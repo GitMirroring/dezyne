@@ -21,37 +21,22 @@
 //
 // Code:
 
-interface foo.I {
+interface ivar {
   enum Bool {f,t};
   in Bool e;
+  out void foo;
   behaviour {
-    on e: {}
+    enum state { one, two };
+    on e: reply(Bool.t);
   }
 }
 
-component bar.c {
-  provides foo.I i;
+component var {
+  provides ivar i;
+  requires ivar o;
   behaviour {
-    foo.I.Bool state = foo.I.Bool.t;
-    on i.e(): { i.e($0$, $1$); }
-  }
-}
-
-namespace baz {
-  namespace foo {
-    interface I {
-      enum Bool {f,t};
-      in Bool e;
-      behaviour {
-        on e: {}
-      }
-    }
-  }
-  component c {
-    provides foo.I i;
-    behaviour {
-      foo.I.Bool state = foo.I.Bool.t;
-      on i.e: { reply (state); }
-    }
+    enum state { one, two };
+    state m = state.one;
+    on i.e(): reply(ivar.Bool.t);
   }
 }

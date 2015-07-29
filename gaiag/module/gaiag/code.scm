@@ -144,7 +144,7 @@
 (define (dump-interface o)
   (mkdir-p "dezyne")
   (dump-global o)
-  (let ((name (.name o)))
+  (let ((name ((om:scope-name '_) o)))
     (dump-indented (list 'dezyne name (code:extension o))
                    (lambda ()
                      (code-file 'interface (code:module o))))))
@@ -152,7 +152,7 @@
 (define (dump-component o)
   (mkdir-p "dezyne")
   (dump-global o)
-  (let ((name (.name o))
+  (let ((name ((om:scope-name '_) o))
         (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
     (when (.behaviour o)
       (map dump interfaces)
@@ -162,7 +162,7 @@
     (dump-main o)))
 
 (define (dump-main o)
-  (and-let* ((name (.name o))
+  (and-let* ((name ((om:scope-name '_) o))
              (model (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                                 string->symbol)))
              ((eq? model name))
@@ -175,7 +175,7 @@
 
 (define (dump-system o)
   (mkdir-p "dezyne")
-  (let ((name (.name o))
+  (let ((name ((om:scope-name '_) o))
         (model (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                            string->symbol)))
         (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
@@ -237,9 +237,9 @@
     (match o
       (($ <interface>)
        (module-define! module '.interface (.name o))
-       (module-define! module '.INTERFACE (string-upcase (symbol->string (.name o)))))
+       (module-define! module '.INTERFACE (string-upcase (symbol->string ((om:scope-name '_) o)))))
       ((? (is? <model>))
-       (module-define! module '.COMPONENT (string-upcase (symbol->string (.name o))))))
+       (module-define! module '.COMPONENT (string-upcase (symbol->string ((om:scope-name '_) o))))))
       module))
 
 (define* (->code model src :optional (locals '()) (indent 1) (compound? #t))
@@ -652,25 +652,22 @@
     (animate snippet `((interface ,interface) (provided ,provided) (required ,required)))))
 
 (define ((declare-enum model) enum)
-  (let* ((scope (or (.scope enum) (.name model)))
-         (fields ((compose .elements .fields) enum))
+  (let* ((fields ((compose .elements .fields) enum))
          (length (length fields)))
    (snippet 'declare-enum
-            `((scope ,scope) (name ,(.name enum)) (fields ,fields) (length ,length)))))
+            `((scope ,(om:scope enum)) (name ,(om:name enum)) (fields ,fields) (length ,length)))))
 
 (define ((enum-to-string o) enum)
   (let* ((fields ((compose .elements .fields) enum))
-         (length (length fields))
-         (scope (or (.scope enum) (.name o))))
+         (length (length fields)))
     (snippet 'enum-to-string
-             `((scope ,scope) (name ,(.name enum)) (fields ,fields) (length ,length)))))
+             `((scope ,(om:scope enum)) (name ,(om:name enum)) (fields ,fields) (length ,length)))))
 
 (define ((string-to-enum o) enum)
   (let* ((fields ((compose .elements .fields) enum))
-         (length (length fields))
-         (scope (or (.scope enum) (.name o))))
+         (length (length fields)))
    (snippet 'string-to-enum
-            `((scope ,scope) (name ,(.name enum)) (fields ,fields) (length ,length)))))
+            `((scope ,(om:scope enum)) (name ,(om:name enum)) (fields ,fields) (length ,length)))))
 
 (define (declare-integer integer)
   (snippet 'declare-integer `((name ,(.name integer)))))
@@ -743,7 +740,7 @@
                                  (animate-snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
                                ((compose .elements .formals) signature)))
          (reply-name (.name type))
-         (reply-scope (or (and enum (.scope enum)) (.type port)))
+         (reply-scope (pair?? (om:scope enum)))
          (statement
           (or (and-let*
                (((is-a? model <component>))
@@ -835,19 +832,20 @@
     (animate snippet `((name ,name) (direction ,direction) (injected? ,injected?) (interface ,interface)))))
 
 (define (declare-replies o)
+  (stderr "reply-enums: ~a\n" (om:reply-enums o))
   (map (lambda (x) (snippet 'declare-reply
-                            `((scope ,(or (.scope x) (.name o)))
-                              (name ,(.name x)))))
+                            `((scope ,(om:scope x))
+                              (name ,(om:name x)))))
        (om:reply-enums o)))
 
 (define (return-type port event)
   (let* ((type ((compose .type .signature) event))
-         (scope (or (.scope type) (and=> port .type)))
-         (name (.name type)))
+         (scope (om:scope type))
+         (name (om:name type)))
     (cond
       ((eq? name 'bool) (snippet 'bool '()))
       ((eq? name 'void) 'void)
-      ((eq? (.scope type) '*global*)
+      ((eq? scope '*global*)
        (snippet 'type-global-enum `((space "") (scope ,scope) (name ,name))))
       (scope (snippet 'type-enum `((space "") (scope ,scope) (name ,name))))
       (else

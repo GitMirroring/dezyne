@@ -73,6 +73,9 @@
     (($ <variable> name type ($ <action> trigger))
      (->string (list 'variable name (->string type) (list 'assign-action trigger))))
 
+    (($ <variable> name type ($ <expression> value))
+     (->string (list 'variable name (->string type) value)))
+
     ;; comment this out to get ol style system as system
     (($ <system> name ('ports ports ...) ('instances instances ...) ('bindings bindings ...))
      (->string (list 'system-as-component name ports instances bindings)))
@@ -111,17 +114,13 @@
     (($ <expression>) #f)
     (($ <var> identifier) (->string identifier))
     (($ <data> data) (->string (list "$" data "$")))
-    (($ <literal> #f type field) (->string (list type "." field)))
-    (($ <literal> '*global* type field) (->string (list type "." field)))
-    (($ <literal> scope type field) (->string (list scope "." (->string type) "." field)))
+    (($ <literal> #f type field) ((->join ".") (list type field)))
+    (($ <literal> '*global* type field) ((->join ".") (list type field)))
+    (($ <literal> scope type field)
+     ((->join ".") (list scope (->string type) field)))
     (($ <field> type field) (->string (list (->string type) "." field)))
     (('! ($ <expression> expression)) (->string (list "!" (paren expression))))
     (('! expression) (->string (list "!" (paren expression))))
-    ;; (('or lhs rhs) (let ((lhs (->string lhs))
-    ;;                      (rhs (->string rhs)))
-    ;;                  ;;(list lhs " || " rhs)
-    ;;                  (list "(" lhs " " 'or " " rhs ")")
-    ;;                  )) ;; FIXME: do we need to add gratituous parens?
     (((or '== '!= '< '<= '> '>= '+ '-) lhs rhs)
      (let ((lhs (->string lhs))
            (rhs (->string rhs))
@@ -198,7 +197,7 @@
                   (compound . ,(lambda (x)
                                  (apply string-append
                                         (map ->string (.elements x)))))))
-    (enum . ((name . ,->string)
+    (enum . ((name . ,.name)
              (fields . ,(compose comma-space-join .elements))))
     (extern . ((name . ,->string)
                (scope . ,identity)

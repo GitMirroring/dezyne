@@ -124,40 +124,18 @@
   ((compose ast:resolve ast->om ast:public) ast))
 
 (define (type-equal? a b)
-  (match (cons a b)
-    (((? (is? <enum>)) . (? (is? <*type*>)))
-     (and (or (eq? (.scope a) (.scope b))
-              (and (eq? (.scope a) '*global*)
-                   (not (.scope b))))
-          (eq? (.name a) (.name b))))
-    (((? (is? <*type*>)) . (? (is? <*type*>)))
-     (and (eq? (.scope a) (.scope b))
-          (eq? (.name a) (.name b))))
-    (((? symbol?) . (? (is? <*type*>)))
-     (and (not (.scope b))
-          (eq? a (.name b))))
-    (((? symbol?) . (? symbol?))
-     (and (not (.scope b))
-          (eq? a (.name b))))))
+  (equal? (.name a) (.name b)))
 
 (define (->symbol o)
   (match o
-    (($ <type> ('name name ...)) ((->symbol-join '.) name))
-    (($ <enum> name field) ((->symbol-join '.) name))
-    ;; (($ <type> name #f) name)
-    ;; (($ <type> name scope) (symbol-append scope '. name))
-    ;; (($ <value> type field)  (symbol-append type '. field))
+    (($ <type> name) (->symbol name))
+    (($ <enum> name field) (->symbol name))
+    (('name name ...) ((->symbol-join '.) name))
     (_ o)))
 
-;; hmm
-(define (scoped-types model)
-  (let ((scope (.scope (.name model))))
-    (map (lambda (o)
-           (match o
-             (('enum name fields) (list 'enum name scope fields))
-             (('extern name value) (list 'extern name scope value))
-             (('int name range) (list 'int name scope range))))
-         ((compose public-types om:import .type) port))))
+(define ((om:ensure-scope scope) name)
+  (if (or (member name '(bool void)) (pair? (.scope name))) name
+      (append scope (.elements name))))
 
 (define (resolve-model- model o locals)
 
@@ -187,10 +165,16 @@
     (lambda (field)
       (and-let* ((variable (var? identifier))
                  (type (.type variable))
-                 (enum (om:enum model type)))
+                 (enum (or (om:enum model (ensure-scope type))
+                           (om:enum model type))))
                 (member field (.elements (.fields enum))))))
 
-  (define (type? type) ((om:type model) type))
+  (define (ensure-scope type)
+    (make <type> :name ((om:ensure-scope (.name model)) (.name type))))
+
+  (define (type? type)
+    (or ((om:type model) (ensure-scope type))
+        ((om:type model) type)))
 
   (define (fake:type model o)
     (match o
@@ -199,17 +183,17 @@
       ('true (make <type> :name 'bool))
       (($ <data>) (make <type> :name 'data))
       ((? number?) (make <type> :name 'int))
-      (($ <literal> scope name field)
-       (and-let* ((enum (om:enum model (make <type> :name name :scope scope)))
+      (('name type field)
+       (and-let* ((enum (or (om:enum model (ensure-scope (make <type> :name (make <name> :elements (list type)))))
+                            (om:enum model (make <type> :name (make <name> :elements (list type))))))
                   ((member field ((compose .elements .fields) enum))))
                  enum))
-      (($ <value> type field)
-       (and-let* ((enum (om:enum model (make <type> :name type)))
+      (('name scope ... field)
+       (and-let* ((enum (om:enum model (make <type> :name (make <name> :elements scope))))
                   ((member field ((compose .elements .fields) enum))))
                  enum))
       (_ #f)))
 
-  (stderr "resolving: ~a\n" o)
   (match o
     ('root o)
     (($ <var> (and (? (negate var?)) (get! identifier)))
@@ -230,31 +214,27 @@
             (formals ((compose .elements .formals .signature) function))
             (argument-count (length arguments))
             (formal-count (length formals)))
-       (if (= argument-count formal-count)
-           (failure)
+       (if (= argument-count formal-count) (failure)
            (resolve-error o identifier
                           (format #f "function ~a expects ~a arguments, found: ~a" "~a" formal-count argument-count)))))
 
     (($ <variable> name (and (? (negate type?)) (get! type)) expression)
-     (stderr "TYPE: ~a ==> ~a\n" (type) (type? (type)))
-     (let* ((scope (.scope (type)))
-            (name (.name (type)))
-            (name (if scope
-                      (symbol-append scope '. name)
-                      name)))
-      (resolve-error (type) name "undefined type: ~a")))
+      (resolve-error (type) (->symbol (type)) "undefined type: ~a"))
 
     (($ <variable> name (and (? (negate extern?)) (get! type)) ($ <expression> (? unspecified?)))
       (resolve-error o name "undefined variable value: ~a"))
 
     (($ <variable> name type expression) (=> failure)
      (or (and-let* ((e-type (fake:type model expression))
+                    (v-type (ensure-scope type))
+                    ((not (type-equal? e-type v-type)))
                     ((not (type-equal? e-type type)))
+                    (actual (type? type))
                     ((if (eq? (.name e-type) 'data)
-                         (not (om:extern model type))))
+                         (not (is-a? actual <extern>))))
                     ((if (eq? (.name e-type) 'int)
-                         (not (om:integer model type)))))
-                   (type-mismatch expression (->symbol type) (->symbol e-type)))
+                         (not (is-a? actual <int>)))))
+                   (type-mismatch expression (->symbol v-type) (->symbol e-type)))
          (failure)))
 
     ((or 'false 'true) o)
@@ -284,7 +264,6 @@
     (($ <field>) o)
     (($ <illegal>) o)
     (($ <int>) o)
-    (($ <literal>) o)
     (($ <otherwise>) (make <otherwise>))
     (($ <port>) o)
     (($ <signature> type (? unspecified?))
@@ -295,12 +274,9 @@
      (make <signature>
        :type ((resolve-model model locals) type)
        :formals ((resolve-model model locals) formals)))
-    ;; (($ <signature> type)
-    ;;  (make <signature>
-    ;;    :type ((resolve-model model locals) type)
-    ;;    :formals '(formals)))
     (($ <trigger>) o)
-    (($ <type>) o)
+    (($ <type> name)
+     (make <type> :name (or (and=> (type? o) .name) name)))
     (($ <var>) o)
 
     ((? symbol?) (undefined-error 'programming-error o))
@@ -342,7 +318,7 @@
        :expression (make <call> :identifier (function))))
 
     (($ <assign> identifier
-        ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
+        ($ <expression> ('name (and (? port?) (get! port)) event)))
      (make <assign>
        :identifier identifier
        :expression (make <action>
@@ -408,7 +384,7 @@
        :type ((resolve-model model locals) type)
        :expression ((resolve-model model locals) (action))))
 
-    (($ <variable> name type ($ <expression> ($ <value> (and (? port?) (get! port)) event)))
+    (($ <variable> name type ($ <expression> ('name (and (? port?) (get! port)) event)))
      (make <variable>
        :name name
        :type ((resolve-model model locals) type)
@@ -427,20 +403,31 @@
        :type ((resolve-model model locals) type)
        :expression ((resolve-model model locals) expression)))
 
-    (($ <name> name ...) o)
+    (('name (and (? enum?) (get! enum)) (and (? (enum-field? (enum))) (get! field)))
+     (make <literal> :scope (car (om:scope (enum? (enum)))) :type (enum) :field (field)))
 
-    (($ <value> (and (? enum?) (get! enum))
-        (and (? (enum-field? (enum))) (get! field)))
-     (make <literal> :scope (.scope (enum? (enum))) :type (enum) :field (field)))
+    (('name (and (? var?) (get! type)) (? (member-field? (type))))
+     (make <field> :identifier (type) :field (.name o)))
 
-    (($ <value> (and (? var?) (get! type)) (? (member-field? (type))))
-     (make <field> :identifier (type) :field (.field o)))
+    (('name scope name field) (=> failure)
+     (let ((enum (enum? `(name ,scope ,name))))
+       (if (not enum) (failure)
+           (make <literal> :scope scope :type name :field field))))
 
-    (($ <value> (? enum?) field)
+    (('namespace-TODO-name scope ... field) (=> failure)
+     (let ((enum (enum? scope)))
+       (if (not enum) (failure)
+           (make <literal> :scope scope :field field))))
+
+    (('name (? enum?) field)
      (resolve-error o field "undefined enum field: ~a"))
 
-    (($ <value> (? var?) field)
+    (('name (? var?) field)
      (resolve-error o field "undefined enum field: ~a"))
+
+    (('name t ...)
+     (stderr "RESOLVE TODO: ~a\n" o)
+     o)
 
     (($ <expression> value)
      (make <expression> :value ((resolve-model model locals) value)))

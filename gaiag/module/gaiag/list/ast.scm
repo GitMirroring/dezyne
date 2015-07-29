@@ -36,7 +36,7 @@
   :use-module (gaiag reader)
 
   :use-module (language dezyne location)
-  
+
   :use-module (gaiag list om)
 
   :export (
@@ -131,11 +131,7 @@
 
     (('data value) (make <data> :value value))
 
-    (('enum name scope fields)
-     (make <enum>
-       :name name
-       :scope scope
-       :fields (ast->om- fields)))
+    (('enum name fields) (make <enum> :name name :fields (ast->om- fields)))
 
     (('extern name scope value)
      (make <extern> :name name :scope scope :value value))
@@ -154,7 +150,7 @@
 
     (('field identifier field) (make <field> :identifier identifier :field field))
 
-    (('fields fields ...) (make <fields> :elements fields))    
+    (('fields fields ...) (make <fields> :elements fields))
 
     (('function name signature recursive? statement)
      (make <function>
@@ -186,8 +182,8 @@
 
     (('import name) (make <import> :name name))
 
-    (('int name scope range)
-     (make <int> :name name :scope scope :range (ast->om- range)))
+    (('int name range)
+     (make <int> :name name :range (ast->om- range)))
 
     (('instance name component) (make <instance> :name name :component component))
 
@@ -210,7 +206,7 @@
 
     (('otherwise) (make <otherwise> :value 'otherwise))
 
-    (('otherwise value) (make <otherwise> :value value))    
+    (('otherwise value) (make <otherwise> :value value))
 
     (('formal name type)
      (make <formal> :name name :type (ast->om- type)))
@@ -267,11 +263,13 @@
     (('triggers triggers ...)
      (make <triggers> :elements (map ast->om- triggers)))
 
-    (('type scope ('type name)) (make <type> :name name :scope scope))
+    (('type scope barf-namespace-0 ('type name)) (make <type> :name name :scope scope))
 
     (('type name) (make <type> :name name))
 
-    (('type name scope) (make <type> :name name :scope scope))
+    (('type name scope)
+     (stderr "TNS: ~a\n" ast)
+     barf-namespace-1 (make <type> :name name :scope scope))
 
     (('types types ...) (make <types> :elements (map ast->om- types)))
 

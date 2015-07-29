@@ -693,13 +693,16 @@
 (define (.name ast)
   (match ast
     (('name scope ... name) name)
+    ((or 'bool 'void) ast)
     (_ (cadr ast))))
 
 (define (.scope ast)
+  ;;(stderr ".SCOPE: ~a\n" ast)
   (match ast
     (('literal scope type field) scope)
     (('type name) #f)
-    (('name scope ... name) scope)))
+    (('name scope ... name) scope)
+    ((or 'bool 'void) '())))
 
 (define (.elements ast)
   (if (pair? ast)

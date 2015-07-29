@@ -58,7 +58,7 @@
     (($ <system>) (dump-system o))))
 
 (define (dump-interface o)
-  (let ((name (.name o)))
+  (let ((name ((om:scope-name '_) o)))
     (dump-indented (symbol-append name (code:extension o))
                    (lambda () (c-file (c-name o) (code:module o))))
     (and-let* ((code-name (symbol-append name (code:extension (make <component>))))
@@ -69,7 +69,7 @@
                              (lambda () (c-file (c-code o) (code:module o)))))))
 
 (define (dump-component o)
-  (let ((name (.name o))
+  (let ((name ((om:scope-name '_) o))
         (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
     (dump-indented (symbol-append name (code:extension (make <interface>)))
                    (lambda ()
@@ -81,7 +81,7 @@
     (dump-main o)))
 
 (define (dump-system o)
-  (let ((name (.name o))
+  (let ((name ((om:scope-name '_) o))
         (interfaces (map code:import (map .type ((compose .elements .ports) o))))
         (components (map code:import (map .component ((compose .elements .instances) o)))))
     (dump-indented (symbol-append name (code:extension (make <interface>)))
@@ -93,7 +93,7 @@
     (dump-main o)))
 
 (define (dump-main o)
-  (and-let* ((name (.name o))
+  (and-let* ((name ((om:scope-name '_) o))
              (model (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                                 string->symbol)))
              ((eq? model name)))
