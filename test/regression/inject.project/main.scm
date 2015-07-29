@@ -21,10 +21,10 @@
 ;;; Code:
 
 (define (main args)
-  (let* ((locator (make <locator>))
-         (runtime (make <runtime>))
-         (sut (make <Injected>
+  (let* ((locator (make <dezyne:locator>))
+         (runtime (make <dezyne:runtime>))
+         (sut (make <dezyne:Injected>
                 :locator (set locator runtime)
                 :name 'sut
-                :t.out (make <itop.out> :f (lambda () (stderr "f\n"))))))
+                :t.out (make <dezyne:itop.out> :f (lambda () (stderr "f\n"))))))
     (action sut .t .in .e)))

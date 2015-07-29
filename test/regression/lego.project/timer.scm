@@ -22,23 +22,21 @@
 ;;; Code:
 
 
-(define-class <timer> (<component>)
+(define-class <dezyne:timer> (<dezyne:component>)
   (port :accessor .port :init-value #f))
-(define-method (initialize (o <timer>) args)
+(define-method (initialize (o <dezyne:timer>) args)
   (next-method)
   (set! (.port o)
-    (make <itimer>
-       :in (make <itimer.in>
+    (make <dezyne:itimer>
+       :in (make <dezyne:itimer.in>
               :name 'port
               :self o
               :create (lambda (. args) (call-in o (lambda () (apply port-create (cons o args))) `(,(.port o) create)))
               :cancel (lambda (. args) (call-in o (lambda () (apply port-cancel (cons o args))) `(,(.port o) cancel))))
-       :out (make <itimer.out>))))
+       :out (make <dezyne:itimer.out>))))
 
-(define-method (port-create (o <timer>) ms)
+(define-method (port-create (o <dezyne:timer>) ms)
     #t)
 
-(define-method (port-cancel (o <timer>) )
+(define-method (port-cancel (o <dezyne:timer>) )
     #t)
-
-

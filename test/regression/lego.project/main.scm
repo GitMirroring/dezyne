@@ -31,7 +31,7 @@
 (define (consume_synchronous_out_events event-alist)
   (read-line)
   (let loop ((line (read-line)))
-    (and-let* ((line line) 
+    (and-let* ((line line)
                ((not (eof-object? line)))
                (event (assoc-ref event-alist (string->symbol line))))
               (event)
@@ -330,9 +330,9 @@
 
 (define (main . args)
   (let* ((print-illegal (lambda () (stderr "illegal\n") (exit 0)))
-         (locator (make <locator>))
-         (runtime (make <runtime> :illegal print-illegal))
-         (sut (make <LegoBallSorter> :locator (set locator runtime) :name 'sut))
+         (locator (make <dezyne:locator>))
+         (runtime (make <dezyne:runtime> :illegal print-illegal))
+         (sut (make <dezyne:LegoBallSorter> :locator (set locator runtime) :name 'sut))
          (event-alist (fill-event-alist sut)))
     (while (and-let*
             ((line (read-line))

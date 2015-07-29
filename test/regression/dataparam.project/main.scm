@@ -41,12 +41,12 @@
   (assert (= i5 5)))
 
 (define (main . args)
-  (let* ((loc (make <locator>))
-         (rt (make <runtime>))
-         (d (make <Datasystem>
+  (let* ((loc (make <dezyne:locator>))
+         (rt (make <dezyne:runtime>))
+         (d (make <dezyne:Datasystem>
               :locator (set loc rt)
               :name 'd
-              :port.out (make <IDataparam.out>
+              :port.out (make <dezyne:IDataparam.out>
                           :name 'port
                           ;;:self d ;; hmm
                           :a0 a0
@@ -56,7 +56,7 @@
          (i (make <v> :v 0))
          (j (make <v> :v 0)))
     ;;(set! (.self (.out d .port)) d) ;;hmm
-  
+
     (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action d .port .in .e0r)))
     (action d .port .in .e0)
     (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action d .port .in .er 123)))

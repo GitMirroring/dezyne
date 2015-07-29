@@ -60,13 +60,13 @@
 ;;   (stderr "Siren.turnoff\n"))
 
 (define (main args)
-  (let* ((loc (make <locator>))
-         (rt (make <runtime>))
-         (sut (make <AlarmSystem>
+  (let* ((loc (make <dezyne:locator>))
+         (rt (make <dezyne:runtime>))
+         (sut (make <dezyne:AlarmSystem>
                 :locator (set loc rt)
                 :name 'sut
                 :console.out
-                (make <IConsole.out>
+                (make <dezyne:IConsole.out>
                  :detected (lambda () (stderr "Console.detected\n"))
                  :deactivated (lambda () (stderr "Console.deactivated\n"))))))
     (action (.alarm sut) .console .in .arm)
@@ -75,4 +75,3 @@
     (action (.alarm sut) .console .in .disarm)
     (action (.sensor sut) .sensor .out .disabled)
     (flush (.sensor sut))))
-
