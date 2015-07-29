@@ -15,38 +15,15 @@
 (pass-if "annotate-first-dummy-test"
   #t)
 
-(define ast
-  '(root (interface
-        iloc
-        (types)
-        (events
-          (event e (signature (type void)) in)
-          (event a (signature (type void)) out))
-        (behaviour
-          #f
-          (types)
-          (variables)
-          (functions)
-          (compound
-            (on (triggers (trigger #f e))
-                (action (trigger #f a))))))
-      (component
-        loc
-        (ports (port i iloc provides #f))
-        (behaviour
-          #f
-          (types)
-          (variables)
-          (functions)
-          (compound
-            (on (triggers (trigger i e))
-                (action (trigger i a))))))))
+(define ast (read-ast "examples/loc.dzn"))
 
 (define locations
   '(locations
   (root ((location "examples/loc.dzn" 0 0 0 #f)
          interface
-         iloc
+         ((location "examples/loc.dzn" 0 10 10 #f)
+          name
+          iloc)
          (types)
          (events
            (event e
@@ -80,8 +57,15 @@
               (trigger #f a))))))
         ((location "examples/loc.dzn" 10 0 84 #f)
          component
-         loc
-         (ports (port i iloc provides #f))
+         ((location "examples/loc.dzn" 10 10 94 #f)
+          name
+          loc)
+         (ports (port i
+                      ((location "examples/loc.dzn" 12 11 111 #f)
+                       name
+                       iloc)
+                      provides
+                      #f))
          (behaviour
            #f
            (types)

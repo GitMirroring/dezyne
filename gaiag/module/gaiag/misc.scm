@@ -77,6 +77,7 @@
            string-postfix?
            string-sub ;; FIXME: look at guile-lib string-substitute sugar
            symbol<
+           list-symbol<
            null-symbol
            symbol-null?
            pair??
@@ -154,6 +155,9 @@
   (string-suffix? (symbol->string suffix) (symbol->string string)))
 
 (define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
+
+(define (list-symbol< a b)
+  (symbol< (apply symbol-append a) (apply symbol-append b)))
 
 (define (join-components components)
   (apply

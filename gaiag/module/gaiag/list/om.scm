@@ -370,7 +370,7 @@
   (let-keywords
    args #f
    ((name #f))
-   (cons <import> (list (make-<name> :name name)))))
+   (cons <import> (list (make-<name> :elements name)))))
 
 (define (make-<interface> . args)
   (let-keywords
@@ -613,10 +613,9 @@
 (define (make-<literal> . args)
   (let-keywords
    args #f
-   ((scope #f)
-    (type #f)
+   ((name (make <name>))
     (field #f))
-   (cons <literal> (list scope type field))))
+   (cons <literal> (list name field))))
 
 (define (make-<type> . args)
   (let-keywords
@@ -697,9 +696,7 @@
     (_ (cadr ast))))
 
 (define (.scope ast)
-  ;;(stderr ".SCOPE: ~a\n" ast)
   (match ast
-    (('literal scope type field) scope)
     (('type name) #f)
     (('name scope ... name) scope)
     ((or 'bool 'void) '())))
@@ -853,7 +850,7 @@
 (define (.field ast)
   (match ast
     (('field identifier field) field)
-    (('literal scope type field) field)
+    (('literal name field) field)
     (('value type field) field)))
 
 (define (.message ast)

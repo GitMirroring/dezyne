@@ -9,7 +9,7 @@
   :use-module (test-suite misc)
 
   :use-module (gaiag ast)
-  :use-module (gaiag annotate)  
+  :use-module (gaiag annotate)
   :use-module (gaiag pretty)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
@@ -64,7 +64,7 @@ interface i
   ((compose .statement .behaviour om:interface) idle-init-busy-ast))
 
 (pass-if "table-state-expression-state-field"
-  (let ((state (make <literal> :type 'S :field 'idle)))
+  (let ((state (make <literal> :name '(name i S) :field 'idle)))
    (om-pretty-noisy-equal?
     (simplify-literal
      (om:interface idle-init-busy-ast)
@@ -73,7 +73,7 @@ interface i
     #t)))
 
 (pass-if "table-state-expression-state-var"
-  (let ((state (make <literal> :type 'S :field 'idle)))
+  (let ((state (make <literal> :name '(name i S) :field 'idle)))
    (om-pretty-noisy-equal?
     (simplify-literal
      (om:interface idle-init-busy-ast)
@@ -82,7 +82,7 @@ interface i
     state)))
 
 (pass-if "table-state-expression-state-b-not-b"
-  (let ((state (make <literal> :type 'S :field 'idle)))
+  (let ((state (make <literal> :name '(name i S) :field 'idle)))
    (om-pretty-noisy-equal?
     (simplify-literal
      (om:interface idle-init-busy-ast)
@@ -110,7 +110,7 @@ interface i
 
      [s.init] on e:
      {
-      a; s = S.idle;                     
+      a; s = S.idle;
       }
      [s.idle] on e:
      {
@@ -156,19 +156,19 @@ interface i
  (on (triggers (trigger #f e (arguments)))
      (compound
       (action (trigger #f a (arguments)))
-      (assign s (expression (literal #f S idle))))))
+      (assign s (expression (literal (name i S) idle))))))
 (guard
  (expression (field s idle))
  (on (triggers (trigger #f e (arguments)))
      (compound
       (action (trigger #f a (arguments)))
-      (assign s (expression (literal #f S busy))))))
+      (assign s (expression (literal (name i S) busy))))))
 (guard
  (expression (field s busy))
  (on (triggers (trigger #f e (arguments)))
      (compound
       (action (trigger #f a (arguments)))
-      (assign s (expression (literal #f S init))))))
+      (assign s (expression (literal (name i S) init))))))
 )))
 
 (pass-if "table-state-state-var-equals"
@@ -269,7 +269,7 @@ interface i
  (on (triggers (trigger #f e (arguments)))
      (compound
       (action (trigger #f a (arguments)))
-      (assign s (expression (literal #f S idle))))))
+      (assign s (expression (literal (name i S) idle))))))
 (guard
  (expression (field s idle))
  (on (triggers (trigger #f e (arguments)))
@@ -277,7 +277,7 @@ interface i
       (expression (var b))
       (compound
        (action (trigger #f a (arguments)))
-       (assign s (expression (literal #f S busy)))))))
+       (assign s (expression (literal (name i S) busy)))))))
 (guard
  (expression (field s busy))
  (on (triggers (trigger #f e (arguments)))
@@ -285,7 +285,7 @@ interface i
       (expression (! (var b)))
       (compound
        (action (trigger #f a (arguments)))
-       (assign s (expression (literal #f S init))))))))))
+       (assign s (expression (literal (name i S) init))))))))))
 
 (pass-if "table-state-expressions-pretty"
   (diff-noisy-equal?
@@ -674,15 +674,15 @@ interface I
 #{
 interface I {
  in void e;
- 
+
  behaviour {
   enum S { init };
-  
+
   S s = S.init;
   S o = S.init;
-  
+
   bool b = false;
-  
+
   [o.init] {
    on e: {
     [b] { }
@@ -718,19 +718,19 @@ interface I {
   in void i;
   in void o;
   out void a;
-  
+
   behaviour
   {
     enum S {init, setup, idle};
-    
+
     S s = S.init;
-    
+
     on o: s = S.init;
     on i: {
       [s.init] s = S.setup;
       [otherwise] illegal;
-    }    
-    
+    }
+
     on inevitable: {
       [s.setup]
       {
@@ -781,15 +781,15 @@ interface I {
 #{
 interface I {
  in void e;
- 
+
  behaviour {
   enum S { init };
   S s = S.init;
 
   bool b = false;
-  
+
   S o = S.init;
-  
+
   [o.init] {
    on e: {
     [b] { }
@@ -809,7 +809,7 @@ interface I {
         [b]
         {
         }
-        [otherwise]  
+        [otherwise]
         illegal;
     }
 }
@@ -822,17 +822,17 @@ interface I {
     (ast:resolve*
      (dezyne->ast
 #{interface IDevice {
- 
+
  enum Res { OK, NOK };
- 
+
  in Res turnon();
  in void turnoff();
 
  behaviour {
-  
+
   enum State { Off, On };
   State s = State.Off;
-  
+
   on turnon: {
    [s.Off] {
     reply(Res.OK);
@@ -843,7 +843,7 @@ interface I {
   }
   on turnoff: {
    [s.Off] illegal;
-   [s.On] s = State.Off;    
+   [s.On] s = State.Off;
   }
  }
 }
@@ -862,7 +862,7 @@ interface I {
       }
       [true]
       reply(Res.NOK);
-    } 
+    }
     on turnoff:
     illegal;
   }
@@ -888,7 +888,7 @@ interface I {
   in void e();
   out void a();
 
-  behaviour 
+  behaviour
   {
     enum S { init, idle };
     S s = S.init;
@@ -920,7 +920,7 @@ interface I {
          assign
          s
          (expression
-           ((location #f 12 11 152 #f) literal #f S idle)))
+           ((location #f 12 11 152 #f) literal (name i S) idle)))
         ((location #f 13 6 165 #f)
          action
          (trigger #f a (arguments))))))
@@ -936,4 +936,3 @@ interface I {
        ((location #f 17 4 201 #f)
         action
         (trigger #f a (arguments)))))))))
-

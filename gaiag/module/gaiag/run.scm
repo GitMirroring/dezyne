@@ -85,7 +85,7 @@
 (define *component* #f)  ;; FIXME
 
 (define (run-model model)
-  (stderr "\n\n>>>running: ~a ~a {~a}\n" (ast-name model) (.name model) (map ->string (om:find-triggers model)))
+  (stderr "\n\n>>>running: ~a ~a {~a}\n" (ast-name model) ((om:scope-name '.) model) (map ->string (om:find-triggers model)))
   (and-let* ((((is? <component>) model))
              (interfaces (map run:import
                               (map .type ((compose .elements .ports) model))))))
@@ -186,7 +186,7 @@
       (map (lambda (event) (make <trigger> :port port :event event))
            (filter identity (list inevitable optional)))))
 
-  (debug "\n\nrun-to-completion[~a, ~a]: top: ~a\n" (.name model) (->symbol (car (.trail info))) top?)
+  (debug "\n\nrun-to-completion[~a, ~a]: top: ~a\n" ((om:scope-name '.) model) (->symbol (car (.trail info))) top?)
   (debug-state model info)
   (debug "trail: ~a\n" (.trail info))
   (debug "trigger: ~a\n" (->string (car (.trail info))))
@@ -198,7 +198,7 @@
     (prune infos)))
 
 (define* (run-port model trigger info :optional (top? #f))
-  (debug "run-port-action[~a, ~a]\n" (.name model) (->symbol trigger))
+  (debug "run-port-action[~a, ~a]\n" ((om:scope-name '.) model) (->symbol trigger))
   (let* ((port (.port trigger))
          (scope (.type (om:port model port)))
          (interface (run:import scope))
@@ -228,7 +228,7 @@
                     (make <literal> :field 'return)))
          (trace (.trace component-info))
          (trace (append trace (reverse (.trace i-info))))
-         (info (clone component-info :trail trail :q q :reply (make <literal> :scope scope :type (.type reply) :field (.field reply)) :trace trace :error (.error i-info))))
+         (info (clone component-info :trail trail :q q :reply (make <literal> :name (.name reply) :field (.field reply)) :trace trace :error (.error i-info))))
     (set-state info port (.state i-info))))
 
 (define* ((run model trigger) info)
@@ -238,7 +238,7 @@
                       (eq? (.event t) (.event trigger))))))
       (debug "MATCH?: ~a == ~a ==> ~a\n" (->symbol t) (->symbol trigger) r)
       r))
-  (debug "\nrun[~a, ~a]: ~a trail:~a\n" (.name model) (->symbol trigger) (ast-name (.ast info)) (map ->symbol (.trail info)))
+  (debug "\nrun[~a, ~a]: ~a trail:~a\n" ((om:scope-name '.) model) (->symbol trigger) (ast-name (.ast info)) (map ->symbol (.trail info)))
   (debug "q: ~a\n" (.q info))
   (debug-state model info)
   (debug-pretty (map trace-location (.trace info)) (current-error-port))
@@ -274,7 +274,7 @@
              infos)
            '()))
       (($ <on> ('triggers triggers ...) statement)
-       (debug "on[~a, ~a]: ~a, ~a\n" (.name model) (->symbol (car triggers)) (->symbol trigger) (.trail info))
+       (debug "on[~a, ~a]: ~a, ~a\n" ((om:scope-name '.) model) (->symbol (car triggers)) (->symbol trigger) (.trail info))
        (if (not (find trigger-matches? triggers)) '()
            (let* ((on-info (clone info :ast statement :trace '()))
                   (marking-trigger (if (or (is-a? model <interface>) (eq? (.direction (om:port model port)) 'provides)) trigger
@@ -295,15 +295,15 @@
                                       (.trace info+trigger+ast)))) info))
               infos))))
       (('compound statements ...)
-       (debug "ENTER IMPERATIVE[~a, ~a]: ~a\n" (.name model) (length statements) (and (pair? statements) (ast-name (car statements))))
+       (debug "ENTER IMPERATIVE[~a, ~a]: ~a\n" ((om:scope-name '.) model) (length statements) (and (pair? statements) (ast-name (car statements))))
        (let loop ((statements statements) (loop-info info+ast) (frame 0))
          (if (or (null? statements)
                  (and
                   (.error loop-info)
-                  (debug "BAILING COMPOUND[~a]: ~a\n" (.name model) (if (null? statements) '()  (car statements)))))
+                  (debug "BAILING COMPOUND[~a]: ~a\n" ((om:scope-name '.) model) (if (null? statements) '()  (car statements)))))
              (list (clone loop-info :ast '() :state (drop (.state loop-info) frame)))
              (let ((statement (car statements)))
-               (let* ((foo (debug "IMPERATIVE[~a, ~a]: ~a\n" (.name model) (length statements) (ast-name statement)))
+               (let* ((foo (debug "IMPERATIVE[~a, ~a]: ~a\n" ((om:scope-name '.) model) (length statements) (ast-name statement)))
                       (state (if (is-a? statement <variable>)
                                  (acons (.name statement)
                                         #f (.state loop-info)) (.state loop-info)))
@@ -316,7 +316,7 @@
                  (append-map (lambda (info) (loop (cdr statements) info frame)) infos))))))
       (('compound) (list info+ast))
       (($ <action> action)
-       (debug "action[~a, ~a]: ~a\n" (.name model) (->symbol action) (.trail info))
+       (debug "action[~a, ~a]: ~a\n" ((om:scope-name '.) model) (->symbol action) (.trail info))
        (let* ((infos
                (if (is-a? model <interface>)
                    (cond
@@ -361,23 +361,23 @@
                                                  (.trace info+ast)))) info)))
               infos)))
       (($ <assign> identifier expression)
-       (debug "assign[~a, ~a]: ~a\n" (.name model) identifier (.trail info))
+       (debug "assign[~a, ~a]: ~a\n" ((om:scope-name '.) model) identifier (.trail info))
        (let* ((infos (eval-function-expression model trigger (clone info :ast expression)))
               (set-var (lambda (info)
-                         (debug "  assign var[~a]: ~a := ~a\n" (.name model) identifier (.return info))
+                         (debug "  assign var[~a]: ~a := ~a\n" ((om:scope-name '.) model) identifier (.return info))
                          (var! (.state info) identifier (.return info))))
               (infos (map (modify-field :state set-var) infos))
               (infos (map cons-state infos))
               (infos (map (cons-trace ast) infos)))
          infos))
       (($ <call> function ('arguments arguments ...))
-       (debug "void call[~a, ~a]: ~a\n" (.name model) function (.trail info))
+       (debug "void call[~a, ~a]: ~a\n" ((om:scope-name '.) model) function (.trail info))
        (let ((infos (eval-function-expression model trigger info+ast)))
          infos))
       (($ <if> expression then #f)
        (let ((info info+ast)
              (value (eval-expression model state expression)))
-         (debug "<if>[~a] at: ~a\n" (.name model) (trace-location ast))
+         (debug "<if>[~a] at: ~a\n" ((om:scope-name '.) model) (trace-location ast))
          (debug "expr ~a ==> ~a\n" expression value)
          (if value
              ((run model trigger) (clone info :ast then))
@@ -385,7 +385,7 @@
       (($ <if> expression then else)
        (let ((info info+ast)
              (value (eval-expression model state expression)))
-         (debug "<if>[~a] at: ~a\n" (.name model) (trace-location ast))
+         (debug "<if>[~a] at: ~a\n" ((om:scope-name '.) model) (trace-location ast))
          (debug "expr ~a ==> ~a\n" expression value)
          (if value
              ((run model trigger) (clone info :ast then))
@@ -395,17 +395,17 @@
          (list info)))
       (($ <reply> expression)
        (let* ((reply (eval-expression model state expression)))
-         (debug "reply[~a]: ~a\n" (.name model) reply)
+         (debug "reply[~a]: ~a\n" ((om:scope-name '.) model) reply)
          (list (clone info+ast :reply reply))))
       (($ <return> expression)
        (let ((return (eval-expression model state expression)))
-         (debug "return[~a, ~a]: ~a\n" (.name model) expression (.trail info))
+         (debug "return[~a, ~a]: ~a\n" ((om:scope-name '.) model) expression (.trail info))
          (list (clone info+ast :return return))))
       (($ <variable> identifier type expression)
-       (debug "variable[~a, ~a]: ~a\n" (.name model) identifier (.trail info))
+       (debug "variable[~a, ~a]: ~a\n" ((om:scope-name '.) model) identifier (.trail info))
        (let* ((infos (eval-function-expression model trigger (clone info :ast expression)))
               (set-var (lambda (info)
-                         (debug "  init var[~a]: ~a := ~a\n" (.name model) identifier (.return info))
+                         (debug "  init var[~a]: ~a := ~a\n" ((om:scope-name '.) model) identifier (.return info))
                          (var! (.state info) identifier (.return info))))
               (infos (map (modify-field :state set-var) infos))
               (infos (map cons-state infos))
@@ -422,7 +422,7 @@
        (if (or (pair? (.trail info)) (eq? next-trail-empty next-trail-empty-reject)) (failure)
            (and (debug "BAIL RECURSION\n") (list info))))
       (($ <call> function ('arguments arguments ...))
-       (debug "valued call[~a, ~a]: ~a\n" (.name model) function (.trail info))
+       (debug "valued call[~a, ~a]: ~a\n" ((om:scope-name '.) model) function (.trail info))
        (let* ((f (om:function model function))
               (formals (map .name ((compose .elements .formals .signature) f)))
               (statement (.statement f))
@@ -663,7 +663,7 @@
 
 (define (next-action model info trigger action)
   (let ((trail (.trail info)))
-    (debug "next-action[~a ~a]: ~a\n" (.name model) action trail)
+    (debug "next-action[~a ~a]: ~a\n" ((om:scope-name '.) model) action trail)
     (cond
      ((null? trail) (next-trail-empty model info 'action (->symbol action)))
      (else
@@ -677,23 +677,23 @@
                      (eq? (.event action) (.event next))))
             (clone info :trail (cdr (.trail info)))
             (and
-             (debug "REJECT-TRACE: ACTION[~a expect:~a]: next:~a\n" (.name model) action next)
+             (debug "REJECT-TRACE: ACTION[~a expect:~a]: next:~a\n" ((om:scope-name '.) model) action next)
              ((cons-trace
-               (list 'reject 'action (.name model) 'next next 'expected action))
+               (list 'reject 'action ((om:scope-name '.) model) 'next next 'expected action))
               (clone info :error #t)))))))))
 
 (define (next-illegal model info)
   (let* ((trail (.trail info)))
-    (debug "next-illegal[~a]: ~a\n" (.name model) trail)
+    (debug "next-illegal[~a]: ~a\n" ((om:scope-name '.) model) trail)
     (if (null? trail)
         (next-trail-empty model info 'illegal 'illegal)
         (let* ((next (car trail)))
           (if (eq? next 'illegal)
               (clone info :trail (cdr trail) :return next :error #t) ;; FIXME: illegal was matched, is that an error?
               (and
-               (debug "REJECT-TRACE: ILLEGAL[~a expect:~a]: next:~a\n" (.name model) 'illegal next)
+               (debug "REJECT-TRACE: ILLEGAL[~a expect:~a]: next:~a\n" ((om:scope-name '.) model) 'illegal next)
                ((cons-trace
-                 (list 'reject 'illegal (.name model) 'next next 'expected 'illegal))
+                 (list 'reject 'illegal ((om:scope-name '.) model) 'next next 'expected 'illegal))
                 (clone info :error 'illegal))))))))
 
 (define (trigger-equal? a b)
@@ -703,7 +703,7 @@
   (let ((trail (.trail info))
         (port (.port action))
         (event (.event action)))
-    (debug "next-queue?[~a ~a]: ~a trail: ~a\n" (.name model) port (->symbol action) trail)
+    (debug "next-queue?[~a ~a]: ~a trail: ~a\n" ((om:scope-name '.) model) port (->symbol action) trail)
     (if (null? trail)
         (clone info :error #t)
         (let* ((next (symbol->trigger (car trail)))
@@ -713,12 +713,12 @@
                    (eq? (.direction (om:port *component* n-port)) 'requires))
               (clone info :trail (cdr trail) :return next)
               (and
-               (debug "NOT-Q-ABLE: QUEUE[~a expect:~a]: next:~a\n" (.name model) "??" next)
+               (debug "NOT-Q-ABLE: QUEUE[~a expect:~a]: next:~a\n" ((om:scope-name '.) model) "??" next)
                (clone info :error #t)))))))
 
 (define (next-reply model info trigger)
   "eat a 'RETURN or PORT.'RETURN from trail, or error"
-  (debug "next-reply[~a]: ~a\n" (.name model) (.reply info))
+  (debug "next-reply[~a]: ~a\n" ((om:scope-name '.) model) (.reply info))
   (debug "trail: ~a\n" (.trail info))
   (let* ((port (.port trigger))
          (trail (.trail info)))
@@ -728,22 +728,22 @@
                (next (symbol->literal model (car trail)))
                (port (and (is-a? model <component>) (.scope next)))
                (scope (and port (is-a? model <component>) (.type (om:port model port))))
-               (reply (make <literal> :scope scope :type (.type reply) :field (.field reply)))
-               (next-reply (make <literal> :scope scope :type (.type next) :field (.field next))))
+               (reply (make <literal> :name (.name reply) :field (.field reply)))
+               (next-reply (make <literal> :name (.name next) :field (.field next))))
           (if (and (is-a? model <component>) (not port))
               (throw 'runtime-error "component-reply-without-port"))
           (if (equal? next-reply reply)
               (clone info :trail (cdr trail) :return next :reply reply)
               (and
-               (debug "REJECT-TRACE: REPLY[~a expect:~a]: next:~a\n" (.name model) reply next-reply)
+               (debug "REJECT-TRACE: REPLY[~a expect:~a]: next:~a\n" ((om:scope-name '.) model) reply next-reply)
                (debug "trace: ~a\n" (map trace-location (.trace info)))
                ((cons-trace
-                 (list 'reject 'reply (.name model) 'next next-reply 'expected reply))
+                 (list 'reject 'reply ((om:scope-name '.) model) 'next next-reply 'expected reply))
                 (clone info :error #t))))))))
 
 (define (next-return model info trigger)
   "eat a 'RETURN or PORT.'RETURN from trail, or error"
-  (debug "next-return[~a]: ~a\n" (.name model) (.trail info))
+  (debug "next-return[~a]: ~a\n" ((om:scope-name '.) model) (.trail info))
   (let* ((event (.event trigger)))
     (if (modeling? trigger) info
         (let* ((port (.port trigger))
@@ -766,18 +766,18 @@
                        ;; interface already matched illegal, we need a return!
                        (clone info :trail (cdr trail) :return return))
                       (else
-                       (debug "REJECT-TRACE: RETURN[~a expect:~a] next: ~a\n" (.name model) reply next)
+                       (debug "REJECT-TRACE: RETURN[~a expect:~a] next: ~a\n" ((om:scope-name '.) model) reply next)
                        (debug "trail: ~a\n" (.trail info))
                        (debug "AT: ~a\n" (trace-location (.ast info)))
                        ((cons-trace
-                         (list 'reject 'return (.name model) 'next next 'expected reply))
+                         (list 'reject 'return ((om:scope-name '.) model) 'next next 'expected reply))
                         (clone info :reply (make <literal>) :error (or (.error info) #t)))))))))))
 
 (define (next-value model info trigger action)
   "eat a ENUM_FIELD or PORT.ENUM_FIELD from trail, or error"
   (let* ((info (next-action model info trigger action))
          (trail (.trail info)))
-    (debug "next-value[~a ~a]: ~a\n" (.name model) action trail)
+    (debug "next-value[~a ~a]: ~a\n" ((om:scope-name '.) model) action trail)
     (if (null? trail)
         (next-trail-empty model info 'value (->symbol action))
         (let* ((value (car trail))
@@ -785,13 +785,13 @@
                (reply (if (and #f (is-a? model <interface>)) return
                           (let* ((port (.port action))
                                  (scope (.type (om:port model port))))
-                            (make <literal> :scope scope :type (.type return) :field (.field return)))))
+                            (make <literal> :name (.name return) :field (.field return)))))
                (return (make <return> :expression return)))
-          (debug "SETTING reply[~a]: ~a\n" (.name model) reply)
+          (debug "SETTING reply[~a]: ~a\n" ((om:scope-name '.) model) reply)
           (clone info :trail (cdr (.trail info)) :reply reply)))))
 
 (define (next-trail-empty-reject model info name o)
-  (debug "REJECT-TRACE ~a[~a]: ~a NULL\n" (.name model) name o)
+  (debug "REJECT-TRACE ~a[~a]: ~a NULL\n" ((om:scope-name '.) model) name o)
   (clone info :error (or (.error info) name)))
 (define (next-trail-empty-allow model info name o) info)
 (define next-trail-empty next-trail-empty-reject)
@@ -806,7 +806,7 @@
          (field (if (=1 (length type-field)) (car type-field) (cadr type-field)))
          (port-def (and port (is-a? model <component>) (om:port model port)))
          (scope (or (and port-def (.name port-def)) port)))
-    (make <literal> :scope scope :type type :field field)))
+    (make <literal> :name (list 'name scope type) :field field)))
 
 (define (skip-trail info port)
   (if (not port) barf-no-port)
@@ -869,7 +869,9 @@
       (($ <expression> expression) (->string expression))
       (($ <var> identifier) (symbol->string identifier))
       (($ <field> type field) (->string (list (->string type) "." field)))
-      (($ <literal> scope type field) (->string (list (->string type) "_" (->string field))))
+      (($ <literal> ('name) #f) "")
+      (($ <literal> ('name name) field) (->symbol (list (->string name) "_" (->symbol field))))
+      (($ <literal> ('name scope ... name) field) (->string (list ((->join "_") scope) '. name '_  field)))
       (($ <trigger> #f event) (->string event))
       (($ <trigger> port event) (->string (list port "." event)))
       (('type name) (->string name))
@@ -886,8 +888,9 @@
     (($ <expression> expression) (->symbol expression))
     (($ <var> identifier) identifier)
     (($ <field> type field) (->symbol (list (->symbol type) "." field)))
-    (($ <literal> #f type field) (->symbol (list (->symbol type) "_" (->symbol field))))
-    (($ <literal> scope type field) (->symbol (list scope '. type '_  field)))
+    (($ <literal> ('name) #f) null-symbol)
+    (($ <literal> ('name name) field) (->symbol (list (->symbol name) "_" (->symbol field))))
+    (($ <literal> ('name scope ... name) field) (->symbol (list ((->symbol-join '_) scope) '. name '_  field)))
     (($ <trigger> #f event) (->symbol event))
     (($ <trigger> port event) (->symbol (list port "." event)))
     ((h ... t) (apply symbol-append (map ->symbol src)))
@@ -907,7 +910,7 @@
     info))
 
 (define (print-state model info)
-  (stderr "state[~a]\n    ~a\n" (.name model) (string-sub ", " "\n     " (state->string (.state info))))
+  (stderr "state[~a]\n    ~a\n" ((om:scope-name '.) model) (string-sub ", " "\n     " (state->string (.state info))))
   (if (is-a? model <component>)
       (for-each (lambda (s) (stderr "  [~a]: ~a\n" (car s) (state->string (cdr s)))) (.state-alist info))))
 
@@ -918,5 +921,5 @@
 (define (ast-> ast)
   ((compose
     ast:run
-    (om:register run:om)
+    (om:register run:om #t)
     ) ast))

@@ -40,7 +40,7 @@
            gen1-interfaces))
 
 (define (ast-> ast)
-  (let ((om ((om:register code:om) ast #t)))
+  (let ((om ((om:register code:om #t) ast)))
     (map dump (filter (negate om:imported?) ((om:filter <model>) om))))
   "")
 

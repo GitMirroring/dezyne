@@ -133,8 +133,8 @@
 
     (('enum name fields) (make <enum> :name name :fields (ast->om- fields)))
 
-    (('extern name scope value)
-     (make <extern> :name name :scope scope :value value))
+    (('extern name value)
+     (make <extern> :name name :value value))
 
     (('event name signature direction)
      (make <event>
@@ -198,9 +198,6 @@
        :events (ast->om- (or (null-is-#f (assoc 'events body)) '(events)))
        :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->om-)))
 
-    (('literal scope type field)
-     (make <literal> :scope scope :type type :field field))
-
     (('on triggers statement)
      (make <on> :triggers (ast->om- triggers) :statement (ast->om- statement)))
 
@@ -263,7 +260,9 @@
     (('triggers triggers ...)
      (make <triggers> :elements (map ast->om- triggers)))
 
-    (('type scope barf-namespace-0 ('type name)) (make <type> :name name :scope scope))
+    (('type scope ('type name))
+     barf-namespace-0
+     (make <type> :name name :scope scope))
 
     (('type name) (make <type> :name name))
 
@@ -280,8 +279,6 @@
 
     (('variables variables ...)
      (make <variables> :elements (map ast->om- variables)))
-
-    (('value type field) (make <value> :type type :field field))
 
     ((h t ...) (map ast->om- ast))
 

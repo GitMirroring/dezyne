@@ -110,21 +110,28 @@
            om:scope
            ))
 
-(define* ((om:scope-name :optional (infix '.)) o)
+(define* ((om:scope-name :optional (infix '_)) o)
   (match o
-    ((type ('name name ...) t ...) ((->symbol-join infix) name))))
+    (('name name ...) ((->symbol-join infix) name))
+    ((type (and ('name name ...) (get! name)) t ...) ((om:scope-name infix) (name)))
+    ((type id (and ('name name ...) (get! name)) t ...) ((om:scope-name infix) (name)))))
 
 (define (om:name o)
   (match o
+    (('name scope ... name) name)
     ((type ('name scope ... name) t ...) name)
+    ((type id ('name scope ... name) t ...) name)
     ((type 'bool) 'bool)
     ((type 'void) 'void)
     ((type (and (or 'bool 'void))) '())))
 
 (define (om:scope o)
   (match o
+    (('name scope ... name) scope)
     ((type ('name scope ... name) t ...) scope)
-    ((type (or 'bool 'void)) '())))
+    ((type id ('name scope ... name) t ...) scope)
+    ((type (or 'bool 'void)) '())
+    (_ '())))
 
 (define (om:map f o)
   (match o
@@ -144,7 +151,8 @@
 (define ((om:type- model) o)
   (match o
     ((? symbol?) (find (om:named `(name ,@(cdr (.name model)) ,o)) (om:types model)))
-    (('name scope ... name) (find (om:named o) (om:types model)))
+    (('name scope ... name)
+     (find (om:named o) (om:types model)))
     (($ <type> ('name scope ... name)) ((om:type- model) `(type ,name ,(cons 'name scope))))
     (('type 'bool) o)
     (('type 'void) o)
@@ -541,7 +549,7 @@
 
 (define om:register-type om:register-model)
 
-(define* ((om:register transform) ast :optional (clear? #f))
+(define* ((om:register transform :optional (clear? #f)) ast)
   (let ((om (transform ast)))
     (if clear?
         (set! *ast-alist* (filter (lambda (x) (is-a? (cdr x) <*type*>)) *ast-alist*)))
@@ -550,11 +558,13 @@
     om))
 
 (define* (read-ast name #:optional (transform ast->om))
-  (and-let* ((ast (null-is-#f (read-dzn name (om:register transform))))
+  (and-let* ((name (if (pair? name) name (list 'name name)))
+             (ast (null-is-#f (read-dzn (cdr name) (om:register transform))))
              (models (null-is-#f (filter (is? <model>) ast))))
-            (find (lambda (model) (eq? (.name model) name)) models)))
+            (find (lambda (model) (equal? (.name model) name)) models)))
 
 (define* (om:import name #:optional (transform ast->om))
-  (or (cached-model name)
-      (and-let* ((ast (read-ast name transform)))
-                (cache-model name ast))))
+  (let ((name (if (pair? name) name (list 'name name))))
+    (or (cached-model name)
+        (and-let* ((ast (read-ast name transform)))
+                  (cache-model name ast)))))

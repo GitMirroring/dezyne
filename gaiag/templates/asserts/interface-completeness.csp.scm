@@ -24,6 +24,6 @@
 ;;; Code:
 
 assert COMPLETE'({#
-(comma-join (append (map (lambda (event-name) (list (.name model) "." event-name)) (delete-duplicates (map .event (modeling-events model)))) (map (lambda (event) (list (.name model) "." (.name event))) (filter om:in? (.elements (.events model))))))}) [F= IF_#(.name model) _#
+(comma-join (append (map (lambda (event-name) (list .scope_model "." event-name)) (delete-duplicates (map .event (modeling-events model)))) (map (lambda (event) (list .scope_model "." (.name event))) (filter om:in? (.elements (.events model))))))}) [F= IF_#.scope_model _#
 ((compose .name .behaviour) model) (true,true)[[range_error<-illegal]] \ diff(Events,{#
-(comma-join (append (map (lambda (event-name) (list (.name model) "." event-name)) (delete-duplicates (map .event (modeling-events model)))) (map (lambda (event) (list (.name model) "." (.name event))) (filter om:in? (.elements (.events model)))) (list 'illegal)))})
+(comma-join (append (map (lambda (event-name) (list .scope_model "." event-name)) (delete-duplicates (map .event (modeling-events model)))) (map (lambda (event) (list .scope_model "." (.name event))) (filter om:in? (.elements (.events model)))) (list 'illegal)))})

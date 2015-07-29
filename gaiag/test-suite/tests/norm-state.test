@@ -29,7 +29,7 @@
 
 (define (csp-norm-state* ast)
   ((compose csp-norm-state ast->om) ast))
- 
+
 (pass-if "csp-norm-state-first-dummy-test"
          #t)
 
@@ -40,7 +40,7 @@
                            #{
                              interface i { in void a; out void b;
                                           behaviour { on a: [true] { } } } #})))
-          '(interface i (types) (events (event a (signature (type void #f)) in) (event b (signature (type void #f)) out))
+          '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true) (on (triggers (trigger #f a)) (compound))))))))
@@ -53,7 +53,7 @@
                              interface i { in void a; out void b;
                                               behaviour { on a: [true] b;
                                                              } } #})))
-          '(interface i (types) (events (event a (signature (type void #f)) in) (event b (signature (type void #f)) out))
+          '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -69,8 +69,8 @@
                                               out void d;
                                               behaviour { on a,b,c: [true] d;
                                                           } } #})))
-          '(interface i (types) (events (event a (signature (type void #f)) in) (event b (signature (type void #f)) in) (event c (signature (type void #f)) in)
-                                        (event d (signature (type void #f)) out))
+          '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
+                                        (event d (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -88,8 +88,8 @@
                                                           on b: [true] e;
                                                           on c: [true] f;
                                                           } } #})))
-          '(interface i (types) (events (event a (signature (type void #f)) in) (event b (signature (type void #f)) in) (event c (signature (type void #f)) in)
-                                        (event d (signature (type void #f)) out) (event e (signature (type void #f)) out) (event f (signature (type void #f)) out))
+          '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
+                                        (event d (signature (type void)) out) (event e (signature (type void)) out) (event f (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -120,7 +120,7 @@
                       (action (trigger siren turnoff))
                       (assign
                        state
-                       (expression (literal #f States Disarmed)))
+                       (expression (literal (name States) Disarmed)))
                       (assign sounding (expression false))))
                     (guard
                      (otherwise)
@@ -129,7 +129,7 @@
                       (assign
                        state
                        (expression
-                        (literal #f States Disarmed)))))))))))
+                        (literal (name States) Disarmed)))))))))))
           '(compound
             (guard
              (expression (field state Disarming))
@@ -149,7 +149,7 @@
                   (action (trigger siren turnoff))
                   (assign
                    state
-                   (expression (literal #f States Disarmed)))
+                   (expression (literal (name States) Disarmed)))
                   (assign sounding (expression false)))))
             (guard
              (expression
@@ -160,7 +160,7 @@
                   (action (trigger console deactivated))
                   (assign
                    state
-                   (expression (literal #f States Disarmed)))))))))
+                   (expression (literal (name States) Disarmed)))))))))
 
 (pass-if "csp-norm-state-function-call"
          (om-pretty-noisy-equal?
@@ -171,7 +171,7 @@
                                               behaviour
                                               { void foo(){ if(true){}} on a,b,c: [true] d ;
                                                      } } #})))
-          '(interface i (types) (events (event a (signature (type void #f)) in) (event d (signature (type void #f)) out))
+          '(interface (name i) (types) (events (event a (signature (type void)) in) (event d (signature (type void)) out))
                       (behaviour #f
                                  (types)
                                  (variables)
@@ -193,8 +193,8 @@
                                               behaviour
                                               { on a,b,c: [true] d ;
                                                    } } #})))
-          '(interface i (types) (events (event a (signature (type void #f)) in) (event b (signature (type void #f)) in) (event c (signature (type void #f)) in)
-                                        (event d (signature (type void #f)) out))
+          '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
+                                        (event d (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -209,8 +209,7 @@
                              component c { behaviour { [true] on i.a: illegal;
                                                        [false] on i.b,i.c,j.a: illegal;
                                                           } } #})))
-          '(component
-            c
+          '(component (name c)
             (ports)
             (behaviour
              #f
@@ -237,8 +236,8 @@
                                               out void d;
                                               behaviour { on a,b,c: [true] d;
                                                           } } #})))
-          '(interface i (types) (events (event a (signature (type void #f)) in) (event b (signature (type void #f)) in) (event c (signature (type void #f)) in)
-                                        (event d (signature (type void #f)) out))
+          '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
+                                        (event d (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -255,8 +254,8 @@
                                                           on b: [true] d;
                                                           on c: [true] d;
                                                           } } #})))
-          '(interface i (types) (events (event a (signature (type void #f)) in) (event b (signature (type void #f)) in) (event c (signature (type void #f)) in)
-                                        (event d (signature (type void #f)) out))
+          '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
+                                        (event d (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -274,7 +273,7 @@
                                                           on j.a:     [true] j.d;
                                                           on j.b:     [true] j.e;
                                                           } } #})))
-          '(component c (ports)
+          '(component (name c) (ports)
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -296,7 +295,7 @@
                                                           on j.a: [true] j.d;
                                                           on j.b: [true] j.e;
                                                           } } #})))
-          '(component c (ports)
+          '(component (name c) (ports)
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -374,20 +373,20 @@ interface norm_nested_guards
 }
 #})))))
 '(interface
-  norm_nested_guards
-  (types (enum Reply #f (fields Ok Nok)))
-  (events (event e (signature (type Reply #f)) in))
+  (name norm_nested_guards)
+  (types (enum (name norm_nested_guards Reply) (fields Ok Nok)))
+  (events (event e (signature (type (name norm_nested_guards Reply))) in))
   (behaviour
     #f
-    (types (enum State #f (fields Foo)))
+    (types (enum (name norm_nested_guards State) (fields Foo)))
     (variables
       (variable
         state
-        (type State #f)
-        (expression (literal #f State Foo)))
+        (type (name norm_nested_guards State))
+        (expression (literal (name norm_nested_guards State) Foo)))
       (variable
         bar
-        (type bool #f)
+        (type bool)
         (expression true)))
     (functions)
     (compound
@@ -396,6 +395,6 @@ interface norm_nested_guards
           (and (and (field state Foo) (var bar)) true))
         (compound
           (on (triggers (trigger #f e (arguments)))
-              (reply (expression (literal #f Reply Ok))))
+              (reply (expression (literal (name norm_nested_guards Reply) Ok))))
           (on (triggers (trigger #f e (arguments)))
-              (reply (expression (literal #f Reply Nok)))))))))))
+              (reply (expression (literal (name norm_nested_guards Reply) Nok)))))))))))

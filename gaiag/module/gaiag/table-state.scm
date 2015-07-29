@@ -27,7 +27,7 @@
 (define-module (gaiag table-state)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 optargs)    
+  :use-module (ice-9 optargs)
   :use-module (gaiag list match)
   :use-module (ice-9 getopt-long)
   :use-module (ice-9 pretty-print)
@@ -35,14 +35,14 @@
 
   :use-module (language dezyne location)
   :use-module (gaiag misc)
-  
+
   :use-module (gaiag ast)
   :use-module (gaiag gaiag)
   :use-module (gaiag evaluate)
   :use-module (gaiag json-table)
   :use-module (gaiag norm)
   :use-module (gaiag norm-event)
-  :use-module (gaiag norm-state)  
+  :use-module (gaiag norm-state)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
   :use-module (gaiag pretty)
@@ -136,15 +136,15 @@
             (($ <int>)
              (let* ((var (find int-var? variables))
                     (range (.range type)))
-               (make <enum> :name (.name type) :fields (make <fields> :elements (iota (- (.to range) (.from range) -1) (.from range))))))
+               (make <enum> :name ((om:scope-name) type) :fields (make <fields> :elements (iota (- (.to range) (.from range) -1) (.from range))))))
             (($ <type> 'bool)
              (let ((var (find var-bool? variables)))
-               (make <enum> :name (.name var) :fields (make <fields> :elements '(false true)))))
+               (make <enum> :name (list 'name (.name var)) :fields (make <fields> :elements '(false true)))))
             (_  (make <enum> :fields (make <fields> :elements '(<Initial>))))))
          (fields ((compose .elements .fields) enum))
          (states (map (lambda (field)
                         (make <literal>
-                          :type (.name enum)
+                          :name (.name enum)
                           :field field)) fields))
          (guards (filter identity
                          (map (lambda (state)
@@ -158,11 +158,11 @@
              (field (make-state-field model state))
              (expression
               (match state
-                (($ <literal> #f (and (? (bool-var? model)) (get! type)) 'true)
+                (($ <literal> ('name (and (? (bool-var? model)) (get! type))) 'true)
                  (make <expression> :value (make <var> :name (type))))
-                (($ <literal> #f (and (? (bool-var? model)) (get! type)) 'false)
+                (($ <literal> ('name (and (? (bool-var? model)) (get! type))) 'false)
                  (make <expression> :value (list '! (make <var> :name (type)))))
-                (($ <literal> #f (and (? (int? model)) (get! type)) v)
+                (($ <literal> ('name (and (? (int? model)) (get! type))) v)
                  (make <expression> :value (list '== (make <var> :name (.identifier field)) v)))
                 (_ (make <expression> :value (make-state-field model state))))))
             (retain-source-properties
@@ -183,7 +183,7 @@
     (and (pair? guards) (car guards))))
 
 (define (state-var model state)
-  (define (type? v) (eq? ((compose .name .type) v) (.type state)))
+  (define (type? v) (equal? ((compose .name .type) v) (.name state)))
   (find (lambda (v)
           (or (type? v) (var-bool? v))) ((compose .elements .variables .behaviour) model)))
 
@@ -209,13 +209,13 @@
                          (loop (cdr statements))))))))
        (cond
         ((and (not top?) (=1 (length statements))) (car statements))
-        ((and (null? statements) 
+        ((and (null? statements)
               (not (null? (.elements o)))
               (om:declarative? o))
          #f)
         (else
          (retain-source-properties o (make <compound>
-                                       :elements 
+                                       :elements
                                        ((simplify model state) statements)))))))
 
     (($ <on> triggers ($ <guard> ($ <expression> #t) statement)) (=> failure)
@@ -234,7 +234,7 @@
        (expression (cond ((and (om:equal? (.value expression1) value)
                                (is-a? expression1 <otherwise>))
                           expression1)
-                         ((and (om:equal? (.value expression2) value) 
+                         ((and (om:equal? (.value expression2) value)
                                (is-a? expression2 <otherwise>))
                           expression2)
                          (else (make <expression> :value value))))
@@ -250,12 +250,12 @@
                (retain-source-properties
                 o
                 (match value
-                  (#t (if (om:declarative? statement) 
+                  (#t (if (om:declarative? statement)
                           statement
                           (make <guard> :expression expression :statement statement)))
                   (($ <literal>)
-                   (and (om:equal? value state) 
-                        (if (om:declarative? statement) 
+                   (and (om:equal? value state)
+                        (if (om:declarative? statement)
                             statement
                             (make <guard> :expression expression :statement statement))))
                   (_ (make <guard> :expression expression :statement statement))))))

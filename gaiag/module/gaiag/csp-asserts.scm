@@ -35,7 +35,7 @@
            ))
 
 (define (om->csp-asserts o)
-  (let ((om ((om:register ast->om) o #t)))
+  (let ((om ((om:register ast->om #t) o)))
     (om->csp om)
     (assert-list om)))
 

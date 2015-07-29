@@ -32,11 +32,11 @@
    (dezyne->ast
     #{ interface i { } #}
     )
-   '(root (interface i (types) (events)))))
+   '(root (interface (name i) (types) (events)))))
 
 (pass-if "parse-component"
   (pretty-noisy-equal?
    (dezyne->ast
     #{ component c { } #}
     )
-   '(root (component c (ports)))))
+   '(root (component (name c) (ports)))))

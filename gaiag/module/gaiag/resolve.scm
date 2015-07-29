@@ -264,6 +264,7 @@
     (($ <field>) o)
     (($ <illegal>) o)
     (($ <int>) o)
+    (($ <literal>) o)
     (($ <otherwise>) (make <otherwise>))
     (($ <port>) o)
     (($ <signature> type (? unspecified?))
@@ -403,27 +404,40 @@
        :type ((resolve-model model locals) type)
        :expression ((resolve-model model locals) expression)))
 
+    (('name name ...) (=> failure)
+     (or (and-let* ((enum (enum? o)))
+                   (.name enum))
+         (failure)))
+
+    (('name (and (? var?) (get! name)))
+     (make <var> :name (name)))
+
+    (('name (and (? enum?) (get! enum)))
+     (.name (enum? (enum))))
+
     (('name (and (? enum?) (get! enum)) (and (? (enum-field? (enum))) (get! field)))
-     (make <literal> :scope (car (om:scope (enum? (enum)))) :type (enum) :field (field)))
+     (make <literal> :name (.name (enum? (enum))) :field (field)))
 
     (('name (and (? var?) (get! type)) (? (member-field? (type))))
      (make <field> :identifier (type) :field (.name o)))
 
     (('name scope name field) (=> failure)
-     (let ((enum (enum? `(name ,scope ,name))))
+     (let* ((name `(name ,scope ,name))
+            (enum (enum? name)))
        (if (not enum) (failure)
-           (make <literal> :scope scope :type name :field field))))
-
-    (('namespace-TODO-name scope ... field) (=> failure)
-     (let ((enum (enum? scope)))
-       (if (not enum) (failure)
-           (make <literal> :scope scope :field field))))
+           (make <literal> :name name :field field))))
 
     (('name (? enum?) field)
      (resolve-error o field "undefined enum field: ~a"))
 
     (('name (? var?) field)
      (resolve-error o field "undefined enum field: ~a"))
+
+    (('name scope ... field) (=> failure)
+     (or (and-let* ((enum (om:enum model (make <type> :name (make <name> :elements scope))))
+                    ((member field ((compose .elements .fields) enum))))
+                   (make <literal> :name (make <name> :elements scope) :field field))
+         (failure)))
 
     (('name t ...)
      (stderr "RESOLVE TODO: ~a\n" o)

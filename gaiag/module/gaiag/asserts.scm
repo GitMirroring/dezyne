@@ -26,8 +26,8 @@
 
 (define-module (gaiag asserts)
   :use-module (ice-9 and-let-star)
-  :use-module (ice-9 curried-definitions)  
-  :use-module (gaiag list match)  
+  :use-module (ice-9 curried-definitions)
+  :use-module (gaiag list match)
   :use-module (srfi srfi-1)
 
   :use-module (gaiag csp)
@@ -44,8 +44,8 @@
 
 (define ((assert model) check)
   (if (eq? check 'compliance)
-      (list (ast-name model) (.name model) check (.type (om:port model)))
-      (list (ast-name model) (.name model) check)))
+      (list (ast-name model) ((om:scope-name) model) check ((om:scope-name) (.type (om:port model))))
+      (list (ast-name model) ((om:scope-name) model) check)))
 
 (define (assert-list o)
   (match o
@@ -61,13 +61,13 @@
      (or (and-let* ((model (om:model-with-behaviour o)))
                    (assert-list-all model))
          '()))
-    (_ (assert-list ((om:register (compose ast->om ast:resolve)) o #t)))))
+    (_ (assert-list ((om:register (compose ast->om ast:resolve #t)) o)))))
 
 (define (assert-list-all o)
   (match o
     (($ <component>)
      (append
-      (let ((interfaces (map om:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) symbol<)))))
+      (let ((interfaces (map om:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) list-symbol<)))))
         (apply append (map assert-list interfaces)))
       (assert-list o)))
     (($ <interface>) (assert-list o))))

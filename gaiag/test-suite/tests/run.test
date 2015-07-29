@@ -37,12 +37,12 @@
 
 (define if-ast
   '((interface
-     i
+     (name i)
      (types)
      (events
-      (event a (signature (type void #f)) in)
-      (event b (signature (type void #f)) out)
-      (event c (signature (type void #f)) out))
+      (event a (signature (type void)) in)
+      (event b (signature (type void)) out)
+      (event c (signature (type void)) out))
      (behaviour
       #f
       (types)
@@ -56,7 +56,7 @@
                 (compound (action (trigger #f b)))
                 (compound (action (trigger #f c))))
             (assign t (expression (! (var t)))))))))
-    (component C (ports (provides i I)) (behaviour))))
+    (component (name C) (ports (provides i (name I))) (behaviour))))
 
 (pass-if "simulator-state-vector"
   (pretty-noisy-equal?
@@ -150,7 +150,7 @@
 
 (pass-if "walk-trail-arguments"
 (or #f (let* ((arguments-ast (read-ast 'examples/arguments.dzn))
-          (om ((om:register run:om) arguments-ast #t))
+          (om ((om:register run:om #t) arguments-ast))
           (model (find (is? <component>) om))
           (trail '(i.e i.e i.e))
           (foobar (set-program-arguments '("gaiag" "--json" "foobar")))
@@ -160,7 +160,7 @@
 
 (pass-if "walk-trail-pauls"
 (or #t  (let* ((pauls-ast (read-ast 'examples/regression/Comp.dzn))
-          (om ((om:register run:om) pauls-ast #t))
+          (om ((om:register run:om #t) pauls-ast))
           (model (find (is? <component>) om))
           (trail '(client.initialize result_t.OK result_t.OK client.perform_actions result_t.OK result_t.OK client.perform_actions result_t.NOK client.recover result_t.OK client.perform_actions))
           (pauls-trace (walk-trail model trail))

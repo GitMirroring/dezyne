@@ -35,6 +35,7 @@
   :use-module (gaiag ast)
   :use-module (gaiag misc)
   :use-module (gaiag norm)
+  :use-module (gaiag reader)
 
   :export (
            eval-expression
@@ -78,8 +79,8 @@
       (_ (make <var> :name (.name o)))
 
       (_ *unspecified*)
-      (($ <enum> name scope field) (make <literal> :scope scope :type name :field *unspecified*))
-      (($ <int> name scope range) *unspecified*)
+      (($ <enum> name field) (make <literal> :name name :field *unspecified*))
+      (($ <int> name range) *unspecified*)
       ;;(($ <type> 'bool) *unspecified*)
       (($ <type> 'bool) (make <var> :name (.name o)))
       (_ (stderr "FIXME: INIT VAR: a\n" o))
@@ -124,7 +125,7 @@
     (($ <var> identifier) (var state identifier))
     (($ <field> (and (? (var? model)) (get! identifier)) field)
      (eq? (.field (var state (identifier))) field))
-    (($ <literal> scope type value) o)
+    (($ <literal> name field) o)
     (('! expr) (not (eval-expression model state expr)))
     (('and a b) (and (eval-expression model state a)
                      (eval-expression model state b)))
@@ -154,7 +155,7 @@
     (('> a b) (> (eval-expression model state a)
                  (eval-expression model state b)))
     (('>= a b) (>= (eval-expression model state a)
-                   (eval-expression model state b)))    
+                   (eval-expression model state b)))
     ((? symbol?) (eval-expression model state (var state o)))
     ((? boolean?) o)
     ((? number?) o)
@@ -190,14 +191,14 @@
     (($ <var> (and (? (bool-var? model)) (get! identifier)))
      (let ((var (var state (identifier))))
        (match var
-         (($ <literal> scope type field) (eq? field 'true))
+         (($ <literal> name field) (eq? field 'true))
          (#f o)
          (_ var))))
 
     (($ <var> (and (? (int-var? model)) (get! identifier)))
      (let ((var (var state (identifier))))
        (match var
-         (($ <literal> scope type field) field)
+         (($ <literal> name field) field)
          ((? number?) var)
          (_ var))))
 
@@ -210,7 +211,7 @@
            (eq? (.field v) field)
            o)))
 
-    (($ <literal> scope type value) o)
+    (($ <literal> name field) o)
 
     (('== a b)
      (let ((a (simplify-expression model state a))

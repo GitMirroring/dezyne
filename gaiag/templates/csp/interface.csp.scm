@@ -25,19 +25,19 @@
 
 -- interface.csp.scm
 
-channel #(.name model): {#(comma-join (append (interface-events model om:in?) (list "the_end'") ))}
+channel #.scope_model : {#(comma-join (append (interface-events model om:in?) (list "the_end'") ))}
 #(let ((events (interface-events model om:out?)))
    (if (pair? events)
-       (list "channel " (.name model) "_'': {" (comma-join events) "}")))
-channel #(.name model)_': {#(comma-join (return-values model))}
-channel #(.name model)_in',#(.name model)_out': {#(comma-join (map (lambda (x) (list (.name model) "_'." x)) (return-values model)))}
-channel #(.name model)_''': {modeling}
+       (list "channel " .scope_model "_'': {" (comma-join events) "}")))
+channel #.scope_model _': {#(comma-join (return-values model))}
+channel #.scope_model _in',#.scope_model _out': {#(comma-join (map (lambda (x) (list .scope_model "_'." x)) (return-values model)))}
+channel #.scope_model _''': {modeling}
 
-IF_#(.name model) _#((compose .name .behaviour) model)(IG,CS) = let
+IF_#.scope_model _#((compose .name .behaviour) model)(IG,CS) = let
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
 #(behaviour-interface->csp model)
 
-REORDER' = #(.name model)?x' -> (#(.name model)_in'?y' -> #(.name model).the_end' -> #(.name model)_out'!y' -> REORDER' [] #(.name model).the_end' -> REORDER')
+REORDER' = #.scope_model ?x' -> (#.scope_model _in'?y' -> #.scope_model .the_end' -> #.scope_model _out'!y' -> REORDER' [] #.scope_model .the_end' -> REORDER')
 
 compress(x) = let
 transparent sbisim
@@ -46,9 +46,9 @@ within sbisim(diamond(x))
 
 within compress((if CS
                 then #
-(.name model) _#((compose .name .behaviour) model) (#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import (.name model))))))
+.scope_model _#((compose .name .behaviour) model) (#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import .scope_model )))))
                 else #
-(.name model) _#((compose .name .behaviour) model) (#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import (.name model)))))) #(optional-chaos model))
-               [[x<-#(.name model)_in'.x|x<-extensions(#(.name model)_in')]] [|{|#(.name model),#(.name model)_in',#(.name model).the_end'|}|] REORDER' [[#(.name model)_out'.x<-x|x<-extensions(#(.name model)_out')]] \ {|#(.name model)_in',#(.name model).the_end'|})
+.scope_model _#((compose .name .behaviour) model) (#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import .scope_model ))))) #(optional-chaos model))
+               [[x<-#.scope_model _in'.x|x<-extensions(#.scope_model _in')]] [|{|#.scope_model ,#.scope_model _in',#.scope_model .the_end'|}|] REORDER' [[#.scope_model _out'.x<-x|x<-extensions(#.scope_model _out')]] \ {|#.scope_model _in',#.scope_model .the_end'|})
 
 -- end of interface.csp.scm

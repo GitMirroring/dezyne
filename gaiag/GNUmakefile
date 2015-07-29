@@ -827,3 +827,15 @@ out/test: out/argument.c++ out/main.o out/runtime.o
 #out/test: out/argument.o out/main.o out/runtime.o
 	g++ -o out/test out/*o
 	echo 'i.e' | out/test
+
+out/var:
+	rm -rf out && mkdir out && cd out && ln -s ../examples . && ln -s ../runtime/c++/* .
+	(cd out && ../gaiag -l c++ -m var ../examples/var.dzn)
+	g++ --std=c++11 -o out/test out/*cc
+	echo i.e | out/test
+
+out/namespace:
+	rm -rf out && mkdir out && cd out && ln -s ../examples . && ln -s ../runtime/c++/* .
+	(cd out && ../gaiag -l c++ -m namespace ../examples/namespace.dzn)
+	g++ --std=c++11 -o out/test out/*cc
+	echo i.e | out/test

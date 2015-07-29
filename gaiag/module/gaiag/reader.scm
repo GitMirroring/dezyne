@@ -86,7 +86,7 @@
 
 (define (read-ast- file-name)
   (let* ((file-name (->string file-name))
-         (file-name  (if (string= file-name "-") "/dev/stdin" (find-file file-name)))
+         (file-name (if (string= file-name "-") "/dev/stdin" (find-file file-name)))
          (file (open-input-file file-name)))
     (if (eq? (peek-char file) #\()
         (read file)

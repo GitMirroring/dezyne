@@ -83,7 +83,7 @@
            (throw 'csp message))))))
 
 (define (ast-> ast)
-  (let ((om ((om:register ast->om) ast #t)))
+  (let ((om ((om:register ast->om #t) ast)))
     (om->csp om))
   "")
 
@@ -105,8 +105,8 @@
 
 (define (model-generate-csp root o)
   (let ((separate-asserts? (option-ref (parse-opts (command-line)) 'assert #f)))
-    (and-let* ((norm ((om:register csp:norm) root #t))
-               (name (.name o))
+    (and-let* ((norm ((om:register csp:norm #t) root))
+               (name ((om:scope-name) o))
                (model
                 (om:model-with-behaviour norm))
                (file-name (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
@@ -154,7 +154,7 @@
   (match o
     (($ <interface>) '())
     (($ <component>)
-     (map om:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) symbol<))))))
+     (map om:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) list-symbol<))))))
 
 (define (assembly-lts o)
   (match o
@@ -198,11 +198,11 @@
 (define asserts-alist
   `(
     ((component completeness) . ,(gulp-template 'asserts/component-completeness.csp.scm))
-    ((component illegal) . "assert STOP [T= AS_#(.name model) _#((compose .name .behaviour) model) (false) \\ diff(Events,{illegal,queue_full})\n")
-    ((component deterministic) . "assert CO_#(.name model) _#((compose .name .behaviour) model)(true,true)[[#(.type (om:port model))_'.x<-#(.name (om:port model))_'.x|x<-extensions(#(.name (om:port model))_')]] :[deterministic]\n")
-    ((component deadlock)  . "assert AS_#(.name model) _#((compose .name .behaviour) model) (false) :[deadlock free]\n")
+    ((component illegal) . "assert STOP [T= AS_#.scope_model _#((compose .name .behaviour) model) (false) \\ diff(Events,{illegal,queue_full})\n")
+    ((component deterministic) . "assert CO_#.scope_model _#((compose .name .behaviour) model)(true,true)[[#((om:scope-name) (om:port model))_'.x<-#(.name (om:port model))_'.x|x<-extensions(#(.name (om:port model))_')]] :[deterministic]\n")
+    ((component deadlock)  . "assert AS_#.scope_model _#((compose .name .behaviour) model) (false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-template 'asserts/component-compliance.csp.scm))
-    ((component livelock)  .  "assert AS_#(.name model) _#((compose .name .behaviour) model) (true) \\ diff(Events,{|#(comma-join (append (required-modeling-events model) (list \"illegal\" ((compose .name om:port) model) ((compose .name om:port) model))))_'#(->string (if (not (null? (filter om:out? (om:events (om:port model))))) (list \",\" ((compose .name om:port) model)\"_''\")))|}) :[livelock free]\n")
+    ((component livelock)  .  "assert AS_#.scope_model _#((compose .name .behaviour) model) (true) \\ diff(Events,{|#(comma-join (append (required-modeling-events model) (list \"illegal\" ((compose .name om:port) model) ((compose .name om:port) model))))_'#(->string (if (not (null? (filter om:out? (om:events (om:port model))))) (list \",\" ((compose .name om:port) model)\"_''\")))|}) :[livelock free]\n")
     ((interface completeness) . ,(gulp-template 'asserts/interface-completeness.csp.scm))
     ((interface deadlock) . ,(gulp-template 'asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-template 'asserts/interface-livelock.csp.scm))))
@@ -212,6 +212,8 @@
                                  (resolve-module '(gaiag csp))
                                  ))))
     (module-define! module 'model o)
+    (module-define! module '.model (om:name o))
+    (module-define! module '.scope_model ((om:scope-name) o))
     module))
 
 (define (csp-file file-name module)
@@ -292,7 +294,7 @@
          (if (pair? lets)
              (list
               ((->join "\n") lets))))
-         (list (.name model) "_" ((compose .name .behaviour) model) "(" (comma-space-join (om:member-names model)) ")" " =\n")
+         (list ((om:scope-name) model) "_" ((compose .name .behaviour) model) "(" (comma-space-join (om:member-names model)) ")" " =\n")
      (if inside
          (if (pair? lets)
              (list
@@ -312,7 +314,7 @@
          (if (pair? lets)
              (list
               ((->join "\n") lets))))
-     (list (.name model) "_" ((compose .name .behaviour) model) "(" (comma-space-join (om:member-names model))")" " =\n")
+     (list ((om:scope-name) model) "_" ((compose .name .behaviour) model) "(" (comma-space-join (om:member-names model))")" " =\n")
      (if inside
          (if (pair? lets)
              (list
@@ -322,7 +324,7 @@
      "("
      (check-range (om:member-names model) behaviour model)
      "\n[]\n"
-     (list "CS & " (.name model) "?x:{" (comma-join (delete-duplicates (map .event (modeling-events model)))) "} -> illegal -> STOP\n")
+     (list "CS & " ((om:scope-name) model) "?x:{" (comma-join (delete-duplicates (map .event (modeling-events model)))) "} -> illegal -> STOP\n")
      ")")))
 
 (define (csp-expression->string model src locals)
@@ -336,7 +338,7 @@
           (csp-expression->string model expression locals)
           (list "(" (csp-expression->string model expression locals) ")"))))
 
-  (let* ((model-name (.name model))
+  (let* ((model-name ((om:scope-name) model))
          (model- (symbol-append model-name '_)))
     (match src
       (($ <var> identifier) (list (->string identifier)))
@@ -345,12 +347,10 @@
       (($ <field> identifier field)
        (let* ((var (var? identifier))
               (type (and=> var .type))
-              (name (and=> type .name)))
-         (list "(" ;; model- state not in scope, IConsole_state not in scope
+              (name (and=> type om:name)))
+         (list "("
                identifier " == " name "_" field ")")))
-      (($ <literal> #f type field) (list type "_" field))
-      (($ <literal> scope type field) (list type '_ field))
-
+      (($ <literal> ('name scope ... name) field) ((->symbol-join '_) (list name field)))
       (('group expression) (list "(" (csp-expression->string model expression locals) ")"))
       (('! expression) (->string (list "(" "not " (paren expression) ")")))
       (((or 'and 'or '== '!= '< '<= '> '>= '+ '-) lhs rhs)
@@ -417,13 +417,13 @@
               (filter om:requires? (om:ports o)))))
 
 (define (typed-elements o)
-   (map (lambda (x) (symbol-append (.name o) '_ x)) ((compose .elements .fields) o)))
+  (map (lambda (x) ((->symbol-join '_) (append (cons (om:name o) (list x))))) ((compose .elements .fields) o)))
 
-(define (*scope* s)
-  (if (eq? s '*global*) 'global s)) ;; FIXME: interface global
+(define* (*scope* s :optional (infix '_))
+  (if (eq? s '*global*) 'global ((->symbol-join infix) s)))
 
 (define (enum-scope model e)
-  (symbol-append (*scope* (or (.scope e) (.name model))) '_ (.name e)))
+  (symbol-append (*scope* e) '_ (om:name e)))
 
 (define (enum-values o)
   (match o
@@ -439,16 +439,16 @@
 
 (define (enum-types o)
   (match o
-    (($ <interface>) (append (map (make-interface-enum (.name o)) (om:enums o)) (om:enums)))
+    (($ <interface>) (append (om:enums o) (om:enums)))
     (($ <component>)
      (append
       (apply append
            (map enum-types
                 (map (compose om:import .type) ((compose .elements .ports) o))))
-      (append (map (make-interface-enum (.name o)) (om:enums o)) (om:enums))))))
+      (append (om:enums o) (om:enums))))))
 
 (define (return-value o)
-  (map (lambda (value) (symbol-append (.name o) '_ value)) ((compose .elements .fields) o)))
+  (map (lambda (value) ((->symbol-join '_) (append ((compose cdr .name) o) (list value)))) ((compose .elements .fields) o)))
 
 (define (add-return-if-empty returns)
   (if (null? returns)
@@ -520,7 +520,7 @@
                            "|} ")))
 
 (define (optional-chaos o) ;; FIXME: no test
-  (let ((name (.name o)))
+  (let ((name ((om:scope-name) o)))
     (if (member 'optional (map .event (om:find-triggers o)))
         (list " [|{" name ".optional}|] " "CHAOS({" name ".optional})")
         "")))
@@ -713,9 +713,9 @@
   (csp-transform-model (or (om:component ast) (om:interface ast)) src))
 
 (define* (csp-transform-model model o :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()) (indent 0) (tail '()) (function #f))
-  (let* ((model-name (.name model))
+  (let* ((model-name ((om:scope-name) model))
          (model- (symbol-append model-name '_))
-         (channel (or channel (if (is-a? model <interface>) model-name (.type (om:port model)))))
+         (channel (or channel (if (is-a? model <interface>) model-name ((om:scope-name) (om:port model)))))
          (space (make-string (* indent 2) #\space))
          (member-name-list (comma-join (om:member-names model)))
          )
@@ -935,7 +935,8 @@
           (($ <action> trigger)
            (let* ((event-name (.event trigger))
                   (suffix (if (om:out? (om:event model trigger)) "_''" ""))
-                  (channel (if (is-a? model <interface>) model-name  (.port trigger)))
+                  (channel (if (is-a? model <interface>) model-name (.port trigger)
+                               ))
                   (channel-return (if ((requires-event? model) trigger) (list " -> " channel "_'.return")))
                   (channel (list channel suffix)))
              (list

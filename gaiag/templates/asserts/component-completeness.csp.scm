@@ -26,8 +26,8 @@
 assert COMPLETE'({#
 (comma-join
  (append (map (lambda (event) (list (.name (om:port model)) "." (.name event))) (filter om:in? (om:events (om:port model))))
-         (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "_''." (.name event))) (filter om:out? (om:events port))))) (filter om:requires? ((compose .elements .ports) model)))))}) [F= CO_#(.name model) _#
-((compose .name .behaviour) model) (true,true)[[#(.type (om:port model))_'.x'<-#(.name (om:port model))_'.x'|x'<-extensions(#(.name (om:port model))_')]][[range_error<-illegal]] \ diff(Events,{#
+         (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "_''." (.name event))) (filter om:out? (om:events port))))) (filter om:requires? ((compose .elements .ports) model)))))}) [F= CO_#.scope_model _#
+((compose .name .behaviour) model) (true,true)[[#((om:scope-name) (om:port model))_'.x'<-#(.name (om:port model))_'.x'|x'<-extensions(#(.name (om:port model))_')]][[range_error<-illegal]] \ diff(Events,{#
 (comma-join
  (append (map (lambda (event) (list (.name (om:port model)) "." (.name event))) (filter om:in? (om:events (om:port model))))
          (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "_''." (.name event))) (filter om:out? (om:events port))))) (filter om:requires? ((compose .elements .ports) model))))),illegal})

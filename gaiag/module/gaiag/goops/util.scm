@@ -566,7 +566,7 @@
       (cache-type (.name o) o))
   o)
 
-(define* ((om:register transform) ast :optional (clear? #f))
+(define* ((om:register transform :optional (clear? #f)) ast)
   (let ((om (transform ast)))
     (if clear?
         (set! *ast-alist* (filter (lambda (x) (is-a? (cdr x) <*type*>)) *ast-alist*)))

@@ -11,9 +11,39 @@
   :use-module (ice-9 match)
 
   :use-module (gaiag misc)
+  :use-module (gaiag reader)
   :use-module (gaiag resolve)
 
   :use-module (gaiag ast))
+
+(define namespace-ast
+  (dezyne->ast
+#{
+interface foo.I {
+  enum Bool {f,t};
+  in Bool e();
+  behaviour {
+    on e: {
+    reply(Bool.t);
+    }
+  }
+}
+
+component bar.c {
+  provides foo.I i;
+  behaviour {
+    foo.I.Bool state = foo.I.Bool.t;
+    on i.e(): {
+      reply(foo.I.Bool.t);
+    }
+  }
+}
+#}))
+
+(define (resolve-namespace-interface)
+  (find (is? <interface>) namespace-ast))
+(define (resolve-namespace-component)
+  (find (is? <component>) namespace-ast))
 
 (eval-when (compile eval load) (read-hash-extend #\{ #f))
 
@@ -66,6 +96,7 @@
         (int (name ivar mode) (range 0 3)))
        (variables
         (variable m (type (name state)) (expression (name state one)))
+        (variable r (type (name e)) (expression (name e v)))
         (variable b (type bool) (expression true))
         (variable x (type (name mixed)) (expression (name mixed v))))
        (functions (function toggle (signature (type void)) #f (compound))
@@ -90,6 +121,7 @@
        (int (name var mode) (range 0 3)))
       (variables
        (variable m (type (name state)) (expression (name state one)))
+       (variable r (type (name ivar e)) (expression (name e v)))
        (variable e (type (name ivar e)) (expression (name ivar e v)))
        (variable b (type bool) true))
        (functions
@@ -256,7 +288,7 @@
                  (reply (expression (name mixed v))))))
           '(on (triggers (trigger #f foo))
                 (compound
-                 (reply (expression (literal ivar mixed v)))))))
+                 (reply (expression (literal (name ivar mixed) v)))))))
 
 (pass-if "ast:resolve-guarded-reply-value-interface"
          (om-pretty-noisy-equal?
@@ -277,7 +309,7 @@
                   (guard
                    (expression true)
                    (compound
-                    (reply (expression (literal ivar mixed v))))))))))
+                    (reply (expression (literal (name ivar mixed) v))))))))))
 
 (pass-if "ast:resolve-reply-value-component"
          (om-pretty-noisy-equal?
@@ -289,14 +321,25 @@
 
           '(on (triggers (trigger o foo))
                 (compound
-                 (reply (expression (literal ivar mixed v)))))))
+                 (reply (expression (literal (name ivar mixed) v)))))))
+
+(pass-if "ast:resolve-reply-member"
+         (om-pretty-noisy-equal?
+          (ast:resolve-model*
+           (resolve-component)
+           '(on (triggers (trigger o foo))
+                (compound
+                 (reply (expression (name r))))))
+          '(on (triggers (trigger o foo))
+                (compound
+                 (reply (expression (var r)))))))
 
 (pass-if "ast:resolve-mixed-type-component"
          (om-pretty-noisy-equal?
           (ast:resolve-model*
            (resolve-component)
            '(root (variable v (type (name ivar mixed)) (name ivar mixed v))))
-          '(root (variable v (type (name ivar mixed)) (literal ivar mixed v)))))
+          '(root (variable v (type (name ivar mixed)) (literal (name ivar mixed) v)))))
 
 (pass-if "ast:resolve-value-enum-value"
          (om-pretty-noisy-equal?
@@ -305,7 +348,7 @@
            '(variables
              (variable m (type (name state)) (expression (name state one)))))
           '(variables
-            (variable m (type (name var state)) (expression (literal var state one))))))
+            (variable m (type (name var state)) (expression (literal (name var state) one))))))
 
 (pass-if "ast:resolve-value-field-interface"
          (om-pretty-noisy-equal?
@@ -487,6 +530,14 @@
           '(function rbfa (signature (type void) (formals))
                      recursive
                       (assign b (compound (call rbfb (arguments (expression #t))))))))
+
+(pass-if "ast:resolve-namespace-literal"
+         (om-pretty-noisy-equal?
+          (ast:resolve-root-model
+           namespace-ast
+           (resolve-namespace-component)
+           '(variable state (type (name foo I Bool)) (expression (name foo I Bool t))))
+          '(variable state (type (name foo I Bool)) (expression (literal (name foo I Bool) t)))))
 
 (pass-if "ast:resolve-undefined-identifier"
   (om-pretty-noisy-equal?

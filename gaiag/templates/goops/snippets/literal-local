@@ -1,1 +1,1 @@
-(assoc-ref #.model -#type -alist '#field)
+(assoc-ref #.model -#name -alist '#field)
