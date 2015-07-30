@@ -29,7 +29,7 @@
   :use-module (gaiag reader)
 
   :use-module (language dezyne location)
-  
+
   :use-module (gaiag goops om)
 
   :export (
@@ -149,7 +149,7 @@
 
     (('field identifier field) (make <field> :identifier identifier :field field))
 
-    (('fields fields ...) (make <fields> :elements fields))    
+    (('fields fields ...) (make <fields> :elements fields))
 
     (('function name signature recursive? statement)
      (make <function>
@@ -205,7 +205,7 @@
 
     (('otherwise) (make <otherwise> :value 'otherwise))
 
-    (('otherwise value) (make <otherwise> :value value))    
+    (('otherwise value) (make <otherwise> :value value))
 
     (('formal name type)
      (make <formal> :name name :type (ast->om- type)))

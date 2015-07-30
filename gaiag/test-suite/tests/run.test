@@ -73,7 +73,7 @@
    (walk-trail
     (om:interface
      (run:om
-      (dezyne->ast
+      (dzn->ast
        #{
          interface i { in void a; out void b;
                           behaviour { on a: b;
@@ -99,7 +99,7 @@
     (walk-trail
      (run:om
       (cadr
-       (dezyne->ast
+       (dzn->ast
         #{ interface i
                      {
                       in void a; out void b;

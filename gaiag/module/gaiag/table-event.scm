@@ -34,12 +34,12 @@
   :use-module (language dezyne location)
   :use-module (gaiag misc)
   :use-module (gaiag gaiag)
-  
+
   :use-module (gaiag ast)
   :use-module (gaiag json-table)
   :use-module (gaiag norm)
   :use-module (gaiag norm-event)
-  :use-module (gaiag norm-state)    
+  :use-module (gaiag norm-state)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
   :use-module (gaiag pretty)

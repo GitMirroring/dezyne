@@ -34,20 +34,20 @@
 
   :use-module (srfi srfi-1)
   :use-module (srfi srfi-9)
-  
+
   :use-module (language dezyne location)
   :use-module (gaiag misc)
-  :use-module (gaiag pretty-print)  
+  :use-module (gaiag pretty-print)
 
   :use-module (gaiag ast)
   :use-module (gaiag json)
-  :use-module (gaiag pretty)
+  :use-module (gaiag dzn)
   :use-module (gaiag reader)
-  :use-module (gaiag resolve)  
+  :use-module (gaiag resolve)
   :use-module (gaiag run)
 
   :export (json-init
-           json-table-event           
+           json-table-event
            json-table-state))
 
 (define (json-init o)
@@ -78,7 +78,7 @@
                             (rules . ,(list
                                        (alist->hash-table
                                         `((guard . ,(json-guard (make <guard> :expression 'true)))
-                                          (actions . ,(json-action statement))
+                                          (actions . ,(json-action model statement))
                                           (callbacks . ,(json-callback model statement))
                                           (next . ,(json-next model var state statement))))))))))
     (_ (stderr "catch all1:\n")
@@ -86,7 +86,7 @@
                             (rules . ,(list
                                        (alist->hash-table
                                         `((guard . ,(json-guard (make <guard> :expression 'true)))
-                                          (actions . ,(json-action '()))
+                                          (actions . ,(json-action model '()))
                                           (callbacks . ,(json-callback model '()))
                                           (next . ()))))))))))
 
@@ -94,10 +94,10 @@
   (match o
     (($ <expression> value) (state-var model value))
     (($ <field> identifier) identifier)
-    (('or ($ <field> identifier field) __1) identifier)    
+    (('or ($ <field> identifier field) __1) identifier)
     (($ <var> identifier) identifier)
     ((! ($ <var> identifier)) identifier)
-    (('== ($ <var> identifier) (and (? number?) (get! number))) identifier)    
+    (('== ($ <var> identifier) (and (? number?) (get! number))) identifier)
     (_ '<state>)))
 
 (define ((json-table-state model) o)
@@ -123,7 +123,7 @@
                                        (alist->hash-table
                                         `((triggers . ,(json-triggers (make <triggers>)))
                                           (guard . "")
-                                          (actions . ,(json-action '()))
+                                          (actions . ,(json-action model '()))
                                           (callbacks . ,(json-callback model '()))
                                           (next . ()))))))))))
 
@@ -144,7 +144,7 @@
            (alist->hash-table
             `((guard . ,(json-guard o))
               (inner . ,(json-guard inner))
-              (actions . ,(json-action statement))
+              (actions . ,(json-action model statement))
               (callbacks . ,(json-callback model statement))
               (next . ,(json-next model var state statement))))))
          (('compound)
@@ -152,7 +152,7 @@
            (alist->hash-table
             `((guard . ,(json-guard o))
               ;;(inner . ,(json-data-location '() '()))
-              (actions . ,(json-action inner))
+              (actions . ,(json-action model inner))
               (callbacks . ,(json-callback model inner))
               (next . ,(json-next model var state inner))
               ))))
@@ -163,7 +163,7 @@
                    (alist->hash-table
                     `((guard . ,(json-guard o))
                       (inner . ,(json-guard inner))
-                      (actions . ,(json-action statement))
+                      (actions . ,(json-action model statement))
                       (callbacks . ,(json-callback model statement))
                       (next . ,(json-next model var state statement))))))
                (.elements (compound))))
@@ -174,7 +174,7 @@
                    (alist->hash-table
                     `((guard . ,(json-guard o))
                       (inner . ,(json-guard inner))
-                      (actions . ,(json-action statement))
+                      (actions . ,(json-action model statement))
                       (callbacks . ,(json-callback model statement))
                       (next . ,(json-next model var state statement))))))
                (.elements (compound))))
@@ -182,7 +182,7 @@
          (_ (list
              (alist->hash-table
               `((guard . ,(json-guard o))
-                (actions . ,(json-action statement))
+                (actions . ,(json-action model statement))
                 (callbacks . ,(json-callback model statement))
                 (next . ,(json-next model var state statement)))))))))
     (($ <on> triggers (and ($ <compound> ($ <guard> expression statement) ..1) (get! compound)))
@@ -196,7 +196,7 @@
       (alist->hash-table
       `((triggers . ,(json-triggers (.triggers o)))
         (guard . "")
-        (actions . ,(json-action (.statement o)))
+        (actions . ,(json-action model (.statement o)))
         (callbacks . ,(json-callback model (.statement o)))
         (next . ,(json-next model var state (.statement o)))))))))
 
@@ -206,7 +206,7 @@
                                  (if (source-location triggers) triggers statement)
                                  ))
      (guard . ,(->symbol guard))
-     (actions . ,(json-action statement))
+     (actions . ,(json-action model statement))
      (callbacks . ,(json-callback model statement))
      (next . ,(json-next model var state statement)))))
 
@@ -272,15 +272,15 @@
 (define (json-state data o)
   (json-data-location data o))
 
-(define (json-action o)
-  (json-data-location (ast->dezyne o) o))
+(define (json-action model o)
+  (json-data-location ((ast->dzn model) o) o))
 
 (define (json-callback model o)
   (define (function? identifier) (om:function model identifier))
   (define (recursive? identifier) (.recursive (function? identifier)))
   (define (non-recursive? identifier)
     (not (recursive? identifier)))
-  
+
   (define (return-action o)
     (match o
       (($ <action>) (list o))
@@ -298,7 +298,7 @@
   (or (and-let* (((is-a? model <interface>))
                  ((is-a? o <statement>))
                  (actions (return-actions o)))
-                (map ast->dezyne actions))
+                (map (ast->dzn model) actions))
       '()))
 
 (define* (json-triggers o :optional (location o))

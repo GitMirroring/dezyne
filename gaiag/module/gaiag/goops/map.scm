@@ -30,7 +30,7 @@
   :use-module (ice-9 pretty-print)
 
   :use-module (language dezyne location)
-  
+
   :use-module (gaiag reader)
 
   :use-module (gaiag goops om)

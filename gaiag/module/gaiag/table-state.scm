@@ -45,10 +45,10 @@
   :use-module (gaiag norm-state)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
-  :use-module (gaiag pretty)
+  :use-module (gaiag dzn)
 
   :export (ast->
-           mangle-table prepend-guards pretty-table remove-initial simplify table table-state))
+           mangle-table prepend-guards dzn-table remove-initial simplify table table-state))
 
 ;;(define debug stderr)
 (define (debug . args) #t)
@@ -136,7 +136,7 @@
             (($ <int>)
              (let* ((var (find int-var? variables))
                     (range (.range type)))
-               (make <enum> :name ((om:scope-name) type) :fields (make <fields> :elements (iota (- (.to range) (.from range) -1) (.from range))))))
+               (make <enum> :name (.name type) :fields (make <fields> :elements (iota (- (.to range) (.from range) -1) (.from range))))))
             (($ <type> 'bool)
              (let ((var (find var-bool? variables)))
                (make <enum> :name (list 'name (.name var)) :fields (make <fields> :elements '(false true)))))
@@ -320,9 +320,9 @@
       ((or #t #f) (and json? (list (make-hash-table))))
       (_ (and (not json?) o)))))
 
-(define (pretty-table o)
+(define (dzn-table o)
   (match o
-    (('root t ...) (ast->dzn o))
+    (('root t ...) ((ast->dzn) o))
     (_ o)))
 
 (define (switch-norm-event o)
@@ -342,7 +342,7 @@
 
 (define (ast-> ast)
   ((compose
-    pretty-table
+    dzn-table
     (mangle-table json-table-state)
     (table table-state)
     ast:resolve

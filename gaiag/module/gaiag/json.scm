@@ -26,10 +26,10 @@
 
 (define-module (gaiag json)
   :use-module (srfi srfi-1)
-  :use-module (srfi srfi-9)  
+  :use-module (srfi srfi-9)
 
   :use-module (ice-9 and-let-star)
-  :use-module (gaiag list match)  
+  :use-module (gaiag list match)
 
   :use-module (language dezyne location)
   :use-module (gaiag misc)

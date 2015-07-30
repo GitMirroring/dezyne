@@ -36,7 +36,7 @@
 (pass-if "csp-norm-state-101"
          (om-pretty-noisy-equal?
           (csp-norm-state*
-           (cadr (dezyne->ast
+           (cadr (dzn->ast
                            #{
                              interface i { in void a; out void b;
                                           behaviour { on a: [true] { } } } #})))
@@ -48,7 +48,7 @@
 (pass-if "csp-norm-state-102"
          (om-pretty-noisy-equal?
           (csp-norm-state*
-           (cadr (dezyne->ast
+           (cadr (dzn->ast
                            #{
                              interface i { in void a; out void b;
                                               behaviour { on a: [true] b;
@@ -63,7 +63,7 @@
 (pass-if "csp-norm-state-aggregate-guard-passive"
          (om-pretty-noisy-equal?
           (csp-norm-state*
-           (cadr (dezyne->ast
+           (cadr (dzn->ast
                            #{
                              interface i { in void a; in void b; in void c;
                                               out void d;
@@ -80,7 +80,7 @@
 (pass-if "csp-norm-state-aggregate-guard-active"
          (om-pretty-noisy-equal?
           (csp-norm-state*
-           (cadr (dezyne->ast
+           (cadr (dzn->ast
                            #{
                              interface i { in void a; in void b; in void c;
                                               out void d; out void e; out void f;
@@ -165,7 +165,7 @@
 (pass-if "csp-norm-state-function-call"
          (om-pretty-noisy-equal?
           (csp-norm-state*
-           (cadr (dezyne->ast
+           (cadr (dzn->ast
                            #{
                              interface i { in void a; out void d;
                                               behaviour
@@ -186,7 +186,7 @@
 (pass-if "csp-norm-state-split-on-passive"
          (om-pretty-noisy-equal?
           (csp-norm-state*
-           (cadr (dezyne->ast
+           (cadr (dzn->ast
                            #{
                              interface i { in void a; in void b; in void c;
                                               out void d;
@@ -204,7 +204,7 @@
 (pass-if "csp-norm-state-split-on-active-single-on"
          (om-pretty-noisy-equal?
           (csp-norm-state*
-           (cadr (dezyne->ast
+           (cadr (dzn->ast
                            #{
                              component c { behaviour { [true] on i.a: illegal;
                                                        [false] on i.b,i.c,j.a: illegal;
@@ -230,7 +230,7 @@
 (pass-if "csp-norm-state-aggregate-on-interface-passive"
          (om-pretty-noisy-equal?
           (csp-norm-state*
-           (cadr (dezyne->ast
+           (cadr (dzn->ast
                            #{
                              interface i {  in void a; in void b; in void c;
                                               out void d;
@@ -246,7 +246,7 @@
 (pass-if "csp-norm-state-aggregate-on-interface-active"
          (om-pretty-noisy-equal?
           (csp-norm-state*
-           (cadr (dezyne->ast
+           (cadr (dzn->ast
                            #{
                              interface i {  in void a; in void b; in void c;
                                               out void d;
@@ -267,7 +267,7 @@
 (pass-if "csp-norm-state-aggregate-on-component-passive"
          (om-pretty-noisy-equal?
           (csp-norm-state*
-           (cadr (dezyne->ast
+           (cadr (dzn->ast
                            #{
                              component c { behaviour { on i.a,i.b: [true] j.d;
                                                           on j.a:     [true] j.d;
@@ -288,7 +288,7 @@
 (pass-if "csp-norm-state-aggregate-on-component-active"
          (om-pretty-noisy-equal?
           (csp-norm-state*
-           (cadr (dezyne->ast
+           (cadr (dzn->ast
                            #{
                              component c { behaviour { on i.a: [true] j.d;
                                                           on i.b: [true] j.d;
@@ -350,7 +350,7 @@
 (pass-if "csp-norm-state-nested-guards"
          (om-pretty-noisy-equal?
           (csp-norm-state*
-           (cadr (ast:resolve (ast->om (dezyne->ast
+           (cadr (ast:resolve (ast->om (dzn->ast
                            #{
 interface norm_nested_guards
 {

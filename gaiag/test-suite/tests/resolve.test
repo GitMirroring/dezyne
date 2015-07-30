@@ -17,7 +17,7 @@
   :use-module (gaiag ast))
 
 (define namespace-ast
-  (dezyne->ast
+  (dzn->ast
 #{
 interface foo.I {
   enum Bool {f,t};

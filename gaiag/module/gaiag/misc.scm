@@ -56,6 +56,7 @@
            components->file-name
            file-name->components
            diff
+           drop-prefix
            dump-file
            dump-output
            eat-one-space
@@ -126,6 +127,11 @@
 (define null-symbol (string->symbol ""))
 (define (symbol-null? x) (eq? x null-symbol))
 (define (number->symbol x) (string->symbol (number->string x)))
+
+(define (drop-prefix prefix lst)
+  (let loop ((prefix prefix) (lst lst))
+    (if (or (null? prefix) (null? lst) (not (eq? (car prefix) (car lst)))) lst
+        (loop (cdr prefix) (cdr lst)))))
 
 (define ((->symbol-join infix) lst)
   (let loop ((lst lst) (result '()))

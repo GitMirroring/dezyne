@@ -29,14 +29,14 @@
 
 (pass-if "parse-interface"
   (pretty-noisy-equal?
-   (dezyne->ast
+   (dzn->ast
     #{ interface i { } #}
     )
    '(root (interface (name i) (types) (events)))))
 
 (pass-if "parse-component"
   (pretty-noisy-equal?
-   (dezyne->ast
+   (dzn->ast
     #{ component c { } #}
     )
    '(root (component (name c) (ports)))))

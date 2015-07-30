@@ -89,7 +89,7 @@
            om:out?
            om:out-or-inout?
            om:parent
-           om:parse-dezyne
+           om:parse-dzn
            om:port
            om:ports
            om:provides?
@@ -584,8 +584,8 @@
       (and-let* ((ast (read-ast name transform)))
                 (cache-model name ast))))
 
-(define* (om:parse-dezyne string :optional (register (om:register ast->om)))
-  (parse-dezyne string register))
+(define* (om:parse-dzn string :optional (register (om:register ast->om)))
+  (parse-dzn string register))
 
 (define (om:declarative? o)
   (or (is-a? o <guard>)

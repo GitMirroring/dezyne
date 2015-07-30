@@ -369,8 +369,8 @@
 (define (make-<import> . args)
   (let-keywords
    args #f
-   ((name #f))
-   (cons <import> (list (make-<name> :elements name)))))
+   ((name (make <name>)))
+   (cons <import> (list name))))
 
 (define (make-<interface> . args)
   (let-keywords

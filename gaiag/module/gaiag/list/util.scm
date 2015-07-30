@@ -97,24 +97,32 @@
            om:externs
            om:integers
            om:interface-enums
+           om:interface-types
+           om:public-types
            om:interface
            om:reply-enums
            om:instance
            om:model-with-behaviour
            om:models-with-behaviour
            om:typed?
-           om:parse-dezyne
+           om:parse-dzn
            make-interface-enum
+
            om:scope-name
            om:name
            om:scope
+           om:drop-scope
+           om:scope+name
            ))
 
-(define* ((om:scope-name :optional (infix '_)) o)
+(define* ((om:scope-name :optional (infix '_)) o) ;; -> symbol
   (match o
     (('name name ...) ((->symbol-join infix) name))
     ((type (and ('name name ...) (get! name)) t ...) ((om:scope-name infix) (name)))
     ((type id (and ('name name ...) (get! name)) t ...) ((om:scope-name infix) (name)))))
+
+(define (om:scope+name o) ;; FIXME: om:scope+name
+  ((compose cdr .name) o))
 
 (define (om:name o)
   (match o
@@ -140,12 +148,15 @@
     ((h t ...) (retain-source-properties o (cons (car o) (map f (cdr o)))))
     (_ o)))
 
+(define (om:drop-scope scope o)
+  (drop-prefix (cdr scope) o))
+
 (define om->list identity)
 (define om2list identity)
 
 (define ((om:type model) o)
   (let ((r ((om:type- model) o)))
-    (stderr "\nom:type[~a]: ~a ==> ~a\n" (.name model) o r)
+    ;;(stderr "\nom:type[~a]: ~a ==> ~a\n" (.name model) o r)
     r))
 
 (define ((om:type- model) o)
@@ -240,20 +251,24 @@
      (('behaviour b types _ ...) (.elements types))
      (('interface name types events ('behaviour b btypes _ ...)) (append (.elements btypes) (.elements types)))
      (('component name ports ('behaviour b btypes _ ...))
-      (append (.elements btypes) (apply append (map interface-types (.elements ports)))))
-     (('component name ports) (apply append (map interface-types (.elements ports))))
-     (('component name ports #f) (apply append (map interface-types (.elements ports))))
-     (('system name ports body ...) (apply append (map interface-types (.elements ports))))
+      (append (.elements btypes) (om:interface-types model)))
+     (('component name ports) (om:interface-types model))
+     (('component name ports #f) (om:interface-types model))
+     (('system name ports body ...) (om:interface-types model))
      (('root models ...) (filter (is? <*type*>) models))
      (('import file) '()))
    (globals)))
 
-(define (interface-types port)
-  ((compose public-types om:import .type) port))
+(define (om:interface-types o)
+  (match o
+    (($ <interface>) (om:public-types o))
+    (($ <port>) ((compose om:public-types om:import .type) o))
+    ((? (is? <model>)) (append-map om:interface-types (om:ports o)))))
 
-(define (public-types ast)
-  (match ast
-    ((? (is? <interface>)) ((compose .elements .types) ast))))
+(define (om:public-types o)
+  (match o
+    ((? (is? <interface>)) ((compose .elements .types) o))
+    (_ '())))
 
 (define ((collect predicate) o)
   (match o
@@ -316,8 +331,8 @@
 
 ;; ugh
 
-(define* (om:parse-dezyne string :optional (register (om:register ast->om)))
-  (parse-dezyne string register))
+(define* (om:parse-dzn string :optional (register (om:register ast->om)))
+  (parse-dzn string register))
 
 ;; JUNK ME
 (define (om:models-with-behaviour om)
@@ -408,13 +423,12 @@
 
 (define (om:interface-enums o)
   (match o
-    (($ <interface>)
-     ((om:filter <enum>) (.types o)))
+    (($ <interface>) ((om:filter <enum>) (.types o)))
     (($ <port>) (om:enums o))
     (($ <component>)
-     (apply append (map om:interface-enums ((compose .elements .ports) o))))
+     (append-map om:interface-enums ((compose .elements .ports) o)))
     (($ <system>)
-     (apply append (map om:interface-enums ((compose .elements .ports) o))))))
+     (append-map om:interface-enums ((compose .elements .ports) o)))))
 
 (define (om:reply-enums o)
   (match o

@@ -1,0 +1,85 @@
+;; -*-scheme-*-
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+
+(read-set! keywords 'prefix)
+
+(define-module (test-handler)
+  :use-module (test-suite lib)
+  :use-module (test-suite misc)
+
+  :use-module (gaiag dzn)
+  :use-module (gaiag reader)
+  :use-module (gaiag resolve))
+
+(define (ast->dzn* ast) ((compose (ast->dzn) ast:resolve ast->om) ast))
+(pass-if "dzn-first-dummy-test"
+	 #t)
+
+(pass-if "dzn-interface"
+  (let ((dzn #{
+interface i {
+  behaviour {
+  }
+}
+#}))
+    (diff-noisy-equal?
+     (ast->dzn*
+      (dzn->ast dzn))
+     dzn)))
+
+(pass-if "dzn-component"
+  (let ((dzn #{
+component c {
+}
+#}))
+(diff-noisy-equal?
+ (ast->dzn*
+  (dzn->ast dzn))
+ dzn)))
+
+(pass-if "dzn-in"
+  (let ((dzn #{
+interface i {
+  in void identifier();
+  behaviour {
+  }
+}
+#}))
+(diff-noisy-equal?
+ (ast->dzn*
+   (dzn->ast dzn))
+ dzn)))
+
+(pass-if "dzn-provides"
+  (let ((dzn #{
+interface Interface {
+  behaviour {
+  }
+}
+
+component c {
+  provides Interface identifier;
+  behaviour {
+    on i.a():
+       illegal;
+  }
+}
+#}))
+(diff-noisy-equal?
+ (ast->dzn*
+   (dzn->ast dzn))
+ dzn)))
+
+(pass-if "dzn-expression"  ;; FIXME: 878d54f Add norm.scm broke dzn.
+  (let ((dzn #{
+interface i {
+  behaviour {
+   [true || false]
+   {}
+  }
+}
+#}))
+(diff-noisy-equal?
+ (ast->dzn*
+   (dzn->ast dzn))
+ dzn)))

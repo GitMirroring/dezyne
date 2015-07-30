@@ -221,8 +221,8 @@
      (flatten-compound- statement))
     (('compound statements ...)
      (retain-source-properties
-      o 
-      (make <compound> :elements 
+      o
+      (make <compound> :elements
             (apply append (map flatten-compound-compound statements)))))
     ((? (is? <ast>)) (om:map flatten-compound- o))
     (('skip) o)

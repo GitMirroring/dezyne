@@ -52,17 +52,14 @@
 
   :export (animate
            animate-file
-           animate-input
-           animate-module-populate
            animate-string
-           animate-template
-           file-line-column-location
-           line-column-location
+           animate-input
+           populate-module
+           snippet
            gulp-template
            prefix-dir
            template?
            template-file
-           template->string
            template-dir
            templates))
 
@@ -97,123 +94,43 @@
            (pair? (assoc (ast-name x) (templates))))
       (and (list? x) (pair? (assoc (car x) (templates))))))
 
-(define (animate-module-populate module formal key-procedure-pairs)
-  (let loop ((pairs key-procedure-pairs))
+(define* (populate-module module key-value-pairs :optional (o #f))
+  (let loop ((pairs key-value-pairs))
     (if (null? pairs)
         module
         (let* ((pair (car pairs))
                (key (car pair))
-               (procedure-or-data (cdr pair))
-               (value (if (procedure? procedure-or-data)
-                          (procedure-or-data formal)
+               (procedure-or-data (cadr pair))
+               (value (if (procedure? procedure-or-data) (procedure-or-data o)
                           procedure-or-data)))
           (module-define! module key value)
           (loop (cdr pairs))))))
 
-(define (template->string name . key-procedure-pairs)
-  (let ((template (assoc-ref (templates) name)))
-    (animate-template name (map (lambda (pair data)
-                               (let* ((key (car pair))
-                                      (procedure (cdr pair))
-                                      (value (procedure data)))
-                                 (cons key value)))
-                                template key-procedure-pairs))))
-
-(define (pairs->module pairs)
-  (let ((module (make-module 31 (list (current-module)))))
-    (let loop ((pairs pairs))
-      (if (pair? pairs)
-          (let* ((pair (car pairs))
-                 (key (car pair))
-                 (value (cdr pair))
-                 (value (if (pair? value) (car value) value)))
-            (module-define! module key value)
-            (loop (cdr pairs)))))
-    module))
-
-(define (animate-template name key-value-pairs)
-  (with-output-to-string
-    (lambda () (animate-file name (pairs->module key-value-pairs)))))
-
 (define* (animate string :optional (o #f))
-  (match o
-    ((? list?) (animate string (pairs->module o)))
-    ((? module?)
-     (with-output-to-string
-       (lambda ()
-         (with-input-from-string string (lambda () (animate-input- o))))))
-    (_ (animate string (current-module)))))
+  (with-output-to-string (lambda () (animate-string string o))))
 
-(define* (line-column-location tell :optional (port (current-input-port)))
-  (seek port 0 SEEK_SET)
-  (let loop ((line 1))
-    (let ((string (read-delimited "\n" port)))
-      (if (eq? string *eof*)
-          (list 0 0 "")
-          (if (>= (ftell port) tell)
-              (list line (- tell (- (ftell port) (string-length string) 1)) string)
-              (loop (1+ line)))))))
+(define* (snippet file-name :optional (o #f))
+  (parameterize ((template-dir (append (template-dir) '(snippets))))
+    (with-output-to-string (lambda () (animate-file file-name o)))))
 
-(define (port-size port)
-  (seek port 0 SEEK_END)
-  (ftell port))
+(define* (animate-string string :optional (o #f))
+  (with-input-from-string string (lambda () (animate-input (get-module o)))))
 
-(define (file-line-column-location file-name tell)
-  (with-input-from-file file-name (lambda () (line-column-location tell))))
-
-(define (animate-file file-name module)
+(define* (animate-file file-name :optional (o #f))
   (let ((file-name (components->file-name (template-file file-name))))
-      (with-input-from-file file-name (lambda () (animate-input module file-name)))))
+    (with-input-from-file file-name (lambda () (animate-input (get-module o))))))
 
-(define* (animate-input module :optional (file-name "<input>"))
-  (catch 'parse-error
-    (lambda ()
-      (animate-input- module))
-    (lambda (key . args)
-      (let* ((tell (assoc-ref (car args) 'tell))
-             (size (assoc-ref (car args) 'size))
-             (start (assoc-ref (car args) 'start))
-             (scm (assoc-ref (car args) 'scm))
-             (pos (let loop ((tell (if (>1 (length tell)) (cdr tell) tell)) (start start))
-                    (if (null? tell)
-                        0
-                        (+ (car tell) (car start)
-                           (loop (cdr tell) (cdr start))))))
-             (line-column (if pos
-                              (line-column-location pos)
-                              (list 0 0 "")))
-             (line (car line-column))
-             (column (cadr line-column))
-             (file-string (caddr line-column))
-             (string (assoc-ref (car args) 'line))
-             (args (car (or (assoc-ref (car args) 'args)
-                            (list args))))
-             (error-message (or (car args) (cadr args)))
-             (error-args (if (car args) '() (caddr args)))
-             (error-string (apply format (append (list #f error-message) error-args)))
-             (message
-              (if (string? string)
-                  (if (string-contains file-string string)
-                      (format #f "~a:~a:~a: parse error: ~a\n~a\n~a~a...\n" file-name line column error-string (string-take file-string column) (make-string column #\space)
-                              (string-drop file-string column))
-                      (format #f "~a:~a: parse error: ~a\n    just before: ~a\n" file-name line error-string string))
-                  (format #f "~a:~a: parse error: *eof*: ~a\n" file-name line error-string))))
-        (stderr "~a" message)
-        (throw 'parse-error message)))))
+(define* (get-module o)
+  (match o
+    ((? module?) o)
+    ((? list?) (populate-module (current-module) o))
+    (_ (current-module))))
 
-(define* (animate-string string :optional (module (current-module)))
-  (with-input-from-string string
-    (lambda () (animate-input- module))))
-
-(define escape #\#)
-
-(define (animate-input- module)
+(define (animate-input module)
   (let* ((start '(0))
          (start-hash-read-string (lambda (chr port)
                                    (set! start
-                                         (cons (1+ (ftell (current-input-port))) start)
-                                         ;;(1+ (ftell (current-input-port)))
-                                         )
+                                         (cons (1+ (ftell (current-input-port))) start))
                                    (hash-read-string chr port))))
     (read-hash-extend #\{ start-hash-read-string)
     (while (and-let* ((s (*eof*-is-#f (read-delimited (make-string 1 escape)))))
@@ -251,3 +168,9 @@
                             (args (car (or (assoc-ref (car args) 'args)
                                        (list args)))))
                        (throw 'parse-error (append `((tell . ,tell) (start . ,start) (size . ,size) (line . ,line) (args ,args))))))))))))))
+
+(define escape #\#)
+
+(define (port-size port)
+  (seek port 0 SEEK_END)
+  (ftell port))

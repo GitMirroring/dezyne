@@ -10,7 +10,7 @@
 
   :use-module (gaiag ast)
   :use-module (gaiag annotate)
-  :use-module (gaiag pretty)
+  :use-module (gaiag dzn)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
   :use-module (gaiag table-state))
@@ -24,22 +24,22 @@
                 'command-line
                         (lambda () '("test-suite/run-tests" "foo" "bar")))
 
-(define (model o)
+(define (get-model o)
   (car (filter (is? <model>) o)))
 
 (define (test-table-state o)
-  ((compose .statement .behaviour) ((table table-state) (model o))))
+  ((compose .statement .behaviour) ((table table-state) (get-model o))))
 
-(define (pretty-table-state o)
- (ast->dezyne (test-table-state o)))
+(define (dzn-table-state o)
+ ((ast->dzn (get-model o)) (test-table-state o)))
 
 (pass-if "table-state-dummy-test"
          #t)
 
 (define idle-init-busy-ast
-  (model
+  (get-model
    (ast:resolve*
-    (dezyne->ast
+    (dzn->ast
 #{
 interface i
 {
@@ -97,7 +97,7 @@ interface i
   (om-pretty-noisy-equal?
    (test-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface i
 {
@@ -129,7 +129,7 @@ interface i
   (om-pretty-noisy-equal?
    (test-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface i
 {
@@ -175,7 +175,7 @@ interface i
   (om-pretty-noisy-equal?
    (test-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface i
 {
@@ -201,7 +201,7 @@ interface i
   (om-pretty-noisy-equal?
    (test-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface i
 {
@@ -230,19 +230,19 @@ interface i
            (expression (var b))
            (compound
              (action (trigger #f a (arguments)))
-             (assign s (expression (literal #f S idle)))))))
+             (assign s (expression (literal (name i S) idle)))))))
   (guard
     (expression (field s idle))
     (on (triggers (trigger #f e (arguments)))
          (compound
            (action (trigger #f a (arguments)))
-           (assign s (expression (literal #f S busy)))))))))
+           (assign s (expression (literal (name i S) busy)))))))))
 
 (pass-if "table-state-expressions"
   (om-pretty-noisy-equal?
    (test-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface i
 {
@@ -289,9 +289,9 @@ interface i
 
 (pass-if "table-state-expressions-pretty"
   (diff-noisy-equal?
-   (pretty-table-state
+   (dzn-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface i
 {
@@ -352,9 +352,9 @@ interface i
 (pass-if "table-state-guards"
   (or ;;(stderr "disabled: ~a\n" "table-state-guards")
   (diff-noisy-equal?
-   (pretty-table-state
+   (dzn-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface i
 {
@@ -378,8 +378,7 @@ interface i
             }
           [!b]
             on e:
-            {
-            }
+            {}
         }
       [s.busy]
         [true]
@@ -440,8 +439,7 @@ interface i
       s = S.busy;
     }
     [bb && !b]
-    {
-    }
+    {}
   }
   [s.busy]
   on e:
@@ -455,9 +453,9 @@ interface i
 
 (pass-if "table-state-choice"
   (diff-noisy-equal?
-   (pretty-table-state
+   (dzn-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface i
 {
@@ -476,8 +474,7 @@ interface i
        a;
       }
       [true]
-      {
-      }
+      {}
      }
   }
 }
@@ -490,8 +487,7 @@ interface i
       [true]
       a;
       [true]
-      {
-      }
+      {}
   }
 }
 "))
@@ -500,9 +496,9 @@ interface i
 (pass-if "table-state-sort-triggers"
   (or (stderr "disabled: ~a\n" "table-state-sort-triggers")
    (diff-noisy-equal?
-   (pretty-table-state
+   (dzn-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface ISiren
 {
@@ -550,9 +546,9 @@ interface ISiren
 
 (pass-if "table-state-resolve-deep-otherwise"
   (diff-noisy-equal?
-   (pretty-table-state
+   (dzn-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface i
 {
@@ -589,8 +585,7 @@ interface i
   }
   [s.idle]
   on e:
-  {
-  }
+  {}
   [s.busy]
   on e:
   s = S.init;
@@ -599,9 +594,9 @@ interface i
 
 (pass-if "table-state-expand-deep-otherwise"
   (diff-noisy-equal?
-   (pretty-table-state
+   (dzn-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface i
 {
@@ -634,8 +629,7 @@ interface i
       [b]
       a;
       [!b]
-      {
-      }
+      {}
    }
 }
 
@@ -643,9 +637,9 @@ interface i
 
 (pass-if "table-state-nested-compound"
   (diff-noisy-equal?
-   (pretty-table-state
+   (dzn-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface I
 {
@@ -661,16 +655,15 @@ interface I
 {
   [b]
   on e:
-  {
-  }
+  {}
 }
 "))
 
 (pass-if "table-state-other-enum"
   (diff-noisy-equal?
-   (pretty-table-state
+   (dzn-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface I {
  in void e;
@@ -700,8 +693,7 @@ interface I {
       [o.init]
       {
         [b]
-        {
-        }
+        {}
         [otherwise]
         illegal;
       }
@@ -710,9 +702,9 @@ interface I {
 
 (pass-if "table-state-collapse-inevitable"
   (diff-noisy-equal?
-   (pretty-table-state
+   (dzn-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface I {
   in void i;
@@ -775,9 +767,9 @@ interface I {
 
 (pass-if "table-state-expression-otherwise"
   (diff-noisy-equal?
-   (pretty-table-state
+   (dzn-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{
 interface I {
  in void e;
@@ -807,8 +799,7 @@ interface I {
       [o.init]
       {
         [b]
-        {
-        }
+        {}
         [otherwise]
         illegal;
     }
@@ -818,9 +809,9 @@ interface I {
 (pass-if "table-state-non-det"
   (or ;; (stderr "disabled: ~a\n" "table-state-non-det")
    (diff-noisy-equal?
-   (pretty-table-state
+   (dzn-table-state
     (ast:resolve*
-     (dezyne->ast
+     (dzn->ast
 #{interface IDevice {
 
  enum Res { OK, NOK };
@@ -882,7 +873,7 @@ interface I {
    (extract-locations
     (test-table-state
      (ast:resolve*
-      (dezyne->ast
+      (dzn->ast
 #{interface table
 {
   in void e();
@@ -905,34 +896,37 @@ interface I {
 }
 #}))))
 '(compound
-  ((location #f 9 4 116 #f)
+  ((location #f 9 4 115 #f)
    guard
    (expression (field s init))
    (on (triggers
-         ((location #f 10 7 132 #f)
+         ((location #f 10 7 131 #f)
           trigger
           #f
           e
           (arguments)))
-       ((location #f 11 4 139 #f)
+       ((location #f 11 4 138 #f)
         compound
-        ((location #f 12 6 147 #f)
+        ((location #f 12 6 146 #f)
          assign
          s
          (expression
-           ((location #f 12 11 152 #f) literal (name i S) idle)))
-        ((location #f 13 6 165 #f)
+           ((location #f 12 10 150 #f)
+            literal
+            (name table S)
+            idle)))
+        ((location #f 13 6 164 #f)
          action
          (trigger #f a (arguments))))))
-  ((location #f 15 4 178 #f)
+  ((location #f 15 4 177 #f)
    guard
    (expression (field s idle))
    (on (triggers
-         ((location #f 10 7 132 #f)
+         ((location #f 10 7 131 #f)
           trigger
           #f
           e
           (arguments)))
-       ((location #f 17 4 201 #f)
+       ((location #f 17 4 200 #f)
         action
         (trigger #f a (arguments)))))))))

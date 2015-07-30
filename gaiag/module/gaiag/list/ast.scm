@@ -180,7 +180,7 @@
 
     (('illegal) (make <illegal>))
 
-    (('import name) (make <import> :name name))
+    (('import name) (make <import> :name `(name ,name)))
 
     (('int name range)
      (make <int> :name name :range (ast->om- range)))

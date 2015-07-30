@@ -29,13 +29,13 @@
   :use-module (language dezyne parse)
   :use-module (language dezyne location)
   :use-module (language dezyne tokenize)
-  :export (dezyne->ast find-file try-find-file parse-dezyne read-dzn read-ast))
+  :export (dzn->ast find-file try-find-file parse-dzn read-dzn read-ast))
 
-(define (dezyne->ast x)
+(define (dzn->ast x)
   (or (and-let* ((file-name (->string x))
                  ((file-exists? file-name)))
                 (read-dzn file-name))
-      (parse-dezyne x)))
+      (parse-dzn x)))
 
 (define (read-and-parse lang port cenv)
   (let ((exp ((language-reader lang) port cenv)))
@@ -44,11 +44,11 @@
      ((language-parser lang) => (lambda (parse) (parse exp)))
      (else exp))))
 
-(define (dezyne-reader port env)
+(define (dzn-reader port env)
   ((make-parser) (make-tokenizer port) syntax-error-handler))
 
 (define (read-dzn- file-name)
-  (dezyne-reader (open-file file-name "r") (current-module)))
+  (dzn-reader (open-file file-name "r") (current-module)))
 
 (define *include-path* '("." "examples"))
 (define (path-find-file path file-name)
@@ -100,10 +100,10 @@ only perform a read, otherwise assume ASD content and also invoke
 the parser."
   (register (read-ast- file-name)))
 
-(define (parse-dezyne- string)
+(define (parse-dzn- string)
   (read-hash-extend #\{ hash-read-string)
   (with-input-from-string string
-    (lambda () (dezyne-reader (current-input-port) (current-module)))))
+    (lambda () (dzn-reader (current-input-port) (current-module)))))
 
-(define* (parse-dezyne string :optional (register identity))
-  (register (parse-dezyne- string)))
+(define* (parse-dzn string :optional (register identity))
+  (register (parse-dzn- string)))

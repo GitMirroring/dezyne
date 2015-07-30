@@ -30,7 +30,7 @@
 
   :use-module (gaiag list match)
   :use-module (ice-9 and-let-star)
-  :use-module (srfi srfi-9)  
+  :use-module (srfi srfi-9)
 
 ;;  :use-module (system base lalr)
 
@@ -48,7 +48,7 @@
 (define (ast:annotate o)
   ((compose
     annotate-imported
-    annotate-locations   
+    annotate-locations
     ) o))
 
 (define ast->annotate ast:annotate)
@@ -113,13 +113,13 @@
     (('component body ... (and ('imported . imported)))
      (mark-imported (cons 'component body) imported))
     (('system body ... (and ('imported . imported)))
-     (mark-imported (cons 'system body) imported))    
+     (mark-imported (cons 'system body) imported))
     (('enum body ... (and ('imported . imported)))
      (mark-imported (cons 'enum body) imported))
     (('extern body ... (and ('imported . imported)))
-     (mark-imported (cons 'enum body) imported))    
+     (mark-imported (cons 'enum body) imported))
     (('int body ... (and ('imported . imported)))
-     (mark-imported (cons 'enum body) imported))    
+     (mark-imported (cons 'enum body) imported))
     (_ o)))
 
 (define (ast-> ast)

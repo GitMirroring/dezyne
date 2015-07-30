@@ -16,7 +16,7 @@
 (pass-if "assert"
   (pretty-noisy-equal?
    (assert-list
-    (om:parse-dezyne
+    (om:parse-dzn
      #{ interface I { }
                   component C {
                                provides I i ;
@@ -36,14 +36,14 @@
 (pass-if "assert"
   (pretty-noisy-equal?
    (assert-list
-    (om:parse-dezyne
+    (om:parse-dzn
      #{ component C {} #}))
    '()))
 
 (pass-if "assert-interface"
   (pretty-noisy-equal?
    (assert-list
-    (om:parse-dezyne
+    (om:parse-dzn
      #{ interface I {behaviour { }}
                   component C {
                                provides I i ;

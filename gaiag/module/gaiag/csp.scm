@@ -422,6 +422,10 @@
 (define* (*scope* s :optional (infix '_))
   (if (eq? s '*global*) 'global ((->symbol-join infix) s)))
 
+;; (define* ((*scope* model :optional (infix (string->symbol "."))) o)
+;;   (if (eq? o '*global*) null-symbol
+;;       ((->symbol-join infix) (om:drop-scope (.name model) o))))
+
 (define (enum-scope model e)
   (symbol-append (*scope* e) '_ (om:name e)))
 
@@ -447,14 +451,6 @@
                 (map (compose om:import .type) ((compose .elements .ports) o))))
       (append (om:enums o) (om:enums))))))
 
-(define (return-value o)
-  (map (lambda (value) ((->symbol-join '_) (append ((compose cdr .name) o) (list value)))) ((compose .elements .fields) o)))
-
-(define (add-return-if-empty returns)
-  (if (null? returns)
-      '(return)
-      (append (apply append returns) (list 'return)))) ;; FIXME: add only return when needed
-
 (define (return-values-port port) ;; FIMXE: no test
   (let ((interface (csp:import (.type port))))
     (return-values interface)))
@@ -462,9 +458,17 @@
 (define (return-values o) ;; FIMXE: no test
   (match o
     (($ <interface>)
-     (add-return-if-empty (map return-value (om:reply-enums o))))
+     (add-return-if-empty (map (return-value o) (om:reply-enums o))))
     (($ <component>)
      (apply append (map (compose return-values om:import .type) ((compose .elements .ports) o))))))
+
+(define ((return-value model) o)
+  (map (lambda (value) ((->symbol-join '_) (append (om:drop-scope (.name model) (om:scope+name o)) (list value)))) ((compose .elements .fields) o)))
+
+(define (add-return-if-empty returns)
+  (if (null? returns)
+      '(return)
+      (append (apply append returns) (list 'return)))) ;; FIXME: add only return when needed
 
 (define ((statement-on-p/r predicate) o)
   (let* ((triggers (.elements (.triggers o)))

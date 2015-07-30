@@ -41,6 +41,7 @@
 
   :export (ast:code
            code:om
+           code-file
            code:identifier?
            code:import
            code:->code
@@ -113,7 +114,7 @@
 (define indenter (make-parameter indent))
 
 (define* (*scope* s :optional (infix (string->symbol "::")))
-  (stderr "*scope*: ~a\n" s)
+  (debug "*scope*: ~a\n" s)
   (if (eq? s '*global*) 'global ((->symbol-join infix) s)))
 
 (define (dump-indented file-name thunk)
@@ -197,12 +198,6 @@
 (define statements.port (make-parameter #f))
 (define statements.event (make-parameter #f))
 
-(define (animate-snippet name pairs)
-  (parameterize ((template-dir (append (template-dir) '(snippets))))
-    (animate-template name pairs)))
-
-(define snippet animate-snippet)
-
 (define (language)
   (string->symbol (option-ref (parse-opts (command-line)) 'language 'c++)))
 
@@ -212,6 +207,7 @@
      (assoc-ref `((c . .h)
                   (c++ . .hh)
                   (c++03 . .hh)
+                  (dzn . .dzn)
                   (goops . .scm)
                   (java . .java)
                   (javascript . .js)
@@ -222,6 +218,7 @@
      (assoc-ref '((c . .c)
                   (c++ . .cc)
                   (c++03 . .cc)
+                  (dzn . .dzn)
                   (goops . .scm)
                   (java . .java)
                   (javascript . .js)
@@ -229,7 +226,7 @@
                   (python . .py))
                 (language)))))
 
-(define (code:module o)
+(define* (code:module o)
   (let ((module (make-module 31 (list
                                  (resolve-module (list 'gaiag (language)))
                                  (resolve-module '(gaiag misc))))))
@@ -268,7 +265,7 @@
            (snippet 'formal-identifier
                     `((identifier ,identifier)
                       (out? ,(om:out-or-inout? (formal? identifier)))
-                      (argument . #f))))
+                      (argument #f))))
           ((local? identifier)
            (snippet 'local `((identifier ,identifier) (argument #f))))
           (else identifier)))
@@ -359,7 +356,7 @@
             (arguments ((join)
                         (map (lambda (e p)
                                (let ((out? (member (.direction p) '(inout out))))
-                                 (snippet 'argument `((expression . ,(expression->string model e locals (if out? 'out 'in)))
+                                 (snippet 'argument `((expression ,(expression->string model e locals (if out? 'out 'in)))
                                                       (out? ,(member (.direction p) '(inout out)))))))
                              arguments formals))))
          (snippet 'call-arguments
@@ -403,7 +400,7 @@
               (arguments ((join)
                           (map (lambda (e p)
                                  (let ((out? (member (.direction p) '(inout out))))
-                                   (snippet 'argument `((expression . ,(expression->string model e locals (if out? 'out 'in)))
+                                   (snippet 'argument `((expression ,(expression->string model e locals (if out? 'out 'in)))
                                                         (out? ,(member (.direction p) '(inout out)))))))
                                arguments formals))))
          (snippet (symbol-append 'action- direction)
@@ -416,7 +413,7 @@
                     (comma ,comma)
                     (comma-space ,comma-space)))))
       (($ <reply> (and ($ <expression> ($ <literal> name field)) (get! expression)))
-       (stderr "0scope: ~a\n" (.scope name))
+       (debug "0scope: ~a\n" (.scope name))
        (snippet 'reply
                 `((space ,space)
                   (scope ,(.scope name))
@@ -425,15 +422,15 @@
       (($ <reply> (and ($ <expression> ($ <var> name)) (get! expression)))
        (let* ((var (var? name))
               (type (.type var)))
-         (stderr "var: ~a\n" var)
-         (stderr "type: ~a\n" type)
-         (stderr "1scope: ~a\n" (om:scope type))
+         (debug "var: ~a\n" var)
+         (debug "type: ~a\n" type)
+         (debug "1scope: ~a\n" (om:scope type))
          (snippet 'reply
                   `((space ,space)
                     (scope ,(om:scope type))
                     (name ,(om:name type))
                     (expression ,(expression->string model (expression) locals))))))
-      (($ <reply>) (stderr "REPLY TODO: ~a\n" src) "//reply = ...\n")
+      (($ <reply>) (debug "REPLY TODO: ~a\n" src) "//reply = ...\n")
       (($ <return> #f) (snippet 'return-void `((space ,space))))
       (($ <return> expression)
        (snippet 'return
@@ -449,7 +446,7 @@
       (($ <type> ('name '*global* name))
        (snippet 'type-global-enum `((space ,space) (scope (global)) (name ,name))))
       (($ <type> (and (? enum?) (get! name)))
-       (stderr "2scope: ~a\n" (om:scope src))
+       (debug "2scope: ~a\n" (om:scope src))
        (snippet 'type-local-enum `((space ,space)
                                    (scope ,(om:scope src))
                                    ;;(scope ,((compose .elements .name) model))
@@ -536,18 +533,18 @@
   (member guard (om:top-statements model)))
 
 (define (bool-expression->string model o)
-  (stderr "BES: ~a\n" o)
+  (debug "BES: ~a\n" o)
   (match o
     (($ <field> identifier field)
      (snippet 'field `((identifier ,identifier) (field ,field))))
     (($ <literal> ('name '*global* name) field)
-     (snippet 'literal-global `((scope . *global*) (name ,name) (field ,field))))
+     (snippet 'literal-global `((scope *global*) (name ,name) (field ,field))))
     (($ <literal> ('name scope ... name) field) (=> failure)
-     (stderr "LITERAL: scope=~a, xx=~a\n" scope ((compose cdr .name) model))
+     (debug "LITERAL: scope=~a, xx=~a\n" scope ((compose cdr .name) model))
      (if (not (equal? scope ((compose cdr .name) model))) (failure)
-         (snippet 'literal-local `((scope . #f) (name ,name) (field ,field)))))
+         (snippet 'literal-local `((scope #f) (name ,name) (field ,field)))))
     (($ <literal> name field)
-     (stderr "LIT!: ~a\n" o)
+     (debug "LIT!: ~a\n" o)
      (snippet 'literal `((scope ,(om:scope o)) (name ,(om:name o)) (field ,field))))
     (_ (expression->string model o))))
 
@@ -570,7 +567,7 @@
                                    (field ,field))))
                     ('*global*
                      (snippet 'literal-global
-                              `((scope . ,(.scope type))
+                              `((scope ,(.scope type))
                                 (type ,(.name type))
                                 (field ,field))))
                     (_ (snippet 'literal
@@ -595,7 +592,7 @@
             (arguments ((join)
                         (map (lambda (e p)
                                (let ((out? (member (.direction p) '(inout out))))
-                                 (snippet 'argument `((expression . ,(expression->string model e locals (if out? 'out 'in)))
+                                 (snippet 'argument `((expression ,(expression->string model e locals (if out? 'out 'in)))
                                                       (out? ,(member (.direction p) '(inout out)))))))
                              arguments formals))))
        (snippet 'action-expression
@@ -633,7 +630,7 @@
             (arguments ((join)
                         (map (lambda (e p)
                                (let ((out? (member (.direction p) '(inout out))))
-                                 (snippet 'argument `((expression . ,(expression->string model e locals (if out? 'out 'in)))
+                                 (snippet 'argument `((expression ,(expression->string model e locals (if out? 'out 'in)))
                                                       (out? ,(member (.direction p) '(inout out)))))))
                              arguments formals))))
        (snippet 'call-arguments-expression
@@ -699,7 +696,7 @@
          (formal-list (map (lambda (x) (code:->code model x)) (.elements formals)))
          (formal-objects (.elements formals))
          (formal-types (map (lambda (formal)
-                                 (animate-snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
+                                 (snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
                                ((compose .elements .formals) signature)))
          (comma (if (pair? (.elements formals)) (sep) ""))
          (comma-space (if (pair? (.elements formals)) `(,(sep) " ") ""))
@@ -755,7 +752,7 @@
          (formal-list (map (lambda (x) (code:->code model x)) (.elements formals)))
          (formals (code:->code model formals))
          (formal-types (map (lambda (formal)
-                                 (animate-snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
+                                 (snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
                                ((compose .elements .formals) signature)))
          (reply-name (om:name type))
          (reply-scope (or (pair?? (om:scope enum)) '()))
@@ -840,8 +837,8 @@
          (type (.type variable))
          (expression (expression->string model (.expression variable)))
          (type (code:->code model type)))
-    (stderr "TYPE FOR: ~a => ~a\n" variable type)
-    (stderr "EXPRESSION: ~a => ~a\n" variable expression)
+    (debug "TYPE FOR: ~a => ~a\n" variable type)
+    (debug "EXPRESSION: ~a => ~a\n" variable expression)
     (animate snippet `((name ,name) (type ,type) (expression ,expression)))))
 
 (define ((init-port snippet) port)
@@ -850,13 +847,13 @@
          (interface (om:name port))
          (scope (om:scope port))
          (injected? (.injected port)))
-    (stderr "\nPORT: ~a\n" port)
-    (stderr "scope: ~a\n" scope)
-    (stderr "name: ~a\n" name)
+    (debug "\nPORT: ~a\n" port)
+    (debug "scope: ~a\n" scope)
+    (debug "name: ~a\n" name)
     (animate snippet `((scope ,scope) (name ,name) (direction ,direction) (injected? ,injected?) (interface ,interface)))))
 
 (define (declare-replies o)
-  (stderr "reply-enums: ~a\n" (om:reply-enums o))
+  (debug "reply-enums: ~a\n" (om:reply-enums o))
   (map (lambda (x) (snippet 'declare-reply
                             `((scope ,(om:scope x))
                               (name ,(om:name x)))))
@@ -870,7 +867,7 @@
       ((eq? name 'bool) (snippet 'bool '()))
       ((eq? name 'void) 'void)
       ((equal? scope '(*global*))
-       (stderr "0scope: ~a\n" scope)
+       (debug "0scope: ~a\n" scope)
        (snippet 'type-global-enum `((space "") (scope ,scope) (name ,name))))
       ((equal? scope (.name model))
        (snippet 'type-local `((space "") (scope ,scope) (name ,name))))
@@ -881,10 +878,10 @@
   (let ((instance (om:instance model bind))
         (port (om:port model bind)))
     (snippet 'binding
-               `((instance . ,(match instance
+               `((instance ,(match instance
                                 (($ <instance>) (.name instance))
                                 (($ <interface>) (.name instance))))
-                 (port . ,(match port
+                 (port ,(match port
                             (($ <port>) (.name port))
                             (($ <interface>) (list "x" (.name port)))))))))
 
@@ -942,3 +939,6 @@
      (animate-string (if (null-is-#f condition) then "") (current-module)))
     ((_ condition then else)
      (animate-string (if (null-is-#f condition) then else) (current-module)))))
+
+(define (debug . x) #t)
+;;(define debug stderr)

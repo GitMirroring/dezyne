@@ -77,7 +77,7 @@ Languages: c c++ cs csp dezyne goops java javascript python
 
 Examples:
   ./gaiag examples/Alarm.dzn
-  ./gaiag -l dezyne examples/Alarm.scm
+  ./gaiag -l dzn examples/Alarm.scm
   ./gaiag -l csp examples/Alarm.dzn
   ./gaiag -l csp -o alarm.csp examples/Alarm.dzn
   ./gaiag -l c++ examples/Alarm.dzn

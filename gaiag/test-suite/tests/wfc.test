@@ -27,7 +27,7 @@
   :use-module (gaiag ast))
 
 (define (dezyne->om o)
-  ((compose om:resolve ast->om dezyne->ast) o))
+  ((compose om:resolve ast->om dzn->ast) o))
 
 (define (wfc-error o message)
   ((@@ (gaiag wfc) wfc-error) (ast->om o) message))

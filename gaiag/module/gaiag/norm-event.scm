@@ -43,7 +43,7 @@
            ast->
            code-norm-event
            norm-event
-           table-norm-event           
+           table-norm-event
            ))
 
 (define (norm-event o)
@@ -202,7 +202,7 @@
     ((and ('compound s ...) (? om:declarative?))
      (retain-source-properties
       o
-      (make <compound> :elements (map (passdown-expression expression seen-on?) s))))    
+      (make <compound> :elements (map (passdown-expression expression seen-on?) s))))
     (('compound s ...)
      (retain-source-properties
       expression
