@@ -1,6 +1,6 @@
-##ifndef STRING_TO_ENUM_#(*scope* scope)_#name
-##define STRING_TO_ENUM_#(*scope* scope)_#name  1
-inline #(*scope* scope)::#name ::type to_#(*scope* scope)_#name(std::string s)
+##ifndef STRING_TO_ENUM_#(*scope* scope '_)_#name
+##define STRING_TO_ENUM_#(*scope* scope '_)_#name  1
+inline #(*scope* scope)::#name ::type to_#(*scope* scope '_)_#name(std::string s)
 {
   static std::map<std::string, #(*scope* scope)::#name ::type> m = {
         #(->string (map (lambda (field) (->string (list "{" "\"" name "_" field "\"," (*scope* scope) "::" name "::" field "},\n"))) fields)) };
@@ -10,4 +10,4 @@ inline #(*scope* scope)::#name ::type to_#(*scope* scope)_#name(std::string s)
   }
   return (#(*scope* scope)::#name ::type)-1;
 }
-##endif // STRING_TO_ENUM_#(*scope* scope)_#name
+##endif // STRING_TO_ENUM_#(*scope* scope '_)_#name

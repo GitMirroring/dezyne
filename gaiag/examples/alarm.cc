@@ -43,7 +43,7 @@ int main()
 {
   dezyne::runtime runtime;
   dezyne::locator locator;
-  dezyne::AlarmSystem alarmsystem(locator.set(runtime));
+  AlarmSystem alarmsystem(locator.set(runtime));
 
   alarmsystem.dzn_meta.name = "alarmsystem";
   alarmsystem.console.meta.requires = {"console",&alarmsystem};

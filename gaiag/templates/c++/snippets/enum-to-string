@@ -1,5 +1,5 @@
-##ifndef ENUM_TO_STRING_#(*scope* scope)_#name
-##define ENUM_TO_STRING_#(*scope* scope)_#name  1
+##ifndef ENUM_TO_STRING_#(*scope* scope '_)_#name
+##define ENUM_TO_STRING_#(*scope* scope '_)_#name  1
 inline const char* to_string(#(*scope* scope)::#name ::type v)
 {
   switch(v)
@@ -8,4 +8,4 @@ inline const char* to_string(#(*scope* scope)::#name ::type v)
   }
   return "";
 }
-##endif // ENUM_TO_STRING_#(*scope* scope)_#name
+##endif // ENUM_TO_STRING_#(*scope* scope '_)_#name

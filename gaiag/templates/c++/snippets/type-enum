@@ -1,1 +1,1 @@
-#(*scope* scope)#(if scope "::")#name ::type
+#((*ns-scope* model) scope-name) ::type

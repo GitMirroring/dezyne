@@ -1,20 +1,16 @@
-##ifndef DEZYNE_#.INTERFACE _HH
-##define DEZYNE_#.INTERFACE _HH
+##ifndef #.INTERFACE _HH
+##define #.INTERFACE _HH
 
 ##include "meta.hh"
 
 ##include <cassert>
 ##include <map>
 
-namespace dezyne
-{
+#(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
  #(string-if (pair? (om:enums)) #{
- namespace global
- {
 #})#
   (->string (map (declare-enum model) (om:enums)))
  #(string-if (pair? (om:enums)) #{
- }
 #})
 struct #.interface
 {
@@ -31,8 +27,8 @@ struct #.interface
           #{std::function<#return-type  (#formals)> #name;
 #}) (filter om:out? ((compose .elements .events) model))) } out;
 
-   port::meta meta;
-   inline #.interface(port::meta m) : meta(m) {}
+   dezyne::port::meta meta;
+   inline #.interface(dezyne::port::meta m) : meta(m) {}
 
    void check_bindings() const
    {
@@ -56,5 +52,5 @@ struct #.interface
    #(->string (map (enum-to-string model) (om:enums)))
    #(->string (map (string-to-enum model) (om:interface-enums model)))
    #(->string (map (string-to-enum model) (om:enums)))
-}
-##endif // DEZYNE_#.INTERFACE _HH
+#(map (lambda (x) (list "}\n")) (om:scope model))
+##endif // #.INTERFACE _HH

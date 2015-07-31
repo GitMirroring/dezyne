@@ -1,1 +1,1 @@
-reply_#(*scope* scope)_#name  = #expression;
+reply_#(*scope* scope '_)_#name  = #expression;

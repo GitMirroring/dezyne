@@ -1,5 +1,5 @@
-##ifndef DEZYNE_#.COMPONENT _HH
-##define DEZYNE_#.COMPONENT _HH
+##ifndef #.COMPONENT _HH
+##define #.COMPONENT _HH
 
 #(map (include-component #{
 ##include "#component .hh"
@@ -11,12 +11,11 @@
 
 #(if (pair? (injected-bindings model)) (list "#include \"locator.hh\"") (list "namespace dezyne\n {\nstruct locator;\n}"))
 
-namespace dezyne
-{
+#(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 struct #.model
 {
    dezyne::meta dzn_meta;
-#(map (lambda (binding) (list (.component (om:instance model (injected-instance-name binding))) " "
+#(map (lambda (binding) (list ((om:scope-name ) (.component (om:instance model (injected-instance-name binding)))) " "
                               (injected-instance-name binding) ";\n")) (injected-bindings model)) #
 (if (pair? (injected-bindings model)) (list "dezyne::locator dezyne_local_locator;\n")) #
 (map (init-instance #{
@@ -28,5 +27,5 @@ struct #.model
   void check_bindings() const;
   void dump_tree() const;
 };
-}
-##endif // DEZYNE_#.COMPONENT _HH
+#(map (lambda (x) (list "}\n")) (om:scope model))
+##endif // #.COMPONENT _HH
