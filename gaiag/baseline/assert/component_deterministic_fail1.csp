@@ -61,35 +61,35 @@ channel i24_ii_''': extensions(i20_I_''')
 
 
 
-CO_i117_C_(IIG,IG) = let
+CO_i85_C_(IIG,IG) = let
 
-i117_C_(i37_s) =
+i85_C_(i31_s) =
 transition_begin -> (
-((i37_s == i29_States_S0)) & (
+((i31_s == i29_States_S0)) & (
 i21_i?x:{i3_e} -> (
   let tmp' = i29_States_S1 within
-  let i37_s = tmp' within
+  let i31_s = tmp' within
     i20_I_'.return ->
   transition_end ->
-  i117_C_(i37_s)
+  i85_C_(i31_s)
 ))
 []
-(((i37_s == i29_States_S1) and true)) & (
+(((i31_s == i29_States_S1) and true)) & (
 i21_i?x:{i3_e} -> (
   i24_ii!i3_e -> i24_ii_'.return ->
     i20_I_'.return ->
   transition_end ->
-  i117_C_(i37_s)
+  i85_C_(i31_s)
 )
  []
   i21_i?x:{i3_e} -> (
     i20_I_'.return ->
   transition_end ->
-  i117_C_(i37_s)
+  i85_C_(i31_s)
 )))
 
-within i117_C_(i29_States_S0)
-                                                     
+within i85_C_(i29_States_S0)
+
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
 
@@ -151,7 +151,7 @@ within Idle(0)
 
 within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-AS_i117_C_(IIG) = let
+AS_i85_C_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -160,7 +160,7 @@ within sbisim(diamond(x))
 ClientCalls = {i21_i.i3_e}
 UsedModeling = {}
 TheEnd = {|i24_ii_'''|}
-within compress((CO_i117_C_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((CO_i85_C_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i21_i,i21_i_'|}|]
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
@@ -172,9 +172,9 @@ within compress((CO_i117_C_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reo
 assert COMPLETE'({i20_I.i3_e}) [F= IF_i20_I_(true,true)[[range_error<-illegal]] \ diff(Events,{i20_I.i3_e,illegal})
 assert IF_i20_I_(false,false) :[deadlock free]
 assert IF_i20_I_(true,false) :[livelock free]
-assert CO_i117_C_(true,true)[[i20_I_'.x<-i21_i_'.x|x<-extensions(i21_i_')]] :[deterministic]
-assert COMPLETE'({i21_i.i3_e}) [F= CO_i117_C_(true,true)[[i20_I_'.x'<-i21_i_'.x'|x'<-extensions(i21_i_')]][[range_error<-illegal]] \ diff(Events,{i21_i.i3_e,illegal})
-assert STOP [T= AS_i117_C_(false) \ diff(Events,{illegal,queue_full})
-assert AS_i117_C_(false) :[deadlock free]
-assert IF_i20_I_(true,false) [[i20_I.x<-i21_i.x|x<-extensions(i21_i)]][[i20_I_'.x<-i21_i_'.x|x<-extensions(i21_i_')]]\ {i20_I_'''.modeling} [F= AS_i117_C_(true) \ diff(Events,{|illegal,i21_i,i21_i_'|})
-assert AS_i117_C_(true) \ diff(Events,{|illegal,i21_i,i21_i_'|}) :[livelock free]
+assert CO_i85_C_(true,true)[[i20_I_'.x<-i21_i_'.x|x<-extensions(i21_i_')]] :[deterministic]
+assert COMPLETE'({i21_i.i3_e}) [F= CO_i85_C_(true,true)[[i20_I_'.x'<-i21_i_'.x'|x'<-extensions(i21_i_')]][[range_error<-illegal]] \ diff(Events,{i21_i.i3_e,illegal})
+assert STOP [T= AS_i85_C_(false) \ diff(Events,{illegal,queue_full})
+assert AS_i85_C_(false) :[deadlock free]
+assert IF_i20_I_(true,false) [[i20_I.x<-i21_i.x|x<-extensions(i21_i)]][[i20_I_'.x<-i21_i_'.x|x<-extensions(i21_i_')]]\ {i20_I_'''.modeling} [F= AS_i85_C_(true) \ diff(Events,{|illegal,i21_i,i21_i_'|})
+assert AS_i85_C_(true) \ diff(Events,{|illegal,i21_i,i21_i_'|}) :[livelock free]

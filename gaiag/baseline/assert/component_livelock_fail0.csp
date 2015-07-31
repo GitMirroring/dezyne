@@ -49,27 +49,27 @@ within compress((if CS
 -- end of both.csp.scm
 -- interface.csp.scm
 
-channel i47_II: {inevitable,the_end'}
-channel i47_II_'': {i21_e}
-channel i47_II_': {return}
-channel i47_II_in',i47_II_out': {i47_II_'.return}
-channel i47_II_''': {modeling}
+channel i40_II: {inevitable,the_end'}
+channel i40_II_'': {i21_e}
+channel i40_II_': {return}
+channel i40_II_in',i40_II_out': {i40_II_'.return}
+channel i40_II_''': {modeling}
 
-IF_i47_II_(IG,CS) = let
+IF_i40_II_(IG,CS) = let
 
-i47_II_() =
+i40_II_() =
 ((true) & (
-i47_II?x:{inevitable} ->(
-  i47_II_''!i21_e ->
-    i47_II_'''.modeling ->
-  i47_II.the_end' ->
-  i47_II_()
+i40_II?x:{inevitable} ->(
+  i40_II_''!i21_e ->
+    i40_II_'''.modeling ->
+  i40_II.the_end' ->
+  i40_II_()
 ))
 []
-CS & i47_II?x:{inevitable} -> illegal -> STOP
+CS & i40_II?x:{inevitable} -> illegal -> STOP
 )
 
-REORDER' = i47_II?x' -> (i47_II_in'?y' -> i47_II.the_end' -> i47_II_out'!y' -> REORDER' [] i47_II.the_end' -> REORDER')
+REORDER' = i40_II?x' -> (i40_II_in'?y' -> i40_II.the_end' -> i40_II_out'!y' -> REORDER' [] i40_II.the_end' -> REORDER')
 
 compress(x) = let
 transparent sbisim
@@ -77,55 +77,55 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                then i47_II_()
-                else i47_II_() )
-               [[x<-i47_II_in'.x|x<-extensions(i47_II_in')]] [|{|i47_II,i47_II_in',i47_II.the_end'|}|] REORDER' [[i47_II_out'.x<-x|x<-extensions(i47_II_out')]] \ {|i47_II_in',i47_II.the_end'|})
+                then i40_II_()
+                else i40_II_() )
+               [[x<-i40_II_in'.x|x<-extensions(i40_II_in')]] [|{|i40_II,i40_II_in',i40_II.the_end'|}|] REORDER' [[i40_II_out'.x<-x|x<-extensions(i40_II_out')]] \ {|i40_II_in',i40_II.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
 -- end of both.csp.scm
 -- component.csp.scm
 
-channel i48_i: extensions(i20_I)
-channel i51_ii: extensions(i47_II)
+channel i41_i: extensions(i20_I)
+channel i44_ii: extensions(i40_II)
 
-channel i48_i_': extensions(i20_I_')
-channel i51_ii_': extensions(i47_II_')
+channel i41_i_': extensions(i20_I_')
+channel i44_ii_': extensions(i40_II_')
 
-channel i51_ii_'': extensions(i47_II_'')
+channel i44_ii_'': extensions(i40_II_'')
 
-channel i48_i_''': extensions(i20_I_''')
-channel i51_ii_''': extensions(i47_II_''')
+channel i41_i_''': extensions(i20_I_''')
+channel i44_ii_''': extensions(i40_II_''')
 
 
 
-CO_i78_C_(IIG,IG) = let
+CO_i71_C_(IIG,IG) = let
 
-i78_C_() =
+i71_C_() =
 transition_begin -> (
 (true) & (
-i48_i?x:{i3_e} -> (
+i41_i?x:{i3_e} -> (
     i20_I_'.return ->
   transition_end ->
-  i78_C_()
+  i71_C_()
 )
  []
-  i51_ii_''?x:{i21_e} -> (
+  i44_ii_''?x:{i21_e} -> (
     transition_end ->
-  i78_C_()
+  i71_C_()
 )))
 
-within i78_C_()
-                                                     
+within i71_C_()
+
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {i51_ii_''.i21_e,extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {i44_ii_''.i21_e,extensions_over_empty_channels_is_undefined}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
 channel reorder_in  : {i20_I_'.return}
-channel reorder_out : {i48_i_'.return}
+channel reorder_out : {i41_i_'.return}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -149,7 +149,7 @@ within
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
        []
-       reorder_in?i20_I_'.x' -> reorder_out!i48_i_'.x' -> R'(A')
+       reorder_in?i20_I_'.x' -> reorder_out!i41_i_'.x' -> R'(A')
 
 S'    = let
 
@@ -164,7 +164,7 @@ FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
             []
             (r' == <> & reorder_in?i20_I_'.x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i48_i_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i41_i_'.head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -178,33 +178,33 @@ within Idle(0)
 
 within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-AS_i78_C_(IIG) = let
+AS_i71_C_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 
-ClientCalls = {i48_i.i3_e}
-UsedModeling = {i51_ii.inevitable}
-TheEnd = {|i51_ii_'''|}
-within compress((CO_i78_C_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-                 [|{|OUT',transition_begin,transition_end,reorder_in,i48_i,i48_i_'|}|]
+ClientCalls = {i41_i.i3_e}
+UsedModeling = {i44_ii.inevitable}
+TheEnd = {|i44_ii_'''|}
+within compress((CO_i71_C_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+                 [|{|OUT',transition_begin,transition_end,reorder_in,i41_i,i41_i_'|}|]
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
-                [|{|IN',i51_ii,i51_ii_',i51_ii_'''|}|]
-                (IF_i47_II_(true,false) [[i47_II.x<-i51_ii.x|x<-extensions(i51_ii)]][[i47_II_'.x<-i51_ii_'.x|x<-extensions(i51_ii_')]][[i47_II_''.x<-i51_ii_''.x|x<-extensions(i51_ii_'')]][[i47_II_'''.x<-i51_ii_'''.x|x<-extensions(i51_ii_''')]]
+                [|{|IN',i44_ii,i44_ii_',i44_ii_'''|}|]
+                (IF_i40_II_(true,false) [[i40_II.x<-i44_ii.x|x<-extensions(i44_ii)]][[i40_II_'.x<-i44_ii_'.x|x<-extensions(i44_ii_')]][[i40_II_''.x<-i44_ii_''.x|x<-extensions(i44_ii_'')]][[i40_II_'''.x<-i44_ii_'''.x|x<-extensions(i44_ii_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
 assert COMPLETE'({i20_I.i3_e}) [F= IF_i20_I_(true,true)[[range_error<-illegal]] \ diff(Events,{i20_I.i3_e,illegal})
 assert IF_i20_I_(false,false) :[deadlock free]
 assert IF_i20_I_(true,false) :[livelock free]
-assert COMPLETE'({i47_II.inevitable}) [F= IF_i47_II_(true,true)[[range_error<-illegal]] \ diff(Events,{i47_II.inevitable,illegal})
-assert IF_i47_II_(false,false) :[deadlock free]
-assert IF_i47_II_(true,false) :[livelock free]
-assert CO_i78_C_(true,true)[[i20_I_'.x<-i48_i_'.x|x<-extensions(i48_i_')]] :[deterministic]
-assert COMPLETE'({i48_i.i3_e,i51_ii_''.i21_e}) [F= CO_i78_C_(true,true)[[i20_I_'.x'<-i48_i_'.x'|x'<-extensions(i48_i_')]][[range_error<-illegal]] \ diff(Events,{i48_i.i3_e,i51_ii_''.i21_e,illegal})
-assert STOP [T= AS_i78_C_(false) \ diff(Events,{illegal,queue_full})
-assert AS_i78_C_(false) :[deadlock free]
-assert IF_i20_I_(true,false) [[i20_I.x<-i48_i.x|x<-extensions(i48_i)]][[i20_I_'.x<-i48_i_'.x|x<-extensions(i48_i_')]]\ {i20_I_'''.modeling} [F= AS_i78_C_(true) \ diff(Events,{|illegal,i48_i,i48_i_'|})
-assert AS_i78_C_(true) \ diff(Events,{|i51_ii.inevitable,illegal,i48_i,i48_i_'|}) :[livelock free]
+assert COMPLETE'({i40_II.inevitable}) [F= IF_i40_II_(true,true)[[range_error<-illegal]] \ diff(Events,{i40_II.inevitable,illegal})
+assert IF_i40_II_(false,false) :[deadlock free]
+assert IF_i40_II_(true,false) :[livelock free]
+assert CO_i71_C_(true,true)[[i20_I_'.x<-i41_i_'.x|x<-extensions(i41_i_')]] :[deterministic]
+assert COMPLETE'({i41_i.i3_e,i44_ii_''.i21_e}) [F= CO_i71_C_(true,true)[[i20_I_'.x'<-i41_i_'.x'|x'<-extensions(i41_i_')]][[range_error<-illegal]] \ diff(Events,{i41_i.i3_e,i44_ii_''.i21_e,illegal})
+assert STOP [T= AS_i71_C_(false) \ diff(Events,{illegal,queue_full})
+assert AS_i71_C_(false) :[deadlock free]
+assert IF_i20_I_(true,false) [[i20_I.x<-i41_i.x|x<-extensions(i41_i)]][[i20_I_'.x<-i41_i_'.x|x<-extensions(i41_i_')]]\ {i20_I_'''.modeling} [F= AS_i71_C_(true) \ diff(Events,{|illegal,i41_i,i41_i_'|})
+assert AS_i71_C_(true) \ diff(Events,{|i44_ii.inevitable,illegal,i41_i,i41_i_'|}) :[livelock free]

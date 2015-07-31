@@ -57,11 +57,11 @@ channel i14_i_''': extensions(i13_I_''')
 
 
 
-CO_i84_Functions_(IIG,IG) = let
+CO_i60_Functions_(IIG,IG) = let
 i21_g(P')(i18_counter) = 
 if not ((0 <= i18_counter and i18_counter <= 2)) then range_error -> STOP else
     P'()
-i60_f(P')(i24_counter) = 
+i43_f(P')(i24_counter) = 
 if not ((0 <= i24_counter and i24_counter <= 2)) then range_error -> STOP else
     (if (i24_counter < 2) then 
       i21_g(P')((i24_counter + 1)) -- tail recursion
@@ -70,19 +70,19 @@ if not ((0 <= i24_counter and i24_counter <= 2)) then range_error -> STOP else
       P'()
 )
 
-i84_Functions_() =
+i60_Functions_() =
 transition_begin -> (
 i14_i?x:{i3_e} -> (
   let Cont_2'() =
       i13_I_'.return ->
     transition_end ->
-  i84_Functions_()
+  i60_Functions_()
   within
-  i60_f(Cont_2')(0)
+  i43_f(Cont_2')(0)
 ))
 
-within i84_Functions_()
-                                                     
+within i60_Functions_()
+
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
 
@@ -144,7 +144,7 @@ within Idle(0)
 
 within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-AS_i84_Functions_(IIG) = let
+AS_i60_Functions_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
@@ -153,7 +153,7 @@ within sbisim(diamond(x))
 ClientCalls = {i14_i.i3_e}
 UsedModeling = {}
 TheEnd = {||}
-within compress((CO_i84_Functions_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+within compress((CO_i60_Functions_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i14_i,i14_i_'|}|]
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
@@ -165,9 +165,9 @@ within compress((CO_i84_Functions_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [
 assert COMPLETE'({i13_I.i3_e}) [F= IF_i13_I_(true,true)[[range_error<-illegal]] \ diff(Events,{i13_I.i3_e,illegal})
 assert IF_i13_I_(false,false) :[deadlock free]
 assert IF_i13_I_(true,false) :[livelock free]
-assert CO_i84_Functions_(true,true)[[i13_I_'.x<-i14_i_'.x|x<-extensions(i14_i_')]] :[deterministic]
-assert COMPLETE'({i14_i.i3_e}) [F= CO_i84_Functions_(true,true)[[i13_I_'.x'<-i14_i_'.x'|x'<-extensions(i14_i_')]][[range_error<-illegal]] \ diff(Events,{i14_i.i3_e,illegal})
-assert STOP [T= AS_i84_Functions_(false) \ diff(Events,{illegal,queue_full})
-assert AS_i84_Functions_(false) :[deadlock free]
-assert IF_i13_I_(true,false) [[i13_I.x<-i14_i.x|x<-extensions(i14_i)]][[i13_I_'.x<-i14_i_'.x|x<-extensions(i14_i_')]]\ {i13_I_'''.modeling} [F= AS_i84_Functions_(true) \ diff(Events,{|illegal,i14_i,i14_i_'|})
-assert AS_i84_Functions_(true) \ diff(Events,{|illegal,i14_i,i14_i_'|}) :[livelock free]
+assert CO_i60_Functions_(true,true)[[i13_I_'.x<-i14_i_'.x|x<-extensions(i14_i_')]] :[deterministic]
+assert COMPLETE'({i14_i.i3_e}) [F= CO_i60_Functions_(true,true)[[i13_I_'.x'<-i14_i_'.x'|x'<-extensions(i14_i_')]][[range_error<-illegal]] \ diff(Events,{i14_i.i3_e,illegal})
+assert STOP [T= AS_i60_Functions_(false) \ diff(Events,{illegal,queue_full})
+assert AS_i60_Functions_(false) :[deadlock free]
+assert IF_i13_I_(true,false) [[i13_I.x<-i14_i.x|x<-extensions(i14_i)]][[i13_I_'.x<-i14_i_'.x|x<-extensions(i14_i_')]]\ {i13_I_'''.modeling} [F= AS_i60_Functions_(true) \ diff(Events,{|illegal,i14_i,i14_i_'|})
+assert AS_i60_Functions_(true) \ diff(Events,{|illegal,i14_i,i14_i_'|}) :[livelock free]

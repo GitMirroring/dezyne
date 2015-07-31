@@ -115,7 +115,7 @@ i44_i?x:{i27_e} -> (
 )))
 
 within i66_DummyC_()
-                                                     
+
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
 
