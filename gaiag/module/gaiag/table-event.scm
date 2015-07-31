@@ -42,7 +42,7 @@
   :use-module (gaiag norm-state)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
-  :use-module (gaiag pretty)
+  :use-module (gaiag dzn)
   :use-module (gaiag table-state)
 
   :export (ast-> table-event))
@@ -58,7 +58,7 @@
 
 (define (ast-> ast)
   ((compose
-    pretty-table
+    dzn-table
     (mangle-table json-table-event)
     (table table-event)
     ast:resolve
