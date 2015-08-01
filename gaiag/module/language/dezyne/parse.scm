@@ -78,6 +78,15 @@
     (models model) : (append $1 (list $2))
     (models namespace name lbrace models rbrace) : (append $1 (map (add-scope $3) $5)))
 
+   (name
+    (dot Identifier) : (note-location `(name *global* ,$2) @1)
+    (name-pair) : $1
+    (name dot Identifier) : (append $1 `(,$3)))
+
+   (name-pair
+    (Identifier) : (note-location `(name ,$1) @1)
+    (Identifier dot Identifier) : (note-location `(name ,$1 ,$3) @1))
+
    (model
     (import-spec) : $1
     (type) : $1
@@ -87,6 +96,11 @@
    (import-spec
     (import Identifier semicolon) : `(,$1 ,$2)
     (import Identifier dot Identifier semicolon) : `(,$1 ,(symbol-append $2 '. $4)))
+
+   (type
+    (enum-spec) : $1
+    (extern-spec) : $1
+    (subint-spec): $1)
 
    (interface-spec
     (interface name lbrace events/types rbrace)
@@ -113,19 +127,19 @@
     (instances/binds instance/bind) : (append $1 (list $2)))
 
    (instance
-    (Identifier Identifier semicolon) : `(instance ,$2 ,$1))
+    (name Identifier semicolon) : `(instance ,$2 ,$1))
 
    (instance/bind
     (instance) : $1
     (bind) : $1)
 
+   (bind
+    (binding <=> binding semicolon) : `(bind ,$1 ,$3))
+
    (binding
     (*) : `(binding #f *)
     (Identifier) : `(binding #f ,$1)
     (Identifier dot Identifier) : `(binding ,$1 ,$3))
-
-   (bind
-    (binding <=> binding semicolon) : `(bind ,$1 ,$3))
 
    (events/types
     () : '()
@@ -164,11 +178,6 @@
    (optional-types
     () : '(types)
     (optional-types type) : (append $1 (list $2)))
-
-   (type
-    (enum-spec) : $1
-    (extern-spec) : $1
-    (subint-spec): $1)
 
    (variable-type
     (bool) : '(type bool)
@@ -300,15 +309,6 @@
 
    (compound-statement
     (lbrace statements rbrace) : (note-location $2 @1))
-
-   (name
-    (dot Identifier) : (note-location `(name *global* ,$2) @1)
-    (name-pair) : $1
-    (name dot Identifier) : (append $1 `(,$3)))
-
-   (name-pair
-    (Identifier) : (note-location `(name ,$1) @1)
-    (Identifier dot Identifier) : (note-location `(name ,$1 ,$3) @1))
 
    (on-event-statement
     (on trigger-spec colon statement) : (note-location `(,$1 ,$2 ,$4) @1))
