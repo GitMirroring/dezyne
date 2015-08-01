@@ -82,12 +82,21 @@ endif
 #endif
 #endif
 
+NAMESPACE_P:=$(shell grep -hEo '\<namespace\>' $(LOCAL_DZN_FILES))
 ifneq ($(strip $(LOCAL_DZN_FILES)),)
 ifeq ($(strip $(LOCAL_INTERFACES)),)
-LOCAL_INTERFACES:=$(shell grep -hEo '^interface [_a-zA-Z0-9]+' $(LOCAL_DZN_FILES) | sed 's/^interface //')
+ifeq ($(NAMESPACE_P),)
+LOCAL_INTERFACES:=$(shell grep -hEo '^interface [._a-zA-Z0-9]+' $(LOCAL_DZN_FILES) | sed -e 's/^interface //' -e 's/[.]/_/g')
+else
+LOCAL_INTERFACES:=$(shell $(DZN) parse --interfaces $(LOCAL_DZN_FILES))
+endif
 endif
 ifeq ($(strip $(LOCAL_COMPONENTS)),)
-LOCAL_COMPONENTS:=$(shell grep -hEo '^component [_a-zA-Z0-9]+' $(LOCAL_DZN_FILES) | sed 's/^component //')
+ifeq ($(NAMESPACE_P),)
+LOCAL_COMPONENTS:=$(shell grep -hEo '^component [._a-zA-Z0-9]+' $(LOCAL_DZN_FILES) | sed -e 's/^component //' -e 's/[.]/_/g')
+else
+LOCAL_COMPONENTS:=$(shell $(DZN) parse --components $(LOCAL_DZN_FILES))
+endif
 endif
 endif
 LOCAL_MODELS:=$(LOCAL_INTERFACES) $(LOCAL_COMPONENTS)

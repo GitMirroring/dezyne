@@ -1,0 +1,61 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+namespace inner {
+  namespace foo {
+    interface I {
+      enum Bool {f,t};
+      in Bool e();
+      out void a();
+      behaviour {
+        on e: {a;reply(Bool.t);}
+      }
+    }
+  }
+  component space {
+    provides foo.I inner;
+    provides .foo.I foo;
+    behaviour {
+      foo.I.Bool inner_state = foo.I.Bool.t;
+      .foo.I.Bool foo_state = .foo.I.Bool.T;
+      on inner.e(): {inner.a();reply (inner_state);}
+      on foo.e(): {foo.a();reply (foo_state);}
+    }
+  }
+}
+
+interface foo.I {
+  enum Bool {F,T};
+  in Bool e();
+  out void a();
+  behaviour {
+    on e: {a;reply (Bool.T);}
+  }
+}
+
+component bar.c {
+  provides foo.I i;
+  behaviour {
+    foo.I.Bool state = foo.I.Bool.T;
+    on i.e(): {i.a();reply (state);}
+  }
+}

@@ -27,7 +27,10 @@
 # Comp, Reply: main generates different reply values per language
 # dollar_escape: gaiag parse error due to incorrect escaping of dollar expression $sss;xxx$ (zoho6839)
 # FDR void reply instead of valued reply (component ValuedReturn.dzn!ConstrainedAxis) (zoho6834)
-# unguarded: shadowing: c++: x.in.move () instead of this->x.in.move()
+# unguarded: shadowing: c++: x.in.move () instead of this->x.in.move() <--FIXED
+# name_space: OM parser prints empty (root)
+# inner_space: does not parse with OM-parser
+# simple_space: does not generate namespaces in SCM output
 BROKEN:=\
  regression/iincomplete.dzn\
  regression/externaltypesbroken.dzn\
@@ -37,6 +40,9 @@ BROKEN:=\
  regression/unguarded.dzn\
  regression/hide.dzn\
  regression/BrokenComp.dzn\
+ regression/inner_space.dzn\
+ regression/name_space.dzn\
+ regression/simple_space.dzn\
 
 # error: Reply5: variable s is already defined in method i_done()
 BROKEN_cs:=\
