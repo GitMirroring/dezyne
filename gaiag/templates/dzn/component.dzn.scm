@@ -20,15 +20,13 @@
 ;;; 
 ;;; Code:
 
-component #.model  {
-  #(map (init-port #{
-#direction  #(string-if injected? "injected ")#interface  #name ;
-#}) (om:ports model))
-#(string-if (.behaviour model) #{
-   behaviour {
-   #(map (->dzn model) ((compose .elements .types .behaviour) model))#
-   (map (->dzn model) (om:variables model))
-   #(map (define-function model) (om:functions model)) #
-   (statement->dzn model) }
+component #.scope.model  {
+  #(map (->dzn model) (om:ports model))
+  #(string-if (.behaviour model) #{
+  behaviour {
+  #(map (->dzn model) ((compose .elements .types .behaviour) model))#
+  (map (->dzn model) (om:variables model))
+  #(map (define-function model) (om:functions model)) #
+  (statement->dzn model) }
 #})
 }

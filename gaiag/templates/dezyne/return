@@ -1,1 +1,0 @@
-return#(if (and (defined? 'expression) expression) (list " " expression));

@@ -106,24 +106,24 @@
           (module-define! module key value)
           (loop (cdr pairs))))))
 
-(define* (animate string :optional (o #f))
-  (with-output-to-string (lambda () (animate-string string o))))
+(define* (animate string :optional (o #f) (p #f))
+  (with-output-to-string (lambda () (animate-string string o p))))
 
-(define* (snippet file-name :optional (o #f))
+(define* (snippet file-name :optional (o #f) (p #f))
   (parameterize ((template-dir (append (template-dir) '(snippets))))
-    (with-output-to-string (lambda () (animate-file file-name o)))))
+    (with-output-to-string (lambda () (animate-file file-name o p)))))
 
-(define* (animate-string string :optional (o #f))
-  (with-input-from-string string (lambda () (animate-input (get-module o)))))
+(define* (animate-string string :optional (o #f) (p #f))
+  (with-input-from-string string (lambda () (animate-input (get-module o p)))))
 
-(define* (animate-file file-name :optional (o #f))
+(define* (animate-file file-name :optional (o #f) (p #f))
   (let ((file-name (components->file-name (template-file file-name))))
-    (with-input-from-file file-name (lambda () (animate-input (get-module o))))))
+    (with-input-from-file file-name (lambda () (animate-input (get-module o p))))))
 
-(define* (get-module o)
+(define* (get-module o :optional (p #f))
   (match o
     ((? module?) o)
-    ((? list?) (populate-module (current-module) o))
+    ((? list?) (populate-module (current-module) o p))
     (_ (current-module))))
 
 (define (animate-input module)

@@ -100,6 +100,7 @@
            om:interface-types
            om:public-types
            om:interface
+           om:interfaces
            om:reply-enums
            om:instance
            om:model-with-behaviour
@@ -119,10 +120,18 @@
   (match o
     (('name name ...) ((->symbol-join infix) name))
     ((type (and ('name name ...) (get! name)) t ...) ((om:scope-name infix) (name)))
-    ((type id (and ('name name ...) (get! name)) t ...) ((om:scope-name infix) (name)))))
+    ((type id (and ('name name ...) (get! name)) t ...) ((om:scope-name infix) (name)))
+    ((type 'bool) 'bool)
+    ((type 'void) 'void)))
 
-(define (om:scope+name o) ;; FIXME: om:scope+name
-  ((compose cdr .name) o))
+(define (om:scope+name o)
+  (match o
+    (('name name ...) name)
+    ((type ('name name ...) t ...) name)
+    ((type id ('name name ...) t ...) name)
+    ((type 'bool) 'bool)
+    ((type 'void) 'void)
+    ((type (and (or 'bool 'void))) '())))
 
 (define (om:name o)
   (match o
@@ -157,6 +166,7 @@
 (define ((om:type model) o)
   (let ((r ((om:type- model) o)))
     ;;(stderr "\nom:type[~a]: ~a ==> ~a\n" (.name model) o r)
+    ;;(stderr "TYPES[~a]: ~a\n" (.name model) (om:types model))
     r))
 
 (define ((om:type- model) o)
@@ -251,6 +261,7 @@
      (('behaviour b types _ ...) (.elements types))
      (('interface name types events ('behaviour b btypes _ ...)) (append (.elements btypes) (.elements types)))
      (('component name ports ('behaviour b btypes _ ...))
+      ;;(stderr "WOET: ~a\n" (om:interface-types model))
       (append (.elements btypes) (om:interface-types model)))
      (('component name ports) (om:interface-types model))
      (('component name ports #f) (om:interface-types model))
@@ -266,6 +277,7 @@
     ((? (is? <model>)) (append-map om:interface-types (om:ports o)))))
 
 (define (om:public-types o)
+  ;;(stderr "PUBLIC[~a]: ~a\n" (.name o) ((compose .elements .types) o))
   (match o
     ((? (is? <interface>)) ((compose .elements .types) o))
     (_ '())))
@@ -466,6 +478,7 @@
     (($ <port>) (om:import (.type o)))
     (($ <interface>) o)
     ((? (is? <model>)) (om:interface (om:port o)))
+    (('name name ...) (cached-model o))
     ((h t ...) (find (is? <interface>) o))))
 
 ;; compare
@@ -545,6 +558,9 @@
 
 ;;;; reading/caching
 (define *ast-alist* '())
+
+(define (om:interfaces)
+  (filter (is? <interface>) *ast-alist*))
 
 (define (cache-model name o)
   (set! *ast-alist* (assoc-set! *ast-alist* name o))

@@ -1,4 +1,0 @@
-component #name 
-{
-  #ports #
-(if (defined? 'behaviour) (list "\n  " behaviour "\n"))}

@@ -302,6 +302,7 @@
     (lbrace statements rbrace) : (note-location $2 @1))
 
    (name
+    (dot Identifier) : (note-location `(name *global* ,$2) @1)
     (name-pair) : $1
     (name dot Identifier) : (append $1 `(,$3)))
 

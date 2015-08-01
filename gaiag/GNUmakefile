@@ -834,8 +834,8 @@ out/var:
 	g++ --std=c++11 -o out/test out/*cc
 	echo i.e | out/test
 
-out/namespace:
+namespace:
 	rm -rf out && mkdir out && cd out && ln -s ../examples . && ln -s ../runtime/c++/* .
-	(cd out && ../gaiag -l c++ -m namespace ../examples/namespace.dzn)
+	(cd out && ../gaiag -l c++ -m inner_space ../examples/inner_space.dzn)
 	g++ --std=c++11 -o out/test out/*cc
 	echo i.e | out/test

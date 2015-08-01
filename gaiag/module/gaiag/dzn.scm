@@ -127,6 +127,13 @@
     (($ <extern>) ((declare-extern model) o))
     (($ <int>) ((declare-int model) o))
 
+    (($ <port> name type direction injected)
+     ((animate-snippet 'declare-port `((direction ,direction)
+                                       (name ,name)
+                                       (interface ,type)
+                                       (injected? ,injected)))
+      o))
+
     (($ <type> ('name scope ... name))
      ((->join ".") (list ((*scope* model) scope) name)))
 
@@ -190,8 +197,7 @@
   (map (->dzn model) ((compose .elements .statement .behaviour) model)))
 
 (define* ((*scope* model :optional (infix (string->symbol "."))) o)
-  ;;(stderr "*scope*: ~a\n" o)
-  (if (eq? o '*global*) null-symbol
+  (if (and (>1 (length o)) (not (eq? (cadr (.name model)) (car o)))) ((->symbol-join infix) (cons null-symbol o))
       ((->symbol-join infix) (om:drop-scope (.name model) o))))
 
 (define* ((animate-pairs pairs string) :optional parameter)
@@ -222,7 +228,8 @@
                     `((direction ,.direction)
                       (formals ,(compose (->dzn model) .formals .signature))
                       (name ,.name)
-                      (type ,(compose .name .type .signature))))
+                      (type ,(compose om:name .type .signature))
+                      (scope.type ,(compose (om:scope-name '.) .type .signature))))
    event))
 
 (define ((define-function model) function)
@@ -260,7 +267,7 @@
                                       (resolve-module '(gaiag misc))))))
     (module-define! module 'model o)
     (module-define! module '.model (and=> ((is? <model>) o) om:name))
-    (module-define! module '.scope_model (and=> ((is? <model>) o) om:scope-name))
+    (module-define! module '.scope.model (and=> ((is? <model>) o) (om:scope-name '.)))
     module))
 
 (define* ((ast->dzn :optional (model #f)) o)

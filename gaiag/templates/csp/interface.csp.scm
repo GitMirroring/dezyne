@@ -46,9 +46,9 @@ within sbisim(diamond(x))
 
 within compress((if CS
                 then #
-.scope_model _#((compose .name .behaviour) model) (#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import .scope_model )))))
+.scope_model _#((compose .name .behaviour) model) (#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import (.name model))))))
                 else #
-.scope_model _#((compose .name .behaviour) model) (#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import .scope_model ))))) #(optional-chaos model))
+.scope_model _#((compose .name .behaviour) model) (#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import (.name model)))))) #(optional-chaos model))
                [[x<-#.scope_model _in'.x|x<-extensions(#.scope_model _in')]] [|{|#.scope_model ,#.scope_model _in',#.scope_model .the_end'|}|] REORDER' [[#.scope_model _out'.x<-x|x<-extensions(#.scope_model _out')]] \ {|#.scope_model _in',#.scope_model .the_end'|})
 
 -- end of interface.csp.scm

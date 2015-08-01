@@ -20,7 +20,7 @@
 ;;; 
 ;;; Code:
 
-interface #.model  {
+interface #.scope.model  {
   #(map (->dzn model) (om:interface-types model))#
   (map (declare-event model) (om:events model))
    behaviour {

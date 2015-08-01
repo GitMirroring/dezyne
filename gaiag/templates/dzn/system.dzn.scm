@@ -20,13 +20,11 @@
 ;;; 
 ;;; Code:
 
-component #.model  {
-  #(map (init-port #{
-#direction  #(string-if injected? "injected ")#interface  #name ;
-#}) (om:ports model))
-   system {
-#(map (init-instance #{
+component #.scope.model  {
+  #(map (->dzn model) (om:ports model))
+  system {
+  #(map (init-instance #{
   #component  #name;
 #}) ((compose .elements .instances) model))
-#(map (init-binding model) ((compose .elements .bindings) model))  }
+  #(map (init-binding model) ((compose .elements .bindings) model))  }
 }

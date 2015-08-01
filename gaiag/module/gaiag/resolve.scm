@@ -45,7 +45,7 @@
 (define (ast:resolve o)
   (match o
     (('root models ...) (resolve-root o))
-    ((or ($ <interface>) ($ <component>)) ((resolve-model o '()) o))
+    ((? (is? <model>)) (resolve-model o))
     (_  o)))
 
 (define (resolve-error o symbol message)
@@ -107,15 +107,45 @@
 (define (resolve-top-model o)
   (match o
     ((? (is? <model>))
-     ((compose om:register-model (resolve-model o '())) o))
-    (_ ((resolve-model o '()) o))))
+     ((compose om:register-model resolve-model) o))
+    (_ ((resolve o '()) o))))
 
-(define ((resolve-model model locals) o)
+(define (resolve-model o)
+  (match o
+    (($ <interface>)
+     ((compose om:register-model (resolve o '())) o))
+    (($ <component>)
+     (rsp o ((compose om:register-model (resolve #f '()) (resolve-ports o)) o)))
+    (_ ((resolve o '()) o))))
+
+(define ((resolve-ports model) o)
+
+  (define (interface? type)
+    (let loop ((scope (om:scope+name model)))
+      (if (null? scope) (om:interface type)
+          (or (om:interface ((om:ensure-scope scope) type))
+              (loop (drop-right scope 1))))))
+
+  (match o
+    (($ <component> name ports behaviour)
+     (make <component>
+       :name name
+       :ports ((resolve-ports model) ports)
+       :behaviour behaviour))
+    (('ports ports ...)
+     (make <ports> :elements (map (resolve-ports model) ports)))
+    (($ <port> name type dir injected)
+     (let ((interface (interface? type)))
+       (if (not interface) o;; FIXME import...
+           (make <port> :name name :type (.name interface) :direction dir :injected injected))))
+    (_ o)))
+
+(define ((resolve model locals) o)
   (match o
     (($ <system>) o)
     (($ <*type*>) o)
     (($ <import>) o)
-    (_ (retain-source-properties o (resolve-model- model o locals)))))
+    (_ (retain-source-properties o (resolve- model o locals)))))
 
 (define (resolve:import name)
   (om:import name resolve:om))
@@ -133,19 +163,23 @@
     (('name name ...) ((->symbol-join '.) name))
     (_ o)))
 
-(define ((om:ensure-scope scope) name)
-  (if (or (member name '(bool void)) (pair? (.scope name))) name
-      (append scope (.elements name))))
+(define ((om:ensure-scope scope) name) ;; FIXME: step-wise search
+  (cond ((member name '(bool void)) name)
+        ((and (>2 (length name)) (eq? ((compose car .scope) name) '*global*))
+         (cons 'name ((compose cddr) name)))
+        (else
+         (cons 'name (append scope (drop-prefix scope (.elements name)))))))
 
-(define (resolve-model- model o locals)
+(define (resolve- model o locals)
 
-  (define (enum? identifier) (om:enum model identifier))
-  (define (extern? type) (om:extern model type))
+  (define (enum? identifier) (and=> (type? identifier) (is? <enum>)))
+  (define (extern? identifier) (and=> (type? identifier) (is? <extern>)))
+  (define (int? identifier) (and=> (type? identifier) (is? <int>)))
+
   (define (event? identifier)
     (and (is-a? model <interface>)
          (not (var? identifier)) (om:event model identifier)))
   (define (function? identifier) (om:function model identifier))
-  (define (int? identifier) (om:integer model identifier))
   (define (member? identifier) (om:variable model identifier))
   (define (port? name) (and (is-a? model <component>) (om:port model name)))
 
@@ -165,16 +199,16 @@
     (lambda (field)
       (and-let* ((variable (var? identifier))
                  (type (.type variable))
-                 (enum (or (om:enum model (ensure-scope type))
-                           (om:enum model type))))
+                 (enum (type? type)))
                 (member field (.elements (.fields enum))))))
 
-  (define (ensure-scope type)
-    (make <type> :name ((om:ensure-scope (.name model)) (.name type))))
-
   (define (type? type)
-    (or ((om:type model) (ensure-scope type))
-        ((om:type model) type)))
+    (let ((name (if (is-a? type <name>) type
+                    (.name type))))
+     (let loop ((scope (om:scope+name model)))
+       (if (null? scope) ((om:type model) type)
+           (or ((om:type model) ((om:ensure-scope scope) name))
+               (loop (drop-right scope 1)))))))
 
   (define (fake:type model o)
     (match o
@@ -184,8 +218,7 @@
       (($ <data>) (make <type> :name 'data))
       ((? number?) (make <type> :name 'int))
       (('name type field)
-       (and-let* ((enum (or (om:enum model (ensure-scope (make <type> :name (make <name> :elements (list type)))))
-                            (om:enum model (make <type> :name (make <name> :elements (list type))))))
+       (and-let* ((enum (or (type? (make <type> :name (make <name> :elements (list type))))))
                   ((member field ((compose .elements .fields) enum))))
                  enum))
       (('name scope ... field)
@@ -219,22 +252,21 @@
                           (format #f "function ~a expects ~a arguments, found: ~a" "~a" formal-count argument-count)))))
 
     (($ <variable> name (and (? (negate type?)) (get! type)) expression)
-      (resolve-error (type) (->symbol (type)) "undefined type: ~a"))
+     (resolve-error (type) (->symbol (type)) "undefined type: ~a"))
 
     (($ <variable> name (and (? (negate extern?)) (get! type)) ($ <expression> (? unspecified?)))
       (resolve-error o name "undefined variable value: ~a"))
 
     (($ <variable> name type expression) (=> failure)
      (or (and-let* ((e-type (fake:type model expression))
-                    (v-type (ensure-scope type))
+                    (v-type (type? type))
                     ((not (type-equal? e-type v-type)))
-                    ((not (type-equal? e-type type)))
                     (actual (type? type))
                     ((if (eq? (.name e-type) 'data)
                          (not (is-a? actual <extern>))))
                     ((if (eq? (.name e-type) 'int)
                          (not (is-a? actual <int>)))))
-                   (type-mismatch expression (->symbol v-type) (->symbol e-type)))
+                   (type-mismatch expression (->symbol (.name v-type)) (->symbol e-type)))
          (failure)))
 
     ((or 'false 'true) o)
@@ -243,19 +275,18 @@
     ((or '== '!= '< '<= '> '>= 'group) o)
 
     (($ <formal> name type direction)
-     (make <formal> :name name :type ((resolve-model model locals) type) :direction direction))
+     (make <formal> :name name :type ((resolve model locals) type) :direction direction))
 
     (($ <call> identifier (and ('arguments arguments ...) (get! arguments)) last?)
-     (make <call> :identifier identifier :arguments ((resolve-model model locals) (arguments)) :last? last?))
+     (make <call> :identifier identifier :arguments ((resolve model locals) (arguments)) :last? last?))
 
-    (($ <type> ($ <name> (and (? enum?) (get! enum))) #f)
-     (make <type> :name (enum) :scope (.scope (enum? (enum)))))
-
-    (($ <type> ($ <name> (and (? int?) (get! int))) #f)
-     (make <type> :name (int) :scope (.scope (int? (int)))))
+    (($ <type> name) (=> failure)
+     (or (and-let* ((type (type? o)))
+                   (make <type> :name (.name type)))
+         (failure)))
 
     (($ <event> name signature direction)
-     (make <event> :name name :signature ((resolve-model model '()) signature) :direction direction))
+     (make <event> :name name :signature ((resolve model '()) signature) :direction direction))
 
     (($ <data>) o)
     (($ <enum>) o)
@@ -269,15 +300,13 @@
     (($ <port>) o)
     (($ <signature> type (? unspecified?))
      (make <signature>
-       :type ((resolve-model model locals) type)
+       :type ((resolve model locals) type)
        :formals '(formals)))
     (($ <signature> type formals)
      (make <signature>
-       :type ((resolve-model model locals) type)
-       :formals ((resolve-model model locals) formals)))
+       :type ((resolve model locals) type)
+       :formals ((resolve model locals) formals)))
     (($ <trigger>) o)
-    (($ <type> name)
-     (make <type> :name (or (and=> (type? o) .name) name)))
     (($ <var>) o)
 
     ((? symbol?) (undefined-error 'programming-error o))
@@ -295,7 +324,7 @@
 
     (($ <assign> identifier ($ <expression> (and ($ <call>) (get! call))))
      (make <assign> :identifier identifier
-           :expression ((resolve-model model locals) (call))))
+           :expression ((resolve model locals) (call))))
 
     (($ <assign> identifier ($ <call> (and (? event?) (get! event))))
      (make <assign>
@@ -304,7 +333,7 @@
 
     (($ <assign> identifier (and ($ <call>) (get! call)))
      (make <assign> :identifier identifier
-           :expression ((resolve-model model locals) (call))))
+           :expression ((resolve model locals) (call))))
 
     (($ <assign> identifier
         ($ <expression> ($ <var> (and (? event?) (get! event)))))
@@ -328,7 +357,7 @@
     (($ <assign> identifier ($ <expression> (and ($ <action>) (get! action))))
      (make <assign>
        :identifier identifier
-       :expression ((resolve-model model locals) (action))))
+       :expression ((resolve model locals) (action))))
 
     (($ <assign> identifier
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
@@ -339,42 +368,42 @@
     (($ <assign> identifier (and ($ <expression>) (get! expression)))
      (make <assign>
        :identifier identifier
-       :expression ((resolve-model model locals) (expression))))
+       :expression ((resolve model locals) (expression))))
 
     (($ <assign> identifier expression)
      (make <assign>
        :identifier identifier
-       :expression ((resolve-model model locals) expression)))
+       :expression ((resolve model locals) expression)))
 
     (($ <formal> name type direction)
      (make <formal>
        :name name
-       :type ((resolve-model model locals) type)
+       :type ((resolve model locals) type)
        :direction direction))
 
     (($ <formal> name type)
      (make <formal>
        :name name
-       :type ((resolve-model model locals) type)))
+       :type ((resolve model locals) type)))
 
     (($ <variable> name type
         ($ <expression> ($ <call> (and (? event?) (get! event)))))
      (make <variable>
        :name name
-       :type ((resolve-model model locals) type)
+       :type ((resolve model locals) type)
        :expression (make <action> :trigger
                          (make <trigger> :event (event)))))
 
     (($ <variable> name type ($ <expression> (and ($ <call>) (get! call))))
      (make <variable>
        :name name
-       :type ((resolve-model model locals) type)
-       :expression ((resolve-model model locals) (call))))
+       :type ((resolve model locals) type)
+       :expression ((resolve model locals) (call))))
 
     (($ <variable> name type
         ($ <expression> ($ <var> (and (? event?) (get! event)))))
      (make <variable>
-       :type ((resolve-model model locals) type)
+       :type ((resolve model locals) type)
        :name name
        :expression (make <action> :trigger
                          (make <trigger> :event (event)))))
@@ -382,27 +411,27 @@
     (($ <variable> name type ($ <expression> (and ($ <action>) (get! action))))
      (make <variable>
        :name name
-       :type ((resolve-model model locals) type)
-       :expression ((resolve-model model locals) (action))))
+       :type ((resolve model locals) type)
+       :expression ((resolve model locals) (action))))
 
     (($ <variable> name type ($ <expression> ('name (and (? port?) (get! port)) event)))
      (make <variable>
        :name name
-       :type ((resolve-model model locals) type)
+       :type ((resolve model locals) type)
        :expression (make <action> :trigger (make <trigger> :port (port) :event event))))
 
     (($ <variable> name type
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
      (make <variable>
        :name name
-       :type ((resolve-model model locals) type)
+       :type ((resolve model locals) type)
        :expression (make <call> :identifier (function))))
 
     (($ <variable> name type expression)
      (make <variable>
        :name name
-       :type ((resolve-model model locals) type)
-       :expression ((resolve-model model locals) expression)))
+       :type ((resolve model locals) type)
+       :expression ((resolve model locals) expression)))
 
     (('name name ...) (=> failure)
      (or (and-let* ((enum (enum? o)))
@@ -412,31 +441,23 @@
     (('name (and (? var?) (get! name)))
      (make <var> :name (name)))
 
-    (('name (and (? enum?) (get! enum)))
-     (.name (enum? (enum))))
-
-    (('name (and (? enum?) (get! enum)) (and (? (enum-field? (enum))) (get! field)))
-     (make <literal> :name (.name (enum? (enum))) :field (field)))
-
     (('name (and (? var?) (get! type)) (? (member-field? (type))))
      (make <field> :identifier (type) :field (.name o)))
 
     (('name scope name field) (=> failure)
      (let* ((name `(name ,scope ,name))
-            (enum (enum? name)))
+            (enum (enum? o)))
        (if (not enum) (failure)
-           (make <literal> :name name :field field))))
-
-    (('name (? enum?) field)
-     (resolve-error o field "undefined enum field: ~a"))
+           (make <literal> :name (.name enum) :field field))))
 
     (('name (? var?) field)
      (resolve-error o field "undefined enum field: ~a"))
 
     (('name scope ... field) (=> failure)
-     (or (and-let* ((enum (om:enum model (make <type> :name (make <name> :elements scope))))
-                    ((member field ((compose .elements .fields) enum))))
-                   (make <literal> :name (make <name> :elements scope) :field field))
+     (or (and-let* ((enum (enum? (make <type> :name (make <name> :elements scope)))))
+                   (if (member field ((compose .elements .fields) enum))
+                       (make <literal> :name (.name enum) :field field)
+                       (resolve-error o field "undefined enum field: ~a")))
          (failure)))
 
     (('name t ...)
@@ -444,14 +465,14 @@
      o)
 
     (($ <expression> value)
-     (make <expression> :value ((resolve-model model locals) value)))
+     (make <expression> :value ((resolve model locals) value)))
 
     (($ <function> name ($ <signature> type ('formals)) recursive? statement)
      (make <function>
        :name name
-       :signature ((resolve-model model locals) (.signature o))
+       :signature ((resolve model locals) (.signature o))
        :recursive (and ((recurses? model) name) 'recursive)
-       :statement ((resolve-model model locals) statement)))
+       :statement ((resolve model locals) statement)))
 
     (($ <function> name ($ <signature> type ('formals formals ...)) recursive? statement)
      (let ((locals (let loop ((formals formals) (locals locals))
@@ -461,16 +482,16 @@
                                (acons (.name (car formals)) (car formals) locals))))))
        (make <function>
          :name name
-         :signature ((resolve-model model locals) (.signature o))
+         :signature ((resolve model locals) (.signature o))
          :recursive (and ((recurses? model) name) 'recursive)
-         :statement ((resolve-model model locals) statement))))
+         :statement ((resolve model locals) statement))))
 
     (($ <function> name ($ <signature> type) recursive? statement)
      (make <function>
        :name name
-       :signature ((resolve-model model locals) (.signature o))
+       :signature ((resolve model locals) (.signature o))
        :recursive (and ((recurses? model) name) 'recursive)
-       :statement ((resolve-model model locals) statement)))
+       :statement ((resolve model locals) statement)))
 
     (('compound statements ...)
      (make <compound>
@@ -483,13 +504,13 @@
                               (($ <variable> name type expression)
                                (acons name statement locals))
                               (_ locals))))
-               (let ((resolved ((resolve-model model locals) (car statements))))
+               (let ((resolved ((resolve model locals) (car statements))))
                  (cons resolved (loop (cdr statements) locals))))))))
 
     (($ <guard> expression statement)
        (make <guard>
-         :expression ((resolve-model model locals) expression)
-         :statement ((resolve-model model locals) statement)))
+         :expression ((resolve model locals) expression)
+         :statement ((resolve model locals) statement)))
 
     (($ <on> triggers statement)
      (let* ((formals (apply append (map (compose .elements .arguments)
@@ -500,16 +521,15 @@
                           (loop (cdr formals)
                                 (acons ((compose .name .value car) formals) (car formals) locals))))))
        (make <on>
-         :triggers ((resolve-model model locals) triggers)
-         :statement ((resolve-model model locals) statement))))
+         :triggers ((resolve model locals) triggers)
+         :statement ((resolve model locals) statement))))
 
     (($ <interface> name types events behaviour)
      (make <interface>
        :name name
        :types types
-       ;;:events (om:map (resolve-model model '()) events)
-       :events ((resolve-model model '()) events)
-       :behaviour ((resolve-model model '()) behaviour)))
+       :events ((resolve o '()) events)
+       :behaviour ((resolve o '()) behaviour)))
 
     (($ <component> name ports (? unspecified?))
      (make <component> :name name :ports ports))
@@ -518,45 +538,45 @@
        (make <component>
          :name name
          :ports ports
-         :behaviour ((resolve-model model '()) behaviour)))
+         :behaviour ((resolve o '()) behaviour)))
 
     (($ <behaviour> name types variables functions statement)
      (make <behaviour>
        :name name
        :types types
-       :variables ((resolve-model model '()) variables)
+       :variables ((resolve model '()) variables)
        ;; om:map denx0r?
-       :functions ((resolve-model model '()) functions)
-       :statement ((resolve-model model '()) statement)
-       ;;:functions (om:map (resolve-model model '()) functions)
-       ;;:statement (om:map (resolve-model model '()) statement)
+       :functions ((resolve model '()) functions)
+       :statement ((resolve model '()) statement)
+       ;;:functions (om:map (resolve model '()) functions)
+       ;;:statement (om:map (resolve model '()) statement)
      ))
 
     (($ <if> expression then else)
      (make <if>
-       :expression ((resolve-model model locals) expression)
-       :then ((resolve-model model locals) then)
+       :expression ((resolve model locals) expression)
+       :then ((resolve model locals) then)
        :else (and (not (eq? else *unspecified*))
-                  else ((resolve-model model locals) else))))
+                  else ((resolve model locals) else))))
     (('arguments arguments ...)
-     (make <arguments> :elements (map (resolve-model model locals) arguments)))
+     (make <arguments> :elements (map (resolve model locals) arguments)))
     (('events events ...)
-     (cons 'events (map (resolve-model model '()) events)))
+     (cons 'events (map (resolve model '()) events)))
     (('triggers triggers ...) o)
     (('functions functions ...)
-     (make <functions> :elements (map (resolve-model model '()) functions)))
+     (make <functions> :elements (map (resolve model '()) functions)))
     (('formals formals ...)
-     (make <formals> :elements (map (resolve-model model '()) formals)))
+     (make <formals> :elements (map (resolve model '()) formals)))
     (('variables variables ...)
      (let ((variables (map (range-check model) variables)))
-       (make <variables> :elements (map (resolve-model model '()) variables))))
+       (make <variables> :elements (map (resolve model '()) variables))))
     ;; (($ <reply> expression)
-    ;;  (make <reply> :expression ((resolve-model model locals) expression)))
+    ;;  (make <reply> :expression ((resolve model locals) expression)))
     ;; (($ <return> expression)
-    ;;  (make <return> :expression ((resolve-model model locals) expression)))
+    ;;  (make <return> :expression ((resolve model locals) expression)))
 
-    ((? (is? <ast>)) (om:map (lambda (o) ((resolve-model model locals) o)) o))
-    ((h t ...) (map (lambda (o) ((resolve-model model locals) o)) o))
+    ((? (is? <ast>)) (om:map (lambda (o) ((resolve model locals) o)) o))
+    ((h t ...) (map (lambda (o) ((resolve model locals) o)) o))
     (_ o)))
 
 (define ((range-check model) variable)
