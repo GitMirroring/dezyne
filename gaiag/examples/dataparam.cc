@@ -63,7 +63,7 @@ int main()
   dezyne::runtime rt;
   l.set(rt);
 
-  dezyne::Datasystem d(l);
+  Datasystem d(l);
 
   d.dzn_meta.name = "d";
   d.port.meta.requires = {"port",&d};
@@ -76,11 +76,11 @@ int main()
   d.check_bindings();
   d.dump_tree();
 
-  assert(dezyne::IDataparam::Status::Yes == d.port.in.e0r());
+  assert(IDataparam::Status::Yes == d.port.in.e0r());
   d.port.in.e0();
-  assert(dezyne::IDataparam::Status::Yes == d.port.in.er(123));
+  assert(IDataparam::Status::Yes == d.port.in.er(123));
   d.port.in.e(123);
-  assert(dezyne::IDataparam::Status::No == d.port.in.eer(123,345));
+  assert(IDataparam::Status::No == d.port.in.eer(123,345));
 
   int i = 0;
   d.port.in.eo(i);
@@ -97,15 +97,15 @@ int main()
   assert(i == 246);
 
 
-  assert(dezyne::IDataparam::Status::Yes == d.port.in.eor(i));
+  assert(IDataparam::Status::Yes == d.port.in.eor(i));
   assert(i == 234);
 
-  assert(dezyne::IDataparam::Status::Yes == d.port.in.eoor(i,j));
+  assert(IDataparam::Status::Yes == d.port.in.eoor(i,j));
   assert(i == 123 && j == 456);
 
-  assert(dezyne::IDataparam::Status::Yes == d.port.in.eior(i,j));
+  assert(IDataparam::Status::Yes == d.port.in.eior(i,j));
   assert(i == 123 && j == i);
 
-  assert(dezyne::IDataparam::Status::Yes == d.port.in.eio2r(i));
+  assert(IDataparam::Status::Yes == d.port.in.eio2r(i));
   assert(i == 246);
 }

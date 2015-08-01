@@ -41,7 +41,7 @@ int main()
 {
   dezyne::runtime runtime;
   dezyne::locator locator;
-  dezyne::AlarmSystem sut(locator.set(runtime));
+  AlarmSystem sut(locator.set(runtime));
 
   sut.dzn_meta.name = "sut";
 

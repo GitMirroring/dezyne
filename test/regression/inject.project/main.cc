@@ -38,7 +38,7 @@ int main()
   dezyne::runtime rt;
   l.set(rt);
 
-  dezyne::Injected sut(l);
+  Injected sut(l);
   sut.dzn_meta.name = "sut";
   sut.t.meta.requires = {"", 0};
   sut.t.out.f = f;

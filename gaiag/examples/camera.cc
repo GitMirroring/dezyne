@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,7 +41,7 @@ int main()
   l.set(rt);
 
   // create camera component
-  dezyne::Camera cam(l);
+  Camera cam(l);
 
   // stub unconnected callback functions from camera component
   cam.control.out.focus = []{std::cout << "Driver.control_focus" << std::endl;};

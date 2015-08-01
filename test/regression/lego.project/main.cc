@@ -42,11 +42,11 @@ struct Lego
 struct timer_impl: public itimer_impl
 {
   sigc::connection connection;
-  dezyne::itimer& port;
+  itimer& port;
   Lego& lego;
 
   timer_impl(const dezyne::locator& l)
-  : port(l.get<dezyne::itimer>())
+  : port(l.get<itimer>())
   , lego(l.get<Lego>())
   {}
   bool stupid_member(){lego.update(); port.out.timeout(); return false;}
@@ -103,7 +103,7 @@ namespace dezyne
       std::clog << prefix << value_to_string(r) << std::endl;
       return r;
     }
-    throw std::runtime_error("\"" + s + "\" is not a reply value");  
+    throw std::runtime_error("\"" + s + "\" is not a reply value");
   }
 
   void fill_event_map(LegoBallSorter& m, event_map& e)
@@ -198,9 +198,9 @@ namespace dezyne
     m.brick4_s2.in.detect = [&] () {return log_valued<itouch::status::type>("brick4_s2.", "detect", e, to_itouch_status, static_cast<const char*(*)(itouch::status::type)>(to_string));};
     m.brick4_s3.in.detect = [&] () {return log_valued<itouch::status::type>("brick4_s3.", "detect", e, to_itouch_status, static_cast<const char*(*)(itouch::status::type)>(to_string));};
 
-    e["ctrl.calibrate"] = m.ctrl.in.calibrate; 
-    e["ctrl.stop"] = m.ctrl.in.stop; 
-    e["ctrl.operate"] = m.ctrl.in.operate; 
+    e["ctrl.calibrate"] = m.ctrl.in.calibrate;
+    e["ctrl.stop"] = m.ctrl.in.stop;
+    e["ctrl.operate"] = m.ctrl.in.operate;
   }
 }
 
@@ -220,7 +220,7 @@ int main()
   l.set(create_timer_impl);
 
   dezyne::event_map event_map;
-  dezyne::LegoBallSorter sut(l);
+  LegoBallSorter sut(l);
   sut.dzn_meta.name = "sut";
 
   dezyne::fill_event_map(sut, event_map);

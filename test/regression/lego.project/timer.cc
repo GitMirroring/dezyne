@@ -30,11 +30,9 @@
 #include <functional>
 #include <memory>
 
-namespace dezyne
-{
-  timer::timer(const locator& l)
-  : dzn_meta{"","timer",reinterpret_cast<const component*>(this),0}
-  , dzn_rt(l.get<runtime>())
+timer::timer(const dezyne::locator& l)
+  : dzn_meta{"","timer",reinterpret_cast<const dezyne::component*>(this),0}
+  , dzn_rt(l.get<dezyne::runtime>())
   , dzn_locator(l)
   , port{{}}
   {
@@ -42,13 +40,12 @@ namespace dezyne
     port.meta.provides.port = "port";
     port.meta.provides.address = this;
 
-    locator tmp(l.clone());
+    dezyne::locator tmp(l.clone());
     tmp.set(port);
-    auto pimpl = l.get<std::function<std::shared_ptr<itimer_impl>(const locator&)>>()(tmp);
+    auto pimpl = l.get<std::function<std::shared_ptr<itimer_impl>(const dezyne::locator&)>>()(tmp);
 #ifdef TEST_EVENT
     port.out.timeout = [] {std::clog << "timeout" << std::endl;};
 #endif
-    port.in.create = [=](int ms){trace_in(port.meta, "create"); pimpl->create(ms); trace_out(port.meta, "return");};
-    port.in.cancel = [=]{trace_in(port.meta, "cancel"); pimpl->cancel(); trace_out(port.meta, "return"); };
+    port.in.create = [=](int ms){dezyne::trace_in(port.meta, "create"); pimpl->create(ms); dezyne::trace_out(port.meta, "return");};
+    port.in.cancel = [=]{dezyne::trace_in(port.meta, "cancel"); pimpl->cancel(); dezyne::trace_out(port.meta, "return"); };
   }
-}

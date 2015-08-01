@@ -41,7 +41,7 @@ int main()
   dezyne::runtime rt;
   l.set(rt);
 
-  dezyne::Injected i(l);
+  Injected i(l);
 
   i.dzn_meta.name = "i";
   i.t.meta.requires = {"t",&i};
