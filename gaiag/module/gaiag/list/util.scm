@@ -116,13 +116,15 @@
            om:scope+name
            ))
 
-(define* ((om:scope-name :optional (infix '_)) o) ;; -> symbol
-  (match o
-    (('name name ...) ((->symbol-join infix) name))
-    ((type (and ('name name ...) (get! name)) t ...) ((om:scope-name infix) (name)))
-    ((type id (and ('name name ...) (get! name)) t ...) ((om:scope-name infix) (name)))
-    ((type 'bool) 'bool)
-    ((type 'void) 'void)))
+(define* ((om:scope-name :optional (infix '_)) o)
+  (let ((infix (if (symbol? infix) infix
+                   (string->symbol infix))))
+    (match o
+      (('name name ...) ((->symbol-join infix) name))
+      ((type (and ('name name ...) (get! name)) t ...) ((om:scope-name infix) (name)))
+      ((type id (and ('name name ...) (get! name)) t ...) ((om:scope-name infix) (name)))
+      ((type 'bool) 'bool)
+      ((type 'void) 'void))))
 
 (define (om:scope+name o)
   (match o

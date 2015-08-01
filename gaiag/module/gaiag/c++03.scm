@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -44,3 +45,4 @@
   )
 
 (define ast-> (@@ (gaiag c++) ast->))
+(define c++:scope-join (@@ (gaiag c++) c++:scope-join))

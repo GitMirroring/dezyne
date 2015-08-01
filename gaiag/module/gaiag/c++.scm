@@ -55,7 +55,7 @@
 
 (define (dump-component o)
   ((@@ (gaiag c) dump-component) o)
-  (let ((name (.name o)))
+  (let ((name ((om:scope-name) o)))
     (if (and (not (.behaviour o))
              (map-file o))
         (dump-indented (symbol-append 'glue- name '.cc)
@@ -64,7 +64,7 @@
 
 (define (dump-system o)
   ((@@ (gaiag c) dump-system) o)
-  (let ((name (.name o)))
+  (let ((name ((om:scope-name) o)))
     (if (map-file o)
         (dump-indented (symbol-append name 'Interface.h)
                        (lambda ()
@@ -82,7 +82,7 @@
     (animate-file file-name module)))
 
 (define (event2->interface1-event1-alist port)
-  (and-let* ((string (gulp-file (find-file port '(.map))))
+  (and-let* ((string (gulp-file (find-file ((om:scope-name) port) '(.map))))
              (lst (string-split string #\newline))
              (lst (filter (lambda (x) (not (string-prefix? "//" x))) lst))
              (lst (map (lambda (o) (map string->symbol (string-tokenize o char-set:graphic))) lst))
@@ -102,4 +102,4 @@
 
 (define (map-file o)
   (and (om:port o)
-       (try-find-file (.type (om:port o)) '(.map))))
+       (try-find-file ((om:scope-name) (om:port o)) '(.map))))
