@@ -184,7 +184,7 @@
   (define (port? name) (and (is-a? model <component>) (om:port model name)))
 
   (define (local? identifier) (assoc-ref locals identifier))
-  (define (var? identifier) (or (member? identifier) (local? identifier)))
+  (define (var? identifier) (or (local? identifier) (member? identifier)))
   (define (unspecified? x) (eq? x *unspecified*))
 
   (define (event-or-function? identifier)
@@ -306,7 +306,9 @@
      (make <signature>
        :type ((resolve model locals) type)
        :formals ((resolve model locals) formals)))
-    (($ <trigger>) o)
+    (($ <trigger> #f) o)
+    (($ <trigger> port event arguments)
+     (make <trigger> :port port :event event :arguments ((resolve model locals) arguments)))
     (($ <var>) o)
 
     ((? symbol?) (undefined-error 'programming-error o))
@@ -314,7 +316,7 @@
     (($ <action> ($ <trigger> #f (and (? function?) (get! identifier))))
      (make <call> :identifier (identifier)))
 
-    (($ <action>) o)
+    (($ <action> trigger) (make <action> :trigger ((resolve model locals) trigger)))
 
     (($ <assign> identifier
         ($ <expression> ($ <call> (and (? event?) (get! event)))))
@@ -461,7 +463,7 @@
          (failure)))
 
     (('name t ...)
-     (stderr "RESOLVE TODO: ~a\n" o)
+     ;;(stderr "RESOLVE TODO: ~a\n" o)
      o)
 
     (($ <expression> value)

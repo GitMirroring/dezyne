@@ -123,7 +123,8 @@ component bar.c {
        (variable m (type (name state)) (expression (name state one)))
        (variable r (type (name ivar e)) (expression (name e v)))
        (variable e (type (name ivar e)) (expression (name ivar e v)))
-       (variable b (type bool) true))
+       (variable b (type bool) true)
+       (variable x (type (name ivar xint)) (expression (data 0))))
        (functions
         (function fun (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (assign a (expression true))))
@@ -451,6 +452,13 @@ component bar.c {
              (variable e (type (name xint)) (expression (data 0)))))
           '(compound
             (variable e (type (name ivar xint)) (expression (data 0))))))
+
+(pass-if "ast:resolve-extern-expression"
+  (om-pretty-noisy-equal?
+   (ast:resolve*
+    (resolve-component)
+    '(action (trigger i eo (expression (name x)))))
+   '(action (trigger i eo (expression (var x))))))
 
 (pass-if "ast:resolve-extern-unspecified"
          (om-pretty-noisy-equal?
