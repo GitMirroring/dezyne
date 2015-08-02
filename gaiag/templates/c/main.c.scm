@@ -4,7 +4,7 @@
 ##include "locator.h"
 ##include "map.h"
 
-##include "#.model .h"
+##include "#.scope_model .h"
 
 ##include <stdio.h>
 ##include <stdlib.h>
@@ -83,21 +83,21 @@ int log_valued(char* prefix, char* event, map* event_map, int (*string_to_value)
 #(map
  (lambda (port)
    (map (define-on model port #{
-   #(string-if (not (eq? type 'void)) #{int#} #{void#})  #.model _log_event_#port _#direction _#event (#interface * m) {
+   #(string-if (not (eq? type 'void)) #{int#} #{void#})  #.scope_model _log_event_#port _#direction _#event (#((c:scope-name) interface) * m) {
    (void)m;
    #(string-if (eq? return-type 'void) #{
    log_#direction("#port .", "#event ", global_event_map);#}#{
    return log_valued("#port .", "#event ", global_event_map, string_to_#((om:scope-join #f) reply-scope)_#reply-name , #((om:scope-join #f) reply-scope)_#reply-name _to_string);#})}
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
-void #.model _fill_event_map(#.model * m, map* e) {
+void #.scope_model _fill_event_map(#.scope_model * m, map* e) {
    int dzn_i = 0;
    void *p;
    closure *c;
    #(map
      (lambda (port)
        (map (define-on model port #{
-          m->#port ->#direction .#event  = #.model _log_event_#port _#direction _#event;
+          m->#port ->#direction .#event  = #.scope_model _log_event_#port _#direction _#event;
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
    #(map
@@ -122,14 +122,14 @@ int main() {
 	locator_init(&dezyne_locator, &dezyne_runtime);
 	dezyne_locator.illegal = illegal_print;
 
-	#.model  sut;
+	#.scope_model  sut;
 	dzn_meta_t mt = {"sut", 0};
-	#.model _init(&sut, &dezyne_locator, &mt);
+	#.scope_model _init(&sut, &dezyne_locator, &mt);
 
 	map event_map;
 	map_init(&event_map);
         global_event_map = &event_map;
-	#.model _fill_event_map(&sut, &event_map);
+	#.scope_model _fill_event_map(&sut, &event_map);
 
 	char* line;
 	while ((line = read_line()) != 0) {

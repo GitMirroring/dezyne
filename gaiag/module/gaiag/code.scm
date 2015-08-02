@@ -552,6 +552,7 @@
         ""))
 
   (match o
+    ((? unspecified?) *unspecified*)
     (($ <expression> (? unspecified?)) *unspecified*)
     (($ <expression>) (expression->string model (.value o) locals argument))
     (($ <action> ($ <trigger> port-name event-name ('arguments arguments ...)))
@@ -647,13 +648,13 @@
   (let* ((fields ((compose .elements .fields) enum))
          (length (length fields)))
    (snippet 'declare-enum
-            `((scope ,(om:scope enum)) (name ,(om:name enum)) (fields ,fields) (length ,length)))))
+            `((scope+name ,(om:scope+name enum)) (scope ,(om:scope enum)) (name ,(om:name enum)) (fields ,fields) (length ,length)))))
 
 (define ((enum-to-string o) enum)
   (let* ((fields ((compose .elements .fields) enum))
          (length (length fields)))
     (snippet 'enum-to-string
-             `((scope ,(om:scope enum)) (name ,(om:name enum)) (fields ,fields) (length ,length)))))
+             `((scope+name ,(om:scope+name enum)) (scope ,(om:scope enum)) (name ,(om:name enum)) (fields ,fields) (length ,length)))))
 
 (define ((string-to-enum o) enum)
   (let* ((fields ((compose .elements .fields) enum))
@@ -823,9 +824,11 @@
   (let* ((name (.name variable))
          (type (.type variable))
          (expression (expression->string model (.expression variable)))
+         (expression (if (and (string? expression)
+                              (not (string-null? expression))) expression))
          (type (code:->code model type)))
     (debug "TYPE FOR: ~a => ~a\n" variable type)
-    (debug "EXPRESSION: ~a => ~a\n" variable expression)
+    (debug "EXPRESSION: ~a => ~a unspecified?=~a\n" variable expression (eq? expression *unspecified*))
     (animate string `((name ,name) (type ,type) (expression ,expression)))))
 
 (define ((init-port string) port)

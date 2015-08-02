@@ -1,5 +1,5 @@
-##ifndef DEZYNE_#.COMPONENT _H
-##define DEZYNE_#.COMPONENT _H
+##ifndef #.COMPONENT _H
+##define #.COMPONENT _H
 
 #(map (include-interface #{
 ##include "#interface .h"
@@ -17,10 +17,10 @@ typedef struct {
 #}) (om:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
-#interface  #name _;
-#interface * #name;
-#}) ((compose .elements .ports) model))} #.model;
+#((c:scope-join) interface)  #name _;
+#((c:scope-join) interface) * #name;
+#}) ((compose .elements .ports) model))} #.scope_model;
 
-void #.model _init(#.model * self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
+void #.scope_model _init(#.scope_model * self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
-##endif // DEZYNE_#.COMPONENT _H
+##endif // #.COMPONENT _H

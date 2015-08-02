@@ -51,6 +51,12 @@
       (map dump (filter (negate om:imported?) ((om:filter <model>) om)))))
   "")
 
+(define* ((c:scope-join) o)
+  ((om:scope-join #f '_) o))
+
+(define* ((c:scope-name) o)
+  ((om:scope-name) o))
+
 (define (dump o)
   (match o
     (($ <interface>) (dump-interface o))

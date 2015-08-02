@@ -1,6 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;;
-;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,7 +21,7 @@
 ;;; Code:
 
 
-(define-class <Comp> (<component>)
+(define-class OK_NOK (<component>)
   (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
   (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
   (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
@@ -33,7 +32,7 @@
   (client :accessor .client :init-value #f)
   (device_A :accessor .device_A :init-value #f))
 
-(define-method (initialize (o <Comp>) args)
+(define-method (initialize (o OK_NOK) args)
   (next-method)
   (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o)))
   (set! (.client o)
@@ -50,7 +49,7 @@
               :name 'device_A
               :self o))))
 
-(define-method (client-initialize (o <Comp>) )
+(define-method (client-initialize (o OK_NOK) )
     (cond 
     ((equal? (.s o) '(State Uninitialized))
       (let ((res (make <v> :v (action o .device_A .in .initialize)))) 
@@ -68,7 +67,7 @@
       (illegal)))
     (.reply-IComp-result_t o))
 
-(define-method (client-recover (o <Comp>) )
+(define-method (client-recover (o OK_NOK) )
     (cond 
     ((equal? (.s o) '(State Uninitialized))
       (illegal))
@@ -84,7 +83,7 @@
         (set! (.reply-IDevice-result_t o) '(result_t NOK)))))))
     (.reply-IComp-result_t o))
 
-(define-method (client-perform_actions (o <Comp>) )
+(define-method (client-perform_actions (o OK_NOK) )
     (cond 
     ((equal? (.s o) '(State Uninitialized))
       (illegal))

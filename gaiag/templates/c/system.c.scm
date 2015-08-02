@@ -1,4 +1,4 @@
-##include "#.model .h"
+##include "#.scope_model .h"
 
 ##include <string.h>
 
@@ -8,7 +8,7 @@
 	required->in = provided->in;\
   }
 
-void #.model _init(#.model  *self, locator* dezyne_locator, dzn_meta_t* dzn_meta) {
+void #.scope_model _init(#.scope_model  *self, locator* dezyne_locator, dzn_meta_t* dzn_meta) {
    memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 #(map (init-instance #{
   dzn_meta_t dzn_m_#name  = {"#name ", self};

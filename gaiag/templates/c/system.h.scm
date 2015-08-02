@@ -1,5 +1,5 @@
-##ifndef DEZYNE_#.COMPONENT _H
-##define DEZYNE_#.COMPONENT _H
+##ifndef #.COMPONENT _H
+##define #.COMPONENT _H
 
 #(map (include-component #{
 ##include "#component .h"
@@ -13,17 +13,17 @@
 
 typedef struct {
     dzn_meta_t dzn_meta;
-#(map (lambda (binding) (list (.component (om:instance model (injected-instance-name binding))) " "
+#(map (lambda (binding) (list ((c:scope-name) (.component (om:instance model (injected-instance-name binding)))) " "
                               (injected-instance-name binding) ";\n")) (injected-bindings model)) #
 (if (pair? (injected-bindings model)) (list "locator local_locator;\n")) #
 (map (init-instance #{
   #component  #name;
 #}) (non-injected-instances model))
 #(map (init-port #{
-  #interface * #name;
+  #((om:scope-join) interface) * #name;
 #}) ((compose .elements .ports) model))
-} #.model;
+} #.scope_model;
 
-void #.model _init(#.model *self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
+void #.scope_model _init(#.scope_model *self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
 
-##endif // DEZYNE_#.COMPONENT _H
+##endif // #.COMPONENT _H

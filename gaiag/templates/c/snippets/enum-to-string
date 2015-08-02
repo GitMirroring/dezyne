@@ -1,5 +1,5 @@
-#(if (eq? scope '*global*) "static ")char const* #((om:scope-join #f) scope)_#name _to_string(#((om:scope-join #f) scope)_#name  v) {
+#(if (om:outer-scope? model (append scope+name '(foo))) "static ")char const* #((c:scope-join) scope)_#name _to_string(#((c:scope-join) scope)_#name  v) {
   switch(v) {
-  #(->string (map (lambda (field) (->string (list "case " ((om:scope-join #f) scope) "_" name "_" field ": return \"" name "_" field "\";\n"))) fields)) }
+  #(->string (map (lambda (field) (->string (list "case " ((c:scope-join) scope) "_" name "_" field ": return \"" name "_" field "\";\n"))) fields)) }
   return "";
 }
