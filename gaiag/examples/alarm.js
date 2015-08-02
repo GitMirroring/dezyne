@@ -25,42 +25,46 @@
 
 /* handwritten alarm.js */
 
-dezyne.Console = function(rt, meta) {
-  this.rt = rt;
+dezyne.Console = function(locator, meta) {
+  this.locator = locator;
+  this.rt = locator.get(dezyne.runtime);
   this.meta = meta;
   this.console = new dezyne.IConsole({provides: {}, requires: {component: this, name: 'console'}});
   this.console.out.detected = function() {process.stderr.write('Console.detected\n');}
   this.console.out.deactivated = function() {process.stderr.write('Console.deactivated\n');}
 };
 
-dezyne.Sensor = function(rt, meta) {
-  this.rt = rt;
+dezyne.Sensor = function(locator, meta) {
+  this.locator = locator;
+  this.rt = locator.get(dezyne.runtime);
   this.meta = meta;
   this.sensor = new dezyne.ISensor({provides: {component: this, name: 'sensor'}, requires: {}});
-  this.sensor.in.enable = function() {runtime.call_in(this, function() {}, [this.sensor, 'enable']);}.bind(this);
-  this.sensor.in.disable = function() {runtime.call_in(this, function() {}, [this.sensor, 'disable']);}.bind(this);
+  this.sensor.in.enable = function() {this.rt.call_in(this, function() {}, [this.sensor, 'enable']);}.bind(this);
+  this.sensor.in.disable = function() {this.rt.call_in(this, function() {}, [this.sensor, 'disable']);}.bind(this);
 }
 
-dezyne.Siren = function(rt, meta) {
-  this.rt = rt;
+dezyne.Siren = function(locator, meta) {
+  this.locator = locator;
+  this.rt = locator.get(dezyne.runtime);
   this.meta = meta;
   this.siren = new dezyne.ISiren({provides: {component: this, name: 'siren'}, requires: {}});
-  this.siren.in.turnon = function() {runtime.call_in(this, function() {}, [this.siren, 'turnon']); }.bind(this);
-  this.siren.in.turnoff = function() {runtime.call_in(this, function() {}, [this.siren, 'turnoff']); }.bind(this);
+  this.siren.in.turnon = function() {this.rt.call_in(this, function() {}, [this.siren, 'turnon']); }.bind(this);
+  this.siren.in.turnoff = function() {this.rt.call_in(this, function() {}, [this.siren, 'turnoff']); }.bind(this);
 }
 
 function main() {
+  var loc = new dezyne.locator();
   var rt = new dezyne.runtime();
-  var alarmsystem = new dezyne.AlarmSystem(rt, {name: 'alarmsystem'});
-  var gui = new dezyne.Console(rt, {name: 'alarmsystem'});
-  dezyne.connect(alarmsystem.console, gui.console);
+  var sut = new dezyne.AlarmSystem(loc.set(rt), {name: 'sut'});
+  var gui = new dezyne.Console(loc.set(rt), {name: 'sut'});
+  dezyne.connect(sut.console, gui.console);
 
-  alarmsystem.console.in.arm();
-  alarmsystem.sensor.sensor.out.triggered();
-  runtime.flush(alarmsystem.sensor);
-  alarmsystem.console.in.disarm();
-  alarmsystem.sensor.sensor.out.disabled();
-  runtime.flush(alarmsystem.sensor);
+  sut.console.in.arm();
+  sut.sensor.sensor.out.triggered();
+  rt.flush(sut.sensor);
+  sut.console.in.disarm();
+  sut.sensor.sensor.out.disabled();
+  rt.flush(sut.sensor);
 }
 
 main();

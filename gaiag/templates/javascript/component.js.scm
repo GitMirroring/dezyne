@@ -1,26 +1,25 @@
-function #.model(locator, meta) {
+function #.scope_model(locator, meta) {
   this.locator = locator;
   this.rt = locator.get(dezyne.runtime);
   this.rt.components = (this.rt.components || []).concat ([this]);
   this.meta = meta;
   this.flushes = true;#
-(->string (map (declare-enum model) (append (om:enums (.behaviour model)) (om:enums))))
-#
-    (map (init-member model #{
+  (->string (map (declare-enum model) (append (om:enums (.behaviour model)) (om:enums))))
+  #(map (init-member model #{
   #(string-if (eq? expression *unspecified*) "" #{this.#name  = #expression ;
 #})#}) (om:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
 #
     (map (init-port #{
-  this.#name  = new dezyne.#interface({provides: {name: '#name ', component: this}, requires: {}});
+  this.#name  = new dezyne.#((om:scope-join) interface)({provides: {name: '#name ', component: this}, requires: {}});
 #}) (filter om:provides? ((compose .elements .ports) model)))#
     (map (init-port #{
 #(string-if injected?
 #{
-    this.#name  = locator.get(dezyne.#interface);
+    this.#name  = locator.get(dezyne.#((om:scope-join) interface));
 #}
 #{
-    this.#name  = new dezyne.#interface({provides: {}, requires: {name: '#name ', component: this}});
+    this.#name  = new dezyne.#((om:scope-join) interface)({provides: {}, requires: {name: '#name ', component: this}});
 #})
 #}) (filter om:requires? ((compose .elements .ports) model)))#
 (map
@@ -41,4 +40,4 @@ function #.model(locator, meta) {
 #}) (om:functions model))
 };
 
-dezyne.#.model  = #.model;
+dezyne.#.scope_model  = #.scope_model;

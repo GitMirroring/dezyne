@@ -49,7 +49,7 @@ function log_valued(prefix, event, event_map, string_to_value, value_to_string) 
   throw 'runtime error: "' + s + '" is not a reply value'
 }
 
-function #.model _fill_event_map(m) 
+function #.scope_model _fill_event_map(m)
 {
   var e = {
 #(map
@@ -61,7 +61,7 @@ function #.model _fill_event_map(m)
 #(map
     (lambda (port)
      (map (define-on model port #{
-       m.#port .#direction .#event  = function() {#(string-if (eq? return-type 'void) #{log_#direction('#port .', '#event ', e);#}#{return log_valued('#port .', '#event ', e, function(s) {return new dezyne.#interface().#reply-name[drop_prefix(s, '#port .#reply-name _')];}, new dezyne.#interface().#reply-name _to_string)#})};
+       m.#port .#direction .#event  = function() {#(string-if (eq? return-type 'void) #{log_#direction('#port .', '#event ', e);#}#{return log_valued('#port .', '#event ', e, function(s) {return new dezyne.#((om:scope-name) interface)().#reply-name[drop_prefix(s, '#port .#reply-name _')];}, new dezyne.#((om:scope-name) interface)().#reply-name _to_string)#})};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))   return e;
 }
@@ -69,9 +69,9 @@ function #.model _fill_event_map(m)
 function main () {
   var loc = new dezyne.locator();
   var rt = new dezyne.runtime(function() {console.error("illegal");process.exit(0);});
-  var sut = new dezyne.#.model (loc.set(rt), {name: 'sut'});
+  var sut = new dezyne.#.scope_model (loc.set(rt), {name: 'sut'});
 
-  var event_map = #.model _fill_event_map(sut);
+  var event_map = #.scope_model _fill_event_map(sut);
 
   var fs = require ('fs');
   lines = fs.readFileSync ('/dev/stdin', 'ascii').toString().trim().split ('\n').reverse ();

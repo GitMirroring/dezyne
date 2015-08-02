@@ -1,16 +1,16 @@
-alarmsystem.console.arm -> alarmsystem.alarm.console.arm
-alarmsystem.alarm.sensor.enable -> alarmsystem.sensor.sensor.enable
-alarmsystem.sensor.sensor.return -> alarmsystem.alarm.sensor.return
-alarmsystem.alarm.console.return -> alarmsystem.console.return
-alarmsystem.sensor.sensor.triggered -> alarmsystem.alarm.sensor.triggered
+sut.console.arm -> sut.alarm.console.arm
+sut.alarm.sensor.enable -> sut.sensor.sensor.enable
+sut.sensor.sensor.return -> sut.alarm.sensor.return
+sut.alarm.console.return -> sut.console.return
+sut.sensor.sensor.triggered -> sut.alarm.sensor.triggered
 Console.detected
-alarmsystem.alarm.siren.turnon -> alarmsystem.siren.siren.turnon
-alarmsystem.siren.siren.return -> alarmsystem.alarm.siren.return
-alarmsystem.console.disarm -> alarmsystem.alarm.console.disarm
-alarmsystem.alarm.sensor.disable -> alarmsystem.sensor.sensor.disable
-alarmsystem.sensor.sensor.return -> alarmsystem.alarm.sensor.return
-alarmsystem.alarm.siren.turnoff -> alarmsystem.siren.siren.turnoff
-alarmsystem.siren.siren.return -> alarmsystem.alarm.siren.return
-alarmsystem.alarm.console.return -> alarmsystem.console.return
-alarmsystem.sensor.sensor.disabled -> alarmsystem.alarm.sensor.disabled
+sut.alarm.siren.turnon -> sut.siren.siren.turnon
+sut.siren.siren.return -> sut.alarm.siren.return
+sut.console.disarm -> sut.alarm.console.disarm
+sut.alarm.sensor.disable -> sut.sensor.sensor.disable
+sut.sensor.sensor.return -> sut.alarm.sensor.return
+sut.alarm.siren.turnoff -> sut.siren.siren.turnoff
+sut.siren.siren.return -> sut.alarm.siren.return
+sut.alarm.console.return -> sut.console.return
+sut.sensor.sensor.disabled -> sut.alarm.sensor.disabled
 Console.deactivated

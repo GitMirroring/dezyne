@@ -1,4 +1,4 @@
-function #.model(locator, meta) {
+function #.scope_model(locator, meta) {
   this.locator = locator;
   this.rt = locator.get(dezyne.runtime);
   this.rt.top = this.rt.top || this;
@@ -23,4 +23,4 @@ function #.model(locator, meta) {
 #}) (filter (negate bind-port?) ((compose .elements .bindings) model)))
 };
 
-dezyne.#.model  = #.model;
+dezyne.#.scope_model  = #.scope_model;
