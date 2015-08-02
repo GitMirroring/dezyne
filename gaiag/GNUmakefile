@@ -631,6 +631,30 @@ java-alarm: compile
 
 java: compile java-alarm java-regression
 
+cs-alarm: compile
+	rm -rf out && mkdir out && ln -s ../examples ../templates out
+	cd out && for file in\
+	 	examples/AlarmSystem.dzn\
+	 	examples/regression/Alarm.dzn\
+	 	examples/IConsole.dzn\
+	 	examples/ISensor.dzn\
+	 	examples/ISiren.dzn\
+	 	examples/Sensor.dzn\
+	 	examples/Siren.dzn\
+		;\
+	 	do $(shell pwd)/gaiag -l cs $$file; done
+	cd out && ln -s ../runtime/cs/header.cs .
+	cd out && ln -s ../examples/alarm.cs .
+	mcs -out:out/test out/*.cs out/dezyne/*.cs
+	out/test
+	$(diff) baseline/IConsole.cs out/dezyne
+	$(diff) baseline/ISensor.cs out/dezyne
+	$(diff) baseline/ISiren.cs out/dezyne
+	$(diff) baseline/Alarm.cs out/dezyne
+	$(diff) baseline/AlarmSystem.cs out/dezyne
+
+cs: compile cs-alarm # cs-regression
+
 # javascript // js FIXME
 
 javascript: compile javascript-alarm javascript-dataparam javascript-regression

@@ -23,7 +23,7 @@
 
 using System;
 
-public class #.model  : Component {#
+public class #.scope_model  : Component {#
 (->string (map (declare-enum model) (om:enums (.behaviour model))))#
 (->string (map declare-integer (om:integers (.behaviour model))))
 #
@@ -32,24 +32,24 @@ public class #.model  : Component {#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
 #
     (map (init-port #{#'()
-  public #interface  #name;#}) ((compose .elements .ports) model))
+  public #((om:scope-join) interface)  #name;#}) ((compose .elements .ports) model))
 
-  public #.model(Locator locator, String name="", SystemComponent parent=null) : base(locator, name, parent) {
+  public #.scope_model(Locator locator, String name="", SystemComponent parent=null) : base(locator, name, parent) {
     this.flushes = true;#
 (map (init-member model #{#'()
     #(string-if (eq? expression (if #f #f)) "" #{#name  = #expression ;#})#}) (om:variables model))#
 (map (init-port #{#'()
-    #name  = new #interface();
+    #name  = new #((om:scope-join) interface)();
     #name .inport.name = "#name ";
     #name .inport.self = this;#})
     (filter om:provides? ((compose .elements .ports) model)))#
 (map (init-port #{#'()
 #(string-if injected?
 #{
-    #name  = locator.get<#interface >();
+    #name  = locator.get<#((om:scope-join) interface) >();
 #}
 #{
-    #name  = new #interface();
+    #name  = new #((om:scope-join) interface)();
     #name .outport.name = "#name ";
     #name .outport.self = this;#})
 #})
@@ -57,7 +57,7 @@ public class #.model  : Component {#
 (map
    (lambda (port)
      (map (define-on model port #{#'()
-  #port .#direction port.#event  = (#formals) => {#(string-if (not (eq? return-type 'void)) #{return #})Runtime.call#(symbol-capitalize direction)<#interface .In,#interface .Out#(string-if (not (eq? return-type 'void)) #{, #return-type#})>(this, () => {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}, new Meta<#interface .In,#interface .Out>(this.#port , "#event"));};
+   #port .#direction port.#event  = (#formals) => {#(string-if (not (eq? return-type 'void)) #{return #})Runtime.call#(symbol-capitalize direction)<#((om:scope-name '_) interface) .In,#((om:scope-name '_) interface) .Out#(string-if (not (eq? return-type 'void)) #{, #return-type#})>(this, () => {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}, new Meta<#((om:scope-name '_) interface) .In,#((om:scope-name '_) interface) .Out>(this.#port , "#event"));};
    #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))
   }#

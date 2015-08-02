@@ -1,2 +1,2 @@
 
-  #(if (eq? scope '*global*) 'DznGlobal scope).#name  reply_#((om:scope-join #f) scope)_#name;
+  #(if (or (null? scope) (om:outer-scope? model scope)) 'DznGlobal scope).#name  reply_#((om:scope-join #f) scope)_#name;

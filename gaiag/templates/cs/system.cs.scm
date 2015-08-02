@@ -23,15 +23,15 @@
 
 using System;
 
-class #.model  : SystemComponent {
+class #.scope_model  : SystemComponent {
 #(map (init-instance #{
     public #component  #name;
 #}) ((compose .elements .instances) model))#
 (map (init-port #{
-    public #interface  #name;
+    public #((om:scope-join) interface)  #name;
 #}) ((compose .elements .ports) model))
 
-  public #.model(Locator locator, String name="", SystemComponent parent=null) : base(locator, name, parent) {
+  public #.scope_model(Locator locator, String name="", SystemComponent parent=null) : base(locator, name, parent) {
 #(map (init-instance #{
     #name  = new #component(locator, "#name ", this);
 #}) (injected-instances model))#
@@ -46,6 +46,6 @@ class #.model  : SystemComponent {
     #port  = #instance;
 #}) (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
 # (map (connect-ports model #{
-    #interface .connect(#provided , #required);
+    #((om:scope-name '_) interface) .connect(#provided , #required);
 #}) (filter (negate bind-port?) ((compose .elements .bindings) model)))}
 }

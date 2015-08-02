@@ -1,1 +1,1 @@
-#((om:scope-join #f) scope).#name .#field
+#(if (or (null? scope) (om:outer-scope? model scope)) 'DznGlobal ((om:scope-join) scope)).#name .#field

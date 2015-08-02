@@ -86,13 +86,13 @@ class main {
 
   private class EventMap : Dictionary<String, Action> {};
 
-  private static EventMap fillEventMap(#.model  m) {
+  private static EventMap fillEventMap(#.scope_model  m) {
   V<int> v = new V<int> (0);
   EventMap e = new EventMap();
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction port.#event  = (#formals) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued<#(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name >("#port .", "#event ", e, "#port .#reply-name _");#})};
+    m.#port .#direction port.#event  = (#formals) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued<#(if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'DznGlobal reply-scope).#reply-name >("#port .", "#event ", e, "#port .#reply-name _");#})};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
 #(map
@@ -106,7 +106,7 @@ class main {
   public static void Main(String[] args) {
     Locator locator = new Locator();
     Runtime runtime = new Runtime(() => {System.Console.Error.WriteLine("illegal"); Environment.Exit(0);});
-    #.model  sut = new #.model(locator.set(runtime), "sut");
+    #.scope_model  sut = new #.scope_model(locator.set(runtime), "sut");
     EventMap e = fillEventMap(sut);
     String line;
     while ((line = System.Console.ReadLine()) != null) {
