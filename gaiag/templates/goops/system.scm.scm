@@ -1,4 +1,4 @@
-(define-class <dezyne:#.model > (<dezyne:system>)#
+(define-class <dezyne:#.scope_model > (<dezyne:system>)#
 (map (init-instance #{#'()
   (#name  :accessor .#name  :init-value ##f)#})
      ((compose .elements .instances) model))#
@@ -6,7 +6,7 @@
   (#port  :accessor .#port  :init-value ##f :init-keyword :#port)#})
      (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model)))))
 
-(define-method (initialize (o <dezyne:#.model >) args)
+(define-method (initialize (o <dezyne:#.scope_model >) args)
   (next-method)
   (let-keywords
    args ##f ((locator ##f)

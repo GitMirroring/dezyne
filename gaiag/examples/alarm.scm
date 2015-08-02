@@ -22,50 +22,53 @@
 ;;; Code:
 
 ;; Handwritten
-(define-class <Sensor> (<component>)
+(define-class <dezyne:Sensor> (<dezyne:component>)
   (sensor :accessor .sensor :init-value #f))
 
-(define-method (initialize (o <Sensor>) args)
+(define-method (initialize (o <dezyne:Sensor>) args)
   (next-method)
   (set! (.sensor o)
-        (make <ISensor>
-          :in (make <ISensor.in>
+        (make <dezyne:ISensor>
+          :in (make <dezyne:ISensor.in>
                 :name 'sensor
                 :self o
                 :enable (lambda () (enable o))
                 :disable (lambda () (disable o))))))
 
-(define-method (enable (o <Sensor>))
+(define-method (enable (o <dezyne:Sensor>))
   (stderr "Sensor.enable\n"))
 
-(define-method (disable (o <Sensor>))
+(define-method (disable (o <dezyne:Sensor>))
   (stderr "Sensor.disable\n"))
 
-(define-class <Siren> (<component>)
+(define-class <dezyne:Siren> (<dezyne:component>)
   (siren :accessor .siren :init-value #f))
 
-(define-method (initialize (o <Siren>) args)
+(define-method (initialize (o <dezyne:Siren>) args)
   (next-method)
-  (set! (.siren o) (make <ISiren>
+  (set! (.siren o) (make <dezyne:ISiren>
                      :in
-                     (make <ISiren.in>
+                     (make <dezyne:ISiren.in>
                        :name 'siren
                        :self o
                        :turnon (lambda () (turnon o))
                        :turnoff (lambda () (turnoff o))))))
 
-(define-method (turnon (o <Siren>))
+(define-method (turnon (o <dezyne:Siren>))
   (stderr "Siren.turnon\n"))
 
-(define-method (turnoff (o <Siren>))
+(define-method (turnoff (o <dezyne:Siren>))
   (stderr "Siren.turnoff\n"))
 
 (define (main args)
-  (let ((sut (make <AlarmSystem>
-                  :console.out
-                  (make <IConsole.out>
-                    :detected (lambda () (stderr "Console.detected\n"))
-                    :deactivated (lambda () (stderr "Console.deactivated\n"))))))
+  (let* ((loc (make <dezyne:locator>))
+         (rt (make <dezyne:runtime>))
+         (sut (make <dezyne:AlarmSystem>
+                :locator (set loc rt)
+                :console.out
+                (make <dezyne:IConsole.out>
+                  :detected (lambda () (stderr "Console.detected\n"))
+                  :deactivated (lambda () (stderr "Console.deactivated\n"))))))
     (action (.alarm sut) .console .in .arm)
     (action (.sensor sut) .sensor .out .triggered)
     (action (.alarm sut) .console .in .disarm)
