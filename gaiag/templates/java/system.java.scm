@@ -1,16 +1,16 @@
-class #.model  extends SystemComponent {
+class #.scope_model  extends SystemComponent {
 #(map (init-instance #{
     #component  #name;
 #}) ((compose .elements .instances) model))#
 (map (init-port #{
-    #interface  #name;
+    #((om:scope-join) interface)  #name;
 #}) ((compose .elements .ports) model))
 
-  public #.model(Locator locator) {this(locator, "");};
+  public #.scope_model(Locator locator) {this(locator, "");};
 
-  public #.model(Locator locator, String name) {this(locator, name, null);};
+  public #.scope_model(Locator locator, String name) {this(locator, name, null);};
 
-  public #.model(Locator locator, String name, SystemComponent parent) {
+  public #.scope_model(Locator locator, String name, SystemComponent parent) {
   super(locator, name, parent);
 #(map (init-instance #{
     #name  = new #component(locator, "#name ", this);

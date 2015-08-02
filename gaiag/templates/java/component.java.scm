@@ -1,4 +1,4 @@
-class #.model  extends Component {#
+class #.scope_model  extends Component {#
 (->string (map (declare-enum model) (om:enums (.behaviour model))))#
 (->string (map declare-integer (om:integers (.behaviour model))))
 #
@@ -7,29 +7,29 @@ class #.model  extends Component {#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
 #
     (map (init-port #{#'()
-  #interface  #name;#}) ((compose .elements .ports) model))
+  #((om:scope-join) interface)  #name;#}) ((compose .elements .ports) model))
 
-  public #.model(Locator locator) {this(locator, "");};
+  public #.scope_model(Locator locator) {this(locator, "");};
 
-  public #.model(Locator locator, String name) {this(locator, name, null);};
+  public #.scope_model(Locator locator, String name) {this(locator, name, null);};
 
-  public #.model(Locator locator, String name, SystemComponent parent) {
+  public #.scope_model(Locator locator, String name, SystemComponent parent) {
     super(locator, name, parent);
     this.flushes = true;#
 (map (init-member model #{#'()
     #(string-if (eq? expression (if #f #f)) "" #{#name  = #expression ;#})#}) (om:variables model))#
 (map (init-port #{#'()
-    #name  = new #interface();
+    #name  = new #((om:scope-join) interface)();
     #name .in.name = "#name ";
     #name .in.self = this;#})
     (filter om:provides? ((compose .elements .ports) model)))#
 (map (init-port #{#'()
 #(string-if injected?
 #{
-    #name  = (#interface)locator.get(#interface .class);
+    #name  = (#((om:scope-join) interface))locator.get(#((om:scope-join) interface) .class);
 #}
 #{
-    #name  = new #interface();
+    #name  = new #((om:scope-join) interface)();
     #name .out.name = "#name ";
     #name .out.self = this;#})
 #})
@@ -37,7 +37,7 @@ class #.model  extends Component {#
 (map
    (lambda (port)
      (map (define-on model port #{#'()
-  #port .#direction .#event  = new #(action-type return-type formal-types)() {public #return-type  action(#formals) {#(string-if (not (eq? return-type 'void)) #{return #})Runtime.call#(symbol-capitalize direction)(#.model .this, new #(action-type return-type '()) () {public #return-type  action() {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}}, new Meta(#.model .this.#port , "#event"));};};
+  #port .#direction .#event  = new #(action-type return-type formal-types)() {public #return-type  action(#formals) {#(string-if (not (eq? return-type 'void)) #{return #})Runtime.call#(symbol-capitalize direction)(#.scope_model .this, new #(action-type return-type '()) () {public #return-type  action() {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}}, new Meta(#.scope_model .this.#port , "#event"));};};
    #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))
   };#

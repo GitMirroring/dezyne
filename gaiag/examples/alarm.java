@@ -22,9 +22,10 @@
 // Code:
 
 // Handwritten
-class Console {
+class Console extends Component {
   IConsole console;
-  public Console(Runtime runtime, String name, ComponentBase parent) {
+  public Console(Locator locator, String name, SystemComponent parent) {
+    super(locator, name, parent);
     console = new IConsole();
     console.out.detected = new Action() {
         public void action() {
@@ -39,9 +40,10 @@ class Console {
   }
 }
 
-class Sensor {
+class Sensor extends Component {
   ISensor sensor;
-  public Sensor(Runtime runtime, String name, ComponentBase parent) {
+  public Sensor(Locator locator, String name, SystemComponent parent) {
+    super(locator, name, parent);
     sensor = new ISensor();
     sensor.in.enable = new Action() {
         public void action() {
@@ -56,9 +58,10 @@ class Sensor {
   }
 }
 
-class Siren {
+class Siren extends Component {
   ISiren siren;
-  public Siren(Runtime runtime, String name, ComponentBase parent) {
+  public Siren(Locator locator, String name, SystemComponent parent) {
+    super(locator, name, parent);
     siren = new ISiren();
     siren.in.turnon = new Action() {
         public void action() {
@@ -75,17 +78,21 @@ class Siren {
 
 class alarm {
   public static void main(String[] args) {
+    Locator locator = new Locator();
     Runtime runtime = new Runtime();
-    System.err.println("alarm main");
-    AlarmSystem alarm = new AlarmSystem(runtime);
-    Console console = new Console(runtime, "", null);
-    Interface.connect(alarm.console, console.console);
+    AlarmSystem sut = new AlarmSystem(locator.set(runtime), "sut");
+    //Console console = new Console(runtime, "", null);
+    //Interface.connect(sut.console, console.console);
+    sut.console.out.detected = new Action() {public void action() {System.err.println("Console.detected");}};
+    sut.console.out.deactivated = new Action() {public void action() {System.err.println("Console.deactivated");}};
 
     // Test trace
 
-    alarm.console.in.arm.action();
-    alarm.sensor.sensor.out.triggered.action();
-    alarm.console.in.disarm.action();
-    alarm.sensor.sensor.out.disabled.action();
+    sut.console.in.arm.action();
+    sut.sensor.sensor.out.triggered.action();
+    Runtime.flush(sut.sensor);
+    sut.console.in.disarm.action();
+    sut.sensor.sensor.out.disabled.action();
+    Runtime.flush(sut.sensor);
   }
 }

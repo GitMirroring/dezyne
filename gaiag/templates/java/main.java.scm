@@ -79,13 +79,13 @@ class main<R> {
 
   private static class EventMap extends HashMap<String, Action> {};
 
-  private static EventMap fillEventMap(final #.model  m) {
+  private static EventMap fillEventMap(final #.scope_model  m) {
   final V<Integer> v = new V<Integer> (0);
   final EventMap e = new EventMap();
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction .#event  = new #(action-type return-type formal-types)() {public #return-type  action(#formals) {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued("#port .", "#event ", e, "#port .#reply-name _", #(if (eq? reply-scope '*global*) 'DznGlobal reply-scope).#reply-name .class);#})};};
+    m.#port .#direction .#event  = new #(action-type return-type formal-types)() {public #return-type  action(#formals) {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued("#port .", "#event ", e, "#port .#reply-name _", #(if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'DznGlobal reply-scope).#reply-name .class);#})};};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
 #(map
@@ -99,7 +99,7 @@ class main<R> {
   public static void main(String[] args) throws IOException {
     Locator locator = new Locator();
     Runtime runtime = new Runtime(new Action() {public void action() {System.err.println("illegal");System.exit(0);}});
-    #.model  sut = new #.model(locator.set(runtime), "sut");
+    #.scope_model  sut = new #.scope_model(locator.set(runtime), "sut");
     EventMap e = fillEventMap(sut);
     main.reader = new Reader();
     String line;
