@@ -53,7 +53,7 @@
        (lambda (. args)#
         (string-if (eq? return-type 'void) #{#'()
       (log-#direction  "#port ." '#event  e)#}#{#'()
-    (log-valued "#port ." '#event  e (lambda (s) (assoc-ref #(if (eq? reply-scope '*global*) 'global reply-scope) -#reply-name -alist (string->symbol (drop-prefix s "#port .#reply-name _")))) (lambda (r) (symbol-append '#reply-name _ (assoc-xref #(if (eq? reply-scope '*global*) 'global reply-scope) -#reply-name -alist r))))#})))
+    (log-valued "#port ." '#event  e (lambda (s) (assoc-ref #(if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'global ((om:scope-join #f) reply-scope)) -#reply-name -alist (string->symbol (drop-prefix s "#port .#reply-name _")))) (lambda (r) (symbol-append '#reply-name _ (assoc-xref #(if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'global ((om:scope-join #f) reply-scope)) -#reply-name -alist r))))#})))
 #})
                 (filter (negate (om:dir-matches? port))
                         (om:events port)))) (om:ports model))       e))

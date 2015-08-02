@@ -1,1 +1,0 @@
-(assoc-ref #((om:scope-join #f) scope)-#name -alist '#field)

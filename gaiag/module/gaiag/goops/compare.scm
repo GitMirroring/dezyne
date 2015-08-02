@@ -100,8 +100,7 @@
                (om->list (.arguments b)))))
 
 (define-method (equal? (a <literal>) (b <literal>))
-  (and (eq? (.scope a) (.scope b))
-       (eq? (.type a) (.type b))
+  (and (equal? (name a) (.name b))
        (eq? (.field a) (.field b))))
 
 (define-method (equal? (a <field>) (b <field>))

@@ -102,7 +102,6 @@
            .range
            .recursive
            .right
-           .scope
            .signature
            .statement
            .then
@@ -176,9 +175,6 @@
 
 (define-class <ast> ())
 
-(define-class <named> (<ast>)
-  (name :accessor .name :init-value #f :init-keyword :name))
-
 (define-class <ast-list> (<ast>)
   (elements :accessor @elements :init-form (list) :init-keyword :elements))
 
@@ -188,9 +184,10 @@
 (define-class <bindings> (<ast-list>))
 (define-class <events> (<ast-list>))
 (define-class <fields> (<ast-list>))
+(define-class <formals> (<ast-list>))
 (define-class <functions> (<ast-list>))
 (define-class <instances> (<ast-list>))
-(define-class <formals> (<ast-list>))
+(define-class <name> (<ast-list>))
 (define-class <ports> (<ast-list>))
 (define-class <root> (<ast-list>))
 (define-class <triggers> (<ast-list>))
@@ -200,7 +197,6 @@
 (define-class <statement> (<ast>))
 (define-class <compound> (<ast-list> <statement>))
 
-(define-class <context-vector> (<ast-list>)) ;; ugh
 
 (define ast-lists
   (list
@@ -210,15 +206,15 @@
     <compound>
     <events>
     <fields>
+    <formals>
     <functions>
     <instances>
-    <formals>
+    <name>
     <ports>
     <root>
     <triggers>
     <types>
     <variables>
-    <context-vector> ;; URG
     ))
 
 (define ast-list-names (map class-name ast-lists))
@@ -244,6 +240,9 @@
                     (member name ast-list-names)
                  (eq? name (class-name class))))))
 
+(define-class <named> (<ast>)
+  (name :accessor .name :init-form (make <name>) :init-keyword :name))
+
 (define-class <model> (<named>))
 
 (define-class <import> (<named>))
@@ -253,22 +252,21 @@
   (events :accessor .events :init-form (make <events>) :init-keyword :events)
   (behaviour :accessor .behaviour :init-value #f :init-keyword :behaviour))
 
-(define-class <*type*> (<ast>)
-  (scope :accessor .scope :init-value #f :init-keyword :scope))
-
-(define-class <type> (<named> <*type*>)
-  (scope :accessor .scope :init-value #f :init-keyword :scope))
+(define-class <*type*> (<named>)) ;; REMOVEME
+(define-class <type> (<*type*>))
 
 (define-class <signature> (<ast>)
-  (type :accessor .type :init-value (make <type>) :init-keyword :type)
+  (type :accessor .type :init-form (make <type>) :init-keyword :type)
   (formals :accessor .formals :init-form (make <formals>) :init-keyword :formals))
 
-(define-class <event> (<named>)
+(define-class <event> (<ast>)
+  (name :accessor .name :init-value #f :init-keyword :name)
   (signature :accessor .signature :init-form (make <signature>) :init-keyword :signature)
   (direction :accessor .direction :init-value #f :init-keyword :direction))
 
-(define-class <port> (<named>)
-  (type :accessor .type :init-value #f :init-keyword :type)
+(define-class <port> (<ast>)
+  (name :accessor .name :init-value #f :init-keyword :name)
+  (type :accessor .type :init-value (make <name>) :init-keyword :type)
   (direction :accessor .direction :init-value #f :init-keyword :direction)
   (injected :accessor .injected :init-value #f :init-keyword :injected))
 
@@ -282,27 +280,19 @@
 
 (define-class <otherwise> (<expression>))
 
-(define-class <var> (<named>))
+(define-class <var> (<ast>)
+  (name :accessor .name :init-value #f :init-keyword :name))
 
 (define-class <field> (<ast>)
   (identifier :accessor .identifier :init-value #f :init-keyword :identifier)
   (field :accessor .field :init-value #f :init-keyword :field))
 
-(define-class <value> (<ast>)
-  (type :accessor .type :init-value #f :init-keyword :type)
+(define-class <literal> (<named>)
   (field :accessor .field :init-value #f :init-keyword :field))
 
-(define-class <literal> (<ast>)
-  (scope :accessor .scope :init-value #f :init-keyword :scope)
-  (type :accessor .type :init-value #f :init-keyword :type)
-  (field :accessor .field :init-value #f :init-keyword :field))
-
-(define-class <value> (<ast>)
-  (type :accessor .type :init-value #f :init-keyword :type)
-  (field :accessor .field :init-value #f :init-keyword :field))
-
-(define-class <formal> (<named>)
-  (type :accessor .type :init-value (make <type>) :init-keyword :type)
+(define-class <formal> (<ast>)
+  (name :accessor .name :init-value #f :init-keyword :name)
+  (type :accessor .type :init-form (make <type>) :init-keyword :type)
   (direction :accessor .direction :init-value #f :init-keyword :direction))
 
 (define-class <component> (<model>)
@@ -330,13 +320,15 @@
   (from :accessor .from :init-value 0 :init-keyword :from)
   (to :accessor .to :init-value 0 :init-keyword :to))
 
-(define-class <behaviour> (<named>)
+(define-class <behaviour> (<ast>)
+  (name :accessor .name :init-value #f :init-keyword :name)
   (types :accessor .types :init-form (make <types>) :init-keyword :types)
   (variables :accessor .variables :init-form (make <variables>) :init-keyword :variables)
   (functions :accessor .functions :init-form (make <functions>) :init-keyword :functions)
   (statement :accessor .statement :init-form (make <compound>) :init-keyword :statement))
 
-(define-class <function> (<named>)
+(define-class <function> (<ast>)
+  (name :accessor .name :init-value #f :init-keyword :name)
   (signature :accessor .signature :init-form (make <signature>) :init-keyword :signature)
   (recursive :accessor .recursive :init-value #f :init-keyword :recursive)
   (statement :accessor .statement :init-value #f :init-keyword :statement))
@@ -379,8 +371,9 @@
 (define-class <return> (<imperative>)
   (expression :accessor .expression :init-value #f :init-keyword :expression))
 
-(define-class <variable> (<named> <imperative>)
-  (type :accessor .type :init-value 'bool :init-keyword :type)
+(define-class <variable> (<imperative>)
+  (name :accessor .name :init-value #f :init-keyword :name)
+  (type :accessor .type :init-form (make <type> :name 'bool) :init-keyword :type)
   (expression :accessor .expression :init-form (make <expression>) :init-keyword :expression))
 
 (define-class <bind> (<statement>)
@@ -391,8 +384,9 @@
   (instance :accessor .instance :init-value #f :init-keyword :instance)
   (port :accessor .port :init-value #f :init-keyword :port))
 
-(define-class <instance> (<named> <statement>)
-  (component :accessor .component :init-value #f :init-keyword :component))
+(define-class <instance> (<statement>)
+  (name :accessor .name :init-value #f :init-keyword :name)
+  (component :accessor .component :init-value (make <name>) :init-keyword :component))
 
 (define-class <error> (<ast>)
   (ast :accessor .ast :init-value #f :init-keyword :ast)

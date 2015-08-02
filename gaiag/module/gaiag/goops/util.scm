@@ -363,17 +363,12 @@
 ;;   ((is? <extern>) (om:type o type)))
 
 (define-method (om:extern (o <model>) (type <type>))
-  (find (lambda (o) (and (eq? (.name o) (.name type))
-                         ;;(or (eq? (.scope o) (.scope type)) (and (eq? (.scope o) '*global*) (not (.scope type))))
-                         ;;(eq? (.scope o) (.scope type)) NEW gone
-                         ))
+  (find (lambda (o) (and (equal? (.name o) (.name type))))
         (append (om:externs o) (om:externs))))
 
 (define-method (om:extern (o <component>) (type <type>))
   (or (next-method)
-      (find (lambda (o) (and (eq? (.name o) (.name type))
-                             ;;(eq? (.scope o) (.scope type))
-                             )) ;; NEW
+      (find (lambda (o) (and (equal? (.name o) (.name type))))
             (om:interface-externs o))))
 
 (define ((make-interface-integer port) o)
@@ -470,16 +465,12 @@
   (find (lambda (o) (eq? (.name o) name)) (append (om:types o) (om:types) builtin-types)))
 
 (define-method (om:type (o <model>) (type <type>))
-  (or (find (lambda (o) (and (eq? (.name o) (.name type))
-                             (or (eq? (.scope o) (.scope type))
-                                 (and (or (eq? (.scope o) '*global*))
-                                      (not (.scope type))))))
+  (or (find (lambda (o) (equal? (.name o) (.name type)))
             (append (om:types o) (om:types) builtin-types))))
 
 (define-method (om:type (o <component>) (type <type>))
   (or (next-method)
-      (find (lambda (o) (and (eq? (.name o) (.name type))
-                             (eq? (.scope o) (.scope type))))
+      (find (lambda (o) (equal? (.name o) (.name type)))
             (om:interface-types o))))
 
 (define-method (om:type (o <model>))

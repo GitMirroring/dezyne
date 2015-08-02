@@ -726,7 +726,7 @@
         (next-trail-empty model info 'reply (->symbol trigger))
         (let* ((reply (.reply info))
                (next (symbol->literal model (car trail)))
-               (port (and (is-a? model <component>) (.scope next)))
+               (port (and (is-a? model <component>) ((compose car .elements .name) next)))
                (scope (and port (is-a? model <component>) (.type (om:port model port))))
                (reply (make <literal> :name (.name reply) :field (.field reply)))
                (next-reply (make <literal> :name (.name next) :field (.field next))))

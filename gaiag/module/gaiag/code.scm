@@ -410,10 +410,9 @@
                     (comma ,comma)
                     (comma-space ,comma-space)))))
       (($ <reply> (and ($ <expression> ($ <literal> name field)) (get! expression)))
-       (debug "0scope: ~a\n" (.scope name))
        (snippet 'reply
                 `((space ,space)
-                  (scope ,(.scope name))
+                  (scope ,(om:scope name))
                   (name ,(.name name))
                   (expression ,(expression->string model (expression) locals)))))
       (($ <reply> (and ($ <expression> ($ <var> name)) (get! expression)))

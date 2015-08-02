@@ -126,14 +126,11 @@
 
     (('data value) (make <data> :value value))
 
-    (('enum name scope fields)
-     (make <enum>
-       :name name
-       :scope scope
-       :fields (ast->om- fields)))
+    (('enum name fields)
+     (make <enum> :name name :fields (ast->om- fields)))
 
-    (('extern name scope value)
-     (make <extern> :name name :scope scope :value value))
+    (('extern name value)
+     (make <extern> :name name :value value))
 
     (('event name signature direction)
      (make <event>
@@ -181,8 +178,8 @@
 
     (('import name) (make <import> :name name))
 
-    (('int name scope range)
-     (make <int> :name name :scope scope :range (ast->om- range)))
+    (('int name range)
+     (make <int> :name name :range (ast->om- range)))
 
     (('instance name component) (make <instance> :name name :component component))
 
@@ -197,8 +194,11 @@
        :events (ast->om- (or (null-is-#f (assoc 'events body)) '(events)))
        :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->om-)))
 
-    (('literal scope type field)
-     (make <literal> :scope scope :type type :field field))
+    (('literal name field)
+     (make <literal> :name name :field field))
+
+    (('name name ...)
+     (make <name> :name name))
 
     (('on triggers statement)
      (make <on> :triggers (ast->om- triggers) :statement (ast->om- statement)))
@@ -262,11 +262,7 @@
     (('triggers triggers ...)
      (make <triggers> :elements (map ast->om- triggers)))
 
-    (('type scope ('type name)) (make <type> :name name :scope scope))
-
     (('type name) (make <type> :name name))
-
-    (('type name scope) (make <type> :name name :scope scope))
 
     (('types types ...) (make <types> :elements (map ast->om- types)))
 
@@ -277,8 +273,6 @@
 
     (('variables variables ...)
      (make <variables> :elements (map ast->om- variables)))
-
-    (('value type field) (make <value> :type type :field field))
 
     ((h t ...) (map ast->om- ast))
 

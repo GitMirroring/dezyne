@@ -62,7 +62,6 @@
            .range
            .recursive
            .right
-           .scope
            .signature
            .statement
            .then
@@ -694,12 +693,6 @@
     (('name scope ... name) name)
     ((or 'bool 'void) ast)
     (_ (cadr ast))))
-
-(define (.scope ast)
-  (match ast
-    (('type name) #f)
-    (('name scope ... name) scope)
-    ((or 'bool 'void) '())))
 
 (define (.elements ast)
   (if (pair? ast)
