@@ -1,1 +1,1 @@
-reply_#(*scope* scope)_#name  = #expression;
+reply_#((om:scope-join #f) scope)_#name  = #expression;

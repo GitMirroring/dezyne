@@ -59,7 +59,7 @@
     (void)self;
     #statement #
     (if (not (eq? type 'void))
-(list "    return self->reply_" (*scope* reply-scope) "_" reply-name ";\n"
+(list "    return self->reply_" ((om:scope-join #f) reply-scope) "_" reply-name ";\n"
       )) }
 
 #}) (filter (om:dir-matches? port) (om:events port))))
@@ -73,9 +73,9 @@
     runtime_event(helper_#port _#event , &a);
 #(string-if (not (eq? type 'void))
 #{ #.model * self_ = self->#direction .self; 
-#}) runtime_trace_out(&self->in, &self->out, #(string-if (eq? type 'void) #{"return"#} #{#(*scope* reply-scope)_#reply-name _to_string (self_->reply_#(*scope* reply-scope)_#reply-name)#}));
+#}) runtime_trace_out(&self->in, &self->out, #(string-if (eq? type 'void) #{"return"#} #{#((om:scope-join #f) reply-scope)_#reply-name _to_string (self_->reply_#((om:scope-join #f) reply-scope)_#reply-name)#}));
 #(string-if (not (eq? type 'void))
-#{ return self_->reply_#(*scope* reply-scope)_#reply-name;
+#{ return self_->reply_#((om:scope-join #f) reply-scope)_#reply-name;
 #}) }
 #}) (filter om:in? (om:events port))))
     (filter om:provides? (om:ports model)))#

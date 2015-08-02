@@ -1,2 +1,2 @@
 
-#space (set! (.reply-#(*scope* scope)-#name  o) #expression)
+#space (set! (.reply-#((om:scope-join #f) scope)-#name  o) #expression)

@@ -1,1 +1,1 @@
-#((*ns-scope* model) scope-name)::#field
+#((c++:scope-join model) scope-name)::#field

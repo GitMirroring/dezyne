@@ -1,11 +1,11 @@
-##ifndef ENUM_TO_STRING_#(*scope* scope '_)_#name
-##define ENUM_TO_STRING_#(*scope* scope '_)_#name  1
-inline const char* to_string(#(*scope* scope)::#name ::type v)
+##ifndef ENUM_TO_STRING_#((c++:scope-join #f '_) scope)_#name
+##define ENUM_TO_STRING_#((c++:scope-join #f '_) scope)_#name  1
+inline const char* to_string(#((c++:scope-join #f) scope)::#name ::type v)
 {
   switch(v)
   {
-  #(->string (map (lambda (field) (->string (list "case " (*scope* scope) "::" name "::" field ": return \"" name "_" field "\";\n"))) fields))
+  #(->string (map (lambda (field) (->string (list "case " ((c++:scope-join #f) scope) "::" name "::" field ": return \"" name "_" field "\";\n"))) fields))
   }
   return "";
 }
-##endif // ENUM_TO_STRING_#(*scope* scope '_)_#name
+##endif // ENUM_TO_STRING_#((c++:scope-join #f '_) scope)_#name

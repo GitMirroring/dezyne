@@ -110,10 +110,12 @@
            make-interface-enum
 
            om:scope-name
+           om:scope-join
            om:name
            om:scope
            om:drop-scope
            om:scope+name
+           om:outer-scope?
            ))
 
 (define* ((om:scope-name :optional (infix '_)) o)
@@ -125,6 +127,17 @@
       ((type id (and ('name name ...) (get! name)) t ...) ((om:scope-name infix) (name)))
       ((type 'bool) 'bool)
       ((type 'void) 'void))))
+
+(define (om:outer-scope? model o)
+  (and model (>1 (length o))
+       (not (eq? ((compose car om:scope+name) model) (car o)))))
+
+(define* ((om:scope-join :optional (model #f) (infix '_)) o)
+  (let* ((outer? (om:outer-scope? model o))
+         (scope (if (not model) o
+                    (if outer? (cons null-symbol o)
+                        (om:drop-scope (.name model) o)))))
+    ((->symbol-join infix) scope)))
 
 (define (om:scope+name o)
   (match o
@@ -200,7 +213,7 @@
            (or (is-a? ast <extern>) ;; ignore scope on extern...
                (equal? (om:scope ast) scope)
                (and (not scope)
-                    (equal? (om:scope ast) '(*global*)))))))
+                    (equal? (om:scope ast) '(*)))))))
 
 (define* (om:port model :optional (o #f))
   (match o

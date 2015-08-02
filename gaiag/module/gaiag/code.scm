@@ -85,8 +85,6 @@
            sep
            statements.event
            statements.port
-           *scope*
-           *ns-scope*
            string-if
            ))
 
@@ -113,19 +111,6 @@
 (define join (make-parameter (->join ", ")))
 (define sep (make-parameter ","))
 (define indenter (make-parameter indent))
-
-(define* (*scope* s :optional (infix (string->symbol "::")))
-  (debug "*scope*: ~a\n" s)
-  (if (eq? s '*global*) 'global ((->symbol-join infix) s)))
-
-(define* ((*ns-scope* model :optional (infix (string->symbol "::"))) o)
-  (debug "*ns-scope*[~a]: ~a\n" (.name model) o)
-  (when (>1 (length o))
-    (debug "name: cadr[~a]: ~a\n" (.name model) (cadr (.name model)))
-    (debug "o: car[~a]: ~a\n" o (car o)))
-  (let ((outer (and (>1 (length o)) (not (eq? (cadr (.name model)) (car o))))))
-    (if outer ((->symbol-join infix) (cons null-symbol o))
-        ((->symbol-join infix) (om:drop-scope (.name model) o)))))
 
 (define (dump-indented file-name thunk)
   (dump-output file-name
@@ -848,7 +833,7 @@
                     (name ,.name)
                     (direction ,.direction)
                     (injected? ,.injected)
-                    (interface ,.type))
+                    (interface ,om:scope+name))
            port))
 
 (define (declare-replies o)

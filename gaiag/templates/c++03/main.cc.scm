@@ -56,7 +56,7 @@ typedef std::map<std::string, boost::function<void()> > event_map;
  #(map
    (lambda (port)
      (map (define-on model port #{m.#port .#direction .#event  = boost::bind(#(string-if (eq? return-type 'void) #{&log_#direction , "#port .", "#event ", boost::ref(e)#}
-                                                                                                                 #{&log_valued<#(*scope* reply-scope)::#reply-name ::type>, "#port .", "#event ", boost::ref(e), to_#(*scope* reply-scope)_#reply-name , static_cast<const char*(*)(#(*scope* reply-scope)::#reply-name ::type)>(to_string)#}));
+                                                                                                                 #{&log_valued< #((om:scope-join #f) reply-scope)::#reply-name ::type>, "#port .", "#event ", boost::ref(e), to_#((om:scope-join #f) reply-scope)_#reply-name , static_cast<const char*(*)(#((om:scope-join #f) reply-scope)::#reply-name ::type)>(to_string)#}));
      #}) (filter (negate (om:dir-matches? port)) (om:events port)))) (om:ports model))
   #(map
     (lambda (port)

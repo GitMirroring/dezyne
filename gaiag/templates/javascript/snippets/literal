@@ -1,1 +1,1 @@
-new dezyne.#(*scope* scope)().#name .#field
+new dezyne.#((om:scope-join #f) scope)().#name .#field

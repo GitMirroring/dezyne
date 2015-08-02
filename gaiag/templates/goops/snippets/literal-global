@@ -1,1 +1,1 @@
-(assoc-ref #(*scope* scope)-#name -alist '#field)
+(assoc-ref #((om:scope-join #f) scope)-#name -alist '#field)

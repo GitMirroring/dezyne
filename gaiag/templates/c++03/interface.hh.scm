@@ -28,7 +28,6 @@ struct #.interface
 #}) (filter om:out? ((compose .elements .events) model))) } out;
 
    dezyne::port::meta meta;
-   inline #.interface(dezyne::port::meta m) : meta(m) {}
 
    void check_bindings() const
    {

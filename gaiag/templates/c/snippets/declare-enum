@@ -1,9 +1,9 @@
-##ifndef ENUM_#(*scope* scope)_#name
-##define ENUM_#(*scope* scope)_#name  1
+##ifndef ENUM_#((om:scope-join #f) scope)_#name
+##define ENUM_#((om:scope-join #f) scope)_#name  1
 typedef enum {
-    #((->join ", ") (map (lambda (f) (->string (list (*scope* scope) '_ name '_ f))) fields))
-} #(*scope* scope)_#name;
+    #((->join ", ") (map (lambda (f) (->string (list ((om:scope-join #f) scope) '_ name '_ f))) fields))
+} #((om:scope-join #f) scope)_#name;
 
-int string_to_#(*scope* scope)_#name(char* s);
-#(if (eq? scope '*global*) "static ")char const* #(*scope* scope)_#name _to_string(#(*scope* scope)_#name  v);
-##endif // ENUM_#(*scope* scope)_#name
+int string_to_#((om:scope-join #f) scope)_#name(char* s);
+#(if (eq? scope '*global*) "static ")char const* #((om:scope-join #f) scope)_#name _to_string(#((om:scope-join #f) scope)_#name  v);
+##endif // ENUM_#((om:scope-join #f) scope)_#name

@@ -1,4 +1,4 @@
-Checking out/Comp.csp
+Checking out/OK_NOK.csp
 
 Checking COMPLETE'({IComp.initialize,IComp.recover,IComp.perform_actions}) [F= IF_IComp_(true,true)\diff(Events,{IComp.initialize,IComp.recover,IComp.perform_actions,illegal})
 true
@@ -18,20 +18,20 @@ true
 Checking IF_IDevice_(true,false) :[livelock free]
 true
 
-Checking CO_Comp_(true,true)[[IComp_'.x<-client_'.x|x<-extensions(client_')]] :[deterministic]
+Checking CO_OK_NOK_(true,true)[[IComp_'.x<-client_'.x|x<-extensions(client_')]] :[deterministic]
 true
 
-Checking COMPLETE'({client.initialize,client.recover,client.perform_actions}) [F= CO_Comp_(true,true)[[IComp_'.x'<-client_'.x'|x'<-extensions(client_')]]\diff(Events,{client.initialize,client.recover,client.perform_actions,illegal})
+Checking COMPLETE'({client.initialize,client.recover,client.perform_actions}) [F= CO_OK_NOK_(true,true)[[IComp_'.x'<-client_'.x'|x'<-extensions(client_')]]\diff(Events,{client.initialize,client.recover,client.perform_actions,illegal})
 true
 
-Checking STOP [T= AS_Comp_(false)\diff(Events,{illegal})
+Checking STOP [T= AS_OK_NOK_(false)\diff(Events,{illegal})
 true
 
-Checking AS_Comp_(false) :[deadlock free]
+Checking AS_OK_NOK_(false) :[deadlock free]
 true
 
-Checking IF_IComp_(true,false)[[IComp.x<-client.x|x<-extensions(client)]][[IComp_'.x<-client_'.x|x<-extensions(client_')]]\{IComp_'''.modeling} [F= AS_Comp_(true)\diff(Events,{|illegal,client,client_'|})
+Checking IF_IComp_(true,false)[[IComp.x<-client.x|x<-extensions(client)]][[IComp_'.x<-client_'.x|x<-extensions(client_')]]\{IComp_'''.modeling} [F= AS_OK_NOK_(true)\diff(Events,{|illegal,client,client_'|})
 true
 
-Checking AS_Comp_(true)\diff(Events,{|illegal,client,client_'|}) :[livelock free]
+Checking AS_OK_NOK_(true)\diff(Events,{|illegal,client,client_'|}) :[livelock free]
 true

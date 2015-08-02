@@ -163,9 +163,9 @@
     (('name name ...) ((->symbol-join '.) name))
     (_ o)))
 
-(define ((om:ensure-scope scope) name) ;; FIXME: step-wise search
+(define ((om:ensure-scope scope) name)
   (cond ((member name '(bool void)) name)
-        ((and (>2 (length name)) (eq? ((compose car .scope) name) '*global*))
+        ((and (>2 (length name)) (eq? ((compose car om:scope) name) '*))
          (cons 'name ((compose cddr) name)))
         (else
          (cons 'name (append scope (drop-prefix scope (.elements name)))))))

@@ -59,7 +59,7 @@ namespace dezyne
  #(map
    (lambda (port)
      (map (define-on model port #{m.#port .#direction .#event  = [&] (#formals) {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}
-                                                                                                                 #{return log_valued<#(*scope* reply-scope)::#reply-name ::type>("#port .", "#event ", e, to_#(*scope* reply-scope)_#reply-name , static_cast<const char*(*)(#(*scope* reply-scope)::#reply-name ::type)>(to_string));#})};
+                                                                                                                 #{return log_valued<#((c++:scope-join #f) reply-scope)::#reply-name ::type>("#port .", "#event ", e, to_#((c++:scope-join #f) reply-scope)_#reply-name , static_cast<const char*(*)(#((c++:scope-join #f) reply-scope)::#reply-name ::type)>(to_string));#})};
      #}) (filter (negate (om:dir-matches? port)) (om:events port)))) (om:ports model))
  #(map
     (lambda (port)

@@ -87,7 +87,7 @@ int log_valued(char* prefix, char* event, map* event_map, int (*string_to_value)
    (void)m;
    #(string-if (eq? return-type 'void) #{
    log_#direction("#port .", "#event ", global_event_map);#}#{
-   return log_valued("#port .", "#event ", global_event_map, string_to_#(*scope* reply-scope)_#reply-name , #(*scope* reply-scope)_#reply-name _to_string);#})}
+   return log_valued("#port .", "#event ", global_event_map, string_to_#((om:scope-join #f) reply-scope)_#reply-name , #((om:scope-join #f) reply-scope)_#reply-name _to_string);#})}
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
 void #.model _fill_event_map(#.model * m, map* e) {

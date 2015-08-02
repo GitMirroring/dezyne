@@ -25,7 +25,7 @@ struct #.model
 #}) (om:variables model))#
     (delete-duplicates (append-map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
-#(*scope* scope)::#interface  #name;
+#((c++:scope-join model) interface)  #name ;
 #}) ((compose .elements .ports) model))
     #.model (const dezyne::locator&);
   void check_bindings() const;

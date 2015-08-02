@@ -46,7 +46,7 @@ class #.model  extends Component {#
      (map (define-on model port #{#'()
   public #return-type  #port _#event (#formals) {
   #statement #(if (not (eq? type 'void))
-(list "return reply_" (*scope* reply-scope) "_" reply-name ";\n")) };
+(list "return reply_" ((om:scope-join #f) reply-scope) "_" reply-name ";\n")) };
 #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))#
 (map (define-function model #{

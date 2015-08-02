@@ -29,7 +29,7 @@ function #.model(locator, meta) {
   this.#port .#direction .#event  = function(#arguments) {
   #(string-if (not (eq? type 'void)) #{return #})this.rt.#(string-if (eq? return-type 'void) "" "r")call_#direction(this, function() {
   #statement #(string-if (not (eq? type 'void))
-#{ return this.reply_#(*scope* reply-scope)_#reply-name;
+#{ return this.reply_#((om:scope-join #f) reply-scope)_#reply-name;
 #}) }.bind(this), [this.#port , '#event '#(string-if (not (eq? type 'void))#{, this.#port .#reply-name _to_string#})]);
 }.bind(this);
 #}) (filter (om:dir-matches? port) (om:events port))))

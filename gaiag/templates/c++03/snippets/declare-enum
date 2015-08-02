@@ -1,5 +1,5 @@
-##ifndef ENUM_#(*scope* scope '_)_#name
-##define ENUM_#(*scope* scope '_)_#name  1
+##ifndef ENUM_#((c++:scope-join #f '_) scope)_#name
+##define ENUM_#((c++:scope-join #f '_) scope)_#name  1
 struct #name
 {
   enum type
@@ -7,4 +7,4 @@ struct #name
     #((->join ", ") fields)
   };
 };
-##endif // ENUM_#(*scope* scope '_)_#name
+##endif // ENUM_#((c++:scope-join #f '_) scope)_#name

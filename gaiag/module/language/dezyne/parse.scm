@@ -79,7 +79,7 @@
     (models namespace name lbrace models rbrace) : (append $1 (map (add-scope $3) $5)))
 
    (name
-    (dot Identifier) : (note-location `(name *global* ,$2) @1)
+    (dot Identifier) : (note-location `(name * ,$2) @1)
     (name-pair) : $1
     (name dot Identifier) : (append $1 `(,$3)))
 

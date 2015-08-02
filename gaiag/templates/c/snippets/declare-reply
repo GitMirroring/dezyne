@@ -1,1 +1,1 @@
-int reply_#(*scope* scope)_#name;
+int reply_#((om:scope-join #f) scope)_#name;

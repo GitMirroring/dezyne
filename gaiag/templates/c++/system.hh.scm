@@ -15,7 +15,7 @@
 struct #.model
 {
    dezyne::meta dzn_meta;
-#(map (lambda (binding) (list ((om:scope-name ) (.component (om:instance model (injected-instance-name binding)))) " "
+#(map (lambda (binding) (list ((om:scope-name) (.component (om:instance model (injected-instance-name binding)))) " "
                               (injected-instance-name binding) ";\n")) (injected-bindings model)) #
 (if (pair? (injected-bindings model)) (list "dezyne::locator dezyne_local_locator;\n")) #
 (map (init-instance #{

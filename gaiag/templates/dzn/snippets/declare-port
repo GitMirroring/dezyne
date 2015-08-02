@@ -1,1 +1,1 @@
-#direction  #(string-if injected? "injected ")#((om:scope-name) interface))  #name ;
+#direction  #(string-if injected? "injected ")#((om:scope-name) interface)  #name ;

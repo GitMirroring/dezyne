@@ -419,15 +419,11 @@
 (define (typed-elements o)
   (map (lambda (x) ((->symbol-join '_) (append (cons (om:name o) (list x))))) ((compose .elements .fields) o)))
 
-(define* (*scope* s :optional (infix '_))
-  (if (eq? s '*global*) 'global ((->symbol-join infix) s)))
-
-;; (define* ((*scope* model :optional (infix (string->symbol "."))) o)
-;;   (if (eq? o '*global*) null-symbol
-;;       ((->symbol-join infix) (om:drop-scope (.name model) o))))
+(define* ((csp:om:scope-join :optional (infix '_)) o)
+  ((om:scope-join #f infix) o))
 
 (define (enum-scope model e)
-  (symbol-append (*scope* e) '_ (om:name e)))
+  (symbol-append ((csp:scope-join) e) '_ (om:name e)))
 
 (define (enum-values o)
   (match o

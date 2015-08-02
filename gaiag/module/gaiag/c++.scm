@@ -44,6 +44,9 @@
     (map dump (filter (negate om:imported?) ((om:filter <model>) om))))
   "")
 
+(define* ((c++:scope-join :optional (model #f) (infix (string->symbol "::"))) o)
+  ((om:scope-join model infix) o))
+
 (define (dump o)
   (match o
     (($ <interface>) (dump-interface o))

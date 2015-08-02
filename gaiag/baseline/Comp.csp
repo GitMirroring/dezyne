@@ -6,14 +6,14 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = State_Calibrated | State_Error | State_Initialized | State_Uninitialized | calibrate | initialize | modeling | perform_action1 | perform_action2 | perform_actions | recover | result_t_NOK | result_t_OK | return | the_end'
+datatype event_enumeration_alphabet = State_Calibrated | State_Error | State_Initialised | State_Uninitialised | calibrate | initialise | modeling | perform_action1 | perform_action2 | perform_actions | recover | result_t_NOK | result_t_OK | return | the_end'
 
 -- end of combinators
 -- both.csp.scm
 -- end of both.csp.scm
 -- interface.csp.scm
 
-channel IComp: {initialize,perform_actions,recover,the_end'}
+channel IComp: {initialise,perform_actions,recover,the_end'}
 
 channel IComp_': {result_t_OK,result_t_NOK,return}
 channel IComp_in',IComp_out': {IComp_'.result_t_OK,IComp_'.result_t_NOK,IComp_'.return}
@@ -22,29 +22,27 @@ channel IComp_''': {modeling}
 IF_IComp_(IG,CS) = let
 
 IComp_(s) =
-((((s == State_Uninitialized) and true)) & (
-IComp?x:{initialize} -> (
+((((s == State_Uninitialised) and true)) & (
+IComp?x:{initialise} -> (
   IComp_'!result_t_OK -> 
-  let tmp' = State_Initialized within
+  let tmp' = State_Initialised within
   let s = tmp' within
   IComp.the_end' ->
   IComp_(s)
 )
  []
-  IComp?x:{initialize} -> (
+  IComp?x:{initialise} -> (
   IComp_'!result_t_NOK -> 
-  let tmp' = State_Uninitialized within
-  let s = tmp' within
   IComp.the_end' ->
   IComp_(s)
 ))
 []
-((s == State_Uninitialized)) & (
+((s == State_Uninitialised)) & (
 IG & IComp?x:{recover,perform_actions} -> (
   illegal -> STOP
 ))
 []
-(((s == State_Initialized) and true)) & (
+(((s == State_Initialised) and true)) & (
 IComp?x:{perform_actions} -> (
   IComp_'!result_t_OK -> 
   IComp.the_end' ->
@@ -59,15 +57,15 @@ IComp?x:{perform_actions} -> (
   IComp_(s)
 ))
 []
-((s == State_Initialized)) & (
-IG & IComp?x:{initialize,recover} -> (
+((s == State_Initialised)) & (
+IG & IComp?x:{initialise,recover} -> (
   illegal -> STOP
 ))
 []
 (((s == State_Error) and true)) & (
 IComp?x:{recover} -> (
   IComp_'!result_t_OK -> 
-  let tmp' = State_Initialized within
+  let tmp' = State_Initialised within
   let s = tmp' within
   IComp.the_end' ->
   IComp_(s)
@@ -80,7 +78,7 @@ IComp?x:{recover} -> (
 ))
 []
 ((s == State_Error)) & (
-IG & IComp?x:{initialize,perform_actions} -> (
+IG & IComp?x:{initialise,perform_actions} -> (
   illegal -> STOP
 ))
 []
@@ -95,8 +93,8 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                then IComp_(State_Uninitialized)
-                else IComp_(State_Uninitialized) )
+                then IComp_(State_Uninitialised)
+                else IComp_(State_Uninitialised) )
                [[x<-IComp_in'.x|x<-extensions(IComp_in')]] [|{|IComp,IComp_in',IComp.the_end'|}|] REORDER' [[IComp_out'.x<-x|x<-extensions(IComp_out')]] \ {|IComp_in',IComp.the_end'|})
 
 -- end of interface.csp.scm
@@ -104,7 +102,7 @@ within compress((if CS
 -- end of both.csp.scm
 -- interface.csp.scm
 
-channel IDevice: {calibrate,initialize,perform_action1,perform_action2,the_end'}
+channel IDevice: {calibrate,initialise,perform_action1,perform_action2,the_end'}
 
 channel IDevice_': {result_t_OK,result_t_NOK,return}
 channel IDevice_in',IDevice_out': {IDevice_'.result_t_OK,IDevice_'.result_t_NOK,IDevice_'.return}
@@ -113,29 +111,27 @@ channel IDevice_''': {modeling}
 IF_IDevice_(IG,CS) = let
 
 IDevice_(s) =
-((((s == State_Uninitialized) and true)) & (
-IDevice?x:{initialize} -> (
+((((s == State_Uninitialised) and true)) & (
+IDevice?x:{initialise} -> (
   IDevice_'!result_t_OK -> 
-  let tmp' = State_Initialized within
+  let tmp' = State_Initialised within
   let s = tmp' within
   IDevice.the_end' ->
   IDevice_(s)
 )
  []
-  IDevice?x:{initialize} -> (
+  IDevice?x:{initialise} -> (
   IDevice_'!result_t_NOK -> 
-  let tmp' = State_Uninitialized within
-  let s = tmp' within
   IDevice.the_end' ->
   IDevice_(s)
 ))
 []
-((s == State_Uninitialized)) & (
+((s == State_Uninitialised)) & (
 IG & IDevice?x:{calibrate,perform_action1,perform_action2} -> (
   illegal -> STOP
 ))
 []
-(((s == State_Initialized) and true)) & (
+(((s == State_Initialised) and true)) & (
 IDevice?x:{calibrate} -> (
   IDevice_'!result_t_OK -> 
   let tmp' = State_Calibrated within
@@ -146,14 +142,12 @@ IDevice?x:{calibrate} -> (
  []
   IDevice?x:{calibrate} -> (
   IDevice_'!result_t_NOK -> 
-  let tmp' = State_Initialized within
-  let s = tmp' within
   IDevice.the_end' ->
   IDevice_(s)
 ))
 []
-((s == State_Initialized)) & (
-IDevice?x:{initialize} -> (
+((s == State_Initialised)) & (
+IDevice?x:{initialise} -> (
   IDevice_'!result_t_OK -> 
   IDevice.the_end' ->
   IDevice_(s)
@@ -166,29 +160,23 @@ IDevice?x:{initialize} -> (
 (((s == State_Calibrated) and true)) & (
 IDevice?x:{perform_action1,perform_action2} -> (
   IDevice_'!result_t_OK -> 
-  let tmp' = State_Calibrated within
-  let s = tmp' within
   IDevice.the_end' ->
   IDevice_(s)
 )
  []
   IDevice?x:{perform_action1,perform_action2} -> (
   IDevice_'!result_t_NOK -> 
-  let tmp' = State_Initialized within
+  let tmp' = State_Initialised within
   let s = tmp' within
   IDevice.the_end' ->
   IDevice_(s)
 ))
 []
 ((s == State_Calibrated)) & (
-IDevice?x:{calibrate} -> (
+IDevice?x:{calibrate,initialise} -> (
   IDevice_'!result_t_OK -> 
   IDevice.the_end' ->
   IDevice_(s)
-)
- []
-  IG & IDevice?x:{initialize} -> (
-  illegal -> STOP
 ))
 []
 CS & IDevice?x:{} -> illegal -> STOP
@@ -202,8 +190,8 @@ transparent diamond
 within sbisim(diamond(x))
 
 within compress((if CS
-                then IDevice_(State_Uninitialized)
-                else IDevice_(State_Uninitialized) )
+                then IDevice_(State_Uninitialised)
+                else IDevice_(State_Uninitialised) )
                [[x<-IDevice_in'.x|x<-extensions(IDevice_in')]] [|{|IDevice,IDevice_in',IDevice.the_end'|}|] REORDER' [[IDevice_out'.x<-x|x<-extensions(IDevice_out')]] \ {|IDevice_in',IDevice.the_end'|})
 
 -- end of interface.csp.scm
@@ -213,56 +201,163 @@ within compress((if CS
 
 channel client: extensions(IComp)
 channel device_A: extensions(IDevice)
+channel device_B: extensions(IDevice)
 
 channel client_': extensions(IComp_')
 channel device_A_': extensions(IDevice_')
+channel device_B_': extensions(IDevice_')
 
 
 channel client_''': extensions(IComp_''')
 channel device_A_''': extensions(IDevice_''')
+channel device_B_''': extensions(IDevice_''')
 
 
 
-CO_Comp_(IIG,IG) = let
+CO_OK_NOK_(IIG,IG) = let
 
-Comp_(s) =
+OK_NOK_(s) =
 transition_begin -> (
-((s == State_Uninitialized)) & (
-client?x:{initialize} -> (
-  device_A!initialize ->
+((s == State_Uninitialised)) & (
+client?x:{initialise} -> (
+  device_A!initialise ->
   device_A_'?res:{result_t_OK,result_t_NOK} ->
   (if (res == result_t_OK) then 
-    device_A!calibrate ->
+    device_B!initialise ->
+    device_B_'?res ->
+    (if (res == result_t_OK) then 
+      device_A!calibrate ->
     device_A_'?res ->
     (if (res == result_t_OK) then 
-      let tmp' = State_Initialized within
+      device_B!calibrate ->
+    device_B_'?res ->
+    (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    let tmp' = State_Initialised within
     let s = tmp' within
-    IComp_'!result_t_OK -> 
     transition_end ->
-    Comp_(s)
+    OK_NOK_(s)
 
     else
-      let tmp' = State_Uninitialized within
-    let s = tmp' within
-    IComp_'!result_t_NOK -> 
+      IComp_'!result_t_NOK -> 
     transition_end ->
-    Comp_(s)
+    OK_NOK_(s)
+)
+
+    else
+      (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    let tmp' = State_Initialised within
+    let s = tmp' within
+    transition_end ->
+    OK_NOK_(s)
+
+    else
+      IComp_'!result_t_NOK -> 
+    transition_end ->
+    OK_NOK_(s)
+)
+)
+
+    else
+      (if (res == result_t_OK) then 
+      device_B!calibrate ->
+    device_B_'?res ->
+    (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    let tmp' = State_Initialised within
+    let s = tmp' within
+    transition_end ->
+    OK_NOK_(s)
+
+    else
+      IComp_'!result_t_NOK -> 
+    transition_end ->
+    OK_NOK_(s)
+)
+
+    else
+      (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    let tmp' = State_Initialised within
+    let s = tmp' within
+    transition_end ->
+    OK_NOK_(s)
+
+    else
+      IComp_'!result_t_NOK -> 
+    transition_end ->
+    OK_NOK_(s)
+)
+)
 )
 
   else
     (if (res == result_t_OK) then 
-      let tmp' = State_Initialized within
+      device_A!calibrate ->
+    device_A_'?res ->
+    (if (res == result_t_OK) then 
+      device_B!calibrate ->
+    device_B_'?res ->
+    (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    let tmp' = State_Initialised within
     let s = tmp' within
-    IComp_'!result_t_OK -> 
     transition_end ->
-    Comp_(s)
+    OK_NOK_(s)
 
     else
-      let tmp' = State_Uninitialized within
-    let s = tmp' within
-    IComp_'!result_t_NOK -> 
+      IComp_'!result_t_NOK -> 
     transition_end ->
-    Comp_(s)
+    OK_NOK_(s)
+)
+
+    else
+      (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    let tmp' = State_Initialised within
+    let s = tmp' within
+    transition_end ->
+    OK_NOK_(s)
+
+    else
+      IComp_'!result_t_NOK -> 
+    transition_end ->
+    OK_NOK_(s)
+)
+)
+
+    else
+      (if (res == result_t_OK) then 
+      device_B!calibrate ->
+    device_B_'?res ->
+    (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    let tmp' = State_Initialised within
+    let s = tmp' within
+    transition_end ->
+    OK_NOK_(s)
+
+    else
+      IComp_'!result_t_NOK -> 
+    transition_end ->
+    OK_NOK_(s)
+)
+
+    else
+      (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    let tmp' = State_Initialised within
+    let s = tmp' within
+    transition_end ->
+    OK_NOK_(s)
+
+    else
+      IComp_'!result_t_NOK -> 
+    transition_end ->
+    OK_NOK_(s)
+)
+)
 )
 )
 )
@@ -271,47 +366,151 @@ client?x:{initialize} -> (
   illegal -> STOP
 ))
 []
-((s == State_Initialized)) & (
+((s == State_Initialised)) & (
 client?x:{perform_actions} -> (
   device_A!perform_action1 ->
   device_A_'?res:{result_t_OK,result_t_NOK} ->
   (if (res == result_t_OK) then 
-    device_A!perform_action2 ->
+    device_B!perform_action1 ->
+    device_B_'?res ->
+    (if (res == result_t_OK) then 
+      device_A!perform_action2 ->
     device_A_'?res ->
     (if (res == result_t_OK) then 
-      let tmp' = State_Initialized within
-    let s = tmp' within
-    IComp_'!result_t_OK -> 
+      device_B!perform_action2 ->
+    device_B_'?res ->
+    (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
     transition_end ->
-    Comp_(s)
+    OK_NOK_(s)
 
     else
-      let tmp' = State_Error within
+      IComp_'!result_t_NOK -> 
+    let tmp' = State_Error within
     let s = tmp' within
-    IComp_'!result_t_NOK -> 
     transition_end ->
-    Comp_(s)
+    OK_NOK_(s)
+)
+
+    else
+      (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    transition_end ->
+    OK_NOK_(s)
+
+    else
+      IComp_'!result_t_NOK -> 
+    let tmp' = State_Error within
+    let s = tmp' within
+    transition_end ->
+    OK_NOK_(s)
+)
+)
+
+    else
+      (if (res == result_t_OK) then 
+      device_B!perform_action2 ->
+    device_B_'?res ->
+    (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    transition_end ->
+    OK_NOK_(s)
+
+    else
+      IComp_'!result_t_NOK -> 
+    let tmp' = State_Error within
+    let s = tmp' within
+    transition_end ->
+    OK_NOK_(s)
+)
+
+    else
+      (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    transition_end ->
+    OK_NOK_(s)
+
+    else
+      IComp_'!result_t_NOK -> 
+    let tmp' = State_Error within
+    let s = tmp' within
+    transition_end ->
+    OK_NOK_(s)
+)
+)
 )
 
   else
     (if (res == result_t_OK) then 
-      let tmp' = State_Initialized within
-    let s = tmp' within
-    IComp_'!result_t_OK -> 
+      device_A!perform_action2 ->
+    device_A_'?res ->
+    (if (res == result_t_OK) then 
+      device_B!perform_action2 ->
+    device_B_'?res ->
+    (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
     transition_end ->
-    Comp_(s)
+    OK_NOK_(s)
 
     else
-      let tmp' = State_Error within
+      IComp_'!result_t_NOK -> 
+    let tmp' = State_Error within
     let s = tmp' within
-    IComp_'!result_t_NOK -> 
     transition_end ->
-    Comp_(s)
+    OK_NOK_(s)
+)
+
+    else
+      (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    transition_end ->
+    OK_NOK_(s)
+
+    else
+      IComp_'!result_t_NOK -> 
+    let tmp' = State_Error within
+    let s = tmp' within
+    transition_end ->
+    OK_NOK_(s)
+)
+)
+
+    else
+      (if (res == result_t_OK) then 
+      device_B!perform_action2 ->
+    device_B_'?res ->
+    (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    transition_end ->
+    OK_NOK_(s)
+
+    else
+      IComp_'!result_t_NOK -> 
+    let tmp' = State_Error within
+    let s = tmp' within
+    transition_end ->
+    OK_NOK_(s)
+)
+
+    else
+      (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    transition_end ->
+    OK_NOK_(s)
+
+    else
+      IComp_'!result_t_NOK -> 
+    let tmp' = State_Error within
+    let s = tmp' within
+    transition_end ->
+    OK_NOK_(s)
+)
+)
 )
 )
 )
  []
-  IIG & client?x:{initialize,recover} -> (
+  IIG & client?x:{initialise,recover} -> (
   illegal -> STOP
 ))
 []
@@ -320,27 +519,43 @@ client?x:{recover} -> (
   device_A!calibrate ->
   device_A_'?res:{result_t_OK,result_t_NOK} ->
   (if (res == result_t_OK) then 
-    let tmp' = State_Initialized within
+    device_B!calibrate ->
+    device_B_'?res ->
+    (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    let tmp' = State_Initialised within
     let s = tmp' within
-    IComp_'!result_t_OK -> 
     transition_end ->
-    Comp_(s)
+    OK_NOK_(s)
+
+    else
+      IComp_'!result_t_NOK -> 
+    transition_end ->
+    OK_NOK_(s)
+)
 
   else
-    let tmp' = State_Error within
+    (if (res == result_t_OK) then 
+      IComp_'!result_t_OK -> 
+    let tmp' = State_Initialised within
     let s = tmp' within
-    IComp_'!result_t_NOK -> 
     transition_end ->
-    Comp_(s)
+    OK_NOK_(s)
+
+    else
+      IComp_'!result_t_NOK -> 
+    transition_end ->
+    OK_NOK_(s)
+)
 )
 )
  []
-  IIG & client?x:{initialize,perform_actions} -> (
+  IIG & client?x:{initialise,perform_actions} -> (
   illegal -> STOP
 )))
 
-within Comp_(State_Uninitialized)
-                                                     
+within OK_NOK_(State_Uninitialised)
+
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
 
@@ -402,33 +617,34 @@ within Idle(0)
 
 within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
-AS_Comp_(IIG) = let
+AS_OK_NOK_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 
-ClientCalls = {client.initialize,client.recover,client.perform_actions}
+ClientCalls = {client.initialise,client.recover,client.perform_actions}
 UsedModeling = {}
-TheEnd = {|device_A_'''|}
-within compress((CO_Comp_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+TheEnd = {|device_A_''',device_B_'''|}
+within compress((CO_OK_NOK_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,client,client_'|}|]
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
-                [|{|IN',device_A,device_A_',device_A_'''|}|]
+                [|{|IN',device_A,device_A_',device_A_''',device_B,device_B_',device_B_'''|}|]
                 (IF_IDevice_(true,false) [[IDevice.x<-device_A.x|x<-extensions(device_A)]][[IDevice_'.x<-device_A_'.x|x<-extensions(device_A_')]][[IDevice_'''.x<-device_A_'''.x|x<-extensions(device_A_''')]]
+                 ||| IF_IDevice_(true,false) [[IDevice.x<-device_B.x|x<-extensions(device_B)]][[IDevice_'.x<-device_B_'.x|x<-extensions(device_B_')]][[IDevice_'''.x<-device_B_'''.x|x<-extensions(device_B_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
 -- end of component.csp.scm
-assert COMPLETE'({IComp.initialize,IComp.recover,IComp.perform_actions}) [F= IF_IComp_(true,true)[[range_error<-illegal]] \ diff(Events,{IComp.initialize,IComp.recover,IComp.perform_actions,illegal})
+assert COMPLETE'({IComp.initialise,IComp.recover,IComp.perform_actions}) [F= IF_IComp_(true,true)[[range_error<-illegal]] \ diff(Events,{IComp.initialise,IComp.recover,IComp.perform_actions,illegal})
 assert IF_IComp_(false,false) :[deadlock free]
 assert IF_IComp_(true,false) :[livelock free]
-assert COMPLETE'({IDevice.initialize,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2}) [F= IF_IDevice_(true,true)[[range_error<-illegal]] \ diff(Events,{IDevice.initialize,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2,illegal})
+assert COMPLETE'({IDevice.initialise,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2}) [F= IF_IDevice_(true,true)[[range_error<-illegal]] \ diff(Events,{IDevice.initialise,IDevice.calibrate,IDevice.perform_action1,IDevice.perform_action2,illegal})
 assert IF_IDevice_(false,false) :[deadlock free]
 assert IF_IDevice_(true,false) :[livelock free]
-assert CO_Comp_(true,true)[[IComp_'.x<-client_'.x|x<-extensions(client_')]] :[deterministic]
-assert COMPLETE'({client.initialize,client.recover,client.perform_actions}) [F= CO_Comp_(true,true)[[IComp_'.x'<-client_'.x'|x'<-extensions(client_')]][[range_error<-illegal]] \ diff(Events,{client.initialize,client.recover,client.perform_actions,illegal})
-assert STOP [T= AS_Comp_(false) \ diff(Events,{illegal,queue_full})
-assert AS_Comp_(false) :[deadlock free]
-assert IF_IComp_(true,false) [[IComp.x<-client.x|x<-extensions(client)]][[IComp_'.x<-client_'.x|x<-extensions(client_')]]\ {IComp_'''.modeling} [F= AS_Comp_(true) \ diff(Events,{|illegal,client,client_'|})
-assert AS_Comp_(true) \ diff(Events,{|illegal,client,client_'|}) :[livelock free]
+assert CO_OK_NOK_(true,true)[[IComp_'.x<-client_'.x|x<-extensions(client_')]] :[deterministic]
+assert COMPLETE'({client.initialise,client.recover,client.perform_actions}) [F= CO_OK_NOK_(true,true)[[IComp_'.x'<-client_'.x'|x'<-extensions(client_')]][[range_error<-illegal]] \ diff(Events,{client.initialise,client.recover,client.perform_actions,illegal})
+assert STOP [T= AS_OK_NOK_(false) \ diff(Events,{illegal,queue_full})
+assert AS_OK_NOK_(false) :[deadlock free]
+assert IF_IComp_(true,false) [[IComp.x<-client.x|x<-extensions(client)]][[IComp_'.x<-client_'.x|x<-extensions(client_')]]\ {IComp_'''.modeling} [F= AS_OK_NOK_(true) \ diff(Events,{|illegal,client,client_'|})
+assert AS_OK_NOK_(true) \ diff(Events,{|illegal,client,client_'|}) :[livelock free]

@@ -135,7 +135,7 @@
       o))
 
     (($ <type> ('name scope ... name))
-     ((->join ".") (list ((*scope* model) scope) name)))
+     ((->join ".") (list ((dzn:scope-join model) scope) name)))
 
     (($ <binding> #f port) (->string port))
     (($ <binding> instance port) (->string instance "." port))
@@ -153,7 +153,7 @@
     (($ <data> data) (->string (list "$" data "$")))
     (($ <field> type field) (->string (list ((->dzn model) type) "." field)))
     (($ <literal> ('name scope ... name) field)
-     ((->join ".") (list ((*scope* model) scope) name field)))
+     ((->join ".") (list ((dzn:scope-join model) scope) name field)))
     (($ <var> identifier) ((->dzn model) identifier))
     (('! ($ <expression> expression)) (->string (list "!" (paren model expression))))
     (('! expression) (->string (list "!" (paren model expression))))
@@ -196,9 +196,8 @@
 (define (statement->dzn model)
   (map (->dzn model) ((compose .elements .statement .behaviour) model)))
 
-(define* ((*scope* model :optional (infix (string->symbol "."))) o)
-  (if (and (>1 (length o)) (not (eq? (cadr (.name model)) (car o)))) ((->symbol-join infix) (cons null-symbol o))
-      ((->symbol-join infix) (om:drop-scope (.name model) o))))
+(define* ((dzn:scope-join model :optional (infix '.)) o)
+  ((om:scope-join model infix) o))
 
 (define* ((animate-pairs pairs string) :optional parameter)
   (animate string (pairs->module pairs parameter)))

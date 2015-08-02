@@ -21,7 +21,7 @@
     "              :name '" (.name port) "\n"
     "              :self o")
       (map (define-on model port #{#'()
-              :#event  (lambda (. args) (#(string-if (eq? return-type 'void) "" "r")call-in o (lambda () (apply #port -#event  (cons o args))) `(,(.#port  o) #event #(string-if (not (eq? 'void return-type)) #{  #reply-name  ,#(*scope* reply-scope)-#reply-name -alist#}))))#})
+              :#event  (lambda (. args) (#(string-if (eq? return-type 'void) "" "r")call-in o (lambda () (apply #port -#event  (cons o args))) `(,(.#port  o) #event #(string-if (not (eq? 'void return-type)) #{  #reply-name  ,#((om:scope-join #f) reply-scope)-#reply-name -alist#}))))#})
     (filter om:in? (om:events port)))
     (list ")\n"
      "       :out (make <dezyne:" (.type port) ".out>)))")))
@@ -50,7 +50,7 @@
      (map (define-on model port #{
 (define-method (#port -#event  (o <dezyne:#.model >) #formals)#
 statement #(if (not (eq? type 'void))
-(list "\n    (.reply-" (*scope* reply-scope) "-" reply-name " o)")))
+(list "\n    (.reply-" ((om:scope-join #f) reply-scope) "-" reply-name " o)")))
 
 #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))#

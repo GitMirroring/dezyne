@@ -1,1 +1,1 @@
-#(*scope* scope)_#name _#field
+#((om:scope-join #f) scope)_#name _#field

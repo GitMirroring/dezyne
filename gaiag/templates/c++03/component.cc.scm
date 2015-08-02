@@ -32,13 +32,13 @@ dzn_rt.performs_flush(this) = true;
 #
    (map
     (lambda (port)
-      (map (define-on model port #{#port .#direction .#event  = boost::bind(&#(string-if (eq? return-type 'void) "dezyne::call_in<" #{dezyne::rcall_in<#(*scope* reply-scope) ::#reply-name ::type, #})#.model ,#interface #comma #((->join ",") formal-types)>,this,boost::function<#return-type(#((->join ",") formal-types))>(boost::bind(&#.model ::#port _#event ,this#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list))))))#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list)))),boost::make_tuple(&#port , "#event ", "return"));
+      (map (define-on model port #{#port .#direction .#event  = boost::bind(&#(string-if (eq? return-type 'void) "dezyne::call_in< " #{dezyne::rcall_in< #((om:scope-join #f) reply-scope) ::#reply-name ::type, #})#.model ,#((om:scope-name "::") interface) #comma #((->join ",") formal-types)>,this,boost::function< #return-type(#((->join ",") formal-types))>(boost::bind(&#.model ::#port _#event ,this#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list))))))#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list)))),boost::make_tuple(&#port , "#event ", "return"));
 #}) (filter om:in? (om:events port))))
     (filter om:provides? (om:ports model)))#
 (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = boost::bind(&dezyne::call_out<#.model , #interface #comma #((->join ",") formal-types)>, this, boost::function<#return-type(#((->join ",") formal-types))>(boost::bind(&#.model ::#port _#event , this #comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list))))))#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list)))), boost::make_tuple(&#port , "#event ", "return"));
+#port .#direction .#event  = boost::bind(&dezyne::call_out<#.model , #((om:scope-name "::") interface) #comma #((->join ",") formal-types)>, this, boost::function< #return-type(#((->join ",") formal-types))>(boost::bind(&#.model ::#port _#event , this #comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list))))))#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list)))), boost::make_tuple(&#port , "#event ", "return"));
 #}) (filter om:out? (om:events port))))
     (filter om:requires? (om:ports model)))
 }
@@ -50,7 +50,7 @@ dzn_rt.performs_flush(this) = true;
   {
     #statement #
     (string-if (not (eq? type 'void))
-#{  return reply_#(*scope* reply-scope '_)_#reply-name ;
+#{  return reply_#((om:scope-join #f) reply-scope)_#reply-name ;
 #}) }
 
 #}) (filter (om:dir-matches? port) (om:events port))))
