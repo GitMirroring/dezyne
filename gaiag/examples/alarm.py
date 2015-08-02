@@ -27,6 +27,7 @@ import os
 sys.path.insert (0, os.path.dirname (sys.argv[0]))
 #
 import dezyne.AlarmSystem
+import locator
 import runtime
 
 def detected ():
@@ -36,20 +37,21 @@ def deactivated ():
     sys.stderr.write ('Console.deactivated\n')
 
 def main ():
-    rt = runtime.runtime ()
-    alarm_system = dezyne.AlarmSystem (rt, name='alarmsystem')
-    alarm_system.console.outs.name = 'console'
-    alarm_system.console.outs.self = alarm_system
+    loc = locator.Locator ()
+    rt = runtime.Runtime ()
+    sut = dezyne.AlarmSystem (loc.set (rt), name='alarmsystem')
+    sut.console.outport.name = 'console'
+    sut.console.outport.self = sut
 
-    alarm_system.console.outs.detected = detected
-    alarm_system.console.outs.deactivated = deactivated
+    sut.console.outport.detected = detected
+    sut.console.outport.deactivated = deactivated
 
-    alarm_system.console.ins.arm ()
-    alarm_system.sensor.sensor.outs.triggered ()
-    runtime.flush(alarm_system.sensor)
-    alarm_system.console.ins.disarm ()
-    alarm_system.sensor.sensor.outs.disabled ()
-    runtime.flush(alarm_system.sensor)
+    sut.console.inport.arm ()
+    sut.sensor.sensor.outport.triggered ()
+    rt.flush (sut.sensor)
+    sut.console.inport.disarm ()
+    sut.sensor.sensor.outport.disabled ()
+    rt.flush (sut.sensor)
 
 if __name__ == '__main__':
     main ()

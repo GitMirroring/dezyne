@@ -5,7 +5,7 @@ import dezyne.#interface
 import runtime
 from runtime import V
 
-class #.model  (runtime.Component):
+class #.scope_model  (runtime.Component):
 #(->string (map (declare-enum model) (append (om:enums (.behaviour model)) (om:enums))))
     def __init__ (self, loc, name='', parent=None):
         runtime.Component.__init__ (self, loc, name, parent)
@@ -16,15 +16,15 @@ class #.model  (runtime.Component):
 #})#}) (om:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
-        self.#name  = dezyne.#interface  (provides=runtime.Port ('#name ', self))
+        self.#name  = dezyne.#((om:scope-join) interface)  (provides=runtime.Port ('#name ', self))
 #}) (filter om:provides? ((compose .elements .ports) model)))#
     (map (init-port #{
 #(string-if injected?
 #{
-        self.#name  = loc.get (dezyne.#interface)
+        self.#name  = loc.get (dezyne.#((om:scope-join) interface))
 #}
 #{
-        self.#name  = dezyne.#interface  (requires=runtime.Port ('#name ', self))
+        self.#name  = dezyne.#((om:scope-join) interface)  (requires=runtime.Port ('#name ', self))
 #})
 #}) (filter om:requires? ((compose .elements .ports) model)))
 #

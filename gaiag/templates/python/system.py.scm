@@ -5,7 +5,7 @@ def connect (provided, required):
     provided.outport = required.outport
     required.inport = provided.inport
 
-class #.model (runtime.Component):
+class #.scope_model (runtime.Component):
     def __init__ (self, loc, name='', parent=None):
         runtime.Component.__init__ (self, loc, name, parent)
 #(map (init-instance #{

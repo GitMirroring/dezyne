@@ -4,7 +4,7 @@ import sys
 import os
 sys.path.insert (0, os.path.dirname (sys.argv[0]))
 ##
-import dezyne.#.model
+import dezyne.#.scope_model
 import locator
 import runtime
 
@@ -44,7 +44,7 @@ def log_valued (prefix, event, event_map, string_to_value, value_to_string):
         return r
     raise Exception ('"%s" is not a reply value' % s)
 
-def #.model _fill_event_map (m):
+def #.scope_model _fill_event_map (m):
     e = {
 #(map
     (lambda (port)
@@ -55,7 +55,7 @@ def #.model _fill_event_map (m):
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction port.#event  = lambda *args: #(string-if (eq? return-type 'void) #{log_#direction ('#port .', '#event ', e)#}#{log_valued ('#port .', '#event ', e, lambda s: dezyne.#interface .#reply-name .__dict__.get (drop_prefix(s, '#port .#reply-name _'), None), dezyne.#interface .#reply-name _to_string)#})
+    m.#port .#direction port.#event  = lambda *args: #(string-if (eq? return-type 'void) #{log_#direction ('#port .', '#event ', e)#}#{log_valued ('#port .', '#event ', e, lambda s: dezyne.#((om:scope-name) interface) .#reply-name .__dict__.get (drop_prefix(s, '#port .#reply-name _'), None), dezyne.#((om:scope-name) interface) .#reply-name _to_string)#})
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))     return e
 
@@ -65,9 +65,9 @@ def main ():
         sys.exit (0)
     loc = locator.Locator ()
     rt = runtime.Runtime (illegal)
-    sut = dezyne.#.model  (loc.set (rt), name='sut')
+    sut = dezyne.#.scope_model  (loc.set (rt), name='sut')
 
-    event_map = #.model _fill_event_map (sut)
+    event_map = #.scope_model _fill_event_map (sut)
 
     event = sys.stdin.readline ().strip ()
     while event:
