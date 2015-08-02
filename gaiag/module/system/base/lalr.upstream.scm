@@ -1927,7 +1927,7 @@
                          (___errorp "Syntax error: unexpected end of input")
                          #f)
                        (begin
-                         (___errorp "Syntax error: unexpected token : " ___input)
+                         (___errorp "Syntax error: unexpected token: " ___input)
                          (___recover i)
                          (if (>= ___sp 0)
                              (set! ___input #f)

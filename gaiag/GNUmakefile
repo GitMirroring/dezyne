@@ -864,12 +864,12 @@ out/var:
 
 namespace:
 	rm -rf out && mkdir out && cd out && ln -s ../examples . && ln -s ../runtime/$(CXX)/* .
-	(cd out && ../gaiag -l $(CXX) -m inner_space ../examples/inner_space.dzn)
+	(cd out && ../gaiag -l $(CXX) -m inner_space examples/inner_space.dzn)
 	g++ $(CXX11) -o out/test out/*cc
 	echo i.e | out/test
 
 c-namespace:
 	rm -rf out && mkdir out && cd out && ln -s ../examples . && ln -s ../runtime/c/* .
-	(cd out && ../gaiag -l c -m inner_space ../examples/inner_space.dzn)
+	(cd out && ../gaiag -l c -m inner_space examples/inner_space.dzn)
 	gcc -o out/test out/*c
 	echo i.e | out/test
