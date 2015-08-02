@@ -1,14 +1,13 @@
-##include "#.model .hh"
+##include "#.scope_model .hh"
 
-namespace dezyne
-{
+#(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 #.model ::#.model (const dezyne::locator& dezyne_locator)
 : #((->join "\n, ")
     (append
             (list
              (->string
               (list
-               "dzn_meta(\"\",\"" .model "\",reinterpret_cast<component*>(this),0)")))
+               "dzn_meta(\"\",\"" .model "\",reinterpret_cast<dezyne::component*>(this),0)")))
             (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
                  (injected-bindings model))
             (list (if (pair? (injected-bindings model))
@@ -19,10 +18,10 @@ namespace dezyne
                  (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))))
 {
  #((->join "\n")
-   (map (init-instance #{dzn_meta.children.push_back(reinterpret_cast<component*>(&#name));#})
+   (map (init-instance #{dzn_meta.children.push_back(reinterpret_cast<dezyne::component*>(&#name));#})
         (non-injected-instances model)))
- #(map (init-instance #{#name .dzn_meta.parent = reinterpret_cast<component*>(this);
-    #name .dzn_meta.address = reinterpret_cast<component*>(&#name );
+ #(map (init-instance #{#name .dzn_meta.parent = reinterpret_cast<dezyne::component*>(this);
+    #name .dzn_meta.address = reinterpret_cast<dezyne::component*>(&#name );
     #name .dzn_meta.name = "#name ";
 #})
        (non-injected-instances model))#
@@ -38,4 +37,4 @@ namespace dezyne
   {
     dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
   }
-}
+#(map (lambda (x) (list "}\n")) (om:scope model))

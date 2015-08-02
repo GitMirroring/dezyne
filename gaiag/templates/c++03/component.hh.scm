@@ -1,5 +1,5 @@
-##ifndef DEZYNE_#.COMPONENT _HH
-##define DEZYNE_#.COMPONENT _HH
+##ifndef #.COMPONENT _HH
+##define #.COMPONENT _HH
 
 #(map (include-interface #{
 ##include "#interface .hh"
@@ -7,16 +7,17 @@
 
 ##include "runtime.hh"
 
-namespace dezyne
-{
+namespace dezyne {
 struct locator;
 struct runtime;
+}
 
+#(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 struct #.model
 {
     dezyne::meta dzn_meta;
-    runtime& dzn_rt;
-    locator const& dzn_locator;
+    dezyne::runtime& dzn_rt;
+    dezyne::locator const& dzn_locator;
     #(->string (map (declare-enum model) (om:enums (.behaviour model))))#
     (->string (map declare-integer (om:integers (.behaviour model))))#
     (map (init-member model #{
@@ -24,9 +25,9 @@ struct #.model
 #}) (om:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
-#interface  #name;
+#(*scope* scope)::#interface  #name;
 #}) ((compose .elements .ports) model))
-    #.model (const locator&);
+    #.model (const dezyne::locator&);
   void check_bindings() const;
   void dump_tree() const;
 
@@ -46,5 +47,5 @@ private:
 (map (define-function model #{
   #return-type  #name (#formals);
 #}) (om:functions model)) };
-}
-##endif // DEZYNE_#.COMPONENT _HH
+#(map (lambda (x) (list "}\n")) (om:scope model))
+##endif // #.COMPONENT _HH

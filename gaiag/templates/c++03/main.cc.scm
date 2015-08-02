@@ -2,7 +2,7 @@
 ##include "runtime.hh"
 ##include "locator.hh"
 
-##include "#.model .hh"
+##include "#.scope_model .hh"
 
 ##include <iostream>
 
@@ -39,17 +39,17 @@ typedef std::map<std::string, boost::function<void()> > event_map;
   {
     std::clog << prefix << event << std::endl;
     std::string s = consume_synchronous_out_events(event_map);
-    
+
     R r = string_to_value(s.erase(std::min(s.size(), s.find(prefix)), prefix.size()));
     if (static_cast<int>(r) != -1)
     {
       std::clog << prefix << value_to_string(r) << std::endl;
       return r;
     }
-    throw std::runtime_error("\"" + s + "\" is not a reply value");  
+    throw std::runtime_error("\"" + s + "\" is not a reply value");
   }
 
-  void fill_event_map(#.model & m, event_map& e)
+  void fill_event_map(#((om:scope-name (string->symbol "::")) model) & m, event_map& e)
   {
     int dzn_i = 0;
 
@@ -83,7 +83,7 @@ int main()
   l.set(ih);
 
   dezyne::event_map event_map;
-  dezyne::#.model  sut(l);
+  #((om:scope-name (string->symbol "::")) model)  sut(l);
   sut.dzn_meta.name = "sut";
 
   dezyne::fill_event_map(sut, event_map);
