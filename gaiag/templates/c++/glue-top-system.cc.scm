@@ -19,7 +19,7 @@ struct #.model Glue
 : public #.model Component
 , public boost::enable_shared_from_this<#.model Glue>
 {
-  /*dezyne*/::#.model  component;
+  #((c++:scope-name) model)  component;
 
 #(define (api port) (->string (list ((om:scope-name) port) "_API")))
 #(define (cb port) (->string (list ((om:scope-name) port) "_CB")))
@@ -28,11 +28,11 @@ struct #.model Glue
         (let* ((entry (car alist))
                (interface (second entry))
                (component (symbol-drop interface 1))
-               (port-type ((om:scope-name) (om:port model))))
+               (port-type ((c++:scope-name) (om:port model))))
           (list "struct " component "\n: public " interface "\n"
                 "{\n"
-                "/*dezyne*/::" port-type "& api;\n"
-                component "(/*dezyne*/::" port-type "& api)\n"
+                port-type "& api;\n"
+                component "(" port-type "& api)\n"
                 ": api(api)\n"
                 "{}\n"
                 (map
@@ -87,7 +87,7 @@ boost::shared_ptr<asd::channels::ISingleThreaded> st;
 #(map (lambda (alist)
         (let* ((entry (car alist))
                (interface (second entry))
-               (port-type ((om:scope-name) (om:port model))))
+               (port-type ((c++:scope-name) (om:port model))))
           (list "void GetAPI(boost::shared_ptr<" interface ">* api)\n"
                "{\n"
                "*api = api_" interface ";\n"
@@ -98,7 +98,7 @@ boost::shared_ptr<asd::channels::ISingleThreaded> st;
 #(map (lambda (alist)
         (let* ((entry (car alist))
                (interface (second entry))
-               (port-type ((om:scope-name) (om:port model))))
+               (port-type ((c++:scope-name) (om:port model))))
           (list "void RegisterCB(boost::shared_ptr<" interface "> cb)\n"
                "{\n"
                "cb_" interface " = cb;\n"
@@ -114,7 +114,7 @@ void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded> st)
 dezyne::locator dezyne_locator;
 dezyne::runtime dezyne_runtime;
 
-boost::shared_ptr<#((om:scope-name) (om:port model)) Interface> #.model Component::GetInstance ()
+boost::shared_ptr<#(om:name (om:port model)) Interface> #.model Component::GetInstance ()
 {
   dezyne_locator.set(dezyne_runtime);
   return boost::make_shared<#.model Glue> (dezyne_locator);
