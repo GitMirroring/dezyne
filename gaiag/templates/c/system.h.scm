@@ -17,7 +17,7 @@ typedef struct {
                               (injected-instance-name binding) ";\n")) (injected-bindings model)) #
 (if (pair? (injected-bindings model)) (list "locator local_locator;\n")) #
 (map (init-instance #{
-  #component  #name;
+  #((om:scope-name) component)  #name;
 #}) (non-injected-instances model))
 #(map (init-port #{
   #((om:scope-join) interface) * #name;

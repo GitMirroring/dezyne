@@ -25,7 +25,7 @@ using System;
 
 class #.scope_model  : SystemComponent {
 #(map (init-instance #{
-    public #component  #name;
+    public #((om:scope-name) component)  #name;
 #}) ((compose .elements .instances) model))#
 (map (init-port #{
     public #((om:scope-join) interface)  #name;
@@ -33,14 +33,14 @@ class #.scope_model  : SystemComponent {
 
   public #.scope_model(Locator locator, String name="", SystemComponent parent=null) : base(locator, name, parent) {
 #(map (init-instance #{
-    #name  = new #component(locator, "#name ", this);
+    #name  = new #((om:scope-name) component)(locator, "#name ", this);
 #}) (injected-instances model))#
 (string-if (pair? (injected-bindings model)) #{
     locator = locator.clone()#
     (map (init-bind model #{.set(#instance);#}) (injected-bindings model))
 #})#
 (map (init-instance #{
-    #name  = new #component(locator, "#name ", this);
+    #name  = new #((om:scope-name) component)(locator, "#name ", this);
 #}) (non-injected-instances model))#
 (map (init-bind model #{
     #port  = #instance;

@@ -12,15 +12,15 @@ void #.scope_model _init(#.scope_model  *self, locator* dezyne_locator, dzn_meta
    memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 #(map (init-instance #{
   dzn_meta_t dzn_m_#name  = {"#name ", self};
-  #component _init(&self->#name , dezyne_locator, &dzn_m_#name);#})
+  #((om:scope-name) component) _init(&self->#name , dezyne_locator, &dzn_m_#name);#})
   (injected-instances model))#
 (string-if (pair? (injected-bindings model)) #{#'()
    dezyne_locator = locator_clone(dezyne_locator);#})#
     (map (init-bind model #{#'()
-    locator_set(dezyne_locator, "#interface ", &self->#instance _);#}) (injected-bindings model))#
+    locator_set(dezyne_locator, "#((om:scope-name) interface) ", &self->#instance _);#}) (injected-bindings model))#
 (map (init-instance #{#'()
   dzn_meta_t dzn_m_#name  = {"#name ", self};
-  #component _init(&self->#name , dezyne_locator, &dzn_m_#name);#})
+  #((om:scope-name) component) _init(&self->#name , dezyne_locator, &dzn_m_#name);#})
    (non-injected-instances model))#
 (map (init-bind model #{#'()
   self->#port  = self->#instance; #})

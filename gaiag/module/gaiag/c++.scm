@@ -47,6 +47,9 @@
 (define* ((c++:scope-join :optional (model #f) (infix (string->symbol "::"))) o)
   ((om:scope-join model infix) o))
 
+(define* ((c++:scope-name :optional (infix (string->symbol "::"))) o)
+  ((om:scope-name infix) o))
+
 (define (dump o)
   (match o
     (($ <interface>) (dump-interface o))
@@ -72,6 +75,7 @@
         (dump-indented (symbol-append name 'Interface.h)
                        (lambda ()
                          (c++-file 'glue-top-system-interface.hh.scm (code:module (om:interface (om:port o)))))))
+    ;;(stderr "MAP: ~a [~a] ==> ~a\n" (.name o) (om:port o) (map-file o))
     (when (map-file o)
       (dump-indented (symbol-append name 'Component.h)
                     (lambda ()
@@ -85,7 +89,7 @@
     (animate-file file-name module)))
 
 (define (event2->interface1-event1-alist port)
-  (and-let* ((string (gulp-file (find-file ((om:scope-name) port) '(.map))))
+  (and-let* ((string (gulp-file (find-file (map-file-name port) '(.map))))
              (lst (string-split string #\newline))
              (lst (filter (lambda (x) (not (string-prefix? "//" x))) lst))
              (lst (map (lambda (o) (map string->symbol (string-tokenize o char-set:graphic))) lst))
@@ -105,4 +109,10 @@
 
 (define (map-file o)
   (and (om:port o)
-       (try-find-file ((om:scope-name) (om:port o)) '(.map))))
+       (try-find-file (map-file-name o) '(.map))))
+
+(define (map-file-name o)
+  (match o
+    ((or ($ <component>) ($ <system>)) (map-file-name (om:port o)))
+    (_ (om:name o)) ;; dzn::IConsole ==> IConsole.map
+    (_ ((om:scope-name) o)))) ;; dzn::IConsole ==> dzn_IConsole.map

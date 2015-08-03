@@ -5,14 +5,14 @@ function #.scope_model(locator, meta) {
   this.rt.components = (this.rt.components || []).concat ([this]);
   this.meta = meta;
 #(map (init-instance #{
-    this.#name  = new dezyne.#component(locator, {parent: this, name: '#name '});
+    this.#name  = new dezyne.#((om:scope-name) component)(locator, {parent: this, name: '#name '});
 #}) (injected-instances model))#
 (string-if (pair? (injected-bindings model)) #{
    this.locator = locator.clone()#
     (map (init-bind model #{.set(this.#instance)#}) (injected-bindings model))
 #})#
 (map (init-instance #{
-    this.#name  = new dezyne.#component(locator, {parent: this, name: '#name '});
+    this.#name  = new dezyne.#((om:scope-name) component)(locator, {parent: this, name: '#name '});
 #}) (non-injected-instances model))#
 (map (init-bind model #{
     this.#port  = this.#instance;

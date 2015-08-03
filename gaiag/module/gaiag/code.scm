@@ -799,7 +799,7 @@
          (interface (if (not injected?) (om:port model port)
                         (if left-port left-port
                             right-port)))
-         (interface ((om:scope-name) interface))
+         (interface (.type interface))
          (instance (and (bind-port? bind)
                         (if (not (.instance left))
                             (binding-name model right)
@@ -807,7 +807,7 @@
     (animate string `((port ,port) (direction ,direction) (edir ,edir) (injected? ,injected?) (instance ,instance) (interface ,interface)))))
 
 (define ((init-instance string) instance)
-  (let ((component ((om:scope-name) instance))
+  (let ((component (.component instance))
         (name (.name instance)))
     (animate string `((component ,component) (name ,name)))))
 
