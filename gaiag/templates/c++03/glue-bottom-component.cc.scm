@@ -19,13 +19,11 @@ struct SingleThreaded
   void processCBs(){}
 };
 
-static std::map</*dezyne*/::#.model *, boost::shared_ptr<#((om:scope-name) (om:port model)) Interface> > g_handwritten;
-
 #(define ((gen1-interfaces dir?) model)
    (let* ((port (om:port model))
           (provided
            (filter dir? ((compose .elements .events om:interface) port)))
-          (alist (event2->interface1-event1-alist ((om:scope-name) port)))
+          (alist (event2->interface1-event1-alist port))
           (gen1-provided (filter identity (map (lambda (x) (assoc (.name x) alist)) provided))))
      (if (pair? gen1-provided) (list gen1-provided) '())))
 
@@ -33,11 +31,11 @@ static std::map</*dezyne*/::#.model *, boost::shared_ptr<#((om:scope-name) (om:p
         (let* ((entry (car alist))
                (interface (second entry))
                (component (symbol-drop interface 1))
-               (port-type ((om:scope-name) (om:port model))))
+               (port-type ((c++:scope-name) (om:port model))))
          (list "struct " component "\n: public " interface "\n"
                "{\n"
-               "/*dezyne*/::" port-type "& port;\n"
-               component "(/*dezyne*/::" port-type "& port)\n"
+               port-type "& port;\n"
+               component "(" port-type "& port)\n"
                ": port(port)\n"
                "{}\n"
                (map
@@ -48,15 +46,16 @@ static std::map</*dezyne*/::#.model *, boost::shared_ptr<#((om:scope-name) (om:p
       ((gen1-interfaces om:out?) model))
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
-//namespace dezyne
-//{
-#.model ::#.model (const dezyne::locator& l)
-: dzn_meta{"glue","#.model",reinterpret_cast<const component*>(this),0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (om:ports model)))}}
-, dzn_rt (l.get<dezyne::runtime>())#
+static std::map<#.model *, boost::shared_ptr<#(om:name (om:port model)) Interface> > g_handwritten;
+
+#.model ::#.model (const dezyne::locator& dezyne_locator)
+: dzn_meta{"glue","#.model",reinterpret_cast<const dezyne::component*>(this),0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (om:ports model)))}}
+, dzn_rt(dezyne_locator.get<dezyne::runtime>())
+, dzn_locator(dezyne_locator)#
 (map (lambda (port) (if (eq? (.direction port) 'provides) (list "\n, " (.name port) "({{\"" (.name port) "\",this},{\"\",0}})") (list "\n, " (.name port) "({{\"\",0},{\"" (.name port) "\",this}})"))) ((compose .elements .ports) model))
 {
-  boost::shared_ptr< ::#((om:scope-name) (om:port model)) Interface> component = ::#.model Component::GetInstance() ;
-#(map (lambda (port) (->string (list "boost::shared_ptr< ::" ((om:scope-name) port) "> api_" (.name port) ";\n"
+  boost::shared_ptr< ::#(om:name (om:port model)) Interface> component = ::#.model Component::GetInstance() ;
+#(map (lambda (port) (->string (list "boost::shared_ptr< ::" (om:name port) "> api_" (.name port) ";\n"
                                        "component->GetAPI(&api_" (.name port) ");\n")))
         (filter om:provides? ((compose .elements .ports) model)))
 g_handwritten.insert (std::make_pair (this,component));
@@ -73,8 +72,7 @@ g_handwritten.insert (std::make_pair (this,component));
           (map
            (lambda (entry)
              (let ((port (om:port model)))
-              (list (.name port) ".in." (first entry) " = boost::bind(&::" ((om:scope-name) port) "::" (third entry) ",api_" (.name port) ");\n")))
+              (list (.name port) ".in." (first entry) " = boost::bind(&::" (om:name port) "::" (third entry) ",api_" (.name port) ");\n")))
            alist)))
       ((gen1-interfaces om:in?) model))}
-//}
 #(map (lambda (x) (list "}\n")) (om:scope model))
