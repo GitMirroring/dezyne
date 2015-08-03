@@ -618,7 +618,7 @@
      (let ((expression (expression->string model expression locals)))
        (snippet 'not `((expression ,expression)))))
     (('group expression)
-     (list "(" (expression->string model expression locals) ")"))
+     (snippet 'group `((expression ,(expression->string model expression locals))) ")"))
     (((or 'and 'or '== '!=) lhs rhs)
      (let ((lhs (expression->string model lhs locals))
            (rhs (expression->string model rhs locals))
