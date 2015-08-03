@@ -63,6 +63,7 @@
            eat-one-space-or-newline
            f-is-null
            gulp-file
+           gulp-pipe
            gulp-port
            hash-read-string
            hash-table->alist
@@ -238,6 +239,9 @@
 
 (define (gulp-file file-name)
   (with-input-from-file (components->file-name file-name) read-string))
+
+(define (gulp-pipe command)
+  (gulp-port (cdr (apply run-with-pipe (list "r" "/bin/bash" "-c" command)))))
 
 (define (gulp-port . port)
   (or (and-let* ((result (read-delimited "" (if (pair? port) (car port) (current-input-port))))

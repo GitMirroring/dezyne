@@ -602,14 +602,14 @@
     (for-each om:register-type (filter (is? <*type*>) om))
     om))
 
-(define* (read-ast name #:optional (transform ast->om))
+(define* (import-ast name #:optional (transform ast->om))
   (and-let* ((name (if (pair? name) name (list 'name name)))
-             (ast (null-is-#f (read-dzn (cdr name) (om:register transform))))
+             (ast (null-is-#f (read-ast name (om:register transform))))
              (models (null-is-#f (filter (is? <model>) ast))))
             (find (lambda (model) (equal? (.name model) name)) models)))
 
 (define* (om:import name #:optional (transform ast->om))
   (let ((name (if (pair? name) name (list 'name name))))
     (or (cached-model name)
-        (and-let* ((ast (read-ast name transform)))
+        (and-let* ((ast (import-ast name transform)))
                   (cache-model name ast)))))
