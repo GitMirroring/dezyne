@@ -31,12 +31,19 @@ $(LOCAL_OUT)/AlarmSystemComponent.cpp: LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
 $(LOCAL_OUT)/AlarmSystemComponent.cpp: LOCAL_MAP_FILES:=$(LOCAL_MAP_FILES)
 $(LOCAL_OUT)/AlarmSystemComponent.cpp: LOCAL_OUT:=$(LOCAL_OUT)
 $(LOCAL_OUT)/AlarmSystemComponent.cpp: $(LOCAL_DZN_TOP)
-#	$(DZN) code -l $(LOCAL_LANGUAGE) -o $(LOCAL_OUT) $(LOCAL_DZN_TOP) $(LOCAL_MAP_FILES)
-	$(DZN) code -l $(LOCAL_LANGUAGE) -o $(LOCAL_OUT) $(CDIR)AlarmSystem.dzn $(LOCAL_MAP_FILES)
+	$(DZN) code -l $(LOCAL_LANGUAGE) -o $(LOCAL_OUT) $(CDIR)AlarmSystem.dzn $(LOCAL_MAP_FILES) |& sed -e s,^,$(dir $<),
+
+GLUE_O_FILES:=\
+  $(LOCAL_OUT)/AlarmSystemComponent.o\
+  $(LOCAL_OUT)/glue-Sensor.o\
+  $(LOCAL_OUT)/glue-Siren.o\
+
+LOCAL_O_FILES+=$(GLUE_O_FILES)
+LOCAL_O_FILES:=$(filter-out $(LOCAL_OUT)/Sensor.o $(LOCAL_OUT)/Siren.o, $(LOCAL_O_FILES))
+LOCAL_COMPONENTS:=$(filter-out Sensor Siren, $(LOCAL_COMPONENTS))
 
 $(LOCAL_OUT)/AlarmSystemComponent.o: $(LOCAL_OUT)/AlarmSystem.o
 
-LOCAL_O_FILES+=$(LOCAL_OUT)/AlarmSystemComponent.o
 include make/$(LOCAL_LANGUAGE).make
 
 include make/reset.make

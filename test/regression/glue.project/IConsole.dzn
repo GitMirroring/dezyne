@@ -20,6 +20,7 @@
 //
 // Code:
 
+namespace dzn {
 interface IConsole
 {
     in void arm();
@@ -85,4 +86,5 @@ interface IConsole
         illegal;
     }
   }
+}
 }

@@ -20,6 +20,7 @@
 //
 // Code:
 
+namespace dzn {
 interface ISiren
 {
   in void turnon();
@@ -52,4 +53,5 @@ interface ISiren
         illegal;
     }
   }
+}
 }

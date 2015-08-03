@@ -25,12 +25,12 @@ import ISiren.dzn;
 
 component Siren
 {
-  provides ISiren siren;
+  provides dzn.ISiren siren;
   //requires injected ILogger logger;
 
-  behaviour
-  {
-    on siren.turnon(): { }//logger.log(); }
-    on siren.turnoff(): { }//logger.log(); }
-  }
+  // behaviour
+  // {
+  //   on siren.turnon(): { }//logger.log(); }
+  //   on siren.turnoff(): { }//logger.log(); }
+  // }
 }

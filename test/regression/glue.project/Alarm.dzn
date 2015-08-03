@@ -26,9 +26,9 @@ import IConsole.dzn;
 
 component Alarm
 {
-    provides IConsole console;
-    requires ISensor sensor;
-    requires ISiren siren;
+    provides dzn.IConsole console;
+    requires dzn.ISensor sensor;
+    requires dzn.ISiren siren;
 
   behaviour d
   {
