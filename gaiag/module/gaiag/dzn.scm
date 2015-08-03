@@ -147,7 +147,7 @@
 
 
 
-    (('group expression) ((->dzn model) (list "(" ((->dzn model) expression) ")")))
+    (('group expression) (->string (list "(" ((->dzn model) expression) ")")))
     (($ <expression> expression) (expression->dzn model expression))
     (($ <expression>) #f)
     (($ <data> data) (->string (list "$" data "$")))
@@ -219,7 +219,7 @@
 (define ((declare-int model) int)
   (let* ((range (.range int)))
     ((animate-snippet 'declare-int
-                      `((scope ,(om:scope int)) (name ,(om:name int)) (range ,range)))
+                      `((scope ,(om:scope int)) (name ,(om:name int)) (range ,range) (from ,(.from range)) (to ,(.to range))))
      int)))
 
 (define ((declare-event model) event)
