@@ -100,7 +100,7 @@
 
 (define (json-trace model trace)
   ;;  (stderr "json-trace: ~a\n" (.name model))
-  (let ((name (.name model)))
+  (let ((name ((om:scope-name '.) model)))
     (let loop ((trace trace) (trigger (make <trigger>)) (state (state-vector model)) (trail '()))
       ;;(stderr "JSON: ~a\n" (if (pair? trace) (car trace)))
       (cond

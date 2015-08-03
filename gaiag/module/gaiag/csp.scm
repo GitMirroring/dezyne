@@ -419,12 +419,6 @@
 (define (typed-elements o)
   (map (lambda (x) ((->symbol-join '_) (append (cons (om:name o) (list x))))) ((compose .elements .fields) o)))
 
-(define* ((csp:om:scope-join :optional (infix '_)) o)
-  ((om:scope-join #f infix) o))
-
-(define (enum-scope model e)
-  (symbol-append ((csp:scope-join) e) '_ (om:name e)))
-
 (define (enum-values o)
   (match o
     (($ <interface>)

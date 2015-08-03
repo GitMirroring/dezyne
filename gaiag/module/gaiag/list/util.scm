@@ -107,7 +107,6 @@
            om:models-with-behaviour
            om:typed?
            om:parse-dzn
-           make-interface-enum
 
            om:scope-name
            om:scope-join
@@ -202,7 +201,9 @@
     (#f #f)))
 
 (define ((om:named name) ast)
-  (equal? (.name ast) name))
+  (match name
+    ((? symbol?) (or (eq? name (.name ast)) ((om:named `(name ,name)) ast)))
+    (_ (equal? (.name ast) name))))
 
 (define ((om:scoped name scope) ast)
   (equal? (append scope (list name)) (.name ast)))
@@ -441,12 +442,6 @@
   (match ast
     (($ <interface>) (.elements (.events ast)))
     (($ <port>) (om:events (om:import (.type ast))))))
-
-(define ((make-interface-enum port) o)
-  (make <enum> :name (.name o) :scope port :fields (.fields o)))
-
-(define ((make-scoped-enum model) o)
-  (make <enum> :name (make <name> :name (append ((compose .scope .name) model) (list ((compose .name .name) o)))) :fields (.fields o)))
 
 (define (om:interface-enums o)
   (match o

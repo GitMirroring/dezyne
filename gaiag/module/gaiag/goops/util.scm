@@ -307,20 +307,17 @@
 (define (om:booleans o)
   '())
 
-(define ((make-interface-enum port) o)
-  (make <enum> :name (.name o) :scope port :fields (.fields o)))
-
 (define-method (om:interface-enums (o <interface>))
   ((om:filter <enum>) (.types o)))
 
 (define-method (om:interface-enums (port <port>))
-  (map (make-interface-enum (.type port)) (om:enums port)))
+  (om:enums port))
 
 (define-method (om:interface-enums (o <component>))
-  (apply append (map om:interface-enums ((compose .elements .ports) o))))
+  (append-map om:interface-enums ((compose .elements .ports) o)))
 
 (define-method (om:interface-enums (o <system>))
-  (apply append (map om:interface-enums ((compose .elements .ports) o))))
+  (append-map om:interface-enums ((compose .elements .ports) o)))
 
 (define-method (om:enums o)
   ((om:filter <enum>) (om:types o)))
@@ -331,20 +328,17 @@
 (define-method (om:enum (o <model>) (type <type>))
   ((is? <enum>) (om:type o type)))
 
-(define ((make-interface-extern port) o)
-  (make <extern> :name (.name o) :scope port :value (.value o)))
-
 (define-method (om:interface-externs (o <interface>))
   ((om:filter <extern>) (.types o)))
 
 (define-method (om:interface-externs (port <port>))
-  (map (make-interface-extern (.type port)) (om:externs port)))
+ (om:externs port))
 
 (define-method (om:interface-externs (o <component>))
-  (apply append (map om:interface-externs ((compose .elements .ports) o))))
+  (append-map om:interface-externs ((compose .elements .ports) o)))
 
 (define-method (om:interface-externs (o <system>))
-  (apply append (map om:interface-externs ((compose .elements .ports) o))))
+  (append-map om:interface-externs ((compose .elements .ports) o)))
 
 (define-method (om:externs o)
   ((om:filter <extern>) (om:types o)))
@@ -371,17 +365,14 @@
       (find (lambda (o) (and (equal? (.name o) (.name type))))
             (om:interface-externs o))))
 
-(define ((make-interface-integer port) o)
-  (make <int> :name (.name o) :scope port :range (.range o)))
-
 (define-method (om:interface-integers (o <interface>))
   ((om:filter <int>) (.types o)))
 
 (define-method (om:interface-integers (port <port>))
-  (map (make-interface-integer (.type port)) (om:integers port)))
+  (om:integers port))
 
 (define-method (om:interface-integers (o <component>))
-  (apply append (map om:interface-integers ((compose .elements .ports) o))))
+  (append-map om:interface-integers ((compose .elements .ports) o)))
 
 (define-method (om:integers o)
   ((om:filter <int>) (om:types o)))
@@ -416,30 +407,17 @@
 (define-method (om:types (o <list>)) ((om:filter <type>) o))
 (define-method (om:types (o <root>)) (om:types (.elements o)))
 
-;; WIP: refactor om:enums, om:integers, om:externs into om:types
-(define-method (make-interface-type port)
-  (lambda (o) (make-interface-type port o)))
-
-(define-method (make-interface-type port (o <enum>))
-  ((make-interface-enum port) o))
-
-(define-method (make-interface-type port (o <extern>))
-  ((make-interface-extern port) o))
-
-(define-method (make-interface-type port (o <int>))
-  ((make-interface-integer port) o))
-
 (define-method (om:interface-types (o <interface>))
   ((compose .elements .types) o))
 
 (define-method (om:interface-types (port <port>))
-  (map (make-interface-type (.type port)) (om:types port)))
+  (om:types port))
 
 (define-method (om:interface-types (o <component>))
-  (apply append (map om:interface-types ((compose .elements .ports) o))))
+  (append-map om:interface-types ((compose .elements .ports) o)))
 
 (define-method (om:interface-types (o <system>))
-  (apply append (map om:interface-types ((compose .elements .ports) o))))
+  (append-map om:interface-types ((compose .elements .ports) o)))
 
 (define-method (om:types (o <interface>))
   (append (.elements (.types o)) (or (and=> (.behaviour o) (compose .elements .types)) '()) (om:types)))
@@ -619,8 +597,10 @@
   (or (and (eq? (om:id (.statement o)) (om:id t)) o)
       (om:parent (.statement o) t)))
 
-(define ((om:named name) model)
-  (eq? (.name model) name))
+(define ((om:named name) ast)
+  (match name
+    ((? symbol?) (or (eq? name (.name ast)) ((om:named `(name ,name)) ast)))
+    (_ (equal? (.name ast) name))))
 
 (define (source-file o)
   (and-let* (((supports-source-properties? o))
