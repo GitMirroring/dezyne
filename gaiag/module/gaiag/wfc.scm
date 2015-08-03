@@ -33,100 +33,85 @@
 
   :use-module (srfi srfi-1)
 
+  :use-module (language dezyne location)
+
+  :use-module (gaiag ast)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
-  :use-module (gaiag goops om)
-  ;;:use-module (gaiag ast)
   :use-module (gaiag resolve)
-
 
   :export (
            ast:wfc
            ))
 
-(cond-expand
- (goops-om
-  (use-modules (gaiag goops om)))
- (else #t))
-
-(define-method (ast:wfc (o <ast>))
+(define (ast:wfc o)
   (and-let* ((errors (null-is-#f
                       ((om:collect <error>)
                        (append
                         (interface o)
                         (component o)
-                        (second-on o)
+                        ((second-on) o)
                         (mixing-declarative-imperative o))))))
             (report-errors errors))
   o)
 
-(define-method (wfc-error (o <ast>) (message <string>))
+(define (wfc-error o message)
   (make <error> :ast o :message (string-append "not well-formed: " message)))
 
-(define-method (interface (o <ast>))
+(define (interface o)
   (match o
-    (($ <root> elements) '(()) (apply append (map interface elements)))
-    (($ <interface> name ($ <types> types) ($ <events> events) #f)
+    (('root elements ...) '(()) (append-map interface elements))
+    (($ <interface> name ($ <types>) ($ <events>) #f)
      (list (wfc-error o "interface must have a behaviour")))
     (_ '())))
 
-(define-method (component (o <ast>))
+(define (component o)
   (match o
-    (($ <root> elements) '(()) (apply append (map component elements)))
-    (($ <component> name ($ <ports> ports) ($ <behaviour>))
+    (('root elements ...) '(()) (append-map component elements))
+    (($ <component> name ('ports ports ...) ($ <behaviour>))
      ((om:filter <error>)
-      (append
-       (list
-        (if (!= (length (filter om:provides? ports)) 1)
-            (wfc-error o "component with behaviour must have one provides port")))
-       '())))
+      (if (>0 (length (filter om:provides? ports))) '()
+          (list (wfc-error o "component with behaviour must have one provides port")))))
     (_ '())))
 
-(define-method (second-on (o <ast>))
-  ((second-on- 0) o))
-
-(define-method (second-on- (count <integer>))
-  (lambda (o)
-    (match o
-      (($ <root> elements) (apply append (map second-on elements)))
-      (($ <system>) '())
-      (($ <interface>) (or (and=> (.behaviour o) second-on) '()))
-      (($ <component>) (or (and=> (.behaviour o) second-on) '()))
-      (($ <behaviour>) (or (and=> (.statement o) second-on) '()))
-      (($ <compound> statements)
-       (append (map (second-on- count) statements)))
-      (($ <on> triggers statement)
-       (if (>0 count) (wfc-error o "second on")
-           (append ((second-on- (1+ count)) statement))))
-      (($ <guard> expression statement) (append ((second-on- count) statement)))
-      (_ '()))))
-
-(define-method (mixing-declarative-imperative (o <ast>))
+(define* ((second-on :optional (count 0)) o)
   (match o
-    (($ <root> elements) (apply append (map mixing-declarative-imperative elements)))
+    (('root elements ...) (append-map (second-on) elements))
+    (($ <system>) '())
+    (($ <interface>) (or (and=> (.behaviour o) (second-on)) '()))
+    (($ <component>) (or (and=> (.behaviour o) (second-on)) '()))
+    (($ <behaviour>) (or (and=> (.statement o) (second-on)) '()))
+    (('compound statements ...) (map (second-on count) statements))
+    (($ <on> triggers statement)
+     (if (>0 count) (wfc-error o "second on")
+         ((second-on (1+ count)) statement)))
+    (($ <guard> expression statement) ((second-on count) statement))
+    (_ '())))
+
+(define (mixing-declarative-imperative o)
+  (match o
+    (('root elements ...) (append-map mixing-declarative-imperative elements))
     (($ <system>) '())
     (($ <interface>) (or (and=> (.behaviour o) mixing-declarative-imperative) '()))
     (($ <component>) (or (and=> (.behaviour o) mixing-declarative-imperative) '()))
     (($ <behaviour>) (or (and=> (.statement o) mixing-declarative-imperative) '()))
-    (($ <compound> statements)
-     (apply append
-      (let ((first (first-statement statements)))
-        (match first
-          ((? (is? <imperative>))
-           (or (and-let* ((declarative
-                           (null-is-#f ((om:filter <declarative>) statements)))
-                          (ast (car declarative)))
-                         (list (wfc-error ast "mixing declarative")))
-               '()))
-          ((? (is? <declarative>))
-           (or (and-let* ((imperative
-                           (null-is-#f ((om:filter <imperative>) statements)))
-                          (ast (car imperative)))
-                         (list (wfc-error ast "mixing imperative")))
-               '()))
-          (_ '())))
-      (map mixing-declarative-imperative statements)))
+    ((and ('compound statements ...) (? om:declarative?))
+     (append
+      (or (and-let* ((imperative
+                      (null-is-#f (filter om:imperative? statements)))
+                     (ast (car imperative)))
+                    (list (wfc-error ast "mixing imperative")))
+          '())
+      (append-map mixing-declarative-imperative statements)))
+    (('compound statements ...)
+     (append
+      (or (and-let* ((declarative
+                      (null-is-#f (filter om:declarative? statements)))
+                     (ast (car declarative)))
+                          (list (wfc-error ast "mixing declarative")))
+          '())
+      (append-map mixing-declarative-imperative statements)))
     (($ <on> triggers statement) (mixing-declarative-imperative statement))
     (($ <guard> epression statement) (mixing-declarative-imperative statement))
     (($ <if> expression then #f) (mixing-declarative-imperative then))
@@ -134,13 +119,10 @@
                                            (mixing-declarative-imperative else)))
     (_ '())))
 
-(define-method (first-statement (o <null>))
-  '())
-
-(define-method (first-statement (o <list>))
-  (let ((first (car o)))
-    (or (and=> ((is? <compound>) first) (compose first-statement .elements))
-        first)))
-
 (define (ast-> ast)
-  ((compose om->list ast:wfc ast:resolve ast->om) ast))
+  ((compose
+    om->list
+    ast:wfc
+    ast:resolve
+    ast->om
+    ) ast))
