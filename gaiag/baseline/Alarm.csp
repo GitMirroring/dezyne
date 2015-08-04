@@ -1,5 +1,5 @@
-nametype bool = {false, true}
-
+nametype bool = {false, true}   
+                
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -371,7 +371,7 @@ IIG & console?x:{arm} -> (
 )))
 
 within Alarm_d(States_Disarmed, false)
-
+                                                     
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {sensor_''.triggered,sensor_''.disabled,extensions_over_empty_channels_is_undefined}
 
@@ -385,9 +385,9 @@ channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
-N' = 3
-
 Q' = let
+
+N' = 3
 
 external chase
 
@@ -407,6 +407,9 @@ R'(A') = ([] x' : A' @ x' -> R'(A'))
        reorder_in?IConsole_'.x' -> reorder_out!console_'.x' -> R'(A')
 
 S'    = let
+
+N' = 3
+
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
@@ -441,7 +444,7 @@ UsedModeling = {sensor.inevitable,sensor.optional}
 TheEnd = {|sensor_''',siren_'''|}
 within compress((CO_Alarm_d(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,console,console_'|}|]
-                 compress(SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|LINK'|}) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',sensor,sensor_',sensor_''',siren,siren_',siren_'''|}|]
                 (IF_ISensor_b(true,false) [[ISensor.x<-sensor.x|x<-extensions(sensor)]][[ISensor_'.x<-sensor_'.x|x<-extensions(sensor_')]][[ISensor_''.x<-sensor_''.x|x<-extensions(sensor_'')]][[ISensor_'''.x<-sensor_'''.x|x<-extensions(sensor_''')]]

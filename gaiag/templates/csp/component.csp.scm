@@ -46,7 +46,7 @@ CO_#(.name model) _#((compose .name .behaviour) model) (IIG,IG) = let
 #(behaviour-component->csp model)
 
 within #(.name model) _#((compose .name .behaviour) model)(#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import (.name model))))))
-
+                                                     
 channel extensions_over_empty_channels_is_undefined
 channel IN',OUT' : {#
  (comma-join (list (comma-join
@@ -64,9 +64,9 @@ channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
 
-N' = #(csp-queue-size)
-
 Q' = let
+
+N' = #(csp-queue-size)
 
 external chase
 
@@ -86,6 +86,9 @@ R'(A') = ([] x' : A' @ x' -> R'(A'))
        reorder_in?#(.type (om:port model))_'.x' -> reorder_out!#(.name (om:port model))_'.x' -> R'(A')
 
 S'    = let
+
+N' = #(csp-queue-size)
+
 
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
@@ -127,7 +130,7 @@ TheEnd = {|#(comma-join (map (lambda (port)
                (filter om:requires? ((compose .elements .ports) model))))|}
 within compress((CO_#(.name model) _#((compose .name .behaviour) model) (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|#(comma-join (append (list "OUT',transition_begin,transition_end,reorder_in") (let ((port (om:port model))) (list (.name port) (string-append (symbol->string (.name port)) "_'")))))|}|]
-                 compress(SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|LINK'|}) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|#(comma-join (apply append (list "IN'") (map (lambda (o) (list (.name o) (string-append (symbol->string (.name o)) "_'") (string-append (symbol->string (.name o)) "_'''"))) (filter om:requires? ((compose .elements .ports) model)))))|}|]
                 (# (let ((required_processes ((->join "\n                 ||| ") (map (lambda (port)
