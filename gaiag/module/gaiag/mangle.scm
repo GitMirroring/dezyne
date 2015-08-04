@@ -29,7 +29,6 @@
 
   ;;  :use-module (gaiag ast)
   :use-module (gaiag goops om)
-  :use-module (gaiag goops map)  
 
   :export (ast-> om:mangle mangle-prefix-alist))
 

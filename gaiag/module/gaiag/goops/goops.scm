@@ -28,9 +28,8 @@
   :use-module (gaiag misc)
   :use-module (gaiag goops ast)
   :use-module (gaiag goops compare)
-  :use-module (gaiag goops csp)  
+  :use-module (gaiag goops csp)
   :use-module (gaiag goops display)
-  :use-module (gaiag goops map)
   :use-module (gaiag goops om)
   :use-module (gaiag goops util))
 
@@ -39,9 +38,8 @@
 (re-export-modules
  (gaiag goops ast)
  (gaiag goops compare)
- (gaiag goops csp)  
+ (gaiag goops csp)
  (gaiag goops display)
- (gaiag goops map)
  (gaiag goops om)
- (gaiag goops simulate) 
+ (gaiag goops simulate)
  (gaiag goops util))

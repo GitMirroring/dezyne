@@ -35,7 +35,12 @@
   :use-module (gaiag goops om)
   :use-module (gaiag goops util)
 
-  :export (om:< om:equal?)
+  :export (
+           om:<
+           om:equal?
+           om:guard-equal?
+           om:triggers-equal?
+           )
   :re-export (< equal?))
 
 (define om:< <)
@@ -112,3 +117,10 @@
 
 (define-method (equal? (a <expression>) (b <expression>))
   (equal? (om2list (.value a)) (om2list (.value b))))
+
+(define-method (om:guard-equal? (lhs <guard>) (rhs <guard>))
+  (equal? (om->list (.expression lhs)) (om->list (.expression rhs))))
+
+(define-method (om:triggers-equal? (a <on>) (b <on>))
+  (equal? ((compose .elements .triggers) a)
+          ((compose .elements .triggers) b)))

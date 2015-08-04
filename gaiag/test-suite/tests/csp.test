@@ -129,10 +129,10 @@ interface i
   enum Status { Yes, No };
   extern xint $int&$;
   in void e();
-  in i.Status f();
+  in Status f();
   out void g();
   out void h();
-  in void ei(i.xint a);
+  in void ei(xint a);
 
   behaviour B
   {
@@ -140,7 +140,7 @@ interface i
     subint I02 {0..2};
     S s = S.S1;
     bool b = false;
-    i.I02 c = 0;
+    I02 c = 0;
     void toggle()
     {
     }
@@ -149,15 +149,15 @@ interface i
     {
     }
 
-    i.IO2 f()
+    I02 f()
     {
     }
 
-    void g(bool b1,bool b2)
+    void g(bool b1, bool b2)
     {
     }
 
-    i.S funx(i.xint xi)
+    S funx(xint xi)
     {
     }
 

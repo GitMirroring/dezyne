@@ -30,6 +30,7 @@
   ;;:use-module (gaiag goops goops) ;; GOOPS backend
   :use-module (gaiag list goops)  ;; LIST backend
 
+  :use-module (gaiag om)
   :export (
            ))
 
@@ -37,11 +38,13 @@
  (goops-om
   (cond-expand-provide (current-module) '(goops-om))
   (re-export-modules
-   (gaiag goops goops)))
+   (gaiag goops goops)
+   (gaiag om)))
  (list-om
   (cond-expand-provide (current-module) '(list-om))
   (re-export-modules
-   (gaiag list goops)))
+   (gaiag list goops)
+   (gaiag om)))
  (else
   ))
 

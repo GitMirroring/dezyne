@@ -864,7 +864,7 @@
                     tail))
                   (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
 
-          (($ <assign> identifier ($ <action> (and ($ <trigger> port event) (get! trigger))) expressions)
+          (($ <assign> identifier ($ <action> (and ($ <trigger> port event) (get! trigger))))
            (list
             (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
             (list space (or port channel) "_'" "?" identifier " ->\n")

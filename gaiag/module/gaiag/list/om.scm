@@ -106,6 +106,7 @@
            <list>
            <literal>
            <name>
+           <named>
            <null>
            <system>
            <bindings>
@@ -307,7 +308,8 @@
     ('ast (and (pair? ast) (member (car ast) (append ast-leafs ast-lists)) ast))
     ('ast-list (and (pair? ast) (member (car ast) ast-lists) ast))
     ('expression (or (and (pair? ast) (member (car ast) '(expression otherwise)) ast)))
-    ('model (or (is-a? ast <interface>) (is-a? ast <component>) (is-a? ast <system>)))
+    ('named (or (is-a? ast <model>) (is-a? ast <import>) (is-a? ast <literal>) (is-a? ast <*type*>)))
+    ('model (or (is-a? ast <component>) (is-a? ast <interface>) (is-a? ast <system>)))
     ('statement (and (pair? ast) (member (car ast) ast-statements) ast))
     ('*type* (or (is-a? ast <enum>) (is-a? ast <extern>) (is-a? ast <int>) (is-a? ast <type>)))
 
@@ -344,6 +346,7 @@
            ((m (datum->syntax #'type (symbol-append 'make- (syntax->datum #'type))))) #'(m args ...))))))
 
 (define <model> 'model)
+(define <named> 'named)
 (define <statement> 'statement)
 (define <*type*> '*type*)
 
@@ -690,7 +693,7 @@
 
 (define (.name ast)
   (match ast
-    (('name scope ... name) name)
+    ;;(('name scope ... name) name)
     ((or 'bool 'void) ast)
     (_ (cadr ast))))
 

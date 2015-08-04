@@ -444,7 +444,7 @@
      (make <var> :name (name)))
 
     (('name (and (? var?) (get! type)) (? (member-field? (type))))
-     (make <field> :identifier (type) :field (.name o)))
+     (make <field> :identifier (type) :field (om:name o)))
 
     (('name scope name field) (=> failure)
      (let* ((name `(name ,scope ,name))

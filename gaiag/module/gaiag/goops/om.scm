@@ -180,9 +180,13 @@
   (elements :accessor @elements :init-form (list) :init-keyword :elements))
 
 (define .elements cdr)
+(define .name cdr)
+
+(define-class <statement> (<ast>))
 
 (define-class <arguments> (<ast-list>))
 (define-class <bindings> (<ast-list>))
+(define-class <compound> (<ast-list> <statement>))
 (define-class <events> (<ast-list>))
 (define-class <fields> (<ast-list>))
 (define-class <formals> (<ast-list>))
@@ -194,9 +198,6 @@
 (define-class <triggers> (<ast-list>))
 (define-class <types> (<ast-list>))
 (define-class <variables> (<ast-list>))
-
-(define-class <statement> (<ast>))
-(define-class <compound> (<ast-list> <statement>))
 
 
 (define ast-lists
@@ -233,13 +234,14 @@
       (apply goops:make (cons class args))))
 
 (define (is-a? o class)
-  (if (not (pair? o)) (goops:is-a? o class)
-      (and-let* ((type (car o))
-                 ((symbol? type))
-                 (name (symbol->class type)))
-                (if (or (eq? class <ast>) (eq? class <ast-list>))
-                    (member name ast-list-names)
-                 (eq? name (class-name class))))))
+  (and (if (not (pair? o)) (goops:is-a? o class)
+           (and-let* ((type (car o))
+                      ((symbol? type))
+                      (name (symbol->class type)))
+                     (if (or (eq? class <ast>) (eq? class <ast-list>))
+                         (member name ast-list-names)
+                         (eq? name (class-name class)))))
+       o))
 
 (define-class <named> (<ast>)
   (name :accessor .name :init-form (make <name>) :init-keyword :name))
