@@ -20,45 +20,46 @@
 //
 // Code:
 
-interface Provides
-{
+interface Provides {
   in void start();
   out void busy();
   out void finish();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on start:
     {
       busy;
       finish;
+
     }
   }
 }
-interface Requires
-{
+
+interface Requires {
   in void ping();
   out void pong();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on ping:
     {
       pong;
       pong;
+
     }
   }
 }
-component reply_reorder
-{
+
+component reply_reorder {
   provides Provides p;
   requires Requires r;
 
-  behaviour 
-  {
+  behaviour {
     bool first = true;
+
     [!first]
     {
       on p.start():
@@ -67,7 +68,9 @@ component reply_reorder
       {
         p.finish();
         first = !first;
+
       }
+
     }
     [first]
     {
@@ -77,8 +80,11 @@ component reply_reorder
       {
         p.busy();
         first = !first;
+
       }
+
     }
   }
+
 }
 

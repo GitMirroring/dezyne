@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,15 +22,14 @@
 //
 // Code:
 
-interface Iterator
-{
+interface Iterator {
   extern element $int$;
-  enum end { yes, no };
+  enum end {yes, no};
   in end next(element elmt);
 
-  behaviour 
-  {
+  behaviour {
     end done = end.no;
+
     [done.yes]
     on next:
     reply(done);
@@ -40,54 +40,55 @@ interface Iterator
       {
         reply(done);
         done = end.yes;
+
       }
       reply(done);
+
     }
   }
 }
-interface IList
-{
+
+interface IList {
   in void step();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on step:
-    {
-    }
+    {}
   }
 }
-component List
-{
+
+component List {
   provides IList pp;
   requires Iterator list;
 
-  behaviour 
-  {
-    Iterator.end head()
-    {
-      Iterator.element elmt;
+  behaviour {
+
+    nameIteratorend head() {
+      Iterator.element elmt = ;
       Iterator.end it = list.next(elmt);
       return it;
+
     }
 
-    void tail(Iterator.end done)
-    {
-      if (done == Iterator.end.no)
-      {
-        Iterator.element elmt;
+    void tail(Iterator.end done) {
+      if (done == Iterator.end.no) {
+        Iterator.element elmt = ;
         done = list.next(elmt);
-        tail(done);
+        tail, (done), false
       }
-      return;
+      return false;
+
     }
 
     [true]
     on pp.step():
     {
       Iterator.end it = head();
-      tail(it);
+      tail, (it), false
     }
   }
+
 }
 

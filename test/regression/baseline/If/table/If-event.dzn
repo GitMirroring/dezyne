@@ -20,50 +20,56 @@
 //
 // Code:
 
-interface I
-{
+interface I {
   in void a();
   out void b();
   out void c();
 
-  behaviour 
-  {
+  behaviour {
     bool t = false;
+
     on a:
     {
       [!t]
       {
         c;
         t = !t;
+
       }
       [t]
       {
         b;
         t = !t;
+
       }
+
     }
   }
 }
-component If
-{
+
+component If {
   provides I i;
 
-  behaviour 
-  {
+  behaviour {
     bool t = false;
+
     on i.a():
     {
       [!t]
       {
         i.c();
         t = !t;
+
       }
       [t]
       {
         i.b();
         t = !t;
+
       }
+
     }
   }
+
 }
 

@@ -20,22 +20,20 @@
 //
 // Code:
 
-interface IFunctionCall
-{
+interface IFunctionCall {
   in void evt();
   out void act();
 
-  behaviour 
-  {
-    void func()
-    {
+  behaviour {
+
+    void func() {
       act;
-      return;
+      return false;
+
     }
 
     on evt:
     [true]
-    func();
-  }
+    func, (), false}
 }
 

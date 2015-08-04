@@ -20,29 +20,28 @@
 //
 // Code:
 
-interface iincomplete
-{
+interface iincomplete {
   in void e();
   out void a();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on e:
     a;
   }
 }
-component incomplete
-{
+
+component incomplete {
   provides iincomplete p;
   requires iincomplete r;
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on p.e():
-    {
-    }
+    {}
   }
+
 }
 

@@ -20,30 +20,29 @@
 //
 // Code:
 
-interface IDataparam
-{
+interface IDataparam {
   extern xint $int$;
-  enum Status { Yes, No };
+  enum Status {Yes, No};
   in void e0();
   in Status e0r();
   in void e(xint i);
   in Status er(xint i);
-  in Status eer(xint i,xint j);
+  in Status eer(xint i, xint j);
   in void eo(out xint i);
-  in void eoo(out xint i,out xint j);
-  in void eio(xint i,out xint j);
+  in void eoo(out xint i, out xint j);
+  in void eio(xint i, out xint j);
   in void eio2(inout xint i);
   in Status eor(out xint i);
-  in Status eoor(out xint i,out xint j);
-  in Status eior(xint i,out xint j);
+  in Status eoor(out xint i, out xint j);
+  in Status eior(xint i, out xint j);
   in Status eio2r(inout xint i);
   out void a0();
   out void a(xint i);
-  out void aa(xint i,xint j);
-  out void a6(xint a0,xint a1,xint a2,xint a3,xint a4,xint a5);
+  out void aa(xint i, xint j);
+  out void a6(xint a0, xint a1, xint a2, xint a3, xint a4, xint a5);
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     {
       on e0:
@@ -52,58 +51,63 @@ interface IDataparam
       {
         a0;
         reply(Status.Yes);
+
       }
       on e:
       {
         a;
         aa;
+
       }
       on er:
       {
         a;
         aa;
         reply(Status.Yes);
+
       }
       on eer:
       {
         a;
         aa;
         reply(Status.No);
+
       }
       on eo, eoo, eio, eio2:
-      {
-      }
+      {}
       on eor, eoor, eior, eio2r:
       reply(Status.Yes);
+
     }
   }
 }
-component Dataparam
-{
+
+component Dataparam {
   provides IDataparam port;
 
-  behaviour 
-  {
+  behaviour {
     IDataparam.xint mi = $0$;
     IDataparam.Status s = IDataparam.Status.Yes;
-    IDataparam.Status fun()
-    {
+
+    nameIDataparamStatus fun() {
       return IDataparam.Status.Yes;
+
     }
 
-    IDataparam.Status funx(IDataparam.xint xi)
-    {
+    nameIDataparamStatus funx(IDataparam.xint xi) {
       return IDataparam.Status.Yes;
+
     }
 
     [true]
     {
       on port.e0():
-      port.a6($0$,$1$,$2$,$3$,$4$,$5$);
+      port.a6($0$, $1$, $2$, $3$, $4$, $5$);
       on port.e0r():
       {
         port.a0();
         reply(IDataparam.Status.Yes);
+
       }
       on port.e(pi):
       {
@@ -111,81 +115,92 @@ component Dataparam
         s = s;
         mi = pi;
         port.a(mi);
-        port.aa(mi,pi);
+        port.aa(mi, pi);
+
       }
       on port.er(pi):
       {
         IDataparam.Status s = IDataparam.Status.No;
         mi = pi;
         port.a(mi);
-        port.aa(mi,pi);
+        port.aa(mi, pi);
         reply(IDataparam.Status.Yes);
+
       }
-      on port.eer(i,j):
+      on port.eer(i, j):
       {
         IDataparam.Status s = IDataparam.Status.No;
         port.a(j);
-        port.aa(j,i);
+        port.aa(j, i);
         reply(s);
+
       }
       on port.eo(i):
       i = $234$;
-      on port.eoo(i,j):
+      on port.eoo(i, j):
       {
         i = $123$;
         j = $456$;
+
       }
-      on port.eio(i,j):
+      on port.eio(i, j):
       j = i;
       on port.eio2(i):
       {
         IDataparam.xint t = i;
         i = $246$;
+
       }
       on port.eor(i):
       {
         i = $234$;
         reply(IDataparam.Status.Yes);
+
       }
-      on port.eoor(i,j):
+      on port.eoor(i, j):
       {
         i = $123$;
         j = $456$;
         reply(IDataparam.Status.Yes);
+
       }
-      on port.eior(i,j):
+      on port.eior(i, j):
       {
         j = i;
         reply(IDataparam.Status.Yes);
+
       }
       on port.eio2r(i):
       {
         IDataparam.xint t = i;
         i = $246$;
         reply(IDataparam.Status.Yes);
+
       }
+
     }
   }
+
 }
-component proxy
-{
+
+component proxy {
   provides IDataparam top;
   requires IDataparam bottom;
 
-  behaviour 
-  {
-    void outfunc(out IDataparam.xint i)
-    {
+  behaviour {
+
+    void outfunc(out IDataparam.xint i) {
       IDataparam.xint j = i;
       bottom.eo(j);
       i = j;
-      return;
+      return false;
+
     }
 
-    void deferfunc(IDataparam.xint i)
-    {
+    void deferfunc(IDataparam.xint i) {
       top.a(i);
-      return;
+      return false;
+
     }
 
     [true]
@@ -196,6 +211,7 @@ component proxy
       {
         IDataparam.Status r = bottom.e0r();
         reply(r);
+
       }
       on top.e(pi):
       bottom.e(pi);
@@ -203,59 +219,64 @@ component proxy
       {
         IDataparam.Status r = bottom.er(pi);
         reply(r);
+
       }
-      on top.eer(i,j):
+      on top.eer(i, j):
       {
-        IDataparam.Status r = bottom.eer(i,j);
+        IDataparam.Status r = bottom.eer(i, j);
         reply(r);
+
       }
       on top.eo(i):
-      outfunc(i);
-      on top.eoo(i,j):
-      bottom.eoo(i,j);
-      on top.eio(i,j):
-      bottom.eio(i,j);
+      outfunc, (i), falseon top.eoo(i, j):
+      bottom.eoo(i, j);
+      on top.eio(i, j):
+      bottom.eio(i, j);
       on top.eio2(i):
       bottom.eio2(i);
       on top.eor(i):
       {
         IDataparam.Status s = bottom.eor(i);
         reply(s);
+
       }
-      on top.eoor(i,j):
+      on top.eoor(i, j):
       {
-        IDataparam.Status s = bottom.eoor(i,j);
+        IDataparam.Status s = bottom.eoor(i, j);
         reply(s);
+
       }
-      on top.eior(i,j):
+      on top.eior(i, j):
       {
-        IDataparam.Status s = bottom.eior(i,j);
+        IDataparam.Status s = bottom.eior(i, j);
         reply(s);
+
       }
       on top.eio2r(i):
       {
         IDataparam.Status s = bottom.eio2r(i);
         reply(s);
+
       }
       on bottom.a0():
       top.a0();
-      on bottom.a6(A0,A1,A2,A3,A4,A5):
-      top.a6(A0,A1,A2,A3,A4,A5);
+      on bottom.a6(A0, A1, A2, A3, A4, A5):
+      top.a6(A0, A1, A2, A3, A4, A5);
       on bottom.a(i):
-      deferfunc(i);
-      on bottom.aa(i,j):
-      top.aa(i,j);
+      deferfunc, (i), falseon bottom.aa(i, j):
+      top.aa(i, j);
+
     }
   }
+
 }
-component Datasystem
-{
+
+component Datasystem {
   provides IDataparam port;
 
-  system
-  {
-    proxy p;
-    Dataparam c;
+  system {
+    nameproxy p;
+    nameDataparam c;
 
     p.top <=> port;
     c.port <=> p.bottom;

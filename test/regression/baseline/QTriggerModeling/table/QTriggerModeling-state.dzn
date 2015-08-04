@@ -20,9 +20,8 @@
 //
 // Code:
 
-interface ICallEmitMulti
-{
-  enum EmitResult { One, Two };
+interface ICallEmitMulti {
+  enum EmitResult {One, Two};
   in void req();
   in EmitResult reqValued();
   in void ack();
@@ -30,11 +29,11 @@ interface ICallEmitMulti
   out void ntfA();
   out void ntfB();
 
-  behaviour 
-  {
+  behaviour {
     subint Counter {0..2};
     bool isWaiting = false;
     Counter pending = 0;
+
     [!isWaiting]
     {
       on req:
@@ -43,6 +42,7 @@ interface ICallEmitMulti
         ntfB;
         pending = 2;
         isWaiting = true;
+
       }
       on reqValued:
       {
@@ -51,9 +51,11 @@ interface ICallEmitMulti
         pending = 2;
         isWaiting = true;
         reply(EmitResult.Two);
+
       }
       on ack, done:
       illegal;
+
     }
     [isWaiting]
     {
@@ -65,6 +67,7 @@ interface ICallEmitMulti
         illegal;
         [otherwise]
         pending = pending - 1;
+
       }
       on done:
       {
@@ -72,50 +75,51 @@ interface ICallEmitMulti
         isWaiting = false;
         [otherwise]
         illegal;
+
       }
+
     }
   }
 }
-interface ICallTrigger
-{
+
+interface ICallTrigger {
   in void start();
   out void notLiveLock();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on start:
-    {
-    }
+    {}
   }
 }
-interface ITauTrigger
-{
+
+interface ITauTrigger {
   in void noDeadlock();
   out void start();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     {
       on noDeadlock:
-      {
-      }
+      {}
       on optional:
       start;
+
     }
   }
 }
-component QTriggerModeling
-{
+
+component QTriggerModeling {
   provides ICallTrigger ict;
   requires ITauTrigger itt;
   requires ICallEmitMulti src;
 
-  behaviour 
-  {
+  behaviour {
     bool behave = true;
     bool useVoid = true;
+
     [!behave]
     {
       on ict.start(), itt.start():
@@ -124,9 +128,11 @@ component QTriggerModeling
       {
         src.ack();
         src.done();
+
       }
       on src.ntfB():
       src.ack();
+
     }
     [behave]
     {
@@ -136,6 +142,7 @@ component QTriggerModeling
         src.req();
         [otherwise]
         ICallEmitMulti.EmitResult ignored = src.reqValued();
+
       }
       on src.ntfA():
       {
@@ -143,6 +150,7 @@ component QTriggerModeling
         src.ack();
         [otherwise]
         src.ack();
+
       }
       on src.ntfB():
       {
@@ -151,15 +159,20 @@ component QTriggerModeling
           src.ack();
           src.done();
           useVoid = false;
+
         }
         [otherwise]
         {
           src.ack();
           src.done();
           behave = false;
+
         }
+
       }
+
     }
   }
+
 }
 

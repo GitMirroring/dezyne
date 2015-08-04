@@ -20,23 +20,23 @@
 //
 // Code:
 
-interface IChoice2
-{
+interface IChoice2 {
   in void arm();
   in void disarm();
   out void detected();
   out void deactivated();
 
-  behaviour 
-  {
-    enum States { Disarmed, Armed, Triggered, Disarming };
+  behaviour {
+    enum States {Disarmed, Armed, Triggered, Disarming};
     States state = States.Disarmed;
+
     on arm:
     {
       [state.Disarmed]
       state = States.Armed;
       [state.Disarming || state.Triggered || state.Armed]
       illegal;
+
     }
     on disarm:
     {
@@ -44,18 +44,21 @@ interface IChoice2
       illegal;
       [state.Triggered || state.Armed]
       state = States.Disarming;
+
     }
     on optional:
     [state.Armed]
     {
       detected;
       state = States.Triggered;
+
     }
     on inevitable:
     [state.Disarming]
     {
       deactivated;
       state = States.Disarmed;
+
     }
   }
 }

@@ -20,17 +20,16 @@
 //
 // Code:
 
-interface ITauEmitMulti
-{
+interface ITauEmitMulti {
   out void a();
   out void b();
   in void c();
   out void d();
   in void e();
 
-  behaviour 
-  {
+  behaviour {
     bool isWaiting = false;
+
     [!isWaiting]
     {
       on inevitable:
@@ -38,12 +37,13 @@ interface ITauEmitMulti
         a;
         isWaiting = true;
         b;
+
       }
       on c:
       illegal;
       on e:
-      {
-      }
+      {}
+
     }
     [isWaiting]
     {
@@ -51,67 +51,70 @@ interface ITauEmitMulti
       {
         d;
         isWaiting = false;
+
       }
       on e:
       illegal;
+
     }
   }
 }
-interface ITauEmitSingle
-{
+
+interface ITauEmitSingle {
   out void a();
   in void c();
 
-  behaviour 
-  {
+  behaviour {
     bool isWaiting = false;
+
     [!isWaiting]
     {
       on inevitable:
       {
         a;
         isWaiting = true;
+
       }
       on c:
       illegal;
+
     }
     [isWaiting]
     on c:
     isWaiting = false;
   }
 }
-interface IDummy
-{
+
+interface IDummy {
   in void start();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on start:
-    {
-    }
+    {}
   }
 }
-component TauEmitMultiple
-{
+
+component TauEmitMultiple {
   provides IDummy ctrl;
   requires ITauEmitMulti rpa;
   requires ITauEmitSingle rps;
 
-  behaviour 
-  {
+  behaviour {
     bool expect_b = false;
     bool expect_d = false;
+
     [!expect_b]
     {
       on ctrl.start():
-      {
-      }
+      {}
       on rpa.a():
       {
         expect_b = true;
         rpa.c();
         expect_d = true;
+
       }
       on rpa.b():
       illegal;
@@ -121,20 +124,22 @@ component TauEmitMultiple
         rpa.e();
         [otherwise]
         illegal;
+
       }
       on rps.a():
       rps.c();
+
     }
     [expect_b]
     {
       on ctrl.start(), rpa.b():
-      {
-      }
+      {}
       on rpa.a():
       {
         expect_b = true;
         rpa.c();
         expect_d = true;
+
       }
       on rpa.d():
       {
@@ -142,10 +147,13 @@ component TauEmitMultiple
         rpa.e();
         [otherwise]
         illegal;
+
       }
       on rps.a():
       rps.c();
+
     }
   }
+
 }
 

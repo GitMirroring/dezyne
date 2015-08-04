@@ -20,25 +20,24 @@
 //
 // Code:
 
-interface IMultipleOutEventsOnSingleTau
-{
+interface IMultipleOutEventsOnSingleTau {
   in void ca();
   out void oa();
   out void ob();
 
-  behaviour 
-  {
-    enum States { Closed, Emitting, Open };
+  behaviour {
+    enum States {Closed, Emitting, Open};
     States state = States.Closed;
+
     on ca:
     {
       [state.Emitting || state.Closed]
       illegal;
       [state.Emitting || state.Closed]
-      {
-      }
+      {}
       [state.Open]
       state = States.Closed;
+
     }
     on inevitable:
     {
@@ -47,45 +46,50 @@ interface IMultipleOutEventsOnSingleTau
         oa;
         ob;
         state = States.Open;
+
       }
       [state.Closed]
       {
         oa;
         state = States.Emitting;
+
       }
       [state.Emitting]
       {
         ob;
         state = States.Open;
+
       }
+
     }
   }
 }
-component MultipleOutEventsOnSingleTau
-{
+
+component MultipleOutEventsOnSingleTau {
   provides IMultipleOutEventsOnSingleTau pp;
   requires IMultipleOutEventsOnSingleTau rp;
 
-  behaviour 
-  {
+  behaviour {
     bool combine_out = false;
     bool ca_enabled = false;
+
     on pp.ca():
     {
       [combine_out || !combine_out]
-      if (ca_enabled)
-      {
+      if (ca_enabled) {
         rp.ca();
         combine_out = !combine_out;
+
       }
+
     }
     on rp.oa():
     {
       [!combine_out]
       pp.oa();
       [combine_out]
-      {
-      }
+      {}
+
     }
     on rp.ob():
     {
@@ -93,14 +97,18 @@ component MultipleOutEventsOnSingleTau
       {
         pp.ob();
         ca_enabled = true;
+
       }
       [combine_out]
       {
         pp.oa();
         pp.ob();
         ca_enabled = true;
+
       }
+
     }
   }
+
 }
 

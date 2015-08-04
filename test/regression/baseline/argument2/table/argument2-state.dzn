@@ -20,18 +20,17 @@
 //
 // Code:
 
-interface I
-{
+interface I {
   in void e();
   out void f();
 
-  behaviour 
-  {
+  behaviour {
     bool b = false;
-    bool g(bool ga,bool gb)
-    {
+
+    bool g(bool ga, bool gb) {
       f;
       return ga || gb;
+
     }
 
     [!b]
@@ -40,8 +39,8 @@ interface I
       b = !b;
       bool c = g(b, b);
       b = g(c, c);
-      if (c)
-      f;
+      if (c) f;
+
     }
     [b]
     on e:
@@ -49,22 +48,22 @@ interface I
       b = !b;
       bool c = g(b, b);
       b = g(c, c);
-      if (c)
-      f;
+      if (c) f;
+
     }
   }
 }
-component argument2
-{
+
+component argument2 {
   provides I i;
 
-  behaviour 
-  {
+  behaviour {
     bool b = false;
-    bool g(bool ga,bool gb)
-    {
+
+    bool g(bool ga, bool gb) {
       i.f();
       return ga || gb;
+
     }
 
     [!b]
@@ -73,8 +72,8 @@ component argument2
       b = !b;
       bool c = g(b, b);
       b = g(c, c);
-      if (c)
-      i.f();
+      if (c) i.f();
+
     }
     [b]
     on i.e():
@@ -82,9 +81,10 @@ component argument2
       b = !b;
       bool c = g(b, b);
       b = g(c, c);
-      if (c)
-      i.f();
+      if (c) i.f();
+
     }
   }
+
 }
 

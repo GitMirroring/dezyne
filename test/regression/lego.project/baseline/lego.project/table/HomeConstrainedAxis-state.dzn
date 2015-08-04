@@ -20,46 +20,45 @@
 //
 // Code:
 
-component HomeConstrainedMove
-{
+component HomeConstrainedMove {
   provides IConstrainedMove ctrl;
   requires IMove motor;
   requires ITouchSense homeSensor;
 
-  behaviour 
-  {
-    enum State { lost, idle, moving, calibratingHome };
+  behaviour {
+    enum State {lost, idle, moving, calibratingHome};
     State s = State.lost;
-    void slowBackward()
-    {
-      motor.run($(config.get("Power::CalibrationSpeed"))$,$true$);
-      return;
+
+    void slowBackward() {
+      motor.run($(config.get("Power::CalibrationSpeed"))$, $true$);
+      return false;
+
     }
 
-    void recordHome()
-    {
+    void recordHome() {
       homeSensor.disable();
       motor.stop();
       motor.zero();
-      return;
+      return false;
+
     }
 
-    void startAbsoluteMove(IConstrainedMove.position_t target)
-    {
+    void startAbsoluteMove(IConstrainedMove.position_t target) {
       ITouchSense.TouchState ignore = ITouchSense.TouchState.Released;
       ignore = homeSensor.enable();
-      motor.move($(config.get("Power::OperationalSpeed"))$,target);
+      motor.move($(config.get("Power::OperationalSpeed"))$, target);
       s = State.moving;
-      return;
+      return false;
+
     }
 
-    void notifyArrived()
-    {
+    void notifyArrived() {
       motor.stop();
       homeSensor.disable();
       s = State.idle;
       ctrl.arrived();
-      return;
+      return false;
+
     }
 
     [s.lost]
@@ -69,24 +68,26 @@ component HomeConstrainedMove
         motor.stop();
         homeSensor.disable();
         s = State.lost;
+
       }
       on ctrl.calibrate():
       {
         ITouchSense.TouchState hss = homeSensor.enable();
-        if (hss == ITouchSense.TouchState.Pressed)
-        {
-          recordHome();
-          s = State.idle;
+        if (hss == ITouchSense.TouchState.Pressed) {
+          recordHome, (), falses = State.idle;
           ctrl.homed();
+
         }
         else
         {
-          slowBackward();
-          s = State.calibratingHome;
+          slowBackward, (), falses = State.calibratingHome;
+
         }
+
       }
       on ctrl.move(), homeSensor.pressed(), homeSensor.released(), motor.arrived():
       illegal;
+
     }
     [s.idle]
     {
@@ -95,6 +96,7 @@ component HomeConstrainedMove
         motor.stop();
         homeSensor.disable();
         s = State.lost;
+
       }
       on ctrl.calibrate(), homeSensor.pressed(), homeSensor.released(), motor.arrived():
       illegal;
@@ -102,9 +104,11 @@ component HomeConstrainedMove
       {
         ITouchSense.TouchState ignore = ITouchSense.TouchState.Released;
         ignore = homeSensor.enable();
-        motor.move($(config.get("Power::OperationalSpeed"))$,target);
+        motor.move($(config.get("Power::OperationalSpeed"))$, target);
         s = State.moving;
+
       }
+
     }
     [s.moving]
     {
@@ -113,20 +117,19 @@ component HomeConstrainedMove
         motor.stop();
         homeSensor.disable();
         s = State.lost;
+
       }
       on ctrl.calibrate(), ctrl.move():
       illegal;
       on homeSensor.pressed():
       {
         motor.stop();
-        recordHome();
-        notifyArrived();
+        recordHome, (), falsenotifyArrived, (), false
       }
       on homeSensor.released():
-      {
-      }
+      {}
       on motor.arrived():
-      notifyArrived();
+      notifyArrived, (), false
     }
     [s.calibratingHome]
     {
@@ -135,29 +138,31 @@ component HomeConstrainedMove
         motor.stop();
         homeSensor.disable();
         s = State.lost;
+
       }
       on ctrl.calibrate(), ctrl.move(), homeSensor.released(), motor.arrived():
       illegal;
       on homeSensor.pressed():
       {
-        recordHome();
-        s = State.idle;
+        recordHome, (), falses = State.idle;
         ctrl.homed();
+
       }
+
     }
   }
+
 }
-component HomeConstrainedAxis
-{
+
+component HomeConstrainedAxis {
   provides IConstrainedMove ctrl;
   requires imotor motorHw;
   requires itouch homeSensorHw;
 
-  system
-  {
-    HomeConstrainedMove bhv;
-    Motor motor;
-    TouchSensor homeSensor;
+  system {
+    nameHomeConstrainedMove bhv;
+    nameMotor motor;
+    nameTouchSensor homeSensor;
 
     ctrl <=> bhv.ctrl;
     bhv.motor <=> motor.ctrl;

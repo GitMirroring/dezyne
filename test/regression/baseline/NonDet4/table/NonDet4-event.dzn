@@ -20,8 +20,7 @@
 //
 // Code:
 
-interface NonDet4
-{
+interface NonDet4 {
   in void init();
   in void work();
   in void stop();
@@ -31,10 +30,10 @@ interface NonDet4
   out void stopped();
   out void recovered();
 
-  behaviour 
-  {
-    enum States { Powered, Ready, Working, Stopping, Error };
+  behaviour {
+    enum States {Powered, Ready, Working, Stopping, Error};
     States mainState = States.Working;
+
     on init:
     {
       [mainState.Powered]
@@ -43,15 +42,19 @@ interface NonDet4
         {
           ok;
           mainState = States.Ready;
+
         }
         [true]
         {
           error;
           mainState = States.Error;
+
         }
+
       }
       [mainState.Error || mainState.Stopping || mainState.Working || mainState.Ready]
       illegal;
+
     }
     on work:
     {
@@ -59,6 +62,7 @@ interface NonDet4
       illegal;
       [mainState.Ready]
       mainState = States.Working;
+
     }
     on recover:
     {
@@ -70,13 +74,17 @@ interface NonDet4
         {
           ok;
           mainState = States.Ready;
+
         }
         [true]
         {
           error;
           mainState = States.Error;
+
         }
+
       }
+
     }
     on stop:
     {
@@ -88,6 +96,7 @@ interface NonDet4
       mainState = States.Ready;
       [mainState.Error]
       ok;
+
     }
     on inevitable:
     {
@@ -97,13 +106,17 @@ interface NonDet4
         {
           ok;
           mainState = States.Ready;
+
         }
         [true]
         {
           error;
           mainState = States.Error;
+
         }
+
       }
+
     }
   }
 }

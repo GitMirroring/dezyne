@@ -20,28 +20,28 @@
 //
 // Code:
 
-interface iincomplete_with_modeling_event
-{
+interface iincomplete_with_modeling_event {
   in void e();
   out void a();
 
-  behaviour 
-  {
+  behaviour {
+
     on inevitable:
     [true]
     a;
   }
 }
-component incomplete_with_modeling_event
-{
+
+component incomplete_with_modeling_event {
   provides iincomplete_with_modeling_event p;
   requires iincomplete_with_modeling_event r;
 
-  behaviour 
-  {
+  behaviour {
+
     on r.a():
     [true]
     p.a();
   }
+
 }
 

@@ -20,23 +20,23 @@
 //
 // Code:
 
-interface IMove2D
-{
+interface IMove2D {
   extern MovePosition $Integer$;
   in void calibrate();
   out void calibrated();
   in void stop();
-  in void move(MovePosition x,MovePosition y);
+  in void move(MovePosition x, MovePosition y);
   out void arrived();
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Ready, Moving };
+  behaviour {
+    enum State {Lost, Calibrating, Ready, Moving};
     State s = State.Lost;
+
     on stop:
     {
       [s.Moving || s.Ready || s.Calibrating || s.Lost]
       s = State.Lost;
+
     }
     on calibrate:
     {
@@ -46,22 +46,23 @@ interface IMove2D
       {
         calibrated;
         s = State.Ready;
+
       }
       [s.Moving || s.Ready || s.Calibrating]
       illegal;
       [s.Moving || s.Ready || s.Calibrating]
-      {
-      }
+      {}
+
     }
     on move:
     {
       [s.Moving || s.Calibrating || s.Lost]
       illegal;
       [s.Moving || s.Calibrating || s.Lost]
-      {
-      }
+      {}
       [s.Ready]
       s = State.Moving;
+
     }
     on inevitable:
     {
@@ -69,44 +70,46 @@ interface IMove2D
       {
         s = State.Ready;
         calibrated;
+
       }
       [s.Moving]
       {
         s = State.Ready;
         arrived;
+
       }
+
     }
   }
 }
-component Move2D
-{
+
+component Move2D {
   provides IMove2D ctrl;
   requires IConstrainedMove xAxis;
   requires IConstrainedMove yAxis;
 
-  behaviour 
-  {
+  behaviour {
     subint AxisCount {0..2};
     bool isCalibrating = false;
     AxisCount nCalibrated = 0;
     AxisCount nMoving = 0;
-    void tryCalibrated()
-    {
+
+    void tryCalibrated() {
       nCalibrated = nCalibrated + 1;
-      if (nCalibrated == 2)
-      {
+      if (nCalibrated == 2) {
         ctrl.calibrated();
         isCalibrating = false;
+
       }
-      return;
+      return false;
+
     }
 
-    void tryArrived()
-    {
+    void tryArrived() {
       nMoving = nMoving - 1;
-      if (nMoving == 0)
-      ctrl.arrived();
-      return;
+      if (nMoving == 0) ctrl.arrived();
+      return false;
+
     }
 
     on ctrl.stop():
@@ -118,7 +121,9 @@ component Move2D
         nCalibrated = 0;
         nMoving = 0;
         isCalibrating = false;
+
       }
+
     }
     on ctrl.calibrate():
     {
@@ -129,28 +134,27 @@ component Move2D
         yAxis.calibrate();
         nCalibrated = 0;
         isCalibrating = true;
+
       }
       [isCalibrating || !isCalibrating]
-      {
-      }
+      {}
+
     }
     on xAxis.homed():
     {
       [isCalibrating || !isCalibrating]
-      if (nCalibrated < 2)
-      tryCalibrated();
-      else
+      if (nCalibrated < 2) tryCalibrated, (), falseelse
       illegal;
+
     }
     on yAxis.homed():
     {
       [isCalibrating || !isCalibrating]
-      if (nCalibrated < 2)
-      tryCalibrated();
-      else
+      if (nCalibrated < 2) tryCalibrated, (), falseelse
       illegal;
+
     }
-    on ctrl.move(x,y):
+    on ctrl.move(x, y):
     {
       [isCalibrating || !isCalibrating]
       [nMoving == 0 && nCalibrated == 2]
@@ -158,33 +162,35 @@ component Move2D
         nMoving = 2;
         xAxis.move(x);
         yAxis.move(y);
+
       }
       [isCalibrating || !isCalibrating]
-      {
-      }
+      {}
+
     }
     on xAxis.arrived():
     {
       [isCalibrating || !isCalibrating]
       [nMoving > 0]
-      tryArrived();
-      [isCalibrating || !isCalibrating]
+      tryArrived, (), false[isCalibrating || !isCalibrating]
       [nMoving == 0]
       illegal;
+
     }
     on yAxis.arrived():
     {
       [isCalibrating || !isCalibrating]
       [nMoving > 0]
-      tryArrived();
-      [isCalibrating || !isCalibrating]
+      tryArrived, (), false[isCalibrating || !isCalibrating]
       [nMoving == 0]
       illegal;
+
     }
   }
+
 }
-component Stage
-{
+
+component Stage {
   provides IMove2D ctrl;
   requires imotor xMotorHw;
   requires itouch xHomeSensorHw;
@@ -193,11 +199,10 @@ component Stage
   requires itouch yHomeSensorHw;
   requires itouch yEndSensorHw;
 
-  system
-  {
-    Move2D bhv;
-    ConstrainedAxis xAxis;
-    ConstrainedAxis yAxis;
+  system {
+    nameMove2D bhv;
+    nameConstrainedAxis xAxis;
+    nameConstrainedAxis yAxis;
 
     ctrl <=> bhv.ctrl;
     bhv.xAxis <=> xAxis.ctrl;

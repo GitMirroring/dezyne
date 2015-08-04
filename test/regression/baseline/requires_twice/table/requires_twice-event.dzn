@@ -20,39 +20,39 @@
 //
 // Code:
 
-interface irequires_twice
-{
+interface irequires_twice {
   in void e();
   out void a();
 
-  behaviour 
-  {
+  behaviour {
+
     on e:
     [true]
     a;
   }
 }
-component requires_twice
-{
+
+component requires_twice {
   provides irequires_twice p;
   requires irequires_twice once;
   requires irequires_twice twice;
 
-  behaviour 
-  {
+  behaviour {
+
     on p.e():
     [true]
     {
       once.e();
       twice.e();
+
     }
     on once.a():
     [true]
-    {
-    }
+    {}
     on twice.a():
     [true]
     p.a();
   }
+
 }
 

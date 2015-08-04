@@ -20,31 +20,31 @@
 //
 // Code:
 
-interface iq2
-{
+interface iq2 {
   in void e();
   out void a();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on e:
     a;
   }
 }
-interface ir2
-{
+
+interface ir2 {
   out void a();
 
-  behaviour 
-  {
+  behaviour {
     bool s = false;
+
     [!s]
     on inevitable:
     {
       s = !s;
       a;
       a;
+
     }
     [s]
     on inevitable:
@@ -52,24 +52,26 @@ interface ir2
       s = !s;
       a;
       a;
+
     }
   }
 }
-component q2
-{
+
+component q2 {
   provides iq2 p;
   requires ir2 r;
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     {
       on p.e():
       p.a();
       on r.a():
-      {
-      }
+      {}
+
     }
   }
+
 }
 

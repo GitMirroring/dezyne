@@ -20,15 +20,14 @@
 //
 // Code:
 
-interface IGuardtwotopon
-{
+interface IGuardtwotopon {
   in void e();
   in void t();
   out void a();
 
-  behaviour 
-  {
+  behaviour {
     bool b = false;
+
     [!b]
     on e, t:
     a;
@@ -37,27 +36,29 @@ interface IGuardtwotopon
     a;
   }
 }
-component Guardtwotopon
-{
+
+component Guardtwotopon {
   provides IGuardtwotopon i;
 
-  behaviour 
-  {
+  behaviour {
     bool b = false;
+
     [!b]
     {
       on i.e():
       {
         bool c = true;
-        if (c)
-        i.a();
+        if (c) i.a();
+
       }
       on i.t():
       i.a();
+
     }
     [b]
     on i.e(), i.t():
     i.a();
   }
+
 }
 

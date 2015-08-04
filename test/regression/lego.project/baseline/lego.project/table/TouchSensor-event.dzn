@@ -20,18 +20,17 @@
 //
 // Code:
 
-interface ITouchSense
-{
-  enum TouchState { Pressed, Released };
+interface ITouchSense {
+  enum TouchState {Pressed, Released};
   in TouchState enable();
   out void pressed();
   out void released();
   in void disable();
 
-  behaviour 
-  {
+  behaviour {
     bool disabled = true;
     TouchState ts = TouchState.Released;
+
     on enable:
     {
       [!disabled]
@@ -41,21 +40,24 @@ interface ITouchSense
         ts = TouchState.Pressed;
         reply(ts);
         disabled = false;
+
       }
       [disabled]
       {
         ts = TouchState.Released;
         reply(ts);
         disabled = false;
+
       }
+
     }
     on disable:
     {
       [!disabled]
       disabled = true;
       [disabled]
-      {
-      }
+      {}
+
     }
     on inevitable:
     {
@@ -64,34 +66,36 @@ interface ITouchSense
       {
         ts = TouchState.Pressed;
         pressed;
+
       }
       [!disabled]
       [ts.Pressed]
       {
         ts = TouchState.Released;
         released;
+
       }
+
     }
   }
 }
-component TouchSense
-{
+
+component TouchSense {
   provides ITouchSense ctrl;
   requires itimer timer;
   requires itouch sensor;
 
-  behaviour 
-  {
+  behaviour {
     ITouchSense.TouchState previous = ITouchSense.TouchState.Released;
     itimer.milliseconds_t time = $50$;
     bool disabled = true;
-    ITouchSense.TouchState getStatus()
-    {
+
+    nameITouchSenseTouchState getStatus() {
       itouch.status val = sensor.detect();
-      if (val == itouch.status.released)
-      return ITouchSense.TouchState.Released;
+      if (val == itouch.status.released) return ITouchSense.TouchState.Released;
       else
       return ITouchSense.TouchState.Pressed;
+
     }
 
     on ctrl.disable():
@@ -100,7 +104,9 @@ component TouchSense
       {
         timer.cancel();
         disabled = true;
+
       }
+
     }
     on ctrl.enable():
     {
@@ -111,35 +117,51 @@ component TouchSense
         timer.create(time);
         disabled = false;
         reply(previous);
+
       }
       [previous.Released || previous.Pressed]
       [!disabled]
       illegal;
+
     }
     on timer.timeout():
     {
       [previous.Released || previous.Pressed]
       [disabled]
       illegal;
-      [previous.Released || previous.Pressed]
+      [previous.Pressed]
       [!disabled]
       {
         ITouchSense.TouchState current = getStatus();
+        if (current == ITouchSense.TouchState.Released) ctrl.released();
         previous = current;
         timer.create(time);
+
       }
+      [previous.Released]
+      [!disabled]
+      {
+        ITouchSense.TouchState current = getStatus();
+        if (current == ITouchSense.TouchState.Pressed) ctrl.pressed();
+        else
+        {}
+        previous = current;
+        timer.create(time);
+
+      }
+
     }
   }
+
 }
-component TouchSensor
-{
+
+component TouchSensor {
   provides ITouchSense ctrl;
   requires itouch hw;
 
-  system
-  {
-    timer pollTimer;
-    TouchSense bhv;
+  system {
+    nametimer pollTimer;
+    nameTouchSense bhv;
 
     ctrl <=> bhv.ctrl;
     bhv.timer <=> pollTimer.port;

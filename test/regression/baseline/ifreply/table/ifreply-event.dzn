@@ -20,20 +20,19 @@
 //
 // Code:
 
-interface ifreply
-{
-  enum Status { Ok, Nok };
+interface ifreply {
+  enum Status {Ok, Nok};
   in Status e();
 
-  behaviour 
-  {
+  behaviour {
+
     on e:
     {
       [true]
       reply(Status.Ok);
       [true]
-      {
-      }
+      {}
+
     }
   }
 }

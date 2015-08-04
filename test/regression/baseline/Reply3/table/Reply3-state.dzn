@@ -20,100 +20,95 @@
 //
 // Code:
 
-interface I
-{
-  enum Status { Yes, No };
+interface I {
+  enum Status {Yes, No};
   in Status done();
 
-  behaviour 
-  {
+  behaviour {
     bool dummy = false;
-    void reply_fun()
-    {
+
+    void reply_fun() {
       reply(Status.Yes);
-      return;
+      return false;
+
     }
 
-    void reply_fun_arg(Status s)
-    {
+    void reply_fun_arg(Status s) {
       reply(s);
-      return;
+      return false;
+
     }
 
     [!dummy]
     on done:
     {
       [true]
-      reply_fun();
-      [true]
-      reply_fun_arg(Status.No);
+      reply_fun, (), false[true]
+      reply_fun_arg, (Status.No), false
     }
     [dummy]
     on done:
     {
       [true]
-      reply_fun();
-      [true]
-      reply_fun_arg(Status.No);
+      reply_fun, (), false[true]
+      reply_fun_arg, (Status.No), false
     }
   }
 }
-interface U
-{
-  enum Status { Ok, Nok };
+
+interface U {
+  enum Status {Ok, Nok};
   in Status what();
 
-  behaviour 
-  {
+  behaviour {
     bool dummy = false;
-    void reply_fun()
-    {
+
+    void reply_fun() {
       reply(Status.Ok);
-      return;
+      return false;
+
     }
 
-    void reply_fun_arg(Status s)
-    {
+    void reply_fun_arg(Status s) {
       reply(s);
-      return;
+      return false;
+
     }
 
     [!dummy]
     on what:
     {
       [true]
-      reply_fun();
-      [true]
-      reply_fun_arg(Status.Nok);
+      reply_fun, (), false[true]
+      reply_fun_arg, (Status.Nok), false
     }
     [dummy]
     on what:
     {
       [true]
-      reply_fun();
-      [true]
-      reply_fun_arg(Status.Nok);
+      reply_fun, (), false[true]
+      reply_fun_arg, (Status.Nok), false
     }
   }
 }
-component Reply3
-{
+
+component Reply3 {
   provides I i;
   requires U u;
 
-  behaviour 
-  {
+  behaviour {
     bool dummy = false;
-    void reply_fun()
-    {
+
+    void reply_fun() {
       reply(I.Status.Yes);
-      return;
+      return false;
+
     }
 
-    void reply_fun_arg(I.Status s)
-    {
+    void reply_fun_arg(I.Status s) {
       reply(s);
-      return;
+      return false;
+
     }
 
     [!dummy]
@@ -121,21 +116,18 @@ component Reply3
     {
       U.Status s = u.what();
       s = u.what();
-      if (s == U.Status.Ok)
-      reply_fun();
-      else
-      reply_fun_arg(I.Status.No);
+      if (s == U.Status.Ok) reply_fun, (), falseelse
+      reply_fun_arg, (I.Status.No), false
     }
     [dummy]
     on i.done():
     {
       U.Status s = u.what();
       s = u.what();
-      if (s == U.Status.Ok)
-      reply_fun();
-      else
-      reply_fun_arg(I.Status.No);
+      if (s == U.Status.Ok) reply_fun, (), falseelse
+      reply_fun_arg, (I.Status.No), false
     }
   }
+
 }
 

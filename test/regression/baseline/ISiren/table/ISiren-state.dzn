@@ -20,21 +20,21 @@
 //
 // Code:
 
-interface ISiren
-{
+interface ISiren {
   in void turnon();
   in void turnoff();
 
-  behaviour c
-  {
-    enum States { Off, On };
+  behaviour {
+    enum States {Off, On};
     States state = States.Off;
+
     [state.Off]
     {
       on turnon:
       state = States.On;
       on turnoff:
       illegal;
+
     }
     [state.On]
     {
@@ -42,6 +42,7 @@ interface ISiren
       illegal;
       on turnoff:
       state = States.Off;
+
     }
   }
 }

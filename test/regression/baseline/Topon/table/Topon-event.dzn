@@ -20,48 +20,52 @@
 //
 // Code:
 
-interface ITopon
-{
+interface ITopon {
   in void e();
   in void t();
   out void a();
 
-  behaviour 
-  {
+  behaviour {
     bool b = false;
     bool c = false;
+
     on t:
     {
       [b || !b]
       a;
+
     }
     on e:
     {
       [b || !b]
       [!c]
       a;
+
     }
   }
 }
-component Topon
-{
+
+component Topon {
   provides ITopon i;
 
-  behaviour 
-  {
+  behaviour {
     bool b = false;
     bool c = false;
+
     on i.t():
     {
       [b || !b]
       i.a();
+
     }
     on i.e():
     {
       [b || !b]
       [!c]
       i.a();
+
     }
   }
+
 }
 

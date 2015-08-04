@@ -20,45 +20,44 @@
 //
 // Code:
 
-interface dummy
-{
+interface dummy {
   in void e();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on e:
-    {
-    }
+    {}
   }
 }
-interface imodeling
-{
+
+interface imodeling {
   in void e();
   out void f();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on optional, e:
     f;
   }
 }
-component modeling
-{
+
+component modeling {
   provides dummy p;
   requires imodeling r;
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     {
       on p.e():
       r.e();
       on r.f():
-      {
-      }
+      {}
+
     }
   }
+
 }
 

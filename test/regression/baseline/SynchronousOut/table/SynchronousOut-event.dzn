@@ -20,15 +20,14 @@
 //
 // Code:
 
-interface ISynchronousOut
-{
-  enum Val { One, Two };
+interface ISynchronousOut {
+  enum Val {One, Two};
   in void void_event();
   in Val valued_event();
   out void out_event();
 
-  behaviour 
-  {
+  behaviour {
+
     on void_event:
     [true]
     out_event;
@@ -38,22 +37,25 @@ interface ISynchronousOut
       {
         out_event;
         reply(Val.One);
+
       }
       [true]
       {
         out_event;
         reply(Val.Two);
+
       }
+
     }
   }
 }
-component SynchronousOut
-{
+
+component SynchronousOut {
   provides ISynchronousOut pp;
   requires ISynchronousOut rp;
 
-  behaviour 
-  {
+  behaviour {
+
     on pp.void_event():
     [true]
     rp.void_event();
@@ -62,10 +64,12 @@ component SynchronousOut
     {
       ISynchronousOut.Val v = rp.valued_event();
       reply(v);
+
     }
     on rp.out_event():
     [true]
     pp.out_event();
   }
+
 }
 

@@ -20,27 +20,26 @@
 //
 // Code:
 
-interface iq3
-{
+interface iq3 {
   in void e();
   out void a();
 
-  behaviour 
-  {
+  behaviour {
+
     on e:
     [true]
     a;
   }
 }
-interface ir3
-{
+
+interface ir3 {
   in void e();
   out void a();
   out void b();
 
-  behaviour 
-  {
+  behaviour {
     bool s = false;
+
     on e:
     {
       [s || !s]
@@ -48,31 +47,33 @@ interface ir3
         s = !s;
         a;
         b;
+
       }
+
     }
   }
 }
-component q3
-{
+
+component q3 {
   provides iq3 p;
   requires ir3 r;
 
-  behaviour 
-  {
+  behaviour {
+
     on p.e():
     [true]
     {
       p.a();
       r.e();
+
     }
     on r.a():
     [true]
-    {
-    }
+    {}
     on r.b():
     [true]
-    {
-    }
+    {}
   }
+
 }
 

@@ -20,23 +20,23 @@
 //
 // Code:
 
-interface IConsole
-{
+interface IConsole {
   in void arm();
   in void disarm();
   out void detected();
   out void deactivated();
 
-  behaviour a
-  {
-    enum States { Disarmed, Armed, Triggered, Disarming };
+  behaviour {
+    enum States {Disarmed, Armed, Triggered, Disarming};
     States state = States.Disarmed;
+
     [state.Disarmed]
     {
       on arm:
       state = States.Armed;
       on disarm:
       illegal;
+
     }
     [state.Armed]
     {
@@ -48,7 +48,9 @@ interface IConsole
       {
         detected;
         state = States.Triggered;
+
       }
+
     }
     [state.Triggered]
     {
@@ -56,6 +58,7 @@ interface IConsole
       illegal;
       on disarm:
       state = States.Disarming;
+
     }
     [state.Disarming]
     {
@@ -65,7 +68,9 @@ interface IConsole
       {
         deactivated;
         state = States.Disarmed;
+
       }
+
     }
   }
 }

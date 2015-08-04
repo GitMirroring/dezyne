@@ -20,14 +20,13 @@
 //
 // Code:
 
-interface I
-{
-  enum Status { Yes, No };
+interface I {
+  enum Status {Yes, No};
   in Status done();
 
-  behaviour 
-  {
+  behaviour {
     bool dummy = false;
+
     [!dummy]
     on done:
     reply(Status.Yes);
@@ -36,14 +35,14 @@ interface I
     reply(Status.Yes);
   }
 }
-interface U
-{
-  enum Status { Ok, Nok };
+
+interface U {
+  enum Status {Ok, Nok};
   in Status what();
 
-  behaviour 
-  {
+  behaviour {
     bool dummy = false;
+
     [!dummy]
     on what:
     reply(Status.Ok);
@@ -52,32 +51,33 @@ interface U
     reply(Status.Ok);
   }
 }
-component R
-{
+
+component R {
   provides I i;
   requires U u;
 
-  behaviour 
-  {
+  behaviour {
     bool dummy = false;
+
     [!dummy]
     on i.done():
     {
       U.Status s = u.what();
-      if (s == U.Status.Ok)
-      reply(I.Status.Yes);
+      if (s == U.Status.Ok) reply(I.Status.Yes);
       else
       reply(I.Status.No);
+
     }
     [dummy]
     on i.done():
     {
       U.Status s = u.what();
-      if (s == U.Status.Ok)
-      reply(I.Status.Yes);
+      if (s == U.Status.Ok) reply(I.Status.Yes);
       else
       reply(I.Status.No);
+
     }
   }
+
 }
 

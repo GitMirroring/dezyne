@@ -20,42 +20,45 @@
 //
 // Code:
 
-interface ITwotopon
-{
+interface ITwotopon {
   in void e();
   in void t();
   out void a();
 
-  behaviour 
-  {
+  behaviour {
     bool b = false;
+
     on e:
     {
       [b || !b]
       a;
+
     }
     on t:
     [!b]
     a;
   }
 }
-component Twotopon
-{
+
+component Twotopon {
   provides ITwotopon i;
 
-  behaviour 
-  {
+  behaviour {
     bool b = false;
+
     on i.e():
     {
       [b || !b]
       i.a();
+
     }
     on i.t():
     {
       [b || !b]
       i.a();
+
     }
   }
+
 }
 

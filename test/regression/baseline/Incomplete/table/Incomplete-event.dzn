@@ -20,37 +20,34 @@
 //
 // Code:
 
-interface IIncomplete
-{
+interface IIncomplete {
   in void available();
   in void missing();
 
-  behaviour 
-  {
+  behaviour {
+
     on available:
     [true]
-    {
-    }
+    {}
     on missing:
     [true]
-    {
-    }
+    {}
   }
 }
-component Incomplete
-{
+
+component Incomplete {
   provides IIncomplete pp;
 
-  behaviour 
-  {
+  behaviour {
     bool enabled = true;
+
     on pp.available():
     [enabled]
-    {
-    }
+    {}
     on pp.missing():
     [enabled]
     enabled = false;
   }
+
 }
 

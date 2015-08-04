@@ -20,8 +20,7 @@
 //
 // Code:
 
-interface IFeed
-{
+interface IFeed {
   in void calibrate();
   out void calibrated();
   in void stop();
@@ -29,10 +28,10 @@ interface IFeed
   out void consumeNextBall();
   out void consumeLastBall();
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Idle, Preparing, Prepared };
+  behaviour {
+    enum State {Lost, Calibrating, Idle, Preparing, Prepared};
     State s = State.Lost;
+
     [s.Lost]
     {
       on stop:
@@ -45,10 +44,13 @@ interface IFeed
         {
           calibrated;
           s = State.Idle;
+
         }
+
       }
       on produceBall:
       illegal;
+
     }
     [s.Calibrating]
     {
@@ -60,7 +62,9 @@ interface IFeed
       {
         calibrated;
         s = State.Idle;
+
       }
+
     }
     [s.Idle]
     {
@@ -76,13 +80,17 @@ interface IFeed
         {
           consumeNextBall;
           s = State.Prepared;
+
         }
         [true]
         {
           consumeLastBall;
           s = State.Idle;
+
         }
+
       }
+
     }
     [s.Preparing]
     {
@@ -96,13 +104,17 @@ interface IFeed
         {
           consumeNextBall;
           s = State.Prepared;
+
         }
         [true]
         {
           consumeLastBall;
           s = State.Idle;
+
         }
+
       }
+
     }
     [s.Prepared]
     {
@@ -118,13 +130,17 @@ interface IFeed
         {
           consumeNextBall;
           s = State.Prepared;
+
         }
         [true]
         {
           consumeLastBall;
           s = State.Idle;
+
         }
+
       }
+
     }
   }
 }

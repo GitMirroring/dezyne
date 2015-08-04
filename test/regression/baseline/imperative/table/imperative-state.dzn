@@ -20,71 +20,71 @@
 //
 // Code:
 
-interface iimperative
-{
+interface iimperative {
   in void e();
   out void f();
   out void g();
   out void h();
 
-  behaviour 
-  {
-    enum S { S1, S2 };
+  behaviour {
+    enum S {S1, S2};
     S s = S.S1;
     bool b = false;
     bool c = true;
+
     [s.S1]
     on e:
     {
-      if (c || b)
-      {
+      if (c || b) {
         f;
         g;
+
       }
-      if (b)
-      {
-        if (c)
-        g;
+      if (b) {
+        if (c) g;
         c = false;
         f;
+
       }
       else
-      if (c)
-      {
+      if (c) {
         b = false;
         h;
+
       }
       else
       {
         b = true;
         g;
+
       }
       s = S.S2;
+
     }
     [s.S2]
     on e:
     {
-      if (b)
-      {
-        if (!c)
-        c = true;
+      if (b) {
+        if (!c) c = true;
         else
         c = false;
         h;
+
       }
       b = !b;
       s = S.S1;
+
     }
   }
 }
-component imperative
-{
+
+component imperative {
   provides iimperative i;
 
-  behaviour 
-  {
-    enum States { I, II, III, IV };
+  behaviour {
+    enum States {I, II, III, IV};
     States state = States.I;
+
     [state.I]
     on i.e():
     {
@@ -92,6 +92,7 @@ component imperative
       i.g();
       i.h();
       state = States.II;
+
     }
     [state.II]
     on i.e():
@@ -104,13 +105,16 @@ component imperative
       i.g();
       i.f();
       state = States.IV;
+
     }
     [state.IV]
     on i.e():
     {
       i.h();
       state = States.I;
+
     }
   }
+
 }
 

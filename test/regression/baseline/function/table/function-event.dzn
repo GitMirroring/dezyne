@@ -20,73 +20,73 @@
 //
 // Code:
 
-interface I
-{
+interface I {
   in void a();
   in void b();
   out void c();
   out void d();
 
-  behaviour 
-  {
+  behaviour {
     bool f = false;
-    void toggle()
-    {
-      if (f)
-      {
+
+    void toggle() {
+      if (f) {
         c;
+
       }
       f = !f;
-      return;
+      return false;
+
     }
 
     on a:
     {
       [f || !f]
-      toggle();
+      toggle, (), false
     }
     on b:
     {
       [f || !f]
       {
-        toggle();
-        toggle();
-        d;
+        toggle, (), falsetoggle, (), falsed;
+
       }
+
     }
   }
 }
-component function
-{
+
+component function {
   provides I i;
 
-  behaviour 
-  {
+  behaviour {
     bool f = false;
-    void toggle()
-    {
-      if (f)
-      {
+
+    void toggle() {
+      if (f) {
         i.c();
+
       }
       f = !f;
-      return;
+      return false;
+
     }
 
     on i.a():
     {
       [f || !f]
-      toggle();
+      toggle, (), false
     }
     on i.b():
     {
       [f || !f]
       {
-        toggle();
-        toggle();
-        i.d();
+        toggle, (), falsetoggle, (), falsei.d();
+
       }
+
     }
   }
+
 }
 

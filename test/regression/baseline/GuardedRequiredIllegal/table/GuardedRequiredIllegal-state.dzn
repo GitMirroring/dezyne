@@ -20,32 +20,31 @@
 //
 // Code:
 
-interface Top
-{
+interface Top {
   in void unguarded();
   in void e();
   out void f();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     {
       on unguarded, e:
-      {
-      }
+      {}
       on optional:
       f;
+
     }
   }
 }
-interface Bottom
-{
+
+interface Bottom {
   in void e();
   out void f();
 
-  behaviour 
-  {
+  behaviour {
     bool c = false;
+
     [!c]
     on e:
     c = true;
@@ -57,39 +56,43 @@ interface Bottom
       {
         c = false;
         f;
+
       }
+
     }
   }
 }
-component GuardedRequiredIllegal
-{
+
+component GuardedRequiredIllegal {
   provides Top t;
   requires Bottom b;
 
-  behaviour 
-  {
+  behaviour {
     bool c = false;
+
     [!c]
     {
       on t.unguarded():
-      {
-      }
+      {}
       on t.e():
       {
         c = true;
         b.e();
+
       }
       on b.f():
       illegal;
+
     }
     [c]
     {
       on t.unguarded(), t.e():
-      {
-      }
+      {}
       on b.f():
       c = false;
+
     }
   }
+
 }
 

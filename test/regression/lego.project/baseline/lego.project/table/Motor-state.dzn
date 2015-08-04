@@ -20,33 +20,32 @@
 //
 // Code:
 
-interface IMove
-{
+interface IMove {
   extern imove_boolean $Boolean$;
   extern imove_position_t $Integer$;
   extern imove_milliseconds_t $Integer$;
   extern imove_power_t $Byte$;
-  in void move(imove_power_t power,imove_position_t position);
+  in void move(imove_power_t power, imove_position_t position);
   out void arrived();
-  in void run(imove_power_t power,imove_boolean invert);
-  in void pulse(imove_power_t power,imove_boolean invert,imove_milliseconds_t duration);
+  in void run(imove_power_t power, imove_boolean invert);
+  in void pulse(imove_power_t power, imove_boolean invert, imove_milliseconds_t duration);
   in void stop();
   in void coast();
   in void zero();
   in void position(out imove_position_t pos);
 
-  behaviour 
-  {
+  behaviour {
     bool moving = false;
+
     [!moving]
     {
       on move, pulse:
       moving = true;
       on zero, position:
-      {
-      }
+      {}
       on stop, coast:
       moving = false;
+
     }
     [moving]
     {
@@ -56,44 +55,47 @@ interface IMove
       {
         moving = false;
         arrived;
+
       }
       on pulse:
       {
         moving = true;
         [true]
         illegal;
+
       }
       on stop, coast:
       moving = false;
       on position:
-      {
-      }
+      {}
+
     }
   }
 }
-component Move
-{
+
+component Move {
   provides IMove ctrl;
   requires itimer timer;
   requires imotor motor;
 
-  behaviour 
-  {
+  behaviour {
     bool moving = false;
     bool pulsing = false;
     itimer.milliseconds_t time = $(config.get("Duration::PollInterval"))$;
-    imotor.position_t destination;
+    imotor.position_t destination = ;
+
     [!moving]
     {
-      on ctrl.move(power,position):
+      on ctrl.move(power, position):
       [!pulsing]
       {
         destination = position;
         timer.create(time);
-        motor.move(power,destination);
+        motor.move(power, destination);
         moving = true;
+
       }
-      on ctrl.pulse(p,i,d), ctrl.move(pow,pos):
+      on ctrl.pulse(p, i, d), ctrl.move(pow, pos):
       [pulsing]
       illegal;
       on timer.timeout():
@@ -105,7 +107,9 @@ component Move
           motor.coast();
           ctrl.arrived();
           pulsing = false;
+
         }
+
       }
       on ctrl.zero():
       {
@@ -113,22 +117,25 @@ component Move
         motor.zero();
         [pulsing]
         illegal;
+
       }
-      on ctrl.pulse(power,invert,duration):
+      on ctrl.pulse(power, invert, duration):
       [!pulsing]
       {
         timer.create(duration);
-        motor.run(power,invert);
+        motor.run(power, invert);
         pulsing = true;
+
       }
-      on ctrl.run(power,invert):
-      motor.run(power,invert);
+      on ctrl.run(power, invert):
+      motor.run(power, invert);
       on ctrl.stop():
       {
         motor.stop();
         timer.cancel();
         moving = false;
         pulsing = false;
+
       }
       on ctrl.coast():
       {
@@ -136,35 +143,39 @@ component Move
         timer.cancel();
         moving = false;
         pulsing = false;
+
       }
       on ctrl.position(pos):
       motor.position(pos);
+
     }
     [moving]
     {
-      on ctrl.move(power,position), ctrl.pulse(p,i,d), ctrl.zero():
+      on ctrl.move(power, position), ctrl.pulse(p, i, d), ctrl.zero():
       [!pulsing]
       illegal;
       on timer.timeout():
       [!pulsing]
       {
         imotor.result_t arrive = motor.at(destination);
-        if (arrive == imotor.result_t.yes)
-        {
+        if (arrive == imotor.result_t.yes) {
           ctrl.arrived();
           moving = false;
+
         }
         else
         timer.create(time);
+
       }
-      on ctrl.run(power,invert):
-      motor.run(power,invert);
+      on ctrl.run(power, invert):
+      motor.run(power, invert);
       on ctrl.stop():
       {
         motor.stop();
         timer.cancel();
         moving = false;
         pulsing = false;
+
       }
       on ctrl.coast():
       {
@@ -172,21 +183,23 @@ component Move
         timer.cancel();
         moving = false;
         pulsing = false;
+
       }
       on ctrl.position(pos):
       motor.position(pos);
+
     }
   }
+
 }
-component Motor
-{
+
+component Motor {
   provides IMove ctrl;
   requires imotor hw;
 
-  system
-  {
-    timer pollTimer;
-    Move bhv;
+  system {
+    nametimer pollTimer;
+    nameMove bhv;
 
     ctrl <=> bhv.ctrl;
     bhv.timer <=> pollTimer.port;

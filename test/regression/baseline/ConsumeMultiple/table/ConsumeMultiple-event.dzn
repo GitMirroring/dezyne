@@ -20,22 +20,21 @@
 //
 // Code:
 
-interface ITauEmitMulti
-{
+interface ITauEmitMulti {
   in void ack();
   in void done();
   out void ntfA();
   out void ntfB();
 
-  behaviour 
-  {
+  behaviour {
     bool isWaiting = false;
     bool isEmitting = false;
+
     on ack:
     {
       [isWaiting || !isWaiting]
-      {
-      }
+      {}
+
     }
     on inevitable:
     [!isWaiting]
@@ -44,13 +43,16 @@ interface ITauEmitMulti
       {
         ntfA;
         isEmitting = true;
+
       }
       [otherwise]
       {
         ntfB;
         isWaiting = true;
         isEmitting = false;
+
       }
+
     }
     on done:
     {
@@ -58,34 +60,36 @@ interface ITauEmitMulti
       illegal;
       [isWaiting]
       isWaiting = false;
+
     }
   }
 }
-interface IDummy
-{
-  enum ReplyValue { Ok };
+
+interface IDummy {
+  enum ReplyValue {Ok};
   in ReplyValue dummy();
   out void liveLockPreventer();
 
-  behaviour 
-  {
+  behaviour {
+
     on dummy:
     [true]
     reply(ReplyValue.Ok);
   }
 }
-component ConsumeMultiple
-{
+
+component ConsumeMultiple {
   provides IDummy d;
   requires ITauEmitMulti src;
 
-  behaviour 
-  {
+  behaviour {
     bool behave = true;
+
     on d.dummy():
     {
       [behave || !behave]
       reply(IDummy.ReplyValue.Ok);
+
     }
     on src.ntfA():
     {
@@ -93,6 +97,7 @@ component ConsumeMultiple
       src.done();
       [behave]
       src.ack();
+
     }
     on src.ntfB():
     {
@@ -102,8 +107,11 @@ component ConsumeMultiple
       {
         src.done();
         behave = false;
+
       }
+
     }
   }
+
 }
 

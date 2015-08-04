@@ -20,22 +20,20 @@
 //
 // Code:
 
-interface IFunctionCallVariable
-{
+interface IFunctionCallVariable {
   in void evt();
   out void actTrue();
   out void actFalse();
 
-  behaviour 
-  {
+  behaviour {
     bool b = false;
-    bool func(bool c)
-    {
-      if (c)
-      actTrue;
+
+    bool func(bool c) {
+      if (c) actTrue;
       else
       actFalse;
       return !c;
+
     }
 
     [!b]

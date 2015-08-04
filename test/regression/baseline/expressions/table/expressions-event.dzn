@@ -20,69 +20,69 @@
 //
 // Code:
 
-interface I
-{
+interface I {
   in void e();
   out void a();
   out void hi();
   out void lo();
 
-  behaviour 
-  {
+  behaviour {
     subint State {0..3};
     State state = 3;
     State c = 0;
+
     on e:
     {
-      [state == 0]
+      [state.0]
       {
         state = 3;
         a;
+
       }
-      [state == 3 || state == 2 || state == 1]
+      [state.3 || state.2 || state.1]
       {
         state = state - 1;
-        if (c < state)
-        c = c + 1;
+        if (c < state) c = c + 1;
         else
-        if (c <= state + 1)
-        lo;
+        if (c <= state + 1) lo;
         else
-        if (c > state)
-        hi;
+        if (c > state) hi;
+
       }
+
     }
   }
 }
-component expressions
-{
+
+component expressions {
   provides I i;
 
-  behaviour 
-  {
+  behaviour {
     subint State {0..3};
     State state = 3;
     State c = 0;
+
     on i.e():
     {
-      [state == 0]
+      [state.0]
       {
         state = 3;
         i.a();
+
       }
-      [state == 3 || state == 2 || state == 1]
+      [state.3 || state.2 || state.1]
       {
         state = state - 1;
-        if (c < state)
-        c = c + 1;
+        if (c < state) c = c + 1;
         else
-        if (c <= state + 1)
-        i.lo();
+        if (c <= state + 1) i.lo();
         else
-        if (c > state)
-        i.hi();
+        if (c > state) i.hi();
+
       }
+
     }
   }
+
 }
 

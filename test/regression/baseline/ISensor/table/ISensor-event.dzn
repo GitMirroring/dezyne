@@ -20,23 +20,23 @@
 //
 // Code:
 
-interface ISensor
-{
+interface ISensor {
   in void enable();
   in void disable();
   out void triggered();
   out void disabled();
 
-  behaviour b
-  {
-    enum States { Disabled, Enabled, Disabling, Triggered };
+  behaviour {
+    enum States {Disabled, Enabled, Disabling, Triggered};
     States state = States.Disabled;
+
     on enable:
     {
       [state.Disabled]
       state = States.Enabled;
       [state.Triggered || state.Disabling || state.Enabled]
       illegal;
+
     }
     on disable:
     {
@@ -44,18 +44,21 @@ interface ISensor
       illegal;
       [state.Triggered || state.Enabled]
       state = States.Disabling;
+
     }
     on optional:
     [state.Enabled]
     {
       triggered;
       state = States.Triggered;
+
     }
     on inevitable:
     [state.Disabling]
     {
       disabled;
       state = States.Disabled;
+
     }
   }
 }

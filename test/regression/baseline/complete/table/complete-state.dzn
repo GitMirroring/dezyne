@@ -20,32 +20,33 @@
 //
 // Code:
 
-interface icomplete
-{
+interface icomplete {
   in void e();
   out void a();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on e:
     a;
   }
 }
-component complete
-{
+
+component complete {
   provides icomplete p;
   requires icomplete r;
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     {
       on p.e():
       r.e();
       on r.a():
       p.a();
+
     }
   }
+
 }
 

@@ -21,14 +21,13 @@
 //
 // Code:
 
-interface ISimple
-{
+interface ISimple {
   in void e();
   out void a();
 
-  behaviour 
-  {
+  behaviour {
     bool On = false;
+
     on e:
     {
       [!On]
@@ -37,28 +36,33 @@ interface ISimple
       {
         a;
         On = !On;
+
       }
+
     }
   }
 }
-component Simpleint2
-{
+
+component Simpleint2 {
   provides ISimple p;
 
-  behaviour 
-  {
+  behaviour {
     subint S {0..1};
     S s = 0;
+
     on p.e():
     {
-      [s == 0]
+      [s.0]
       s = 1;
-      [s == 1]
+      [s.1]
       {
         p.a();
         s = 0;
+
       }
+
     }
   }
+
 }
 

@@ -20,22 +20,22 @@
 //
 // Code:
 
-interface IHandle
-{
+interface IHandle {
   in void calibrate();
   out void calibrated();
   in void stop();
   in void operate();
   out void finished();
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Idle, Operating };
+  behaviour {
+    enum State {Lost, Calibrating, Idle, Operating};
     State s = State.Lost;
+
     on stop:
     {
       [s.Operating || s.Idle || s.Calibrating || s.Lost]
       s = State.Lost;
+
     }
     on calibrate:
     {
@@ -45,24 +45,25 @@ interface IHandle
       {
         calibrated;
         s = State.Idle;
+
       }
       [s.Operating || s.Idle || s.Calibrating]
       illegal;
       [s.Operating || s.Idle || s.Calibrating]
-      {
-      }
+      {}
+
     }
     on operate:
     {
       [s.Operating || s.Calibrating || s.Lost]
       illegal;
       [s.Operating || s.Calibrating || s.Lost]
-      {
-      }
+      {}
       [s.Idle]
       s = State.Operating;
       [s.Idle]
       finished;
+
     }
     on inevitable:
     {
@@ -70,36 +71,40 @@ interface IHandle
       {
         calibrated;
         s = State.Idle;
+
       }
       [s.Operating]
       {
         s = State.Idle;
         finished;
+
       }
+
     }
   }
 }
-interface ITransfer
-{
+
+interface ITransfer {
   extern TrPosition $int$;
   in void calibrate();
   out void calibrated();
   in void stop();
-  in void move(TrPosition x,TrPosition y);
+  in void move(TrPosition x, TrPosition y);
   out void arrived();
-  in void transfer(TrPosition x,TrPosition y);
+  in void transfer(TrPosition x, TrPosition y);
   out void picked();
   out void placed();
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Ready, Moving, Transferring };
+  behaviour {
+    enum State {Lost, Calibrating, Ready, Moving, Transferring};
     State s = State.Lost;
     bool isPicked = false;
+
     on stop:
     {
       [s.Transferring || s.Moving || s.Ready || s.Calibrating || s.Lost]
       s = State.Lost;
+
     }
     on calibrate:
     {
@@ -109,9 +114,11 @@ interface ITransfer
       {
         calibrated;
         s = State.Ready;
+
       }
       [s.Transferring || s.Moving || s.Ready || s.Calibrating]
       illegal;
+
     }
     on move:
     {
@@ -121,6 +128,7 @@ interface ITransfer
       s = State.Moving;
       [s.Ready]
       arrived;
+
     }
     on transfer:
     {
@@ -130,19 +138,23 @@ interface ITransfer
       {
         s = State.Transferring;
         isPicked = false;
+
       }
       [s.Ready]
       {
         s = State.Transferring;
         picked;
         isPicked = true;
+
       }
       [s.Ready]
       {
         s = State.Ready;
         picked;
         placed;
+
       }
+
     }
     on inevitable:
     {
@@ -150,29 +162,34 @@ interface ITransfer
       {
         calibrated;
         s = State.Ready;
+
       }
       [s.Moving]
       {
         arrived;
         s = State.Ready;
+
       }
       [s.Transferring]
       [!isPicked]
       {
         picked;
         isPicked = true;
+
       }
       [s.Transferring]
       [isPicked]
       {
         placed;
         s = State.Ready;
+
       }
+
     }
   }
 }
-interface IInspect
-{
+
+interface IInspect {
   in void calibrate();
   out void calibrated();
   in void stop();
@@ -182,14 +199,15 @@ interface IInspect
   in void prepare();
   out void prepared();
 
-  behaviour 
-  {
-    enum State { Lost, Ready, Calibrating, Inspecting, Waiting, Preparing };
+  behaviour {
+    enum State {Lost, Ready, Calibrating, Inspecting, Waiting, Preparing};
     State s = State.Lost;
+
     on stop:
     {
       [s.Preparing || s.Waiting || s.Inspecting || s.Calibrating || s.Ready || s.Lost]
       s = State.Lost;
+
     }
     on calibrate:
     {
@@ -199,9 +217,11 @@ interface IInspect
       {
         calibrated;
         s = State.Ready;
+
       }
       [s.Preparing || s.Waiting || s.Inspecting || s.Calibrating || s.Ready]
       illegal;
+
     }
     on inspect:
     {
@@ -209,6 +229,7 @@ interface IInspect
       illegal;
       [s.Ready]
       s = State.Inspecting;
+
     }
     on prepare:
     {
@@ -220,7 +241,9 @@ interface IInspect
       {
         prepared;
         s = State.Ready;
+
       }
+
     }
     on inevitable:
     {
@@ -228,27 +251,32 @@ interface IInspect
       {
         calibrated;
         s = State.Ready;
+
       }
       [s.Inspecting]
       {
         accepted;
         s = State.Waiting;
+
       }
       [s.Inspecting]
       {
         rejected;
         s = State.Waiting;
+
       }
       [s.Preparing]
       {
         prepared;
         s = State.Ready;
+
       }
+
     }
   }
 }
-interface IFeed
-{
+
+interface IFeed {
   in void calibrate();
   out void calibrated();
   in void stop();
@@ -256,14 +284,15 @@ interface IFeed
   out void consumeNextBall();
   out void consumeLastBall();
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Idle, Preparing, Prepared };
+  behaviour {
+    enum State {Lost, Calibrating, Idle, Preparing, Prepared};
     State s = State.Lost;
+
     on stop:
     {
       [s.Prepared || s.Preparing || s.Idle || s.Calibrating || s.Lost]
       s = State.Lost;
+
     }
     on calibrate:
     {
@@ -273,9 +302,11 @@ interface IFeed
       {
         calibrated;
         s = State.Idle;
+
       }
       [s.Prepared || s.Preparing || s.Idle || s.Calibrating]
       illegal;
+
     }
     on produceBall:
     {
@@ -287,12 +318,15 @@ interface IFeed
       {
         consumeNextBall;
         s = State.Prepared;
+
       }
       [s.Prepared || s.Idle]
       {
         consumeLastBall;
         s = State.Idle;
+
       }
+
     }
     on inevitable:
     {
@@ -300,34 +334,39 @@ interface IFeed
       {
         calibrated;
         s = State.Idle;
+
       }
       [s.Preparing]
       {
         consumeNextBall;
         s = State.Prepared;
+
       }
       [s.Preparing]
       {
         consumeLastBall;
         s = State.Idle;
+
       }
+
     }
   }
 }
-interface IConvey
-{
+
+interface IConvey {
   in void convey();
   out void conveyed();
   in void stop();
 
-  behaviour 
-  {
-    enum State { Idle, Conveying };
+  behaviour {
+    enum State {Idle, Conveying};
     State s = State.Idle;
+
     on stop:
     {
       [s.Conveying || s.Idle]
       s = State.Idle;
+
     }
     on convey:
     {
@@ -337,17 +376,19 @@ interface IConvey
       conveyed;
       [s.Conveying]
       illegal;
+
     }
     on inevitable:
     [s.Conveying]
     {
       conveyed;
       s = State.Idle;
+
     }
   }
 }
-component Handle
-{
+
+component Handle {
   provides IHandle ctrl;
   requires ITransfer robot;
   requires IInspect inspector;
@@ -355,11 +396,10 @@ component Handle
   requires IConvey acceptPort;
   requires IConvey rejectPort;
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Idle, Operating };
+  behaviour {
+    enum State {Lost, Calibrating, Idle, Operating};
     subint usedCount {0..4};
-    enum Operation { PreparingInput, TransferringInput, PreparingOutput, TransferringOutput, Finalizing };
+    enum Operation {PreparingInput, TransferringInput, PreparingOutput, TransferringOutput, Finalizing};
     State s = State.Lost;
     usedCount calibrated = 0;
     usedCount requiredCalibrations = 3;
@@ -373,113 +413,111 @@ component Handle
     bool isBallAccepted = false;
     bool isAcceptEmpty = true;
     bool isRejectEmpty = true;
-    void tryCalibrated()
-    {
+
+    void tryCalibrated() {
       calibrated = calibrated + 1;
-      if (calibrated == requiredCalibrations)
-      {
+      if (calibrated == requiredCalibrations) {
         s = State.Idle;
         isInspectorAtInput = true;
         isInspectorAtOutput = false;
         ctrl.calibrated();
+
       }
-      return;
+      return false;
+
     }
 
-    void ignoreIllegal()
-    {
-      return;
+    void ignoreIllegal() {
+      return false;
+
     }
 
-    void startBatch()
-    {
+    void startBatch() {
       s = State.Operating;
       isLastBall = false;
-      prepareInputTransfer();
-      return;
+      prepareInputTransfer, (), falsereturn false;
+
     }
 
-    void finalizeBatch()
-    {
+    void finalizeBatch() {
       s = State.Idle;
       ctrl.finished();
-      return;
+      return false;
+
     }
 
-    void prepareInputTransfer()
-    {
+    void prepareInputTransfer() {
       o = Operation.PreparingInput;
-      if (!isBallAtInput)
-      {
+      if (!isBallAtInput) {
         feedPort.produceBall();
         isBallAtInput = false;
+
       }
-      if (!isInspectorAtInput)
-      {
+      if (!isInspectorAtInput) {
         inspector.prepare();
         isInspectorAtInput = false;
+
       }
-      if (!isRobotAtInput)
-      {
-        sendRobotToInputPick();
-        isRobotAtInput = false;
+      if (!isRobotAtInput) {
+        sendRobotToInputPick, (), falseisRobotAtInput = false;
+
       }
-      tryInputTransfer();
-      return;
+      tryInputTransfer, (), falsereturn false;
+
     }
 
-    void sendRobotToInputPick()
-    {
-      robot.move($0$,$0$);
+    void sendRobotToInputPick() {
+      robot.move($0$, $0$);
       isRobotAtOutput = false;
       isRobotAtInput = false;
-      return;
+      return false;
+
     }
 
-    void tryInputTransfer()
-    {
-      if ((isBallAtInput && isRobotAtInput) && isInspectorAtInput)
-      {
-        robot.transfer($0$,$0$);
+    void tryInputTransfer() {
+      if (isBallAtInput && isRobotAtInput && isInspectorAtInput) {
+        robot.transfer($0$, $0$);
         o = Operation.TransferringInput;
+
       }
-      return;
+      return false;
+
     }
 
-    void tryOutputTransfer()
-    {
-      if (isRobotAtOutput && isInspectorAtOutput)
-      {
-        if (isAcceptEmpty && isBallAccepted)
-        {
-          robot.transfer($0$,$0$);
+    void tryOutputTransfer() {
+      if (isRobotAtOutput && isInspectorAtOutput) {
+        if (isAcceptEmpty && isBallAccepted) {
+          robot.transfer($0$, $0$);
           o = Operation.TransferringOutput;
+
         }
-        if (isRejectEmpty && !isBallAccepted)
-        {
-          robot.transfer($0$,$0$);
+        if (isRejectEmpty && !isBallAccepted) {
+          robot.transfer($0$, $0$);
           o = Operation.TransferringOutput;
+
         }
+
       }
-      return;
+      return false;
+
     }
 
-    void tryFinished()
-    {
-      if (((((isLastBall && !isBallAtInput) && isAcceptEmpty) && isRejectEmpty) && isRobotAtInput) && isInspectorAtInput)
-      {
+    void tryFinished() {
+      if (isLastBall && !isBallAtInput && isAcceptEmpty && isRejectEmpty && isRobotAtInput && isInspectorAtInput) {
         s = State.Idle;
         ctrl.finished();
+
       }
-      return;
+      return false;
+
     }
 
-    void manuallyRemoveStrayMaterial()
-    {
+    void manuallyRemoveStrayMaterial() {
       isBallAtInput = false;
       isAcceptEmpty = true;
       isRejectEmpty = true;
-      return;
+      return false;
+
     }
 
     on ctrl.stop():
@@ -492,8 +530,9 @@ component Handle
         acceptPort.stop();
         rejectPort.stop();
         s = State.Lost;
-        manuallyRemoveStrayMaterial();
+        manuallyRemoveStrayMaterial, (), false
       }
+
     }
     on ctrl.calibrate():
     {
@@ -504,16 +543,16 @@ component Handle
         feedPort.calibrate();
         calibrated = 0;
         s = State.Calibrating;
+
       }
       [s.Operating || s.Idle || s.Calibrating]
-      ignoreIllegal();
+      ignoreIllegal, (), false
     }
     on ctrl.operate():
     {
       [s.Operating || s.Calibrating || s.Lost]
-      ignoreIllegal();
-      [s.Idle]
-      startBatch();
+      ignoreIllegal, (), false[s.Idle]
+      startBatch, (), false
     }
     on robot.arrived():
     {
@@ -523,7 +562,7 @@ component Handle
       [o.PreparingInput]
       {
         isRobotAtInput = true;
-        tryInputTransfer();
+        tryInputTransfer, (), false
       }
       [s.Operating]
       [o.TransferringInput]
@@ -532,7 +571,7 @@ component Handle
       [o.PreparingOutput]
       {
         isRobotAtOutput = true;
-        tryOutputTransfer();
+        tryOutputTransfer, (), false
       }
       [s.Operating]
       [o.TransferringOutput]
@@ -541,8 +580,9 @@ component Handle
       [o.Finalizing]
       {
         isRobotAtInput = true;
-        tryFinished();
+        tryFinished, (), false
       }
+
     }
     on robot.picked():
     {
@@ -557,6 +597,7 @@ component Handle
       {
         feedPort.produceBall();
         isBallAtInput = false;
+
       }
       [s.Operating]
       [o.TransferringInput]
@@ -570,10 +611,12 @@ component Handle
       {
         isInspectorAtOutput = false;
         inspector.prepare();
+
       }
       [s.Operating]
       [o.Finalizing]
       illegal;
+
     }
     on robot.placed():
     {
@@ -588,8 +631,9 @@ component Handle
         isInspectorAtInput = false;
         inspector.inspect();
         isRobotAtInput = false;
-        robot.move($0$,$0$);
+        robot.move($0$, $0$);
         o = Operation.PreparingOutput;
+
       }
       [s.Operating]
       [o.PreparingOutput]
@@ -600,11 +644,10 @@ component Handle
       {
         isAcceptEmpty = false;
         acceptPort.convey();
-        sendRobotToInputPick();
-        if (isLastBall && !isBallAtInput)
-        o = Operation.Finalizing;
+        sendRobotToInputPick, (), falseif (isLastBall && !isBallAtInput) o = Operation.Finalizing;
         else
         o = Operation.PreparingInput;
+
       }
       [s.Operating]
       [o.TransferringOutput]
@@ -612,15 +655,15 @@ component Handle
       {
         isRejectEmpty = false;
         rejectPort.convey();
-        sendRobotToInputPick();
-        if (isLastBall && !isBallAtInput)
-        o = Operation.Finalizing;
+        sendRobotToInputPick, (), falseif (isLastBall && !isBallAtInput) o = Operation.Finalizing;
         else
         o = Operation.PreparingInput;
+
       }
       [s.Operating]
       [o.Finalizing]
       illegal;
+
     }
     on inspector.prepared():
     {
@@ -630,7 +673,7 @@ component Handle
       [o.PreparingInput]
       {
         isInspectorAtInput = true;
-        tryInputTransfer();
+        tryInputTransfer, (), false
       }
       [s.Operating]
       [o.TransferringInput]
@@ -645,8 +688,9 @@ component Handle
       [o.Finalizing]
       {
         isInspectorAtInput = true;
-        tryFinished();
+        tryFinished, (), false
       }
+
     }
     on inspector.accepted():
     {
@@ -663,7 +707,7 @@ component Handle
       {
         isBallAccepted = true;
         isInspectorAtOutput = true;
-        tryOutputTransfer();
+        tryOutputTransfer, (), false
       }
       [s.Operating]
       [o.TransferringOutput]
@@ -671,6 +715,7 @@ component Handle
       [s.Operating]
       [o.Finalizing]
       illegal;
+
     }
     on inspector.rejected():
     {
@@ -687,7 +732,7 @@ component Handle
       {
         isBallAccepted = false;
         isInspectorAtOutput = true;
-        tryOutputTransfer();
+        tryOutputTransfer, (), false
       }
       [s.Operating]
       [o.TransferringOutput]
@@ -695,6 +740,7 @@ component Handle
       [s.Operating]
       [o.Finalizing]
       illegal;
+
     }
     on feedPort.consumeNextBall():
     {
@@ -705,29 +751,33 @@ component Handle
       {
         isLastBall = false;
         isBallAtInput = true;
-        tryInputTransfer();
+        tryInputTransfer, (), false
       }
       [s.Operating]
       [o.TransferringInput]
       {
         isLastBall = false;
         isBallAtInput = true;
+
       }
       [s.Operating]
       [o.PreparingOutput]
       {
         isLastBall = false;
         isBallAtInput = true;
+
       }
       [s.Operating]
       [o.TransferringOutput]
       {
         isLastBall = false;
         isBallAtInput = true;
+
       }
       [s.Operating]
       [o.Finalizing]
       illegal;
+
     }
     on feedPort.consumeLastBall():
     {
@@ -738,29 +788,33 @@ component Handle
       {
         isLastBall = true;
         isBallAtInput = true;
-        tryInputTransfer();
+        tryInputTransfer, (), false
       }
       [s.Operating]
       [o.TransferringInput]
       {
         isLastBall = true;
         isBallAtInput = true;
+
       }
       [s.Operating]
       [o.PreparingOutput]
       {
         isLastBall = true;
         isBallAtInput = true;
+
       }
       [s.Operating]
       [o.TransferringOutput]
       {
         isLastBall = true;
         isBallAtInput = true;
+
       }
       [s.Operating]
       [o.Finalizing]
       illegal;
+
     }
     on acceptPort.conveyed():
     {
@@ -776,7 +830,7 @@ component Handle
       [o.PreparingOutput]
       {
         isAcceptEmpty = true;
-        tryOutputTransfer();
+        tryOutputTransfer, (), false
       }
       [s.Operating]
       [o.TransferringOutput]
@@ -785,8 +839,9 @@ component Handle
       [o.Finalizing]
       {
         isAcceptEmpty = true;
-        tryFinished();
+        tryFinished, (), false
       }
+
     }
     on rejectPort.conveyed():
     {
@@ -802,7 +857,7 @@ component Handle
       [o.PreparingOutput]
       {
         isRejectEmpty = true;
-        tryOutputTransfer();
+        tryOutputTransfer, (), false
       }
       [s.Operating]
       [o.TransferringOutput]
@@ -811,30 +866,32 @@ component Handle
       [o.Finalizing]
       {
         isRejectEmpty = true;
-        tryFinished();
+        tryFinished, (), false
       }
+
     }
     on inspector.calibrated():
     {
       [s.Operating || s.Idle || s.Lost]
       illegal;
       [s.Calibrating]
-      tryCalibrated();
+      tryCalibrated, (), false
     }
     on feedPort.calibrated():
     {
       [s.Operating || s.Idle || s.Lost]
       illegal;
       [s.Calibrating]
-      tryCalibrated();
+      tryCalibrated, (), false
     }
     on robot.calibrated():
     {
       [s.Operating || s.Idle || s.Lost]
       illegal;
       [s.Calibrating]
-      tryCalibrated();
+      tryCalibrated, (), false
     }
   }
+
 }
 

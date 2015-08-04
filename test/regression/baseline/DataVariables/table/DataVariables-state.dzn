@@ -20,8 +20,7 @@
 //
 // Code:
 
-interface IDataVariables
-{
+interface IDataVariables {
   extern integer $int$;
   extern boolean $int$;
   extern string $int$;
@@ -31,52 +30,53 @@ interface IDataVariables
   in void inoutString(inout string text);
   out void inDataVariable(DataVariableType dv);
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     {
       on inInt, outBool, inoutString:
-      {
-      }
+      {}
       on optional:
       inDataVariable;
+
     }
   }
 }
-component DataVariables
-{
+
+component DataVariables {
   provides IDataVariables pp;
   requires IDataVariables rp;
 
-  behaviour 
-  {
+  behaviour {
     IDataVariables.integer idv = $42$;
-    IDataVariables.boolean bdv;
+    IDataVariables.boolean bdv = ;
     IDataVariables.string sdv = $0$;
     IDataVariables.DataVariableType dvtdv = $0$;
-    void f(inout IDataVariables.string s)
-    {
+
+    void f(inout IDataVariables.string s) {
       s = $1$;
       rp.inoutString(s);
-      return;
+      return false;
+
     }
 
     [true]
     {
       on pp.inInt(idv):
-      {
-      }
+      {}
       on pp.outBool(bdv):
       bdv = $0$;
       on pp.inoutString(s):
       {
         IDataVariables.string local = s;
-        f(local);
-        s = local;
+        f, (local), falses = local;
+
       }
       on rp.inDataVariable(idv):
       pp.inDataVariable(dvtdv);
+
     }
   }
+
 }
 

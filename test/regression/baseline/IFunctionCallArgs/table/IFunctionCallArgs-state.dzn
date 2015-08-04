@@ -20,28 +20,24 @@
 //
 // Code:
 
-interface IFunctionCallArgs
-{
+interface IFunctionCallArgs {
   in void evt();
   out void act();
 
-  behaviour 
-  {
+  behaviour {
     bool b = false;
-    void func(bool c)
-    {
-      if (c)
-      act;
+
+    void func(bool c) {
+      if (c) act;
       b = true;
-      return;
+      return false;
+
     }
 
     [!b]
     on evt:
-    func(b);
-    [b]
+    func, (b), false[b]
     on evt:
-    func(b);
-  }
+    func, (b), false}
 }
 

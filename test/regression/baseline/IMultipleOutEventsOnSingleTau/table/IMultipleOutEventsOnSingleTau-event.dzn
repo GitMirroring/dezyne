@@ -20,25 +20,24 @@
 //
 // Code:
 
-interface IMultipleOutEventsOnSingleTau
-{
+interface IMultipleOutEventsOnSingleTau {
   in void ca();
   out void oa();
   out void ob();
 
-  behaviour 
-  {
-    enum States { Closed, Emitting, Open };
+  behaviour {
+    enum States {Closed, Emitting, Open};
     States state = States.Closed;
+
     on ca:
     {
       [state.Emitting || state.Closed]
       illegal;
       [state.Emitting || state.Closed]
-      {
-      }
+      {}
       [state.Open]
       state = States.Closed;
+
     }
     on inevitable:
     {
@@ -47,17 +46,21 @@ interface IMultipleOutEventsOnSingleTau
         oa;
         ob;
         state = States.Open;
+
       }
       [state.Closed]
       {
         oa;
         state = States.Emitting;
+
       }
       [state.Emitting]
       {
         ob;
         state = States.Open;
+
       }
+
     }
   }
 }

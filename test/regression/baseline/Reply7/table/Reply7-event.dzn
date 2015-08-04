@@ -20,35 +20,34 @@
 //
 // Code:
 
-interface IReply7
-{
-  enum E { A };
+interface IReply7 {
+  enum E {A};
   in E foo();
 
-  behaviour 
-  {
+  behaviour {
+
     on foo:
     [true]
     reply(E.A);
   }
 }
-component Reply7
-{
+
+component Reply7 {
   provides IReply7 p;
   requires IReply7 r;
 
-  behaviour 
-  {
-    void f()
-    {
+  behaviour {
+
+    void f() {
       IReply7.E v = r.foo();
       reply(v);
-      return;
+      return false;
+
     }
 
     on p.foo():
     [true]
-    f();
-  }
+    f, (), false}
+
 }
 

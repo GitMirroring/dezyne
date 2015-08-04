@@ -20,8 +20,7 @@
 //
 // Code:
 
-interface IControl
-{
+interface IControl {
   in void setup();
   in void shoot();
   in void release();
@@ -29,16 +28,17 @@ interface IControl
   out void focus();
   out void image();
 
-  behaviour 
-  {
-    enum State { Idle, Setup, Ready, Acquire };
+  behaviour {
+    enum State {Idle, Setup, Ready, Acquire};
     State state = State.Idle;
+
     on setup:
     {
       [state.Idle]
       state = State.Setup;
       [state.Acquire || state.Ready || state.Setup]
       illegal;
+
     }
     on shoot:
     {
@@ -46,6 +46,7 @@ interface IControl
       illegal;
       [state.Ready || state.Setup]
       state = State.Acquire;
+
     }
     on release:
     {
@@ -53,6 +54,7 @@ interface IControl
       illegal;
       [state.Ready || state.Setup]
       state = State.Idle;
+
     }
     on inevitable:
     {
@@ -62,17 +64,20 @@ interface IControl
       {
         ready;
         state = State.Ready;
+
       }
       [state.Acquire]
       {
         image;
         state = State.Idle;
+
       }
+
     }
   }
 }
-interface IAcquisition
-{
+
+interface IAcquisition {
   in void contrast_gradient();
   in void cancel();
   in void acquire();
@@ -80,16 +85,17 @@ interface IAcquisition
   out void higher_contrast();
   out void lower_contrast();
 
-  behaviour 
-  {
-    enum State { Idle, Contrast, Acquire };
+  behaviour {
+    enum State {Idle, Contrast, Acquire};
     State state = State.Idle;
+
     on contrast_gradient:
     {
       [state.Idle]
       state = State.Contrast;
       [state.Acquire || state.Contrast]
       illegal;
+
     }
     on acquire:
     {
@@ -97,6 +103,7 @@ interface IAcquisition
       illegal;
       [state.Contrast]
       state = State.Acquire;
+
     }
     on cancel:
     {
@@ -104,6 +111,7 @@ interface IAcquisition
       illegal;
       [state.Acquire || state.Contrast]
       state = State.Idle;
+
     }
     on inevitable:
     {
@@ -113,17 +121,20 @@ interface IAcquisition
         lower_contrast;
         [true]
         higher_contrast;
+
       }
       [state.Acquire]
       {
         image;
         state = State.Idle;
+
       }
+
     }
   }
 }
-interface IOptics
-{
+
+interface IOptics {
   in void prepare();
   in void capture();
   in void cancel();
@@ -131,21 +142,23 @@ interface IOptics
   in void focus_in();
   in void focus_out();
 
-  behaviour 
-  {
-    enum State { Idle, Prepare, Ready };
+  behaviour {
+    enum State {Idle, Prepare, Ready};
     State state = State.Idle;
+
     on prepare:
     {
       [state.Idle]
       state = State.Prepare;
       [state.Ready || state.Prepare]
       illegal;
+
     }
     on cancel:
     {
       [state.Ready || state.Prepare || state.Idle]
       state = State.Idle;
+
     }
     on capture:
     {
@@ -153,42 +166,44 @@ interface IOptics
       illegal;
       [state.Ready || state.Prepare]
       state = State.Idle;
+
     }
     on focus_in:
     {
       [state.Ready || state.Prepare || state.Idle]
-      {
-      }
+      {}
+
     }
     on focus_out:
     {
       [state.Ready || state.Prepare || state.Idle]
-      {
-      }
+      {}
+
     }
     on inevitable:
     [state.Prepare]
     {
       ready;
       state = State.Ready;
+
     }
   }
 }
-component Driver
-{
+
+component Driver {
   provides IControl control;
   requires IAcquisition acquisition;
   requires IOptics optics;
 
-  behaviour 
-  {
-    enum State { Idle, Setup, Ready, Acquire };
-    enum Contrast { Down, Up, Max };
-    enum Zoom { In, Out };
+  behaviour {
+    enum State {Idle, Setup, Ready, Acquire};
+    enum Contrast {Down, Up, Max};
+    enum Zoom {In, Out};
     State state = State.Idle;
     Contrast contrast = Contrast.Down;
     Zoom zoom = Zoom.In;
     bool ready = false;
+
     on control.setup():
     {
       [state.Idle]
@@ -196,9 +211,11 @@ component Driver
         optics.prepare();
         acquisition.contrast_gradient();
         state = State.Setup;
+
       }
       [state.Acquire || state.Ready || state.Setup]
       illegal;
+
     }
     on control.shoot():
     {
@@ -209,7 +226,9 @@ component Driver
         acquisition.acquire();
         optics.capture();
         state = State.Acquire;
+
       }
+
     }
     on control.release():
     {
@@ -219,7 +238,9 @@ component Driver
       {
         acquisition.cancel();
         state = State.Idle;
+
       }
+
     }
     on acquisition.image():
     {
@@ -229,7 +250,9 @@ component Driver
       {
         control.image();
         state = State.Idle;
+
       }
+
     }
     on acquisition.higher_contrast():
     {
@@ -237,15 +260,16 @@ component Driver
       illegal;
       [state.Setup]
       {
-        if (zoom.In)
-        optics.focus_in();
+        if (zoom.In) optics.focus_in();
         else
         optics.focus_out();
         contrast = Contrast.Up;
         control.focus();
+
       }
       [state.Ready]
       control.focus();
+
     }
     on acquisition.lower_contrast():
     {
@@ -255,88 +279,97 @@ component Driver
       {
         [contrast.Up]
         {
-          if (zoom.In)
-          {
+          if (zoom.In) {
             optics.focus_out();
             zoom = Zoom.Out;
+
           }
           else
           {
             optics.focus_in();
             zoom = Zoom.In;
+
           }
           contrast = Contrast.Max;
-          if (ready)
-          {
+          if (ready) {
             contrast = Contrast.Down;
             control.ready();
             ready = false;
             state = State.Ready;
+
           }
           else
           control.focus();
+
         }
         [contrast.Down]
         {
-          if (zoom.In)
-          {
+          if (zoom.In) {
             optics.focus_out();
             zoom = Zoom.Out;
+
           }
           else
           {
             optics.focus_in();
             zoom = Zoom.In;
+
           }
           contrast = Contrast.Down;
           control.focus();
+
         }
         [otherwise]
         control.focus();
+
       }
       [state.Ready]
       control.focus();
+
     }
     on optics.ready():
     {
       [state.Idle]
       illegal;
       [state.Setup]
-      if (contrast.Max)
-      {
+      if (contrast.Max) {
         control.ready();
         ready = false;
         state = State.Ready;
+
       }
       else
       ready = true;
       [state.Ready]
       control.focus();
       [state.Acquire]
-      {
-      }
+      {}
+
     }
   }
+
 }
-component Acquire
-{
+
+component Acquire {
   provides IAcquisition port;
   requires IMemory memory;
   requires ISensor sensor;
 
-  behaviour 
-  {
-    enum State { Idle, Contrast, Acquire };
+  behaviour {
+    enum State {Idle, Contrast, Acquire};
     State state = State.Idle;
+
     on port.contrast_gradient():
     {
       [state.Idle]
       {
         sensor.enable();
         state = State.Contrast;
+
       }
       [state.Acquire || state.Contrast]
       illegal;
+
     }
     on port.acquire():
     {
@@ -346,7 +379,9 @@ component Acquire
       {
         sensor.acquire();
         state = State.Acquire;
+
       }
+
     }
     on port.cancel():
     {
@@ -356,7 +391,9 @@ component Acquire
       {
         sensor.cancel();
         state = State.Idle;
+
       }
+
     }
     on sensor.higher_contrast():
     {
@@ -364,6 +401,7 @@ component Acquire
       illegal;
       [state.Contrast]
       port.higher_contrast();
+
     }
     on sensor.lower_contrast():
     {
@@ -371,6 +409,7 @@ component Acquire
       illegal;
       [state.Contrast]
       port.lower_contrast();
+
     }
     on sensor.image():
     {
@@ -380,31 +419,36 @@ component Acquire
       {
         port.image();
         state = State.Idle;
+
       }
+
     }
   }
+
 }
-component OpticsControl
-{
+
+component OpticsControl {
   provides IOptics port;
   requires ILens lens;
   requires IShutter shutter;
   requires IFlash flash;
 
-  behaviour 
-  {
-    enum State { Idle, Prepare, Ready };
+  behaviour {
+    enum State {Idle, Prepare, Ready};
     State state = State.Idle;
     bool ready = false;
+
     on port.prepare():
     {
       [state.Idle]
       {
         state = State.Prepare;
         flash.prepare();
+
       }
       [state.Ready || state.Prepare]
       illegal;
+
     }
     on port.cancel():
     {
@@ -412,18 +456,21 @@ component OpticsControl
       {
         flash.cancel();
         state = State.Idle;
+
       }
+
     }
     on flash.ready():
     {
       [state.Ready || state.Idle]
-      {
-      }
+      {}
       [state.Prepare]
       {
         state = State.Ready;
         port.ready();
+
       }
+
     }
     on port.capture():
     {
@@ -434,37 +481,42 @@ component OpticsControl
         state = State.Idle;
         flash.cancel();
         shutter.expose();
+
       }
       [state.Ready]
       {
         state = State.Idle;
         flash.flash();
         shutter.expose();
+
       }
+
     }
     on port.focus_in():
     {
       [state.Ready || state.Prepare || state.Idle]
       lens.zoom_in();
+
     }
     on port.focus_out():
     {
       [state.Ready || state.Prepare || state.Idle]
       lens.zoom_out();
+
     }
   }
+
 }
-component Acquisition
-{
+
+component Acquisition {
   provides IAcquisition port;
   requires IHardware acquire_hardware;
   requires IHardware contrast_hardware;
 
-  system
-  {
-    Acquire acquire;
-    Memory memory;
-    CMOS sensor;
+  system {
+    nameAcquire acquire;
+    nameMemory memory;
+    nameCMOS sensor;
 
     port <=> acquire.port;
     acquire.memory <=> memory.port;
@@ -473,17 +525,16 @@ component Acquisition
     contrast_hardware <=> sensor.contrast_hardware;
   }
 }
-component Optics
-{
+
+component Optics {
   provides IOptics port;
   requires IHardware flash_hardware;
 
-  system
-  {
-    OpticsControl optics;
-    Lens lens;
-    Shutter shutter;
-    Flash flash;
+  system {
+    nameOpticsControl optics;
+    nameLens lens;
+    nameShutter shutter;
+    nameFlash flash;
 
     port <=> optics.port;
     optics.lens <=> lens.port;
@@ -492,33 +543,31 @@ component Optics
     flash_hardware <=> flash.hardware;
   }
 }
-component HardwareLayer
-{
+
+component HardwareLayer {
   provides IHardware acquire;
   provides IHardware contrast;
   provides IHardware flash;
 
-  system
-  {
-    Hardware acquire_hardware;
-    Hardware contrast_hardware;
-    Hardware flash_hardware;
+  system {
+    nameHardware acquire_hardware;
+    nameHardware contrast_hardware;
+    nameHardware flash_hardware;
 
     acquire <=> acquire_hardware.port;
     contrast <=> contrast_hardware.port;
     flash <=> flash_hardware.port;
   }
 }
-component Camera
-{
+
+component Camera {
   provides IControl control;
 
-  system
-  {
-    Driver driver;
-    Acquisition acquisition;
-    Optics optics;
-    HardwareLayer hardware;
+  system {
+    nameDriver driver;
+    nameAcquisition acquisition;
+    nameOptics optics;
+    nameHardwareLayer hardware;
 
     control <=> driver.control;
     driver.acquisition <=> acquisition.port;
@@ -528,23 +577,22 @@ component Camera
     hardware.flash <=> optics.flash_hardware;
   }
 }
-component Camera2
-{
+
+component Camera2 {
   provides IControl control;
 
-  system
-  {
-    Driver driver;
-    Acquire acquisition;
-    Memory memory;
-    CMOS sensor;
-    Hardware acquire_hardware;
-    Hardware contrast_hardware;
-    OpticsControl optics;
-    Lens lens;
-    Shutter shutter;
-    Flash flash;
-    Hardware flash_hardware;
+  system {
+    nameDriver driver;
+    nameAcquire acquisition;
+    nameMemory memory;
+    nameCMOS sensor;
+    nameHardware acquire_hardware;
+    nameHardware contrast_hardware;
+    nameOpticsControl optics;
+    nameLens lens;
+    nameShutter shutter;
+    nameFlash flash;
+    nameHardware flash_hardware;
 
     control <=> driver.control;
     driver.acquisition <=> acquisition.port;

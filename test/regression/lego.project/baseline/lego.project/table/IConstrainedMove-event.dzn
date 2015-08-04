@@ -20,8 +20,7 @@
 //
 // Code:
 
-interface IConstrainedMove
-{
+interface IConstrainedMove {
   extern position_t $Integer$;
   in void calibrate();
   out void homed();
@@ -29,22 +28,22 @@ interface IConstrainedMove
   in void move(position_t target);
   out void arrived();
 
-  behaviour 
-  {
-    enum State { lost, idle, calibrating, moving };
+  behaviour {
+    enum State {lost, idle, calibrating, moving};
     State s = State.lost;
-    void notifyHomed()
-    {
+
+    void notifyHomed() {
       s = State.idle;
       homed;
-      return;
+      return false;
+
     }
 
-    void notifyArrived()
-    {
+    void notifyArrived() {
       s = State.idle;
       arrived;
-      return;
+      return false;
+
     }
 
     on calibrate:
@@ -52,9 +51,9 @@ interface IConstrainedMove
       [s.lost]
       s = State.calibrating;
       [s.lost]
-      notifyHomed();
-      [s.moving || s.calibrating || s.idle]
+      notifyHomed, (), false[s.moving || s.calibrating || s.idle]
       illegal;
+
     }
     on move:
     {
@@ -62,18 +61,19 @@ interface IConstrainedMove
       illegal;
       [s.idle]
       s = State.moving;
+
     }
     on stop:
     {
       [s.moving || s.calibrating || s.idle || s.lost]
       s = State.lost;
+
     }
     on inevitable:
     {
       [s.calibrating]
-      notifyHomed();
-      [s.moving]
-      notifyArrived();
+      notifyHomed, (), false[s.moving]
+      notifyArrived, (), false
     }
   }
 }

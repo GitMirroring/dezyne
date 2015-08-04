@@ -20,19 +20,19 @@
 //
 // Code:
 
-interface ir2
-{
+interface ir2 {
   out void a();
 
-  behaviour 
-  {
+  behaviour {
     bool s = false;
+
     [!s]
     on inevitable:
     {
       s = !s;
       a;
       a;
+
     }
     [s]
     on inevitable:
@@ -40,6 +40,7 @@ interface ir2
       s = !s;
       a;
       a;
+
     }
   }
 }

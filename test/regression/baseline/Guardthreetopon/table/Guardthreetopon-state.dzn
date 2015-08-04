@@ -20,28 +20,27 @@
 //
 // Code:
 
-interface RGuardthreetopon
-{
+interface RGuardthreetopon {
   in void e();
   out void a();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on e:
     illegal;
   }
 }
-interface IGuardthreetopon
-{
+
+interface IGuardthreetopon {
   in void e();
   in void t();
   in void s();
   out void a();
 
-  behaviour 
-  {
+  behaviour {
     bool b = false;
+
     [!b]
     on e, t, s:
     a;
@@ -50,36 +49,37 @@ interface IGuardthreetopon
     a;
   }
 }
-component Guardthreetopon
-{
+
+component Guardthreetopon {
   provides IGuardthreetopon i;
   requires RGuardthreetopon r;
 
-  behaviour 
-  {
+  behaviour {
     bool b = false;
+
     [!b]
     {
       on i.e():
       {
         bool c = true;
-        if (c)
-        i.a();
+        if (c) i.a();
+
       }
       on i.t(), i.s():
       i.a();
       on r.a():
-      {
-      }
+      {}
+
     }
     [b]
     {
       on i.e(), i.t(), i.s():
       i.a();
       on r.a():
-      {
-      }
+      {}
+
     }
   }
+
 }
 

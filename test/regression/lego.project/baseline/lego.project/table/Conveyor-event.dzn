@@ -21,20 +21,20 @@
 //
 // Code:
 
-interface IConvey
-{
+interface IConvey {
   in void convey();
   out void conveyed();
   in void stop();
 
-  behaviour 
-  {
-    enum State { Idle, Conveying };
+  behaviour {
+    enum State {Idle, Conveying};
     State s = State.Idle;
+
     on stop:
     {
       [s.Conveying || s.Idle]
       s = State.Idle;
+
     }
     on convey:
     {
@@ -44,25 +44,27 @@ interface IConvey
       conveyed;
       [s.Conveying]
       illegal;
+
     }
     on inevitable:
     [s.Conveying]
     {
       conveyed;
       s = State.Idle;
+
     }
   }
 }
-component Convey
-{
+
+component Convey {
   provides IConvey ctrl;
   requires IMove motor;
   requires ITouchSense sensor;
 
-  behaviour 
-  {
-    enum State { Idle, Conveying };
+  behaviour {
+    enum State {Idle, Conveying};
     State s = State.Idle;
+
     on ctrl.stop():
     {
       [s.Conveying || s.Idle]
@@ -70,32 +72,37 @@ component Convey
         motor.stop();
         sensor.disable();
         s = State.Idle;
+
       }
+
     }
     on motor.arrived():
     {
       [s.Conveying || s.Idle]
-      {
-      }
+      {}
+
     }
     on ctrl.convey():
     {
       [s.Idle]
       {
         ITouchSense.TouchState ss = sensor.enable();
-        if (ss == ITouchSense.TouchState.Pressed)
-        {
+        if (ss == ITouchSense.TouchState.Pressed) {
           sensor.disable();
           ctrl.conveyed();
+
         }
         else
         {
-          motor.run($(config.get("power::50"))$,$false$);
+          motor.run($(config.get("power::50"))$, $false$);
           s = State.Conveying;
+
         }
+
       }
       [s.Conveying]
       illegal;
+
     }
     on sensor.pressed():
     {
@@ -106,7 +113,9 @@ component Convey
         sensor.disable();
         ctrl.conveyed();
         s = State.Idle;
+
       }
+
     }
     on sensor.released():
     {
@@ -117,21 +126,23 @@ component Convey
         sensor.disable();
         ctrl.conveyed();
         s = State.Idle;
+
       }
+
     }
   }
+
 }
-component Conveyor
-{
+
+component Conveyor {
   provides IConvey ctrl;
   requires imotor motorHw;
   requires itouch sensorHw;
 
-  system
-  {
-    Convey bhv;
-    Motor motor;
-    TouchSensor sensor;
+  system {
+    nameConvey bhv;
+    nameMotor motor;
+    nameTouchSensor sensor;
 
     ctrl <=> bhv.ctrl;
     bhv.motor <=> motor.ctrl;

@@ -20,23 +20,23 @@
 //
 // Code:
 
-interface IConsole
-{
+interface IConsole {
   in void arm();
   in void disarm();
   out void detected();
   out void deactivated();
 
-  behaviour a
-  {
-    enum States { Disarmed, Armed, Triggered, Disarming };
+  behaviour {
+    enum States {Disarmed, Armed, Triggered, Disarming};
     States state = States.Disarmed;
+
     on arm:
     {
       [state.Disarmed]
       state = States.Armed;
       [state.Disarming || state.Triggered || state.Armed]
       illegal;
+
     }
     on disarm:
     {
@@ -44,38 +44,42 @@ interface IConsole
       illegal;
       [state.Triggered || state.Armed]
       state = States.Disarming;
+
     }
     on optional:
     [state.Armed]
     {
       detected;
       state = States.Triggered;
+
     }
     on inevitable:
     [state.Disarming]
     {
       deactivated;
       state = States.Disarmed;
+
     }
   }
 }
-interface ISensor
-{
+
+interface ISensor {
   in void enable();
   in void disable();
   out void triggered();
   out void disabled();
 
-  behaviour b
-  {
-    enum States { Disabled, Enabled, Disabling, Triggered };
+  behaviour {
+    enum States {Disabled, Enabled, Disabling, Triggered};
     States state = States.Disabled;
+
     on enable:
     {
       [state.Disabled]
       state = States.Enabled;
       [state.Triggered || state.Disabling || state.Enabled]
       illegal;
+
     }
     on disable:
     {
@@ -83,36 +87,40 @@ interface ISensor
       illegal;
       [state.Triggered || state.Enabled]
       state = States.Disabling;
+
     }
     on optional:
     [state.Enabled]
     {
       triggered;
       state = States.Triggered;
+
     }
     on inevitable:
     [state.Disabling]
     {
       disabled;
       state = States.Disabled;
+
     }
   }
 }
-interface ISiren
-{
+
+interface ISiren {
   in void turnon();
   in void turnoff();
 
-  behaviour c
-  {
-    enum States { Off, On };
+  behaviour {
+    enum States {Off, On};
     States state = States.Off;
+
     on turnon:
     {
       [state.Off]
       state = States.On;
       [state.On]
       illegal;
+
     }
     on turnoff:
     {
@@ -120,29 +128,32 @@ interface ISiren
       illegal;
       [state.On]
       state = States.Off;
+
     }
   }
 }
-component Alarm
-{
+
+component Alarm {
   provides IConsole console;
   requires ISensor sensor;
   requires ISiren siren;
 
-  behaviour d
-  {
-    enum States { Disarmed, Armed, Triggered, Disarming };
+  behaviour {
+    enum States {Disarmed, Armed, Triggered, Disarming};
     States state = States.Disarmed;
     bool sounding = false;
+
     on console.arm():
     {
       [state.Disarmed]
       {
         sensor.enable();
         state = States.Armed;
+
       }
       [state.Disarming || state.Triggered || state.Armed]
       illegal;
+
     }
     on console.disarm():
     {
@@ -152,6 +163,7 @@ component Alarm
       {
         sensor.disable();
         state = States.Disarming;
+
       }
       [state.Triggered]
       {
@@ -159,7 +171,9 @@ component Alarm
         siren.turnoff();
         sounding = false;
         state = States.Disarming;
+
       }
+
     }
     on sensor.triggered():
     {
@@ -171,10 +185,11 @@ component Alarm
         siren.turnon();
         sounding = true;
         state = States.Triggered;
+
       }
       [state.Disarming]
-      {
-      }
+      {}
+
     }
     on sensor.disabled():
     {
@@ -188,14 +203,19 @@ component Alarm
           siren.turnoff();
           state = States.Disarmed;
           sounding = false;
+
         }
         [otherwise]
         {
           console.deactivated();
           state = States.Disarmed;
+
         }
+
       }
+
     }
   }
+
 }
 

@@ -20,29 +20,29 @@
 //
 // Code:
 
-interface IExtern
-{
+interface IExtern {
   extern xint $int$;
   in void e();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on e:
     illegal;
   }
 }
-component Extern
-{
+
+component Extern {
   provides IExtern port;
 
-  behaviour 
-  {
+  behaviour {
     IExtern.xint i = $0$;
-    IExtern.xint j;
+    IExtern.xint j = ;
+
     [true]
     on port.e():
     illegal;
   }
+
 }
 

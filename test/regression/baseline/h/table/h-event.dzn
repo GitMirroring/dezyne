@@ -20,22 +20,22 @@
 //
 // Code:
 
-interface IHandle
-{
+interface IHandle {
   in void hcalibrate();
   out void hcalibrated();
   in void stop();
   in void operate();
   out void finished();
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Idle, Operating };
+  behaviour {
+    enum State {Lost, Calibrating, Idle, Operating};
     State s = State.Lost;
+
     on stop:
     {
       [s.Operating || s.Idle || s.Calibrating || s.Lost]
       s = State.Lost;
+
     }
     on hcalibrate:
     {
@@ -44,20 +44,20 @@ interface IHandle
       [s.Operating || s.Idle || s.Calibrating]
       illegal;
       [s.Operating || s.Idle]
-      {
-      }
+      {}
+
     }
     on operate:
     {
       [s.Operating || s.Calibrating || s.Lost]
       illegal;
       [s.Operating || s.Calibrating || s.Lost]
-      {
-      }
+      {}
       [s.Idle]
       s = State.Operating;
       [s.Idle]
       finished;
+
     }
     on inevitable:
     {
@@ -65,36 +65,40 @@ interface IHandle
       {
         hcalibrated;
         s = State.Idle;
+
       }
       [s.Operating]
       {
         s = State.Idle;
         finished;
+
       }
+
     }
   }
 }
-interface ITransfer
-{
+
+interface ITransfer {
   extern TrPosition $int$;
   in void tcalibrate();
   out void tcalibrated();
   in void stop();
-  in void move(TrPosition x,TrPosition y);
+  in void move(TrPosition x, TrPosition y);
   out void arrived();
-  in void transfer(TrPosition x,TrPosition y);
+  in void transfer(TrPosition x, TrPosition y);
   out void picked();
   out void placed();
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Ready, Moving, Transferring };
+  behaviour {
+    enum State {Lost, Calibrating, Ready, Moving, Transferring};
     State s = State.Lost;
     bool isPicked = false;
+
     on stop:
     {
       [s.Transferring || s.Moving || s.Ready || s.Calibrating || s.Lost]
       s = State.Lost;
+
     }
     on tcalibrate:
     {
@@ -102,56 +106,61 @@ interface ITransfer
       {
         tcalibrated;
         s = State.Ready;
+
       }
       [s.Calibrating]
       illegal;
+
     }
     on move:
     {
       [s.Calibrating || s.Lost]
       illegal;
+
     }
     on transfer:
     {
       [s.Calibrating || s.Lost]
       illegal;
+
     }
     on inevitable:
     [s.Calibrating]
     {
       tcalibrated;
       s = State.Ready;
+
     }
   }
 }
-component h
-{
+
+component h {
   provides IHandle ctrl;
   requires ITransfer robot;
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Idle, Operating };
+  behaviour {
+    enum State {Lost, Calibrating, Idle, Operating};
     subint usedCount {0..4};
-    enum Operation { PreparingInput, TransferringInput, PreparingOutput, TransferringOutput, Finalizing };
+    enum Operation {PreparingInput, TransferringInput, PreparingOutput, TransferringOutput, Finalizing};
     State s = State.Lost;
     usedCount calibrated = 0;
     usedCount requiredCalibrations = 3;
     Operation o = Operation.PreparingInput;
-    void tryCalibrated()
-    {
+
+    void tryCalibrated() {
       calibrated = calibrated + 1;
-      if (calibrated == requiredCalibrations)
-      {
+      if (calibrated == requiredCalibrations) {
         s = State.Idle;
         ctrl.hcalibrated();
+
       }
-      return;
+      return false;
+
     }
 
-    void ignoreIllegal()
-    {
-      return;
+    void ignoreIllegal() {
+      return false;
+
     }
 
     on ctrl.hcalibrate():
@@ -161,17 +170,19 @@ component h
         robot.tcalibrate();
         calibrated = 0;
         s = State.Calibrating;
+
       }
       [s.Operating || s.Idle || s.Calibrating]
-      ignoreIllegal();
+      ignoreIllegal, (), false
     }
     on robot.tcalibrated():
     {
       [s.Operating || s.Idle || s.Lost]
       illegal;
       [s.Calibrating]
-      tryCalibrated();
+      tryCalibrated, (), false
     }
   }
+
 }
 

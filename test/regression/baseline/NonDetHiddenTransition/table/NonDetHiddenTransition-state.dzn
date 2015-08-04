@@ -20,17 +20,16 @@
 //
 // Code:
 
-interface NonDetHiddenTransition
-{
+interface NonDetHiddenTransition {
   in void c();
   out void na();
   out void ns();
 
-  behaviour 
-  {
-    enum State { A, B };
+  behaviour {
+    enum State {A, B};
     State s = State.A;
     bool b = false;
+
     [s.A]
     {
       on c:
@@ -41,13 +40,17 @@ interface NonDetHiddenTransition
         {
           b = true;
           s = State.B;
+
         }
         [true]
         {
           b = false;
           s = State.B;
+
         }
+
       }
+
     }
     [s.B]
     {
@@ -57,10 +60,11 @@ interface NonDetHiddenTransition
         ns;
         [otherwise]
         illegal;
+
       }
       on inevitable:
-      if (b)
-      na;
+      if (b) na;
+
     }
   }
 }

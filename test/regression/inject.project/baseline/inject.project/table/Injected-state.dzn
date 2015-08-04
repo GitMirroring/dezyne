@@ -20,109 +20,111 @@
 //
 // Code:
 
-interface itop
-{
+interface itop {
   in void e();
   out void f();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on e:
     f;
   }
 }
-interface imiddle
-{
+
+interface imiddle {
   in void e();
   out void f();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on e:
     f;
   }
 }
-interface ibottom
-{
+
+interface ibottom {
   in void e();
   out void f();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on e:
     f;
   }
 }
-interface ilogger
-{
+
+interface ilogger {
   in void log();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on log:
-    {
-    }
+    {}
   }
 }
-component logger
-{
+
+component logger {
   provides ilogger log;
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on log.log():
-    {
-    }
+    {}
   }
+
 }
-component middle
-{
+
+component middle {
   provides itop t;
   requires ibottom b;
   requires injected ilogger l;
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     {
       on t.e():
       {
         l.log();
         b.e();
+
       }
       on b.f():
       {
         l.log();
         t.f();
+
       }
+
     }
   }
+
 }
-component bottom
-{
+
+component bottom {
   provides ibottom b;
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     on b.e():
     b.f();
   }
+
 }
-component Injected
-{
+
+component Injected {
   provides itop t;
 
-  system
-  {
-    logger l;
-    middle m;
-    bottom b;
+  system {
+    namelogger l;
+    namemiddle m;
+    namebottom b;
 
     m.t <=> t;
     m.b <=> b.b;

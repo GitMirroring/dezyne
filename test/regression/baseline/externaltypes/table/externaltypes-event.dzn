@@ -21,57 +21,55 @@
 // Code:
 
 extern integer $int$;
-enum Global { aap, noot };
-interface Iexternaltypes
-{
-  enum E { yes, no };
+
+enum Global {aap, noot};
+
+interface Iexternaltypes {
+  enum E {yes, no};
   extern bl $int$;
   in Global e();
   in void f(integer call_me_i_and_boom);
   in E g();
   in void h(bl ii);
 
-  behaviour 
-  {
+  behaviour {
+
     on e:
     [true]
     reply(Global.aap);
     on f:
     [true]
-    {
-    }
+    {}
     on g:
     [true]
     reply(E.yes);
     on h:
     [true]
-    {
-    }
+    {}
   }
 }
-component externaltypes
-{
+
+component externaltypes {
   provides Iexternaltypes i;
   requires Iexternaltypes j;
 
-  behaviour 
-  {
-    integer n;
-    Iexternaltypes.bl b;
+  behaviour {
+    integer n = ;
+    Iexternaltypes.bl b = ;
+
     on i.e():
     [true]
     reply(Global.aap);
     on i.f():
     [true]
-    {
-    }
+    {}
     on i.g():
     [true]
     reply(Iexternaltypes.E.yes);
     on i.h():
     [true]
-    {
-    }
+    {}
   }
+
 }
 

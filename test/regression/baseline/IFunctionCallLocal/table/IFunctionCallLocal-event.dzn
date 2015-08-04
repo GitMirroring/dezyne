@@ -20,29 +20,29 @@
 //
 // Code:
 
-interface IFunctionCallReturnLocal
-{
+interface IFunctionCallReturnLocal {
   in void doIt();
   out void done();
   out void skip();
 
-  behaviour 
-  {
-    enum Toggle { Ping, Pong };
+  behaviour {
+    enum Toggle {Ping, Pong};
     Toggle state = Toggle.Ping;
-    bool shouldWeDoIt()
-    {
+
+    bool shouldWeDoIt() {
       bool result = false;
-      if (state == Toggle.Ping)
-      {
+      if (state == Toggle.Ping) {
         result = true;
         return result;
+
       }
       else
       {
         return false;
+
       }
       return result;
+
     }
 
     on doIt:
@@ -50,17 +50,20 @@ interface IFunctionCallReturnLocal
       [state.Pong || state.Ping]
       {
         bool localVariable = shouldWeDoIt();
-        if (localVariable)
-        {
+        if (localVariable) {
           done;
           state = Toggle.Pong;
+
         }
         else
         {
           skip;
           state = Toggle.Ping;
+
         }
+
       }
+
     }
   }
 }

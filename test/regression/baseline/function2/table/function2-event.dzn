@@ -20,27 +20,26 @@
 //
 // Code:
 
-interface ifunction2
-{
+interface ifunction2 {
   in void a();
   in void b();
   out void c();
   out void d();
 
-  behaviour 
-  {
+  behaviour {
     bool f = false;
-    bool vtoggle()
-    {
-      if (f)
-      c;
+
+    bool vtoggle() {
+      if (f) c;
       return !f;
+
     }
 
     on a:
     {
       [f || !f]
       f = vtoggle();
+
     }
     on b:
     {
@@ -50,28 +49,30 @@ interface ifunction2
         bool bb = vtoggle();
         f = bb;
         d;
+
       }
+
     }
   }
 }
-component function2
-{
+
+component function2 {
   provides ifunction2 i;
 
-  behaviour 
-  {
+  behaviour {
     bool f = false;
-    bool vtoggle()
-    {
-      if (f)
-      i.c();
+
+    bool vtoggle() {
+      if (f) i.c();
       return !f;
+
     }
 
     on i.a():
     {
       [f || !f]
       f = vtoggle();
+
     }
     on i.b():
     {
@@ -81,8 +82,11 @@ component function2
         bool bb = vtoggle();
         f = bb;
         i.d();
+
       }
+
     }
   }
+
 }
 

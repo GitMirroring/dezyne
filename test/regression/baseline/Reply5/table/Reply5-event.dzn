@@ -20,22 +20,21 @@
 //
 // Code:
 
-interface I
-{
-  enum Status { Yes, No };
+interface I {
+  enum Status {Yes, No};
   in Status done();
 
-  behaviour 
-  {
+  behaviour {
     bool dummy = false;
-    Status fun()
-    {
+
+    nameIStatus fun() {
       return Status.Yes;
+
     }
 
-    Status fun_arg(Status s)
-    {
+    nameIStatus fun_arg(Status s) {
       return s;
+
     }
 
     on done:
@@ -46,32 +45,36 @@ interface I
         {
           Status s = fun();
           reply(s);
+
         }
         [true]
         {
           Status s = fun_arg(Status.No);
           reply(s);
+
         }
+
       }
+
     }
   }
 }
-interface U
-{
-  enum Status { Ok, Nok };
+
+interface U {
+  enum Status {Ok, Nok};
   in Status what();
 
-  behaviour 
-  {
+  behaviour {
     bool dummy = false;
-    Status fun()
-    {
+
+    nameUStatus fun() {
       return Status.Ok;
+
     }
 
-    Status fun_arg(Status s)
-    {
+    nameUStatus fun_arg(Status s) {
       return s;
+
     }
 
     on what:
@@ -82,32 +85,36 @@ interface U
         {
           Status s = fun();
           reply(s);
+
         }
         [true]
         {
           Status s = fun_arg(Status.Nok);
           reply(s);
+
         }
+
       }
+
     }
   }
 }
-component Reply5
-{
+
+component Reply5 {
   provides I i;
   requires U u;
 
-  behaviour 
-  {
+  behaviour {
     bool dummy = false;
-    I.Status fun()
-    {
+
+    nameIStatus fun() {
       return I.Status.Yes;
+
     }
 
-    I.Status fun_arg(I.Status s)
-    {
+    nameIStatus fun_arg(I.Status s) {
       return s;
+
     }
 
     on i.done():
@@ -116,18 +123,22 @@ component Reply5
       {
         U.Status s = u.what();
         s = u.what();
-        if (s == U.Status.Ok)
-        {
+        if (s == U.Status.Ok) {
           I.Status s = fun();
           reply(s);
+
         }
         else
         {
           I.Status s = fun_arg(I.Status.No);
           reply(s);
+
         }
+
       }
+
     }
   }
+
 }
 

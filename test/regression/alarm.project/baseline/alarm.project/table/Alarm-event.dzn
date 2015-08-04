@@ -20,26 +20,27 @@
 //
 // Code:
 
-component Alarm
-{
+component Alarm {
   provides IConsole console;
   requires ISensor sensor;
   requires ISiren siren;
 
-  behaviour d
-  {
-    enum States { Disarmed, Armed, Triggered, Disarming };
+  behaviour {
+    enum States {Disarmed, Armed, Triggered, Disarming};
     States state = States.Disarmed;
     bool sounding = false;
+
     on console.arm():
     {
       [state.Disarmed]
       {
         sensor.enable();
         state = States.Armed;
+
       }
       [state.Disarming || state.Triggered || state.Armed]
       illegal;
+
     }
     on console.disarm():
     {
@@ -49,6 +50,7 @@ component Alarm
       {
         sensor.disable();
         state = States.Disarming;
+
       }
       [state.Triggered]
       {
@@ -56,7 +58,9 @@ component Alarm
         siren.turnoff();
         sounding = false;
         state = States.Disarming;
+
       }
+
     }
     on sensor.triggered():
     {
@@ -68,10 +72,11 @@ component Alarm
         siren.turnon();
         sounding = true;
         state = States.Triggered;
+
       }
       [state.Disarming]
-      {
-      }
+      {}
+
     }
     on sensor.disabled():
     {
@@ -85,14 +90,19 @@ component Alarm
           siren.turnoff();
           state = States.Disarmed;
           sounding = false;
+
         }
         [otherwise]
         {
           console.deactivated();
           state = States.Disarmed;
+
         }
+
       }
+
     }
   }
+
 }
 

@@ -20,8 +20,7 @@
 //
 // Code:
 
-interface NonDet2
-{
+interface NonDet2 {
   in void stop();
   in void recover();
   out void ok();
@@ -29,10 +28,10 @@ interface NonDet2
   out void stopped();
   out void recovered();
 
-  behaviour 
-  {
-    enum States { Ready, Stopping, Error, Recovering };
+  behaviour {
+    enum States {Ready, Stopping, Error, Recovering};
     States mainState = States.Ready;
+
     on stop:
     {
       [mainState.Ready]
@@ -43,6 +42,7 @@ interface NonDet2
       illegal;
       [mainState.Error]
       ok;
+
     }
     on recover:
     {
@@ -53,9 +53,10 @@ interface NonDet2
         [true]
         mainState = States.Recovering;
         [true]
-        {
-        }
+        {}
+
       }
+
     }
     on inevitable:
     {
@@ -63,9 +64,11 @@ interface NonDet2
       {
         ok;
         mainState = States.Ready;
+
       }
       [mainState.Error]
       error;
+
     }
   }
 }

@@ -20,8 +20,7 @@
 //
 // Code:
 
-interface IInspect
-{
+interface IInspect {
   in void calibrate();
   out void calibrated();
   in void stop();
@@ -31,10 +30,10 @@ interface IInspect
   in void prepare();
   out void prepared();
 
-  behaviour 
-  {
-    enum State { Lost, Ready, Calibrating, Inspecting, Waiting, Preparing };
+  behaviour {
+    enum State {Lost, Ready, Calibrating, Inspecting, Waiting, Preparing};
     State s = State.Lost;
+
     [s.Lost]
     {
       on stop:
@@ -47,10 +46,13 @@ interface IInspect
         {
           calibrated;
           s = State.Ready;
+
         }
+
       }
       on inspect, prepare:
       illegal;
+
     }
     [s.Ready]
     {
@@ -60,6 +62,7 @@ interface IInspect
       illegal;
       on inspect:
       s = State.Inspecting;
+
     }
     [s.Calibrating]
     {
@@ -71,7 +74,9 @@ interface IInspect
       {
         calibrated;
         s = State.Ready;
+
       }
+
     }
     [s.Inspecting]
     {
@@ -85,13 +90,17 @@ interface IInspect
         {
           accepted;
           s = State.Waiting;
+
         }
         [true]
         {
           rejected;
           s = State.Waiting;
+
         }
+
       }
+
     }
     [s.Waiting]
     {
@@ -107,8 +116,11 @@ interface IInspect
         {
           prepared;
           s = State.Ready;
+
         }
+
       }
+
     }
     [s.Preparing]
     {
@@ -120,21 +132,22 @@ interface IInspect
       {
         prepared;
         s = State.Ready;
+
       }
+
     }
   }
 }
-component Inspect
-{
+
+component Inspect {
   provides IInspect ctrl;
   requires ilight sensor;
   requires IMove2D stage;
   requires itimer sensorSettleTimer;
 
-  behaviour 
-  {
-    enum State { Lost, Ready, Calibrating, Inspecting, Waiting, Preparing };
-    enum InspectPosition { Unknown, Receive, Inspect, Accept, Reject };
+  behaviour {
+    enum State {Lost, Ready, Calibrating, Inspecting, Waiting, Preparing};
+    enum InspectPosition {Unknown, Receive, Inspect, Accept, Reject};
     State s = State.Lost;
     InspectPosition p = InspectPosition.Unknown;
     IMove2D.MovePosition receiveX = $(config.get("Position::Inspector::ReceiveX"))$;
@@ -145,14 +158,15 @@ component Inspect
     IMove2D.MovePosition acceptY = $(config.get("Position::Inspector::AcceptY"))$;
     IMove2D.MovePosition rejectX = $(config.get("Position::Inspector::RejectX"))$;
     IMove2D.MovePosition rejectY = $(config.get("Position::Inspector::RejectY"))$;
-    void stop()
-    {
+
+    void stop() {
       sensorSettleTimer.cancel();
       stage.stop();
       sensor.turnoff();
       p = InspectPosition.Unknown;
       s = State.Lost;
-      return;
+      return false;
+
     }
 
     [s.Lost]
@@ -160,52 +174,58 @@ component Inspect
       on sensorSettleTimer.timeout(), ctrl.inspect(), ctrl.prepare(), stage.arrived(), stage.calibrated():
       illegal;
       on ctrl.stop():
-      stop();
-      on ctrl.calibrate():
+      stop, (), falseon ctrl.calibrate():
       {
         s = State.Calibrating;
         p = InspectPosition.Unknown;
         stage.calibrate();
+
       }
+
     }
     [s.Ready]
     {
       on sensorSettleTimer.timeout(), ctrl.calibrate(), ctrl.prepare(), stage.arrived(), stage.calibrated():
       illegal;
       on ctrl.stop():
-      stop();
-      on ctrl.inspect():
+      stop, (), falseon ctrl.inspect():
       {
         s = State.Inspecting;
-        stage.move(inspectX,inspectY);
+        stage.move(inspectX, inspectY);
+
       }
+
     }
     [s.Calibrating]
     {
       on sensorSettleTimer.timeout(), ctrl.calibrate(), ctrl.inspect(), ctrl.prepare():
       illegal;
       on ctrl.stop():
-      stop();
-      on stage.arrived():
+      stop, (), falseon stage.arrived():
       {
         [p.Receive]
         {
           ctrl.calibrated();
           s = State.Ready;
+
         }
         [!p.Receive]
         illegal;
+
       }
       on stage.calibrated():
       {
         [p.Unknown]
         {
-          stage.move(receiveX,receiveY);
+          stage.move(receiveX, receiveY);
           p = InspectPosition.Receive;
+
         }
         [!p.Unknown]
         illegal;
+
       }
+
     }
     [s.Inspecting]
     {
@@ -213,20 +233,21 @@ component Inspect
       {
         ilight.status ballStatus = sensor.detect();
         sensor.turnoff();
-        if (ballStatus == ilight.status.accept)
-        {
-          stage.move(acceptX,acceptY);
+        if (ballStatus == ilight.status.accept) {
+          stage.move(acceptX, acceptY);
           p = InspectPosition.Accept;
+
         }
         else
         {
-          stage.move(rejectX,rejectY);
+          stage.move(rejectX, rejectY);
           p = InspectPosition.Reject;
+
         }
+
       }
       on ctrl.stop():
-      stop();
-      on ctrl.calibrate(), ctrl.inspect(), ctrl.prepare(), stage.calibrated():
+      stop, (), falseon ctrl.calibrate(), ctrl.inspect(), ctrl.prepare(), stage.calibrated():
       illegal;
       on stage.arrived():
       {
@@ -235,50 +256,58 @@ component Inspect
           p = InspectPosition.Inspect;
           sensor.turnon();
           sensorSettleTimer.create($100$);
+
         }
         [p.Accept]
         {
           ctrl.accepted();
           s = State.Waiting;
+
         }
         [p.Reject]
         {
           ctrl.rejected();
           s = State.Waiting;
+
         }
         [p.Inspect]
         illegal;
+
       }
+
     }
     [s.Waiting]
     {
       on sensorSettleTimer.timeout(), ctrl.calibrate(), ctrl.inspect(), stage.arrived(), stage.calibrated():
       illegal;
       on ctrl.stop():
-      stop();
-      on ctrl.prepare():
+      stop, (), falseon ctrl.prepare():
       {
         s = State.Preparing;
         p = InspectPosition.Receive;
-        stage.move(receiveX,receiveY);
+        stage.move(receiveX, receiveY);
+
       }
+
     }
     [s.Preparing]
     {
       on sensorSettleTimer.timeout(), ctrl.calibrate(), ctrl.inspect(), ctrl.prepare(), stage.calibrated():
       illegal;
       on ctrl.stop():
-      stop();
-      on stage.arrived():
+      stop, (), falseon stage.arrived():
       {
         ctrl.prepared();
         s = State.Ready;
+
       }
+
     }
   }
+
 }
-component Inspector
-{
+
+component Inspector {
   provides IInspect ctrl;
   requires ilight sensor;
   requires imotor stageXMotorHw;
@@ -288,11 +317,10 @@ component Inspector
   requires itouch stageYHomeSensorHw;
   requires itouch stageYEndSensorHw;
 
-  system
-  {
-    Inspect bhv;
-    Stage stage;
-    timer sensorSettletimer;
+  system {
+    nameInspect bhv;
+    nameStage stage;
+    nametimer sensorSettletimer;
 
     ctrl <=> bhv.ctrl;
     bhv.sensor <=> sensor;

@@ -20,9 +20,8 @@
 //
 // Code:
 
-interface IChoice
-{
-  enum Style { State, Mixed, Event };
+interface IChoice {
+  enum Style {State, Mixed, Event};
   in Style choose();
   out void ss();
   out void sm();
@@ -34,9 +33,9 @@ interface IChoice
   out void mm();
   out void me();
 
-  behaviour 
-  {
+  behaviour {
     Style preference = Style.State;
+
     [preference.State]
     on choose:
     {
@@ -45,19 +44,23 @@ interface IChoice
         preference = Style.State;
         ss;
         reply(preference);
+
       }
       [true]
       {
         preference = Style.Mixed;
         sm;
         reply(preference);
+
       }
       [true]
       {
         preference = Style.Event;
         se;
         reply(preference);
+
       }
+
     }
     [preference.Mixed]
     on choose:
@@ -67,19 +70,23 @@ interface IChoice
         preference = Style.State;
         ms;
         reply(preference);
+
       }
       [true]
       {
         preference = Style.Mixed;
         mm;
         reply(preference);
+
       }
       [true]
       {
         preference = Style.Event;
         me;
         reply(preference);
+
       }
+
     }
     [preference.Event]
     on choose:
@@ -89,19 +96,23 @@ interface IChoice
         preference = Style.State;
         es;
         reply(preference);
+
       }
       [true]
       {
         preference = Style.Mixed;
         em;
         reply(preference);
+
       }
       [true]
       {
         preference = Style.Event;
         ee;
         reply(preference);
+
       }
+
     }
   }
 }

@@ -20,20 +20,20 @@
 //
 // Code:
 
-interface running
-{
+interface running {
   in void start();
   in void stop();
 
-  behaviour 
-  {
+  behaviour {
     bool running = false;
+
     [!running]
     {
       on start:
       running = !running;
       on stop:
       illegal;
+
     }
     [running]
     {
@@ -41,6 +41,7 @@ interface running
       illegal;
       on stop:
       running = !running;
+
     }
   }
 }

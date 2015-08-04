@@ -20,8 +20,7 @@
 //
 // Code:
 
-component LegoBallSorter
-{
+component LegoBallSorter {
   provides IHandle ctrl;
   requires imotor brick1_aA;
   requires imotor brick1_aB;
@@ -47,14 +46,13 @@ component LegoBallSorter
   requires itouch brick4_s2;
   requires itouch brick4_s3;
 
-  system
-  {
-    MaterialHandler handler;
-    Inspector inspector;
-    FeedPort input;
-    Conveyor accept;
-    Conveyor reject;
-    Feeder track;
+  system {
+    nameMaterialHandler handler;
+    nameInspector inspector;
+    nameFeedPort input;
+    nameConveyor accept;
+    nameConveyor reject;
+    nameFeeder track;
 
     ctrl <=> handler.ctrl;
     handler.feedPort <=> input.ctrl;

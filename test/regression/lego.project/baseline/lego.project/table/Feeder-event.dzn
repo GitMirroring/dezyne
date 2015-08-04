@@ -20,53 +20,52 @@
 //
 // Code:
 
-component Feed
-{
+component Feed {
   provides IFeed ctrl;
   requires IConstrainedMove axis;
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Idle, Preparing, Prepared };
+  behaviour {
+    enum State {Lost, Calibrating, Idle, Preparing, Prepared};
     subint Count {0..4};
     State s = State.Lost;
     bool isRetracting = false;
     bool isFeedRequested = false;
     Count inventory = 0;
-    void feedNext()
-    {
-      if (inventory == 4)
-      {
+
+    void feedNext() {
+      if (inventory == 4) {
         axis.move($(config.get("Position::Feeder::DropFirst"))$);
+
       }
-      if (inventory == 3)
-      {
+      if (inventory == 3) {
         axis.move($(config.get("Position::Feeder::DropSecond"))$);
+
       }
-      if (inventory == 2)
-      {
+      if (inventory == 2) {
         axis.move($(config.get("Position::Feeder::DropThird"))$);
+
       }
-      if (inventory == 1)
-      {
+      if (inventory == 1) {
         axis.move($(config.get("Position::Feeder::DropLast"))$);
+
       }
       s = State.Preparing;
       inventory = inventory - 1;
-      return;
+      return false;
+
     }
 
-    void retract()
-    {
+    void retract() {
       axis.move($(config.get("Position::Feeder::Retracted"))$);
       isRetracting = true;
-      return;
+      return false;
+
     }
 
-    void refill()
-    {
+    void refill() {
       inventory = 4;
-      return;
+      return false;
+
     }
 
     on ctrl.stop():
@@ -77,7 +76,9 @@ component Feed
         s = State.Lost;
         isRetracting = false;
         isFeedRequested = false;
+
       }
+
     }
     on ctrl.calibrate():
     {
@@ -85,9 +86,11 @@ component Feed
       {
         axis.calibrate();
         s = State.Calibrating;
+
       }
       [s.Prepared || s.Preparing || s.Idle || s.Calibrating]
       illegal;
+
     }
     on ctrl.produceBall():
     {
@@ -95,15 +98,14 @@ component Feed
       illegal;
       [s.Idle]
       [!isRetracting]
-      feedNext();
-      [s.Idle]
+      feedNext, (), false[s.Idle]
       [isRetracting && !isFeedRequested]
       isFeedRequested = true;
       [s.Idle]
       [isRetracting && isFeedRequested]
       illegal;
       [s.Prepared]
-      feedNext();
+      feedNext, (), false
     }
     on axis.homed():
     {
@@ -112,9 +114,10 @@ component Feed
       [s.Calibrating]
       {
         ctrl.calibrated();
-        refill();
-        s = State.Idle;
+        refill, (), falses = State.Idle;
+
       }
+
     }
     on axis.arrived():
     {
@@ -123,11 +126,9 @@ component Feed
       [s.Idle]
       [isRetracting]
       {
-        refill();
-        if (isFeedRequested)
-        feedNext();
-        isRetracting = false;
+        refill, (), falseif (isFeedRequested) feedNext, (), falseisRetracting = false;
         isFeedRequested = false;
+
       }
       [s.Idle]
       [!isRetracting]
@@ -137,27 +138,29 @@ component Feed
       {
         ctrl.consumeNextBall();
         s = State.Prepared;
+
       }
       [s.Preparing]
       [inventory == 0]
       {
         ctrl.consumeLastBall();
-        retract();
-        s = State.Idle;
+        retract, (), falses = State.Idle;
+
       }
+
     }
   }
+
 }
-component Feeder
-{
+
+component Feeder {
   provides IFeed ctrl;
   requires imotor motorHw;
   requires itouch endSensorHw;
 
-  system
-  {
-    Feed bhv;
-    EndConstrainedAxis axis;
+  system {
+    nameFeed bhv;
+    nameEndConstrainedAxis axis;
 
     ctrl <=> bhv.ctrl;
     bhv.axis <=> axis.ctrl;

@@ -21,27 +21,27 @@
 //
 // Code:
 
-interface IRequiredOptional
-{
+interface IRequiredOptional {
   out void a();
 
-  behaviour 
-  {
+  behaviour {
+
     on optional:
     [true]
     a;
   }
 }
-component RequiredOptional
-{
+
+component RequiredOptional {
   provides IRequiredOptional p;
   requires IRequiredOptional r;
 
-  behaviour 
-  {
+  behaviour {
+
     on r.a():
     [true]
     p.a();
   }
+
 }
 

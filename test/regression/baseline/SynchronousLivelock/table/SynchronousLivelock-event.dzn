@@ -21,28 +21,30 @@
 //
 // Code:
 
-interface IIterator
-{
+interface IIterator {
   extern ListElement $int$;
-  enum IsPastEnd { Yes, No };
+  enum IsPastEnd {Yes, No};
   in IsPastEnd getFirstElmt(ListElement elmt);
   in IsPastEnd getNextElmt(ListElement elmt);
 
-  behaviour 
-  {
+  behaviour {
     IsPastEnd isPastEnd = IsPastEnd.Yes;
+
     on getFirstElmt:
     {
       [isPastEnd.No || isPastEnd.Yes]
       {
         isPastEnd = IsPastEnd.No;
         reply(isPastEnd);
+
       }
       [isPastEnd.No || isPastEnd.Yes]
       {
         isPastEnd = IsPastEnd.Yes;
         reply(isPastEnd);
+
       }
+
     }
     on getNextElmt:
     {
@@ -52,53 +54,54 @@ interface IIterator
       {
         isPastEnd = IsPastEnd.Yes;
         reply(isPastEnd);
+
       }
+
     }
   }
 }
-interface IDriver
-{
+
+interface IDriver {
   in void step();
 
-  behaviour 
-  {
+  behaviour {
+
     on step:
     [true]
-    {
-    }
+    {}
   }
 }
-component SynchronousLivelock
-{
+
+component SynchronousLivelock {
   provides IDriver pp;
   requires IIterator listIt;
 
-  behaviour 
-  {
-    IIterator.IsPastEnd consumeListHead()
-    {
-      IIterator.ListElement elmt;
+  behaviour {
+
+    nameIIteratorIsPastEnd consumeListHead() {
+      IIterator.ListElement elmt = ;
       IIterator.IsPastEnd v = listIt.getFirstElmt(elmt);
       return v;
+
     }
 
-    void consumeListTail(IIterator.IsPastEnd pastEnd)
-    {
-      if (pastEnd == IIterator.IsPastEnd.No)
-      {
-        IIterator.ListElement elmt;
+    void consumeListTail(IIterator.IsPastEnd pastEnd) {
+      if (pastEnd == IIterator.IsPastEnd.No) {
+        IIterator.ListElement elmt = ;
         pastEnd = listIt.getNextElmt(elmt);
-        consumeListTail(pastEnd);
+        consumeListTail, (pastEnd), false
       }
-      return;
+      return false;
+
     }
 
     on pp.step():
     [true]
     {
       IIterator.IsPastEnd ipe = consumeListHead();
-      consumeListTail(ipe);
+      consumeListTail, (ipe), false
     }
   }
+
 }
 

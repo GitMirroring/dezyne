@@ -20,15 +20,14 @@
 //
 // Code:
 
-interface iq
-{
+interface iq {
   in void e();
   out void a();
   in void f();
   out void b();
 
-  behaviour 
-  {
+  behaviour {
+
     on e:
     [true]
     a;
@@ -37,26 +36,29 @@ interface iq
     {
       a;
       b;
+
     }
   }
 }
-interface ir
-{
+
+interface ir {
   in void e();
   out void a();
   in void f();
   out void b();
 
-  behaviour 
-  {
+  behaviour {
     bool s = false;
+
     on e:
     {
       [s || !s]
       {
         s = !s;
         a;
+
       }
+
     }
     on f:
     {
@@ -64,17 +66,19 @@ interface ir
       {
         s = !s;
         b;
+
       }
+
     }
   }
 }
-component q
-{
+
+component q {
   provides iq p;
   requires ir r;
 
-  behaviour 
-  {
+  behaviour {
+
     on p.e():
     [true]
     r.e();
@@ -86,10 +90,12 @@ component q
     {
       r.e();
       r.f();
+
     }
     on r.b():
     [true]
     p.b();
   }
+
 }
 

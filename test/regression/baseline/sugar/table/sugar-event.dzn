@@ -20,31 +20,31 @@
 //
 // Code:
 
-interface I
-{
+interface I {
   in void e();
   out void a();
 
-  behaviour 
-  {
-    enum Enum { False, True };
+  behaviour {
+    enum Enum {False, True};
     Enum s = Enum.False;
+
     on e:
     [s.False]
     a;
   }
 }
-component sugar
-{
+
+component sugar {
   provides I i;
 
-  behaviour 
-  {
-    enum Enum { False, True };
+  behaviour {
+    enum Enum {False, True};
     Enum s = Enum.False;
+
     on i.e():
     [s.False]
     i.a();
   }
+
 }
 

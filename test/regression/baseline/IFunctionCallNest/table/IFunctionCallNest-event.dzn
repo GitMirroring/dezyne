@@ -20,32 +20,29 @@
 //
 // Code:
 
-interface IFunctionCallNest
-{
+interface IFunctionCallNest {
   in void evt();
   out void act();
 
-  behaviour 
-  {
+  behaviour {
     bool b = false;
-    void func(bool c)
-    {
-      inner(c);
-      b = true;
-      return;
+
+    void func(bool c) {
+      inner, (c), falseb = true;
+      return false;
+
     }
 
-    void inner(bool d)
-    {
-      if (d)
-      act;
-      return;
+    void inner(bool d) {
+      if (d) act;
+      return false;
+
     }
 
     on evt:
     {
       [b || !b]
-      func(b);
+      func, (b), false
     }
   }
 }

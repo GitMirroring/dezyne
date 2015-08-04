@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,52 +22,46 @@
 //
 // Code:
 
-interface I
-{
+interface I {
   in void e();
   out void fix();
   out void g();
 
-  behaviour 
-  {
+  behaviour {
+
     on e:
     [true]
-    {
-    }
+    {}
   }
 }
-interface II
-{
+
+interface II {
   in void e();
 
-  behaviour 
-  {
+  behaviour {
+
     on e:
     [true]
-    {
-    }
+    {}
   }
 }
-component combinedon
-{
+
+component combinedon {
   provides II p;
   requires I a;
   requires I b;
 
-  behaviour 
-  {
+  behaviour {
+
     on p.e():
     [true]
-    {
-    }
+    {}
     on a.fix():
     [true]
-    {
-    }
+    {}
     on b.fix():
     [true]
-    {
-    }
+    {}
     on a.g():
     [true]
     illegal;
@@ -74,5 +69,6 @@ component combinedon
     [true]
     illegal;
   }
+
 }
 

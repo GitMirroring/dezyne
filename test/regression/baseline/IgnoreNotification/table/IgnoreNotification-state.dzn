@@ -20,65 +20,66 @@
 //
 // Code:
 
-interface IDummy
-{
+interface IDummy {
   in void ia();
   out void oa();
 
-  behaviour 
-  {
+  behaviour {
+
     [true]
     {
       on ia:
-      {
-      }
+      {}
       on optional:
       oa;
+
     }
   }
 }
-interface INotifier
-{
+
+interface INotifier {
   out void oa();
 
-  behaviour 
-  {
+  behaviour {
     bool isPaired = false;
+
     [!isPaired]
     on optional:
     {
       oa;
       oa;
       isPaired = !isPaired;
+
     }
     [isPaired]
     on optional:
     {
       oa;
       isPaired = !isPaired;
+
     }
   }
 }
-component IgnoreNotification
-{
+
+component IgnoreNotification {
   provides IDummy pp;
   requires INotifier rp;
 
-  behaviour 
-  {
+  behaviour {
     bool communicate = false;
+
     [!communicate]
     on pp.ia(), rp.oa():
-    {
-    }
+    {}
     [communicate]
     {
       on pp.ia():
-      {
-      }
+      {}
       on rp.oa():
       pp.oa();
+
     }
   }
+
 }
 

@@ -20,18 +20,17 @@
 //
 // Code:
 
-interface IHandle
-{
+interface IHandle {
   in void calibrate();
   out void calibrated();
   in void stop();
   in void operate();
   out void finished();
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Idle, Operating };
+  behaviour {
+    enum State {Lost, Calibrating, Idle, Operating};
     State s = State.Lost;
+
     [s.Lost]
     {
       on stop:
@@ -44,16 +43,19 @@ interface IHandle
         {
           calibrated;
           s = State.Idle;
+
         }
+
       }
       on operate:
       {
         [true]
         illegal;
         [true]
-        {
-        }
+        {}
+
       }
+
     }
     [s.Calibrating]
     {
@@ -64,14 +66,16 @@ interface IHandle
         [true]
         illegal;
         [true]
-        {
-        }
+        {}
+
       }
       on inevitable:
       {
         calibrated;
         s = State.Idle;
+
       }
+
     }
     [s.Idle]
     {
@@ -82,8 +86,8 @@ interface IHandle
         [true]
         illegal;
         [true]
-        {
-        }
+        {}
+
       }
       on operate:
       {
@@ -91,7 +95,9 @@ interface IHandle
         s = State.Operating;
         [true]
         finished;
+
       }
+
     }
     [s.Operating]
     {
@@ -102,34 +108,36 @@ interface IHandle
         [true]
         illegal;
         [true]
-        {
-        }
+        {}
+
       }
       on inevitable:
       {
         s = State.Idle;
         finished;
+
       }
+
     }
   }
 }
-interface ITransfer
-{
+
+interface ITransfer {
   extern TrPosition $Integer$;
   in void calibrate();
   out void calibrated();
   in void stop();
-  in void move(TrPosition x,TrPosition y);
+  in void move(TrPosition x, TrPosition y);
   out void arrived();
-  in void transfer(TrPosition x,TrPosition y);
+  in void transfer(TrPosition x, TrPosition y);
   out void picked();
   out void placed();
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Ready, Moving, Transferring };
+  behaviour {
+    enum State {Lost, Calibrating, Ready, Moving, Transferring};
     State s = State.Lost;
     bool isPicked = false;
+
     [s.Lost]
     {
       on stop:
@@ -142,10 +150,13 @@ interface ITransfer
         {
           calibrated;
           s = State.Ready;
+
         }
+
       }
       on move, transfer:
       illegal;
+
     }
     [s.Calibrating]
     {
@@ -157,7 +168,9 @@ interface ITransfer
       {
         calibrated;
         s = State.Ready;
+
       }
+
     }
     [s.Ready]
     {
@@ -171,6 +184,7 @@ interface ITransfer
         s = State.Moving;
         [true]
         arrived;
+
       }
       on transfer:
       {
@@ -178,20 +192,25 @@ interface ITransfer
         {
           s = State.Transferring;
           isPicked = false;
+
         }
         [true]
         {
           s = State.Transferring;
           picked;
           isPicked = true;
+
         }
         [true]
         {
           s = State.Ready;
           picked;
           placed;
+
         }
+
       }
+
     }
     [s.Moving]
     {
@@ -203,7 +222,9 @@ interface ITransfer
       {
         arrived;
         s = State.Ready;
+
       }
+
     }
     [s.Transferring]
     {
@@ -217,18 +238,22 @@ interface ITransfer
         {
           picked;
           isPicked = true;
+
         }
         [isPicked]
         {
           placed;
           s = State.Ready;
+
         }
+
       }
+
     }
   }
 }
-interface IRetain
-{
+
+interface IRetain {
   in void stop();
   in void calibrate();
   out void calibrated();
@@ -236,17 +261,18 @@ interface IRetain
   in void release();
   out void ready();
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Ready, Moving };
+  behaviour {
+    enum State {Lost, Calibrating, Ready, Moving};
     State s = State.Lost;
     bool isHolding = false;
+
     [s.Lost]
     {
       on stop:
       {
         s = State.Lost;
         isHolding = false;
+
       }
       on calibrate:
       {
@@ -257,10 +283,13 @@ interface IRetain
           calibrated;
           s = State.Ready;
           isHolding = true;
+
         }
+
       }
       on retain, release:
       illegal;
+
     }
     [s.Calibrating]
     {
@@ -268,6 +297,7 @@ interface IRetain
       {
         s = State.Lost;
         isHolding = false;
+
       }
       on calibrate, retain, release:
       illegal;
@@ -276,7 +306,9 @@ interface IRetain
         calibrated;
         s = State.Ready;
         isHolding = true;
+
       }
+
     }
     [s.Ready]
     {
@@ -284,6 +316,7 @@ interface IRetain
       {
         s = State.Lost;
         isHolding = false;
+
       }
       on calibrate:
       {
@@ -291,6 +324,7 @@ interface IRetain
         illegal;
         [isHolding]
         illegal;
+
       }
       on retain:
       {
@@ -300,9 +334,11 @@ interface IRetain
         {
           ready;
           isHolding = true;
+
         }
         [isHolding]
         illegal;
+
       }
       on release:
       {
@@ -314,8 +350,11 @@ interface IRetain
         {
           ready;
           isHolding = false;
+
         }
+
       }
+
     }
     [s.Moving]
     {
@@ -323,6 +362,7 @@ interface IRetain
       {
         s = State.Lost;
         isHolding = false;
+
       }
       on calibrate, retain, release:
       illegal;
@@ -331,12 +371,14 @@ interface IRetain
         ready;
         s = State.Ready;
         isHolding = !isHolding;
+
       }
+
     }
   }
 }
-component Handle
-{
+
+component Handle {
   provides IHandle ctrl;
   requires ITransfer robot;
   requires IInspect inspector;
@@ -344,11 +386,10 @@ component Handle
   requires IConvey acceptPort;
   requires IConvey rejectPort;
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Idle, Operating };
+  behaviour {
+    enum State {Lost, Calibrating, Idle, Operating};
     subint usedCount {0..4};
-    enum Operation { PreparingInput, TransferringInput, PreparingOutput, TransferringOutput, Finalizing };
+    enum Operation {PreparingInput, TransferringInput, PreparingOutput, TransferringOutput, Finalizing};
     State s = State.Lost;
     usedCount calibrated = 0;
     usedCount requiredCalibrations = 3;
@@ -362,113 +403,111 @@ component Handle
     bool isBallAccepted = false;
     bool isAcceptEmpty = true;
     bool isRejectEmpty = true;
-    void tryCalibrated()
-    {
+
+    void tryCalibrated() {
       calibrated = calibrated + 1;
-      if (calibrated == requiredCalibrations)
-      {
+      if (calibrated == requiredCalibrations) {
         s = State.Idle;
         isInspectorAtInput = true;
         isInspectorAtOutput = false;
         ctrl.calibrated();
+
       }
-      return;
+      return false;
+
     }
 
-    void ignoreIllegal()
-    {
-      return;
+    void ignoreIllegal() {
+      return false;
+
     }
 
-    void startBatch()
-    {
+    void startBatch() {
       s = State.Operating;
       isLastBall = false;
-      prepareInputTransfer();
-      return;
+      prepareInputTransfer, (), falsereturn false;
+
     }
 
-    void finalizeBatch()
-    {
+    void finalizeBatch() {
       s = State.Idle;
       ctrl.finished();
-      return;
+      return false;
+
     }
 
-    void prepareInputTransfer()
-    {
+    void prepareInputTransfer() {
       o = Operation.PreparingInput;
-      if (!isBallAtInput)
-      {
+      if (!isBallAtInput) {
         feedPort.produceBall();
         isBallAtInput = false;
+
       }
-      if (!isInspectorAtInput)
-      {
+      if (!isInspectorAtInput) {
         inspector.prepare();
         isInspectorAtInput = false;
+
       }
-      if (!isRobotAtInput)
-      {
-        sendRobotToInputPick();
-        isRobotAtInput = false;
+      if (!isRobotAtInput) {
+        sendRobotToInputPick, (), falseisRobotAtInput = false;
+
       }
-      tryInputTransfer();
-      return;
+      tryInputTransfer, (), falsereturn false;
+
     }
 
-    void sendRobotToInputPick()
-    {
-      robot.move($(config.get("Position::Robot::X::InputPick"))$,$(config.get("Position::Robot::Y::InputPick"))$);
+    void sendRobotToInputPick() {
+      robot.move($(config.get("Position::Robot::X::InputPick"))$, $(config.get("Position::Robot::Y::InputPick"))$);
       isRobotAtOutput = false;
       isRobotAtInput = false;
-      return;
+      return false;
+
     }
 
-    void tryInputTransfer()
-    {
-      if ((isBallAtInput && isRobotAtInput) && isInspectorAtInput)
-      {
-        robot.transfer($(config.get("Position::Robot::X::InputDrop"))$,$(config.get("Position::Robot::Y::InputDrop"))$);
+    void tryInputTransfer() {
+      if (isBallAtInput && isRobotAtInput && isInspectorAtInput) {
+        robot.transfer($(config.get("Position::Robot::X::InputDrop"))$, $(config.get("Position::Robot::Y::InputDrop"))$);
         o = Operation.TransferringInput;
+
       }
-      return;
+      return false;
+
     }
 
-    void tryOutputTransfer()
-    {
-      if (isRobotAtOutput && isInspectorAtOutput)
-      {
-        if (isAcceptEmpty && isBallAccepted)
-        {
-          robot.transfer($(config.get("Position::Robot::X::OutputDrop"))$,$(config.get("Position::Robot::Y::AcceptDrop"))$);
+    void tryOutputTransfer() {
+      if (isRobotAtOutput && isInspectorAtOutput) {
+        if (isAcceptEmpty && isBallAccepted) {
+          robot.transfer($(config.get("Position::Robot::X::OutputDrop"))$, $(config.get("Position::Robot::Y::AcceptDrop"))$);
           o = Operation.TransferringOutput;
+
         }
-        if (isRejectEmpty && !isBallAccepted)
-        {
-          robot.transfer($(config.get("Position::Robot::X::OutputDrop"))$,$(config.get("Position::Robot::Y::RejectDrop"))$);
+        if (isRejectEmpty && !isBallAccepted) {
+          robot.transfer($(config.get("Position::Robot::X::OutputDrop"))$, $(config.get("Position::Robot::Y::RejectDrop"))$);
           o = Operation.TransferringOutput;
+
         }
+
       }
-      return;
+      return false;
+
     }
 
-    void tryFinished()
-    {
-      if (((((isLastBall && !isBallAtInput) && isAcceptEmpty) && isRejectEmpty) && isRobotAtInput) && isInspectorAtInput)
-      {
+    void tryFinished() {
+      if (isLastBall && !isBallAtInput && isAcceptEmpty && isRejectEmpty && isRobotAtInput && isInspectorAtInput) {
         s = State.Idle;
         ctrl.finished();
+
       }
-      return;
+      return false;
+
     }
 
-    void manuallyRemoveStrayMaterial()
-    {
+    void manuallyRemoveStrayMaterial() {
       isBallAtInput = false;
       isAcceptEmpty = true;
       isRejectEmpty = true;
-      return;
+      return false;
+
     }
 
     [s.Lost]
@@ -481,7 +520,7 @@ component Handle
         acceptPort.stop();
         rejectPort.stop();
         s = State.Lost;
-        manuallyRemoveStrayMaterial();
+        manuallyRemoveStrayMaterial, (), false
       }
       on ctrl.calibrate():
       {
@@ -490,11 +529,12 @@ component Handle
         feedPort.calibrate();
         calibrated = 0;
         s = State.Calibrating;
+
       }
       on robot.calibrated(), inspector.calibrated(), feedPort.calibrated(), feedPort.consumeNextBall(), feedPort.consumeLastBall(), inspector.prepared(), inspector.accepted(), inspector.rejected(), robot.arrived(), robot.picked(), robot.placed(), acceptPort.conveyed(), rejectPort.conveyed():
       illegal;
       on ctrl.operate():
-      ignoreIllegal();
+      ignoreIllegal, (), false
     }
     [s.Calibrating]
     {
@@ -506,14 +546,13 @@ component Handle
         acceptPort.stop();
         rejectPort.stop();
         s = State.Lost;
-        manuallyRemoveStrayMaterial();
+        manuallyRemoveStrayMaterial, (), false
       }
       on ctrl.calibrate(), ctrl.operate():
-      ignoreIllegal();
-      on robot.calibrated(), inspector.calibrated(), feedPort.calibrated():
-      tryCalibrated();
-      on feedPort.consumeNextBall(), feedPort.consumeLastBall(), inspector.prepared(), inspector.accepted(), inspector.rejected(), robot.arrived(), robot.picked(), robot.placed(), acceptPort.conveyed(), rejectPort.conveyed():
+      ignoreIllegal, (), falseon robot.calibrated(), inspector.calibrated(), feedPort.calibrated():
+      tryCalibrated, (), falseon feedPort.consumeNextBall(), feedPort.consumeLastBall(), inspector.prepared(), inspector.accepted(), inspector.rejected(), robot.arrived(), robot.picked(), robot.placed(), acceptPort.conveyed(), rejectPort.conveyed():
       illegal;
+
     }
     [s.Idle]
     {
@@ -525,14 +564,13 @@ component Handle
         acceptPort.stop();
         rejectPort.stop();
         s = State.Lost;
-        manuallyRemoveStrayMaterial();
+        manuallyRemoveStrayMaterial, (), false
       }
       on ctrl.calibrate():
-      ignoreIllegal();
-      on robot.calibrated(), inspector.calibrated(), feedPort.calibrated(), feedPort.consumeNextBall(), feedPort.consumeLastBall(), inspector.prepared(), inspector.accepted(), inspector.rejected(), robot.arrived(), robot.picked(), robot.placed(), acceptPort.conveyed(), rejectPort.conveyed():
+      ignoreIllegal, (), falseon robot.calibrated(), inspector.calibrated(), feedPort.calibrated(), feedPort.consumeNextBall(), feedPort.consumeLastBall(), inspector.prepared(), inspector.accepted(), inspector.rejected(), robot.arrived(), robot.picked(), robot.placed(), acceptPort.conveyed(), rejectPort.conveyed():
       illegal;
       on ctrl.operate():
-      startBatch();
+      startBatch, (), false
     }
     [s.Operating]
     {
@@ -544,11 +582,10 @@ component Handle
         acceptPort.stop();
         rejectPort.stop();
         s = State.Lost;
-        manuallyRemoveStrayMaterial();
+        manuallyRemoveStrayMaterial, (), false
       }
       on ctrl.calibrate(), ctrl.operate():
-      ignoreIllegal();
-      on robot.calibrated(), inspector.calibrated(), feedPort.calibrated():
+      ignoreIllegal, (), falseon robot.calibrated(), inspector.calibrated(), feedPort.calibrated():
       illegal;
       on feedPort.consumeNextBall():
       {
@@ -556,25 +593,29 @@ component Handle
         {
           isLastBall = false;
           isBallAtInput = true;
-          tryInputTransfer();
+          tryInputTransfer, (), false
         }
         [o.TransferringInput]
         {
           isLastBall = false;
           isBallAtInput = true;
+
         }
         [o.PreparingOutput]
         {
           isLastBall = false;
           isBallAtInput = true;
+
         }
         [o.TransferringOutput]
         {
           isLastBall = false;
           isBallAtInput = true;
+
         }
         [o.Finalizing]
         illegal;
+
       }
       on feedPort.consumeLastBall():
       {
@@ -582,32 +623,36 @@ component Handle
         {
           isLastBall = true;
           isBallAtInput = true;
-          tryInputTransfer();
+          tryInputTransfer, (), false
         }
         [o.TransferringInput]
         {
           isLastBall = true;
           isBallAtInput = true;
+
         }
         [o.PreparingOutput]
         {
           isLastBall = true;
           isBallAtInput = true;
+
         }
         [o.TransferringOutput]
         {
           isLastBall = true;
           isBallAtInput = true;
+
         }
         [o.Finalizing]
         illegal;
+
       }
       on inspector.prepared():
       {
         [o.PreparingInput]
         {
           isInspectorAtInput = true;
-          tryInputTransfer();
+          tryInputTransfer, (), false
         }
         [o.TransferringInput]
         illegal;
@@ -618,8 +663,9 @@ component Handle
         [o.Finalizing]
         {
           isInspectorAtInput = true;
-          tryFinished();
+          tryFinished, (), false
         }
+
       }
       on inspector.accepted():
       {
@@ -631,12 +677,13 @@ component Handle
         {
           isBallAccepted = true;
           isInspectorAtOutput = true;
-          tryOutputTransfer();
+          tryOutputTransfer, (), false
         }
         [o.TransferringOutput]
         illegal;
         [o.Finalizing]
         illegal;
+
       }
       on inspector.rejected():
       {
@@ -648,34 +695,36 @@ component Handle
         {
           isBallAccepted = false;
           isInspectorAtOutput = true;
-          tryOutputTransfer();
+          tryOutputTransfer, (), false
         }
         [o.TransferringOutput]
         illegal;
         [o.Finalizing]
         illegal;
+
       }
       on robot.arrived():
       {
         [o.PreparingInput]
         {
           isRobotAtInput = true;
-          tryInputTransfer();
+          tryInputTransfer, (), false
         }
         [o.TransferringInput]
         illegal;
         [o.PreparingOutput]
         {
           isRobotAtOutput = true;
-          tryOutputTransfer();
+          tryOutputTransfer, (), false
         }
         [o.TransferringOutput]
         illegal;
         [o.Finalizing]
         {
           isRobotAtInput = true;
-          tryFinished();
+          tryFinished, (), false
         }
+
       }
       on robot.picked():
       {
@@ -685,6 +734,7 @@ component Handle
         {
           feedPort.produceBall();
           isBallAtInput = false;
+
         }
         [o.TransferringInput && isLastBall]
         isBallAtInput = false;
@@ -694,9 +744,11 @@ component Handle
         {
           isInspectorAtOutput = false;
           inspector.prepare();
+
         }
         [o.Finalizing]
         illegal;
+
       }
       on robot.placed():
       {
@@ -707,8 +759,9 @@ component Handle
           isInspectorAtInput = false;
           inspector.inspect();
           isRobotAtInput = false;
-          robot.move($(config.get("Position::Robot::X::OutputPick"))$,$(config.get("Position::Robot::Y::OutputPick"))$);
+          robot.move($(config.get("Position::Robot::X::OutputPick"))$, $(config.get("Position::Robot::Y::OutputPick"))$);
           o = Operation.PreparingOutput;
+
         }
         [o.PreparingOutput]
         illegal;
@@ -716,24 +769,23 @@ component Handle
         {
           isAcceptEmpty = false;
           acceptPort.convey();
-          sendRobotToInputPick();
-          if (isLastBall && !isBallAtInput)
-          o = Operation.Finalizing;
+          sendRobotToInputPick, (), falseif (isLastBall && !isBallAtInput) o = Operation.Finalizing;
           else
           o = Operation.PreparingInput;
+
         }
         [o.TransferringOutput && !isBallAccepted]
         {
           isRejectEmpty = false;
           rejectPort.convey();
-          sendRobotToInputPick();
-          if (isLastBall && !isBallAtInput)
-          o = Operation.Finalizing;
+          sendRobotToInputPick, (), falseif (isLastBall && !isBallAtInput) o = Operation.Finalizing;
           else
           o = Operation.PreparingInput;
+
         }
         [o.Finalizing]
         illegal;
+
       }
       on acceptPort.conveyed():
       {
@@ -744,15 +796,16 @@ component Handle
         [o.PreparingOutput]
         {
           isAcceptEmpty = true;
-          tryOutputTransfer();
+          tryOutputTransfer, (), false
         }
         [o.TransferringOutput]
         isAcceptEmpty = true;
         [o.Finalizing]
         {
           isAcceptEmpty = true;
-          tryFinished();
+          tryFinished, (), false
         }
+
       }
       on rejectPort.conveyed():
       {
@@ -763,32 +816,34 @@ component Handle
         [o.PreparingOutput]
         {
           isRejectEmpty = true;
-          tryOutputTransfer();
+          tryOutputTransfer, (), false
         }
         [o.TransferringOutput]
         isRejectEmpty = true;
         [o.Finalizing]
         {
           isRejectEmpty = true;
-          tryFinished();
+          tryFinished, (), false
         }
+
       }
+
     }
   }
+
 }
-component Transfer
-{
+
+component Transfer {
   provides ITransfer ctrl;
   requires IRetain hoist;
   requires IRetain gripper;
   requires IConstrainedMove trolley;
   requires IConstrainedMove truck;
 
-  behaviour 
-  {
-    enum State { Idle, Calibrating, Moving, Transferring };
+  behaviour {
+    enum State {Idle, Calibrating, Moving, Transferring};
     subint Count {0..5};
-    enum TransferState { Picking, Raising, Moving, Placing, Idle };
+    enum TransferState {Picking, Raising, Moving, Placing, Idle};
     State s = State.Idle;
     TransferState ts = TransferState.Idle;
     Count nCalibrated = 0;
@@ -798,55 +853,55 @@ component Transfer
     bool isRetaining = true;
     ITransfer.TrPosition placeX = $0$;
     ITransfer.TrPosition placeY = $0$;
-    void tryCalibrated()
-    {
+
+    void tryCalibrated() {
       nCalibrated = nCalibrated + 1;
-      if (nCalibrated == 2)
-      {
+      if (nCalibrated == 2) {
         isXYMoveAllowed = true;
-        calibrateXY();
+        calibrateXY, (), false
       }
-      if (nCalibrated == 5)
-      {
+      if (nCalibrated == 5) {
         isCalibrated = true;
         s = State.Idle;
         isRetaining = false;
         ctrl.calibrated();
+
       }
-      return;
+      return false;
+
     }
 
-    void calibrateZ()
-    {
+    void calibrateZ() {
       s = State.Calibrating;
       isXYMoveAllowed = false;
       nCalibrated = 0;
       hoist.calibrate();
       gripper.calibrate();
-      return;
+      return false;
+
     }
 
-    void calibrateXY()
-    {
-      if (isXYMoveAllowed)
-      {
+    void calibrateXY() {
+      if (isXYMoveAllowed) {
         s = State.Calibrating;
         gripper.release();
         trolley.calibrate();
         truck.calibrate();
+
       }
-      return;
+      return false;
+
     }
 
-    void startPick(ITransfer.TrPosition tgtX,ITransfer.TrPosition tgtY)
-    {
+    void startPick(ITransfer.TrPosition tgtX, ITransfer.TrPosition tgtY) {
       placeX = tgtX;
       placeY = tgtY;
       isXYMoveAllowed = false;
       s = State.Transferring;
       ts = TransferState.Picking;
       hoist.release();
-      return;
+      return false;
+
     }
 
     [s.Idle]
@@ -861,6 +916,7 @@ component Transfer
         isCalibrated = false;
         isRetaining = true;
         isXYMoveAllowed = false;
+
       }
       on ctrl.calibrate():
       {
@@ -868,10 +924,11 @@ component Transfer
         {
           isCalibrated = false;
           isRetaining = true;
-          calibrateZ();
+          calibrateZ, (), false
         }
         [isCalibrated]
         illegal;
+
       }
       on ctrl.move():
       {
@@ -879,23 +936,25 @@ component Transfer
         illegal;
         [isCalibrated && !isXYMoveAllowed]
         illegal;
+
       }
       on ctrl.transfer():
       [!isCalibrated]
       illegal;
-      on ctrl.move(x,y):
+      on ctrl.move(x, y):
       [isCalibrated && isXYMoveAllowed]
       {
         truck.move(x);
         trolley.move(y);
         nMoving = 2;
         s = State.Moving;
+
       }
-      on ctrl.transfer(x,y):
+      on ctrl.transfer(x, y):
       [isCalibrated]
-      startPick(x, y);
-      on hoist.calibrated(), gripper.calibrated(), trolley.homed(), truck.homed(), hoist.ready(), gripper.ready(), trolley.arrived(), truck.arrived():
+      startPick, (x, y), falseon hoist.calibrated(), gripper.calibrated(), trolley.homed(), truck.homed(), hoist.ready(), gripper.ready(), trolley.arrived(), truck.arrived():
       illegal;
+
     }
     [s.Calibrating]
     {
@@ -909,11 +968,12 @@ component Transfer
         isCalibrated = false;
         isRetaining = true;
         isXYMoveAllowed = false;
+
       }
       on ctrl.calibrate(), ctrl.move(), ctrl.transfer(), hoist.ready(), trolley.arrived(), truck.arrived():
       illegal;
       on hoist.calibrated(), gripper.calibrated(), trolley.homed(), truck.homed(), gripper.ready():
-      tryCalibrated();
+      tryCalibrated, (), false
     }
     [s.Moving]
     {
@@ -927,18 +987,21 @@ component Transfer
         isCalibrated = false;
         isRetaining = true;
         isXYMoveAllowed = false;
+
       }
       on ctrl.calibrate(), ctrl.move(), ctrl.transfer(), hoist.calibrated(), gripper.calibrated(), trolley.homed(), truck.homed(), hoist.ready(), gripper.ready():
       illegal;
       on trolley.arrived(), truck.arrived():
       {
         nMoving = nMoving - 1;
-        if (nMoving == 0)
-        {
+        if (nMoving == 0) {
           s = State.Idle;
           ctrl.arrived();
+
         }
+
       }
+
     }
     [s.Transferring]
     {
@@ -952,6 +1015,7 @@ component Transfer
         isCalibrated = false;
         isRetaining = true;
         isXYMoveAllowed = false;
+
       }
       on ctrl.calibrate(), ctrl.move(), ctrl.transfer(), hoist.calibrated(), gripper.calibrated(), trolley.homed(), truck.homed():
       illegal;
@@ -967,18 +1031,21 @@ component Transfer
           trolley.move(placeY);
           nMoving = 2;
           ts = TransferState.Moving;
+
         }
         [ts.Moving]
         illegal;
         [ts.Placing]
         gripper.release();
-        [ts.Raising && (!isRetaining && !isRetaining)]
+        [ts.Raising && !isRetaining && !isRetaining]
         {
           isXYMoveAllowed = true;
           s = State.Idle;
           ts = TransferState.Idle;
           ctrl.placed();
+
         }
+
       }
       on gripper.ready():
       {
@@ -987,6 +1054,7 @@ component Transfer
           hoist.retain();
           isRetaining = true;
           ts = TransferState.Raising;
+
         }
         [ts.Raising && isRetaining]
         illegal;
@@ -997,9 +1065,11 @@ component Transfer
           isRetaining = false;
           hoist.retain();
           ts = TransferState.Raising;
+
         }
         [ts.Raising && !isRetaining]
         illegal;
+
       }
       on trolley.arrived(), truck.arrived():
       {
@@ -1010,31 +1080,35 @@ component Transfer
         [ts.Moving]
         {
           nMoving = nMoving - 1;
-          if (nMoving == 0)
-          {
+          if (nMoving == 0) {
             isXYMoveAllowed = false;
             hoist.release();
             ts = TransferState.Placing;
+
           }
+
         }
         [ts.Placing]
         illegal;
         [ts.Raising && !isRetaining]
         illegal;
+
       }
+
     }
   }
+
 }
-component Lift
-{
+
+component Lift {
   provides IRetain ctrl;
   requires IConstrainedMove winch;
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Ready, Moving };
+  behaviour {
+    enum State {Lost, Calibrating, Ready, Moving};
     State s = State.Lost;
     bool isHolding = false;
+
     [s.Lost]
     {
       on ctrl.stop():
@@ -1042,14 +1116,17 @@ component Lift
         winch.stop();
         s = State.Lost;
         isHolding = false;
+
       }
       on ctrl.calibrate():
       {
         winch.calibrate();
         s = State.Calibrating;
+
       }
       on ctrl.retain(), ctrl.release(), winch.arrived(), winch.homed():
       illegal;
+
     }
     [s.Calibrating]
     {
@@ -1058,6 +1135,7 @@ component Lift
         winch.stop();
         s = State.Lost;
         isHolding = false;
+
       }
       on ctrl.calibrate(), ctrl.retain(), ctrl.release():
       illegal;
@@ -1066,9 +1144,11 @@ component Lift
         ctrl.calibrated();
         s = State.Ready;
         isHolding = true;
+
       }
       on winch.homed():
       winch.move($(config.get("Position::Robot::Z::Up"))$);
+
     }
     [s.Ready]
     {
@@ -1077,6 +1157,7 @@ component Lift
         winch.stop();
         s = State.Lost;
         isHolding = false;
+
       }
       on ctrl.calibrate(), winch.arrived():
       {
@@ -1084,6 +1165,7 @@ component Lift
         illegal;
         [isHolding]
         illegal;
+
       }
       on ctrl.retain():
       {
@@ -1091,9 +1173,11 @@ component Lift
         {
           winch.move($(config.get("Position::Robot::Z::Up"))$);
           s = State.Moving;
+
         }
         [isHolding]
         illegal;
+
       }
       on ctrl.release():
       {
@@ -1103,10 +1187,13 @@ component Lift
         {
           winch.move($(config.get("Position::Robot::Z::Down"))$);
           s = State.Moving;
+
         }
+
       }
       on winch.homed():
       illegal;
+
     }
     [s.Moving]
     {
@@ -1115,6 +1202,7 @@ component Lift
         winch.stop();
         s = State.Lost;
         isHolding = false;
+
       }
       on ctrl.calibrate(), ctrl.retain(), ctrl.release(), winch.homed():
       illegal;
@@ -1123,20 +1211,23 @@ component Lift
         ctrl.ready();
         s = State.Ready;
         isHolding = !isHolding;
+
       }
+
     }
   }
+
 }
-component Grip
-{
+
+component Grip {
   provides IRetain ctrl;
   requires IConstrainedMove gripper;
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Ready, Moving };
+  behaviour {
+    enum State {Lost, Calibrating, Ready, Moving};
     State s = State.Lost;
     bool isHolding = false;
+
     [s.Lost]
     {
       on ctrl.stop():
@@ -1144,14 +1235,17 @@ component Grip
         gripper.stop();
         s = State.Lost;
         isHolding = false;
+
       }
       on ctrl.calibrate():
       {
         gripper.calibrate();
         s = State.Calibrating;
+
       }
       on ctrl.retain(), ctrl.release(), gripper.homed(), gripper.arrived():
       illegal;
+
     }
     [s.Calibrating]
     {
@@ -1160,6 +1254,7 @@ component Grip
         gripper.stop();
         s = State.Lost;
         isHolding = false;
+
       }
       on ctrl.calibrate(), ctrl.retain(), ctrl.release():
       illegal;
@@ -1170,7 +1265,9 @@ component Grip
         ctrl.calibrated();
         s = State.Ready;
         isHolding = true;
+
       }
+
     }
     [s.Ready]
     {
@@ -1179,6 +1276,7 @@ component Grip
         gripper.stop();
         s = State.Lost;
         isHolding = false;
+
       }
       on ctrl.calibrate(), gripper.homed(), gripper.arrived():
       illegal;
@@ -1188,9 +1286,11 @@ component Grip
         {
           s = State.Moving;
           gripper.move($(config.get("Position::Robot::Gripper::Closed"))$);
+
         }
         [isHolding]
         illegal;
+
       }
       on ctrl.release():
       {
@@ -1200,8 +1300,11 @@ component Grip
         {
           s = State.Moving;
           gripper.move($(config.get("Position::Robot::Gripper::Open"))$);
+
         }
+
       }
+
     }
     [s.Moving]
     {
@@ -1210,6 +1313,7 @@ component Grip
         gripper.stop();
         s = State.Lost;
         isHolding = false;
+
       }
       on ctrl.calibrate(), ctrl.retain(), ctrl.release(), gripper.homed():
       illegal;
@@ -1218,12 +1322,15 @@ component Grip
         ctrl.ready();
         s = State.Ready;
         isHolding = !isHolding;
+
       }
+
     }
   }
+
 }
-component MaterialHandler
-{
+
+component MaterialHandler {
   provides IHandle ctrl;
   requires IInspect inspector;
   requires IFeed feedPort;
@@ -1238,10 +1345,9 @@ component MaterialHandler
   requires imotor truckMotorHw;
   requires itouch truckHomeSensorHw;
 
-  system
-  {
-    Handle bhv;
-    Robot robot;
+  system {
+    nameHandle bhv;
+    nameRobot robot;
 
     ctrl <=> bhv.ctrl;
     bhv.robot <=> robot.ctrl;
@@ -1259,8 +1365,8 @@ component MaterialHandler
     robot.truckMotorHw <=> truckMotorHw;
   }
 }
-component Robot
-{
+
+component Robot {
   provides ITransfer ctrl;
   requires imotor hoistMotorHw;
   requires itouch hoistEndSensorHw;
@@ -1271,13 +1377,12 @@ component Robot
   requires imotor truckMotorHw;
   requires itouch truckHomeSensorHw;
 
-  system
-  {
-    Transfer bhv;
-    Hoist hoist;
-    Gripper gripper;
-    EndConstrainedAxis trolley;
-    HomeConstrainedAxis truck;
+  system {
+    nameTransfer bhv;
+    nameHoist hoist;
+    nameGripper gripper;
+    nameEndConstrainedAxis trolley;
+    nameHomeConstrainedAxis truck;
 
     ctrl <=> bhv.ctrl;
     bhv.hoist <=> hoist.ctrl;
@@ -1294,16 +1399,15 @@ component Robot
     truck.homeSensorHw <=> truckHomeSensorHw;
   }
 }
-component Hoist
-{
+
+component Hoist {
   provides IRetain ctrl;
   requires imotor motorHw;
   requires itouch endSensorHw;
 
-  system
-  {
-    Lift bhv;
-    EndConstrainedAxis winch;
+  system {
+    nameLift bhv;
+    nameEndConstrainedAxis winch;
 
     ctrl <=> bhv.ctrl;
     bhv.winch <=> winch.ctrl;
@@ -1311,16 +1415,15 @@ component Hoist
     winch.endSensorHw <=> endSensorHw;
   }
 }
-component Gripper
-{
+
+component Gripper {
   provides IRetain ctrl;
   requires imotor motorHw;
   requires itouch endSensorHw;
 
-  system
-  {
-    Grip bhv;
-    EndConstrainedAxis gripper;
+  system {
+    nameGrip bhv;
+    nameEndConstrainedAxis gripper;
 
     ctrl <=> bhv.ctrl;
     bhv.gripper <=> gripper.ctrl;

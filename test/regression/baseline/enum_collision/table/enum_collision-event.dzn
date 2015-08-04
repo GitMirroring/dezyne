@@ -20,15 +20,14 @@
 //
 // Code:
 
-interface ienum_collision
-{
-  enum Retval1 { OK, NOK };
-  enum Retval2 { OK, NOK };
+interface ienum_collision {
+  enum Retval1 {OK, NOK};
+  enum Retval2 {OK, NOK};
   in Retval1 foo();
   in Retval2 bar();
 
-  behaviour 
-  {
+  behaviour {
+
     on foo:
     [true]
     reply(Retval1.OK);
@@ -37,12 +36,12 @@ interface ienum_collision
     reply(Retval2.NOK);
   }
 }
-component enum_collision
-{
+
+component enum_collision {
   provides ienum_collision i;
 
-  behaviour 
-  {
+  behaviour {
+
     on i.foo():
     [true]
     reply(ienum_collision.Retval1.OK);
@@ -50,5 +49,6 @@ component enum_collision
     [true]
     reply(ienum_collision.Retval2.NOK);
   }
+
 }
 

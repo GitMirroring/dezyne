@@ -20,18 +20,17 @@
 //
 // Code:
 
-interface TestBool
-{
+interface TestBool {
   in void evt();
 
-  behaviour 
-  {
-    enum States { State1, State2 };
+  behaviour {
+    enum States {State1, State2};
     bool b1 = true;
     bool b2 = true;
     bool b3 = true;
     States state1 = States.State1;
     States state2 = States.State2;
+
     on evt:
     {
       [b1 || !b1]
@@ -47,36 +46,37 @@ interface TestBool
         b2 = b1 && b2;
         b3 = state1.State2;
         b2 = b1 || b2 || b3;
-        b3 = (b1 && b2) && b3;
+        b3 = b1 && b2 && b3;
         b1 = !(!b2);
         b1 = !b2 && b3;
         b2 = !b2 || b3;
         b3 = !(state1 == States.State2);
-        b1 = (b2 && b3) || b1;
-        b2 = b1 || (b2 && b3);
-        if (state1.State2)
-        b1 = !b1;
+        b1 = b2 && b3 || b1;
+        b2 = b1 || b2 && b3;
+        if (state1.State2) b1 = !b1;
+
       }
       [b1]
       [state2.State1]
-      {
-      }
+      {}
+
     }
   }
 }
-component testBoolean
-{
+
+component testBoolean {
   provides TestBool i;
 
-  behaviour 
-  {
+  behaviour {
     bool b = false;
+
     on i.evt():
     {
       [b || !b]
-      {
-      }
+      {}
+
     }
   }
+
 }
 

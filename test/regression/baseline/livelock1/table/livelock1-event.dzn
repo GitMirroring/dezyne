@@ -20,44 +20,41 @@
 //
 // Code:
 
-interface nolivelock
-{
+interface nolivelock {
   in void dummy();
 
-  behaviour 
-  {
+  behaviour {
+
     on dummy:
     [true]
-    {
-    }
+    {}
   }
 }
-interface ilivelock
-{
+
+interface ilivelock {
   out void dummy();
 
-  behaviour 
-  {
+  behaviour {
+
     on inevitable:
     [true]
     dummy;
   }
 }
-component livelock1
-{
+
+component livelock1 {
   provides nolivelock n;
   requires ilivelock l;
 
-  behaviour 
-  {
+  behaviour {
+
     on n.dummy():
     [true]
-    {
-    }
+    {}
     on l.dummy():
     [true]
-    {
-    }
+    {}
   }
+
 }
 

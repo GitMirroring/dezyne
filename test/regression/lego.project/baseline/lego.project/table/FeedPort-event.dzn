@@ -20,18 +20,17 @@
 //
 // Code:
 
-component FeedConvey
-{
+component FeedConvey {
   provides IFeed ctrl;
   requires IFeed feeder;
   requires IConvey conveyor;
 
-  behaviour 
-  {
-    enum State { Lost, Calibrating, Idle, Preparing, Prepared };
-    enum FeedPhase { Idle, Feeding, ConveyingNext, ConveyingLast };
+  behaviour {
+    enum State {Lost, Calibrating, Idle, Preparing, Prepared};
+    enum FeedPhase {Idle, Feeding, ConveyingNext, ConveyingLast};
     State s = State.Lost;
     FeedPhase p = FeedPhase.Idle;
+
     on ctrl.stop():
     {
       [s.Prepared || s.Preparing || s.Idle || s.Calibrating || s.Lost]
@@ -40,7 +39,9 @@ component FeedConvey
         conveyor.stop();
         s = State.Lost;
         p = FeedPhase.Idle;
+
       }
+
     }
     on ctrl.calibrate():
     {
@@ -48,9 +49,11 @@ component FeedConvey
       {
         feeder.calibrate();
         s = State.Calibrating;
+
       }
       [s.Prepared || s.Preparing || s.Idle || s.Calibrating]
       illegal;
+
     }
     on ctrl.produceBall():
     {
@@ -61,7 +64,9 @@ component FeedConvey
         feeder.produceBall();
         s = State.Preparing;
         p = FeedPhase.Feeding;
+
       }
+
     }
     on feeder.calibrated():
     {
@@ -71,6 +76,7 @@ component FeedConvey
       {
         ctrl.calibrated();
         s = State.Idle;
+
       }
       [s.Preparing]
       [p.ConveyingNext]
@@ -78,6 +84,7 @@ component FeedConvey
       [s.Preparing]
       [p.ConveyingLast]
       illegal;
+
     }
     on feeder.consumeNextBall():
     {
@@ -88,6 +95,7 @@ component FeedConvey
       {
         conveyor.convey();
         p = FeedPhase.ConveyingNext;
+
       }
       [s.Preparing]
       [p.ConveyingNext]
@@ -95,6 +103,7 @@ component FeedConvey
       [s.Preparing]
       [p.ConveyingLast]
       illegal;
+
     }
     on feeder.consumeLastBall():
     {
@@ -105,6 +114,7 @@ component FeedConvey
       {
         conveyor.convey();
         p = FeedPhase.ConveyingLast;
+
       }
       [s.Preparing]
       [p.ConveyingNext]
@@ -112,6 +122,7 @@ component FeedConvey
       [s.Preparing]
       [p.ConveyingLast]
       illegal;
+
     }
     on conveyor.conveyed():
     {
@@ -126,6 +137,7 @@ component FeedConvey
         ctrl.consumeNextBall();
         s = State.Prepared;
         p = FeedPhase.Idle;
+
       }
       [s.Preparing]
       [p.ConveyingLast]
@@ -133,21 +145,23 @@ component FeedConvey
         ctrl.consumeLastBall();
         s = State.Prepared;
         p = FeedPhase.Idle;
+
       }
+
     }
   }
+
 }
-component FeedPort
-{
+
+component FeedPort {
   provides IFeed ctrl;
   requires IFeed feeder;
   requires imotor motorHw;
   requires itouch sensorHw;
 
-  system
-  {
-    FeedConvey bhv;
-    Conveyor conveyor;
+  system {
+    nameFeedConvey bhv;
+    nameConveyor conveyor;
 
     ctrl <=> bhv.ctrl;
     bhv.conveyor <=> conveyor.ctrl;
