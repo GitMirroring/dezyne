@@ -30,6 +30,8 @@
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 pretty-print)
 
+  :use-module (gaiag om)
+
   :use-module (gaiag animate)
   :use-module (gaiag indent)
   :use-module (gaiag code)
@@ -37,8 +39,6 @@
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
 ;;  :use-module (gaiag wfc)
-
-  :use-module (gaiag ast)
 
   :export (
            ast->

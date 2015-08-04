@@ -22,10 +22,9 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
+  :use-module (gaiag om)
   :use-module (gaiag reader)
-  :use-module (gaiag norm-state)
-
-  :use-module (gaiag ast))
+  :use-module (gaiag norm-state))
 
 (define (csp-norm-state* ast)
   ((compose csp-norm-state ast->om) ast))

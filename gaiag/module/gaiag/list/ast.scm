@@ -260,15 +260,7 @@
     (('triggers triggers ...)
      (make <triggers> :elements (map ast->om- triggers)))
 
-    (('type scope ('type name))
-     barf-namespace-0
-     (make <type> :name name :scope scope))
-
     (('type name) (make <type> :name name))
-
-    (('type name scope)
-     (stderr "TNS: ~a\n" ast)
-     barf-namespace-1 (make <type> :name name :scope scope))
 
     (('types types ...) (make <types> :elements (map ast->om- types)))
 

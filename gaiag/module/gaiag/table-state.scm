@@ -34,18 +34,19 @@
   :use-module (srfi srfi-1)
 
   :use-module (language dezyne location)
-  :use-module (gaiag misc)
 
-  :use-module (gaiag ast)
-  :use-module (gaiag gaiag)
+  :use-module (gaiag om)
+
+  :use-module (gaiag dzn)
   :use-module (gaiag evaluate)
+  :use-module (gaiag gaiag)
   :use-module (gaiag json-table)
+  :use-module (gaiag misc)
   :use-module (gaiag norm)
   :use-module (gaiag norm-event)
   :use-module (gaiag norm-state)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
-  :use-module (gaiag dzn)
 
   :export (ast->
            mangle-table prepend-guards dzn-table remove-initial simplify table table-state))

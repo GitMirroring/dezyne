@@ -32,10 +32,11 @@
   :use-module (srfi srfi-1)
 
   :use-module (language dezyne location)
+
+  :use-module (gaiag om)
+
   :use-module (gaiag misc)
   :use-module (gaiag gaiag)
-
-  :use-module (gaiag ast)
   :use-module (gaiag json-table)
   :use-module (gaiag norm)
   :use-module (gaiag norm-event)

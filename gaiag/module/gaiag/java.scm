@@ -26,12 +26,11 @@
 (define-module (gaiag java)
   :use-module (ice-9 pretty-print)
 
+  :use-module (gaiag om)
+
   :use-module (gaiag code)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
-
-    ;;:use-module (oop goops describe)
-  :use-module (gaiag ast)
 
   :export (ast-> action-type ->type))
 
@@ -53,5 +52,3 @@
    ((equal? type "int") "Integer")
    ((equal? type "boolean") "Boolean")
    (else type)))
-
-

@@ -28,18 +28,17 @@
   :use-module (gaiag list match)
   :use-module (language dezyne location)
 
+  :use-module (gaiag om)
+
+  :use-module (gaiag evaluate)
   :use-module (gaiag gaiag)
   :use-module (gaiag json-trace)
   :use-module (gaiag misc)
-  :use-module (gaiag evaluate)
-
   :use-module (gaiag pretty-print)
   :use-module (gaiag reader)
-
   :use-module (gaiag resolve)
   ;;  :use-module (gaiag wfc)
 
-  :use-module (gaiag ast)
 
   :export (ast->
            explore-space

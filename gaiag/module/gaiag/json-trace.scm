@@ -25,14 +25,14 @@
 
   :use-module (srfi srfi-1)
 
+  :use-module (gaiag om)
+
+  :use-module (gaiag evaluate)
   :use-module (gaiag json)
   :use-module (gaiag misc)
   :use-module (gaiag pretty-print)
   :use-module (gaiag reader)
-  :use-module (gaiag evaluate)
   :use-module (gaiag run)
-
-  :use-module (gaiag ast)
 
   :export (
            json-init

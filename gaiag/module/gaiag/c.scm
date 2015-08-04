@@ -32,6 +32,8 @@
   :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
 
+  :use-module (gaiag om)
+
   :use-module (gaiag animate)
   :use-module (gaiag code)
   :use-module (gaiag gaiag)
@@ -40,8 +42,6 @@
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
 ;;  :use-module (gaiag wfc)
-
-  :use-module (gaiag ast)
 
   :export (ast->))
 

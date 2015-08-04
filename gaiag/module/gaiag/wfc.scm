@@ -35,10 +35,10 @@
 
   :use-module (language dezyne location)
 
-  :use-module (gaiag ast)
+  :use-module (gaiag om)
+
   :use-module (gaiag misc)
   :use-module (gaiag reader)
-
   :use-module (gaiag resolve)
 
   :export (

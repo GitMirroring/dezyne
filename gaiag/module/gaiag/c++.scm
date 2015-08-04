@@ -34,7 +34,7 @@
   :use-module (gaiag resolve)
 ;;  :use-module (gaiag wfc)
 
-  :use-module (gaiag ast)
+  :use-module (gaiag om)
 
   :export (ast->
            gen1-interfaces))

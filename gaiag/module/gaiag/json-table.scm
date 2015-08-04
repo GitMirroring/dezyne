@@ -36,12 +36,13 @@
   :use-module (srfi srfi-9)
 
   :use-module (language dezyne location)
+
+  :use-module (gaiag om)
+
+  :use-module (gaiag dzn)
+  :use-module (gaiag json)
   :use-module (gaiag misc)
   :use-module (gaiag pretty-print)
-
-  :use-module (gaiag ast)
-  :use-module (gaiag json)
-  :use-module (gaiag dzn)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
   :use-module (gaiag run)

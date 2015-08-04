@@ -8,7 +8,8 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
-  :use-module (gaiag ast)
+  :use-module (gaiag om)
+
   :use-module (gaiag annotate)
   :use-module (gaiag dzn)
   :use-module (gaiag reader)

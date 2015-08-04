@@ -24,13 +24,12 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
+  :use-module (gaiag om)
+
   :use-module (gaiag reader)
   :use-module (gaiag pretty-print)
   :use-module (gaiag evaluate)
-  :use-module (gaiag run)
-
-
-  :use-module (gaiag ast))
+  :use-module (gaiag run))
 
 (pass-if "simulator-first-dummy-test"
 	 #t)

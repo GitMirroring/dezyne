@@ -48,7 +48,7 @@
   :use-module (srfi srfi-1)
 
   :use-module (gaiag misc)
-  :use-module (gaiag ast)
+  :use-module (gaiag om)
 
   :export (animate
            animate-file

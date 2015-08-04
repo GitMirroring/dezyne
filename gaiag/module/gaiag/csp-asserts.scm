@@ -25,10 +25,11 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag csp-asserts)
-    :use-module (gaiag ast)
 
-  :use-module (gaiag csp)
+  :use-module (gaiag om)
+
   :use-module (gaiag asserts)
+  :use-module (gaiag csp)
 
   :export (
            ast->

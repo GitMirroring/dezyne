@@ -24,12 +24,12 @@
 
   :use-module (system repl error-handling)
 
+  :use-module (gaiag om)
+
   :use-module (gaiag coverage)
   :use-module (gaiag misc)
   :use-module (gaiag pretty-print)
   :use-module (gaiag reader)
-
-  :use-module (gaiag ast)
 
   :export (main parse-opts))
 

@@ -32,9 +32,9 @@
   :use-module (gaiag list match)
 
   :use-module (language dezyne location)
-  :use-module (gaiag misc)
+  :use-module (gaiag om)
 
-  :use-module (gaiag ast)
+  :use-module (gaiag misc)
   :use-module (gaiag reader)
 
   :export (

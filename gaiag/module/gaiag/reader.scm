@@ -58,7 +58,6 @@
           (read-dzn- file-name)))))
 
 (define (find-model-file o)
-  (if (> (length *include-path*) 3) barf)
   (let ((grep (lambda (dir) (gulp-pipe (format #f "/bin/grep -El '^(component|interface|enum|extern|int) ~a' ~a/~a.dzn ~a/*.dzn 2>/dev/null" o dir o dir)))))
     (let loop ((path *include-path*))
       (if (null? path) #f

@@ -34,6 +34,8 @@
   :use-module (gaiag animate)
   :use-module (gaiag asserts)
 
+  :use-module (gaiag om)
+
   :use-module (gaiag gaiag)
 ;;  :use-module (gaiag mangle)
   :use-module (gaiag misc)
@@ -43,7 +45,6 @@
   :use-module (gaiag resolve)
 ;; :use-module (gaiag wfc)
 
-  :use-module (gaiag ast)
 
   :export (
            ast->

@@ -26,12 +26,11 @@
 (define-module (gaiag cs)
   :use-module (ice-9 pretty-print)
 
+  :use-module (gaiag om)
+
   :use-module (gaiag code)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
-
-    ;;:use-module (oop goops describe)
-  :use-module (gaiag ast)
 
   :export (ast-> lambda-type))
 

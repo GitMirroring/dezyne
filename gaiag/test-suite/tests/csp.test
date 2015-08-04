@@ -11,11 +11,13 @@
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 match)
 
+  :use-module (gaiag om)
+
   :use-module (gaiag csp)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
-  :use-module (gaiag ast))
+)
 
 ;; JUNKME
 (define (ast->sugar ast)

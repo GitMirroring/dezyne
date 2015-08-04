@@ -22,9 +22,9 @@
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 regex)
 
-  :use-module (gaiag misc)
+  :use-module (gaiag om)
 
-  :use-module (gaiag ast)
+  :use-module (gaiag misc)
   :use-module (gaiag csp)
 
   :export (fail

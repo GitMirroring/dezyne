@@ -7,6 +7,8 @@
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
+  :use-module (gaiag om)
+
   :use-module (gaiag dzn)
   :use-module (gaiag reader)
   :use-module (gaiag resolve))

@@ -27,11 +27,12 @@
 (define-module (gaiag goops)
   :use-module (ice-9 pretty-print)
 
+  :use-module (gaiag om)
+
   :use-module (gaiag code)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
-  :use-module (gaiag ast)
   :export (ast->))
 
 (define (ast-> ast)

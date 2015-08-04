@@ -28,6 +28,7 @@
 (define-module (gaiag om)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
+  :use-module (ice-9 getopt-long)
   :use-module (ice-9 optargs)
 
   :use-module (system foreign)
@@ -35,8 +36,10 @@
 
   :use-module (srfi srfi-1)
 
+  ;;:use-module (gaiag goops goops) ;; GOOPS backend
+  :use-module (gaiag list goops)  ;; LIST backend
+
   :use-module (gaiag list match)
-  :use-module (gaiag ast)
   :use-module (gaiag annotate)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
@@ -93,6 +96,17 @@
            om:variables
            ))
 
+(cond-expand
+ (goops-om
+  (cond-expand-provide (current-module) '(goops-om))
+  (re-export-modules
+   (gaiag goops goops)))
+ (list-om
+  (cond-expand-provide (current-module) '(list-om))
+  (re-export-modules
+   (gaiag list goops)))
+ (else
+  ))
 
 ;;; AST-LIST shorthands
 (define* (om:events o)

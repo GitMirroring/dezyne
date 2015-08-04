@@ -35,7 +35,7 @@
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
 
-    :use-module (gaiag ast)
+    :use-module (gaiag om)
 
   :export (
            ast->
