@@ -164,15 +164,18 @@
     ((type (or 'bool 'void)) '())
     (_ '())))
 
+(define (om:drop-scope scope o)
+  (drop-prefix (cdr scope) o))
+
+
+
+
 (define (om:map f o)
   (match o
     ((? (is? <ast-list>))
      (retain-source-properties o (cons (car o) (map f (.elements o)))))
     ((h t ...) (retain-source-properties o (cons (car o) (map f (cdr o)))))
     (_ o)))
-
-(define (om:drop-scope scope o)
-  (drop-prefix (cdr scope) o))
 
 (define om->list identity)
 (define om2list identity)

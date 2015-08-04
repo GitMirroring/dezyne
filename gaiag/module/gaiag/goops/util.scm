@@ -109,8 +109,53 @@
            om:variable
            om:variables
            om:void?
-           make-interface-enum
+
+
+
+           om:scope-name
+           om:scope-join
+           om:name
+           om:scope
+           om:drop-scope
+           om:scope+name
+           om:outer-scope?
            ))
+
+(define* ((om:scope-name :optional (infix '_)) o)
+  (let ((infix (if (symbol? infix) infix
+                   (string->symbol infix))))
+    (((->symbol-join infix) (om:scope+name o)))))
+
+(define (om:scope+name o)
+  (match o
+    (('name name ...) name)
+    (($ <instance> x name) (om:scope+name name))
+    (($ <port> x name) (om:scope+name name))
+    ((? (is? <named>)) ((compose om:scope+name .name) o))
+    (($ <type> 'bool) '(bool))
+    (($ <type> 'void) '(void))))
+
+(define (om:outer-scope? model o)
+  (and model (>1 (length o))
+       (not (eq? ((compose car om:scope+name) model) (car o)))))
+
+(define* ((om:scope-join :optional (model #f) (infix '_)) o)
+  (let* ((outer? (om:outer-scope? model o))
+         (scope (if (not model) o
+                    (if outer? (cons null-symbol o)
+                        (om:drop-scope (.name model) o)))))
+    ((->symbol-join infix) scope)))
+
+(define (om:name o)
+  ((compose last om:scope+name)) o)
+
+(define (om:scope o)
+  (drop-right (om:scope+name o) 1))
+
+(define (om:drop-scope scope o)
+  (drop-prefix (cdr scope) o))
+
+
 
 (define ((is? class) o)
   (and (is-a? o class) o))

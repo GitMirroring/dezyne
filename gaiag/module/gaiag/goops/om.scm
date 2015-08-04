@@ -146,6 +146,7 @@
            <interface>
            <literal>
            <model>
+           <name>
            <named>
            <on>
            <otherwise>

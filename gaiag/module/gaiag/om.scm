@@ -27,7 +27,13 @@
 
 (define-module (gaiag om)
   :use-module (gaiag ast)
-  :use-module (gaiag annotate))
+  :use-module (gaiag annotate)
+  :export (
+           ))
 
 (define (ast-> ast)
-  ((compose om->list ast->om ast->annotate) ast))
+  ((compose
+    om->list
+    ast->om
+    ast->annotate
+    ) ast))

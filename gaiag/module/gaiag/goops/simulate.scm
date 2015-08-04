@@ -29,7 +29,6 @@
   :export (
            <info>
            .trail
-           .ast
            .q
            .state
            .reply
@@ -37,7 +36,10 @@
            .state-alist
            .trace
            .error
-           ))
+           )
+  :re-export (
+              .ast
+              ))
 
 (define-class <info> (<ast>)
   (trail :accessor .trail :init-form (list) :init-keyword :trail)

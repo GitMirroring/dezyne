@@ -198,7 +198,7 @@
      (make <literal> :name name :field field))
 
     (('name name ...)
-     (make <name> :name name))
+     (make <name> :elements name))
 
     (('on triggers statement)
      (make <on> :triggers (ast->om- triggers) :statement (ast->om- statement)))
