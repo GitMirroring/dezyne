@@ -17,7 +17,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag goops ast)
+(define-module (gaiag list ast)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 pretty-print)
@@ -42,8 +42,6 @@
 
 (define (ast->sugar ast)
   (match ast
-    ;; (('provides type name) `(port ,name ,type provides))
-    ;; (('requires type name injected ...) `(port ,name ,type requires ,injected))
     (('on ('triggers t ...) statement) ast)
     (('on triggers statement) (list 'on (cons 'triggers (map ast->trigger-sugar triggers)) statement))
     (_ ast)))
@@ -61,7 +59,7 @@
   (let* ((ast (if (and (pair? ast)
                       (not (ast:model? ast))
                       (not (eq? (car ast) 'root))
-                      (find ast:model? ast))
+                      (ast:model? (car ast)))
                   (cons 'root ast)
                   ast))
          (ast (if (and (pair? ast) (assoc-ref ast 'locations))
@@ -126,8 +124,7 @@
 
     (('data value) (make <data> :value value))
 
-    (('enum name fields)
-     (make <enum> :name name :fields (ast->om- fields)))
+    (('enum name fields) (make <enum> :name name :fields (ast->om- fields)))
 
     (('extern name value)
      (make <extern> :name name :value value))
@@ -176,7 +173,7 @@
 
     (('illegal) (make <illegal>))
 
-    (('import name) (make <import> :name name))
+    (('import name) (make <import> :name `(name ,name)))
 
     (('int name range)
      (make <int> :name name :range (ast->om- range)))
@@ -194,11 +191,9 @@
        :events (ast->om- (or (null-is-#f (assoc 'events body)) '(events)))
        :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->om-)))
 
-    (('literal name field)
-     (make <literal> :name name :field field))
+    (('literal name field) (make <literal> :name name :field field))
 
-    (('name name ...)
-     (make <name> :elements name))
+    (('name name ...) (make <name> :elements name))
 
     (('on triggers statement)
      (make <on> :triggers (ast->om- triggers) :statement (ast->om- statement)))
@@ -282,27 +277,18 @@
   (set-source-property! o 'imported? (cdr entry)))
 
 (define (ast:public ast)
-;;  (stderr "public: ~a\n" ast)
   (match ast
     (('root models ...) ast)
     (('enum name fields) `(enum ,name ,fields))
     (('extern name value) `(extern ,name ,value))
     (('int name range) `(int ,name ,range))
     (('interface name types events behaviour) `(interface ,name ,types ,events))
-;;    (('component name body ...) '(import))
-;;    (('system name body ...) '(import))
     ((h t ...) (map ast:public ast))
     (_ '(import))))
 
 (define (ast:interface ast)
-;;  (stderr "interface: ~a\n" ast)
   (match ast
     (('root models ...) ast)
-;;    (('enum name fields) `(enum ,name ,fields))
-;;    (('extern name value) `(extern ,name ,value))
-;;    (('int name range) `(int ,name ,range))
     (('interface name body ...) ast)
-;;    (('component name body ...) '(import))
-;;    (('system name body ...) '(import))
     ((h t ...) (map ast:interface ast))
     (_ '(import))))

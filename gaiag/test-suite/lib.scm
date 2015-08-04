@@ -346,7 +346,7 @@
           (error "Nested calls to run-test are not permitted."))
       (let ((test-name (full-name name)))
             (set! test-running #t)
-            (catch #t ;;'pass
+            (catch #t ;'pass
               (lambda ()
                 (let ((result (thunk)))
                   (if (eq? result #t) (throw 'pass))

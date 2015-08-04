@@ -71,7 +71,9 @@
                   ast))
          (ast (if (and (pair? ast) (assoc-ref ast 'locations))
                   (ast->annotate ast) ast)))
-    (ast->om- ast)))
+    ;;ast
+    (ast->om- ast)
+    ))
 
 (define (ast->om- ast)
   (retain-source-properties ast ((compose ast->om-- ast->sugar) ast)))
@@ -197,6 +199,10 @@
        :types (ast->om- (or (null-is-#f (assoc 'types body)) '(types)))
        :events (ast->om- (or (null-is-#f (assoc 'events body)) '(events)))
        :behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->om-)))
+
+    (('literal name field) (make <literal> :name name :field field))
+
+    (('name name ...) (make <name> :elements name))
 
     (('on triggers statement)
      (make <on> :triggers (ast->om- triggers) :statement (ast->om- statement)))

@@ -315,18 +315,18 @@
 
    (trigger-spec
     (triggers) : (note-location (cons 'triggers $1) @1)
-    (optional) : (note-location `(triggers ,(note-location `(trigger #f ,$1) @1)) @1)
-    (inevitable) : (note-location `(triggers ,(note-location `(trigger #f ,$1) @1)) @1))
+    (optional) : (note-location `(triggers ,(note-location `(trigger #f ,$1 (arguments)) @1)) @1)
+    (inevitable) : (note-location `(triggers ,(note-location `(trigger #f ,$1 (arguments)) @1)) @1))
 
    (triggers
     (trigger) : `(,$1)
     (triggers #{,}# trigger) : (append $1 (list $3)))
 
    (trigger
-    (Identifier) : (note-location `(trigger #f ,$1) @1)
-    (Identifier #{(}# #{)}#) : (note-location `(trigger #f ,$1) @1)
-    (Identifier #{.}# Identifier) : (note-location `(trigger ,$1 ,$3) @1)
-    (Identifier #{.}# Identifier #{(}# #{)}#) : (note-location `(trigger ,$1 ,$3) @1)
+    (Identifier) : (note-location `(trigger #f ,$1 (arguments)) @1)
+    (Identifier #{(}# #{)}#) : (note-location `(trigger #f ,$1 (arguments)) @1)
+    (Identifier #{.}# Identifier) : (note-location `(trigger ,$1 ,$3 (arguments)) @1)
+    (Identifier #{.}# Identifier #{(}# #{)}#) : (note-location `(trigger ,$1 ,$3 (arguments)) @1)
     (Identifier #{(}# arguments #{)}#) : (note-location `(trigger #f ,$1 ,$3) @1)
     (Identifier #{.}# Identifier #{(}# arguments #{)}#) : (note-location `(trigger ,$1 ,$3 ,$5) @1))
 
@@ -370,9 +370,9 @@
 
 (define (make-trigger o)
   (match o
-    ((? symbol?) `(trigger #f o))
-    (('name event) `(trigger #f ,event))
-    (('name port event) `(trigger ,port ,event))))
+    ((? symbol?) `(trigger #f o (arguments)))
+    (('name event) `(trigger #f ,event (arguments)))
+    (('name port event) `(trigger ,port ,event (arguments)))))
 
 (define ((add-scope scope) o)
   (rsp o ((add-scope- scope) o)))

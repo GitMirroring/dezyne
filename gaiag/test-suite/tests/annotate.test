@@ -51,10 +51,11 @@
                ((location "examples/loc.dzn" 6 7 71 #f)
                 trigger
                 #f
-                e))
+                e
+                (arguments)))
              ((location "examples/loc.dzn" 6 10 74 #f)
               action
-              (trigger #f a))))))
+              (trigger #f a (arguments)))))))
         ((location "examples/loc.dzn" 10 0 84 #f)
          component
          ((location "examples/loc.dzn" 10 10 94 #f)
@@ -79,10 +80,11 @@
                ((location "examples/loc.dzn" 15 7 142 #f)
                 trigger
                 i
-                e))
+                e
+                (arguments)))
              ((location "examples/loc.dzn" 15 14 149 #f)
               action
-              (trigger i a)))))))))
+              (trigger i a (arguments))))))))))
 
 (pass-if "annotate-extract"
   (pretty-noisy-equal?
