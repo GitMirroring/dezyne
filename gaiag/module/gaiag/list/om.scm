@@ -846,8 +846,7 @@
 (define (.field ast)
   (match ast
     (('field identifier field) field)
-    (('literal name field) field)
-    (('value type field) field)))
+    (('literal name field) field)))
 
 (define (.message ast)
   (match ast
