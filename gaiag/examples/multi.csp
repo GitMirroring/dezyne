@@ -1,0 +1,191 @@
+nametype bool = {false, true}
+
+channel illegal
+channel range_error
+channel transition_begin, transition_end
+
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
+
+datatype event_enumeration_alphabet = left | modeling | return | right | the_end'
+
+-- end of combinators
+-- both.csp.scm
+-- end of both.csp.scm
+-- interface.csp.scm
+
+channel imulti: {left,the_end'}
+
+channel imulti_': {return}
+
+channel imulti_in',imulti_out': {imulti_'.return}
+
+channel imulti_''': {modeling}
+
+IF_imulti_(IG,CS) = let
+
+imulti_() =
+(imulti?x:{left} -> (
+    imulti_'.return ->
+  imulti.the_end' ->
+  imulti_()
+)
+[]
+CS & imulti?x:{} -> illegal -> STOP
+)
+
+REORDER' = imulti?x' -> (imulti_in'?y' -> imulti.the_end' -> imulti_out'!y' -> REORDER'
+                         []
+                         imulti.the_end' -> REORDER')
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                then imulti_()
+                else imulti_() )
+               [[x<-imulti_in'.x|x<-extensions(imulti_in')]] [|{|imulti,imulti_in'|}|] REORDER' [[imulti_out'.x<-x|x<-extensions(imulti_out')]] \ {|imulti_in',imulti.the_end'|})
+
+-- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
+-- component.csp.scm
+
+channel p_left: extensions(imulti)
+channel p_right: extensions(imulti)
+channel r: extensions(imulti)
+
+
+channel p_left_': extensions(imulti_')
+channel p_right_': extensions(imulti_')
+channel r_': extensions(imulti_')
+
+channel p_''': extensions(imulti_''')
+channel r_''': extensions(imulti_''')
+
+CO_multi_(IIG,IG) = let
+
+multi_() =
+transition_begin -> (
+p_left?x:{left} -> (
+  r!left -> r_'.return ->
+    p_left_'.return ->
+  transition_end ->
+  multi_()
+)
+[]
+p_right?x:{left} -> (
+  r!left -> r_'.return ->
+    p_right_'.return ->
+  transition_end ->
+  multi_()
+))
+
+within multi_()
+
+channel extensions_over_empty_channels_is_undefined
+channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+
+channel LINK' : {|IN',OUT'|}
+
+SINGLETHREADED = true
+
+channel reorder_in, reorder_out : {|p_left_',p_right_'|}
+channel queue_full
+
+SEMANTICS(in',out',link',client',modeling',end') = let
+
+Q' = let
+
+N' = 3
+
+external chase
+
+Cell = link'.in'?x' -> link'.out'!x' -> Cell
+
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
+
+Front = Cell[[link'.out' <- out']]
+
+within
+       if (N'==1) then (Back[[link'.out' <- out']])
+       else if(N'==2) then chase(Back [link'.out' <-> link'.in'] Front  \ {|link'|})
+       else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
+
+R'(A') = ([] x' : A' @ x' -> R'(A'))
+       []
+       reorder_in?x' -> reorder_out!x' -> R'(A')
+
+S'    = let
+
+N' = 3
+
+
+Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
+
+FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
+            []
+            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+            []
+            (r' == <> & reorder_in?x' -> Busy(c',<x'>))
+
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
+              []
+              (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
+              []
+              (c' <= N' & in'?x' -> Busy(c'+1,r'))
+              []
+              (c' > 0 & out'?x' -> Busy(c'-1,r'))
+              []
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
+
+within Idle(0)
+
+within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+AS_multi_(IIG) = let
+
+ClientCalls = {p_left.left,p_right.left}
+UsedModeling = {}
+TheEnd = {|r_'''|}
+within compress((CO_multi_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+                 [|{|OUT',transition_begin,transition_end,reorder_in,p_left,p_left_',p_right,p_right_'|}|]
+                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
+                [|{|IN',r,r_',r_'''|}|]
+                (IF_imulti_(true,false) [[imulti.x<-r.x|x<-extensions(r)]][[imulti_'.x<-r_'.x|x<-extensions(r_')]]
+                 [[imulti.x<-r.x|x<-extensions(r)]]
+                 [[imulti_'''.x<-r_'''.x|x<-extensions(r_''')]]
+)[[x<-IN'.x|x<-extensions(IN')]])
+
+-- end of component.csp.scm
+assert COMPLETE'({imulti.left}) [F= IF_imulti_(true,true)[[range_error<-illegal]] \ diff(Events,{imulti.left,illegal})
+assert IF_imulti_(false,false) :[deadlock free]
+assert IF_imulti_(true,false) :[livelock free]
+assert CO_multi_(true,true) :[deterministic]
+assert COMPLETE'({p_left.left,p_right.left}) [F= CO_multi_(true,true)[[range_error<-illegal]] \ diff(Events,{p_left.left,p_right.left,illegal})
+assert STOP [T= AS_multi_(false) \ diff(Events,{illegal,queue_full})
+assert AS_multi_(false) :[deadlock free]
+
+IF_MULTI = let
+
+R2C = (p_left?x -> [] y : {|p_left_'|} @ y -> R2C)
+      []
+      (p_right?x -> [] y : {|p_right_'|} @ y -> R2C)
+
+within compress(((IF_imulti_(true,false) [[imulti.x<-p_left.x|x<-extensions(p_left)]][[imulti_'.x<-p_left_'.x|x<-extensions(p_left_')]] \ {imulti_'''.modeling})
+       |||
+       (IF_imulti_(true,false) [[imulti.x<-p_right.x|x<-extensions(p_right)]][[imulti_'.x<-p_right_'.x|x<-extensions(p_right_')]] \ {imulti_'''.modeling}))
+       [|{|p_left,p_left_',p_right,p_right_'|}|]
+       R2C)
+
+assert IF_MULTI
+       [F=
+       AS_multi_(true) \ diff(Events,{|illegal,p_left,p_right,p_left_',p_right_'|})
+assert AS_multi_(true) \ diff(Events,{|illegal,p_left,p_right,p_left_',p_right_'|}) :[livelock free]
