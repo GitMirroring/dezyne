@@ -183,6 +183,13 @@
     (('instances instances ...)
      (make <instances> :elements (map ast->om- instances)))
 
+    (('interface name types events #f)
+     (make <interface>
+       :name name
+       :types (ast->om- types)
+       :events (ast->om- events)
+       :behaviour #f))
+
     (('interface name body ...)
      (and=> (assoc 'imported body) (mark-imported ast))
      (make <interface>

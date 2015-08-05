@@ -29,7 +29,7 @@
 )
 
 (define (dezyne->om o)
-  ((compose om:resolve ast->om dzn->ast) o))
+  ((compose ast:resolve ast->om dzn->ast) o))
 
 (define (wfc-error o message)
   ((@@ (gaiag wfc) wfc-error) (ast->om o) message))
@@ -42,44 +42,44 @@
 (pass-if "wfc-first-dummy-test"
 	 #t)
 
-;; (pass-if "wfc-second-on"
-;;   (om-pretty-noisy-equal?
-;;    (second-on
-;;     (dezyne->om
-;;      #{
-;;        interface i { in void a; out void b;
-;;                         behaviour
-;;                         { [true] on a: [false] on a: b ;
-;;                           } } #}))
-;;    (list (wfc-error '(on (triggers (trigger #f a))
-;;                          (action (trigger #f b)))
-;;                     "second on"))))
+(pass-if "wfc-second-on"
+  (om-pretty-noisy-equal?
+   ((second-on)
+    (dezyne->om
+     #{
+       interface i { in void a; out void b;
+                        behaviour
+                        { [true] on a: [false] on a: b ;
+                          } } #}))
+   (list (wfc-error '(on (triggers (trigger #f a))
+                         (action (trigger #f b)))
+                    "second on"))))
 
-;; (pass-if "wfc-mixing-declarative-imperative"
-;;   (om-pretty-noisy-equal?
-;;    (mixing-declarative-imperative
-;;     (dezyne->om
-;;      #{
-;;        interface i { in void a; out void c;
-;;                         behaviour
-;;                         { bool b = false             ;
-;;                                [true] on a: c        ;
-;;                                b = true              ;
-;;                                } } #}))
-;;    (list (wfc-error '(assign b (expression true)) "mixing imperative"))))
+(pass-if "wfc-mixing-declarative-imperative"
+  (om-pretty-noisy-equal?
+   (mixing-declarative-imperative
+    (dezyne->om
+     #{
+       interface i { in void a; out void c;
+                        behaviour
+                        { bool b = false             ;
+                               [true] on a: c        ;
+                               b = true              ;
+                               } } #}))
+   (list (wfc-error '(assign b (expression true)) "mixing imperative"))))
 
-;; (pass-if "wfc-interface"
-;;   (om-pretty-noisy-equal?
-;;    (interface
-;;     (dezyne->om
-;;      #{ interface i { } #} ))
-;;    (list
-;;     (wfc-error '(interface i) "interface must have a behaviour"))))
+(pass-if "wfc-interface"
+  (om-pretty-noisy-equal?
+   (interface
+    (dezyne->om
+     #{ interface i { } #} ))
+   (list
+    (wfc-error '(interface (name i)) "interface must have a behaviour"))))
 
-;; (pass-if "wfc-component"
-;;   (om-pretty-noisy-equal?
-;;    (component
-;;     (dezyne->om
-;;      #{ component c { behaviour { } } #}))
-;;    (list
-;;     (wfc-error '(component c (ports) (behaviour #f)) "component with behaviour must have one provides port"))))
+(pass-if "wfc-component"
+  (om-pretty-noisy-equal?
+   (component
+    (dezyne->om
+     #{ component c { behaviour { } } #}))
+   (list
+    (wfc-error '(component (name c) (ports) (behaviour #f)) "component with behaviour must have one provides port"))))
