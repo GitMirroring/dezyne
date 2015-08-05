@@ -1,8 +1,69 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-Gaiag runs or GOOPS or plain list backends.  Default is the--
-with guile-2.2-- much faster list backend.
+Gaiag is a implementation of the Dezyne server backend in Scheme.  It
+uses a functional approach based on AST-transformations.  It can be
+used standalone or use input from the OM-parser generator.
 
-    module/gaiag/ast.scm -- edit manually to switch to GOOPS
-    module/gaiag/goops/  -- the GOOPS backend
-    module/gaiag/goops/  -- the plain list backend
+It uses some GNU Guile extensions, such as modules and GOOPS, the
+object oriented extension to Guile.  Features include
+
+   * DZN parser               produce an AST that stays close to DZN
+   * object model in Goops    DZN AST/OM class definition, about 200 lines
+   * semantics-resolver       resolve function or action, etc
+   * name-resolver            name resolution
+   * type checker             basic type checks -- INCOMPLETE
+   * well-formedness checker  basic checks -- INCOMPLETE
+   * code generators          c, c++, ...
+   * CSP generator
+   * DZN pretty printer
+   * AST normalisations
+   * table views              event, state
+   * json2scm, scm2jon        external scripts for JSON integration pipes
+   * simulator                TODO: also use pessimist approach over
+                              multiple run-to-completion calls
+   * test suite               250 module tests
+   * code coverage stats
+
+Using Goops introduces a significant performance penalty over using of
+plain lists --a factor 5 to 15-- depending on the use of generics and
+multiple dispatch.  A proof of concept to reduce this penalty to ca 5%
+lives in Andy Wingo's wip-goops-refactor branch which still (Wed Aug 5
+2015) has some problems.  (See git://git.savannah.gnu.org/guile).
+
+A plain list backend for Goops-like client code is available and used
+by default.  It supports (make <class>), (match o (($ <class> ...))
+(is-a? o <class>) and transparent use of all slot accessors.  Client
+code cannot use (define-class) or (define-method).
+
+ROADMAP
+=======
+
+    ./gaiag                   main executable, see --help
+    GNUmakefile               local makefile with handy tests, code coverage
+    baseline/                 CSP and CODE baseline for handy diffing
+    examples/                 example and test DZN input
+    ./json2scm                JSON text to Scheme [] -> (), {} -> #,(hash)
+    module/gaiag/om.scm       edit manually to switch to GOOPS or LIST
+    module/gaiag/goops/       the GOOPS backend
+    module/gaiag/list/        the plain list backend [default]
+    module/gaiag/gaiag.scm    top level scheme file
+    module/gaiag/resolve.scm  AST resolver
+    module/gaiag/*.scm        language backends [c, c++, csp, dzn, ...]
+    module/gaiag/*.scm        pseudo-language backends [ast, om, run, ...]
+    module/gaiag/*.scm        library modules
+    module/gaiag/json.scm     JSON library Aleix Conchillo Flaque
+                 json/*.scm   (https://github.com/aconchillo/guile-json)
+    module/gaiag/pretty-print.scm
+                              Guile pretty printer; prints non-opaque hash-lists
+    module/language/dezyne/   parser for DZN and plumbing to integrate DZN as
+                              first class language in Guile [REPL/debugger]
+    module/system/base/lalr*  LALR for Scheme by Dominique Boucher
+                              (part of main Guile, but our upstream
+                              modifications have not been released in Guile)
+                              https://github.com/schemeway/lalr-scm
+    patches/                  not-yet upstreamed patches
+    runtime/                  dzn runtime for code languages
+    ./scm2json                Scheme text to JSON () -> [], #,(hash) -> {}
+    templates/                template files and snippets for output languages
+    test-suite/tests/*.test   module tests
+    test-suite/lib.scm        the Guile test framework, with LINE:COLUMN patch

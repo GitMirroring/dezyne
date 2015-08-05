@@ -1,0 +1,303 @@
+From 322ebdc43806a95270fb98a1505d3fff49a3fce9 Mon Sep 17 00:00:00 2001
+From: Jan Nieuwenhuizen <janneke@gnu.org>
+Date: Tue, 23 Sep 2014 18:37:44 +0200
+Subject: [PATCH] Add GNU-style error location for failing tests in test-suite.
+
+* test-suite/test-suite/lib.scm (run-test): Add location parameter;
+  display GNU style error location for failing test.
+
+* test-suite/test-suite/lib.scm (pass-if, pass-if-equal)
+  (run-test-exception, pass-if-exception, expect-fail-exception): Update
+  callers.
+
+* test-suite/tests/getopt-long.test (pass-if-fatal-exception)
+  test-suite/tests/goops.test (with-test-prefix)
+  test-suite/tests/numbers.test (run-division-tests)
+  test-suite/tests/r5rs_pitfall.test (should-be, should-be-but-isnt)
+  test-suite/tests/srfi-64.test (guile-test-runner): Update callers.
+---
+ test-suite/test-suite/lib.scm      | 65 ++++++++++++++++++++++----------------
+ test-suite/tests/getopt-long.test  |  4 ++-
+ test-suite/tests/goops.test        |  1 +
+ test-suite/tests/numbers.test      |  4 +--
+ test-suite/tests/r5rs_pitfall.test | 14 ++++----
+ test-suite/tests/srfi-64.test      | 14 +++++---
+ 6 files changed, 60 insertions(+), 42 deletions(-)
+
+diff --git a/test-suite/test-suite/lib.scm b/test-suite/test-suite/lib.scm
+index 27620a7..76a5820 100644
+--- a/test-suite/test-suite/lib.scm
++++ b/test-suite/test-suite/lib.scm
+@@ -80,16 +80,17 @@
+ 
+ ;;;; CORE FUNCTIONS
+ ;;;;
+-;;;; The function (run-test name expected-result thunk) is the heart of the
+-;;;; testing environment.  The first parameter NAME is a unique name for the
+-;;;; test to be executed (for an explanation of this parameter see below under
+-;;;; TEST NAMES).  The second parameter EXPECTED-RESULT is a boolean value
+-;;;; that indicates whether the corresponding test is expected to pass.  If
+-;;;; EXPECTED-RESULT is #t the test is expected to pass, if EXPECTED-RESULT is
+-;;;; #f the test is expected to fail.  Finally, THUNK is the function that
+-;;;; actually performs the test.  For example:
+-;;;;
+-;;;;    (run-test "integer addition" #t (lambda () (= 2 (+ 1 1))))
++;;;; The function (run-test name location expected-result thunk) is the heart
++;;;; of the testing environment.  The first parameter NAME is a unique name
++;;;; for the test to be executed (for an explanation of this parameter see
++;;;; below under TEST NAMES).  The third parameter EXPECTED-RESULT is a
++;;;; boolean value that indicates whether the corresponding test is expected
++;;;; to pass.  If EXPECTED-RESULT is #t the test is expected to pass, if
++;;;; EXPECTED-RESULT is #f the test is expected to fail.  Finally, THUNK is
++;;;; the function that actually performs the test.  For example:
++;;;;
++;;;;    (run-test "integer addition" (current-source-location) #t (lambda ()
++;;;;    (= 2 (+ 1 1))))
+ ;;;;
+ ;;;; To report success, THUNK should either return #t or throw 'pass.  To
+ ;;;; report failure, THUNK should either return #f or throw 'fail.  If THUNK
+@@ -107,9 +108,9 @@
+ ;;;; Convenience macros for tests expected to pass or fail
+ ;;;;
+ ;;;; * (pass-if name body) is a short form for
+-;;;;   (run-test name #t (lambda () body))
++;;;;   (run-test name (current-source-location) #t (lambda () body))
+ ;;;; * (expect-fail name body) is a short form for
+-;;;;   (run-test name #f (lambda () body))
++;;;;   (run-test name (current-source-location) #f (lambda () body))
+ ;;;;
+ ;;;; For example:
+ ;;;;
+@@ -162,9 +163,9 @@
+ ;;;; a test name in such cases.
+ ;;;;
+ ;;;; * (pass-if expression) is a short form for
+-;;;;   (run-test 'expression #t (lambda () expression))
++;;;;   (run-test 'expression location #t (lambda () expression))
+ ;;;; * (expect-fail expression) is a short form for
+-;;;;   (run-test 'expression #f (lambda () expression))
++;;;;   (run-test 'expression location #f (lambda () expression))
+ ;;;;
+ ;;;; For example:
+ ;;;;
+@@ -320,7 +321,7 @@
+ ;;; The idea is taken from Greg, the GNUstep regression test environment.
+ (define run-test
+   (let ((test-running #f))
+-    (lambda (name expect-pass thunk)
++    (lambda (name location expect-pass thunk)
+       (if test-running
+           (error "Nested calls to run-test are not permitted."))
+       (let ((test-name (full-name name)))
+@@ -334,20 +335,21 @@
+               (lambda (key . args)
+                 (case key
+                   ((pass)
+-                   (report (if expect-pass 'pass 'upass) test-name))
++                   (report (if expect-pass 'pass 'upass) test-name location))
+                   ((fail)
+                    ;; ARGS may contain extra info about the failure,
+                    ;; such as the expected and actual value.
+                    (apply report (if expect-pass 'fail 'xfail)
+                           test-name
++                          location
+                           args))
+                   ((unresolved untested unsupported)
+-                   (report key test-name))
++                   (report key test-name location))
+                   ((quit)
+-                   (report 'unresolved test-name)
++                   (report 'unresolved test-name location)
+                    (quit))
+                   (else
+-                   (report 'error test-name (cons key args))))))
++                   (report 'error test-name location (cons key args))))))
+             (set! test-running #f)))))
+ 
+ ;;; A short form for tests that are expected to pass, taken from Greg.
+@@ -356,9 +358,9 @@
+     ((_ name)
+      ;; presume this is a simple test, i.e. (pass-if (even? 2))
+      ;; where the body should also be the name.
+-     (run-test 'name #t (lambda () name)))
++     (run-test 'name (current-source-location) #t (lambda () name)))
+     ((_ name rest ...)
+-     (run-test name #t (lambda () rest ...)))))
++     (run-test name (current-source-location) #t (lambda () rest ...)))))
+ 
+ (define-syntax pass-if-equal
+   (syntax-rules ()
+@@ -366,7 +368,7 @@
+     ((_ expected body)
+      (pass-if-equal 'body expected body))
+     ((_ name expected body ...)
+-     (run-test name #t
++     (run-test name (current-source-location) #t
+                (lambda ()
+                  (let ((result (begin body ...)))
+                    (or (equal? expected result)
+@@ -380,16 +382,17 @@
+     ((_ name)
+      ;; presume this is a simple test, i.e. (expect-fail (even? 2))
+      ;; where the body should also be the name.
+-     (run-test 'name #f (lambda () name)))
++     (run-test 'name (current-source-location) #f (lambda () name)))
+     ((_ name rest ...)
+-     (run-test name #f (lambda () rest ...)))))
++     (run-test name (current-source-location) #f (lambda () rest ...)))))
+ 
+ ;;; A helper function to implement the macros that test for exceptions.
+-(define (run-test-exception name exception expect-pass thunk)
++(define (run-test-exception name location exception expect-pass thunk)
+   (match exception
+     ((expected-key . expected-pattern)
+      (run-test
+       name
++      location
+       expect-pass
+       (lambda ()
+         (catch expected-key
+@@ -411,13 +414,15 @@
+ (define-syntax pass-if-exception
+   (syntax-rules ()
+     ((_ name exception body rest ...)
+-     (run-test-exception name exception #t (lambda () body rest ...)))))
++     (run-test-exception name (current-source-location) exception #t
++                         (lambda () body rest ...)))))
+ 
+ ;;; A short form for tests expected to fail to throw a certain exception.
+ (define-syntax expect-fail-exception
+   (syntax-rules ()
+     ((_ name exception body rest ...)
+-     (run-test-exception name exception #f (lambda () body rest ...)))))
++     (run-test-exception name (current-source-location) exception #f
++                         (lambda () body rest ...)))))
+ 
+ 
+ ;;;; TEST NAMES
+@@ -636,11 +641,15 @@
+   '(fail upass unresolved error))
+ 
+ ;;; Display a single test result in formatted form to the given port
+-(define (print-result port result name . args)
++(define (print-result port result name location . args)
+   (let* ((tag (assq result result-tags))
+ 	 (label (if tag (cadr tag) #f)))
+     (if label
+ 	(begin
++          (if (not (eq? result 'pass))
++              (format port "~a:~a:" 
++                      (assoc-ref location 'filename)
++                      (1+ (assoc-ref location 'line))))
+ 	  (display label port)
+ 	  (display ": " port)
+ 	  (display (format-test-name name) port)
+diff --git a/test-suite/tests/getopt-long.test b/test-suite/tests/getopt-long.test
+index 4ae6048..a89d4a4 100644
+--- a/test-suite/tests/getopt-long.test
++++ b/test-suite/tests/getopt-long.test
+@@ -28,7 +28,9 @@
+        (with-error-to-port port
+          (lambda ()
+            (run-test
+-            name #t
++            name
++            (current-source-location)
++            #t
+             (lambda ()
+               (catch (car exn)
+                 (lambda () exp #f)
+diff --git a/test-suite/tests/goops.test b/test-suite/tests/goops.test
+index d8a5ecf..94823b4 100644
+--- a/test-suite/tests/goops.test
++++ b/test-suite/tests/goops.test
+@@ -110,6 +110,7 @@
+ 			      (with-output-to-string
+ 				(lambda ()
+ 				  (display class))))
++                          (current-source-location)
+ 			  #t
+ 			  (lambda ()
+ 			    (catch #t
+diff --git a/test-suite/tests/numbers.test b/test-suite/tests/numbers.test
+index 847f939..adf9fc1 100644
+--- a/test-suite/tests/numbers.test
++++ b/test-suite/tests/numbers.test
+@@ -5221,7 +5221,7 @@
+ 
+   (define (run-division-tests quo+rem quo rem valid-answer?)
+     (define (test n d)
+-      (run-test (list n d) #t
++      (run-test (list n d) (current-source-location) #t
+                 (lambda ()
+                   (let-values (((q r) (quo+rem n d)))
+                     (and (test-eqv? q (quo n d))
+@@ -5240,7 +5240,7 @@
+         (pass-if-exception name exception (quo n d))
+         (pass-if-exception name exception (rem n d))))
+ 
+-    (run-test "documented?" #t
++    (run-test "documented?" (current-source-location) #t
+               (lambda ()
+                 (and (documented? quo+rem)
+                      (documented? quo)
+diff --git a/test-suite/tests/r5rs_pitfall.test b/test-suite/tests/r5rs_pitfall.test
+index 1d9fcf7..e44d1d3 100644
+--- a/test-suite/tests/r5rs_pitfall.test
++++ b/test-suite/tests/r5rs_pitfall.test
+@@ -25,16 +25,18 @@
+ (define-syntax should-be
+   (syntax-rules ()
+     ((_ test-id value expression)
+-     (run-test test-id #t (lambda ()
+-                            (false-if-exception
+-                             (equal? expression value)))))))
++     (run-test test-id (current-source-location) #t
++               (lambda ()
++                 (false-if-exception
++                  (equal? expression value)))))))
+ 
+ (define-syntax should-be-but-isnt
+   (syntax-rules ()
+     ((_ test-id value expression)
+-     (run-test test-id #f (lambda ()
+-                            (false-if-exception
+-                             (equal? expression value)))))))
++     (run-test test-id (current-source-location) #f
++               (lambda ()
++                 (false-if-exception
++                  (equal? expression value)))))))
+ 
+ (define call/cc call-with-current-continuation)
+ 
+diff --git a/test-suite/tests/srfi-64.test b/test-suite/tests/srfi-64.test
+index 190d6b2..a374443 100644
+--- a/test-suite/tests/srfi-64.test
++++ b/test-suite/tests/srfi-64.test
+@@ -26,13 +26,17 @@
+       (lambda (runner)
+         (let* ((result-alist (test-result-alist runner))
+                (result-kind (assq-ref result-alist 'result-kind))
+-               (test-name (list (assq-ref result-alist 'test-name))))
++               (test-name (list (assq-ref result-alist 'test-name)))
++               (file-name (assq-ref result-alist 'source-file))
++               (line (1- (assq-ref result-alist 'source-line)))
++               (location (list (cons 'filename file-name)
++                               (cons 'line line))))
+           (case result-kind
+-            ((pass)  (report 'pass     test-name))
+-            ((xpass) (report 'upass    test-name))
+-            ((skip)  (report 'untested test-name))
++            ((pass)  (report 'pass     test-name location))
++            ((xpass) (report 'upass    test-name location))
++            ((skip)  (report 'untested test-name location))
+             ((fail xfail)
+-             (apply report result-kind test-name result-alist))
++             (apply report result-kind test-name location result-alist))
+             (else #t)))))
+     runner))
+ 
+-- 
+Jan Nieuwenhuizen <janneke@gnu.org> | GNU LilyPond http://lilypond.org
+Freelance IT http://JoyofSource.com | Avatar®  http://AvatarAcademy.nl  
+

@@ -1,0 +1,28 @@
+From 16768de55f4f2c79bf38af93ca907772c71a603a Mon Sep 17 00:00:00 2001
+From: Jan Nieuwenhuizen <janneke@gnu.org>
+Date: Thu, 31 Jul 2014 08:19:17 +0200
+Subject: [PATCH] Have pretty-print write non-opaque srfi-10 #,(hash hash
+ tables.
+
+	* module/ice-9/pretty-print.scm (generic-write): write hash tables
+        in srfi-10 hash-comma read syntax.
+---
+ module/ice-9/pretty-print.scm | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/module/ice-9/pretty-print.scm b/module/ice-9/pretty-print.scm
+index 007061f..a5a590d 100644
+--- a/module/ice-9/pretty-print.scm
++++ b/module/ice-9/pretty-print.scm
+@@ -64,6 +64,8 @@
+       (match obj
+         (((or 'quote 'quasiquote 'unquote 'unquote-splicing) body)
+          (wr body (out (read-macro-prefix obj) col)))
++        ((? hash-table?) (wr (cons 'hash (hash-map->list list obj)) 
++                             (out "#," col)))
+         ((head . (rest ...))
+          ;; A proper list: do our own list printing so as to catch read
+          ;; macros that appear in the middle of the list.
+-- 
+1.9.1
+

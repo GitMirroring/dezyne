@@ -102,9 +102,9 @@
 ;;;; CORE FUNCTIONS
 ;;;;
 ;;;; The function (run-test name location expected-result thunk) is the heart of the
-;;;; testing environment.  The first formal NAME is a unique name for the
-;;;; test to be executed (for an explanation of this formal see below under
-;;;; TEST NAMES).  The third formal EXPECTED-RESULT is a boolean value
+;;;; testing environment.  The first parameter NAME is a unique name for the
+;;;; test to be executed (for an explanation of this parameter see below under
+;;;; TEST NAMES).  The third parameter EXPECTED-RESULT is a boolean value
 ;;;; that indicates whether the corresponding test is expected to pass.  If
 ;;;; EXPECTED-RESULT is #t the test is expected to pass, if EXPECTED-RESULT is
 ;;;; #f the test is expected to fail.  Finally, THUNK is the function that
@@ -139,7 +139,7 @@
 ;;;;
 ;;;; Convenience macros to test for exceptions
 ;;;;
-;;;; The following macros take exception formals which are pairs
+;;;; The following macros take exception parameters which are pairs
 ;;;; (type . message), where type is a symbol that denotes an exception type
 ;;;; like 'wrong-type-arg or 'out-of-range, and message is a string holding a
 ;;;; regular expression that describes the error message for the exception
@@ -323,12 +323,12 @@
   (cons 'misc-error "^string contains #\\\\nul character"))
 
 
-;;; Display all formals to the default output port, followed by a newline.
+;;; Display all parameters to the default output port, followed by a newline.
 (define (display-line . objs)
   (for-each display objs)
   (newline))
 
-;;; Display all formals to the given output port, followed by a newline.
+;;; Display all parameters to the given output port, followed by a newline.
 (define (display-line-port port . objs)
   (for-each (lambda (obj) (display obj port)) objs)
   (newline port))
@@ -346,7 +346,7 @@
           (error "Nested calls to run-test are not permitted."))
       (let ((test-name (full-name name)))
             (set! test-running #t)
-            (catch #t ;'pass
+            (catch #t ;; 'pass
               (lambda ()
                 (let ((result (thunk)))
                   (if (eq? result #t) (throw 'pass))
@@ -413,6 +413,7 @@
     ((expected-key . expected-pattern)
      (run-test
       name
+      location
       expect-pass
       (lambda ()
         (catch expected-key
