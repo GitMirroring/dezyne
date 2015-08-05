@@ -1,3 +1,9 @@
+verify: IControl: check: completeness: ok
+
+verify: IControl: check: deadlock: ok
+
+verify: IControl: check: livelock: ok
+
 verify: IAcquisition: check: completeness: ok
 
 verify: IAcquisition: check: deadlock: ok
@@ -9,12 +15,6 @@ verify: IOptics: check: completeness: ok
 verify: IOptics: check: deadlock: ok
 
 verify: IOptics: check: livelock: ok
-
-verify: IControl: check: completeness: ok
-
-verify: IControl: check: deadlock: ok
-
-verify: IControl: check: livelock: ok
 
 verify: Driver: check: deterministic: ok
 

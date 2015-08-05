@@ -4,12 +4,6 @@ verify: IOptics: check: deadlock: ok
 
 verify: IOptics: check: livelock: ok
 
-verify: IFlash: check: completeness: ok
-
-verify: IFlash: check: deadlock: ok
-
-verify: IFlash: check: livelock: ok
-
 verify: ILens: check: completeness: ok
 
 verify: ILens: check: deadlock: ok
@@ -21,6 +15,12 @@ verify: IShutter: check: completeness: ok
 verify: IShutter: check: deadlock: ok
 
 verify: IShutter: check: livelock: ok
+
+verify: IFlash: check: completeness: ok
+
+verify: IFlash: check: deadlock: ok
+
+verify: IFlash: check: livelock: ok
 
 verify: OpticsControl: check: deterministic: ok
 

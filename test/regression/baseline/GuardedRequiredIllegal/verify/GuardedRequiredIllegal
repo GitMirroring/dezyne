@@ -1,14 +1,14 @@
-verify: Bottom: check: completeness: ok
-
-verify: Bottom: check: deadlock: ok
-
-verify: Bottom: check: livelock: ok
-
 verify: Top: check: completeness: ok
 
 verify: Top: check: deadlock: ok
 
 verify: Top: check: livelock: ok
+
+verify: Bottom: check: completeness: ok
+
+verify: Bottom: check: deadlock: ok
+
+verify: Bottom: check: livelock: ok
 
 verify: GuardedRequiredIllegal: check: deterministic: ok
 

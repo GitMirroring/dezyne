@@ -1,9 +1,3 @@
-verify: ICallEmitMulti: check: completeness: ok
-
-verify: ICallEmitMulti: check: deadlock: ok
-
-verify: ICallEmitMulti: check: livelock: ok
-
 verify: ICallTrigger: check: completeness: ok
 
 verify: ICallTrigger: check: deadlock: ok
@@ -15,6 +9,12 @@ verify: ITauTrigger: check: completeness: ok
 verify: ITauTrigger: check: deadlock: ok
 
 verify: ITauTrigger: check: livelock: ok
+
+verify: ICallEmitMulti: check: completeness: ok
+
+verify: ICallEmitMulti: check: deadlock: ok
+
+verify: ICallEmitMulti: check: livelock: ok
 
 verify: QTriggerModeling: check: deterministic: ok
 

@@ -1,15 +1,15 @@
+verify: IDummy: check: completeness: ok
+
+verify: IDummy: check: deadlock: ok
+
+verify: IDummy: check: livelock: ok
+
 verify: INotifier: check: completeness: ok
 
 verify: INotifier: check: deadlock: fail
 deadlock in model INotifier
 
 verify: INotifier: check: livelock: ok
-
-verify: IDummy: check: completeness: ok
-
-verify: IDummy: check: deadlock: ok
-
-verify: IDummy: check: livelock: ok
 
 verify: IgnoreNotification: check: deterministic: ok
 

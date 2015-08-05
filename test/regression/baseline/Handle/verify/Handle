@@ -1,3 +1,15 @@
+verify: IHandle: check: completeness: ok
+
+verify: IHandle: check: deadlock: ok
+
+verify: IHandle: check: livelock: ok
+
+verify: ITransfer: check: completeness: ok
+
+verify: ITransfer: check: deadlock: ok
+
+verify: ITransfer: check: livelock: ok
+
 verify: IInspect: check: completeness: ok
 
 verify: IInspect: check: deadlock: ok
@@ -15,18 +27,6 @@ verify: IConvey: check: completeness: ok
 verify: IConvey: check: deadlock: ok
 
 verify: IConvey: check: livelock: ok
-
-verify: IHandle: check: completeness: ok
-
-verify: IHandle: check: deadlock: ok
-
-verify: IHandle: check: livelock: ok
-
-verify: ITransfer: check: completeness: ok
-
-verify: ITransfer: check: deadlock: ok
-
-verify: ITransfer: check: livelock: ok
 
 verify: Handle: check: deterministic: ok
 

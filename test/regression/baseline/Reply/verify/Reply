@@ -1,14 +1,14 @@
-verify: U: check: completeness: ok
-
-verify: U: check: deadlock: ok
-
-verify: U: check: livelock: ok
-
 verify: I: check: completeness: ok
 
 verify: I: check: deadlock: ok
 
 verify: I: check: livelock: ok
+
+verify: U: check: completeness: ok
+
+verify: U: check: deadlock: ok
+
+verify: U: check: livelock: ok
 
 verify: Reply: check: deterministic: ok
 

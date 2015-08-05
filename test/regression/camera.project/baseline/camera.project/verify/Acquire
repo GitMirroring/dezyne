@@ -1,14 +1,14 @@
-verify: IMemory: check: completeness: ok
-
-verify: IMemory: check: deadlock: ok
-
-verify: IMemory: check: livelock: ok
-
 verify: IAcquisition: check: completeness: ok
 
 verify: IAcquisition: check: deadlock: ok
 
 verify: IAcquisition: check: livelock: ok
+
+verify: IMemory: check: completeness: ok
+
+verify: IMemory: check: deadlock: ok
+
+verify: IMemory: check: livelock: ok
 
 verify: ISensor: check: completeness: ok
 
