@@ -20,9 +20,10 @@
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 optargs)
   #:use-module (ice-9 receive)
-  #:use-module (srfi srfi-1)
 
+  #:use-module (srfi srfi-1)
 
   #:use-module (system base lalr)
   #:use-module (language tree-il)
@@ -235,8 +236,8 @@
 
 
    (function-call
-    (Identifier #{(}# #{)}#) : (note-location `(call ,$1) @1)
-    (Identifier #{(}# arguments #{)}#) : (note-location `(call ,$1 ,$3) @1))
+    (Identifier #{(}# #{)}#) : (note-location `(call ,$1 (arguments) #f) @1)
+    (Identifier #{(}# arguments #{)}#) : (note-location `(call ,$1 ,$3 #f) @1))
 
    (arguments
     (expression) : `(arguments ,$1)
@@ -338,7 +339,7 @@
 
    (action
     (name-pair #{(}# #{)}#) : (rsp $1 `(action ,(make-trigger $1)))
-    (name-pair #{(}# arguments #{)}#) : (rsp $1 `(action ,(append (make-trigger $1) (list $3)))))
+    (name-pair #{(}# arguments #{)}#) : (rsp $1 `(action ,(make-trigger $1 $3))))
 
    (action-statement
     (name-pair #{;}#) : (rsp $1 `(action ,(make-trigger $1)))
@@ -356,7 +357,7 @@
     (return expression #{;}#) : (note-location `(return ,$2) @1))
 
    (variable
-    (variable-type Identifier #{;}#) : `(variable ,$2 ,$1)
+    (variable-type Identifier #{;}#) : `(variable ,$2 ,$1 (expression))
     (variable-type Identifier = expression #{;}#) : `(variable ,$2 ,$1 ,(note-location $4 @2)))
 
    (variables
@@ -368,11 +369,11 @@
 (define (stderr string . rest)
   (apply format (cons* (current-error-port) string rest)))
 
-(define (make-trigger o)
+(define* (make-trigger o #:optional (arguments '(arguments)))
   (match o
-    ((? symbol?) `(trigger #f o (arguments)))
-    (('name event) `(trigger #f ,event (arguments)))
-    (('name port event) `(trigger ,port ,event (arguments)))))
+    ((? symbol?) `(trigger #f o ,arguments))
+    (('name event) `(trigger #f ,event ,arguments))
+    (('name port event) `(trigger ,port ,event ,arguments))))
 
 (define ((add-scope scope) o)
   (rsp o ((add-scope- scope) o)))

@@ -42,7 +42,7 @@
           '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
-                                  (guard (expression true) (on (triggers (trigger #f a)) (compound))))))))
+                                  (guard (expression true) (on (triggers (trigger #f a (arguments))) (compound))))))))
 
 (pass-if "csp-norm-state-102"
          (om-pretty-noisy-equal?
@@ -56,8 +56,8 @@
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
-                                         (on (triggers (trigger #f a))
-                                             (action (trigger #f b)))))))))
+                                         (on (triggers (trigger #f a (arguments)))
+                                             (action (trigger #f b (arguments))))))))))
 
 (pass-if "csp-norm-state-aggregate-guard-passive"
          (om-pretty-noisy-equal?
@@ -73,8 +73,8 @@
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
-                                         (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
-                                             (action (trigger #f d)))))))))
+                                         (on (triggers (trigger #f a (arguments)) (trigger #f b (arguments)) (trigger #f c (arguments)))
+                                             (action (trigger #f d (arguments))))))))))
 
 (pass-if "csp-norm-state-aggregate-guard-active"
          (om-pretty-noisy-equal?
@@ -93,9 +93,9 @@
                                  (compound
                                   (guard (expression true)
                                          (compound
-                                          (on (triggers (trigger #f a)) (action (trigger #f d)))
-                                          (on (triggers (trigger #f b)) (action (trigger #f e)))
-                                          (on (triggers (trigger #f c)) (action (trigger #f f))))))))))
+                                          (on (triggers (trigger #f a (arguments))) (action (trigger #f d (arguments))))
+                                          (on (triggers (trigger #f b (arguments))) (action (trigger #f e (arguments))))
+                                          (on (triggers (trigger #f c (arguments))) (action (trigger #f f (arguments)))))))))))
 
 (pass-if "csp-norm-state-aggregate-guard-recurse"
          (om-pretty-noisy-equal?
@@ -105,18 +105,18 @@
               (expression (field state Disarming))
               (compound
                (on (triggers
-                    (trigger console arm)
-                    (trigger console disarm))
+                    (trigger console arm (arguments))
+                    (trigger console disarm (arguments)))
                    (illegal))
-               (on (triggers (trigger sensor triggered))
+               (on (triggers (trigger sensor triggered (arguments)))
                    (compound))
-               (on (triggers (trigger sensor disabled))
+               (on (triggers (trigger sensor disabled (arguments)))
                    (compound
                     (guard
                      (expression (var sounding))
                      (compound
-                      (action (trigger console deactivated))
-                      (action (trigger siren turnoff))
+                      (action (trigger console deactivated (arguments)))
+                      (action (trigger siren turnoff (arguments)))
                       (assign
                        state
                        (expression (literal (name States) Disarmed)))
@@ -124,7 +124,7 @@
                     (guard
                      (otherwise)
                      (compound
-                      (action (trigger console deactivated))
+                      (action (trigger console deactivated (arguments)))
                       (assign
                        state
                        (expression
@@ -134,18 +134,18 @@
              (expression (field state Disarming))
              (compound
               (on (triggers
-                   (trigger console arm)
-                   (trigger console disarm))
+                   (trigger console arm (arguments))
+                   (trigger console disarm (arguments)))
                   (illegal))
-              (on (triggers (trigger sensor triggered))
+              (on (triggers (trigger sensor triggered (arguments)))
                   (compound))))
             (guard
              (expression
               (and (field state Disarming) (var sounding)))
-             (on (triggers (trigger sensor disabled))
+             (on (triggers (trigger sensor disabled (arguments)))
                  (compound
-                  (action (trigger console deactivated))
-                  (action (trigger siren turnoff))
+                  (action (trigger console deactivated (arguments)))
+                  (action (trigger siren turnoff (arguments)))
                   (assign
                    state
                    (expression (literal (name States) Disarmed)))
@@ -154,9 +154,9 @@
              (expression
               (and (field state Disarming)
                    (! (var sounding))))
-             (on (triggers (trigger sensor disabled))
+             (on (triggers (trigger sensor disabled (arguments)))
                  (compound
-                  (action (trigger console deactivated))
+                  (action (trigger console deactivated (arguments)))
                   (assign
                    state
                    (expression (literal (name States) Disarmed)))))))))
@@ -179,8 +179,8 @@
                                             (compound (if (expression true) (compound)))))
                                  (compound
                                   (guard (expression true)
-                                         (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
-                                             (action (trigger #f d)))))))))
+                                         (on (triggers (trigger #f a (arguments)) (trigger #f b (arguments)) (trigger #f c (arguments)))
+                                             (action (trigger #f d (arguments))))))))))
 
 (pass-if "csp-norm-state-split-on-passive"
          (om-pretty-noisy-equal?
@@ -197,8 +197,8 @@
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
-                                         (on (triggers (trigger #f a) (trigger #f b) (trigger #f c))
-                                             (action (trigger #f d)))))))))
+                                         (on (triggers (trigger #f a (arguments)) (trigger #f b (arguments)) (trigger #f c (arguments)))
+                                             (action (trigger #f d (arguments))))))))))
 
 (pass-if "csp-norm-state-split-on-active-single-on"
          (om-pretty-noisy-equal?
@@ -218,13 +218,13 @@
              (compound
               (guard
                (expression true)
-               (on (triggers (trigger i a)) (illegal)))
+               (on (triggers (trigger i a (arguments))) (illegal)))
               (guard
                (expression false)
                (compound
-                (on (triggers (trigger i b) (trigger i c))
+                (on (triggers (trigger i b (arguments)) (trigger i c (arguments)))
                      (illegal))
-                (on (triggers (trigger j a)) (illegal)))))))))
+                (on (triggers (trigger j a (arguments))) (illegal)))))))))
 
 (pass-if "csp-norm-state-aggregate-on-interface-passive"
          (om-pretty-noisy-equal?
@@ -240,7 +240,7 @@
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
-                                         (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d)))))))))
+                                         (on (triggers (trigger #f a (arguments)) (trigger #f b (arguments)) (trigger #f c (arguments))) (action (trigger #f d (arguments))))))))))
 
 (pass-if "csp-norm-state-aggregate-on-interface-active"
          (om-pretty-noisy-equal?
@@ -259,7 +259,7 @@
                                  (compound
                                   (guard (expression true)
                                          (compound
-                                          (on (triggers (trigger #f a) (trigger #f b) (trigger #f c)) (action (trigger #f d))))))))))
+                                          (on (triggers (trigger #f a (arguments)) (trigger #f b (arguments)) (trigger #f c (arguments))) (action (trigger #f d (arguments)))))))))))
 
 ;; not modifying the input where it is already fine,
 ;; helps retaining more location information in AST.
@@ -277,12 +277,12 @@
                                  (compound
                                   (guard (expression true)
                                          (compound
-                                          (on (triggers (trigger i a) (trigger i b))
-                                              (action (trigger j d)))
-                                          (on (triggers (trigger j a))
-                                              (action (trigger j d)))
-                                          (on (triggers (trigger j b))
-                                              (action (trigger j e))))))))))
+                                          (on (triggers (trigger i a (arguments)) (trigger i b (arguments)))
+                                              (action (trigger j d (arguments))))
+                                          (on (triggers (trigger j a (arguments)))
+                                              (action (trigger j d (arguments))))
+                                          (on (triggers (trigger j b (arguments)))
+                                              (action (trigger j e (arguments)))))))))))
 
 (pass-if "csp-norm-state-aggregate-on-component-active"
          (om-pretty-noisy-equal?
@@ -299,12 +299,12 @@
                                  (compound
                                   (guard (expression true)
                                          (compound
-                                          (on (triggers (trigger i a) (trigger i b))
-                                              (action (trigger j d)))
-                                          (on (triggers (trigger j a))
-                                              (action (trigger j d)))
-                                          (on (triggers (trigger j b))
-                                              (action (trigger j e))))))))))
+                                          (on (triggers (trigger i a (arguments)) (trigger i b (arguments)))
+                                              (action (trigger j d (arguments))))
+                                          (on (triggers (trigger j a (arguments)))
+                                              (action (trigger j d (arguments))))
+                                          (on (triggers (trigger j b (arguments)))
+                                              (action (trigger j e (arguments)))))))))))
 
 (pass-if "csp-norm-state-aggregate-on-component-active"
          (om-pretty-noisy-equal?
@@ -312,38 +312,38 @@
            '(compound
              (compound
               (guard (expression (value state Disarmed))
-                     (on (triggers (trigger console arm))
+                     (on (triggers (trigger console arm (arguments)))
                          (compound
-                          (action (trigger sensor enable))
+                          (action (trigger sensor enable (arguments)))
                           (assign state (expression (value States Armed))))))
               (guard (expression (value state Disarmed))
                      (on (triggers
-                          (trigger console disarm)
-                          (trigger sensor triggered)
-                          (trigger sensor disabled))
+                          (trigger console disarm (arguments))
+                          (trigger sensor triggered (arguments))
+                          (trigger sensor disabled (arguments)))
                          (illegal))))
              (compound
               (guard (expression (value state Armed))
-                     (on (triggers (trigger console arm)) (illegal))))))
+                     (on (triggers (trigger console arm (arguments))) (illegal))))))
           '(compound
             (guard
              (expression (value state Disarmed))
              (compound
-              (on (triggers (trigger console arm))
+              (on (triggers (trigger console arm (arguments)))
                   (compound
-                   (action (trigger sensor enable))
+                   (action (trigger sensor enable (arguments)))
                    (assign
                     state
                     (expression (value States Armed)))))
-              (on (triggers (trigger console disarm))
+              (on (triggers (trigger console disarm (arguments)))
                   (illegal))
               (on (triggers
-                   (trigger sensor triggered)
-                   (trigger sensor disabled))
+                   (trigger sensor triggered (arguments))
+                   (trigger sensor disabled (arguments)))
                   (illegal))))
             (guard
              (expression (value state Armed))
-             (on (triggers (trigger console arm))
+             (on (triggers (trigger console arm (arguments)))
                  (illegal))))))
 
 (pass-if "csp-norm-state-nested-guards"

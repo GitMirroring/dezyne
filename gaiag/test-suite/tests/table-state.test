@@ -869,7 +869,8 @@ interface I {
 ")))
 
 (pass-if "table-state-locations"
-  (or ;;(stderr "disabled: ~a\n" "table-state-locations")
+         (or (and (not (pair? idle-init-busy-ast))
+                  (stderr "GOOPS: disabled: ~a\n" "table-state-locations"))
    (pretty-noisy-equal?
    (extract-locations
     (test-table-state

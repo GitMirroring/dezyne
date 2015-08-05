@@ -72,4 +72,8 @@
       (assert-list o)))
     (($ <interface>) (assert-list o))))
 
-(define ast-> assert-list)
+(define (ast-> o)
+  ((compose
+    assert-list
+    ast->om
+    ) o))

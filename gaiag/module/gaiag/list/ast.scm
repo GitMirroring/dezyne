@@ -71,9 +71,7 @@
                   ast))
          (ast (if (and (pair? ast) (assoc-ref ast 'locations))
                   (ast->annotate ast) ast)))
-    ;;ast
-    (ast->om- ast)
-    ))
+    (ast->om- ast)))
 
 (define (ast->om- ast)
   (retain-source-properties ast ((compose ast->om-- ast->sugar) ast)))
@@ -244,9 +242,6 @@
 
     (('signature type) (make <signature> :type (ast->om- type)))
 
-    (('signature type formals)
-     (make <signature> :type (ast->om- type) :formals (ast->om- formals)))
-
     (('system name ports instances bindings)
      (and=> (assoc 'imported (cddr ast)) (mark-imported ast))
      (make <system>
@@ -271,6 +266,9 @@
     (('types types ...) (make <types> :elements (map ast->om- types)))
 
     (('var name) (make <var> :name name))
+
+    (('variable name type)
+     (make <variable> :name name :type (ast->om- type) :expression (make <expression>)))
 
     (('variable name type expression)
      (make <variable> :name name :type (ast->om- type) :expression (ast->om- expression)))

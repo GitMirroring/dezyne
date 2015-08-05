@@ -226,7 +226,7 @@
         (if (null? statements)
             next
             (loop (cdr statements) (json-next- model var next (car statements) functions)))))
-     (($ <assign> (? var?) ($ <expression> ($ <literal> scope type field)))
+     (($ <assign> (? var?) ($ <expression> ($ <literal> name field)))
       (list (make <field> :identifier var :field field)))
      (($ <assign> (? var?) ($ <expression> ('! ($ <var> (? var?)))))
       (match next
@@ -322,8 +322,9 @@
     (($ <field> type field) (->symbol (list (->symbol type) "." field)))
     (('! ($ <expression> value)) (symbol-append '! (->symbol value)))
     ((identifier ($ <field> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." field)))
-    ((identifier ($ <literal> scope type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." (->symbol field))))
-    (($ <literal> scope type field) (->symbol (list (->symbol type) "." (->symbol field))))
+    ((identifier ($ <literal> name field)) (->symbol (list (->symbol identifier) " = " (->symbol name) "." (->symbol field))))
+    (($ <literal> name field) (->symbol (list (->symbol name) "." (->symbol field))))
+    (('name scope ...) ((->symbol-join '.) scope))
     (('triggers triggers ...) (->symbol ((->join ",") (map ->symbol triggers))))
     (($ <trigger> #f event) (->symbol event))
     (($ <trigger> port event) (->symbol (list port "." event)))

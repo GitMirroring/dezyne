@@ -307,7 +307,6 @@
      (make <signature>
        :type ((resolve model locals) type)
        :formals ((resolve model locals) formals)))
-    (($ <trigger> #f) o)
     (($ <trigger> port event arguments)
      (make <trigger> :port port :event event :arguments ((resolve model locals) arguments)))
     (($ <var>) o)
@@ -463,12 +462,19 @@
                        (resolve-error o field "undefined enum field: ~a")))
          (failure)))
 
-    (('name t ...)
-     ;;(stderr "RESOLVE TODO: ~a\n" o)
-     o)
-
     (($ <expression> value)
      (make <expression> :value ((resolve model locals) value)))
+
+    (('name t ...)
+     o)
+
+    ;; (($ <function> name ($ <signature> type) recursive? statement)
+    ;;  (stderr "WIERD\n")
+    ;;  (make <function>
+    ;;    :name name
+    ;;    :signature ((resolve model locals) (.signature o))
+    ;;    :recursive (and ((recurses? model) name) 'recursive)
+    ;;    :statement ((resolve model locals) statement)))
 
     (($ <function> name ($ <signature> type ('formals)) recursive? statement)
      (make <function>
@@ -488,13 +494,6 @@
          :signature ((resolve model locals) (.signature o))
          :recursive (and ((recurses? model) name) 'recursive)
          :statement ((resolve model locals) statement))))
-
-    (($ <function> name ($ <signature> type) recursive? statement)
-     (make <function>
-       :name name
-       :signature ((resolve model locals) (.signature o))
-       :recursive (and ((recurses? model) name) 'recursive)
-       :statement ((resolve model locals) statement)))
 
     (('compound statements ...)
      (make <compound>
@@ -516,15 +515,18 @@
          :statement ((resolve model locals) statement)))
 
     (($ <on> triggers statement)
-     (let* ((formals (apply append (map (compose .elements .arguments)
-                                           (.elements triggers))))
-            (locals (let loop ((formals formals) (locals locals))
-                      (if (null? formals)
+     (let* ((triggers (resolve-on-triggers triggers))
+            (arguments (append-map (compose .elements .arguments) (.elements triggers)))
+            (locals (let loop ((arguments arguments) (locals locals))
+                      (if (null? arguments)
                           locals
-                          (loop (cdr formals)
-                                (acons ((compose .name .value car) formals) (car formals) locals))))))
+                          (loop (cdr arguments)
+                                (let* ((argument (car arguments))
+                                       (name ((compose .name .value) argument))
+                                       (name (if (pair? name) (car name) name)))
+                                 (acons name argument locals)))))))
        (make <on>
-         :triggers ((resolve model locals) triggers)
+         :triggers triggers
          :statement ((resolve model locals) statement))))
 
     (($ <interface> name types events behaviour)
@@ -573,14 +575,24 @@
     (('variables variables ...)
      (let ((variables (map (range-check model) variables)))
        (make <variables> :elements (map (resolve model '()) variables))))
-    ;; (($ <reply> expression)
-    ;;  (make <reply> :expression ((resolve model locals) expression)))
-    ;; (($ <return> expression)
-    ;;  (make <return> :expression ((resolve model locals) expression)))
-
+    (($ <reply> expression)
+     (make <reply> :expression ((resolve model locals) expression)))
+    (($ <return> expression)
+     (make <return> :expression ((resolve model locals) expression)))
     ((? (is? <ast>)) (om:map (lambda (o) ((resolve model locals) o)) o))
     ((h t ...) (map (lambda (o) ((resolve model locals) o)) o))
     (_ o)))
+
+(define (resolve-on-triggers o)
+  (match o
+    (('triggers triggers ...) (om:map resolve-on-triggers o))
+    (($ <trigger> p e ('arguments)) o)
+    (($ <trigger> p e arguments)
+     (rsp o (make <trigger> :port p :event e :arguments (resolve-on-triggers arguments))))
+    (('arguments arguments ...) (om:map resolve-on-triggers o))
+    (($ <expression> (and ('name name) (get! value)))
+     (rsp o (make <expression> :value (rsp (value) (make <var> :name name)))))
+    (($ <expression> ($ <var> name)) o)))
 
 (define ((range-check model) variable)
   (define (int-type? type) (om:integer model type))

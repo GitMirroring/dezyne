@@ -70,9 +70,8 @@
 
 (define (om:map f o)
   (match o
-    ((? (is? <ast-list>))
-     (retain-source-properties o (cons (car o) (map f (.elements o)))))
-    ((h t ...) (retain-source-properties o (cons (car o) (map f (cdr o)))))
+    ((? (is? <ast-list>)) (rsp o (cons (car o) (map f (.elements o)))))
+    ((h t ...) (map f o))
     ((? (is? <ast>)) (goops:clone o (om:map-initializer f)))
     (_ o)))
 

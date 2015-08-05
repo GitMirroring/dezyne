@@ -120,7 +120,7 @@ interface I {
            (ast->om
             '(if (expression (var b))
                  (compound)
-                 (assign s (expression (literal #f S three))))))
+                 (assign s (expression (literal (name S) three))))))
           '(s.one s.three)))
 
 (pass-if "json-table-if-two"
@@ -131,8 +131,8 @@ interface I {
            (make <field> :identifier 's :field 'one)
            (ast->om
             '(if (expression (var b))
-                 (assign s (expression (literal #f S two)))
-                 (assign s (expression (literal #f S three))))))
+                 (assign s (expression (literal (name S) two)))
+                 (assign s (expression (literal (name S) three))))))
           '(s.two s.three)))
 
 (pass-if "json-table-if-recursive"
@@ -142,5 +142,5 @@ interface I {
            's
            (make <field> :identifier 's :field 'one)
            (ast->om
-            '(if (expression (var b)) (call fun (arguments) #f) (assign s (expression (literal #f S three))))))
+            '(if (expression (var b)) (call fun (arguments) #f) (assign s (expression (literal (name S) three))))))
           '(s.one s.three)))

@@ -26,8 +26,8 @@
 
 interface IDataparam
 {
-  
-  
+
+
   extern xint $int$;
   enum Status {Yes, No};
 
@@ -110,9 +110,9 @@ component Dataparam
     //   return $(xi + xj) / 2$;
     // }
 
-    on port.e0: { port.a6($0$,$1$,$2$,$3$,$4$,$5$); }
+    on port.e0(): { port.a6($0$,$1$,$2$,$3$,$4$,$5$); }
 
-    on port.e0r(): {port.a0;reply(IDataparam.Status.Yes);}
+    on port.e0r(): {port.a0();reply(IDataparam.Status.Yes);}
 
     on port.e (pi):
     {

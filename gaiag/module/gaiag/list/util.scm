@@ -65,9 +65,8 @@
 
 (define (om:map f o)
   (match o
-    ((? (is? <ast-list>))
-     (retain-source-properties o (cons (car o) (map f (.elements o)))))
-    ((h t ...) (retain-source-properties o (cons (car o) (map f (cdr o)))))
+    ((? (is? <ast-list>)) (rsp o (cons (car o) (map f (.elements o)))))
+    ((h t ...) (rsp o (map f o)))
     (_ o)))
 
 (define (om:guard-equal? lhs rhs)

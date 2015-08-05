@@ -110,7 +110,7 @@ component bar.c {
                   (function efun
                             (signature (type (name state))) #f (compound (return (var m)))))
        (compound
-        (on (triggers (trigger #f foo))
+        (on (triggers (trigger #f foo (arguments)))
             (reply (expression (name e v)))))))
     (component
      (name var)
@@ -130,31 +130,31 @@ component bar.c {
         (function fun (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (assign a (expression true))))
         (function rfun (signature (type void) (formals)) #f
-                  (compound (call rgun (arguments (expression #t)))))
+                  (compound (call rgun (arguments (expression #t)) #f)))
         (function rgun (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call rgun (arguments (expression #t)))))
+                  (compound (call rgun (arguments (expression #t)) #f)))
         (function fa (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call fb (arguments (expression #t)))))
+                  (compound (call fb (arguments (expression #t)) #f)))
         (function fb (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call fc (arguments (expression #t)))))
+                  (compound (call fc (arguments (expression #t)) #f)))
         (function fc (signature (type void) (formals (formal a (type bool)))) #f
                   (compound (assign b (expression true))))
         (function rfa (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call rfb (arguments (expression #t)))))
+                  (compound (call rfb (arguments (expression #t)) #f)))
         (function rfb (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call rfc (arguments (expression #t)))))
+                  (compound (call rfc (arguments (expression #t)) #f)))
         (function rfc (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call rfa (arguments (expression #t)))))
+                  (compound (call rfa (arguments (expression #t)) #f)))
         (function rbfa (signature (type void) (formals (formal a (type bool)))) #f
-                  (assign b (call rbfb (arguments (expression #t)))))
+                  (assign b (call rbfb (arguments (expression #t)) #f)))
         (function rbfb (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (assign b (call rbfc (arguments (expression #t))))))
+                  (compound (assign b (call rbfc (arguments (expression #t)) #f))))
         (function rbfc (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call fa (arguments (expression #t))) (call fb (arguments (expression #t))) (compound (call fc (arguments (expression #t))) (assign b (call rbfa (arguments (expression #t)))))))
+                  (compound (call fa (arguments (expression #t))) (call fb (arguments (expression #t))) (compound (call fc (arguments (expression #t)) #f) (assign b (call rbfa (arguments (expression #t)) #f)))))
         (function efun
                   (signature (type (name state))) #f (compound (return (var m)))))
        (compound
-       (on (triggers (trigger i foo))
+       (on (triggers (trigger i foo (arguments)))
            (compound
             (variable e (type (name ivar e)) (expression (name o foo)))
             (assign e (expression (name o foo)))
@@ -177,38 +177,38 @@ component bar.c {
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-interface)
-           '(on (triggers (trigger #f e))
+           '(on (triggers (trigger #f e (arguments)))
                 (compound
-                 (action (trigger #f toggle)))))
-          '(on (triggers (trigger #f e))
+                 (action (trigger #f toggle (arguments))))))
+          '(on (triggers (trigger #f e (arguments)))
                (compound
-                (call toggle)))))
+                (call toggle (arguments) #f)))))
 
 (pass-if "ast:resolve-variable-valued-function-call"
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-interface)
           '(root (variable e (type (name e)) (expression (var efun)))))
-          '(root (variable e (type (name ivar e)) (call efun)))))
+          '(root (variable e (type (name ivar e)) (call efun (arguments) #f)))))
 
 (pass-if "ast:resolve-assign-valued-function-call"
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-interface)
            '(assign m (expression (var efun))))
-          '(assign m (call efun))))
+          '(assign m (call efun (arguments) #f))))
 
 (pass-if "ast:resolve-variable-valued-action"
          (om-pretty-noisy-equal?
           (ast:resolve-root-model
            resolve-ast
            (resolve-component)
-           '(on (triggers (trigger o foo))
+           '(on (triggers (trigger o foo (arguments)))
                 (compound
                  (variable e (type (name ivar e)) (expression (name o foo))))))
-          '(on (triggers (trigger o foo))
+          '(on (triggers (trigger o foo (arguments)))
                (compound
-                (variable e (type (name ivar e)) (action (trigger o foo)))))))
+                (variable e (type (name ivar e)) (action (trigger o foo (arguments))))))))
 
 (pass-if "ast:resolve-variable-valued-action-arguments"
          (om-pretty-noisy-equal?
@@ -222,12 +222,12 @@ component bar.c {
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-component)
-           '(on (triggers (trigger o foo))
+           '(on (triggers (trigger o foo (arguments)))
                 (compound
                  (assign m (expression (name o foo))))))
-          '(on (triggers (trigger o foo))
+          '(on (triggers (trigger o foo (arguments)))
                (compound
-                (assign m (action (trigger o foo)))))))
+                (assign m (action (trigger o foo (arguments))))))))
 
 (pass-if "ast:resolve-assign-valued-action-arguments"
          (om-pretty-noisy-equal?
@@ -241,54 +241,54 @@ component bar.c {
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-interface)
-           '(on (triggers (trigger #f foo))
+           '(on (triggers (trigger #f foo (arguments)))
                 (compound
                  (variable e (type (name e)) (expression (var bar))))))
-          '(on (triggers (trigger #f foo))
+          '(on (triggers (trigger #f foo (arguments)))
                 (compound
-                 (variable e (type (name ivar e)) (action (trigger #f bar)))))))
+                 (variable e (type (name ivar e)) (action (trigger #f bar (arguments))))))))
 
 (pass-if "ast:resolve-assign-valued-action-interface"
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-interface)
-           '(on (triggers (trigger #f foo))
+           '(on (triggers (trigger #f foo (arguments)))
                 (compound
                  (assign x (expression (var bar))))))
-          '(on (triggers (trigger #f foo))
+          '(on (triggers (trigger #f foo (arguments)))
                 (compound
-                 (assign x (action (trigger #f bar)))))))
+                 (assign x (action (trigger #f bar (arguments))))))))
 
 (pass-if "ast:resolve-variable-valued-action-call-interface"
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-interface)
-           '(on (triggers (trigger #f foo))
+           '(on (triggers (trigger #f foo (arguments)))
                 (compound
-                 (variable e (type (name e)) (expression (call bar))))))
-          '(on (triggers (trigger #f foo))
+                 (variable e (type (name e)) (expression (call bar (arguments) #f))))))
+          '(on (triggers (trigger #f foo (arguments)))
                (compound
-                (variable e (type (name ivar e)) (action (trigger #f bar)))))))
+                (variable e (type (name ivar e)) (action (trigger #f bar (arguments))))))))
 
 (pass-if "ast:resolve-assign-valued-action-call-interface"
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-interface)
-           '(on (triggers (trigger #f foo))
+           '(on (triggers (trigger #f foo (arguments)))
                 (compound
-                 (assign x (expression (call bar))))))
-          '(on (triggers (trigger #f foo))
+                 (assign x (expression (call bar (arguments) #f))))))
+          '(on (triggers (trigger #f foo (arguments)))
                 (compound
-                 (assign x (action (trigger #f bar)))))))
+                 (assign x (action (trigger #f bar (arguments))))))))
 
 (pass-if "ast:resolve-reply-value-interface"
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-interface)
-           '(on (triggers (trigger #f foo))
+           '(on (triggers (trigger #f foo (arguments)))
                 (compound
                  (reply (expression (name mixed v))))))
-          '(on (triggers (trigger #f foo))
+          '(on (triggers (trigger #f foo (arguments)))
                 (compound
                  (reply (expression (literal (name ivar mixed) v)))))))
 
@@ -297,7 +297,7 @@ component bar.c {
           (ast:resolve*
            (resolve-interface)
            '(guard (expression false)
-                   (on (triggers (trigger #f foo))
+                   (on (triggers (trigger #f foo (arguments)))
                        (compound
                         (guard
                          (expression true)
@@ -306,7 +306,7 @@ component bar.c {
 
           '(guard
             (expression false)
-            (on (triggers (trigger #f foo))
+            (on (triggers (trigger #f foo (arguments)))
                  (compound
                   (guard
                    (expression true)
@@ -317,11 +317,11 @@ component bar.c {
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-component)
-           '(on (triggers (trigger o foo))
+           '(on (triggers (trigger o foo (arguments)))
                 (compound
                  (reply (expression (name ivar mixed v))))))
 
-          '(on (triggers (trigger o foo))
+          '(on (triggers (trigger o foo (arguments)))
                 (compound
                  (reply (expression (literal (name ivar mixed) v)))))))
 
@@ -329,10 +329,10 @@ component bar.c {
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-component)
-           '(on (triggers (trigger o foo))
+           '(on (triggers (trigger o foo (arguments)))
                 (compound
                  (reply (expression (name r))))))
-          '(on (triggers (trigger o foo))
+          '(on (triggers (trigger o foo (arguments)))
                 (compound
                  (reply (expression (var r)))))))
 
@@ -396,7 +396,7 @@ component bar.c {
              (variable e (type (name ivar e)) (expression (name o foo)))
              (assign e (expression (var e)))))
           '(compound
-             (variable e (type (name ivar e)) (action (trigger o foo)))
+             (variable e (type (name ivar e)) (action (trigger o foo (arguments))))
              (assign e (expression (var e))))))
 
 (pass-if "ast:resolve-local-if"
@@ -405,14 +405,16 @@ component bar.c {
            (resolve-interface)
            '(compound
              (variable c (type bool) (expression true))
-             (assign b (call g (arguments (expression (var c)) (expression (var c)))))
+             (assign b (call g (arguments (expression (var c)) (expression (var c))) #f))
              (if (expression (var c))
-                  (compound))))
+                 (compound)
+                 #f)))
           '(compound
              (variable c (type bool) (expression true))
-             (assign b (call g (arguments (expression (var c)) (expression (var c)))))
+             (assign b (call g (arguments (expression (var c)) (expression (var c))) #f))
              (if (expression (var c))
-                  (compound)))))
+                 (compound)
+                 #f))))
 
 (pass-if "ast:resolve-true"
          (om-pretty-noisy-equal?
@@ -495,50 +497,50 @@ component bar.c {
           (ast:resolve*
            (resolve-component)
            '(function rgun (signature (type void) (formals)) #f
-                      (compound (call rgun (arguments (expression #t))))))
+                      (compound (call rgun (arguments (expression #t)) #f))))
           '(function rgun (signature (type void) (formals))
                      recursive
-                      (compound (call rgun (arguments (expression #t)))))))
+                      (compound (call rgun (arguments (expression #t)) #f)))))
 
 (pass-if "ast:resolve-recursive-indirect"
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-component)
            '(function rfun (signature (type void) (formals)) #f
-                      (compound (call rgun (arguments (expression #t))))))
+                      (compound (call rgun (arguments (expression #t)) #f))))
           '(function rfun (signature (type void) (formals))
                      recursive
-                     (compound (call rgun (arguments (expression #t)))))))
+                     (compound (call rgun (arguments (expression #t)) #f)))))
 
 (pass-if "ast:resolve-non-recursive-deep"
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-component)
            '(function fa (signature (type void) (formals)) #f
-                      (compound (call fb (arguments (expression #t))))))
+                      (compound (call fb (arguments (expression #t)) #f))))
           '(function fa (signature (type void) (formals))
                      #f
-                     (compound (call fb (arguments (expression #t)))))))
+                     (compound (call fb (arguments (expression #t)) #f)))))
 
 (pass-if "ast:resolve-recursive-3"
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-component)
            '(function rfa (signature (type void) (formals)) #f
-                      (compound (call rfb (arguments (expression #t))))))
+                      (compound (call rfb (arguments (expression #t)) #f))))
           '(function rfa (signature (type void) (formals))
                      recursive
-                     (compound (call rfb (arguments (expression #t)))))))
+                     (compound (call rfb (arguments (expression #t)) #f)))))
 
 (pass-if "ast:resolve-recursive-3-assign"
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-component)
            '(function rbfa (signature (type void) (formals)) #f
-                      (assign b (compound (call rbfb (arguments (expression #t)))))))
+                      (assign b (compound (call rbfb (arguments (expression #t)) #f)))))
           '(function rbfa (signature (type void) (formals))
                      recursive
-                      (assign b (compound (call rbfb (arguments (expression #t))))))))
+                      (assign b (compound (call rbfb (arguments (expression #t)) #f))))))
 
 (pass-if "ast:resolve-namespace-literal"
          (om-pretty-noisy-equal?
@@ -559,15 +561,15 @@ component bar.c {
   (om-pretty-noisy-equal?
    (ast:resolve*
     (resolve-interface)
-    '(action (trigger #f q)))
-   (resolve-error '(action (trigger #f q)) 'q "undefined function or event: ~a")))
+    '(action (trigger #f q (arguments))))
+   (resolve-error '(action (trigger #f q (arguments))) 'q "undefined function or event: ~a")))
 
 (pass-if "ast:resolve-undefined-call"
   (om-pretty-noisy-equal?
    (ast:resolve*
     (resolve-interface)
-    '(call q))
-   (resolve-error '(call q) 'q "undefined function or event: ~a")))
+    '(call q (arguments) #f))
+   (resolve-error '(call q (arguments) #f) 'q "undefined function or event: ~a")))
 
 (pass-if "ast:resolve-undefined-enum-field"
   (om-pretty-noisy-equal?
@@ -664,8 +666,8 @@ component bar.c {
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-component)
-           '(call rfun (arguments (expression true))))
-          (resolve-error '(call rfun (arguments (expression true)))
+           '(call rfun (arguments (expression true)) #f))
+          (resolve-error '(call rfun (arguments (expression true)) #f)
                          'rfun
                          (format #f "function ~a expects ~a arguments, found: ~a" "~a" 0 1))))
 

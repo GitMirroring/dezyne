@@ -411,10 +411,13 @@
                     (comma ,comma)
                     (comma-space ,comma-space)))))
       (($ <reply> (and ($ <expression> ($ <literal> name field)) (get! expression)))
+       (stderr "NAME: ~a\n" name)
+       (stderr "scope: ~a\n" (om:scope name))
+       (stderr "name: ~a\n" (om:name name))
        (snippet 'reply
                 `((space ,space)
                   (scope ,(om:scope name))
-                  (name ,(.name name))
+                  (name ,(om:name name))
                   (expression ,(expression->string model (expression) locals)))))
       (($ <reply> (and ($ <expression> ($ <var> name)) (get! expression)))
        (let* ((var (var? name))
@@ -740,7 +743,7 @@
                                  (snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
                                ((compose .elements .formals) signature)))
          (reply-name (om:name type))
-         (reply-scope (or (pair?? (om:scope enum)) '()))
+         (reply-scope (or (and enum (pair?? (om:scope enum))) '()))
          (statement
           (or (and-let*
                (((is-a? model <component>))

@@ -49,11 +49,11 @@
        (variable t (type bool) (expression false)))
       (functions)
       (compound
-       (on (triggers (trigger #f a))
+       (on (triggers (trigger #f a (arguments)))
            (compound
             (if (expression (var t))
-                (compound (action (trigger #f b)))
-                (compound (action (trigger #f c))))
+                (compound (action (trigger #f b (arguments))))
+                (compound (action (trigger #f c (arguments)))))
             (assign t (expression (! (var t)))))))))
     (component (name C) (ports (provides i (name I))) (behaviour))))
 

@@ -143,6 +143,7 @@ interface i
     S s = S.S1;
     bool b = false;
     I02 c = 0;
+    xint x = $0$;
     void toggle()
     {
     }
@@ -2348,10 +2349,9 @@ let t = tmp' within
           (purge-data* i-ast
                        '(on (triggers (trigger #f e (arguments)))
                             (compound
-                             (assign s (call funx (arguments (data 0)) #f)))))
+                             (assign x (call funx (arguments (expression (data 0))) #f)))))
           '(on (triggers (trigger #f e (arguments)))
-                (compound
-                 (assign s (call funx (arguments) #f))))))
+               (compound (skip)))))
 
 (pass-if "tail-call"
          (csp-pretty-noisy-equal?

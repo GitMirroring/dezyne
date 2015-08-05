@@ -17,7 +17,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag list ast)
+(define-module (gaiag goops ast)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 pretty-print)
@@ -235,9 +235,6 @@
 
     (('signature type) (make <signature> :type (ast->om- type)))
 
-    (('signature type formals)
-     (make <signature> :type (ast->om- type) :formals (ast->om- formals)))
-
     (('system name ports instances bindings)
      (and=> (assoc 'imported (cddr ast)) (mark-imported ast))
      (make <system>
@@ -262,6 +259,9 @@
     (('types types ...) (make <types> :elements (map ast->om- types)))
 
     (('var name) (make <var> :name name))
+
+    (('variable name type)
+     (make <variable> :name name :type (ast->om- type) :expression (make <expression>)))
 
     (('variable name type expression)
      (make <variable> :name name :type (ast->om- type) :expression (ast->om- expression)))

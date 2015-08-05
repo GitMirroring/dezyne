@@ -47,6 +47,7 @@
   :export (
            om:collect
            om:declarative?
+           om:dir-matches?
            om:drop-scope
            om:enum
            om:enums
@@ -61,12 +62,13 @@
            om:import
            om:imported?
            om:in?
+           om:integers
            om:instance
+           om:interface-enums
            om:integer
            om:interface
            om:interface-types
            om:interfaces
-           om:map
            om:model-with-behaviour
            om:name
            om:named
@@ -78,6 +80,7 @@
            om:port
            om:ports
            om:public-types
+           om:provides?
            om:register
            om:register-model
            om:register-type
@@ -343,13 +346,6 @@
   (match x
     (symbol? (filter (is? x) o))
     (procedure? (filter x o))))
-
-(define (om:map f o)
-  (match o
-    ((? (is? <ast-list>))
-     (retain-source-properties o (cons (car o) (map f (.elements o)))))
-    ((h t ...) (retain-source-properties o (cons (car o) (map f (cdr o)))))
-    (_ o)))
 
 (define* (om:find-triggers ast :optional (found '()))
   (match ast
