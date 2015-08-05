@@ -155,7 +155,7 @@
   (match o
     (($ <interface>) '())
     (($ <component>)
-     (map om:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) list-symbol<))))))
+     (map om:import (delete-duplicates (map .type ((compose .elements .ports) o)))))))
 
 (define (assembly-lts o)
   (match o
