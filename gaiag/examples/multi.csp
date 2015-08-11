@@ -6,7 +6,7 @@ channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = left | modeling | return | right | the_end'
+datatype event_enumeration_alphabet = Direction_Left | Direction_Right | left | modeling | return | right | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -14,17 +14,16 @@ datatype event_enumeration_alphabet = left | modeling | return | right | the_end
 -- interface.csp.scm
 
 channel imulti: {left,the_end'}
-
+channel imulti_'': {right}
 channel imulti_': {return}
-
 channel imulti_in',imulti_out': {imulti_'.return}
-
 channel imulti_''': {modeling}
 
 IF_imulti_(IG,CS) = let
 
 imulti_() =
 (imulti?x:{left} -> (
+  imulti_''!right ->
     imulti_'.return ->
   imulti.the_end' ->
   imulti_()
@@ -33,9 +32,7 @@ imulti_() =
 CS & imulti?x:{} -> illegal -> STOP
 )
 
-REORDER' = imulti?x' -> (imulti_in'?y' -> imulti.the_end' -> imulti_out'!y' -> REORDER'
-                         []
-                         imulti.the_end' -> REORDER')
+REORDER' = imulti?x' -> (imulti_in'?y' -> imulti.the_end' -> imulti_out'!y' -> REORDER' [] imulti.the_end' -> REORDER')
 
 compress(x) = let
 transparent sbisim
@@ -45,7 +42,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then imulti_()
                 else imulti_() )
-               [[x<-imulti_in'.x|x<-extensions(imulti_in')]] [|{|imulti,imulti_in'|}|] REORDER' [[imulti_out'.x<-x|x<-extensions(imulti_out')]] \ {|imulti_in',imulti.the_end'|})
+               [[x<-imulti_in'.x|x<-extensions(imulti_in')]] [|{|imulti,imulti_in',imulti.the_end'|}|] REORDER' [[imulti_out'.x<-x|x<-extensions(imulti_out')]] \ {|imulti_in',imulti.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -56,36 +53,57 @@ channel p_left: extensions(imulti)
 channel p_right: extensions(imulti)
 channel r: extensions(imulti)
 
-
 channel p_left_': extensions(imulti_')
 channel p_right_': extensions(imulti_')
 channel r_': extensions(imulti_')
 
-channel p_''': extensions(imulti_''')
+channel p_left_'': extensions(imulti_'')
+channel p_right_'': extensions(imulti_'')
+channel r_'': extensions(imulti_'')
+
 channel r_''': extensions(imulti_''')
+
+
 
 CO_multi_(IIG,IG) = let
 
-multi_() =
+multi_(dir) =
 transition_begin -> (
 p_left?x:{left} -> (
+  let tmp' = Direction_Left within
+  let dir = tmp' within
   r!left -> r_'.return ->
     p_left_'.return ->
   transition_end ->
-  multi_()
+  multi_(dir)
 )
 []
 p_right?x:{left} -> (
+  let tmp' = Direction_Right within
+  let dir = tmp' within
   r!left -> r_'.return ->
     p_right_'.return ->
   transition_end ->
-  multi_()
+  multi_(dir)
+)
+[]
+r_''?x:{right} -> (
+  (if (dir == Direction_Left) then
+    p_left_''!right ->
+        transition_end ->
+  multi_(dir)
+
+  else
+    p_right_''!right ->
+        transition_end ->
+  multi_(dir)
+)
 ))
 
-within multi_()
+within multi_(Direction_Left)
 
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|r_'',extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
@@ -144,13 +162,11 @@ within Idle(0)
 
 within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},client',modeling'}))
 
+AS_multi_(IIG) = let
 compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-AS_multi_(IIG) = let
-
 ClientCalls = {p_left.left,p_right.left}
 UsedModeling = {}
 TheEnd = {|r_'''|}
@@ -159,33 +175,33 @@ within compress((CO_multi_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reor
                  SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',r,r_',r_'''|}|]
-                (IF_imulti_(true,false) [[imulti.x<-r.x|x<-extensions(r)]][[imulti_'.x<-r_'.x|x<-extensions(r_')]]
-                 [[imulti.x<-r.x|x<-extensions(r)]]
-                 [[imulti_'''.x<-r_'''.x|x<-extensions(r_''')]]
-)[[x<-IN'.x|x<-extensions(IN')]])
+                (IF_imulti_(true,false) [[imulti.x<-r.x|x<-extensions(r)]][[imulti_'.x<-r_'.x|x<-extensions(r_')]][[imulti_''.x<-r_''.x|x<-extensions(r_'')]][[imulti_'''.x<-r_'''.x|x<-extensions(r_''')]]
+                 )[[x<-IN'.x|x<-extensions(IN')]])
+
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = p_left?x -> p_left_'?x -> R2C
+      []
+      p_right?x -> p_right_'?x -> R2C
+
+IFS = compress(IF_imulti_(true,false)[[imulti<-p_left]][[imulti_'<-p_left_']][[imulti_''<-p_left_'']] \ {|imulti_'''|})
+      |||
+      compress(IF_imulti_(true,false)[[imulti<-p_right]][[imulti_'<-p_right_']][[imulti_''<-p_right_'']] \ {|imulti_'''|})
+
+within IFS [|{|p_left,p_left_',p_right,p_right_'|}|] R2C
 
 -- end of component.csp.scm
 assert COMPLETE'({imulti.left}) [F= IF_imulti_(true,true)[[range_error<-illegal]] \ diff(Events,{imulti.left,illegal})
 assert IF_imulti_(false,false) :[deadlock free]
 assert IF_imulti_(true,false) :[livelock free]
 assert CO_multi_(true,true) :[deterministic]
-assert COMPLETE'({p_left.left,p_right.left}) [F= CO_multi_(true,true)[[range_error<-illegal]] \ diff(Events,{p_left.left,p_right.left,illegal})
+assert COMPLETE'({p_left.left,p_right.left,r_''.right}) [F= CO_multi_(true,true)[[range_error<-illegal]] \ diff(Events,{p_left.left,p_right.left,r_''.right,illegal})
 assert STOP [T= AS_multi_(false) \ diff(Events,{illegal,queue_full})
 assert AS_multi_(false) :[deadlock free]
-
-IF_MULTI = let
-
-R2C = (p_left?x -> [] y : {|p_left_'|} @ y -> R2C)
-      []
-      (p_right?x -> [] y : {|p_right_'|} @ y -> R2C)
-
-within compress(((IF_imulti_(true,false) [[imulti.x<-p_left.x|x<-extensions(p_left)]][[imulti_'.x<-p_left_'.x|x<-extensions(p_left_')]] \ {imulti_'''.modeling})
-       |||
-       (IF_imulti_(true,false) [[imulti.x<-p_right.x|x<-extensions(p_right)]][[imulti_'.x<-p_right_'.x|x<-extensions(p_right_')]] \ {imulti_'''.modeling}))
-       [|{|p_left,p_left_',p_right,p_right_'|}|]
-       R2C)
-
-assert IF_MULTI
-       [F=
-       AS_multi_(true) \ diff(Events,{|illegal,p_left,p_right,p_left_',p_right_'|})
-assert AS_multi_(true) \ diff(Events,{|illegal,p_left,p_right,p_left_',p_right_'|}) :[livelock free]
+assert IF_SPEC [F= AS_multi_(true) \ diff(Events,{|illegal,p_left,p_left_',p_left_'',p_right,p_right_',p_right_''|})
+assert AS_multi_(true) \ diff(Events,{|illegal,p_left,p_left_',p_left_'',p_right,p_right_',p_right_''|}) :[livelock free]

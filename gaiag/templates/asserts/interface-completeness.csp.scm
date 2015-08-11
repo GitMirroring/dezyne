@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
@@ -24,6 +24,8 @@
 ;;; Code:
 
 assert COMPLETE'({#
-(comma-join (append (map (lambda (event-name) (list .scope_model "." event-name)) (delete-duplicates (map .event (modeling-events model)))) (map (lambda (event) (list .scope_model "." (.name event))) (filter om:in? (.elements (.events model))))))}) [F= IF_#.scope_model _#
-((compose .name .behaviour) model) (true,true)[[range_error<-illegal]] \ diff(Events,{#
-(comma-join (append (map (lambda (event-name) (list .scope_model "." event-name)) (delete-duplicates (map .event (modeling-events model)))) (map (lambda (event) (list .scope_model "." (.name event))) (filter om:in? (.elements (.events model)))) (list 'illegal)))})
+(comma-join (append (map (lambda (event) (list .scope_model "." (.name event))) (filter om:in? (.elements (.events model))))
+                    (map (lambda (event) (list .scope_model "_'''." (.event event))) (modeling-events model))))}) [F= IF_#.scope_model _(true,true)[[range_error<-illegal]] \ diff(Events,{#
+(comma-join (append (map (lambda (event) (list .scope_model "." (.name event))) (filter om:in? (.elements (.events model))))
+                    (map (lambda (event) (list .scope_model "_'''." (.event event))) (modeling-events model))
+                    (list 'illegal)))})

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,4 +21,4 @@
 ;;; 
 ;;; Code:
 
-LTS_#(.name model)_AS = AS_#(.name model) _#((compose .name .behaviour) model) (false)
+LTS_#(.name model)_AS = AS_#(.name model) _(false)

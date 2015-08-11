@@ -24,10 +24,10 @@
 interface imulti
 {
   in void left();
-
+  out void right();
   behaviour
   {
-    on left: {}
+    on left: right;
   }
 }
 
@@ -39,7 +39,10 @@ component multi
 
   behaviour
   {
-    on p_left.left(): r.left();
-    on p_right.left(): r.left();
+    enum Direction {Left, Right};
+    Direction dir = Direction.Left;
+    on p_left.left(): {dir = Direction.Left; r.left();}
+    on p_right.left():{dir = Direction.Right; r.left();}
+    on r.right(): if(dir.Left){p_left.right();} else {p_right.right();}
   }
 }

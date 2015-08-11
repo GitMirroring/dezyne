@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
@@ -25,9 +25,9 @@
 
 assert COMPLETE'({#
 (comma-join
- (append (map (lambda (event) (list (.name (om:port model)) "." (.name event))) (filter om:in? (om:events (om:port model))))
-         (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "_''." (.name event))) (filter om:out? (om:events port))))) (filter om:requires? ((compose .elements .ports) model)))))}) [F= CO_#.scope_model _#
-((compose .name .behaviour) model) (true,true)[[#((om:scope-name) (om:port model))_'.x'<-#(.name (om:port model))_'.x'|x'<-extensions(#(.name (om:port model))_')]][[range_error<-illegal]] \ diff(Events,{#
+ (append (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "." (.name event))) (filter om:in? (om:events port))))) (om:provided model))
+         (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "_''." (.name event))) (filter om:out? (om:events port))))) (om:required model))))}) [F= CO_#
+.scope_model _(true,true)[[range_error<-illegal]] \ diff(Events,{#
 (comma-join
- (append (map (lambda (event) (list (.name (om:port model)) "." (.name event))) (filter om:in? (om:events (om:port model))))
-         (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "_''." (.name event))) (filter om:out? (om:events port))))) (filter om:requires? ((compose .elements .ports) model))))),illegal})
+ (append (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "." (.name event))) (filter om:in? (om:events port))))) (om:provided model))
+         (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "_''." (.name event))) (filter om:out? (om:events port))))) (om:required model)))),illegal})

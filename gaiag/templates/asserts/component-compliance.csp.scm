@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
@@ -23,10 +23,4 @@
 ;;; 
 ;;; Code:
 
-assert IF_#((compose (om:scope-name) om:port) model) _#((compose .name .behaviour om:import .type om:port) model)(true,false) [[#((compose (om:scope-name) om:port) model) .x<-#((compose .name om:port) model) .x|x<-extensions(#((compose .name om:port) model))]][[#((compose (om:scope-name) om:port) model)_'.x<-#((compose .name om:port) model)_'.x|x<-extensions(#((compose .name om:port) model)_')]]#
-(->string (if (not (null? (filter om:out? (om:events (om:port model))))) (list "[["((compose (om:scope-name) om:port) model) "_''.x<-" ((compose .name om:port) model) "_''.x|x<-extensions("((compose .name om:port) model) "_'')]]"))) \ {#
-   (comma-join
-       (append (list (->string (list ((om:scope-name) (om:port model)) "_'''.modeling"))) (map (lambda (x) (map ->string (list ((compose .name om:port) model) "." x))) (filter
-         (lambda (x) (or (eq? x 'optional) (eq? x 'inevitable)))
-         (port-events (om:port model))))))} [F= AS_#.scope_model _#((compose .name .behaviour) model) (true) \ diff(Events,{|illegal,#((compose .name om:port)model),#((compose .name om:port)model)_'#
-(->string (if (not (null? (filter om:out? (om:events (om:port model))))) (list "," ((compose .name om:port) model) "_''")))|})
+assert IF_SPEC [F= AS_#.scope_model _(true) \ diff(Events,{|illegal,#(comma-join (append-map (lambda (port) (csp-channels port .name)) (om:provided model)))|})

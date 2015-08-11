@@ -3,7 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -23,8 +23,8 @@
 ;;; 
 ;;; Code:
 
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -39,7 +39,7 @@ datatype event_enumeration_alphabet = #
      (interface-events model identity)
      (enum-values model)
      (return-values model)
-     (list 'the_end' 'modeling))
+     (list 'the_end' 'inevitable 'optional 'modeling))
     symbol<)))
 
 -- end of combinators

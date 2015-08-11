@@ -22,4 +22,4 @@
 ;;; 
 ;;; Code:
 
-assert IF_#.scope_model _#((compose .name .behaviour) model) (true,false) :[livelock free]
+assert IF_#.scope_model _(true,false) :[livelock free]

@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -22,4 +22,4 @@
 ;;; 
 ;;; Code:
 
-assert IF_#.scope_model _#((compose .name .behaviour) model) (false,false) :[deadlock free]
+assert IF_#.scope_model _(false,false) :[deadlock free]

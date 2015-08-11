@@ -29,6 +29,7 @@
   :use-module (ice-9 receive)
   :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
+  :use-module (srfi srfi-26)
 
   :use-module (gaiag list match)
   :use-module (gaiag animate)
@@ -199,11 +200,11 @@
 (define asserts-alist
   `(
     ((component completeness) . ,(gulp-template 'asserts/component-completeness.csp.scm))
-    ((component illegal) . "assert STOP [T= AS_#.scope_model _#((compose .name .behaviour) model) (false) \\ diff(Events,{illegal,queue_full})\n")
-    ((component deterministic) . "assert CO_#.scope_model _#((compose .name .behaviour) model)(true,true)[[#((om:scope-name) (om:port model))_'.x<-#(.name (om:port model))_'.x|x<-extensions(#(.name (om:port model))_')]] :[deterministic]\n")
-    ((component deadlock)  . "assert AS_#.scope_model _#((compose .name .behaviour) model) (false) :[deadlock free]\n")
+    ((component illegal) . "assert STOP [T= AS_#.scope_model _(false) \\ diff(Events,{illegal,queue_full})\n")
+    ((component deterministic) . "assert CO_#.scope_model _(true,true) :[deterministic]\n")
+    ((component deadlock)  . "assert AS_#.scope_model _(false) :[deadlock free]\n")
     ((component compliance) . ,(gulp-template 'asserts/component-compliance.csp.scm))
-    ((component livelock)  .  "assert AS_#.scope_model _#((compose .name .behaviour) model) (true) \\ diff(Events,{|#(comma-join (append (required-modeling-events model) (list \"illegal\" ((compose .name om:port) model) ((compose .name om:port) model))))_'#(->string (if (not (null? (filter om:out? (om:events (om:port model))))) (list \",\" ((compose .name om:port) model)\"_''\")))|}) :[livelock free]\n")
+    ((component livelock)  .  "assert AS_#.scope_model _(true) \\ diff(Events,{|#(comma-join (append (required-modeling-events model) (list \"illegal\") (append-map (lambda (port) (map (cut symbol-append (.name port) <>) (map string->symbol (if (not (null? (filter om:out? (om:events port)))) (list \"\" \"_'\" \"_''\") (list \"\" \"_'\"))))) (om:provided model))))|}) :[livelock free]\n")
     ((interface completeness) . ,(gulp-template 'asserts/interface-completeness.csp.scm))
     ((interface deadlock) . ,(gulp-template 'asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-template 'asserts/interface-livelock.csp.scm))))
@@ -295,7 +296,7 @@
          (if (pair? lets)
              (list
               ((->join "\n") lets))))
-         (list ((om:scope-name) model) "_" ((compose .name .behaviour) model) "(" (comma-space-join (om:member-names model)) ")" " =\n")
+         (list ((om:scope-name) model) "_(" (comma-space-join (om:member-names model)) ")" " =\n")
      (if inside
          (if (pair? lets)
              (list
@@ -315,7 +316,7 @@
          (if (pair? lets)
              (list
               ((->join "\n") lets))))
-     (list ((om:scope-name) model) "_" ((compose .name .behaviour) model) "(" (comma-space-join (om:member-names model))")" " =\n")
+     (list ((om:scope-name) model) "_(" (comma-space-join (om:member-names model))")" " =\n")
      (if inside
          (if (pair? lets)
              (list
@@ -325,7 +326,7 @@
      "("
      (check-range (om:member-names model) behaviour model)
      "\n[]\n"
-     (list "CS & " ((om:scope-name) model) "?x:{" (comma-join (delete-duplicates (map .event (modeling-events model)))) "} -> illegal -> STOP\n")
+     (list "CS & " ((om:scope-name) model) "_'''?x:{" (comma-join (delete-duplicates (map .event (modeling-events model)))) "} -> illegal -> STOP\n")
      ")")))
 
 (define (csp-expression->string model src locals)
@@ -373,10 +374,11 @@
      (let* ((events ((compose .elements .events) o))
             (events (filter predicate? events))
             (events (map .name events))
-            (modeling (modeling-events o))
-            (modeling (filter predicate? modeling))
-            (modeling (map .event modeling)))
-       (delete-duplicates (sort (append events modeling) symbol<))))
+            ;; (modeling (modeling-events o))
+            ;; (modeling (filter predicate? modeling))
+            ;; (modeling (map .event modeling))
+            )
+       (delete-duplicates (sort (append events) symbol<))))
     (($ <component>)
      (apply append (map (compose (lambda (x) (interface-events x predicate?)) om:import .type) ((compose .elements .ports) o))))))
 
@@ -402,7 +404,7 @@
 (define (om:modeling? o)
   (match o
     (($ <trigger>)
-     (and (not (.port o)) (member (.event o) '(optional inevitable))))))
+     (and (not (.port o)) (modeling-event? o)))))
 
 (define (om:void? model o)
   (and (not (om:modeling? o)) (not (om:typed? model o))))
@@ -413,7 +415,7 @@
 (define (required-modeling-events o)
   (apply append
          (map (lambda (port)
-                (map (lambda (event) (->string (list (.name port) '. (.event event))))
+                (map (lambda (event) (->string (list (.name port) '_'''. (.event event))))
                      (modeling-events (csp:import (.type port)))))
               (filter om:requires? (om:ports o)))))
 
@@ -517,7 +519,7 @@
 (define (optional-chaos o) ;; FIXME: no test
   (let ((name ((om:scope-name) o)))
     (if (member 'optional (map .event (om:find-triggers o)))
-        (list " [|{" name ".optional}|] " "CHAOS({" name ".optional})")
+        (list " [|{" name "_'''.optional}|] " "CHAOS({" name "_'''.optional})")
         "")))
 
 (define (ast-transform ast src)
@@ -710,7 +712,7 @@
 (define* (csp-transform-model model o :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()) (indent 0) (tail '()) (function #f))
   (let* ((model-name ((om:scope-name) model))
          (model- (symbol-append model-name '_))
-         (channel (or channel (if (is-a? model <interface>) model-name ((om:scope-name) (om:port model)))))
+         (channel (or channel (if (is-a? model <interface>) model-name (.name (om:port model)))))
          (space (make-string (* indent 2) #\space))
          (member-name-list (comma-join (om:member-names model)))
          )
@@ -728,13 +730,13 @@
                    (or (and (is-a? model <interface>) (not inevitable-optional?))
                        (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
                   (the-end (make <the-end>))
+                  (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                   (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
                   (tail (csp-transform-model model (statement) inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
                   (real-triggers (filter (negate modeling-event?) triggers))
                   (modeling-triggers (filter modeling-event? triggers))
                   (modeling-triggers (map .event modeling-triggers))
                   (trigger-in? (lambda (trigger) (om:in? (om:event model trigger))))
-                  (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                   (IG (if ((provides-event? model) (car triggers)) "IIG & "  "IG & ")))
              (receive (ins outs) (partition trigger-in? real-triggers)
                  ((->list-join "\n[]\n")
@@ -752,7 +754,7 @@
                             (list
                              IG
                              (if (is-a? model <interface>) model-name channel)
-                             (list "?x:{" (comma-join modeling-triggers) "} -> (\n")
+                             (list "_'''?x:{" (comma-join modeling-triggers) "} -> (\n")
                              tail
                              ")"))
                            '()))
@@ -774,13 +776,13 @@
                    (or (and (is-a? model <interface>) (not inevitable-optional?))
                        (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
                   (the-end (make <the-end>))
+                  (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                   (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
                   (tail (csp-transform-model model statement inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
                   (real-triggers (filter (negate modeling-event?) triggers))
                   (modeling-triggers (filter modeling-event? triggers))
                   (modeling-triggers (map .event modeling-triggers))
-                  (trigger-in? (lambda (trigger) (om:in? (om:event model trigger))))
-                  (channel (if (is-a? model <interface>) model-name (.port (car triggers)))))
+                  (trigger-in? (lambda (trigger) (om:in? (om:event model trigger)))))
              (receive (ins outs) (partition trigger-in? real-triggers)
                  ((->list-join "\n[]\n")
                   (append
@@ -795,7 +797,7 @@
                            (list
                             (list
                              (if (is-a? model <interface>) model-name channel)
-                             (list "?x:{" (comma-join modeling-triggers) "} ->(\n")
+                             (list "_'''?x:{" (comma-join modeling-triggers) "} ->(\n")
                              tail
                              ")"))
                             '()))
@@ -967,19 +969,18 @@
           (('arguments arguments ...)
            (map (lambda (x) (csp-transform-model model x inevitable-optional? channel provided-on? locals)) arguments))
 
-          (($ <expression> (and ($ <call>) (get! call))) (csp-transform-model model (call)))
+          (($ <expression> (and ($ <call>) (get! call))) (csp-transform-model model (call) inevitable-optional? channel))
           (($ <expression>) (csp-expression->string model o locals))
 
           (($ <the-end>)
-           (let* ((behaviour (.name (.behaviour model)))
-                  (component? (is-a? model <component>)))
+           (let ((component? (is-a? model <component>)))
              (if component?
                  (list
                   (list space "transition_end ->\n")
-                  (list space model-name "_" behaviour "(" (comma-join (om:member-names model)) ")\n"))
+                  (list space model-name "_(" (comma-join (om:member-names model)) ")\n"))
                  (list
                   (list space channel ".the_end' ->\n")
-                  (list space model-name "_" behaviour "(" (comma-join (om:member-names model)) ")\n"))
+                  (list space model-name "_(" (comma-join (om:member-names model)) ")\n"))
                  )))
 
           (#f (list space "SKIP\n"))
@@ -1068,3 +1069,8 @@
          (list space "within\n")
          )
         (append (list 'def) l))))
+
+(define* (csp-channels port op)
+  (map (cut symbol-append (op port) <>)
+       (map string->symbol
+            (if (not (null? (filter om:out? (om:events port)))) (list "" "_'" "_''") (list "" "_'")))))

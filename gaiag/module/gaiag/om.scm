@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -80,11 +81,13 @@
            om:port
            om:ports
            om:public-types
+           om:provided
            om:provides?
            om:register
            om:register-model
            om:register-type
            om:reply-enums
+           om:required
            om:requires?
            om:scope
            om:scope+name
@@ -134,6 +137,12 @@
     (($ <interface>) '())
     (($ <component> name ('ports ports ...)) ports)
     (($ <system> name ('ports ports ...)) ports)))
+
+(define (om:provided o)
+  (filter om:provides? (om:ports o)))
+
+(define (om:required o)
+  (filter om:requires? (om:ports o)))
 
 (define* (om:types :optional (model #f))
   (append
