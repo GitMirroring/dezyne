@@ -1,12 +1,12 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = a | e | modeling | return | s | t | the_end'
+datatype event_enumeration_alphabet = a | e | inevitable | modeling | optional | return | s | t | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -17,7 +17,7 @@ channel IGuardthreetopon: {e,s,t,the_end'}
 channel IGuardthreetopon_'': {a}
 channel IGuardthreetopon_': {return}
 channel IGuardthreetopon_in',IGuardthreetopon_out': {IGuardthreetopon_'.return}
-channel IGuardthreetopon_''': {modeling}
+channel IGuardthreetopon_''': {inevitable,optional,modeling}
 
 IF_IGuardthreetopon_(IG,CS) = let
 
@@ -69,10 +69,12 @@ IGuardthreetopon?x:{s} -> (
   IGuardthreetopon_(b)
 )
 []
-CS & IGuardthreetopon?x:{} -> illegal -> STOP
+CS & IGuardthreetopon_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = IGuardthreetopon?x' -> (IGuardthreetopon_in'?y' -> IGuardthreetopon.the_end' -> IGuardthreetopon_out'!y' -> REORDER' [] IGuardthreetopon.the_end' -> REORDER')
+           []
+           IGuardthreetopon_'''?x':{inevitable,optional} -> IGuardthreetopon_'''?x':{modeling} -> IGuardthreetopon.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -82,7 +84,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then IGuardthreetopon_(false)
                 else IGuardthreetopon_(false) )
-               [[x<-IGuardthreetopon_in'.x|x<-extensions(IGuardthreetopon_in')]] [|{|IGuardthreetopon,IGuardthreetopon_in',IGuardthreetopon.the_end'|}|] REORDER' [[IGuardthreetopon_out'.x<-x|x<-extensions(IGuardthreetopon_out')]] \ {|IGuardthreetopon_in',IGuardthreetopon.the_end'|})
+               [[x<-IGuardthreetopon_in'.x|x<-extensions(IGuardthreetopon_in')]] [|{|IGuardthreetopon,IGuardthreetopon_in',IGuardthreetopon_'''|}|] REORDER' [[IGuardthreetopon_out'.x<-x|x<-extensions(IGuardthreetopon_out')]] \ {|IGuardthreetopon_in',IGuardthreetopon.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -93,7 +95,7 @@ channel RGuardthreetopon: {e,the_end'}
 channel RGuardthreetopon_'': {a}
 channel RGuardthreetopon_': {return}
 channel RGuardthreetopon_in',RGuardthreetopon_out': {RGuardthreetopon_'.return}
-channel RGuardthreetopon_''': {modeling}
+channel RGuardthreetopon_''': {inevitable,optional,modeling}
 
 IF_RGuardthreetopon_(IG,CS) = let
 
@@ -102,10 +104,12 @@ RGuardthreetopon_() =
   illegal -> STOP
 )
 []
-CS & RGuardthreetopon?x:{} -> illegal -> STOP
+CS & RGuardthreetopon_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = RGuardthreetopon?x' -> (RGuardthreetopon_in'?y' -> RGuardthreetopon.the_end' -> RGuardthreetopon_out'!y' -> REORDER' [] RGuardthreetopon.the_end' -> REORDER')
+           []
+           RGuardthreetopon_'''?x':{inevitable,optional} -> RGuardthreetopon_'''?x':{modeling} -> RGuardthreetopon.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -115,7 +119,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then RGuardthreetopon_()
                 else RGuardthreetopon_() )
-               [[x<-RGuardthreetopon_in'.x|x<-extensions(RGuardthreetopon_in')]] [|{|RGuardthreetopon,RGuardthreetopon_in',RGuardthreetopon.the_end'|}|] REORDER' [[RGuardthreetopon_out'.x<-x|x<-extensions(RGuardthreetopon_out')]] \ {|RGuardthreetopon_in',RGuardthreetopon.the_end'|})
+               [[x<-RGuardthreetopon_in'.x|x<-extensions(RGuardthreetopon_in')]] [|{|RGuardthreetopon,RGuardthreetopon_in',RGuardthreetopon_'''|}|] REORDER' [[RGuardthreetopon_out'.x<-x|x<-extensions(RGuardthreetopon_out')]] \ {|RGuardthreetopon_in',RGuardthreetopon.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -131,7 +135,6 @@ channel r_': extensions(RGuardthreetopon_')
 channel i_'': extensions(IGuardthreetopon_'')
 channel r_'': extensions(RGuardthreetopon_'')
 
-channel i_''': extensions(IGuardthreetopon_''')
 channel r_''': extensions(RGuardthreetopon_''')
 
 
@@ -143,7 +146,7 @@ transition_begin -> (
 ((true and b)) & (
 i?x:{e} -> (
   i_''!a ->
-    IGuardthreetopon_'.return ->
+    i_'.return ->
   transition_end ->
   Guardthreetopon_(b)
 ))
@@ -153,12 +156,12 @@ i?x:{e} -> (
   let c = true within
   (if c then 
     i_''!a ->
-      IGuardthreetopon_'.return ->
+      i_'.return ->
     transition_end ->
   Guardthreetopon_(b)
 
   else
-      IGuardthreetopon_'.return ->
+      i_'.return ->
     transition_end ->
   Guardthreetopon_(b)
 )
@@ -167,7 +170,7 @@ i?x:{e} -> (
 (b) & (
 i?x:{t} -> (
   i_''!a ->
-    IGuardthreetopon_'.return ->
+    i_'.return ->
   transition_end ->
   Guardthreetopon_(b)
 ))
@@ -175,7 +178,7 @@ i?x:{t} -> (
 ((not b)) & (
 i?x:{t} -> (
   i_''!a ->
-    IGuardthreetopon_'.return ->
+    i_'.return ->
   transition_end ->
   Guardthreetopon_(b)
 ))
@@ -187,22 +190,21 @@ r_''?x:{a} -> (
 []
 i?x:{s} -> (
   i_''!a ->
-    IGuardthreetopon_'.return ->
+    i_'.return ->
   transition_end ->
   Guardthreetopon_(b)
 ))
 
 within Guardthreetopon_(false)
-                                                     
+
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {r_''.a,extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|r_'',extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {IGuardthreetopon_'.return}
-channel reorder_out : {i_'.return}
+channel reorder_in, reorder_out : {|i_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -225,23 +227,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?IGuardthreetopon_'.x' -> reorder_out!i_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?IGuardthreetopon_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -249,7 +250,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?IGuardthreetopon_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -260,17 +261,30 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {i.e,i.t,i.s}
-UsedModeling = {}
-TheEnd = {|r_'''|}
-within compress((CO_Guardthreetopon_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {i.e,i.t,i.s}
+begin_required_modeling' = {}
+end_required_modeling' = {r_'''.modeling}
+within compress((CO_Guardthreetopon_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i,i_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',r,r_',r_'''|}|]
                 (IF_RGuardthreetopon_(true,false) [[RGuardthreetopon.x<-r.x|x<-extensions(r)]][[RGuardthreetopon_'.x<-r_'.x|x<-extensions(r_')]][[RGuardthreetopon_''.x<-r_''.x|x<-extensions(r_'')]][[RGuardthreetopon_'''.x<-r_'''.x|x<-extensions(r_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
+
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = i?x -> i_'?x -> R2C
+
+IFS = IF_IGuardthreetopon_(true,false)[[IGuardthreetopon<-i]][[IGuardthreetopon_'<-i_']][[IGuardthreetopon_''<-i_'']]
+
+within compress(IFS [|{|i,i_'|}|] R2C \ {|IGuardthreetopon_'''|})
+
 
 -- end of component.csp.scm
 assert COMPLETE'({IGuardthreetopon.e,IGuardthreetopon.t,IGuardthreetopon.s}) [F= IF_IGuardthreetopon_(true,true)[[range_error<-illegal]] \ diff(Events,{IGuardthreetopon.e,IGuardthreetopon.t,IGuardthreetopon.s,illegal})
@@ -279,9 +293,9 @@ assert IF_IGuardthreetopon_(true,false) :[livelock free]
 assert COMPLETE'({RGuardthreetopon.e}) [F= IF_RGuardthreetopon_(true,true)[[range_error<-illegal]] \ diff(Events,{RGuardthreetopon.e,illegal})
 assert IF_RGuardthreetopon_(false,false) :[deadlock free]
 assert IF_RGuardthreetopon_(true,false) :[livelock free]
-assert CO_Guardthreetopon_(true,true)[[IGuardthreetopon_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
-assert COMPLETE'({i.e,i.t,i.s,r_''.a}) [F= CO_Guardthreetopon_(true,true)[[IGuardthreetopon_'.x'<-i_'.x'|x'<-extensions(i_')]][[range_error<-illegal]] \ diff(Events,{i.e,i.t,i.s,r_''.a,illegal})
+assert CO_Guardthreetopon_(true,true) :[deterministic]
+assert COMPLETE'({i.e,i.t,i.s,r_''.a}) [F= CO_Guardthreetopon_(true,true)[[range_error<-illegal]] \ diff(Events,{i.e,i.t,i.s,r_''.a,illegal})
 assert STOP [T= AS_Guardthreetopon_(false) \ diff(Events,{illegal,queue_full})
 assert AS_Guardthreetopon_(false) :[deadlock free]
-assert IF_IGuardthreetopon_(true,false) [[IGuardthreetopon.x<-i.x|x<-extensions(i)]][[IGuardthreetopon_'.x<-i_'.x|x<-extensions(i_')]][[IGuardthreetopon_''.x<-i_''.x|x<-extensions(i_'')]]\ {IGuardthreetopon_'''.modeling} [F= AS_Guardthreetopon_(true) \ diff(Events,{|illegal,i,i_',i_''|})
+assert IF_SPEC [F= AS_Guardthreetopon_(true) \ diff(Events,{|illegal,i,i_',i_''|})
 assert AS_Guardthreetopon_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

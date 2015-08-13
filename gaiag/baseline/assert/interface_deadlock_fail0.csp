@@ -1,48 +1,14 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = i30_e | i3_e | modeling | return | the_end'
+datatype event_enumeration_alphabet = i30_e | i3_e | inevitable | modeling | optional | return | the_end'
 
 -- end of combinators
--- both.csp.scm
--- end of both.csp.scm
--- interface.csp.scm
-
-channel i29_I: {i3_e,the_end'}
-
-channel i29_I_': {return}
-channel i29_I_in',i29_I_out': {i29_I_'.return}
-channel i29_I_''': {modeling}
-
-IF_i29_I_(IG,CS) = let
-
-i29_I_() =
-((true) & (
-IG & i29_I?x:{i3_e} -> (
-  illegal -> STOP
-))
-[]
-CS & i29_I?x:{} -> illegal -> STOP
-)
-
-REORDER' = i29_I?x' -> (i29_I_in'?y' -> i29_I.the_end' -> i29_I_out'!y' -> REORDER' [] i29_I.the_end' -> REORDER')
-
-compress(x) = let
-transparent sbisim
-transparent diamond
-within sbisim(diamond(x))
-
-within compress((if CS
-                then i29_I_()
-                else i29_I_() )
-               [[x<-i29_I_in'.x|x<-extensions(i29_I_in')]] [|{|i29_I,i29_I_in',i29_I.the_end'|}|] REORDER' [[i29_I_out'.x<-x|x<-extensions(i29_I_out')]] \ {|i29_I_in',i29_I.the_end'|})
-
--- end of interface.csp.scm
 -- both.csp.scm
 -- end of both.csp.scm
 -- interface.csp.scm
@@ -51,7 +17,7 @@ channel i46_DummyI: {i30_e,the_end'}
 
 channel i46_DummyI_': {return}
 channel i46_DummyI_in',i46_DummyI_out': {i46_DummyI_'.return}
-channel i46_DummyI_''': {modeling}
+channel i46_DummyI_''': {inevitable,optional,modeling}
 
 IF_i46_DummyI_(IG,CS) = let
 
@@ -63,10 +29,12 @@ i46_DummyI?x:{i30_e} -> (
   i46_DummyI_()
 ))
 []
-CS & i46_DummyI?x:{} -> illegal -> STOP
+CS & i46_DummyI_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = i46_DummyI?x' -> (i46_DummyI_in'?y' -> i46_DummyI.the_end' -> i46_DummyI_out'!y' -> REORDER' [] i46_DummyI.the_end' -> REORDER')
+           []
+           i46_DummyI_'''?x':{inevitable,optional} -> i46_DummyI_'''?x':{modeling} -> i46_DummyI.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -76,7 +44,43 @@ within sbisim(diamond(x))
 within compress((if CS
                 then i46_DummyI_()
                 else i46_DummyI_() )
-               [[x<-i46_DummyI_in'.x|x<-extensions(i46_DummyI_in')]] [|{|i46_DummyI,i46_DummyI_in',i46_DummyI.the_end'|}|] REORDER' [[i46_DummyI_out'.x<-x|x<-extensions(i46_DummyI_out')]] \ {|i46_DummyI_in',i46_DummyI.the_end'|})
+               [[x<-i46_DummyI_in'.x|x<-extensions(i46_DummyI_in')]] [|{|i46_DummyI,i46_DummyI_in',i46_DummyI_'''|}|] REORDER' [[i46_DummyI_out'.x<-x|x<-extensions(i46_DummyI_out')]] \ {|i46_DummyI_in',i46_DummyI.the_end'|})
+
+-- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
+-- interface.csp.scm
+
+channel i29_I: {i3_e,the_end'}
+
+channel i29_I_': {return}
+channel i29_I_in',i29_I_out': {i29_I_'.return}
+channel i29_I_''': {inevitable,optional,modeling}
+
+IF_i29_I_(IG,CS) = let
+
+i29_I_() =
+((true) & (
+IG & i29_I?x:{i3_e} -> (
+  illegal -> STOP
+))
+[]
+CS & i29_I_'''?x:{} -> illegal -> STOP
+)
+
+REORDER' = i29_I?x' -> (i29_I_in'?y' -> i29_I.the_end' -> i29_I_out'!y' -> REORDER' [] i29_I.the_end' -> REORDER')
+           []
+           i29_I_'''?x':{inevitable,optional} -> i29_I_'''?x':{modeling} -> i29_I.the_end' -> REORDER'
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                then i29_I_()
+                else i29_I_() )
+               [[x<-i29_I_in'.x|x<-extensions(i29_I_in')]] [|{|i29_I,i29_I_in',i29_I_'''|}|] REORDER' [[i29_I_out'.x<-x|x<-extensions(i29_I_out')]] \ {|i29_I_in',i29_I.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -90,7 +94,6 @@ channel i47_i_': extensions(i46_DummyI_')
 channel i50_ii_': extensions(i29_I_')
 
 
-channel i47_i_''': extensions(i46_DummyI_''')
 channel i50_ii_''': extensions(i29_I_''')
 
 
@@ -101,7 +104,7 @@ i69_DummyC_() =
 transition_begin -> (
 (true) & (
 i47_i?x:{i30_e} -> (
-    i46_DummyI_'.return ->
+    i47_i_'.return ->
   transition_end ->
   i69_DummyC_()
 )))
@@ -109,14 +112,13 @@ i47_i?x:{i30_e} -> (
 within i69_DummyC_()
 
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {i46_DummyI_'.return}
-channel reorder_out : {i47_i_'.return}
+channel reorder_in, reorder_out : {|i47_i_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -139,23 +141,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?i46_DummyI_'.x' -> reorder_out!i47_i_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?i46_DummyI_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i47_i_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -163,7 +164,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?i46_DummyI_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -174,28 +175,41 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {i47_i.i30_e}
-UsedModeling = {}
-TheEnd = {|i50_ii_'''|}
-within compress((CO_i69_DummyC_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {i47_i.i30_e}
+begin_required_modeling' = {}
+end_required_modeling' = {i50_ii_'''.modeling}
+within compress((CO_i69_DummyC_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i47_i,i47_i_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',i50_ii,i50_ii_',i50_ii_'''|}|]
                 (IF_i29_I_(true,false) [[i29_I.x<-i50_ii.x|x<-extensions(i50_ii)]][[i29_I_'.x<-i50_ii_'.x|x<-extensions(i50_ii_')]][[i29_I_'''.x<-i50_ii_'''.x|x<-extensions(i50_ii_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = i47_i?x -> i47_i_'?x -> R2C
+
+IFS = IF_i46_DummyI_(true,false)[[i46_DummyI<-i47_i]][[i46_DummyI_'<-i47_i_']]
+
+within compress(IFS [|{|i47_i,i47_i_'|}|] R2C \ {|i46_DummyI_'''|})
+
+
 -- end of component.csp.scm
-assert COMPLETE'({i29_I.i3_e}) [F= IF_i29_I_(true,true)[[range_error<-illegal]] \ diff(Events,{i29_I.i3_e,illegal})
-assert IF_i29_I_(false,false) :[deadlock free]
-assert IF_i29_I_(true,false) :[livelock free]
 assert COMPLETE'({i46_DummyI.i30_e}) [F= IF_i46_DummyI_(true,true)[[range_error<-illegal]] \ diff(Events,{i46_DummyI.i30_e,illegal})
 assert IF_i46_DummyI_(false,false) :[deadlock free]
 assert IF_i46_DummyI_(true,false) :[livelock free]
-assert CO_i69_DummyC_(true,true)[[i46_DummyI_'.x<-i47_i_'.x|x<-extensions(i47_i_')]] :[deterministic]
-assert COMPLETE'({i47_i.i30_e}) [F= CO_i69_DummyC_(true,true)[[i46_DummyI_'.x'<-i47_i_'.x'|x'<-extensions(i47_i_')]][[range_error<-illegal]] \ diff(Events,{i47_i.i30_e,illegal})
+assert COMPLETE'({i29_I.i3_e}) [F= IF_i29_I_(true,true)[[range_error<-illegal]] \ diff(Events,{i29_I.i3_e,illegal})
+assert IF_i29_I_(false,false) :[deadlock free]
+assert IF_i29_I_(true,false) :[livelock free]
+assert CO_i69_DummyC_(true,true) :[deterministic]
+assert COMPLETE'({i47_i.i30_e}) [F= CO_i69_DummyC_(true,true)[[range_error<-illegal]] \ diff(Events,{i47_i.i30_e,illegal})
 assert STOP [T= AS_i69_DummyC_(false) \ diff(Events,{illegal,queue_full})
 assert AS_i69_DummyC_(false) :[deadlock free]
-assert IF_i46_DummyI_(true,false) [[i46_DummyI.x<-i47_i.x|x<-extensions(i47_i)]][[i46_DummyI_'.x<-i47_i_'.x|x<-extensions(i47_i_')]]\ {i46_DummyI_'''.modeling} [F= AS_i69_DummyC_(true) \ diff(Events,{|illegal,i47_i,i47_i_'|})
+assert IF_SPEC [F= AS_i69_DummyC_(true) \ diff(Events,{|illegal,i47_i,i47_i_'|})
 assert AS_i69_DummyC_(true) \ diff(Events,{|illegal,i47_i,i47_i_'|}) :[livelock free]

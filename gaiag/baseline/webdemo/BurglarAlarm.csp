@@ -1,23 +1,60 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = i1428_Result_Failed | i1428_Result_OK | i1432_SwitchOn | i1437_SwitchOff | i1438_Tripped | i1439_SwitchedOff | i1443_SwitchOffFailed | i1447_States_Activated_AlarmMode | i1447_States_Activated_Idle | i1447_States_NotActivated | i1608_SignalTripped | i1609_SignalArmed | i1610_SignalUnarmed | i1611_SignalTrippedWrongCode | i1658_KeyPressed | i1659_Initialize | i1682_Result_BufferCleared | i1682_Result_CharAdded | i1682_Result_CodeComplete | i1682_Result_InvalidChar | i1686_AddDigit | i1691_GetCode | i1694_States_Building | i1694_States_Complete | i279_States_Armed | i279_States_Disarming | i279_States_Tripped | i279_States_Unarmed | i279_States_Uninitialized | modeling | optional | return | the_end'
+datatype event_enumeration_alphabet = i1428_Result_Failed | i1428_Result_OK | i1432_SwitchOn | i1437_SwitchOff | i1438_Tripped | i1439_SwitchedOff | i1443_SwitchOffFailed | i1447_States_Activated_AlarmMode | i1447_States_Activated_Idle | i1447_States_NotActivated | i1608_SignalTripped | i1609_SignalArmed | i1610_SignalUnarmed | i1611_SignalTrippedWrongCode | i1658_KeyPressed | i1659_Initialize | i1682_Result_BufferCleared | i1682_Result_CharAdded | i1682_Result_CodeComplete | i1682_Result_InvalidChar | i1686_AddDigit | i1691_GetCode | i1694_States_Building | i1694_States_Complete | i279_States_Armed | i279_States_Disarming | i279_States_Tripped | i279_States_Unarmed | i279_States_Uninitialized | inevitable | modeling | optional | return | the_end'
 
 -- end of combinators
 -- both.csp.scm
 -- end of both.csp.scm
 -- interface.csp.scm
 
-channel i1607_IAlarmSystem: {i1432_SwitchOn,i1437_SwitchOff,optional,the_end'}
+channel i1675_IAlarmConsole: {i1658_KeyPressed,i1659_Initialize,the_end'}
+
+channel i1675_IAlarmConsole_': {return}
+channel i1675_IAlarmConsole_in',i1675_IAlarmConsole_out': {i1675_IAlarmConsole_'.return}
+channel i1675_IAlarmConsole_''': {inevitable,optional,modeling}
+
+IF_i1675_IAlarmConsole_(IG,CS) = let
+
+i1675_IAlarmConsole_() =
+(i1675_IAlarmConsole?x:{i1658_KeyPressed,i1659_Initialize} -> (
+    i1675_IAlarmConsole_'.return ->
+  i1675_IAlarmConsole.the_end' ->
+  i1675_IAlarmConsole_()
+)
+[]
+CS & i1675_IAlarmConsole_'''?x:{} -> illegal -> STOP
+)
+
+REORDER' = i1675_IAlarmConsole?x' -> (i1675_IAlarmConsole_in'?y' -> i1675_IAlarmConsole.the_end' -> i1675_IAlarmConsole_out'!y' -> REORDER' [] i1675_IAlarmConsole.the_end' -> REORDER')
+           []
+           i1675_IAlarmConsole_'''?x':{inevitable,optional} -> i1675_IAlarmConsole_'''?x':{modeling} -> i1675_IAlarmConsole.the_end' -> REORDER'
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                then i1675_IAlarmConsole_()
+                else i1675_IAlarmConsole_() )
+               [[x<-i1675_IAlarmConsole_in'.x|x<-extensions(i1675_IAlarmConsole_in')]] [|{|i1675_IAlarmConsole,i1675_IAlarmConsole_in',i1675_IAlarmConsole_'''|}|] REORDER' [[i1675_IAlarmConsole_out'.x<-x|x<-extensions(i1675_IAlarmConsole_out')]] \ {|i1675_IAlarmConsole_in',i1675_IAlarmConsole.the_end'|})
+
+-- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
+-- interface.csp.scm
+
+channel i1607_IAlarmSystem: {i1432_SwitchOn,i1437_SwitchOff,the_end'}
 channel i1607_IAlarmSystem_'': {i1438_Tripped,i1439_SwitchedOff,i1443_SwitchOffFailed}
 channel i1607_IAlarmSystem_': {i1428_Result_OK,i1428_Result_Failed,return}
 channel i1607_IAlarmSystem_in',i1607_IAlarmSystem_out': {i1607_IAlarmSystem_'.i1428_Result_OK,i1607_IAlarmSystem_'.i1428_Result_Failed,i1607_IAlarmSystem_'.return}
-channel i1607_IAlarmSystem_''': {modeling}
+channel i1607_IAlarmSystem_''': {inevitable,optional,modeling}
 
 IF_i1607_IAlarmSystem_(IG,CS) = let
 
@@ -60,7 +97,7 @@ i1607_IAlarmSystem?x:{i1437_SwitchOff} -> (
   i1607_IAlarmSystem_(i1449_state)
 )
  []
-  i1607_IAlarmSystem?x:{optional} ->(
+  i1607_IAlarmSystem_'''?x:{optional} ->(
   i1607_IAlarmSystem_''!i1438_Tripped ->
   let tmp' = i1447_States_Activated_AlarmMode within
   let i1449_state = tmp' within
@@ -94,10 +131,12 @@ i1607_IAlarmSystem?x:{i1437_SwitchOff} -> (
   illegal -> STOP
 ))
 []
-CS & i1607_IAlarmSystem?x:{optional} -> illegal -> STOP
+CS & i1607_IAlarmSystem_'''?x:{optional} -> illegal -> STOP
 )
 
 REORDER' = i1607_IAlarmSystem?x' -> (i1607_IAlarmSystem_in'?y' -> i1607_IAlarmSystem.the_end' -> i1607_IAlarmSystem_out'!y' -> REORDER' [] i1607_IAlarmSystem.the_end' -> REORDER')
+           []
+           i1607_IAlarmSystem_'''?x':{inevitable,optional} -> i1607_IAlarmSystem_'''?x':{modeling} -> i1607_IAlarmSystem.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -106,8 +145,8 @@ within sbisim(diamond(x))
 
 within compress((if CS
                 then i1607_IAlarmSystem_(i1447_States_NotActivated)
-                else i1607_IAlarmSystem_(i1447_States_NotActivated)  [|{i1607_IAlarmSystem.optional}|] CHAOS({i1607_IAlarmSystem.optional}))
-               [[x<-i1607_IAlarmSystem_in'.x|x<-extensions(i1607_IAlarmSystem_in')]] [|{|i1607_IAlarmSystem,i1607_IAlarmSystem_in',i1607_IAlarmSystem.the_end'|}|] REORDER' [[i1607_IAlarmSystem_out'.x<-x|x<-extensions(i1607_IAlarmSystem_out')]] \ {|i1607_IAlarmSystem_in',i1607_IAlarmSystem.the_end'|})
+                else i1607_IAlarmSystem_(i1447_States_NotActivated)  [|{i1607_IAlarmSystem_'''.optional}|] CHAOS({i1607_IAlarmSystem_'''.optional}))
+               [[x<-i1607_IAlarmSystem_in'.x|x<-extensions(i1607_IAlarmSystem_in')]] [|{|i1607_IAlarmSystem,i1607_IAlarmSystem_in',i1607_IAlarmSystem_'''|}|] REORDER' [[i1607_IAlarmSystem_out'.x<-x|x<-extensions(i1607_IAlarmSystem_out')]] \ {|i1607_IAlarmSystem_in',i1607_IAlarmSystem.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -118,7 +157,7 @@ channel i1630_IAlarmStatusUI: {i1608_SignalTripped,i1609_SignalArmed,i1610_Signa
 
 channel i1630_IAlarmStatusUI_': {return}
 channel i1630_IAlarmStatusUI_in',i1630_IAlarmStatusUI_out': {i1630_IAlarmStatusUI_'.return}
-channel i1630_IAlarmStatusUI_''': {modeling}
+channel i1630_IAlarmStatusUI_''': {inevitable,optional,modeling}
 
 IF_i1630_IAlarmStatusUI_(IG,CS) = let
 
@@ -129,10 +168,12 @@ i1630_IAlarmStatusUI_() =
   i1630_IAlarmStatusUI_()
 )
 []
-CS & i1630_IAlarmStatusUI?x:{} -> illegal -> STOP
+CS & i1630_IAlarmStatusUI_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = i1630_IAlarmStatusUI?x' -> (i1630_IAlarmStatusUI_in'?y' -> i1630_IAlarmStatusUI.the_end' -> i1630_IAlarmStatusUI_out'!y' -> REORDER' [] i1630_IAlarmStatusUI.the_end' -> REORDER')
+           []
+           i1630_IAlarmStatusUI_'''?x':{inevitable,optional} -> i1630_IAlarmStatusUI_'''?x':{modeling} -> i1630_IAlarmStatusUI.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -142,42 +183,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then i1630_IAlarmStatusUI_()
                 else i1630_IAlarmStatusUI_() )
-               [[x<-i1630_IAlarmStatusUI_in'.x|x<-extensions(i1630_IAlarmStatusUI_in')]] [|{|i1630_IAlarmStatusUI,i1630_IAlarmStatusUI_in',i1630_IAlarmStatusUI.the_end'|}|] REORDER' [[i1630_IAlarmStatusUI_out'.x<-x|x<-extensions(i1630_IAlarmStatusUI_out')]] \ {|i1630_IAlarmStatusUI_in',i1630_IAlarmStatusUI.the_end'|})
-
--- end of interface.csp.scm
--- both.csp.scm
--- end of both.csp.scm
--- interface.csp.scm
-
-channel i1675_IAlarmConsole: {i1658_KeyPressed,i1659_Initialize,the_end'}
-
-channel i1675_IAlarmConsole_': {return}
-channel i1675_IAlarmConsole_in',i1675_IAlarmConsole_out': {i1675_IAlarmConsole_'.return}
-channel i1675_IAlarmConsole_''': {modeling}
-
-IF_i1675_IAlarmConsole_(IG,CS) = let
-
-i1675_IAlarmConsole_() =
-(i1675_IAlarmConsole?x:{i1658_KeyPressed,i1659_Initialize} -> (
-    i1675_IAlarmConsole_'.return ->
-  i1675_IAlarmConsole.the_end' ->
-  i1675_IAlarmConsole_()
-)
-[]
-CS & i1675_IAlarmConsole?x:{} -> illegal -> STOP
-)
-
-REORDER' = i1675_IAlarmConsole?x' -> (i1675_IAlarmConsole_in'?y' -> i1675_IAlarmConsole.the_end' -> i1675_IAlarmConsole_out'!y' -> REORDER' [] i1675_IAlarmConsole.the_end' -> REORDER')
-
-compress(x) = let
-transparent sbisim
-transparent diamond
-within sbisim(diamond(x))
-
-within compress((if CS
-                then i1675_IAlarmConsole_()
-                else i1675_IAlarmConsole_() )
-               [[x<-i1675_IAlarmConsole_in'.x|x<-extensions(i1675_IAlarmConsole_in')]] [|{|i1675_IAlarmConsole,i1675_IAlarmConsole_in',i1675_IAlarmConsole.the_end'|}|] REORDER' [[i1675_IAlarmConsole_out'.x<-x|x<-extensions(i1675_IAlarmConsole_out')]] \ {|i1675_IAlarmConsole_in',i1675_IAlarmConsole.the_end'|})
+               [[x<-i1630_IAlarmStatusUI_in'.x|x<-extensions(i1630_IAlarmStatusUI_in')]] [|{|i1630_IAlarmStatusUI,i1630_IAlarmStatusUI_in',i1630_IAlarmStatusUI_'''|}|] REORDER' [[i1630_IAlarmStatusUI_out'.x<-x|x<-extensions(i1630_IAlarmStatusUI_out')]] \ {|i1630_IAlarmStatusUI_in',i1630_IAlarmStatusUI.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -188,7 +194,7 @@ channel i1785_ICodeBuilder: {i1686_AddDigit,i1691_GetCode,the_end'}
 
 channel i1785_ICodeBuilder_': {i1682_Result_CharAdded,i1682_Result_InvalidChar,i1682_Result_CodeComplete,i1682_Result_BufferCleared,return}
 channel i1785_ICodeBuilder_in',i1785_ICodeBuilder_out': {i1785_ICodeBuilder_'.i1682_Result_CharAdded,i1785_ICodeBuilder_'.i1682_Result_InvalidChar,i1785_ICodeBuilder_'.i1682_Result_CodeComplete,i1785_ICodeBuilder_'.i1682_Result_BufferCleared,i1785_ICodeBuilder_'.return}
-channel i1785_ICodeBuilder_''': {modeling}
+channel i1785_ICodeBuilder_''': {inevitable,optional,modeling}
 
 IF_i1785_ICodeBuilder_(IG,CS) = let
 
@@ -239,10 +245,12 @@ IG & i1785_ICodeBuilder?x:{i1686_AddDigit} -> (
   i1785_ICodeBuilder_(i1696_state)
 ))
 []
-CS & i1785_ICodeBuilder?x:{} -> illegal -> STOP
+CS & i1785_ICodeBuilder_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = i1785_ICodeBuilder?x' -> (i1785_ICodeBuilder_in'?y' -> i1785_ICodeBuilder.the_end' -> i1785_ICodeBuilder_out'!y' -> REORDER' [] i1785_ICodeBuilder.the_end' -> REORDER')
+           []
+           i1785_ICodeBuilder_'''?x':{inevitable,optional} -> i1785_ICodeBuilder_'''?x':{modeling} -> i1785_ICodeBuilder.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -252,7 +260,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then i1785_ICodeBuilder_(i1694_States_Building)
                 else i1785_ICodeBuilder_(i1694_States_Building) )
-               [[x<-i1785_ICodeBuilder_in'.x|x<-extensions(i1785_ICodeBuilder_in')]] [|{|i1785_ICodeBuilder,i1785_ICodeBuilder_in',i1785_ICodeBuilder.the_end'|}|] REORDER' [[i1785_ICodeBuilder_out'.x<-x|x<-extensions(i1785_ICodeBuilder_out')]] \ {|i1785_ICodeBuilder_in',i1785_ICodeBuilder.the_end'|})
+               [[x<-i1785_ICodeBuilder_in'.x|x<-extensions(i1785_ICodeBuilder_in')]] [|{|i1785_ICodeBuilder,i1785_ICodeBuilder_in',i1785_ICodeBuilder_'''|}|] REORDER' [[i1785_ICodeBuilder_out'.x<-x|x<-extensions(i1785_ICodeBuilder_out')]] \ {|i1785_ICodeBuilder_in',i1785_ICodeBuilder.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -271,7 +279,6 @@ channel i271_codestore_': extensions(i1785_ICodeBuilder_')
 
 channel i265_alarmSystem_'': extensions(i1607_IAlarmSystem_'')
 
-channel i262_alarmConsole_''': extensions(i1675_IAlarmConsole_''')
 channel i265_alarmSystem_''': extensions(i1607_IAlarmSystem_''')
 channel i268_statusUI_''': extensions(i1630_IAlarmStatusUI_''')
 channel i271_codestore_''': extensions(i1785_ICodeBuilder_''')
@@ -287,13 +294,13 @@ i262_alarmConsole?x:{i1659_Initialize} -> (
   i268_statusUI!i1610_SignalUnarmed -> i268_statusUI_'.return ->
   let tmp' = i279_States_Unarmed within
   let i281_state = tmp' within
-    i1675_IAlarmConsole_'.return ->
+    i262_alarmConsole_'.return ->
   transition_end ->
   i673_AlarmConsole_(i281_state)
 )
  []
   i262_alarmConsole?x:{i1658_KeyPressed} -> (
-    i1675_IAlarmConsole_'.return ->
+    i262_alarmConsole_'.return ->
   transition_end ->
   i673_AlarmConsole_(i281_state)
 )
@@ -304,7 +311,7 @@ i262_alarmConsole?x:{i1659_Initialize} -> (
 []
 ((i281_state == i279_States_Unarmed)) & (
 i262_alarmConsole?x:{i1659_Initialize} -> (
-    i1675_IAlarmConsole_'.return ->
+    i262_alarmConsole_'.return ->
   transition_end ->
   i673_AlarmConsole_(i281_state)
 )
@@ -320,18 +327,18 @@ i262_alarmConsole?x:{i1659_Initialize} -> (
       i268_statusUI!i1609_SignalArmed -> i268_statusUI_'.return ->
       let tmp' = i279_States_Armed within
       let i281_state = tmp' within
-        i1675_IAlarmConsole_'.return ->
+        i262_alarmConsole_'.return ->
       transition_end ->
   i673_AlarmConsole_(i281_state)
 
     else
-        i1675_IAlarmConsole_'.return ->
+        i262_alarmConsole_'.return ->
       transition_end ->
   i673_AlarmConsole_(i281_state)
 )
 
   else
-      i1675_IAlarmConsole_'.return ->
+      i262_alarmConsole_'.return ->
     transition_end ->
   i673_AlarmConsole_(i281_state)
 )
@@ -343,7 +350,7 @@ i262_alarmConsole?x:{i1659_Initialize} -> (
 []
 ((i281_state == i279_States_Armed)) & (
 i262_alarmConsole?x:{i1659_Initialize} -> (
-    i1675_IAlarmConsole_'.return ->
+    i262_alarmConsole_'.return ->
   transition_end ->
   i673_AlarmConsole_(i281_state)
 )
@@ -356,12 +363,12 @@ i262_alarmConsole?x:{i1659_Initialize} -> (
     i265_alarmSystem!i1437_SwitchOff -> i265_alarmSystem_'.return ->
     let tmp' = i279_States_Disarming within
     let i281_state = tmp' within
-      i1675_IAlarmConsole_'.return ->
+      i262_alarmConsole_'.return ->
     transition_end ->
   i673_AlarmConsole_(i281_state)
 
   else
-      i1675_IAlarmConsole_'.return ->
+      i262_alarmConsole_'.return ->
     transition_end ->
   i673_AlarmConsole_(i281_state)
 )
@@ -381,7 +388,7 @@ i262_alarmConsole?x:{i1659_Initialize} -> (
 []
 ((i281_state == i279_States_Disarming)) & (
 i262_alarmConsole?x:{i1659_Initialize,i1658_KeyPressed} -> (
-    i1675_IAlarmConsole_'.return ->
+    i262_alarmConsole_'.return ->
   transition_end ->
   i673_AlarmConsole_(i281_state)
 )
@@ -409,7 +416,7 @@ i262_alarmConsole?x:{i1659_Initialize,i1658_KeyPressed} -> (
 []
 ((i281_state == i279_States_Tripped)) & (
 i262_alarmConsole?x:{i1659_Initialize} -> (
-    i1675_IAlarmConsole_'.return ->
+    i262_alarmConsole_'.return ->
   transition_end ->
   i673_AlarmConsole_(i281_state)
 )
@@ -422,12 +429,12 @@ i262_alarmConsole?x:{i1659_Initialize} -> (
     i265_alarmSystem!i1437_SwitchOff -> i265_alarmSystem_'.return ->
     let tmp' = i279_States_Disarming within
     let i281_state = tmp' within
-      i1675_IAlarmConsole_'.return ->
+      i262_alarmConsole_'.return ->
     transition_end ->
   i673_AlarmConsole_(i281_state)
 
   else
-      i1675_IAlarmConsole_'.return ->
+      i262_alarmConsole_'.return ->
     transition_end ->
   i673_AlarmConsole_(i281_state)
 )
@@ -440,14 +447,13 @@ i262_alarmConsole?x:{i1659_Initialize} -> (
 within i673_AlarmConsole_(i279_States_Uninitialized)
 
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {i265_alarmSystem_''.i1438_Tripped,i265_alarmSystem_''.i1439_SwitchedOff,i265_alarmSystem_''.i1443_SwitchOffFailed,extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|i265_alarmSystem_'',extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {i1675_IAlarmConsole_'.return}
-channel reorder_out : {i262_alarmConsole_'.return}
+channel reorder_in, reorder_out : {|i262_alarmConsole_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -470,23 +476,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?i1675_IAlarmConsole_'.x' -> reorder_out!i262_alarmConsole_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?i1675_IAlarmConsole_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i262_alarmConsole_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -494,7 +499,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?i1675_IAlarmConsole_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -505,13 +510,12 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {i262_alarmConsole.i1658_KeyPressed,i262_alarmConsole.i1659_Initialize}
-UsedModeling = {i265_alarmSystem.optional}
-TheEnd = {|i265_alarmSystem_''',i268_statusUI_''',i271_codestore_'''|}
-within compress((CO_i673_AlarmConsole_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {i262_alarmConsole.i1658_KeyPressed,i262_alarmConsole.i1659_Initialize}
+begin_required_modeling' = {i265_alarmSystem_'''.optional}
+end_required_modeling' = {i265_alarmSystem_'''.modeling,i268_statusUI_'''.modeling,i271_codestore_'''.modeling}
+within compress((CO_i673_AlarmConsole_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i262_alarmConsole,i262_alarmConsole_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',i265_alarmSystem,i265_alarmSystem_',i265_alarmSystem_''',i268_statusUI,i268_statusUI_',i268_statusUI_''',i271_codestore,i271_codestore_',i271_codestore_'''|}|]
                 (IF_i1607_IAlarmSystem_(true,false) [[i1607_IAlarmSystem.x<-i265_alarmSystem.x|x<-extensions(i265_alarmSystem)]][[i1607_IAlarmSystem_'.x<-i265_alarmSystem_'.x|x<-extensions(i265_alarmSystem_')]][[i1607_IAlarmSystem_''.x<-i265_alarmSystem_''.x|x<-extensions(i265_alarmSystem_'')]][[i1607_IAlarmSystem_'''.x<-i265_alarmSystem_'''.x|x<-extensions(i265_alarmSystem_''')]]
@@ -519,22 +523,36 @@ within compress((CO_i673_AlarmConsole_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')
                  ||| IF_i1785_ICodeBuilder_(true,false) [[i1785_ICodeBuilder.x<-i271_codestore.x|x<-extensions(i271_codestore)]][[i1785_ICodeBuilder_'.x<-i271_codestore_'.x|x<-extensions(i271_codestore_')]][[i1785_ICodeBuilder_'''.x<-i271_codestore_'''.x|x<-extensions(i271_codestore_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = i262_alarmConsole?x -> i262_alarmConsole_'?x -> R2C
+
+IFS = IF_i1675_IAlarmConsole_(true,false)[[i1675_IAlarmConsole<-i262_alarmConsole]][[i1675_IAlarmConsole_'<-i262_alarmConsole_']]
+
+within compress(IFS [|{|i262_alarmConsole,i262_alarmConsole_'|}|] R2C \ {|i1675_IAlarmConsole_'''|})
+
+
 -- end of component.csp.scm
-assert COMPLETE'({i1607_IAlarmSystem.optional,i1607_IAlarmSystem.i1432_SwitchOn,i1607_IAlarmSystem.i1437_SwitchOff}) [F= IF_i1607_IAlarmSystem_(true,true)[[range_error<-illegal]] \ diff(Events,{i1607_IAlarmSystem.optional,i1607_IAlarmSystem.i1432_SwitchOn,i1607_IAlarmSystem.i1437_SwitchOff,illegal})
+assert COMPLETE'({i1675_IAlarmConsole.i1658_KeyPressed,i1675_IAlarmConsole.i1659_Initialize}) [F= IF_i1675_IAlarmConsole_(true,true)[[range_error<-illegal]] \ diff(Events,{i1675_IAlarmConsole.i1658_KeyPressed,i1675_IAlarmConsole.i1659_Initialize,illegal})
+assert IF_i1675_IAlarmConsole_(false,false) :[deadlock free]
+assert IF_i1675_IAlarmConsole_(true,false) :[livelock free]
+assert COMPLETE'({i1607_IAlarmSystem.i1432_SwitchOn,i1607_IAlarmSystem.i1437_SwitchOff,i1607_IAlarmSystem_'''.optional}) [F= IF_i1607_IAlarmSystem_(true,true)[[range_error<-illegal]] \ diff(Events,{i1607_IAlarmSystem.i1432_SwitchOn,i1607_IAlarmSystem.i1437_SwitchOff,i1607_IAlarmSystem_'''.optional,illegal})
 assert IF_i1607_IAlarmSystem_(false,false) :[deadlock free]
 assert IF_i1607_IAlarmSystem_(true,false) :[livelock free]
 assert COMPLETE'({i1630_IAlarmStatusUI.i1608_SignalTripped,i1630_IAlarmStatusUI.i1609_SignalArmed,i1630_IAlarmStatusUI.i1610_SignalUnarmed,i1630_IAlarmStatusUI.i1611_SignalTrippedWrongCode}) [F= IF_i1630_IAlarmStatusUI_(true,true)[[range_error<-illegal]] \ diff(Events,{i1630_IAlarmStatusUI.i1608_SignalTripped,i1630_IAlarmStatusUI.i1609_SignalArmed,i1630_IAlarmStatusUI.i1610_SignalUnarmed,i1630_IAlarmStatusUI.i1611_SignalTrippedWrongCode,illegal})
 assert IF_i1630_IAlarmStatusUI_(false,false) :[deadlock free]
 assert IF_i1630_IAlarmStatusUI_(true,false) :[livelock free]
-assert COMPLETE'({i1675_IAlarmConsole.i1658_KeyPressed,i1675_IAlarmConsole.i1659_Initialize}) [F= IF_i1675_IAlarmConsole_(true,true)[[range_error<-illegal]] \ diff(Events,{i1675_IAlarmConsole.i1658_KeyPressed,i1675_IAlarmConsole.i1659_Initialize,illegal})
-assert IF_i1675_IAlarmConsole_(false,false) :[deadlock free]
-assert IF_i1675_IAlarmConsole_(true,false) :[livelock free]
 assert COMPLETE'({i1785_ICodeBuilder.i1686_AddDigit,i1785_ICodeBuilder.i1691_GetCode}) [F= IF_i1785_ICodeBuilder_(true,true)[[range_error<-illegal]] \ diff(Events,{i1785_ICodeBuilder.i1686_AddDigit,i1785_ICodeBuilder.i1691_GetCode,illegal})
 assert IF_i1785_ICodeBuilder_(false,false) :[deadlock free]
 assert IF_i1785_ICodeBuilder_(true,false) :[livelock free]
-assert CO_i673_AlarmConsole_(true,true)[[i1675_IAlarmConsole_'.x<-i262_alarmConsole_'.x|x<-extensions(i262_alarmConsole_')]] :[deterministic]
-assert COMPLETE'({i262_alarmConsole.i1658_KeyPressed,i262_alarmConsole.i1659_Initialize,i265_alarmSystem_''.i1438_Tripped,i265_alarmSystem_''.i1439_SwitchedOff,i265_alarmSystem_''.i1443_SwitchOffFailed}) [F= CO_i673_AlarmConsole_(true,true)[[i1675_IAlarmConsole_'.x'<-i262_alarmConsole_'.x'|x'<-extensions(i262_alarmConsole_')]][[range_error<-illegal]] \ diff(Events,{i262_alarmConsole.i1658_KeyPressed,i262_alarmConsole.i1659_Initialize,i265_alarmSystem_''.i1438_Tripped,i265_alarmSystem_''.i1439_SwitchedOff,i265_alarmSystem_''.i1443_SwitchOffFailed,illegal})
+assert CO_i673_AlarmConsole_(true,true) :[deterministic]
+assert COMPLETE'({i262_alarmConsole.i1658_KeyPressed,i262_alarmConsole.i1659_Initialize,i265_alarmSystem_''.i1438_Tripped,i265_alarmSystem_''.i1439_SwitchedOff,i265_alarmSystem_''.i1443_SwitchOffFailed}) [F= CO_i673_AlarmConsole_(true,true)[[range_error<-illegal]] \ diff(Events,{i262_alarmConsole.i1658_KeyPressed,i262_alarmConsole.i1659_Initialize,i265_alarmSystem_''.i1438_Tripped,i265_alarmSystem_''.i1439_SwitchedOff,i265_alarmSystem_''.i1443_SwitchOffFailed,illegal})
 assert STOP [T= AS_i673_AlarmConsole_(false) \ diff(Events,{illegal,queue_full})
 assert AS_i673_AlarmConsole_(false) :[deadlock free]
-assert IF_i1675_IAlarmConsole_(true,false) [[i1675_IAlarmConsole.x<-i262_alarmConsole.x|x<-extensions(i262_alarmConsole)]][[i1675_IAlarmConsole_'.x<-i262_alarmConsole_'.x|x<-extensions(i262_alarmConsole_')]]\ {i1675_IAlarmConsole_'''.modeling} [F= AS_i673_AlarmConsole_(true) \ diff(Events,{|illegal,i262_alarmConsole,i262_alarmConsole_'|})
-assert AS_i673_AlarmConsole_(true) \ diff(Events,{|i265_alarmSystem.optional,illegal,i262_alarmConsole,i262_alarmConsole_'|}) :[livelock free]
+assert IF_SPEC [F= AS_i673_AlarmConsole_(true) \ diff(Events,{|illegal,i262_alarmConsole,i262_alarmConsole_'|})
+assert AS_i673_AlarmConsole_(true) \ diff(Events,{|i265_alarmSystem_'''.optional,illegal,i262_alarmConsole,i262_alarmConsole_'|}) :[livelock free]

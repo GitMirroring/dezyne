@@ -1,12 +1,12 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = busy | finish | modeling | ping | pong | return | start | the_end'
+datatype event_enumeration_alphabet = busy | finish | inevitable | modeling | optional | ping | pong | return | start | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -17,7 +17,7 @@ channel Provides: {start,the_end'}
 channel Provides_'': {busy,finish}
 channel Provides_': {return}
 channel Provides_in',Provides_out': {Provides_'.return}
-channel Provides_''': {modeling}
+channel Provides_''': {inevitable,optional,modeling}
 
 IF_Provides_(IG,CS) = let
 
@@ -30,10 +30,12 @@ Provides_() =
   Provides_()
 )
 []
-CS & Provides?x:{} -> illegal -> STOP
+CS & Provides_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = Provides?x' -> (Provides_in'?y' -> Provides.the_end' -> Provides_out'!y' -> REORDER' [] Provides.the_end' -> REORDER')
+           []
+           Provides_'''?x':{inevitable,optional} -> Provides_'''?x':{modeling} -> Provides.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -43,7 +45,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then Provides_()
                 else Provides_() )
-               [[x<-Provides_in'.x|x<-extensions(Provides_in')]] [|{|Provides,Provides_in',Provides.the_end'|}|] REORDER' [[Provides_out'.x<-x|x<-extensions(Provides_out')]] \ {|Provides_in',Provides.the_end'|})
+               [[x<-Provides_in'.x|x<-extensions(Provides_in')]] [|{|Provides,Provides_in',Provides_'''|}|] REORDER' [[Provides_out'.x<-x|x<-extensions(Provides_out')]] \ {|Provides_in',Provides.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -54,7 +56,7 @@ channel Requires: {ping,the_end'}
 channel Requires_'': {pong}
 channel Requires_': {return}
 channel Requires_in',Requires_out': {Requires_'.return}
-channel Requires_''': {modeling}
+channel Requires_''': {inevitable,optional,modeling}
 
 IF_Requires_(IG,CS) = let
 
@@ -67,10 +69,12 @@ Requires_() =
   Requires_()
 )
 []
-CS & Requires?x:{} -> illegal -> STOP
+CS & Requires_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = Requires?x' -> (Requires_in'?y' -> Requires.the_end' -> Requires_out'!y' -> REORDER' [] Requires.the_end' -> REORDER')
+           []
+           Requires_'''?x':{inevitable,optional} -> Requires_'''?x':{modeling} -> Requires.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -80,7 +84,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then Requires_()
                 else Requires_() )
-               [[x<-Requires_in'.x|x<-extensions(Requires_in')]] [|{|Requires,Requires_in',Requires.the_end'|}|] REORDER' [[Requires_out'.x<-x|x<-extensions(Requires_out')]] \ {|Requires_in',Requires.the_end'|})
+               [[x<-Requires_in'.x|x<-extensions(Requires_in')]] [|{|Requires,Requires_in',Requires_'''|}|] REORDER' [[Requires_out'.x<-x|x<-extensions(Requires_out')]] \ {|Requires_in',Requires.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -96,7 +100,6 @@ channel r_': extensions(Requires_')
 channel p_'': extensions(Provides_'')
 channel r_'': extensions(Requires_'')
 
-channel p_''': extensions(Provides_''')
 channel r_''': extensions(Requires_''')
 
 
@@ -125,22 +128,21 @@ r_''?x:{pong} -> (
 []
 p?x:{start} -> (
   r!ping -> r_'.return ->
-    Provides_'.return ->
+    p_'.return ->
   transition_end ->
   reply_reorder_(first)
 ))
 
 within reply_reorder_(true)
-                                                     
+
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {r_''.pong,extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|r_'',extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {Provides_'.return}
-channel reorder_out : {p_'.return}
+channel reorder_in, reorder_out : {|p_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -163,23 +165,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?Provides_'.x' -> reorder_out!p_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?Provides_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!p_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -187,7 +188,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?Provides_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -198,17 +199,30 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {p.start}
-UsedModeling = {}
-TheEnd = {|r_'''|}
-within compress((CO_reply_reorder_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {p.start}
+begin_required_modeling' = {}
+end_required_modeling' = {r_'''.modeling}
+within compress((CO_reply_reorder_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,p,p_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',r,r_',r_'''|}|]
                 (IF_Requires_(true,false) [[Requires.x<-r.x|x<-extensions(r)]][[Requires_'.x<-r_'.x|x<-extensions(r_')]][[Requires_''.x<-r_''.x|x<-extensions(r_'')]][[Requires_'''.x<-r_'''.x|x<-extensions(r_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
+
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = p?x -> p_'?x -> R2C
+
+IFS = IF_Provides_(true,false)[[Provides<-p]][[Provides_'<-p_']][[Provides_''<-p_'']]
+
+within compress(IFS [|{|p,p_'|}|] R2C \ {|Provides_'''|})
+
 
 -- end of component.csp.scm
 assert COMPLETE'({Provides.start}) [F= IF_Provides_(true,true)[[range_error<-illegal]] \ diff(Events,{Provides.start,illegal})
@@ -217,9 +231,9 @@ assert IF_Provides_(true,false) :[livelock free]
 assert COMPLETE'({Requires.ping}) [F= IF_Requires_(true,true)[[range_error<-illegal]] \ diff(Events,{Requires.ping,illegal})
 assert IF_Requires_(false,false) :[deadlock free]
 assert IF_Requires_(true,false) :[livelock free]
-assert CO_reply_reorder_(true,true)[[Provides_'.x<-p_'.x|x<-extensions(p_')]] :[deterministic]
-assert COMPLETE'({p.start,r_''.pong}) [F= CO_reply_reorder_(true,true)[[Provides_'.x'<-p_'.x'|x'<-extensions(p_')]][[range_error<-illegal]] \ diff(Events,{p.start,r_''.pong,illegal})
+assert CO_reply_reorder_(true,true) :[deterministic]
+assert COMPLETE'({p.start,r_''.pong}) [F= CO_reply_reorder_(true,true)[[range_error<-illegal]] \ diff(Events,{p.start,r_''.pong,illegal})
 assert STOP [T= AS_reply_reorder_(false) \ diff(Events,{illegal,queue_full})
 assert AS_reply_reorder_(false) :[deadlock free]
-assert IF_Provides_(true,false) [[Provides.x<-p.x|x<-extensions(p)]][[Provides_'.x<-p_'.x|x<-extensions(p_')]][[Provides_''.x<-p_''.x|x<-extensions(p_'')]]\ {Provides_'''.modeling} [F= AS_reply_reorder_(true) \ diff(Events,{|illegal,p,p_',p_''|})
+assert IF_SPEC [F= AS_reply_reorder_(true) \ diff(Events,{|illegal,p,p_',p_''|})
 assert AS_reply_reorder_(true) \ diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]

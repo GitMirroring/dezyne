@@ -1,12 +1,12 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = Status_No | Status_Yes | a | a0 | a6 | aa | e | e0 | e0r | eer | eio | eio2 | eio2r | eior | eo | eoo | eoor | eor | er | modeling | return | the_end'
+datatype event_enumeration_alphabet = Status_No | Status_Yes | a | a0 | a6 | aa | e | e0 | e0r | eer | eio | eio2 | eio2r | eior | eo | eoo | eoor | eor | er | inevitable | modeling | optional | return | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -17,7 +17,7 @@ channel IDataparam: {e,e0,e0r,eer,eio,eio2,eio2r,eior,eo,eoo,eoor,eor,er,the_end
 channel IDataparam_'': {a,a0,a6,aa}
 channel IDataparam_': {Status_Yes,Status_No,return}
 channel IDataparam_in',IDataparam_out': {IDataparam_'.Status_Yes,IDataparam_'.Status_No,IDataparam_'.return}
-channel IDataparam_''': {modeling}
+channel IDataparam_''': {inevitable,optional,modeling}
 
 IF_IDataparam_(IG,CS) = let
 
@@ -72,10 +72,12 @@ IDataparam?x:{eor,eoor,eior,eio2r} -> (
   IDataparam_()
 )
 []
-CS & IDataparam?x:{} -> illegal -> STOP
+CS & IDataparam_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = IDataparam?x' -> (IDataparam_in'?y' -> IDataparam.the_end' -> IDataparam_out'!y' -> REORDER' [] IDataparam.the_end' -> REORDER')
+           []
+           IDataparam_'''?x':{inevitable,optional} -> IDataparam_'''?x':{modeling} -> IDataparam.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -85,7 +87,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then IDataparam_()
                 else IDataparam_() )
-               [[x<-IDataparam_in'.x|x<-extensions(IDataparam_in')]] [|{|IDataparam,IDataparam_in',IDataparam.the_end'|}|] REORDER' [[IDataparam_out'.x<-x|x<-extensions(IDataparam_out')]] \ {|IDataparam_in',IDataparam.the_end'|})
+               [[x<-IDataparam_in'.x|x<-extensions(IDataparam_in')]] [|{|IDataparam,IDataparam_in',IDataparam_'''|}|] REORDER' [[IDataparam_out'.x<-x|x<-extensions(IDataparam_out')]] \ {|IDataparam_in',IDataparam.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -98,7 +100,6 @@ channel port_': extensions(IDataparam_')
 
 channel port_'': extensions(IDataparam_'')
 
-channel port_''': extensions(IDataparam_''')
 
 
 
@@ -112,14 +113,14 @@ Dataparam_(s) =
 transition_begin -> (
 port?x:{e0} -> (
   port_''!a6 ->
-    IDataparam_'.return ->
+    port_'.return ->
   transition_end ->
   Dataparam_(s)
 )
 []
 port?x:{e0r} -> (
   port_''!a0 ->
-  IDataparam_'!Status_Yes -> 
+  port_'!Status_Yes -> 
   transition_end ->
   Dataparam_(s)
 )
@@ -131,7 +132,7 @@ port?x:{e} -> (
     let s = tmp' within
     port_''!a ->
   port_''!aa ->
-    IDataparam_'.return ->
+    port_'.return ->
   transition_end ->
   Dataparam_(s)
   within
@@ -143,12 +144,12 @@ port?x:{er} -> (
   port_''!a ->
   port_''!aa ->
   (if true then 
-    IDataparam_'!Status_Yes -> 
+    port_'!Status_Yes -> 
     transition_end ->
     Dataparam_(s)
 
   else
-    IDataparam_'!s -> 
+    port_'!s -> 
     transition_end ->
     Dataparam_(s)
 )
@@ -158,70 +159,69 @@ port?x:{eer} -> (
   let s = Status_No within
   port_''!a ->
   port_''!aa ->
-  IDataparam_'!s -> 
+  port_'!s -> 
   transition_end ->
   Dataparam_(s)
 )
 []
 port?x:{eo} -> (
-    IDataparam_'.return ->
+    port_'.return ->
   transition_end ->
   Dataparam_(s)
 )
 []
 port?x:{eoo} -> (
-    IDataparam_'.return ->
+    port_'.return ->
   transition_end ->
   Dataparam_(s)
 )
 []
 port?x:{eio} -> (
-    IDataparam_'.return ->
+    port_'.return ->
   transition_end ->
   Dataparam_(s)
 )
 []
 port?x:{eio2} -> (
-    IDataparam_'.return ->
+    port_'.return ->
   transition_end ->
   Dataparam_(s)
 )
 []
 port?x:{eor} -> (
-  IDataparam_'!Status_Yes -> 
+  port_'!Status_Yes -> 
   transition_end ->
   Dataparam_(s)
 )
 []
 port?x:{eoor} -> (
-  IDataparam_'!Status_Yes -> 
+  port_'!Status_Yes -> 
   transition_end ->
   Dataparam_(s)
 )
 []
 port?x:{eior} -> (
-  IDataparam_'!Status_Yes -> 
+  port_'!Status_Yes -> 
   transition_end ->
   Dataparam_(s)
 )
 []
 port?x:{eio2r} -> (
-  IDataparam_'!Status_Yes -> 
+  port_'!Status_Yes -> 
   transition_end ->
   Dataparam_(s)
 ))
 
 within Dataparam_(Status_Yes)
-                                                     
+
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {IDataparam_'.Status_Yes,IDataparam_'.Status_No,IDataparam_'.return}
-channel reorder_out : {port_'.Status_Yes,port_'.Status_No,port_'.return}
+channel reorder_in, reorder_out : {|port_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -244,23 +244,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?IDataparam_'.x' -> reorder_out!port_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?IDataparam_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!port_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -268,7 +267,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?IDataparam_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -279,25 +278,38 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r}
-UsedModeling = {}
-TheEnd = {||}
-within compress((CO_Dataparam_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r}
+begin_required_modeling' = {}
+end_required_modeling' = {}
+within compress((CO_Dataparam_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,port,port_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN'|}|]
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = port?x -> port_'?x -> R2C
+
+IFS = IF_IDataparam_(true,false)[[IDataparam<-port]][[IDataparam_'<-port_']][[IDataparam_''<-port_'']]
+
+within compress(IFS [|{|port,port_'|}|] R2C \ {|IDataparam_'''|})
+
+
 -- end of component.csp.scm
 assert COMPLETE'({IDataparam.e0,IDataparam.e0r,IDataparam.e,IDataparam.er,IDataparam.eer,IDataparam.eo,IDataparam.eoo,IDataparam.eio,IDataparam.eio2,IDataparam.eor,IDataparam.eoor,IDataparam.eior,IDataparam.eio2r}) [F= IF_IDataparam_(true,true)[[range_error<-illegal]] \ diff(Events,{IDataparam.e0,IDataparam.e0r,IDataparam.e,IDataparam.er,IDataparam.eer,IDataparam.eo,IDataparam.eoo,IDataparam.eio,IDataparam.eio2,IDataparam.eor,IDataparam.eoor,IDataparam.eior,IDataparam.eio2r,illegal})
 assert IF_IDataparam_(false,false) :[deadlock free]
 assert IF_IDataparam_(true,false) :[livelock free]
-assert CO_Dataparam_(true,true)[[IDataparam_'.x<-port_'.x|x<-extensions(port_')]] :[deterministic]
-assert COMPLETE'({port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r}) [F= CO_Dataparam_(true,true)[[IDataparam_'.x'<-port_'.x'|x'<-extensions(port_')]][[range_error<-illegal]] \ diff(Events,{port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r,illegal})
+assert CO_Dataparam_(true,true) :[deterministic]
+assert COMPLETE'({port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r}) [F= CO_Dataparam_(true,true)[[range_error<-illegal]] \ diff(Events,{port.e0,port.e0r,port.e,port.er,port.eer,port.eo,port.eoo,port.eio,port.eio2,port.eor,port.eoor,port.eior,port.eio2r,illegal})
 assert STOP [T= AS_Dataparam_(false) \ diff(Events,{illegal,queue_full})
 assert AS_Dataparam_(false) :[deadlock free]
-assert IF_IDataparam_(true,false) [[IDataparam.x<-port.x|x<-extensions(port)]][[IDataparam_'.x<-port_'.x|x<-extensions(port_')]][[IDataparam_''.x<-port_''.x|x<-extensions(port_'')]]\ {IDataparam_'''.modeling} [F= AS_Dataparam_(true) \ diff(Events,{|illegal,port,port_',port_''|})
+assert IF_SPEC [F= AS_Dataparam_(true) \ diff(Events,{|illegal,port,port_',port_''|})
 assert AS_Dataparam_(true) \ diff(Events,{|illegal,port,port_',port_''|}) :[livelock free]

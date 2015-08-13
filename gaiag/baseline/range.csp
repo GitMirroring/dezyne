@@ -1,12 +1,12 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = a | e | modeling | return | the_end'
+datatype event_enumeration_alphabet = a | e | inevitable | modeling | optional | return | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -17,7 +17,7 @@ channel range: {e,the_end'}
 channel range_'': {a}
 channel range_': {return}
 channel range_in',range_out': {range_'.return}
-channel range_''': {modeling}
+channel range_''': {inevitable,optional,modeling}
 
 IF_range_(IG,CS) = let
 f(P')(state) = 
@@ -47,10 +47,12 @@ range?x:{e} -> (
   f(Cont_2')(state)
 )
 []
-CS & range?x:{} -> illegal -> STOP
+CS & range_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = range?x' -> (range_in'?y' -> range.the_end' -> range_out'!y' -> REORDER' [] range.the_end' -> REORDER')
+           []
+           range_'''?x':{inevitable,optional} -> range_'''?x':{modeling} -> range.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -60,7 +62,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then range_(3)
                 else range_(3) )
-               [[x<-range_in'.x|x<-extensions(range_in')]] [|{|range,range_in',range.the_end'|}|] REORDER' [[range_out'.x<-x|x<-extensions(range_out')]] \ {|range_in',range.the_end'|})
+               [[x<-range_in'.x|x<-extensions(range_in')]] [|{|range,range_in',range_'''|}|] REORDER' [[range_out'.x<-x|x<-extensions(range_out')]] \ {|range_in',range.the_end'|})
 
 -- end of interface.csp.scm
 assert COMPLETE'({range.e}) [F= IF_range_(true,true)[[range_error<-illegal]] \ diff(Events,{range.e,illegal})

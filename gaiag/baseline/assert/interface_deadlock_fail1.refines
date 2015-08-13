@@ -1,37 +1,37 @@
 Checking out/assert/interface_deadlock_fail1.csp
 
-Checking COMPLETE'({i78_I.i3_e}) [F= IF_i78_I_(true)\diff(Events,{i78_I.i3_e,illegal})
+Checking COMPLETE'({i71_DummyI.i55_e}) [F= IF_i71_DummyI_(true,true)[[range_error<-illegal]]\diff(Events,{i71_DummyI.i55_e,illegal})
 true
 
-Checking IF_i78_I_(false) :[deadlock free]
+Checking IF_i71_DummyI_(false,false) :[deadlock free]
+true
+
+Checking IF_i71_DummyI_(true,false) :[livelock free]
+true
+
+Checking COMPLETE'({i54_I.i3_e}) [F= IF_i54_I_(true,true)[[range_error<-illegal]]\diff(Events,{i54_I.i3_e,illegal})
+true
+
+Checking IF_i54_I_(false,false) :[deadlock free]
 xfalse
 
-Checking IF_i78_I_(true) :[livelock free]
+Checking IF_i54_I_(true,false) :[livelock free]
 true
 
-Checking COMPLETE'({i95_DummyI.i79_e}) [F= IF_i95_DummyI_(true)\diff(Events,{i95_DummyI.i79_e,illegal})
+Checking CO_i94_DummyC_(true,true) :[deterministic]
 true
 
-Checking IF_i95_DummyI_(false) :[deadlock free]
+Checking COMPLETE'({i72_i.i55_e}) [F= CO_i94_DummyC_(true,true)[[range_error<-illegal]]\diff(Events,{i72_i.i55_e,illegal})
 true
 
-Checking IF_i95_DummyI_(true) :[livelock free]
+Checking STOP [T= AS_i94_DummyC_(false)\diff(Events,{illegal,queue_full})
 true
 
-Checking CO_i118_DummyC_(true,true) :[deterministic]
+Checking AS_i94_DummyC_(false) :[deadlock free]
 true
 
-Checking COMPLETE'({i96_i.i79_e}) [F= CO_i118_DummyC_(true,true)\diff(Events,{i96_i.i79_e,illegal})
+Checking IF_SPEC [F= AS_i94_DummyC_(true)\diff(Events,{|illegal,i72_i,i72_i_'|})
 true
 
-Checking STOP [T= AS_i118_DummyC_(false)\diff(Events,{illegal})
-true
-
-Checking AS_i118_DummyC_(false) :[deadlock free]
-true
-
-Checking IF_i95_DummyI_(true)[[i95_DummyI.x<-i96_i.x|x<-extensions(i96_i)]][[i95_DummyI_'.x<-i96_i_'.x|x<-extensions(i96_i_')]]\{} [F= AS_i118_DummyC_(true)\diff(Events,{|illegal,i96_i,i96_i_'|})
-true
-
-Checking AS_i118_DummyC_(true)\diff(Events,{|illegal,i96_i,i96_i_'|}) :[livelock free]
+Checking AS_i94_DummyC_(true)\diff(Events,{|illegal,i72_i,i72_i_'|}) :[livelock free]
 true

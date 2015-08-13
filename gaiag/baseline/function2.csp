@@ -1,12 +1,12 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = a | b | c | d | modeling | return | the_end'
+datatype event_enumeration_alphabet = a | b | c | d | inevitable | modeling | optional | return | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -17,7 +17,7 @@ channel ifunction2: {a,b,the_end'}
 channel ifunction2_'': {c,d}
 channel ifunction2_': {return}
 channel ifunction2_in',ifunction2_out': {ifunction2_'.return}
-channel ifunction2_''': {modeling}
+channel ifunction2_''': {inevitable,optional,modeling}
 
 IF_ifunction2_(IG,CS) = let
 vtoggle(P')(f) = 
@@ -58,10 +58,12 @@ ifunction2?x:{a} -> (
   vtoggle(Cont_3')(f)
 ))
 []
-CS & ifunction2?x:{} -> illegal -> STOP
+CS & ifunction2_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = ifunction2?x' -> (ifunction2_in'?y' -> ifunction2.the_end' -> ifunction2_out'!y' -> REORDER' [] ifunction2.the_end' -> REORDER')
+           []
+           ifunction2_'''?x':{inevitable,optional} -> ifunction2_'''?x':{modeling} -> ifunction2.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -71,7 +73,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then ifunction2_(false)
                 else ifunction2_(false) )
-               [[x<-ifunction2_in'.x|x<-extensions(ifunction2_in')]] [|{|ifunction2,ifunction2_in',ifunction2.the_end'|}|] REORDER' [[ifunction2_out'.x<-x|x<-extensions(ifunction2_out')]] \ {|ifunction2_in',ifunction2.the_end'|})
+               [[x<-ifunction2_in'.x|x<-extensions(ifunction2_in')]] [|{|ifunction2,ifunction2_in',ifunction2_'''|}|] REORDER' [[ifunction2_out'.x<-x|x<-extensions(ifunction2_out')]] \ {|ifunction2_in',ifunction2.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -84,7 +86,6 @@ channel i_': extensions(ifunction2_')
 
 channel i_'': extensions(ifunction2_'')
 
-channel i_''': extensions(ifunction2_''')
 
 
 
@@ -104,7 +105,7 @@ transition_begin -> (
 i?x:{a} -> (
   let Cont_4'(f, res') =
   let f = res' within
-      ifunction2_'.return ->
+      i_'.return ->
     transition_end ->
   function2_(f)
   within
@@ -119,7 +120,7 @@ i?x:{a} -> (
     let tmp' = bb within
     let f = tmp' within
     i_''!d ->
-    ifunction2_'.return ->
+    i_'.return ->
   transition_end ->
   function2_(f)
   within
@@ -129,16 +130,15 @@ i?x:{a} -> (
 )))
 
 within function2_(false)
-                                                     
+
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {ifunction2_'.return}
-channel reorder_out : {i_'.return}
+channel reorder_in, reorder_out : {|i_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -161,23 +161,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?ifunction2_'.x' -> reorder_out!i_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?ifunction2_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -185,7 +184,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?ifunction2_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -196,25 +195,38 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {i.a,i.b}
-UsedModeling = {}
-TheEnd = {||}
-within compress((CO_function2_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {i.a,i.b}
+begin_required_modeling' = {}
+end_required_modeling' = {}
+within compress((CO_function2_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i,i_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN'|}|]
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = i?x -> i_'?x -> R2C
+
+IFS = IF_ifunction2_(true,false)[[ifunction2<-i]][[ifunction2_'<-i_']][[ifunction2_''<-i_'']]
+
+within compress(IFS [|{|i,i_'|}|] R2C \ {|ifunction2_'''|})
+
+
 -- end of component.csp.scm
 assert COMPLETE'({ifunction2.a,ifunction2.b}) [F= IF_ifunction2_(true,true)[[range_error<-illegal]] \ diff(Events,{ifunction2.a,ifunction2.b,illegal})
 assert IF_ifunction2_(false,false) :[deadlock free]
 assert IF_ifunction2_(true,false) :[livelock free]
-assert CO_function2_(true,true)[[ifunction2_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
-assert COMPLETE'({i.a,i.b}) [F= CO_function2_(true,true)[[ifunction2_'.x'<-i_'.x'|x'<-extensions(i_')]][[range_error<-illegal]] \ diff(Events,{i.a,i.b,illegal})
+assert CO_function2_(true,true) :[deterministic]
+assert COMPLETE'({i.a,i.b}) [F= CO_function2_(true,true)[[range_error<-illegal]] \ diff(Events,{i.a,i.b,illegal})
 assert STOP [T= AS_function2_(false) \ diff(Events,{illegal,queue_full})
 assert AS_function2_(false) :[deadlock free]
-assert IF_ifunction2_(true,false) [[ifunction2.x<-i.x|x<-extensions(i)]][[ifunction2_'.x<-i_'.x|x<-extensions(i_')]][[ifunction2_''.x<-i_''.x|x<-extensions(i_'')]]\ {ifunction2_'''.modeling} [F= AS_function2_(true) \ diff(Events,{|illegal,i,i_',i_''|})
+assert IF_SPEC [F= AS_function2_(true) \ diff(Events,{|illegal,i,i_',i_''|})
 assert AS_function2_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

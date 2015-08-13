@@ -1,12 +1,12 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = Enum_False | Enum_True | a | e | modeling | return | the_end'
+datatype event_enumeration_alphabet = Enum_False | Enum_True | a | e | inevitable | modeling | optional | return | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -17,7 +17,7 @@ channel I: {e,the_end'}
 channel I_'': {a}
 channel I_': {return}
 channel I_in',I_out': {I_'.return}
-channel I_''': {modeling}
+channel I_''': {inevitable,optional,modeling}
 
 IF_I_(IG,CS) = let
 
@@ -60,10 +60,12 @@ I?x:{e} -> (
 )
 ))
 []
-CS & I?x:{} -> illegal -> STOP
+CS & I_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = I?x' -> (I_in'?y' -> I.the_end' -> I_out'!y' -> REORDER' [] I.the_end' -> REORDER')
+           []
+           I_'''?x':{inevitable,optional} -> I_'''?x':{modeling} -> I.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -73,7 +75,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then I_(Enum_False)
                 else I_(Enum_False) )
-               [[x<-I_in'.x|x<-extensions(I_in')]] [|{|I,I_in',I.the_end'|}|] REORDER' [[I_out'.x<-x|x<-extensions(I_out')]] \ {|I_in',I.the_end'|})
+               [[x<-I_in'.x|x<-extensions(I_in')]] [|{|I,I_in',I_'''|}|] REORDER' [[I_out'.x<-x|x<-extensions(I_out')]] \ {|I_in',I.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -86,7 +88,6 @@ channel i_': extensions(I_')
 
 channel i_'': extensions(I_'')
 
-channel i_''': extensions(I_''')
 
 
 
@@ -98,7 +99,7 @@ transition_begin -> (
 i?x:{e} -> (
   (if (s == Enum_False) then 
     i_''!a ->
-      I_'.return ->
+      i_'.return ->
     transition_end ->
   sugar_(s)
 
@@ -106,12 +107,12 @@ i?x:{e} -> (
     let t = Enum_False within
     (if (t == Enum_True) then 
       i_''!a ->
-        I_'.return ->
+        i_'.return ->
       transition_end ->
   sugar_(s)
 
     else
-        I_'.return ->
+        i_'.return ->
       transition_end ->
   sugar_(s)
 )
@@ -119,16 +120,15 @@ i?x:{e} -> (
 )))
 
 within sugar_(Enum_False)
-                                                     
+
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {I_'.return}
-channel reorder_out : {i_'.return}
+channel reorder_in, reorder_out : {|i_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -151,23 +151,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?I_'.x' -> reorder_out!i_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?I_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -175,7 +174,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?I_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -186,25 +185,38 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {i.e}
-UsedModeling = {}
-TheEnd = {||}
-within compress((CO_sugar_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {i.e}
+begin_required_modeling' = {}
+end_required_modeling' = {}
+within compress((CO_sugar_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i,i_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN'|}|]
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = i?x -> i_'?x -> R2C
+
+IFS = IF_I_(true,false)[[I<-i]][[I_'<-i_']][[I_''<-i_'']]
+
+within compress(IFS [|{|i,i_'|}|] R2C \ {|I_'''|})
+
+
 -- end of component.csp.scm
 assert COMPLETE'({I.e}) [F= IF_I_(true,true)[[range_error<-illegal]] \ diff(Events,{I.e,illegal})
 assert IF_I_(false,false) :[deadlock free]
 assert IF_I_(true,false) :[livelock free]
-assert CO_sugar_(true,true)[[I_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
-assert COMPLETE'({i.e}) [F= CO_sugar_(true,true)[[I_'.x'<-i_'.x'|x'<-extensions(i_')]][[range_error<-illegal]] \ diff(Events,{i.e,illegal})
+assert CO_sugar_(true,true) :[deterministic]
+assert COMPLETE'({i.e}) [F= CO_sugar_(true,true)[[range_error<-illegal]] \ diff(Events,{i.e,illegal})
 assert STOP [T= AS_sugar_(false) \ diff(Events,{illegal,queue_full})
 assert AS_sugar_(false) :[deadlock free]
-assert IF_I_(true,false) [[I.x<-i.x|x<-extensions(i)]][[I_'.x<-i_'.x|x<-extensions(i_')]][[I_''.x<-i_''.x|x<-extensions(i_'')]]\ {I_'''.modeling} [F= AS_sugar_(true) \ diff(Events,{|illegal,i,i_',i_''|})
+assert IF_SPEC [F= AS_sugar_(true) \ diff(Events,{|illegal,i,i_',i_''|})
 assert AS_sugar_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

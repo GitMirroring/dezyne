@@ -1,12 +1,12 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = S_S1 | S_S2 | States_I | States_II | States_III | States_IV | e | f | g | h | modeling | return | the_end'
+datatype event_enumeration_alphabet = S_S1 | S_S2 | States_I | States_II | States_III | States_IV | e | f | g | h | inevitable | modeling | optional | return | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -17,7 +17,7 @@ channel iimperative: {e,the_end'}
 channel iimperative_'': {f,g,h}
 channel iimperative_': {return}
 channel iimperative_in',iimperative_out': {iimperative_'.return}
-channel iimperative_''': {modeling}
+channel iimperative_''': {inevitable,optional,modeling}
 
 IF_iimperative_(IG,CS) = let
 
@@ -161,10 +161,12 @@ iimperative?x:{e} -> (
 )
 ))
 []
-CS & iimperative?x:{} -> illegal -> STOP
+CS & iimperative_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = iimperative?x' -> (iimperative_in'?y' -> iimperative.the_end' -> iimperative_out'!y' -> REORDER' [] iimperative.the_end' -> REORDER')
+           []
+           iimperative_'''?x':{inevitable,optional} -> iimperative_'''?x':{modeling} -> iimperative.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -174,7 +176,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then iimperative_(S_S1, false, true)
                 else iimperative_(S_S1, false, true) )
-               [[x<-iimperative_in'.x|x<-extensions(iimperative_in')]] [|{|iimperative,iimperative_in',iimperative.the_end'|}|] REORDER' [[iimperative_out'.x<-x|x<-extensions(iimperative_out')]] \ {|iimperative_in',iimperative.the_end'|})
+               [[x<-iimperative_in'.x|x<-extensions(iimperative_in')]] [|{|iimperative,iimperative_in',iimperative_'''|}|] REORDER' [[iimperative_out'.x<-x|x<-extensions(iimperative_out')]] \ {|iimperative_in',iimperative.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -187,7 +189,6 @@ channel i_': extensions(iimperative_')
 
 channel i_'': extensions(iimperative_'')
 
-channel i_''': extensions(iimperative_''')
 
 
 
@@ -202,7 +203,7 @@ i?x:{e} -> (
   i_''!h ->
   let tmp' = States_II within
   let state = tmp' within
-    iimperative_'.return ->
+    i_'.return ->
   transition_end ->
   imperative_(state)
 ))
@@ -211,7 +212,7 @@ i?x:{e} -> (
 i?x:{e} -> (
   let tmp' = States_III within
   let state = tmp' within
-    iimperative_'.return ->
+    i_'.return ->
   transition_end ->
   imperative_(state)
 ))
@@ -224,7 +225,7 @@ i?x:{e} -> (
   i_''!f ->
   let tmp' = States_IV within
   let state = tmp' within
-    iimperative_'.return ->
+    i_'.return ->
   transition_end ->
   imperative_(state)
 ))
@@ -234,22 +235,21 @@ i?x:{e} -> (
   i_''!h ->
   let tmp' = States_I within
   let state = tmp' within
-    iimperative_'.return ->
+    i_'.return ->
   transition_end ->
   imperative_(state)
 )))
 
 within imperative_(States_I)
-                                                     
+
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {iimperative_'.return}
-channel reorder_out : {i_'.return}
+channel reorder_in, reorder_out : {|i_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -272,23 +272,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?iimperative_'.x' -> reorder_out!i_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?iimperative_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -296,7 +295,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?iimperative_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -307,25 +306,38 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {i.e}
-UsedModeling = {}
-TheEnd = {||}
-within compress((CO_imperative_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {i.e}
+begin_required_modeling' = {}
+end_required_modeling' = {}
+within compress((CO_imperative_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i,i_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN'|}|]
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = i?x -> i_'?x -> R2C
+
+IFS = IF_iimperative_(true,false)[[iimperative<-i]][[iimperative_'<-i_']][[iimperative_''<-i_'']]
+
+within compress(IFS [|{|i,i_'|}|] R2C \ {|iimperative_'''|})
+
+
 -- end of component.csp.scm
 assert COMPLETE'({iimperative.e}) [F= IF_iimperative_(true,true)[[range_error<-illegal]] \ diff(Events,{iimperative.e,illegal})
 assert IF_iimperative_(false,false) :[deadlock free]
 assert IF_iimperative_(true,false) :[livelock free]
-assert CO_imperative_(true,true)[[iimperative_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
-assert COMPLETE'({i.e}) [F= CO_imperative_(true,true)[[iimperative_'.x'<-i_'.x'|x'<-extensions(i_')]][[range_error<-illegal]] \ diff(Events,{i.e,illegal})
+assert CO_imperative_(true,true) :[deterministic]
+assert COMPLETE'({i.e}) [F= CO_imperative_(true,true)[[range_error<-illegal]] \ diff(Events,{i.e,illegal})
 assert STOP [T= AS_imperative_(false) \ diff(Events,{illegal,queue_full})
 assert AS_imperative_(false) :[deadlock free]
-assert IF_iimperative_(true,false) [[iimperative.x<-i.x|x<-extensions(i)]][[iimperative_'.x<-i_'.x|x<-extensions(i_')]][[iimperative_''.x<-i_''.x|x<-extensions(i_'')]]\ {iimperative_'''.modeling} [F= AS_imperative_(true) \ diff(Events,{|illegal,i,i_',i_''|})
+assert IF_SPEC [F= AS_imperative_(true) \ diff(Events,{|illegal,i,i_',i_''|})
 assert AS_imperative_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

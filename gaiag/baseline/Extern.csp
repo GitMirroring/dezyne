@@ -1,12 +1,12 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = e | modeling | return | the_end'
+datatype event_enumeration_alphabet = e | inevitable | modeling | optional | return | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -17,7 +17,7 @@ channel IExtern: {e,the_end'}
 
 channel IExtern_': {return}
 channel IExtern_in',IExtern_out': {IExtern_'.return}
-channel IExtern_''': {modeling}
+channel IExtern_''': {inevitable,optional,modeling}
 
 IF_IExtern_(IG,CS) = let
 
@@ -26,10 +26,12 @@ IExtern_() =
   illegal -> STOP
 )
 []
-CS & IExtern?x:{} -> illegal -> STOP
+CS & IExtern_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = IExtern?x' -> (IExtern_in'?y' -> IExtern.the_end' -> IExtern_out'!y' -> REORDER' [] IExtern.the_end' -> REORDER')
+           []
+           IExtern_'''?x':{inevitable,optional} -> IExtern_'''?x':{modeling} -> IExtern.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -39,7 +41,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then IExtern_()
                 else IExtern_() )
-               [[x<-IExtern_in'.x|x<-extensions(IExtern_in')]] [|{|IExtern,IExtern_in',IExtern.the_end'|}|] REORDER' [[IExtern_out'.x<-x|x<-extensions(IExtern_out')]] \ {|IExtern_in',IExtern.the_end'|})
+               [[x<-IExtern_in'.x|x<-extensions(IExtern_in')]] [|{|IExtern,IExtern_in',IExtern_'''|}|] REORDER' [[IExtern_out'.x<-x|x<-extensions(IExtern_out')]] \ {|IExtern_in',IExtern.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -51,7 +53,6 @@ channel port: extensions(IExtern)
 channel port_': extensions(IExtern_')
 
 
-channel port_''': extensions(IExtern_''')
 
 
 
@@ -64,16 +65,15 @@ IIG & port?x:{e} -> (
 ))
 
 within Extern_()
-                                                     
+
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {IExtern_'.return}
-channel reorder_out : {port_'.return}
+channel reorder_in, reorder_out : {|port_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -96,23 +96,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?IExtern_'.x' -> reorder_out!port_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?IExtern_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!port_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -120,7 +119,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?IExtern_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -131,25 +130,38 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {port.e}
-UsedModeling = {}
-TheEnd = {||}
-within compress((CO_Extern_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {port.e}
+begin_required_modeling' = {}
+end_required_modeling' = {}
+within compress((CO_Extern_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,port,port_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN'|}|]
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = port?x -> port_'?x -> R2C
+
+IFS = IF_IExtern_(true,false)[[IExtern<-port]][[IExtern_'<-port_']]
+
+within compress(IFS [|{|port,port_'|}|] R2C \ {|IExtern_'''|})
+
+
 -- end of component.csp.scm
 assert COMPLETE'({IExtern.e}) [F= IF_IExtern_(true,true)[[range_error<-illegal]] \ diff(Events,{IExtern.e,illegal})
 assert IF_IExtern_(false,false) :[deadlock free]
 assert IF_IExtern_(true,false) :[livelock free]
-assert CO_Extern_(true,true)[[IExtern_'.x<-port_'.x|x<-extensions(port_')]] :[deterministic]
-assert COMPLETE'({port.e}) [F= CO_Extern_(true,true)[[IExtern_'.x'<-port_'.x'|x'<-extensions(port_')]][[range_error<-illegal]] \ diff(Events,{port.e,illegal})
+assert CO_Extern_(true,true) :[deterministic]
+assert COMPLETE'({port.e}) [F= CO_Extern_(true,true)[[range_error<-illegal]] \ diff(Events,{port.e,illegal})
 assert STOP [T= AS_Extern_(false) \ diff(Events,{illegal,queue_full})
 assert AS_Extern_(false) :[deadlock free]
-assert IF_IExtern_(true,false) [[IExtern.x<-port.x|x<-extensions(port)]][[IExtern_'.x<-port_'.x|x<-extensions(port_')]]\ {IExtern_'''.modeling} [F= AS_Extern_(true) \ diff(Events,{|illegal,port,port_'|})
+assert IF_SPEC [F= AS_Extern_(true) \ diff(Events,{|illegal,port,port_'|})
 assert AS_Extern_(true) \ diff(Events,{|illegal,port,port_'|}) :[livelock free]

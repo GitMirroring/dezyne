@@ -1,12 +1,12 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = Status_Nok | Status_Ok | e | modeling | return | the_end'
+datatype event_enumeration_alphabet = Status_Nok | Status_Ok | e | inevitable | modeling | optional | return | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -17,7 +17,7 @@ channel ifreply: {e,the_end'}
 
 channel ifreply_': {Status_Ok,Status_Nok,return}
 channel ifreply_in',ifreply_out': {ifreply_'.Status_Ok,ifreply_'.Status_Nok,ifreply_'.return}
-channel ifreply_''': {modeling}
+channel ifreply_''': {inevitable,optional,modeling}
 
 IF_ifreply_(IG,CS) = let
 
@@ -47,10 +47,12 @@ ifreply?x:{e} -> (
 )
 ))
 []
-CS & ifreply?x:{} -> illegal -> STOP
+CS & ifreply_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = ifreply?x' -> (ifreply_in'?y' -> ifreply.the_end' -> ifreply_out'!y' -> REORDER' [] ifreply.the_end' -> REORDER')
+           []
+           ifreply_'''?x':{inevitable,optional} -> ifreply_'''?x':{modeling} -> ifreply.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -60,7 +62,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then ifreply_()
                 else ifreply_() )
-               [[x<-ifreply_in'.x|x<-extensions(ifreply_in')]] [|{|ifreply,ifreply_in',ifreply.the_end'|}|] REORDER' [[ifreply_out'.x<-x|x<-extensions(ifreply_out')]] \ {|ifreply_in',ifreply.the_end'|})
+               [[x<-ifreply_in'.x|x<-extensions(ifreply_in')]] [|{|ifreply,ifreply_in',ifreply_'''|}|] REORDER' [[ifreply_out'.x<-x|x<-extensions(ifreply_out')]] \ {|ifreply_in',ifreply.the_end'|})
 
 -- end of interface.csp.scm
 assert COMPLETE'({ifreply.e}) [F= IF_ifreply_(true,true)[[range_error<-illegal]] \ diff(Events,{ifreply.e,illegal})

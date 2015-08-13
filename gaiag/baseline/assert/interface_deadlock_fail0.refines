@@ -1,36 +1,36 @@
 Checking out/assert/interface_deadlock_fail0.csp
 
-Checking COMPLETE'({i29_I.i3_e}) [F= IF_i29_I_(true)\diff(Events,{i29_I.i3_e,illegal})
+Checking COMPLETE'({i46_DummyI.i30_e}) [F= IF_i46_DummyI_(true,true)[[range_error<-illegal]]\diff(Events,{i46_DummyI.i30_e,illegal})
 true
 
-Checking IF_i29_I_(false) :[deadlock free]
+Checking IF_i46_DummyI_(false,false) :[deadlock free]
+true
+
+Checking IF_i46_DummyI_(true,false) :[livelock free]
+true
+
+Checking COMPLETE'({i29_I.i3_e}) [F= IF_i29_I_(true,true)[[range_error<-illegal]]\diff(Events,{i29_I.i3_e,illegal})
+true
+
+Checking IF_i29_I_(false,false) :[deadlock free]
 xfalse
 
-Checking IF_i29_I_(true) :[livelock free]
-true
-
-Checking COMPLETE'({i46_DummyI.i30_e}) [F= IF_i46_DummyI_(true)\diff(Events,{i46_DummyI.i30_e,illegal})
-true
-
-Checking IF_i46_DummyI_(false) :[deadlock free]
-true
-
-Checking IF_i46_DummyI_(true) :[livelock free]
+Checking IF_i29_I_(true,false) :[livelock free]
 true
 
 Checking CO_i69_DummyC_(true,true) :[deterministic]
 true
 
-Checking COMPLETE'({i47_i.i30_e}) [F= CO_i69_DummyC_(true,true)\diff(Events,{i47_i.i30_e,illegal})
+Checking COMPLETE'({i47_i.i30_e}) [F= CO_i69_DummyC_(true,true)[[range_error<-illegal]]\diff(Events,{i47_i.i30_e,illegal})
 true
 
-Checking STOP [T= AS_i69_DummyC_(false)\diff(Events,{illegal})
+Checking STOP [T= AS_i69_DummyC_(false)\diff(Events,{illegal,queue_full})
 true
 
 Checking AS_i69_DummyC_(false) :[deadlock free]
 true
 
-Checking IF_i46_DummyI_(true)[[i46_DummyI.x<-i47_i.x|x<-extensions(i47_i)]][[i46_DummyI_'.x<-i47_i_'.x|x<-extensions(i47_i_')]]\{} [F= AS_i69_DummyC_(true)\diff(Events,{|illegal,i47_i,i47_i_'|})
+Checking IF_SPEC [F= AS_i69_DummyC_(true)\diff(Events,{|illegal,i47_i,i47_i_'|})
 true
 
 Checking AS_i69_DummyC_(true)\diff(Events,{|illegal,i47_i,i47_i_'|}) :[livelock free]

@@ -1,12 +1,12 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = a | e | modeling | return | t | the_end'
+datatype event_enumeration_alphabet = a | e | inevitable | modeling | optional | return | t | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -17,7 +17,7 @@ channel ITopon: {e,t,the_end'}
 channel ITopon_'': {a}
 channel ITopon_': {return}
 channel ITopon_in',ITopon_out': {ITopon_'.return}
-channel ITopon_''': {modeling}
+channel ITopon_''': {inevitable,optional,modeling}
 
 IF_ITopon_(IG,CS) = let
 
@@ -53,10 +53,12 @@ ITopon?x:{t} -> (
   ITopon_(b,c)
 )
 []
-CS & ITopon?x:{} -> illegal -> STOP
+CS & ITopon_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = ITopon?x' -> (ITopon_in'?y' -> ITopon.the_end' -> ITopon_out'!y' -> REORDER' [] ITopon.the_end' -> REORDER')
+           []
+           ITopon_'''?x':{inevitable,optional} -> ITopon_'''?x':{modeling} -> ITopon.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -66,7 +68,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then ITopon_(false, false)
                 else ITopon_(false, false) )
-               [[x<-ITopon_in'.x|x<-extensions(ITopon_in')]] [|{|ITopon,ITopon_in',ITopon.the_end'|}|] REORDER' [[ITopon_out'.x<-x|x<-extensions(ITopon_out')]] \ {|ITopon_in',ITopon.the_end'|})
+               [[x<-ITopon_in'.x|x<-extensions(ITopon_in')]] [|{|ITopon,ITopon_in',ITopon_'''|}|] REORDER' [[ITopon_out'.x<-x|x<-extensions(ITopon_out')]] \ {|ITopon_in',ITopon.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -79,7 +81,6 @@ channel i_': extensions(ITopon_')
 
 channel i_'': extensions(ITopon_'')
 
-channel i_''': extensions(ITopon_''')
 
 
 
@@ -90,7 +91,7 @@ transition_begin -> (
 ((b and (not c))) & (
 i?x:{e} -> (
   i_''!a ->
-    ITopon_'.return ->
+    i_'.return ->
   transition_end ->
   Topon_(b,c)
 ))
@@ -98,7 +99,7 @@ i?x:{e} -> (
 (((not b) and (not c))) & (
 i?x:{e} -> (
   i_''!a ->
-    ITopon_'.return ->
+    i_'.return ->
   transition_end ->
   Topon_(b,c)
 ))
@@ -106,29 +107,28 @@ i?x:{e} -> (
 (((not c) and (not b))) & (
 i?x:{e} -> (
   i_''!a ->
-    ITopon_'.return ->
+    i_'.return ->
   transition_end ->
   Topon_(b,c)
 ))
 []
 i?x:{t} -> (
   i_''!a ->
-    ITopon_'.return ->
+    i_'.return ->
   transition_end ->
   Topon_(b,c)
 ))
 
 within Topon_(false, false)
-                                                     
+
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {ITopon_'.return}
-channel reorder_out : {i_'.return}
+channel reorder_in, reorder_out : {|i_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -151,23 +151,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?ITopon_'.x' -> reorder_out!i_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?ITopon_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -175,7 +174,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?ITopon_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -186,25 +185,38 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {i.e,i.t}
-UsedModeling = {}
-TheEnd = {||}
-within compress((CO_Topon_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {i.e,i.t}
+begin_required_modeling' = {}
+end_required_modeling' = {}
+within compress((CO_Topon_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i,i_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN'|}|]
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = i?x -> i_'?x -> R2C
+
+IFS = IF_ITopon_(true,false)[[ITopon<-i]][[ITopon_'<-i_']][[ITopon_''<-i_'']]
+
+within compress(IFS [|{|i,i_'|}|] R2C \ {|ITopon_'''|})
+
+
 -- end of component.csp.scm
 assert COMPLETE'({ITopon.e,ITopon.t}) [F= IF_ITopon_(true,true)[[range_error<-illegal]] \ diff(Events,{ITopon.e,ITopon.t,illegal})
 assert IF_ITopon_(false,false) :[deadlock free]
 assert IF_ITopon_(true,false) :[livelock free]
-assert CO_Topon_(true,true)[[ITopon_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
-assert COMPLETE'({i.e,i.t}) [F= CO_Topon_(true,true)[[ITopon_'.x'<-i_'.x'|x'<-extensions(i_')]][[range_error<-illegal]] \ diff(Events,{i.e,i.t,illegal})
+assert CO_Topon_(true,true) :[deterministic]
+assert COMPLETE'({i.e,i.t}) [F= CO_Topon_(true,true)[[range_error<-illegal]] \ diff(Events,{i.e,i.t,illegal})
 assert STOP [T= AS_Topon_(false) \ diff(Events,{illegal,queue_full})
 assert AS_Topon_(false) :[deadlock free]
-assert IF_ITopon_(true,false) [[ITopon.x<-i.x|x<-extensions(i)]][[ITopon_'.x<-i_'.x|x<-extensions(i_')]][[ITopon_''.x<-i_''.x|x<-extensions(i_'')]]\ {ITopon_'''.modeling} [F= AS_Topon_(true) \ diff(Events,{|illegal,i,i_',i_''|})
+assert IF_SPEC [F= AS_Topon_(true) \ diff(Events,{|illegal,i,i_',i_''|})
 assert AS_Topon_(true) \ diff(Events,{|illegal,i,i_',i_''|}) :[livelock free]

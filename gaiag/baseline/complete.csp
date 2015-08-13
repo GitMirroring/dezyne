@@ -1,12 +1,12 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = a | e | modeling | return | the_end'
+datatype event_enumeration_alphabet = a | e | inevitable | modeling | optional | return | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -17,7 +17,7 @@ channel icomplete: {e,the_end'}
 channel icomplete_'': {a}
 channel icomplete_': {return}
 channel icomplete_in',icomplete_out': {icomplete_'.return}
-channel icomplete_''': {modeling}
+channel icomplete_''': {inevitable,optional,modeling}
 
 IF_icomplete_(IG,CS) = let
 
@@ -29,10 +29,12 @@ icomplete_() =
   icomplete_()
 )
 []
-CS & icomplete?x:{} -> illegal -> STOP
+CS & icomplete_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = icomplete?x' -> (icomplete_in'?y' -> icomplete.the_end' -> icomplete_out'!y' -> REORDER' [] icomplete.the_end' -> REORDER')
+           []
+           icomplete_'''?x':{inevitable,optional} -> icomplete_'''?x':{modeling} -> icomplete.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -42,7 +44,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then icomplete_()
                 else icomplete_() )
-               [[x<-icomplete_in'.x|x<-extensions(icomplete_in')]] [|{|icomplete,icomplete_in',icomplete.the_end'|}|] REORDER' [[icomplete_out'.x<-x|x<-extensions(icomplete_out')]] \ {|icomplete_in',icomplete.the_end'|})
+               [[x<-icomplete_in'.x|x<-extensions(icomplete_in')]] [|{|icomplete,icomplete_in',icomplete_'''|}|] REORDER' [[icomplete_out'.x<-x|x<-extensions(icomplete_out')]] \ {|icomplete_in',icomplete.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -58,7 +60,6 @@ channel r_': extensions(icomplete_')
 channel p_'': extensions(icomplete_'')
 channel r_'': extensions(icomplete_'')
 
-channel p_''': extensions(icomplete_''')
 channel r_''': extensions(icomplete_''')
 
 
@@ -69,7 +70,7 @@ complete_() =
 transition_begin -> (
 p?x:{e} -> (
   r!e -> r_'.return ->
-    icomplete_'.return ->
+    p_'.return ->
   transition_end ->
   complete_()
 )
@@ -81,16 +82,15 @@ r_''?x:{a} -> (
 ))
 
 within complete_()
-                                                     
+
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {r_''.a,extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|r_'',extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {icomplete_'.return}
-channel reorder_out : {p_'.return}
+channel reorder_in, reorder_out : {|p_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -113,23 +113,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?icomplete_'.x' -> reorder_out!p_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?icomplete_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!p_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -137,7 +136,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?icomplete_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -148,25 +147,38 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {p.e}
-UsedModeling = {}
-TheEnd = {|r_'''|}
-within compress((CO_complete_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {p.e}
+begin_required_modeling' = {}
+end_required_modeling' = {r_'''.modeling}
+within compress((CO_complete_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,p,p_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',r,r_',r_'''|}|]
                 (IF_icomplete_(true,false) [[icomplete.x<-r.x|x<-extensions(r)]][[icomplete_'.x<-r_'.x|x<-extensions(r_')]][[icomplete_''.x<-r_''.x|x<-extensions(r_'')]][[icomplete_'''.x<-r_'''.x|x<-extensions(r_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = p?x -> p_'?x -> R2C
+
+IFS = IF_icomplete_(true,false)[[icomplete<-p]][[icomplete_'<-p_']][[icomplete_''<-p_'']]
+
+within compress(IFS [|{|p,p_'|}|] R2C \ {|icomplete_'''|})
+
+
 -- end of component.csp.scm
 assert COMPLETE'({icomplete.e}) [F= IF_icomplete_(true,true)[[range_error<-illegal]] \ diff(Events,{icomplete.e,illegal})
 assert IF_icomplete_(false,false) :[deadlock free]
 assert IF_icomplete_(true,false) :[livelock free]
-assert CO_complete_(true,true)[[icomplete_'.x<-p_'.x|x<-extensions(p_')]] :[deterministic]
-assert COMPLETE'({p.e,r_''.a}) [F= CO_complete_(true,true)[[icomplete_'.x'<-p_'.x'|x'<-extensions(p_')]][[range_error<-illegal]] \ diff(Events,{p.e,r_''.a,illegal})
+assert CO_complete_(true,true) :[deterministic]
+assert COMPLETE'({p.e,r_''.a}) [F= CO_complete_(true,true)[[range_error<-illegal]] \ diff(Events,{p.e,r_''.a,illegal})
 assert STOP [T= AS_complete_(false) \ diff(Events,{illegal,queue_full})
 assert AS_complete_(false) :[deadlock free]
-assert IF_icomplete_(true,false) [[icomplete.x<-p.x|x<-extensions(p)]][[icomplete_'.x<-p_'.x|x<-extensions(p_')]][[icomplete_''.x<-p_''.x|x<-extensions(p_'')]]\ {icomplete_'''.modeling} [F= AS_complete_(true) \ diff(Events,{|illegal,p,p_',p_''|})
+assert IF_SPEC [F= AS_complete_(true) \ diff(Events,{|illegal,p,p_',p_''|})
 assert AS_complete_(true) \ diff(Events,{|illegal,p,p_',p_''|}) :[livelock free]

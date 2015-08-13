@@ -1,23 +1,23 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = dummy | inevitable | modeling | return | the_end'
+datatype event_enumeration_alphabet = dummy | inevitable | modeling | optional | return | the_end'
 
 -- end of combinators
 -- both.csp.scm
 -- end of both.csp.scm
 -- interface.csp.scm
 
-channel ilivelock: {dummy,inevitable,the_end'}
+channel ilivelock: {dummy,the_end'}
 
 channel ilivelock_': {return}
 channel ilivelock_in',ilivelock_out': {ilivelock_'.return}
-channel ilivelock_''': {modeling}
+channel ilivelock_''': {inevitable,optional,modeling}
 
 IF_ilivelock_(IG,CS) = let
 
@@ -26,16 +26,18 @@ ilivelock_() =
   illegal -> STOP
 )
 []
-ilivelock?x:{inevitable} ->(
+ilivelock_'''?x:{inevitable} ->(
     ilivelock_'''.modeling ->
   ilivelock.the_end' ->
   ilivelock_()
 )
 []
-CS & ilivelock?x:{inevitable} -> illegal -> STOP
+CS & ilivelock_'''?x:{inevitable} -> illegal -> STOP
 )
 
 REORDER' = ilivelock?x' -> (ilivelock_in'?y' -> ilivelock.the_end' -> ilivelock_out'!y' -> REORDER' [] ilivelock.the_end' -> REORDER')
+           []
+           ilivelock_'''?x':{inevitable,optional} -> ilivelock_'''?x':{modeling} -> ilivelock.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -45,33 +47,35 @@ within sbisim(diamond(x))
 within compress((if CS
                 then ilivelock_()
                 else ilivelock_() )
-               [[x<-ilivelock_in'.x|x<-extensions(ilivelock_in')]] [|{|ilivelock,ilivelock_in',ilivelock.the_end'|}|] REORDER' [[ilivelock_out'.x<-x|x<-extensions(ilivelock_out')]] \ {|ilivelock_in',ilivelock.the_end'|})
+               [[x<-ilivelock_in'.x|x<-extensions(ilivelock_in')]] [|{|ilivelock,ilivelock_in',ilivelock_'''|}|] REORDER' [[ilivelock_out'.x<-x|x<-extensions(ilivelock_out')]] \ {|ilivelock_in',ilivelock.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
 -- end of both.csp.scm
 -- interface.csp.scm
 
-channel nolivelock: {inevitable,the_end'}
+channel nolivelock: {the_end'}
 channel nolivelock_'': {dummy}
 channel nolivelock_': {return}
 channel nolivelock_in',nolivelock_out': {nolivelock_'.return}
-channel nolivelock_''': {modeling}
+channel nolivelock_''': {inevitable,optional,modeling}
 
 IF_nolivelock_(IG,CS) = let
 
 nolivelock_() =
-(nolivelock?x:{inevitable} ->(
+(nolivelock_'''?x:{inevitable} ->(
   nolivelock_''!dummy ->
     nolivelock_'''.modeling ->
   nolivelock.the_end' ->
   nolivelock_()
 )
 []
-CS & nolivelock?x:{inevitable} -> illegal -> STOP
+CS & nolivelock_'''?x:{inevitable} -> illegal -> STOP
 )
 
 REORDER' = nolivelock?x' -> (nolivelock_in'?y' -> nolivelock.the_end' -> nolivelock_out'!y' -> REORDER' [] nolivelock.the_end' -> REORDER')
+           []
+           nolivelock_'''?x':{inevitable,optional} -> nolivelock_'''?x':{modeling} -> nolivelock.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -81,7 +85,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then nolivelock_()
                 else nolivelock_() )
-               [[x<-nolivelock_in'.x|x<-extensions(nolivelock_in')]] [|{|nolivelock,nolivelock_in',nolivelock.the_end'|}|] REORDER' [[nolivelock_out'.x<-x|x<-extensions(nolivelock_out')]] \ {|nolivelock_in',nolivelock.the_end'|})
+               [[x<-nolivelock_in'.x|x<-extensions(nolivelock_in')]] [|{|nolivelock,nolivelock_in',nolivelock_'''|}|] REORDER' [[nolivelock_out'.x<-x|x<-extensions(nolivelock_out')]] \ {|nolivelock_in',nolivelock.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -96,7 +100,6 @@ channel n_': extensions(nolivelock_')
 
 channel n_'': extensions(nolivelock_'')
 
-channel l_''': extensions(ilivelock_''')
 channel n_''': extensions(nolivelock_''')
 
 
@@ -115,16 +118,15 @@ n_''?x:{dummy} -> (
 ))
 
 within livelock2_()
-                                                     
+
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {n_''.dummy,extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|n_'',extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {ilivelock_'.return}
-channel reorder_out : {l_'.return}
+channel reorder_in, reorder_out : {|l_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -147,23 +149,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?ilivelock_'.x' -> reorder_out!l_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?ilivelock_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!l_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -171,7 +172,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?ilivelock_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -182,28 +183,41 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {l.dummy}
-UsedModeling = {n.inevitable}
-TheEnd = {|n_'''|}
-within compress((CO_livelock2_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {l.dummy}
+begin_required_modeling' = {n_'''.inevitable}
+end_required_modeling' = {n_'''.modeling}
+within compress((CO_livelock2_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,l,l_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',n,n_',n_'''|}|]
                 (IF_nolivelock_(true,false) [[nolivelock.x<-n.x|x<-extensions(n)]][[nolivelock_'.x<-n_'.x|x<-extensions(n_')]][[nolivelock_''.x<-n_''.x|x<-extensions(n_'')]][[nolivelock_'''.x<-n_'''.x|x<-extensions(n_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = l?x -> l_'?x -> R2C
+
+IFS = IF_ilivelock_(true,false)[[ilivelock<-l]][[ilivelock_'<-l_']]
+
+within compress(IFS [|{|l,l_'|}|] R2C \ {|ilivelock_'''|})
+
+
 -- end of component.csp.scm
-assert COMPLETE'({ilivelock.inevitable,ilivelock.dummy}) [F= IF_ilivelock_(true,true)[[range_error<-illegal]] \ diff(Events,{ilivelock.inevitable,ilivelock.dummy,illegal})
+assert COMPLETE'({ilivelock.dummy,ilivelock_'''.inevitable}) [F= IF_ilivelock_(true,true)[[range_error<-illegal]] \ diff(Events,{ilivelock.dummy,ilivelock_'''.inevitable,illegal})
 assert IF_ilivelock_(false,false) :[deadlock free]
 assert IF_ilivelock_(true,false) :[livelock free]
-assert COMPLETE'({nolivelock.inevitable}) [F= IF_nolivelock_(true,true)[[range_error<-illegal]] \ diff(Events,{nolivelock.inevitable,illegal})
+assert COMPLETE'({nolivelock_'''.inevitable}) [F= IF_nolivelock_(true,true)[[range_error<-illegal]] \ diff(Events,{nolivelock_'''.inevitable,illegal})
 assert IF_nolivelock_(false,false) :[deadlock free]
 assert IF_nolivelock_(true,false) :[livelock free]
-assert CO_livelock2_(true,true)[[ilivelock_'.x<-l_'.x|x<-extensions(l_')]] :[deterministic]
-assert COMPLETE'({l.dummy,n_''.dummy}) [F= CO_livelock2_(true,true)[[ilivelock_'.x'<-l_'.x'|x'<-extensions(l_')]][[range_error<-illegal]] \ diff(Events,{l.dummy,n_''.dummy,illegal})
+assert CO_livelock2_(true,true) :[deterministic]
+assert COMPLETE'({l.dummy,n_''.dummy}) [F= CO_livelock2_(true,true)[[range_error<-illegal]] \ diff(Events,{l.dummy,n_''.dummy,illegal})
 assert STOP [T= AS_livelock2_(false) \ diff(Events,{illegal,queue_full})
 assert AS_livelock2_(false) :[deadlock free]
-assert IF_ilivelock_(true,false) [[ilivelock.x<-l.x|x<-extensions(l)]][[ilivelock_'.x<-l_'.x|x<-extensions(l_')]]\ {ilivelock_'''.modeling,l.inevitable} [F= AS_livelock2_(true) \ diff(Events,{|illegal,l,l_'|})
-assert AS_livelock2_(true) \ diff(Events,{|n.inevitable,illegal,l,l_'|}) :[livelock free]
+assert IF_SPEC [F= AS_livelock2_(true) \ diff(Events,{|illegal,l,l_'|})
+assert AS_livelock2_(true) \ diff(Events,{|n_'''.inevitable,illegal,l,l_'|}) :[livelock free]

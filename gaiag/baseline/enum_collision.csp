@@ -1,12 +1,12 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = Retval1_NOK | Retval1_OK | Retval2_NOK | Retval2_OK | bar | foo | modeling | return | the_end'
+datatype event_enumeration_alphabet = Retval1_NOK | Retval1_OK | Retval2_NOK | Retval2_OK | bar | foo | inevitable | modeling | optional | return | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -17,7 +17,7 @@ channel ienum_collision: {bar,foo,the_end'}
 
 channel ienum_collision_': {Retval1_OK,Retval1_NOK,Retval2_OK,Retval2_NOK,return}
 channel ienum_collision_in',ienum_collision_out': {ienum_collision_'.Retval1_OK,ienum_collision_'.Retval1_NOK,ienum_collision_'.Retval2_OK,ienum_collision_'.Retval2_NOK,ienum_collision_'.return}
-channel ienum_collision_''': {modeling}
+channel ienum_collision_''': {inevitable,optional,modeling}
 
 IF_ienum_collision_(IG,CS) = let
 
@@ -34,10 +34,12 @@ ienum_collision?x:{bar} -> (
   ienum_collision_()
 )
 []
-CS & ienum_collision?x:{} -> illegal -> STOP
+CS & ienum_collision_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = ienum_collision?x' -> (ienum_collision_in'?y' -> ienum_collision.the_end' -> ienum_collision_out'!y' -> REORDER' [] ienum_collision.the_end' -> REORDER')
+           []
+           ienum_collision_'''?x':{inevitable,optional} -> ienum_collision_'''?x':{modeling} -> ienum_collision.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -47,7 +49,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then ienum_collision_()
                 else ienum_collision_() )
-               [[x<-ienum_collision_in'.x|x<-extensions(ienum_collision_in')]] [|{|ienum_collision,ienum_collision_in',ienum_collision.the_end'|}|] REORDER' [[ienum_collision_out'.x<-x|x<-extensions(ienum_collision_out')]] \ {|ienum_collision_in',ienum_collision.the_end'|})
+               [[x<-ienum_collision_in'.x|x<-extensions(ienum_collision_in')]] [|{|ienum_collision,ienum_collision_in',ienum_collision_'''|}|] REORDER' [[ienum_collision_out'.x<-x|x<-extensions(ienum_collision_out')]] \ {|ienum_collision_in',ienum_collision.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -59,7 +61,6 @@ channel i: extensions(ienum_collision)
 channel i_': extensions(ienum_collision_')
 
 
-channel i_''': extensions(ienum_collision_''')
 
 
 
@@ -68,28 +69,27 @@ CO_enum_collision_(IIG,IG) = let
 enum_collision_() =
 transition_begin -> (
 i?x:{foo} -> (
-  ienum_collision_'!Retval1_OK -> 
+  i_'!Retval1_OK -> 
   transition_end ->
   enum_collision_()
 )
 []
 i?x:{bar} -> (
-  ienum_collision_'!Retval2_NOK -> 
+  i_'!Retval2_NOK -> 
   transition_end ->
   enum_collision_()
 ))
 
 within enum_collision_()
-                                                     
+
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {ienum_collision_'.Retval1_OK,ienum_collision_'.Retval1_NOK,ienum_collision_'.Retval2_OK,ienum_collision_'.Retval2_NOK,ienum_collision_'.return}
-channel reorder_out : {i_'.Retval1_OK,i_'.Retval1_NOK,i_'.Retval2_OK,i_'.Retval2_NOK,i_'.return}
+channel reorder_in, reorder_out : {|i_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -112,23 +112,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?ienum_collision_'.x' -> reorder_out!i_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?ienum_collision_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -136,7 +135,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?ienum_collision_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -147,25 +146,38 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {i.foo,i.bar}
-UsedModeling = {}
-TheEnd = {||}
-within compress((CO_enum_collision_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {i.foo,i.bar}
+begin_required_modeling' = {}
+end_required_modeling' = {}
+within compress((CO_enum_collision_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i,i_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN'|}|]
                 (STOP
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = i?x -> i_'?x -> R2C
+
+IFS = IF_ienum_collision_(true,false)[[ienum_collision<-i]][[ienum_collision_'<-i_']]
+
+within compress(IFS [|{|i,i_'|}|] R2C \ {|ienum_collision_'''|})
+
+
 -- end of component.csp.scm
 assert COMPLETE'({ienum_collision.foo,ienum_collision.bar}) [F= IF_ienum_collision_(true,true)[[range_error<-illegal]] \ diff(Events,{ienum_collision.foo,ienum_collision.bar,illegal})
 assert IF_ienum_collision_(false,false) :[deadlock free]
 assert IF_ienum_collision_(true,false) :[livelock free]
-assert CO_enum_collision_(true,true)[[ienum_collision_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
-assert COMPLETE'({i.foo,i.bar}) [F= CO_enum_collision_(true,true)[[ienum_collision_'.x'<-i_'.x'|x'<-extensions(i_')]][[range_error<-illegal]] \ diff(Events,{i.foo,i.bar,illegal})
+assert CO_enum_collision_(true,true) :[deterministic]
+assert COMPLETE'({i.foo,i.bar}) [F= CO_enum_collision_(true,true)[[range_error<-illegal]] \ diff(Events,{i.foo,i.bar,illegal})
 assert STOP [T= AS_enum_collision_(false) \ diff(Events,{illegal,queue_full})
 assert AS_enum_collision_(false) :[deadlock free]
-assert IF_ienum_collision_(true,false) [[ienum_collision.x<-i.x|x<-extensions(i)]][[ienum_collision_'.x<-i_'.x|x<-extensions(i_')]]\ {ienum_collision_'''.modeling} [F= AS_enum_collision_(true) \ diff(Events,{|illegal,i,i_'|})
+assert IF_SPEC [F= AS_enum_collision_(true) \ diff(Events,{|illegal,i,i_'|})
 assert AS_enum_collision_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]

@@ -1,46 +1,46 @@
 Checking out/webdemo/Alarm.csp
 
-Checking COMPLETE'({i242_IConsole.inevitable,i242_IConsole.optional,i242_IConsole.i3_arm,i242_IConsole.i4_disarm}) [F= IF_i242_IConsole_(true,true)[[range_error<-illegal]]\diff(Events,{i242_IConsole.inevitable,i242_IConsole.optional,i242_IConsole.i3_arm,i242_IConsole.i4_disarm,illegal})
+Checking COMPLETE'({i168_IConsole.i3_arm,i168_IConsole.i4_disarm,i168_IConsole_'''.inevitable,i168_IConsole_'''.optional}) [F= IF_i168_IConsole_(true,true)[[range_error<-illegal]]\diff(Events,{i168_IConsole.i3_arm,i168_IConsole.i4_disarm,i168_IConsole_'''.inevitable,i168_IConsole_'''.optional,illegal})
 true
 
-Checking IF_i242_IConsole_(false,false) :[deadlock free]
+Checking IF_i168_IConsole_(false,false) :[deadlock free]
 true
 
-Checking IF_i242_IConsole_(true,false) :[livelock free]
+Checking IF_i168_IConsole_(true,false) :[livelock free]
 true
 
-Checking COMPLETE'({i482_ISensor.inevitable,i482_ISensor.optional,i482_ISensor.i243_enable,i482_ISensor.i244_disable}) [F= IF_i482_ISensor_(true,true)[[range_error<-illegal]]\diff(Events,{i482_ISensor.inevitable,i482_ISensor.optional,i482_ISensor.i243_enable,i482_ISensor.i244_disable,illegal})
+Checking COMPLETE'({i334_ISensor.i169_enable,i334_ISensor.i170_disable,i334_ISensor_'''.inevitable,i334_ISensor_'''.optional}) [F= IF_i334_ISensor_(true,true)[[range_error<-illegal]]\diff(Events,{i334_ISensor.i169_enable,i334_ISensor.i170_disable,i334_ISensor_'''.inevitable,i334_ISensor_'''.optional,illegal})
 true
 
-Checking IF_i482_ISensor_(false,false) :[deadlock free]
+Checking IF_i334_ISensor_(false,false) :[deadlock free]
 true
 
-Checking IF_i482_ISensor_(true,false) :[livelock free]
+Checking IF_i334_ISensor_(true,false) :[livelock free]
 true
 
-Checking COMPLETE'({i589_ISiren.i483_turnon,i589_ISiren.i484_turnoff}) [F= IF_i589_ISiren_(true,true)[[range_error<-illegal]]\diff(Events,{i589_ISiren.i483_turnon,i589_ISiren.i484_turnoff,illegal})
+Checking COMPLETE'({i411_ISiren.i335_turnon,i411_ISiren.i336_turnoff}) [F= IF_i411_ISiren_(true,true)[[range_error<-illegal]]\diff(Events,{i411_ISiren.i335_turnon,i411_ISiren.i336_turnoff,illegal})
 true
 
-Checking IF_i589_ISiren_(false,false) :[deadlock free]
+Checking IF_i411_ISiren_(false,false) :[deadlock free]
 true
 
-Checking IF_i589_ISiren_(true,false) :[livelock free]
+Checking IF_i411_ISiren_(true,false) :[livelock free]
 true
 
-Checking CO_i1011_Alarm_(true,true)[[i242_IConsole_'.x<-i590_console_'.x|x<-extensions(i590_console_')]] :[deterministic]
+Checking CO_i706_Alarm_(true,true) :[deterministic]
 true
 
-Checking COMPLETE'({i590_console.i3_arm,i590_console.i4_disarm,i593_sensor_''.i245_triggered,i593_sensor_''.i246_disabled}) [F= CO_i1011_Alarm_(true,true)[[i242_IConsole_'.x'<-i590_console_'.x'|x'<-extensions(i590_console_')]][[range_error<-illegal]]\diff(Events,{i590_console.i3_arm,i590_console.i4_disarm,i593_sensor_''.i245_triggered,i593_sensor_''.i246_disabled,illegal})
+Checking COMPLETE'({i412_console.i3_arm,i412_console.i4_disarm,i415_sensor_''.i171_triggered,i415_sensor_''.i172_disabled}) [F= CO_i706_Alarm_(true,true)[[range_error<-illegal]]\diff(Events,{i412_console.i3_arm,i412_console.i4_disarm,i415_sensor_''.i171_triggered,i415_sensor_''.i172_disabled,illegal})
 true
 
-Checking STOP [T= AS_i1011_Alarm_(false)\diff(Events,{illegal,queue_full})
+Checking STOP [T= AS_i706_Alarm_(false)\diff(Events,{illegal,queue_full})
 xfalse
 
-Checking AS_i1011_Alarm_(false) :[deadlock free]
+Checking AS_i706_Alarm_(false) :[deadlock free]
 xfalse
 
-Checking IF_i242_IConsole_(true,false)[[i242_IConsole.x<-i590_console.x|x<-extensions(i590_console)]][[i242_IConsole_'.x<-i590_console_'.x|x<-extensions(i590_console_')]][[i242_IConsole_''.x<-i590_console_''.x|x<-extensions(i590_console_'')]]\{i242_IConsole_'''.modeling,i590_console.inevitable,i590_console.optional} [F= AS_i1011_Alarm_(true)\diff(Events,{|illegal,i590_console,i590_console_',i590_console_''|})
+Checking IF_SPEC [F= AS_i706_Alarm_(true)\diff(Events,{|illegal,i412_console,i412_console_',i412_console_''|})
 xfalse
 
-Checking AS_i1011_Alarm_(true)\diff(Events,{|i593_sensor.inevitable,i593_sensor.optional,illegal,i590_console,i590_console_',i590_console_''|}) :[livelock free]
+Checking AS_i706_Alarm_(true)\diff(Events,{|i415_sensor_'''.inevitable,i415_sensor_'''.optional,illegal,i412_console,i412_console_',i412_console_''|}) :[livelock free]
 true

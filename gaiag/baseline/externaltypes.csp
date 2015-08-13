@@ -1,12 +1,12 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = E_no | E_yes | Global_aap | Global_noot | e | f | g | h | modeling | return | the_end'
+datatype event_enumeration_alphabet = E_no | E_yes | Global_aap | Global_noot | e | f | g | h | inevitable | modeling | optional | return | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -17,7 +17,7 @@ channel Iexternaltypes: {e,f,g,h,the_end'}
 
 channel Iexternaltypes_': {Global_aap,Global_noot,E_yes,E_no,return}
 channel Iexternaltypes_in',Iexternaltypes_out': {Iexternaltypes_'.Global_aap,Iexternaltypes_'.Global_noot,Iexternaltypes_'.E_yes,Iexternaltypes_'.E_no,Iexternaltypes_'.return}
-channel Iexternaltypes_''': {modeling}
+channel Iexternaltypes_''': {inevitable,optional,modeling}
 
 IF_Iexternaltypes_(IG,CS) = let
 
@@ -40,10 +40,12 @@ Iexternaltypes?x:{g} -> (
   Iexternaltypes_()
 )
 []
-CS & Iexternaltypes?x:{} -> illegal -> STOP
+CS & Iexternaltypes_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = Iexternaltypes?x' -> (Iexternaltypes_in'?y' -> Iexternaltypes.the_end' -> Iexternaltypes_out'!y' -> REORDER' [] Iexternaltypes.the_end' -> REORDER')
+           []
+           Iexternaltypes_'''?x':{inevitable,optional} -> Iexternaltypes_'''?x':{modeling} -> Iexternaltypes.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -53,7 +55,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then Iexternaltypes_()
                 else Iexternaltypes_() )
-               [[x<-Iexternaltypes_in'.x|x<-extensions(Iexternaltypes_in')]] [|{|Iexternaltypes,Iexternaltypes_in',Iexternaltypes.the_end'|}|] REORDER' [[Iexternaltypes_out'.x<-x|x<-extensions(Iexternaltypes_out')]] \ {|Iexternaltypes_in',Iexternaltypes.the_end'|})
+               [[x<-Iexternaltypes_in'.x|x<-extensions(Iexternaltypes_in')]] [|{|Iexternaltypes,Iexternaltypes_in',Iexternaltypes_'''|}|] REORDER' [[Iexternaltypes_out'.x<-x|x<-extensions(Iexternaltypes_out')]] \ {|Iexternaltypes_in',Iexternaltypes.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -67,7 +69,6 @@ channel i_': extensions(Iexternaltypes_')
 channel j_': extensions(Iexternaltypes_')
 
 
-channel i_''': extensions(Iexternaltypes_''')
 channel j_''': extensions(Iexternaltypes_''')
 
 
@@ -77,19 +78,19 @@ CO_externaltypes_(IIG,IG) = let
 externaltypes_() =
 transition_begin -> (
 i?x:{e} -> (
-  Iexternaltypes_'!Global_aap -> 
+  i_'!Global_aap -> 
   transition_end ->
   externaltypes_()
 )
 []
 i?x:{f,h} -> (
-    Iexternaltypes_'.return ->
+    i_'.return ->
   transition_end ->
   externaltypes_()
 )
 []
 i?x:{g} -> (
-  Iexternaltypes_'!E_yes -> 
+  i_'!E_yes -> 
   transition_end ->
   externaltypes_()
 ))
@@ -97,14 +98,13 @@ i?x:{g} -> (
 within externaltypes_()
 
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {Iexternaltypes_'.Global_aap,Iexternaltypes_'.Global_noot,Iexternaltypes_'.E_yes,Iexternaltypes_'.E_no,Iexternaltypes_'.return}
-channel reorder_out : {i_'.Global_aap,i_'.Global_noot,i_'.E_yes,i_'.E_no,i_'.return}
+channel reorder_in, reorder_out : {|i_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -127,23 +127,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?Iexternaltypes_'.x' -> reorder_out!i_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?Iexternaltypes_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -151,7 +150,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?Iexternaltypes_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -162,25 +161,38 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {i.e,i.f,i.g,i.h}
-UsedModeling = {}
-TheEnd = {|j_'''|}
-within compress((CO_externaltypes_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {i.e,i.f,i.g,i.h}
+begin_required_modeling' = {}
+end_required_modeling' = {j_'''.modeling}
+within compress((CO_externaltypes_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i,i_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',j,j_',j_'''|}|]
                 (IF_Iexternaltypes_(true,false) [[Iexternaltypes.x<-j.x|x<-extensions(j)]][[Iexternaltypes_'.x<-j_'.x|x<-extensions(j_')]][[Iexternaltypes_'''.x<-j_'''.x|x<-extensions(j_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = i?x -> i_'?x -> R2C
+
+IFS = IF_Iexternaltypes_(true,false)[[Iexternaltypes<-i]][[Iexternaltypes_'<-i_']]
+
+within compress(IFS [|{|i,i_'|}|] R2C \ {|Iexternaltypes_'''|})
+
+
 -- end of component.csp.scm
 assert COMPLETE'({Iexternaltypes.e,Iexternaltypes.f,Iexternaltypes.g,Iexternaltypes.h}) [F= IF_Iexternaltypes_(true,true)[[range_error<-illegal]] \ diff(Events,{Iexternaltypes.e,Iexternaltypes.f,Iexternaltypes.g,Iexternaltypes.h,illegal})
 assert IF_Iexternaltypes_(false,false) :[deadlock free]
 assert IF_Iexternaltypes_(true,false) :[livelock free]
-assert CO_externaltypes_(true,true)[[Iexternaltypes_'.x<-i_'.x|x<-extensions(i_')]] :[deterministic]
-assert COMPLETE'({i.e,i.f,i.g,i.h}) [F= CO_externaltypes_(true,true)[[Iexternaltypes_'.x'<-i_'.x'|x'<-extensions(i_')]][[range_error<-illegal]] \ diff(Events,{i.e,i.f,i.g,i.h,illegal})
+assert CO_externaltypes_(true,true) :[deterministic]
+assert COMPLETE'({i.e,i.f,i.g,i.h}) [F= CO_externaltypes_(true,true)[[range_error<-illegal]] \ diff(Events,{i.e,i.f,i.g,i.h,illegal})
 assert STOP [T= AS_externaltypes_(false) \ diff(Events,{illegal,queue_full})
 assert AS_externaltypes_(false) :[deadlock free]
-assert IF_Iexternaltypes_(true,false) [[Iexternaltypes.x<-i.x|x<-extensions(i)]][[Iexternaltypes_'.x<-i_'.x|x<-extensions(i_')]]\ {Iexternaltypes_'''.modeling} [F= AS_externaltypes_(true) \ diff(Events,{|illegal,i,i_'|})
+assert IF_SPEC [F= AS_externaltypes_(true) \ diff(Events,{|illegal,i,i_'|})
 assert AS_externaltypes_(true) \ diff(Events,{|illegal,i,i_'|}) :[livelock free]

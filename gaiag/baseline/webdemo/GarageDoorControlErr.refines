@@ -1,42 +1,6 @@
 Checking out/webdemo/GarageDoorControlErr.csp
 
-Checking COMPLETE'({i298_LimitSwitchIF.inevitable,i298_LimitSwitchIF.optional,i298_LimitSwitchIF.i7_doorOpening,i298_LimitSwitchIF.i8_doorClosing,i298_LimitSwitchIF.i9_doorStopped,i298_LimitSwitchIF.i13_queryPosition,i298_LimitSwitchIF.i15_initialise}) [F= IF_i298_LimitSwitchIF_(true,true)[[range_error<-illegal]]\diff(Events,{i298_LimitSwitchIF.inevitable,i298_LimitSwitchIF.optional,i298_LimitSwitchIF.i7_doorOpening,i298_LimitSwitchIF.i8_doorClosing,i298_LimitSwitchIF.i9_doorStopped,i298_LimitSwitchIF.i13_queryPosition,i298_LimitSwitchIF.i15_initialise,illegal})
-true
-
-Checking IF_i298_LimitSwitchIF_(false,false) :[deadlock free]
-true
-
-Checking IF_i298_LimitSwitchIF_(true,false) :[livelock free]
-true
-
-Checking COMPLETE'({i496_MotorControlIF.optional,i496_MotorControlIF.i299_initialise,i496_MotorControlIF.i300_start,i496_MotorControlIF.i301_stop,i496_MotorControlIF.i302_setOpen,i496_MotorControlIF.i303_setClose}) [F= IF_i496_MotorControlIF_(true,true)[[range_error<-illegal]]\diff(Events,{i496_MotorControlIF.optional,i496_MotorControlIF.i299_initialise,i496_MotorControlIF.i300_start,i496_MotorControlIF.i301_stop,i496_MotorControlIF.i302_setOpen,i496_MotorControlIF.i303_setClose,illegal})
-xfalse
-
-Checking IF_i496_MotorControlIF_(false,false) :[deadlock free]
-true
-
-Checking IF_i496_MotorControlIF_(true,false) :[livelock free]
-true
-
-Checking COMPLETE'({i562_SwitchPressIF.inevitable,i562_SwitchPressIF.i498_acknowledge}) [F= IF_i562_SwitchPressIF_(true,true)[[range_error<-illegal]]\diff(Events,{i562_SwitchPressIF.inevitable,i562_SwitchPressIF.i498_acknowledge,illegal})
-true
-
-Checking IF_i562_SwitchPressIF_(false,false) :[deadlock free]
-true
-
-Checking IF_i562_SwitchPressIF_(true,false) :[livelock free]
-true
-
-Checking COMPLETE'({i667_ITimer.inevitable,i667_ITimer.i568_CreateTimer,i667_ITimer.i575_CreateTimerEx,i667_ITimer.i579_CreateTimerMSec,i667_ITimer.i580_CancelTimer}) [F= IF_i667_ITimer_(true,true)[[range_error<-illegal]]\diff(Events,{i667_ITimer.inevitable,i667_ITimer.i568_CreateTimer,i667_ITimer.i575_CreateTimerEx,i667_ITimer.i579_CreateTimerMSec,i667_ITimer.i580_CancelTimer,illegal})
-true
-
-Checking IF_i667_ITimer_(false,false) :[deadlock free]
-true
-
-Checking IF_i667_ITimer_(true,false) :[livelock free]
-true
-
-Checking COMPLETE'({i806_DoorControlIF.inevitable,i806_DoorControlIF.i668_initialise,i806_DoorControlIF.i669_reset}) [F= IF_i806_DoorControlIF_(true,true)[[range_error<-illegal]]\diff(Events,{i806_DoorControlIF.inevitable,i806_DoorControlIF.i668_initialise,i806_DoorControlIF.i669_reset,illegal})
+Checking COMPLETE'({i806_DoorControlIF.i668_initialise,i806_DoorControlIF.i669_reset,i806_DoorControlIF_'''.inevitable}) [F= IF_i806_DoorControlIF_(true,true)[[range_error<-illegal]]\diff(Events,{i806_DoorControlIF.i668_initialise,i806_DoorControlIF.i669_reset,i806_DoorControlIF_'''.inevitable,illegal})
 true
 
 Checking IF_i806_DoorControlIF_(false,false) :[deadlock free]
@@ -45,10 +9,46 @@ true
 Checking IF_i806_DoorControlIF_(true,false) :[livelock free]
 true
 
-Checking CO_i1440_GarageDoorControlErr_(true,true)[[i806_DoorControlIF_'.x<-i807_doorControl_'.x|x<-extensions(i807_doorControl_')]] :[deterministic]
+Checking COMPLETE'({i562_SwitchPressIF.i498_acknowledge,i562_SwitchPressIF_'''.inevitable}) [F= IF_i562_SwitchPressIF_(true,true)[[range_error<-illegal]]\diff(Events,{i562_SwitchPressIF.i498_acknowledge,i562_SwitchPressIF_'''.inevitable,illegal})
 true
 
-Checking COMPLETE'({i807_doorControl.i668_initialise,i807_doorControl.i669_reset,i810_switchPress_''.i497_switchPressed,i813_motorControl_''.i304_driveFault,i813_motorControl_''.i305_powerWarning,i816_limitSw_''.i10_doorOpened,i816_limitSw_''.i11_doorClosed,i816_limitSw_''.i12_proximityWarning,i819_timer_''.i581_Timeout}) [F= CO_i1440_GarageDoorControlErr_(true,true)[[i806_DoorControlIF_'.x'<-i807_doorControl_'.x'|x'<-extensions(i807_doorControl_')]][[range_error<-illegal]]\diff(Events,{i807_doorControl.i668_initialise,i807_doorControl.i669_reset,i810_switchPress_''.i497_switchPressed,i813_motorControl_''.i304_driveFault,i813_motorControl_''.i305_powerWarning,i816_limitSw_''.i10_doorOpened,i816_limitSw_''.i11_doorClosed,i816_limitSw_''.i12_proximityWarning,i819_timer_''.i581_Timeout,illegal})
+Checking IF_i562_SwitchPressIF_(false,false) :[deadlock free]
+true
+
+Checking IF_i562_SwitchPressIF_(true,false) :[livelock free]
+true
+
+Checking COMPLETE'({i496_MotorControlIF.i299_initialise,i496_MotorControlIF.i300_start,i496_MotorControlIF.i301_stop,i496_MotorControlIF.i302_setOpen,i496_MotorControlIF.i303_setClose,i496_MotorControlIF_'''.optional}) [F= IF_i496_MotorControlIF_(true,true)[[range_error<-illegal]]\diff(Events,{i496_MotorControlIF.i299_initialise,i496_MotorControlIF.i300_start,i496_MotorControlIF.i301_stop,i496_MotorControlIF.i302_setOpen,i496_MotorControlIF.i303_setClose,i496_MotorControlIF_'''.optional,illegal})
+xfalse
+
+Checking IF_i496_MotorControlIF_(false,false) :[deadlock free]
+true
+
+Checking IF_i496_MotorControlIF_(true,false) :[livelock free]
+true
+
+Checking COMPLETE'({i298_LimitSwitchIF.i7_doorOpening,i298_LimitSwitchIF.i8_doorClosing,i298_LimitSwitchIF.i9_doorStopped,i298_LimitSwitchIF.i13_queryPosition,i298_LimitSwitchIF.i15_initialise,i298_LimitSwitchIF_'''.inevitable,i298_LimitSwitchIF_'''.optional}) [F= IF_i298_LimitSwitchIF_(true,true)[[range_error<-illegal]]\diff(Events,{i298_LimitSwitchIF.i7_doorOpening,i298_LimitSwitchIF.i8_doorClosing,i298_LimitSwitchIF.i9_doorStopped,i298_LimitSwitchIF.i13_queryPosition,i298_LimitSwitchIF.i15_initialise,i298_LimitSwitchIF_'''.inevitable,i298_LimitSwitchIF_'''.optional,illegal})
+true
+
+Checking IF_i298_LimitSwitchIF_(false,false) :[deadlock free]
+true
+
+Checking IF_i298_LimitSwitchIF_(true,false) :[livelock free]
+true
+
+Checking COMPLETE'({i667_ITimer.i568_CreateTimer,i667_ITimer.i575_CreateTimerEx,i667_ITimer.i579_CreateTimerMSec,i667_ITimer.i580_CancelTimer,i667_ITimer_'''.inevitable}) [F= IF_i667_ITimer_(true,true)[[range_error<-illegal]]\diff(Events,{i667_ITimer.i568_CreateTimer,i667_ITimer.i575_CreateTimerEx,i667_ITimer.i579_CreateTimerMSec,i667_ITimer.i580_CancelTimer,i667_ITimer_'''.inevitable,illegal})
+true
+
+Checking IF_i667_ITimer_(false,false) :[deadlock free]
+true
+
+Checking IF_i667_ITimer_(true,false) :[livelock free]
+true
+
+Checking CO_i1440_GarageDoorControlErr_(true,true) :[deterministic]
+true
+
+Checking COMPLETE'({i807_doorControl.i668_initialise,i807_doorControl.i669_reset,i810_switchPress_''.i497_switchPressed,i813_motorControl_''.i304_driveFault,i813_motorControl_''.i305_powerWarning,i816_limitSw_''.i10_doorOpened,i816_limitSw_''.i11_doorClosed,i816_limitSw_''.i12_proximityWarning,i819_timer_''.i581_Timeout}) [F= CO_i1440_GarageDoorControlErr_(true,true)[[range_error<-illegal]]\diff(Events,{i807_doorControl.i668_initialise,i807_doorControl.i669_reset,i810_switchPress_''.i497_switchPressed,i813_motorControl_''.i304_driveFault,i813_motorControl_''.i305_powerWarning,i816_limitSw_''.i10_doorOpened,i816_limitSw_''.i11_doorClosed,i816_limitSw_''.i12_proximityWarning,i819_timer_''.i581_Timeout,illegal})
 xfalse
 
 Checking STOP [T= AS_i1440_GarageDoorControlErr_(false)\diff(Events,{illegal,queue_full})
@@ -57,8 +57,8 @@ true
 Checking AS_i1440_GarageDoorControlErr_(false) :[deadlock free]
 xfalse
 
-Checking IF_i806_DoorControlIF_(true,false)[[i806_DoorControlIF.x<-i807_doorControl.x|x<-extensions(i807_doorControl)]][[i806_DoorControlIF_'.x<-i807_doorControl_'.x|x<-extensions(i807_doorControl_')]][[i806_DoorControlIF_''.x<-i807_doorControl_''.x|x<-extensions(i807_doorControl_'')]]\{i806_DoorControlIF_'''.modeling,i807_doorControl.inevitable} [F= AS_i1440_GarageDoorControlErr_(true)\diff(Events,{|illegal,i807_doorControl,i807_doorControl_',i807_doorControl_''|})
+Checking IF_SPEC [F= AS_i1440_GarageDoorControlErr_(true)\diff(Events,{|illegal,i807_doorControl,i807_doorControl_',i807_doorControl_''|})
 xfalse
 
-Checking AS_i1440_GarageDoorControlErr_(true)\diff(Events,{|i810_switchPress.inevitable,i813_motorControl.optional,i816_limitSw.inevitable,i816_limitSw.optional,i819_timer.inevitable,illegal,i807_doorControl,i807_doorControl_',i807_doorControl_''|}) :[livelock free]
+Checking AS_i1440_GarageDoorControlErr_(true)\diff(Events,{|i810_switchPress_'''.inevitable,i813_motorControl_'''.optional,i816_limitSw_'''.inevitable,i816_limitSw_'''.optional,i819_timer_'''.inevitable,illegal,i807_doorControl,i807_doorControl_',i807_doorControl_''|}) :[livelock free]
 true

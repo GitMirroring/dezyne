@@ -1,5 +1,5 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -13,11 +13,55 @@ datatype event_enumeration_alphabet = e | f | inevitable | modeling | optional |
 -- end of both.csp.scm
 -- interface.csp.scm
 
-channel Bottom: {e,inevitable,the_end'}
+channel Top: {e,unguarded,the_end'}
+channel Top_'': {f}
+channel Top_': {return}
+channel Top_in',Top_out': {Top_'.return}
+channel Top_''': {inevitable,optional,modeling}
+
+IF_Top_(IG,CS) = let
+
+Top_() =
+(Top?x:{unguarded,e} -> (
+    Top_'.return ->
+  Top.the_end' ->
+  Top_()
+)
+[]
+Top_'''?x:{optional} ->(
+  Top_''!f ->
+    Top_'''.modeling ->
+  Top.the_end' ->
+  Top_()
+)
+[]
+CS & Top_'''?x:{optional} -> illegal -> STOP
+)
+
+REORDER' = Top?x' -> (Top_in'?y' -> Top.the_end' -> Top_out'!y' -> REORDER' [] Top.the_end' -> REORDER')
+           []
+           Top_'''?x':{inevitable,optional} -> Top_'''?x':{modeling} -> Top.the_end' -> REORDER'
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                then Top_()
+                else Top_()  [|{Top_'''.optional}|] CHAOS({Top_'''.optional}))
+               [[x<-Top_in'.x|x<-extensions(Top_in')]] [|{|Top,Top_in',Top_'''|}|] REORDER' [[Top_out'.x<-x|x<-extensions(Top_out')]] \ {|Top_in',Top.the_end'|})
+
+-- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
+-- interface.csp.scm
+
+channel Bottom: {e,the_end'}
 channel Bottom_'': {f}
 channel Bottom_': {return}
 channel Bottom_in',Bottom_out': {Bottom_'.return}
-channel Bottom_''': {modeling}
+channel Bottom_''': {inevitable,optional,modeling}
 
 IF_Bottom_(IG,CS) = let
 
@@ -36,7 +80,7 @@ IG & Bottom?x:{e} -> (
   illegal -> STOP
 )
  []
-  Bottom?x:{inevitable} ->(
+  Bottom_'''?x:{inevitable} ->(
   let tmp' = false within
   let c = tmp' within
   Bottom_''!f ->
@@ -45,10 +89,12 @@ IG & Bottom?x:{e} -> (
   Bottom_(c)
 ))
 []
-CS & Bottom?x:{inevitable} -> illegal -> STOP
+CS & Bottom_'''?x:{inevitable} -> illegal -> STOP
 )
 
 REORDER' = Bottom?x' -> (Bottom_in'?y' -> Bottom.the_end' -> Bottom_out'!y' -> REORDER' [] Bottom.the_end' -> REORDER')
+           []
+           Bottom_'''?x':{inevitable,optional} -> Bottom_'''?x':{modeling} -> Bottom.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -58,49 +104,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then Bottom_(false)
                 else Bottom_(false) )
-               [[x<-Bottom_in'.x|x<-extensions(Bottom_in')]] [|{|Bottom,Bottom_in',Bottom.the_end'|}|] REORDER' [[Bottom_out'.x<-x|x<-extensions(Bottom_out')]] \ {|Bottom_in',Bottom.the_end'|})
-
--- end of interface.csp.scm
--- both.csp.scm
--- end of both.csp.scm
--- interface.csp.scm
-
-channel Top: {e,optional,unguarded,the_end'}
-channel Top_'': {f}
-channel Top_': {return}
-channel Top_in',Top_out': {Top_'.return}
-channel Top_''': {modeling}
-
-IF_Top_(IG,CS) = let
-
-Top_() =
-(Top?x:{unguarded,e} -> (
-    Top_'.return ->
-  Top.the_end' ->
-  Top_()
-)
-[]
-Top?x:{optional} ->(
-  Top_''!f ->
-    Top_'''.modeling ->
-  Top.the_end' ->
-  Top_()
-)
-[]
-CS & Top?x:{optional} -> illegal -> STOP
-)
-
-REORDER' = Top?x' -> (Top_in'?y' -> Top.the_end' -> Top_out'!y' -> REORDER' [] Top.the_end' -> REORDER')
-
-compress(x) = let
-transparent sbisim
-transparent diamond
-within sbisim(diamond(x))
-
-within compress((if CS
-                then Top_()
-                else Top_()  [|{Top.optional}|] CHAOS({Top.optional}))
-               [[x<-Top_in'.x|x<-extensions(Top_in')]] [|{|Top,Top_in',Top.the_end'|}|] REORDER' [[Top_out'.x<-x|x<-extensions(Top_out')]] \ {|Top_in',Top.the_end'|})
+               [[x<-Bottom_in'.x|x<-extensions(Bottom_in')]] [|{|Bottom,Bottom_in',Bottom_'''|}|] REORDER' [[Bottom_out'.x<-x|x<-extensions(Bottom_out')]] \ {|Bottom_in',Bottom.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -116,7 +120,6 @@ channel b_': extensions(Bottom_')
 channel t_'': extensions(Top_'')
 channel b_'': extensions(Bottom_'')
 
-channel t_''': extensions(Top_''')
 channel b_''': extensions(Bottom_''')
 
 
@@ -130,7 +133,7 @@ t?x:{e} -> (
   let tmp' = true within
   let c = tmp' within
   b!e -> b_'.return ->
-    Top_'.return ->
+    t_'.return ->
   transition_end ->
   GuardedRequiredIllegal_(c)
 ))
@@ -142,7 +145,7 @@ IG & b_''?x:{f} -> (
 []
 (c) & (
 t?x:{e} -> (
-    Top_'.return ->
+    t_'.return ->
   transition_end ->
   GuardedRequiredIllegal_(c)
 ))
@@ -156,22 +159,21 @@ b_''?x:{f} -> (
 ))
 []
 t?x:{unguarded} -> (
-    Top_'.return ->
+    t_'.return ->
   transition_end ->
   GuardedRequiredIllegal_(c)
 ))
 
 within GuardedRequiredIllegal_(false)
-                                                     
+
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {b_''.f,extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|b_'',extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {Top_'.return}
-channel reorder_out : {t_'.return}
+channel reorder_in, reorder_out : {|t_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -194,23 +196,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?Top_'.x' -> reorder_out!t_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?Top_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!t_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -218,7 +219,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?Top_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -229,28 +230,41 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {t.unguarded,t.e}
-UsedModeling = {b.inevitable}
-TheEnd = {|b_'''|}
-within compress((CO_GuardedRequiredIllegal_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {t.unguarded,t.e}
+begin_required_modeling' = {b_'''.inevitable}
+end_required_modeling' = {b_'''.modeling}
+within compress((CO_GuardedRequiredIllegal_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,t,t_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',b,b_',b_'''|}|]
                 (IF_Bottom_(true,false) [[Bottom.x<-b.x|x<-extensions(b)]][[Bottom_'.x<-b_'.x|x<-extensions(b_')]][[Bottom_''.x<-b_''.x|x<-extensions(b_'')]][[Bottom_'''.x<-b_'''.x|x<-extensions(b_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = t?x -> t_'?x -> R2C
+
+IFS = IF_Top_(true,false)[[Top<-t]][[Top_'<-t_']][[Top_''<-t_'']]
+
+within compress(IFS [|{|t,t_'|}|] R2C \ {|Top_'''|})
+
+
 -- end of component.csp.scm
-assert COMPLETE'({Bottom.inevitable,Bottom.e}) [F= IF_Bottom_(true,true)[[range_error<-illegal]] \ diff(Events,{Bottom.inevitable,Bottom.e,illegal})
-assert IF_Bottom_(false,false) :[deadlock free]
-assert IF_Bottom_(true,false) :[livelock free]
-assert COMPLETE'({Top.optional,Top.unguarded,Top.e}) [F= IF_Top_(true,true)[[range_error<-illegal]] \ diff(Events,{Top.optional,Top.unguarded,Top.e,illegal})
+assert COMPLETE'({Top.unguarded,Top.e,Top_'''.optional}) [F= IF_Top_(true,true)[[range_error<-illegal]] \ diff(Events,{Top.unguarded,Top.e,Top_'''.optional,illegal})
 assert IF_Top_(false,false) :[deadlock free]
 assert IF_Top_(true,false) :[livelock free]
-assert CO_GuardedRequiredIllegal_(true,true)[[Top_'.x<-t_'.x|x<-extensions(t_')]] :[deterministic]
-assert COMPLETE'({t.unguarded,t.e,b_''.f}) [F= CO_GuardedRequiredIllegal_(true,true)[[Top_'.x'<-t_'.x'|x'<-extensions(t_')]][[range_error<-illegal]] \ diff(Events,{t.unguarded,t.e,b_''.f,illegal})
+assert COMPLETE'({Bottom.e,Bottom_'''.inevitable}) [F= IF_Bottom_(true,true)[[range_error<-illegal]] \ diff(Events,{Bottom.e,Bottom_'''.inevitable,illegal})
+assert IF_Bottom_(false,false) :[deadlock free]
+assert IF_Bottom_(true,false) :[livelock free]
+assert CO_GuardedRequiredIllegal_(true,true) :[deterministic]
+assert COMPLETE'({t.unguarded,t.e,b_''.f}) [F= CO_GuardedRequiredIllegal_(true,true)[[range_error<-illegal]] \ diff(Events,{t.unguarded,t.e,b_''.f,illegal})
 assert STOP [T= AS_GuardedRequiredIllegal_(false) \ diff(Events,{illegal,queue_full})
 assert AS_GuardedRequiredIllegal_(false) :[deadlock free]
-assert IF_Top_(true,false) [[Top.x<-t.x|x<-extensions(t)]][[Top_'.x<-t_'.x|x<-extensions(t_')]][[Top_''.x<-t_''.x|x<-extensions(t_'')]]\ {Top_'''.modeling,t.optional} [F= AS_GuardedRequiredIllegal_(true) \ diff(Events,{|illegal,t,t_',t_''|})
-assert AS_GuardedRequiredIllegal_(true) \ diff(Events,{|b.inevitable,illegal,t,t_',t_''|}) :[livelock free]
+assert IF_SPEC [F= AS_GuardedRequiredIllegal_(true) \ diff(Events,{|illegal,t,t_',t_''|})
+assert AS_GuardedRequiredIllegal_(true) \ diff(Events,{|b_'''.inevitable,illegal,t,t_',t_''|}) :[livelock free]

@@ -214,7 +214,7 @@ interface i
           "i?x:{e} -> (
 i_'.return ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 )"))
 
 (define csp-transform-return-reply
@@ -248,7 +248,7 @@ i_B(s,b,c)
           "i?x:{f} -> (
 i_'!Status_Yes ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 )"))
 
 (define csp-transform-reply-via
@@ -308,7 +308,7 @@ i_B(s,b,c)
 i_'!Status_Yes ->
 i_'.return ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 )"))
 
 ;; \\)
@@ -407,7 +407,7 @@ P'(s, b, c)
           "i?x:{e} -> (
     i_'.return ->
   i.the_end' ->
-  i_B(s,b,c)
+  i_(s,b,c)
 )"))
 
 (define csp-transform-assign-via
@@ -724,7 +724,7 @@ let tmp' = S_S2 within
 let s = tmp' within
 i_'.return ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 else
 let tmp' = false within
 let c = tmp' within
@@ -734,7 +734,7 @@ let tmp' = S_S2 within
 let s = tmp' within
 i_'.return ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 )
 else
 (if c then
@@ -745,7 +745,7 @@ let tmp' = S_S2 within
 let s = tmp' within
 i_'.return ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 else
 let tmp' = true within
 let b = tmp' within
@@ -754,7 +754,7 @@ let tmp' = S_S2 within
 let s = tmp' within
 i_'.return ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 )
 )
 else
@@ -769,7 +769,7 @@ let tmp' = S_S2 within
 let s = tmp' within
 i_'.return ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 else
 let tmp' = false within
 let c = tmp' within
@@ -779,7 +779,7 @@ let tmp' = S_S2 within
 let s = tmp' within
 i_'.return ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 )
 else
 (if c then
@@ -790,7 +790,7 @@ let tmp' = S_S2 within
 let s = tmp' within
 i_'.return ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 else
 let tmp' = true within
 let b = tmp' within
@@ -799,7 +799,7 @@ let tmp' = S_S2 within
 let s = tmp' within
 i_'.return ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 )
 )
 )
@@ -858,9 +858,9 @@ component c
 
           ;; to:
           "j?x:{e} -> (
-    i_'.return ->
+    j_'.return ->
   transition_end ->
-  c_B(s,b,c)
+  c_(s,b,c)
 )"))
 
 
@@ -1008,7 +1008,7 @@ let sounding = tmp' within
 let tmp' = States_Triggered within
 let state = tmp' within
 transition_end ->
-Alarm_d(state,sounding)
+Alarm_(state,sounding)
 )"))
 
 
@@ -1295,7 +1295,7 @@ var_()
 let Cont_3'(s, b, c) =
 i_'.return ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 within
 toggle(Cont_3')(s, b, c)
 )"))
@@ -1350,7 +1350,7 @@ let Cont_4'(s, b, c, res') =
 let b = res' within
 i_'.return ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 within
 vtoggle(Cont_4')(s, b, c)
 )"))
@@ -1394,7 +1394,7 @@ let Cont_5'(s, b, c, res') =
 let b = res' within
 i_'.return ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 within
 vtoggle(Cont_5')(s, b, c)
 )"))
@@ -1476,7 +1476,7 @@ let Cont_6'(s, b, c, res') =
 let c = res' within
 i_'.return ->
 i.the_end' ->
-i_B(s,b,c)
+i_(s,b,c)
 within
 g(Cont_6')(s, b, c, b, b)
 )"))
@@ -1530,11 +1530,11 @@ g(Cont_6')(s, b, c, b, b)
 u!what ->
 u_'?s:{Status_Ok,Status_Nok} ->
 (if (s == Status_Ok) then
-IReply_'!Status_Yes ->
+i_'!Status_Yes ->
 transition_end ->
 Reply_(dummy)
 else
-IReply_'!Status_No ->
+i_'!Status_No ->
 transition_end ->
 Reply_(dummy)
 )
@@ -1575,7 +1575,7 @@ Reply_(dummy)
 
           ;; to:
           "reply_fun(P')(dummy) =
-IReply_'!Status_Yes ->
+i_'!Status_Yes ->
 P'(dummy)
 "))
 
@@ -1615,7 +1615,7 @@ P'(dummy)
 
           ;; to:
           "reply_fun_arg(P')(dummy, s) =
-IReply_'!s ->
+i_'!s ->
 P'(dummy)
 "))
 
@@ -1653,7 +1653,7 @@ P'(dummy)
           "i?x:{e} -> (
 u!what ->
 u_'?s:{Status_Ok,Status_Nok} ->
-IReply_'.return ->
+i_'.return ->
 transition_end ->
 Reply_(dummy)
 )"))
@@ -1692,7 +1692,7 @@ Reply_(dummy)
           "i?x:{e} -> (
 u!what ->
 u_'?s:{Status_Ok,Status_Nok} ->
-IReply_'.return ->
+i_'.return ->
 transition_end ->
 Reply_(dummy)
 )"))
@@ -1737,7 +1737,7 @@ Reply_(dummy)
 let res = Status_Ok within
 u!what ->
 u_'?res ->
-IReply_'.return ->
+i_'.return ->
 transition_end ->
 Reply_(dummy)
 )"))
@@ -1815,11 +1815,11 @@ Reply_(dummy)
 let c = true within
 (if c then
 i_''!f ->
-IReturn_'.return ->
+i_'.return ->
 transition_end ->
 arguments_(b)
 else
-IReturn_'.return ->
+i_'.return ->
 transition_end ->
 arguments_(b)
 )
@@ -1986,11 +1986,11 @@ let Cont_7'(b, res') =
 let b = res' within
 (if c then
 i_''!f ->
-IValued_'.return ->
+i_'.return ->
 transition_end ->
 arguments_(b)
 else
-IValued_'.return ->
+i_'.return ->
 transition_end ->
 arguments_(b)
 )
@@ -2064,11 +2064,11 @@ let Cont_9'(b, res') =
 let b = res' within
 (if c then
 i_''!f ->
-IValued_'.return ->
+i_'.return ->
 transition_end ->
 arguments_(b)
 else
-IValued_'.return ->
+i_'.return ->
 transition_end ->
 arguments_(b)
 )
@@ -2230,7 +2230,7 @@ h(Cont_10')(b, s, b)
           "imember?x:{e} -> (
 imember_'.return ->
 imember.the_end' ->
-imember_B()
+imember_()
 )"))
 
 (pass-if "unbehaved"

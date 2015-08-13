@@ -1,12 +1,12 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A')) |~| illegal->STOP
 
-datatype event_enumeration_alphabet = e | modeling | return | the_end'
+datatype event_enumeration_alphabet = e | inevitable | modeling | optional | return | the_end'
 
 -- end of combinators
 -- both.csp.scm
@@ -17,17 +17,19 @@ channel iincomplete: {e,the_end'}
 
 channel iincomplete_': {return}
 channel iincomplete_in',iincomplete_out': {iincomplete_'.return}
-channel iincomplete_''': {modeling}
+channel iincomplete_''': {inevitable,optional,modeling}
 
 IF_iincomplete_(IG,CS) = let
 
 iincomplete_() =
 (STOP
 []
-CS & iincomplete?x:{} -> illegal -> STOP
+CS & iincomplete_'''?x:{} -> illegal -> STOP
 )
 
 REORDER' = iincomplete?x' -> (iincomplete_in'?y' -> iincomplete.the_end' -> iincomplete_out'!y' -> REORDER' [] iincomplete.the_end' -> REORDER')
+           []
+           iincomplete_'''?x':{inevitable,optional} -> iincomplete_'''?x':{modeling} -> iincomplete.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -37,7 +39,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then iincomplete_()
                 else iincomplete_() )
-               [[x<-iincomplete_in'.x|x<-extensions(iincomplete_in')]] [|{|iincomplete,iincomplete_in',iincomplete.the_end'|}|] REORDER' [[iincomplete_out'.x<-x|x<-extensions(iincomplete_out')]] \ {|iincomplete_in',iincomplete.the_end'|})
+               [[x<-iincomplete_in'.x|x<-extensions(iincomplete_in')]] [|{|iincomplete,iincomplete_in',iincomplete_'''|}|] REORDER' [[iincomplete_out'.x<-x|x<-extensions(iincomplete_out')]] \ {|iincomplete_in',iincomplete.the_end'|})
 
 -- end of interface.csp.scm
 assert COMPLETE'({iincomplete.e}) [F= IF_iincomplete_(true,true)[[range_error<-illegal]] \ diff(Events,{iincomplete.e,illegal})

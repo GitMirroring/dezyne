@@ -1,5 +1,5 @@
-nametype bool = {false, true}   
-                
+nametype bool = {false, true}
+
 channel illegal
 channel range_error
 channel transition_begin, transition_end
@@ -13,11 +13,252 @@ datatype event_enumeration_alphabet = i10_doorOpened | i11_doorClosed | i12_prox
 -- end of both.csp.scm
 -- interface.csp.scm
 
-channel i298_LimitSwitchIF: {i13_queryPosition,i15_initialise,i7_doorOpening,i8_doorClosing,i9_doorStopped,inevitable,optional,the_end'}
+channel i821_DoorControlIF: {i683_initialise,i684_reset,the_end'}
+channel i821_DoorControlIF_'': {i685_warning,i686_error}
+channel i821_DoorControlIF_': {return}
+channel i821_DoorControlIF_in',i821_DoorControlIF_out': {i821_DoorControlIF_'.return}
+channel i821_DoorControlIF_''': {inevitable,optional,modeling}
+
+IF_i821_DoorControlIF_(IG,CS) = let
+
+i821_DoorControlIF_(i692_state) =
+(((i692_state == i690_State_NotReady)) & (
+i821_DoorControlIF?x:{i683_initialise} -> (
+  let tmp' = i690_State_Ready within
+  let i692_state = tmp' within
+    i821_DoorControlIF_'.return ->
+  i821_DoorControlIF.the_end' ->
+  i821_DoorControlIF_(i692_state)
+)
+ []
+  IG & i821_DoorControlIF?x:{i684_reset} -> (
+  illegal -> STOP
+))
+[]
+((i692_state == i690_State_Ready)) & (
+IG & i821_DoorControlIF?x:{i683_initialise,i684_reset} -> (
+  illegal -> STOP
+)
+ []
+  i821_DoorControlIF_'''?x:{inevitable} ->(
+  i821_DoorControlIF_''!i685_warning ->
+    i821_DoorControlIF_'''.modeling ->
+  i821_DoorControlIF.the_end' ->
+  i821_DoorControlIF_(i692_state)
+)
+ []
+  i821_DoorControlIF_'''?x:{inevitable} ->(
+  i821_DoorControlIF_''!i686_error ->
+  let tmp' = i690_State_Error within
+  let i692_state = tmp' within
+    i821_DoorControlIF_'''.modeling ->
+  i821_DoorControlIF.the_end' ->
+  i821_DoorControlIF_(i692_state)
+))
+[]
+((i692_state == i690_State_Error)) & (
+i821_DoorControlIF?x:{i684_reset} -> (
+  let tmp' = i690_State_Ready within
+  let i692_state = tmp' within
+    i821_DoorControlIF_'.return ->
+  i821_DoorControlIF.the_end' ->
+  i821_DoorControlIF_(i692_state)
+)
+ []
+  IG & i821_DoorControlIF?x:{i683_initialise} -> (
+  illegal -> STOP
+))
+[]
+CS & i821_DoorControlIF_'''?x:{inevitable} -> illegal -> STOP
+)
+
+REORDER' = i821_DoorControlIF?x' -> (i821_DoorControlIF_in'?y' -> i821_DoorControlIF.the_end' -> i821_DoorControlIF_out'!y' -> REORDER' [] i821_DoorControlIF.the_end' -> REORDER')
+           []
+           i821_DoorControlIF_'''?x':{inevitable,optional} -> i821_DoorControlIF_'''?x':{modeling} -> i821_DoorControlIF.the_end' -> REORDER'
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                then i821_DoorControlIF_(i690_State_NotReady)
+                else i821_DoorControlIF_(i690_State_NotReady) )
+               [[x<-i821_DoorControlIF_in'.x|x<-extensions(i821_DoorControlIF_in')]] [|{|i821_DoorControlIF,i821_DoorControlIF_in',i821_DoorControlIF_'''|}|] REORDER' [[i821_DoorControlIF_out'.x<-x|x<-extensions(i821_DoorControlIF_out')]] \ {|i821_DoorControlIF_in',i821_DoorControlIF.the_end'|})
+
+-- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
+-- interface.csp.scm
+
+channel i577_SwitchPressIF: {i513_acknowledge,the_end'}
+channel i577_SwitchPressIF_'': {i512_switchPressed}
+channel i577_SwitchPressIF_': {return}
+channel i577_SwitchPressIF_in',i577_SwitchPressIF_out': {i577_SwitchPressIF_'.return}
+channel i577_SwitchPressIF_''': {inevitable,optional,modeling}
+
+IF_i577_SwitchPressIF_(IG,CS) = let
+
+i577_SwitchPressIF_(i518_state) =
+(((i518_state == i516_State_Ready)) & (
+i577_SwitchPressIF_'''?x:{inevitable} ->(
+  i577_SwitchPressIF_''!i512_switchPressed ->
+  let tmp' = i516_State_NotReady within
+  let i518_state = tmp' within
+    i577_SwitchPressIF_'''.modeling ->
+  i577_SwitchPressIF.the_end' ->
+  i577_SwitchPressIF_(i518_state)
+)
+ []
+  IG & i577_SwitchPressIF?x:{i513_acknowledge} -> (
+  illegal -> STOP
+))
+[]
+((i518_state == i516_State_NotReady)) & (
+i577_SwitchPressIF?x:{i513_acknowledge} -> (
+  let tmp' = i516_State_Ready within
+  let i518_state = tmp' within
+    i577_SwitchPressIF_'.return ->
+  i577_SwitchPressIF.the_end' ->
+  i577_SwitchPressIF_(i518_state)
+))
+[]
+CS & i577_SwitchPressIF_'''?x:{inevitable} -> illegal -> STOP
+)
+
+REORDER' = i577_SwitchPressIF?x' -> (i577_SwitchPressIF_in'?y' -> i577_SwitchPressIF.the_end' -> i577_SwitchPressIF_out'!y' -> REORDER' [] i577_SwitchPressIF.the_end' -> REORDER')
+           []
+           i577_SwitchPressIF_'''?x':{inevitable,optional} -> i577_SwitchPressIF_'''?x':{modeling} -> i577_SwitchPressIF.the_end' -> REORDER'
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                then i577_SwitchPressIF_(i516_State_Ready)
+                else i577_SwitchPressIF_(i516_State_Ready) )
+               [[x<-i577_SwitchPressIF_in'.x|x<-extensions(i577_SwitchPressIF_in')]] [|{|i577_SwitchPressIF,i577_SwitchPressIF_in',i577_SwitchPressIF_'''|}|] REORDER' [[i577_SwitchPressIF_out'.x<-x|x<-extensions(i577_SwitchPressIF_out')]] \ {|i577_SwitchPressIF_in',i577_SwitchPressIF.the_end'|})
+
+-- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
+-- interface.csp.scm
+
+channel i511_MotorControlIF: {i299_initialise,i300_start,i301_stop,i302_setOpen,i303_setClose,the_end'}
+channel i511_MotorControlIF_'': {i304_driveFault,i305_powerWarning}
+channel i511_MotorControlIF_': {return}
+channel i511_MotorControlIF_in',i511_MotorControlIF_out': {i511_MotorControlIF_'.return}
+channel i511_MotorControlIF_''': {inevitable,optional,modeling}
+
+IF_i511_MotorControlIF_(IG,CS) = let
+
+i511_MotorControlIF_(i316_motor, i320_dir, i324_state) =
+((((i324_state == i308_State_Ready) and (i316_motor == i311_OnOff_MotorOff))) & (
+i511_MotorControlIF?x:{i300_start} -> (
+  let tmp' = i311_OnOff_MotorOn within
+  let i316_motor = tmp' within
+    i511_MotorControlIF_'.return ->
+  i511_MotorControlIF.the_end' ->
+  i511_MotorControlIF_(i316_motor,i320_dir,i324_state)
+)
+ []
+  i511_MotorControlIF?x:{i302_setOpen} -> (
+  let tmp' = i314_Direction_DoorOpen within
+  let i320_dir = tmp' within
+    i511_MotorControlIF_'.return ->
+  i511_MotorControlIF.the_end' ->
+  i511_MotorControlIF_(i316_motor,i320_dir,i324_state)
+)
+ []
+  i511_MotorControlIF?x:{i303_setClose} -> (
+  let tmp' = i314_Direction_DoorClose within
+  let i320_dir = tmp' within
+    i511_MotorControlIF_'.return ->
+  i511_MotorControlIF.the_end' ->
+  i511_MotorControlIF_(i316_motor,i320_dir,i324_state)
+)
+ []
+  IG & i511_MotorControlIF?x:{i301_stop} -> (
+  illegal -> STOP
+))
+[]
+(((i324_state == i308_State_Ready) and (i316_motor == i311_OnOff_MotorOn))) & (
+i511_MotorControlIF?x:{i301_stop} -> (
+  let tmp' = i311_OnOff_MotorOff within
+  let i316_motor = tmp' within
+    i511_MotorControlIF_'.return ->
+  i511_MotorControlIF.the_end' ->
+  i511_MotorControlIF_(i316_motor,i320_dir,i324_state)
+)
+ []
+  IG & i511_MotorControlIF?x:{i300_start,i302_setOpen,i303_setClose} -> (
+  illegal -> STOP
+)
+ []
+  i511_MotorControlIF_'''?x:{optional} ->(
+  i511_MotorControlIF_''!i304_driveFault ->
+  let tmp' = i311_OnOff_MotorOff within
+  let i316_motor = tmp' within
+    i511_MotorControlIF_'''.modeling ->
+  i511_MotorControlIF.the_end' ->
+  i511_MotorControlIF_(i316_motor,i320_dir,i324_state)
+)
+ []
+  i511_MotorControlIF_'''?x:{optional} ->(
+  i511_MotorControlIF_''!i305_powerWarning ->
+    i511_MotorControlIF_'''.modeling ->
+  i511_MotorControlIF.the_end' ->
+  i511_MotorControlIF_(i316_motor,i320_dir,i324_state)
+))
+[]
+((i324_state == i308_State_Ready)) & (
+IG & i511_MotorControlIF?x:{i299_initialise} -> (
+  illegal -> STOP
+))
+[]
+((i324_state == i308_State_NotReady)) & (
+i511_MotorControlIF?x:{i299_initialise} -> (
+  let tmp' = i308_State_Ready within
+  let i324_state = tmp' within
+  let tmp' = i311_OnOff_MotorOff within
+  let i316_motor = tmp' within
+    i511_MotorControlIF_'.return ->
+  i511_MotorControlIF.the_end' ->
+  i511_MotorControlIF_(i316_motor,i320_dir,i324_state)
+)
+ []
+  IG & i511_MotorControlIF?x:{i300_start,i301_stop,i302_setOpen,i303_setClose} -> (
+  illegal -> STOP
+))
+[]
+CS & i511_MotorControlIF_'''?x:{optional} -> illegal -> STOP
+)
+
+REORDER' = i511_MotorControlIF?x' -> (i511_MotorControlIF_in'?y' -> i511_MotorControlIF.the_end' -> i511_MotorControlIF_out'!y' -> REORDER' [] i511_MotorControlIF.the_end' -> REORDER')
+           []
+           i511_MotorControlIF_'''?x':{inevitable,optional} -> i511_MotorControlIF_'''?x':{modeling} -> i511_MotorControlIF.the_end' -> REORDER'
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+within compress((if CS
+                then i511_MotorControlIF_(i311_OnOff_MotorOff, i314_Direction_DoorOpen, i308_State_NotReady)
+                else i511_MotorControlIF_(i311_OnOff_MotorOff, i314_Direction_DoorOpen, i308_State_NotReady)  [|{i511_MotorControlIF_'''.optional}|] CHAOS({i511_MotorControlIF_'''.optional}))
+               [[x<-i511_MotorControlIF_in'.x|x<-extensions(i511_MotorControlIF_in')]] [|{|i511_MotorControlIF,i511_MotorControlIF_in',i511_MotorControlIF_'''|}|] REORDER' [[i511_MotorControlIF_out'.x<-x|x<-extensions(i511_MotorControlIF_out')]] \ {|i511_MotorControlIF_in',i511_MotorControlIF.the_end'|})
+
+-- end of interface.csp.scm
+-- both.csp.scm
+-- end of both.csp.scm
+-- interface.csp.scm
+
+channel i298_LimitSwitchIF: {i13_queryPosition,i15_initialise,i7_doorOpening,i8_doorClosing,i9_doorStopped,the_end'}
 channel i298_LimitSwitchIF_'': {i10_doorOpened,i11_doorClosed,i12_proximityWarning}
 channel i298_LimitSwitchIF_': {i6_Position_Opened,i6_Position_Closed,i6_Position_Unknown,return}
 channel i298_LimitSwitchIF_in',i298_LimitSwitchIF_out': {i298_LimitSwitchIF_'.i6_Position_Opened,i298_LimitSwitchIF_'.i6_Position_Closed,i298_LimitSwitchIF_'.i6_Position_Unknown,i298_LimitSwitchIF_'.return}
-channel i298_LimitSwitchIF_''': {modeling}
+channel i298_LimitSwitchIF_''': {inevitable,optional,modeling}
 
 IF_i298_LimitSwitchIF_(IG,CS) = let
 
@@ -72,7 +313,7 @@ i298_LimitSwitchIF?x:{i7_doorOpening} -> (
 ))
 []
 ((i22_door == i20_DoorState_Opening)) & (
-i298_LimitSwitchIF?x:{inevitable} ->(
+i298_LimitSwitchIF_'''?x:{inevitable} ->(
   i298_LimitSwitchIF_''!i10_doorOpened ->
   let tmp' = i6_Position_Opened within
   let i26_state = tmp' within
@@ -83,7 +324,7 @@ i298_LimitSwitchIF?x:{inevitable} ->(
   i298_LimitSwitchIF_(i22_door,i26_state)
 )
  []
-  i298_LimitSwitchIF?x:{inevitable} ->(
+  i298_LimitSwitchIF_'''?x:{inevitable} ->(
   let tmp' = i6_Position_Unknown within
   let i26_state = tmp' within
     i298_LimitSwitchIF_'''.modeling ->
@@ -104,7 +345,7 @@ i298_LimitSwitchIF?x:{inevitable} ->(
 ))
 []
 ((i22_door == i20_DoorState_Closing)) & (
-i298_LimitSwitchIF?x:{inevitable} ->(
+i298_LimitSwitchIF_'''?x:{inevitable} ->(
   i298_LimitSwitchIF_''!i11_doorClosed ->
   let tmp' = i6_Position_Closed within
   let i26_state = tmp' within
@@ -115,7 +356,7 @@ i298_LimitSwitchIF?x:{inevitable} ->(
   i298_LimitSwitchIF_(i22_door,i26_state)
 )
  []
-  i298_LimitSwitchIF?x:{optional} ->(
+  i298_LimitSwitchIF_'''?x:{optional} ->(
   i298_LimitSwitchIF_''!i12_proximityWarning ->
     i298_LimitSwitchIF_'''.modeling ->
   i298_LimitSwitchIF.the_end' ->
@@ -135,7 +376,7 @@ i298_LimitSwitchIF?x:{inevitable} ->(
 ))
 []
 (((i22_door == i20_DoorState_Closing) and (i26_state == i6_Position_Opened))) & (
-i298_LimitSwitchIF?x:{inevitable} ->(
+i298_LimitSwitchIF_'''?x:{inevitable} ->(
   let tmp' = i6_Position_Unknown within
   let i26_state = tmp' within
     i298_LimitSwitchIF_'''.modeling ->
@@ -143,10 +384,12 @@ i298_LimitSwitchIF?x:{inevitable} ->(
   i298_LimitSwitchIF_(i22_door,i26_state)
 ))
 []
-CS & i298_LimitSwitchIF?x:{inevitable,optional} -> illegal -> STOP
+CS & i298_LimitSwitchIF_'''?x:{inevitable,optional} -> illegal -> STOP
 )
 
 REORDER' = i298_LimitSwitchIF?x' -> (i298_LimitSwitchIF_in'?y' -> i298_LimitSwitchIF.the_end' -> i298_LimitSwitchIF_out'!y' -> REORDER' [] i298_LimitSwitchIF.the_end' -> REORDER')
+           []
+           i298_LimitSwitchIF_'''?x':{inevitable,optional} -> i298_LimitSwitchIF_'''?x':{modeling} -> i298_LimitSwitchIF.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -155,178 +398,19 @@ within sbisim(diamond(x))
 
 within compress((if CS
                 then i298_LimitSwitchIF_(i20_DoorState_Uninitialized, i6_Position_Unknown)
-                else i298_LimitSwitchIF_(i20_DoorState_Uninitialized, i6_Position_Unknown)  [|{i298_LimitSwitchIF.optional}|] CHAOS({i298_LimitSwitchIF.optional}))
-               [[x<-i298_LimitSwitchIF_in'.x|x<-extensions(i298_LimitSwitchIF_in')]] [|{|i298_LimitSwitchIF,i298_LimitSwitchIF_in',i298_LimitSwitchIF.the_end'|}|] REORDER' [[i298_LimitSwitchIF_out'.x<-x|x<-extensions(i298_LimitSwitchIF_out')]] \ {|i298_LimitSwitchIF_in',i298_LimitSwitchIF.the_end'|})
+                else i298_LimitSwitchIF_(i20_DoorState_Uninitialized, i6_Position_Unknown)  [|{i298_LimitSwitchIF_'''.optional}|] CHAOS({i298_LimitSwitchIF_'''.optional}))
+               [[x<-i298_LimitSwitchIF_in'.x|x<-extensions(i298_LimitSwitchIF_in')]] [|{|i298_LimitSwitchIF,i298_LimitSwitchIF_in',i298_LimitSwitchIF_'''|}|] REORDER' [[i298_LimitSwitchIF_out'.x<-x|x<-extensions(i298_LimitSwitchIF_out')]] \ {|i298_LimitSwitchIF_in',i298_LimitSwitchIF.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
 -- end of both.csp.scm
 -- interface.csp.scm
 
-channel i511_MotorControlIF: {i299_initialise,i300_start,i301_stop,i302_setOpen,i303_setClose,optional,the_end'}
-channel i511_MotorControlIF_'': {i304_driveFault,i305_powerWarning}
-channel i511_MotorControlIF_': {return}
-channel i511_MotorControlIF_in',i511_MotorControlIF_out': {i511_MotorControlIF_'.return}
-channel i511_MotorControlIF_''': {modeling}
-
-IF_i511_MotorControlIF_(IG,CS) = let
-
-i511_MotorControlIF_(i316_motor, i320_dir, i324_state) =
-((((i324_state == i308_State_Ready) and (i316_motor == i311_OnOff_MotorOff))) & (
-i511_MotorControlIF?x:{i300_start} -> (
-  let tmp' = i311_OnOff_MotorOn within
-  let i316_motor = tmp' within
-    i511_MotorControlIF_'.return ->
-  i511_MotorControlIF.the_end' ->
-  i511_MotorControlIF_(i316_motor,i320_dir,i324_state)
-)
- []
-  i511_MotorControlIF?x:{i302_setOpen} -> (
-  let tmp' = i314_Direction_DoorOpen within
-  let i320_dir = tmp' within
-    i511_MotorControlIF_'.return ->
-  i511_MotorControlIF.the_end' ->
-  i511_MotorControlIF_(i316_motor,i320_dir,i324_state)
-)
- []
-  i511_MotorControlIF?x:{i303_setClose} -> (
-  let tmp' = i314_Direction_DoorClose within
-  let i320_dir = tmp' within
-    i511_MotorControlIF_'.return ->
-  i511_MotorControlIF.the_end' ->
-  i511_MotorControlIF_(i316_motor,i320_dir,i324_state)
-)
- []
-  IG & i511_MotorControlIF?x:{i301_stop} -> (
-  illegal -> STOP
-))
-[]
-(((i324_state == i308_State_Ready) and (i316_motor == i311_OnOff_MotorOn))) & (
-i511_MotorControlIF?x:{i301_stop} -> (
-  let tmp' = i311_OnOff_MotorOff within
-  let i316_motor = tmp' within
-    i511_MotorControlIF_'.return ->
-  i511_MotorControlIF.the_end' ->
-  i511_MotorControlIF_(i316_motor,i320_dir,i324_state)
-)
- []
-  IG & i511_MotorControlIF?x:{i300_start,i302_setOpen,i303_setClose} -> (
-  illegal -> STOP
-)
- []
-  i511_MotorControlIF?x:{optional} ->(
-  i511_MotorControlIF_''!i304_driveFault ->
-  let tmp' = i311_OnOff_MotorOff within
-  let i316_motor = tmp' within
-    i511_MotorControlIF_'''.modeling ->
-  i511_MotorControlIF.the_end' ->
-  i511_MotorControlIF_(i316_motor,i320_dir,i324_state)
-)
- []
-  i511_MotorControlIF?x:{optional} ->(
-  i511_MotorControlIF_''!i305_powerWarning ->
-    i511_MotorControlIF_'''.modeling ->
-  i511_MotorControlIF.the_end' ->
-  i511_MotorControlIF_(i316_motor,i320_dir,i324_state)
-))
-[]
-((i324_state == i308_State_Ready)) & (
-IG & i511_MotorControlIF?x:{i299_initialise} -> (
-  illegal -> STOP
-))
-[]
-((i324_state == i308_State_NotReady)) & (
-i511_MotorControlIF?x:{i299_initialise} -> (
-  let tmp' = i308_State_Ready within
-  let i324_state = tmp' within
-  let tmp' = i311_OnOff_MotorOff within
-  let i316_motor = tmp' within
-    i511_MotorControlIF_'.return ->
-  i511_MotorControlIF.the_end' ->
-  i511_MotorControlIF_(i316_motor,i320_dir,i324_state)
-)
- []
-  IG & i511_MotorControlIF?x:{i300_start,i301_stop,i302_setOpen,i303_setClose} -> (
-  illegal -> STOP
-))
-[]
-CS & i511_MotorControlIF?x:{optional} -> illegal -> STOP
-)
-
-REORDER' = i511_MotorControlIF?x' -> (i511_MotorControlIF_in'?y' -> i511_MotorControlIF.the_end' -> i511_MotorControlIF_out'!y' -> REORDER' [] i511_MotorControlIF.the_end' -> REORDER')
-
-compress(x) = let
-transparent sbisim
-transparent diamond
-within sbisim(diamond(x))
-
-within compress((if CS
-                then i511_MotorControlIF_(i311_OnOff_MotorOff, i314_Direction_DoorOpen, i308_State_NotReady)
-                else i511_MotorControlIF_(i311_OnOff_MotorOff, i314_Direction_DoorOpen, i308_State_NotReady)  [|{i511_MotorControlIF.optional}|] CHAOS({i511_MotorControlIF.optional}))
-               [[x<-i511_MotorControlIF_in'.x|x<-extensions(i511_MotorControlIF_in')]] [|{|i511_MotorControlIF,i511_MotorControlIF_in',i511_MotorControlIF.the_end'|}|] REORDER' [[i511_MotorControlIF_out'.x<-x|x<-extensions(i511_MotorControlIF_out')]] \ {|i511_MotorControlIF_in',i511_MotorControlIF.the_end'|})
-
--- end of interface.csp.scm
--- both.csp.scm
--- end of both.csp.scm
--- interface.csp.scm
-
-channel i577_SwitchPressIF: {i513_acknowledge,inevitable,the_end'}
-channel i577_SwitchPressIF_'': {i512_switchPressed}
-channel i577_SwitchPressIF_': {return}
-channel i577_SwitchPressIF_in',i577_SwitchPressIF_out': {i577_SwitchPressIF_'.return}
-channel i577_SwitchPressIF_''': {modeling}
-
-IF_i577_SwitchPressIF_(IG,CS) = let
-
-i577_SwitchPressIF_(i518_state) =
-(((i518_state == i516_State_Ready)) & (
-i577_SwitchPressIF?x:{inevitable} ->(
-  i577_SwitchPressIF_''!i512_switchPressed ->
-  let tmp' = i516_State_NotReady within
-  let i518_state = tmp' within
-    i577_SwitchPressIF_'''.modeling ->
-  i577_SwitchPressIF.the_end' ->
-  i577_SwitchPressIF_(i518_state)
-)
- []
-  IG & i577_SwitchPressIF?x:{i513_acknowledge} -> (
-  illegal -> STOP
-))
-[]
-((i518_state == i516_State_NotReady)) & (
-i577_SwitchPressIF?x:{i513_acknowledge} -> (
-  let tmp' = i516_State_Ready within
-  let i518_state = tmp' within
-    i577_SwitchPressIF_'.return ->
-  i577_SwitchPressIF.the_end' ->
-  i577_SwitchPressIF_(i518_state)
-))
-[]
-CS & i577_SwitchPressIF?x:{inevitable} -> illegal -> STOP
-)
-
-REORDER' = i577_SwitchPressIF?x' -> (i577_SwitchPressIF_in'?y' -> i577_SwitchPressIF.the_end' -> i577_SwitchPressIF_out'!y' -> REORDER' [] i577_SwitchPressIF.the_end' -> REORDER')
-
-compress(x) = let
-transparent sbisim
-transparent diamond
-within sbisim(diamond(x))
-
-within compress((if CS
-                then i577_SwitchPressIF_(i516_State_Ready)
-                else i577_SwitchPressIF_(i516_State_Ready) )
-               [[x<-i577_SwitchPressIF_in'.x|x<-extensions(i577_SwitchPressIF_in')]] [|{|i577_SwitchPressIF,i577_SwitchPressIF_in',i577_SwitchPressIF.the_end'|}|] REORDER' [[i577_SwitchPressIF_out'.x<-x|x<-extensions(i577_SwitchPressIF_out')]] \ {|i577_SwitchPressIF_in',i577_SwitchPressIF.the_end'|})
-
--- end of interface.csp.scm
--- both.csp.scm
--- end of both.csp.scm
--- interface.csp.scm
-
-channel i682_ITimer: {i583_CreateTimer,i590_CreateTimerEx,i594_CreateTimerMSec,i595_CancelTimer,inevitable,the_end'}
+channel i682_ITimer: {i583_CreateTimer,i590_CreateTimerEx,i594_CreateTimerMSec,i595_CancelTimer,the_end'}
 channel i682_ITimer_'': {i596_Timeout}
 channel i682_ITimer_': {return}
 channel i682_ITimer_in',i682_ITimer_out': {i682_ITimer_'.return}
-channel i682_ITimer_''': {modeling}
+channel i682_ITimer_''': {inevitable,optional,modeling}
 
 IF_i682_ITimer_(IG,CS) = let
 
@@ -341,7 +425,7 @@ i682_ITimer?x:{i583_CreateTimer,i590_CreateTimerEx,i594_CreateTimerMSec} -> (
 ))
 []
 ((i601_state == i599_States_Active)) & (
-i682_ITimer?x:{inevitable} ->(
+i682_ITimer_'''?x:{inevitable} ->(
   i682_ITimer_''!i596_Timeout ->
   let tmp' = i599_States_Inactive within
   let i601_state = tmp' within
@@ -363,10 +447,12 @@ i682_ITimer?x:{i595_CancelTimer} -> (
   i682_ITimer_(i601_state)
 )
 []
-CS & i682_ITimer?x:{inevitable} -> illegal -> STOP
+CS & i682_ITimer_'''?x:{inevitable} -> illegal -> STOP
 )
 
 REORDER' = i682_ITimer?x' -> (i682_ITimer_in'?y' -> i682_ITimer.the_end' -> i682_ITimer_out'!y' -> REORDER' [] i682_ITimer.the_end' -> REORDER')
+           []
+           i682_ITimer_'''?x':{inevitable,optional} -> i682_ITimer_'''?x':{modeling} -> i682_ITimer.the_end' -> REORDER'
 
 compress(x) = let
 transparent sbisim
@@ -376,83 +462,7 @@ within sbisim(diamond(x))
 within compress((if CS
                 then i682_ITimer_(i599_States_Inactive)
                 else i682_ITimer_(i599_States_Inactive) )
-               [[x<-i682_ITimer_in'.x|x<-extensions(i682_ITimer_in')]] [|{|i682_ITimer,i682_ITimer_in',i682_ITimer.the_end'|}|] REORDER' [[i682_ITimer_out'.x<-x|x<-extensions(i682_ITimer_out')]] \ {|i682_ITimer_in',i682_ITimer.the_end'|})
-
--- end of interface.csp.scm
--- both.csp.scm
--- end of both.csp.scm
--- interface.csp.scm
-
-channel i821_DoorControlIF: {i683_initialise,i684_reset,inevitable,the_end'}
-channel i821_DoorControlIF_'': {i685_warning,i686_error}
-channel i821_DoorControlIF_': {return}
-channel i821_DoorControlIF_in',i821_DoorControlIF_out': {i821_DoorControlIF_'.return}
-channel i821_DoorControlIF_''': {modeling}
-
-IF_i821_DoorControlIF_(IG,CS) = let
-
-i821_DoorControlIF_(i692_state) =
-(((i692_state == i690_State_NotReady)) & (
-i821_DoorControlIF?x:{i683_initialise} -> (
-  let tmp' = i690_State_Ready within
-  let i692_state = tmp' within
-    i821_DoorControlIF_'.return ->
-  i821_DoorControlIF.the_end' ->
-  i821_DoorControlIF_(i692_state)
-)
- []
-  IG & i821_DoorControlIF?x:{i684_reset} -> (
-  illegal -> STOP
-))
-[]
-((i692_state == i690_State_Ready)) & (
-IG & i821_DoorControlIF?x:{i683_initialise,i684_reset} -> (
-  illegal -> STOP
-)
- []
-  i821_DoorControlIF?x:{inevitable} ->(
-  i821_DoorControlIF_''!i685_warning ->
-    i821_DoorControlIF_'''.modeling ->
-  i821_DoorControlIF.the_end' ->
-  i821_DoorControlIF_(i692_state)
-)
- []
-  i821_DoorControlIF?x:{inevitable} ->(
-  i821_DoorControlIF_''!i686_error ->
-  let tmp' = i690_State_Error within
-  let i692_state = tmp' within
-    i821_DoorControlIF_'''.modeling ->
-  i821_DoorControlIF.the_end' ->
-  i821_DoorControlIF_(i692_state)
-))
-[]
-((i692_state == i690_State_Error)) & (
-i821_DoorControlIF?x:{i684_reset} -> (
-  let tmp' = i690_State_Ready within
-  let i692_state = tmp' within
-    i821_DoorControlIF_'.return ->
-  i821_DoorControlIF.the_end' ->
-  i821_DoorControlIF_(i692_state)
-)
- []
-  IG & i821_DoorControlIF?x:{i683_initialise} -> (
-  illegal -> STOP
-))
-[]
-CS & i821_DoorControlIF?x:{inevitable} -> illegal -> STOP
-)
-
-REORDER' = i821_DoorControlIF?x' -> (i821_DoorControlIF_in'?y' -> i821_DoorControlIF.the_end' -> i821_DoorControlIF_out'!y' -> REORDER' [] i821_DoorControlIF.the_end' -> REORDER')
-
-compress(x) = let
-transparent sbisim
-transparent diamond
-within sbisim(diamond(x))
-
-within compress((if CS
-                then i821_DoorControlIF_(i690_State_NotReady)
-                else i821_DoorControlIF_(i690_State_NotReady) )
-               [[x<-i821_DoorControlIF_in'.x|x<-extensions(i821_DoorControlIF_in')]] [|{|i821_DoorControlIF,i821_DoorControlIF_in',i821_DoorControlIF.the_end'|}|] REORDER' [[i821_DoorControlIF_out'.x<-x|x<-extensions(i821_DoorControlIF_out')]] \ {|i821_DoorControlIF_in',i821_DoorControlIF.the_end'|})
+               [[x<-i682_ITimer_in'.x|x<-extensions(i682_ITimer_in')]] [|{|i682_ITimer,i682_ITimer_in',i682_ITimer_'''|}|] REORDER' [[i682_ITimer_out'.x<-x|x<-extensions(i682_ITimer_out')]] \ {|i682_ITimer_in',i682_ITimer.the_end'|})
 
 -- end of interface.csp.scm
 -- both.csp.scm
@@ -477,7 +487,6 @@ channel i828_motorControl_'': extensions(i511_MotorControlIF_'')
 channel i831_limitSw_'': extensions(i298_LimitSwitchIF_'')
 channel i834_timer_'': extensions(i682_ITimer_'')
 
-channel i822_doorControl_''': extensions(i821_DoorControlIF_''')
 channel i825_switchPress_''': extensions(i577_SwitchPressIF_''')
 channel i828_motorControl_''': extensions(i511_MotorControlIF_''')
 channel i831_limitSw_''': extensions(i298_LimitSwitchIF_''')
@@ -512,7 +521,7 @@ i822_doorControl?x:{i683_initialise} -> (
   i828_motorControl!i299_initialise -> i828_motorControl_'.return ->
   let tmp' = i842_State_Ready within
   let i844_state = tmp' within
-    i821_DoorControlIF_'.return ->
+    i822_doorControl_'.return ->
   transition_end ->
   i1474_GarageDoorControl_(i844_state,i848_secondSwitchPress,i852_position)
 ))
@@ -706,7 +715,7 @@ IIG & i822_doorControl?x:{i684_reset} -> (
 i822_doorControl?x:{i684_reset} -> (
   let tmp' = i842_State_Ready within
   let i844_state = tmp' within
-    i821_DoorControlIF_'.return ->
+    i822_doorControl_'.return ->
   transition_end ->
   i1474_GarageDoorControl_(i844_state,i848_secondSwitchPress,i852_position)
 ))
@@ -753,14 +762,13 @@ i828_motorControl_''?x:{i304_driveFault} -> (
 within i1474_GarageDoorControl_(i842_State_NotReady, false, i6_Position_Unknown)
 
 channel extensions_over_empty_channels_is_undefined
-channel IN',OUT' : {i825_switchPress_''.i512_switchPressed,i828_motorControl_''.i304_driveFault,i828_motorControl_''.i305_powerWarning,i831_limitSw_''.i10_doorOpened,i831_limitSw_''.i11_doorClosed,i831_limitSw_''.i12_proximityWarning,i834_timer_''.i596_Timeout,extensions_over_empty_channels_is_undefined}
+channel IN',OUT' : {|i825_switchPress_'',i828_motorControl_'',i831_limitSw_'',i834_timer_'',extensions_over_empty_channels_is_undefined|}
 
 channel LINK' : {|IN',OUT'|}
 
 SINGLETHREADED = true
 
-channel reorder_in  : {i821_DoorControlIF_'.return}
-channel reorder_out : {i822_doorControl_'.return}
+channel reorder_in, reorder_out : {|i822_doorControl_'|}
 channel queue_full
 
 SEMANTICS(in',out',link',client',modeling',end') = let
@@ -783,23 +791,22 @@ within
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
 R'(A') = ([] x' : A' @ x' -> R'(A'))
-       []
-       reorder_in?i821_DoorControlIF_'.x' -> reorder_out!i822_doorControl_'.x' -> R'(A')
+         []
+         reorder_in?x' -> reorder_out!x' -> R'(A')
 
 S'    = let
 
 N' = 3
 
-
 Idle(c') = transition_begin -> ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))
 
 FillQ(c',r') = (c' <= N' & in'?x' -> FillQ(c'+1,r'))
-            []
-            ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
-            []
-            (r' == <> & reorder_in?i821_DoorControlIF_'.x' -> Busy(c',<x'>))
+               []
+               ([] x':end' @ x' ->  (Busy(c',r') [] c' == 0 & ([] x' : union(client',modeling') @ x' -> FillQ(c',<>))))
+               []
+               (r' == <> & reorder_in?x' -> Busy(c',<x'>))
 
-Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!i822_doorControl_'.head(r') -> Idle(0)))
+Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)))
               []
               (c' > 0 & transition_end -> transition_begin -> Busy(c',r'))
               []
@@ -807,7 +814,7 @@ Busy(c',r') = (c' == 0 & transition_end -> (if r' == <> then Idle(0) else reorde
               []
               (c' > 0 & out'?x' -> Busy(c'-1,r'))
               []
-              (r' != <> & reorder_in?i821_DoorControlIF_'.x' -> illegal -> STOP)
+              (r' != <> & reorder_in?x' -> illegal -> STOP)
 
 within Idle(0)
 
@@ -818,13 +825,12 @@ compress(x) = let
 transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
-
-ClientCalls = {i822_doorControl.i683_initialise,i822_doorControl.i684_reset}
-UsedModeling = {i825_switchPress.inevitable,i828_motorControl.optional,i831_limitSw.inevitable,i831_limitSw.optional,i834_timer.inevitable}
-TheEnd = {|i825_switchPress_''',i828_motorControl_''',i831_limitSw_''',i834_timer_'''|}
-within compress((CO_i1474_GarageDoorControl_(IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
+provided_in' = {i822_doorControl.i683_initialise,i822_doorControl.i684_reset}
+begin_required_modeling' = {i825_switchPress_'''.inevitable,i828_motorControl_'''.optional,i831_limitSw_'''.inevitable,i831_limitSw_'''.optional,i834_timer_'''.inevitable}
+end_required_modeling' = {i825_switchPress_'''.modeling,i828_motorControl_'''.modeling,i831_limitSw_'''.modeling,i834_timer_'''.modeling}
+within compress((CO_i1474_GarageDoorControl_ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|OUT',transition_begin,transition_end,reorder_in,i822_doorControl,i822_doorControl_'|}|]
-                 SEMANTICS(IN',OUT',LINK',ClientCalls,UsedModeling,TheEnd) \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|IN',i825_switchPress,i825_switchPress_',i825_switchPress_''',i828_motorControl,i828_motorControl_',i828_motorControl_''',i831_limitSw,i831_limitSw_',i831_limitSw_''',i834_timer,i834_timer_',i834_timer_'''|}|]
                 (IF_i577_SwitchPressIF_(true,false) [[i577_SwitchPressIF.x<-i825_switchPress.x|x<-extensions(i825_switchPress)]][[i577_SwitchPressIF_'.x<-i825_switchPress_'.x|x<-extensions(i825_switchPress_')]][[i577_SwitchPressIF_''.x<-i825_switchPress_''.x|x<-extensions(i825_switchPress_'')]][[i577_SwitchPressIF_'''.x<-i825_switchPress_'''.x|x<-extensions(i825_switchPress_''')]]
@@ -833,25 +839,39 @@ within compress((CO_i1474_GarageDoorControl_(IIG,true) [[x<-OUT'.x|x<-extensions
                  ||| IF_i682_ITimer_(true,false) [[i682_ITimer.x<-i834_timer.x|x<-extensions(i834_timer)]][[i682_ITimer_'.x<-i834_timer_'.x|x<-extensions(i834_timer_')]][[i682_ITimer_''.x<-i834_timer_''.x|x<-extensions(i834_timer_'')]][[i682_ITimer_'''.x<-i834_timer_'''.x|x<-extensions(i834_timer_''')]]
 )[[x<-IN'.x|x<-extensions(IN')]])
 
+IF_SPEC = let
+
+compress(x) = let
+transparent sbisim
+transparent diamond
+within sbisim(diamond(x))
+
+R2C = i822_doorControl?x -> i822_doorControl_'?x -> R2C
+
+IFS = IF_i821_DoorControlIF_(true,false)[[i821_DoorControlIF<-i822_doorControl]][[i821_DoorControlIF_'<-i822_doorControl_']][[i821_DoorControlIF_''<-i822_doorControl_'']]
+
+within compress(IFS [|{|i822_doorControl,i822_doorControl_'|}|] R2C \ {|i821_DoorControlIF_'''|})
+
+
 -- end of component.csp.scm
-assert COMPLETE'({i298_LimitSwitchIF.inevitable,i298_LimitSwitchIF.optional,i298_LimitSwitchIF.i7_doorOpening,i298_LimitSwitchIF.i8_doorClosing,i298_LimitSwitchIF.i9_doorStopped,i298_LimitSwitchIF.i13_queryPosition,i298_LimitSwitchIF.i15_initialise}) [F= IF_i298_LimitSwitchIF_(true,true)[[range_error<-illegal]] \ diff(Events,{i298_LimitSwitchIF.inevitable,i298_LimitSwitchIF.optional,i298_LimitSwitchIF.i7_doorOpening,i298_LimitSwitchIF.i8_doorClosing,i298_LimitSwitchIF.i9_doorStopped,i298_LimitSwitchIF.i13_queryPosition,i298_LimitSwitchIF.i15_initialise,illegal})
-assert IF_i298_LimitSwitchIF_(false,false) :[deadlock free]
-assert IF_i298_LimitSwitchIF_(true,false) :[livelock free]
-assert COMPLETE'({i511_MotorControlIF.optional,i511_MotorControlIF.i299_initialise,i511_MotorControlIF.i300_start,i511_MotorControlIF.i301_stop,i511_MotorControlIF.i302_setOpen,i511_MotorControlIF.i303_setClose}) [F= IF_i511_MotorControlIF_(true,true)[[range_error<-illegal]] \ diff(Events,{i511_MotorControlIF.optional,i511_MotorControlIF.i299_initialise,i511_MotorControlIF.i300_start,i511_MotorControlIF.i301_stop,i511_MotorControlIF.i302_setOpen,i511_MotorControlIF.i303_setClose,illegal})
-assert IF_i511_MotorControlIF_(false,false) :[deadlock free]
-assert IF_i511_MotorControlIF_(true,false) :[livelock free]
-assert COMPLETE'({i577_SwitchPressIF.inevitable,i577_SwitchPressIF.i513_acknowledge}) [F= IF_i577_SwitchPressIF_(true,true)[[range_error<-illegal]] \ diff(Events,{i577_SwitchPressIF.inevitable,i577_SwitchPressIF.i513_acknowledge,illegal})
-assert IF_i577_SwitchPressIF_(false,false) :[deadlock free]
-assert IF_i577_SwitchPressIF_(true,false) :[livelock free]
-assert COMPLETE'({i682_ITimer.inevitable,i682_ITimer.i583_CreateTimer,i682_ITimer.i590_CreateTimerEx,i682_ITimer.i594_CreateTimerMSec,i682_ITimer.i595_CancelTimer}) [F= IF_i682_ITimer_(true,true)[[range_error<-illegal]] \ diff(Events,{i682_ITimer.inevitable,i682_ITimer.i583_CreateTimer,i682_ITimer.i590_CreateTimerEx,i682_ITimer.i594_CreateTimerMSec,i682_ITimer.i595_CancelTimer,illegal})
-assert IF_i682_ITimer_(false,false) :[deadlock free]
-assert IF_i682_ITimer_(true,false) :[livelock free]
-assert COMPLETE'({i821_DoorControlIF.inevitable,i821_DoorControlIF.i683_initialise,i821_DoorControlIF.i684_reset}) [F= IF_i821_DoorControlIF_(true,true)[[range_error<-illegal]] \ diff(Events,{i821_DoorControlIF.inevitable,i821_DoorControlIF.i683_initialise,i821_DoorControlIF.i684_reset,illegal})
+assert COMPLETE'({i821_DoorControlIF.i683_initialise,i821_DoorControlIF.i684_reset,i821_DoorControlIF_'''.inevitable}) [F= IF_i821_DoorControlIF_(true,true)[[range_error<-illegal]] \ diff(Events,{i821_DoorControlIF.i683_initialise,i821_DoorControlIF.i684_reset,i821_DoorControlIF_'''.inevitable,illegal})
 assert IF_i821_DoorControlIF_(false,false) :[deadlock free]
 assert IF_i821_DoorControlIF_(true,false) :[livelock free]
-assert CO_i1474_GarageDoorControl_(true,true)[[i821_DoorControlIF_'.x<-i822_doorControl_'.x|x<-extensions(i822_doorControl_')]] :[deterministic]
-assert COMPLETE'({i822_doorControl.i683_initialise,i822_doorControl.i684_reset,i825_switchPress_''.i512_switchPressed,i828_motorControl_''.i304_driveFault,i828_motorControl_''.i305_powerWarning,i831_limitSw_''.i10_doorOpened,i831_limitSw_''.i11_doorClosed,i831_limitSw_''.i12_proximityWarning,i834_timer_''.i596_Timeout}) [F= CO_i1474_GarageDoorControl_(true,true)[[i821_DoorControlIF_'.x'<-i822_doorControl_'.x'|x'<-extensions(i822_doorControl_')]][[range_error<-illegal]] \ diff(Events,{i822_doorControl.i683_initialise,i822_doorControl.i684_reset,i825_switchPress_''.i512_switchPressed,i828_motorControl_''.i304_driveFault,i828_motorControl_''.i305_powerWarning,i831_limitSw_''.i10_doorOpened,i831_limitSw_''.i11_doorClosed,i831_limitSw_''.i12_proximityWarning,i834_timer_''.i596_Timeout,illegal})
+assert COMPLETE'({i577_SwitchPressIF.i513_acknowledge,i577_SwitchPressIF_'''.inevitable}) [F= IF_i577_SwitchPressIF_(true,true)[[range_error<-illegal]] \ diff(Events,{i577_SwitchPressIF.i513_acknowledge,i577_SwitchPressIF_'''.inevitable,illegal})
+assert IF_i577_SwitchPressIF_(false,false) :[deadlock free]
+assert IF_i577_SwitchPressIF_(true,false) :[livelock free]
+assert COMPLETE'({i511_MotorControlIF.i299_initialise,i511_MotorControlIF.i300_start,i511_MotorControlIF.i301_stop,i511_MotorControlIF.i302_setOpen,i511_MotorControlIF.i303_setClose,i511_MotorControlIF_'''.optional}) [F= IF_i511_MotorControlIF_(true,true)[[range_error<-illegal]] \ diff(Events,{i511_MotorControlIF.i299_initialise,i511_MotorControlIF.i300_start,i511_MotorControlIF.i301_stop,i511_MotorControlIF.i302_setOpen,i511_MotorControlIF.i303_setClose,i511_MotorControlIF_'''.optional,illegal})
+assert IF_i511_MotorControlIF_(false,false) :[deadlock free]
+assert IF_i511_MotorControlIF_(true,false) :[livelock free]
+assert COMPLETE'({i298_LimitSwitchIF.i7_doorOpening,i298_LimitSwitchIF.i8_doorClosing,i298_LimitSwitchIF.i9_doorStopped,i298_LimitSwitchIF.i13_queryPosition,i298_LimitSwitchIF.i15_initialise,i298_LimitSwitchIF_'''.inevitable,i298_LimitSwitchIF_'''.optional}) [F= IF_i298_LimitSwitchIF_(true,true)[[range_error<-illegal]] \ diff(Events,{i298_LimitSwitchIF.i7_doorOpening,i298_LimitSwitchIF.i8_doorClosing,i298_LimitSwitchIF.i9_doorStopped,i298_LimitSwitchIF.i13_queryPosition,i298_LimitSwitchIF.i15_initialise,i298_LimitSwitchIF_'''.inevitable,i298_LimitSwitchIF_'''.optional,illegal})
+assert IF_i298_LimitSwitchIF_(false,false) :[deadlock free]
+assert IF_i298_LimitSwitchIF_(true,false) :[livelock free]
+assert COMPLETE'({i682_ITimer.i583_CreateTimer,i682_ITimer.i590_CreateTimerEx,i682_ITimer.i594_CreateTimerMSec,i682_ITimer.i595_CancelTimer,i682_ITimer_'''.inevitable}) [F= IF_i682_ITimer_(true,true)[[range_error<-illegal]] \ diff(Events,{i682_ITimer.i583_CreateTimer,i682_ITimer.i590_CreateTimerEx,i682_ITimer.i594_CreateTimerMSec,i682_ITimer.i595_CancelTimer,i682_ITimer_'''.inevitable,illegal})
+assert IF_i682_ITimer_(false,false) :[deadlock free]
+assert IF_i682_ITimer_(true,false) :[livelock free]
+assert CO_i1474_GarageDoorControl_(true,true) :[deterministic]
+assert COMPLETE'({i822_doorControl.i683_initialise,i822_doorControl.i684_reset,i825_switchPress_''.i512_switchPressed,i828_motorControl_''.i304_driveFault,i828_motorControl_''.i305_powerWarning,i831_limitSw_''.i10_doorOpened,i831_limitSw_''.i11_doorClosed,i831_limitSw_''.i12_proximityWarning,i834_timer_''.i596_Timeout}) [F= CO_i1474_GarageDoorControl_(true,true)[[range_error<-illegal]] \ diff(Events,{i822_doorControl.i683_initialise,i822_doorControl.i684_reset,i825_switchPress_''.i512_switchPressed,i828_motorControl_''.i304_driveFault,i828_motorControl_''.i305_powerWarning,i831_limitSw_''.i10_doorOpened,i831_limitSw_''.i11_doorClosed,i831_limitSw_''.i12_proximityWarning,i834_timer_''.i596_Timeout,illegal})
 assert STOP [T= AS_i1474_GarageDoorControl_(false) \ diff(Events,{illegal,queue_full})
 assert AS_i1474_GarageDoorControl_(false) :[deadlock free]
-assert IF_i821_DoorControlIF_(true,false) [[i821_DoorControlIF.x<-i822_doorControl.x|x<-extensions(i822_doorControl)]][[i821_DoorControlIF_'.x<-i822_doorControl_'.x|x<-extensions(i822_doorControl_')]][[i821_DoorControlIF_''.x<-i822_doorControl_''.x|x<-extensions(i822_doorControl_'')]]\ {i821_DoorControlIF_'''.modeling,i822_doorControl.inevitable} [F= AS_i1474_GarageDoorControl_(true) \ diff(Events,{|illegal,i822_doorControl,i822_doorControl_',i822_doorControl_''|})
-assert AS_i1474_GarageDoorControl_(true) \ diff(Events,{|i825_switchPress.inevitable,i828_motorControl.optional,i831_limitSw.inevitable,i831_limitSw.optional,i834_timer.inevitable,illegal,i822_doorControl,i822_doorControl_',i822_doorControl_''|}) :[livelock free]
+assert IF_SPEC [F= AS_i1474_GarageDoorControl_(true) \ diff(Events,{|illegal,i822_doorControl,i822_doorControl_',i822_doorControl_''|})
+assert AS_i1474_GarageDoorControl_(true) \ diff(Events,{|i825_switchPress_'''.inevitable,i828_motorControl_'''.optional,i831_limitSw_'''.inevitable,i831_limitSw_'''.optional,i834_timer_'''.inevitable,illegal,i822_doorControl,i822_doorControl_',i822_doorControl_''|}) :[livelock free]
