@@ -23,4 +23,4 @@
 ;;; 
 ;;; Code:
 
-assert IF_SPEC [F= AS_#.scope_model _(true) \ diff(Events,{|illegal,#(comma-join (append-map (lambda (port) (csp-channels port .name)) (om:provided model)))|})
+assert IF_SPEC [F= AS_#.scope_model _(true) \ diff(Events,{|illegal,#(comma-join (append-map csp-channels (om:provided model)))|})

@@ -25,9 +25,21 @@ interface imulti
 {
   in void left();
   out void right();
+
   behaviour
   {
-    on left: right;
+    bool b = false;
+
+    [!b]
+    {
+      on left: right;
+      on left: b = true;
+    }
+    [b]
+    {
+      on left: illegal;
+      on inevitable: {b = false; right;}
+    }
   }
 }
 
@@ -41,8 +53,29 @@ component multi
   {
     enum Direction {Left, Right};
     Direction dir = Direction.Left;
-    on p_left.left(): {dir = Direction.Left; r.left();}
-    on p_right.left():{dir = Direction.Right; r.left();}
-    on r.right(): if(dir.Left){p_left.right();} else {p_right.right();}
+
+    bool b_left = false;
+    bool b_right = false;
+
+    [!b_left && !b_right]
+    {
+      on p_left.left(): {dir = Direction.Left; r.left(); b_left = true;}
+      on p_right.left():{dir = Direction.Right; r.left(); b_right = true;}
+      on r.right(): illegal;
+    }
+    [b_left || b_right]
+    {
+      on p_left.left():
+      {
+        [b_left] illegal;
+        [!b_left] p_left.right();
+      }
+      on p_right.left():
+      {
+        [b_right] illegal;
+        [!b_right] p_right.right();
+      }
+      on r.right(): if(dir.Left){b_left = false; p_left.right();} else {b_right = false; p_right.right();}
+    }
   }
 }

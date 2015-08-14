@@ -33,12 +33,11 @@
          (->string "channel " (.name port) "_': extensions(" ((om:scope-name) port) "_')\n" ))
        (filter (lambda (port) (not (eq? ((om:scope-name) port) (.name port)))) (om:ports model)))
 # (map (lambda (port)
-         (and-let* ((events (null-is-#f (port-events port om:out?))))
-                   (->string "channel " (.name port) "_'': extensions(" ((om:scope-name) port) "_'')\n" )))
+         (->string "channel " (.name port) "_'': extensions(" ((om:scope-name) port) "_'')\n" ))
        (filter (lambda (port) (not (eq? ((om:scope-name) port) (.name port)))) (om:ports model)))
 # (map (lambda (port)
          (->string "channel " (.name port) "_''': extensions(" ((om:scope-name) port) "_''')\n" ))
-       (filter (lambda (port) (not (eq? ((om:scope-name) port) (.name port)))) (om:required model)))
+       (filter (lambda (port) (not (eq? ((om:scope-name) port) (.name port)))) (om:ports model)))
 
 
 CO_#.scope_model _(IIG,IG) = let
@@ -136,15 +135,16 @@ transparent sbisim
 transparent diamond
 within sbisim(diamond(x))
 
-R2C = #((->list-join "\n      []\n      ") (map (lambda (port) (list (.name port) "?x -> " (.name port) "_'?x -> R2C")) (om:provided model)))
+R2C = #((->list-join "\n      []\n      ") (append (map (lambda (port) (list (.name port) "?x -> " (.name port) "_'?x -> R2C")) (om:provided model))
+                                                   (map (lambda (port) (list (.name port) "_'''?x -> " (.name port) "_'''?x -> R2C")) (om:provided model))))
 
 IFS = #((->list-join "\n      |||\n      ") (map (lambda (port) (list "IF_" (.name (.type port)) "_(true,false)"
                                                                       (map (lambda (interface channel) (list "[[" interface "<-" channel "]]"))
                                                                            (csp-channels port (compose .name .type)) (csp-channels port .name))))
                                                  (om:provided model)))
 
-within compress(IFS [|{|#(comma-join (map (lambda (port) (list (.name port) "," (.name port) "_'")) (om:provided model)))|}|] R2C \ {|#
-(comma-join (delete-duplicates (map (lambda (port) (list (.name (.type port)) "_'''")) (om:provided model))))|})
+within compress(IFS [|{|#(comma-join (map (lambda (port) (list (.name port) "," (.name port) "_'" "," (.name port) "_'''")) (om:provided model)))|}|] R2C \ {|#
+(comma-join (delete-duplicates (map (lambda (port) (list (.name port) "_'''")) (om:provided model))))|})
 
 
 -- end of component.csp.scm

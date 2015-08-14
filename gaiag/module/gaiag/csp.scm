@@ -1070,7 +1070,7 @@
          )
         (append (list 'def) l))))
 
-(define* (csp-channels port op)
+(define* (csp-channels port :optional (op .name))
   (map (cut symbol-append (op port) <>)
        (map string->symbol
-            (if (not (null? (filter om:out? (om:events port)))) (list "" "_'" "_''") (list "" "_'")))))
+            (if (not (null? (filter om:out? (om:events port)))) (list "" "_'" "_''" "_'''") (list "" "_'")))))

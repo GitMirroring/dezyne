@@ -26,11 +26,9 @@
 -- interface.csp.scm
 
 channel #.scope_model : {#(comma-join (append (interface-events model om:in?) (list "the_end'") ))}
-#(let ((events (interface-events model om:out?)))
-   (if (pair? events)
-       (list "channel " .scope_model "_'': {" (comma-join events) "}")))
 channel #.scope_model _': {#(comma-join (return-values model))}
 channel #.scope_model _in',#.scope_model _out': {#(comma-join (map (lambda (x) (list .scope_model "_'." x)) (return-values model)))}
+channel #.scope_model _'': {#(comma-join (interface-events model om:out?))}
 channel #.scope_model _''': {inevitable,optional,modeling}
 
 IF_#.scope_model _(IG,CS) = let
