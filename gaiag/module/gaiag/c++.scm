@@ -50,6 +50,9 @@
 (define* ((c++:scope-name :optional (infix (string->symbol "::"))) o)
   ((om:scope-name infix) o))
 
+(define (c++:init-brace-open) "{")
+(define (c++:init-brace-close) "}")
+
 (define (dump o)
   (match o
     (($ <interface>) (dump-interface o))

@@ -7,11 +7,11 @@
             (list
              (->string
               (list
-               "dzn_meta{\"\",\"" .model "\",reinterpret_cast<dezyne::component*>(this),0,{"
+               "dzn_meta" (c++:init-brace-open) "\"\",\"" .model "\",reinterpret_cast<dezyne::component*>(this),0,{"
                ((->join ",")
                 (map (init-instance #{reinterpret_cast<dezyne::component*>(&#name)#})
                      (non-injected-instances model)))
-               "},{}}")))
+               "},{}" (c++:init-brace-close))))
             (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
                  (injected-bindings model))
             (list (if (pair? (injected-bindings model))

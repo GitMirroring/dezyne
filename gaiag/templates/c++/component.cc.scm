@@ -7,7 +7,7 @@
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 #.model ::#.model (const dezyne::locator& dezyne_locator)
-: dzn_meta{"","#.model",reinterpret_cast<const dezyne::component*>(this),0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (om:ports model)))}}
+: dzn_meta#(c++:init-brace-open)"","#.model",reinterpret_cast<const dezyne::component*>(this),0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (om:ports model)))}#(c++:init-brace-close)
 , dzn_rt(dezyne_locator.get<dezyne::runtime>())
 , dzn_locator(dezyne_locator)
 , #

@@ -1,6 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -23,7 +22,7 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag c++03)
+(define-module (gaiag c++-msvc11)
   :use-module (gaiag om)
   :use-module (gaiag code)
   :use-module (gaiag c++)
@@ -33,5 +32,5 @@
 (define ast-> (@@ (gaiag c++) ast->))
 (define c++:scope-join (@@ (gaiag c++) c++:scope-join))
 (define c++:scope-name (@@ (gaiag c++) c++:scope-name))
-(define c++:init-brace-open (@@ (gaiag c++) c++:init-brace-open))
-(define c++:init-brace-close (@@ (gaiag c++) c++:init-brace-close))
+(define (c++:init-brace-open) "(")
+(define (c++:init-brace-close) ")")
