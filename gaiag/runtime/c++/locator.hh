@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -25,6 +26,7 @@
 #ifndef LOCATOR_HH
 #define LOCATOR_HH
 
+#include <iostream>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -48,6 +50,10 @@ private:
   };
   std::map<std::pair<Key,type_info>, void*> services;
 public:
+  locator()
+  {
+    set(std::clog);
+  }
   locator clone() const
   {
     return locator(*this);

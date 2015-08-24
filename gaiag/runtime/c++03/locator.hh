@@ -23,6 +23,7 @@
 #ifndef LOCATOR_HH
 #define LOCATOR_HH
 
+#include <iostream>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -46,6 +47,10 @@ private:
   };
   std::map<std::pair<Key,type_info>, void*> services;
 public:
+  locator()
+  {
+    set(std::clog);
+  }
   locator clone() const
   {
     return locator(*this);

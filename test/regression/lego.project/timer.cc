@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -46,6 +47,6 @@ timer::timer(const dezyne::locator& l)
 #ifdef TEST_EVENT
     port.out.timeout = [] {std::clog << "timeout" << std::endl;};
 #endif
-    port.in.create = [=](int ms){dezyne::trace_in(port.meta, "create"); pimpl->create(ms); dezyne::trace_out(port.meta, "return");};
-    port.in.cancel = [=]{dezyne::trace_in(port.meta, "cancel"); pimpl->cancel(); dezyne::trace_out(port.meta, "return"); };
+    port.in.create = [=](int ms){dezyne::trace_in(std::clog, port.meta, "create"); pimpl->create(ms); dezyne::trace_out(std::clog, port.meta, "return");};
+    port.in.cancel = [=]{dezyne::trace_in(std::clog, port.meta, "cancel"); pimpl->cancel(); dezyne::trace_out(std::clog, port.meta, "return"); };
   }

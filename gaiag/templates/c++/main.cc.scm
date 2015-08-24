@@ -64,7 +64,7 @@ namespace dezyne
  #(map
     (lambda (port)
     (map (define-on model port #{
-       e["#port .#event "] = #(string-if (null? argument-list) #{m.#port .#direction .#event; #} #{ [m,&dzn_i] {m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));};#})
+       e["#port .#event "] = #(string-if (null? argument-list) #{m.#port .#direction .#event; #} #{ [&] {m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));};#})
 #}) (filter (om:dir-matches? port)
        (om:events port)))) (om:ports model)) }
 }

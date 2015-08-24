@@ -32,16 +32,16 @@ namespace dezyne {
 
 runtime::runtime(){}
 
-void trace_in(port::meta const& m, const char* e)
+void trace_in(std::ostream& os, port::meta const& m, const char* e)
 {
-  std::clog << path(m.requires.address, m.requires.port) << "." << e << " -> "
+  os << path(m.requires.address, m.requires.port) << "." << e << " -> "
             << path(m.provides.address, m.provides.port) << "." << e << std::endl;
 }
 
-void trace_out(port::meta const& m, const char* e)
+void trace_out(std::ostream& os, port::meta const& m, const char* e)
 {
-  std::clog << path(m.provides.address, m.provides.port) << "." << e << " -> "
-            << path(m.requires.address, m.requires.port) << "." << e << std::endl;
+  os << path(m.provides.address, m.provides.port) << "." << e << " -> "
+     << path(m.requires.address, m.requires.port) << "." << e << std::endl;
 }
 
 bool runtime::external(void* scope) {
