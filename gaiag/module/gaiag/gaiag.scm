@@ -118,6 +118,7 @@ Examples:
       (_ #t))))
 
 (define (main args)
+  (stderr "command-line:" (command-line))
   (let* ((options (parse-opts args))
          (debug? (option-ref options 'debug #f))
          (coverage? (option-ref options 'coverage #f)))
