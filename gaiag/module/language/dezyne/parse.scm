@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -42,7 +43,7 @@
    (out-table: "dezyne.out")
    (
     #{{}# #{}}# #{)}# #{]}# #{\;}# : #{,}#
-    on namespace #{[}#
+    blocking on namespace #{[}#
     inevitable optional
     otherwise
     if reply return
@@ -312,7 +313,8 @@
     (#{{}# statements #{}}#) : (note-location $2 @1))
 
    (on-event-statement
-    (on trigger-spec : statement) : (note-location `(,$1 ,$2 ,$4) @1))
+    (on trigger-spec : statement) : (note-location `(,$1 ,$2 ,$4) @1)
+    (blocking on trigger-spec : statement) : (note-location `(,$1 ,$2 ,$3 ,$5) @1))
 
    (trigger-spec
     (triggers) : (note-location (cons 'triggers $1) @1)
@@ -350,7 +352,9 @@
     (if #{(}# expression #{)}# statement else statement) : (note-location `(if ,$3 ,$5 ,$7) @1))
 
    (reply-statement
-    (reply #{(}# expression #{)}# #{\;}#) : (note-location `(,$1 ,$3) @1))
+    (reply #{(}# expression #{)}# #{\;}#) : (note-location `(,$1 ,$3) @1)
+    (Identifier #{.}# reply #{(}# #{)}# #{\;}#) : (note-location `(,$1 ,$3) @1)
+    (Identifier #{.}# reply #{(}# expression #{)}# #{\;}#) : (note-location `(,$1 ,$3 ,$5) @1))
 
    (return-statement
     (return #{\;}#) : (note-location '(return) @1)
