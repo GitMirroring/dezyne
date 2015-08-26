@@ -188,7 +188,7 @@
     (('int name range)
      (make <int> :name name :range (ast->om- range)))
 
-    (('instance name component) (make <instance> :name name :component component))
+    (('instance name type) (make <instance> :name name :type type))
 
     (('instances instances ...)
      (make <instances> :elements (map ast->om- instances)))

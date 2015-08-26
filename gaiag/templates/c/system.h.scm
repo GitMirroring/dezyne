@@ -13,7 +13,7 @@
 
 typedef struct {
     dzn_meta_t dzn_meta;
-#(map (lambda (binding) (list ((c:scope-name) (.component (om:instance model (injected-instance-name binding)))) " "
+#(map (lambda (binding) (list ((c:scope-name) (.type (om:instance model (injected-instance-name binding)))) " "
                               (injected-instance-name binding) ";\n")) (injected-bindings model)) #
 (if (pair? (injected-bindings model)) (list "locator local_locator;\n")) #
 (map (init-instance #{

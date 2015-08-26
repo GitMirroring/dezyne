@@ -37,7 +37,6 @@
            .ast
            .behaviour
            .bindings
-           .component
            .direction
            .elements
            .else
@@ -161,7 +160,6 @@
            make-<fields>
            make-<function>
            make-<guard>
-           make-<instance>
            make-<if>
            make-<illegal>
            make-<instances>
@@ -588,8 +586,8 @@
   (let-keywords
    args #f
    ((name #f)
-    (component #f))
-   (cons <instance> (list name component))))
+    (type #f))
+   (cons <instance> (list name type))))
 
 (define (make-<variable> . args)
   (let-keywords
@@ -841,6 +839,7 @@
 
 (define (.type ast)
   (match ast
+    (('instance name type) type)
     (('literal scope type field) type)
     (('port name type direction external injected) type)
     (('formal name type) #f)

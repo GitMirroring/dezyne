@@ -1,4 +1,15 @@
 * STATUS
+** system simulation WIP
+
+   ./gaiag -l run -t '(console.arm sensor.triggered console.disarm)' examples/AlarmSystem.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+   ./gaiag -l run -m Camera2 -t '(control.setup)' ../test/regression/camera.project/Camera.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+   ./gaiag -l run -m Camera -t '(control.setup)' ../test/regression/camera.project/Camera.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+   ./gaiag -l run -t '(doorControl.initialise)' ../webapp/server/commands/examples/GarageDoorControl.dzn 2>&1 | sed -re 's/:([0-9])[0-9]\"$/:\1/' -e 's/[(]"/"/' -e 's/trace /\n/' - | tr -d '"'
+
+
 ** test/run.sh runs smoke test with known tricky success cases
 ** triangle (in test/)
 

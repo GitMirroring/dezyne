@@ -926,7 +926,7 @@
     (animate string `((port ,port) (direction ,direction) (edir ,edir) (injected? ,injected?) (instance ,instance) (interface ,interface)))))
 
 (define ((init-instance string) instance)
-  (let ((component (.component instance))
+  (let ((component (.type instance))
         (name (.name instance)))
     (animate string `((component ,component) (name ,name)))))
 
@@ -1015,7 +1015,7 @@
       (.port (.right binding))))
 
 (define (injected-instance-type model binding)
-  (.component (om:instance model (if (.instance (.left binding))
+  (.type (om:instance model (if (.instance (.left binding))
                                       (.left binding)
                                       (.right binding)))))
 

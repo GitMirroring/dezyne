@@ -275,7 +275,7 @@
     (formal-direction variable-type Identifier): (note-location `(formal ,$3 ,$2 ,$1) @1))
 
    (statements
-    () : '(compound)
+    () : (list 'compound)
     (statements statement/variable) : (append $1 (list $2)))
 
    (statement/variable

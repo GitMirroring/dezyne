@@ -80,7 +80,6 @@
            .arguments
            .behaviour
            .bindings
-           .component
            .direction
            .elements
            .else
@@ -395,7 +394,7 @@
 
 (define-class <instance> (<statement>)
   (name :accessor @name :init-value #f :init-keyword :name)
-  (component :accessor .component :init-value (make <name>) :init-keyword :component))
+  (type :accessor @type :init-value (make <name>) :init-keyword :type))
 
 (define-class <error> (<ast>)
   (ast :accessor .ast :init-value #f :init-keyword :ast)
@@ -489,6 +488,7 @@
 (define (.type o)
   (match o
     (($ <formal> name type) type)
+    (($ <instance> name type) type)
     (($ <literal> scope type field) type)
     (($ <port> name type) type)
     (($ <signature> type) type)

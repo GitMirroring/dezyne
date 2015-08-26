@@ -64,7 +64,7 @@
 (define-method (mangle (o <instance>))
   (make <instance>
     :name (and=> (.name o) (prefix (om:prefix 'instance)))
-    :component (and=> (.component o) (prefix (om:prefix 'component)))))
+    :type (and=> (.type o) (prefix (om:prefix 'component)))))
 
 (define-method (mangle (o <variable>))
   (make <variable>

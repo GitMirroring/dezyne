@@ -250,7 +250,7 @@
        (or
         (and-let* ((name (.instance o))
                    (instance (om:instance model name))
-                   (type (and=> instance .component))
+                   (type (and=> instance .type))
                    (component (om:import type)))
                   (om:port component port))
         (om:port model port))))
