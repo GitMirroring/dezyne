@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -86,7 +87,8 @@
                                      (statement (on-statement (map .statement shared-ons))))
                                 (make <on>
                                   :triggers triggers
-                                  :statement statement))
+                                  :statement statement
+                                  :blocking? (.blocking? (car ons))))
                               (car shared-ons))))
                      (cons aggregated-on (loop remainder)))))))))
      (('functions functions ...) o)
@@ -135,7 +137,8 @@
                        (retain-source-properties
                         (.triggers o)
                         (make <triggers> :elements triggers))
-                       :statement (.statement o))))
+                       :statement (.statement o)
+                       :blocking? (.blocking? o))))
                (cons shared-on (loop remainder)))))))
     (_ o)))
 

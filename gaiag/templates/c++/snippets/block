@@ -1,0 +1,3 @@
+#statement
+dzn_rt.handling(this) = false;
+dzn_locator.get<dezyne::pump>().block(&this->#port);

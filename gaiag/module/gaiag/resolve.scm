@@ -503,7 +503,7 @@
          :expression ((resolve model locals) expression)
          :statement ((resolve model locals) statement)))
 
-    (($ <on> triggers statement)
+    (($ <on> triggers statement blocking?)
      (let* ((triggers (resolve-on-triggers triggers))
             (arguments (append-map (compose .elements .arguments) (.elements triggers)))
             (locals (let loop ((arguments arguments) (locals locals))
@@ -516,7 +516,8 @@
                                  (acons name argument locals)))))))
        (make <on>
          :triggers triggers
-         :statement ((resolve model locals) statement))))
+         :statement ((resolve model locals) statement)
+         :blocking? blocking?)))
 
     (($ <interface> name types events behaviour)
      (make <interface>
@@ -564,8 +565,8 @@
     (('variables variables ...)
      (let ((variables (map (range-check model) variables)))
        (make <variables> :elements (map (resolve model '()) variables))))
-    (($ <reply> expression)
-     (make <reply> :expression ((resolve model locals) expression)))
+    (($ <reply> expression port)
+     (make <reply> :expression ((resolve model locals) expression) :port port))
     (($ <return> expression)
      (make <return> :expression ((resolve model locals) expression)))
     ((? (is? <ast>)) (om:map (lambda (o) ((resolve model locals) o)) o))

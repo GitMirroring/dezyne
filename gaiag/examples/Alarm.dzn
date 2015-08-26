@@ -92,7 +92,7 @@ component Alarm
       on console.arm():
         illegal;
 
-      on console.disarm():
+      blocking on console.disarm():
       {
         sensor.disable();
         state = States.Disarming;

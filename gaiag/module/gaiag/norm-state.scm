@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -89,25 +90,25 @@
 
 (define (passdown-on o)
   (match o
-    (($ <on>) ((passdown-triggers (.triggers o)) (.statement o)))
+    (($ <on>) ((passdown-triggers (.triggers o) (.blocking? o)) (.statement o)))
     ((? (is? <ast>)) (om:map passdown-on o))
     ((h t ...) (map passdown-on o))
     (_ o)))
 
-(define ((passdown-triggers triggers) o)
+(define ((passdown-triggers triggers blocking?) o)
   (match o
     (('compound statements ...)
      (let ((statements statements))
        (match statements
          ((($ <guard>) ..1)
           (make <compound>
-            :elements (map (passdown-triggers triggers) statements)))
-         (_ (make <on> :triggers triggers :statement o)))))
+            :elements (map (passdown-triggers triggers blocking?) statements)))
+         (_ (make <on> :triggers triggers :statement o :blocking? blocking?)))))
     (($ <guard>)
      (make <guard>
        :expression (.expression o)
-       :statement ((passdown-triggers triggers) (.statement o))))
-    (_ (make <on> :triggers triggers :statement o))))
+       :statement ((passdown-triggers triggers blocking?) (.statement o))))
+    (_ (make <on> :triggers triggers :statement o :blocking? blocking?))))
 
 (define (ast-> ast)
   ((compose

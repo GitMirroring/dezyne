@@ -322,9 +322,9 @@
                 `((space ,space)
                   (identifier ,(identifier-snippet identifier))
                   (expression ,(expression->string model expression locals)))))
-      (($ <on> triggers (and ($ <if> e t #f) (get! statement)))
-       (->code- model (make <on> :triggers triggers :statement (wrap-compound (statement))) locals indent))
-      (($ <on> triggers statement)
+      (($ <on> triggers (and ($ <if> e t #f) (get! statement)) blocking?)
+       (->code- model (make <on> :triggers triggers :statement (wrap-compound (statement)) :blocking? blocking?) locals indent))
+      (($ <on> triggers statement blocking?)
        (or (and-let* ((trigger ((find-trigger port event) src)))
                      (let* ((aliases
                              (let loop ((formals ((compose .elements .formals .signature) event))
@@ -350,7 +350,12 @@
                                                       (statements
                                                        ,(snippet 'context
                                                                  `((space ,space) (statement ,aliases) (continuation ,statement))))))
-                                           statement)))
+                                           statement))
+                            (statement (if (not blocking?) statement
+                                           (snippet 'block
+                                                    `((space ,space)
+                                                      (statement ,statement)
+                                                      (port ,(.port trigger)))))))
                        statement))
            '$empty-statement$))
       (($ <call> function ('arguments))
@@ -416,27 +421,34 @@
                     (number ,number)
                     (comma ,comma)
                     (comma-space ,comma-space)))))
-      (($ <reply> (and ($ <expression> ($ <literal> name field)) (get! expression)))
-       (debug "NAME: ~a\n" name)
-       (debug "scope: ~a\n" (om:scope name))
-       (debug "name: ~a\n" (om:name name))
-       (snippet 'reply
-                `((space ,space)
-                  (scope ,(om:scope name))
-                  (name ,(om:name name))
-                  (expression ,(expression->string model (expression) locals)))))
-      (($ <reply> (and ($ <expression> ($ <var> name)) (get! expression)))
+      (($ <reply> (and ($ <expression> ($ <literal> name field)) (get! expression)) port)
+       (->string (list (snippet 'reply
+                                `((space ,space)
+                                  (scope ,(om:scope name))
+                                  (name ,(om:name name))
+                                  (expression ,(expression->string model (expression) locals))))
+                       (if port (snippet 'release
+                                         `((space ,space)
+                                           (scope ,(om:scope name))
+                                           (name ,(om:name name))
+                                           (port ,port)))))))
+      (($ <reply> (and ($ <expression> ($ <var> name)) (get! expression)) port)
        (let* ((var (var? name))
               (type (.type var)))
-         (debug "var: ~a\n" var)
-         (debug "type: ~a\n" type)
-         (debug "1scope: ~a\n" (om:scope type))
-         (snippet 'reply
-                  `((space ,space)
-                    (scope ,(om:scope type))
-                    (name ,(om:name type))
-                    (expression ,(expression->string model (expression) locals))))))
-      (($ <reply>) (debug "REPLY TODO: ~a\n" src) "//reply = ...\n")
+         (->string (list (snippet 'reply
+                                  `((space ,space)
+                                    (scope ,(om:scope type))
+                                    (name ,(om:name type))
+                                    (expression ,(expression->string model (expression) locals))))
+                         (if port (snippet 'release
+                                           `((space ,space)
+                                             (scope ,(om:scope type))
+                                             (name ,(om:name type))
+                                             (port ,port))))))))
+      (($ <reply> expression port)
+       (if port (snippet 'release
+                         `((space ,space)
+                           (port ,port)))))
       (($ <return> #f) (snippet 'return-void `((space ,space))))
       (($ <return> expression)
        (snippet 'return
