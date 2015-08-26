@@ -314,7 +314,7 @@
 
    (on-event-statement
     (on trigger-spec : statement) : (note-location `(,$1 ,$2 ,$4) @1)
-    (blocking on trigger-spec : statement) : (note-location `(,$1 ,$2 ,$3 ,$5) @1))
+    (blocking on trigger-spec : statement) : (note-location `(,$2 ,$3 ,$5 ,$1) @1))
 
    (trigger-spec
     (triggers) : (note-location (cons 'triggers $1) @1)
@@ -353,8 +353,8 @@
 
    (reply-statement
     (reply #{(}# expression #{)}# #{\;}#) : (note-location `(,$1 ,$3) @1)
-    (Identifier #{.}# reply #{(}# #{)}# #{\;}#) : (note-location `(,$1 ,$3) @1)
-    (Identifier #{.}# reply #{(}# expression #{)}# #{\;}#) : (note-location `(,$1 ,$3 ,$5) @1))
+    (Identifier #{.}# reply #{(}# #{)}# #{\;}#) : (note-location `(,$3 (expression) ,$1) @1)
+    (Identifier #{.}# reply #{(}# expression #{)}# #{\;}#) : (note-location `(,$3 ,$5 ,$1) @1))
 
    (return-statement
     (return #{\;}#) : (note-location '(return) @1)

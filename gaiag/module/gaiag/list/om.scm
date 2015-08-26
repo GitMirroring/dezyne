@@ -37,6 +37,7 @@
            .ast
            .behaviour
            .bindings
+           .blocking?
            .component
            .direction
            .elements
@@ -542,14 +543,16 @@
   (let-keywords
    args #f
    ((triggers (make <triggers>))
-    (statement #f))
-   (cons <on> (list triggers statement))))
+    (statement #f)
+    (blocking? #f))
+   (cons <on> (list triggers statement blocking?))))
 
 (define (make-<reply> . args)
   (let-keywords
    args #f
-   ((expression #f))
-   (cons <reply> (list expression))))
+   ((expression #f)
+    (port #f))
+   (cons <reply> (list expression port))))
 
 (define (make-<return> . args)
   (let-keywords
@@ -669,7 +672,8 @@
   (match ast
     (('binding instance port) port)
     (('trigger port event) port)
-    (('trigger port event arguments) port)))
+    (('trigger port event arguments) port)
+    (('reply expression port) port)))
 
 (define (.instance ast)
   (match ast
@@ -689,7 +693,7 @@
 
 (define (.triggers ast)
   (match ast
-    (('on triggers statement) triggers)))
+    (('on triggers statement blocking?) triggers)))
 
 (define (.name ast)
   (match ast
@@ -788,9 +792,13 @@
 (define (.statement ast)
   (match ast
     (('guard expression statement) statement)
-    (('on triggers statement) statement)
+    (('on triggers statement blocking?) statement)
     (('behaviour name types variables functions statement) statement)
     (('function name signature recursive statement) statement)))
+
+(define (.blocking? ast)
+  (match ast
+    (('on triggers statement blocking?) blocking?)))
 
 (define (.functions ast)
   (match ast

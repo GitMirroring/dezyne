@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -212,6 +213,9 @@
     (('on triggers statement)
      (make <on> :triggers (ast->om- triggers) :statement (ast->om- statement)))
 
+    (('on triggers statement blocking?)
+     (make <on> :triggers (ast->om- triggers) :statement (ast->om- statement) :blocking? blocking?))
+
     (('otherwise) (make <otherwise> :value 'otherwise))
 
     (('otherwise value) (make <otherwise> :value value))
@@ -237,6 +241,8 @@
     (('range from to) (make <range> :from from :to to))
 
     (('reply expression) (make <reply> :expression (ast->om- expression)))
+
+    (('reply expression port) (make <reply> :expression (ast->om- expression) :port port))
 
     (('return) (make <return>))
 

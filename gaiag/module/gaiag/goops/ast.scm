@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -205,6 +206,9 @@
     (('on triggers statement)
      (make <on> :triggers (ast->om- triggers) :statement (ast->om- statement)))
 
+    (('on triggers statement blocking?)
+     (make <on> :triggers (ast->om- triggers) :statement (ast->om- statement) :blocking? blocking?))
+
     (('otherwise) (make <otherwise> :value 'otherwise))
 
     (('otherwise value) (make <otherwise> :value value))
@@ -230,6 +234,8 @@
     (('range from to) (make <range> :from from :to to))
 
     (('reply expression) (make <reply> :expression (ast->om- expression)))
+
+    (('reply expression port) (make <reply> :expression (ast->om- expression) :port port))
 
     (('return) (make <return>))
 

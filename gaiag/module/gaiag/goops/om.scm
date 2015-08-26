@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -79,6 +80,7 @@
            .arguments
            .behaviour
            .bindings
+           .blocking?
            .component
            .direction
            .elements
@@ -364,10 +366,12 @@
 
 (define-class <on> (<declarative>)
   (triggers :accessor .triggers :init-form (make <triggers>) :init-keyword :triggers)
-  (statement :accessor @statement :init-value #f :init-keyword :statement))
+  (statement :accessor @statement :init-value #f :init-keyword :statement)
+  (blocking? :accessor .blocking? :init-value #f :init-keyword :blocking?))
 
 (define-class <reply> (<imperative>)
-  (expression :accessor @expression :init-value #f :init-keyword :expression))
+  (expression :accessor @expression :init-value #f :init-keyword :expression)
+  (port :accessor @port :init-value #f :init-keyword :port))
 
 (define-class <return> (<imperative>)
   (expression :accessor @expression :init-value #f :init-keyword :expression))
@@ -457,6 +461,7 @@
 (define (.port o)
   (match o
     (($ <binding> instance port) port)
+    (($ <reply> expression port) port)
     (($ <trigger> port event) port)))
 
 (define (.ports o)
