@@ -29,6 +29,9 @@
 #include "meta.hh"
 #include "locator.hh"
 
+//haX0r here
+#include "pump.hh"  //TODO: put this include in every component which uses the blocking keyword in its behaviour. 
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
