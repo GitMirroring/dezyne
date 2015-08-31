@@ -28,6 +28,11 @@ endif
 
 PROJECT_P:=$(filter project,$(patsubst %.project,project project,$(notdir $(CDIR:%/=%))))
 
+$(info LOCAL_DZN_FILES: $(LOCAL_DZN_FILES))
+$(info LOCAL_DZN_OUT_FILES: $(LOCAL_DZN_OUT_FILES))
+$(info LOCAL_SOURCE_FILES: $(LOCAL_DZN_OUT_FILES))
+$(info PROJECT_P: $(PROJECT_P))
+
 ifeq ($(words $(LOCAL_DZN_FILES) $(LOCAL_DZN_OUT_FILES) $(LOCAL_SOURCE_FILES) $(PROJECT_P)),1)
 LOCAL_DZN_TOP:=$(firstword $(LOCAL_DZN_FILES) $(LOCAL_DZN_OUT_FILES))
 LOCAL_NAME:=$(basename $(notdir $(LOCAL_DZN_TOP)))

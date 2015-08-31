@@ -97,6 +97,7 @@ endif
 	$(DZN) depends -l $(LOCAL_LANGUAGE) -m $(LOCAL_SUT) -g $(*F) -o $(LOCAL_OUT) $< | sed 's,[*]global[*]_,,' >> $@
 	@echo -e '\t$(DZN) code -l $(LOCAL_LANGUAGE) -m $(LOCAL_SUT) -o $(LOCAL_OUT) $< $(LOCAL_MAP_FILES) |& sed -e s,^,$(dir $<),' >> $@
 
+$(info LOCAL_D_FILES $(LOCAL_D_FILES))
 depend: $(LOCAL_D_FILES)
 ifeq ($(strip $(filter-out clean depend help run verify,$(MAKECMDGOALS))),$(MAKECMDGOALS))
 -include $(LOCAL_D_FILES)
