@@ -31,8 +31,8 @@ SHELL:=/bin/bash
 DZN:=../webapp/client/dzn
 OUT:=out
 CCACHE:=$(shell type -p ccache)
-#TRIANGLE_MAX:=cat
-TRIANGLE_MAX:=head -50 # use `cat' for all
+TRIANGLE_MAX:=cat
+#TRIANGLE_MAX:=head -50 # use `cat' for all
 VERBOSE:=
 
 DEFAULT_CODE_LANGUAGES:=c c++ c++03 cs goops javascript python
