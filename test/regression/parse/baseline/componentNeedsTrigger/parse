@@ -1,2 +1,2 @@
 componentNeedsTrigger.dzn:10:11: Well-formedness error: Component with behaviour needs at least one trigger event: 'Alarm1'
-componentNeedsTrigger.dzn:10:11: Well-formedness error: Component with behaviour must have one provides port: 'Alarm1'
+componentNeedsTrigger.dzn:10:11: Well-formedness error: Component with behaviour must have at least one provides port: 'Alarm1'
