@@ -52,7 +52,7 @@
            json-table-state))
 
 (define (json-init o)
-  `((name . ,(om:scope+name o))
+  `((name . ,((om:scope-name '.) o))
     (type . ,(ast-name o))))
 
 (define ((json-table-event model) o)
