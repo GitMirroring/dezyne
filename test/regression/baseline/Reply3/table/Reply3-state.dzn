@@ -43,15 +43,19 @@ interface I {
     on done:
     {
       [true]
-      reply_fun, (), false[true]
-      reply_fun_arg, (Status.No), false
+      reply_fun();
+      [true]
+      reply_fun_arg(Status.No);
+
     }
     [dummy]
     on done:
     {
       [true]
-      reply_fun, (), false[true]
-      reply_fun_arg, (Status.No), false
+      reply_fun();
+      [true]
+      reply_fun_arg(Status.No);
+
     }
   }
 }
@@ -79,15 +83,19 @@ interface U {
     on what:
     {
       [true]
-      reply_fun, (), false[true]
-      reply_fun_arg, (Status.Nok), false
+      reply_fun();
+      [true]
+      reply_fun_arg(Status.Nok);
+
     }
     [dummy]
     on what:
     {
       [true]
-      reply_fun, (), false[true]
-      reply_fun_arg, (Status.Nok), false
+      reply_fun();
+      [true]
+      reply_fun_arg(Status.Nok);
+
     }
   }
 }
@@ -116,16 +124,20 @@ component Reply3 {
     {
       U.Status s = u.what();
       s = u.what();
-      if (s == U.Status.Ok) reply_fun, (), falseelse
-      reply_fun_arg, (I.Status.No), false
+      if (s == U.Status.Ok) reply_fun();
+      else
+      reply_fun_arg(I.Status.No);
+
     }
     [dummy]
     on i.done():
     {
       U.Status s = u.what();
       s = u.what();
-      if (s == U.Status.Ok) reply_fun, (), falseelse
-      reply_fun_arg, (I.Status.No), false
+      if (s == U.Status.Ok) reply_fun();
+      else
+      reply_fun_arg(I.Status.No);
+
     }
   }
 

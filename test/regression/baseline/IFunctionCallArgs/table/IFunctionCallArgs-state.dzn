@@ -36,8 +36,10 @@ interface IFunctionCallArgs {
 
     [!b]
     on evt:
-    func, (b), false[b]
+    func(b);
+    [b]
     on evt:
-    func, (b), false}
+    func(b);
+  }
 }
 

@@ -98,14 +98,16 @@ component Feed {
       illegal;
       [s.Idle]
       [!isRetracting]
-      feedNext, (), false[s.Idle]
+      feedNext();
+      [s.Idle]
       [isRetracting && !isFeedRequested]
       isFeedRequested = true;
       [s.Idle]
       [isRetracting && isFeedRequested]
       illegal;
       [s.Prepared]
-      feedNext, (), false
+      feedNext();
+
     }
     on axis.homed():
     {
@@ -114,7 +116,8 @@ component Feed {
       [s.Calibrating]
       {
         ctrl.calibrated();
-        refill, (), falses = State.Idle;
+        refill();
+        s = State.Idle;
 
       }
 
@@ -126,7 +129,9 @@ component Feed {
       [s.Idle]
       [isRetracting]
       {
-        refill, (), falseif (isFeedRequested) feedNext, (), falseisRetracting = false;
+        refill();
+        if (isFeedRequested) feedNext();
+        isRetracting = false;
         isFeedRequested = false;
 
       }
@@ -144,7 +149,8 @@ component Feed {
       [inventory == 0]
       {
         ctrl.consumeLastBall();
-        retract, (), falses = State.Idle;
+        retract();
+        s = State.Idle;
 
       }
 

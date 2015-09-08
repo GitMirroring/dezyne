@@ -95,22 +95,26 @@ component ConstrainedMove {
       {
         ITouchSense.TouchState hss = homeSensor.enable();
         if (hss == ITouchSense.TouchState.Pressed) {
-          recordHome, (), falseITouchSense.TouchState ess = endSensor.enable();
+          recordHome();
+          ITouchSense.TouchState ess = endSensor.enable();
           if (ess == ITouchSense.TouchState.Pressed) {
-            recordLength, (), falses = State.idle;
+            recordLength();
+            s = State.idle;
             ctrl.homed();
 
           }
           else
           {
-            slowForward, (), falses = State.calibratingLength;
+            slowForward();
+            s = State.calibratingLength;
 
           }
 
         }
         else
         {
-          slowBackward, (), falses = State.calibratingHome;
+          slowBackward();
+          s = State.calibratingHome;
 
         }
 
@@ -132,19 +136,23 @@ component ConstrainedMove {
       [s.moving]
       {
         motor.stop();
-        notifyArrived, (), false
+        notifyArrived();
+
       }
       [s.calibratingHome]
       {
-        recordHome, (), falseITouchSense.TouchState ess = endSensor.enable();
+        recordHome();
+        ITouchSense.TouchState ess = endSensor.enable();
         if (ess == ITouchSense.TouchState.Pressed) {
-          recordLength, (), falses = State.idle;
+          recordLength();
+          s = State.idle;
           ctrl.homed();
 
         }
         else
         {
-          slowForward, (), falses = State.calibratingLength;
+          slowForward();
+          s = State.calibratingLength;
 
         }
 
@@ -166,11 +174,13 @@ component ConstrainedMove {
       [s.moving]
       {
         motor.stop();
-        notifyArrived, (), false
+        notifyArrived();
+
       }
       [s.calibratingLength]
       {
-        recordLength, (), falsectrl.homed();
+        recordLength();
+        ctrl.homed();
         s = State.idle;
 
       }
@@ -189,7 +199,8 @@ component ConstrainedMove {
       [s.calibratingLength || s.calibratingHome || s.idle || s.lost]
       illegal;
       [s.moving]
-      notifyArrived, (), false
+      notifyArrived();
+
     }
     on ctrl.move(target):
     [s.idle]

@@ -215,20 +215,24 @@ component h {
     [s.Calibrating]
     {
       on ctrl.hcalibrate():
-      ignoreIllegal, (), falseon robot.tcalibrated():
-      tryCalibrated, (), false
+      ignoreIllegal();
+      on robot.tcalibrated():
+      tryCalibrated();
+
     }
     [s.Idle]
     {
       on ctrl.hcalibrate():
-      ignoreIllegal, (), falseon robot.tcalibrated():
+      ignoreIllegal();
+      on robot.tcalibrated():
       illegal;
 
     }
     [s.Operating]
     {
       on ctrl.hcalibrate():
-      ignoreIllegal, (), falseon robot.tcalibrated():
+      ignoreIllegal();
+      on robot.tcalibrated():
       illegal;
 
     }

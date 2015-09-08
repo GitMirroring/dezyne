@@ -174,7 +174,8 @@ component Inspect {
       on sensorSettleTimer.timeout(), ctrl.inspect(), ctrl.prepare(), stage.arrived(), stage.calibrated():
       illegal;
       on ctrl.stop():
-      stop, (), falseon ctrl.calibrate():
+      stop();
+      on ctrl.calibrate():
       {
         s = State.Calibrating;
         p = InspectPosition.Unknown;
@@ -188,7 +189,8 @@ component Inspect {
       on sensorSettleTimer.timeout(), ctrl.calibrate(), ctrl.prepare(), stage.arrived(), stage.calibrated():
       illegal;
       on ctrl.stop():
-      stop, (), falseon ctrl.inspect():
+      stop();
+      on ctrl.inspect():
       {
         s = State.Inspecting;
         stage.move(inspectX, inspectY);
@@ -201,7 +203,8 @@ component Inspect {
       on sensorSettleTimer.timeout(), ctrl.calibrate(), ctrl.inspect(), ctrl.prepare():
       illegal;
       on ctrl.stop():
-      stop, (), falseon stage.arrived():
+      stop();
+      on stage.arrived():
       {
         [p.Receive]
         {
@@ -247,7 +250,8 @@ component Inspect {
 
       }
       on ctrl.stop():
-      stop, (), falseon ctrl.calibrate(), ctrl.inspect(), ctrl.prepare(), stage.calibrated():
+      stop();
+      on ctrl.calibrate(), ctrl.inspect(), ctrl.prepare(), stage.calibrated():
       illegal;
       on stage.arrived():
       {
@@ -281,7 +285,8 @@ component Inspect {
       on sensorSettleTimer.timeout(), ctrl.calibrate(), ctrl.inspect(), stage.arrived(), stage.calibrated():
       illegal;
       on ctrl.stop():
-      stop, (), falseon ctrl.prepare():
+      stop();
+      on ctrl.prepare():
       {
         s = State.Preparing;
         p = InspectPosition.Receive;
@@ -295,7 +300,8 @@ component Inspect {
       on sensorSettleTimer.timeout(), ctrl.calibrate(), ctrl.inspect(), ctrl.prepare(), stage.calibrated():
       illegal;
       on ctrl.stop():
-      stop, (), falseon stage.arrived():
+      stop();
+      on stage.arrived():
       {
         ctrl.prepared();
         s = State.Ready;

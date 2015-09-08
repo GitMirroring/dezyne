@@ -69,7 +69,8 @@ component DataVariables {
       on pp.inoutString(s):
       {
         IDataVariables.string local = s;
-        f, (local), falses = local;
+        f(local);
+        s = local;
 
       }
       on rp.inDataVariable(idv):

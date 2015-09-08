@@ -37,7 +37,8 @@ interface IFunctionCallArgs {
     on evt:
     {
       [b || !b]
-      func, (b), false
+      func(b);
+
     }
   }
 }

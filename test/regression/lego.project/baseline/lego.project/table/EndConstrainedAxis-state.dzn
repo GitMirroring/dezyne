@@ -73,13 +73,15 @@ component EndConstrainedMove {
       {
         ITouchSense.TouchState ess = endSensor.enable();
         if (ess == ITouchSense.TouchState.Pressed) {
-          recordHome, (), falses = State.idle;
+          recordHome();
+          s = State.idle;
           ctrl.homed();
 
         }
         else
         {
-          slowForward, (), falses = State.calibratingEnd;
+          slowForward();
+          s = State.calibratingEnd;
 
         }
 
@@ -123,12 +125,14 @@ component EndConstrainedMove {
       on endSensor.pressed():
       {
         motor.stop();
-        notifyArrived, (), false
+        notifyArrived();
+
       }
       on endSensor.released():
       {}
       on motor.arrived():
-      notifyArrived, (), false
+      notifyArrived();
+
     }
     [s.calibratingEnd]
     {
@@ -143,7 +147,8 @@ component EndConstrainedMove {
       illegal;
       on endSensor.pressed():
       {
-        recordHome, (), falses = State.idle;
+        recordHome();
+        s = State.idle;
         ctrl.homed();
 
       }

@@ -42,13 +42,16 @@ interface I {
     on a:
     {
       [f || !f]
-      toggle, (), false
+      toggle();
+
     }
     on b:
     {
       [f || !f]
       {
-        toggle, (), falsetoggle, (), falsed;
+        toggle();
+        toggle();
+        d;
 
       }
 
@@ -75,13 +78,16 @@ component function {
     on i.a():
     {
       [f || !f]
-      toggle, (), false
+      toggle();
+
     }
     on i.b():
     {
       [f || !f]
       {
-        toggle, (), falsetoggle, (), falsei.d();
+        toggle();
+        toggle();
+        i.d();
 
       }
 

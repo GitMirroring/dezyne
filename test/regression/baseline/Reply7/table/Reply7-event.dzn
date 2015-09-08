@@ -47,7 +47,8 @@ component Reply7 {
 
     on p.foo():
     [true]
-    f, (), false}
+    f();
+  }
 
 }
 

@@ -87,10 +87,15 @@
      (->string var " = " ((->dzn model) expression) ";\n"))
 
     (('assign-call function arguments)
-     (->string function ((->dzn model) arguments)))
+     ((animate-snippet 'call-expression `((function ,function)
+                                          (arguments ,((->dzn model) arguments))))))
 
     (('assign-action action trigger)
      (->string ((->dzn model) trigger)))
+
+    (($ <call> function arguments)
+     ((animate-snippet 'call `((function ,function)
+                               (arguments ,((->dzn model) arguments))))))
 
     (($ <if> expression then #f)
      ((animate-snippet 'if-then `((expression ,((->dzn model) expression))
@@ -116,11 +121,9 @@
      ((->dzn model) (list 'variable name type ((->dzn model) (list 'assign-action trigger)))))
 
     (($ <variable> name type (? unspecified?))
-     ;;(init-member model "type #name ;\n")
      (->string ((->dzn model) type) " " name ";\n"))
 
     (($ <variable> name type expression)
-     ;;(init-member model "type #name  = #expression;\n")
      (->string ((->dzn model) type) " " name " = " ((->dzn model) expression) ";\n"))
 
     (($ <enum>) ((declare-enum model) o))

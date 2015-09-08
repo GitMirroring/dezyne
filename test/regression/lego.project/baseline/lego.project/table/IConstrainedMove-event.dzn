@@ -51,7 +51,8 @@ interface IConstrainedMove {
       [s.lost]
       s = State.calibrating;
       [s.lost]
-      notifyHomed, (), false[s.moving || s.calibrating || s.idle]
+      notifyHomed();
+      [s.moving || s.calibrating || s.idle]
       illegal;
 
     }
@@ -72,8 +73,10 @@ interface IConstrainedMove {
     on inevitable:
     {
       [s.calibrating]
-      notifyHomed, (), false[s.moving]
-      notifyArrived, (), false
+      notifyHomed();
+      [s.moving]
+      notifyArrived();
+
     }
   }
 }

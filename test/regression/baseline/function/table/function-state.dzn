@@ -42,9 +42,12 @@ interface I {
     [!f]
     {
       on a:
-      toggle, (), falseon b:
+      toggle();
+      on b:
       {
-        toggle, (), falsetoggle, (), falsed;
+        toggle();
+        toggle();
+        d;
 
       }
 
@@ -52,9 +55,12 @@ interface I {
     [f]
     {
       on a:
-      toggle, (), falseon b:
+      toggle();
+      on b:
       {
-        toggle, (), falsetoggle, (), falsed;
+        toggle();
+        toggle();
+        d;
 
       }
 
@@ -81,9 +87,12 @@ component function {
     [!f]
     {
       on i.a():
-      toggle, (), falseon i.b():
+      toggle();
+      on i.b():
       {
-        toggle, (), falsetoggle, (), falsei.d();
+        toggle();
+        toggle();
+        i.d();
 
       }
 
@@ -91,9 +100,12 @@ component function {
     [f]
     {
       on i.a():
-      toggle, (), falseon i.b():
+      toggle();
+      on i.b():
       {
-        toggle, (), falsetoggle, (), falsei.d();
+        toggle();
+        toggle();
+        i.d();
 
       }
 

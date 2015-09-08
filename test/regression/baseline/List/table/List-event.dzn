@@ -73,7 +73,8 @@ component List {
       if (done == Iterator.end.no) {
         Iterator.element elmt = ;
         done = list.next(elmt);
-        tail, (done), false
+        tail(done);
+
       }
       return false;
 
@@ -83,7 +84,8 @@ component List {
     [true]
     {
       Iterator.end it = head();
-      tail, (it), false
+      tail(it);
+
     }
   }
 

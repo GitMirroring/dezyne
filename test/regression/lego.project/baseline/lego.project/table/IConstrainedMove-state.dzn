@@ -53,7 +53,8 @@ interface IConstrainedMove {
         [true]
         s = State.calibrating;
         [true]
-        notifyHomed, (), false
+        notifyHomed();
+
       }
       on move:
       illegal;
@@ -78,7 +79,8 @@ interface IConstrainedMove {
       on stop:
       s = State.lost;
       on inevitable:
-      notifyHomed, (), false
+      notifyHomed();
+
     }
     [s.moving]
     {
@@ -87,7 +89,8 @@ interface IConstrainedMove {
       on stop:
       s = State.lost;
       on inevitable:
-      notifyArrived, (), false
+      notifyArrived();
+
     }
   }
 }

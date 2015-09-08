@@ -34,6 +34,7 @@ interface IFunctionCall {
 
     [true]
     on evt:
-    func, (), false}
+    func();
+  }
 }
 

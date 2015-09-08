@@ -74,13 +74,15 @@ component HomeConstrainedMove {
       {
         ITouchSense.TouchState hss = homeSensor.enable();
         if (hss == ITouchSense.TouchState.Pressed) {
-          recordHome, (), falses = State.idle;
+          recordHome();
+          s = State.idle;
           ctrl.homed();
 
         }
         else
         {
-          slowBackward, (), falses = State.calibratingHome;
+          slowBackward();
+          s = State.calibratingHome;
 
         }
 
@@ -124,12 +126,15 @@ component HomeConstrainedMove {
       on homeSensor.pressed():
       {
         motor.stop();
-        recordHome, (), falsenotifyArrived, (), false
+        recordHome();
+        notifyArrived();
+
       }
       on homeSensor.released():
       {}
       on motor.arrived():
-      notifyArrived, (), false
+      notifyArrived();
+
     }
     [s.calibratingHome]
     {
@@ -144,7 +149,8 @@ component HomeConstrainedMove {
       illegal;
       on homeSensor.pressed():
       {
-        recordHome, (), falses = State.idle;
+        recordHome();
+        s = State.idle;
         ctrl.homed();
 
       }

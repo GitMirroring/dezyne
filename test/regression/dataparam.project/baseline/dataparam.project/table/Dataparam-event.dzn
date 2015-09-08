@@ -262,7 +262,8 @@ component proxy {
     }
     on top.eo(i):
     [true]
-    outfunc, (i), falseon top.eoo(i, j):
+    outfunc(i);
+    on top.eoo(i, j):
     [true]
     bottom.eoo(i, j);
     on top.eio(i, j):
@@ -307,7 +308,8 @@ component proxy {
     top.a6(A0, A1, A2, A3, A4, A5);
     on bottom.a(i):
     [true]
-    deferfunc, (i), falseon bottom.aa(i, j):
+    deferfunc(i);
+    on bottom.aa(i, j):
     [true]
     top.aa(i, j);
   }

@@ -172,7 +172,8 @@ component Move2D {
 
       }
       on xAxis.homed(), yAxis.homed():
-      if (nCalibrated < 2) tryCalibrated, (), falseelse
+      if (nCalibrated < 2) tryCalibrated();
+      else
       illegal;
       on ctrl.move(x, y):
       {
@@ -190,7 +191,8 @@ component Move2D {
       on xAxis.arrived(), yAxis.arrived():
       {
         [nMoving > 0]
-        tryArrived, (), false[nMoving == 0]
+        tryArrived();
+        [nMoving == 0]
         illegal;
 
       }
@@ -210,7 +212,8 @@ component Move2D {
       on ctrl.calibrate():
       {}
       on xAxis.homed(), yAxis.homed():
-      if (nCalibrated < 2) tryCalibrated, (), falseelse
+      if (nCalibrated < 2) tryCalibrated();
+      else
       illegal;
       on ctrl.move(x, y):
       {
@@ -228,7 +231,8 @@ component Move2D {
       on xAxis.arrived(), yAxis.arrived():
       {
         [nMoving > 0]
-        tryArrived, (), false[nMoving == 0]
+        tryArrived();
+        [nMoving == 0]
         illegal;
 
       }

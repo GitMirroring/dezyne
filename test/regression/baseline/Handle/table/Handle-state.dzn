@@ -584,7 +584,8 @@ component Handle {
     void startBatch() {
       s = State.Operating;
       isLastBall = false;
-      prepareInputTransfer, (), falsereturn false;
+      prepareInputTransfer();
+      return false;
 
     }
 
@@ -608,10 +609,12 @@ component Handle {
 
       }
       if (!isRobotAtInput) {
-        sendRobotToInputPick, (), falseisRobotAtInput = false;
+        sendRobotToInputPick();
+        isRobotAtInput = false;
 
       }
-      tryInputTransfer, (), falsereturn false;
+      tryInputTransfer();
+      return false;
 
     }
 
@@ -679,7 +682,8 @@ component Handle {
         acceptPort.stop();
         rejectPort.stop();
         s = State.Lost;
-        manuallyRemoveStrayMaterial, (), false
+        manuallyRemoveStrayMaterial();
+
       }
       on ctrl.calibrate():
       {
@@ -693,7 +697,8 @@ component Handle {
       on robot.calibrated(), inspector.calibrated(), feedPort.calibrated(), feedPort.consumeNextBall(), feedPort.consumeLastBall(), inspector.prepared(), inspector.accepted(), inspector.rejected(), robot.arrived(), robot.picked(), robot.placed(), acceptPort.conveyed(), rejectPort.conveyed():
       illegal;
       on ctrl.operate():
-      ignoreIllegal, (), false
+      ignoreIllegal();
+
     }
     [s.Calibrating]
     {
@@ -705,11 +710,14 @@ component Handle {
         acceptPort.stop();
         rejectPort.stop();
         s = State.Lost;
-        manuallyRemoveStrayMaterial, (), false
+        manuallyRemoveStrayMaterial();
+
       }
       on ctrl.calibrate(), ctrl.operate():
-      ignoreIllegal, (), falseon robot.calibrated(), inspector.calibrated(), feedPort.calibrated():
-      tryCalibrated, (), falseon feedPort.consumeNextBall(), feedPort.consumeLastBall(), inspector.prepared(), inspector.accepted(), inspector.rejected(), robot.arrived(), robot.picked(), robot.placed(), acceptPort.conveyed(), rejectPort.conveyed():
+      ignoreIllegal();
+      on robot.calibrated(), inspector.calibrated(), feedPort.calibrated():
+      tryCalibrated();
+      on feedPort.consumeNextBall(), feedPort.consumeLastBall(), inspector.prepared(), inspector.accepted(), inspector.rejected(), robot.arrived(), robot.picked(), robot.placed(), acceptPort.conveyed(), rejectPort.conveyed():
       illegal;
 
     }
@@ -723,13 +731,16 @@ component Handle {
         acceptPort.stop();
         rejectPort.stop();
         s = State.Lost;
-        manuallyRemoveStrayMaterial, (), false
+        manuallyRemoveStrayMaterial();
+
       }
       on ctrl.calibrate():
-      ignoreIllegal, (), falseon robot.calibrated(), inspector.calibrated(), feedPort.calibrated(), feedPort.consumeNextBall(), feedPort.consumeLastBall(), inspector.prepared(), inspector.accepted(), inspector.rejected(), robot.arrived(), robot.picked(), robot.placed(), acceptPort.conveyed(), rejectPort.conveyed():
+      ignoreIllegal();
+      on robot.calibrated(), inspector.calibrated(), feedPort.calibrated(), feedPort.consumeNextBall(), feedPort.consumeLastBall(), inspector.prepared(), inspector.accepted(), inspector.rejected(), robot.arrived(), robot.picked(), robot.placed(), acceptPort.conveyed(), rejectPort.conveyed():
       illegal;
       on ctrl.operate():
-      startBatch, (), false
+      startBatch();
+
     }
     [s.Operating]
     {
@@ -741,10 +752,12 @@ component Handle {
         acceptPort.stop();
         rejectPort.stop();
         s = State.Lost;
-        manuallyRemoveStrayMaterial, (), false
+        manuallyRemoveStrayMaterial();
+
       }
       on ctrl.calibrate(), ctrl.operate():
-      ignoreIllegal, (), falseon robot.calibrated(), inspector.calibrated(), feedPort.calibrated():
+      ignoreIllegal();
+      on robot.calibrated(), inspector.calibrated(), feedPort.calibrated():
       illegal;
       on feedPort.consumeNextBall():
       {
@@ -752,7 +765,8 @@ component Handle {
         {
           isLastBall = false;
           isBallAtInput = true;
-          tryInputTransfer, (), false
+          tryInputTransfer();
+
         }
         [o.TransferringInput]
         {
@@ -782,7 +796,8 @@ component Handle {
         {
           isLastBall = true;
           isBallAtInput = true;
-          tryInputTransfer, (), false
+          tryInputTransfer();
+
         }
         [o.TransferringInput]
         {
@@ -811,7 +826,8 @@ component Handle {
         [o.PreparingInput]
         {
           isInspectorAtInput = true;
-          tryInputTransfer, (), false
+          tryInputTransfer();
+
         }
         [o.TransferringInput]
         illegal;
@@ -822,7 +838,8 @@ component Handle {
         [o.Finalizing]
         {
           isInspectorAtInput = true;
-          tryFinished, (), false
+          tryFinished();
+
         }
 
       }
@@ -836,7 +853,8 @@ component Handle {
         {
           isBallAccepted = true;
           isInspectorAtOutput = true;
-          tryOutputTransfer, (), false
+          tryOutputTransfer();
+
         }
         [o.TransferringOutput]
         illegal;
@@ -854,7 +872,8 @@ component Handle {
         {
           isBallAccepted = false;
           isInspectorAtOutput = true;
-          tryOutputTransfer, (), false
+          tryOutputTransfer();
+
         }
         [o.TransferringOutput]
         illegal;
@@ -867,21 +886,24 @@ component Handle {
         [o.PreparingInput]
         {
           isRobotAtInput = true;
-          tryInputTransfer, (), false
+          tryInputTransfer();
+
         }
         [o.TransferringInput]
         illegal;
         [o.PreparingOutput]
         {
           isRobotAtOutput = true;
-          tryOutputTransfer, (), false
+          tryOutputTransfer();
+
         }
         [o.TransferringOutput]
         illegal;
         [o.Finalizing]
         {
           isRobotAtInput = true;
-          tryFinished, (), false
+          tryFinished();
+
         }
 
       }
@@ -928,7 +950,8 @@ component Handle {
         {
           isAcceptEmpty = false;
           acceptPort.convey();
-          sendRobotToInputPick, (), falseif (isLastBall && !isBallAtInput) o = Operation.Finalizing;
+          sendRobotToInputPick();
+          if (isLastBall && !isBallAtInput) o = Operation.Finalizing;
           else
           o = Operation.PreparingInput;
 
@@ -937,7 +960,8 @@ component Handle {
         {
           isRejectEmpty = false;
           rejectPort.convey();
-          sendRobotToInputPick, (), falseif (isLastBall && !isBallAtInput) o = Operation.Finalizing;
+          sendRobotToInputPick();
+          if (isLastBall && !isBallAtInput) o = Operation.Finalizing;
           else
           o = Operation.PreparingInput;
 
@@ -955,14 +979,16 @@ component Handle {
         [o.PreparingOutput]
         {
           isAcceptEmpty = true;
-          tryOutputTransfer, (), false
+          tryOutputTransfer();
+
         }
         [o.TransferringOutput]
         isAcceptEmpty = true;
         [o.Finalizing]
         {
           isAcceptEmpty = true;
-          tryFinished, (), false
+          tryFinished();
+
         }
 
       }
@@ -975,14 +1001,16 @@ component Handle {
         [o.PreparingOutput]
         {
           isRejectEmpty = true;
-          tryOutputTransfer, (), false
+          tryOutputTransfer();
+
         }
         [o.TransferringOutput]
         isRejectEmpty = true;
         [o.Finalizing]
         {
           isRejectEmpty = true;
-          tryFinished, (), false
+          tryFinished();
+
         }
 
       }

@@ -173,14 +173,16 @@ component h {
 
       }
       [s.Operating || s.Idle || s.Calibrating]
-      ignoreIllegal, (), false
+      ignoreIllegal();
+
     }
     on robot.tcalibrated():
     {
       [s.Operating || s.Idle || s.Lost]
       illegal;
       [s.Calibrating]
-      tryCalibrated, (), false
+      tryCalibrated();
+
     }
   }
 

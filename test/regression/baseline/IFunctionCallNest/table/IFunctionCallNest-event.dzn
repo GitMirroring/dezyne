@@ -28,7 +28,8 @@ interface IFunctionCallNest {
     bool b = false;
 
     void func(bool c) {
-      inner, (c), falseb = true;
+      inner(c);
+      b = true;
       return false;
 
     }
@@ -42,7 +43,8 @@ interface IFunctionCallNest {
     on evt:
     {
       [b || !b]
-      func, (b), false
+      func(b);
+
     }
   }
 }

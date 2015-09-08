@@ -91,22 +91,26 @@ component ConstrainedMove {
       {
         ITouchSense.TouchState hss = homeSensor.enable();
         if (hss == ITouchSense.TouchState.Pressed) {
-          recordHome, (), falseITouchSense.TouchState ess = endSensor.enable();
+          recordHome();
+          ITouchSense.TouchState ess = endSensor.enable();
           if (ess == ITouchSense.TouchState.Pressed) {
-            recordLength, (), falses = State.idle;
+            recordLength();
+            s = State.idle;
             ctrl.homed();
 
           }
           else
           {
-            slowForward, (), falses = State.calibratingLength;
+            slowForward();
+            s = State.calibratingLength;
 
           }
 
         }
         else
         {
-          slowBackward, (), falses = State.calibratingHome;
+          slowBackward();
+          s = State.calibratingHome;
 
         }
 
@@ -153,12 +157,14 @@ component ConstrainedMove {
       on homeSensor.pressed(), endSensor.pressed():
       {
         motor.stop();
-        notifyArrived, (), false
+        notifyArrived();
+
       }
       on homeSensor.released(), endSensor.released():
       {}
       on motor.arrived():
-      notifyArrived, (), false
+      notifyArrived();
+
     }
     [s.calibratingHome]
     {
@@ -174,15 +180,18 @@ component ConstrainedMove {
       illegal;
       on homeSensor.pressed():
       {
-        recordHome, (), falseITouchSense.TouchState ess = endSensor.enable();
+        recordHome();
+        ITouchSense.TouchState ess = endSensor.enable();
         if (ess == ITouchSense.TouchState.Pressed) {
-          recordLength, (), falses = State.idle;
+          recordLength();
+          s = State.idle;
           ctrl.homed();
 
         }
         else
         {
-          slowForward, (), falses = State.calibratingLength;
+          slowForward();
+          s = State.calibratingLength;
 
         }
 
@@ -203,7 +212,8 @@ component ConstrainedMove {
       illegal;
       on endSensor.pressed():
       {
-        recordLength, (), falsectrl.homed();
+        recordLength();
+        ctrl.homed();
         s = State.idle;
 
       }

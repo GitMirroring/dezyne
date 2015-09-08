@@ -163,7 +163,8 @@ component Inspect {
     on ctrl.stop():
     {
       [s.Preparing || s.Waiting || s.Inspecting || s.Calibrating || s.Ready || s.Lost]
-      stop, (), false
+      stop();
+
     }
     on ctrl.calibrate():
     {

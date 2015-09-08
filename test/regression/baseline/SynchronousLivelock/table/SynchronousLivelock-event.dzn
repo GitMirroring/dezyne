@@ -89,7 +89,8 @@ component SynchronousLivelock {
       if (pastEnd == IIterator.IsPastEnd.No) {
         IIterator.ListElement elmt = ;
         pastEnd = listIt.getNextElmt(elmt);
-        consumeListTail, (pastEnd), false
+        consumeListTail(pastEnd);
+
       }
       return false;
 
@@ -99,7 +100,8 @@ component SynchronousLivelock {
     [true]
     {
       IIterator.IsPastEnd ipe = consumeListHead();
-      consumeListTail, (ipe), false
+      consumeListTail(ipe);
+
     }
   }
 

@@ -35,6 +35,7 @@ interface range_function {
 
     [true]
     on e:
-    f, (4), false}
+    f(4);
+  }
 }
 
