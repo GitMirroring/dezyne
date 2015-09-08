@@ -1,0 +1,5 @@
+verify: imultiple_provides: check: completeness: ok
+
+verify: imultiple_provides: check: deadlock: ok
+
+verify: imultiple_provides: check: livelock: ok

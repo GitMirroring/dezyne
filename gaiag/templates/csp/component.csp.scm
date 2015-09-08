@@ -57,7 +57,7 @@ SINGLETHREADED = true
 channel reorder_in, reorder_out : {|#(comma-join (map (lambda (x) (symbol-append x (string->symbol "_'"))) (map .name (om:provided model))))|}
 channel queue_full
 
-SEMANTICS(in',out',link',provided_in',provided_out',required_modeling',required_modeling_end',provided_modeling_end') = let
+SEMANTICS(in',out',link',provided_in',required_modeling',required_modeling_end') = let
 
 Q' = let
 
@@ -85,32 +85,34 @@ S'    = let
 N' = #(csp-queue-size)
 
  -- component receives a stimulus
-Idle(c') = transition_begin -> (([] x' : provided_in' @ x' -> FillQ(c',<>,false))
+Idle(c') = transition_begin -> (([] x':provided_in' @ x' -> FillQ(c',<>,false))
                                 []
-                                ([] x' :required_modeling' @ x' -> FillQ(c',<>,true)))
+                                ([] x':required_modeling' @ x' -> FillQ(c',<>,true)))
 
 FillQ(c',r',rmod') =
    -- as a result of the stimulus it starts filling its queue
 (c' <= N' & in'?x' -> FillQ(c'+1,r',rmod'))
 [] -- component is done filling the queue or it turned out to be an empty required modeling event
-([] x':required_modeling_end' @ x' -> (Busy(c',r',rmod',false) [] c' == 0 & (([] x' : provided_in' @ x' -> FillQ(c',<>,false))
-                                                                             []
-                                                                             ([] x' :required_modeling' @ x' -> FillQ(c',<>,true)))))
-[]
-([]x':provided_out' @ x' -> FillQ(c',r',rmod'))
+([] x':required_modeling_end' @ x' -> (Busy(c',r',rmod',false,extensions_over_empty_channels_is_undefined)
+                                       [] c' == 0 & (([] x' : provided_in' @ x' -> FillQ(c',<>,false))
+                                                     []
+                                                     ([] x' :required_modeling' @ x' -> FillQ(c',<>,true)))))
+[] -- synchronous out event
+([]x':{|#(comma-join (map (lambda (port) (symbol-append (.name port) (string->symbol "_''"))) (om:provided model)))|} @ x' -> FillQ(c',r',rmod'))
 [] -- component replies on the stimulus
-(r' == <> & reorder_in?x' -> Busy(c',<x'>,rmod',false))
+(r' == <> & reorder_in?x' -> Busy(c',<x'>,rmod',false,extensions_over_empty_channels_is_undefined))
 
-Busy(c',r',rmod',pout') =
-([]x':provided_out' @ x' -> Busy(c',r',rmod',true))
+Busy(c',r',rmod',pout',end') =
+-- if rmod' then asynchronous out event else synchronous out event
+#((->join "\n[]\n") (map (lambda (port) (list "([]x':{|" (.name port) "_''|} @ x' -> Busy(c',r',rmod',true," (.name port) "_'''.modeling))")) (om:provided model)))
 [] -- component is finished and outputs the void or reply event
-(c' == 0 & transition_end -> if rmod' and pout' then []x:provided_modeling_end' @ x -> End(r') else End(r'))
+(c' == 0 & transition_end -> if rmod' and pout' then end' -> End(r') else End(r'))
 []
-(c' > 0 & transition_end -> transition_begin -> Busy(c',r',rmod',pout')) -- handling synchronous out events
+(c' > 0 & transition_end -> transition_begin -> Busy(c',r',rmod',pout',end')) -- handling synchronous out events
 []
-(c' <= N' & in'?x' -> Busy(c'+1,r',rmod',pout')) -- accepting synchronous out events
+(c' <= N' & in'?x' -> Busy(c'+1,r',rmod',pout',end')) -- accepting synchronous out events
 []
-(c' > 0 & out'?x' -> (Busy(c'-1,r',rmod',pout') [] []x:provided_out' @ x -> Busy(c'-1,r',rmod',true))) -- handling queued out events
+(c' > 0 & out'?x' -> Busy(c'-1,r',rmod',pout',end')) -- handling queued out events
 []
 (r' != <> & reorder_in?x' -> illegal -> STOP) -- another reply is not allowed
 
@@ -127,16 +129,13 @@ transparent diamond
 within sbisim(diamond(x))
 provided_in' = {#
  (comma-join (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "." (.name event))) (filter om:in? (om:events port))))) (om:provided model)))}
-provided_out' = {#
- (comma-join (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "_''." (.name event))) (filter om:out? (om:events port))))) (om:provided model)))}
 begin_required_modeling' = {#(comma-join (required-modeling-events model))}
 end_required_modeling' = {#(comma-join (map (lambda (port)
                  (->string (.name port) "_'''.modeling" ))
                                             (filter om:requires? ((compose .elements .ports) model))))}
-end_provided_modeling' = {#(comma-join (map (lambda (port) (->string (.name port) "_'''.modeling" )) (om:provided model)))}
 within compress((CO_#.scope_model _ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|#(comma-join (list "OUT',transition_begin,transition_end,reorder_in" (comma-join (append-map (lambda (port) (list (.name port) (symbol-append (.name port) (string->symbol "_'")) (symbol-append (.name port) (string->symbol "_''")))) (om:provided model)))))|}|]
-                 SEMANTICS(IN',OUT',LINK',provided_in',provided_out',begin_required_modeling',end_required_modeling',end_provided_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|#(comma-join (apply append (list "IN'") (map (lambda (o) (list (.name o) (string-append (symbol->string (.name o)) "_'") (string-append (symbol->string (.name o)) "_'''"))) (om:required model))))|}|]
                 (# (let ((required_processes ((->join "\n                 ||| ") (map (lambda (port)

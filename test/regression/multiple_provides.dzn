@@ -21,7 +21,7 @@
 //
 // Code:
 
-interface imulti
+interface imultiple_provides
 {
   in void left();
   out void right();
@@ -43,11 +43,11 @@ interface imulti
   }
 }
 
-component multi
+component multiple_provides
 {
-  provides imulti p_left;
-  provides imulti p_right;
-  requires imulti r;
+  provides imultiple_provides p_left;
+  provides imultiple_provides p_right;
+  requires imultiple_provides r;
 
   behaviour
   {
