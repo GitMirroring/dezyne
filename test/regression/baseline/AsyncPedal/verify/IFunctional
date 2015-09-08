@@ -1,0 +1,5 @@
+verify: IFunctional: check: completeness: ok
+
+verify: IFunctional: check: deadlock: ok
+
+verify: IFunctional: check: livelock: ok
