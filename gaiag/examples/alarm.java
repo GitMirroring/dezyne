@@ -60,8 +60,12 @@ class Sensor extends Component {
 
 class Siren extends Component {
   ISiren siren;
+<<<<<<< HEAD
   public Siren(Locator locator, String name, SystemComponent parent) {
     super(locator, name, parent);
+=======
+  public Siren(Runtime runtime, String name, ComponentBase parent) {
+>>>>>>> 3151123... gaiag: java: use lambda expressions.  Requires openjdk-8-jdk.
     siren = new ISiren();
     siren.in.turnon = new Action() {
         public void action() {
@@ -78,6 +82,7 @@ class Siren extends Component {
 
 class alarm {
   public static void main(String[] args) {
+<<<<<<< HEAD
     Locator locator = new Locator();
     Runtime runtime = new Runtime();
     AlarmSystem sut = new AlarmSystem(locator.set(runtime), "sut");
@@ -94,5 +99,19 @@ class alarm {
     sut.console.in.disarm.action();
     sut.sensor.sensor.out.disabled.action();
     Runtime.flush(sut.sensor);
+=======
+    Runtime runtime = new Runtime();
+    System.err.println("alarm main");
+    AlarmSystem alarm = new AlarmSystem(runtime);
+    Console console = new Console(runtime, "", null);
+    Interface.connect(alarm.console, console.console);
+
+    // Test trace
+
+    alarm.console.in.arm.action();
+    alarm.sensor.sensor.out.triggered.action();
+    alarm.console.in.disarm.action();
+    alarm.sensor.sensor.out.disabled.action();
+>>>>>>> 3151123... gaiag: java: use lambda expressions.  Requires openjdk-8-jdk.
   }
 }

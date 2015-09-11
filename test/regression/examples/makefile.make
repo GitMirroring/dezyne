@@ -30,6 +30,7 @@ DZN_FILES:=$(wildcard $(CDIR)*.dzn)
 BROKEN_code:=\
   $(CDIR)BurglarAlarm.dzn\
   $(CDIR)GarageDoorControl.dzn\
+  $(CDIR)GarageDoorControlErr.dzn\
   $(CDIR)Recursion.dzn\
 
 BROKEN_c:=\
@@ -40,6 +41,8 @@ BROKEN_goops:=\
 
 BROKEN_java:=\
   $(CDIR)GarageDoorControlErr.dzn\
+
+BROKEN_java7:=$(BROKEN_java)
 
 BROKEN_javascript:=\
   $(CDIR)GarageDoorControlErr.dzn\

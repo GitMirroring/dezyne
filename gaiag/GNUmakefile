@@ -580,6 +580,7 @@ JAVA_BROKEN =\
  Extern.dzn\
  hide.dzn\
  provides_twice.dzn\
+ sugar.dzn\
  Reply5.dzn\
 
 JAVA_SOURCES = $(filter-out $(JAVA_BROKEN),$(CC_SOURCES))

@@ -68,6 +68,8 @@ BROKEN_java:=\
  regression/R.dzn\
  regression/SynchronousLivelock.dzn\
 
+BROKEN_java7:=$(BROKEN_java)
+
 # function function()
 BROKEN_javascript:=\
  regression/DataVariables.dzn\

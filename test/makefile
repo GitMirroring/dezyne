@@ -34,7 +34,21 @@ CCACHE:=$(shell type -p ccache)
 TRIANGLE_MAX:=head -50 # use `cat' for all
 VERBOSE:=
 
-CODE_LANGUAGES=c c++ c++03 cs goops java javascript python
+DEFAULT_CODE_LANGUAGES:=c c++ c++03 cs goops javascript python
+CODE_LANGUAGES:=$(DEFAULT_CODE_LANGUAGES)
+
+JAVA:=$(strip $(shell /usr/bin/javac -version 2>&1 | grep -oe 'javac 1.8' >/dev/null && echo 8))
+JAVA7:=$(strip $(shell /usr/bin/javac -version 2>&1 | grep -oe 'javac 1.[78]' >/dev/null && echo 7))
+
+ifeq ($(DEFAULT_CODE_LANGUAGES),$(CODE_LANGUAGES))
+ifneq ($(JAVA),)
+CODE_LANGUAGES+=java
+endif
+ifneq ($(JAVA7),)
+CODE_LANGUAGES+=java7
+endif
+endif
+
 # PSEUDO_LANGUAGES=convert parse run table verify
 PSEUDO_LANGUAGES=run table verify
 ALL_LANGUAGES=$(CODE_LANGUAGES) $(PSEUDO_LANGUAGES)
@@ -86,17 +100,17 @@ clean:
 	rm -rf $(OUT)
 
 ifeq ($(strip $(filter-out bugs clean help smoke smoke-clean,$(MAKECMDGOALS))),$(MAKECMDGOALS))
-MAKEFILES:=regression/makefile.make $(sort $(wildcard regression/*/makefile.make regression/*/*/makefile.make))
+MAKE_SNIPPETS:=regression/makefile.make $(sort $(wildcard regression/*/makefile.make regression/*/*/makefile.make))
 endif
 ifeq ($(MAKECMDGOALS),smoke)
-MAKEFILES:=regression/alarm.project/makefile.make
+MAKE_SNIPPETS:=regression/alarm.project/makefile.make
 CODE_LANGUAGES:=c c++
 ALL_LANGUAGES:=$(CODE_LANGUAGES) run verify
 endif
 ifeq ($(strip $(filter bugs,$(MAKECMDGOALS:update-bugs=bugs))),bugs)
-MAKEFILES:=bugs/makefile.make
+MAKE_SNIPPETS:=bugs/makefile.make
 bugs: check
 update-bugs: update
 endif
 
-$(foreach i,$(MAKEFILES),$(eval CDIR:=$(dir $(i))) $(info Entering $(i:%/makefile.make=%)) $(eval -include $(i)))
+$(foreach i,$(MAKE_SNIPPETS),$(eval CDIR:=$(dir $(i))) $(info Entering $(i:%/makefile.make=%)) $(eval -include $(i)))

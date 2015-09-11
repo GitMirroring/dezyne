@@ -72,6 +72,7 @@ Usage: gaiag [OPTION]... FILE
   -v, --version        display version
 
 Languages: c c++ cs csp dezyne goops java javascript python
+           c++03 c++msvc11 java7
            ast annotate om norm-event norm-state resolve
            run table-event table-state wfc
 

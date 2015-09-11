@@ -25,12 +25,7 @@ LOCAL_HEADER_EXT:=
 LOCAL_JAVA_FILES+=$(wildcard $(CDIR)*.java)
 LOCAL_SOURCE_FILES+=$(LOCAL_JAVA_FILES)
 LOCAL_HEADER:=$(LOCAL_OUT)/header.java
-ifeq ($(JAVA7),)
-JAVA7:=$(shell /usr/bin/javac -version 2>&1 | grep -oe 'javac 1.7' >/dev/null && echo 7 || echo ' ')
-endif
-# set JAVA7 hard: code generator produces still java7 for now
-JAVA7:=7
-LOCAL_FOOTER:=$(wildcard $(CDIR)main.java$(JAVA7))
+LOCAL_FOOTER:=$(wildcard $(CDIR)main.java)
 ifeq ($(LOCAL_FOOTER),)
 LOCAL_FOOTER:=$(LOCAL_OUT)/main.java
 endif

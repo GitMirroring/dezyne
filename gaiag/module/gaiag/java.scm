@@ -32,16 +32,12 @@
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
-  :export (ast-> action-type ->type))
+  :export (ast-> lambda-type ->type))
 
 (define ast-> ast:code)
 
-(define (action-type type formal-types)
-  (let ((count (length formal-types))
-        (formal-types
-         (map
-          (lambda (p) (if (string-prefix? "final " p) (substring p 6) p))
-          formal-types)))
+(define (lambda-type type formal-types)
+  (let ((count (length formal-types)))
    (list
     (if (eq? type 'void)
         (list "Action" (if (>0 count) (list count "<" ((->join ", ") formal-types) ">") ""))

@@ -34,59 +34,73 @@ class V<T> {
   public V (T v) {this.v = v;}
 }
 
-abstract class Action {
+@FunctionalInterface
+interface Action {
   public abstract void action();
 }
 
-abstract class Action1<P> {
+@FunctionalInterface
+interface Action1<P> {
   public abstract void action(P p);
 }
 
-abstract class Action2<P0,P1> {
+@FunctionalInterface
+interface Action2<P0,P1> {
   public abstract void action(P0 p0, P1 p1);
 }
 
-abstract class Action3<P0,P1,P2> {
+@FunctionalInterface
+interface Action3<P0,P1,P2> {
   public abstract void action(P0 p0, P1 p1, P2 p2);
 }
 
-abstract class Action4<P0,P1,P2,P3> {
+@FunctionalInterface
+interface Action4<P0,P1,P2,P3> {
   public abstract void action(P0 p0, P1 p1, P2 p2, P3 p3);
 }
 
-abstract class Action5<P0,P1,P2,P3,P4> {
+@FunctionalInterface
+interface Action5<P0,P1,P2,P3,P4> {
   public abstract void action(P0 p0, P1 p1, P2 p2, P3 p3, P4 p4);
 }
 
-abstract class Action6<P0,P1,P2,P3,P4,P5> {
+@FunctionalInterface
+interface Action6<P0,P1,P2,P3,P4,P5> {
   public abstract void action(P0 p0, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5);
 }
 
-abstract class ValuedAction<R> {
+@FunctionalInterface
+interface ValuedAction<R> {
   public abstract R action();
 }
 
-abstract class ValuedAction1<R,P> {
+@FunctionalInterface
+interface ValuedAction1<R,P> {
   public abstract R action(P p);
 }
 
-abstract class ValuedAction2<R,P0,P1> {
+@FunctionalInterface
+interface ValuedAction2<R,P0,P1> {
   public abstract R action(P0 p0, P1 p1);
 }
 
-abstract class ValuedAction3<R,P0,P1,P2> {
+@FunctionalInterface
+interface ValuedAction3<R,P0,P1,P2> {
   public abstract R action(P0 p0, P1 p1, P2 p2);
 }
 
-abstract class ValuedAction4<R,P0,P1,P2,P3> {
+@FunctionalInterface
+interface ValuedAction4<R,P0,P1,P2,P3> {
   public abstract R action(P0 p0, P1 p1, P2 p2, P3 p3);
 }
 
-abstract class ValuedAction5<R,P0,P1,P2,P3,P4> {
+@FunctionalInterface
+interface ValuedAction5<R,P0,P1,P2,P3,P4> {
   public abstract R action(P0 p0, P1 p1, P2 p2, P3 p3, P4 p4);
 }
 
-abstract class ValuedAction6<R,P0,P1,P2,P3,P4,P5> {
+@FunctionalInterface
+interface ValuedAction6<R,P0,P1,P2,P3,P4,P5> {
   public abstract R action(P0 p0, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5);
 }
 
@@ -133,7 +147,7 @@ abstract class SystemComponent extends ComponentBase {
 class Meta {
   public Interface i;
   public String e;
-  public Meta(Interface i, String e) {this.i = i; this.e = e;};
+  public Meta(Interface i, String e) {this.i = i; this.e = e;}
 }
 
 class Runtime<R> {
@@ -203,7 +217,7 @@ class Runtime<R> {
     R r = valued_helper(c, f, m);
     traceOut(m.i, r.getClass().getSimpleName() + "_" + r.name());
     return r;
-  };
+  }
   public static void callOut(Component c, Action f, Meta m) {
     traceOut(m.i, m.e);
     defer(m.i.in.self, c, f);
@@ -246,14 +260,14 @@ class Locator {
   public Locator set(Object o, String key) {
     services.put(this.key(o,key), o);
     return this;
-  }  
+  }
   @SuppressWarnings("unchecked")
   public Object get(Object o) {return get(o, "");}
   @SuppressWarnings("unchecked")
   public Object get(Object o, String key) {
     Class c = (o instanceof Class) ? (Class)o : o.getClass();
     return services.get(this.key(c, key));
-  }  
+  }
   public Locator clone() {return new Locator(new Services(services));}
 }
 
