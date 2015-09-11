@@ -1,1 +1,1 @@
-functionReturnValue.dzn:4:10: Well-formedness error: function does not return a value in all cases: 'f'
+functionReturnValue.dzn:4:10: Well-formedness error: Function does not return a value in all cases: 'f'
