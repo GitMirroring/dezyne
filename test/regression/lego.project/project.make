@@ -27,16 +27,23 @@ LOCAL_HEADER:=$(CDIR)config.scm
 endif
 
 include make/common.make
+
+LOCAL_FILTER_O_FILES:=$(LOCAL_OUT)/gui.o $(LOCAL_OUT)/lego-main.o $(LOCAL_OUT)/pump.o
+
 include make/$(LOCAL_LANGUAGE).make
 
 $(LOCAL_OUT)/%.o: CDIR:=$(CDIR)
 $(LOCAL_OUT)/%.o: LOCAL_HEADER_EXT:=$(LOCAL_HEADER_EXT)
 $(LOCAL_OUT)/%.o: LOCAL_CFLAGS:=-I$(CDIR) -include MachineConstants$(LOCAL_HEADER_EXT)
 $(LOCAL_OUT)/%.o: LOCAL_CXXFLAGS:=-I$(CDIR) -include MachineConstants$(LOCAL_HEADER_EXT)
+$(LOCAL_OUT)/gui.o: LOCAL_CXXFLAGS+=$(shell pkg-config gtkmm-3.0 --cflags)
+$(LOCAL_OUT)/gui.o: LOCAL_CFLAGS+=$(shell pkg-config gtk+-3.0 --cflags)
 $(LOCAL_OUT)/main.o: LOCAL_CXXFLAGS:=$(shell pkg-config gtkmm-3.0 --cflags)
 $(LOCAL_OUT)/main.o: LOCAL_CFLAGS:=$(shell pkg-config gtk+-3.0 --cflags)
 $(LOCAL_TARGET): LOCAL_LDLIBS:=$(shell pkg-config gtkmm-3.0 --libs)
 
 $(LOCAL_OUT)/main.o: $(LOCAL_OUT)/LegoBallSorter.o
+$(LOCAL_OUT)/lego-main.o: $(LOCAL_OUT)/LegoBallSorter.o
+$(LOCAL_OUT)/gui.o: $(LOCAL_OUT)/LegoBallSorter.o
 
 include make/reset.make

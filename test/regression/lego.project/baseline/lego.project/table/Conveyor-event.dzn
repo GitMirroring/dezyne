@@ -94,7 +94,7 @@ component Convey {
         }
         else
         {
-          motor.run($(config.get("power::50"))$, $false$);
+          motor.run($(config.get("Power::50"))$, $false$);
           s = State.Conveying;
 
         }
@@ -111,6 +111,7 @@ component Convey {
       [s.Conveying]
       {
         sensor.disable();
+        motor.stop();
         ctrl.conveyed();
         s = State.Idle;
 
@@ -124,6 +125,7 @@ component Convey {
       [s.Conveying]
       {
         sensor.disable();
+        motor.stop();
         ctrl.conveyed();
         s = State.Idle;
 
