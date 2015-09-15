@@ -76,7 +76,7 @@ void runtime::flush(void* scope)
   if(!external(scope))
   {
     std::queue<std::function<void()> >& q = queue(scope);
-    while(not q.empty())
+    while(! q.empty())
     {
       std::function<void()> event = q.front();
       q.pop();
@@ -117,7 +117,7 @@ void runtime::handle(void* scope, const std::function<void()>& event)
   std::cout << path(scope) << " handle " << std::boolalpha << handle << std::endl;
 #endif
 
-  if(not handle)
+  if(! handle)
   {
     {
       scoped_value<bool> sv(handle, true);
