@@ -21,7 +21,12 @@
 //
 // Code:
 
-var config = {
+#! /usr/bin/nodejs
+
+var dezyne = require (__dirname + '/dezyne/runtime');
+dezyne.extend (dezyne, require (__dirname + '/dezyne/LegoBallSorter'));
+
+config = {
   get: function(x) { return 0; }
 };
 
@@ -76,7 +81,7 @@ function log_valued(prefix, event, event_map, string_to_value, value_to_string) 
   throw 'runtime error: "' + s + '" is not a reply value'
 }
 
-function LegoBallSorter_fill_event_map(m) 
+function LegoBallSorter_fill_event_map(m)
 {
   var e = {
     'ctrl.calibrate': m.ctrl.in.calibrate,

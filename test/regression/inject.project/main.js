@@ -20,16 +20,20 @@
 //
 // Code:
 
+#! /usr/bin/nodejs
+
+var dezyne = require (__dirname + '/dezyne/runtime');
+dezyne.extend (dezyne, require (__dirname + '/dezyne/Injected'));
 
 function main() {
   var loc = new dezyne.locator();
   var rt = new dezyne.runtime();
   var sut = new dezyne.Injected(loc.set(rt), 'sut');
   sut.t.out.f = function() {console.error('f');};
-  
+
   //sut.check_bindings();
   //sut.dump_tree();
-  
+
   sut.t.in.e();
 }
 

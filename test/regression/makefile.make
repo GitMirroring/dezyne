@@ -42,7 +42,7 @@ BROKEN:=\
  regression/BrokenComp.dzn\
  regression/inner_space.dzn\
  regression/name_space.dzn\
- xregression/simple_space.dzn\
+ regression/simple_space.dzn\
 
 # error: Reply5: variable s is already defined in method i_done()
 BROKEN_cs:=\
@@ -70,10 +70,9 @@ BROKEN_java:=\
 
 BROKEN_java7:=$(BROKEN_java)
 
-# function function()
 BROKEN_javascript:=\
  regression/DataVariables.dzn\
- regression/function.dzn\
+
 
 BROKEN_python:=\
  regression/DataVariables.dzn\

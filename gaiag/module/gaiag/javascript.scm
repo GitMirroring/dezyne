@@ -35,3 +35,16 @@
   :export (ast->))
 
 (define ast-> ast:code)
+
+(define (javascript:namespace model)
+  ((->join ".") (cons 'dezyne (om:scope model))))
+
+(define (javascript:preamble model)
+  (->string
+   "dezyne = typeof (dezyne) !== 'undefined' ? dezyne : require (__dirname + '/runtime');\n"
+   (let loop ((todo (cons 'dezyne (om:scope model))) (namespace '()))
+     (if (null? todo) '()
+         (let* ((namespace (append namespace (list (car todo))))
+                (o ((->join ".") namespace)))
+           (append (list o " = " o " || {};\n" )
+                   (loop (cdr todo) namespace)))))))

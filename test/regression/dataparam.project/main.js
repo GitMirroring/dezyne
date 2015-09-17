@@ -20,6 +20,10 @@
 //
 // Code:
 
+#! /usr/bin/nodejs
+
+var dezyne = require (__dirname + '/dezyne/runtime');
+dezyne.extend (dezyne, require (__dirname + '/dezyne/Datasystem'));
 
 /* handwritten dataparam.js */
 
@@ -48,7 +52,7 @@ function a6(i0, i1, i2,i3, i4, i5) {
 
 function main() {
   var loc = new dezyne.locator();
-  var rt = new dezyne.runtime();  
+  var rt = new dezyne.runtime();
   var d = new dezyne.Datasystem(loc.set(rt), {name: 'd'});
   d.port.meta.requires = {name: 'port', component: null};
 

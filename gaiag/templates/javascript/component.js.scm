@@ -1,4 +1,8 @@
-function #.scope_model(locator, meta) {
+#(javascript:preamble model)#
+(map (include-interface #{
+dezyne.extend (dezyne, require (__dirname + '/#interface '));
+#}) (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
+#(javascript:namespace model).#.model  = function (locator, meta) {
   this.locator = locator;
   this.rt = locator.get(dezyne.runtime);
   this.rt.components = (this.rt.components || []).concat ([this]);
@@ -11,15 +15,15 @@ function #.scope_model(locator, meta) {
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
 #
     (map (init-port #{
-  this.#name  = new dezyne.#((om:scope-join) interface)({provides: {name: '#name ', component: this}, requires: {}});
+  this.#name  = new dezyne.#((om:scope-join #f '.) interface)({provides: {name: '#name ', component: this}, requires: {}});
 #}) (filter om:provides? ((compose .elements .ports) model)))#
     (map (init-port #{
 #(string-if injected?
 #{
-    this.#name  = locator.get(dezyne.#((om:scope-join) interface));
+    this.#name  = locator.get(dezyne.#((om:scope-join #f '.) interface));
 #}
 #{
-    this.#name  = new dezyne.#((om:scope-join) interface)({provides: {}, requires: {name: '#name ', component: this}});
+    this.#name  = new dezyne.#((om:scope-join #f '.) interface)({provides: {}, requires: {name: '#name ', component: this}});
 #})
 #}) (filter om:requires? ((compose .elements .ports) model)))#
 (map
@@ -40,4 +44,6 @@ function #.scope_model(locator, meta) {
 #}) (om:functions model))
 };
 
-dezyne.#.scope_model  = #.scope_model;
+if (typeof (module) !== 'undefined') {
+  module.exports = dezyne;
+}

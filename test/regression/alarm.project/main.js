@@ -20,32 +20,10 @@
 //
 // Code:
 
+#! /usr/bin/nodejs
 
-/* handwritten alarm.js */
-
-// dezyne.Console = function(rt, meta) {
-//   this.rt = rt;
-//   this.meta = meta;
-//   this.console = new dezyne.IConsole({provides: {}, requires: {component: this, name: 'console'}});
-//   this.console.out.detected = function() {process.stderr.write('Console.detected\n');}
-//   this.console.out.deactivated = function() {process.stderr.write('Console.deactivated\n');}
-// };
-
-// dezyne.Sensor = function(rt, meta) {
-//   this.rt = rt;
-//   this.meta = meta;
-//   this.sensor = new dezyne.ISensor({provides: {component: this, name: 'sensor'}, requires: {}});
-//   this.sensor.in.enable = function() {runtime.call_in(this, function() {}, [this.sensor, 'enable']);}.bind(this);
-//   this.sensor.in.disable = function() {runtime.call_in(this, function() {}, [this.sensor, 'disable']);}.bind(this);
-// }
-
-// dezyne.Siren = function(rt, meta) {
-//   this.rt = rt;
-//   this.meta = meta;
-//   this.siren = new dezyne.ISiren({provides: {component: this, name: 'siren'}, requires: {}});
-//   this.siren.in.turnon = function() {runtime.call_in(this, function() {}, [this.siren, 'turnon']); }.bind(this);
-//   this.siren.in.turnoff = function() {runtime.call_in(this, function() {}, [this.siren, 'turnoff']); }.bind(this);
-// }
+var dezyne = require (__dirname + '/dezyne/runtime');
+dezyne.extend (dezyne, require (__dirname + '/dezyne/AlarmSystem'));
 
 function main() {
   var loc = new dezyne.locator();

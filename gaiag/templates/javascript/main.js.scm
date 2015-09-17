@@ -1,3 +1,8 @@
+##! /usr/bin/nodejs
+
+var dezyne = require (__dirname + '/dezyne/runtime');
+dezyne.extend (dezyne, require (__dirname + '/dezyne/#.scope_model '));
+
 var relaxed = false;
 var lines = [];
 function read_line() {
@@ -69,7 +74,7 @@ function #.scope_model _fill_event_map(m)
 function main () {
   var loc = new dezyne.locator();
   var rt = new dezyne.runtime(function() {console.error("illegal");process.exit(0);});
-  var sut = new dezyne.#.scope_model (loc.set(rt), {name: 'sut'});
+  var sut = new #(javascript:namespace model).#.model (loc.set(rt), {name: 'sut'});
 
   var event_map = #.scope_model _fill_event_map(sut);
 

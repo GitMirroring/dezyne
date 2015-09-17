@@ -1,4 +1,5 @@
-function #.interface(meta) {#
+#(javascript:preamble model)
+#(javascript:namespace model).#.interface  = function (meta) {#
 (->string (map (declare-enum model) (append (om:interface-enums model) (om:enums))))
   this.in = {
 #((->join ",\n") (map (declare-io model #{
@@ -14,4 +15,6 @@ function #.interface(meta) {#
   this.meta = meta;
 };
 
-dezyne.#.interface  = #.interface;
+if (typeof (module) !== 'undefined') {
+  module.exports = dezyne;
+}

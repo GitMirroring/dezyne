@@ -1,7 +1,5 @@
 // Dezyne --- Dezyne command line tools
-//
-// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,7 +20,11 @@
 //
 // Code:
 
-#! /usr/bin/nodejs
+function extend(o, u) {
+  for (var i in u)
+    o[i] = u[i];
+  return o;
+}
 
 function runtime(illegal) {
   this.illegal = illegal || function() {console.assert(!'illegal')};
@@ -130,7 +132,7 @@ function runtime(illegal) {
   };
 };
 
-function locator (services) {
+function locator(services) {
   this.services = services || {};
   this.key = function(type, key) {
     return (type.prototype ? type.prototype : type).name + (key || '');
@@ -143,14 +145,9 @@ function locator (services) {
     return this.services[this.key(o, key)];
   };
   this.clone = function() {
-    return new dezyne.locator(extend({}, this.services));
+    return new dezyne.locator(extend(this.services));
   };
 };
-
-function extend (o, u) {
-  Object.keys(u).forEach(function (k,v,x) {o[k]=u[k];});
-  return o;
-}
 
 function connect(provided, required) {
   provided.out = required.out;
@@ -159,4 +156,13 @@ function connect(provided, required) {
   required.meta.provides = provided.meta.provides;
 };
 
-var dezyne = {connect:connect,locator:locator,runtime:runtime};
+var runtime = {
+  connect: connect,
+  extend: extend,
+  locator: locator,
+  runtime: runtime,
+}
+
+if (typeof (module) !== 'undefined') {
+  module.exports = runtime;
+}
