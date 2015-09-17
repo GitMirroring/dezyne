@@ -2,7 +2,7 @@
 ;;
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
-;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -222,8 +222,10 @@
 (define (dump-file file-name string)
   (with-output-to-file (components->file-name file-name) (lambda () (display string))))
 
-(define (dump-output file-name thunk)  ;; JUNK ME
-  (with-output-to-file (components->file-name file-name) thunk))
+(define (dump-output file-name thunk)
+  (let ((name (components->file-name file-name)))
+    (if (string=? name "-") (thunk)
+        (with-output-to-file name thunk))))
 
 (define (read-string-12.04)
   (read-delimited ""))
