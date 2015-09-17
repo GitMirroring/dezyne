@@ -2,7 +2,7 @@
 ;;
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
-;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -50,9 +50,10 @@
                      (('name scope ... name) (find-model-file name))
                      (_ o))))
     (let* ((file-name (->string file-name))
-           (file-name (if (string= file-name "-") "/dev/stdin"
+           (file-name (if (string= file-name "-") "-"
                           (find-file file-name)))
-           (file (open-input-file file-name)))
+           (file (if (string= file-name "-") (current-input-port)
+                     (open-input-file file-name))))
       (if (eq? (peek-char file) #\()
           (read file)
           (read-dzn- file-name)))))
