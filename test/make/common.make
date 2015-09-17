@@ -89,19 +89,18 @@ ifeq ($(strip $(LOCAL_INTERFACES)),)
 ifeq ($(NAMESPACE_P),)
 LOCAL_INTERFACES:=$(shell grep -hEo '^interface [._a-zA-Z0-9]+' $(LOCAL_DZN_FILES) | sed -e 's/^interface //' -e 's/[.]/_/g')
 else
-LOCAL_INTERFACES:=$(shell $(DZN) parse --interfaces $(LOCAL_DZN_FILES))
+LOCAL_INTERFACES:=$(shell $(DZN) parse --interfaces $(LOCAL_DZN_FILES) | tr '.' '_')
 endif
 endif
 ifeq ($(strip $(LOCAL_COMPONENTS)),)
 ifeq ($(NAMESPACE_P),)
 LOCAL_COMPONENTS:=$(shell grep -hEo '^component [._a-zA-Z0-9]+' $(LOCAL_DZN_FILES) | sed -e 's/^component //' -e 's/[.]/_/g')
 else
-LOCAL_COMPONENTS:=$(shell $(DZN) parse --components $(LOCAL_DZN_FILES))
+LOCAL_COMPONENTS:=$(shell $(DZN) parse --components $(LOCAL_DZN_FILES) | tr '.' '_')
 endif
 endif
 endif
 LOCAL_MODELS:=$(LOCAL_INTERFACES) $(LOCAL_COMPONENTS)
-
 ifeq ($(VERBOSE),debug)
 $(info interfaces[$(LOCAL_NAME)]: $(LOCAL_INTERFACES))
 $(info components[$(LOCAL_NAME)]: $(LOCAL_COMPONENTS))

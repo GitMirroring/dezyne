@@ -29,21 +29,10 @@ interface simple.I {
   }
 }
 
-// OM parser segfaults on using simple.I
-interface removemeI {
-  enum Bool {F,T};
-  in Bool e();
-  out void a();
-  behaviour {
-    on e: {a;reply(Bool.T);}
-  }
-}
-
 component simple.space {
-  //provides simple.I i;
-  provides removemeI i;
+  provides simple.I i;
   behaviour {
-    //simple.I.Bool state = simple.I.Bool.t;
-    on i.e(): {i.a();reply(removemeI.Bool.T);}
+    simple.I.Bool state = simple.I.Bool.t;
+    on i.e(): {i.a();reply(simple.I.Bool.t);}
   }
 }
