@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -56,7 +57,7 @@ ifeq ($(LOCAL_TRACE_LANGUAGE),)
 ifeq ($(filter c c++ c++03, $(LOCAL_LANGUAGE)),$(LOCAL_LANGUAGE))
 LOCAL_TRACE_LANGUAGE:=code
 else
-ifeq ($(filter cs java python, $(LOCAL_LANGUAGE)),$(LOCAL_LANGUAGE))
+ifeq ($(filter cs java java7 python, $(LOCAL_LANGUAGE)),$(LOCAL_LANGUAGE))
 LOCAL_TRACE_LANGUAGE:=code
 else
 LOCAL_TRACE_LANGUAGE:=code

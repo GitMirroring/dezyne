@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -21,9 +22,9 @@
 # Code:
 
 #LANGUAGES:=$(filter c c++ c++03 cs goops javascript python, $(CODE_LANGUAGES))
-JAVA7:=$(shell /usr/bin/javac -version 2>&1 | grep -oe 'javac 1.7' >/dev/null && echo 7 || echo '')
-ifeq ($(JAVA7),7)
-LANGUAGES:=$(filter-out java, $(CODE_LANGUAGES))
+JAVA7:=$(shell /usr/bin/javac -version 2>&1 | grep -oe 'javac 1.7' >/dev/null && echo java7)
+ifneq ($(JAVA7),)
+LANGUAGES:=$(filter-out java java7, $(CODE_LANGUAGES))
 else
 LANGUAGES:=$(CODE_LANGUAGES)
 endif

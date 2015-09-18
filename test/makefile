@@ -1,7 +1,9 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 # Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
+# Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -37,8 +39,8 @@ VERBOSE:=
 DEFAULT_CODE_LANGUAGES:=c c++ c++03 cs goops javascript python
 CODE_LANGUAGES:=$(DEFAULT_CODE_LANGUAGES)
 
-JAVA:=$(strip $(shell /usr/bin/javac -version 2>&1 | grep -oe 'javac 1.8' >/dev/null && echo 8))
-JAVA7:=$(strip $(shell /usr/bin/javac -version 2>&1 | grep -oe 'javac 1.[78]' >/dev/null && echo 7))
+JAVA:=$(strip $(shell /usr/bin/javac -version 2>&1 | grep -oe 'javac 1.8' >/dev/null && echo java))
+JAVA7:=$(strip $(shell /usr/bin/javac -version 2>&1 | grep -oe 'javac 1.[78]' >/dev/null && echo java7))
 
 ifeq ($(DEFAULT_CODE_LANGUAGES),$(CODE_LANGUAGES))
 ifneq ($(JAVA),)
