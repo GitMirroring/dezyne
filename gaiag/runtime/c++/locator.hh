@@ -61,7 +61,7 @@ public:
   template <typename T>
   locator& set(T& t, const Key& key = Key())
   {
-    services.insert(std::make_pair(std::make_pair(key,type_info(typeid(T))), &t));
+    services[std::make_pair(key,type_info(typeid(T)))] = &t;
     return *this;
   }
   template <typename T>
