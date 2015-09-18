@@ -3,7 +3,6 @@
 # Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 # Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
-# Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 #
 # This file is part of Dezyne.
 #
