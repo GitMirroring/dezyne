@@ -43,7 +43,6 @@ interface IMove {
       moving = true;
       [moving]
       illegal;
-
     }
     on zero:
     {
@@ -51,7 +50,6 @@ interface IMove {
       {}
       [moving]
       illegal;
-
     }
     on run:
     {
@@ -59,7 +57,6 @@ interface IMove {
       {}
       [moving]
       illegal;
-
     }
     on pulse:
     {
@@ -67,32 +64,27 @@ interface IMove {
       moving = true;
       [moving]
       illegal;
-
     }
     on stop:
     {
       [moving || !moving]
       moving = false;
-
     }
     on coast:
     {
       [moving || !moving]
       moving = false;
-
     }
     on position:
     {
       [moving || !moving]
       {}
-
     }
     on inevitable:
     [moving]
     {
       moving = false;
       arrived;
-
     }
   }
 }
@@ -117,12 +109,10 @@ component Move {
         timer.create(time);
         motor.move(power, destination);
         moving = true;
-
       }
       [moving]
       [!pulsing]
       illegal;
-
     }
     on ctrl.pulse(power, invert, duration):
     [!moving]
@@ -131,7 +121,6 @@ component Move {
       timer.create(duration);
       motor.run(power, invert);
       pulsing = true;
-
     }
     on timer.timeout():
     {
@@ -144,7 +133,6 @@ component Move {
         motor.coast();
         ctrl.arrived();
         pulsing = false;
-
       }
       [moving]
       [!pulsing]
@@ -153,13 +141,9 @@ component Move {
         if (arrive == imotor.result_t.yes) {
           ctrl.arrived();
           moving = false;
-
         }
-        else
-        timer.create(time);
-
+        else timer.create(time);
       }
-
     }
     on ctrl.zero():
     {
@@ -172,7 +156,6 @@ component Move {
       [moving]
       [!pulsing]
       illegal;
-
     }
     on ctrl.move(pow, pos):
     [!moving]
@@ -186,13 +169,11 @@ component Move {
       [moving]
       [!pulsing]
       illegal;
-
     }
     on ctrl.run(power, invert):
     {
       [moving || !moving]
       motor.run(power, invert);
-
     }
     on ctrl.stop():
     {
@@ -202,9 +183,7 @@ component Move {
         timer.cancel();
         moving = false;
         pulsing = false;
-
       }
-
     }
     on ctrl.coast():
     {
@@ -214,15 +193,12 @@ component Move {
         timer.cancel();
         moving = false;
         pulsing = false;
-
       }
-
     }
     on ctrl.position(pos):
     {
       [moving || !moving]
       motor.position(pos);
-
     }
   }
 

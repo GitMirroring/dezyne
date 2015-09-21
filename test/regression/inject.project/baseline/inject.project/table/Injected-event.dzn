@@ -91,14 +91,12 @@ component middle {
     {
       l.log();
       b.e();
-
     }
     on b.f():
     [true]
     {
       l.log();
       t.f();
-
     }
   }
 

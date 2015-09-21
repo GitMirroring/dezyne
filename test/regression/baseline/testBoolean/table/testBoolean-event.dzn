@@ -54,12 +54,10 @@ interface TestBool {
         b1 = b2 && b3 || b1;
         b2 = b1 || b2 && b3;
         if (state1.State2) b1 = !b1;
-
       }
       [b1]
       [state2.State1]
       {}
-
     }
   }
 }
@@ -74,7 +72,6 @@ component testBoolean {
     {
       [b || !b]
       {}
-
     }
   }
 

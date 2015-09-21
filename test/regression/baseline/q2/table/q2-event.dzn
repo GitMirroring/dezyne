@@ -45,9 +45,7 @@ interface ir2 {
         s = !s;
         a;
         a;
-
       }
-
     }
   }
 }

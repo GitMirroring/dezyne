@@ -40,16 +40,13 @@ interface ITouchSense {
         ts = TouchState.Pressed;
         reply(ts);
         disabled = false;
-
       }
       [disabled]
       {
         ts = TouchState.Released;
         reply(ts);
         disabled = false;
-
       }
-
     }
     on disable:
     {
@@ -57,7 +54,6 @@ interface ITouchSense {
       disabled = true;
       [disabled]
       {}
-
     }
     on inevitable:
     {
@@ -66,16 +62,13 @@ interface ITouchSense {
       {
         ts = TouchState.Pressed;
         pressed;
-
       }
       [!disabled]
       [ts.Pressed]
       {
         ts = TouchState.Released;
         released;
-
       }
-
     }
   }
 }
@@ -90,12 +83,10 @@ component TouchSense {
     itimer.milliseconds_t time = $50$;
     bool disabled = true;
 
-    nameITouchSenseTouchState getStatus() {
+    ITouchSense.TouchState getStatus() {
       itouch.status val = sensor.detect();
       if (val == itouch.status.released) return ITouchSense.TouchState.Released;
-      else
-      return ITouchSense.TouchState.Pressed;
-
+      else return ITouchSense.TouchState.Pressed;
     }
 
     on ctrl.disable():
@@ -104,9 +95,7 @@ component TouchSense {
       {
         timer.cancel();
         disabled = true;
-
       }
-
     }
     on ctrl.enable():
     {
@@ -117,12 +106,10 @@ component TouchSense {
         timer.create(time);
         disabled = false;
         reply(previous);
-
       }
       [previous.Released || previous.Pressed]
       [!disabled]
       illegal;
-
     }
     on timer.timeout():
     {
@@ -136,20 +123,16 @@ component TouchSense {
         if (current == ITouchSense.TouchState.Released) ctrl.released();
         previous = current;
         timer.create(time);
-
       }
       [previous.Released]
       [!disabled]
       {
         ITouchSense.TouchState current = getStatus();
         if (current == ITouchSense.TouchState.Pressed) ctrl.pressed();
-        else
-        {}
+        else {}
         previous = current;
         timer.create(time);
-
       }
-
     }
   }
 

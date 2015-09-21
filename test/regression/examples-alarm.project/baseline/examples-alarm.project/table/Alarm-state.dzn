@@ -36,7 +36,6 @@ interface IConsole {
       state = State.Armed;
       on disarm:
       illegal;
-
     }
     [state.Armed]
     {
@@ -48,9 +47,7 @@ interface IConsole {
       {
         detected;
         state = State.Triggered;
-
       }
-
     }
     [state.Triggered]
     {
@@ -58,7 +55,6 @@ interface IConsole {
       illegal;
       on disarm:
       state = State.Disarming;
-
     }
     [state.Disarming]
     {
@@ -68,9 +64,7 @@ interface IConsole {
       {
         deactivated;
         state = State.Disarmed;
-
       }
-
     }
   }
 }
@@ -91,7 +85,6 @@ interface ISensor {
       state = State.Enabled;
       on disable:
       illegal;
-
     }
     [state.Enabled]
     {
@@ -103,9 +96,7 @@ interface ISensor {
       {
         triggered;
         state = State.Triggered;
-
       }
-
     }
     [state.Disabling]
     {
@@ -115,9 +106,7 @@ interface ISensor {
       {
         disabled;
         state = State.Disabled;
-
       }
-
     }
     [state.Triggered]
     {
@@ -125,7 +114,6 @@ interface ISensor {
       illegal;
       on disable:
       state = State.Disabling;
-
     }
   }
 }
@@ -144,7 +132,6 @@ interface ISiren {
       state = State.On;
       on turnoff:
       illegal;
-
     }
     [state.On]
     {
@@ -152,7 +139,6 @@ interface ISiren {
       illegal;
       on turnoff:
       state = State.Off;
-
     }
   }
 }
@@ -173,11 +159,9 @@ component Alarm {
       {
         sensor.enable();
         state = State.Armed;
-
       }
       on console.disarm(), sensor.triggered(), sensor.disabled():
       illegal;
-
     }
     [state.Armed]
     {
@@ -187,7 +171,6 @@ component Alarm {
       {
         sensor.disable();
         state = State.Disarming;
-
       }
       on sensor.triggered():
       {
@@ -195,9 +178,7 @@ component Alarm {
         siren.turnon();
         sounding = true;
         state = State.Triggered;
-
       }
-
     }
     [state.Triggered]
     {
@@ -208,9 +189,7 @@ component Alarm {
         sensor.disable();
         sounding = false;
         state = State.Disarming;
-
       }
-
     }
     [state.Disarming]
     {
@@ -223,17 +202,13 @@ component Alarm {
           console.deactivated();
           sounding = false;
           state = State.Disarmed;
-
         }
         [otherwise]
         {
           console.deactivated();
           state = State.Disarmed;
-
         }
-
       }
-
     }
   }
 

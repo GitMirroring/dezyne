@@ -38,7 +38,6 @@ interface IControl {
       state = State.Setup;
       [state.Acquire || state.Ready || state.Setup]
       illegal;
-
     }
     on shoot:
     {
@@ -46,7 +45,6 @@ interface IControl {
       illegal;
       [state.Ready || state.Setup]
       state = State.Acquire;
-
     }
     on release:
     {
@@ -54,7 +52,6 @@ interface IControl {
       illegal;
       [state.Ready || state.Setup]
       state = State.Idle;
-
     }
     on inevitable:
     {
@@ -64,15 +61,12 @@ interface IControl {
       {
         ready;
         state = State.Ready;
-
       }
       [state.Acquire]
       {
         image;
         state = State.Idle;
-
       }
-
     }
   }
 }
@@ -95,7 +89,6 @@ interface IAcquisition {
       state = State.Contrast;
       [state.Acquire || state.Contrast]
       illegal;
-
     }
     on acquire:
     {
@@ -103,7 +96,6 @@ interface IAcquisition {
       illegal;
       [state.Contrast]
       state = State.Acquire;
-
     }
     on cancel:
     {
@@ -111,7 +103,6 @@ interface IAcquisition {
       illegal;
       [state.Acquire || state.Contrast]
       state = State.Idle;
-
     }
     on inevitable:
     {
@@ -121,15 +112,12 @@ interface IAcquisition {
         lower_contrast;
         [true]
         higher_contrast;
-
       }
       [state.Acquire]
       {
         image;
         state = State.Idle;
-
       }
-
     }
   }
 }
@@ -152,13 +140,11 @@ interface IOptics {
       state = State.Prepare;
       [state.Ready || state.Prepare]
       illegal;
-
     }
     on cancel:
     {
       [state.Ready || state.Prepare || state.Idle]
       state = State.Idle;
-
     }
     on capture:
     {
@@ -166,26 +152,22 @@ interface IOptics {
       illegal;
       [state.Ready || state.Prepare]
       state = State.Idle;
-
     }
     on focus_in:
     {
       [state.Ready || state.Prepare || state.Idle]
       {}
-
     }
     on focus_out:
     {
       [state.Ready || state.Prepare || state.Idle]
       {}
-
     }
     on inevitable:
     [state.Prepare]
     {
       ready;
       state = State.Ready;
-
     }
   }
 }
@@ -211,11 +193,9 @@ component Driver {
         optics.prepare();
         acquisition.contrast_gradient();
         state = State.Setup;
-
       }
       [state.Acquire || state.Ready || state.Setup]
       illegal;
-
     }
     on control.shoot():
     {
@@ -226,9 +206,7 @@ component Driver {
         acquisition.acquire();
         optics.capture();
         state = State.Acquire;
-
       }
-
     }
     on control.release():
     {
@@ -238,9 +216,7 @@ component Driver {
       {
         acquisition.cancel();
         state = State.Idle;
-
       }
-
     }
     on acquisition.image():
     {
@@ -250,9 +226,7 @@ component Driver {
       {
         control.image();
         state = State.Idle;
-
       }
-
     }
     on acquisition.higher_contrast():
     {
@@ -261,15 +235,12 @@ component Driver {
       [state.Setup]
       {
         if (zoom.In) optics.focus_in();
-        else
-        optics.focus_out();
+        else optics.focus_out();
         contrast = Contrast.Up;
         control.focus();
-
       }
       [state.Ready]
       control.focus();
-
     }
     on acquisition.lower_contrast():
     {
@@ -282,13 +253,10 @@ component Driver {
           if (zoom.In) {
             optics.focus_out();
             zoom = Zoom.Out;
-
           }
-          else
-          {
+          else {
             optics.focus_in();
             zoom = Zoom.In;
-
           }
           contrast = Contrast.Max;
           if (ready) {
@@ -296,36 +264,27 @@ component Driver {
             control.ready();
             ready = false;
             state = State.Ready;
-
           }
-          else
-          control.focus();
-
+          else control.focus();
         }
         [contrast.Down]
         {
           if (zoom.In) {
             optics.focus_out();
             zoom = Zoom.Out;
-
           }
-          else
-          {
+          else {
             optics.focus_in();
             zoom = Zoom.In;
-
           }
           contrast = Contrast.Down;
           control.focus();
-
         }
         [otherwise]
         control.focus();
-
       }
       [state.Ready]
       control.focus();
-
     }
     on optics.ready():
     {
@@ -336,15 +295,12 @@ component Driver {
         control.ready();
         ready = false;
         state = State.Ready;
-
       }
-      else
-      ready = true;
+      else ready = true;
       [state.Ready]
       control.focus();
       [state.Acquire]
       {}
-
     }
   }
 
@@ -365,11 +321,9 @@ component Acquire {
       {
         sensor.enable();
         state = State.Contrast;
-
       }
       [state.Acquire || state.Contrast]
       illegal;
-
     }
     on port.acquire():
     {
@@ -379,9 +333,7 @@ component Acquire {
       {
         sensor.acquire();
         state = State.Acquire;
-
       }
-
     }
     on port.cancel():
     {
@@ -391,9 +343,7 @@ component Acquire {
       {
         sensor.cancel();
         state = State.Idle;
-
       }
-
     }
     on sensor.higher_contrast():
     {
@@ -401,7 +351,6 @@ component Acquire {
       illegal;
       [state.Contrast]
       port.higher_contrast();
-
     }
     on sensor.lower_contrast():
     {
@@ -409,7 +358,6 @@ component Acquire {
       illegal;
       [state.Contrast]
       port.lower_contrast();
-
     }
     on sensor.image():
     {
@@ -419,9 +367,7 @@ component Acquire {
       {
         port.image();
         state = State.Idle;
-
       }
-
     }
   }
 
@@ -444,11 +390,9 @@ component OpticsControl {
       {
         state = State.Prepare;
         flash.prepare();
-
       }
       [state.Ready || state.Prepare]
       illegal;
-
     }
     on port.cancel():
     {
@@ -456,9 +400,7 @@ component OpticsControl {
       {
         flash.cancel();
         state = State.Idle;
-
       }
-
     }
     on flash.ready():
     {
@@ -468,9 +410,7 @@ component OpticsControl {
       {
         state = State.Ready;
         port.ready();
-
       }
-
     }
     on port.capture():
     {
@@ -481,28 +421,23 @@ component OpticsControl {
         state = State.Idle;
         flash.cancel();
         shutter.expose();
-
       }
       [state.Ready]
       {
         state = State.Idle;
         flash.flash();
         shutter.expose();
-
       }
-
     }
     on port.focus_in():
     {
       [state.Ready || state.Prepare || state.Idle]
       lens.zoom_in();
-
     }
     on port.focus_out():
     {
       [state.Ready || state.Prepare || state.Idle]
       lens.zoom_out();
-
     }
   }
 

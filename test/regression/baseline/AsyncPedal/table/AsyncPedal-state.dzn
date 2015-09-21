@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -43,9 +44,7 @@ interface IPedal {
       {
         led = State.Pressed;
         pressed;
-
       }
-
     }
     [pedal.Released]
     {
@@ -59,17 +58,13 @@ interface IPedal {
         {
           led = State.Pressed;
           pressed;
-
         }
         [led.Pressed]
         {
           led = State.Released;
           released;
-
         }
-
       }
-
     }
   }
 }
@@ -104,9 +99,7 @@ interface IAsync {
       {
         pong;
         pending = false;
-
       }
-
     }
   }
 }
@@ -132,15 +125,12 @@ component Client {
         {
           left.release();
           state = State.Released;
-
         }
         [side.Right]
         {
           right.release();
           state = State.Released;
-
         }
-
       }
       on left.pressed():
       if (side.Left) pedal.pressed();
@@ -150,7 +140,6 @@ component Client {
       if (side.Right) pedal.pressed();
       on right.released():
       if (side.Right) pedal.released();
-
     }
     [state.Released]
     {
@@ -160,15 +149,12 @@ component Client {
         {
           left.press();
           state = State.Pressed;
-
         }
         [side.Right]
         {
           right.press();
           state = State.Pressed;
-
         }
-
       }
       on pedal.release():
       illegal;
@@ -180,7 +166,6 @@ component Client {
       if (side.Right) pedal.pressed();
       on right.released():
       if (side.Right) pedal.released();
-
     }
   }
 
@@ -201,7 +186,6 @@ component PedalPair {
       {
         left_pressed = true;
         if (!right_pressed) pedal.press();
-
       }
       on right.press():
       {
@@ -209,11 +193,9 @@ component PedalPair {
         {
           right_pressed = true;
           pedal.press();
-
         }
         [otherwise]
         illegal;
-
       }
       on left.release():
       illegal;
@@ -223,25 +205,20 @@ component PedalPair {
         {
           right_pressed = false;
           pedal.release();
-
         }
         [otherwise]
         illegal;
-
       }
       on pedal.pressed():
       {
         left.pressed();
         right.pressed();
-
       }
       on pedal.released():
       {
         left.released();
         right.released();
-
       }
-
     }
     [left_pressed]
     {
@@ -253,13 +230,11 @@ component PedalPair {
         right_pressed = true;
         [otherwise]
         illegal;
-
       }
       on left.release():
       {
         left_pressed = false;
         if (!right_pressed) pedal.release();
-
       }
       on right.release():
       {
@@ -267,21 +242,17 @@ component PedalPair {
         right_pressed = false;
         [otherwise]
         illegal;
-
       }
       on pedal.pressed():
       {
         left.pressed();
         right.pressed();
-
       }
       on pedal.released():
       {
         left.released();
         right.released();
-
       }
-
     }
   }
 
@@ -310,15 +281,12 @@ component Acquisition {
           if (!p) {
             async.ping();
             p = true;
-
           }
           a = true;
           if (f) functional.signal();
-
         }
         [otherwise]
         illegal;
-
       }
       on activation.release():
       {
@@ -327,15 +295,12 @@ component Acquisition {
           if (!p) {
             async.ping();
             p = true;
-
           }
           a = false;
           if (f) functional.nosignal();
-
         }
         [otherwise]
         illegal;
-
       }
       on fluo.press():
       {
@@ -344,15 +309,12 @@ component Acquisition {
           if (!p) {
             async.ping();
             p = true;
-
           }
           f = true;
           if (a) functional.signal();
-
         }
         [otherwise]
         illegal;
-
       }
       on fluo.release():
       {
@@ -361,15 +323,12 @@ component Acquisition {
           if (!p) {
             async.ping();
             p = true;
-
           }
           f = false;
           if (a) functional.nosignal();
-
         }
         [otherwise]
         illegal;
-
       }
       on async.pong():
       {
@@ -377,22 +336,16 @@ component Acquisition {
         if (!a) {
           aled = State.Released;
           activation.released();
-
         }
         if (f && fled.Released) {
           fled = State.Pressed;
           fluo.pressed();
-
         }
-        else
-        if (!f && fled.Pressed) {
+        else if (!f && fled.Pressed) {
           fled = State.Released;
           fluo.released();
-
         }
-
       }
-
     }
     [aled.Released]
     {
@@ -403,15 +356,12 @@ component Acquisition {
           if (!p) {
             async.ping();
             p = true;
-
           }
           a = true;
           if (f) functional.signal();
-
         }
         [otherwise]
         illegal;
-
       }
       on activation.release():
       {
@@ -420,15 +370,12 @@ component Acquisition {
           if (!p) {
             async.ping();
             p = true;
-
           }
           a = false;
           if (f) functional.nosignal();
-
         }
         [otherwise]
         illegal;
-
       }
       on fluo.press():
       {
@@ -437,15 +384,12 @@ component Acquisition {
           if (!p) {
             async.ping();
             p = true;
-
           }
           f = true;
           if (a) functional.signal();
-
         }
         [otherwise]
         illegal;
-
       }
       on fluo.release():
       {
@@ -454,15 +398,12 @@ component Acquisition {
           if (!p) {
             async.ping();
             p = true;
-
           }
           f = false;
           if (a) functional.nosignal();
-
         }
         [otherwise]
         illegal;
-
       }
       on async.pong():
       {
@@ -470,24 +411,17 @@ component Acquisition {
         if (a) {
           aled = State.Pressed;
           activation.pressed();
-
         }
-        else
-        {}
+        else {}
         if (f && fled.Released) {
           fled = State.Pressed;
           fluo.pressed();
-
         }
-        else
-        if (!f && fled.Pressed) {
+        else if (!f && fled.Pressed) {
           fled = State.Released;
           fluo.released();
-
         }
-
       }
-
     }
   }
 

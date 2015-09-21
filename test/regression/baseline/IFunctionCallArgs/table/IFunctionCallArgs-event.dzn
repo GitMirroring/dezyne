@@ -31,14 +31,12 @@ interface IFunctionCallArgs {
       if (c) act;
       b = true;
       return false;
-
     }
 
     on evt:
     {
       [b || !b]
       func(b);
-
     }
   }
 }

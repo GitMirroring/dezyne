@@ -32,18 +32,15 @@ interface I {
     void toggle() {
       if (f) {
         c;
-
       }
       f = !f;
       return false;
-
     }
 
     on a:
     {
       [f || !f]
       toggle();
-
     }
     on b:
     {
@@ -52,9 +49,7 @@ interface I {
         toggle();
         toggle();
         d;
-
       }
-
     }
   }
 }
@@ -68,18 +63,15 @@ component function {
     void toggle() {
       if (f) {
         i.c();
-
       }
       f = !f;
       return false;
-
     }
 
     on i.a():
     {
       [f || !f]
       toggle();
-
     }
     on i.b():
     {
@@ -88,9 +80,7 @@ component function {
         toggle();
         toggle();
         i.d();
-
       }
-
     }
   }
 

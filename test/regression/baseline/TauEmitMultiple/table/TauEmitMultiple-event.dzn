@@ -36,7 +36,6 @@ interface ITauEmitMulti {
       a;
       isWaiting = true;
       b;
-
     }
     on c:
     {
@@ -46,9 +45,7 @@ interface ITauEmitMulti {
       {
         d;
         isWaiting = false;
-
       }
-
     }
     on e:
     {
@@ -56,7 +53,6 @@ interface ITauEmitMulti {
       {}
       [isWaiting]
       illegal;
-
     }
   }
 }
@@ -73,7 +69,6 @@ interface ITauEmitSingle {
     {
       a;
       isWaiting = true;
-
     }
     on c:
     {
@@ -81,7 +76,6 @@ interface ITauEmitSingle {
       illegal;
       [isWaiting]
       isWaiting = false;
-
     }
   }
 }
@@ -110,7 +104,6 @@ component TauEmitMultiple {
     {
       [expect_b || !expect_b]
       {}
-
     }
     on rpa.a():
     {
@@ -119,9 +112,7 @@ component TauEmitMultiple {
         expect_b = true;
         rpa.c();
         expect_d = true;
-
       }
-
     }
     on rpa.b():
     {
@@ -129,7 +120,6 @@ component TauEmitMultiple {
       illegal;
       [expect_b]
       {}
-
     }
     on rpa.d():
     {
@@ -139,15 +129,12 @@ component TauEmitMultiple {
         rpa.e();
         [otherwise]
         illegal;
-
       }
-
     }
     on rps.a():
     {
       [expect_b || !expect_b]
       rps.c();
-
     }
   }
 

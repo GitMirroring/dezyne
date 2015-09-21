@@ -39,17 +39,14 @@ component FeedConvey {
         conveyor.stop();
         s = State.Lost;
         p = FeedPhase.Idle;
-
       }
       on ctrl.calibrate():
       {
         feeder.calibrate();
         s = State.Calibrating;
-
       }
       on ctrl.produceBall(), feeder.calibrated(), feeder.consumeNextBall(), feeder.consumeLastBall(), conveyor.conveyed():
       illegal;
-
     }
     [s.Calibrating]
     {
@@ -59,7 +56,6 @@ component FeedConvey {
         conveyor.stop();
         s = State.Lost;
         p = FeedPhase.Idle;
-
       }
       on ctrl.calibrate(), ctrl.produceBall(), feeder.consumeNextBall(), feeder.consumeLastBall(), conveyor.conveyed():
       illegal;
@@ -67,9 +63,7 @@ component FeedConvey {
       {
         ctrl.calibrated();
         s = State.Idle;
-
       }
-
     }
     [s.Idle]
     {
@@ -79,7 +73,6 @@ component FeedConvey {
         conveyor.stop();
         s = State.Lost;
         p = FeedPhase.Idle;
-
       }
       on ctrl.calibrate(), feeder.calibrated(), feeder.consumeNextBall(), feeder.consumeLastBall(), conveyor.conveyed():
       illegal;
@@ -88,9 +81,7 @@ component FeedConvey {
         feeder.produceBall();
         s = State.Preparing;
         p = FeedPhase.Feeding;
-
       }
-
     }
     [s.Preparing]
     {
@@ -100,7 +91,6 @@ component FeedConvey {
         conveyor.stop();
         s = State.Lost;
         p = FeedPhase.Idle;
-
       }
       on ctrl.calibrate(), ctrl.produceBall():
       illegal;
@@ -112,7 +102,6 @@ component FeedConvey {
         illegal;
         [p.ConveyingLast]
         illegal;
-
       }
       on feeder.consumeNextBall():
       {
@@ -120,13 +109,11 @@ component FeedConvey {
         {
           conveyor.convey();
           p = FeedPhase.ConveyingNext;
-
         }
         [p.ConveyingNext]
         illegal;
         [p.ConveyingLast]
         illegal;
-
       }
       on feeder.consumeLastBall():
       {
@@ -134,13 +121,11 @@ component FeedConvey {
         {
           conveyor.convey();
           p = FeedPhase.ConveyingLast;
-
         }
         [p.ConveyingNext]
         illegal;
         [p.ConveyingLast]
         illegal;
-
       }
       on conveyor.conveyed():
       {
@@ -151,18 +136,14 @@ component FeedConvey {
           ctrl.consumeNextBall();
           s = State.Prepared;
           p = FeedPhase.Idle;
-
         }
         [p.ConveyingLast]
         {
           ctrl.consumeLastBall();
           s = State.Prepared;
           p = FeedPhase.Idle;
-
         }
-
       }
-
     }
     [s.Prepared]
     {
@@ -172,7 +153,6 @@ component FeedConvey {
         conveyor.stop();
         s = State.Lost;
         p = FeedPhase.Idle;
-
       }
       on ctrl.calibrate(), feeder.calibrated(), feeder.consumeNextBall(), feeder.consumeLastBall(), conveyor.conveyed():
       illegal;
@@ -181,9 +161,7 @@ component FeedConvey {
         feeder.produceBall();
         s = State.Preparing;
         p = FeedPhase.Feeding;
-
       }
-
     }
   }
 

@@ -40,9 +40,7 @@ interface NonDetHiddenTransition {
         ns;
         [otherwise]
         illegal;
-
       }
-
     }
     on inevitable:
     {
@@ -50,17 +48,14 @@ interface NonDetHiddenTransition {
       {
         b = true;
         s = State.B;
-
       }
       [s.A]
       {
         b = false;
         s = State.B;
-
       }
       [s.B]
       if (b) na;
-
     }
   }
 }

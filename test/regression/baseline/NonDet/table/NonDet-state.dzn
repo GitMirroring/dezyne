@@ -42,19 +42,15 @@ interface NonDet {
         {
           ok;
           mainState = States.Ready;
-
         }
         [true]
         {
           error;
           mainState = States.Error;
-
         }
-
       }
       on work, recover, stop:
       illegal;
-
     }
     [mainState.Ready]
     {
@@ -68,9 +64,7 @@ interface NonDet {
         mainState = States.Stopping;
         [true]
         mainState = States.Ready;
-
       }
-
     }
     [mainState.Working]
     {
@@ -84,17 +78,13 @@ interface NonDet {
         {
           ok;
           mainState = States.Ready;
-
         }
         [true]
         {
           error;
           mainState = States.Error;
-
         }
-
       }
-
     }
     [mainState.Stopping]
     {
@@ -108,17 +98,13 @@ interface NonDet {
         {
           ok;
           mainState = States.Ready;
-
         }
         [true]
         {
           error;
           mainState = States.Error;
-
         }
-
       }
-
     }
     [mainState.Error]
     {
@@ -130,19 +116,15 @@ interface NonDet {
         {
           ok;
           mainState = States.Ready;
-
         }
         [true]
         {
           error;
           mainState = States.Error;
-
         }
-
       }
       on stop:
       ok;
-
     }
   }
 }

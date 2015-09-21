@@ -32,14 +32,12 @@ interface ifunction2 {
     bool vtoggle() {
       if (f) c;
       return !f;
-
     }
 
     on a:
     {
       [f || !f]
       f = vtoggle();
-
     }
     on b:
     {
@@ -49,9 +47,7 @@ interface ifunction2 {
         bool bb = vtoggle();
         f = bb;
         d;
-
       }
-
     }
   }
 }
@@ -65,14 +61,12 @@ component function2 {
     bool vtoggle() {
       if (f) i.c();
       return !f;
-
     }
 
     on i.a():
     {
       [f || !f]
       f = vtoggle();
-
     }
     on i.b():
     {
@@ -82,9 +76,7 @@ component function2 {
         bool bb = vtoggle();
         f = bb;
         i.d();
-
       }
-
     }
   }
 

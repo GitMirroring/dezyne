@@ -37,7 +37,6 @@ interface IMultipleOutEventsOnSingleTau {
       {}
       [state.Open]
       state = States.Closed;
-
     }
     on inevitable:
     {
@@ -46,21 +45,17 @@ interface IMultipleOutEventsOnSingleTau {
         oa;
         ob;
         state = States.Open;
-
       }
       [state.Closed]
       {
         oa;
         state = States.Emitting;
-
       }
       [state.Emitting]
       {
         ob;
         state = States.Open;
-
       }
-
     }
   }
 }

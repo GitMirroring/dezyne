@@ -34,7 +34,6 @@ interface ISiren {
       state = States.On;
       [state.On]
       illegal;
-
     }
     on turnoff:
     {
@@ -42,7 +41,6 @@ interface ISiren {
       illegal;
       [state.On]
       state = States.Off;
-
     }
   }
 }

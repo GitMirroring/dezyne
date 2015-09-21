@@ -49,11 +49,9 @@ component Guardtwotopon {
       {
         bool c = true;
         if (c) i.a();
-
       }
       on i.t():
       i.a();
-
     }
     [b]
     on i.e(), i.t():

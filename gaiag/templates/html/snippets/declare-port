@@ -1,0 +1,1 @@
+<span class="keyword">#direction </span> #(string-if injected? "<span class=\"keyword\">injected</span> ")<span class="scope">#((om:scope-name) interface)</span> #name ;

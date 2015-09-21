@@ -44,9 +44,7 @@ interface IMove2D {
         {
           calibrated;
           s = State.Ready;
-
         }
-
       }
       on move:
       {
@@ -54,9 +52,7 @@ interface IMove2D {
         illegal;
         [true]
         {}
-
       }
-
     }
     [s.Calibrating]
     {
@@ -68,15 +64,12 @@ interface IMove2D {
         illegal;
         [true]
         {}
-
       }
       on inevitable:
       {
         s = State.Ready;
         calibrated;
-
       }
-
     }
     [s.Ready]
     {
@@ -88,11 +81,9 @@ interface IMove2D {
         illegal;
         [true]
         {}
-
       }
       on move:
       s = State.Moving;
-
     }
     [s.Moving]
     {
@@ -104,15 +95,12 @@ interface IMove2D {
         illegal;
         [true]
         {}
-
       }
       on inevitable:
       {
         s = State.Ready;
         arrived;
-
       }
-
     }
   }
 }
@@ -133,17 +121,14 @@ component Move2D {
       if (nCalibrated == 2) {
         ctrl.calibrated();
         isCalibrating = false;
-
       }
       return false;
-
     }
 
     void tryArrived() {
       nMoving = nMoving - 1;
       if (nMoving == 0) ctrl.arrived();
       return false;
-
     }
 
     [!isCalibrating]
@@ -155,7 +140,6 @@ component Move2D {
         nCalibrated = 0;
         nMoving = 0;
         isCalibrating = false;
-
       }
       on ctrl.calibrate():
       {
@@ -165,16 +149,13 @@ component Move2D {
           yAxis.calibrate();
           nCalibrated = 0;
           isCalibrating = true;
-
         }
         [true]
         {}
-
       }
       on xAxis.homed(), yAxis.homed():
       if (nCalibrated < 2) tryCalibrated();
-      else
-      illegal;
+      else illegal;
       on ctrl.move(x, y):
       {
         [nMoving == 0 && nCalibrated == 2]
@@ -182,11 +163,9 @@ component Move2D {
           nMoving = 2;
           xAxis.move(x);
           yAxis.move(y);
-
         }
         [true]
         {}
-
       }
       on xAxis.arrived(), yAxis.arrived():
       {
@@ -194,9 +173,7 @@ component Move2D {
         tryArrived();
         [nMoving == 0]
         illegal;
-
       }
-
     }
     [isCalibrating]
     {
@@ -207,14 +184,12 @@ component Move2D {
         nCalibrated = 0;
         nMoving = 0;
         isCalibrating = false;
-
       }
       on ctrl.calibrate():
       {}
       on xAxis.homed(), yAxis.homed():
       if (nCalibrated < 2) tryCalibrated();
-      else
-      illegal;
+      else illegal;
       on ctrl.move(x, y):
       {
         [nMoving == 0 && nCalibrated == 2]
@@ -222,11 +197,9 @@ component Move2D {
           nMoving = 2;
           xAxis.move(x);
           yAxis.move(y);
-
         }
         [true]
         {}
-
       }
       on xAxis.arrived(), yAxis.arrived():
       {
@@ -234,9 +207,7 @@ component Move2D {
         tryArrived();
         [nMoving == 0]
         illegal;
-
       }
-
     }
   }
 

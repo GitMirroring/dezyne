@@ -39,7 +39,7 @@
 
   :use-module (gaiag om)
 
-  :use-module (gaiag dzn)
+  :use-module (gaiag html)
   :use-module (gaiag json)
   :use-module (gaiag misc)
   :use-module (gaiag pretty-print)
@@ -274,7 +274,7 @@
   (json-data-location data o))
 
 (define (json-action model o)
-  (json-data-location ((ast->dzn model) o) o))
+  (json-data-location ((ast->html model) o) o))
 
 (define (json-callback model o)
   (define (function? identifier) (om:function model identifier))
@@ -299,7 +299,7 @@
   (or (and-let* (((is-a? model <interface>))
                  ((is-a? o <statement>))
                  (actions (return-actions o)))
-                (map (ast->dzn model) actions))
+                (map (ast->html model) actions))
       '()))
 
 (define* (json-triggers o :optional (location o))

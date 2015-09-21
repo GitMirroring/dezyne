@@ -46,13 +46,10 @@ interface IInspect {
         {
           calibrated;
           s = State.Ready;
-
         }
-
       }
       on inspect, prepare:
       illegal;
-
     }
     [s.Ready]
     {
@@ -62,7 +59,6 @@ interface IInspect {
       illegal;
       on inspect:
       s = State.Inspecting;
-
     }
     [s.Calibrating]
     {
@@ -74,9 +70,7 @@ interface IInspect {
       {
         calibrated;
         s = State.Ready;
-
       }
-
     }
     [s.Inspecting]
     {
@@ -90,17 +84,13 @@ interface IInspect {
         {
           accepted;
           s = State.Waiting;
-
         }
         [true]
         {
           rejected;
           s = State.Waiting;
-
         }
-
       }
-
     }
     [s.Waiting]
     {
@@ -116,11 +106,8 @@ interface IInspect {
         {
           prepared;
           s = State.Ready;
-
         }
-
       }
-
     }
     [s.Preparing]
     {
@@ -132,9 +119,7 @@ interface IInspect {
       {
         prepared;
         s = State.Ready;
-
       }
-
     }
   }
 }
@@ -166,7 +151,6 @@ component Inspect {
       p = InspectPosition.Unknown;
       s = State.Lost;
       return false;
-
     }
 
     [s.Lost]
@@ -180,9 +164,7 @@ component Inspect {
         s = State.Calibrating;
         p = InspectPosition.Unknown;
         stage.calibrate();
-
       }
-
     }
     [s.Ready]
     {
@@ -194,9 +176,7 @@ component Inspect {
       {
         s = State.Inspecting;
         stage.move(inspectX, inspectY);
-
       }
-
     }
     [s.Calibrating]
     {
@@ -210,11 +190,9 @@ component Inspect {
         {
           ctrl.calibrated();
           s = State.Ready;
-
         }
         [!p.Receive]
         illegal;
-
       }
       on stage.calibrated():
       {
@@ -222,13 +200,10 @@ component Inspect {
         {
           stage.move(receiveX, receiveY);
           p = InspectPosition.Receive;
-
         }
         [!p.Unknown]
         illegal;
-
       }
-
     }
     [s.Inspecting]
     {
@@ -239,15 +214,11 @@ component Inspect {
         if (ballStatus == ilight.status.accept) {
           stage.move(acceptX, acceptY);
           p = InspectPosition.Accept;
-
         }
-        else
-        {
+        else {
           stage.move(rejectX, rejectY);
           p = InspectPosition.Reject;
-
         }
-
       }
       on ctrl.stop():
       stop();
@@ -260,25 +231,20 @@ component Inspect {
           p = InspectPosition.Inspect;
           sensor.turnon();
           sensorSettleTimer.create($100$);
-
         }
         [p.Accept]
         {
           ctrl.accepted();
           s = State.Waiting;
-
         }
         [p.Reject]
         {
           ctrl.rejected();
           s = State.Waiting;
-
         }
         [p.Inspect]
         illegal;
-
       }
-
     }
     [s.Waiting]
     {
@@ -291,9 +257,7 @@ component Inspect {
         s = State.Preparing;
         p = InspectPosition.Receive;
         stage.move(receiveX, receiveY);
-
       }
-
     }
     [s.Preparing]
     {
@@ -305,9 +269,7 @@ component Inspect {
       {
         ctrl.prepared();
         s = State.Ready;
-
       }
-
     }
   }
 

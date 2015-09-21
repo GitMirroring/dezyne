@@ -34,7 +34,6 @@ interface IConvey {
     {
       [s.Conveying || s.Idle]
       s = State.Idle;
-
     }
     on convey:
     {
@@ -44,14 +43,12 @@ interface IConvey {
       conveyed;
       [s.Conveying]
       illegal;
-
     }
     on inevitable:
     [s.Conveying]
     {
       conveyed;
       s = State.Idle;
-
     }
   }
 }
@@ -72,15 +69,12 @@ component Convey {
         motor.stop();
         sensor.disable();
         s = State.Idle;
-
       }
-
     }
     on motor.arrived():
     {
       [s.Conveying || s.Idle]
       {}
-
     }
     on ctrl.convey():
     {
@@ -90,19 +84,14 @@ component Convey {
         if (ss == ITouchSense.TouchState.Pressed) {
           sensor.disable();
           ctrl.conveyed();
-
         }
-        else
-        {
+        else {
           motor.run($(config.get("Power::50"))$, $false$);
           s = State.Conveying;
-
         }
-
       }
       [s.Conveying]
       illegal;
-
     }
     on sensor.pressed():
     {
@@ -114,9 +103,7 @@ component Convey {
         motor.stop();
         ctrl.conveyed();
         s = State.Idle;
-
       }
-
     }
     on sensor.released():
     {
@@ -128,9 +115,7 @@ component Convey {
         motor.stop();
         ctrl.conveyed();
         s = State.Idle;
-
       }
-
     }
   }
 

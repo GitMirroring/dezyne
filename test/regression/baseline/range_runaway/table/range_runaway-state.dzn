@@ -59,7 +59,6 @@ component range_runaway {
       r.e();
       on r.add():
       n = n + 1;
-
     }
     [n.1]
     {
@@ -67,7 +66,6 @@ component range_runaway {
       r.e();
       on r.add():
       n = n + 1;
-
     }
     [n.2]
     {
@@ -75,7 +73,6 @@ component range_runaway {
       r.e();
       on r.add():
       n = n + 1;
-
     }
     [n.3]
     {
@@ -83,7 +80,6 @@ component range_runaway {
       r.e();
       on r.add():
       n = n + 1;
-
     }
     [n.4]
     {
@@ -91,7 +87,6 @@ component range_runaway {
       r.e();
       on r.add():
       n = n + 1;
-
     }
   }
 

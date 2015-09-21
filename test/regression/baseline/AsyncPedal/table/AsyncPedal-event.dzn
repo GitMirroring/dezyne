@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -38,7 +39,6 @@ interface IPedal {
       illegal;
       [pedal.Released]
       pedal = State.Pressed;
-
     }
     on release:
     {
@@ -46,7 +46,6 @@ interface IPedal {
       pedal = State.Released;
       [pedal.Released]
       illegal;
-
     }
     on optional:
     {
@@ -55,16 +54,13 @@ interface IPedal {
       {
         led = State.Pressed;
         pressed;
-
       }
       [pedal.Released]
       [led.Pressed]
       {
         led = State.Released;
         released;
-
       }
-
     }
   }
 }
@@ -97,14 +93,12 @@ interface IAsync {
       pending = true;
       [pending]
       illegal;
-
     }
     on inevitable:
     [pending]
     {
       pong;
       pending = false;
-
     }
   }
 }
@@ -130,17 +124,13 @@ component Client {
         {
           left.press();
           state = State.Pressed;
-
         }
         [side.Right]
         {
           right.press();
           state = State.Pressed;
-
         }
-
       }
-
     }
     on pedal.release():
     {
@@ -150,43 +140,35 @@ component Client {
         {
           left.release();
           state = State.Released;
-
         }
         [side.Right]
         {
           right.release();
           state = State.Released;
-
         }
-
       }
       [state.Released]
       illegal;
-
     }
     on left.pressed():
     {
       [state.Released || state.Pressed]
       if (side.Left) pedal.pressed();
-
     }
     on left.released():
     {
       [state.Released || state.Pressed]
       if (side.Left) pedal.released();
-
     }
     on right.pressed():
     {
       [state.Released || state.Pressed]
       if (side.Right) pedal.pressed();
-
     }
     on right.released():
     {
       [state.Released || state.Pressed]
       if (side.Right) pedal.released();
-
     }
   }
 
@@ -207,11 +189,9 @@ component PedalPair {
       {
         left_pressed = true;
         if (!right_pressed) pedal.press();
-
       }
       [left_pressed]
       illegal;
-
     }
     on right.press():
     {
@@ -221,11 +201,9 @@ component PedalPair {
         {
           right_pressed = true;
           pedal.press();
-
         }
         [otherwise]
         illegal;
-
       }
       [left_pressed]
       {
@@ -233,9 +211,7 @@ component PedalPair {
         right_pressed = true;
         [otherwise]
         illegal;
-
       }
-
     }
     on left.release():
     {
@@ -245,9 +221,7 @@ component PedalPair {
       {
         left_pressed = false;
         if (!right_pressed) pedal.release();
-
       }
-
     }
     on right.release():
     {
@@ -257,11 +231,9 @@ component PedalPair {
         {
           right_pressed = false;
           pedal.release();
-
         }
         [otherwise]
         illegal;
-
       }
       [left_pressed]
       {
@@ -269,9 +241,7 @@ component PedalPair {
         right_pressed = false;
         [otherwise]
         illegal;
-
       }
-
     }
     on pedal.pressed():
     {
@@ -279,9 +249,7 @@ component PedalPair {
       {
         left.pressed();
         right.pressed();
-
       }
-
     }
     on pedal.released():
     {
@@ -289,9 +257,7 @@ component PedalPair {
       {
         left.released();
         right.released();
-
       }
-
     }
   }
 
@@ -320,17 +286,13 @@ component Acquisition {
           if (!p) {
             async.ping();
             p = true;
-
           }
           a = true;
           if (f) functional.signal();
-
         }
         [otherwise]
         illegal;
-
       }
-
     }
     on activation.release():
     {
@@ -341,17 +303,13 @@ component Acquisition {
           if (!p) {
             async.ping();
             p = true;
-
           }
           a = false;
           if (f) functional.nosignal();
-
         }
         [otherwise]
         illegal;
-
       }
-
     }
     on fluo.press():
     {
@@ -362,17 +320,13 @@ component Acquisition {
           if (!p) {
             async.ping();
             p = true;
-
           }
           f = true;
           if (a) functional.signal();
-
         }
         [otherwise]
         illegal;
-
       }
-
     }
     on fluo.release():
     {
@@ -383,17 +337,13 @@ component Acquisition {
           if (!p) {
             async.ping();
             p = true;
-
           }
           f = false;
           if (a) functional.nosignal();
-
         }
         [otherwise]
         illegal;
-
       }
-
     }
     on async.pong():
     {
@@ -403,20 +353,15 @@ component Acquisition {
         if (!a) {
           aled = State.Released;
           activation.released();
-
         }
         if (f && fled.Released) {
           fled = State.Pressed;
           fluo.pressed();
-
         }
-        else
-        if (!f && fled.Pressed) {
+        else if (!f && fled.Pressed) {
           fled = State.Released;
           fluo.released();
-
         }
-
       }
       [aled.Released]
       {
@@ -424,24 +369,17 @@ component Acquisition {
         if (a) {
           aled = State.Pressed;
           activation.pressed();
-
         }
-        else
-        {}
+        else {}
         if (f && fled.Released) {
           fled = State.Pressed;
           fluo.pressed();
-
         }
-        else
-        if (!f && fled.Pressed) {
+        else if (!f && fled.Pressed) {
           fled = State.Released;
           fluo.released();
-
         }
-
       }
-
     }
   }
 

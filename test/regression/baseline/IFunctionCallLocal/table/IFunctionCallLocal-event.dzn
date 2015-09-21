@@ -34,15 +34,11 @@ interface IFunctionCallReturnLocal {
       if (state == Toggle.Ping) {
         result = true;
         return result;
-
       }
-      else
-      {
+      else {
         return false;
-
       }
       return result;
-
     }
 
     on doIt:
@@ -53,17 +49,12 @@ interface IFunctionCallReturnLocal {
         if (localVariable) {
           done;
           state = Toggle.Pong;
-
         }
-        else
-        {
+        else {
           skip;
           state = Toggle.Ping;
-
         }
-
       }
-
     }
   }
 }

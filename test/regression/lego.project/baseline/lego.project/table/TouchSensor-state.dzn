@@ -43,17 +43,13 @@ interface ITouchSense {
         {
           ts = TouchState.Pressed;
           pressed;
-
         }
         [ts.Pressed]
         {
           ts = TouchState.Released;
           released;
-
         }
-
       }
-
     }
     [disabled]
     {
@@ -64,20 +60,16 @@ interface ITouchSense {
           ts = TouchState.Pressed;
           reply(ts);
           disabled = false;
-
         }
         [true]
         {
           ts = TouchState.Released;
           reply(ts);
           disabled = false;
-
         }
-
       }
       on disable:
       {}
-
     }
   }
 }
@@ -92,12 +84,10 @@ component TouchSense {
     itimer.milliseconds_t time = $50$;
     bool disabled = true;
 
-    nameITouchSenseTouchState getStatus() {
+    ITouchSense.TouchState getStatus() {
       itouch.status val = sensor.detect();
       if (val == itouch.status.released) return ITouchSense.TouchState.Released;
-      else
-      return ITouchSense.TouchState.Pressed;
-
+      else return ITouchSense.TouchState.Pressed;
     }
 
     [previous.Pressed]
@@ -106,7 +96,6 @@ component TouchSense {
       {
         timer.cancel();
         disabled = true;
-
       }
       on ctrl.enable():
       {
@@ -116,11 +105,9 @@ component TouchSense {
           timer.create(time);
           disabled = false;
           reply(previous);
-
         }
         [!disabled]
         illegal;
-
       }
       on timer.timeout():
       {
@@ -132,11 +119,8 @@ component TouchSense {
           if (current == ITouchSense.TouchState.Released) ctrl.released();
           previous = current;
           timer.create(time);
-
         }
-
       }
-
     }
     [previous.Released]
     {
@@ -144,7 +128,6 @@ component TouchSense {
       {
         timer.cancel();
         disabled = true;
-
       }
       on ctrl.enable():
       {
@@ -154,11 +137,9 @@ component TouchSense {
           timer.create(time);
           disabled = false;
           reply(previous);
-
         }
         [!disabled]
         illegal;
-
       }
       on timer.timeout():
       {
@@ -168,15 +149,11 @@ component TouchSense {
         {
           ITouchSense.TouchState current = getStatus();
           if (current == ITouchSense.TouchState.Pressed) ctrl.pressed();
-          else
-          {}
+          else {}
           previous = current;
           timer.create(time);
-
         }
-
       }
-
     }
   }
 

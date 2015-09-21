@@ -30,7 +30,6 @@ interface range_function {
 
     void f(State s) {
       return false;
-
     }
 
     [true]

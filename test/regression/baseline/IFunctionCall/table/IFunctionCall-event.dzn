@@ -29,7 +29,6 @@ interface IFunctionCall {
     void func() {
       act;
       return false;
-
     }
 
     on evt:

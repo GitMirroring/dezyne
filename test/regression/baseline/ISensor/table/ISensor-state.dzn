@@ -36,7 +36,6 @@ interface ISensor {
       state = States.Enabled;
       on disable:
       illegal;
-
     }
     [state.Enabled]
     {
@@ -48,9 +47,7 @@ interface ISensor {
       {
         triggered;
         state = States.Triggered;
-
       }
-
     }
     [state.Disabling]
     {
@@ -60,9 +57,7 @@ interface ISensor {
       {
         disabled;
         state = States.Disabled;
-
       }
-
     }
     [state.Triggered]
     {
@@ -70,7 +65,6 @@ interface ISensor {
       illegal;
       on disable:
       state = States.Disabling;
-
     }
   }
 }

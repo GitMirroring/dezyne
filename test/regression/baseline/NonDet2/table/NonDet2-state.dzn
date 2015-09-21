@@ -40,11 +40,9 @@ interface NonDet2 {
         mainState = States.Stopping;
         [true]
         mainState = States.Error;
-
       }
       on recover:
       illegal;
-
     }
     [mainState.Stopping]
     {
@@ -54,9 +52,7 @@ interface NonDet2 {
       {
         ok;
         mainState = States.Ready;
-
       }
-
     }
     [mainState.Error]
     {
@@ -68,11 +64,9 @@ interface NonDet2 {
         mainState = States.Recovering;
         [true]
         {}
-
       }
       on inevitable:
       error;
-
     }
     [mainState.Recovering]
     {
@@ -82,9 +76,7 @@ interface NonDet2 {
       {
         ok;
         mainState = States.Ready;
-
       }
-
     }
   }
 }

@@ -52,14 +52,12 @@ interface Bottom {
       c = true;
       [c]
       illegal;
-
     }
     on inevitable:
     [c]
     {
       c = false;
       f;
-
     }
   }
 }
@@ -75,7 +73,6 @@ component GuardedRequiredIllegal {
     {
       [c || !c]
       {}
-
     }
     on t.e():
     {
@@ -83,11 +80,9 @@ component GuardedRequiredIllegal {
       {
         c = true;
         b.e();
-
       }
       [c]
       {}
-
     }
     on b.f():
     {
@@ -95,7 +90,6 @@ component GuardedRequiredIllegal {
       illegal;
       [c]
       c = false;
-
     }
   }
 

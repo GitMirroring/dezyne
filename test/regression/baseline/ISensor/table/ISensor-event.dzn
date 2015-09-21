@@ -36,7 +36,6 @@ interface ISensor {
       state = States.Enabled;
       [state.Triggered || state.Disabling || state.Enabled]
       illegal;
-
     }
     on disable:
     {
@@ -44,21 +43,18 @@ interface ISensor {
       illegal;
       [state.Triggered || state.Enabled]
       state = States.Disabling;
-
     }
     on optional:
     [state.Enabled]
     {
       triggered;
       state = States.Triggered;
-
     }
     on inevitable:
     [state.Disabling]
     {
       disabled;
       state = States.Disabled;
-
     }
   }
 }

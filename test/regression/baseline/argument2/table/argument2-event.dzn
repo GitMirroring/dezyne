@@ -30,7 +30,6 @@ interface I {
     bool g(bool ga, bool gb) {
       f;
       return ga || gb;
-
     }
 
     on e:
@@ -41,9 +40,7 @@ interface I {
         bool c = g(b, b);
         b = g(c, c);
         if (c) f;
-
       }
-
     }
   }
 }
@@ -57,7 +54,6 @@ component argument2 {
     bool g(bool ga, bool gb) {
       i.f();
       return ga || gb;
-
     }
 
     on i.e():
@@ -68,9 +64,7 @@ component argument2 {
         bool c = g(b, b);
         b = g(c, c);
         if (c) i.f();
-
       }
-
     }
   }
 

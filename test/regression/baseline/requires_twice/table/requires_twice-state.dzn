@@ -45,13 +45,11 @@ component requires_twice {
       {
         once.e();
         twice.e();
-
       }
       on once.a():
       {}
       on twice.a():
       p.a();
-
     }
   }
 

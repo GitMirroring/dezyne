@@ -35,7 +35,6 @@ interface IHandle {
     {
       [s.Operating || s.Idle || s.Calibrating || s.Lost]
       s = State.Lost;
-
     }
     on hcalibrate:
     {
@@ -45,7 +44,6 @@ interface IHandle {
       illegal;
       [s.Operating || s.Idle]
       {}
-
     }
     on operate:
     {
@@ -57,7 +55,6 @@ interface IHandle {
       s = State.Operating;
       [s.Idle]
       finished;
-
     }
     on inevitable:
     {
@@ -65,15 +62,12 @@ interface IHandle {
       {
         hcalibrated;
         s = State.Idle;
-
       }
       [s.Operating]
       {
         s = State.Idle;
         finished;
-
       }
-
     }
   }
 }
@@ -98,7 +92,6 @@ interface ITransfer {
     {
       [s.Transferring || s.Moving || s.Ready || s.Calibrating || s.Lost]
       s = State.Lost;
-
     }
     on tcalibrate:
     {
@@ -106,30 +99,25 @@ interface ITransfer {
       {
         tcalibrated;
         s = State.Ready;
-
       }
       [s.Calibrating]
       illegal;
-
     }
     on move:
     {
       [s.Calibrating || s.Lost]
       illegal;
-
     }
     on transfer:
     {
       [s.Calibrating || s.Lost]
       illegal;
-
     }
     on inevitable:
     [s.Calibrating]
     {
       tcalibrated;
       s = State.Ready;
-
     }
   }
 }
@@ -152,15 +140,12 @@ component h {
       if (calibrated == requiredCalibrations) {
         s = State.Idle;
         ctrl.hcalibrated();
-
       }
       return false;
-
     }
 
     void ignoreIllegal() {
       return false;
-
     }
 
     on ctrl.hcalibrate():
@@ -170,11 +155,9 @@ component h {
         robot.tcalibrate();
         calibrated = 0;
         s = State.Calibrating;
-
       }
       [s.Operating || s.Idle || s.Calibrating]
       ignoreIllegal();
-
     }
     on robot.tcalibrated():
     {
@@ -182,7 +165,6 @@ component h {
       illegal;
       [s.Calibrating]
       tryCalibrated();
-
     }
   }
 

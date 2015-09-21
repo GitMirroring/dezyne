@@ -33,11 +33,9 @@ interface ISimple {
       {
         a;
         On = !On;
-
       }
       [On]
       On = !On;
-
     }
   }
 }
@@ -57,9 +55,7 @@ component Simpleint {
       {
         p.a();
         s = 0;
-
       }
-
     }
   }
 

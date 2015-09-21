@@ -57,13 +57,11 @@ component range_runaway {
     {
       [n.4 || n.3 || n.2 || n.1 || n.0]
       r.e();
-
     }
     on r.add():
     {
       [n.4 || n.3 || n.2 || n.1 || n.0]
       n = n + 1;
-
     }
   }
 

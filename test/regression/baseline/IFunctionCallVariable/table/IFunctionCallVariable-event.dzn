@@ -30,17 +30,14 @@ interface IFunctionCallVariable {
 
     bool func(bool c) {
       if (c) actTrue;
-      else
-      actFalse;
+      else actFalse;
       return !c;
-
     }
 
     on evt:
     {
       [b || !b]
       bool b1 = func(b);
-
     }
   }
 }

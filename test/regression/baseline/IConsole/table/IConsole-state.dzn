@@ -36,7 +36,6 @@ interface IConsole {
       state = States.Armed;
       on disarm:
       illegal;
-
     }
     [state.Armed]
     {
@@ -48,9 +47,7 @@ interface IConsole {
       {
         detected;
         state = States.Triggered;
-
       }
-
     }
     [state.Triggered]
     {
@@ -58,7 +55,6 @@ interface IConsole {
       illegal;
       on disarm:
       state = States.Disarming;
-
     }
     [state.Disarming]
     {
@@ -68,9 +64,7 @@ interface IConsole {
       {
         deactivated;
         state = States.Disarmed;
-
       }
-
     }
   }
 }

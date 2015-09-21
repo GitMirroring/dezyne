@@ -35,9 +35,7 @@ interface I {
         reply(Status.Yes);
         [true]
         reply(Status.No);
-
       }
-
     }
   }
 }
@@ -57,9 +55,7 @@ interface U {
         reply(Status.Ok);
         [true]
         reply(Status.Nok);
-
       }
-
     }
   }
 }
@@ -77,11 +73,8 @@ component Reply {
       {
         U.Status s = u.what();
         if (s == U.Status.Ok) reply(I.Status.Yes);
-        else
-        reply(I.Status.No);
-
+        else reply(I.Status.No);
       }
-
     }
   }
 

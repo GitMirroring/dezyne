@@ -59,7 +59,6 @@ component combinedon {
       {}
       on a.g(), b.g():
       illegal;
-
     }
   }
 

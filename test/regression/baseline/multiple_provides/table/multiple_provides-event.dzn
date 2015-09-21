@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -36,14 +37,12 @@ interface imultiple_provides {
       b = true;
       [b]
       illegal;
-
     }
     on inevitable:
     [b]
     {
       b = false;
       right;
-
     }
   }
 }
@@ -67,7 +66,6 @@ component multiple_provides {
         dir = Direction.Left;
         r.left();
         b_left = true;
-
       }
       [dir.Right || dir.Left]
       [b_left || b_right]
@@ -76,9 +74,7 @@ component multiple_provides {
         illegal;
         [!b_left]
         p_left.right();
-
       }
-
     }
     on p_right.left():
     {
@@ -88,7 +84,6 @@ component multiple_provides {
         dir = Direction.Right;
         r.left();
         b_right = true;
-
       }
       [dir.Right || dir.Left]
       [b_left || b_right]
@@ -97,9 +92,7 @@ component multiple_provides {
         illegal;
         [!b_right]
         p_right.right();
-
       }
-
     }
     on r.right():
     {
@@ -111,16 +104,13 @@ component multiple_provides {
       {
         b_left = false;
         p_left.right();
-
       }
       [dir.Right]
       [b_left || b_right]
       {
         b_right = false;
         p_right.right();
-
       }
-
     }
   }
 

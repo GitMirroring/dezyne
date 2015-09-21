@@ -110,6 +110,7 @@
   (with-output-to-string (lambda () (animate-string string o p))))
 
 (define* (snippet file-name :optional (o #f) (p #f))
+  ;;(stderr "SNIPPET: ~a\n" file-name)
   (parameterize ((template-dir (append (template-dir) '(snippets))))
     (with-output-to-string (lambda () (animate-file file-name o p)))))
 

@@ -42,7 +42,6 @@ interface Iexternaltypes {
       {}
       on g:
       reply(E.yes);
-
     }
   }
 }
@@ -63,7 +62,6 @@ component externaltypes {
       {}
       on i.g():
       reply(Iexternaltypes.E.yes);
-
     }
   }
 

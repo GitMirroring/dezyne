@@ -42,11 +42,9 @@ interface ICallEmitMulti {
         ntfB;
         pending = 2;
         isWaiting = true;
-
       }
       [isWaiting]
       illegal;
-
     }
     on reqValued:
     {
@@ -57,11 +55,9 @@ interface ICallEmitMulti {
         pending = 2;
         isWaiting = true;
         reply(EmitResult.Two);
-
       }
       [isWaiting]
       illegal;
-
     }
     on ack:
     {
@@ -73,9 +69,7 @@ interface ICallEmitMulti {
         illegal;
         [otherwise]
         pending = pending - 1;
-
       }
-
     }
     on done:
     {
@@ -87,9 +81,7 @@ interface ICallEmitMulti {
         isWaiting = false;
         [otherwise]
         illegal;
-
       }
-
     }
   }
 }
@@ -140,7 +132,6 @@ component QTriggerModeling {
       [behave]
       [otherwise]
       ICallEmitMulti.EmitResult ignored = src.reqValued();
-
     }
     on itt.start():
     {
@@ -152,7 +143,6 @@ component QTriggerModeling {
       [behave]
       [otherwise]
       ICallEmitMulti.EmitResult ignored = src.reqValued();
-
     }
     on src.ntfA():
     {
@@ -160,7 +150,6 @@ component QTriggerModeling {
       {
         src.ack();
         src.done();
-
       }
       [behave]
       [useVoid]
@@ -168,7 +157,6 @@ component QTriggerModeling {
       [behave]
       [otherwise]
       src.ack();
-
     }
     on src.ntfB():
     {
@@ -180,7 +168,6 @@ component QTriggerModeling {
         src.ack();
         src.done();
         useVoid = false;
-
       }
       [behave]
       [otherwise]
@@ -188,9 +175,7 @@ component QTriggerModeling {
         src.ack();
         src.done();
         behave = false;
-
       }
-
     }
   }
 

@@ -35,37 +35,30 @@ component Feed {
     void feedNext() {
       if (inventory == 4) {
         axis.move($(config.get("Position::Feeder::DropFirst"))$);
-
       }
       if (inventory == 3) {
         axis.move($(config.get("Position::Feeder::DropSecond"))$);
-
       }
       if (inventory == 2) {
         axis.move($(config.get("Position::Feeder::DropThird"))$);
-
       }
       if (inventory == 1) {
         axis.move($(config.get("Position::Feeder::DropLast"))$);
-
       }
       s = State.Preparing;
       inventory = inventory - 1;
       return false;
-
     }
 
     void retract() {
       axis.move($(config.get("Position::Feeder::Retracted"))$);
       isRetracting = true;
       return false;
-
     }
 
     void refill() {
       inventory = 4;
       return false;
-
     }
 
     [s.Lost]
@@ -76,17 +69,14 @@ component Feed {
         s = State.Lost;
         isRetracting = false;
         isFeedRequested = false;
-
       }
       on ctrl.calibrate():
       {
         axis.calibrate();
         s = State.Calibrating;
-
       }
       on ctrl.produceBall(), axis.homed(), axis.arrived():
       illegal;
-
     }
     [s.Calibrating]
     {
@@ -96,7 +86,6 @@ component Feed {
         s = State.Lost;
         isRetracting = false;
         isFeedRequested = false;
-
       }
       on ctrl.calibrate(), ctrl.produceBall(), axis.arrived():
       illegal;
@@ -105,9 +94,7 @@ component Feed {
         ctrl.calibrated();
         refill();
         s = State.Idle;
-
       }
-
     }
     [s.Idle]
     {
@@ -117,7 +104,6 @@ component Feed {
         s = State.Lost;
         isRetracting = false;
         isFeedRequested = false;
-
       }
       on ctrl.calibrate(), axis.homed():
       illegal;
@@ -129,7 +115,6 @@ component Feed {
         isFeedRequested = true;
         [isRetracting && isFeedRequested]
         illegal;
-
       }
       on axis.arrived():
       {
@@ -139,13 +124,10 @@ component Feed {
           if (isFeedRequested) feedNext();
           isRetracting = false;
           isFeedRequested = false;
-
         }
         [!isRetracting]
         illegal;
-
       }
-
     }
     [s.Preparing]
     {
@@ -155,7 +137,6 @@ component Feed {
         s = State.Lost;
         isRetracting = false;
         isFeedRequested = false;
-
       }
       on ctrl.calibrate(), ctrl.produceBall(), axis.homed():
       illegal;
@@ -165,18 +146,14 @@ component Feed {
         {
           ctrl.consumeNextBall();
           s = State.Prepared;
-
         }
         [inventory == 0]
         {
           ctrl.consumeLastBall();
           retract();
           s = State.Idle;
-
         }
-
       }
-
     }
     [s.Prepared]
     {
@@ -186,13 +163,11 @@ component Feed {
         s = State.Lost;
         isRetracting = false;
         isFeedRequested = false;
-
       }
       on ctrl.calibrate(), axis.homed(), axis.arrived():
       illegal;
       on ctrl.produceBall():
       feedNext();
-
     }
   }
 

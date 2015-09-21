@@ -34,7 +34,6 @@ interface ienum_collision {
       reply(Retval1.OK);
       on bar:
       reply(Retval2.NOK);
-
     }
   }
 }
@@ -50,7 +49,6 @@ component enum_collision {
       reply(ienum_collision.Retval1.OK);
       on i.bar():
       reply(ienum_collision.Retval2.NOK);
-
     }
   }
 

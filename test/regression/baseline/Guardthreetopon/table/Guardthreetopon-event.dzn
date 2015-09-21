@@ -45,19 +45,16 @@ interface IGuardthreetopon {
     {
       [b || !b]
       a;
-
     }
     on t:
     {
       [b || !b]
       a;
-
     }
     on s:
     {
       [b || !b]
       a;
-
     }
   }
 }
@@ -75,29 +72,24 @@ component Guardthreetopon {
       {
         bool c = true;
         if (c) i.a();
-
       }
       [b]
       i.a();
-
     }
     on r.a():
     {
       [b || !b]
       {}
-
     }
     on i.t():
     {
       [b || !b]
       i.a();
-
     }
     on i.s():
     {
       [b || !b]
       i.a();
-
     }
   }
 

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -41,13 +42,10 @@ interface IPedal {
         {
           pedal = State.Pressed;
           pressed;
-
         }
         [true]
         pedal = State.Pressed;
-
       }
-
     }
     on release:
     {
@@ -57,15 +55,12 @@ interface IPedal {
         {
           pedal = State.Released;
           released;
-
         }
         [true]
         pedal = State.Released;
-
       }
       [pedal.Released]
       illegal;
-
     }
   }
 }
@@ -93,16 +88,13 @@ component PedalPair {
         left_pressed = true;
         pedal.press();
         right.pressed();
-
       }
       [client.RIGHT || client.LEFT]
       [!left_pressed && right_pressed]
       {
         left_pressed = true;
         left.pressed();
-
       }
-
     }
     on right.press():
     {
@@ -115,16 +107,13 @@ component PedalPair {
         client = CLIENT.RIGHT;
         right_pressed = true;
         pedal.press();
-
       }
       [client.RIGHT || client.LEFT]
       [!right_pressed && left_pressed]
       {
         right_pressed = true;
         right.pressed();
-
       }
-
     }
     on left.release():
     {
@@ -137,12 +126,10 @@ component PedalPair {
         client = CLIENT.LEFT;
         left_pressed = false;
         pedal.release();
-
       }
       [client.RIGHT || client.LEFT]
       [left_pressed && right_pressed]
       left_pressed = false;
-
     }
     on right.release():
     {
@@ -155,12 +142,10 @@ component PedalPair {
         client = CLIENT.RIGHT;
         right_pressed = false;
         pedal.release();
-
       }
       [client.RIGHT || client.LEFT]
       [right_pressed && left_pressed]
       right_pressed = false;
-
     }
     on pedal.pressed():
     {
@@ -168,7 +153,6 @@ component PedalPair {
       left.pressed();
       [client.RIGHT]
       right.pressed();
-
     }
     on pedal.released():
     {
@@ -176,7 +160,6 @@ component PedalPair {
       left.released();
       [client.RIGHT]
       right.released();
-
     }
   }
 

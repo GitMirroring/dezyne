@@ -45,7 +45,6 @@ interface IMove {
       {}
       on stop, coast:
       moving = false;
-
     }
     [moving]
     {
@@ -55,20 +54,17 @@ interface IMove {
       {
         moving = false;
         arrived;
-
       }
       on pulse:
       {
         moving = true;
         [true]
         illegal;
-
       }
       on stop, coast:
       moving = false;
       on position:
       {}
-
     }
   }
 }
@@ -93,7 +89,6 @@ component Move {
         timer.create(time);
         motor.move(power, destination);
         moving = true;
-
       }
       on ctrl.pulse(p, i, d), ctrl.move(pow, pos):
       [pulsing]
@@ -107,9 +102,7 @@ component Move {
           motor.coast();
           ctrl.arrived();
           pulsing = false;
-
         }
-
       }
       on ctrl.zero():
       {
@@ -117,7 +110,6 @@ component Move {
         motor.zero();
         [pulsing]
         illegal;
-
       }
       on ctrl.pulse(power, invert, duration):
       [!pulsing]
@@ -125,7 +117,6 @@ component Move {
         timer.create(duration);
         motor.run(power, invert);
         pulsing = true;
-
       }
       on ctrl.run(power, invert):
       motor.run(power, invert);
@@ -135,7 +126,6 @@ component Move {
         timer.cancel();
         moving = false;
         pulsing = false;
-
       }
       on ctrl.coast():
       {
@@ -143,11 +133,9 @@ component Move {
         timer.cancel();
         moving = false;
         pulsing = false;
-
       }
       on ctrl.position(pos):
       motor.position(pos);
-
     }
     [moving]
     {
@@ -161,11 +149,8 @@ component Move {
         if (arrive == imotor.result_t.yes) {
           ctrl.arrived();
           moving = false;
-
         }
-        else
-        timer.create(time);
-
+        else timer.create(time);
       }
       on ctrl.run(power, invert):
       motor.run(power, invert);
@@ -175,7 +160,6 @@ component Move {
         timer.cancel();
         moving = false;
         pulsing = false;
-
       }
       on ctrl.coast():
       {
@@ -183,11 +167,9 @@ component Move {
         timer.cancel();
         moving = false;
         pulsing = false;
-
       }
       on ctrl.position(pos):
       motor.position(pos);
-
     }
   }
 

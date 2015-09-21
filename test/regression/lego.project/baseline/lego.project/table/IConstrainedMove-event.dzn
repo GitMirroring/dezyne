@@ -36,14 +36,12 @@ interface IConstrainedMove {
       s = State.idle;
       homed;
       return false;
-
     }
 
     void notifyArrived() {
       s = State.idle;
       arrived;
       return false;
-
     }
 
     on calibrate:
@@ -54,7 +52,6 @@ interface IConstrainedMove {
       notifyHomed();
       [s.moving || s.calibrating || s.idle]
       illegal;
-
     }
     on move:
     {
@@ -62,13 +59,11 @@ interface IConstrainedMove {
       illegal;
       [s.idle]
       s = State.moving;
-
     }
     on stop:
     {
       [s.moving || s.calibrating || s.idle || s.lost]
       s = State.lost;
-
     }
     on inevitable:
     {
@@ -76,7 +71,6 @@ interface IConstrainedMove {
       notifyHomed();
       [s.moving]
       notifyArrived();
-
     }
   }
 }

@@ -36,15 +36,12 @@ interface IIterator {
       {
         isPastEnd = IsPastEnd.No;
         reply(isPastEnd);
-
       }
       [isPastEnd.No || isPastEnd.Yes]
       {
         isPastEnd = IsPastEnd.Yes;
         reply(isPastEnd);
-
       }
-
     }
     on getNextElmt:
     {
@@ -54,9 +51,7 @@ interface IIterator {
       {
         isPastEnd = IsPastEnd.Yes;
         reply(isPastEnd);
-
       }
-
     }
   }
 }
@@ -78,11 +73,10 @@ component SynchronousLivelock {
 
   behaviour {
 
-    nameIIteratorIsPastEnd consumeListHead() {
+    IIterator.IsPastEnd consumeListHead() {
       IIterator.ListElement elmt = ;
       IIterator.IsPastEnd v = listIt.getFirstElmt(elmt);
       return v;
-
     }
 
     void consumeListTail(IIterator.IsPastEnd pastEnd) {
@@ -90,10 +84,8 @@ component SynchronousLivelock {
         IIterator.ListElement elmt = ;
         pastEnd = listIt.getNextElmt(elmt);
         consumeListTail(pastEnd);
-
       }
       return false;
-
     }
 
     on pp.step():
@@ -101,7 +93,6 @@ component SynchronousLivelock {
     {
       IIterator.IsPastEnd ipe = consumeListHead();
       consumeListTail(ipe);
-
     }
   }
 

@@ -33,14 +33,12 @@ interface I {
     {
       c;
       t = !t;
-
     }
     [t]
     on a:
     {
       b;
       t = !t;
-
     }
   }
 }
@@ -56,14 +54,12 @@ component If {
     {
       i.c();
       t = !t;
-
     }
     [t]
     on i.a():
     {
       i.b();
       t = !t;
-
     }
   }
 

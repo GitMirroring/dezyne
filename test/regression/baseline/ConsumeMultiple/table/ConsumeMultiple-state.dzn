@@ -40,20 +40,16 @@ interface ITauEmitMulti {
         {
           ntfA;
           isEmitting = true;
-
         }
         [isEmitting]
         {
           ntfB;
           isWaiting = true;
           isEmitting = false;
-
         }
-
       }
       on done:
       illegal;
-
     }
     [isWaiting]
     {
@@ -61,7 +57,6 @@ interface ITauEmitMulti {
       {}
       on done:
       isWaiting = false;
-
     }
   }
 }
@@ -94,7 +89,6 @@ component ConsumeMultiple {
       src.done();
       on src.ntfB():
       src.ack();
-
     }
     [behave]
     {
@@ -106,9 +100,7 @@ component ConsumeMultiple {
       {
         src.done();
         behave = false;
-
       }
-
     }
   }
 

@@ -32,7 +32,6 @@ interface ITwotopon {
     {
       [b || !b]
       a;
-
     }
     on t:
     [!b]
@@ -50,13 +49,11 @@ component Twotopon {
     {
       [b || !b]
       i.a();
-
     }
     on i.t():
     {
       [b || !b]
       i.a();
-
     }
   }
 

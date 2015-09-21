@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -36,7 +37,6 @@ interface isingle_tau_to_multiple_tau_should_not_refine {
       b = !b;
       on inevitable:
       c;
-
     }
   }
 }
@@ -55,9 +55,7 @@ component single_tau_to_multiple_tau_should_not_refine {
       {
         p.c();
         p.c();
-
       }
-
     }
   }
 

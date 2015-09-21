@@ -33,7 +33,6 @@ interface Top {
       {}
       on optional:
       f;
-
     }
   }
 }
@@ -56,9 +55,7 @@ interface Bottom {
       {
         c = false;
         f;
-
       }
-
     }
   }
 }
@@ -78,11 +75,9 @@ component GuardedRequiredIllegal {
       {
         c = true;
         b.e();
-
       }
       on b.f():
       illegal;
-
     }
     [c]
     {
@@ -90,7 +85,6 @@ component GuardedRequiredIllegal {
       {}
       on b.f():
       c = false;
-
     }
   }
 

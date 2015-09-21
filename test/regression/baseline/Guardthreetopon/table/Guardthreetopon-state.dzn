@@ -63,13 +63,11 @@ component Guardthreetopon {
       {
         bool c = true;
         if (c) i.a();
-
       }
       on i.t(), i.s():
       i.a();
       on r.a():
       {}
-
     }
     [b]
     {
@@ -77,7 +75,6 @@ component Guardthreetopon {
       i.a();
       on r.a():
       {}
-
     }
   }
 

@@ -33,7 +33,6 @@ interface running {
       running = !running;
       [running]
       illegal;
-
     }
     on stop:
     {
@@ -41,7 +40,6 @@ interface running {
       illegal;
       [running]
       running = !running;
-
     }
   }
 }

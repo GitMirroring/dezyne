@@ -39,43 +39,32 @@ interface iimperative {
         if (c || b) {
           f;
           g;
-
         }
         if (b) {
           if (c) g;
           c = false;
           f;
-
         }
-        else
-        if (c) {
+        else if (c) {
           b = false;
           h;
-
         }
-        else
-        {
+        else {
           b = true;
           g;
-
         }
         s = S.S2;
-
       }
       [s.S2]
       {
         if (b) {
           if (!c) c = true;
-          else
-          c = false;
+          else c = false;
           h;
-
         }
         b = !b;
         s = S.S1;
-
       }
-
     }
   }
 }
@@ -95,7 +84,6 @@ component imperative {
         i.g();
         i.h();
         state = States.II;
-
       }
       [state.II]
       state = States.III;
@@ -106,15 +94,12 @@ component imperative {
         i.g();
         i.f();
         state = States.IV;
-
       }
       [state.IV]
       {
         i.h();
         state = States.I;
-
       }
-
     }
   }
 

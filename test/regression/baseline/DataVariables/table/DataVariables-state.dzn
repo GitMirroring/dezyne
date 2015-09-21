@@ -38,7 +38,6 @@ interface IDataVariables {
       {}
       on optional:
       inDataVariable;
-
     }
   }
 }
@@ -57,7 +56,6 @@ component DataVariables {
       s = $1$;
       rp.inoutString(s);
       return false;
-
     }
 
     [true]
@@ -71,11 +69,9 @@ component DataVariables {
         IDataVariables.string local = s;
         f(local);
         s = local;
-
       }
       on rp.inDataVariable(idv):
       pp.inDataVariable(dvtdv);
-
     }
   }
 

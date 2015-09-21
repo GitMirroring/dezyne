@@ -33,7 +33,6 @@ interface range_member {
     {
       [state.3 || state.2 || state.1 || state.0]
       {}
-
     }
   }
 }

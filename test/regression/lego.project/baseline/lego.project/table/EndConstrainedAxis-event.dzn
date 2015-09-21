@@ -32,7 +32,6 @@ component EndConstrainedMove {
     void slowForward() {
       motor.run($(config.get("Power::CalibrationSpeed"))$, $false$);
       return false;
-
     }
 
     void recordHome() {
@@ -40,7 +39,6 @@ component EndConstrainedMove {
       motor.stop();
       motor.zero();
       return false;
-
     }
 
     void startAbsoluteMove(IConstrainedMove.position_t target) {
@@ -48,7 +46,6 @@ component EndConstrainedMove {
       motor.move($(config.get("Power::OperationalSpeed"))$, target);
       s = State.moving;
       return false;
-
     }
 
     void notifyArrived() {
@@ -57,7 +54,6 @@ component EndConstrainedMove {
       s = State.idle;
       ctrl.arrived();
       return false;
-
     }
 
     on ctrl.stop():
@@ -67,9 +63,7 @@ component EndConstrainedMove {
         motor.stop();
         endSensor.disable();
         s = State.lost;
-
       }
-
     }
     on ctrl.calibrate():
     {
@@ -80,25 +74,19 @@ component EndConstrainedMove {
           recordHome();
           s = State.idle;
           ctrl.homed();
-
         }
-        else
-        {
+        else {
           slowForward();
           s = State.calibratingEnd;
-
         }
-
       }
       [s.calibratingEnd || s.moving || s.idle]
       illegal;
-
     }
     on ctrl.move():
     {
       [s.calibratingEnd || s.moving || s.lost]
       illegal;
-
     }
     on endSensor.pressed():
     {
@@ -108,16 +96,13 @@ component EndConstrainedMove {
       {
         motor.stop();
         notifyArrived();
-
       }
       [s.calibratingEnd]
       {
         recordHome();
         s = State.idle;
         ctrl.homed();
-
       }
-
     }
     on endSensor.released():
     {
@@ -125,7 +110,6 @@ component EndConstrainedMove {
       illegal;
       [s.moving]
       {}
-
     }
     on motor.arrived():
     {
@@ -133,7 +117,6 @@ component EndConstrainedMove {
       illegal;
       [s.moving]
       notifyArrived();
-
     }
     on ctrl.move(target):
     [s.idle]
@@ -142,7 +125,6 @@ component EndConstrainedMove {
       ignore = endSensor.enable();
       motor.move($(config.get("Power::OperationalSpeed"))$, target);
       s = State.moving;
-
     }
   }
 

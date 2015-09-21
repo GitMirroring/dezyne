@@ -42,19 +42,15 @@ interface NonDet3 {
         {
           ok;
           mainState = States.Ready;
-
         }
         [true]
         {
           error;
           mainState = States.Error;
-
         }
-
       }
       [mainState.Error || mainState.Stopping || mainState.Working || mainState.Ready]
       illegal;
-
     }
     on work:
     {
@@ -62,7 +58,6 @@ interface NonDet3 {
       illegal;
       [mainState.Ready]
       mainState = States.Working;
-
     }
     on recover:
     {
@@ -74,17 +69,13 @@ interface NonDet3 {
         {
           ok;
           mainState = States.Ready;
-
         }
         [true]
         {
           error;
           mainState = States.Error;
-
         }
-
       }
-
     }
     on stop:
     {
@@ -96,7 +87,6 @@ interface NonDet3 {
       mainState = States.Ready;
       [mainState.Error]
       ok;
-
     }
     on inevitable:
     {
@@ -106,17 +96,13 @@ interface NonDet3 {
         {
           ok;
           mainState = States.Ready;
-
         }
         [true]
         {
           error;
           mainState = States.Error;
-
         }
-
       }
-
     }
   }
 }

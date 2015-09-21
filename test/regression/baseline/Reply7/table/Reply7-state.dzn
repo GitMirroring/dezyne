@@ -42,7 +42,6 @@ component Reply7 {
       IReply7.E v = r.foo();
       reply(v);
       return false;
-
     }
 
     [true]

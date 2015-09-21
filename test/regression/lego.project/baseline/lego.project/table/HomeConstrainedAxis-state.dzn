@@ -32,7 +32,6 @@ component HomeConstrainedMove {
     void slowBackward() {
       motor.run($(config.get("Power::CalibrationSpeed"))$, $true$);
       return false;
-
     }
 
     void recordHome() {
@@ -40,7 +39,6 @@ component HomeConstrainedMove {
       motor.stop();
       motor.zero();
       return false;
-
     }
 
     void startAbsoluteMove(IConstrainedMove.position_t target) {
@@ -49,7 +47,6 @@ component HomeConstrainedMove {
       motor.move($(config.get("Power::OperationalSpeed"))$, target);
       s = State.moving;
       return false;
-
     }
 
     void notifyArrived() {
@@ -58,7 +55,6 @@ component HomeConstrainedMove {
       s = State.idle;
       ctrl.arrived();
       return false;
-
     }
 
     [s.lost]
@@ -68,7 +64,6 @@ component HomeConstrainedMove {
         motor.stop();
         homeSensor.disable();
         s = State.lost;
-
       }
       on ctrl.calibrate():
       {
@@ -77,19 +72,14 @@ component HomeConstrainedMove {
           recordHome();
           s = State.idle;
           ctrl.homed();
-
         }
-        else
-        {
+        else {
           slowBackward();
           s = State.calibratingHome;
-
         }
-
       }
       on ctrl.move(), homeSensor.pressed(), homeSensor.released(), motor.arrived():
       illegal;
-
     }
     [s.idle]
     {
@@ -98,7 +88,6 @@ component HomeConstrainedMove {
         motor.stop();
         homeSensor.disable();
         s = State.lost;
-
       }
       on ctrl.calibrate(), homeSensor.pressed(), homeSensor.released(), motor.arrived():
       illegal;
@@ -108,9 +97,7 @@ component HomeConstrainedMove {
         ignore = homeSensor.enable();
         motor.move($(config.get("Power::OperationalSpeed"))$, target);
         s = State.moving;
-
       }
-
     }
     [s.moving]
     {
@@ -119,7 +106,6 @@ component HomeConstrainedMove {
         motor.stop();
         homeSensor.disable();
         s = State.lost;
-
       }
       on ctrl.calibrate(), ctrl.move():
       illegal;
@@ -128,13 +114,11 @@ component HomeConstrainedMove {
         motor.stop();
         recordHome();
         notifyArrived();
-
       }
       on homeSensor.released():
       {}
       on motor.arrived():
       notifyArrived();
-
     }
     [s.calibratingHome]
     {
@@ -143,7 +127,6 @@ component HomeConstrainedMove {
         motor.stop();
         homeSensor.disable();
         s = State.lost;
-
       }
       on ctrl.calibrate(), ctrl.move(), homeSensor.released(), motor.arrived():
       illegal;
@@ -152,9 +135,7 @@ component HomeConstrainedMove {
         recordHome();
         s = State.idle;
         ctrl.homed();
-
       }
-
     }
   }
 

@@ -31,7 +31,6 @@ interface IFunctionCallArgs {
       if (c) act;
       b = true;
       return false;
-
     }
 
     [!b]

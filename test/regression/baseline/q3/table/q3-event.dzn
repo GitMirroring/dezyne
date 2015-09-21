@@ -47,9 +47,7 @@ interface ir3 {
         s = !s;
         a;
         b;
-
       }
-
     }
   }
 }
@@ -65,7 +63,6 @@ component q3 {
     {
       p.a();
       r.e();
-
     }
     on r.a():
     [true]

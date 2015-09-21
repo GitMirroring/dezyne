@@ -27,14 +27,12 @@ interface I {
   behaviour {
     bool dummy = false;
 
-    nameIStatus fun() {
+    Status fun() {
       return Status.Yes;
-
     }
 
-    nameIStatus fun_arg(Status s) {
+    Status fun_arg(Status s) {
       return s;
-
     }
 
     on done:
@@ -45,17 +43,13 @@ interface I {
         {
           Status v = fun();
           reply(v);
-
         }
         [true]
         {
           Status v = fun_arg(Status.No);
           reply(v);
-
         }
-
       }
-
     }
   }
 }
@@ -67,14 +61,12 @@ interface U {
   behaviour {
     bool dummy = false;
 
-    nameUStatus fun() {
+    Status fun() {
       return Status.Ok;
-
     }
 
-    nameUStatus fun_arg(Status s) {
+    Status fun_arg(Status s) {
       return s;
-
     }
 
     on what:
@@ -85,17 +77,13 @@ interface U {
         {
           Status v = fun();
           reply(v);
-
         }
         [true]
         {
           Status v = fun_arg(Status.Ok);
           reply(v);
-
         }
-
       }
-
     }
   }
 }
@@ -108,14 +96,12 @@ component Reply4 {
     enum Status {Yes, No};
     bool dummy = false;
 
-    nameReply4Status fun() {
+    Status fun() {
       return Status.Yes;
-
     }
 
-    nameReply4Status fun_arg(Status s) {
+    Status fun_arg(Status s) {
       return s;
-
     }
 
     on i.done():
@@ -127,21 +113,14 @@ component Reply4 {
         if (s == U.Status.Ok) {
           Status v = fun();
           if (v == Status.Yes) reply(I.Status.Yes);
-          else
-          reply(I.Status.No);
-
+          else reply(I.Status.No);
         }
-        else
-        {
+        else {
           Status v = fun_arg(Status.No);
           if (v == Status.Yes) reply(I.Status.Yes);
-          else
-          reply(I.Status.No);
-
+          else reply(I.Status.No);
         }
-
       }
-
     }
   }
 

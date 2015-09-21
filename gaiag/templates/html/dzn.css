@@ -1,0 +1,27 @@
+body {
+    background-color: #ffffff;
+}
+.component {
+
+}
+.enum-name {
+    color: #0000b0;
+}
+.enum-field {
+    color: #6060e0;
+}
+.keyword {
+    color: #a000a0;
+}
+.scope {
+    color: #ffa500;
+}
+.event {
+    color: #404040;
+}
+.port {
+    color: #a0a0a0;
+}
+.type {
+    color: #00a000;
+}

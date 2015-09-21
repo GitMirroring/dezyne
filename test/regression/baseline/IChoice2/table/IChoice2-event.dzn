@@ -36,7 +36,6 @@ interface IChoice2 {
       state = States.Armed;
       [state.Disarming || state.Triggered || state.Armed]
       illegal;
-
     }
     on disarm:
     {
@@ -44,21 +43,18 @@ interface IChoice2 {
       illegal;
       [state.Triggered || state.Armed]
       state = States.Disarming;
-
     }
     on optional:
     [state.Armed]
     {
       detected;
       state = States.Triggered;
-
     }
     on inevitable:
     [state.Disarming]
     {
       deactivated;
       state = States.Disarmed;
-
     }
   }
 }

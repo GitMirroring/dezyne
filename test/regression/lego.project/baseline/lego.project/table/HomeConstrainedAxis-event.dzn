@@ -32,7 +32,6 @@ component HomeConstrainedMove {
     void slowBackward() {
       motor.run($(config.get("Power::CalibrationSpeed"))$, $true$);
       return false;
-
     }
 
     void recordHome() {
@@ -40,7 +39,6 @@ component HomeConstrainedMove {
       motor.stop();
       motor.zero();
       return false;
-
     }
 
     void startAbsoluteMove(IConstrainedMove.position_t target) {
@@ -49,7 +47,6 @@ component HomeConstrainedMove {
       motor.move($(config.get("Power::OperationalSpeed"))$, target);
       s = State.moving;
       return false;
-
     }
 
     void notifyArrived() {
@@ -58,7 +55,6 @@ component HomeConstrainedMove {
       s = State.idle;
       ctrl.arrived();
       return false;
-
     }
 
     on ctrl.stop():
@@ -68,9 +64,7 @@ component HomeConstrainedMove {
         motor.stop();
         homeSensor.disable();
         s = State.lost;
-
       }
-
     }
     on ctrl.calibrate():
     {
@@ -81,25 +75,19 @@ component HomeConstrainedMove {
           recordHome();
           s = State.idle;
           ctrl.homed();
-
         }
-        else
-        {
+        else {
           slowBackward();
           s = State.calibratingHome;
-
         }
-
       }
       [s.calibratingHome || s.moving || s.idle]
       illegal;
-
     }
     on ctrl.move():
     {
       [s.calibratingHome || s.moving || s.lost]
       illegal;
-
     }
     on homeSensor.pressed():
     {
@@ -110,16 +98,13 @@ component HomeConstrainedMove {
         motor.stop();
         recordHome();
         notifyArrived();
-
       }
       [s.calibratingHome]
       {
         recordHome();
         s = State.idle;
         ctrl.homed();
-
       }
-
     }
     on homeSensor.released():
     {
@@ -127,7 +112,6 @@ component HomeConstrainedMove {
       illegal;
       [s.moving]
       {}
-
     }
     on motor.arrived():
     {
@@ -135,7 +119,6 @@ component HomeConstrainedMove {
       illegal;
       [s.moving]
       notifyArrived();
-
     }
     on ctrl.move(target):
     [s.idle]
@@ -144,7 +127,6 @@ component HomeConstrainedMove {
       ignore = homeSensor.enable();
       motor.move($(config.get("Power::OperationalSpeed"))$, target);
       s = State.moving;
-
     }
   }
 

@@ -36,7 +36,6 @@ interface IConsole {
       state = State.Armed;
       [state.Disarming || state.Triggered || state.Armed]
       illegal;
-
     }
     on disarm:
     {
@@ -44,21 +43,18 @@ interface IConsole {
       illegal;
       [state.Triggered || state.Armed]
       state = State.Disarming;
-
     }
     on optional:
     [state.Armed]
     {
       detected;
       state = State.Triggered;
-
     }
     on inevitable:
     [state.Disarming]
     {
       deactivated;
       state = State.Disarmed;
-
     }
   }
 }
@@ -79,7 +75,6 @@ interface ISensor {
       state = State.Enabled;
       [state.Triggered || state.Disabling || state.Enabled]
       illegal;
-
     }
     on disable:
     {
@@ -87,21 +82,18 @@ interface ISensor {
       illegal;
       [state.Triggered || state.Enabled]
       state = State.Disabling;
-
     }
     on optional:
     [state.Enabled]
     {
       triggered;
       state = State.Triggered;
-
     }
     on inevitable:
     [state.Disabling]
     {
       disabled;
       state = State.Disabled;
-
     }
   }
 }
@@ -120,7 +112,6 @@ interface ISiren {
       state = State.On;
       [state.On]
       illegal;
-
     }
     on turnoff:
     {
@@ -128,7 +119,6 @@ interface ISiren {
       illegal;
       [state.On]
       state = State.Off;
-
     }
   }
 }
@@ -149,11 +139,9 @@ component Alarm {
       {
         sensor.enable();
         state = State.Armed;
-
       }
       [state.Disarming || state.Triggered || state.Armed]
       illegal;
-
     }
     on console.disarm():
     {
@@ -163,16 +151,13 @@ component Alarm {
       {
         sensor.disable();
         state = State.Disarming;
-
       }
       [state.Triggered]
       {
         sensor.disable();
         sounding = false;
         state = State.Disarming;
-
       }
-
     }
     on sensor.triggered():
     {
@@ -184,9 +169,7 @@ component Alarm {
         siren.turnon();
         sounding = true;
         state = State.Triggered;
-
       }
-
     }
     on sensor.disabled():
     {
@@ -199,17 +182,13 @@ component Alarm {
           console.deactivated();
           sounding = false;
           state = State.Disarmed;
-
         }
         [otherwise]
         {
           console.deactivated();
           state = State.Disarmed;
-
         }
-
       }
-
     }
   }
 

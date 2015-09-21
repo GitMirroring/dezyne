@@ -33,13 +33,11 @@ component ConstrainedMove {
     void slowForward() {
       motor.run($(config.get("Power::CalibrationSpeed"))$, $false$);
       return false;
-
     }
 
     void slowBackward() {
       motor.run($(config.get("Power::CalibrationSpeed"))$, $true$);
       return false;
-
     }
 
     void recordHome() {
@@ -47,14 +45,12 @@ component ConstrainedMove {
       motor.stop();
       motor.zero();
       return false;
-
     }
 
     void recordLength() {
       endSensor.disable();
       motor.stop();
       return false;
-
     }
 
     void startAbsoluteMove(IConstrainedMove.position_t target) {
@@ -64,7 +60,6 @@ component ConstrainedMove {
       motor.move($(config.get("Power::OperationalSpeed"))$, target);
       s = State.moving;
       return false;
-
     }
 
     void notifyArrived() {
@@ -74,7 +69,6 @@ component ConstrainedMove {
       s = State.idle;
       ctrl.arrived();
       return false;
-
     }
 
     on ctrl.stop():
@@ -85,9 +79,7 @@ component ConstrainedMove {
         homeSensor.disable();
         endSensor.disable();
         s = State.lost;
-
       }
-
     }
     on ctrl.calibrate():
     {
@@ -101,33 +93,24 @@ component ConstrainedMove {
             recordLength();
             s = State.idle;
             ctrl.homed();
-
           }
-          else
-          {
+          else {
             slowForward();
             s = State.calibratingLength;
-
           }
-
         }
-        else
-        {
+        else {
           slowBackward();
           s = State.calibratingHome;
-
         }
-
       }
       [s.calibratingLength || s.calibratingHome || s.moving || s.idle]
       illegal;
-
     }
     on ctrl.move():
     {
       [s.calibratingLength || s.calibratingHome || s.moving || s.lost]
       illegal;
-
     }
     on homeSensor.pressed():
     {
@@ -137,7 +120,6 @@ component ConstrainedMove {
       {
         motor.stop();
         notifyArrived();
-
       }
       [s.calibratingHome]
       {
@@ -147,17 +129,12 @@ component ConstrainedMove {
           recordLength();
           s = State.idle;
           ctrl.homed();
-
         }
-        else
-        {
+        else {
           slowForward();
           s = State.calibratingLength;
-
         }
-
       }
-
     }
     on homeSensor.released():
     {
@@ -165,7 +142,6 @@ component ConstrainedMove {
       illegal;
       [s.moving]
       {}
-
     }
     on endSensor.pressed():
     {
@@ -175,16 +151,13 @@ component ConstrainedMove {
       {
         motor.stop();
         notifyArrived();
-
       }
       [s.calibratingLength]
       {
         recordLength();
         ctrl.homed();
         s = State.idle;
-
       }
-
     }
     on endSensor.released():
     {
@@ -192,7 +165,6 @@ component ConstrainedMove {
       illegal;
       [s.moving]
       {}
-
     }
     on motor.arrived():
     {
@@ -200,7 +172,6 @@ component ConstrainedMove {
       illegal;
       [s.moving]
       notifyArrived();
-
     }
     on ctrl.move(target):
     [s.idle]
@@ -210,7 +181,6 @@ component ConstrainedMove {
       ignore = endSensor.enable();
       motor.move($(config.get("Power::OperationalSpeed"))$, target);
       s = State.moving;
-
     }
   }
 

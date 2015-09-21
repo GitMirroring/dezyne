@@ -61,7 +61,6 @@ component DataVariables {
       s = $1$;
       rp.inoutString(s);
       return false;
-
     }
 
     on pp.inInt(idv):
@@ -76,7 +75,6 @@ component DataVariables {
       IDataVariables.string local = s;
       f(local);
       s = local;
-
     }
     on rp.inDataVariable(idv):
     [true]

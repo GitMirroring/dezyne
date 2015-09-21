@@ -32,7 +32,6 @@ interface ifunction2 {
     bool vtoggle() {
       if (f) c;
       return !f;
-
     }
 
     [!f]
@@ -45,9 +44,7 @@ interface ifunction2 {
         bool bb = vtoggle();
         f = bb;
         d;
-
       }
-
     }
     [f]
     {
@@ -59,9 +56,7 @@ interface ifunction2 {
         bool bb = vtoggle();
         f = bb;
         d;
-
       }
-
     }
   }
 }
@@ -75,7 +70,6 @@ component function2 {
     bool vtoggle() {
       if (f) i.c();
       return !f;
-
     }
 
     [!f]
@@ -88,9 +82,7 @@ component function2 {
         bool bb = vtoggle();
         f = bb;
         i.d();
-
       }
-
     }
     [f]
     {
@@ -102,9 +94,7 @@ component function2 {
         bool bb = vtoggle();
         f = bb;
         i.d();
-
       }
-
     }
   }
 

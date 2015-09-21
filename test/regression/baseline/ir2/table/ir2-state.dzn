@@ -32,7 +32,6 @@ interface ir2 {
       s = !s;
       a;
       a;
-
     }
     [s]
     on inevitable:
@@ -40,7 +39,6 @@ interface ir2 {
       s = !s;
       a;
       a;
-
     }
   }
 }

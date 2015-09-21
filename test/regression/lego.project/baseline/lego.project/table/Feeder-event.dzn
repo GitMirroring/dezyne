@@ -35,37 +35,30 @@ component Feed {
     void feedNext() {
       if (inventory == 4) {
         axis.move($(config.get("Position::Feeder::DropFirst"))$);
-
       }
       if (inventory == 3) {
         axis.move($(config.get("Position::Feeder::DropSecond"))$);
-
       }
       if (inventory == 2) {
         axis.move($(config.get("Position::Feeder::DropThird"))$);
-
       }
       if (inventory == 1) {
         axis.move($(config.get("Position::Feeder::DropLast"))$);
-
       }
       s = State.Preparing;
       inventory = inventory - 1;
       return false;
-
     }
 
     void retract() {
       axis.move($(config.get("Position::Feeder::Retracted"))$);
       isRetracting = true;
       return false;
-
     }
 
     void refill() {
       inventory = 4;
       return false;
-
     }
 
     on ctrl.stop():
@@ -76,9 +69,7 @@ component Feed {
         s = State.Lost;
         isRetracting = false;
         isFeedRequested = false;
-
       }
-
     }
     on ctrl.calibrate():
     {
@@ -86,11 +77,9 @@ component Feed {
       {
         axis.calibrate();
         s = State.Calibrating;
-
       }
       [s.Prepared || s.Preparing || s.Idle || s.Calibrating]
       illegal;
-
     }
     on ctrl.produceBall():
     {
@@ -107,7 +96,6 @@ component Feed {
       illegal;
       [s.Prepared]
       feedNext();
-
     }
     on axis.homed():
     {
@@ -118,9 +106,7 @@ component Feed {
         ctrl.calibrated();
         refill();
         s = State.Idle;
-
       }
-
     }
     on axis.arrived():
     {
@@ -133,7 +119,6 @@ component Feed {
         if (isFeedRequested) feedNext();
         isRetracting = false;
         isFeedRequested = false;
-
       }
       [s.Idle]
       [!isRetracting]
@@ -143,7 +128,6 @@ component Feed {
       {
         ctrl.consumeNextBall();
         s = State.Prepared;
-
       }
       [s.Preparing]
       [inventory == 0]
@@ -151,9 +135,7 @@ component Feed {
         ctrl.consumeLastBall();
         retract();
         s = State.Idle;
-
       }
-
     }
   }
 

@@ -30,13 +30,11 @@ interface I {
     void reply_fun() {
       reply(Status.Yes);
       return false;
-
     }
 
     void reply_fun_arg(Status s) {
       reply(s);
       return false;
-
     }
 
     on done:
@@ -47,9 +45,7 @@ interface I {
         reply_fun();
         [true]
         reply_fun_arg(Status.No);
-
       }
-
     }
   }
 }
@@ -64,13 +60,11 @@ interface U {
     void reply_fun() {
       reply(Status.Ok);
       return false;
-
     }
 
     void reply_fun_arg(Status s) {
       reply(s);
       return false;
-
     }
 
     on what:
@@ -81,9 +75,7 @@ interface U {
         reply_fun();
         [true]
         reply_fun_arg(Status.Nok);
-
       }
-
     }
   }
 }
@@ -98,13 +90,11 @@ component Reply3 {
     void reply_fun() {
       reply(I.Status.Yes);
       return false;
-
     }
 
     void reply_fun_arg(I.Status s) {
       reply(s);
       return false;
-
     }
 
     on i.done():
@@ -114,11 +104,8 @@ component Reply3 {
         U.Status s = u.what();
         s = u.what();
         if (s == U.Status.Ok) reply_fun();
-        else
-        reply_fun_arg(I.Status.No);
-
+        else reply_fun_arg(I.Status.No);
       }
-
     }
   }
 

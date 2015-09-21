@@ -44,13 +44,10 @@ interface IFeed {
         {
           calibrated;
           s = State.Idle;
-
         }
-
       }
       on produceBall:
       illegal;
-
     }
     [s.Calibrating]
     {
@@ -62,9 +59,7 @@ interface IFeed {
       {
         calibrated;
         s = State.Idle;
-
       }
-
     }
     [s.Idle]
     {
@@ -80,17 +75,13 @@ interface IFeed {
         {
           consumeNextBall;
           s = State.Prepared;
-
         }
         [true]
         {
           consumeLastBall;
           s = State.Idle;
-
         }
-
       }
-
     }
     [s.Preparing]
     {
@@ -104,17 +95,13 @@ interface IFeed {
         {
           consumeNextBall;
           s = State.Prepared;
-
         }
         [true]
         {
           consumeLastBall;
           s = State.Idle;
-
         }
-
       }
-
     }
     [s.Prepared]
     {
@@ -130,17 +117,13 @@ interface IFeed {
         {
           consumeNextBall;
           s = State.Prepared;
-
         }
         [true]
         {
           consumeLastBall;
           s = State.Idle;
-
         }
-
       }
-
     }
   }
 }

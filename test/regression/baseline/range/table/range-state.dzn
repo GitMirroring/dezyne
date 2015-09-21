@@ -28,9 +28,8 @@ interface range {
     subint State {0..3};
     State state = 3;
 
-    namerangeState f() {
+    State f() {
       return 5;
-
     }
 
     [state.0]
@@ -41,7 +40,6 @@ interface range {
       State x = 6;
       State y = f();
       a;
-
     }
     [state.1]
     on e:
@@ -51,7 +49,6 @@ interface range {
       State x = 6;
       State y = f();
       a;
-
     }
     [state.2]
     on e:
@@ -61,7 +58,6 @@ interface range {
       State x = 6;
       State y = f();
       a;
-
     }
     [state.3]
     on e:
@@ -71,7 +67,6 @@ interface range {
       State x = 6;
       State y = f();
       a;
-
     }
   }
 }

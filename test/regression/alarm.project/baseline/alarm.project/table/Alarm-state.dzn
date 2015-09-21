@@ -36,11 +36,9 @@ component Alarm {
       {
         sensor.enable();
         state = States.Armed;
-
       }
       on console.disarm(), sensor.triggered(), sensor.disabled():
       illegal;
-
     }
     [state.Armed]
     {
@@ -50,7 +48,6 @@ component Alarm {
       {
         sensor.disable();
         state = States.Disarming;
-
       }
       on sensor.triggered():
       {
@@ -58,9 +55,7 @@ component Alarm {
         siren.turnon();
         sounding = true;
         state = States.Triggered;
-
       }
-
     }
     [state.Triggered]
     {
@@ -72,9 +67,7 @@ component Alarm {
         siren.turnoff();
         sounding = false;
         state = States.Disarming;
-
       }
-
     }
     [state.Disarming]
     {
@@ -90,17 +83,13 @@ component Alarm {
           siren.turnoff();
           state = States.Disarmed;
           sounding = false;
-
         }
         [otherwise]
         {
           console.deactivated();
           state = States.Disarmed;
-
         }
-
       }
-
     }
   }
 

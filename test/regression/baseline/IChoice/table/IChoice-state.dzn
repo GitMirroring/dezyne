@@ -44,23 +44,19 @@ interface IChoice {
         preference = Style.State;
         ss;
         reply(preference);
-
       }
       [true]
       {
         preference = Style.Mixed;
         sm;
         reply(preference);
-
       }
       [true]
       {
         preference = Style.Event;
         se;
         reply(preference);
-
       }
-
     }
     [preference.Mixed]
     on choose:
@@ -70,23 +66,19 @@ interface IChoice {
         preference = Style.State;
         ms;
         reply(preference);
-
       }
       [true]
       {
         preference = Style.Mixed;
         mm;
         reply(preference);
-
       }
       [true]
       {
         preference = Style.Event;
         me;
         reply(preference);
-
       }
-
     }
     [preference.Event]
     on choose:
@@ -96,23 +88,19 @@ interface IChoice {
         preference = Style.State;
         es;
         reply(preference);
-
       }
       [true]
       {
         preference = Style.Mixed;
         em;
         reply(preference);
-
       }
       [true]
       {
         preference = Style.Event;
         ee;
         reply(preference);
-
       }
-
     }
   }
 }

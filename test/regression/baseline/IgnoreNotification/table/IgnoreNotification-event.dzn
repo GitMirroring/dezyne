@@ -48,15 +48,12 @@ interface INotifier {
         oa;
         oa;
         isPaired = !isPaired;
-
       }
       [isPaired]
       {
         oa;
         isPaired = !isPaired;
-
       }
-
     }
   }
 }
@@ -72,7 +69,6 @@ component IgnoreNotification {
     {
       [communicate || !communicate]
       {}
-
     }
     on rp.oa():
     {
@@ -80,7 +76,6 @@ component IgnoreNotification {
       {}
       [communicate]
       pp.oa();
-
     }
   }
 

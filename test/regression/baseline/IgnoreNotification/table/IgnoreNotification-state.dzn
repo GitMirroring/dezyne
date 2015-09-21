@@ -32,7 +32,6 @@ interface IDummy {
       {}
       on optional:
       oa;
-
     }
   }
 }
@@ -49,14 +48,12 @@ interface INotifier {
       oa;
       oa;
       isPaired = !isPaired;
-
     }
     [isPaired]
     on optional:
     {
       oa;
       isPaired = !isPaired;
-
     }
   }
 }
@@ -77,7 +74,6 @@ component IgnoreNotification {
       {}
       on rp.oa():
       pp.oa();
-
     }
   }
 

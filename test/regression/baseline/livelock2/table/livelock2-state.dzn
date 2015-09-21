@@ -31,7 +31,6 @@ interface ilivelock {
       illegal;
       on inevitable:
       {}
-
     }
   }
 }
@@ -59,7 +58,6 @@ component livelock2 {
       illegal;
       on n.dummy():
       {}
-
     }
   }
 

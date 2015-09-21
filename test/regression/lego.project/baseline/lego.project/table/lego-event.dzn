@@ -59,7 +59,6 @@ interface imotor {
       reply(result_t.yes);
       [true]
       reply(result_t.no);
-
     }
   }
 }
@@ -76,7 +75,6 @@ interface itouch {
       reply(status.pressed);
       [true]
       reply(status.released);
-
     }
   }
 }
@@ -101,7 +99,6 @@ interface ilight {
       reply(status.accept);
       [true]
       reply(status.reject);
-
     }
   }
 }
@@ -122,7 +119,6 @@ interface itimer {
       state = State.Pending;
       [state.Pending]
       illegal;
-
     }
     on cancel:
     {
@@ -130,14 +126,12 @@ interface itimer {
       {}
       [state.Pending]
       state = State.Idle;
-
     }
     on inevitable:
     [state.Pending]
     {
       timeout;
       state = State.Idle;
-
     }
   }
 }

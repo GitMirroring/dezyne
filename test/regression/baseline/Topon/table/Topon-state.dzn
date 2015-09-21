@@ -39,9 +39,7 @@ interface ITopon {
         a;
         [!c]
         a;
-
       }
-
     }
     [b]
     {
@@ -50,7 +48,6 @@ interface ITopon {
       on e:
       [!c]
       a;
-
     }
   }
 }
@@ -72,9 +69,7 @@ component Topon {
         i.a();
         [!c]
         i.a();
-
       }
-
     }
     [b]
     {
@@ -83,7 +78,6 @@ component Topon {
       on i.e():
       [!c]
       i.a();
-
     }
   }
 

@@ -32,7 +32,6 @@ interface Provides {
     {
       busy;
       finish;
-
     }
   }
 }
@@ -48,7 +47,6 @@ interface Requires {
     {
       pong;
       pong;
-
     }
   }
 }
@@ -68,9 +66,7 @@ component reply_reorder {
       {
         p.finish();
         first = !first;
-
       }
-
     }
     [first]
     {
@@ -80,9 +76,7 @@ component reply_reorder {
       {
         p.busy();
         first = !first;
-
       }
-
     }
   }
 

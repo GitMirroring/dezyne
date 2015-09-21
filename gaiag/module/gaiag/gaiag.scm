@@ -71,7 +71,7 @@ Usage: gaiag [OPTION]... FILE
   -o, --output FILE    generate FILE containing the output
   -v, --version        display version
 
-Languages: c c++ cs csp dezyne goops java javascript python
+Languages: c c++ cs csp dzn goops html java javascript python
            c++03 c++msvc11 java7
            ast annotate om norm-event norm-state resolve
            run table-event table-state wfc

@@ -38,9 +38,7 @@ interface ISynchronousOut {
         reply(Val.One);
         out_event;
         reply(Val.Two);
-
       }
-
     }
   }
 }
@@ -59,11 +57,9 @@ component SynchronousOut {
       {
         ISynchronousOut.Val v = rp.valued_event();
         reply(v);
-
       }
       on rp.out_event():
       pp.out_event();
-
     }
   }
 

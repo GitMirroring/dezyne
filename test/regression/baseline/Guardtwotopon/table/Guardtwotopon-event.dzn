@@ -32,7 +32,6 @@ interface IGuardtwotopon {
     {
       [b || !b]
       a;
-
     }
     on t:
     [!b]
@@ -52,17 +51,14 @@ component Guardtwotopon {
       {
         bool c = true;
         if (c) i.a();
-
       }
       [b]
       i.a();
-
     }
     on i.t():
     {
       [b || !b]
       i.a();
-
     }
   }
 

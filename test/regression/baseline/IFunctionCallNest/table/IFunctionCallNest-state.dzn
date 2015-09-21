@@ -31,13 +31,11 @@ interface IFunctionCallNest {
       inner(c);
       b = true;
       return false;
-
     }
 
     void inner(bool d) {
       if (d) act;
       return false;
-
     }
 
     [!b]

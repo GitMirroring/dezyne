@@ -37,7 +37,6 @@ interface IMultipleOutEventsOnSingleTau {
         illegal;
         [true]
         {}
-
       }
       on inevitable:
       {
@@ -46,17 +45,13 @@ interface IMultipleOutEventsOnSingleTau {
           oa;
           ob;
           state = States.Open;
-
         }
         [true]
         {
           oa;
           state = States.Emitting;
-
         }
-
       }
-
     }
     [state.Emitting]
     {
@@ -66,15 +61,12 @@ interface IMultipleOutEventsOnSingleTau {
         illegal;
         [true]
         {}
-
       }
       on inevitable:
       {
         ob;
         state = States.Open;
-
       }
-
     }
     [state.Open]
     on ca:
@@ -96,7 +88,6 @@ component MultipleOutEventsOnSingleTau {
       if (ca_enabled) {
         rp.ca();
         combine_out = !combine_out;
-
       }
       on rp.oa():
       pp.oa();
@@ -104,9 +95,7 @@ component MultipleOutEventsOnSingleTau {
       {
         pp.ob();
         ca_enabled = true;
-
       }
-
     }
     [combine_out]
     {
@@ -114,7 +103,6 @@ component MultipleOutEventsOnSingleTau {
       if (ca_enabled) {
         rp.ca();
         combine_out = !combine_out;
-
       }
       on rp.oa():
       {}
@@ -123,9 +111,7 @@ component MultipleOutEventsOnSingleTau {
         pp.oa();
         pp.ob();
         ca_enabled = true;
-
       }
-
     }
   }
 

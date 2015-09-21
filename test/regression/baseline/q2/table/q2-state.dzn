@@ -44,7 +44,6 @@ interface ir2 {
       s = !s;
       a;
       a;
-
     }
     [s]
     on inevitable:
@@ -52,7 +51,6 @@ interface ir2 {
       s = !s;
       a;
       a;
-
     }
   }
 }
@@ -69,7 +67,6 @@ component q2 {
       p.a();
       on r.a():
       {}
-
     }
   }
 

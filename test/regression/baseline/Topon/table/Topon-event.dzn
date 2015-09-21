@@ -33,14 +33,12 @@ interface ITopon {
     {
       [b || !b]
       a;
-
     }
     on e:
     {
       [b || !b]
       [!c]
       a;
-
     }
   }
 }
@@ -56,14 +54,12 @@ component Topon {
     {
       [b || !b]
       i.a();
-
     }
     on i.e():
     {
       [b || !b]
       [!c]
       i.a();
-
     }
   }
 

@@ -28,11 +28,13 @@
 (define-module (gaiag dzn)
   :use-module (gaiag list match)
   :use-module (ice-9 curried-definitions)
+  :use-module (ice-9 getopt-long)
   :use-module (ice-9 pretty-print)
 
   :use-module (gaiag om)
 
   :use-module (gaiag animate)
+  :use-module (gaiag gaiag)
   :use-module (gaiag indent)
   :use-module (gaiag code)
   :use-module (gaiag misc)
@@ -68,14 +70,15 @@
                              (statement ,((->dzn model) statement))))))
 
     (('compound)
-     ((animate-snippet 'compound-empty '())))
+     ((animate-snippet 'compound-empty)))
 
     (('compound statements ...)
      ((animate-snippet 'compound `((statements ,(map (->dzn model) statements))))))
 
-    (($ <action> trigger) (->string ((->dzn model) trigger) ";\n"))
+    (($ <action> trigger)
+     ((animate-snippet 'action `((trigger ,((->dzn model) trigger))))))
 
-    (($ <illegal>) "illegal;\n")
+    (($ <illegal>) ((animate-snippet 'illegal)))
 
     (($ <assign> var ($ <call> function arguments))
      ((->dzn model) (list 'assign var (list 'assign-call function arguments))))
@@ -91,7 +94,7 @@
                                           (arguments ,((->dzn model) arguments))))))
 
     (('assign-action action trigger)
-     (->string ((->dzn model) trigger)))
+     ((animate-snippet 'assign-action `((trigger ,((->dzn model) trigger))))))
 
     (($ <call> function arguments)
      ((animate-snippet 'call `((function ,function)
@@ -106,13 +109,13 @@
                                        (then ,((->dzn model) then))
                                        (else ,((->dzn model) else))))))
 
-    (($ <otherwise> value) "otherwise")
+    (($ <otherwise> value) ((animate-snippet 'otherwise)))
 
-    (($ <reply> expression) (->string "reply(" ((->dzn model) expression) ");\n"))
+    (($ <reply> expression) ((animate-snippet 'reply `((expression ,((->dzn model) expression))))))
 
-    (($ <return> (? unspecified?)) (->string "return;"))
+    (($ <return> (? unspecified?)) ((animate-snippet 'return-void)))
 
-    (($ <return> expression) (->string "return " ((->dzn model) expression) ";\n"))
+    (($ <return> expression) ((animate-snippet 'return `((expression ,((->dzn model) expression))))))
 
     (($ <variable> name type ($ <call> function arguments))
      ((->dzn model) (list 'variable name type ((->dzn model) (list 'assign-call function arguments)))))
@@ -137,26 +140,34 @@
                                        (injected? ,injected)))
       o))
 
+    (($ <type> 'bool) ((animate-snippet 'bool)))
+    (($ <type> 'void) ((animate-snippet 'void)))
     (($ <type> ('name scope ... name))
-     ((->join ".") (list ((dzn:scope-join model) scope) name)))
+     ((animate-snippet 'type `((scope ,((dzn:scope-join model) scope))
+                               (dot ,(if (or (null? scope) (equal? (list (om:name model)) scope)) "" "."))
+                               (name ,name)))))
 
-    (($ <binding> #f port) (->string port))
-    (($ <binding> instance port) (->string instance "." port))
+    (($ <binding> #f port) ((animate-snippet 'binding-port `((port ,port)))))
+    (($ <binding> instance port) ((animate-snippet 'binding `((instance ,instance) (port ,port)))))
 
     (($ <formal> name type (or #f 'in)) (->string (list ((->dzn model) type) " " name)))
-    (($ <formal> name type dir) (->string (list dir " " ((->dzn model) type) " " name)))
-    (($ <trigger> #f event) (->string event))
-    (($ <trigger> port event arguments) (->string port '. event ((->dzn model) arguments)))
-
-
+    (($ <formal> name type dir) ((animate-snippet 'formal `((dir ,(if (not (om:out-or-inout? o)) "" dir))
+                                                            (out? ,(om:out-or-inout? o))
+                                                            (type ,((->dzn model) type))
+                                                            (name ,name)))))
+    (($ <trigger> #f event) ((animate-snippet 'itrigger `((event ,event)))))
+    (($ <trigger> port event arguments) ((animate-snippet 'trigger `((event ,event) (port ,port) (arguments ,((->dzn model) arguments))))))
 
     (('group expression) (->string (list "(" ((->dzn model) expression) ")")))
     (($ <expression> expression) (expression->dzn model expression))
     (($ <expression>) #f)
-    (($ <data> data) (->string (list "$" data "$")))
+    (($ <data> data) ((animate-snippet 'data `((data ,data)))))
     (($ <field> type field) (->string (list ((->dzn model) type) "." field)))
     (($ <literal> ('name scope ... name) field)
-     ((->join ".") (list ((dzn:scope-join model) scope) name field)))
+     ((animate-snippet 'literal `((scope ,((dzn:scope-join model) scope))
+                                  (dot ,(if (or (null? scope) (equal? (list (om:name model)) scope)) "" "."))
+                                  (name ,name)
+                                  (field ,field)))))
     (($ <var> identifier) ((->dzn model) identifier))
     (('! ($ <expression> expression)) (->string (list "!" (paren model expression))))
     (('! expression) (->string (list "!" (paren model expression))))
@@ -176,8 +187,8 @@
     ((? string?) o)
     (() "")
     ((? unspecified?) "")
-    (#f "false")
-    (#t "true")
+    (#f ((animate-snippet 'false)))
+    (#t ((animate-snippet 'true)))
     (_ (->string o))))
 
 (define (paren model expression)
@@ -205,7 +216,7 @@
 (define* ((animate-pairs pairs string) :optional parameter)
   (animate string (pairs->module pairs parameter)))
 
-(define* ((animate-snippet file-name pairs) :optional parameter)
+(define* ((animate-snippet file-name :optional (pairs '())) :optional parameter)
   (snippet file-name (pairs->module pairs parameter)))
 
 (define* (pairs->module key-procedure-pairs :optional (parameter #f))
@@ -230,7 +241,7 @@
                     `((direction ,.direction)
                       (formals ,(compose (->dzn model) .formals .signature))
                       (name ,.name)
-                      (type ,(compose om:name .type .signature))
+                      (type ,((->dzn model) ((compose .type .signature) event)))
                       (scope.type ,(compose (om:scope-name '.) .type .signature))))
    event))
 
@@ -239,11 +250,11 @@
                     `((formals ,(compose (->dzn model) .formals .signature))
                       (name ,.name)
                       (statement ,(compose (->dzn model) .statement))
-                      (type ,(compose .name .type .signature))))
+                      (type ,((->dzn model) ((compose .type .signature) function)))))
    function))
 
 (define ((init-binding model) binding)
-  ((animate-snippet 'binding
+  ((animate-snippet 'bind
                     `((left ,(compose (->dzn model) .left))
                       (right ,(compose (->dzn model) .right))))
    binding))
@@ -272,9 +283,14 @@
     (module-define! module '.scope.model (and=> ((is? <model>) o) (om:scope-name '.)))
     module))
 
-(define* ((ast->dzn :optional (model #f)) o)
-  (parameterize ((template-dir (append (prefix-dir) `(templates dzn))))
-    ((->dzn model) o)))
+(define (language)
+  (let ((language (string->symbol (option-ref (parse-opts (command-line)) 'language 'dzn))))
+    (if (member language '(dzn html)) language
+        'dzn)))
+
+(define* ((ast->dzn :optional (model #f) (language (language))) o)
+  (parameterize ((template-dir (append (prefix-dir) `(templates ,language))))
+    (indent-string ((->dzn model) o))))
 
 (define (ast-> ast)
   ((compose

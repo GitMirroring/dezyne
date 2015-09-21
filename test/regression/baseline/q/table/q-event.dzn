@@ -36,7 +36,6 @@ interface iq {
     {
       a;
       b;
-
     }
   }
 }
@@ -56,9 +55,7 @@ interface ir {
       {
         s = !s;
         a;
-
       }
-
     }
     on f:
     {
@@ -66,9 +63,7 @@ interface ir {
       {
         s = !s;
         b;
-
       }
-
     }
   }
 }
@@ -90,7 +85,6 @@ component q {
     {
       r.e();
       r.f();
-
     }
     on r.b():
     [true]

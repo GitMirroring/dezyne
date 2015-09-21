@@ -30,17 +30,14 @@ interface IFunctionCallAssignment {
 
     bool func(bool c) {
       if (c) actTrue;
-      else
-      actFalse;
+      else actFalse;
       return !c;
-
     }
 
     on evt:
     {
       [b || !b]
       b = func(b);
-
     }
   }
 }

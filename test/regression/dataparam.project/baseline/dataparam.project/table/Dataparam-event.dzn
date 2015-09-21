@@ -51,14 +51,12 @@ interface IDataparam {
     {
       a0;
       reply(Status.Yes);
-
     }
     on e:
     [true]
     {
       a;
       aa;
-
     }
     on er:
     [true]
@@ -66,7 +64,6 @@ interface IDataparam {
       a;
       aa;
       reply(Status.Yes);
-
     }
     on eer:
     [true]
@@ -74,7 +71,6 @@ interface IDataparam {
       a;
       aa;
       reply(Status.No);
-
     }
     on eo:
     [true]
@@ -110,14 +106,12 @@ component Dataparam {
     IDataparam.xint mi = $0$;
     IDataparam.Status s = IDataparam.Status.Yes;
 
-    nameIDataparamStatus fun() {
+    IDataparam.Status fun() {
       return IDataparam.Status.Yes;
-
     }
 
-    nameIDataparamStatus funx(IDataparam.xint xi) {
+    IDataparam.Status funx(IDataparam.xint xi) {
       return IDataparam.Status.Yes;
-
     }
 
     on port.e0():
@@ -128,7 +122,6 @@ component Dataparam {
     {
       port.a0();
       reply(IDataparam.Status.Yes);
-
     }
     on port.e(pi):
     [true]
@@ -138,7 +131,6 @@ component Dataparam {
       mi = pi;
       port.a(mi);
       port.aa(mi, pi);
-
     }
     on port.er(pi):
     [true]
@@ -148,7 +140,6 @@ component Dataparam {
       port.a(mi);
       port.aa(mi, pi);
       reply(IDataparam.Status.Yes);
-
     }
     on port.eer(i, j):
     [true]
@@ -157,7 +148,6 @@ component Dataparam {
       port.a(j);
       port.aa(j, i);
       reply(s);
-
     }
     on port.eo(i):
     [true]
@@ -167,7 +157,6 @@ component Dataparam {
     {
       i = $123$;
       j = $456$;
-
     }
     on port.eio(i, j):
     [true]
@@ -177,14 +166,12 @@ component Dataparam {
     {
       IDataparam.xint t = i;
       i = $246$;
-
     }
     on port.eor(i):
     [true]
     {
       i = $234$;
       reply(IDataparam.Status.Yes);
-
     }
     on port.eoor(i, j):
     [true]
@@ -192,14 +179,12 @@ component Dataparam {
       i = $123$;
       j = $456$;
       reply(IDataparam.Status.Yes);
-
     }
     on port.eior(i, j):
     [true]
     {
       j = i;
       reply(IDataparam.Status.Yes);
-
     }
     on port.eio2r(i):
     [true]
@@ -207,7 +192,6 @@ component Dataparam {
       IDataparam.xint t = i;
       i = $246$;
       reply(IDataparam.Status.Yes);
-
     }
   }
 
@@ -224,13 +208,11 @@ component proxy {
       bottom.eo(j);
       i = j;
       return false;
-
     }
 
     void deferfunc(IDataparam.xint i) {
       top.a(i);
       return false;
-
     }
 
     on top.e0():
@@ -241,7 +223,6 @@ component proxy {
     {
       IDataparam.Status r = bottom.e0r();
       reply(r);
-
     }
     on top.e(pi):
     [true]
@@ -251,14 +232,12 @@ component proxy {
     {
       IDataparam.Status r = bottom.er(pi);
       reply(r);
-
     }
     on top.eer(i, j):
     [true]
     {
       IDataparam.Status r = bottom.eer(i, j);
       reply(r);
-
     }
     on top.eo(i):
     [true]
@@ -277,28 +256,24 @@ component proxy {
     {
       IDataparam.Status s = bottom.eor(i);
       reply(s);
-
     }
     on top.eoor(i, j):
     [true]
     {
       IDataparam.Status s = bottom.eoor(i, j);
       reply(s);
-
     }
     on top.eior(i, j):
     [true]
     {
       IDataparam.Status s = bottom.eior(i, j);
       reply(s);
-
     }
     on top.eio2r(i):
     [true]
     {
       IDataparam.Status s = bottom.eio2r(i);
       reply(s);
-
     }
     on bottom.a0():
     [true]

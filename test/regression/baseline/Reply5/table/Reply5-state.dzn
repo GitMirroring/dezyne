@@ -27,14 +27,12 @@ interface I {
   behaviour {
     bool dummy = false;
 
-    nameIStatus fun() {
+    Status fun() {
       return Status.Yes;
-
     }
 
-    nameIStatus fun_arg(Status s) {
+    Status fun_arg(Status s) {
       return s;
-
     }
 
     [!dummy]
@@ -44,15 +42,12 @@ interface I {
       {
         Status s = fun();
         reply(s);
-
       }
       [true]
       {
         Status s = fun_arg(Status.No);
         reply(s);
-
       }
-
     }
     [dummy]
     on done:
@@ -61,15 +56,12 @@ interface I {
       {
         Status s = fun();
         reply(s);
-
       }
       [true]
       {
         Status s = fun_arg(Status.No);
         reply(s);
-
       }
-
     }
   }
 }
@@ -81,14 +73,12 @@ interface U {
   behaviour {
     bool dummy = false;
 
-    nameUStatus fun() {
+    Status fun() {
       return Status.Ok;
-
     }
 
-    nameUStatus fun_arg(Status s) {
+    Status fun_arg(Status s) {
       return s;
-
     }
 
     [!dummy]
@@ -98,15 +88,12 @@ interface U {
       {
         Status s = fun();
         reply(s);
-
       }
       [true]
       {
         Status s = fun_arg(Status.Nok);
         reply(s);
-
       }
-
     }
     [dummy]
     on what:
@@ -115,15 +102,12 @@ interface U {
       {
         Status s = fun();
         reply(s);
-
       }
       [true]
       {
         Status s = fun_arg(Status.Nok);
         reply(s);
-
       }
-
     }
   }
 }
@@ -135,14 +119,12 @@ component Reply5 {
   behaviour {
     bool dummy = false;
 
-    nameIStatus fun() {
+    I.Status fun() {
       return I.Status.Yes;
-
     }
 
-    nameIStatus fun_arg(I.Status s) {
+    I.Status fun_arg(I.Status s) {
       return s;
-
     }
 
     [!dummy]
@@ -153,15 +135,11 @@ component Reply5 {
       if (s == U.Status.Ok) {
         I.Status s = fun();
         reply(s);
-
       }
-      else
-      {
+      else {
         I.Status s = fun_arg(I.Status.No);
         reply(s);
-
       }
-
     }
     [dummy]
     on i.done():
@@ -171,15 +149,11 @@ component Reply5 {
       if (s == U.Status.Ok) {
         I.Status s = fun();
         reply(s);
-
       }
-      else
-      {
+      else {
         I.Status s = fun_arg(I.Status.No);
         reply(s);
-
       }
-
     }
   }
 

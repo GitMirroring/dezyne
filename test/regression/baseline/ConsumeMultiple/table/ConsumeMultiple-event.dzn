@@ -34,7 +34,6 @@ interface ITauEmitMulti {
     {
       [isWaiting || !isWaiting]
       {}
-
     }
     on inevitable:
     [!isWaiting]
@@ -43,16 +42,13 @@ interface ITauEmitMulti {
       {
         ntfA;
         isEmitting = true;
-
       }
       [otherwise]
       {
         ntfB;
         isWaiting = true;
         isEmitting = false;
-
       }
-
     }
     on done:
     {
@@ -60,7 +56,6 @@ interface ITauEmitMulti {
       illegal;
       [isWaiting]
       isWaiting = false;
-
     }
   }
 }
@@ -89,7 +84,6 @@ component ConsumeMultiple {
     {
       [behave || !behave]
       reply(IDummy.ReplyValue.Ok);
-
     }
     on src.ntfA():
     {
@@ -97,7 +91,6 @@ component ConsumeMultiple {
       src.done();
       [behave]
       src.ack();
-
     }
     on src.ntfB():
     {
@@ -107,9 +100,7 @@ component ConsumeMultiple {
       {
         src.done();
         behave = false;
-
       }
-
     }
   }
 

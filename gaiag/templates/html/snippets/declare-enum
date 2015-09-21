@@ -1,0 +1,1 @@
+#(use-modules (gaiag misc))<span class="keyword">enum</span> #name  {#((->join ", ") fields) };
