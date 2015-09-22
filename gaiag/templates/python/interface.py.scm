@@ -1,6 +1,6 @@
 import runtime
 
-class #.interface :
+class #.scope_model :
 #(->string (map (declare-enum model) (append (om:interface-enums model) (om:enums))))#'(
 )#(->string (map (enum-to-string model) (append (om:interface-enums model) (om:enums))))#'(
 )     def __init__ (self, provides=runtime.Port (), requires=runtime.Port ()):

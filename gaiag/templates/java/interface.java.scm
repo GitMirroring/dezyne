@@ -1,4 +1,4 @@
-class #.interface  extends Interface<#.interface .In, #.interface .Out> {#
+class #.scope_model  extends Interface<#.scope_model .In, #.scope_model .Out> {#
 (->string (map (declare-enum model) (om:interface-enums model)))
   class In extends Interface.In {
 #((->join "\n") (map (declare-io model #{
@@ -11,7 +11,7 @@ class #.interface  extends Interface<#.interface .In, #.interface .Out> {#
     #(lambda-type return-type formal-types)  #name;#})
  (filter om:out? ((compose .elements .events) model))))
   }
-  public #.interface() {
+  public #.scope_model() {
     in = new In();
     out = new Out();
   }

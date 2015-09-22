@@ -23,7 +23,7 @@
 
 using System;
 
-public class #.interface  : Interface<#.interface .In, #.interface .Out> {#
+public class #.scope_model  : Interface<#.scope_model .In, #.scope_model .Out> {#
 (->string (map (declare-enum model) (om:interface-enums model)))
   new public class In : Interface<#.scope_model .In, #.scope_model .Out>.In {
 #((->join "\n") (map (declare-io model #{
@@ -36,7 +36,7 @@ public class #.interface  : Interface<#.interface .In, #.interface .Out> {#
     public #(lambda-type return-type formal-types)  #name;#})
  (filter om:out? ((compose .elements .events) model))))
   }
-  public #.interface() {
+  public #.scope_model() {
     inport = new In();
     outport = new Out();
   }

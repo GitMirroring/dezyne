@@ -79,7 +79,7 @@ class main<R> {
 
   private static class EventMap extends HashMap<String, Action> {};
 
-  private static EventMap fillEventMap(#.model  m) {
+  private static EventMap fillEventMap(#.scope_model  m) {
   V<Integer> v = new V<Integer> (0);
   EventMap e = new EventMap();
 #(map
