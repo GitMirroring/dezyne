@@ -116,30 +116,8 @@
     (($ <interface>)
      ((compose om:register-model (resolve o '())) o))
     (($ <component>)
-     (rsp o ((compose om:register-model (resolve #f '()) (resolve-ports o)) o)))
+     ((compose om:register-model (resolve o '())) o))
     (_ ((resolve o '()) o))))
-
-(define ((resolve-ports model) o)
-
-  (define (interface? type)
-    (let loop ((scope (om:scope+name model)))
-      (if (null? scope) (om:interface type)
-          (or (om:interface ((om:ensure-scope scope) type))
-              (loop (drop-right scope 1))))))
-
-  (match o
-    (($ <component> name ports behaviour)
-     (make <component>
-       :name name
-       :ports ((resolve-ports model) ports)
-       :behaviour behaviour))
-    (('ports ports ...)
-     (make <ports> :elements (map (resolve-ports model) ports)))
-    (($ <port> name type dir injected)
-     (let ((interface (interface? type)))
-       (if (not interface) o;; FIXME import...
-           (make <port> :name name :type (.name interface) :direction dir :injected injected))))
-    (_ o)))
 
 (define ((resolve model locals) o)
   (match o
@@ -203,13 +181,10 @@
                  (enum (type? type)))
                 (member field (.elements (.fields enum))))))
 
-  (define (type? type)
-    (let ((name (if (is-a? type <name>) type
-                    (.name type))))
-     (let loop ((scope (om:scope+name model)))
-       (if (null? scope) ((om:type model) type)
-           (or ((om:type model) ((om:ensure-scope scope) name))
-               (loop (drop-right scope 1)))))))
+  (define (type? o)
+    (match o
+      (($ <type> ('name '* rest ...)) ((om:type model) (make <type> :name (cons 'name rest))))
+      (_ ((om:type model) o))))
 
   (define (fake:type model o)
     (match o
@@ -228,6 +203,7 @@
                  enum))
       (_ #f)))
 
+  ;;(stderr "resolve: ~a\n" o)
   (match o
     ('root o)
     (($ <var> (and (? (negate var?)) (get! identifier)))
@@ -435,6 +411,9 @@
        :type ((resolve model locals) type)
        :expression ((resolve model locals) expression)))
 
+    (('name '* rest ...)
+     ((resolve model locals) (cons 'name rest)))
+
     (('name name ...) (=> failure)
      (or (and-let* ((enum (enum? o)))
                    (.name enum))
@@ -459,7 +438,7 @@
      (or (and-let* ((enum (enum? (make <type> :name (make <name> :elements scope)))))
                    (if (member field ((compose .elements .fields) enum))
                        (make <literal> :name (.name enum) :field field)
-                       (resolve-error o field "undefined enum field: ~a")))
+                         (resolve-error o field "undefined enum field: ~a")))
          (failure)))
 
     (($ <expression> value)

@@ -40,7 +40,6 @@ BROKEN:=\
  regression/unguarded.dzn\
  regression/hide.dzn\
  regression/BrokenComp.dzn\
- regression/inner_space.dzn\
 
 # error: Reply5: variable s is already defined in method i_done()
 BROKEN_cs:=\
@@ -50,6 +49,8 @@ BROKEN_cs:=\
  regression/SynchronousLivelock.dzn\
 
 # c++ is main language, can never be broken
+BROKEN_c++03:=\
+ regression/inner_space.dzn\
 
 BROKEN_goops:=\
  regression/DataVariables.dzn\

@@ -41,7 +41,7 @@
    (driver: lr)
    (out-table: "dezyne.out")
    (
-    #{{}# #{}}# #{)}# #{]}# #{;}# : #{,}#
+    #{{}# #{}}# #{)}# #{]}# #{\;}# : #{,}#
     on namespace #{[}#
     inevitable optional
     otherwise
@@ -95,8 +95,8 @@
     (component-spec) : $1)
 
    (import-spec
-    (import Identifier #{;}#) : `(,$1 ,$2)
-    (import Identifier #{.}# Identifier #{;}#) : `(,$1 ,(symbol-append $2 '. $4)))
+    (import Identifier #{\;}#) : `(,$1 ,$2)
+    (import Identifier #{.}# Identifier #{\;}#) : `(,$1 ,(symbol-append $2 '. $4)))
 
    (type
     (enum-spec) : $1
@@ -111,13 +111,13 @@
     (interface name #{{}# events/types behaviour-spec #{}}#)
     : (receive (e t)
           (partition event? $4)
-        (note-location `(,$1 ,$2 ,(cons 'types (map (add-scope $2) t)) ,(cons 'events e) ,((add-scope $2) $5)) @1)))
+        (note-location `(,$1 ,$2 ,(cons 'types (map (add-scope $2) t)) ,(cons 'events e) ,$5) @1)))
 
    (component-spec
     (component name #{{}# ports #{}}#)
     : (note-location `(,$1 ,$2 ,$4) @1)
     (component name #{{}# ports behaviour-spec #{}}#)
-    : (note-location `(,$1 ,$2 ,$4 ,((add-scope $2) $5)) @1)
+    : (note-location `(,$1 ,$2 ,$4 ,$5) @1)
     (component name #{{}# ports system #{{}# instances/binds #{}}# #{}}#)
     : (receive (instances binds)
           (partition (lambda (x) (eq? (car x) 'instance)) $7)
@@ -128,14 +128,14 @@
     (instances/binds instance/bind) : (append $1 (list $2)))
 
    (instance
-    (name Identifier #{;}#) : `(instance ,$2 ,$1))
+    (name Identifier #{\;}#) : `(instance ,$2 ,$1))
 
    (instance/bind
     (instance) : $1
     (bind) : $1)
 
    (bind
-    (binding <=> binding #{;}#) : `(bind ,$1 ,$3))
+    (binding <=> binding #{\;}#) : `(bind ,$1 ,$3))
 
    (binding
     (*) : `(binding #f *)
@@ -151,9 +151,9 @@
     (type) : $1)
 
    (event
-    (event-direction variable-type Identifier #{;}#) : `(event ,$3 ,(note-location `(signature ,$2) @2) ,$1)
-    (event-direction variable-type Identifier #{(}# #{)}# #{;}#) : `(event , $3 ,(note-location `(signature ,$2) @2) ,$1)
-    (event-direction variable-type Identifier #{(}# formals #{)}# #{;}#) : `(event ,$3 ,(note-location `(signature ,$2 ,$5) @2) ,$1))
+    (event-direction variable-type Identifier #{\;}#) : `(event ,$3 ,(note-location `(signature ,$2) @2) ,$1)
+    (event-direction variable-type Identifier #{(}# #{)}# #{\;}#) : `(event , $3 ,(note-location `(signature ,$2) @2) ,$1)
+    (event-direction variable-type Identifier #{(}# formals #{)}# #{\;}#) : `(event ,$3 ,(note-location `(signature ,$2 ,$5) @2) ,$1))
 
    (formal-direction
     (in) : 'in
@@ -169,8 +169,8 @@
     (ports port) : (append $1 (list $2)))
 
    (port
-    (port-direction name Identifier #{;}#) : `(port ,$3 ,$2 ,$1 #f)
-    (port-direction injected name Identifier #{;}#) : `(port ,$4 ,$3 ,$1 ,$2))
+    (port-direction name Identifier #{\;}#) : `(port ,$3 ,$2 ,$1 #f)
+    (port-direction injected name Identifier #{\;}#) : `(port ,$4 ,$3 ,$1 ,$2))
 
    (port-direction
     (provides) : 'provides
@@ -186,21 +186,21 @@
     (name) : (note-location `(type ,$1) @1))
 
    (enum-spec
-    (enum Identifier #{{}# enum-fields #{}}# #{;}#) : (note-location `(enum (name ,$2) ,$4) @1))
+    (enum Identifier #{{}# enum-fields #{}}# #{\;}#) : (note-location `(enum (name ,$2) ,$4) @1))
 
    (enum-fields
     (Identifier) : `(fields ,$1)
     (enum-fields #{,}# Identifier) : (append $1 (list $3)))
 
    (subint-spec
-    (subint Identifier #{{}# integer .. integer #{}}# #{;}#) : (note-location `(int (name ,$2) (range ,$4 ,$6)) @1))
+    (subint Identifier #{{}# integer .. integer #{}}# #{\;}#) : (note-location `(int (name ,$2) (range ,$4 ,$6)) @1))
 
    (integer
     (NumericLiteral): $1
     (- NumericLiteral): (- $2))
 
    (extern-spec
-    (extern Identifier Data #{;}#) : (note-location `(extern (name ,$2) ,$3) @1))
+    (extern Identifier Data #{\;}#) : (note-location `(extern (name ,$2) ,$3) @1))
 
    (expression
     (expr): `(expression ,$1))
@@ -299,7 +299,7 @@
     (return-statement) : $1)
 
    (function-call-statement
-    (function-call #{;}#) : $1)
+    (function-call #{\;}#) : $1)
 
    (guarded-statement
     (#{[}# guard #{]}# statement) : (note-location `(guard ,$2 ,$4) @1))
@@ -332,33 +332,33 @@
     (Identifier #{.}# Identifier #{(}# arguments #{)}#) : (note-location `(trigger ,$1 ,$3 ,$5) @1))
 
    (illegal-statement
-    (illegal #{;}#) : (note-location `(illegal) @1))
+    (illegal #{\;}#) : (note-location `(illegal) @1))
 
    (assignment-statement
-    (Identifier = expression #{;}#) : (note-location `(assign ,$1 ,$3) @1))
+    (Identifier = expression #{\;}#) : (note-location `(assign ,$1 ,$3) @1))
 
    (action
     (name-pair #{(}# #{)}#) : (rsp $1 `(action ,(make-trigger $1)))
     (name-pair #{(}# arguments #{)}#) : (rsp $1 `(action ,(make-trigger $1 $3))))
 
    (action-statement
-    (name-pair #{;}#) : (rsp $1 `(action ,(make-trigger $1)))
-    (action #{;}#) : $1)
+    (name-pair #{\;}#) : (rsp $1 `(action ,(make-trigger $1)))
+    (action #{\;}#) : $1)
 
    (if-statement
     (if #{(}# expression #{)}# statement) : (note-location `(if ,$3 ,$5) @1)
     (if #{(}# expression #{)}# statement else statement) : (note-location `(if ,$3 ,$5 ,$7) @1))
 
    (reply-statement
-    (reply #{(}# expression #{)}# #{;}#) : (note-location `(,$1 ,$3) @1))
+    (reply #{(}# expression #{)}# #{\;}#) : (note-location `(,$1 ,$3) @1))
 
    (return-statement
-    (return #{;}#) : (note-location '(return) @1)
-    (return expression #{;}#) : (note-location `(return ,$2) @1))
+    (return #{\;}#) : (note-location '(return) @1)
+    (return expression #{\;}#) : (note-location `(return ,$2) @1))
 
    (variable
-    (variable-type Identifier #{;}#) : `(variable ,$2 ,$1 (expression))
-    (variable-type Identifier = expression #{;}#) : `(variable ,$2 ,$1 ,(note-location $4 @2)))
+    (variable-type Identifier #{\;}#) : `(variable ,$2 ,$1 (expression))
+    (variable-type Identifier = expression #{\;}#) : `(variable ,$2 ,$1 ,(note-location $4 @2)))
 
    (variables
     (variable) : `(variables ,$1)
@@ -379,18 +379,29 @@
   (rsp o ((add-scope- scope) o)))
 
 (define ((add-scope- scope) o)
-  (match o
-    (('interface name types events behaviour)
-     (rsp o `(interface ,((add-scope scope) name) ,((add-scope scope) types) ,events ,((add-scope scope) behaviour))))
-    (('component name ports behaviour)
-     `(component ,((add-scope scope) name) ,ports ,((add-scope scope) behaviour)))
-    (('behaviour name types variables functions statement)
-     `(behaviour ,name ,((add-scope scope) types) ,variables ,functions ,statement))
-    (('name name ...) (append scope name))
-    (('types types ...) (cons 'types (map (add-scope scope) types)))
-    (((and (or 'enum 'extern 'int) (get! type)) ('name name ...) spec)
-     (list (type) (append scope name) spec))
-    (_ o)))
+  ;;(stderr "ADD-SCOPE[~a]: ~a\n" scope o)
+  (if (or (and (pair? scope) (eq? (car scope) '*))) o
+      (match o
+        (('interface name types events behaviour)
+         (rsp o `(interface ,((add-scope scope) name) ,((add-scope scope) types) ,events ,((add-scope scope) behaviour))))
+        (('component name ports behaviour)
+         `(component ,((add-scope scope) name) ,((add-scope scope) ports) ,((add-scope scope) behaviour)))
+        (('behaviour name types variables functions statement)
+         `(behaviour ,name ,((add-scope scope) types) ,((add-scope scope) variables) ,functions ,statement))
+        (('name '* scope ...) o)
+        (('name name ...) (append scope name))
+        (('ports ports ...) (cons 'ports (map (add-scope scope) ports)))
+        (('types types ...) (cons 'types (map (add-scope scope) types)))
+        (('variables variables ...) (cons 'variables (map (add-scope scope) variables)))
+        (('port name type direction injected)
+         `(port ,((add-scope scope) name) ,type ,direction ,injected))
+        (('variable name type expression)
+         `(variable ,name ,((add-scope scope) type) ,((add-scope scope) expression)))
+        (('type ('name s ... name))
+         `(type ,((add-scope scope) (cadr o))))
+        (((and (or 'enum 'extern 'int) (get! type)) ('name name ...) spec)
+         (list (type) (append scope name) spec))
+        (_ o))))
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))

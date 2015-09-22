@@ -1,0 +1,5 @@
+verify: pessimist: check: completeness: ok
+
+verify: pessimist: check: deadlock: ok
+
+verify: pessimist: check: livelock: ok

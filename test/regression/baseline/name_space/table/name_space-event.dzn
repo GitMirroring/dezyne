@@ -21,18 +21,37 @@
 //
 // Code:
 
-interface pessimist {
-  in void e();
+interface name.I {
+  enum Bool {f, t};
+  in .Bool e();
+  out void a();
 
   behaviour {
-    bool b = false;
 
     on e:
+    [true]
     {
-      [b || !b]
-      b = !b;
-      [b]
-      illegal;
+      a;
+      reply(.Bool.t);
     }
   }
 }
+
+component name.space {
+  provides name_I i;
+
+  behaviour {
+    I.Bool state = I.Bool.t;
+
+    on i.e():
+    {
+      [state.t || state.f]
+      {
+        i.a();
+        reply(I.Bool.t);
+      }
+    }
+  }
+
+}
+

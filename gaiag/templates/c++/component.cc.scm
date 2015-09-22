@@ -44,7 +44,7 @@
   {
     #statement #
     (string-if (not (eq? type 'void))
-#{  return reply_#((c++:scope-join #f '_) reply-scope)_#reply-name ;
+#{  return this->reply_#((c++:scope-join #f '_) reply-scope)_#reply-name ;
 #}) }
 
 #}) (filter (om:dir-matches? port) (om:events port))))

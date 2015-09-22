@@ -451,10 +451,9 @@
        (debug "\ntype: ~a\n" src)
        (debug "scope: ~a\n" (om:scope src))
        (debug "name: ~a\n" (om:name src))
-       (debug "scope2: ~a\n" (om:scope name))
-       (debug "name2: ~a\n" (om:name name))
-       (debug "we are here: ~a=> ~a\n" src        (snippet 'type-enum `((space ,space) (scope-name (cdr name)) (scope ,(om:scope src)) (name ,(om:name src)))))
-       (snippet 'type-enum `((space ,space) (scope-name ,(cdr name)) (scope ,(om:scope src)) (name ,(om:name src)))))
+       (debug "scope-name: ~a\n" (append (om:scope src) (list (om:name src))))
+       (debug "we are here: ~a=> ~a\n" src        (snippet 'type-enum `((space ,space) (scope-name ,(append (om:scope src) (list (om:name src)))) (scope ,(om:scope src)) (name ,(om:name src)))))
+       (snippet 'type-enum `((space ,space) (scope-name ,(append (om:scope src) (list (om:name src)))) (scope ,(om:scope src)) (name ,(om:name src)))))
       (($ <type> name)
        (snippet 'type `((scope-name ,(cdr name)) (space ,space) (scope ,(om:scope src)) (name ,(om:name src)))))
       (($ <variable> name type (and ($ <action>) (get! action)))
@@ -748,6 +747,7 @@
                                ((compose .elements .formals) signature)))
          (reply-name (om:name type))
          (reply-scope (or (and enum (pair?? (om:scope enum))) '()))
+         (reply-scope-name (or (and enum (pair?? (om:scope+name enum))) '()))
          (statement
           (or (and-let*
                (((is-a? model <component>))
@@ -850,6 +850,7 @@
   (debug "reply-enums: ~a\n" (om:reply-enums o))
   (map (lambda (x) (snippet 'declare-reply
                             `((scope ,(om:scope x))
+                              (scope-name ,((compose cdr .name) x))
                               (name ,(om:name x)))))
        (om:reply-enums o)))
 

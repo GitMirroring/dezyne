@@ -21,18 +21,17 @@
 //
 // Code:
 
-interface pessimist {
+interface pessimist
+{
   in void e();
-
-  behaviour {
+  //out void a();
+  behaviour
+  {
     bool b = false;
-
     on e:
-    {
-      [b || !b]
       b = !b;
-      [b]
+    [b]
+      on e:
       illegal;
-    }
   }
 }

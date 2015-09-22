@@ -1,1 +1,1 @@
-#((c++:scope-join model) scope)::#name ::type reply_#((c++:scope-join #f '_) scope)_#name;
+#((c++:scope-join model) scope-name)::type reply_#((c++:scope-join #f '_) scope)_#name;
