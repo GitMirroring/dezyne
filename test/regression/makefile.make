@@ -42,7 +42,7 @@ BROKEN:=\
  regression/BrokenComp.dzn\
  regression/inner_space.dzn\
  regression/name_space.dzn\
- regression/simple_space.dzn\
+ xregression/simple_space.dzn\
 
 # error: Reply5: variable s is already defined in method i_done()
 BROKEN_cs:=\

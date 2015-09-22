@@ -15,7 +15,7 @@
  (map (init-member model #{
 #name(#(if (not (eq? expression *unspecified*)) expression))#}) (om:variables model)))#
 (if (null? (om:variables model)) "" "\n, ") #
-((->join  "\n, ") (map (lambda (port) (list (.name port) "{" (if (.injected port) (list "dezyne_locator.get<" ((om:scope-name) (.type port)) ">()") (list "{" (if (eq? (.direction port) 'requires) "{\"\",0},") "{\"" (.name port) "\",this}" (if (eq? (.direction port) 'provides) ",{\"\",0}") "}")) "}")) (om:ports model)))
+((->join  "\n, ") (map (lambda (port) (list (.name port) "{" (if (.injected port) (list "dezyne_locator.get<" ((c++:scope-name) (.type port)) ">()") (list "{" (if (eq? (.direction port) 'requires) "{\"\",0},") "{\"" (.name port) "\",this}" (if (eq? (.direction port) 'provides) ",{\"\",0}") "}")) "}")) (om:ports model)))
   {
     dzn_rt.performs_flush(this) = true;
 #
