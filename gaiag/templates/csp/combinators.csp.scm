@@ -30,7 +30,9 @@ channel range_error
 channel transition_begin, transition_end
 channel extensions_over_empty_channels_is_undefined
 
-COMPLETE'(A') = []x:A' @ x-> COMPLETE'(A') |~| illegal->STOP
+COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A'))
+                []
+                ([]x:A' @ x-> illegal->STOP)
 
 datatype event_enumeration_alphabet = #
 (pipe-join

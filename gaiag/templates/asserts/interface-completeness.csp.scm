@@ -25,7 +25,7 @@
 
 assert COMPLETE'({#
 (comma-join (append (map (lambda (event) (list .scope_model "." (.name event))) (filter om:in? (.elements (.events model))))
-                    (map (lambda (event) (list .scope_model "_'''." (.event event))) (modeling-events model))))}) [F= IF_#.scope_model _(true,true)[[range_error<-illegal]] \ diff(Events,{#
+                    (map (lambda (event) (list .scope_model "_'''." (.event event))) (modeling-events model))))}) [F= IF_#.scope_model _(true,true) \ diff(Events,{#
 (comma-join (append (map (lambda (event) (list .scope_model "." (.name event))) (filter om:in? (.elements (.events model))))
                     (map (lambda (event) (list .scope_model "_'''." (.event event))) (modeling-events model))
                     (list 'illegal)))})

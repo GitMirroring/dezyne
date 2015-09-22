@@ -1,4 +1,5 @@
-verify: range_member: check: completeness: ok
+verify: range_member: check: completeness: fail
+integer range error in model range_member
 
 verify: range_member: check: deadlock: fail
 integer range error in model range_member

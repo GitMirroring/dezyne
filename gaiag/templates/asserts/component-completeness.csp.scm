@@ -27,7 +27,7 @@ assert COMPLETE'({#
 (comma-join
  (append (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "." (.name event))) (filter om:in? (om:events port))))) (om:provided model))
          (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "_''." (.name event))) (filter om:out? (om:events port))))) (om:required model))))}) [F= CO_#
-.scope_model _(true,true)[[range_error<-illegal]] \ diff(Events,{#
+.scope_model _(true,true) \ diff(Events,{#
 (comma-join
  (append (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "." (.name event))) (filter om:in? (om:events port))))) (om:provided model))
          (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "_''." (.name event))) (filter om:out? (om:events port))))) (om:required model)))),illegal})
