@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@hansei-kaizen.org>
 # Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
@@ -50,7 +51,6 @@ BROKEN_cs:=\
 
 # c++ is main language, can never be broken
 BROKEN_c++03:=\
- regression/inner_space.dzn\
 
 BROKEN_goops:=\
  regression/DataVariables.dzn\
