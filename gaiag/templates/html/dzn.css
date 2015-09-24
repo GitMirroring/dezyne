@@ -4,10 +4,10 @@ body {
 .component {
 
 }
-.enum-name {
+.name {
     color: #0000b0;
 }
-.enum-field {
+.field {
     color: #6060e0;
 }
 .keyword {

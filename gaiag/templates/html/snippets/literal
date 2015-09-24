@@ -1,1 +1,1 @@
-<span class="scope">#scope </span>#dot <span class="enum-name">#name </span>.<span class="enum-field">#field </span>
+<span class="scope">#scope </span>#dot <span class="name">#name </span>.<span class="field">#field </span>
