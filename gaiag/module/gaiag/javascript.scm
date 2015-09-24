@@ -41,6 +41,7 @@
 
 (define (javascript:preamble model)
   (->string
+   "require = typeof (require) !== 'undefined' ? require : function () {return {};};\n"
    "dezyne = typeof (dezyne) !== 'undefined' ? dezyne : require (__dirname + '/runtime');\n"
    (let loop ((todo (cons 'dezyne (om:scope model))) (namespace '()))
      (if (null? todo) '()

@@ -1,6 +1,6 @@
 ##! /usr/bin/nodejs
 
-var dezyne = require (__dirname + '/dezyne/runtime');
+var dezyne = typeof (dezyne) !== undefined && dezyne ? dezyne : require (__dirname + '/dezyne/runtime');
 dezyne.extend (dezyne, require (__dirname + '/dezyne/#.scope_model '));
 
 var relaxed = false;

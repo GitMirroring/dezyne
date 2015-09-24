@@ -20,15 +20,10 @@
 //
 // Code:
 
-if (!Array.prototype.each) {
-  Array.prototype.each = Array.prototype.forEach
-}
-
-if (!Object.prototype.extend) {
-  Object.prototype.extend = function (u) {
-    Object.keys (u).each (function (k,v,x) {this[k]=u[k]})
-    return this
-  }
+function extend(o, u) {
+  for (var i in u)
+    o[i] = u[i];
+  return o;
 }
 
 function runtime(illegal) {
@@ -137,7 +132,7 @@ function runtime(illegal) {
   };
 };
 
-function locator (services) {
+function locator(services) {
   this.services = services || {};
   this.key = function(type, key) {
     return (type.prototype ? type.prototype : type).name + (key || '');
@@ -150,14 +145,9 @@ function locator (services) {
     return this.services[this.key(o, key)];
   };
   this.clone = function() {
-    return new dezyne.locator({}.extend (this.services));
+    return new dezyne.locator(extend({}, this.services));
   };
 };
-
-// function extend (o, u) {
-//   Object.keys(u).forEach(function (k,v,x) {o[k]=u[k];});
-//   return o;
-// }
 
 function connect(provided, required) {
   provided.out = required.out;
@@ -166,13 +156,13 @@ function connect(provided, required) {
   required.meta.provides = provided.meta.provides;
 };
 
-var dezyne = {
+var dezyne = extend (typeof (dezyne !== 'undefined') && dezyne ? dezyne : {}, {
   connect: connect,
+  extend: extend,
   locator: locator,
   runtime: runtime,
-}
+});
 
-//var dezyne = {connect:connect,locator:locator,runtime:runtime};
 if (typeof (module) !== 'undefined') {
   module.exports = dezyne;
 }
