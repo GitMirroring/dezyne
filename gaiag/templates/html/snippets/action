@@ -1,1 +1,1 @@
-#trigger ;
+<span onclick='CONTEXT.click(#location); event.stopPropagation(); return true;'>#trigger ;</span>

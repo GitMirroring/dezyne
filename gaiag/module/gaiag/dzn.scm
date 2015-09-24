@@ -31,13 +31,15 @@
   :use-module (ice-9 getopt-long)
   :use-module (ice-9 pretty-print)
 
-  :use-module (gaiag om)
+  :use-module (json)
 
   :use-module (gaiag animate)
   :use-module (gaiag gaiag)
   :use-module (gaiag indent)
+  :use-module (gaiag json)
   :use-module (gaiag code)
   :use-module (gaiag misc)
+  :use-module (gaiag om)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
 ;;  :use-module (gaiag wfc)
@@ -76,7 +78,8 @@
      ((animate-snippet 'compound `((statements ,(map (->dzn model) statements))))))
 
     (($ <action> trigger)
-     ((animate-snippet 'action `((trigger ,((->dzn model) trigger))))))
+     ((animate-snippet 'action `((trigger ,((->dzn model) trigger))
+                                 (location ,(location o))))))
 
     (($ <illegal>) ((animate-snippet 'illegal)))
 
@@ -91,14 +94,16 @@
 
     (('assign-call function arguments)
      ((animate-snippet 'call-expression `((function ,function)
-                                          (arguments ,((->dzn model) arguments))))))
+                                          (arguments ,((->dzn model) arguments))
+                                          (location ,(location (om:function model function)))))))
 
     (('assign-action action trigger)
      ((animate-snippet 'assign-action `((trigger ,((->dzn model) trigger))))))
 
     (($ <call> function arguments)
      ((animate-snippet 'call `((function ,function)
-                               (arguments ,((->dzn model) arguments))))))
+                               (arguments ,((->dzn model) arguments))
+                               (location ,(location (om:function model function)))))))
 
     (($ <if> expression then #f)
      ((animate-snippet 'if-then `((expression ,((->dzn model) expression))
@@ -190,6 +195,9 @@
     (#f ((animate-snippet 'false)))
     (#t ((animate-snippet 'true)))
     (_ (->string o))))
+
+(define (location o)
+  ((compose scm->json-string json-location) o))
 
 (define (paren model expression)
   (if (or (number? expression) (symbol? expression)
