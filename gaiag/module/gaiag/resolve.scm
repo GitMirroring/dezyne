@@ -203,7 +203,6 @@
                  enum))
       (_ #f)))
 
-  ;;(stderr "resolve: ~a\n" o)
   (match o
     ('root o)
     (($ <var> (and (? (negate var?)) (get! identifier)))
@@ -438,7 +437,8 @@
      (or (and-let* ((enum (enum? (make <type> :name (make <name> :elements scope)))))
                    (if (member field ((compose .elements .fields) enum))
                        (make <literal> :name (.name enum) :field field)
-                         (resolve-error o field "undefined enum field: ~a")))
+                       (and
+                        (resolve-error o field "undefined enum field: ~a"))))
          (failure)))
 
     (($ <expression> value)

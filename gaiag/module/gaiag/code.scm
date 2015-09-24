@@ -415,9 +415,9 @@
                     (comma ,comma)
                     (comma-space ,comma-space)))))
       (($ <reply> (and ($ <expression> ($ <literal> name field)) (get! expression)))
-       (stderr "NAME: ~a\n" name)
-       (stderr "scope: ~a\n" (om:scope name))
-       (stderr "name: ~a\n" (om:name name))
+       (debug "NAME: ~a\n" name)
+       (debug "scope: ~a\n" (om:scope name))
+       (debug "name: ~a\n" (om:name name))
        (snippet 'reply
                 `((space ,space)
                   (scope ,(om:scope name))

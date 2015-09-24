@@ -93,8 +93,6 @@
            om:scope+name
            om:scope-join ;; JUNKME
            om:scope-name
-           om:scoped
-           om:scoped-extern
            om:type
            om:typed?
            om:types
@@ -245,26 +243,10 @@
 (define ((om:type- model) o)
   (match o
     ((? symbol?) (find (om:named `(name ,@(cdr (.name model)) ,o)) (om:types model)))
-    (('name scope ... name)
-     (find (om:named o) (om:types model)))
-
-    ;; (('type name scope)
-    ;;  (or (find (om:scoped name scope) (om:types model))
-    ;;      (find (om:scoped-extern name scope) (om:types model))))
-
-    ;; (($ <type> ('name scope ... name)) ((om:type- model) `(type ,name ,(cons 'name scope))))
+    (('name scope ... name) (find (om:named o) (om:types model)))
     (($ <type> 'bool) o)
     (($ <type> 'void) o)
-    (($ <type> name) (=> failure)
-     ;;(stderr "SEARCHING FOR: ~a\n" name)
-     (or (find (om:named name) (om:types model))
-         (failure)))
-    (($ <type> ('name name))
-     ;; (stderr "SEARCHING FOR: ~a\n" (append (.name model) (list name)))
-     (or (find (om:scoped (.name model) name) (om:types model))
-         ;;(find (om:scoped-extern (.name model) name) (om:types model))
-         ))
-    (($ <type>) #f)
+    (($ <type> name) (find (om:named name) (om:types model)))
     (($ <variable> name type expression) ((om:type- model) type))
     (($ <formal> name type) ((om:type- model) type))
     (($ <formal> name type direction) ((om:type- model) type))
@@ -274,19 +256,6 @@
   (match name
     ((? symbol?) (or (eq? name (.name ast)) ((om:named `(name ,name)) ast)))
     (_ (equal? (.name ast) name))))
-
-(define ((om:scoped scope name) ast)
-  (equal? (append scope (list name)) (.name ast)))
-
-(define ((om:scoped-extern scope name) ast)
-  (or (append scope (list name)) (.name ast)
-      (and (equal? (om:name ast) (om:name scope))
-           (or (is-a? ast <extern>) ;; ignore scope on extern...
-               (equal? (om:scope ast) (om:scope scope))
-               (and (null? (om:scope scope))
-                    (equal? (om:scope ast) '(*)))))))
-
-
 
 ;;; NAME/NAMESPACE/SCOPE
 (define (om:scope+name o)
@@ -510,11 +479,13 @@
             (find (lambda (model) (equal? (.name model) name)) models)))
 
 (define* (om:import name #:optional (transform ast->om))
-  (let ((name (if (pair? name) name (list 'name name))))
+  (let ((name (match name
+                (('name '* name ...) (cons 'name name))
+                (('name n ...) name)
+                (_ (list 'name name)))))
     (or (cached-model name)
         (and-let* ((ast (import-ast name transform)))
                   (cache-model name ast)))))
-
 
 (define* (om:parse-dzn string :optional (register (om:register ast->om)))
   (parse-dzn string register))
