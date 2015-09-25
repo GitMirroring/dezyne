@@ -1,5 +1,5 @@
 #(javascript:preamble model)
-#(javascript:namespace model).#.interface  = function (meta) {#
+#(javascript:namespace model).#.interface  = function #.interface (meta) {#
 (->string (map (declare-enum model) (append (om:interface-enums model) (om:enums))))
   this.in = {
 #((->join ",\n") (map (declare-io model #{

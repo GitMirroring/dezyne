@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -103,31 +104,34 @@ function runtime(illegal) {
     }
   };
 
-  this.trace_in = function(m, e) {
-    process.stderr.write(this.path(m[0].meta.requires) + '.' + e + ' -> '
-                         + this.path(m[0].meta.provides) + '.' + e + '\n');
+  this.trace_in = function(m, e, trace) {
+      trace(this.path(m[0].meta.requires) + '.' + e + ' -> ' +
+            this.path(m[0].meta.provides) + '.' + e + '\n');
   };
 
-  this.trace_out = function(m, e) {
-    process.stderr.write(this.path(m[0].meta.provides) + '.' + e + ' -> '
-                         + this.path(m[0].meta.requires) + '.' + e + '\n');
+  this.trace_out = function(m, e, trace) {
+      trace(this.path(m[0].meta.provides) + '.' + e + ' -> ' +
+            this.path(m[0].meta.requires) + '.' + e + '\n');
   };
 
   this.call_in = function(c, f, m) {
-    this.trace_in(m, m[1]);
+    var trace = c.locator.get(Function.prototype, 'trace');
+    this.trace_in(m, m[1], trace);
     this.handle(c, f);
-    this.trace_out(m, 'return');
+    this.trace_out(m, 'return', trace);
   }
 
   this.rcall_in = function(c, f, m) {
-    this.trace_in(m, m[1]);
+    var trace = c.locator.get(Function.prototype, 'trace');
+    this.trace_in(m, m[1], trace);
     var r = this.valued_helper(c, f, m);
-    this.trace_out(m, m[2][r]);
+    this.trace_out(m, m[2][r], trace);
     return r;
   };
 
   this.call_out = function(c, f, m) {
-    this.trace_out(m, m[1]);
+    var trace = c.locator.get(Function.prototype, 'trace');
+    this.trace_out(m, m[1], trace);
     this.defer(m[0].meta.provides.component, c, f);
   };
 };
@@ -135,12 +139,17 @@ function runtime(illegal) {
 function locator(services) {
   this.services = services || {};
   this.key = function(type, key) {
-    return (type.prototype ? type.prototype : type).name + (key || '');
+    var key = (type.constructor ? type.constructor.name : '') + (key || '');
+    console.assert(key != '');
+    return key;
   };
   this.set = function(o, key) {
     this.services[this.key(o, key)] = o;
     return this;
   };
+
+  this.set(function(s){process.stderr.write(s);}, 'trace');
+
   this.get = function(o, key) {
     return this.services[this.key(o, key)];
   };

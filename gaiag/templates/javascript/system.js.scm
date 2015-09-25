@@ -7,7 +7,7 @@ dezyne.extend (require (__dirname + '/#interface '));
 #}) (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
 #(javascript:namespace model).#.model  = function (locator, meta) {
   this.locator = locator;
-  this.rt = locator.get(dezyne.runtime);
+  this.rt = locator.get(new dezyne.runtime());
   this.rt.top = this.rt.top || this;
   this.rt.components = (this.rt.components || []).concat ([this]);
   this.meta = meta;

@@ -4,7 +4,7 @@ dezyne.extend (dezyne, require (__dirname + '/#interface '));
 #}) (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
 #(javascript:namespace model).#.model  = function (locator, meta) {
   this.locator = locator;
-  this.rt = locator.get(dezyne.runtime);
+  this.rt = locator.get(new dezyne.runtime());
   this.rt.components = (this.rt.components || []).concat ([this]);
   this.meta = meta;
   this.flushes = true;#
@@ -20,7 +20,7 @@ dezyne.extend (dezyne, require (__dirname + '/#interface '));
     (map (init-port #{
 #(string-if injected?
 #{
-    this.#name  = locator.get(dezyne.#((om:scope-join #f '.) interface));
+    this.#name  = locator.get(new dezyne.#((om:scope-join #f '.) interface)());
 #}
 #{
     this.#name  = new dezyne.#((om:scope-join #f '.) interface)({provides: {}, requires: {name: '#name ', component: this}});
