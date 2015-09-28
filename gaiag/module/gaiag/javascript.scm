@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -41,7 +42,7 @@
 
 (define (javascript:preamble model)
   (->string
-   "require = typeof (require) !== 'undefined' ? require : function () {return {};};\n"
+   "dzn_require = typeof (require) !== 'undefined' ? require : function () {return {};};\n"
    "dezyne = typeof (dezyne) !== 'undefined' ? dezyne : require (__dirname + '/runtime');\n"
    (let loop ((todo (cons 'dezyne (om:scope model))) (namespace '()))
      (if (null? todo) '()
