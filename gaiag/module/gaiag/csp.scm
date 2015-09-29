@@ -386,13 +386,13 @@
   (member (.event event) '(optional inevitable)))
 
 (define (om:member-names model)
-  (map .name (filter (lambda (x) (not (is-a? (om:extern model (.type x)) <extern>))) (om:variables model))))
+  (map .name (filter (lambda (x) (not (is-a? ((om:type model) (.type x)) <extern>))) (om:variables model))))
 
 (define (om:member-types model)
-  (map (om:type model) (filter (lambda (x) (not (is-a? (om:extern model (.type x)) <extern>))) (om:variables model))))
+  (map (om:type model) (filter (lambda (x) (not (is-a? ((om:type model) (.type x)) <extern>))) (om:variables model))))
 
 (define (om:member-values model)
-  (map (compose .value .expression) (filter (lambda (x) (not (is-a? (om:extern model (.type x)) <extern>))) (om:variables model))))
+  (map (compose .value .expression) (filter (lambda (x) (not (is-a? ((om:type model) (.type x)) <extern>))) (om:variables model))))
 
 ;; ugh
 (define (om:component o)

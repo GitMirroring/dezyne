@@ -246,16 +246,28 @@
     (('name scope ... name) (find (om:named o) (om:types model)))
     (($ <type> 'bool) o)
     (($ <type> 'void) o)
-    (($ <type> name) (find (om:named name) (om:types model)))
+    (($ <type> name)
+     (or (find (om:named name) (om:types model))
+         (find (om:scoped (om:scope+name model) name) (om:types))))
     (($ <variable> name type expression) ((om:type- model) type))
     (($ <formal> name type) ((om:type- model) type))
     (($ <formal> name type direction) ((om:type- model) type))
     (#f #f)))
 
 (define ((om:named name) ast)
+  ;;(stderr "\nom:named[~a]: ~a" name ast)
   (match name
     ((? symbol?) (or (eq? name (.name ast)) ((om:named `(name ,name)) ast)))
     (_ (equal? (.name ast) name))))
+
+(define ((om:scoped scope name) ast)
+  (let ((r ((om:scoped- scope name) ast)))
+    ;;(stderr "\nom:scoped[~a, ~a]: ~a ==> ~a\n" scope name ast r)
+    r))
+
+(define ((om:scoped- scope name) ast)
+  (if (null? (om:scope name)) (eq? (om:name ast) (om:name name))
+      (equal? (append scope (om:scope+name ast)) (cdr name))))
 
 ;;; NAME/NAMESPACE/SCOPE
 (define (om:scope+name o)

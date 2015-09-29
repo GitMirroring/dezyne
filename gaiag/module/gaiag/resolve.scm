@@ -183,6 +183,7 @@
 
   (define (type? o)
     (match o
+      (($ <type> ('name name)) (=> failure) (or ((om:type model) (make <type> :name (append (.name model) (list name)))) (failure)))
       (($ <type> ('name '* rest ...)) ((om:type model) (make <type> :name (cons 'name rest))))
       (_ ((om:type model) o))))
 
@@ -259,7 +260,10 @@
     (($ <type> name) (=> failure)
      (or (and-let* ((type (type? o)))
                    (make <type> :name (.name type)))
-         (failure)))
+         (and-let* ((type (type? (append (.name model) (cdr name)))))
+                   (make <type> :name (.name type)))
+         (failure)
+         (undefined-error o name)))
 
     (($ <event> name signature direction)
      (make <event> :name name :signature ((resolve model '()) signature) :direction direction))
@@ -286,7 +290,8 @@
      (make <trigger> :port port :event event :arguments ((resolve model locals) arguments)))
     (($ <var>) o)
 
-    ((? symbol?) (undefined-error 'programming-error o))
+    ((? symbol?)
+     (undefined-error 'programming-error o))
 
     (($ <action> ($ <trigger> #f (and (? function?) (get! identifier))))
      (make <call> :identifier (identifier)))
@@ -420,6 +425,11 @@
 
     (('name (and (? var?) (get! name)))
      (make <var> :name (name)))
+
+    (('name name) (=> failure)
+     (or (and-let* ((type (type? (append (.name model) (list name)))))
+                   (.name type))
+         (failure)))
 
     (('name (and (? var?) (get! type)) (? (member-field? (type))))
      (make <field> :identifier (type) :field (om:name o)))

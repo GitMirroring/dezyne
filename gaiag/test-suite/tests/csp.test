@@ -15,9 +15,12 @@
 
   :use-module (gaiag csp)
   :use-module (gaiag misc)
-  :use-module (gaiag reader)
+  ;;:use-module (gaiag reader)
   :use-module (gaiag resolve)
 )
+
+(define dzn->ast
+  (compose ast:resolve ast->om (@ (gaiag reader) dzn->ast)))
 
 ;; JUNKME
 (define (ast->sugar ast)

@@ -41,6 +41,122 @@ component bar.c {
 }
 #}))
 
+(define resolve-ast
+  (dzn->ast #{
+interface ivar {
+  enum e {v};
+  extern xint $int&$;
+  enum mixed {v};
+  in e foo();
+  in mixed bar();
+  in void ei(out xint i);
+  in e eo(xint i);
+
+  behaviour {
+    enum state {one, two};
+    subint mode {0..3};
+    state m = state.one;
+    e r = e.v;
+    bool b = true;
+    mixed x = mixed.v;
+
+    void toggle() {}
+
+    bool g(bool ga, bool gb) {return true;}
+
+    state efun() {
+      return m;
+    }
+
+    on foo:
+    reply(e.v);
+  }
+}
+
+component var {
+  provides ivar i;
+  requires ivar o;
+
+  behaviour {
+    enum state {one, two};
+    subint mode {0..3};
+    state m = state.one;
+    ivar.e r = ivar.e.v;
+    ivar.e e = ivar.e.v;
+    bool b = true;
+    ivar.xint x = $0$;
+
+    void fun(bool a) {
+      a = true;
+    }
+
+    void rfun() {
+      rgun(true);
+    }
+
+    void rgun(bool a) {
+      rgun(true);
+    }
+
+    void fa(bool a) {
+      fb(true);
+    }
+
+    void fb(bool a) {
+      fc(true);
+    }
+
+    void fc(bool a) {
+      b = true;
+    }
+
+    void rfa(bool a) {
+      rfb(true);
+    }
+
+    void rfb(bool a) {
+      rfc(true);
+    }
+
+    void rfc(bool a) {
+      rfa(true);
+    }
+
+    void rbfa(bool a) {rbfb(true);}
+
+    void rbfb(bool a) {
+      rbfc(true);
+    }
+
+    void rbfc(bool a) {
+      fa(true);
+      fb(true);
+      {
+        fc(true);
+        rbfa(true);
+      }
+    }
+
+    state efun() {
+      return m;
+    }
+
+    on i.foo():
+    {
+      ivar.e e = o.foo();
+      e = o.foo();
+      reply(e);
+    }
+
+    on i.ei(i):
+    {
+      i = $0$;
+    }
+  }
+}
+#}
+  ))
+
 (define (resolve-namespace-interface)
   (find (is? <interface>) namespace-ast))
 (define (resolve-namespace-component)
@@ -74,96 +190,6 @@ component bar.c {
          (m (ast->om model)))
     ((resolve m '()) (ast->om o))))
 
-(define resolve-ast
-  '((interface
-     (name ivar)
-      (types (enum (name ivar e) (fields v))
-             (extern (name ivar xint) int&)
-             (enum (name ivar mixed) (fields v)))
-      (events (event foo (signature (type (name e))) in)
-              (event bar (signature (type (name mixed))) out)
-              (event ei (signature
-                   (type void)
-                   (formals (formal i (type (name xint)) out)))
-                  in)
-              (event eo (signature
-                   (type (name e))
-                   (formals (formal i (type (name xint)) in)))
-                  out))
-      (behaviour
-       #f
-       (types
-        (enum (name ivar state) (fields one two))
-        (int (name ivar mode) (range 0 3)))
-       (variables
-        (variable m (type (name state)) (expression (name state one)))
-        (variable r (type (name e)) (expression (name e v)))
-        (variable b (type bool) (expression true))
-        (variable x (type (name mixed)) (expression (name mixed v))))
-       (functions (function toggle (signature (type void)) #f (compound))
-                  (function g
-                            (signature (type bool)
-                                       (formals (formal ga (type bool))
-                                                   (formal gb (type bool))))
-                            #f
-                            (compound))
-                  (function efun
-                            (signature (type (name state))) #f (compound (return (var m)))))
-       (compound
-        (on (triggers (trigger #f foo (arguments)))
-            (reply (expression (name e v)))))))
-    (component
-     (name var)
-     (ports (port i (name ivar) provides) (port o (name ivar) requires))
-     (behaviour
-      #f
-      (types
-       (enum (name var state) (fields one two))
-       (int (name var mode) (range 0 3)))
-      (variables
-       (variable m (type (name state)) (expression (name state one)))
-       (variable r (type (name ivar e)) (expression (name e v)))
-       (variable e (type (name ivar e)) (expression (name ivar e v)))
-       (variable b (type bool) true)
-       (variable x (type (name ivar xint)) (expression (data 0))))
-       (functions
-        (function fun (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (assign a (expression true))))
-        (function rfun (signature (type void) (formals)) #f
-                  (compound (call rgun (arguments (expression #t)) #f)))
-        (function rgun (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call rgun (arguments (expression #t)) #f)))
-        (function fa (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call fb (arguments (expression #t)) #f)))
-        (function fb (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call fc (arguments (expression #t)) #f)))
-        (function fc (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (assign b (expression true))))
-        (function rfa (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call rfb (arguments (expression #t)) #f)))
-        (function rfb (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call rfc (arguments (expression #t)) #f)))
-        (function rfc (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call rfa (arguments (expression #t)) #f)))
-        (function rbfa (signature (type void) (formals (formal a (type bool)))) #f
-                  (assign b (call rbfb (arguments (expression #t)) #f)))
-        (function rbfb (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (assign b (call rbfc (arguments (expression #t)) #f))))
-        (function rbfc (signature (type void) (formals (formal a (type bool)))) #f
-                  (compound (call fa (arguments (expression #t))) (call fb (arguments (expression #t))) (compound (call fc (arguments (expression #t)) #f) (assign b (call rbfa (arguments (expression #t)) #f)))))
-        (function efun
-                  (signature (type (name state))) #f (compound (return (var m)))))
-       (compound
-       (on (triggers (trigger i foo (arguments)))
-           (compound
-            (variable e (type (name ivar e)) (expression (name o foo)))
-            (assign e (expression (name o foo)))
-            (reply (expression (var e)))))
-       (on (triggers
-            (trigger i ei (arguments (expression (var i)))))
-           (compound
-            (assign i (expression (data 0))))))))))
-
 (define (resolve-interface)
   (find (is? <interface>) resolve-ast))
 
@@ -188,7 +214,7 @@ component bar.c {
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-interface)
-          '(root (variable e (type (name e)) (expression (var efun)))))
+          '(root (variable e (type (name ivar e)) (expression (var efun)))))
           '(root (variable e (type (name ivar e)) (call efun (arguments) #f)))))
 
 (pass-if "ast:resolve-assign-valued-function-call"
@@ -243,7 +269,7 @@ component bar.c {
            (resolve-interface)
            '(on (triggers (trigger #f foo (arguments)))
                 (compound
-                 (variable e (type (name e)) (expression (var bar))))))
+                 (variable e (type (name ivar e)) (expression (var bar))))))
           '(on (triggers (trigger #f foo (arguments)))
                 (compound
                  (variable e (type (name ivar e)) (action (trigger #f bar (arguments))))))))
@@ -265,7 +291,7 @@ component bar.c {
            (resolve-interface)
            '(on (triggers (trigger #f foo (arguments)))
                 (compound
-                 (variable e (type (name e)) (expression (call bar (arguments) #f))))))
+                 (variable e (type (name ivar e)) (expression (call bar (arguments) #f))))))
           '(on (triggers (trigger #f foo (arguments)))
                (compound
                 (variable e (type (name ivar e)) (action (trigger #f bar (arguments))))))))
@@ -287,7 +313,7 @@ component bar.c {
            (resolve-interface)
            '(on (triggers (trigger #f foo (arguments)))
                 (compound
-                 (reply (expression (name mixed v))))))
+                 (reply (expression (name ivar mixed v))))))
           '(on (triggers (trigger #f foo (arguments)))
                 (compound
                  (reply (expression (literal (name ivar mixed) v)))))))
@@ -302,7 +328,7 @@ component bar.c {
                         (guard
                          (expression true)
                          (compound
-                          (reply (expression (name mixed v)))))))))
+                          (reply (expression (name ivar mixed v)))))))))
 
           '(guard
             (expression false)
@@ -350,7 +376,7 @@ component bar.c {
            '(variables
              (variable m (type (name state)) (expression (name state one)))))
           '(variables
-            (variable m (type (name var state)) (expression (literal (name var state) one))))))
+            (variable m (type (name state)) (expression (literal (name state) one))))))
 
 (pass-if "ast:resolve-value-field-interface"
          (om-pretty-noisy-equal?
@@ -452,7 +478,7 @@ component bar.c {
           (ast:resolve*
            (resolve-interface)
            '(compound
-             (variable e (type (name xint)) (expression (data 0)))))
+             (variable e (type (name ivar xint)) (expression (data 0)))))
           '(compound
             (variable e (type (name ivar xint)) (expression (data 0))))))
 
@@ -467,7 +493,7 @@ component bar.c {
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-interface)
-           '(root (variable e (type (name xint)) (expression))))
+           '(root (variable e (type (name ivar xint)) (expression))))
           `(root (variable e (type (name ivar xint)) (expression ,*unspecified*)))))
 
 (pass-if "ast:resolve-extern-component"
@@ -575,8 +601,8 @@ component bar.c {
   (om-pretty-noisy-equal?
    (ast:resolve*
     (resolve-interface)
-    '(name state three))
-   (resolve-error '(name state three) 'three "undefined enum field: ~a")))
+    '(name ivar state three))
+   (resolve-error '(name ivar state three) 'three "undefined enum field: ~a")))
 
 (pass-if "ast:resolve-undefined-enum-var-field"
   (om-pretty-noisy-equal?
@@ -624,7 +650,7 @@ component bar.c {
   (om-pretty-noisy-equal?
    (ast:resolve*
     (resolve-interface)
-    '(root (variable c (type (name mode)) (expression 0))))
+    '(root (variable c (type (name ivar mode)) (expression 0))))
    '(root (variable c (type (name ivar mode)) (expression 0)))))
 
 (pass-if "ast:resolve-init-type-mismatch"
@@ -638,8 +664,8 @@ component bar.c {
   (om-pretty-noisy-equal?
    (ast:resolve*
     (resolve-interface)
-    '(root (variable b (type bool) (name state one))))
-   `(root ,(type-mismatch '(name state one) 'bool 'ivar.state))))
+    '(root (variable b (type bool) (name ivar state one))))
+   `(root ,(type-mismatch '(name ivar state one) 'bool 'ivar.state))))
 
 (pass-if "ast:resolve-init-enum-mismatch"
   (om-pretty-noisy-equal?
@@ -652,7 +678,7 @@ component bar.c {
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-interface)
-           '(root (variable e (type (name xint)) (expression 0))))
+           '(root (variable e (type (name ivar xint)) (expression 0))))
           `(root ,(type-mismatch '(expression 0) 'ivar.xint 'int))))
 
 (pass-if "ast:resolve-bool-unspecified-mismatch"

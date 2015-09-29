@@ -52,7 +52,7 @@ interface I
           (json-callback
            i-ast
            (make <action> :trigger (make <trigger> :event 'e)))
-          '("e;\n")))
+          '("<span class=\"event\">e</span>;\n")))
 
 (pass-if "json-table-json-callback-if"
          (pretty-noisy-equal?
@@ -61,7 +61,8 @@ interface I
            (make <if>
              :then (make <action> :trigger (make <trigger> :event 'e))
              :else (make <action> :trigger (make <trigger> :event 'f))))
-          '("e;\n" "f;\n")))
+          '("<span class=\"event\">e</span>;\n"
+            "<span class=\"event\">f</span>;\n")))
 
 (pass-if "json-table-json-callback-if-same"
          (pretty-noisy-equal?
@@ -70,14 +71,15 @@ interface I
            (make <if>
              :then (make <action> :trigger (make <trigger> :event 'e))
              :else (make <action> :trigger (make <trigger> :event 'e))))
-          '("e;\n" "e;\n")))
+          '("<span class=\"event\">e</span>;\n"
+            "<span class=\"event\">e</span>;\n")))
 
 (pass-if "json-table-json-callback-function"
          (pretty-noisy-equal?
           (json-callback
            i-ast
            (make <call> :identifier 'f))
-          '("e;\n")))
+          '("<span class=\"event\">e</span>;\n")))
 
 (pass-if "json-table-json-callback-recursive-function"
          (pretty-noisy-equal?
