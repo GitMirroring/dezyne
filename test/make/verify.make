@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -28,7 +29,7 @@ verify-$(LOCAL_TARGET)/$(1): LOCAL_OUT:=$$(LOCAL_OUT)
 verify-$(LOCAL_TARGET)/$(1): LOCAL_TARGET:=$$(LOCAL_TARGET)
 verify-$(LOCAL_TARGET)/$(1): LOCAL_DZN_TOP:=$$(LOCAL_DZN_TOP)
 verify-$(LOCAL_TARGET)/$(1):
-	diff -uw $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(1) <($(DZN) --verbose verify --all -m $(1) $(LOCAL_DZN_TOP))
+	diff -uwB $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(1) <($(DZN) --verbose verify --all -m $(1) $(LOCAL_DZN_TOP))
 check-$(OUT)/$(LOCAL_NAME): verify-$(LOCAL_TARGET)/$(1)
 verify-$(OUT)/$(LOCAL_NAME): verify-$(LOCAL_TARGET)/$(1)
 verify-$(LOCAL_TARGET): verify-$(LOCAL_TARGET)/$(1)
