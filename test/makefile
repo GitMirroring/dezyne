@@ -112,8 +112,7 @@ MAKE_SNIPPETS:=regression/alarm.project/makefile.make
 CODE_LANGUAGES:=c c++
 ALL_LANGUAGES:=$(CODE_LANGUAGES) run verify
 endif
-ifeq ($(MAKECMDGOALS),lopw)
-lopw: all
+ifneq ($(LOPW),)
 MAKE_SNIPPETS:=regression/lopw/makefile.make
 CODE_LANGUAGES:=c++
 ALL_LANGUAGES:=$(CODE_LANGUAGES)
