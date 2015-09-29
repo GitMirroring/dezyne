@@ -292,7 +292,7 @@
     module))
 
 (define (language)
-  (let ((language (string->symbol (option-ref (parse-opts (command-line)) 'language 'dzn))))
+  (let ((language (string->symbol (option-ref (parse-opts (command-line)) 'language "dzn"))))
     (if (member language '(dzn html)) language
         'dzn)))
 
