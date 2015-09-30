@@ -28,7 +28,7 @@ parse-$(LOCAL_TARGET): LOCAL_TARGET:=$(LOCAL_TARGET)
 parse-$(LOCAL_TARGET): LOCAL_TRACE_FILES:=$(LOCAL_TRACE_FILES)
 parse-$(LOCAL_TARGET): LOCAL_TRACE_LANGUAGE:=$(LOCAL_TRACE_LANGUAGE)
 parse-$(LOCAL_TARGET): #$(LOCAL_TARGET)
-	diff -uw $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE) <($(DZN) --verbose parse $(LOCAL_DZN_TOP) 2>&1)
+	diff -uw $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE) <($(DZN) parse $(LOCAL_DZN_TOP) 2>&1 && echo 'parse: no errors found')
 check-$(OUT)/$(LOCAL_NAME): parse-$(LOCAL_TARGET)
 parse-$(OUT)/$(LOCAL_NAME): parse-$(LOCAL_TARGET)
 parse: parse-$(LOCAL_TARGET)
@@ -46,7 +46,8 @@ update-parse-$(LOCAL_TARGET): LOCAL_TRACE_FILES:=$(LOCAL_TRACE_FILES)
 update-parse-$(LOCAL_TARGET): LOCAL_TRACE_LANGUAGE:=$(LOCAL_TRACE_LANGUAGE)
 update-parse-$(LOCAL_TARGET): #$(LOCAL_TARGET)
 	mkdir -p $(CDIR)baseline/$(LOCAL_NAME)
-	-$(DZN) --verbose parse $(LOCAL_DZN_TOP) 2> $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE) 1>&2
+	-($(DZN) parse $(LOCAL_DZN_TOP) && echo 'parse: no errors found') > $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE) 2>&1
+
 update-parse-$(OUT)/$(LOCAL_NAME): update-parse-$(LOCAL_TARGET)
 update-parse: update-parse-$(LOCAL_TARGET)
 ifeq ($(VERBOSE),debug)
