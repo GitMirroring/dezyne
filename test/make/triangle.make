@@ -42,7 +42,7 @@ $(TRACE0): LOCAL_SUT:=$(LOCAL_SUT)
 $(TRACE0): LOCAL_TRACE_ILLEGAL:=$(LOCAL_TRACE_ILLEGAL)
 $(TRACE0):
 	@mkdir -p $(LOCAL_OUT) #fixme dzn traces
-	$(DZN) traces $(LOCAL_TRACE_ILLEGAL) -m $(LOCAL_SUT) -o $(LOCAL_OUT) $(LOCAL_DZN_TOP)
+	$(DZN) traces -q 7 $(LOCAL_TRACE_ILLEGAL) -m $(LOCAL_SUT) -o $(LOCAL_OUT) $(LOCAL_DZN_TOP)
 endif
 
 ifeq ($(VERBOSE),debug)
