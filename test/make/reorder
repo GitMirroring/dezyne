@@ -1,0 +1,41 @@
+#!/usr/bin/nodejs
+
+process.stdin.setEncoding('utf8');
+
+var result = '';
+process.stdin.on('readable', function() {
+  var data = process.stdin.read();
+  if(data) result += data;
+});
+
+process.stdin.on('end', function() {
+  result = result.split(/verify: /m);
+  if(result.length > 0 && result[0].length == 0) result.shift();
+
+  var model_order = result.map(function(s) {
+    return s.split('\n').join('#').replace(/([^:]+).*/,'$1');
+  })
+      .filter(function (e, i, a) {
+        return a.lastIndexOf(e) === i;
+      });
+
+  process.stdout.write('verify: ' +
+                       result
+                       .sort(function(a,b){
+                         var order = ['deterministic',
+                                      'completeness',
+                                      'illegal',
+                                      'deadlock',
+                                      'compliance',
+                                      'livelock'];
+
+                         a1 = model_order.indexOf(a.split('\n').join('#').replace(/([^:]+).*/,'$1'));
+                         b1 = model_order.indexOf(b.split('\n').join('#').replace(/([^:]+).*/,'$1'));
+
+                         a2 = order.indexOf(a.split('\n').join('#').replace(/[^:]+: [^:]+: ([^:]+).*/,'$1'));
+                         b2 = order.indexOf(b.split('\n').join('#').replace(/[^:]+: [^:]+: ([^:]+).*/,'$1'));
+
+                         return a1 < b1 ? -1 : a1 > b1 ? 1 : a2 < b2 ? -1 : 1;
+                       })
+                       .join('verify: '));
+});
