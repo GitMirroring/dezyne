@@ -1,0 +1,6 @@
+<external>..e -> sut.p.e
+p.a
+sut.p.return -> <external>..return
+<external>..e -> sut.p.e
+p.b
+sut.p.return -> <external>..return

@@ -109,9 +109,10 @@
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))
 
+(define (wrap-compound statement) (make <compound> :elements (list statement)))
+(define indenter (make-parameter indent))
 (define join (make-parameter (->join ", ")))
 (define sep (make-parameter ","))
-(define indenter (make-parameter indent))
 
 (define (dump-indented file-name thunk)
   (dump-output file-name
@@ -279,7 +280,7 @@
       (() "")
       ('$empty-statement$ (snippet 'empty `((space ,space))))
       (($ <guard> expression (and ($ <guard>) statement))
-       (let* ((statement (->code model (make <compound> :elements (list statement)) locals (1+ indent)))
+       (let* ((statement (->code model (wrap-compound statement) locals (1+ indent)))
               (statement (if (eq? statement '$empty-statement$)
                              (->code model statement locals (1+ indent))
                              statement)))
@@ -301,6 +302,8 @@
                 `((space ,space)
                   (expression ,(expression->string model expression locals))
                   (then ,(->code model then locals (1+ indent))))))
+      (($ <if> expression (and ($ <if> e t #f) (get! then)) else)
+       (->code- model (make <if> :expression expression :then (wrap-compound (then)) :else else) locals indent))
       (($ <if> expression then else)
        (snippet 'if-then-else
                 `((space ,space)
@@ -322,6 +325,8 @@
                 `((space ,space)
                   (identifier ,(identifier-snippet identifier))
                   (expression ,(expression->string model expression locals)))))
+      (($ <on> triggers (and ($ <if> e t #f) (get! statement)))
+       (->code- model (make <on> :triggers triggers :statement (wrap-compound (statement))) locals indent))
       (($ <on> triggers statement)
        (or (and-let* ((trigger ((find-trigger port event) src)))
                      (let* ((aliases

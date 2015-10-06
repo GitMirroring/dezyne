@@ -1,0 +1,17 @@
+verify: iififelse: check: completeness: ok
+
+verify: iififelse: check: deadlock: ok
+
+verify: iififelse: check: livelock: ok
+
+verify: ififelse: check: deterministic: ok
+
+verify: ififelse: check: completeness: ok
+
+verify: ififelse: check: illegal: ok
+
+verify: ififelse: check: deadlock: ok
+
+verify: ififelse: check: compliance: ok
+
+verify: ififelse: check: livelock: ok
