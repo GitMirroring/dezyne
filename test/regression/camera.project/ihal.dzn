@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -22,7 +23,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // This model is part of the Camera Dezyne Example Project.
-// The model contains the behavioural specification for the interfaces 
+// The model contains the behavioural specification for the interfaces
 // to the hardware. This is the list of interface specifications in this model:
 // - the IMemory
 // - the ISensor
@@ -154,7 +155,7 @@ interface IHardware
       [idle] idle = false;
       [!idle] illegal;
     }
-    on inevitable: {interrupt; idle = true;}
+    [!idle] on inevitable: {interrupt; idle = true;}
     on cancel: idle = true;
   }
 }
