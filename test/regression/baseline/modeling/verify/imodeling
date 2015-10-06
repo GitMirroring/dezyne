@@ -1,5 +1,3 @@
 verify: imodeling: check: completeness: ok
-
 verify: imodeling: check: deadlock: ok
-
 verify: imodeling: check: livelock: ok

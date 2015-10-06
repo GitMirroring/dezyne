@@ -1,8 +1,6 @@
 verify: I: check: completeness: ok
-
 verify: I: check: deadlock: fail
 I.e
 I.return
 deadlock in model I
-
 verify: I: check: livelock: ok

@@ -1,1 +1,12 @@
-error: verification failed
+verify: inner_i25_foo_i24_I: check: completeness: ok
+verify: inner_i25_foo_i24_I: check: deadlock: ok
+verify: inner_i25_foo_i24_I: check: livelock: ok
+verify: foo_i93_I: check: completeness: ok
+verify: foo_i93_I: check: deadlock: ok
+verify: foo_i93_I: check: livelock: ok
+verify: inner_i69_space: check: deterministic: ok
+verify: inner_i69_space: check: completeness: ok
+verify: inner_i69_space: check: illegal: ok
+verify: inner_i69_space: check: deadlock: ok
+verify: inner_i69_space: check: compliance: ok
+verify: inner_i69_space: check: livelock: ok

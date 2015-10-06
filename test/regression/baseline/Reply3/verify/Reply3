@@ -1,23 +1,12 @@
 verify: I: check: completeness: ok
-
 verify: I: check: deadlock: ok
-
 verify: I: check: livelock: ok
-
 verify: U: check: completeness: ok
-
 verify: U: check: deadlock: ok
-
 verify: U: check: livelock: ok
-
 verify: Reply3: check: deterministic: ok
-
 verify: Reply3: check: completeness: ok
-
 verify: Reply3: check: illegal: ok
-
 verify: Reply3: check: deadlock: ok
-
 verify: Reply3: check: compliance: ok
-
 verify: Reply3: check: livelock: ok

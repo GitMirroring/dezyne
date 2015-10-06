@@ -1,17 +1,9 @@
 verify: ienum_collision: check: completeness: ok
-
 verify: ienum_collision: check: deadlock: ok
-
 verify: ienum_collision: check: livelock: ok
-
 verify: enum_collision: check: deterministic: ok
-
 verify: enum_collision: check: completeness: ok
-
 verify: enum_collision: check: illegal: ok
-
 verify: enum_collision: check: deadlock: ok
-
 verify: enum_collision: check: compliance: ok
-
 verify: enum_collision: check: livelock: ok

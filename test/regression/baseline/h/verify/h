@@ -1,29 +1,18 @@
 verify: IHandle: check: completeness: ok
-
 verify: IHandle: check: deadlock: ok
-
 verify: IHandle: check: livelock: ok
-
 verify: ITransfer: check: completeness: fail
 ITransfer.tcalibrate
 ITransfer.tcalibrated
 ITransfer.return
 ITransfer is incomplete: 'ITransfer.move,ITransfer.transfer,ITransfer.tcalibrate' not handled
-
 verify: ITransfer: check: deadlock: ok
-
 verify: ITransfer: check: livelock: ok
-
 verify: h: check: deterministic: ok
-
 verify: h: check: completeness: fail
 h is incomplete: 'ctrl.stop,robot.placed,robot.arrived,ctrl.operate,robot.picked' not handled
-
 verify: h: check: illegal: ok
-
 verify: h: check: deadlock: ok
-
 verify: h: check: compliance: fail
 ctrl.stop not performed by component
-
 verify: h: check: livelock: ok

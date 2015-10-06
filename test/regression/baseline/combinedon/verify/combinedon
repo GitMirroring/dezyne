@@ -1,23 +1,12 @@
 verify: II: check: completeness: ok
-
 verify: II: check: deadlock: ok
-
 verify: II: check: livelock: ok
-
 verify: I: check: completeness: ok
-
 verify: I: check: deadlock: ok
-
 verify: I: check: livelock: ok
-
 verify: combinedon: check: deterministic: ok
-
 verify: combinedon: check: completeness: ok
-
 verify: combinedon: check: illegal: ok
-
 verify: combinedon: check: deadlock: ok
-
 verify: combinedon: check: compliance: ok
-
 verify: combinedon: check: livelock: ok

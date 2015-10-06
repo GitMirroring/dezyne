@@ -1,5 +1,3 @@
 verify: iimperative: check: completeness: ok
-
 verify: iimperative: check: deadlock: ok
-
 verify: iimperative: check: livelock: ok

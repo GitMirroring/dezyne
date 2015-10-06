@@ -1,25 +1,14 @@
 verify: IConsole: check: completeness: ok
-
 verify: IConsole: check: deadlock: ok
-
 verify: IConsole: check: livelock: ok
-
 verify: ISensor: check: completeness: ok
-
 verify: ISensor: check: deadlock: ok
-
 verify: ISensor: check: livelock: ok
-
 verify: ISiren: check: completeness: ok
-
 verify: ISiren: check: deadlock: ok
-
 verify: ISiren: check: livelock: ok
-
 verify: Alarm: check: deterministic: ok
-
 verify: Alarm: check: completeness: ok
-
 verify: Alarm: check: illegal: fail
 console.arm
 sensor.enable
@@ -43,7 +32,6 @@ sensor.triggered
 console.detected
 siren.turnon
 illegal
-
 verify: Alarm: check: deadlock: fail
 console.arm
 sensor.enable
@@ -67,7 +55,6 @@ sensor.triggered
 console.detected
 siren.turnon
 deadlock in model Alarm
-
 verify: Alarm: check: compliance: fail
 console.arm
 sensor.enable
@@ -91,5 +78,4 @@ sensor.triggered
 console.detected
 siren.turnon
 Component Alarm is non-compliant with interface of provided port
-
 verify: Alarm: check: livelock: ok

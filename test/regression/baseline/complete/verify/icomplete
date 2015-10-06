@@ -1,5 +1,3 @@
 verify: icomplete: check: completeness: ok
-
 verify: icomplete: check: deadlock: ok
-
 verify: icomplete: check: livelock: ok

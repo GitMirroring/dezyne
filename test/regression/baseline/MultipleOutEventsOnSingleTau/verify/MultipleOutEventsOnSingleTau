@@ -1,13 +1,8 @@
 verify: IMultipleOutEventsOnSingleTau: check: completeness: ok
-
 verify: IMultipleOutEventsOnSingleTau: check: deadlock: ok
-
 verify: IMultipleOutEventsOnSingleTau: check: livelock: ok
-
 verify: MultipleOutEventsOnSingleTau: check: deterministic: ok
-
 verify: MultipleOutEventsOnSingleTau: check: completeness: ok
-
 verify: MultipleOutEventsOnSingleTau: check: illegal: fail
 rp.oa
 rp.ob
@@ -20,7 +15,6 @@ pp.return
 pp.ca
 rp.ca
 illegal
-
 verify: MultipleOutEventsOnSingleTau: check: deadlock: fail
 rp.oa
 rp.ob
@@ -33,7 +27,6 @@ pp.return
 pp.ca
 rp.ca
 deadlock in model MultipleOutEventsOnSingleTau
-
 verify: MultipleOutEventsOnSingleTau: check: compliance: fail
 rp.oa
 rp.ob
@@ -51,5 +44,4 @@ pp.return
 rp.ob
 pp.ob
 Component MultipleOutEventsOnSingleTau is non-compliant with interface of provided port
-
 verify: MultipleOutEventsOnSingleTau: check: livelock: ok

@@ -1,17 +1,9 @@
 verify: IGuardtwotopon: check: completeness: ok
-
 verify: IGuardtwotopon: check: deadlock: ok
-
 verify: IGuardtwotopon: check: livelock: ok
-
 verify: Guardtwotopon: check: deterministic: ok
-
 verify: Guardtwotopon: check: completeness: ok
-
 verify: Guardtwotopon: check: illegal: ok
-
 verify: Guardtwotopon: check: deadlock: ok
-
 verify: Guardtwotopon: check: compliance: ok
-
 verify: Guardtwotopon: check: livelock: ok

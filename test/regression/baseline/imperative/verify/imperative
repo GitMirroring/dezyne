@@ -1,17 +1,9 @@
 verify: iimperative: check: completeness: ok
-
 verify: iimperative: check: deadlock: ok
-
 verify: iimperative: check: livelock: ok
-
 verify: imperative: check: deterministic: ok
-
 verify: imperative: check: completeness: ok
-
 verify: imperative: check: illegal: ok
-
 verify: imperative: check: deadlock: ok
-
 verify: imperative: check: compliance: ok
-
 verify: imperative: check: livelock: ok

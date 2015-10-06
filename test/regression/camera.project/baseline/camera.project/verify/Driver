@@ -1,25 +1,14 @@
 verify: IControl: check: completeness: ok
-
 verify: IControl: check: deadlock: ok
-
 verify: IControl: check: livelock: ok
-
 verify: IAcquisition: check: completeness: ok
-
 verify: IAcquisition: check: deadlock: ok
-
 verify: IAcquisition: check: livelock: ok
-
 verify: IOptics: check: completeness: ok
-
 verify: IOptics: check: deadlock: ok
-
 verify: IOptics: check: livelock: ok
-
 verify: Driver: check: deterministic: ok
-
 verify: Driver: check: completeness: ok
-
 verify: Driver: check: illegal: fail
 control.setup
 optics.prepare
@@ -34,7 +23,6 @@ control.return
 control.setup
 optics.prepare
 illegal
-
 verify: Driver: check: deadlock: fail
 control.setup
 optics.prepare
@@ -49,7 +37,6 @@ control.return
 control.setup
 optics.prepare
 deadlock in model Driver
-
 verify: Driver: check: compliance: fail
 control.setup
 optics.prepare
@@ -64,5 +51,4 @@ control.return
 control.setup
 optics.prepare
 Component Driver is non-compliant with interface of provided port
-
 verify: Driver: check: livelock: ok

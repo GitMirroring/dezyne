@@ -1,5 +1,3 @@
 verify: ISynchronousOut: check: completeness: ok
-
 verify: ISynchronousOut: check: deadlock: ok
-
 verify: ISynchronousOut: check: livelock: ok

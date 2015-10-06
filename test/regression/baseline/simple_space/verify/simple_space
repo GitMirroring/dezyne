@@ -1,1 +1,9 @@
-error: verification failed
+verify: simple_i25_I: check: completeness: ok
+verify: simple_i25_I: check: deadlock: ok
+verify: simple_i25_I: check: livelock: ok
+verify: simple_i50_space: check: deterministic: ok
+verify: simple_i50_space: check: completeness: ok
+verify: simple_i50_space: check: illegal: ok
+verify: simple_i50_space: check: deadlock: ok
+verify: simple_i50_space: check: compliance: ok
+verify: simple_i50_space: check: livelock: ok

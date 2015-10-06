@@ -1,5 +1,3 @@
 verify: ir: check: completeness: ok
-
 verify: ir: check: deadlock: ok
-
 verify: ir: check: livelock: ok

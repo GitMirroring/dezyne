@@ -1,5 +1,3 @@
 verify: ifunction2: check: completeness: ok
-
 verify: ifunction2: check: deadlock: ok
-
 verify: ifunction2: check: livelock: ok

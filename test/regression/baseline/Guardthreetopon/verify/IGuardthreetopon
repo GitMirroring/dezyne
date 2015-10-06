@@ -1,5 +1,3 @@
 verify: IGuardthreetopon: check: completeness: ok
-
 verify: IGuardthreetopon: check: deadlock: ok
-
 verify: IGuardthreetopon: check: livelock: ok

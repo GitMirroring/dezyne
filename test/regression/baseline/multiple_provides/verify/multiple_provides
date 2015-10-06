@@ -1,17 +1,9 @@
 verify: imultiple_provides: check: completeness: ok
-
 verify: imultiple_provides: check: deadlock: ok
-
 verify: imultiple_provides: check: livelock: ok
-
 verify: multiple_provides: check: deterministic: ok
-
 verify: multiple_provides: check: completeness: ok
-
 verify: multiple_provides: check: illegal: ok
-
 verify: multiple_provides: check: deadlock: ok
-
 verify: multiple_provides: check: compliance: ok
-
 verify: multiple_provides: check: livelock: ok

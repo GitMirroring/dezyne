@@ -1,21 +1,13 @@
 verify: isingle_tau_to_multiple_tau_should_not_refine: check: completeness: ok
-
 verify: isingle_tau_to_multiple_tau_should_not_refine: check: deadlock: ok
-
 verify: isingle_tau_to_multiple_tau_should_not_refine: check: livelock: ok
-
 verify: single_tau_to_multiple_tau_should_not_refine: check: deterministic: ok
-
 verify: single_tau_to_multiple_tau_should_not_refine: check: completeness: ok
-
 verify: single_tau_to_multiple_tau_should_not_refine: check: illegal: ok
-
 verify: single_tau_to_multiple_tau_should_not_refine: check: deadlock: ok
-
 verify: single_tau_to_multiple_tau_should_not_refine: check: compliance: fail
 r.c
 p.c
 p.c
 p.c not allowed by port p
-
 verify: single_tau_to_multiple_tau_should_not_refine: check: livelock: ok

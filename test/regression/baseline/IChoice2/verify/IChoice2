@@ -1,5 +1,3 @@
 verify: IChoice2: check: completeness: ok
-
 verify: IChoice2: check: deadlock: ok
-
 verify: IChoice2: check: livelock: ok

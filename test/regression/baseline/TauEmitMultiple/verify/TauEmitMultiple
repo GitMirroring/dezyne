@@ -1,29 +1,15 @@
 verify: IDummy: check: completeness: ok
-
 verify: IDummy: check: deadlock: ok
-
 verify: IDummy: check: livelock: ok
-
 verify: ITauEmitMulti: check: completeness: ok
-
 verify: ITauEmitMulti: check: deadlock: ok
-
 verify: ITauEmitMulti: check: livelock: ok
-
 verify: ITauEmitSingle: check: completeness: ok
-
 verify: ITauEmitSingle: check: deadlock: ok
-
 verify: ITauEmitSingle: check: livelock: ok
-
 verify: TauEmitMultiple: check: deterministic: ok
-
 verify: TauEmitMultiple: check: completeness: ok
-
 verify: TauEmitMultiple: check: illegal: ok
-
 verify: TauEmitMultiple: check: deadlock: ok
-
 verify: TauEmitMultiple: check: compliance: ok
-
 verify: TauEmitMultiple: check: livelock: ok

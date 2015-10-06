@@ -1,5 +1,3 @@
 verify: Iexternaltypes: check: completeness: ok
-
 verify: Iexternaltypes: check: deadlock: ok
-
 verify: Iexternaltypes: check: livelock: ok

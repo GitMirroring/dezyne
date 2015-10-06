@@ -1,5 +1,12 @@
 verify: ISensor: check: completeness: ok
-
 verify: ISensor: check: deadlock: ok
-
 verify: ISensor: check: livelock: ok
+verify: IHardware: check: completeness: ok
+verify: IHardware: check: deadlock: ok
+verify: IHardware: check: livelock: ok
+verify: CMOS: check: deterministic: ok
+verify: CMOS: check: completeness: ok
+verify: CMOS: check: illegal: ok
+verify: CMOS: check: deadlock: ok
+verify: CMOS: check: compliance: ok
+verify: CMOS: check: livelock: ok

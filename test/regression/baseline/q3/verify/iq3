@@ -1,5 +1,3 @@
 verify: iq3: check: completeness: ok
-
 verify: iq3: check: deadlock: ok
-
 verify: iq3: check: livelock: ok

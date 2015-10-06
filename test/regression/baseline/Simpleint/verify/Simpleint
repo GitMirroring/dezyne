@@ -1,20 +1,12 @@
 verify: ISimple: check: completeness: ok
-
 verify: ISimple: check: deadlock: ok
-
 verify: ISimple: check: livelock: ok
-
 verify: Simpleint: check: deterministic: ok
-
 verify: Simpleint: check: completeness: ok
-
 verify: Simpleint: check: illegal: ok
-
 verify: Simpleint: check: deadlock: ok
-
 verify: Simpleint: check: compliance: fail
 p.e
 p.return
 p.return not allowed by port p
-
 verify: Simpleint: check: livelock: ok

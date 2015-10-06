@@ -1,5 +1,3 @@
 verify: DummyI: check: completeness: ok
-
 verify: DummyI: check: deadlock: ok
-
 verify: DummyI: check: livelock: ok

@@ -1,17 +1,9 @@
 verify: ISynchronousOut: check: completeness: ok
-
 verify: ISynchronousOut: check: deadlock: ok
-
 verify: ISynchronousOut: check: livelock: ok
-
 verify: SynchronousOut: check: deterministic: ok
-
 verify: SynchronousOut: check: completeness: ok
-
 verify: SynchronousOut: check: illegal: ok
-
 verify: SynchronousOut: check: deadlock: ok
-
 verify: SynchronousOut: check: compliance: ok
-
 verify: SynchronousOut: check: livelock: ok

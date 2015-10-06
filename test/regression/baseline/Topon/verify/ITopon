@@ -1,5 +1,3 @@
 verify: ITopon: check: completeness: ok
-
 verify: ITopon: check: deadlock: ok
-
 verify: ITopon: check: livelock: ok

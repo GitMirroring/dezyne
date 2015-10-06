@@ -1,5 +1,3 @@
 verify: ITwotopon: check: completeness: ok
-
 verify: ITwotopon: check: deadlock: ok
-
 verify: ITwotopon: check: livelock: ok

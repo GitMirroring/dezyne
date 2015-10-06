@@ -1,6 +1,4 @@
 verify: I: check: completeness: ok
-
 verify: I: check: deadlock: fail
 deadlock in model I
-
 verify: I: check: livelock: ok

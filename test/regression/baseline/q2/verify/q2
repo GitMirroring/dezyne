@@ -1,23 +1,12 @@
 verify: iq2: check: completeness: ok
-
 verify: iq2: check: deadlock: ok
-
 verify: iq2: check: livelock: ok
-
 verify: ir2: check: completeness: ok
-
 verify: ir2: check: deadlock: ok
-
 verify: ir2: check: livelock: ok
-
 verify: q2: check: deterministic: ok
-
 verify: q2: check: completeness: ok
-
 verify: q2: check: illegal: ok
-
 verify: q2: check: deadlock: ok
-
 verify: q2: check: compliance: ok
-
 verify: q2: check: livelock: ok
