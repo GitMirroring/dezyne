@@ -11,10 +11,12 @@ namespace dezyne
   static bool relaxed = false;
   typedef std::map<std::string, std::function<void()>> event_map;
 
-  std::string consume_synchronous_out_events(event_map& event_map)
+  std::string consume_synchronous_out_events(std::string prefix, std::string event, event_map& event_map)
   {
     std::string s;
-    std::cin >> s;
+
+    std::string match = prefix + event;
+    while (std::cin >> s) if (s==match) break;
     while (std::cin >> s)
     {
       if (event_map.find(s) == event_map.end()) break;
@@ -27,7 +29,7 @@ namespace dezyne
   {
     std::clog << prefix << event << std::endl;
     if (relaxed) return;
-    consume_synchronous_out_events(event_map);
+    consume_synchronous_out_events(prefix, event, event_map);
     std::clog << prefix << "return" << std::endl;
   }
 
@@ -41,7 +43,7 @@ namespace dezyne
   {
     std::clog << prefix << event << std::endl;
     if (relaxed) return (R)0;
-    std::string s = consume_synchronous_out_events(event_map);
+    std::string s = consume_synchronous_out_events(prefix, event, event_map);
 
     R r = string_to_value(s.erase(std::min(s.size(), s.find(prefix)), prefix.size()));
     if (static_cast<int>(r) != -1)
@@ -56,11 +58,21 @@ namespace dezyne
   {
     int dzn_i = 0;
 
+    component *c = new component;
+    c->dzn_meta.address = c;
+    c->dzn_meta.parent = 0;
+    c->dzn_meta.name = "<internal>";
+    m.dzn_rt.performs_flush(c) = true;
+
  #(map
    (lambda (port)
      (map (define-on model port #{m.#port .#direction .#event  = [&] (#formals) {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}
                                                                                                                  #{return log_valued<#((c++:scope-join #f) reply-scope)::#reply-name ::type>("#port .", "#event ", e, to_#((c++:scope-join #f) reply-scope)_#reply-name , static_cast<const char*(*)(#((c++:scope-join #f) reply-scope)::#reply-name ::type)>(to_string));#})};
      #}) (filter (negate (om:dir-matches? port)) (om:events port)))) (om:ports model))
+ #(map (init-port #{
+     m.#name .meta.provides.address = c;
+     e["#name .<flush>"] = [&] { std::clog << "#name .<flush>" << std::endl; m.dzn_rt.flush(m.#name .meta.provides.address); };
+     #}) (filter om:requires? (om:ports model)))
  #(map
     (lambda (port)
     (map (define-on model port #{
