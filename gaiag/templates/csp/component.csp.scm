@@ -153,9 +153,9 @@ within sbisim(diamond(x))
 R2C = #((->list-join "\n      []\n      ") (append (map (lambda (port) (list (.name port) "?x -> " (.name port) "_'?x -> R2C")) (om:provided model))
                                                    (map (lambda (port) (list (.name port) "_'''?x -> " (.name port) "_'''?x -> R2C")) (om:provided model))))
 
-IFS = #((->list-join "\n      |||\n      ") (map (lambda (port) (list "IF_" (.name (.type port)) "_(true,false)"
+IFS = #((->list-join "\n      |||\n      ") (map (lambda (port) (list "IF_" ((om:scope-name) port) "_(true,false)"
                                                                       (map (lambda (interface channel) (list "[[" interface "<-" channel "]]"))
-                                                                           (csp-channels port (compose .name .type)) (csp-channels port .name))))
+                                                                           (csp-channels port (om:scope-name)) (csp-channels port .name))))
                                                  (om:provided model)))
 
 within compress(IFS [|{|#(comma-join (map (lambda (port) (list (.name port) "," (.name port) "_'" "," (.name port) "_'''")) (om:provided model)))|}|] R2C \ {|#
