@@ -58,7 +58,7 @@ ifeq ($(VERBOSE),debug)
 $(info target triangle-$(LOCAL_TARGET))
 endif
 
-$(LOCAL_TARGET): 
+$(LOCAL_TARGET):
 	@echo ' .'
 	@echo '/_\' $(LOCAL_NAME)
 #'
@@ -74,7 +74,7 @@ triangle-$(LOCAL_TARGET): $(TRACE0)
 	for i in $$(ls -1 $(LOCAL_TRACE).* | sort -t. -k3 -k4 -n | $(TRIANGLE_MAX) 2>/dev/null); do\
 		set -e;\
 		echo trace[$(LOCAL_LANGUAGE)]: $$i;\
-		diff -wy $$i <($(DZN) run -m $(LOCAL_SUT) -t $$i $(LOCAL_DZN_TOP) | grep ^trace:| sed 's,^trace:,,' | tr ',' '\n');\
+		diff -wy $$i <($(DZN) run -m $(LOCAL_SUT) -t <(grep -v '<flush>' $$i) $(LOCAL_DZN_TOP) | grep ^trace:| sed 's,^trace:,,' | tr ',' '\n');\
 		echo -e '\n---------------------------------------------------------------------------------';\
 		set +e;\
 	done
