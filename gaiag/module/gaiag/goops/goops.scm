@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -25,7 +26,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag goops goops)
-  :use-module (gaiag misc)
+  :use-module (gaiag macros)
   :use-module (gaiag goops ast)
   :use-module (gaiag goops compare)
   :use-module (gaiag goops csp)

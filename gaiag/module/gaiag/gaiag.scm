@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -45,6 +45,7 @@
             (model (single-char #\m) (value #t))
             (trail (single-char #\t) (value #t))
             (output (single-char #\o) (value #t))
+            (output-dir (single-char #\O) (value #t))
             (queue-size (single-char #\q) (value #t))
 	    (version (single-char #\v))))
 	 (options (getopt-long args option-spec
@@ -60,16 +61,17 @@
       (and (or help? usage?)
 	   ((or (and usage? stderr) stdout) "\
 Usage: gaiag [OPTION]... FILE
-  -a, --assert         generate all asserts inline, not in asserts.csp
-  -c, --coverage       write lcov coverage data to gaiag.info
-  -d, --debug          run with debugging
-  -h, --help           display this help
-  -j, --json           use json-friendly format; strings and hash tables
-  -m, --model=MODEL    use model named MODEL
-  -l, --language=LANG  generate output for language=LANG [ast]
-  -t, --trail=TRAIL    specify trail TRAIL for trail-walker
-  -o, --output FILE    generate FILE containing the output
-  -v, --version        display version
+  -a, --assert           generate all asserts inline, not in asserts.csp
+  -c, --coverage         write lcov coverage data to gaiag.info
+  -d, --debug            run with debugging
+  -h, --help             display this help
+  -j, --json             use json-friendly format; strings and hash tables
+  -m, --model=MODEL      use model named MODEL
+  -l, --language=LANG    generate output for language=LANG [ast]
+  -t, --trail=TRAIL      specify trail TRAIL for trail-walker
+  -o, --output FILE      generate FILE containing the output
+  -O, --output-dir=DIR   generate output in DIR
+  -v, --version          display version
 
 Languages: c c++ cs csp dzn goops html java javascript python
            c++03 c++msvc11 java7

@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -25,7 +26,7 @@
 
 (define-module (gaiag list simulate)
   :use-module (ice-9 match)
-  :use-module (ice-9 optargs)  
+  :use-module (ice-9 optargs)
   :use-module (gaiag list om)
   :export (
            <info>

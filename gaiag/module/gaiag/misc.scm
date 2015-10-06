@@ -22,7 +22,7 @@
 (define-module (gaiag misc)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
-  :use-module (gaiag list match)
+  :use-module (ice-9 getopt-long)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 rdelim)
   :use-module (ice-9 regex)
@@ -31,7 +31,9 @@
 
   :use-module (srfi srfi-1)
 
+  :use-module (gaiag list match)
   :use-module (gaiag fifo)
+  :use-module (gaiag gaiag)
 
   :export (
            *eof*
@@ -57,7 +59,7 @@
            file-name->components
            diff
            drop-prefix
-           dump-file
+           dump-string
            dump-output
            eat-one-space
            eat-one-space-or-newline
@@ -98,7 +100,6 @@
            double-colon-join
            nl-comma-join
            pipe-join
-           re-export-modules
            ))
 
 (define *eof* (call-with-input-string "" read-char))
@@ -219,13 +220,18 @@
               flags)))
     `(,@(car ret) ,(caddr ret))))
 
-(define (dump-file file-name string)
-  (with-output-to-file (components->file-name file-name) (lambda () (display string))))
+(define (dump-string file-name string)
+  (dump-output file-name (lambda () (display string))))
 
 (define (dump-output file-name thunk)
-  (let ((name (components->file-name file-name)))
+  (let* ((dir (option-ref (parse-opts (command-line)) 'output-dir #f))
+         (file-name (if (not dir) file-name
+                          (cons dir file-name)))
+         (name (components->file-name file-name)))
     (if (string=? name "-") (thunk)
-        (with-output-to-file name thunk))))
+        (begin
+          (mkdir-p (dirname name))
+          (with-output-to-file name thunk)))))
 
 (define (read-string-12.04)
   (read-delimited ""))
@@ -345,16 +351,3 @@
 
 (define (hash-table->alist table)
   (hash-map->list cons table))
-
-(define-macro (re-export-modules . args)
-  "Re-export the public interface of a module or modules. Invoked as
-@code{(re-export-modules (mod1) (mod2)...)}."
-  (if (null? args)
-       '(if #f #f)
-       `(begin
-          ,@(map (lambda (mod)
-                   (or (list? mod)
-                       (error "Invalid module specification" mod))
-                   `(module-use! (module-public-interface (current-module))
-                                 (resolve-interface ',mod)))
-                 args))))

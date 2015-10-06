@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -25,19 +25,20 @@
 
 (read-set! keywords 'prefix)
 
-(define-module (gaiag list goops)
-  :use-module (gaiag macros)
-  :use-module (gaiag list ast)
-  :use-module (gaiag list csp)
-  :use-module (gaiag list om)
-  :use-module (gaiag list simulate)
-  :use-module (gaiag list util))
+(define-module (gaiag macros)
+  :export (
+           re-export-modules
+           ))
 
-(cond-expand-provide (current-module) '(list-om))
-
-(re-export-modules
- (gaiag list ast)
- (gaiag list csp)
- (gaiag list om)
- (gaiag list simulate)
- (gaiag list util))
+(define-macro (re-export-modules . args)
+  "Re-export the public interface of a module or modules. Invoked as
+@code{(re-export-modules (mod1) (mod2)...)}."
+  (if (null? args)
+       '(if #f #f)
+       `(begin
+          ,@(map (lambda (mod)
+                   (or (list? mod)
+                       (error "Invalid module specification" mod))
+                   `(module-use! (module-public-interface (current-module))
+                                 (resolve-interface ',mod)))
+                 args))))

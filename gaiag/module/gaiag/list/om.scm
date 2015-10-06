@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -29,7 +30,6 @@
   :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
 
-  :use-module (gaiag misc)
   :export (
            symbol->class
 

@@ -124,7 +124,7 @@
   (and-let* ((header (template-file `(header ,(code:extension (make <component>)))))
              (header (components->file-name header))
              ((file-exists? header)))
-            (dump-file (basename header) (gulp-file header))))
+            (dump-string (basename header) (gulp-file header))))
 
 (define (dump-global o)
   (and-let* (((null-is-#f (om:enums)))
@@ -141,7 +141,6 @@
     (($ <system>) (dump-system o))))
 
 (define (dump-interface o)
-  (mkdir-p "dezyne")
   (dump-global o)
   (let ((name ((om:scope-name) o)))
     (dump-indented (list 'dezyne name (code:extension o))
@@ -149,7 +148,6 @@
                      (code-file 'interface (code:module o))))))
 
 (define (dump-component o)
-  (mkdir-p "dezyne")
   (dump-global o)
   (let ((name ((om:scope-name) o))
         (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
@@ -173,7 +171,6 @@
                              (code-file 'main (code:module o))))))
 
 (define (dump-system o)
-  (mkdir-p "dezyne")
   (let ((name ((om:scope-name) o))
         (model (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                            string->symbol)))

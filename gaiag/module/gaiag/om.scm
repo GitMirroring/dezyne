@@ -42,6 +42,7 @@
 
   :use-module (gaiag list match)
   :use-module (gaiag annotate)
+  :use-module (gaiag macros)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
 
