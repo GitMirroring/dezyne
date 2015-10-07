@@ -7,7 +7,8 @@
             (list
              (->string
               (list
-               "dzn_meta(\"\",\"" .model "\",reinterpret_cast<dezyne::component*>(this),0)")))
+               "dzn_meta(\"\",\"" .model "\",reinterpret_cast<dezyne::component*>(this),0)"))
+               "dzn_rt(dezyne_locator.get<dezyne::runtime>())")
             (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
                  (injected-bindings model))
             (list (if (pair? (injected-bindings model))

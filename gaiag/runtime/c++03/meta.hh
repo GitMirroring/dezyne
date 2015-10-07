@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -66,6 +67,7 @@ namespace dezyne
     , address(address)
     , parent(parent)
     {}
+    meta () {}
     std::string name;
     std::string type;
     const component* address;
