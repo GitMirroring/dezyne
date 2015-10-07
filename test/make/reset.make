@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -59,5 +60,6 @@ LOCAL_SUT:=
 LOCAL_TARGET:=
 LOCAL_TRACE:=
 LOCAL_TRACE_FILES:=
+LOCAL_TRACE_FLUSH:=
 LOCAL_TRACE_LANGUAGE:=
 LOCAL_TRACE_ILLEGAL:=
