@@ -1,5 +1,6 @@
 /* -*-c-style:linux;indent-tabs-mode:t-*- */
 
+##include <assert.h>
 ##include "runtime.h"
 ##include "locator.h"
 ##include "map.h"
@@ -14,6 +15,11 @@ typedef struct {
   void (*f)(void*);
   void *self;
 } closure;
+
+typedef struct {
+  runtime_info* info;
+  char* name;
+} args_flush;
 
 map* global_event_map;
 
@@ -39,23 +45,25 @@ char* drop_prefix(char* string, char* prefix) {
 	return string;
 }
 
-char* consume_synchronous_out_events(map* event_map) {
-        read_line();
-	char* line;
-	while ((line = read_line()) != 0) {
+char* consume_synchronous_out_events(char* prefix, char* event, map* event_map) {
+	char* s;
+        char match[1024];
+        strcat(strcpy(match, prefix), event);
+	while ((s = read_line()) != 0) if (!strcmp(match, s)) break;
+	while ((s = read_line()) != 0) {
 		void *p = 0;
-		if (map_get(event_map, line, &p)) break;
+		if (map_get(event_map, s, &p)) break;
                 closure *c = p;
                 c->f(c->self);
-		free(line);
+		free(s);
     	}
-        return line;
+	return s ? s : "";
 }
 
 void log_in(char* prefix, char* event, map* event_map) {
         fprintf(stderr, "%s%s\n", prefix, event);
 	if (relaxed) return;
-        consume_synchronous_out_events(event_map);
+        consume_synchronous_out_events(prefix, event, event_map);
         fprintf(stderr, "%s%s\n", prefix, "return");
 }
 
@@ -64,17 +72,25 @@ void log_out(char* prefix, char* event, map* event_map) {
         fprintf(stderr, "%s%s\n", prefix, event);
 }
 
+void log_flush(void* args) {
+	args_flush* a = args;
+	fprintf(stderr, "%s.<flush>\n", a->name);
+	runtime_flush(a->info);
+}
+
 int log_valued(char* prefix, char* event, map* event_map, int (*string_to_value)(char*), char* (*value_to_string)(int))
 {
         fprintf(stderr, "%s%s\n", prefix, event);
 	if (relaxed) return 0;
-        char* s = consume_synchronous_out_events(event_map);
+        char* s = consume_synchronous_out_events(prefix, event, event_map);
 	int r = string_to_value(drop_prefix(s, prefix));
 	if ((int)r != -1) {
 		fprintf(stderr, "%s%s\n", prefix, value_to_string(r));
 		return r;
 	}
-    return 0;
+	fprintf(stderr,"\"%s\": is not a reply value\n", s);
+	assert(!"not a reply value");
+	return 0;
 }
 
 #(->string (map (string-to-enum model) (om:enums)))
@@ -94,12 +110,29 @@ void #.scope_model _fill_event_map(#.scope_model * m, map* e) {
    int dzn_i = 0;
    void *p;
    closure *c;
+   args_flush* args;
+
+   component *comp = calloc(1, sizeof (component));
+   comp->dzn_info.performs_flush = true;
+   comp->dzn_meta.parent = 0;
+   comp->dzn_meta.name = "<internal>";
+
    #(map
      (lambda (port)
        (map (define-on model port #{
           m->#port ->#direction .#event  = #.scope_model _log_event_#port _#direction _#event;
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
+  #(map (init-port #{
+     c = malloc(sizeof (closure));
+     c->f = log_flush;
+     args = malloc(sizeof(args_flush));
+     args->info = &comp->dzn_info;
+     args->name = "#name ";
+     c->self = args;
+     m->#name ->in.self = comp;
+     map_put(e, "#name .<flush>", c);
+     #}) (filter om:requires? (om:ports model)))
    #(map
      (lambda (port)
        (map (define-on model port #{

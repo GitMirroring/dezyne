@@ -160,7 +160,7 @@ runtime_path (void *m, char* p)
     strcpy (buf, p);
     strcpy (p, c->dzn_meta.name);
     if (strlen (buf))
-      strcat (p, ".");
+      strcat (p, "x");
     return runtime_path (c->dzn_meta.parent, strcat (p, buf));
   }
   strcpy (buf, p);
@@ -177,9 +177,11 @@ runtime_trace_in (void* in, void* out, char const* e)
   char obuf[1024] = "";
   dzn_meta_t* i = in;
   dzn_meta_t* o = out;
-  fprintf (stderr, "%s.%s.%s -> %s.%s.%s\n",
-           runtime_path (o->parent, obuf), o->name, e,
-           runtime_path (i->parent, ibuf), i->name, e);
+  strcpy(ibuf, i->name);
+  strcpy(obuf, o->name);
+  fprintf (stderr, "%s.%s -> %s.%s\n",
+           runtime_path (o->parent, obuf), e,
+           runtime_path (i->parent, ibuf), e);
 }
 
 void
@@ -189,7 +191,9 @@ runtime_trace_out (void* in, void* out, char const* e)
   char obuf[1024] = "";
   dzn_meta_t* i = in;
   dzn_meta_t* o = out;
-  fprintf (stderr, "%s.%s.%s -> %s.%s.%s\n",
-           runtime_path (i->parent, ibuf), i->name, e,
-           runtime_path (o->parent, obuf), o->name, e);
+  strcpy(ibuf, i->name);
+  strcpy(obuf, o->name);
+  fprintf (stderr, "%s.%s -> %s.%s\n",
+           runtime_path (i->parent, ibuf), e,
+           runtime_path (o->parent, obuf), e);
 }
