@@ -33,23 +33,26 @@ class main<R> {
     return string;
   }
 
-  static String consume_synchronous_out_events(EventMap event_map) {
-    main.reader.readLine();
-    String line;
-    while ((line = main.reader.readLine()) != null) {
-      Action a = event_map.get(line);
+  static String consume_synchronous_out_events(String prefix, String event, EventMap event_map) {
+    String s;
+    String match = prefix + event;
+    while ((s = main.reader.readLine()) != null)
+      if (s.equals(match))
+        break;
+    while ((s = main.reader.readLine()) != null) {
+      Action a = event_map.get(s);
       if (a == null) {
         break;
       }
       a.action();
     }
-    return line;
+    return s;
   }
 
   static void log_in(String prefix, String event, EventMap event_map) {
     System.err.println(prefix + event);
     if (relaxed) return;
-    consume_synchronous_out_events(event_map);
+    consume_synchronous_out_events(prefix, event, event_map);
     System.err.println(prefix + "return");
   }
 
@@ -69,7 +72,7 @@ class main<R> {
   static <R extends Enum <R>> R log_valued(String prefix, String event, EventMap event_map, String event_prefix, Class<R> E) {
     System.err.println(prefix + event);
     if (relaxed) return E.getEnumConstants()[0];
-    String s = consume_synchronous_out_events(event_map);
+    String s = consume_synchronous_out_events(prefix, event, event_map);
     R r = string_to_value(E, drop_prefix(s, event_prefix));
     if (r != null) {
       System.err.println(prefix + r.getClass().getSimpleName() + "_" + E.getEnumConstants()[r.ordinal()]);
@@ -81,13 +84,20 @@ class main<R> {
 
   private static EventMap fillEventMap(final #.scope_model  m) {
   final V<Integer> v = new V<Integer> (0);
+  Component c = new Component(m.locator);
   final EventMap e = new EventMap();
+  c.flushes = true;
 #(map
     (lambda (port)
     (map (define-on model port #{
     m.#port .#direction .#event  = new #(action-type return-type formal-types)() {public #return-type  action(#formals) {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued("#port .", "#event ", e, "#port .#reply-name _", #(if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'DznGlobal reply-scope).#reply-name .class);#})};};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
+#(map (init-port #{
+    m.#name .in.self = c;
+    m.#name .in.name = "<internal>";
+    e.put("#name .<flush>", new Action(){public void action() {System.err.println("#name .<flush>"); m.runtime.flush (m.#name .in.self);}});
+#}) (filter om:requires? (om:ports model)))
 #(map
     (lambda (port)
     (map (define-on model port #{
@@ -102,9 +112,9 @@ class main<R> {
     #.scope_model  sut = new #.scope_model(locator.set(runtime), "sut");
     EventMap e = fillEventMap(sut);
     main.reader = new Reader();
-    String line;
-    while ((line = main.reader.readLine()) != null) {
-      Action a = e.get(line);
+    String s;
+    while ((s = main.reader.readLine()) != null) {
+      Action a = e.get(s);
       if (a != null) {
         a.action();
       }

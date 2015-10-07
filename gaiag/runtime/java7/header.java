@@ -119,11 +119,13 @@ abstract class ComponentBase {
   public ComponentBase(Locator locator, String name, SystemComponent parent) {this.locator = locator; this.parent = parent; this.name = name; this.runtime = (Runtime)locator.get(Runtime.class); this.runtime.components.add(this);};
 }
 
-abstract class Component extends ComponentBase {
+class Component extends ComponentBase {
   public boolean handling;
   public boolean flushes;
   public Component deferred;
   public Queue<Action> q;
+  public Component(Locator locator) {this(locator, "");};
+  public Component(Locator locator, String name) {this(locator, name, null);};
   public Component(Locator locator, String name, SystemComponent parent) {super(locator, name, parent); this.q = new LinkedList<Action>();};
 }
 
@@ -216,7 +218,7 @@ class Runtime<R> {
     if (o.parent != null) {
       return path(o.parent, o.name + (p.isEmpty() ? p : ".") + p);
     }
-    return o.name + (p.isEmpty() ? p : ".") + p;
+    return o.name + (!o.name.isEmpty () && !p.isEmpty() ? "." : "") + p;
   }
   public static String path(Interface.Port o) {
     return path(o, "");
