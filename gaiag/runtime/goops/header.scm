@@ -152,8 +152,10 @@
   (defer (.self (.in (car m))) o f))
 
 (define* (path o :optional (p ""))
-  (let ((pp (and o (string-append (symbol->string (.name o))
-                                  (if (string-null? p) p ".") p))))
+  (let* ((name (or (and o (symbol->string (.name o))) ""))
+         (pp (string-append name
+                            (if (and (not (string-null? name))
+                                     (not (string-null? p))) "." "") p)))
     (cond
      ((not o) (string-append "<external>." p))
      ((is-a? o <dezyne:port-base>) (path (.self o) pp))
