@@ -116,7 +116,7 @@ def path (m, p=''):
         return path (m.component, m.name + ('.' + p if p else p))
     if ('parent' in m.__dict__.keys () and m.parent):
         return path (m.parent, m.name + ('.' + p if p else p))
-    return m.name + ('.' + p if p else p)
+    return m.name + ('.' + p if p and m.name else p)
 
 def trace_in (i, e):
     sys.stderr.write (path (i.outport) + '.' + e + ' -> '

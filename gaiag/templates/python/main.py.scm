@@ -15,20 +15,24 @@ def drop_prefix (string, prefix):
         return string[len(prefix):]
     return string
 
-def consume_synchronous_out_events (event_map):
-    sys.stdin.readline ()
-    event = sys.stdin.readline ().strip ()
-    while event:
-        if event not in event_map.keys ():
+def consume_synchronous_out_events (prefix, event, event_map):
+    s = sys.stdin.readline ().strip ()
+    while s:
+        if s == prefix + event:
             break
-        event_map[event] ()
-        event = sys.stdin.readline ().strip ()
-    return event
+        s = sys.stdin.readline ().strip ()
+    s = sys.stdin.readline ().strip ()
+    while s:
+        if s not in event_map.keys ():
+            break
+        event_map[s] ()
+        s = sys.stdin.readline ().strip ()
+    return s
 
 def log_in (prefix, event, event_map):
     sys.stderr.write (prefix + event + '\n')
     if relaxed: return
-    consume_synchronous_out_events (event_map)
+    consume_synchronous_out_events (prefix, event, event_map)
     sys.stderr.write (prefix + 'return' + '\n')
 
 def log_out (prefix, event, event_map):
@@ -37,7 +41,7 @@ def log_out (prefix, event, event_map):
 def log_valued (prefix, event, event_map, string_to_value, value_to_string):
     sys.stderr.write (prefix + event + '\n')
     if relaxed: return 0
-    s = consume_synchronous_out_events (event_map)
+    s = consume_synchronous_out_events (prefix, event, event_map)
     r = string_to_value(s)
     if (r != None):
         sys.stderr.write (prefix + value_to_string[r] + '\n')
@@ -45,6 +49,8 @@ def log_valued (prefix, event, event_map, string_to_value, value_to_string):
     raise Exception ('"%s" is not a reply value' % s)
 
 def #.scope_model _fill_event_map (m):
+    c = runtime.Component (m.loc)
+    m.loc.get (runtime.Runtime).flushes (c)
     e = {
 #(map
     (lambda (port)
@@ -52,6 +58,14 @@ def #.scope_model _fill_event_map (m):
         '#port .#event ': m.#port .#direction port.#event ,
 #}) (filter (om:dir-matches? port)
        (om:events port)))) (om:ports model))     }
+#(map (init-port #{
+    m.#name .inport.component = c
+    m.#name .inport.name = '<internal>'
+    def log_flush ():
+           sys.stderr.write ('#name .<flush>\n')
+           m.rt.flush (m.#name .inport.component)
+    e['#name .<flush>'] = log_flush
+#}) (filter om:requires? (om:ports model)))
 #(map
     (lambda (port)
     (map (define-on model port #{
@@ -69,11 +83,11 @@ def main ():
 
     event_map = #.scope_model _fill_event_map (sut)
 
-    event = sys.stdin.readline ().strip ()
-    while event:
-        if event in event_map.keys ():
-            event_map[event] ()
-        event = sys.stdin.readline ().strip ()
+    s = sys.stdin.readline ().strip ()
+    while s:
+        if s in event_map.keys ():
+            event_map[s] ()
+        s = sys.stdin.readline ().strip ()
 
 if __name__ == '__main__':
     main ()
