@@ -23,7 +23,7 @@
 
 function timer(locator, meta) {
   this.locator = locator;
-  this.rt = locator.get(dezyne.runtime);
+  this.rt = locator.get(new dezyne.runtime());
   this.rt.components = (this.rt.components || []).concat ([this]);
   this.meta = meta;
   this.flushes = true;
