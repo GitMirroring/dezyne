@@ -16,10 +16,10 @@ dezyne.extend (dzn_require (__dirname + '/#interface '));
 #}) (injected-instances model))#
 (string-if (pair? (injected-bindings model)) #{
    this.locator = locator.clone()#
-    (map (init-bind model #{.set(this.#instance)#}) (injected-bindings model))
+    (map (init-bind model #{.set(this.#instance)#}) (injected-bindings model));
 #})#
 (map (init-instance #{
-    this.#name  = new dezyne.#((om:scope-name) component)(locator, {parent: this, name: '#name '});
+    this.#name  = new dezyne.#((om:scope-name) component)(this.locator, {parent: this, name: '#name '});
 #}) (non-injected-instances model))#
 (map (init-bind model #{
     this.#port  = this.#instance;

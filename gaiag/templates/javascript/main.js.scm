@@ -19,22 +19,22 @@ function drop_prefix(string, prefix) {
   return string;
 }
 
-function consume_synchronous_out_events(event_map) {
-  read_line();
-  var event;
-  while (event = read_line()) {
-    if (!event_map[event]) {
+function consume_synchronous_out_events(prefix, event, event_map) {
+  var s;
+  while (s = read_line()) if (s === prefix + event) break;
+  while (s = read_line()) {
+    if (!event_map[s]) {
       break;
     }
-    event_map[event]();
+    event_map[s]();
   }
-  return event;
+  return s;
 }
 
 function log_in(prefix, event, event_map) {
   console.error(prefix + event);
   if (relaxed) return;
-  consume_synchronous_out_events(event_map);
+  consume_synchronous_out_events(prefix, event, event_map);
   console.error(prefix + 'return');
 }
 
@@ -45,7 +45,7 @@ function log_out(prefix, event) {
 function log_valued(prefix, event, event_map, string_to_value, value_to_string) {
   console.error(prefix + event);
   if (relaxed) return 0;
-  var s = consume_synchronous_out_events(event_map);
+  var s = consume_synchronous_out_events(prefix, event, event_map);
   var r = string_to_value(s);
   if (r !== undefined) {
      console.error(prefix + value_to_string[r]);
@@ -56,6 +56,9 @@ function log_valued(prefix, event, event_map, string_to_value, value_to_string) 
 
 function #.scope_model _fill_event_map(m)
 {
+  var c = new dezyne.component(m.locator, {provides:{}});
+  c.flushes = true;
+
   var e = {
 #(map
     (lambda (port)
@@ -63,6 +66,11 @@ function #.scope_model _fill_event_map(m)
       '#port .#event ': m.#port .#direction .#event ,
 #}) (filter (om:dir-matches? port)
        (om:events port)))) (om:ports model)) };
+  #(map (init-port #{
+       m.#name .meta.provides.component = c;
+       m.#name .meta.provides.name = '<internal>';
+       e['#name .<flush>'] = function() {console.error('#name .<flush>'); m.rt.flush(m.#name .meta.provides.component);};
+     #}) (filter om:requires? (om:ports model)))
 #(map
     (lambda (port)
      (map (define-on model port #{
@@ -73,17 +81,17 @@ function #.scope_model _fill_event_map(m)
 
 function main () {
   var loc = new dezyne.locator();
-  var rt = new dezyne.runtime(function() {console.error("illegal");process.exit(0);});
+  var rt = new dezyne.runtime(function() {console.error('illegal');process.exit(0);});
   var sut = new #(javascript:namespace model).#.model (loc.set(rt), {name: 'sut'});
 
   var event_map = #.scope_model _fill_event_map(sut);
 
   var fs = require ('fs');
   lines = fs.readFileSync ('/dev/stdin', 'ascii').toString().trim().split ('\n').reverse ();
-  var event;
-  while (event = read_line ()) {
-    if (event_map[event]) {
-      event_map[event]();
+  var s;
+  while (s = read_line ()) {
+    if (event_map[s]) {
+      event_map[s]();
     }
   }
 }

@@ -33,7 +33,7 @@ function runtime(illegal) {
   this.path = function(m, p) {
     p = p ? p : '';
     if (!m || !m.name) {
-      return '<external>.' + p;
+      return p;
     }
     if (m.component) {
       return this.path(m.component.meta, m.name + (p ? '.' + p : p));
@@ -139,7 +139,8 @@ function runtime(illegal) {
 function locator(services) {
   this.services = services || {};
   this.key = function(type, key) {
-    var key = (type.constructor ? type.constructor.name : '') + (key || '');
+    var constructor = type.constructor || (type.prototype && type.prototype.constructor);
+    var key = (constructor ? constructor.name : '') + (key || '');
     console.assert(key != '');
     return key;
   };
@@ -151,7 +152,8 @@ function locator(services) {
   this.set(function(s){process.stderr.write(s);}, 'trace');
 
   this.get = function(o, key) {
-    return this.services[this.key(o, key)];
+    var key = this.key(o, key);
+    return this.services[key] || console.assert ('no such service: ' + key);
   };
   this.clone = function() {
     return new dezyne.locator(extend({}, this.services));
@@ -165,7 +167,16 @@ function connect(provided, required) {
   required.meta.provides = provided.meta.provides;
 };
 
+function component (locator, meta) {
+  this.locator = locator;
+  this.rt = locator.get(new runtime());
+  this.rt.components = (this.rt.components || []).concat ([this]);
+  this.meta = meta;
+  this.flushes = true;
+}
+
 var dezyne = extend (typeof (dezyne !== 'undefined') && dezyne ? dezyne : {}, {
+  component: component,
   connect: connect,
   extend: extend,
   locator: locator,
