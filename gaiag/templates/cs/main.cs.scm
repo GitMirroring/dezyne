@@ -36,22 +36,25 @@ class main {
     return str;
   }
 
-  static String consume_synchronous_out_events(EventMap event_map) {
-    System.Console.ReadLine();
-    String line;
-    while ((line = System.Console.ReadLine()) != null) {
-      if (!event_map.ContainsKey(line)) {
+  static String consume_synchronous_out_events(String e, String prefix, EventMap event_map) {
+    String s;
+    String match = e + prefix;
+    while ((s = System.Console.ReadLine()) != null)
+      if (s == match)
+        break;
+    while ((s = System.Console.ReadLine()) != null) {
+      if (!event_map.ContainsKey(s)) {
         break;
       }
-      event_map[line]();
+      event_map[s]();
     }
-    return line;
+    return s;
   }
 
   static void log_in(String prefix, String e, EventMap event_map) {
     System.Console.Error.WriteLine(prefix + e);
     if (relaxed) return;
-    consume_synchronous_out_events(event_map);
+    consume_synchronous_out_events(prefix, e, event_map);
     System.Console.Error.WriteLine(prefix + "return");
   }
 
@@ -74,7 +77,7 @@ class main {
         R[] values = (R[])Enum.GetValues(typeof(R));
         return values[0];
     }
-    String s = consume_synchronous_out_events(event_map);
+    String s = consume_synchronous_out_events(prefix, e, event_map);
     R? r = string_to_value<R>(drop_prefix(s, event_prefix));
     if (r != null) {
       System.Console.Error.WriteLine(prefix + typeof(R).Name + "_" + r.ToString());
@@ -88,6 +91,8 @@ class main {
 
   private static EventMap fillEventMap(#.scope_model  m) {
   V<int> v = new V<int> (0);
+  Component c = new Component(m.locator);
+  c.flushes = true;
   EventMap e = new EventMap();
 #(map
     (lambda (port)
@@ -95,6 +100,11 @@ class main {
     m.#port .#direction port.#event  = (#formals) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued<#(if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'DznGlobal reply-scope).#reply-name >("#port .", "#event ", e, "#port .#reply-name _");#})};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
+#(map (init-port #{
+    m.#name .inport.self = c;
+    m.#name .inport.name = "<internal>";
+    e.Add("#name .<flush>", () => {System.Console.Error.WriteLine("#name .<flush>"); Runtime.flush (m.#name .inport.self);});
+#}) (filter om:requires? (om:ports model)))
 #(map
     (lambda (port)
     (map (define-on model port #{
@@ -108,10 +118,10 @@ class main {
     Runtime runtime = new Runtime(() => {System.Console.Error.WriteLine("illegal"); Environment.Exit(0);});
     #.scope_model  sut = new #.scope_model(locator.set(runtime), "sut");
     EventMap e = fillEventMap(sut);
-    String line;
-    while ((line = System.Console.ReadLine()) != null) {
-      if (e.ContainsKey(line)) {
-        e[line]();
+    String s;
+    while ((s = System.Console.ReadLine()) != null) {
+      if (e.ContainsKey(s)) {
+        e[s]();
       }
     }
   }

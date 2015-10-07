@@ -65,12 +65,12 @@ abstract public class ComponentBase {
   public ComponentBase(Locator locator, String name, SystemComponent parent) {this.locator = locator; this.parent = parent; this.name = name; this.runtime = locator.get<Runtime>(); this.runtime.components.Enqueue(this);}
 }
 
-abstract public class Component : ComponentBase {
+public class Component : ComponentBase {
   public bool handling;
   public bool flushes;
   public Component deferred;
   public Queue<Action> q;
-  public Component(Locator locator, String name, SystemComponent parent)
+  public Component(Locator locator, String name="", SystemComponent parent=null)
     : base(locator, name, parent)
     {this.q = new Queue<Action>();}
 }
@@ -168,7 +168,7 @@ public class Runtime {
     if (o.parent != null) {
       return path(o.parent, o.name + (p == "" ? p : ".") + p);
     }
-    return o.name + (p == "" ? p : ".") + p;
+    return o.name + (o.name != "" && p != "" ? "." : "") + p;
   }
   public static String path<I,O>(Interface<I,O>.Port o, String p="") where I: Interface<I,O>.In where O : Interface<I,O>.Out {
     return path(o.self, (o.name == null ? "" : o.name) + (p == "" ? p : ".") + p);
@@ -199,9 +199,9 @@ public class Locator {
   public Locator set(Object o, String key="") {
     services.Add(Locator.key(o,key), o);
     return this;
-  }  
+  }
   public R get<R>(String key="") {
     return (R)services[Locator.key(typeof(R), key)];
-  }  
+  }
   public Locator clone() {return new Locator(new Services(services));}
 }
