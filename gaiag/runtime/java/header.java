@@ -226,7 +226,7 @@ class Runtime<R> {
   }
   public static String path(ComponentBase o, String p) {
     if (o == null) {
-      return "<external>." + p;
+      return "<external>" + (p.isEmpty() ? "" : "." + p);
     }
     if (o.parent != null) {
       return path(o.parent, o.name + (p.isEmpty() ? p : ".") + p);

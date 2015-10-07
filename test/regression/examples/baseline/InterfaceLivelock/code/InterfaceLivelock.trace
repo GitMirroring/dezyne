@@ -1,2 +1,2 @@
-<external>..start -> sut.LoopingInterface.start
-sut.LoopingInterface.return -> <external>..return
+<external>.start -> sut.LoopingInterface.start
+sut.LoopingInterface.return -> <external>.return

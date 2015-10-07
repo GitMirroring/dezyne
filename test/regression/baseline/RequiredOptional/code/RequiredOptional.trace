@@ -1,2 +1,1 @@
-<external>..a -> sut.r.a
-p.a
+<internal>.a -> sut.r.a

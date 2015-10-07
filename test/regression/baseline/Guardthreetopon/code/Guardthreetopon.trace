@@ -1,9 +1,9 @@
-<external>..e -> sut.i.e
+<external>.e -> sut.i.e
 i.a
-sut.i.return -> <external>..return
-<external>..s -> sut.i.s
+sut.i.return -> <external>.return
+<external>.s -> sut.i.s
 i.a
-sut.i.return -> <external>..return
-<external>..t -> sut.i.t
+sut.i.return -> <external>.return
+<external>.t -> sut.i.t
 i.a
-sut.i.return -> <external>..return
+sut.i.return -> <external>.return

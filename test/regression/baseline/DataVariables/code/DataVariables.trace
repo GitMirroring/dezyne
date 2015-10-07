@@ -1,2 +1,2 @@
-<external>..inInt -> sut.pp.inInt
-sut.pp.return -> <external>..return
+<external>.inInt -> sut.pp.inInt
+sut.pp.return -> <external>.return

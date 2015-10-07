@@ -1,3 +1,3 @@
-<external>..e -> sut.i.e
+<external>.e -> sut.i.e
 i.a
-sut.i.Bool_t -> <external>..Bool_t
+sut.i.Bool_t -> <external>.Bool_t

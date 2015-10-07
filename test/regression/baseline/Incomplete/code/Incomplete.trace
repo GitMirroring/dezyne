@@ -1,4 +1,4 @@
-<external>..available -> sut.pp.available
-sut.pp.return -> <external>..return
-<external>..missing -> sut.pp.missing
-sut.pp.return -> <external>..return
+<external>.available -> sut.pp.available
+sut.pp.return -> <external>.return
+<external>.missing -> sut.pp.missing
+sut.pp.return -> <external>.return

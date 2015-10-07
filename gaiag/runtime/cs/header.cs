@@ -163,7 +163,7 @@ public class Runtime {
   }
   public static String path(ComponentBase o, String p) {
     if (o == null) {
-      return "<external>." + p;
+      return "<external>" + (p == "" ? "" : "." + p);
     }
     if (o.parent != null) {
       return path(o.parent, o.name + (p == "" ? p : ".") + p);

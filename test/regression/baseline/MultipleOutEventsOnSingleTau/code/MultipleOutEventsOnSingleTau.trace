@@ -1,8 +1,6 @@
-<external>..oa -> sut.rp.oa
+<internal>.oa -> sut.rp.oa
+<internal>.ob -> sut.rp.ob
+<external>.ca -> sut.pp.ca
 pp.oa
-<external>..ob -> sut.rp.ob
 pp.ob
-<external>..ca -> sut.pp.ca
-rp.ca
-rp.return
-sut.pp.return -> <external>..return
+sut.pp.return -> <external>.return

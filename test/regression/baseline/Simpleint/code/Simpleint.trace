@@ -1,2 +1,2 @@
-<external>..e -> sut.p.e
-sut.p.return -> <external>..return
+<external>.e -> sut.p.e
+sut.p.return -> <external>.return

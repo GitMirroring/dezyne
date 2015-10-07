@@ -1,4 +1,4 @@
-<external>..foo -> sut.p.foo
+<external>.foo -> sut.p.foo
 r.foo
 r.E_A
-sut.p.E_A -> <external>..E_A
+sut.p.E_A -> <external>.E_A

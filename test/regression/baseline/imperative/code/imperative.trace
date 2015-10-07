@@ -1,5 +1,5 @@
-<external>..e -> sut.i.e
+<external>.e -> sut.i.e
 i.f
 i.g
 i.h
-sut.i.return -> <external>..return
+sut.i.return -> <external>.return

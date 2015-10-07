@@ -1,7 +1,7 @@
-<external>..start -> sut.ict.start
+<external>.start -> sut.ict.start
 src.req
-<external>..ntfA -> sut.src.ntfA
-<external>..ntfB -> sut.src.ntfB
+<internal>.ntfA -> sut.src.ntfA
+<internal>.ntfB -> sut.src.ntfB
 src.return
 src.ack
 src.return
@@ -9,4 +9,4 @@ src.ack
 src.return
 src.done
 src.return
-sut.ict.return -> <external>..return
+sut.ict.return -> <external>.return

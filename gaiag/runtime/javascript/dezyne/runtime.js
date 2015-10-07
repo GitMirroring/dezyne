@@ -32,14 +32,17 @@ function runtime(illegal) {
 
   this.path = function(m, p) {
     p = p ? p : '';
-    if (!m || !m.name) {
-      return p;
+    if (!m) {
+      return '<external>' + (p ? '.' + p : p);
+    }
+    if (!m.name) {
+      return p ? p : '<external>';
     }
     if (m.component) {
       return this.path(m.component.meta, m.name + (p ? '.' + p : p));
     }
     if ('component' in m) {
-      return '<external>.' + m.name + (p ? '.' + p : p);
+      return '<external>' + (m.name ? '.' + m.name : '') + (p ? '.' + p : p);
     }
     if (m.parent) {
       return this.path(m.parent.meta, m.name + (p ? '.' + p : p));

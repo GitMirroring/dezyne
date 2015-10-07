@@ -1,4 +1,4 @@
-<external>..evt -> sut.i.evt
-sut.i.return -> <external>..return
-<external>..evt -> sut.i.evt
-sut.i.return -> <external>..return
+<external>.evt -> sut.i.evt
+sut.i.return -> <external>.return
+<external>.evt -> sut.i.evt
+sut.i.return -> <external>.return

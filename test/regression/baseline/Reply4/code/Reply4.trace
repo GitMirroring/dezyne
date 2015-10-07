@@ -1,6 +1,6 @@
-<external>..done -> sut.i.done
+<external>.done -> sut.i.done
 u.what
 u.Status_Ok
 u.what
 u.Status_Ok
-sut.i.Status_Yes -> <external>..Status_Yes
+sut.i.Status_Yes -> <external>.Status_Yes

@@ -1,4 +1,4 @@
-<external>..foo -> sut.i.foo
-sut.i.Retval1_OK -> <external>..Retval1_OK
-<external>..bar -> sut.i.bar
-sut.i.Retval2_NOK -> <external>..Retval2_NOK
+<external>.foo -> sut.i.foo
+sut.i.Retval1_OK -> <external>.Retval1_OK
+<external>.bar -> sut.i.bar
+sut.i.Retval2_NOK -> <external>.Retval2_NOK

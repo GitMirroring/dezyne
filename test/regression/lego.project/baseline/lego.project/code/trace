@@ -1,4 +1,4 @@
-<external>..calibrate -> sut.handler.bhv.ctrl.calibrate
+<external>.calibrate -> sut.handler.bhv.ctrl.calibrate
 sut.handler.bhv.robot.calibrate -> sut.handler.robot.bhv.ctrl.calibrate
 sut.handler.robot.bhv.hoist.calibrate -> sut.handler.robot.hoist.bhv.ctrl.calibrate
 sut.handler.robot.hoist.bhv.winch.calibrate -> sut.handler.robot.hoist.winch.bhv.ctrl.calibrate
@@ -204,6 +204,6 @@ sut.track.bhv.ctrl.calibrated -> sut.input.bhv.feeder.calibrated
 sut.track.bhv.ctrl.return -> sut.input.bhv.feeder.return
 sut.input.bhv.ctrl.calibrated -> sut.handler.bhv.feedPort.calibrated
 sut.input.bhv.ctrl.return -> sut.handler.bhv.feedPort.return
-sut.handler.bhv.ctrl.return -> <external>..return
-<external>..operate -> sut.handler.bhv.ctrl.operate
-sut.handler.bhv.ctrl.return -> <external>..return
+sut.handler.bhv.ctrl.return -> <external>.return
+<external>.operate -> sut.handler.bhv.ctrl.operate
+sut.handler.bhv.ctrl.return -> <external>.return

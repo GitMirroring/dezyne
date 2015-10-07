@@ -1,2 +1,2 @@
-<external>..e -> sut.i.e
-sut.i.Global_aap -> <external>..Global_aap
+<external>.e -> sut.i.e
+sut.i.Global_aap -> <external>.Global_aap

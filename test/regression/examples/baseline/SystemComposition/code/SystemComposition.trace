@@ -1,4 +1,4 @@
-<external>..evt -> sut.n1.p.evt
+<external>.evt -> sut.n1.p.evt
 sut.n1.r1.evt -> sut.s1.n1.p.evt
 sut.s1.n1.r1.evt -> sut.s1.n2.p.evt
 sut.s1.n2.r1.evt -> sut.s1.b1.p.evt
@@ -163,4 +163,4 @@ sut.s3.n14.p.return -> sut.s3.n06.r2.return
 sut.s3.n06.p.return -> sut.s3.n02.r2.return
 sut.s3.n02.p.return -> sut.s3.n00.r2.return
 sut.s3.n00.p.return -> sut.n1.r2.return
-sut.n1.p.return -> <external>..return
+sut.n1.p.return -> <external>.return

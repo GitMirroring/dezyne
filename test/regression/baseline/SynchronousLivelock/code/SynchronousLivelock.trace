@@ -1,4 +1,4 @@
-<external>..step -> sut.pp.step
+<external>.step -> sut.pp.step
 listIt.getFirstElmt
 listIt.IsPastEnd_No
 listIt.getNextElmt
@@ -11,4 +11,4 @@ listIt.getNextElmt
 listIt.IsPastEnd_No
 listIt.getNextElmt
 listIt.IsPastEnd_Yes
-sut.pp.return -> <external>..return
+sut.pp.return -> <external>.return

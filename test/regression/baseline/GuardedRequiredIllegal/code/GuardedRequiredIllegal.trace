@@ -1,2 +1,2 @@
-<external>..unguarded -> sut.t.unguarded
-sut.t.return -> <external>..return
+<external>.unguarded -> sut.t.unguarded
+sut.t.return -> <external>.return

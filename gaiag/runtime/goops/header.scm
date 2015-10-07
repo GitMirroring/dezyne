@@ -157,7 +157,7 @@
                             (if (and (not (string-null? name))
                                      (not (string-null? p))) "." "") p)))
     (cond
-     ((not o) (string-append "<external>." p))
+     ((not o) (string-append "<external>" (if (string-null? p) "" ".") p))
      ((is-a? o <dezyne:port-base>) (path (.self o) pp))
      ((and (is-a? o <dezyne:model>) (.parent o)) (path (.parent o) pp))
      (else pp))))

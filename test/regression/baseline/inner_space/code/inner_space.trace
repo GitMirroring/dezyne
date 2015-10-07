@@ -1,6 +1,6 @@
-<external>..e -> sut.inner.e
+<external>.e -> sut.inner.e
 inner.a
-sut.inner.Bool_t -> <external>..Bool_t
-<external>..e -> sut.fooi.e
+sut.inner.Bool_t -> <external>.Bool_t
+<external>.e -> sut.fooi.e
 fooi.a
-sut.fooi.Bool_T -> <external>..Bool_T
+sut.fooi.Bool_T -> <external>.Bool_T

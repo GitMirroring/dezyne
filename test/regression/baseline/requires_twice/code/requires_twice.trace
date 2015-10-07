@@ -1,9 +1,9 @@
-<external>..e -> sut.p.e
+<external>.e -> sut.p.e
 once.e
-<external>..a -> sut.once.a
+<internal>.a -> sut.once.a
 once.return
 twice.e
-<external>..a -> sut.twice.a
+<internal>.a -> sut.twice.a
 twice.return
 p.a
-sut.p.return -> <external>..return
+sut.p.return -> <external>.return

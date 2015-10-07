@@ -111,7 +111,7 @@ def call_out (c, f, m):
 
 def path (m, p=''):
     if (not m):
-        return '<external>.' + p;
+        return '<external>' + ('.' + p if p else p);
     if ('component' in m.__dict__.keys ()):
         return path (m.component, m.name + ('.' + p if p else p))
     if ('parent' in m.__dict__.keys () and m.parent):

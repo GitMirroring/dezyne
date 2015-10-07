@@ -1,7 +1,7 @@
-<external>..e -> sut.p.e
+<external>.e -> sut.p.e
 p.a
 r.e
+<internal>.a -> sut.r.a
+<internal>.b -> sut.r.b
 r.return
-sut.p.return -> <external>..return
-<external>..a -> sut.r.a
-<external>..b -> sut.r.b
+sut.p.return -> <external>.return

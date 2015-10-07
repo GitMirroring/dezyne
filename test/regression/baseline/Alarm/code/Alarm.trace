@@ -1,16 +1,10 @@
-<external>..arm -> sut.console.arm
+<external>.arm -> sut.console.arm
 sensor.enable
 sensor.return
-sut.console.return -> <external>..return
-<external>..triggered -> sut.sensor.triggered
-console.detected
-siren.turnon
-siren.return
-<external>..disarm -> sut.console.disarm
+sut.console.return -> <external>.return
+<internal>.triggered -> sut.sensor.triggered
+<external>.disarm -> sut.console.disarm
 sensor.disable
 sensor.return
-siren.turnoff
-siren.return
-sut.console.return -> <external>..return
-<external>..disabled -> sut.sensor.disabled
-console.deactivated
+sut.console.return -> <external>.return
+<internal>.disabled -> sut.sensor.disabled

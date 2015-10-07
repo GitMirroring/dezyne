@@ -152,6 +152,8 @@ runtime_path (void *m, char* p)
   if (!m) {
     strcpy (buf, p);
     strcpy (p, "<external>");
+    if (strlen(buf))
+      strcat(p, ".");
     strcat (p, buf);
     return p;
   }
@@ -160,7 +162,7 @@ runtime_path (void *m, char* p)
     strcpy (buf, p);
     strcpy (p, c->dzn_meta.name);
     if (strlen (buf))
-      strcat (p, "x");
+      strcat (p, ".");
     return runtime_path (c->dzn_meta.parent, strcat (p, buf));
   }
   strcpy (buf, p);

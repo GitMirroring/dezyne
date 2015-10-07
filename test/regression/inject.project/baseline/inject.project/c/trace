@@ -1,4 +1,4 @@
-<external>..e -> sut.m.t.e
+<external>.e -> sut.m.t.e
 sut.m.l.log -> sut.l.log.log
 sut.l.log.return -> sut.m.l.return
 sut.m.b.e -> sut.b.b.e
@@ -7,4 +7,4 @@ sut.b.b.return -> sut.m.b.return
 sut.m.l.log -> sut.l.log.log
 sut.l.log.return -> sut.m.l.return
 f
-sut.m.t.return -> <external>..return
+sut.m.t.return -> <external>.return

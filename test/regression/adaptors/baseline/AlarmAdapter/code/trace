@@ -1,4 +1,4 @@
-<external>..run -> sut.adaptor.runner.run
+<external>.run -> sut.adaptor.runner.run
 sut.adaptor.console.arm -> sut.alarm.alarm.console.arm
 sut.alarm.alarm.sensor.enable -> sut.alarm.sensor.sensor.enable
 sut.alarm.sensor.sensor.triggered -> sut.alarm.alarm.sensor.triggered

@@ -81,7 +81,7 @@ namespace dezyne
   inline std::string path(void* c, std::string p="")
   {
     if (!c)
-      return "<external>." + p;
+      return "<external>" + (p.empty() ? p : "." + p);
     return path(reinterpret_cast<const component*>(c)->dzn_meta, p);
   }
 
