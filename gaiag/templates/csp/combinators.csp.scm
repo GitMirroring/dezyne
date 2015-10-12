@@ -23,6 +23,7 @@
 ;;; 
 ;;; Code:
 
+-- provided ports: #(comma-join (map .name (om:provided model)))
 nametype bool = {false, true}
 
 channel illegal
