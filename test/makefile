@@ -80,6 +80,7 @@ Targets:
   check          run all checks
   clean          remove all generated stuff in $(OUT)
   smoke          quick smoke test
+  stress         run stress test
   update         overwrite all baselines
 endef
 export HELP_COMMON
@@ -93,6 +94,9 @@ smoke: check
 smoke-clean:
 	rm -rf $(OUT)/alarm.project/{c,c++}
 
+stress:
+	DZN=$(DZN) bin/stress.sh $(CONFIG)
+
 $(OUT)/.gitignore:
 	mkdir -p $(OUT)
 	echo '*' > $(OUT)/.gitignore
@@ -100,7 +104,7 @@ $(OUT)/.gitignore:
 clean:
 	rm -rf $(OUT)
 
-ifeq ($(strip $(filter-out bugs clean help smoke smoke-clean,$(MAKECMDGOALS))),$(MAKECMDGOALS))
+ifeq ($(strip $(filter-out bugs clean help smoke smoke-clean stress,$(MAKECMDGOALS))),$(MAKECMDGOALS))
 MAKE_SNIPPETS:=regression/makefile.make $(sort $(wildcard regression/*/makefile.make regression/*/*/makefile.make))
 endif
 ifeq ($(MAKECMDGOALS),smoke)
