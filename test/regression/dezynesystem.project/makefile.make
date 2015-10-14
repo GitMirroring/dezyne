@@ -20,6 +20,6 @@
 # 
 # Code:
 
-LANGUAGES:=$(CODE_LANGUAGES)
+LANGUAGES:=$(ALL_LANGUAGES)
 SUT:=DezyneSystem
 include make/project.make

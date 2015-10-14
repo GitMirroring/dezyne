@@ -1,0 +1,12 @@
+verify: IRun: check: completeness: ok
+verify: IRun: check: deadlock: ok
+verify: IRun: check: livelock: ok
+verify: IConsole: check: completeness: ok
+verify: IConsole: check: deadlock: ok
+verify: IConsole: check: livelock: ok
+verify: Adaptor: check: deterministic: ok
+verify: Adaptor: check: completeness: ok
+verify: Adaptor: check: illegal: ok
+verify: Adaptor: check: deadlock: ok
+verify: Adaptor: check: compliance: ok
+verify: Adaptor: check: livelock: ok

@@ -20,7 +20,7 @@
 # 
 # Code:
 
-LANGUAGES:=$(CODE_LANGUAGES)
+LANGUAGES:=$(ALL_LANGUAGES)
 # LANGUAGES:=$(filter-out cs,$(LANGUAGES))
 SUT:=StartControl
 include make/project.make

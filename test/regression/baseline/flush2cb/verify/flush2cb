@@ -1,17 +1,9 @@
 verify: iflush2cb: check: completeness: ok
-
 verify: iflush2cb: check: deadlock: ok
-
 verify: iflush2cb: check: livelock: ok
-
 verify: flush2cb: check: deterministic: ok
-
 verify: flush2cb: check: completeness: ok
-
 verify: flush2cb: check: illegal: ok
-
 verify: flush2cb: check: deadlock: ok
-
 verify: flush2cb: check: compliance: ok
-
 verify: flush2cb: check: livelock: ok

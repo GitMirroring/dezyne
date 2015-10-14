@@ -1,0 +1,9 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: Functions: check: deterministic: ok
+verify: Functions: check: completeness: ok
+verify: Functions: check: illegal: ok
+verify: Functions: check: deadlock: ok
+verify: Functions: check: compliance: ok
+verify: Functions: check: livelock: ok

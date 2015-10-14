@@ -1,0 +1,3 @@
+verify: I_: check: completeness: ok
+verify: I_: check: deadlock: ok
+verify: I_: check: livelock: ok

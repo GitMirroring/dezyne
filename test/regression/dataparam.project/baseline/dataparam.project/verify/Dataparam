@@ -1,17 +1,9 @@
 verify: IDataparam: check: completeness: ok
-
 verify: IDataparam: check: deadlock: ok
-
 verify: IDataparam: check: livelock: ok
-
 verify: Dataparam: check: deterministic: ok
-
 verify: Dataparam: check: completeness: ok
-
 verify: Dataparam: check: illegal: ok
-
 verify: Dataparam: check: deadlock: ok
-
 verify: Dataparam: check: compliance: ok
-
 verify: Dataparam: check: livelock: ok

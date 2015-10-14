@@ -21,7 +21,7 @@
 # 
 # Code:
 
-LANGUAGES:=$(CODE_LANGUAGES) #non-empty
+LANGUAGES:=$(ALL_LANGUAGES)
 DZN_FILES:=$(wildcard $(CDIR)*.dzn)
 
 # BurglarAlarm: does not compile

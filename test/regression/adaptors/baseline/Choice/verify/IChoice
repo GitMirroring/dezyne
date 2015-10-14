@@ -1,0 +1,3 @@
+verify: IChoice: check: completeness: ok
+verify: IChoice: check: deadlock: ok
+verify: IChoice: check: livelock: ok

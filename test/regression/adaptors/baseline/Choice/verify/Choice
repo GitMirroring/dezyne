@@ -1,0 +1,9 @@
+verify: IChoice: check: completeness: ok
+verify: IChoice: check: deadlock: ok
+verify: IChoice: check: livelock: ok
+verify: Choice: check: deterministic: ok
+verify: Choice: check: completeness: ok
+verify: Choice: check: illegal: ok
+verify: Choice: check: deadlock: ok
+verify: Choice: check: compliance: ok
+verify: Choice: check: livelock: ok

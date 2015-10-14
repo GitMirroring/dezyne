@@ -1,17 +1,9 @@
 verify: iguardif: check: completeness: ok
-
 verify: iguardif: check: deadlock: ok
-
 verify: iguardif: check: livelock: ok
-
 verify: guardif: check: deterministic: ok
-
 verify: guardif: check: completeness: ok
-
 verify: guardif: check: illegal: ok
-
 verify: guardif: check: deadlock: ok
-
 verify: guardif: check: compliance: ok
-
 verify: guardif: check: livelock: ok

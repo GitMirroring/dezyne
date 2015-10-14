@@ -20,5 +20,5 @@
 # 
 # Code:
 
-LANGUAGES:=$(CODE_LANGUAGES) table
+LANGUAGES:=$(ALL_LANGUAGES)
 include make/project.make

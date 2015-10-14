@@ -1,0 +1,9 @@
+verify: IDevice: check: completeness: ok
+verify: IDevice: check: deadlock: ok
+verify: IDevice: check: livelock: ok
+verify: Component: check: deterministic: ok
+verify: Component: check: completeness: ok
+verify: Component: check: illegal: ok
+verify: Component: check: deadlock: ok
+verify: Component: check: compliance: ok
+verify: Component: check: livelock: ok

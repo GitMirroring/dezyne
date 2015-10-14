@@ -1,5 +1,3 @@
 verify: iflush2cb: check: completeness: ok
-
 verify: iflush2cb: check: deadlock: ok
-
 verify: iflush2cb: check: livelock: ok

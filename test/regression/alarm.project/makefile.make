@@ -20,7 +20,7 @@
 # 
 # Code:
 
-LANGUAGES:=$(CODE_LANGUAGES) table verify
+LANGUAGES:=$(ALL_LANGUAGES)
 include make/project.make
 SUT:=Alarm
 LANGUAGES:=run

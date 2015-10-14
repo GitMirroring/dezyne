@@ -1,0 +1,3 @@
+verify: IRun: check: completeness: ok
+verify: IRun: check: deadlock: ok
+verify: IRun: check: livelock: ok

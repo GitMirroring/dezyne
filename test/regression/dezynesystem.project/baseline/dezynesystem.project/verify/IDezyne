@@ -1,0 +1,3 @@
+verify: IDezyne: check: completeness: ok
+verify: IDezyne: check: deadlock: ok
+verify: IDezyne: check: livelock: ok

@@ -1,0 +1,9 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: Bot: check: deterministic: ok
+verify: Bot: check: completeness: ok
+verify: Bot: check: illegal: ok
+verify: Bot: check: deadlock: ok
+verify: Bot: check: compliance: ok
+verify: Bot: check: livelock: ok

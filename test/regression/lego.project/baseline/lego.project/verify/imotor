@@ -1,0 +1,3 @@
+verify: imotor: check: completeness: ok
+verify: imotor: check: deadlock: ok
+verify: imotor: check: livelock: ok

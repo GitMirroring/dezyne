@@ -1,5 +1,3 @@
 verify: iififelse: check: completeness: ok
-
 verify: iififelse: check: deadlock: ok
-
 verify: iififelse: check: livelock: ok
