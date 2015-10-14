@@ -74,6 +74,5 @@ component R {
       else reply(I.Status.No);
     }
   }
-
 }
 

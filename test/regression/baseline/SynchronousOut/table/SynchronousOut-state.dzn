@@ -62,6 +62,5 @@ component SynchronousOut {
       pp.out_event();
     }
   }
-
 }
 

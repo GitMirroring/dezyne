@@ -747,7 +747,6 @@ component Handle {
       }
     }
   }
-
 }
 
 component Transfer {
@@ -988,7 +987,6 @@ component Transfer {
       }
     }
   }
-
 }
 
 component Lift {
@@ -1091,7 +1089,6 @@ component Lift {
       }
     }
   }
-
 }
 
 component Grip {
@@ -1187,7 +1184,6 @@ component Grip {
       }
     }
   }
-
 }
 
 component MaterialHandler {

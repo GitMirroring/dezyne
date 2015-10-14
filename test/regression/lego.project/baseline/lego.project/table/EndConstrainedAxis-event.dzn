@@ -127,7 +127,6 @@ component EndConstrainedMove {
       s = State.moving;
     }
   }
-
 }
 
 component EndConstrainedAxis {

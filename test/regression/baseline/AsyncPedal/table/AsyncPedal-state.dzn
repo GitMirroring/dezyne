@@ -168,7 +168,6 @@ component Client {
       if (side.Right) pedal.released();
     }
   }
-
 }
 
 component PedalPair {
@@ -255,7 +254,6 @@ component PedalPair {
       }
     }
   }
-
 }
 
 component Acquisition {
@@ -424,7 +422,6 @@ component Acquisition {
       }
     }
   }
-
 }
 
 component PedalList {

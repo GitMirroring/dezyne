@@ -54,6 +54,5 @@ component guardif {
     on p.e():
     {}
   }
-
 }
 

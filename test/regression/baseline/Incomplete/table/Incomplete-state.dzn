@@ -46,6 +46,5 @@ component Incomplete {
       enabled = false;
     }
   }
-
 }
 

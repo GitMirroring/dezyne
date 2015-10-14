@@ -103,6 +103,5 @@ component SynchronousLivelock {
       consumeListTail(ipe);
     }
   }
-
 }
 

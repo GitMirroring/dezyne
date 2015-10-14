@@ -56,6 +56,5 @@ component name.space {
       reply(I.Bool.t);
     }
   }
-
 }
 

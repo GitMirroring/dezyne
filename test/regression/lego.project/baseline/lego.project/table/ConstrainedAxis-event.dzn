@@ -183,7 +183,6 @@ component ConstrainedMove {
       s = State.moving;
     }
   }
-
 }
 
 component ConstrainedAxis {

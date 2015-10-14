@@ -43,6 +43,5 @@ component Extern {
     [true]
     illegal;
   }
-
 }
 

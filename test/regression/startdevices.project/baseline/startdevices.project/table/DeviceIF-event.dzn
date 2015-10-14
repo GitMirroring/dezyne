@@ -1,0 +1,94 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface Device1IF {
+  in void turnon();
+  in void turnoff();
+  out void ok();
+  out void nok();
+
+  behaviour {
+    enum State {Off, GoingOn, On};
+    State state = State.Off;
+
+    on turnon:
+    {
+      [state.Off]
+      state = State.GoingOn;
+      [state.On || state.GoingOn]
+      illegal;
+    }
+    on turnoff:
+    {
+      [state.GoingOn || state.Off]
+      illegal;
+      [state.On]
+      state = State.Off;
+    }
+    on inevitable:
+    {
+      [state.GoingOn]
+      {
+        ok;
+        state = State.On;
+      }
+      [state.GoingOn]
+      {
+        nok;
+        state = State.Off;
+      }
+    }
+  }
+}
+
+interface Device2IF {
+  enum Result {OK, NOK};
+  in Result turnon();
+  in void turnoff();
+
+  behaviour {
+    enum State {Off, On};
+    State state = State.Off;
+
+    on turnon:
+    {
+      [state.Off]
+      {
+        reply(Result.OK);
+        state = State.On;
+      }
+      [state.Off]
+      reply(Result.NOK);
+      [state.On]
+      illegal;
+    }
+    on turnoff:
+    {
+      [state.Off]
+      illegal;
+      [state.On]
+      state = State.Off;
+    }
+  }
+}
+

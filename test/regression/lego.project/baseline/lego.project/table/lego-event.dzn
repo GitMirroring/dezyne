@@ -139,6 +139,5 @@ interface itimer {
 component timer {
   provides itimer port;
 
-
 }
 

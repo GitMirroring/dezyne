@@ -209,6 +209,5 @@ component PedalPair {
       right.released();
     }
   }
-
 }
 

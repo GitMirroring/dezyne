@@ -97,6 +97,5 @@ component testBoolean {
     on i.evt():
     {}
   }
-
 }
 

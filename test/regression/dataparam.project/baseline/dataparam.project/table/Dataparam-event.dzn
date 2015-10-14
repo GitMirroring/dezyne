@@ -194,7 +194,6 @@ component Dataparam {
       reply(IDataparam.Status.Yes);
     }
   }
-
 }
 
 component proxy {
@@ -288,7 +287,6 @@ component proxy {
     [true]
     top.aa(i, j);
   }
-
 }
 
 component Datasystem {

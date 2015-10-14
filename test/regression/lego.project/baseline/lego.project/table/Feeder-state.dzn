@@ -170,7 +170,6 @@ component Feed {
       feedNext();
     }
   }
-
 }
 
 component Feeder {

@@ -76,7 +76,6 @@ component logger {
     [true]
     {}
   }
-
 }
 
 component middle {
@@ -99,7 +98,6 @@ component middle {
       t.f();
     }
   }
-
 }
 
 component bottom {
@@ -111,7 +109,6 @@ component bottom {
     [true]
     b.f();
   }
-
 }
 
 component Injected {

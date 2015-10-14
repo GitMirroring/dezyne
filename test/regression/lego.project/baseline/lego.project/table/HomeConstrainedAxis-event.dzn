@@ -129,7 +129,6 @@ component HomeConstrainedMove {
       s = State.moving;
     }
   }
-
 }
 
 component HomeConstrainedAxis {

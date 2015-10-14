@@ -45,6 +45,5 @@ component complete {
     [true]
     p.a();
   }
-
 }
 

@@ -48,6 +48,5 @@ component Reply7 {
     [true]
     f();
   }
-
 }
 

@@ -52,6 +52,5 @@ component requires_twice {
       p.a();
     }
   }
-
 }
 

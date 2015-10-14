@@ -69,6 +69,5 @@ component combinedon {
     [true]
     illegal;
   }
-
 }
 

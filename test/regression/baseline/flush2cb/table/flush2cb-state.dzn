@@ -66,6 +66,5 @@ component flush2cb {
       illegal;
     }
   }
-
 }
 

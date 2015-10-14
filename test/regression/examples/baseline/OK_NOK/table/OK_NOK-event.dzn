@@ -1,0 +1,279 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+enum result_t {OK, NOK};
+
+interface IDevice {
+  in result_t initialise();
+  in result_t calibrate();
+  in result_t perform_action1();
+  in result_t perform_action2();
+
+  behaviour {
+    enum State {Uninitialised, Initialised, Calibrated};
+    State s = State.Uninitialised;
+
+    on initialise:
+    {
+      [s.Uninitialised]
+      {
+        [true]
+        {
+          reply(result_t.OK);
+          s = State.Initialised;
+        }
+        [true]
+        reply(result_t.NOK);
+      }
+      [s.Calibrated || s.Initialised]
+      reply(result_t.OK);
+    }
+    on calibrate:
+    {
+      [s.Uninitialised]
+      illegal;
+      [s.Initialised]
+      {
+        [true]
+        {
+          reply(result_t.OK);
+          s = State.Calibrated;
+        }
+        [true]
+        reply(result_t.NOK);
+      }
+      [s.Calibrated]
+      reply(result_t.OK);
+    }
+    on perform_action1:
+    {
+      [s.Initialised || s.Uninitialised]
+      illegal;
+      [s.Calibrated]
+      {
+        [true]
+        reply(result_t.OK);
+        [true]
+        {
+          reply(result_t.NOK);
+          s = State.Initialised;
+        }
+      }
+    }
+    on perform_action2:
+    {
+      [s.Initialised || s.Uninitialised]
+      illegal;
+      [s.Calibrated]
+      {
+        [true]
+        reply(result_t.OK);
+        [true]
+        {
+          reply(result_t.NOK);
+          s = State.Initialised;
+        }
+      }
+    }
+  }
+}
+
+interface IComp {
+  in result_t initialise();
+  in result_t recover();
+  in result_t perform_actions();
+
+  behaviour {
+    enum State {Uninitialised, Initialised, Error};
+    State s = State.Uninitialised;
+
+    on initialise:
+    {
+      [s.Uninitialised]
+      {
+        [true]
+        {
+          reply(result_t.OK);
+          s = State.Initialised;
+        }
+        [true]
+        reply(result_t.NOK);
+      }
+      [s.Error || s.Initialised]
+      illegal;
+    }
+    on recover:
+    {
+      [s.Initialised || s.Uninitialised]
+      illegal;
+      [s.Error]
+      {
+        [true]
+        {
+          reply(result_t.OK);
+          s = State.Initialised;
+        }
+        [true]
+        reply(result_t.NOK);
+      }
+    }
+    on perform_actions:
+    {
+      [s.Error || s.Uninitialised]
+      illegal;
+      [s.Initialised]
+      {
+        [true]
+        reply(result_t.OK);
+        [true]
+        {
+          reply(result_t.NOK);
+          s = State.Error;
+        }
+      }
+    }
+  }
+}
+
+component OK_NOK {
+  provides IComp client;
+  requires IDevice device_A;
+  requires IDevice device_B;
+
+  behaviour {
+    enum State {Uninitialised, Initialised, Error};
+    State s = State.Uninitialised;
+
+    on client.initialise():
+    {
+      [s.Uninitialised]
+      {
+        result_t res = device_A.initialise();
+        if (res.OK) res = device_B.initialise();
+        if (res.OK) res = device_A.calibrate();
+        if (res.OK) res = device_B.calibrate();
+        if (res.OK) {
+          reply(result_t.OK);
+          s = State.Initialised;
+        }
+        else reply(result_t.NOK);
+      }
+      [s.Error || s.Initialised]
+      illegal;
+    }
+    on client.recover():
+    {
+      [s.Initialised || s.Uninitialised]
+      illegal;
+      [s.Error]
+      {
+        result_t res = device_A.calibrate();
+        if (res.OK) res = device_B.calibrate();
+        if (res.OK) {
+          reply(result_t.OK);
+          s = State.Initialised;
+        }
+        else reply(result_t.NOK);
+      }
+    }
+    on client.perform_actions():
+    {
+      [s.Error || s.Uninitialised]
+      illegal;
+      [s.Initialised]
+      {
+        result_t res = device_A.perform_action1();
+        if (res.OK) res = device_B.perform_action1();
+        if (res.OK) res = device_A.perform_action2();
+        if (res.OK) res = device_B.perform_action2();
+        if (res.OK) reply(result_t.OK);
+        else {
+          reply(result_t.NOK);
+          s = State.Error;
+        }
+      }
+    }
+  }
+}
+
+component Device {
+  provides IDevice i;
+
+  behaviour {
+    enum State {Uninitialised, Initialised, Calibrated};
+    State s = State.Uninitialised;
+
+    on i.initialise():
+    {
+      [s.Uninitialised]
+      {
+        reply(result_t.OK);
+        s = State.Initialised;
+      }
+      [s.Calibrated || s.Initialised]
+      reply(result_t.OK);
+    }
+    on i.calibrate():
+    {
+      [s.Uninitialised]
+      illegal;
+      [s.Calibrated || s.Initialised]
+      {
+        reply(result_t.OK);
+        s = State.Calibrated;
+      }
+    }
+    on i.perform_action1():
+    {
+      [s.Initialised || s.Uninitialised]
+      illegal;
+      [s.Calibrated]
+      reply(result_t.OK);
+    }
+    on i.perform_action2():
+    {
+      [s.Initialised || s.Uninitialised]
+      illegal;
+      [s.Calibrated]
+      {
+        reply(result_t.NOK);
+        s = State.Initialised;
+      }
+    }
+  }
+}
+
+component TwoDevices {
+  provides IComp client;
+
+  system {
+    nameOK_NOK rv;
+    nameDevice deviceA;
+    nameDevice deviceB;
+
+    client <=> rv.client;
+    rv.device_A <=> deviceA.i;
+    rv.device_B <=> deviceB.i;
+  }
+}
+

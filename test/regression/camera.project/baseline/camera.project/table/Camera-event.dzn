@@ -303,7 +303,6 @@ component Driver {
       {}
     }
   }
-
 }
 
 component Acquire {
@@ -370,7 +369,6 @@ component Acquire {
       }
     }
   }
-
 }
 
 component OpticsControl {
@@ -440,7 +438,6 @@ component OpticsControl {
       lens.zoom_out();
     }
   }
-
 }
 
 component Acquisition {

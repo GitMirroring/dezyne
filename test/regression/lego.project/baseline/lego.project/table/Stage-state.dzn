@@ -210,7 +210,6 @@ component Move2D {
       }
     }
   }
-
 }
 
 component Stage {

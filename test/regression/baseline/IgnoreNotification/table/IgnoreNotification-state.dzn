@@ -76,6 +76,5 @@ component IgnoreNotification {
       pp.oa();
     }
   }
-
 }
 

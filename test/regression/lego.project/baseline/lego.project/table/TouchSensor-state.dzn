@@ -156,7 +156,6 @@ component TouchSense {
       }
     }
   }
-
 }
 
 component TouchSensor {

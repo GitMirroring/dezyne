@@ -167,6 +167,5 @@ component h {
       tryCalibrated();
     }
   }
-
 }
 

@@ -43,6 +43,5 @@ component Extern {
     on port.e():
     illegal;
   }
-
 }
 

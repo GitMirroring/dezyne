@@ -50,6 +50,5 @@ component sugar {
     on i.e():
     i.a();
   }
-
 }
 

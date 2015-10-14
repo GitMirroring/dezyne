@@ -87,6 +87,5 @@ component GuardedRequiredIllegal {
       c = false;
     }
   }
-
 }
 

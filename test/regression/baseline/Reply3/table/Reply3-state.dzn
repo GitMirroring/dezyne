@@ -126,6 +126,5 @@ component Reply3 {
       else reply_fun_arg(I.Status.No);
     }
   }
-
 }
 

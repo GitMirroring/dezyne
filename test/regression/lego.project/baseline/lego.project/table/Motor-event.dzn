@@ -201,7 +201,6 @@ component Move {
       motor.position(pos);
     }
   }
-
 }
 
 component Motor {

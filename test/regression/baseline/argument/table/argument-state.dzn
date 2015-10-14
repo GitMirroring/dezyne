@@ -79,6 +79,5 @@ component argument {
       if (c) i.f();
     }
   }
-
 }
 

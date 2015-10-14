@@ -162,7 +162,6 @@ component Dataparam {
       }
     }
   }
-
 }
 
 component proxy {
@@ -242,7 +241,6 @@ component proxy {
       top.aa(i, j);
     }
   }
-
 }
 
 component Datasystem {

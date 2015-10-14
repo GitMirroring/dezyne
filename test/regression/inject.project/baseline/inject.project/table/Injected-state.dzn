@@ -76,7 +76,6 @@ component logger {
     on log.log():
     {}
   }
-
 }
 
 component middle {
@@ -100,7 +99,6 @@ component middle {
       }
     }
   }
-
 }
 
 component bottom {
@@ -112,7 +110,6 @@ component bottom {
     on b.e():
     b.f();
   }
-
 }
 
 component Injected {

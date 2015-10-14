@@ -42,6 +42,5 @@ component RequiredOptional {
     on r.a():
     p.a();
   }
-
 }
 

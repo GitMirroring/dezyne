@@ -42,6 +42,5 @@ component incomplete_with_modeling_event {
     on r.a():
     p.a();
   }
-
 }
 

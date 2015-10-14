@@ -58,6 +58,5 @@ component livelock2 {
     [true]
     {}
   }
-
 }
 

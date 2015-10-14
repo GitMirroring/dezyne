@@ -1,0 +1,273 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface IConsole {
+  in void arm();
+  in void disarm();
+  out void detected();
+  out void deactivated();
+
+  behaviour {
+    enum States {Disarmed, Armed, Triggered, Disarming};
+    States state = States.Disarmed;
+
+    on arm:
+    {
+      [state.Disarmed]
+      state = States.Armed;
+      [state.Disarming || state.Triggered || state.Armed]
+      illegal;
+    }
+    on disarm:
+    {
+      [state.Disarming || state.Disarmed]
+      illegal;
+      [state.Triggered || state.Armed]
+      state = States.Disarming;
+    }
+    on optional:
+    [state.Armed]
+    {
+      detected;
+      state = States.Triggered;
+    }
+    on inevitable:
+    [state.Disarming]
+    {
+      deactivated;
+      state = States.Disarmed;
+    }
+  }
+}
+
+interface ISensor {
+  in void enable();
+  in void disable();
+  out void triggered();
+  out void disabled();
+
+  behaviour {
+    enum States {Disabled, Enabled, Disabling, Triggered};
+    States state = States.Disabled;
+
+    on enable:
+    {
+      [state.Disabled]
+      state = States.Enabled;
+      [state.Triggered || state.Disabling || state.Enabled]
+      illegal;
+    }
+    on disable:
+    {
+      [state.Disabling || state.Disabled]
+      illegal;
+      [state.Triggered || state.Enabled]
+      state = States.Disabling;
+    }
+    on optional:
+    [state.Enabled]
+    {
+      triggered;
+      state = States.Triggered;
+    }
+    on inevitable:
+    [state.Disabling]
+    {
+      disabled;
+      state = States.Disabled;
+    }
+  }
+}
+
+interface IHardware {
+  out void triggered();
+  out void disabled();
+
+  behaviour {
+
+    on inevitable:
+    {
+      [true]
+      triggered;
+      [true]
+      disabled;
+    }
+  }
+}
+
+interface ISiren {
+  in void turnon();
+  in void turnoff();
+
+  behaviour {
+    enum States {Off, On};
+    States state = States.Off;
+
+    on turnon:
+    {
+      [state.Off]
+      state = States.On;
+      [state.On]
+      illegal;
+    }
+    on turnoff:
+    {
+      [state.Off]
+      illegal;
+      [state.On]
+      state = States.Off;
+    }
+  }
+}
+
+component Sensor {
+  provides ISensor sensor;
+  requires IHardware hw;
+
+  behaviour {
+
+    on sensor.enable():
+    [true]
+    {}
+    on hw.triggered():
+    [true]
+    sensor.triggered();
+    on sensor.disable():
+    [true]
+    {}
+    on hw.disabled():
+    [true]
+    sensor.disabled();
+  }
+}
+
+component Siren {
+  provides ISiren siren;
+
+  behaviour {
+    enum States {Off, On};
+    States state = States.Off;
+
+    on siren.turnon():
+    {
+      [state.Off]
+      state = States.On;
+      [state.On]
+      illegal;
+    }
+    on siren.turnoff():
+    {
+      [state.Off]
+      illegal;
+      [state.On]
+      state = States.Off;
+    }
+  }
+}
+
+component Alarm {
+  provides IConsole console;
+  requires ISensor sensor;
+  requires ISiren siren;
+
+  behaviour {
+    enum States {Disarmed, Armed, Triggered, Disarming};
+    States state = States.Disarmed;
+    bool sounding = false;
+
+    on console.arm():
+    {
+      [state.Disarmed]
+      {
+        sensor.enable();
+        state = States.Armed;
+      }
+      [state.Disarming || state.Triggered || state.Armed]
+      illegal;
+    }
+    on console.disarm():
+    {
+      [state.Disarming || state.Disarmed]
+      illegal;
+      [state.Armed]
+      {
+        sensor.disable();
+        state = States.Disarming;
+      }
+      [state.Triggered]
+      {
+        sensor.disable();
+        sounding = false;
+        state = States.Disarming;
+      }
+    }
+    on sensor.triggered():
+    {
+      [state.Disarming || state.Triggered || state.Disarmed]
+      illegal;
+      [state.Armed]
+      {
+        console.detected();
+        siren.turnon();
+        sounding = true;
+        state = States.Triggered;
+      }
+    }
+    on sensor.disabled():
+    {
+      [state.Triggered || state.Armed || state.Disarmed]
+      illegal;
+      [state.Disarming]
+      {
+        [sounding]
+        {
+          console.deactivated();
+          sounding = false;
+          state = States.Disarmed;
+        }
+        [otherwise]
+        {
+          console.deactivated();
+          state = States.Disarmed;
+        }
+      }
+    }
+  }
+}
+
+component AlarmSystem {
+  provides IConsole console;
+  requires IHardware hw;
+
+  system {
+    nameSensor sensor;
+    nameSiren siren;
+    nameAlarm alarm;
+
+    console <=> alarm.console;
+    sensor.sensor <=> alarm.sensor;
+    sensor.hw <=> hw;
+    siren.siren <=> alarm.siren;
+  }
+}
+

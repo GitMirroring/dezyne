@@ -48,6 +48,5 @@ component Incomplete {
     [enabled]
     enabled = false;
   }
-
 }
 

@@ -136,7 +136,6 @@ component EndConstrainedMove {
       }
     }
   }
-
 }
 
 component EndConstrainedAxis {

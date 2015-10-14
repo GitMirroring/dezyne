@@ -169,7 +169,6 @@ component Move2D {
       illegal;
     }
   }
-
 }
 
 component Stage {

@@ -272,7 +272,6 @@ component Inspect {
       }
     }
   }
-
 }
 
 component Inspector {

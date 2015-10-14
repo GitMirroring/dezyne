@@ -78,7 +78,6 @@ component inner.space {
       }
     }
   }
-
 }
 
 component bar.c {
@@ -96,6 +95,5 @@ component bar.c {
       }
     }
   }
-
 }
 

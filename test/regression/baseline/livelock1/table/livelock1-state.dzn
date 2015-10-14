@@ -52,6 +52,5 @@ component livelock1 {
     on n.dummy(), l.dummy():
     {}
   }
-
 }
 

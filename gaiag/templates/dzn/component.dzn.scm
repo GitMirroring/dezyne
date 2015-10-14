@@ -28,5 +28,4 @@ component #.scope.model  {
   (map (->dzn model) (om:variables model))
   #(map (define-function model) (om:functions model)) #
   (statement->dzn model) }
-#})
-}
+#}) }

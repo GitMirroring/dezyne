@@ -727,7 +727,6 @@ component Handle {
       tryCalibrated();
     }
   }
-
 }
 
 component Transfer {
@@ -1020,7 +1019,6 @@ component Transfer {
       illegal;
     }
   }
-
 }
 
 component Lift {
@@ -1116,7 +1114,6 @@ component Lift {
       winch.move($(config.get("Position::Robot::Z::Up"))$);
     }
   }
-
 }
 
 component Grip {
@@ -1200,7 +1197,6 @@ component Grip {
       }
     }
   }
-
 }
 
 component MaterialHandler {

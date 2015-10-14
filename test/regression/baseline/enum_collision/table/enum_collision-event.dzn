@@ -49,6 +49,5 @@ component enum_collision {
     [true]
     reply(ienum_collision.Retval2.NOK);
   }
-
 }
 

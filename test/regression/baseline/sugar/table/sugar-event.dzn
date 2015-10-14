@@ -45,6 +45,5 @@ component sugar {
     [s.False]
     i.a();
   }
-
 }
 

@@ -236,7 +236,6 @@ component Inspect {
       illegal;
     }
   }
-
 }
 
 component Inspector {

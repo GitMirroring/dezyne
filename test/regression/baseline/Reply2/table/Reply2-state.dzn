@@ -96,6 +96,5 @@ component Reply2 {
       else reply(I.Status.No);
     }
   }
-
 }
 
