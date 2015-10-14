@@ -79,6 +79,8 @@ within
 R'(A') = ([] x' : A' @ x' -> R'(A'))
          []
          reorder_in?x' -> reorder_out!x' -> R'(A')
+         []
+         queue_full -> STOP
 
 S'    = let
 
@@ -115,12 +117,14 @@ Busy(c',r',rmod',pout',end') =
 (c' > 0 & out'?x' -> Busy(c'-1,r',rmod',pout',end')) -- handling queued out events
 []
 (r' != <> & reorder_in?x' -> illegal -> STOP) -- another reply is not allowed
+[]
+queue_full -> STOP
 
 End(r') = if r' == <> then Idle(0) else reorder_out!head(r') -> Idle(0)
 
 within Idle(0)
 
-within Q' [|{|in',out'|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},provided_in',required_modeling'}))
+within Q' [|{|in',out',queue_full|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},provided_in',required_modeling'}))
 
 AS_#.scope_model _(IIG) = let
 compress(x) = let
