@@ -1,0 +1,3 @@
+verify: Isensor: check: completeness: ok
+verify: Isensor: check: deadlock: ok
+verify: Isensor: check: livelock: ok

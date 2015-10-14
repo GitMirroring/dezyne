@@ -29,7 +29,7 @@ $$(TOP): LOCAL_NAME:=$$(LOCAL_NAME)
 $$(TOP): LOCAL_OUT:=$$(LOCAL_OUT)
 $$(TOP): LOCAL_TARGET:=$$(LOCAL_TARGET)
 $$(TOP): LOCAL_DZN_TOP:=$$(LOCAL_DZN_TOP)
-$$(TOP):
+$$(TOP): $$(LOCAL_DZN_TOP) #idee
 	diff -uwB $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(1) <($(DZN) --verbose verify --all -m $(1) $(LOCAL_DZN_TOP) | bin/reorder)
 
 $(LOCAL_NAME)-$(LOCAL_LANGUAGE): $$(TOP)
@@ -48,7 +48,7 @@ $$(TOP)-update: LOCAL_NAME:=$$(LOCAL_NAME)
 $$(TOP)-update: LOCAL_OUT:=$$(LOCAL_OUT)
 $$(TOP)-update: LOCAL_TARGET:=$$(LOCAL_TARGET)
 $$(TOP)-update: LOCAL_DZN_TOP:=$$(LOCAL_DZN_TOP)
-$$(TOP)-update:
+$$(TOP)-update: $$(LOCAL_DZN_TOP) #idee
 	mkdir -p $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)
 	$(DZN) --verbose verify --all -m $(1) $(LOCAL_DZN_TOP) | bin/reorder > $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(1)
 

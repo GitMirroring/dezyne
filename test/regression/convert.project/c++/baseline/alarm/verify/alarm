@@ -1,0 +1,15 @@
+verify: Iconsole: check: completeness: ok
+verify: Iconsole: check: deadlock: ok
+verify: Iconsole: check: livelock: ok
+verify: Isensor: check: completeness: ok
+verify: Isensor: check: deadlock: ok
+verify: Isensor: check: livelock: ok
+verify: Isiren: check: completeness: ok
+verify: Isiren: check: deadlock: ok
+verify: Isiren: check: livelock: ok
+verify: alarm: check: deterministic: ok
+verify: alarm: check: completeness: ok
+verify: alarm: check: illegal: ok
+verify: alarm: check: deadlock: ok
+verify: alarm: check: compliance: ok
+verify: alarm: check: livelock: ok

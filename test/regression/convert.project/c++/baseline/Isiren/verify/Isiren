@@ -1,0 +1,3 @@
+verify: Isiren: check: completeness: ok
+verify: Isiren: check: deadlock: ok
+verify: Isiren: check: livelock: ok

@@ -22,21 +22,31 @@
 # Code:
 
 ifneq ($(filter c++,$(CODE_LANGUAGES)),)
+LOCAL_SUT:=alarm
 LOCAL_LANGUAGE:=c++
 
-#LOCAL_GLOBAL_TYPES:=
-LOCAL_IM_FILES:=$(wildcard $(CDIR)*.im)
+#FIXME test framework expects Ialarm.dzn, convert produces Iconsole.dzn...
+#LOCAL_IM_FILES:=$(wildcard $(CDIR)*.im)
+LOCAL_IM_FILES:=$(filter-out $(CDIR)alarm.im, $(wildcard $(CDIR)*.im))
 LOCAL_DM_FILES:=$(wildcard $(CDIR)*.dm)
-LOCAL_INTERFACES:=$(LOCAL_IM_FILES:$(CDIR)%.im=I%) #$(patsubst $(CDIR)%.dzn,%,$(wildcard $(CDIR)ITimer.dzn))
-LOCAL_COMPONENTS:=$(LOCAL_DM_FILES:$(CDIR)%.dm=%) #$(patsubst $(CDIR)%.dzn,%,$(wildcard $(CDIR)*System.dzn))
+LOCAL_INTERFACES:=$(LOCAL_IM_FILES:$(CDIR)%.im=I%) $(patsubst $(CDIR)%.dzn,%,$(wildcard $(CDIR)ITimer.dzn))
+LOCAL_COMPONENTS:=$(LOCAL_DM_FILES:$(CDIR)%.dm=%) $(patsubst $(CDIR)%.dzn,%,$(wildcard $(CDIR)*System.dzn))
 
-LOCAL_DZN_FILES:=$(CDIR)GlobalTypes.dzn
+# LOCAL_DZN_FILES:=$(CDIR)GlobalTypes.dzn
 include make/common.make
 
-$(LOCAL_OUT)/%.o: LOCAL_CXXFLAGS:=-I$(CDIR) -DBLOCKING=1 -DURG_BUILD3_STILL_AT_VIVID_HAVE_BOOST_COROUTINE=1
-$(LOCAL_OUT)/main.o: $(LOCAL_OUT)/OutParam.o
+$(LOCAL_OUT)/main.o: $(LOCAL_OUT)/alarm.o
+$(LOCAL_OUT)/alarm.o: $(LOCAL_OUT)/Iconsole.hh
+
+$(LOCAL_OUT)/Iconsole.hh: $(LOCAL_OUT)/Iconsole.dzn
+	$(DZN) code -l c++ -o $(LOCAL_OUT) $^
 
 $(LOCAL_TARGET): CXXFLAGS:=$(CXXFLAGS) -pthread
+
+# traces: TODO
+# $(CDIR)baseline/convert.project/triangle/convert.project.trace.0: $(CDIR)baseline/convert.project/triangle/alarm.trace.0
+# 	mkdir -p $(@D)
+# 	mv $^ $@
 
 include make/convert.make
 include make/c++.make
@@ -44,6 +54,11 @@ DZN_OUT_FILES:=$(LOCAL_DZN_OUT_FILES)
 include make/reset.make
 
 code run table verify parse: $(DZN_OUT_FILES)
+
+$(foreach DZN_FILE,$(DZN_OUT_FILES),\
+	$(eval LOCAL_DZN_FILES:=$(DZN_FILE))\
+	$(eval LOCAL_LANGUAGE:=parse)\
+	$(eval include make/check.make))
 
 $(foreach DZN_FILE,$(DZN_OUT_FILES),\
 	$(eval LOCAL_DZN_FILES:=$(DZN_FILE))\

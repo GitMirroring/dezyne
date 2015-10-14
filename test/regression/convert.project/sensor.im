@@ -1,0 +1,415 @@
+<?xml version="1.0"?>
+<asd OmVersion="10.10.0" BackwardOmVersion="10.10.0" Serializer="2" >
+	<InterfaceModel ID="848">
+		<CodeGenerationLanguage>cpp</CodeGenerationLanguage>
+		<CodeGenerationVersion>8.4.3</CodeGenerationVersion>
+		<DateCreated>20131013T141730</DateCreated>
+		<DateModified>20131104T082622.360454</DateModified>
+		<Guid>0671E01C44104FD99D14ED00DE1C5241</Guid>
+		<ModelSignature>BASE64_oWAzUjcItqBlsFPNMm1vtOHUD9hbpA89xqnMKhd8T6p3aPS8LfpN7T4WrohKuMnMFlFbVr+CeFliRHGaPQU8/qao3r/+01ZpbOiA2oTbtf4L0Pw79JrlwTT6Z5LhoqGvirIwUddJbyziO6my7pRs1Z2MlOhaMY1loFj9pi9LRb4IT6eDeQmR9FDunn3Ya1v2WG1HRDLUdHUYvoddr/QLFMoG0qV1REjpJbjXOPPdCTTPPxBP8Mt2DCETrkAeLYGQlb0ox+FDOzUzoY2CvPFgR5VyjabzWn0zy63sHPnq5KSuT8ZQqVlCZMmvzZjwkzs5PGjACYafdVL+OJgh8CyYow==</ModelSignature>
+		<Name>sensor</Name>
+		<ToolVersion>Converter9(52253)</ToolVersion>
+		<AbstractInterface>
+			<AbstractInterface ID="849">
+				<Guid>C87A6402319E4BBABE71CE5B8DC9EACF</Guid>
+				<Events>
+					<CallEvent ID="850">
+						<Guid>D849ADC0EF514853A0CF4F74E848898A</Guid>
+						<Name>StateInvariant</Name>
+					</CallEvent>
+				</Events>
+				<ReplyEvents>
+					<ReplyEvent ID="851">
+						<Guid>EAE2E4DB6FAA4E7681E63D799063AD7D</Guid>
+						<Name>NoOp</Name>
+					</ReplyEvent>
+					<ReplyEvent ID="852">
+						<Guid>8F0CD6C16E1B453883CBC5F7326E1867</Guid>
+						<Name>Illegal</Name>
+					</ReplyEvent>
+					<ReplyEvent ID="853">
+						<Guid>273B1A6280254F46B2BCB5218E3401FD</Guid>
+						<Name>Disabled</Name>
+					</ReplyEvent>
+				</ReplyEvents>
+			</AbstractInterface>
+		</AbstractInterface>
+		<CodeGeneratorSettings>
+			<CodeGenInfo ID="854">
+				<Language>c</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="855">
+				<Language>cpp</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="856">
+				<Language>csharp</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="857">
+				<Language>java</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="858">
+				<Language>tinyc</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+		</CodeGeneratorSettings>
+		<ImplementedService>
+			<ServiceDependency ID="859">
+				<Declaration>
+					<ServiceDeclaration ID="860">
+						<ExecutionModel>emSingleThreaded</ExecutionModel>
+						<ApplicationInterfaces>
+							<ApplicationInterface ID="861">
+								<Guid>366C2006F349443DB4A4E46FDF206FA7</Guid>
+								<Name>sensor_api</Name>
+								<Events>
+									<CallEvent ID="862">
+										<Guid>50411C74EEBD40C18C08E13E5B95CF80</Guid>
+										<Name>enable</Name>
+									</CallEvent>
+									<CallEvent ID="863">
+										<Guid>34586A5093BA4803893639E1E6376412</Guid>
+										<Name>disable</Name>
+									</CallEvent>
+								</Events>
+								<ReplyEvents>
+									<ReplyEvent ID="864">
+										<Comment>This&#32;is&#32;the&#32;reply&#32;event&#32;for&#32;void&#32;calls</Comment>
+										<Guid>6BF4E5A3D93C443E8253E796385A70CA</Guid>
+										<Name>VoidReply</Name>
+									</ReplyEvent>
+								</ReplyEvents>
+							</ApplicationInterface>
+						</ApplicationInterfaces>
+						<ModellingInterfaces>
+							<ModellingInterface ID="865">
+								<Guid>1DB7C89C48C94769A0F3D171B6185602</Guid>
+								<Name>modeling</Name>
+								<Events>
+									<ModellingEvent ID="866">
+										<Guid>914696DE175B4A5383E4617F31D52576</Guid>
+										<Name>optional</Name>
+									</ModellingEvent>
+									<ModellingEvent ID="867">
+										<AbstractionType>atInevitable</AbstractionType>
+										<Guid>BE1BE7E24035480AAB2091AB4A75FA75</Guid>
+										<Name>inevitable</Name>
+									</ModellingEvent>
+								</Events>
+							</ModellingInterface>
+						</ModellingInterfaces>
+						<NotificationInterfaces>
+							<NotificationInterface ID="868">
+								<Guid>ACC583ADF1FA4243B6696059606DCEA2</Guid>
+								<Name>sensor_cb</Name>
+								<Events>
+									<NotificationEvent ID="869">
+										<Guid>506775E8269D48B5B8BEB8D92A428190</Guid>
+										<Name>triggered</Name>
+									</NotificationEvent>
+									<NotificationEvent ID="870">
+										<Guid>32B768584981404B9F7DCD66F7D74156</Guid>
+										<Name>disabled</Name>
+									</NotificationEvent>
+								</Events>
+							</NotificationInterface>
+						</NotificationInterfaces>
+					</ServiceDeclaration>
+				</Declaration>
+			</ServiceDependency>
+		</ImplementedService>
+		<MainMachine>
+			<MainMachine ID="871">
+				<Guid>2DDD9500F1704E26826819F5F6C27372</Guid>
+				<Name>sensor</Name>
+				<States>
+					<State ID="872">
+						<Guid>311F59AF5666412981E24FA5594386DD</Guid>
+						<Name>Disabled</Name>
+						<Rules>
+							<Rule ID="873">
+								<Event>850</Event>
+								<RuleCases>
+									<RuleCase ID="874">
+										<Row>2</Row>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="875">
+								<Event>862</Event>
+								<RuleCases>
+									<RuleCase ID="876">
+										<Row>3</Row>
+										<NextState>877</NextState>
+										<Actions>
+											<Action ID="878">
+												<Event>864</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="879">
+								<Event>863</Event>
+								<RuleCases>
+									<RuleCase ID="880">
+										<Row>4</Row>
+										<Actions>
+											<Action ID="881">
+												<Event>852</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="882">
+								<Event>866</Event>
+								<RuleCases>
+									<RuleCase ID="883">
+										<Row>5</Row>
+										<Actions>
+											<Action ID="884">
+												<Event>853</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="885">
+								<Event>867</Event>
+								<RuleCases>
+									<RuleCase ID="886">
+										<Row>6</Row>
+										<Actions>
+											<Action ID="887">
+												<Event>853</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+						</Rules>
+					</State>
+					<State ID="877">
+						<Guid>EFE33A52EECC410882ECE190387E20CA</Guid>
+						<Name>Enabled</Name>
+						<Rules>
+							<Rule ID="888">
+								<Event>850</Event>
+								<RuleCases>
+									<RuleCase ID="889">
+										<Row>8</Row>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="890">
+								<Event>862</Event>
+								<RuleCases>
+									<RuleCase ID="891">
+										<Row>9</Row>
+										<Actions>
+											<Action ID="892">
+												<Event>852</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="893">
+								<Event>863</Event>
+								<RuleCases>
+									<RuleCase ID="894">
+										<Row>10</Row>
+										<NextState>895</NextState>
+										<Actions>
+											<Action ID="896">
+												<Event>864</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="897">
+								<Event>866</Event>
+								<RuleCases>
+									<RuleCase ID="898">
+										<Row>11</Row>
+										<NextState>899</NextState>
+										<Actions>
+											<Action ID="900">
+												<Event>869</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="901">
+								<Event>867</Event>
+								<RuleCases>
+									<RuleCase ID="902">
+										<Row>12</Row>
+										<Actions>
+											<Action ID="903">
+												<Event>853</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+						</Rules>
+					</State>
+					<State ID="895">
+						<Guid>84F7798186E14658BC846E89428C2719</Guid>
+						<Name>Disabling</Name>
+						<Rules>
+							<Rule ID="904">
+								<Event>850</Event>
+								<RuleCases>
+									<RuleCase ID="905">
+										<Row>14</Row>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="906">
+								<Event>862</Event>
+								<RuleCases>
+									<RuleCase ID="907">
+										<Row>15</Row>
+										<Actions>
+											<Action ID="908">
+												<Event>852</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="909">
+								<Event>863</Event>
+								<RuleCases>
+									<RuleCase ID="910">
+										<Row>16</Row>
+										<Actions>
+											<Action ID="911">
+												<Event>852</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="912">
+								<Event>866</Event>
+								<RuleCases>
+									<RuleCase ID="913">
+										<Row>17</Row>
+										<Actions>
+											<Action ID="914">
+												<Event>853</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="915">
+								<Event>867</Event>
+								<RuleCases>
+									<RuleCase ID="916">
+										<Row>18</Row>
+										<NextState>872</NextState>
+										<Actions>
+											<Action ID="917">
+												<Event>870</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+						</Rules>
+					</State>
+					<State ID="899">
+						<Guid>5C36D38C37AF44CF99D539D2F1557A06</Guid>
+						<Name>Triggered</Name>
+						<Rules>
+							<Rule ID="918">
+								<Event>850</Event>
+								<RuleCases>
+									<RuleCase ID="919">
+										<Row>20</Row>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="920">
+								<Event>862</Event>
+								<RuleCases>
+									<RuleCase ID="921">
+										<Row>21</Row>
+										<Actions>
+											<Action ID="922">
+												<Event>852</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="923">
+								<Event>863</Event>
+								<RuleCases>
+									<RuleCase ID="924">
+										<Row>22</Row>
+										<NextState>895</NextState>
+										<Actions>
+											<Action ID="925">
+												<Event>864</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="926">
+								<Event>866</Event>
+								<RuleCases>
+									<RuleCase ID="927">
+										<Row>23</Row>
+										<Actions>
+											<Action ID="928">
+												<Event>853</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="929">
+								<Event>867</Event>
+								<RuleCases>
+									<RuleCase ID="930">
+										<Row>24</Row>
+										<Actions>
+											<Action ID="931">
+												<Event>853</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+						</Rules>
+					</State>
+				</States>
+			</MainMachine>
+		</MainMachine>
+		<ModelBuilderSettings>
+			<ModelBuilderSettings ID="932">
+			</ModelBuilderSettings>
+		</ModelBuilderSettings>
+		<VerificationStatus>
+			<VerificationStatus ID="933">
+			</VerificationStatus>
+		</VerificationStatus>
+	</InterfaceModel>
+</asd>

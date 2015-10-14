@@ -53,8 +53,8 @@ $(TOP)-update: #$(LOCAL_TARGET)
 	mkdir -p $(CDIR)baseline/$(LOCAL_NAME)
 	-$(DZN) -v parse $(LOCAL_DZN_TOP) > $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE) 2>&1
 
-$(LOCAL_NAME)-check: $(TOP)-update
-$(LOCAL_LANGUAGE): $(TOP)-update
+$(LOCAL_NAME)-update: $(TOP)-update
+$(LOCAL_LANGUAGE)-update: $(TOP)-update
 
 ifeq ($(filter list,$(MAKECMDGOALS)),list)
 $(info $()    $(TOP)-update)
@@ -64,7 +64,7 @@ endif
 
 ifeq ($(HELP_PARSE),)
 check: parse
-update: update-parse
+update: parse-update
 help: help-parse
 define HELP_PARSE
   parse          run all parse

@@ -1,0 +1,195 @@
+<?xml version="1.0"?>
+<asd OmVersion="10.10.0" BackwardOmVersion="10.10.0" Serializer="2" >
+	<InterfaceModel ID="362">
+		<CodeGenerationLanguage>cpp</CodeGenerationLanguage>
+		<CodeGenerationVersion>8.4.3</CodeGenerationVersion>
+		<DateCreated>20131013T142012</DateCreated>
+		<DateModified>20131104T082622.984454</DateModified>
+		<Guid>11C7462B347C46CF969782FE6C1473DB</Guid>
+		<ModelSignature>BASE64_ezaD37pysAhjMSSh0mlvlI0xg2dQbCRHDyNuuHUiV3pH858PhDbVGBF1sgGOKracPD+bSe1uEO3DItaM1kIxdmq06xIJiO244LpvDG/1ALZlX+8P7QU4JeX9HtGFPv5r5doqptWjqEv4pBzeP/1cNy0Mww/AmKXVHLqRk5OyjxAk7ZvoFgmNKSf14aARclbcvpzCRnkHKY3CftiSVWlRYG3xXyKEOC3vhN9gFeQ43i3/E6YCiWU36/XqY/nmDBPMHIFJ4DhDtZDU+30+FvYNHxWJyZfIGfWu5o+eRDYarcZp+E5LVLl8nU7wj1hF70w76lyk1ouvw43yPeMNS9lLAg==</ModelSignature>
+		<Name>siren</Name>
+		<ToolVersion>Converter9(52253)</ToolVersion>
+		<AbstractInterface>
+			<AbstractInterface ID="363">
+				<Guid>C87A6402319E4BBABE71CE5B8DC9EACF</Guid>
+				<Events>
+					<CallEvent ID="364">
+						<Guid>D849ADC0EF514853A0CF4F74E848898A</Guid>
+						<Name>StateInvariant</Name>
+					</CallEvent>
+				</Events>
+				<ReplyEvents>
+					<ReplyEvent ID="365">
+						<Guid>EAE2E4DB6FAA4E7681E63D799063AD7D</Guid>
+						<Name>NoOp</Name>
+					</ReplyEvent>
+					<ReplyEvent ID="366">
+						<Guid>8F0CD6C16E1B453883CBC5F7326E1867</Guid>
+						<Name>Illegal</Name>
+					</ReplyEvent>
+					<ReplyEvent ID="367">
+						<Guid>273B1A6280254F46B2BCB5218E3401FD</Guid>
+						<Name>Disabled</Name>
+					</ReplyEvent>
+				</ReplyEvents>
+			</AbstractInterface>
+		</AbstractInterface>
+		<CodeGeneratorSettings>
+			<CodeGenInfo ID="368">
+				<Language>c</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="369">
+				<Language>cpp</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="370">
+				<Language>csharp</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="371">
+				<Language>java</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="372">
+				<Language>tinyc</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+		</CodeGeneratorSettings>
+		<ImplementedService>
+			<ServiceDependency ID="373">
+				<Declaration>
+					<ServiceDeclaration ID="374">
+						<ExecutionModel>emSingleThreaded</ExecutionModel>
+						<ApplicationInterfaces>
+							<ApplicationInterface ID="375">
+								<Guid>434D79240FD54202939E4DE2FCECC026</Guid>
+								<Name>siren_api</Name>
+								<Events>
+									<CallEvent ID="376">
+										<Guid>F0354ADAC94947A8A9EB3DFE54D937E5</Guid>
+										<Name>on</Name>
+									</CallEvent>
+									<CallEvent ID="377">
+										<Guid>CDF456FEFF96496B99EC9B091F78B386</Guid>
+										<Name>off</Name>
+									</CallEvent>
+								</Events>
+								<ReplyEvents>
+									<ReplyEvent ID="378">
+										<Comment>This&#32;is&#32;the&#32;reply&#32;event&#32;for&#32;void&#32;calls</Comment>
+										<Guid>348425C930FF4B009D65DCD603C8D50D</Guid>
+										<Name>VoidReply</Name>
+									</ReplyEvent>
+								</ReplyEvents>
+							</ApplicationInterface>
+						</ApplicationInterfaces>
+					</ServiceDeclaration>
+				</Declaration>
+			</ServiceDependency>
+		</ImplementedService>
+		<MainMachine>
+			<MainMachine ID="379">
+				<Guid>C2EF42E62EB14C78ADC5751F1E9B75A1</Guid>
+				<Name>siren</Name>
+				<States>
+					<State ID="380">
+						<Guid>FFD9566FF7614EA689ECE7001D700E20</Guid>
+						<Name>Off</Name>
+						<Rules>
+							<Rule ID="381">
+								<Event>364</Event>
+								<RuleCases>
+									<RuleCase ID="382">
+										<Row>2</Row>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="383">
+								<Event>376</Event>
+								<RuleCases>
+									<RuleCase ID="384">
+										<Row>3</Row>
+										<NextState>385</NextState>
+										<Actions>
+											<Action ID="386">
+												<Event>378</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="387">
+								<Event>377</Event>
+								<RuleCases>
+									<RuleCase ID="388">
+										<Row>4</Row>
+										<Actions>
+											<Action ID="389">
+												<Event>366</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+						</Rules>
+					</State>
+					<State ID="385">
+						<Guid>C60C6D1478464DECA7B197A61309B8D0</Guid>
+						<Name>On</Name>
+						<Rules>
+							<Rule ID="390">
+								<Event>364</Event>
+								<RuleCases>
+									<RuleCase ID="391">
+										<Row>6</Row>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="392">
+								<Event>376</Event>
+								<RuleCases>
+									<RuleCase ID="393">
+										<Row>7</Row>
+										<Actions>
+											<Action ID="394">
+												<Event>366</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="395">
+								<Event>377</Event>
+								<RuleCases>
+									<RuleCase ID="396">
+										<Row>8</Row>
+										<NextState>380</NextState>
+										<Actions>
+											<Action ID="397">
+												<Event>378</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+						</Rules>
+					</State>
+				</States>
+			</MainMachine>
+		</MainMachine>
+		<ModelBuilderSettings>
+			<ModelBuilderSettings ID="398">
+			</ModelBuilderSettings>
+		</ModelBuilderSettings>
+		<VerificationStatus>
+			<VerificationStatus ID="399">
+			</VerificationStatus>
+		</VerificationStatus>
+	</InterfaceModel>
+</asd>

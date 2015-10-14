@@ -26,7 +26,7 @@ ifeq ($(filter list,$(MAKECMDGOALS)),list)
 endif
 ifneq ($(LOCAL_DZN_FILES),)
 #allow regression/makefile.make to include foo/bar.dzn files
-CDIR:=$(dir $(firstword $(LOCAL_DZN_FILES)))
+CDIR:=$(patsubst $(OUT)/%,regression/%,$(dir $(firstword $(LOCAL_DZN_FILES))))
 endif
 
 PROJECT_P:=$(filter project,$(patsubst %.project,project project,$(notdir $(CDIR:%/=%))))
@@ -64,7 +64,7 @@ ifeq ($(LOCAL_SUT),)
 LOCAL_SUT:=$(LOCAL_NAME)
 endif
 
-ifeq ($(strip $(shell grep -ho '^component Main' $(LOCAL_DZN_TOP) /dev/null)),component Main)
+ifeq ($(strip $(shell grep -ho '^component Main' $(LOCAL_DZN_TOP) /dev/null 2>/dev/null)),component Main)
 # for old IRun, Adapter, Main files
 LOCAL_SUT:=Main
 endif
@@ -107,12 +107,11 @@ ifeq ($(LOCAL_TRACE_FLUSH),)
 LOCAL_TRACE_FLUSH:=$($(LOCAL_NAME).flush)
 endif
 
-NAMESPACE_P:=$(shell grep -hEo '\<namespace\>' $(LOCAL_DZN_FILES))
-
+NAMESPACE_P:=$(shell grep -hEo '\<namespace\>' $(LOCAL_DZN_FILES) /dev/null 2>/dev/null)
 ifneq ($(strip $(LOCAL_DZN_FILES)),)
 ifeq ($(strip $(LOCAL_INTERFACES)),)
 ifeq ($(NAMESPACE_P),)
-LOCAL_INTERFACES:=$(shell grep -hEo '^interface [._a-zA-Z0-9]+' $(LOCAL_DZN_FILES) | sed -e 's/^interface //' -e 's/[.]/_/g')
+LOCAL_INTERFACES:=$(shell grep -hEo '^interface [._a-zA-Z0-9]+' $(LOCAL_DZN_FILES) 2>/dev/null | sed -e 's/^interface //' -e 's/[.]/_/g')
 else
 ifeq ($($(LOCAL_DZN_TOP)_INTERFACES),)
 LOCAL_INTERFACES:=$(shell $(DZN) parse --interfaces $(LOCAL_DZN_FILES) | tr '.' '_')
@@ -122,7 +121,7 @@ endif
 endif
 ifeq ($(strip $(LOCAL_COMPONENTS)),)
 ifeq ($(NAMESPACE_P),)
-LOCAL_COMPONENTS:=$(shell grep -hEo '^component [._a-zA-Z0-9]+' $(LOCAL_DZN_FILES) | sed -e 's/^component //' -e 's/[.]/_/g')
+LOCAL_COMPONENTS:=$(shell grep -hEo '^component [._a-zA-Z0-9]+' $(LOCAL_DZN_FILES) 2>/dev/null | sed -e 's/^component //' -e 's/[.]/_/g')
 else
 ifeq ($($(LOCAL_DZN_TOP)_COMPONENTS),)
 LOCAL_COMPONENTS:=$(shell $(DZN) parse --components $(LOCAL_DZN_FILES) | tr '.' '_')
