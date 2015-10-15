@@ -34,7 +34,7 @@
   :use-module (gaiag gaiag)
   :use-module (gaiag indent)
   :use-module (gaiag misc)
-  :use-module (gaiag norm-state)
+  :use-module (gaiag norm-event)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
 ;;  :use-module (gaiag wfc)
@@ -100,7 +100,7 @@
   (om:import name code:om))
 
 (define (code:om ast)
-  ((compose csp-norm-state
+  ((compose code-norm-event
             ;;ast:wfc
             ast:resolve
             ast->om
@@ -276,8 +276,9 @@
     (match src
       (() "")
       ('$empty-statement$ (snippet 'empty `((space ,space))))
-      (($ <guard> expression (and ($ <guard>) statement))
-       (let* ((statement (->code model (wrap-compound statement) blocking? locals (1+ indent)))
+      (($ <guard> expression ('compound statements ...))
+       (let* ((statement (.statement src))
+              (statement (->code- model statement blocking? locals (1+ indent)))
               (statement (if (eq? statement '$empty-statement$)
                              (->code model statement blocking? locals (1+ indent))
                              statement)))
@@ -286,7 +287,8 @@
                     (clause ,(expr->clause model src expression))
                     (statement ,statement)))))
       (($ <guard> expression statement)
-       (let* ((statement (->code- model statement blocking? locals (1+ indent)))
+       (let* ((statement (wrap-compound statement))
+              (statement (->code- model statement blocking? locals (1+ indent)))
               (statement (if (eq? statement '$empty-statement$)
                              (->code model statement blocking? locals (1+ indent))
                              statement)))
@@ -345,6 +347,7 @@
                                            (set! locals (acons alias (.name formal) locals))
                                            (cons (snippet 'alias `((type ,type) (name ,name) (out? ,out?) (alias ,alias) (space ,space)))
                                                  rest)))))))
+                            (blocking? (pair? ((om:collect <blocking>) statement)))
                             (statement (->code model statement blocking? locals indent compound?))
                             (statement (if (pair? aliases)
                                            (snippet 'compound
@@ -518,6 +521,12 @@
      (null-is-#f (filter identity (map (find-trigger port event) statements))))
     (_ #f)))
 
+(define ((is-trigger? port event) o)
+  (match o
+    (($ <on> ('triggers ($ <trigger> p e)))
+     (and (eq? p (.name port)) (eq? e (.name event)) o))
+    (_ #f)))
+
 (define (expr->clause model guard expression)
   (if (is-a? expression <otherwise>)
       (snippet 'clause-else '())
@@ -532,19 +541,16 @@
 (define (om:first-guard? model guard)
   (not
    (and-let* ((parent (om:parent model guard))
-              (parent (cond ((is-a? parent <guard>) (.statement parent))
-                            ((is-a? parent <on>) (om:parent model parent))
-                            (else parent)))
+              ;; (parent (cond ((is-a? parent <guard>) (.statement parent))
+              ;;               ((is-a? parent <on>) (om:parent model parent))
+              ;;               (else parent)))
               (guards
                ;;((om:statements-of-type 'guard) parent)
                (filter (is? <guard>) parent)
                )
-              (guards (filter (find-trigger (statements.port) (statements.event)) guards))
+              ;;(guards (filter (find-trigger (statements.port) (statements.event)) guards))
               (guards (null-is-#f guards)))
              (not (eq? guard (car guards))))))
-
-(define (om:top-guard? model guard)
-  (member guard (om:top-statements model)))
 
 (define (bool-expression->string model o)
   (match o
@@ -771,29 +777,11 @@
                (((is-a? model <component>))
                 ((.behaviour model))
                 (component model)
-                (behaviour (.behaviour component))
-                (statement (.statement behaviour))
-                (blockings ((om:statements-of-type 'blocking) statement))
-                (guards
-                 ;;((om:statements-of-type 'guard) statement)
-                 (if (is-a? statement <guard>)
-                     (list statement)
-                     (filter (is? <guard>) statement))
-                 )
-                (ons
-                 (append ((om:statements-of-type 'on) statement))
-                 ;; (if (is-a? statement <on>)
-                 ;;     (list statement)
-                 ;;     (filter (is? <on>) statement))
-                 )
-                (ons (append blockings ons))
-                (guards (filter (find-trigger port event) guards))
-                (ons (filter (find-trigger port event) ons)))
+                (ons ((compose .elements .statement .behaviour) component))
+                (on (find (is-trigger? port event) ons)))
                (parameterize ((statements.port port)
                               (statements.event event))
-                 (if (null? ons)
-                     (code:->code model (make <compound> :elements guards) blocking? locals 2 #f)
-                     (code:->code model ons blocking? locals 2 #f))))
+                 (code:->code model on blocking? locals 2 #f)))
               "")))
     (animate string `((port ,(.name port))
                        (event ,(.name event))
