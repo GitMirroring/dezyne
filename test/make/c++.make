@@ -23,6 +23,8 @@
 include make/compile.make
 
 CXXFLAGS:=-Wall -std=c++1y
+LOADLIBES:=
+LDLIBS:=-lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
 LOCAL_SOURCE_EXT:=.cc
 LOCAL_HEADER_EXT:=.hh
 LOCAL_CC_FILES+=$(wildcard $(CDIR)*.cc)

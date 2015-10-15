@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
     if (bricks.size () != 4)
       {
         std::cerr << "bricks found: " << bricks.size () << ", expected: 4" << std::endl;
-        std::cerr << "exiting" << std::cerr;
+        std::cerr << "exiting" << std::endl;
         exit (2);
       }
 
@@ -202,9 +202,9 @@ int main(int argc, char* argv[])
     bool stop = false;
     while(not stop && std::getline(std::cin, s)) {
       if(s.empty()) continue;
-      if(s[0] == 'c') pump.handle([&]{sut.ctrl.in.calibrate();});
-      if(s[0] == 'o') pump.handle([&]{sut.ctrl.in.operate();});
-      if(s[0] == 's') pump.handle([&]{sut.ctrl.in.stop();});
+      if(s[0] == 'c') pump.handle(0,0,[&]{sut.ctrl.in.calibrate();});
+      if(s[0] == 'o') pump.handle(0,0,[&]{sut.ctrl.in.operate();});
+      if(s[0] == 's') pump.handle(0,0,[&]{sut.ctrl.in.stop();});
       if(s[0] == 'q') stop = true;
     }
   }
