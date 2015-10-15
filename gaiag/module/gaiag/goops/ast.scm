@@ -100,6 +100,8 @@
     (('bindings bindings ...)
      (make <bindings> :elements (map ast->om- bindings)))
 
+    (('blocking statement) (make <blocking> :statement (ast->om- statement)))
+
     (('call identifier) (make <call> :identifier identifier))
 
     (('call identifier arguments)
@@ -206,8 +208,8 @@
     (('on triggers statement)
      (make <on> :triggers (ast->om- triggers) :statement (ast->om- statement)))
 
-    (('on triggers statement blocking?)
-     (make <on> :triggers (ast->om- triggers) :statement (ast->om- statement) :blocking? blocking?))
+    (('on triggers statement)
+     (make <on> :triggers (ast->om- triggers) :statement (ast->om- statement)))
 
     (('otherwise) (make <otherwise> :value 'otherwise))
 

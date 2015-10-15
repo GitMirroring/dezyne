@@ -86,6 +86,10 @@ int main()
   dezyne::locator l;
   dezyne::runtime rt;
   l.set(rt);
+##if BLOCKING
+  dezyne::pump pump;
+  l.set(pump);
+##endif // BLOCKING
   dezyne::illegal_handler ih;
   ih.illegal = [] {std::clog << "illegal" << std::endl; exit(0);};
   l.set(ih);
@@ -102,7 +106,11 @@ int main()
   std::string event;
   while(std::cin >> event) {
     if (event_map.find(event) != event_map.end()) {
+##if BLOCKING
+      pump(event_map[event]);
+##else // !BLOCKING
       event_map[event]();
+##endif // !BLOCKING
     }
   }
 }

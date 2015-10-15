@@ -37,7 +37,6 @@
            .ast
            .behaviour
            .bindings
-           .blocking?
            .component
            .direction
            .elements
@@ -83,6 +82,7 @@
            <bind>
            <binding>
            <bindings>
+           <blocking>
            <call>
            <component>
            <data>
@@ -146,6 +146,7 @@
            make-<bind>
            make-<binding>
            make-<bindings>
+           make-<blocking>
            make-<call>
            make-<component>
            make-<data>
@@ -211,6 +212,7 @@
     behaviour
     bind
     binding
+    blocking
     call
     component
     data
@@ -272,6 +274,7 @@
     assign
     behaviour
     bind
+    blocking
     call
     compound
     enum
@@ -539,13 +542,18 @@
 (define (make-<illegal> . args)
   (list <illegal>))
 
+(define (make-<blocking> . args)
+  (let-keywords
+   args #f
+   ((statement #f))
+   (cons <blocking> (list statement))))
+
 (define (make-<on> . args)
   (let-keywords
    args #f
    ((triggers (make <triggers>))
-    (statement #f)
-    (blocking? #f))
-   (cons <on> (list triggers statement blocking?))))
+    (statement #f))
+   (cons <on> (list triggers statement))))
 
 (define (make-<reply> . args)
   (let-keywords
@@ -693,7 +701,7 @@
 
 (define (.triggers ast)
   (match ast
-    (('on triggers statement blocking?) triggers)))
+    (('on triggers statement) triggers)))
 
 (define (.name ast)
   (match ast
@@ -791,14 +799,11 @@
 
 (define (.statement ast)
   (match ast
+    (('blocking statement) statement)
     (('guard expression statement) statement)
-    (('on triggers statement blocking?) statement)
+    (('on triggers statement) statement)
     (('behaviour name types variables functions statement) statement)
     (('function name signature recursive statement) statement)))
-
-(define (.blocking? ast)
-  (match ast
-    (('on triggers statement blocking?) blocking?)))
 
 (define (.functions ast)
   (match ast

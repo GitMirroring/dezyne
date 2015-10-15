@@ -121,6 +121,9 @@
 (define-method (om:guard-equal? (lhs <guard>) (rhs <guard>))
   (equal? (om->list (.expression lhs)) (om->list (.expression rhs))))
 
+(define-method (om:triggers-equal? a b)
+  #f)
+
 (define-method (om:triggers-equal? (a <on>) (b <on>))
   (equal? ((compose .elements .triggers) a)
           ((compose .elements .triggers) b)))

@@ -315,6 +315,7 @@
     ((? (compose null-is-#f predicate)) (list o))
     (('compound statements ...)
      (filter identity (apply append (map (collect predicate) statements))))
+    (($ <blocking> s) (filter identity ((collect predicate) s)))
     (($ <guard> e s) (filter identity ((collect predicate) s)))
     (($ <on> t s) (filter identity ((collect predicate) s)))
     (($ <if> e t f) (append (filter identity ((collect predicate) t))
@@ -345,6 +346,7 @@
     (($ <behaviour>) (or (and=> (.statement ast) om:find-triggers) '()))
     (('compound statements ...)
      (delete-duplicates (sort (append (apply append (map om:find-triggers statements))) om:<)))
+    (($ <blocking>) (om:find-triggers (.statement ast) found))
     (($ <on>) (om:find-triggers (.triggers ast)))
     (('triggers triggers ...) triggers)
     (($ <guard>) (om:find-triggers (.statement ast) found))
@@ -381,7 +383,8 @@
 
 
 (define (om:declarative? o)
-  (or (is-a? o <guard>)
+  (or (is-a? o <blocking>)
+      (is-a? o <guard>)
       (is-a? o <on>)
       (and (is-a? o <compound>)
            (>0 (length (.elements o)))
@@ -437,6 +440,8 @@
   (match o
     ((? (is? <model>))
      (om:parent ((compose .statement .behaviour) o) t))
+    (($ <blocking>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
+                        (om:parent (.statement o) t)))
     (($ <guard>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
                      (and (eq? (om:id (.expression o)) (om:id t)) o)
                      (om:parent (.statement o) t)))

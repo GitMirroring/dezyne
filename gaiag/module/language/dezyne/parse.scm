@@ -288,6 +288,7 @@
     (variable) : $1)
 
    (statement
+    (blocking-statement) : $1
     (function-call-statement) : $1
     (guarded-statement) : $1
     (compound-statement) : $1
@@ -298,6 +299,9 @@
     (if-statement) : $1
     (reply-statement) : $1
     (return-statement) : $1)
+
+   (blocking-statement
+    (blocking statement) : (note-location `(blocking ,$2) @1))
 
    (function-call-statement
     (function-call #{\;}#) : $1)
@@ -313,8 +317,7 @@
     (#{{}# statements #{}}#) : (note-location $2 @1))
 
    (on-event-statement
-    (on trigger-spec : statement) : (note-location `(,$1 ,$2 ,$4) @1)
-    (blocking on trigger-spec : statement) : (note-location `(,$2 ,$3 ,$5 ,$1) @1))
+    (on trigger-spec : statement) : (note-location `(,$1 ,$2 ,$4) @1))
 
    (trigger-spec
     (triggers) : (note-location (cons 'triggers $1) @1)

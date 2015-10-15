@@ -49,6 +49,7 @@
            expand-on
            flatten-compound
            guards-not-or
+           passdown-blocking
            remove-otherwise
            remove-skip
            ))
@@ -87,15 +88,14 @@
                                      (statement (on-statement (map .statement shared-ons))))
                                 (make <on>
                                   :triggers triggers
-                                  :statement statement
-                                  :blocking? (.blocking? (car ons))))
+                                  :statement statement))
                               (car shared-ons))))
                      (cons aggregated-on (loop remainder)))))))))
-     (('functions functions ...) o)
-     ((? (is? <ast>)) (om:map (aggregate-on aggregate?) o))
-     (('skip) o)
-     ((h t ...) (map (aggregate-on aggregate?) o))
-     (_ o)))
+    (('functions functions ...) o)
+    ((? (is? <ast>)) (om:map (aggregate-on aggregate?) o))
+    (('skip) o)
+    ((h t ...) (map (aggregate-on aggregate?) o))
+    (_ o)))
 
 (define (om:on-statement-equal? a b)
   (and (is-a? a <on>) (is-a? b <on>)
@@ -137,8 +137,7 @@
                        (retain-source-properties
                         (.triggers o)
                         (make <triggers> :elements triggers))
-                       :statement (.statement o)
-                       :blocking? (.blocking? o))))
+                       :statement (.statement o))))
                (cons shared-on (loop remainder)))))))
     (_ o)))
 
@@ -196,7 +195,7 @@
                        (.value expression)
                        (.value (.expression o))))))
       (.statement o)))
-    (('compound statements ...)
+    ((and ('compound statements ...) (? om:declarative?))
      (let ((statements statements))
        (retain-source-properties
         o
@@ -298,6 +297,25 @@
       (('! expression)
        (make <expression> :value expression))
       (_ (make <expression> :value (list '! expression))))))
+
+(define* ((passdown-blocking :optional (blocking? #f)) o)
+  (define block? (lambda (x) blocking?))
+  (match o
+    (($ <blocking> (and (? om:declarative?) ('compound statements ...)))
+     (make <compound> :elements (map (passdown-blocking #t) statements)))
+    (($ <blocking> ($ <guard> expression statement))
+     (make <guard> :expression expression :statement ((passdown-blocking #t) statement)))
+    (($ <blocking> ($ <on> triggers statement))
+     (make <on> :triggers triggers :statement ((passdown-blocking #t) statement)))
+    ((and ('compound statements ...) (? om:declarative?))
+     (make <compound> :elements (map (passdown-blocking blocking?) statements)))
+    ((and (? block?) (? om:imperative?))
+     (if (not blocking?) o
+         (make <blocking> :statement o)))
+    ((? (is? <ast>)) (om:map (passdown-blocking blocking?) o))
+    (('skip) o)
+    ((h t ...) (map (passdown-blocking blocking?) o))
+    (_ o)))
 
 (define (add-skip o)
   (match o

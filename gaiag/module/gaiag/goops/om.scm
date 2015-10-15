@@ -80,7 +80,6 @@
            .arguments
            .behaviour
            .bindings
-           .blocking?
            .component
            .direction
            .elements
@@ -124,6 +123,7 @@
            <bind>
            <binding>
            <bindings>
+           <blocking>
            <call>
            <component>
            <compound>
@@ -364,10 +364,12 @@
 
 (define-class <illegal> (<statement>))
 
+(define-class <blocking> (<declarative>)
+  (statement :accessor @statement :init-value #f :init-keyword :statement))
+
 (define-class <on> (<declarative>)
   (triggers :accessor .triggers :init-form (make <triggers>) :init-keyword :triggers)
-  (statement :accessor @statement :init-value #f :init-keyword :statement)
-  (blocking? :accessor .blocking? :init-value #f :init-keyword :blocking?))
+  (statement :accessor @statement :init-value #f :init-keyword :statement))
 
 (define-class <reply> (<imperative>)
   (expression :accessor @expression :init-value #f :init-keyword :expression)
@@ -477,6 +479,7 @@
 (define (.statement o)
   (match o
     (($ <behaviour> name types variables functions statement) statement)
+    (($ <blocking> statement) statement)
     (($ <function> name signature recursive statement) statement)
     (($ <guard> expression statement) statement)
     (($ <on> expression statement) statement)))

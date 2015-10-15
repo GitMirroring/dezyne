@@ -22,7 +22,7 @@
 
 include make/compile.make
 
-CXXFLAGS:=-Wall -std=c++11
+CXXFLAGS:=-Wall -std=c++1y
 LOCAL_SOURCE_EXT:=.cc
 LOCAL_HEADER_EXT:=.hh
 LOCAL_CC_FILES+=$(wildcard $(CDIR)*.cc)

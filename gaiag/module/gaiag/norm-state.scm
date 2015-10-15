@@ -54,6 +54,7 @@
     aggregate-guard-g
     flatten-compound
     combine-guards
+    (passdown-blocking)
     passdown-on
     (remove-otherwise)
     add-skip
@@ -68,6 +69,7 @@
     aggregate-guard-g
     flatten-compound
     combine-guards
+    (passdown-blocking)
     passdown-on
     (remove-otherwise)
     add-skip
@@ -90,30 +92,31 @@
 
 (define (passdown-on o)
   (match o
-    (($ <on>) ((passdown-triggers (.triggers o) (.blocking? o)) (.statement o)))
+    (($ <on>) ((passdown-triggers (.triggers o)) (.statement o)))
     ((? (is? <ast>)) (om:map passdown-on o))
     ((h t ...) (map passdown-on o))
     (_ o)))
 
-(define ((passdown-triggers triggers blocking?) o)
+(define ((passdown-triggers triggers) o)
   (match o
     (('compound statements ...)
      (let ((statements statements))
        (match statements
          ((($ <guard>) ..1)
           (make <compound>
-            :elements (map (passdown-triggers triggers blocking?) statements)))
-         (_ (make <on> :triggers triggers :statement o :blocking? blocking?)))))
+            :elements (map (passdown-triggers triggers) statements)))
+         (_ (make <on> :triggers triggers :statement o)))))
     (($ <guard>)
      (make <guard>
        :expression (.expression o)
-       :statement ((passdown-triggers triggers blocking?) (.statement o))))
-    (_ (make <on> :triggers triggers :statement o :blocking? blocking?))))
+       :statement ((passdown-triggers triggers) (.statement o))))
+    (_ (make <on> :triggers triggers :statement o))))
 
 (define (ast-> ast)
   ((compose
     om->list
-    norm-state
+    ;;((@ (gaiag dzn) ast->dzn))
+    csp-norm-state
     ast:resolve
     ast->om
     ) ast))

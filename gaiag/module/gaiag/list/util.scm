@@ -80,7 +80,8 @@
     (_ o)))
 
 (define (om:triggers-equal? a b)
-  (equal? (.triggers a) (.triggers b)))
+  (and (is-a? a <on>) (is-a? b <on>)
+   (equal? (.triggers a) (.triggers b))))
 
 (define (om:< a b)
   (match (cons a b)

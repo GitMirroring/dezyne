@@ -69,10 +69,12 @@
     remove-skip
     aggregate-guard-s
     (aggregate-on om:triggers-equal?)
+    flatten-compound
     (expand-on equal?)
     aggregate-guard-s
     flatten-compound
     combine-ons
+    (passdown-blocking)
     passdown-guard
     (remove-otherwise)
     add-skip
@@ -82,12 +84,19 @@
 (define (code-norm-event o)
   ((compose
     remove-skip
+    flatten-compound
     combine-guards
     (aggregate-on om:triggers-equal?)
+    flatten-compound
+    (passdown-blocking)
+    flatten-compound
+    passdown-guard
+    flatten-compound
     (expand-on equal?)
     aggregate-guard-s
     flatten-compound
     combine-ons
+    (passdown-blocking)
     passdown-guard
     (remove-otherwise)
     add-skip
@@ -179,6 +188,7 @@
 
 (define (passdown-guard o)
   (match o
+    ((and ('compound s ...) (? om:imperative?)) o)
     (($ <guard>) ((passdown-expression (retain-source-properties o (.expression o))) (.statement o)))
     ((? (is? <ast>)) (om:map passdown-guard o))
     (('skip) o)
@@ -218,7 +228,7 @@
             (retain-source-properties
              expression
              (make <guard> :expression expression :statement s))))
-         (('compound t ...)
+         ((and ('compound t ...) (? om:declarative?))
           (retain-source-properties
            o
            (make <compound>
@@ -234,7 +244,8 @@
 (define (ast-> ast)
   ((compose
     om->list
-    norm-event
+    ;;((@ (gaiag dzn) ast->dzn))
+    code-norm-event
     ast:resolve
     ast->om
     ) ast))

@@ -96,7 +96,11 @@
        :identifier name
        :arguments (csp->om arguments)
        :last? last?))
-    (('reply context expression)
+    (('reply expression port)
+     (make <reply>
+       :expression (csp->om expression)
+       :port port))
+    (('reply expression)
      (make <reply>
        :expression (csp->om expression)))
     (('return expression)
@@ -223,7 +227,7 @@ i_(s,b,c)
 (define csp-transform-return-reply
   '(on (triggers (trigger #f f (arguments)))
        (compound
-        (reply (expression (literal (name i Status) Yes))))))
+        (reply (expression (literal (name i Status) Yes)) #f))))
 
 (pass-if "ast-transform-return-reply"
          (csp-pretty-noisy-equal?
@@ -233,7 +237,7 @@ i_(s,b,c)
            i-ast
            '(compound
              (on (triggers (trigger #f f (arguments)))
-                 (reply (expression (literal (name i Status) Yes))))))
+                 (reply (expression (literal (name i Status) Yes)) #f))))
 
           ;; via:
           csp-transform-return-reply
@@ -258,8 +262,7 @@ i_(s,b,c)
   '(on
       (triggers (trigger #f f (arguments)))
       (compound
-       (reply
-        (expression (literal (name i Status) Yes))))))
+       (reply (expression (literal (name i Status) Yes)) #f))))
 
 (pass-if "ast-transform-reply"
          (csp-pretty-noisy-equal?
@@ -269,7 +272,7 @@ i_(s,b,c)
            i-ast
            '(compound
              (on (triggers (trigger #f f (arguments)))
-                 (reply (expression (literal (name i Status) Yes))))))
+                 (reply (expression (literal (name i Status) Yes)) #f))))
 
           ;; via:
           csp-transform-reply-via))
@@ -278,8 +281,7 @@ i_(s,b,c)
   '(on
     (triggers (trigger #f e (arguments)))
     (compound
-     (reply
-      (expression (literal (name i Status) Yes)))
+     (reply (expression (literal (name i Status) Yes)) #f)
      (voidreply))))
 
 (pass-if "ast-transform-compound-reply"
@@ -293,7 +295,7 @@ i_(s,b,c)
            '(compound
              (on (triggers (trigger #f e (arguments)))
                  (compound
-                  (reply (expression (literal (name i Status) Yes)))))))
+                  (reply (expression (literal (name i Status) Yes)) #f)))))
 
           ;; via:
           csp-transform-compound-reply-via))
@@ -1034,9 +1036,9 @@ Alarm_(state,sounding)
           (compound
            (guard (expression true)
                     (compound
-                     (reply (expression (name IReply Status Yes)))))
+                     (reply (expression (name IReply Status Yes)) #f)))
            (guard (expression true)
-                  (compound (reply (expression (name IReply Status No))))))))))
+                  (compound (reply (expression (name IReply Status No)) #f))))))))
     (interface
         (name UReply)
       (types (enum (name UReply Status) (fields Ok Nok)))
@@ -1051,10 +1053,10 @@ Alarm_(state,sounding)
         (on (triggers (trigger #f what (arguments)))
             (compound
              (guard (expression true)
-                    (compound (reply (expression (name UReply Status Ok)))))
+                    (compound (reply (expression (name UReply Status Ok)) #f)))
              (guard (expression true)
                     (compound
-                     (reply (expression (name UReply Status Nok))))))))))
+                     (reply (expression (name UReply Status Nok)) #f))))))))
     (component
      (name Reply)
      (ports (port i (name IReply) provides) (port u (name UReply) requires))
@@ -1072,9 +1074,9 @@ Alarm_(state,sounding)
                     (variable s (type (name UReply Status)) (expression (name u what)))
                     (if (expression (== (var s) (literal (name UReply Status) Ok)))
                         (compound
-                         (reply (expression (literal (name IReply Status) Yes))))
+                         (reply (expression (literal (name IReply Status) Yes)) #f))
                         (compound
-                         (reply (expression (literal (name IReply Status) No))))))))))))))
+                         (reply (expression (literal (name IReply Status) No)) #f))))))))))))
 
 (define var-ast
   '((interface
@@ -1089,7 +1091,7 @@ Alarm_(state,sounding)
        (functions)
        (compound
         (on (triggers (trigger #f foo (arguments)))
-            (reply (expression (literal (name ivar E) v)))))))
+            (reply (expression (literal (name ivar E) v)) #f)))))
     (component
      (name var)
      (ports (port i (name ivar) provides) (port o (name ivar) requires))
@@ -1498,11 +1500,12 @@ g(Cont_6')(s, b, c, b, b)
        (expression (== s (literal (name UReply Status) Ok)))
         (compound
           (reply
-            (context (dummy) (s))
-            (expression (literal (name IReply Status) Yes))))
+            (expression (literal (name IReply Status) Yes))
+            #f))
         (compound
           (reply
-           (expression (literal (name IReply Status) No)))))))))
+           (expression (literal (name IReply Status) No))
+           #f)))))))
 
 (pass-if "ast-transform-reply-variable"
          (csp-pretty-noisy-equal?
@@ -1516,8 +1519,8 @@ g(Cont_6')(s, b, c, b, b)
                (compound
                  (variable s (type (name UReply Status)) (action (trigger u what (arguments))))
                  (if (expression (== s (literal (name UReply Status) Ok)))
-                     (compound (reply (expression (literal (name IReply Status) Yes))))
-                     (compound (reply (expression (literal (name IReply Status) No))))))))
+                     (compound (reply (expression (literal (name IReply Status) Yes)) #f))
+                     (compound (reply (expression (literal (name IReply Status) No)) #f))))))
 
           ;; via:
           csp-reply-variable-ast-via))
@@ -1549,8 +1552,7 @@ Reply_(dummy)
   (signature (type void) (formals))
   #f
   (compound
-    (reply
-     (expression (literal (name IReply Status) Yes))))))
+    (reply (expression (literal (name IReply Status) Yes)) #f))))
 
 (pass-if "ast-transform-reply-function"
          (csp-pretty-noisy-equal?
@@ -1565,7 +1567,7 @@ Reply_(dummy)
               (signature (type void) (formals))
               #f
               (compound
-               (reply (expression (literal (name IReply Status) Yes))))))
+               (reply (expression (literal (name IReply Status) Yes)) #f))))
 
           ;; via:
           csp-reply-function-ast-via))
@@ -1589,9 +1591,7 @@ P'(dummy)
     (type void)
     (formals (formal s (type (name IReply Status)) #f)))
   #f
-  (compound
-    (reply
-      (expression (var s))))))
+  (compound (reply (expression (var s)) #f))))
 
 (pass-if "ast-transform-reply-function-formal"
          (csp-pretty-noisy-equal?
@@ -1605,7 +1605,7 @@ P'(dummy)
                 (type void)
                 (formals (formal s (type (name IReply Status)) #f)))
               #f
-              (compound (reply (expression (var s))))))
+              (compound (reply (expression (var s)) #f))))
 
           ;; via:
           csp-reply-function-formal-ast-via))

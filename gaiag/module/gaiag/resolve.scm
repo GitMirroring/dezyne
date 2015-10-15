@@ -498,12 +498,15 @@
                (let ((resolved ((resolve model locals) (car statements))))
                  (cons resolved (loop (cdr statements) locals))))))))
 
+    (($ <blocking> statement)
+       (make <blocking> :statement ((resolve model locals) statement)))
+
     (($ <guard> expression statement)
        (make <guard>
          :expression ((resolve model locals) expression)
          :statement ((resolve model locals) statement)))
 
-    (($ <on> triggers statement blocking?)
+    (($ <on> triggers statement)
      (let* ((triggers (resolve-on-triggers triggers))
             (arguments (append-map (compose .elements .arguments) (.elements triggers)))
             (locals (let loop ((arguments arguments) (locals locals))
@@ -516,8 +519,7 @@
                                  (acons name argument locals)))))))
        (make <on>
          :triggers triggers
-         :statement ((resolve model locals) statement)
-         :blocking? blocking?)))
+         :statement ((resolve model locals) statement))))
 
     (($ <interface> name types events behaviour)
      (make <interface>

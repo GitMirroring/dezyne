@@ -63,6 +63,9 @@
      (or (module-variable (current-module) 'model) (module-define! (current-module) 'model o))
      (model->dzn o))
 
+    (($ <blocking> statement)
+     ((animate-snippet 'blocking `((statement ,((->dzn model) statement))))))
+
     (($ <guard> expression statement)
      ((animate-snippet 'guard `((expression ,((->dzn model) expression))
                                 (statement ,((->dzn model) statement))))))

@@ -46,6 +46,7 @@ WFC = true
 #WFC = $(TOPDIR)/$(BUILD)/generate
 CXX=c++
 CXX11:=--std=c++11
+CXX1Y:=--std=c++1y
 CXXFLAGS+=$(CXX11) -DDEBUG -DTEST_EVENT
 
 #CXX:=c++03
@@ -874,3 +875,18 @@ c-namespace:
 	(cd out && ../gaiag -l c -m inner_space examples/inner_space.dzn)
 	gcc -o out/test out/*c
 	echo i.e | out/test
+
+out/block:
+	rm -rf out && mkdir out && cd out && ln -s ../examples . && ln -s ../runtime/$(CXX)/* .
+	(cd out && ../gaiag -l $(CXX) -m block ../examples/block.dzn)
+	g++ $(CXX1Y) -DBLOCKING=1 -o out/test out/*cc -lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
+	echo p.b,p.r | tr ',' '\n' | out/test
+
+out/alarm:
+	rm -rf out && mkdir out && cd out && ln -s ../examples . && ln -s ../runtime/$(CXX)/* .
+	(cd out && ../gaiag -l $(CXX) ../examples/IConsole.dzn)
+	(cd out && ../gaiag -l $(CXX) ../examples/ISensor.dzn)
+	(cd out && ../gaiag -l $(CXX) ../examples/ISiren.dzn)
+	(cd out && ../gaiag -l $(CXX) -m Alarm ../examples/Alarm.dzn)
+	g++ $(CXX1Y) -DBLOCKING=1 -o out/test out/*cc -lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
+	echo console.arm,console.disarm | tr ',' '\n' | out/test
