@@ -55,6 +55,7 @@
            declare-enum
            declare-io
            declare-integer
+           declare-out-formals
            declare-replies
            define-function
            define-on
@@ -257,10 +258,11 @@
   (define (member? identifier) (and (not (local? identifier))
                                     (om:variable model identifier)))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
+  (define (alias? identifier) (and=> (local? identifier) (lambda (x) (and (symbol? x) x))))
   (define (formal? identifier) (and=> (var? identifier) (is? <formal>)))
   (define (identifier-snippet identifier)
     (cond ((member? identifier)
-           (snippet 'member `((identifier ,identifier))))
+            (snippet 'member `((identifier ,identifier))))
           ((formal? identifier)
            (snippet 'formal-identifier
                     `((identifier ,identifier)
@@ -268,6 +270,13 @@
                       (argument #f))))
           ((local? identifier)
            (snippet 'local `((identifier ,identifier) (argument #f))))
+          ((is-a? identifier <name>)
+           (let* ((name (om:name identifier))
+                  (alias (or (alias? name) name))
+                  (formal (formal? alias))
+                  (type-name ((compose om:name (om:type model)) formal)))
+             (snippet 'formal-out-identifier `((type ,type-name)
+                                               (name ,alias)))))
           (else identifier)))
 
   (let ((port (statements.port))
@@ -329,9 +338,10 @@
       (($ <on> triggers (and ($ <if> e t #f) (get! statement)))
        (->code- model (make <on> :triggers triggers :statement (wrap-compound (statement))) blocking? locals indent))
       (($ <on> triggers statement)
-       (or (and-let* ((trigger ((find-trigger port event) src)))
+       (or (and-let* ((trigger ((find-trigger port event) src))
+                      (formals ((compose .elements .formals .signature) event)))
                      (let* ((aliases
-                             (let loop ((formals ((compose .elements .formals .signature) event))
+                             (let loop ((formals formals)
                                         (arguments (map (compose .name .value) ((compose .elements .arguments) trigger))))
                                (if (null? arguments)
                                    '()
@@ -357,10 +367,12 @@
                                                                  `((space ,space) (statement ,aliases) (continuation ,statement))))))
                                            statement))
                             (statement (if (not blocking?) statement
-                                           (snippet 'block
-                                                    `((space ,space)
-                                                      (statement ,statement)
-                                                      (port ,(.port trigger)))))))
+                                           `(,@(map (lambda (x)
+                                                      (snippet 'block-formal `((name ,(.name x)) (type-name ,((compose om:name (om:type model)) x))))) (filter om:out-or-inout? formals))
+                                             ,(snippet 'block
+                                                       `((space ,space)
+                                                         (statement ,statement)
+                                                         (port ,(.port trigger))))))))
                        statement))
            '$empty-statement$))
       (($ <call> function ('arguments))
@@ -862,6 +874,15 @@
                               (scope-name ,((compose cdr .name) x))
                               (name ,(om:name x)))))
        (om:reply-enums o)))
+
+(define ((declare-out-formals model) o)
+  (map (lambda (x)
+         (let ((type ((om:type model) (.type x))))
+           (snippet 'declare-out-formal
+                    `((type ,(.value type))
+                      (type-name ,(om:name type))
+                      (name ,(.name x))))))
+       (om:out-formals o)))
 
 (define (return-type model event)
   (let ((type ((compose .type .signature) event)))

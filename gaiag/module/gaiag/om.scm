@@ -74,6 +74,7 @@
            om:model-with-behaviour
            om:name
            om:named
+           om:out-formals
            om:out-or-inout?
            om:out?
            om:outer-scope?
@@ -370,6 +371,12 @@
      (let* ((events (filter om:typed? (om:events o)))
             (names (delete-duplicates (map (compose .name .type .signature) events))))
        (map (lambda (n) (om:enum o n)) names)))
+    (_ '())))
+
+(define (om:out-formals o)
+  (match o
+    (($ <interface>)
+     (filter om:out-or-inout? (append-map (compose .elements .formals .signature) (om:events o))))
     (_ '())))
 
 (define* (om:typed? o :optional (trigger #f))
