@@ -880,7 +880,7 @@ out/block:
 	rm -rf out && mkdir out && cd out && ln -s ../examples . && ln -s ../runtime/$(CXX)/* .
 	(cd out && ../gaiag -l $(CXX) -m block ../examples/block.dzn)
 	g++ $(CXX1Y) -DBLOCKING=1 -o out/test out/*cc -lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
-	echo p.b,p.r | tr ',' '\n' | out/test
+	echo p1.b,p2.r | tr ',' '\n' | out/test
 
 out/alarm:
 	rm -rf out && mkdir out && cd out && ln -s ../examples . && ln -s ../runtime/$(CXX)/* .
@@ -890,3 +890,13 @@ out/alarm:
 	(cd out && ../gaiag -l $(CXX) -m Alarm ../examples/Alarm.dzn)
 	g++ $(CXX1Y) -DBLOCKING=1 -o out/test out/*cc -lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
 	echo console.arm,console.disarm | tr ',' '\n' | out/test
+
+out/blockdata:
+	rm -rf out && mkdir out && cd out && ln -s ../examples . && ln -s ../runtime/$(CXX)/* .
+	cd out && ln -s ../examples/blockdata.cc main.cc
+	(cd out && ../gaiag -l $(CXX) ../examples/blockdata.dzn)
+	-g++ $(CXX1Y) -DBLOCKING=1 -o out/test out/*cc -lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
+	-echo p1.b,p2.r | tr ',' '\n' | out/test
+	-diff -uwB baseline/iblockdata.hh out/iblockdata.hh
+	-diff -uwB baseline/blockdata.hh out/blockdata.hh
+	-diff -uwB baseline/blockdata.cc out/blockdata.cc

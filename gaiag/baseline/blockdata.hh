@@ -1,4 +1,5 @@
 // Dezyne --- Dezyne command line tools
+//
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -20,25 +21,52 @@
 //
 // Code:
 
-interface iblock {
-  in void b();
-  in void r();
-  out void a();
-  behaviour {on b: a; on r: {}}
+#ifndef BLOCKDATA_HH
+#define BLOCKDATA_HH
+
+#include "iblockdata.hh"
+#include "iblockdata.hh"
+
+
+#include "runtime.hh"
+
+namespace dezyne {
+  struct locator;
+  struct runtime;
 }
 
-component block {
-  provides iblock p1;
-  provides iblock p2;
-  behaviour {
-      blocking on p1.b(): {
-        p1.a();
-      }
-      on p2.r(): {
-        p1.reply();
-      }
 
-      on p1.r (): {}
-      on p2.b (): {p2.a();}
-  }
-}
+struct blockdata
+{
+  dezyne::meta dzn_meta;
+  dezyne::runtime& dzn_rt;
+  dezyne::locator const& dzn_locator;
+#ifndef ENUM__Bool
+#define ENUM__Bool 1
+  struct Bool
+  {
+    enum type
+    {
+      f, t
+    };
+  };
+#endif // ENUM__Bool
+  Bool::type reply__Bool;
+  int* out_s_Integer;
+  iblockdata p1;
+  iblockdata p2;
+
+  blockdata(const dezyne::locator&);
+  void check_bindings() const;
+  void dump_tree() const;
+
+  private:
+  Bool::type p1_b(int& s);
+  void p1_success(int s);
+  void p1_fail(int status);
+  Bool::type p2_b(int& s);
+  void p2_success(int s);
+  void p2_fail(int status);
+};
+
+#endif // BLOCKDATA_HH
