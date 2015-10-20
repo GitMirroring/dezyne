@@ -225,8 +225,9 @@
 
 (define (dump-output file-name thunk)
   (let* ((dir (option-ref (parse-opts (command-line)) 'output-dir #f))
-         (file-name (if (not dir) file-name
-                          (cons dir file-name)))
+         (file-name (cond ((not dir) file-name)
+                          ((pair? file-name) (cons dir file-name))
+                          (else (cons dir (list file-name)))))
          (name (components->file-name file-name)))
     (if (string=? name "-") (thunk)
         (begin
