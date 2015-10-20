@@ -340,7 +340,8 @@
     (illegal #{\;}#) : (note-location `(illegal) @1))
 
    (assignment-statement
-    (Identifier = expression #{\;}#) : (note-location `(assign ,$1 ,$3) @1))
+    (Identifier = expression #{\;}#) : (note-location `(assign ,$1 ,$3) @1)
+    (Identifier #{.}# Identifier = expression #{\;}#) : (note-location `(assign (name ,$1 ,$3) ,$5) @1))
 
    (action
     (name-pair #{(}# #{)}#) : (rsp $1 `(action ,(make-trigger $1)))

@@ -209,6 +209,11 @@
     (($ <var> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
 
+    (($ <assign> ('name port name) expression)
+     (make <assign>
+       :identifier (.identifier o)
+       :expression ((resolve model locals) expression)))
+
     (($ <assign> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
 
