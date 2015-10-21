@@ -520,7 +520,7 @@
                           (loop (cdr arguments)
                                 (let* ((argument (car arguments))
                                        (name ((compose .name .value) argument))
-                                       (name (if (pair? name) (car name) name)))
+                                       (name (if (pair? name) (om:name name) name)))
                                  (acons name argument locals)))))))
        (make <on>
          :triggers triggers
