@@ -339,10 +339,12 @@
        (->code- model (make <on> :triggers triggers :statement (wrap-compound (statement))) blocking? locals indent))
       (($ <on> triggers statement)
        (or (and-let* ((trigger ((find-trigger port event) src))
-                      (formals ((compose .elements .formals .signature) event)))
+                      (formals ((compose .elements .formals .signature) event))
+                      (arguments ((compose .elements .arguments) trigger))
+                      (argument-names (map (compose (lambda (n) (match n (('name name) name) (_ n))) .name .value) arguments)))
                      (let* ((aliases
                              (let loop ((formals formals)
-                                        (arguments (map (compose .name .value) ((compose .elements .arguments) trigger))))
+                                        (arguments argument-names))
                                (if (null? arguments)
                                    '()
                                    (let* ((formal (car formals))
@@ -369,6 +371,7 @@
                             (statement (if (not blocking?) statement
                                            `(,@(map (lambda (x)
                                                       (snippet 'block-formal `((name ,(.name x)) (type-name ,((compose om:name (om:type model)) x))))) (filter om:out-or-inout? formals))
+                                             ,(out-bindings model port formals arguments)
                                              ,(snippet 'block
                                                        `((space ,space)
                                                          (statement ,statement)
@@ -520,6 +523,18 @@
       ((h t ...) (map (lambda (x) (->code model x blocking? locals indent)) src))
       ((? unspecified?) #f)
       (_ (throw 'match-error (format #f "~a:code:->code: no match: ~a\n" (current-source-location) src))))))
+
+(define (out-bindings model port formals arguments)
+  (let ((statements
+         (filter-map
+          (lambda (formal argument)
+            (and (om:out-or-inout? formal)
+                 (match argument (($ <expression> ('<- ('name alias) ('name global)))
+                                  (snippet 'out-binding `((alias ,alias) (formal ,(.name formal)) (global ,global) (port (.name port)))))
+                   (_ #f)))) formals arguments)))
+    (snippet 'out-bindings
+             `((port ,(.name port))
+               (statements ,statements)))))
 
 (define ((find-trigger port event) o)
   (match o

@@ -26,6 +26,9 @@ struct #.model
     (delete-duplicates (append-map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (delete-duplicates (append-map (compose (declare-out-formals model) code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
+    std::function<void ()> out_#name;
+#}) (filter om:provides? ((compose .elements .ports) model)))#
+    (map (init-port #{
 #((c++:scope-join model) interface)  #name ;
 #}) ((compose .elements .ports) model))
     #.model (const dezyne::locator&);
