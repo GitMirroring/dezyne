@@ -918,4 +918,4 @@ out/blocking_datapath_asd_convert:
 	(cd out && ../gaiag -l $(CXX) ../blocking_datapath_asd_convert/IOutParam.dzn)
 	(cd out && ../gaiag -l $(CXX) ../blocking_datapath_asd_convert/IMultiStepOutParam.dzn)
 	-g++ $(CXX1Y) -DBLOCKING=1 -o out/test out/*cc -lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
-	-echo p1.b,p2.r | tr ',' '\n' | out/test
+	-echo outParam.e_out,outParam.e_out_async,outParam.e_inout,outParam.e_inout_async,outParam.e_outdated | tr ',' '\n' | out/test
