@@ -589,7 +589,8 @@
     (('arguments arguments ...) (om:map resolve-on-triggers o))
     (($ <expression> (and ('name name) (get! value)))
      (rsp o (make <expression> :value (rsp (value) (make <var> :name name)))))
-    (($ <expression> ($ <var> name)) o)))
+    (($ <expression> ($ <var> name)) o)
+    (($ <expression> ('<- ('name arg) ('name global))) o)))
 
 (define ((range-check model) variable)
   (define (int-type? type) (om:integer model type))

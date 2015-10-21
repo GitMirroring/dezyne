@@ -131,7 +131,7 @@
     (($ <variable> name type ($ <action> trigger))
      ((->dzn model) (list 'variable name type ((->dzn model) (list 'assign-action trigger)))))
 
-    (($ <variable> name type (? unspecified?))
+    (($ <variable> name type ($ <expression> (? unspecified?)))
      (->string ((->dzn model) type) " " name ";\n"))
 
     (($ <variable> name type expression)
@@ -179,7 +179,7 @@
     (($ <var> identifier) ((->dzn model) identifier))
     (('! ($ <expression> expression)) (->string (list "!" (paren model expression))))
     (('! expression) (->string (list "!" (paren model expression))))
-    (((or 'or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)
+    (((or 'or 'and '<- '== '!= '< '<= '> '>= '+ '-) lhs rhs)
      (let* ((lhs ((->dzn model) lhs))
             (rhs ((->dzn model) rhs))
             (op (car o))

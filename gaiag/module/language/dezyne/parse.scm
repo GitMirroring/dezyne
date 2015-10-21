@@ -62,7 +62,7 @@
     (nonassoc: = <=> ..)
     (left: #{||}#)
     (left: &&)
-    (left: == != < > <= >=)
+    (left: <- == != < > <= >=)
     (left: !)
     (left: + -)
     (left: * /)
@@ -219,6 +219,7 @@
     (expr && expr) : `(and ,$1 ,$3)
     (expr #{||}# expr) : `(or ,$1 ,$3)
 
+    (expr <- expr) : `(<- ,$1 ,$3)
     (expr == expr) : `(== ,$1 ,$3)
     (expr != expr) : `(!= ,$1 ,$3)
     (expr < expr) : `(< ,$1 ,$3)

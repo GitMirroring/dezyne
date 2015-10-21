@@ -900,3 +900,13 @@ out/blockdata:
 	-diff -uwB baseline/iblockdata.hh out/iblockdata.hh
 	-diff -uwB baseline/blockdata.hh out/blockdata.hh
 	-diff -uwB baseline/blockdata.cc out/blockdata.cc
+
+out/blockdata2b:
+	rm -rf out && mkdir out && cd out && ln -s ../examples . && ln -s ../runtime/$(CXX)/* .
+	cd out && ln -s ../examples/blockdata2b.cc main.cc
+	(cd out && ../gaiag -l $(CXX) ../examples/blockdata2b.dzn)
+	-g++ $(CXX1Y) -DBLOCKING=1 -o out/test out/*cc -lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
+	-echo p1.b,p2.r | tr ',' '\n' | out/test
+	-diff -uwB baseline/iblockdata2b.hh out/iblockdata2b.hh
+	-diff -uwB baseline/blockdata2b.hh out/blockdata2b.hh
+	-diff -uwB baseline/blockdata2b.cc out/blockdata2b.cc
