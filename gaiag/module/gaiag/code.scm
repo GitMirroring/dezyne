@@ -55,7 +55,6 @@
            declare-enum
            declare-io
            declare-integer
-           declare-out-formals
            declare-replies
            define-function
            define-on
@@ -369,9 +368,7 @@
                                                                  `((space ,space) (statement ,aliases) (continuation ,statement))))))
                                            statement))
                             (statement (if (not blocking?) statement
-                                           `(,@(map (lambda (x)
-                                                      (snippet 'block-formal `((name ,(.name x)) (type-name ,((compose om:name (om:type model)) x))))) (filter om:out-or-inout? formals))
-                                             ,(out-bindings model port formals arguments)
+                                           `(,(out-bindings model port formals arguments)
                                              ,(snippet 'block
                                                        `((space ,space)
                                                          (statement ,statement)
@@ -889,15 +886,6 @@
                               (scope-name ,((compose cdr .name) x))
                               (name ,(om:name x)))))
        (om:reply-enums o)))
-
-(define ((declare-out-formals model) o)
-  (map (lambda (x)
-         (let ((type ((om:type model) (.type x))))
-           (snippet 'declare-out-formal
-                    `((type ,(.value type))
-                      (type-name ,(om:name type))
-                      (name ,(.name x))))))
-       (om:out-formals o)))
 
 (define (return-type model event)
   (let ((type ((compose .type .signature) event)))
