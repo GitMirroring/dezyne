@@ -910,3 +910,12 @@ out/blockdata2b:
 	-diff -uwB baseline/iblockdata2b.hh out/iblockdata2b.hh
 	-diff -uwB baseline/blockdata2b.hh out/blockdata2b.hh
 	-diff -uwB baseline/blockdata2b.cc out/blockdata2b.cc
+
+out/henk: out/blocking_datapath_asd_convert
+out/blocking_datapath_asd_convert:
+	rm -rf out && mkdir out && cd out && ln -s ../examples . && ln -s ../runtime/$(CXX)/* .
+	(cd out && ../gaiag -l $(CXX) -m OutParamComp ../blocking_datapath_asd_convert/OutParamComp.dzn)
+	(cd out && ../gaiag -l $(CXX) ../blocking_datapath_asd_convert/IOutParam.dzn)
+	(cd out && ../gaiag -l $(CXX) ../blocking_datapath_asd_convert/IMultiStepOutParam.dzn)
+	-g++ $(CXX1Y) -DBLOCKING=1 -o out/test out/*cc -lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
+	-echo p1.b,p2.r | tr ',' '\n' | out/test

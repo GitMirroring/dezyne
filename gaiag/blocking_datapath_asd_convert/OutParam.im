@@ -1,0 +1,247 @@
+<?xml version="1.0"?>
+<asd OmVersion="10.10.0" BackwardOmVersion="10.10.0" Serializer="2" >
+	<InterfaceModel ID="893057">
+		<CodeGenerationLanguage>cpp</CodeGenerationLanguage>
+		<CodeGenerationVersion>9.2.9</CodeGenerationVersion>
+		<DateCreated>20151021T162016</DateCreated>
+		<DateModified>20151021T154401</DateModified>
+		<Guid>F05429D0D87E49149B26D516CB1D4ABB</Guid>
+		<ModelSignature>BASE64_xF550KYCAmoQ+WpDeNWlVWNIhE38jg+QXB43HPeu6JP9LvZGE0paUuRaSr8KEY7HfRB7th1xBhyHMPciMTxQN2BllTqz2fu7aZaafO8Xe5eQIACfMuQ/p8BRlaofP8pOw3/nZqhXJ4ikFQEk5rN/sqI7ZofXGIprvumh/dV8Pc36dDxkmrNdTWRw3oFghgrz4B47lVJu2kAAID6UPiVycOSyrbp3LKu+9DbwXqDC1oZKXF4+nAenb65gm+odLspU9wipgKIJuKODKd/Oacb4ZR+f9XiA06r/qTkDET88ZSqUjJjDcFuS3IsmD+yOKr2mmmAq1nhq3/jp5MJv/Nu1VQ==</ModelSignature>
+		<Name>OutParam</Name>
+		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.3(52305)</ToolVersion>
+		<AbstractInterface>
+			<AbstractInterface ID="893058">
+				<Guid>C87A6402319E4BBABE71CE5B8DC9EACF</Guid>
+				<Events>
+					<CallEvent ID="893059">
+						<Guid>D849ADC0EF514853A0CF4F74E848898A</Guid>
+						<Name>StateInvariant</Name>
+					</CallEvent>
+				</Events>
+				<ReplyEvents>
+					<ReplyEvent ID="893060">
+						<Guid>EAE2E4DB6FAA4E7681E63D799063AD7D</Guid>
+						<Name>NoOp</Name>
+					</ReplyEvent>
+					<ReplyEvent ID="893061">
+						<Guid>8F0CD6C16E1B453883CBC5F7326E1867</Guid>
+						<Name>Illegal</Name>
+					</ReplyEvent>
+					<ReplyEvent ID="893062">
+						<Guid>273B1A6280254F46B2BCB5218E3401FD</Guid>
+						<Name>Disabled</Name>
+					</ReplyEvent>
+				</ReplyEvents>
+			</AbstractInterface>
+		</AbstractInterface>
+		<ImplementedService>
+			<ServiceDependency ID="893063">
+				<Declaration>
+					<ServiceDeclaration ID="893064">
+						<ApplicationInterfaces>
+							<ApplicationInterface ID="893071">
+								<Guid>5190707EE7884D77844172EB0E71348C</Guid>
+								<Name>IOutParam</Name>
+								<Events>
+									<CallEvent ID="893072">
+										<Comment>Happy&#32;flow</Comment>
+										<Guid>FC29533B6FED41BA99053D1C64B6D58A</Guid>
+										<Name>e_out</Name>
+										<Parameters>
+											<SimpleParameter ID="893117">
+												<Direction>pdOut</Direction>
+												<Name>number</Name>
+												<Type>int</Type>
+											</SimpleParameter>
+										</Parameters>
+									</CallEvent>
+									<CallEvent ID="893118">
+										<Comment>Happy&#32;flow</Comment>
+										<Guid>E855C63A38304D3EBE26509C7A95C90F</Guid>
+										<Name>e_out_async</Name>
+										<Parameters>
+											<SimpleParameter ID="893119">
+												<Direction>pdOut</Direction>
+												<Name>number</Name>
+												<Type>int</Type>
+											</SimpleParameter>
+										</Parameters>
+									</CallEvent>
+									<CallEvent ID="893074">
+										<Comment>Happy&#32;flow</Comment>
+										<Guid>77EFA1161F0F45FDA3075F83FF7904CC</Guid>
+										<Name>e_inout</Name>
+										<Parameters>
+											<SimpleParameter ID="893075">
+												<Direction>pdInOut</Direction>
+												<Name>number</Name>
+												<Type>int:void</Type>
+											</SimpleParameter>
+										</Parameters>
+									</CallEvent>
+									<CallEvent ID="893120">
+										<Comment>Happy&#32;flow</Comment>
+										<Guid>31D229E44ADF47CFBF69F6F9CAF04655</Guid>
+										<Name>e_inout_async</Name>
+										<Parameters>
+											<SimpleParameter ID="893121">
+												<Direction>pdInOut</Direction>
+												<Name>number</Name>
+												<Type>int</Type>
+											</SimpleParameter>
+										</Parameters>
+									</CallEvent>
+									<CallEvent ID="893087">
+										<Comment>Exceptional&#32;flow:&#32;Output&#32;outdated&#32;number.&#32;(VoidReply&#32;before&#32;getting&#32;new&#32;data.)</Comment>
+										<Guid>D4B0528678F04889998961CB035A4025</Guid>
+										<Name>e_outdated</Name>
+										<Parameters>
+											<SimpleParameter ID="893088">
+												<Direction>pdOut</Direction>
+												<Name>number</Name>
+												<Type>int</Type>
+											</SimpleParameter>
+										</Parameters>
+									</CallEvent>
+								</Events>
+								<ReplyEvents>
+									<ReplyEvent ID="893076">
+										<Comment>This&#32;is&#32;the&#32;reply&#32;event&#32;for&#32;void&#32;calls</Comment>
+										<Guid>C98E0770A3CB4CDF9820DC78A78B089B</Guid>
+										<Name>VoidReply</Name>
+									</ReplyEvent>
+								</ReplyEvents>
+							</ApplicationInterface>
+						</ApplicationInterfaces>
+					</ServiceDeclaration>
+				</Declaration>
+			</ServiceDependency>
+		</ImplementedService>
+		<MainMachine>
+			<MainMachine ID="893065">
+				<Guid>A6B7A104462E4DA2B92EB0E2A9C0C6DB</Guid>
+				<Name>OutParam</Name>
+				<States>
+					<State ID="893066">
+						<Guid>EAD9DD6D49FD41E7AFB2F54FB18A0CCA</Guid>
+						<Name>Available</Name>
+						<Rules>
+							<Rule ID="893067">
+								<Event>893059</Event>
+								<RuleCases>
+									<RuleCase ID="893068">
+										<Row>2</Row>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="893077">
+								<Event>893072</Event>
+								<RuleCases>
+									<RuleCase ID="893078">
+										<Row>3</Row>
+										<NextState>893066</NextState>
+										<Actions>
+											<Action ID="893079">
+												<Event>893076</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="893122">
+								<Event>893118</Event>
+								<RuleCases>
+									<RuleCase ID="893123">
+										<Row>4</Row>
+										<NextState>893066</NextState>
+										<Actions>
+											<Action ID="893124">
+												<Event>893076</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="893080">
+								<Event>893074</Event>
+								<RuleCases>
+									<RuleCase ID="893081">
+										<Row>5</Row>
+										<NextState>893066</NextState>
+										<Actions>
+											<Action ID="893082">
+												<Event>893076</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="893125">
+								<Event>893120</Event>
+								<RuleCases>
+									<RuleCase ID="893126">
+										<Row>6</Row>
+										<NextState>893066</NextState>
+										<Actions>
+											<Action ID="893127">
+												<Event>893076</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="893089">
+								<Event>893087</Event>
+								<RuleCases>
+									<RuleCase ID="893090">
+										<Row>7</Row>
+										<NextState>893066</NextState>
+										<Actions>
+											<Action ID="893091">
+												<Event>893076</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+						</Rules>
+					</State>
+				</States>
+			</MainMachine>
+		</MainMachine>
+		<ModelBuilderSettings>
+			<ModelBuilderSettings ID="893069">
+			</ModelBuilderSettings>
+		</ModelBuilderSettings>
+		<VerificationStatus>
+			<VerificationStatus ID="893070">
+				<CompilerVersion>9.2.9</CompilerVersion>
+				<Language>cpp</Language>
+				<Checks>
+					<Check ID="893083">
+						<CheckType>mvrSafety</CheckType>
+						<Name>Modelling&#32;Error&#32;check</Name>
+						<Result>crPassed</Result>
+					</Check>
+					<Check ID="893084">
+						<CheckNo>1</CheckNo>
+						<CheckType>mvrLivelock</CheckType>
+						<Name>Livelock&#32;check</Name>
+						<Result>crPassed</Result>
+					</Check>
+					<Check ID="893085">
+						<CheckNo>2</CheckNo>
+						<CheckType>mvrDeadlock</CheckType>
+						<Name>Deadlock&#32;check</Name>
+						<Result>crPassed</Result>
+					</Check>
+				</Checks>
+				<Fingerprints>
+					<Fingerprint ID="893086">
+						<Fingerprint>D5ACC75A</Fingerprint>
+					</Fingerprint>
+				</Fingerprints>
+			</VerificationStatus>
+		</VerificationStatus>
+	</InterfaceModel>
+</asd>
