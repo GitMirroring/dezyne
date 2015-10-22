@@ -34,7 +34,8 @@
   :use-module (gaiag gaiag)
   :use-module (gaiag indent)
   :use-module (gaiag misc)
-  :use-module (gaiag norm-event)
+;;  :use-module (gaiag norm-event)
+  :use-module (gaiag norm-state)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
 ;;  :use-module (gaiag wfc)
@@ -100,11 +101,13 @@
   (om:import name code:om))
 
 (define (code:om ast)
-  ((compose code-norm-event
-            ;;ast:wfc
-            ast:resolve
-            ast->om
-            ) ast))
+  ((compose
+    ;;code-norm-event
+    csp-norm-state
+    ;;ast:wfc
+    ast:resolve
+    ast->om
+    ) ast))
 
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))
@@ -562,17 +565,20 @@
 (define (om:top-statements o)
   ((compose .elements .statement .behaviour) o))
 
+(define (norm-event-om:first-guard? model guard)
+  (not
+   (and-let* ((parent (om:parent model guard))
+              (guards (null-is-#f (filter (is? <guard>) parent))))
+             (not (eq? guard (car guards))))))
+
 (define (om:first-guard? model guard)
   (not
    (and-let* ((parent (om:parent model guard))
-              ;; (parent (cond ((is-a? parent <guard>) (.statement parent))
-              ;;               ((is-a? parent <on>) (om:parent model parent))
-              ;;               (else parent)))
-              (guards
-               ;;((om:statements-of-type 'guard) parent)
-               (filter (is? <guard>) parent)
-               )
-              ;;(guards (filter (find-trigger (statements.port) (statements.event)) guards))
+              (parent (cond ((is-a? parent <guard>) (.statement parent))
+                            ((is-a? parent <on>) (om:parent model parent))
+                            (else parent)))
+              (guards (filter (is? <guard>) parent))
+              (guards (filter (find-trigger (statements.port) (statements.event)) guards))
               (guards (null-is-#f guards)))
              (not (eq? guard (car guards))))))
 
@@ -801,11 +807,21 @@
                (((is-a? model <component>))
                 ((.behaviour model))
                 (component model)
-                (ons ((compose .elements .statement .behaviour) component))
-                (ons (filter (is-trigger? port event) ons)))
+                (behaviour (.behaviour component))
+                (statement (.statement behaviour))
+;;                (norm-event-ons ((compose .elements .statement .behaviour) component))
+;;                (norm-event-ons (filter (is-trigger? port event) ons))
+                (guards (if (is-a? statement <guard>) (list statement)
+                            (filter (is? <guard>) statement)))
+                (ons ((om:statements-of-type 'on) statement))
+                (ons (filter (find-trigger port event) ons))
+                (guards (filter (find-trigger port event) guards)))
                (parameterize ((statements.port port)
                               (statements.event event))
-                 (map (lambda (on) (code:->code model on blocking? locals 2 #f)) ons)))
+                 ;;(map (lambda (on) (code:->code model on blocking? locals 2 #f)) norm-event-ons)
+                 (if (null? ons)
+                     (code:->code model (make <compound> :elements guards) blocking? locals 2 #f)
+                     (code:->code model ons blocking? locals 2 #f))))
               "")))
     (animate string `((port ,(.name port))
                        (event ,(.name event))
