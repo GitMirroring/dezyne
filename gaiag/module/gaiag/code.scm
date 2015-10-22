@@ -529,7 +529,7 @@
          (filter-map
           (lambda (formal argument)
             (and (om:out-or-inout? formal)
-                 (match argument (($ <expression> ('<- ('name alias) ('name global)))
+                 (match argument (($ <expression> ('<- ('name alias) ($ <var> global)))
                                   (snippet 'out-binding `((alias ,alias) (formal ,(.name formal)) (global ,global) (port (.name port)))))
                    (_ #f)))) formals arguments)))
     (snippet 'out-bindings

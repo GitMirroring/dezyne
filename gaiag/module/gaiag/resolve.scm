@@ -593,7 +593,9 @@
     (($ <expression> (and ('name name) (get! value)))
      (rsp o (make <expression> :value (rsp (value) (make <var> :name name)))))
     (($ <expression> ($ <var> name)) o)
-    (($ <expression> ('<- ('name arg) ('name global))) o)))
+    (($ <expression> ('<- ('name arg) ('name global)))
+     (make <expression> :value `(<- (name ,arg) ,(make <var> :name global))))
+    (($ <expression> ('<- ('name arg) ($ <var> global))) o)))
 
 (define ((range-check model) variable)
   (define (int-type? type) (om:integer model type))
