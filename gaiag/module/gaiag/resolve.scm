@@ -204,6 +204,7 @@
                  enum))
       (_ #f)))
 
+  ;;(stderr "resolve: ~a\n" o)
   (match o
     ('root o)
     (($ <var> (and (? (negate var?)) (get! identifier)))
@@ -424,7 +425,8 @@
      ((resolve model locals) (cons 'name rest)))
 
     (('name name ...) (=> failure)
-     (or (and-let* ((enum (enum? o)))
+     (or (and-let* (((pair? name))
+                    (enum (enum? o)))
                    (.name enum))
          (failure)))
 
@@ -449,7 +451,8 @@
      (resolve-error o field "undefined enum field: ~a"))
 
     (('name scope ... field) (=> failure)
-     (or (and-let* ((enum (enum? (make <type> :name (make <name> :elements scope)))))
+     (or (and-let* (((pair? scope))
+                    (enum (enum? (make <type> :name (make <name> :elements scope)))))
                    (if (member field ((compose .elements .fields) enum))
                        (make <literal> :name (.name enum) :field field)
                        (and
@@ -521,7 +524,7 @@
                                 (let* ((argument (car arguments))
                                        (name ((compose .name .value) argument))
                                        (name (if (pair? name) (om:name name) name)))
-                                 (acons name argument locals)))))))
+                                  (acons name argument locals)))))))
        (make <on>
          :triggers triggers
          :statement ((resolve model locals) statement))))
