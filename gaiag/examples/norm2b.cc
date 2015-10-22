@@ -61,12 +61,14 @@ int main()
     std::clog << "after pump p1 data=" << data << std::endl;
 
     pump ([&] () {sut.p2.in.success (3);});
-    std::clog << "after pump.and_wait p2 data=" << data_promise.get_future().get() << std::endl;
+    int data_idle = data_promise.get_future().get();
+    std::clog << "result idle data=" << data_idle << std::endl;
+    assert(data_idle == 3);
 
     pump ([&] () {sut.p2.in.success (6);});
     pump.and_wait ([&] () {sut.p1.in.b (data);});
-    std::clog << "after pump.and_wait data=" << data << std::endl;
-
+    std::clog << "result running data=" << data << std::endl;
+    assert(data == 6);
   }
   std::clog << "after ~pump data=" << data << std::endl;
 }
