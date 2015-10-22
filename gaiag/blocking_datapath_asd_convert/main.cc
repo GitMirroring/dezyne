@@ -30,13 +30,11 @@
 
 int main()
 {
-  dezyne::pump pump;
   int i = 1;
   {
     dezyne::locator l;
     dezyne::runtime rt;
     l.set(rt);
-    l.set(pump);
     dezyne::illegal_handler ih;
     ih.illegal = [] {std::clog << "illegal" << std::endl; exit(0);};
     l.set(ih);
@@ -44,6 +42,8 @@ int main()
     OutParamComp sut(l);
     sut.dzn_meta.name = "sut";
 
+    dezyne::pump pump;
+    l.set(pump);
 
     sut.datasource.in.Init = [&] () {std::clog << "datasource.in.Init" << std::endl; return IMultiStepOutParam::IMultiStepOutParam_Values::Ok;};
     sut.datasource.in.Term = [&] () {std::clog << "datasource.in.Term" << std::endl;};
@@ -60,16 +60,25 @@ int main()
     sut.check_bindings();
     sut.dump_tree();
     char s[100];
-    pump ([&] {sut.outParam.in.e_out(i);});
-    std::clog << "i=" << i << std::endl;
+
+    std::promise<int> data_promise;
+    pump ([&] {
+        std::clog << "running e_out" << std::endl;
+        sut.outParam.in.e_out(i);
+        std::clog << "done e_out" << std::endl;
+        data_promise.set_value (i);
+      });
+    std::clog << "waiting for promise..." << std::endl;
+    int e_out_result = data_promise.get_future ().get();
+    std::clog << "i=" << e_out_result << std::endl;
 
     std::cin.getline (s, sizeof(s));
 
+#if 0
     pump ([&] {sut.outParam.in.e_out_async(i);});
     pump.and_wait ([&] {sut.datasource.out.ReceiveData(i);});
     std::clog << "i=" << i << std::endl;
 
-#if 0
     pump ([&] {sut.outParam.in.e_inout(i);});
     pump.and_wait ([&] {sut.datasource.out.ReceiveData(i);});
     std::clog << "i=" << i << std::endl;
@@ -82,6 +91,7 @@ int main()
     pump.and_wait ([&] {sut.datasource.out.ReceiveData(i);});
     std::clog << "i=" << i << std::endl;
 #endif
+
   }
   std::clog << "i=" << i << std::endl;
 }
