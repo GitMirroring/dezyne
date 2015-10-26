@@ -26,8 +26,8 @@
 -- interface.csp.scm
 
 channel #.scope_model : {#(comma-join (append (interface-events model om:in?) (list "the_end'") ))}
-channel #.scope_model _': {#(comma-join (return-values model))}
-channel #.scope_model _in',#.scope_model _out': {#(comma-join (map (lambda (x) (list .scope_model "_'." x)) (return-values model)))}
+channel #.scope_model _': {#(comma-join (append (return-values model) (list "blocked")))}
+channel #.scope_model _in',#.scope_model _out': {#(comma-join (map (lambda (x) (list .scope_model "_'." x)) (append (return-values model) (list "blocked"))))}
 channel #.scope_model _'': {#(comma-join (let ((out-events (interface-events model om:out?))) (if (null? out-events) (list 'extensions_over_empty_channels_is_undefined) out-events)))}
 
 channel #.scope_model _''': {inevitable,optional,modeling}

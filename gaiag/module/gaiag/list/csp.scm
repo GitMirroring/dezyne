@@ -31,9 +31,11 @@
            <skip>
            <voidreply>
            <the-end>           
-
+           <the-end-blocking>           
+           
            make-<skip>
            make-<the-end>           
+           make-<the-end-blocking>           
            make-<voidreply>
            ))
 
@@ -41,6 +43,7 @@
   '(
     skip
     the-end           
+    the-end-blocking           
     voidreply
  ))
 
@@ -53,6 +56,9 @@
 
 (define (make-<the-end> . args)
   '(the-end))
+
+(define (make-<the-end-blocking> . args)
+  '(the-end-blocking))
 
 (define (make-<voidreply> . args)
   '(voidreply))

@@ -692,6 +692,10 @@
             (valued-triggers? (lambda (x) (om:typed? model ((compose car .elements) triggers)))))
        (let ((result (ast-transform-return ast statement)))
          (match result
+           (($ <blocking> statement)
+            (make <on>
+              :triggers triggers
+              :statement result))
            (('compound)
             (make <on>
               :triggers triggers
@@ -729,7 +733,7 @@
                   (provided-on?
                    (or (and (is-a? model <interface>) (not inevitable-optional?))
                        (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
-                  (the-end (make <the-end>))
+                  (the-end (if (is-a? statement <blocking>) (make <the-end-blocking>) (make <the-end>)))
                   (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                   (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
                   (tail (csp-transform-model model (statement) inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
@@ -775,7 +779,7 @@
                   (provided-on?
                    (or (and (is-a? model <interface>) (not inevitable-optional?))
                        (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
-                  (the-end (make <the-end>))
+                  (the-end (if (is-a? statement <blocking>) (make <the-end-blocking>) (make <the-end>)))
                   (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                   (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
                   (tail (csp-transform-model model statement inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
@@ -851,6 +855,12 @@
                (list else ")\n")
               )))
 
+          (($ <blocking> stat)
+           (let* ((stat (csp-transform-model model stat inevitable-optional? channel provided-on? locals (1+ indent) tail function)))
+             (list
+               (list stat "\n")
+              )))
+          
           ;; simple statements
           (($ <call> identifier arguments last?)
            (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
@@ -923,12 +933,17 @@
               (list space "let " name " = " expression " within\n")
               (check-range (list name) tail model locals indent))))
 
-          (($ <reply> expression)
-           (let* ((expression (csp-expression->string model expression locals)))
-             (list
-              (list space channel "_'!" expression " -> \n")
-              tail)))
-
+          (($ <reply> expression port)
+           (let* ((expression (csp-expression->string model expression locals))
+                  (port (if port port channel)))
+             (if expression
+                 (list
+                  (list space port "_'!" expression " -> \n")
+                  tail)
+                 (list
+                  (list space port "_'.return -> \n")
+                  tail))))
+                 
           (($ <action> trigger)
            (let* ((event-name (.event trigger))
                   (suffix (if (om:out? (om:event model trigger)) "_''" ""))
@@ -983,6 +998,12 @@
                   (list space model-name "_(" (comma-join (om:member-names model)) ")\n"))
                  )))
 
+          (($ <the-end-blocking>)
+            (list
+             (list space channel "_'.blocked ->\n")
+             (list space "transition_end ->\n")
+             (list space model-name "_(" (comma-join (om:member-names model)) ")\n")))
+          
           (#f (list space "SKIP\n"))
           (#t (list space "SKIP\n")) ;; FIXME: who produces #t?
 

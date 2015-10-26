@@ -43,7 +43,7 @@ datatype event_enumeration_alphabet = #
      (interface-events model identity)
      (enum-values model)
      (return-values model)
-     (list 'the_end' 'inevitable 'optional 'modeling))
+     (list 'blocked 'the_end' 'inevitable 'optional 'modeling))
     symbol<)))
 
 -- end of combinators

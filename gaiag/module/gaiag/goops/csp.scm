@@ -30,10 +30,13 @@
            <skip>
            <voidreply>
            <the-end>           
+           <the-end-blocking>           
            ))
 
 (define-class <skip> (<ast>))
 
 (define-class <the-end> (<ast>))
+
+(define-class <the-end-blocking> (<ast>))
 
 (define-class <voidreply> (<ast>))
