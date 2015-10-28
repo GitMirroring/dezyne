@@ -173,7 +173,7 @@ interface ISiren
   }
 }
 
-component Alarm
+component AlarmBlock
 {
     provides IConsole console;
     requires ISensor sensor;
