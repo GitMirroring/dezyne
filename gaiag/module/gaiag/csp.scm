@@ -576,8 +576,9 @@
             (events (map (lambda (x) (om:event model x)) t))
             (formals (apply append (map (compose .elements .formals .signature) events)))
             (arguments (apply append (map (compose .elements .arguments) t)))
+            (binding-name (lambda (name) (if (pair? name) (om:name name) name)))
             (arguments (if (pair? arguments)
-                           (map (compose .name .value) arguments)
+                           (map (compose binding-name .name .value) arguments)
                            (map .name formals)))
             (locals (let loop ((formals formals)
                                (arguments arguments)
@@ -860,7 +861,7 @@
              (list
                (list stat "\n")
               )))
-          
+
           ;; simple statements
           (($ <call> identifier arguments last?)
            (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
@@ -943,7 +944,7 @@
                  (list
                   (list space port "_'.return -> \n")
                   tail))))
-                 
+
           (($ <action> trigger)
            (let* ((event-name (.event trigger))
                   (suffix (if (om:out? (om:event model trigger)) "_''" ""))
@@ -1003,7 +1004,7 @@
              (list space channel "_'.blocked ->\n")
              (list space "transition_end ->\n")
              (list space model-name "_(" (comma-join (om:member-names model)) ")\n")))
-          
+
           (#f (list space "SKIP\n"))
           (#t (list space "SKIP\n")) ;; FIXME: who produces #t?
 
