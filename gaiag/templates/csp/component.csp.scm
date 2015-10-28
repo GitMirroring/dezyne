@@ -46,14 +46,19 @@ CO_#.scope_model _plain(IIG,IG) = let
 
 within #.scope_model _(#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values model))))
 
-CO_#.scope_model _(IIG,IG) = 
+CO_#.scope_model _(IIG,IG) =
 
-let APIBlock = 
-#((->list-join "\n      []\n      ") (map (lambda (port) (list (.name port) "?x -> " (.name port) "_'?x: diff(extensions(" (.name port) "_'), {blocked}) -> APIBlock")) (om:provided 
-model)))
+let APIBlock =
+#((->list-join "[]\n")
+  (map (lambda (port)
+         (list
+          (list port "?x -> " port "_'?x: diff(extensions(" port "_'), {blocked}) -> APIBlock" "\n")
+          (list "[]\n")
+          (list port "_'?x: diff(extensions(" port "_'), {blocked}) -> APIBlock" "\n")))
+       (map .name(om:provided model))))
 
-within CO_#.scope_model _plain(IIG,IG) [|diff({|#(comma-join (map (lambda (port) (list (.name port) "," (.name port) "_'" "|}")) (om:provided model))) ,{#
-(comma-join (map (lambda (port) (list (.name port) "_'.blocked")) (om:provided model))) })|] APIBlock 
+within CO_#.scope_model _plain(IIG,IG) [|diff({|#(comma-join (map (lambda (port) (list (.name port) "," (.name port) "_'")) (om:provided model))) |},{#
+(comma-join (map (lambda (port) (list (.name port) "_'.blocked")) (om:provided model))) })|] APIBlock
 
 channel IN',OUT' : {|#(comma-join (append (map (lambda (port) (list (.name port) "_''"))
                                   (filter (lambda (port) (not (null? (filter om:out? (om:events port))))) (om:required model)))
@@ -129,7 +134,9 @@ Busy(c',r',rmod',pout',end') =
 []
 (r' == <> & reorder_in?x' -> Busy(c',<x'>,rmod',pout',end')) -- reply to unblock port
 []
-(r' != <> & reorder_in?x' -> illegal -> STOP) -- another reply is not allowed
+(r' != <> & reorder_in?x': diff(extensions(reorder_in),provided_blocked') -> illegal -> STOP) -- another reply is not allowed
+[]
+(r' != <> & reorder_in?x': provided_blocked' -> Busy(c',r',rmod',pout',end')) -- ignore blocked if reply already given
 []
 queue_full -> STOP
 

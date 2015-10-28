@@ -733,7 +733,7 @@
                   (provided-on?
                    (or (and (is-a? model <interface>) (not inevitable-optional?))
                        (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
-                  (the-end (if (is-a? statement <blocking>) (make <the-end-blocking>) (make <the-end>)))
+                  (the-end (if (and (is-a? statement <blocking>) provided-on?) (make <the-end-blocking>) (make <the-end>)))
                   (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                   (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
                   (tail (csp-transform-model model (statement) inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
@@ -779,7 +779,7 @@
                   (provided-on?
                    (or (and (is-a? model <interface>) (not inevitable-optional?))
                        (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
-                  (the-end (if (is-a? statement <blocking>) (make <the-end-blocking>) (make <the-end>)))
+                  (the-end (if (and (is-a? statement <blocking>) provided-on?) (make <the-end-blocking>) (make <the-end>)))
                   (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                   (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
                   (tail (csp-transform-model model statement inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
