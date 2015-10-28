@@ -390,16 +390,19 @@
 
 
 (define (om:declarative? o)
-  (or (is-a? o <blocking>)
-      (is-a? o <guard>)
-      (is-a? o <on>)
-      (and (is-a? o <compound>)
-           (>0 (length (.elements o)))
-           (om:declarative? (car (.elements o))))
-      (and (pair? o)
-           (om:declarative? (car o)))))
+  (and (is-a? o <statement>)
+       (or (is-a? o <blocking>)
+           (is-a? o <guard>)
+           (is-a? o <on>)
+           (and (is-a? o <compound>)
+                (>0 (length (.elements o)))
+                (om:declarative? (car (.elements o))))
+           (and (pair? o)
+                (om:declarative? (car o))))))
 
-(define om:imperative? (negate om:declarative?))
+(define (om:imperative? o)
+  (and (is-a? o <statement>)
+       (not (om:declarative? o))))
 
 ;; JUNK ME
 (define (om:models-with-behaviour o)
