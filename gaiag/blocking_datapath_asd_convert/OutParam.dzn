@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -27,22 +28,39 @@
 // Language            : asd
 // 
 // Model name          : OutParam
-// Model file          : OutParam.im
-// Model last updated  : 2015-Oct-21 15:44:01
-// Model fingerprint   : B508589B
+// Model file          : OutParam.dm
+// Model last updated  : 2015-Oct-30 14:50:57
+// Model fingerprint   : A61544AD
 // 
 // Version             : 1.0
 // Project             : 
 // Author              : 
+// Component type      : Multiple
 // Execution model     : Multi-threaded
 // Broadcasting        : No
 // 
 // /////////////////////////////////////////////////////////////////////////////
+// 
+// Basis for testing parameter passing.
+// 
+// /////////////////////////////////////////////////////////////////////////////
+
 
 
 import IOutParam.dzn;
+import OutParamComp.dzn;
+import MultiStepOutParam.dzn;
 
 component OutParam
 {
   provides IOutParam outParam;
+
+  system
+  {
+    OutParamComp outParamComp;
+    MultiStepOutParam datasource;
+
+    outParam <=> outParamComp.outParam;
+    outParamComp.datasource <=> datasource.multiStepOutParam;
+  }
 }

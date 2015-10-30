@@ -4,11 +4,11 @@
 		<CodeGenerationLanguage>cpp</CodeGenerationLanguage>
 		<CodeGenerationVersion>9.2.9</CodeGenerationVersion>
 		<DateCreated>20151021T162016</DateCreated>
-		<DateModified>20151021T154401</DateModified>
+		<DateModified>20151029T151349</DateModified>
 		<Guid>F05429D0D87E49149B26D516CB1D4ABB</Guid>
-		<ModelSignature>BASE64_xF550KYCAmoQ+WpDeNWlVWNIhE38jg+QXB43HPeu6JP9LvZGE0paUuRaSr8KEY7HfRB7th1xBhyHMPciMTxQN2BllTqz2fu7aZaafO8Xe5eQIACfMuQ/p8BRlaofP8pOw3/nZqhXJ4ikFQEk5rN/sqI7ZofXGIprvumh/dV8Pc36dDxkmrNdTWRw3oFghgrz4B47lVJu2kAAID6UPiVycOSyrbp3LKu+9DbwXqDC1oZKXF4+nAenb65gm+odLspU9wipgKIJuKODKd/Oacb4ZR+f9XiA06r/qTkDET88ZSqUjJjDcFuS3IsmD+yOKr2mmmAq1nhq3/jp5MJv/Nu1VQ==</ModelSignature>
+		<ModelSignature>BASE64_bYGzuCcBKpKUIhq2JO0pCSnHcEeKGI1KscpZM7uCOTIW2tFZ9VWsorENPyMc07nI+ToH/pnk53QLgWsdLg0oww5Q5sHj1w7JbsnwgJskZEJqT2J88aiHqiHQH/SIbage03xDEZWu/t1uoVKElTUFUO5jxsw5ayKJAVOVJAwC+RyenVBr+s5S9w4v6dgfHIsPmMqLhD99+bcbcRTps0i5/JvY6hfjYGDKsZyFkNyufcAJ2ymPMz5kfQSeJMlj4mzKDd7nCXGBa0VN9XnRLB8MDZ+rI7VvunGTrRnU+dzj8vEvhBcHkMJMNHgUe7ohs5sCVrZXbCNDSQ849QJv+A96Gg==</ModelSignature>
 		<Name>OutParam</Name>
-		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.3(52305)</ToolVersion>
+		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.7(52380)</ToolVersion>
 		<AbstractInterface>
 			<AbstractInterface ID="893058">
 				<Guid>C87A6402319E4BBABE71CE5B8DC9EACF</Guid>
@@ -72,10 +72,10 @@
 										<Guid>77EFA1161F0F45FDA3075F83FF7904CC</Guid>
 										<Name>e_inout</Name>
 										<Parameters>
-											<SimpleParameter ID="893075">
+											<SimpleParameter ID="893128">
 												<Direction>pdInOut</Direction>
 												<Name>number</Name>
-												<Type>int:void</Type>
+												<Type>int</Type>
 											</SimpleParameter>
 										</Parameters>
 									</CallEvent>

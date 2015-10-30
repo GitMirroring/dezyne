@@ -4,12 +4,12 @@
 		<CodeGenerationLanguage>cpp</CodeGenerationLanguage>
 		<CodeGenerationVersion>9.2.9</CodeGenerationVersion>
 		<DateCreated>20151021T162910</DateCreated>
-		<DateModified>20151021T154721</DateModified>
+		<DateModified>20151030T145057</DateModified>
 		<Description>Basis&#32;for&#32;testing&#32;parameter&#32;passing.</Description>
 		<Guid>ADA478BDA88B485AB5FA8EE48A1E37D0</Guid>
-		<ModelSignature>BASE64_s79a7pdepDrJbogJnp+cQbBcKNAnJcCZS3tNYEHBBdqwFeGB+wZZ+NE3mZWuN2Z+OaL7lCN6AhGOr/zZmJPwfytbKj/JhdEBJ1BT9lPhoxMAVSS6tGtNYa5qbLr3Nb24WJKTN78DxdT6Q8sMSN1lhJNKvk1+vsm/Oc2bihSyZwF1lhjll2k+ouONl7QtiVuvmHNZyXmmbx7Mz1RuZcSIMdb/o3hDXwxnj+nJqB0uLJCETDYtocu8XQ4CXOB8/x0QwxT3hFKphczw1CT+ttnRw6Q778lIOOeZfolNrrkv7D14cjN11sc6i/mm2+SVYLEDyufqHq27S/eqNY3w/mUjfw==</ModelSignature>
+		<ModelSignature>BASE64_j5aU/ZvtmyM/FejNxKjwClsqcTqLl0p5kDvFTaVnk0is5nQpcmCN/7GV11lpq8zYSWn8/RctIMZGmpq5GN9hB7WLRtdBUQmT3PdU0ICs6yoxfj581hvYLulEKzBuQjUlrcAhp4UdVXRDd7AyoYV9FP/7gQtoGuXqQKOkedWrwm8D+NeEGPAQBDybjKgqL6F0yVC0Sli/lCCUE2bVs0chnQ4XWN4HzZa6PUm7pbuu5pfDVsyl3zlpHCqr2Hsl4J2DG3Llh07Mx8+9IMwty7tPFxcz4iOfWKFMDK8yjaN524eOiJESlH0OmRHhbgsD/bgeP7vFKlXgtSUXFOTmaEnzgQ==</ModelSignature>
 		<Name>OutParam</Name>
-		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.3(52305)</ToolVersion>
+		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.7(52380)</ToolVersion>
 		<AbstractInterface>
 			<AbstractInterface ID="893072">
 				<Guid>C87A6402319E4BBABE71CE5B8DC9EACF</Guid>
@@ -335,8 +335,8 @@
 											</Action>
 										</Actions>
 										<Arguments>
-											<SimpleArgument ID="893199">
-												<Value>number</Value>
+											<SimpleArgument ID="893348">
+												<Value>&gt;&lt;nr</Value>
 											</SimpleArgument>
 										</Arguments>
 									</RuleCase>
