@@ -313,7 +313,8 @@
      (if (not blocking?) o
          (make <blocking> :statement o)))
     ((? (is? <ast>)) (om:map (passdown-blocking blocking?) o))
-    (('skip) o)
+    (('skip) (if (not blocking?) o
+                 (make <blocking> :statement o)))
     ((h t ...) (map (passdown-blocking blocking?) o))
     (_ o)))
 
