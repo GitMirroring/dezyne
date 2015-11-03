@@ -1,0 +1,9 @@
+<external>.arm -> sut.console.arm
+sensor.enable
+sensor.return
+sut.console.return -> <external>.return
+<external>.disarm -> sut.console.disarm
+sensor.disable
+sensor.return
+<internal>.disabled -> sut.sensor.disabled
+sut.console.return -> <external>.return

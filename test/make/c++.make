@@ -23,6 +23,7 @@
 include make/compile.make
 
 CXXFLAGS:=-Wall -std=c++1y
+CXXFLAGS+=$(shell grep -q 'blocking' $(LOCAL_DZN_FILES) /dev/null && echo '-DBLOCKING=1')
 LOADLIBES:=
 LDLIBS:=-lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
 LOCAL_SOURCE_EXT:=.cc
