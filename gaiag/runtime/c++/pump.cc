@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,6 +29,13 @@
 
 #include <boost/coroutine/all.hpp>
 
+static void debug(const std::string& s)
+{
+#ifdef DEBUG
+  std::cout << s << std::endl;
+#endif
+}
+
 namespace dezyne
 {
   struct coroutine
@@ -38,6 +46,7 @@ namespace dezyne
     yield_type yield;
     void* port;
     bool finished;
+    bool released;
     template <typename Worker>
     coroutine(std::vector<coroutine>& coroutines, Worker&& worker)
     : call{[&coroutines, worker = std::move(worker)](auto&& yield){
@@ -48,6 +57,7 @@ namespace dezyne
     , yield()
     , port(nullptr)
     , finished(false)
+    , released(false)
     {}
   };
 
@@ -56,21 +66,22 @@ namespace dezyne
   auto schedule = [&]{
     while(true)
     {
-      std::cout << "schedule" << std::endl;
-
-      coroutines.erase(std::remove_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.finished;}), coroutines.end());
-
       auto it = std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr and not c.finished;});
-      if(it != coroutines.rend()) it->call();
+      if(it != coroutines.rend())
+      {
+        debug("schedule");
+        it->call();
+      }
       else break;
+      coroutines.erase(std::remove_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.finished;}), coroutines.end());
     }
-    std::cout << "schedule exit" << std::endl;
+    debug("schedule exit");
   };
 
   auto finish = [&](const char* name){
     auto self = std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr and not c.finished;});
     self->finished = true;
-    std::cout << "exit " << name << " coroutine" << std::endl;
+    debug(std::string("exit ") + name + " coroutine");
   };
 
   static std::function<void()> worker;
@@ -127,7 +138,7 @@ namespace dezyne
       coroutines.emplace_back(coroutines, [&]{
           while(running or queue.size())
           {
-            std::cout << "main coroutine" << std::endl;
+            debug("main coroutine");
             worker();
           }
           finish("main");
@@ -148,23 +159,25 @@ namespace dezyne
     self->port = p;
 
     coroutines.emplace_back(coroutines, [&]{
-        std::cout << "new coroutine" << std::endl;
-        worker();
+        auto self = std::find_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.port == nullptr and not c.finished;});
+        while(not self->released)
+        {
+          debug("new coroutine");
+          worker();
+        }
         finish("new");
       });
-
-    std::cout << "block" << std::endl;
+    debug("block");
     self = std::find_if(coroutines.begin(), coroutines.end(), [p](auto& c){return c.port == p;});
-
     self->yield();
   }
   void pump::release(void* p)
   {
     auto self = std::find_if(coroutines.begin(), coroutines.end(), [p](auto& c){return c.port == nullptr and not c.finished;});
     auto blocked = std::find_if(coroutines.begin(), coroutines.end(), [p](auto& c){return c.port == p;});
-    std::cout << "unblock" << std::endl;
+    debug("unblock");
     blocked->port = nullptr;
-    self->yield();
+    self->released = true;
   }
   void pump::operator()(const std::function<void()>& e)
   {
