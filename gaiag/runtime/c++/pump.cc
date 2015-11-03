@@ -23,11 +23,11 @@
 // Code:
 
 #include "pump.hh"
+#include "context.hh"
 
 #include <algorithm>
 #include <iostream>
-
-#include <boost/coroutine/all.hpp>
+#include <list>
 
 static void debug(const std::string& s)
 {
@@ -40,46 +40,40 @@ namespace dezyne
 {
   struct coroutine
   {
-    typedef boost::coroutines::symmetric_coroutine<void>::call_type call_type;
-    typedef boost::coroutines::symmetric_coroutine<void>::yield_type yield_type;
-    call_type call;
-    yield_type yield;
+    std::function<void(dezyne::context&)> yield;
+    dezyne::context context;
     void* port;
     bool finished;
     bool released;
     template <typename Worker>
-    coroutine(std::vector<coroutine>& coroutines, Worker&& worker)
-    : call{[&coroutines, worker = std::move(worker)](auto&& yield){
-        auto& self = coroutines.back();
-        self.yield = std::move(yield);
+    coroutine(Worker&& worker)
+    : context{[this, worker = std::move(worker)](std::function<void(dezyne::context&)>&& yield){
+        this->yield = std::move(yield);
         worker();
       }}
-    , yield()
     , port(nullptr)
     , finished(false)
     , released(false)
     {}
   };
 
-  std::vector<coroutine> coroutines;
+  std::list<coroutine> coroutines;
 
-  auto schedule = [&]{
-    while(true)
-    {
-      auto it = std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr and not c.finished;});
-      if(it != coroutines.rend())
-      {
-        debug("schedule");
-        it->call();
-      }
-      else break;
-      coroutines.erase(std::remove_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.finished;}), coroutines.end());
-    }
-    debug("schedule exit");
+  auto find_self = [] {
+    auto self = std::find_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.port == nullptr and not c.finished;});
+    if(self == coroutines.end()) throw std::runtime_error("cannot find my self");
+    return self;
+  };
+
+  auto find_blocked = [] (void* port) {
+    auto self = std::find_if(coroutines.begin(), coroutines.end(), [port](auto& c){return c.port == port;});
+    if(self == coroutines.end()) throw std::runtime_error("cannot find my blocked self");
+    return self;
   };
 
   auto finish = [&](const char* name){
-    auto self = std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr and not c.finished;});
+    auto self = find_self();
+
     self->finished = true;
     debug(std::string("exit ") + name + " coroutine");
   };
@@ -131,20 +125,23 @@ namespace dezyne
           queue.pop();
           lock.unlock();
           f();
-          if(not lock) lock.lock();
         }
       };
 
-      coroutines.emplace_back(coroutines, [&]{
+      context bogus;
+      bogus.release();
+
+      coroutines.emplace_back([&]{
           while(running or queue.size())
           {
             debug("main coroutine");
             worker();
           }
           finish("main");
-        });
+          });
 
-      schedule();
+      coroutines.back().context.call(bogus);
+
       assert(queue.empty());
     }
     catch(const std::exception& e)
@@ -155,11 +152,12 @@ namespace dezyne
   }
   void pump::block(void* p)
   {
-    auto self = std::find_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.port == nullptr and not c.finished;});
+    auto self = find_self();
     self->port = p;
 
-    coroutines.emplace_back(coroutines, [&]{
-        auto self = std::find_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.port == nullptr and not c.finished;});
+    debug("block");
+    coroutines.emplace_back([&]{
+        auto self = find_self();
         while(not self->released)
         {
           debug("new coroutine");
@@ -167,17 +165,20 @@ namespace dezyne
         }
         finish("new");
       });
-    debug("block");
-    self = std::find_if(coroutines.begin(), coroutines.end(), [p](auto& c){return c.port == p;});
-    self->yield();
+
+    self = find_blocked(p);
+
+    coroutines.back().context.call(self->context);
   }
   void pump::release(void* p)
   {
-    auto self = std::find_if(coroutines.begin(), coroutines.end(), [p](auto& c){return c.port == nullptr and not c.finished;});
-    auto blocked = std::find_if(coroutines.begin(), coroutines.end(), [p](auto& c){return c.port == p;});
+    auto self = find_self();
+    auto blocked = find_blocked(p);
+
     debug("unblock");
     blocked->port = nullptr;
     self->released = true;
+    self->yield(blocked->context);
   }
   void pump::operator()(const std::function<void()>& e)
   {

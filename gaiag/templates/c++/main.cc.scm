@@ -88,10 +88,6 @@ int main()
   dezyne::locator l;
   dezyne::runtime rt;
   l.set(rt);
-##if BLOCKING
-  dezyne::pump pump;
-  l.set(pump);
-##endif // BLOCKING
   dezyne::illegal_handler ih;
   ih.illegal = [] {std::clog << "illegal" << std::endl; exit(0);};
   l.set(ih);
@@ -99,6 +95,10 @@ int main()
   dezyne::event_map event_map;
   #((om:scope-name (string->symbol "::")) model)  sut(l);
   sut.dzn_meta.name = "sut";
+##if BLOCKING
+  dezyne::pump pump;
+  l.set(pump);
+##endif // BLOCKING
 
   dezyne::fill_event_map(sut, event_map);
 
