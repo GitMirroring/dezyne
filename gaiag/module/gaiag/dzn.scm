@@ -119,7 +119,9 @@
 
     (($ <otherwise> value) ((animate-snippet 'otherwise)))
 
-    (($ <reply> expression) ((animate-snippet 'reply `((expression ,((->dzn model) expression))))))
+    (($ <reply> expression #f) ((animate-snippet 'reply `((expression ,((->dzn model) expression))))))
+
+    (($ <reply> expression port) ((animate-snippet 'reply-port `((expression ,((->dzn model) expression)) (port ,port)))))
 
     (($ <return> (? unspecified?)) ((animate-snippet 'return-void)))
 
