@@ -62,7 +62,9 @@ namespace dezyne
     c->dzn_meta.address = c;
     c->dzn_meta.parent = 0;
     c->dzn_meta.name = "<internal>";
+##if !BLOCKING
     m.dzn_rt.performs_flush(c) = true;
+##endif //!BLOCKING
 
  #(map
    (lambda (port)
