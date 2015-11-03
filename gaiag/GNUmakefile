@@ -888,7 +888,7 @@ out/alarm:
 	(cd out && ../gaiag -l $(CXX) ../examples/ISensor.dzn)
 	(cd out && ../gaiag -l $(CXX) ../examples/ISiren.dzn)
 	(cd out && ../gaiag -l $(CXX) -m Alarm ../examples/Alarm.dzn)
-	g++ -g $(CXX1Y) -DBLOCKING=1 -o out/test out/*cc -lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
+	g++ -g $(CXX1Y) -DxDEBUG -DCOROUTINE=1 -DBLOCKING=1 -o out/test out/*cc -lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
 	echo console.arm,console.disarm,sensor.disabled | tr ',' '\n' | out/test
 	echo console.arm,console.disarm,sensor.triggered,sensor.disabled | tr ',' '\n' | out/test
 
