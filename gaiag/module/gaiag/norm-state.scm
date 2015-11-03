@@ -54,8 +54,8 @@
     aggregate-guard-g
     flatten-compound
     combine-guards
-    (passdown-blocking)
     passdown-on
+    (passdown-blocking)
     (remove-otherwise)
     add-skip
     )
@@ -69,8 +69,8 @@
     aggregate-guard-g
     flatten-compound
     combine-guards
-    (passdown-blocking)
     passdown-on
+    (passdown-blocking)
     (remove-otherwise)
     add-skip
     )
