@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -68,7 +69,9 @@ namespace dezyne
     {
       this->context();
     }
-    void yield_to(dezyne::context&) {}
+    void yield_to(dezyne::context& c) {
+      yield(c);
+    }
     void release() {}
 #else // !HAVE_BOOST_COROUTINE
     coroutine(bool thread_p) : context(thread_p) {}

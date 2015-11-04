@@ -57,20 +57,20 @@ namespace dezyne
   std::list<coroutine> coroutines;
 
 #if HAVE_BOOST_COROUTINE
-  auto schedule = [&]{
-    while(true)
-    {
-      auto it = std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr and not c.finished;});
-      if(it != coroutines.rend())
-      {
-        debug("schedule", it->id);
-        it->context();
-      }
-      else break;
-      coroutines.erase(std::remove_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.finished;}), coroutines.end());
-    }
-    debug("schedule exit");
-  };
+  // auto schedule = [&]{
+  //   while(true)
+  //   {
+  //     auto it = std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr and not c.finished;});
+  //     if(it != coroutines.rend())
+  //     {
+  //       debug("schedule", it->id);
+  //       it->context();
+  //     }
+  //     else break;
+  //     coroutines.erase(std::remove_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.finished;}), coroutines.end());
+  //   }
+  //   debug("schedule exit");
+  // };
 #endif
 
   auto find_self = [] {
@@ -112,7 +112,8 @@ namespace dezyne
   static std::function<void()> worker;
 
   pump::pump()
-  : running(true)
+  : switch_context([]{})
+  , running(true)
   , task(std::async(std::launch::async, std::ref(*this)))
   {}
   pump::~pump()
@@ -174,7 +175,16 @@ namespace dezyne
        auto self = find_self();
        self->call(zero.context);
 #else
-       schedule();
+       while(true)
+       {
+         auto it = std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr and not c.finished;});
+         if(it != coroutines.rend())
+         {
+           debug("schedule", it->id);
+           it->context();
+         }
+         else break;
+       }
 #endif
       assert(queue.empty());
     }
@@ -197,10 +207,9 @@ namespace dezyne
         {
           debug("worker", self->id);
           worker();
-          //self = find_self();
-          self = std::find_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.port == nullptr and not c.finished;});
         }
         finish("new");
+        switch_context();
       });
 
     self = find_blocked(p);
@@ -208,7 +217,8 @@ namespace dezyne
 #if !HAVE_BOOST_COROUTINE
     coroutines.back().call(self->context);
 #else
-    self->yield();
+    self->yield_to(coroutines.back().context);
+    coroutines.erase(std::remove_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.finished;}), coroutines.end());
 #endif
   }
   void pump::release(void* p)
@@ -218,9 +228,12 @@ namespace dezyne
 
     debug("unblock", blocked->id);
     debug("released", self->id);
-    blocked->port = nullptr;
     self->released = true;
-    self->yield_to(blocked->context);
+
+    switch_context = [blocked,self] {
+        blocked->port = nullptr;
+        self->yield_to(blocked->context);
+      };
   }
   void pump::operator()(const std::function<void()>& e)
   {

@@ -58,6 +58,8 @@ namespace dezyne
 
     std::map<deadline, std::function<void()>> timers;
 
+    std::function<void()> switch_context;
+
     std::thread::id thread_id;
     bool running;
     std::condition_variable condition;
