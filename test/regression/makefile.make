@@ -85,11 +85,23 @@ BROKEN_trace:=\
 
 BROKEN_verify:=
 
+BLOCKING:=$(shell grep -l blocking regression/*dzn)
+BROKEN_cs+=$(BLOCKING)
+BROKEN_c++03+=$(BLOCKING)
+BROKEN_goops+=$(BLOCKING)
+BROKEN_java+=$(BLOCKING)
+BROKEN_java7+=$(BLOCKING)
+BROKEN_javascript+=$(BLOCKING)
+BROKEN_python+=$(BLOCKING)
+BROKEN_run+=$(BLOCKING)
+BROKEN_trace+=$(BLOCKING)
+
 DZN_FILES:=$(wildcard $(CDIR)*.dzn)
 DZN_FILES:=$(filter-out $(BROKEN),$(DZN_FILES))
 LANGUAGES:=$(ALL_LANGUAGES)
 include make/files.make
 
+## TRIANGLE: TODO
 ##DZN_FILES:=$(CDIR)Alarm.dzn $(CDIR)Comp.dzn $(CDIR)Reply.dzn $(CDIR)Handle.dzn $(CDIR)SynchronousOut.dzn
 DZN_FILES:=$(CDIR)Handle.dzn #$(CDIR)Comp.dzn $(CDIR)Reply.dzn
 $(foreach lang,$(CODE_LANGUAGES) $(filter run,$(PSEUDO_LANGUAGES)),\
