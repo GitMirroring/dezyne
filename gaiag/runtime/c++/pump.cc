@@ -25,6 +25,9 @@
 #ifndef HAVE_BOOST_COROUTINE
 #define HAVE_BOOST_COROUTINE 1
 #endif
+// #ifdef HAVE_BOOST_COROUTINE
+// #undef HAVE_BOOST_COROUTINE
+// #endif
 
 #include "pump.hh"
 
@@ -53,6 +56,7 @@ namespace dezyne
   int coroutine::g_id = 0;
   std::list<coroutine> coroutines;
 
+#if HAVE_BOOST_COROUTINE
   auto schedule = [&]{
     while(true)
     {
@@ -67,6 +71,7 @@ namespace dezyne
     }
     debug("schedule exit");
   };
+#endif
 
   auto find_self = [] {
     int count =0;
@@ -169,7 +174,7 @@ namespace dezyne
        auto self = find_self();
        self->call(zero.context);
 #else
-      schedule();
+       schedule();
 #endif
       assert(queue.empty());
     }

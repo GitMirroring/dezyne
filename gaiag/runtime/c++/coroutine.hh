@@ -25,8 +25,10 @@
 #define COROUTINE_HH
 
 #if HAVE_BOOST_COROUTINE
+#warning using boost coroutine
 #include <boost/coroutine/all.hpp>
 #else // !HAVE_BOOST_COROUTINE
+#warning using threads
 #include "context.hh"
 #endif // !HAVE_BOOST_COROUTINE
 
