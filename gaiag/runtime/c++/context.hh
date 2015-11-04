@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -72,12 +73,13 @@ namespace dezyne
     std::unique_ptr<std::condition_variable> condition;
     std::thread thread;
   public:
-    context()
+    context(bool thread_p=true)
     : state(INITIAL)
     , work()
     , mutex(std::make_unique<std::mutex>())
     , condition(std::make_unique<std::condition_variable>())
-    , thread([this] {
+    , thread([&thread_p, this] {
+        if(!thread_p) return;
         //std::clog << _ << "enter context" << std::endl;
         std::unique_lock<std::mutex> lock(*this->mutex);
         while(state != FINAL)
@@ -99,6 +101,7 @@ namespace dezyne
         //std::clog << _ << "exit context" << std::endl;
       })
     {
+      if(!thread_p) return;
       std::unique_lock<std::mutex> lock(*mutex);
       //std::clog << _ << "ctor waiting" << std::endl;
       while(state != BLOCKED) condition->wait(lock);

@@ -24,19 +24,11 @@
 
 #include "pump.hh"
 
-#if 0 // __cplusplus >= 201402L
-#define COROUTINE 1
-#endif // __cplusplus >= 201402L
-
-#if COROUTINE
-#include <boost/coroutine/all.hpp>
-#else // !COROUTINE
-#include "context.hh"
-#endif // !COROUTINE
-
 #include <algorithm>
 #include <iostream>
 #include <list>
+
+#include "coroutine.hh"
 
 static void debug(const std::string& s)
 {
@@ -47,47 +39,6 @@ static void debug(const std::string& s)
 
 namespace dezyne
 {
-#if COROUTINE
-  typedef boost::coroutines::symmetric_coroutine<void>::call_type context;
-  typedef boost::coroutines::symmetric_coroutine<void>::yield_type yield;
-#else
-  typedef std::function<void(dezyne::context&)> yield;
-#endif // !COROUTINE
-
-  struct coroutine
-  {
-    dezyne::context context;
-    dezyne::yield yield;
-    void* port;
-    bool finished;
-    bool released;
-    template <typename Worker>
-    coroutine(std::list<coroutine>& coroutines, Worker&& worker)
-      : context{[&coroutines, this, worker = std::move(worker)](auto&& yield){
-        this->yield = std::move(yield);
-        worker();
-      }}
-    , port(nullptr)
-    , finished(false)
-    , released(false)
-    {}
-    void call(dezyne::context& context)
-    {
-#if COROUTINE
-      (void)context;
-      this->context();
-#else // !COROUTINE
-      this->context.call(context);
-#endif // !COROUTINE
-    }
-    void yield_to(dezyne::context& context)
-    {
-#if !COROUTINE
-      this->yield(context);
-#endif //!COROUTINE
-    }
-  };
-
   std::list<coroutine> coroutines;
 
   auto find_self = [] {
@@ -159,12 +110,9 @@ namespace dezyne
         }
       };
 
-      context bogus;
-#if !COROUTINE
-      bogus.release();
-#endif // !COROUTINE
+      coroutine zero(false);
 
-      coroutines.emplace_back(coroutines, [&]{
+      coroutines.emplace_back([&]{
           while(running or queue.size())
           {
             debug("main coroutine");
@@ -173,12 +121,8 @@ namespace dezyne
           finish("main");
           });
 
-#if COROUTINE
       auto self = find_self();
-      self->call(bogus);
-#else // !COROUTINE
-      coroutines.back().call(bogus);
-#endif
+      self->call(zero.context);
       assert(queue.empty());
     }
     catch(const std::exception& e)
@@ -193,7 +137,7 @@ namespace dezyne
     self->port = p;
 
     debug("block");
-    coroutines.emplace_back(coroutines, [&]{
+    coroutines.emplace_back([&]{
         auto self = find_self();
         while(not self->released)
         {
