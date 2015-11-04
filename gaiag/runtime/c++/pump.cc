@@ -22,6 +22,10 @@
 //
 // Code:
 
+#ifndef HAVE_BOOST_COROUTINE
+#define HAVE_BOOST_COROUTINE 1
+#endif
+
 #include "pump.hh"
 
 #include <algorithm>
@@ -37,13 +41,54 @@ static void debug(const std::string& s)
 #endif
 }
 
+static void debug(const std::string& s, int id)
+{
+#ifdef DEBUG
+  std::cout << '[' << id << "] " << s << std::endl;
+#endif
+}
+
 namespace dezyne
 {
+  int coroutine::g_id = 0;
   std::list<coroutine> coroutines;
 
+  auto schedule = [&]{
+    while(true)
+    {
+      auto it = std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr and not c.finished;});
+      if(it != coroutines.rend())
+      {
+        debug("schedule", it->id);
+        it->context();
+      }
+      else break;
+      coroutines.erase(std::remove_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.finished;}), coroutines.end());
+    }
+    debug("schedule exit");
+  };
+
   auto find_self = [] {
-    auto self = std::find_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.port == nullptr and not c.finished;});
+    int count =0;
+    for (auto& c: coroutines) {
+      if (c.port == nullptr and not c.released and not c.finished) count++;
+    }
+    if (count !=1)throw std::runtime_error("too many coros");
+
+    auto self = std::find_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.port == nullptr and not c.released and not c.finished;});
     if(self == coroutines.end()) throw std::runtime_error("cannot find my self");
+    return self;
+  };
+
+  auto rfind_self = [] {
+    int count =0;
+    for (auto& c: coroutines) {
+      if (c.port == nullptr and not c.released and not c.finished) count++;
+    }
+    //if (count !=1)throw std::runtime_error("too many coros");
+
+    auto self = std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr /*and not c.released */and not c.finished;});
+    if(self == coroutines.rend()) throw std::runtime_error("cannot find my self");
     return self;
   };
 
@@ -54,10 +99,9 @@ namespace dezyne
   };
 
   auto finish = [&](const char* name){
-    auto self = find_self();
-
+    auto self = rfind_self();//std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr and not c.finished;});
     self->finished = true;
-    debug(std::string("exit ") + name + " coroutine");
+    debug(std::string("exit ") + name + " coroutine", self->id);
   };
 
   static std::function<void()> worker;
@@ -121,8 +165,12 @@ namespace dezyne
           finish("main");
           });
 
-      auto self = find_self();
-      self->call(zero.context);
+#if !HAVE_BOOST_COROUTINE
+       auto self = find_self();
+       self->call(zero.context);
+#else
+      schedule();
+#endif
       assert(queue.empty());
     }
     catch(const std::exception& e)
@@ -136,27 +184,35 @@ namespace dezyne
     auto self = find_self();
     self->port = p;
 
-    debug("block");
+    debug("block", self->id);
     coroutines.emplace_back([&]{
         auto self = find_self();
+        debug("new coroutine", self->id);
         while(not self->released)
         {
-          debug("new coroutine");
+          debug("worker", self->id);
           worker();
+          //self = find_self();
+          self = std::find_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.port == nullptr and not c.finished;});
         }
         finish("new");
       });
 
     self = find_blocked(p);
 
+#if !HAVE_BOOST_COROUTINE
     coroutines.back().call(self->context);
+#else
+    self->yield();
+#endif
   }
   void pump::release(void* p)
   {
     auto self = find_self();
     auto blocked = find_blocked(p);
 
-    debug("unblock");
+    debug("unblock", blocked->id);
+    debug("released", self->id);
     blocked->port = nullptr;
     self->released = true;
     self->yield_to(blocked->context);

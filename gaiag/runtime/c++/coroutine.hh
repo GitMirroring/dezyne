@@ -41,6 +41,9 @@ namespace dezyne
 
   struct coroutine
   {
+    static int g_id;
+    int id;
+
     dezyne::context context;
     dezyne::yield yield;
     void* port;
@@ -48,7 +51,8 @@ namespace dezyne
     bool released;
     template <typename Worker>
     coroutine(Worker&& worker)
-      : context{[this, worker = std::move(worker)](auto&& yield){
+      : id(g_id++)
+      , context{[this, worker = std::move(worker)](auto&& yield){
         this->yield = std::move(yield);
         worker();
       }}
