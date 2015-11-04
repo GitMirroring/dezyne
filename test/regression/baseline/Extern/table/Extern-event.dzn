@@ -37,7 +37,7 @@ component Extern {
 
   behaviour {
     IExtern.xint i = $0$;
-    IExtern.xint j = ;
+    IExtern.xint j;
 
     on port.e():
     [true]

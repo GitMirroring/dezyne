@@ -53,7 +53,7 @@ component DataVariables {
 
   behaviour {
     IDataVariables.integer idv = $42$;
-    IDataVariables.boolean bdv = ;
+    IDataVariables.boolean bdv;
     IDataVariables.string sdv = $0$;
     IDataVariables.DataVariableType dvtdv = $0$;
 

@@ -98,7 +98,7 @@ component Move {
     bool moving = false;
     bool pulsing = false;
     itimer.milliseconds_t time = $(config.get("Duration::PollInterval"))$;
-    imotor.position_t destination = ;
+    imotor.position_t destination;
 
     on ctrl.move(power, position):
     {

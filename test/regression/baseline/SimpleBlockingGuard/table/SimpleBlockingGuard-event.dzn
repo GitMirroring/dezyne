@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -22,64 +21,35 @@
 //
 // Code:
 
-interface Iterator {
-  extern element $int$;
-  enum end {yes, no};
-  in end next(element elmt);
-
-  behaviour {
-    end done = end.no;
-
-    on next:
-    {
-      [done.no || done.yes]
-      reply(done);
-      [done.no]
-      {
-        reply(done);
-        done = end.yes;
-      }
-    }
-  }
-}
-
-interface IList {
-  in void step();
+interface ISimpleBlockingGuard {
+  in void ia();
 
   behaviour {
 
-    on step:
+    on ia:
     [true]
     {}
   }
 }
 
-component List {
-  provides IList pp;
-  requires Iterator list;
+component SimpleBlockingGuard {
+  provides ISimpleBlockingGuard pp;
 
   behaviour {
+    bool deadlock = false;
 
-    Iterator.end head() {
-      Iterator.element elmt;
-      Iterator.end it = list.next(elmt);
-      return it;
-    }
-
-    void tail(Iterator.end done) {
-      if (done == Iterator.end.no) {
-        Iterator.element elmt;
-        done = list.next(elmt);
-        tail(done);
-      }
-      return false;
-    }
-
-    on pp.step():
-    [true]
+    on pp.ia():
     {
-      Iterator.end it = head();
-      tail(it);
+      [deadlock || !deadlock]
+      {
+        [deadlock]
+        blocking {}
+        [blocking otherwise]
+        blocking {
+          pp.reply();
+          deadlock = true;
+        }
+      }
     }
   }
 }

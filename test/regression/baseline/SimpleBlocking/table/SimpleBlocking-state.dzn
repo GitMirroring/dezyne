@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -22,64 +21,66 @@
 //
 // Code:
 
-interface Iterator {
-  extern element $int$;
-  enum end {yes, no};
-  in end next(element elmt);
-
-  behaviour {
-    end done = end.no;
-
-    on next:
-    {
-      [done.no || done.yes]
-      reply(done);
-      [done.no]
-      {
-        reply(done);
-        done = end.yes;
-      }
-    }
-  }
-}
-
-interface IList {
-  in void step();
+interface I {
+  in void e();
 
   behaviour {
 
-    on step:
     [true]
+    on e:
     {}
   }
 }
 
-component List {
-  provides IList pp;
-  requires Iterator list;
+interface II {
+  in void e();
+  out void cb();
 
   behaviour {
+    bool busy = false;
 
-    Iterator.end head() {
-      Iterator.element elmt;
-      Iterator.end it = list.next(elmt);
-      return it;
-    }
-
-    void tail(Iterator.end done) {
-      if (done == Iterator.end.no) {
-        Iterator.element elmt;
-        done = list.next(elmt);
-        tail(done);
-      }
-      return false;
-    }
-
-    on pp.step():
-    [true]
+    [!busy]
+    on e:
+    busy = true;
+    [busy]
     {
-      Iterator.end it = head();
-      tail(it);
+      on e:
+      illegal;
+      on inevitable:
+      {
+        cb;
+        busy = false;
+      }
+    }
+  }
+}
+
+component SimpleBlocking {
+  provides I p;
+  requires II r;
+
+  behaviour {
+    bool busy = false;
+
+    [!busy]
+    {
+      on p.e():
+      blocking {
+        r.e();
+        busy = true;
+      }
+      on r.cb():
+      illegal;
+    }
+    [busy]
+    {
+      on p.e():
+      illegal;
+      on r.cb():
+      {
+        p.reply();
+        busy = false;
+      }
     }
   }
 }

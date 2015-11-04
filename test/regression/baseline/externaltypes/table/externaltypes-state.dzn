@@ -51,8 +51,8 @@ component externaltypes {
   requires Iexternaltypes j;
 
   behaviour {
-    integer n = ;
-    Iexternaltypes.bl b = ;
+    integer n;
+    Iexternaltypes.bl b;
 
     [true]
     {

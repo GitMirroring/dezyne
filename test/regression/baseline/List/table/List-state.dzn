@@ -64,14 +64,14 @@ component List {
   behaviour {
 
     Iterator.end head() {
-      Iterator.element elmt = ;
+      Iterator.element elmt;
       Iterator.end it = list.next(elmt);
       return it;
     }
 
     void tail(Iterator.end done) {
       if (done == Iterator.end.no) {
-        Iterator.element elmt = ;
+        Iterator.element elmt;
         done = list.next(elmt);
         tail(done);
       }

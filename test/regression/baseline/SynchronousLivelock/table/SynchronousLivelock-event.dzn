@@ -74,14 +74,14 @@ component SynchronousLivelock {
   behaviour {
 
     IIterator.IsPastEnd consumeListHead() {
-      IIterator.ListElement elmt = ;
+      IIterator.ListElement elmt;
       IIterator.IsPastEnd v = listIt.getFirstElmt(elmt);
       return v;
     }
 
     void consumeListTail(IIterator.IsPastEnd pastEnd) {
       if (pastEnd == IIterator.IsPastEnd.No) {
-        IIterator.ListElement elmt = ;
+        IIterator.ListElement elmt;
         pastEnd = listIt.getNextElmt(elmt);
         consumeListTail(pastEnd);
       }
