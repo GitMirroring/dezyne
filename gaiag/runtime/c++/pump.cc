@@ -52,12 +52,11 @@ namespace dezyne
   auto find_self = [] {
     int count =0;
     for (auto& c: coroutines) {
-      if (c.port == nullptr and not c.released and not c.finished) count++;
+      if (c.port == nullptr and not c.finished) count++;
     }
-    if (count !=1)throw std::runtime_error("too many coros");
-
-    auto self = std::find_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.port == nullptr and not c.released and not c.finished;});
+    auto self = std::find_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.port == nullptr not c.finished;});
     if(self == coroutines.end()) throw std::runtime_error("cannot find my self");
+    if (count !=1)throw std::runtime_error("too many coros");
     return self;
   };
 
@@ -178,7 +177,7 @@ namespace dezyne
     self = find_blocked(p);
 
     self->yield_to(coroutines.back().context);
-    coroutines.remove_if([](auto& c){return c.finished;});
+    coroutines.remove_if([](auto& c){if(c.finished) std::cout << "removing: " << c.id << std::endl; return c.finished;});
   }
   void pump::release(void* p)
   {
