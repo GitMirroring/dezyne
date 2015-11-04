@@ -63,29 +63,21 @@ namespace dezyne
     , finished(false)
     , released(false)
     {}
+    void yield_to(dezyne::context& context)
+    {
+      this->yield(context);
+    }
 #if HAVE_BOOST_COROUTINE
     coroutine(bool thread_p) : context() {}
     void call(dezyne::context& context)
     {
       this->context();
     }
-    void yield_to(dezyne::context& c) {
-      yield(c);
-    }
-    void release() {}
 #else // !HAVE_BOOST_COROUTINE
     coroutine(bool thread_p) : context(thread_p) {}
     void call(dezyne::context& context)
     {
       this->context.call(context);
-    }
-    void yield_to(dezyne::context& context)
-    {
-      this->yield(context);
-    }
-    void release()
-    {
-      this->context.release();
     }
 #endif // !HAVE_BOOST_COROUTINE
   };

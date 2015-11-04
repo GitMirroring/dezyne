@@ -22,13 +22,6 @@
 //
 // Code:
 
-#ifndef HAVE_BOOST_COROUTINE
-#define HAVE_BOOST_COROUTINE 1
-#endif
-// #ifdef HAVE_BOOST_COROUTINE
-// #undef HAVE_BOOST_COROUTINE
-// #endif
-
 #include "pump.hh"
 
 #include <algorithm>
@@ -55,23 +48,6 @@ namespace dezyne
 {
   int coroutine::g_id = 0;
   std::list<coroutine> coroutines;
-
-#if HAVE_BOOST_COROUTINE
-  // auto schedule = [&]{
-  //   while(true)
-  //   {
-  //     auto it = std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr and not c.finished;});
-  //     if(it != coroutines.rend())
-  //     {
-  //       debug("schedule", it->id);
-  //       it->context();
-  //     }
-  //     else break;
-  //     coroutines.erase(std::remove_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.finished;}), coroutines.end());
-  //   }
-  //   debug("schedule exit");
-  // };
-#endif
 
   auto find_self = [] {
     int count =0;
@@ -169,23 +145,10 @@ namespace dezyne
             worker();
           }
           finish("main");
-          });
+        });
 
-#if !HAVE_BOOST_COROUTINE
-       auto self = find_self();
-       self->call(zero.context);
-#else
-       while(true)
-       {
-         auto it = std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr and not c.finished;});
-         if(it != coroutines.rend())
-         {
-           debug("schedule", it->id);
-           it->context();
-         }
-         else break;
-       }
-#endif
+      auto self = find_self();
+      self->call(zero.context);
       assert(queue.empty());
     }
     catch(const std::exception& e)
@@ -214,12 +177,8 @@ namespace dezyne
 
     self = find_blocked(p);
 
-#if !HAVE_BOOST_COROUTINE
-    coroutines.back().call(self->context);
-#else
     self->yield_to(coroutines.back().context);
-    coroutines.erase(std::remove_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.finished;}), coroutines.end());
-#endif
+    coroutines.remove_if([](auto& c){return c.finished;});
   }
   void pump::release(void* p)
   {
