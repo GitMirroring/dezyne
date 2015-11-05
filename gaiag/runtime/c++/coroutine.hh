@@ -25,6 +25,8 @@
 #ifndef COROUTINE_HH
 #define COROUTINE_HH
 
+#include <iostream>
+
 #if HAVE_BOOST_COROUTINE
 #warning using boost coroutine
 #include <boost/coroutine/all.hpp>
@@ -63,18 +65,22 @@ namespace dezyne
     , finished(false)
     , released(false)
     {}
+    ~coroutine()
+    {
+      std::clog << __FUNCTION__ << ": " << id << std::endl;
+    }
     void yield_to(dezyne::context& context)
     {
       this->yield(context);
     }
 #if HAVE_BOOST_COROUTINE
-    coroutine(bool thread_p) : context() {}
+    coroutine(bool thread_p) : id(-1), context() {}
     void call(dezyne::context& context)
     {
       this->context();
     }
 #else // !HAVE_BOOST_COROUTINE
-    coroutine(bool thread_p) : context(thread_p) {}
+    coroutine(bool thread_p) : id(-1), context(thread_p) {}
     void call(dezyne::context& context)
     {
       this->context.call(context);

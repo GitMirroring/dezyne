@@ -119,6 +119,7 @@ namespace dezyne
     }
     ~context()
     {
+      std::clog << _ << __FUNCTION__  << ": " << to_string(state) << std::endl;
       if(!mutex) return;
       std::unique_lock<std::mutex> lock(*mutex);
       do_finish(lock);
