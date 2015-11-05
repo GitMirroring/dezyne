@@ -59,11 +59,11 @@ namespace dezyne
     coroutine(Worker&& worker)
     : id(g_id++)
       //, context{[this, worker](std::function<void(dezyne::context&)> yield){
-    , context{[this, worker](dezyne::yield&& yield){
+    , context([this, worker](dezyne::yield&& yield){
 
         this->yield = std::move(yield);
         worker();
-      }}
+      })
     , port(nullptr)
     , finished(false)
     , released(false)
