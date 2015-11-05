@@ -4,9 +4,9 @@
 		<CodeGenerationLanguage>cpp</CodeGenerationLanguage>
 		<CodeGenerationVersion>9.2.9</CodeGenerationVersion>
 		<DateCreated>20151021T162357</DateCreated>
-		<DateModified>20151021T150659</DateModified>
+		<DateModified>20151105T104413</DateModified>
 		<Guid>EEE4517728214C438398964640490BA1</Guid>
-		<ModelSignature>BASE64_BAmPGakabH01jnTXz5P1igiGjp5eO0aLmt/88V0IG5DtIb5DErz/SmT9J8Eo3956Kkzw8wgdDiKoBB0KDtKUokXTdGpuDpCfBnaO5gayu7x1svR/g3qPpuE9vNMZ4nMjM+JfCUlW55OG0KjtIOnxl+zsGTaq81nxmkmmlFZgVTKRtLxVq6SpT1cvQXWbQibId3A0iYsYiHsXZa5N6Xpeh7+PZWOrdr5hMh6o7tcxwtkiWgvXGybvn7EMnRA1cBcb5zgHSHdfwomMge95otpYUAcVFpX+HHkuR4R6bz4+4B+TkloyFLYfdGbwajK8V2emTTuTIExXdpdOxIoqx9bJ5Q==</ModelSignature>
+		<ModelSignature>BASE64_w4h/cGAOi2OwD7M6fAm/6I6CELdQUQT/ExFQOttr2CGKy7n1bCtR1Q3GgjCqgCDd70ALPgypPAHLhkcq6ERlxHANPY0+KlwHdQmCMTtBlvr98zaA6/MIiyO3wh8z23msKzEdKEWL/1ZVneMoIEF6Tyy3ieRHMF1Cu+VXWbS9aMwqJeZo2c9osJyHFExK8RPeCL1MimxHIKAAJU8xhXI/M2B+JwInzP3D5IeeZEnYF22iOreh8lM+P0StCvj9HLu/pEh6jRJBzvmjUEtBiTPLMNNtOoWf3Wy3wRp+FTwEOMp6rCyOxozliuAaPhOxt6QObiIQ1X+A0a18Xr+dUKGXdw==</ModelSignature>
 		<Name>MultiStepOutParam</Name>
 		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.3(52305)</ToolVersion>
 		<AbstractInterface>
@@ -63,6 +63,11 @@
 												<Type>int</Type>
 											</SimpleParameter>
 										</Parameters>
+									</CallEvent>
+									<CallEvent ID="893349">
+										<Comment>Results&#32;passed&#32;back&#32;by&#32;synchronously&#32;posted&#32;out&#32;event.</Comment>
+										<Guid>7C3413B5A29A4A54A93045DA923C509B</Guid>
+										<Name>GetData_SyncOutResult</Name>
 									</CallEvent>
 									<CallEvent ID="893117">
 										<Guid>752D15711592462E92D09680B2B19C75</Guid>
@@ -178,11 +183,24 @@
 									</RuleCase>
 								</RuleCases>
 							</Rule>
+							<Rule ID="893350">
+								<Event>893349</Event>
+								<RuleCases>
+									<RuleCase ID="893351">
+										<Row>6</Row>
+										<Actions>
+											<Action ID="893352">
+												<Event>893075</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
 							<Rule ID="893124">
 								<Event>893117</Event>
 								<RuleCases>
 									<RuleCase ID="893125">
-										<Row>6</Row>
+										<Row>7</Row>
 										<Actions>
 											<Action ID="893126">
 												<Event>893075</Event>
@@ -195,7 +213,7 @@
 								<Event>893119</Event>
 								<RuleCases>
 									<RuleCase ID="893128">
-										<Row>7</Row>
+										<Row>8</Row>
 										<Actions>
 											<Action ID="893129">
 												<Event>893076</Event>
@@ -208,7 +226,7 @@
 								<Event>893120</Event>
 								<RuleCases>
 									<RuleCase ID="893131">
-										<Row>8</Row>
+										<Row>9</Row>
 										<Actions>
 											<Action ID="893132">
 												<Event>893076</Event>
@@ -227,7 +245,7 @@
 								<Event>893073</Event>
 								<RuleCases>
 									<RuleCase ID="893103">
-										<Row>10</Row>
+										<Row>11</Row>
 									</RuleCase>
 								</RuleCases>
 							</Rule>
@@ -235,7 +253,7 @@
 								<Event>893086</Event>
 								<RuleCases>
 									<RuleCase ID="893105">
-										<Row>11</Row>
+										<Row>12</Row>
 										<Actions>
 											<Action ID="893106">
 												<Event>893075</Event>
@@ -248,7 +266,7 @@
 								<Event>893087</Event>
 								<RuleCases>
 									<RuleCase ID="893108">
-										<Row>12</Row>
+										<Row>13</Row>
 										<NextState>893080</NextState>
 										<Actions>
 											<Action ID="893109">
@@ -262,7 +280,7 @@
 								<Event>893088</Event>
 								<RuleCases>
 									<RuleCase ID="893111">
-										<Row>13</Row>
+										<Row>14</Row>
 										<NextState>893094</NextState>
 										<Actions>
 											<Action ID="893112">
@@ -272,11 +290,28 @@
 									</RuleCase>
 								</RuleCases>
 							</Rule>
+							<Rule ID="893353">
+								<Event>893349</Event>
+								<RuleCases>
+									<RuleCase ID="893354">
+										<Row>15</Row>
+										<NextState>893094</NextState>
+										<Actions>
+											<Action ID="893355">
+												<Event>893090</Event>
+											</Action>
+											<Action ID="893356">
+												<Event>893122</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
 							<Rule ID="893133">
 								<Event>893117</Event>
 								<RuleCases>
 									<RuleCase ID="893134">
-										<Row>14</Row>
+										<Row>16</Row>
 										<NextState>893135</NextState>
 										<Actions>
 											<Action ID="893136">
@@ -290,7 +325,7 @@
 								<Event>893119</Event>
 								<RuleCases>
 									<RuleCase ID="893138">
-										<Row>15</Row>
+										<Row>17</Row>
 										<Actions>
 											<Action ID="893139">
 												<Event>893076</Event>
@@ -303,7 +338,7 @@
 								<Event>893120</Event>
 								<RuleCases>
 									<RuleCase ID="893141">
-										<Row>16</Row>
+										<Row>18</Row>
 										<Actions>
 											<Action ID="893142">
 												<Event>893076</Event>
@@ -322,7 +357,7 @@
 								<Event>893073</Event>
 								<RuleCases>
 									<RuleCase ID="893144">
-										<Row>18</Row>
+										<Row>20</Row>
 									</RuleCase>
 								</RuleCases>
 							</Rule>
@@ -330,7 +365,7 @@
 								<Event>893086</Event>
 								<RuleCases>
 									<RuleCase ID="893146">
-										<Row>19</Row>
+										<Row>21</Row>
 										<Actions>
 											<Action ID="893147">
 												<Event>893075</Event>
@@ -343,7 +378,7 @@
 								<Event>893087</Event>
 								<RuleCases>
 									<RuleCase ID="893149">
-										<Row>20</Row>
+										<Row>22</Row>
 										<Actions>
 											<Action ID="893150">
 												<Event>893075</Event>
@@ -356,7 +391,7 @@
 								<Event>893088</Event>
 								<RuleCases>
 									<RuleCase ID="893152">
-										<Row>21</Row>
+										<Row>23</Row>
 										<NextState>893135</NextState>
 										<Actions>
 											<Action ID="893153">
@@ -366,11 +401,28 @@
 									</RuleCase>
 								</RuleCases>
 							</Rule>
+							<Rule ID="893357">
+								<Event>893349</Event>
+								<RuleCases>
+									<RuleCase ID="893358">
+										<Row>24</Row>
+										<NextState>893135</NextState>
+										<Actions>
+											<Action ID="893359">
+												<Event>893090</Event>
+											</Action>
+											<Action ID="893360">
+												<Event>893122</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
 							<Rule ID="893154">
 								<Event>893117</Event>
 								<RuleCases>
 									<RuleCase ID="893155">
-										<Row>22</Row>
+										<Row>25</Row>
 										<Actions>
 											<Action ID="893156">
 												<Event>893075</Event>
@@ -383,7 +435,7 @@
 								<Event>893119</Event>
 								<RuleCases>
 									<RuleCase ID="893158">
-										<Row>23</Row>
+										<Row>26</Row>
 										<Actions>
 											<Action ID="893159">
 												<Event>893076</Event>
@@ -396,7 +448,7 @@
 								<Event>893120</Event>
 								<RuleCases>
 									<RuleCase ID="893161">
-										<Row>24</Row>
+										<Row>27</Row>
 										<NextState>893094</NextState>
 										<Actions>
 											<Action ID="893162">
@@ -420,18 +472,18 @@
 				<CompilerVersion>9.2.9</CompilerVersion>
 				<Language>cpp</Language>
 				<Checks>
-					<Check ID="893163">
+					<Check ID="893361">
 						<CheckType>mvrSafety</CheckType>
 						<Name>Modelling&#32;Error&#32;check</Name>
 						<Result>crPassed</Result>
 					</Check>
-					<Check ID="893164">
+					<Check ID="893362">
 						<CheckNo>1</CheckNo>
 						<CheckType>mvrLivelock</CheckType>
 						<Name>Livelock&#32;check</Name>
 						<Result>crPassed</Result>
 					</Check>
-					<Check ID="893165">
+					<Check ID="893363">
 						<CheckNo>2</CheckNo>
 						<CheckType>mvrDeadlock</CheckType>
 						<Name>Deadlock&#32;check</Name>
@@ -439,8 +491,8 @@
 					</Check>
 				</Checks>
 				<Fingerprints>
-					<Fingerprint ID="893166">
-						<Fingerprint>98B83FD6</Fingerprint>
+					<Fingerprint ID="893364">
+						<Fingerprint>8266FF9F</Fingerprint>
 					</Fingerprint>
 				</Fingerprints>
 			</VerificationStatus>

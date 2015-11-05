@@ -4,11 +4,11 @@
 		<CodeGenerationLanguage>cpp</CodeGenerationLanguage>
 		<CodeGenerationVersion>9.2.9</CodeGenerationVersion>
 		<DateCreated>20151021T162016</DateCreated>
-		<DateModified>20151029T151349</DateModified>
+		<DateModified>20151105T110027</DateModified>
 		<Guid>F05429D0D87E49149B26D516CB1D4ABB</Guid>
-		<ModelSignature>BASE64_bYGzuCcBKpKUIhq2JO0pCSnHcEeKGI1KscpZM7uCOTIW2tFZ9VWsorENPyMc07nI+ToH/pnk53QLgWsdLg0oww5Q5sHj1w7JbsnwgJskZEJqT2J88aiHqiHQH/SIbage03xDEZWu/t1uoVKElTUFUO5jxsw5ayKJAVOVJAwC+RyenVBr+s5S9w4v6dgfHIsPmMqLhD99+bcbcRTps0i5/JvY6hfjYGDKsZyFkNyufcAJ2ymPMz5kfQSeJMlj4mzKDd7nCXGBa0VN9XnRLB8MDZ+rI7VvunGTrRnU+dzj8vEvhBcHkMJMNHgUe7ohs5sCVrZXbCNDSQ849QJv+A96Gg==</ModelSignature>
+		<ModelSignature>BASE64_iyTdB0MBm/NlQMP55Kqv7aSjU6B5n2OYcK98VcM/KCmkHqOGIvmScHVcwfL/LvZrXXh6pwNuCQUGy9AyHgIpqO6J9ym9Fpen597VN2qRMa4Q4MpRD1avFHVVdiWHX7qwLZ1p6QUB19LtXxzybW8VVOos87VVqVn+U8agU3tnGztWV1M6GANZVmZBxy9GBKm2NIhbDWDpe3g5nVrqoB80bjQiq54xURGqwFcYiRPB4KZRZ0K4eiAdEzcj6nfDFjDGbdIYtPP7vIZzEOMntF0vB/XPsvrB0c4xVP+jsZRudW3kDBSqzlFJEhupkMQCz1NAcqKBZMOPJ5SWSda2IRc/CQ==</ModelSignature>
 		<Name>OutParam</Name>
-		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.7(52380)</ToolVersion>
+		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.3(52305)</ToolVersion>
 		<AbstractInterface>
 			<AbstractInterface ID="893058">
 				<Guid>C87A6402319E4BBABE71CE5B8DC9EACF</Guid>
@@ -44,7 +44,7 @@
 								<Name>IOutParam</Name>
 								<Events>
 									<CallEvent ID="893072">
-										<Comment>Happy&#32;flow</Comment>
+										<Comment>Happy&#32;flow&#32;-&#32;Data&#32;path&#32;=&#32;synchronous&#32;call&#32;sequence.</Comment>
 										<Guid>FC29533B6FED41BA99053D1C64B6D58A</Guid>
 										<Name>e_out</Name>
 										<Parameters>
@@ -55,8 +55,20 @@
 											</SimpleParameter>
 										</Parameters>
 									</CallEvent>
+									<CallEvent ID="893361">
+										<Comment>Happy&#32;flow&#32;-&#32;Data&#32;path&#32;=&#32;synchronously&#32;posted&#32;out&#32;event&#32;on&#32;required&#32;port.&#32;=&gt;&#32;Data&#32;travels&#32;through&#32;component&#32;queue.</Comment>
+										<Guid>55D07D11B6D843CB85781901F4BCADF1</Guid>
+										<Name>e_out_sync</Name>
+										<Parameters>
+											<SimpleParameter ID="893362">
+												<Direction>pdOut</Direction>
+												<Name>number</Name>
+												<Type>int</Type>
+											</SimpleParameter>
+										</Parameters>
+									</CallEvent>
 									<CallEvent ID="893118">
-										<Comment>Happy&#32;flow</Comment>
+										<Comment>Happy&#32;flow&#32;-&#32;Data&#32;path&#32;=&#32;modelling-event&#32;triggered&#32;out&#32;event&#32;on&#32;required&#32;port.&#32;=&gt;&#32;Data&#32;travels&#32;through&#32;component&#32;queue.</Comment>
 										<Guid>E855C63A38304D3EBE26509C7A95C90F</Guid>
 										<Name>e_out_async</Name>
 										<Parameters>
@@ -68,7 +80,7 @@
 										</Parameters>
 									</CallEvent>
 									<CallEvent ID="893074">
-										<Comment>Happy&#32;flow</Comment>
+										<Comment>Happy&#32;flow&#32;-&#32;Data&#32;path&#32;=&#32;synchronous&#32;call&#32;sequence.</Comment>
 										<Guid>77EFA1161F0F45FDA3075F83FF7904CC</Guid>
 										<Name>e_inout</Name>
 										<Parameters>
@@ -79,8 +91,20 @@
 											</SimpleParameter>
 										</Parameters>
 									</CallEvent>
+									<CallEvent ID="893363">
+										<Comment>Happy&#32;flow&#32;-&#32;Data&#32;path&#32;=&#32;modelling-event&#32;triggered&#32;out&#32;event&#32;on&#32;required&#32;port.&#32;=&gt;&#32;Data&#32;travels&#32;through&#32;component&#32;queue.</Comment>
+										<Guid>A2E8EB4A9FFC46E38C8833DEC9F61D80</Guid>
+										<Name>e_inout_sync</Name>
+										<Parameters>
+											<SimpleParameter ID="893364">
+												<Direction>pdInOut</Direction>
+												<Name>number</Name>
+												<Type>int</Type>
+											</SimpleParameter>
+										</Parameters>
+									</CallEvent>
 									<CallEvent ID="893120">
-										<Comment>Happy&#32;flow</Comment>
+										<Comment>Happy&#32;flow&#32;-&#32;Data&#32;path&#32;=&#32;modelling-event&#32;triggered&#32;out&#32;event&#32;on&#32;required&#32;port.&#32;=&gt;&#32;Data&#32;travels&#32;through&#32;component&#32;queue.</Comment>
 										<Guid>31D229E44ADF47CFBF69F6F9CAF04655</Guid>
 										<Name>e_inout_async</Name>
 										<Parameters>
@@ -148,11 +172,25 @@
 									</RuleCase>
 								</RuleCases>
 							</Rule>
+							<Rule ID="893365">
+								<Event>893361</Event>
+								<RuleCases>
+									<RuleCase ID="893366">
+										<Row>4</Row>
+										<NextState>893066</NextState>
+										<Actions>
+											<Action ID="893367">
+												<Event>893076</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
 							<Rule ID="893122">
 								<Event>893118</Event>
 								<RuleCases>
 									<RuleCase ID="893123">
-										<Row>4</Row>
+										<Row>5</Row>
 										<NextState>893066</NextState>
 										<Actions>
 											<Action ID="893124">
@@ -166,10 +204,24 @@
 								<Event>893074</Event>
 								<RuleCases>
 									<RuleCase ID="893081">
-										<Row>5</Row>
+										<Row>6</Row>
 										<NextState>893066</NextState>
 										<Actions>
 											<Action ID="893082">
+												<Event>893076</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="893368">
+								<Event>893363</Event>
+								<RuleCases>
+									<RuleCase ID="893369">
+										<Row>7</Row>
+										<NextState>893066</NextState>
+										<Actions>
+											<Action ID="893370">
 												<Event>893076</Event>
 											</Action>
 										</Actions>
@@ -180,7 +232,7 @@
 								<Event>893120</Event>
 								<RuleCases>
 									<RuleCase ID="893126">
-										<Row>6</Row>
+										<Row>8</Row>
 										<NextState>893066</NextState>
 										<Actions>
 											<Action ID="893127">
@@ -194,7 +246,7 @@
 								<Event>893087</Event>
 								<RuleCases>
 									<RuleCase ID="893090">
-										<Row>7</Row>
+										<Row>9</Row>
 										<NextState>893066</NextState>
 										<Actions>
 											<Action ID="893091">
@@ -218,18 +270,18 @@
 				<CompilerVersion>9.2.9</CompilerVersion>
 				<Language>cpp</Language>
 				<Checks>
-					<Check ID="893083">
+					<Check ID="893375">
 						<CheckType>mvrSafety</CheckType>
 						<Name>Modelling&#32;Error&#32;check</Name>
 						<Result>crPassed</Result>
 					</Check>
-					<Check ID="893084">
+					<Check ID="893376">
 						<CheckNo>1</CheckNo>
 						<CheckType>mvrLivelock</CheckType>
 						<Name>Livelock&#32;check</Name>
 						<Result>crPassed</Result>
 					</Check>
-					<Check ID="893085">
+					<Check ID="893377">
 						<CheckNo>2</CheckNo>
 						<CheckType>mvrDeadlock</CheckType>
 						<Name>Deadlock&#32;check</Name>
@@ -237,8 +289,8 @@
 					</Check>
 				</Checks>
 				<Fingerprints>
-					<Fingerprint ID="893086">
-						<Fingerprint>D5ACC75A</Fingerprint>
+					<Fingerprint ID="893378">
+						<Fingerprint>DBBAA08B</Fingerprint>
 					</Fingerprint>
 				</Fingerprints>
 			</VerificationStatus>
