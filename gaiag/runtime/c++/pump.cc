@@ -75,7 +75,6 @@ namespace dezyne
 
   auto find_blocked = [] (void* port) {
     auto self = std::find_if(coroutines.begin(), coroutines.end(), [port](auto& c){return c.port == port;});
-    if(self == coroutines.end()) throw std::runtime_error("cannot find my blocked self");
     return self;
   };
 
@@ -179,6 +178,12 @@ namespace dezyne
   void pump::block(void* p)
   {
     auto self = find_self();
+    if(self->skip_block)
+    {
+      self->skip_block = false;
+      return;
+    }
+
     self->port = p;
 
     debug("block", self->id);
@@ -218,7 +223,13 @@ namespace dezyne
   void pump::release(void* p)
   {
     auto self = find_self();
+
     auto blocked = find_blocked(p);
+    if(blocked == coroutines.end())
+    {
+      self->skip_block = true;
+      return;
+    }
 
     debug("unblock", blocked->id);
     debug("released", self->id);

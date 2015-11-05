@@ -54,16 +54,18 @@ namespace dezyne
     void* port;
     bool finished;
     bool released;
+    bool skip_block;
     template <typename Worker>
     coroutine(Worker&& worker)
-      : id(g_id++)
-      , context{[this, worker = std::move(worker)](auto&& yield){
+    : id(g_id++)
+    , context{[this, worker = std::move(worker)](auto&& yield){
         this->yield = std::move(yield);
         worker();
       }}
     , port(nullptr)
     , finished(false)
     , released(false)
+    , skip_block(false)
     {}
     ~coroutine()
     {
@@ -76,14 +78,14 @@ namespace dezyne
       this->yield(context);
     }
 #if HAVE_BOOST_COROUTINE
-    coroutine() : id(-1) , context() {}
+    coroutine() : id(-1), context() {}
     void call(dezyne::context& context)
     {
       this->context();
     }
     void release(){}
 #else // !HAVE_BOOST_COROUTINE
-    coroutine() : id(-1) , context(false) {}
+    coroutine() : id(-1), context(false) {}
     void call(dezyne::context& context)
     {
       this->context.call(context);
