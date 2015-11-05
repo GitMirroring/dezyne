@@ -65,6 +65,7 @@ namespace dezyne
     , finished(false)
     , released(false)
     {}
+    coroutine() : id(-1), context(false) {}
     ~coroutine()
     {
       std::clog << __FUNCTION__ << ": " << id << std::endl;
@@ -74,13 +75,11 @@ namespace dezyne
       this->yield(context);
     }
 #if HAVE_BOOST_COROUTINE
-    coroutine(bool thread_p) : id(-1), context() {}
     void call(dezyne::context& context)
     {
       this->context();
     }
 #else // !HAVE_BOOST_COROUTINE
-    coroutine(bool thread_p) : id(-1), context(thread_p) {}
     void call(dezyne::context& context)
     {
       this->context.call(context);

@@ -67,19 +67,18 @@ namespace dezyne
   {
     State state;
   public:
-    std::function<void(std::function<void(context&)>&&)> work;
     std::function<void()> rel;
+    std::function<void(std::function<void(context&)>&&)> work;
     std::unique_ptr<std::mutex> mutex;
     std::unique_ptr<std::condition_variable> condition;
     std::thread thread;
   public:
-    context(bool thread_p=true)
+    context()
     : state(INITIAL)
     , work()
     , mutex(std::make_unique<std::mutex>())
     , condition(std::make_unique<std::condition_variable>())
-    , thread([&thread_p, this] {
-        if(!thread_p) return;
+    , thread([this] {
         //std::clog << _ << "enter context" << std::endl;
         std::unique_lock<std::mutex> lock(*this->mutex);
         while(state != FINAL)
@@ -96,17 +95,23 @@ namespace dezyne
           //std::clog << _ << "after work" << std::endl;
           if(state == FINAL) break;
 
-          this->rel();
+          if(this->rel) this->rel();
         }
         //std::clog << _ << "exit context" << std::endl;
       })
     {
-      if(!thread_p) return;
       std::unique_lock<std::mutex> lock(*mutex);
       //std::clog << _ << "ctor waiting" << std::endl;
       while(state != BLOCKED) condition->wait(lock);
       //std::clog << _ << "ctor ready" << std::endl;
     }
+    context(bool)
+    : state(INITIAL)
+    , work()
+    , mutex(std::make_unique<std::mutex>())
+    , condition(std::make_unique<std::condition_variable>())
+    , thread()
+    {}
     context(context&&) = delete;//default;
     context& operator=(context&&) = delete;//default;
     context(const context&) = delete;
@@ -146,7 +151,6 @@ namespace dezyne
     void call(context& c)
     {
       std::unique_lock<std::mutex> lock(*mutex);
-      this->rel = [&]{c.release();};
       do_release(lock);
 
       std::unique_lock<std::mutex> lock2(*c.mutex);

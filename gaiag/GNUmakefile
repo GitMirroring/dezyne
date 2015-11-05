@@ -3,10 +3,8 @@
 # Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 # Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2014 Jan Nieuwenhuizen <jan@avatar.nl>
-# Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 # Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-# Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 #
 # This file is part of Gaiag.
 #

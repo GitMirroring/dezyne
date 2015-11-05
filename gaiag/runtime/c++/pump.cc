@@ -136,7 +136,9 @@ namespace dezyne
         }
       };
 
-      coroutine zero(false);
+      coroutine zero;
+
+      trek_de_stekker_druit = [&]{zero.context.release();};
 
       if(not lock) lock.lock();
       while(running or queue.size())
@@ -149,9 +151,17 @@ namespace dezyne
               worker();
             }
             finish("main");
-            decltype(switch_context) tmp([]{});
-            std::swap(switch_context, tmp);
-            tmp();
+
+            if(coroutines.size() != 1)
+            {
+              decltype(switch_context) tmp([]{});
+              std::swap(switch_context, tmp);
+              tmp();
+            }
+            else
+            {
+              trek_de_stekker_druit();
+            }
           });
 
         coroutines.back().call(zero.context);
@@ -180,9 +190,17 @@ namespace dezyne
           worker();
         }
         finish("new");
-        decltype(switch_context) tmp([]{});
-        std::swap(switch_context, tmp);
-        tmp();
+
+        if(coroutines.size() != 1)
+        {
+          decltype(switch_context) tmp([]{});
+          std::swap(switch_context, tmp);
+          tmp();
+        }
+        else
+        {
+          trek_de_stekker_druit();
+        }
       });
 
     self = find_blocked(p);

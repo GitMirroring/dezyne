@@ -59,6 +59,7 @@ namespace dezyne
     std::map<deadline, std::function<void()>> timers;
 
     std::function<void()> switch_context;
+    std::function<void()> trek_de_stekker_druit;
 
     std::thread::id thread_id;
     bool running;
