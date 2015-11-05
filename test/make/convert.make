@@ -38,19 +38,23 @@ $(info LOCAL_O_FILES: $(LOCAL_COMPONENTS:%=$(LOCAL_OUT)/%.o))
 endif
 
 $(LOCAL_OUT)/%.dzn: CDIR:=$(CDIR)
+$(LOCAL_OUT)/%.dzn: LOCAL_GLOBAL_TYPES:=$(LOCAL_GLOBAL_TYPES)
 $(LOCAL_OUT)/%.dzn: LOCAL_OUT:=$(LOCAL_OUT)
 $(LOCAL_OUT)/%.dzn: $(CDIR)%.dm
 	@mkdir -p $(LOCAL_OUT)
 	echo "$< -> $@"
 	$(DZN) convert -o $(dir $@) $<
 	sed -i -e 's,\(component \w*\)Comp,\1,' -e 's,Iasd.builtin.ITimer,ITimer,' $(basename $@)Comp.dzn
+#	$(LOCAL_GLOBAL_TYPES)sed -i -e 's,^.* extern,extern,' $(basename $@)Comp.dzn
 	mv $(basename $@)Comp.dzn $(basename $@).dzn
 
 $(LOCAL_OUT)/I%.dzn: CDIR:=$(CDIR)
+$(LOCAL_OUT)/I%.dzn: LOCAL_GLOBAL_TYPES:=$(LOCAL_GLOBAL_TYPES)
 $(LOCAL_OUT)/I%.dzn: LOCAL_OUT:=$(LOCAL_OUT)
 $(LOCAL_OUT)/I%.dzn: LOCAL_STUBS_OUT:=$(LOCAL_STUBS_OUT)
 $(LOCAL_OUT)/I%.dzn: $(CDIR)%.im
 	@mkdir -p $(LOCAL_OUT)
 	echo "$< -> $@"
 	$(DZN) convert -o $(dir $@) -m $<
+#	$(LOCAL_GLOBAL_TYPES)sed -i -e 's,^.* extern,extern,' $@
 	if [ "$(filter $(@:$(LOCAL_OUT)/I%.dzn=$(LOCAL_OUT)/%.dzn),$(LOCAL_STUBS_OUT))" != "$(<:$(CDIR)%.im=$(LOCAL_OUT)/%.dzn)" ]; then rm $(<:$(CDIR)%.im=$(LOCAL_OUT)/%.dzn); fi

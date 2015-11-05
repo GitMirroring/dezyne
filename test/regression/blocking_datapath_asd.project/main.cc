@@ -1,7 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,7 +24,7 @@
 #include "runtime.hh"
 #include "locator.hh"
 
-#include "OutParamComp.hh"
+#include "OutParam.hh"
 
 #include <iostream>
 #include <cassert>
@@ -42,7 +41,7 @@ int main()
     ih.illegal = [] {std::clog << "illegal" << std::endl; exit(0);};
     l.set(ih);
 
-    OutParamComp sut(l);
+    OutParam sut(l);
     sut.dzn_meta.name = "sut";
 
     dezyne::pump pump;

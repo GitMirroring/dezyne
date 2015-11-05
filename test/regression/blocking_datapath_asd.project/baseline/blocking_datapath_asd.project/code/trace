@@ -1,0 +1,42 @@
+running e_out
+<external>.e_out -> sut.outParam.e_out
+datasource.in.Init
+datasource.in.GetData j=4321
+datasource.in.Term
+sut.outParam.return -> <external>.return
+done e_out
+<external>.e_out_sync -> sut.outParam.e_out_sync
+datasource.in.Init
+datasource.in.GetData_SyncOutResult j=4321
+<external>.ReceiveData -> sut.datasource.ReceiveData
+datasource.in.Term
+sut.outParam.return -> <external>.return
+<external>.e_out_async -> sut.outParam.e_out_async
+datasource.in.Init
+datasource.in.RequestData
+<external>.ReceiveData -> sut.datasource.ReceiveData
+datasource.in.Term
+sut.outParam.return -> <external>.return
+<external>.e_inout -> sut.outParam.e_inout
+datasource.in.Init
+datasource.in.GetData j=1025
+datasource.in.Term
+sut.outParam.return -> <external>.return
+<external>.e_inout_sync -> sut.outParam.e_inout_sync
+datasource.in.Init
+datasource.in.GetData_SyncOutResult j=4321
+<external>.ReceiveData -> sut.datasource.ReceiveData
+datasource.in.Term
+sut.outParam.return -> <external>.return
+<external>.e_inout_async -> sut.outParam.e_inout_async
+datasource.in.Init
+datasource.in.RequestData
+<external>.ReceiveData -> sut.datasource.ReceiveData
+datasource.in.Term
+sut.outParam.return -> <external>.return
+<external>.e_outdated -> sut.outParam.e_outdated
+datasource.in.Init
+datasource.in.GetData j=12
+datasource.in.Term
+sut.outParam.return -> <external>.return
+exit main
