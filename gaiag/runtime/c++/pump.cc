@@ -138,7 +138,7 @@ namespace dezyne
 
       coroutine zero;
 
-      trek_de_stekker_druit = [&]{zero.context.release();};
+      exit = [&]{zero.release();};
 
       if(not lock) lock.lock();
       while(running or queue.size())
@@ -160,7 +160,7 @@ namespace dezyne
             }
             else
             {
-              trek_de_stekker_druit();
+              exit();
             }
           });
 
@@ -199,7 +199,7 @@ namespace dezyne
         }
         else
         {
-          trek_de_stekker_druit();
+          exit();
         }
       });
 

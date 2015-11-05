@@ -71,7 +71,6 @@ namespace dezyne
     std::function<void(std::function<void(context&)>&&)> work;
     std::unique_ptr<std::mutex> mutex;
     std::unique_ptr<std::condition_variable> condition;
-    bool join;
     std::thread thread;
   public:
     context()
@@ -79,7 +78,6 @@ namespace dezyne
     , work()
     , mutex(std::make_unique<std::mutex>())
     , condition(std::make_unique<std::condition_variable>())
-    , join(true)
     , thread([this] {
         //std::clog << _ << "enter context" << std::endl;
         std::unique_lock<std::mutex> lock(*this->mutex);
@@ -112,7 +110,6 @@ namespace dezyne
     , work()
     , mutex(std::make_unique<std::mutex>())
     , condition(std::make_unique<std::condition_variable>())
-    , join(false)
     , thread()
     {}
     context(context&&) = delete;//default;
@@ -209,7 +206,7 @@ namespace dezyne
       state = FINAL;
       lock.unlock();
       condition->notify_all();
-      if (join) thread.join();
+      if(thread.joinable()) thread.join();
       //std::clog << _ << "exit finish: " << to_string(state) << std::endl;
     }
   };
