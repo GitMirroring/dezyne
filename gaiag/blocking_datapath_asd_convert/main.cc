@@ -75,18 +75,21 @@ int main()
         promise.set_value(i);
       });
     assert(promise.get_future().get() == 4321);
+    std::clog << "e_out: done" << std::endl;
     }
 #endif
 
+#if 1
     {
       std::promise<int> promise;
       pump ([&] {sut.outParam.in.e_out_async(i);});
       pump([&] {sut.datasource.out.ReceiveData(42);
           promise.set_value(i);});
-      std::clog << "waiting for promise..., expect 42" << std::endl;
       assert(promise.get_future().get() == 42);
+      std::clog << "e_out_async: done" << std::endl;
     }
-    
+#endif
+
 #ifdef test_synchronous_datapath
     {
       std::promise<int> promise;
@@ -96,17 +99,20 @@ int main()
           promise.set_value(i);
         });
       assert(promise.get_future().get() == 1025);
+      std::clog << "e_inout: done" << std::endl;
     }
 #endif
-    
+
+#if 1
     {
       std::promise<int> promise;
       pump ([&] {sut.outParam.in.e_inout_async(i);});
       pump([&] {sut.datasource.out.ReceiveData(123);
           promise.set_value(i);});
       assert(promise.get_future().get() == 123);
-      std::clog << "Oh yeah" << std::endl;
+      std::clog << "e_inout_async: done" << std::endl;
     }
+#endif
 
 #if(0)
     {
@@ -116,9 +122,9 @@ int main()
           promise.set_value(i);
         });
       assert(promise.get_future().get() == 12);
+      std::clog << "e_outdated: done" << std::endl;
     }
 #endif
-
   }
-  std::clog << "i=" << i << std::endl;
+  std::clog << "exit main" << std::endl;
 }
