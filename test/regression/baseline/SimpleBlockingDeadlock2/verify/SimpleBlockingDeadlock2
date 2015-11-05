@@ -7,3 +7,16 @@ verify: II: check: livelock: ok
 verify: SimpleBlockingDeadlock2: check: deterministic: ok
 verify: SimpleBlockingDeadlock2: check: completeness: ok
 verify: SimpleBlockingDeadlock2: check: illegal: ok
+verify: SimpleBlockingDeadlock2: check: deadlock: fail
+p.e
+r.e
+r.return
+r.cb
+deadlock in model SimpleBlockingDeadlock2
+verify: SimpleBlockingDeadlock2: check: compliance: fail
+p.e
+r.e
+r.return
+r.cb
+p.return not performed by component
+verify: SimpleBlockingDeadlock2: check: livelock: ok

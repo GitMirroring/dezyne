@@ -1,0 +1,10 @@
+<external>.e -> sut.blocked1.provided.e
+async1.trigger
+async1.return
+<external>.e -> sut.blocked2.provided.e
+async2.trigger
+async2.return
+<internal>.notify -> sut.blocked1.required.notify
+sut.blocked1.provided.return -> <external>.return
+<internal>.notify -> sut.blocked2.required.notify
+sut.blocked2.provided.return -> <external>.return

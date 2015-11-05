@@ -1,3 +1,17 @@
 verify: ISimpleBlockingGuard: check: completeness: ok
 verify: ISimpleBlockingGuard: check: deadlock: ok
 verify: ISimpleBlockingGuard: check: livelock: ok
+verify: SimpleBlockingGuard: check: deterministic: ok
+verify: SimpleBlockingGuard: check: completeness: ok
+verify: SimpleBlockingGuard: check: illegal: ok
+verify: SimpleBlockingGuard: check: deadlock: fail
+pp.ia
+pp.return
+pp.ia
+deadlock in model SimpleBlockingGuard
+verify: SimpleBlockingGuard: check: compliance: fail
+pp.ia
+pp.return
+pp.ia
+pp.return not performed by component
+verify: SimpleBlockingGuard: check: livelock: ok
