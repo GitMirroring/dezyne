@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -52,7 +53,7 @@ namespace dezyne
       }
       bool operator < (const deadline& d) const
       {
-        return t < d.t or (t == d.t and id < d.id);
+        return t < d.t || (t == d.t && id < d.id);
       }
     };
 

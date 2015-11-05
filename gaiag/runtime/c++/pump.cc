@@ -53,9 +53,9 @@ namespace dezyne
   auto find_self = [] {
     int count =0;
     for (auto& c: coroutines) {
-      if (c.port == nullptr and not c.finished) count++;
+      if (c.port == nullptr && !c.finished) count++;
     }
-    auto self = std::find_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.port == nullptr and not c.finished;});
+    auto self = std::find_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.port == nullptr && !c.finished;});
     if(self == coroutines.end()) throw std::runtime_error("cannot find my self");
     if (count !=1)throw std::runtime_error("too many coros");
     return self;
@@ -64,11 +64,11 @@ namespace dezyne
   auto rfind_self = [] {
     int count =0;
     for (auto& c: coroutines) {
-      if (c.port == nullptr and not c.released and not c.finished) count++;
+      if (c.port == nullptr && !c.released && !c.finished) count++;
     }
     //if (count !=1)throw std::runtime_error("too many coros");
 
-    auto self = std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr /*and not c.released */and not c.finished;});
+    auto self = std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr !c.finished;});
     if(self == coroutines.rend()) throw std::runtime_error("cannot find my self");
     return self;
   };
@@ -79,7 +79,7 @@ namespace dezyne
   };
 
   auto finish = [&](const char* name){
-    auto self = rfind_self();//std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr and not c.finished;});
+    auto self = rfind_self();//std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr && !c.finished;});
     self->finished = true;
     debug(std::string("exit ") + name + " coroutine", self->id);
   };
@@ -107,14 +107,14 @@ namespace dezyne
       std::unique_lock<std::mutex> lock(mutex, std::defer_lock);
 
       worker = [&] {
-        if(not lock) lock.lock();
+        if(!lock) lock.lock();
         if(timers.empty())
         {
-          condition.wait(lock, [this]{return queue.size() or not running;});
+          condition.wait(lock, [this]{return queue.size() || !running;});
         }
         else
         {
-          condition.wait_until(lock, timers.begin()->first.t, [this]{return queue.size() or not running;});
+          condition.wait_until(lock, timers.begin()->first.t, [this]{return queue.size() || !running;});
         }
 
         while(timers.size() && timers.begin()->first.expired())
@@ -123,7 +123,7 @@ namespace dezyne
           timers.erase(timers.begin());
           lock.unlock();
           t.second();
-          if(not lock) lock.lock();
+          if(!lock) lock.lock();
         }
 
         if(queue.size())
@@ -139,12 +139,12 @@ namespace dezyne
 
       exit = [&]{debug("enter exit"); zero.release();};
 
-      if(not lock) lock.lock();
-      while(running or queue.size())
+      if(!lock) lock.lock();
+      while(running || queue.size())
       {
         coroutines.emplace_back([&]{
             auto self = find_self();
-            while((running or queue.size()) and not self->released)
+            while((running || queue.size()) && !self->released)
             {
               debug("main coroutine", self->id);
               worker();
@@ -190,7 +190,7 @@ namespace dezyne
     coroutines.emplace_back([&]{
         auto self = find_self();
         debug("new coroutine", self->id);
-        while((running or queue.size()) and not self->released)
+        while((running || queue.size()) && !self->released)
         {
           debug("worker", self->id);
           worker();
@@ -246,14 +246,14 @@ namespace dezyne
   }
   void pump::operator()(const std::function<void()>& e)
   {
-    assert(e and std::this_thread::get_id() != thread_id);
+    assert(e && std::this_thread::get_id() != thread_id);
     std::lock_guard<std::mutex> lock(mutex);
     queue.push(e);
     condition.notify_one();
   }
   void pump::operator()(std::function<void()>&& e)
   {
-    assert(e and std::this_thread::get_id() != thread_id);
+    assert(e && std::this_thread::get_id() != thread_id);
     std::lock_guard<std::mutex> lock(mutex);
     queue.push(std::move(e));
     condition.notify_one();
@@ -262,7 +262,7 @@ namespace dezyne
   {
     std::promise<void> p;
 
-    assert(e and std::this_thread::get_id() != thread_id);
+    assert(e && std::this_thread::get_id() != thread_id);
 
     {std::lock_guard<std::mutex> lock(mutex);
     queue.push([&]{e(); p.set_value();});
@@ -272,7 +272,7 @@ namespace dezyne
   }
   void pump::handle(size_t id, size_t ms, const std::function<void()>& e)
   {
-    assert(e and std::this_thread::get_id() == thread_id);
+    assert(e && std::this_thread::get_id() == thread_id);
     assert(std::find_if(timers.begin(), timers.end(), [id](const std::pair<deadline, std::function<void()>>& p){ return p.first.id == id; }) == timers.end());
     timers.emplace(deadline(id, ms), e);
   }
