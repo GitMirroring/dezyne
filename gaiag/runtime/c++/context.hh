@@ -69,18 +69,18 @@ namespace dezyne
   public:
     std::function<void()> rel;
     std::function<void(std::function<void(context&)>&&)> work;
-    std::unique_ptr<std::mutex> mutex;
-    std::unique_ptr<std::condition_variable> condition;
+    std::mutex mutex;
+    std::condition_variable condition;
     std::thread thread;
   public:
     context()
     : state(INITIAL)
     , work()
-    , mutex(std::make_unique<std::mutex>())
-    , condition(std::make_unique<std::condition_variable>())
+    , mutex()
+    , condition()
     , thread([this] {
         //std::clog << _ << "enter context" << std::endl;
-        std::unique_lock<std::mutex> lock(*this->mutex);
+        std::unique_lock<std::mutex> lock(mutex);
         while(state != FINAL)
         {
           do_block(lock);
@@ -100,16 +100,16 @@ namespace dezyne
         //std::clog << _ << "exit context" << std::endl;
       })
     {
-      std::unique_lock<std::mutex> lock(*mutex);
+      std::unique_lock<std::mutex> lock(mutex);
       //std::clog << _ << "ctor waiting" << std::endl;
-      while(state != BLOCKED) condition->wait(lock);
+      while(state != BLOCKED) condition.wait(lock);
       //std::clog << _ << "ctor ready" << std::endl;
     }
     context(bool)
     : state(INITIAL)
     , work()
-    , mutex(std::make_unique<std::mutex>())
-    , condition(std::make_unique<std::condition_variable>())
+    , mutex()
+    , condition()
     , thread()
     {}
     context(context&&) = delete;//default;
@@ -127,8 +127,7 @@ namespace dezyne
 #ifdef DEBUG
       std::clog << _ << __FUNCTION__  << ": " << to_string(state) << std::endl;
 #endif
-      if(!mutex) return;
-      std::unique_lock<std::mutex> lock(*mutex);
+      std::unique_lock<std::mutex> lock(mutex);
       do_finish(lock);
     }
     std::thread::id get_id()
@@ -137,50 +136,50 @@ namespace dezyne
     }
     void finish()
     {
-      std::unique_lock<std::mutex> lock(*mutex);
+      std::unique_lock<std::mutex> lock(mutex);
       do_finish(lock);
     }
     void block()
     {
-      std::unique_lock<std::mutex> lock(*mutex);
+      std::unique_lock<std::mutex> lock(mutex);
       do_block(lock);
     }
     void release()
     {
-      std::unique_lock<std::mutex> lock(*mutex);
+      std::unique_lock<std::mutex> lock(mutex);
       do_release(lock);
     }
     void call(context& c)
     {
-      std::unique_lock<std::mutex> lock(*mutex);
+      std::unique_lock<std::mutex> lock(mutex);
       do_release(lock);
 
-      std::unique_lock<std::mutex> lock2(*c.mutex);
+      std::unique_lock<std::mutex> lock2(c.mutex);
       c.state = BLOCKED;
 
       lock.unlock();
 
-      do { c.condition->wait(lock2); } while(c.state == BLOCKED);
+      do { c.condition.wait(lock2); } while(c.state == BLOCKED);
     }
     template <typename Work>
     void yield(Work&& work, context& c)
     {
-      std::unique_lock<std::mutex> lock(*mutex);
+      std::unique_lock<std::mutex> lock(mutex);
       this->work = std::move(work);
       this->rel = [&]{c.release();};
       do_release(lock);
 
-      std::unique_lock<std::mutex> lock2(*c.mutex);
+      std::unique_lock<std::mutex> lock2(c.mutex);
       c.state = BLOCKED;
 
       lock.unlock();
 
-      do { c.condition->wait(lock2); } while(c.state == BLOCKED);
+      do { c.condition.wait(lock2); } while(c.state == BLOCKED);
     }
     void yield(context& to)
     {
       if(&to == this) return;
-      std::unique_lock<std::mutex> lock(*mutex);
+      std::unique_lock<std::mutex> lock(mutex);
       to.release();
       do_block(lock);
     }
@@ -189,8 +188,8 @@ namespace dezyne
     {
       //std::clog << _ << "enter block: " << to_string(state) << std::endl;
       state = BLOCKED;
-      condition->notify_one();
-      do { condition->wait(lock); } while(state == BLOCKED);
+      condition.notify_one();
+      do { condition.wait(lock); } while(state == BLOCKED);
       //std::clog << _ << "exit block: " << to_string(state) << std::endl;
     }
     void do_release(std::unique_lock<std::mutex>&)
@@ -199,7 +198,7 @@ namespace dezyne
       if(state != BLOCKED) throw std::runtime_error("not allowed to release a call which is " +
                                                     to_string(state));
       state = RELEASED;
-      condition->notify_one();
+      condition.notify_one();
       //std::clog << _ << "exit release: " << to_string(state) << std::endl;
     }
     void do_finish(std::unique_lock<std::mutex>& lock)
@@ -207,7 +206,7 @@ namespace dezyne
       //std::clog << _ << "enter finish: " << to_string(state) << std::endl;
       state = FINAL;
       lock.unlock();
-      condition->notify_all();
+      condition.notify_all();
       if(thread.joinable()) thread.join();
       //std::clog << _ << "exit finish: " << to_string(state) << std::endl;
     }
