@@ -61,7 +61,6 @@ int main()
     sut.datasource.in.GetData_SyncOutResult = [&] () {
       std::clog << "datasource.in.GetData_SyncOutResult j=" << j << std::endl;
       sut.datasource.out.ReceiveData(j); // Synchronous call-back!
-      // pump([&] {sut.datasource.out.ReceiveData(j);});
       return IMultiStepOutParam::IMultiStepOutParam_Values::Ok;
     };
     sut.datasource.in.RequestData = [&] () {
@@ -137,7 +136,7 @@ int main()
       assert(promise.get_future().get() == 4321);
      }
 #endif
- 
+
 #if 1
     {
       std::promise<int> promise;
@@ -162,6 +161,7 @@ int main()
       std::clog << "e_outdated: done" << std::endl;
     }
 #endif
+
   }
   std::clog << "exit main" << std::endl;
 }

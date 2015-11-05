@@ -1,3 +1,4 @@
 #statement
 dzn_rt.handling(this) = false;
+dzn_rt.flush(this);
 dzn_locator.get<dezyne::pump>().block(&this->#port);
