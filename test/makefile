@@ -106,6 +106,8 @@ clean:
 
 ifeq ($(strip $(filter-out bugs clean help smoke smoke-clean stress,$(MAKECMDGOALS))),$(MAKECMDGOALS))
 MAKE_SNIPPETS:=regression/makefile.make $(sort $(wildcard regression/*/makefile.make regression/*/*/makefile.make))
+# using old version of pump... breaks
+MAKE_SNIPPETS:=$(filter-out regression/lego.project/makefile.make regression/autocryocycle.project/makefile.make,$(MAKE_SNIPPETS))
 endif
 ifeq ($(MAKECMDGOALS),smoke)
 MAKE_SNIPPETS:=regression/alarm.project/makefile.make
