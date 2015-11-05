@@ -138,16 +138,16 @@ int main(int argc, char* argv[])
       }
 
     // create dezyne system
-    dezyne::pump pump;
     dezyne::runtime rt;
     dezyne::locator loc;
-    loc.set(pump);
     loc.set(rt);
 
     std::function<std::shared_ptr<itimer_impl>(const dezyne::locator&)> create_timer_impl = [](const dezyne::locator& l){return std::make_shared<timer_impl>(l);};
     loc.set(create_timer_impl);
 
     LegoBallSorter sut(loc);
+    dezyne::pump pump;
+    loc.set(pump);
 
     sut.dzn_meta.name = "sut";
     sut.ctrl.meta.requires = {"ctrl",0};
