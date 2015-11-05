@@ -21,4 +21,8 @@
 # Code:
 
 LANGUAGES:=parse
+BROKEN=\
+ regression/parse/replyNotFound.dzn\
+ regression/parse/replyVoidExpected.dzn\
+
 include make/files.make
