@@ -4,10 +4,10 @@
 		<CodeGenerationLanguage>cpp</CodeGenerationLanguage>
 		<CodeGenerationVersion>9.2.9</CodeGenerationVersion>
 		<DateCreated>20151021T162910</DateCreated>
-		<DateModified>20151105T110015</DateModified>
+		<DateModified>20151105T124736</DateModified>
 		<Description>Basis&#32;for&#32;testing&#32;parameter&#32;passing.</Description>
 		<Guid>ADA478BDA88B485AB5FA8EE48A1E37D0</Guid>
-		<ModelSignature>BASE64_z9YNTHsMxbdg27vzk1Nv9eURtpidpZiGF6JYCmfj0ot6OX/dXdI8Tl0HssoGPfuUgB4Hb7eKKcUFIIerjXOhW5nvEiFZJ1oGRtjdQkAoDd4latlKhU/LdxtPIpxfqHyBVpe3sTbgUSKGzRwKkBgTNMovapE+pjkaeYExhkkzOIBLV/cUlOprXzgVFbkJY+j3exkLgwVtKvwIBVLk1kXmAP3cEMNHwlxfHihXv65XRqiD2pLYGB+JIZcWwt9sVA0gGlbF2DE4Y0RXIOKTFtsW5a3C1rhSDgZstWxcXFFOtJ+Px1/wRHPkRSNCIuk5fxtVCVbCk+UGrl2p5zRpv9UT7w==</ModelSignature>
+		<ModelSignature>BASE64_de6kCBzSmrTCpiisMOyMs6rNGahkfDL4iucbJKdh/1hA5Th8mk/S61nPDxEpFwy59LWsauigMqZK8gO6hBk7Wknrd78iv8WmX4IFuNQWQ7PkCfLKqiyt0WRkkFHNEuGu6rj0R+hofT1gXO0RlZTFTVVO7+oDCBm5F+ZXkrIhIU4GPjCd+2mQFtqbkVDzB4drg0J/QtjMy9O6BmC+aAW83EqNXFh0cAohMAQYAm+ygwHmpZ3GtRmYgRNMPzhPKvP73e6NWJ1a+UDDExlnivW/ks/9M8cz97YiUbVFKQSGXvCEMBcdOLK4Izwz5IiaDu9Pxw+WMz/LcCiwnbO6oj1BYQ==</ModelSignature>
 		<Name>OutParam</Name>
 		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.3(52305)</ToolVersion>
 		<AbstractInterface>
@@ -320,7 +320,7 @@
 									<RuleCase ID="893188">
 										<Comment>Reply&#32;at&#32;end&#32;of&#32;transaction</Comment>
 										<Row>6</Row>
-										<StateUpdate>pending_reply&#32;=&#32;true;&#10;synchronous&#32;=&#32;true;&#10;synchronous_cb&#32;=&#32;false</StateUpdate>
+										<StateUpdate>pending_reply&#32;=&#32;true;&#10;synchronous&#32;=&#32;false;&#10;synchronous_cb&#32;=&#32;false</StateUpdate>
 										<NextState>893182</NextState>
 										<Actions>
 											<Action ID="893189">
@@ -398,7 +398,7 @@
 									<RuleCase ID="893196">
 										<Comment>Reply&#32;at&#32;end&#32;of&#32;transaction</Comment>
 										<Row>9</Row>
-										<StateUpdate>pending_reply&#32;=&#32;true;&#10;synchronous&#32;=&#32;true;&#10;synchronous_cb&#32;=&#32;false</StateUpdate>
+										<StateUpdate>pending_reply&#32;=&#32;true;&#10;synchronous&#32;=&#32;false;&#10;synchronous_cb&#32;=&#32;false</StateUpdate>
 										<NextState>893182</NextState>
 										<Actions>
 											<Action ID="893197">

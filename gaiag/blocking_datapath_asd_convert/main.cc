@@ -30,8 +30,6 @@
 #include <iostream>
 #include <cassert>
 
-// Data path test for converted ASD model OutParam.dm
-
 int main()
 {
   int i = 1;
@@ -62,7 +60,8 @@ int main()
     };
     sut.datasource.in.GetData_SyncOutResult = [&] () {
       std::clog << "datasource.in.GetData_SyncOutResult j=" << j << std::endl;
-      sut.datasource.out.ReceiveData(j);
+      sut.datasource.out.ReceiveData(j); // Synchronous call-back!
+      // pump([&] {sut.datasource.out.ReceiveData(j);});
       return IMultiStepOutParam::IMultiStepOutParam_Values::Ok;
     };
     sut.datasource.in.RequestData = [&] () {
@@ -72,18 +71,20 @@ int main()
     sut.check_bindings();
     sut.dump_tree();
 
-    //#define test_synchronous_datapath
+    #define test_synchronous_datapath
 
 #ifdef test_synchronous_datapath
-    { // Data path test - out parameter through synchronous call stack
-      std::promise<int> promise;
-      i = 1234;
-      j = 4321;
-      pump ([&] {
-          sut.outParam.in.e_out(i);
-          promise.set_value(i);
-        });
-      assert(promise.get_future().get() == 4321);
+    {
+    std::promise<int> promise;
+    j = 4321;
+    pump ([&] {
+        std::clog << "running e_out" << std::endl;
+        sut.outParam.in.e_out(i);
+        std::clog << "done e_out" << std::endl;
+        promise.set_value(i);
+      });
+    assert(promise.get_future().get() == 4321);
+    std::clog << "e_out: done" << std::endl;
     }
 #endif
 
@@ -100,37 +101,29 @@ int main()
     }
 #endif
 
-    { // Data path test - out parameter through asynchronous out event
+#if 1
+    {
       std::promise<int> promise;
-      i = 1234;
       pump ([&] {sut.outParam.in.e_out_async(i);});
       pump([&] {sut.datasource.out.ReceiveData(42);
           promise.set_value(i);});
-      std::clog << "waiting for promise..., expect 42" << std::endl;
       assert(promise.get_future().get() == 42);
+      std::clog << "e_out_async: done" << std::endl;
     }
-    
+#endif
+
 #ifdef test_synchronous_datapath
-    { // Data path test - out parameter through synchronous call stack
+    {
       std::promise<int> promise;
-      i = 1234;
+      i = 142;
       j = 1025;
       pump ([&] {sut.outParam.in.e_inout(i);
           promise.set_value(i);
         });
       assert(promise.get_future().get() == 1025);
+      std::clog << "e_inout: done" << std::endl;
     }
 #endif
-    
-    { // Data path test - out parameter through synchronous call stack
-      std::promise<int> promise;
-      i = 1234;
-      pump ([&] {sut.outParam.in.e_inout_async(i);});
-      pump([&] {sut.datasource.out.ReceiveData(123);
-          promise.set_value(i);});
-      assert(promise.get_future().get() == 123);
-      std::clog << "Oh yeah" << std::endl;
-    }
 
 #ifdef test_synchronous_datapath
     { // Data path test - out parameter through synchronous out event
@@ -142,33 +135,33 @@ int main()
           promise.set_value(i);
         });
       assert(promise.get_future().get() == 4321);
-    }
+     }
 #endif
-
-#if(0)
-    { // Data path test - out parameter through asynchronous out event
+ 
+#if 1
+    {
       std::promise<int> promise;
-      i = 1234;
-      j = 4321;
-      pump ([&] {
-          sut.outParam.in.e_inout_async(i);
-          promise.set_value(i);
-        });
-      assert(promise.get_future().get() == 4321);
+      pump ([&] {sut.outParam.in.e_inout_async(i);});
+      pump([&] {sut.datasource.out.ReceiveData(123);
+          promise.set_value(i);});
+      assert(promise.get_future().get() == 123);
+      std::clog << "e_inout_async: done" << std::endl;
     }
 #endif
 
 #ifdef test_synchronous_datapath
-    { // Out parameter unchanged after reply()
+    {
       std::promise<int> promise;
-      i = 12;
+      j = 12;
+      i = 1234;
       pump ([&] {sut.outParam.in.e_outdated(i);
           promise.set_value(i);
         });
-      assert(promise.get_future().get() == 12);
+      // std::clog << "out param = " << promise.get_future().get() << std::endl;
+      assert(promise.get_future().get() == 123);
+      std::clog << "e_outdated: done" << std::endl;
     }
 #endif
-
   }
-  std::clog << "i=" << i << std::endl;
+  std::clog << "exit main" << std::endl;
 }
