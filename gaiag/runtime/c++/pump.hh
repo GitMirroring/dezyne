@@ -76,6 +76,13 @@ namespace dezyne
     void operator()(const std::function<void()>&);
     void operator()(std::function<void()>&&);
     void and_wait(const std::function<void()>&);
+    template <typename R>
+    R and_wait(const std::function<R()>& e)
+    {
+      std::promise<R> p;
+      this->operator()([&]{p.set_value(e());});
+      return p.get_future().get();
+    }
     void handle(size_t id, size_t ms, const std::function<void()>&);
     void remove(size_t id);
   };
