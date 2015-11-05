@@ -55,7 +55,7 @@ namespace dezyne
     for (auto& c: coroutines) {
       if (c.port == nullptr && !c.finished) count++;
     }
-    auto self = std::find_if(coroutines.begin(), coroutines.end(), [](auto& c){return c.port == nullptr && !c.finished;});
+    auto self = std::find_if(coroutines.begin(), coroutines.end(), [](dezyne::coroutine& c){return c.port == nullptr && !c.finished;});
     if(self == coroutines.end()) throw std::runtime_error("cannot find my self");
     if (count !=1)throw std::runtime_error("too many coros");
     return self;
@@ -68,18 +68,18 @@ namespace dezyne
     }
     //if (count !=1)throw std::runtime_error("too many coros");
 
-    auto self = std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr !c.finished;});
+    auto self = std::find_if(coroutines.rbegin(), coroutines.rend(), [](dezyne::coroutine& c){return c.port == nullptr && !c.finished;});
     if(self == coroutines.rend()) throw std::runtime_error("cannot find my self");
     return self;
   };
 
   auto find_blocked = [] (void* port) {
-    auto self = std::find_if(coroutines.begin(), coroutines.end(), [port](auto& c){return c.port == port;});
+    auto self = std::find_if(coroutines.begin(), coroutines.end(), [port](dezyne::coroutine& c){return c.port == port;});
     return self;
   };
 
   auto finish = [&](const char* name){
-    auto self = rfind_self();//std::find_if(coroutines.rbegin(), coroutines.rend(), [](auto& c){return c.port == nullptr && !c.finished;});
+    auto self = rfind_self();//std::find_if(coroutines.rbegin(), coroutines.rend(), [](dezyne::coroutine& c){return c.port == nullptr && !c.finished;});
     self->finished = true;
     debug(std::string("exit ") + name + " coroutine", self->id);
   };
@@ -165,7 +165,7 @@ namespace dezyne
 
         coroutines.back().call(zero.context);
         debug("finish pump");
-        coroutines.remove_if([](auto& c){if(c.finished) debug("removing", c.id); return c.finished;});
+        coroutines.remove_if([](dezyne::coroutine& c){if(c.finished) debug("removing", c.id); return c.finished;});
       }
       assert(queue.empty());
     }
@@ -218,7 +218,7 @@ namespace dezyne
       std::clog << c.id << " ";
     }
     std::clog << std::endl;
-    coroutines.remove_if([](auto& c){if(c.finished) debug("removing",c.id); return c.finished;});
+    coroutines.remove_if([](dezyne::coroutine& c){if(c.finished) debug("removing",c.id); return c.finished;});
   }
   void pump::release(void* p)
   {

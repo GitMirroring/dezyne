@@ -920,7 +920,7 @@ out/norm2b:
 	rm -rf out && mkdir out && cd out && ln -s ../examples . && ln -s ../runtime/$(CXX)/* .
 	cd out && ln -s ../examples/norm2b.cc main.cc
 	(cd out && ../gaiag -l $(CXX) ../examples/norm2b.dzn)
-	-g++ $(CXX1Y) -DBLOCKING=1 -o out/test out/*cc -lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
+	-g++ $(CXX11) -DBLOCKING=1 -o out/test out/*cc -lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
 	-echo p1.b,p2.r | tr ',' '\n' | out/test
 	-diff -uwB baseline/inorm2b.hh out/inorm2b.hh
 	-diff -uwB baseline/norm2b.hh out/norm2b.hh
