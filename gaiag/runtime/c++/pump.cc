@@ -166,7 +166,7 @@ namespace dezyne
 
         coroutines.back().call(zero.context);
         debug("finish pump");
-        coroutines.remove_if([](auto& c){if(c.finished) std::cout << "removing: " << c.id << std::endl; return c.finished;});
+        coroutines.remove_if([](auto& c){if(c.finished) debug("removing", c.id); return c.finished;});
       }
       assert(queue.empty());
     }
@@ -213,7 +213,7 @@ namespace dezyne
       std::clog << c.id << " ";
     }
     std::clog << std::endl;
-    coroutines.remove_if([](auto& c){if(c.finished) std::cout << "removing: " << c.id << std::endl; return c.finished;});
+    coroutines.remove_if([](auto& c){if(c.finished) debug("removing",c.id); return c.finished;});
   }
   void pump::release(void* p)
   {

@@ -67,7 +67,9 @@ namespace dezyne
     {}
     ~coroutine()
     {
+#ifdef DEBUG
       std::clog << __FUNCTION__ << ": " << id << std::endl;
+#endif
     }
     void yield_to(dezyne::context& context)
     {
