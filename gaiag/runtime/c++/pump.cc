@@ -138,14 +138,14 @@ namespace dezyne
 
       coroutine zero;
 
-      exit = [&]{zero.release();};
+      exit = [&]{debug("enter exit"); zero.release();};
 
       if(not lock) lock.lock();
       while(running or queue.size())
       {
         coroutines.emplace_back([&]{
             auto self = find_self();
-            while(running or queue.size() and not self->released)
+            while((running or queue.size()) and not self->released)
             {
               debug("main coroutine", self->id);
               worker();
@@ -165,6 +165,7 @@ namespace dezyne
           });
 
         coroutines.back().call(zero.context);
+        debug("finish pump");
         coroutines.remove_if([](auto& c){if(c.finished) std::cout << "removing: " << c.id << std::endl; return c.finished;});
       }
       assert(queue.empty());
@@ -184,7 +185,7 @@ namespace dezyne
     coroutines.emplace_back([&]{
         auto self = find_self();
         debug("new coroutine", self->id);
-        while(running or queue.size() and not self->released)
+        while((running or queue.size()) and not self->released)
         {
           debug("worker", self->id);
           worker();
