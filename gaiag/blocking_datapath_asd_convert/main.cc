@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
 //
@@ -27,10 +28,12 @@
 #include "OutParamComp.hh"
 
 #include <iostream>
+#include <cassert>
 
 int main()
 {
   int i = 1;
+  int j = 1024;
   {
     dezyne::locator l;
     dezyne::runtime rt;
@@ -48,9 +51,8 @@ int main()
     sut.datasource.in.Init = [&] () {std::clog << "datasource.in.Init" << std::endl; return IMultiStepOutParam::IMultiStepOutParam_Values::Ok;};
     sut.datasource.in.Term = [&] () {std::clog << "datasource.in.Term" << std::endl;};
     sut.datasource.in.GetData = [&] (int& nr) {
-      static int r = 0;
-      std::clog << "datasource.in.GetData r=" << r << std::endl;
-      nr = r++;
+      std::clog << "datasource.in.GetData j=" << j << std::endl;
+      nr = j;
       return IMultiStepOutParam::IMultiStepOutParam_Values::Ok;
     };
     sut.datasource.in.RequestData = [&] () {
@@ -59,37 +61,62 @@ int main()
 
     sut.check_bindings();
     sut.dump_tree();
-    char s[100];
 
-    std::promise<int> data_promise;
+    //#define test_synchronous_datapath
+
+#ifdef test_synchronous_datapath
+    {
+    std::promise<int> promise;
+    j = 4321;
     pump ([&] {
         std::clog << "running e_out" << std::endl;
         sut.outParam.in.e_out(i);
         std::clog << "done e_out" << std::endl;
-        data_promise.set_value (i);
+        promise.set_value(i);
       });
-    std::clog << "waiting for promise..." << std::endl;
-    int e_out_result = data_promise.get_future ().get();
-    std::clog << "i=" << e_out_result << std::endl;
+    assert(promise.get_future().get() == 4321);
+    }
+#endif
 
-    std::cin.getline (s, sizeof(s));
+    {
+      std::promise<int> promise;
+      pump ([&] {sut.outParam.in.e_out_async(i);});
+      pump([&] {sut.datasource.out.ReceiveData(42);
+          promise.set_value(i);});
+      std::clog << "waiting for promise..., expect 42" << std::endl;
+      assert(promise.get_future().get() == 42);
+    }
+    
+#ifdef test_synchronous_datapath
+    {
+      std::promise<int> promise;
+      i = 142;
+      j = 1025;
+      pump ([&] {sut.outParam.in.e_inout(i);
+          promise.set_value(i);
+        });
+      assert(promise.get_future().get() == 1025);
+    }
+#endif
+    
+    {
+      std::promise<int> promise;
+      pump ([&] {sut.outParam.in.e_inout_async(i);});
+      pump([&] {sut.datasource.out.ReceiveData(123);
+          promise.set_value(i);});
+      assert(promise.get_future().get() == 123);
+      std::clog << "Oh yeah" << std::endl;
+    }
 
-#if 0
-    pump ([&] {sut.outParam.in.e_out_async(i);});
-    pump.and_wait ([&] {sut.datasource.out.ReceiveData(i);});
-    std::clog << "i=" << i << std::endl;
-
-    pump ([&] {sut.outParam.in.e_inout(i);});
-    pump.and_wait ([&] {sut.datasource.out.ReceiveData(i);});
-    std::clog << "i=" << i << std::endl;
-
-    pump ([&] {sut.outParam.in.e_inout_async(i);});
-    pump.and_wait ([&] {sut.datasource.out.ReceiveData(i);});
-    std::clog << "i=" << i << std::endl;
-
-    pump ([&] {sut.outParam.in.e_outdated(i);});
-    pump.and_wait ([&] {sut.datasource.out.ReceiveData(i);});
-    std::clog << "i=" << i << std::endl;
+#if(0)
+    {
+      std::promise<int> promise;
+      i = 12;
+      pump ([&] {sut.outParam.in.e_outdated(i);
+          promise.set_value(i);
+        });
+      assert(promise.get_future().get() == 12);
+    }
 #endif
 
   }

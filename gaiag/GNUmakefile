@@ -1,9 +1,12 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
 # Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 # Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2014 Jan Nieuwenhuizen <jan@avatar.nl>
+# Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 # Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 #
 # This file is part of Gaiag.
 #
@@ -927,11 +930,12 @@ out/norm2b:
 
 out/henk: out/blocking_datapath_asd_convert
 out/blocking_datapath_asd_convert:
-	rm -rf out && mkdir out && cd out && ln -s ../examples . && ln -s ../runtime/$(CXX)/* .
-	cat blocking_datapath_asd_convert/I*dzn blocking_datapath_asd_convert/M*dzn blocking_datapath_asd_convert/O*dzn | grep -v import > out/henk.dzn
-	(cd out && ../gaiag -l $(CXX) -m OutParamComp ../blocking_datapath_asd_convert/OutParamComp.dzn)
-	(cd out && ../gaiag -l $(CXX) ../blocking_datapath_asd_convert/IOutParam.dzn)
-	(cd out && ../gaiag -l $(CXX) ../blocking_datapath_asd_convert/IMultiStepOutParam.dzn)
+	rm -rf out && mkdir out && cd out && ln -s ../runtime/$(CXX)/* . && ln -s ../blocking_datapath_asd_convert/*.[id]m .
+	(cd out && ../../externals/asdsuite/0.0.0/asd -l gen2 *.[id]m)
+	(cd out && sed -i -e 's,^.* extern,extern,' *.dzn)
+	(cd out && ../gaiag -l $(CXX) -m OutParamComp OutParamComp.dzn)
+	(cd out && ../gaiag -l $(CXX) IOutParam.dzn)
+	(cd out && ../gaiag -l $(CXX) IMultiStepOutParam.dzn)
 	(cd out && ln -fs ../blocking_datapath_asd_convert/main.cc .)
-	-g++ $(CXX1Y) -DBLOCKING=1 -o out/test out/*cc -lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
+	-g++ $(CXX1Y) -DxHAVE_BOOST_COROUTINE=1 -DBLOCKING=1 -o out/test out/*cc -lboost_system -lboost_coroutine -lboost_thread -lboost_context -pthread
 	-echo outParam.e_out,outParam.e_out_async,outParam.e_inout,outParam.e_inout_async,outParam.e_outdated | tr ',' '\n' | out/test
