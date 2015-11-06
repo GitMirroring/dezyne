@@ -218,14 +218,14 @@ namespace dezyne
   void pump::operator()(const std::function<void()>& e)
   {
     assert(e && std::this_thread::get_id() != thread_id);
-    std::lock_guard<std::mutex> lock(mutex);
+    std::unique_lock<std::mutex> lock(mutex);
     queue.push(e);
     condition.notify_one();
   }
   void pump::operator()(std::function<void()>&& e)
   {
     assert(e && std::this_thread::get_id() != thread_id);
-    std::lock_guard<std::mutex> lock(mutex);
+    std::unique_lock<std::mutex> lock(mutex);
     queue.push(std::move(e));
     lock.unlock();
     condition.notify_one();

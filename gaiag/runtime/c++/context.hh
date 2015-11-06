@@ -68,7 +68,7 @@ namespace dezyne
     State state;
   public:
     std::function<void()> rel;
-    std::function<void(std::function<void(context&)>&&)> work;
+    std::function<void(std::function<void(context&)>&)> work;
     std::mutex mutex;
     std::condition_variable condition;
     std::thread thread;
@@ -89,7 +89,8 @@ namespace dezyne
           if(!this->work) break;
 
           lock.unlock();
-          this->work([this](context& c){ yield(c); });
+          std::function<void(context&)> yield([this](context& c){ this->yield(c); });
+          this->work(yield);
           lock.lock();
 
           //std::clog << _ << "after work" << std::endl;
