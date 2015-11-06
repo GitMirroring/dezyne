@@ -58,8 +58,7 @@ namespace dezyne
     template <typename Worker>
     coroutine(Worker&& worker)
     : id(g_id++)
-    , context([this, worker](dezyne::yield&& yield){
-
+    , context([this, worker](dezyne::yield& yield){
         this->yield = std::move(yield);
         worker();
       })
