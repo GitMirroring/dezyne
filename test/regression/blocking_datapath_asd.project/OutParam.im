@@ -4,9 +4,9 @@
 		<CodeGenerationLanguage>cpp</CodeGenerationLanguage>
 		<CodeGenerationVersion>9.2.9</CodeGenerationVersion>
 		<DateCreated>20151021T162016</DateCreated>
-		<DateModified>20151105T110027</DateModified>
+		<DateModified>20151106T131546</DateModified>
 		<Guid>F05429D0D87E49149B26D516CB1D4ABB</Guid>
-		<ModelSignature>BASE64_iyTdB0MBm/NlQMP55Kqv7aSjU6B5n2OYcK98VcM/KCmkHqOGIvmScHVcwfL/LvZrXXh6pwNuCQUGy9AyHgIpqO6J9ym9Fpen597VN2qRMa4Q4MpRD1avFHVVdiWHX7qwLZ1p6QUB19LtXxzybW8VVOos87VVqVn+U8agU3tnGztWV1M6GANZVmZBxy9GBKm2NIhbDWDpe3g5nVrqoB80bjQiq54xURGqwFcYiRPB4KZRZ0K4eiAdEzcj6nfDFjDGbdIYtPP7vIZzEOMntF0vB/XPsvrB0c4xVP+jsZRudW3kDBSqzlFJEhupkMQCz1NAcqKBZMOPJ5SWSda2IRc/CQ==</ModelSignature>
+		<ModelSignature>BASE64_tN30Rp6c0aZgyIi8YyTZqYKP5X2Ug3Qi/JpIByobIKDVcDsS1hg9J7dU9nhWrAOzmuU9vV6hMbmd3tHUK5IMs3lI73vEOqeDoMPMgP8kkeHHogkxzEoYUqJhZYD9gC8GdGl0kqZMgKnzltDBK2sC/DDOFFhzCQ5LSHoI9euJWTdzAkhTrmxgiJtsGHc79pcPnLZrJiRtr9+1uRFtWXC/iCJkL3IqDYNKn61C4Bd+IXXpqw/kpBhgCjGlSj7xaWNMuXG+GAXOhZme+hInwM4tTsoc3LDcQgt+NKZ7zz9phUVuwo0j5pAjEJcAQABZ4u1IKH2okT3aBIWHBfl6Z05wbQ==</ModelSignature>
 		<Name>OutParam</Name>
 		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.3(52305)</ToolVersion>
 		<AbstractInterface>
@@ -79,6 +79,18 @@
 											</SimpleParameter>
 										</Parameters>
 									</CallEvent>
+									<CallEvent ID="893432">
+										<Comment>Happy&#32;flow&#32;-&#32;Data&#32;path&#32;=&#32;modelling-event&#32;triggered&#32;out&#32;event&#32;on&#32;required&#32;port&#32;processes&#32;synchronously&#32;posted&#32;out&#32;event</Comment>
+										<Guid>5DE985E2D7C548EDA776671921C1490B</Guid>
+										<Name>e_out_sync_async</Name>
+										<Parameters>
+											<SimpleParameter ID="893433">
+												<Direction>pdOut</Direction>
+												<Name>number</Name>
+												<Type>int</Type>
+											</SimpleParameter>
+										</Parameters>
+									</CallEvent>
 									<CallEvent ID="893074">
 										<Comment>Happy&#32;flow&#32;-&#32;Data&#32;path&#32;=&#32;synchronous&#32;call&#32;sequence.</Comment>
 										<Guid>77EFA1161F0F45FDA3075F83FF7904CC</Guid>
@@ -115,6 +127,18 @@
 											</SimpleParameter>
 										</Parameters>
 									</CallEvent>
+									<CallEvent ID="893434">
+										<Comment>Happy&#32;flow&#32;-&#32;Data&#32;path&#32;=&#32;modelling-event&#32;triggered&#32;out&#32;event&#32;on&#32;required&#32;port&#32;processes&#32;synchronously&#32;posted&#32;out&#32;event</Comment>
+										<Guid>A789C6AAC8E34507822CB58DC63FD007</Guid>
+										<Name>e_inout_sync_async</Name>
+										<Parameters>
+											<SimpleParameter ID="893446">
+												<Direction>pdInOut</Direction>
+												<Name>number</Name>
+												<Type>int</Type>
+											</SimpleParameter>
+										</Parameters>
+									</CallEvent>
 									<CallEvent ID="893087">
 										<Comment>Exceptional&#32;flow:&#32;Output&#32;outdated&#32;number.&#32;(VoidReply&#32;before&#32;getting&#32;new&#32;data.)</Comment>
 										<Guid>D4B0528678F04889998961CB035A4025</Guid>
@@ -126,6 +150,16 @@
 												<Type>int</Type>
 											</SimpleParameter>
 										</Parameters>
+									</CallEvent>
+									<CallEvent ID="893487">
+										<Comment>Data&#32;paths&#32;through&#32;sub-machines</Comment>
+										<Guid>01967BFC1A31499897DCAC36D700B6B5</Guid>
+										<Name>enable_sub_machines</Name>
+									</CallEvent>
+									<CallEvent ID="893488">
+										<Comment>Data&#32;paths&#32;through&#32;main&#32;machine&#32;only</Comment>
+										<Guid>47FF284BF38E43A3B749AEAC16D21CAC</Guid>
+										<Name>disable_sub_machines</Name>
 									</CallEvent>
 								</Events>
 								<ReplyEvents>
@@ -200,11 +234,25 @@
 									</RuleCase>
 								</RuleCases>
 							</Rule>
+							<Rule ID="893436">
+								<Event>893432</Event>
+								<RuleCases>
+									<RuleCase ID="893437">
+										<Row>6</Row>
+										<NextState>893066</NextState>
+										<Actions>
+											<Action ID="893438">
+												<Event>893076</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
 							<Rule ID="893080">
 								<Event>893074</Event>
 								<RuleCases>
 									<RuleCase ID="893081">
-										<Row>6</Row>
+										<Row>7</Row>
 										<NextState>893066</NextState>
 										<Actions>
 											<Action ID="893082">
@@ -218,7 +266,7 @@
 								<Event>893363</Event>
 								<RuleCases>
 									<RuleCase ID="893369">
-										<Row>7</Row>
+										<Row>8</Row>
 										<NextState>893066</NextState>
 										<Actions>
 											<Action ID="893370">
@@ -232,10 +280,24 @@
 								<Event>893120</Event>
 								<RuleCases>
 									<RuleCase ID="893126">
-										<Row>8</Row>
+										<Row>9</Row>
 										<NextState>893066</NextState>
 										<Actions>
 											<Action ID="893127">
+												<Event>893076</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="893439">
+								<Event>893434</Event>
+								<RuleCases>
+									<RuleCase ID="893440">
+										<Row>10</Row>
+										<NextState>893066</NextState>
+										<Actions>
+											<Action ID="893441">
 												<Event>893076</Event>
 											</Action>
 										</Actions>
@@ -246,10 +308,38 @@
 								<Event>893087</Event>
 								<RuleCases>
 									<RuleCase ID="893090">
-										<Row>9</Row>
+										<Row>11</Row>
 										<NextState>893066</NextState>
 										<Actions>
 											<Action ID="893091">
+												<Event>893076</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="893489">
+								<Event>893487</Event>
+								<RuleCases>
+									<RuleCase ID="893490">
+										<Row>12</Row>
+										<NextState>893066</NextState>
+										<Actions>
+											<Action ID="893491">
+												<Event>893076</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="893492">
+								<Event>893488</Event>
+								<RuleCases>
+									<RuleCase ID="893493">
+										<Row>13</Row>
+										<NextState>893066</NextState>
+										<Actions>
+											<Action ID="893494">
 												<Event>893076</Event>
 											</Action>
 										</Actions>
@@ -270,18 +360,18 @@
 				<CompilerVersion>9.2.9</CompilerVersion>
 				<Language>cpp</Language>
 				<Checks>
-					<Check ID="893375">
+					<Check ID="893495">
 						<CheckType>mvrSafety</CheckType>
 						<Name>Modelling&#32;Error&#32;check</Name>
 						<Result>crPassed</Result>
 					</Check>
-					<Check ID="893376">
+					<Check ID="893496">
 						<CheckNo>1</CheckNo>
 						<CheckType>mvrLivelock</CheckType>
 						<Name>Livelock&#32;check</Name>
 						<Result>crPassed</Result>
 					</Check>
-					<Check ID="893377">
+					<Check ID="893497">
 						<CheckNo>2</CheckNo>
 						<CheckType>mvrDeadlock</CheckType>
 						<Name>Deadlock&#32;check</Name>
@@ -289,8 +379,8 @@
 					</Check>
 				</Checks>
 				<Fingerprints>
-					<Fingerprint ID="893378">
-						<Fingerprint>DBBAA08B</Fingerprint>
+					<Fingerprint ID="893498">
+						<Fingerprint>803AF950</Fingerprint>
 					</Fingerprint>
 				</Fingerprints>
 			</VerificationStatus>

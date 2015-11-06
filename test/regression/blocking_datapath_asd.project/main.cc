@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -66,19 +67,37 @@ int main()
   sut.datasource.in.RequestData = [&] () {
     std::clog << "datasource.in.RequestData" << std::endl;
   };
+  sut.reflector.in.Ping = [](){
+    std::clog << "reflector.in.Ping" << std::endl;
+  };
 
   sut.check_bindings();
   sut.dump_tree();
 
 #define test_synchronous_datapath
+#define test_synchrounous_queue_flush
+  //#define test_sub_machines
+
+#ifdef test_sub_machines
+  sut.outParam.in.disable_sub_machines();
+  for (bool sm_enabled, sm_tested = false;
+       not sm_tested;
+       sut.outParam.in.enable_sub_machines(), sm_enabled = true)
+  {
+    if (sm_enabled)
+      std::clog << "Testing data-path through sub-machines." << std::endl;
+    else
+      std::clog << "Testing data-path for main state machine only." << std::endl;
+
+    if (sm_enabled) sm_tested = true;
+#else
+    {
+#endif
+    
 
 #ifdef test_synchronous_datapath
   j = 4321;
-  pump.and_wait([&] {
-      std::clog << "running e_out" << std::endl;
-      sut.outParam.in.e_out(i);
-      std::clog << "done e_out" << std::endl;
-    });
+  pump.and_wait([&] {sut.outParam.in.e_out(i);});
   assert(i == 4321);
   std::clog << "e_out: done" << std::endl;
 #endif
@@ -89,6 +108,7 @@ int main()
   j = 4321;
   pump.and_wait([&]{sut.outParam.in.e_out_sync(i);});
   assert(i == 4321);
+  std::clog << "e_out_sync: done" << std::endl;
 #endif
 
 #if 1
@@ -96,6 +116,14 @@ int main()
   pump.and_wait([&] {sut.datasource.out.ReceiveData(42);});
   assert(i == 42);
   std::clog << "e_out_async: done" << std::endl;
+#endif
+
+#ifdef test_synchrounous_queue_flush
+  j = 24;
+  pump([&] {sut.outParam.in.e_out_sync_async(i);});
+  pump.and_wait([&] {sut.reflector.out.Pong();});
+  assert(i == 24);
+  std::clog << "e_out_sync_async: done" << std::endl;
 #endif
 
 #ifdef test_synchronous_datapath
@@ -112,21 +140,32 @@ int main()
   j = 4321;
   pump.and_wait([&] {sut.outParam.in.e_inout_sync(i);});
   assert(i == 4321);
+  std::clog << "e_inout_sync: done" << std::endl;
 #endif
 
 #if 1
   pump([&] {sut.outParam.in.e_inout_async(i);});
   pump.and_wait([&] {sut.datasource.out.ReceiveData(123);});
   assert(i == 123);
+  std::clog << "e_inout_async: done" << std::endl;
+#endif
+
+#ifdef test_synchrounous_queue_flush
+  j = 124;
+  pump([&] {sut.outParam.in.e_inout_sync_async(i);});
+  pump.and_wait([&] {sut.reflector.out.Pong();});
+  assert(i == 124);
+  std::clog << "e_inout_sync_async: done" << std::endl;
 #endif
 
 #ifdef test_synchronous_datapath
   j = 12;
   i = 1234;
   pump.and_wait([&] {sut.outParam.in.e_outdated(i);});
-  assert(i == 123);
+  assert(i == 124);
   std::clog << "e_outdated: done" << std::endl;
 #endif
+  }
 
   std::clog << "exit main" << std::endl;
 }
