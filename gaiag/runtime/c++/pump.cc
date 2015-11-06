@@ -61,25 +61,13 @@ namespace dezyne
     return self;
   };
 
-  auto rfind_self = [] {
-    int count =0;
-    for (auto& c: coroutines) {
-      if (c.port == nullptr && !c.released && !c.finished) count++;
-    }
-    //if (count !=1)throw std::runtime_error("too many coros");
-
-    auto self = std::find_if(coroutines.rbegin(), coroutines.rend(), [](dezyne::coroutine& c){return c.port == nullptr && !c.finished;});
-    if(self == coroutines.rend()) throw std::runtime_error("cannot find my self");
-    return self;
-  };
-
   auto find_blocked = [] (void* port) {
     auto self = std::find_if(coroutines.begin(), coroutines.end(), [port](dezyne::coroutine& c){return c.port == port;});
     return self;
   };
 
-  auto finish = [&](const char* name){
-    auto self = rfind_self();//std::find_if(coroutines.rbegin(), coroutines.rend(), [](dezyne::coroutine& c){return c.port == nullptr && !c.finished;});
+  auto finish = [&](char const* name){
+    auto self = find_self();
     self->finished = true;
     debug(std::string("exit ") + name + " coroutine", self->id);
   };
@@ -142,27 +130,7 @@ namespace dezyne
       if(!lock) lock.lock();
       while(running || queue.size())
       {
-        coroutines.emplace_back([&]{
-            auto self = find_self();
-            while((running || queue.size()) && !self->released)
-            {
-              debug("main coroutine", self->id);
-              worker();
-            }
-            finish("main");
-
-            if(coroutines.size() != 1)
-            {
-              decltype(switch_context) tmp([]{});
-              std::swap(switch_context, tmp);
-              tmp();
-            }
-            else
-            {
-              exit();
-            }
-          });
-
+        do_one("main");
         coroutines.back().call(zero.context);
         debug("finish pump");
         coroutines.remove_if([](dezyne::coroutine& c){if(c.finished) debug("removing", c.id); return c.finished;});
@@ -174,6 +142,30 @@ namespace dezyne
       std::clog << "oops: " << e.what() << std::endl;
       std::abort();
     }
+  }
+  void pump::do_one(char const* level)
+  {
+    coroutines.emplace_back([&]{
+        auto self = find_self();
+        debug(std::string(level) + " coroutine", self->id);
+        while((running || queue.size()) && !self->released)
+          {
+            debug(level, self->id);
+            worker();
+          }
+        finish(level);
+
+        if(coroutines.size() != 1)
+          {
+            decltype(switch_context) tmp([]{});
+            std::swap(switch_context, tmp);
+            tmp();
+          }
+        else
+          {
+            exit();
+          }
+      });
   }
   void pump::block(void* p)
   {
@@ -187,28 +179,7 @@ namespace dezyne
     self->port = p;
 
     debug("block", self->id);
-    coroutines.emplace_back([&]{
-        auto self = find_self();
-        debug("new coroutine", self->id);
-        while((running || queue.size()) && !self->released)
-        {
-          debug("worker", self->id);
-          worker();
-        }
-        finish("new");
-
-        if(coroutines.size() != 1)
-        {
-          decltype(switch_context) tmp([]{});
-          std::swap(switch_context, tmp);
-          tmp();
-        }
-        else
-        {
-          exit();
-        }
-      });
-
+    do_one("new");
     self = find_blocked(p);
 
     self->yield_to(coroutines.back().context);
