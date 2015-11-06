@@ -86,6 +86,7 @@ BROKEN_trace:=\
 BROKEN_verify:=
 
 BLOCKING:=$(shell grep -l blocking regression/*dzn)
+BROKEN_c+=$(BLOCKING)
 BROKEN_cs+=$(BLOCKING)
 BROKEN_c++03+=$(BLOCKING)
 BROKEN_goops+=$(BLOCKING)
