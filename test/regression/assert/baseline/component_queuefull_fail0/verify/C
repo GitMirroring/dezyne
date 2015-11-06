@@ -10,6 +10,7 @@ r.c
 r.c
 r.c
 r.c
+r.return
 queue full
 verify: C: check: deadlock: fail
 p.e
@@ -19,8 +20,6 @@ r.c
 r.c
 r.c
 r.return
-p.c
-p.c
 queue full
 verify: C: check: compliance: fail
 p.e
@@ -30,8 +29,5 @@ r.c
 r.c
 r.c
 r.return
-queue_full
-p.c
-p.c
 p.c not performed by component
 verify: C: check: livelock: ok
