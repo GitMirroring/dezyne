@@ -76,98 +76,98 @@ int main()
 
 #define test_synchronous_datapath
 #define test_synchrounous_queue_flush
-#define test_sub_machines
+  //#define test_sub_machines
 
 #ifdef test_sub_machines
-  pump([&]{sut.outParam.in.disable_sub_machines();});
-  for (bool sm_enabled = false, sm_tested = false;
-       not sm_tested;
-       pump([&]{sut.outParam.in.enable_sub_machines();}), sm_enabled = true)
-  {
-    if (sm_enabled)
-      std::clog << "Testing data-path through sub-machines." << std::endl;
-    else
-      std::clog << "Testing data-path for main state machine only." << std::endl;
-
-    if (sm_enabled) sm_tested = true;
+    for (int pass = 0; pass < 2; pass++)
+    {
+      if (pass == 0)
+      {
+        std::clog << "Testing data-path for main state machine only." << std::endl;
+        pump([&]{sut.outParam.in.disable_sub_machines();});
+      }
+      else if (pass == 1)
+      {
+        std::clog << "Testing data-path through sub-machines." << std::endl;
+        pump([&]{sut.outParam.in.enable_sub_machines();});
+      }
+      else break;
 #else
     {
 #endif
 
 
 #ifdef test_synchronous_datapath
-  j = 4321;
-  pump.and_wait([&] {sut.outParam.in.e_out(i);});
-  std::clog << "e_out: done" << i << std::endl;
-  assert(i == 4321);
-  std::clog << "e_out: done" << std::endl;
+      i = 848;
+      j = 4321;
+      pump.and_wait([&] {sut.outParam.in.e_out(i);});
+      assert(i == 4321);
+      std::clog << "e_out: done" << std::endl;
 
 #endif
 
 #ifdef test_synchronous_datapath
-  // Data path test - out parameter through synchronous out event
-  i = 1234;
-  j = 4321;
-  pump.and_wait([&]{sut.outParam.in.e_out_sync(i);});
-  assert(i == 4321);
-  std::clog << "e_out_sync: done" << std::endl;
+      i = 1234;
+      j = 4321;
+      pump.and_wait([&]{sut.outParam.in.e_out_sync(i);});
+      assert(i == 4321);
+      std::clog << "e_out_sync: done" << std::endl;
 #endif
 
 #if 1
-  pump([&] {sut.outParam.in.e_out_async(i);});
-  pump.and_wait([&] {sut.datasource.out.ReceiveData(42);});
-  assert(i == 42);
-  std::clog << "e_out_async: done" << std::endl;
+      pump([&] {sut.outParam.in.e_out_async(i);});
+      pump.and_wait([&] {sut.datasource.out.ReceiveData(42);});
+      assert(i == 42);
+      std::clog << "e_out_async: done" << std::endl;
 #endif
 
 #ifdef test_synchrounous_queue_flush
-  j = 24;
-  pump([&] {sut.outParam.in.e_out_sync_async(i);});
-  pump.and_wait([&] {sut.reflector.out.Pong();});
-  assert(i == 24);
-  std::clog << "e_out_sync_async: done" << std::endl;
+      j = 24;
+      pump([&] {sut.outParam.in.e_out_sync_async(i);});
+      pump.and_wait([&] {sut.reflector.out.Pong();});
+      assert(i == 24);
+      std::clog << "e_out_sync_async: done" << std::endl;
 #endif
 
 #ifdef test_synchronous_datapath
-  i = 142;
-  j = 1025;
-  pump.and_wait([&] {sut.outParam.in.e_inout(i);});
-  assert(i == 1025);
-  std::clog << "e_inout: done" << std::endl;
+      i = 142;
+      j = 1025;
+      pump.and_wait([&] {sut.outParam.in.e_inout(i);});
+      assert(i == 1025);
+      std::clog << "e_inout: done" << std::endl;
 #endif
 
 #ifdef test_synchronous_datapath
-  // Data path test - out parameter through synchronous out event
-  i = 1234;
-  j = 4321;
-  pump.and_wait([&] {sut.outParam.in.e_inout_sync(i);});
-  assert(i == 4321);
-  std::clog << "e_inout_sync: done" << std::endl;
+      i = 1234;
+      j = 4321;
+      pump.and_wait([&] {sut.outParam.in.e_inout_sync(i);});
+      assert(i == 4321);
+      std::clog << "e_inout_sync: done" << std::endl;
 #endif
 
 #if 1
-  pump([&] {sut.outParam.in.e_inout_async(i);});
-  pump.and_wait([&] {sut.datasource.out.ReceiveData(123);});
-  assert(i == 123);
-  std::clog << "e_inout_async: done" << std::endl;
+      pump([&] {sut.outParam.in.e_inout_async(i);});
+      pump.and_wait([&] {sut.datasource.out.ReceiveData(123);});
+      assert(i == 123);
+      std::clog << "e_inout_async: done" << std::endl;
 #endif
 
 #ifdef test_synchrounous_queue_flush
-  j = 124;
-  pump([&] {sut.outParam.in.e_inout_sync_async(i);});
-  pump.and_wait([&] {sut.reflector.out.Pong();});
-  assert(i == 124);
-  std::clog << "e_inout_sync_async: done" << std::endl;
+      j = 124;
+      pump([&] {sut.outParam.in.e_inout_sync_async(i);});
+      pump.and_wait([&] {sut.reflector.out.Pong();});
+      assert(i == 124);
+      std::clog << "e_inout_sync_async: done" << std::endl;
 #endif
 
 #ifdef test_synchronous_datapath
-  j = 12;
-  i = 1234;
-  pump.and_wait([&] {sut.outParam.in.e_outdated(i);});
-  assert(i == 124);
-  std::clog << "e_outdated: done" << std::endl;
+      j = 12;
+      i = 1234;
+      pump.and_wait([&] {sut.outParam.in.e_outdated(i);});
+      assert(i == 124);
+      std::clog << "e_outdated: done" << std::endl;
 #endif
-  }
+    }
 
   std::clog << "exit main" << std::endl;
 }
