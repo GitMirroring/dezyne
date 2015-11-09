@@ -76,13 +76,13 @@ int main()
 
 #define test_synchronous_datapath
 #define test_synchrounous_queue_flush
-  //#define test_sub_machines
+#define test_sub_machines
 
 #ifdef test_sub_machines
-  sut.outParam.in.disable_sub_machines();
-  for (bool sm_enabled, sm_tested = false;
+  pump([&]{sut.outParam.in.disable_sub_machines();});
+  for (bool sm_enabled = false, sm_tested = false;
        not sm_tested;
-       sut.outParam.in.enable_sub_machines(), sm_enabled = true)
+       pump([&]{sut.outParam.in.enable_sub_machines();}), sm_enabled = true)
   {
     if (sm_enabled)
       std::clog << "Testing data-path through sub-machines." << std::endl;
@@ -93,13 +93,15 @@ int main()
 #else
     {
 #endif
-    
+
 
 #ifdef test_synchronous_datapath
   j = 4321;
   pump.and_wait([&] {sut.outParam.in.e_out(i);});
+  std::clog << "e_out: done" << i << std::endl;
   assert(i == 4321);
   std::clog << "e_out: done" << std::endl;
+
 #endif
 
 #ifdef test_synchronous_datapath
