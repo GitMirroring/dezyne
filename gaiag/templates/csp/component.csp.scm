@@ -132,11 +132,11 @@ Busy(c',r',rmod',pout',end') =
 []
 (c' > 0 & out'?x' -> Busy(c'-1,r',rmod',pout',end')) -- handling queued out events
 []
-(r' == <> & reorder_in?x' -> Busy(c',<x'>,rmod',pout',end')) -- reply to unblock port
+(r' == <> & reorder_in?x' -> Busy(c',<x'>,false,pout',end')) -- reply to unblock port
 []
 (r' != <> & reorder_in?x': diff(extensions(reorder_in),provided_blocked') -> illegal -> STOP) -- another reply is not allowed
 []
-(r' != <> & reorder_in?x': provided_blocked' -> Busy(c',r',rmod',pout',end')) -- ignore blocked if reply already given
+(r' != <> & reorder_in?x': provided_blocked' -> Busy(c',r',false,pout',end')) -- ignore blocked if reply already given
 []
 queue_full -> STOP
 
