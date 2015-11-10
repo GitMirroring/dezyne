@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -21,8 +22,4 @@
 # Code:
 
 LANGUAGES:=parse
-BROKEN=\
- regression/parse/replyNotFound.dzn\
- regression/parse/replyVoidExpected.dzn\
-
 include make/files.make
