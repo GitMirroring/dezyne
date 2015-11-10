@@ -479,6 +479,7 @@
        (if (null? statements)
            #f
            (or (prefix-illegal? (car statements)) (loop (cdr statements))))))
+    (($ <blocking> statement) (prefix-illegal? statement))
     (($ <illegal>) #t)
     (_ #f)))
 
