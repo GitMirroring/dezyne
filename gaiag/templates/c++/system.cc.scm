@@ -7,9 +7,9 @@
             (list
              (->string
               (list
-               "dzn_meta" (c++:init-brace-open) "\"\",\"" .model "\",reinterpret_cast<dezyne::component*>(this),0,{"
+               "dzn_meta" (c++:init-brace-open) "\"\",\"" .model "\",0,{"
                ((->join ",")
-                (map (init-instance #{reinterpret_cast<dezyne::component*>(&#name)#})
+                (map (init-instance #{&#name .dzn_meta#})
                      (non-injected-instances model)))
                "},{}" (c++:init-brace-close)))
              "dzn_rt(dezyne_locator.get<dezyne::runtime>())")
@@ -22,8 +22,7 @@
             (map (init-bind model #{ #port(#instance)#})
                  (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))))
 {
- #(map (init-instance #{#name .dzn_meta.parent = reinterpret_cast<dezyne::component*>(this);
-    #name .dzn_meta.address = reinterpret_cast<dezyne::component*>(&#name );
+ #(map (init-instance #{#name .dzn_meta.parent = &dzn_meta;
     #name .dzn_meta.name = "#name ";
 #})
        (non-injected-instances model))#
@@ -33,10 +32,10 @@
 
   void #.model ::check_bindings() const
   {
-    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+    dezyne::check_bindings(&dzn_meta);
   }
   void #.model ::dump_tree() const
   {
-    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+    dezyne::dump_tree(&dzn_meta);
   }
 #(map (lambda (x) (list "}\n")) (om:scope model))

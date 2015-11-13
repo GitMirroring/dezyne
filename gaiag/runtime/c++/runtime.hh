@@ -30,7 +30,7 @@
 #include "locator.hh"
 
 //haX0r here
-#include "pump.hh"  //TODO: put this include in every component which uses the blocking keyword in its behaviour. 
+#include "pump.hh"  //TODO: put this include in every component which uses the blocking keyword in its behaviour.
 
 #include <algorithm>
 #include <cassert>
@@ -44,27 +44,27 @@ namespace dezyne
   void trace_in(std::ostream&, port::meta const&, const char*);
   void trace_out(std::ostream&, port::meta const&, const char*);
 
-  inline void apply(const component* t, const std::function<void(const dezyne::meta&)>& f)
+  inline void apply(const dezyne::meta* m, const std::function<void(const dezyne::meta*)>& f)
   {
-    f(t->dzn_meta);
-    for (auto c : t->dzn_meta.children)
+    f(m);
+    for (auto c : m->children)
     {
       apply(c, f);
     }
   }
 
-  inline void check_bindings(const component* c)
+  inline void check_bindings(const dezyne::meta* c)
   {
-    dezyne::apply(c, [](const dezyne::meta& m){
-        std::for_each(m.ports_connected.begin(), m.ports_connected.end(), [&](std::function<void()> p){p();});
+    apply(c, [](const dezyne::meta* m){
+        std::for_each(m->ports_connected.begin(), m->ports_connected.end(), [](const std::function<void()>& p){p();});
       });
   }
 
-  inline void dump_tree(const component* c)
+  inline void dump_tree(const dezyne::meta* c)
   {
-    dezyne::apply(c, [](const dezyne::meta& m){
-        std::clog << path(m) << ":" << m.type << std::endl;
-    });
+    apply(c, [](const dezyne::meta* m){
+        std::clog << path(m) << ":" << m->type << std::endl;
+      });
   }
 
   struct runtime

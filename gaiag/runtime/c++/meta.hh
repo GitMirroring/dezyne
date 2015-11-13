@@ -34,6 +34,8 @@
 
 namespace dezyne
 {
+  struct meta;
+
   namespace port
   {
     struct meta
@@ -41,62 +43,48 @@ namespace dezyne
       struct
       {
         std::string port;
-        void*       address;
+        void* address;
+        const dezyne::meta* meta;
       } provides;
 
       struct
       {
         std::string port;
-        void*       address;
+        void* address;
+        const dezyne::meta* meta;
       } requires;
     };
   }
-
-  struct component;
 
   struct meta
   {
     std::string name;
     std::string type;
-    const component* address;
-    const component* parent;
-    std::vector<const component*> children;
+    const meta* parent;
+    std::vector<const meta*> children;
     std::vector<std::function<void()>> ports_connected;
-  };
-
-  struct component
-  {
-    dezyne::meta dzn_meta;
   };
 
   struct illegal_handler {std::function<void()> illegal = [] {assert(!"h:illegal");};};
 
-  inline std::string path(meta const& m, std::string p="")
+  inline std::string path(const meta* m, std::string p = std::string())
   {
-    if(m.parent)
-      return path(m.parent->dzn_meta, m.name + (p.empty() ? p : "." + p));
-    return m.name + (p.empty() ? p : "." + p);
-  }
-
-  inline std::string path(void* c, std::string p="")
-  {
-    if (!c)
-      return "<external>" + (p.empty() ? p : "." + p);
-    return path(reinterpret_cast<const component*>(c)->dzn_meta, p);
+    p = p.empty() ? p : "." + p;
+    if(!m) return "<external>" + p;
+    if(!m->parent) return m->name + p;
+    return path(m->parent, m->name + p);
   }
 
   struct binding_error_in: public std::runtime_error
   {
-    template <typename T>
-    binding_error_in(T const& m, const std::string& msg)
-    : std::runtime_error("not connected: " + path(m.provides.address ? m.provides.address : m.requires.address, m.provides.address ? m.provides.port : m.requires.port) + "." + msg)
+    binding_error_in(const port::meta& m, const std::string& msg)
+    : std::runtime_error("not connected: " + path(m.provides.address ? m.provides.meta : m.requires.meta, m.provides.address ? m.provides.port : m.requires.port) + "." + msg)
     {}
   };
   struct binding_error_out: public std::runtime_error
   {
-    template <typename T>
-    binding_error_out(T const& m, const std::string& msg)
-    : std::runtime_error("not connected: " + path(m.requires.address ? m.requires.address : m.provides.address, m.requires.address ? m.requires.port : m.provides.port) + "." + msg)
+    binding_error_out(const port::meta& m, const std::string& msg)
+    : std::runtime_error("not connected: " + path(m.requires.address ? m.requires.meta : m.provides.meta, m.requires.address ? m.requires.port : m.provides.port) + "." + msg)
     {}
   };
 }

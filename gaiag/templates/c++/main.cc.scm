@@ -54,14 +54,15 @@ namespace dezyne
     throw std::runtime_error("\"" + s + "\" is not a reply value");
   }
 
-  void fill_event_map(#((om:scope-name (string->symbol "::")) model) & m, event_map& e)
+  struct component
+  {
+    meta dzn_meta;
+  };
+
+  void fill_event_map(component* c, #((om:scope-name (string->symbol "::")) model) & m, event_map& e)
   {
     int dzn_i = 0;
 
-    component *c = new component;
-    c->dzn_meta.address = c;
-    c->dzn_meta.parent = 0;
-    c->dzn_meta.name = "<internal>";
 ##if !BLOCKING
     m.dzn_rt.performs_flush(c) = true;
 ##endif //!BLOCKING
@@ -73,6 +74,7 @@ namespace dezyne
      #}) (filter (negate (om:dir-matches? port)) (om:events port)))) (om:ports model))
  #(map (init-port #{
      m.#name .meta.provides.address = c;
+     m.#name .meta.provides.meta = &c->dzn_meta;
      e["#name .<flush>"] = [&] { std::clog << "#name .<flush>" << std::endl; m.dzn_rt.flush(m.#name .meta.provides.address); };
      #}) (filter om:requires? (om:ports model)))
  #(map
@@ -100,7 +102,10 @@ int main()
   l.set(pump);
 ##endif // BLOCKING
 
-  dezyne::fill_event_map(sut, event_map);
+  dezyne::component c;
+  c.dzn_meta.parent = 0;
+  c.dzn_meta.name = "<internal>";
+  dezyne::fill_event_map(&c, sut, event_map);
 
   sut.check_bindings();
   sut.dump_tree();

@@ -31,7 +31,7 @@
 #warning using boost coroutine
 #include <boost/coroutine/all.hpp>
 #else // !HAVE_BOOST_COROUTINE
-#warning using threads
+//#warning using threads
 #include "context.hh"
 #endif // !HAVE_BOOST_COROUTINE
 
@@ -58,7 +58,8 @@ namespace dezyne
     template <typename Worker>
     coroutine(Worker&& worker)
     : id(g_id++)
-    , context([this, worker](dezyne::yield& yield){
+    , context([this, worker](dezyne::yield&& yield){
+
         this->yield = std::move(yield);
         worker();
       })
