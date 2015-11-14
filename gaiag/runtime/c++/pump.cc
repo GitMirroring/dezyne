@@ -217,34 +217,47 @@ namespace dezyne
   }
   void pump::operator()(const std::function<void()>& e)
   {
-    assert(e && std::this_thread::get_id() != thread_id);
-    std::unique_lock<std::mutex> lock(mutex);
+    assert(e);
+    assert(std::this_thread::get_id() != thread_id);
+    std::lock_guard<std::mutex> lock(mutex);
     queue.push(e);
     condition.notify_one();
   }
   void pump::operator()(std::function<void()>&& e)
   {
-    assert(e && std::this_thread::get_id() != thread_id);
-    std::unique_lock<std::mutex> lock(mutex);
+    assert(e);
+    assert(std::this_thread::get_id() != thread_id);
+    std::lock_guard<std::mutex> lock(mutex);
     queue.push(std::move(e));
-    lock.unlock();
     condition.notify_one();
   }
   void pump::and_wait(const std::function<void()>& e)
   {
     std::promise<void> p;
-    this->operator()([&]{e(); p.set_value();});
+
+    assert(e);
+    assert(std::this_thread::get_id() != thread_id);
+
+    {std::lock_guard<std::mutex> lock(mutex);
+    queue.push([&]{e(); p.set_value();});
+    condition.notify_one();}
+
     p.get_future().get();
   }
   void pump::handle(size_t id, size_t ms, const std::function<void()>& e)
   {
-    assert(e && std::this_thread::get_id() == thread_id);
+    assert(e);
+#if HAVE_BOOST_COROUTINE
+    assert(std::this_thread::get_id() == thread_id);
+#endif // HAVE_BOOST_COROUTINE
     assert(std::find_if(timers.begin(), timers.end(), [id](const std::pair<deadline, std::function<void()>>& p){ return p.first.id == id; }) == timers.end());
     timers.emplace(deadline(id, ms), e);
   }
   void pump::remove(size_t id)
   {
+#if HAVE_BOOST_COROUTINE
     assert(std::this_thread::get_id() == thread_id);
+#endif // HAVE_BOOST_COROUTINE
     auto it = std::find_if(timers.begin(), timers.end(), [id](const std::pair<deadline, std::function<void()>>& p){ return p.first.id == id; });
     if(it != timers.end()) timers.erase(it);
   }
