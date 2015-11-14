@@ -75,16 +75,10 @@ namespace dezyne
     return path(m->parent, m->name + p);
   }
 
-  struct binding_error_in: public std::runtime_error
+  struct binding_error: public std::runtime_error
   {
-    binding_error_in(const port::meta& m, const std::string& msg)
+    binding_error(const port::meta& m, const std::string& msg)
     : std::runtime_error("not connected: " + path(m.provides.address ? m.provides.meta : m.requires.meta, m.provides.address ? m.provides.port : m.requires.port) + "." + msg)
-    {}
-  };
-  struct binding_error_out: public std::runtime_error
-  {
-    binding_error_out(const port::meta& m, const std::string& msg)
-    : std::runtime_error("not connected: " + path(m.requires.address ? m.requires.meta : m.provides.meta, m.requires.address ? m.requires.port : m.provides.port) + "." + msg)
     {}
   };
 }

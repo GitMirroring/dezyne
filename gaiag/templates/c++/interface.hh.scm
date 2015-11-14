@@ -33,10 +33,10 @@ struct #.interface
    void check_bindings() const
    {
    #(map (declare-io model
-         #{if (! in.#name) throw dezyne::binding_error_in(meta, "in.#name");
+         #{if (! in.#name) throw dezyne::binding_error(meta, "in.#name");
 #}) (filter om:in? ((compose .elements .events) model)))
    #(map (declare-io model
-         #{if (! out.#name) throw dezyne::binding_error_out(meta, "out.#name");
+         #{if (! out.#name) throw dezyne::binding_error(meta, "out.#name");
 #}) (filter om:out? ((compose .elements .events) model)))
    }
   };
