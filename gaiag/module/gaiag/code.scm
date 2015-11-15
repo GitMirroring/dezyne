@@ -705,9 +705,10 @@
 
 (define ((declare-enum model) enum)
   (let* ((fields ((compose .elements .fields) enum))
-         (length (length fields)))
+         (length (length fields))
+         (asd? #t))
    (snippet 'declare-enum
-            `((scope+name ,(om:scope+name enum)) (scope ,(om:scope enum)) (name ,(om:name enum)) (fields ,fields) (length ,length)))))
+            `((scope+name ,(om:scope+name enum)) (scope ,(om:scope enum)) (name ,(om:name enum)) (fields ,fields) (length ,length) (asd? ,asd?)))))
 
 (define ((enum-to-string o) enum)
   (let* ((fields ((compose .elements .fields) enum))
