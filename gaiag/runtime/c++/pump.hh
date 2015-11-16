@@ -76,9 +76,12 @@ namespace dezyne
     void operator()(const std::function<void()>&);
     void operator()(std::function<void()>&&);
     void and_wait(const std::function<void()>&);
+    void and_wait_(const std::function<void()>&);
     template <typename R>
     R and_wait(const std::function<R()>& e)
     {
+      if (std::this_thread::get_id() == thread_id)
+        throw std::runtime_error("het is echt helemaal foo");
       std::promise<R> p;
       this->operator()([&]{p.set_value(e());});
       return p.get_future().get();
