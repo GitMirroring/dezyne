@@ -114,6 +114,22 @@ namespace dezyne
     runtime& operator = (const runtime&);
   };
 
+  template <typename F, typename ... Args>
+  void shell(const locator& l, F&& f, Args&& ...args)
+  {
+    auto e = [=]{return f(std::forward<Args>(args)...);};
+    bool* wait = l.try_get<bool>("wait");
+    !wait ? e() : *wait ? l.get<dezyne::pump>().and_wait(e) : l.get<dezyne::pump>()(e);
+  }
+  template <typename R, typename F, typename ... Args>
+  R valued_shell(const locator& l, F&& f, Args&& ...args)
+  {
+    auto e = [=]{return f(std::forward<Args>(args)...);};
+    bool* wait = l.try_get<bool>("wait");
+    assert(!wait || *wait);
+    return !wait ? e() : l.get<dezyne::pump>().and_wait<R>(e);
+  }
+
   template <typename C, typename P>
   void call_in(C* c, std::function<void()> f, std::tuple<P*, const char*, const char*> m)
   {

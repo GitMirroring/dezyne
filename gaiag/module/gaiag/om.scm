@@ -47,6 +47,11 @@
   :use-module (gaiag reader)
 
   :export (
+           om:bind
+           om:bind-other-port
+           om:binding system
+           om:binding-other-port
+           om:instance-name
            om:collect
            om:declarative?
            om:dir-matches?
@@ -206,6 +211,26 @@
                        (om:import (.type (om:port model (.port bind))))))
     ((? boolean?) #f)))
 
+(define (om:bind model port)
+  (let* ((binds ((compose .elements .bindings) model)))
+    (find (lambda (bind) (or (eq? (.port (.left bind)) port)
+                             (eq? (.port (.right bind)) port)))
+          binds)))
+
+(define (om:bind-other-port bind port)
+  (if (eq? (.port (.left bind)) port) (.right bind) (.left bind)))
+
+(define (om:binding system port)
+  (let ((bind (om:bind system port)))
+    (if (eq? (.port (.left bind)) port) (.left bind) (.right bind))))
+
+(define (om:binding-other-port system port)
+  (let* ((bind (om:bind system port)))
+    (om:bind-other-port bind port)))
+
+(define (om:instance-name bind)
+  (or (.instance (.left bind)) (.instance (.right bind))))
+
 (define (om:interface o)
   (match o
     (($ <port>) (om:import (.type o)))
@@ -227,7 +252,7 @@
         (om:port model port))))
     (_ (find (if o (om:named o)
                  (lambda (x) (eq? (.direction x) 'provides)))
-        (.elements (.ports model))))))
+             (.elements (.ports model))))))
 
 (define (om:variable model o)
   (find (om:named o) (om:variables model)))

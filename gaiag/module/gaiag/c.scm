@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -113,10 +114,18 @@
     (animate-file file-name module)))
 
 (define (c-name o)
-  (symbol-append (ast-name o) (code:extension o) '.scm))
+  (let* ((type (ast-name o))
+         (name ((om:scope-name) o))
+         (shell (option-ref (parse-opts (command-line)) 'shell #f))
+         (template (if (and shell (eq? name (string->symbol shell))) 'shell type)))
+    (symbol-append template (code:extension o) '.scm)))
 
 (define (c-code o)
   (symbol-append (ast-name o) (code:extension (make <component>)) '.scm))
 
 (define (c-header o)
-  (symbol-append (ast-name o) (code:extension (make <interface>)) '.scm))
+    (let* ((type (ast-name o))
+           (name ((om:scope-name) o))
+           (shell (option-ref (parse-opts (command-line)) 'shell #f))
+           (template (if (and shell (eq? name (string->symbol shell))) 'shell type)))
+      (symbol-append template (code:extension (make <interface>)) '.scm)))

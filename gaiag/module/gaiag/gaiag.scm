@@ -43,6 +43,7 @@
             (language (single-char #\l) (value #t))
             (lts)
             (model (single-char #\m) (value #t))
+            (shell (single-char #\s) (value #t))
             (trail (single-char #\t) (value #t))
             (output (single-char #\o) (value #t))
             (output-dir (single-char #\O) (value #t))
@@ -68,6 +69,7 @@ Usage: gaiag [OPTION]... FILE
   -j, --json             use json-friendly format; strings and hash tables
   -m, --model=MODEL      use model named MODEL
   -l, --language=LANG    generate output for language=LANG [ast]
+  -s, --shell=MODEL      generate thread safe system shell for MODEL
   -t, --trail=TRAIL      specify trail TRAIL for trail-walker
   -o, --output FILE      generate FILE containing the output
   -O, --output-dir=DIR   generate output in DIR

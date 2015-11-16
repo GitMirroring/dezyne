@@ -802,6 +802,15 @@
          (reply-name (om:name type))
          (reply-scope (or (and enum (pair?? (om:scope enum))) '()))
          (reply-scope-name (or (and enum (pair?? (om:scope+name enum))) '()))
+         (system (is-a? model <system>))
+         (bind (and system (om:bind system (.name port))))
+         (binding (and bind
+                       (bind-port? bind)
+                       (if (not (.instance (.left bind)))
+                           (.right bind)
+                           (.left bind))))
+         (instance (and binding (.instance binding)))
+         (instance-port (and binding (.port binding)))
          (blocking? #f)
          (statement
           (or (and-let*
@@ -841,6 +850,8 @@
                        (reply-name ,reply-name)
                        (reply-scope ,reply-scope)
                        (return-type ,return-type)
+                       (instance ,instance)
+                       (instance-port ,instance-port)
                        (statement ,statement)
                        (type ,(.name type))))))
 
