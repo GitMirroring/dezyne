@@ -28,8 +28,6 @@
 #include <iostream>
 #include <list>
 
-#include "coroutine.hh"
-
 static void debug(const std::string& s)
 {
 #ifdef DEBUG
@@ -48,9 +46,7 @@ namespace dezyne
 {
   int coroutine::g_id = 0;
 
-  std::list<coroutine> coroutines;
-
-  auto find_self = [] {
+  auto find_self = [] (std::list<coroutine>& coroutines){
     int count =0;
     for (auto& c: coroutines) {
       if (c.port == nullptr && !c.finished) count++;
@@ -61,18 +57,16 @@ namespace dezyne
     return self;
   };
 
-  auto find_blocked = [] (void* port) {
+  auto find_blocked = [] (std::list<coroutine>& coroutines, void* port) {
     auto self = std::find_if(coroutines.begin(), coroutines.end(), [port](dezyne::coroutine& c){return c.port == port;});
     return self;
   };
 
-  auto finish = [&](char const* name){
-    auto self = find_self();
+  auto finish = [&](std::list<coroutine>& coroutines, char const* name){
+    auto self = find_self(coroutines);
     self->finished = true;
     debug(std::string("exit ") + name + " coroutine", self->id);
   };
-
-  static std::function<void()> worker;
 
   pump::pump()
   : switch_context([]{})
@@ -146,14 +140,14 @@ namespace dezyne
   void pump::do_one(char const* level)
   {
     coroutines.emplace_back([&]{
-        auto self = find_self();
+        auto self = find_self(coroutines);
         debug(std::string(level) + " coroutine", self->id);
         while((running || queue.size()) && !self->released)
           {
             debug(level, self->id);
             worker();
           }
-        finish(level);
+        finish(coroutines, level);
 
         if(coroutines.size() != 1)
           {
@@ -169,7 +163,7 @@ namespace dezyne
   }
   void pump::block(void* p)
   {
-    auto self = find_self();
+    auto self = find_self(coroutines);
     if(self->skip_block)
     {
       self->skip_block = false;
@@ -180,7 +174,7 @@ namespace dezyne
 
     debug("block", self->id);
     do_one("new");
-    self = find_blocked(p);
+    self = find_blocked(coroutines, p);
 
     self->yield_to(coroutines.back().context);
     debug("entered context", self->id);
@@ -193,9 +187,9 @@ namespace dezyne
   }
   void pump::release(void* p)
   {
-    auto self = find_self();
+    auto self = find_self(coroutines);
 
-    auto blocked = find_blocked(p);
+    auto blocked = find_blocked(coroutines, p);
     if(blocked == coroutines.end())
     {
       self->skip_block = true;

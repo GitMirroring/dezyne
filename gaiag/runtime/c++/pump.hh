@@ -25,10 +25,13 @@
 #ifndef PUMP_HH
 #define PUMP_HH
 
+#include "coroutine.hh"
+
 #include <cassert>
 #include <condition_variable>
 #include <functional>
 #include <future>
+#include <list>
 #include <map>
 #include <mutex>
 #include <queue>
@@ -37,6 +40,9 @@ namespace dezyne
 {
   struct pump
   {
+    std::function<void()> worker;
+    std::list<coroutine> coroutines;
+
     std::queue<std::function<void()>> queue;
 
     struct deadline
