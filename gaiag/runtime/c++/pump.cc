@@ -46,219 +46,219 @@ static void debug(const std::string& s, int id)
 
 namespace dezyne
 {
-  int coroutine::g_id = 0;
+int coroutine::g_id = 0;
 
-  std::list<coroutine> coroutines;
+std::list<coroutine> coroutines;
 
-  auto find_self = [] {
-    int count =0;
-    for (auto& c: coroutines) {
-      if (c.port == nullptr && !c.finished) count++;
-    }
-    auto self = std::find_if(coroutines.begin(), coroutines.end(), [](dezyne::coroutine& c){return c.port == nullptr && !c.finished;});
-    if(self == coroutines.end()) throw std::runtime_error("cannot find my self");
-    if (count !=1)throw std::runtime_error("too many coros");
-    return self;
-  };
-
-  auto find_blocked = [] (void* port) {
-    auto self = std::find_if(coroutines.begin(), coroutines.end(), [port](dezyne::coroutine& c){return c.port == port;});
-    return self;
-  };
-
-  auto finish = [&](char const* name){
-    auto self = find_self();
-    self->finished = true;
-    debug(std::string("exit ") + name + " coroutine", self->id);
-  };
-
-  static std::function<void()> worker;
-
-  pump::pump()
-  : switch_context([]{})
-  , running(true)
-  , task(std::async(std::launch::async, std::ref(*this)))
-  {}
-  pump::~pump()
-  {
-    std::unique_lock<std::mutex> lock(mutex);
-    running = false;
-    condition.notify_one();
-    lock.unlock();
-    task.get();
+auto find_self = [] {
+  int count =0;
+  for (auto& c: coroutines) {
+    if (c.port == nullptr && !c.finished) count++;
   }
-  void pump::operator()()
+  auto self = std::find_if(coroutines.begin(), coroutines.end(), [](dezyne::coroutine& c){return c.port == nullptr && !c.finished;});
+  if(self == coroutines.end()) throw std::runtime_error("cannot find my self");
+  if (count !=1)throw std::runtime_error("too many coros");
+  return self;
+};
+
+auto find_blocked = [] (void* port) {
+  auto self = std::find_if(coroutines.begin(), coroutines.end(), [port](dezyne::coroutine& c){return c.port == port;});
+  return self;
+};
+
+auto finish = [&](char const* name){
+  auto self = find_self();
+  self->finished = true;
+  debug(std::string("exit ") + name + " coroutine", self->id);
+};
+
+static std::function<void()> worker;
+
+pump::pump()
+: switch_context([]{})
+, running(true)
+, task(std::async(std::launch::async, std::ref(*this)))
+{}
+pump::~pump()
+{
+  std::unique_lock<std::mutex> lock(mutex);
+  running = false;
+  condition.notify_one();
+  lock.unlock();
+  task.get();
+}
+void pump::operator()()
+{
+  try
   {
-    try
-    {
-      thread_id = std::this_thread::get_id();
-      std::unique_lock<std::mutex> lock(mutex, std::defer_lock);
+    thread_id = std::this_thread::get_id();
 
-      worker = [&] {
-        if(!lock) lock.lock();
-        if(timers.empty())
-        {
-          condition.wait(lock, [this]{return queue.size() || !running;});
-        }
-        else
-        {
-          condition.wait_until(lock, timers.begin()->first.t, [this]{return queue.size() || !running;});
-        }
-
-        while(timers.size() && timers.begin()->first.expired())
-        {
-          auto t = *timers.begin();
-          timers.erase(timers.begin());
-          lock.unlock();
-          t.second();
-          if(!lock) lock.lock();
-        }
-
-        if(queue.size())
-        {
-          std::function<void()> f(std::move(queue.front()));
-          queue.pop();
-          lock.unlock();
-          f();
-        }
-      };
-
-      coroutine zero;
-
-      exit = [&]{debug("enter exit"); zero.release();};
-
-      if(!lock) lock.lock();
-      while(running || queue.size())
+    worker = [&] {
+      std::unique_lock<std::mutex> lock(mutex);
+      if(timers.empty())
       {
-        do_one("main");
-        coroutines.back().call(zero.context);
-        debug("finish pump");
-        coroutines.remove_if([](dezyne::coroutine& c){if(c.finished) debug("removing", c.id); return c.finished;});
+        condition.wait(lock, [this]{return queue.size() || !running;});
       }
-      assert(queue.empty());
-    }
-    catch(const std::exception& e)
+      else
+      {
+        condition.wait_until(lock, timers.begin()->first.t, [this]{return queue.size() || !running;});
+      }
+
+      while(timers.size() && timers.begin()->first.expired())
+      {
+        auto t = *timers.begin();
+        timers.erase(timers.begin());
+        lock.unlock();
+        t.second();
+      }
+
+      if(queue.size())
+      {
+        std::function<void()> f(std::move(queue.front()));
+        queue.pop();
+        lock.unlock();
+        f();
+      }
+    };
+
+    coroutine zero;
+
+    exit = [&]{debug("enter exit"); zero.release();};
+
+    std::unique_lock<std::mutex> lock(mutex);
+    while(running || queue.size())
     {
-      std::clog << "oops: " << e.what() << std::endl;
-      std::abort();
+      lock.unlock();
+      do_one("main");
+      coroutines.back().call(zero.context);
+      debug("finish pump");
+      lock.lock();
+      coroutines.remove_if([](dezyne::coroutine& c){if(c.finished) debug("removing", c.id); return c.finished;});
     }
+    assert(queue.empty());
   }
-  void pump::do_one(char const* level)
+  catch(const std::exception& e)
   {
-    coroutines.emplace_back([&]{
-        auto self = find_self();
-        debug(std::string(level) + " coroutine", self->id);
-        while((running || queue.size()) && !self->released)
-          {
-            debug(level, self->id);
-            worker();
-          }
-        finish(level);
-
-        if(coroutines.size() != 1)
-          {
-            decltype(switch_context) tmp([]{});
-            std::swap(switch_context, tmp);
-            tmp();
-          }
-        else
-          {
-            exit();
-          }
-      });
+    std::clog << "oops: " << e.what() << std::endl;
+    std::abort();
   }
-  void pump::block(void* p)
+}
+void pump::do_one(char const* level)
+{
+  coroutines.emplace_back([&]{
+      auto self = find_self();
+      debug(std::string(level) + " coroutine", self->id);
+      while((running || queue.size()) && !self->released)
+      {
+        debug(level, self->id);
+        worker();
+      }
+      finish(level);
+
+      if(coroutines.size() != 1)
+      {
+        decltype(switch_context) tmp([]{});
+        std::swap(switch_context, tmp);
+        tmp();
+      }
+      else
+      {
+        exit();
+      }
+    });
+}
+void pump::block(void* p)
+{
+  auto self = find_self();
+  if(self->skip_block)
   {
-    auto self = find_self();
-    if(self->skip_block)
-    {
-      self->skip_block = false;
-      return;
-    }
-
-    self->port = p;
-
-    debug("block", self->id);
-    do_one("new");
-    self = find_blocked(p);
-
-    self->yield_to(coroutines.back().context);
-    debug("entered context", self->id);
-    std::clog << "routines: ";
-    for (auto& c: coroutines) {
-      std::clog << c.id << " ";
-    }
-    std::clog << std::endl;
-    coroutines.remove_if([](dezyne::coroutine& c){if(c.finished) debug("removing",c.id); return c.finished;});
+    self->skip_block = false;
+    return;
   }
-  void pump::release(void* p)
-  {
-    auto self = find_self();
 
-    auto blocked = find_blocked(p);
-    if(blocked == coroutines.end())
-    {
-      self->skip_block = true;
-      return;
-    }
+  self->port = p;
 
-    debug("unblock", blocked->id);
-    debug("released", self->id);
-    self->released = true;
+  debug("block", self->id);
+  do_one("new");
+  self = find_blocked(p);
 
-    switch_context = [blocked,self] {
-        blocked->port = nullptr;
-
-        debug("switch from", self->id);
-        debug("to", blocked->id);
-
-        self->yield_to(blocked->context);
-      };
+  self->yield_to(coroutines.back().context);
+  debug("entered context", self->id);
+  std::clog << "routines: ";
+  for (auto& c: coroutines) {
+    std::clog << c.id << " ";
   }
-  void pump::operator()(const std::function<void()>& e)
-  {
-    assert(e);
-    assert(std::this_thread::get_id() != thread_id);
-    std::lock_guard<std::mutex> lock(mutex);
-    queue.push(e);
-    condition.notify_one();
-  }
-  void pump::operator()(std::function<void()>&& e)
-  {
-    assert(e);
-    assert(std::this_thread::get_id() != thread_id);
-    std::lock_guard<std::mutex> lock(mutex);
-    queue.push(std::move(e));
-    condition.notify_one();
-  }
-  void pump::and_wait(const std::function<void()>& e)
-  {
-    std::promise<void> p;
+  std::clog << std::endl;
+  coroutines.remove_if([](dezyne::coroutine& c){if(c.finished) debug("removing",c.id); return c.finished;});
+}
+void pump::release(void* p)
+{
+  auto self = find_self();
 
-    assert(e);
-    assert(std::this_thread::get_id() != thread_id);
+  auto blocked = find_blocked(p);
+  if(blocked == coroutines.end())
+  {
+    self->skip_block = true;
+    return;
+  }
 
-    {std::lock_guard<std::mutex> lock(mutex);
+  debug("unblock", blocked->id);
+  debug("released", self->id);
+  self->released = true;
+
+  switch_context = [blocked,self] {
+    blocked->port = nullptr;
+
+    debug("switch from", self->id);
+    debug("to", blocked->id);
+
+    self->yield_to(blocked->context);
+  };
+}
+void pump::operator()(const std::function<void()>& e)
+{
+  assert(e);
+  assert(std::this_thread::get_id() != thread_id);
+  std::lock_guard<std::mutex> lock(mutex);
+  queue.push(e);
+  condition.notify_one();
+}
+void pump::operator()(std::function<void()>&& e)
+{
+  assert(e);
+  //assert(std::this_thread::get_id() != thread_id);
+  std::lock_guard<std::mutex> lock(mutex);
+  queue.push(std::move(e));
+  condition.notify_one();
+}
+void pump::and_wait(const std::function<void()>& e)
+{
+  std::promise<void> p;
+
+  assert(e);
+  //assert(std::this_thread::get_id() != thread_id);
+
+  {std::lock_guard<std::mutex> lock(mutex);
     queue.push([&]{e(); p.set_value();});
     condition.notify_one();}
 
-    p.get_future().get();
-  }
-  void pump::handle(size_t id, size_t ms, const std::function<void()>& e)
-  {
-    assert(e);
+  p.get_future().get();
+}
+void pump::handle(size_t id, size_t ms, const std::function<void()>& e)
+{
+  assert(e);
 #if HAVE_BOOST_COROUTINE
-    assert(std::this_thread::get_id() == thread_id);
+  assert(std::this_thread::get_id() == thread_id);
 #endif // HAVE_BOOST_COROUTINE
-    assert(std::find_if(timers.begin(), timers.end(), [id](const std::pair<deadline, std::function<void()>>& p){ return p.first.id == id; }) == timers.end());
-    timers.emplace(deadline(id, ms), e);
-  }
-  void pump::remove(size_t id)
-  {
+  assert(std::find_if(timers.begin(), timers.end(), [id](const std::pair<deadline, std::function<void()>>& p){ return p.first.id == id; }) == timers.end());
+  timers.emplace(deadline(id, ms), e);
+}
+void pump::remove(size_t id)
+{
 #if HAVE_BOOST_COROUTINE
-    assert(std::this_thread::get_id() == thread_id);
+  //assert(std::this_thread::get_id() == thread_id);
 #endif // HAVE_BOOST_COROUTINE
-    auto it = std::find_if(timers.begin(), timers.end(), [id](const std::pair<deadline, std::function<void()>>& p){ return p.first.id == id; });
-    if(it != timers.end()) timers.erase(it);
-  }
+  auto it = std::find_if(timers.begin(), timers.end(), [id](const std::pair<deadline, std::function<void()>>& p){ return p.first.id == id; });
+  if(it != timers.end()) timers.erase(it);
+}
 }
