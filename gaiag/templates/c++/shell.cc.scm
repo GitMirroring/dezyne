@@ -12,12 +12,13 @@
                 (map (init-instance #{&#name .dzn_meta#})
                      (non-injected-instances model)))
                "},{}" (c++:init-brace-close)))
-             "dzn_rt(dezyne_locator.get<dezyne::runtime>())")
+             "dzn_rt(dezyne_locator.get<dezyne::runtime>())"
+             "dzn_pump()")
             (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
                  (injected-bindings model))
-            (list (if (pair? (injected-bindings model))
-                      (list "dezyne_local_locator(dezyne_locator.clone()" (map (lambda (binding) (list ".set(" (binding-name model (injected-binding binding)) ")"))  (injected-bindings model)) ")")))
-            (map (init-instance #{ #name (#(if (pair? (injected-bindings model)) "dezyne_local_locator" "dezyne_locator"))#})
+            (list (if (or #t (pair? (injected-bindings model)))
+                      (list "dezyne_local_locator(dezyne_locator.clone().set(dzn_pump)" (map (lambda (binding) (list ".set(" (binding-name model (injected-binding binding)) ")"))  (injected-bindings model)) ")")))
+            (map (init-instance #{ #name (#(if (or #t (pair? (injected-bindings model))) "dezyne_local_locator" "dezyne_locator"))#})
                  (non-injected-instances model))
             (map (init-bind model #{ #port(#instance)#})
                  (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
@@ -27,7 +28,7 @@
  (lambda (port)
    (map (define-on model port #{
 #port .#direction .#event  = [&] (#formals) {
-    return dezyne::#(string-if (eq? return-type 'void) #{shell#}#{valued_shell<#return-type >#})(dezyne_locator, [&] {return #instance .#instance-port .in.#event(#arguments);});
+    return dezyne::#(string-if (eq? return-type 'void) #{shell#}#{valued_shell<#return-type >#})(dzn_pump, [&] {return #instance .#instance-port .in.#event(#arguments);});
 };
 #}) (filter om:in? (om:events port))))
     (filter om:provides? (om:ports model)))#
@@ -35,7 +36,7 @@
     (lambda (port)
       (map (define-on model port #{
 #port .#direction .#event  = [&] (#formals) {
-    return dezyne::shell(dezyne_locator, [&] {return #instance .#instance-port .out.#event(#arguments);});
+    return dezyne::shell(dzn_pump, [&] {return #instance .#instance-port .out.#event(#arguments);});
 };
 #}) (filter om:out? (om:events port))))
     (filter om:requires? (om:ports model)))#

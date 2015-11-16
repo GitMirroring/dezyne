@@ -1,6 +1,8 @@
 ##ifndef #.COMPONENT _HH
 ##define #.COMPONENT _HH
 
+##include "pump.hh"
+
 #(map (include-component #{
 ##include "#component .hh"
 #}) ((compose .elements .instances) model))
@@ -16,9 +18,11 @@ struct #.model
 {
    dezyne::meta dzn_meta;
    dezyne::runtime& dzn_rt;
+   dezyne::pump dzn_pump;
 #(map (lambda (binding) (list ((c++:scope-name) (.component (om:instance model (injected-instance-name binding)))) " "
-                              (injected-instance-name binding) ";\n")) (injected-bindings model)) #
-(if (pair? (injected-bindings model)) (list "dezyne::locator dezyne_local_locator;\n")) #
+                              (injected-instance-name binding) ";\n")) (injected-bindings model))
+dezyne::locator dezyne_local_locator;
+#;;(if (pair? (injected-bindings model)) (list "dezyne::locator dezyne_local_locator;\n")) #
 (map (init-instance #{
   #((c++:scope-name) component)  #name;
 #}) (non-injected-instances model))
