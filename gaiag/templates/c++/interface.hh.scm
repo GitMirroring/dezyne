@@ -28,7 +28,12 @@ struct #.interface
 #}) (filter om:out? ((compose .elements .events) model))) } out;
 
    dezyne::port::meta meta;
+#(string-if (eq? (language) 'c++-msvc11) #{
+   inline #.interface(dezyne::port::meta &&m) : meta(std::move(m)){}
+#}
+#{
    inline #.interface(dezyne::port::meta m) : meta(m) {}
+#})
 
    void check_bindings() const
    {
