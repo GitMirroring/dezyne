@@ -1,8 +1,10 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -76,7 +78,7 @@ int main()
 
 #define test_synchronous_datapath
 #define test_synchrounous_queue_flush
-  //#define test_sub_machines
+#define test_sub_machines
 
 #ifdef test_sub_machines
     for (int pass = 0; pass < 2; pass++)
