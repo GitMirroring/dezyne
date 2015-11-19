@@ -3,8 +3,6 @@
 ##include "locator.hh"
 ##include "runtime.hh"
 
-##include <iostream>
-
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 #.model ::#.model (const dezyne::locator& dezyne_locator)
 : dzn_meta#(c++:init-brace-open)"","#.model",0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (om:ports model)))}#(c++:init-brace-close)
@@ -58,8 +56,8 @@
   {
     dezyne::check_bindings(&dzn_meta);
   }
-  void #.model ::dump_tree() const
+  void #.model ::dump_tree(std::ostream& os) const
   {
-    dezyne::dump_tree(&dzn_meta);
+    dezyne::dump_tree(dzn_locator.get<typename std::ostream>(), &dzn_meta);
   }
 #(map (lambda (x) (list "}\n")) (om:scope model))

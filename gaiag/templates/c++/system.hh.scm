@@ -1,6 +1,8 @@
 ##ifndef #.COMPONENT _HH
 ##define #.COMPONENT _HH
 
+##include <iostream>
+
 #(map (include-component #{
 ##include "#component .hh"
 #}) ((compose .elements .instances) model))
@@ -26,7 +28,7 @@ struct #.model
 #}) (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
   #.model (const dezyne::locator&);
   void check_bindings() const;
-  void dump_tree() const;
+  void dump_tree(std::ostream& os=std::clog) const;
 };
 #(map (lambda (x) (list "}\n")) (om:scope model))
 ##endif // #.COMPONENT _HH

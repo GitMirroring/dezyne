@@ -42,6 +42,7 @@ namespace dezyne
   {
     std::function<void()> worker;
     std::list<coroutine> coroutines;
+    std::set<void*> skip_block;
 
     std::queue<std::function<void()>> queue;
 

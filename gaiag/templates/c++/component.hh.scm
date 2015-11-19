@@ -1,6 +1,8 @@
 ##ifndef #.COMPONENT _HH
 ##define #.COMPONENT _HH
 
+##include <iostream>
+
 #(map (include-interface #{
 ##include "#interface .hh"
 #}) (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
@@ -32,7 +34,7 @@ struct #.model
 #}) ((compose .elements .ports) model))
     #.model (const dezyne::locator&);
   void check_bindings() const;
-  void dump_tree() const;
+  void dump_tree(std::ostream& os=std::clog) const;
 
 private:
 #(map

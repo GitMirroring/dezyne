@@ -65,8 +65,8 @@
   {
     dezyne::check_bindings(&dzn_meta);
   }
-  void #.model ::dump_tree() const
+  void #.model ::dump_tree(std::ostream& os) const
   {
-    dezyne::dump_tree(&dzn_meta);
+    dezyne::dump_tree(os, &dzn_meta);
   }
 #(map (lambda (x) (list "}\n")) (om:scope model))
