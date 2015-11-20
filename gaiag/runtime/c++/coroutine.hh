@@ -69,7 +69,7 @@ namespace dezyne
     {}
     ~coroutine()
     {
-#ifdef DEBUG
+#ifdef DEBUG_RUNTIME
       std::clog << __FUNCTION__ << ": " << id << std::endl;
 #endif
     }

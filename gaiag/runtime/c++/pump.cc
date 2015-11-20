@@ -30,14 +30,14 @@
 
 static void debug(const std::string& s)
 {
-#ifdef DEBUG
+#ifdef DEBUG_RUNTIME
   std::cout << s << std::endl;
 #endif
 }
 
 static void debug(const std::string& s, int id)
 {
-#ifdef DEBUG
+#ifdef DEBUG_RUNTIME
   std::cout << '[' << id << "] " << s << std::endl;
 #endif
 }
