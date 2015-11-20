@@ -58,6 +58,6 @@
   }
   void #.model ::dump_tree(std::ostream& os) const
   {
-    dezyne::dump_tree(dzn_locator.get<typename std::ostream>(), &dzn_meta);
+    dezyne::dump_tree(os, &dzn_meta);
   }
 #(map (lambda (x) (list "}\n")) (om:scope model))
