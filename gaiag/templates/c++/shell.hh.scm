@@ -18,9 +18,8 @@
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 struct #.model
 {
-   dezyne::meta dzn_meta;
-   dezyne::runtime& dzn_rt;
-   dezyne::pump dzn_pump;
+  dezyne::meta dzn_meta;
+  dezyne::runtime& dzn_rt;
 #(map (lambda (binding) (list ((c++:scope-name) (.component (om:instance model (injected-instance-name binding)))) " "
                               (injected-instance-name binding) ";\n")) (injected-bindings model))
 dezyne::locator dezyne_local_locator;
@@ -30,6 +29,7 @@ dezyne::locator dezyne_local_locator;
 #}) (non-injected-instances model))
 #(map (init-bind model #{ #((c++:scope-name) interface)  #port;
 #}) (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
+  dezyne::pump dzn_pump;
   #.model (const dezyne::locator&);
   void check_bindings() const;
   void dump_tree(std::ostream& os=std::clog) const;

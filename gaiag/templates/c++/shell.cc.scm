@@ -12,8 +12,7 @@
                 (map (init-instance #{&#name .dzn_meta#})
                      (non-injected-instances model)))
                "},{}" (c++:init-brace-close)))
-             "dzn_rt(dezyne_locator.get<dezyne::runtime>())"
-             "dzn_pump()")
+             "dzn_rt(dezyne_locator.get<dezyne::runtime>())")
             (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
                  (injected-bindings model))
             (list (if (or #t (pair? (injected-bindings model)))
@@ -22,6 +21,7 @@
                  (non-injected-instances model))
             (map (init-bind model #{ #port(#instance)#})
                  (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
+            (list "dzn_pump()")
             ))
 {
 #(map
