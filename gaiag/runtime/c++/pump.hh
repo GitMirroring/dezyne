@@ -79,7 +79,7 @@ namespace dezyne
     ~pump();
     void operator()();
     void block(void*);
-    void do_one(char const *);
+    void do_one(const std::string &);
     void release(void*);
     void operator()(const std::function<void()>&);
     void operator()(std::function<void()>&&);

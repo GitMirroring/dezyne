@@ -62,7 +62,7 @@ auto find_blocked = [] (std::list<coroutine>& coroutines, void* port) {
   return self;
 };
 
-auto finish = [&](std::list<coroutine>& coroutines, char const* name){
+auto finish = [&](std::list<coroutine>& coroutines, const std::string &name){
   auto self = find_self(coroutines);
   self->finished = true;
   debug(std::string("exit ") + name + " coroutine", self->id);
@@ -131,33 +131,47 @@ void pump::operator()()
     }
     assert(queue.empty());
   }
+#ifdef BOOST_HAVE_COROUTINES
+  catch(const boost::coroutines::detail::forced_unwind&) {throw;}
+#endif
   catch(const std::exception& e)
   {
-    std::clog << "oops: " << e.what() << std::endl;
-    std::abort();
+    std::cout << "oops: " << e.what() << std::endl;
+    std::terminate();
   }
 }
-void pump::do_one(char const* level)
+void pump::do_one(const std::string &level)
 {
-  coroutines.emplace_back([&]{
-      auto self = find_self(coroutines);
-      debug(std::string(level) + " coroutine", self->id);
-      while((running || queue.size()) && !self->released)
+  coroutines.emplace_back([&,level]{
+      try
       {
-        debug(level, self->id);
-        worker();
-      }
-      finish(coroutines, level);
+        auto self = find_self(coroutines);
+        debug(std::string(level) + " coroutine", self->id);
+        while((running || queue.size()) && !self->released)
+        {
+          debug(level, self->id);
+          worker();
+        }
+        finish(coroutines, level);
 
-      if(coroutines.size() != 1)
-      {
-        decltype(switch_context) tmp([]{});
-        std::swap(switch_context, tmp);
-        tmp();
+        if(coroutines.size() != 1)
+        {
+          decltype(switch_context) tmp([]{});
+          std::swap(switch_context, tmp);
+          tmp();
+        }
+        else
+        {
+          exit();
+        }
       }
-      else
+#ifdef BOOST_HAVE_COROUTINES
+      catch(const boost::coroutines::detail::forced_unwind&) {throw;}
+#endif
+      catch(const std::exception& e)
       {
-        exit();
+        std::cout << "oops: " << e.what() << std::endl;
+        std::terminate();
       }
     });
 }

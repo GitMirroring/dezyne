@@ -40,7 +40,7 @@
 
 namespace dezyne
 {
-#ifdef DEBUG
+#ifdef DEBUG_RUNTIME
 struct thread_id_helper {
   thread_id_helper() {}
 
@@ -53,7 +53,7 @@ struct thread_id_helper {
 #endif // !__GNUC__
   }
 } _;
-#endif // !DEBUG
+#endif // !DEBUG_RUNTIME
 
 class context;
 enum State {INITIAL, RELEASED, BLOCKED, FINAL};
@@ -96,6 +96,7 @@ public:
 
         lock.unlock();
         std::function<void(context&)> yield([this](context& c){ this->yield(c); });
+		assert(yield);
         this->work(yield);
         lock.lock();
 
@@ -131,7 +132,7 @@ public:
   }
   ~context()
   {
-#ifdef DEBUG
+#ifdef DEBUG_RUNTIME
     std::clog << _ << __FUNCTION__  << ": " << to_string(state) << std::endl;
 #endif
     std::unique_lock<std::mutex> lock(mutex);
