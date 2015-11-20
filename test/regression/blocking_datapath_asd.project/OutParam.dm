@@ -4,12 +4,12 @@
 		<CodeGenerationLanguage>cpp</CodeGenerationLanguage>
 		<CodeGenerationVersion>9.2.9</CodeGenerationVersion>
 		<DateCreated>20151021T162910</DateCreated>
-		<DateModified>20151106T135420</DateModified>
+		<DateModified>20151120T093504</DateModified>
 		<Description>Basis&#32;for&#32;testing&#32;parameter&#32;passing.</Description>
 		<Guid>ADA478BDA88B485AB5FA8EE48A1E37D0</Guid>
-		<ModelSignature>BASE64_umYNzjQdfPImFQCgEQQE0i74T3adq0xncTNYFli7zfOhNcj4NLcka5hxY8B1aUdwyww4m1n5fkrXfKHu2XO9IfgapJHisaLE0HS2adAnWKheKRsh3182j0m9B12YIGKeOvO5LsKxJiCpPM0Nfm3byuQEZZGczkEcfQc+gSLk6+gWR9x97Rt88QXwvsQExXhvxFzl6We1pQCFOvR2VQRre51uTKQSBxfLctsu3EJt0ijItsIwCtFCbcpsXvP6JYu/Bs/XuyREs78baguM/CC+nN34nrlIQQb9DqS4orAAIE2PfQ9jOMeNlg+fKD/r+r6nQoAN86/oqQNAj7EcmpYjbQ==</ModelSignature>
+		<ModelSignature>BASE64_Z9DCZeOYCtOjWDgHmKnzIuJtHqn0ssP33e3tk3cjqi2xrzCZHNUzlj58Q7Jar01NQt4IYyrtgpgKR+pKgeyxvv+eF1ZaZH/kejRI6i6GNJB5zRLjxzNxr+84H/cvYMXFRY5DWIU5brnPijWfCz0T8uHjoXy/otBUXVpUCte5Ji5u2NlWEpNiUfeQ7KiU6Zl34I4HdFnp3PYcJFvxWzVIS71cDZ+B6wfCKYf7htdH9XAIVPOr6ImA27ZHVYDHK0U5K9sW/oaYfVuIkDloQMwx/xY0C/5avJa3T8aXCtZoaTYMyNM9SKnmHr+VjqtPkZ4FcVw/82Sjhv3LbNGSMzZAig==</ModelSignature>
 		<Name>OutParam</Name>
-		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.3(52305)</ToolVersion>
+		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.7(52388)</ToolVersion>
 		<AbstractInterface>
 			<AbstractInterface ID="893072">
 				<Guid>C87A6402319E4BBABE71CE5B8DC9EACF</Guid>
@@ -504,8 +504,8 @@
 											</Action>
 										</Actions>
 										<Arguments>
-											<SimpleArgument ID="894494">
-												<Value>number</Value>
+											<SimpleArgument ID="894644">
+												<Value>&gt;&lt;nr</Value>
 											</SimpleArgument>
 										</Arguments>
 									</RuleCase>
@@ -546,8 +546,8 @@
 											</Action>
 										</Actions>
 										<Arguments>
-											<SimpleArgument ID="894497">
-												<Value>number</Value>
+											<SimpleArgument ID="894645">
+												<Value>&gt;&lt;nr</Value>
 											</SimpleArgument>
 										</Arguments>
 									</RuleCase>
@@ -588,8 +588,8 @@
 											</Action>
 										</Actions>
 										<Arguments>
-											<SimpleArgument ID="894500">
-												<Value>number</Value>
+											<SimpleArgument ID="894646">
+												<Value>&gt;&lt;nr</Value>
 											</SimpleArgument>
 										</Arguments>
 									</RuleCase>
@@ -630,8 +630,8 @@
 											</Action>
 										</Actions>
 										<Arguments>
-											<SimpleArgument ID="894503">
-												<Value>number</Value>
+											<SimpleArgument ID="894647">
+												<Value>&gt;&lt;nr</Value>
 											</SimpleArgument>
 										</Arguments>
 									</RuleCase>
