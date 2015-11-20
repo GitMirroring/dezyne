@@ -35,6 +35,7 @@
 #include <map>
 #include <mutex>
 #include <queue>
+#include <set>
 
 namespace dezyne
 {
