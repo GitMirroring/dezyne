@@ -26,6 +26,7 @@
 #define CONTEXT_HH
 
 #include <algorithm>
+#include <cassert>
 #include <condition_variable>
 #include <functional>
 #include <future>
