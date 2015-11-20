@@ -1,7 +1,7 @@
 ##include "#.scope_model .hh"
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
-#.model ::#.model (const dezyne::locator& dezyne_locator)
+#.model ::#.model (const dezyne::locator& locator)
 : #((->join "\n, ")
     (append
             (list
@@ -11,13 +11,9 @@
                ((->join ",")
                 (map (init-instance #{&#name .dzn_meta#})
                      (non-injected-instances model)))
-               "},{}" (c++:init-brace-close)))
-             "dzn_rt(dezyne_locator.get<dezyne::runtime>())")
-            (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
-                 (injected-bindings model))
-            (list (if (or #t (pair? (injected-bindings model)))
-                      (list "dezyne_local_locator(dezyne_locator.clone().set(dzn_pump)" (map (lambda (binding) (list ".set(" (binding-name model (injected-binding binding)) ")"))  (injected-bindings model)) ")")))
-            (map (init-instance #{ #name (#(if (or #t (pair? (injected-bindings model))) "dezyne_local_locator" "dezyne_locator"))#})
+               "},{}" (c++:init-brace-close))))
+            (list "dzn_locator(locator.clone().set(dzn_runtime).set(dzn_pump))")
+            (map (init-instance #{ #name (dzn_locator)#})
                  (non-injected-instances model))
             (map (init-bind model #{ #port(#instance)#})
                  (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))

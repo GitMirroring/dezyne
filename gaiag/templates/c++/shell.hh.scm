@@ -18,13 +18,12 @@
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 struct #.model
 {
-  dezyne::meta dzn_meta;
-  dezyne::runtime& dzn_rt;
-#(map (lambda (binding) (list ((c++:scope-name) (.component (om:instance model (injected-instance-name binding)))) " "
+ dezyne::meta dzn_meta;
+ dezyne::runtime dzn_runtime;
+ #(map (lambda (binding) (list ((c++:scope-name) (.component (om:instance model (injected-instance-name binding)))) " "
                               (injected-instance-name binding) ";\n")) (injected-bindings model))
-dezyne::locator dezyne_local_locator;
-#;;(if (pair? (injected-bindings model)) (list "dezyne::locator dezyne_local_locator;\n")) #
-(map (init-instance #{
+ dezyne::locator dzn_locator;
+#(map (init-instance #{
   #((c++:scope-name) component)  #name;
 #}) (non-injected-instances model))
 #(map (init-bind model #{ #((c++:scope-name) interface)  #port;
