@@ -312,7 +312,7 @@
                 `((space ,space)
                   (expression ,(expression->string model expression locals))
                   (then ,(->code model then blocking? locals (1+ indent))))))
-      (($ <if> expression (and ($ <if> e t #f) (get! then)) else)
+      (($ <if> expression (and ($ <if> e t) (get! then)) else)
        (->code- model (make <if> :expression expression :then (wrap-compound (then)) :else else) blocking? locals indent))
       (($ <if> expression then else)
        (snippet 'if-then-else

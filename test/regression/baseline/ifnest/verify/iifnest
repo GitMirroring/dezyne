@@ -1,0 +1,3 @@
+verify: iifnest: check: completeness: ok
+verify: iifnest: check: deadlock: ok
+verify: iifnest: check: livelock: ok
