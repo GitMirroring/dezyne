@@ -1,14 +1,14 @@
 <external>.arm -> .alarm.console.arm
 Sensor.Enable
 Sensor.Triggered
-.sensor.sensor.triggered -> .alarm.sensor.triggered
+<external>.sensor.triggered -> .alarm.sensor.triggered
 ConsoleCB.Tripped
 Siren.Turnon
 .alarm.console.return -> <external>.return
 <external>.disarm -> .alarm.console.disarm
 Sensor.Disable
 Sensor.Disabled
-.sensor.sensor.disabled -> .alarm.sensor.disabled
+<external>.sensor.disabled -> .alarm.sensor.disabled
 Siren.Turnoff
 ConsoleCB.Deactivated
 .alarm.console.return -> <external>.return

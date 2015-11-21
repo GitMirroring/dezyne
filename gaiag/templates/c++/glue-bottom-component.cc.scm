@@ -49,7 +49,7 @@ struct SingleThreaded
 static std::map<#.model *, boost::shared_ptr<#(om:name (om:port model)) Interface> > g_handwritten;
 
 #.model ::#.model (const dezyne::locator& dezyne_locator)
-: dzn_meta{"glue","#.model",reinterpret_cast<const dezyne::component*>(this),0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (om:ports model)))}}
+: dzn_meta{"glue","#.model",0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (om:ports model)))}}
 , dzn_rt(dezyne_locator.get<dezyne::runtime>())
 , dzn_locator(dezyne_locator)#
 (map (lambda (port) (if (eq? (.direction port) 'provides) (list "\n, " (.name port) "({{\"" (.name port) "\",this},{\"\",0}})") (list "\n, " (.name port) "({{\"\",0},{\"" (.name port) "\",this}})"))) ((compose .elements .ports) model))
