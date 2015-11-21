@@ -47,7 +47,7 @@
 namespace gui {
 struct Motor: public Gtk::SpinButton
 {
-  dezyne::component meta;
+  dezyne::meta meta;
 
   int home;
   int end;
@@ -60,7 +60,7 @@ struct Motor: public Gtk::SpinButton
 
   Motor(const char* name, int home=0, int end=0)
   : Gtk::SpinButton(Gtk::Adjustment::create(0.0, min, max, 1.0, 0.0, 0.0))
-  , meta{{name,"NXT-Motor",reinterpret_cast<const dezyne::component*>(this),0,{},{}}}
+  , meta{name,"NXT-Motor",0,{},{}}
   , home(home)
   , end(end)
   , velocity(0.5)
@@ -88,11 +88,11 @@ struct Motor: public Gtk::SpinButton
 
 struct Sensor: public Gtk::CheckButton
 {
-  dezyne::component meta;
+  dezyne::meta meta;
 
   Sensor(const char* name)
   : Gtk::CheckButton(name)
-  , meta{{name,"NXT-Sensor",reinterpret_cast<const dezyne::component*>(this),0,{},{}}}
+  , meta{name,"NXT-Sensor",0,{},{}}
   {}
 };
 

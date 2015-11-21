@@ -32,10 +32,10 @@
 #include <memory>
 
 timer::timer(const dezyne::locator& l)
-  : dzn_meta{"","timer",reinterpret_cast<const dezyne::component*>(this),0}
+  : dzn_meta{"","timer",0,{},{}}
   , dzn_rt(l.get<dezyne::runtime>())
   , dzn_locator(l)
-  , port{{}}
+  , port{{{"in",this},{"",0}}}
   {
     dzn_meta.ports_connected.push_back([this]{port.check_bindings();});
     port.meta.provides.port = "port";

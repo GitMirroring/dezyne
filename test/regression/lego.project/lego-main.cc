@@ -192,8 +192,8 @@ int main(int argc, char* argv[])
 
     sut.check_bindings();
 
-    dezyne::apply(reinterpret_cast<dezyne::component*>(&sut), [](const dezyne::meta& m){
-        std::clog << m.parent << " " << m.address << " " << m.name << std::endl;
+    dezyne::apply(&sut.dzn_meta, [](const dezyne::meta* m){
+        std::clog << m->parent << " " << m << " " << m->name << std::endl;
       });
 
     // run the event loop

@@ -1,0 +1,209 @@
+<external>.calibrate -> sut.handler.bhv.ctrl.calibrate
+sut.handler.bhv.robot.calibrate -> sut.handler.robot.bhv.ctrl.calibrate
+sut.handler.robot.bhv.hoist.calibrate -> sut.handler.robot.hoist.bhv.ctrl.calibrate
+sut.handler.robot.hoist.bhv.winch.calibrate -> sut.handler.robot.hoist.winch.bhv.ctrl.calibrate
+sut.handler.robot.hoist.winch.bhv.endSensor.enable -> sut.handler.robot.hoist.winch.endSensor.bhv.ctrl.enable
+brick4_s3.detect
+sut.handler.robot.hoist.winch.endSensor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.handler.robot.hoist.winch.endSensor.bhv.timer.return
+sut.handler.robot.hoist.winch.endSensor.bhv.ctrl.TouchState_Pressed -> sut.handler.robot.hoist.winch.bhv.endSensor.TouchState_Pressed
+sut.handler.robot.hoist.winch.bhv.endSensor.disable -> sut.handler.robot.hoist.winch.endSensor.bhv.ctrl.disable
+sut.handler.robot.hoist.winch.endSensor.bhv.timer.cancel -> <external>.port.cancel
+<external>.port.return -> sut.handler.robot.hoist.winch.endSensor.bhv.timer.return
+sut.handler.robot.hoist.winch.endSensor.bhv.ctrl.return -> sut.handler.robot.hoist.winch.bhv.endSensor.return
+sut.handler.robot.hoist.winch.bhv.motor.stop -> sut.handler.robot.hoist.winch.motor.bhv.ctrl.stop
+brick4_aA.stop
+sut.handler.robot.hoist.winch.motor.bhv.timer.cancel -> <external>.port.cancel
+<external>.port.return -> sut.handler.robot.hoist.winch.motor.bhv.timer.return
+sut.handler.robot.hoist.winch.motor.bhv.ctrl.return -> sut.handler.robot.hoist.winch.bhv.motor.return
+sut.handler.robot.hoist.winch.bhv.motor.zero -> sut.handler.robot.hoist.winch.motor.bhv.ctrl.zero
+brick4_aA.zero
+sut.handler.robot.hoist.winch.motor.bhv.ctrl.return -> sut.handler.robot.hoist.winch.bhv.motor.return
+sut.handler.robot.hoist.winch.bhv.ctrl.homed -> sut.handler.robot.hoist.bhv.winch.homed
+sut.handler.robot.hoist.winch.bhv.ctrl.return -> sut.handler.robot.hoist.bhv.winch.return
+sut.handler.robot.hoist.bhv.winch.move -> sut.handler.robot.hoist.winch.bhv.ctrl.move
+sut.handler.robot.hoist.winch.bhv.endSensor.enable -> sut.handler.robot.hoist.winch.endSensor.bhv.ctrl.enable
+brick4_s3.detect
+sut.handler.robot.hoist.winch.endSensor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.handler.robot.hoist.winch.endSensor.bhv.timer.return
+sut.handler.robot.hoist.winch.endSensor.bhv.ctrl.TouchState_Pressed -> sut.handler.robot.hoist.winch.bhv.endSensor.TouchState_Pressed
+sut.handler.robot.hoist.winch.bhv.motor.move -> sut.handler.robot.hoist.winch.motor.bhv.ctrl.move
+sut.handler.robot.hoist.winch.motor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.handler.robot.hoist.winch.motor.bhv.timer.return
+brick4_aA.move
+sut.handler.robot.hoist.winch.motor.bhv.ctrl.return -> sut.handler.robot.hoist.winch.bhv.motor.return
+sut.handler.robot.hoist.winch.bhv.ctrl.return -> sut.handler.robot.hoist.bhv.winch.return
+sut.handler.robot.hoist.bhv.ctrl.return -> sut.handler.robot.bhv.hoist.return
+sut.handler.robot.bhv.gripper.calibrate -> sut.handler.robot.gripper.bhv.ctrl.calibrate
+sut.handler.robot.gripper.bhv.gripper.calibrate -> sut.handler.robot.gripper.gripper.bhv.ctrl.calibrate
+sut.handler.robot.gripper.gripper.bhv.endSensor.enable -> sut.handler.robot.gripper.gripper.endSensor.bhv.ctrl.enable
+brick4_s1.detect
+sut.handler.robot.gripper.gripper.endSensor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.handler.robot.gripper.gripper.endSensor.bhv.timer.return
+sut.handler.robot.gripper.gripper.endSensor.bhv.ctrl.TouchState_Pressed -> sut.handler.robot.gripper.gripper.bhv.endSensor.TouchState_Pressed
+sut.handler.robot.gripper.gripper.bhv.endSensor.disable -> sut.handler.robot.gripper.gripper.endSensor.bhv.ctrl.disable
+sut.handler.robot.gripper.gripper.endSensor.bhv.timer.cancel -> <external>.port.cancel
+<external>.port.return -> sut.handler.robot.gripper.gripper.endSensor.bhv.timer.return
+sut.handler.robot.gripper.gripper.endSensor.bhv.ctrl.return -> sut.handler.robot.gripper.gripper.bhv.endSensor.return
+sut.handler.robot.gripper.gripper.bhv.motor.stop -> sut.handler.robot.gripper.gripper.motor.bhv.ctrl.stop
+brick4_aB.stop
+sut.handler.robot.gripper.gripper.motor.bhv.timer.cancel -> <external>.port.cancel
+<external>.port.return -> sut.handler.robot.gripper.gripper.motor.bhv.timer.return
+sut.handler.robot.gripper.gripper.motor.bhv.ctrl.return -> sut.handler.robot.gripper.gripper.bhv.motor.return
+sut.handler.robot.gripper.gripper.bhv.motor.zero -> sut.handler.robot.gripper.gripper.motor.bhv.ctrl.zero
+brick4_aB.zero
+sut.handler.robot.gripper.gripper.motor.bhv.ctrl.return -> sut.handler.robot.gripper.gripper.bhv.motor.return
+sut.handler.robot.gripper.gripper.bhv.ctrl.homed -> sut.handler.robot.gripper.bhv.gripper.homed
+sut.handler.robot.gripper.gripper.bhv.ctrl.return -> sut.handler.robot.gripper.bhv.gripper.return
+sut.handler.robot.gripper.bhv.gripper.move -> sut.handler.robot.gripper.gripper.bhv.ctrl.move
+sut.handler.robot.gripper.gripper.bhv.endSensor.enable -> sut.handler.robot.gripper.gripper.endSensor.bhv.ctrl.enable
+brick4_s1.detect
+sut.handler.robot.gripper.gripper.endSensor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.handler.robot.gripper.gripper.endSensor.bhv.timer.return
+sut.handler.robot.gripper.gripper.endSensor.bhv.ctrl.TouchState_Pressed -> sut.handler.robot.gripper.gripper.bhv.endSensor.TouchState_Pressed
+sut.handler.robot.gripper.gripper.bhv.motor.move -> sut.handler.robot.gripper.gripper.motor.bhv.ctrl.move
+sut.handler.robot.gripper.gripper.motor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.handler.robot.gripper.gripper.motor.bhv.timer.return
+brick4_aB.move
+sut.handler.robot.gripper.gripper.motor.bhv.ctrl.return -> sut.handler.robot.gripper.gripper.bhv.motor.return
+sut.handler.robot.gripper.gripper.bhv.ctrl.return -> sut.handler.robot.gripper.bhv.gripper.return
+sut.handler.robot.gripper.bhv.ctrl.return -> sut.handler.robot.bhv.gripper.return
+sut.handler.robot.bhv.ctrl.return -> sut.handler.bhv.robot.return
+sut.handler.bhv.inspector.calibrate -> sut.inspector.bhv.ctrl.calibrate
+sut.inspector.bhv.stage.calibrate -> sut.inspector.stage.bhv.ctrl.calibrate
+sut.inspector.stage.bhv.xAxis.calibrate -> sut.inspector.stage.xAxis.bhv.ctrl.calibrate
+sut.inspector.stage.xAxis.bhv.homeSensor.enable -> sut.inspector.stage.xAxis.homeSensor.bhv.ctrl.enable
+brick2_s2.detect
+sut.inspector.stage.xAxis.homeSensor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.inspector.stage.xAxis.homeSensor.bhv.timer.return
+sut.inspector.stage.xAxis.homeSensor.bhv.ctrl.TouchState_Pressed -> sut.inspector.stage.xAxis.bhv.homeSensor.TouchState_Pressed
+sut.inspector.stage.xAxis.bhv.homeSensor.disable -> sut.inspector.stage.xAxis.homeSensor.bhv.ctrl.disable
+sut.inspector.stage.xAxis.homeSensor.bhv.timer.cancel -> <external>.port.cancel
+<external>.port.return -> sut.inspector.stage.xAxis.homeSensor.bhv.timer.return
+sut.inspector.stage.xAxis.homeSensor.bhv.ctrl.return -> sut.inspector.stage.xAxis.bhv.homeSensor.return
+sut.inspector.stage.xAxis.bhv.motor.stop -> sut.inspector.stage.xAxis.motor.bhv.ctrl.stop
+brick3_aA.stop
+sut.inspector.stage.xAxis.motor.bhv.timer.cancel -> <external>.port.cancel
+<external>.port.return -> sut.inspector.stage.xAxis.motor.bhv.timer.return
+sut.inspector.stage.xAxis.motor.bhv.ctrl.return -> sut.inspector.stage.xAxis.bhv.motor.return
+sut.inspector.stage.xAxis.bhv.motor.zero -> sut.inspector.stage.xAxis.motor.bhv.ctrl.zero
+brick3_aA.zero
+sut.inspector.stage.xAxis.motor.bhv.ctrl.return -> sut.inspector.stage.xAxis.bhv.motor.return
+sut.inspector.stage.xAxis.bhv.endSensor.enable -> sut.inspector.stage.xAxis.endSensor.bhv.ctrl.enable
+brick1_s1.detect
+sut.inspector.stage.xAxis.endSensor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.inspector.stage.xAxis.endSensor.bhv.timer.return
+sut.inspector.stage.xAxis.endSensor.bhv.ctrl.TouchState_Pressed -> sut.inspector.stage.xAxis.bhv.endSensor.TouchState_Pressed
+sut.inspector.stage.xAxis.bhv.endSensor.disable -> sut.inspector.stage.xAxis.endSensor.bhv.ctrl.disable
+sut.inspector.stage.xAxis.endSensor.bhv.timer.cancel -> <external>.port.cancel
+<external>.port.return -> sut.inspector.stage.xAxis.endSensor.bhv.timer.return
+sut.inspector.stage.xAxis.endSensor.bhv.ctrl.return -> sut.inspector.stage.xAxis.bhv.endSensor.return
+sut.inspector.stage.xAxis.bhv.motor.stop -> sut.inspector.stage.xAxis.motor.bhv.ctrl.stop
+brick3_aA.stop
+sut.inspector.stage.xAxis.motor.bhv.timer.cancel -> <external>.port.cancel
+<external>.port.return -> sut.inspector.stage.xAxis.motor.bhv.timer.return
+sut.inspector.stage.xAxis.motor.bhv.ctrl.return -> sut.inspector.stage.xAxis.bhv.motor.return
+sut.inspector.stage.xAxis.bhv.ctrl.homed -> sut.inspector.stage.bhv.xAxis.homed
+sut.inspector.stage.xAxis.bhv.ctrl.return -> sut.inspector.stage.bhv.xAxis.return
+sut.inspector.stage.bhv.yAxis.calibrate -> sut.inspector.stage.yAxis.bhv.ctrl.calibrate
+sut.inspector.stage.yAxis.bhv.homeSensor.enable -> sut.inspector.stage.yAxis.homeSensor.bhv.ctrl.enable
+brick3_s3.detect
+sut.inspector.stage.yAxis.homeSensor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.inspector.stage.yAxis.homeSensor.bhv.timer.return
+sut.inspector.stage.yAxis.homeSensor.bhv.ctrl.TouchState_Pressed -> sut.inspector.stage.yAxis.bhv.homeSensor.TouchState_Pressed
+sut.inspector.stage.yAxis.bhv.homeSensor.disable -> sut.inspector.stage.yAxis.homeSensor.bhv.ctrl.disable
+sut.inspector.stage.yAxis.homeSensor.bhv.timer.cancel -> <external>.port.cancel
+<external>.port.return -> sut.inspector.stage.yAxis.homeSensor.bhv.timer.return
+sut.inspector.stage.yAxis.homeSensor.bhv.ctrl.return -> sut.inspector.stage.yAxis.bhv.homeSensor.return
+sut.inspector.stage.yAxis.bhv.motor.stop -> sut.inspector.stage.yAxis.motor.bhv.ctrl.stop
+brick3_aC.stop
+sut.inspector.stage.yAxis.motor.bhv.timer.cancel -> <external>.port.cancel
+<external>.port.return -> sut.inspector.stage.yAxis.motor.bhv.timer.return
+sut.inspector.stage.yAxis.motor.bhv.ctrl.return -> sut.inspector.stage.yAxis.bhv.motor.return
+sut.inspector.stage.yAxis.bhv.motor.zero -> sut.inspector.stage.yAxis.motor.bhv.ctrl.zero
+brick3_aC.zero
+sut.inspector.stage.yAxis.motor.bhv.ctrl.return -> sut.inspector.stage.yAxis.bhv.motor.return
+sut.inspector.stage.yAxis.bhv.endSensor.enable -> sut.inspector.stage.yAxis.endSensor.bhv.ctrl.enable
+brick3_s2.detect
+sut.inspector.stage.yAxis.endSensor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.inspector.stage.yAxis.endSensor.bhv.timer.return
+sut.inspector.stage.yAxis.endSensor.bhv.ctrl.TouchState_Pressed -> sut.inspector.stage.yAxis.bhv.endSensor.TouchState_Pressed
+sut.inspector.stage.yAxis.bhv.endSensor.disable -> sut.inspector.stage.yAxis.endSensor.bhv.ctrl.disable
+sut.inspector.stage.yAxis.endSensor.bhv.timer.cancel -> <external>.port.cancel
+<external>.port.return -> sut.inspector.stage.yAxis.endSensor.bhv.timer.return
+sut.inspector.stage.yAxis.endSensor.bhv.ctrl.return -> sut.inspector.stage.yAxis.bhv.endSensor.return
+sut.inspector.stage.yAxis.bhv.motor.stop -> sut.inspector.stage.yAxis.motor.bhv.ctrl.stop
+brick3_aC.stop
+sut.inspector.stage.yAxis.motor.bhv.timer.cancel -> <external>.port.cancel
+<external>.port.return -> sut.inspector.stage.yAxis.motor.bhv.timer.return
+sut.inspector.stage.yAxis.motor.bhv.ctrl.return -> sut.inspector.stage.yAxis.bhv.motor.return
+sut.inspector.stage.yAxis.bhv.ctrl.homed -> sut.inspector.stage.bhv.yAxis.homed
+sut.inspector.stage.yAxis.bhv.ctrl.return -> sut.inspector.stage.bhv.yAxis.return
+sut.inspector.stage.bhv.ctrl.calibrated -> sut.inspector.bhv.stage.calibrated
+sut.inspector.stage.bhv.ctrl.return -> sut.inspector.bhv.stage.return
+sut.inspector.bhv.stage.move -> sut.inspector.stage.bhv.ctrl.move
+sut.inspector.stage.bhv.xAxis.move -> sut.inspector.stage.xAxis.bhv.ctrl.move
+sut.inspector.stage.xAxis.bhv.homeSensor.enable -> sut.inspector.stage.xAxis.homeSensor.bhv.ctrl.enable
+brick2_s2.detect
+sut.inspector.stage.xAxis.homeSensor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.inspector.stage.xAxis.homeSensor.bhv.timer.return
+sut.inspector.stage.xAxis.homeSensor.bhv.ctrl.TouchState_Pressed -> sut.inspector.stage.xAxis.bhv.homeSensor.TouchState_Pressed
+sut.inspector.stage.xAxis.bhv.endSensor.enable -> sut.inspector.stage.xAxis.endSensor.bhv.ctrl.enable
+brick1_s1.detect
+sut.inspector.stage.xAxis.endSensor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.inspector.stage.xAxis.endSensor.bhv.timer.return
+sut.inspector.stage.xAxis.endSensor.bhv.ctrl.TouchState_Pressed -> sut.inspector.stage.xAxis.bhv.endSensor.TouchState_Pressed
+sut.inspector.stage.xAxis.bhv.motor.move -> sut.inspector.stage.xAxis.motor.bhv.ctrl.move
+sut.inspector.stage.xAxis.motor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.inspector.stage.xAxis.motor.bhv.timer.return
+brick3_aA.move
+sut.inspector.stage.xAxis.motor.bhv.ctrl.return -> sut.inspector.stage.xAxis.bhv.motor.return
+sut.inspector.stage.xAxis.bhv.ctrl.return -> sut.inspector.stage.bhv.xAxis.return
+sut.inspector.stage.bhv.yAxis.move -> sut.inspector.stage.yAxis.bhv.ctrl.move
+sut.inspector.stage.yAxis.bhv.homeSensor.enable -> sut.inspector.stage.yAxis.homeSensor.bhv.ctrl.enable
+brick3_s3.detect
+sut.inspector.stage.yAxis.homeSensor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.inspector.stage.yAxis.homeSensor.bhv.timer.return
+sut.inspector.stage.yAxis.homeSensor.bhv.ctrl.TouchState_Pressed -> sut.inspector.stage.yAxis.bhv.homeSensor.TouchState_Pressed
+sut.inspector.stage.yAxis.bhv.endSensor.enable -> sut.inspector.stage.yAxis.endSensor.bhv.ctrl.enable
+brick3_s2.detect
+sut.inspector.stage.yAxis.endSensor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.inspector.stage.yAxis.endSensor.bhv.timer.return
+sut.inspector.stage.yAxis.endSensor.bhv.ctrl.TouchState_Pressed -> sut.inspector.stage.yAxis.bhv.endSensor.TouchState_Pressed
+sut.inspector.stage.yAxis.bhv.motor.move -> sut.inspector.stage.yAxis.motor.bhv.ctrl.move
+sut.inspector.stage.yAxis.motor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.inspector.stage.yAxis.motor.bhv.timer.return
+brick3_aC.move
+sut.inspector.stage.yAxis.motor.bhv.ctrl.return -> sut.inspector.stage.yAxis.bhv.motor.return
+sut.inspector.stage.yAxis.bhv.ctrl.return -> sut.inspector.stage.bhv.yAxis.return
+sut.inspector.stage.bhv.ctrl.return -> sut.inspector.bhv.stage.return
+sut.inspector.bhv.ctrl.return -> sut.handler.bhv.inspector.return
+sut.handler.bhv.feedPort.calibrate -> sut.input.bhv.ctrl.calibrate
+sut.input.bhv.feeder.calibrate -> sut.track.bhv.ctrl.calibrate
+sut.track.bhv.axis.calibrate -> sut.track.axis.bhv.ctrl.calibrate
+sut.track.axis.bhv.endSensor.enable -> sut.track.axis.endSensor.bhv.ctrl.enable
+brick1_s4.detect
+sut.track.axis.endSensor.bhv.timer.create -> <external>.port.create
+<external>.port.return -> sut.track.axis.endSensor.bhv.timer.return
+sut.track.axis.endSensor.bhv.ctrl.TouchState_Pressed -> sut.track.axis.bhv.endSensor.TouchState_Pressed
+sut.track.axis.bhv.endSensor.disable -> sut.track.axis.endSensor.bhv.ctrl.disable
+sut.track.axis.endSensor.bhv.timer.cancel -> <external>.port.cancel
+<external>.port.return -> sut.track.axis.endSensor.bhv.timer.return
+sut.track.axis.endSensor.bhv.ctrl.return -> sut.track.axis.bhv.endSensor.return
+sut.track.axis.bhv.motor.stop -> sut.track.axis.motor.bhv.ctrl.stop
+brick1_aC.stop
+sut.track.axis.motor.bhv.timer.cancel -> <external>.port.cancel
+<external>.port.return -> sut.track.axis.motor.bhv.timer.return
+sut.track.axis.motor.bhv.ctrl.return -> sut.track.axis.bhv.motor.return
+sut.track.axis.bhv.motor.zero -> sut.track.axis.motor.bhv.ctrl.zero
+brick1_aC.zero
+sut.track.axis.motor.bhv.ctrl.return -> sut.track.axis.bhv.motor.return
+sut.track.axis.bhv.ctrl.homed -> sut.track.bhv.axis.homed
+sut.track.axis.bhv.ctrl.return -> sut.track.bhv.axis.return
+sut.track.bhv.ctrl.calibrated -> sut.input.bhv.feeder.calibrated
+sut.track.bhv.ctrl.return -> sut.input.bhv.feeder.return
+sut.input.bhv.ctrl.calibrated -> sut.handler.bhv.feedPort.calibrated
+sut.input.bhv.ctrl.return -> sut.handler.bhv.feedPort.return
+sut.handler.bhv.ctrl.return -> <external>.return
+<external>.operate -> sut.handler.bhv.ctrl.operate
+sut.handler.bhv.ctrl.return -> <external>.return
