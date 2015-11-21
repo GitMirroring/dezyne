@@ -706,7 +706,7 @@
 (define ((declare-enum model) enum)
   (let* ((fields ((compose .elements .fields) enum))
          (length (length fields))
-         (asd? #t))
+         (asd? #f))
    (snippet 'declare-enum
             `((scope+name ,(om:scope+name enum)) (scope ,(om:scope enum)) (name ,(om:name enum)) (fields ,fields) (length ,length) (asd? ,asd?)))))
 
