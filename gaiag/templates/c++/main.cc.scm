@@ -97,14 +97,16 @@ int main()
   dezyne::event_map event_map;
   #((om:scope-name (string->symbol "::")) model)  sut(l);
   sut.dzn_meta.name = "sut";
+
+  dezyne::component c;
+  c.dzn_meta.parent = 0;
+  c.dzn_meta.name = "<internal>";
+
 ##if BLOCKING
   dezyne::pump pump;
   l.set(pump);
 ##endif // BLOCKING
 
-  dezyne::component c;
-  c.dzn_meta.parent = 0;
-  c.dzn_meta.name = "<internal>";
   dezyne::fill_event_map(&c, sut, event_map);
 
   sut.check_bindings();
