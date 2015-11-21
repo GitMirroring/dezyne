@@ -131,7 +131,7 @@ void pump::operator()()
     }
     assert(queue.empty());
   }
-#ifdef BOOST_HAVE_COROUTINES
+#if HAVE_BOOST_COROUTINE
   catch(const boost::coroutines::detail::forced_unwind&) {throw;}
 #endif
   catch(const std::exception& e)
@@ -165,7 +165,7 @@ void pump::do_one(const std::string &level)
           exit();
         }
       }
-#ifdef BOOST_HAVE_COROUTINES
+#if HAVE_BOOST_COROUTINE
       catch(const boost::coroutines::detail::forced_unwind&) {throw;}
 #endif
       catch(const std::exception& e)

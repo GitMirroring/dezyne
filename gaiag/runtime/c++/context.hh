@@ -58,7 +58,7 @@ struct thread_id_helper {
 
 class context;
 enum State {INITIAL, RELEASED, BLOCKED, FINAL};
-inline std::string to_string(State state)
+inline char const* context_to_string(State state)
 {
   switch(state)
   {
@@ -134,7 +134,7 @@ public:
   ~context()
   {
 #ifdef DEBUG_RUNTIME
-    std::clog << _ << __FUNCTION__  << ": " << to_string(state) << std::endl;
+    std::clog << _ << __FUNCTION__  << ": " << context_to_string(state) << std::endl;
 #endif
     std::unique_lock<std::mutex> lock(mutex);
     do_finish(lock);
@@ -195,29 +195,29 @@ public:
 private:
   void do_block(std::unique_lock<std::mutex>& lock)
   {
-    //std::clog << _ << "enter block: " << to_string(state) << std::endl;
+    //std::clog << _ << "enter block: " << context_to_string(state) << std::endl;
     state = BLOCKED;
     condition.notify_one();
     do { condition.wait(lock); } while(state == BLOCKED);
-    //std::clog << _ << "exit block: " << to_string(state) << std::endl;
+    //std::clog << _ << "exit block: " << context_to_string(state) << std::endl;
   }
   void do_release(std::unique_lock<std::mutex>&)
   {
-    //std::clog << _ << "enter release: " << to_string(state) << std::endl;
-    if(state != BLOCKED) throw std::runtime_error("not allowed to release a call which is " +
-                                                  to_string(state));
+    //std::clog << _ << "enter release: " << context_to_string(state) << std::endl;
+    if(state != BLOCKED) throw std::runtime_error(std::string("not allowed to release a call which is ") +
+                                                  context_to_string(state));
     state = RELEASED;
     condition.notify_one();
-    //std::clog << _ << "exit release: " << to_string(state) << std::endl;
+    //std::clog << _ << "exit release: " << context_to_string(state) << std::endl;
   }
   void do_finish(std::unique_lock<std::mutex>& lock)
   {
-    //std::clog << _ << "enter finish: " << to_string(state) << std::endl;
+    //std::clog << _ << "enter finish: " << context_to_string(state) << std::endl;
     state = FINAL;
     lock.unlock();
     condition.notify_all();
     if(thread.joinable()) thread.join();
-    //std::clog << _ << "exit finish: " << to_string(state) << std::endl;
+    //std::clog << _ << "exit finish: " << context_to_string(state) << std::endl;
   }
 };
 }
