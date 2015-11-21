@@ -1,0 +1,55 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+extern integer $int$;
+
+interface ishadow {
+  in void e(integer g, integer p);
+  in void f(out integer p);
+  in void b(out integer x);
+
+  behaviour {
+
+    [true]
+    on e, f, b:
+    {}
+  }
+}
+
+component shadow {
+  provides ishadow p;
+
+  behaviour {
+    integer g = $-1$;
+
+    [true]
+    {
+      on p.e(a, p):
+      g = a;
+      on p.f(q):
+      q = g;
+      on p.b(x <- g):
+      blocking p.reply();
+    }
+  }
+}
+

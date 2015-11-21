@@ -1,0 +1,3 @@
+verify: ishadow: check: completeness: ok
+verify: ishadow: check: deadlock: ok
+verify: ishadow: check: livelock: ok

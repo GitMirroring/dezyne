@@ -1,0 +1,10 @@
+<external>.e -> sut.p.e
+sut.p.return -> <external>.return
+<external>.f -> sut.p.f
+sut.p.return -> <external>.return
+r=1
+<external>.e -> sut.p.e
+sut.p.return -> <external>.return
+<external>.b -> sut.p.b
+sut.p.return -> <external>.return
+r=3

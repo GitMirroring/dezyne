@@ -164,8 +164,11 @@
      ((? unspecified?) '()))
    (globals)))
 
-(define (om:variables model)
-  ((compose .elements .variables .behaviour) model))
+(define (om:variables o)
+  (match o
+    ((or ($ <interface>) ($ <component>))
+     ((compose .elements .variables .behaviour) o))
+    (_ '())))
 
 (define (om:interface-enums o)
   (match o
