@@ -1,1 +1,12 @@
-verify: 
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: II: check: completeness: ok
+verify: II: check: deadlock: ok
+verify: II: check: livelock: ok
+verify: DirectAndDeferredReply: check: deterministic: ok
+verify: DirectAndDeferredReply: check: completeness: ok
+verify: DirectAndDeferredReply: check: illegal: ok
+verify: DirectAndDeferredReply: check: deadlock: ok
+verify: DirectAndDeferredReply: check: compliance: ok
+verify: DirectAndDeferredReply: check: livelock: ok

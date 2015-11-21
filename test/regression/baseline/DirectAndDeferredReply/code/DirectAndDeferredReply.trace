@@ -1,0 +1,9 @@
+<external>.e -> sut.p.e
+r.e
+r.return
+<internal>.cb -> sut.r.cb
+sut.p.return -> <external>.return
+<external>.e -> sut.p.e
+r.f
+r.return
+sut.p.return -> <external>.return

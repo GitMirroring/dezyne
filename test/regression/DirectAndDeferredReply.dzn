@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -51,24 +52,23 @@ component DirectAndDeferredReply {
     bool busy = false;
     bool direct = false;
     [!busy] {
-      on p.e: 
+      on p.e():
 	blocking if (direct) {
           r.f();
  	  p.reply();
           direct = !direct;
         }
 	else {
-          r.e(); 
-          busy = true; 
+          r.e();
+          busy = true;
           direct = !direct;
         }
       on r.cb: illegal;
     }
     [busy] {
-       on p.e: illegal;
-       on r.cb: 
+      on p.e(): illegal;
+      on r.cb():
          { p.reply(); busy = false; }
     }
   }
 }
-
