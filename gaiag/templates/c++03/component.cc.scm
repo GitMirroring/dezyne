@@ -7,7 +7,7 @@
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 #.model ::#.model (const dezyne::locator& dezyne_locator)
-: dzn_meta("","#.model",reinterpret_cast<const dezyne::component*>(this),0)
+: dzn_meta("","#.model",0)
 , dzn_rt(dezyne_locator.get<dezyne::runtime>())
 , dzn_locator(dezyne_locator)
 , #
@@ -22,10 +22,12 @@
 
 #(map (init-port #{#name .meta.provides.port = "#name ";
                    #name .meta.provides.address = this;
+                   #name .meta.provides.meta = &this->dzn_meta;
                    #}) (filter om:provides? ((compose .elements .ports) model)))
 
 #(map (init-port #{#name .meta.requires.port = "#name ";
                    #name .meta.requires.address = this;
+                   #name .meta.requires.meta = &this->dzn_meta;
                    #}) (filter om:requires? ((compose .elements .ports) model)))
 
 dzn_rt.performs_flush(this) = true;
@@ -62,10 +64,10 @@ dzn_rt.performs_flush(this) = true;
 #}) (om:functions model)))
   void #.model ::check_bindings() const
   {
-    dezyne::check_bindings(reinterpret_cast<const dezyne::component*>(this));
+    dezyne::check_bindings(&dzn_meta);
   }
   void #.model ::dump_tree() const
   {
-    dezyne::dump_tree(reinterpret_cast<const dezyne::component*>(this));
+    dezyne::dump_tree(&dzn_meta);
   }
 #(map (lambda (x) (list "}\n")) (om:scope model))

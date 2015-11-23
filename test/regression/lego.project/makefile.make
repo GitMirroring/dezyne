@@ -28,7 +28,6 @@ LANGUAGES:=$(filter-out java java7, $(ALL_LANGUAGES))
 else
 LANGUAGES:=$(ALL_LANGUAGES)
 endif
-LANGUAGES:=$(filter-out c++03, $(LANGUAGES))
 $(foreach LOCAL_LANGUAGE,$(LANGUAGES),\
 	$(eval include $(CDIR)project.make))
 DZN_FILES:=
