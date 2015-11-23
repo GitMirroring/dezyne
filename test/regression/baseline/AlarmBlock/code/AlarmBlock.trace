@@ -7,3 +7,4 @@ sensor.disable
 sensor.return
 <internal>.disabled -> sut.sensor.disabled
 sut.console.return -> <external>.return
+sensor.<flush>

@@ -94,7 +94,6 @@ BROKEN_java+=$(BLOCKING)
 BROKEN_java7+=$(BLOCKING)
 BROKEN_javascript+=$(BLOCKING)
 BROKEN_python+=$(BLOCKING)
-BROKEN_run+=$(BLOCKING)
 BROKEN_trace+=$(BLOCKING)
 
 DZN_FILES:=$(wildcard $(CDIR)*.dzn)

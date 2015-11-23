@@ -6,5 +6,4 @@ console.disarm
 sensor.disable
 sensor.return
 sensor.disabled
-sensor.<flush>
 console.return
