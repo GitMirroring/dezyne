@@ -35,6 +35,7 @@ endif
 ifeq ($(DEVELOPMENT),)
 DEVELOPMENT_DZN:=$(filter %/webapp/client/dzn,$(DZN))
 DEVELOPMENT:=$(DEVELOPMENT_DZN:/webapp/client/dzn=)
+DEVELOPMENT:=$(shell cd $(DEVELOPMENT) && pwd)
 ifeq ($(VERBOSE),debug)
 $(info Using dzn shortcut $(DEVELOPMENT))
 endif
@@ -111,7 +112,7 @@ $(LOCAL_OUT)/$(1):
 ifeq ($(wildcard $(DEVELOPMENT)/gaiag),)
 	$(DZN) cat /share/runtime/$(LOCAL_LANGUAGE)/$$(notdir $$@) > $$@
 else
-	cat $(DEVELOPMENT)/gaiag/runtime/$(LOCAL_LANGUAGE)/$$(notdir $$@) > $$@
+	ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LOCAL_LANGUAGE)/$$(notdir $$@) $$@
 endif
 endef
 
