@@ -62,23 +62,25 @@ component SimpleBlocking3 {
   behaviour {
     bool busy = false;
 
-    [!busy]
     on p.e():
-    blocking {
-      r.e();
-      busy = true;
+    {
+      [!busy]
+      blocking {
+        r.e();
+        busy = true;
+      }
+      [busy]
+      illegal;
     }
     on r.cb():
-    [!busy]
-    illegal;
-    on p.e():
-    [busy]
-    illegal;
-    [busy]
-    on r.cb():
-    blocking {
-      p.reply();
-      busy = false;
+    {
+      [!busy]
+      illegal;
+      [busy]
+      blocking {
+        p.reply();
+        busy = false;
+      }
     }
   }
 }

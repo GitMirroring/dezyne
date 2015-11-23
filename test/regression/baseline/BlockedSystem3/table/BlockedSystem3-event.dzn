@@ -61,8 +61,8 @@ component Blocked {
 
   behaviour {
 
-    [true]
     on provided.e():
+    [true]
     blocking required.trigger();
     on required.notify():
     [true]
