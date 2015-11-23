@@ -20,7 +20,7 @@
 # 
 # Code:
 
-LANGUAGES:=$(ALL_LANGUAGES)
+LANGUAGES:=$(filter-out run,$(ALL_LANGUAGES))
 include make/project.make
 SUT:=Alarm
 LANGUAGES:=run

@@ -65,7 +65,7 @@ interface IPedal {
   }
 }
 
-component PedalPair {
+component SyncPedal {
   provides IPedal left;
   provides IPedal right;
   requires IPedal pedal;
