@@ -58,6 +58,7 @@
     flatten-compound
     combine-ons
     passdown-guard
+    (passdown-blocking)
     (remove-otherwise)
     add-skip
     identity
@@ -74,8 +75,8 @@
     aggregate-guard-s
     flatten-compound
     combine-ons
-    (passdown-blocking)
     passdown-guard
+    (passdown-blocking)
     (remove-otherwise)
     add-skip
     )
