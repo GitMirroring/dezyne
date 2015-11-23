@@ -59,12 +59,12 @@ namespace dezyne
     meta dzn_meta;
   };
 
-  void fill_event_map(component* c, #((om:scope-name (string->symbol "::")) model) & m, event_map& e)
+  void fill_event_map(runtime& rt, component* c, #((om:scope-name (string->symbol "::")) model) & m, event_map& e)
   {
     int dzn_i = 0;
 
 ##if !BLOCKING
-    m.dzn_rt.performs_flush(c) = true;
+    rt.performs_flush(c) = true;
 ##endif //!BLOCKING
 
  #(map
@@ -107,7 +107,7 @@ int main()
   l.set(pump);
 ##endif // BLOCKING
 
-  dezyne::fill_event_map(&c, sut, event_map);
+  dezyne::fill_event_map(rt, &c, sut, event_map);
 
   sut.check_bindings();
   sut.dump_tree();

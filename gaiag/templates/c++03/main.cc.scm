@@ -65,9 +65,13 @@ namespace dezyne
     meta dzn_meta;
   };
 
-  void fill_event_map(component* c, #((om:scope-name (string->symbol "::")) model) & m, event_map& e)
+  void fill_event_map(runtime& rt, component* c, #((om:scope-name (string->symbol "::")) model) & m, event_map& e)
   {
     int dzn_i = 0;
+
+##if !BLOCKING
+    rt.performs_flush(c) = true;
+##endif //!BLOCKING
 
  #(map
    (lambda (port)
@@ -110,7 +114,7 @@ int main()
   dezyne::component c;
   c.dzn_meta.parent = 0;
   c.dzn_meta.name = "<internal>";
-  dezyne::fill_event_map(&c, sut, event_map);
+  dezyne::fill_event_map(rt, &c, sut, event_map);
 
   sut.check_bindings();
   sut.dump_tree();
