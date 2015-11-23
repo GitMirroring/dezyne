@@ -22,9 +22,9 @@
 
 LOCAL_DZN_FILES:=$(wildcard $(CDIR)*.dzn)
 
-ifeq ($(LOCAL_LANGUAGE),c++)
-LOCAL_TRACE_LANGUAGE:=$(LOCAL_LANGUAGE)
-endif
+# ifeq ($(LOCAL_LANGUAGE),c++)
+# LOCAL_TRACE_LANGUAGE:=$(LOCAL_LANGUAGE)
+# endif
 
 ifeq ($(LOCAL_LANGUAGE),goops)
 LOCAL_HEADER:=$(CDIR)config.scm
