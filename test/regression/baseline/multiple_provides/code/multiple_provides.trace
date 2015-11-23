@@ -1,0 +1,7 @@
+<external>.left -> sut.p_left.left
+r.left
+r.return
+sut.p_left.return -> <external>.return
+<external>.left -> sut.p_right.left
+p_right.right
+sut.p_right.return -> <external>.return
