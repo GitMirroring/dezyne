@@ -62,6 +62,7 @@ namespace dezyne
   void fill_event_map(runtime& rt, component* c, #((om:scope-name (string->symbol "::")) model) & m, event_map& e)
   {
     int dzn_i = 0;
+    (void)dzn_i;
 
 ##if !BLOCKING
     rt.performs_flush(c) = true;
