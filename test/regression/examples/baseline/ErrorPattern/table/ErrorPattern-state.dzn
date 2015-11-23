@@ -81,7 +81,7 @@ interface IDevice {
   }
 }
 
-component Component {
+component ErrorPattern {
   provides IDevice p;
   requires IDevice a;
   requires IDevice b;
