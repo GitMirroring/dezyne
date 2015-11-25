@@ -382,7 +382,7 @@
                                                        ,(snippet 'context
                                                                  `((space ,space) (statement ,aliases) (continuation ,statement))))))
                                            statement))
-                            (statement (if (not blocking?) statement
+                            (statement (if (or (not blocking?) (eq? (.direction port) 'requires)) statement
                                            `(,(out-bindings model port formals arguments)
                                              ,(snippet 'block
                                                        `((space ,space)
