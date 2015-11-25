@@ -79,7 +79,7 @@ std::cout << "Hardware["  << hardware[this].first << "].cancel"<< std::endl;
 
 void serve_interrupts() {
   for(auto& h : hardware) {
-    if(not h.second.second) {
+    if(! h.second.second) {
 	  h.second.second = true;
 	  std::cout << "Hardware[" << h.second.first << "].interrupt" << std::endl;
 	  h.first->port.out.interrupt();
