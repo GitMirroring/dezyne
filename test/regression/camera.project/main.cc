@@ -29,19 +29,17 @@
 
 #include "Hardware.hh"
 
-namespace dezyne {
-  void serve_interrupts();
-}
+void serve_interrupts();
 
 int main()
 {
   // create runtime infrastructure
-  dezyne::runtime rt;
-  dezyne::locator l;
-  l.set(rt);
+  dezyne::locator locator;
+  dezyne::runtime runtime;
+  dezyne::illegal_handler illegal_handler;
 
   // create camera component
-  dezyne::Camera cam(l);
+  Camera cam(locator.set(runtime).set(illegal_handler));
   cam.dzn_meta.name = "camera";
 
   // stub unconnected callback functions from camera component
@@ -51,41 +49,40 @@ int main()
 
   // play the example test trace
   cam.control.in.setup();
-  dezyne::serve_interrupts();
+  serve_interrupts();
 
   cam.control.in.shoot();
-  dezyne::serve_interrupts();
+  serve_interrupts();
 }
 
-namespace dezyne
+
+std::map<Hardware*, std::pair<int,bool>> hardware;
+int cnt = 0;
+Hardware::Hardware(const dezyne::locator& l)
+: dzn_rt(l.get<dezyne::runtime>())
+, dzn_locator(l)
+, port({{"port", this},{}})
 {
-  std::map<Hardware*, std::pair<int,bool>> hardware;
-  int cnt = 0;
-  Hardware::Hardware(const locator& l)
-  : dzn_rt(l.get<runtime>())
-  , dzn_locator(l)
-  , port({{"port", this},{}})
-  {
-    port.in.kick = [this]{port_kick();};
-	port.in.cancel = [this]{port_cancel();};
-    hardware[this].first = cnt++;
-    hardware[this].second = true;
-  }
-  void Hardware::port_kick() {
-    hardware[this].second = false;
-    std::cout << "Hardware["  << hardware[this].first << "].kick"<< std::endl;
-  }
-  void Hardware::port_cancel() {
-    hardware[this].second = true;
-    std::cout << "Hardware["  << hardware[this].first << "].cancel"<< std::endl;
-  }
-  void serve_interrupts() {
-    for(auto& h : hardware) {
-      if(not h.second.second) {
-        h.second.second = true;
-        std::cout << "Hardware[" << h.second.first << "].interrupt" << std::endl;
-         h.first->port.out.interrupt();
-      }
-   	}
+port.in.kick = [this]{port_kick();};
+port.in.cancel = [this]{port_cancel();};
+hardware[this].first = cnt++;
+hardware[this].second = true;
+}
+void Hardware::port_kick() {
+hardware[this].second = false;
+std::cout << "Hardware["  << hardware[this].first << "].kick"<< std::endl;
+}
+void Hardware::port_cancel() {
+hardware[this].second = true;
+std::cout << "Hardware["  << hardware[this].first << "].cancel"<< std::endl;
+}
+
+void serve_interrupts() {
+  for(auto& h : hardware) {
+    if(not h.second.second) {
+	  h.second.second = true;
+	  std::cout << "Hardware[" << h.second.first << "].interrupt" << std::endl;
+	  h.first->port.out.interrupt();
+    }
   }
 }
