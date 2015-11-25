@@ -41,9 +41,7 @@
 
 (define (ast-> ast)
   (let ((om ((om:register code:om #t) ast)))
-    (map dump (filter ;;(negate om:imported?)
-                      identity
-                      ((om:filter <model>) om))))
+    (map dump (filter (negate om:imported?) ((om:filter <model>) om))))
   "")
 
 (define* ((c++:scope-join :optional (model #f) (infix (string->symbol "::"))) o)
