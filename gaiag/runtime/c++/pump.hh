@@ -48,6 +48,7 @@ namespace dezyne
     std::set<void*> skip_block;
 
     std::queue<std::function<void()>> queue;
+    std::function<std::function<void()>()> next_event;
 
     struct deadline
     {

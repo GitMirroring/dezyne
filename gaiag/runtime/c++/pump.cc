@@ -28,6 +28,7 @@
 #include <iostream>
 #include <list>
 
+#define DEBUG_RUNTIME 1
 static void debug(const std::string& s)
 {
 #ifdef DEBUG_RUNTIME
@@ -216,6 +217,15 @@ void pump::block(void* p)
   debug("block", self->id);
   create_context("new");
   self = find_blocked(coroutines, p);
+
+  if (queue.empty() && next_event) {
+    std::clog << "READING TO Q?" << std::endl;
+    auto f = next_event();
+    if (f) {
+      std::clog << "READING TO Q" << std::endl;
+      queue.push(f);
+    }
+  }
 
   self->yield_to(coroutines.back().context);
   debug("entered context", self->id);
