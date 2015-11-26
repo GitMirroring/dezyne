@@ -114,8 +114,7 @@ void runtime::handle(void* scope, const std::function<void()>& event)
   bool& handle = handling(scope);
 
 #ifdef DEBUG_RUNTIME
-  std::cout << path(reinterpret_cast<dezyne::meta*>(scope)) << " handle "
-            << std::boolalpha << handle << std::endl;
+  std::cout << path(reinterpret_cast<dezyne::meta*>(scope)) << " handle " << std::boolalpha << handle << std::endl;
 #endif
 
   if(! handle)

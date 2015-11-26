@@ -22,11 +22,12 @@
 //
 // Code:
 
-#ifndef DEZYNE_PUMP_HH
-#define DEZYNE_PUMP_HH
+#ifndef PUMP_HH
+#define PUMP_HH
 
 #include "coroutine.hh"
 
+#include <cassert>
 #include <condition_variable>
 #include <functional>
 #include <future>
@@ -43,7 +44,9 @@ namespace dezyne
     std::function<void()> worker;
     std::list<coroutine> coroutines;
     std::list<coroutine> collateral_blocked;
+
     std::set<void*> skip_block;
+
     std::queue<std::function<void()>> queue;
 
     struct deadline
@@ -54,13 +57,21 @@ namespace dezyne
       : id(id)
       , t(std::chrono::steady_clock::now() + std::chrono::milliseconds(ms))
       {}
-      bool expired() const {return t <= std::chrono::steady_clock::now();}
-      bool operator < (const deadline& d) const {return t < d.t || (t == d.t && id < d.id);}
+      bool expired() const
+      {
+        return t <= std::chrono::steady_clock::now();
+      }
+      bool operator < (const deadline& d) const
+      {
+        return t < d.t || (t == d.t && id < d.id);
+      }
     };
 
     std::map<deadline, std::function<void()>> timers;
+
     std::function<void()> switch_context;
     std::function<void()> exit;
+
     std::thread::id thread_id;
     bool running;
     std::condition_variable condition;
@@ -74,14 +85,17 @@ namespace dezyne
     void collateral_release(std::list<coroutine>::iterator);
 
     void block(void*);
-    void create_context();
+    void create_context(const std::string &);
     void release(void*);
     void operator()(const std::function<void()>&);
     void operator()(std::function<void()>&&);
     void and_wait(const std::function<void()>&);
+    void and_wait_(const std::function<void()>&);
     template <typename R>
     R and_wait(const std::function<R()>& e)
     {
+      if (std::this_thread::get_id() == thread_id)
+        throw std::runtime_error("het is echt helemaal foo");
       std::promise<R> p;
       this->operator()([&]{p.set_value(e());});
       return p.get_future().get();
@@ -91,4 +105,4 @@ namespace dezyne
   };
 }
 
-#endif //DEZYNE_PUMP_HH
+#endif
