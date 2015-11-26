@@ -21,27 +21,14 @@
 # 
 # Code:
 
-BROKEN_c++:=\
- x$(CDIR)AlarmBlock.dzn\
- x$(CDIR)BlockedSystem2.dzn\
- $(CDIR)BlockedSystem3.dzn\
- $(CDIR)DirectAndDeferredReply.dzn\
- $(CDIR)MultipleProvidesBlocking.dzn\
- x$(CDIR)SimpleBlocking.dzn\
- x$(CDIR)SimpleBlocking2.dzn\
- x$(CDIR)SimpleBlocking3.dzn\
- x$(CDIR)SimpleBlocking4.dzn\
- x$(CDIR)SimpleBlockingBinding.dzn\
- $(CDIR)SimpleBlockingDeadlock.dzn\
- $(CDIR)SimpleBlockingDeadlock2.dzn\
- $(CDIR)SimpleBlockingGuard.dzn\
- x$(CDIR)SimpleBlockingTwoReply.dzn\
-#
-BROKEN_run:=\
+BLOCKING_SYSTEMS:=\
  $(CDIR)BlockedSystem.dzn\
  $(CDIR)BlockedSystem2.dzn\
  $(CDIR)BlockedSystem3.dzn\
+ $(CDIR)BlockedSystem4.dzn\
 #
-#LANGUAGES:=c++ run
-LANGUAGES:=c++
+BROKEN_triangle:=$(BLOCKING_SYSTEMS)
+BROKEN_run:=$(BLOCKING_SYSTEMS)
+#
+LANGUAGES:=c++ run
 include make/files.make

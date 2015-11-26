@@ -41,7 +41,7 @@ $(foreach DZN_FILE,$(DZN_FILES),\
 ifeq ($(PROJECT_P),)
 ifneq ($(filter c++,$(LANGUAGES)),)
 $(foreach lang,$(CODE_LANGUAGES) $(filter run,$(PSEUDO_LANGUAGES)),\
-	$(foreach i,$(filter-out $(BROKEN_$(lang):%=\%%),$(DZN_FILES)),\
+	$(foreach i,$(filter-out $(BROKEN_triangle:%=\%%) $(BROKEN_$(lang):%=\%%),$(DZN_FILES)),\
 		$(eval LOCAL_LANGUAGE:=$(lang))\
 		$(eval LOCAL_DZN_FILES:=$(i))\
 		$(eval include make/common.make)\

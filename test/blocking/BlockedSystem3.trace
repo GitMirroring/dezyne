@@ -1,0 +1,15 @@
+port1.e
+async1.trigger
+async1.return
+port2.e
+async2.trigger
+async2.return
+port3.e
+async3.trigger
+async3.return
+async1.notify
+port1.return
+async2.notify
+port2.return
+async3.notify
+port3.return

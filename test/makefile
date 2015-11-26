@@ -95,13 +95,14 @@ $(OUT)/.gitignore:
 
 DIRECTORIES:=$(shell find -mindepth 1 -name makefile | sed s,/makefile,,)
 .PHONY: $(DIRECTORIES)
-ifneq ($(OUT),out-check)
+ifeq ($(SUB),)
 $(DIRECTORIES):
-	$(MAKE) -C $@ OUT=out-$@ $(MAKEOVERRIDES)
+	$(MAKE) -C $@ SUB=$@ $(MAKEOVERRIDES)
 endif
 $(DIRECTORIES:%=%-clean):
-	$(MAKE) -C $(@:%-clean=%) OUT=$(@:%-clean=%) $(MAKEOVERRIDES) clean
+	$(MAKE) -C $(@:%-clean=%) SUB=$(@:%-clean=%) $(MAKEOVERRIDES) clean
 $(DIRECTORIES:%=%-update):
+	$(MAKE) -C $(@:%-update=%) SUB=$(@:%-update=%) $(MAKEOVERRIDES) update
 
 stress:
 	DZN=$(DZN) bin/stress.sh $(CONFIG)

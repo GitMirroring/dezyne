@@ -43,6 +43,9 @@ int main()
 
   OutParam sut(l);
   sut.dzn_meta.name = "sut";
+  sut.outParam.meta.requires.port = "outParam";
+  sut.datasource.meta.provides.port = "datasource";
+  sut.reflector.meta.provides.port = "reflector";
 
   dezyne::pump pump;
   l.set(pump);
