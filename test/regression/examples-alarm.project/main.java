@@ -1,1 +1,1 @@
-../alarm.project/main.java
+../../check/alarm.project/main.java

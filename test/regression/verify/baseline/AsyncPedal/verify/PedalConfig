@@ -1,0 +1,3 @@
+verify: IPedal: check: completeness: ok
+verify: IPedal: check: deadlock: ok
+verify: IPedal: check: livelock: ok

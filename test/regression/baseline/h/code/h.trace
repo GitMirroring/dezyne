@@ -1,5 +1,0 @@
-<external>.hcalibrate -> sut.ctrl.hcalibrate
-robot.tcalibrate
-<internal>.tcalibrated -> sut.robot.tcalibrated
-robot.return
-sut.ctrl.return -> <external>.return

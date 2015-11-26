@@ -1,0 +1,3 @@
+verify: IFunctionCall: check: completeness: ok
+verify: IFunctionCall: check: deadlock: ok
+verify: IFunctionCall: check: livelock: ok

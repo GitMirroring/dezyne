@@ -25,17 +25,29 @@ LANGUAGES:=$(ALL_LANGUAGES)
 endif
 
 ifeq ($(DZN_FILES),)
-DZN_FILES:=$(wildcard $(CDIR)*.dzn)
+DZN_FILES:=$(sort $(wildcard $(CDIR)*.dzn))
 endif
 
-DZN_FILES:=$(filter-out $(BROKEN),$(DZN_FILES))
+DZN_FILES:=$(filter-out $(BROKEN:%=\%%),$(DZN_FILES))
 
 $(info Languages: $(LANGUAGES))
 $(foreach DZN_FILE,$(DZN_FILES),\
 	$(foreach lang,$(LANGUAGES),\
-		$(if $(filter-out $(BROKEN_$(lang)),$(DZN_FILE)),\
+		$(if $(filter-out $(BROKEN_$(lang):%=\%%),$(DZN_FILE)),\
 			$(eval LOCAL_LANGUAGE:=$(lang))\
 			$(eval LOCAL_DZN_FILES:=$(DZN_FILE))\
 			$(eval include make/check.make))))
+
+ifeq ($(PROJECT_P),)
+ifneq ($(filter c++,$(LANGUAGES)),)
+$(foreach lang,$(CODE_LANGUAGES) $(filter run,$(PSEUDO_LANGUAGES)),\
+	$(foreach i,$(filter-out $(BROKEN_$(lang):%=\%%),$(DZN_FILES)),\
+		$(eval LOCAL_LANGUAGE:=$(lang))\
+		$(eval LOCAL_DZN_FILES:=$(i))\
+		$(eval include make/common.make)\
+		$(eval include make/triangle.make)\
+		$(eval include make/reset.make)))
+endif
+endif
 DZN_FILES:=
 LANGUAGES:=

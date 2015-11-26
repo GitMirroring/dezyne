@@ -1,0 +1,12 @@
+sensors.Activate
+aSensor.Activate
+aSensor.return
+bSensor.Activate
+bSensor.return
+sensors.return
+sensors.Deactivate
+aSensor.Deactivate
+aSensor.return
+bSensor.Deactivate
+bSensor.return
+sensors.return

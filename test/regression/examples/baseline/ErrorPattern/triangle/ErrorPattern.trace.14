@@ -1,0 +1,9 @@
+p.initialize
+a.initialize
+a.return
+b.initialize
+b.return
+p.return
+a.error
+a.<flush>
+p.error

@@ -1,6 +1,0 @@
-<external>.step -> sut.pp.step
-list.next
-list.end_no
-list.next
-list.end_yes
-sut.pp.return -> <external>.return

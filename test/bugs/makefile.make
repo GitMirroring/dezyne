@@ -21,10 +21,14 @@
 # 
 # Code:
 
-DZN_FILES:=$(wildcard $(CDIR)*.dzn)
-ifeq ($(strip $(filter-out bugs update-bugs,$(MAKECMDGOALS))),$(MAKECMDGOALS))
-xBROKEN:=$(DZN_FILES)
-endif
-XDZN_FILES:=$(filter-out $(BROKEN),$(DZN_FILES))
-LANGUAGES:=$(ALL_LANGUAGES)
+# provides_twice: external component, does not link...
+# hide: variable shadowing!?
+# iincomplete: does not parse...
+# Comp, Reply: main generates different reply values per language
+# dollar_escape: gaiag parse error due to incorrect escaping of dollar expression $sss;xxx$ (zoho6839)
+# FDR void reply instead of valued reply (component ValuedReturn.dzn!ConstrainedAxis) (zoho6834)
+# unguarded: shadowing: c++: x.in.move () instead of this->x.in.move() <--FIXED
+# name_space: OM parser prints empty (root)
+# inner_space: does not parse with OM-parser
+# simple_space: does not generate namespaces in SCM output
 include make/files.make

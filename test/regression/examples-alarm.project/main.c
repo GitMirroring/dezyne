@@ -1,1 +1,1 @@
-../alarm.project/main.c
+../../check/alarm.project/main.c

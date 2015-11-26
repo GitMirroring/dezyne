@@ -1,3 +1,0 @@
-verify: IBlocked: check: completeness: ok
-verify: IBlocked: check: deadlock: ok
-verify: IBlocked: check: livelock: ok

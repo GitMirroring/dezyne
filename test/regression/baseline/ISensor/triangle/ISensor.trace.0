@@ -1,0 +1,5 @@
+ISensor.enable
+ISensor.return
+ISensor.disable
+ISensor.return
+ISensor.disabled

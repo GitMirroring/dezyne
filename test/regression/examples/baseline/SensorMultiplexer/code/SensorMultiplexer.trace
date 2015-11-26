@@ -1,6 +1,0 @@
-<external>.Activate -> sut.sensors.Activate
-aSensor.Activate
-aSensor.return
-bSensor.Activate
-bSensor.return
-sut.sensors.return -> <external>.return

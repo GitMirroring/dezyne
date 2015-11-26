@@ -1,2 +1,3 @@
 startIF.startAll
+device1IF.turnon
 startIF.stopAll

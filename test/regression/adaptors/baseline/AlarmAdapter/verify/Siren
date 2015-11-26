@@ -1,9 +1,0 @@
-verify: ISiren: check: completeness: ok
-verify: ISiren: check: deadlock: ok
-verify: ISiren: check: livelock: ok
-verify: Siren: check: deterministic: ok
-verify: Siren: check: completeness: ok
-verify: Siren: check: illegal: ok
-verify: Siren: check: deadlock: ok
-verify: Siren: check: compliance: ok
-verify: Siren: check: livelock: ok

@@ -1,0 +1,12 @@
+ctrl.stop
+robot.stop
+robot.return
+inspector.stop
+inspector.return
+feedPort.stop
+feedPort.return
+acceptPort.stop
+acceptPort.return
+rejectPort.stop
+rejectPort.return
+ctrl.return

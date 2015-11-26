@@ -1,9 +1,0 @@
-console.arm
-sensor.enable
-sensor.return
-console.return
-console.disarm
-sensor.disable
-sensor.return
-sensor.disabled
-console.return

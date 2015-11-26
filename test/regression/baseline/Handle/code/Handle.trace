@@ -1,8 +1,0 @@
-<external>.calibrate -> sut.ctrl.calibrate
-robot.calibrate
-robot.return
-inspector.calibrate
-inspector.return
-feedPort.calibrate
-feedPort.return
-sut.ctrl.return -> <external>.return

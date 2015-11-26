@@ -69,19 +69,24 @@ endif
 LOCAL_BASE:=$(notdir $(basename $(LOCAL_DZN_TOP)))
 
 ifeq ($(strip $(LOCAL_TRACE_FILES)),)
-LOCAL_TRACE_FILES:=$(wildcard $(basename $(LOCAL_DZN_TOP)).trace $(basename $(LOCAL_DZN_TOP)).trace.*)
+LOCAL_TRACE_FILES:=$(wildcard $(basename $(LOCAL_DZN_TOP)).trace)
 endif
 
 ifeq ($(strip $(LOCAL_TRACE_FILES)),)
 LOCAL_TRACE_FILES:=$(wildcard $(CDIR)trace)
 endif
 
-## do not require an empty trace for projects
-#ifeq ($(strip $(LOCAL_TRACE_FILES)),)
-#ifneq ($(PROJECT_P),)
-#LOCAL_TRACE_FILES:=make/trace
-#endif
-#endif
+ifeq ($(strip $(LOCAL_TRACE_FILES)),)
+LOCAL_TRACE_FILES:=$(shell echo "$(wildcard $(CDIR)baseline/$(LOCAL_NAME)/triangle/$(LOCAL_NAME).trace.*)" | tr ' ' '\n' | sort -t. -n -k3 | $(TRIANGLE_MAX))
+endif
+
+ifeq ($(strip $(LOCAL_TRACE_FILES)),)
+LOCAL_TRACE_FILES:=$(CDIR)baseline/$(LOCAL_NAME)/triangle/$(LOCAL_NAME).trace.0
+endif
+
+ifeq ($(LOCAL_TRACE_FLUSH),)
+LOCAL_TRACE_FLUSH:=$($(LOCAL_NAME).flush)
+endif
 
 NAMESPACE_P:=$(shell grep -hEo '\<namespace\>' $(LOCAL_DZN_FILES))
 ifneq ($(strip $(LOCAL_DZN_FILES)),)

@@ -1,0 +1,381 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+component Client
+{
+  provides IPedal pedal;
+  requires IPedal left;
+  requires IPedal right;
+
+  behaviour
+  {
+    enum State {Pressed, Released};
+    enum Side {Left, Right};
+    State state = State.Released;
+    Side side = Side.Right;
+    on pedal.press():
+    {
+      [state.Released]
+      {
+        [side.Left] {left.press(); state = State.Pressed;}
+        [side.Right]{right.press(); state = State.Pressed;}
+      }
+      [otherwise] illegal;
+    }
+    on pedal.release():
+    {
+      [state.Pressed]
+      {
+        [side.Left] {left.release(); state = State.Released;}
+        [side.Right] {right.release(); state = State.Released;}
+      }
+      [otherwise] illegal;
+    }
+    on left.pressed():
+    {
+      if(side.Left) pedal.pressed();
+    }
+    on left.released():
+    {
+      if(side.Left) pedal.released();
+    }
+    on right.pressed():
+    {
+      if(side.Right) pedal.pressed();
+    }
+    on right.released():
+    {
+      if(side.Right) pedal.released();
+    }
+  }
+}
+
+interface IPedal
+{
+  in void press();
+  in void release();
+
+  out void pressed();
+  out void released();
+
+  behaviour
+  {
+    enum State {Pressed, Released};
+    State pedal = State.Released;
+    State led = State.Released;
+    on press:
+    {
+      [pedal.Released] {pedal = State.Pressed;}
+      [otherwise] illegal;
+    }
+    on release:
+    {
+      [pedal.Pressed] {pedal = State.Released;}
+      [otherwise] illegal;
+    }
+    [led.Released] on optional: {led = State.Pressed; pressed;}
+    [pedal.Released && led.Pressed] on optional: {led = State.Released; released;}
+ }
+}
+
+component PedalPair
+{
+  provides IPedal left;
+  provides IPedal right;
+
+  requires IPedal pedal;
+
+  behaviour
+  {
+    bool left_pressed = false;
+    bool right_pressed = false;
+    on left.press():
+    {
+      [!left_pressed] {
+        left_pressed = true;
+        if(!right_pressed)
+          pedal.press();
+      }
+      [otherwise] illegal;
+    }
+    on right.press():
+    {
+      [!right_pressed] {
+        right_pressed = true;
+        if(!left_pressed)
+          pedal.press();
+      }
+      [otherwise] illegal;
+    }
+    on left.release():
+    {
+      [left_pressed] {
+        left_pressed = false;
+        if(!right_pressed)
+          pedal.release();
+      }
+      [otherwise] illegal;
+    }
+    on right.release():
+    {
+      [right_pressed] {
+        right_pressed = false;
+        if(!left_pressed)
+          pedal.release();
+      }
+      [otherwise] illegal;
+    }
+    on pedal.pressed(): {left.pressed(); right.pressed();}
+    on pedal.released(): {left.released(); right.released();}
+  }
+}
+
+component PedalList
+{
+  provides IPedal one;
+  provides IPedal two;
+  provides IPedal three;
+
+  requires IPedal pedal;
+
+  system
+  {
+    PedalPair demux1;
+    PedalPair demux2;
+
+    one <=> demux1.left;
+    two <=> demux1.right;
+    three <=> demux2.right;
+    demux1.pedal <=> demux2.left;
+    demux2.pedal <=> pedal;
+  }
+}
+
+component PedalConfig
+{
+  provides IPedal activation1;
+  provides IPedal activation2;
+  provides IPedal activation3;
+
+  provides IPedal fluo1;
+  provides IPedal fluo2;
+  provides IPedal fluo3;
+
+  requires IPedal activation;
+  requires IPedal fluo;
+
+  system
+  {
+    PedalList activationPedals;
+    PedalList fluoPedals;
+
+    activation1 <=> activationPedals.one;
+    activation2 <=> activationPedals.two;
+    activation3 <=> activationPedals.three;
+    activationPedals.pedal <=> activation;
+
+    fluo1 <=> fluoPedals.one;
+    fluo2 <=> fluoPedals.two;
+    fluo3 <=> fluoPedals.three;
+    fluoPedals.pedal <=> fluo;
+  }
+}
+
+interface IFunctional
+{
+  in void signal();
+  in void nosignal();
+
+  behaviour
+  {
+    on signal:{}
+    on nosignal:{}
+  }
+}
+
+interface IAsync
+{
+  in void ping();
+  out void pong();
+
+  behaviour
+  {
+    bool pending = false;
+    [!pending] on ping: pending = true;
+    [pending] on ping: illegal;
+    [pending] on inevitable:
+    {
+       pong;
+       pending = false;
+    }
+  }
+}
+
+component Acquisition
+{
+  provides IPedal activation;
+  provides IPedal fluo;
+
+  requires IFunctional functional;
+  requires IAsync async;
+
+  behaviour
+  {
+    enum State {Pressed, Released};
+    State aled = State.Released;
+    State fled = State.Released;
+    bool p = false;
+    bool a = false;
+    bool f = false;
+
+
+    on activation.press():
+    {
+      [!a] {
+        if(!p) { async.ping(); p = true; }
+        a = true;
+        if(f) {
+          functional.signal();
+        }
+      }
+      [otherwise] illegal;
+    }
+    on activation.release():
+    {
+      [a] {
+        if(!p) { async.ping(); p = true; }
+        a = false;
+        if(f) {
+          functional.nosignal();
+        }
+      }
+      [otherwise] illegal;
+    }
+    on fluo.press():
+    {
+      [!f] {
+        if(!p) { async.ping(); p = true; }
+        f = true;
+        if(a) {
+          functional.signal();
+        }
+      }
+      [otherwise] illegal;
+    }
+    on fluo.release():
+    {
+      [f] {
+        if(!p) { async.ping(); p = true; }
+        f = false;
+        if(a) functional.nosignal();
+      }
+      [otherwise] illegal;
+    }
+    on async.pong():
+    {
+      p = false;
+      if(a && (aled.Released)) {
+        aled = State.Pressed;
+        activation.pressed();
+      } else if(!a && (aled.Pressed)) {
+        aled = State.Released;
+        activation.released();
+      }
+      if(f && (fled.Released)) {
+        fled = State.Pressed;
+        fluo.pressed();
+      } else if(!f && (fled.Pressed)) {
+        fled = State.Released;
+        fluo.released();
+      }
+    }
+  }
+}
+
+component ASC
+{
+  provides IPedal activation1;
+  provides IPedal activation2;
+  provides IPedal activation3;
+
+  provides IPedal fluo1;
+  provides IPedal fluo2;
+  provides IPedal fluo3;
+
+  requires IFunctional functional;
+  requires IAsync async;
+
+  system
+  {
+    PedalConfig config;
+
+    activation1 <=> config.activation1;
+    activation2 <=> config.activation2;
+    activation3 <=> config.activation3;
+
+    fluo1 <=> config.fluo1;
+    fluo2 <=> config.fluo2;
+    fluo3 <=> config.fluo3;
+
+    Acquisition acquisition;
+
+    config.activation <=> acquisition.activation;
+    config.fluo <=> acquisition.fluo;
+
+    acquisition.functional <=> functional;
+    acquisition.async <=> async;
+  }
+}
+
+component AsyncPedal
+{
+  provides IPedal c1;
+  provides IPedal c2;
+  provides IPedal c3;
+
+  requires IFunctional functional;
+  requires IAsync async;
+
+  system
+  {
+    Client client1;
+    Client client2;
+    Client client3;
+
+    c1 <=> client1.pedal;
+    c2 <=> client2.pedal;
+    c3 <=> client3.pedal;
+
+    ASC asc;
+
+    client1.left <=> asc.activation1;
+    client1.right <=> asc.activation2;
+    client2.left <=> asc.activation3;
+    client2.right <=> asc.fluo1;
+    client3.left <=> asc.fluo2;
+    client3.right <=> asc.fluo3;
+
+    asc.functional <=> functional;
+    asc.async <=> async;
+  }
+}

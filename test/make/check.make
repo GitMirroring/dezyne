@@ -28,7 +28,7 @@ include make/$(LOCAL_LANGUAGE).make
 
 ifeq ($(filter $(LOCAL_LANGUAGE),$(CODE_LANGUAGES) run),$(LOCAL_LANGUAGE))
 ifeq ($(PROJECT_P),)
-ifneq ($(filter-out $(BROKEN_trace) $(BROKEN_$(LOCAL_LANGUAGE)),$(LOCAL_DZN_TOP)),)
+ifneq ($(filter-out $(BROKEN_trace:%=\%%) $(BROKEN_$(LOCAL_LANGUAGE):%=\%%),$(LOCAL_DZN_TOP)),)
 ifneq ($(TRIANGLE),)
 include make/triangle.make
 endif

@@ -1,1 +1,1 @@
-../alarm.project/main.scm
+../../check/alarm.project/main.scm

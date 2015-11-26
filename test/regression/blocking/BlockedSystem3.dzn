@@ -1,0 +1,92 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface IBlocked
+{
+  in void e();
+
+  behaviour
+  {
+    on e:{}
+  }
+}
+
+interface IAsync
+{
+  in void trigger();
+  out void notify();
+
+  behaviour
+  {
+    bool pending = false;
+    on trigger:
+    {
+      [!pending] pending = true;
+      [pending] illegal;
+    }
+    on inevitable:
+    {
+      [pending]{pending = false; notify;}
+    }
+  }
+}
+
+component Blocked
+{
+  provides IBlocked provided;
+
+  requires IAsync required;
+
+  behaviour
+  {
+    blocking on provided.e(): required.trigger();
+
+    on required.notify(): provided.reply();
+  }
+}
+
+component BlockedSystem3
+{
+  provides IBlocked port1;
+  provides IBlocked port2;
+  provides IBlocked port3;
+
+  requires IAsync async1;
+  requires IAsync async2;
+  requires IAsync async3;
+
+  system
+  {
+    Blocked blocked1;
+    Blocked blocked2;
+    Blocked blocked3;
+
+    blocked1.provided <=> port1;
+    blocked2.provided <=> port2;
+    blocked3.provided <=> port3;
+
+    blocked1.required <=> async1;
+    blocked2.required <=> async2;
+    blocked3.required <=> async3;
+  }
+}

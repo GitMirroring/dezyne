@@ -1,3 +1,0 @@
-verify: itimer: check: completeness: ok
-verify: itimer: check: deadlock: ok
-verify: itimer: check: livelock: ok

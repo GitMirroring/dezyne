@@ -1,5 +1,0 @@
-verify: ISiren: check: completeness: ok
-
-verify: ISiren: check: deadlock: ok
-
-verify: ISiren: check: livelock: ok

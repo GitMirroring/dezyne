@@ -29,16 +29,18 @@ run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TARGET:=$$(LOCAL_TARGET)
 run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_SUT:=$$(LOCAL_SUT)
 run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
 run-$(LOCAL_TARGET)/$(notdir $(1)): $(1)
-	diff -uw $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(notdir $(1)) <($(DZN) --verbose run -m $(LOCAL_SUT) -t <(grep -v '<flush>' $(1)) $(LOCAL_DZN_TOP) | grep '^trace:' | sed s,trace:,, | tr ',' '\n' | grep -Ev '^ *$$$$')
+	diff -uw <(grep -v '[.]<flush>' $(1)) <($(DZN) run -m $(LOCAL_SUT) -t <(grep -v '<flush>' $(1)) $(LOCAL_DZN_TOP) | grep ^trace:| sed 's,^trace:,,' | tr ',' '\n')
 check-$(OUT)/$(LOCAL_NAME): run-$(LOCAL_TARGET)/$(notdir $(1))
 run-$(OUT)/$(LOCAL_NAME): run-$(LOCAL_TARGET)/$(notdir $(1))
 run-$(LOCAL_TARGET): run-$(LOCAL_TARGET)/$(notdir $(1))
 run: run-$(LOCAL_TARGET)/$(notdir $(1))
+ifeq ($(1),$(firstword $(LOCAL_TRACE_FILES)))
 ifeq ($(VERBOSE),debug)
 $$(info target check-$(OUT)/$(LOCAL_NAME))
 $$(info target run-$(OUT)/$(LOCAL_NAME))
 $$(info target run-$(LOCAL_TARGET))
-$$(info target run-$(LOCAL_TARGET)/$(notdir $(1)))
+#$$(info target run-$(LOCAL_TARGET)/$(notdir $(1)))
+endif
 endif
 
 update-run-$(LOCAL_TARGET)/$(notdir $(1)): CDIR:=$$(CDIR)
@@ -49,17 +51,18 @@ update-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TARGET:=$$(LOCAL_TARGET)
 update-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_SUT:=$$(LOCAL_SUT)
 update-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
 update-run-$(LOCAL_TARGET)/$(notdir $(1)): $(1)
-	mkdir -p $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)
-	$(DZN) --verbose run -m $(LOCAL_SUT) -t <(grep -v '<flush>' $(1)) $(LOCAL_DZN_TOP) | grep '^trace:' | sed s,trace:,, | tr ',' '\n' | (grep -Ev '^ *$$$$'||:) > $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(notdir $(1))
+	@true
 update-$(OUT)/$(LOCAL_NAME): update-run-$(LOCAL_TARGET)/$(notdir $(1))
 update-run-$(OUT)/$(LOCAL_NAME): update-run-$(LOCAL_TARGET)/$(notdir $(1))
 update-run-$(LOCAL_TARGET): update-run-$(LOCAL_TARGET)/$(notdir $(1))
 update-run: update-run-$(LOCAL_TARGET)/$(notdir $(1))
+ifeq ($(1),$(firstword $(LOCAL_TRACE_FILES)))
 ifeq ($(VERBOSE),debug)
 $$(info target update-$(OUT)/$(LOCAL_NAME))
 $$(info target update-run-$(OUT)/$(LOCAL_NAME))
 $$(info target update-run-$(LOCAL_TARGET))
-$$(info target update-run-$(LOCAL_TARGET)/$(notdir $(1)))
+#$$(info target update-run-$(LOCAL_TARGET)/$(notdir $(1)))
+endif
 endif
 endef
 

@@ -1,3 +1,0 @@
-verify: ITouchSense: check: completeness: ok
-verify: ITouchSense: check: deadlock: ok
-verify: ITouchSense: check: livelock: ok

@@ -1,4 +1,0 @@
-<external>.startAll -> sut.startIF.startAll
-device1IF.turnon
-device1IF.return
-sut.startIF.return -> <external>.return

@@ -24,31 +24,30 @@
 # Code:
 
 ## common
-.PHONY: bugs regression
+.PHONY: all default check clean help regression stress
 .SECONDARY:
 .SUFFIXES:
 SHELL:=/bin/bash
 DZN:=../webapp/client/dzn
 OUT:=out
 CCACHE:=$(shell type -p ccache)
-TRIANGLE_MAX:=cat
-#TRIANGLE_MAX:=head -50 # use `cat' for all
+#TRIANGLE_MAX:=cat
+TRIANGLE_MAX:=head -50 # use `cat' for all
 VERBOSE:=
 
-DEFAULT_CODE_LANGUAGES:=c c++ c++03 cs goops javascript python
-CODE_LANGUAGES:=$(DEFAULT_CODE_LANGUAGES)
+ALL_CODE_LANGUAGES:=c c++ c++03 cs goops javascript python
 
 JAVA:=$(strip $(shell /usr/bin/javac -version 2>&1 | grep -oe 'javac 1.8' >/dev/null && echo java))
 JAVA7:=$(strip $(shell /usr/bin/javac -version 2>&1 | grep -oe 'javac 1.[78]' >/dev/null && echo java7))
 
-ifeq ($(DEFAULT_CODE_LANGUAGES),$(CODE_LANGUAGES))
 ifneq ($(JAVA),)
-CODE_LANGUAGES+=java
+ALL_CODE_LANGUAGES+=java
 endif
 ifneq ($(JAVA7),)
-CODE_LANGUAGES+=java7
+ALL_CODE_LANGUAGES+=java7
 endif
-endif
+
+CODE_LANGUAGES:=c++
 
 # PSEUDO_LANGUAGES=convert parse run table verify
 PSEUDO_LANGUAGES=run table verify
@@ -76,10 +75,10 @@ Variables:
   VERBOSE={|debug|info} [$(VERBOSE)]
 
 Targets:
-  all            update everything
   check          run all checks
   clean          remove all generated stuff in $(OUT)
-  smoke          quick smoke test
+  check          check
+  regression     full regression test suite
   stress         run stress test
   update         overwrite all baselines
 endef
@@ -87,45 +86,24 @@ export HELP_COMMON
 help-common:
 	@echo "$$HELP_COMMON"
 
-all: $(OUT)/.gitignore
-
-all: check
-smoke: check
-smoke-clean:
-	rm -rf $(OUT)/alarm.project/{c,c++}
-
-stress:
-	DZN=$(DZN) bin/stress.sh $(CONFIG)
+clean:
+	rm -rf $(OUT)
 
 $(OUT)/.gitignore:
 	mkdir -p $(OUT)
 	echo '*' > $(OUT)/.gitignore
 
-clean:
-	rm -rf $(OUT)
+DIRECTORIES:=$(shell find -mindepth 1 -name makefile | sed s,/makefile,,)
+.PHONY: $(DIRECTORIES)
+ifneq ($(OUT),out-check)
+$(DIRECTORIES):
+	$(MAKE) -C $@ OUT=out-$@ $(MAKEOVERRIDES)
+endif
+$(DIRECTORIES:%=%-clean):
+	$(MAKE) -C $(@:%-clean=%) OUT=$(@:%-clean=%) $(MAKEOVERRIDES) clean
+$(DIRECTORIES:%=%-update):
 
-ifeq ($(strip $(filter-out bugs clean help smoke smoke-clean stress,$(MAKECMDGOALS))),$(MAKECMDGOALS))
-MAKE_SNIPPETS:=regression/makefile.make $(sort $(wildcard regression/*/makefile.make regression/*/*/makefile.make))
-endif
-ifeq ($(MAKECMDGOALS),smoke)
-MAKE_SNIPPETS:=regression/alarm.project/makefile.make
-CODE_LANGUAGES:=c c++
-ALL_LANGUAGES:=$(CODE_LANGUAGES) run verify
-endif
-ifneq ($(FEI),)
-MAKE_SNIPPETS:=regression/fei/makefile.make
-CODE_LANGUAGES:=c++
-ALL_LANGUAGES:=$(CODE_LANGUAGES)
-endif
-ifneq ($(LOPW),)
-MAKE_SNIPPETS:=regression/lopw/makefile.make
-CODE_LANGUAGES:=c++
-ALL_LANGUAGES:=$(CODE_LANGUAGES)
-endif
-ifeq ($(strip $(filter bugs,$(MAKECMDGOALS:update-bugs=bugs))),bugs)
-MAKE_SNIPPETS:=bugs/makefile.make
-bugs: check
-update-bugs: update
-endif
+stress:
+	DZN=$(DZN) bin/stress.sh $(CONFIG)
 
 $(foreach i,$(MAKE_SNIPPETS),$(eval CDIR:=$(dir $(i))) $(info Entering $(i:%/makefile.make=%)) $(eval -include $(i)))

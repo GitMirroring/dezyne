@@ -1,0 +1,16 @@
+alarm.console.arm
+alarm.sensor.enable
+sensor.sensor.return
+alarm.console.return
+sensor.sensor.triggered
+Console.detected
+alarm.siren.turnon
+siren.siren.return
+alarm.console.disarm
+alarm.sensor.disable
+sensor.sensor.return
+alarm.siren.turnoff
+siren.siren.return
+alarm.console.return
+sensor.sensor.disabled
+Console.deactivated

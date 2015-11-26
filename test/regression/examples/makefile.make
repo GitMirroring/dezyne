@@ -32,21 +32,14 @@ BROKEN_code:=\
   $(CDIR)GarageDoorControl.dzn\
   $(CDIR)GarageDoorControlErr.dzn\
   $(CDIR)Recursion.dzn\
+  $(CDIR)SystemComposition.dzn\
 
-BROKEN_c:=\
-  $(CDIR)GarageDoorControlErr.dzn\
-
-BROKEN_goops:=\
-  $(CDIR)GarageDoorControlErr.dzn\
-
-BROKEN_java:=\
-  $(CDIR)GarageDoorControlErr.dzn\
-
-BROKEN_java7:=$(BROKEN_java)
-
-BROKEN_javascript:=\
-  $(CDIR)GarageDoorControlErr.dzn\
+BROKEN_run:=\
+  $(CDIR)Stage.dzn\
 
 $(foreach lang,$(LANGUAGES), $(eval BROKEN_$(lang)+=$(BROKEN_code)))
+
+ErrorPattern.flush:=--flush
+SensorMultiplexer.flush:=--flush
 
 include make/files.make

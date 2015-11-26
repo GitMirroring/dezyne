@@ -1,6 +1,0 @@
-<external>..initialise -> sut.doorControl.initialise
-limitSw.initialise
-limitSw.return
-motorControl.initialise
-motorControl.return
-sut.doorControl.return -> <external>..return

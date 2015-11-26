@@ -21,7 +21,6 @@
 # 
 # Code:
 
-#LANGUAGES:=$(filter c c++ c++03 cs goops javascript python, $(CODE_LANGUAGES))
 JAVA7:=$(shell /usr/bin/javac -version 2>&1 | grep -oe 'javac 1.7' >/dev/null && echo java7)
 ifneq ($(JAVA7),)
 LANGUAGES:=$(filter-out java java7, $(ALL_LANGUAGES))

@@ -22,5 +22,5 @@
 
 LANGUAGES:=$(ALL_LANGUAGES)
 DZN_FILES:=$(wildcard $(CDIR)*.dzn)
-BROKEN_cs:=$(CDIR)camera.dzn
-include make/files.make
+#include make/files.make
+include make/reset.make

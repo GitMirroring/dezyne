@@ -22,4 +22,5 @@
 
 LANGUAGES:=$(ALL_LANGUAGES)
 SUT:=DezyneSystem
+LOCAL_CODE2FDR:=(echo iDezyne.authenticate;bin/code2fdr)
 include make/project.make

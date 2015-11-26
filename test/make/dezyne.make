@@ -98,7 +98,13 @@ endif
 	@echo -e '\t$(DZN) code -l $(LOCAL_LANGUAGE) -m $(LOCAL_SUT) -o $(LOCAL_OUT) $< $(LOCAL_MAP_FILES) |& sed -e s,^,$(dir $<),' >> $@
 
 depend: $(LOCAL_D_FILES)
-ifeq ($(strip $(filter-out clean depend help run verify,$(MAKECMDGOALS))),$(MAKECMDGOALS))
+ifeq ($(strip\
+  $(findstring clean,$(MAKECMDGOALS))\
+  $(findstring depend,$(MAKECMDGOALS))\
+  $(findstring help,$(MAKECMDGOALS))\
+  $(findstring run,$(MAKECMDGOALS))\
+  $(findstring verify,$(MAKECMDGOALS))\
+  ),)
 -include $(LOCAL_D_FILES)
 endif
 

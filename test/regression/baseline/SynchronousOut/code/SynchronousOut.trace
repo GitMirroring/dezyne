@@ -1,6 +1,0 @@
-<external>.valued_event -> sut.pp.valued_event
-rp.valued_event
-<internal>.out_event -> sut.rp.out_event
-rp.Val_One
-pp.out_event
-sut.pp.Val_One -> <external>.Val_One

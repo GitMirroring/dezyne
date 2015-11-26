@@ -1,0 +1,4 @@
+client.initialise
+device_A.initialise
+device_A.result_t_NOK
+client.result_t_NOK

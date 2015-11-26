@@ -1,0 +1,15 @@
+ctrl.calibrate
+robot.calibrate
+robot.return
+inspector.calibrate
+inspector.return
+feedPort.calibrate
+feedPort.return
+ctrl.return
+inspector.calibrated
+inspector.<flush>
+robot.calibrated
+robot.<flush>
+feedPort.calibrated
+feedPort.<flush>
+ctrl.calibrated

@@ -28,7 +28,7 @@ interface IExtern {
 
     on e:
     [true]
-    illegal;
+    {}
   }
 }
 
@@ -41,7 +41,7 @@ component Extern {
 
     on port.e():
     [true]
-    illegal;
+    {}
   }
 }
 

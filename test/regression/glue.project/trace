@@ -1,0 +1,8 @@
+Sensor.Enable
+Sensor.Triggered
+ConsoleCB.Tripped
+Siren.Turnon
+Sensor.Disable
+Sensor.Disabled
+Siren.Turnoff
+ConsoleCB.Deactivated

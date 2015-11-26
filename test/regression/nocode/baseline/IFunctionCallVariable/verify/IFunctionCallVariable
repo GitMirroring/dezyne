@@ -1,0 +1,3 @@
+verify: IFunctionCallVariable: check: completeness: ok
+verify: IFunctionCallVariable: check: deadlock: ok
+verify: IFunctionCallVariable: check: livelock: ok

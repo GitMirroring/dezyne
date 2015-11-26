@@ -21,6 +21,7 @@
 # 
 # Code:
 
+LOCAL_CODE2FDR:=(echo -e 'ctrl.calibrate\nctrl.operate';bin/code2fdr)
 LOCAL_DZN_FILES:=$(wildcard $(CDIR)*.dzn)
 
 # ifeq ($(LOCAL_LANGUAGE),c++)

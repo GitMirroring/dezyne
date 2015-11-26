@@ -28,7 +28,7 @@ interface IExtern
 
   behaviour
   {
-    on e: illegal;
+    on e: {}
   }
 }
 
@@ -40,6 +40,6 @@ component Extern
   {
     IExtern.xint i = $0$;
     IExtern.xint j;
-    on port.e(): illegal;
+    on port.e(): {}
   }
 }

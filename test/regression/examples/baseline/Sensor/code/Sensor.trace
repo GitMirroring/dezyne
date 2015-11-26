@@ -1,6 +1,0 @@
-<external>.read -> sut.p.read
-sensor0.read
-sensor0.Result_Closed
-sensor1.read
-sensor1.Result_Closed
-sut.p.Result_Closed -> <external>.Result_Closed

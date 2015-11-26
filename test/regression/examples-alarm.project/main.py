@@ -1,1 +1,1 @@
-../alarm.project/main.py
+../../check/alarm.project/main.py

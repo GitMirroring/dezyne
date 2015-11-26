@@ -22,25 +22,10 @@
 # 
 # Code:
 
-# provides_twice: external component, does not link...
-# hide: variable shadowing!?
-# iincomplete: does not parse...
-# Comp, Reply: main generates different reply values per language
-# dollar_escape: gaiag parse error due to incorrect escaping of dollar expression $sss;xxx$ (zoho6839)
-# FDR void reply instead of valued reply (component ValuedReturn.dzn!ConstrainedAxis) (zoho6834)
-# unguarded: shadowing: c++: x.in.move () instead of this->x.in.move() <--FIXED
-# name_space: OM parser prints empty (root)
-# inner_space: does not parse with OM-parser
-# simple_space: does not generate namespaces in SCM output
 BROKEN:=\
- regression/iincomplete.dzn\
- regression/externaltypesbroken.dzn\
- regression/provides_twice.dzn\
- regression/dollar_escape.dzn\
- regression/ValuedReturn.dzn\
- regression/unguarded.dzn\
- regression/hide.dzn\
- regression/BrokenComp.dzn\
+  regression/ConsumeMultiple.dzn\
+  regression/QTriggerModeling.dzn\
+#
 
 # error: Reply5: variable s is already defined in method i_done()
 BROKEN_cs:=\
@@ -71,45 +56,31 @@ BROKEN_java7:=$(BROKEN_java)
 
 BROKEN_javascript:=\
  regression/DataVariables.dzn\
-
+#
 
 BROKEN_python:=\
  regression/DataVariables.dzn\
  regression/SynchronousLivelock.dzn\
+#
 
 BROKEN_run:=\
+ regression/MultipleOutEventsOnSingleTau.dzn\
+ regression/Simpleint.dzn\
+ regression/SyncPedal.dzn\
+ regression/incomplete.dzn\
+ regression/inner_space.dzn\
+ regression/simple_space.dzn\
+#
 
-# TypeError: Cannot call method 'replace' of undefined
-BROKEN_trace:=\
- regression/Extern.dzn\
+Alarm.flush:=--flush
+ConsumeMultiple.flush:=--flush
+DataVariables.flush:=--flush
+Handle.flush:=--flush
+MultipleOutEventsOnSingleTau.flush:=--flush
+RequiredOptional.flush:=--flush
+TauEmitMultiple.flush:=--flush
+flush2cb.flush:=--flush
+multiple_provides.flush:=--flush
+single_tau_to_multiple_tau_should_not_refine.flush:=--flush
 
-BROKEN_verify:=
-
-BLOCKING:=$(shell grep -l blocking regression/*dzn)
-BROKEN_c+=$(BLOCKING)
-BROKEN_cs+=$(BLOCKING)
-BROKEN_c++03+=$(BLOCKING)
-BROKEN_goops+=$(BLOCKING)
-BROKEN_java+=$(BLOCKING)
-BROKEN_java7+=$(BLOCKING)
-BROKEN_javascript+=$(BLOCKING)
-BROKEN_python+=$(BLOCKING)
-BROKEN_trace+=$(BLOCKING)
-
-DZN_FILES:=$(wildcard $(CDIR)*.dzn)
-DZN_FILES:=$(filter-out $(BROKEN),$(DZN_FILES))
-LANGUAGES:=$(ALL_LANGUAGES)
 include make/files.make
-
-## TRIANGLE: TODO
-##DZN_FILES:=$(CDIR)Alarm.dzn $(CDIR)Comp.dzn $(CDIR)Reply.dzn $(CDIR)Handle.dzn $(CDIR)SynchronousOut.dzn
-DZN_FILES:=$(CDIR)Handle.dzn #$(CDIR)Comp.dzn $(CDIR)Reply.dzn
-$(foreach lang,$(CODE_LANGUAGES) $(filter run,$(PSEUDO_LANGUAGES)),\
-	$(foreach i,$(filter-out $(BROKEN_$(lang)),$(DZN_FILES)),\
-		$(eval LOCAL_TRACE_ILLEGAL:=--illegal)\
-		$(eval LOCAL_LANGUAGE:=$(lang))\
-		$(eval LOCAL_DZN_FILES:=$(i))\
-		$(eval include make/common.make)\
-		$(eval include make/triangle.make)\
-		$(eval include make/reset.make)))
-DZN_FILES:=

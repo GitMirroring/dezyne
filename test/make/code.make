@@ -24,27 +24,34 @@
 include make/dezyne.make
 include make/binary.make
 
+ifeq ($(LOCAL_CODE2FDR),)
+LOCAL_CODE2FDR:=bin/code2fdr
+endif
+
 define CODE.rule
 code-$(LOCAL_TARGET)/$(notdir $(1)): CDIR:=$$(CDIR)
+code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_CODE2FDR:=$$(LOCAL_CODE2FDR)
 code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_LANGUAGE:=$$(LOCAL_LANGUAGE)
 code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_NAME:=$$(LOCAL_NAME)
 code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_OUT:=$$(LOCAL_OUT)
 code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TARGET:=$$(LOCAL_TARGET)
+code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FLUSH:=$$(LOCAL_TRACE_FLUSH)
 code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
 code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_LANGUAGE:=$$(LOCAL_TRACE_LANGUAGE)
-# grep out Asserts; these show source code lines: makes baseline fragile
-code-$(LOCAL_TARGET)/$(notdir $(1)): $(LOCAL_OUT)/test
-	cat "$(1)" 2>/dev/null | tr ' ,' '\n\n' | $(LOCAL_TARGET) 2>&1 | grep -iEv ':|assert|[[:blank:]]at |^Exception in thread|traceback|GLib|^;;;|^$$$$|\^|^ ' | diff -u $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_TRACE_LANGUAGE)/$(notdir $(1)) -
+code-$(LOCAL_TARGET)/$(notdir $(1)): $(LOCAL_OUT)/test $(LOCAL_TRACE_FILES)
+	diff -uw $(i) <(cat $(i) | $(LOCAL_TARGET) $(LOCAL_TRACE_FLUSH) |& $(LOCAL_CODE2FDR));
 check-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
 code-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
 code-$(LOCAL_TARGET): code-$(LOCAL_TARGET)/$(notdir $(1))
 code-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
 code: $(LOCAL_OUT)/test code-$(LOCAL_TARGET)/$(notdir $(1))
+ifeq ($(1),$(firstword $(LOCAL_TRACE_FILES)))
 ifeq ($(VERBOSE),debug)
 $$(info target check-$(OUT)/$(LOCAL_NAME))
 $$(info target code-$(OUT)/$(LOCAL_NAME))
 $$(info target code-$(LOCAL_TARGET))
-$$(info target code-$(LOCAL_TARGET)/$(notdir $(1)))
+#$$(info target code-$(LOCAL_TARGET)/$(notdir $(1)))
+endif
 endif
 
 update-code-$(LOCAL_TARGET)/$(notdir $(1)): CDIR:=$$(CDIR)
@@ -55,17 +62,18 @@ update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TARGET:=$$(LOCAL_TARGET)
 update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
 update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_LANGUAGE:=$$(LOCAL_TRACE_LANGUAGE)
 update-code-$(LOCAL_TARGET)/$(notdir $(1)): $(LOCAL_OUT)/test
-	mkdir -p $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_TRACE_LANGUAGE)/
-	cat "$(1)" 2>/dev/null | tr ' ,' '\n\n' | $(LOCAL_TARGET) 2>&1 | grep -iEv ':|assert|[[:blank:]]at |^Exception in thread|traceback|GLib|^;;;|^$$$$|\^|^ ' > $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_TRACE_LANGUAGE)/$(notdir $(i))
+	@true
 update-$(OUT)/$(LOCAL_NAME): update-code-$(LOCAL_TARGET)/$(notdir $(1))
 update-code-$(OUT)/$(LOCAL_NAME): update-code-$(LOCAL_TARGET)/$(notdir $(1))
 update-code-$(LOCAL_TARGET): update-code-$(LOCAL_TARGET)/$(notdir $(1))
 update-code: $(LOCAL_OUT)/test update-code-$(LOCAL_TARGET)/$(notdir $(1))
+ifeq ($(1),$(firstword $(LOCAL_TRACE_FILES)))
 ifeq ($(VERBOSE),debug)
 $$(info target update-$(OUT)/$(LOCAL_NAME))
 $$(info target update-code-$(OUT)/$(LOCAL_NAME))
 $$(info target update-code-$(LOCAL_TARGET))
-$$(info target update-code-$(LOCAL_TARGET)/$(notdir $(1)))
+#$$(info target update-code-$(LOCAL_TARGET)/$(notdir $(1)))
+endif
 endif
 endef
 

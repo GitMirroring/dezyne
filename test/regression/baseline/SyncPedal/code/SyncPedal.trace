@@ -1,9 +1,0 @@
-<external>.press -> sut.left.press
-pedal.press
-pedal.return
-right.pressed
-sut.left.return -> <external>.return
-<external>.release -> sut.left.release
-pedal.release
-pedal.return
-sut.left.return -> <external>.return

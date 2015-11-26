@@ -21,7 +21,8 @@
 # 
 # Code:
 
-LANGUAGES:=c c++ cs goops $(JAVA) $(JAVA7) javascript python table
+CODE_LANGUAGES:=c c++ cs goops $(JAVA) $(JAVA7) javascript python
+PSEUDO_LANGUAGES:=table
 
 # we need to set LOCAL_LANGUAGE, copy make/project.make inline
 #include make/project.make

@@ -1,8 +1,0 @@
-<external>.start -> sut.p.start
-r.ping
-<internal>.pong -> sut.r.pong
-<internal>.pong -> sut.r.pong
-r.return
-p.busy
-p.finish
-sut.p.return -> <external>.return

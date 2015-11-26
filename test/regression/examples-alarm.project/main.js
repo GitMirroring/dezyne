@@ -1,1 +1,1 @@
-../alarm.project/main.js
+../../check/alarm.project/main.js
