@@ -47,6 +47,7 @@ ifneq ($(JAVA7),)
 ALL_CODE_LANGUAGES+=java7
 endif
 
+ALL_CODE_LANGUAGES:=c++
 CODE_LANGUAGES:=c++
 
 # PSEUDO_LANGUAGES=convert parse run table verify
