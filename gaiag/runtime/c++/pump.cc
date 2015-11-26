@@ -64,12 +64,12 @@ auto find_blocked = [] (std::list<coroutine>& coroutines, void* port) {
 
 auto finish = [&](std::list<coroutine>& coroutines, const std::string &name){
   auto self = find_self(coroutines);
+  debug(std::string("finish ") + name + " coroutine", self->id);
   self->finished = true;
-  debug(std::string("exit ") + name + " coroutine", self->id);
 };
 
 pump::pump()
-: switch_context([]{})
+: switch_context()
 , running(true)
 , task(std::async(std::launch::async, std::ref(*this)))
 {}
@@ -116,31 +116,29 @@ void pump::operator()()
     };
 
     coroutine zero;
+    create_context("main");
 
     exit = [&]{debug("enter exit"); zero.release();};
 
     std::unique_lock<std::mutex> lock(mutex);
-    while(running || queue.size())
+    while(running || queue.size() || collateral_blocked.size())
     {
+      assert(coroutines.size());
       if (lock) lock.unlock();
-      do_one("main");
       coroutines.back().call(zero.context);
-      debug("finish pump");
       lock.lock();
       coroutines.remove_if([](dezyne::coroutine& c){if(c.finished) debug("removing", c.id); return c.finished;});
     }
+    debug("finish pump");
     assert(queue.empty());
   }
-#if HAVE_BOOST_COROUTINE
-  catch(const boost::coroutines::detail::forced_unwind&) {throw;}
-#endif
   catch(const std::exception& e)
   {
     std::cout << "oops: " << e.what() << std::endl;
     std::terminate();
   }
 }
-void pump::do_one(const std::string &level)
+void pump::create_context(const std::string &level)
 {
   coroutines.emplace_back([&,level]{
       try
@@ -151,22 +149,24 @@ void pump::do_one(const std::string &level)
         {
           debug(level, self->id);
           worker();
+          if(!self->released)
+          {
+            collateral_release(self);
+          }
         }
-        finish(coroutines, level);
 
-        if(coroutines.size() != 1)
-        {
-          decltype(switch_context) tmp([]{});
-          std::swap(switch_context, tmp);
-          tmp();
-        }
-        else
-        {
-          exit();
-        }
+        if(self->released) finish(coroutines, level);
+
+        if(switch_context) decltype(switch_context)(std::move(switch_context))();
+
+        if(!self->released) collateral_release(self);
+
+        exit();
       }
 #if HAVE_BOOST_COROUTINE
       catch(const boost::coroutines::detail::forced_unwind&) {throw;}
+#else
+      catch(const context::unwind&) {}
 #endif
       catch(const std::exception& e)
       {
@@ -174,6 +174,26 @@ void pump::do_one(const std::string &level)
         std::terminate();
       }
     });
+}
+void pump::collateral_block()
+{
+  auto self = find_self(coroutines);
+  debug("collateral_block", self->id);
+
+  collateral_blocked.splice(collateral_blocked.end(), coroutines, self);
+  create_context("collateral");
+  self->yield_to(coroutines.back().context);
+
+  debug("collateral_unblock", self->id);
+}
+void pump::collateral_release(std::list<coroutine>::iterator self)
+{
+  if(collateral_blocked.size()) finish(coroutines, "foo");
+  while(collateral_blocked.size())
+  {
+    coroutines.splice(coroutines.end(), collateral_blocked, collateral_blocked.begin());
+    self->yield_to(coroutines.back().context);
+  }
 }
 void pump::block(void* p)
 {
@@ -194,16 +214,18 @@ void pump::block(void* p)
   self->port = p;
 
   debug("block", self->id);
-  do_one("new");
+  create_context("new");
   self = find_blocked(coroutines, p);
 
   self->yield_to(coroutines.back().context);
   debug("entered context", self->id);
-  std::clog << "routines: ";
+#ifdef DEBUG_RUNTIME
+  std::cout << "routines: ";
   for (auto& c: coroutines) {
     std::clog << c.id << " ";
   }
-  std::clog << std::endl;
+  std::cout << std::endl;
+#endif
   coroutines.remove_if([](dezyne::coroutine& c){if(c.finished) debug("removing",c.id); return c.finished;});
 }
 void pump::release(void* p)

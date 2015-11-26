@@ -71,7 +71,7 @@ bool& runtime::performs_flush(void* scope)
 void runtime::flush(void* scope)
 {
 #ifdef DEBUG_RUNTIME
-  std::cout << path(scope) << " flush" << std::endl;
+  std::cout << path(reinterpret_cast<dezyne::meta*>(scope)) << " flush" << std::endl;
 #endif
   if(!external(scope))
   {
@@ -95,7 +95,7 @@ void runtime::flush(void* scope)
 void runtime::defer(void* src, void* tgt, const std::function<void()>& event)
 {
 #ifdef DEBUG_RUNTIME
-  std::cout << path(tgt) << " defer" << std::endl;
+  std::cout << path(reinterpret_cast<dezyne::meta*>(tgt)) << " defer" << std::endl;
 #endif
 
   if(!(src && performs_flush(src)) && !handling(tgt))
@@ -114,7 +114,7 @@ void runtime::handle(void* scope, const std::function<void()>& event)
   bool& handle = handling(scope);
 
 #ifdef DEBUG_RUNTIME
-  std::cout << path(scope) << " handle " << std::boolalpha << handle << std::endl;
+  std::cout << path(reinterpret_cast<dezyne::meta*>(scope)) << " handle " << std::boolalpha << handle << std::endl;
 #endif
 
   if(! handle)

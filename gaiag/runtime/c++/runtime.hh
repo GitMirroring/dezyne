@@ -131,6 +131,10 @@ void call_in(C* c, std::function<void()> f, std::tuple<P*, const char*, const ch
 {
   auto& os = c->dzn_locator.template get<typename std::ostream>();
   trace_in(os, std::get<0>(m)->meta, std::get<1>(m));
+  if(c->dzn_rt.handling(c))
+  {
+    c->dzn_locator.template get<dezyne::pump>().collateral_block();
+  }
   c->dzn_rt.handle(c, f);
   trace_out(os, std::get<0>(m)->meta, std::get<2>(m) ? std::get<2>(m) : "return");
 }

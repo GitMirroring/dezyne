@@ -43,6 +43,8 @@ namespace dezyne
   {
     std::function<void()> worker;
     std::list<coroutine> coroutines;
+    std::list<coroutine> collateral_blocked;
+
     std::set<void*> skip_block;
 
     std::queue<std::function<void()>> queue;
@@ -78,8 +80,12 @@ namespace dezyne
     pump();
     ~pump();
     void operator()();
+
+    void collateral_block();
+    void collateral_release(std::list<coroutine>::iterator);
+
     void block(void*);
-    void do_one(const std::string &);
+    void create_context(const std::string &);
     void release(void*);
     void operator()(const std::function<void()>&);
     void operator()(std::function<void()>&&);

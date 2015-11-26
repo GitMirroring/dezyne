@@ -70,7 +70,7 @@ namespace dezyne
     ~coroutine()
     {
 #ifdef DEBUG_RUNTIME
-      std::clog << __FUNCTION__ << ": " << id << std::endl;
+      std::cout << __FUNCTION__ << ": " << id << std::endl;
 #endif
     }
     void yield_to(dezyne::context& context)

@@ -42,7 +42,7 @@
 namespace dezyne
 {
 #ifdef DEBUG_RUNTIME
-struct thread_id_helper {
+static struct thread_id_helper {
   thread_id_helper() {}
 
   friend std::ostream& operator << (std::ostream& os, const thread_id_helper&)
@@ -74,6 +74,10 @@ class context
 {
   State state;
 public:
+  struct unwind: public std::runtime_error
+  {
+    unwind(): std::runtime_error("unwind") {}
+  };
   std::function<void()> rel;
   std::function<void(std::function<void(context&)>&)> work;
   std::mutex mutex;
@@ -86,27 +90,31 @@ public:
   , mutex()
   , condition()
   , thread([this] {
-      //std::clog << _ << "enter context" << std::endl;
-      std::unique_lock<std::mutex> lock(mutex);
-      while(state != FINAL)
+      try
       {
-        do_block(lock);
-        if(state == FINAL) break;
-        //std::clog << _ << "before work" << std::endl;
-        if(!this->work) break;
+        //std::clog << _ << "enter context" << std::endl;
+        std::unique_lock<std::mutex> lock(mutex);
+        while(state != FINAL)
+        {
+          do_block(lock);
+          if(state == FINAL) break;
+          //std::clog << _ << "before work" << std::endl;
+          if(!this->work) break;
 
-        lock.unlock();
-        std::function<void(context&)> yield([this](context& c){ this->yield(c); });
-		assert(yield);
-        this->work(yield);
-        lock.lock();
+          lock.unlock();
+          std::function<void(context&)> yield([this](context& c){ this->yield(c); });
+          assert(yield);
+          this->work(yield);
+          lock.lock();
 
-        //std::clog << _ << "after work" << std::endl;
-        if(state == FINAL) break;
+          //std::clog << _ << "after work" << std::endl;
+          if(state == FINAL) break;
 
-        if(this->rel) this->rel();
+          if(this->rel) this->rel();
+        }
+        //std::clog << _ << "exit context" << std::endl;
       }
-      //std::clog << _ << "exit context" << std::endl;
+      catch(const unwind&){}
     })
   {
     std::unique_lock<std::mutex> lock(mutex);
@@ -199,6 +207,7 @@ private:
     state = BLOCKED;
     condition.notify_one();
     do { condition.wait(lock); } while(state == BLOCKED);
+    if(state == FINAL) throw unwind();
     //std::clog << _ << "exit block: " << context_to_string(state) << std::endl;
   }
   void do_release(std::unique_lock<std::mutex>&)

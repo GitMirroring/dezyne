@@ -1,0 +1,13 @@
+<internal>.f -> sut.a.r2.f
+sut.a.r1.e -> sut.b.p.e
+r3.e
+r3.return
+<external>.e -> sut.a.p.e
+<internal>.f -> sut.b.r.f
+sut.b.p.return -> sut.a.r1.return
+sut.a.r1.e -> sut.b.p.e
+r3.e
+r3.return
+<internal>.f -> sut.b.r.f
+sut.b.p.return -> sut.a.r1.return
+sut.a.p.return -> <external>.return
