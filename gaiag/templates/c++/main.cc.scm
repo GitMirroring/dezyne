@@ -86,7 +86,11 @@ namespace dezyne
        e["#instance .#instance-port .#event "] = e["#port .#event "];
        #})
 #}) (filter (om:dir-matches? port)
-       (om:events port)))) (om:ports model)) }
+       (om:events port)))) (om:ports model))
+   #(map (init-port #{
+     m.#name .meta.provides.port = "#name ";
+     m.#name .meta.requires.port = "#name ";
+ #}) (om:ports model)) }
 }
 
 int main()
