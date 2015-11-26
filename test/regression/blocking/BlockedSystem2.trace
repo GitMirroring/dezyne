@@ -1,6 +1,10 @@
-port1.e
+blocked1.provided.e
 async1.trigger
 async1.return
-port2.e
-async1.notify
-async2.notify
+blocked2.provided.e
+async2.trigger
+async2.return
+blocked1.required.notify
+blocked1.provided.return
+blocked2.required.notify
+blocked2.provided.return

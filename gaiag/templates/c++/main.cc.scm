@@ -82,6 +82,9 @@ namespace dezyne
     (lambda (port)
     (map (define-on model port #{
        e["#port .#event "] = #(string-if (null? argument-list) #{m.#port .#direction .#event; #} #{ [&] {m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));};#})
+       #(string-if (is-a? model <system>) #{
+       e["#instance .#instance-port .#event "] = e["#port .#event "];
+       #})
 #}) (filter (om:dir-matches? port)
        (om:events port)))) (om:ports model)) }
 }

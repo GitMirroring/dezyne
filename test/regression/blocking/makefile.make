@@ -23,7 +23,7 @@
 
 BROKEN_c++:=\
  x$(CDIR)AlarmBlock.dzn\
- $(CDIR)BlockedSystem2.dzn\
+ x$(CDIR)BlockedSystem2.dzn\
  $(CDIR)BlockedSystem3.dzn\
  $(CDIR)DirectAndDeferredReply.dzn\
  $(CDIR)MultipleProvidesBlocking.dzn\
