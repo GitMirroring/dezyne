@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -33,7 +34,7 @@ code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
 code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_LANGUAGE:=$$(LOCAL_TRACE_LANGUAGE)
 # grep out Asserts; these show source code lines: makes baseline fragile
 code-$(LOCAL_TARGET)/$(notdir $(1)): $(LOCAL_OUT)/test
-	diff -u $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_TRACE_LANGUAGE)/$(notdir $(1)) <(cat "$(1)" 2>/dev/null | tr ' ,' '\n\n' | $(LOCAL_TARGET) 2>&1 | grep -iEv ':|assert|[[:blank:]]at |^Exception in thread|traceback|GLib|^;;;|^$$$$|\^|^ ')
+	cat "$(1)" 2>/dev/null | tr ' ,' '\n\n' | $(LOCAL_TARGET) 2>&1 | grep -iEv ':|assert|[[:blank:]]at |^Exception in thread|traceback|GLib|^;;;|^$$$$|\^|^ ' | diff -u $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_TRACE_LANGUAGE)/$(notdir $(1)) -
 check-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
 code-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
 code-$(LOCAL_TARGET): code-$(LOCAL_TARGET)/$(notdir $(1))

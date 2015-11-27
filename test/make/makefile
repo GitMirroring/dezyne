@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -28,7 +29,7 @@ endif
 
 ## common
 .SUFFIXES:
-SHELL:=/bin/bash
+SHELL:=/bin/bash -o pipefail
 OUT:=out
 CCACHE:=$(shell type -p ccache)
 
