@@ -73,22 +73,22 @@ namespace dezyne
       std::cout << __FUNCTION__ << ": " << id << std::endl;
 #endif
     }
-    void yield_to(dezyne::context& context)
+    void yield_to(dezyne::coroutine& c)
     {
-      this->yield(context);
+      this->yield(c.context);
     }
 #if HAVE_BOOST_COROUTINE
     coroutine() : id(-1), context() {}
-    void call(dezyne::context& context)
+    void call(dezyne::coroutine& c)
     {
       this->context();
     }
     void release(){}
 #else // !HAVE_BOOST_COROUTINE
     coroutine() : id(-1), context(false) {}
-    void call(dezyne::context& context)
+    void call(dezyne::coroutine& c)
     {
-      this->context.call(context);
+      this->context.call(c.context);
     }
     void release()
     {

@@ -125,7 +125,7 @@ void pump::operator()()
     {
       assert(coroutines.size());
       if (lock) lock.unlock();
-      coroutines.back().call(zero.context);
+      coroutines.back().call(zero);
       lock.lock();
       coroutines.remove_if([](dezyne::coroutine& c){if(c.finished) debug("removing", c.id); return c.finished;});
     }
@@ -181,7 +181,7 @@ void pump::collateral_block()
 
   collateral_blocked.splice(collateral_blocked.end(), coroutines, self);
   create_context();
-  self->yield_to(coroutines.back().context);
+  self->yield_to(coroutines.back());
 
   debug("collateral_unblock", self->id);
 }
@@ -191,7 +191,7 @@ void pump::collateral_release(std::list<coroutine>::iterator self)
   while(collateral_blocked.size())
   {
     coroutines.splice(coroutines.end(), collateral_blocked, collateral_blocked.begin());
-    self->yield_to(coroutines.back().context);
+    self->yield_to(coroutines.back());
   }
 }
 void pump::block(void* p)
@@ -215,7 +215,7 @@ void pump::block(void* p)
   debug("block", self->id);
   create_context();
 
-  self->yield_to(coroutines.back().context);
+  self->yield_to(coroutines.back());
   debug("entered context", self->id);
 #ifdef DEBUG_RUNTIME
   std::cout << "routines: ";
@@ -247,7 +247,7 @@ void pump::release(void* p)
     debug("switch from", self->id);
     debug("to", blocked->id);
 
-    self->yield_to(blocked->context);
+    self->yield_to(*blocked);
   };
 }
 void pump::operator()(const std::function<void()>& e)
