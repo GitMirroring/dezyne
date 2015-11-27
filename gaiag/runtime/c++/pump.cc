@@ -214,7 +214,6 @@ void pump::block(void* p)
 
   debug("block", self->id);
   create_context();
-  self = find_blocked(coroutines, p);
 
   self->yield_to(coroutines.back().context);
   debug("entered context", self->id);
@@ -254,7 +253,6 @@ void pump::release(void* p)
 void pump::operator()(const std::function<void()>& e)
 {
   assert(e);
-  assert(std::this_thread::get_id() != thread_id);
   std::lock_guard<std::mutex> lock(mutex);
   queue.push(e);
   condition.notify_one();
@@ -262,7 +260,6 @@ void pump::operator()(const std::function<void()>& e)
 void pump::operator()(std::function<void()>&& e)
 {
   assert(e);
-  //assert(std::this_thread::get_id() != thread_id);
   std::lock_guard<std::mutex> lock(mutex);
   queue.push(std::move(e));
   condition.notify_one();
@@ -278,28 +275,19 @@ void pump::and_wait_(const std::function<void()>& e)
   std::promise<void> p;
 
   assert(e);
-  //assert(std::this_thread::get_id() != thread_id);
-
   {std::lock_guard<std::mutex> lock(mutex);
-    queue.push([&]{e(); p.set_value();});
-    condition.notify_one();}
-
+    queue.push([&]{e(); p.set_value();});}
+  condition.notify_one();
   p.get_future().get();
 }
 void pump::handle(size_t id, size_t ms, const std::function<void()>& e)
 {
   assert(e);
-#if HAVE_BOOST_COROUTINE
-  //assert(std::this_thread::get_id() == thread_id);
-#endif // HAVE_BOOST_COROUTINE
   assert(std::find_if(timers.begin(), timers.end(), [id](const std::pair<deadline, std::function<void()>>& p){ return p.first.id == id; }) == timers.end());
   timers.emplace(deadline(id, ms), e);
 }
 void pump::remove(size_t id)
 {
-#if HAVE_BOOST_COROUTINE
-  //assert(std::this_thread::get_id() == thread_id);
-#endif // HAVE_BOOST_COROUTINE
   auto it = std::find_if(timers.begin(), timers.end(), [id](const std::pair<deadline, std::function<void()>>& p){ return p.first.id == id; });
   if(it != timers.end()) timers.erase(it);
 }
