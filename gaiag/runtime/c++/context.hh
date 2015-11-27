@@ -22,68 +22,43 @@
 //
 // Code:
 
-#ifndef CONTEXT_HH
-#define CONTEXT_HH
+#ifndef DEZYNE_CONTEXT_HH
+#define DEZYNE_CONTEXT_HH
 
-#include <algorithm>
 #include <cassert>
 #include <condition_variable>
 #include <functional>
-#include <future>
-#include <exception>
-#include <iomanip>
-#include <iostream>
-#include <map>
 #include <mutex>
-#include <sstream>
 #include <stdexcept>
 #include <thread>
 
 namespace dezyne
 {
-#ifdef DEBUG_RUNTIME
-static struct thread_id_helper {
-  thread_id_helper() {}
-
-  friend std::ostream& operator << (std::ostream& os, const thread_id_helper&)
-  {
-#ifdef __GNUC__
-    return os << std::setfill('0') << std::setw(6) << __gthread_self () - (__gthread_self () / 100000) * 100000 << ' ';
-#else // !__GNUC__
-    return os;
-#endif // !__GNUC__
-  }
-} _;
-#endif // !DEBUG_RUNTIME
-
-class context;
-enum State {INITIAL, RELEASED, BLOCKED, FINAL};
-inline char const* context_to_string(State state)
-{
-  switch(state)
-  {
-  case INITIAL: return "INITIAL";
-  case RELEASED: return "RELEASED";
-  case BLOCKED: return "BLOCKED";
-  case FINAL: return "FINAL";
-  }
-  throw std::logic_error("UNKNOWN STATE");
-}
-
 class context
 {
-  State state;
-public:
-  struct unwind: public std::runtime_error
+  enum State {INITIAL, RELEASED, BLOCKED, FINAL};
+  inline std::string to_string(State state)
   {
-    unwind(): std::runtime_error("unwind") {}
-  };
+    switch(state)
+    {
+    case INITIAL: return "INITIAL";
+    case RELEASED: return "RELEASED";
+    case BLOCKED: return "BLOCKED";
+    case FINAL: return "FINAL";
+    }
+    throw std::logic_error("UNKNOWN STATE");
+  }
+  State state;
   std::function<void()> rel;
   std::function<void(std::function<void(context&)>&)> work;
   std::mutex mutex;
   std::condition_variable condition;
   std::thread thread;
 public:
+  struct unwind: public std::runtime_error
+  {
+    unwind(): std::runtime_error("unwind") {}
+  };
   context()
   : state(INITIAL)
   , work()
@@ -92,35 +67,26 @@ public:
   , thread([this] {
       try
       {
-        //std::clog << _ << "enter context" << std::endl;
         std::unique_lock<std::mutex> lock(mutex);
         while(state != FINAL)
         {
           do_block(lock);
           if(state == FINAL) break;
-          //std::clog << _ << "before work" << std::endl;
           if(!this->work) break;
-
           lock.unlock();
           std::function<void(context&)> yield([this](context& c){ this->yield(c); });
           assert(yield);
           this->work(yield);
           lock.lock();
-
-          //std::clog << _ << "after work" << std::endl;
           if(state == FINAL) break;
-
           if(this->rel) this->rel();
         }
-        //std::clog << _ << "exit context" << std::endl;
       }
       catch(const unwind&){}
     })
   {
     std::unique_lock<std::mutex> lock(mutex);
-    //std::clog << _ << "ctor waiting" << std::endl;
     while(state != BLOCKED) condition.wait(lock);
-    //std::clog << _ << "ctor ready" << std::endl;
   }
   context(bool)
   : state(INITIAL)
@@ -129,8 +95,8 @@ public:
   , condition()
   , thread()
   {}
-  context(context&&) = delete;//default;
-  context& operator=(context&&) = delete;//default;
+  context(context&&) = delete;
+  context& operator=(context&&) = delete;
   context(const context&) = delete;
   context& operator=(const context&) = delete;
   template <typename Work>
@@ -141,9 +107,6 @@ public:
   }
   ~context()
   {
-#ifdef DEBUG_RUNTIME
-    std::clog << _ << __FUNCTION__  << ": " << context_to_string(state) << std::endl;
-#endif
     std::unique_lock<std::mutex> lock(mutex);
     do_finish(lock);
   }
@@ -203,32 +166,27 @@ public:
 private:
   void do_block(std::unique_lock<std::mutex>& lock)
   {
-    //std::clog << _ << "enter block: " << context_to_string(state) << std::endl;
     state = BLOCKED;
     condition.notify_one();
     do { condition.wait(lock); } while(state == BLOCKED);
     if(state == FINAL) throw unwind();
-    //std::clog << _ << "exit block: " << context_to_string(state) << std::endl;
   }
   void do_release(std::unique_lock<std::mutex>&)
   {
-    //std::clog << _ << "enter release: " << context_to_string(state) << std::endl;
-    if(state != BLOCKED) throw std::runtime_error(std::string("not allowed to release a call which is ") +
-                                                  context_to_string(state));
+    if(state != BLOCKED)
+      throw std::runtime_error("not allowed to release a call which is " +
+                               to_string(state));
     state = RELEASED;
     condition.notify_one();
-    //std::clog << _ << "exit release: " << context_to_string(state) << std::endl;
   }
   void do_finish(std::unique_lock<std::mutex>& lock)
   {
-    //std::clog << _ << "enter finish: " << context_to_string(state) << std::endl;
     state = FINAL;
     lock.unlock();
     condition.notify_all();
     if(thread.joinable()) thread.join();
-    //std::clog << _ << "exit finish: " << context_to_string(state) << std::endl;
   }
 };
 }
 
-#endif //CONTEXT_HH
+#endif //DEZYNE_CONTEXT_HH
