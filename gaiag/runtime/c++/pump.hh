@@ -85,7 +85,7 @@ namespace dezyne
     void collateral_release(std::list<coroutine>::iterator);
 
     void block(void*);
-    void create_context(const std::string &);
+    void create_context();
     void release(void*);
     void operator()(const std::function<void()>&);
     void operator()(std::function<void()>&&);

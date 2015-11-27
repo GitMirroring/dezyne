@@ -62,10 +62,10 @@ auto find_blocked = [] (std::list<coroutine>& coroutines, void* port) {
   return self;
 };
 
-auto finish = [&](std::list<coroutine>& coroutines, const std::string &name){
+auto finish = [&](std::list<coroutine>& coroutines){
   auto self = find_self(coroutines);
-  debug(std::string("finish ") + name + " coroutine", self->id);
   self->finished = true;
+  debug("finish coroutine", self->id);
 };
 
 pump::pump()
@@ -116,7 +116,7 @@ void pump::operator()()
     };
 
     coroutine zero;
-    create_context("main");
+    create_context();
 
     exit = [&]{debug("enter exit"); zero.release();};
 
@@ -138,16 +138,15 @@ void pump::operator()()
     std::terminate();
   }
 }
-void pump::create_context(const std::string &level)
+void pump::create_context()
 {
-  coroutines.emplace_back([&,level]{
+  coroutines.emplace_back([&]{
       try
       {
         auto self = find_self(coroutines);
-        debug(std::string(level) + " coroutine", self->id);
+        debug("create context", self->id);
         while((running || queue.size()) && !self->released)
         {
-          debug(level, self->id);
           worker();
           if(!self->released)
           {
@@ -155,7 +154,7 @@ void pump::create_context(const std::string &level)
           }
         }
 
-        if(self->released) finish(coroutines, level);
+        if(self->released) finish(coroutines);
 
         if(switch_context) decltype(switch_context)(std::move(switch_context))();
 
@@ -181,14 +180,14 @@ void pump::collateral_block()
   debug("collateral_block", self->id);
 
   collateral_blocked.splice(collateral_blocked.end(), coroutines, self);
-  create_context("collateral");
+  create_context();
   self->yield_to(coroutines.back().context);
 
   debug("collateral_unblock", self->id);
 }
 void pump::collateral_release(std::list<coroutine>::iterator self)
 {
-  if(collateral_blocked.size()) finish(coroutines, "foo");
+  if(collateral_blocked.size()) finish(coroutines);
   while(collateral_blocked.size())
   {
     coroutines.splice(coroutines.end(), collateral_blocked, collateral_blocked.begin());
@@ -214,7 +213,7 @@ void pump::block(void* p)
   self->port = p;
 
   debug("block", self->id);
-  create_context("new");
+  create_context();
   self = find_blocked(coroutines, p);
 
   self->yield_to(coroutines.back().context);
