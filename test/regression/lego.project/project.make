@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -32,7 +33,7 @@ endif
 
 include make/common.make
 
-LOCAL_FILTER_O_FILES:=$(LOCAL_OUT)/gui.o $(LOCAL_OUT)/lego-main.o $(LOCAL_OUT)/pump.o
+LOCAL_FILTER_O_FILES:=$(LOCAL_OUT)/gui.o $(LOCAL_OUT)/lego-main.o
 
 include make/$(LOCAL_LANGUAGE).make
 
