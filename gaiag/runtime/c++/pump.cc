@@ -79,7 +79,7 @@ pump::~pump()
   running = false;
   condition.notify_one();
   if (lock) lock.unlock();
-  task.get();
+  task.wait();
 }
 void pump::operator()()
 {
