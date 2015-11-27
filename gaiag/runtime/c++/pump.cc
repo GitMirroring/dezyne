@@ -25,9 +25,14 @@
 #include "pump.hh"
 
 #include <algorithm>
-#include <iostream>
-#include <list>
+#include <cassert>
 
+#ifdef DEBUG_RUNTIME
+#include <iostream>
+#endif
+
+namespace dezyne
+{
 static void debug(const std::string& s)
 {
 #ifdef DEBUG_RUNTIME
@@ -42,31 +47,27 @@ static void debug(const std::string& s, int id)
 #endif
 }
 
-namespace dezyne
+static std::list<coroutine>::iterator find_self(std::list<coroutine>& coroutines)
 {
-int coroutine::g_id = 0;
-
-auto find_self = [] (std::list<coroutine>& coroutines){
-  int count =0;
-  for (auto& c: coroutines) {
-    if (c.port == nullptr && !c.finished) count++;
-  }
+  assert(1 == std::count_if(coroutines.begin(), coroutines.end(), [](const coroutine& c){return c.port == nullptr && !c.finished;}));
   auto self = std::find_if(coroutines.begin(), coroutines.end(), [](dezyne::coroutine& c){return c.port == nullptr && !c.finished;});
-  if(self == coroutines.end()) throw std::runtime_error("cannot find my self");
-  if (count !=1)throw std::runtime_error("too many coros");
   return self;
-};
+}
 
-auto find_blocked = [] (std::list<coroutine>& coroutines, void* port) {
+static std::list<coroutine>::iterator find_blocked(std::list<coroutine>& coroutines, void* port)
+{
   auto self = std::find_if(coroutines.begin(), coroutines.end(), [port](dezyne::coroutine& c){return c.port == port;});
   return self;
-};
+}
 
-auto finish = [&](std::list<coroutine>& coroutines){
+static void finish(std::list<coroutine>& coroutines)
+{
   auto self = find_self(coroutines);
   self->finished = true;
   debug("finish coroutine", self->id);
-};
+}
+
+int coroutine::g_id = 0;
 
 pump::pump()
 : switch_context()
@@ -134,7 +135,9 @@ void pump::operator()()
   }
   catch(const std::exception& e)
   {
+#ifdef DEBUG_RUNTIME
     std::cout << "oops: " << e.what() << std::endl;
+#endif
     std::terminate();
   }
 }
@@ -169,7 +172,9 @@ void pump::create_context()
 #endif
       catch(const std::exception& e)
       {
+#ifdef DEBUG_RUNTIME
         std::cout << "oops: " << e.what() << std::endl;
+#endif
         std::terminate();
       }
     });
@@ -266,15 +271,8 @@ void pump::operator()(std::function<void()>&& e)
 }
 void pump::and_wait(const std::function<void()>& e)
 {
-  if (std::this_thread::get_id() == thread_id)
-    return operator()(e);
-  return and_wait_(e);
-}
-void pump::and_wait_(const std::function<void()>& e)
-{
-  std::promise<void> p;
-
   assert(e);
+  std::promise<void> p;
   {std::lock_guard<std::mutex> lock(mutex);
     queue.push([&]{e(); p.set_value();});}
   condition.notify_one();

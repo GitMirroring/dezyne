@@ -23,14 +23,13 @@
 //
 // Code:
 
-#ifndef RUNTIME_HH
-#define RUNTIME_HH
+#ifndef DEZYNE_RUNTIME_HH
+#define DEZYNE_RUNTIME_HH
 
 #include "meta.hh"
 #include "locator.hh"
 
-//haX0r here
-#include "pump.hh"  //TODO: put this include in every component which uses the blocking keyword in its behaviour.
+#include "pump.hh"
 
 #include <algorithm>
 #include <cassert>
@@ -157,4 +156,4 @@ void call_out(C* c, std::function<void()> f, std::tuple<P*, const char*, const c
   c->dzn_rt.defer(std::get<0>(m)->meta.provides.address, c, f);
 }
 }
-#endif
+#endif //DEZYNE_RUNTIME_HH

@@ -23,8 +23,8 @@
 //
 // Code:
 
-#ifndef LOCATOR_HH
-#define LOCATOR_HH
+#ifndef DEZYNE_LOCATOR_HH
+#define DEZYNE_LOCATOR_HH
 
 #include <iostream>
 #include <map>
@@ -81,4 +81,4 @@ public:
   }
 };
 }
-#endif
+#endif //DEZYNE_LOCATOR_HH

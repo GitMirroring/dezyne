@@ -23,8 +23,8 @@
 //
 // Code:
 
-#ifndef META_HH
-#define META_HH
+#ifndef DEZYNE_META_HH
+#define DEZYNE_META_HH
 
 #include <cassert>
 #include <functional>
@@ -78,8 +78,9 @@ namespace dezyne
   struct binding_error: public std::runtime_error
   {
     binding_error(const port::meta& m, const std::string& msg)
-    : std::runtime_error("not connected: " + path(m.provides.address ? m.provides.meta : m.requires.meta, m.provides.address ? m.provides.port : m.requires.port) + "." + msg)
+    : std::runtime_error("not connected: " + path(m.provides.address ? m.provides.meta : m.requires.meta,
+                                                  m.provides.address ? m.provides.port : m.requires.port) + "." + msg)
     {}
   };
 }
-#endif
+#endif //DEZYNE_META_HH

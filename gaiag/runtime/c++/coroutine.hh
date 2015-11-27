@@ -22,27 +22,23 @@
 //
 // Code:
 
-#ifndef COROUTINE_HH
-#define COROUTINE_HH
-
-#include <iostream>
+#ifndef DEZYNE_COROUTINE_HH
+#define DEZYNE_COROUTINE_HH
 
 #if HAVE_BOOST_COROUTINE
-#warning using boost coroutine
 #include <boost/coroutine/all.hpp>
-#else // !HAVE_BOOST_COROUTINE
-//#warning using threads
+#else
 #include "context.hh"
-#endif // !HAVE_BOOST_COROUTINE
+#endif
 
 namespace dezyne
 {
 #if HAVE_BOOST_COROUTINE
   typedef boost::coroutines::symmetric_coroutine<void>::call_type context;
   typedef boost::coroutines::symmetric_coroutine<void>::yield_type yield;
-#else // !HAVE_BOOST_COROUTINE
+#else
   typedef std::function<void(dezyne::context&)> yield;
-#endif // !HAVE_BOOST_COROUTINE
+#endif
 
   struct coroutine
   {
@@ -79,7 +75,7 @@ namespace dezyne
     }
 #if HAVE_BOOST_COROUTINE
     coroutine() : id(-1), context() {}
-    void call(dezyne::coroutine& c)
+    void call(dezyne::coroutine&)
     {
       this->context();
     }
@@ -94,7 +90,7 @@ namespace dezyne
     {
       this->context.release();
     }
-#endif // !HAVE_BOOST_COROUTINE
+#endif // HAVE_BOOST_COROUTINE
   };
 }
-#endif //COROUTINE_HH
+#endif //DEZYNE_COROUTINE_HH
