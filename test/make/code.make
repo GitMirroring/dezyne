@@ -39,7 +39,7 @@ code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FLUSH:=$$(LOCAL_TRACE_FLUSH)
 code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
 code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_LANGUAGE:=$$(LOCAL_TRACE_LANGUAGE)
 code-$(LOCAL_TARGET)/$(notdir $(1)): $(LOCAL_OUT)/test $(LOCAL_TRACE_FILES)
-	diff -uw $(i) <(cat $(i) | $(LOCAL_TARGET) $(LOCAL_TRACE_FLUSH) |& $(LOCAL_CODE2FDR));
+	diff -uw $(i) <(cat $(i) | timeout 0.01 $(LOCAL_TARGET) $(LOCAL_TRACE_FLUSH) |& $(LOCAL_CODE2FDR));
 check-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
 code-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
 code-$(LOCAL_TARGET): code-$(LOCAL_TARGET)/$(notdir $(1))
