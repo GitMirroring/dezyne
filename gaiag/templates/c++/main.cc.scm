@@ -117,16 +117,24 @@ int main()
 
   dezyne::fill_event_map(rt, &c, sut, event_map);
 
+  pump.next_event = [&] {
+    std::string s;
+    if(std::cin >> s) {
+      return event_map[s];
+    }
+    throw std::runtime_error ("unexpected EOF: expected releasing event on stdin");
+  };
+
   sut.check_bindings();
   sut.dump_tree();
 
-  std::string event;
-  while(std::cin >> event) {
-    if (event_map.find(event) != event_map.end()) {
+  std::string s;
+  while(std::cin >> s) {
+    if (event_map.find(s) != event_map.end()) {
 ##if BLOCKING
-      pump.and_wait(event_map[event]);
+      pump.and_wait(event_map[s]);
 ##else // !BLOCKING
-      event_map[event]();
+      event_map[s]();
 ##endif // !BLOCKING
     }
   }
