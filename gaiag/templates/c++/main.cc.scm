@@ -124,7 +124,7 @@ int main()
   while(std::cin >> event) {
     if (event_map.find(event) != event_map.end()) {
 ##if BLOCKING
-      pump(event_map[event]);
+      pump.and_wait(event_map[event]);
 ##else // !BLOCKING
       event_map[event]();
 ##endif // !BLOCKING
