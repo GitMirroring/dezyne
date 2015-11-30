@@ -27,11 +27,13 @@ DZN_FILES:=$(wildcard $(CDIR)*.dzn)
 # BurglarAlarm: does not compile
 # GarageDoorControl does not compile due to system component specification
 # Recursion: segfaults on stack overflow
+# Stage: only interfaces
 BROKEN_code:=\
   $(CDIR)BurglarAlarm.dzn\
   $(CDIR)GarageDoorControl.dzn\
   $(CDIR)GarageDoorControlErr.dzn\
   $(CDIR)Recursion.dzn\
+  $(CDIR)Stage.dzn\
   $(CDIR)SystemComposition.dzn\
 
 BROKEN_run:=\
