@@ -11,7 +11,12 @@ namespace dezyne
   static bool relaxed = false;
   typedef std::map<std::string, std::function<void()>> event_map;
 
-  std::string consume_synchronous_out_events(std::string prefix, std::string event, event_map& event_map)
+  pump* g_pump;
+
+  bool g_main = true;
+  std::mutex g_mutex;
+
+  std::string consume_synchronous_out_events(std::string prefix, std::string event, event_map& event_map, bool doit = true)
   {
     std::string s;
 
@@ -43,7 +48,7 @@ namespace dezyne
   {
     std::clog << prefix << event << std::endl;
     if (relaxed) return (R)0;
-    std::string s = consume_synchronous_out_events(prefix, event, event_map);
+    std::string s = consume_synchronous_out_events(prefix, event, event_map, false);
 
     R r = string_to_value(s.erase(std::min(s.size(), s.find(prefix)), prefix.size()));
     if (static_cast<int>(r) != -1)
@@ -61,7 +66,7 @@ namespace dezyne
 
   void fill_event_map(runtime& rt, component* c, #((om:scope-name (string->symbol "::")) model) & m, event_map& e)
   {
-    int dzn_i = 0;
+    static int dzn_i = 0;
     (void)dzn_i;
 
 ##if !BLOCKING
@@ -74,14 +79,14 @@ namespace dezyne
                                                                                                                  #{return log_valued<#((c++:scope-join #f) reply-scope)::#reply-name ::type>("#port .", "#event ", e, to_#((c++:scope-join #f) reply-scope)_#reply-name , static_cast<const char*(*)(#((c++:scope-join #f) reply-scope)::#reply-name ::type)>(to_string));#})};
      #}) (filter (negate (om:dir-matches? port)) (om:events port)))) (om:ports model))
  #(map (init-port #{
-     m.#name .meta.provides.address = c;
-     m.#name .meta.provides.meta = &c->dzn_meta;
+//     m.#name .meta.provides.address = c;
+//     m.#name .meta.provides.meta = &c->dzn_meta;
      e["#name .<flush>"] = [&] { std::clog << "#name .<flush>" << std::endl; m.dzn_rt.flush(m.#name .meta.provides.address); };
      #}) (filter om:requires? (om:ports model)))
  #(map
     (lambda (port)
     (map (define-on model port #{
-       e["#port .#event "] = #(string-if (null? argument-list) #{m.#port .#direction .#event; #} #{ [&] {m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));};#})
+       e["#port .#event "] = #(string-if (null? argument-list) #{m.#port .#direction .#event; #} #{ [&] {return m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));};#})
        #(string-if (is-a? model <system>) #{
        e["#instance .#instance-port .#event "] = e["#port .#event "];
        #})
@@ -112,17 +117,25 @@ int main()
 
 ##if BLOCKING
   dezyne::pump pump;
+  dezyne::g_pump = &pump;
   l.set(pump);
 ##endif // BLOCKING
 
   dezyne::fill_event_map(rt, &c, sut, event_map);
 
   pump.next_event = [&] {
-    std::string s;
-    if(std::cin >> s) {
-      return event_map[s];
-    }
-    throw std::runtime_error ("unexpected EOF: expected releasing event on stdin");
+    pump([&]{
+        std::unique_lock<std::mutex> lock(dezyne::g_mutex);
+        std::string s;
+        while(!dezyne::g_main && std::cin >> s && event_map.find(s) != event_map.end())
+        {
+          lock.unlock();
+          event_map[s]();
+          //std::this_thread::sleep_for(std::chrono::milliseconds(50));
+          lock.lock();
+          s.clear();
+        }
+      });
   };
 
   sut.check_bindings();
@@ -132,7 +145,12 @@ int main()
   while(std::cin >> s) {
     if (event_map.find(s) != event_map.end()) {
 ##if BLOCKING
+      std::unique_lock<std::mutex> lock(dezyne::g_mutex);
+      dezyne::g_main = false;
+      lock.unlock();
       pump.and_wait(event_map[s]);
+      lock.lock();
+      dezyne::g_main = true;
 ##else // !BLOCKING
       event_map[s]();
 ##endif // !BLOCKING

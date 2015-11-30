@@ -219,12 +219,8 @@ void pump::block(void* p)
   self = find_blocked(coroutines, p);
 
   if (queue.empty() && next_event) {
-    std::clog << "READING TO Q?" << std::endl;
-    auto f = next_event();
-    if (f) {
-      std::clog << "READING TO Q" << std::endl;
-      queue.push(f);
-    }
+    std::clog << "doing next_event" << std::endl;
+    next_event();
   }
 
   self->yield_to(coroutines.back().context);

@@ -1,7 +1,9 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 # Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 # Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+# Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -90,7 +92,7 @@ triangle-$(LOCAL_TARGET): $(TRACE0) $(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/test
 	for i in $$(ls -1 $(LOCAL_TRACE).* | sort -t. -k3 -k4 -n | $(TRIANGLE_MAX) 2>/dev/null); do\
 		set -e;\
 		echo trace[$(LOCAL_LANGUAGE)]: $$i;\
-		diff -wy $$i <(cat $$i | timeout 0.01 $(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/test $(LOCAL_TRACE_FLUSH) |& $(LOCAL_CODE2FDR));\
+		diff -wy $$i <(cat $$i | timeout 10 $(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/test $(LOCAL_TRACE_FLUSH) |& $(LOCAL_CODE2FDR));\
 		echo -e '\n---------------------------------------------------------------------------------';\
 		set +e;\
 	done
