@@ -24,7 +24,7 @@ namespace dezyne
     throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(line) + ": invalid event; expected: `" + match + "', found: `" + s + "'");
   }
 
-  std::string get_return(dezyne::pump& pump, std::string prefix, std::string event, event_map& event_map, bool value=false)
+  std::string get_return(std::string prefix, std::string event, event_map& event_map, bool value=false)
   {
     std::string s;
     std::string match = prefix + event;
@@ -44,22 +44,22 @@ namespace dezyne
     throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": invalid event; expected: `" + match + "', found: `" + s + "'");
   }
 
-  void call_in(dezyne::pump& pump, std::string prefix, std::string event, event_map& event_map)
+  void call_in(std::string prefix, std::string event, event_map& event_map)
   {
     std::clog << prefix << event << std::endl;
     if (relaxed) return;
     match_event(prefix + event, __LINE__);
-    get_return(pump, prefix, "return", event_map);
+    get_return(prefix, "return", event_map);
     std::clog << prefix << "return" << std::endl;
   }
 
   template <typename R>
-  R call_valued(dezyne::pump& pump, std::string prefix, std::string event, event_map& event_map, R (*string_to_value)(std::string), const char* (*value_to_string)(R))
+  R call_valued(std::string prefix, std::string event, event_map& event_map, R (*string_to_value)(std::string), const char* (*value_to_string)(R))
   {
     std::clog << prefix << event << std::endl;
     if (relaxed) return (R)0;
     match_event(prefix + event, __LINE__);
-    std::string s = get_return(pump, prefix, "", event_map, true);
+    std::string s = get_return(prefix, "", event_map, true);
     R r = string_to_value(s.erase(std::min(s.size(), s.find(prefix)), prefix.size()));
     if (static_cast<int>(r) != -1)
     {
@@ -69,7 +69,7 @@ namespace dezyne
     throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": not a reply value: `" + s + "', expected: `" + prefix + "*'");
   }
 
-  void call_out(dezyne::pump&, std::string prefix, std::string event, event_map& event_map)
+  void call_out(std::string prefix, std::string event, event_map& event_map)
   {
     std::clog << prefix << event << std::endl;
     if (relaxed) return;
@@ -86,15 +86,15 @@ namespace dezyne
     }
   };
 
-  void fill_event_map(dezyne::pump& pump, component* c, #((om:scope-name (string->symbol "::")) model) & m, event_map& e)
+  void fill_event_map(component* c, #((om:scope-name (string->symbol "::")) model) & m, event_map& e)
   {
     static int dzn_i = 0;
     (void)dzn_i;
 
  #(map
    (lambda (port)
-     (map (define-on model port #{m.#port .#direction .#event  = [&] (#formals) {#(string-if (eq? return-type 'void) #{call_#direction(pump, "#port .", "#event ", e);#}
-                                                                                                                 #{return call_valued<#((c++:scope-join #f) reply-scope)::#reply-name ::type>(pump, "#port .", "#event ", e, to_#((c++:scope-join #f) reply-scope)_#reply-name , static_cast<const char*(*)(#((c++:scope-join #f) reply-scope)::#reply-name ::type)>(to_string));#})};
+     (map (define-on model port #{m.#port .#direction .#event  = [&] (#formals) {#(string-if (eq? return-type 'void) #{call_#direction("#port .", "#event ", e);#}
+                                                                                                                 #{return call_valued<#((c++:scope-join #f) reply-scope)::#reply-name ::type>("#port .", "#event ", e, to_#((c++:scope-join #f) reply-scope)_#reply-name , static_cast<const char*(*)(#((c++:scope-join #f) reply-scope)::#reply-name ::type)>(to_string));#})};
      #}) (filter (negate (om:dir-matches? port)) (om:events port)))) (om:ports model))
 
 ##if 0
@@ -118,7 +118,7 @@ namespace dezyne
  #(map
     (lambda (port)
     (map (define-on model port #{
-       e["#port .#event "] = #(string-if (null? argument-list) #{m.#port .#direction .#event #} #{ [&] {m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));}#})#;
+       e["#port .#event "] = #(string-if (null? argument-list) #{m.#port .#direction .#event #} #{ [&] {m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));}#});
        #(string-if (is-a? model <system>) #{
        e["#instance .#instance-port .#event "] = e["#port .#event "];
        #})
@@ -161,7 +161,7 @@ int main(int argc, char const* argv[])
   c.dzn_meta.parent = 0;
   c.dzn_meta.name = "<internal>";
 
-  dezyne::fill_event_map(pump, &c, sut, event_map);
+  dezyne::fill_event_map(&c, sut, event_map);
 
 ##if BLOCKING
   dezyne::pump pump;
