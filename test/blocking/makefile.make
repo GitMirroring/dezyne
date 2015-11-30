@@ -21,12 +21,16 @@
 # 
 # Code:
 
+BROKEN:=\
+ $(CDIR)BlockedSystem4.dzn\
+#
 BLOCKING_DEADLOCK:=\
  $(CDIR)SimpleBlockingDeadlock.dzn\
  $(CDIR)SimpleBlockingDeadlock2.dzn\
 #
 BLOCKING_SYSTEM:=\
  $(CDIR)BlockedSystem.dzn\
+ $(CDIR)BlockedSystem1.dzn\
  $(CDIR)BlockedSystem2.dzn\
  $(CDIR)BlockedSystem3.dzn\
  $(CDIR)BlockedSystem4.dzn\
