@@ -40,7 +40,7 @@ int main()
   l.set(pump);
 
   sut.dzn_meta.name = "sut";
-  //  sut.p.meta.requires.port = "port";
+  sut.p.meta.requires.port = "p";
   pump.and_wait([&]{sut.p.in.e(1, 2);});
   int r;
   pump.and_wait([&]{sut.p.in.f(r);});
