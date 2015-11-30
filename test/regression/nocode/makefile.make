@@ -22,4 +22,16 @@
 # Code:
 
 LANGUAGES:=run verify
+BROKEN_run:=\
+ $(CDIR)IFunctionCallLocal.dzn\
+ $(CDIR)NonDetHiddenTransition.dzn\
+ $(CDIR)ifreply.dzn\
+ $(CDIR)ir2.dzn\
+ $(CDIR)pessimist.dzn\
+ $(CDIR)range.dzn\
+ $(CDIR)range_function.dzn\
+ $(CDIR)range_member.dzn\
+ $(CDIR)range_runaway.dzn\
+ $(CDIR)running.dzn\
+#
 include make/files.make

@@ -69,6 +69,7 @@ BROKEN_run:=\
  regression/SyncPedal.dzn\
  regression/incomplete.dzn\
  regression/inner_space.dzn\
+ regression/name_space.dzn\
  regression/simple_space.dzn\
 #
 

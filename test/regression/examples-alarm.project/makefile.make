@@ -25,7 +25,8 @@ LANGUAGES:=$(ALL_LANGUAGES)
 LANGUAGES:=$(filter-out cs run verify,$(LANGUAGES))
 SUT:=AlarmSystem
 include make/project.make
-LANGUAGES:=run verify
+#LANGUAGES:=run verify
+LANGUAGES:=verify
 SUT:=Alarm
 DZN_FILES:=$(CDIR)Alarm.dzn
 include make/project.make
