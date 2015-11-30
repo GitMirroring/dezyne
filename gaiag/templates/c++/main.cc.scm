@@ -4,11 +4,7 @@
 
 ##include "#.scope_model .hh"
 
-##include <unistd.h>
-
 ##include <iostream>
-
-//##define SHELL 1
 
 namespace dezyne
 {
@@ -95,16 +91,6 @@ namespace dezyne
     static int dzn_i = 0;
     (void)dzn_i;
 
-##if BLOCKING && SHELL
-    auto wait = [=,&pump] (std::function<void()> const& f) {return [=,&pump] {pump.and_wait(f);};};
-    auto wait_return = [=,&pump] (std::function<void()> const& f, std::string prefix) {return [=,&pump] {pump.and_wait(f); if (!relaxed) match_event(prefix + "return", __LINE__);};};
-##else //!(BLOCKING && SHELL)
-    auto wait = [=] (std::function<void()> const& f) {return f;};
-    auto wait_return = [=] (std::function<void()> const& f, std::string prefix) {return [=] {f(); if (!relaxed) match_event(prefix + "return", __LINE__);};};
-##endif //!(BLOCKING && SHELL)
-  (void)wait;
-  (void)wait_return;
-
  #(map
    (lambda (port)
      (map (define-on model port #{m.#port .#direction .#event  = [&] (#formals) {#(string-if (eq? return-type 'void) #{call_#direction(pump, "#port .", "#event ", e);#}
@@ -132,7 +118,7 @@ namespace dezyne
  #(map
     (lambda (port)
     (map (define-on model port #{
-       e["#port .#event "] = wait#(string-if (and #f (eq? return-type 'void)) #{_return#})(#(string-if (null? argument-list) #{m.#port .#direction .#event #} #{ [&] {m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));}#})#(string-if (and #f (eq? return-type 'void)) #{, "#port ."#}));
+       e["#port .#event "] = #(string-if (null? argument-list) #{m.#port .#direction .#event #} #{ [&] {m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));}#})#;
        #(string-if (is-a? model <system>) #{
        e["#instance .#instance-port .#event "] = e["#port .#event "];
        #})
@@ -141,7 +127,7 @@ namespace dezyne
  #(map
     (lambda (port)
     (map (define-on model port #{
-       e["#port .#event "] = wait(#(string-if (null? argument-list) #{m.#port .#direction .#event #} #{ [&] {m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));}#}));
+       e["#port .#event "] = #(string-if (null? argument-list) #{m.#port .#direction .#event #} #{ [&] {m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));}#});
 #}) (filter (om:dir-matches? port) (om:events port))))
             (filter om:requires? (om:ports model)))
  #(map (init-port #{
@@ -175,12 +161,12 @@ int main(int argc, char const* argv[])
   c.dzn_meta.parent = 0;
   c.dzn_meta.name = "<internal>";
 
-  dezyne::pump pump;
-  l.set(pump);
-
   dezyne::fill_event_map(pump, &c, sut, event_map);
 
 ##if BLOCKING
+  dezyne::pump pump;
+  l.set(pump);
+
   pump.next_event = [&] {
     pump([&]{
         std::unique_lock<std::mutex> lock(mutex);
@@ -208,15 +194,11 @@ int main(int argc, char const* argv[])
       std::unique_lock<std::mutex> lock(mutex);
       main_p = false;
       lock.unlock();
-##endif //BLOCKING
-##if BLOCKING && SHELL
-      event_map[s]();
-##else //!(BLOCKING && SHELL)
-    pump.and_wait(event_map[s]);
-##endif //!(BLOCKING && SHELL)
-##if BLOCKING
+      pump.and_wait(event_map[s]);
       lock.lock();
       main_p = true;
-##endif //BLOCKING
+##else //!BLOCKING
+      event_map[s]();
+##endif //!BLOCKING
   }
 }
