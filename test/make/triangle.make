@@ -75,6 +75,7 @@ triangle-$(LOCAL_TARGET): LOCAL_NAME:=$(LOCAL_NAME)
 triangle-$(LOCAL_TARGET): LOCAL_SUT:=$(LOCAL_SUT)#for run
 triangle-$(LOCAL_TARGET): LOCAL_DZN_TOP:=$(LOCAL_DZN_TOP)#for run
 triangle-$(LOCAL_TARGET): LOCAL_TRACE:=$(LOCAL_TRACE)
+triangle-$(LOCAL_TARGET): LOCAL_TIMEOUT:=$(LOCAL_TIMEOUT)
 triangle-$(LOCAL_TARGET): LOCAL_TRACE_FLUSH:=$(LOCAL_TRACE_FLUSH)
 ifeq ($(LOCAL_LANGUAGE),run)
 triangle-$(LOCAL_TARGET): $(LOCAL_TARGET:%/triangle/test=%/$(LOCAL_LANGUAGE)/test)
@@ -91,7 +92,7 @@ triangle-$(LOCAL_TARGET): $(TRACE0) $(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/test
 	for i in $$(ls -1 $(LOCAL_TRACE).* | sort -t. -k3 -k4 -n | $(TRIANGLE_MAX) 2>/dev/null); do\
 		set -e;\
 		echo trace[$(LOCAL_LANGUAGE)]: $$i;\
-		diff -wy $$i <(cat $$i | timeout 10 $(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/test $(LOCAL_TRACE_FLUSH) |& $(LOCAL_CODE2FDR));\
+		diff -wy $$i <(cat $$i | timeout $(LOCAL_TIMEOUT) $(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/test $(LOCAL_TRACE_FLUSH) |& $(LOCAL_CODE2FDR));\
 		echo -e '\n---------------------------------------------------------------------------------';\
 		set +e;\
 	done
