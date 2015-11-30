@@ -132,7 +132,7 @@ namespace dezyne
  #(map
     (lambda (port)
     (map (define-on model port #{
-       e["#port .#event "] = wait_return(#(string-if (null? argument-list) #{m.#port .#direction .#event #} #{ [&] {m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));}#}), "#port .");
+       e["#port .#event "] = wait#(string-if (and #f (eq? return-type 'void)) #{_return#})(#(string-if (null? argument-list) #{m.#port .#direction .#event #} #{ [&] {m.#port .#direction .#event (#(comma-join (map (lambda (i) "dzn_i") argument-list)));}#})#(string-if (and #f (eq? return-type 'void)) #{, "#port ."#}));
        #(string-if (is-a? model <system>) #{
        e["#instance .#instance-port .#event "] = e["#port .#event "];
        #})
@@ -176,17 +176,16 @@ int main(int argc, char const* argv[])
   c.dzn_meta.name = "<internal>";
 
   dezyne::pump pump;
-  dezyne::g_pump = &pump;
   l.set(pump);
 
-  dezyne::fill_event_map(rt, &c, sut, event_map);
+  dezyne::fill_event_map(pump, &c, sut, event_map);
 
 ##if BLOCKING
   pump.next_event = [&] {
     pump([&]{
         std::unique_lock<std::mutex> lock(mutex);
         std::string s;
-        while(!dezyne::main_p && std::cin >> s && event_map.find(s) != event_map.end())
+        while(!main_p && std::cin >> s && event_map.find(s) != event_map.end())
         {
           lock.unlock();
           event_map[s]();
@@ -203,10 +202,11 @@ int main(int argc, char const* argv[])
   while(std::cin >> s) {
     if (event_map.find(s) == event_map.end()
         && !dezyne::relaxed)
-    throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": no such event: `" + s + "'");
+       //throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": no such event: `" + s + "'");
+       continue; // valued/vs return thinko
 ##if BLOCKING
-      std::unique_lock<std::mutex> lock(dezyne::mutex);
-      dezyne::main_p = false;
+      std::unique_lock<std::mutex> lock(mutex);
+      main_p = false;
       lock.unlock();
 ##endif //BLOCKING
 ##if BLOCKING && SHELL
@@ -216,7 +216,7 @@ int main(int argc, char const* argv[])
 ##endif //!(BLOCKING && SHELL)
 ##if BLOCKING
       lock.lock();
-      dezyne::main_p = true;
+      main_p = true;
 ##endif //BLOCKING
   }
 }
