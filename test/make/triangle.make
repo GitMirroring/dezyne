@@ -110,7 +110,7 @@ endif
 
 ifeq ($(HELP_TRIANGLE),)
 update-triangle:
-check: triangle
+#check: triangle
 update: update-triangle
 help: help-triangle
 define HELP_TRIANGLE
