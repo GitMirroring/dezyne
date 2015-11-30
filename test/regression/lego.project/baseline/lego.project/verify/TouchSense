@@ -1,0 +1,15 @@
+verify: ITouchSense: check: completeness: ok
+verify: ITouchSense: check: deadlock: ok
+verify: ITouchSense: check: livelock: ok
+verify: itimer: check: completeness: ok
+verify: itimer: check: deadlock: ok
+verify: itimer: check: livelock: ok
+verify: itouch: check: completeness: ok
+verify: itouch: check: deadlock: ok
+verify: itouch: check: livelock: ok
+verify: TouchSense: check: deterministic: ok
+verify: TouchSense: check: completeness: ok
+verify: TouchSense: check: illegal: ok
+verify: TouchSense: check: deadlock: ok
+verify: TouchSense: check: compliance: ok
+verify: TouchSense: check: livelock: ok

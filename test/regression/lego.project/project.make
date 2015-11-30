@@ -21,15 +21,18 @@
 # 
 # Code:
 
-LOCAL_CODE2FDR:=(echo -e 'ctrl.calibrate\nctrl.operate';bin/code2fdr)
-LOCAL_DZN_FILES:=$(wildcard $(CDIR)*.dzn)
+LOCAL_CODE2FDR=grep -v ':'
+LOCAL_DZN_FILES:=$(sort $(wildcard $(CDIR)*.dzn))
 
 # ifeq ($(LOCAL_LANGUAGE),c++)
 # LOCAL_TRACE_LANGUAGE:=$(LOCAL_LANGUAGE)
 # endif
 
+LOCAL_TIMEOUT:=20
+
 ifeq ($(LOCAL_LANGUAGE),goops)
 LOCAL_HEADER:=$(CDIR)config.scm
+LOCAL_TIMEOUT:=200
 endif
 
 include make/common.make

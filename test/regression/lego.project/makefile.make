@@ -37,10 +37,5 @@ out/lego.project/c++03/timer.o: CXXFLAGS:=-std=c++11 $(CXXFLAGS)
 
 LANGUAGES:=table
 include make/files.make
-# DZN_FILES:=$(wildcard $(CDIR)*.dzn)
-# $(foreach f,$(DZN_FILES),\
-# 	$(eval LOCAL_LANGUAGE:=table)\
-# 	$(eval LOCAL_DZN_FILES:=$(f))\
-# 	$(eval include make/check.make))
 DZN_FILES:=
 LANGUAGES:=
