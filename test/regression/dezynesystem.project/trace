@@ -1,5 +1,4 @@
 iDezyne.authenticate
-dezyneApplication.iDezyne.authenticate
 userDB.checkUser
 userDB.return
-dezyneApplication.iDezyne.return
+iDezyne.return
