@@ -1,0 +1,12 @@
+verify: IBlocked: check: completeness: ok
+verify: IBlocked: check: deadlock: ok
+verify: IBlocked: check: livelock: ok
+verify: IAsync: check: completeness: ok
+verify: IAsync: check: deadlock: ok
+verify: IAsync: check: livelock: ok
+verify: Blocked: check: deterministic: ok
+verify: Blocked: check: completeness: ok
+verify: Blocked: check: illegal: ok
+verify: Blocked: check: deadlock: ok
+verify: Blocked: check: compliance: ok
+verify: Blocked: check: livelock: ok

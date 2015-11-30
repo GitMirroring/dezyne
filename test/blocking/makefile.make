@@ -21,14 +21,22 @@
 # 
 # Code:
 
-BLOCKING_SYSTEMS:=\
+BLOCKING_DEADLOCK:=\
+ $(CDIR)SimpleBlockingDeadlock.dzn\
+ $(CDIR)SimpleBlockingDeadlock2.dzn\
+#
+BLOCKING_SYSTEM:=\
  $(CDIR)BlockedSystem.dzn\
  $(CDIR)BlockedSystem2.dzn\
  $(CDIR)BlockedSystem3.dzn\
  $(CDIR)BlockedSystem4.dzn\
 #
-BROKEN_triangle:=$(BLOCKING_SYSTEMS)
-BROKEN_run:=$(BLOCKING_SYSTEMS)
+BROKEN_triangle:=\
+ $(BLOCKING_SYSTEM)\
 #
-LANGUAGES:=c++ run
+BROKEN_run:=\
+ $(BLOCKING_DEADLOCK)\
+ $(BLOCKING_SYSTEM)\
+#
+LANGUAGES:=c++ run verify
 include make/files.make

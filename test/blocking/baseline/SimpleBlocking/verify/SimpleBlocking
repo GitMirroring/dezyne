@@ -1,0 +1,12 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: II: check: completeness: ok
+verify: II: check: deadlock: ok
+verify: II: check: livelock: ok
+verify: SimpleBlocking: check: deterministic: ok
+verify: SimpleBlocking: check: completeness: ok
+verify: SimpleBlocking: check: illegal: ok
+verify: SimpleBlocking: check: deadlock: ok
+verify: SimpleBlocking: check: compliance: ok
+verify: SimpleBlocking: check: livelock: ok

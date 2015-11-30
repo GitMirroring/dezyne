@@ -1,0 +1,13 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: MultipleProvidesBlocking: check: deterministic: ok
+verify: MultipleProvidesBlocking: check: completeness: ok
+verify: MultipleProvidesBlocking: check: illegal: ok
+verify: MultipleProvidesBlocking: check: deadlock: fail
+q.e
+deadlock in model MultipleProvidesBlocking
+verify: MultipleProvidesBlocking: check: compliance: fail
+q.e
+Component MultipleProvidesBlocking is non-compliant with interface of provided port
+verify: MultipleProvidesBlocking: check: livelock: ok
