@@ -44,6 +44,7 @@ int main()
   AlarmSystem sut(locator.set(runtime));
 
   sut.dzn_meta.name = "sut";
+  sut.console.meta.requires.port = "console";
 
   sut.console.out.detected = detected;
   sut.console.out.deactivated = deactivated;
