@@ -22,4 +22,7 @@
 # Code:
 
 #LANGUAGES:=c++ run verify
+BROKEN_run:=\
+ $(CDIR)trip.dzn\
+#
 include make/files.make

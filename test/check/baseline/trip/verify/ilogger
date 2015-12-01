@@ -1,0 +1,3 @@
+verify: ilogger: check: completeness: ok
+verify: ilogger: check: deadlock: ok
+verify: ilogger: check: livelock: ok
