@@ -22,7 +22,7 @@
 # Code:
 
 BROKEN:=\
- $(CDIR)BlockedSystem4.dzn\
+ x$(CDIR)BlockedSystem4.dzn\
 #
 BLOCKING_DEADLOCK:=\
  $(CDIR)SimpleBlockingDeadlock.dzn\
