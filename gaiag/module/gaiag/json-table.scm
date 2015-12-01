@@ -258,7 +258,7 @@
             (else (json-next- model var next else functions)))
         (add-state then else)))
      (($ <illegal>) '())
-     (_ (list next)))))
+     (_  next))))
 
 (define (add-state o state)
   (match state
