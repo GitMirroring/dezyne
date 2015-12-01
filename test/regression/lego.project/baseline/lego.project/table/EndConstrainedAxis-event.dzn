@@ -31,21 +31,21 @@ component EndConstrainedMove {
 
     void slowForward() {
       motor.run($(config.get("Power::CalibrationSpeed"))$, $false$);
-      return false;
+      return;
     }
 
     void recordHome() {
       endSensor.disable();
       motor.stop();
       motor.zero();
-      return false;
+      return;
     }
 
     void startAbsoluteMove(IConstrainedMove.position_t target) {
       ITouchSense.TouchState ignore = endSensor.enable();
       motor.move($(config.get("Power::OperationalSpeed"))$, target);
       s = State.moving;
-      return false;
+      return;
     }
 
     void notifyArrived() {
@@ -53,7 +53,7 @@ component EndConstrainedMove {
       endSensor.disable();
       s = State.idle;
       ctrl.arrived();
-      return false;
+      return;
     }
 
     on ctrl.stop():

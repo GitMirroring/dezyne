@@ -47,18 +47,18 @@ component Feed {
       }
       s = State.Preparing;
       inventory = inventory - 1;
-      return false;
+      return;
     }
 
     void retract() {
       axis.move($(config.get("Position::Feeder::Retracted"))$);
       isRetracting = true;
-      return false;
+      return;
     }
 
     void refill() {
       inventory = 4;
-      return false;
+      return;
     }
 
     [s.Lost]

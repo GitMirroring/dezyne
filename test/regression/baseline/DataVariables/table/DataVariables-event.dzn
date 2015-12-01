@@ -60,7 +60,7 @@ component DataVariables {
     void f(inout IDataVariables.string s) {
       s = $1$;
       rp.inoutString(s);
-      return false;
+      return;
     }
 
     on pp.inInt(idv):

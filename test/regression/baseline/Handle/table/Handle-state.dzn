@@ -505,24 +505,24 @@ component Handle {
         isInspectorAtOutput = false;
         ctrl.calibrated();
       }
-      return false;
+      return;
     }
 
     void ignoreIllegal() {
-      return false;
+      return;
     }
 
     void startBatch() {
       s = State.Operating;
       isLastBall = false;
       prepareInputTransfer();
-      return false;
+      return;
     }
 
     void finalizeBatch() {
       s = State.Idle;
       ctrl.finished();
-      return false;
+      return;
     }
 
     void prepareInputTransfer() {
@@ -540,14 +540,14 @@ component Handle {
         isRobotAtInput = false;
       }
       tryInputTransfer();
-      return false;
+      return;
     }
 
     void sendRobotToInputPick() {
       robot.move($0$, $0$);
       isRobotAtOutput = false;
       isRobotAtInput = false;
-      return false;
+      return;
     }
 
     void tryInputTransfer() {
@@ -555,7 +555,7 @@ component Handle {
         robot.transfer($0$, $0$);
         o = Operation.TransferringInput;
       }
-      return false;
+      return;
     }
 
     void tryOutputTransfer() {
@@ -569,7 +569,7 @@ component Handle {
           o = Operation.TransferringOutput;
         }
       }
-      return false;
+      return;
     }
 
     void tryFinished() {
@@ -577,14 +577,14 @@ component Handle {
         s = State.Idle;
         ctrl.finished();
       }
-      return false;
+      return;
     }
 
     void manuallyRemoveStrayMaterial() {
       isBallAtInput = false;
       isAcceptEmpty = true;
       isRejectEmpty = true;
-      return false;
+      return;
     }
 
     [s.Lost]

@@ -75,7 +75,7 @@ component List {
         done = list.next(elmt);
         tail(done);
       }
-      return false;
+      return;
     }
 
     [true]

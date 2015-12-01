@@ -35,13 +35,13 @@ interface IConstrainedMove {
     void notifyHomed() {
       s = State.idle;
       homed;
-      return false;
+      return;
     }
 
     void notifyArrived() {
       s = State.idle;
       arrived;
-      return false;
+      return;
     }
 
     on calibrate:

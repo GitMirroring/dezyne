@@ -122,7 +122,7 @@ component Inspect {
       sensor.turnoff();
       p = InspectPosition.Unknown;
       s = State.Lost;
-      return false;
+      return;
     }
 
     on sensorSettleTimer.timeout():

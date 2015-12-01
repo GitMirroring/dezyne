@@ -39,12 +39,12 @@ component Functions {
     subint counter_t {0..2};
 
     void g(counter_t counter) {
-      return false;
+      return;
     }
 
     void f(counter_t counter) {
       if (counter < 2) g(counter + 1);
-      return false;
+      return;
     }
 
     [true]

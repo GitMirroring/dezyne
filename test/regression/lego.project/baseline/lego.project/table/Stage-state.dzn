@@ -122,13 +122,13 @@ component Move2D {
         ctrl.calibrated();
         isCalibrating = false;
       }
-      return false;
+      return;
     }
 
     void tryArrived() {
       nMoving = nMoving - 1;
       if (nMoving == 0) ctrl.arrived();
-      return false;
+      return;
     }
 
     [!isCalibrating]

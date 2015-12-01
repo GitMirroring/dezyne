@@ -34,7 +34,7 @@ interface I {
         c;
       }
       f = !f;
-      return false;
+      return;
     }
 
     on a:
@@ -65,7 +65,7 @@ component function {
         i.c();
       }
       f = !f;
-      return false;
+      return;
     }
 
     on i.a():

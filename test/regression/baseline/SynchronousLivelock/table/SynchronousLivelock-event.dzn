@@ -85,7 +85,7 @@ component SynchronousLivelock {
         pastEnd = listIt.getNextElmt(elmt);
         consumeListTail(pastEnd);
       }
-      return false;
+      return;
     }
 
     on pp.step():

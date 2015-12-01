@@ -31,14 +31,14 @@ component HomeConstrainedMove {
 
     void slowBackward() {
       motor.run($(config.get("Power::CalibrationSpeed"))$, $true$);
-      return false;
+      return;
     }
 
     void recordHome() {
       homeSensor.disable();
       motor.stop();
       motor.zero();
-      return false;
+      return;
     }
 
     void startAbsoluteMove(IConstrainedMove.position_t target) {
@@ -46,7 +46,7 @@ component HomeConstrainedMove {
       ignore = homeSensor.enable();
       motor.move($(config.get("Power::OperationalSpeed"))$, target);
       s = State.moving;
-      return false;
+      return;
     }
 
     void notifyArrived() {
@@ -54,7 +54,7 @@ component HomeConstrainedMove {
       homeSensor.disable();
       s = State.idle;
       ctrl.arrived();
-      return false;
+      return;
     }
 
     [s.lost]

@@ -206,12 +206,12 @@ component proxy {
       IDataparam.xint j = i;
       bottom.eo(j);
       i = j;
-      return false;
+      return;
     }
 
     void deferfunc(IDataparam.xint i) {
       top.a(i);
-      return false;
+      return;
     }
 
     on top.e0():

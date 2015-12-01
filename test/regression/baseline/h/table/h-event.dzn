@@ -141,11 +141,11 @@ component h {
         s = State.Idle;
         ctrl.hcalibrated();
       }
-      return false;
+      return;
     }
 
     void ignoreIllegal() {
-      return false;
+      return;
     }
 
     on ctrl.hcalibrate():

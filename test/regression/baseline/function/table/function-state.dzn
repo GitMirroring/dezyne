@@ -34,7 +34,7 @@ interface I {
         c;
       }
       f = !f;
-      return false;
+      return;
     }
 
     [!f]
@@ -73,7 +73,7 @@ component function {
         i.c();
       }
       f = !f;
-      return false;
+      return;
     }
 
     [!f]

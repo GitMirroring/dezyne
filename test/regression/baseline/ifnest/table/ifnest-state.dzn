@@ -48,7 +48,7 @@ component ifnest {
       }
       else if (true) p.c();
       else illegal;
-      return false;
+      return;
     }
 
     [true]

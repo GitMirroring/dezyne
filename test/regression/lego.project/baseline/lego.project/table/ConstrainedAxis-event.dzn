@@ -32,25 +32,25 @@ component ConstrainedMove {
 
     void slowForward() {
       motor.run($(config.get("Power::CalibrationSpeed"))$, $false$);
-      return false;
+      return;
     }
 
     void slowBackward() {
       motor.run($(config.get("Power::CalibrationSpeed"))$, $true$);
-      return false;
+      return;
     }
 
     void recordHome() {
       homeSensor.disable();
       motor.stop();
       motor.zero();
-      return false;
+      return;
     }
 
     void recordLength() {
       endSensor.disable();
       motor.stop();
-      return false;
+      return;
     }
 
     void startAbsoluteMove(IConstrainedMove.position_t target) {
@@ -59,7 +59,7 @@ component ConstrainedMove {
       ignore = endSensor.enable();
       motor.move($(config.get("Power::OperationalSpeed"))$, target);
       s = State.moving;
-      return false;
+      return;
     }
 
     void notifyArrived() {
@@ -68,7 +68,7 @@ component ConstrainedMove {
       endSensor.disable();
       s = State.idle;
       ctrl.arrived();
-      return false;
+      return;
     }
 
     on ctrl.stop():

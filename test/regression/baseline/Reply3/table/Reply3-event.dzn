@@ -29,12 +29,12 @@ interface I {
 
     void reply_fun() {
       reply(Status.Yes);
-      return false;
+      return;
     }
 
     void reply_fun_arg(Status s) {
       reply(s);
-      return false;
+      return;
     }
 
     on done:
@@ -59,12 +59,12 @@ interface U {
 
     void reply_fun() {
       reply(Status.Ok);
-      return false;
+      return;
     }
 
     void reply_fun_arg(Status s) {
       reply(s);
-      return false;
+      return;
     }
 
     on what:
@@ -89,12 +89,12 @@ component Reply3 {
 
     void reply_fun() {
       reply(I.Status.Yes);
-      return false;
+      return;
     }
 
     void reply_fun_arg(I.Status s) {
       reply(s);
-      return false;
+      return;
     }
 
     on i.done():
