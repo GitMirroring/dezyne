@@ -123,7 +123,7 @@
 
     (($ <reply> expression port) ((animate-snippet 'reply-port `((expression ,((->dzn model) expression)) (port ,port)))))
 
-    (($ <return> (? unspecified?)) ((animate-snippet 'return-void)))
+    (($ <return> #f) ((animate-snippet 'return-void)))
 
     (($ <return> expression) ((animate-snippet 'return `((expression ,((->dzn model) expression))))))
 
