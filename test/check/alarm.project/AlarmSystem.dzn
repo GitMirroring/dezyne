@@ -22,21 +22,19 @@
 // Code:
 
 import Alarm.dzn;
-import Sensor.dzn;
-import Siren.dzn;
 
 component AlarmSystem
 {
   provides IConsole console;
+  requires ISiren siren;
+  requires ISensor sensor;
 
   system
     {
       Alarm alarm;
-      Sensor sensor;
-      Siren siren;
 
       console <=> alarm.console;
-      alarm.sensor <=> sensor.sensor;
-      alarm.siren <=> siren.siren;
+      alarm.sensor <=> sensor;
+      alarm.siren <=> siren;
     }
 }

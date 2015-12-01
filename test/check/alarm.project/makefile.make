@@ -22,6 +22,7 @@
 # Code:
 
 LANGUAGES:=$(filter-out run,$(ALL_LANGUAGES))
+SUT:=AlarmSystem
 include make/project.make
 SUT:=Alarm
 LANGUAGES:=run
