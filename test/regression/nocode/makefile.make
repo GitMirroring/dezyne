@@ -21,7 +21,7 @@
 # 
 # Code:
 
-LANGUAGES:=run verify
+LANGUAGES:=run table verify
 BROKEN_run:=\
  $(CDIR)IFunctionCallLocal.dzn\
  $(CDIR)NonDetHiddenTransition.dzn\

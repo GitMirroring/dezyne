@@ -1,0 +1,11 @@
+verify: missingstate: check: completeness: fail
+missingstate.e
+missingstate.a
+missingstate.return
+missingstate is incomplete: 'missingstate.e' not handled
+verify: missingstate: check: deadlock: fail
+missingstate.e
+missingstate.a
+missingstate.return
+deadlock in model missingstate
+verify: missingstate: check: livelock: ok
