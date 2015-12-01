@@ -24,7 +24,7 @@ component #.scope.model  {
   #(map (->dzn model) (om:ports model))
   system {
   #(map (init-instance #{
-  #component  #name;
+  #((om:scope-name '.) component)  #name;
 #}) ((compose .elements .instances) model))
   #(map (init-binding model) ((compose .elements .bindings) model))  }
 }
