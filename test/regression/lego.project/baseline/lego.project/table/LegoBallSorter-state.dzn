@@ -47,12 +47,12 @@ component LegoBallSorter {
   requires itouch brick4_s3;
 
   system {
-    nameMaterialHandler handler;
-    nameInspector inspector;
-    nameFeedPort input;
-    nameConveyor accept;
-    nameConveyor reject;
-    nameFeeder track;
+    MaterialHandler handler;
+    Inspector inspector;
+    FeedPort input;
+    Conveyor accept;
+    Conveyor reject;
+    Feeder track;
 
     ctrl <=> handler.ctrl;
     handler.feedPort <=> input.ctrl;

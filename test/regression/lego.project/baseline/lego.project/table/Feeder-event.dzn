@@ -146,8 +146,8 @@ component Feeder {
   requires itouch endSensorHw;
 
   system {
-    nameFeed bhv;
-    nameEndConstrainedAxis axis;
+    Feed bhv;
+    EndConstrainedAxis axis;
 
     ctrl <=> bhv.ctrl;
     bhv.axis <=> axis.ctrl;

@@ -137,9 +137,9 @@ component HomeConstrainedAxis {
   requires itouch homeSensorHw;
 
   system {
-    nameHomeConstrainedMove bhv;
-    nameMotor motor;
-    nameTouchSensor homeSensor;
+    HomeConstrainedMove bhv;
+    Motor motor;
+    TouchSensor homeSensor;
 
     ctrl <=> bhv.ctrl;
     bhv.motor <=> motor.ctrl;

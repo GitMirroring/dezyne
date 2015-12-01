@@ -181,9 +181,9 @@ component Stage {
   requires itouch yEndSensorHw;
 
   system {
-    nameMove2D bhv;
-    nameConstrainedAxis xAxis;
-    nameConstrainedAxis yAxis;
+    Move2D bhv;
+    ConstrainedAxis xAxis;
+    ConstrainedAxis yAxis;
 
     ctrl <=> bhv.ctrl;
     bhv.xAxis <=> xAxis.ctrl;

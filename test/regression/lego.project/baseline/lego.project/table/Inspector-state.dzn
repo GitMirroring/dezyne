@@ -285,9 +285,9 @@ component Inspector {
   requires itouch stageYEndSensorHw;
 
   system {
-    nameInspect bhv;
-    nameStage stage;
-    nametimer sensorSettletimer;
+    Inspect bhv;
+    Stage stage;
+    timer sensorSettletimer;
 
     ctrl <=> bhv.ctrl;
     bhv.sensor <=> sensor;

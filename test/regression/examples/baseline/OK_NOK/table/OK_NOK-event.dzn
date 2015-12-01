@@ -267,9 +267,9 @@ component TwoDevices {
   provides IComp client;
 
   system {
-    nameOK_NOK rv;
-    nameDevice deviceA;
-    nameDevice deviceB;
+    OK_NOK rv;
+    Device deviceA;
+    Device deviceB;
 
     client <=> rv.client;
     rv.device_A <=> deviceA.i;

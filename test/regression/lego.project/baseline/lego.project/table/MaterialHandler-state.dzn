@@ -1202,8 +1202,8 @@ component MaterialHandler {
   requires itouch truckHomeSensorHw;
 
   system {
-    nameHandle bhv;
-    nameRobot robot;
+    Handle bhv;
+    Robot robot;
 
     ctrl <=> bhv.ctrl;
     bhv.robot <=> robot.ctrl;
@@ -1234,11 +1234,11 @@ component Robot {
   requires itouch truckHomeSensorHw;
 
   system {
-    nameTransfer bhv;
-    nameHoist hoist;
-    nameGripper gripper;
-    nameEndConstrainedAxis trolley;
-    nameHomeConstrainedAxis truck;
+    Transfer bhv;
+    Hoist hoist;
+    Gripper gripper;
+    EndConstrainedAxis trolley;
+    HomeConstrainedAxis truck;
 
     ctrl <=> bhv.ctrl;
     bhv.hoist <=> hoist.ctrl;
@@ -1262,8 +1262,8 @@ component Hoist {
   requires itouch endSensorHw;
 
   system {
-    nameLift bhv;
-    nameEndConstrainedAxis winch;
+    Lift bhv;
+    EndConstrainedAxis winch;
 
     ctrl <=> bhv.ctrl;
     bhv.winch <=> winch.ctrl;
@@ -1278,8 +1278,8 @@ component Gripper {
   requires itouch endSensorHw;
 
   system {
-    nameGrip bhv;
-    nameEndConstrainedAxis gripper;
+    Grip bhv;
+    EndConstrainedAxis gripper;
 
     ctrl <=> bhv.ctrl;
     bhv.gripper <=> gripper.ctrl;

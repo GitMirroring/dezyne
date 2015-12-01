@@ -120,9 +120,9 @@ component Conveyor {
   requires itouch sensorHw;
 
   system {
-    nameConvey bhv;
-    nameMotor motor;
-    nameTouchSensor sensor;
+    Convey bhv;
+    Motor motor;
+    TouchSensor sensor;
 
     ctrl <=> bhv.ctrl;
     bhv.motor <=> motor.ctrl;

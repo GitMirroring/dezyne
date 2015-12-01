@@ -247,8 +247,8 @@ component Datasystem {
   provides IDataparam port;
 
   system {
-    nameproxy p;
-    nameDataparam c;
+    proxy p;
+    Dataparam c;
 
     p.top <=> port;
     c.port <=> p.bottom;

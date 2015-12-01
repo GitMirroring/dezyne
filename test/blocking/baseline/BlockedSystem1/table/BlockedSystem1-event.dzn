@@ -1,0 +1,115 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface I1 {
+  in void e();
+
+  behaviour {
+
+    on e:
+    [true]
+    {}
+  }
+}
+
+interface I2 {
+  out void f();
+
+  behaviour {
+
+    on inevitable:
+    [true]
+    f;
+  }
+}
+
+interface I3 {
+  in void e();
+  out void f();
+
+  behaviour {
+    bool pending = false;
+
+    on e:
+    {
+      [!pending]
+      pending = true;
+      [pending]
+      illegal;
+    }
+    on inevitable:
+    [pending]
+    {
+      pending = false;
+      f;
+    }
+  }
+}
+
+component A {
+  provides I1 p;
+  requires I1 r1;
+  requires I2 r2;
+
+  behaviour {
+
+    on p.e():
+    [true]
+    r1.e();
+    on r2.f():
+    [true]
+    r1.e();
+  }
+}
+
+component B {
+  provides I1 p;
+  requires I3 r;
+
+  behaviour {
+
+    on p.e():
+    [true]
+    blocking r.e();
+    on r.f():
+    [true]
+    p.reply();
+  }
+}
+
+component BlockedSystem1 {
+  provides I1 p;
+  requires I2 r2;
+  requires I3 r3;
+
+  system {
+    A a;
+    B b;
+
+    p <=> a.p;
+    a.r1 <=> b.p;
+    a.r2 <=> r2;
+    b.r <=> r3;
+  }
+}
+

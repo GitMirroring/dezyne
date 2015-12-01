@@ -142,8 +142,8 @@ component TouchSensor {
   requires itouch hw;
 
   system {
-    nametimer pollTimer;
-    nameTouchSense bhv;
+    timer pollTimer;
+    TouchSense bhv;
 
     ctrl <=> bhv.ctrl;
     bhv.timer <=> pollTimer.port;

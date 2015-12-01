@@ -450,9 +450,9 @@ component Acquisition {
   requires IHardware contrast_hardware;
 
   system {
-    nameAcquire acquire;
-    nameMemory memory;
-    nameCMOS sensor;
+    Acquire acquire;
+    Memory memory;
+    CMOS sensor;
 
     port <=> acquire.port;
     acquire.memory <=> memory.port;
@@ -467,10 +467,10 @@ component Optics {
   requires IHardware flash_hardware;
 
   system {
-    nameOpticsControl optics;
-    nameLens lens;
-    nameShutter shutter;
-    nameFlash flash;
+    OpticsControl optics;
+    Lens lens;
+    Shutter shutter;
+    Flash flash;
 
     port <=> optics.port;
     optics.lens <=> lens.port;
@@ -486,9 +486,9 @@ component HardwareLayer {
   provides IHardware flash;
 
   system {
-    nameHardware acquire_hardware;
-    nameHardware contrast_hardware;
-    nameHardware flash_hardware;
+    Hardware acquire_hardware;
+    Hardware contrast_hardware;
+    Hardware flash_hardware;
 
     acquire <=> acquire_hardware.port;
     contrast <=> contrast_hardware.port;
@@ -500,10 +500,10 @@ component Camera {
   provides IControl control;
 
   system {
-    nameDriver driver;
-    nameAcquisition acquisition;
-    nameOptics optics;
-    nameHardwareLayer hardware;
+    Driver driver;
+    Acquisition acquisition;
+    Optics optics;
+    HardwareLayer hardware;
 
     control <=> driver.control;
     driver.acquisition <=> acquisition.port;
@@ -518,17 +518,17 @@ component Camera2 {
   provides IControl control;
 
   system {
-    nameDriver driver;
-    nameAcquire acquisition;
-    nameMemory memory;
-    nameCMOS sensor;
-    nameHardware acquire_hardware;
-    nameHardware contrast_hardware;
-    nameOpticsControl optics;
-    nameLens lens;
-    nameShutter shutter;
-    nameFlash flash;
-    nameHardware flash_hardware;
+    Driver driver;
+    Acquire acquisition;
+    Memory memory;
+    CMOS sensor;
+    Hardware acquire_hardware;
+    Hardware contrast_hardware;
+    OpticsControl optics;
+    Lens lens;
+    Shutter shutter;
+    Flash flash;
+    Hardware flash_hardware;
 
     control <=> driver.control;
     driver.acquisition <=> acquisition.port;

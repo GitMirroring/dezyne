@@ -144,9 +144,9 @@ component EndConstrainedAxis {
   requires itouch endSensorHw;
 
   system {
-    nameEndConstrainedMove bhv;
-    nameMotor motor;
-    nameTouchSensor endSensor;
+    EndConstrainedMove bhv;
+    Motor motor;
+    TouchSensor endSensor;
 
     ctrl <=> bhv.ctrl;
     bhv.motor <=> motor.ctrl;

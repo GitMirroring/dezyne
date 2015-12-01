@@ -179,8 +179,8 @@ component Motor {
   requires imotor hw;
 
   system {
-    nametimer pollTimer;
-    nameMove bhv;
+    timer pollTimer;
+    Move bhv;
 
     ctrl <=> bhv.ctrl;
     bhv.timer <=> pollTimer.port;

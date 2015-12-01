@@ -42,5 +42,5 @@ BROKEN_run:=\
  $(BLOCKING_DEADLOCK)\
  $(BLOCKING_SYSTEM)\
 #
-LANGUAGES:=c++ run verify
+LANGUAGES:=c++ run table verify
 include make/files.make

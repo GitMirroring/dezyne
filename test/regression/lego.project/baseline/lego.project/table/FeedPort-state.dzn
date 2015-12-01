@@ -173,8 +173,8 @@ component FeedPort {
   requires itouch sensorHw;
 
   system {
-    nameFeedConvey bhv;
-    nameConveyor conveyor;
+    FeedConvey bhv;
+    Conveyor conveyor;
 
     ctrl <=> bhv.ctrl;
     bhv.conveyor <=> conveyor.ctrl;
