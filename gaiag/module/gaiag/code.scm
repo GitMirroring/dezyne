@@ -58,6 +58,7 @@
            declare-integer
            declare-replies
            define-function
+           define-reply
            define-on
            connect-ports
            enum-to-string
@@ -927,6 +928,12 @@
                               (scope-name ,((compose cdr .name) x))
                               (name ,(om:name x)))))
        (om:reply-enums o)))
+
+(define ((define-reply string) enum)
+  (animate string `((scope ,(om:scope enum))
+                    (scope-name ,((compose cdr .name) enum))
+                    (name ,(om:name enum)))
+           enum))
 
 (define (return-type model event)
   (let ((type ((compose .type .signature) event)))

@@ -399,6 +399,8 @@
      (let* ((events (filter om:typed? (om:events o)))
             (names (delete-duplicates (map (compose .name .type .signature) events))))
        (map (lambda (n) (om:enum o n)) names)))
+    (($ <component>)
+     (delete-duplicates (append-map (compose om:reply-enums om:import .type) ((compose .elements .ports) o))))
     (_ '())))
 
 (define (om:out-formals o)
