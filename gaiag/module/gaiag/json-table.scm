@@ -246,6 +246,8 @@
         (if (member identifier functions)
             next
             (json-next- model var next (.statement function) (cons identifier functions)))))
+     (($ <blocking> statement)
+      (json-next- model var next statement functions))
      (($ <guard> expression statement)
       (add-state next (json-next- model var next statement functions)))
      (($ <if> expression then #f)
