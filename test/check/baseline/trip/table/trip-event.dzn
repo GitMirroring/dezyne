@@ -139,7 +139,10 @@ component trap {
     on i.r(p):
     {
       [state.3 || state.2 || state.1 || state.0]
-      global_i = p;
+      {
+        global_i = p;
+        i.reply();
+      }
     }
     on i.e():
     {

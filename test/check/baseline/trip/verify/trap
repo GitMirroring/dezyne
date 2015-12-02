@@ -9,11 +9,13 @@ verify: ilogger: check: deadlock: ok
 verify: ilogger: check: livelock: ok
 verify: trap: check: deterministic: ok
 verify: trap: check: completeness: ok
-verify: trap: check: illegal: ok
+verify: trap: check: illegal: fail
+i.r
+illegal
 verify: trap: check: deadlock: fail
 i.e
 deadlock in model trap
 verify: trap: check: compliance: fail
-i.e
-i.a not performed by component
+i.r
+Component trap is non-compliant with interface of provided port
 verify: trap: check: livelock: ok

@@ -138,7 +138,7 @@ component trap
     }
 
     blocking on i.b(o <- global_i): {i.a();}
-    on i.r(p): { global_i = p; }
+    on i.r(p): { global_i = p; i.reply();}
     on i.e():
     {
       [b || state == 0]

@@ -145,7 +145,10 @@ component trap {
       on i.b(o <- global_i):
       blocking i.a();
       on i.r(p):
-      global_i = p;
+      {
+        global_i = p;
+        i.reply();
+      }
       on i.e():
       {
         b = !b;
@@ -166,7 +169,10 @@ component trap {
       on i.b(o <- global_i):
       blocking i.a();
       on i.r(p):
-      global_i = p;
+      {
+        global_i = p;
+        i.reply();
+      }
       on i.e():
       {
         [b]
@@ -197,7 +203,10 @@ component trap {
       on i.b(o <- global_i):
       blocking i.a();
       on i.r(p):
-      global_i = p;
+      {
+        global_i = p;
+        i.reply();
+      }
       on i.e():
       {
         [b]
@@ -228,7 +237,10 @@ component trap {
       on i.b(o <- global_i):
       blocking i.a();
       on i.r(p):
-      global_i = p;
+      {
+        global_i = p;
+        i.reply();
+      }
       on i.e():
       {
         [b]

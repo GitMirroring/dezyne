@@ -149,6 +149,8 @@ int main(int argc, char const* argv[])
   dezyne::locator l;
   dezyne::runtime rt;
   l.set(rt);
+  std::unique_ptr<dezyne::pump> tmp1(new dezyne::pump);
+  l.set(*tmp1);
   dezyne::illegal_handler ih;
   ih.illegal = [] {std::clog << "illegal" << std::endl; exit(0);};
   l.set(ih);
@@ -164,8 +166,8 @@ int main(int argc, char const* argv[])
   dezyne::fill_event_map(&c, sut, event_map);
 
 ##if BLOCKING
-  dezyne::pump pump;
-  l.set(pump);
+  std::unique_ptr<dezyne::pump> tmp2(std::move(tmp1)); //now the pump is destroyed before the sut is
+  dezyne::pump& pump = *tmp2;
 
   pump.next_event = [&] {
     pump([&]{
