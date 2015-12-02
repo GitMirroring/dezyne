@@ -25,15 +25,17 @@ interface I {
   enum Status {Yes, No};
   extern xint $int$;
   in Status e();
+  in void b(out xint formal);
+  in void r(xint formal);
   out void a();
   out void hi();
   out void lo();
 
   behaviour {
-    bool b = false;
+    bool mb = false;
 
     void h() {
-      if (b) return;
+      if (mb) return;
       return;
     }
 
@@ -42,25 +44,37 @@ interface I {
       return ga || gb;
     }
 
-    [!b]
-    on e:
+    [!mb]
     {
-      b = !b;
-      bool c = g(b, b);
-      b = g(c, c);
-      h();
-      if (c) a;
-      reply(Status.Yes);
+      on b:
+      a;
+      on r:
+      {}
+      on e:
+      {
+        mb = !mb;
+        bool c = g(mb, mb);
+        mb = g(c, c);
+        h();
+        if (c) a;
+        reply(Status.Yes);
+      }
     }
-    [b]
-    on e:
+    [mb]
     {
-      b = !b;
-      bool c = g(b, b);
-      b = g(c, c);
-      h();
-      if (c) a;
-      reply(Status.Yes);
+      on b:
+      a;
+      on r:
+      {}
+      on e:
+      {
+        mb = !mb;
+        bool c = g(mb, mb);
+        mb = g(c, c);
+        h();
+        if (c) a;
+        reply(Status.Yes);
+      }
     }
   }
 }
@@ -118,6 +132,7 @@ component trap {
     subint State {0..3};
     State state = 3;
     State c = 0;
+    I.xint global_i;
     bool b = false;
 
     bool g(bool ga, bool gb) {
@@ -126,24 +141,12 @@ component trap {
     }
 
     [state.0]
-    on i.e():
     {
-      b = !b;
-      bool c = g(b, b);
-      b = g(c, c);
-      if (c) i.a();
-      else i.a();
-      U.Status s = U.Status.Ok;
-      s = U.Status.Nok;
-      s = u.what();
-      b = s == U.Status.Ok;
-      if (s == U.Status.Ok) reply(I.Status.Yes);
-      if (!s.Ok) reply(I.Status.No);
-    }
-    [state.1]
-    on i.e():
-    {
-      [b]
+      on i.b(o <- global_i):
+      blocking i.a();
+      on i.r(p):
+      global_i = p;
+      on i.e():
       {
         b = !b;
         bool c = g(b, b);
@@ -157,62 +160,98 @@ component trap {
         if (s == U.Status.Ok) reply(I.Status.Yes);
         if (!s.Ok) reply(I.Status.No);
       }
-      [otherwise]
+    }
+    [state.1]
+    {
+      on i.b(o <- global_i):
+      blocking i.a();
+      on i.r(p):
+      global_i = p;
+      on i.e():
       {
-        state = state - 1;
-        if (c < state) c = c + 1;
-        else if (c <= state + 1) i.lo();
-        else if (c > state) i.hi();
+        [b]
+        {
+          b = !b;
+          bool c = g(b, b);
+          b = g(c, c);
+          if (c) i.a();
+          else i.a();
+          U.Status s = U.Status.Ok;
+          s = U.Status.Nok;
+          s = u.what();
+          b = s == U.Status.Ok;
+          if (s == U.Status.Ok) reply(I.Status.Yes);
+          if (!s.Ok) reply(I.Status.No);
+        }
+        [otherwise]
+        {
+          state = state - 1;
+          if (c < state) c = c + 1;
+          else if (c <= state + 1) i.lo();
+          else if (c > state) i.hi();
+        }
       }
     }
     [state.2]
-    on i.e():
     {
-      [b]
+      on i.b(o <- global_i):
+      blocking i.a();
+      on i.r(p):
+      global_i = p;
+      on i.e():
       {
-        b = !b;
-        bool c = g(b, b);
-        b = g(c, c);
-        if (c) i.a();
-        else i.a();
-        U.Status s = U.Status.Ok;
-        s = U.Status.Nok;
-        s = u.what();
-        b = s == U.Status.Ok;
-        if (s == U.Status.Ok) reply(I.Status.Yes);
-        if (!s.Ok) reply(I.Status.No);
-      }
-      [otherwise]
-      {
-        state = state - 1;
-        if (c < state) c = c + 1;
-        else if (c <= state + 1) i.lo();
-        else if (c > state) i.hi();
+        [b]
+        {
+          b = !b;
+          bool c = g(b, b);
+          b = g(c, c);
+          if (c) i.a();
+          else i.a();
+          U.Status s = U.Status.Ok;
+          s = U.Status.Nok;
+          s = u.what();
+          b = s == U.Status.Ok;
+          if (s == U.Status.Ok) reply(I.Status.Yes);
+          if (!s.Ok) reply(I.Status.No);
+        }
+        [otherwise]
+        {
+          state = state - 1;
+          if (c < state) c = c + 1;
+          else if (c <= state + 1) i.lo();
+          else if (c > state) i.hi();
+        }
       }
     }
     [state.3]
-    on i.e():
     {
-      [b]
+      on i.b(o <- global_i):
+      blocking i.a();
+      on i.r(p):
+      global_i = p;
+      on i.e():
       {
-        b = !b;
-        bool c = g(b, b);
-        b = g(c, c);
-        if (c) i.a();
-        else i.a();
-        U.Status s = U.Status.Ok;
-        s = U.Status.Nok;
-        s = u.what();
-        b = s == U.Status.Ok;
-        if (s == U.Status.Ok) reply(I.Status.Yes);
-        if (!s.Ok) reply(I.Status.No);
-      }
-      [otherwise]
-      {
-        state = state - 1;
-        if (c < state) c = c + 1;
-        else if (c <= state + 1) i.lo();
-        else if (c > state) i.hi();
+        [b]
+        {
+          b = !b;
+          bool c = g(b, b);
+          b = g(c, c);
+          if (c) i.a();
+          else i.a();
+          U.Status s = U.Status.Ok;
+          s = U.Status.Nok;
+          s = u.what();
+          b = s == U.Status.Ok;
+          if (s == U.Status.Ok) reply(I.Status.Yes);
+          if (!s.Ok) reply(I.Status.No);
+        }
+        [otherwise]
+        {
+          state = state - 1;
+          if (c < state) c = c + 1;
+          else if (c <= state + 1) i.lo();
+          else if (c > state) i.hi();
+        }
       }
     }
   }

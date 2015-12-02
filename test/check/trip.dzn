@@ -27,16 +27,18 @@ interface I
   extern xint $int$;
 
   in Status e();
+  in void b(out xint formal);
+  in void r(xint formal);
   out void a();
   out void hi();
   out void lo();
 
   behaviour
   {
-    bool b = false;
+    bool mb = false;
     void h ()
     {
-      if (b) return;
+      if (mb) return;
     }
     bool g (bool ga, bool gb)
     {
@@ -44,24 +46,28 @@ interface I
       return ga || gb;
     }
 
-    [true]
-      on e:
-      {
-        b = ! b;
-        bool c = g (b, b);
-
-        b = g (c, c);
-        h ();
-        if(c)
-        {
-          a;
-        }
-        reply(Status.Yes);
-      }
-    [otherwise]
+    on b: { a; }
+    on r: {}
     {
-      on inevitable: a;
-      on optional: a;
+      [true]
+        on e:
+        {
+          mb = ! mb;
+          bool c = g (mb, mb);
+
+          mb = g (c, c);
+          h ();
+          if(c)
+            {
+              a;
+            }
+          reply(Status.Yes);
+        }
+      [otherwise]
+        {
+          on inevitable: a;
+          on optional: a;
+        }
     }
   }
 }
@@ -122,6 +128,8 @@ component trap
     State state = 3;
     State c = 0;
 
+    I.xint global_i;
+
     bool b = false;
     bool g (bool ga, bool gb)
     {
@@ -129,6 +137,8 @@ component trap
       return ga || gb;
     }
 
+    blocking on i.b(o <- global_i): {i.a();}
+    on i.r(p): { global_i = p; }
     on i.e():
     {
       [b || state == 0]

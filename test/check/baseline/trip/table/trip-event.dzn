@@ -25,15 +25,17 @@ interface I {
   enum Status {Yes, No};
   extern xint $int$;
   in Status e();
+  in void b(out xint formal);
+  in void r(xint formal);
   out void a();
   out void hi();
   out void lo();
 
   behaviour {
-    bool b = false;
+    bool mb = false;
 
     void h() {
-      if (b) return;
+      if (mb) return;
       return;
     }
 
@@ -42,13 +44,23 @@ interface I {
       return ga || gb;
     }
 
+    on b:
+    {
+      [mb || !mb]
+      a;
+    }
+    on r:
+    {
+      [mb || !mb]
+      {}
+    }
     on e:
     {
-      [b || !b]
+      [mb || !mb]
       {
-        b = !b;
-        bool c = g(b, b);
-        b = g(c, c);
+        mb = !mb;
+        bool c = g(mb, mb);
+        mb = g(c, c);
         h();
         if (c) a;
         reply(Status.Yes);
@@ -111,6 +123,7 @@ component trap {
     subint State {0..3};
     State state = 3;
     State c = 0;
+    I.xint global_i;
     bool b = false;
 
     bool g(bool ga, bool gb) {
@@ -118,6 +131,16 @@ component trap {
       return ga || gb;
     }
 
+    on i.b(o <- global_i):
+    {
+      [state.3 || state.2 || state.1 || state.0]
+      blocking i.a();
+    }
+    on i.r(p):
+    {
+      [state.3 || state.2 || state.1 || state.0]
+      global_i = p;
+    }
     on i.e():
     {
       [state.0]
