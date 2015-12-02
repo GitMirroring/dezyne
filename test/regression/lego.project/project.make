@@ -21,7 +21,7 @@
 # 
 # Code:
 
-LOCAL_CODE2FDR=grep -v ':'
+LOCAL_CODE2FDR=grep -v '[:;]'
 LOCAL_DZN_FILES:=$(sort $(wildcard $(CDIR)*.dzn))
 
 # ifeq ($(LOCAL_LANGUAGE),c++)

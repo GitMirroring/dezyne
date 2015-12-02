@@ -20,4 +20,52 @@
 //
 // Code:
 
-TypeError: Cannot read property 'client_version' of undefined
+interface IChoice2 {
+  in void arm();
+  in void disarm();
+  out void detected();
+  out void deactivated();
+
+  behaviour {
+    enum States {Disarmed, Armed, Triggered, Disarming};
+    States state = States.Disarmed;
+
+    [state.Disarmed]
+    {
+      on arm:
+      state = States.Armed;
+      on disarm:
+      illegal;
+    }
+    [state.Armed]
+    {
+      on arm:
+      illegal;
+      on disarm:
+      state = States.Disarming;
+      on optional:
+      {
+        detected;
+        state = States.Triggered;
+      }
+    }
+    [state.Triggered]
+    {
+      on arm:
+      illegal;
+      on disarm:
+      state = States.Disarming;
+    }
+    [state.Disarming]
+    {
+      on arm, disarm:
+      illegal;
+      on inevitable:
+      {
+        deactivated;
+        state = States.Disarmed;
+      }
+    }
+  }
+}
+
