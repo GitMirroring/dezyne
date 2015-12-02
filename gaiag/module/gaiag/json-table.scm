@@ -39,6 +39,7 @@
 
   :use-module (gaiag om)
 
+  :use-module (gaiag evaluate)
   :use-module (gaiag html)
   :use-module (gaiag json)
   :use-module (gaiag misc)
@@ -100,6 +101,23 @@
     ((! ($ <var> identifier)) identifier)
     (('== ($ <var> identifier) (and (? number?) (get! number))) identifier)
     (_ '<state>)))
+
+(define ((state->value model) o)
+  (stderr "state->value: ~a\n" o)
+  (match o
+    (($ <field> x (and (? number?) (get! number))) (number))
+    (($ <field> x (and (or 'true 'false) (get! bool))) (bool))
+    (($ <field> var field)
+     (let* ((var (om:variable model var))
+            (enum ((om:type model) var)))
+       (make <literal> :name (.name enum) :field field)))
+    (_ o )))
+
+(define ((value->state identifier) o)
+  (match o
+    ((? number?) (make <field> :identifier identifier :field o))
+    ((? symbol?) (make <field> :identifier identifier :field o))
+    (_ o)))
 
 (define ((json-table-state model) o)
   (match o
@@ -236,10 +254,12 @@
       (list (list '! (make <var> :name var))))
      (($ <assign> (? var?) ($ <expression> 'true))
       (list (make <var> :name var)))
-     (($ <assign> (? var?) ($ <expression> (and (? number?) (get! number))))
-      (list (list '== (make <var> :name var) (number))))
      (($ <assign> (? var?) expression)
-      (list unknown))
+      (let* ((state (map (undefined-variable-state model (lambda (x) unknown)) (om:variables model)))
+             (values (map (state->value model) next))
+             (states (map (lambda (v) (var! state var v)) values))
+             (updates (map (lambda (s) (eval-expression model s expression)) states)))
+        (map (value->state var) updates)))
      (($ <call>)
       (let* ((identifier (.identifier o))
              (function (om:function model identifier)))

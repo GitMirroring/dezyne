@@ -43,6 +43,7 @@
            simplify-expression
            variable-state
            undefined-state-vector
+           undefined-variable-state
            state-vector
            var
            var!
