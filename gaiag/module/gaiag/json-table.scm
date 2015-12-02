@@ -343,6 +343,7 @@
     (($ <otherwise>) 'otherwise)
     (($ <expression> expression) (->symbol expression))
     (($ <var> identifier) identifier)
+    (($ <field> type (and (? number?) (get! number))) (->symbol (list type '== (number))))
     (($ <field> type field) (->symbol (list (->symbol type) "." field)))
     (('! ($ <expression> value)) (symbol-append '! (->symbol value)))
     ((identifier ($ <field> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." field)))
