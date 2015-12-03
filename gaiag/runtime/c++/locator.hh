@@ -39,13 +39,13 @@ private:
   typedef std::string Key;
   struct type_info
   {
-    const std::type_info* t;
+    const std::type_info* type;
     type_info(const std::type_info& t)
-    : t(&t)
+    : type(&t)
     {}
     bool operator < (const type_info& that) const
     {
-      return t->before(*that.t);
+      return type->before(*that.type);
     }
   };
   std::map<std::pair<Key,type_info>, const void*> services;
