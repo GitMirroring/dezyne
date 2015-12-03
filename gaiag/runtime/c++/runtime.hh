@@ -116,13 +116,13 @@ private:
 template <typename F, typename ... Args>
 void shell(dezyne::pump& pump, F&& f, Args&& ...args)
 {
-  return pump.and_wait([&]{return f(std::forward<Args>(args)...);});
+  return pump.and_wait(std::bind(f, std::forward<Args>(args)...));
 }
 
 template <typename R, typename F, typename ... Args>
 R valued_shell(dezyne::pump& pump, F&& f, Args&& ...args)
 {
-  return pump.and_wait<R>([&]{return f(std::forward<Args>(args)...);});
+  return pump.and_wait<R>(std::bind(f,std::forward<Args>(args)...));
 }
 
 template <typename C, typename P>
