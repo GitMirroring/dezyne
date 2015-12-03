@@ -79,12 +79,18 @@ namespace dezyne
     void release(void*);
     void operator()(const std::function<void()>&);
     void operator()(std::function<void()>&&);
-    void and_wait(const std::function<void()>&);
-    template <typename R>
-    R and_wait(const std::function<R()>& e)
+    template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
+    void and_wait(const L& l)
     {
-      std::promise<R> p;
-      this->operator()([&]{p.set_value(e());});
+      std::promise<void> p;
+      this->operator()([&p,l]{l(); p.set_value();});
+      p.get_future().get();
+    }
+    template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
+    auto and_wait(const L& l) -> decltype(l())
+    {
+      std::promise<decltype(l())> p;
+      this->operator()([&p,l]{p.set_value(l());});
       return p.get_future().get();
     }
     void handle(size_t id, size_t ms, const std::function<void()>&);

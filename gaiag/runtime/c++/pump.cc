@@ -275,15 +275,6 @@ void pump::operator()(std::function<void()>&& e)
   queue.push(std::move(e));
   condition.notify_one();
 }
-void pump::and_wait(const std::function<void()>& e)
-{
-  assert(e);
-  std::promise<void> p;
-  {std::lock_guard<std::mutex> lock(mutex);
-    queue.push([&]{e(); p.set_value();});}
-  condition.notify_one();
-  p.get_future().get();
-}
 void pump::handle(size_t id, size_t ms, const std::function<void()>& e)
 {
   assert(e);
