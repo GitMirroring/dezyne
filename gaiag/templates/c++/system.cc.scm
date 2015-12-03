@@ -1,5 +1,7 @@
 ##include "#.scope_model .hh"
 
+##include "runtime.hh"
+
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 #.model ::#.model (const dezyne::locator& dezyne_locator)
 : #((->join "\n, ")

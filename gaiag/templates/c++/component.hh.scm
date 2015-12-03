@@ -7,8 +7,6 @@
 ##include "#interface .hh"
 #}) (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
 
-##include "runtime.hh"
-
 namespace dezyne {
 struct locator;
 struct runtime;
