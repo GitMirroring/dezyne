@@ -77,20 +77,20 @@ struct runtime
   bool& performs_flush(void* scope);
   void flush(void*);
   void defer(void*, void*, const std::function<void()>&);
-  void handle(void*, const std::function<void()>&); // trace_data const&);
+  void handle(void*, const std::function<void()>&);
 
-  template <typename R>
-  inline R valued_helper(void* scope, const std::function<R()>& event)
+  template <typename L>
+  inline auto valued_helper(void* scope, L&& l) -> decltype(l())
   {
     bool& handle = handling(scope);
     if(handle) throw std::logic_error("a valued event cannot be deferred");
-    R tmp;
+    decltype(l()) r;
     {
       runtime::scoped_value<bool> sv(handle, true);
-      tmp = event();
+      r = l();
     }
     flush(scope);
-    return tmp;
+    return r;
   }
 
   template <typename T>
@@ -114,46 +114,40 @@ private:
 };
 
 template <typename F, typename ... Args>
-void shell(dezyne::pump& pump, F&& f, Args&& ...args)
+auto shell(dezyne::pump& pump, F&& f, Args&& ...args) -> decltype(f())
 {
-  return pump.and_wait(std::bind(f, std::forward<Args>(args)...));
+  return pump.and_wait(std::bind(f,std::forward<Args>(args)...));
 }
 
-template <typename R, typename F, typename ... Args>
-R valued_shell(dezyne::pump& pump, F&& f, Args&& ...args)
-{
-  return pump.and_wait<R>(std::bind(f,std::forward<Args>(args)...));
-}
-
-template <typename C, typename P>
-void call_in(C* c, std::function<void()> f, std::tuple<P*, const char*, const char*> m)
+template <typename C, typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
+void call_in(C* c, L&& l, const dezyne::port::meta& meta, const char* event)
 {
   auto& os = c->dzn_locator.template get<typename std::ostream>();
-  trace_in(os, std::get<0>(m)->meta, std::get<1>(m));
+  trace_in(os, meta, event);
   if(c->dzn_rt.handling(c))
   {
     c->dzn_locator.template get<dezyne::pump>().collateral_block();
   }
-  c->dzn_rt.handle(c, f);
-  trace_out(os, std::get<0>(m)->meta, std::get<2>(m) ? std::get<2>(m) : "return");
+  c->dzn_rt.handle(c, l);
+  trace_out(os, meta, "return");
 }
 
-template <typename R, typename C, typename P>
-R call_in(C* c, std::function<R()> f, std::tuple<P*, const char*, const char*> m)
+template <typename C, typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
+auto call_in(C* c, L&& l, const dezyne::port::meta& meta, const char* event) -> decltype(l())
 {
   auto& os = c->dzn_locator.template get<typename std::ostream>();
-  trace_in(os, std::get<0>(m)->meta, std::get<1>(m));
-  auto r = c->dzn_rt.valued_helper(c, f);
-  trace_out(os, std::get<0>(m)->meta, to_string (r));
+  trace_in(os, meta, event);
+  auto r = c->dzn_rt.valued_helper(c, l);
+  trace_out(os, meta, to_string (r));
   return r;
 }
 
-template <typename C, typename P>
-void call_out(C* c, std::function<void()> f, std::tuple<P*, const char*, const char*> m)
+template <typename C, typename L>
+void call_out(C* c, L&& l, const dezyne::port::meta& meta, const char* event)
 {
   auto& os = c->dzn_locator.template get<typename std::ostream>();
-  trace_out(os, std::get<0>(m)->meta, std::get<1>(m));
-  c->dzn_rt.defer(std::get<0>(m)->meta.provides.address, c, f);
+  trace_out(os, meta, event);
+  c->dzn_rt.defer(meta.provides.address, c, l);
 }
 }
 #endif //DEZYNE_RUNTIME_HH

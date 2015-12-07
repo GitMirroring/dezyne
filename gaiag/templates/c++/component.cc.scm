@@ -5,7 +5,7 @@
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 #.model ::#.model (const dezyne::locator& dezyne_locator)
-: dzn_meta#(c++:init-brace-open)"","#.model",0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (om:ports model)))}#(c++:init-brace-close)
+: dzn_meta#(c++:init-brace-open)"","#.model",0,{},{#((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports model)))}#(c++:init-brace-close)
 , dzn_rt(dezyne_locator.get<dezyne::runtime>())
 , dzn_locator(dezyne_locator)
 , #
@@ -21,17 +21,13 @@
    (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = [&] (#formals) {
-    #(if (eq? return-type 'void) "" "return ")dezyne::call_in(this, #(string-if (and (eq? return-type 'void) (null? argument-list)) #{ [this] {#port _#event();}#} #{std::function<#return-type ()>([&] {#(if (eq? return-type 'void) "" "return ")#port _#event (#arguments);})#}), std::make_tuple(&this->#port , "#event ", "return"));
-};
+#port .#direction .#event  = [&] (#formals) { return dezyne::call_in(this, [&]{return #port _#event (#arguments);}, #port .meta, "#event "); };
 #}) (filter om:in? (om:events port))))
     (filter om:provides? (om:ports model)))#
 (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = [&] (#formals) {
-    dezyne::call_out(this, #(string-if (null? argument-list) #{[this] {#port _#event();}#} #{ std::function<void()>([&#comma #arguments] {this->#port _#event (#arguments);}) #}), std::make_tuple(&this->#port , "#event ", "return"));
-};
+#port .#direction .#event  = [&] (#formals) { return dezyne::call_out(this, [=]{return #port _#event (#arguments);}, #port .meta, "#event "); };
 #}) (filter om:out? (om:events port))))
     (filter om:requires? (om:ports model)))
 }
