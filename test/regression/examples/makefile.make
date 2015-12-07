@@ -24,23 +24,6 @@
 LANGUAGES:=$(ALL_LANGUAGES)
 DZN_FILES:=$(wildcard $(CDIR)*.dzn)
 
-# BurglarAlarm: does not compile
-# GarageDoorControl does not compile due to system component specification
-# Recursion: segfaults on stack overflow
-# Stage: only interfaces
-BROKEN_code:=\
-  $(CDIR)BurglarAlarm.dzn\
-  $(CDIR)GarageDoorControl.dzn\
-  $(CDIR)GarageDoorControlErr.dzn\
-  $(CDIR)Recursion.dzn\
-  $(CDIR)Stage.dzn\
-  $(CDIR)SystemComposition.dzn\
-
-BROKEN_run:=\
-  $(CDIR)Stage.dzn\
-
-$(foreach lang,$(LANGUAGES), $(eval BROKEN_$(lang)+=$(BROKEN_code)))
-
 ErrorPattern.flush:=--flush
 SensorMultiplexer.flush:=--flush
 

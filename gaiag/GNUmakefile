@@ -420,7 +420,7 @@ out/%.refines: examples/regression/%.dzn
 	$(.REGRESSION_REFINES)
 
 define .WEBDEMO_REFINES
-rm -rf out && mkdir -p out/webdemo && ln -s ../../$(DEPTH)/webapp/server/commands ../../templates out/webdemo && ln -s commands/examples out/webdemo/examples && ln -s commands out/webdemo/webdemo && ln -s ../$(DEPTH)/webapp out
+rm -rf out && mkdir -p out/webdemo && ln -s ../../$(DEPTH)/server/commands ../../templates out/webdemo && ln -s root/examples out/webdemo/examples && ln -s commands out/webdemo/webdemo && ln -s ../$(DEPTH) out
 cd out/webdemo && $(TOPDIR)/$(BUILD)/generate -M -l scm $<
 cd out/webdemo && $(shell pwd)/gaiag -l csp $*.scm
 [ -f out/webdemo/$*.csp ] || mv out/webdemo/*.csp out/webdemo/$*.csp
@@ -434,10 +434,10 @@ endef
 
 #out/webdemo/%.update: UPDATE=||:; cp out/webdemo/$*.update baseline/webdemo/$*.refines; cp out/webdemo/$*.csp baseline/webdemo/
 out/webdemo/%.update: UPDATE=&& cp out/webdemo/$*.csp baseline/webdemo/
-out/webdemo/%.update: $(DEPTH)/webapp/server/commands/examples/%.dzn
+out/webdemo/%.update: $(DEPTH)/server/root/examples/%.dzn
 	$(.WEBDEMO_REFINES)
 
-out/webdemo/%.refines: $(DEPTH)/webapp/server/commands/examples/%.dzn
+out/webdemo/%.refines: $(DEPTH)/server/root/examples/%.dzn
 	$(.WEBDEMO_REFINES)
 out/webdemo/%.refines: examples/regression/%.dzn
 	$(.WEBDEMO_REFINES)
@@ -479,7 +479,7 @@ csp-regression-update: $(CSP_SOURCES:%.dzn=out/%.update)
 BROKEN =\
  large-injection.dzn\
 
-DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/webapp/server/commands/examples && ls *.dzn))
+DEMO_SOURCES = $(filter-out $(BROKEN) ,$(shell cd $(DEPTH)/server/root/examples && ls *.dzn))
 csp-demo: $(DEMO_SOURCES:%.dzn=out/webdemo/%.refines)
 csp-demo-update: $(DEMO_SOURCES:%.dzn=out/webdemo/%.update)
 
@@ -777,7 +777,7 @@ goops: compile goops-alarm goops-dataparam goops-regression
 .PHONY: glue
 
 glue:
-	rm -rf out && mkdir -p out && cd out && ln -s ../examples ../../webapp/server/commands ../runtime/$(CXX)/* ../templates .
+	rm -rf out && mkdir -p out && cd out && ln -s ../examples ../../server/commands ../runtime/$(CXX)/* ../templates .
 	rm -f out/main.cc
 	cd out && for model in\
 	 	AlarmSystem\
@@ -785,7 +785,7 @@ glue:
 	 	Console\
 	 	Sensor\
 	 	Siren;\
-	 	do $(shell pwd)/gaiag -m $$model -l $(CXX) commands/examples/AlarmSystem.dzn; done
+	 	do $(shell pwd)/gaiag -m $$model -l $(CXX) root/examples/AlarmSystem.dzn; done
 	rm -f out/main.cc
 	ln -sf examples/glue.cc out
 	ln -sf examples/ISensorInterface.h out
@@ -835,7 +835,7 @@ table:
 	@echo
 	./gaiag -m Alarm -j -l table examples/Alarm.dzn | ./scm2json | sed -e 's/, /,\n /g'
 	@echo
-	./gaiag -m SensorMultiplexer4 -l table ../webapp/server/commands/examples/choiceexample.dzn # | ./scm2json | sed -e 's/, /,\n /g'
+	./gaiag -m SensorMultiplexer4 -l table ../server/root/examples/choiceexample.dzn # | ./scm2json | sed -e 's/, /,\n /g'
 
 lts/%.svg: ../webdemo/examples/%.dzn
 	mkdir -p $(dir $@)

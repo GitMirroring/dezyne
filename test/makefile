@@ -28,7 +28,7 @@
 .SECONDARY:
 .SUFFIXES:
 SHELL:=/bin/bash
-DZN:=../webapp/client/dzn
+DZN:=../client/dzn
 OUT:=out
 CCACHE:=$(shell type -p ccache)
 #TRIANGLE_MAX:=cat
@@ -55,7 +55,7 @@ PSEUDO_LANGUAGES=run table verify
 ALL_LANGUAGES=$(CODE_LANGUAGES) $(PSEUDO_LANGUAGES)
 
 # put your local overrides here, e.g.,
-# DZN:=~/development.git/webapp/client/dzn
+# DZN:=~/development.git/client/dzn
 -include .local.make
 
 default: check
@@ -69,7 +69,7 @@ Options:
   see make --help
 
 Variables:
-  DZN={dzn|~/development.git/webapp/client/dzn} [$(DZN)]
+  DZN={dzn|~/development.git/client/dzn} [$(DZN)]
   ALL_LANGUAGES='...' [$(ALL_LANGUAGES)]
   CODE_LANGUAGES='...' [$(CODE_LANGUAGES)]
   OUT=<dir> [$(OUT)]

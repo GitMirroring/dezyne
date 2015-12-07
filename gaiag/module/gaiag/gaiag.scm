@@ -87,8 +87,7 @@ Examples:
   ./gaiag -l csp -o alarm.csp examples/Alarm.dzn
   ./gaiag -l c++ examples/Alarm.dzn
   ./gaiag -l wfc examples/wfc/wfc-double-on.dzn
-  ./gaiag -l run -t '(arm)' examples/IConsole.dzn
-  ./gaiag -l run -t '(console.arm)' -j examples/Alarm.dzn | ./scm2json | ../webapp/client/pretty
+  ./gaiag -l run -t '(arm)' examples/IConsole.dzn ./gaiag -l run -t '(console.arm)' -j examples/Alarm.dzn | ./scm2json | ../client/pretty
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))

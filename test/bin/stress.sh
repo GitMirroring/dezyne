@@ -24,7 +24,7 @@
 #!/bin/bash -e
 
 CONFIG=${1-localhost}
-DZN=${DZN-../webapp/client/dzn}
+DZN=${DZN-../client/dzn}
 
 if bunyan --version; then
 BUNYAN="bunyan --no-color -l 30"
