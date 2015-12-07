@@ -27,6 +27,11 @@ ifeq ($(VERBOSE),debug)
 $(info D_FILES: $(LOCAL_D_FILES))
 endif
 
+ifneq ($(GOAL_FILES),)
+D_FILTER:=$(foreach f,$(GOAL_FILES),$(shell echo $(OUT)/$(f)/%))
+LOCAL_D_FILES:=$(filter $(D_FILTER),$(LOCAL_D_FILES))
+endif
+
 # I will say hello only once
 ifeq ($(strip $(DZN_HELLO)),)
 DZN_HELLO:=$(shell timeout 2 $(DZN) hello || { echo "timeout running: dzn hello" 1>&2; kill -9 $$PPID; })

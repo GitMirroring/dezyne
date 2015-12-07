@@ -42,6 +42,7 @@ code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_LANGUAGE:=$$(LOCAL_TRACE_LANGUA
 code-$(LOCAL_TARGET)/$(notdir $(1)): $(LOCAL_OUT)/test $(LOCAL_TRACE_FILES)
 	diff -uw $(i) <(cat $(i) | timeout $(LOCAL_TIMEOUT) $(LOCAL_TARGET) $(LOCAL_TRACE_FLUSH) |& $(LOCAL_CODE2FDR));
 check-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
+code-$(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE): code-$(LOCAL_TARGET)/$(notdir $(1))
 code-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
 code-$(LOCAL_TARGET): code-$(LOCAL_TARGET)/$(notdir $(1))
 code-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
@@ -49,32 +50,10 @@ code: $(LOCAL_OUT)/test code-$(LOCAL_TARGET)/$(notdir $(1))
 ifeq ($(1),$(firstword $(LOCAL_TRACE_FILES)))
 ifeq ($(VERBOSE),debug)
 $$(info target check-$(OUT)/$(LOCAL_NAME))
+$$(info target code-$(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE))
 $$(info target code-$(OUT)/$(LOCAL_NAME))
-$$(info target code-$(LOCAL_TARGET))
+#$$(info target code-$(LOCAL_TARGET))
 #$$(info target code-$(LOCAL_TARGET)/$(notdir $(1)))
-endif
-endif
-
-update-code-$(LOCAL_TARGET)/$(notdir $(1)): CDIR:=$$(CDIR)
-update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_LANGUAGE:=$$(LOCAL_LANGUAGE)
-update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_NAME:=$$(LOCAL_NAME)
-update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_OUT:=$$(LOCAL_OUT)
-update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TIMEOUT:=$$(LOCAL_TIMEOUT)
-update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TARGET:=$$(LOCAL_TARGET)
-update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
-update-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_LANGUAGE:=$$(LOCAL_TRACE_LANGUAGE)
-update-code-$(LOCAL_TARGET)/$(notdir $(1)): $(LOCAL_OUT)/test
-	@true
-update-$(OUT)/$(LOCAL_NAME): update-code-$(LOCAL_TARGET)/$(notdir $(1))
-update-code-$(OUT)/$(LOCAL_NAME): update-code-$(LOCAL_TARGET)/$(notdir $(1))
-update-code-$(LOCAL_TARGET): update-code-$(LOCAL_TARGET)/$(notdir $(1))
-update-code: $(LOCAL_OUT)/test update-code-$(LOCAL_TARGET)/$(notdir $(1))
-ifeq ($(1),$(firstword $(LOCAL_TRACE_FILES)))
-ifeq ($(VERBOSE),debug)
-$$(info target update-$(OUT)/$(LOCAL_NAME))
-$$(info target update-code-$(OUT)/$(LOCAL_NAME))
-$$(info target update-code-$(LOCAL_TARGET))
-#$$(info target update-code-$(LOCAL_TARGET)/$(notdir $(1)))
 endif
 endif
 endef
@@ -90,11 +69,9 @@ endif
 
 ifeq ($(HELP_CODE),)
 check: code
-update: update-code
 help: help-code
 define HELP_CODE
   code           run all code
-  update-code    overwrite code baseline
 endef
 export HELP_CODE
 help-code:

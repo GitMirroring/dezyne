@@ -48,11 +48,27 @@ ALL_CODE_LANGUAGES+=java7
 endif
 
 ALL_CODE_LANGUAGES:=c++
-CODE_LANGUAGES:=c++
+CODE_LANGUAGES:=$(ALL_CODE_LANGUAGES)
 
 # PSEUDO_LANGUAGES=convert parse run table verify
 PSEUDO_LANGUAGES=run table verify
 ALL_LANGUAGES=$(CODE_LANGUAGES) $(PSEUDO_LANGUAGES)
+
+PREFIXES:=check code parse run table update verify
+PREFIX_FILTER:=$(OUT)/% $(foreach s,$(PREFIXES),$(shell echo "$(s)-$(OUT)/%"))
+GOAL_TARGETS:=$(filter $(PREFIX_FILTER),$(MAKECMDGOALS))
+GOAL_DIRS:=$(GOAL_TARGETS)
+$(foreach p,$(PREFIX_FILTER),$(eval GOAL_DIRS:=$(patsubst $(p),$(OUT)/%,$(GOAL_DIRS))))
+LANGUAGE_FILTER:=$(foreach l,$(ALL_LANGUAGES),$(shell echo "%/$(l)"))
+GOAL_FILES:=$(GOAL_DIRS:$(OUT)/%=%)
+GOAL_LANGUAGES:=$(filter $(LANGUAGE_FILTER),$(GOAL_FILES))
+$(foreach l,$(ALL_LANGUAGES),$(eval GOAL_LANGUAGES:=$(patsubst %/$(l),$(l),$(GOAL_LANGUAGES))))
+ifneq ($(GOAL_LANGUAGES),)
+ALL_LANGUAGES:=$(filter $(GOAL_LANGUAGES),$(ALL_LANGUAGES))
+PSEUDO_LANGUAGES:=$(filter $(GOAL_LANGUAGES),$(PSEUDO_LANGUAGES))
+CODE_LANGUAGES:=$(filter $(GOAL_LANGUAGES),$(CODE_LANGUAGES))
+LANGUAGES:=$(filter $(GOAL_LANGUAGES),$(LANGUAGES))
+endif
 
 # put your local overrides here, e.g.,
 # DZN:=~/development.git/client/dzn
