@@ -108,27 +108,4 @@ void runtime::defer(void* src, void* tgt, const std::function<void()>& event)
     queue(tgt).push(event);
   }
 }
-
-void runtime::handle(void* scope, const std::function<void()>& event)
-{
-  bool& handle = handling(scope);
-
-#ifdef DEBUG_RUNTIME
-  std::cout << path(reinterpret_cast<dezyne::meta*>(scope)) << " handle "
-            << std::boolalpha << handle << std::endl;
-#endif
-
-  if(! handle)
-  {
-    {
-      scoped_value<bool> sv(handle, true);
-      event();
-    }
-    flush(scope);
-  }
-  else
-  {
-    throw std::logic_error("component already handling an event");
-  }
-}
 }
