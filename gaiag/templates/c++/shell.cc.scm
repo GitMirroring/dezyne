@@ -24,7 +24,7 @@
  (lambda (port)
    (map (define-on model port #{
 #port .#direction .#event  = [&] (#formals) {
-    return dezyne::#(string-if (eq? return-type 'void) #{shell#}#{valued_shell<#return-type >#})(dzn_pump, [&] {return #instance .#instance-port .in.#event(#arguments);});
+    return dezyne::shell(dzn_pump, [&] {return #instance .#instance-port .#direction .#event(#arguments);});
 };
 #}) (filter om:in? (om:events port))))
     (filter om:provides? (om:ports model)))#
@@ -32,7 +32,7 @@
     (lambda (port)
       (map (define-on model port #{
 #port .#direction .#event  = [&] (#formals) {
-    return dezyne::shell(dzn_pump, [&] {return #instance .#instance-port .out.#event(#arguments);});
+    return dezyne::shell(dzn_pump, [&] {return #instance .#instance-port .#direction .#event(#arguments);});
 };
 #}) (filter om:out? (om:events port))))
     (filter om:requires? (om:ports model)))#
