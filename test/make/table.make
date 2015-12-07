@@ -22,52 +22,56 @@
 
 LOCAL_TARGET:=$(LOCAL_OUT)/$(LOCAL_BASE)
 
-table-$(LOCAL_TARGET): CDIR:=$(CDIR)
-table-$(LOCAL_TARGET): LOCAL_BASE:=$(LOCAL_BASE)
-table-$(LOCAL_TARGET): LOCAL_NAME:=$(LOCAL_NAME)
-table-$(LOCAL_TARGET): LOCAL_DZN_TOP:=$(LOCAL_DZN_TOP)
-table-$(LOCAL_TARGET): LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
-table-$(LOCAL_TARGET): LOCAL_TARGET:=$(LOCAL_TARGET)
-table-$(LOCAL_TARGET): LOCAL_TRACE_FILES:=$(LOCAL_TRACE_FILES)
-table-$(LOCAL_TARGET): LOCAL_TRACE_LANGUAGE:=$(LOCAL_TRACE_LANGUAGE)
-table-$(LOCAL_TARGET): #$(LOCAL_TARGET)
+TOP:=$(LOCAL_NAME)-$(LOCAL_LANGUAGE)
+$(TOP): CDIR:=$(CDIR)
+$(TOP): LOCAL_BASE:=$(LOCAL_BASE)
+$(TOP): LOCAL_NAME:=$(LOCAL_NAME)
+$(TOP): LOCAL_DZN_TOP:=$(LOCAL_DZN_TOP)
+$(TOP): LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
+$(TOP): LOCAL_TARGET:=$(LOCAL_TARGET)
+$(TOP): LOCAL_TRACE_FILES:=$(LOCAL_TRACE_FILES)
+$(TOP): LOCAL_TRACE_LANGUAGE:=$(LOCAL_TRACE_LANGUAGE)
+$(TOP): #$(LOCAL_TARGET)
 	diff -uwB $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-state.dzn <($(DZN) table --form=state -o - $(LOCAL_DZN_TOP) 2>&1)
 	diff -uwB $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-event.dzn <($(DZN) table --form=event -o - $(LOCAL_DZN_TOP) 2>&1)
-check-$(OUT)/$(LOCAL_NAME): table-$(LOCAL_TARGET)
-table-$(OUT)/$(LOCAL_NAME): table-$(LOCAL_TARGET)
-table: table-$(LOCAL_TARGET)
-ifeq ($(VERBOSE),debug)
-$(info target table-$(OUT)/$(LOCAL_NAME))
-$(info target table-$(LOCAL_TARGET))
+
+$(LOCAL_NAME)-check: $(TOP)
+$(LOCAL_LANGUAGE): $(TOP)
+
+ifeq ($(filter list,$(MAKECMDGOALS)),list)
+$(info $()    $(LOCAL_NAME)-$(LOCAL_LANGUAGE))
+$(info $()    $(LOCAL_NAME))
 endif
 
-update-table-$(LOCAL_TARGET): CDIR:=$(CDIR)
-update-table-$(LOCAL_TARGET): LOCAL_BASE:=$(LOCAL_BASE)
-update-table-$(LOCAL_TARGET): LOCAL_NAME:=$(LOCAL_NAME)
-update-table-$(LOCAL_TARGET): LOCAL_DZN_TOP:=$(LOCAL_DZN_TOP)
-update-table-$(LOCAL_TARGET): LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
-update-table-$(LOCAL_TARGET): LOCAL_TARGET:=$(LOCAL_TARGET)
-update-table-$(LOCAL_TARGET): LOCAL_TRACE_FILES:=$(LOCAL_TRACE_FILES)
-update-table-$(LOCAL_TARGET): LOCAL_TRACE_LANGUAGE:=$(LOCAL_TRACE_LANGUAGE)
-update-table-$(LOCAL_TARGET): #$(LOCAL_TARGET)
+$(TOP)-update: CDIR:=$(CDIR)
+$(TOP)-update: LOCAL_BASE:=$(LOCAL_BASE)
+$(TOP)-update: LOCAL_NAME:=$(LOCAL_NAME)
+$(TOP)-update: LOCAL_DZN_TOP:=$(LOCAL_DZN_TOP)
+$(TOP)-update: LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
+$(TOP)-update: LOCAL_TARGET:=$(LOCAL_TARGET)
+$(TOP)-update: LOCAL_TRACE_FILES:=$(LOCAL_TRACE_FILES)
+$(TOP)-update: LOCAL_TRACE_LANGUAGE:=$(LOCAL_TRACE_LANGUAGE)
+$(TOP)-update: #$(LOCAL_TARGET)
 	mkdir -p $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)
 	-$(DZN) table --form=state -o - $(LOCAL_DZN_TOP) 2> $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-state.dzn 1>&2
 	-$(DZN) table --form=event -o - $(LOCAL_DZN_TOP) 2> $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-event.dzn 1>&2
-update-$(OUT)/$(LOCAL_NAME): update-table-$(LOCAL_TARGET)
-update-table-$(OUT)/$(LOCAL_NAME): update-table-$(LOCAL_TARGET)
-update-table: update-table-$(LOCAL_TARGET)
-ifeq ($(VERBOSE),debug)
-$(info target update-table-$(OUT)/$(LOCAL_NAME))
-$(info target update-table-$(LOCAL_TARGET))
+
+$(LOCAL_NAME)-check: $(TOP)-update
+$(LOCAL_LANGUAGE): $(TOP)-update
+
+ifeq ($(filter list,$(MAKECMDGOALS)),list)
+$(info $()    $(TOP)-update)
+$(info $()    $(LOCAL_NAME)-$(LOCAL_LANGUAGE)-update)
+$(info $()    $(LOCAL_NAME)-update)
 endif
 
 ifeq ($(HELP_TABLE),)
 check: table
-update: update-table
+update: table-update
 help: help-table
 define HELP_TABLE
   table          run all table
-  update-table   overwrite table baseline
+  table-update   overwrite table baseline
 endef
 export HELP_TABLE
 help-table:

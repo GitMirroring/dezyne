@@ -28,12 +28,28 @@ ifeq ($(DZN_FILES),)
 DZN_FILES:=$(wildcard $(CDIR)*.dzn)
 endif
 
+ifneq ($(GOAL_LANGUAGES),)
+LANGUAGES:=$(filter $(GOAL_LANGUAGES),$(LANGUAGES))
+endif
+
+ifeq ($(GOAL_NAMES),$(notdir $(CDIR:%/=%)))
+$(info c pg LOCAL_GOAL_FILES $(LOCAL_GOAL_FILES))
+LOCAL_GOAL_FILES:=$(CDIR)%.dzn
+else
+LOCAL_GOAL_FILES:=$(GOAL_NAMES:%=$(CDIR)%.dzn)
+endif
+
+ifneq ($(LOCAL_GOAL_FILES),)
+DZN_FILES:=$(filter $(LOCAL_GOAL_FILES),$(DZN_FILES))
+endif
+
+ifneq ($(DZN_FILES),)
 $(foreach lang,$(LANGUAGES),\
 	$(eval LOCAL_LANGUAGE:=$(lang))\
 	$(eval LOCAL_SUT:=$(SUT))\
 	$(eval LOCAL_DZN_FILES:=$(DZN_FILES))\
 	$(eval include make/check.make))
-
+endif
 DZN_FILES:=
 LANGUAGES:=
 SUT:=

@@ -20,39 +20,46 @@
 # 
 # Code:
 
-parse-$(LOCAL_TARGET): CDIR:=$(CDIR)
-parse-$(LOCAL_TARGET): LOCAL_NAME:=$(LOCAL_NAME)
-parse-$(LOCAL_TARGET): LOCAL_DZN_TOP:=$(LOCAL_DZN_TOP)
-parse-$(LOCAL_TARGET): LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
-parse-$(LOCAL_TARGET): LOCAL_TARGET:=$(LOCAL_TARGET)
-parse-$(LOCAL_TARGET): LOCAL_TRACE_FILES:=$(LOCAL_TRACE_FILES)
-parse-$(LOCAL_TARGET): LOCAL_TRACE_LANGUAGE:=$(LOCAL_TRACE_LANGUAGE)
-parse-$(LOCAL_TARGET): #$(LOCAL_TARGET)
+TOP:=$(LOCAL_NAME)-$(LOCAL_LANGUAGE)
+
+$(TOP): CDIR:=$(CDIR)
+$(TOP): LOCAL_NAME:=$(LOCAL_NAME)
+$(TOP): LOCAL_DZN_TOP:=$(LOCAL_DZN_TOP)
+$(TOP): LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
+$(TOP): LOCAL_TARGET:=$(LOCAL_TARGET)
+$(TOP): LOCAL_TRACE_FILES:=$(LOCAL_TRACE_FILES)
+$(TOP): LOCAL_TRACE_LANGUAGE:=$(LOCAL_TRACE_LANGUAGE)
+$(TOP): #$(LOCAL_TARGET)
 	diff -uw $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE) <($(DZN) -v parse $(LOCAL_DZN_TOP) 2>&1)
-check-$(OUT)/$(LOCAL_NAME): parse-$(LOCAL_TARGET)
-parse-$(OUT)/$(LOCAL_NAME): parse-$(LOCAL_TARGET)
-parse: parse-$(LOCAL_TARGET)
-ifeq ($(VERBOSE),debug)
-$(info target parse-$(OUT)/$(LOCAL_NAME))
-$(info target parse-$(LOCAL_TARGET))
+
+$(LOCAL_NAME)-check: $(TOP)
+$(LOCAL_LANGUAGE): $(TOP)
+
+ifeq ($(filter list,$(MAKECMDGOALS)),list)
+$(info $()    $(TOP))
+$(info $()    $(LOCAL_NAME)-$(LOCAL_LANGUAGE))
+$(info $()    $(LOCAL_NAME))
 endif
 
-update-parse-$(LOCAL_TARGET): CDIR:=$(CDIR)
-update-parse-$(LOCAL_TARGET): LOCAL_NAME:=$(LOCAL_NAME)
-update-parse-$(LOCAL_TARGET): LOCAL_DZN_TOP:=$(LOCAL_DZN_TOP)
-update-parse-$(LOCAL_TARGET): LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
-update-parse-$(LOCAL_TARGET): LOCAL_TARGET:=$(LOCAL_TARGET)
-update-parse-$(LOCAL_TARGET): LOCAL_TRACE_FILES:=$(LOCAL_TRACE_FILES)
-update-parse-$(LOCAL_TARGET): LOCAL_TRACE_LANGUAGE:=$(LOCAL_TRACE_LANGUAGE)
-update-parse-$(LOCAL_TARGET): #$(LOCAL_TARGET)
+
+$(TOP)-update: CDIR:=$(CDIR)
+$(TOP)-update: LOCAL_NAME:=$(LOCAL_NAME)
+$(TOP)-update: LOCAL_DZN_TOP:=$(LOCAL_DZN_TOP)
+$(TOP)-update: LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
+$(TOP)-update: LOCAL_TARGET:=$(LOCAL_TARGET)
+$(TOP)-update: LOCAL_TRACE_FILES:=$(LOCAL_TRACE_FILES)
+$(TOP)-update: LOCAL_TRACE_LANGUAGE:=$(LOCAL_TRACE_LANGUAGE)
+$(TOP)-update: #$(LOCAL_TARGET)
 	mkdir -p $(CDIR)baseline/$(LOCAL_NAME)
 	-$(DZN) -v parse $(LOCAL_DZN_TOP) > $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE) 2>&1
 
-update-parse-$(OUT)/$(LOCAL_NAME): update-parse-$(LOCAL_TARGET)
-update-parse: update-parse-$(LOCAL_TARGET)
-ifeq ($(VERBOSE),debug)
-$(info target update-parse-$(OUT)/$(LOCAL_NAME))
-$(info target update-parse-$(LOCAL_TARGET))
+$(LOCAL_NAME)-check: $(TOP)-update
+$(LOCAL_LANGUAGE): $(TOP)-update
+
+ifeq ($(filter list,$(MAKECMDGOALS)),list)
+$(info $()    $(TOP)-update)
+$(info $()    $(LOCAL_NAME)-$(LOCAL_LANGUAGE)-update)
+$(info $()    $(LOCAL_NAME)-update)
 endif
 
 ifeq ($(HELP_PARSE),)
@@ -61,7 +68,7 @@ update: update-parse
 help: help-parse
 define HELP_PARSE
   parse          run all parse
-  update-parse   overwrite parse baseline
+  parse-update   overwrite parse baseline
 endef
 export HELP_PARSE
 help-parse:

@@ -29,31 +29,35 @@ LOCAL_CODE2FDR:=bin/code2fdr
 endif
 
 define CODE.rule
-code-$(LOCAL_TARGET)/$(notdir $(1)): CDIR:=$$(CDIR)
-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_CODE2FDR:=$$(LOCAL_CODE2FDR)
-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_LANGUAGE:=$$(LOCAL_LANGUAGE)
-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_NAME:=$$(LOCAL_NAME)
-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_OUT:=$$(LOCAL_OUT)
-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TARGET:=$$(LOCAL_TARGET)
-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TIMEOUT:=$$(LOCAL_TIMEOUT)
-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FLUSH:=$$(LOCAL_TRACE_FLUSH)
-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
-code-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_LANGUAGE:=$$(LOCAL_TRACE_LANGUAGE)
-code-$(LOCAL_TARGET)/$(notdir $(1)): $(LOCAL_OUT)/test $(LOCAL_TRACE_FILES)
+TRACE:=$$(patsubst %.trace.0,trace.0,$(notdir $(1)))
+TRACE:=$$(TRACE)
+TOP:=$(LOCAL_NAME)-$(LOCAL_LANGUAGE)-$$(TRACE)
+$$(TOP): CDIR:=$$(CDIR)
+$$(TOP): LOCAL_CODE2FDR:=$$(LOCAL_CODE2FDR)
+$$(TOP): LOCAL_LANGUAGE:=$$(LOCAL_LANGUAGE)
+$$(TOP): LOCAL_NAME:=$$(LOCAL_NAME)
+$$(TOP): LOCAL_OUT:=$$(LOCAL_OUT)
+$$(TOP): LOCAL_TARGET:=$$(LOCAL_TARGET)
+$$(TOP): LOCAL_TIMEOUT:=$$(LOCAL_TIMEOUT)
+$$(TOP): LOCAL_TRACE_FLUSH:=$$(LOCAL_TRACE_FLUSH)
+$$(TOP): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
+$$(TOP): LOCAL_TRACE_LANGUAGE:=$$(LOCAL_TRACE_LANGUAGE)
+$$(TOP): $(LOCAL_OUT)/test $(LOCAL_TRACE_FILES)
 	diff -uw $(i) <(cat $(i) | timeout $(LOCAL_TIMEOUT) $(LOCAL_TARGET) $(LOCAL_TRACE_FLUSH) |& $(LOCAL_CODE2FDR));
-check-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
-code-$(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE): code-$(LOCAL_TARGET)/$(notdir $(1))
-code-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
-code-$(LOCAL_TARGET): code-$(LOCAL_TARGET)/$(notdir $(1))
-code-$(OUT)/$(LOCAL_NAME): code-$(LOCAL_TARGET)/$(notdir $(1))
-code: $(LOCAL_OUT)/test code-$(LOCAL_TARGET)/$(notdir $(1))
+
+$(LOCAL_NAME)-$(LOCAL_LANGUAGE): $$(TOP)
+$(LOCAL_NAME)-code: $(LOCAL_NAME)-$(LOCAL_LANGUAGE)
+$(LOCAL_NAME): $(LOCAL_NAME)-code
+$(LOCAL_NAME)-check: $(LOCAL_NAME)-code
+$(LOCAL_LANGUAGE): $(LOCAL_NAME)
+code: $(LOCAL_LANGUAGE)
+
 ifeq ($(1),$(firstword $(LOCAL_TRACE_FILES)))
-ifeq ($(VERBOSE),debug)
-$$(info target check-$(OUT)/$(LOCAL_NAME))
-$$(info target code-$(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE))
-$$(info target code-$(OUT)/$(LOCAL_NAME))
-#$$(info target code-$(LOCAL_TARGET))
-#$$(info target code-$(LOCAL_TARGET)/$(notdir $(1)))
+ifeq ($(filter list,$(MAKECMDGOALS)),list)
+$$(info $$()    $$(TOP))
+$$(info $$()    $(LOCAL_NAME)-$(LOCAL_LANGUAGE))
+$$(info $$()    $(LOCAL_NAME)-code)
+$$(info $$()    $(LOCAL_NAME))
 endif
 endif
 endef

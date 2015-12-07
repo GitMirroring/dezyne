@@ -34,8 +34,3 @@ LANGUAGES:=
 
 out/lego.project/c++03/main.o: CXXFLAGS:=-std=c++11 $(CXXFLAGS)
 out/lego.project/c++03/timer.o: CXXFLAGS:=-std=c++11 $(CXXFLAGS)
-
-LANGUAGES:=table
-include make/files.make
-DZN_FILES:=
-LANGUAGES:=

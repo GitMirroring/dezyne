@@ -4,23 +4,27 @@ DZN TEST FRAMEWORK
 Try:
     make help
 
+    make -C blocking
+
 Many convenience targets are avialable, such as,
 
-    make check-out/Component
+    make Component
 
-    make code-out/Component
-    make verify-out/Component
-    make check-out/dir.project
+    make Component-code
+    make Component-c++
+    make Component-verify
+    make Component-run
+    make Component-parse
+    make Component-table
+    make Component-update
 
-    make update-out/Component
-
-    make update-code-out/Component
-    make update-verify-out/Component
-    make update-out/dir.project
+    make dir.project
+    make dir.project-c++
+    ...
 
 running
 
-    make VERBOSE=debug
+    make list
 
 lists them all.
 

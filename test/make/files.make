@@ -24,19 +24,17 @@ ifeq ($(LANGUAGES),)
 LANGUAGES:=$(ALL_LANGUAGES)
 endif
 
-#$(info GOAL_FILES: $(GOAL_FILES))
-#$(info LANGUAGE_FILTER: $(LANGUAGE_FILTER))
-#$(info LANGUAGES: $(LANGUAGES))
+ifeq ($(DZN_FILES),)
+DZN_FILES:=$(sort $(wildcard $(CDIR)*.dzn))
+endif
 
-LANGUAGE_FILTER:=$(foreach l,$(LANGUAGES),$(shell echo "%/$(l)"))
-GOAL_LANGUAGES:=$(filter $(LANGUAGE_FILTER),$(GOAL_FILES))
-$(foreach l,$(LANGUAGES),$(eval GOAL_LANGUAGES:=$(patsubst %/$(l),$(l),$(GOAL_LANGUAGES))))
 ifneq ($(GOAL_LANGUAGES),)
 LANGUAGES:=$(filter $(GOAL_LANGUAGES),$(LANGUAGES))
 endif
 
-ifeq ($(DZN_FILES),)
-DZN_FILES:=$(sort $(wildcard $(CDIR)*.dzn))
+LOCAL_GOAL_FILES:=$(GOAL_NAMES:%=$(CDIR)%.dzn)
+ifneq ($(LOCAL_GOAL_FILES),)
+DZN_FILES:=$(filter $(LOCAL_GOAL_FILES),$(DZN_FILES))
 endif
 
 DZN_FILES:=$(filter-out $(BROKEN:%=\%%),$(DZN_FILES))

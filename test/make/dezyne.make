@@ -20,6 +20,10 @@
 # 
 # Code:
 
+ifneq ($(GOAL_LANGUAGE),)
+LOCAL_LANGUAGE:=$(filter $(GOAL_LANGUAGE),$(LOCAL_LANGUAGE))
+endif
+
 LOCAL_D_FILES:=$(patsubst %.dzn,$(LOCAL_OUT)/%.d,$(notdir $(LOCAL_DZN_FILES)))
 LOCAL_D_FILES+=$(LOCAL_DZN_OUT_FILES:%.dzn=%.d)
 
@@ -27,8 +31,8 @@ ifeq ($(VERBOSE),debug)
 $(info D_FILES: $(LOCAL_D_FILES))
 endif
 
-ifneq ($(GOAL_FILES),)
-D_FILTER:=$(foreach f,$(GOAL_FILES),$(shell echo $(OUT)/$(f)/%))
+ifneq ($(GOAL_FILE),)
+D_FILTER:=$(foreach f,$(GOAL_FILE),$(shell echo $(OUT)/$(f)/%))
 LOCAL_D_FILES:=$(filter $(D_FILTER),$(LOCAL_D_FILES))
 endif
 
@@ -107,6 +111,7 @@ ifeq ($(strip\
   $(findstring clean,$(MAKECMDGOALS))\
   $(findstring depend,$(MAKECMDGOALS))\
   $(findstring help,$(MAKECMDGOALS))\
+  $(findstring list,$(MAKECMDGOALS))\
   $(findstring run,$(MAKECMDGOALS))\
   $(findstring verify,$(MAKECMDGOALS))\
   ),)
@@ -161,21 +166,21 @@ ifeq ($(HELP_DEZYNE),)
 help: help-dezyne
 define HELP_DEZYNE
   depend         create $(OUT)/<component|project>/<language>/*.d dependency-files for Dezyne
-  clean-runtime  remove Dezyne runtime
+  runtime-clean  remove Dezyne runtime
 endef
 export HELP_DEZYNE
 help-dezyne:
 	@echo "$$HELP_DEZYNE"
 endif
 
-clean-runtime-$(LOCAL_TARGET): LOCAL_OUT:=$(LOCAL_OUT)
-clean-runtime-$(LOCAL_TARGET): LOCAL_RUNTIME:=$(LOCAL_RUNTIME)
-clean-runtime-$(LOCAL_TARGET): LOCAL_RUNTIME_DEZYNE:=$(LOCAL_RUNTIME_DEZYNE)
-clean-runtime-$(LOCAL_TARGET):
+runtime-clean-$(LOCAL_TARGET): LOCAL_OUT:=$(LOCAL_OUT)
+runtime-clean-$(LOCAL_TARGET): LOCAL_RUNTIME:=$(LOCAL_RUNTIME)
+runtime-clean-$(LOCAL_TARGET): LOCAL_RUNTIME_DEZYNE:=$(LOCAL_RUNTIME_DEZYNE)
+runtime-clean-$(LOCAL_TARGET):
 	echo cleaning runtime $(LOCAL_OUT)
 	rm -f $(LOCAL_RUNTIME:%=$(LOCAL_OUT)/%) $(LOCAL_RUNTIME_DEZYNE:%=$(LOCAL_OUT)/dezyne/%)
 
-clean-runtime: clean-runtime-$(LOCAL_TARGET)
+runtime-clean: runtime-clean-$(LOCAL_TARGET)
 
 $(LOCAL_TARGET): LOCAL_DZN_FILES:=$(LOCAL_DZN_FILES)
 $(LOCAL_TARGET): LOCAL_RUNTIME_HEADERS:=$(LOCAL_RUNTIME_HEADERS)

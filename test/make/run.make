@@ -21,48 +21,31 @@
 # Code:
 
 define RUN.rule
-run-$(LOCAL_TARGET)/$(notdir $(1)): CDIR:=$$(CDIR)
-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_NAME:=$$(LOCAL_NAME)
-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_DZN_TOP:=$$(LOCAL_DZN_TOP)
-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_LANGUAGE:=$$(LOCAL_LANGUAGE)
-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TARGET:=$$(LOCAL_TARGET)
-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_SUT:=$$(LOCAL_SUT)
-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
-run-$(LOCAL_TARGET)/$(notdir $(1)): $(1)
+TRACE:=$$(patsubst %.trace.0,trace.0,$(notdir $(1)))
+TRACE:=$$(TRACE)
+TOP:=$(LOCAL_NAME)-$(LOCAL_LANGUAGE)-$$(TRACE)
+$$(TOP): CDIR:=$$(CDIR)
+$$(TOP): LOCAL_NAME:=$$(LOCAL_NAME)
+$$(TOP): LOCAL_DZN_TOP:=$$(LOCAL_DZN_TOP)
+$$(TOP): LOCAL_LANGUAGE:=$$(LOCAL_LANGUAGE)
+$$(TOP): LOCAL_TARGET:=$$(LOCAL_TARGET)
+$$(TOP): LOCAL_SUT:=$$(LOCAL_SUT)
+$$(TOP): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
+$$(TOP): $(1)
 	diff -uw <(grep -v '[.]<flush>' $(1)) <($(DZN) run -m $(LOCAL_SUT) -t <(grep -v '<flush>' $(1)) $(LOCAL_DZN_TOP) | grep ^trace:| sed 's,^trace:,,' | tr ',' '\n')
-check-$(OUT)/$(LOCAL_NAME): run-$(LOCAL_TARGET)/$(notdir $(1))
-run-$(OUT)/$(LOCAL_NAME): run-$(LOCAL_TARGET)/$(notdir $(1))
-run-$(LOCAL_TARGET): run-$(LOCAL_TARGET)/$(notdir $(1))
-run: run-$(LOCAL_TARGET)/$(notdir $(1))
+
+$(LOCAL_NAME)-$(LOCAL_LANGUAGE): $$(TOP)
+$(LOCAL_NAME)-check: $$(TOP)
+$(LOCAL_LANGUAGE): $$(TOP)
+
 ifeq ($(1),$(firstword $(LOCAL_TRACE_FILES)))
-ifeq ($(VERBOSE),debug)
-$$(info target check-$(OUT)/$(LOCAL_NAME))
-$$(info target run-$(OUT)/$(LOCAL_NAME))
-$$(info target run-$(LOCAL_TARGET))
-#$$(info target run-$(LOCAL_TARGET)/$(notdir $(1)))
-endif
+ifeq ($(filter list,$(MAKECMDGOALS)),list)
+#$$(info )
+$$(info $$()    $$(TOP))
+$$(info $$()    $(LOCAL_NAME)-$(LOCAL_LANGUAGE))
+$$(info $$()    $(LOCAL_NAME))
 endif
 
-update-run-$(LOCAL_TARGET)/$(notdir $(1)): CDIR:=$$(CDIR)
-update-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_NAME:=$$(LOCAL_NAME)
-update-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_DZN_TOP:=$$(LOCAL_DZN_TOP)
-update-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_LANGUAGE:=$$(LOCAL_LANGUAGE)
-update-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TARGET:=$$(LOCAL_TARGET)
-update-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_SUT:=$$(LOCAL_SUT)
-update-run-$(LOCAL_TARGET)/$(notdir $(1)): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
-update-run-$(LOCAL_TARGET)/$(notdir $(1)): $(1)
-	@true
-update-$(OUT)/$(LOCAL_NAME): update-run-$(LOCAL_TARGET)/$(notdir $(1))
-update-run-$(OUT)/$(LOCAL_NAME): update-run-$(LOCAL_TARGET)/$(notdir $(1))
-update-run-$(LOCAL_TARGET): update-run-$(LOCAL_TARGET)/$(notdir $(1))
-update-run: update-run-$(LOCAL_TARGET)/$(notdir $(1))
-ifeq ($(1),$(firstword $(LOCAL_TRACE_FILES)))
-ifeq ($(VERBOSE),debug)
-$$(info target update-$(OUT)/$(LOCAL_NAME))
-$$(info target update-run-$(OUT)/$(LOCAL_NAME))
-$$(info target update-run-$(LOCAL_TARGET))
-#$$(info target update-run-$(LOCAL_TARGET)/$(notdir $(1)))
-endif
 endif
 endef
 
@@ -73,11 +56,9 @@ $(LOCAL_TARGET):
 
 ifeq ($(HELP_RUN),)
 check: run
-update: update-run
 help: help-run
 define HELP_RUN
   run            run all traces
-  update-run     overwrite run baseline
 endef
 export HELP_RUN
 help-run:

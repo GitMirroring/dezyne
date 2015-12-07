@@ -21,12 +21,30 @@
 # 
 # Code:
 
+ifeq ($(filter list,$(MAKECMDGOALS)),list)
+##$(info )
+endif
 ifneq ($(LOCAL_DZN_FILES),)
 #allow regression/makefile.make to include foo/bar.dzn files
 CDIR:=$(dir $(firstword $(LOCAL_DZN_FILES)))
 endif
 
 PROJECT_P:=$(filter project,$(patsubst %.project,project project,$(notdir $(CDIR:%/=%))))
+
+.PHONY: $(CDIR) $(notdir $(CDIR:%/=%)))
+ifeq ($(GOAL_NAMES),$(notdir $(CDIR:%/=%)))
+LOCAL_GOAL_FILES:=$(CDIR)%.dzn
+else
+LOCAL_GOAL_FILES:=$(GOAL_NAMES:%=$(CDIR)%.dzn)
+endif
+
+ifneq ($(LOCAL_GOAL_FILES),)
+LOCAL_DZN_FILES:=$(filter $(LOCAL_GOAL_FILES),$(LOCAL_DZN_FILES))
+endif
+
+ifeq ($(LOCAL_DZN_FILES),)
+LOCAL_DZN_FILES:=/dev/null
+endif
 
 ifeq ($(words $(LOCAL_DZN_FILES) $(LOCAL_DZN_OUT_FILES) $(LOCAL_SOURCE_FILES) $(PROJECT_P)),1)
 LOCAL_DZN_TOP:=$(firstword $(LOCAL_DZN_FILES) $(LOCAL_DZN_OUT_FILES))
@@ -90,6 +108,7 @@ LOCAL_TRACE_FLUSH:=$($(LOCAL_NAME).flush)
 endif
 
 NAMESPACE_P:=$(shell grep -hEo '\<namespace\>' $(LOCAL_DZN_FILES))
+
 ifneq ($(strip $(LOCAL_DZN_FILES)),)
 ifeq ($(strip $(LOCAL_INTERFACES)),)
 ifeq ($(NAMESPACE_P),)
@@ -115,6 +134,8 @@ endif
 ifeq ($(LOCAL_TIMEOUT),)
 LOCAL_TIMEOUT:=0.1
 endif
+
+
 
 $(LOCAL_TARGET): LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
 $(LOCAL_TARGET): LOCAL_NAME:=$(LOCAL_NAME)

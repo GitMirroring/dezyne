@@ -21,15 +21,10 @@
 # 
 # Code:
 
-CURPATH:=$(shell echo $(CURDIR)/ | sed -e s,^.*/test/,,)
-DEPTH:=$(shell echo $(CURPATH) | sed -re s,[^/]+/,../,g)
-PHONIES:=all check clean default depend help list regression stress update
-DIRECTORIES:=$(notdir $(shell find . -mindepth 2 -type d | grep -v baseline)) alarm.project
-.PHONY: $(DIRECTORIES) $(PHONIES)
-default: all
-define TOP.rule
-$(1):
-	$(MAKE) -C $(DEPTH) MAKE_SNIPPETS="$(CURPATH)makefile.make $(patsubst %,$(CURPATH)%,$(sort $(wildcard */makefile.make)))" $(MAKEOVERRIDES) $$@
-endef
-
-$(foreach i,% $(PHONIES) $(DIRECTORIES),$(eval $(call TOP.rule,$(i))))
+LANGUAGES:=$(filter-out run,$(ALL_LANGUAGES))
+SUT:=AlarmSystem
+include make/project.make
+SUT:=Alarm
+LANGUAGES:=run
+LOCAL_TRACE_FILES:=$(CDIR)run.trace
+include make/project.make

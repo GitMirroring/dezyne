@@ -24,7 +24,11 @@
 # Code:
 
 ## common
-.PHONY: all default check clean help regression stress
+PHONIES:=all check clean default depend help list regression stress update
+DIRECTORIES:=$(notdir $(shell find . -mindepth 2 -type d | grep -Ev 'baseline|out|[.]git'))
+.PHONY: $(PHONIES)
+.PHONY: $(DIRECTORIES)
+
 .SECONDARY:
 .SUFFIXES:
 SHELL:=/bin/bash
@@ -54,21 +58,21 @@ CODE_LANGUAGES:=$(ALL_CODE_LANGUAGES)
 PSEUDO_LANGUAGES=run table verify
 ALL_LANGUAGES=$(CODE_LANGUAGES) $(PSEUDO_LANGUAGES)
 
-PREFIXES:=check code parse run table update verify
-PREFIX_FILTER:=$(OUT)/% $(foreach s,$(PREFIXES),$(shell echo "$(s)-$(OUT)/%"))
-GOAL_TARGETS:=$(filter $(PREFIX_FILTER),$(MAKECMDGOALS))
-GOAL_DIRS:=$(GOAL_TARGETS)
-$(foreach p,$(PREFIX_FILTER),$(eval GOAL_DIRS:=$(patsubst $(p),$(OUT)/%,$(GOAL_DIRS))))
-LANGUAGE_FILTER:=$(foreach l,$(ALL_LANGUAGES),$(shell echo "%/$(l)"))
-GOAL_FILES:=$(GOAL_DIRS:$(OUT)/%=%)
-GOAL_LANGUAGES:=$(filter $(LANGUAGE_FILTER),$(GOAL_FILES))
-$(foreach l,$(ALL_LANGUAGES),$(eval GOAL_LANGUAGES:=$(patsubst %/$(l),$(l),$(GOAL_LANGUAGES))))
-ifneq ($(GOAL_LANGUAGES),)
-ALL_LANGUAGES:=$(filter $(GOAL_LANGUAGES),$(ALL_LANGUAGES))
-PSEUDO_LANGUAGES:=$(filter $(GOAL_LANGUAGES),$(PSEUDO_LANGUAGES))
-CODE_LANGUAGES:=$(filter $(GOAL_LANGUAGES),$(CODE_LANGUAGES))
-LANGUAGES:=$(filter $(GOAL_LANGUAGES),$(LANGUAGES))
+SUFFIXES:=code parse update $(PSEUDO_LANGUAGES) $(CODE_LANGUAGES)
+.PHONY: $(SUFFIXES)
+PHONIES+=$(SUFFIXES)
+#SUFFIX_FILTER:=$(foreach s,$(SUFFIXES),$(shell echo "%-$(s)"))
+GOAL_TARGETS:=$(strip $(filter-out $(PHONIES),$(MAKECMDGOALS)))
+#GOAL_TARGETS:=$(strip $(filter $(SUFFIX_FILTER),$(MAKECMDGOALS)))
+GOAL_NAMES:=
+$(foreach i,$(GOAL_TARGETS),$(eval GOAL_NAMES+=$(firstword $(subst -, ,$(i)))))
+GOAL_NAMES:=$(strip $(GOAL_NAMES))
+GOAL_LANGUAGES:=
+$(foreach i,$(GOAL_TARGETS),$(eval GOAL_LANGUAGES+=$(word 2,$(subst -, ,$(i)))))
+ifeq ($(filter code,$(GOAL_LANGUAGES)),code)
+GOAL_LANGUAGES:=$(filter-out code,$(GOAL_LANGUAGES)) $(ALL_CODE_LANGUAGES)
 endif
+GOAL_LANGUAGES:=$(strip $(GOAL_LANGUAGES))
 
 # put your local overrides here, e.g.,
 # DZN:=~/development.git/client/dzn
@@ -95,6 +99,7 @@ Targets:
   check          run all checks
   clean          remove all generated stuff in $(OUT)
   check          check
+  list           list all targets
   regression     full regression test suite
   stress         run stress test
   update         overwrite all baselines
@@ -102,6 +107,10 @@ endef
 export HELP_COMMON
 help-common:
 	@echo "$$HELP_COMMON"
+
+#ifeq ($(filter list,$(MAKECMDGOALS)),list)
+#$(info Targets:)
+#endif
 
 clean:
 	rm -rf $(OUT)
@@ -111,7 +120,7 @@ $(OUT)/.gitignore:
 	echo '*' > $(OUT)/.gitignore
 
 DIRECTORIES:=$(shell find -mindepth 1 -name makefile | sed s,/makefile,,)
-.PHONY: $(DIRECTORIES)
+#.PHONY: $(DIRECTORIES)
 ifeq ($(SUB),)
 $(DIRECTORIES):
 	$(MAKE) -C $@ SUB=$@ $(MAKEOVERRIDES)
@@ -123,5 +132,9 @@ $(DIRECTORIES:%=%-update):
 
 stress:
 	DZN=$(DZN) bin/stress.sh $(CONFIG)
+
+ifneq ($(filter help list,$(MAKECMDGOALS)),)
+MAKE_SNIPPETS="$(CURPATH)makefile.make $(patsubst %,$(CURPATH)%,$(sort $(wildcard */makefile.make)))" $(MAKEOVERRIDES) $$@
+endif
 
 $(foreach i,$(MAKE_SNIPPETS),$(eval CDIR:=$(dir $(i))) $(info Entering $(i:%/makefile.make=%)) $(eval -include $(i)))
