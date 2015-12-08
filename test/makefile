@@ -25,7 +25,7 @@
 
 ## common
 PHONIES:=all check clean default depend help list regression stress update
-DIRECTORIES:=$(notdir $(shell find . -mindepth 2 -type d | grep -Ev 'baseline|out|[.]git'))
+DIRECTORIES:=$(notdir $(shell find . -mindepth 1 -type d | grep -Ev 'baseline|bin|out|[.]git'))
 .PHONY: $(PHONIES)
 .PHONY: $(DIRECTORIES)
 
@@ -58,17 +58,30 @@ CODE_LANGUAGES:=$(ALL_CODE_LANGUAGES)
 PSEUDO_LANGUAGES=run table verify
 ALL_LANGUAGES=$(CODE_LANGUAGES) $(PSEUDO_LANGUAGES)
 
+## We do only what we're meant to do...
 SUFFIXES:=code parse update $(PSEUDO_LANGUAGES) $(CODE_LANGUAGES)
 .PHONY: $(SUFFIXES)
 PHONIES+=$(SUFFIXES)
-#SUFFIX_FILTER:=$(foreach s,$(SUFFIXES),$(shell echo "%-$(s)"))
 GOAL_TARGETS:=$(strip $(filter-out $(PHONIES),$(MAKECMDGOALS)))
-#GOAL_TARGETS:=$(strip $(filter $(SUFFIX_FILTER),$(MAKECMDGOALS)))
 GOAL_NAMES:=
 $(foreach i,$(GOAL_TARGETS),$(eval GOAL_NAMES+=$(firstword $(subst -, ,$(i)))))
+GOAL_NAMES:=$(filter-out $(SUFFIXES),$(GOAL_NAMES))
 GOAL_NAMES:=$(strip $(GOAL_NAMES))
+
 GOAL_LANGUAGES:=
-$(foreach i,$(GOAL_TARGETS),$(eval GOAL_LANGUAGES+=$(word 2,$(subst -, ,$(i)))))
+define GOAL_LANGUAGE.rule
+WORDS:=$$(subst -, ,$(1))
+ifeq ($$(filter $$(word 1,$$(WORDS)),$(SUFFIXES)),$$(word 1,$$(WORDS)))
+ifeq ($$(word 2,$$(WORDS)),update)
+GOAL_LANGUAGES+=$$(word 1,$$(WORDS))
+endif
+else
+ifneq ($$(word 2,$$(WORDS)),update)
+GOAL_LANGUAGES+=$$(word 2,$$(WORDS))
+endif
+endif
+endef
+$(foreach i,$(GOAL_TARGETS),$(eval $(call GOAL_LANGUAGE.rule,$(i))))
 ifeq ($(filter code,$(GOAL_LANGUAGES)),code)
 GOAL_LANGUAGES:=$(filter-out code,$(GOAL_LANGUAGES)) $(ALL_CODE_LANGUAGES)
 endif
@@ -120,7 +133,7 @@ $(OUT)/.gitignore:
 	echo '*' > $(OUT)/.gitignore
 
 DIRECTORIES:=$(shell find -mindepth 1 -name makefile | sed s,/makefile,,)
-#.PHONY: $(DIRECTORIES)
+.PHONY: $(DIRECTORIES)
 ifeq ($(SUB),)
 $(DIRECTORIES):
 	$(MAKE) -C $@ SUB=$@ $(MAKEOVERRIDES)
@@ -133,8 +146,13 @@ $(DIRECTORIES:%=%-update):
 stress:
 	DZN=$(DZN) bin/stress.sh $(CONFIG)
 
-ifneq ($(filter help list,$(MAKECMDGOALS)),)
-MAKE_SNIPPETS="$(CURPATH)makefile.make $(patsubst %,$(CURPATH)%,$(sort $(wildcard */makefile.make)))" $(MAKEOVERRIDES) $$@
+ifeq ($(MAKECMDGOALS),help)
+MAKE_SNIPPETS=$(CURPATH)makefile.make $(patsubst %,$(CURPATH)%,$(sort $(wildcard check/makefile.make)))
+MAKE_SNIPPETS:=$(filter-out fei/makefile.make lopw/makefile.make,$(MAKE_SNIPPETS))
+endif
+ifeq ($(MAKECMDGOALS),list)
+MAKE_SNIPPETS=$(CURPATH)makefile.make $(patsubst %,$(CURPATH)%,$(sort $(wildcard */makefile.make)))
+MAKE_SNIPPETS:=$(filter-out fei/makefile.make lopw/makefile.make,$(MAKE_SNIPPETS))
 endif
 
 $(foreach i,$(MAKE_SNIPPETS),$(eval CDIR:=$(dir $(i))) $(info Entering $(i:%/makefile.make=%)) $(eval -include $(i)))

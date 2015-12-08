@@ -24,7 +24,7 @@
 CURPATH:=$(shell echo $(CURDIR)/ | sed -e s,^.*/test/,,)
 DEPTH:=$(shell echo $(CURPATH) | sed -re s,[^/]+/,../,g)
 PHONIES:=all check clean default depend help list regression stress update
-DIRECTORIES:=$(notdir $(shell find . -mindepth 2 -type d | grep -v baseline)) alarm.project
+DIRECTORIES:=$(notdir $(shell find . -mindepth 2 -type d | grep -v 'baseline'))
 .PHONY: $(DIRECTORIES) $(PHONIES)
 default: all
 define TOP.rule

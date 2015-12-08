@@ -31,9 +31,11 @@ $$(TOP): LOCAL_TARGET:=$$(LOCAL_TARGET)
 $$(TOP): LOCAL_DZN_TOP:=$$(LOCAL_DZN_TOP)
 $$(TOP):
 	diff -uwB $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(1) <($(DZN) --verbose verify --all -m $(1) $(LOCAL_DZN_TOP) | bin/reorder)
+
 $(LOCAL_NAME)-$(LOCAL_LANGUAGE): $$(TOP)
-$(LOCAL_NAME): $(LOCAL_NAME)-$(LOCAL_LANGUAGE)
-$(LOCAL_LANGUAGE): $(LOCAL_NAME)
+$(LOCAL_NAME): $$(TOP)
+$(LOCAL_LANGUAGE): $$(TOP)
+
 ifeq ($(filter list,$(MAKECMDGOALS)),list)
 $$(info $$()    $$(TOP))
 $$(info $$()    $(LOCAL_NAME)-$(LOCAL_LANGUAGE))
@@ -49,9 +51,11 @@ $$(TOP)-update: LOCAL_DZN_TOP:=$$(LOCAL_DZN_TOP)
 $$(TOP)-update:
 	mkdir -p $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)
 	$(DZN) --verbose verify --all -m $(1) $(LOCAL_DZN_TOP) | bin/reorder > $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(1)
+
 $(LOCAL_NAME)-$(LOCAL_LANGUAGE)-update: $$(TOP)-update
-$(LOCAL_NAME)-update: $(LOCAL_NAME)-$(LOCAL_LANGUAGE)-update
-update-verify: $(LOCAL_NAME)-$(LOCAL_LANGUAGE)-update
+$(LOCAL_NAME)-update: $$(TOP)-update
+$(LOCAL_LANGUAGE)-update: $$(TOP)-update
+
 ifeq ($(filter list,$(MAKECMDGOALS)),list)
 $$(info $$()    $(LOCAL_NAME)-$(LOCAL_LANGUAGE)-update)
 $$(info $$()    $(LOCAL_NAME)-update)
@@ -65,11 +69,12 @@ $(LOCAL_TARGET):
 
 ifeq ($(HELP_VERIFY),)
 check: verify
-update: update-verify
+update: verify-update
+verify-update:
 help: help-verify
 define HELP_VERIFY
   verify         run verification checks
-  update-verify  overwrite verification baseline
+  verify-update  overwrite verification baseline
 endef
 export HELP_VERIFY
 help-verify:

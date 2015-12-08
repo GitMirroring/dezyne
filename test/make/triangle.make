@@ -58,28 +58,30 @@ endif
 traces-$(LOCAL_TARGET): $(TRACE0)
 traces: traces-$(LOCAL_TARGET)
 
-triangle: triangle-$(LOCAL_TARGET)
+TOP:=$(LOCAL_LANGUAGE)-$(LOCAL_TARGET)
+
+triangle: $(TOP)
 
 ifeq ($(VERBOSE),debug)
-$(info target triangle-$(LOCAL_TARGET))
+$(info target $(TOP))
 endif
 
 $(LOCAL_TARGET):
 	@echo ' .'
 	@echo '/_\' $(LOCAL_NAME)
 #'
-triangle-$(LOCAL_TARGET): CDIR:=$(CDIR)
-triangle-$(LOCAL_TARGET): LOCAL_CODE2FDR:=$(LOCAL_CODE2FDR)
-triangle-$(LOCAL_TARGET): LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
-triangle-$(LOCAL_TARGET): LOCAL_NAME:=$(LOCAL_NAME)
-triangle-$(LOCAL_TARGET): LOCAL_SUT:=$(LOCAL_SUT)#for run
-triangle-$(LOCAL_TARGET): LOCAL_DZN_TOP:=$(LOCAL_DZN_TOP)#for run
-triangle-$(LOCAL_TARGET): LOCAL_TRACE:=$(LOCAL_TRACE)
-triangle-$(LOCAL_TARGET): LOCAL_TIMEOUT:=$(LOCAL_TIMEOUT)
-triangle-$(LOCAL_TARGET): LOCAL_TRACE_FLUSH:=$(LOCAL_TRACE_FLUSH)
+$(TOP): CDIR:=$(CDIR)
+$(TOP): LOCAL_CODE2FDR:=$(LOCAL_CODE2FDR)
+$(TOP): LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
+$(TOP): LOCAL_NAME:=$(LOCAL_NAME)
+$(TOP): LOCAL_SUT:=$(LOCAL_SUT)#for run
+$(TOP): LOCAL_DZN_TOP:=$(LOCAL_DZN_TOP)#for run
+$(TOP): LOCAL_TRACE:=$(LOCAL_TRACE)
+$(TOP): LOCAL_TIMEOUT:=$(LOCAL_TIMEOUT)
+$(TOP): LOCAL_TRACE_FLUSH:=$(LOCAL_TRACE_FLUSH)
 ifeq ($(LOCAL_LANGUAGE),run)
-triangle-$(LOCAL_TARGET): $(LOCAL_TARGET:%/triangle/test=%/$(LOCAL_LANGUAGE)/test)
-triangle-$(LOCAL_TARGET): $(TRACE0)
+$(TOP): $(LOCAL_TARGET:%/triangle/test=%/$(LOCAL_LANGUAGE)/test)
+$(TOP): $(TRACE0)
 	for i in $$(ls -1 $(LOCAL_TRACE).* | sort -t. -k3 -k4 -n | $(TRIANGLE_MAX) 2>/dev/null); do\
 		set -e;\
 		echo trace[$(LOCAL_LANGUAGE)]: $$i;\
@@ -88,7 +90,7 @@ triangle-$(LOCAL_TARGET): $(TRACE0)
 		set +e;\
 	done
 else # LOCAL_LANGUAGE!=run
-triangle-$(LOCAL_TARGET): $(TRACE0) $(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/test
+$(TOP): $(TRACE0) $(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/test
 	for i in $$(ls -1 $(LOCAL_TRACE).* | sort -t. -k3 -k4 -n | $(TRIANGLE_MAX) 2>/dev/null); do\
 		set -e;\
 		echo trace[$(LOCAL_LANGUAGE)]: $$i;\
@@ -97,26 +99,3 @@ triangle-$(LOCAL_TARGET): $(TRACE0) $(OUT)/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/test
 		set +e;\
 	done
 endif # LOCAL_LANGUAGE!=run
-
-triangle-$(LOCAL_TARGET): $(TRACE0)
-triangle-$(LOCAL_TARGET): LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
-triangle-$(OUT)/$(LOCAL_NAME): triangle-$(LOCAL_TARGET)
-check-$(OUT)/$(LOCAL_NAME): triangle-$(LOCAL_TARGET)
-ifeq ($(VERBOSE),debug)
-$(info target triangle-$(OUT)/$(LOCAL_NAME))
-$(info target triangle-$(LOCAL_TARGET))
-$(info target triangle-$(OUT)/$(LOCAL_NAME))
-endif
-
-ifeq ($(HELP_TRIANGLE),)
-update-triangle:
-#check: triangle
-update: update-triangle
-help: help-triangle
-define HELP_TRIANGLE
-  triangle       run triangle checks
-endef
-export HELP_TRIANGLE
-help-triangle:
-	@echo "$$HELP_TRIANGLE"
-endif

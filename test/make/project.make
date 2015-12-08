@@ -33,7 +33,6 @@ LANGUAGES:=$(filter $(GOAL_LANGUAGES),$(LANGUAGES))
 endif
 
 ifeq ($(GOAL_NAMES),$(notdir $(CDIR:%/=%)))
-$(info c pg LOCAL_GOAL_FILES $(LOCAL_GOAL_FILES))
 LOCAL_GOAL_FILES:=$(CDIR)%.dzn
 else
 LOCAL_GOAL_FILES:=$(GOAL_NAMES:%=$(CDIR)%.dzn)

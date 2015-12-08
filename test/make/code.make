@@ -46,10 +46,11 @@ $$(TOP): $(LOCAL_OUT)/test $(LOCAL_TRACE_FILES)
 	diff -uw $(i) <(cat $(i) | timeout $(LOCAL_TIMEOUT) $(LOCAL_TARGET) $(LOCAL_TRACE_FLUSH) |& $(LOCAL_CODE2FDR));
 
 $(LOCAL_NAME)-$(LOCAL_LANGUAGE): $$(TOP)
-$(LOCAL_NAME)-code: $(LOCAL_NAME)-$(LOCAL_LANGUAGE)
-$(LOCAL_NAME): $(LOCAL_NAME)-code
-$(LOCAL_NAME)-check: $(LOCAL_NAME)-code
-$(LOCAL_LANGUAGE): $(LOCAL_NAME)
+$(LOCAL_NAME)-code: $$(TOP)
+$(LOCAL_NAME): $$(TOP)
+$(LOCAL_NAME)-check: $$(TOP)
+$(LOCAL_LANGUAGE): $$(TOP)
+
 code: $(LOCAL_LANGUAGE)
 
 ifeq ($(1),$(firstword $(LOCAL_TRACE_FILES)))

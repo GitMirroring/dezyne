@@ -114,14 +114,20 @@ ifeq ($(strip $(LOCAL_INTERFACES)),)
 ifeq ($(NAMESPACE_P),)
 LOCAL_INTERFACES:=$(shell grep -hEo '^interface [._a-zA-Z0-9]+' $(LOCAL_DZN_FILES) | sed -e 's/^interface //' -e 's/[.]/_/g')
 else
+ifeq ($($(LOCAL_DZN_TOP)_INTERFACES),)
 LOCAL_INTERFACES:=$(shell $(DZN) parse --interfaces $(LOCAL_DZN_FILES) | tr '.' '_')
+$(LOCAL_DZN_TOP)_INTERFACES:=$(LOCAL_INTERFACES)
+endif
 endif
 endif
 ifeq ($(strip $(LOCAL_COMPONENTS)),)
 ifeq ($(NAMESPACE_P),)
 LOCAL_COMPONENTS:=$(shell grep -hEo '^component [._a-zA-Z0-9]+' $(LOCAL_DZN_FILES) | sed -e 's/^component //' -e 's/[.]/_/g')
 else
+ifeq ($($(LOCAL_DZN_TOP)_COMPONENTS),)
 LOCAL_COMPONENTS:=$(shell $(DZN) parse --components $(LOCAL_DZN_FILES) | tr '.' '_')
+$(LOCAL_DZN_TOP)_COMPONENTS:=$(LOCAL_COMPONENTS)
+endif
 endif
 endif
 endif
@@ -134,8 +140,6 @@ endif
 ifeq ($(LOCAL_TIMEOUT),)
 LOCAL_TIMEOUT:=0.1
 endif
-
-
 
 $(LOCAL_TARGET): LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
 $(LOCAL_TARGET): LOCAL_NAME:=$(LOCAL_NAME)

@@ -56,12 +56,12 @@ $(TOP)-update: #$(LOCAL_TARGET)
 	-$(DZN) table --form=state -o - $(LOCAL_DZN_TOP) 2> $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-state.dzn 1>&2
 	-$(DZN) table --form=event -o - $(LOCAL_DZN_TOP) 2> $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-event.dzn 1>&2
 
-$(LOCAL_NAME)-check: $(TOP)-update
-$(LOCAL_LANGUAGE): $(TOP)-update
+$(LOCAL_NAME)-update: $(TOP)-update
+$(LOCAL_LANGUAGE)-update: LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
+$(LOCAL_LANGUAGE)-update: $(TOP)-update
 
 ifeq ($(filter list,$(MAKECMDGOALS)),list)
 $(info $()    $(TOP)-update)
-$(info $()    $(LOCAL_NAME)-$(LOCAL_LANGUAGE)-update)
 $(info $()    $(LOCAL_NAME)-update)
 endif
 
