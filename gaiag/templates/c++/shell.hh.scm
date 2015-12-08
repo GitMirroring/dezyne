@@ -3,6 +3,8 @@
 
 ##include <iostream>
 
+##include <dzn/locator.hh>
+##include <dzn/runtime.hh>
 ##include <dzn/pump.hh>
 
 #(map (include-component #{

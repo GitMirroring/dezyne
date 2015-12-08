@@ -46,7 +46,6 @@ namespace dzn
     std::list<coroutine> collateral_blocked;
     std::set<void*> skip_block;
     std::queue<std::function<void()>> queue;
-    std::function<void()> next_event;
 
     struct deadline
     {
@@ -66,10 +65,12 @@ namespace dzn
     std::thread::id thread_id;
     bool running;
     std::condition_variable condition;
+    std::condition_variable idle;
     std::mutex mutex;
     std::future<void> task;
     pump();
     ~pump();
+    void wait();
     void operator()();
 
     void collateral_block();
@@ -80,28 +81,45 @@ namespace dzn
     void release(void*);
     void operator()(const std::function<void()>&);
     void operator()(std::function<void()>&&);
-    template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
-    void and_wait(const L& l)
-    {
-      std::promise<void> p;
-      this->operator()([&p,l]{l(); p.set_value();});
-      p.get_future().get();
-    }
-    template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
-    auto and_wait(const L& l) -> decltype(l())
-    {
-      std::promise<decltype(l())> p;
-      this->operator()([&p,l]{p.set_value(l());});
-      return p.get_future().get();
-    }
     void handle(size_t id, size_t ms, const std::function<void()>&);
     void remove(size_t id);
   };
 
-  template <typename F, typename ... Args>
-  auto shell(dzn::pump& pump, F&& f, Args&& ...args) -> decltype(f())
+  template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
+  void blocking(dzn::pump& pump, const L& l)
   {
-    return pump.and_wait(std::bind(f,std::forward<Args>(args)...));
+    std::promise<void> p;
+    pump([&]{l(); p.set_value();});
+    return p.get_future().get();
+  }
+  template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
+  auto blocking(dzn::pump& pump, const L& l) -> decltype(l())
+  {
+    std::promise<decltype(l())> p;
+    pump([&]{p.set_value(l());});
+    return p.get_future().get();
+  }
+  template <typename Lambda, typename Next, typename = typename std::enable_if<std::is_void<typename std::result_of<Lambda()>::type>::value>::type>
+  void blocking(dzn::pump& pump, const Lambda& lambda, Next&& next)
+  {
+    std::promise<void> p;
+    pump([&]{lambda(); p.set_value();});
+    next();
+    return p.get_future().get();
+  }
+  template <typename Lambda, typename Next, typename = typename std::enable_if<!std::is_void<typename std::result_of<Lambda()>::type>::value>::type>
+  auto blocking(dzn::pump& pump, const Lambda& lambda, Next&& next) -> decltype(lambda())
+  {
+    std::promise<decltype(lambda())> p;
+    pump([&]{p.set_value(lambda());});
+    next();
+    return p.get_future().get();
+  }
+
+  template <typename Lambda, typename ... Args>
+  auto shell(dzn::pump& pump, Lambda&& lambda, Args&& ...args) -> decltype(lambda())
+  {
+    return blocking(pump, std::bind(lambda, std::forward<Args>(args)...));
   }
 }
 

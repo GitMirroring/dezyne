@@ -92,6 +92,11 @@ namespace dzn
     if (lock) lock.unlock();
     task.wait();
   }
+  void pump::wait()
+  {
+    std::unique_lock<std::mutex> lock(mutex);
+    idle.wait(lock, [this]{return queue.empty();});
+  }
   void pump::operator()()
   {
     try
@@ -100,6 +105,10 @@ namespace dzn
 
       worker = [&] {
         std::unique_lock<std::mutex> lock(mutex);
+        if(queue.empty())
+        {
+          idle.notify_one();
+        }
         if(timers.empty())
         {
           condition.wait(lock, [this]{return queue.size() || !running;});
@@ -228,12 +237,7 @@ namespace dzn
     self->port = p;
 
     debug("block", self->id);
-    if (queue.empty() && next_event) {
-#ifdef DEBUG_RUNTIME
-      std::cout << "doing next_event" << std::endl;
-#endif
-      next_event();
-    }
+
     create_context();
 
     self->yield_to(coroutines.back());
@@ -254,6 +258,7 @@ namespace dzn
     auto blocked = find_blocked(coroutines, p);
     if(blocked == coroutines.end())
     {
+    debug("skip block", self->id);
       skip_block.insert(p);
       return;
     }

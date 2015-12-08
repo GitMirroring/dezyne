@@ -32,7 +32,7 @@
     (lambda (port)
       (map (define-on model port #{
 #port .#direction .#event  = [&] (#formals) {
-    return dzn::shell(dzn_pump, [&] {return #instance .#instance-port .#direction .#event(#arguments);});
+    return dzn_pump([&] {return #instance .#instance-port .#direction .#event(#arguments);});
 };
 #}) (filter om:out? (om:events port))))
     (filter om:requires? (om:ports model)))#

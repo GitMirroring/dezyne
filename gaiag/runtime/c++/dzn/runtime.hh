@@ -27,7 +27,6 @@
 
 #include <dzn/meta.hh>
 #include <dzn/locator.hh>
-
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -35,9 +34,10 @@
 #include <queue>
 #include <tuple>
 
-inline char const* to_string(bool b){return b ? "true" : "false";}
+inline void to__void(std::string){}
+inline std::string to_string(bool b){return b ? "true" : "false";}
 inline bool to__bool(std::string s){return s == "true";}
-inline char const* to_string(int i){static std::string s; s=std::to_string(i); return s.c_str();}
+inline std::string to_string(int i){static std::string s; s=std::to_string(i); return s.c_str();}
 inline int to__int(std::string s){return std::stoi (s);}
 
 namespace dzn

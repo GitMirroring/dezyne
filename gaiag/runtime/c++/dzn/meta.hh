@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,6 +30,11 @@
 #include <string>
 #include <stdexcept>
 #include <vector>
+
+inline std::string to_string()
+{
+  return "return";
+}
 
 namespace dzn
 {

@@ -192,3 +192,17 @@
 
 (define ((event->arguments-code interface) event)
    ((->join ", ") (map .name (.elements ((event->formals interface) event)))))
+
+(define (c++:out-var-decls model formal-objects)
+  (map (lambda (f i)
+         (if (member (.direction f) '(inout out))
+             (list (->code model (.type f)) " _" i "; ")))
+       formal-objects (iota (length formal-objects))))
+
+(define (c++:out-param-list model formal-objects)
+  ((->join ",")
+   (map (lambda (f i)
+          (if (member (.direction f) '(inout out))
+              (list "_" i)
+              (list (->code model (.type f)) "()")))
+        formal-objects (iota (length formal-objects)))))
