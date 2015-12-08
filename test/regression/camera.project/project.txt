@@ -1,0 +1,2 @@
+purpose: Multi-file workshop example. See guidelines.txt for more details.
+

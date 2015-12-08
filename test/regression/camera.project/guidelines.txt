@@ -1,5 +1,3 @@
-purpose: Multi-file workshop example
-
 These are the guidelines to build, compile and execute the Camera example project:
 
 1. Generate code from the 3 .dzn files

@@ -1,0 +1,3 @@
+verify: MotorControlIF: check: completeness: ok
+verify: MotorControlIF: check: deadlock: ok
+verify: MotorControlIF: check: livelock: ok
