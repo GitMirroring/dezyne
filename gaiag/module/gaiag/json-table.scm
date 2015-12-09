@@ -254,6 +254,8 @@
       (list (list '! (make <var> :name var))))
      (($ <assign> (? var?) ($ <expression> 'true))
       (list (make <var> :name var)))
+     (($ <assign> (? var?) ($ <action>))
+      (list unknown))
      (($ <assign> (? var?) expression)
       (let* ((state (map (undefined-variable-state model (lambda (x) unknown)) (om:variables model)))
              (values (map (state->value model) next))
