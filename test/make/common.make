@@ -29,6 +29,10 @@ ifneq ($(LOCAL_DZN_FILES),)
 CDIR:=$(patsubst $(OUT)/%,regression/%,$(dir $(firstword $(LOCAL_DZN_FILES))))
 endif
 
+ACDIR:=$(shell readlink -e $(CDIR))/
+RCDIR:=$(patsubst $(CURDIR)/%,%,$(ACDIR))
+CDIR:=$(RCDIR)
+
 PROJECT_P:=$(filter project,$(patsubst %.project,project project,$(notdir $(CDIR:%/=%))))
 
 .PHONY: $(CDIR) $(notdir $(CDIR:%/=%)))
