@@ -1,9 +1,1 @@
-verify: IMemory: check: completeness: ok
-verify: IMemory: check: deadlock: ok
-verify: IMemory: check: livelock: ok
-verify: Memory: check: deterministic: ok
-verify: Memory: check: completeness: ok
-verify: Memory: check: illegal: ok
-verify: Memory: check: deadlock: ok
-verify: Memory: check: compliance: ok
-verify: Memory: check: livelock: ok
+verify: 

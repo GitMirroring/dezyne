@@ -1,9 +1,1 @@
-verify: I: check: completeness: ok
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
-verify: Sensor: check: deterministic: ok
-verify: Sensor: check: completeness: ok
-verify: Sensor: check: illegal: ok
-verify: Sensor: check: deadlock: ok
-verify: Sensor: check: compliance: ok
-verify: Sensor: check: livelock: ok
+verify: 

@@ -1,3 +1,1 @@
-verify: IControl: check: completeness: ok
-verify: IControl: check: deadlock: ok
-verify: IControl: check: livelock: ok
+verify: 

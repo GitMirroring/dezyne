@@ -1,9 +1,1 @@
-verify: IDevice: check: completeness: ok
-verify: IDevice: check: deadlock: ok
-verify: IDevice: check: livelock: ok
-verify: Device: check: deterministic: ok
-verify: Device: check: completeness: ok
-verify: Device: check: illegal: ok
-verify: Device: check: deadlock: ok
-verify: Device: check: compliance: ok
-verify: Device: check: livelock: ok
+verify: 

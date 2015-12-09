@@ -1,0 +1,142 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+component DezyneApplication {
+  provides IDezyne iDezyne;
+  requires IBackend ibackend;
+  requires IUserDB userDB;
+  requires IAccountDB accountDB;
+  requires ITimer timer;
+
+  behaviour {
+    enum AuthState {Unknown, Authenticating, Authorized};
+    AuthState state = AuthState.Unknown;
+    bool ModelCheckOngoing = false;
+    bool VerificationOngoing = false;
+    bool SessionExpired = false;
+    IAccountDB.result SeatAvailable = IAccountDB.result.NotAvailable;
+
+    [state.Unknown]
+    {
+      on iDezyne.authenticate():
+      {
+        userDB.checkUser();
+        state = AuthState.Authenticating;
+      }
+      on iDezyne.checkModel(), iDezyne.verifyModel(), userDB.UserCredentialsOK(), userDB.UserCredentialsNOK(), userDB.UserUnknown(), ibackend.checkModelRes(), ibackend.verifyModelRes(), timer.timeout():
+      illegal;
+    }
+    [state.Authenticating]
+    {
+      on iDezyne.authenticate(), iDezyne.checkModel(), iDezyne.verifyModel(), ibackend.checkModelRes(), ibackend.verifyModelRes(), timer.timeout():
+      illegal;
+      on userDB.UserCredentialsOK():
+      {
+        SeatAvailable = accountDB.checkIfSeatAvailable();
+        if (SeatAvailable == IAccountDB.result.Available) {
+          state = AuthState.Authorized;
+          timer.createTimer();
+          iDezyne.authenticateSuccess();
+        }
+        else {
+          state = AuthState.Unknown;
+          iDezyne.authenticateFailed();
+        }
+      }
+      on userDB.UserCredentialsNOK(), userDB.UserUnknown():
+      {
+        iDezyne.authenticateFailed();
+        state = AuthState.Unknown;
+      }
+    }
+    [state.Authorized]
+    {
+      on iDezyne.authenticate(), userDB.UserCredentialsOK(), userDB.UserCredentialsNOK(), userDB.UserUnknown():
+      illegal;
+      on iDezyne.checkModel():
+      {
+        [!SessionExpired]
+        {
+          [ModelCheckOngoing]
+          illegal;
+          [!ModelCheckOngoing]
+          {
+            ModelCheckOngoing = true;
+            ibackend.checkModel();
+            reply(IDezyne.res.Ok);
+          }
+        }
+        [otherwise]
+        reply(IDezyne.res.Nok);
+      }
+      on iDezyne.verifyModel():
+      {
+        [!SessionExpired]
+        {
+          [VerificationOngoing]
+          illegal;
+          [!VerificationOngoing]
+          {
+            VerificationOngoing = true;
+            ibackend.verifyModel();
+            reply(IDezyne.res.Ok);
+          }
+        }
+        [otherwise]
+        reply(IDezyne.res.Nok);
+      }
+      on ibackend.checkModelRes():
+      {
+        ModelCheckOngoing = false;
+        if (SessionExpired && !VerificationOngoing) {
+          SessionExpired = false;
+          state = AuthState.Unknown;
+        }
+        iDezyne.checkModelRes();
+      }
+      on ibackend.verifyModelRes():
+      {
+        VerificationOngoing = false;
+        if (SessionExpired && !ModelCheckOngoing) {
+          SessionExpired = false;
+          state = AuthState.Unknown;
+        }
+        iDezyne.verifyModelRes();
+      }
+      on timer.timeout():
+      {
+        [ModelCheckOngoing || VerificationOngoing]
+        {
+          SessionExpired = true;
+          iDezyne.reauthenticateNeeded();
+        }
+        [otherwise]
+        {
+          state = AuthState.Unknown;
+          iDezyne.reauthenticateNeeded();
+        }
+      }
+    }
+  }
+}
+
