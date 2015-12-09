@@ -1,0 +1,32 @@
+      Events           Guard                Actions                  Next
+[state.Disarmed]
+console.arm                     sensor.enable(); state = States state.Armed
+                                .Armed;
+console.disarm,
+sensor.triggered,               illegal;
+sensor.disabled
+[state.Armed]
+console.arm,                    illegal;
+sensor.disabled
+console.disarm                  sensor.disable(); state =       state.Disarming
+                                States.Disarming;
+                                console.detected(); siren.
+sensor.triggered                turnon(); sounding = true;      state.Triggered
+                                state = States.Triggered;
+[state.Triggered]
+                                sensor.disable(); siren.turnoff
+console.disarm                  (); sounding = false; state =   state.Disarming
+                                States.Disarming;
+console.arm,
+sensor.triggered,               illegal;
+sensor.disabled
+[state.Disarming]
+sensor.triggered                {}                              state.Disarming
+console.arm,                    illegal;
+console.disarm
+                                console.deactivated(); siren.
+sensor.disabled     [sounding]  turnoff(); state = States.      state.Disarmed
+                                Disarmed; sounding = false;
+sensor.disabled     [otherwise] console.deactivated(); state =  state.Disarmed
+                                States.Disarmed;
+

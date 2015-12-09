@@ -32,8 +32,10 @@ $(TOP): LOCAL_TARGET:=$(LOCAL_TARGET)
 $(TOP): LOCAL_TRACE_FILES:=$(LOCAL_TRACE_FILES)
 $(TOP): LOCAL_TRACE_LANGUAGE:=$(LOCAL_TRACE_LANGUAGE)
 $(TOP): #$(LOCAL_TARGET)
-	diff -uwB $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-state.dzn <($(DZN) table --form=state -o - $(LOCAL_DZN_TOP) 2>&1)
-	diff -uwB $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-event.dzn <($(DZN) table --form=event -o - $(LOCAL_DZN_TOP) 2>&1)
+	diff -uwB $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-state.dzn <($(DZN) table --form=state -o - $(LOCAL_DZN_TOP))
+	diff -uwB $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-event.dzn <($(DZN) table --form=event -o - $(LOCAL_DZN_TOP))
+	diff -uwB $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-state.html <($(DZN) --html table --form=state -o - $(LOCAL_DZN_TOP) | w3m -dump -T text/html)
+	diff -uwB $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-event.html <($(DZN) --html table --form=event -o - $(LOCAL_DZN_TOP) | w3m -dump -T text/html)
 
 $(LOCAL_NAME)-check: $(TOP)
 $(LOCAL_LANGUAGE): $(TOP)
@@ -53,8 +55,10 @@ $(TOP)-update: LOCAL_TRACE_FILES:=$(LOCAL_TRACE_FILES)
 $(TOP)-update: LOCAL_TRACE_LANGUAGE:=$(LOCAL_TRACE_LANGUAGE)
 $(TOP)-update: #$(LOCAL_TARGET)
 	mkdir -p $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)
-	-$(DZN) table --form=state -o - $(LOCAL_DZN_TOP) 2> $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-state.dzn 1>&2
-	-$(DZN) table --form=event -o - $(LOCAL_DZN_TOP) 2> $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-event.dzn 1>&2
+	$(DZN) table --form=state -o - $(LOCAL_DZN_TOP) > $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-state.dzn
+	$(DZN) table --form=event -o - $(LOCAL_DZN_TOP) > $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-event.dzn
+	$(DZN) --html table --form=state -o - $(LOCAL_DZN_TOP) | w3m -dump -T text/html > $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-state.html
+	$(DZN) --html table --form=event -o - $(LOCAL_DZN_TOP) | w3m -dump -T text/html > $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE)/$(LOCAL_BASE)-event.html
 
 $(LOCAL_NAME)-update: $(TOP)-update
 $(LOCAL_LANGUAGE)-update: LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
