@@ -1,0 +1,80 @@
+verify: DoorControlIF: check: completeness: ok
+verify: DoorControlIF: check: deadlock: ok
+verify: DoorControlIF: check: livelock: ok
+verify: SwitchPressIF: check: completeness: ok
+verify: SwitchPressIF: check: deadlock: ok
+verify: SwitchPressIF: check: livelock: ok
+verify: LimitSwitchIF: check: completeness: ok
+verify: LimitSwitchIF: check: deadlock: ok
+verify: LimitSwitchIF: check: livelock: ok
+verify: ITimer: check: completeness: ok
+verify: ITimer: check: deadlock: ok
+verify: ITimer: check: livelock: ok
+verify: MotorControlIF: check: completeness: fail
+MotorControlIF.initialise
+MotorControlIF.return
+MotorControlIF is incomplete: 'MotorControlIF.stop' not handled
+verify: MotorControlIF: check: deadlock: ok
+verify: MotorControlIF: check: livelock: ok
+verify: GarageDoorControlErr: check: deterministic: ok
+verify: GarageDoorControlErr: check: completeness: fail
+doorControl.initialise
+limitSw.initialise
+limitSw.return
+motorControl.initialise
+motorControl.return
+doorControl.return
+switchPress.switchPressed
+switchPress.acknowledge
+switchPress.return
+limitSw.queryPosition
+limitSw.Position_Opened
+motorControl.setClose
+motorControl.return
+motorControl.start
+motorControl.return
+limitSw.doorClosing
+limitSw.return
+GarageDoorControlErr is incomplete: 'limitSw.doorOpened' not handled
+verify: GarageDoorControlErr: check: illegal: ok
+verify: GarageDoorControlErr: check: deadlock: fail
+doorControl.initialise
+limitSw.initialise
+limitSw.return
+motorControl.initialise
+motorControl.return
+doorControl.return
+switchPress.switchPressed
+switchPress.acknowledge
+switchPress.return
+limitSw.queryPosition
+limitSw.Position_Unknown
+motorControl.setOpen
+motorControl.return
+motorControl.start
+motorControl.return
+limitSw.doorOpening
+limitSw.return
+motorControl.driveFault
+deadlock in model GarageDoorControlErr
+verify: GarageDoorControlErr: check: compliance: fail
+doorControl.initialise
+limitSw.initialise
+limitSw.return
+motorControl.initialise
+motorControl.return
+doorControl.return
+switchPress.switchPressed
+switchPress.acknowledge
+switchPress.return
+limitSw.queryPosition
+limitSw.Position_Unknown
+motorControl.setOpen
+motorControl.return
+motorControl.start
+motorControl.return
+limitSw.doorOpening
+limitSw.return
+motorControl.driveFault
+doorControl.reset not performed by component
+verify: GarageDoorControlErr: check: livelock: ok

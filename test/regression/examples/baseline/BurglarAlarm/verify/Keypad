@@ -1,0 +1,3 @@
+verify: IAlarmConsole: check: completeness: ok
+verify: IAlarmConsole: check: deadlock: ok
+verify: IAlarmConsole: check: livelock: ok

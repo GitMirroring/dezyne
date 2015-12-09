@@ -1,0 +1,630 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ISiren {
+  in void TurnOn();
+  in void TurnOff();
+
+  behaviour {
+    enum State {Silent, Sounding};
+    State state = State.Silent;
+
+    [state.Silent]
+    {
+      on TurnOn:
+      state = State.Sounding;
+      on TurnOff:
+      illegal;
+    }
+    [state.Sounding]
+    {
+      on TurnOn:
+      illegal;
+      on TurnOff:
+      state = State.Silent;
+    }
+  }
+}
+
+interface ISecretCode {
+  extern SecretCodeType $int$;
+  enum AuthorizationResult {CORRECT, WRONG};
+  in AuthorizationResult isCodeCorrect(SecretCodeType secretCode);
+
+  behaviour {
+
+    [true]
+    on isCodeCorrect:
+    {
+      reply(AuthorizationResult.CORRECT);
+      reply(AuthorizationResult.WRONG);
+    }
+  }
+}
+
+interface ITimer {
+  extern double $double$;
+  extern long $long$;
+  in void CreateTimer(double t);
+  in void CreateTimerEx(long tsec, long tnsec);
+  in void CreateTimerMSec(long tmsec);
+  in void CancelTimer();
+  out void Timeout();
+
+  behaviour {
+    enum States {Inactive, Active};
+    States state = States.Inactive;
+
+    [state.Inactive]
+    {
+      on CancelTimer:
+      state = States.Inactive;
+      on CreateTimer, CreateTimerEx, CreateTimerMSec:
+      state = States.Active;
+    }
+    [state.Active]
+    {
+      on CancelTimer:
+      state = States.Inactive;
+      on CreateTimer, CreateTimerEx, CreateTimerMSec:
+      illegal;
+      on inevitable:
+      {
+        Timeout;
+        state = States.Inactive;
+      }
+    }
+  }
+}
+
+interface ISensor {
+  in void Activate();
+  in void Deactivate();
+  out void DetectedMovement();
+
+  behaviour {
+    enum States {Deactivated, Activated, Triggered};
+    States state = States.Deactivated;
+
+    [state.Deactivated]
+    {
+      on Activate:
+      state = States.Activated;
+      on Deactivate:
+      illegal;
+    }
+    [state.Activated]
+    {
+      on Activate:
+      illegal;
+      on Deactivate:
+      state = States.Deactivated;
+      on optional:
+      {
+        DetectedMovement;
+        state = States.Triggered;
+      }
+    }
+    [state.Triggered]
+    {
+      on Activate:
+      illegal;
+      on Deactivate:
+      state = States.Deactivated;
+    }
+  }
+}
+
+interface IAlarmSystem {
+  extern SecretCodeType $int$;
+  enum Result {OK, Failed};
+  in Result SwitchOn(SecretCodeType secretCode);
+  in void SwitchOff(SecretCodeType secretCode);
+  out void Tripped();
+  out void SwitchedOff();
+  out void SwitchOffFailed(SecretCodeType secretCode);
+
+  behaviour {
+    enum States {NotActivated, Activated_Idle, Activated_AlarmMode};
+    States state = States.NotActivated;
+
+    [state.NotActivated]
+    {
+      on SwitchOn:
+      {
+        [true]
+        {
+          reply(Result.OK);
+          state = States.Activated_Idle;
+        }
+        [true]
+        reply(Result.Failed);
+      }
+      on SwitchOff:
+      illegal;
+    }
+    [state.Activated_Idle]
+    {
+      on SwitchOn:
+      illegal;
+      on SwitchOff:
+      {
+        [true]
+        {
+          SwitchedOff;
+          state = States.NotActivated;
+        }
+        [true]
+        {
+          SwitchOffFailed;
+          state = States.Activated_AlarmMode;
+        }
+      }
+      on optional:
+      {
+        Tripped;
+        state = States.Activated_AlarmMode;
+      }
+    }
+    [state.Activated_AlarmMode]
+    {
+      on SwitchOn:
+      illegal;
+      on SwitchOff:
+      {
+        [true]
+        {
+          SwitchedOff;
+          state = States.NotActivated;
+        }
+        [true]
+        SwitchOffFailed;
+      }
+    }
+  }
+}
+
+interface IAlarmStatusUI {
+  in void SignalTripped();
+  in void SignalArmed();
+  in void SignalUnarmed();
+  in void SignalTrippedWrongCode();
+
+  behaviour {
+
+    [true]
+    on SignalTripped, SignalArmed, SignalUnarmed, SignalTrippedWrongCode:
+    {}
+  }
+}
+
+interface IRgbLed {
+  in void EmitRed();
+  in void EmitYellow();
+  in void EmitGreen();
+  in void Off();
+
+  behaviour {
+
+    [true]
+    on EmitRed, EmitYellow, EmitGreen, Off:
+    {}
+  }
+}
+
+interface IAlarmConsole {
+  extern char $char$;
+  in void KeyPressed(char key);
+  in void Initialize();
+
+  behaviour {
+
+    [true]
+    on KeyPressed, Initialize:
+    {}
+  }
+}
+
+interface ICodeBuilder {
+  extern char $char$;
+  extern xint $int$;
+  enum Result {CharAdded, InvalidChar, CodeComplete, BufferCleared};
+  in Result AddDigit(char digit);
+  in void GetCode(out xint code);
+
+  behaviour {
+    enum States {Building, Complete};
+    States state = States.Building;
+
+    [state.Building]
+    {
+      on AddDigit:
+      {
+        [true]
+        reply(Result.CharAdded);
+        [true]
+        reply(Result.InvalidChar);
+        [true]
+        {
+          reply(Result.CodeComplete);
+          state = States.Complete;
+        }
+        [true]
+        reply(Result.BufferCleared);
+      }
+      on GetCode:
+      {}
+    }
+    [state.Complete]
+    {
+      on AddDigit:
+      illegal;
+      on GetCode:
+      state = States.Building;
+    }
+  }
+}
+
+component AlarmConsole {
+  provides IAlarmConsole alarmConsole;
+  requires IAlarmSystem alarmSystem;
+  requires IAlarmStatusUI statusUI;
+  requires ICodeBuilder codestore;
+
+  behaviour {
+    enum States {Uninitialized, Unarmed, Armed, Disarming, Tripped};
+    States state = States.Uninitialized;
+
+    [state.Uninitialized]
+    {
+      on alarmConsole.Initialize():
+      {
+        statusUI.SignalUnarmed();
+        state = States.Unarmed;
+      }
+      on alarmConsole.KeyPressed(key):
+      {}
+      on alarmSystem.Tripped(), alarmSystem.SwitchedOff(), alarmSystem.SwitchOffFailed():
+      illegal;
+    }
+    [state.Unarmed]
+    {
+      on alarmConsole.Initialize():
+      {}
+      on alarmConsole.KeyPressed(key):
+      {
+        ICodeBuilder.Result val = codestore.AddDigit(key);
+        if (val == ICodeBuilder.Result.CodeComplete) {
+          ICodeBuilder.xint pin;
+          codestore.GetCode(pin);
+          IAlarmSystem.Result val = alarmSystem.SwitchOn(pin);
+          if (val == IAlarmSystem.Result.OK) {
+            statusUI.SignalArmed();
+            state = States.Armed;
+          }
+        }
+      }
+      on alarmSystem.Tripped(), alarmSystem.SwitchedOff(), alarmSystem.SwitchOffFailed():
+      illegal;
+    }
+    [state.Armed]
+    {
+      on alarmConsole.Initialize():
+      {}
+      on alarmConsole.KeyPressed(key):
+      {
+        ICodeBuilder.Result val = codestore.AddDigit(key);
+        if (val == ICodeBuilder.Result.CodeComplete) {
+          ICodeBuilder.xint pin;
+          codestore.GetCode(pin);
+          alarmSystem.SwitchOff(pin);
+          state = States.Disarming;
+        }
+      }
+      on alarmSystem.Tripped():
+      {
+        statusUI.SignalTripped();
+        state = States.Tripped;
+      }
+      on alarmSystem.SwitchedOff(), alarmSystem.SwitchOffFailed():
+      illegal;
+    }
+    [state.Disarming]
+    {
+      on alarmConsole.Initialize(), alarmConsole.KeyPressed(key), alarmSystem.Tripped():
+      {}
+      on alarmSystem.SwitchedOff():
+      {
+        statusUI.SignalUnarmed();
+        state = States.Unarmed;
+      }
+      on alarmSystem.SwitchOffFailed():
+      {
+        statusUI.SignalTrippedWrongCode();
+        state = States.Tripped;
+      }
+    }
+    [state.Tripped]
+    {
+      on alarmConsole.Initialize():
+      {}
+      on alarmConsole.KeyPressed(key):
+      {
+        ICodeBuilder.Result val = codestore.AddDigit(key);
+        if (val == ICodeBuilder.Result.CodeComplete) {
+          ICodeBuilder.xint pin;
+          codestore.GetCode(pin);
+          alarmSystem.SwitchOff(pin);
+          state = States.Disarming;
+        }
+      }
+      on alarmSystem.Tripped(), alarmSystem.SwitchedOff(), alarmSystem.SwitchOffFailed():
+      illegal;
+    }
+  }
+}
+
+component AlarmStatusUI {
+  provides IAlarmStatusUI alarmStatusUI;
+  requires IRgbLed rgbLed;
+  requires ITimer blinkTimer;
+
+  behaviour {
+    enum States {Shining, Blinking};
+    States state = States.Shining;
+    bool ledOn = false;
+
+    void startBlinking() {
+      rgbLed.Off();
+      blinkTimer.CreateTimer($0.5$);
+      ledOn = false;
+      state = States.Blinking;
+      return;
+    }
+
+    void blink() {
+      blinkTimer.CreateTimer($0.5$);
+      if (ledOn) rgbLed.Off();
+      else rgbLed.EmitRed();
+      ledOn = !ledOn;
+      return;
+    }
+
+    void stopBlinking() {
+      blinkTimer.CancelTimer();
+      state = States.Shining;
+      return;
+    }
+
+    [state.Shining]
+    {
+      on alarmStatusUI.SignalTripped():
+      rgbLed.EmitRed();
+      on alarmStatusUI.SignalArmed():
+      rgbLed.EmitYellow();
+      on alarmStatusUI.SignalUnarmed():
+      rgbLed.EmitGreen();
+      on alarmStatusUI.SignalTrippedWrongCode():
+      startBlinking();
+      on blinkTimer.Timeout():
+      illegal;
+    }
+    [state.Blinking]
+    {
+      on alarmStatusUI.SignalTripped():
+      {
+        stopBlinking();
+        rgbLed.EmitRed();
+      }
+      on alarmStatusUI.SignalArmed():
+      {
+        stopBlinking();
+        rgbLed.EmitYellow();
+      }
+      on alarmStatusUI.SignalUnarmed():
+      {
+        stopBlinking();
+        rgbLed.EmitGreen();
+      }
+      on alarmStatusUI.SignalTrippedWrongCode():
+      {}
+      on blinkTimer.Timeout():
+      blink();
+    }
+  }
+}
+
+component SensorMultiplexer {
+  provides ISensor sensors;
+  requires ISensor aSensor;
+  requires ISensor bSensor;
+
+  behaviour {
+    enum States {Deactivated, Activated, Triggered};
+    States state = States.Deactivated;
+
+    [state.Deactivated]
+    {
+      on sensors.Activate():
+      {
+        aSensor.Activate();
+        bSensor.Activate();
+        state = States.Activated;
+      }
+      on sensors.Deactivate(), aSensor.DetectedMovement(), bSensor.DetectedMovement():
+      illegal;
+    }
+    [state.Activated]
+    {
+      on sensors.Activate():
+      illegal;
+      on sensors.Deactivate():
+      {
+        aSensor.Deactivate();
+        bSensor.Deactivate();
+        state = States.Deactivated;
+      }
+      on aSensor.DetectedMovement(), bSensor.DetectedMovement():
+      {
+        sensors.DetectedMovement();
+        state = States.Triggered;
+      }
+    }
+    [state.Triggered]
+    {
+      on sensors.Activate():
+      illegal;
+      on sensors.Deactivate():
+      {
+        aSensor.Deactivate();
+        bSensor.Deactivate();
+        state = States.Deactivated;
+      }
+      on aSensor.DetectedMovement(), bSensor.DetectedMovement():
+      {}
+    }
+  }
+}
+
+component BurglarAlarm {
+  provides IAlarmSystem alarmSystem;
+  requires ISiren siren;
+  requires ISecretCode codeValidator;
+  requires ITimer preAlarmTimer;
+  requires ISensor sensors;
+
+  behaviour {
+    enum States {NotActivated, Activated_Idle, Activated_AlarmMode, Activated_Tripped, WrongCode_Retry};
+    States state = States.NotActivated;
+
+    void disarm() {
+      sensors.Deactivate();
+      preAlarmTimer.CancelTimer();
+      alarmSystem.SwitchedOff();
+      return;
+    }
+
+    [state.NotActivated]
+    {
+      on alarmSystem.SwitchOn(pinCode):
+      {
+        ISecretCode.AuthorizationResult val = codeValidator.isCodeCorrect(pinCode);
+        if (val == ISecretCode.AuthorizationResult.CORRECT) {
+          sensors.Activate();
+          reply(IAlarmSystem.Result.OK);
+          state = States.Activated_Idle;
+        }
+        else if (val == ISecretCode.AuthorizationResult.WRONG) reply(IAlarmSystem.Result.Failed);
+      }
+      on alarmSystem.SwitchOff(pinCode), preAlarmTimer.Timeout(), sensors.DetectedMovement():
+      illegal;
+    }
+    [state.Activated_Idle]
+    {
+      on alarmSystem.SwitchOn(pinCode), preAlarmTimer.Timeout():
+      illegal;
+      on alarmSystem.SwitchOff(pinCode):
+      {
+        ISecretCode.AuthorizationResult val = codeValidator.isCodeCorrect(pinCode);
+        if (val == ISecretCode.AuthorizationResult.CORRECT) {
+          disarm();
+          state = States.NotActivated;
+        }
+        else if (val == ISecretCode.AuthorizationResult.WRONG) {
+          preAlarmTimer.CreateTimer($10$);
+          alarmSystem.SwitchOffFailed(pinCode);
+          state = States.WrongCode_Retry;
+        }
+      }
+      on sensors.DetectedMovement():
+      {
+        preAlarmTimer.CreateTimer($5$);
+        alarmSystem.Tripped();
+        state = States.Activated_Tripped;
+      }
+    }
+    [state.Activated_AlarmMode]
+    {
+      on alarmSystem.SwitchOn(pinCode), preAlarmTimer.Timeout():
+      illegal;
+      on alarmSystem.SwitchOff(pinCode):
+      {
+        ISecretCode.AuthorizationResult val = codeValidator.isCodeCorrect(pinCode);
+        if (val == ISecretCode.AuthorizationResult.CORRECT) {
+          disarm();
+          siren.TurnOff();
+          state = States.NotActivated;
+        }
+        else if (val == ISecretCode.AuthorizationResult.WRONG) alarmSystem.SwitchOffFailed(pinCode);
+      }
+      on sensors.DetectedMovement():
+      {}
+    }
+    [state.Activated_Tripped]
+    {
+      on alarmSystem.SwitchOn(pinCode), sensors.DetectedMovement():
+      illegal;
+      on alarmSystem.SwitchOff(pinCode):
+      {
+        ISecretCode.AuthorizationResult val = codeValidator.isCodeCorrect(pinCode);
+        if (val == ISecretCode.AuthorizationResult.CORRECT) {
+          disarm();
+          state = States.NotActivated;
+        }
+        else if (val == ISecretCode.AuthorizationResult.WRONG) {
+          preAlarmTimer.CancelTimer();
+          preAlarmTimer.CreateTimer($10$);
+          alarmSystem.SwitchOffFailed(pinCode);
+          state = States.WrongCode_Retry;
+        }
+      }
+      on preAlarmTimer.Timeout():
+      {
+        siren.TurnOn();
+        state = States.Activated_AlarmMode;
+      }
+    }
+    [state.WrongCode_Retry]
+    {
+      on alarmSystem.SwitchOn(pinCode):
+      illegal;
+      on alarmSystem.SwitchOff(pinCode):
+      {
+        ISecretCode.AuthorizationResult val = codeValidator.isCodeCorrect(pinCode);
+        if (val == ISecretCode.AuthorizationResult.CORRECT) {
+          disarm();
+          state = States.NotActivated;
+        }
+        else if (val == ISecretCode.AuthorizationResult.WRONG) alarmSystem.SwitchOffFailed(pinCode);
+      }
+      on preAlarmTimer.Timeout():
+      {
+        siren.TurnOn();
+        state = States.Activated_AlarmMode;
+      }
+      on sensors.DetectedMovement():
+      {}
+    }
+  }
+}
+
