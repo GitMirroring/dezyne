@@ -1,7 +1,9 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 # Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@hansei-kaizen.org>
 # Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -73,7 +75,6 @@ BROKEN_run:=\
  regression/simple_space.dzn\
 #
 
-Alarm.flush:=--flush
 ConsumeMultiple.flush:=--flush
 DataVariables.flush:=--flush
 Handle.flush:=--flush
