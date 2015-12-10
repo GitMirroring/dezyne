@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
 //
@@ -142,12 +143,16 @@ int main(int argc, char* argv[])
     dezyne::locator loc;
     loc.set(rt);
 
+    std::unique_ptr<dezyne::pump> tmp1(new dezyne::pump);
+    loc.set(*tmp1);
+
     std::function<std::shared_ptr<itimer_impl>(const dezyne::locator&)> create_timer_impl = [](const dezyne::locator& l){return std::make_shared<timer_impl>(l);};
     loc.set(create_timer_impl);
 
     LegoBallSorter sut(loc);
-    dezyne::pump pump;
-    loc.set(pump);
+
+    std::unique_ptr<dezyne::pump> tmp2(std::move(tmp1)); //now the pump is destroyed before the sut is
+    dezyne::pump& pump = *tmp2;
 
     sut.dzn_meta.name = "sut";
     sut.ctrl.meta.requires = {"ctrl",0};
@@ -202,9 +207,9 @@ int main(int argc, char* argv[])
     bool stop = false;
     while(not stop && std::getline(std::cin, s)) {
       if(s.empty()) continue;
-      if(s[0] == 'c') pump.handle(0,0,[&]{sut.ctrl.in.calibrate();});
-      if(s[0] == 'o') pump.handle(0,0,[&]{sut.ctrl.in.operate();});
-      if(s[0] == 's') pump.handle(0,0,[&]{sut.ctrl.in.stop();});
+      if(s[0] == 'c') pump.and_wait(sut.ctrl.in.calibrate);
+      if(s[0] == 'o') pump.and_wait(sut.ctrl.in.operate);
+      if(s[0] == 's') pump.and_wait(sut.ctrl.in.stop);
       if(s[0] == 'q') stop = true;
     }
   }

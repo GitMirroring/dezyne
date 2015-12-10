@@ -3,7 +3,6 @@
 # Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 # Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@hansei-kaizen.org>
 # Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-# Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 #
 # This file is part of Dezyne.
 #
