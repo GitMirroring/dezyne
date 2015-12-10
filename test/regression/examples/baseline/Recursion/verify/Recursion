@@ -1,1 +1,15 @@
-verify: 
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: Recursion: check: deterministic: fail
+i.e
+Component Recursion is non-deterministic due to overlapping guards
+verify: Recursion: check: completeness: ok
+verify: Recursion: check: illegal: ok
+verify: Recursion: check: deadlock: fail
+i.e
+deadlock in model Recursion
+verify: Recursion: check: compliance: ok
+verify: Recursion: check: livelock: fail
+i.e
+livelock in model Recursion

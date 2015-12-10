@@ -1,1 +1,3 @@
-verify: 
+verify: IComp: check: completeness: ok
+verify: IComp: check: deadlock: ok
+verify: IComp: check: livelock: ok

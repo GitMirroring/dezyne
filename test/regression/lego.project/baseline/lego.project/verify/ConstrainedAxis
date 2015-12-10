@@ -1,1 +1,3 @@
-verify: 
+verify: IConstrainedMove: check: completeness: ok
+verify: IConstrainedMove: check: deadlock: ok
+verify: IConstrainedMove: check: livelock: ok

@@ -1,1 +1,9 @@
-verify: 
+verify: ISensor: check: completeness: ok
+verify: ISensor: check: deadlock: ok
+verify: ISensor: check: livelock: ok
+verify: SensorMultiplexer3: check: deterministic: ok
+verify: SensorMultiplexer3: check: completeness: ok
+verify: SensorMultiplexer3: check: illegal: ok
+verify: SensorMultiplexer3: check: deadlock: ok
+verify: SensorMultiplexer3: check: compliance: ok
+verify: SensorMultiplexer3: check: livelock: ok

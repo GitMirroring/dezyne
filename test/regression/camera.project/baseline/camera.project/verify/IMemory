@@ -1,1 +1,3 @@
-verify: 
+verify: IMemory: check: completeness: ok
+verify: IMemory: check: deadlock: ok
+verify: IMemory: check: livelock: ok

@@ -1,1 +1,3 @@
-verify: 
+verify: IAccountDB: check: completeness: ok
+verify: IAccountDB: check: deadlock: ok
+verify: IAccountDB: check: livelock: ok

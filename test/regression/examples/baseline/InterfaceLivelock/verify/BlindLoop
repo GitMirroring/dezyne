@@ -1,1 +1,3 @@
-verify: 
+verify: BlindLoop: check: completeness: ok
+verify: BlindLoop: check: deadlock: ok
+verify: BlindLoop: check: livelock: ok
