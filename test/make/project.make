@@ -49,6 +49,7 @@ $(foreach lang,$(LANGUAGES),\
 	$(eval LOCAL_DZN_FILES:=$(DZN_FILES))\
 	$(eval include make/check.make))
 endif
+include make/reset.make
 DZN_FILES:=
 LANGUAGES:=
 SUT:=

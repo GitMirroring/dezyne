@@ -146,13 +146,9 @@ $(DIRECTORIES:%=%-update):
 stress:
 	DZN=$(DZN) bin/stress.sh $(CONFIG)
 
-ifeq ($(MAKECMDGOALS),help)
-MAKE_SNIPPETS=$(CURPATH)makefile.make $(patsubst %,$(CURPATH)%,$(sort $(wildcard check/makefile.make)))
-MAKE_SNIPPETS:=$(filter-out fei/makefile.make lopw/makefile.make,$(MAKE_SNIPPETS))
-endif
-ifeq ($(MAKECMDGOALS),list)
-MAKE_SNIPPETS=$(CURPATH)makefile.make $(patsubst %,$(CURPATH)%,$(sort $(wildcard */makefile.make)))
-MAKE_SNIPPETS:=$(filter-out fei/makefile.make lopw/makefile.make,$(MAKE_SNIPPETS))
+#ifeq ($(filter help list, $(MAKECMDGOALS)), $(MAKECMDGOALS))
+ifeq ($(MAKE_SNIPPETS),)
+MAKE_SNIPPETS=$(CURPATH)makefile.make $(patsubst %,$(CURPATH)%,$(sort $(wildcard check/makefile.make check/*/makefile.make)))
 endif
 
 $(foreach i,$(MAKE_SNIPPETS),$(eval CDIR:=$(dir $(i))) $(info Entering $(i:%/makefile.make=%)) $(eval -include $(i)))

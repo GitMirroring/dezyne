@@ -58,5 +58,6 @@ $(foreach lang,$(CODE_LANGUAGES) $(filter run,$(PSEUDO_LANGUAGES)),\
 		$(eval include make/reset.make)))
 endif
 endif
+include make/reset.make
 DZN_FILES:=
 LANGUAGES:=
