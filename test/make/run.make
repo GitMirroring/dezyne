@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -32,7 +33,7 @@ $$(TOP): LOCAL_TARGET:=$$(LOCAL_TARGET)
 $$(TOP): LOCAL_SUT:=$$(LOCAL_SUT)
 $$(TOP): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
 $$(TOP): $(1)
-	diff -uw <(grep -v '[.]<flush>' $(1)) <($(DZN) run -m $(LOCAL_SUT) -t <(grep -v '<flush>' $(1)) $(LOCAL_DZN_TOP) | grep ^trace:| sed 's,^trace:,,' | tr ',' '\n')
+	diff -uw <(grep -v '[.]<flush>' $(1)) <($(DZN) run -m $(basename $(LOCAL_SUT)) -t <(grep -v '<flush>' $(1)) $(LOCAL_DZN_TOP) | grep ^trace:| sed 's,^trace:,,' | tr ',' '\n')
 
 $(LOCAL_NAME)-$(LOCAL_LANGUAGE): $$(TOP)
 $(LOCAL_NAME)-check: $$(TOP)
