@@ -21,13 +21,13 @@
    (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = [&] (#formals) { return dezyne::call_in(this, [&]{return #port _#event (#arguments);}, #port .meta, "#event "); };
+#port .#direction .#event  = [&] (#formals) { return dezyne::call_in(this, [&]{return #port _#event (#arguments);}, this->#port .meta, "#event "); };
 #}) (filter om:in? (om:events port))))
     (filter om:provides? (om:ports model)))#
 (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = [&] (#formals) { return dezyne::call_out(this, [=]{return #port _#event (#arguments);}, #port .meta, "#event "); };
+#port .#direction .#event  = [&] (#formals) { return dezyne::call_out(this, [=]{return #port _#event (#arguments);}, this->#port .meta, "#event "); };
 #}) (filter om:out? (om:events port))))
     (filter om:requires? (om:ports model)))
 }
