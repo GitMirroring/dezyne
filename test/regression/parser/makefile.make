@@ -21,23 +21,5 @@
 # 
 # Code:
 
-CURPATH:=$(shell echo $(CURDIR)/ | sed -e s,^.*/test/,,)
-DEPTH:=$(shell echo $(CURPATH) | sed -re s,[^/]+/,../,g)
-ifeq ($(DEPTH),)
-DEPTH:=.
-endif
-PHONIES:=all check clean default depend help list stress update
-MAKE_SNIPPETS:=$(sort $(shell find . -name makefile.make))
-MAKE_SNIPPETS:=$(MAKE_SNIPPETS:./%=$(CURPATH)%)
-DIRECTORIES:=$(dir $(MAKE_SNIPPETS))
-DIRECTORIES:=$(DIRECTORIES:$(notdir $(basename $(CURDIR)))/%/=%)
-.PHONY: $(DIRECTORIES) $(PHONIES)
-default: all
-%:
-	$(MAKE) -C $(DEPTH) MAKE_SNIPPETS="$(MAKE_SNIPPETS)" $(MAKEOVERRIDES) $@
-
-$(DIRECTORIES):
-	$(MAKE) -C $(DEPTH) MAKE_SNIPPETS="$(CURPATH)$@/makefile.make" $(MAKEOVERRIDES) check
-
-$(PHONIES):
-	$(MAKE) -C $(DEPTH) MAKE_SNIPPETS="$(MAKE_SNIPPETS)" $(MAKEOVERRIDES) $@
+LANGUAGES:=parse
+include make/files.make

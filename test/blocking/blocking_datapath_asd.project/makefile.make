@@ -21,7 +21,7 @@
 # 
 # Code:
 
-ifneq ($(filter c++,$(CODE_LANGUAGES)),)
+ifneq ($(filter c++,$(LANGUAGES)),)
 LOCAL_LANGUAGE:=c++
 
 #LOCAL_GLOBAL_TYPES:=
