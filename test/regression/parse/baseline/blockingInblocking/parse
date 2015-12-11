@@ -1,0 +1,1 @@
+blockingInblocking.dzn:14:29: Well-formedness error: BlockingStatement not allowed within other BlockingStatement
