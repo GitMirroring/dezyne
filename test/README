@@ -70,6 +70,3 @@ regression/lego.project/
 
 EXTERNAL PROJECTS
 =================
-
-regression/autocryocycle.project/
-   - convert and glue project [c++]
