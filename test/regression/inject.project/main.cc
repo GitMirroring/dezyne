@@ -40,7 +40,9 @@ int main()
 
   Injected sut(l);
   sut.dzn_meta.name = "sut";
-  sut.t.meta.requires = {"", 0};
+  // sut.t.meta.provides = {"t", 0};
+  sut.t.meta.requires = {"t", 0};
+  sut.t.meta.provides = {"t", 0};
   sut.t.out.f = f;
 
   sut.check_bindings();

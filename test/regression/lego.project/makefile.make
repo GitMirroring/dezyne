@@ -25,12 +25,14 @@ JAVA7:=$(shell /usr/bin/javac -version 2>&1 | grep -oe 'javac 1.7' >/dev/null &&
 ifneq ($(JAVA7),)
 LANGUAGES:=$(filter-out java java7, $(ALL_LANGUAGES))
 else
-LANGUAGES:=$(ALL_LANGUAGES)
+#LANGUAGES:=$(ALL_LANGUAGES)
+LANGUAGES:=c c++ cs goops $(JAVA) $(JAVA7) javascript python table
 endif
 $(foreach LOCAL_LANGUAGE,$(LANGUAGES),\
 	$(eval include $(CDIR)project.make))
-DZN_FILES:=
-LANGUAGES:=
 
 out/lego.project/c++03/main.o: CXXFLAGS:=-std=c++11 $(CXXFLAGS)
 out/lego.project/c++03/timer.o: CXXFLAGS:=-std=c++11 $(CXXFLAGS)
+
+DZN_FILES:=
+LANGUAGES:=

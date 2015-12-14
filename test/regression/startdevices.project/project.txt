@@ -1,2 +1,0 @@
-purpose: A very simple illustration of how two devices might be started
-
