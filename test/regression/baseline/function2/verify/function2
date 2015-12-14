@@ -1,9 +1,9 @@
-verify: ifunction2: check: completeness: ok
-verify: ifunction2: check: deadlock: ok
-verify: ifunction2: check: livelock: ok
 verify: function2: check: deterministic: ok
 verify: function2: check: completeness: ok
 verify: function2: check: illegal: ok
 verify: function2: check: deadlock: ok
 verify: function2: check: compliance: ok
 verify: function2: check: livelock: ok
+verify: ifunction2: check: completeness: ok
+verify: ifunction2: check: deadlock: ok
+verify: ifunction2: check: livelock: ok

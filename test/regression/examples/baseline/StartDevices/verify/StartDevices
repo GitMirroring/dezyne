@@ -1,12 +1,12 @@
-verify: StartControlIF: check: completeness: ok
-verify: StartControlIF: check: deadlock: ok
-verify: StartControlIF: check: livelock: ok
 verify: Device1IF: check: completeness: ok
 verify: Device1IF: check: deadlock: ok
 verify: Device1IF: check: livelock: ok
 verify: Device2IF: check: completeness: ok
 verify: Device2IF: check: deadlock: ok
 verify: Device2IF: check: livelock: ok
+verify: StartControlIF: check: completeness: ok
+verify: StartControlIF: check: deadlock: ok
+verify: StartControlIF: check: livelock: ok
 verify: StartDevices: check: deterministic: ok
 verify: StartDevices: check: completeness: ok
 verify: StartDevices: check: illegal: fail

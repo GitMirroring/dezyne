@@ -1,3 +1,9 @@
+verify: AlarmBlock: check: deterministic: ok
+verify: AlarmBlock: check: completeness: ok
+verify: AlarmBlock: check: illegal: ok
+verify: AlarmBlock: check: deadlock: ok
+verify: AlarmBlock: check: compliance: ok
+verify: AlarmBlock: check: livelock: ok
 verify: IConsole: check: completeness: ok
 verify: IConsole: check: deadlock: ok
 verify: IConsole: check: livelock: ok
@@ -7,9 +13,3 @@ verify: ISensor: check: livelock: ok
 verify: ISiren: check: completeness: ok
 verify: ISiren: check: deadlock: ok
 verify: ISiren: check: livelock: ok
-verify: AlarmBlock: check: deterministic: ok
-verify: AlarmBlock: check: completeness: ok
-verify: AlarmBlock: check: illegal: ok
-verify: AlarmBlock: check: deadlock: ok
-verify: AlarmBlock: check: compliance: ok
-verify: AlarmBlock: check: livelock: ok

@@ -1,4 +1,5 @@
 #!/usr/bin/nodejs
+// -*-javascript-*-
 
 process.stdin.setEncoding('utf8');
 
@@ -17,7 +18,8 @@ process.stdin.on('end', function() {
   })
       .filter(function (e, i, a) {
         return a.lastIndexOf(e) === i;
-      });
+      })
+      .sort ();
 
   process.stdout.write('verify: ' +
                        result

@@ -1,3 +1,20 @@
+verify: DoorControl: check: deterministic: ok
+
+verify: DoorControl: check: completeness: ok
+
+verify: DoorControl: check: illegal: ok
+
+verify: DoorControl: check: deadlock: ok
+
+verify: DoorControl: check: compliance: ok
+
+verify: DoorControl: check: livelock: ok
+verify: DoorControlIF: check: completeness: ok
+
+verify: DoorControlIF: check: deadlock: ok
+
+verify: DoorControlIF: check: livelock: ok
+
 verify: LimitSwitchIF: check: completeness: ok
 
 verify: LimitSwitchIF: check: deadlock: ok
@@ -16,20 +33,3 @@ verify: SwitchPressIF: check: deadlock: ok
 
 verify: SwitchPressIF: check: livelock: ok
 
-verify: DoorControlIF: check: completeness: ok
-
-verify: DoorControlIF: check: deadlock: ok
-
-verify: DoorControlIF: check: livelock: ok
-
-verify: DoorControl: check: deterministic: ok
-
-verify: DoorControl: check: completeness: ok
-
-verify: DoorControl: check: illegal: ok
-
-verify: DoorControl: check: deadlock: ok
-
-verify: DoorControl: check: compliance: ok
-
-verify: DoorControl: check: livelock: ok

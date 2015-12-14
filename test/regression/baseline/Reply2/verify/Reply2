@@ -1,12 +1,12 @@
 verify: I: check: completeness: ok
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
-verify: U: check: completeness: ok
-verify: U: check: deadlock: ok
-verify: U: check: livelock: ok
 verify: Reply2: check: deterministic: ok
 verify: Reply2: check: completeness: ok
 verify: Reply2: check: illegal: ok
 verify: Reply2: check: deadlock: ok
 verify: Reply2: check: compliance: ok
 verify: Reply2: check: livelock: ok
+verify: U: check: completeness: ok
+verify: U: check: deadlock: ok
+verify: U: check: livelock: ok

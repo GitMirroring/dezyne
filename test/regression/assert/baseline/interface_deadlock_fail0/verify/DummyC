@@ -1,3 +1,9 @@
+verify: DummyC: check: deterministic: ok
+verify: DummyC: check: completeness: ok
+verify: DummyC: check: illegal: ok
+verify: DummyC: check: deadlock: ok
+verify: DummyC: check: compliance: ok
+verify: DummyC: check: livelock: ok
 verify: DummyI: check: completeness: ok
 verify: DummyI: check: deadlock: ok
 verify: DummyI: check: livelock: ok
@@ -5,9 +11,3 @@ verify: I: check: completeness: ok
 verify: I: check: deadlock: fail
 deadlock in model I
 verify: I: check: livelock: ok
-verify: DummyC: check: deterministic: ok
-verify: DummyC: check: completeness: ok
-verify: DummyC: check: illegal: ok
-verify: DummyC: check: deadlock: ok
-verify: DummyC: check: compliance: ok
-verify: DummyC: check: livelock: ok

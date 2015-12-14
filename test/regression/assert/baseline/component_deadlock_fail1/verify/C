@@ -1,6 +1,3 @@
-verify: I: check: completeness: ok
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
 verify: C: check: deterministic: ok
 verify: C: check: completeness: ok
 verify: C: check: illegal: ok
@@ -14,3 +11,6 @@ i.return
 i.e
 Component C is non-compliant with interface of provided port
 verify: C: check: livelock: ok
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok

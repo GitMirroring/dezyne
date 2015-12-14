@@ -1,3 +1,9 @@
+verify: AlarmStatusUI: check: deterministic: ok
+verify: AlarmStatusUI: check: completeness: ok
+verify: AlarmStatusUI: check: illegal: ok
+verify: AlarmStatusUI: check: deadlock: ok
+verify: AlarmStatusUI: check: compliance: ok
+verify: AlarmStatusUI: check: livelock: ok
 verify: IAlarmStatusUI: check: completeness: ok
 verify: IAlarmStatusUI: check: deadlock: ok
 verify: IAlarmStatusUI: check: livelock: ok
@@ -7,9 +13,3 @@ verify: IRgbLed: check: livelock: ok
 verify: ITimer: check: completeness: ok
 verify: ITimer: check: deadlock: ok
 verify: ITimer: check: livelock: ok
-verify: AlarmStatusUI: check: deterministic: ok
-verify: AlarmStatusUI: check: completeness: ok
-verify: AlarmStatusUI: check: illegal: ok
-verify: AlarmStatusUI: check: deadlock: ok
-verify: AlarmStatusUI: check: compliance: ok
-verify: AlarmStatusUI: check: livelock: ok

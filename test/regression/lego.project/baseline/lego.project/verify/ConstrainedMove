@@ -1,3 +1,9 @@
+verify: ConstrainedMove: check: deterministic: ok
+verify: ConstrainedMove: check: completeness: ok
+verify: ConstrainedMove: check: illegal: ok
+verify: ConstrainedMove: check: deadlock: ok
+verify: ConstrainedMove: check: compliance: ok
+verify: ConstrainedMove: check: livelock: ok
 verify: IConstrainedMove: check: completeness: ok
 verify: IConstrainedMove: check: deadlock: ok
 verify: IConstrainedMove: check: livelock: ok
@@ -7,9 +13,3 @@ verify: IMove: check: livelock: ok
 verify: ITouchSense: check: completeness: ok
 verify: ITouchSense: check: deadlock: ok
 verify: ITouchSense: check: livelock: ok
-verify: ConstrainedMove: check: deterministic: ok
-verify: ConstrainedMove: check: completeness: ok
-verify: ConstrainedMove: check: illegal: ok
-verify: ConstrainedMove: check: deadlock: ok
-verify: ConstrainedMove: check: compliance: ok
-verify: ConstrainedMove: check: livelock: ok

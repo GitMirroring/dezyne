@@ -1,9 +1,9 @@
-verify: IBlocked: check: completeness: ok
-verify: IBlocked: check: deadlock: ok
-verify: IBlocked: check: livelock: ok
 verify: DoubleBlocked: check: deterministic: ok
 verify: DoubleBlocked: check: completeness: ok
 verify: DoubleBlocked: check: illegal: ok
 verify: DoubleBlocked: check: deadlock: ok
 verify: DoubleBlocked: check: compliance: ok
 verify: DoubleBlocked: check: livelock: ok
+verify: IBlocked: check: completeness: ok
+verify: IBlocked: check: deadlock: ok
+verify: IBlocked: check: livelock: ok

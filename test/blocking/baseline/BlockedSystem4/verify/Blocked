@@ -1,9 +1,3 @@
-verify: IBlocked: check: completeness: ok
-verify: IBlocked: check: deadlock: ok
-verify: IBlocked: check: livelock: ok
-verify: IAsync: check: completeness: ok
-verify: IAsync: check: deadlock: ok
-verify: IAsync: check: livelock: ok
 verify: Blocked: check: deterministic: ok
 verify: Blocked: check: completeness: ok
 verify: Blocked: check: illegal: ok
@@ -16,3 +10,9 @@ required.notify
 provided.return
 Component Blocked is non-compliant with interface of provided port
 verify: Blocked: check: livelock: ok
+verify: IAsync: check: completeness: ok
+verify: IAsync: check: deadlock: ok
+verify: IAsync: check: livelock: ok
+verify: IBlocked: check: completeness: ok
+verify: IBlocked: check: deadlock: ok
+verify: IBlocked: check: livelock: ok

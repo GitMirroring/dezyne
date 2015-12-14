@@ -1,9 +1,3 @@
-verify: IDummy: check: completeness: ok
-verify: IDummy: check: deadlock: ok
-verify: IDummy: check: livelock: ok
-verify: ITauEmitMulti: check: completeness: ok
-verify: ITauEmitMulti: check: deadlock: ok
-verify: ITauEmitMulti: check: livelock: ok
 verify: ConsumeMultiple: check: deterministic: ok
 verify: ConsumeMultiple: check: completeness: ok
 verify: ConsumeMultiple: check: illegal: fail
@@ -37,3 +31,9 @@ src.ntfA
 src.done
 Component ConsumeMultiple is non-compliant with interface of provided port
 verify: ConsumeMultiple: check: livelock: ok
+verify: IDummy: check: completeness: ok
+verify: IDummy: check: deadlock: ok
+verify: IDummy: check: livelock: ok
+verify: ITauEmitMulti: check: completeness: ok
+verify: ITauEmitMulti: check: deadlock: ok
+verify: ITauEmitMulti: check: livelock: ok

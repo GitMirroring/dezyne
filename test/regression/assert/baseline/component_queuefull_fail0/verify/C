@@ -1,6 +1,3 @@
-verify: I: check: completeness: ok
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
 verify: C: check: deterministic: ok
 verify: C: check: completeness: ok
 verify: C: check: illegal: fail
@@ -31,3 +28,6 @@ r.c
 r.return
 p.c not performed by component
 verify: C: check: livelock: ok
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok

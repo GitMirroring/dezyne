@@ -1,12 +1,3 @@
-verify: IPedal: check: completeness: ok
-verify: IPedal: check: deadlock: ok
-verify: IPedal: check: livelock: ok
-verify: IFunctional: check: completeness: ok
-verify: IFunctional: check: deadlock: ok
-verify: IFunctional: check: livelock: ok
-verify: IAsync: check: completeness: ok
-verify: IAsync: check: deadlock: ok
-verify: IAsync: check: livelock: ok
 verify: Acquisition: check: deterministic: ok
 verify: Acquisition: check: completeness: ok
 verify: Acquisition: check: illegal: ok
@@ -25,3 +16,12 @@ activation.pressed
 fluo.pressed
 fluo.pressed not allowed by port fluo
 verify: Acquisition: check: livelock: ok
+verify: IAsync: check: completeness: ok
+verify: IAsync: check: deadlock: ok
+verify: IAsync: check: livelock: ok
+verify: IFunctional: check: completeness: ok
+verify: IFunctional: check: deadlock: ok
+verify: IFunctional: check: livelock: ok
+verify: IPedal: check: completeness: ok
+verify: IPedal: check: deadlock: ok
+verify: IPedal: check: livelock: ok
