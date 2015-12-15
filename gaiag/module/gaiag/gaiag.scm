@@ -38,6 +38,7 @@
 	  '((assert (single-char #\a))
 	    (coverage (single-char #\c))
 	    (debug (single-char #\d))
+	    (glue (single-char #\g) (value #t))
             (help (single-char #\h))
             (json (single-char #\j))
             (language (single-char #\l) (value #t))
@@ -65,6 +66,7 @@ Usage: gaiag [OPTION]... FILE
   -a, --assert           generate all asserts inline, not in asserts.csp
   -c, --coverage         write lcov coverage data to gaiag.info
   -d, --debug            run with debugging
+  -g, --glue=TYPE        generate glue code for TYPE [dzn]
   -h, --help             display this help
   -j, --json             use json-friendly format; strings and hash tables
   -m, --model=MODEL      use model named MODEL

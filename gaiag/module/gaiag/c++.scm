@@ -22,12 +22,14 @@
   :use-module (ice-9 curried-definitions)
   :use-module (gaiag list match)
   :use-module (ice-9 and-let-star)
+  :use-module (ice-9 getopt-long)
   :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
 
   :use-module (gaiag animate)
   :use-module (gaiag c)
   :use-module (gaiag code)
+  :use-module (gaiag gaiag)
   :use-module (gaiag indent)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
@@ -37,7 +39,7 @@
   :use-module (gaiag om)
 
   :export (ast->
-           gen1-interfaces))
+           asd-interfaces))
 
 (define (ast-> ast)
   (let ((om ((om:register code:om #t) ast)))
@@ -53,6 +55,9 @@
 (define (c++:init-brace-open) "{")
 (define (c++:init-brace-close) "}")
 
+(define (glue)
+  (and=> (option-ref (parse-opts (command-line)) 'glue #f) string->symbol))
+
 (define (dump o)
   (match o
     (($ <interface>) (dump-interface o))
@@ -63,8 +68,27 @@
   ((@@ (gaiag c) dump-interface) o))
 
 (define (dump-component o)
-  ((@@ (gaiag c) dump-component) o)
+  (if (and (glue)
+           (eq? (glue) 'asd)
+           (map-file o))
+      ;; TODO: asd glue templates
+      (let ((name ((om:scope-name) o)))
+        (dump-indented (symbol-append 'glue- name '.cc)
+                       (lambda ()
+                         (c++-file 'glue-bottom-component.cc.scm (code:module o))))
+        (dump-indented (symbol-append name 'Interface.h)
+                       (lambda ()
+                         (c++-file 'glue-top-system-interface.hh.scm (code:module (om:interface (om:port o))))))
+        (dump-indented (symbol-append name 'Component.h)
+                       (lambda ()
+                         (c++-file 'glue-top-system.hh.scm (code:module o))))
+        (dump-indented (symbol-append name 'Component.cpp)
+                       (lambda ()
+                         (c++-file 'glue-top-system.cc.scm (code:module o))))))
+
   (let ((name ((om:scope-name) o)))
+    ((@@ (gaiag c) dump-component) o)
+    ;; TODO: rename dzn glue templates
     (if (and (not (.behaviour o))
              (map-file o))
         (dump-indented (symbol-append 'glue- name '.cc)
@@ -103,12 +127,12 @@
   (define (cdr-equal? x) (equal? (cdr x) value))
   (and=> (find cdr-equal? alist) car))
 
-(define ((gen1-interfaces dir?) model)
+(define ((asd-interfaces dir?) model)
   (let* ((provided
           (filter dir? ((compose .elements .events) model)))
          (alist (event2->interface1-event1-alist (.name model)))
-         (gen1-provided (filter identity (map (lambda (x) (assoc (.name x) alist)) provided))))
-    (if (pair? gen1-provided) (list gen1-provided) '())))
+         (asd-provided (filter identity (map (lambda (x) (assoc (.name x) alist)) provided))))
+    (if (pair? asd-provided) (list asd-provided) '())))
 
 (define (map-file o)
   (and (om:port o)

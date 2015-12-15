@@ -20,10 +20,17 @@
 //
 // Code:
 
-#include "IConsoleInterface.h"
-class AlarmComponent: public IConsoleInterface
+#ifndef ALARM_COMPONENT_H
+#define ALARM_COMPONENT_H
+
+#include "AlarmInterface.h"
+
+struct AlarmComponent
+//  : public dzn::IConsoleInterface
+: public IConsoleInterface
 {
-public:
+  //  static boost::shared_ptr<dzn::IConsoleInterface> GetInstance();
   static boost::shared_ptr<IConsoleInterface> GetInstance();
   static void ReleaseInstance();
 };
+#endif

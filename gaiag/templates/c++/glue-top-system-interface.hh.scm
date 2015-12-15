@@ -18,7 +18,7 @@
                      (list "virtual " return-type " " (third entry) "() = 0;\n")))
                  alist)
                 "};\n")))
-      ((gen1-interfaces om:in?) model))
+      ((asd-interfaces om:in?) model))
 
 #(map (lambda (alist)
         (let* ((entry (car alist))
@@ -33,7 +33,7 @@
                      (list "virtual " return-type " " (third entry) "() = 0;\n")))
                  alist)
                 "};\n")))
-      ((gen1-interfaces om:out?) model))
+      ((asd-interfaces om:out?) model))
 
 struct #.model Interface
 {
@@ -41,12 +41,12 @@ struct #.model Interface
         (let* ((entry (car alist))
                (interface (second entry)))
           (list "virtual void GetAPI(boost::shared_ptr<" interface ">*) = 0 ;\n")))
-      ((gen1-interfaces om:in?) model))#
+      ((asd-interfaces om:in?) model))#
 (map (lambda (alist)
         (let* ((entry (car alist))
                (interface (second entry)))
           (list "virtual void RegisterCB(boost::shared_ptr<" interface ">) = 0;\n")))
-      ((gen1-interfaces om:out?) model))
+      ((asd-interfaces om:out?) model))
 virtual void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded>) = 0;
 };
 ##endif // #.INTERFACE _INTERFACE_H

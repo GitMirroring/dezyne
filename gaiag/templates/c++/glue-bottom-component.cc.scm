@@ -19,31 +19,38 @@ struct SingleThreaded
   void processCBs(){}
 };
 
-#(define ((gen1-interfaces dir?) model)
-   (let* ((port (om:port model))
-          (provided
-           (filter dir? ((compose .elements .events om:interface) port)))
-          (alist (event2->interface1-event1-alist port))
-          (gen1-provided (filter identity (map (lambda (x) (assoc (.name x) alist)) provided))))
-     (if (pair? gen1-provided) (list gen1-provided) '())))
+#(define mapping->event first)
+#(define mapping->asd-interface second)
+#(define mapping->asd-event third)
+#(define (mapping->component mapping) (symbol-drop (mapping->asd-interface mapping) 1))
 
-#(map (lambda (alist)
-        (let* ((entry (car alist))
-               (interface (second entry))
-               (component (symbol-drop interface 1))
-               (port-type ((c++:scope-name) (om:port model))))
-         (list "struct " component "\n: public " interface "\n"
-               "{\n"
-               port-type "& port;\n"
-               component "(" port-type "& port)\n"
-               ": port(port)\n"
-               "{}\n"
-               (map
-                (lambda (entry)
-                  (list "void " (third entry) "(){ port.out." (first entry) "(); }\n"))
-                alist)
-               "};\n")))
-      ((gen1-interfaces om:out?) model))
+#(map (lambda (mapping-list)
+        (let* ((mapping (car mapping-list))
+               (port (om:port model))
+               (port-type ((c++:scope-name) port))
+               (member-functions
+                (map
+                 (animate-pairs `((asd-interface ,mapping->asd-interface)
+                                  (event ,mapping->event)
+                                  (asd-event ,mapping->asd-event)
+                                  (return-type ,(compose (lambda (e) (return-type port e)) (lambda (e) (om:event (om:interface model) e)) mapping->event))) #{
+#return-type  #asd-event(){ port.out.#event(); }
+#})
+                 mapping-list)))
+((animate-pairs `((component ,mapping->component)
+                  (asd-interface ,mapping->asd-interface)
+                  (member-functions ,member-functions)
+                  (port-type ,port-type)) #{
+struct #component : public #asd-interface
+{
+ #port-type & port;
+ #component(#port-type & port)
+ : port(port)
+ {}
+ #member-functions
+};
+#}) mapping)))
+      ((asd-interfaces om:out?) (om:interface model)))
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 static std::map<#.model *, boost::shared_ptr<#(om:name (om:port model)) Interface> > g_handwritten;
@@ -59,20 +66,25 @@ static std::map<#.model *, boost::shared_ptr<#(om:name (om:port model)) Interfac
                                        "component->GetAPI(&api_" (.name port) ");\n")))
         (filter om:provides? ((compose .elements .ports) model)))
 g_handwritten.insert (std::make_pair (this,component));
-#(map (lambda (alist)
-        (let* ((entry (car alist))
-               (interface (second entry))
-               (component (symbol-drop interface 1)))
-          (list "component->RegisterCB(boost::make_shared<" component ">(boost::ref(" (.name (om:port model)) ")));\n")))
-      ((gen1-interfaces om:out?) model))
-#(if (pair? ((gen1-interfaces om:out?) model)) "component->RegisterCB(boost::make_shared< ::SingleThreaded>()); //fixme")
-#(map (lambda (alist)
-        (let* ((entry (car alist))
-               (interface (second entry)))
-          (map
-           (lambda (entry)
-             (let ((port (om:port model)))
-              (list (.name port) ".in." (first entry) " = boost::bind(&::" (om:name port) "::" (third entry) ",api_" (.name port) ");\n")))
-           alist)))
-      ((gen1-interfaces om:in?) model))}
+#(map
+  (lambda (mapping-list)
+   ((animate-pairs `((component ,mapping->component)
+                     (port ,(.name (om:port model)))
+                     (asd-interface ,mapping->asd-interface))
+#{
+  component->RegisterCB(boost::make_shared<#component >(boost::ref(#port)));
+#}) (car mapping-list))) ((asd-interfaces om:out?) (om:interface model)))
+#(if (pair? ((asd-interfaces om:out?) (om:interface model))) "component->RegisterCB(boost::make_shared< ::SingleThreaded>()); //fixme")
+#(map
+  (lambda (mapping-list)
+    (map
+      (animate-pairs `((asd-interface ,mapping->asd-interface)
+                       (asd-event ,mapping->asd-event)
+                       (event ,mapping->event)
+                       (component ,mapping->component)
+                       (port ,(.name (om:port model)))
+                       (port-type ,(om:name (om:port model))))
+#{
+ #port .in.#event  = boost::bind(&::#port-type ::#asd-event , api_#port);
+#}) mapping-list)) ((asd-interfaces om:in?) (om:interface model)))}
 #(map (lambda (x) (list "}\n")) (om:scope model))

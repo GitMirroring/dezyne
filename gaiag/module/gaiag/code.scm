@@ -24,6 +24,7 @@
   :use-module (ice-9 getopt-long)
   :use-module (gaiag list match)
   :use-module (ice-9 and-let-star)
+  :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
 
@@ -89,6 +90,9 @@
            statements.event
            statements.port
            string-if
+
+           animate-pairs
+
            ))
 
 (define (ast:code ast)
@@ -1004,6 +1008,14 @@
      (animate-string (if (null-is-#f condition) then "") (current-module)))
     ((_ condition then else)
      (animate-string (if (null-is-#f condition) then else) (current-module)))))
+
+(define* (pairs->module key-procedure-pairs :optional (parameter #f))
+  (let ((module (code:module (and=> (module-variable (current-module) 'model)
+                                    variable-ref))))
+    (populate-module module key-procedure-pairs parameter)))
+
+(define* ((animate-pairs pairs string) :optional parameter)
+  (animate string (pairs->module pairs parameter)))
 
 (define (debug . x) #t)
 ;;(define debug stderr)
