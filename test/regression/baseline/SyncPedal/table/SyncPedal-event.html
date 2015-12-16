@@ -1,0 +1,12 @@
+     States      Guard           Code                Next
+press
+[pedal.Pressed]         illegal;
+[pedal.Released] [true] pedal = State.Pressed;  pedal.Pressed
+                        pressed;
+[pedal.Released] [true] pedal = State.Pressed;  pedal.Pressed
+release
+[pedal.Pressed]  [true] pedal = State.Released; pedal.Released
+                        released;
+[pedal.Pressed]  [true] pedal = State.Released; pedal.Released
+[pedal.Released]        illegal;
+

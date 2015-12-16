@@ -1,0 +1,21 @@
+                States                  Guard        Code             Next
+setup
+[state.Idle]                                  state = State.Setup state.Setup
+                                              ;
+[state.Acquire || state.Ready ||              illegal;
+state.Setup]
+shoot
+[state.Acquire || state.Idle]                 illegal;
+[state.Ready || state.Setup]                  state = State.      state.Acquire
+                                              Acquire;
+release
+[state.Acquire || state.Idle]                 illegal;
+[state.Ready || state.Setup]                  state = State.Idle; state.Idle
+inevitable
+[state.Ready || state.Setup]                  focus;              state.Ready
+                                              ready;
+[state.Setup]                                 state = State.Ready state.Ready
+                                              ;
+[state.Acquire]                               image;              state.Idle
+                                              state = State.Idle;
+

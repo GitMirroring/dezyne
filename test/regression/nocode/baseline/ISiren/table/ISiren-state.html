@@ -1,0 +1,8 @@
+Events  Guard        Code           Next
+[state.Off]
+turnon        state = States.On;  state.On
+turnoff       illegal;
+[state.On]
+turnon        illegal;
+turnoff       state = States.Off; state.Off
+

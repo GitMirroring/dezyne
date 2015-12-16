@@ -1,0 +1,15 @@
+            States              Guard          Code                 Next
+Activate
+[state.Deactivated]                   state = States.         state.Activated
+                                      Activated;
+[state.Triggered ||                   illegal;
+state.Activated]
+Deactivate
+[state.Deactivated]                   illegal;
+[state.Triggered ||                   state = States.         state.Deactivated
+state.Activated]                      Deactivated;
+optional
+                                      DetectedMovement;
+[state.Activated]                     state = States.         state.Triggered
+                                      Triggered;
+

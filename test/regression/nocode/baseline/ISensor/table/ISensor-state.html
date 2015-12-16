@@ -1,0 +1,17 @@
+    Events      Guard           Code                 Next
+[state.Disabled]
+enable                state = States.Enabled;   state.Enabled
+disable               illegal;
+[state.Enabled]
+enable                illegal;
+disable               state = States.Disabling; state.Disabling
+optional              triggered;                state.Triggered
+                      state = States.Triggered;
+[state.Disabling]
+enable, disable       illegal;
+inevitable            disabled;                 state.Disabled
+                      state = States.Disabled;
+[state.Triggered]
+enable                illegal;
+disable               state = States.Disabling; state.Disabling
+

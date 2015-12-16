@@ -1,0 +1,19 @@
+   Events     Guard               Code                      Next
+[mainState.Ready]
+stop                 mainState = States.Stopping;   mainState.Stopping
+stop                 mainState = States.Error;      mainState.Error
+recover              illegal;
+[mainState.Stopping]
+inevitable           ok;                            mainState.Ready
+                     mainState = States.Ready;
+stop, recover        illegal;
+[mainState.Error]
+stop                 ok;                            mainState.Error
+recover       [true] mainState = States.Recovering; mainState.Recovering
+recover       [true] {}                             mainState.Error
+inevitable           error;                         mainState.Error
+[mainState.Recovering]
+inevitable           ok;                            mainState.Ready
+                     mainState = States.Ready;
+stop, recover        illegal;
+

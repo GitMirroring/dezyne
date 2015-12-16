@@ -1,0 +1,13 @@
+            States              Guard           Code                 Next
+arm
+[state.Disarmed]                      state = States.Armed;     state.Armed
+[state.Triggered ||                   illegal;
+state.Armed]
+disarm
+[state.Disarmed]                      illegal;
+[state.Triggered ||                   state = States.Disarmed;  state.Disarmed
+state.Armed]
+optional
+[state.Armed]                         detected;                 state.Triggered
+                                      state = States.Triggered;
+

@@ -1,0 +1,8 @@
+Events Guard      Code         Next
+[done.yes]
+next         reply(done);    done.yes
+[done.no]
+next         reply(done);    done.yes
+             done = end.yes;
+next         reply(done);    done.no
+

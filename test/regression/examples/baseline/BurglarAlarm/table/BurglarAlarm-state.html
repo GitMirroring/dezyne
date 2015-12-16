@@ -1,0 +1,8 @@
+Events  Guard          Code                Next
+[state.Silent]
+TurnOn        state = State.Sounding; state.Sounding
+TurnOff       illegal;
+[state.Sounding]
+TurnOn        illegal;
+TurnOff       state = State.Silent;   state.Silent
+

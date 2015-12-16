@@ -1,0 +1,13 @@
+   States    Guard        Code          Next
+inevitable
+                   a;
+[!isWaiting]       isWaiting = true;  isWaiting
+                   b;
+c
+[!isWaiting]       illegal;
+[isWaiting]        d;                 isWaiting
+                   isWaiting = false;
+e
+[!isWaiting]       {}                 isWaiting
+[isWaiting]        illegal;
+

@@ -1,0 +1,21 @@
+       Events         Guard          Code              Next
+[state.Idle]
+setup                       state = State.Setup;   state.Setup
+shoot, release              illegal;
+[state.Setup]
+setup                       illegal;
+shoot                       state = State.Acquire; state.Acquire
+release                     state = State.Idle;    state.Idle
+inevitable                  focus;                 state.Setup
+inevitable                  ready;                 state.Ready
+                            state = State.Ready;
+[state.Ready]
+setup                       illegal;
+shoot                       state = State.Acquire; state.Acquire
+release                     state = State.Idle;    state.Idle
+inevitable                  focus;                 state.Ready
+[state.Acquire]
+inevitable                  image;                 state.Idle
+                            state = State.Idle;
+setup, release, shoot       illegal;
+

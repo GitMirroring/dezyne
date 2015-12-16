@@ -1,0 +1,41 @@
+Events      Guard                    Code                     Next
+[!b1]
+                       b1 = b1 || b2;
+                       b2 = b1 && b2;
+                       b3 = !b1;
+                       b1 = true;
+                       b2 = false;
+                       b3 = state1 == States.State2;
+                       b1 = state2 != States.State2;
+                       b2 = b1 && b2;
+evt    [state1.State1] b3 = state1.State2;              b1.<unknown>, !b1
+                       b2 = b1 || b2 || b3;
+                       b3 = b1 && b2 && b3;
+                       b1 = !(!b2);
+                       b1 = !b2 && b3;
+                       b2 = !b2 || b3;
+                       b3 = !(state1 == States.State2);
+                       b1 = b2 && b3 || b1;
+                       b2 = b1 || b2 && b3;
+                       if (state1.State2) b1 = !b1;
+[b1]
+                       b1 = b1 || b2;
+                       b2 = b1 && b2;
+                       b3 = !b1;
+                       b1 = true;
+                       b2 = false;
+                       b3 = state1 == States.State2;
+                       b1 = state2 != States.State2;
+                       b2 = b1 && b2;
+evt    [state1.State1] b3 = state1.State2;              b1.<unknown>, !b1
+                       b2 = b1 || b2 || b3;
+                       b3 = b1 && b2 && b3;
+                       b1 = !(!b2);
+                       b1 = !b2 && b3;
+                       b2 = !b2 || b3;
+                       b3 = !(state1 == States.State2);
+                       b1 = b2 && b3 || b1;
+                       b2 = b1 || b2 && b3;
+                       if (state1.State2) b1 = !b1;
+evt    [state2.State1] {}                               b1
+

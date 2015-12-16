@@ -1,0 +1,12 @@
+  Events   Guard        Code           Next
+[!isWaiting]
+                 a;
+inevitable       isWaiting = true;  isWaiting
+                 b;
+c                illegal;
+e                {}                 !isWaiting
+[isWaiting]
+c                d;                 !isWaiting
+                 isWaiting = false;
+e                illegal;
+

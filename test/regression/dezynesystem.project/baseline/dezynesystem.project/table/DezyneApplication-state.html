@@ -1,0 +1,81 @@
+          Events                  Guard                      Code                      Next
+[state.Unknown]
+                                                userDB.checkUser();
+iDezyne.authenticate                            state = AuthState.             state.Authenticating
+                                                Authenticating;
+iDezyne.checkModel,
+iDezyne.verifyModel,
+userDB.UserCredentialsOK,
+userDB.UserCredentialsNOK,                      illegal;
+userDB.UserUnknown,
+ibackend.checkModelRes,
+ibackend.verifyModelRes,
+timer.timeout
+[state.Authenticating]
+                                                SeatAvailable = accountDB.
+                                                checkIfSeatAvailable();
+                                                if (SeatAvailable == 
+                                                IAccountDB.result.Available) {
+                                                  state = AuthState.Authorized
+                                                ;
+                                                  timer.createTimer();         state.Authorized,
+userDB.UserCredentialsOK                          iDezyne.authenticateSuccess  state.Unknown
+                                                ();
+                                                }
+                                                else {
+                                                  state = AuthState.Unknown;
+                                                  iDezyne.authenticateFailed
+                                                ();
+                                                }
+userDB.UserCredentialsNOK,                      iDezyne.authenticateFailed();  state.Unknown
+userDB.UserUnknown                              state = AuthState.Unknown;
+iDezyne.checkModel,
+iDezyne.verifyModel,
+iDezyne.authenticate,                           illegal;
+ibackend.checkModelRes,
+ibackend.verifyModelRes,
+timer.timeout
+[state.Authorized]
+iDezyne.authenticate,
+userDB.UserCredentialsOK,                       illegal;
+userDB.UserCredentialsNOK,
+userDB.UserUnknown
+                           [ModelCheckOngoing | SessionExpired = true;
+timer.timeout              |                    iDezyne.reauthenticateNeeded   state.Authorized
+                           VerificationOngoing] ();
+                                                state = AuthState.Unknown;
+timer.timeout              [otherwise]          iDezyne.reauthenticateNeeded   state.Unknown
+                                                ();
+                                                [ModelCheckOngoing]
+                                                illegal;
+                                                [!ModelCheckOngoing]
+iDezyne.checkModel         [!SessionExpired]    {                              state.Authorized
+                                                  ModelCheckOngoing = true;
+                                                  ibackend.checkModel();
+                                                  reply(IDezyne.res.Ok);
+                                                }
+iDezyne.checkModel         [otherwise]          reply(IDezyne.res.Nok);        state.Authorized
+                                                [VerificationOngoing]
+                                                illegal;
+                                                [!VerificationOngoing]
+iDezyne.verifyModel        [!SessionExpired]    {                              state.Authorized
+                                                  VerificationOngoing = true;
+                                                  ibackend.verifyModel();
+                                                  reply(IDezyne.res.Ok);
+                                                }
+iDezyne.verifyModel        [otherwise]          reply(IDezyne.res.Nok);        state.Authorized
+                                                ModelCheckOngoing = false;
+                                                if (SessionExpired && !
+                                                VerificationOngoing) {         state.Authorized,
+ibackend.checkModelRes                            SessionExpired = false;      state.Unknown
+                                                  state = AuthState.Unknown;
+                                                }
+                                                iDezyne.checkModelRes();
+                                                VerificationOngoing = false;
+                                                if (SessionExpired && !
+                                                ModelCheckOngoing) {           state.Authorized,
+ibackend.verifyModelRes                           SessionExpired = false;      state.Unknown
+                                                  state = AuthState.Unknown;
+                                                }
+                                                iDezyne.verifyModelRes();
+

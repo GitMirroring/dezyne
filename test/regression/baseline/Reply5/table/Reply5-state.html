@@ -1,0 +1,12 @@
+Events Guard              Code               Next
+[!dummy]
+done         Status s = fun();              !dummy
+             reply(s);
+done         Status s = fun_arg(Status.No); !dummy
+             reply(s);
+[dummy]
+done         Status s = fun();              dummy
+             reply(s);
+done         Status s = fun_arg(Status.No); dummy
+             reply(s);
+

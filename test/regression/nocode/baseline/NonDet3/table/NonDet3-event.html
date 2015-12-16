@@ -1,0 +1,45 @@
+               States                Guard        Code              Next
+init
+                                            ok;
+[mainState.Powered]                  [true] mainState =      mainState.Ready
+                                            States.Ready;
+                                            error;
+[mainState.Powered]                  [true] mainState =      mainState.Error
+                                            States.Error;
+[mainState.Error ||
+mainState.Stopping ||                       illegal;
+mainState.Working ||
+mainState.Ready]
+work
+[mainState.Error ||
+mainState.Stopping ||                       illegal;
+mainState.Working ||
+mainState.Powered]
+[mainState.Ready]                           mainState =      mainState.Working
+                                            States.Working;
+recover
+[mainState.Stopping ||
+mainState.Working || mainState.Ready        illegal;
+|| mainState.Powered]
+                                            ok;
+[mainState.Error]                    [true] mainState =      mainState.Ready
+                                            States.Ready;
+                                            error;
+[mainState.Error]                    [true] mainState =      mainState.Error
+                                            States.Error;
+stop
+[mainState.Powered]                         illegal;
+[mainState.Stopping ||                      mainState = 
+mainState.Working ||                        States.Stopping; mainState.Stopping
+mainState.Ready]
+[mainState.Ready]                           mainState =      mainState.Ready
+                                            States.Ready;
+[mainState.Error]                           ok;              mainState.Error
+inevitable
+[mainState.Stopping ||                      ok;
+mainState.Working]                   [true] mainState =      mainState.Ready
+                                            States.Ready;
+[mainState.Stopping ||                      error;
+mainState.Working]                   [true] mainState =      mainState.Error
+                                            States.Error;
+

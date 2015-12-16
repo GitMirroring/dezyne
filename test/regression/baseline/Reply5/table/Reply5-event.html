@@ -1,0 +1,7 @@
+     States       Guard               Code              Next
+done
+[dummy || !dummy] [true] Status s = fun();              dummy
+                         reply(s);
+[dummy || !dummy] [true] Status s = fun_arg(Status.No); dummy
+                         reply(s);
+

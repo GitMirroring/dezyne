@@ -1,0 +1,19 @@
+                States                 Guard        Code             Next
+enable
+[state.Disabled]                             state = States.    state.Enabled
+                                             Enabled;
+[state.Triggered || state.Disabling ||       illegal;
+state.Enabled]
+disable
+[state.Disabling || state.Disabled]          illegal;
+[state.Triggered || state.Enabled]           state = States.    state.Disabling
+                                             Disabling;
+optional
+                                             triggered;
+[state.Enabled]                              state = States.    state.Triggered
+                                             Triggered;
+inevitable
+                                             disabled;
+[state.Disabling]                            state = States.    state.Disabled
+                                             Disabled;
+

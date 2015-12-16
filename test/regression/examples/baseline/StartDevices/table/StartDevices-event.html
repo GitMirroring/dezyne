@@ -1,0 +1,13 @@
+           States            Guard          Code              Next
+turnon
+[state.Off]                        state = State.GoingOn; state.GoingOn
+[state.On || state.GoingOn]        illegal;
+turnoff
+[state.GoingOn || state.Off]       illegal;
+[state.On]                         state = State.Off;     state.Off
+inevitable
+[state.GoingOn]                    ok;                    state.On
+                                   state = State.On;
+[state.GoingOn]                    nok;                   state.Off
+                                   state = State.Off;
+

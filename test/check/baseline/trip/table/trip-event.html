@@ -1,11 +1,13 @@
- States  Guard                        Actions                           Next
+  States    Guard        Code             Next
 b
-[mb || !       a;                                                     mb
-mb]
+[mb || !mb]       a;                  mb
 r
-[mb || !       {}                                                     mb
-mb]
+[mb || !mb]       {}                  mb
 e
-[mb || !       mb = !mb; bool c = g(mb, mb); mb = g(c, c); h(); if    mb.
-mb]            (c) a; reply(Status.Yes);                              <unknown>
+                  mb = !mb;
+                  bool c = g(mb, mb);
+[mb || !mb]       mb = g(c, c);       mb.<unknown>
+                  h();
+                  if (c) a;
+                  reply(Status.Yes);
 

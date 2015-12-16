@@ -1,0 +1,13 @@
+ Events  Guard           Code                 Next
+[state.Disarmed]
+arm            state = States.Armed;     state.Armed
+disarm         illegal;
+[state.Armed]
+arm            illegal;
+disarm         state = States.Disarmed;  state.Disarmed
+optional       detected;                 state.Triggered
+               state = States.Triggered;
+[state.Triggered]
+arm            illegal;
+disarm         state = States.Disarmed;  state.Disarmed
+
