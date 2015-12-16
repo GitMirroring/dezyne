@@ -36,6 +36,7 @@ $$(TOP): $(1)
 	diff -uw <(grep -v '[.]<flush>' $(1)) <($(DZN) run -m $(basename $(LOCAL_SUT)) -t <(grep -v '<flush>' $(1)) $(LOCAL_DZN_TOP) | grep ^trace:| sed 's,^trace:,,' | tr ',' '\n')
 
 $(LOCAL_NAME)-$(LOCAL_LANGUAGE): $$(TOP)
+$(LOCAL_NAME): $$(TOP)
 $(LOCAL_NAME)-check: $$(TOP)
 $(LOCAL_LANGUAGE): $$(TOP)
 
@@ -56,7 +57,7 @@ $(LOCAL_TARGET):
 	@echo $@
 
 ifeq ($(HELP_RUN),)
-check: run
+all: run
 help: help-run
 define HELP_RUN
   run            run all traces

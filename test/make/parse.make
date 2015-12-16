@@ -32,6 +32,7 @@ $(TOP): LOCAL_TRACE_LANGUAGE:=$(LOCAL_TRACE_LANGUAGE)
 $(TOP): #$(LOCAL_TARGET)
 	diff -uw $(CDIR)baseline/$(LOCAL_NAME)/$(LOCAL_LANGUAGE) <($(DZN) -v parse $(LOCAL_DZN_TOP) 2>&1)
 
+$(LOCAL_NAME): $(TOP)
 $(LOCAL_NAME)-check: $(TOP)
 $(LOCAL_LANGUAGE): $(TOP)
 
@@ -63,7 +64,7 @@ $(info $()    $(LOCAL_NAME)-update)
 endif
 
 ifeq ($(HELP_PARSE),)
-check: parse
+all: parse
 update: parse-update
 help: help-parse
 define HELP_PARSE

@@ -51,6 +51,7 @@ $(LOCAL_NAME): $$(TOP)
 $(LOCAL_NAME)-check: $$(TOP)
 $(LOCAL_LANGUAGE): $$(TOP)
 
+code: LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)
 code: $(LOCAL_LANGUAGE)
 
 ifeq ($(1),$(firstword $(LOCAL_TRACE_FILES)))
@@ -73,7 +74,7 @@ endif
 endif
 
 ifeq ($(HELP_CODE),)
-check: code
+all: code
 help: help-code
 define HELP_CODE
   code           run all code

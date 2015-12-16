@@ -24,7 +24,7 @@
 # Code:
 
 ## common
-PHONIES:=all check clean default depend help list regression stress update
+PHONIES:=all clean default depend help list regression stress update
 DIRECTORIES:=$(notdir $(shell find . -mindepth 1 -type d | grep -Ev 'baseline|bin|out|[.]git'))
 .PHONY: $(PHONIES)
 .PHONY: $(DIRECTORIES)
@@ -91,7 +91,9 @@ GOAL_LANGUAGES:=$(strip $(GOAL_LANGUAGES))
 # DZN:=~/development.git/client/dzn
 -include .local.make
 
-default: check
+ifneq ($(MAKELEVEL),1)
+default: all
+endif
 
 help: help-common
 
@@ -109,9 +111,9 @@ Variables:
   VERBOSE={|debug|info} [$(VERBOSE)]
 
 Targets:
-  check          run all checks
+  all            run all checks
   clean          remove all generated stuff in $(OUT)
-  check          check
+  check          run checks in check/
   list           list all targets
   regression     full regression test suite
   stress         run stress test

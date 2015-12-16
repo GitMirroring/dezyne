@@ -70,7 +70,7 @@ $(info $()    $(LOCAL_NAME)-update)
 endif
 
 ifeq ($(HELP_TABLE),)
-check: table
+all: table
 update: table-update
 help: help-table
 define HELP_TABLE

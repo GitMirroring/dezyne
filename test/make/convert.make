@@ -112,7 +112,7 @@ $(info out $(notdir $(LOCAL_DZN_OUT_FILES)))
 $(foreach i,$(notdir $(LOCAL_DZN_OUT_FILES)),$(eval $(call CONVERT.rule,$(i))))
 
 ifeq ($(HELP_CONVERT),)
-check: convert
+all: convert
 update: update-convert
 help: help-convert
 define HELP_CONVERT

@@ -34,6 +34,7 @@ $$(TOP): $$(LOCAL_DZN_TOP) #idee
 
 $(LOCAL_NAME)-$(LOCAL_LANGUAGE): $$(TOP)
 $(LOCAL_NAME): $$(TOP)
+$(LOCAL_NAME)-check: $$(TOP)
 $(LOCAL_LANGUAGE): $$(TOP)
 
 ifeq ($(filter list,$(MAKECMDGOALS)),list)
@@ -68,7 +69,7 @@ $(LOCAL_TARGET):
 	@echo $@
 
 ifeq ($(HELP_VERIFY),)
-check: verify
+all: verify
 update: verify-update
 verify-update:
 help: help-verify

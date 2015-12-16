@@ -26,7 +26,7 @@ DEPTH:=$(shell echo $(CURPATH) | sed -re s,[^/]+/,../,g)
 ifeq ($(DEPTH),)
 DEPTH:=.
 endif
-PHONIES:=all check clean default depend help list stress update
+PHONIES:=all check clean default force depend help list stress update
 MAKE_SNIPPETS:=$(sort $(shell find . -name makefile.make))
 MAKE_SNIPPETS:=$(MAKE_SNIPPETS:./%=$(CURPATH)%)
 DIRECTORIES:=$(dir $(MAKE_SNIPPETS))
