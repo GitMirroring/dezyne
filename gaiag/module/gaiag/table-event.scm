@@ -60,6 +60,7 @@
 (define (ast-> ast)
   ((compose
     dzn-table
+    (lambda (x) (filter identity x))
     (mangle-table json-table-event)
     (table table-event)
     ast:resolve
