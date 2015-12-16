@@ -871,7 +871,7 @@
       (($ <var> identifier) (symbol->string identifier))
       (($ <field> type field) (->string (list (->string type) "." field)))
       (($ <literal> ('name) #f) "")
-      (($ <literal> ('name name) field) (->symbol (list (->string name) "_" (->symbol field))))
+      (($ <literal> ('name name) field) (->string (list (->string name) "_" (->symbol field))))
       (($ <literal> ('name scope ... name) field) (->string (list ((->join "_") scope) '. name '_  field)))
       (($ <trigger> #f event) (->string event))
       (($ <trigger> port event) (->string (list port "." event)))
