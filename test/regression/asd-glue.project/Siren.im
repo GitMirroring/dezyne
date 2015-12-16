@@ -1,0 +1,219 @@
+<?xml version="1.0"?>
+<asd OmVersion="10.10.0" BackwardOmVersion="10.10.0" Serializer="2" >
+	<InterfaceModel ID="384">
+		<Author>Peter&#32;van&#32;de&#32;Velde</Author>
+		<DateCreated>20071019T131104</DateCreated>
+		<DateModified>20160104T142503</DateModified>
+		<Guid>8A49017CEA2D4E119FFE5AE79E6E25F2</Guid>
+		<ModelSignature>BASE64_TBrd3fL2LrjZmDMeBHDKxvCvCL8blHA5ngx/6LO1q5oSFmKAJSGRTchCOB4zszSJlgoviOr6/aOG4CiomMyiDE+kwKJ6Gqap1iXY4FH39Eu77bNx+w0QwKle2vAodID29/d5CDYiSGnbfF7W5pbX0lQYISQKtItQl0uz0B/fuNj3d/bezNVEYjwKBbdK+pFGhKDo5ned4PasPliNcYfmtgYfVTHD/wPp94XV9F6Hfro1+Ns9HoytR4Iae0rn0VpYh+yInPg1V5Fcbmn4F83cQA04X8B3j+I6X3ZNiBu7xbsRHqY60VaElj/7C6Md0i2WNgJQKyoqIQQnCTFrDoktDg==</ModelSignature>
+		<Name>Siren</Name>
+		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.7(52388)</ToolVersion>
+		<AbstractInterface>
+			<AbstractInterface ID="385">
+				<Guid>C87A6402319E4BBABE71CE5B8DC9EACF</Guid>
+				<Events>
+					<CallEvent ID="386">
+						<Guid>D849ADC0EF514853A0CF4F74E848898A</Guid>
+						<Name>StateInvariant</Name>
+					</CallEvent>
+				</Events>
+				<ReplyEvents>
+					<ReplyEvent ID="387">
+						<Guid>EAE2E4DB6FAA4E7681E63D799063AD7D</Guid>
+						<Name>NoOp</Name>
+					</ReplyEvent>
+					<ReplyEvent ID="388">
+						<Guid>8F0CD6C16E1B453883CBC5F7326E1867</Guid>
+						<Name>Illegal</Name>
+					</ReplyEvent>
+					<ReplyEvent ID="389">
+						<Guid>273B1A6280254F46B2BCB5218E3401FD</Guid>
+						<Name>Disabled</Name>
+					</ReplyEvent>
+				</ReplyEvents>
+			</AbstractInterface>
+		</AbstractInterface>
+		<CodeGeneratorSettings>
+			<CodeGenInfo ID="3466">
+				<GenerateDebugInfo>0</GenerateDebugInfo>
+				<Language>c</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="3467">
+				<GenerateDebugInfo>0</GenerateDebugInfo>
+				<InterfaceFiles>./code/cpp/src/generated</InterfaceFiles>
+				<Language>cpp</Language>
+				<TypeIncludes>#include&#32;&quot;Generic.h&quot;</TypeIncludes>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="3468">
+				<GenerateDebugInfo>0</GenerateDebugInfo>
+				<InterfaceFiles>./code/cs/src/generated</InterfaceFiles>
+				<Language>csharp</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="3469">
+				<GenerateDebugInfo>0</GenerateDebugInfo>
+				<Language>csp</Language>
+				<UseOldTracing>1</UseOldTracing>
+			</CodeGenInfo>
+			<CodeGenInfo ID="3470">
+				<GenerateDebugInfo>0</GenerateDebugInfo>
+				<InterfaceFiles>./code/java/src/generated</InterfaceFiles>
+				<Language>java</Language>
+				<NamespacePrefix>com.verum.examples.AlarmSystem</NamespacePrefix>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="3471">
+				<GenerateDebugInfo>0</GenerateDebugInfo>
+				<Language>tinyc</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+		</CodeGeneratorSettings>
+		<ImplementedService>
+			<ServiceDependency ID="395">
+				<Declaration>
+					<ServiceDeclaration ID="396">
+						<ExecutionModel>emSingleThreaded</ExecutionModel>
+						<ApplicationInterfaces>
+							<ApplicationInterface ID="397">
+								<Guid>7711C3146852471187F912D88560B9E2</Guid>
+								<Name>ISiren</Name>
+								<Events>
+									<CallEvent ID="398">
+										<Comment>Turn&#32;the&#32;siren&#32;on</Comment>
+										<Guid>E9439571CA3F4BBEA2B1C98066275766</Guid>
+										<Name>TurnOn</Name>
+									</CallEvent>
+									<CallEvent ID="399">
+										<Comment>Turn&#32;the&#32;siren&#32;off</Comment>
+										<Guid>d67586061ba2483a94fef09b8e14372f</Guid>
+										<Name>TurnOff</Name>
+									</CallEvent>
+								</Events>
+								<ReplyEvents>
+									<ReplyEvent ID="400">
+										<Guid>A42098D3A14244E08F353029CCD39D93</Guid>
+										<Name>VoidReply</Name>
+									</ReplyEvent>
+								</ReplyEvents>
+							</ApplicationInterface>
+						</ApplicationInterfaces>
+					</ServiceDeclaration>
+				</Declaration>
+			</ServiceDependency>
+		</ImplementedService>
+		<MainMachine>
+			<MainMachine ID="401">
+				<Guid>fe117f8141154967af52c56c93455fbb</Guid>
+				<Name>Siren</Name>
+				<States>
+					<State ID="402">
+						<Guid>30faf3dccfdd4e89aff9cf1c01560b44</Guid>
+						<Name>SirenOff</Name>
+						<Rules>
+							<Rule ID="403">
+								<Event>386</Event>
+								<RuleCases>
+									<RuleCase ID="404">
+										<Row>2</Row>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="405">
+								<Event>398</Event>
+								<RuleCases>
+									<RuleCase ID="406">
+										<Row>3</Row>
+										<NextState>407</NextState>
+										<Actions>
+											<Action ID="408">
+												<Event>400</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="409">
+								<Event>399</Event>
+								<RuleCases>
+									<RuleCase ID="410">
+										<Comment>Illegal&#32;-&#32;Siren&#32;already&#32;off</Comment>
+										<Row>4</Row>
+										<Actions>
+											<Action ID="411">
+												<Event>388</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+						</Rules>
+					</State>
+					<State ID="407">
+						<Guid>15ce957bb5a845669df6de5b043369a1</Guid>
+						<Name>SirenOn</Name>
+						<Rules>
+							<Rule ID="412">
+								<Event>386</Event>
+								<RuleCases>
+									<RuleCase ID="413">
+										<Row>6</Row>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="414">
+								<Event>398</Event>
+								<RuleCases>
+									<RuleCase ID="415">
+										<Comment>Illegal&#32;-&#32;Siren&#32;already&#32;on</Comment>
+										<Row>7</Row>
+										<Actions>
+											<Action ID="416">
+												<Event>388</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="417">
+								<Event>399</Event>
+								<RuleCases>
+									<RuleCase ID="418">
+										<Row>8</Row>
+										<NextState>402</NextState>
+										<Actions>
+											<Action ID="419">
+												<Event>400</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+						</Rules>
+					</State>
+				</States>
+			</MainMachine>
+		</MainMachine>
+		<ModelBuilderSettings>
+			<ModelBuilderSettings ID="420">
+			</ModelBuilderSettings>
+		</ModelBuilderSettings>
+		<Tags>
+			<Tag ID="421">
+				<Guid>4df651b94f9b44eb96e8528f6682d1d3</Guid>
+				<Name>Tag</Name>
+				<Value>Description</Value>
+			</Tag>
+		</Tags>
+		<VerificationStatus>
+			<VerificationStatus ID="422">
+			</VerificationStatus>
+		</VerificationStatus>
+	</InterfaceModel>
+</asd>

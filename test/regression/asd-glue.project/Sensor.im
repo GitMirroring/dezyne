@@ -1,0 +1,458 @@
+<?xml version="1.0"?>
+<asd OmVersion="10.10.0" BackwardOmVersion="10.10.0" Serializer="2" >
+	<InterfaceModel ID="870">
+		<Author>Peter&#32;van&#32;de&#32;Velde</Author>
+		<DateCreated>20071019T130224</DateCreated>
+		<DateModified>20160104T142451</DateModified>
+		<Guid>019843BCB45E4A97BD26781E8838E46B</Guid>
+		<ModelSignature>BASE64_WpptyvTN3AWVD3fR4jYauX/vfCTADKpUAXwAj08fRoJxnIqZeABgYWDQvEEd06SyQ4IEGdIq8JJWBKtVXvDot+dYkAWQggugrmPRK4kR43Wjo10MxWaZ+2P3AFDfRxcYSmoyO3DKu9J1I7DAgcPKZtckz2Z04GlukT54rXIjnZ7IVg45nraJlVRTrD/WsVA1UWb2GcglEAZ+guFnNQdCgaamu2EH8r3hCcLKLkLNWu0+enwshUrKbE3+rXh4m63fPTKLtsCzixG+GDKW56pyVYgb05YcgOGNmoahONEBwEyWS75xnLXtQE7WgHU42A33aA7yISBErbIutD1FV3ZGYg==</ModelSignature>
+		<Name>Sensor</Name>
+		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.7(52388)</ToolVersion>
+		<AbstractInterface>
+			<AbstractInterface ID="871">
+				<Guid>C87A6402319E4BBABE71CE5B8DC9EACF</Guid>
+				<Events>
+					<CallEvent ID="872">
+						<Guid>D849ADC0EF514853A0CF4F74E848898A</Guid>
+						<Name>StateInvariant</Name>
+					</CallEvent>
+				</Events>
+				<ReplyEvents>
+					<ReplyEvent ID="873">
+						<Guid>EAE2E4DB6FAA4E7681E63D799063AD7D</Guid>
+						<Name>NoOp</Name>
+					</ReplyEvent>
+					<ReplyEvent ID="874">
+						<Guid>8F0CD6C16E1B453883CBC5F7326E1867</Guid>
+						<Name>Illegal</Name>
+					</ReplyEvent>
+					<ReplyEvent ID="875">
+						<Guid>273B1A6280254F46B2BCB5218E3401FD</Guid>
+						<Name>Disabled</Name>
+					</ReplyEvent>
+				</ReplyEvents>
+			</AbstractInterface>
+		</AbstractInterface>
+		<CodeGeneratorSettings>
+			<CodeGenInfo ID="3466">
+				<GenerateDebugInfo>0</GenerateDebugInfo>
+				<Language>c</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="3467">
+				<GenerateDebugInfo>0</GenerateDebugInfo>
+				<InterfaceFiles>./code/cpp/src/generated</InterfaceFiles>
+				<Language>cpp</Language>
+				<TypeIncludes>#include&#32;&quot;Generic.h&quot;</TypeIncludes>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="3468">
+				<GenerateDebugInfo>0</GenerateDebugInfo>
+				<InterfaceFiles>./code/cs/src/generated</InterfaceFiles>
+				<Language>csharp</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="3469">
+				<GenerateDebugInfo>0</GenerateDebugInfo>
+				<Language>csp</Language>
+				<UseOldTracing>1</UseOldTracing>
+			</CodeGenInfo>
+			<CodeGenInfo ID="3470">
+				<GenerateDebugInfo>0</GenerateDebugInfo>
+				<InterfaceFiles>./code/java/src/generated</InterfaceFiles>
+				<Language>java</Language>
+				<NamespacePrefix>com.verum.examples.AlarmSystem</NamespacePrefix>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="3471">
+				<GenerateDebugInfo>0</GenerateDebugInfo>
+				<Language>tinyc</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+		</CodeGeneratorSettings>
+		<ImplementedService>
+			<ServiceDependency ID="881">
+				<Declaration>
+					<ServiceDeclaration ID="882">
+						<ExecutionModel>emSingleThreaded</ExecutionModel>
+						<ApplicationInterfaces>
+							<ApplicationInterface ID="883">
+								<Guid>45580249C9AA4116BD4D747FE198DFB1</Guid>
+								<Name>ISensor</Name>
+								<Events>
+									<CallEvent ID="884">
+										<Comment>Activate&#32;the&#32;sensor</Comment>
+										<Guid>1F41086EFF744B639FF1A4B3558D578C</Guid>
+										<Name>Activate</Name>
+									</CallEvent>
+									<CallEvent ID="885">
+										<Comment>Deactivate&#32;the&#32;sensor;&#32;asynchronous:&#32;Deactivated&#32;notifies&#32;completion</Comment>
+										<Guid>23A4389A07F34D0996F3EF76BFE53350</Guid>
+										<Name>Deactivate</Name>
+									</CallEvent>
+								</Events>
+								<ReplyEvents>
+									<ReplyEvent ID="886">
+										<Comment>&quot;Void&quot;&#32;return</Comment>
+										<Guid>877595A2FE04471BB3746E0DA924ABCC</Guid>
+										<Name>VoidReply</Name>
+									</ReplyEvent>
+								</ReplyEvents>
+							</ApplicationInterface>
+						</ApplicationInterfaces>
+						<ModellingInterfaces>
+							<ModellingInterface ID="887">
+								<Guid>76f955b7d06140ec8fd2f15e8aac18e3</Guid>
+								<Name>Internal</Name>
+								<Events>
+									<ModellingEvent ID="888">
+										<Comment>Movement&#32;detected</Comment>
+										<Guid>aee9ce6c8819496aaf9637d35402b802</Guid>
+										<Name>DetectedMovement</Name>
+									</ModellingEvent>
+									<ModellingEvent ID="889">
+										<AbstractionType>atInevitable</AbstractionType>
+										<Comment>Completely&#32;deactivated</Comment>
+										<Guid>59dd010338b6475c814a7f9df40bb3fc</Guid>
+										<Name>Deactivated</Name>
+									</ModellingEvent>
+								</Events>
+							</ModellingInterface>
+						</ModellingInterfaces>
+						<NotificationInterfaces>
+							<NotificationInterface ID="890">
+								<Guid>06F64D710BD64DDD89A12583CC6FF0E2</Guid>
+								<Name>ISensor_NI</Name>
+								<Events>
+									<NotificationEvent ID="891">
+										<Comment>Sensor&#32;has&#32;detected&#32;movement</Comment>
+										<Guid>A847A22358EF4D899DC245F0D4AB769A</Guid>
+										<Name>DetectedMovement</Name>
+									</NotificationEvent>
+									<NotificationEvent ID="892">
+										<Comment>Notification&#32;that&#32;Deactive&#32;has&#32;completed</Comment>
+										<Guid>C8A785A5733B47EE9FEB5877BE61C4B9</Guid>
+										<Name>Deactivated</Name>
+									</NotificationEvent>
+								</Events>
+							</NotificationInterface>
+						</NotificationInterfaces>
+					</ServiceDeclaration>
+				</Declaration>
+			</ServiceDependency>
+		</ImplementedService>
+		<MainMachine>
+			<MainMachine ID="893">
+				<Guid>b1276eed05c04d98a8fcb6f7cdc589e3</Guid>
+				<Name>Sensor</Name>
+				<States>
+					<State ID="894">
+						<Guid>9793dc3f34574cfc8e5b4dce4cb049d2</Guid>
+						<Name>Deactivated</Name>
+						<Rules>
+							<Rule ID="895">
+								<Event>872</Event>
+								<RuleCases>
+									<RuleCase ID="896">
+										<Row>2</Row>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="897">
+								<Event>884</Event>
+								<RuleCases>
+									<RuleCase ID="898">
+										<Comment>Activate&#32;sensor</Comment>
+										<Row>3</Row>
+										<NextState>899</NextState>
+										<Actions>
+											<Action ID="900">
+												<Event>886</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="901">
+								<Event>885</Event>
+								<RuleCases>
+									<RuleCase ID="902">
+										<Comment>Illegal&#32;-&#32;already&#32;deactivated</Comment>
+										<Row>4</Row>
+										<Actions>
+											<Action ID="903">
+												<Event>874</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="904">
+								<Event>888</Event>
+								<RuleCases>
+									<RuleCase ID="905">
+										<Comment>Cannot&#32;occur&#32;-&#32;not&#32;activated</Comment>
+										<Row>5</Row>
+										<Actions>
+											<Action ID="906">
+												<Event>875</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="907">
+								<Event>889</Event>
+								<RuleCases>
+									<RuleCase ID="908">
+										<Comment>Cannot&#32;occur&#32;-&#32;already&#32;deactivated</Comment>
+										<Row>6</Row>
+										<Actions>
+											<Action ID="909">
+												<Event>875</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+						</Rules>
+					</State>
+					<State ID="899">
+						<Guid>16144ebbbc994a2fb7b96c993f5a1a19</Guid>
+						<Name>Activated</Name>
+						<Rules>
+							<Rule ID="910">
+								<Event>872</Event>
+								<RuleCases>
+									<RuleCase ID="911">
+										<Row>8</Row>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="912">
+								<Event>884</Event>
+								<RuleCases>
+									<RuleCase ID="913">
+										<Comment>Illegal&#32;-&#32;already&#32;activated</Comment>
+										<Row>9</Row>
+										<Actions>
+											<Action ID="914">
+												<Event>874</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="915">
+								<Event>885</Event>
+								<RuleCases>
+									<RuleCase ID="916">
+										<Comment>Deactivate&#32;sensor</Comment>
+										<Row>10</Row>
+										<NextState>917</NextState>
+										<Actions>
+											<Action ID="918">
+												<Event>886</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="919">
+								<Event>888</Event>
+								<RuleCases>
+									<RuleCase ID="920">
+										<Comment>Sensor&#32;detected&#32;movement</Comment>
+										<Row>11</Row>
+										<NextState>921</NextState>
+										<Actions>
+											<Action ID="922">
+												<Event>891</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="923">
+								<Event>889</Event>
+								<RuleCases>
+									<RuleCase ID="924">
+										<Comment>Cannot&#32;occur&#32;-&#32;not&#32;deactivating&#32;yet</Comment>
+										<Row>12</Row>
+										<Actions>
+											<Action ID="925">
+												<Event>875</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+						</Rules>
+					</State>
+					<State ID="917">
+						<Guid>cedb1fff73604443ae3b630bf4b46550</Guid>
+						<Name>Deactivating</Name>
+						<Rules>
+							<Rule ID="926">
+								<Event>872</Event>
+								<RuleCases>
+									<RuleCase ID="927">
+										<Row>14</Row>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="928">
+								<Event>884</Event>
+								<RuleCases>
+									<RuleCase ID="929">
+										<Comment>Illegal&#32;-&#32;not&#32;yet&#32;deactivated</Comment>
+										<Row>15</Row>
+										<Actions>
+											<Action ID="930">
+												<Event>874</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="931">
+								<Event>885</Event>
+								<RuleCases>
+									<RuleCase ID="932">
+										<Comment>Ilegal&#32;-&#32;already&#32;deactivated</Comment>
+										<Row>16</Row>
+										<Actions>
+											<Action ID="933">
+												<Event>874</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="934">
+								<Event>888</Event>
+								<RuleCases>
+									<RuleCase ID="935">
+										<Comment>Cannot&#32;occur&#32;-&#32;deactivating</Comment>
+										<Row>17</Row>
+										<Actions>
+											<Action ID="936">
+												<Event>875</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="937">
+								<Event>889</Event>
+								<RuleCases>
+									<RuleCase ID="938">
+										<Comment>Completely&#32;deactivated</Comment>
+										<Row>18</Row>
+										<NextState>894</NextState>
+										<Actions>
+											<Action ID="939">
+												<Event>892</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+						</Rules>
+					</State>
+					<State ID="921">
+						<Guid>951f79b8ca2849c0b6420d2bd4dd021e</Guid>
+						<Name>Triggered</Name>
+						<Rules>
+							<Rule ID="940">
+								<Event>872</Event>
+								<RuleCases>
+									<RuleCase ID="941">
+										<Row>20</Row>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="942">
+								<Event>884</Event>
+								<RuleCases>
+									<RuleCase ID="943">
+										<Comment>Illegal&#32;-&#32;already&#32;activated</Comment>
+										<Row>21</Row>
+										<Actions>
+											<Action ID="944">
+												<Event>874</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="945">
+								<Event>885</Event>
+								<RuleCases>
+									<RuleCase ID="946">
+										<Comment>Deactivate&#32;sensor</Comment>
+										<Row>22</Row>
+										<NextState>917</NextState>
+										<Actions>
+											<Action ID="947">
+												<Event>886</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="948">
+								<Event>888</Event>
+								<RuleCases>
+									<RuleCase ID="949">
+										<Comment>Once&#32;triggered,&#32;no&#32;new&#32;detected&#32;movement&#32;is&#32;signalled</Comment>
+										<Row>23</Row>
+										<Actions>
+											<Action ID="950">
+												<Event>875</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+							<Rule ID="951">
+								<Event>889</Event>
+								<RuleCases>
+									<RuleCase ID="952">
+										<Comment>Cannot&#32;occur,&#32;not&#32;deactivating</Comment>
+										<Row>24</Row>
+										<Actions>
+											<Action ID="953">
+												<Event>875</Event>
+											</Action>
+										</Actions>
+									</RuleCase>
+								</RuleCases>
+							</Rule>
+						</Rules>
+					</State>
+				</States>
+			</MainMachine>
+		</MainMachine>
+		<ModelBuilderSettings>
+			<ModelBuilderSettings ID="954">
+			</ModelBuilderSettings>
+		</ModelBuilderSettings>
+		<Tags>
+			<Tag ID="955">
+				<Guid>556a833df29e4d009639088234620b13</Guid>
+				<Name>Tag</Name>
+				<Value>Description</Value>
+			</Tag>
+		</Tags>
+		<VerificationStatus>
+			<VerificationStatus ID="956">
+			</VerificationStatus>
+		</VerificationStatus>
+	</InterfaceModel>
+</asd>

@@ -445,14 +445,14 @@
 
 (define (om:in? o)
   (match o
-    (($ <event>)
-     (eq? (.direction o) 'in))
+    (($ <event>) (eq? (.direction o) 'in))
+    (($ <formal>) (eq? (.direction o) 'in))
     (($ <trigger>) #t)))
 
 (define (om:out? o)
   (match o
-    (($ <event>)
-     (eq? (.direction o) 'out))
+    (($ <event>) (eq? (.direction o) 'out))
+    (($ <formal>) (eq? (.direction o) 'out))
     (($ <trigger>) #f)))
 
 (define (om:out-or-inout? o)

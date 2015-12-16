@@ -89,7 +89,9 @@
            equal??
            symbol-prefix?
            symbol-capitalize
+           symbol-upcase
            symbol-drop
+           symbol-drop-right
            symbol-split
 
            ;; FIXME
@@ -148,8 +150,15 @@
 (define (symbol-capitalize symbol)
   ((compose string->symbol string-capitalize symbol->string) symbol))
 
+(define (symbol-upcase symbol)
+  ((compose string->symbol string-upcase symbol->string) symbol))
+
 (define (symbol-drop symbol count)
   (define ((drop count) string) (string-drop string count))
+  ((compose string->symbol (drop count) symbol->string) symbol))
+
+(define (symbol-drop-right symbol count)
+  (define ((drop count) string) (string-drop-right string count))
   ((compose string->symbol (drop count) symbol->string) symbol))
 
 (define (symbol-take symbol count)

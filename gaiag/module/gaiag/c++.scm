@@ -19,11 +19,13 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag c++)
+  :use-module (srfi srfi-26)
   :use-module (ice-9 curried-definitions)
   :use-module (gaiag list match)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 getopt-long)
   :use-module (ice-9 pretty-print)
+  :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
 
   :use-module (gaiag animate)
@@ -73,27 +75,31 @@
            (map-file o))
       ;; TODO: asd glue templates
       (let ((name ((om:scope-name) o)))
-        (dump-indented (symbol-append 'glue- name '.cc)
+        (dump-indented (symbol-append name '.hh)
                        (lambda ()
-                         (c++-file 'glue-bottom-component.cc.scm (code:module o))))
-        (dump-indented (symbol-append name 'Interface.h)
+                         (c++-file 'asd.hh.scm (code:module o))))
+        (dump-indented (symbol-append name '.cc)
                        (lambda ()
-                         (c++-file 'glue-top-system-interface.hh.scm (code:module (om:interface (om:port o))))))
-        (dump-indented (symbol-append name 'Component.h)
-                       (lambda ()
-                         (c++-file 'glue-top-system.hh.scm (code:module o))))
-        (dump-indented (symbol-append name 'Component.cpp)
-                       (lambda ()
-                         (c++-file 'glue-top-system.cc.scm (code:module o))))))
-
-  (let ((name ((om:scope-name) o)))
-    ((@@ (gaiag c) dump-component) o)
-    ;; TODO: rename dzn glue templates
-    (if (and (not (.behaviour o))
-             (map-file o))
-        (dump-indented (symbol-append 'glue- name '.cc)
-                       (lambda ()
-                         (c++-file 'glue-bottom-component.cc.scm (code:module o)))))))
+                         (c++-file 'asd.cc.scm (code:module o))))
+        ((@@ (gaiag c) dump-main) o)
+        (for-each (lambda (port)
+                    (let* ((module (code:module o))
+                           (interface (symbol-drop (last (.type port)) 1))
+                           (INTERFACE (symbol-upcase interface)))
+                      (module-define! module '.interface interface)
+                      (module-define! module '.INTERFACE INTERFACE)
+                      (dump-indented (symbol-append interface 'Component.h)
+                                     (lambda ()
+                                       (c++-file 'asdcomponent.h.scm module)))))
+                  (filter om:requires? (om:ports o))))
+      (let ((name ((om:scope-name) o)))
+        ((@@ (gaiag c) dump-component) o)
+        ;; TODO: rename dzn glue templates
+        (if (and (not (.behaviour o))
+                 (map-file o))
+            (dump-indented (symbol-append 'glue- name '.cc)
+                           (lambda ()
+                             (c++-file 'glue-bottom-component.cc.scm (code:module o))))))))
 
 (define (dump-system o)
   ((@@ (gaiag c) dump-system) o)
@@ -115,13 +121,17 @@
   (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
     (animate-file file-name module)))
 
-(define (event2->interface1-event1-alist port)
-  (and-let* ((string (gulp-file (find-file (map-file-name port) '(.map))))
+(define (event2->interface1-event1-alist- string)
+  (and-let* ((string string)
              (lst (string-split string #\newline))
              (lst (filter (lambda (x) (not (string-prefix? "//" x))) lst))
              (lst (map (lambda (o) (map string->symbol (string-tokenize o char-set:graphic))) lst))
              (lst (filter pair? lst)))
             (fold (lambda (e r) (acons (third e) (take e 2) r)) '() lst)))
+
+(define (event2->interface1-event1-alist port)
+  (event2->interface1-event1-alist-
+   (gulp-file (find-file (map-file-name port) '(.map)))))
 
 (define (assoc-xref alist value)
   (define (cdr-equal? x) (equal? (cdr x) value))
@@ -143,3 +153,42 @@
     ((or ($ <component>) ($ <system>)) (map-file-name (om:port o)))
     (_ (om:name o)) ;; dzn::IConsole ==> IConsole.map
     (_ ((om:scope-name) o)))) ;; dzn::IConsole ==> dzn_IConsole.map
+
+;;(define mapping->asd-interface second)
+(define (string->mapping string)
+  (and-let* ((string string)
+             (lst (string-split string #\newline))
+             (lst (filter (lambda (x) (not (string-prefix? "//" x))) lst))
+             (lst (map (lambda (o) (map string->symbol (string-tokenize o char-set:graphic))) lst))
+             (lst (filter pair? lst)))
+            lst ;;            (fold (lambda (e r) (acons (third e) (take e 2) r)) '() lst)
+            ))
+
+(define (mapping->channel mapping)
+  (let loop ((lst mapping))
+    (if (null? lst) '()
+        (let ((channel (caar lst)))
+          (receive (same rest)
+              (partition (lambda (m) (eq? (car m) channel)) lst)
+            (append (list (cons (caar same) (map cdr same))) (loop rest)))))))
+
+(define* ((stderr-identity :optional (identifier "#")) o) (stderr "~a:~a\n" identifier o) o)
+(define (port->mapping-list port)
+  ((compose
+    mapping->channel
+    string->mapping
+    gulp-file
+    (cut find-file <> '(.map)))
+   (map-file-name port)))
+
+(define ((event->formals interface) event)
+   ((compose .formals .signature) (om:event interface event)))
+
+(define ((event->formals-code interface) event)
+   (code:->code interface ((event->formals interface) event)))
+
+(define ((event->asd-formals-code interface) event)
+   ((->join ", ") (map (lambda (f) (->string (list  (if (om:in? f) "const " "") "asd::value<" (code:->code interface (.type f)) ">::type&" (code:->code interface (.name f))))) (.elements ((event->formals interface) event)))))
+
+(define ((event->arguments-code interface) event)
+   ((->join ", ") (map .name (.elements ((event->formals interface) event)))))

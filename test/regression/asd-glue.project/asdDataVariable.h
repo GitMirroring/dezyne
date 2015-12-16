@@ -1,0 +1,66 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+/*
+ * This is confidential material the contents of which are the property of Verum Software Technologies BV.  
+ * All reproduction and/or duplication in whole or in part without the written prior consent of 
+ * Verum Software Technologies BV is strictly forbidden.  Modification of this code is strictly forbidden 
+ * and may result in software runtime failure.
+ *
+ * Modification or removal of this notice in whole or in part is strictly forbidden.
+ * Copyright 1998 - 2013 Verum Software Technologies BV
+ */
+#ifndef __ASD_DATAVARIABLE_H__
+#define __ASD_DATAVARIABLE_H__
+
+#include "asdPassByValue.h"
+#include "asdDiagnostics.h"
+
+namespace asd_52077
+{
+  template<typename T> class DataVariable
+  {
+  protected:
+    T m_Value;
+
+  public:
+    DataVariable() : m_Value() {}
+    virtual ~DataVariable() {}
+
+    const T& GetValue() const
+    {
+      return m_Value;
+    }
+
+    void SetValue(const T& value) 
+    {
+      m_Value = value; 
+    }
+
+    virtual void Initialise() {}
+    virtual void Invalidate() {}
+  };
+}
+
+#endif
+

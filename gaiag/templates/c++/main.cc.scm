@@ -6,6 +6,8 @@
 
 ##include <iostream>
 
+#(string-if (eq? (glue) 'asd) #{extern boost::shared_ptr<asd::channels::ISingleThreaded> g_singlethreaded;#})
+
 namespace dezyne
 {
   static bool flush = false;
@@ -94,7 +96,7 @@ namespace dezyne
  #(map
    (lambda (port)
      (map (define-on model port #{m.#port .#direction .#event  = [&] (#formals) {#(string-if (eq? return-type 'void) #{call_#direction("#port .", "#event ", e);#}
-                                                                                                                 #{return call_valued<#((c++:scope-join #f) reply-scope)::#reply-name ::type>("#port .", "#event ", e, to_#((c++:scope-join #f) reply-scope)_#reply-name , static_cast<const char*(*)(#((c++:scope-join #f) reply-scope)::#reply-name ::type)>(to_string));#})};
+                                                                                                                 #{return call_valued<#((c++:scope-join #f) reply-scope)::#reply-name ::type>("#port .", "#event ", e, #((c++:scope-join #f) (drop-right reply-scope 1))::to_#((om:scope-join #f) reply-scope)_#reply-name , static_cast<const char*(*)(#((c++:scope-join #f) reply-scope)::#reply-name ::type)>(#((c++:scope-join #f) (drop-right reply-scope 1))::to_string));#})};
      #}) (filter (negate (om:dir-matches? port)) (om:events port)))) (om:ports model))
 
 ##if 0
@@ -108,13 +110,15 @@ namespace dezyne
      #}) (om:ports model))
 ##endif
 
- #(map (init-port #{
+#(map (init-port (if (not (eq? (glue) 'asd)) #{
      if (flush) {
        m.#name .meta.provides.address = c;
        m.#name .meta.provides.meta = &c->dzn_meta;
      }
      e["#name .<flush>"] = [&] { std::clog << "#name .<flush>" << std::endl; m.dzn_rt.flush(m.#name .meta.provides.address); };
-     #}) (filter om:requires? (om:ports model)))
+#}
+#{   e["#name .<flush>"] = [&] { std::clog << "#name .<flush>" << std::endl; g_singlethreaded->processCBs();};
+#})) (filter om:requires? (om:ports model)))
  #(map
     (lambda (port)
     (map (define-on model port #{

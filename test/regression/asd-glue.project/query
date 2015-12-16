@@ -1,0 +1,10 @@
+<?xml version='1.0'?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:template match="asd">
+    <xsl:variable name="root" select="."/>
+    <xsl:for-each select="DesignModel/ServiceReferences/ServiceReference">
+      <xsl:variable name="id" select="Dependency"/>
+      <xsl:value-of select="Construction"/> : <xsl:for-each select="$root/DesignModel/UsedServices/ServiceDependency[@ID=$id]"> <xsl:value-of select="Name"/></xsl:for-each>,
+    </xsl:for-each>
+  </xsl:template>
+</xsl:stylesheet>
