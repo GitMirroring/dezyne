@@ -238,7 +238,7 @@
            (and-let* ((type (car o))
                       ((symbol? type))
                       (name (symbol->class type)))
-                     (if (or (eq? class <ast>) (eq? class <ast-list>))
+                     (if (or (eq? class <ast>) (eq? class <ast-list>) (eq? class <statement>))
                          (member name ast-list-names)
                          (eq? name (class-name class)))))
        o))
