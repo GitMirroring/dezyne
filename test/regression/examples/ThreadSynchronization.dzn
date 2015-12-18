@@ -21,7 +21,7 @@
 //
 // Code:
 
-// Thread synchronization by 'blocking' component.
+//purpose: Thread synchronization by 'blocking' component.
 // ===================================================================
 // Marking an on event handler as 'blocking' will block the calling
 // thread until an explicit thread release has been performed. Thread
