@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
+// Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
 //
@@ -73,7 +73,7 @@ component MotorControl
 }
 
 
-extern Position $Position$;
+extern Position $int$;
 
 
 interface IMotorAsync

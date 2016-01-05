@@ -1,0 +1,3 @@
+verify: IStageAsync: check: completeness: ok
+verify: IStageAsync: check: deadlock: ok
+verify: IStageAsync: check: livelock: ok
