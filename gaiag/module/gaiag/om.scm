@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -94,6 +94,7 @@
            om:register-model
            om:register-type
            om:reply-enums
+           om:reply-types
            om:required
            om:requires?
            om:scope
@@ -394,13 +395,16 @@
     (_ '())))
 
 (define (om:reply-enums o)
+  (filter (is? <enum>) (om:reply-types o)))
+
+(define (om:reply-types o)
   (match o
     (($ <interface>)
      (let* ((events (filter om:typed? (om:events o)))
-            (names (delete-duplicates (map (compose .name .type .signature) events))))
-       (map (lambda (n) (om:enum o n)) names)))
+            (types (delete-duplicates (map (compose .type .signature) events))))
+       (filter-map (om:type o) types)))
     (($ <component>)
-     (delete-duplicates (append-map (compose om:reply-enums om:import .type) ((compose .elements .ports) o))))
+     (delete-duplicates (append-map (compose om:reply-types om:import .type) ((compose .elements .ports) o))))
     (_ '())))
 
 (define (om:out-formals o)

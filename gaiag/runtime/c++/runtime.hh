@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
@@ -156,6 +156,7 @@ struct call_helper
     reply = to_string(r);
     return r;
   }
+  inline std::string to_string(bool b){return b ? "true" : "false";}
   ~call_helper()
   {
     trace_out(os, meta, reply.c_str());

@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
@@ -41,7 +41,7 @@ datatype event_enumeration_alphabet = #
    (sort
     (append
      (interface-events model identity)
-     (enum-values model)
+     (type-values model)
      (return-values model)
      (list 'blocked 'the_end' 'inevitable 'optional 'modeling 'silent))
     symbol<)))

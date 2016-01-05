@@ -4,7 +4,7 @@
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -420,29 +420,36 @@
               (filter om:requires? (om:ports o)))))
 
 (define (typed-elements o)
-  (map (lambda (x) ((->symbol-join '_) (append (cons (om:name o) (list x))))) ((compose .elements .fields) o)))
+  (match o
+    (($ <type> 'bool)
+     (list 'bool_false 'bool_true))
+    (($ <enum> name fields)
+     (map (lambda (x)
+            ((->symbol-join '_) (append (cons (om:name o) (list x))))) (.elements fields)))
+    (_ 'barf)
+    ))
 
-(define (enum-values o)
+(define (type-values o)
   (match o
     (($ <interface>)
-      (apply append (map typed-elements (enum-types o))))
+      (apply append (map typed-elements (types o))))
     (($ <component>)
-      (apply append (map typed-elements (enum-types o))))
+      (apply append (map typed-elements (types o))))
     (($ <component>)
      (delete-duplicates
       (append
-       (apply append (map (compose enum-values om:import .type) ((compose .elements .ports) o)))
-       (apply append (map typed-elements (enum-types o))))))))
+       (apply append (map (compose type-values om:import .type) ((compose .elements .ports) o)))
+       (apply append (map typed-elements (types o))))))))
 
-(define (enum-types o)
+(define (types o)
   (match o
-    (($ <interface>) (append (om:enums o) (om:enums)))
+    (($ <interface>) (append (om:types o) (om:types)))
     (($ <component>)
      (append
       (apply append
-           (map enum-types
+           (map types
                 (map (compose om:import .type) ((compose .elements .ports) o))))
-      (append (om:enums o) (om:enums))))))
+      (append (om:types o) (om:types))))))
 
 (define (return-values-port port) ;; FIMXE: no test
   (let ((interface (csp:import (.type port))))
@@ -451,12 +458,16 @@
 (define (return-values o) ;; FIMXE: no test
   (match o
     (($ <interface>)
-     (add-return-if-empty (map (return-value o) (om:reply-enums o))))
+     (add-return-if-empty (map (return-value o) (om:reply-types o))))
     (($ <component>)
      (apply append (map (compose return-values om:import .type) ((compose .elements .ports) o))))))
 
 (define ((return-value model) o)
-  (map (lambda (value) ((->symbol-join '_) (append (om:drop-scope (.name model) (om:scope+name o)) (list value)))) ((compose .elements .fields) o)))
+  (match o
+    (($ <type> 'bool) (list 'bool_false 'bool_true))
+    (($ <enum> name fields)
+     (map (lambda (value) ((->symbol-join '_) (append (om:drop-scope (.name model) (om:scope+name o)) (list value)))) (.elements fields)))
+    (_ 'barf)))
 
 (define (add-return-if-empty returns)
   (if (null? returns)
@@ -716,6 +727,26 @@
   (csp-transform-model (or (om:component ast) (om:interface ast)) src))
 
 (define* (csp-transform-model model o :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()) (indent 0) (tail '()) (function #f))
+
+  (define (member? identifier) (and (not (local? identifier))
+                                    (om:variable model identifier)))
+  (define (local? identifier) (assoc-ref locals identifier))
+  (define (var? identifier) (or (member? identifier) (local? identifier)))
+  (define (expression-type o locals)
+    (match o
+      (($ <expression> expression) (expression-type expression locals))
+      (($ <literal>) 'enum)
+      (($ <var> name) (let* ((var (var? name))
+                             (type (.type var)))
+                        ;;(stderr "VAR[~a]: type=~a\n" var type)
+                        (match type
+                          (($ <type> 'bool) 'bool)
+                          (($ <type> ('name scope ... type)) 'enum)
+                          (($ <enum>) 'enum))))
+      ('false 'bool)
+      ('true 'bool)
+      (_ 'bool)))
+
   (let* ((model-name ((om:scope-name) model))
          (model- (symbol-append model-name '_))
          (channel (or channel (if (is-a? model <interface>) model-name (.name (om:port model)))))
@@ -936,11 +967,19 @@
               (check-range (list name) tail model locals indent))))
 
           (($ <reply> expression port)
-           (let* ((expression (csp-expression->string model expression locals))
+           (let* ((type (expression-type expression locals))
+                  (csp (csp-expression->string model expression locals))
+                  ;;(foo (stderr "CSP: ~a\n" csp))
+                  (csp (match type
+                         ('bool (match expression
+                                  (($ <expression> 'false) 'bool_false)
+                                  (($ <expression> 'true) 'bool_true)
+                                  (_ (->string "(if " csp " then bool_true else bool_false" ")"))))
+                                (_ csp)))
                   (port (if port port channel)))
-             (if expression
+             (if csp
                  (list
-                  (list space port "_'!" expression " -> \n")
+                  (list space port "_'!" csp " -> \n")
                   tail)
                  (list
                   (list space port "_'.return -> \n")

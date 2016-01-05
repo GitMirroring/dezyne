@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
@@ -482,6 +482,20 @@
                                              (scope ,(om:scope type))
                                              (name ,(om:name type))
                                              (port ,port))))))))
+      (($ <reply> (and ($ <expression>) (get! expression)) port)
+       (let* ((expression (expression->string model (expression) locals))
+              (scope '())
+              (type 'bool))
+         (->string (list (snippet 'reply
+                                  `((space ,space)
+                                    (scope ,scope)
+                                    (name ,type)
+                                    (expression ,expression)))
+                         (if port (snippet 'release
+                                           `((space ,space)
+                                             (scope ,scope)
+                                             (name ,type)
+                                             (port ,port))))))))
       (($ <reply> expression port)
        (if port (snippet 'release
                          `((space ,space)
@@ -926,18 +940,20 @@
            port))
 
 (define (declare-replies o)
-  (debug "reply-enums: ~a\n" (om:reply-enums o))
-  (map (lambda (x) (snippet 'declare-reply
+  (debug "reply-types: ~a\n" (om:reply-types o))
+  (map (lambda (x)
+         (snippet 'declare-reply
                             `((scope ,(om:scope x))
-                              (scope-name ,((compose cdr .name) x))
-                              (name ,(om:name x)))))
-       (om:reply-enums o)))
+                              (scope-name ,(om:scope+name x))
+                              (name ,(om:name x))
+                              (type ,(ast-name x)))))
+       (om:reply-types o)))
 
-(define ((define-reply string) enum)
-  (animate string `((scope ,(om:scope enum))
-                    (scope-name ,((compose cdr .name) enum))
-                    (name ,(om:name enum)))
-           enum))
+(define ((define-reply string) type)
+  (animate string `((scope ,(om:scope type))
+                    (scope-name ,(om:scope+name type))
+                    (name ,(om:name type)))
+           type))
 
 (define (return-type model event)
   (let ((type ((compose .type .signature) event)))
