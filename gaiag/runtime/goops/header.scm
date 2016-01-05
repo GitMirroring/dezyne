@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -175,26 +175,51 @@
 (define-method (locator-key (type <class>) (key <symbol>))
   (symbol-append (class-name type) key))
 
+(define-method (locator-key (type <object>))
+  (locator-key (class-of type) 'key))
+
+(define-method (locator-key (key <symbol>))
+  key)
+
+(define-method (locator-key (key <string>))
+  (locator-key (string->symbol key)))
+
+(define-method (locator-key (type <object>) (key <symbol>))
+  (locator-key (class-of type) key))
+
 (define-method (locator-key (type <class>) (key <string>))
   (locator-key type (string->symbol key)))
-
-(define-method (locator-key type (key <symbol>))
-  (locator-key (class-of type) key))
 
 (define-method (locator-key type (key <string>))
   (locator-key type (string->symbol key)))
 
-(define-method (set (o <dezyne:locator>) x)
-  (set o x ""))
+(define-method (locator-key x key)
+  (locator-key key))
+
+(define-method (set (o <dezyne:locator>) (x <object>))
+  (set o x 'key))
 
 (define-method (set (o <dezyne:locator>) x key)
   (set! (.services o) (assoc-set! (.services o) (locator-key x key) x))
   o)
 
-(define-method (get (o <dezyne:locator>) x)
-  (get o x ""))
+(define-method (set (o <dezyne:locator>) (x <object>) key)
+  (set! (.services o) (assoc-set! (.services o) (locator-key x key) x))
+  o)
 
-(define-method (get (o <dezyne:locator>) x key)
+(define-method (get (o <dezyne:locator>) (key <symbol>))
+  (assoc-ref (.services o) (locator-key key)))
+
+(define-method (get (o <dezyne:locator>) (type <class>))
+  (get o type 'key))
+
+(define-method (get (o <dezyne:locator>) (type <object>))
+  (get o type 'key))
+
+(define-method (get (o <dezyne:locator>) (x <class>) key)
+  (assoc-ref (.services o) (locator-key x key)))
+
+(define-method (get (o <dezyne:locator>) (x <object>) key)
   (assoc-ref (.services o) (locator-key x key)))
 
 (define-method (clone (o <dezyne:locator>))
