@@ -74,6 +74,11 @@ endif
 endif
 endif
 
+ifeq ($(VERBOSE),runtime)
+$(info DEVELOPMENT: $(DEVELOPMENT))
+$(info LOCAL_RUNTIME: $(LOCAL_RUNTIME))
+endif
+
 LOCAL_RUNTIME_HEADERS:=$(filter %$(LOCAL_HEADER_EXT),$(LOCAL_RUNTIME))
 LOCAL_RUNTIME_SOURCES:=$(filter %$(LOCAL_SOURCE_EXT),$(LOCAL_RUNTIME))
 
