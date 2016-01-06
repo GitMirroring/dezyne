@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;
@@ -357,6 +357,7 @@
     (if #{(}# expression #{)}# statement else statement) : (note-location `(if ,$3 ,$5 ,$7) @1))
 
    (reply-statement
+    (reply #{(}# #{)}# #{\;}#) : (note-location `(,$1 (expression)) @1)
     (reply #{(}# expression #{)}# #{\;}#) : (note-location `(,$1 ,$3) @1)
     (Identifier #{.}# reply #{(}# #{)}# #{\;}#) : (note-location `(,$3 (expression) ,$1) @1)
     (Identifier #{.}# reply #{(}# expression #{)}# #{\;}#) : (note-location `(,$3 ,$5 ,$1) @1))
