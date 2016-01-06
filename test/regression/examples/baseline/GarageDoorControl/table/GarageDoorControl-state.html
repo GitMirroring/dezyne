@@ -15,7 +15,7 @@ doorStopped                                     door = DoorState.  door.Idle
 inevitable                                      Opened;            door.Idle
                                                 door = DoorState.
                                                 Idle;
-inevitable                                      state = Position.  door.Opening
+inevitable                       [state.Closed] state = Position.  door.Opening
                                                 Unknown;
 [door.Closing]
 initialise, doorOpening,                        illegal;

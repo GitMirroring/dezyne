@@ -2,7 +2,7 @@
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
-;; Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
@@ -974,10 +974,7 @@
            (let ((channel-return
                   (if (and (not inevitable-optional?) provided-on?)
                       (list
-                       (list space channel "_'.return ->\n"))
-                      (if (not (is-a? model <component>))
-                          (list
-                           (list space channel "_'''.modeling ->\n"))))))
+                       (list space channel "_'.return ->\n")))))
              (list
               (list space channel-return)
               tail)))

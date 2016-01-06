@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,9 +26,9 @@
 /* ******************************************************************************************* */
 /* This example models the behaviour of the automatic "up and over" garage door I have at home.*/
 /* See the associated specification document that describes the observed behaviour of the door.*/
-/* Note that this model has been built to simply show how certain basic feature of Dezyne      */
+/* Note that this model has been built to simply show how certain basic features of Dezyne     */
 /* work and how they might be used. If this were a real system I would have implemented        */
-/* certain things differently, e.g. the timer on the switch press. Note that I'm also sure that  */
+/* certain things differently, e.g. the timer on the switch press. Note that I'm also sure that*/
 /* the purists will argue that the whole thing could have been done differently. But my        */
 /* purpose here is to illustrate how a simple minded ex-programmer like me might go about      */
 /* solving this problem. Note that for illustrative purposes I have left a simple error in the */
@@ -96,7 +97,7 @@ interface LimitSwitchIF
                    
                     // An internal event leads to the door being in the Unknown state
                    
-                    on inevitable: { state = Position.Unknown; }
+                    [state.Closed] on inevitable: { state = Position.Unknown; }
                                                    
                     on doorClosing, doorOpening: illegal;
                     on doorStopped: door = DoorState.Idle;
@@ -120,7 +121,7 @@ interface LimitSwitchIF
 // The motor control is pretty dumb. With the motor off, we can select either the open or close direction
 // Then we can turn it on. If the motor is working too hard - for instance if the counter balance spring
 // on the door has weakened, then the motor will report a "power warning". If the motor hits a hard stop,
-// for instance if a limit switch fails, then it will immediate shutoff and send a drive fault message
+// for instance if a limit switch fails, then it will immediately shutoff and send a drive fault message
 
 interface MotorControlIF
 {
@@ -201,7 +202,7 @@ interface SwitchPressIF
 	}
 }
 
-// Interface to a one shot timer
+// Interface to an one shot timer
 // The Timer can be started via CreateTimer, CreateTimerEx, or via CreateTimerMSec
 // The Timer is stopped via CancelTimer
 // The Timer reports expiration via Timeout
@@ -342,7 +343,7 @@ component GarageDoorControlErr
 				
 				position = limitSw.queryPosition();
 				
-				//	If the door is opened, close it
+				// If the door is opened, close it
 				
 				if ( position == LimitSwitchIF.Position.Opened )
 				{

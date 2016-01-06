@@ -4,7 +4,7 @@
 ;;;
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -43,7 +43,7 @@ datatype event_enumeration_alphabet = #
      (interface-events model identity)
      (enum-values model)
      (return-values model)
-     (list 'blocked 'the_end' 'inevitable 'optional 'modeling))
+     (list 'blocked 'the_end' 'inevitable 'optional 'modeling 'silent))
     symbol<)))
 
 -- end of combinators

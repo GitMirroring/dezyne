@@ -9,4 +9,5 @@ verify: DummyI: check: deadlock: ok
 verify: DummyI: check: livelock: ok
 verify: I: check: completeness: ok
 verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
+verify: I: check: livelock: fail
+livelock in model I

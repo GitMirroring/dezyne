@@ -1,0 +1,12 @@
+verify: IMotorAsync: check: completeness: ok
+verify: IMotorAsync: check: deadlock: ok
+verify: IMotorAsync: check: livelock: ok
+verify: IMotorSync: check: completeness: ok
+verify: IMotorSync: check: deadlock: ok
+verify: IMotorSync: check: livelock: ok
+verify: MotorControl: check: deterministic: ok
+verify: MotorControl: check: completeness: ok
+verify: MotorControl: check: illegal: ok
+verify: MotorControl: check: deadlock: ok
+verify: MotorControl: check: compliance: ok
+verify: MotorControl: check: livelock: ok

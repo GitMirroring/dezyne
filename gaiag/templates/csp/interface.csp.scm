@@ -4,7 +4,7 @@
 ;;;
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -30,15 +30,20 @@ channel #.scope_model _': {#(comma-join (append (return-values model) (list "blo
 channel #.scope_model _in',#.scope_model _out': {#(comma-join (map (lambda (x) (list .scope_model "_'." x)) (append (return-values model) (list "blocked"))))}
 channel #.scope_model _'': {#(comma-join (let ((out-events (interface-events model om:out?))) (if (null? out-events) (list 'extensions_over_empty_channels_is_undefined) out-events)))}
 
-channel #.scope_model _''': {inevitable,optional,modeling}
+channel #.scope_model _''': {inevitable,optional,modeling,silent}
 
 IF_#.scope_model _(IG,CS) = let
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
 #(behaviour-interface->csp model)
 
-REORDER' = #.scope_model ?x' -> (#.scope_model _in'?y' -> #.scope_model .the_end' -> #.scope_model _out'!y' -> REORDER' [] #.scope_model .the_end' -> REORDER')
-           []
-           #.scope_model _'''?x':{inevitable,optional} -> #.scope_model _'''?x':{modeling} -> #.scope_model .the_end' -> REORDER'
+REORDER' = 
+let
+Star(c', P') = P' [] c'?x' -> Star(c', P')
+Switch(c', P', Q') = P' [] c'?x' -> Star(c', Q') 
+within
+#.scope_model ?x' -> Star(#.scope_model _'', (#.scope_model _in'?y' -> Star(#.scope_model _'', #.scope_model .the_end' -> #.scope_model _out'!y' -> REORDER') [] #.scope_model .the_end' -> REORDER'))
+[]
+#.scope_model _'''?x':{inevitable,optional} -> Switch(#.scope_model _'', #.scope_model .the_end' -> #.scope_model _'''.silent -> REORDER', #.scope_model .the_end' -> #.scope_model _'''.modeling -> REORDER')
 
 compress(x) = let
 transparent sbisim
@@ -50,6 +55,6 @@ within compress((if CS
 .scope_model _(#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import (.name model))))))
                 else #
 .scope_model _(#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import (.name model)))))) #(optional-chaos model))
-               [[x<-#.scope_model _in'.x|x<-extensions(#.scope_model _in')]] [|{|#.scope_model ,#.scope_model _in',#.scope_model _'''|}|] REORDER' [[#.scope_model _out'.x<-x|x<-extensions(#.scope_model _out')]] \ {|#.scope_model _in',#.scope_model .the_end'|})
+               [[x<-#.scope_model _in'.x|x<-extensions(#.scope_model _in')]] [|{|#.scope_model ,#.scope_model _in',#.scope_model _'',#.scope_model _'''.inevitable,#.scope_model _'''.optional|}|] REORDER' [[#.scope_model _out'.x<-x|x<-extensions(#.scope_model _out')]] \ {|#.scope_model _in',#.scope_model .the_end'|})
 
 -- end of interface.csp.scm

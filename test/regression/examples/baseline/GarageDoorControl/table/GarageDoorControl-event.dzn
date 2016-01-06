@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -80,6 +81,7 @@ interface LimitSwitchIF {
         door = DoorState.Idle;
       }
       [door.Opening]
+      [state.Closed]
       state = Position.Unknown;
       [door.Closing]
       {

@@ -1,12 +1,13 @@
 verify: BlindLoop: check: completeness: ok
 verify: BlindLoop: check: deadlock: ok
-verify: BlindLoop: check: livelock: ok
+verify: BlindLoop: check: livelock: fail
+BlindLoop.start
+BlindLoop.return
+livelock in model BlindLoop
 verify: InterfaceLivelock: check: deterministic: ok
 verify: InterfaceLivelock: check: completeness: ok
 verify: InterfaceLivelock: check: illegal: ok
 verify: InterfaceLivelock: check: deadlock: ok
 verify: InterfaceLivelock: check: compliance: fail
-LoopingInterface.start
-LoopingInterface.return
 Component InterfaceLivelock is non-compliant with interface of provided port
 verify: InterfaceLivelock: check: livelock: ok

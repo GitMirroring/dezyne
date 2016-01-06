@@ -61,11 +61,12 @@ motorControl.start
 motorControl.return
 limitSw.doorClosing
 limitSw.return
-motorControl.powerWarning
-doorControl.warning
 motorControl.driveFault
 limitSw.doorStopped
 limitSw.return
 timer.CancelTimer
 timer.return
 doorControl.error
+switchPress.switchPressed
+switchPress.acknowledge
+switchPress.return

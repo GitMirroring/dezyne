@@ -1,0 +1,12 @@
+verify: IMotorSync: check: completeness: ok
+verify: IMotorSync: check: deadlock: ok
+verify: IMotorSync: check: livelock: ok
+verify: IStageSync: check: completeness: ok
+verify: IStageSync: check: deadlock: ok
+verify: IStageSync: check: livelock: ok
+verify: Stage2DSync: check: deterministic: ok
+verify: Stage2DSync: check: completeness: ok
+verify: Stage2DSync: check: illegal: ok
+verify: Stage2DSync: check: deadlock: ok
+verify: Stage2DSync: check: compliance: ok
+verify: Stage2DSync: check: livelock: ok

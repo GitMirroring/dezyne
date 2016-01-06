@@ -5,7 +5,7 @@
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2014, 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -156,9 +156,9 @@ provided_in' = {#
 provided_blocked' = {#
  (comma-join (map (lambda (port) (list (.name port) "_'." "blocked")) (om:provided model)))}
 begin_required_modeling' = {#(comma-join (required-modeling-events model))}
-end_required_modeling' = {#(comma-join (map (lambda (port)
-                 (->string (.name port) "_'''.modeling" ))
-                                            (filter om:requires? ((compose .elements .ports) model))))}
+end_required_modeling' = {#(comma-join (append-map (lambda (port)
+                                                     (list (->string (.name port) "_'''.modeling" ) (->string (.name port) "_'''.silent" )))
+                                                   (filter om:requires? ((compose .elements .ports) model))))}
 within compress((CO_#.scope_model _ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|#(comma-join (list "OUT',transition_begin,transition_end,reorder_in" (comma-join (append-map (lambda (port) (list (.name port) (symbol-append (.name port) (string->symbol "_'")) (symbol-append (.name port) (string->symbol "_''")))) (om:provided model)))))|}|]
                  SEMANTICS(IN',OUT',LINK',provided_in',provided_blocked',begin_required_modeling',end_required_modeling') \ {|OUT',transition_begin,transition_end,reorder_in|}
@@ -180,12 +180,14 @@ R2C = #((->list-join "\n      []\n      ") (append (map (lambda (port) (list (.n
                                                    (map (lambda (port) (list (.name port) "_'''?x -> " (.name port) "_'''?x -> R2C")) (om:provided model))))
 
 IFS = #((->list-join "\n      |||\n      ") (map (lambda (port) (list "IF_" ((om:scope-name) port) "_(true,false)"
-                                                                      (map (lambda (interface channel) (list "[[" interface "<-" channel "]]"))
-                                                                           (csp-channels port (om:scope-name)) (csp-channels port .name))))
+                                                                      (list "[[" ((om:scope-name) port) "<-" (.name port) "]]" 
+                                                                            "[[" ((om:scope-name) port) "_'" "<-" (.name port) "_'" "]]" 
+                                                                            "[[" ((om:scope-name) port) "_''" "<-" (.name port) "_''" "]]" 
+                                                                            "[[" ((om:scope-name) port) "_'''" "<-" (.name port) "_'''" "]]")))
                                                  (om:provided model)))
 
 within compress(IFS [|{|#(comma-join (map (lambda (port) (list (.name port) "," (.name port) "_'" "," (.name port) "_'''")) (om:provided model)))|}|] R2C \ {|#
-(comma-join (delete-duplicates (append-map (lambda (port) (list (list (.name port) "_'''.inevitable") (list (.name port) "_'''.optional"))) (om:provided model))))|})
+(comma-join (delete-duplicates (append-map (lambda (port) (list (list (.name port) "_'''.inevitable") (list (.name port) "_'''.optional") (list (.name port) "_'''.silent"))) (om:provided model))))|})
 
 
 -- end of component.csp.scm

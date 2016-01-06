@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -22,4 +23,4 @@
 ;;; 
 ;;; Code:
 
-assert IF_#.scope_model _(true,false) :[livelock free]
+assert IF_#.scope_model _(true,false) \ {|#.scope_model _'''|} :[livelock free]

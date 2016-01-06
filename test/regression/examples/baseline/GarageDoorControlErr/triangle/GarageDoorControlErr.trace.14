@@ -31,17 +31,6 @@ motorControl.start
 motorControl.return
 limitSw.doorClosing
 limitSw.return
-limitSw.proximityWarning
-motorControl.stop
-motorControl.return
-limitSw.doorStopped
-limitSw.return
-motorControl.setOpen
-motorControl.return
-motorControl.start
-motorControl.return
-limitSw.doorOpening
-limitSw.return
 switchPress.switchPressed
 timer.CreateTimerMSec
 timer.return
@@ -54,5 +43,5 @@ motorControl.setOpen
 motorControl.return
 motorControl.start
 motorControl.return
-limitSw.doorClosing
+limitSw.doorOpening
 limitSw.return

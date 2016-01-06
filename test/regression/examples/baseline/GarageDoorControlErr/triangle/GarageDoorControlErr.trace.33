@@ -17,9 +17,3 @@ limitSw.doorOpening
 limitSw.return
 motorControl.powerWarning
 doorControl.warning
-motorControl.driveFault
-limitSw.doorStopped
-limitSw.return
-timer.CancelTimer
-timer.return
-doorControl.error

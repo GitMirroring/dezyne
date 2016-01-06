@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -95,7 +96,7 @@ interface LimitSwitchIF
                    
                     // An internal event leads to the door being in the Unknown state
                    
-                    on inevitable: { state = Position.Unknown; }
+                    [state.Closed] on inevitable: { state = Position.Unknown; }
                                                    
                     on doorClosing, doorOpening: illegal;
                     on doorStopped: door = DoorState.Idle;

@@ -31,11 +31,14 @@ motorControl.start
 motorControl.return
 limitSw.doorClosing
 limitSw.return
-limitSw.proximityWarning
+limitSw.doorClosed
 motorControl.stop
 motorControl.return
-limitSw.doorStopped
-limitSw.return
+switchPress.switchPressed
+switchPress.acknowledge
+switchPress.return
+limitSw.queryPosition
+limitSw.Position_Closed
 motorControl.setOpen
 motorControl.return
 motorControl.start

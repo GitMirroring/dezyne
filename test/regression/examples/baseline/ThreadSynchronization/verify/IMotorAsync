@@ -1,0 +1,3 @@
+verify: IMotorAsync: check: completeness: ok
+verify: IMotorAsync: check: deadlock: ok
+verify: IMotorAsync: check: livelock: ok

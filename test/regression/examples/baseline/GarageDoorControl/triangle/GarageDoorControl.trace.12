@@ -70,16 +70,7 @@ motorControl.stop
 motorControl.return
 limitSw.doorStopped
 limitSw.return
-switchPress.switchPressed
-switchPress.acknowledge
-switchPress.return
-timer.CancelTimer
-timer.return
-switchPress.switchPressed
-switchPress.acknowledge
-switchPress.return
-limitSw.queryPosition
-limitSw.Position_Closed
+timer.Timeout
 motorControl.setOpen
 motorControl.return
 motorControl.start
