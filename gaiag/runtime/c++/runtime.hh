@@ -156,7 +156,17 @@ struct call_helper
     reply = to_string(r);
     return r;
   }
-  inline std::string to_string(bool b){return b ? "true" : "false";}
+#if BOOL_FOO
+  template <typename L, typename = typename std::enable_if<std::is_integral<typename std::result_of<L()>>>
+  auto operator()(L&& l) -> decltype(l())
+  {
+    auto r = c->dzn_rt.handle(c, l);
+    reply = to_string(r);
+    return r;
+  }
+#endif
+  inline char const* to_string(bool b){return b ? "true" : "false";}
+  inline bool to__bool(std::string s){return s == "true";}
   ~call_helper()
   {
     trace_out(os, meta, reply.c_str());

@@ -96,7 +96,7 @@ namespace dezyne
  #(map
    (lambda (port)
      (map (define-on model port #{m.#port .#direction .#event  = [&] (#formals) {#(string-if (eq? return-type 'void) #{call_#direction("#port .", "#event ", e);#}
-                                                                                                                 #{return call_valued<#((c++:scope-join #f) reply-scope)::#reply-name ::type>("#port .", "#event ", e, #((c++:scope-join #f) (drop-right reply-scope 1))::to_#((om:scope-join #f) reply-scope)_#reply-name , static_cast<const char*(*)(#((c++:scope-join #f) reply-scope)::#reply-name ::type)>(#((c++:scope-join #f) (drop-right reply-scope 1))::to_string));#})};
+                                                                                                                 #{return call_valued<#((c++:scope-join #f) reply-scope)#(string-if (eq? reply-type 'enum) #{::#})#reply-name #(string-if (eq? reply-type 'enum) #{::type#})>("#port .", "#event ", e, to_#((c++:scope-join #f) reply-scope)_#reply-name , static_cast<const char*(*)(#((c++:scope-join #f) reply-scope)#(string-if (eq? reply-type 'enum) #{::#})#reply-name #(string-if (eq? reply-type 'enum) #{::type#}))>(to_string));#})};
      #}) (filter (negate (om:dir-matches? port)) (om:events port)))) (om:ports model))
 
 ##if 0

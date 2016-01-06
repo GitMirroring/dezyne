@@ -423,6 +423,7 @@
   (match o
     (($ <type> 'bool)
      (list 'bool_false 'bool_true))
+    (($ <int> name range) '());; FIXME: TODO
     (($ <enum> name fields)
      (map (lambda (x)
             ((->symbol-join '_) (append (cons (om:name o) (list x))))) (.elements fields)))
