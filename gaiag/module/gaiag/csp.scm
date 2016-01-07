@@ -467,7 +467,7 @@
 
 (define ((return-value model) o)
   (match o
-    (($ <type> 'bool) (list 'bool_false 'bool_true))
+    (($ <type> 'bool) (list 'bool.false 'bool.true))
     (($ <enum> name fields)
      (map (lambda (value) ((->symbol-join '_) (append (om:drop-scope (.name model) (om:scope+name o)) (list value)))) (.elements fields)))
     (($ <int> name range) '())))
@@ -940,10 +940,11 @@
 
           (($ <variable> identifier type ($ <action> (and ($ <trigger> port event) (get! trigger))))
            (let ((type ((compose .type .signature) (om:event model (trigger))))
-                 (values (if (eq? (.name type) 'void) 'return (comma-join (typed-elements ((om:type model) type))))))
+                 (values (if (eq? (.name type) 'void) 'return (comma-join (typed-elements ((om:type model) type)))))
+                 (constructor (if (eq? (.name type) 'bool) "bool." "")))
             (list
              (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
-             (list space (or port channel) "_'" "?" identifier ":{" values "} ->\n")
+             (list space (or port channel) "_'" "?" constructor identifier ":{" values "} ->\n")
              (check-range (list identifier) tail model locals indent))))
 
           (($ <variable> name type ($ <call> identifier arguments))
@@ -972,9 +973,9 @@
                   ;;(foo (stderr "CSP: ~a\n" csp))
                   (csp (match type
                          ('bool (match expression
-                                  (($ <expression> 'false) 'bool_false)
-                                  (($ <expression> 'true) 'bool_true)
-                                  (_ (->string "(if " csp " then bool_true else bool_false" ")"))))
+                                  (($ <expression> 'false) 'bool.false)
+                                  (($ <expression> 'true) 'bool.true)
+                                  (_ (->string "bool." csp))))
                                 (_ csp)))
                   (port (if port port channel)))
              (if csp

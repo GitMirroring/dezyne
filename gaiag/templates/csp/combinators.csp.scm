@@ -24,7 +24,6 @@
 ;;; Code:
 
 -- provided ports: #(comma-join (map .name (om:provided model)))
-nametype bool = {false, true}
 
 channel illegal
 channel range_error
@@ -42,7 +41,7 @@ datatype event_enumeration_alphabet = #
     (append
      (interface-events model identity)
      (type-values model)
-     (return-values model)
+     (map (lambda (x) (if (or (eq? x 'bool.false) (eq? x 'bool.true)) 'bool.Bool x)) (return-values model))
      (list 'blocked 'the_end' 'inevitable 'optional 'modeling 'silent))
     symbol<)))
 
