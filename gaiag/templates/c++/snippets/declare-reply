@@ -1,1 +1,0 @@
-#((c++:scope-join model) scope-name)#(string-if (eq? type 'enum) #{::type#})  reply_#((c++:scope-join #f '_) scope)_#name;

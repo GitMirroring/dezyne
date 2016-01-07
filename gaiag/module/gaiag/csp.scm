@@ -443,14 +443,16 @@
        (apply append (map typed-elements (types o))))))))
 
 (define (types o)
-  (match o
-    (($ <interface>) (append (om:types o) (om:types)))
-    (($ <component>)
-     (append
-      (apply append
-           (map types
-                (map (compose om:import .type) ((compose .elements .ports) o))))
-      (append (om:types o) (om:types))))))
+  (filter
+   (negate (is? <extern>))
+   (match o
+     (($ <interface>) (append (om:types o) (om:types)))
+     (($ <component>)
+      (append
+       (apply append
+              (map types
+                   (map (compose om:import .type) ((compose .elements .ports) o))))
+       (append (om:types o) (om:types)))))))
 
 (define (return-values-port port) ;; FIMXE: no test
   (let ((interface (csp:import (.type port))))
@@ -468,7 +470,7 @@
     (($ <type> 'bool) (list 'bool_false 'bool_true))
     (($ <enum> name fields)
      (map (lambda (value) ((->symbol-join '_) (append (om:drop-scope (.name model) (om:scope+name o)) (list value)))) (.elements fields)))
-    (_ 'barf)))
+    (($ <int> name range) '())))
 
 (define (add-return-if-empty returns)
   (if (null? returns)
@@ -739,11 +741,8 @@
       (($ <literal>) 'enum)
       (($ <var> name) (let* ((var (var? name))
                              (type (.type var)))
-                        ;;(stderr "VAR[~a]: type=~a\n" var type)
-                        (match type
-                          (($ <type> 'bool) 'bool)
-                          (($ <type> ('name scope ... type)) 'enum)
-                          (($ <enum>) 'enum))))
+                        (ast-name ((om:type model) type))))
+      ((? number?) 'int)
       ('false 'bool)
       ('true 'bool)
       (_ 'bool)))
