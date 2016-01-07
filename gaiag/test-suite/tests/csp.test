@@ -1111,7 +1111,7 @@ Alarm_(state,sounding)
     (variable
       e
       (type (name ivar E))
-      (action (trigger i bar (arguments))))
+      (action (trigger i foo (arguments))))
     (voidreply))))
 
 (pass-if "ast-transform-ast-transform-variable-valued-action"
@@ -1122,7 +1122,7 @@ Alarm_(state,sounding)
            var-ast
            '(on (triggers (trigger o bar (arguments)))
                 (compound
-                 (variable e (type (name ivar E)) (action (trigger i bar (arguments)))))))
+                 (variable e (type (name ivar E)) (action (trigger i foo (arguments)))))))
           csp-transform-variable-valued-action-via))
 
 (pass-if "csp-transform-variable-valued-action"
@@ -1133,7 +1133,7 @@ Alarm_(state,sounding)
 
           ;; to:
           "o_''?x:{bar} -> (
-i_''!bar ->
+i!foo ->
 i_'?e:{E_v} ->
 transition_end ->
 var_()
@@ -1150,7 +1150,7 @@ var_()
 
           ;; via:
           "o_''?x:{bar} -> (
-i_''!bar ->
+i!foo ->
 i_'?e:{E_v} ->
 transition_end ->
 var_()
@@ -1165,7 +1165,7 @@ var_()
       (variable
         e
         (type (name ivar E))
-        (action (trigger i bar (arguments))))
+        (action (trigger i foo (arguments))))
       #f)
     (voidreply))))
 
@@ -1177,7 +1177,7 @@ var_()
            var-ast
            '(on (triggers (trigger o bar (arguments)))
                 (if (expression true)
-                    (variable e (type (name ivar E)) (action (trigger i bar (arguments))))
+                    (variable e (type (name ivar E)) (action (trigger i foo (arguments))))
                     #f)))
           csp-transform-if-variable-valued-action-via))
 
@@ -1190,7 +1190,7 @@ var_()
           ;; to:
           "o_''?x:{bar} -> (
 (if true then
-i_''!bar ->
+i!foo ->
 i_'?e:{E_v} ->
 transition_end ->
 var_()
@@ -1210,7 +1210,7 @@ var_()
        (variable
           e
           (type (name ivar E))
-          (action (trigger i bar (arguments)))))
+          (action (trigger i foo (arguments)))))
       #f)
      (voidreply))))
 
@@ -1223,7 +1223,7 @@ var_()
            '(on (triggers (trigger o bar (arguments)))
                 (if (expression true)
                     (compound
-                     (variable e (type (name ivar E)) (action (trigger i bar (arguments)))))
+                     (variable e (type (name ivar E)) (action (trigger i foo (arguments)))))
                     #f)))
           csp-transform-if-compound-variable-valued-action-via))
 
@@ -1236,7 +1236,7 @@ var_()
           ;; to:
           "o_''?x:{bar} -> (
 (if true then
-i_''!bar ->
+i!foo ->
 i_'?e:{E_v} ->
 transition_end ->
 var_()
@@ -1257,7 +1257,7 @@ var_()
 
           ;; via:
           "o_''?x:{bar} -> (
-i_''!bar ->
+i!foo ->
 i_'?e:{E_v} ->
 transition_end ->
 var_()

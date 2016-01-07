@@ -36,13 +36,15 @@ COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A'))
 
 datatype event_enumeration_alphabet = #
 (pipe-join
-  (delete-duplicates
-   (sort
-    (append
-     (interface-events model identity)
-     (type-values model)
-     (map (lambda (x) (if (or (eq? x 'bool.false) (eq? x 'bool.true)) 'bool.Bool x)) (return-values model))
-     (list 'blocked 'the_end' 'inevitable 'optional 'modeling 'silent))
-    symbol<)))
+ (delete-duplicates
+  (sort
+   (map (lambda (x) (if (symbol-prefix? 'int. x) 'int.Int x))
+        (map (lambda (x) (if (symbol-prefix? 'bool. x) 'bool.Bool x))
+             (append
+              (interface-events model identity)
+              (type-values model)
+              (return-values model)
+              (list 'blocked 'the_end' 'inevitable 'optional 'modeling 'silent))))
+   symbol<)))
 
 -- end of combinators

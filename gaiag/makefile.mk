@@ -1,5 +1,6 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
 # Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2014 Henk Katerberg <henk.katerberg@yahoo.com>
 #
 # This file is part of Gaiag.
@@ -38,7 +39,7 @@ MODULE_SRCS := $(filter %.scm,$(shell git ls-files $(CDIR)/module))
 #MODULE_SRCS := $(filter %.scm,$(shell git ls-files $(CDIR)/module | grep -Ev 'module/g/|module/gr/' ))
 SRCS := $(filter-out $(FRST),$(GUILE_LIB_SRCS) $(MODULE_SRCS))
 
-CLEAN:=$(CLEAN) $(BUILD)/module
+CLEAN:=$(CLEAN) $(BUILD)/module $(HOME)/.cache/guile
 
 $(BUILD)/module:
 	ln -s $(shell pwd)/gaiag/module $(BUILD)/module

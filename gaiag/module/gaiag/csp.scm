@@ -422,8 +422,9 @@
 (define (typed-elements o)
   (match o
     (($ <type> 'bool)
-     (list 'bool_false 'bool_true))
-    (($ <int> name range) '());; FIXME: TODO
+     (list 'bool.false 'bool.true))
+    (($ <int> name ($ <range> from to))
+     (map (lambda (i) (symbol-append 'int. (number->symbol i))) (iota (1+ (- to from)) from)))
     (($ <enum> name fields)
      (map (lambda (x)
             ((->symbol-join '_) (append (cons (om:name o) (list x))))) (.elements fields)))
@@ -470,7 +471,8 @@
     (($ <type> 'bool) (list 'bool.false 'bool.true))
     (($ <enum> name fields)
      (map (lambda (value) ((->symbol-join '_) (append (om:drop-scope (.name model) (om:scope+name o)) (list value)))) (.elements fields)))
-    (($ <int> name range) '())))
+    (($ <int> name ($ <range> from to))
+     (map (lambda (i) (symbol-append 'int. (number->symbol i))) (iota (1+ (- to from)) from)))))
 
 (define (add-return-if-empty returns)
   (if (null? returns)
@@ -745,6 +747,10 @@
       ((? number?) 'int)
       ('false 'bool)
       ('true 'bool)
+      (((or '+ '- '* '/) lhs rhs) 'int)
+      (((or 'or 'and '== '!= '< '<= '> '>=) lhs rhs) 'bool)
+      (('- _) 'int)
+      (('! _) 'bool)
       (_ 'bool)))
 
   (let* ((model-name ((om:scope-name) model))
@@ -939,10 +945,11 @@
               (check-range (list identifier) tail model locals indent))))
 
           (($ <variable> identifier type ($ <action> (and ($ <trigger> port event) (get! trigger))))
-           (let ((type ((compose .type .signature) (om:event model (trigger))))
+           (let* ((type ((compose .type .signature) (om:event model (trigger))))
                  (values (if (eq? (.name type) 'void) 'return (comma-join (typed-elements ((om:type model) type)))))
-                 (constructor (if (eq? (.name type) 'bool) "bool." "")))
-            (list
+                 (constructor (if (eq? (.name type) 'bool) "bool." ""))
+                 (constructor (if (is-a? ((om:type model) type) <int>) "int." constructor)))
+             (list
              (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
              (list space (or port channel) "_'" "?" constructor identifier ":{" values "} ->\n")
              (check-range (list identifier) tail model locals indent))))
@@ -972,11 +979,9 @@
                   (csp (csp-expression->string model expression locals))
                   ;;(foo (stderr "CSP: ~a\n" csp))
                   (csp (match type
-                         ('bool (match expression
-                                  (($ <expression> 'false) 'bool.false)
-                                  (($ <expression> 'true) 'bool.true)
-                                  (_ (->string "bool." csp))))
-                                (_ csp)))
+                         ('bool (->string "bool." csp))
+                         ('int (->string "int." csp))
+                         (_ csp)))
                   (port (if port port channel)))
              (if csp
                  (list
