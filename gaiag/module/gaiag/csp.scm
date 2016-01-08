@@ -737,6 +737,7 @@
                                     (om:variable model identifier)))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
+  (define (bool? identifier) (and (var? identifier) (eq? (and=> ((om:type model) (var? identifier)) .name) 'bool)))
   (define (expression-type o locals)
     (match o
       (($ <expression> expression) (expression-type expression locals))
@@ -973,6 +974,12 @@
              (list
               (list space "let " name " = " expression " within\n")
               (check-range (list name) tail model locals indent))))
+
+          (($ <reply> ($ <expression> ($ <var> (and (? bool?) (get! bool)))) port)
+           (let ((port (if port port channel)))
+             (list
+              (list space port "_'!bool." (bool) " -> \n")
+              tail)))
 
           (($ <reply> expression port)
            (let* ((type (expression-type expression locals))

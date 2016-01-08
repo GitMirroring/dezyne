@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,9 +26,11 @@ interface I {
     in bool e();
 
     behaviour {
+        bool b = false;
         on e: {
             [true] reply(false);
             [true] reply(true);
+            [true] reply(b);
         }
     }
 }
@@ -41,5 +44,5 @@ component boolnot {
             bool b = r.e();
             reply(!b);
         }
-    }     
+    }
 }
