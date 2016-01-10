@@ -918,10 +918,14 @@
                   (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
 
           (($ <assign> identifier ($ <action> (and ($ <trigger> port event) (get! trigger))))
-           (list
-            (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
-            (list space (or port channel) "_'" "?" identifier " ->\n")
-            (check-range (list identifier) tail model locals indent)))
+           (let* ((type ((compose .type .signature) (om:event model (trigger))))
+                  (values (if (eq? (.name type) 'void) 'return (comma-join (typed-elements ((om:type model) type)))))
+                  (constructor (if (eq? (.name type) 'bool) "bool." ""))
+                  (constructor (if (is-a? ((om:type model) type) <int>) "int." constructor)))
+             (list
+              (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
+              (list space (or port channel) "_'?" constructor identifier ":{" values "} ->\n")
+              (check-range (list identifier) tail model locals indent))))
 
           (($ <assign> identifier ($ <call> function arguments))
            ;;(stderr "arguments: ~a ~a\n" arguments (pair? arguments))
@@ -952,7 +956,7 @@
                  (constructor (if (is-a? ((om:type model) type) <int>) "int." constructor)))
              (list
              (list space (or port channel) (if (om:out? (om:event model (trigger))) "_''") "!" event " ->\n")
-             (list space (or port channel) "_'" "?" constructor identifier ":{" values "} ->\n")
+             (list space (or port channel) "_'?" constructor identifier ":{" values "} ->\n")
              (check-range (list identifier) tail model locals indent))))
 
           (($ <variable> name type ($ <call> identifier arguments))

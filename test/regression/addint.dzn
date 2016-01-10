@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -72,9 +73,9 @@ component addint {
     behaviour {
         on total.e(): {
             Left l = left.e();
-            Right r = right.e();
+            Right r = 0;
+            r = right.e();
             reply(l+r);
         }
-    }     
+    }
 }
-

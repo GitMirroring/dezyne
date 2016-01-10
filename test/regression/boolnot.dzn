@@ -40,9 +40,17 @@ component boolnot {
     requires I r;
 
     behaviour {
-        on p.e(): {
-            bool b = r.e();
-            reply(!b);
+      bool m = false;
+        [m] on p.e(): {
+          m = !m;
+          bool b = r.e();
+          reply(!b);
+        }
+        [!m] on p.e(): {
+          m = !m;
+          bool b = false;
+          b = r.e();
+          reply(!b);
         }
     }
 }

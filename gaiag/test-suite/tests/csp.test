@@ -1739,7 +1739,7 @@ Reply_(dummy)
           "i?x:{e} -> (
 let res = Status_Ok within
 u!what ->
-u_'?res ->
+u_'?res:{Status_Ok,Status_Nok} ->
 i_'.return ->
 transition_end ->
 Reply_(dummy)
