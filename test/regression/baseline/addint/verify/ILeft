@@ -1,0 +1,3 @@
+verify: ILeft: check: completeness: ok
+verify: ILeft: check: deadlock: ok
+verify: ILeft: check: livelock: ok

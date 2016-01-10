@@ -1,0 +1,15 @@
+verify: ILeft: check: completeness: ok
+verify: ILeft: check: deadlock: ok
+verify: ILeft: check: livelock: ok
+verify: IRight: check: completeness: ok
+verify: IRight: check: deadlock: ok
+verify: IRight: check: livelock: ok
+verify: ITotal: check: completeness: ok
+verify: ITotal: check: deadlock: ok
+verify: ITotal: check: livelock: ok
+verify: addint: check: deterministic: ok
+verify: addint: check: completeness: ok
+verify: addint: check: illegal: ok
+verify: addint: check: deadlock: ok
+verify: addint: check: compliance: ok
+verify: addint: check: livelock: ok

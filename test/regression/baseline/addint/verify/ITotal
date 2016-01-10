@@ -1,0 +1,3 @@
+verify: ITotal: check: completeness: ok
+verify: ITotal: check: deadlock: ok
+verify: ITotal: check: livelock: ok
