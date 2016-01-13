@@ -225,6 +225,8 @@
 (define (valued? model o)
   (om:typed? model (car ((compose .elements .triggers) o))))
 
+(define (unspecified? x) (eq? x *unspecified*))
+
 (define (behaviour->csp model)
 
   (define (void? o)
@@ -752,6 +754,7 @@
       (((or 'or 'and '== '!= '< '<= '> '>=) lhs rhs) 'bool)
       (('- _) 'int)
       (('! _) 'bool)
+      ((? unspecified?) 'void)
       (_ 'bool)))
 
   (let* ((model-name ((om:scope-name) model))
@@ -988,7 +991,6 @@
           (($ <reply> expression port)
            (let* ((type (expression-type expression locals))
                   (csp (csp-expression->string model expression locals))
-                  ;;(foo (stderr "CSP: ~a\n" csp))
                   (csp (match type
                          ('bool (->string "bool." csp))
                          ('int (->string "int." csp))
@@ -996,8 +998,9 @@
                   (port (if port port channel)))
              (if csp
                  (list
+                  (list space "if not member(" csp "," "extensions(" port "_')) then type_error -> illegal -> STOP else\n")  
                   (list space port "_'!" csp " -> \n")
-                  tail)
+                 tail)
                  (list
                   (list space port "_'.return -> \n")
                   tail))))
@@ -1094,7 +1097,7 @@
          (guards (apply append (map (lambda(x) (range-guard x)) identifiers))))
     (if (pair? guards)
         (list
-         (list space "if not (" ((->join (string-append " and\n" space)) guards) ") then range_error -> STOP else\n")
+         (list space "if not (" ((->join (string-append " and\n" space)) guards) ") then range_error -> illegal -> STOP else\n")
          statement)
         statement)))
 

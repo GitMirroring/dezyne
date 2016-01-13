@@ -1,6 +1,4 @@
-verify: range: check: completeness: fail
-range.e
-integer range error in model range
+verify: range: check: completeness: ok
 verify: range: check: deadlock: fail
 range.e
 integer range error in model range

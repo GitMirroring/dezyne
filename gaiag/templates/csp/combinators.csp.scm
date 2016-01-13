@@ -27,6 +27,7 @@
 
 channel illegal
 channel range_error
+channel type_error
 channel transition_begin, transition_end
 channel extensions_over_empty_channels_is_undefined
 
