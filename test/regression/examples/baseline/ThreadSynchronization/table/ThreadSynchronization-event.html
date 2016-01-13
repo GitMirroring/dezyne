@@ -1,0 +1,8 @@
+   States    Guard        Code          Next
+move
+[!is_moving]       is_moving = true;  is_moving
+[is_moving]        illegal;
+inevitable
+[is_moving]        arrived;           is_moving
+                   is_moving = false;
+
