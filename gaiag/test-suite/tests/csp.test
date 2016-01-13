@@ -251,6 +251,7 @@ i_(s,b,c)
 
           ;; to
           "i?x:{f} -> (
+if not member(Status_Yes,extensions(i_')) then type_error -> illegal -> STOP else
 i_'!Status_Yes ->
 i.the_end' ->
 i_(s,b,c)
@@ -308,6 +309,7 @@ i_(s,b,c)
 
           ;; to:
           "i?x:{e} -> (
+if not member(Status_Yes,extensions(i_')) then type_error -> illegal -> STOP else
 i_'!Status_Yes ->
 i_'.return ->
 i.the_end' ->
@@ -512,7 +514,7 @@ let s = tmp' within
 
           "let tmp' = 0 within
 let c = tmp' within
-if not ((0 <= c and c <= 2)) then range_error -> STOP else
+if not ((0 <= c and c <= 2)) then range_error -> illegal -> STOP else
 "))
 
 (pass-if "csp-transform-variable-int"
@@ -525,7 +527,7 @@ if not ((0 <= c and c <= 2)) then range_error -> STOP else
              (skip)))
 
           "let i = 2 within
-if not ((0 <= i and i <= 2)) then range_error -> STOP else
+if not ((0 <= i and i <= 2)) then range_error -> illegal -> STOP else
 "))
 
 (pass-if "csp-transform-assign-int-function"
@@ -536,7 +538,7 @@ if not ((0 <= i and i <= 2)) then range_error -> STOP else
 
           "let Cont_1'(s, b, c, res') =
 let c = res' within
-if not ((0 <= c and c <= 2)) then range_error -> STOP else
+if not ((0 <= c and c <= 2)) then range_error -> illegal -> STOP else
 within
 f(Cont_1')(s, b, c)
 "))
@@ -564,10 +566,10 @@ f(Cont_2')(s, b, c)
              (assign i 1)))
 
           "let i = 2 within
-if not ((0 <= i and i <= 2)) then range_error -> STOP else
+if not ((0 <= i and i <= 2)) then range_error -> illegal -> STOP else
 let tmp' = 1 within
 let i = tmp' within
-if not ((0 <= i and i <= 2)) then range_error -> STOP else
+if not ((0 <= i and i <= 2)) then range_error -> illegal -> STOP else
 "))
 
 (pass-if "csp-transform-expression"
@@ -721,7 +723,7 @@ i_''!g ->
 i_''!g ->
 let tmp' = false within
 let c = tmp' within
-if not ((0 <= c and c <= 2)) then range_error -> STOP else
+if not ((0 <= c and c <= 2)) then range_error -> illegal -> STOP else
 i!f ->
 let tmp' = S_S2 within
 let s = tmp' within
@@ -731,7 +733,7 @@ i_(s,b,c)
 else
 let tmp' = false within
 let c = tmp' within
-if not ((0 <= c and c <= 2)) then range_error -> STOP else
+if not ((0 <= c and c <= 2)) then range_error -> illegal -> STOP else
 i!f ->
 let tmp' = S_S2 within
 let s = tmp' within
@@ -766,7 +768,7 @@ else
 i_''!g ->
 let tmp' = false within
 let c = tmp' within
-if not ((0 <= c and c <= 2)) then range_error -> STOP else
+if not ((0 <= c and c <= 2)) then range_error -> illegal -> STOP else
 i!f ->
 let tmp' = S_S2 within
 let s = tmp' within
@@ -776,7 +778,7 @@ i_(s,b,c)
 else
 let tmp' = false within
 let c = tmp' within
-if not ((0 <= c and c <= 2)) then range_error -> STOP else
+if not ((0 <= c and c <= 2)) then range_error -> illegal -> STOP else
 i!f ->
 let tmp' = S_S2 within
 let s = tmp' within
@@ -1534,10 +1536,12 @@ g(Cont_6')(s, b, c, b, b)
 u!what ->
 u_'?s:{Status_Ok,Status_Nok} ->
 (if (s == Status_Ok) then
+if not member(Status_Yes,extensions(i_')) then type_error -> illegal -> STOP else
 i_'!Status_Yes ->
 transition_end ->
 Reply_(dummy)
 else
+if not member(Status_No,extensions(i_')) then type_error -> illegal -> STOP else
 i_'!Status_No ->
 transition_end ->
 Reply_(dummy)
@@ -1578,6 +1582,7 @@ Reply_(dummy)
 
           ;; to:
           "reply_fun(P')(dummy) =
+if not member(Status_Yes,extensions(i_')) then type_error -> illegal -> STOP else
 i_'!Status_Yes ->
 P'(dummy)
 "))
@@ -1616,6 +1621,7 @@ P'(dummy)
 
           ;; to:
           "reply_fun_arg(P')(dummy, s) =
+if not member(s,extensions(i_')) then type_error -> illegal -> STOP else
 i_'!s ->
 P'(dummy)
 "))
