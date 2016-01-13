@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -34,6 +35,9 @@
 #include <iostream>
 #include <map>
 #include <queue>
+
+inline char const* to_string(bool b){return b ? "true" : "false";}
+inline bool to__bool(std::string s){return s == "true";}
 
 namespace dezyne
 {

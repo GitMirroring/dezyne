@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -37,6 +37,9 @@
 #include <map>
 #include <queue>
 #include <tuple>
+
+inline char const* to_string(bool b){return b ? "true" : "false";}
+inline bool to__bool(std::string s){return s == "true";}
 
 namespace dezyne
 {
@@ -165,8 +168,6 @@ struct call_helper
     return r;
   }
 #endif
-  inline char const* to_string(bool b){return b ? "true" : "false";}
-  inline bool to__bool(std::string s){return s == "true";}
   ~call_helper()
   {
     trace_out(os, meta, reply.c_str());
