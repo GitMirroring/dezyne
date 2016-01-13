@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -224,12 +224,13 @@
     (('formals formals ...)
      (make <formals> :elements (map ast->om- formals)))
 
-    (('port name type direction injected ...)
+    (('port name type direction external-injected ...)
      (make <port>
        :name name
        :type type
        :direction direction
-       :injected (and=> (null-is-#f injected) car)))
+       :external (find (lambda (x) (eq? x 'external)) external-injected)
+       :injected (find (lambda (x) (eq? x 'injected)) external-injected)))
 
     (('ports ports ...) (make <ports> :elements (map ast->om- ports)))
 

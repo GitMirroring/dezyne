@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -143,10 +143,11 @@
     (($ <extern>) ((declare-extern model) o))
     (($ <int>) ((declare-int model) o))
 
-    (($ <port> name type direction injected)
+    (($ <port> name type direction external injected)
      ((animate-snippet 'declare-port `((direction ,direction)
                                        (name ,name)
                                        (interface ,type)
+                                       (external? ,external)
                                        (injected? ,injected)))
       o))
 

@@ -953,6 +953,7 @@
   (animate string `((scope ,om:scope)
                     (name ,.name)
                     (direction ,.direction)
+                    (external? ,.external)
                     (injected? ,.injected)
                     (interface ,om:scope+name))
            port))

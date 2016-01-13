@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2009, 2010, 2011 Free Software Foundation, Inc.
@@ -42,6 +42,7 @@
          else
          enum
          extern
+         external
          false
          if
          illegal

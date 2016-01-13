@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -44,6 +44,7 @@
            .event
            .events
            .expression
+           .external
            .field
            .fields
            .from
@@ -426,8 +427,9 @@
    ((name (make <name>))
     (type #f)
     (direction #f)
+    (external #f)
     (injected #f))
-   (cons <port> (list name type direction injected))))
+   (cons <port> (list name type direction external injected))))
 
 (define (make-<behaviour> . args)
   (let-keywords
@@ -827,30 +829,26 @@
     (('event name signature direction) direction)
     (('formal name type) #f)
     (('formal name type direction) direction)
-    (('port name type direction) direction)
-    (('port name type direction injected) direction)))
+    (('port name type direction external injected) direction)))
+
+(define (.external ast)
+  (match ast
+    (('port name type direction external injected) external)))
 
 (define (.injected ast)
   (match ast
-    (('port name type direction) #f)
-    (('port name type direction injected) injected)))
+    (('port name type direction external injected) injected)))
 
 (define (.type ast)
   (match ast
     (('literal scope type field) type)
-    (('port name type direction) type)
-    (('port name type direction injected) type)
+    (('port name type direction external injected) type)
     (('formal name type) #f)
     (('formal name direction type) direction)
     (('signature type) type)
     (('signature type formals) type)
     (('value type field) type)
     (('variable name type expression) type)))
-
-(define (.injected ast)
-  (match ast
-    (('port name type direction) #f)
-    (('port name type direction injected) injected)))
 
 (define (.component ast)
   (match ast

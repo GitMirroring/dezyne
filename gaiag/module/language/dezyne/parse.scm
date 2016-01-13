@@ -52,7 +52,7 @@
     in inout out
     illegal
     behaviour import interface component system
-    provides requires injected
+    provides requires external injected
     bool enum extern subint void
     NumericLiteral Data
     $
@@ -170,8 +170,11 @@
     (ports port) : (append $1 (list $2)))
 
    (port
-    (port-direction name Identifier #{\;}#) : `(port ,$3 ,$2 ,$1 #f)
-    (port-direction injected name Identifier #{\;}#) : `(port ,$4 ,$3 ,$1 ,$2))
+    (port-direction name Identifier #{\;}#) : `(port ,$3 ,$2 ,$1 #f #f)
+    (port-direction external name Identifier #{\;}#) : `(port ,$4 ,$3 ,$1 ,$2 #f)
+    (port-direction injected name Identifier #{\;}#) : `(port ,$4 ,$3 ,$1 #f ,$2)
+    (port-direction external injected name Identifier #{\;}#) : `(port ,$5 ,$4 ,$1 ,$2 ,$3)
+    (port-direction injected external name Identifier #{\;}#) : `(port ,$5 ,$4 ,$1 ,$3 ,$2))
 
    (port-direction
     (provides) : 'provides

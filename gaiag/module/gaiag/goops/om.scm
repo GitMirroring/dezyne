@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -87,6 +87,7 @@
            .event
            .events
            .expression
+           .external
            .field
            .fields
            .from
@@ -271,6 +272,7 @@
   (name :accessor @name :init-value #f :init-keyword :name)
   (type :accessor @type :init-value (make <name>) :init-keyword :type)
   (direction :accessor @direction :init-value #f :init-keyword :direction)
+  (external :accessor .external :init-value #f :init-keyword :external)
   (injected :accessor .injected :init-value #f :init-keyword :injected))
 
 (define-class <trigger> (<ast>)
@@ -416,7 +418,7 @@
   (match ast
     (($ <event> name signature direction) direction)
     (($ <formal> name type direction) direction)
-    (($ <port> name type direction injected) direction)))
+    (($ <port> name type direction external injected) direction)))
 
 (define (.expression o)
   (match o
