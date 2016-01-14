@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 #
 # This file is part of Dezyne.
@@ -60,7 +60,6 @@ ifeq ($($(LOCAL_LANGUAGE)_RUNTIME),)
 ifeq ($(wildcard $(DEVELOPMENT)/gaiag),)
 $(LOCAL_LANGUAGE)_RUNTIME:=$(filter-out makefile $(notdir $(LOCAL_SOURCE_FILES)),$(shell $(DZN) ls /share/runtime/$(LOCAL_LANGUAGE)))
 else
-$(info LOCAL_SOURCE_FILES: $(LOCAL_SOURCE_FILES))
 $(LOCAL_LANGUAGE)_RUNTIME:=$(filter-out makefile $(notdir $(LOCAL_SOURCE_FILES)),$(shell ls -1F $(DEVELOPMENT)/gaiag/runtime/$(LOCAL_LANGUAGE)))
 endif
 LOCAL_RUNTIME:=$($(LOCAL_LANGUAGE)_RUNTIME)
