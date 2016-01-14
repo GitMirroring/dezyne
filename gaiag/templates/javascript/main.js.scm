@@ -57,7 +57,7 @@ function log_valued(prefix, event, event_map, string_to_value, value_to_string) 
 function #.scope_model _fill_event_map(m)
 {
   var c = new dezyne.component(m.locator, {provides:{}});
-  c.flushes = true;
+  c.flushes = dezyne.flush;
 
   var e = {
 #(map
@@ -67,8 +67,10 @@ function #.scope_model _fill_event_map(m)
 #}) (filter (om:dir-matches? port)
        (om:events port)))) (om:ports model)) };
   #(map (init-port #{
+     if (dezyne.flush) {
        m.#name .meta.provides.component = c;
-       m.#name .meta.provides.name = '<internal>';
+       m.#name .meta.provides.name = '<internal>.#name ';
+     }
        e['#name .<flush>'] = function() {console.error('#name .<flush>'); m.rt.flush(m.#name .meta.provides.component);};
      #}) (filter om:requires? (om:ports model)))
 #(map
@@ -76,13 +78,20 @@ function #.scope_model _fill_event_map(m)
      (map (define-on model port #{
        m.#port .#direction .#event  = function() {#(string-if (eq? return-type 'void) #{log_#direction('#port .', '#event ', e);#}#{return log_valued('#port .', '#event ', e, function(s) {return new dezyne.#((om:scope-name) interface)().#reply-name[drop_prefix(s, '#port .#reply-name _')];}, new dezyne.#((om:scope-name) interface)().#reply-name _to_string)#})};
 #}) (filter (negate (om:dir-matches? port))
-       (om:events port)))) (om:ports model))   return e;
+       (om:events port)))) (om:ports model))
+ #(map (init-port #{
+     m.#name .meta.provides.name = "#name ";
+     m.#name .meta.requires.name = "#name ";
+ #}) (om:ports model))
+   return e;
 }
 
 function main () {
+  dezyne.flush = process.argv.length > 2 && process.argv[2] === '--flush'
+  dezyne.relaxed = process.argv.length > 2 && process.argv[2] === '--relaxed'
   var loc = new dezyne.locator();
   var rt = new dezyne.runtime(function() {console.error('illegal');process.exit(0);});
-  var sut = new #(javascript:namespace model).#.model (loc.set(rt), {name: 'sut'});
+  var sut = new #(javascript:namespace model).#.model (loc.set(rt), {name:'sut'});
 
   var event_map = #.scope_model _fill_event_map(sut);
 

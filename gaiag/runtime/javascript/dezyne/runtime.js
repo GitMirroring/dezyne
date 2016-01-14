@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -31,23 +31,13 @@ function runtime(illegal) {
   this.illegal = illegal || function() {console.assert(!'illegal')};
 
   this.path = function(m, p) {
-    p = p ? p : '';
-    if (!m) {
-      return '<external>' + (p ? '.' + p : p);
-    }
-    if (!m.name) {
-      return p ? p : '<external>';
-    }
-    if (m.component) {
-      return this.path(m.component.meta, m.name + (p ? '.' + p : p));
-    }
-    if ('component' in m) {
-      return '<external>' + (m.name ? '.' + m.name : '') + (p ? '.' + p : p);
-    }
-    if (m.parent) {
-      return this.path(m.parent.meta, m.name + (p ? '.' + p : p));
-    }
-    return m.name + (p ? '.' + p : p);
+    p = p ? '.' + p : '';
+    name = (m && m.name ? '.' + m.name : '')
+    if (!m) return '<xternal>' + name + p;
+    if (m.parent) return this.path(m.parent.meta, m.name + p, 'x');
+    if (!m.component && !p) return '<external>' + (m.name ? '.' + m.name : '');
+    if (!m.component) return m.name + p;
+    return this.path(m.component.meta, m.name + p, 'x');
   };
 
   this.external = function(c) {
