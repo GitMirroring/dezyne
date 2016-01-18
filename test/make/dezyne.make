@@ -43,8 +43,8 @@ DZN_HELLO:=$(shell timeout 2 $(DZN) hello || { echo "timeout running: dzn hello"
 endif
 
 ifeq ($(DEVELOPMENT),)
-DEVELOPMENT_DZN:=$(filter %/client/dzn,$(DZN))
-DEVELOPMENT:=$(DEVELOPMENT_DZN:/client/dzn=)
+DEVELOPMENT_DZN:=$(filter %/client/bin/dzn,$(DZN))
+DEVELOPMENT:=$(DEVELOPMENT_DZN:/client/bin/dzn=)
 DEVELOPMENT:=$(shell cd $(DEVELOPMENT) && pwd)
 ifeq ($(VERBOSE),debug)
 $(info Using dzn shortcut $(DEVELOPMENT))
