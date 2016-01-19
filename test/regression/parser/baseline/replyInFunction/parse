@@ -1,0 +1,1 @@
+replyInFunction.dzn:25:7: Well-formedness error: Reply without port is not allowed in a function if multiple 'provides' ports are present
