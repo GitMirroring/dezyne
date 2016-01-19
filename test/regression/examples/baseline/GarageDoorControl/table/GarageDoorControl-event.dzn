@@ -454,3 +454,41 @@ component GarageDoorControl {
   }
 }
 
+component MotorControl {
+  provides MotorControlIF motorIF;
+
+}
+
+component LimitSwitch {
+  provides LimitSwitchIF limitIF;
+
+}
+
+component WallSwitch {
+  provides SwitchPressIF switchIF;
+
+}
+
+component Timer {
+  provides ITimer iTimer;
+
+}
+
+component GarageDoorSystem {
+  provides DoorControlIF iDoorCtrl;
+
+  system {
+    GarageDoorControl doorCtrl;
+    MotorControl m;
+    LimitSwitch l;
+    WallSwitch s;
+    Timer z;
+
+    iDoorCtrl <=> doorCtrl.doorControl;
+    doorCtrl.switchPress <=> s.switchIF;
+    doorCtrl.motorControl <=> m.motorIF;
+    doorCtrl.limitSw <=> l.limitIF;
+    doorCtrl.timer <=> z.iTimer;
+  }
+}
+
