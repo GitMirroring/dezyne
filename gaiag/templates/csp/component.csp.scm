@@ -66,23 +66,16 @@ channel IN',OUT' : {|#(comma-join (append (map (lambda (port) (list (.name port)
 
 channel LINK' : {|IN',OUT'|}
 
-SINGLETHREADED = true
-
 channel reorder_in, reorder_out : {|#(comma-join (map (lambda (x) (symbol-append x (string->symbol "_'"))) (map .name (om:provided model))))|}
 channel queue_full
 
 SEMANTICS(in',out',link',provided_in',provided_blocked',required_modeling',required_modeling_end',externals') = let
 
 Q' = let
-
 N' = #(csp-queue-size)
-
 external chase
-
 Cell = link'.in'?x' -> link'.out'!x' -> Cell
-
 Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
-
 Front = Cell[[link'.out' <- out']]
 
 within
@@ -90,31 +83,23 @@ within
        else if(N'==2) then chase(Back [link'.out' <-> link'.in'] Front  \ {|link'|})
        else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
 
-R'(A') = ([] x' : A' @ x' -> R'(A'))
-         []
-         reorder_in?x' -> reorder_out!x' -> R'(A')
-         []
-         queue_full -> STOP
-
 S'    = let
-
 N' = #(csp-queue-size)
-
  -- component receives a stimulus
-Idle() = transition_begin -> (([] x':provided_in' @ x' -> FillQ(0,false,false))
+Idle() = transition_begin -> (([] x':provided_in' @ x' -> FillQ(0,false))
                               []
-                              ([] x':required_modeling' @ x' -> FillQ(0,true,member(x',externals'))))
+                              ([] x':required_modeling' @ x' -> FillQ(0,true)))
 
-FillQ(c',rmod',external') =
+FillQ(c',rmod') =
    -- as a result of the stimulus it starts filling its queue
-(c' <= N' & in'?x' -> FillQ(c'+1,rmod',external'))
+(c' <= N' & in'?x' -> FillQ(c'+1,rmod'))
 [] -- component is done filling the queue or it turned out to be an empty required modeling event
 ([] x':required_modeling_end' @ x' -> (Busy(c',<>,rmod',false,extensions_over_empty_channels_is_undefined)
-                                       [] ((c' == 0) or external' & (([] x' : provided_in' @ x' -> FillQ(c',false,external'))
-                                                     []
-                                                     ([] x' :required_modeling' @ x' -> FillQ(c',true,external'))))))
+                                       [] ((c' == 0) & (([] x' : provided_in' @ x' -> FillQ(c',false))
+                                                       []
+                                                       ([] x' :required_modeling' @ x' -> FillQ(c',true))))))
 [] -- synchronous out event
-([]x':{|#(comma-join (map (lambda (port) (symbol-append (.name port) (string->symbol "_''"))) (om:provided model)))|} @ x' -> FillQ(c',rmod',external'))
+([]x':{|#(comma-join (map (lambda (port) (symbol-append (.name port) (string->symbol "_''"))) (om:provided model)))|} @ x' -> FillQ(c',rmod'))
 [] -- component replies on the stimulus
 (reorder_in?x': diff(extensions(reorder_in),provided_blocked')  -> Busy(c',<x'>,rmod',false,extensions_over_empty_channels_is_undefined))
 [] -- component blocks port
@@ -144,8 +129,7 @@ End(r') = if r' == <> then Idle() else reorder_out!head(r') -> Idle()
 
 within Idle()
 
-within Q' [|{|in',out',queue_full|}|] if SINGLETHREADED then S' else R'(Union({{|in',out',transition_begin,transition_end|},provided_in',required_modeling'}))
-
+within Q' [|{|in',out',queue_full|}|] S'
 AS_#.scope_model _(IIG) = let
 compress(x) = let
 transparent sbisim
@@ -160,13 +144,20 @@ end_required_modeling' = {#(comma-join (append-map (lambda (port)
                 (list (->string (.name port) "_'''.modeling" ) (->string (.name port) "_'''.silent" )))
                                             (filter om:requires? ((compose .elements .ports) model))))}
 externals' = {|#((->join ",") (map (lambda (x) (list (.name x) "_'''")) (filter .external (om:ports model))))|}
+#(map (animate-pairs `((interface ,identity))
+#{IFD_#interface _(IG,CS) =
+compress(IF_#interface _(IG,CS) [[x<-#interface _in''.x|x<-extensions(#interface _in'')]]
+[|{|#interface _in'',#interface _out'',queue_full|}|]
+IQ'(#interface _in'',#interface _out'',#interface _link'',#(* 3 (csp-queue-size)))
+[[#interface _out''.x<-x|x<-extensions(#interface _out'')]] \ {|#interface _in'',queue_full|})
+#}) (delete-duplicates (map (compose om:name .type) (filter .external (om:ports model)))))
 within compress((CO_#.scope_model _ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|#(comma-join (list "OUT',transition_begin,transition_end,reorder_in" (comma-join (append-map (lambda (port) (list (.name port) (symbol-append (.name port) (string->symbol "_'")) (symbol-append (.name port) (string->symbol "_''")))) (om:provided model)))))|}|]
                  SEMANTICS(IN',OUT',LINK',provided_in',provided_blocked',begin_required_modeling',end_required_modeling',externals') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|#(comma-join (apply append (list "IN'") (map (lambda (o) (list (.name o) (string-append (symbol->string (.name o)) "_'") (string-append (symbol->string (.name o)) "_'''"))) (om:required model))))|}|]
                 (# (let ((required_processes ((->join "\n                 ||| ") (map (lambda (port)
-(->string (list "IF_" ((om:scope-name) port) '_"(true,false) [["((om:scope-name) port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]][["((om:scope-name) port) "_'.x<-" (.name port) "_'.x|x<-extensions("(.name port)"_')]]" (if (not (null? (filter om:out? (om:events port)))) (list "[["((om:scope-name) port) "_''.x<-" (.name port) "_''.x|x<-extensions("(.name port)"_'')]]")) (list "[["((om:scope-name) port) "_'''.x<-" (.name port) "_'''.x|x<-extensions("(.name port)"_''')]]"))))
+(->string (list (if (.external port) "IFD_" "IF_") ((om:scope-name) port) '_"(true,false) [["((om:scope-name) port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]][["((om:scope-name) port) "_'.x<-" (.name port) "_'.x|x<-extensions("(.name port)"_')]]" (if (not (null? (filter om:out? (om:events port)))) (list "[["((om:scope-name) port) "_''.x<-" (.name port) "_''.x|x<-extensions("(.name port)"_'')]]")) (list "[["((om:scope-name) port) "_'''.x<-" (.name port) "_'''.x|x<-extensions("(.name port)"_''')]]"))))
  (filter om:requires? ((compose .elements .ports) model)))))) (if (string-null? required_processes) 'STOP required_processes))
 )[[x<-IN'.x|x<-extensions(IN')]])
 

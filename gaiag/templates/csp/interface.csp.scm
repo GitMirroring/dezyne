@@ -29,9 +29,10 @@ channel #.scope_model : {#(comma-join (append (interface-events model om:in?) (l
 channel #.scope_model _': {#(comma-join (reverse (append (return-values model) (list "blocked"))))}
 channel #.scope_model _in',#.scope_model _out': {#(comma-join (map (lambda (x) (list .scope_model "_'." x)) (append (return-values model) (list "blocked"))))}
 channel #.scope_model _'': {#(comma-join (let ((out-events (interface-events model om:out?))) (if (null? out-events) (list 'extensions_over_empty_channels_is_undefined) out-events)))}
-
 channel #.scope_model _''': {inevitable,optional,modeling,silent}
-
+channel #.scope_model _in'',#.scope_model _out'': {|#.scope_model _'',#.scope_model _'''|}
+channel #.scope_model _link'': {|#.scope_model _in'',#.scope_model _out''|}
+                            
 IF_#.scope_model _(IG,CS) = let
 # (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
 #(behaviour-interface->csp model)

@@ -48,4 +48,15 @@ datatype event_enumeration_alphabet = #
               (list 'blocked 'the_end' 'inevitable 'optional 'modeling 'silent))))
    symbol<)))
 
+IQ'(in',out',link',size') = let
+N' = size'
+external chase
+Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
+Front = Cell[[link'.out' <- out']]
+Cell = link'.in'?x' -> link'.out'!x' -> Cell
+within
+       if (N'==1) then (Back[[link'.out' <- out']])
+       else if(N'==2) then chase(Back [link'.out' <-> link'.in'] Front  \ {|link'|})
+       else chase((Back [link'.out' <-> link'.in'] ([link'.out'<->link'.in'] x : <1..N'-2> @ Cell)) [link'.out' <-> link'.in'] Front \ {|link'|})
+
 -- end of combinators

@@ -53,13 +53,13 @@
            csp:import
            csp-comma-list
            csp-component
-           csp-module
            ast-transform
            csp-transform
            csp:norm
            csp-queue-size
            om->csp
 
+           animate-pairs
            assign
            provides?
            requires?
@@ -113,7 +113,7 @@
                 (om:model-with-behaviour norm))
                (file-name (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
               (dump-output file-name (lambda ()
-                                       (csp-file 'combinators.csp.scm (csp-module model))
+                                       (csp-file 'combinators.csp.scm (csp:module model))
                                        (csp-model model)
                                        (if separate-asserts?
                                            (animate-string "\ninclude \"asserts.csp\"\n")
@@ -162,24 +162,24 @@
   (match o
     (($ <interface>) *unspecified*)
     (($ <component>)
-     (csp-file 'assembly-lts.csp.scm (csp-module o)))))
+     (csp-file 'assembly-lts.csp.scm (csp:module o)))))
 
 (define (csp-lts o)
   (match o
     (($ <interface>)
-     (csp-file 'interface-lts.csp.scm (csp-module o)))
+     (csp-file 'interface-lts.csp.scm (csp:module o)))
     (($ <component>)
-     (csp-file 'component-lts.csp.scm (csp-module o)))))
+     (csp-file 'component-lts.csp.scm (csp:module o)))))
 
 (define (csp-model o)
   (match o
     (($ <interface>)
-     (csp-file 'both.csp.scm (csp-module o))
-     (csp-file 'interface.csp.scm (csp-module o)))
+     (csp-file 'both.csp.scm (csp:module o))
+     (csp-file 'interface.csp.scm (csp:module o)))
     (($ <component>)
      (for-each csp-model (interfaces o))
-     (csp-file 'both.csp.scm (csp-module o))
-     (csp-file 'component.csp.scm (csp-module o)))))
+     (csp-file 'both.csp.scm (csp:module o))
+     (csp-file 'component.csp.scm (csp:module o)))))
 
 (define (csp-asserts o)
   (match o
@@ -195,7 +195,7 @@
            (model (cadr assert))
            (check (caddr assert))
            (template (assoc-ref asserts-alist (list class check))))
-      (animate-string template (csp-module o)))))
+      (animate-string template (csp:module o)))))
 
 (define asserts-alist
   `(
@@ -209,7 +209,7 @@
     ((interface deadlock) . ,(gulp-template 'asserts/interface-deadlock.csp.scm))
     ((interface livelock) . ,(gulp-template 'asserts/interface-livelock.csp.scm))))
 
-(define (csp-module o)
+(define (csp:module o)
   (let ((module (make-module 31 (list
                                  (resolve-module '(gaiag csp))
                                  ))))
@@ -998,7 +998,7 @@
                   (port (if port port channel)))
              (if csp
                  (list
-                  (list space "if not member(" csp "," "extensions(" port "_')) then type_error -> illegal -> STOP else\n")  
+                  (list space "if not member(" csp "," "extensions(" port "_')) then type_error -> illegal -> STOP else\n")
                   (list space port "_'!" csp " -> \n")
                  tail)
                  (list
@@ -1153,3 +1153,11 @@
   (map (cut symbol-append (op port) <>)
        (map string->symbol
             (if (not (null? (filter om:out? (om:events port)))) (list "" "_'" "_''" "_'''") (list "" "_'")))))
+
+(define* (pairs->module key-procedure-pairs :optional (parameter #f))
+  (let ((module (csp:module (and=> (module-variable (current-module) 'model)
+                                    variable-ref))))
+    (populate-module module key-procedure-pairs parameter)))
+
+(define* ((animate-pairs pairs string) :optional parameter)
+  (animate string (pairs->module pairs parameter)))
