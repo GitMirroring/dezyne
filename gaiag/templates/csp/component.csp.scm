@@ -145,10 +145,10 @@ end_required_modeling' = {#(comma-join (append-map (lambda (port)
                                             (filter om:requires? ((compose .elements .ports) model))))}
 externals' = {|#((->join ",") (map (lambda (x) (list (.name x) "_'''")) (filter .external (om:ports model))))|}
 #(map (animate-pairs `((interface ,identity))
-#{IFD_#interface _(IG,CS) =
-compress(IF_#interface _(IG,CS) [[x<-#interface _in''.x|x<-extensions(#interface _in'')]]
-[|{|#interface _in'',#interface _out'',queue_full|}|]
-IQ'(#interface _in'',#interface _out'',#interface _link'',#(* 3 (csp-queue-size)))
+#{IFD_#interface _(IG,CS) = 
+compress(IF_#interface _(IG,CS) [[x<-#interface _in''.x|x<-extensions(#interface _in'')]] 
+[|{|#interface _in'',#interface _out'',queue_full|}|] 
+IQ'(#interface _in'',#interface _out'',#interface _link'',#(* 3 (csp-queue-size))) 
 [[#interface _out''.x<-x|x<-extensions(#interface _out'')]] \ {|#interface _in'',queue_full|})
 #}) (delete-duplicates (map (compose om:name .type) (filter .external (om:ports model)))))
 within compress((CO_#.scope_model _ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]

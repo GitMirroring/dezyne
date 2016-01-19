@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -118,7 +119,6 @@ Examples:
       (_ #t))))
 
 (define (main args)
-  (stderr "command-line:" (command-line))
   (let* ((options (parse-opts args))
          (debug? (option-ref options 'debug #f))
          (coverage? (option-ref options 'coverage #f)))
