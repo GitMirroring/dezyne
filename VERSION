@@ -1,4 +1,5 @@
 # make and bash include
-VERSION=1.2.2
-SERVER_VERSIONS="(1[.][0-2][.][0-9]+|0[.]9[.][0-9]+|0[.]3[.][0-9]+)"
-
+MAJOR_VERSION=1
+MINOR_VERSION=2
+PATCH_LEVEL=2
+CLIENT_PATCH_LEVEL=3
