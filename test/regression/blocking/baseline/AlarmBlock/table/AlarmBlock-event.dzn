@@ -1,0 +1,192 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface IConsole {
+  in void arm();
+  in void disarm();
+  out void detected();
+
+  behaviour {
+    enum States {Disarmed, Armed, Triggered, Disarming};
+    States state = States.Disarmed;
+
+    on arm:
+    {
+      [state.Disarmed]
+      state = States.Armed;
+      [state.Triggered || state.Armed]
+      illegal;
+    }
+    on disarm:
+    {
+      [state.Disarmed]
+      illegal;
+      [state.Triggered || state.Armed]
+      state = States.Disarmed;
+    }
+    on optional:
+    [state.Armed]
+    {
+      detected;
+      state = States.Triggered;
+    }
+  }
+}
+
+interface ISensor {
+  in void enable();
+  in void disable();
+  out void triggered();
+  out void disabled();
+
+  behaviour {
+    enum States {Disabled, Enabled, Disabling, Triggered};
+    States state = States.Disabled;
+
+    on enable:
+    {
+      [state.Disabled]
+      state = States.Enabled;
+      [state.Triggered || state.Disabling || state.Enabled]
+      illegal;
+    }
+    on disable:
+    {
+      [state.Disabling || state.Disabled]
+      illegal;
+      [state.Triggered || state.Enabled]
+      state = States.Disabling;
+    }
+    on optional:
+    [state.Enabled]
+    {
+      triggered;
+      state = States.Triggered;
+    }
+    on inevitable:
+    [state.Disabling]
+    {
+      disabled;
+      state = States.Disabled;
+    }
+  }
+}
+
+interface ISiren {
+  in void turnon();
+  in void turnoff();
+
+  behaviour {
+    enum States {Off, On};
+    States state = States.Off;
+
+    on turnon:
+    {
+      [state.Off]
+      state = States.On;
+      [state.On]
+      illegal;
+    }
+    on turnoff:
+    {
+      [state.Off]
+      illegal;
+      [state.On]
+      state = States.Off;
+    }
+  }
+}
+
+component AlarmBlock {
+  provides IConsole console;
+  requires ISensor sensor;
+  requires ISiren siren;
+
+  behaviour {
+    enum States {Disarmed, Armed, Triggered, Disarming};
+    States state = States.Disarmed;
+    bool sounding = false;
+
+    on console.arm():
+    {
+      [state.Disarmed]
+      {
+        sensor.enable();
+        state = States.Armed;
+      }
+      [state.Disarming || state.Triggered || state.Armed]
+      illegal;
+    }
+    on console.disarm():
+    {
+      [state.Disarming || state.Disarmed]
+      illegal;
+      [state.Armed]
+      blocking {
+        sensor.disable();
+        state = States.Disarming;
+      }
+      [state.Triggered]
+      blocking {
+        sensor.disable();
+        siren.turnoff();
+        sounding = false;
+        state = States.Disarming;
+      }
+    }
+    on sensor.triggered():
+    {
+      [state.Triggered || state.Disarmed]
+      illegal;
+      [state.Armed]
+      {
+        console.detected();
+        siren.turnon();
+        sounding = true;
+        state = States.Triggered;
+      }
+      [state.Disarming]
+      {}
+    }
+    on sensor.disabled():
+    {
+      [state.Triggered || state.Armed || state.Disarmed]
+      illegal;
+      [state.Disarming]
+      {
+        [sounding]
+        {
+          siren.turnoff();
+          state = States.Disarmed;
+          console.reply();
+          sounding = false;
+        }
+        [otherwise]
+        {
+          state = States.Disarmed;
+          console.reply();
+        }
+      }
+    }
+  }
+}
+

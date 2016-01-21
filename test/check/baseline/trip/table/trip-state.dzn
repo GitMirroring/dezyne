@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -141,15 +141,24 @@ component trap {
     }
 
     [state.0]
+    on i.e():
     {
-      on i.b(o <- global_i):
-      blocking i.a();
-      on i.r(p):
-      {
-        global_i = p;
-        i.reply();
-      }
-      on i.e():
+      b = !b;
+      bool c = g(b, b);
+      b = g(c, c);
+      if (c) i.a();
+      else i.a();
+      U.Status s = U.Status.Ok;
+      s = U.Status.Nok;
+      s = u.what();
+      b = s == U.Status.Ok;
+      if (s == U.Status.Ok) reply(I.Status.Yes);
+      if (!s.Ok) reply(I.Status.No);
+    }
+    [state.1]
+    on i.e():
+    {
+      [b]
       {
         b = !b;
         bool c = g(b, b);
@@ -163,107 +172,65 @@ component trap {
         if (s == U.Status.Ok) reply(I.Status.Yes);
         if (!s.Ok) reply(I.Status.No);
       }
-    }
-    [state.1]
-    {
-      on i.b(o <- global_i):
-      blocking i.a();
-      on i.r(p):
+      [otherwise]
       {
-        global_i = p;
-        i.reply();
-      }
-      on i.e():
-      {
-        [b]
-        {
-          b = !b;
-          bool c = g(b, b);
-          b = g(c, c);
-          if (c) i.a();
-          else i.a();
-          U.Status s = U.Status.Ok;
-          s = U.Status.Nok;
-          s = u.what();
-          b = s == U.Status.Ok;
-          if (s == U.Status.Ok) reply(I.Status.Yes);
-          if (!s.Ok) reply(I.Status.No);
-        }
-        [otherwise]
-        {
-          state = state - 1;
-          if (c < state) c = c + 1;
-          else if (c <= state + 1) i.lo();
-          else if (c > state) i.hi();
-        }
+        state = state - 1;
+        if (c < state) c = c + 1;
+        else if (c <= state + 1) i.lo();
+        else if (c > state) i.hi();
+        reply(I.Status.Yes);
       }
     }
     [state.2]
+    on i.e():
     {
-      on i.b(o <- global_i):
-      blocking i.a();
-      on i.r(p):
+      [b]
       {
-        global_i = p;
-        i.reply();
+        b = !b;
+        bool c = g(b, b);
+        b = g(c, c);
+        if (c) i.a();
+        else i.a();
+        U.Status s = U.Status.Ok;
+        s = U.Status.Nok;
+        s = u.what();
+        b = s == U.Status.Ok;
+        if (s == U.Status.Ok) reply(I.Status.Yes);
+        if (!s.Ok) reply(I.Status.No);
       }
-      on i.e():
+      [otherwise]
       {
-        [b]
-        {
-          b = !b;
-          bool c = g(b, b);
-          b = g(c, c);
-          if (c) i.a();
-          else i.a();
-          U.Status s = U.Status.Ok;
-          s = U.Status.Nok;
-          s = u.what();
-          b = s == U.Status.Ok;
-          if (s == U.Status.Ok) reply(I.Status.Yes);
-          if (!s.Ok) reply(I.Status.No);
-        }
-        [otherwise]
-        {
-          state = state - 1;
-          if (c < state) c = c + 1;
-          else if (c <= state + 1) i.lo();
-          else if (c > state) i.hi();
-        }
+        state = state - 1;
+        if (c < state) c = c + 1;
+        else if (c <= state + 1) i.lo();
+        else if (c > state) i.hi();
+        reply(I.Status.Yes);
       }
     }
     [state.3]
+    on i.e():
     {
-      on i.b(o <- global_i):
-      blocking i.a();
-      on i.r(p):
+      [b]
       {
-        global_i = p;
-        i.reply();
+        b = !b;
+        bool c = g(b, b);
+        b = g(c, c);
+        if (c) i.a();
+        else i.a();
+        U.Status s = U.Status.Ok;
+        s = U.Status.Nok;
+        s = u.what();
+        b = s == U.Status.Ok;
+        if (s == U.Status.Ok) reply(I.Status.Yes);
+        if (!s.Ok) reply(I.Status.No);
       }
-      on i.e():
+      [otherwise]
       {
-        [b]
-        {
-          b = !b;
-          bool c = g(b, b);
-          b = g(c, c);
-          if (c) i.a();
-          else i.a();
-          U.Status s = U.Status.Ok;
-          s = U.Status.Nok;
-          s = u.what();
-          b = s == U.Status.Ok;
-          if (s == U.Status.Ok) reply(I.Status.Yes);
-          if (!s.Ok) reply(I.Status.No);
-        }
-        [otherwise]
-        {
-          state = state - 1;
-          if (c < state) c = c + 1;
-          else if (c <= state + 1) i.lo();
-          else if (c > state) i.hi();
-        }
+        state = state - 1;
+        if (c < state) c = c + 1;
+        else if (c <= state + 1) i.lo();
+        else if (c > state) i.hi();
+        reply(I.Status.Yes);
       }
     }
   }

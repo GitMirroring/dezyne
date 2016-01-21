@@ -21,10 +21,23 @@
 # 
 # Code:
 
-BROKEN_javascript:=\
- $(CDIR)block.dzn\
+BLOCKING_DEADLOCK:=\
+ $(CDIR)SimpleBlockingDeadlock.dzn\
+ $(CDIR)SimpleBlockingDeadlock2.dzn\
+#
+BLOCKING_SYSTEM:=\
+ $(CDIR)BlockedSystem.dzn\
+ $(CDIR)BlockedSystem1.dzn\
+ $(CDIR)BlockedSystem2.dzn\
+ $(CDIR)BlockedSystem3.dzn\
+ $(CDIR)BlockedSystem4.dzn\
+#
+BROKEN_triangle:=\
+ $(BLOCKING_SYSTEM)\
 #
 BROKEN_run:=\
- $(CDIR)trip.dzn\
+ $(BLOCKING_DEADLOCK)\
+ $(BLOCKING_SYSTEM)\
 #
+LANGUAGES:=$(filter c++ run table verify,$(CODE_LANGUAGES) $(PSEUDO_LANGUAGES))
 include make/files.make
