@@ -299,6 +299,22 @@
              (snippet 'formal-out-identifier `((type ,type-name)
                                                (name ,alias)))))
           (else identifier)))
+  (define (expression-type o locals)
+    (match o
+      (($ <expression> expression) (expression-type expression locals))
+      (($ <literal>) 'enum)
+      (($ <var> name) (let* ((var (var? name))
+                             (type (.type var)))
+                        (ast-name ((om:type model) type))))
+      ((? number?) 'int)
+      ('false 'bool)
+      ('true 'bool)
+      (((or '+ '- '* '/) lhs rhs) 'int)
+      (((or 'or 'and '== '!= '< '<= '> '>=) lhs rhs) 'bool)
+      (('- _) 'int)
+      (('! _) 'bool)
+      ((? unspecified?) 'void)
+      (_ 'bool)))
 
   (let ((port (statements.port))
         (event (statements.event))
@@ -462,6 +478,7 @@
                     (comma ,comma)
                     (comma-space ,comma-space)))))
       (($ <reply> (and ($ <expression> ($ <literal> name field)) (get! expression)) port)
+       (debug "reply0: ~a\n" (expression))
        (->string (list (snippet 'reply
                                 `((space ,space)
                                   (scope ,(om:scope name))
@@ -490,6 +507,7 @@
                                              (name ,(om:name type))
                                              (port ,port))))))))
       (($ <reply> (and ($ <expression> (? unspecified?)) (get! expression)) port)
+       (debug "reply2: ~a\n" (expression))
        (if port (snippet 'release
                          `((space ,space)
                            (port ,port)))))
@@ -497,7 +515,7 @@
        (debug "\nreply3: ~a\n" (expression))
        (if (eq? (expression) *unspecified*) (failure)
            (let* ((scope '())
-                  (type 'bool))
+                  (type (expression-type (expression) locals)))
              (debug "reply3: type=~a\n" type)
              (debug "reply3: expression=~a\n" (expression->string model (expression) locals))
              (->string (list (snippet 'reply
