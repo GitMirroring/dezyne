@@ -788,7 +788,7 @@
             `((scope ,(om:scope enum)) (name ,(om:name enum)) (fields ,fields) (length ,length)))))
 
 (define (declare-integer integer)
-  (snippet 'declare-integer `((name ,(om:name integer)))))
+  (snippet 'declare-integer `((name int))))
 
 (define ((declare-io model string) event)
   (let* ((name (.name event))
@@ -865,8 +865,8 @@
          (formal-objects formals)
          (formal-list (map (lambda (x) (code:->code model x)) formals))
          (formals (code:->code model (make <formals> :elements formals)))
-         (reply-name (om:name type))
          (reply-type (ast-name ((om:type model) type)))
+         (reply-name (if (eq? reply-type 'int) 'int (om:name type)))
          (reply-scope (om:scope type-type))
          (reply-scope-name (om:scope+name type-type))
          (system (is-a? model <system>))

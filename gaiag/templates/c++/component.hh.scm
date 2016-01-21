@@ -18,12 +18,11 @@ struct #.model
     dezyne::meta dzn_meta;
     dezyne::runtime& dzn_rt;
     dezyne::locator const& dzn_locator;
-    #(->string (map (declare-enum model) (om:enums (.behaviour model))))#
-    (->string (map declare-integer (om:integers (.behaviour model))))#
+    #(map (declare-enum model) (om:enums (.behaviour model)))#
     (map (init-member model #{
 #type  #name;
 #}) (om:variables model))#
-    (delete-duplicates (append-map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
+    (delete-duplicates (append-map (compose declare-replies code:import .type) ((compose .elements .ports) model)) equal?)#
     (map (init-port #{
     std::function<void ()> out_#name;
 #}) (filter om:provides? ((compose .elements .ports) model)))#

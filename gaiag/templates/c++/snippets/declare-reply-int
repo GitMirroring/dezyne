@@ -1,1 +1,1 @@
-int reply_#((c++:scope-join #f '_) scope)_#name;
+int reply_#((c++:scope-join #f '_) scope)_int;
