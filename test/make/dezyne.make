@@ -148,7 +148,7 @@ $(LOCAL_OUT)/dezyne/$(1):
 ifeq ($(wildcard $(DEVELOPMENT)/gaiag),)
 	$(DZN) cat /share/runtime/$(LOCAL_LANGUAGE)/dezyne/$$(notdir $$@) > $$@
 else
-	cat $(DEVELOPMENT)/gaiag/runtime/$(LOCAL_LANGUAGE)/dezyne/$$(notdir $$@) > $$@
+	ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LOCAL_LANGUAGE)/dezyne/$$(notdir $$@) $$@
 endif
 endef
 

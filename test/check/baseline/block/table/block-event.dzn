@@ -22,11 +22,21 @@
 
 interface I {
   in void e();
-  out void a();
 
   behaviour {
 
     on e:
+    [true]
+    {}
+  }
+}
+
+interface II {
+  out void a();
+
+  behaviour {
+
+    on inevitable:
     [true]
     a;
   }
@@ -34,18 +44,27 @@ interface I {
 
 component block {
   provides I p;
-  requires I r;
+  requires II r;
 
   behaviour {
+    bool blocked = false;
 
     on p.e():
-    [true]
-    blocking r.e();
-    on r.a():
-    [true]
     {
-      p.a();
-      p.reply();
+      [!blocked]
+      blocking blocked = true;
+      [blocked]
+      {}
+    }
+    on r.a():
+    {
+      [!blocked]
+      {}
+      [blocked]
+      {
+        p.reply();
+        blocked = false;
+      }
     }
   }
 }
