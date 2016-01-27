@@ -69,7 +69,7 @@ channel LINK' : {|IN',OUT'|}
 channel reorder_in, reorder_out : {|#(comma-join (map (lambda (x) (symbol-append x (string->symbol "_'"))) (map .name (om:provided model))))|}
 channel queue_full
 
-SEMANTICS(in',out',link',provided_in',provided_blocked',required_modeling',required_modeling_end',externals') = let
+SEMANTICS(in',out',link',provided_in',provided_blocked',required_modeling',required_modeling_end',in_internal') = let
 
 Q' = let
 N' = #(csp-queue-size)
@@ -86,18 +86,21 @@ within
 S'    = let
 N' = #(csp-queue-size)
  -- component receives a stimulus
-Idle() = transition_begin -> (([] x':provided_in' @ x' -> FillQ(0,false))
-                              []
-                              ([] x':required_modeling' @ x' -> FillQ(0,true)))
+Idle() = transition_begin -> Started()
+
+Started() = 
+(([] x':provided_in' @ x' -> FillQ(0,false))
+[]
+([] x':required_modeling' @ x' -> FillQ(0,true))
+[]
+(in'?x' -> Busy(1,<>,true,false,extensions_over_empty_channels_is_undefined)))
 
 FillQ(c',rmod') =
    -- as a result of the stimulus it starts filling its queue
-(c' <= N' & in'?x' -> FillQ(c'+1,rmod'))
+(c' <= N' & in'?x':in_internal' -> FillQ(c'+1,rmod'))
 [] -- component is done filling the queue or it turned out to be an empty required modeling event
-([] x':required_modeling_end' @ x' -> (Busy(c',<>,rmod',false,extensions_over_empty_channels_is_undefined)
-                                       [] ((c' == 0) & (([] x' : provided_in' @ x' -> FillQ(c',false))
-                                                       []
-                                                       ([] x' :required_modeling' @ x' -> FillQ(c',true))))))
+([] x':required_modeling_end' @ x' -> 
+(Busy(c',<>,rmod',false,extensions_over_empty_channels_is_undefined) [] ((c' == 0) & Started())))
 [] -- synchronous out event
 ([]x':{|#(comma-join (map (lambda (port) (symbol-append (.name port) (string->symbol "_''"))) (om:provided model)))|} @ x' -> FillQ(c',rmod'))
 [] -- component replies on the stimulus
@@ -113,7 +116,7 @@ Busy(c',r',rmod',pout',end') =
 []
 (c' > 0 & transition_end -> transition_begin -> Busy(c',r',rmod',pout',end')) -- handling synchronous out events
 []
-(c' <= N' & in'?x' -> Busy(c'+1,r',rmod',pout',end')) -- accepting synchronous out events
+(c' <= N' & in'?x':in_internal' -> Busy(c'+1,r',rmod',pout',end')) -- accepting synchronous out events
 []
 (c' > 0 & out'?x' -> Busy(c'-1,r',rmod',pout',end')) -- handling queued out events
 []
@@ -143,17 +146,17 @@ begin_required_modeling' = {#(comma-join (required-modeling-events model))}
 end_required_modeling' = {#(comma-join (append-map (lambda (port)
                 (list (->string (.name port) "_'''.modeling" ) (->string (.name port) "_'''.silent" )))
                                             (filter om:requires? ((compose .elements .ports) model))))}
-externals' = {|#((->join ",") (map (lambda (x) (list (.name x) "_'''")) (filter .external (om:ports model))))|}
+in_internals' = inter(extensions(IN'), {|#((->join ",") (map (lambda (x) (list (.name x) "_''")) (filter (negate .external) (om:ports model))))|})
 #(map (animate-pairs `((interface ,identity))
 #{IFD_#interface _(IG,CS) = 
-compress(IF_#interface _(IG,CS) [[x<-#interface _in''.x|x<-extensions(#interface _in'')]] 
-[|{|#interface _in'',#interface _out'',queue_full|}|] 
-IQ'(#interface _in'',#interface _out'',#interface _link'',#(* 3 (csp-queue-size))) 
-[[#interface _out''.x<-x|x<-extensions(#interface _out'')]] \ {|#interface _in'',queue_full|})
+(IF_#interface _(IG,CS) [[x<-#interface _in''.x|x<-extensions(#interface _in'')]] \ {|#interface _'''|}) 
+[|{|#interface _in'',#interface _out''|}|] 
+IQ'(#interface _in'',#interface _out'',#interface _link'',#(csp-queue-size)) 
+[[#interface _out''.x<-x|x<-extensions(#interface _out'')]] \ {|#interface _in''|}
 #}) (delete-duplicates (map (compose om:name .type) (filter .external (om:ports model)))))
 within compress((CO_#.scope_model _ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|#(comma-join (list "OUT',transition_begin,transition_end,reorder_in" (comma-join (append-map (lambda (port) (list (.name port) (symbol-append (.name port) (string->symbol "_'")) (symbol-append (.name port) (string->symbol "_''")))) (om:provided model)))))|}|]
-                 SEMANTICS(IN',OUT',LINK',provided_in',provided_blocked',begin_required_modeling',end_required_modeling',externals') \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',provided_blocked',begin_required_modeling',end_required_modeling',in_internals') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|#(comma-join (apply append (list "IN'") (map (lambda (o) (list (.name o) (string-append (symbol->string (.name o)) "_'") (string-append (symbol->string (.name o)) "_'''"))) (om:required model))))|}|]
                 (# (let ((required_processes ((->join "\n                 ||| ") (map (lambda (port)
