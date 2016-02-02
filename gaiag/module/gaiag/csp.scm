@@ -982,12 +982,6 @@
               (list space "let " name " = " expression " within\n")
               (check-range (list name) tail model locals indent))))
 
-          (($ <reply> ($ <expression> ($ <var> (and (? bool?) (get! bool)))) port)
-           (let ((port (if port port channel)))
-             (list
-              (list space port "_'!bool." (bool) " -> \n")
-              tail)))
-
           (($ <reply> expression port)
            (let* ((type (expression-type expression locals))
                   (csp (csp-expression->string model expression locals))
@@ -995,7 +989,11 @@
                          ('bool (->string "bool." csp))
                          ('int (->string "int." csp))
                          (_ csp)))
-                  (port (if port port channel)))
+                  (port (if port 
+                            port 
+                            (if (or provided-on? (is-a? model <interface>)) 
+                                channel
+                                (.name (om:port model))))))
              (if csp
                  (list
                   (list space "if not member(" csp "," "extensions(" port "_')) then type_error -> illegal -> STOP else\n")
