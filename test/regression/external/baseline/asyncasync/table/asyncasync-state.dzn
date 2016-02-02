@@ -1,0 +1,118 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface I {
+  in void e();
+  in void a();
+  out void ec();
+  out void ac();
+
+  behaviour {
+    enum State {idle, busy, aborting};
+    State s = State.idle;
+
+    [s.idle]
+    {
+      on e:
+      s = State.busy;
+      on a:
+      s = State.aborting;
+    }
+    [s.busy]
+    {
+      on e:
+      illegal;
+      on a:
+      s = State.aborting;
+      on inevitable:
+      {
+        ec;
+        s = State.idle;
+      }
+    }
+    [s.aborting]
+    {
+      on e, a:
+      illegal;
+      on inevitable:
+      {
+        ac;
+        s = State.idle;
+      }
+    }
+  }
+}
+
+component asyncasync {
+  provides I p;
+  requires external I r;
+
+  behaviour {
+    enum State {idle, busy, aborting};
+    State s = State.idle;
+
+    [s.idle]
+    {
+      on p.e():
+      {
+        r.e();
+        s = State.busy;
+      }
+      on p.a():
+      {
+        r.a();
+        s = State.aborting;
+      }
+      on r.ec(), r.ac():
+      illegal;
+    }
+    [s.busy]
+    {
+      on p.e(), r.ac():
+      illegal;
+      on p.a():
+      {
+        r.a();
+        s = State.aborting;
+      }
+      on r.ec():
+      {
+        p.ec();
+        s = State.idle;
+      }
+    }
+    [s.aborting]
+    {
+      on p.e(), p.a():
+      illegal;
+      on r.ec():
+      {}
+      on r.ac():
+      {
+        p.ac();
+        s = State.idle;
+      }
+    }
+  }
+}
+

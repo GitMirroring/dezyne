@@ -1,0 +1,18 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: II: check: completeness: ok
+verify: II: check: deadlock: ok
+verify: II: check: livelock: ok
+verify: asyncsync_illegal: check: deterministic: ok
+verify: asyncsync_illegal: check: completeness: ok
+verify: asyncsync_illegal: check: illegal: ok
+verify: asyncsync_illegal: check: deadlock: ok
+verify: asyncsync_illegal: check: compliance: fail
+p.e
+r.e
+r.ec
+r.return
+p.ec
+p.ec not allowed by port p
+verify: asyncsync_illegal: check: livelock: ok

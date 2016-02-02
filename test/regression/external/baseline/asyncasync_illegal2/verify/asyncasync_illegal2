@@ -1,0 +1,39 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: asyncasync_illegal2: check: deterministic: ok
+verify: asyncasync_illegal2: check: completeness: ok
+verify: asyncasync_illegal2: check: illegal: fail
+p.e
+r.e
+r.return
+p.return
+p.a
+r.a
+r.return
+p.return
+r.ec
+illegal
+verify: asyncasync_illegal2: check: deadlock: fail
+p.e
+r.e
+r.return
+p.return
+p.a
+r.a
+r.return
+p.return
+r.ec
+deadlock in model asyncasync_illegal2
+verify: asyncasync_illegal2: check: compliance: fail
+p.e
+r.e
+r.return
+p.return
+p.a
+r.a
+r.return
+p.return
+r.ec
+Component asyncasync_illegal2 is non-compliant with interface of provided port
+verify: asyncasync_illegal2: check: livelock: ok

@@ -1,0 +1,9 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: asyncasync: check: deterministic: ok
+verify: asyncasync: check: completeness: ok
+verify: asyncasync: check: illegal: ok
+verify: asyncasync: check: deadlock: ok
+verify: asyncasync: check: compliance: ok
+verify: asyncasync: check: livelock: ok
