@@ -3,8 +3,10 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -45,7 +47,7 @@ datatype event_enumeration_alphabet = #
               (interface-events model identity)
               (type-values model)
               (return-values model)
-              (list 'blocked 'the_end' 'inevitable 'optional 'modeling 'silent))))
+              (list 'bool.Bool 'int.Int 'blocked 'the_end' 'inevitable 'optional 'modeling 'silent))))
    symbol<)))
 
 IQ'(in',out',link',size') = let
