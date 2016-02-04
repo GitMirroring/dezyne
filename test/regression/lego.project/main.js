@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +21,7 @@
 //
 // Code:
 
-#! /usr/bin/nodejs
+#! /usr/bin/env node
 
 var dezyne = typeof (dezyne) !== undefined && dezyne ? dezyne : require (__dirname + '/dezyne/runtime');
 dezyne.extend (dezyne, require (__dirname + '/dezyne/LegoBallSorter'));

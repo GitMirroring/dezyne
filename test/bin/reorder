@@ -1,4 +1,4 @@
-#!/usr/bin/nodejs
+#! /usr/bin/env node
 // -*-javascript-*-
 
 process.stdin.setEncoding('utf8');

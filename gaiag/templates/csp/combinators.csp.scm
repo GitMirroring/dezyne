@@ -6,7 +6,6 @@
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as

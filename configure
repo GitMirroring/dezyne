@@ -1,5 +1,5 @@
-#! /usr/bin/guile \
--e main
+#! /bin/sh
+exec env guile -e main -s $0 ${1+"$@"}
 !#
 
 (define (main . args)
@@ -128,13 +128,18 @@ Usage: ./configure [OPTION]...
     (check-version 'java '(1 7) 'openjdk-7-jre-headless '-version)
     (check-version 'javac '(1 7) 'openjdk-7-jdk '-version)
     (check-version 'markdown '())
-    (check-version 'mcs '(3) 'mono-mcs)
-    (check-version 'npm '())
+;;    (check-version 'mcs '(3) 'mono-mcs)
+    (check-version 'node '(0 10))
+    (check-version 'npm '(1 0))
     (check-version 'pkg-config '(0 25))
+    (check-version 'tclsh '(8 6) 'tcl8.6 "<(echo 'puts $tcl_version;exit 0')")
+    (check-version 'tclsh '(100) 'tcllib "<(echo 'package require cmdline;puts 100')")
+    (check-version 'tclsh '(100) 'tclxml "<(echo 'package require dom;puts 100')")    
     (check-pkg-config 'gtk+-3.0 '())
     (check-pkg-config 'gtkmm-3.0 '())
     (check-version 'psql '(9 3) 'postgresql)
-    (check-header-c++ 'boost/algorithm/string.hpp 'libboost-dev))
+    (check-header-c++ 'expat.h 'libexpat-dev)
+    (check-header-c++ 'boost/algorithm/string.hpp 'libboost-dev))  
   (when (pair? required)
     (stderr "\nMissing dependencies, run\n\n")
     (stderr "    sudo apt-get install ~a\n" ((->string " ") required))
