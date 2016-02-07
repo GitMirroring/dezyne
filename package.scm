@@ -21,6 +21,9 @@
 ;;; Code:
 
 (set! %load-path (cons "." %load-path))
+(use-modules (srfi srfi-1))
 (use-modules (dezyne))
 dezyne-server
 ;;fdr2
+;;tcllib
+;;tclxml

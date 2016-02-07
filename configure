@@ -1,9 +1,7 @@
-#! /bin/sh
-exec env guile -e main -s $0 ${1+"$@"}
+#! /bin/bash
+# -*- scheme -*-
+exec ${GUILE-guile} -e '(@@ (configure) main)' -s "$0" ${1+"$@"}
 !#
-
-(define (main . args)
-  ((@@ (configure) main) (command-line)))
 
 (read-set! keywords 'prefix)
 
@@ -35,11 +33,11 @@ exec env guile -e main -s $0 ${1+"$@"}
       ""))
 
 (define (gulp-pipe command)
-  (gulp-port (cdr (apply run-with-pipe (list "r" "/bin/bash" "-c" command)))))
+  (gulp-port (cdr (apply run-with-pipe (list "r" "bash" "-c" command)))))
 
 (define (parse-opts args)
   (let* ((option-spec
-	  '((help (single-char #\h))))
+  	  '((help (single-char #\h))))
          (options (getopt-long args option-spec
                                :stop-at-first-non-option #t))
          (help? (option-ref options 'help #f))
@@ -118,6 +116,7 @@ Usage: ./configure [OPTION]...
 (define (main args)
   (let* ((verum? (file-exists? "/verum"))
          (options (parse-opts args)))
+    (check-version 'bash '(4 0) 'bash)
     (check-version 'gcc '(4 8))
     (check-version 'g++ '(4 8))
     (check-version 'bison '())
@@ -129,6 +128,7 @@ Usage: ./configure [OPTION]...
     (check-version 'java '(1 7) 'openjdk-7-jre-headless '-version)
     (check-version 'javac '(1 7) 'openjdk-7-jdk '-version)
     (check-version 'markdown '())
+    (check-version 'make '(4 0) 'make)
 ;;    (check-version 'mcs '(3) 'mono-mcs)
     (check-version 'node '(0 10))
     (check-version 'npm '(1 0))
@@ -136,6 +136,7 @@ Usage: ./configure [OPTION]...
     (check-version 'tclsh '(8 6) 'tcl8.6 "<(echo 'puts $tcl_version;exit 0')")
     (check-version 'tclsh '(100) 'tcllib "<(echo 'package require cmdline;puts 100')")
     (check-version 'tclsh '(100) 'tclxml "<(echo 'package require dom;puts 100')")    
+    (check-version 'w3m '(0 5) 'w3m '-version)
     (check-pkg-config 'gtk+-3.0 '())
     (check-pkg-config 'gtkmm-3.0 '())
     (check-version 'psql '(9 3) 'postgresql)
