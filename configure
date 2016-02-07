@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 # -*- scheme -*-
 exec ${GUILE-guile} -e '(@@ (configure) main)' -s "$0" ${1+"$@"}
 !#
@@ -132,7 +132,10 @@ Usage: ./configure [OPTION]...
 ;;    (check-version 'mcs '(3) 'mono-mcs)
     (check-version 'node '(0 10))
     (check-version 'npm '(1 0))
+    (check-version 'perl '(5))
     (check-version 'pkg-config '(0 25))
+    (check-version 'python '(2 7))
+    (check-version 'python2.7 '(2 7))
     (check-version 'tclsh '(8 6) 'tcl8.6 "<(echo 'puts $tcl_version;exit 0')")
     (check-version 'tclsh '(100) 'tcllib "<(echo 'package require cmdline;puts 100')")
     (check-version 'tclsh '(100) 'tclxml "<(echo 'package require dom;puts 100')")    
