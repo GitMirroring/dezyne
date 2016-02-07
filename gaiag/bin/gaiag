@@ -1,0 +1,20 @@
+#! /bin/sh
+self=$(readlink -f $(cut -d '' -f2 < /proc/$$/cmdline))
+bin=$(cd $(dirname $self) && pwd)
+prefix=$(cd $bin/.. && pwd)
+[ "$(basename $prefix)" != "gaiag" ] && prefix=$prefix/gaiag
+top=$(cd $prefix/.. && pwd)
+build=${ABS_BUILD-$top/build}
+ccache=$build/ccache
+GUILE_AUTO_COMPILE=0
+GUILE_LOAD_PATH="$prefix:$prefix/json:$GUILE_LOAD_PATH"
+GUILE_LOAD_COMPILED_PATH="$ccache:$ccache/json:$GUILE_LOAD_COMPILED_PATH"
+export GUILE_AUTO_COMPILE GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
+exec ${GUILE-guile} --debug -e main -s $0 "$@"
+!#
+;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+
+;;(format (current-error-port) "%load-path ~a\n" %load-path )
+;;(format (current-error-port) "%load-compiled-path ~a\n" %load-compiled-path )
+(define (main . args)
+  ((@ (gaiag gaiag) main) (command-line)))

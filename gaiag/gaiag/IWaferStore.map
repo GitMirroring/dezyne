@@ -1,0 +1,9 @@
+
+IWaferAdmin init_closing_lot_id init_closing_lot_id
+IWaferAdmin copy_process_elem_id copy_process_elem_id
+
+IWaferData_set action_at_expose_CTC action_at_expose_CTC
+IWaferData_set action_at_expose_EXPOSE action_at_expose_EXPOSE
+
+IWaferData_get action_at_expose action_at_expose
+IWaferData_get action_at_measure action_at_measure

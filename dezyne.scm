@@ -27,7 +27,7 @@
   #:use-module (guix build utils)
   #:use-module (guix utils)
 
-  
+
   #:use-module (guix licenses)
 
   #:use-module (guix packages)
@@ -42,14 +42,14 @@
   #:use-module (gnu packages bash)
   #:use-module (gnu packages bison)
   #:use-module (gnu packages boost)
-  #:use-module (gnu packages ccache)  
+  #:use-module (gnu packages ccache)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages databases)
-  #:use-module (gnu packages graphviz)  
+  #:use-module (gnu packages graphviz)
   #:use-module (gnu packages guile)
-  #:use-module (gnu packages gtk)  
+  #:use-module (gnu packages gtk)
   #:use-module (gnu packages flex)
-  #:use-module (gnu packages java)  
+  #:use-module (gnu packages java)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages markdown)
   #:use-module (gnu packages node)
@@ -224,14 +224,14 @@ $CONFIG_SHELL, but some don't, such as `mkinstalldirs' or Automake's
     		    "http://git.oban/" name "-" version ".tar.xz"))
               (sha256
                (base32
-    		"17jnbg5myxvw6i470i4w08fj2yd66j7phhkzigidn92g9zly5882"))))
+    		"1d4hg0xdqsby8bwwy1hc9ygja2sads32fxssi89bbzxg51al13xs"))))
     (build-system gnu-build-system)
     (inputs `(
 	      ("bash" ,bash)
 	      ("boost" ,boost)
 	      ("expat" ,expat)
 	      ("fdr2" ,fdr2)
-	      ("graphviz" ,graphviz)	      
+	      ("graphviz" ,graphviz)
 	      ("guile" ,guile-next)
 	      ("guile-lib" ,guile-lib-next)
 	      ("gtkmm" ,gtkmm)
@@ -246,7 +246,7 @@ $CONFIG_SHELL, but some don't, such as `mkinstalldirs' or Automake's
 		     ("bash" ,bash)
 		     ("bison" ,bison)
 		     ("guile" ,guile-next)
-		     ("guile-lib" ,guile-lib-next)		     
+		     ("guile-lib" ,guile-lib-next)
 		     ("flex" ,flex)
 		     ("jdk" ,icedtea-7 "jdk")
 		     ("markdown" ,markdown)

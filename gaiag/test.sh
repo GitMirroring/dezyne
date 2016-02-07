@@ -2,7 +2,7 @@
 #
 # This file is part of Gaiag.
 #
-# Copyright © 2014 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 # Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
@@ -27,10 +27,12 @@
 # try: ./test.sh --debug
 self=$(readlink -f $(cut -d '' -f2 < /proc/$$/cmdline))
 prefix=$(cd $(dirname $self) && pwd)
-GUILE_LOAD_PATH="$prefix:$prefix/module:$GUILE_LOAD_PATH"
-GUILE_LOAD_COMPILED_PATH="$prefix/ccache:$GUILE_LOAD_COMPILED_PATH"
-export GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
-spec=language/dezyne/spec
-[ -f $prefix/ccache/$spec.go ] || guile $prefix/module/$spec.scm
-${GUILE-guile} $prefix/module/language/dezyne/spec.scm
+[ "$(basename $prefix)" != "gaiag" ] && prefix=$prefix/gaiag
+top=$(cd $prefix/.. && pwd)
+build=${ABS_BUILD-$top/build}
+ccache=$build/ccache
+GUILE_AUTO_COMPILE=0
+GUILE_LOAD_PATH="$prefix:$prefix/json:$GUILE_LOAD_PATH"
+GUILE_LOAD_COMPILED_PATH="$ccache:$ccache/json:$GUILE_LOAD_COMPILED_PATH"
+export GUILE_AUTO_COMPILE GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
 exec ${GUILE-guile} -e main test-suite/run-tests "$@" < /dev/null

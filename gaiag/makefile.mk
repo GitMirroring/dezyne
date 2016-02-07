@@ -22,27 +22,25 @@
 # 
 # Code:
 
+SUBM := json/
+SRCS := $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/$(SUBM)json) || (find $(CDIR)/$(SUBM)json -name '*.scm')))
+SRCS += $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/$(SUBM)*.scm) || (find $(CDIR)/$(SUBM) -maxdepth 0 -name '*.scm')))
+
+include make/guile.mk
+
+SRCS := $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/system) || find $(CDIR)/system))
+
+include make/guile.mk
+
+SRCS := $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/language) || find $(CDIR)/language))
+
+include make/guile.mk
+
+SRCS := $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/gaiag) || find $(CDIR)/gaiag))
+
+CLEAN:=$(CLEAN) $(BUILD)/ccache $(HOME)/.cache/guile
+
 TARG := gaiag
-FRST :=\
-  gaiag/module/system/base/lalr.scm\
-  gaiag/module/language/dezyne/location.scm\
-  gaiag/module/language/dezyne/parse.scm\
-  gaiag/module/language/dezyne/tokenize.scm\
-  gaiag/module/language/dezyne/spec.scm\
-
-GUILE_LIB_PREFIX := /usr/share/guile/site
-GUILE_LIB_FILES :=\
- os/process.scm\
- compat/guile-2.scm\
-
-MODULE_SRCS := $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/module) || find $(CDIR)/module))
-SRCS := $(filter-out $(FRST),$(GUILE_LIB_SRCS) $(MODULE_SRCS))
-
-CLEAN:=$(CLEAN) $(BUILD)/module $(HOME)/.cache/guile
-
-$(BUILD)/module:
-	ln -s $(shell pwd)/gaiag/module $(BUILD)/module
-
 include make/guile.mk
 
 TARG := scm2json
@@ -54,7 +52,7 @@ include make/guile.mk
 TEST := $(TEST) $(CDIR)-check
 
 $(CDIR)-check: CDIR:=$(CDIR)
-$(CDIR)-check:
-	cd $(CDIR) && GUILE_AUTO_COMPILE=0 GUILE_LOAD_COMPILED_PATH=$(shell cd $(BUILD) && pwd)/ccache ./test.sh
+$(CDIR)-check: $(BUILD)/$(CDIR)
+	cd $(CDIR) && GUILE_AUTO_COMPILE=0 GUILE_LOAD_PATH=$(GLP) GUILE_LOAD_COMPILED_PATH=$(GLCP) ./test.sh
 
 include make/check.mk
