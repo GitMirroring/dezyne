@@ -21,7 +21,7 @@
 # 
 # Code:
 
-#!/bin/bash -e
+#! /bin/bash -e
 
 CONFIG=${1-localhost}
 DZN=${DZN-../client/bin/dzn}
