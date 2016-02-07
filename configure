@@ -122,6 +122,7 @@ Usage: ./configure [OPTION]...
     (check-version 'g++ '(4 8))
     (check-version 'bison '())
     (check-version 'flex '())
+    (check-version 'dot '() 'graphviz)    
     (check-version 'guile '(2 0) 'guile-2.0)
     (check-version 'guild '(2 0) 'guile-2.0-dev)
     (check-version 'fdr2 '() 'fdr2 'batch)
