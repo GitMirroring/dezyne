@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,7 +21,7 @@
 # 
 # Code:
 
-ifneq ($(filter c++,$(LANGUAGES)),)
+ifneq ($(filter c++,$(ALL_LANGUAGES)),)
 LOCAL_SUT:=alarm
 LOCAL_LANGUAGE:=c++
 
@@ -55,6 +55,7 @@ include make/reset.make
 
 code run table verify parse: $(DZN_OUT_FILES)
 
+ifeq (0,1) # traces: TODO
 $(foreach DZN_FILE,$(DZN_OUT_FILES),\
 	$(eval LOCAL_DZN_FILES:=$(DZN_FILE))\
 	$(eval LOCAL_LANGUAGE:=parse)\
@@ -65,7 +66,6 @@ $(foreach DZN_FILE,$(DZN_OUT_FILES),\
 	$(eval LOCAL_LANGUAGE:=verify)\
 	$(eval include make/check.make))
 
-ifeq (0,1) # traces: TODO
 $(foreach DZN_FILE,$(DZN_OUT_FILES),\
 	$(eval LOCAL_DZN_FILES:=$(DZN_FILE))\
 	$(eval LOCAL_LANGUAGE:=run)\
