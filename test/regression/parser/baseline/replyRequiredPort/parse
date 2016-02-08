@@ -1,1 +1,2 @@
-replyRequiredPort.dzn:22:53: Well-formedness error: Reply not allowed on 'requires' Port: 'sensor'
+replyRequiredPort.dzn:25:8: Well-formedness error: Reply without port is not allowed outside the scope of an 'on' clause if multiple 'provides' ports are present
+replyRequiredPort.dzn:30:30: Well-formedness error: Reply without port is not allowed for an 'out' event if multiple 'provides' ports are present
