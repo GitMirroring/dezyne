@@ -35,12 +35,10 @@
   #:use-module (guix utils)
 
   #:use-module (gnu packages)
-  #:use-module (gnu packages admin) ;; inetutils telnet
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages bison)
   #:use-module (gnu packages boost)
-  #:use-module (gnu packages ccache)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages databases)
   #:use-module (gnu packages graphviz)
@@ -252,11 +250,6 @@
               "https://www.cs.ox.ac.uk/projects/concurrency-tools/"
               "academic"))))
 
-(define* (configure #:key outputs make-maker? #:allow-other-keys)
-  "Configure the given Perl package."
-  (let* ((out (assoc-ref outputs "out")))
-    (zero? (apply system* "sh"))))
-
 (define (file-is-symlink? file)
   (and (file-exists? file)
        (eq? 'symlink (stat:type (lstat file)))))
@@ -318,9 +311,6 @@ $CONFIG_SHELL, but some don't, such as `mkinstalldirs' or Automake's
                            #:parallel-build? #f
                            #:tests? #t
                            #:parallel-tests? #f
-                           #:make-flags (list (string-append
-                                               "DESTDIR=" (assoc-ref %outputs "out"))
-                                              "PREFIX=/")
                            #:phases
                            (modify-phases %standard-phases
                              (add-before
@@ -344,11 +334,8 @@ $CONFIG_SHELL, but some don't, such as `mkinstalldirs' or Automake's
                                                                 (and (file-exists? file)
                                                                      (eq? 'symlink (stat:type (lstat file))))
                                                                 (file-is-directory? file)))
-                                                          (find-files ".")))))
-                             (replace 'configure
-                                      (lambda* (#:key outputs #:allow-other-keys)
-                                        (let* ((out (assoc-ref outputs "out")))
-                                          (zero? (system* "./configure"))))))))
+                                                          (find-files "."))))
+                                      ))))
 
     (synopsis "Dezyne")
     (description "boo")
