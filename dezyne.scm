@@ -24,17 +24,14 @@
   #:use-module (ice-9 optargs)
 
   #:use-module (srfi srfi-1)
+
   #:use-module (guix build utils)
-  #:use-module (guix utils)
-
-
-  #:use-module (guix licenses)
-
-  #:use-module (guix packages)
-  #:use-module (guix download)
-  #:use-module (guix git-download)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system trivial)
+  #:use-module (guix download)
+  #:use-module (guix git-download)
+  #:use-module (guix licenses)
+  #:use-module (guix packages)
   #:use-module (guix utils)
 
   #:use-module (gnu packages)
@@ -64,17 +61,15 @@
   #:export (patch-source-shebangs-no-symlinks)
   )
 
-(define-public guile-lib-next
+(define-public guile-next-lib
   (package (inherit guile-lib)
-    (name "guile-lib-next")
+    (name "guile-next-lib")
     (version "0.2.2")
     (inputs `(("guile" ,guile-next)))
-    (native-inputs
-     `(("guile" ,guile-next)))
     (arguments
      (append (substitute-keyword-arguments
-                 `(#:tests? #f
-                            ,@(package-arguments guile-lib)))))))
+              `(#:tests? #f ;; 2 tests still fail
+                ,@(package-arguments guile-lib)))))))
 
 (define-public tcllib
   (package
@@ -233,7 +228,7 @@ $CONFIG_SHELL, but some don't, such as `mkinstalldirs' or Automake's
 	      ("fdr2" ,fdr2)
 	      ("graphviz" ,graphviz)
 	      ("guile" ,guile-next)
-	      ("guile-lib" ,guile-lib-next)
+	      ("guile-lib" ,guile-next-lib)
 	      ("gtkmm" ,gtkmm)
 	      ("java" ,icedtea-7)
 	      ("node" ,node)
@@ -246,7 +241,7 @@ $CONFIG_SHELL, but some don't, such as `mkinstalldirs' or Automake's
 		     ("bash" ,bash)
 		     ("bison" ,bison)
 		     ("guile" ,guile-next)
-		     ("guile-lib" ,guile-lib-next)
+		     ("guile-lib" ,guile-next-lib)
 		     ("flex" ,flex)
 		     ("jdk" ,icedtea-7 "jdk")
 		     ("markdown" ,markdown)
