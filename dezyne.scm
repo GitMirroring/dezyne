@@ -77,34 +77,6 @@
                         `(#:tests? #f ;; 2 tests still fail
                                    ,@(package-arguments guile-lib)))))))
 
-(define-public tcllib
-  (package
-    (name "tcllib")
-    (version "1.18")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://sourceforge/" name "/"
-                                  name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "05dmrk9qsryah2n17z6z85dj9l9lfyvnsd7faw0p9bs1pp5pwrkj"))))
-    (build-system gnu-build-system)
-    (native-inputs
-     `(("tcl" ,tcl)))
-    (native-search-paths
-     (list (search-path-specification
-            (variable "TCLLIBPATH")
-            (separator " ")
-            (files (list (string-append "lib/tcllib" version ""))))))
-    (home-page "https://core.tcl.tk/tcllib/home")
-    (synopsis "Standard Tcl Library")
-    (description "Tcllib, the standard Tcl library, is a collection of common utility
- functions and modules all written in high-level Tcl.
-")
-    (license (non-copyleft "http://www.tcl.tk/software/tcltk/license.html"
-                           "Tcl/Tk license"))))
-
-
 (define-public tclxml
   (package
     (name "tclxml")
@@ -243,7 +215,16 @@
                        `("FDRHOME" "" = (,out)))
                      ))))
     (synopsis "fdr")
-    (description "FDR (Failures-Divergence Refinement) is a model-checking tool for state machines, with foundations in the theory of concurrency based around CSP—Hoare’s Communicating Sequential Processes [Hoare85]. Its method of establishing whether a property holds is to test for the refinement of a transition system capturing the property by the candidate machine. There is also the ability to check determinism of a state machine, and this is used primarily for checking security properties [Roscoe95], [RosWood94]. The main ideas behind FDR are presented in [Roscoe94] and some applications are presented in [Roscoe97]")
+    (description "FDR (Failures-Divergence Refinement) is a
+model-checking tool for state machines, with foundations in the theory
+of concurrency based around CSP—Hoare’s Communicating Sequential
+Processes [Hoare85]. Its method of establishing whether a property
+holds is to test for the refinement of a transition system capturing
+the property by the candidate machine. There is also the ability to
+check determinism of a state machine, and this is used primarily for
+checking security properties [Roscoe95], [RosWood94]. The main ideas
+behind FDR are presented in [Roscoe94] and some applications are
+presented in [Roscoe97]")
     (home-page "https://www.cs.ox.ac.uk/projects/concurrency-tools/")
     (license ((@@ (guix licenses) license)
               "academic use"
@@ -337,8 +318,14 @@ $CONFIG_SHELL, but some don't, such as `mkinstalldirs' or Automake's
                                                           (find-files "."))))
                                       ))))
 
-    (synopsis "Dezyne")
-    (description "boo")
+    (synopsis "Dezyne server")
+    (description "Dezyne is a new generation of model-driven software
+engineering tools that enables software engineers to create, explore
+and formally verify designs for state based, event driven or
+concurrent software systems.  It leads to generated code that is
+robust, reliable and trustworthy.  The results include a 50% reduction
+in development costs, 20% decrease in time to market and a 25%
+reduction in the cost of field defects.")
     (home-page "http://www.verum.com")
     (license ((@@ (guix licenses) license)
               "proprietary"
