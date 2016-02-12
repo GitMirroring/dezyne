@@ -35,6 +35,7 @@
   #:use-module (guix utils)
 
   #:use-module (gnu packages)
+  #:use-module (gnu packages admin) ;; telnet
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages bison)
@@ -255,6 +256,8 @@ $CONFIG_SHELL, but some don't, such as `mkinstalldirs' or Automake's
 		     ("tcllib" ,tcllib)
 		     ("tclxml" ,tclxml)
 		     ("w3m" ,w3m)
+
+                     ("telnet" ,telnet)
 		     ))
 
 
