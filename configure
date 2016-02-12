@@ -35,26 +35,35 @@ exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@
 (define (gulp-pipe command)
   (gulp-port (cdr (apply run-with-pipe (list "r" "bash" "-c" command)))))
 
+
+(define PREFIX "/usr/local")
+(define SYSCONFDIR "$(PREFIX)/etc")
+(define BUILD_TRIPLET (gulp-pipe "xgcc -dumpmachine 2>/dev/null"))
+
 (define (parse-opts args)
   (let* ((option-spec
-  	  '((help (single-char #\h))))
-         (options (getopt-long args option-spec
-                               :stop-at-first-non-option #t))
+  	  '((build (value #t))
+            (help (single-char #\h))
+            (prefix (value #t))
+            (sysconfdir (value #t))
+            ;;ignore
+            (enable-fast-install)))
+         (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
          (files (option-ref options '() '()))
-         (usage? (and (not help?) (not (null? files))))
-         (version? (option-ref options 'version #f)))
-    (or
-     (and version?
-          (stdout "0.1\n")
-          (exit 0))
-     (and (or help? usage?)
-          ((or (and usage? stderr) stdout) "\
+         (prefix (option-ref options '() PREFIX))
+         (usage? (and (not help?) #f)))
+    (if (pair? files)
+        (stderr "ignoring files: ~a\n" files))
+    (or (and (or help? usage?)
+             ((or (and usage? stderr) stdout) "\
 Usage: ./configure [OPTION]...
   -h, --help           display this help
-")
-          (exit (or (and usage? 2) 0)))
-     options)))
+  --prefix=DIR         install in PREFIX [~a]
+  --sysconfdir=DIR     read-only single-machine data [PREFIX/etc]
+" PREFIX)
+             (exit (or (and usage? 2) 0)))
+        options)))
 
 (define (tuple< a b)
   (cond
@@ -118,13 +127,16 @@ Usage: ./configure [OPTION]...
 
 (define (main args)
   (let* ((verum? (file-exists? "/verum"))
-         (options (parse-opts args)))
+         (options (parse-opts args))
+         (build-triplet (option-ref options 'build BUILD_TRIPLET))
+         (prefix (option-ref options 'prefix PREFIX))
+         (sysconfdir (option-ref options 'sysconfdir SYSCONFDIR)))
     (check-version 'bash '(4 0) 'bash)
     (check-version 'gcc '(4 8))
     (check-version 'g++ '(4 8))
     (check-version 'bison '())
     (check-version 'flex '())
-    (check-version 'dot '() 'graphviz)    
+    (check-version 'dot '() 'graphviz)
     (check-version 'guile '(2 0) 'guile-2.0)
     (check-version 'guild '(2 0) 'guile-2.0-dev)
     (check-version 'fdr2 '() 'fdr2 'batch)
@@ -142,19 +154,25 @@ Usage: ./configure [OPTION]...
     (check-version 'python2.7 '(2 7))
     (check-version 'tclsh '(8 6) 'tcl8.6 "<(echo 'puts $tcl_version;exit 0')")
     (check-version 'tclsh '(100) 'tcllib "<(echo 'package require cmdline;puts 100')")
-    (check-version 'tclsh '(100) 'tclxml "<(echo 'package require dom;puts 100')")    
+    (check-version 'tclsh '(100) 'tclxml "<(echo 'package require dom;puts 100')")
     (check-version 'w3m '(0 5) 'w3m '-version)
     (check-pkg-config 'gtk+-3.0 '())
     (check-pkg-config 'gtkmm-3.0 '())
     (check-version 'psql '(9 3) 'postgresql)
     (check-header-c++ 'expat.h 'libexpat-dev)
-    (check-header-c++ 'boost/algorithm/string.hpp 'libboost-dev))  
-  (when (pair? required)
-    (stderr "\nMissing dependencies, run\n\n")
-    (if guix? 
-	(stderr "    guix environment -l package.scm\n")
-	(stderr "    sudo apt-get install ~a\n" ((->string " ") required)))
-    (exit 1))
-  (stdout "\nRun:
+    (check-header-c++ 'boost/algorithm/string.hpp 'libboost-dev)
+
+    (when (pair? required)
+          (stderr "\nMissing dependencies, run\n\n")
+          (if guix?
+              (stderr "    guix environment -l package.scm\n")
+              (stderr "    sudo apt-get install ~a\n" ((->string " ") required)))
+          (exit 1))
+    (with-output-to-file ".config.mk"
+      (lambda ()
+        (stdout "BUILD_TRIPLET:=~a\n" build-triplet)
+        (stdout "PREFIX:=~a\n" prefix)
+        (stdout "SYSCONFDIR:=~a\n" sysconfdir)))
+    (stdout "\nRun:
   make            to build Dezyne
-  make help       for help on other targets\n"))
+  make help       for help on other targets\n")))
