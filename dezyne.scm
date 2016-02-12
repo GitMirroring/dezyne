@@ -77,51 +77,6 @@
                         `(#:tests? #f ;; 2 tests still fail
                                    ,@(package-arguments guile-lib)))))))
 
-(define-public tclxml
-  (package
-    (name "tclxml")
-    (version "3.2")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://sourceforge/" name "/"
-                                  name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "0ffb4aw63inig3aql33g4pk0kjk14dv238anp1scwjdjh1k6n4gl"))
-              (patches (list (search-patch (string-append (getenv "HOME") "/development.git/tclxml-3.2-install.patch"))))))
-    (build-system gnu-build-system)
-    (native-inputs
-     `(("tcl" ,tcl)
-       ("tcllib" ,tcllib)
-       ("libxml2" ,libxml2)
-       ("libxslt" ,libxslt)))
-    (native-search-paths
-     (list (search-path-specification
-            (variable "TCLLIBPATH")
-            (separator " ")
-            (files (list (string-append "lib/Tclxml" version))))))
-    (arguments
-     `(#:configure-flags
-       (list (string-append "--with-tclconfig="
-                            (assoc-ref %build-inputs "tcl")
-                            "/lib")
-             (string-append "--with-xml2-config="
-                            (assoc-ref %build-inputs "libxml2")
-                            "/bin/xml2-config")
-             (string-append "--with-xslt-config="
-                            (assoc-ref %build-inputs "libxslt")
-                            "/bin/xslt-config"))
-       #:phases (modify-phases %standard-phases
-                  (delete 'check))))
-    (home-page "http://tclxml.sourceforge.net/")
-    (synopsis " Tcl library for XML parsing")
-    (description " TclXML provides event-based parsing of XML documents.  The
- application may register callback scripts for certain document
- features, and when the parser encounters those features while parsing
- the document the callback is evaluated.")
-    (license (non-copyleft "http://www.tcl.tk/software/tcltk/license.html"
-                           "Tcl/Tk license"))))
-
 (define-public fdr2
   (package
     (name "fdr2")
@@ -152,8 +107,7 @@
     (native-search-paths
      (list (search-path-specification
             (variable "FDRHOME")
-            (files '("/")))))
-    (outputs '("out"))
+            (files '(".")))))
     (build-system trivial-build-system)
     (arguments
      `(#:modules ((guix build utils))
