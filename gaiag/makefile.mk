@@ -28,10 +28,6 @@ SRCS += $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/$(SUBM)*.sc
 
 include make/guile.mk
 
-SRCS := $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/system) || find $(CDIR)/system))
-
-include make/guile.mk
-
 SRCS := $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/language) || find $(CDIR)/language))
 
 include make/guile.mk
