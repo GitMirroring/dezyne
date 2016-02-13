@@ -21,13 +21,14 @@
 (define-module (test-handler)
   :use-module (srfi srfi-1)
 
+  :use-module (ice-9 pretty-print)
+
   :use-module (test-suite lib)
   :use-module (test-suite misc)
 
   :use-module (gaiag om)
 
   :use-module (gaiag reader)
-  :use-module (gaiag pretty-print)
   :use-module (gaiag evaluate)
   :use-module (gaiag run))
 

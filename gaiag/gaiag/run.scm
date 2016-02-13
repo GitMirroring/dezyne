@@ -23,6 +23,7 @@
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 getopt-long)
   :use-module (ice-9 optargs)
+  :use-module (ice-9 pretty-print)
   :use-module (ice-9 receive)
   :use-module (srfi srfi-1)
 
@@ -35,7 +36,6 @@
   :use-module (gaiag gaiag)
   :use-module (gaiag json-trace)
   :use-module (gaiag misc)
-  :use-module (gaiag pretty-print)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
   ;;  :use-module (gaiag wfc)

@@ -312,11 +312,10 @@
        (let ((json? (option-ref (parse-opts (command-line)) 'json #f)))
          (if json?
              (and-let* ((behaviour (.behaviour o))
-                           (statement (.statement behaviour)))
-                          (alist->hash-table
-                           (append
-                            (json-init o)
-                            ((json-table o) statement))))
+                        (statement (.statement behaviour)))
+               (append
+                (json-init o)
+                ((json-table o) statement)))
              o)))
       ;;(#f (if (not json?) o (list (make-hash-table))))
       ;;((or #t #f) (and json? (list (make-hash-table))))

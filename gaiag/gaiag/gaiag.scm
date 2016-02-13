@@ -21,6 +21,8 @@
 
 (define-module (gaiag gaiag)
   :use-module (ice-9 getopt-long)
+  :use-module (ice-9 pretty-print)
+
   :use-module (gaiag list match)
 
   :use-module (system repl error-handling)
@@ -29,7 +31,6 @@
 
   :use-module (gaiag coverage)
   :use-module (gaiag misc)
-  :use-module (gaiag pretty-print)
   :use-module (gaiag reader)
 
   :export (main parse-opts))

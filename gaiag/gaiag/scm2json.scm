@@ -24,7 +24,6 @@
   :use-module (srfi srfi-10)
 
   :use-module (json)
-  :use-module (gaiag hash)
   :use-module (gaiag misc)
   :export (main))
 
