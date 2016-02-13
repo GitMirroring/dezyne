@@ -23,6 +23,7 @@
 ;;; (json builder) --- Guile JSON implementation.
 
 ;; Copyright (C) 2013 Aleix Conchillo Flaque <aconchillo@gmail.com>
+;; Copyright (C) 2015,2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; This file is part of guile-json.
 ;;
@@ -127,7 +128,22 @@
       (display (number->string (exact->inexact scm)) port)
       (display (number->string scm) port)))
 
-(define (->string x) (if (symbol? x) (symbol->string x) x))
+(define (->string x)
+  (cond ((char? x) (make-string 1 x))
+        ((number? x) (number->string x))
+        ((symbol? x) (symbol->string x))
+        (else x)))
+
+(define (atom? x)
+  (or (char? x) (number? x) (string? x) (symbol? x)))
+
+(define (json-alist? x)
+  (and (pair? x)
+       (let loop ((x x))
+         (or (null? x)
+             (null? (car x))
+             (and (pair? (car x)) (atom? (caar x))
+                  (loop (cdr x)))))))
 
 (define (json-build-string scm port escape)
   (display "\"" port)
@@ -163,7 +179,7 @@
   (build-newline port pretty)
   (simple-format port "~A{" (indent-string pretty level))
   (build-newline port pretty)
-  (let ((pairs (hash-map->list cons scm)))
+  (let ((pairs scm))
     (unless (null? pairs)
       (build-object-pair (car pairs) port escape pretty (+ level 1))
       (for-each (lambda (p)
@@ -181,8 +197,10 @@
    ((number? scm) (json-build-number scm port))
    ((symbol? scm) (json-build-string (symbol->string scm) port escape))
    ((string? scm) (json-build-string scm port escape))
+   ((json-alist? scm) (json-build-object scm port escape pretty level))
    ((list? scm) (json-build-array scm port escape pretty level))
-   ((hash-table? scm) (json-build-object scm port escape pretty level))
+   ((hash-table? scm)
+    (json-build-object (hash-map->list cons scm) port escape pretty level))
    (else (throw 'json-invalid))))
 
 ;;
