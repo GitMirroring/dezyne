@@ -259,7 +259,7 @@
   (with-input-from-file (components->file-name file-name) read-string))
 
 (define (gulp-pipe command)
-  (gulp-port (cdr (apply run-with-pipe (list "r" "/bin/bash" "-c" command)))))
+  (gulp-port (cdr (apply run-with-pipe (list "r" "/bin/sh" "-c" command)))))
 
 (define (gulp-port . port)
   (or (and-let* ((result (read-delimited "" (if (pair? port) (car port) (current-input-port))))
