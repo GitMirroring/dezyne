@@ -24,7 +24,7 @@
 
 SUBM := json/
 SRCS := $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/$(SUBM)json) || (find $(CDIR)/$(SUBM)json -name '*.scm')))
-SRCS += $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/$(SUBM)*.scm) || (find $(CDIR)/$(SUBM) -maxdepth 0 -name '*.scm')))
+SRCS += $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/$(SUBM)*.scm) || (find $(CDIR)/$(SUBM) -maxdepth 1 -name '*.scm')))
 
 include make/guile.mk
 
