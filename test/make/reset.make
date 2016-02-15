@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 #
 # This file is part of Dezyne.
@@ -43,6 +43,7 @@ LOCAL_GLOBAL_TYPES:=#
 LOCAL_HEADER:=
 LOCAL_HEADER_EXT:=
 LOCAL_INTERFACES:=
+LOCAL_INTERPRETER:=
 LOCAL_JAVA_FILES:=
 LOCAL_JS_FILES:=
 LOCAL_LANGUAGE:=

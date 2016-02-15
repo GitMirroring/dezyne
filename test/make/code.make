@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
@@ -43,7 +43,10 @@ $$(TOP): LOCAL_TRACE_FLUSH:=$$(LOCAL_TRACE_FLUSH)
 $$(TOP): LOCAL_TRACE_FILES:=$$(LOCAL_TRACE_FILES)
 $$(TOP): LOCAL_TRACE_LANGUAGE:=$$(LOCAL_TRACE_LANGUAGE)
 $$(TOP): $(LOCAL_OUT)/test $(LOCAL_TRACE_FILES)
-	diff -uw $(i) <(cat $(i) | timeout $(LOCAL_TIMEOUT) $(LOCAL_TARGET) $(LOCAL_TRACE_FLUSH) |& $(LOCAL_CODE2FDR));
+ifeq ($(VERBOSE),debug)
+	-cat $(i) | $(LOCAL_TARGET) $(LOCAL_TRACE_FLUSH)
+endif
+	diff -uw $(i) <(cat $(i) | timeout $(LOCAL_TIMEOUT) $(LOCAL_INTERPRETER) $(LOCAL_TARGET) $(LOCAL_TRACE_FLUSH) |& $(LOCAL_CODE2FDR));
 
 $(LOCAL_NAME)-$(LOCAL_LANGUAGE): $$(TOP)
 $(LOCAL_NAME)-code: $$(TOP)

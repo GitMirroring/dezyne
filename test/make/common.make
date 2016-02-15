@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 #
 # This file is part of Dezyne.
@@ -141,7 +141,7 @@ $(info components[$(LOCAL_NAME)]: $(LOCAL_COMPONENTS))
 endif
 
 ifeq ($(LOCAL_TIMEOUT),)
-LOCAL_TIMEOUT:=0.1
+LOCAL_TIMEOUT:=0.5
 endif
 
 $(LOCAL_TARGET): LOCAL_LANGUAGE:=$(LOCAL_LANGUAGE)

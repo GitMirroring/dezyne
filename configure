@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*- scheme -*-
-exec ${GUILE-guile} -e '(@@ (configure) main)' -s "$0" ${1+"$@"}
+exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@"}
 !#
 
 (read-set! keywords 'prefix)
@@ -113,6 +113,9 @@ Usage: ./configure [OPTION]...
     (if (not result)
         (set! required (cons deb required)))))
 
+(define guix?
+  (system "guix --version &>/dev/null"))
+
 (define (main args)
   (let* ((verum? (file-exists? "/verum"))
          (options (parse-opts args)))
@@ -148,7 +151,9 @@ Usage: ./configure [OPTION]...
     (check-header-c++ 'boost/algorithm/string.hpp 'libboost-dev))  
   (when (pair? required)
     (stderr "\nMissing dependencies, run\n\n")
-    (stderr "    sudo apt-get install ~a\n" ((->string " ") required))
+    (if guix? 
+	(stderr "    guix environment -l package.scm\n")
+	(stderr "    sudo apt-get install ~a\n" ((->string " ") required)))
     (exit 1))
   (stdout "\nRun:
   make            to build Dezyne

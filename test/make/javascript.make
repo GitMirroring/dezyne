@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -25,6 +25,7 @@ LOCAL_HEADER_EXT:=
 LOCAL_JS_FILES+=$(wildcard $(CDIR)*.js)
 LOCAL_SOURCE_FILES+=$(LOCAL_JS_FILES)
 LOCAL_HEADER:=
+LOCAL_INTERPRETER:=node
 LOCAL_FOOTER:=$(wildcard $(CDIR)main.js)
 ifeq ($(LOCAL_FOOTER),)
 LOCAL_FOOTER:=$(LOCAL_OUT)/main.js
