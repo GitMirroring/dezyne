@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -74,7 +74,7 @@ void runtime::flush(void* scope)
   if(!external(scope))
   {
     std::queue<boost::function<void()> >& q = queue(scope);
-    while(not q.empty())
+    while(!q.empty())
     {
       boost::function<void()> event = q.front();
       q.pop();
@@ -115,7 +115,7 @@ void runtime::handle(void* scope, const boost::function<void()>& event)
   std::cout << path(scope) << " handle " << std::boolalpha << handle << std::endl;
 #endif
 
-  if(not handle)
+  if(!handle)
   {
     {
       scoped_value<bool> sv(handle, true);
