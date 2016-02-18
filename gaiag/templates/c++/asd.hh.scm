@@ -1,7 +1,7 @@
 ##ifndef #.COMPONENT _HH
 ##define #.COMPONENT _HH
 
-namespace dezyne {
+namespace dzn {
 struct locator;
 struct runtime;
 }
@@ -17,13 +17,13 @@ struct runtime;
 
 struct #.model
 {
-  dezyne::meta dzn_meta;
-  dezyne::runtime& dzn_rt;
-  dezyne::locator& dzn_locator;
+  dzn::meta dzn_meta;
+  dzn::runtime& dzn_rt;
+  dzn::locator& dzn_locator;
   #(map (init-port #{#((c++:scope-join model) interface)  #name ;
                      #}) ((compose .elements .ports) model))
   boost::shared_ptr<#(symbol-drop (om:name (om:port model)) 1) Interface> component;
-  #.model (dezyne::locator&);
+  #.model (dzn::locator&);
   void check_bindings() const {}
   void dump_tree() const {}
 };

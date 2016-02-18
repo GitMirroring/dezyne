@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -29,8 +29,8 @@
 
 #include "LegoBallSorter.h"
 
-#include "runtime.h"
-#include "locator.h"
+#include <dzn/runtime.h>
+#include <dzn/locator.h>
 
 #include <stdlib.h>
 #include <sys/time.h>

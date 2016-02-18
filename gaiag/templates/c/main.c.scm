@@ -1,9 +1,9 @@
 /* -*-c-style:linux;indent-tabs-mode:t-*- */
 
 ##include <assert.h>
-##include "runtime.h"
-##include "locator.h"
-##include "map.h"
+##include <dzn/runtime.h>
+##include <dzn/locator.h>
+##include <dzn/map.h>
 
 ##include "#.scope_model .h"
 

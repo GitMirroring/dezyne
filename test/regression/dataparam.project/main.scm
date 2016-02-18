@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -41,12 +41,12 @@
   (assert (= i5 5)))
 
 (define (main . args)
-  (let* ((loc (make <dezyne:locator>))
-         (rt (make <dezyne:runtime>))
-         (d (make <dezyne:Datasystem>
+  (let* ((loc (make <dzn:locator>))
+         (rt (make <dzn:runtime>))
+         (d (make <dzn:Datasystem>
               :locator (set loc rt)
               :name 'd
-              :port.out (make <dezyne:IDataparam.out>
+              :port.out (make <dzn:IDataparam.out>
                           :name 'port
                           ;;:self d ;; hmm
                           :a0 a0

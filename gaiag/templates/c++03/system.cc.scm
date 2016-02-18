@@ -1,14 +1,14 @@
 ##include "#.scope_model .hh"
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
-#.model ::#.model (const dezyne::locator& dezyne_locator)
+#.model ::#.model (const dzn::locator& dezyne_locator)
 : #((->join "\n, ")
     (append
             (list
              (->string
               (list
                "dzn_meta(\"\",\"" .model "\",0)"))
-               "dzn_rt(dezyne_locator.get<dezyne::runtime>())")
+               "dzn_rt(dezyne_locator.get<dzn::runtime>())")
             (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
                  (injected-bindings model))
             (list (if (pair? (injected-bindings model))
@@ -31,10 +31,10 @@
 
   void #.model ::check_bindings() const
   {
-    dezyne::check_bindings(&dzn_meta);
+    dzn::check_bindings(&dzn_meta);
   }
   void #.model ::dump_tree() const
   {
-    dezyne::dump_tree(&dzn_meta);
+    dzn::dump_tree(&dzn_meta);
   }
 #(map (lambda (x) (list "}\n")) (om:scope model))

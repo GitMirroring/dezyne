@@ -1,7 +1,7 @@
 ##! /usr/bin/env node
 
-var dezyne = typeof (dezyne) !== undefined && dezyne ? dezyne : require (__dirname + '/dezyne/runtime');
-dezyne.extend (dezyne, require (__dirname + '/dezyne/#.scope_model '));
+var dzn = typeof (dzn) !== undefined && dzn ? dzn : require (__dirname + '/dzn/runtime');
+dzn.extend (dzn, require (__dirname + '/dzn/#.scope_model '));
 
 var relaxed = false;
 var lines = [];
@@ -56,8 +56,8 @@ function log_valued(prefix, event, event_map, string_to_value, value_to_string) 
 
 function #.scope_model _fill_event_map(m)
 {
-  var c = new dezyne.component(m.locator, {provides:{}});
-  c.flushes = dezyne.flush;
+  var c = new dzn.component(m.locator, {provides:{}});
+  c.flushes = dzn.flush;
 
   var e = {
 #(map
@@ -67,7 +67,7 @@ function #.scope_model _fill_event_map(m)
 #}) (filter (om:dir-matches? port)
        (om:events port)))) (om:ports model)) };
   #(map (init-port #{
-     if (dezyne.flush) {
+     if (dzn.flush) {
        m.#name .meta.provides.component = c;
        m.#name .meta.provides.name = '<internal>.#name ';
      }
@@ -76,7 +76,7 @@ function #.scope_model _fill_event_map(m)
 #(map
     (lambda (port)
      (map (define-on model port #{
-       m.#port .#direction .#event  = function() {#(string-if (eq? return-type 'void) #{log_#direction('#port .', '#event ', e);#}#{return log_valued('#port .', '#event ', e, function(s) {return new dezyne.#((om:scope-name) interface)().#reply-name[drop_prefix(s, '#port .#reply-name _')];}, new dezyne.#((om:scope-name) interface)().#reply-name _to_string)#})};
+       m.#port .#direction .#event  = function() {#(string-if (eq? return-type 'void) #{log_#direction('#port .', '#event ', e);#}#{return log_valued('#port .', '#event ', e, function(s) {return new dzn.#((om:scope-name) interface)().#reply-name[drop_prefix(s, '#port .#reply-name _')];}, new dzn.#((om:scope-name) interface)().#reply-name _to_string)#})};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
  #(map (init-port #{
@@ -87,10 +87,10 @@ function #.scope_model _fill_event_map(m)
 }
 
 function main () {
-  dezyne.flush = process.argv.length > 2 && process.argv[2] === '--flush'
-  dezyne.relaxed = process.argv.length > 2 && process.argv[2] === '--relaxed'
-  var loc = new dezyne.locator();
-  var rt = new dezyne.runtime(function() {console.error('illegal');process.exit(0);});
+  dzn.flush = process.argv.length > 2 && process.argv[2] === '--flush'
+  dzn.relaxed = process.argv.length > 2 && process.argv[2] === '--relaxed'
+  var loc = new dzn.locator();
+  var rt = new dzn.runtime(function() {console.error('illegal');process.exit(0);});
   var sut = new #(javascript:namespace model).#.model (loc.set(rt), {name:'sut'});
 
   var event_map = #.scope_model _fill_event_map(sut);

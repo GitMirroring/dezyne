@@ -21,8 +21,8 @@
 //
 // Code:
 
-#include "runtime.hh"
-#include "locator.hh"
+#include <dzn/runtime.hh>
+#include <dzn/locator.hh>
 
 #include "OutParam.hh"
 
@@ -34,10 +34,10 @@ int main()
   int i = 1;
   int j = 1024;
 
-  dezyne::locator l;
-  dezyne::runtime rt;
+  dzn::locator l;
+  dzn::runtime rt;
   l.set(rt);
-  dezyne::illegal_handler ih;
+  dzn::illegal_handler ih;
   ih.illegal = [] {std::clog << "illegal" << std::endl; exit(0);};
   l.set(ih);
 
@@ -47,7 +47,7 @@ int main()
   sut.datasource.meta.provides.port = "datasource";
   sut.reflector.meta.provides.port = "reflector";
 
-  dezyne::pump pump;
+  dzn::pump pump;
   l.set(pump);
 
   sut.datasource.in.Init = [&] () {

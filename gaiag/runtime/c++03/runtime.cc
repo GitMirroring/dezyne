@@ -21,12 +21,12 @@
 //
 // Code:
 
-#include "runtime.hh"
+#include <dzn/runtime.hh>
 
 #include <algorithm>
 #include <iostream>
 
-namespace dezyne {
+namespace dzn {
 
 runtime::runtime(){}
 

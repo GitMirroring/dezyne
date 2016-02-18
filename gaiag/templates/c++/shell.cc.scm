@@ -1,7 +1,7 @@
 ##include "#.scope_model .hh"
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
-#.model ::#.model (const dezyne::locator& locator)
+#.model ::#.model (const dzn::locator& locator)
 : #((->join "\n, ")
     (append
             (list
@@ -24,7 +24,7 @@
  (lambda (port)
    (map (define-on model port #{
 #port .#direction .#event  = [&] (#formals) {
-    return dezyne::shell(dzn_pump, [&] {return #instance .#instance-port .#direction .#event(#arguments);});
+    return dzn::shell(dzn_pump, [&] {return #instance .#instance-port .#direction .#event(#arguments);});
 };
 #}) (filter om:in? (om:events port))))
     (filter om:provides? (om:ports model)))#
@@ -32,7 +32,7 @@
     (lambda (port)
       (map (define-on model port #{
 #port .#direction .#event  = [&] (#formals) {
-    return dezyne::shell(dzn_pump, [&] {return #instance .#instance-port .#direction .#event(#arguments);});
+    return dzn::shell(dzn_pump, [&] {return #instance .#instance-port .#direction .#event(#arguments);});
 };
 #}) (filter om:out? (om:events port))))
     (filter om:requires? (om:ports model)))#
@@ -59,10 +59,10 @@
 
   void #.model ::check_bindings() const
   {
-    dezyne::check_bindings(&dzn_meta);
+    dzn::check_bindings(&dzn_meta);
   }
   void #.model ::dump_tree(std::ostream& os) const
   {
-    dezyne::dump_tree(os, &dzn_meta);
+    dzn::dump_tree(os, &dzn_meta);
   }
 #(map (lambda (x) (list "}\n")) (om:scope model))

@@ -1,7 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,10 +21,10 @@
 //
 // Code:
 
-#ifndef DEZYNE_PUMP_HH
-#define DEZYNE_PUMP_HH
+#ifndef DZN_PUMP_HH
+#define DZN_PUMP_HH
 
-#include "coroutine.hh"
+#include <dzn/coroutine.hh>
 
 #include <condition_variable>
 #include <functional>
@@ -36,7 +35,7 @@
 #include <queue>
 #include <set>
 
-namespace dezyne
+namespace dzn
 {
   struct pump
   {
@@ -98,4 +97,4 @@ namespace dezyne
   };
 }
 
-#endif //DEZYNE_PUMP_HH
+#endif //DZN_PUMP_HH

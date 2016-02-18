@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
@@ -22,16 +22,16 @@
 //
 // Code:
 
-#include "runtime.h"
+#include <dzn/runtime.h>
 
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "mem.h"
-#include "closure.h"
-#include "locator.h"
-#include "queue.h"
+#include <dzn/mem.h>
+#include <dzn/closure.h>
+#include <dzn/locator.h>
+#include <dzn/queue.h>
 
 typedef struct {
   int size;

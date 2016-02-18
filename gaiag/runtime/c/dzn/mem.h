@@ -1,7 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,23 +21,12 @@
 //
 // Code:
 
-#ifndef CLOSURE_H
-#define CLOSURE_H
+#ifndef DZN_MEM_H
+#define DZN_MEM_H
 
-#ifndef DZN_STATIC_QUEUES
+#include <stdlib.h>
 
-typedef struct {
-  void (*func)(void*);
-  void *args;
-} closure;
+void* dzn_calloc (size_t n, size_t size);
+void* dzn_malloc (size_t size);
 
-#else
-
-typedef struct {
-  void (*func)(void*);
-  char args[DZN_MAX_ARGS_SIZE];
-} closure;
-
-#endif
-
-#endif /* CLOSURE_H */
+#endif /* DZN_MEM_H */

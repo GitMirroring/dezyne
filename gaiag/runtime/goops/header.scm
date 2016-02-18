@@ -22,11 +22,11 @@
 
 
 (define (main . args)
-  ((@@ (dezyne) main) (command-line)))
+  ((@@ (dzn) main) (command-line)))
 
 (read-set! keywords 'prefix)
 
-(define-module (dezyne)
+(define-module (dzn)
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 optargs)
@@ -48,46 +48,46 @@
   (define (cdr-equal? x) (equal? (cdr x) value))
   (and=> (find cdr-equal? alist) car))
 
-(define-class <dezyne:model> ())
+(define-class <dzn:model> ())
 
-(define-class <dezyne:port-base> ())
+(define-class <dzn:port-base> ())
 
-(define-class <dezyne:interface> (<dezyne:model>)
+(define-class <dzn:interface> (<dzn:model>)
   (in :accessor .in :init-value #f :init-keyword :in)
   (out :accessor .out :init-value #f :init-keyword :out))
 
-(define-class <dezyne:component-base> (<dezyne:model>)
+(define-class <dzn:component-base> (<dzn:model>)
   (locator :accessor .locator :init-value #f :init-keyword :locator)
   (runtime :accessor .runtime :init-value #f)
   (parent :accessor .parent :init-value #f :init-keyword :parent)
   (name :accessor .name :init-value (symbol) :init-keyword :name))
 
-(define-method (initialize (o <dezyne:component-base>) args)
+(define-method (initialize (o <dzn:component-base>) args)
   (next-method)
-  (set! (.runtime o) (get (.locator o) <dezyne:runtime>))
+  (set! (.runtime o) (get (.locator o) <dzn:runtime>))
   (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o))))
 
-(define-class <dezyne:component> (<dezyne:component-base>)
+(define-class <dzn:component> (<dzn:component-base>)
  (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
  (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
  (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
  (q :accessor .q :init-form (make-q) :init-keyword :q))
 
-(define-class <dezyne:system> (<dezyne:component-base>))
+(define-class <dzn:system> (<dzn:component-base>))
 
-(define-method (connect-ports (provided <dezyne:interface>) (required <dezyne:interface>))
+(define-method (connect-ports (provided <dzn:interface>) (required <dzn:interface>))
   (set! (.out provided) (.out required))
   (set! (.in required) (.in provided)))
 
 (define (illegal) (throw 'assert 'illegal))
 
-(define-method (action-method (o <dezyne:component>) (port <accessor>) (dir <accessor>) (event <accessor>) . args)
+(define-method (action-method (o <dzn:component>) (port <accessor>) (dir <accessor>) (event <accessor>) . args)
   (apply (event (dir (port o))) args))
 
 (define (action o port dir event . args)
   (apply ((compose event dir port) o) args))
 
-(define-class <dezyne:runtime> ()
+(define-class <dzn:runtime> ()
   (components :accessor .components :init-form (list) :init-keyword :components)
   (illegal :accessor .illegal :init-value illegal :init-keyword :illegal))
 
@@ -135,19 +135,19 @@
              (field (assoc-xref alist r)))
             (symbol-append type '_ field)))
 
-(define-method (call-in (o <dezyne:component>) f m)
+(define-method (call-in (o <dzn:component>) f m)
   (apply trace-in (take m 2))
   (handle o f)
   (trace-out (car m) 'return)
   #f)
 
-(define-method (rcall-in (o <dezyne:component>) f m)
+(define-method (rcall-in (o <dzn:component>) f m)
   (apply trace-in (take m 2))
   (let ((r (valued-helper o f m)))
     (trace-out (car m) (or (return-value? r (cddr m)) 'return))
     r))
 
-(define-method (call-out (o <dezyne:component>) f m)
+(define-method (call-out (o <dzn:component>) f m)
   (apply trace-out m)
   (defer (.self (.in (car m))) o f))
 
@@ -158,8 +158,8 @@
                                      (not (string-null? p))) "." "") p)))
     (cond
      ((not o) (string-append "<external>" (if (string-null? p) "" ".") p))
-     ((is-a? o <dezyne:port-base>) (path (.self o) pp))
-     ((and (is-a? o <dezyne:model>) (.parent o)) (path (.parent o) pp))
+     ((is-a? o <dzn:port-base>) (path (.self o) pp))
+     ((and (is-a? o <dzn:model>) (.parent o)) (path (.parent o) pp))
      (else pp))))
 
 (define (trace-in i e)
@@ -169,7 +169,7 @@
   (stderr "~a.~a -> ~a.~a\n" (path (.in i)) e (path (.out i)) e))
 
 
-(define-class <dezyne:locator> ()
+(define-class <dzn:locator> ()
   (services :accessor .services :init-form (list) :init-keyword :services))
 
 (define-method (locator-key (type <class>) (key <symbol>))
@@ -196,31 +196,31 @@
 (define-method (locator-key x key)
   (locator-key key))
 
-(define-method (set (o <dezyne:locator>) (x <object>))
+(define-method (set (o <dzn:locator>) (x <object>))
   (set o x 'key))
 
-(define-method (set (o <dezyne:locator>) x key)
+(define-method (set (o <dzn:locator>) x key)
   (set! (.services o) (assoc-set! (.services o) (locator-key x key) x))
   o)
 
-(define-method (set (o <dezyne:locator>) (x <object>) key)
+(define-method (set (o <dzn:locator>) (x <object>) key)
   (set! (.services o) (assoc-set! (.services o) (locator-key x key) x))
   o)
 
-(define-method (get (o <dezyne:locator>) (key <symbol>))
+(define-method (get (o <dzn:locator>) (key <symbol>))
   (assoc-ref (.services o) (locator-key key)))
 
-(define-method (get (o <dezyne:locator>) (type <class>))
+(define-method (get (o <dzn:locator>) (type <class>))
   (get o type 'key))
 
-(define-method (get (o <dezyne:locator>) (type <object>))
+(define-method (get (o <dzn:locator>) (type <object>))
   (get o type 'key))
 
-(define-method (get (o <dezyne:locator>) (x <class>) key)
+(define-method (get (o <dzn:locator>) (x <class>) key)
   (assoc-ref (.services o) (locator-key x key)))
 
-(define-method (get (o <dezyne:locator>) (x <object>) key)
+(define-method (get (o <dzn:locator>) (x <object>) key)
   (assoc-ref (.services o) (locator-key x key)))
 
-(define-method (clone (o <dezyne:locator>))
-  (make <dezyne:locator> :services (list-copy (.services o))))
+(define-method (clone (o <dzn:locator>))
+  (make <dzn:locator> :services (list-copy (.services o))))

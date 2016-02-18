@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -24,8 +24,8 @@
 
 #include "Injected.h"
 
-#include "locator.h"
-#include "runtime.h"
+#include <dzn/locator.h>
+#include <dzn/runtime.h>
 
 #include <stdio.h>
 

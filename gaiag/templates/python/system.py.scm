@@ -1,4 +1,4 @@
-import dezyne
+import dzn
 import runtime
 
 def connect (provided, required):
@@ -9,14 +9,14 @@ class #.scope_model (runtime.Component):
     def __init__ (self, loc, name='', parent=None):
         runtime.Component.__init__ (self, loc, name, parent)
 #(map (init-instance #{
-        self.#name  = dezyne.#((om:scope-name) component)  (loc, name='#name ', parent=self)
+        self.#name  = dzn.#((om:scope-name) component)  (loc, name='#name ', parent=self)
 #}) (injected-instances model))#
 (string-if (pair? (injected-bindings model)) #{
         loc = loc.clone ()#
     (map (init-bind model #{.set (self.#instance)#}) (injected-bindings model))
 #})#
 (map (init-instance #{
-        self.#name  = dezyne.#((om:scope-name) component)  (loc, name='#name ', parent=self)
+        self.#name  = dzn.#((om:scope-name) component)  (loc, name='#name ', parent=self)
 #}) (non-injected-instances model))#
 (map (init-bind model #{
         self.#port  = self.#instance

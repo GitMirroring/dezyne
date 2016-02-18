@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,13 +24,16 @@
 #ifndef META_HH
 #define META_HH
 
+#include <boost/bind.hpp>
+#include <boost/bind/protect.hpp>
+#include <boost/function.hpp>
+
 #include <cassert>
-#include <functional>
 #include <string>
 #include <stdexcept>
 #include <vector>
 
-namespace dezyne
+namespace dzn
 {
   struct meta;
 
@@ -38,40 +41,52 @@ namespace dezyne
   {
     struct meta
     {
-      struct
+      meta()
+      : provides()
+      , requires()
+      {}
+      struct detail
       {
+        detail()
+        : port()
+        , address()
+        , meta()
+        {}
         std::string port;
         void* address;
-        const dezyne::meta* meta;
-      } provides;
-
-      struct
-      {
-        std::string port;
-        void* address;
-        const dezyne::meta* meta;
-      } requires;
+        const dzn::meta* meta;
+      };
+      detail provides;
+      detail requires;
     };
   }
 
   struct meta
   {
+    meta(const std::string& name, const std::string& type, const meta* parent)
+    : name(name)
+    , type(type)
+    , parent(parent)
+    {}
+    meta () {}
     std::string name;
     std::string type;
     const meta* parent;
     std::vector<const meta*> children;
-    std::vector<std::function<void()>> ports_connected;
-    meta(std::string&& name, std::string&& type, const meta* parent, std::vector<const meta*>&& children, std::vector<std::function<void()>>&& ports_connected)
-    : name(name)
-    , type(type)
-    , parent(parent)
-    , children(children)
-    , ports_connected(ports_connected)
-    {}
-    meta() {}
+    std::vector<boost::function<void()> > ports_connected;
   };
 
-  struct illegal_handler {std::function<void()> illegal = [] {assert(!"h:illegal");};};
+  struct illegal_handler
+  {
+    illegal_handler()
+    : illegal(boost::bind(&illegal_handler::throw_handler, this))
+    {}
+    void throw_handler()
+    {
+      throw std::runtime_error("illegal");
+    }
+    boost::function<void()> illegal;
+  };
 
   inline std::string path(const meta* m, std::string p = std::string())
   {

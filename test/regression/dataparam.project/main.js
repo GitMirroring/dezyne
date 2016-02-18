@@ -23,7 +23,7 @@
 #! /usr/bin/env node
 
 var dezyne = typeof (dezyne) !== undefined && dezyne ? dezyne : require (__dirname + '/dezyne/runtime');
-dezyne.extend (dezyne, require (__dirname + '/dezyne/Datasystem'));
+dzn.extend (dezyne, require (__dirname + '/dezyne/Datasystem'));
 
 /* handwritten dataparam.js */
 
@@ -51,9 +51,9 @@ function a6(i0, i1, i2,i3, i4, i5) {
 }
 
 function main() {
-  var loc = new dezyne.locator();
-  var rt = new dezyne.runtime();
-  var d = new dezyne.Datasystem(loc.set(rt), {name: 'd'});
+  var loc = new dzn.locator();
+  var rt = new dzn.runtime();
+  var d = new dzn.Datasystem(loc.set(rt), {name: 'd'});
   d.port.meta.requires = {name: 'port', component: null};
 
   d.port.out.a0 = a0;
@@ -61,11 +61,11 @@ function main() {
   d.port.out.aa = aa;
   d.port.out.a6 = a6;
 
-  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.e0r());
+  console.assert(new dzn.IDataparam().Status.Yes == d.port.in.e0r());
   d.port.in.e0();
-  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.er(123));
+  console.assert(new dzn.IDataparam().Status.Yes == d.port.in.er(123));
   d.port.in.e(123);
-  console.assert(new dezyne.IDataparam().Status.No == d.port.in.eer(123,345));
+  console.assert(new dzn.IDataparam().Status.No == d.port.in.eer(123,345));
 
   var i = {value:0};
   d.port.in.eo(i);
@@ -82,16 +82,16 @@ function main() {
   console.assert(i.value == 246);
 
 
-  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.eor(i));
+  console.assert(new dzn.IDataparam().Status.Yes == d.port.in.eor(i));
   console.assert(i.value == 234);
 
-  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.eoor(i,j));
+  console.assert(new dzn.IDataparam().Status.Yes == d.port.in.eoor(i,j));
   console.assert(i.value == 123 && j.value == 456);
 
-  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.eior(i.value,j));
+  console.assert(new dzn.IDataparam().Status.Yes == d.port.in.eior(i.value,j));
   console.assert(i.value == 123 && j.value == i.value);
 
-  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.eio2r(i));
+  console.assert(new dzn.IDataparam().Status.Yes == d.port.in.eio2r(i));
   console.assert(i.value == 246);
 }
 

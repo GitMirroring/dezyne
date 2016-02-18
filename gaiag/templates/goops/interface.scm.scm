@@ -1,15 +1,15 @@
 #(->string (map (declare-enum model) (om:interface-enums model)))
 #(->string (map (declare-enum model) (om:enums)))
-(define-class <dezyne:#.scope_model .in> (<dezyne:port-base>)
+(define-class <dzn:#.scope_model .in> (<dzn:port-base>)
   (name :accessor .name :init-value (symbol) :init-keyword :name)
   (self :accessor .self :init-value ##f :init-keyword :self)#
 (map (declare-io model #{#'()
   (#name  :accessor .#name  :init-value ##f :init-keyword :#name)#})
   (filter om:in? ((compose .elements .events) model))))
-(define-class <dezyne:#.scope_model .out> (<dezyne:port-base>)
+(define-class <dzn:#.scope_model .out> (<dzn:port-base>)
   (name :accessor .name :init-value (symbol) :init-keyword :name)
   (self :accessor .self :init-value ##f :init-keyword :self)#
 (map (declare-io model #{#'()
   (#name  :accessor .#name  :init-value ##f :init-keyword :#name)#})
   (filter om:out? ((compose .elements .events) model))))
-(define-class <dezyne:#.scope_model > (<dezyne:interface>))
+(define-class <dzn:#.scope_model > (<dzn:interface>))

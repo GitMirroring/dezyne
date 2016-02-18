@@ -1,7 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,22 +21,22 @@
 //
 // Code:
 
-#ifndef DEZYNE_COROUTINE_HH
-#define DEZYNE_COROUTINE_HH
+#ifndef DZN_COROUTINE_HH
+#define DZN_COROUTINE_HH
 
 #if HAVE_BOOST_COROUTINE
 #include <boost/coroutine/all.hpp>
 #else
-#include "context.hh"
+#include <dzn/context.hh>
 #endif
 
-namespace dezyne
+namespace dzn
 {
 #if HAVE_BOOST_COROUTINE
   typedef boost::coroutines::symmetric_coroutine<void>::call_type context;
   typedef boost::coroutines::symmetric_coroutine<void>::yield_type yield;
 #else
-  typedef std::function<void(dezyne::context&)> yield;
+  typedef std::function<void(dzn::context&)> yield;
 #endif
 
   struct coroutine
@@ -45,8 +44,8 @@ namespace dezyne
     static int g_id;
     int id;
 
-    dezyne::context context;
-    dezyne::yield yield;
+    dzn::context context;
+    dzn::yield yield;
     void* port;
     bool finished;
     bool released;
@@ -54,7 +53,7 @@ namespace dezyne
     template <typename Worker>
     coroutine(Worker&& worker)
     : id(g_id++)
-    , context([this, worker](dezyne::yield& yield){
+    , context([this, worker](dzn::yield& yield){
         this->yield = std::move(yield);
         worker();
       })
@@ -69,20 +68,20 @@ namespace dezyne
       std::cout << __FUNCTION__ << ": " << id << std::endl;
 #endif
     }
-    void yield_to(dezyne::coroutine& c)
+    void yield_to(dzn::coroutine& c)
     {
       this->yield(c.context);
     }
 #if HAVE_BOOST_COROUTINE
     coroutine() : id(-1), context() {}
-    void call(dezyne::coroutine&)
+    void call(dzn::coroutine&)
     {
       this->context();
     }
     void release(){}
 #else // !HAVE_BOOST_COROUTINE
     coroutine() : id(-1), context(false) {}
-    void call(dezyne::coroutine& c)
+    void call(dzn::coroutine& c)
     {
       this->context.call(c.context);
     }
@@ -93,4 +92,4 @@ namespace dezyne
 #endif // HAVE_BOOST_COROUTINE
   };
 }
-#endif //DEZYNE_COROUTINE_HH
+#endif //DZN_COROUTINE_HH

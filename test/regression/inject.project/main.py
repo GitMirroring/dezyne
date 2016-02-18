@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -26,7 +26,7 @@ import sys
 import os
 sys.path.insert (0, os.path.dirname (sys.argv[0]))
 ##
-import dezyne.Injected
+import dzn.Injected
 import runtime
 import locator
 
@@ -37,7 +37,7 @@ def main ():
     loc = locator.Locator ()
     rt = runtime.Runtime ()
 
-    sut = dezyne.Injected (loc.set (rt), 'sut')
+    sut = dzn.Injected (loc.set (rt), 'sut')
     sut.t.outport.f = f;
 
     #sut.check_bindings ()

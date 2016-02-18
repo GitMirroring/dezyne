@@ -1,5 +1,5 @@
 // Gaiag --- Guile in Asd In Asd in Guile.
-// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
@@ -24,8 +24,8 @@
 
 #include "AlarmSystem.hh"
 
-#include "locator.hh"
-#include "runtime.hh"
+#include <dzn/locator.hh>
+#include <dzn/runtime.hh>
 
 #include <iostream>
 
@@ -41,8 +41,8 @@ void deactivated()
 
 int main()
 {
-  dezyne::runtime runtime;
-  dezyne::locator locator;
+  dzn::runtime runtime;
+  dzn::locator locator;
   AlarmSystem alarmsystem(locator.set(runtime));
 
   alarmsystem.dzn_meta.name = "alarmsystem";

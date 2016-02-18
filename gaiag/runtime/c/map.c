@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
@@ -25,14 +25,14 @@
 /*
  * Generic map implementation.
  */
-#include "map.h"
+#include <dzn/map.h>
 
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "mem.h"
+#include <dzn/mem.h>
 
 #define INITIAL_SIZE (256)
 #define MAX_CHAIN_LENGTH (8)
@@ -385,7 +385,7 @@ int map_length(map* m){
 #include <stdio.h>
 #include <assert.h>
 
-#include "map.h"
+#include <dzn/map.h>
 
 #define KEY_MAX_LENGTH (256)
 #define KEY_PREFIX ("somekey")

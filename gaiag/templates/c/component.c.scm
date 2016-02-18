@@ -1,7 +1,7 @@
 ##include "#.scope_model .h"
 
-##include "locator.h"
-##include "runtime.h"
+##include <dzn/locator.h>
+##include <dzn/runtime.h>
 ##include <string.h>
 
 #(->string (map (declare-enum model) (om:enums (.behaviour model))))

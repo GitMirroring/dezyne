@@ -1,7 +1,6 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,15 +21,15 @@
 //
 // Code:
 
-#ifndef RUNTIME_H
-#define RUNTIME_H
+#ifndef DZN_RUNTIME_H
+#define DZN_RUNTIME_H
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
-#include "queue.h"
-#include "map.h"
+#include <dzn/queue.h>
+#include <dzn/map.h>
 
 typedef struct {
 	int dummy;
@@ -75,4 +74,4 @@ void runtime_trace_out (void* in, void *out, char const* e);
 
 #define DZN_TRACE(msg) fprintf (stderr, "%s\n", msg)
 
-#endif
+#endif /* DZN_RUNTIME_H */

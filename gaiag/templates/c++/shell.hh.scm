@@ -3,7 +3,7 @@
 
 ##include <iostream>
 
-##include "pump.hh"
+##include <dzn/pump.hh>
 
 #(map (include-component #{
 ##include "#component .hh"
@@ -13,23 +13,29 @@
 ##include "#interface .hh"
 #}) (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
 
-#(if (pair? (injected-bindings model)) (list "#include \"locator.hh\"") (list "namespace dezyne\n {\nstruct locator;\n}"))
+#(string-if (pair? (injected-bindings model))
+#{
+##include <dzn/locator.hh>
+#}
+#{
+namespace dzn {struct locator;}
+#})
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 struct #.model
 {
- dezyne::meta dzn_meta;
- dezyne::runtime dzn_runtime;
+ dzn::meta dzn_meta;
+ dzn::runtime dzn_runtime;
  #(map (lambda (binding) (list ((c++:scope-name) (.component (om:instance model (injected-instance-name binding)))) " "
                               (injected-instance-name binding) ";\n")) (injected-bindings model))
- dezyne::locator dzn_locator;
+ dzn::locator dzn_locator;
 #(map (init-instance #{
   #((c++:scope-name) component)  #name;
 #}) (non-injected-instances model))
 #(map (init-bind model #{ #((c++:scope-name) interface)  #port;
 #}) (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
-  dezyne::pump dzn_pump;
-  #.model (const dezyne::locator&);
+  dzn::pump dzn_pump;
+  #.model (const dzn::locator&);
   void check_bindings() const;
   void dump_tree(std::ostream& os=std::clog) const;
 };

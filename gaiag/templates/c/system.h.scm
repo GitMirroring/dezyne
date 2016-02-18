@@ -9,7 +9,7 @@
 ##include "#interface .h"
 #}) (om:ports model))
 
-##include "locator.h"
+##include <dzn/locator.h>
 
 typedef struct {
     dzn_meta_t dzn_meta;

@@ -1,8 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,13 +21,13 @@
 //
 // Code:
 
-#ifndef DEZYNE_RUNTIME_HH
-#define DEZYNE_RUNTIME_HH
+#ifndef DZN_RUNTIME_HH
+#define DZN_RUNTIME_HH
 
-#include "meta.hh"
-#include "locator.hh"
+#include <dzn/meta.hh>
+#include <dzn/locator.hh>
 
-#include "pump.hh"
+#include <dzn/pump.hh>
 
 #include <algorithm>
 #include <cassert>
@@ -43,12 +41,12 @@ inline bool to__bool(std::string s){return s == "true";}
 inline char const* to_string(int i){static std::string s; s=std::to_string(i); return s.c_str();}
 inline int to__int(std::string s){return std::stoi (s);}
 
-namespace dezyne
+namespace dzn
 {
 void trace_in(std::ostream&, port::meta const&, const char*);
 void trace_out(std::ostream&, port::meta const&, const char*);
 
-inline void apply(const dezyne::meta* m, const std::function<void(const dezyne::meta*)>& f)
+inline void apply(const dzn::meta* m, const std::function<void(const dzn::meta*)>& f)
 {
   f(m);
   for (auto c : m->children)
@@ -57,16 +55,16 @@ inline void apply(const dezyne::meta* m, const std::function<void(const dezyne::
   }
 }
 
-inline void check_bindings(const dezyne::meta* c)
+inline void check_bindings(const dzn::meta* c)
 {
-  apply(c, [](const dezyne::meta* m){
+  apply(c, [](const dzn::meta* m){
       std::for_each(m->ports_connected.begin(), m->ports_connected.end(), [](const std::function<void()>& p){p();});
     });
 }
 
-inline void dump_tree(std::ostream& os, const dezyne::meta* c)
+inline void dump_tree(std::ostream& os, const dzn::meta* c)
 {
-  apply(c, [&](const dezyne::meta* m){
+  apply(c, [&](const dzn::meta* m){
       os << path(m) << ":" << m->type << std::endl;
     });
 }
@@ -123,7 +121,7 @@ private:
 };
 
 template <typename F, typename ... Args>
-auto shell(dezyne::pump& pump, F&& f, Args&& ...args) -> decltype(f())
+auto shell(dzn::pump& pump, F&& f, Args&& ...args) -> decltype(f())
 {
   return pump.and_wait(std::bind(f,std::forward<Args>(args)...));
 }
@@ -133,10 +131,10 @@ struct call_helper
 {
   C* c;
   std::ostream& os;
-  const dezyne::port::meta& meta;
+  const dzn::port::meta& meta;
   const char* event;
   std::string reply;
-  call_helper(C* c, const dezyne::port::meta& meta, const char* event)
+  call_helper(C* c, const dzn::port::meta& meta, const char* event)
   : c(c)
   , os(c->dzn_locator.template get<typename std::ostream>())
   , meta(meta)
@@ -146,7 +144,7 @@ struct call_helper
     trace_in(os, meta, event);
     if(c->dzn_rt.handling(c))
     {
-      c->dzn_locator.template get<dezyne::pump>().collateral_block();
+      c->dzn_locator.template get<dzn::pump>().collateral_block();
     }
   }
   template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
@@ -177,18 +175,18 @@ struct call_helper
 };
 
 template <typename C, typename L>
-auto call_in(C* c, L&& l, const dezyne::port::meta& meta, const char* event) -> decltype(l())
+auto call_in(C* c, L&& l, const dzn::port::meta& meta, const char* event) -> decltype(l())
 {
   call_helper<C> helper(c, meta, event);
   return helper(l);
 }
 
 template <typename C, typename L>
-void call_out(C* c, L&& l, const dezyne::port::meta& meta, const char* event)
+void call_out(C* c, L&& l, const dzn::port::meta& meta, const char* event)
 {
   auto& os = c->dzn_locator.template get<typename std::ostream>();
   trace_out(os, meta, event);
   c->dzn_rt.defer(meta.provides.address, c, l);
 }
 }
-#endif //DEZYNE_RUNTIME_HH
+#endif //DZN_RUNTIME_HH

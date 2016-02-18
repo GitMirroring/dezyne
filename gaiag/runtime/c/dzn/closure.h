@@ -1,7 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,16 +21,23 @@
 //
 // Code:
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef DZN_CLOSURE_H
+#define DZN_CLOSURE_H
 
+#ifndef DZN_STATIC_QUEUES
 
-// uncomment line below to have preallocated static queues iso dynamically allocated queues.
-// #define DZN_STATIC_QUEUES
+typedef struct {
+  void (*func)(void*);
+  void *args;
+} closure;
 
-#ifdef DZN_STATIC_QUEUES
-  #define DZN_MAX_ARGS_SIZE 24
-  #define DZN_DEFAULT_QUEUE_SIZE 7
+#else
+
+typedef struct {
+  void (*func)(void*);
+  char args[DZN_MAX_ARGS_SIZE];
+} closure;
+
 #endif
 
-#endif /* CONFIG_H */
+#endif /* DZN_CLOSURE_H */

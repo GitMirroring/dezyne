@@ -5,9 +5,9 @@
 ##include "#interface .hh"
 #}) (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
 
-##include "runtime.hh"
+##include <dzn/runtime.hh>
 
-namespace dezyne {
+namespace dzn {
 struct locator;
 struct runtime;
 }
@@ -15,9 +15,9 @@ struct runtime;
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 struct #.model
 {
-    dezyne::meta dzn_meta;
-    dezyne::runtime& dzn_rt;
-    dezyne::locator const& dzn_locator;
+    dzn::meta dzn_meta;
+    dzn::runtime& dzn_rt;
+    dzn::locator const& dzn_locator;
     #(->string (map (declare-enum model) (om:enums (.behaviour model))))#
     (->string (map declare-integer (om:integers (.behaviour model))))#
     (map (init-member model #{
@@ -27,7 +27,7 @@ struct #.model
     (map (init-port #{
 #((c++:scope-join model) interface)  #name ;
 #}) ((compose .elements .ports) model))
-    #.model (const dezyne::locator&);
+    #.model (const dzn::locator&);
   void check_bindings() const;
   void dump_tree() const;
 

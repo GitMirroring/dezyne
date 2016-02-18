@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,7 +22,7 @@
 //
 // Code:
 
-#include "pump.hh"
+#include <dzn/pump.hh>
 
 #include <algorithm>
 #include <cassert>
@@ -31,7 +31,7 @@
 #include <iostream>
 #endif
 
-namespace dezyne
+namespace dzn
 {
 static void debug(const std::string& s)
 {
@@ -50,13 +50,13 @@ static void debug(const std::string& s, int id)
 static std::list<coroutine>::iterator find_self(std::list<coroutine>& coroutines)
 {
   assert(1 == std::count_if(coroutines.begin(), coroutines.end(), [](const coroutine& c){return c.port == nullptr && !c.finished;}));
-  auto self = std::find_if(coroutines.begin(), coroutines.end(), [](dezyne::coroutine& c){return c.port == nullptr && !c.finished;});
+  auto self = std::find_if(coroutines.begin(), coroutines.end(), [](dzn::coroutine& c){return c.port == nullptr && !c.finished;});
   return self;
 }
 
 static std::list<coroutine>::iterator find_blocked(std::list<coroutine>& coroutines, void* port)
 {
-  auto self = std::find_if(coroutines.begin(), coroutines.end(), [port](dezyne::coroutine& c){return c.port == port;});
+  auto self = std::find_if(coroutines.begin(), coroutines.end(), [port](dzn::coroutine& c){return c.port == port;});
   return self;
 }
 
@@ -128,7 +128,7 @@ void pump::operator()()
       if (lock) lock.unlock();
       coroutines.back().call(zero);
       lock.lock();
-      coroutines.remove_if([](dezyne::coroutine& c){if(c.finished) debug("removing", c.id); return c.finished;});
+      coroutines.remove_if([](dzn::coroutine& c){if(c.finished) debug("removing", c.id); return c.finished;});
     }
     debug("finish pump");
     assert(queue.empty());
@@ -235,7 +235,7 @@ void pump::block(void* p)
   }
   std::cout << std::endl;
 #endif
-  coroutines.remove_if([](dezyne::coroutine& c){if(c.finished) debug("removing",c.id); return c.finished;});
+  coroutines.remove_if([](dzn::coroutine& c){if(c.finished) debug("removing",c.id); return c.finished;});
 }
 void pump::release(void* p)
 {

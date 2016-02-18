@@ -4,7 +4,7 @@
 //
 // Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
-// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
@@ -25,8 +25,8 @@
 
 #include "Injected.hh"
 
-#include "locator.hh"
-#include "runtime.hh"
+#include <dzn/locator.hh>
+#include <dzn/runtime.hh>
 
 #include <iostream>
 
@@ -37,8 +37,8 @@ void f()
 
 int main()
 {
-  dezyne::locator l;
-  dezyne::runtime rt;
+  dzn::locator l;
+  dzn::runtime rt;
   l.set(rt);
 
   Injected i(l);

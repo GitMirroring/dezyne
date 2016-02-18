@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -45,7 +45,6 @@ $(LOCAL_TARGET): $(LOCAL_O_FILES)
 else
 
 $(LOCAL_TARGET): $(LOCAL_RUNTIME_SOURCES:%=$(LOCAL_OUT)/%)
-$(LOCAL_TARGET): $(LOCAL_RUNTIME_DEZYNE:%=$(LOCAL_OUT)/dezyne/%)
 
 ifeq ($(filter $(LOCAL_LANGUAGE),cs java java7),)
 $(LOCAL_TARGET): $(LOCAL_HEADER) $(LOCAL_DEZYNE_FILES) $(LOCAL_FOOTER)

@@ -1,5 +1,5 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
-# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Gaiag.
 #
@@ -26,7 +26,7 @@ import sys
 import os
 sys.path.insert (0, os.path.dirname (sys.argv[0]))
 #
-import dezyne.AlarmSystem
+import dzn.AlarmSystem
 import locator
 import runtime
 
@@ -39,7 +39,7 @@ def deactivated ():
 def main ():
     loc = locator.Locator ()
     rt = runtime.Runtime ()
-    sut = dezyne.AlarmSystem (loc.set (rt), name='alarmsystem')
+    sut = dzn.AlarmSystem (loc.set (rt), name='alarmsystem')
     sut.console.outport.name = 'console'
     sut.console.outport.self = sut
 

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,12 +23,12 @@
 
 function timer(locator, meta) {
   this.locator = locator;
-  this.rt = locator.get(new dezyne.runtime());
+  this.rt = locator.get(new dzn.runtime());
   this.rt.components = (this.rt.components || []).concat ([this]);
   this.meta = meta;
   this.flushes = true;
 
-  this.port = new dezyne.itimer({provides: {name: 'port', component: this}, requires: {}});
+  this.port = new dzn.itimer({provides: {name: 'port', component: this}, requires: {}});
   this.port.in.create = function(ms) {
     this.rt.call_in(this, function() {
       { }
@@ -43,4 +43,4 @@ function timer(locator, meta) {
 
 };
 
-dezyne.timer = timer;
+dzn.timer = timer;

@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,8 +22,8 @@
 
 #include "MachineConstants.hh"
 
-#include "runtime.hh"
-#include "locator.hh"
+#include <dzn/runtime.hh>
+#include <dzn/locator.hh>
 
 #include "LegoBallSorter.hh"
 
@@ -45,7 +45,7 @@ struct timer_impl: public itimer_impl
   itimer& port;
   Lego& lego;
 
-  timer_impl(const dezyne::locator& l)
+  timer_impl(const dzn::locator& l)
   : port(l.get<itimer>())
   , lego(l.get<Lego>())
   {}
@@ -60,7 +60,7 @@ struct timer_impl: public itimer_impl
   }
 };
 
-namespace dezyne
+namespace dzn
 {
   bool relaxed = true;
   typedef std::map<std::string, std::function<void()>> event_map;
@@ -206,24 +206,24 @@ namespace dezyne
 
 int main()
 {
-  dezyne::locator l;
-  dezyne::runtime rt;
+  dzn::locator l;
+  dzn::runtime rt;
   l.set(rt);
-  dezyne::illegal_handler ih;
+  dzn::illegal_handler ih;
   ih.illegal = [] {std::clog << "illegal" << std::endl; exit(0);};
   l.set(ih);
 
   Lego lego;
   l.set(lego);
 
-  std::function<std::shared_ptr<itimer_impl>(const dezyne::locator&)> create_timer_impl = [](const dezyne::locator& l){return std::make_shared<timer_impl>(l);};
+  std::function<std::shared_ptr<itimer_impl>(const dzn::locator&)> create_timer_impl = [](const dzn::locator& l){return std::make_shared<timer_impl>(l);};
   l.set(create_timer_impl);
 
-  dezyne::event_map event_map;
+  dzn::event_map event_map;
   LegoBallSorter sut(l);
   sut.dzn_meta.name = "sut";
 
-  dezyne::fill_event_map(sut, event_map);
+  dzn::fill_event_map(sut, event_map);
 
   sut.check_bindings();
   sut.dump_tree();

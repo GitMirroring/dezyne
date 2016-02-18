@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,8 +22,8 @@
 // Code:
 
 
-#include "runtime.hh"
-#include "locator.hh"
+#include <dzn/runtime.hh>
+#include <dzn/locator.hh>
 
 #include "blockdata2b.hh"
 
@@ -33,12 +33,12 @@ int main()
 {
   int data = -1;
   {
-    dezyne::locator l;
-    dezyne::runtime rt;
+    dzn::locator l;
+    dzn::runtime rt;
     l.set(rt);
-    dezyne::pump pump;
+    dzn::pump pump;
     l.set(pump);
-    dezyne::illegal_handler ih;
+    dzn::illegal_handler ih;
     ih.illegal = [] {std::clog << "illegal" << std::endl; exit(0);};
     l.set(ih);
 

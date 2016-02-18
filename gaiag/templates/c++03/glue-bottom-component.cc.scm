@@ -2,8 +2,8 @@
 
 ##include "asdInterfaces.h"
 
-##include "locator.hh"
-##include "runtime.hh"
+##include <dzn/locator.hh>
+##include <dzn/runtime.hh>
 
 ##include "#.model Component.h"
 
@@ -48,9 +48,9 @@ struct SingleThreaded
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 static std::map<#.model *, boost::shared_ptr<#(om:name (om:port model)) Interface> > g_handwritten;
 
-#.model ::#.model (const dezyne::locator& dezyne_locator)
-: dzn_meta{"glue","#.model",reinterpret_cast<const dezyne::component*>(this),0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (om:ports model)))}}
-, dzn_rt(dezyne_locator.get<dezyne::runtime>())
+#.model ::#.model (const dzn::locator& dezyne_locator)
+: dzn_meta{"glue","#.model",reinterpret_cast<const dzn::component*>(this),0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (om:ports model)))}}
+, dzn_rt(dezyne_locator.get<dzn::runtime>())
 , dzn_locator(dezyne_locator)#
 (map (lambda (port) (if (eq? (.direction port) 'provides) (list "\n, " (.name port) "({{\"" (.name port) "\",this},{\"\",0}})") (list "\n, " (.name port) "({{\"\",0},{\"" (.name port) "\",this}})"))) ((compose .elements .ports) model))
 {

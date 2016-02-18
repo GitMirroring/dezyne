@@ -23,12 +23,12 @@
 #! /usr/bin/env node
 
 var dezyne = typeof (dezyne) !== undefined && dezyne ? dezyne : require (__dirname + '/dezyne/runtime');
-dezyne.extend (dezyne, require (__dirname + '/dezyne/Injected'));
+dzn.extend (dezyne, require (__dirname + '/dezyne/Injected'));
 
 function main() {
-  var loc = new dezyne.locator();
-  var rt = new dezyne.runtime();
-  var sut = new dezyne.Injected(loc.set(rt), 'sut');
+  var loc = new dzn.locator();
+  var rt = new dzn.runtime();
+  var sut = new dzn.Injected(loc.set(rt), 'sut');
   sut.t.out.f = function() {console.error('f');};
 
   //sut.check_bindings();

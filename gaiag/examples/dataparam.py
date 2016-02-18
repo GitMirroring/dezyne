@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -26,7 +26,7 @@ import sys
 import os
 sys.path.insert (0, os.path.dirname (sys.argv[0]))
 #
-import dezyne.Datasystem
+import dzn.Datasystem
 import runtime
 
 def a0():
@@ -50,7 +50,7 @@ def a6(i0, i1, i2,i3, i4, i5):
 
 def main():
     rt = runtime.runtime ()
-    d = dezyne.Datasystem(rt, name='d');
+    d = dzn.Datasystem(rt, name='d');
     d.port.outs.name = 'port'
     d.port.outs.self = d
 
@@ -59,11 +59,11 @@ def main():
     d.port.outs.aa = aa;
     d.port.outs.a6 = a6;
 
-    assert(dezyne.IDataparam().Status.Yes == d.port.ins.e0r());
+    assert(dzn.IDataparam().Status.Yes == d.port.ins.e0r());
     d.port.ins.e0();
-    assert(dezyne.IDataparam().Status.Yes == d.port.ins.er(123));
+    assert(dzn.IDataparam().Status.Yes == d.port.ins.er(123));
     d.port.ins.e(123);
-    assert(dezyne.IDataparam().Status.No == d.port.ins.eer(123,345));
+    assert(dzn.IDataparam().Status.No == d.port.ins.eer(123,345));
 
     i = {'value':0};
     d.port.ins.eo(i);
@@ -80,16 +80,16 @@ def main():
     assert(i['value'] == 246);
 
 
-    assert(dezyne.IDataparam().Status.Yes == d.port.ins.eor(i));
+    assert(dzn.IDataparam().Status.Yes == d.port.ins.eor(i));
     assert(i['value'] == 234);
 
-    assert(dezyne.IDataparam().Status.Yes == d.port.ins.eoor(i,j));
+    assert(dzn.IDataparam().Status.Yes == d.port.ins.eoor(i,j));
     assert(i['value'] == 123 and j['value'] == 456);
 
-    assert(dezyne.IDataparam().Status.Yes == d.port.ins.eior(i['value'],j));
+    assert(dzn.IDataparam().Status.Yes == d.port.ins.eior(i['value'],j));
     assert(i['value'] == 123 and j['value'] == i['value']);
 
-    assert(dezyne.IDataparam().Status.Yes == d.port.ins.eio2r(i));
+    assert(dzn.IDataparam().Status.Yes == d.port.ins.eio2r(i));
     assert(i['value'] == 246);
 
 

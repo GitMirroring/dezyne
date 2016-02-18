@@ -1,8 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,8 +21,8 @@
 //
 // Code:
 
-#ifndef DEZYNE_META_HH
-#define DEZYNE_META_HH
+#ifndef DZN_META_HH
+#define DZN_META_HH
 
 #include <cassert>
 #include <functional>
@@ -32,7 +30,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace dezyne
+namespace dzn
 {
   struct meta;
 
@@ -44,14 +42,14 @@ namespace dezyne
       {
         std::string port;
         void* address;
-        const dezyne::meta* meta;
+        const dzn::meta* meta;
       } provides;
 
       struct
       {
         std::string port;
         void* address;
-        const dezyne::meta* meta;
+        const dzn::meta* meta;
       } requires;
     };
   }
@@ -83,4 +81,4 @@ namespace dezyne
     {}
   };
 }
-#endif //DEZYNE_META_HH
+#endif //DZN_META_HH

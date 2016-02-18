@@ -1,7 +1,7 @@
 ##ifndef #.INTERFACE _HH
 ##define #.INTERFACE _HH
 
-##include "meta.hh"
+##include <dzn/meta.hh>
 
 ##include <cassert>
 ##include <map>
@@ -27,15 +27,15 @@ struct #.interface
           #{boost::function<#return-type  (#((->join ",") formal-types))> #name;
 #}) (filter om:out? ((compose .elements .events) model))) } out;
 
-   dezyne::port::meta meta;
+   dzn::port::meta meta;
 
    void check_bindings() const
    {
    #(map (declare-io model
-         #{if (! in.#name) throw dezyne::binding_error(meta, "in.#name");
+         #{if (! in.#name) throw dzn::binding_error(meta, "in.#name");
 #}) (filter om:in? ((compose .elements .events) model)))
    #(map (declare-io model
-         #{if (! out.#name) throw dezyne::binding_error(meta, "out.#name");
+         #{if (! out.#name) throw dzn::binding_error(meta, "out.#name");
 #}) (filter om:out? ((compose .elements .events) model)))
    }
   };

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -48,8 +48,8 @@ function a6(i0, i1, i2,i3, i4, i5) {
 }
 
 function main() {
-  var rt = new dezyne.runtime();
-  var d = new dezyne.Datasystem(rt, {name: 'd'});
+  var rt = new dzn.runtime();
+  var d = new dzn.Datasystem(rt, {name: 'd'});
   d.port.meta.requires = {name: 'port', component: d};
 
   d.port.out.a0 = a0;
@@ -57,11 +57,11 @@ function main() {
   d.port.out.aa = aa;
   d.port.out.a6 = a6;
 
-  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.e0r());
+  console.assert(new dzn.IDataparam().Status.Yes == d.port.in.e0r());
   d.port.in.e0();
-  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.er(123));
+  console.assert(new dzn.IDataparam().Status.Yes == d.port.in.er(123));
   d.port.in.e(123);
-  console.assert(new dezyne.IDataparam().Status.No == d.port.in.eer(123,345));
+  console.assert(new dzn.IDataparam().Status.No == d.port.in.eer(123,345));
 
   var i = {value:0};
   d.port.in.eo(i);
@@ -78,16 +78,16 @@ function main() {
   console.assert(i.value == 246);
 
 
-  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.eor(i));
+  console.assert(new dzn.IDataparam().Status.Yes == d.port.in.eor(i));
   console.assert(i.value == 234);
 
-  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.eoor(i,j));
+  console.assert(new dzn.IDataparam().Status.Yes == d.port.in.eoor(i,j));
   console.assert(i.value == 123 && j.value == 456);
 
-  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.eior(i.value,j));
+  console.assert(new dzn.IDataparam().Status.Yes == d.port.in.eior(i.value,j));
   console.assert(i.value == 123 && j.value == i.value);
 
-  console.assert(new dezyne.IDataparam().Status.Yes == d.port.in.eio2r(i));
+  console.assert(new dzn.IDataparam().Status.Yes == d.port.in.eio2r(i));
   console.assert(i.value == 246);
 }
 

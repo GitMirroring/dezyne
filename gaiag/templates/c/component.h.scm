@@ -5,8 +5,8 @@
 ##include "#interface .h"
 #}) (om:ports model))
 
-##include "runtime.h"
-##include "locator.h"
+##include <dzn/runtime.h>
+##include <dzn/locator.h>
 
 
 typedef struct {

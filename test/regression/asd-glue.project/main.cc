@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,14 +23,14 @@
 // Code:
 
 
-#include "runtime.hh"
-#include "locator.hh"
+#include <dzn/runtime.hh>
+#include <dzn/locator.hh>
 
 #include "AlarmSystemComp.hh"
 
 #include <iostream>
 
-namespace dezyne
+namespace dzn
 {
   static bool flush = false;
   static bool relaxed = false;
@@ -167,36 +168,36 @@ namespace dezyne
 
 int main(int argc, char const* argv[])
 {
-  dezyne::flush = argc > 1 && argv[1] == std::string("--flush");
-  dezyne::relaxed = argc > 1 && argv[1] == std::string("--relaxed");
+  dzn::flush = argc > 1 && argv[1] == std::string("--flush");
+  dzn::relaxed = argc > 1 && argv[1] == std::string("--relaxed");
 
 #if BLOCKING
   bool main_p = true;
   std::mutex mutex;
 #endif //BLOCKING
 
-  dezyne::locator l;
-  dezyne::runtime rt;
+  dzn::locator l;
+  dzn::runtime rt;
   l.set(rt);
-  std::unique_ptr<dezyne::pump> tmp1(new dezyne::pump);
+  std::unique_ptr<dzn::pump> tmp1(new dzn::pump);
   l.set(*tmp1);
-  dezyne::illegal_handler ih;
+  dzn::illegal_handler ih;
   ih.illegal = [] {std::clog << "illegal" << std::endl; exit(0);};
   l.set(ih);
 
-  dezyne::event_map event_map;
+  dzn::event_map event_map;
   AlarmSystemComp sut(l);
   sut.dzn_meta.name = "sut";
 
-  dezyne::component c(rt);
+  dzn::component c(rt);
   c.dzn_meta.parent = 0;
   c.dzn_meta.name = "<internal>";
 
-  dezyne::fill_event_map(&c, sut, event_map);
+  dzn::fill_event_map(&c, sut, event_map);
 
 #if BLOCKING
-  std::unique_ptr<dezyne::pump> tmp2(std::move(tmp1)); //now the pump is destroyed before the sut is
-  dezyne::pump& pump = *tmp2;
+  std::unique_ptr<dzn::pump> tmp2(std::move(tmp1)); //now the pump is destroyed before the sut is
+  dzn::pump& pump = *tmp2;
 
   pump.next_event = [&] {
     pump([&]{
@@ -218,7 +219,7 @@ int main(int argc, char const* argv[])
   std::string s;
   while(std::cin >> s) {
     if (event_map.find(s) == event_map.end()
-    && !dezyne::relaxed)
+    && !dzn::relaxed)
     //throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": no such event: `" + s + "'");
     continue; // valued/vs return thinko
 #if BLOCKING

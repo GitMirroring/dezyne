@@ -4,7 +4,7 @@ import sys
 import os
 sys.path.insert (0, os.path.dirname (sys.argv[0]))
 ##
-import dezyne.#.scope_model
+import dzn.#.scope_model
 import locator
 import runtime
 
@@ -69,7 +69,7 @@ def #.scope_model _fill_event_map (m):
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction port.#event  = lambda *args: #(string-if (eq? return-type 'void) #{log_#direction ('#port .', '#event ', e)#}#{log_valued ('#port .', '#event ', e, lambda s: dezyne.#((om:scope-name) interface) .#reply-name .__dict__.get (drop_prefix(s, '#port .#reply-name _'), None), dezyne.#((om:scope-name) interface) .#reply-name _to_string)#})
+    m.#port .#direction port.#event  = lambda *args: #(string-if (eq? return-type 'void) #{log_#direction ('#port .', '#event ', e)#}#{log_valued ('#port .', '#event ', e, lambda s: dzn.#((om:scope-name) interface) .#reply-name .__dict__.get (drop_prefix(s, '#port .#reply-name _'), None), dzn.#((om:scope-name) interface) .#reply-name _to_string)#})
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))     return e
 
@@ -79,7 +79,7 @@ def main ():
         sys.exit (0)
     loc = locator.Locator ()
     rt = runtime.Runtime (illegal)
-    sut = dezyne.#.scope_model  (loc.set (rt), name='sut')
+    sut = dzn.#.scope_model  (loc.set (rt), name='sut')
 
     event_map = #.scope_model _fill_event_map (sut)
 

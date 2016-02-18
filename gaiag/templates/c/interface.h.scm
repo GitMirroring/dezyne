@@ -1,7 +1,7 @@
 ##ifndef #.INTERFACE _H
 ##define #.INTERFACE _H
 
-##include "runtime.h"
+##include <dzn/runtime.h>
 
 #(->string (map (declare-enum model) (append (om:interface-enums model) (om:enums))))
 

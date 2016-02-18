@@ -1,6 +1,6 @@
 import sys
 #(map (include-interface #{
-import dezyne.#interface
+import dzn.#interface
 #}) (om:ports model))
 import runtime
 from runtime import V
@@ -16,15 +16,15 @@ class #.scope_model  (runtime.Component):
 #})#}) (om:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
-        self.#name  = dezyne.#((om:scope-join) interface)  (provides=runtime.Port ('#name ', self))
+        self.#name  = dzn.#((om:scope-join) interface)  (provides=runtime.Port ('#name ', self))
 #}) (filter om:provides? ((compose .elements .ports) model)))#
     (map (init-port #{
 #(string-if injected?
 #{
-        self.#name  = loc.get (dezyne.#((om:scope-join) interface))
+        self.#name  = loc.get (dzn.#((om:scope-join) interface))
 #}
 #{
-        self.#name  = dezyne.#((om:scope-join) interface)  (requires=runtime.Port ('#name ', self))
+        self.#name  = dzn.#((om:scope-join) interface)  (requires=runtime.Port ('#name ', self))
 #})
 #}) (filter om:requires? ((compose .elements .ports) model)))
 #

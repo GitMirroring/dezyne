@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,8 +22,8 @@
 
 #include "Datasystem.hh"
 
-#include "locator.hh"
-#include "runtime.hh"
+#include <dzn/locator.hh>
+#include <dzn/runtime.hh>
 
 #include <algorithm>
 #include <cassert>
@@ -58,8 +58,8 @@ void a6(int i0, int i1, int i2, int i3, int i4, int i5)
 
 int main()
 {
-  dezyne::locator l;
-  dezyne::runtime rt;
+  dzn::locator l;
+  dzn::runtime rt;
   l.set(rt);
 
   Datasystem sut(l);

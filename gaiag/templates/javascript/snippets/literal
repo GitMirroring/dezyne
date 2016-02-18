@@ -1,1 +1,1 @@
-#(string-if (or (null? scope) (equal? scope (om:scope+name model))) #{this#} #{new dezyne.#((om:scope-join #f '.) scope)()#}).#name .#field
+#(string-if (or (null? scope) (equal? scope (om:scope+name model))) #{this#} #{new dzn.#((om:scope-join #f '.) scope)()#}).#name .#field

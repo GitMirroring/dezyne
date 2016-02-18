@@ -1,14 +1,14 @@
 ##include "#.scope_model .hh"
 
-##include "locator.hh"
-##include "runtime.hh"
+##include <dzn/locator.hh>
+##include <dzn/runtime.hh>
 
 ##include <iostream>
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
-#.model ::#.model (const dezyne::locator& dezyne_locator)
+#.model ::#.model (const dzn::locator& dezyne_locator)
 : dzn_meta("","#.model",0)
-, dzn_rt(dezyne_locator.get<dezyne::runtime>())
+, dzn_rt(dezyne_locator.get<dzn::runtime>())
 , dzn_locator(dezyne_locator)
 , #
 ((->join  "\n, ")
@@ -34,13 +34,13 @@ dzn_rt.performs_flush(this) = true;
 #
    (map
     (lambda (port)
-      (map (define-on model port #{#port .#direction .#event  = boost::bind(&#(string-if (eq? return-type 'void) "dezyne::call_in< " #{dezyne::rcall_in< #(if (null? reply-scope) "" "::")#((c++:scope-join #f) reply-scope)::#reply-name ::type, #})#.model ,::#((c++:scope-name) interface) #comma #((->join ",") formal-types)>,this,boost::function< #return-type(#((->join ",") formal-types))>(boost::bind(&#.model ::#port _#event ,this#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list))))))#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list)))),boost::make_tuple(&#port , "#event ", "return"));
+      (map (define-on model port #{#port .#direction .#event  = boost::bind(&#(string-if (eq? return-type 'void) "dzn::call_in< " #{dzn::rcall_in< #(if (null? reply-scope) "" "::")#((c++:scope-join #f) reply-scope)::#reply-name ::type, #})#.model ,::#((c++:scope-name) interface) #comma #((->join ",") formal-types)>,this,boost::function< #return-type(#((->join ",") formal-types))>(boost::bind(&#.model ::#port _#event ,this#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list))))))#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list)))),boost::make_tuple(&#port , "#event ", "return"));
 #}) (filter om:in? (om:events port))))
     (filter om:provides? (om:ports model)))#
 (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = boost::bind(&dezyne::call_out<#.model , ::#((c++:scope-name) interface) #comma #((->join ",") formal-types)>, this, boost::function< #return-type(#((->join ",") formal-types))>(boost::bind(&#.model ::#port _#event , this #comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list))))))#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list)))), boost::make_tuple(&#port , "#event ", "return"));
+#port .#direction .#event  = boost::bind(&dzn::call_out<#.model , ::#((c++:scope-name) interface) #comma #((->join ",") formal-types)>, this, boost::function< #return-type(#((->join ",") formal-types))>(boost::bind(&#.model ::#port _#event , this #comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list))))))#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list)))), boost::make_tuple(&#port , "#event ", "return"));
 #}) (filter om:out? (om:events port))))
     (filter om:requires? (om:ports model)))
 }
@@ -64,10 +64,10 @@ dzn_rt.performs_flush(this) = true;
 #}) (om:functions model)))
   void #.model ::check_bindings() const
   {
-    dezyne::check_bindings(&dzn_meta);
+    dzn::check_bindings(&dzn_meta);
   }
   void #.model ::dump_tree() const
   {
-    dezyne::dump_tree(&dzn_meta);
+    dzn::dump_tree(&dzn_meta);
   }
 #(map (lambda (x) (list "}\n")) (om:scope model))

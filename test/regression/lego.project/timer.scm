@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,21 +22,21 @@
 ;;; Code:
 
 
-(define-class <dezyne:timer> (<dezyne:component>)
+(define-class <dzn:timer> (<dzn:component>)
   (port :accessor .port :init-value #f))
-(define-method (initialize (o <dezyne:timer>) args)
+(define-method (initialize (o <dzn:timer>) args)
   (next-method)
   (set! (.port o)
-    (make <dezyne:itimer>
-       :in (make <dezyne:itimer.in>
+    (make <dzn:itimer>
+       :in (make <dzn:itimer.in>
               :name 'port
               :self o
               :create (lambda (. args) (call-in o (lambda () (apply port-create (cons o args))) `(,(.port o) create)))
               :cancel (lambda (. args) (call-in o (lambda () (apply port-cancel (cons o args))) `(,(.port o) cancel))))
-       :out (make <dezyne:itimer.out>))))
+       :out (make <dzn:itimer.out>))))
 
-(define-method (port-create (o <dezyne:timer>) ms)
+(define-method (port-create (o <dzn:timer>) ms)
     #t)
 
-(define-method (port-cancel (o <dezyne:timer>) )
+(define-method (port-cancel (o <dzn:timer>) )
     #t)

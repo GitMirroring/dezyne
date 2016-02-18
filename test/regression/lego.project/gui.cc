@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -29,8 +29,8 @@
 
 #include "LegoBallSorter.hh"
 
-#include "runtime.hh"
-#include "locator.hh"
+#include <dzn/runtime.hh>
+#include <dzn/locator.hh>
 
 #if __cplusplus >= 201103L
 
@@ -47,7 +47,7 @@
 namespace gui {
 struct Motor: public Gtk::SpinButton
 {
-  dezyne::meta meta;
+  dzn::meta meta;
 
   int home;
   int end;
@@ -88,7 +88,7 @@ struct Motor: public Gtk::SpinButton
 
 struct Sensor: public Gtk::CheckButton
 {
-  dezyne::meta meta;
+  dzn::meta meta;
 
   Sensor(const char* name)
   : Gtk::CheckButton(name)
@@ -338,7 +338,7 @@ struct timer_impl: public itimer_impl
   itimer& port;
   gui::Lego& lego;
 
-  timer_impl(const dezyne::locator& l)
+  timer_impl(const dzn::locator& l)
   : port(l.get<itimer>())
     , lego(l.get<Lego>())
   {}
@@ -367,12 +367,12 @@ int main(int argc, char* argv[])
 
     // create dezyne system
 
-    dezyne::runtime rt;
-    dezyne::locator loc;
+    dzn::runtime rt;
+    dzn::locator loc;
     loc.set(rt);
     loc.set(lego);
 
-    std::function<std::shared_ptr<itimer_impl>(const dezyne::locator&)> create_timer_impl = [](const dezyne::locator& l){return std::make_shared<gui::timer_impl>(l);};
+    std::function<std::shared_ptr<itimer_impl>(const dzn::locator&)> create_timer_impl = [](const dzn::locator& l){return std::make_shared<gui::timer_impl>(l);};
     loc.set(create_timer_impl);
 
     LegoBallSorter sut(loc);
@@ -440,9 +440,9 @@ void connect(imotor& m, Motor& g)
 
   m.in.move     = [&] (std::int8_t power, std::int32_t position) {
 #if !SHORT_CIRCUIT
-    dezyne::trace_in (std::clog, m.meta, "move");
+    dzn::trace_in (std::clog, m.meta, "move");
     g.target = position;
-    dezyne::trace_out (std::clog, m.meta, "return");
+    dzn::trace_out (std::clog, m.meta, "return");
 #endif
   };
   m.in.run      = [&] (std::int8_t power, bool invert) {
@@ -466,11 +466,11 @@ void connect(itouch& t, Sensor& s)
 
 #if !SHORT_CIRCUIT
   t.in.detect  = [&] {
-    dezyne::trace_in (std::clog, t.meta, "detect");
+    dzn::trace_in (std::clog, t.meta, "detect");
     auto r = s.get_active()
       ? itouch::status::pressed
       : itouch::status::released;
-    dezyne::trace_out (std::clog, t.meta, r == itouch::status::pressed ? "status_pressed" : "status_released");
+    dzn::trace_out (std::clog, t.meta, r == itouch::status::pressed ? "status_pressed" : "status_released");
     return r;
   };
 #else

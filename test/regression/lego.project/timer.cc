@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -23,17 +23,17 @@
 
 #include "timer.hh"
 
-#include "locator.hh"
-#include "runtime.hh"
+#include <dzn/locator.hh>
+#include <dzn/runtime.hh>
 
 #include "itimer_impl.hh"
 
 #include <functional>
 #include <memory>
 
-timer::timer(const dezyne::locator& l)
+timer::timer(const dzn::locator& l)
   : dzn_meta{"","timer",0}
-  , dzn_rt(l.get<dezyne::runtime>())
+  , dzn_rt(l.get<dzn::runtime>())
   , dzn_locator(l)
   , port{{}}
   {
@@ -42,12 +42,12 @@ timer::timer(const dezyne::locator& l)
     port.meta.provides.address = this;
     port.meta.provides.meta = &this->dzn_meta;
 
-    dezyne::locator tmp(l.clone());
+    dzn::locator tmp(l.clone());
     tmp.set(port);
-    auto pimpl = l.get<std::function<std::shared_ptr<itimer_impl>(const dezyne::locator&)>>()(tmp);
+    auto pimpl = l.get<std::function<std::shared_ptr<itimer_impl>(const dzn::locator&)>>()(tmp);
 #ifdef TEST_EVENT
     port.out.timeout = [] {std::clog << "timeout" << std::endl;};
 #endif
-    port.in.create = [=](int ms){dezyne::trace_in(std::clog, port.meta, "create"); pimpl->create(ms); dezyne::trace_out(std::clog, port.meta, "return");};
-    port.in.cancel = [=]{dezyne::trace_in(std::clog, port.meta, "cancel"); pimpl->cancel(); dezyne::trace_out(std::clog, port.meta, "return"); };
+    port.in.create = [=](int ms){dzn::trace_in(std::clog, port.meta, "create"); pimpl->create(ms); dzn::trace_out(std::clog, port.meta, "return");};
+    port.in.cancel = [=]{dzn::trace_in(std::clog, port.meta, "cancel"); pimpl->cancel(); dzn::trace_out(std::clog, port.meta, "return"); };
   }

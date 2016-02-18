@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -22,7 +22,7 @@
 # Code:
 
 import sys
-import dezyne.itimer
+import dzn.itimer
 
 import runtime
 from runtime import V
@@ -32,7 +32,7 @@ class timer (runtime.Component):
     def __init__ (self, loc, name='', parent=None):
         runtime.Component.__init__ (self, loc, name, parent)
         loc.get (runtime.Runtime).flushes (self)
-        self.port = dezyne.itimer (provides=runtime.Port ('port', self))
+        self.port = dzn.itimer (provides=runtime.Port ('port', self))
 
         self.port.inport.create = lambda *args: runtime.call_in (self, lambda: self.port_create (*args), (self.port, 'create'))
         self.port.inport.cancel = lambda *args: runtime.call_in (self, lambda: self.port_cancel (*args), (self.port, 'cancel'))

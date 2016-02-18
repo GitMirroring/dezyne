@@ -1,7 +1,7 @@
 ##include "#.model Component.h"
 
-##include "locator.hh"
-##include "runtime.hh"
+##include <dzn/locator.hh>
+##include <dzn/runtime.hh>
 
 ##include "#.model .hh"
 
@@ -66,7 +66,7 @@ struct #component : public #asd-interface
 #}) ((asd-interfaces om:out?) (om:interface model)))
 boost::shared_ptr<asd::channels::ISingleThreaded> st;
 
-#.model Glue (const dezyne::locator& l)
+#.model Glue (const dzn::locator& l)
 : component(l)
 #(map
   (lambda (mapping-list)
@@ -116,8 +116,8 @@ void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded> st)
 }
 };
 
-dezyne::locator dezyne_locator;
-dezyne::runtime dezyne_runtime;
+dzn::locator dezyne_locator;
+dzn::runtime dezyne_runtime;
 
 boost::shared_ptr<#(om:name (om:port model)) Interface> #.model Component::GetInstance ()
 {

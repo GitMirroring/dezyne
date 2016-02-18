@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,22 +22,22 @@
 //
 // Code:
 
-#include "runtime.hh"
-#include "locator.hh"
+#include <dzn/runtime.hh>
+#include <dzn/locator.hh>
 
 #include "Camera.hh"
 
 #include "Hardware.hh"
 
-namespace dezyne {
+namespace dzn {
   void serve_interrupts();
 }
 
 int main()
 {
   // create runtime infrastructure
-  dezyne::runtime rt;
-  dezyne::locator l;
+  dzn::runtime rt;
+  dzn::locator l;
   l.set(rt);
 
   // create camera component
@@ -50,17 +50,17 @@ int main()
 
   // play the example test trace
   cam.control.in.setup();
-  dezyne::serve_interrupts();
+  dzn::serve_interrupts();
 
   cam.control.in.shoot();
-  dezyne::serve_interrupts();
+  dzn::serve_interrupts();
 }
 
-namespace dezyne
+namespace dzn
 {
   std::map<Hardware*, std::pair<int,bool>> hardware;
   int cnt = 0;
-  Hardware::Hardware(const locator& l): rt(l.get<runtime>()) {
+  Hardware::Hardware(const locator& l): rt(l.get<runtime.hh>()) {
     port.in.kick = [this]{port_kick();};
 	port.in.cancel = [this]{port_cancel();};
     hardware[this].first = cnt++;

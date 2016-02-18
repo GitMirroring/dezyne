@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -149,7 +149,7 @@ function locator(services) {
     return this.services[key] || console.assert ('no such service: ' + key);
   };
   this.clone = function() {
-    return new dezyne.locator(extend({}, this.services));
+    return new dzn.locator(extend({}, this.services));
   };
 };
 
@@ -168,7 +168,7 @@ function component (locator, meta) {
   this.flushes = true;
 }
 
-var dezyne = extend (typeof (dezyne !== 'undefined') && dezyne ? dezyne : {}, {
+var dzn = extend (typeof (dzn !== 'undefined') && dzn ? dzn : {}, {
   component: component,
   connect: connect,
   extend: extend,
@@ -177,5 +177,5 @@ var dezyne = extend (typeof (dezyne !== 'undefined') && dezyne ? dezyne : {}, {
 });
 
 if (typeof (module) !== 'undefined') {
-  module.exports = dezyne;
+  module.exports = dzn;
 }

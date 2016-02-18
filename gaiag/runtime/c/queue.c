@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -21,14 +21,14 @@
 //
 // Code:
 
-#include "queue.h"
+#include <dzn/queue.h>
 
-#include "config.h"
+#include <dzn/config.h>
 
 #include <assert.h>
 #include <stdlib.h>
 
-#include "mem.h"
+#include <dzn/mem.h>
 
 void
 queue_init(queue* self)

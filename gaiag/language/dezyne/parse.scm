@@ -38,7 +38,7 @@
 (define (make-parser)
   (lalr-parser
    (driver: lr)
-   ;;(out-table: "dezyne.out")
+   ;;(out-table: "dzn.out")
    (
     #{{}# #{}}# #{)}# #{]}# #{\;}# : #{,}#
     blocking on namespace #{[}#

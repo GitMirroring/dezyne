@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
@@ -22,8 +23,8 @@
 //
 // Code:
 
-#include "runtime.hh"
-#include "locator.hh"
+#include <dzn/runtime.hh>
+#include <dzn/locator.hh>
 
 #include "Camera.hh"
 
@@ -34,9 +35,9 @@ void serve_interrupts();
 int main()
 {
   // create runtime infrastructure
-  dezyne::locator locator;
-  dezyne::runtime runtime;
-  dezyne::illegal_handler illegal_handler;
+  dzn::locator locator;
+  dzn::runtime runtime;
+  dzn::illegal_handler illegal_handler;
 
   // create camera component
   Camera cam(locator.set(runtime).set(illegal_handler));
@@ -58,8 +59,8 @@ int main()
 
 std::map<Hardware*, std::pair<int,bool>> hardware;
 int cnt = 0;
-Hardware::Hardware(const dezyne::locator& l)
-: dzn_rt(l.get<dezyne::runtime>())
+Hardware::Hardware(const dzn::locator& l)
+: dzn_rt(l.get<dzn::runtime>())
 , dzn_locator(l)
 , port({{"port", this},{}})
 {

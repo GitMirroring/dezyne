@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -330,9 +330,9 @@
 
 (define (main . args)
   (let* ((print-illegal (lambda () (stderr "illegal\n") (exit 0)))
-         (locator (make <dezyne:locator>))
-         (runtime (make <dezyne:runtime> :illegal print-illegal))
-         (sut (make <dezyne:LegoBallSorter> :locator (set locator runtime) :name 'sut))
+         (locator (make <dzn:locator>))
+         (runtime (make <dzn:runtime> :illegal print-illegal))
+         (sut (make <dzn:LegoBallSorter> :locator (set locator runtime) :name 'sut))
          (event-alist (fill-event-alist sut)))
     (while (and-let*
             ((line (read-line))

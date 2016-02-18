@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -23,12 +23,12 @@
 //
 // Code:
 
-#include "runtime.hh"
+#include <dzn/runtime.hh>
 
 #include <algorithm>
 #include <iostream>
 
-namespace dezyne {
+namespace dzn {
 
 runtime::runtime(){}
 
@@ -71,7 +71,7 @@ bool& runtime::performs_flush(void* scope)
 void runtime::flush(void* scope)
 {
 #ifdef DEBUG_RUNTIME
-  std::cout << path(reinterpret_cast<dezyne::meta*>(scope)) << " flush" << std::endl;
+  std::cout << path(reinterpret_cast<dzn::meta*>(scope)) << " flush" << std::endl;
 #endif
   if(!external(scope))
   {
@@ -95,7 +95,7 @@ void runtime::flush(void* scope)
 void runtime::defer(void* src, void* tgt, const std::function<void()>& event)
 {
 #ifdef DEBUG_RUNTIME
-  std::cout << path(reinterpret_cast<dezyne::meta*>(tgt)) << " defer" << std::endl;
+  std::cout << path(reinterpret_cast<dzn::meta*>(tgt)) << " defer" << std::endl;
 #endif
 
   if(!(src && performs_flush(src)) && !handling(tgt))

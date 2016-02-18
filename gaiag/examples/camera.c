@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,8 +22,8 @@
 //
 // Code:
 
-#include "runtime.h"
-#include "locator.h"
+#include <dzn/runtime.h>
+#include <dzn/locator.h>
 
 #include "Camera.h"
 

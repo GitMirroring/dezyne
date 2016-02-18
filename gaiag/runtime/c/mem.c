@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +22,7 @@
 //
 // Code:
 
-#include "mem.h"
+#include <dzn/mem.h>
 
 #include <assert.h>
 

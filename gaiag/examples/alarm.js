@@ -2,7 +2,7 @@
 //
 // This file is part of Gaiag.
 //
-// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // Gaiag is free software: you can redistribute it and/or modify it
@@ -25,39 +25,39 @@
 
 /* handwritten alarm.js */
 
-dezyne.Console = function(locator, meta) {
+dzn.Console = function(locator, meta) {
   this.locator = locator;
-  this.rt = locator.get(dezyne.runtime);
+  this.rt = locator.get(dzn.runtime);
   this.meta = meta;
-  this.console = new dezyne.IConsole({provides: {}, requires: {component: this, name: 'console'}});
+  this.console = new dzn.IConsole({provides: {}, requires: {component: this, name: 'console'}});
   this.console.out.detected = function() {process.stderr.write('Console.detected\n');}
   this.console.out.deactivated = function() {process.stderr.write('Console.deactivated\n');}
 };
 
-dezyne.Sensor = function(locator, meta) {
+dzn.Sensor = function(locator, meta) {
   this.locator = locator;
-  this.rt = locator.get(dezyne.runtime);
+  this.rt = locator.get(dzn.runtime);
   this.meta = meta;
-  this.sensor = new dezyne.ISensor({provides: {component: this, name: 'sensor'}, requires: {}});
+  this.sensor = new dzn.ISensor({provides: {component: this, name: 'sensor'}, requires: {}});
   this.sensor.in.enable = function() {this.rt.call_in(this, function() {}, [this.sensor, 'enable']);}.bind(this);
   this.sensor.in.disable = function() {this.rt.call_in(this, function() {}, [this.sensor, 'disable']);}.bind(this);
 }
 
-dezyne.Siren = function(locator, meta) {
+dzn.Siren = function(locator, meta) {
   this.locator = locator;
-  this.rt = locator.get(dezyne.runtime);
+  this.rt = locator.get(dzn.runtime);
   this.meta = meta;
-  this.siren = new dezyne.ISiren({provides: {component: this, name: 'siren'}, requires: {}});
+  this.siren = new dzn.ISiren({provides: {component: this, name: 'siren'}, requires: {}});
   this.siren.in.turnon = function() {this.rt.call_in(this, function() {}, [this.siren, 'turnon']); }.bind(this);
   this.siren.in.turnoff = function() {this.rt.call_in(this, function() {}, [this.siren, 'turnoff']); }.bind(this);
 }
 
 function main() {
-  var loc = new dezyne.locator();
-  var rt = new dezyne.runtime();
-  var sut = new dezyne.AlarmSystem(loc.set(rt), {name: 'sut'});
-  var gui = new dezyne.Console(loc.set(rt), {name: 'sut'});
-  dezyne.connect(sut.console, gui.console);
+  var loc = new dzn.locator();
+  var rt = new dzn.runtime();
+  var sut = new dzn.AlarmSystem(loc.set(rt), {name: 'sut'});
+  var gui = new dzn.Console(loc.set(rt), {name: 'sut'});
+  dzn.connect(sut.console, gui.console);
 
   sut.console.in.arm();
   sut.sensor.sensor.out.triggered();

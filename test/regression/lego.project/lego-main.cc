@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
@@ -29,11 +29,11 @@
 
 #include "LegoBallSorter.hh"
 
-#include "runtime.hh"
-#include "locator.hh"
+#include <dzn/runtime.hh>
+#include <dzn/locator.hh>
 
 #if __cplusplus >= 201103L
-#include "pump.hh"
+#include <dzn/pump.hh>
 
 #include "lego_usb.hh"
 
@@ -64,12 +64,12 @@ struct timer_impl: public itimer_impl
   static size_t g_id;
   size_t id;
   itimer& port;
-  dezyne::pump& p;
+  dzn::pump& p;
 
-  timer_impl(const dezyne::locator& l)
+  timer_impl(const dzn::locator& l)
   : id(g_id++)
   , port(l.get<itimer>())
-  , p(l.get<dezyne::pump>())
+  , p(l.get<dzn::pump>())
   {}
   void create(int ms)
   {
@@ -139,20 +139,20 @@ int main(int argc, char* argv[])
       }
 
     // create dezyne system
-    dezyne::runtime rt;
-    dezyne::locator loc;
+    dzn::runtime rt;
+    dzn::locator loc;
     loc.set(rt);
 
-    std::unique_ptr<dezyne::pump> tmp1(new dezyne::pump);
+    std::unique_ptr<dzn::pump> tmp1(new dzn::pump);
     loc.set(*tmp1);
 
-    std::function<std::shared_ptr<itimer_impl>(const dezyne::locator&)> create_timer_impl = [](const dezyne::locator& l){return std::make_shared<timer_impl>(l);};
+    std::function<std::shared_ptr<itimer_impl>(const dzn::locator&)> create_timer_impl = [](const dzn::locator& l){return std::make_shared<timer_impl>(l);};
     loc.set(create_timer_impl);
 
     LegoBallSorter sut(loc);
 
-    std::unique_ptr<dezyne::pump> tmp2(std::move(tmp1)); //now the pump is destroyed before the sut is
-    dezyne::pump& pump = *tmp2;
+    std::unique_ptr<dzn::pump> tmp2(std::move(tmp1)); //now the pump is destroyed before the sut is
+    dzn::pump& pump = *tmp2;
 
     sut.dzn_meta.name = "sut";
     sut.ctrl.meta.requires = {"ctrl",0};
@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
 
     sut.check_bindings();
 
-    dezyne::apply(&sut.dzn_meta, [](const dezyne::meta* m){
+    dzn::apply(&sut.dzn_meta, [](const dzn::meta* m){
         std::clog << m->parent << " " << m << " " << m->name << std::endl;
       });
 

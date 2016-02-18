@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,10 +21,10 @@
 ;;; Code:
 
 (define (main args)
-  (let* ((locator (make <dezyne:locator>))
-         (runtime (make <dezyne:runtime>))
-         (sut (make <dezyne:Injected>
+  (let* ((locator (make <dzn:locator>))
+         (runtime (make <dzn:runtime>))
+         (sut (make <dzn:Injected>
                 :locator (set locator runtime)
                 :name 'sut
-                :t.out (make <dezyne:itop.out> :f (lambda () (stderr "f\n"))))))
+                :t.out (make <dzn:itop.out> :f (lambda () (stderr "f\n"))))))
     (action sut .t .in .e)))

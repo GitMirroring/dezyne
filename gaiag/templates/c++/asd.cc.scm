@@ -12,15 +12,15 @@ boost::shared_ptr<asd::channels::ISingleThreaded> g_singlethreaded;
           (->string (list "#include" "\"" interface 'Component.h "\"\n"))))
       (filter om:requires? (om:ports model)))
 
-##include "locator.hh"
-##include "runtime.hh"
+##include <dzn/locator.hh>
+##include <dzn/runtime.hh>
 
 ##include <boost/bind.hpp>
 ##include <boost/enable_shared_from_this.hpp>
 ##include <boost/make_shared.hpp>
 ##include <boost/ref.hpp>
 
-dezyne::locator* g_locator = nullptr;
+dzn::locator* g_locator = nullptr;
 
 #(define mapping->event first)#
 (define mapping->asd-interface second)#
@@ -218,10 +218,10 @@ struct SingleThreaded
 
 struct call_helper
 {
-  const dezyne::port::meta& meta;
+  const dzn::port::meta& meta;
   const char* event;
   std::string reply;
-  call_helper(const dezyne::port::meta& meta, const char* event)
+  call_helper(const dzn::port::meta& meta, const char* event)
   : meta(meta)
   , event(event)
   , reply("return")
@@ -247,8 +247,8 @@ struct call_helper
 };
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
-#.model ::#.model (dezyne::locator& locator)
-: dzn_rt(locator.get<dezyne::runtime>())
+#.model ::#.model (dzn::locator& locator)
+: dzn_rt(locator.get<dzn::runtime>())
 , dzn_locator(locator)
 , #(map (lambda (port) (if (eq? (.direction port) 'provides) (list (.name port) "({{\"" (.name port) "\",this,&dzn_meta},{\"\",0,0}})") (list "\n, " (.name port) "({{\"\",0,0},{\"" (.name port)"\",this,&dzn_meta}})"))) ((compose .elements .ports) model))
 {

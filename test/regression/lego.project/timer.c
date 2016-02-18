@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,8 +23,8 @@
 #include "timer.h"
 #include "itimer_impl.h"
 
-#include "locator.h"
-#include "runtime.h"
+#include <dzn/locator.h>
+#include <dzn/runtime.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,7 +1,6 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,8 +24,8 @@
 #ifndef RUNTIME_HH
 #define RUNTIME_HH
 
-#include "meta.hh"
-#include "locator.hh"
+#include <dzn/meta.hh>
+#include <dzn/locator.hh>
 
 #include <boost/tuple/tuple.hpp>
 
@@ -39,7 +38,7 @@
 inline char const* to_string(bool b){return b ? "true" : "false";}
 inline bool to__bool(std::string s){return s == "true";}
 
-namespace dezyne
+namespace dzn
 {
   void trace_in(std::ostream&, port::meta const&, const char*);
   void trace_out(std::ostream&, port::meta const&, const char*);
@@ -63,7 +62,7 @@ namespace dezyne
 
   inline void check_bindings(const meta* m)
   {
-    dezyne::apply(m, check_bindings_helper);
+    dzn::apply(m, check_bindings_helper);
   }
 
   inline void dump_tree_helper(const meta* m)
@@ -73,7 +72,7 @@ namespace dezyne
 
   inline void dump_tree(const meta* m)
   {
-    dezyne::apply(m, dump_tree_helper);
+    dzn::apply(m, dump_tree_helper);
   }
 
   struct runtime

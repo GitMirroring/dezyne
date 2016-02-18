@@ -1,8 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,8 +21,8 @@
 //
 // Code:
 
-#ifndef DEZYNE_LOCATOR_HH
-#define DEZYNE_LOCATOR_HH
+#ifndef LOCATOR_HH
+#define LOCATOR_HH
 
 #include <iostream>
 #include <map>
@@ -32,20 +30,20 @@
 #include <string>
 #include <typeinfo>
 
-namespace dezyne {
+namespace dzn {
 struct locator
 {
 private:
   typedef std::string Key;
   struct type_info
   {
-    const std::type_info* type;
+    const std::type_info* t;
     type_info(const std::type_info& t)
-    : type(&t)
+    : t(&t)
     {}
     bool operator < (const type_info& that) const
     {
-      return type->before(*that.type);
+      return t->before(*that.t);
     }
   };
   std::map<std::pair<Key,type_info>, const void*> services;
@@ -67,7 +65,7 @@ public:
   template <typename T>
   T* try_get(const Key& key = Key()) const
   {
-    auto it = services.find(std::make_pair(key,type_info(typeid(T))));
+    std::map<std::pair<Key,type_info>, const void*>::const_iterator it = services.find(std::make_pair(key,type_info(typeid(T))));
     if(it != services.end() && it->second)
       return reinterpret_cast<T*>(const_cast<void*>(it->second));
     return 0;
@@ -81,4 +79,4 @@ public:
   }
 };
 }
-#endif //DEZYNE_LOCATOR_HH
+#endif

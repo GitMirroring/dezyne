@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,8 +22,8 @@
 
 #include "Injected.hh"
 
-#include "locator.hh"
-#include "runtime.hh"
+#include <dzn/locator.hh>
+#include <dzn/runtime.hh>
 
 #include <iostream>
 
@@ -34,8 +34,8 @@ void f()
 
 int main()
 {
-  dezyne::locator l;
-  dezyne::runtime rt;
+  dzn::locator l;
+  dzn::runtime rt;
   l.set(rt);
 
   Injected sut(l);

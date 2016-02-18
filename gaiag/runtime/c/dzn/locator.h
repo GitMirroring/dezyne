@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -20,10 +21,10 @@
 //
 // Code:
 
-#ifndef LOCATOR_H
-#define LOCATOR_H
+#ifndef DZN_LOCATOR_H
+#define DZN_LOCATOR_H
 
-#include "runtime.h"
+#include <dzn/runtime.h>
 
 typedef struct locator locator;
 struct locator {
@@ -38,4 +39,4 @@ locator* locator_clone(locator* self);
 void* locator_get(locator* self, char* key);
 locator* locator_set(locator* self, char* key, void* value);
 
-#endif // LOCATOR_H
+#endif // DZN_LOCATOR_H

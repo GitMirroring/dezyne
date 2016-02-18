@@ -24,7 +24,7 @@
 #! /usr/bin/env node
 
 var dezyne = typeof (dezyne) !== undefined && dezyne ? dezyne : require (__dirname + '/dezyne/runtime');
-dezyne.extend (dezyne, require (__dirname + '/dezyne/LegoBallSorter'));
+dzn.extend (dezyne, require (__dirname + '/dezyne/LegoBallSorter'));
 
 config = {
   get: function(x) { return 0; }
@@ -96,92 +96,92 @@ function LegoBallSorter_fill_event_map(m)
   m.brick1_aA.in.coast = function() {log_in('brick1_aA.', 'coast', e);};
   m.brick1_aA.in.zero = function() {log_in('brick1_aA.', 'zero', e);};
   m.brick1_aA.in.position = function() {log_in('brick1_aA.', 'position', e);};
-  m.brick1_aA.in.at = function() {return log_valued('brick1_aA.', 'at', e, function(s) {return new dezyne.imotor().result_t[drop_prefix(s, 'brick1_aA.result_t_')];}, new dezyne.imotor().result_t_to_string)};
+  m.brick1_aA.in.at = function() {return log_valued('brick1_aA.', 'at', e, function(s) {return new dzn.imotor().result_t[drop_prefix(s, 'brick1_aA.result_t_')];}, new dzn.imotor().result_t_to_string)};
   m.brick1_aB.in.move = function() {log_in('brick1_aB.', 'move', e);};
   m.brick1_aB.in.run = function() {log_in('brick1_aB.', 'run', e);};
   m.brick1_aB.in.stop = function() {log_in('brick1_aB.', 'stop', e);};
   m.brick1_aB.in.coast = function() {log_in('brick1_aB.', 'coast', e);};
   m.brick1_aB.in.zero = function() {log_in('brick1_aB.', 'zero', e);};
   m.brick1_aB.in.position = function() {log_in('brick1_aB.', 'position', e);};
-  m.brick1_aB.in.at = function() {return log_valued('brick1_aB.', 'at', e, function(s) {return new dezyne.imotor().result_t[drop_prefix(s, 'brick1_aB.result_t_')];}, new dezyne.imotor().result_t_to_string)};
+  m.brick1_aB.in.at = function() {return log_valued('brick1_aB.', 'at', e, function(s) {return new dzn.imotor().result_t[drop_prefix(s, 'brick1_aB.result_t_')];}, new dzn.imotor().result_t_to_string)};
   m.brick1_aC.in.move = function() {log_in('brick1_aC.', 'move', e);};
   m.brick1_aC.in.run = function() {log_in('brick1_aC.', 'run', e);};
   m.brick1_aC.in.stop = function() {log_in('brick1_aC.', 'stop', e);};
   m.brick1_aC.in.coast = function() {log_in('brick1_aC.', 'coast', e);};
   m.brick1_aC.in.zero = function() {log_in('brick1_aC.', 'zero', e);};
   m.brick1_aC.in.position = function() {log_in('brick1_aC.', 'position', e);};
-  m.brick1_aC.in.at = function() {return log_valued('brick1_aC.', 'at', e, function(s) {return new dezyne.imotor().result_t[drop_prefix(s, 'brick1_aC.result_t_')];}, new dezyne.imotor().result_t_to_string)};
-  m.brick1_s1.in.detect = function() {return log_valued('brick1_s1.', 'detect', e, function(s) {return new dezyne.itouch().status[drop_prefix(s, 'brick1_s1.status_')];}, new dezyne.itouch().status_to_string)};
-  m.brick1_s2.in.detect = function() {return log_valued('brick1_s2.', 'detect', e, function(s) {return new dezyne.itouch().status[drop_prefix(s, 'brick1_s2.status_')];}, new dezyne.itouch().status_to_string)};
-  m.brick1_s3.in.detect = function() {return log_valued('brick1_s3.', 'detect', e, function(s) {return new dezyne.itouch().status[drop_prefix(s, 'brick1_s3.status_')];}, new dezyne.itouch().status_to_string)};
-  m.brick1_s4.in.detect = function() {return log_valued('brick1_s4.', 'detect', e, function(s) {return new dezyne.itouch().status[drop_prefix(s, 'brick1_s4.status_')];}, new dezyne.itouch().status_to_string)};
+  m.brick1_aC.in.at = function() {return log_valued('brick1_aC.', 'at', e, function(s) {return new dzn.imotor().result_t[drop_prefix(s, 'brick1_aC.result_t_')];}, new dzn.imotor().result_t_to_string)};
+  m.brick1_s1.in.detect = function() {return log_valued('brick1_s1.', 'detect', e, function(s) {return new dzn.itouch().status[drop_prefix(s, 'brick1_s1.status_')];}, new dzn.itouch().status_to_string)};
+  m.brick1_s2.in.detect = function() {return log_valued('brick1_s2.', 'detect', e, function(s) {return new dzn.itouch().status[drop_prefix(s, 'brick1_s2.status_')];}, new dzn.itouch().status_to_string)};
+  m.brick1_s3.in.detect = function() {return log_valued('brick1_s3.', 'detect', e, function(s) {return new dzn.itouch().status[drop_prefix(s, 'brick1_s3.status_')];}, new dzn.itouch().status_to_string)};
+  m.brick1_s4.in.detect = function() {return log_valued('brick1_s4.', 'detect', e, function(s) {return new dzn.itouch().status[drop_prefix(s, 'brick1_s4.status_')];}, new dzn.itouch().status_to_string)};
   m.brick2_aA.in.move = function() {log_in('brick2_aA.', 'move', e);};
   m.brick2_aA.in.run = function() {log_in('brick2_aA.', 'run', e);};
   m.brick2_aA.in.stop = function() {log_in('brick2_aA.', 'stop', e);};
   m.brick2_aA.in.coast = function() {log_in('brick2_aA.', 'coast', e);};
   m.brick2_aA.in.zero = function() {log_in('brick2_aA.', 'zero', e);};
   m.brick2_aA.in.position = function() {log_in('brick2_aA.', 'position', e);};
-  m.brick2_aA.in.at = function() {return log_valued('brick2_aA.', 'at', e, function(s) {return new dezyne.imotor().result_t[drop_prefix(s, 'brick2_aA.result_t_')];}, new dezyne.imotor().result_t_to_string)};
+  m.brick2_aA.in.at = function() {return log_valued('brick2_aA.', 'at', e, function(s) {return new dzn.imotor().result_t[drop_prefix(s, 'brick2_aA.result_t_')];}, new dzn.imotor().result_t_to_string)};
   m.brick2_aB.in.move = function() {log_in('brick2_aB.', 'move', e);};
   m.brick2_aB.in.run = function() {log_in('brick2_aB.', 'run', e);};
   m.brick2_aB.in.stop = function() {log_in('brick2_aB.', 'stop', e);};
   m.brick2_aB.in.coast = function() {log_in('brick2_aB.', 'coast', e);};
   m.brick2_aB.in.zero = function() {log_in('brick2_aB.', 'zero', e);};
   m.brick2_aB.in.position = function() {log_in('brick2_aB.', 'position', e);};
-  m.brick2_aB.in.at = function() {return log_valued('brick2_aB.', 'at', e, function(s) {return new dezyne.imotor().result_t[drop_prefix(s, 'brick2_aB.result_t_')];}, new dezyne.imotor().result_t_to_string)};
-  m.brick2_s2.in.detect = function() {return log_valued('brick2_s2.', 'detect', e, function(s) {return new dezyne.itouch().status[drop_prefix(s, 'brick2_s2.status_')];}, new dezyne.itouch().status_to_string)};
-  m.brick2_s3.in.detect = function() {return log_valued('brick2_s3.', 'detect', e, function(s) {return new dezyne.itouch().status[drop_prefix(s, 'brick2_s3.status_')];}, new dezyne.itouch().status_to_string)};
-  m.brick2_s4.in.detect = function() {return log_valued('brick2_s4.', 'detect', e, function(s) {return new dezyne.itouch().status[drop_prefix(s, 'brick2_s4.status_')];}, new dezyne.itouch().status_to_string)};
+  m.brick2_aB.in.at = function() {return log_valued('brick2_aB.', 'at', e, function(s) {return new dzn.imotor().result_t[drop_prefix(s, 'brick2_aB.result_t_')];}, new dzn.imotor().result_t_to_string)};
+  m.brick2_s2.in.detect = function() {return log_valued('brick2_s2.', 'detect', e, function(s) {return new dzn.itouch().status[drop_prefix(s, 'brick2_s2.status_')];}, new dzn.itouch().status_to_string)};
+  m.brick2_s3.in.detect = function() {return log_valued('brick2_s3.', 'detect', e, function(s) {return new dzn.itouch().status[drop_prefix(s, 'brick2_s3.status_')];}, new dzn.itouch().status_to_string)};
+  m.brick2_s4.in.detect = function() {return log_valued('brick2_s4.', 'detect', e, function(s) {return new dzn.itouch().status[drop_prefix(s, 'brick2_s4.status_')];}, new dzn.itouch().status_to_string)};
   m.brick3_aA.in.move = function() {log_in('brick3_aA.', 'move', e);};
   m.brick3_aA.in.run = function() {log_in('brick3_aA.', 'run', e);};
   m.brick3_aA.in.stop = function() {log_in('brick3_aA.', 'stop', e);};
   m.brick3_aA.in.coast = function() {log_in('brick3_aA.', 'coast', e);};
   m.brick3_aA.in.zero = function() {log_in('brick3_aA.', 'zero', e);};
   m.brick3_aA.in.position = function() {log_in('brick3_aA.', 'position', e);};
-  m.brick3_aA.in.at = function() {return log_valued('brick3_aA.', 'at', e, function(s) {return new dezyne.imotor().result_t[drop_prefix(s, 'brick3_aA.result_t_')];}, new dezyne.imotor().result_t_to_string)};
+  m.brick3_aA.in.at = function() {return log_valued('brick3_aA.', 'at', e, function(s) {return new dzn.imotor().result_t[drop_prefix(s, 'brick3_aA.result_t_')];}, new dzn.imotor().result_t_to_string)};
   m.brick3_aC.in.move = function() {log_in('brick3_aC.', 'move', e);};
   m.brick3_aC.in.run = function() {log_in('brick3_aC.', 'run', e);};
   m.brick3_aC.in.stop = function() {log_in('brick3_aC.', 'stop', e);};
   m.brick3_aC.in.coast = function() {log_in('brick3_aC.', 'coast', e);};
   m.brick3_aC.in.zero = function() {log_in('brick3_aC.', 'zero', e);};
   m.brick3_aC.in.position = function() {log_in('brick3_aC.', 'position', e);};
-  m.brick3_aC.in.at = function() {return log_valued('brick3_aC.', 'at', e, function(s) {return new dezyne.imotor().result_t[drop_prefix(s, 'brick3_aC.result_t_')];}, new dezyne.imotor().result_t_to_string)};
+  m.brick3_aC.in.at = function() {return log_valued('brick3_aC.', 'at', e, function(s) {return new dzn.imotor().result_t[drop_prefix(s, 'brick3_aC.result_t_')];}, new dzn.imotor().result_t_to_string)};
   m.brick3_s1.in.turnon = function() {log_in('brick3_s1.', 'turnon', e);};
   m.brick3_s1.in.turnoff = function() {log_in('brick3_s1.', 'turnoff', e);};
-  m.brick3_s1.in.detect = function() {return log_valued('brick3_s1.', 'detect', e, function(s) {return new dezyne.ilight().status[drop_prefix(s, 'brick3_s1.status_')];}, new dezyne.ilight().status_to_string)};
-  m.brick3_s2.in.detect = function() {return log_valued('brick3_s2.', 'detect', e, function(s) {return new dezyne.itouch().status[drop_prefix(s, 'brick3_s2.status_')];}, new dezyne.itouch().status_to_string)};
-  m.brick3_s3.in.detect = function() {return log_valued('brick3_s3.', 'detect', e, function(s) {return new dezyne.itouch().status[drop_prefix(s, 'brick3_s3.status_')];}, new dezyne.itouch().status_to_string)};
+  m.brick3_s1.in.detect = function() {return log_valued('brick3_s1.', 'detect', e, function(s) {return new dzn.ilight().status[drop_prefix(s, 'brick3_s1.status_')];}, new dzn.ilight().status_to_string)};
+  m.brick3_s2.in.detect = function() {return log_valued('brick3_s2.', 'detect', e, function(s) {return new dzn.itouch().status[drop_prefix(s, 'brick3_s2.status_')];}, new dzn.itouch().status_to_string)};
+  m.brick3_s3.in.detect = function() {return log_valued('brick3_s3.', 'detect', e, function(s) {return new dzn.itouch().status[drop_prefix(s, 'brick3_s3.status_')];}, new dzn.itouch().status_to_string)};
   m.brick4_aA.in.move = function() {log_in('brick4_aA.', 'move', e);};
   m.brick4_aA.in.run = function() {log_in('brick4_aA.', 'run', e);};
   m.brick4_aA.in.stop = function() {log_in('brick4_aA.', 'stop', e);};
   m.brick4_aA.in.coast = function() {log_in('brick4_aA.', 'coast', e);};
   m.brick4_aA.in.zero = function() {log_in('brick4_aA.', 'zero', e);};
   m.brick4_aA.in.position = function() {log_in('brick4_aA.', 'position', e);};
-  m.brick4_aA.in.at = function() {return log_valued('brick4_aA.', 'at', e, function(s) {return new dezyne.imotor().result_t[drop_prefix(s, 'brick4_aA.result_t_')];}, new dezyne.imotor().result_t_to_string)};
+  m.brick4_aA.in.at = function() {return log_valued('brick4_aA.', 'at', e, function(s) {return new dzn.imotor().result_t[drop_prefix(s, 'brick4_aA.result_t_')];}, new dzn.imotor().result_t_to_string)};
   m.brick4_aB.in.move = function() {log_in('brick4_aB.', 'move', e);};
   m.brick4_aB.in.run = function() {log_in('brick4_aB.', 'run', e);};
   m.brick4_aB.in.stop = function() {log_in('brick4_aB.', 'stop', e);};
   m.brick4_aB.in.coast = function() {log_in('brick4_aB.', 'coast', e);};
   m.brick4_aB.in.zero = function() {log_in('brick4_aB.', 'zero', e);};
   m.brick4_aB.in.position = function() {log_in('brick4_aB.', 'position', e);};
-  m.brick4_aB.in.at = function() {return log_valued('brick4_aB.', 'at', e, function(s) {return new dezyne.imotor().result_t[drop_prefix(s, 'brick4_aB.result_t_')];}, new dezyne.imotor().result_t_to_string)};
+  m.brick4_aB.in.at = function() {return log_valued('brick4_aB.', 'at', e, function(s) {return new dzn.imotor().result_t[drop_prefix(s, 'brick4_aB.result_t_')];}, new dzn.imotor().result_t_to_string)};
   m.brick4_aC.in.move = function() {log_in('brick4_aC.', 'move', e);};
   m.brick4_aC.in.run = function() {log_in('brick4_aC.', 'run', e);};
   m.brick4_aC.in.stop = function() {log_in('brick4_aC.', 'stop', e);};
   m.brick4_aC.in.coast = function() {log_in('brick4_aC.', 'coast', e);};
   m.brick4_aC.in.zero = function() {log_in('brick4_aC.', 'zero', e);};
   m.brick4_aC.in.position = function() {log_in('brick4_aC.', 'position', e);};
-  m.brick4_aC.in.at = function() {return log_valued('brick4_aC.', 'at', e, function(s) {return new dezyne.imotor().result_t[drop_prefix(s, 'brick4_aC.result_t_')];}, new dezyne.imotor().result_t_to_string)};
-  m.brick4_s1.in.detect = function() {return log_valued('brick4_s1.', 'detect', e, function(s) {return new dezyne.itouch().status[drop_prefix(s, 'brick4_s1.status_')];}, new dezyne.itouch().status_to_string)};
-  m.brick4_s2.in.detect = function() {return log_valued('brick4_s2.', 'detect', e, function(s) {return new dezyne.itouch().status[drop_prefix(s, 'brick4_s2.status_')];}, new dezyne.itouch().status_to_string)};
-  m.brick4_s3.in.detect = function() {return log_valued('brick4_s3.', 'detect', e, function(s) {return new dezyne.itouch().status[drop_prefix(s, 'brick4_s3.status_')];}, new dezyne.itouch().status_to_string)};
+  m.brick4_aC.in.at = function() {return log_valued('brick4_aC.', 'at', e, function(s) {return new dzn.imotor().result_t[drop_prefix(s, 'brick4_aC.result_t_')];}, new dzn.imotor().result_t_to_string)};
+  m.brick4_s1.in.detect = function() {return log_valued('brick4_s1.', 'detect', e, function(s) {return new dzn.itouch().status[drop_prefix(s, 'brick4_s1.status_')];}, new dzn.itouch().status_to_string)};
+  m.brick4_s2.in.detect = function() {return log_valued('brick4_s2.', 'detect', e, function(s) {return new dzn.itouch().status[drop_prefix(s, 'brick4_s2.status_')];}, new dzn.itouch().status_to_string)};
+  m.brick4_s3.in.detect = function() {return log_valued('brick4_s3.', 'detect', e, function(s) {return new dzn.itouch().status[drop_prefix(s, 'brick4_s3.status_')];}, new dzn.itouch().status_to_string)};
   return e;
 }
 
 function main () {
-  var loc = new dezyne.locator();
-  var rt = new dezyne.runtime(function() {console.error("illegal");process.exit(0);});
-  var sut = new dezyne.LegoBallSorter(loc.set(rt), {name: 'sut'});
+  var loc = new dzn.locator();
+  var rt = new dzn.runtime(function() {console.error("illegal");process.exit(0);});
+  var sut = new dzn.LegoBallSorter(loc.set(rt), {name: 'sut'});
 
   var event_map = LegoBallSorter_fill_event_map(sut);
 

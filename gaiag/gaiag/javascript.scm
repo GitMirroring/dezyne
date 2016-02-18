@@ -38,13 +38,13 @@
 (define ast-> ast:code)
 
 (define (javascript:namespace model)
-  ((->join ".") (cons 'dezyne (om:scope model))))
+  ((->join ".") (cons 'dzn (om:scope model))))
 
 (define (javascript:preamble model)
   (->string
    "dzn_require = typeof (require) !== 'undefined' ? require : function () {return {};};\n"
-   "dezyne = typeof (dezyne) !== 'undefined' ? dezyne : require (__dirname + '/runtime');\n"
-   (let loop ((todo (cons 'dezyne (om:scope model))) (namespace '()))
+   "dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');\n"
+   (let loop ((todo (cons 'dzn (om:scope model))) (namespace '()))
      (if (null? todo) '()
          (let* ((namespace (append namespace (list (car todo))))
                 (o ((->join ".") namespace)))

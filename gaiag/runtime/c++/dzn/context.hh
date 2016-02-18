@@ -1,7 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,8 +21,8 @@
 //
 // Code:
 
-#ifndef DEZYNE_CONTEXT_HH
-#define DEZYNE_CONTEXT_HH
+#ifndef DZN_CONTEXT_HH
+#define DZN_CONTEXT_HH
 
 #include <cassert>
 #include <condition_variable>
@@ -32,7 +31,7 @@
 #include <stdexcept>
 #include <thread>
 
-namespace dezyne
+namespace dzn
 {
 class context
 {
@@ -189,4 +188,4 @@ private:
 };
 }
 
-#endif //DEZYNE_CONTEXT_HH
+#endif //DZN_CONTEXT_HH

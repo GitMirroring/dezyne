@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,8 +29,8 @@
  * Modified by Pete Warden to fix a serious performance problem, support strings as keys
  * and removed thread synchronization - http://petewarden.typepad.com
  */
-#ifndef MAP_H
-#define MAP_H
+#ifndef DZN_MAP_H
+#define DZN_MAP_H
 
 #define MAP_MISSING -3  /* No such element */
 #define MAP_FULL -2 	/* Map is full */
@@ -95,4 +96,4 @@ extern void map_free(map* self);
  */
 extern int map_length(map* self);
 
-#endif // MAP_H
+#endif /* DZN_MAP_H */

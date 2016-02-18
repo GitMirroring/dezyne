@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -32,15 +33,15 @@
 #include"SirenComponent.h"
 
 
-#include "locator.hh"
-#include "runtime.hh"
+#include <dzn/locator.hh>
+#include <dzn/runtime.hh>
 
 #include <boost/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/ref.hpp>
 
-dezyne::locator* g_locator = nullptr;
+dzn::locator* g_locator = nullptr;
 
 
 
@@ -178,10 +179,10 @@ struct SingleThreaded
 
 struct call_helper
 {
-  const dezyne::port::meta& meta;
+  const dzn::port::meta& meta;
   const char* event;
   std::string reply;
-  call_helper(const dezyne::port::meta& meta, const char* event)
+  call_helper(const dzn::port::meta& meta, const char* event)
   : meta(meta)
   , event(event)
   , reply("return")
@@ -207,8 +208,8 @@ struct call_helper
 };
 
 
-AlarmSystemComp::AlarmSystemComp(dezyne::locator& locator)
-: dzn_rt(locator.get<dezyne::runtime>())
+AlarmSystemComp::AlarmSystemComp(dzn::locator& locator)
+: dzn_rt(locator.get<dzn::runtime>())
 , dzn_locator(locator)
 , console({{"console",this,&dzn_meta},{"",0,0}})
 , sensor({{"",0,0},{"sensor",this,&dzn_meta}})

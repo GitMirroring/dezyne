@@ -55,22 +55,17 @@ endif
 ifeq ($(strip $(DZN_HELLO)),hello)
 # list runtime only once for each language
 LOCAL_RUNTIME:=$($(LOCAL_LANGUAGE)_RUNTIME)
-LOCAL_RUNTIME_DEZYNE:=$($(LOCAL_LANGUAGE)_RUNTIME_DEZYNE)
 ifeq ($($(LOCAL_LANGUAGE)_RUNTIME),)
 ifeq ($(wildcard $(DEVELOPMENT)/gaiag),)
-$(LOCAL_LANGUAGE)_RUNTIME:=$(filter-out makefile $(notdir $(LOCAL_SOURCE_FILES)),$(shell $(DZN) ls /share/runtime/$(LOCAL_LANGUAGE)))
+$(LOCAL_LANGUAGE)_RUNTIME:=\
+ $(filter-out makefile %/ $(notdir $(LOCAL_SOURCE_FILES)),$(shell $(DZN) ls /share/runtime/$(LOCAL_LANGUAGE)))\
+ $(patsubst %,dzn/%,$(filter-out makefile %/ $(notdir $(LOCAL_SOURCE_FILES)),$(shell $(DZN) ls /share/runtime/$(LOCAL_LANGUAGE)/dzn)))
 else
-$(LOCAL_LANGUAGE)_RUNTIME:=$(filter-out makefile $(notdir $(LOCAL_SOURCE_FILES)),$(shell ls -1F $(DEVELOPMENT)/gaiag/runtime/$(LOCAL_LANGUAGE)))
+$(LOCAL_LANGUAGE)_RUNTIME:=\
+  $(filter-out makefile %/ $(notdir $(LOCAL_SOURCE_FILES)),$(shell ls -1F $(DEVELOPMENT)/gaiag/runtime/$(LOCAL_LANGUAGE)))\
+  $(patsubst %,dzn/%,$(filter-out makefile %/ $(notdir $(LOCAL_SOURCE_FILES)),$(shell ls -1F $(DEVELOPMENT)/gaiag/runtime/$(LOCAL_LANGUAGE)/dzn)))
 endif
 LOCAL_RUNTIME:=$($(LOCAL_LANGUAGE)_RUNTIME)
-ifeq ($(filter dezyne/,$(LOCAL_RUNTIME)),dezyne/)
-ifeq ($(wildcard $(DEVELOPMENT)/gaiag),)
-$(LOCAL_LANGUAGE)_RUNTIME_DEZYNE:=$(shell $(DZN) ls /share/runtime/$(LOCAL_LANGUAGE)/dezyne)
-else
-$(LOCAL_LANGUAGE)_RUNTIME_DEZYNE:=$(shell ls -1F $(DEVELOPMENT)/gaiag/runtime/$(LOCAL_LANGUAGE)/dezyne)
-endif
-LOCAL_RUNTIME_DEZYNE:=$($(LOCAL_LANGUAGE)_RUNTIME_DEZYNE)
-endif
 endif
 endif
 
@@ -129,26 +124,12 @@ $(LOCAL_OUT)/$(1): LOCAL_LANGUAGE:=$$(LOCAL_LANGUAGE)
 $(LOCAL_OUT)/$(1): LOCAL_OUT:=$$(LOCAL_OUT)
 $(LOCAL_OUT)/$(1): LOCAL_RUNTIME:=$$(LOCAL_RUNTIME)
 $(LOCAL_OUT)/$(1):
-	mkdir -p $(LOCAL_OUT)
+	@mkdir -p $$(LOCAL_OUT)/$$(dir $(1))
 	@rm -f $$@
 ifeq ($(wildcard $(DEVELOPMENT)/gaiag),)
-	$(DZN) cat /share/runtime/$(LOCAL_LANGUAGE)/$$(notdir $$@) > $$@
+	$(DZN) cat /share/runtime/$(LOCAL_LANGUAGE)/$(1) > $$@
 else
-	ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LOCAL_LANGUAGE)/$$(notdir $$@) $$@
-endif
-endef
-
-define RUNTIME_DEZYNE.rule
-$(LOCAL_OUT)/dezyne/$(1): LOCAL_LANGUAGE:=$$(LOCAL_LANGUAGE)
-$(LOCAL_OUT)/dezyne/$(1): LOCAL_OUT:=$$(LOCAL_OUT)
-$(LOCAL_OUT)/dezyne/$(1): LOCAL_RUNTIME:=$$(LOCAL_RUNTIME)
-$(LOCAL_OUT)/dezyne/$(1):
-	mkdir -p $(LOCAL_OUT)/dezyne
-	@rm -f $$@
-ifeq ($(wildcard $(DEVELOPMENT)/gaiag),)
-	$(DZN) cat /share/runtime/$(LOCAL_LANGUAGE)/dezyne/$$(notdir $$@) > $$@
-else
-	ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LOCAL_LANGUAGE)/dezyne/$$(notdir $$@) $$@
+	ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LOCAL_LANGUAGE)/$(1) $$@
 endif
 endef
 
@@ -159,7 +140,6 @@ $(1).o: $$(LOCAL_RUNTIME_HEADERS:%=$$(LOCAL_OUT)/%)
 endef
 
 $(foreach i,$(LOCAL_RUNTIME),$(eval $(call RUNTIME.rule,$(i))))
-$(foreach i,$(LOCAL_RUNTIME_DEZYNE),$(eval $(call RUNTIME_DEZYNE.rule,$(i))))
 $(foreach i,$(LOCAL_RUNTIME_SOURCES:%=$(LOCAL_OUT)/%),$(eval $(call RUNTIME_SOURCE.dep,$(basename $(i)))))
 $(foreach i,$(LOCAL_O_FILES),$(eval $(call RUNTIME_SOURCE.dep,$(basename $(i)))))
 
@@ -181,16 +161,13 @@ endif
 
 runtime-clean-$(LOCAL_TARGET): LOCAL_OUT:=$(LOCAL_OUT)
 runtime-clean-$(LOCAL_TARGET): LOCAL_RUNTIME:=$(LOCAL_RUNTIME)
-runtime-clean-$(LOCAL_TARGET): LOCAL_RUNTIME_DEZYNE:=$(LOCAL_RUNTIME_DEZYNE)
 runtime-clean-$(LOCAL_TARGET):
 	echo cleaning runtime $(LOCAL_OUT)
-	rm -f $(LOCAL_RUNTIME:%=$(LOCAL_OUT)/%) $(LOCAL_RUNTIME_DEZYNE:%=$(LOCAL_OUT)/dezyne/%)
+	rm -f $(LOCAL_RUNTIME:%=$(LOCAL_OUT)/%)
 
 runtime-clean: runtime-clean-$(LOCAL_TARGET)
 
 $(LOCAL_TARGET): LOCAL_DZN_FILES:=$(LOCAL_DZN_FILES)
 $(LOCAL_TARGET): LOCAL_RUNTIME_HEADERS:=$(LOCAL_RUNTIME_HEADERS)
-$(LOCAL_TARGET): LOCAL_RUNTIME_DEZYNE:=$(LOCAL_RUNTIME_DEZYNE)
 all: LOCAL_DZN_FILES:=$(LOCAL_DZN_FILES)
 all: LOCAL_RUNTIME:=$(LOCAL_RUNTIME)
-all: LOCAL_RUNTIME_DEZYNE:=$(LOCAL_RUNTIME_DEZYNE)

@@ -1,12 +1,12 @@
 
-##include "runtime.hh"
-##include "locator.hh"
+##include <dzn/runtime.hh>
+##include <dzn/locator.hh>
 
 ##include "#.scope_model .hh"
 
 ##include <iostream>
 
-namespace dezyne
+namespace dzn
 {
  static bool relaxed = false;
  typedef std::map<std::string, boost::function<void()> > event_map;
@@ -38,7 +38,7 @@ namespace dezyne
     std::clog << prefix << event << std::endl;
   }
 
-  void log_flush(dezyne::runtime& rt, dezyne::port::meta& meta, std::string name)
+  void log_flush(dzn::runtime& rt, dzn::port::meta& meta, std::string name)
   {
     std::clog << name << ".<flush>" << std::endl;
     rt.flush(meta.provides.address);
@@ -100,22 +100,22 @@ void illegal_handler()
 
 int main()
 {
-  dezyne::locator l;
-  dezyne::runtime rt;
+  dzn::locator l;
+  dzn::runtime rt;
   l.set(rt);
 
-  dezyne::illegal_handler ih;
+  dzn::illegal_handler ih;
   ih.illegal = illegal_handler;
   l.set(ih);
 
-  dezyne::event_map event_map;
+  dzn::event_map event_map;
   #((om:scope-name (string->symbol "::")) model)  sut(l);
   sut.dzn_meta.name = "sut";
 
-  dezyne::component c;
+  dzn::component c;
   c.dzn_meta.parent = 0;
   c.dzn_meta.name = "<internal>";
-  dezyne::fill_event_map(rt, &c, sut, event_map);
+  dzn::fill_event_map(rt, &c, sut, event_map);
 
   sut.check_bindings();
   sut.dump_tree();
