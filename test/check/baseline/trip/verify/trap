@@ -9,9 +9,9 @@ verify: ilogger: check: deadlock: ok
 verify: ilogger: check: livelock: ok
 verify: trap: check: deterministic: ok
 verify: trap: check: completeness: fail
-trap is incomplete: 'i.r,i.b' not handled
+trap is incomplete: 'i.b,i.r' not handled
 verify: trap: check: illegal: ok
 verify: trap: check: deadlock: ok
 verify: trap: check: compliance: fail
-i.r not performed by component
+i.b not performed by component
 verify: trap: check: livelock: ok
