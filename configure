@@ -39,7 +39,7 @@ exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@
 
 (define PREFIX "/usr/local")
 (define SYSCONFDIR "$(PREFIX)/etc")
-(define BUILD_TRIPLET (gulp-pipe "xgcc -dumpmachine 2>/dev/null"))
+(define BUILD_TRIPLET (gulp-pipe "gcc -dumpmachine 2>/dev/null"))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -132,7 +132,7 @@ Usage: ./configure [OPTION]...
         (set! required (cons deb required)))))
 
 (define guix?
-  (system "guix --version &>/dev/null"))
+  (= 0 (system "guix --version 1>/dev/null 2>/dev/null")))
 
 (define (main args)
   (let* ((verum? (file-exists? "/verum"))
@@ -181,6 +181,7 @@ Usage: ./configure [OPTION]...
           (exit 1))
     (with-output-to-file ".config.mk"
       (lambda ()
+        (stdout "CONFIG_MK:=t")
         (stdout "BUILD_TRIPLET:=~a\n" build-triplet)
         (stdout "PREFIX:=~a\n" prefix)
         (stdout "SYSCONFDIR:=~a\n" sysconfdir)))
