@@ -20,10 +20,10 @@
 ;;; 
 ;;; Code:
 
-(set! %load-path (cons "." %load-path))
-(use-modules (srfi srfi-1))
+(set! %load-path (cons "release" %load-path))
 (use-modules (dezyne))
 dezyne-server
+;;dezyne-server-release
+;;fakechroot
+;;fakeroot
 ;;fdr2
-;;tcllib
-;;tclxml
