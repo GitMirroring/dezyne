@@ -1,0 +1,2 @@
+#x:model-name'Actions = struct #x:action-struct;
+     #x:enum-struct#x:model-name'ReplyUnion = struct #x:reply-union-struct;

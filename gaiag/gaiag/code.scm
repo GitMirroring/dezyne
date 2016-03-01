@@ -82,6 +82,7 @@
             code-file
             code:file-name
             code:dump
+	    code:declarative-or-imperative
             code:extension
             code:dump-main
             code:module
@@ -221,8 +222,8 @@
       (injected-instances o)))
 
 ;;; code:ast querying
-(define (code:reply-types o)
-  (let ((lst (om:reply-types o)))
+(define* (code:reply-types o #:key (pred om:typed?))
+  (let ((lst (om:reply-types o #:pred pred)))
     (delete-duplicates lst (lambda (a b) (or (and (is-a? a <bool>)
                                                   (is-a? b <bool>))
                                              (and (is-a? a <int>)

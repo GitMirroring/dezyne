@@ -1,0 +1,3 @@
+#x:model-name'Queue(l: List(ActionUnion)) = 
+         (l == []) -> (sum e: #x:provided-port-type'Actions. #x:provided-port-name'in_allow(e) . #x:model-name'Queue()) +
+         (l == []) -> empty_queue_c . #x:model-name'Queue();

@@ -49,8 +49,10 @@
   #:use-module (gaiag resolve)
 
   #:export (
-           ast->
-           norm-state
+	    norm-state
+	    norm:on-same-port-voidness-statement?
+	    norm:port-and-voidness-equal?
+	    passdown-on
            csp-norm-state
            ))
 

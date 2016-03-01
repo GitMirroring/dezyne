@@ -44,7 +44,6 @@
   #:use-module (gaiag resolve)
 
   #:export (
-           ast->
 	   assert-list
            ))
 

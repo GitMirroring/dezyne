@@ -1,0 +1,4 @@
+#x:pretty-print-dzn
+     #x:mcrl2-process-name'#.name(#x:process-parameters) = #x:mcrl2-process-name'#.name'#x:mcrl2-child-identifier();
+
+     #x:mcrl2-statement-process

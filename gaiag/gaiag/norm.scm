@@ -62,6 +62,7 @@
            prepend-true-guard
            remove-otherwise
            remove-skip
+	   transform-compounds
 
            norm:on-equal?
            norm:triggers-equal?
@@ -75,7 +76,7 @@
   (match o
     (($ <guard>) o)
     (($ <on>) (if guard-seen? o
-                  (rsp o (make <guard> #:expression 'true #:statement o))))
+                  (rsp o (make <guard> #:expression (make <literal> #:value 'true) #:statement o))))
     ((? (is? <ast>)) (tree-map (prepend-true-guard guard-seen?) o))
     (_ o)))
 
@@ -83,7 +84,7 @@
   (match o
     ((and ($ <on>) (= .statement ($ <guard>))) o)
     ((and ($ <on>) (= .triggers t) (= .statement s))
-     (rsp o (make <on> #:triggers t #:statement (make <guard> #:expression 'true #:statement s))))
+     (rsp o (make <on> #:triggers t #:statement (make <guard> #:expression (make <literal> #:value 'true) #:statement s))))
     ((? (is? <ast>)) (tree-map append-true-guard o))
     (_ o)))
 
@@ -384,4 +385,11 @@
      (clone o #:behaviour (add-skip behaviour)))
     ((? (is? <component-model>)) o)
     ((? (is? <ast>)) (tree-map add-skip o))
+    (_ o)))
+
+(define (transform-compounds o)
+  (match o
+    ((? om:imperative?) o)
+    (($ <compound>) (rsp o (make <declarative-compound> #:elements (.elements (om:map transform-compounds o)))))
+    ((? (is? <ast>)) (om:map transform-compounds o))
     (_ o)))

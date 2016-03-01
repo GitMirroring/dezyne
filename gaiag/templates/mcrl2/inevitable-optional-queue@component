@@ -1,0 +1,3 @@
+(l == []) -> (#x:required-inevitable-allow) . #x:model-name'Queue() +
+         (l == []) -> (#x:required-optional-allow) . #x:model-name'Queue() +
+         

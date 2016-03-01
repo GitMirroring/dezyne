@@ -36,7 +36,8 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((calling-context (single-char #\c) (value #t))
+          '((ast (single-char #\A))
+            (calling-context (single-char #\c) (value #t))
             (debug (single-char #\d))
             (depends) ;; FIXME
             (deprecated (value #t))
@@ -60,6 +61,7 @@
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
 Usage: gdzn code [OPTION]... DZN-FILE [MAP-FILE]...
+  -A, --ast                   generate AST
   -c, --calling-context=TYPE  generate extra parameter of TYPE for every event
 FIXME:      --depends[=TYPE]        generate dependency for DZN-FILE and write to DZN-FILE.TYPE, default is stdout
   -g, --glue=TYPE             generate glue for TYPE [dzn]

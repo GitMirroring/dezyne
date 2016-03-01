@@ -56,12 +56,13 @@
 
 
   #:export (
-           ast->
            behaviour->csp
            csp-comma-list
            csp-component
            ast-transform
            on->csp
+           ast-transform-return
+           csp-transform
            csp:norm
            csp-queue-size
            ast->csp
@@ -69,20 +70,26 @@
            csp:parse->om
            demangle
            csp-asserts
+           purge-data
+	   tail-call
 
            animate-pairs
            assign
+           om:typed?
            provides?
            requires?
            string-if
            dzn-async?
+
+	   .trigger
 
            <the-end>
            <the-end-blocking>
            <voidreply>
            ))
 
-(define-class <the-end-node> (<ast-node>))
+(define-class <the-end-node> (<ast-node>)
+  (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger))
 (define-class <the-end-blocking-node> (<ast-node>))
 (define-class <voidreply-node> (<ast-node>))
 
@@ -235,15 +242,6 @@
 
 (define (valued? model o)
   (om:typed? model (car ((compose .elements .triggers) o))))
-
-(define* (om:typed? o #:optional (trigger #f))
-  (if trigger (om:typed? (.event trigger))
-      (match o
-        (($ <event>)
-         (let ((type ((compose .type .signature) o)))
-           (not (is-a? type <void>))))
-        ((? (is? <modeling-event>)) #f)
-        ((? boolean?) #f))))
 
 (define (unspecified? x) (eq? x *unspecified*))
 
@@ -630,6 +628,15 @@
     (($ <call>)
      (clone o #:arguments (clone (.arguments o) #:elements (purge-formal-list (.function o) ((compose .elements .arguments) o)))))
 
+    (($ <action>)
+     (clone o #:trigger (model-purge-data model (.event o) locals)))
+
+    (($ <trigger>)
+     (clone o #:arguments (make <arguments>)))
+
+    (($ <triggers>)
+     (clone o #:elements (map (cut model-purge-data model <> locals) (.elements o))))
+
     (($ <on>)
      (let* ((t (filter (negate ast:modeling?) ((compose .elements .triggers) o)))
             (events (map .event t))
@@ -646,7 +653,8 @@
                           (loop (cdr formals)
                                 (cdr on-formals)
                                 (acons (car on-formals) (car formals) locals))))))
-       (clone o #:statement (model-purge-data model (.statement o) locals))))
+       (clone o #:statement (model-purge-data model (.statement o) locals)
+ 	      #:triggers (model-purge-data model triggers locals))))
 
     (($ <function>)
      (let* ((formals ((compose .elements .formals .signature) o))
@@ -673,7 +681,6 @@
     (($ <enum-literal>) o)
     (($ <otherwise>) o)
     (($ <port>) o)
-    (($ <trigger>) o)
     (($ <type>) o)
     (($ <var>) o)
 
@@ -742,6 +749,10 @@
        (if (=1 (length result))
            (car result)
            (clone o #:elements result))))
+
+;;TODO: Check if correct
+    (($ <guard>)
+     (clone o #:statement (ast-transform-return ast (.statement o))))
     (($ <on>)
      (let* ((model (or (resolve:component ast) (resolve:interface ast)))
             (members (om:member-names model))

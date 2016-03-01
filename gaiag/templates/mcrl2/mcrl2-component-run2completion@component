@@ -1,0 +1,1 @@
+#x:model-name'Run_to_Completion = sum f: #x:provided-port-type'Actions. #x:provided-port-name'in_rc(f) . #x:model-name'RC_provided_port_in(f, false, global_reply_variable_#x:provided-port-type)#x:required-ports-completion;

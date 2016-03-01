@@ -38,8 +38,11 @@
   #:use-module (gaiag config)
   #:use-module (gaiag json2scm)
   #:use-module (gaiag misc)
+  #:use-module (gaiag mcrl2)
   #:use-module (gaiag commands parse)
   #:use-module (gaiag resolve)
+  #:use-module (gaiag commands code)
+  #:use-module (scmcrl2 verification)
   #:export (parse-opts
             main))
 
@@ -53,7 +56,8 @@
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))
             (queue_size (single-char #\q) (value #t))
-	    (version (single-char #\V) (value #t))))
+	    (version (single-char #\V) (value #t))
+            (mcrl2 (single-char #\M))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
@@ -157,9 +161,25 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
       (if (null? models) traces
           (loop (cdr models) (append traces (verify-model options file-name (car models))))))))
 
+(define (verify-mcrl2 options file-name)
+  (let* ((modelname (option-ref options 'model #f))
+	 (ast (file->ast options file-name))
+         (module (resolve-module `(gaiag mcrl2)))
+         (root-> (module-ref module 'root->))
+         (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
+	 (root (mcrl2:om ast)))
+    ;;(if gdzn-debug? (stderr "AST:\n ~s\n" root))
+    (with-output-to-file "verify.mcrl2" (cut root-> root))
+    (pk (mcrl2:verify file-name modelname root))
+    *unspecified*))
+
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
-         (file-name (car files)))
-    (assert-parse options file-name)
-    (verify options file-name)))
+         (file-name (car files))
+	 (mcrl2 (option-ref options 'mcrl2 #f)))
+    (if (not mcrl2)
+	(begin
+	  (assert-parse options file-name)
+	  (verify options file-name))
+	(verify-mcrl2 options file-name))))

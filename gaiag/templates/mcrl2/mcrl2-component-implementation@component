@@ -1,0 +1,15 @@
+#x:model-name'Implementation = rename({#x:rename-required-ports #x:rename-provided-ports},
+         hide({#x:hidden-actions},
+           allow({#x:allowed-actions},
+             comm({#x:communicated-actions},
+               (#x:model-name'Run_to_Completion() || allow({#x:allowed-parallel-actions},
+                 comm({#x:communicated-allowed-parallel-actions},
+                   (allow({#x:allowed-communicated-allowed-parallel-actions},
+		   #x:required-port-parallel-communication #x:no-required-port-parallel-communication
+                   ) || #x:model-name'Queue([]))
+                 )
+               ))
+             )
+           )
+         )
+       );

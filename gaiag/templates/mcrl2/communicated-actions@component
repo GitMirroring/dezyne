@@ -1,0 +1,1 @@
+empty_queue_c | empty_queue -> queue_empty, #x:required-port-communicated-actions #x:provided-port-communicated-actions

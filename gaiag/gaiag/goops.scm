@@ -83,11 +83,12 @@
            .statement
            .then
            .to
-           .trigger
+           ;;.trigger
            .triggers
            .type
            .type@
            .types
+	   .type.name
            .value
            .variable
            .variables
@@ -576,7 +577,8 @@
   (then #:getter .then #:init-value #f #:init-keyword #:then)
   (else #:getter .else #:init-value #f #:init-keyword #:else))
 
-(define-class <illegal-node> (<imperative-node>))
+(define-class <illegal-node> (<imperative-node>)
+  (event #:getter .event #:init-value #f #:init-keyword #:event))
 
 (define-class <blocking-node> (<declarative-node>)
   (statement #:getter .statement #:init-value #f #:init-keyword #:statement))

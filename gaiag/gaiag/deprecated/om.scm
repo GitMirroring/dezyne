@@ -98,6 +98,7 @@
            om:scope-join ;; JUNKME
            om:scope-name
            om:type
+           om:typed?
            om:type-name
            om:types
            om:variables
@@ -359,6 +360,9 @@
     ((? (compose null-is-#f predicate)) (list o))
     (($ <compound>)
      (filter identity (apply append (map (collect predicate) (ast:statement* o)))))
+    (($ <functions>)
+     (filter identity (apply append (map (collect predicate) (ast:function* o))))
+    (($ <function>) (filter identity ((collect predicate) (.statement o))))
     (($ <blocking>) (filter identity ((collect predicate) (.statement o))))
     (($ <guard>) (filter identity ((collect predicate) (.statement o))))
     (($ <on>) (filter identity ((collect predicate) (.statement o))))
@@ -367,7 +371,9 @@
     ;; FIXME: recurse through whole AST
     (($ <interface>) (filter identity ((collect predicate) (.behaviour o))))
     (($ <component>) (filter identity ((collect predicate) (.behaviour o))))
-    (($ <behaviour>) (filter identity ((collect predicate) (.statement o))))
+    (($ <behaviour>) (append
+                      (filter identity ((collect predicate) (.statement o))))
+                      (filter identity ((collect predicate) (.functions o))))
     ((h t ...)
      (filter identity (apply append (map (collect predicate) o))))
     (_ '())))
@@ -410,17 +416,26 @@
     ((? (is? <interface>)) ((compose .elements .types) o))
     (_ '())))
 
-(define (om:reply-enums o)
-  (filter (is? <enum>) (om:reply-types o)))
+(define* (om:typed? o #:optional (trigger #f))
+  (if trigger (om:typed? (.event trigger))
+      (match o
+        (($ <event>)
+         (let ((type ((compose .type .signature) o)))
+           (not (is-a? type <void>))))
+        ((? (is? <modeling-event>)) #f)
+        ((? boolean?) #f))))
 
-(define (om:reply-types o)
+(define (om:reply-enums o)
+  (om:reply-types o #:pred (is? <enum>)))
+
+(define* (om:reply-types o #:key (pred om:typed?))
   (match o
     (($ <interface>)
-     (let* ((events (filter ast:typed? (om:events o)))
+     (let* ((events (filter pred (om:events o)))
             (types (delete-duplicates (map (compose .type .signature) events))))
        (filter-map (om:type o) types)))
     ((or ($ <component>) ($ <foreign>))
-     (delete-duplicates (append-map (compose om:reply-types .type) (ast:port* o))))
+     (delete-duplicates (append-map (compose (cut om:reply-types <> #:pred pred) .type) (ast:port* o))))
     (_ '())))
 
 (define (om:out-formals o)
