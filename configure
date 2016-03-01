@@ -38,8 +38,8 @@ exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@
   (gulp-port (cdr (apply run-with-pipe (list "r" "bash" "-c" command)))))
 
 
-(define PREFIX "/usr/local")
-(define SYSCONFDIR "$(PREFIX)/etc")
+(define PREFIX "/var/lib/dezyne")
+(define SYSCONFDIR "/etc")
 (define BUILD_TRIPLET (gulp-pipe "gcc -dumpmachine 2>/dev/null"))
 
 (define (parse-opts args)

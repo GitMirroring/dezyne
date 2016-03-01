@@ -1,13 +1,13 @@
 #! /bin/sh
 # -*- scheme -*-
-set -x
 self=$(readlink -f $(cut -d '' -f2 < /proc/$$/cmdline))
 bin=$(cd $(dirname $self) && pwd)
 prefix=$(cd $bin/.. && pwd)
 [ "$(basename $prefix)" != "gaiag" ] && prefix=$prefix/gaiag
 top=$(cd $prefix/.. && pwd)
 build=${ABS_BUILD-$top/build}
-ccache=$build/ccache
+[ ! -d "$ccache" ] && ccache=$top/lib/ccache
+[ ! -d "$ccache" ] && ccache=$build/ccache
 GUILE_AUTO_COMPILE=0
 GUILE_LOAD_PATH="$prefix:$prefix/json:$GUILE_LOAD_PATH"
 GUILE_LOAD_COMPILED_PATH="$ccache:$ccache/json:$GUILE_LOAD_COMPILED_PATH"
