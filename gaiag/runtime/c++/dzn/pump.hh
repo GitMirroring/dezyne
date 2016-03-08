@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -39,6 +40,7 @@ namespace dzn
 {
   struct pump
   {
+    std::function <void()> collateral_block_lambda;
     std::function<void()> worker;
     std::list<coroutine> coroutines;
     std::list<coroutine> collateral_blocked;
@@ -95,6 +97,12 @@ namespace dzn
     void handle(size_t id, size_t ms, const std::function<void()>&);
     void remove(size_t id);
   };
+
+  template <typename F, typename ... Args>
+  auto shell(dzn::pump& pump, F&& f, Args&& ...args) -> decltype(f())
+  {
+    return pump.and_wait(std::bind(f,std::forward<Args>(args)...));
+  }
 }
 
 #endif //DZN_PUMP_HH

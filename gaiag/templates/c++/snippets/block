@@ -1,4 +1,4 @@
 #statement
 dzn_rt.handling(this) = false;
 dzn_rt.flush(this);
-dzn_locator.get<dzn::pump>().block(&this->#port);
+dzn::port_block(dzn_locator, &this->#port);

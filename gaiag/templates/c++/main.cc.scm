@@ -1,10 +1,12 @@
 
 ##include <dzn/runtime.hh>
 ##include <dzn/locator.hh>
+##include <dzn/pump.hh>
 
 ##include "#.scope_model .hh"
 
 ##include <iostream>
+##include <memory>
 
 #(string-if (eq? (glue) 'asd) #{extern boost::shared_ptr<asd::channels::ISingleThreaded> g_singlethreaded;#})
 
