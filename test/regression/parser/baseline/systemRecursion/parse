@@ -1,0 +1,3 @@
+systemRecursion.dzn:1:11: Well-formedness error: System composition is recursive: 'C1'
+systemRecursion.dzn:14:11: Well-formedness error: System composition is recursive: 'C3'
+systemRecursion.dzn:21:11: Well-formedness error: System composition is recursive: 'C4'
