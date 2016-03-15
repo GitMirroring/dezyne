@@ -20,10 +20,40 @@
 ;;; 
 ;;; Code:
 
+;; guix.scm for Dezyne
+;;
+;; To setup the guix-0.9.0 package manager on Ubuntu, run
+;;
+;;   wget http://192.168.32.138/guix_0.9.0-1_amd64.deb
+;;   wget http://192.168.32.138/guile-json_0.5.0-1_all.deb
+;;   sudo dpkg -i guix_0.9.0-1_amd64.deb guile-json_0.5.0-1_all.deb
+;;   sudo guix archive --authorize /usr/share/guix/hydra.gnu.org.pub
+;;
+;; Get a up to date guix system description
+;;
+;;   mkdir -p ~/src
+;;   cd ~/src
+;;   git clone http://git.savannah.gnu.org/cgit/guix.git/
+;;   cd guix
+;;   guix environment guix
+;;   ./bootstrap
+;;   make
+;;   mkdir -p ~/.config/guix
+;;   ln -s ~/src/guix ~/.config/guix/latest
+;;
+;; To build and install, run
+;;
+;;   guix package -f guix.scm
+;;
+;; To setup a Dezyne build environment, run
+;;
+;;   guix environment -f guix.scm --ad-hoc ccache git
+;;
+;; To build and run a vm with multiple services, run
+;;
+;;   make guix-vm
+;;   make run-guix-vm
+
 (set! %load-path (cons "release" %load-path))
 (use-modules (dezyne))
 dezyne-server
-;;dezyne-server-release
-;;fakechroot
-;;fakeroot
-;;fdr2

@@ -23,11 +23,10 @@
   :use-module (ice-9 and-let-star)
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 getopt-long)
+  :use-module (ice-9 popen)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 rdelim)
   :use-module (ice-9 regex)
-
-  :use-module (os process)
 
   :use-module (srfi srfi-1)
 
@@ -243,29 +242,14 @@
           (mkdir-p (dirname name))
           (with-output-to-file name thunk)))))
 
-(define (read-string-12.04)
-  (read-delimited ""))
-
-(when (not (defined? 'read-string))
-    (module-define! (current-module) 'read-string read-string-12.04)
-    (export read-string))
-
-(when (not (defined? 'supports-source-properties?)) ;; guile-2.0.5/Ubuntu 12.04
-  (module-define! (current-module) 'supports-source-properties?
-                  (lambda (x) (or (pair? x) (instance? x))))
-  (export supports-source-properties?))
-
 (define (gulp-file file-name)
   (with-input-from-file (components->file-name file-name) read-string))
 
 (define (gulp-pipe command)
-  (gulp-port (cdr (apply run-with-pipe (list "r" "/bin/sh" "-c" command)))))
-
-(define (gulp-port . port)
-  (or (and-let* ((result (read-delimited "" (if (pair? port) (car port) (current-input-port))))
-                 ((string? result)))
-                result)
-      ""))
+  (let* ((port (open-pipe command OPEN_READ))
+         (output (read-string port)))
+    (close-port port)
+    (string-trim-right output #\newline)))
 
 (define (logf port string . rest)
   (apply format (cons* port string rest))
@@ -343,12 +327,12 @@
        (and (equal? postfix (string-take-right string (string-length postfix)))
             postfix)))
 
-(define* (diff a b :optional (options "-u") (virtual-name-a "a") (virtual-name-b "b"))
+(define* (diff a b :optional (options " -u") (virtual-name-a "a") (virtual-name-b "b"))
   (let ((file-name-a (fifo a))
         (file-name-b (fifo b)))
     (string-sub file-name-a virtual-name-a
                 (string-sub file-name-b virtual-name-b
-                            (gulp-port (cdr (run-with-pipe "r" "diff" options file-name-a file-name-b)))))))
+                            (gulp-pipe (string-append "diff" options " "file-name-a " " file-name-b))))))
 
 (define (alist->hash-table alist)
   (let ((table (make-hash-table (length alist))))
