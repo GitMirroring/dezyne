@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2013, 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2013, 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -76,7 +76,7 @@
 (define (diff-noisy-equal? actual expected)
   (let ((diff (diff (collapse-whitespace expected)
                     (collapse-whitespace actual)
-                    "-u"
+                    " -u"
                     "expected"
                     "actual")))
     (or (string-null? diff)

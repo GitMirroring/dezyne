@@ -27,14 +27,14 @@ exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@
 (define (stdout string . rest)
   (apply logf (cons* (current-output-port) string rest)))
 
-(define *shell* "/bin/sh")
+(define *shell* "bash")
 (define (gulp-pipe command)
   (let* ((port (open-pipe* OPEN_READ *shell* "-c" command))
          (output (read-string port)))
     (close-port port)
     (string-trim-right output #\newline)))
 
-(set! *shell* (gulp-pipe "type bash | sed 's,^.* ,,'"))
+(define *verbose?* #f)
 
 (define PREFIX "/var/lib/dezyne")
 (define SYSCONFDIR "/etc")
@@ -46,6 +46,7 @@ exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@
             (help (single-char #\h))
             (prefix (value #t))
             (sysconfdir (value #t))
+            (verbose (single-char #\v))
             ;;ignore
             (enable-fast-install)))
          (options (getopt-long args option-spec))
@@ -61,6 +62,7 @@ Usage: ./configure [OPTION]...
   -h, --help           display this help
   --prefix=DIR         install in PREFIX [~a]
   --sysconfdir=DIR     read-only single-machine data [PREFIX/etc]
+  -v, --verbose        be verbose
 " PREFIX)
              (exit (or (and usage? 2) 0)))
         options)))
@@ -105,7 +107,9 @@ Usage: ./configure [OPTION]...
          (pass? (and actual (compare expected actual))))
     (stderr "~a ~a\n" (if pass? (if (pair? actual) "" " yes") (if actual " no, found" "")) (version->string actual))
     (if (not pass?)
-        (set! required (cons (or deb command) required)))
+        (begin
+          (if *verbose?* (stderr "~a\n" actual))
+          (set! required (cons (or deb command) required))))
     pass?))
 
 (define* (check-pkg-config package expected :optional (deb #f))
@@ -128,7 +132,9 @@ Usage: ./configure [OPTION]...
          (m (string-match expected result)))
     (stderr " ~a\n" (if m "yes" "no"))
     (if (not m)
-        (set! required (cons deb required)))))
+        (begin
+          (if *verbose?* (stderr "~a\n" result))
+          (set! required (cons deb required))))))
 
 (define guix?
   (= 0 (system "guix --version 1>/dev/null 2>/dev/null")))
@@ -138,7 +144,9 @@ Usage: ./configure [OPTION]...
          (options (parse-opts args))
          (build-triplet (option-ref options 'build BUILD_TRIPLET))
          (prefix (option-ref options 'prefix PREFIX))
-         (sysconfdir (option-ref options 'sysconfdir SYSCONFDIR)))
+         (sysconfdir (option-ref options 'sysconfdir SYSCONFDIR))
+         (verbose? (option-ref options 'verbose #f)))
+    (set! *verbose?* verbose?)
     (check-version 'bash '(4 0) 'bash)
     (check-version 'gcc '(4 8))
     (check-version 'g++ '(4 8))
