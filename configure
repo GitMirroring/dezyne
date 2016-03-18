@@ -154,7 +154,7 @@ Usage: ./configure [OPTION]...
     (check-version 'flex '())
     (check-version 'dot '() 'graphviz)
     (check-version 'guile '(2 0) 'guile-2.0)
-    (check-version 'guild '(2 0) 'guile-2.0-dev)
+;;    (check-version 'guild '(2 0) 'guile-2.0-dev)
 ;;    (check-version 'guix '(0 9) 'guix)
     (check-version 'fakechroot '(2 16) 'fakechroot '-v)
 ;;    (check-version 'fdr2 '() 'fdr2 'batch)
