@@ -138,7 +138,7 @@ DIRECTORIES:=$(shell find -mindepth 1 -name makefile | sed s,/makefile,,)
 .PHONY: $(DIRECTORIES)
 ifeq ($(SUB),)
 $(DIRECTORIES):
-	$(MAKE) -C $@ SUB=$@ $(MAKEOVERRIDES)
+	$(MAKE) -C $@ SUB=$@ #$(MAKEOVERRIDES)
 endif
 $(DIRECTORIES:%=%-clean):
 	$(MAKE) -C $(@:%-clean=%) SUB=$(@:%-clean=%) $(MAKEOVERRIDES) clean
