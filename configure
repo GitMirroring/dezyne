@@ -1,5 +1,20 @@
 #! /bin/sh
 # -*- scheme -*-
+unset LANG LC_ALL
+echo -n "checking for guile..."
+guile=$(type -p ${GUILE-guile} 2>/dev/null|tail -n 1|sed 's,^.* ,,')
+if [ -x "$guile" ]; then
+    echo " $guile"
+else
+    pm=$({ guix --help || dpkg --help; }|head -n 1|sed 's,.*Usage: \([^ ]*\).*,\1,g')
+    case "$pm" in dpkg) message="sudo apt-get install guile-2.0";; *) message="guix package -i guile";; esac
+    cat <<EOF
+Missing dependencies, run
+
+    $pm
+EOF
+    exit 1
+fi
 unset GUILE_AUTO_COMPILE GUILE_LOAD_COMPILED_PATH
 exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@"}
 !#
@@ -7,11 +22,11 @@ exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@
 (read-set! keywords 'prefix)
 
 (define-module (configure)
-  :use-module (ice-9 curried-definitions)
   :use-module (ice-9 and-let-star)
+  :use-module (ice-9 curried-definitions)
   :use-module (ice-9 getopt-long)
-  :use-module (ice-9 optargs)
   :use-module (ice-9 match)
+  :use-module (ice-9 optargs)
   :use-module (ice-9 popen)
   :use-module (ice-9 rdelim)
   :use-module (ice-9 regex))
