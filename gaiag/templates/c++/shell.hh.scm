@@ -33,7 +33,7 @@ struct #.model
   #((c++:scope-name) component)  #name;
 #}) (non-injected-instances model))
 #(map (init-bind model #{ #((c++:scope-name) interface)  #port;
-#}) (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
+#}) (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
   dzn::pump dzn_pump;
   #.model (const dzn::locator&);
   void check_bindings() const;

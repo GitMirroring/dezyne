@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -44,8 +44,8 @@ class #.scope_model  : SystemComponent {
 #}) (non-injected-instances model))#
 (map (init-bind model #{
     #port  = #instance;
-#}) (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
+#}) (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
 # (map (connect-ports model #{
     #((om:scope-name '_) interface) .connect(#provided , #required);
-#}) (filter (negate bind-port?) ((compose .elements .bindings) model)))}
+#}) (filter (negate om:port-bind?) ((compose .elements .bindings) model)))}
 }

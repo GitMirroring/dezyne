@@ -4,7 +4,7 @@
      ((compose .elements .instances) model))#
 (map (init-bind model #{#'()
   (#port  :accessor .#port  :init-value ##f :init-keyword :#port)#})
-     (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model)))))
+     (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) model)))))
 
 (define-method (initialize (o <dzn:#.scope_model >) args)
   (next-method)
@@ -14,7 +14,7 @@
             (parent ##f)
             #((->join "\n            ")
  (map (init-bind model #{(#port .#edir  (make <dzn:#((om:scope-name) interface) .#edir >))#})
-      (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))))#
+      (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) model))))))#
 (map (init-instance #{#'()
   (set! (.#name  o) (make <dzn:#((om:scope-name) component) > :locator (.locator o) :parent o :name '#name))#})
   (injected-instances model))#
@@ -28,7 +28,7 @@
 (map (init-bind model #{#'()
   (set! (.#port  o) #instance)
   (set! (.#edir  (.#port  o)) #port .#edir)#})
-     (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model)))))#
+     (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) model)))))#
 (map (connect-ports model #{#'()
   (connect-ports #provided  #required)#})
-     (filter (negate bind-port?) ((compose .elements .bindings) model))))
+     (filter (negate om:port-bind?) ((compose .elements .bindings) model))))

@@ -24,7 +24,7 @@ void #.scope_model _init(#.scope_model  *self, locator* dezyne_locator, dzn_meta
    (non-injected-instances model))#
 (map (init-bind model #{#'()
   self->#port  = self->#instance; #})
-    (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
+    (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
  # (map (connect-ports model #{
     CONNECT(self->#provided , self->#required );
-#}) (filter (negate bind-port?) ((compose .elements .bindings) model))) }
+#}) (filter (negate om:port-bind?) ((compose .elements .bindings) model))) }

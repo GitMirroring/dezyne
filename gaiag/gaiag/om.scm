@@ -49,10 +49,13 @@
   :export (
            om:bind
            om:bind-other-port
-           om:binding system
+           om:binding
+           om:bindings
+           om:binding-other
            om:binding-other-port
            om:instance-name
            om:collect
+           om:component
            om:declarative?
            om:dir-matches?
            om:drop-scope
@@ -71,6 +74,9 @@
            om:in?
            om:integers
            om:instance
+           om:instances
+           om:instance-name
+           om:instance-binding?
            om:interface-enums
            om:integer
            om:interface
@@ -87,6 +93,9 @@
            om:parse-dzn
            om:port
            om:ports
+           om:port-bind
+           om:port-bind?
+           om:port-binding?
            om:public-types
            om:provided
            om:provides?
@@ -120,6 +129,9 @@
  (else
   ))
 
+(define (deprecated . where)
+  (stderr "DEPRECATED:~a\n" where))
+
 ;;; AST-LIST shorthands
 (define* (om:events o)
   (match o
@@ -143,6 +155,16 @@
     (($ <interface>) '())
     (($ <component> name ('ports ports ...)) ports)
     (($ <system> name ('ports ports ...)) ports)))
+
+(define (om:instances o)
+  (match o
+    (($ <interface>) '())
+    (($ <component>) o)
+    (($ <system>) ((compose .elements .instances) o))))
+
+(define (om:bindings o)
+  (match o
+    (($ <system>) ((compose .elements .bindings) o))))
 
 (define (om:provided o)
   (filter om:provides? (om:ports o)))
@@ -215,25 +237,89 @@
                        (om:import (.type (om:port model (.port bind))))))
     ((? boolean?) #f)))
 
-(define (om:bind model port)
-  (let* ((binds ((compose .elements .bindings) model)))
-    (find (lambda (bind) (or (eq? (.port (.left bind)) port)
-                             (eq? (.port (.right bind)) port)))
-          binds)))
+(define (om:port-bind? bind)
+  (and (om:port-binding? bind)
+       bind))
 
-(define (om:bind-other-port bind port)
+(define (om:port-binding? bind)
+  (or (and (not (.instance (.left bind)))
+           (.left bind))
+      (and (not (.instance (.right  bind)))
+           (.right bind))))
+
+(define (om:instance-binding? bind)
+  (or (and (not (.instance (.left bind)))
+           (.right bind))
+      (and (not (.instance (.right  bind)))
+           (.left bind))))
+
+(define (om:port-bind system port)
+  (find (lambda (bind) (and=> (om:port-bind? bind)
+                              (lambda (b)
+                                (eq? (.port (om:port-binding? b)) port))))
+        ((compose .elements .bindings) system)))
+
+(define (om:bind system o)
+  (let* ((binds ((compose .elements .bindings) system)))
+    (match o
+      ((? symbol?) ;; FIXME: port need not be unique
+       (deprecated (current-source-location))
+       (find (lambda (bind) (or (eq? (.port (.left bind)) o)
+                                (eq? (.port (.right bind)) o)))
+           binds))
+      (($ <binding> instance port)
+       (find (lambda (bind)
+               (or (and (eq? (.instance (.left bind)) instance)
+                                     (eq? (.port (.left bind)) port))
+                                (and (eq? (.instance (.right bind)) instance)
+                                     (eq? (.port (.right bind)) port))))
+             binds)))))
+
+(define (om:bind-other-port bind port) ;; FIXME: port need not be unique
+  (deprecated (current-source-location))
   (if (eq? (.port (.left bind)) port) (.right bind) (.left bind)))
 
-(define (om:binding system port)
-  (let ((bind (om:bind system port)))
-    (if (eq? (.port (.left bind)) port) (.left bind) (.right bind))))
+(define (om:binding system o)
+  (match o
+    ((? symbol?)
+     (deprecated (current-source-location))
+     (let ((bind (om:bind system o)))
+       (if (eq? (.port (.left bind)) o) (.left bind) (.right bind))))
+    (($ <binding> instance port)
+     (let ((bind (om:bind system o)))
+       (and bind
+            (if (and (eq? (.instance (.left bind)) instance)
+                     (eq? (.port (.left bind)) port)) (.left bind)
+                     (.right bind)))))))
 
-(define (om:binding-other-port system port)
+(define (om:binding-other-port system port) ;; FIXME: port need not be unique
+  (deprecated (current-source-location))
   (let* ((bind (om:bind system port)))
     (om:bind-other-port bind port)))
 
+(define (om:binding-other system binding)
+  (let ((bind (om:bind system binding)))
+    (if (and (eq? (.instance (.left bind)) (.instance binding))
+             (eq? (.port (.left bind)) (.port binding)))
+        (.right bind)
+        (.left bind))))
+
 (define (om:instance-name bind)
   (or (.instance (.left bind)) (.instance (.right bind))))
+
+(define (om:component system o)
+  (match o
+    ((? symbol?) (om:component system (om:instance system o)))
+    (($ <binding> #f port)
+     ;;#f
+     ;;(om:component system (om:binding-other-port system port))
+     (let* ((bind (om:bind system port))
+            (instance (om:instance-name bind)))
+       (om:component system instance)))
+    (($ <binding> instance port) (om:component system instance))
+    (($ <bind>) (om:component system (om:instance-name o)))
+    (($ <instance> name type) (om:import type))
+    (($ <port> name type) (om:import type))))
 
 (define (om:interface o)
   (match o
@@ -380,6 +466,7 @@
     (($ <on>) (om:find-triggers (.triggers ast)))
     (('triggers triggers ...) triggers)
     (($ <guard>) (om:find-triggers (.statement ast) found))
+    (($ <system>) (append-map om:find-triggers (map (lambda (i) (om:component ast i)) (om:instances ast))))
     (_ '())))
 
 (define (om:interface-types o)
@@ -482,6 +569,7 @@
 
 (define (om:parent o t)
   (match o
+    (($ <system>) #f)
     ((? (is? <model>))
      (om:parent ((compose .statement .behaviour) o) t))
     (($ <blocking>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)

@@ -51,7 +51,6 @@
            code:extension
            enum-type
            ->code
-           bind-port?
            binding-name
            code:module
            declare-enum
@@ -870,14 +869,10 @@
          (reply-scope (om:scope type-type))
          (reply-scope-name (om:scope+name type-type))
          (system (is-a? model <system>))
-         (bind (and system (om:bind system (.name port))))
-         (binding (and bind
-                       (bind-port? bind)
-                       (if (not (.instance (.left bind)))
-                           (.right bind)
-                           (.left bind))))
-         (instance (and binding (.instance binding)))
-         (instance-port (and binding (.port binding)))
+         (bind (and system (om:port-bind system (.name port))))
+         (instance-binding (and bind (om:instance-binding? bind)))
+         (instance (and instance-binding (.instance instance-binding)))
+         (instance-port (and instance-binding (.port instance-binding)))
          (blocking? #f)
          (statement
           (or (and-let*
@@ -928,7 +923,7 @@
          (left-port (om:port model left))
          (right (.right bind))
          (right-port (om:port model right))
-         (port (and (bind-port? bind)
+         (port (and (om:port-bind? bind)
                     (if (not (.instance left)) (.port left) (.port right))))
          (injected? (and (eq? port '*) port))
          (direction (or injected? (.direction (om:port model port))))
@@ -937,7 +932,7 @@
                         (if left-port left-port
                             right-port)))
          (interface (.type interface))
-         (instance (and (bind-port? bind)
+         (instance (and (om:port-bind? bind)
                         (if (not (.instance left))
                             (binding-name model right)
                             (binding-name model left)))))
@@ -1008,9 +1003,6 @@
                  (port ,(match port
                             (($ <port>) (.name port))
                             (($ <interface>) (list "x" (.name port)))))))))
-
-(define (bind-port? binding)
-  (or (not (.instance (.left binding))) (not (.instance (.right binding)))))
 
 (define (injected-binding? binding)
   (or (eq? '* (.port (.left binding)))

@@ -20,7 +20,7 @@ class #.scope_model (runtime.Component):
 #}) (non-injected-instances model))#
 (map (init-bind model #{
         self.#port  = self.#instance
-#}) (filter bind-port? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
+#}) (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
 # (map (connect-ports model #{
         connect (self.#provided , self.#required)
-#}) (filter (negate bind-port?) ((compose .elements .bindings) model)))
+#}) (filter (negate om:port-bind?) ((compose .elements .bindings) model)))
