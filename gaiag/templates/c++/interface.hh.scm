@@ -3,9 +3,6 @@
 
 ##include <dzn/meta.hh>
 
-##include <cassert>
-##include <map>
-
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
  #(string-if (pair? (om:enums)) #{
 #})#
