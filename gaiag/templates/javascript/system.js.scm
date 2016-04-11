@@ -11,6 +11,8 @@ dzn.extend (dzn_require (__dirname + '/#interface '));
   this.rt.top = this.rt.top || this;
   this.rt.components = (this.rt.components || []).concat ([this]);
   this.meta = meta;
+  this.meta.ports = [#((->join ",") (map (lambda (s) (list "'" (.name s) "'")) ((compose .elements .ports) model)))];
+  this.meta.children = [#((->join ",") (map (init-instance #{'#name '#}) ((compose .elements .instances) model)))];
 #(map (init-instance #{
     this.#name  = new dzn.#((om:scope-name '.) component)(locator, {parent: this, name: '#name '});
 #}) (injected-instances model))#
@@ -23,12 +25,11 @@ dzn.extend (dzn_require (__dirname + '/#interface '));
 #}) (non-injected-instances model))#
 (map (init-bind model #{
     this.#port  = this.#instance;
-#}) (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) model))))#
-'()this.children = [#((->join ", ") (map (init-instance #{ this.#name #}) ((compose .elements .instances) model)))];
-# (map (connect-ports model #{
-    dzn.connect(this.#provided , this.#required);
-#}) (filter (negate om:port-bind?) ((compose .elements .bindings) model)))
-};
+#}) (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
+#(map (connect-ports model #{
+                               dzn.connect(this.#provided , this.#required);
+                                          #}) (filter (negate om:port-bind?) ((compose .elements .bindings) model)))
+;
 
 if (typeof (module) !== 'undefined') {
   module.exports = dzn;
