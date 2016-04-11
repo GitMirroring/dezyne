@@ -29,7 +29,7 @@ dzn.extend (dzn_require (__dirname + '/#interface '));
 #(map (connect-ports model #{
                                dzn.connect(this.#provided , this.#required);
                                           #}) (filter (negate om:port-bind?) ((compose .elements .bindings) model)))
-;
+}
 
 if (typeof (module) !== 'undefined') {
   module.exports = dzn;
