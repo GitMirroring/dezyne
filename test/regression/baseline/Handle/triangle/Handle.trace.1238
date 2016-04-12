@@ -1,9 +1,0 @@
-ctrl.calibrate
-robot.calibrate
-robot.calibrated
-robot.return
-inspector.calibrate
-inspector.return
-feedPort.calibrate
-feedPort.return
-ctrl.return
