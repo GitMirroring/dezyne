@@ -79,10 +79,10 @@ namespace dzn
   int coroutine::g_id = 0;
 
   pump::pump()
-  : switch_context()
+  : collateral_block_lambda([this]{collateral_block();})
+  , switch_context()
   , running(true)
   , task(std::async(std::launch::async, std::ref(*this)))
-  , collateral_block_lambda([this]{collateral_block();})
   {}
   pump::~pump()
   {
