@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -53,6 +53,7 @@
            om:bindings
            om:binding-other
            om:binding-other-port
+           om:blocking?
            om:instance-name
            om:collect
            om:component
@@ -425,6 +426,14 @@
 
 
 ;;; UTILITIES
+
+(define (om:blocking? o)
+  (match o
+    (($ <component>)
+     (and-let* ((behaviour (.behaviour o))
+                (blocking ((om:collect <blocking>) behaviour)))
+       (pair? blocking)))
+    (_ #f)))
 
 (define ((collect predicate) o)
   (match o

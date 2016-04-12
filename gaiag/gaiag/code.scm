@@ -2,7 +2,7 @@
 ;;
 ;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
-;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -315,6 +315,12 @@
       ((? unspecified?) 'void)
       (_ 'bool)))
 
+  (define (reply-port port)
+    (or port
+        (and=> (or (and (om:provides? (statements.port)) (statements.port))
+                   (car (filter om:provides? (om:ports model))))
+               .name)))
+
   (let ((port (statements.port))
         (event (statements.event))
         (space (make-string (* indent (if (eq? (language) 'python) 4 2)) #\space)))
@@ -478,43 +484,51 @@
                     (comma-space ,comma-space)))))
       (($ <reply> (and ($ <expression> ($ <literal> name field)) (get! expression)) port)
        (debug "reply0: ~a\n" (expression))
-       (->string (list (snippet 'reply
-                                `((space ,space)
-                                  (scope ,(om:scope name))
-                                  (name ,(om:name name))
-                                  (expression ,(expression->string model (expression) locals))))
-                       (if port (snippet 'release
-                                         `((space ,space)
-                                           (scope ,(om:scope name))
-                                           (name ,(om:name name))
-                                           (port ,port)))))))
+       (let ((port (reply-port port)))
+         (->string
+          (list (snippet 'reply
+                         `((space ,space)
+                           (scope ,(om:scope name))
+                           (name ,(om:name name))
+                           (expression ,(expression->string
+                                         model (expression) locals))))
+                (if (om:blocking? model)  (snippet 'release
+                                                   `((space ,space)
+                                                     (scope ,(om:scope name))
+                                                     (name ,(om:name name))
+                                                     (port ,port))))))))
       (($ <reply> (and ($ <expression> ($ <var> name)) (get! expression)) port)
        (debug "reply1: ~a\n" (expression))
        (let* ((var (var? name))
-              (type (.type var)))
+              (type (.type var))
+              (port (reply-port port)))
          (debug "reply1: var=~a\n" var)
          (debug "reply1: type=~a\n" type)
          (debug "reply1: expression=~a\n" (expression->string model (expression) locals))
-         (->string (list (snippet 'reply
-                                  `((space ,space)
-                                    (scope ,(om:scope type))
-                                    (name ,(om:name type))
-                                    (expression ,(expression->string model (expression) locals))))
-                         (if port (snippet 'release
-                                           `((space ,space)
-                                             (scope ,(om:scope type))
-                                             (name ,(om:name type))
-                                             (port ,port))))))))
+         (->string (list
+                    (snippet 'reply
+                             `((space ,space)
+                               (scope ,(om:scope type))
+                               (name ,(om:name type))
+                               (expression ,(expression->string
+                                             model (expression) locals))))
+                    (if (om:blocking? model) (snippet 'release
+                                                      `((space ,space)
+                                                        (scope ,(om:scope type))
+                                                        (name ,(om:name type))
+                                                        (port ,port))))))))
       (($ <reply> (and ($ <expression> (? unspecified?)) (get! expression)) port)
        (debug "reply2: ~a\n" (expression))
-       (if port (snippet 'release
-                         `((space ,space)
-                           (port ,port)))))
+       (let ((port (reply-port port)))
+         (if (om:blocking? model) (snippet 'release
+                                           `((space ,space)
+                                             (port ,port))))))
       (($ <reply> (and ($ <expression>) (get! expression)) port) (=> failure)
        (debug "\nreply3: ~a\n" (expression))
        (if (eq? (expression) *unspecified*) (failure)
            (let* ((scope '())
-                  (type (expression-type (expression) locals)))
+                  (type (expression-type (expression) locals))
+                  (port (reply-port port)))
              (debug "reply3: type=~a\n" type)
              (debug "reply3: expression=~a\n" (expression->string model (expression) locals))
              (->string (list (snippet 'reply
@@ -522,15 +536,16 @@
                                         (scope ,scope)
                                         (name ,type)
                                         (expression ,(expression->string model (expression) locals))))
-                             (if port (snippet 'release
-                                               `((space ,space)
-                                                 (scope ,scope)
-                                                 (name ,type)
-                                                 (port ,port)))))))))
+                             (if (om:blocking? model) (snippet 'release
+                                                               `((space ,space)
+                                                                 (scope ,scope)
+                                                                 (name ,type)
+                                                                 (port ,port)))))))))
       (($ <reply> expression port)
-       (if port (snippet 'release
-                         `((space ,space)
-                           (port ,port)))))
+       (let ((port (reply-port port)))
+         (if (om:blocking? model) (snippet 'release
+                                           `((space ,space)
+                                             (port ,port))))))
       (($ <return> #f) (snippet 'return-void `((space ,space))))
       (($ <return> expression)
        (snippet 'return
