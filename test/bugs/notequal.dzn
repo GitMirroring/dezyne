@@ -1,0 +1,48 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// For the following behaviour, the symbolic computation does not reduce I.State.NOK != I.State.NOK to false,
+// while it correctly reduces I.State.OK != I.State.NOK to true.
+// This is observable in the table views, e.g. event table::
+//
+// e
+// [s.NOK]  {} s.NOK 
+// [s.NOK] [I.State.NOK != I.State.NOK] illegal;  
+// [s.OK]  illegal; 
+//
+
+
+interface I {
+  in void e();
+  behaviour {
+    enum State { NOK, OK};
+    State s = State.NOK;
+    State t = State.NOK;
+    [s.NOK] {
+      on e: {}
+    }
+    [s.OK && t != State.NOK] {
+      on e: illegal;
+    }
+  }
+}
