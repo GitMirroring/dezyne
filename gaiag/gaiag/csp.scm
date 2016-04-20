@@ -744,9 +744,8 @@
     (match o
       (($ <expression> expression) (expression-type expression locals))
       (($ <literal>) 'enum)
-      (($ <var> name) (let* ((var (var? name))
-                             (type (.type var)))
-                        (ast-name ((om:type model) type))))
+      (($ <var> name) (let ((var (var? name)))
+                        (om:name ((om:type model) var))))
       ((? number?) 'int)
       ('false 'bool)
       ('true 'bool)
