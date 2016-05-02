@@ -105,7 +105,7 @@ $(LOCAL_OUT)/%.d: $(LOCAL_OUT)/%.dzn
 endif
 	@mkdir -p $(LOCAL_OUT)
 	@echo -e '.PRECIOUS: $(LOCAL_OUT)/%$(SOURCE_EXT) $(LOCAL_OUT)/%$(LOCAL_HEADER_EXT)' > $@
-	$(DZN) depends -l $(LOCAL_LANGUAGE) -m $(LOCAL_SUT) -g $(*F) -o $(LOCAL_OUT) $< | sed 's,[*]global[*]_,,' >> $@
+	$(DZN) code --depends -l $(LOCAL_LANGUAGE) -m $(LOCAL_SUT) -g $(*F) -o $(LOCAL_OUT) $< | sed 's,[*]global[*]_,,' >> $@
 	@echo -e '\t$(DZN) code -l $(LOCAL_LANGUAGE) -m $(LOCAL_SUT) -o $(LOCAL_OUT) $< $(LOCAL_MAP_FILES) |& sed -e s,^,$(dir $<),' >> $@
 
 depend: $(LOCAL_D_FILES)
