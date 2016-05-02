@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -34,8 +35,8 @@ endif
 $(LOCAL_OUT)/main.class: LOCAL_OUT:=$(LOCAL_OUT)
 $(LOCAL_OUT)/main.class: LOCAL_FOOTER:=$(LOCAL_FOOTER)
 $(LOCAL_OUT)/main.class: LOCAL_MODELS:=$(LOCAL_MODELS)
-$(LOCAL_OUT)/main.class: $(LOCAL_FOOTER) $(LOCAL_MODELS:%=$(LOCAL_OUT)/dezyne/%.java)
-	-cp $(LOCAL_OUT)/dezyne/*.java $(LOCAL_OUT)
+$(LOCAL_OUT)/main.class: $(LOCAL_FOOTER) $(LOCAL_MODELS:%=$(LOCAL_OUT)/dzn/%.java)
+	-cp $(LOCAL_OUT)/dzn/*.java $(LOCAL_OUT)
 	cp --force --backup $(LOCAL_FOOTER) $(LOCAL_OUT)/$(basename $(notdir $(LOCAL_FOOTER))).java
 #	cd $(LOCAL_OUT) && javac -Xlint:unchecked *.java
 	javac -d $(LOCAL_OUT) $(LOCAL_OUT)/*.java

@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 # Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 #
 # This file is part of Dezyne.
@@ -87,7 +88,7 @@ LOCAL_O_FILES+=$(LOCAL_OUT)/main.o
 LOCAL_O_FILES+=$(patsubst %,$(LOCAL_OUT)/%.o,$(LOCAL_COMPONENTS))
 LOCAL_O_FILES+=$(patsubst %$(LOCAL_SOURCE_EXT),$(LOCAL_OUT)/%.o,$(LOCAL_RUNTIME_SOURCES))
 else # !c,c++,c++03
-LOCAL_DEZYNE_FILES+=$(patsubst %,$(LOCAL_OUT)/dezyne/%$(LOCAL_SOURCE_EXT),$(LOCAL_INTERFACES) $(LOCAL_COMPONENTS))
+LOCAL_DEZYNE_FILES+=$(patsubst %,$(LOCAL_OUT)/dzn/%$(LOCAL_SOURCE_EXT),$(LOCAL_INTERFACES) $(LOCAL_COMPONENTS))
 endif # !c,c++,c++03
 
 $(LOCAL_OUT)/%.d: LOCAL_SOURCE_EXT:=$(LOCAL_SOURCE_EXT)

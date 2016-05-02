@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -30,7 +31,7 @@ ifeq ($(LOCAL_FOOTER),)
 LOCAL_FOOTER:=$(LOCAL_OUT)/main.cs
 endif
 
-LOCAL_DEZYNE_FILES+=$(patsubst %,$(LOCAL_OUT)/dezyne/%$(LOCAL_SOURCE_EXT),$(LOCAL_INTERFACES) $(LOCAL_COMPONENTS))
+LOCAL_DEZYNE_FILES+=$(patsubst %,$(LOCAL_OUT)/dzn/%$(LOCAL_SOURCE_EXT),$(LOCAL_INTERFACES) $(LOCAL_COMPONENTS))
 $(LOCAL_TARGET).exe: CDIR:=$(CDIR)
 $(LOCAL_TARGET).exe: LOCAL_DEZYNE_FILES:=$(LOCAL_DEZYNE_FILES)
 $(LOCAL_TARGET).exe: LOCAL_FOOTER:=$(LOCAL_FOOTER)
@@ -38,7 +39,7 @@ $(LOCAL_TARGET).exe: LOCAL_OUT:=$(LOCAL_OUT)
 $(LOCAL_TARGET).exe: $(LOCAL_HEADER) $(LOCAL_DEZYNE_FILES) $(LOCAL_FOOTER) $(LOCAL_OUT)/main.cs
 #	-cp $(CDIR)*.cs $(LOCAL_OUT)
 	cp --force --backup $(LOCAL_FOOTER) $(LOCAL_OUT)/$(notdir $(LOCAL_FOOTER))
-	mcs -debug -out:$@ $(LOCAL_OUT)/*.cs $(LOCAL_OUT)/dezyne/*.cs
+	mcs -debug -out:$@ $(LOCAL_OUT)/*.cs $(LOCAL_OUT)/dzn/*.cs
 
 define MONO_SCRIPT
 #! /bin/bash
