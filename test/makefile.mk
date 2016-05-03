@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -26,5 +26,20 @@ TEST := $(TEST) $(CDIR)-check
 $(CDIR)-check: CDIR:=$(CDIR)
 $(CDIR)-check:
 	$(MAKE) smoke
+
+CLEAN := $(CLEAN) $(CDIR)/regression/examples/index.txt
+
+$(CDIR)/regression/examples/index.txt:
+	for i in $(wildcard $(@D)/*.dzn); do \
+	    echo $$(basename $$i .dzn);\
+	    head -1 $$i | sed -e s,'^// *,,' -e 's,^purpose: *,,';\
+	    echo;\
+	done > $@.$$PPID~
+	for i in $(wildcard $(@D)/*/project.txt); do \
+	    echo $$(basename $$(dirname $$i));\
+	    head -1 $$i | sed -e s,'^// *,,' -e 's,^purpose: *,,';\
+	    echo;\
+	done >> $@.$$PPID~
+	mv $@.$$PPID~ $@
 
 include make/check.mk
