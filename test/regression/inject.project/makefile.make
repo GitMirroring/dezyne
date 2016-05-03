@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 #
 # This file is part of Dezyne.
@@ -23,7 +23,9 @@
 
 # we need to set LOCAL_LANGUAGE, copy make/project.make inline
 #include make/project.make
-#LANGUAGES:=c c++ cs goops $(JAVA) $(JAVA7) javascript python table
+ifeq ($(LANGUAGES),)
+LANGUAGES:=$(ALL_LANGUAGES)
+endif
 
 DZN_FILES:=$(wildcard $(CDIR)*.dzn)
 
