@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
 //
@@ -27,9 +28,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-public class V<T> {
-  public T v;
-  public V (T v) {this.v = v;}
+public class V<T> where T : new()
+{
+    public T v;
+    public V() { this.v = new T(); }
+    public V(T v) { this.v = v; }
 }
 
 public class RuntimeException : SystemException {
