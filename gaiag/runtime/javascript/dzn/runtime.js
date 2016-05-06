@@ -22,6 +22,23 @@
 //
 // Code:
 
+if (!Array.prototype.each) {
+  Array.prototype.each = Array.prototype.forEach;
+};
+
+if (!Function.prototype.runtime) {
+  Function.prototype.runtime = function (o, port, direction, name) {
+    var f = this.bind (o);
+    return function () {
+      var args = Array.prototype.slice.call (arguments);
+      var ff = function () {
+        return f.apply (o, args);
+      }.bind (this)
+      o.rt['call_' + direction] (o, ff, [port, name]);
+    }
+  }
+}
+
 function extend(o, u) {
   for (var i in u)
     o[i] = u[i];
@@ -119,7 +136,7 @@ function runtime(illegal) {
     var trace = c.locator.get(Function.prototype, 'trace');
     this.trace_in(m, m[1], trace);
     var r = this.valued_helper(c, f, m);
-    this.trace_out(m, m[2][r], trace);
+    this.trace_out(m, r, trace);
     return r;
   };
 
@@ -128,7 +145,22 @@ function runtime(illegal) {
     this.trace_out(m, m[1], trace);
     this.defer(m[0].meta.provides.component, c, f);
   };
-};
+
+  this.bind = function (o) {
+    o.meta.ports
+      .each (function (name) {
+        var port = o[name];
+        var dir = Object.keys (port.meta.provides).length ? 'in' : 'out';
+        Object.keys (port[dir])
+          .each (function (event) {
+            if (port[dir][event])
+              port[dir][event] = port[dir][event].runtime (o, port, dir, event);
+            else
+              console.error ('port not bound:'  + [name, dir, event].join ('.'));
+          });
+      });
+  };
+}
 
 function locator(services) {
   this.services = services || {};

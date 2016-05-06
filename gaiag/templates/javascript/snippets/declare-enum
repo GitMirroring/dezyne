@@ -1,9 +1,5 @@
 
 this.#name  = {
    #((->join ", ")
-     (map (lambda (x) (list (car x) ": " (cadr x))) (zip fields (iota length))))
-};
-this.#name _to_string = {
-   #((->join ", ")
-     (map (lambda (x) (list (car x) ": '" name "_" (cadr x) "'")) (zip (iota length) fields)))
+     (map (lambda (x) (list x ": '" name "_" x "'")) fields))
 };
