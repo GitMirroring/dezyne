@@ -111,7 +111,7 @@ function runtime(illegal) {
       this.flush(c);
     }
     else {
-      throw 'runtime error: component already handling an event';
+      throw 'runtime error: component already handling an event: ' + c.meta.name;
     }
   };
 
