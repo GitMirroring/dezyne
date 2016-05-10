@@ -90,29 +90,14 @@ function runtime(illegal) {
     }
   };
 
-  this.valued_helper = function(c, f, m) {
-    if (c.handling) {
-      throw 'runtime error: a valued event cannot be deferred';
-    }
+  this.handle = function(c, f) {
+    if (c.handling)
+      throw new Error ('runtime error: component already handling an event: ' + c.meta.name);
     c.handling = true;
     var r = f();
     c.handling = false;
     this.flush(c);
     return r;
-  };
-
-  this.handle = function(c, f) {
-    if (!c.handling) {
-      {
-        c.handling = true;
-        f();
-        c.handling = false;
-      }
-      this.flush(c);
-    }
-    else {
-      throw 'runtime error: component already handling an event: ' + c.meta.name;
-    }
   };
 
   this.trace_in = function(m, e, trace) {
@@ -128,17 +113,9 @@ function runtime(illegal) {
   this.call_in = function(c, f, m) {
     var trace = c.locator.get(Function.prototype, 'trace');
     this.trace_in(m, m[1], trace);
-    this.handle(c, f);
-    this.trace_out(m, 'return', trace);
+    var r = this.handle(c, f);
+    this.trace_out(m, typeof (r) === 'undefined' && 'return' || r, trace);
   }
-
-  this.rcall_in = function(c, f, m) {
-    var trace = c.locator.get(Function.prototype, 'trace');
-    this.trace_in(m, m[1], trace);
-    var r = this.valued_helper(c, f, m);
-    this.trace_out(m, r, trace);
-    return r;
-  };
 
   this.call_out = function(c, f, m) {
     var trace = c.locator.get(Function.prototype, 'trace');
