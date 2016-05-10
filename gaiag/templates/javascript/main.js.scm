@@ -12,6 +12,10 @@ function read_line() {
   return '';
 }
 
+function peek_line() {
+  return lines.slice(-1)[0];
+}
+
 function drop_prefix(string, prefix) {
   if (string.indexOf(prefix) === 0) {
     return string.slice(prefix.length);
@@ -87,20 +91,23 @@ function #.scope_model _fill_event_map(m)
 }
 
 function main () {
-  dzn.flush = process.argv.length > 2 && process.argv[2] === '--flush'
-  dzn.relaxed = process.argv.length > 2 && process.argv[2] === '--relaxed'
+  dzn.flush = process.argv.length > 2 && process.argv[2] === '--flush';
+  dzn.relaxed = process.argv.length > 2 && process.argv[2] === '--relaxed';
   var loc = new dzn.locator();
+  var pump = new dzn.pump();
+  loc.set(pump);
   var rt = new dzn.runtime(function() {console.error('illegal');process.exit(0);});
   var sut = new #(javascript:namespace model).#.model (loc.set(rt), {name:'sut'});
 
   var event_map = #.scope_model _fill_event_map(sut);
 
   var fs = require ('fs');
-  lines = fs.readFileSync ('/dev/stdin', 'ascii').toString().trim().split ('\n').reverse ();
+  lines = fs.readFileSync('/dev/stdin', 'ascii').toString().trim().split ('\n').reverse ();
   var s;
-  while (s = read_line ()) {
+  pump.queue = {pop:function(){var s=read_line(); return s?event_map[s]:undefined;},peek:peek_line};
+  while (s = pump.queue.peek ()) {
     if (event_map[s]) {
-      event_map[s]();
+      pump.pump (event_map[s]);
     }
   }
 }

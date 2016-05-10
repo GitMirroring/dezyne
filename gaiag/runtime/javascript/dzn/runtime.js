@@ -26,6 +26,44 @@ if (!Array.prototype.each) {
   Array.prototype.each = Array.prototype.forEach;
 };
 
+if (!Array.prototype.find) {
+  Array.prototype.find = function(predicate) {
+    if (this === null) {
+      throw new TypeError('Array.prototype.find called on null or undefined');
+    }
+    if (typeof predicate !== 'function') {
+      throw new TypeError('predicate must be a function');
+    }
+    var list = Object(this);
+    var length = list.length >>> 0;
+    var thisArg = arguments[1];
+    var value;
+
+    for (var i = 0; i < length; i++) {
+      value = list[i];
+      if (predicate.call(thisArg, value, i, list)) {
+        return value;
+      }
+    }
+    return undefined;
+  };
+}
+
+if (!Array.prototype.last) {
+  Array.prototype.last = function (){
+    return this[this.length - 1];
+  };
+};
+
+if (!Array.prototype.remove) {
+  Array.prototype.remove = function (elem) {
+    var i = this.indexOf(elem);
+    if(i != -1)
+      this.splice(i, 1);
+    return this;
+  };
+};
+
 if (!Function.prototype.runtime) {
   Function.prototype.runtime = function (o, port, direction, name) {
     var f = this.bind (o);
@@ -90,7 +128,13 @@ function runtime(illegal) {
     }
   };
 
+  this.collateral_block = function (locator) {
+    var p;
+    if (p = locator.get(new pump())) {p.collateral_block();}
+  }.bind (this);
+  
   this.handle = function(c, f) {
+    if (c.handling) this.collateral_block (c.locator);
     if (c.handling)
       throw new Error ('runtime error: component already handling an event: ' + c.meta.name);
     c.handling = true;
@@ -101,13 +145,13 @@ function runtime(illegal) {
   };
 
   this.trace_in = function(m, e, trace) {
-      trace(this.path(m[0].meta.requires) + '.' + e + ' -> ' +
-            this.path(m[0].meta.provides) + '.' + e + '\n');
+    trace(this.path(m[0].meta.requires) + '.' + e + ' -> ' +
+          this.path(m[0].meta.provides) + '.' + e + '\n');
   };
 
   this.trace_out = function(m, e, trace) {
-      trace(this.path(m[0].meta.provides) + '.' + e + ' -> ' +
-            this.path(m[0].meta.requires) + '.' + e + '\n');
+    trace(this.path(m[0].meta.provides) + '.' + e + ' -> ' +
+          this.path(m[0].meta.requires) + '.' + e + '\n');
   };
 
   this.call_in = function(c, f, m) {
@@ -137,6 +181,135 @@ function runtime(illegal) {
           });
       });
   };
+}
+
+function identity (x) {return x;}
+var debug = identity;
+
+var fibers = function (f) {
+  function identity (x){return x;};
+  return {yield:identity,run:identity}
+}
+if (typeof (module) !== 'undefined') {
+  try {fibers = require ('fibers') } catch (e) { }
+}
+
+function pump() {
+  this.id = 0;
+  this.zero = {id:this.id};
+  this.running = false;
+  this.skip_block = [];
+  this.coroutines = [];
+  this.collateral_blocked = [];
+  this.queue = {pop:function (){},peek:function (){}};
+
+  this.at = function (id) {
+    return this.coroutines.find (function (c){return c.id == id;});
+  }.bind (this);
+
+  this.find_self = function () {
+    return this.self;
+    //return this.coroutines.find (function (c) {return c.fiber === fibers.current;});
+  }.bind (this);
+
+  this.worker = function () {
+    var event;
+    if (event = this.queue.pop ())
+      event ();
+  }.bind (this);
+
+  this.create_context = function () {
+    var id = this.id++;
+    var coroutine = {id:id};
+    var f = function (self) {
+      var r;
+      debug('create context', self.id);
+      while ((this.running || this.queue.peek ()) && !self.released) {
+        this.worker ();
+        if (!self.released) this.collateral_release (self);
+        if (self.released) self.finished = true;
+        if (this.switch_context) this.switch_context ();
+        if (!self.released) this.collateral_release (self);
+      }
+    }.bind (this);
+
+    this.coroutines.push (coroutine);
+    coroutine.fiber = fibers (f);
+    return coroutine;
+  }.bind (this);
+
+  this.collateral_block = function () {
+    var self = this.find_self ();
+    debug('collateral_block', self.id);
+    this.collateral_blocked.push (self);
+    var coroutine = this.create_context ();
+    this.coroutines = this.coroutines.filter (function (c){return c.id!=coroutine.id;});
+    fibers.yield (coroutine);
+    debug('collateral_unblock', self.id);
+  }.bind (this);
+
+  this.collateral_release = function (self) {
+    if (this.collateral_blocked.length) self.finished = true;
+    while (this.collateral_blocked.length) {
+      this.coroutines.push (this.collateral_blocked.shift ());
+      fibers.yield (this.coroutines.last ());
+    }
+  }.bind (this);
+  
+  this.block = function (port) {
+    var skip = this.skip_block.indexOf (port);
+    if (skip !== -1) {
+      this.skip_block = this.skip_block.slice (0, skip)
+        .concat (this.skip.block.slice (skip+1));
+      return;
+    }
+    var self = this.find_self ();
+    debug('block', self.id);
+    self.port = port;
+    fibers.yield (this.create_context ());
+    debug('entered context', this.find_self ().id);
+  }.bind (this);
+
+  this.release = function (port) {
+    var self = this.find_self ();
+    debug('release', self.id);
+
+    var blocked = this.coroutines.find (function (c){return c.port == port;});
+    if (!blocked) {
+      debug('skip block', self.id);
+      this.skip_block.push(port);
+      return;
+    }
+
+    debug('unblock', blocked.id);
+    debug('released', self.id);
+    self.released = true;
+
+    this.switch_context = function () {
+      delete this.switch_context;
+      delete blocked.port;
+      debug('switch from', self.id);
+      debug('to', blocked.id);
+      fibers.yield (blocked);
+    }.bind (this);
+  }.bind (this);
+
+  this.pump = function() {
+    var from = {id:-1};
+    this.zero = this.create_context ();
+    var to = this.zero;
+    while(this.queue.peek () && to != undefined) { //? || this.running) {
+      debug('switch_to ' + to.id, from.id);
+      from = to;
+      this.self = to;
+      to = to.fiber.run(to);
+      if(to === undefined) {
+        this.coroutines = this.coroutines.filter (function (c){return c.id != from.id;})
+        if (!this.coroutines.length) return;
+        to = this.coroutines.last ();
+      }
+    }
+  }.bind(this);
 }
 
 function locator(services) {
@@ -193,9 +366,40 @@ var dzn = extend (typeof (dzn !== 'undefined') && dzn ? dzn : {}, {
   connect: connect,
   extend: extend,
   locator: locator,
+  pump: pump,
   runtime: runtime,
 });
 
+function main () {
+  debug = function (msg, id) {if (true) console.log ('[' + id + '] ' + msg);}
+  var p = new dzn.pump ();
+  var q = [
+    function () {
+      console.log ('one')
+      p.block ('one');
+      console.log ('one.done')
+    },
+    function () {
+      console.log ('two')
+      p.collateral_block ();
+      console.log ('two.done')
+    },
+    function () {
+      console.log ('three')
+      p.release ('one');
+      console.log ('three.done')
+    },
+  ].reverse ();
+  p.queue = {
+    pop: function (f) {return q.pop ();}
+    ,
+    peek: function () {return q.length;}
+  };
+  fibers (p.pump).run ();
+}
+
 if (typeof (module) !== 'undefined') {
   module.exports = dzn;
+  if (require.main === module && /runtime.js/.test (require.main.filename))
+    main ();
 }

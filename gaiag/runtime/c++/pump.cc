@@ -228,11 +228,13 @@ namespace dzn
     }
 
     auto self = find_self(coroutines);
+#if 0 //DEAD CODE? verify and remove .skip_block member
     if(self->skip_block)
     {
       self->skip_block = false;
       return;
     }
+#endif
 
     self->port = p;
 

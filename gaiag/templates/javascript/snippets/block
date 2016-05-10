@@ -1,0 +1,4 @@
+#statement
+this.handling = false;
+this.rt.flush(this);
+this.locator.get(new dzn.pump()).block(this.#port);

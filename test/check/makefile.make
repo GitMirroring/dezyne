@@ -21,9 +21,6 @@
 # 
 # Code:
 
-BROKEN_javascript:=\
- $(CDIR)block.dzn\
-#
 BROKEN_run:=\
  $(CDIR)trip.dzn\
 #

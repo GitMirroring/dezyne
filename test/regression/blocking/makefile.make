@@ -39,5 +39,5 @@ BROKEN_run:=\
  $(BLOCKING_DEADLOCK)\
  $(BLOCKING_SYSTEM)\
 #
-LANGUAGES:=$(filter c++ run table verify,$(CODE_LANGUAGES) $(PSEUDO_LANGUAGES))
+LANGUAGES:=$(filter c++ javascript run table verify,$(CODE_LANGUAGES) $(PSEUDO_LANGUAGES))
 include make/files.make
