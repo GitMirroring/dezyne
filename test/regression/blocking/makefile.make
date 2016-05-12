@@ -35,6 +35,12 @@ BLOCKING_SYSTEM:=\
 BROKEN_triangle:=\
  $(BLOCKING_SYSTEM)\
 #
+BROKEN_c++:=\
+$(CDIR)BlockedSystem4.dzn\
+$(CDIR)MultipleProvidesBlocking.dzn\
+$(CDIR)SimpleBlockingDeadlock2.dzn\
+$(CDIR)SimpleBlockingGuard.dzn\
+#
 BROKEN_run:=\
  $(BLOCKING_DEADLOCK)\
  $(BLOCKING_SYSTEM)\
