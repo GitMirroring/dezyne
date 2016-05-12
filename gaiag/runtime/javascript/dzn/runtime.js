@@ -72,7 +72,7 @@ if (!Function.prototype.runtime) {
       var ff = function () {
         return f.apply (o, args);
       }.bind (this)
-      o.rt['call_' + direction] (o, ff, [port, name]);
+      return o.rt['call_' + direction] (o, ff, [port, name]);
     }
   }
 }
@@ -158,7 +158,8 @@ function runtime(illegal) {
     var trace = c.locator.get(Function.prototype, 'trace');
     this.trace_in(m, m[1], trace);
     var r = this.handle(c, f);
-    this.trace_out(m, typeof (r) === 'undefined' && 'return' || r, trace);
+    this.trace_out(m, (r === undefined ? 'return' : r), trace);
+    return r;
   }
 
   this.call_out = function(c, f, m) {
@@ -184,6 +185,7 @@ function runtime(illegal) {
 }
 
 function identity (x) {return x;}
+function debug_print (msg, id) {if (true) console.log ('[' + id + '] ' + msg);}
 var debug = identity;
 
 var fibers = function (f) {
@@ -215,7 +217,7 @@ function pump() {
   this.worker = function () {
     var event;
     if (event = this.queue.pop ())
-      event ();
+      return event ();
   }.bind (this);
 
   this.create_context = function () {
@@ -260,7 +262,7 @@ function pump() {
     var skip = this.skip_block.indexOf (port);
     if (skip !== -1) {
       this.skip_block = this.skip_block.slice (0, skip)
-        .concat (this.skip.block.slice (skip+1));
+        .concat (this.skip_block.slice (skip+1));
       return;
     }
     var self = this.find_self ();
@@ -370,8 +372,9 @@ var dzn = extend (typeof (dzn !== 'undefined') && dzn ? dzn : {}, {
   runtime: runtime,
 });
 
+  debug = debug_print;
 function main () {
-  debug = function (msg, id) {if (true) console.log ('[' + id + '] ' + msg);}
+  debug = debug_print;
   var p = new dzn.pump ();
   var q = [
     function () {

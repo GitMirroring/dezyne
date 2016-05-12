@@ -1,1 +1,1 @@
-#formal  = self.#global;
+#formal  = this.#global;

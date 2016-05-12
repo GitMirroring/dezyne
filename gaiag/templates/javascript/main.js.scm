@@ -67,7 +67,7 @@ function #.scope_model _fill_event_map(m)
 #(map
     (lambda (port)
     (map (define-on model port #{
-      '#port .#event ': m.#port .#direction .#event ,
+      '#port .#event ': function () {m.#port .#direction .#event (#(javascript:out-param-list model formal-objects));},
 #}) (filter (om:dir-matches? port)
        (om:events port)))) (om:ports model)) };
   #(map (init-port #{

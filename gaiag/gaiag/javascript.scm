@@ -50,3 +50,10 @@
                 (o ((->join ".") namespace)))
            (append (list o " = " o " || {};\n" )
                    (loop (cdr todo) namespace)))))))
+
+(define (javascript:out-param-list model formal-objects)
+  ((->join ",")
+   (map (lambda (f i)
+          (if (member (.direction f) '(inout out))
+              "{value:0}" "0"))
+        formal-objects (iota (length formal-objects)))))
