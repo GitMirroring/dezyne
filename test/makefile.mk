@@ -30,16 +30,18 @@ $(CDIR)-check:
 CLEAN := $(CLEAN) $(CDIR)/regression/examples/index.txt
 
 $(CDIR)/regression/examples/index.txt:
-	for i in $(wildcard $(@D)/*.dzn); do \
-	    echo $$(basename $$i .dzn);\
+	for i in $(sort\
+	    $(wildcard $(@D)/*.dzn)\
+	    $(wildcard $(@D)/*/project.txt)\
+	    ); do \
+	    if [ $$(basename $$i) = project.txt  ]; then\
+		echo $$(basename $$(dirname $$i));\
+	    else\
+		echo $$(basename $$i .dzn);\
+	    fi;\
 	    head -1 $$i | sed -e s,'^// *,,' -e 's,^purpose: *,,';\
 	    echo;\
 	done > $@.$$PPID~
-	for i in $(wildcard $(@D)/*/project.txt); do \
-	    echo $$(basename $$(dirname $$i));\
-	    head -1 $$i | sed -e s,'^// *,,' -e 's,^purpose: *,,';\
-	    echo;\
-	done >> $@.$$PPID~
 	mv $@.$$PPID~ $@
 
 include make/check.mk
