@@ -372,7 +372,6 @@ var dzn = extend (typeof (dzn !== 'undefined') && dzn ? dzn : {}, {
   runtime: runtime,
 });
 
-  debug = debug_print;
 function main () {
   debug = debug_print;
   var p = new dzn.pump ();

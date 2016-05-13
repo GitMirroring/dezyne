@@ -27,6 +27,12 @@ $(CDIR)-check: CDIR:=$(CDIR)
 $(CDIR)-check:
 	$(MAKE) smoke
 
+PROPER := $(PROPER) $(CDIR)/node_modules/.dummy
+$(CDIR)/node_modules/.dummy: CDIR:=$(CDIR)
+$(CDIR)/node_modules/.dummy: $(CDIR)/package.json
+	cd $(CDIR) && npm install
+	touch $@
+
 CLEAN := $(CLEAN) $(CDIR)/regression/examples/index.txt
 
 $(CDIR)/regression/examples/index.txt:

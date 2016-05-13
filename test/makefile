@@ -38,6 +38,8 @@ CCACHE:=$(shell type -p ccache)
 #TRIANGLE_MAX:=cat
 TRIANGLE_MAX:=head -50 # use `cat' for all
 VERBOSE:=
+NODE_PATH:=$(CURDIR)/node_modules
+export NODE_PATH
 
 ALL_CODE_LANGUAGES:=c c++ c++03 cs goops javascript python
 

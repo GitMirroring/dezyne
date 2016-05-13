@@ -1,0 +1,9 @@
+{
+  "name": "test",
+  "description": "development regression test",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "fibers": "^1.0.13"
+  }
+}
