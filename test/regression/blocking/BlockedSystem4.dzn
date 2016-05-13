@@ -74,7 +74,7 @@ component Blocked
   {
     blocking on provided.e(): required.trigger();
 
-    on required.notify(): provided.reply();
+    on required.notify(): provided.reply(IBlocked.Status.OK);
   }
 }
 
