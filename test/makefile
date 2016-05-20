@@ -148,7 +148,8 @@ $(DIRECTORIES:%=%-update):
 	$(MAKE) -C $(@:%-update=%) SUB=$(@:%-update=%) $(MAKEOVERRIDES) update
 
 stress:
-	DZN=$(DZN) bin/stress.sh $(CONFIG)
+#	DZN=$(DZN) bin/stress.sh $(CONFIG)
+	echo FIXME: bin/stress.sh has been disabled
 
 #ifeq ($(filter help list, $(MAKECMDGOALS)), $(MAKECMDGOALS))
 ifeq ($(MAKE_SNIPPETS),)
