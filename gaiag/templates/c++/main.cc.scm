@@ -12,7 +12,7 @@ connect_ports (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c
     #(string-if (eq? direction 'out) #{c.match("#port .#event ");#}
     #{c.match("#port .#event "); std::string tmp = c.match_return();
     dzn::trace_out(std::clog, c.system.#port .meta, tmp.substr(tmp.rfind('.')+1).c_str());
-    return to_#((c++:scope-join #f '_) reply-scope)_#reply-name(tmp); #})
+    return to_#((c++:scope-join #f '_) reply-scope)_#reply-name(tmp.substr(tmp.rfind('.')+1)); #})
   };
   #}) (filter (negate (om:dir-matches? port)) (om:events port))))
   (om:ports model))}
