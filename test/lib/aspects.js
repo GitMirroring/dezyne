@@ -159,7 +159,9 @@ triangle: function() {
     var flush = ''; // TODO: config
     var illegal = ''; // TODO: config
     var cmd =	'dzn traces -q 7 '+illegal+' '+flush+' -m '+model+' -o '+out+' '+filename;
-    return util.spawn_sync_shell(cmd)
+    return lstat(out)
+      .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
+      .then(function(){return util.spawn_sync_shell(cmd);})
       .fail (function(err) {console.log(err); return 1; });
   }
   ,

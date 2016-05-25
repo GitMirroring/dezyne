@@ -3,7 +3,7 @@
 var fs = require('fs');
 var path = require('path');
 var q = require('q');
-var util = require(__dirname + '/lib/util');
+var util = require(__dirname + '/../lib/util');
 var name = 'Test Framework';
 var title = 'Regression Tests';
 
@@ -13,7 +13,7 @@ var output = {
     output.filePath = outputFilePath;
     var fileExtension = path.extname(outputFilePath || '').split('.').join('');
     if (fileExtension) {
-      var scriptfile = __dirname + '/lib/' + fileExtension + '.js';
+      var scriptfile = __dirname + '/../lib/' + fileExtension + '.js';
       try {
         output.write = require(scriptfile).write;
       }
@@ -104,14 +104,14 @@ function processTarget(target, aspects) {
     var worklist = items
     .filter(function(item){
       var lstat = q.denodeify(fs.lstat);
-      return lstat(__dirname + '/' + path + '/' + item)
+      return lstat(process.cwd() + '/' + path + '/' + item)
       .then(function(stats) {
         return stats.isDirectory();
       });
     })
     .map(function(item) {
       return function() {
-        return util.run(__dirname + '/' + path + '/' + item + '/run', aspects)
+        return util.run(process.cwd() + '/' + path + '/' + item + '/run', aspects)
         .then(function(result) {
           output.log(item, result);
           var testStatus;
@@ -133,11 +133,11 @@ function processTarget(target, aspects) {
           result.testStatus = testStatus;
         })
         .fail(function(err) {
-          console.error('RUN FAILED!!!!' + __dirname + '/' + path + '/' + item + '/run:' + err);
+          console.error('RUN FAILED!!!!' + process.cwd() + '/' + path + '/' + item + '/run:' + err);
         });
       };
     });
-    
+
     util.parallel_n(worklist, 1)
     .then(function(results) {
       output.close(succeeded, failed);
