@@ -21,12 +21,27 @@
 # 
 # Code:
 
-smoke:
+SHELL:=bash
+
+smoke: prerequisites
 	bin/test --output=test.html
 
-test:
+test: prerequisites
 	bin/test --verbose --output=test.html
 
 DZN:=../client/bin/dzn
 stress:
 	DZN=$(DZN) bin/stress.sh $(CONFIG)
+
+
+prerequisites: server daemon
+
+server:
+	mkdir -p out
+	make -C ../server &> out/server.log &
+	sleep 1;
+
+daemon:
+	mkdir -p out
+	make -C ../daemon &> out/daemon.log &
+	sleep 1;

@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -153,7 +153,7 @@ component Sequence_control
         }
 
         on client_verify.start(ws,msg):{
-          client_verify.result (ws, ${command:{name:'verify',type:'error',result:'bla',status:1,returncode:1}}$);
+          client_verify.result (ws, $"{command:{name:'verify',type:'error',result:'bla',status:1,returncode:1}}"$);
         }
         on client_verify.cancel (ws): {}
 
@@ -163,7 +163,7 @@ component Sequence_control
           server_run.deny(ws,msg):{}
 
         on client_run.start (ws,msg): {
-          client_run.result (ws, ${command:{name:'run',type:'error',result:'bla',status:1,returncode:1}}$);
+          client_run.result (ws, $"{command:{name:'run',type:'error',result:'bla',status:1,returncode:1}}"$);
         }
         on client_run.cancel (ws): {
           s = state.IDLE;
@@ -192,7 +192,7 @@ component Sequence_control
         }
 
         on client_run.start(ws,msg): {
-          client_run.result (ws, ${command:{name:'run',type:'error',result:'bla',status:1,returncode:1}}$);
+          client_run.result (ws, $"{command:{name:'run',type:'error',result:'bla',status:1,returncode:1}}"$);
         }
         on client_run.cancel (ws): {}
 
@@ -202,7 +202,7 @@ component Sequence_control
           server_run.deny(ws,msg): {}
 
         on client_verify.start (ws,msg): {
-          client_verify.result (ws, ${command:{name:'verify',type:'error',result:'bla',status:1,returncode:1}}$);
+          client_verify.result (ws, $"{command:{name:'verify',type:'error',result:'bla',status:1,returncode:1}}"$);
         }
         on client_verify.cancel (ws): {
           s = state.IDLE;
@@ -713,7 +713,7 @@ component Debugger
           on model.result (msg): if (connected) broker.send (msg);
           on model.run (ws, msg): debugger.run (ws, msg);
           on model.selection_out (ws, msg): {
-            if (connected) broker.send (${selection:msg}$);
+            if (connected) broker.send ($"{selection:msg}"$);
             debugger.selection_out(ws, msg);
           }
         }
@@ -961,7 +961,7 @@ component Traceview
         on model.result (msg): broker.send (msg);
         on model.run (ws, msg): {}
         on model.selection_out (ws, msg): {
-          broker.send (${selection:msg}$);
+          broker.send ($"{selection:msg}"$);
           traceview.selection_out (ws, msg);
         }
       }
