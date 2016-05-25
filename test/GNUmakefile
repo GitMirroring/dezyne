@@ -22,10 +22,10 @@
 # Code:
 
 smoke:
-	bin/test
+	bin/test --output=test.html
 
 test:
-	bin/test --verbose
+	bin/test --verbose --output=test.html
 
 DZN:=../client/bin/dzn
 stress:
