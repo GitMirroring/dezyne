@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -20,9 +21,13 @@
 # 
 # Code:
 
-CXX=ccache g++
+CXX:=ccache g++
 CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
 CPPFLAGS=-I$(IN)
+GLOBALS_H=$(wildcard $(DIR)/globals.h)
+ifneq ($(GLOBALS_H),)
+CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
+endif
 
 $(OUT)/%.o: $(IN)/%.cc
 	mkdir -p $(dir $@)

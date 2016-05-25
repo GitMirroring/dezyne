@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -114,7 +115,7 @@ triangle: function() {
   ,
   build: function(dir, model, filename, baseline) {
     var out = __dirname+'/../out/'+path.basename(dir);
-    var cmd = 'make OUT='+out+' IN='+out+' -f '+__dirname+'/build.make'
+    var cmd = 'make DIR='+dir+' OUT='+out+' IN='+out+' -f '+__dirname+'/build.make'
     return util.spawn_sync_shell(cmd)
       .fail (function(err) {console.log(err); return 1; });
   }
