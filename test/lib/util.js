@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -103,6 +104,7 @@ var util = {
     var windows_p = /^win32/.test (process.platform);
     var shell = windows_p ? 'cmd.exe' : 'bash';
     var c = windows_p ? '/c' : '-c';
+    console.log ([cmd].join (' '));
     return util.spawn_sync (shell, [c, cmd], options);
   }
   ,
