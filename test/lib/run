@@ -1,4 +1,5 @@
 #! /usr/bin/env node
+// -*-javascript-*-
 
 var aspects = process.argv;
 aspects.shift(); // strip 'nodejs'
