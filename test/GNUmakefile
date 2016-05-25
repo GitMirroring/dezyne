@@ -21,7 +21,9 @@
 # 
 # Code:
 
+.PHONY: all check smoke stress test
 SHELL:=bash
+DZN:=../client/bin/dzn
 
 smoke: prerequisites
 	bin/test --output=test.html
@@ -29,10 +31,12 @@ smoke: prerequisites
 test: prerequisites
 	bin/test --verbose --output=test.html
 
-DZN:=../client/bin/dzn
-stress:
-	DZN=$(DZN) bin/stress.sh $(CONFIG)
+# quick check target
+check: prerequisites
+	bin/test -t check
 
+stress: prerequisites
+	DZN=$(DZN) bin/stress.sh $(CONFIG)
 
 prerequisites: server daemon
 

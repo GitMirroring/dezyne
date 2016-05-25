@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
-//
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,65 +20,36 @@
 //
 // Code:
 
-interface ISensor
+interface ISiren
 {
-  in void enable();
-  in void disable();
+  in void turnon();
+  in void turnoff();
 
-  out void triggered();
-  out void disabled();
-
-  behaviour b
+  behaviour c
   {
     enum States {
-        Disabled,
-        Enabled,
-        Disabling,
-        Triggered
+        Off,
+        On
     };
-    States state = States.Disabled;
+    States state = States.Off;
 
-    [state.Disabled]
+    [state.Off]
     {
-      on enable:
+      on turnon:
       {
-        state = States.Enabled;
+        state = States.On;
       }
-      on disable:
+      on turnoff:
         illegal;
     }
-    [state.Enabled]
+    [state.On]
     {
-      on enable:
+      on turnoff:
+      {
+        state = States.Off;
+      }
+      on turnon:
         illegal;
-      on disable:
-      {
-        state = States.Disabling;
-      }
-      on optional:
-      {
-        triggered;
-        state = States.Triggered;
-      }
-    }
-    [state.Disabling]
-    {
-      on enable, disable:
-        illegal;
-      on inevitable:
-      {
-        disabled;
-        state = States.Disabled;
-      }
-    }
-    [state.Triggered]
-    {
-      on enable:
-        illegal;
-      on disable:
-      {
-        state = States.Disabling;
-      }
     }
   }
 }

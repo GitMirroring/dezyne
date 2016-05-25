@@ -1,9 +1,0 @@
-verify: ilogger: check: completeness: ok
-verify: ilogger: check: deadlock: ok
-verify: ilogger: check: livelock: ok
-verify: logger: check: deterministic: ok
-verify: logger: check: completeness: ok
-verify: logger: check: illegal: ok
-verify: logger: check: deadlock: ok
-verify: logger: check: compliance: ok
-verify: logger: check: livelock: ok
