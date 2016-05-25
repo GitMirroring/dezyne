@@ -36,8 +36,6 @@ function V(st1, st2) {
  return ST.skipped;
 }
 
-var RUNNING = 0;
-var MAXPROCESSES = 1;
 function delay(ms) {
     var deferred = q.defer();
     setTimeout(deferred.resolve, ms);
@@ -128,19 +126,7 @@ var util = {
     return (buffer.toString().indexOf(sub) > -1);
   }
   ,
-  run: function(command, aspects) {
-    if (RUNNING >= MAXPROCESSES) {
-//    console.log('----------DELAY ' + command + '----------------');
-      return delay(100)
-      .then(function(result) {return util.run(command, aspects);});
-    } else {
-      return util.runNow(command, aspects);
-    }
-  }
-  ,
-  runNow: function(command, aspects) {
-    RUNNING++;
-//    console.log('-------- START ' + command + ' -----------------------' + RUNNING);
+  run: function(command, aspects, verbose) {
     var future = q.defer();
     var singleTestStartTime = new Date();
     return getcall(command,aspects)
@@ -150,11 +136,10 @@ var util = {
 
       var stdout = '';
       var stderr = '';
-      var output = '';
       var status = '';
       script.stdout.on('data', function (data) {
+        if(verbose) process.stdout.write(data);
         stdout += data;
-        output += data;
         if (util.contains(data, ST.ok)) status = V(status, ST.ok);
         if (util.contains(data, ST.failed)) status = V(status, ST.failed);
         if (util.contains(data, ST.skipped)) status = V(status, ST.skipped);
@@ -162,25 +147,22 @@ var util = {
         if (util.contains(data, ST.error)) status = V(status, ST.error);
       });
       script.stderr.on('data', function (data) {
+        if(verbose) process.stderr.write(data);
         stderr += data;
-        output += data;
       });
       script.on('close', function (code, signal) {
-        RUNNING--;
         var result = {};
         try {
           result.status = status || ST.error;
           result.returncode = signal || code;
           result.stdout = stdout;
           result.stderr = stderr;
-          result.output = output;
           future.resolve(result);
         }
         catch (err) {
           result.status = ST.error;
           result.returncode = 1;
           result.stdout = err.toString();
-          result.output = err.toString();
           future.resolve(result);
         }
       });
@@ -191,7 +173,7 @@ var util = {
     })
     .then(function(result) {
       var singleTestEndTime = new Date();
-      result.output += '\nElapsed time: ' + util.elapsedTime(singleTestStartTime, singleTestEndTime, true);
+      if(verbose) console.log('\nElapsed time: ' + util.elapsedTime(singleTestStartTime, singleTestEndTime, true));
       return result;
     });
   }

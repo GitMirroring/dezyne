@@ -111,7 +111,7 @@ function processTarget(target, aspects) {
     })
     .map(function(item) {
       return function() {
-        return util.run(process.cwd() + '/' + path + '/' + item + '/run', aspects)
+        return util.run(process.cwd() + '/' + path + '/' + item + '/run', aspects, options.verbose)
         .then(function(result) {
           output.log(item, result);
           var testStatus;
@@ -123,9 +123,6 @@ function processTarget(target, aspects) {
             status = 'failed';
             testStatus = 'failed';
             failed++;
-          }
-          if (options.verbose) {
-            console.log(result.output);
           }
           if (!options.quiet) {
             console.log('Finished test: ' + item + '; status: ' + testStatus);
