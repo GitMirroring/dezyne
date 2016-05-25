@@ -94,7 +94,6 @@ function addLine(line) {
 function processTarget(target, aspects) {
   var path = target;
   var readdir = q.denodeify(fs.readdir);
-  var status = "succeeded";
   var failed = 0;
   var succeeded = 0;
   var totalTestStartTime = new Date();
@@ -111,23 +110,15 @@ function processTarget(target, aspects) {
     })
     .map(function(item) {
       return function() {
+        console.log('[....] ' + item);
         return util.run(process.cwd() + '/' + path + '/' + item + '/run', aspects, options.verbose)
         .then(function(result) {
-          output.log(item, result);
-          var testStatus;
-          if (result.returncode === 0) {
-            testStatus = 'succeeded';
-            succeeded++;
-          }
-          else {
-            status = 'failed';
-            testStatus = 'failed';
-            failed++;
-          }
+          result.returncode === 0 ? ++succeeded : ++failed;
           if (!options.quiet) {
-            console.log('Finished test: ' + item + '; status: ' + testStatus);
+            console.log((result.returncode === 0 ? '[PASS] ' : '[FAIL] ') + item);
           }
-          result.testStatus = testStatus;
+          result.testStatus = result.returncode === 0 ? 'succeeded' : 'failed';
+          output.log(item, result);
         })
         .fail(function(err) {
           console.error('RUN FAILED!!!!' + process.cwd() + '/' + path + '/' + item + '/run:' + err);
