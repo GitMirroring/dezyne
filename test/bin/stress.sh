@@ -79,7 +79,7 @@ EOF
 ) <($DZN verify -m Alarm out/$$/Alarm.dzn) || kill -9 $XPID; ) &
     for j in $(seq 10); do
         (for i in $(seq 2); do
-            $DZN hello &>/dev/null&
+            $DZN &>/dev/null&
         done
     wait)
             done

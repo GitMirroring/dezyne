@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -26,3 +27,6 @@ smoke:
 test:
 	bin/test --verbose
 
+DZN:=../client/bin/dzn
+stress:
+	DZN=$(DZN) bin/stress.sh $(CONFIG)
