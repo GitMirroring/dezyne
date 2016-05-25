@@ -1,0 +1,153 @@
+#! /usr/bin/env nodejs
+
+var fs = require('fs');
+var path = require('path');
+var q = require('q');
+var util = require(__dirname + '/lib/util');
+var name = 'Test Framework';
+var title = 'Regression Tests';
+
+var output = {
+  result: {},
+  open: function(name, title, target, outputFilePath) {
+    output.filePath = outputFilePath;
+    var fileExtension = path.extname(outputFilePath || '').split('.').join('');
+    if (fileExtension) {
+      var scriptfile = __dirname + '/lib/' + fileExtension + '.js';
+      try {
+        output.write = require(scriptfile).write;
+      }
+      catch (error) {
+        console.error("Don't know how to create " + fileExtension + '-file (missing ' + path.basename(scriptfile) + ')');
+        process.exit(2);
+      }
+      var outputDir = path.dirname(outputFilePath);
+      fs.access(outputDir, fs.W_OK, function(error) {
+        if (error) {
+          console.error('Cannot write file in ' + outputDir + ' directory');
+          process.exit(2);
+        }
+      });
+    }
+    output.result.name = name;
+    output.result.title = title;
+    output.result.target = target;
+    output.result.startTime = new Date();
+    output.result.items = [];
+  }
+  ,
+  close: function(succeeded, failed) {
+    output.result.endTime = new Date();
+    output.result.elapsedTime = util.elapsedTime(output.result.startTime, output.result.endTime, false);
+    output.result.succeeded = succeeded;
+    output.result.failed = failed;
+    if (output.write) {
+      output.write(output.result, output.filePath);
+    }
+  }
+  ,
+  log: function(name, result) {
+    output.result.items.push({ name: name, result: result });
+  }
+  ,
+}
+
+function parse_opts(argv) {
+  var getopt = require('node-getopt');
+  var option_parser = getopt.create
+  ([
+    ['t', 'target=all', 'test target all [default]'],
+    ['a', 'aspects=all', 'test aspects all [default]'],
+    ['o', 'output=tests.html', 'output file name [default]'],
+    ['v', 'verbose', 'show test output on stdout'],
+    ['q', 'quiet', 'suppress test summary lines on stdout'],
+    ['h', 'help', 'display this help and exit'],
+  ]);
+  var help = '';
+  help += addLine(name);
+  help += addLine('Usage: tfw.js [OPTION]...');
+  help += addLine('Options:');
+  help += addLine('[[OPTIONS]]');
+  option_parser.bindHelp(help);
+  option_parser.error(function(msg) {
+    msg && console.error(msg);
+    console.error(option_parser.getHelp());
+    if (msg) {
+      process.exit(2);
+    }
+  });
+  var args = option_parser.parse(argv);
+  args.options.target = args.options.target || 'all';
+  args.options.aspects = args.options.aspects || 'all';
+  args.options.aspects = args.options.aspects.split(',');
+  args.options.output = args.options.output || 'tests.html';
+  if (args.argv.length > 2) {
+    option_parser.errorFunc('error: unknown argument: ' + args.argv[2]);
+  }
+  return args;
+}
+
+function addLine(line) {
+  return line + '\n';
+}
+
+function processTarget(target, aspects) {
+  var path = target;
+  var readdir = q.denodeify(fs.readdir);
+  var status = "succeeded";
+  var failed = 0;
+  var succeeded = 0;
+  var totalTestStartTime = new Date();
+  output.open(name, title, target, options.output);
+  readdir(path)
+  .then(function(items) {
+    var worklist = items
+    .filter(function(item){
+      var lstat = q.denodeify(fs.lstat);
+      return lstat(__dirname + '/' + path + '/' + item)
+      .then(function(stats) {
+        return stats.isDirectory();
+      });
+    })
+    .map(function(item) {
+      return function() {
+        return util.run(__dirname + '/' + path + '/' + item + '/run', aspects)
+        .then(function(result) {
+          output.log(item, result);
+          var testStatus;
+          if (result.returncode === 0) {
+            testStatus = 'succeeded';
+            succeeded++;
+          }
+          else {
+            status = 'failed';
+            testStatus = 'failed';
+            failed++;
+          }
+          if (options.verbose) {
+            console.log(result.output);
+          }
+          if (!options.quiet) {
+            console.log('Finished test: ' + item + '; status: ' + testStatus);
+          }
+          result.testStatus = testStatus;
+        })
+        .fail(function(err) {
+          console.error('RUN FAILED!!!!' + __dirname + '/' + path + '/' + item + '/run:' + err);
+        });
+      };
+    });
+    
+    util.parallel_n(worklist, 1)
+    .then(function(results) {
+      output.close(succeeded, failed);
+    });
+  })
+  .fail(function(err) {
+    console.log('Error: ' + err);
+    process.exit(1);
+  });
+}
+
+var options = parse_opts(process.argv).options;
+processTarget(options.target, options.aspects);

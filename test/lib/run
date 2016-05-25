@@ -1,0 +1,8 @@
+#! /usr/bin/env nodejs
+
+var aspects = process.argv;
+aspects.shift(); // strip 'nodejs'
+aspects.shift(); // strip the name of this script
+var dir = aspects.shift(); // first argument is the input directory; the rest is the aspects
+
+require (__dirname + '/aspects').all(aspects, dir).done(function(result) { process.exit(result); } );
