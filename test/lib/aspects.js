@@ -103,7 +103,9 @@ triangle: function() {
     var trace = dir+'/'+model+'.trace';
     return lstat(trace)
       .then (function(stats) {
-        var cmd = out+'/test < '+trace;
+        //var interpreter='node'; //WIP
+        var interpreter='';
+        var cmd = 'diff -uw '+ trace + ' <(cat '+trace +'|'+interpreter+' '+out+'/test|&'+__dirname+'/../bin/code2fdr)';
         return util.spawn_sync_shell(cmd)
           .fail (function(err) {console.log(err); return 1; });
       })
