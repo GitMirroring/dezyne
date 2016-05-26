@@ -174,7 +174,7 @@ triangle: function() {
         return 'diff -uwB '+baseline+' <(dzn --verbose verify --all -m '+model+' '+filename+' | '+__dirname+'/../bin/reorder)';
       })
       .fail (function(err) {
-        return '[ "$(dzn verify --all -m '+model+' '+filename+')" = "" ]';
+        return 'out="$(dzn verify --all -m '+model+' '+filename+')"; [ "$out" = "" ] || { echo "$out"; false; }';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd);
