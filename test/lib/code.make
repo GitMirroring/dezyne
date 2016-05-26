@@ -20,11 +20,19 @@
 # 
 # Code:
 
+define CHECKPARAM
+ifeq ($(origin $(1)), undefined)
+$$(error $(1) undefined)
+endif
+endef
+
+$(foreach i,DZN CODE MODEL IN OUT,$(eval $(call CHECKPARAM,$(i))))
+
 .PHONY:all
 
 all: $(wildcard $(IN)/*.dzn)
 	mkdir -p $(OUT)/dzn
-	for file in $(filter-out %/, $(patsubst /$(CODE)/%, %,  $(shell dzn ls -R /share/runtime/$(CODE)))); do dzn cat /share/runtime/$(CODE)/$$file > $(OUT)/$$file; done
-	for file in $^; do dzn code -l $(CODE) --depends -m $(MODEL) -o $(OUT) $$file; done
+	for file in $(filter-out %/, $(patsubst /$(CODE)/%, %,  $(shell $(DZN) ls -R /share/runtime/$(CODE)))); do $(DZN) cat /share/runtime/$(CODE)/$$file > $(OUT)/$$file; done
+	for file in $^; do $(DZN) code -l $(CODE) --depends -m $(MODEL) -o $(OUT) $$file; done
 
 -include $(patsubst $(IN)/%.dzn, $(OUT)/%.d, $(wildcard $(IN)/*.dzn))

@@ -21,6 +21,14 @@
 # 
 # Code:
 
+define CHECKPARAM
+ifeq ($(origin $(1)), undefined)
+$$(error $(1) undefined)
+endif
+endef
+
+$(foreach i,IN OUT,$(eval $(call CHECKPARAM,$(i))))
+
 CXX:=ccache g++
 CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
 CPPFLAGS=-I$(IN)
