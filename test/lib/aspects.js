@@ -37,10 +37,10 @@ function skip_filter(work, dir) {
 }
 
 var dependencies = {
-  code:     [],
-  execute:  ['traces', 'build'],
   build:    ['code'],
+  code:     [],
   convert:  [],
+  execute:  ['traces', 'build'],
   parse:    [],
   run:      ['traces'],
   table:    [],
