@@ -28,14 +28,14 @@ DZN:=../client/bin/dzn
 smoke: prerequisite
 	bin/test
 
-test: prerequisites
+test: prerequisite
 	bin/test --verbose
 
 # quick check target
 check: prerequisite
 	bin/test -t check
 
-stress: prerequisites
+stress: prerequisite
 	DZN=$(DZN) bin/stress.sh $(CONFIG)
 
 prerequisite:
