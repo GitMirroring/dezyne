@@ -81,7 +81,7 @@ function parse_opts(argv) {
   args.options.target = args.options.target || 'all';
   args.options.aspects = args.options.aspects || 'all';
   args.options.aspects = args.options.aspects.split(',');
-  args.options.output = args.options.output || 'tests.html';
+  args.options.output = args.options.output || 'test.html';
   if (args.argv.length > 2) {
     option_parser.errorFunc('error: unknown argument: ' + args.argv[2]);
   }

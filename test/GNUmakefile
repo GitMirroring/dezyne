@@ -26,10 +26,10 @@ SHELL:=bash
 DZN:=../client/bin/dzn
 
 smoke: prerequisite
-	bin/test --output=test.html
+	bin/test
 
 test: prerequisites
-	bin/test --verbose --output=test.html
+	bin/test --verbose
 
 # quick check target
 check: prerequisite
