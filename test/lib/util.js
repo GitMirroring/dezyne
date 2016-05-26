@@ -82,15 +82,17 @@ var util = {
   ,
   parallel_n: function (list /*list of q returning lambdas*/, max) {
     function next(promises) {
-      if(promises.length < list.length) {
-        var pool = promises.filter(function(e){ return !e.isFulfilled();});
-        var promise = list[promises.length]();
-        promises.push(promise);
-        pool.push(promise);
-        return q.any(pool)
-         .then(function(){return next(promises);});
-      }
-      return q.all(promises);
+      return q().then(function(){
+        if(promises.length < list.length) {
+          var pool = promises.filter(function(e){ return !e.isFulfilled();});
+          var promise = list[promises.length]();
+          promises.push(promise);
+          pool.push(promise);
+          return q.any(pool)
+            .then(function(){return next(promises);});
+        }
+        return q.all(promises);
+      });
     }
 
     var promises = list.slice(0,max).map(function(e) {return e();});
@@ -138,10 +140,12 @@ var util = {
 
       var stdout = '';
       var stderr = '';
+      var output = '';
       var status = '';
       script.stdout.on('data', function (data) {
         if(verbose) process.stdout.write(data);
         stdout += data;
+        output += data;
         if (util.contains(data, ST.ok)) status = V(status, ST.ok);
         if (util.contains(data, ST.failed)) status = V(status, ST.failed);
         if (util.contains(data, ST.skipped)) status = V(status, ST.skipped);
@@ -151,6 +155,7 @@ var util = {
       script.stderr.on('data', function (data) {
         if(verbose) process.stderr.write(data);
         stderr += data;
+        output += data;
       });
       script.on('close', function (code, signal) {
         var result = {};
@@ -159,6 +164,7 @@ var util = {
           result.returncode = signal || code;
           result.stdout = stdout;
           result.stderr = stderr;
+          result.output = output;
           future.resolve(result);
         }
         catch (err) {

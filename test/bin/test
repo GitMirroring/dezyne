@@ -100,42 +100,43 @@ function processTarget(target, aspects) {
   var totalTestStartTime = new Date();
   output.open(name, title, target, options.output);
   readdir(path)
-  .then(function(items) {
-    var worklist = items
-    .filter(function(item){
-      var lstat = q.denodeify(fs.lstat);
-      return lstat(process.cwd() + '/' + path + '/' + item)
-      .then(function(stats) {
-        return stats.isDirectory();
-      });
-    })
-    .map(function(item) {
-      return function() {
-        console.log('[....] ' + item);
-        return util.run(process.cwd() + '/' + path + '/' + item + '/run', aspects, options.verbose)
-        .then(function(result) {
-          result.returncode === 0 ? ++succeeded : ++failed;
-          if (!options.quiet) {
-            console.log((result.returncode === 0 ? '[PASS] ' : '[FAIL] ') + item);
-          }
-          result.testStatus = result.returncode === 0 ? 'succeeded' : 'failed';
-          output.log(item, result);
-        })
-        .fail(function(err) {
-          console.error('RUN FAILED!!!!' + process.cwd() + '/' + path + '/' + item + '/run:' + err);
-        });
-      };
-    });
+    .then(function(items) {
+      var worklist = items
+          .filter(function(item){
+            var lstat = q.denodeify(fs.lstat);
+            return lstat(process.cwd() + '/' + path + '/' + item)
+              .then(function(stats) {
+                return stats.isDirectory();
+              });
+          })
+          .map(function(item) {
+            return function() {
+              console.log('[....] ' + item);
+              return util.run(process.cwd() + '/' + path + '/' + item + '/run', aspects, options.verbose)
+                .then(function(result) {
+                  result.returncode === 0 ? ++succeeded : ++failed;
+                  if (!options.quiet) {
+                    console.log((result.returncode === 0 ? '[PASS] ' : '[FAIL] ') + item);
+                  }
+                  result.testStatus = result.returncode === 0 ? 'succeeded' : 'failed';
+                  output.log(item, result);
+                })
+                .fail(function(err) {
+                  console.error('RUN FAILED!!!!' + process.cwd() + '/' + path + '/' + item + '/run:' + err);
+                });
+            };
+          });
 
-    util.parallel_n(worklist, 1)
-    .then(function(results) {
-      output.close(succeeded, failed);
-    });
-  })
-  .fail(function(err) {
-    console.log('Error: ' + err);
-    process.exit(1);
-  });
+      return util.parallel_n(worklist, 1)
+        .then(function(results) {
+          output.close(succeeded, failed);
+        });
+    })
+    .fail(function(err) {
+      console.error(err + err.stack);
+      process.exit(1);
+    })
+    .done();
 }
 
 var options = parse_opts(process.argv).options;
