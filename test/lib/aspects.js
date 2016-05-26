@@ -26,6 +26,7 @@ var fs = require('fs');
 var path = require('path');
 var util = require(__dirname+'/util');
 var lstat = q.denodeify(fs.lstat);
+var dzn = __dirname + '/../../client/bin/dzn';
 
 function skip_filter(work, dir) {
   try {
@@ -87,31 +88,43 @@ var aspects = {
     }, q(0));
   }
   ,
-triangle: function() {
+  triangle: function() {
     return q(0);
   }
   ,
   code: function(dir, model, filename, baseline) {
     var out = __dirname+'/../out/'+path.basename(dir);
-    var cmd = 'make CODE=c++ MODEL='+model+' IN='+dir+' OUT='+out+' -f '+__dirname+'/code.make';
+    var cmd = 'make DZN=' + dzn + ' CODE=c++ MODEL='+model+' IN='+dir+' OUT='+out+' -f '+__dirname+'/code.make';
     return util.spawn_sync_shell(cmd)
       .fail (function(err) {console.log(err); return 1; });
   }
   ,
   execute: function(dir, model, filename, baseline) {
     var out = __dirname+'/../out/'+path.basename(dir);
-    var trace = dir+'/'+model+'.trace';
-    return lstat(trace)
-      .then (function(stats) {
-        //var interpreter='node'; //WIP
-        var interpreter='';
-        var cmd = 'diff -uw '+ trace + ' <(cat '+trace +'|'+interpreter+' '+out+'/test|&'+__dirname+'/../bin/code2fdr)';
-        return util.spawn_sync_shell(cmd)
-          .fail (function(err) {console.log(err); return 1; });
+
+    return q.all([q.denodeify(fs.readdir)(baseline).then((files)=>{return files.map((file)=>{return baseline + '/' + file;});}),
+                  q.denodeify(fs.readdir)(out).then((files)=>{return files.map((file)=>{return out + '/' + file;});})]
+                 .map((e)=>{ return e.fail(()=>{return [];}); }))
+      .then(function(files_list){
+        return [].concat.apply([],files_list)
+          .filter(function(file){ return /trace/.test(file); });
       })
-      .fail (function(err) {
-        console.log('execute: [SKIPPED] no trace file');
-        return q(0);
+      .then(function(traces) {
+        if(traces.length == 0)
+          console.log('execute: [SKIPPED] no trace file(s)');
+        return traces;
+      })
+      .then (function(traces) {
+        return traces.map(function(trace) {
+          var interpreter='';
+          var cmd = 'diff -uw '+ trace + ' <(cat '+ trace +'|'+interpreter+' '+out+'/test|&'+__dirname+'/../bin/code2fdr)';
+          return util.spawn_sync_shell(cmd)
+            .fail (function(err) {console.log(err); return 1; });
+        })
+      })
+      .then(function(exitstatuses){
+        return exitstatuses
+          .reduce(function(a, b) { return a || b; }, 0);
       });
   }
   ,
@@ -131,10 +144,10 @@ triangle: function() {
     var lstat = q.denodeify(fs.lstat);
     return lstat(baseline)
       .then (function(stats) {
-        return 'diff -uw '+baseline+' <(dzn -v parse '+filename+' 2>&1)';
+        return 'diff -uw '+baseline+' <(' + dzn + ' -v parse '+filename+' 2>&1)';
       })
       .fail (function(err) {
-        return '[ "$(dzn parse '+filename+' 2>&1)" = "" ]';
+        return '[ "$(' + dzn + ' parse '+filename+' 2>&1)" = "" ]';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd)
@@ -161,7 +174,7 @@ triangle: function() {
     var out = __dirname+'/../out/' + path.basename(dir);
     var flush = ''; // TODO: config
     var illegal = ''; // TODO: config
-    var cmd =	'dzn traces -q 7 '+illegal+' '+flush+' -m '+model+' -o '+out+' '+filename;
+    var cmd =	dzn + ' traces -q 7 '+illegal+' '+flush+' -m '+model+' -o '+out+' '+filename;
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
       .then(function(){return util.spawn_sync_shell(cmd);})
@@ -171,10 +184,10 @@ triangle: function() {
   verify: function(dir, model, filename, baseline) {
     return lstat(baseline)
       .then (function(stats) {
-        return 'diff -uwB '+baseline+' <(dzn --verbose verify --all -m '+model+' '+filename+' | '+__dirname+'/../bin/reorder)';
+        return 'diff -uwB '+baseline+' <(' + dzn + ' --verbose verify --all -m '+model+' '+filename+' | '+__dirname+'/../bin/reorder)';
       })
       .fail (function(err) {
-        return 'out="$(dzn verify --all -m '+model+' '+filename+')"; [ "$out" = "" ] || { echo "$out"; false; }';
+        return 'out="$(' + dzn + ' verify --all -m '+model+' '+filename+')"; [ "$out" = "" ] || { echo "$out"; false; }';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd);
