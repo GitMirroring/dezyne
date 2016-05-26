@@ -1,4 +1,4 @@
-#! /usr/bin/env node
+#! /usr/bin/env nodejs
 // -*-javascript-*-
 
 var fs = require('fs');
@@ -23,12 +23,10 @@ var output = {
         process.exit(2);
       }
       var outputDir = path.dirname(outputFilePath);
-      fs.access(outputDir, fs.W_OK, function(error) {
-        if (error) {
-          console.error('Cannot write file in ' + outputDir + ' directory');
-          process.exit(2);
-        }
-      });
+      if (!util.writable(outputDir)) {
+        console.error('Cannot write file in ' + outputDir + ' directory');
+        process.exit(2);
+      };
     }
     output.result.name = name;
     output.result.title = title;

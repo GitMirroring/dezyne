@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -99,6 +100,16 @@ var util = {
 
     return q.any(promises)
       .then(function(){return next(promises);});
+  }
+  ,
+  writable: function(dir) {
+    var stat = fs.lstatSync(dir);
+    if (!stat) { return false; }
+    var result = 
+      ( (process.getuid() == stat.uid) && (stat.mode & 00200) ) || // User is owner and owner can write.
+      ( (process.getgid() == stat.gid) && (stat.mode & 00020) ) || // User is in group and group can write.
+      ( stat.mode & 00002 ); // Anyone can write.
+    return result;
   }
   ,
   spawn_sync_shell: function (cmd, options) {
