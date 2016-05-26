@@ -99,35 +99,6 @@ var aspects = {
       .fail (function(err) {console.log(err); return 1; });
   }
   ,
-  execute: function(dir, model, filename, baseline) {
-    var out = __dirname+'/../out/'+path.basename(dir);
-
-    return q.all([q.denodeify(fs.readdir)(baseline).then((files)=>{return files.map((file)=>{return baseline + '/' + file;});}),
-                  q.denodeify(fs.readdir)(out).then((files)=>{return files.map((file)=>{return out + '/' + file;});})]
-                 .map((e)=>{ return e.fail(()=>{return [];}); }))
-      .then(function(files_list){
-        return [].concat.apply([],files_list)
-          .filter(function(file){ return /trace/.test(file); });
-      })
-      .then(function(traces) {
-        if(traces.length == 0)
-          console.log('execute: [SKIPPED] no trace file(s)');
-        return traces;
-      })
-      .then (function(traces) {
-        return traces.map(function(trace) {
-          var interpreter='';
-          var cmd = 'diff -uw '+ trace + ' <(cat '+ trace +'|'+interpreter+' '+out+'/test|&'+__dirname+'/../bin/code2fdr)';
-          return util.spawn_sync_shell(cmd)
-            .fail (function(err) {console.log(err); return 1; });
-        })
-      })
-      .then(function(exitstatuses){
-        return exitstatuses
-          .reduce(function(a, b) { return a || b; }, 0);
-      });
-  }
-  ,
   build: function(dir, model, filename, baseline) {
     var out = __dirname+'/../out/'+path.basename(dir);
     var cmd = 'make DIR='+dir+' OUT='+out+' IN='+out+' -f '+__dirname+'/build.make'
@@ -155,9 +126,51 @@ var aspects = {
       });
   }
   ,
+  run_traces: function(dir, model, filename, baseline, app) {
+    var out = __dirname+'/../out/'+path.basename(dir);
+    return q.all([q.denodeify(fs.readdir)(baseline)
+                  .then((files)=>files.map((file)=>baseline + '/' + file))
+                  ,
+                  q.denodeify(fs.readdir)(out)
+                  .then((files)=>files.map((file)=>out + '/' + file))]
+                 .map((e)=>e.fail(()=>[])))
+      .then(function(files_list){
+        return [].concat.apply([],files_list)
+          .filter(function(file){ return /trace/.test(file); });
+      })
+      .then(function(traces) {
+        if(traces.length == 0)
+          console.log('execute: [SKIPPED] no trace file(s)');
+        return traces;
+      })
+      .then (function(traces) {
+        return traces.map(function(trace) {
+          return app(trace);
+        })
+      })
+      .then(function(exitstatuses){
+        return exitstatuses
+          .reduce(function(a, b) { return a || b; }, 0);
+      });
+  }
+  ,
+  execute: function(dir, model, filename, baseline) {
+    var out = __dirname+'/../out/'+path.basename(dir);
+    return aspects.run_traces(dir, model, filename, baseline, function(trace){
+      return util.spawn_sync_shell('diff -uw '+ trace + ' <(cat '+ trace + ' | ' +
+                                   out + '/test |& ' +
+                                   __dirname + '/../bin/code2fdr)')
+        .fail (function(err) {console.log(err); return 1; });
+    });
+  }
+  ,
   run: function(dir, model, filename, baseline) {
-    console.log('run: [TODO]');
-    return q(0);
+    return aspects.run_traces(dir, model, filename, baseline, function(trace){
+      return util.spawn_sync_shell('diff -uw '+ trace + ' <(cat '+ trace + ' | ' +
+                                   dzn + ' run -m ' + model + ' ' + filename + ' |& ' +
+                                   'grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')')
+        .fail (function(err) {console.log(err); return 1; });
+    });
   }
   ,
   table: function(dir, model, filename, baseline) {
