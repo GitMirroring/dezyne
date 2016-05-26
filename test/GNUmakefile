@@ -25,27 +25,18 @@
 SHELL:=bash
 DZN:=../client/bin/dzn
 
-smoke: prerequisites
+smoke: prerequisite
 	bin/test --output=test.html
 
 test: prerequisites
 	bin/test --verbose --output=test.html
 
 # quick check target
-check: prerequisites
+check: prerequisite
 	bin/test -t check
 
 stress: prerequisites
 	DZN=$(DZN) bin/stress.sh $(CONFIG)
 
-prerequisites: server daemon
-
-server:
-	mkdir -p out
-	make -C ../server &> out/server.log &
-	sleep 1;
-
-daemon:
-	mkdir -p out
-	make -C ../daemon &> out/daemon.log &
-	sleep 1;
+prerequisite:
+	timeout 2 $(DZN) hello || { echo "timeout running: dzn hello" 1>&2; kill -9 $$PPID; }
