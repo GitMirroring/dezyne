@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -43,6 +43,8 @@ namespace dzn
     dzn::runtime runtime;
     System system;
 
+    std::map<std::string, std::function<void()>> lookup;
+
     std::queue<std::string> expect;
     std::mutex mutex;
     std::condition_variable condition;
@@ -63,28 +65,42 @@ namespace dzn
     {
       std::unique_lock<std::mutex> lock(mutex);
       condition.wait(lock, [this]{return not expect.empty();});
-      std::string tmp = expect.front();
-      expect.pop();
+      std::string tmp = expect.front(); expect.pop();
+      auto it = lookup.find(tmp);
+      while(it != lookup.end())
+      {
+        it->second();
+        condition.wait(lock, [this]{return not expect.empty();});
+        tmp = expect.front(); expect.pop();
+        it = lookup.find(tmp);
+      }
       return tmp;
     }
     void match(const std::string& actual)
     {
-      std::unique_lock<std::mutex> lock(mutex);
-      condition.wait(lock, [this]{return not expect.empty();});
+      std::string tmp = match_return();
 
-      if(actual != expect.front())
-        throw std::runtime_error("unmatched expectation: \"" + expect.front() + "\" got: \"" + actual + "\"");
-
-      expect.pop();
+      if(actual != tmp)
+        throw std::runtime_error("unmatched expectation: \"" + actual + "\" got: \"" + tmp + "\"");
     }
-    void operator()(const std::map<std::string, std::function<void()>>& lookup)
+    void operator()(std::map<std::string, std::function<void()>>&& lookup, std::set<std::string>&& required_ports)
     {
+      this->lookup = std::move(lookup);
+
+      std::string port;
       std::string str;
+
       while(std::cin >> str)
       {
-        auto it = lookup.find(str);
-        if(it == lookup.end())
+        auto it = this->lookup.find(str);
+        if(it == this->lookup.end() || port.size())
         {
+          std::string p = str.substr(0, str.find('.'));
+          if(it == this->lookup.end() && required_ports.find(p) != required_ports.end())
+          {
+            if(port.empty() || port != p) port = p;
+            else port.clear();
+          }
           std::unique_lock<std::mutex> lock(mutex);
           condition.notify_one();
           expect.push(str);
@@ -92,6 +108,7 @@ namespace dzn
         else
         {
           pump(it->second);
+          port.clear();
         }
       }
     }

@@ -53,5 +53,5 @@ main(int argc, char* argv[])
   dzn::container<#((om:scope-name (string->symbol "::")) model)> c(argc > 1 && argv[1] == std::string("--flush"));
 
   connect_ports (c);
-  c(event_map (c));
+  c(event_map (c), {#((->join ",") (map (lambda (port) (list "\"" (.name port) "\"")) (filter om:requires? (om:ports model))))});
 }
