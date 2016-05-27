@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -66,26 +67,30 @@ var aspects = {
     var derived = work.append_map(depend).unique();
     work = work.filter(function(e) { return derived.indexOf(e) == -1;});
 
-    return aspects.test(work, dir);
+    return aspects.test(work, {}, dir).then (function(result) { return result.exitcode; });
   }
   ,
-  test: function(work, dir, model, filename, baseline) {
+  test: function(work, done, dir, model, filename, baseline) {
     return work.reduce(function(promise, e) {
       return promise.then(function(result1) {
+        if (done[e]) return result1;
         var modelname = model || path.basename(dir);
         console.log(e + '[' + modelname + '] ...');
-        return aspects.test(dependencies[e], dir, model, filename, baseline)
-          .then(function(result1) {
-            return aspects[e](dir,
-                              modelname,
-                              filename || dir + '/' + modelname + '.dzn',
-                              baseline || (dir + '/baseline/' + e + '/' + modelname))
-              .then(function(result2){ return result1 || result2; });
+        return aspects.test(dependencies[e], result1.done, dir, model, filename, baseline)
+          .then(function(result) {
+            return result.exitcode && result
+            || aspects[e](dir,
+                          modelname,
+                          filename || dir + '/' + modelname + '.dzn',
+                          baseline || (dir + '/baseline/' + e + '/' + modelname))
+                       .then(function(exitcode){ var done = result.done; done[e] = true; return {exitcode:exitcode, done:done};});
           })
-          .then(function(result2) { console.log(e + '[' + modelname + ']: ' + (result2 ? (result2 == 'ERROR' ? '[ERROR]' : '[FAILED]') : '[OK]'));
-                                    return result1 || result2; });
+          .then(function(result2) { console.log(e + '[' + modelname + ']: ' + (result2.exitcode ? (result2.exitcode == 'ERROR' ? '[ERROR]' : '[FAILED]') : '[OK]'));
+                                    var done = result2.done; done[e] = true;
+                                    return {exitcode: result1.exitcode || result2.exitcode, done:done };
+                                  });
       });
-    }, q(0));
+    }, q({exitcode:0, done:done}));
   }
   ,
   triangle: function() {
@@ -129,11 +134,11 @@ var aspects = {
   run_traces: function(dir, model, filename, baseline, app) {
     var out = __dirname+'/../out/'+path.basename(dir);
     return q.all([q.denodeify(fs.readdir)(baseline)
-                  .then((files)=>files.map((file)=>baseline + '/' + file))
+                  .then(function (files) { return files.map( function(file) { return baseline + '/' + file; }); })
                   ,
                   q.denodeify(fs.readdir)(out)
-                  .then((files)=>files.map((file)=>out + '/' + file))]
-                 .map((e)=>e.fail(()=>[])))
+                  .then(function (files) { return files.map( function (file) { return out + '/' + file; }); })]
+                 .map(function (e) { return e.fail( function () { return []; }); }))
       .then(function(files_list){
         return [].concat.apply([],files_list)
           .filter(function(file){ return /trace/.test(file); });
@@ -144,20 +149,16 @@ var aspects = {
         return traces;
       })
       .then (function(traces) {
-        return traces.map(function(trace) {
-          return app(trace);
-        })
-      })
-      .then(function(exitstatuses){
-        return exitstatuses
-          .reduce(function(a, b) { return a || b; }, 0);
+        return traces.reduce(function(promise, trace) {
+          return promise.then(function(result1){return app(trace).then(function(result2){ return result1 || result2; }); });
+        }, q(0))
       });
   }
   ,
   execute: function(dir, model, filename, baseline) {
     var out = __dirname+'/../out/'+path.basename(dir);
     return aspects.run_traces(dir, model, filename, baseline, function(trace){
-      return util.spawn_sync_shell('diff -uw '+ trace + ' <(cat '+ trace + ' | ' +
+      return util.spawn_sync_shell('timeout 10 diff -uw '+ trace + ' <(cat '+ trace + ' | ' +
                                    out + '/test |& ' +
                                    __dirname + '/../bin/code2fdr)')
         .fail (function(err) {console.log(err); return 1; });
@@ -166,10 +167,11 @@ var aspects = {
   ,
   run: function(dir, model, filename, baseline) {
     return aspects.run_traces(dir, model, filename, baseline, function(trace){
-      return util.spawn_sync_shell('diff -uw '+ trace + ' <(cat '+ trace + ' | ' +
+      return util.spawn_sync_shell('timeout 10 diff -uw '+ trace + ' <(cat '+ trace + ' | ' +
                                    dzn + ' run -m ' + model + ' ' + filename + ' |& ' +
                                    'grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')')
-        .fail (function(err) {console.log(err); return 1; });
+        .fail (function(err) {console.log(err); return 1; })
+        .then(function(result){console.log('diff: ' + result); return result;});
     });
   }
   ,
