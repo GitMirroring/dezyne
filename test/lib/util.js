@@ -47,7 +47,7 @@ function getcall(command,aspects) {
   var lstat = q.denodeify(fs.lstat);
   return lstat(command)
     .then(function(stats) { return {command:command, args:aspects}; })
-    .fail(function(err) { return {command:__dirname + '/' + path.basename(command), args:[path.dirname(command)].concat(aspects)}; });
+    .fail(function(err) { return {command:__dirname + '/../bin/' + path.basename(command), args:[path.dirname(command)].concat(aspects)}; });
 }
 
 if (!Array.prototype.append_map) {
