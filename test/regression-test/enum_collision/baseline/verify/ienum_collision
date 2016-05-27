@@ -1,0 +1,3 @@
+verify: ienum_collision: check: completeness: ok
+verify: ienum_collision: check: deadlock: ok
+verify: ienum_collision: check: livelock: ok

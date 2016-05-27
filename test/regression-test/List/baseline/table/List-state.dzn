@@ -1,0 +1,88 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface Iterator {
+  extern element $int$;
+  enum end {yes, no};
+  in end next(element elmt);
+
+  behaviour {
+    end done = end.no;
+
+    [done.yes]
+    on next:
+    reply(done);
+    [done.no]
+    on next:
+    {
+      [true]
+      {
+        reply(done);
+        done = end.yes;
+      }
+      reply(done);
+    }
+  }
+}
+
+interface IList {
+  in void step();
+
+  behaviour {
+
+    [true]
+    on step:
+    {}
+  }
+}
+
+component List {
+  provides IList pp;
+  requires Iterator list;
+
+  behaviour {
+
+    Iterator.end head() {
+      Iterator.element elmt;
+      Iterator.end it = list.next(elmt);
+      return it;
+    }
+
+    void tail(Iterator.end done) {
+      if (done == Iterator.end.no) {
+        Iterator.element elmt;
+        done = list.next(elmt);
+        tail(done);
+      }
+      return;
+    }
+
+    [true]
+    on pp.step():
+    {
+      Iterator.end it = head();
+      tail(it);
+    }
+  }
+}
+

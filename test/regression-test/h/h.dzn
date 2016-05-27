@@ -1,0 +1,514 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// ctrl.hcalibrate robot.tcalibrate robot.tcalibrated robot.return ctrl.return
+
+interface IHandle
+{
+  in void hcalibrate();
+  out void hcalibrated();
+  in void stop();
+
+  in void operate(); // start next batch
+  out void finished(); // batch finished
+
+  behaviour
+  {
+    enum State {Lost, Calibrating, Idle, Operating};
+    State s = State.Lost;
+
+    on stop: {s = State.Lost;}
+
+    [s.Lost]
+    {
+      on hcalibrate:
+        {
+          s = State.Calibrating;
+        }
+      // on hcalibrate:
+      //   {
+      //     hcalibrated;
+      //     s = State.Idle;
+      //   }
+      on operate:
+        illegal;
+      on operate:
+        {}
+    }
+    [s.Calibrating]
+      {
+       on hcalibrate:
+         illegal;
+       on operate:
+         illegal;
+       on operate:
+         {}
+       on inevitable:
+         {
+           hcalibrated;
+           s = State.Idle;
+         }
+     }
+     [s.Idle]
+     {
+       on hcalibrate:
+         illegal;
+       on hcalibrate:
+         {}
+       on operate:
+         s = State.Operating;
+       on operate:
+         finished;
+     }
+    [s.Operating]
+    {
+      on hcalibrate:
+        illegal;
+      on hcalibrate:
+        {}
+      on operate:
+        illegal;
+      on operate:
+        {}
+      on inevitable:
+        {
+          s = State.Idle;
+          finished;
+        }
+    }
+  }
+}
+
+interface ITransfer
+{
+  extern TrPosition $int$;
+
+  in void tcalibrate();
+  out void tcalibrated();
+  in void stop();
+
+  in void move(TrPosition x, TrPosition y);
+  out void arrived();
+  in void transfer(TrPosition x, TrPosition y);
+  out void picked();
+  out void placed();
+
+  behaviour
+  {
+    enum State {Lost, Calibrating, Ready, Moving, Transferring};
+    State s = State.Lost;
+    bool isPicked = false;
+
+    on stop: s = State.Lost;
+
+    [s.Lost]
+    {
+      // on tcalibrate:
+      //   s = State.Calibrating;
+      on tcalibrate:
+        {
+          tcalibrated;
+          s = State.Ready;
+        }
+      on move, transfer: illegal;
+    }
+    [s.Calibrating]
+    {
+      on inevitable:
+        {
+          tcalibrated;
+          s = State.Ready;
+        }
+      on tcalibrate, move, transfer: illegal;
+    }
+    // [s.Ready]
+    // {
+    //   on move: s = State.Moving;
+    //   on move: arrived;
+
+    //   on transfer: {s = State.Transferring; isPicked = false;}
+    //   on transfer: {s = State.Transferring; picked; isPicked = true;}
+    //   on transfer: {s = State.Ready; picked; placed;}
+
+    //   on tcalibrate: illegal;
+    // }
+    // [s.Moving]
+    // {
+    //   on inevitable: {arrived; s = State.Ready;}
+
+    //   on tcalibrate, move, transfer: illegal;
+    // }
+    // [s.Transferring]
+    // {
+    //   on inevitable: [!isPicked] {picked; isPicked = true;}
+    //   on inevitable: [isPicked] {placed; s = State.Ready;}
+
+    //   on tcalibrate, move, transfer: illegal;
+    // }
+  }
+}
+
+// interface IInspect
+// {
+//   in void icalibrate();
+//   out void icalibrated();
+//   in void stop();
+
+//   in void inspect(); // inspect ball dropped onto stage
+//   out void accepted(); // at output take-over waiting to be relieved of accepted ball
+//   out void rejected(); // at output take-over waiting to be relieved of rejected ball
+//   in void prepare(); // move to input take-over and prepare to receive next ball
+//   out void prepared(); // at input take-over ready to receive next ball
+
+//   behaviour
+//   {
+//     enum State {Lost, Ready, Calibrating, Inspecting, Waiting, Preparing};
+//     State s = State.Lost;
+
+//     on stop: s = State.Lost;
+
+//     [s.Lost]
+//     {
+//       on icalibrate: s = State.Calibrating;
+//       on icalibrate: {icalibrated; s = State.Ready;}
+//       on inspect, prepare: illegal;
+//     }
+//     [s.Calibrating]
+//     {
+//       on icalibrate, inspect, prepare: illegal;
+//       on inevitable: {icalibrated; s = State.Ready;}
+//     }
+//     [s.Ready]
+//     {
+//       on icalibrate, prepare: illegal;
+//       on inspect: s = State.Inspecting;
+//     }
+//     [s.Inspecting]
+//     {
+//       on icalibrate, prepare, inspect: illegal;
+//       on inevitable: {accepted; s = State.Waiting;}
+//       on inevitable: {rejected; s = State.Waiting;}
+//     }
+//     [s.Waiting]
+//     {
+//       on prepare: s = State.Preparing;
+//       on prepare: {prepared; s = State.Ready;}
+//       on icalibrate, inspect: illegal;
+//     }
+//     [s.Preparing]
+//     {
+//       on icalibrate, prepare, inspect: illegal;
+//       on inevitable: {prepared; s = State.Ready;}
+//     }
+//   }
+// }
+
+// interface IFeed
+// {
+//   in void fcalibrate();
+//   out void fcalibrated();
+//   in void stop();
+
+//   in void produceBall();
+//   out void consumeNextBall();
+//   out void consumeLastBall();
+    
+//   behaviour
+//   {
+//     enum State {Lost, Calibrating, Idle, Preparing, Prepared};
+//     State s = State.Lost;
+        
+//     on stop: s = State.Lost;
+        
+//     [s.Lost]
+//     {
+//       on fcalibrate: {s = State.Calibrating;}      
+//       on fcalibrate: {fcalibrated; s = State.Idle;}      
+//       on produceBall: illegal;  
+//     }
+//     [s.Calibrating]
+//     {
+//       on inevitable: {fcalibrated; s = State.Idle;}
+//       on fcalibrate, produceBall: illegal;
+//     }
+//     [s.Idle]
+//     {
+//       on produceBall: {s = State.Preparing;}
+//       on produceBall: {consumeNextBall; s = State.Prepared;}
+//       on produceBall: {consumeLastBall; s = State.Idle;}
+//       on fcalibrate: illegal;
+//     }
+//     [s.Preparing]
+//     {
+//       on inevitable: {consumeNextBall; s = State.Prepared;}
+//       on inevitable: {consumeLastBall; s = State.Idle;}
+//       on fcalibrate, produceBall: illegal;
+//     }
+//     [s.Prepared]
+//     {
+//       on produceBall: {s = State.Preparing;}
+//       on produceBall: {consumeNextBall; s = State.Prepared;}
+//       on produceBall: {consumeLastBall; s = State.Idle;}
+//       on fcalibrate: illegal;
+//     }
+//   }
+// }
+
+// interface IConvey
+// {
+//   in void convey();
+//   out void conveyed();
+//   in void stop();
+
+//   behaviour
+//   {
+//     enum State {Idle, Conveying};
+//     State s = State.Idle;
+
+//     on stop: s = State.Idle;
+
+//     [s.Idle] on convey: s = State.Conveying;
+//     [s.Idle] on convey: conveyed;
+//     [s.Conveying]
+//     {
+//       on convey: illegal;
+//       on inevitable: {conveyed; s = State.Idle;}
+//     }
+//   }
+// }
+
+component h
+{
+  provides IHandle ctrl;
+  requires ITransfer robot;
+  // requires IInspect inspector;
+  // requires IFeed feedPort;
+  // requires IConvey acceptPort;
+  // requires IConvey rejectPort;
+
+
+  behaviour
+  {
+    enum State {Lost, Calibrating, Idle, Operating};
+    subint usedCount {0..4};
+
+    enum Operation {PreparingInput, TransferringInput, PreparingOutput, TransferringOutput, Finalizing};
+
+    State s = State.Lost;
+    usedCount calibrated = 0;
+    usedCount requiredCalibrations = 3; // nr of subsystems requiring calibration (robot, inspector, feedPort)
+    Operation o = Operation.PreparingInput;
+
+    // bool isLastBall = false;
+    // bool isBallAtInput = false; // FeedPort ready for input transfer
+    // bool isRobotAtInput = false;
+    // bool isRobotAtOutput = false;
+    // bool isInspectorAtInput = false;
+    // bool isInspectorAtOutput = false;
+    // bool isBallAccepted = false;
+    // bool isAcceptEmpty = true;
+    // bool isRejectEmpty = true;
+
+    void tryCalibrated() {
+      calibrated = calibrated + 1;
+      if (calibrated == requiredCalibrations)
+      {
+        s = State.Idle;
+        // isInspectorAtInput = true;
+        // isInspectorAtOutput = false;
+        ctrl.hcalibrated();
+      }
+    }
+    void ignoreIllegal() {
+      // NoOp instead of illegal =>
+      // no assert on illegal control commands received from UI.
+      // This functionality could be moved to a separate armour component
+    }
+    // void startBatch() {
+    //   s = State.Operating;
+    //   isLastBall = false;
+    //   prepareInputTransfer();
+    // }
+    // void finalizeBatch() {
+    //   s = State.Idle;
+    //   ctrl.finished();
+    // }
+    // void prepareInputTransfer() {
+    //   o = Operation.PreparingInput;
+    //   if (!isBallAtInput) {feedPort.produceBall(); isBallAtInput = false;}
+    //   if (!isInspectorAtInput) {inspector.prepare(); isInspectorAtInput = false;}
+    //   if (!isRobotAtInput) {sendRobotToInputPick(); isRobotAtInput = false;}
+
+    //   tryInputTransfer();
+    // }
+    // void sendRobotToInputPick() {
+    //   robot.move($0$, $0$);
+    //   isRobotAtOutput = false;
+    //   isRobotAtInput = false;
+    // }
+    // void tryInputTransfer() {
+    //   if (isBallAtInput && isRobotAtInput && isInspectorAtInput) {
+    //     robot.transfer($0$, $0$);
+    //     o = Operation.TransferringInput;
+    //   }
+    // }
+    // void tryOutputTransfer() {
+    //   if (isRobotAtOutput && isInspectorAtOutput) {
+    //     if (isAcceptEmpty && isBallAccepted) {
+    //       robot.transfer($0$, $0$);
+    //       o = Operation.TransferringOutput;
+    //     }
+    //     if (isRejectEmpty && !isBallAccepted) {
+    //       robot.transfer($0$, $0$);
+    //       o = Operation.TransferringOutput;
+    //     }
+    //   }
+    // }
+    // void tryFinished() {
+    //   if (isLastBall && !isBallAtInput && isAcceptEmpty && isRejectEmpty && isRobotAtInput && isInspectorAtInput) {
+    //     s = State.Idle;
+    //     ctrl.finished();
+    //   }
+    // }
+    // void manuallyRemoveStrayMaterial() {
+    //   isBallAtInput = false;
+    //   isAcceptEmpty = true;
+    //   isRejectEmpty = true;
+    // }
+
+    // on ctrl.stop():
+    //   {
+    //     robot.stop();
+    //     inspector.stop();
+    //     feedPort.stop();
+    //     acceptPort.stop();
+    //     rejectPort.stop();
+    //     s = State.Lost;
+
+    //     manuallyRemoveStrayMaterial();
+    //   }
+
+    on ctrl.hcalibrate(): [s.Lost]
+    {
+      robot.tcalibrate();
+      // inspector.calibrate();
+      // feedPort.calibrate();
+
+      calibrated = 0;
+      s = State.Calibrating;
+    }
+    on ctrl.hcalibrate(): [!s.Lost] ignoreIllegal();
+
+    [s.Calibrating]
+      {
+       on robot.tcalibrated()
+         //,inspector.calibrated()
+         //,feedPort.calibrated()
+         : tryCalibrated();
+     }
+
+    // on ctrl.operate(): [s.Idle] startBatch();
+    // on ctrl.operate(): [!s.Idle] ignoreIllegal();
+
+    // [s.Operating] // batch processing
+    // {
+    //   [o.PreparingInput] // synchronization of feedPort, inspector and robot
+    //   {
+    //     on feedPort.consumeNextBall(): {isLastBall = false; isBallAtInput = true; tryInputTransfer();}
+    //     on feedPort.consumeLastBall(): {isLastBall = true; isBallAtInput = true; tryInputTransfer();}
+    //     on inspector.prepared(): {isInspectorAtInput = true; tryInputTransfer();}
+    //     on inspector.accepted, inspector.rejected(): illegal;
+    //     on robot.arrived(): {isRobotAtInput = true; tryInputTransfer();}
+    //     on robot.picked(), robot.placed(): illegal;
+    //     on acceptPort.conveyed(): isAcceptEmpty = true;
+    //     on rejectPort.conveyed(): isRejectEmpty = true;
+    //   }
+    //   [o.TransferringInput]
+    //   {
+    //     on feedPort.consumeNextBall(): {isLastBall = false; isBallAtInput = true;}
+    //     on feedPort.consumeLastBall(): {isLastBall = true; isBallAtInput = true;}
+    //     on inspector.prepared(), inspector.accepted(), inspector.rejected(): illegal;
+    //     on robot.picked(): [!isLastBall] {feedPort.produceBall(); isBallAtInput = false;}
+    //     on robot.picked(): [isLastBall] {isBallAtInput = false;}
+    //     on robot.placed(): {isInspectorAtInput = false; inspector.inspect(); isRobotAtInput = false; robot.move($0$, $0$); o = Operation.PreparingOutput;}
+    //     on robot.arrived(): illegal;
+    //     on acceptPort.conveyed(): isAcceptEmpty = true;
+    //     on rejectPort.conveyed(): isRejectEmpty = true;
+    //   }
+    //   [o.PreparingOutput] // synchronization of robot, inspector and (acceptPort or rejectPort)
+    //   {
+    //     on feedPort.consumeNextBall(): {isLastBall = false; isBallAtInput = true;}
+    //     on feedPort.consumeLastBall(): {isLastBall = true; isBallAtInput = true;}
+    //     on inspector.prepared(): illegal;
+    //     on inspector.accepted(): {isBallAccepted = true; isInspectorAtOutput = true; tryOutputTransfer();}
+    //     on inspector.rejected(): {isBallAccepted = false; isInspectorAtOutput = true; tryOutputTransfer();}
+    //     on robot.picked(), robot.placed(): illegal;
+    //     on robot.arrived(): {isRobotAtOutput = true; tryOutputTransfer();}
+    //     on acceptPort.conveyed(): {isAcceptEmpty = true; tryOutputTransfer();}
+    //     on rejectPort.conveyed(): {isRejectEmpty = true; tryOutputTransfer();}
+    //   }
+    //   [o.TransferringOutput]
+    //   {
+    //     on feedPort.consumeNextBall(): {isLastBall = false; isBallAtInput = true;}
+    //     on feedPort.consumeLastBall(): {isLastBall = true; isBallAtInput = true;}
+    //     on inspector.prepared(): isInspectorAtInput = true;
+    //     on inspector.accepted(), inspector.rejected(): illegal;
+    //     on robot.picked(): {isInspectorAtOutput = false; inspector.prepare();}
+    //     on robot.placed(): [isBallAccepted] {isAcceptEmpty = false; acceptPort.convey(); sendRobotToInputPick(); if (isLastBall && !isBallAtInput) o = Operation.Finalizing; else o = Operation.PreparingInput;}
+    //     on robot.placed(): [!isBallAccepted] {isRejectEmpty = false; rejectPort.convey(); sendRobotToInputPick(); if (isLastBall && !isBallAtInput) o = Operation.Finalizing; else o = Operation.PreparingInput;}
+    //     on robot.arrived(): illegal;
+    //     on acceptPort.conveyed(): isAcceptEmpty = true;
+    //     on rejectPort.conveyed(): isRejectEmpty = true;
+    //   }
+    //   [o.Finalizing]
+    //   {
+    //     on feedPort.consumeNextBall(), feedPort.consumeLastBall(): illegal;
+    //     on inspector.prepared(): {isInspectorAtInput = true; tryFinished();}
+    //     on inspector.accepted(), inspector.rejected(): illegal;
+    //     on robot.arrived(): {isRobotAtInput = true; tryFinished();}
+    //     on robot.picked(), robot.placed(): illegal;
+    //     on acceptPort.conveyed(): {isAcceptEmpty = true; tryFinished();}
+    //     on rejectPort.conveyed(): {isRejectEmpty = true; tryFinished();}
+    //   }
+    // }
+
+    //[!s.Operating]
+    //{
+      // none of the operational output events of any of the subjects should arrive when not operational
+      // on robot.arrived(), robot.picked(), robot.placed(): illegal;
+      // on inspector.prepared(), inspector.accepted(), inspector.rejected(): illegal;
+      // on feedPort.consumeNextBall(), feedPort.consumeLastBall(): illegal;
+      // on acceptPort.conveyed(): illegal;
+      // on rejectPort.conveyed(): illegal;
+    // }
+    [!s.Calibrating]
+    {
+      on
+        robot.tcalibrated()
+        //,inspector.calibrated()
+        //, feedPort.calibrated()
+        :illegal;
+    }
+  }
+}
+

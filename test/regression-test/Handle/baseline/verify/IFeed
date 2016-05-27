@@ -1,0 +1,3 @@
+verify: IFeed: check: completeness: ok
+verify: IFeed: check: deadlock: ok
+verify: IFeed: check: livelock: ok

@@ -1,0 +1,12 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: Reply5: check: deterministic: ok
+verify: Reply5: check: completeness: ok
+verify: Reply5: check: illegal: ok
+verify: Reply5: check: deadlock: ok
+verify: Reply5: check: compliance: ok
+verify: Reply5: check: livelock: ok
+verify: U: check: completeness: ok
+verify: U: check: deadlock: ok
+verify: U: check: livelock: ok

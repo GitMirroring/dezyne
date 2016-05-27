@@ -1,0 +1,12 @@
+verify: foo_i89_I: check: completeness: ok
+verify: foo_i89_I: check: deadlock: ok
+verify: foo_i89_I: check: livelock: ok
+verify: inner_i24_foo_i23_I: check: completeness: ok
+verify: inner_i24_foo_i23_I: check: deadlock: ok
+verify: inner_i24_foo_i23_I: check: livelock: ok
+verify: inner_i66_space: check: deterministic: ok
+verify: inner_i66_space: check: completeness: ok
+verify: inner_i66_space: check: illegal: ok
+verify: inner_i66_space: check: deadlock: ok
+verify: inner_i66_space: check: compliance: ok
+verify: inner_i66_space: check: livelock: ok

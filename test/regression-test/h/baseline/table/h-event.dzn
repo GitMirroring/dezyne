@@ -1,0 +1,172 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface IHandle {
+  in void hcalibrate();
+  out void hcalibrated();
+  in void stop();
+  in void operate();
+  out void finished();
+
+  behaviour {
+    enum State {Lost, Calibrating, Idle, Operating};
+    State s = State.Lost;
+
+    on stop:
+    {
+      [s.Operating || s.Idle || s.Calibrating || s.Lost]
+      s = State.Lost;
+    }
+    on hcalibrate:
+    {
+      [s.Lost]
+      s = State.Calibrating;
+      [s.Operating || s.Idle || s.Calibrating]
+      illegal;
+      [s.Operating || s.Idle]
+      {}
+    }
+    on operate:
+    {
+      [s.Operating || s.Calibrating || s.Lost]
+      illegal;
+      [s.Operating || s.Calibrating || s.Lost]
+      {}
+      [s.Idle]
+      s = State.Operating;
+      [s.Idle]
+      finished;
+    }
+    on inevitable:
+    {
+      [s.Calibrating]
+      {
+        hcalibrated;
+        s = State.Idle;
+      }
+      [s.Operating]
+      {
+        s = State.Idle;
+        finished;
+      }
+    }
+  }
+}
+
+interface ITransfer {
+  extern TrPosition $int$;
+  in void tcalibrate();
+  out void tcalibrated();
+  in void stop();
+  in void move(TrPosition x, TrPosition y);
+  out void arrived();
+  in void transfer(TrPosition x, TrPosition y);
+  out void picked();
+  out void placed();
+
+  behaviour {
+    enum State {Lost, Calibrating, Ready, Moving, Transferring};
+    State s = State.Lost;
+    bool isPicked = false;
+
+    on stop:
+    {
+      [s.Transferring || s.Moving || s.Ready || s.Calibrating || s.Lost]
+      s = State.Lost;
+    }
+    on tcalibrate:
+    {
+      [s.Lost]
+      {
+        tcalibrated;
+        s = State.Ready;
+      }
+      [s.Calibrating]
+      illegal;
+    }
+    on move:
+    {
+      [s.Calibrating || s.Lost]
+      illegal;
+    }
+    on transfer:
+    {
+      [s.Calibrating || s.Lost]
+      illegal;
+    }
+    on inevitable:
+    [s.Calibrating]
+    {
+      tcalibrated;
+      s = State.Ready;
+    }
+  }
+}
+
+component h {
+  provides IHandle ctrl;
+  requires ITransfer robot;
+
+  behaviour {
+    enum State {Lost, Calibrating, Idle, Operating};
+    subint usedCount {0..4};
+    enum Operation {PreparingInput, TransferringInput, PreparingOutput, TransferringOutput, Finalizing};
+    State s = State.Lost;
+    usedCount calibrated = 0;
+    usedCount requiredCalibrations = 3;
+    Operation o = Operation.PreparingInput;
+
+    void tryCalibrated() {
+      calibrated = calibrated + 1;
+      if (calibrated == requiredCalibrations) {
+        s = State.Idle;
+        ctrl.hcalibrated();
+      }
+      return;
+    }
+
+    void ignoreIllegal() {
+      return;
+    }
+
+    on ctrl.hcalibrate():
+    {
+      [s.Lost]
+      {
+        robot.tcalibrate();
+        calibrated = 0;
+        s = State.Calibrating;
+      }
+      [s.Operating || s.Idle || s.Calibrating]
+      ignoreIllegal();
+    }
+    on robot.tcalibrated():
+    {
+      [s.Operating || s.Idle || s.Lost]
+      illegal;
+      [s.Calibrating]
+      tryCalibrated();
+    }
+  }
+}
+

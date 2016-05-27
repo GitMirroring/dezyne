@@ -1,0 +1,9 @@
+verify: ISimple: check: completeness: ok
+verify: ISimple: check: deadlock: ok
+verify: ISimple: check: livelock: ok
+verify: Simpleint2: check: deterministic: ok
+verify: Simpleint2: check: completeness: ok
+verify: Simpleint2: check: illegal: ok
+verify: Simpleint2: check: deadlock: ok
+verify: Simpleint2: check: compliance: ok
+verify: Simpleint2: check: livelock: ok

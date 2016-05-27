@@ -1,0 +1,9 @@
+verify: ITwotopon: check: completeness: ok
+verify: ITwotopon: check: deadlock: ok
+verify: ITwotopon: check: livelock: ok
+verify: Twotopon: check: deterministic: ok
+verify: Twotopon: check: completeness: ok
+verify: Twotopon: check: illegal: ok
+verify: Twotopon: check: deadlock: ok
+verify: Twotopon: check: compliance: ok
+verify: Twotopon: check: livelock: ok

@@ -1,0 +1,3 @@
+verify: ICallTrigger: check: completeness: ok
+verify: ICallTrigger: check: deadlock: ok
+verify: ICallTrigger: check: livelock: ok

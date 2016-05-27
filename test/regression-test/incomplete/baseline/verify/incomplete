@@ -1,0 +1,13 @@
+verify: iincomplete: check: completeness: ok
+verify: iincomplete: check: deadlock: ok
+verify: iincomplete: check: livelock: ok
+verify: incomplete: check: deterministic: ok
+verify: incomplete: check: completeness: fail
+incomplete is incomplete: 'r' not handled
+verify: incomplete: check: illegal: ok
+verify: incomplete: check: deadlock: ok
+verify: incomplete: check: compliance: fail
+p.e
+p.return
+p.return not allowed by port p
+verify: incomplete: check: livelock: ok

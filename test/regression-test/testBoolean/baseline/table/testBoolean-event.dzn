@@ -1,0 +1,79 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface TestBool {
+  in void evt();
+
+  behaviour {
+    enum States {State1, State2};
+    bool b1 = true;
+    bool b2 = true;
+    bool b3 = true;
+    States state1 = States.State1;
+    States state2 = States.State2;
+
+    on evt:
+    {
+      [b1 || !b1]
+      [state1.State1]
+      {
+        b1 = b1 || b2;
+        b2 = b1 && b2;
+        b3 = !b1;
+        b1 = true;
+        b2 = false;
+        b3 = state1 == States.State2;
+        b1 = state2 != States.State2;
+        b2 = b1 && b2;
+        b3 = state1.State2;
+        b2 = b1 || b2 || b3;
+        b3 = b1 && b2 && b3;
+        b1 = !(!b2);
+        b1 = !b2 && b3;
+        b2 = !b2 || b3;
+        b3 = !(state1 == States.State2);
+        b1 = b2 && b3 || b1;
+        b2 = b1 || b2 && b3;
+        if (state1.State2) b1 = !b1;
+      }
+      [b1]
+      [state2.State1]
+      {}
+    }
+  }
+}
+
+component testBoolean {
+  provides TestBool i;
+
+  behaviour {
+    bool b = false;
+
+    on i.evt():
+    {
+      [b || !b]
+      {}
+    }
+  }
+}
+

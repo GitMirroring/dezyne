@@ -1,0 +1,9 @@
+verify: Iexternaltypes: check: completeness: ok
+verify: Iexternaltypes: check: deadlock: ok
+verify: Iexternaltypes: check: livelock: ok
+verify: externaltypes: check: deterministic: ok
+verify: externaltypes: check: completeness: ok
+verify: externaltypes: check: illegal: ok
+verify: externaltypes: check: deadlock: ok
+verify: externaltypes: check: compliance: ok
+verify: externaltypes: check: livelock: ok

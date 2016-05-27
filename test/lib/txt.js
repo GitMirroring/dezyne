@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -28,22 +29,23 @@ function addLine(line) {
 
 var public = {
   write: function(result, filePath) {
-    var status = (result.failed) ? 'failed' : 'succeeded';
+    var ucStatus = (result.failed) ? '[FAIL]' : '[PASS]';
     var text = '';
-    text +=  addLine('Target: ' + result.target + ' (' + status + ')');
+    text +=  addLine('Target: ' + result.target + ' ' + ucStatus);
     text +=  addLine('Date: ' + result.startTime.toLocaleDateString());
     text +=  addLine('Start time: ' + result.startTime.toLocaleTimeString());
     text +=  addLine('End time: ' + result.endTime.toLocaleTimeString());
     text +=  addLine('Elapsed time: ' + result.elapsedTime);
-    text +=  addLine('Total tests: ' + (result.succeeded + result.failed));
-    text +=  addLine('Succeeded: ' + result.succeeded);
+    text +=  addLine('Total tests: ' + (result.passed + result.failed));
+    text +=  addLine('Passed: ' + result.passed);
     text +=  addLine('Failed: ' + result.failed);
     text +=  addLine('');
     text +=  result.items.map(function(item) {
+      var ucStatus = (item.result.returncode !== 0) ? '[FAIL]' : '[PASS]';
       var text = '';
-      text +=  addLine(item.name + ' ' + item.result.status);
+      text +=  addLine('[....] ' + item.name);
       text +=  addLine(item.result.output);
-      text +=  addLine('Finished test: ' + item.name + '; status: ' + status);
+      text +=  addLine(ucStatus + ' ' + item.name);
       text +=  addLine('');
      return text;
       text +=  addLine(item.result.output);

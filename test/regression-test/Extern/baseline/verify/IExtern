@@ -1,0 +1,3 @@
+verify: IExtern: check: completeness: ok
+verify: IExtern: check: deadlock: ok
+verify: IExtern: check: livelock: ok

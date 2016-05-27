@@ -1,0 +1,9 @@
+verify: IReply7: check: completeness: ok
+verify: IReply7: check: deadlock: ok
+verify: IReply7: check: livelock: ok
+verify: Reply7: check: deterministic: ok
+verify: Reply7: check: completeness: ok
+verify: Reply7: check: illegal: ok
+verify: Reply7: check: deadlock: ok
+verify: Reply7: check: compliance: ok
+verify: Reply7: check: livelock: ok

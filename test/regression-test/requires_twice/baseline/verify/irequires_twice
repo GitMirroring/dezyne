@@ -1,0 +1,3 @@
+verify: irequires_twice: check: completeness: ok
+verify: irequires_twice: check: deadlock: ok
+verify: irequires_twice: check: livelock: ok

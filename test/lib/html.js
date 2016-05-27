@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -28,7 +29,8 @@ function addLine(line) {
 
 var public = {
   write: function(result, filePath) {
-    var status = (result.failed) ? 'failed' : 'succeeded';
+    var lcStatus = (result.failed) ? 'fail' : 'pass';
+    var ucStatus = (result.failed) ? '[FAIL]' : '[PASS]';
     var html = '';
     html +=  addLine('<!DOCTYPE html>');
     html +=  addLine('<html>');
@@ -54,14 +56,14 @@ var public = {
     html +=  addLine('      pre {');
     html +=  addLine('        display: inline;');
     html +=  addLine('      }');
-    html +=  addLine('      h1.failed {');
+    html +=  addLine('      h1.fail {');
     html +=  addLine('        color: red;');
     html +=  addLine('      }');
-    html +=  addLine('      li.failed {');
+    html +=  addLine('      li.fail {');
     html +=  addLine('        color: red;');
     html +=  addLine('        cursor: pointer;');
     html +=  addLine('      }');
-    html +=  addLine('      li.succeeded {');
+    html +=  addLine('      li.pass {');
     html +=  addLine('        cursor: pointer;');
     html +=  addLine('      }');
     html +=  addLine('      .output {');
@@ -100,7 +102,7 @@ var public = {
     html +=  addLine('    </script>');
     html +=  addLine('  </head>');
     html +=  addLine('  <body>');
-    html +=  addLine('    <h1 id="target" class="' + status + '">Target: ' + result.target + ' (' + status + ')</h1>');
+    html +=  addLine('    <h1 id="target" class="' + lcStatus + '">Target: ' + result.target + ' ' + ucStatus + '</h1>');
     html +=  addLine('    <table>');
     html +=  addLine('      <tr>');
     html +=  addLine('        <th>Date</th>');
@@ -108,7 +110,7 @@ var public = {
     html +=  addLine('        <th>End time</th>');
     html +=  addLine('        <th>Elapsed time</th>');
     html +=  addLine('        <th>Total tests</th>');
-    html +=  addLine('        <th>Succeeded</th>');
+    html +=  addLine('        <th>Passed</th>');
     html +=  addLine('        <th>Failed</th>');
     html +=  addLine('      </tr>');
     html +=  addLine('      <tr>');
@@ -116,17 +118,19 @@ var public = {
     html +=  addLine('        <td>' + result.startTime.toLocaleTimeString() + '</td>');
     html +=  addLine('        <td>' + result.endTime.toLocaleTimeString() + '</td>');
     html +=  addLine('        <td>' + result.elapsedTime + '</td>');
-    html +=  addLine('        <td>' + (result.succeeded + result.failed) + '</td>');
-    html +=  addLine('        <td>' + result.succeeded + '</td>');
+    html +=  addLine('        <td>' + (result.passed + result.failed) + '</td>');
+    html +=  addLine('        <td>' + result.passed + '</td>');
     html +=  addLine('        <td>' + result.failed + '</td>');
     html +=  addLine('      </tr>');
     html +=  addLine('    </table>');
     html +=  addLine('    <ol>');
     html +=  result.items.map(function(item) {
+      var lcStatus = (item.result.returncode !== 0) ? 'fail' : 'pass';
+      var ucStatus = (item.result.returncode !== 0) ? '[FAIL]' : '[PASS]';
       var log = item.result.output.replace(/(error:)/ig, '</pre></span><span class="emphasize">$1</span><span class="normal"><pre>');
       var html = '';
       html += '      <li id="' + item.name + '" ';
-      html += 'class=' + item.result.testStatus;
+      html += 'class=' + lcStatus;
       html +=  addLine(' onclick="toggle(this)">');
       html +=  addLine('        <img id="' + item.name + '_expand" style="vertical-align:center; display: inline;" src="lib/images/expand.gif">');
       html +=  addLine('        <img id="' + item.name + '_collapse" style="vertical-align:center; display: none;" src="lib/images/collapse.gif">');

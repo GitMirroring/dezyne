@@ -1,0 +1,12 @@
+verify: iq3: check: completeness: ok
+verify: iq3: check: deadlock: ok
+verify: iq3: check: livelock: ok
+verify: ir3: check: completeness: ok
+verify: ir3: check: deadlock: ok
+verify: ir3: check: livelock: ok
+verify: q3: check: deterministic: ok
+verify: q3: check: completeness: ok
+verify: q3: check: illegal: ok
+verify: q3: check: deadlock: ok
+verify: q3: check: compliance: ok
+verify: q3: check: livelock: ok

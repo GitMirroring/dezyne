@@ -1,0 +1,155 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface imultiple_provides {
+  in void left();
+  out void right();
+
+  behaviour {
+    bool b = false;
+
+    [!b]
+    on left:
+    {
+      [true]
+      right;
+      [true]
+      b = true;
+    }
+    [b]
+    {
+      on left:
+      illegal;
+      on inevitable:
+      {
+        b = false;
+        right;
+      }
+    }
+  }
+}
+
+component multiple_provides {
+  provides imultiple_provides p_left;
+  provides imultiple_provides p_right;
+  requires imultiple_provides r;
+
+  behaviour {
+    enum Direction {Left, Right};
+    Direction dir = Direction.Left;
+    bool b_left = false;
+    bool b_right = false;
+
+    [dir.Left]
+    {
+      on p_left.left():
+      {
+        [!b_left && !b_right]
+        {
+          dir = Direction.Left;
+          r.left();
+          b_left = true;
+        }
+        [b_left || b_right]
+        {
+          [b_left]
+          illegal;
+          [!b_left]
+          p_left.right();
+        }
+      }
+      on p_right.left():
+      {
+        [!b_left && !b_right]
+        {
+          dir = Direction.Right;
+          r.left();
+          b_right = true;
+        }
+        [b_left || b_right]
+        {
+          [b_right]
+          illegal;
+          [!b_right]
+          p_right.right();
+        }
+      }
+      on r.right():
+      {
+        [!b_left && !b_right]
+        illegal;
+        [b_left || b_right]
+        {
+          b_left = false;
+          p_left.right();
+        }
+      }
+    }
+    [dir.Right]
+    {
+      on p_left.left():
+      {
+        [!b_left && !b_right]
+        {
+          dir = Direction.Left;
+          r.left();
+          b_left = true;
+        }
+        [b_left || b_right]
+        {
+          [b_left]
+          illegal;
+          [!b_left]
+          p_left.right();
+        }
+      }
+      on p_right.left():
+      {
+        [!b_left && !b_right]
+        {
+          dir = Direction.Right;
+          r.left();
+          b_right = true;
+        }
+        [b_left || b_right]
+        {
+          [b_right]
+          illegal;
+          [!b_right]
+          p_right.right();
+        }
+      }
+      on r.right():
+      {
+        [!b_left && !b_right]
+        illegal;
+        [b_left || b_right]
+        {
+          b_right = false;
+          p_right.right();
+        }
+      }
+    }
+  }
+}
+

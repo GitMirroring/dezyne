@@ -1,0 +1,95 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// Test queueing of modelling-event triggered output events
+// (Well-formedness: modelling event may trigger at most one output event)
+
+interface ITauEmitMulti
+{
+  in void ack();
+  in void done();
+  out void ntfA();
+  out void ntfB();
+
+  behaviour
+  {
+    bool isWaiting = false;
+    bool isEmitting = false;
+
+    {
+      [otherwise]
+      {
+        on ack: {}
+        on inevitable: 
+          { 
+            [!isEmitting] {ntfA; isEmitting = true;}
+            [otherwise] {ntfB; isWaiting = true; isEmitting = false;}
+          }
+        on done: illegal;
+      }
+      [isWaiting]
+      {
+        on ack: {}
+        on done: { isWaiting = false; }
+      }
+    }
+  }
+}
+
+interface IDummy
+{
+  enum ReplyValue {Ok};
+  in ReplyValue dummy();
+  out void liveLockPreventer();
+
+  behaviour
+  {
+    on dummy: {reply(ReplyValue.Ok);}
+  }
+}
+
+component ConsumeMultiple
+{
+  provides IDummy d;
+  requires ITauEmitMulti src;
+
+  behaviour
+  {
+    bool behave = true;
+
+    {
+      [behave]
+      {
+        on d.dummy(): {reply(IDummy.ReplyValue.Ok);}
+        on src.ntfA(): {src.ack();} // Allowed! ntfA + ntfB post is atomic action
+        on src.ntfB(): {src.done(); behave = false;}
+      }
+      [otherwise] // misbehave
+      {
+        on d.dummy(): {reply(IDummy.ReplyValue.Ok);}
+        on src.ntfA(): {src.done();} // Illegal: interface not isWaiting
+        on src.ntfB(): {src.ack();}
+      }
+    }
+  }
+}

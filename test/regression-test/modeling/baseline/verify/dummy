@@ -1,0 +1,3 @@
+verify: dummy: check: completeness: ok
+verify: dummy: check: deadlock: ok
+verify: dummy: check: livelock: ok

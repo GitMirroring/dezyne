@@ -35,10 +35,10 @@ var output = {
     output.result.items = [];
   }
   ,
-  close: function(succeeded, failed) {
+  close: function(passed, failed) {
     output.result.endTime = new Date();
     output.result.elapsedTime = util.elapsedTime(output.result.startTime, output.result.endTime, false);
-    output.result.succeeded = succeeded;
+    output.result.passed = passed;
     output.result.failed = failed;
     if (output.write) {
       output.write(output.result, output.filePath);
@@ -57,7 +57,7 @@ function parse_opts(argv) {
   ([
     ['t', 'target=all', 'test target all [default]'],
     ['a', 'aspects=all', 'test aspects all [default]'],
-    ['o', 'output=tests.html', 'output file name [default]'],
+    ['o', 'output=<target>.html', 'output file name [default]'],
     ['v', 'verbose', 'show test output on stdout'],
     ['q', 'quiet', 'suppress test summary lines on stdout'],
     ['h', 'help', 'display this help and exit'],
@@ -79,7 +79,7 @@ function parse_opts(argv) {
   args.options.target = args.options.target || 'all';
   args.options.aspects = args.options.aspects || 'all';
   args.options.aspects = args.options.aspects.split(',');
-  args.options.output = args.options.output || 'test.html';
+  args.options.output = args.options.output || args.options.target + '.html';
   if (args.argv.length > 2) {
     option_parser.errorFunc('error: unknown argument: ' + args.argv[2]);
   }
@@ -94,7 +94,7 @@ function processTarget(target, aspects) {
   var path = target;
   var readdir = q.denodeify(fs.readdir);
   var failed = 0;
-  var succeeded = 0;
+  var passed = 0;
   var totalTestStartTime = new Date();
   output.open(name, title, target, options.output);
   readdir(path)
@@ -112,11 +112,10 @@ function processTarget(target, aspects) {
               console.log('[....] ' + item);
               return util.run(process.cwd() + '/' + path + '/' + item + '/run', aspects, options.verbose)
                 .then(function(result) {
-                  result.returncode === 0 ? ++succeeded : ++failed;
+                  result.returncode === 0 ? ++passed : ++failed;
                   if (!options.quiet) {
                     console.log((result.returncode === 0 ? '[PASS] ' : '[FAIL] ') + item);
                   }
-                  result.testStatus = result.returncode === 0 ? 'succeeded' : 'failed';
                   output.log(item, result);
                 })
                 .fail(function(err) {
@@ -127,7 +126,7 @@ function processTarget(target, aspects) {
 
       return util.parallel_n(worklist, 1)
         .then(function(results) {
-          output.close(succeeded, failed);
+          output.close(passed, failed);
         });
     })
     .fail(function(err) {
