@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -24,11 +25,7 @@ var fs = require('fs');
 
 var public = {
   write: function(result, filePath) {
-    fs.writeFile(filePath, JSON.stringify(result, null, ' '), function(error) {
-      if (error) {
-        throw error;
-      }
-    });
+    fs.writeFileSync(filePath, JSON.stringify(result, null, ' '));
   }
   ,
 }

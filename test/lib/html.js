@@ -22,109 +22,130 @@
 //
 // Code:
 
+#! /usr/bin/env node
+
 var fs = require('fs');
 
-function addLine(line) {
-  return line + '\n';
-}
-
-var public = {
-  write: function(result, filePath) {
+var private = {
+  read: function() {
+    var fileContent = '';
+    var stdin = process.stdin;
+    stdin.on('data', function(data) {
+      fileContent += data;
+    });
+    stdin.on('end', function() {
+      result = JSON.parse(fileContent);
+      result.startTime = new Date(result.startTime);
+      result.endTime = new Date(result.endTime);
+      private.write(result);
+    });
+  }
+  ,
+  write: function(result) {
+    var fileContent = private.transform(result);
+    console.log(fileContent);
+  }
+  ,
+  addLine: function(line) {
+    return line + '\n';
+  }
+  ,
+  transform: function(result) {
     var lcStatus = (result.failed) ? 'fail' : 'pass';
     var ucStatus = (result.failed) ? '[FAIL]' : '[PASS]';
     var html = '';
-    html +=  addLine('<!DOCTYPE html>');
-    html +=  addLine('<html>');
-    html +=  addLine('  <head>');
-    html +=  addLine('    <title>' + result.title + '</title>');
-    html +=  addLine('    <style>');
-    html +=  addLine('      body {');
-    html +=  addLine('        font-family: Sans-serif;');
-    html +=  addLine('      }');
-    html +=  addLine('      table {');
-    html +=  addLine('          border-collapse: collapse;');
-    html +=  addLine('      }');
-    html +=  addLine('      table, th, td {');
-    html +=  addLine('          border: 2px solid black;');
-    html +=  addLine('      }');
-    html +=  addLine('      td {');
-    html +=  addLine('          text-align: center;');
-    html +=  addLine('      }');
-    html +=  addLine('      ol {');
-    html +=  addLine('        font-size: 115%;');
-    html +=  addLine('        font-weight: bold;');
-    html +=  addLine('      }');
-    html +=  addLine('      pre {');
-    html +=  addLine('        display: inline;');
-    html +=  addLine('      }');
-    html +=  addLine('      h1.fail {');
-    html +=  addLine('        color: red;');
-    html +=  addLine('      }');
-    html +=  addLine('      li.fail {');
-    html +=  addLine('        color: red;');
-    html +=  addLine('        cursor: pointer;');
-    html +=  addLine('      }');
-    html +=  addLine('      li.pass {');
-    html +=  addLine('        cursor: pointer;');
-    html +=  addLine('      }');
-    html +=  addLine('      .output {');
-    html +=  addLine('        font-size: initial;');
-    html +=  addLine('        font-weight: initial;');
-    html +=  addLine('        font-family: monospace;');
-    html +=  addLine('        margin: 10px 0px;');
-    html +=  addLine('      }');
-    html +=  addLine('      .normal {');
-    html +=  addLine('        font-weight: initial;');
-    html +=  addLine('        color: initial;');
-    html +=  addLine('      }');
-    html +=  addLine('      .emphasize {');
-    html +=  addLine('        font-weight: bold;');
-    html +=  addLine('        color: red;');
-    html +=  addLine('      }');
-    html +=  addLine('    </style>');
-    html +=  addLine('    <script>');
-    html +=  addLine('      function toggle(element) {');
-    html +=  addLine('        var details = document.getElementById(element.id + "_details");');
-    html +=  addLine('        var expand = document.getElementById(element.id + "_expand");');
-    html +=  addLine('        var collapse = document.getElementById(element.id + "_collapse");');
-    html +=  addLine('        switch (details.style.display) {');
-    html +=  addLine('        case "none":');
-    html +=  addLine('          details.style.display = "block";');
-    html +=  addLine('          expand.style.display = "none";');
-    html +=  addLine('          collapse.style.display = "inline";');
-    html +=  addLine('          break;');
-    html +=  addLine('        case "block":');
-    html +=  addLine('          details.style.display = "none";');
-    html +=  addLine('          expand.style.display = "inline";');
-    html +=  addLine('          collapse.style.display = "none";');
-    html +=  addLine('          break;');
-    html +=  addLine('        }');
-    html +=  addLine('      }');
-    html +=  addLine('    </script>');
-    html +=  addLine('  </head>');
-    html +=  addLine('  <body>');
-    html +=  addLine('    <h1 id="target" class="' + lcStatus + '">Target: ' + result.target + ' ' + ucStatus + '</h1>');
-    html +=  addLine('    <table>');
-    html +=  addLine('      <tr>');
-    html +=  addLine('        <th>Date</th>');
-    html +=  addLine('        <th>Start time</th>');
-    html +=  addLine('        <th>End time</th>');
-    html +=  addLine('        <th>Elapsed time</th>');
-    html +=  addLine('        <th>Total tests</th>');
-    html +=  addLine('        <th>Passed</th>');
-    html +=  addLine('        <th>Failed</th>');
-    html +=  addLine('      </tr>');
-    html +=  addLine('      <tr>');
-    html +=  addLine('        <td>' + result.startTime.toLocaleDateString() + '</td>');
-    html +=  addLine('        <td>' + result.startTime.toLocaleTimeString() + '</td>');
-    html +=  addLine('        <td>' + result.endTime.toLocaleTimeString() + '</td>');
-    html +=  addLine('        <td>' + result.elapsedTime + '</td>');
-    html +=  addLine('        <td>' + (result.passed + result.failed) + '</td>');
-    html +=  addLine('        <td>' + result.passed + '</td>');
-    html +=  addLine('        <td>' + result.failed + '</td>');
-    html +=  addLine('      </tr>');
-    html +=  addLine('    </table>');
-    html +=  addLine('    <ol>');
+    html +=  private.addLine('<!DOCTYPE html>');
+    html +=  private.addLine('<html>');
+    html +=  private.addLine('  <head>');
+    html +=  private.addLine('    <title>' + result.title + '</title>');
+    html +=  private.addLine('    <style>');
+    html +=  private.addLine('      body {');
+    html +=  private.addLine('        font-family: Sans-serif;');
+    html +=  private.addLine('      }');
+    html +=  private.addLine('      table {');
+    html +=  private.addLine('          border-collapse: collapse;');
+    html +=  private.addLine('      }');
+    html +=  private.addLine('      table, th, td {');
+    html +=  private.addLine('          border: 2px solid black;');
+    html +=  private.addLine('      }');
+    html +=  private.addLine('      td {');
+    html +=  private.addLine('          text-align: center;');
+    html +=  private.addLine('      }');
+    html +=  private.addLine('      ol {');
+    html +=  private.addLine('        font-size: 115%;');
+    html +=  private.addLine('        font-weight: bold;');
+    html +=  private.addLine('      }');
+    html +=  private.addLine('      pre {');
+    html +=  private.addLine('        display: inline;');
+    html +=  private.addLine('      }');
+    html +=  private.addLine('      h1.fail {');
+    html +=  private.addLine('        color: red;');
+    html +=  private.addLine('      }');
+    html +=  private.addLine('      li.fail {');
+    html +=  private.addLine('        color: red;');
+    html +=  private.addLine('        cursor: pointer;');
+    html +=  private.addLine('      }');
+    html +=  private.addLine('      li.pass {');
+    html +=  private.addLine('        cursor: pointer;');
+    html +=  private.addLine('      }');
+    html +=  private.addLine('      .output {');
+    html +=  private.addLine('        font-size: initial;');
+    html +=  private.addLine('        font-weight: initial;');
+    html +=  private.addLine('        font-family: monospace;');
+    html +=  private.addLine('        margin: 10px 0px;');
+    html +=  private.addLine('      }');
+    html +=  private.addLine('      .normal {');
+    html +=  private.addLine('        font-weight: initial;');
+    html +=  private.addLine('        color: initial;');
+    html +=  private.addLine('      }');
+    html +=  private.addLine('      .emphasize {');
+    html +=  private.addLine('        font-weight: bold;');
+    html +=  private.addLine('        color: red;');
+    html +=  private.addLine('      }');
+    html +=  private.addLine('    </style>');
+    html +=  private.addLine('    <script>');
+    html +=  private.addLine('      function toggle(element) {');
+    html +=  private.addLine('        var details = document.getElementById(element.id + "_details");');
+    html +=  private.addLine('        var expand = document.getElementById(element.id + "_expand");');
+    html +=  private.addLine('        var collapse = document.getElementById(element.id + "_collapse");');
+    html +=  private.addLine('        switch (details.style.display) {');
+    html +=  private.addLine('        case "none":');
+    html +=  private.addLine('          details.style.display = "block";');
+    html +=  private.addLine('          expand.style.display = "none";');
+    html +=  private.addLine('          collapse.style.display = "inline";');
+    html +=  private.addLine('          break;');
+    html +=  private.addLine('        case "block":');
+    html +=  private.addLine('          details.style.display = "none";');
+    html +=  private.addLine('          expand.style.display = "inline";');
+    html +=  private.addLine('          collapse.style.display = "none";');
+    html +=  private.addLine('          break;');
+    html +=  private.addLine('        }');
+    html +=  private.addLine('      }');
+    html +=  private.addLine('    </script>');
+    html +=  private.addLine('  </head>');
+    html +=  private.addLine('  <body>');
+    html +=  private.addLine('    <h1 id="target" class="' + lcStatus + '">Target: ' + result.target + ' ' + ucStatus + '</h1>');
+    html +=  private.addLine('    <table>');
+    html +=  private.addLine('      <tr>');
+    html +=  private.addLine('        <th>Date</th>');
+    html +=  private.addLine('        <th>Start time</th>');
+    html +=  private.addLine('        <th>End time</th>');
+    html +=  private.addLine('        <th>Elapsed time</th>');
+    html +=  private.addLine('        <th>Total tests</th>');
+    html +=  private.addLine('        <th>Passed</th>');
+    html +=  private.addLine('        <th>Failed</th>');
+    html +=  private.addLine('      </tr>');
+    html +=  private.addLine('      <tr>');
+    html +=  private.addLine('        <td>' + result.startTime.toLocaleDateString() + '</td>');
+    html +=  private.addLine('        <td>' + result.startTime.toLocaleTimeString() + '</td>');
+    html +=  private.addLine('        <td>' + result.endTime.toLocaleTimeString() + '</td>');
+    html +=  private.addLine('        <td>' + result.elapsedTime + '</td>');
+    html +=  private.addLine('        <td>' + (result.passed + result.failed) + '</td>');
+    html +=  private.addLine('        <td>' + result.passed + '</td>');
+    html +=  private.addLine('        <td>' + result.failed + '</td>');
+    html +=  private.addLine('      </tr>');
+    html +=  private.addLine('    </table>');
+    html +=  private.addLine('    <ol>');
     html +=  result.items.map(function(item) {
       var lcStatus = (item.result.exitcode !== 0) ? 'fail' : 'pass';
       var ucStatus = (item.result.exitcode !== 0) ? '[FAIL]' : '[PASS]';
@@ -132,20 +153,48 @@ var public = {
       var html = '';
       html += '      <li id="' + item.name + '" ';
       html += 'class=' + lcStatus;
-      html +=  addLine(' onclick="toggle(this)">');
-      html +=  addLine('        <img id="' + item.name + '_expand" style="vertical-align:center; display: inline;" src="lib/images/expand.gif">');
-      html +=  addLine('        <img id="' + item.name + '_collapse" style="vertical-align:center; display: none;" src="lib/images/collapse.gif">');
-      html +=  addLine('        ' + item.name + ' ' + item.result.status);
-      html +=  addLine('      </li>');
-      html +=  addLine('      <div class="output" id="' + item.name + '_details" style="display: none;"><span class="normal"><pre>' + log + '</pre></span></div>');
+      html +=  private.addLine(' onclick="toggle(this)">');
+      html +=  private.addLine('        <img id="' + item.name + '_expand" style="vertical-align:center; display: inline;" src="data:image/gif;base64,');
+      html +=  private.addLine('          R0lGODlhEAAQAOZYAHyl4Zm454mp4Yqq4ZCv44en4JOz5IWl36PC65y76Imy5Y+u45S05Zu66F+J');
+      html +=  private.addLine('          1VqF1Iur4p696Yav5Za15oWs45Kx5KC+6mKM1o2t45++6oio4aC/6qLA6oys4o+v46XE66G/6oam');
+      html +=  private.addLine('          32GJ1XOb3Zi35p686ZGx5Hui4V2G1WaQ2GuU2ouq4WSO2GiS2aXD65Gv5G+Y3ISj34au5aTC63+n');
+      html +=  private.addLine('          4YOj3nWd3l2G1KLA64Gq46bE7Jq56IOr44Cp442s45e25p286GaO2KLB65Sz5VmD0luF1H+m4ZW0');
+      html +=  private.addLine('          5Z686GqS2Yur4Xii3p276IGi3oqy5Yan4GyW2liD0nef3pi25nCa3ISk34yz5v///////wAAAAAA');
+      html +=  private.addLine('          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+      html +=  private.addLine('          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5');
+      html +=  private.addLine('          BAEAAFgALAAAAAAQABAAAAeegFiCg4SFhoeGVopOChIyFDw9NACEVjofMwgcGxlICTtLhAouCDgg');
+      html +=  private.addLine('          FhFMDQE/NoQSQhyoV1cBUxNDVIQUnEBWtAAMBiZQhDklCbTKVwQLSYRGq8u0GBBBhCckEwwAtFYd');
+      html +=  private.addLine('          AwIXhFJHBhUEtCsCBSEOhCMVLws+SgIaTwcxN4QwHtUDNBQ4UKVGkweEVLRIweKCCAcoijwgEgWR');
+      html +=  private.addLine('          xYuHAgEAOw==">');
+      html +=  private.addLine('        <img id="' + item.name + '_collapse" style="vertical-align:center; display: none;" src="data:image/gif;base64,');
+      html +=  private.addLine('          R0lGODlhDgAOAMQAAP///+vr6+Dg4P7+/uPj4/T09Pz8/Ojo6Pf395ycnN7e3t3d3fHx8e7u7n9/');
+      html +=  private.addLine('          f1dXV8XFxba2tqOjo5+fn6enp8DAwMfHx9fX19PT07GxscrKyru7u+np6QAAAAAAAAAAACH5BAAA');
+      html +=  private.addLine('          AAAALAAAAAAOAA4AAAVbIBAsZGkGAAesbLty1yDPtHxhRq7vOaYhwKAQqIEUjsjkEVJhOB3QqJNR');
+      html +=  private.addLine('          2TSuj6z22thEAuCwGBzJHM7o9DlDIbjfcDdFIqjb73WJZaLo+/8TFgAQCYWGhxAAIQA7">');
+      html +=  private.addLine('        ' + item.name + ' ' + item.result.status);
+      html +=  private.addLine('      </li>');
+      html +=  private.addLine('      <div class="output" id="' + item.name + '_details" style="display: none;"><span class="normal"><pre>' + log + '</pre></span></div>');
       return html;
     }).join('');
-    html +=  addLine('    </ol>');
-    html +=  addLine('  </body>');
-    html +=  addLine('<html>');
-    fs.writeFileSync (filePath, html);
+    html +=  private.addLine('    </ol>');
+    html +=  private.addLine('  </body>');
+    html +=  private.addLine('<html>');
+    return html;
   }
   ,
+}
+
+var public = {
+  write: function(result, filePath) {
+    var fileContent = private.transform(result);
+    fs.writeFileSync(filePath, fileContent);
+  }
+  ,
+}
+
+if (require.main === module) {
+  // Called from the command line
+  private.read();
 }
 
 module.exports = public;
