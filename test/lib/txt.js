@@ -41,7 +41,7 @@ var public = {
     text +=  addLine('Failed: ' + result.failed);
     text +=  addLine('');
     text +=  result.items.map(function(item) {
-      var ucStatus = (item.result.returncode !== 0) ? '[FAIL]' : '[PASS]';
+      var ucStatus = (item.result.exitcode !== 0) ? '[FAIL]' : '[PASS]';
       var text = '';
       text +=  addLine('[....] ' + item.name);
       text +=  addLine(item.result.output);

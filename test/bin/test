@@ -110,27 +110,30 @@ function processTarget(target, aspects) {
           .map(function(item) {
             return function() {
               console.log('[....] ' + item);
-              return util.run(process.cwd() + '/' + path + '/' + item + '/run', aspects, options.verbose)
+              var cmd = process.cwd() + '/' + path + '/' + item + '/run';
+              return util.run(cmd, aspects, options.verbose)
                 .then(function(result) {
-                  result.returncode === 0 ? ++passed : ++failed;
-                  if (!options.quiet) {
-                    console.log((result.returncode === 0 ? '[PASS] ' : '[FAIL] ') + item);
-                  }
+                  result.exitcode === 0 ? ++passed : ++failed;
                   output.log(item, result);
+                  return result.exitcode;
                 })
-                .fail(function(err) {
-                  console.error('RUN FAILED!!!!' + process.cwd() + '/' + path + '/' + item + '/run:' + err);
+                .tap(function(exitcode) {
+                  if (!options.quiet) {
+                    console.log((exitcode === 0 ? '[PASS] ' : '[FAIL] ') + item);
+                  }
                 });
             };
           });
 
       return util.parallel_n(worklist, 1)
-        .then(function(results) {
+        .then(function(exitcodes) {
+          console.log('EXITCODES: ' + exitcodes);
           output.close(passed, failed);
-        });
+          process.exit(exitcodes.reduce(function(a, b){ return a || b; }, 0));
+        })
     })
     .fail(function(err) {
-      console.error(err + err.stack);
+      console.error(err.stack);
       process.exit(1);
     })
     .done();

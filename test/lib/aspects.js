@@ -59,15 +59,32 @@ function depend(e) {
 
 var aspects = {
   all: function(work, dir) {
-    work = skip_filter(work.length == 0 || work[0] == 'all' ? Object.keys(dependencies) : work, dir);
+    function find_key(v, e) {
+      Object.keys(dependencies).indexOf(e) == -1 && console.error(e + ' not listed');
+      return v && dependencies[e];
+    }
 
-    var skip = Object.keys(dependencies).filter(function(e) { return work.indexOf(e) == -1; });
-    skip.map(function(e) { console.log(e + ': [SKIPPED]');});
+    if(!Object.keys(dependencies)
+       .reduce(function(v, e){ return v && dependencies[e].reduce(find_key, true); }, true))
+      return q(1);
 
-    var derived = work.append_map(depend).unique();
-    work = work.filter(function(e) { return derived.indexOf(e) == -1;});
+    return util.spawn_sync_shell(dzn + ' hello')
+      .then(function(result) {
+        if(result != 0) {
+          console.error('dzn hello failed (is your server running?)');
+          return result;
+        }
 
-    return aspects.test(work, {}, dir).then (function(result) { return result.exitcode; });
+        work = skip_filter(work.length == 0 || work[0] == 'all' ? Object.keys(dependencies) : work, dir);
+
+        // var skip = Object.keys(dependencies).filter(function(e) { return work.indexOf(e) == -1; });
+        // skip.map(function(e) { console.log(e + ': [SKIPPED]');});
+
+        var derived = work.append_map(depend).unique();
+        work = work.filter(function(e) { return derived.indexOf(e) == -1;});
+
+        return aspects.test(work, {}, dir).then (function(result) { return result.exitcode; });
+      });
   }
   ,
   test: function(work, done, dir, model, filename, baseline) {
@@ -79,11 +96,11 @@ var aspects = {
         return aspects.test(dependencies[e], result1.done, dir, model, filename, baseline)
           .then(function(result) {
             return result.exitcode && result
-            || aspects[e](dir,
-                          modelname,
-                          filename || dir + '/' + modelname + '.dzn',
-                          baseline || (dir + '/baseline/' + e + '/' + modelname))
-                       .then(function(exitcode){ var done = result.done; done[e] = true; return {exitcode:exitcode, done:done};});
+              || aspects[e](dir,
+                            modelname,
+                            filename || dir + '/' + modelname + '.dzn',
+                            baseline || (dir + '/baseline/' + e + '/' + modelname))
+              .then(function(exitcode){ var done = result.done; done[e] = true; return {exitcode:exitcode, done:done};});
           })
           .then(function(result2) { console.log(e + '[' + modelname + ']: ' + (result2.exitcode ? (result2.exitcode == 'ERROR' ? '[ERROR]' : '[FAILED]') : '[OK]'));
                                     var done = result2.done; done[e] = true;
@@ -133,15 +150,28 @@ var aspects = {
   ,
   run_traces: function(dir, model, filename, baseline, app) {
     var out = __dirname+'/../out/'+path.basename(dir);
-    return q.all([q.denodeify(fs.readdir)(baseline)
-                  .then(function (files) { return files.map( function(file) { return baseline + '/' + file; }); })
-                  ,
-                  q.denodeify(fs.readdir)(out)
-                  .then(function (files) { return files.map( function (file) { return out + '/' + file; }); })]
-                 .map(function (e) { return e.fail( function () { return []; }); }))
-      .then(function(files_list){
-        return [].concat.apply([],files_list)
-          .filter(function(file){ return /trace/.test(file); });
+
+    function ls_files_recursively(dir) {
+      return q.denodeify(fs.readdir)(dir)
+        .then(function(entries) {
+          return q.all(entries.map(function(entry) {
+            entry = dir + '/' + entry;
+            var is_dir = false;
+            try { is_dir = fs.lstatSync(entry).isDirectory(); } catch(e) {}
+            return is_dir && ls_files_recursively(entry) || [entry];
+          }))
+            .then(function(entries) {
+              return entries.append_map(util.identity);
+            })
+        });
+    }
+
+    return q.all([ls_files_recursively(dir + '/baseline'),
+                  ls_files_recursively(out)]
+                 .map(function (e) { return e.fail( function (e) { console.log(baseline + ' ' + e + e.stack); return []; }); }))
+      .then(function(files_list) {
+        var f = [].concat.apply([],files_list);
+          return f.filter(function(file){ return /trace/.exec(file); });
       })
       .then(function(traces) {
         if(traces.length == 0)
@@ -158,20 +188,19 @@ var aspects = {
   execute: function(dir, model, filename, baseline) {
     var out = __dirname+'/../out/'+path.basename(dir);
     return aspects.run_traces(dir, model, filename, baseline, function(trace){
-      return util.spawn_sync_shell('timeout 10 diff -uw '+ trace + ' <(cat '+ trace + ' | ' +
+      return util.spawn_sync_shell('diff -uw '+ trace + ' <(cat '+ trace + ' | ' +
                                    out + '/test |& ' +
-                                   __dirname + '/../bin/code2fdr)')
-        .fail (function(err) {console.log(err); return 1; });
+                                   __dirname + '/../bin/code2fdr)', 2000)
+        .fail (function(err) {console.log('execute fail: ' + err); return 1; });
     });
   }
   ,
   run: function(dir, model, filename, baseline) {
     return aspects.run_traces(dir, model, filename, baseline, function(trace){
-      return util.spawn_sync_shell('timeout 10 diff -uw '+ trace + ' <(cat '+ trace + ' | ' +
+      return util.spawn_sync_shell('diff -uw '+ trace + ' <(cat '+ trace + ' | ' +
                                    dzn + ' run -m ' + model + ' ' + filename + ' |& ' +
                                    'grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')')
-        .fail (function(err) {console.log(err); return 1; })
-        .then(function(result){console.log('diff: ' + result); return result;});
+        .fail (function(err) {console.log(err); return 1; });
     });
   }
   ,

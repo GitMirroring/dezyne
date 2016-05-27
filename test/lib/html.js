@@ -125,8 +125,8 @@ var public = {
     html +=  addLine('    </table>');
     html +=  addLine('    <ol>');
     html +=  result.items.map(function(item) {
-      var lcStatus = (item.result.returncode !== 0) ? 'fail' : 'pass';
-      var ucStatus = (item.result.returncode !== 0) ? '[FAIL]' : '[PASS]';
+      var lcStatus = (item.result.exitcode !== 0) ? 'fail' : 'pass';
+      var ucStatus = (item.result.exitcode !== 0) ? '[FAIL]' : '[PASS]';
       var log = item.result.output.replace(/(error:)/ig, '</pre></span><span class="emphasize">$1</span><span class="normal"><pre>');
       var html = '';
       html += '      <li id="' + item.name + '" ';
