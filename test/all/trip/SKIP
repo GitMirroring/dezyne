@@ -1,0 +1,6 @@
+# experiment with skip/parameters
+# FIXME: skipping traces, intended to only run handwritten system traces
+#        switches off execution alltogether :-(
+#run:{"model":"trap"}
+run
+traces

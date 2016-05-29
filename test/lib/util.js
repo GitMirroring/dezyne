@@ -56,6 +56,10 @@ if (!Array.prototype.append_map) {
   }
 }
 
+if (!Array.prototype.each) {
+  Array.prototype.each = Array.prototype.forEach;
+};
+
 if (!Array.prototype.unique) {
   Array.prototype.unique = function (compare) {
     if (this == null) return [];

@@ -29,13 +29,22 @@ var util = require(__dirname+'/util');
 var lstat = q.denodeify(fs.lstat);
 var dzn = __dirname + '/../../client/bin/dzn';
 
-function skip_filter(work, dir) {
+function get_skip(dir) {
   try {
     fs.lstatSync(dir+'/SKIP');
-    var skip_list = fs.readFileSync(dir+'/SKIP').toString().split('\n');
-    return work.filter(function (e) {return skip_list.indexOf(e) == -1;});
+    var parameters = {};
+    fs.readFileSync(dir+'/SKIP').toString().split('\n')
+      .each (function (line) {
+        var o = line.split (':');
+        parameters[o[0]] = JSON.parse (o.slice (1).join (':') || 'true');
+      });
+    return parameters;
   } catch (e) {}
-  return work;
+  return [];
+}
+
+function skip_filter (parameters) {
+  return function (e) {return parameters[e] === undefined;}
 }
 
 var dependencies = {
@@ -75,31 +84,42 @@ var aspects = {
           return result;
         }
 
-        work = skip_filter(work.length == 0 || work[0] == 'all' ? Object.keys(dependencies) : work, dir);
+        var parameters = get_skip (dir);
+        work = (work.length == 0 || work[0] == 'all'
+                ? Object.keys(dependencies)
+                : work)
+          .filter (skip_filter (parameters));
+        console.log ('parameters: '+ JSON.stringify (parameters));
+        console.log ('work: '+ JSON.stringify (work));        
 
         // var skip = Object.keys(dependencies).filter(function(e) { return work.indexOf(e) == -1; });
         // skip.map(function(e) { console.log(e + ': [SKIPPED]');});
 
-        var derived = work.append_map(depend).unique();
+        var derived = work.append_map(depend).unique()
+            .filter (skip_filter (parameters));
+        console.log ('derived:' + derived);
         work = work.filter(function(e) { return derived.indexOf(e) == -1;});
 
-        return aspects.test(work, {}, dir).then (function(result) { return result.exitcode; });
+        return aspects.test(work, {}, dir, undefined, undefined, undefined, parameters).then (function(result) { return result.exitcode; });
       });
   }
   ,
-  test: function(work, done, dir, model, filename, baseline) {
-    return work.reduce(function(promise, e) {
+  test: function(work, done, dir, model, filename, baseline, parameters) {
+    return work
+      .filter (skip_filter (parameters))
+      .reduce(function(promise, e) {
       return promise.then(function(result1) {
         if (done[e]) return result1;
         var modelname = model || path.basename(dir);
         console.log(e + '[' + modelname + '] ...');
-        return aspects.test(dependencies[e], result1.done, dir, model, filename, baseline)
+        return aspects.test(dependencies[e], result1.done, dir, model, filename, baseline, parameters)
           .then(function(result) {
             return result.exitcode && result
               || aspects[e](dir,
                             modelname,
                             filename || dir + '/' + modelname + '.dzn',
-                            baseline || (dir + '/baseline/' + e + '/' + modelname))
+                            baseline || (dir + '/baseline/' + e + '/' + modelname),
+                            parameters && parameters[e])
               .then(function(exitcode){ var done = result.done; done[e] = true; return {exitcode:exitcode, done:done};});
           })
           .then(function(result2) { console.log(e + '[' + modelname + ']: ' + (result2.exitcode ? (result2.exitcode == 'ERROR' ? '[ERROR]' : '[FAILED]') : '[OK]'));
@@ -195,7 +215,8 @@ var aspects = {
     });
   }
   ,
-  run: function(dir, model, filename, baseline) {
+  run: function(dir, model, filename, baseline, parameters) {
+    model = parameters && parameters.model || model;
     return aspects.run_traces(dir, model, filename, baseline, function(trace){
       return util.spawn_sync_shell('diff -uw '+ trace + ' <(cat '+ trace + ' | ' +
                                    dzn + ' run -m ' + model + ' ' + filename + ' |& ' +
