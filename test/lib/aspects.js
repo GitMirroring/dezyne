@@ -32,20 +32,24 @@ var dzn = __dirname + '/../../client/bin/dzn';
 function get_skip(dir) {
   try {
     fs.lstatSync(dir+'/SKIP');
-    var parameters = {};
+    var skip = {};
     fs.readFileSync(dir+'/SKIP').toString().split('\n')
       .filter (function (line) {return !/^#/.test (line);})
       .each (function (line) {
         var o = line.split (':');
-        parameters[o[0]] = JSON.parse (o.slice (1).join (':') || 'true');
+        var e = o[0].trim ();
+        skip[e] = true;
+        try {skip[e] = JSON.parse (o.slice (1).join (':'));} catch (e) {}
       });
-    return parameters;
+    return skip;
   } catch (e) {}
   return [];
 }
 
 function skip_filter (parameters) {
-  return function (e) {return parameters[e] === undefined;}
+  return function (e) {
+    return parameters[e] !== true || console.log(e + ': [SKIPPED]') && false;
+  }
 }
 
 var dependencies = {
@@ -90,15 +94,9 @@ var aspects = {
                 ? Object.keys(dependencies)
                 : work)
           .filter (skip_filter (parameters));
-        console.log ('parameters: '+ JSON.stringify (parameters));
-        console.log ('work: '+ JSON.stringify (work));        
-
-        // var skip = Object.keys(dependencies).filter(function(e) { return work.indexOf(e) == -1; });
-        // skip.map(function(e) { console.log(e + ': [SKIPPED]');});
 
         var derived = work.append_map(depend).unique()
             .filter (skip_filter (parameters));
-        console.log ('derived:' + derived);
         work = work.filter(function(e) { return derived.indexOf(e) == -1;});
 
         return aspects.test(work, {}, dir, undefined, undefined, undefined, parameters).then (function(result) { return result.exitcode; });
@@ -206,12 +204,15 @@ var aspects = {
       });
   }
   ,
-  execute: function(dir, model, filename, baseline) {
+  execute: function(dir, model, filename, baseline, parameters) {
     var out = __dirname+'/../out/'+path.basename(dir);
+    var flush = parameters && parameters.flush && ' --flush' || '';
     return aspects.run_traces(dir, model, filename, baseline, function(trace){
-      return util.spawn_sync_shell('diff -uw '+ trace + ' <(cat '+ trace + ' | ' +
-                                   out + '/test |& ' +
-                                   __dirname + '/../bin/code2fdr)', 2000)
+      return util.spawn_sync_shell(
+        'diff -uw '
+          + trace
+          + ' <(cat '+ trace + ' | ' + out + '/test' + flush
+          + '|& ' + __dirname + '/../bin/code2fdr)', 2000)
         .fail (function(err) {console.log('execute fail: ' + err); return 1; });
     });
   }
@@ -219,9 +220,12 @@ var aspects = {
   run: function(dir, model, filename, baseline, parameters) {
     model = parameters && parameters.model || model;
     return aspects.run_traces(dir, model, filename, baseline, function(trace){
-      return util.spawn_sync_shell('diff -uw '+ trace + ' <(cat '+ trace + ' | ' +
-                                   dzn + ' run -m ' + model + ' ' + filename + ' |& ' +
-                                   'grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')')
+      return util.spawn_sync_shell(
+        'diff -uw'
+          + ' <(grep -v "<flush>" '+ trace + ')'
+          + ' <(grep -v "<flush>" '+ trace + '|'
+          + ' ' + dzn + ' run -m ' + model + ' ' + filename + ' |&'
+          + ' grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')')
         .fail (function(err) {console.log(err); return 1; });
     });
   }
@@ -236,11 +240,11 @@ var aspects = {
     return q(0);
   }
   ,
-  traces: function(dir, model, filename, baseline) {
+  traces: function(dir, model, filename, baseline, parameters) {
     var out = __dirname+'/../out/' + path.basename(dir);
-    var flush = ''; // TODO: config
+    var flush = parameters && parameters.flush && ' --flush' || '';
     var illegal = ''; // TODO: config
-    var cmd =	dzn + ' traces -q 7 '+illegal+' '+flush+' -m '+model+' -o '+out+' '+filename;
+    var cmd = dzn + ' traces -q 7 '+illegal+flush+' -m '+model+' -o '+out+' '+filename;
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
       .then(function(){return util.spawn_sync_shell(cmd);})
