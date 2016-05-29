@@ -29,26 +29,25 @@ var util = require(__dirname+'/util');
 var lstat = q.denodeify(fs.lstat);
 var dzn = __dirname + '/../../client/bin/dzn';
 
-function get_skip(dir) {
+function get_meta(dir) {
   try {
-    fs.lstatSync(dir+'/SKIP');
-    var skip = {};
-    fs.readFileSync(dir+'/SKIP').toString().split('\n')
+    var meta = {};
+    fs.readFileSync(dir+'/META').toString().split('\n')
       .filter (function (line) {return !/^#/.test (line);})
       .each (function (line) {
         var o = line.split (':');
         var e = o[0].trim ();
-        skip[e] = true;
-        try {skip[e] = JSON.parse (o.slice (1).join (':'));} catch (e) {}
+        meta[e] = true;
+        try {meta[e] = JSON.parse (o.slice (1).join (':'));} catch (e) {}
       });
-    return skip;
+    return meta;
   } catch (e) {}
   return [];
 }
 
-function skip_filter (parameters) {
+function skip_filter (meta) {
   return function (e) {
-    return parameters[e] !== true || console.log(e + ': [SKIPPED]') && false;
+    return meta[e] !== true || console.log(e + ': [SKIPPED]') && false;
   }
 }
 
@@ -89,36 +88,36 @@ var aspects = {
           return result;
         }
 
-        var parameters = get_skip (dir);
+        var meta = get_meta (dir);
         work = (work.length == 0 || work[0] == 'all'
                 ? Object.keys(dependencies)
                 : work)
-          .filter (skip_filter (parameters));
+          .filter (skip_filter (meta));
 
         var derived = work.append_map(depend).unique()
-            .filter (skip_filter (parameters));
+            .filter (skip_filter (meta));
         work = work.filter(function(e) { return derived.indexOf(e) == -1;});
 
-        return aspects.test(work, {}, dir, undefined, undefined, undefined, parameters).then (function(result) { return result.exitcode; });
+        return aspects.test(work, {}, dir, undefined, undefined, undefined, meta).then (function(result) { return result.exitcode; });
       });
   }
   ,
-  test: function(work, done, dir, model, filename, baseline, parameters) {
+  test: function(work, done, dir, model, filename, baseline, meta) {
     return work
-      .filter (skip_filter (parameters))
+      .filter (skip_filter (meta))
       .reduce(function(promise, e) {
       return promise.then(function(result1) {
         if (done[e]) return result1;
         var modelname = model || path.basename(dir);
         console.log(e + '[' + modelname + '] ...');
-        return aspects.test(dependencies[e], result1.done, dir, model, filename, baseline, parameters)
+        return aspects.test(dependencies[e], result1.done, dir, model, filename, baseline, meta)
           .then(function(result) {
             return result.exitcode && result
               || aspects[e](dir,
                             modelname,
                             filename || dir + '/' + modelname + '.dzn',
                             baseline || (dir + '/baseline/' + e + '/' + modelname),
-                            parameters && parameters[e])
+                            meta && meta[e])
               .then(function(exitcode){ var done = result.done; done[e] = true; return {exitcode:exitcode, done:done};});
           })
           .then(function(result2) { console.log(e + '[' + modelname + ']: ' + (result2.exitcode ? (result2.exitcode == 'ERROR' ? '[ERROR]' : '[FAILED]') : '[OK]'));
@@ -204,9 +203,9 @@ var aspects = {
       });
   }
   ,
-  execute: function(dir, model, filename, baseline, parameters) {
+  execute: function(dir, model, filename, baseline, meta) {
     var out = __dirname+'/../out/'+path.basename(dir);
-    var flush = parameters && parameters.flush && ' --flush' || '';
+    var flush = meta && meta.flush && ' --flush' || '';
     return aspects.run_traces(dir, model, filename, baseline, function(trace){
       return util.spawn_sync_shell(
         'diff -uw '
@@ -217,8 +216,8 @@ var aspects = {
     });
   }
   ,
-  run: function(dir, model, filename, baseline, parameters) {
-    model = parameters && parameters.model || model;
+  run: function(dir, model, filename, baseline, meta) {
+    model = meta && meta.model || model;
     return aspects.run_traces(dir, model, filename, baseline, function(trace){
       return util.spawn_sync_shell(
         'diff -uw'
@@ -240,9 +239,9 @@ var aspects = {
     return q(0);
   }
   ,
-  traces: function(dir, model, filename, baseline, parameters) {
+  traces: function(dir, model, filename, baseline, meta) {
     var out = __dirname+'/../out/' + path.basename(dir);
-    var flush = parameters && parameters.flush && ' --flush' || '';
+    var flush = meta && meta.flush && ' --flush' || '';
     var illegal = ''; // TODO: config
     var cmd = dzn + ' traces -q 7 '+illegal+flush+' -m '+model+' -o '+out+' '+filename;
     return lstat(out)

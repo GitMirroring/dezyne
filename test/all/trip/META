@@ -1,0 +1,5 @@
+# List aspects to skip on separate line
+run
+traces
+# FIXME: running manually crafted system traces is broken?
+execute

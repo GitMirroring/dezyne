@@ -1,7 +1,0 @@
-# List aspects to skip on separate line
-run
-# Hmm: or add parameters as json object... rename SKIP?
-#run:{"model":"trap"}
-traces
-# Hmm, are system traces broken?
-execute
