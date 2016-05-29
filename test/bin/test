@@ -101,7 +101,7 @@ function processTarget(dir, options) {
   q.denodeify(fs.readdir) (dir)
     .then(function (files) {
       return files.filter(function (f) {
-        try {return fs.lstatSync (dir + '/' + f + '/').isDirectory ();} catch (e) {
+        try {return fs.lstatSync (dir + '/' + f + '/').isDirectory () && f != 'baseline'} catch (e) {
           return /[.]dzn$/.test (f);
         }
       })
