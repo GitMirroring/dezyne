@@ -21,7 +21,7 @@
 # 
 # Code:
 
-.PHONY: all check smoke stress test
+.PHONY: all check regression smoke stress test
 SHELL:=bash
 DZN:=../client/bin/dzn
 
@@ -34,6 +34,9 @@ test: prerequisite
 # quick check target
 check: prerequisite
 	bin/test check
+
+regression: prerequisite
+	bin/test regression-test
 
 stress: prerequisite
 	DZN=$(DZN) bin/stress.sh $(CONFIG)
