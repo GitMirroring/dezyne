@@ -224,7 +224,7 @@ var aspects = {
         'diff -uw'
           + ' <(grep -v "<flush>" '+ trace + ')'
           + ' <(grep -v "<flush>" '+ trace + '|'
-          + ' ' + dzn + ' run -m ' + model + ' ' + filename + ' |&'
+          + ' ' + dzn + ' run --strict --model=' + model + ' ' + filename + ' |&'
           + ' grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')')
         .fail (function(err) {console.log(err); return 1; });
     });
