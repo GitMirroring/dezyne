@@ -1,6 +1,7 @@
-# experiment with skip/parameters
-# FIXME: skipping traces, intended to only run handwritten system traces
-#        switches off execution alltogether :-(
-#run:{"model":"trap"}
+# List aspects to skip on separate line
 run
+# Hmm: or add parameters as json object... rename SKIP?
+#run:{"model":"trap"}
 traces
+# Hmm, are system traces broken?
+execute

@@ -34,6 +34,7 @@ function get_skip(dir) {
     fs.lstatSync(dir+'/SKIP');
     var parameters = {};
     fs.readFileSync(dir+'/SKIP').toString().split('\n')
+      .filter (function (line) {return !/^#/.test (line);})
       .each (function (line) {
         var o = line.split (':');
         parameters[o[0]] = JSON.parse (o.slice (1).join (':') || 'true');
