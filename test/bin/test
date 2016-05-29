@@ -90,27 +90,28 @@ function addLine(line) {
   return line + '\n';
 }
 
-function processTarget(target, aspects) {
-  var path = target;
-  var readdir = q.denodeify(fs.readdir);
+function processTarget(dir, aspects) {
   var failed = 0;
   var passed = 0;
   var totalTestStartTime = new Date();
-  output.open(name, title, target, options.output);
-  readdir(path)
+  output.open(name, title, dir, options.output);
+  q.denodeify(fs.readdir) (dir)
+    .then(function (files) {
+      return files.filter(function (f) {
+        try {return fs.lstatSync (dir + '/' + f + '/').isDirectory ();} catch (e) {
+          return /[.]dzn$/.test (f);
+        }
+      })
+    })
+    .then(function(files){
+      return files.map(function(f){return f.replace (/[^\/]+[.]dzn$/, '');})
+    })
     .then(function(items) {
       var worklist = items
-          .filter(function(item){
-            var lstat = q.denodeify(fs.lstat);
-            return lstat(process.cwd() + '/' + path + '/' + item)
-              .then(function(stats) {
-                return stats.isDirectory();
-              });
-          })
           .map(function(item) {
             return function() {
               console.log('[....] ' + item);
-              var cmd = process.cwd() + '/' + path + '/' + item + '/run';
+              var cmd = process.cwd() + '/' + dir + '/' + item + '/run';
               return util.run(cmd, aspects, options.verbose)
                 .then(function(result) {
                   result.exitcode === 0 ? ++passed : ++failed;
