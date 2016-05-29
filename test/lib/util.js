@@ -183,15 +183,25 @@ var util = {
           future.resolve(result);
         })
 
-        script.on('exit', function (code, signal) {
+        function resolve (code) {
           var result = {};
-          result.status = status || ST.error;
-          result.exitcode = signal || code;
+          result.status = status;
+          result.exitcode = code;
           result.stdout = stdout;
           result.stderr = stderr;
           result.output = output;
-          future.resolve(result);
+          return future.resolve(result);
+        }
+
+        script.on('close', function (code) {
+          return resolve (code);
+        });
+
+        script.on('exit', function (code, signal) {
+          status = status || ST.error;
+          return resolve (signal || code);
         })
+        
         return future.promise;
       })
       .fail(function(err) {

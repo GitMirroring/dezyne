@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 //
 // This file is part of Dezyne.
@@ -142,11 +143,7 @@ var public = {
     html +=  addLine('    </ol>');
     html +=  addLine('  </body>');
     html +=  addLine('<html>');
-    fs.writeFile(filePath, html, function(error) {
-      if (error) {
-        throw error;
-      }
-    });
+    fs.writeFileSync (filePath, html);
   }
   ,
 }

@@ -11,9 +11,9 @@ var output = {
   result: {},
   open: function(name, title, target, outputFilePath) {
     output.filePath = outputFilePath;
-    var fileExtension = path.extname(outputFilePath || '').split('.').join('');
-    if (fileExtension) {
-      var scriptfile = __dirname + '/../lib/' + fileExtension + '.js';
+    var format = path.extname(outputFilePath || '').split('.').join('');
+    if (format) {
+      var scriptfile = __dirname + '/../lib/' + format + '.js';
       try {
         output.write = require(scriptfile).write;
       }
@@ -41,6 +41,7 @@ var output = {
     output.result.failed = failed;
     if (output.write) {
       output.write(output.result, output.filePath);
+      console.log ('See file://' + process.cwd () + '/' + output.filePath);
     }
   }
   ,
@@ -56,7 +57,7 @@ function parse_opts(argv) {
   ([
     ['a', 'aspects=ASPECTS', 'test aspects ASPECTS [all]'],
     ['h', 'help', 'display this help and exit'],
-    ['o', 'output=<target>.html', 'output file name [default]'],
+    ['o', 'output=OUTPUT', 'write output to OUTPUT [TARGET.html]'],
     ['q', 'quiet', 'suppress test summary lines on stdout'],
     ['v', 'verbose', 'show test output on stdout'],
   ]);
@@ -85,7 +86,8 @@ Examples:\n\
   args.files = args.files.length && args.files || ['all'];
   args.options.aspects = args.options.aspects || 'all';
   args.options.aspects = args.options.aspects.split(',');
-  args.options.output = args.options.output || args.options.target + '.html';
+  args.options.output = args.options.output
+    || path.basename (args.files[0]) + '.html';
   if (args.argv.length > 3)
     option_parser.errorFunc('error: unknown argument: ' + args.argv[3]);
   return args;
