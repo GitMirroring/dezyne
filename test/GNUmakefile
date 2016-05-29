@@ -33,7 +33,7 @@ test: prerequisite
 
 # quick check target
 check: prerequisite
-	bin/test -t check
+	bin/test check
 
 stress: prerequisite
 	DZN=$(DZN) bin/stress.sh $(CONFIG)

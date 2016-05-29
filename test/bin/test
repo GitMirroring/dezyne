@@ -5,8 +5,7 @@ var fs = require('fs');
 var path = require('path');
 var q = require('q');
 var util = require(__dirname + '/../lib/util');
-var name = 'Test Framework';
-var title = 'Regression Tests';
+var aspects = require(__dirname + '/../lib/aspects');
 
 var output = {
   result: {},
@@ -55,19 +54,25 @@ function parse_opts(argv) {
   var getopt = require('node-getopt');
   var option_parser = getopt.create
   ([
-    ['t', 'target=all', 'test target all [default]'],
-    ['a', 'aspects=all', 'test aspects all [default]'],
-    ['o', 'output=<target>.html', 'output file name [default]'],
-    ['v', 'verbose', 'show test output on stdout'],
-    ['q', 'quiet', 'suppress test summary lines on stdout'],
+    ['a', 'aspects=ASPECTS', 'test aspects ASPECTS [all]'],
     ['h', 'help', 'display this help and exit'],
+    ['o', 'output=<target>.html', 'output file name [default]'],
+    ['q', 'quiet', 'suppress test summary lines on stdout'],
+    ['v', 'verbose', 'show test output on stdout'],
   ]);
-  var help = '';
-  help += addLine(name);
-  help += addLine('Usage: tfw.js [OPTION]...');
-  help += addLine('Options:');
-  help += addLine('[[OPTIONS]]');
-  option_parser.bindHelp(help);
+  option_parser.bindHelp(
+'Usage: bin/test [OPTION]... TARGET\n\
+Options:\n\
+[[OPTIONS]]\n\
+\n\
+Target: a test directory such as all, check, regression-test\n\
+\n\
+Aspects: ' + Object.keys (aspects).sort() + '\n\
+\n\
+Examples:\n\
+  bin/test\n\
+  bin/test -a code check\n\
+  bin/test -a parse check/trip');
   option_parser.error(function(msg) {
     msg && console.error(msg);
     console.error(option_parser.getHelp());
@@ -76,24 +81,22 @@ function parse_opts(argv) {
     }
   });
   var args = option_parser.parse(argv);
-  args.options.target = args.options.target || 'all';
+  args.files = args.argv.slice (2);
+  args.files = args.files.length && args.files || ['all'];
   args.options.aspects = args.options.aspects || 'all';
   args.options.aspects = args.options.aspects.split(',');
   args.options.output = args.options.output || args.options.target + '.html';
-  if (args.argv.length > 2) {
-    option_parser.errorFunc('error: unknown argument: ' + args.argv[2]);
-  }
+  if (args.argv.length > 3)
+    option_parser.errorFunc('error: unknown argument: ' + args.argv[3]);
   return args;
 }
 
-function addLine(line) {
-  return line + '\n';
-}
-
-function processTarget(dir, aspects) {
+function processTarget(dir, options) {
   var failed = 0;
   var passed = 0;
   var totalTestStartTime = new Date();
+  var name = 'Test Framework';
+  var title = 'Regression Tests';
   output.open(name, title, dir, options.output);
   q.denodeify(fs.readdir) (dir)
     .then(function (files) {
@@ -112,7 +115,7 @@ function processTarget(dir, aspects) {
             return function() {
               console.log('[....] ' + item);
               var cmd = process.cwd() + '/' + dir + '/' + item + '/run';
-              return util.run(cmd, aspects, options.verbose)
+              return util.run(cmd, options.aspects, options.verbose)
                 .then(function(result) {
                   result.exitcode === 0 ? ++passed : ++failed;
                   output.log(item, result);
@@ -140,5 +143,5 @@ function processTarget(dir, aspects) {
     .done();
 }
 
-var options = parse_opts(process.argv).options;
-processTarget(options.target, options.aspects);
+var args = parse_opts(process.argv);
+processTarget(args.files[0], args.options);
