@@ -5,7 +5,7 @@ verify: Incomplete: check: deterministic: ok
 verify: Incomplete: check: completeness: fail
 pp.missing
 pp.return
-Incomplete is incomplete: 'pp.missing,pp.available' not handled
+Incomplete is incomplete: 'pp.available,pp.missing' not handled
 verify: Incomplete: check: illegal: ok
 verify: Incomplete: check: deadlock: fail
 pp.missing
