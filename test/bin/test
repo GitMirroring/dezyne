@@ -41,7 +41,7 @@ var output = {
     output.result.failed = failed;
     if (output.write) {
       output.write(output.result, output.filePath);
-      console.log ('See file://' + process.cwd () + '/' + output.filePath);
+      console.log ('See file://' + path.resolve (output.filePath));
     }
   }
   ,
@@ -55,9 +55,9 @@ function parse_opts(argv) {
   var getopt = require('node-getopt');
   var option_parser = getopt.create
   ([
-    ['a', 'aspects=ASPECTS', 'test aspects ASPECTS [all]'],
+    ['a', 'aspects=ASPECT[,ASPECT]...', 'test aspects ASPECT... [all]'],
     ['h', 'help', 'display this help and exit'],
-    ['o', 'output=OUTPUT', 'write output to OUTPUT [TARGET.html]'],
+    ['o', 'output=OUTPUT', 'write output to OUTPUT [out/TARGET.html]'],
     ['q', 'quiet', 'suppress test summary lines on stdout'],
     ['v', 'verbose', 'show test output on stdout'],
   ]);
@@ -87,7 +87,7 @@ Examples:\n\
   args.options.aspects = args.options.aspects || 'all';
   args.options.aspects = args.options.aspects.split(',');
   args.options.output = args.options.output
-    || path.basename (args.files[0]) + '.html';
+    || __dirname + '/../out/' + path.basename (args.files[0]) + '.html';
   if (args.argv.length > 3)
     option_parser.errorFunc('error: unknown argument: ' + args.argv[3]);
   return args;
@@ -99,14 +99,20 @@ function processTarget(dir, options) {
   var totalTestStartTime = new Date();
   var name = 'Test Framework';
   var title = 'Regression Tests';
-  output.open(name, title, dir, options.output);
-  q.denodeify(fs.readdir) (dir)
-    .then(function (files) {
-      return files.filter(function (f) {
-        try {return fs.lstatSync (dir + '/' + f + '/').isDirectory () && f != 'baseline'} catch (e) {
-          return /[.]dzn$/.test (f);
-        }
-      })
+  
+  util.spawn_sync_shell('mkdir -p ' + path.dirname (options.output))
+    .then (function () {
+      return output.open(name, title, dir, options.output);
+    })
+    .then (function () {
+      return q.denodeify(fs.readdir) (dir)
+        .then(function (files) {
+          return files.filter(function (f) {
+            try {return fs.lstatSync (dir + '/' + f + '/').isDirectory () && f != 'baseline'} catch (e) {
+              return /[.]dzn$/.test (f);
+            }
+          })
+        })
     })
     .then(function(files){
       return files.map(function(f){return f.replace (/[^\/]+[.]dzn$/, '');})
