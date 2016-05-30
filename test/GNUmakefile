@@ -25,19 +25,13 @@
 SHELL:=bash
 DZN:=../client/bin/dzn
 
-smoke: prerequisite
-	bin/test
-
-test: prerequisite
-	bin/test --verbose
-
 # quick check target
 check: prerequisite
-	bin/test check
+	bin/test --verbose check
 
 regression: prerequisite
 	echo 'regression SKIPPED'
-#	bin/test regression-test
+#	bin/test --verbose regression-test
 
 stress: prerequisite
 	DZN=$(DZN) bin/stress.sh $(CONFIG)
