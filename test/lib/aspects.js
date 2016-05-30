@@ -29,25 +29,30 @@ var util = require(__dirname+'/util');
 var lstat = q.denodeify(fs.lstat);
 var dzn = __dirname + '/../../client/bin/dzn';
 
+var default_meta = 
+  { skip: []
+  , ignore: []
+  , flush: false
+  , language: ["c++"]
+  };
+  
 function get_meta(dir) {
   try {
-    var meta = {};
-    fs.readFileSync(dir+'/META').toString().split('\n')
-      .filter (function (line) {return !/^#/.test (line);})
-      .each (function (line) {
-        var o = line.split (':');
-        var e = o[0].trim ();
-        meta[e] = true;
-        try {meta[e] = JSON.parse (o.slice (1).join (':'));} catch (e) {}
-      });
+    var meta_string = fs.readFileSync(dir+'/META');
+    try {
+      var meta = JSON.parse (meta_string);
+    } catch (e) {
+      console.log('[ERROR]: '+ dir + '/META is not a valid JSON object');
+    }
+    Object.keys(default_meta).each(function (e) { meta[e] = meta[e] || default_meta[e]; });
     return meta;
   } catch (e) {}
-  return [];
+  return default_meta;
 }
 
 function skip_filter (meta) {
   return function (e) {
-    return meta[e] !== true || console.log(e + ': [SKIPPED]') && false;
+    return (meta.skip.indexOf(e) == -1) || console.log(e + ': [SKIPPED]') && false;
   }
 }
 
@@ -91,7 +96,7 @@ var aspects = {
         var meta = get_meta (dir);
         work = (work.length == 0 || work[0] == 'all'
                 ? Object.keys(dependencies)
-                : work)
+                : work)f
           .filter (skip_filter (meta));
 
         var derived = work.append_map(depend).unique()
@@ -117,7 +122,7 @@ var aspects = {
                             modelname,
                             filename || dir + '/' + modelname + '.dzn',
                             baseline || (dir + '/baseline/' + e + '/' + modelname),
-                            meta && meta[e])
+                            meta)
               .then(function(exitcode){ var done = result.done; done[e] = true; return {exitcode:exitcode, done:done};});
           })
           .then(function(result2) { console.log(e + '[' + modelname + ']: ' + (result2.exitcode ? (result2.exitcode == 'ERROR' ? '[ERROR]' : '[FAILED]') : '[OK]'));
@@ -205,7 +210,7 @@ var aspects = {
   ,
   execute: function(dir, model, filename, baseline, meta) {
     var out = __dirname+'/../out/'+path.basename(dir);
-    var flush = meta && meta.flush && ' --flush' || '';
+    var flush = meta.flush && ' --flush' || '';
     return aspects.run_traces(dir, model, filename, baseline, function(trace){
       return util.spawn_sync_shell(
         'diff -uw '
@@ -217,7 +222,6 @@ var aspects = {
   }
   ,
   run: function(dir, model, filename, baseline, meta) {
-    model = meta && meta.model || model;
     return aspects.run_traces(dir, model, filename, baseline, function(trace){
       return util.spawn_sync_shell(
         'diff -uw'
@@ -241,7 +245,7 @@ var aspects = {
   ,
   traces: function(dir, model, filename, baseline, meta) {
     var out = __dirname+'/../out/' + path.basename(dir);
-    var flush = meta && meta.flush && ' --flush' || '';
+    var flush = meta.flush && ' --flush' || '';
     var illegal = ''; // TODO: config
     var cmd = dzn + ' traces -q 7 '+illegal+flush+' -m '+model+' -o '+out+' '+filename;
     return lstat(out)

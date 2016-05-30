@@ -1,2 +1,2 @@
-execute:{"flush":true}
-traces:{"flush":true}
+{ "flush": true }
+
