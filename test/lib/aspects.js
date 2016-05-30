@@ -29,12 +29,13 @@ var util = require(__dirname+'/util');
 var lstat = q.denodeify(fs.lstat);
 var dzn = __dirname + '/../../client/bin/dzn';
 
-var default_meta = 
-  { skip: []
+var default_meta = {
+  skip: []
   , ignore: []
   , flush: false
   , language: ["c++"]
-  };
+  , max: {code:undefined,run:50}
+};
   
 function get_meta(dir) {
   try {
@@ -73,6 +74,47 @@ var dependencies = {
 
 function depend(e) {
   return dependencies[e].concat(dependencies[e].append_map(depend));
+}
+
+function run_traces (dir, model, filename, baseline, meta, app) {
+  var out = __dirname+'/../out/'+path.basename(dir);
+  function ls_files_recursively(dir) {
+    return q.denodeify(fs.readdir)(dir)
+      .then(function(entries) {
+        entries.sort ();
+        if (app.aspect === 'run' && meta.max !== undefined) {
+          var lower = Math.floor ((entries.length - meta.max) * Math.random ());
+          entries = entries.slice (lower, lower+meta.max);
+        }
+        return q.all(entries.map(function(entry) {
+          entry = dir + '/' + entry;
+          var is_dir = false;
+          try { is_dir = fs.lstatSync(entry).isDirectory(); } catch(e) {}
+          return is_dir && ls_files_recursively(entry) || [entry];
+        }))
+          .then(function(entries) {
+            return entries.append_map(util.identity);
+          })
+      });
+  }
+
+  return q.all([ls_files_recursively(dir + '/baseline'),
+                ls_files_recursively(out)]
+               .map(function (e) { return e.fail( function (e) { console.log(baseline + ' ' + e + e.stack); return []; }); }))
+    .then(function(files_list) {
+      var f = [].concat.apply([],files_list);
+      return f.filter(function(file){ return /trace/.exec(file); });
+    })
+    .then(function(traces) {
+      if(traces.length == 0)
+        console.log('execute: [SKIPPED] no trace file(s)');
+      return traces;
+    })
+    .then (function(traces) {
+      return traces.reduce(function(promise, trace) {
+        return promise.then(function(result1){return app.spawn(trace).then(function(result2){ return result1 || result2; }); });
+      }, q(0))
+    });
 }
 
 var aspects = {
@@ -171,58 +213,21 @@ var aspects = {
       });
   }
   ,
-  run_traces: function(dir, model, filename, baseline, app) {
-    var out = __dirname+'/../out/'+path.basename(dir);
-
-    function ls_files_recursively(dir) {
-      return q.denodeify(fs.readdir)(dir)
-        .then(function(entries) {
-          return q.all(entries.map(function(entry) {
-            entry = dir + '/' + entry;
-            var is_dir = false;
-            try { is_dir = fs.lstatSync(entry).isDirectory(); } catch(e) {}
-            return is_dir && ls_files_recursively(entry) || [entry];
-          }))
-            .then(function(entries) {
-              return entries.append_map(util.identity);
-            })
-        });
-    }
-
-    return q.all([ls_files_recursively(dir + '/baseline'),
-                  ls_files_recursively(out)]
-                 .map(function (e) { return e.fail( function (e) { console.log(baseline + ' ' + e + e.stack); return []; }); }))
-      .then(function(files_list) {
-        var f = [].concat.apply([],files_list);
-          return f.filter(function(file){ return /trace/.exec(file); });
-      })
-      .then(function(traces) {
-        if(traces.length == 0)
-          console.log('execute: [SKIPPED] no trace file(s)');
-        return traces;
-      })
-      .then (function(traces) {
-        return traces.reduce(function(promise, trace) {
-          return promise.then(function(result1){return app(trace).then(function(result2){ return result1 || result2; }); });
-        }, q(0))
-      });
-  }
-  ,
   execute: function(dir, model, filename, baseline, meta) {
     var out = __dirname+'/../out/'+path.basename(dir);
     var flush = meta.flush && ' --flush' || '';
-    return aspects.run_traces(dir, model, filename, baseline, function(trace){
+    return run_traces(dir, model, filename, baseline, meta, {aspect:'execute',spawn:function(trace){
       return util.spawn_sync_shell(
         'diff -uw '
           + trace
           + ' <(cat '+ trace + ' | ' + out + '/test' + flush
           + '|& ' + __dirname + '/../bin/code2fdr)', 2000)
         .fail (function(err) {console.log('execute fail: ' + err); return 1; });
-    });
+    }});
   }
   ,
   run: function(dir, model, filename, baseline, meta) {
-    return aspects.run_traces(dir, model, filename, baseline, function(trace){
+    return run_traces(dir, model, filename, baseline, meta, {aspect:'run', spawn:function(trace){
       return util.spawn_sync_shell(
         'diff -uw'
           + ' <(grep -v "<flush>" '+ trace + ')'
@@ -230,7 +235,7 @@ var aspects = {
           + ' ' + dzn + ' run --strict --model=' + model + ' ' + filename + ' |&'
           + ' grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')')
         .fail (function(err) {console.log(err); return 1; });
-    });
+    }});
   }
   ,
   table: function(dir, model, filename, baseline) {
