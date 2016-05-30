@@ -96,7 +96,7 @@ var aspects = {
         var meta = get_meta (dir);
         work = (work.length == 0 || work[0] == 'all'
                 ? Object.keys(dependencies)
-                : work)f
+                : work)
           .filter (skip_filter (meta));
 
         var derived = work.append_map(depend).unique()
