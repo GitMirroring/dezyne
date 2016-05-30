@@ -1,6 +1,7 @@
 verify: ilivelock: check: completeness: ok
 verify: ilivelock: check: deadlock: ok
-verify: ilivelock: check: livelock: ok
+verify: ilivelock: check: livelock: fail
+livelock in model ilivelock
 verify: livelock2: check: deterministic: ok
 verify: livelock2: check: completeness: ok
 verify: livelock2: check: illegal: ok
