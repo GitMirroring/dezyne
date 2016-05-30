@@ -23,6 +23,13 @@ process.stdin.on('end', function() {
 
   process.stdout.write('verify: ' +
                        result
+                       .map(function(c){
+                         if (c.indexOf (' is incomplete: ') === -1) return c;
+                         var x = c.split (':');
+                         var events = x[4].trim ().slice (1, -1).split (',');
+                         x[4] = " '" + events.sort().join (',') + "' not handled\n";
+                         return x.join (':');
+                       })
                        .sort(function(a,b){
                          var order = ['deterministic',
                                       'completeness',
