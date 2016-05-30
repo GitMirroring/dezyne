@@ -30,8 +30,7 @@ check: prerequisite
 	bin/test --verbose check
 
 regression: prerequisite
-	echo 'regression SKIPPED'
-#	bin/test --verbose regression-test
+	bin/test --verbose regression-test
 
 stress: prerequisite
 	DZN=$(DZN) bin/stress.sh $(CONFIG)
