@@ -115,7 +115,7 @@ function processTarget(dir, options) {
         })
     })
     .then(function(files){
-      return files.map(function(f){return f.replace (/[^\/]+[.]dzn$/, '');})
+      return files.map(function(f){return f.replace (/[^\/]+[.]dzn$/, '');}).unique();
     })
     .then(function(items) {
       var worklist = items
