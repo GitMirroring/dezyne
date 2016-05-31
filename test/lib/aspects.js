@@ -36,7 +36,7 @@ var default_meta = {
   , language: ["c++"]
   , max: {code:undefined,run:50}
 };
-  
+
 function get_meta(dir) {
   try {
     var meta_string = fs.readFileSync(dir+'/META');
@@ -59,33 +59,29 @@ function skip_filter (meta) {
 
 var dependencies = {
   build:    ['code'],
-  code:     [],
+  code:     ['convert'],
   convert:  [],
   execute:  ['traces', 'build'],
-  parse:    [],
+  parse:    ['convert'],
   run:      ['traces'],
-  table:    [],
-  tables:   [],
-  traces:   [],
+  table:    ['convert'],
+  traces:   ['convert'],
   triangle: ['execute', 'run'],
-  verify:   [],
-  view:     [],
+  verify:   ['convert'],
+  view:     ['convert'],
 };
 
 function depend(e) {
   return dependencies[e].concat(dependencies[e].append_map(depend));
 }
 
-function run_traces (dir, model, filename, baseline, meta, app) {
-  var out = __dirname+'/../out/'+path.basename(dir);
+function run_traces(parameters, asp, app) {
+  var out = __dirname+'/../out/'+path.basename(parameters.dir);
+  var baseline = parameters.dir + '/baseline/'+asp+'/' + parameters.model;
+
   function ls_files_recursively(dir) {
     return q.denodeify(fs.readdir)(dir)
       .then(function(entries) {
-        entries.sort ();
-        if (app.aspect === 'run' && meta.max !== undefined) {
-          var lower = Math.floor ((entries.length - meta.max) * Math.random ());
-          entries = entries.slice (lower, lower+meta.max);
-        }
         return q.all(entries.map(function(entry) {
           entry = dir + '/' + entry;
           var is_dir = false;
@@ -98,12 +94,12 @@ function run_traces (dir, model, filename, baseline, meta, app) {
       });
   }
 
-  return q.all([ls_files_recursively(dir + '/baseline'),
+  return q.all([ls_files_recursively(parameters.dir + '/baseline'),
                 ls_files_recursively(out)]
                .map(function (e) { return e.fail( function (e) { console.log(baseline + ' ' + e + e.stack); return []; }); }))
     .then(function(files_list) {
       var f = [].concat.apply([],files_list);
-      return f.filter(function(file){ return /trace/.exec(file); });
+        return f.filter(function(file){ return /trace/.exec(file); });
     })
     .then(function(traces) {
       if(traces.length == 0)
@@ -112,7 +108,7 @@ function run_traces (dir, model, filename, baseline, meta, app) {
     })
     .then (function(traces) {
       return traces.reduce(function(promise, trace) {
-        return promise.then(function(result1){return app.spawn(trace).then(function(result2){ return result1 || result2; }); });
+        return promise.then(function(result1){return app(trace).then(function(result2){ return result1 || result2; }); });
       }, q(0))
     });
 }
@@ -145,67 +141,99 @@ var aspects = {
             .filter (skip_filter (meta));
         work = work.filter(function(e) { return derived.indexOf(e) == -1;});
 
-        return aspects.test(work, {}, dir, undefined, undefined, undefined, meta).then (function(result) { return result.exitcode; });
+
+        var modelname = path.basename(dir);
+        var filename = dir + '/' + modelname + '.dzn';
+        var parameters = {work: work, done: {}, dir: dir, model: modelname, filename: filename, meta: meta};
+        return aspects.test(parameters).then (function(result) { return result.exitcode; });
       });
   }
   ,
-  test: function(work, done, dir, model, filename, baseline, meta) {
-    return work
-      .filter (skip_filter (meta))
+  test: function(parameters) {
+    return parameters.work
+      .filter (skip_filter (parameters.meta))
       .reduce(function(promise, e) {
-      return promise.then(function(result1) {
-        if (done[e]) return result1;
-        var modelname = model || path.basename(dir);
-        console.log(e + '[' + modelname + '] ...');
-        return aspects.test(dependencies[e], result1.done, dir, model, filename, baseline, meta)
-          .then(function(result) {
-            return result.exitcode && result
-              || aspects[e](dir,
-                            modelname,
-                            filename || dir + '/' + modelname + '.dzn',
-                            baseline || (dir + '/baseline/' + e + '/' + modelname),
-                            meta)
-              .then(function(exitcode){ var done = result.done; done[e] = true; return {exitcode:exitcode, done:done};});
+        return promise.then(function(result1) {
+          if (result1.parameters.done[e]) return result1;
+          var modelname = result1.parameters.model;
+          console.log(e + '[' + modelname + '] ...');
+          var parameters1 = util.deep_copy(result1.parameters);
+          parameters1.work = dependencies[e];
+          return aspects.test(parameters1)
+            .then(function(result1) {
+              return result1.exitcode && result1
+                || aspects[e](result1.parameters)
+                .then(function(result2) {
+                  return (typeof(result2) == 'number') ? {exitcode: result2, parameters: result1.parameters} : result2;
+                });
+            })
+            .then(function(result2) {
+              console.log(e + '[' + modelname + ']: ' + (result2.exitcode ? (result2.exitcode == 'ERROR' ? '[ERROR]' : '[FAILED]') : '[OK]'));
+              var parameters2 = util.deep_copy(result2.parameters);
+              parameters2.done[e] = true;
+              return {exitcode: result1.exitcode || result2.exitcode, parameters: parameters2};
+            });
+        });
+      }, q({exitcode:0, parameters: parameters}));
+  }
+  ,
+  triangle: function(parameters) {
+    return q(0);
+  }
+  ,
+  code: function(parameters) {
+    var out = __dirname+'/../out/'+path.basename(parameters.dir);
+    var cmd = 'make DZN=' + dzn + ' CODE=c++ MODEL='+parameters.model+' IN='+parameters.dir+' OUT='+out+' -f '+__dirname+'/code.make';
+    return util.spawn_sync_shell(cmd)
+      .fail (function(err) {console.log(err); return 1; });
+  }
+  ,
+  build: function(parameters) {
+    var out = __dirname+'/../out/'+path.basename(parameters.dir);
+    var cmd = 'make DIR='+parameters.dir+' OUT='+out+' IN='+out+' -f '+__dirname+'/build.make'
+    return util.spawn_sync_shell(cmd)
+      .fail (function(err) {console.log(err); return 1; });
+  }
+  ,
+  convert: function(parameters) {
+    var base = path.basename(parameters.filename, '.dzn');
+    var dm = parameters.dir+'/'+base+'.dm';
+    return lstat(dm)
+    .then (function(stats) {
+      var out = __dirname+'/../out/'+path.basename(parameters.dir);
+      var cmd = 'mkdir -p '+out+'; '+
+        'echo "'+dm+' -> '+out+'/'+base+'.dzn"; ' +
+        dzn+' convert -g -o '+out+' '+dm+'; ' +
+        'sed -i -e "s,\\(component \\w*\\)Comp,\\1," -e "s,Iasd.builtin.ITimer,ITimer," '+out+'/'+base+'Comp.dzn; ' +
+        'sed -i -e "s,in void on(),in void on1()," '+out+'/*.dzn; ' +
+//      '$(LOCAL_GLOBAL_TYPES)sed -i -e 's,^.* extern,extern,' $(basename $@)Comp.dzn; ' +
+        'mv '+out+'/'+base+'Comp.dzn '+out+'/'+base+'.dzn'
+      return util.spawn_sync_shell(cmd)
+          .then (function (result) {
+            var parameters1 = util.deep_copy(parameters);
+            parameters1.dir = out;
+            parameters1.filename = out + '/' + base+'.dzn';
+            parameters1.model = base+'Comp';
+            return {exitcode:0, parameters:parameters1};
           })
-          .then(function(result2) { console.log(e + '[' + modelname + ']: ' + (result2.exitcode ? (result2.exitcode == 'ERROR' ? '[ERROR]' : '[FAILED]') : '[OK]'));
-                                    var done = result2.done; done[e] = true;
-                                    return {exitcode: result1.exitcode || result2.exitcode, done:done };
-                                  });
-      });
-    }, q({exitcode:0, done:done}));
+          .fail (function(err) {console.log(err); return 1; });
+    })
+    .fail (function(err) {
+      console.log ('convert: [SKIPPED] no DM file '+dm);
+      return 0;
+    });
   }
   ,
-  triangle: function() {
-    return q(0);
-  }
-  ,
-  code: function(dir, model, filename, baseline) {
-    var out = __dirname+'/../out/'+path.basename(dir);
-    var cmd = 'make DZN=' + dzn + ' CODE=c++ MODEL='+model+' IN='+dir+' OUT='+out+' -f '+__dirname+'/code.make';
-    return util.spawn_sync_shell(cmd)
-      .fail (function(err) {console.log(err); return 1; });
-  }
-  ,
-  build: function(dir, model, filename, baseline) {
-    var out = __dirname+'/../out/'+path.basename(dir);
-    var cmd = 'make DIR='+dir+' OUT='+out+' IN='+out+' -f '+__dirname+'/build.make'
-    return util.spawn_sync_shell(cmd)
-      .fail (function(err) {console.log(err); return 1; });
-  }
-  ,
-  convert: function(dir, model, filename, baseline) {
-    console.log('convert: [TODO]');
-    return q(0);
-  }
-  ,
-  parse: function(dir, model, filename, baseline) {
+  parse: function(parameters) {
     var lstat = q.denodeify(fs.lstat);
+    var baseline = parameters.dir + '/baseline/parse/' + parameters.model;
+
     return lstat(baseline)
       .then (function(stats) {
-        return 'diff -uw '+baseline+' <(' + dzn + ' -v parse '+filename+' 2>&1)';
+        return 'diff -uw '+baseline+' <(' + dzn + ' -v parse '+parameters.filename+' 2>&1)';
       })
       .fail (function(err) {
-        return '[ "$(' + dzn + ' parse '+filename+' 2>&1)" = "" ]';
+        return '[ "$(' + dzn + ' parse '+parameters.filename+' 2>&1)" = "" ]';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd)
@@ -213,59 +241,110 @@ var aspects = {
       });
   }
   ,
-  execute: function(dir, model, filename, baseline, meta) {
-    var out = __dirname+'/../out/'+path.basename(dir);
-    var flush = meta.flush && ' --flush' || '';
-    return run_traces(dir, model, filename, baseline, meta, {aspect:'execute',spawn:function(trace){
+  execute: function(parameters) {
+    var out = __dirname+'/../out/'+path.basename(parameters.dir);
+    var flush = parameters.meta.flush && ' --flush' || '';
+    return run_traces(parameters, 'execute', function(trace){
       return util.spawn_sync_shell(
         'diff -uw '
           + trace
           + ' <(cat '+ trace + ' | ' + out + '/test' + flush
           + '|& ' + __dirname + '/../bin/code2fdr)', 2000)
         .fail (function(err) {console.log('execute fail: ' + err); return 1; });
-    }});
+    });
   }
   ,
-  run: function(dir, model, filename, baseline, meta) {
-    return run_traces(dir, model, filename, baseline, meta, {aspect:'run', spawn:function(trace){
+  run: function(parameters) {
+    return run_traces(parameters, 'run', function(trace){
       return util.spawn_sync_shell(
         'diff -uw'
           + ' <(grep -v "<flush>" '+ trace + ')'
           + ' <(grep -v "<flush>" '+ trace + '|'
-          + ' ' + dzn + ' run --strict --model=' + model + ' ' + filename + ' |&'
+          + ' ' + dzn + ' run --strict --model=' + parameters.model + ' ' + parameters.filename + ' |&'
           + ' grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')')
         .fail (function(err) {console.log(err); return 1; });
-    }});
+    });
   }
   ,
-  table: function(dir, model, filename, baseline) {
-    console.log('table: [TODO]');
-    return q(0);
+  table: function(parameters) {
+    return q(0)
+    .then (function(result) {
+      var baseline = parameters.dir + '/baseline/table/'+parameters.model+'-state.dzn';
+      return lstat(baseline)
+      .then (function(stats) {
+        var cmd = 'diff -uwB '+baseline+' <('+dzn+' table --form=state -o - '+parameters.filename+')';
+        return util.spawn_sync_shell(cmd)
+          .fail (function(err) {console.log(err); return 1; });
+      })
+      .then (function(result1) { return result || result1; })
+      .fail (function(err) {
+        console.log('table: [SKIPPED] no baseline '+baseline);
+        return 0;
+      });
+    })
+    .then (function(result) {
+      var baseline = parameters.dir + '/baseline/table/'+parameters.model+'-event.dzn';
+      return lstat(baseline)
+      .then (function(stats) {
+        var cmd = 'diff -uwB '+baseline+' <('+dzn+' table --form=event -o - '+parameters.filename+')';
+        return util.spawn_sync_shell(cmd)
+          .fail (function(err) {console.log(err); return 1; });
+      })
+      .then (function(result1) { return result || result1; })
+      .fail (function(err) {
+        console.log('table: [SKIPPED] no baseline '+baseline);
+        return result;
+      });
+    })
+    .then (function(result) {
+     var baseline = parameters.dir + '/baseline/table/'+parameters.model+'-state.html';
+      return lstat(baseline)
+      .then (function(stats) {
+        var cmd = 'diff -uwB '+baseline+' <('+dzn+' --html table --form=state -o - '+parameters.filename+' | w3m -dump -T text/html)';
+        return util.spawn_sync_shell(cmd)
+          .fail (function(err) {console.log(err); return 1; });
+      })
+      .then (function(result1) { return result || result1; })
+      .fail (function(err) {
+        console.log('table: [SKIPPED] no baseline '+baseline);
+        return result;
+      });
+    })
+    .then (function(result) {
+      var baseline = parameters.dir + '/baseline/table/'+parameters.model+'-event.html';
+      return lstat(baseline)
+      .then (function(stats) {
+        var cmd = 'diff -uwB '+baseline+' <('+dzn+' --html table --form=event -o - '+parameters.filename+' | w3m -dump -T text/html)';
+        return util.spawn_sync_shell(cmd)
+          .fail (function(err) {console.log(err); return 1; });
+      })
+      .then (function(result1) { return result || result1; })
+      .fail (function(err) {
+        console.log('table: [SKIPPED] no baseline '+baseline);
+        return result;
+      });
+    })
   }
   ,
-  tables: function(dir, model, filename, baseline) {
-    console.log('tables: [TODO]');
-    return q(0);
-  }
-  ,
-  traces: function(dir, model, filename, baseline, meta) {
-    var out = __dirname+'/../out/' + path.basename(dir);
-    var flush = meta.flush && ' --flush' || '';
+  traces: function(parameters) {
+    var out = __dirname+'/../out/' + path.basename(parameters.dir);
+    var flush = parameters.meta.flush ? ' --flush' : '';
     var illegal = ''; // TODO: config
-    var cmd = dzn + ' traces -q 7 '+illegal+flush+' -m '+model+' -o '+out+' '+filename;
+    var cmd = dzn + ' traces -q 7 '+illegal+flush+' -m '+parameters.model+' -o '+out+' '+parameters.filename;
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
       .then(function(){return util.spawn_sync_shell(cmd);})
       .fail (function(err) {console.log(err); return 1; });
   }
   ,
-  verify: function(dir, model, filename, baseline) {
+  verify: function(parameters) {
+    var baseline = parameters.dir + '/baseline/verify/' + parameters.model;
     return lstat(baseline)
       .then (function(stats) {
-        return 'diff -uwB '+baseline+' <(' + dzn + ' --verbose verify --all -m '+model+' '+filename+' | '+__dirname+'/../bin/reorder)';
+        return 'diff -uwB '+baseline+' <(' + dzn + ' --verbose verify --all -m '+parameters.model+' '+parameters.filename+' | '+__dirname+'/../bin/reorder)';
       })
       .fail (function(err) {
-        return 'out="$(' + dzn + ' verify --all -m '+model+' '+filename+')"; [ "$out" = "" ] || { echo "$out"; false; }';
+        return 'out="$(' + dzn + ' verify --all -m '+parameters.model+' '+parameters.filename+')"; [ "$out" = "" ] || { echo "$out"; false; }';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd);
@@ -273,7 +352,7 @@ var aspects = {
       .fail (function(err) {console.log(err); return 1; });
   }
   ,
-  view: function(dir, model, filename, baseline) {
+  view: function(parameters) {
     console.log('view: [TODO]');
     return q(0);
   }

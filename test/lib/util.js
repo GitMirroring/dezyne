@@ -85,6 +85,10 @@ var util = {
     return q(r);
   }
   ,
+  deep_copy: function(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+  ,
   parallel_n: function (list /*list of q returning lambdas*/, max) {
     function next(promises) {
       return q().then(function(){
