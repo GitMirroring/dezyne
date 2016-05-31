@@ -109,15 +109,22 @@ Usage: ./configure [OPTION]...
   ((->string '.) version))
 
 (define (string->version string)
-  (and-let* ((version (string-tokenize string (char-set-adjoin char-set:digit #\.)))
+  (and-let* ((m (fold-matches "([0-9.]+)" string #("" (0 . 0))
+                              (lambda (m r)
+                                (if (> (string-length (match:substring m))
+                                       (string-length (match:substring r)))
+                                    m
+                                    r))))
+             (string-tuplet (match:substring m))
+             (version (string-tokenize string-tuplet (char-set-adjoin char-set:digit #\.)))
              ((pair? version))
-             (version (car version))
+             (version (car (reverse version)))
              (version (string-tokenize version (char-set-complement (char-set #\.)))))  (map string->number version)))
 
 (define required '())
 (define* (check-version command expected :optional (deb #f) (version-option '--version) (compare tuple<=))
   (stderr "checking for ~a~a..." command (if (pair? expected) (format #f " [~a]" (version->string expected)) ""))
-  (let* ((actual (gulp-pipe (format #f "~a ~a 2>&1" command version-option)))
+  (let* ((actual (gulp-pipe (format #f "~a ~a 2>&1 | grep '[0-9]' | head -1" command version-option)))
          (actual (string->version actual))
          (pass? (and actual (compare expected actual))))
     (stderr "~a ~a\n" (if pass? (if (pair? actual) "" " yes") (if actual " no, found" "")) (version->string actual))
@@ -152,7 +159,9 @@ Usage: ./configure [OPTION]...
           (set! required (cons deb required))))))
 
 (define guix?
-  (= 0 (system "guix --version 1>/dev/null 2>/dev/null")))
+  ;;(= 0 (system "guix --version 1>/dev/null 2>/dev/null")))
+  #f
+  )
 
 (define (main args)
   (let* ((verum? (file-exists? "/verum"))
