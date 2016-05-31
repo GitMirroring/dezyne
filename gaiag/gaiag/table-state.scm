@@ -61,6 +61,7 @@
             (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                         string->symbol))))
        (or (and-let* ((models (.elements o))
+                      ((pair? models))
                       (models (null-is-#f (filter (negate om:imported?) models)))
                       (models (null-is-#f (if name (and=> (find (om:named name) models) list) models))))
                      (make <root> :elements (map (table table-statement) models))))))
@@ -319,6 +320,7 @@
              o)))
       ;;(#f (if (not json?) o (list (make-hash-table))))
       ;;((or #t #f) (and json? (list (make-hash-table))))
+      (#f '())
       (_ (and (not json?) o)))))
 
 (define (dzn-table o)
