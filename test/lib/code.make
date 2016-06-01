@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -26,13 +27,14 @@ $$(error $(1) undefined)
 endif
 endef
 
-$(foreach i,DZN CODE MODEL IN OUT,$(eval $(call CHECKPARAM,$(i))))
+$(foreach i,DZN LANGUAGE MODEL IN OUT,$(eval $(call CHECKPARAM,$(i))))
 
 .PHONY:all
 
 all: $(wildcard $(IN)/*.dzn)
 	mkdir -p $(OUT)/dzn
-	for file in $(filter-out %/, $(patsubst /$(CODE)/%, %,  $(shell $(DZN) ls -R /share/runtime/$(CODE)))); do $(DZN) cat /share/runtime/$(CODE)/$$file > $(OUT)/$$file; done
-	for file in $^; do $(DZN) code -l $(CODE) --depends -m $(MODEL) -o $(OUT) $$file; done
+	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls -R /share/runtime/$(LANGUAGE))));\
+	do $(DZN) cat /share/runtime/$(LANGUAGE)/$$file > $(OUT)/$$file; done
+	for file in $^; do $(DZN) code -l $(LANGUAGE) --depends -m $(MODEL) -o $(OUT) $$file; done
 
 -include $(patsubst $(IN)/%.dzn, $(OUT)/%.d, $(wildcard $(IN)/*.dzn))
