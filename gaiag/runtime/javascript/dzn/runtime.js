@@ -92,7 +92,7 @@ function runtime(illegal) {
     if (!m) return '<xternal>' + name + p;
     if (m.parent) return this.path(m.parent.meta, m.name + p, 'x');
     if (!m.component && !p) return '<external>' + (m.name ? '.' + m.name : '');
-    if (!m.component) return m.name + p;
+    if (!m.component) return (m.name ? m.name : '<external>') + p;
     return this.path(m.component.meta, m.name + p, 'x');
   };
 

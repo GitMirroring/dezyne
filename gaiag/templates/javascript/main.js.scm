@@ -72,12 +72,18 @@ function #.scope_model _fill_event_map(m)
        (om:events port)))) (om:ports model)) };
   #(map (init-port #{
      if (dzn.flush) {
+       m.#name .meta.requires.component = c;
+       m.#name .meta.requires.name = '<internal>.#name ';
+     }
+     #}) (filter om:provides? (om:ports model)))
+  #(map (init-port #{
+     if (dzn.flush) {
        m.#name .meta.provides.component = c;
        m.#name .meta.provides.name = '<internal>.#name ';
      }
        e['#name .<flush>'] = function() {console.error('#name .<flush>'); m.rt.flush(m.#name .meta.provides.component);};
      #}) (filter om:requires? (om:ports model)))
-#(map
+  #(map
     (lambda (port)
      (map (define-on model port #{
        m.#port .#direction .#event  = function() {#(string-if (eq? return-type 'void) #{log_#direction('#port .', '#event ', e);#}#{return log_valued('#port .', '#event ', e, function(s) {return new dzn.#((om:scope-name) interface)().#reply-name[drop_prefix(s, '#port .#reply-name _')];}, new dzn.#((om:scope-name) interface)().#reply-name _to_string)#})};
