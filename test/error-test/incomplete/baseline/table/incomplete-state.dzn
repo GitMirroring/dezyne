@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
-//
-// Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -27,8 +26,8 @@ interface iincomplete {
 
   behaviour {
 
-    on e:
     [true]
+    on e:
     a;
   }
 }
@@ -39,8 +38,8 @@ component incomplete {
 
   behaviour {
 
-    on p.e():
     [true]
+    on p.e():
     {}
   }
 }
