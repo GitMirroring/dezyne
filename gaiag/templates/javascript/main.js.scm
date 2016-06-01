@@ -46,14 +46,13 @@ function log_out(prefix, event) {
   console.error(prefix + event);
 }
 
-function log_valued(prefix, event, event_map, string_to_value, value_to_string) {
+function log_valued(prefix, event, event_map) {
   console.error(prefix + event);
   if (relaxed) return 0;
   var s = consume_synchronous_out_events(prefix, event, event_map);
-  var r = string_to_value(s);
-  if (r !== undefined) {
-     console.error(prefix + value_to_string[r]);
-     return r;
+  if (s !== undefined) {
+     console.error(prefix + s);
+     return s;
   }
   throw 'runtime error: "' + s + '" is not a reply value'
 }
@@ -86,7 +85,7 @@ function #.scope_model _fill_event_map(m)
   #(map
     (lambda (port)
      (map (define-on model port #{
-       m.#port .#direction .#event  = function() {#(string-if (eq? return-type 'void) #{log_#direction('#port .', '#event ', e);#}#{return log_valued('#port .', '#event ', e, function(s) {return new dzn.#((om:scope-name) interface)().#reply-name[drop_prefix(s, '#port .#reply-name _')];}, new dzn.#((om:scope-name) interface)().#reply-name _to_string)#})};
+       m.#port .#direction .#event  = function() {#(string-if (eq? return-type 'void) #{log_#direction('#port .', '#event ', e);#}#{return log_valued('#port .', '#event ', e)#})};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
  #(map (init-port #{
