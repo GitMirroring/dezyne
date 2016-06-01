@@ -82,6 +82,11 @@ function run_traces(parameters, asp, app) {
   function ls_files_recursively(dir) {
     return q.denodeify(fs.readdir)(dir)
       .then(function(entries) {
+        entries.sort ();
+        if (parameters.meta.max && parameters.meta.max[asp] !== undefined) {
+          var lower = Math.floor ((entries.length - parameters.meta.max[asp]) * Math.random ());
+          entries = entries.slice (lower, lower+parameters.meta.max[asp]);
+        }
         return q.all(entries.map(function(entry) {
           entry = dir + '/' + entry;
           var is_dir = false;
