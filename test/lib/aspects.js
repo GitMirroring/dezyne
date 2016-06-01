@@ -301,11 +301,12 @@ var aspects = {
   ,
   run: function(parameters) {
     return run_traces(parameters, 'run', function(trace){
+      var model = parameters.meta.model || parameters.model;
       return util.spawn_sync_shell(
         'diff -uw'
           + ' <(grep -v "<flush>" '+ trace + ')'
           + ' <(grep -v "<flush>" '+ trace + '|'
-          + ' ' + dzn + ' run --strict --model=' + parameters.model + ' ' + parameters.filename + ' |&'
+          + ' ' + dzn + ' run --strict --model=' + model + ' ' + parameters.filename + ' |&'
           + ' grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')')
         .fail (function(err) {console.log(err); return 1; });
     });
