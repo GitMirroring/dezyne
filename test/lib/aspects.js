@@ -101,10 +101,14 @@ function run_traces(parameters, asp, app) {
 
   return q.all([ls_files_recursively(parameters.dir + '/baseline'),
                 ls_files_recursively(out)]
-               .map(function (e) { return e.fail( function (e) { console.log(baseline + ' ' + e + e.stack); return []; }); }))
+               .map(function (e) { return e.fail( function (e) { return []; }); }))
     .then(function(files_list) {
       var f = [].concat.apply([],files_list);
       return f.filter(function(file){ return /trace/.exec(file); });
+    })
+    .then(function(traces) {
+      if (!traces.length) throw new Error ('run_traces: no traces found');
+      return traces;
     })
     .then(function(traces) {
       if(traces.length == 0)
