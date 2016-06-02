@@ -27,6 +27,22 @@ var fs = require('fs');
 var path = require('path');
 var child = require('child_process');
 
+if (!Array.prototype.partition) {
+  Array.prototype.partition = function (predicate, context) {
+    var satisfy = [];
+    var rest = [];
+
+    this.each (function (i) {
+      if (predicate.call (context, i)) {
+        satisfy.push (i);
+      } else {
+        rest.push (i);
+      }
+    });
+    return [satisfy, rest];
+  };
+};
+
 var ST = { error: '[ERROR]', failed: '[FAILED]', ignored: '[IGNORED]', ok: '[OK]', skipped: '[SKIPPED]' };
 
 function V(st1, st2) {
@@ -41,13 +57,6 @@ function delay(ms) {
   var deferred = q.defer();
   setTimeout(deferred.resolve, ms);
   return deferred.promise;
-}
-
-function getcall(command,aspects) {
-  var lstat = q.denodeify(fs.lstat);
-  return lstat(command)
-    .then(function(stats) { return {command:command, args:aspects}; })
-    .fail(function(err) { return {command:'bin/' + path.basename(command), args:[util.relative (path.dirname(command))].concat(aspects)}; });
 }
 
 if (!Array.prototype.append_map) {
@@ -156,17 +165,24 @@ var util = {
     return (buffer.toString().indexOf(sub) > -1);
   }
   ,
-  run: function(command, aspects, verbose) {
+  // run script arguments: bin/run testdir (aspect | language)*
+  //                       testdir/run (aspect | language)*
+  run: function(testdir, aspects_languages, verbose) {
     var future = q.defer();
     var singleTestStartTime = new Date();
-    return getcall(command,aspects)
+
+    var lstat = q.denodeify(fs.lstat);
+    return lstat(testdir + '/run')
+      .then(function(stats) { return {run: testdir + '/run', args:aspects_languages}; })
+      .fail(function(err) { return {run: 'bin/run', args:[util.relative (testdir)].concat(aspects_languages)}; })
+      .tap(function(call) { console.log(call);})
       .then(function(call) {
         var stdout = '';
         var stderr = '';
         var output = '';
         var status = '';
 
-        var script = child.spawn (call.command, call.args);
+        var script = child.spawn (call.run, call.args);
 
         script.stdout.on('data', function (data) {
           if(verbose) process.stdout.write(data);
@@ -210,7 +226,7 @@ var util = {
           status = status || ST.error;
           return resolve (signal || code);
         })
-        
+
         return future.promise;
       })
       .fail(function(err) {

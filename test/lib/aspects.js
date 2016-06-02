@@ -25,6 +25,8 @@
 var q = require('q');
 var fs = require('fs');
 var path = require('path');
+
+var languages = require(__dirname+'/languages');
 var util = require(__dirname+'/util');
 var lstat = q.denodeify(fs.lstat);
 var dzn = '../client/bin/dzn';
@@ -33,11 +35,11 @@ var default_meta = {
   skip: []
   , ignore: []
   , flush: false
-  , language: ['javascript', 'c++']
+  , languages: languages
   , max: {code:undefined,run:50}
 };
 
-function get_meta(dir) {
+function read_meta(dir, default_meta) {
   try {
     var meta_string = fs.readFileSync(dir+'/META');
     try {
@@ -123,7 +125,12 @@ function run_traces(parameters, asp, app) {
 }
 
 var aspects = {
-  all: function(work, dir) {
+  list: function(){
+    return Object.keys(dependencies);
+  }
+  ,
+  all: function(work, languages, dir) {
+
     function find_key(v, e) {
       Object.keys(dependencies).indexOf(e) == -1 && console.error(e + ' not listed');
       return v && dependencies[e];
@@ -140,8 +147,10 @@ var aspects = {
           return result;
         }
 
-        var meta = get_meta (dir);
-        work = (work.length == 0 || work[0] == 'all'
+        var meta = read_meta (dir, default_meta);
+        meta.languages = languages.length && languages || meta.languages;
+
+        work = (work.length == 0
                 ? Object.keys(dependencies)
                 : work)
           .filter (skip_filter (meta));
@@ -150,18 +159,16 @@ var aspects = {
             .filter (skip_filter (meta));
         work = work.filter(function(e) { return derived.indexOf(e) == -1;});
 
-
         var modelname = path.basename(dir);
         var filename = dir + '/' + modelname + '.dzn';
-        var languages = meta.language;
         var parameters = {work: work, done: {}, dir: dir, model: modelname, filename: filename, meta: meta};
-        return languages.reduce(function(promise, language) {
+        return meta.languages.reduce(function(promise, language) {
           return promise.then(function(result1) {
             var parameters = util.deep_copy(result1.parameters);
-            parameters.meta.language = [ language ];
+            parameters.meta.languages = [ language ];
             parameters.work = work;
             return aspects.test(parameters).then (function(result2) {
-              return {exitcode: result1.exitcode || result2.exitcode, parameters: result2.parameters} 
+              return {exitcode: result1.exitcode || result2.exitcode, parameters: result2.parameters}
             });
           });
         }, q({exitcode:0, parameters:parameters}))
@@ -169,13 +176,13 @@ var aspects = {
       });
   }
   ,
-  test: function(parameters) { // pre: parameters.meta.language == [ l ]
-    var language = parameters.meta.language[0];
-    
+  test: function(parameters) { // pre: parameters.meta.languages == [ l ]
+    var language = parameters.meta.languages[0];
+
     function haslanguage(aspect) {
       return (['triangle', 'execute', 'build', 'code'].indexOf(aspect) > -1);
     }
-    
+
     function testcase(aspect,result1) {
       return result1.exitcode && result1
         || aspects[aspect](result1.parameters)
@@ -187,7 +194,7 @@ var aspects = {
     function isdone(done, aspect, language) {
       return haslanguage(aspect) ? (done[aspect] && done[aspect][language]) : done[aspect];
     }
-    
+
     function setdone(done, aspect, language) {
       if (haslanguage(aspect)) {
         done[aspect] = done[aspect] || {};
@@ -196,7 +203,7 @@ var aspects = {
       else done[aspect] = true;
       return done;
     }
-    
+
     function collect(aspect, result1, result2) {
       var parameters2 = util.deep_copy(result2.parameters);
       parameters2.done = setdone(parameters2.done, aspect, language);
@@ -227,16 +234,16 @@ var aspects = {
   }
   ,
   code: function(parameters) {
-    var language = parameters.meta.language[0];
+    var language = parameters.meta.languages[0];
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
-    var cmd = 'make DZN=' + dzn + ' LANGUAGE=' + language + 
+    var cmd = 'make DZN=' + dzn + ' LANGUAGE=' + language +
       ' MODEL='+parameters.model+' IN='+parameters.dir+' OUT='+out+' -f '+'lib/code.make';
     return util.spawn_sync_shell(cmd)
       .fail (function(err) {console.log(err); return 1; });
   }
   ,
   build: function(parameters) {
-    var language = parameters.meta.language[0];
+    var language = parameters.meta.languages[0];
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
     var cmd = 'make DIR='+parameters.dir+' LANGUAGE=' + language + ' OUT='+out+' IN='+out+' -f '+'lib/build.' + language + '.make'
     return util.spawn_sync_shell(cmd)
@@ -244,7 +251,7 @@ var aspects = {
   }
   ,
   execute: function(parameters) {
-    var language = parameters.meta.language[0];
+    var language = parameters.meta.languages[0];
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
     var flush = parameters.meta.flush && ' --flush' || '';
     return run_traces(parameters, 'execute', function(trace){

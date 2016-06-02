@@ -6,6 +6,7 @@ var path = require('path');
 var q = require('q');
 var util = require(__dirname + '/../lib/util');
 var aspects = require(__dirname + '/../lib/aspects');
+var languages = require(__dirname + '/../lib/languages');
 
 var output = {
   result: {},
@@ -55,25 +56,25 @@ function parse_opts(argv) {
   var getopt = require('node-getopt');
   var option_parser = getopt.create
   ([
-    ['a', 'aspects=ASPECT[,ASPECT]...', 'test aspects ASPECT... [all]'],
     ['h', 'help', 'display this help and exit'],
     ['o', 'output=OUTPUT', 'write output to OUTPUT [out/TARGET.html]'],
     ['q', 'quiet', 'suppress test summary lines on stdout'],
     ['v', 'verbose', 'show test output on stdout'],
   ]);
   option_parser.bindHelp(
-'Usage: bin/test [OPTION]... TARGET\n\
+'Usage: bin/test [OPTION]... TARGET (ASPECT | LANGUAGE)*\n\
 Options:\n\
 [[OPTIONS]]\n\
 \n\
 Target: a test directory such as all, check, regression-test\n\
 \n\
-Aspects: ' + Object.keys (aspects).sort() + '\n\
+Aspects: ' + aspects.list().sort() + '\n\
+Languages: ' + languages.sort() + '\n\
 \n\
 Examples:\n\
-  bin/test\n\
-  bin/test -a code check\n\
-  bin/test -a parse check/trip');
+  bin/test check\n\
+  bin/test all/helloworld code c++\n\
+  bin/test check/trip parse');
   option_parser.error(function(msg) {
     msg && console.error(msg);
     console.error(option_parser.getHelp());
@@ -81,25 +82,30 @@ Examples:\n\
       process.exit(2);
     }
   });
+
   var args = option_parser.parse(argv);
-  args.files = args.argv.slice (2);
-  args.files = args.files.length && args.files || ['all'];
-  args.options.aspects = args.options.aspects || 'all';
-  args.options.aspects = args.options.aspects.split(',');
+
+  args.argv = args.argv.slice (2);
+
   args.options.output = args.options.output
-    || 'out/' + path.basename (args.files[0]) + '.html';
-  if (args.argv.length > 3)
-    option_parser.errorFunc('error: unknown argument: ' + args.argv[3]);
+    || 'out/' + path.basename (args.argv[0]) + '.html';
+
   return args;
 }
 
-function processTarget(dir, options) {
+function main() {
+  var args = parse_opts(process.argv);
+
+  var dir = args.argv[0]
+  var aspects_languages = args.argv.slice(1);
+  var options = args.options;
+
   var failed = 0;
   var passed = 0;
   var totalTestStartTime = new Date();
   var name = 'Test Framework';
   var title = 'Regression Tests';
-  
+
   util.spawn_sync_shell('mkdir -p ' + path.dirname (options.output))
     .then (function () {
       return output.open(name, title, dir, options.output);
@@ -122,8 +128,7 @@ function processTarget(dir, options) {
           .map(function(item) {
             return function() {
               console.log('[....] ' + item);
-              var cmd = process.cwd() + '/' + dir + '/' + item + '/run';
-              return util.run(cmd, options.aspects, options.verbose)
+              return util.run(dir + '/' + item, aspects_languages, options.verbose)
                 .then(function(result) {
                   result.exitcode === 0 ? ++passed : ++failed;
                   output.log(item, result);
@@ -151,5 +156,4 @@ function processTarget(dir, options) {
     .done();
 }
 
-var args = parse_opts(process.argv);
-processTarget(args.files[0], args.options);
+main();
