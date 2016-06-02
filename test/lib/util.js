@@ -170,7 +170,6 @@ var util = {
     return lstat(testdir + '/run')
       .then(function(stats) { return {run: testdir + '/run', args:aspects_languages}; })
       .fail(function(err) { return {run: 'bin/run', args:[util.relative (testdir)].concat(aspects_languages)}; })
-      .tap(function(call) { console.log(call);})
       .then(function(call) {
         var stdout = '';
         var stderr = '';
