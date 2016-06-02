@@ -218,7 +218,7 @@ var aspects = {
           return aspects.test(parameters1)
             .then(function(result1){return testcase(e, result1);})
             .then(function(result2){
-              console.log(header + (result2.exitcode ? (result2.exitcode == 'ERROR' ? '[ERROR]' : '[FAILED]') : '[OK]'));
+              console.log(header + (result2.exitcode ? (result2.exitcode == -1 ? '[ERROR]' : '[FAILED]') : '[OK]'));
               return result2;
             })
             .then(function(result2){return collect(e, result1, result2);});
