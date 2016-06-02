@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
+// Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
 //
@@ -30,34 +30,48 @@ interface IMultipleOutEventsOnSingleTau {
     enum States {Closed, Emitting, Open};
     States state = States.Closed;
 
+    [state.Closed]
+    {
+      on ca:
+      {
+        [true]
+        illegal;
+        [true]
+        {}
+      }
+      on inevitable:
+      {
+        [true]
+        {
+          oa;
+          ob;
+          state = States.Open;
+        }
+        [true]
+        {
+          oa;
+          state = States.Emitting;
+        }
+      }
+    }
+    [state.Emitting]
+    {
+      on ca:
+      {
+        [true]
+        illegal;
+        [true]
+        {}
+      }
+      on inevitable:
+      {
+        ob;
+        state = States.Open;
+      }
+    }
+    [state.Open]
     on ca:
-    {
-      [state.Emitting || state.Closed]
-      illegal;
-      [state.Emitting || state.Closed]
-      {}
-      [state.Open]
-      state = States.Closed;
-    }
-    on inevitable:
-    {
-      [state.Closed]
-      {
-        oa;
-        ob;
-        state = States.Open;
-      }
-      [state.Closed]
-      {
-        oa;
-        state = States.Emitting;
-      }
-      [state.Emitting]
-      {
-        ob;
-        state = States.Open;
-      }
-    }
+    state = States.Closed;
   }
 }
 
@@ -69,29 +83,31 @@ component MultipleOutEventsOnSingleTau {
     bool combine_out = false;
     bool ca_enabled = false;
 
-    on pp.ca():
+    [!combine_out]
     {
-      [combine_out || !combine_out]
+      on pp.ca():
       if (ca_enabled) {
         rp.ca();
         combine_out = !combine_out;
       }
-    }
-    on rp.oa():
-    {
-      [!combine_out]
+      on rp.oa():
       pp.oa();
-      [combine_out]
-      {}
-    }
-    on rp.ob():
-    {
-      [!combine_out]
+      on rp.ob():
       {
         pp.ob();
         ca_enabled = true;
       }
-      [combine_out]
+    }
+    [combine_out]
+    {
+      on pp.ca():
+      if (ca_enabled) {
+        rp.ca();
+        combine_out = !combine_out;
+      }
+      on rp.oa():
+      {}
+      on rp.ob():
       {
         pp.oa();
         pp.ob();
