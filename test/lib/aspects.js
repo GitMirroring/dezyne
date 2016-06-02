@@ -157,7 +157,9 @@ var aspects = {
         var modelname = path.basename(dir);
         var filename = dir + '/' + modelname + '.dzn';
         var parameters = {work: work, done: {}, dir: dir, model: modelname, filename: filename, meta: meta};
-        return meta.languages.reduce(function(promise, language) {
+        return meta.languages
+          .filter (skip_filter (meta))
+          .reduce(function(promise, language) {
           return promise.then(function(result1) {
             var parameters = util.deep_copy(result1.parameters);
             parameters.meta.languages = [ language ];
