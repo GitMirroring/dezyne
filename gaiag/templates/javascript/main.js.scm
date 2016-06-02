@@ -32,7 +32,7 @@ function consume_synchronous_out_events(prefix, event, event_map) {
     }
     event_map[s]();
   }
-  return s;
+  return s && s.split ('.').last ();
 }
 
 function log_in(prefix, event, event_map) {
