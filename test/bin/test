@@ -87,7 +87,7 @@ Examples:\n\
   args.options.aspects = args.options.aspects || 'all';
   args.options.aspects = args.options.aspects.split(',');
   args.options.output = args.options.output
-    || __dirname + '/../out/' + path.basename (args.files[0]) + '.html';
+    || 'out/' + path.basename (args.files[0]) + '.html';
   if (args.argv.length > 3)
     option_parser.errorFunc('error: unknown argument: ' + args.argv[3]);
   return args;

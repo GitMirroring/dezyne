@@ -47,7 +47,7 @@ function getcall(command,aspects) {
   var lstat = q.denodeify(fs.lstat);
   return lstat(command)
     .then(function(stats) { return {command:command, args:aspects}; })
-    .fail(function(err) { return {command:__dirname + '/../bin/' + path.basename(command), args:[path.dirname(command)].concat(aspects)}; });
+    .fail(function(err) { return {command:'bin/' + path.basename(command), args:[util.relative (path.dirname(command))].concat(aspects)}; });
 }
 
 if (!Array.prototype.append_map) {
@@ -80,6 +80,11 @@ if (!Array.prototype.unique) {
 
 var util = {
   identity: function (e) { return e; }
+  ,
+  relative: function (file_name) {
+    return fs.realpathSync (file_name)
+      .replace (new RegExp ('^' + fs.realpathSync (process.cwd ()) + '/'), '');
+  }
   ,
   result: function(r) {
     return q(r);

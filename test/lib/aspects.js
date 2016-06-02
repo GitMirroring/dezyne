@@ -27,7 +27,7 @@ var fs = require('fs');
 var path = require('path');
 var util = require(__dirname+'/util');
 var lstat = q.denodeify(fs.lstat);
-var dzn = __dirname + '/../../client/bin/dzn';
+var dzn = '../client/bin/dzn';
 
 var default_meta = {
   skip: []
@@ -76,7 +76,7 @@ function depend(e) {
 }
 
 function run_traces(parameters, asp, app) {
-  var out = __dirname+'/../out/'+path.basename(parameters.dir);
+  var out = 'out/'+path.basename(parameters.dir);
   var baseline = parameters.dir + '/baseline/'+asp+'/' + parameters.model;
 
   function ls_files_recursively(dir) {
@@ -224,31 +224,31 @@ var aspects = {
   ,
   code: function(parameters) {
     var language = parameters.meta.language[0];
-    var out = __dirname+'/../out/'+path.basename(parameters.dir)+'/'+language;
+    var out = 'out/'+path.basename(parameters.dir)+'/'+language;
     var cmd = 'make DZN=' + dzn + ' LANGUAGE=' + language + 
-      ' MODEL='+parameters.model+' IN='+parameters.dir+' OUT='+out+' -f '+__dirname+'/code.make';
+      ' MODEL='+parameters.model+' IN='+parameters.dir+' OUT='+out+' -f '+'lib/code.make';
     return util.spawn_sync_shell(cmd)
       .fail (function(err) {console.log(err); return 1; });
   }
   ,
   build: function(parameters) {
     var language = parameters.meta.language[0];
-    var out = __dirname+'/../out/'+path.basename(parameters.dir)+'/'+language;
-    var cmd = 'make DIR='+parameters.dir+' LANGUAGE=' + language + ' OUT='+out+' IN='+out+' -f '+__dirname+'/build.' + language + '.make'
+    var out = 'out/'+path.basename(parameters.dir)+'/'+language;
+    var cmd = 'make DIR='+parameters.dir+' LANGUAGE=' + language + ' OUT='+out+' IN='+out+' -f '+'lib/build.' + language + '.make'
     return util.spawn_sync_shell(cmd)
       .fail (function(err) {console.log(err); return 1; });
   }
   ,
   execute: function(parameters) {
     var language = parameters.meta.language[0];
-    var out = __dirname+'/../out/'+path.basename(parameters.dir)+'/'+language;
+    var out = 'out/'+path.basename(parameters.dir)+'/'+language;
     var flush = parameters.meta.flush && ' --flush' || '';
     return run_traces(parameters, 'execute', function(trace){
       return util.spawn_sync_shell(
         'diff -uw '
           + trace
           + ' <(cat '+ trace + ' | ' + out + '/test' + flush
-          + '|& ' + __dirname + '/../bin/code2fdr)', 2000)
+          + '|& ' + 'bin/code2fdr)', 2000)
         .fail (function(err) {console.log('execute fail: ' + err); return 1; });
     });
   }
@@ -258,7 +258,7 @@ var aspects = {
     var dm = parameters.dir+'/'+base+'.dm';
     return lstat(dm)
       .then (function(stats) {
-        var out = __dirname+'/../out/'+path.basename(parameters.dir);
+        var out = 'out/'+path.basename(parameters.dir);
         var cmd = 'mkdir -p '+out+'; '+
             'echo "'+dm+' -> '+out+'/'+base+'.dzn"; ' +
             dzn+' convert -g -o '+out+' '+dm+'; ' +
@@ -373,7 +373,7 @@ var aspects = {
   }
   ,
   traces: function(parameters) {
-    var out = __dirname+'/../out/' + path.basename(parameters.dir);
+    var out = 'out/' + path.basename(parameters.dir);
     var flush = parameters.meta.flush ? ' --flush' : '';
     var illegal = ''; // TODO: config
     var cmd = dzn + ' traces -q 7 '+illegal+flush+' -m '+parameters.model+' -o '+out+' '+parameters.filename;
@@ -387,7 +387,7 @@ var aspects = {
     var baseline = parameters.dir + '/baseline/verify/' + parameters.model;
     return lstat(baseline)
       .then (function(stats) {
-        return 'diff -uwB '+baseline+' <(' + dzn + ' --verbose verify --all -m '+parameters.model+' '+parameters.filename+' | '+__dirname+'/../bin/reorder)';
+        return 'diff -uwB '+baseline+' <(' + dzn + ' --verbose verify --all -m '+parameters.model+' '+parameters.filename+' | '+'bin/reorder)';
       })
       .fail (function(err) {
         return 'out="$(' + dzn + ' verify --all -m '+parameters.model+' '+parameters.filename+')"; [ "$out" = "" ] || { echo "$out"; false; }';
