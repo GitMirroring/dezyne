@@ -101,7 +101,7 @@ function run_traces(parameters, asp, app) {
       });
   }
 
-  return q.all([ls_files_recursively(parameters.dir + '/baseline'),
+  return q.all([ls_files_recursively(parameters.dir),
                 ls_files_recursively(out)]
                .map(function (e) { return e.fail( function (e) { return []; }); }))
     .then(function(files_list) {
