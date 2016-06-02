@@ -105,16 +105,11 @@ function run_traces(parameters, asp, app) {
                 ls_files_recursively(out)]
                .map(function (e) { return e.fail( function (e) { return []; }); }))
     .then(function(files_list) {
-      var f = [].concat.apply([],files_list);
-      return f.filter(function(file){ return /trace/.exec(file); });
+      return [].concat.apply([],files_list)
+        .filter(function(file){ return /trace/.test(file); });
     })
     .then(function(traces) {
       if (!traces.length) throw new Error ('run_traces: no traces found');
-      return traces;
-    })
-    .then(function(traces) {
-      if(traces.length == 0)
-        console.log('execute: [SKIPPED] no trace file(s)');
       return traces;
     })
     .then (function(traces) {

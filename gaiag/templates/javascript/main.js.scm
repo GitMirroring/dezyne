@@ -46,6 +46,12 @@ function log_out(prefix, event) {
   console.error(prefix + event);
 }
 
+function type_helper(value, type) {
+  if (type === 'int') return parseInt (value);
+  if (type === 'bool') return value ? true : false;
+  return value;
+}
+
 function log_valued(prefix, event, event_map) {
   console.error(prefix + event);
   if (relaxed) return 0;
@@ -85,7 +91,7 @@ function #.scope_model _fill_event_map(m)
   #(map
     (lambda (port)
      (map (define-on model port #{
-       m.#port .#direction .#event  = function() {#(string-if (eq? return-type 'void) #{log_#direction('#port .', '#event ', e);#}#{return log_valued('#port .', '#event ', e)#})};
+       m.#port .#direction .#event  = function() {#(string-if (eq? return-type-name 'void) #{log_#direction('#port .', '#event ', e);#}#{return type_helper(log_valued('#port .', '#event ', e), '#return-type-name ');#})};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
  #(map (init-port #{

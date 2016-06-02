@@ -112,6 +112,7 @@
            om:scope-join ;; JUNKME
            om:scope-name
            om:type
+           om:type-name
            om:typed?
            om:types
            om:variable
@@ -357,6 +358,13 @@
     ;;(stderr "\nom:type[~a]: ~a ==> ~a\n" (.name model) o r)
     ;;(stderr "TYPES[~a]: ~a\n" (.name model) (om:types model))
     r))
+
+(define (om:type-name o)
+  (match o
+    (($ <enum>) 'enum)
+    (($ <int>) 'int)
+    (($ <type> 'bool) 'bool)
+    (($ <type> 'void) 'void)))
 
 (define ((om:type- model) o)
   (match o
