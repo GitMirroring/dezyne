@@ -1,3 +1,0 @@
-verify: IUserDB: check: completeness: ok
-verify: IUserDB: check: deadlock: ok
-verify: IUserDB: check: livelock: ok

@@ -1,0 +1,112 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// purpose: Show example of error pattern.
+// The following interface contains the so-called error pattern.
+// An device can report an error to its clients and then waits for its
+// client to terminate the device and (re)initialize it again.
+interface IDevice {
+  in void initialize();
+  in void open();
+  in void close();
+  in void terminate();
+
+  out void error();
+
+  behaviour {
+    enum State { Uninitialized, Closed, Open, Error };
+    State s = State.Uninitialized;
+
+    [s.Uninitialized] {
+      on initialize: {s = State.Closed;}
+      on open, close: illegal;
+    }
+    [!s.Uninitialized] {
+      on initialize: illegal;
+
+      [s.Closed] {
+        on open: {s = State.Open;}
+        on close: illegal;
+      }
+      [s.Open] {
+        on open: illegal;
+        on close: {s = State.Closed;}
+      }
+
+      [!s.Error] {
+        on optional: {s = State.Error; error;}
+      }
+      [s.Error] {
+        on open, close: {}
+      }
+    }
+
+    on terminate: s = State.Uninitialized;
+  }
+}
+
+// If all interfaces follow the error pattern as described above it
+// is for an component easy to recover if a required device report
+// and error: upon receiving an error of a required device, the
+// error is propagated towards its client and enters the error state.
+// In the error state, the component waits for a terminate request
+// which will be forwarded to all its required devices. After
+// termination, the component and its required devices can be
+// (re)initialized again.
+component ErrorPattern {
+  provides IDevice p;
+  requires IDevice a;
+  requires IDevice b;
+
+  behaviour {
+    enum State { Uninitialized, Closed, Open, Error };
+    State s = State.Uninitialized;
+
+    [s.Uninitialized] {
+      on p.initialize(): {s = State.Closed; a.initialize(); b.initialize(); }
+      on p.open, p.close: illegal;
+      on a.error, b.error: illegal;
+    }
+    [!s.Uninitialized] {
+      on p.initialize: illegal;
+
+      [s.Closed] {
+        on p.open(): {s = State.Open; a.open();	b.open(); }
+        on p.close: illegal;
+      }
+      [s.Open] {
+        on p.open: illegal;
+        on p.close(): {s = State.Closed; a.close(); b.close(); }
+      }
+
+      [!s.Error] {
+        on a.error(), b.error(): {s = State.Error; p.error(); }
+      }
+      [s.Error] {
+        on p.open(), p.close(): {}
+        on a.error(), b.error(): {}
+      }
+    }
+
+    on p.terminate(): {s = State.Uninitialized; a.terminate(); b.terminate(); }
+  }
+}

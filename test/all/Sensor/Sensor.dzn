@@ -1,0 +1,62 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// purpose: Show multiple valued event calls after each other.
+interface I {
+	enum Result { Open, Closed, Error };
+	
+	in Result read();
+	
+	behaviour {
+		on read: { 
+			[true] reply(Result.Open);
+			[true] reply(Result.Closed);
+			[true] reply(Result.Error);
+		}
+	}
+}
+
+// The following sensor implementation performs a read of two actual 
+// sensors measuring whether a door is open or closed. 
+// If both sensor readings agree on the actual status of the door 
+// this status is reported.
+// If they disagree or one of the sensors reports an error, an error 
+// is reported. 
+component Sensor {
+	provides I p;
+	requires I sensor0;
+	requires I sensor1;
+	
+	behaviour {
+		on p.read(): {
+			I.Result res0 = sensor0.read();
+			I.Result res1 = sensor1.read();
+			if (res0==res1) {
+				reply(res0);
+			}
+			else {
+				reply(I.Result.Error);
+			}
+		}
+	}
+}
+

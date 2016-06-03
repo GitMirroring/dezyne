@@ -1,0 +1,137 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import lego.dzn;
+
+interface IMove
+{
+  extern imove_boolean $Boolean$;
+  extern imove_position_t $Integer$;
+  extern imove_milliseconds_t $Integer$;
+  extern imove_power_t $Byte$; // [0,100]
+
+  in void move(imove_power_t power, imove_position_t position);  //regulated, absolute position
+  out void arrived();
+
+  in void run(imove_power_t power, imove_boolean invert);        //unregulated
+  in void pulse(imove_power_t power, imove_boolean invert, imove_milliseconds_t duration);
+  in void stop(); // brake
+  in void coast();
+  in void zero();
+  in void position(out imove_position_t pos);
+
+  behaviour
+  {
+    bool moving = false;
+    [moving]
+    {
+      on move: illegal;
+      on zero: illegal;
+      on inevitable: {moving = false; arrived;}
+    }
+    [!moving]
+    {
+      on move: { moving = true; }
+      on zero: {}
+    }
+    on run: {}
+    on run: [moving] illegal;
+    on pulse: {moving = true;}
+    on pulse: [moving] illegal;
+    on stop: {moving = false;}
+    on coast: {moving = false;}
+    on position: {}
+  }
+}
+
+component Motor
+{
+  provides IMove ctrl;
+  requires imotor hw;
+
+  system
+  {
+    timer pollTimer;
+    Move bhv;
+
+    ctrl <=> bhv.ctrl;
+    bhv.timer <=> pollTimer.port;
+    bhv.motor <=> hw;
+  }
+}
+
+component Move
+{
+  provides IMove ctrl;
+  requires itimer timer;
+  requires imotor motor;
+
+  behaviour
+  {
+    bool moving = false;
+    bool pulsing = false;
+
+    itimer.milliseconds_t time = $(config.get("Duration::PollInterval"))$;
+    imotor.position_t destination;
+
+    [moving][!pulsing]
+    {
+      on ctrl.move(power, position), ctrl.pulse(p, i, d): illegal;
+      on timer.timeout():
+        {
+          imotor.result_t arrive = motor.at(destination);
+
+          if (arrive == imotor.result_t.yes) {ctrl.arrived(); moving = false;}
+          else                               timer.create(time);
+        }
+      on ctrl.zero(): illegal;
+    }
+    [!moving][!pulsing]
+    {
+      on ctrl.move(power, position):
+        {
+          destination = position;
+          timer.create(time);
+          motor.move(power, destination);
+          moving = true;
+        }
+      on ctrl.pulse(power, invert, duration):
+        {
+          timer.create(duration);
+          motor.run(power, invert);
+          pulsing = true;
+        }
+      on timer.timeout(): illegal;
+      on ctrl.zero(): motor.zero();
+    }
+    [pulsing][!moving]
+    {
+      on ctrl.move(pow, pos), ctrl.pulse(p, i, d): illegal;
+      on timer.timeout(): {motor.coast(); ctrl.arrived(); pulsing = false;}
+      on ctrl.zero(): illegal;
+    }
+    on ctrl.run(power, invert): motor.run(power, invert);
+    on ctrl.stop(): {motor.stop(); timer.cancel(); moving = false; pulsing = false;}
+    on ctrl.coast(): {motor.coast(); timer.cancel(); moving = false; pulsing = false;}
+    on ctrl.position(pos): motor.position(pos);
+  }
+}

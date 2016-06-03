@@ -1,9 +1,0 @@
-verify: ErrorPattern: check: deterministic: ok
-verify: ErrorPattern: check: completeness: ok
-verify: ErrorPattern: check: illegal: ok
-verify: ErrorPattern: check: deadlock: ok
-verify: ErrorPattern: check: compliance: ok
-verify: ErrorPattern: check: livelock: ok
-verify: IDevice: check: completeness: ok
-verify: IDevice: check: deadlock: ok
-verify: IDevice: check: livelock: ok

@@ -33,9 +33,9 @@ $(CDIR)/node_modules/.dummy: $(CDIR)/package.json
 	cd $(CDIR) && npm install
 	touch $@
 
-CLEAN := $(CLEAN) $(CDIR)/regression/examples/index.txt
+CLEAN := $(CLEAN) $(CDIR)/regression-test/examples/index.txt
 
-$(CDIR)/regression/examples/index.txt:
+$(CDIR)/regression-test/examples/index.txt:
 	for i in $(sort\
 	    $(wildcard $(@D)/*.dzn)\
 	    $(wildcard $(@D)/*/project.txt)\

@@ -1,0 +1,52 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+#include "timer.hh"
+
+#include <dzn/locator.hh>
+#include <dzn/runtime.hh>
+
+#include "itimer_impl.hh"
+
+#include <functional>
+#include <memory>
+
+timer::timer(const dzn::locator& l)
+  : dzn_meta{"","timer",0}
+  , dzn_rt(l.get<dzn::runtime>())
+  , dzn_locator(l)
+  , port{{}}
+  {
+    dzn_meta.ports_connected.push_back([this]{port.check_bindings();});
+    port.meta.provides.port = "port";
+    port.meta.provides.address = this;
+    port.meta.provides.meta = &this->dzn_meta;
+
+    dzn::locator tmp(l.clone());
+    tmp.set(port);
+    auto pimpl = l.get<std::function<std::shared_ptr<itimer_impl>(const dzn::locator&)>>()(tmp);
+#ifdef TEST_EVENT
+    port.out.timeout = [] {std::clog << "timeout" << std::endl;};
+#endif
+    port.in.create = [=](int ms){dzn::trace_in(std::clog, port.meta, "create"); pimpl->create(ms); dzn::trace_out(std::clog, port.meta, "return");};
+    port.in.cancel = [=]{dzn::trace_in(std::clog, port.meta, "cancel"); pimpl->cancel(); dzn::trace_out(std::clog, port.meta, "return"); };
+  }

@@ -1,0 +1,62 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+//purpose: Show an interface with a livelock
+
+interface BlindLoop
+{
+    in void start();
+    behaviour
+    {
+        enum States { InitialState, Started, InBusiness };
+        States state = States.InitialState;
+        [state.InitialState]
+        {
+            // first step
+            on start: state = States.Started;
+        }
+        [state.Started]
+        {
+            // change of state caused by an internal (i.e. externally not visible) action.
+            // the components which use this interface are not informed about this state change.
+            on inevitable: state = States.InBusiness;
+            on start:      illegal;
+        }
+        [state.InBusiness]
+        {
+            // change of state caused by an internal (i.e. externally not visible) action.
+            // the components which use this interface are not informed about this state change.
+            // in fact this is a return to a previous state (see State Diagram).
+            on inevitable: state = States.Started;
+            on start:      illegal;
+        }
+    }
+}
+// this is a simple component which implements the BlindLoop interface
+component InterfaceLivelock
+{
+    provides BlindLoop LoopingInterface;
+    behaviour
+    {
+        on LoopingInterface.start(): {  }
+    }
+}

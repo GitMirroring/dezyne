@@ -1,3 +1,0 @@
-verify: IDevice: check: completeness: ok
-verify: IDevice: check: deadlock: ok
-verify: IDevice: check: livelock: ok

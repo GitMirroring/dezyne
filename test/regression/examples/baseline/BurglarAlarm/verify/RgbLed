@@ -1,3 +1,0 @@
-verify: IRgbLed: check: completeness: ok
-verify: IRgbLed: check: deadlock: ok
-verify: IRgbLed: check: livelock: ok

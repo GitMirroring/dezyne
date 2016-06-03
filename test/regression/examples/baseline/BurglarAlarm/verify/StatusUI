@@ -1,3 +1,0 @@
-verify: IAlarmStatusUI: check: completeness: ok
-verify: IAlarmStatusUI: check: deadlock: ok
-verify: IAlarmStatusUI: check: livelock: ok

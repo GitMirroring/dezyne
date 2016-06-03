@@ -1,3 +1,0 @@
-verify: IMotorSync: check: completeness: ok
-verify: IMotorSync: check: deadlock: ok
-verify: IMotorSync: check: livelock: ok

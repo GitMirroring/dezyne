@@ -1,9 +1,0 @@
-verify: ISensor: check: completeness: ok
-verify: ISensor: check: deadlock: ok
-verify: ISensor: check: livelock: ok
-verify: SensorMultiplexer: check: deterministic: ok
-verify: SensorMultiplexer: check: completeness: ok
-verify: SensorMultiplexer: check: illegal: ok
-verify: SensorMultiplexer: check: deadlock: ok
-verify: SensorMultiplexer: check: compliance: ok
-verify: SensorMultiplexer: check: livelock: ok

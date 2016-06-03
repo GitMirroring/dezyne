@@ -1,0 +1,107 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface imotor
+{
+  extern boolean    $Boolean$;
+  extern position_t $Integer$;
+  extern power_t    $Byte$; // [0,100]
+
+  in void move(power_t power, position_t position);  //regulated, absolute position
+  in void run(power_t power, boolean invert);        //unregulated
+  in void stop();
+  in void coast();
+  in void zero();
+  in void position(out position_t pos);
+  enum result_t {yes, no};
+  in result_t at(position_t pos);
+
+  behaviour
+  {
+    on move: {}
+    on run: {}
+    on stop: {}
+    on coast: {}
+    on zero: {}
+    on position: {}
+    on at: reply(result_t.yes);
+    on at: reply(result_t.no);
+  }
+}
+
+interface itouch
+{
+  enum status {pressed, released};
+  in status detect();
+  behaviour
+  {
+    on detect: reply(status.pressed);
+    on detect: reply(status.released);
+  }
+}
+
+interface ilight
+{
+  in void turnon();
+  in void turnoff();
+
+  enum status {accept, reject};
+  in status detect();
+
+  behaviour
+  {
+    on turnon: {}
+    on turnoff: {}
+    on detect: reply(status.accept);
+    on detect: reply(status.reject);
+  }
+}
+
+interface itimer
+{
+  extern milliseconds_t $Integer$;
+  in void create(milliseconds_t ms);
+  in void cancel();
+  out void timeout();
+
+  behaviour
+  {
+    enum State {Idle, Pending};
+    State state = State.Idle;
+    [state.Idle] {
+      on create: { state = State.Pending; }
+      on cancel: {}
+    }
+    [state.Pending] {
+      on create: illegal;
+      on cancel: { state = State.Idle; }
+      on inevitable: { timeout; state = State.Idle; }
+    }
+  }
+}
+
+component timer
+{
+  provides itimer port;
+  // use dzn code -m timer lego.dzn to generate stub
+  // behaviour {on port.create(ms): {} on port.cancel(): {}}
+}

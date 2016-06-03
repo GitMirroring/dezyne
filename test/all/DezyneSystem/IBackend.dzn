@@ -1,0 +1,72 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface IBackend
+{
+/* Interface of the Dezyne BackEnd Server responsible for all modelling related services: 
+ * - well-formedness checking
+ * - generating views (state diagram, state table, system view)
+ * - verification
+ * - simulation
+ * - code generation
+ * 
+ * Only checking and verification of models is modelled in this example.
+ */
+  in void checkModel();                     // perform a well-formedness check
+  in void verifyModel();                    // perform a verification
+  out void checkModelRes();                 // result of well-formedness check
+  out void verifyModelRes();                // result of verification
+
+  behaviour
+  {
+
+    bool ModelCheckOngoing = false;       // boolean to keep track if model check is already ongoing
+    bool VerificationOngoing = false;     // boolean to keep track if verification is already ongoing
+
+
+   on checkModel:                         
+   {
+     [!ModelCheckOngoing] ModelCheckOngoing = true;      // indicate that a model check transaction is ongoing
+     [otherwise] illegal;                                // starting another model check is not allowed when there is already one ongoing
+   }
+
+   on verifyModel:
+   {
+     [!VerificationOngoing] VerificationOngoing = true;  // indicate that a verification transaction is ongoing
+     [otherwise] illegal;                                // starting another verification is not allowed when there is already one ongoing
+   }
+
+   on inevitable:
+   {
+     [ModelCheckOngoing]                                 // eventually the server will return the result of the model check
+     {
+       ModelCheckOngoing = false;
+       checkModelRes;
+     }
+     [VerificationOngoing]                               // eventually the server will return the result of the verification
+     {
+       VerificationOngoing = false;
+       verifyModelRes;
+     }
+   }
+  }
+}

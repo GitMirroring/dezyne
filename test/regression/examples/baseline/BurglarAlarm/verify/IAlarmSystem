@@ -1,3 +1,0 @@
-verify: IAlarmSystem: check: completeness: ok
-verify: IAlarmSystem: check: deadlock: ok
-verify: IAlarmSystem: check: livelock: ok

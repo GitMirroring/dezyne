@@ -1,3 +1,0 @@
-verify: IStageSync: check: completeness: ok
-verify: IStageSync: check: deadlock: ok
-verify: IStageSync: check: livelock: ok

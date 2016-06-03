@@ -1,0 +1,121 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import IFeed.dzn;
+import IConstrainedMove.dzn;
+import EndConstrainedAxis.dzn;
+import lego.dzn;
+
+component Feeder
+{
+  provides IFeed ctrl;
+
+  requires imotor motorHw;
+  requires itouch endSensorHw;
+
+  system
+  {
+    Feed bhv;
+    EndConstrainedAxis axis;
+
+    ctrl <=> bhv.ctrl;
+    bhv.axis <=> axis.ctrl;
+    axis.motorHw <=> motorHw;
+    axis.endSensorHw <=> endSensorHw;
+  }
+}
+
+component Feed
+{
+  provides IFeed ctrl;
+  requires IConstrainedMove axis;
+
+  behaviour
+  {
+    enum State {Lost, Calibrating, Idle, Preparing, Prepared};
+    subint Count {0..4};
+    State s = State.Lost;
+    bool isRetracting = false;
+    bool isFeedRequested = false;
+    Count inventory = 0; // number of balls in store
+
+    void feedNext() {
+      if (inventory == 4) {axis.move($(config.get("Position::Feeder::DropFirst"))$);}
+      if (inventory == 3) {axis.move($(config.get("Position::Feeder::DropSecond"))$);}
+      if (inventory == 2) {axis.move($(config.get("Position::Feeder::DropThird"))$);}
+      if (inventory == 1) {axis.move($(config.get("Position::Feeder::DropLast"))$);}
+      s = State.Preparing;
+      inventory = inventory - 1;
+    }
+    void retract() {
+      axis.move($(config.get("Position::Feeder::Retracted"))$);
+      isRetracting = true;
+    }
+    void refill() {
+      inventory = 4;
+    }
+
+    on ctrl.stop(): {axis.stop(); s = State.Lost; isRetracting = false; isFeedRequested = false;}
+
+    [s.Lost]
+    {
+      on ctrl.calibrate(): {axis.calibrate(); s = State.Calibrating;}      
+      on ctrl.produceBall(): illegal;  
+      on axis.homed(), axis.arrived(): illegal;
+    }
+    [s.Calibrating]
+    {
+      on axis.homed(): {ctrl.calibrated(); refill(); s = State.Idle;}
+      on axis.arrived(): illegal;
+      on ctrl.calibrate(), ctrl.produceBall(): illegal;
+    }
+    [s.Idle]
+    {
+      on ctrl.produceBall(): [!isRetracting] feedNext();
+      on ctrl.produceBall(): [isRetracting] [!isFeedRequested] isFeedRequested = true;
+      on ctrl.produceBall(): [isRetracting] [isFeedRequested] illegal;
+      on ctrl.calibrate(): illegal;
+      on axis.arrived(): [isRetracting]
+      {
+        refill();
+        if (isFeedRequested) feedNext();
+        isRetracting = false;
+        isFeedRequested = false;
+      }
+      on axis.arrived(): [!isRetracting] illegal;
+      on axis.homed(): illegal;
+    }
+    [s.Preparing]
+    {
+      on axis.arrived(): [inventory > 0] {ctrl.consumeNextBall(); s = State.Prepared;}
+      on axis.arrived(): [inventory == 0] {ctrl.consumeLastBall(); retract(); s = State.Idle;}
+      on ctrl.calibrate(), ctrl.produceBall(): illegal;
+      on axis.homed(): illegal;
+    }
+    [s.Prepared]
+    {
+      on ctrl.produceBall(): feedNext();
+      on ctrl.calibrate(): illegal;
+      on axis.homed(), axis.arrived(): illegal;
+    }
+  }
+}
