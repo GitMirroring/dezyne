@@ -106,7 +106,7 @@ function run_traces(parameters, asp, app) {
         .filter(function(file){ return /trace/.test(file); });
     })
     .then(function(traces) {
-      if (!traces.length) throw new Error ('run_traces: no traces found');
+      if (!traces.length) throw new Error ('run_traces: no traces found: ' + traces);
       return traces;
     })
     .then (function(traces) {
