@@ -61,7 +61,7 @@ motorControl.return
 limitSw.doorOpening
 limitSw.return
 motorControl.driveFault
-doorControl.reset not performed by component
+doorControl.error not performed by component
 verify: GarageDoorControlErr: check: livelock: ok
 verify: ITimer: check: completeness: ok
 verify: ITimer: check: deadlock: ok
