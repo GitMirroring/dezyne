@@ -94,10 +94,7 @@ function run_traces(parameters, asp, app) {
           var is_dir = false;
           try { is_dir = fs.lstatSync(entry).isDirectory(); } catch(e) {}
           return is_dir && ls_files_recursively(entry) || [entry];
-        }))
-          .then(function(entries) {
-            return entries.append_map(util.identity);
-          })
+        }).append_map(util.identity));
       });
   }
 
