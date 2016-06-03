@@ -1,3 +1,0 @@
-verify: IAsync: check: completeness: ok
-verify: IAsync: check: deadlock: ok
-verify: IAsync: check: livelock: ok
