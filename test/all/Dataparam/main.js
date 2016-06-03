@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,8 +22,8 @@
 
 #! /usr/bin/env node
 
-var dezyne = typeof (dezyne) !== undefined && dezyne ? dezyne : require (__dirname + '/dezyne/runtime');
-dzn.extend (dezyne, require (__dirname + '/dezyne/Datasystem'));
+var dzn = typeof (dzn) !== undefined && dzn ? dzn : require (__dirname + '/dzn/runtime');
+dzn.extend (dzn, require (__dirname + '/dzn/Datasystem'));
 
 /* handwritten dataparam.js */
 

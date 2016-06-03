@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -20,23 +20,33 @@
 //
 // Code:
 
+// -*-java-*-
+using System;
+using System.Diagnostics;
+
 class main {
 
+  static void assert(bool b) {
+    if (!b) {
+      throw new RuntimeException("assertion failure");
+    }
+  }
+
   static void a0() {
-    System.err.println("a0()");
+    System.Console.WriteLine("a0()");
   }
 
   static void a(int i) {
-    System.err.println("a(" + i + ")");
+    System.Console.WriteLine("a(" + i + ")");
   }
 
   static void aa(int i, int j) {
-    System.err.println("aa(" + i + "," + j + ")");
+    System.Console.WriteLine("aa(" + i + "," + j + ")");
     assert(j == 123);
   }
 
   static void a6(int i0, int i1, int i2, int i3, int i4, int i5) {
-    System.err.println("a6(" + i0 + "," + i1 + "," + i2 + "," + i3 + "," + i4 + "," + i5 + ")");
+    System.Console.WriteLine("a6(" + i0 + "," + i1 + "," + i2 + "," + i3 + "," + i4 + "," + i5 + ")");
     assert(i0 == 0);
     assert(i1 == 1);
     assert(i2 == 2);
@@ -45,49 +55,49 @@ class main {
     assert(i5 == 5);
   }
 
-  public static void main(String[] args) {
+  public static void Main(String[] args) {
     Locator locator = new Locator();
     Runtime runtime = new Runtime();
     Datasystem d = new Datasystem(locator.set(runtime), "d");
-    d.port.out.name = "port";
-    d.port.out.self = null;
+    d.port.outport.name = "port";
+    d.port.outport.self = null;
 
-    d.port.out.a0 = () -> {a0();};
-    d.port.out.a = (Integer p) -> {a(p);};
-    d.port.out.aa = (Integer p0, Integer p1) -> {aa(p0, p1);};
-    d.port.out.a6 = (Integer p0, Integer p1, Integer p2, Integer p3, Integer p4, Integer p5) -> {a6(p0, p1, p2, p3, p4, p5);};
+    d.port.outport.a0 = () => {a0();};
+    d.port.outport.a = (int p) => {a(p);};
+    d.port.outport.aa = (int p0, int p1) => {aa(p0, p1);};
+    d.port.outport.a6 = (int p0, int p1, int p2, int p3, int p4, int p5) => {a6(p0, p1, p2, p3, p4, p5);};
 
-    assert(IDataparam.Status.Yes == d.port.in.e0r.action());
-    d.port.in.e0.action();
-    assert(IDataparam.Status.Yes == d.port.in.er.action(123));
-    d.port.in.e.action(123);
-    assert(IDataparam.Status.No == d.port.in.eer.action(123,345));
+    assert(IDataparam.Status.Yes == d.port.inport.e0r());
+    d.port.inport.e0();
+    assert(IDataparam.Status.Yes == d.port.inport.er(123));
+    d.port.inport.e(123);
+    assert(IDataparam.Status.No == d.port.inport.eer(123,345));
 
-    V<Integer> i = new V<Integer>(0);
-    d.port.in.eo.action(i);
+    V<int> i = new V<int>(0);
+    d.port.inport.eo(i);
     assert(i.v == 234);
 
-    V<Integer> j = new V<Integer>(0);
-    d.port.in.eoo.action(i,j);
+    V<int> j = new V<int>(0);
+    d.port.inport.eoo(i,j);
     assert(i.v == 123 && j.v == 456);
 
-    d.port.in.eio.action(i.v,j);
+    d.port.inport.eio(i.v,j);
     assert(i.v == 123 && j.v == i.v);
 
-    d.port.in.eio2.action(i);
+    d.port.inport.eio2(i);
     assert(i.v == 246);
 
 
-    assert(IDataparam.Status.Yes == d.port.in.eor.action(i));
+    assert(IDataparam.Status.Yes == d.port.inport.eor(i));
     assert(i.v == 234);
 
-    assert(IDataparam.Status.Yes == d.port.in.eoor.action(i,j));
+    assert(IDataparam.Status.Yes == d.port.inport.eoor(i,j));
     assert(i.v == 123 && j.v == 456);
 
-    assert(IDataparam.Status.Yes == d.port.in.eior.action(i.v,j));
+    assert(IDataparam.Status.Yes == d.port.inport.eior(i.v,j));
     assert(i.v == 123 && j.v == i.v);
 
-    assert(IDataparam.Status.Yes == d.port.in.eio2r.action(i));
+    assert(IDataparam.Status.Yes == d.port.inport.eio2r(i));
     assert(i.v == 246);
   }
 }
