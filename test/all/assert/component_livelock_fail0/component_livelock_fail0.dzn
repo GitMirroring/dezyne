@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,19 +23,32 @@
 
 interface I {
   in void e();
-  out void c();
 
   behaviour {    
-    on e: { c; c; c; c; }	
+    [true] {
+       on e: {}
+    }
   }
 }
 
-// This component has an queuefull problem
-component C {
-  provides I p;
-  requires I r;
-  behaviour { 
-    on p.e(): { r.e(); }
-    on r.c(): { p.c(); }
+interface II {
+  out void e();
+
+  behaviour {    
+    [true] {
+       on inevitable: e;
+    }
   }
+}
+
+// This component has an livelock problem immediately
+component C {
+  provides I i;
+  requires II ii;
+  behaviour { 
+    [true] {
+      on i.e(): {}
+      on ii.e(): {}
+    }
+  }      
 }

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -20,34 +21,25 @@
 //
 // Code:
 
+// This interface enters a dead-lock immediately
 interface I {
   in void e();
 
   behaviour {    
     [true] {
-       on e: {}
+       on e: illegal;
     }
   }
 }
 
-interface II {
-  out void e();
-
-  behaviour {    
-    [true] {
-       on inevitable: e;
-    }
-  }
+// Dummy interface and component since there needs to be present a component
+interface DummyI {
+  in void e();
+  behaviour { [true] on e: {} }      
 }
 
-// This component has an livelock problem immediately
-component C {
-  provides I i;
-  requires II ii;
-  behaviour { 
-    [true] {
-      on i.e(): {}
-      on ii.e(): {}
-    }
-  }      
+component DummyC {
+  provides DummyI i;
+  requires I ii;
+  behaviour { [true] on i.e(): {} }      
 }

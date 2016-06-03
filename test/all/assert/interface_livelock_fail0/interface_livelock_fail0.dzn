@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -20,21 +21,26 @@
 //
 // Code:
 
+// This interface immediately enters a live-lock
 interface I {
   in void e();
 
   behaviour {    
     [true] {
        on e: {}
+       on optional: {}     
     }
   }
 }
 
-// This component has an illegal problem
-component C {
-  provides I i;
+// Dummy interface and component since there needs to be present a component
+interface DummyI {
+  in void e();
+  behaviour { [true] on e: {} }      
+}
+
+component DummyC {
+  provides DummyI i;
   requires I ii;
-  behaviour { 
-    [true] on i.e(): {ii.e(); if (true) illegal;}
-  }      
+  behaviour { [true] on i.e(): {} }      
 }

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -30,10 +31,15 @@ interface I {
   }
 }
 
-// This component has an deadlock problem immediately
+// This component has an deadlock problem after one step
 component C {
   provides I i;
   behaviour { 
-    [true] on i.e(): illegal;
+    enum States { S0, S1};
+    States s = States.S0;
+    [s.S0] on i.e(): { 
+      s=States.S1;
+    }
+    [s.S1] on i.e(): illegal;
   }      
 }

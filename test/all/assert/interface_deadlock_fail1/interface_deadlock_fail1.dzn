@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -20,41 +21,31 @@
 //
 // Code:
 
+// This interface enters a live-lock after one step
 interface I {
   in void e();
 
   behaviour {    
-    [true] {
-       on e: {}
-    }
-  }
-}
-
-interface II {
-  in void a();
-  out void e();
-
-  behaviour {
     enum States {S0, S1};
-    States s = States.S0;    
+    States s = States.S0;
+     
     [s.S0] {
-      on a: s = States.S1; 
+       on e: { s= States.S1; }
     }
     [s.S1] {
-      on a: {}
-      on inevitable: e;
+       on e: illegal;
     }
   }
 }
 
-// This component has an livelock problem after one step
-component C {
-  provides I i;
-  requires II ii;
-  behaviour { 
-    [true] {
-      on i.e(): ii.a();
-      on ii.e(): {}
-    }
-  }      
+// Dummy interface and component since there needs to be present a component
+interface DummyI {
+  in void e();
+  behaviour { [true] on e: {} }      
+}
+
+component DummyC {
+  provides DummyI i;
+  requires I ii;
+  behaviour { [true] on i.e(): {} }      
 }

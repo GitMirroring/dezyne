@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,27 +23,23 @@
 
 interface I {
   in void e();
+  in void f();
 
   behaviour {    
     [true] {
        on e: {}
+       on f: {}
     }
   }
 }
 
-// This component has an deterministic problem after one step
+// This component has an compliance problem
 component C {
   provides I i;
-  requires I ii;
   behaviour { 
-    enum States { S0, S1};
-    States s = States.S0;
-    [s.S0] on i.e(): { 
-      s=States.S1;
+    [true] {
+      on i.e(): {}
+      on i.f(): illegal;
     }
-    [s.S1] on i.e(): {
-      [true] { ii.e(); }
-      [true] {}      
-    } 
   }      
 }
