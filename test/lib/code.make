@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 #
 # This file is part of Dezyne.
@@ -21,6 +22,9 @@
 # 
 # Code:
 
+.PHONY:all default
+default: all
+
 define CHECKPARAM
 ifeq ($(origin $(1)), undefined)
 $$(error $(1) undefined)
@@ -29,12 +33,14 @@ endef
 
 $(foreach i,DZN LANGUAGE MODEL IN OUT,$(eval $(call CHECKPARAM,$(i))))
 
-.PHONY:all
+ifeq ($(MAIN),)
+MODEL_OPT:=-m $(MODEL)
+endif
 
 all: $(wildcard $(IN)/*.dzn)
 	mkdir -p $(OUT)/dzn
 	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls -R /share/runtime/$(LANGUAGE))));\
 	do $(DZN) cat /share/runtime/$(LANGUAGE)/$$file > $(OUT)/$$file; done
-	for file in $^; do $(DZN) code -l $(LANGUAGE) --depends -m $(MODEL) -o $(OUT) $$file; done
+	for file in $^; do $(DZN) code -l $(LANGUAGE) --depends $(MODEL_OPT) -o $(OUT) $$file; done
 
 -include $(patsubst $(IN)/%.dzn, $(OUT)/%.d, $(wildcard $(IN)/*.dzn))

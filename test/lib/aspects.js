@@ -31,6 +31,8 @@ var util = require(__dirname+'/util');
 var lstat = q.denodeify(fs.lstat);
 var dzn = '../client/bin/dzn';
 
+var ext = {'c++':'.cc',javascript:'.js'};
+
 var default_meta = {
   skip: []
   , ignore: []
@@ -230,8 +232,15 @@ var aspects = {
   code: function(parameters) {
     var language = parameters.meta.languages[0];
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
-    var cmd = 'make DZN=' + dzn + ' LANGUAGE=' + language +
-      ' MODEL='+parameters.model+' IN='+parameters.dir+' OUT='+out+' -f '+'lib/code.make';
+    var main = parameters.dir + '/main' + ext[language];
+    try {main = fs.lstatSync (main).isFile () && main;} catch (e){main=undefined;};
+    var cmd = 'make DZN=' + dzn
+        + ' LANGUAGE='+language
+        + ' IN='+parameters.dir
+        + ' OUT='+out
+        + (main ? ' MAIN='+main:'')
+        + ' MODEL='+parameters.model
+        + ' -f '+'lib/code.make';
     return util.spawn_sync_shell(cmd)
       .fail (function(err) {console.log(err); return 1; });
   }
@@ -239,7 +248,14 @@ var aspects = {
   build: function(parameters) {
     var language = parameters.meta.languages[0];
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
-    var cmd = 'make DIR='+parameters.dir+' LANGUAGE=' + language + ' OUT='+out+' IN='+out+' -f '+'lib/build.' + language + '.make'
+    var main = parameters.dir + '/main' + ext[language];
+    try {main = fs.lstatSync (main).isFile () && main;} catch (e){main=undefined;};
+    var cmd = 'make DIR='+parameters.dir
+        + ' LANGUAGE='+language
+        + ' OUT='+out
+        + ' IN='+out
+        + (main ? ' MAIN='+main : '')
+        + ' -f '+'lib/build.' + language + '.make';
     return util.spawn_sync_shell(cmd)
       .fail (function(err) {console.log(err); return 1; });
   }

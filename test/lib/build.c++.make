@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
+# Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -20,6 +21,10 @@
 # Commentary:
 # 
 # Code:
+
+.PHONY: default test
+
+default: $(OUT)/test
 
 define CHECKPARAM
 ifeq ($(origin $(1)), undefined)
@@ -41,7 +46,16 @@ $(OUT)/%.o: $(IN)/%.cc
 	mkdir -p $(dir $@)
 	$(COMPILE.cc) -o $@ $<
 
-$(OUT)/test: $(patsubst $(IN)/%.cc, $(OUT)/%.o, $(wildcard $(IN)/*.cc))
+ifneq ($(MAIN),)
+MAIN_O:=$(OUT)/$(patsubst %.cc,%.o,$(notdir $(MAIN)))
+$(MAIN_O): $(MAIN)
+	mkdir -p $(dir $@)
+	$(COMPILE.cc) -o $@ $<
+endif
+
+$(info MAIN_O:$(MAIN_O))
+
+$(OUT)/test: $(patsubst $(IN)/%.cc, $(OUT)/%.o, $(wildcard $(IN)/*.cc)) $(MAIN_O)
 	mkdir -p $(dir $@)
 	$(LINK.cc) -o $@ $^ $(LDFLAGS)
 
