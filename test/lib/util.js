@@ -141,16 +141,19 @@ var util = {
     console.log (cmd);
 
     var future = q.defer ();
-    var p = child.spawn (shell, [c, cmd], {stdio:'inherit'});
-    p.on('close', function (code, signal) {
+    var p = child.spawn (shell, [c, cmd], {detached: true, stdio:'inherit'});
+
+    p.on('exit', function (code, signal) {
       future.resolve(signal ? -1 : code ? 1 : 0);
     })
 
-    return timeout_ms ? future.promise
+    return timeout_ms
+      ? future.promise
       .timeout(timeout_ms)
       .fail(function(msg){
         console.error(cmd + ' ' + msg);
-        p.kill();
+        console.error('killing PID: ' + p.pid);
+        process.kill(-p.pid);
         return -1;
       })
     : future.promise;
