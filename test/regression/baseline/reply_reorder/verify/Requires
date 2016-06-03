@@ -1,3 +1,0 @@
-verify: Requires: check: completeness: ok
-verify: Requires: check: deadlock: ok
-verify: Requires: check: livelock: ok

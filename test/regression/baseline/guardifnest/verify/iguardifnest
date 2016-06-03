@@ -1,3 +1,0 @@
-verify: iguardifnest: check: completeness: ok
-verify: iguardifnest: check: deadlock: ok
-verify: iguardifnest: check: livelock: ok

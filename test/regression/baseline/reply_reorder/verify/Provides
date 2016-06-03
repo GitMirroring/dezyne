@@ -1,3 +1,0 @@
-verify: Provides: check: completeness: ok
-verify: Provides: check: deadlock: ok
-verify: Provides: check: livelock: ok

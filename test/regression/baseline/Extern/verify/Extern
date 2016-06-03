@@ -1,9 +1,0 @@
-verify: Extern: check: deterministic: ok
-verify: Extern: check: completeness: ok
-verify: Extern: check: illegal: ok
-verify: Extern: check: deadlock: ok
-verify: Extern: check: compliance: ok
-verify: Extern: check: livelock: ok
-verify: IExtern: check: completeness: ok
-verify: IExtern: check: deadlock: ok
-verify: IExtern: check: livelock: ok

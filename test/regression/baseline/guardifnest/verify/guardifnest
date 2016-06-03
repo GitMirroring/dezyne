@@ -1,9 +1,0 @@
-verify: guardifnest: check: deterministic: ok
-verify: guardifnest: check: completeness: ok
-verify: guardifnest: check: illegal: ok
-verify: guardifnest: check: deadlock: ok
-verify: guardifnest: check: compliance: ok
-verify: guardifnest: check: livelock: ok
-verify: iguardifnest: check: completeness: ok
-verify: iguardifnest: check: deadlock: ok
-verify: iguardifnest: check: livelock: ok

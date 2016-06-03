@@ -1,3 +1,0 @@
-verify: I3: check: completeness: ok
-verify: I3: check: deadlock: ok
-verify: I3: check: livelock: ok

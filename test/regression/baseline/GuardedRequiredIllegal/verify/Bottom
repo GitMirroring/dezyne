@@ -1,3 +1,0 @@
-verify: Bottom: check: completeness: ok
-verify: Bottom: check: deadlock: ok
-verify: Bottom: check: livelock: ok

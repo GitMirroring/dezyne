@@ -1,9 +1,0 @@
-verify: Client: check: deterministic: ok
-verify: Client: check: completeness: ok
-verify: Client: check: illegal: ok
-verify: Client: check: deadlock: ok
-verify: Client: check: compliance: ok
-verify: Client: check: livelock: ok
-verify: IPedal: check: completeness: ok
-verify: IPedal: check: deadlock: ok
-verify: IPedal: check: livelock: ok

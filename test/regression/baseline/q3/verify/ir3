@@ -1,3 +1,0 @@
-verify: ir3: check: completeness: ok
-verify: ir3: check: deadlock: ok
-verify: ir3: check: livelock: ok

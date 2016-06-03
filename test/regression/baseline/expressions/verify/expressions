@@ -1,9 +1,0 @@
-verify: I: check: completeness: ok
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
-verify: expressions: check: deterministic: ok
-verify: expressions: check: completeness: ok
-verify: expressions: check: illegal: ok
-verify: expressions: check: deadlock: ok
-verify: expressions: check: compliance: ok
-verify: expressions: check: livelock: ok

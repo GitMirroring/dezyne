@@ -1,9 +1,0 @@
-verify: ifnest: check: deterministic: ok
-verify: ifnest: check: completeness: ok
-verify: ifnest: check: illegal: ok
-verify: ifnest: check: deadlock: ok
-verify: ifnest: check: compliance: ok
-verify: ifnest: check: livelock: ok
-verify: iifnest: check: completeness: ok
-verify: iifnest: check: deadlock: ok
-verify: iifnest: check: livelock: ok

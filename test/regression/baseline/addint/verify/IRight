@@ -1,3 +1,0 @@
-verify: IRight: check: completeness: ok
-verify: IRight: check: deadlock: ok
-verify: IRight: check: livelock: ok
