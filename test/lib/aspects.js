@@ -93,7 +93,7 @@ function run_traces(parameters, asp, app) {
           entry = dir + '/' + entry;
           var is_dir = false;
           try { is_dir = fs.lstatSync(entry).isDirectory(); } catch(e) {}
-          return is_dir && ls_files_recursively(entry) || [entry];
+          return is_dir && ls_files_recursively(entry) || q([entry]);
         }).append_map(util.identity));
       });
   }
@@ -106,10 +106,7 @@ function run_traces(parameters, asp, app) {
         .filter(function(file){ return /trace/.test(file); });
     })
     .then(function(traces) {
-      if (!traces.length) throw new Error ('run_traces: no traces found: ' + traces);
-      return traces;
-    })
-    .then (function(traces) {
+      if (!traces.length) throw new Error ('run_traces: no traces found');
       return traces.reduce(function(promise, trace) {
         return promise.then(function(result1){return app(trace).then(function(result2){ return result1 || result2; }); });
       }, q(0))
