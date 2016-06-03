@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
-//
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,13 +20,31 @@
 //
 // Code:
 
-interface missingstate {
-  in void e();
-  out void a();
-  behaviour {
-    enum State {idle, busy};
-    State state = State.idle;
-    [state.idle] on e: {a; state = State.busy;}
-    //[state.busy] on e: illegal;
+interface I
+{
+  enum T { Yes, No };
+
+  in T e();
+
+  behaviour
+  {
+    on e:
+    {
+      [true] { reply(T.Yes); }
+      [true] { reply(T.No); }
+    }
+  }
+}
+
+component ReplyTwo
+{
+  provides I p;
+
+  behaviour
+  {
+    on p.e(): {
+      reply(I.T.Yes);
+      reply(I.T.No);
+    }
   }
 }

@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
-//
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,20 +20,38 @@
 //
 // Code:
 
-interface missingstate {
+interface I
+{
   in void e();
-  out void a();
 
-  behaviour {
-    enum State {idle, busy};
-    State state = State.idle;
-
-    on e:
-    [state.idle]
-    {
-      a;
-      state = State.busy;
-    }
+  behaviour
+  {
+    on e: {}
   }
 }
+
+interface II
+{
+  in void e();
+  out void add();
+
+  behaviour
+  {
+    on e: {}
+  }
+}
+
+component range_runaway
+{
+  provides I p;
+  requires II r;
+
+  behaviour {
+     subint Sub {0..4};
+     Sub n = 5;
+     on p.e(): { r.e();}
+     on r.add(): { n=n+1;}
+  }
+}
+
 
