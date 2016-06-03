@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
+# Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -21,7 +22,10 @@
 # 
 # Code:
 
-test:
-	cp $(OUT)/main.js $(OUT)/test
-	chmod +x $(OUT)/test
+ifeq ($(MAIN),)
+MAIN:=$(OUT)/main.js
+endif
 
+test:
+	cp $(MAIN) $(OUT)/test
+	chmod +x $(OUT)/test
