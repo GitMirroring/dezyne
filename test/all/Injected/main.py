@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #

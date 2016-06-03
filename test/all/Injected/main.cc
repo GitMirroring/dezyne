@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -20,19 +20,33 @@
 //
 // Code:
 
-using System;
+#include "Injected.hh"
 
-class main {
-  public static void Main(String[] args) {
-    Locator locator = new Locator();
-    Runtime runtime = new Runtime();
-    Injected sut = new Injected(locator.set(runtime), "sut");
+#include <dzn/locator.hh>
+#include <dzn/runtime.hh>
 
-    sut.t.outport.f = () => {System.Console.Error.WriteLine("f");};
+#include <iostream>
 
-    //sut.check_bindings ();
-    //sut.dump_tree ();
-    
-    sut.t.inport.e();
-  }
+void f()
+{
+  std::clog << "f" << std::endl;
+}
+
+int main()
+{
+  dzn::locator l;
+  dzn::runtime rt;
+  l.set(rt);
+
+  Injected sut(l);
+  sut.dzn_meta.name = "sut";
+  // sut.t.meta.provides = {"t", 0};
+  sut.t.meta.requires = {"t", 0};
+  sut.t.meta.provides = {"t", 0};
+  sut.t.out.f = f;
+
+  sut.check_bindings();
+  sut.dump_tree();
+
+  sut.t.in.e();
 }
