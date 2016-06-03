@@ -85,25 +85,28 @@ function run_traces(parameters, asp, app) {
     return q.denodeify(fs.readdir)(dir)
       .then(function(entries) {
         entries.sort ();
-        if (parameters.meta.max && parameters.meta.max[asp] !== undefined) {
-          var lower = Math.floor ((entries.length - parameters.meta.max[asp]) * Math.random ());
-          entries = entries.slice (lower, lower+parameters.meta.max[asp]);
-        }
         return q.all(entries.map(function(entry) {
           entry = dir + '/' + entry;
           var is_dir = false;
           try { is_dir = fs.lstatSync(entry).isDirectory(); } catch(e) {}
-          return is_dir && ls_files_recursively(entry) || q([entry]);
+          return is_dir && ls_files_recursively(entry) || [entry];
         }).append_map(util.identity));
       });
   }
 
-  return q.all([ls_files_recursively(parameters.dir),
-                ls_files_recursively(out)]
+  function random_selection(files) {
+    if (parameters.meta.max && parameters.meta.max[asp] !== undefined) {
+      var lower = Math.max(Math.floor ((files.length - parameters.meta.max[asp]) * Math.random ()), 0);
+      files = files.slice (lower, lower + parameters.meta.max[asp]);
+    }
+    return files;
+  }
+
+  return q.all([q.all(ls_files_recursively(parameters.dir)).then(function(files){return files.filter(function(file){ return /trace/.test(file); });}),
+                q.all(ls_files_recursively(out)).then(function(files){return random_selection(files.filter(function(file){ return /trace/.test(file); }));})]
                .map(function (e) { return e.fail( function (e) { return []; }); }))
     .then(function(files_list) {
-      return [].concat.apply([],files_list)
-        .filter(function(file){ return /trace/.test(file); });
+      return [].concat.apply([],files_list);
     })
     .then(function(traces) {
       if (!traces.length) throw new Error ('run_traces: no traces found');
