@@ -93,12 +93,51 @@ Examples:\n\
   return args;
 }
 
+function process_dir (dir, args, passed, failed) {
+  var aspects_languages = args.argv.slice(1);
+
+  dir = dir.replace (/\/*$/, '');
+  var dzn = dir+'/'+path.basename(dir)+'.dzn';
+  var dm = dir+'/'+path.basename(dir)+'.dm';
+  try {fs.lstatSync(dzn);} catch(e) {dzn=undefined;}
+  try {fs.lstatSync(dm);} catch(e) {dm=undefined;}
+  if (dzn || dm)
+    return util.run(dir, aspects_languages, args.options.verbose)
+    .then(function(result) {
+      result.exitcode === 0 ? ++passed : ++failed;
+      output.log(dir, result);
+      return [result.exitcode];
+    })
+    .tap(function(exitcodes) {
+      if (!args.options.quiet) {
+        console.log((exitcodes[0] === 0 ? '[PASS] ' : '[FAIL] ') + dir);
+      }
+    });
+  
+  return q.denodeify(fs.readdir) (dir)
+    .then(function (files) {
+      return files.filter(function (f) {
+        try {return fs.lstatSync (dir + '/' + f + '/').isDirectory () && f != 'baseline'} catch (e) {
+          return /[.]dzn$/.test (f);
+        }
+      })
+    })
+    .then(function(items) {
+      var worklist = items
+          .map(function(item) {
+            return function() {
+              console.log('[....] ' + item);
+              return process_dir (dir + '/' + item, args, passed, failed);
+            };
+          });
+      return util.parallel_n(worklist, 1)
+    });
+}
+
 function main() {
   var args = parse_opts(process.argv);
 
   var dir = args.argv[0]
-  var aspects_languages = args.argv.slice(1);
-  var options = args.options;
 
   var failed = 0;
   var passed = 0;
@@ -106,54 +145,23 @@ function main() {
   var name = 'Test Framework';
   var title = 'Regression Tests';
 
-  util.spawn_sync_shell('mkdir -p ' + path.dirname (options.output))
+  util.spawn_sync_shell('mkdir -p ' + path.dirname (args.options.output))
     .then (function () {
-      return output.open(name, title, dir, options.output);
+      return output.open(name, title, dir, args.options.output);
     })
-    .then (function () {
-      return q.denodeify(fs.readdir) (dir)
-        .then(function (files) {
-          return files.filter(function (f) {
-            try {return fs.lstatSync (dir + '/' + f + '/').isDirectory () && f != 'baseline'} catch (e) {
-              return /[.]dzn$/.test (f);
-            }
-          })
-        })
+    .then(function (){
+      return process_dir (dir, args, passed, failed);
     })
-    .then(function(files){
-      return files.map(function(f){return f.replace (/[^\/]+[.]dzn$/, '');}).unique();
-    })
-    .then(function(items) {
-      var worklist = items
-          .map(function(item) {
-            return function() {
-              console.log('[....] ' + item);
-              return util.run(dir + '/' + item, aspects_languages, options.verbose)
-                .then(function(result) {
-                  result.exitcode === 0 ? ++passed : ++failed;
-                  output.log(item, result);
-                  return result.exitcode;
-                })
-                .tap(function(exitcode) {
-                  if (!options.quiet) {
-                    console.log((exitcode === 0 ? '[PASS] ' : '[FAIL] ') + item);
-                  }
-                });
-            };
-          });
-
-      return util.parallel_n(worklist, 1)
-        .then(function(exitcodes) {
-          console.log('EXITCODES: ' + exitcodes);
-          output.close(passed, failed);
-          process.exit(exitcodes.reduce(function(a, b){ return a || b; }, 0));
-        })
+    .then(function(exitcodes) {
+      console.log('EXITCODES: ' + exitcodes);
+      output.close(passed, failed);
+      process.exit(exitcodes.reduce(function(a, b){ return a || b; }, 0));
     })
     .fail(function(err) {
       console.error(err.stack);
       process.exit(1);
     })
-    .done();
+    .done ();
 }
 
 main();
