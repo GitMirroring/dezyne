@@ -106,7 +106,7 @@ function process_dir (dir, args, passed, failed) {
   if (dzn || dm || run)
     return util.run(dir, aspects_languages, args.options.verbose)
     .then(function(result) {
-      result.exitcode === 0 ? ++passed : ++failed;
+      result.exitcode === 0 ? ++passed.value : ++failed.value;
       output.log(dir, result);
       return [result.exitcode];
     })
@@ -132,7 +132,10 @@ function process_dir (dir, args, passed, failed) {
               return process_dir (dir + '/' + item, args, passed, failed);
             };
           });
-      return util.parallel_n(worklist, 1)
+      return util.parallel_n(worklist, 1);
+    })
+    .then (function (exitcodes_lists) {
+      return [].concat.apply([], exitcodes_lists);
     });
 }
 
@@ -141,8 +144,8 @@ function main() {
 
   var dir = args.argv[0]
 
-  var failed = 0;
-  var passed = 0;
+  var failed = {value:0};
+  var passed = {value:0};
   var totalTestStartTime = new Date();
   var name = 'Test Framework';
   var title = 'Regression Tests';
@@ -154,10 +157,12 @@ function main() {
     .then(function (){
       return process_dir (dir, args, passed, failed);
     })
-    .then(function(exitcodes) {
+    .then(function(exitcodes_lists) {
+      var exitcodes = [].concat.apply([],exitcodes_lists);
       console.log('EXITCODES: ' + exitcodes);
-      output.close(passed, failed);
-      process.exit(exitcodes.reduce(function(a, b){ return a || b; }, 0));
+      output.close(passed.value, failed.value);
+      var x = exitcodes.reduce(function(a, b){return a || b; }, 0);  
+      process.exit(x);
     })
     .fail(function(err) {
       console.error(err.stack);
