@@ -1,1 +1,1 @@
-{"skip":["build","code","c++","execute","javascript","run","traces","verify"]}
+{"skip":["build","code","execute","run","traces","verify"]}

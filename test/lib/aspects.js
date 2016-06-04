@@ -411,6 +411,7 @@ var aspects = {
         return 'diff -uwB '+baseline+' <(' + dzn + ' --verbose verify --all -m '+parameters.model+' '+parameters.filename+' | '+'bin/reorder)';
       })
       .fail (function(err) {
+        console.log ('verify: no baseline=' + baseline);
         return 'out="$(' + dzn + ' verify --all -m '+parameters.model+' '+parameters.filename+')"; [ "$out" = "" ] || { echo "$out"; false; }';
       })
       .then (function(cmd) {
