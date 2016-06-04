@@ -99,9 +99,11 @@ function process_dir (dir, args, passed, failed) {
   dir = dir.replace (/\/*$/, '');
   var dzn = dir+'/'+path.basename(dir)+'.dzn';
   var dm = dir+'/'+path.basename(dir)+'.dm';
+  var run = dir+'/run';
   try {fs.lstatSync(dzn);} catch(e) {dzn=undefined;}
   try {fs.lstatSync(dm);} catch(e) {dm=undefined;}
-  if (dzn || dm)
+  try {fs.lstatSync(run);} catch(e) {run=undefined;}
+  if (dzn || dm || run)
     return util.run(dir, aspects_languages, args.options.verbose)
     .then(function(result) {
       result.exitcode === 0 ? ++passed : ++failed;
