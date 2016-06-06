@@ -1,1 +1,1 @@
-{"skip":["build","code","execute","run","traces","verify"]}
+{"skip":["build","code","execute","run","traces","verify"],"comment":"parse errors:"cannot build,code,execute,run,traces,verify"}
