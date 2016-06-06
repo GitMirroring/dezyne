@@ -57,7 +57,7 @@ function read_meta(dir, default_meta) {
 
 function skip_filter (meta) {
   return function (e) {
-    return (meta.skip.indexOf(e) == -1) || console.log(e + ': [SKIPPED]') && false;
+    return (meta.skip.indexOf(e) == -1) || console.log(e + ': [SKIPPED] ' + (meta.comment || '')) && false;
   }
 }
 
