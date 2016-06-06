@@ -1,15 +1,6 @@
-verify: Dummyinterface_deadlock_fail1: check: deterministic: ok
-verify: Dummyinterface_deadlock_fail1: check: completeness: ok
-verify: Dummyinterface_deadlock_fail1: check: illegal: ok
-verify: Dummyinterface_deadlock_fail1: check: deadlock: ok
-verify: Dummyinterface_deadlock_fail1: check: compliance: ok
-verify: Dummyinterface_deadlock_fail1: check: livelock: ok
-verify: DummyI: check: completeness: ok
-verify: DummyI: check: deadlock: ok
-verify: DummyI: check: livelock: ok
-verify: I: check: completeness: ok
-verify: I: check: deadlock: fail
-I.e
-I.return
-deadlock in model I
-verify: I: check: livelock: ok
+verify: interface_deadlock_fail1: check: completeness: ok
+verify: interface_deadlock_fail1: check: deadlock: fail
+interface_deadlock_fail1.e
+interface_deadlock_fail1.return
+deadlock in model interface_deadlock_fail1
+verify: interface_deadlock_fail1: check: livelock: ok

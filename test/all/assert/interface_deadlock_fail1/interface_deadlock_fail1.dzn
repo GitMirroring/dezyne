@@ -22,7 +22,7 @@
 // Code:
 
 // This interface enters a live-lock after one step
-interface I {
+interface interface_deadlock_fail1 {
   in void e();
 
   behaviour {    
@@ -46,6 +46,6 @@ interface DummyI {
 
 component DummyC {
   provides DummyI i;
-  requires I ii;
+  requires interface_deadlock_fail1 ii;
   behaviour { [true] on i.e(): {} }      
 }

@@ -1,11 +1,11 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
 verify: component_compliance_fail0: check: deterministic: ok
 verify: component_compliance_fail0: check: completeness: ok
 verify: component_compliance_fail0: check: illegal: ok
 verify: component_compliance_fail0: check: deadlock: ok
 verify: component_compliance_fail0: check: compliance: fail
 i.f
-Component C is non-compliant with interface of provided port
+Component component_compliance_fail0 is non-compliant with interface of provided port
 verify: component_compliance_fail0: check: livelock: ok
-verify: I: check: completeness: ok
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok

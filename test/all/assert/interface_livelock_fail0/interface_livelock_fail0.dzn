@@ -22,7 +22,7 @@
 // Code:
 
 // This interface immediately enters a live-lock
-interface I {
+interface interface_livelock_fail0 {
   in void e();
 
   behaviour {    
@@ -41,6 +41,6 @@ interface DummyI {
 
 component DummyC {
   provides DummyI i;
-  requires I ii;
+  requires interface_livelock_fail0 ii;
   behaviour { [true] on i.e(): {} }      
 }

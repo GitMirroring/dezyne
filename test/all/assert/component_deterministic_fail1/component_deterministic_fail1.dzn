@@ -32,7 +32,7 @@ interface I {
 }
 
 // This component has an deterministic problem after one step
-component C {
+component component_deterministic_fail1 {
   provides I i;
   requires I ii;
   behaviour { 

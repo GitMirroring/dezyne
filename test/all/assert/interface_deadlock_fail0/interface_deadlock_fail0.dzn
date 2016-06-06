@@ -22,7 +22,7 @@
 // Code:
 
 // This interface enters a dead-lock immediately
-interface I {
+interface interface_deadlock_fail0 {
   in void e();
 
   behaviour {    
@@ -40,6 +40,6 @@ interface DummyI {
 
 component DummyC {
   provides DummyI i;
-  requires I ii;
+  requires interface_deadlock_fail0 ii;
   behaviour { [true] on i.e(): {} }      
 }

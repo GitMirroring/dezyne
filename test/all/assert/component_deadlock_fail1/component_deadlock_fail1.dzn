@@ -32,7 +32,7 @@ interface I {
 }
 
 // This component has an deadlock problem after one step
-component C {
+component component_deadlock_fail1 {
   provides I i;
   behaviour { 
     enum States { S0, S1};

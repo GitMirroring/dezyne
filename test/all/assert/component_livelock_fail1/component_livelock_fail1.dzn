@@ -49,7 +49,7 @@ interface II {
 }
 
 // This component has an livelock problem after one step
-component C {
+component component_livelock_fail1 {
   provides I i;
   requires II ii;
   behaviour { 

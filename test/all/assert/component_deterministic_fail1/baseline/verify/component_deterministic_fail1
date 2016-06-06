@@ -1,13 +1,13 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
 verify: component_deterministic_fail1: check: deterministic: fail
 i.e
 i.return
 i.e
-Component C is non-deterministic due to overlapping guards
+Component component_deterministic_fail1 is non-deterministic due to overlapping guards
 verify: component_deterministic_fail1: check: completeness: ok
 verify: component_deterministic_fail1: check: illegal: ok
 verify: component_deterministic_fail1: check: deadlock: ok
 verify: component_deterministic_fail1: check: compliance: ok
 verify: component_deterministic_fail1: check: livelock: ok
-verify: I: check: completeness: ok
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok

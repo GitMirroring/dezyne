@@ -32,7 +32,7 @@ interface I {
 }
 
 // This component has an illegal problem
-component C {
+component component_illegal_fail0 {
   provides I i;
   requires I ii;
   behaviour { 

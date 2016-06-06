@@ -31,7 +31,7 @@ interface I {
 }
 
 // This component has an queuefull problem
-component C {
+component component_queuefull_fail0 {
   provides I p;
   requires I r;
   behaviour { 

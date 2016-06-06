@@ -1,3 +1,6 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
 verify: component_illegal_fail0: check: deterministic: ok
 verify: component_illegal_fail0: check: completeness: ok
 verify: component_illegal_fail0: check: illegal: fail
@@ -9,13 +12,10 @@ verify: component_illegal_fail0: check: deadlock: fail
 i.e
 ii.e
 ii.return
-deadlock in model C
+deadlock in model component_illegal_fail0
 verify: component_illegal_fail0: check: compliance: fail
 i.e
 ii.e
 ii.return
-Component C is non-compliant with interface of provided port
+Component component_illegal_fail0 is non-compliant with interface of provided port
 verify: component_illegal_fail0: check: livelock: ok
-verify: I: check: completeness: ok
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
