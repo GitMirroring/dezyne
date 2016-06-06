@@ -35,6 +35,7 @@ $(CDIR)/node_modules/.dummy: $(CDIR)/package.json
 
 CLEAN := $(CLEAN) $(CDIR)/regression-test/examples/index.txt
 
+$(CDIR)/regression-test/examples/index.txt: CDIR:=$(CDIR)
 $(CDIR)/regression-test/examples/index.txt:
 	for i in $(sort\
 	    $(wildcard $(@D)/*.dzn)\
