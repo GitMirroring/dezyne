@@ -59,7 +59,7 @@ function parse_opts(argv) {
     ['h', 'help', 'display this help and exit'],
     ['o', 'output=OUTPUT', 'write output to OUTPUT [out/TARGET.html]'],
     ['q', 'quiet', 'suppress test summary lines on stdout'],
-    ['v', 'verbose', 'show test output on stdout'],
+    ['s', 'summary', 'show only summary lines on stdout'],
   ]);
   option_parser.bindHelp(
 'Usage: bin/test [OPTION]... TARGET (ASPECT | LANGUAGE)*\n\
@@ -104,7 +104,7 @@ function process_dir (dir, args, passed, failed) {
   try {fs.lstatSync(dm);} catch(e) {dm=undefined;}
   try {fs.lstatSync(run);} catch(e) {run=undefined;}
   if (dzn || dm || run)
-    return util.run(dir, aspects_languages, args.options.verbose)
+    return util.run(dir, aspects_languages, !(args.options.quiet || args.options.summary))
     .then(function(result) {
       result.exitcode === 0 ? ++passed.value : ++failed.value;
       output.log(dir, result);
@@ -115,7 +115,7 @@ function process_dir (dir, args, passed, failed) {
         console.log((exitcodes[0] === 0 ? '[PASS] ' : '[FAIL] ') + dir);
       }
     });
-  
+
   return q.denodeify(fs.readdir) (dir)
     .then(function (files) {
       return files.filter(function (f) {
@@ -161,7 +161,7 @@ function main() {
       var exitcodes = [].concat.apply([],exitcodes_lists);
       console.log('EXITCODES: ' + exitcodes);
       output.close(passed.value, failed.value);
-      var x = exitcodes.reduce(function(a, b){return a || b; }, 0);  
+      var x = exitcodes.reduce(function(a, b){return a || b; }, 0);
       process.exit(x);
     })
     .fail(function(err) {
