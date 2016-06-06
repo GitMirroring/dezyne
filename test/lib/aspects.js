@@ -55,12 +55,6 @@ function read_meta(dir, default_meta) {
   return default_meta;
 }
 
-function skip_filter (meta) {
-  return function (e) {
-    return (meta.skip.indexOf(e) == -1) || console.log(e + ': [SKIPPED] ' + (meta.comment || '')) && false;
-  }
-}
-
 var dependencies = {
   build:    ['code'],
   code:     ['convert'],
@@ -77,6 +71,21 @@ var dependencies = {
 
 function depend(e) {
   return dependencies[e].concat(dependencies[e].append_map(depend));
+}
+
+function skip_filter (meta) {
+  function filter_aspect(e) {
+    return meta.skip.indexOf(e) == -1;
+  }
+  function filter_dependency(e) {
+    return depend(e).filter(function(a) { return meta.skip.indexOf(a) != -1; }).length == 0;
+  }
+  return function (e) {
+    if(Object.keys(dependencies).indexOf(e) == -1) return true;
+    if(filter_aspect(e) && filter_dependency(e)) return true;
+    console.log(e + ': [SKIPPED] ' + (meta.comment || ''));
+    return false;
+  }
 }
 
 function run_traces(parameters, asp, app) {
