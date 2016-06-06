@@ -1,5 +1,5 @@
 # make and bash include
-VERSION=3
+VERSION=4
 CLIENT_VERSION=2.0.0
 
 # when releasing, set to version, e.g. 2.0.0
