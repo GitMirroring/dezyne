@@ -138,6 +138,7 @@ var util = {
     var windows_p = /^win32/.test (process.platform);
     var shell = windows_p ? 'cmd.exe' : 'bash';
     var c = windows_p ? '/c' : '-c';
+
     console.log (cmd);
 
     var future = q.defer ();
@@ -165,14 +166,14 @@ var util = {
   ,
   // run script arguments: bin/run testdir (aspect | language)*
   //                       testdir/run (aspect | language)*
-  run: function(testdir, aspects_languages, verbose) {
+  run: function(session, testdir, aspects_languages, verbose) {
     var future = q.defer();
     var singleTestStartTime = new Date();
 
     var lstat = q.denodeify(fs.lstat);
     return lstat(testdir + '/run')
-      .then(function(stats) { return {run: testdir + '/run', args:aspects_languages}; })
-      .fail(function(err) { return {run: 'bin/run', args:[util.relative (testdir)].concat(aspects_languages)}; })
+      .then(function(stats) { return {run: testdir + '/run', args: [session].concat(aspects_languages)}; })
+      .fail(function(err) { return {run: 'bin/run', args: [session, util.relative (testdir)].concat(aspects_languages)}; })
       .then(function(call) {
         var stdout = '';
         var stderr = '';

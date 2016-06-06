@@ -8,6 +8,8 @@ var util = require(__dirname + '/../lib/util');
 var aspects = require(__dirname + '/../lib/aspects');
 var languages = require(__dirname + '/../lib/languages');
 
+var max_parallel = 4;
+
 var output = {
   result: {},
   open: function(name, title, target, outputFilePath) {
@@ -93,6 +95,8 @@ Examples:\n\
   return args;
 }
 
+var session = 0;
+
 function process_dir (dir, args, passed, failed) {
   var aspects_languages = args.argv.slice(1);
 
@@ -104,7 +108,7 @@ function process_dir (dir, args, passed, failed) {
   try {fs.lstatSync(dm);} catch(e) {dm=undefined;}
   try {fs.lstatSync(run);} catch(e) {run=undefined;}
   if (dzn || dm || run)
-    return util.run(dir, aspects_languages, !(args.options.quiet || args.options.summary))
+    return util.run(1 + session++ % max_parallel, dir, aspects_languages, !(args.options.quiet || args.options.summary))
     .then(function(result) {
       result.exitcode === 0 ? ++passed.value : ++failed.value;
       output.log(dir, result);
@@ -132,7 +136,7 @@ function process_dir (dir, args, passed, failed) {
               return process_dir (dir + '/' + item, args, passed, failed);
             };
           });
-      return util.parallel_n(worklist, 1);
+      return util.parallel_n(worklist, max_parallel);
     })
     .then (function (exitcodes_lists) {
       return [].concat.apply([], exitcodes_lists);
