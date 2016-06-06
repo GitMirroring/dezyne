@@ -2,6 +2,6 @@ verify: ITransfer: check: completeness: fail
 ITransfer.tcalibrate
 ITransfer.tcalibrated
 ITransfer.return
-ITransfer is incomplete: 'ITransfer.move,ITransfer.transfer,ITransfer.tcalibrate' not handled
+ITransfer is incomplete: 'ITransfer.move,ITransfer.tcalibrate,ITransfer.transfer' not handled
 verify: ITransfer: check: deadlock: ok
 verify: ITransfer: check: livelock: ok
