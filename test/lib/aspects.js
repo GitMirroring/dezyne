@@ -34,12 +34,11 @@ var dzn = '../client/bin/dzn';
 var ext = {'c++':'.cc',javascript:'.js'};
 
 var default_meta = {
-  negate: [],
-  skip: [],
-  ignore: [],
-  flush: false,
-  languages: languages,
-  max: {code:undefined,run:50},
+  skip: []
+  , ignore: []
+  , flush: false
+  , languages: languages
+  , max: {code:undefined,run:50}
 };
 
 function read_meta(dir, default_meta) {
@@ -318,11 +317,6 @@ var aspects = {
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd)
           .fail (function(err) {console.log(err); return 1; });
-      })
-      .then (function (status){
-        if (parameters.meta.negate.indexOf ('parse') !== -1)
-          return status ? 0 : 1;
-        return status;
       });
   }
   ,
