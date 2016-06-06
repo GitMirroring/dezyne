@@ -33,22 +33,4 @@ $(CDIR)/node_modules/.dummy: $(CDIR)/package.json
 	cd $(CDIR) && npm install
 	touch $@
 
-CLEAN := $(CLEAN) $(CDIR)/regression-test/examples/index.txt
-
-$(CDIR)/regression-test/examples/index.txt: CDIR:=$(CDIR)
-$(CDIR)/regression-test/examples/index.txt:
-	for i in $(sort\
-	    $(wildcard $(@D)/*.dzn)\
-	    $(wildcard $(@D)/*/project.txt)\
-	    ); do \
-	    if [ $$(basename $$i) = project.txt  ]; then\
-		echo $$(basename $$(dirname $$i));\
-	    else\
-		echo $$(basename $$i .dzn);\
-	    fi;\
-	    head -1 $$i | sed -e s,'^// *,,' -e 's,^purpose: *,,';\
-	    echo;\
-	done > $@.$$PPID~
-	mv $@.$$PPID~ $@
-
 include make/check.mk
