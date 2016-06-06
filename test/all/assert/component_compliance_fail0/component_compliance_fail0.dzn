@@ -34,7 +34,7 @@ interface I {
 }
 
 // This component has an compliance problem
-component C {
+component component_compliance_fail0 {
   provides I i;
   behaviour { 
     [true] {

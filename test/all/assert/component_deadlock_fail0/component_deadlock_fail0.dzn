@@ -32,7 +32,7 @@ interface I {
 }
 
 // This component has an deadlock problem immediately
-component C {
+component component_deadlock_fail0 {
   provides I i;
   behaviour { 
     [true] on i.e(): illegal;

@@ -1,6 +1,6 @@
-verify: C: check: deterministic: ok
-verify: C: check: completeness: ok
-verify: C: check: illegal: fail
+verify: component_queuefull_fail0: check: deterministic: ok
+verify: component_queuefull_fail0: check: completeness: ok
+verify: component_queuefull_fail0: check: illegal: fail
 p.e
 r.e
 r.c
@@ -9,7 +9,7 @@ r.c
 r.c
 r.return
 queue full
-verify: C: check: deadlock: fail
+verify: component_queuefull_fail0: check: deadlock: fail
 p.e
 r.e
 r.c
@@ -18,7 +18,7 @@ r.c
 r.c
 r.return
 queue full
-verify: C: check: compliance: fail
+verify: component_queuefull_fail0: check: compliance: fail
 p.e
 r.e
 r.c
@@ -27,7 +27,7 @@ r.c
 r.c
 r.return
 p.c not performed by component
-verify: C: check: livelock: ok
+verify: component_queuefull_fail0: check: livelock: ok
 verify: I: check: completeness: ok
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
