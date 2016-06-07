@@ -9,10 +9,10 @@ verify: asyncsync_illegal: check: completeness: ok
 verify: asyncsync_illegal: check: illegal: ok
 verify: asyncsync_illegal: check: deadlock: ok
 verify: asyncsync_illegal: check: compliance: fail
-p.e
-r.e
-r.ec
+p.a
+r.a
+r.ac
 r.return
-p.ec
-p.ec not allowed by port p
+p.ac
+p.ac not allowed by port p
 verify: asyncsync_illegal: check: livelock: ok
