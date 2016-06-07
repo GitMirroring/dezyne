@@ -273,21 +273,13 @@ var aspects = {
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
     var flush = parameters.meta.flush && ' --flush' || '';
     return run_traces(parameters, 'execute', function(trace) {
-      return util.spawn_sync_shell('set -o pipefail; cat '+ trace + ' | ' + out + '/test' + flush + ' &> ' + out + '/output')
-        .then(function(exitstatus){
-          if(exitstatus) {
-            var expectation = parameters.dir + '/baseline/execute/' + language + '/expectation';
-            try {
-              fs.lstatSync(expectation);
-              return util.spawn_sync_shell('diff -uw ' + expectation + ' ' + out + '/output');
-            } catch(e) {
-              console.log(fs.readFileSync(out + '/output').toString());
-              return 1;
-            }
-          }
-          return util.spawn_sync_shell('diff -uw ' + trace + ' <(bin/code2fdr < ' + out + '/output)');
-        })
-        .fail (function(err) {console.log('execute fail: ' + err); return 1; });
+      var expectation = parameters.dir + '/baseline/execute/' + language + '/expectation';
+      try {
+        fs.lstatSync(expectation);
+        return util.spawn_sync_shell('diff -uw ' + expectation + ' <(set -o pipefail; cat '+ trace + ' | ' + out + '/test' + flush + ' |& bin/code2fdr || echo ERROR)');
+      } catch(e) {
+        return util.spawn_sync_shell('diff -uw ' + trace + ' <(set -o pipefail; cat '+ trace + ' | ' + out + '/test' + flush + ' |& bin/code2fdr)')
+      }
     });
   }
   ,

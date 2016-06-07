@@ -1,6 +1,5 @@
-<external>.p.e -> sut.p.e
-sut.r.e -> <internal>.r.e
-<internal>.r.return -> sut.r.return
-<internal>.r.cb -> sut.r.cb
-terminate called after throwing an instance of 'std::bad_function_call'
-  what():  bad_function_call
+p.e
+r.e
+r.return
+r.cb
+ERROR
