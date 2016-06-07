@@ -1,9 +1,0 @@
-verify: I: check: completeness: ok
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
-verify: If: check: deterministic: ok
-verify: If: check: completeness: ok
-verify: If: check: illegal: ok
-verify: If: check: deadlock: ok
-verify: If: check: compliance: ok
-verify: If: check: livelock: ok

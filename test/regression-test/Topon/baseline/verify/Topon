@@ -1,9 +1,0 @@
-verify: ITopon: check: completeness: ok
-verify: ITopon: check: deadlock: ok
-verify: ITopon: check: livelock: ok
-verify: Topon: check: deterministic: ok
-verify: Topon: check: completeness: ok
-verify: Topon: check: illegal: ok
-verify: Topon: check: deadlock: ok
-verify: Topon: check: compliance: ok
-verify: Topon: check: livelock: ok

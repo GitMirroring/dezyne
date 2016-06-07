@@ -1,3 +1,0 @@
-verify: IConvey: check: completeness: ok
-verify: IConvey: check: deadlock: ok
-verify: IConvey: check: livelock: ok

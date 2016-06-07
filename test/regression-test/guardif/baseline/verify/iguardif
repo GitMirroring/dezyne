@@ -1,3 +1,0 @@
-verify: iguardif: check: completeness: ok
-verify: iguardif: check: deadlock: ok
-verify: iguardif: check: livelock: ok

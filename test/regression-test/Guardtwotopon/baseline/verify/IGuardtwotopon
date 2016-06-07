@@ -1,3 +1,0 @@
-verify: IGuardtwotopon: check: completeness: ok
-verify: IGuardtwotopon: check: deadlock: ok
-verify: IGuardtwotopon: check: livelock: ok

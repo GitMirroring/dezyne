@@ -1,3 +1,0 @@
-verify: TestBool: check: completeness: ok
-verify: TestBool: check: deadlock: ok
-verify: TestBool: check: livelock: ok

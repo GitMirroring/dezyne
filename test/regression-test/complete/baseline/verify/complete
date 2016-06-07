@@ -1,9 +1,0 @@
-verify: complete: check: deterministic: ok
-verify: complete: check: completeness: ok
-verify: complete: check: illegal: ok
-verify: complete: check: deadlock: ok
-verify: complete: check: compliance: ok
-verify: complete: check: livelock: ok
-verify: icomplete: check: completeness: ok
-verify: icomplete: check: deadlock: ok
-verify: icomplete: check: livelock: ok

@@ -1,9 +1,0 @@
-verify: irequires_twice: check: completeness: ok
-verify: irequires_twice: check: deadlock: ok
-verify: irequires_twice: check: livelock: ok
-verify: requires_twice: check: deterministic: ok
-verify: requires_twice: check: completeness: ok
-verify: requires_twice: check: illegal: ok
-verify: requires_twice: check: deadlock: ok
-verify: requires_twice: check: compliance: ok
-verify: requires_twice: check: livelock: ok
