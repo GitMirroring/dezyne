@@ -25,6 +25,7 @@
 .PHONY:all default
 default: all
 
+DEVELOPMENT:=..
 define CHECKPARAM
 ifeq ($(origin $(1)), undefined)
 $$(error $(1) undefined)
@@ -39,8 +40,12 @@ endif
 
 all: $(wildcard $(IN)/*.dzn)
 	mkdir -p $(OUT)/dzn
-	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls -R /share/runtime/$(LANGUAGE))));\
-	do $(DZN) cat /share/runtime/$(LANGUAGE)/$$file > $(OUT)/$$file; done
+	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls /share/runtime/$(LANGUAGE)))); do\
+	    ln -sf ../../../$(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/$$file $(OUT)/$$file;\
+	done
+	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls /share/runtime/$(LANGUAGE)/dzn))); do\
+	    ln -sf ../../../../$(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/dzn/$$file $(OUT)/dzn/$$file;\
+	done
 	for file in $^; do $(DZN) code -l $(LANGUAGE) --depends $(MODEL_OPT) -o $(OUT) $$file; done
 
 -include $(patsubst $(IN)/%.dzn, $(OUT)/%.d, $(wildcard $(IN)/*.dzn))
