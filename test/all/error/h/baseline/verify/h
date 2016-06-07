@@ -14,5 +14,5 @@ h is incomplete: 'ctrl.operate,ctrl.stop,robot.arrived,robot.picked,robot.placed
 verify: h: check: illegal: ok
 verify: h: check: deadlock: ok
 verify: h: check: compliance: fail
-ctrl.stop not performed by component
+ctrl.operate not performed by component
 verify: h: check: livelock: ok
