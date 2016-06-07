@@ -48,7 +48,7 @@ function log_out(prefix, event) {
 
 function type_helper(value, type) {
   if (type === 'int') return parseInt (value);
-  if (type === 'bool') return value ? true : false;
+  if (type === 'bool') return value === 'false' ? false : true;
   return value;
 }
 
