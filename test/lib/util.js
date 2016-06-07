@@ -142,7 +142,11 @@ var util = {
     console.log (cmd);
 
     var future = q.defer ();
-    var p = child.spawn (shell, [c, cmd], {detached: true, stdio:'inherit'});
+
+    var env = process.env;
+    env.NODE_PATH = process.cwd() + '/node_modules';
+
+    var p = child.spawn (shell, [c, cmd], {env: env, detached: true, stdio:'inherit'});
 
     p.on('exit', function (code, signal) {
       future.resolve(signal ? -1 : code ? 1 : 0);
