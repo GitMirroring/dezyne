@@ -1,3 +1,0 @@
-verify: IMove: check: completeness: ok
-verify: IMove: check: deadlock: ok
-verify: IMove: check: livelock: ok

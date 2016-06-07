@@ -1,3 +1,0 @@
-verify: ilight: check: completeness: ok
-verify: ilight: check: deadlock: ok
-verify: ilight: check: livelock: ok
