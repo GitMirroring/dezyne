@@ -284,24 +284,21 @@ var aspects = {
   }
   ,
   convert: function(parameters) {
-    var base = path.basename(parameters.filename, '.dzn');
-    var dm = parameters.dir+'/'+base+'.dm';
+    var dm = parameters.dir + '/' + parameters.model + '.dm';
     return lstat(dm)
       .then (function(stats) {
         var out = 'out/'+path.basename(parameters.dir);
         var cmd = 'mkdir -p '+out+'; '+
-            'echo "'+dm+' -> '+out+'/'+base+'.dzn"; ' +
+            'echo "'+dm+' -> '+out+'/'+parameters.model+'.dzn"; ' +
             dzn(parameters.session)+' convert -g -o '+out+' '+dm+'; ' +
-            'sed -i -e "s,\\(component \\w*\\)Comp,\\1," -e "s,Iasd.builtin.ITimer,ITimer," '+out+'/'+base+'Comp.dzn; ' +
+            'sed -i -e "s,\\(component \\w*\\)Comp,\\1," -e "s,Iasd.builtin.ITimer,ITimer," '+out+'/'+parameters.model+'Comp.dzn; ' +
             'sed -i -e "s,in void on(),in void on1()," '+out+'/*.dzn; ' +
-            //      '$(LOCAL_GLOBAL_TYPES)sed -i -e 's,^.* extern,extern,' $(basename $@)Comp.dzn; ' +
-            'mv '+out+'/'+base+'Comp.dzn '+out+'/'+base+'.dzn'
+            'mv '+out+'/'+parameters.model+'Comp.dzn '+out+'/'+parameters.model+'.dzn'
         return util.spawn_sync_shell(cmd)
           .then (function (result) {
             var parameters1 = util.deep_copy(parameters);
             parameters1.dir = out;
-            parameters1.filename = out + '/' + base+'.dzn';
-            parameters1.model = base+'Comp';
+            parameters1.filename = out + '/' +parameters.model+'.dzn';
             return {exitcode:0, parameters:parameters1};
           })
           .fail (function(err) {console.log(err); return 1; });
