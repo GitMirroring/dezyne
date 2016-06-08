@@ -1,0 +1,1 @@
+blockingMultipleProvides.dzn:22:5: Well-formedness error: BlockingStatement not allowed with multiple provides ports
