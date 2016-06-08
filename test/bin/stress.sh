@@ -74,7 +74,6 @@ console.return
 sensor.triggered
 console.detected
 siren.turnon
-illegal
 EOF
 ) <($DZN verify -m Alarm out/$$/Alarm.dzn) || kill -9 $XPID; ) &
     for j in $(seq 10); do
