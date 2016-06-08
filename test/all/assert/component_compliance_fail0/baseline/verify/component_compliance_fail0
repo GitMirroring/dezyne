@@ -7,5 +7,4 @@ verify: component_compliance_fail0: check: illegal: ok
 verify: component_compliance_fail0: check: deadlock: ok
 verify: component_compliance_fail0: check: compliance: fail
 i.f
-Component component_compliance_fail0 is non-compliant with interface of provided port
 verify: component_compliance_fail0: check: livelock: ok

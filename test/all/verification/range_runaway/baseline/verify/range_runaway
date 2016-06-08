@@ -6,11 +6,7 @@ verify: II: check: deadlock: ok
 verify: II: check: livelock: ok
 verify: range_runaway: check: deterministic: ok
 verify: range_runaway: check: completeness: fail
-integer range error in model range_runaway
 verify: range_runaway: check: illegal: fail
-integer range error in model range_runaway
 verify: range_runaway: check: deadlock: fail
-integer range error in model range_runaway
 verify: range_runaway: check: compliance: fail
-integer range error in model range_runaway
 verify: range_runaway: check: livelock: ok

@@ -10,5 +10,4 @@ left.press
 pedal.press
 pedal.return
 right.pressed
-right.pressed not allowed by port right
 verify: SyncPedal: check: livelock: ok

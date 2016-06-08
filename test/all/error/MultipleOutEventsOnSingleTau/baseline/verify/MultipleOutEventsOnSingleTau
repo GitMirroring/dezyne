@@ -14,7 +14,6 @@ rp.return
 pp.return
 pp.ca
 rp.ca
-illegal
 verify: MultipleOutEventsOnSingleTau: check: deadlock: fail
 rp.oa
 rp.ob
@@ -26,7 +25,6 @@ rp.return
 pp.return
 pp.ca
 rp.ca
-deadlock in model MultipleOutEventsOnSingleTau
 verify: MultipleOutEventsOnSingleTau: check: compliance: fail
 rp.oa
 rp.ob
@@ -43,5 +41,4 @@ rp.return
 pp.return
 rp.ob
 pp.ob
-Component MultipleOutEventsOnSingleTau is non-compliant with interface of provided port
 verify: MultipleOutEventsOnSingleTau: check: livelock: ok

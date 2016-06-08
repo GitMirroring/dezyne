@@ -5,8 +5,6 @@ verify: component_deadlock_fail0: check: deterministic: ok
 verify: component_deadlock_fail0: check: completeness: ok
 verify: component_deadlock_fail0: check: illegal: ok
 verify: component_deadlock_fail0: check: deadlock: fail
-deadlock in model component_deadlock_fail0
 verify: component_deadlock_fail0: check: compliance: fail
 i.e
-Component component_deadlock_fail0 is non-compliant with interface of provided port
 verify: component_deadlock_fail0: check: livelock: ok

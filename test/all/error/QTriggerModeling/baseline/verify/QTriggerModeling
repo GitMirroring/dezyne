@@ -42,7 +42,6 @@ src.return
 src.ack
 src.return
 src.done
-illegal
 verify: QTriggerModeling: check: deadlock: fail
 ict.start
 src.req
@@ -76,7 +75,6 @@ src.return
 src.ack
 src.return
 src.done
-deadlock in model QTriggerModeling
 verify: QTriggerModeling: check: compliance: fail
 ict.start
 src.req
@@ -110,5 +108,4 @@ src.return
 src.ack
 src.return
 src.done
-Component QTriggerModeling is non-compliant with interface of provided port
 verify: QTriggerModeling: check: livelock: ok

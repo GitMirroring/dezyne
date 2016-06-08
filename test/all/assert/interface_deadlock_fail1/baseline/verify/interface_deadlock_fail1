@@ -2,5 +2,4 @@ verify: interface_deadlock_fail1: check: completeness: ok
 verify: interface_deadlock_fail1: check: deadlock: fail
 interface_deadlock_fail1.e
 interface_deadlock_fail1.return
-deadlock in model interface_deadlock_fail1
 verify: interface_deadlock_fail1: check: livelock: ok

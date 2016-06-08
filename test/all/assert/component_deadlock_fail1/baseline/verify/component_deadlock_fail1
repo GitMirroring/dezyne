@@ -7,10 +7,8 @@ verify: component_deadlock_fail1: check: illegal: ok
 verify: component_deadlock_fail1: check: deadlock: fail
 i.e
 i.return
-deadlock in model component_deadlock_fail1
 verify: component_deadlock_fail1: check: compliance: fail
 i.e
 i.return
 i.e
-Component component_deadlock_fail1 is non-compliant with interface of provided port
 verify: component_deadlock_fail1: check: livelock: ok

@@ -3,7 +3,6 @@ verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
 verify: component_deterministic_fail0: check: deterministic: fail
 i.e
-Component component_deterministic_fail0 is non-deterministic due to overlapping guards
 verify: component_deterministic_fail0: check: completeness: ok
 verify: component_deterministic_fail0: check: illegal: ok
 verify: component_deterministic_fail0: check: deadlock: ok

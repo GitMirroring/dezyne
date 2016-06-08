@@ -11,4 +11,3 @@ verify: List: check: deadlock: ok
 verify: List: check: compliance: ok
 verify: List: check: livelock: fail
 pp.step
-livelock in model List

@@ -20,7 +20,6 @@ device2IF.Result_NOK
 startIF.startFailed
 startIF.startAll
 device1IF.turnon
-illegal
 verify: StartDevices: check: deadlock: fail
 startIF.startAll
 device1IF.turnon
@@ -32,7 +31,6 @@ device2IF.Result_NOK
 startIF.startFailed
 startIF.startAll
 device1IF.turnon
-deadlock in model StartDevices
 verify: StartDevices: check: compliance: fail
 startIF.startAll
 device1IF.turnon
@@ -44,5 +42,4 @@ device2IF.Result_NOK
 startIF.startFailed
 startIF.startAll
 device1IF.turnon
-Component StartDevices is non-compliant with interface of provided port
 verify: StartDevices: check: livelock: ok

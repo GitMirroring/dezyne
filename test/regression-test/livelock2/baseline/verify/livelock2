@@ -1,8 +1,8 @@
 verify: ilivelock: check: completeness: ok
 verify: ilivelock: check: deadlock: ok
 verify: ilivelock: check: livelock: fail
-livelock in model ilivelock
 verify: livelock2: check: deterministic: ok
+regression-test/livelock2/livelock2.dzn:1:1:i1: livelock in model ilivelock
 verify: livelock2: check: completeness: ok
 verify: livelock2: check: illegal: ok
 verify: livelock2: check: deadlock: ok

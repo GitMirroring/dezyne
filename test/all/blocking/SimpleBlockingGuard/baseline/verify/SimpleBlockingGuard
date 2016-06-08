@@ -8,10 +8,8 @@ verify: SimpleBlockingGuard: check: deadlock: fail
 pp.ia
 pp.return
 pp.ia
-deadlock in model SimpleBlockingGuard
 verify: SimpleBlockingGuard: check: compliance: fail
 pp.ia
 pp.return
 pp.ia
-pp.return not performed by component
 verify: SimpleBlockingGuard: check: livelock: ok

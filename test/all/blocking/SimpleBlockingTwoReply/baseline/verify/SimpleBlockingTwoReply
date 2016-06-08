@@ -11,17 +11,14 @@ p.e
 r.e
 r.return
 r.cb
-illegal
 verify: SimpleBlockingTwoReply: check: deadlock: fail
 p.e
 r.e
 r.return
 r.cb
-deadlock in model SimpleBlockingTwoReply
 verify: SimpleBlockingTwoReply: check: compliance: fail
 p.e
 r.e
 r.return
 r.cb
-Component SimpleBlockingTwoReply is non-compliant with interface of provided port
 verify: SimpleBlockingTwoReply: check: livelock: ok

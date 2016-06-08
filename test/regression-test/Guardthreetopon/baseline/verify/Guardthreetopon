@@ -9,5 +9,4 @@ verify: IGuardthreetopon: check: deadlock: ok
 verify: IGuardthreetopon: check: livelock: ok
 verify: RGuardthreetopon: check: completeness: ok
 verify: RGuardthreetopon: check: deadlock: fail
-deadlock in model RGuardthreetopon
 verify: RGuardthreetopon: check: livelock: ok

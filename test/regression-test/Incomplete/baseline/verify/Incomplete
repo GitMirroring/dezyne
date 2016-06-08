@@ -5,14 +5,11 @@ verify: Incomplete: check: deterministic: ok
 verify: Incomplete: check: completeness: fail
 pp.missing
 pp.return
-Incomplete is incomplete: 'pp.available,pp.missing' not handled
 verify: Incomplete: check: illegal: ok
 verify: Incomplete: check: deadlock: fail
 pp.missing
 pp.return
-deadlock in model Incomplete
 verify: Incomplete: check: compliance: fail
 pp.missing
 pp.return
-pp.missing not performed by component
 verify: Incomplete: check: livelock: ok

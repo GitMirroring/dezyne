@@ -1,11 +1,9 @@
 verify: IRequiredOptional: check: completeness: ok
 verify: IRequiredOptional: check: deadlock: fail
-deadlock in model IRequiredOptional
 verify: IRequiredOptional: check: livelock: ok
 verify: RequiredOptional: check: deterministic: ok
 verify: RequiredOptional: check: completeness: ok
 verify: RequiredOptional: check: illegal: ok
 verify: RequiredOptional: check: deadlock: fail
-deadlock in model RequiredOptional
 verify: RequiredOptional: check: compliance: ok
 verify: RequiredOptional: check: livelock: ok

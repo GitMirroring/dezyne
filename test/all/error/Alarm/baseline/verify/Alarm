@@ -22,7 +22,6 @@ console.return
 sensor.triggered
 console.detected
 siren.turnon
-illegal
 verify: Alarm: check: deadlock: fail
 console.arm
 sensor.enable
@@ -45,7 +44,6 @@ console.return
 sensor.triggered
 console.detected
 siren.turnon
-deadlock in model Alarm
 verify: Alarm: check: compliance: fail
 console.arm
 sensor.enable
@@ -68,7 +66,6 @@ console.return
 sensor.triggered
 console.detected
 siren.turnon
-Component Alarm is non-compliant with interface of provided port
 verify: Alarm: check: livelock: ok
 verify: IConsole: check: completeness: ok
 verify: IConsole: check: deadlock: ok

@@ -12,11 +12,9 @@ p.e
 r.e
 r.return
 r.cb
-deadlock in model SimpleBlockingDeadlock2
 verify: SimpleBlockingDeadlock2: check: compliance: fail
 p.e
 r.e
 r.return
 r.cb
-p.return not performed by component
 verify: SimpleBlockingDeadlock2: check: livelock: ok

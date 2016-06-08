@@ -11,10 +11,8 @@ verify: SimpleBlockingDeadlock: check: deadlock: fail
 p.e
 r.e
 r.return
-deadlock in model SimpleBlockingDeadlock
 verify: SimpleBlockingDeadlock: check: compliance: fail
 p.e
 r.e
 r.return
-p.return not performed by component
 verify: SimpleBlockingDeadlock: check: livelock: ok

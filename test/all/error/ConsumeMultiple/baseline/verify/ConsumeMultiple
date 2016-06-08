@@ -9,7 +9,6 @@ src.done
 src.return
 src.ntfA
 src.done
-illegal
 verify: ConsumeMultiple: check: deadlock: fail
 src.ntfA
 src.ack
@@ -19,7 +18,6 @@ src.done
 src.return
 src.ntfA
 src.done
-deadlock in model ConsumeMultiple
 verify: ConsumeMultiple: check: compliance: fail
 src.ntfA
 src.ack
@@ -29,7 +27,6 @@ src.done
 src.return
 src.ntfA
 src.done
-Component ConsumeMultiple is non-compliant with interface of provided port
 verify: ConsumeMultiple: check: livelock: ok
 verify: IDummy: check: completeness: ok
 verify: IDummy: check: deadlock: ok

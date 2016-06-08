@@ -10,7 +10,6 @@ r.return
 p.return
 p.a
 r.a
-illegal
 verify: asyncasync_illegal: check: deadlock: fail
 p.e
 r.e
@@ -18,7 +17,6 @@ r.return
 p.return
 p.a
 r.a
-deadlock in model asyncasync_illegal
 verify: asyncasync_illegal: check: compliance: fail
 p.e
 r.e
@@ -26,5 +24,4 @@ r.return
 p.return
 p.a
 r.a
-Component asyncasync_illegal is non-compliant with interface of provided port
 verify: asyncasync_illegal: check: livelock: ok

@@ -1,10 +1,8 @@
 verify: iincomplete_with_modeling_event: check: completeness: fail
-iincomplete_with_modeling_event is incomplete: 'iincomplete_with_modeling_event.e' not handled
 verify: iincomplete_with_modeling_event: check: deadlock: ok
 verify: iincomplete_with_modeling_event: check: livelock: ok
 verify: incomplete_with_modeling_event: check: deterministic: ok
 verify: incomplete_with_modeling_event: check: completeness: fail
-incomplete_with_modeling_event is incomplete: 'p.e' not handled
 verify: incomplete_with_modeling_event: check: illegal: ok
 verify: incomplete_with_modeling_event: check: deadlock: ok
 verify: incomplete_with_modeling_event: check: compliance: ok
