@@ -9,6 +9,5 @@ verify: SynchronousLivelock: check: completeness: ok
 verify: SynchronousLivelock: check: illegal: ok
 verify: SynchronousLivelock: check: deadlock: ok
 verify: SynchronousLivelock: check: compliance: ok
-regression-test/SynchronousLivelock/SynchronousLivelock.dzn:40:7: livelock in model SynchronousLivelock
 verify: SynchronousLivelock: check: livelock: fail
 pp.step

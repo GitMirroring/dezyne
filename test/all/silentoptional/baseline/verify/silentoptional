@@ -3,7 +3,6 @@ verify: I: check: deadlock: ok
 verify: I: check: livelock: fail
 verify: silentoptional: check: deterministic: ok
 verify: silentoptional: check: completeness: ok
-regression-test/silentoptional/silentoptional.dzn:1:1:i1: livelock in model I
 verify: silentoptional: check: illegal: ok
 verify: silentoptional: check: deadlock: ok
 verify: silentoptional: check: compliance: ok

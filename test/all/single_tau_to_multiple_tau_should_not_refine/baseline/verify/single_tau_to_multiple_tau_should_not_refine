@@ -10,4 +10,3 @@ r.c
 p.c
 p.c
 verify: single_tau_to_multiple_tau_should_not_refine: check: livelock: ok
-regression-test/single_tau_to_multiple_tau_should_not_refine/single_tau_to_multiple_tau_should_not_refine.dzn:16:24: p.c not allowed by port p
