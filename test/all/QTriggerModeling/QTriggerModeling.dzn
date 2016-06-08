@@ -1,0 +1,185 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// Test queueing of modelling-event triggered output events
+// (Well-formedness: modelling event may trigger at most one output event)
+interface ICallEmitMulti
+{
+  enum EmitResult {One, Two};
+  in void req();
+  in EmitResult reqValued();
+  in void ack();
+  in void done();
+  out void ntfA();
+  out void ntfB();
+  behaviour
+  {
+    subint Counter {0..2};
+    bool isWaiting = false;
+    Counter pending = 0;
+    {
+      [otherwise]
+      {
+        on req: 
+          {
+            ntfA;
+            ntfB;
+            pending = 2;
+            isWaiting = true;
+          }
+        on reqValued: 
+          {
+            ntfA;
+            ntfB;
+            pending = 2;
+            isWaiting = true;
+            reply(EmitResult.Two);
+          }
+        on ack, done: illegal;
+      }
+      [isWaiting]
+      {
+        on req, reqValued: illegal;
+        on ack:
+          {
+            // Eplicit modelling of range check for 'pending' should not be necessary!
+            // Currently required to prevent CSP compilation error due to otherwise 
+            // unconstrained pending-- operation.
+            [pending == 0]
+              illegal;
+            [otherwise]
+              pending = pending - 1;
+          }
+        on done: 
+          {
+            [pending == 0] isWaiting = false;
+            [otherwise] illegal;
+          }
+      }
+    }
+  }
+}
+
+interface ICallTrigger
+{
+  in void start();
+  out void notLiveLock();
+  behaviour
+  {
+    on start: 
+      {
+      }
+  }
+}
+
+interface ITauTrigger
+{
+  in void noDeadlock();
+  out void start();
+  behaviour
+  {
+    on noDeadlock: 
+      {
+      }
+    on optional: start;
+  }
+}
+
+component QTriggerModeling
+{
+  provides ICallTrigger ict;
+  requires ITauTrigger itt;
+  requires ICallEmitMulti src;
+  behaviour
+  {
+    bool behave = true;
+    bool useVoid = true;
+    {
+      [behave]
+      {
+        [useVoid]
+        {
+          on ict.start(): 
+            {
+              src.req();
+            }
+          on itt.start(): 
+            {
+              src.req();
+            }
+          on src.ntfA(): 
+            {
+              src.ack();
+            } // Allowed! ntfA + ntfB post is atomic action
+          on src.ntfB(): 
+            {
+              src.ack();
+              src.done();
+              useVoid = false;
+            }
+        }
+        [otherwise]
+        {
+          on ict.start(): 
+            {
+              ICallEmitMulti.EmitResult ignored = src.reqValued();
+            }
+          on itt.start(): 
+            {
+              ICallEmitMulti.EmitResult ignored = src.reqValued();
+            }
+          on src.ntfA(): 
+            {
+              src.ack();
+            } // Allowed! ntfA + ntfB post is atomic action
+          on src.ntfB(): 
+            {
+              src.ack();
+              src.done();
+              behave = false;
+            }
+        }
+      }
+      [otherwise] // misbehave
+      {
+        on ict.start(): 
+          {
+            src.req();
+          }
+        on itt.start(): 
+          {
+            src.req();
+          }
+        on src.ntfA(): 
+          {
+            src.ack();
+            src.done();
+          } // Illegal:  ntfA + ntfB post is atomic action => done after ntfB ack.
+        on src.ntfB(): 
+          {
+            src.ack();
+          }
+      }
+    }
+  }
+}

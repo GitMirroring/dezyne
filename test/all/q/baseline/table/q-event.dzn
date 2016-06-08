@@ -1,0 +1,95 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface iq {
+  in void e();
+  out void a();
+  in void f();
+  out void b();
+
+  behaviour {
+
+    on e:
+    [true]
+    a;
+    on f:
+    [true]
+    {
+      a;
+      b;
+    }
+  }
+}
+
+interface ir {
+  in void e();
+  out void a();
+  in void f();
+  out void b();
+
+  behaviour {
+    bool s = false;
+
+    on e:
+    {
+      [s || !s]
+      {
+        s = !s;
+        a;
+      }
+    }
+    on f:
+    {
+      [s || !s]
+      {
+        s = !s;
+        b;
+      }
+    }
+  }
+}
+
+component q {
+  provides iq p;
+  requires ir r;
+
+  behaviour {
+
+    on p.e():
+    [true]
+    r.e();
+    on r.a():
+    [true]
+    p.a();
+    on p.f():
+    [true]
+    {
+      r.e();
+      r.f();
+    }
+    on r.b():
+    [true]
+    p.b();
+  }
+}
+

@@ -1,0 +1,59 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface isingle_tau_to_multiple_tau_should_not_refine {
+  in void e();
+  out void c();
+
+  behaviour {
+    bool b = true;
+
+    on e:
+    {
+      [b || !b]
+      b = !b;
+    }
+    on inevitable:
+    [b]
+    c;
+  }
+}
+
+component single_tau_to_multiple_tau_should_not_refine {
+  provides isingle_tau_to_multiple_tau_should_not_refine p;
+  requires isingle_tau_to_multiple_tau_should_not_refine r;
+
+  behaviour {
+
+    on p.e():
+    [true]
+    r.e();
+    on r.c():
+    [true]
+    {
+      p.c();
+      p.c();
+    }
+  }
+}
+

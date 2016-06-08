@@ -1,0 +1,53 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+component C1 {
+  system {
+    C2  c2;
+    C3 c3;
+  }
+}
+
+component C2 {
+  system {
+    C5 c5;
+  }
+}
+
+component C3 {
+  system {
+    C4 c4;
+    C2 c2;
+  }
+}
+
+component C4 {
+  system {
+    C1 c1;
+  }
+}
+
+component C5 {
+  system {
+  }
+}
