@@ -1,0 +1,3 @@
+all/Recursion/Recursion.dzn:22:7:i7: Component Recursion is non-deterministic due to overlapping guards
+all/Recursion/Recursion.dzn:22:7:i11: deadlock in model Recursion
+all/Recursion/Recursion.dzn:22:7: livelock in model Recursion

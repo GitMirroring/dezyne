@@ -1,0 +1,2 @@
+all/SimpleBlockingDeadlock/SimpleBlockingDeadlock.dzn:30:36:i20: deadlock in model SimpleBlockingDeadlock
+all/SimpleBlockingDeadlock/SimpleBlockingDeadlock.dzn:4:8: p.return not performed by component

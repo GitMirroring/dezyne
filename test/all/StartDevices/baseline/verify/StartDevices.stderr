@@ -1,0 +1,3 @@
+all/StartDevices/StartDevices.dzn:117:18:i82: illegal
+all/StartDevices/StartDevices.dzn:117:18:i82: deadlock in model StartDevices
+all/StartDevices/StartDevices.dzn:117:18: Component StartDevices is non-compliant with interface of provided port

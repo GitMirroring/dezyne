@@ -1,0 +1,2 @@
+all/incomplete/incomplete.dzn:11:1:i1: incomplete is incomplete: 'r' not handled
+all/incomplete/incomplete.dzn:17:8: p.return not allowed by port p

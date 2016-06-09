@@ -1,0 +1,4 @@
+all/bindingCycle/bindingCycle.dzn:22:5: Well-formedness error: Component is part of a cyclic binding: 'c'
+all/bindingCycle/bindingCycle.dzn:35:5: Well-formedness error: Component is part of a cyclic binding: 'c21'
+all/bindingCycle/bindingCycle.dzn:36:5: Well-formedness error: Component is part of a cyclic binding: 'c22'
+all/bindingCycle/bindingCycle.dzn:38:5: Well-formedness error: Component is part of a cyclic binding: 'c12'

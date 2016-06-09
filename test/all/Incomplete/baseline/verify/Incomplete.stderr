@@ -1,0 +1,3 @@
+all/Incomplete/Incomplete.dzn:22:18:i7: Incomplete is incomplete: 'pp.missing,pp.available' not handled
+all/Incomplete/Incomplete.dzn:9:8:i13: deadlock in model Incomplete
+all/Incomplete/Incomplete.dzn:9:8: pp.missing not performed by component

@@ -1,0 +1,1 @@
+all/illegalOnlyStatement/illegalOnlyStatement.dzn:8:9: Well-formedness error: Illegal must be the only Statement in a compound

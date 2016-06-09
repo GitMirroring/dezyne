@@ -1,0 +1,4 @@
+all/range_runaway/range_runaway.dzn:22:1:i1: integer range error in model range_runaway
+all/range_runaway/range_runaway.dzn:1:1:i3: integer range error in model range_runaway
+all/range_runaway/range_runaway.dzn:1:1:i3: integer range error in model range_runaway
+all/range_runaway/range_runaway.dzn:1:1: integer range error in model range_runaway

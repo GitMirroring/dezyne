@@ -1,0 +1,1 @@
+all/interfaceMustDefineBehaviour/interfaceMustDefineBehaviour.dzn:1:11: Well-formedness error: Interface must define behaviour: 'Sensor'

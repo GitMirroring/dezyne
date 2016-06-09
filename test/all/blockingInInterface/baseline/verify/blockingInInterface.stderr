@@ -1,0 +1,1 @@
+all/blockingInInterface/blockingInInterface.dzn:4:13: Well-formedness error: BlockingStatement not allowed in interface behaviour

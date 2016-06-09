@@ -1,0 +1,3 @@
+all/QTriggerModeling/QTriggerModeling.dzn:53:25:i188: illegal
+all/QTriggerModeling/QTriggerModeling.dzn:53:25:i188: deadlock in model QTriggerModeling
+all/QTriggerModeling/QTriggerModeling.dzn:53:25: Component QTriggerModeling is non-compliant with interface of provided port

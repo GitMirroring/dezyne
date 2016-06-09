@@ -412,9 +412,23 @@ var aspects = {
   ,
   verify: function(parameters) {
     var baseline = parameters.dir + '/baseline/verify/' + parameters.model;
-    return lstat(baseline)
+    var dir = 'out/' + path.basename(parameters.dir)
+    var out = dir + '/'+parameters.model;
+    var err = out + '.stderr';
+    return lstat (baseline)
       .then (function(stats) {
-        return 'diff -uwB '+baseline+' <(' + dzn(parameters.session) + ' --verbose verify --all -m '+parameters.model+' '+parameters.filename+' | '+'bin/reorder)';
+        return 'mkdir -p '+dir+';'
+          + '{ set -o pipefail;'
+          + dzn(parameters.session)
+          + ' --verbose verify --all --model='+parameters.model
+          + ' '+parameters.filename
+          + ' 2>'+err
+          + '| bin/reorder > '+out
+          + ';}'
+          + ' || (diff -uw '+baseline+' '+out
+          + '     && (test ! -s '+err
+          + '         || sed -i s,.\r,,g '+err+';'
+          + '            diff -u '+baseline+'.stderr '+err+'))';
       })
       .fail (function(err) {
         console.log ('verify: no baseline=' + baseline);
