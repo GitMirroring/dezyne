@@ -418,7 +418,7 @@ var aspects = {
       })
       .fail (function(err) {
         console.log ('verify: no baseline=' + baseline);
-        return 'out="$(' + dzn(parameters.session) + ' verify --all -m '+parameters.model+' '+parameters.filename+')"; [ "$out" = "" ] || { echo "$out"; false; }';
+        return 'out="$(' + dzn(parameters.session) + ' verify --all -m '+parameters.model+' '+parameters.filename+')" && [ "$out" = "" ] || { echo "$out"; false; }';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd);
