@@ -1,0 +1,1 @@
+all/component_deterministic_fail1/component_deterministic_fail1.dzn:22:7:i13: Component component_deterministic_fail1 is non-deterministic due to overlapping guards

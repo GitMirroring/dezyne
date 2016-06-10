@@ -1,0 +1,2 @@
+all/component_deadlock_fail0/component_deadlock_fail0.dzn:1:1:i2: deadlock in model component_deadlock_fail0
+all/component_deadlock_fail0/component_deadlock_fail0.dzn:15:22: Component component_deadlock_fail0 is non-compliant with interface of provided port

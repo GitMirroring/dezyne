@@ -1,0 +1,3 @@
+all/component_illegal_fail0/component_illegal_fail0.dzn:16:41:i21: illegal
+all/component_illegal_fail0/component_illegal_fail0.dzn:16:41:i21: deadlock in model component_illegal_fail0
+all/component_illegal_fail0/component_illegal_fail0.dzn:16:41: Component component_illegal_fail0 is non-compliant with interface of provided port
