@@ -1,4 +1,4 @@
 all/GarageDoorControlErr/GarageDoorControlErr.dzn:142:7:i8: MotorControlIF is incomplete: 'MotorControlIF.stop' not handled
 all/GarageDoorControlErr/GarageDoorControlErr.dzn:329:6:i32: GarageDoorControlErr is incomplete: 'limitSw.doorOpened' not handled
 all/GarageDoorControlErr/GarageDoorControlErr.dzn:426:6:i121: deadlock in model GarageDoorControlErr
-all/GarageDoorControlErr/GarageDoorControlErr.dzn:248:21: doorControl.error not performed by component
+all/GarageDoorControlErr/GarageDoorControlErr.dzn:248:21:i127: doorControl.error not performed by component

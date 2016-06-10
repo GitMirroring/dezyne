@@ -1,2 +1,2 @@
 all/SimpleBlockingDeadlock2/SimpleBlockingDeadlock2.dzn:33:21:i36: deadlock in model SimpleBlockingDeadlock2
-all/SimpleBlockingDeadlock2/SimpleBlockingDeadlock2.dzn:4:8: p.return not performed by component
+all/SimpleBlockingDeadlock2/SimpleBlockingDeadlock2.dzn:4:8:i38: p.return not performed by component

@@ -1,4 +1,4 @@
 all/emptyBehaviour/emptyBehaviour.dzn:3:1:i1: I is incomplete: 'I.e' not handled
 all/emptyBehaviour/emptyBehaviour.dzn:3:1:i1: deadlock in model I
 all/emptyBehaviour/emptyBehaviour.dzn:9:1:i1: C is incomplete: 'i.e' not handled
-all/emptyBehaviour/emptyBehaviour.dzn:3:1: deadlock in model C
+all/emptyBehaviour/emptyBehaviour.dzn:3:1:i2: deadlock in model C

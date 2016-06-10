@@ -1,2 +1,2 @@
 all/SimpleBlockingGuard/SimpleBlockingGuard.dzn:20:9:i22: deadlock in model SimpleBlockingGuard
-all/SimpleBlockingGuard/SimpleBlockingGuard.dzn:7:8: pp.return not performed by component
+all/SimpleBlockingGuard/SimpleBlockingGuard.dzn:7:8:i24: pp.return not performed by component
