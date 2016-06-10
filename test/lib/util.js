@@ -139,7 +139,7 @@ var util = {
     var shell = windows_p ? 'cmd.exe' : 'bash';
     var c = windows_p ? '/c' : '-c';
 
-    console.log (cmd);
+    console.log (cmd.replace (/\r/g, '\\r'));
 
     var future = q.defer ();
 
