@@ -1,0 +1,171 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// purpose: Set of components to show the use of "external" and "blocking"
+//
+// In Dezyne, an asynchronous action like depicted in the following 
+// interface can be cancelled by a synchronous call; there is no need
+// for an asynchronous out event like for instance "cancelled".
+
+interface Intf {
+  in void execute();
+  out void done();
+
+  in void cancel(); 
+	
+  behaviour {
+    enum State { Idle, Busy };
+    State state = State.Idle;
+    [state.Idle] {
+      on execute: state = State.Busy;
+      on cancel: {}
+    }
+    [state.Busy] {
+      on execute: illegal;
+      on cancel: state = State.Idle;
+      on inevitable: { done; state = State.Idle;}
+    }
+  }
+}
+
+// The following component is an example which uses the interface Intf 
+// both as an provided and required port:
+
+component Comp {
+  provides Intf p;
+  requires Intf r;
+
+  behaviour {
+    enum State { Idle, Busy };
+    State state = State.Idle;
+    [state.Idle] {
+      on p.execute(): { r.execute(); state = State.Busy; }
+      on p.cancel(): {}
+      on r.done: illegal;
+    }
+    [state.Busy] {
+      on p.execute: illegal;
+      on p.cancel(): { r.cancel(); state = State.Idle; }
+      on r.done(): { p.done(); state = State.Idle;}
+    }
+  }
+}
+
+// The following component CompErr shows that the interface Intf 
+// cannot be used as the type of an external port. Due to the possible 
+// delaying of out events, it is possible that a "done" event comes 
+// after the "cancel". If a client would do a next "execute", a previous 
+// "done" could be seen as the "done" of the second "execute". Basically, 
+// due to the possible delay on an external port, the client of an 
+// external port and the component providing the port could get out of 
+// sync. For the following component, this results in an 
+// "Action is illegal" during verification since the component 
+// performs an "execute" event on the external port while the port is in
+// its "busy" state and as such the event "execute" is illegal.
+
+component CompErr {
+  provides Intf p;
+  requires external Intf r;
+  behaviour {
+    enum State { Idle, Busy };
+    State state = State.Idle;
+    [state.Idle] {
+      on p.execute(): { r.execute(); state = State.Busy; }
+      on p.cancel(): {}
+      on r.done(): {} // ignore any delayed "done"'s
+    }
+    [state.Busy] {
+      on p.execute: illegal;
+      on p.cancel(): { r.cancel(); state = State.Idle; }
+      on r.done(): { p.done(); state = State.Idle; }
+    }
+  }
+}
+
+// As we have shown for the previous component "CompErr" with interface 
+// "Intf", if a port is declared as external, an asynchronous action 
+// like "execute" cannot be cancelled using a synchronous action "cancel"
+// as a result of the possible additional delay. The solution is to 
+// introduce an additional out event "cancelled". In other words, "cancel" needs 
+// to be an asynchronous action.
+
+interface IntfAsync {
+  in void execute();
+  out void done();
+
+  in void cancel();
+  out void cancelled(); 
+  
+  behaviour {
+    enum State { Idle, Busy, Cancelling };
+    State state = State.Idle;
+    [state.Idle] {
+      on execute: state = State.Busy;
+      on cancel: cancelled;
+    }
+    [state.Busy] {
+      on cancel: state = State.Cancelling;
+      on inevitable: { done; state = State.Idle;}
+      on execute: illegal;
+    }
+    [state.Cancelling] {
+      on inevitable: { cancelled; state = State.Idle;}
+      on execute, cancel: illegal;
+    }
+  }
+}
+
+// In order to implement interface "Intf" where "cancel" is a synchronous 
+// action using the interface "IntfAsync" as an external port where 
+// "cancel" is an asynchronous action, we need the blocking feature: 
+// during the "cancel" action the client thread is blocked till we get 
+// the asynchronous out event "cancelled"; the client thread is released
+// by performing an reply on the provided port "p". While waiting for the
+// "cancelled" event, any additional "done" event caused by the race 
+// between "done" and "cancel" is ignored.
+
+component CompExt {
+  provides Intf p;
+  requires external IntfAsync r;
+	
+  behaviour {
+    enum State { Idle, Busy, Cancelling };
+    State state = State.Idle;
+    [state.Idle] {
+      on p.execute(): { r.execute(); state = State.Busy; }
+      on p.cancel(): {}
+      on r.done, r.cancelled: illegal;
+    }
+    [state.Busy] {
+      on p.cancel(): blocking { r.cancel(); state = State.Cancelling; }
+      on p.execute: illegal;
+      on r.done(): { p.done(); state = State.Idle; }
+      on r.cancelled: illegal;
+    }
+    [state.Cancelling] {
+      on r.cancelled(): { p.reply(); state = State.Idle;}
+      on p.execute, p.cancel: illegal;
+      on r.done(): {} // ignore; race between "cancel" and "done" due to external
+    }
+  }
+}
