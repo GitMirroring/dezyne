@@ -31,7 +31,7 @@ var util = require(__dirname+'/util');
 var lstat = q.denodeify(fs.lstat);
 
 function dzn(session) {
-  return '../client/bin/dzn --session=' + session;
+  return '../client/bin/dzn --session=' + (session && session || 1);
 }
 
 var ext = {'c++':'.cc',javascript:'.js'};
@@ -242,7 +242,7 @@ var aspects = {
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
     var main = parameters.dir + '/main' + ext[language];
     try {main = fs.lstatSync (main).isFile () && main;} catch (e){main=undefined;};
-    var cmd = 'make DZN="' + dzn(parameters.session) + '"'
+    var cmd = 'make DZN="' + dzn() + '"'
         + ' LANGUAGE='+language
         + ' IN='+parameters.dir
         + ' OUT='+out
@@ -290,7 +290,7 @@ var aspects = {
         var out = 'out/'+path.basename(parameters.dir);
         var cmd = 'mkdir -p '+out+'; '+
             'echo "'+dm+' -> '+out+'/'+parameters.model+'.dzn"; ' +
-            dzn(parameters.session)+' convert -g -o '+out+' '+dm+'; ' +
+            dzn()+' convert -g -o '+out+' '+dm+'; ' +
             'sed -i -e "s,\\(component \\w*\\)Comp,\\1," -e "s,Iasd.builtin.ITimer,ITimer," '+out+'/'+parameters.model+'Comp.dzn; ' +
             'sed -i -e "s,in void on(),in void on1()," '+out+'/*.dzn; ' +
             'mv '+out+'/'+parameters.model+'Comp.dzn '+out+'/'+parameters.model+'.dzn'
@@ -315,10 +315,10 @@ var aspects = {
 
     return lstat(baseline)
       .then (function(stats) {
-        return 'diff -uw '+baseline+' <(' + dzn(parameters.session) + ' -v parse '+parameters.filename+' 2>&1)';
+        return 'diff -uw '+baseline+' <(' + dzn() + ' -v parse '+parameters.filename+' 2>&1)';
       })
       .fail (function(err) {
-        return '[ "$(' + dzn(parameters.session) + ' parse '+parameters.filename+' 2>&1)" = "" ]';
+        return '[ "$(' + dzn() + ' parse '+parameters.filename+' 2>&1)" = "" ]';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd)
@@ -345,7 +345,7 @@ var aspects = {
         var baseline = parameters.dir + '/baseline/table/'+parameters.model+'-state.dzn';
         return lstat(baseline)
           .then (function(stats) {
-            var cmd = 'diff -uwB '+baseline+' <('+dzn(parameters.session)+' table --form=state -o - '+parameters.filename+')';
+            var cmd = 'diff -uwB '+baseline+' <('+dzn()+' table --form=state -o - '+parameters.filename+')';
             return util.spawn_sync_shell(cmd)
               .fail (function(err) {console.log(err); return 1; });
           })
@@ -359,7 +359,7 @@ var aspects = {
         var baseline = parameters.dir + '/baseline/table/'+parameters.model+'-event.dzn';
         return lstat(baseline)
           .then (function(stats) {
-            var cmd = 'diff -uwB '+baseline+' <('+dzn(parameters.session)+' table --form=event -o - '+parameters.filename+')';
+            var cmd = 'diff -uwB '+baseline+' <('+dzn()+' table --form=event -o - '+parameters.filename+')';
             return util.spawn_sync_shell(cmd)
               .fail (function(err) {console.log(err); return 1; });
           })
@@ -373,7 +373,7 @@ var aspects = {
         var baseline = parameters.dir + '/baseline/table/'+parameters.model+'-state.html';
         return lstat(baseline)
           .then (function(stats) {
-            var cmd = 'diff -uwB '+baseline+' <('+dzn(parameters.session)+' --html table --form=state -o - '+parameters.filename+' | w3m -dump -T text/html)';
+            var cmd = 'diff -uwB '+baseline+' <('+dzn()+' --html table --form=state -o - '+parameters.filename+' | w3m -dump -T text/html)';
             return util.spawn_sync_shell(cmd)
               .fail (function(err) {console.log(err); return 1; });
           })
@@ -387,7 +387,7 @@ var aspects = {
         var baseline = parameters.dir + '/baseline/table/'+parameters.model+'-event.html';
         return lstat(baseline)
           .then (function(stats) {
-            var cmd = 'diff -uwB '+baseline+' <('+dzn(parameters.session)+' --html table --form=event -o - '+parameters.filename+' | w3m -dump -T text/html)';
+            var cmd = 'diff -uwB '+baseline+' <('+dzn()+' --html table --form=event -o - '+parameters.filename+' | w3m -dump -T text/html)';
             return util.spawn_sync_shell(cmd)
               .fail (function(err) {console.log(err); return 1; });
           })
@@ -403,7 +403,7 @@ var aspects = {
     var out = 'out/' + path.basename(parameters.dir);
     var flush = parameters.meta.flush ? ' --flush' : '';
     var illegal = ''; // TODO: config
-    var cmd = dzn(parameters.session) + ' traces -q 7 '+illegal+flush+' -m '+parameters.model+' -o '+out+' '+parameters.filename;
+    var cmd = dzn() + ' traces -q 7 '+illegal+flush+' -m '+parameters.model+' -o '+out+' '+parameters.filename;
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
       .then(function(){return util.spawn_sync_shell(cmd);})
