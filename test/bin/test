@@ -95,8 +95,49 @@ Examples:\n\
 
   return args;
 }
-
 var session = 0;
+
+function get_testdir_list(dir) {
+  return q.denodeify(fs.readdir) (dir)
+    .then(function (entries) {
+      if (entries.find (function (entry) { return /[.]dzn$/.test (entry) || /[.]dm$/.test (entry) || entry === 'run';})) {
+        return dir;
+      }
+
+      var q_dirs = entries
+          .filter(function (entry) {
+            try {
+              return entry != 'baseline' && fs.lstatSync (dir + '/' + entry + '/').isDirectory ();
+            } catch (e) {}
+            return false;
+          })
+          .append_map(function (entry) {return get_testdir_list (dir + '/' + entry);});
+
+      return q.all(q_dirs);
+    });
+}
+
+function execute(dir, args) {
+  return get_testdir_list(dir)
+    .tap(function(items){
+      console.log('TESTDIRS ' + items);
+    })
+    .then(function(items) {
+      var worklist = items
+          .map(function(item) {
+            return function(session) {
+              console.log('[....] ' + item);
+              return util.run(session, item, args.argv.slice(1), !(args.options.quiet || args.options.summary))
+                .then(function(result) {
+                  output.log(item, result); //FIXME write the result to output
+                  return {result:result, session:session};
+                });
+            };
+          });
+      return util.parallel_n(worklist, args.options.jobs);
+    });
+}
+
 
 function process_dir (dir, args, passed, failed) {
   var aspects_languages = args.argv.slice(1);
@@ -160,12 +201,13 @@ function main() {
       return output.open(name, title, dir, args.options.output);
     })
     .then(function (){
-      return process_dir (dir, args, passed, failed);
+      return execute(dir, args);
     })
-    .then(function(exitcodes_lists) {
-      var exitcodes = [].concat.apply([],exitcodes_lists);
+    .then(function(results) {
+      exitcodes = results.map(function(result){return result.result.exitcode;});
       console.log('EXITCODES: ' + exitcodes);
-      output.close(passed.value, failed.value);
+      var passed = exitcodes.filter(function(e){return e == 0;}).length;
+      output.close(passed, exitcodes.length - passed);
       var x = exitcodes.reduce(function(a, b){return a || b; }, 0);
       process.exit(x);
     })

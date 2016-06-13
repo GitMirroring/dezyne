@@ -104,24 +104,24 @@ var util = {
   }
   ,
   parallel_n: function (list /*list of q returning lambdas*/, max) {
-    function next(promises) {
+    function next(session, promises) {
       return q().then(function(){
         if(promises.length < list.length) {
           var pool = promises.filter(function(e){ return !e.isFulfilled();});
-          var promise = list[promises.length]();
+          var promise = list[promises.length](session);
           promises.push(promise);
           pool.push(promise);
           return q.any(pool)
-            .then(function(){return next(promises);});
+            .then(function(result){return next(result.session, promises);});
         }
         return q.all(promises);
       });
     }
 
-    var promises = list.slice(0,max).map(function(e) {return e();});
+    var promises = list.slice(0,max).map(function(e, i) {return e(1 + i);});
 
     return q.any(promises)
-      .then(function(){return next(promises);});
+      .then(function(result){return next(result.session, promises);});
   }
   ,
   writable: function(dir) {
