@@ -55,6 +55,7 @@
     flatten-compound
     combine-guards
     passdown-on
+    flatten-compound
     (passdown-blocking)
     (remove-otherwise)
     add-skip
@@ -70,6 +71,7 @@
     flatten-compound
     combine-guards
     passdown-on
+    flatten-compound
     (passdown-blocking)
     (remove-otherwise)
     add-skip
@@ -100,12 +102,11 @@
 (define ((passdown-triggers triggers) o)
   (match o
     (('compound statements ...)
-     (let ((statements statements))
        (match statements
          ((($ <guard>) ..1)
           (make <compound>
             :elements (map (passdown-triggers triggers) statements)))
-         (_ (make <on> :triggers triggers :statement o)))))
+         (_ (make <on> :triggers triggers :statement o))))
     (($ <guard>)
      (make <guard>
        :expression (.expression o)
