@@ -98,44 +98,33 @@ Examples:\n\
 var session = 0;
 
 function get_testdir_list(dir) {
-  return q.denodeify(fs.readdir) (dir)
-    .then(function (entries) {
-      if (entries.find (function (entry) { return /[.]dzn$/.test (entry) || /[.]dm$/.test (entry) || entry === 'run';})) {
-        return dir;
-      }
+  var entries = fs.readdirSync (dir);
+  if (entries.find (function (entry) { return /[.]dzn$/.test (entry) || /[.]dm$/.test (entry) || entry === 'run';}))
+    return [dir];
 
-      var q_dirs = entries
-          .filter(function (entry) {
-            try {
-              return entry != 'baseline' && fs.lstatSync (dir + '/' + entry + '/').isDirectory ();
-            } catch (e) {}
-            return false;
-          })
-          .append_map(function (entry) {return get_testdir_list (dir + '/' + entry);});
-
-      return q.all(q_dirs);
-    });
+  return [].concat.apply
+  (entries
+   .filter(function (entry) {
+     try {
+       return entry != 'baseline' && fs.lstatSync (dir + '/' + entry + '/').isDirectory ();
+     } catch (e) {}
+     return false;
+   })
+   .append_map(function (entry) {return get_testdir_list (dir + '/' + entry);}));
 }
 
 function execute(dir, args) {
-  return get_testdir_list(dir)
-    .tap(function(items){
-      console.log('TESTDIRS ' + items);
-    })
-    .then(function(items) {
-      var worklist = items
-          .map(function(item) {
-            return function(session) {
-              console.log('[....] ' + item);
-              return util.run(session, item, args.argv.slice(1), !(args.options.quiet || args.options.summary))
-                .then(function(result) {
-                  output.log(item, result); //FIXME write the result to output
-                  return {result:result, session:session};
-                });
-            };
+  var worklist = get_testdir_list(dir)
+    .map(function(item) {
+      return function(session) {
+        console.log('[....] ' + item);
+        return util.run(session, item, args.argv.slice(1), !(args.options.quiet || args.options.summary))
+          .then(function(result) {
+            output.log(item, result); //FIXME write the result to output
+            return {result:result, session:session};
           });
-      return util.parallel_n(worklist, args.options.jobs);
-    });
+      }});
+  return util.parallel_n(worklist, args.options.jobs);
 }
 
 
