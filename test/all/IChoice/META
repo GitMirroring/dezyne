@@ -1,1 +1,1 @@
-{"skip":["code","run","traces"],"comment":"error model: cannot execute,run,traces"}
+{"skip":["build","run","traces"],"comment":"interface model: cannot build"}
