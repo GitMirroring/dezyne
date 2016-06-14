@@ -1,1 +1,2 @@
-otherwiseWithNonGuard.dzn:7:5: Well-formedness error: Otherwise guard combined with non GuardedStatement is not allowed: 'otherwiseWithNonGuard.dzn:8:5'
+all/otherwiseWithNonGuard/otherwiseWithNonGuard.dzn:7:5: Well-formedness error: Otherwise guard combined with non GuardedStatement is not allowed
+all/otherwiseWithNonGuard/otherwiseWithNonGuard.dzn:8:5: Well-formedness error: non GuardedStatement defined here
