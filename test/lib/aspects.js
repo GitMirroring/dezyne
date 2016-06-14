@@ -334,7 +334,7 @@ var aspects = {
           + ' <(grep -v "<flush>" '+ trace + ')'
           + ' <(grep -v "<flush>" '+ trace + '|'
           + ' ' + dzn(parameters.session) + ' run --strict --model=' + model + ' ' + parameters.filename + ' |&'
-          + ' grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')', 5000)
+          + ' grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')')
         .fail (function(err) {console.log(err); return 1; });
     });
   }
