@@ -1,2 +1,2 @@
-all/coverageMissing/coverageMissing.dzn:9:1:i1: SensorComp is incomplete: 'sensor.deactivate' not handled
+all/coverageMissing/coverageMissing.dzn:1:1:i2: SensorComp is incomplete: 'sensor.deactivate' not handled
 all/coverageMissing/coverageMissing.dzn:6:8:i5: sensor.deactivate not performed by component
