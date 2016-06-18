@@ -1,0 +1,60 @@
+# Dezyne --- Dezyne command line tools
+# Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+#
+# This file is part of Dezyne.
+#
+# Dezyne is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# Dezyne is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public
+# License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+# 
+# Commentary:
+# 
+# Code:
+
+.PHONY: default test
+
+default: $(OUT)/test
+
+define CHECKPARAM
+ifeq ($(origin $(1)), undefined)
+$$(error $(1) undefined)
+endif
+endef
+
+$(foreach i,IN OUT,$(eval $(call CHECKPARAM,$(i))))
+
+CC:=ccache gcc
+CFLAGS=-g -std=c99
+CPPFLAGS=-I$(IN)
+GLOBALS_H=$(wildcard $(DIR)/globals.h)
+ifneq ($(GLOBALS_H),)
+CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
+endif
+
+$(OUT)/%.o: $(IN)/%.c
+	mkdir -p $(dir $@)
+	$(COMPILE.c) -o $@ $<
+
+ifneq ($(MAIN),)
+MAIN_O:=$(OUT)/$(patsubst %.c,%.o,$(notdir $(MAIN)))
+$(MAIN_O): $(MAIN)
+	mkdir -p $(dir $@)
+	$(COMPILE.c) -o $@ $<
+endif
+
+$(info MAIN_O:$(MAIN_O))
+
+$(OUT)/test: $(patsubst $(IN)/%.c, $(OUT)/%.o, $(wildcard $(IN)/*.c)) $(MAIN_O)
+	mkdir -p $(dir $@)
+	$(LINK.c) -o $@ $^ $(LDFLAGS)
+
+-include $(patsubst $(IN)/%.c, $(OUT)/%.d, $(wildcard $(IN)/*.c))
