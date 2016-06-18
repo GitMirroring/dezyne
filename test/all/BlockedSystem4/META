@@ -1,1 +1,1 @@
-{"skip":["run","traces"],"comment":"system: cannot run,traces"}
+{"skip":["c","run","traces"],"comment":{"true":"system: cannot run,traces","c":"blocking: not supported"}}

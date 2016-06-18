@@ -1,1 +1,1 @@
-{"skip":["run"],"comment":"FIXME: run integration broken"}
+{"skip":["c","run","traces"],"comment":{"true":"system: cannot run,traces","c":"blocking: not supported"}}
