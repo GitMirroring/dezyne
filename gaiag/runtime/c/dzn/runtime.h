@@ -71,6 +71,10 @@ void runtime_event (void (*event)(void*), void* args);
 char* runtime_path (void* m, char* p);
 void runtime_trace_in (void* in, void *out, char const* e);
 void runtime_trace_out (void* in, void *out, char const* e);
+char* _bool_to_string (bool b);
+bool string_to__bool (char *s);
+char* _int_to_string (int i);
+int string_to__int (char *s);
 
 #define DZN_TRACE(msg) fprintf (stderr, "%s\n", msg)
 

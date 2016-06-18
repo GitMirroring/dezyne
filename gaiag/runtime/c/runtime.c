@@ -199,3 +199,29 @@ runtime_trace_out (void* in, void* out, char const* e)
            runtime_path (i->parent, ibuf), e,
            runtime_path (o->parent, obuf), e);
 }
+
+char*
+_bool_to_string (bool b)
+{
+  return b ? "true" : "false";
+}
+
+bool
+string_to__bool (char *s)
+{
+  return !strcmp (s, "true");
+}
+
+char*
+_int_to_string (int i)
+{
+  static char buf[sizeof (i) * 2 + 1];
+  sprintf (buf, "%d", i);
+  return buf;
+}
+
+int
+string_to__int (char *s)
+{
+  return atoi (s);
+}
