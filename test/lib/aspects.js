@@ -34,7 +34,7 @@ function dzn(session) {
   return '../client/bin/dzn --session=' + (session && session || 1);
 }
 
-var ext = {'c++':'.cc',javascript:'.js'};
+var ext = {c:'.c','c++':'.cc',javascript:'.js'};
 
 var default_meta = {
   skip: []
@@ -86,9 +86,17 @@ function skip_filter (meta) {
     return depend(e).filter(function(a) { return meta.skip.indexOf(a) != -1; }).length == 0;
   }
   return function (e) {
-    if(Object.keys(dependencies).indexOf(e) == -1) return true;
-    if(filter_aspect(e) && filter_dependency(e)) return true;
-    console.log(e + ': [SKIPPED] ' + (meta.comment || ''));
+    var language = meta.languages.length === 1 && meta.languages[0];
+    if(!language || meta.skip.indexOf(language) == -1) {
+      if(Object.keys(dependencies).indexOf(e) == -1) return true;
+      if(filter_aspect(e) && filter_dependency(e)) return true;
+    }
+    var comment = language && meta.comment[language]
+        || meta.comment[e]
+        || meta.comment[true]
+        || meta.comment
+        || '';
+    console.log(e + ': [SKIPPED] ' + comment);
     return false;
   }
 }
