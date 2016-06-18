@@ -39,6 +39,7 @@ typedef struct {
 typedef struct {
   char const* name;
   void* parent;
+  void* component;
 } dzn_meta_t;
 
 typedef struct locator locator;

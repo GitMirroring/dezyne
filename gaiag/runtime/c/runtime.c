@@ -148,28 +148,25 @@ runtime_event (void (*event)(void*), void* args)
 char*
 runtime_path (void *m, char* p)
 {
-  char buf[1023];
+  char buf[1023] = "";
   if (!m) {
-    strcpy (buf, p);
-    strcpy (p, "<external>");
-    if (strlen(buf))
-      strcat(p, ".");
-    strcat (p, buf);
-    return p;
+    strcpy (buf, "<external>");
+    if (*p) strcat (buf, ".");
+    return strcpy (p, strcat (buf, p));
   }
-  component *c = m;
-  if (c->dzn_meta.parent) {
-    strcpy (buf, p);
-    strcpy (p, c->dzn_meta.name);
-    if (strlen (buf))
-      strcat (p, ".");
-    return runtime_path (c->dzn_meta.parent, strcat (p, buf));
-  }
-  strcpy (buf, p);
-  strcpy (p, c->dzn_meta.name);
-  if (strlen (buf))
-    strcat (p, ".");
-  return strcat (p, buf);
+  dzn_meta_t *meta = m;
+  if (!meta->component && !(p && *p))
+      strcpy (buf, "<external>.");
+  if (!meta->parent) 
+    {
+      strcat (buf, meta->name);
+      if (p && *p)
+        strcat (buf, ".");
+      strcat (buf, p);
+      strcpy (p, buf);
+    }
+  if (!meta->parent) return p;
+  return runtime_path (meta->parent, p);
 }
 
 void

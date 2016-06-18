@@ -22,6 +22,7 @@ typedef struct {
 } args_flush;
 
 map* global_event_map;
+bool global_flush_p;
 
 static bool relaxed = false;
 
@@ -113,9 +114,9 @@ void #.scope_model _fill_event_map(#.scope_model * m, map* e) {
    args_flush* args;
 
    component *comp = calloc(1, sizeof (component));
-   comp->dzn_info.performs_flush = true;
+   comp->dzn_info.performs_flush = global_flush_p;
    comp->dzn_meta.parent = 0;
-   comp->dzn_meta.name = "<internal>";
+   comp->dzn_meta.name = "";
 
    #(map
      (lambda (port)
@@ -130,7 +131,41 @@ void #.scope_model _fill_event_map(#.scope_model * m, map* e) {
      args->info = &comp->dzn_info;
      args->name = "#name ";
      c->self = args;
+     m->#name ->out.self = comp;
+     {
+     component *r = m->#name ->out.self;
+     if (!*r->dzn_meta.name) r->dzn_meta.name = "#name ";
+
+     component *p = m->#name ->in.self;
+     //if (!*p->dzn_meta.name) p->dzn_meta.name = "#name ";
+
+     if (global_flush_p) {
+         r->dzn_meta.name = "<internal>.#name ";
+         r->dzn_meta.component = comp;
+     }
+     }
+     map_put(e, "#name .<flush>", c);
+     #}) (filter om:provides? (om:ports model)))
+  #(map (init-port #{
+     c = malloc(sizeof (closure));
+     c->f = log_flush;
+     args = malloc(sizeof(args_flush));
+     args->info = &comp->dzn_info;
+     args->name = "#name ";
+     c->self = args;
      m->#name ->in.self = comp;
+     {
+     component *p = m->#name ->in.self;
+     //if (!*p->dzn_meta.name) p->dzn_meta.name = "#name ";
+
+     component *r = m->#name ->out.self;
+     if (!*r->dzn_meta.name) r->dzn_meta.name = "#name ";
+
+     if (global_flush_p) {
+         p->dzn_meta.name = "<internal>.#name ";
+         p->dzn_meta.component = comp;
+     }
+     }
      map_put(e, "#name .<flush>", c);
      #}) (filter om:requires? (om:ports model)))
    #(map
@@ -148,7 +183,8 @@ void illegal_print() {
 	exit(0);
 }
 
-int main() {
+int main(int argc, char** argv) {
+	global_flush_p = argc > 1 && !strcmp(argv[1], "--flush");
 	runtime dezyne_runtime;
 	runtime_init(&dezyne_runtime);
 	locator dezyne_locator;
