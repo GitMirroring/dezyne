@@ -1,0 +1,1 @@
+assert (!"blocking not supported");
