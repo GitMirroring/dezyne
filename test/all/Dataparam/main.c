@@ -63,8 +63,7 @@ int main()
   Datasystem d;
   dzn_meta_t m = {"d", 0};
   Datasystem_init(&d,&l,&m);
-  d.port->out.name = "port";
-  d.port->out.self = 0;
+  d.port->meta.requires.port = "port";
 
   d.port->out.a0 = a0;
   d.port->out.a = a;
