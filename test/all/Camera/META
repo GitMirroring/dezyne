@@ -1,1 +1,1 @@
-{"skip":["execute","run","triangle"],"comment":"handwritten main, no trace: cannot execute,run"}
+{"skip":["c","execute","run","triangle"],"comment":"handwritten main, no trace: cannot c, execute,run"}
