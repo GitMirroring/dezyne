@@ -169,10 +169,15 @@ var util = {
     var env = process.env;
     env.NODE_PATH = process.cwd() + '/node_modules';
 
-    var p = child.spawn (shell, [c, cmd], {env: env, detached: true, stdio:'inherit'});
+    var p = child.spawn (shell, [c, cmd], {env: env, detached: true, stdio:'pipe'});
+
+    var output = '';
+
+    p.stdout.on('data', function(data){process.stdout.write(data); output += data;});
+    p.stderr.on('data', function(data){process.stderr.write(data); output += data;});
 
     p.on('exit', function (code, signal) {
-      future.resolve(signal ? -1 : code ? 1 : 0);
+      future.resolve({status: signal ? -1 : code ? 1 : 0, output: output});
     })
 
     return timeout_ms
@@ -182,7 +187,7 @@ var util = {
         console.error(cmd + ' ' + msg);
         console.error('killing PID: ' + p.pid);
         process.kill(-p.pid);
-        return -1;
+        return {status: -1, output: msg};
       })
     : future.promise;
   }

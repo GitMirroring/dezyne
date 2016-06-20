@@ -26,9 +26,13 @@ var q = require('q');
 var fs = require('fs');
 var path = require('path');
 
-var languages = require(__dirname+'/languages');
+var all_languages = require(__dirname+'/languages');
 var util = require(__dirname+'/util');
 var lstat = q.denodeify(fs.lstat);
+
+function haslanguage(aspect) {
+  return (['triangle', 'execute', 'build', 'code'].indexOf(aspect) > -1);
+}
 
 function dzn(session) {
   return '../client/bin/dzn --session=' + (session && session || 1);
@@ -40,7 +44,7 @@ var default_meta = {
   skip: []
   , ignore: []
   , flush: false
-  , languages: languages
+  , languages: all_languages
   , max: {code:undefined,run:50}
 };
 
@@ -78,6 +82,14 @@ function depend(e) {
   return dependencies[e].concat(dependencies[e].append_map(depend));
 }
 
+function comment(meta, aspect, language) {
+  return language && meta.comment[language]
+    || meta.comment[aspect]
+    || meta.comment[true]
+    || meta.comment
+    || '';
+}
+
 function skip_filter (meta) {
   function filter_aspect(e) {
     return meta.skip.indexOf(e) == -1;
@@ -91,12 +103,6 @@ function skip_filter (meta) {
       if(Object.keys(dependencies).indexOf(e) == -1) return true;
       if(filter_aspect(e) && filter_dependency(e)) return true;
     }
-    var comment = language && meta.comment[language]
-        || meta.comment[e]
-        || meta.comment[true]
-        || meta.comment
-        || '';
-    console.log(e + ': [SKIPPED] ' + comment);
     return false;
   }
 }
@@ -152,7 +158,7 @@ var aspects = {
 
     return util.spawn_sync_shell(dzn(session) + ' hello')
       .then(function(result) {
-        if(result != 0) {
+        if(result.status != 0) {
           console.error('dzn hello failed (is your server running?)');
           return result;
         }
@@ -180,26 +186,44 @@ var aspects = {
             parameters.meta.languages = [ language ];
             parameters.work = work;
             return aspects.test(parameters).then (function(result2) {
-              return {exitcode: result1.exitcode || result2.exitcode, parameters: result2.parameters}
+              return {status: result1.status || result2.status, parameters: result2.parameters}
             });
           });
-        }, q({exitcode:0, parameters:parameters}))
-        .then (function(result) { return result.exitcode; });
+        }, q({status:0, parameters:parameters}))
+          .then (function(result) {
+            var outcome = {};
+            Object.keys(dependencies).each(function(aspect){
+              if(haslanguage(aspect)) {
+                outcome[aspect] = result.parameters.outcome[aspect] || {};
+                all_languages.each(function(language) {
+                  outcome[aspect][language] = outcome[aspect][language] || {output: comment(parameters.meta, aspect, language), status: 'SKIPPED'};
+                });
+              } else {
+                outcome[aspect] = result.parameters.outcome[aspect] || {output: comment(parameters.meta, aspect), status: 'SKIPPED'};
+              }
+            });
+            fs.writeFileSync('out/' + path.basename(dir) + '/outcome.json', JSON.stringify(outcome,null,2));
+            return result.status;
+          });
       });
   }
   ,
   test: function(parameters) { // pre: parameters.meta.languages == [ l ]
     var language = parameters.meta.languages[0];
 
-    function haslanguage(aspect) {
-      return (['triangle', 'execute', 'build', 'code'].indexOf(aspect) > -1);
-    }
-
-    function testcase(aspect,result1) {
-      return result1.exitcode && result1
-        || aspects[aspect](result1.parameters)
-        .then(function(result2) {
-          return (typeof(result2) == 'number') ? {exitcode: result2, parameters: result1.parameters} : result2;
+    function testcase(aspect,dependencies,language) {
+      return dependencies.status
+        || aspects[aspect](dependencies.parameters)
+        .then(function(result) {
+          var parameters = dependencies.parameters;
+          parameters.outcome = parameters.outcome || {};
+          parameters.outcome[aspect] = parameters.outcome[aspect] || {};
+          if(language) {
+            parameters.outcome[aspect][language] = parameters.outcome[aspect][language] || {};
+            parameters.outcome[aspect][language].output = result.output;
+          }
+          else parameters.outcome[aspect].output = result.output;
+          return {status: result.status, parameters: parameters};
         });
     }
 
@@ -219,26 +243,31 @@ var aspects = {
     function collect(aspect, result1, result2) {
       var parameters2 = util.deep_copy(result2.parameters);
       parameters2.done = setdone(parameters2.done, aspect, language);
-      return {exitcode: result1.exitcode || result2.exitcode, parameters: parameters2};
+      return {status: result1.status || result2.status, parameters: parameters2};
     }
     return parameters.work
       .filter (skip_filter (parameters.meta))
-      .reduce(function(promise, e) {
+      .reduce(function(promise, aspect) {
         return promise.then(function(result1) {
-          if (isdone(result1.parameters.done, e, language)) return result1;
-          var header = e + (haslanguage(e) ? '[' + language + ']' : '') + '[' + result1.parameters.model + ']';
+          if (isdone(result1.parameters.done, aspect, language)) return result1;
+          var header = aspect + (haslanguage(aspect) ? '[' + language + ']' : '') + '[' + result1.parameters.model + ']';
           console.log(header + ' ...');
           var parameters1 = util.deep_copy(result1.parameters);
-          parameters1.work = dependencies[e];
+          parameters1.work = dependencies[aspect];
           return aspects.test(parameters1)
-            .then(function(result1){return testcase(e, result1);})
+            .then(function(result2){return testcase(aspect, result2, haslanguage(aspect) && language);})
             .then(function(result2){
-              console.log(header + (result2.exitcode ? (result2.exitcode == -1 ? '[ERROR]' : '[FAILED]') : '[OK]'));
+              var outcome = result2.status ? (result2.status == -1 ? 'ERROR' : 'FAILED') : 'OK';
+              result2.parameters.outcome = result2.parameters.outcome || {};
+              result2.parameters.outcome[aspect] = result2.parameters.outcome[aspect] || {};
+              if(haslanguage(aspect)) result2.parameters.outcome[aspect][language].status = outcome;
+              else                    result2.parameters.outcome[aspect].status = outcome;
+              console.log(header + '[' + outcome + ']');
               return result2;
             })
-            .then(function(result2){return collect(e, result1, result2);});
+            .then(function(result2){return collect(aspect, result1, result2);});
         });
-      }, q({exitcode:0, parameters: parameters}));
+      }, q({status:0, parameters: parameters}));
   }
   ,
   triangle: function(parameters) {
@@ -258,7 +287,7 @@ var aspects = {
         + ' MODEL='+parameters.model
         + ' -f '+'lib/code.make';
     return util.spawn_sync_shell(cmd)
-      .fail (function(err) {console.log(err); return 1; });
+      .fail (function(err) {console.log(err); return {status: -1, output: err}});
   }
   ,
   build: function(parameters) {
@@ -273,7 +302,7 @@ var aspects = {
         + (main ? ' MAIN='+main : '')
         + ' -f '+'lib/build.' + language + '.make';
     return util.spawn_sync_shell(cmd)
-      .fail (function(err) {console.log(err); return 1; });
+      .fail (function(err) {console.log(err); return {status: -1, output: err}});
   }
   ,
   execute: function(parameters) {
@@ -307,13 +336,14 @@ var aspects = {
             var parameters1 = util.deep_copy(parameters);
             parameters1.dir = out;
             parameters1.filename = out + '/' +parameters.model+'.dzn';
-            return {exitcode:0, parameters:parameters1};
+            return {status:0, parameters:parameters1};
           })
-          .fail (function(err) {console.log(err); return 1; });
+          .fail (function(err) {console.log(err); return {status: -1, output: err}});
       })
       .fail (function(err) {
-        console.log ('convert: [SKIPPED] no DM file '+dm);
-        return 0;
+        var comment = 'convert: [SKIPPED] no DM file '+dm;
+        console.log(comment);
+        return {status: 0, output: comment};
       });
   }
   ,
@@ -330,7 +360,7 @@ var aspects = {
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd)
-          .fail (function(err) {console.log(err); return 1; });
+          .fail (function(err) {console.log(err); return {status: -1, output: err}});
       });
   }
   ,
@@ -343,7 +373,7 @@ var aspects = {
           + ' <(grep -v "<flush>" '+ trace + '|'
           + ' ' + dzn(parameters.session) + ' run --strict --model=' + model + ' ' + parameters.filename + ' |&'
           + ' grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')')
-        .fail (function(err) {console.log(err); return 1; });
+        .fail (function(err) {console.log(err); return {status: -1, output: err}});
     });
   }
   ,
@@ -355,12 +385,13 @@ var aspects = {
           .then (function(stats) {
             var cmd = 'diff -uwB '+baseline+' <('+dzn()+' table --form=state -o - '+parameters.filename+')';
             return util.spawn_sync_shell(cmd)
-              .fail (function(err) {console.log(err); return 1; });
+              .fail (function(err) {console.log(err); return {status: -1, output: err}});
           })
           .then (function(result1) { return result || result1; })
           .fail (function(err) {
-            console.log('table: [SKIPPED] no baseline '+baseline);
-            return 0;
+            const comment = 'table: [SKIPPED] no baseline '+baseline;
+            console.log(comment);
+            return {status: 0, output: comment};
           });
       })
       .then (function(result) {
@@ -369,11 +400,13 @@ var aspects = {
           .then (function(stats) {
             var cmd = 'diff -uwB '+baseline+' <('+dzn()+' table --form=event -o - '+parameters.filename+')';
             return util.spawn_sync_shell(cmd)
-              .fail (function(err) {console.log(err); return 1; });
+              .fail (function(err) {console.log(err); return {status: -1, output: err}});
           })
           .then (function(result1) { return result || result1; })
           .fail (function(err) {
-            console.log('table: [SKIPPED] no baseline '+baseline);
+            const comment = 'table: [SKIPPED] no baseline '+baseline;
+            console.log(comment);
+            result.output += comment;
             return result;
           });
       })
@@ -387,7 +420,9 @@ var aspects = {
           })
           .then (function(result1) { return result || result1; })
           .fail (function(err) {
-            console.log('table: [SKIPPED] no baseline '+baseline);
+            const comment = 'table: [SKIPPED] no baseline '+baseline;
+            console.log(comment);
+            result.output += comment;
             return result;
           });
       })
@@ -401,7 +436,9 @@ var aspects = {
           })
           .then (function(result1) { return result || result1; })
           .fail (function(err) {
-            console.log('table: [SKIPPED] no baseline '+baseline);
+            const comment = 'table: [SKIPPED] no baseline '+baseline;
+            console.log(comment);
+            result.output += comment;
             return result;
           });
       })
@@ -415,7 +452,7 @@ var aspects = {
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
       .then(function(){return util.spawn_sync_shell(cmd);})
-      .fail (function(err) {console.log(err); return 1; });
+      .fail (function(err) {console.log(err); return {status: -1, output: err}});
   }
   ,
   verify: function(parameters) {
@@ -445,12 +482,12 @@ var aspects = {
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd);
       })
-      .fail (function(err) {console.log(err); return 1; });
+      .fail (function(err) {console.log(err); return {status: -1, output: err}});
   }
   ,
   view: function(parameters) {
-    console.log('view: [TODO]');
-    return q(0);
+    console.log('view: TODO');
+    return q({status:0,output:'TODO'});
   }
   ,
 };

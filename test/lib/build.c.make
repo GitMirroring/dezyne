@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -50,8 +51,6 @@ $(MAIN_O): $(MAIN)
 	mkdir -p $(dir $@)
 	$(COMPILE.c) -o $@ $<
 endif
-
-$(info MAIN_O:$(MAIN_O))
 
 $(OUT)/test: $(patsubst $(IN)/%.c, $(OUT)/%.o, $(wildcard $(IN)/*.c)) $(MAIN_O)
 	mkdir -p $(dir $@)
