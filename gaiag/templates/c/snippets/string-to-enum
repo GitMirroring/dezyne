@@ -5,5 +5,5 @@ int string_to_#((c:scope-join) scope)_#name(char* s) {
   #((->join "\n") (map (lambda (field) (->string (list "else if (!strcmp (s, " "\"" name "_" field "\")) {\n"
      "return " ((c:scope-join) scope) '_ name '_ field ";\n"
      "}"))) fields))
-   return -1;
+   return INT_MIN;
 }
