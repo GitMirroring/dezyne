@@ -8,17 +8,14 @@
 typedef struct #.scope_model  #.scope_model;
 
 struct #.scope_model  {
+  dzn_port_meta_t meta;
   struct {
-     char const* name;
-     void* self;
    #(map (declare-io model
           #{ #return-type  (*#name)(#.scope_model * self#comma #formals);
 #}) (filter om:in? ((compose .elements .events) model)))
    } in;
 
   struct {
-     char const* name;
-     void* self;
    #(map (declare-io model
           #{ #return-type  (*#name) (#.scope_model * self#comma #formals);
 #}) (filter om:out? ((compose .elements .events) model)))

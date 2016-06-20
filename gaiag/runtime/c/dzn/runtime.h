@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -36,11 +37,23 @@ typedef struct {
 	int dummy;
 } runtime;
 
-typedef struct {
+typedef struct dzn_meta {
   char const* name;
-  void* parent;
-  void* component;
+  struct dzn_meta const* parent;
 } dzn_meta_t;
+
+typedef struct {
+  struct {
+    char const* port;
+    void* address;
+    dzn_meta_t const* meta;
+  } provides;
+  struct {
+    char const* port;
+    void* address;
+    dzn_meta_t const* meta;
+  } requires;
+} dzn_port_meta_t;
 
 typedef struct locator locator;
 typedef struct runtime_info runtime_info;
@@ -70,9 +83,9 @@ void runtime_info_init (runtime_info* info, locator* loc);
 void runtime_flush (runtime_info* self);
 void runtime_defer (void* src, void* tgt, void (*event)(void*), void* args);
 void runtime_event (void (*event)(void*), void* args);
-char* runtime_path (void* m, char* p);
-void runtime_trace_in (void* in, void *out, char const* e);
-void runtime_trace_out (void* in, void *out, char const* e);
+char* runtime_path (dzn_meta_t const* m, char* p);
+void runtime_trace_in (dzn_port_meta_t const* m, char const* e);
+void runtime_trace_out (dzn_port_meta_t const* m, char const* e);
 char* _bool_to_string (bool b);
 bool string_to__bool (char *s);
 char* _int_to_string (int i);

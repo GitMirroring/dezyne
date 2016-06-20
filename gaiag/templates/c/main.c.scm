@@ -7,6 +7,7 @@
 
 ##include "#.scope_model .h"
 
+##define _GNU_SOURCE
 ##include <stdio.h>
 ##include <stdlib.h>
 ##include <string.h>
@@ -116,7 +117,7 @@ void #.scope_model _fill_event_map(#.scope_model * m, map* e) {
    component *comp = calloc(1, sizeof (component));
    comp->dzn_info.performs_flush = global_flush_p;
    comp->dzn_meta.parent = 0;
-   comp->dzn_meta.name = "";
+   comp->dzn_meta.name = "<external>";
 
    #(map
      (lambda (port)
@@ -131,17 +132,14 @@ void #.scope_model _fill_event_map(#.scope_model * m, map* e) {
      args->info = &comp->dzn_info;
      args->name = "#name ";
      c->self = args;
-     m->#name ->out.self = comp;
+
+     m->#name ->meta.requires.port = "#name ";
+     m->#name ->meta.requires.address = comp;
+     m->#name ->meta.requires.meta = &comp->dzn_meta;
+
      {
-     component *r = m->#name ->out.self;
-     if (!*r->dzn_meta.name) r->dzn_meta.name = "#name ";
-
-     component *p = m->#name ->in.self;
-     //if (!*p->dzn_meta.name) p->dzn_meta.name = "#name ";
-
      if (global_flush_p) {
-         r->dzn_meta.name = "<internal>.#name ";
-         r->dzn_meta.component = comp;
+       comp->dzn_meta.name = "<internal>";
      }
      }
      map_put(e, "#name .<flush>", c);
@@ -153,18 +151,15 @@ void #.scope_model _fill_event_map(#.scope_model * m, map* e) {
      args->info = &comp->dzn_info;
      args->name = "#name ";
      c->self = args;
-     m->#name ->in.self = comp;
+
+     m->#name ->meta.provides.port = "#name ";
+     m->#name ->meta.provides.address = comp;
+     m->#name ->meta.provides.meta = &comp->dzn_meta;
+
      {
-     component *p = m->#name ->in.self;
-     //if (!*p->dzn_meta.name) p->dzn_meta.name = "#name ";
-
-     component *r = m->#name ->out.self;
-     if (!*r->dzn_meta.name) r->dzn_meta.name = "#name ";
-
      if (global_flush_p) {
-         p->dzn_meta.name = "<internal>.#name ";
-         p->dzn_meta.component = comp;
-     }
+         comp->dzn_meta.name = "<internal>";
+       }
      }
      map_put(e, "#name .<flush>", c);
      #}) (filter om:requires? (om:ports model)))
@@ -176,8 +171,8 @@ void #.scope_model _fill_event_map(#.scope_model * m, map* e) {
            c->self = m->#port;
            map_put(e, "#port .#event ", c);
 #}) (filter (om:dir-matches? port)
-       (om:events port)))) (om:ports model)) }
-
+	    (om:events port)))) (om:ports model))
+  }
 void illegal_print() {
 	fputs("illegal\n", stderr);
 	exit(0);

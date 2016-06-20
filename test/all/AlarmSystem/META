@@ -1,1 +1,1 @@
-{"skip":["run","traces"],"comment":"system: cannot simulate,traces"}
+{"skip":["run"],"comment":"system: cannot simulate"}

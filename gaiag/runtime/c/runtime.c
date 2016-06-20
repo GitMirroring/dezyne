@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -146,55 +146,48 @@ runtime_event (void (*event)(void*), void* args)
 }
 
 char*
-runtime_path (void *m, char* p)
+runtime_path (dzn_meta_t const* m, char* p)
 {
-  char buf[1023] = "";
+  char buf[1024] = "";
   if (!m) {
     strcpy (buf, "<external>");
     if (*p) strcat (buf, ".");
     return strcpy (p, strcat (buf, p));
   }
-  dzn_meta_t *meta = m;
-  if (!meta->component && !(p && *p))
-      strcpy (buf, "<external>.");
-  if (!meta->parent) 
+  if (!m->parent)
     {
-      strcat (buf, meta->name);
+      strcat (buf, m->name);
       if (p && *p)
         strcat (buf, ".");
       strcat (buf, p);
       strcpy (p, buf);
     }
-  if (!meta->parent) return p;
-  return runtime_path (meta->parent, p);
+  if (!m->parent) return p;
+  return runtime_path (m->parent, p);
 }
 
 void
-runtime_trace_in (void* in, void* out, char const* e)
+runtime_trace_in (dzn_port_meta_t const* meta, char const* e)
 {
-  char ibuf[1024] = "";
-  char obuf[1024] = "";
-  dzn_meta_t* i = in;
-  dzn_meta_t* o = out;
-  strcpy(ibuf, i->name);
-  strcpy(obuf, o->name);
+  char pbuf[1024] = "";
+  char rbuf[1024] = "";
+  strcpy(pbuf, meta->provides.port);
+  strcpy(rbuf, meta->requires.port);
   fprintf (stderr, "%s.%s -> %s.%s\n",
-           runtime_path (o->parent, obuf), e,
-           runtime_path (i->parent, ibuf), e);
+           runtime_path (meta->requires.meta, rbuf), e,
+           runtime_path (meta->provides.meta, pbuf), e);
 }
 
 void
-runtime_trace_out (void* in, void* out, char const* e)
+runtime_trace_out (dzn_port_meta_t const* meta, char const* e)
 {
-  char ibuf[1024] = "";
-  char obuf[1024] = "";
-  dzn_meta_t* i = in;
-  dzn_meta_t* o = out;
-  strcpy(ibuf, i->name);
-  strcpy(obuf, o->name);
+  char pbuf[1024] = "";
+  char rbuf[1024] = "";
+  strcpy(pbuf, meta->provides.port);
+  strcpy(rbuf, meta->requires.port);
   fprintf (stderr, "%s.%s -> %s.%s\n",
-           runtime_path (i->parent, ibuf), e,
-           runtime_path (o->parent, obuf), e);
+           runtime_path (meta->provides.meta, pbuf), e,
+           runtime_path (meta->requires.meta, rbuf), e);
 }
 
 char*
