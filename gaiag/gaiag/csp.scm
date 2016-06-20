@@ -3,7 +3,7 @@
 ;; Copyright © 2014  Rutger van Beusekom
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -72,7 +72,8 @@
     (or (and-let* ((models (filter (lambda (x) (or (is-a? x <interface>) (is-a? x <component>))) om))
                    (models (null-is-#f (filter .behaviour models)))
                    (models (if name (filter (om:named name) models) models))
-                   (c-i (append (filter (is? <component>) models) models)))
+                   (c-i (append (filter (is? <component>) models) models))
+                   ((pair? c-i)))
                   (generate-csp (car c-i)))
         (let* ((models (filter (is? <model>) om))
                (models (comma-join (map .name models)))
@@ -988,9 +989,9 @@
                          ('bool (->string "bool." csp))
                          ('int (->string "int." csp))
                          (_ csp)))
-                  (port (if port 
-                            port 
-                            (if (or provided-on? (is-a? model <interface>)) 
+                  (port (if port
+                            port
+                            (if (or provided-on? (is-a? model <interface>))
                                 channel
                                 (.name (om:port model))))))
              (if csp
