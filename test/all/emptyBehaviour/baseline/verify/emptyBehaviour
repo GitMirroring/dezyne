@@ -1,0 +1,9 @@
+verify: C: check: deterministic: ok
+verify: C: check: completeness: fail
+verify: C: check: illegal: ok
+verify: C: check: deadlock: fail
+verify: C: check: compliance: ok
+verify: C: check: livelock: ok
+verify: I: check: completeness: fail
+verify: I: check: deadlock: fail
+verify: I: check: livelock: ok
