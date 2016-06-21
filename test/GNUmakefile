@@ -27,10 +27,10 @@ DZN:=../client/bin/dzn
 
 # quick check target
 check: prerequisite
-	bin/test -j16 check
+	bin/test -j4 check
 
 regression: prerequisite
-	bin/test -j16 regression-test
+	bin/test -j4 regression-test
 
 stress: prerequisite
 	DZN=$(DZN) bin/stress.sh $(CONFIG)
