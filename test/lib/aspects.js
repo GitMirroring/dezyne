@@ -319,14 +319,14 @@ var aspects = {
   ,
   parse: function(parameters) {
     var lstat = q.denodeify(fs.lstat);
-    var baseline = parameters.dir + '/baseline/parse/' + parameters.model;
+    var baseline = parameters.dir + '/baseline/parse/' + parameters.model + '.stderr';
 
     return lstat(baseline)
       .then (function(stats) {
-        return 'diff -uw '+baseline+' <(' + dzn() + ' -v parse '+parameters.filename+' 2>&1)';
+        return 'diff -uw '+baseline+' <(' + dzn() + ' -v parse '+parameters.filename+' |& sed "s,.\r,,g")';
       })
       .fail (function(err) {
-        return '[ "$(' + dzn() + ' parse '+parameters.filename+' 2>&1)" = "" ]';
+        return '[ "$(' + dzn() + ' parse '+parameters.filename+')" = "" ]';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd)
