@@ -169,7 +169,9 @@ var util = {
     var env = process.env;
     env.NODE_PATH = process.cwd() + '/node_modules';
 
-    var p = child.spawn (shell, [c, cmd], {env: env, detached: true, stdio:'pipe'});
+    var ulimit = 'ulimit -s 16384 -v 2097152;';
+
+    var p = child.spawn (shell, [c, ulimit + cmd], {env: env, detached: true, stdio:'pipe'});
 
     var output = '';
 
