@@ -31,7 +31,7 @@
 
 // This is the interface between a Console and an Alarm system.
 // The Alarm can be armed and disarmed, and the status of the system after arming
-// is reported via the detected and deactivated events. 
+// is reported via the detected and deactivated events.
 interface IConsole
 {
     in void arm();
@@ -72,7 +72,7 @@ interface IConsole
 
 // This is the interface to a (movement) sensor used in the Alarm system.
 // The Sensor can be enabled and disabled, and the status of the Sensor after enabling
-// is reported via the triggered and disabled events. 
+// is reported via the triggered and disabled events.
 interface ISensor
 {
   in void enable();
@@ -146,7 +146,7 @@ component Alarm
 
   behaviour
   {
-    enum State { Disarmed, Armed, Triggered, Disarming };
+    enum State { Disarmed, Armed, Disarming };
     State state = State.Disarmed;
     bool sounding = false;
 
@@ -164,7 +164,6 @@ component Alarm
       on sensor.triggered():    { console.detected();
                                   siren.turnon();
                                   sounding = true;
-                                  state = State.Triggered;
                                 }
       on sensor.disabled():       illegal;
     }
@@ -175,18 +174,6 @@ component Alarm
       on sensor.triggered():      illegal;
       on sensor.disabled():
           { [sounding]          { console.deactivated();
-                                  sounding = false;
-                                  state = State.Disarmed;
-                                }
-            [otherwise]         { console.deactivated();
-                                  state = State.Disarmed;
-                                }
-          }
-    }
-    [state.Triggered]
-    {
-      on console.arm():           illegal;
-      on console.disarm():      { sensor.disable();
 /*
 If the next line is left commented out then an illegal behaviour is spotted;
 the Alarm makes an attempt to turn on the Siren when that is already turned on.
@@ -197,10 +184,12 @@ Undo the commenting, press Update and re-run verification.
 */
                                   //siren.turnoff();
                                   sounding = false;
-                                  state = State.Disarming;
+                                  state = State.Disarmed;
                                 }
-      on sensor.triggered(),
-         sensor.disabled():       illegal;
+            [otherwise]         { console.deactivated();
+                                  state = State.Disarmed;
+                                }
+          }
     }
   }
 }
