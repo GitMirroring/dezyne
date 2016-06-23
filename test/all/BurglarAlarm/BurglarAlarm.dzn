@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -144,7 +145,7 @@ component AlarmConsole
         statusUI.SignalUnarmed();
         state = States.Unarmed;
       }
-      on alarmSystem.SwitchOffFailed():
+      on alarmSystem.SwitchOffFailed(pinCode):
       {
         statusUI.SignalTrippedWrongCode();
         state = States.Tripped;
