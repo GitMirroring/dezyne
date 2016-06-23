@@ -175,8 +175,8 @@ var util = {
 
     var output = '';
 
-    p.stdout.on('data', function(data){process.stdout.write(data); /*output += data*/;});
-    p.stderr.on('data', function(data){process.stderr.write(data); /*output += data*/;});
+    p.stdout.on('data', function(data){process.stdout.write(data); output += data;});
+    p.stderr.on('data', function(data){process.stderr.write(data); output += data;});
 
     p.on('exit', function (code, signal) {
       future.resolve({status: signal ? -1 : code ? 1 : 0, output: output});

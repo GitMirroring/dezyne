@@ -133,9 +133,13 @@ function run_traces(parameters, asp, app) {
       return [].concat.apply([],files_list);
     })
     .then(function(traces) {
-      if (!traces.length) throw new Error ('run_traces: no traces found');
+      if (!traces.length) return {status: 1, output: "No traces available"};
       return traces.reduce(function(promise, trace) {
-        return promise.then(function(result1){return app(trace).then(function(result2){ return result1 || result2; }); });
+        return promise.then(function(result1){
+          return app(trace).then(function(result2){
+            return {status: result1.status || result2.status, output: result1.output + result2.output};
+          });
+        });
       }, q(0))
     });
 }
@@ -211,19 +215,25 @@ var aspects = {
   test: function(parameters) { // pre: parameters.meta.languages == [ l ]
     var language = parameters.meta.languages[0];
 
-    function testcase(aspect,dependencies,language) {
-      return dependencies.status
-        || aspects[aspect](dependencies.parameters)
-        .then(function(result) {
-          var parameters = dependencies.parameters;
+    function updateparameters(parameters, output, aspect, language) {
           parameters.outcome = parameters.outcome || {};
           parameters.outcome[aspect] = parameters.outcome[aspect] || {};
           if(language) {
             parameters.outcome[aspect][language] = parameters.outcome[aspect][language] || {};
-            parameters.outcome[aspect][language].output = result.output;
+            parameters.outcome[aspect][language].output = output;
           }
-          else parameters.outcome[aspect].output = result.output;
-          return {status: result.status, parameters: parameters};
+          else parameters.outcome[aspect].output = output;
+          return parameters;
+    }
+
+    function testcase(aspect,dependencies,language) {
+      if (dependencies.status) {
+        return {status: dependencies.status,
+                parameters: updateparameters(dependencies.parameters, "Skipped, because prerequisite did not succeed", aspect, language)};
+      }
+      return aspects[aspect](dependencies.parameters)
+        .then(function(result) {
+          return {status: result.status, parameters: updateparameters(dependencies.parameters, result.output, aspect, language)};
         });
     }
 
@@ -260,7 +270,10 @@ var aspects = {
               var outcome = result2.status ? (result2.status == -1 ? 'ERROR' : 'FAILED') : 'OK';
               result2.parameters.outcome = result2.parameters.outcome || {};
               result2.parameters.outcome[aspect] = result2.parameters.outcome[aspect] || {};
-              if(haslanguage(aspect)) result2.parameters.outcome[aspect][language].status = outcome;
+              if(haslanguage(aspect)) {
+                result2.parameters.outcome[aspect][language] =result2.parameters.outcome[aspect][language] || {};
+                result2.parameters.outcome[aspect][language].status = outcome;
+              }
               else                    result2.parameters.outcome[aspect].status = outcome;
               console.log(header + '[' + outcome + ']');
               return result2;
@@ -356,7 +369,7 @@ var aspects = {
         return 'diff -uw '+baseline+' <(' + dzn() + ' -v parse '+parameters.filename+' |& sed "s,.\r,,g")';
       })
       .fail (function(err) {
-        return '[ "$(' + dzn() + ' parse '+parameters.filename+')" = "" ]';
+        return '[ "$(' + dzn() + ' parse '+parameters.filename+' |& sed "s,.\r,,g)" = "" ]';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd)

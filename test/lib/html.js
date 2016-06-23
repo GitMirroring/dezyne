@@ -3,7 +3,6 @@
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
-// Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -79,7 +78,7 @@ var privates = {
     html +=  privates.addLine('      pre {');
     html +=  privates.addLine('        display: inline;');
     html +=  privates.addLine('      }');
-    html +=  privates.addLine('      h1.fail {');
+    html +=  privates.addLine('      h1.fail, h2.fail, h3.fail, h4.fail {');
     html +=  privates.addLine('        color: red;');
     html +=  privates.addLine('      }');
     html +=  privates.addLine('      h2, h3, h4 {');
@@ -93,6 +92,12 @@ var privates = {
     html +=  privates.addLine('      a:hover {');
     html +=  privates.addLine('        text-decoration: underline;');
     html +=  privates.addLine('        color: blue;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      a.fail {');
+    html +=  privates.addLine('        color: red;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      a.pass {');
+    html +=  privates.addLine('        color: black;');
     html +=  privates.addLine('      }');
     html +=  privates.addLine('      li.fail {');
     html +=  privates.addLine('        color: red;');
@@ -179,11 +184,13 @@ var privates = {
         if (Object.keys(aspoutcome).indexOf('status') == -1) {
           Object.keys(aspoutcome).each(function(language) {
             var status = aspoutcome[language].status;
-            html +=  privates.addLine('      <td><a href="#'+item.name+'/'+aspect+'/'+language+'">'+status+'</a></td>');
+            var cl = (status=='FAILED'||status=='ERROR') ? 'fail' : 'pass';
+            html +=  privates.addLine('      <td><a href="#'+item.name+'/'+aspect+'/'+language+'" class="'+cl+'">'+status+'</a></td>');
           });
         } else {
           var status = aspoutcome.status;
-          html +=  privates.addLine('      <td><a href="#'+item.name+'/'+aspect+'">'+status+'</a></td>');
+          var cl = (status=='FAILED'||status=='ERROR') ? 'fail' : 'pass';
+          html +=  privates.addLine('      <td><a href="#'+item.name+'/'+aspect+'" class="'+cl+'">'+status+'</a></td>');
         }
       });
       html +=  privates.addLine('    </tr>');
@@ -193,17 +200,19 @@ var privates = {
 
     result.items.each(function(item) {
       var outcome = item.outcome;
-      html +=  privates.addLine('    <h2 id="'+item.name+'">'+item.name+'</h2>');
+//      html +=  privates.addLine('    <h2 id="'+item.name+'">'+item.name+'</h2>');
       Object.keys(outcome).each(function(aspect) {
         var aspoutcome = outcome[aspect];
-        html +=  privates.addLine('      <h3 id="'+item.name+'/'+aspect+'">'+aspect+'</h3>');
+//        html +=  privates.addLine('      <h3 id="'+item.name+'/'+aspect+'">'+aspect+'</h3>');
         if (Object.keys(aspoutcome).indexOf('status') == -1) {
           Object.keys(aspoutcome).each(function(language) {
             var out = aspoutcome[language].output;
-            html +=  privates.addLine('        <h4 id="'+item.name+'/'+aspect+'/'+language+'">'+language+'</h4>');
+
+            html +=  privates.addLine('        <hr><h3 id="'+item.name+'/'+aspect+'/'+language+'">'+item.name+'/'+aspect+'/'+language+'</h3>');
             html +=  privates.addLine('          <pre>'+out+'</pre>');
           });
         } else {
+          html +=  privates.addLine('      <hr><h3 id="'+item.name+'/'+aspect+'">'+item.name+'/'+aspect+'</h3>');
           var out = aspoutcome.output;
           html +=  privates.addLine('        <pre>'+out+'</pre>');
         }
