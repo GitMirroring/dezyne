@@ -83,10 +83,10 @@ function depend(e) {
 }
 
 function comment(meta, aspect, language) {
-  return language && meta.comment[language]
+  return meta.comment && (language && meta.comment[language]
     || meta.comment[aspect]
     || meta.comment[true]
-    || meta.comment
+    || meta.comment)
     || '';
 }
 
@@ -195,20 +195,30 @@ var aspects = {
           });
         }, q({status:0, parameters:parameters}))
           .then (function(result) {
-            var outcome = {};
+            var outcome = {status:{},output:{}};
             Object.keys(dependencies).each(function(aspect){
               if(haslanguage(aspect)) {
-                outcome[aspect] = result.parameters.outcome[aspect] || {};
+		outcome.status[aspect] = result.parameters.outcome.status[aspect] || {};
                 all_languages.each(function(language) {
-                  outcome[aspect][language] = outcome[aspect][language] || {output: comment(parameters.meta, aspect, language), status: 'SKIPPED'};
+                  outcome.status[aspect][language] = result.parameters.outcome.status[aspect] && result.parameters.outcome.status[aspect][language] || 'SKIPPED';
                 });
               } else {
-                outcome[aspect] = result.parameters.outcome[aspect] || {output: comment(parameters.meta, aspect), status: 'SKIPPED'};
+                outcome.status[aspect] = result.parameters.outcome.status[aspect] || 'SKIPPED';
               }
             });
+	    
+	    outcome.output = result.parameters.outcome.output;
+            all_languages.each(function(language) {
+	      Object.keys(dependencies).each(function(aspect) {
+	    	if(haslanguage(aspect))
+	    	  outcome.output[aspect + '-' + language] = outcome.output[aspect + '-' + language] || comment(parameters.meta, aspect, language);
+	    	else
+	    	  outcome.output[aspect] = outcome.output[aspect] || comment(parameters.meta, aspect);
+	      });
+	    });
             fs.writeFileSync('out/' + path.basename(dir) + '/outcome.json', JSON.stringify(outcome,null,2));
             return result.status;
-          });
+	  });
       });
   }
   ,
@@ -216,20 +226,21 @@ var aspects = {
     var language = parameters.meta.languages[0];
 
     function updateparameters(parameters, output, aspect, language) {
-          parameters.outcome = parameters.outcome || {};
-          parameters.outcome[aspect] = parameters.outcome[aspect] || {};
-          if(language) {
-            parameters.outcome[aspect][language] = parameters.outcome[aspect][language] || {};
-            parameters.outcome[aspect][language].output = output;
-          }
-          else parameters.outcome[aspect].output = output;
-          return parameters;
+      console.log(output);
+      parameters.outcome = parameters.outcome || {};
+      parameters.outcome.output = parameters.outcome.output || {};
+      if(language) {
+        parameters.outcome.output[aspect + '-' + language] = output;
+      } else {
+	parameters.outcome.output[aspect] = output;
+      }
+      return parameters;
     }
 
     function testcase(aspect,dependencies,language) {
       if (dependencies.status) {
         return {status: dependencies.status,
-                parameters: updateparameters(dependencies.parameters, "Skipped, because prerequisite did not succeed", aspect, language)};
+                parameters: updateparameters(dependencies.parameters, "Not executed because prerequisite did not succeed", aspect, language)};
       }
       return aspects[aspect](dependencies.parameters)
         .then(function(result) {
@@ -267,15 +278,15 @@ var aspects = {
           return aspects.test(parameters1)
             .then(function(result2){return testcase(aspect, result2, haslanguage(aspect) && language);})
             .then(function(result2){
-              var outcome = result2.status ? (result2.status == -1 ? 'ERROR' : 'FAILED') : 'OK';
+              var status = result2.status ? (result2.status == -1 ? 'ERROR' : 'FAILED') : 'OK';
               result2.parameters.outcome = result2.parameters.outcome || {};
-              result2.parameters.outcome[aspect] = result2.parameters.outcome[aspect] || {};
+	      result2.parameters.outcome.status = result2.parameters.outcome.status || {};
               if(haslanguage(aspect)) {
-                result2.parameters.outcome[aspect][language] =result2.parameters.outcome[aspect][language] || {};
-                result2.parameters.outcome[aspect][language].status = outcome;
+                result2.parameters.outcome.status[aspect] = result2.parameters.outcome.status[aspect] || {};
+                result2.parameters.outcome.status[aspect][language] = status;
               }
-              else                    result2.parameters.outcome[aspect].status = outcome;
-              console.log(header + '[' + outcome + ']');
+              else result2.parameters.outcome.status[aspect] = status;
+              console.log(header + '[' + status + ']');
               return result2;
             })
             .then(function(result2){return collect(aspect, result1, result2);});
@@ -369,7 +380,7 @@ var aspects = {
         return 'diff -uw '+baseline+' <(' + dzn() + ' -v parse '+parameters.filename+' |& sed "s,.\r,,g")';
       })
       .fail (function(err) {
-        return '[ "$(' + dzn() + ' parse '+parameters.filename+' |& sed "s,.\r,,g)" = "" ]';
+        return '[ "$(' + dzn() + ' parse '+parameters.filename+' |& sed \'s,.\r,,g\')" = "" ]';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd)
