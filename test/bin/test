@@ -36,11 +36,60 @@ var output = {
   }
   ,
   close: function(passed, failed) {
+  
+    function read_outcome(item) {
+      var outcome = {
+        build: {
+          'c++': { output:'', status:'ERROR' },
+          c: { output:'', status:'ERROR' },
+          javascript: { output:'', status:'ERROR' }
+        },
+        code: {
+          'c++': { output:'', status:'ERROR' },
+          c: { output:'', status:'ERROR' },
+          javascript: { output:'', status:'ERROR' }
+        },
+        convert: { output:'', status:'ERROR' },
+        execute: {
+          'c++': { output:'', status:'ERROR' },
+          c: { output:'', status:'ERROR' },
+          javascript: { output:'', status:'ERROR' }
+        },
+        parse: { output:'', status:'ERROR' },
+        run: { output:'', status:'ERROR' },
+        table: { output:'', status:'ERROR' },
+        traces: { output:'', status:'ERROR' },
+        triangle: {
+          'c++': { output:'', status:'ERROR' },
+          c: { output:'', status:'ERROR' },
+          javascript: { output:'', status:'ERROR' }
+        },
+        verify: { output:'', status:'ERROR' },
+        view: { output:'', status:'ERROR' }
+      };      
+
+      try {
+        var outcome_string = fs.readFileSync(item+'/outcome.json');
+        try {
+          outcome = JSON.parse (outcome_string);
+        } catch (e) {
+          console.log('[ERROR]: '+ item + '/outcome.json is not a valid JSON object');
+        }
+        return outcome;
+      } catch (e) {
+        console.log('[ERROR]: '+ item + '/outcome.json is missing');
+      }
+      return outcome;
+    }
+
     output.result.endTime = new Date();
     output.result.elapsedTime = util.elapsedTime(output.result.startTime, output.result.endTime, false);
     output.result.passed = passed;
     output.result.failed = failed;
     if (output.write) {
+      output.result.items.each(function(item) {
+        item.outcome = read_outcome(path.dirname (output.filePath)+'/'+path.basename(item.name));
+      });
       output.write(output.result, output.filePath);
       console.log ('See file://' + path.resolve (output.filePath));
     }
@@ -121,7 +170,8 @@ function execute(dir, args) {
         return util.run(session, item, args.argv.slice(1), !(args.options.quiet || args.options.summary))
           .then(function(result) {
             output.log(item, result); //FIXME write the result to output
-            return {result:result, session:session};
+            console.log((result.exitcode === 0 ? '[PASS] ' : '[FAIL] ') + item);
+            return {item:item, result:result, session:session};
           });
       }});
   return util.parallel_n(worklist, args.options.jobs);

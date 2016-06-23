@@ -175,8 +175,8 @@ var util = {
 
     var output = '';
 
-    p.stdout.on('data', function(data){process.stdout.write(data); output += data;});
-    p.stderr.on('data', function(data){process.stderr.write(data); output += data;});
+    p.stdout.on('data', function(data){process.stdout.write(data); /*output += data*/;});
+    p.stderr.on('data', function(data){process.stderr.write(data); /*output += data*/;});
 
     p.on('exit', function (code, signal) {
       future.resolve({status: signal ? -1 : code ? 1 : 0, output: output});
@@ -218,8 +218,8 @@ var util = {
 
         script.stdout.on('data', function (data) {
           if(verbose) process.stdout.write(data);
-          stdout += data;
-          output += data;
+//          stdout += data;
+//          output += data;
 
           status = Object.keys(ST).reduce(function(status, key) {
             return util.contains(data, ST[key]) ? V(status, ST[key]) : status;
@@ -228,8 +228,8 @@ var util = {
         });
         script.stderr.on('data', function (data) {
           if(verbose) process.stderr.write(data);
-          stderr += data;
-          output += data;
+//          stderr += data;
+//          output += data;
         });
         script.on('error', function (err) {
           console.error(err.stack);

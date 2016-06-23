@@ -1,7 +1,9 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
+// Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,7 +28,7 @@
 
 var fs = require('fs');
 
-var private = {
+var privates = {
   read: function() {
     var fileContent = '';
     var stdin = process.stdin;
@@ -37,12 +39,12 @@ var private = {
       result = JSON.parse(fileContent);
       result.startTime = new Date(result.startTime);
       result.endTime = new Date(result.endTime);
-      private.write(result);
+      privates.write(result);
     });
   }
   ,
   write: function(result) {
-    var fileContent = private.transform(result);
+    var fileContent = privates.transform(result);
     console.log(fileContent);
   }
   ,
@@ -54,139 +56,171 @@ var private = {
     var lcStatus = (result.failed) ? 'fail' : 'pass';
     var ucStatus = (result.failed) ? '[FAIL]' : '[PASS]';
     var html = '';
-    html +=  private.addLine('<!DOCTYPE html>');
-    html +=  private.addLine('<html>');
-    html +=  private.addLine('  <head>');
-    html +=  private.addLine('    <title>' + result.title + '</title>');
-    html +=  private.addLine('    <style>');
-    html +=  private.addLine('      body {');
-    html +=  private.addLine('        font-family: Sans-serif;');
-    html +=  private.addLine('      }');
-    html +=  private.addLine('      table {');
-    html +=  private.addLine('          border-collapse: collapse;');
-    html +=  private.addLine('      }');
-    html +=  private.addLine('      table, th, td {');
-    html +=  private.addLine('          border: 2px solid black;');
-    html +=  private.addLine('      }');
-    html +=  private.addLine('      td {');
-    html +=  private.addLine('          text-align: center;');
-    html +=  private.addLine('      }');
-    html +=  private.addLine('      ol {');
-    html +=  private.addLine('        font-size: 115%;');
-    html +=  private.addLine('        font-weight: bold;');
-    html +=  private.addLine('      }');
-    html +=  private.addLine('      pre {');
-    html +=  private.addLine('        display: inline;');
-    html +=  private.addLine('      }');
-    html +=  private.addLine('      h1.fail {');
-    html +=  private.addLine('        color: red;');
-    html +=  private.addLine('      }');
-    html +=  private.addLine('      li.fail {');
-    html +=  private.addLine('        color: red;');
-    html +=  private.addLine('        cursor: pointer;');
-    html +=  private.addLine('      }');
-    html +=  private.addLine('      li.pass {');
-    html +=  private.addLine('        cursor: pointer;');
-    html +=  private.addLine('      }');
-    html +=  private.addLine('      .output {');
-    html +=  private.addLine('        font-size: initial;');
-    html +=  private.addLine('        font-weight: initial;');
-    html +=  private.addLine('        font-family: monospace;');
-    html +=  private.addLine('        margin: 10px 0px;');
-    html +=  private.addLine('      }');
-    html +=  private.addLine('      .normal {');
-    html +=  private.addLine('        font-weight: initial;');
-    html +=  private.addLine('        color: initial;');
-    html +=  private.addLine('      }');
-    html +=  private.addLine('      .emphasize {');
-    html +=  private.addLine('        font-weight: bold;');
-    html +=  private.addLine('        color: red;');
-    html +=  private.addLine('      }');
-    html +=  private.addLine('    </style>');
-    html +=  private.addLine('    <script>');
-    html +=  private.addLine('      function toggle(element) {');
-    html +=  private.addLine('        var details = document.getElementById(element.id + "_details");');
-    html +=  private.addLine('        var expand = document.getElementById(element.id + "_expand");');
-    html +=  private.addLine('        var collapse = document.getElementById(element.id + "_collapse");');
-    html +=  private.addLine('        switch (details.style.display) {');
-    html +=  private.addLine('        case "none":');
-    html +=  private.addLine('          details.style.display = "block";');
-    html +=  private.addLine('          expand.style.display = "none";');
-    html +=  private.addLine('          collapse.style.display = "inline";');
-    html +=  private.addLine('          break;');
-    html +=  private.addLine('        case "block":');
-    html +=  private.addLine('          details.style.display = "none";');
-    html +=  private.addLine('          expand.style.display = "inline";');
-    html +=  private.addLine('          collapse.style.display = "none";');
-    html +=  private.addLine('          break;');
-    html +=  private.addLine('        }');
-    html +=  private.addLine('      }');
-    html +=  private.addLine('    </script>');
-    html +=  private.addLine('  </head>');
-    html +=  private.addLine('  <body>');
-    html +=  private.addLine('    <h1 id="target" class="' + lcStatus + '">Target: ' + result.target + ' ' + ucStatus + '</h1>');
-    html +=  private.addLine('    <table>');
-    html +=  private.addLine('      <tr>');
-    html +=  private.addLine('        <th>Date</th>');
-    html +=  private.addLine('        <th>Start time</th>');
-    html +=  private.addLine('        <th>End time</th>');
-    html +=  private.addLine('        <th>Elapsed time</th>');
-    html +=  private.addLine('        <th>Total tests</th>');
-    html +=  private.addLine('        <th>Passed</th>');
-    html +=  private.addLine('        <th>Failed</th>');
-    html +=  private.addLine('      </tr>');
-    html +=  private.addLine('      <tr>');
-    html +=  private.addLine('        <td>' + result.startTime.toLocaleDateString() + '</td>');
-    html +=  private.addLine('        <td>' + result.startTime.toLocaleTimeString() + '</td>');
-    html +=  private.addLine('        <td>' + result.endTime.toLocaleTimeString() + '</td>');
-    html +=  private.addLine('        <td>' + result.elapsedTime + '</td>');
-    html +=  private.addLine('        <td>' + (result.passed + result.failed) + '</td>');
-    html +=  private.addLine('        <td>' + result.passed + '</td>');
-    html +=  private.addLine('        <td>' + result.failed + '</td>');
-    html +=  private.addLine('      </tr>');
-    html +=  private.addLine('    </table>');
-    html +=  private.addLine('    <ol>');
-    html +=  result.items.map(function(item) {
-      var lcStatus = (item.result.exitcode !== 0) ? 'fail' : 'pass';
-      var ucStatus = (item.result.exitcode !== 0) ? '[FAIL]' : '[PASS]';
-      var log = item.result.output.replace(/(error:)/ig, '</pre></span><span class="emphasize">$1</span><span class="normal"><pre>');
-      var html = '';
-      html += '      <li id="' + item.name + '" ';
-      html += 'class=' + lcStatus;
-      html +=  private.addLine(' onclick="toggle(this)">');
-      html +=  private.addLine('        <img id="' + item.name + '_expand" style="vertical-align:center; display: inline;" src="data:image/gif;base64,');
-      html +=  private.addLine('          R0lGODlhEAAQAOZYAHyl4Zm454mp4Yqq4ZCv44en4JOz5IWl36PC65y76Imy5Y+u45S05Zu66F+J');
-      html +=  private.addLine('          1VqF1Iur4p696Yav5Za15oWs45Kx5KC+6mKM1o2t45++6oio4aC/6qLA6oys4o+v46XE66G/6oam');
-      html +=  private.addLine('          32GJ1XOb3Zi35p686ZGx5Hui4V2G1WaQ2GuU2ouq4WSO2GiS2aXD65Gv5G+Y3ISj34au5aTC63+n');
-      html +=  private.addLine('          4YOj3nWd3l2G1KLA64Gq46bE7Jq56IOr44Cp442s45e25p286GaO2KLB65Sz5VmD0luF1H+m4ZW0');
-      html +=  private.addLine('          5Z686GqS2Yur4Xii3p276IGi3oqy5Yan4GyW2liD0nef3pi25nCa3ISk34yz5v///////wAAAAAA');
-      html +=  private.addLine('          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
-      html +=  private.addLine('          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5');
-      html +=  private.addLine('          BAEAAFgALAAAAAAQABAAAAeegFiCg4SFhoeGVopOChIyFDw9NACEVjofMwgcGxlICTtLhAouCDgg');
-      html +=  private.addLine('          FhFMDQE/NoQSQhyoV1cBUxNDVIQUnEBWtAAMBiZQhDklCbTKVwQLSYRGq8u0GBBBhCckEwwAtFYd');
-      html +=  private.addLine('          AwIXhFJHBhUEtCsCBSEOhCMVLws+SgIaTwcxN4QwHtUDNBQ4UKVGkweEVLRIweKCCAcoijwgEgWR');
-      html +=  private.addLine('          xYuHAgEAOw==">');
-      html +=  private.addLine('        <img id="' + item.name + '_collapse" style="vertical-align:center; display: none;" src="data:image/gif;base64,');
-      html +=  private.addLine('          R0lGODlhDgAOAMQAAP///+vr6+Dg4P7+/uPj4/T09Pz8/Ojo6Pf395ycnN7e3t3d3fHx8e7u7n9/');
-      html +=  private.addLine('          f1dXV8XFxba2tqOjo5+fn6enp8DAwMfHx9fX19PT07GxscrKyru7u+np6QAAAAAAAAAAACH5BAAA');
-      html +=  private.addLine('          AAAALAAAAAAOAA4AAAVbIBAsZGkGAAesbLty1yDPtHxhRq7vOaYhwKAQqIEUjsjkEVJhOB3QqJNR');
-      html +=  private.addLine('          2TSuj6z22thEAuCwGBzJHM7o9DlDIbjfcDdFIqjb73WJZaLo+/8TFgAQCYWGhxAAIQA7">');
-      html +=  private.addLine('        ' + item.name + ' ' + item.result.status);
-      html +=  private.addLine('      </li>');
-      html +=  private.addLine('      <div class="output" id="' + item.name + '_details" style="display: none;"><span class="normal"><pre>' + log + '</pre></span></div>');
-      return html;
-    }).join('');
-    html +=  private.addLine('    </ol>');
-    html +=  private.addLine('  </body>');
-    html +=  private.addLine('<html>');
+    html +=  privates.addLine('<!DOCTYPE html>');
+    html +=  privates.addLine('<html>');
+    html +=  privates.addLine('  <head>');
+    html +=  privates.addLine('    <title>' + result.title + '</title>');
+    html +=  privates.addLine('    <style>');
+    html +=  privates.addLine('      body {');
+    html +=  privates.addLine('        font-family: Sans-serif;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      table {');
+    html +=  privates.addLine('          border-collapse: collapse;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      table, th, td {');
+    html +=  privates.addLine('          border: 1px solid gray;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      td {');
+    html +=  privates.addLine('          text-align: center;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      td, th {');
+    html +=  privates.addLine('          padding: 5px;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      pre {');
+    html +=  privates.addLine('        display: inline;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      h1.fail {');
+    html +=  privates.addLine('        color: red;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      h2, h3, h4 {');
+    html +=  privates.addLine('        line-height: 0.3;');
+    html +=  privates.addLine('        color: blue;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      a {');
+    html +=  privates.addLine('        color: black;');
+    html +=  privates.addLine('        text-decoration: none;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      a:hover {');
+    html +=  privates.addLine('        text-decoration: underline;');
+    html +=  privates.addLine('        color: blue;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      li.fail {');
+    html +=  privates.addLine('        color: red;');
+    html +=  privates.addLine('        cursor: pointer;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      li.pass {');
+    html +=  privates.addLine('        cursor: pointer;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      .output {');
+    html +=  privates.addLine('        font-size: initial;');
+    html +=  privates.addLine('        font-weight: initial;');
+    html +=  privates.addLine('        font-family: monospace;');
+    html +=  privates.addLine('        margin: 10px 0px;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      .normal {');
+    html +=  privates.addLine('        font-weight: initial;');
+    html +=  privates.addLine('        color: initial;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('      .emphasize {');
+    html +=  privates.addLine('        font-weight: bold;');
+    html +=  privates.addLine('        color: red;');
+    html +=  privates.addLine('      }');
+    html +=  privates.addLine('    </style>');
+    html +=  privates.addLine('  </head>');
+    html +=  privates.addLine('  <body>');
+    html +=  privates.addLine('    <h1 id="target" class="' + lcStatus + '">Target: ' + result.target + ' ' + ucStatus + '</h1>');
+    html +=  privates.addLine('    <table>');
+    html +=  privates.addLine('      <tr>');
+    html +=  privates.addLine('        <th>Date</th>');
+    html +=  privates.addLine('        <th>Start time</th>');
+    html +=  privates.addLine('        <th>End time</th>');
+    html +=  privates.addLine('        <th>Elapsed time</th>');
+    html +=  privates.addLine('        <th>Total tests</th>');
+    html +=  privates.addLine('        <th>Passed</th>');
+    html +=  privates.addLine('        <th>Failed</th>');
+    html +=  privates.addLine('      </tr>');
+    html +=  privates.addLine('      <tr>');
+    html +=  privates.addLine('        <td>' + result.startTime.toLocaleDateString() + '</td>');
+    html +=  privates.addLine('        <td>' + result.startTime.toLocaleTimeString() + '</td>');
+    html +=  privates.addLine('        <td>' + result.endTime.toLocaleTimeString() + '</td>');
+    html +=  privates.addLine('        <td>' + result.elapsedTime + '</td>');
+    html +=  privates.addLine('        <td>' + (result.passed + result.failed) + '</td>');
+    html +=  privates.addLine('        <td>' + result.passed + '</td>');
+    html +=  privates.addLine('        <td>' + result.failed + '</td>');
+    html +=  privates.addLine('      </tr>');
+    html +=  privates.addLine('    </table>');
+    html +=  privates.addLine('    <p></p>');
+
+    html +=  privates.addLine('    <table>');
+    if (result.items.length) {
+      html +=  privates.addLine('    <tr>');
+      html +=  privates.addLine('      <th>ITEM</th>');
+
+      var outcome = result.items[0].outcome;
+      Object.keys(outcome).each(function(aspect) {
+        var aspoutcome = outcome[aspect];
+        var len = 1;
+        if (Object.keys(aspoutcome).indexOf('status') == -1) {
+          len = Object.keys(aspoutcome).length;
+        }
+        html +=  privates.addLine('      <th colspan = "'+len+'">'+aspect+'</th>');
+      });
+      html +=  privates.addLine('    </tr>');
+      html +=  privates.addLine('    <tr>');
+      html +=  privates.addLine('      <th> </th>');
+      Object.keys(outcome).each(function(aspect) {
+        var aspoutcome = outcome[aspect];
+        if (Object.keys(aspoutcome).indexOf('status') == -1) {
+          Object.keys(aspoutcome).each(function(language) {
+            html +=  privates.addLine('      <th>'+language+'</th>');
+          });
+        } else {
+          html +=  privates.addLine('      <th> </th>');
+        }
+      });
+      html +=  privates.addLine('    </tr>');
+    }
+    result.items.each(function(item) {
+      var outcome = item.outcome;
+      html +=  privates.addLine('    <tr>');
+      html +=  privates.addLine('      <td><a href="#'+item.name+'">'+item.name+'</a></td>');
+      Object.keys(outcome).each(function(aspect) {
+        var aspoutcome = outcome[aspect];
+        if (Object.keys(aspoutcome).indexOf('status') == -1) {
+          Object.keys(aspoutcome).each(function(language) {
+            var status = aspoutcome[language].status;
+            html +=  privates.addLine('      <td><a href="#'+item.name+'/'+aspect+'/'+language+'">'+status+'</a></td>');
+          });
+        } else {
+          var status = aspoutcome.status;
+          html +=  privates.addLine('      <td><a href="#'+item.name+'/'+aspect+'">'+status+'</a></td>');
+        }
+      });
+      html +=  privates.addLine('    </tr>');
+
+    });
+    html +=  privates.addLine('    </table>');
+
+    result.items.each(function(item) {
+      var outcome = item.outcome;
+      html +=  privates.addLine('    <h2 id="'+item.name+'">'+item.name+'</h2>');
+      Object.keys(outcome).each(function(aspect) {
+        var aspoutcome = outcome[aspect];
+        html +=  privates.addLine('      <h3 id="'+item.name+'/'+aspect+'">'+aspect+'</h3>');
+        if (Object.keys(aspoutcome).indexOf('status') == -1) {
+          Object.keys(aspoutcome).each(function(language) {
+            var out = aspoutcome[language].output;
+            html +=  privates.addLine('        <h4 id="'+item.name+'/'+aspect+'/'+language+'">'+language+'</h4>');
+            html +=  privates.addLine('          <pre>'+out+'</pre>');
+          });
+        } else {
+          var out = aspoutcome.output;
+          html +=  privates.addLine('        <pre>'+out+'</pre>');
+        }
+      });
+    });
+
+
+    html +=  privates.addLine('  </body>');
+    html +=  privates.addLine('<html>');
     return html;
   }
   ,
 }
 
-var public = {
+var publics = {
   write: function(result, filePath) {
-    var fileContent = private.transform(result);
+    var fileContent = privates.transform(result);
     fs.writeFileSync(filePath, fileContent);
   }
   ,
@@ -194,7 +228,7 @@ var public = {
 
 if (require.main === module) {
   // Called from the command line
-  private.read();
+  privates.read();
 }
 
-module.exports = public;
+module.exports = publics;
