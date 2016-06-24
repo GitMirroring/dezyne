@@ -84,9 +84,9 @@ function depend(e) {
 
 function comment(meta, aspect, language) {
   return meta.comment && (language && meta.comment[language]
-    || meta.comment[aspect]
-    || meta.comment[true]
-    || meta.comment)
+                          || meta.comment[aspect]
+                          || meta.comment[true]
+                          || meta.comment)
     || '';
 }
 
@@ -185,20 +185,20 @@ var aspects = {
         return meta.languages
           .filter (skip_filter (meta))
           .reduce(function(promise, language) {
-          return promise.then(function(result1) {
-            var parameters = util.deep_copy(result1.parameters);
-            parameters.meta.languages = [ language ];
-            parameters.work = work;
-            return aspects.test(parameters).then (function(result2) {
-              return {status: result1.status || result2.status, parameters: result2.parameters}
+            return promise.then(function(result1) {
+              var parameters = util.deep_copy(result1.parameters);
+              parameters.meta.languages = [ language ];
+              parameters.work = work;
+              return aspects.test(parameters).then (function(result2) {
+                return {status: result1.status || result2.status, parameters: result2.parameters}
+              });
             });
-          });
-        }, q({status:0, parameters:parameters}))
+          }, q({status:0, parameters:parameters}))
           .then (function(result) {
             var outcome = {status:{},output:{}};
             Object.keys(dependencies).each(function(aspect){
               if(haslanguage(aspect)) {
-		outcome.status[aspect] = result.parameters.outcome.status[aspect] || {};
+                outcome.status[aspect] = {};
                 all_languages.each(function(language) {
                   outcome.status[aspect][language] = result.parameters.outcome.status[aspect] && result.parameters.outcome.status[aspect][language] || 'SKIPPED';
                 });
@@ -206,19 +206,19 @@ var aspects = {
                 outcome.status[aspect] = result.parameters.outcome.status[aspect] || 'SKIPPED';
               }
             });
-	    
-	    outcome.output = result.parameters.outcome.output;
+            
+            outcome.output = result.parameters.outcome.output;
             all_languages.each(function(language) {
-	      Object.keys(dependencies).each(function(aspect) {
-	    	if(haslanguage(aspect))
-	    	  outcome.output[aspect + '-' + language] = outcome.output[aspect + '-' + language] || comment(parameters.meta, aspect, language);
-	    	else
-	    	  outcome.output[aspect] = outcome.output[aspect] || comment(parameters.meta, aspect);
-	      });
-	    });
+              Object.keys(dependencies).each(function(aspect) {
+                if(haslanguage(aspect))
+                  outcome.output[aspect + '-' + language] = outcome.output[aspect + '-' + language] || comment(parameters.meta, aspect, language);
+                else
+                  outcome.output[aspect] = outcome.output[aspect] || comment(parameters.meta, aspect);
+              });
+            });
             fs.writeFileSync('out/' + path.basename(dir) + '/outcome.json', JSON.stringify(outcome,null,2));
             return result.status;
-	  });
+          });
       });
   }
   ,
@@ -232,7 +232,7 @@ var aspects = {
       if(language) {
         parameters.outcome.output[aspect + '-' + language] = output;
       } else {
-	parameters.outcome.output[aspect] = output;
+        parameters.outcome.output[aspect] = output;
       }
       return parameters;
     }
@@ -280,7 +280,7 @@ var aspects = {
             .then(function(result2){
               var status = result2.status ? (result2.status == -1 ? 'ERROR' : 'FAILED') : 'OK';
               result2.parameters.outcome = result2.parameters.outcome || {};
-	      result2.parameters.outcome.status = result2.parameters.outcome.status || {};
+              result2.parameters.outcome.status = result2.parameters.outcome.status || {};
               if(haslanguage(aspect)) {
                 result2.parameters.outcome.status[aspect] = result2.parameters.outcome.status[aspect] || {};
                 result2.parameters.outcome.status[aspect][language] = status;
