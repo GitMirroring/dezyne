@@ -62,12 +62,12 @@ var privates = {
     html +=  privates.addLine('    <script type="text/javascript">');
     html +=  privates.addLine('      var $target;');
     html +=  privates.addLine('      jQuery(document).ready(function() {');
-    html +=  privates.addLine('        jQuery(".pass").click(function(event){');
+    html +=  privates.addLine('        jQuery("a.pass").click(function(event){');
     html +=  privates.addLine('          if ($target) $target.css("background", "white");');
     html +=  privates.addLine('          $target = jQuery(this.hash);');
     html +=  privates.addLine('          $target.css("background", "#CCFFCC");');
     html +=  privates.addLine('        });');
-    html +=  privates.addLine('        jQuery(".fail").click(function(event){');
+    html +=  privates.addLine('        jQuery("a.fail").click(function(event){');
     html +=  privates.addLine('          if ($target) $target.css("background", "white");');
     html +=  privates.addLine('          $target = jQuery(this.hash);');
     html +=  privates.addLine('          $target.css("background", "#FFCCCC");');
@@ -109,17 +109,15 @@ var privates = {
     html +=  privates.addLine('        text-decoration: underline;');
     html +=  privates.addLine('        color: blue;');
     html +=  privates.addLine('      }');
-    html +=  privates.addLine('      a.fail {');
-    html +=  privates.addLine('        color: red;');
+    html +=  privates.addLine('      .fail {');
+    html +=  privates.addLine('        background: #FFCCCC;');
     html +=  privates.addLine('      }');
-    html +=  privates.addLine('      a.pass {');
+    html +=  privates.addLine('      .pass {');
     html +=  privates.addLine('        color: black;');
+    html +=  privates.addLine('        background: #CCFFCC;');
     html +=  privates.addLine('      }');
     html +=  privates.addLine('      li.fail {');
     html +=  privates.addLine('        color: red;');
-    html +=  privates.addLine('        cursor: pointer;');
-    html +=  privates.addLine('      }');
-    html +=  privates.addLine('      li.pass {');
     html +=  privates.addLine('        cursor: pointer;');
     html +=  privates.addLine('      }');
     html +=  privates.addLine('      .output {');
@@ -196,19 +194,19 @@ var privates = {
       var hname = item.name.replace(/\//g,'-');
       var outcome = item.outcome.status;
       html +=  privates.addLine('    <tr>');
-      html +=  privates.addLine('      <td><a href="#'+hname+'">'+item.name+'</a></td>');
+      html +=  privates.addLine('      <td>'+item.name+'</td>');
       Object.keys(outcome).each(function(aspect) {
         var aspoutcome = outcome[aspect];
         if (typeof aspoutcome !== 'string') {
           Object.keys(aspoutcome).each(function(language) {
             var status = aspoutcome[language];
             var cl = (status=='FAILED'||status=='ERROR') ? 'fail' : 'pass';
-            html +=  privates.addLine('      <td><a href="#'+hname+'-'+aspect+'-'+language+'" class="'+cl+'">'+status+'</a></td>');
+            html +=  privates.addLine('      <td class="'+cl+'"><a href="#'+hname+'-'+aspect+'-'+language+'" class="'+cl+'">'+status+'</a></td>');
           });
         } else {
           var status = aspoutcome;
           var cl = (status=='FAILED'||status=='ERROR') ? 'fail' : 'pass';
-          html +=  privates.addLine('      <td><a href="#'+hname+'-'+aspect+'" class="'+cl+'">'+status+'</a></td>');
+          html +=  privates.addLine('      <td class="'+cl+'"><a href="#'+hname+'-'+aspect+'" class="'+cl+'">'+status+'</a></td>');
         }
       });
       html +=  privates.addLine('    </tr>');
