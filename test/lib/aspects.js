@@ -140,7 +140,7 @@ function run_traces(parameters, asp, app) {
             return {status: result1.status || result2.status, output: result1.output + result2.output};
           });
         });
-      }, q(0))
+      }, q({status:0,output:''}))
     });
 }
 
@@ -295,7 +295,7 @@ var aspects = {
   }
   ,
   triangle: function(parameters) {
-    return q(0);
+      return q({status:0, output:''});
   }
   ,
   code: function(parameters) {
@@ -339,7 +339,7 @@ var aspects = {
         fs.lstatSync(expectation);
         return util.spawn_sync_shell('diff -uw ' + expectation + ' <(set -o pipefail; cat '+ trace + ' | ' + out + '/test' + flush + ' |& bin/code2fdr || echo ERROR)');
       } catch(e) {
-        return util.spawn_sync_shell('diff -uw ' + trace + ' <(set -o pipefail; cat '+ trace + ' | ' + out + '/test' + flush + ' |& bin/code2fdr)')
+        return util.spawn_sync_shell('diff -uw ' + trace + ' <(set -o pipefail; cat '+ trace + ' | ' + out + '/test' + flush + ' |& bin/code2fdr || echo ERROR)')
       }
     });
   }
@@ -402,70 +402,31 @@ var aspects = {
   }
   ,
   table: function(parameters) {
-    return q(0)
-      .then (function(result) {
-        var baseline = parameters.dir + '/baseline/table/'+parameters.model+'-state.dzn';
+    
+    function test_table(promise, args) {
+      var suffix = args[0];
+      var form = args[1];
+      return promise.then(function(result1) {
+        var baseline = parameters.dir + '/baseline/table/'+parameters.model+ '-' + form + '.' + suffix;
         return lstat(baseline)
           .then (function(stats) {
-            var cmd = 'diff -uwB '+baseline+' <('+dzn()+' table --form=state -o - '+parameters.filename+')';
+            var cmd = 'diff -uwB '+baseline+' <('+dzn()+' table --form=' + form + ' -o - '+parameters.filename + (suffix == 'html' ? '| w3m -dump -T text/html' : '') +')';
             return util.spawn_sync_shell(cmd)
-              .fail (function(err) {console.log(err); return {status: -1, output: err}});
+              .fail (function(err) {console.log(err); return {status: -1, output: result.output + err}});
           })
-          .then (function(result1) { return result || result1; })
+          .then (function(result2) { return {status: result1.status || result2.status, output: result1.output + result2.output}; })
           .fail (function(err) {
             const comment = 'table: [SKIPPED] no baseline '+baseline;
             console.log(comment);
-            return {status: 0, output: comment};
+            return {status: result1.status, output: result1.output + comment};
           });
-      })
-      .then (function(result) {
-        var baseline = parameters.dir + '/baseline/table/'+parameters.model+'-event.dzn';
-        return lstat(baseline)
-          .then (function(stats) {
-            var cmd = 'diff -uwB '+baseline+' <('+dzn()+' table --form=event -o - '+parameters.filename+')';
-            return util.spawn_sync_shell(cmd)
-              .fail (function(err) {console.log(err); return {status: -1, output: err}});
-          })
-          .then (function(result1) { return result || result1; })
-          .fail (function(err) {
-            const comment = 'table: [SKIPPED] no baseline '+baseline;
-            console.log(comment);
-            result.output += comment;
-            return result;
-          });
-      })
-      .then (function(result) {
-        var baseline = parameters.dir + '/baseline/table/'+parameters.model+'-state.html';
-        return lstat(baseline)
-          .then (function(stats) {
-            var cmd = 'diff -uwB '+baseline+' <('+dzn()+' --html table --form=state -o - '+parameters.filename+' | w3m -dump -T text/html)';
-            return util.spawn_sync_shell(cmd)
-              .fail (function(err) {console.log(err); return 1; });
-          })
-          .then (function(result1) { return result || result1; })
-          .fail (function(err) {
-            const comment = 'table: [SKIPPED] no baseline '+baseline;
-            console.log(comment);
-            result.output += comment;
-            return result;
-          });
-      })
-      .then (function(result) {
-        var baseline = parameters.dir + '/baseline/table/'+parameters.model+'-event.html';
-        return lstat(baseline)
-          .then (function(stats) {
-            var cmd = 'diff -uwB '+baseline+' <('+dzn()+' --html table --form=event -o - '+parameters.filename+' | w3m -dump -T text/html)';
-            return util.spawn_sync_shell(cmd)
-              .fail (function(err) {console.log(err); return 1; });
-          })
-          .then (function(result1) { return result || result1; })
-          .fail (function(err) {
-            const comment = 'table: [SKIPPED] no baseline '+baseline;
-            console.log(comment);
-            result.output += comment;
-            return result;
-          });
-      })
+      });
+    }
+
+    return [['dzn','state'],
+            ['dzn','event'],
+            ['html','state'],
+            ['html','event']].reduce(test_table, q({status:0, output:''}));
   }
   ,
   traces: function(parameters) {
