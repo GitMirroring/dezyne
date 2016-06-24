@@ -47,102 +47,103 @@ var privates = {
     console.log(fileContent);
   }
   ,
-  addLine: function(line) {
-    return line + '\n';
-  }
-  ,
   transform: function(result) {
+    var html = '';
+    
+    function ln(line) {
+      html += line + '\n';
+    }
+    
+    ln('<!DOCTYPE html>');
+    ln('<html>');
+    ln('  <head>');
+    ln('    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>');
+    ln('    <script type="text/javascript">');
+    ln('      var $target;');
+    ln('      jQuery(document).ready(function() {');
+    ln('        jQuery("a.pass").click(function(event){');
+    ln('          if ($target) $target.css("background", "white");');
+    ln('          $target = jQuery(this.hash);');
+    ln('          $target.css("background", "#CCFFCC");');
+    ln('        });');
+    ln('        jQuery("a.fail").click(function(event){');
+    ln('          if ($target) $target.css("background", "white");');
+    ln('          $target = jQuery(this.hash);');
+    ln('          $target.css("background", "#FFCCCC");');
+    ln('        });');
+    ln('      });');
+    ln('    </script>');
+    ln('    <title>' + result.title + '</title>');
+    ln('    <style>');
+    ln('      body {');
+    ln('        font-family: Sans-serif;');
+    ln('      }');
+    ln('      table {');
+    ln('          border-collapse: collapse;');
+    ln('      }');
+    ln('      table, th, td {');
+    ln('          border: 1px solid gray;');
+    ln('      }');
+    ln('      td {');
+    ln('          text-align: center;');
+    ln('      }');
+    ln('      td, th {');
+    ln('          padding: 5px;');
+    ln('      }');
+    ln('      pre {');
+    ln('        display: inline;');
+    ln('      }');
+    ln('      h2, h3, h4 {');
+    ln('        line-height: 0.3;');
+    ln('        color: blue;');
+    ln('      }');
+    ln('      a {');
+    ln('        color: black;');
+    ln('        text-decoration: none;');
+    ln('      }');
+    ln('      a:hover {');
+    ln('        text-decoration: underline;');
+    ln('        color: blue;');
+    ln('      }');
+    ln('      .fail {');
+    ln('        background: #FFCCCC;');
+    ln('      }');
+    ln('      .pass {');
+    ln('        color: black;');
+    ln('        background: #CCFFCC;');
+    ln('      }');
+    ln('    </style>');
+    ln('  </head>');
+    ln('  <body>');
     var lcStatus = (result.failed) ? 'fail' : 'pass';
     var ucStatus = (result.failed) ? '[FAIL]' : '[PASS]';
-    var html = '';
-    html +=  privates.addLine('<!DOCTYPE html>');
-    html +=  privates.addLine('<html>');
-    html +=  privates.addLine('  <head>');
-    html +=  privates.addLine('    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>');
-    html +=  privates.addLine('    <script type="text/javascript">');
-    html +=  privates.addLine('      var $target;');
-    html +=  privates.addLine('      jQuery(document).ready(function() {');
-    html +=  privates.addLine('        jQuery("a.pass").click(function(event){');
-    html +=  privates.addLine('          if ($target) $target.css("background", "white");');
-    html +=  privates.addLine('          $target = jQuery(this.hash);');
-    html +=  privates.addLine('          $target.css("background", "#CCFFCC");');
-    html +=  privates.addLine('        });');
-    html +=  privates.addLine('        jQuery("a.fail").click(function(event){');
-    html +=  privates.addLine('          if ($target) $target.css("background", "white");');
-    html +=  privates.addLine('          $target = jQuery(this.hash);');
-    html +=  privates.addLine('          $target.css("background", "#FFCCCC");');
-    html +=  privates.addLine('        });');
-    html +=  privates.addLine('      });');
-    html +=  privates.addLine('    </script>');
-    html +=  privates.addLine('    <title>' + result.title + '</title>');
-    html +=  privates.addLine('    <style>');
-    html +=  privates.addLine('      body {');
-    html +=  privates.addLine('        font-family: Sans-serif;');
-    html +=  privates.addLine('      }');
-    html +=  privates.addLine('      table {');
-    html +=  privates.addLine('          border-collapse: collapse;');
-    html +=  privates.addLine('      }');
-    html +=  privates.addLine('      table, th, td {');
-    html +=  privates.addLine('          border: 1px solid gray;');
-    html +=  privates.addLine('      }');
-    html +=  privates.addLine('      td {');
-    html +=  privates.addLine('          text-align: center;');
-    html +=  privates.addLine('      }');
-    html +=  privates.addLine('      td, th {');
-    html +=  privates.addLine('          padding: 5px;');
-    html +=  privates.addLine('      }');
-    html +=  privates.addLine('      pre {');
-    html +=  privates.addLine('        display: inline;');
-    html +=  privates.addLine('      }');
-    html +=  privates.addLine('      h2, h3, h4 {');
-    html +=  privates.addLine('        line-height: 0.3;');
-    html +=  privates.addLine('        color: blue;');
-    html +=  privates.addLine('      }');
-    html +=  privates.addLine('      a {');
-    html +=  privates.addLine('        color: black;');
-    html +=  privates.addLine('        text-decoration: none;');
-    html +=  privates.addLine('      }');
-    html +=  privates.addLine('      a:hover {');
-    html +=  privates.addLine('        text-decoration: underline;');
-    html +=  privates.addLine('        color: blue;');
-    html +=  privates.addLine('      }');
-    html +=  privates.addLine('      .fail {');
-    html +=  privates.addLine('        background: #FFCCCC;');
-    html +=  privates.addLine('      }');
-    html +=  privates.addLine('      .pass {');
-    html +=  privates.addLine('        color: black;');
-    html +=  privates.addLine('        background: #CCFFCC;');
-    html +=  privates.addLine('      }');
-    html +=  privates.addLine('    </style>');
-    html +=  privates.addLine('  </head>');
-    html +=  privates.addLine('  <body>');
-    html +=  privates.addLine('    <h1 id="target" class="' + lcStatus + '">Target: ' + result.target + ' ' + ucStatus + '</h1>');
-    html +=  privates.addLine('    <table>');
-    html +=  privates.addLine('      <tr>');
-    html +=  privates.addLine('        <th>Date</th>');
-    html +=  privates.addLine('        <th>Start time</th>');
-    html +=  privates.addLine('        <th>End time</th>');
-    html +=  privates.addLine('        <th>Elapsed time</th>');
-    html +=  privates.addLine('        <th>Total tests</th>');
-    html +=  privates.addLine('        <th>Passed</th>');
-    html +=  privates.addLine('        <th>Failed</th>');
-    html +=  privates.addLine('      </tr>');
-    html +=  privates.addLine('      <tr>');
-    html +=  privates.addLine('        <td>' + result.startTime.toLocaleDateString() + '</td>');
-    html +=  privates.addLine('        <td>' + result.startTime.toLocaleTimeString() + '</td>');
-    html +=  privates.addLine('        <td>' + result.endTime.toLocaleTimeString() + '</td>');
-    html +=  privates.addLine('        <td>' + result.elapsedTime + '</td>');
-    html +=  privates.addLine('        <td>' + (result.passed + result.failed) + '</td>');
-    html +=  privates.addLine('        <td>' + result.passed + '</td>');
-    html +=  privates.addLine('        <td>' + result.failed + '</td>');
-    html +=  privates.addLine('      </tr>');
-    html +=  privates.addLine('    </table>');
-    html +=  privates.addLine('    <p></p>');
+    ln('    <h1 id="target" class="' + lcStatus + '">Target: ' + result.target + ' ' + ucStatus + '</h1>');
+    ln('    <table>');
+    ln('      <tr>');
+    ln('        <th>Date</th>');
+    ln('        <th>Start time</th>');
+    ln('        <th>End time</th>');
+    ln('        <th>Elapsed time</th>');
+    ln('        <th>Total tests</th>');
+    ln('        <th>Passed</th>');
+    ln('        <th>Failed</th>');
+    ln('      </tr>');
+    ln('      <tr>');
+    ln('        <td>' + result.startTime.toLocaleDateString() + '</td>');
+    ln('        <td>' + result.startTime.toLocaleTimeString() + '</td>');
+    ln('        <td>' + result.endTime.toLocaleTimeString() + '</td>');
+    ln('        <td>' + result.elapsedTime + '</td>');
+    ln('        <td>' + (result.passed + result.failed) + '</td>');
+    ln('        <td>' + result.passed + '</td>');
+    ln('        <td>' + result.failed + '</td>');
+    ln('      </tr>');
+    ln('    </table>');
+    ln('    <p></p>');
 
-    html +=  privates.addLine('    <table>');
+    ln('    <table>');
     if (result.items.length) {
-      html +=  privates.addLine('    <tr>');
-      html +=  privates.addLine('      <th>ITEM</th>');
+      ln('    <tr>');
+      ln('      <th>ITEM</th>');
 
       var outcome = result.items[0].outcome.status;
       Object.keys(outcome).each(function(aspect) {
@@ -151,61 +152,61 @@ var privates = {
         if (typeof aspoutcome !== 'string') {
           len = Object.keys(aspoutcome).length;
         }
-        html +=  privates.addLine('      <th colspan = "'+len+'">'+aspect+'</th>');
+        ln('      <th colspan = "'+len+'">'+aspect+'</th>');
       });
-      html +=  privates.addLine('    </tr>');
-      html +=  privates.addLine('    <tr>');
-      html +=  privates.addLine('      <th> </th>');
+      ln('    </tr>');
+      ln('    <tr>');
+      ln('      <th> </th>');
 
       Object.keys(outcome).each(function(aspect) {
         var aspoutcome = outcome[aspect];
         if (typeof aspoutcome !== 'string') {
           Object.keys(aspoutcome).each(function(language) {
-            html +=  privates.addLine('      <th>'+language+'</th>');
+            ln('      <th>'+language+'</th>');
           });
         } else {
-          html +=  privates.addLine('      <th> </th>');
+          ln('      <th> </th>');
         }
       });
-      html +=  privates.addLine('    </tr>');
+      ln('    </tr>');
     }
     result.items.each(function(item) {
       var hname = item.name.replace(/\//g,'-');
       var outcome = item.outcome.status;
-      html +=  privates.addLine('    <tr>');
-      html +=  privates.addLine('      <td>'+item.name+'</td>');
+      ln('    <tr>');
+      ln('      <td>'+item.name+'</td>');
       Object.keys(outcome).each(function(aspect) {
         var aspoutcome = outcome[aspect];
         if (typeof aspoutcome !== 'string') {
           Object.keys(aspoutcome).each(function(language) {
             var status = aspoutcome[language];
             var cl = (status=='FAILED'||status=='ERROR') ? 'fail' : 'pass';
-            html +=  privates.addLine('      <td class="'+cl+'"><a href="#'+hname+'-'+aspect+'-'+language+'" class="'+cl+'">'+status+'</a></td>');
+            ln('      <td class="'+cl+'"><a href="#'+hname+'-'+aspect+'-'+language+'" class="'+cl+'">'+status+'</a></td>');
           });
         } else {
           var status = aspoutcome;
           var cl = (status=='FAILED'||status=='ERROR') ? 'fail' : 'pass';
-          html +=  privates.addLine('      <td class="'+cl+'"><a href="#'+hname+'-'+aspect+'" class="'+cl+'">'+status+'</a></td>');
+          ln('      <td class="'+cl+'"><a href="#'+hname+'-'+aspect+'" class="'+cl+'">'+status+'</a></td>');
         }
       });
-      html +=  privates.addLine('    </tr>');
+      ln('    </tr>');
     });
-    html +=  privates.addLine('    </table>');
+    ln('    </table>');
 
     result.items.each(function(item) {
       var hname = item.name.replace(/\//g,'-');
       var outcome = item.outcome;
       Object.keys(outcome.output).each(function(aspect_language) {
         var out = outcome.output[aspect_language];
-        html +=  privates.addLine('        <div id="'+hname+'-'+aspect_language+'">');
-        html +=  privates.addLine('          <hr>');
-        html +=  privates.addLine('          <h3>'+item.name+'/'+aspect_language+'</h3>');
-        html +=  privates.addLine('          <pre>'+out+'</pre>');
-        html +=  privates.addLine('        </div>');
+        ln('        <div id="'+hname+'-'+aspect_language+'">');
+        ln('          <hr>');
+        ln('          <h3>'+item.name+'/'+aspect_language+'</h3>');
+        ln('          <pre>'+out+'</pre>');
+        ln('        </div>');
       });
     });
-    html +=  privates.addLine('  </body>');
-    html +=  privates.addLine('<html>');
+    ln('  </body>');
+    ln('<html>');
     return html;
   }
   ,
