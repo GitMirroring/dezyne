@@ -32,7 +32,7 @@ interface Iexternaltypes {
   in void f(integer call_me_i_and_boom);
   in E g();
   in void h(bl ii);
-  
+
   behaviour {
     on e: {reply(Global.aap);}
     on f: {}
@@ -44,15 +44,14 @@ interface Iexternaltypes {
 component externaltypes {
   provides Iexternaltypes i;
   requires Iexternaltypes j;
-  
+
   behaviour {
     integer n;
     Iexternaltypes.bl b;
-    
+
     on i.e(): {reply(Global.aap);}
-    on i.f(): {}
+    on i.f(foo): {}
     on i.g(): {reply(Iexternaltypes.E.yes);}
-    on i.h(): {}
+    on i.h(bar): {}
   }
 }
-

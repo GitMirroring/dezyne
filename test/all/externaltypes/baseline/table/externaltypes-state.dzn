@@ -59,7 +59,7 @@ component externaltypes {
     {
       on i.e():
       reply(Global.aap);
-      on i.f(), i.h():
+      on i.f(foo), i.h(bar):
       {}
       on i.g():
       reply(Iexternaltypes.E.yes);
