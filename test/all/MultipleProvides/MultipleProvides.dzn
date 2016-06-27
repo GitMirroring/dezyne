@@ -1,0 +1,142 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// purpose: Example of two provides interfaces using a shared requires port
+// The following interface describes a device that can be opened and closed. 
+// When the device is opened, the client can request an "action", the out 
+// event "completed" is sent when the action is completed.
+
+interface IDevice {
+  in void open();
+  in void action();
+  out void completed();
+  in void close();
+  
+  behaviour {
+    enum State { Closed, Open, Busy };
+    State state = State.Closed;
+    
+    [state.Closed] {
+      on open: state =  State.Open;
+      on action, close: illegal;
+    }
+    [state.Open] {
+      on action: state = State.Busy;
+      on close: state =  State.Closed;
+      on open: illegal;
+    }
+    [state.Busy] {
+      on inevitable: { completed; state = State.Open; }
+      on open, action, close: illegal;
+    }
+  }
+}
+
+// The following component is a multiplexer of the interface IDevice. 
+// It provides two IDevice interfaces and requires one IDevice interface.
+// The component opens the shared device if one of the client opens the device.
+// The component closes the device after the last client closes the device.
+// Requests for performing an "action" by the clients will be serialized:  
+// if one of the client requests an "action" to be performed, the component 
+// forwards this action to the shared device if the device is not busy; if 
+// it is already performing an "action", the "action" for the second client 
+// will be performed after the "action" of the first client is completed.
+
+component MultipleProvides {
+  provides IDevice p0;
+  provides IDevice p1;
+  requires IDevice r;
+  
+  behaviour {
+    enum State { Closed, Open, Busy };
+    enum Port { None, Port0, Port1 };
+    State s0 = State.Closed; // state of port p0
+    State s1 = State.Closed; // state of port p1
+    Port handling = Port.None; // remember for which port the current "action" is being performed
+    Port pending = Port.None; // remember which port is pending, if any
+    
+    void open() {
+      if (s0.Closed && s1.Closed) {
+        r.open();
+      }
+    }
+    void close() {
+      if (s0.Closed && s1.Closed){
+        r.close();
+      }
+    }
+    
+    void action(Port port) {
+      if (handling.None) {
+        r.action();
+        handling = port;
+      }
+      else {
+        pending = port;
+      }
+    }
+    
+    void handle_pending() {
+      if (pending.None) {
+        handling = Port.None;
+      }
+      else {
+        r.action();
+        handling = pending;
+        pending = Port.None;
+      }
+    }
+
+    [s0.Closed] {
+      on p0.open(): { open(); s0 = State.Open; } 
+      on p0.action, p0.close: illegal;
+    }
+    [s1.Closed] {
+      on p1.open(): { open(); s1 = State.Open; } 
+      on p1.action, p1.close: illegal;
+    }
+    [s0.Open] {
+      on p0.close(): { s0 = State.Closed; close(); }
+      on p0.action(): { action(Port.Port0); s0 = State.Busy; }
+      on p0.open: illegal;
+    }
+    [s1.Open] {
+      on p1.close(): { s1 = State.Closed; close(); }
+      on p1.action(): { action(Port.Port1); s1 = State.Busy; }
+      on p1.open: illegal;
+    }
+    [s0.Busy] {
+      on r.completed(): 
+        [handling.Port0] { p0.completed(); s0 = State.Open; handle_pending(); } 
+      on p0.open, p0.action, p0.close: illegal;
+    }
+    [s1.Busy] {
+      on r.completed(): 
+        [handling.Port1] { p1.completed(); s1 = State.Open; handle_pending(); } 
+      on p1.open, p1.action, p1.close: illegal;
+    }
+    
+    [!(s0.Busy||s1.Busy)] on r.completed(): illegal;
+  }   
+}
+
