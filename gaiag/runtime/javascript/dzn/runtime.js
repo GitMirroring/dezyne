@@ -72,7 +72,7 @@ if (!Function.prototype.runtime) {
       var ff = function () {
         return f.apply (o, args);
       }.bind (this)
-      return o.rt['call_' + direction] (o, ff, [port, name]);
+      return o._dzn.rt['call_' + direction] (o, ff, [port, name]);
     }
   }
 }
@@ -90,14 +90,14 @@ function runtime(illegal) {
     p = p ? '.' + p : '';
     name = (m && m.name ? '.' + m.name : '')
     if (!m) return '<xternal>' + name + p;
-    if (m.parent) return this.path(m.parent.meta, m.name + p, 'x');
+    if (m.parent) return this.path(m.parent._dzn.meta, m.name + p, 'x');
     if (!m.component && !p) return '<external>' + (m.name ? '.' + m.name : '');
     if (!m.component) return (m.name ? m.name : '<external>') + p;
-    return this.path(m.component.meta, m.name + p, 'x');
+    return this.path(m.component._dzn.meta, m.name + p, 'x');
   };
 
   this.external = function(c) {
-    return c.rt.components.indexOf (c) == -1;
+    return c._dzn.rt.components.indexOf (c) == -1;
   };
 
   this.flush = function(c) {
@@ -107,23 +107,23 @@ function runtime(illegal) {
     while (c.queue && c.queue.length) {
       this.handle(c, c.queue.pop());
     }
-    if (c.deferred) {
-      var t = c.deferred;
-      c.deferred = null;
-      if (!t.handling) {
+    if (c._dzn.deferred) {
+      var t = c._dzn.deferred;
+      c._dzn.deferred = null;
+      if (!t._dzn.handling) {
         this.flush(t);
       }
     }
   };
 
   this.defer = function(i, o, f) {
-    if(!(i && i.flushes) && !o.handling) {
+    if(!(i && i._dzn.flushes) && !o._dzn.handling) {
       this.handle(o, f);
     }
     else {
       o.queue = [f].concat (o.queue || []);
       if (i) {
-        i.deferred = o;
+        i._dzn.deferred = o;
       }
     }
   };
@@ -134,28 +134,28 @@ function runtime(illegal) {
   }.bind (this);
   
   this.handle = function(c, f) {
-    if (c.handling) this.collateral_block (c.locator);
-    if (c.handling)
-      throw new Error ('runtime error: component already handling an event: ' + c.meta.name);
-    c.handling = true;
+    if (c._dzn.handling) this.collateral_block (c._dzn.locator);
+    if (c._dzn.handling)
+      throw new Error ('runtime error: component already handling an event: ' + c._dzn.meta.name);
+    c._dzn.handling = true;
     var r = f();
-    c.handling = false;
+    c._dzn.handling = false;
     this.flush(c);
     return r;
   };
 
   this.trace_in = function(m, e, trace) {
-    trace(this.path(m[0].meta.requires) + '.' + e + ' -> ' +
-          this.path(m[0].meta.provides) + '.' + e + '\n');
+    trace(this.path(m[0]._dzn.meta.requires) + '.' + e + ' -> ' +
+          this.path(m[0]._dzn.meta.provides) + '.' + e + '\n');
   };
 
   this.trace_out = function(m, e, trace) {
-    trace(this.path(m[0].meta.provides) + '.' + e + ' -> ' +
-          this.path(m[0].meta.requires) + '.' + e + '\n');
+    trace(this.path(m[0]._dzn.meta.provides) + '.' + e + ' -> ' +
+          this.path(m[0]._dzn.meta.requires) + '.' + e + '\n');
   };
 
   this.call_in = function(c, f, m) {
-    var trace = c.locator.get(Function.prototype, 'trace');
+    var trace = c._dzn.locator.get(Function.prototype, 'trace');
     this.trace_in(m, m[1], trace);
     var r = this.handle(c, f);
     this.trace_out(m, (r === undefined ? 'return' : r), trace);
@@ -163,16 +163,16 @@ function runtime(illegal) {
   }
 
   this.call_out = function(c, f, m) {
-    var trace = c.locator.get(Function.prototype, 'trace');
+    var trace = c._dzn.locator.get(Function.prototype, 'trace');
     this.trace_out(m, m[1], trace);
-    this.defer(m[0].meta.provides.component, c, f);
+    this.defer(m[0]._dzn.meta.provides.component, c, f);
   };
 
   this.bind = function (o) {
-    o.meta.ports
+    o._dzn.meta.ports
       .each (function (name) {
         var port = o[name];
-        var dir = Object.keys (port.meta.provides).length ? 'in' : 'out';
+        var dir = Object.keys (port._dzn.meta.provides).length ? 'in' : 'out';
         Object.keys (port[dir])
           .each (function (event) {
             if (port[dir][event])
@@ -341,25 +341,26 @@ function locator(services) {
 function connect(provided, required) {
   provided.out = required.out;
   required.in = provided.in;
-  provided.meta.requires = required.meta.requires;
-  required.meta.provides = provided.meta.provides;
+  provided._dzn.meta.requires = required._dzn.meta.requires;
+  required._dzn.meta.provides = provided._dzn.meta.provides;
 };
 
 function component (locator, meta) {
-  this.locator = locator;
-  this.rt = locator.get(new runtime());
-  this.rt.components = (this.rt.components || []).concat ([this]);
-  this.meta = meta;
-  this.flushes = true;
+  this._dzn = {};
+  this._dzn.locator = locator;
+  this._dzn.rt = locator.get(new runtime());
+  this._dzn.rt.components = (this._dzn.rt.components || []).concat ([this]);
+  this._dzn.meta = meta;
+  this._dzn.flushes = true;
 }
 
 function check_bindings(component) {
-  component.meta.ports.map(function(p){
-    if(!component[p]) throw new Error(component.meta.name + '.' + p + ' not connected');
-    Object.keys(component[p].in).map(function(e){if(!component[p].in[e]) throw new Error(component.meta.name + '.' + p + '.in.' + e + ' not connected');});
-    Object.keys(component[p].out).map(function(e){if(!component[p].out[e]) throw new Error(component.meta.name + '.' + p + '.out.' + e + ' not connected');});
+  component._dzn.meta.ports.map(function(p){
+    if(!component[p]) throw new Error(component._dzn.meta.name + '.' + p + ' not connected');
+    Object.keys(component[p].in).map(function(e){if(!component[p].in[e]) throw new Error(component._dzn.meta.name + '.' + p + '.in.' + e + ' not connected');});
+    Object.keys(component[p].out).map(function(e){if(!component[p].out[e]) throw new Error(component._dzn.meta.name + '.' + p + '.out.' + e + ' not connected');});
   });
-  component.meta.children.map(function(c){check_bindings(component[c]);});
+  component._dzn.meta.children.map(function(c){check_bindings(component[c]);});
 }
 
 var dzn = extend (typeof (dzn !== 'undefined') && dzn ? dzn : {}, {

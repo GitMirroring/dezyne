@@ -65,8 +65,8 @@ function log_valued(prefix, event, event_map) {
 
 function #.scope_model _fill_event_map(m)
 {
-  var c = new dzn.component(m.locator, {provides:{}});
-  c.flushes = dzn.flush;
+  var c = new dzn.component(m._dzn.locator, {provides:{}});
+  c._dzn.flushes = dzn.flush;
 
   var e = {
 #(map
@@ -77,16 +77,16 @@ function #.scope_model _fill_event_map(m)
        (om:events port)))) (om:ports model)) };
   #(map (init-port #{
      if (dzn.flush) {
-       m.#name .meta.requires.component = c;
-       m.#name .meta.requires.name = '<internal>.#name ';
+       m.#name ._dzn.meta.requires.component = c;
+       m.#name ._dzn.meta.requires.name = '<internal>.#name ';
      }
      #}) (filter om:provides? (om:ports model)))
   #(map (init-port #{
      if (dzn.flush) {
-       m.#name .meta.provides.component = c;
-       m.#name .meta.provides.name = '<internal>.#name ';
+       m.#name ._dzn.meta.provides.component = c;
+       m.#name ._dzn.meta.provides.name = '<internal>.#name ';
      }
-       e['#name .<flush>'] = function() {console.error('#name .<flush>'); m.rt.flush(m.#name .meta.provides.component);};
+       e['#name .<flush>'] = function() {console.error('#name .<flush>'); m._dzn.rt.flush(m.#name ._dzn.meta.provides.component);};
      #}) (filter om:requires? (om:ports model)))
   #(map
     (lambda (port)
@@ -95,8 +95,8 @@ function #.scope_model _fill_event_map(m)
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
  #(map (init-port #{
-     m.#name .meta.provides.name = "#name ";
-     m.#name .meta.requires.name = "#name ";
+     m.#name ._dzn.meta.provides.name = "#name ";
+     m.#name ._dzn.meta.requires.name = "#name ";
  #}) (om:ports model))
    return e;
 }

@@ -3,13 +3,14 @@
 dzn.extend (dzn, dzn_require (__dirname + '/#interface '));
 #}) (delete-duplicates (om:ports model) (lambda (x y) (equal? (.type x) (.type y)))))
 #(javascript:namespace model).#.model  = function (locator, meta) {
-  this.locator = locator;
-  this.rt = locator.get(new dzn.runtime());
-  this.rt.components = (this.rt.components || []).concat ([this]);
-  this.meta = meta;
-  this.meta.ports = [#((->join ",") (map (lambda (s) (list "'" (.name s) "'")) ((compose .elements .ports) model)))];
-  this.meta.children = [];
-  this.flushes = true;#
+  this._dzn = {};
+  this._dzn.locator = locator;
+  this._dzn.rt = locator.get(new dzn.runtime());
+  this._dzn.rt.components = (this._dzn.rt.components || []).concat ([this]);
+  this._dzn.meta = meta;
+  this._dzn.meta.ports = [#((->join ",") (map (lambda (s) (list "'" (.name s) "'")) ((compose .elements .ports) model)))];
+  this._dzn.meta.children = [];
+  this._dzn.flushes = true;#
   (->string (map (declare-enum model) (append (om:enums (.behaviour model)) (om:enums))))
   #(map (init-member model #{
   #(string-if (eq? expression *unspecified*) "" #{this.#name  = #expression ;
@@ -40,7 +41,7 @@ dzn.extend (dzn, dzn_require (__dirname + '/#interface '));
    this.#name  = function (#formals) {
 #statements }.bind(this);
 #}) (om:functions model))
-  this.rt.bind(this);
+  this._dzn.rt.bind(this);
 };
 
 if (typeof (module) !== 'undefined') {
