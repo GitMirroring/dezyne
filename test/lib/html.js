@@ -181,7 +181,7 @@ var privates = {
           Object.keys(aspoutcome).each(function(language) {
             var status = aspoutcome[language];
             var cl = (status=='FAILED'||status=='ERROR') ? 'fail' : 'pass';
-            ln('      <td class="'+cl+'"><a href="#'+hname+'-'+aspect+'-'+language+'" class="'+cl+'">'+status+'</a></td>');
+            ln('      <td class="'+cl+'"><a href="#'+hname+'-'+aspect+'-'+language.replace(/\+/g,'p')+'" class="'+cl+'">'+status+'</a></td>');
           });
         } else {
           var status = aspoutcome;
@@ -198,7 +198,7 @@ var privates = {
       var outcome = item.outcome;
       Object.keys(outcome.output).each(function(aspect_language) {
         var out = outcome.output[aspect_language];
-        ln('        <div id="'+hname+'-'+aspect_language+'">');
+        ln('        <div id="'+hname+'-'+aspect_language.replace(/\+/g,'p')+'">');
         ln('          <hr>');
         ln('          <h3>'+item.name+'/'+aspect_language+'</h3>');
         ln('          <pre>'+out+'</pre>');
