@@ -39,34 +39,21 @@ var output = {
   
     function read_outcome(item) {
       var outcome = {
-        build: {
-          'c++': { output:'', status:'ERROR' },
-          c: { output:'', status:'ERROR' },
-          javascript: { output:'', status:'ERROR' }
+        status: {
+          build: { 'c++': 'NOLOG', c: 'NOLOG', javascript: 'NOLOG' },
+          code: { 'c++': 'NOLOG', c: 'NOLOG', javascript: 'NOLOG' },
+          convert: 'NOLOG',
+          execute: { 'c++': 'NOLOG', c: 'NOLOG', javascript: 'NOLOG' },
+          parse: 'NOLOG',
+          run: 'NOLOG',
+          table: 'NOLOG',
+          traces: 'NOLOG',
+          triangle: { 'c++': 'NOLOG', c: 'NOLOG', javascript: 'NOLOG' },
+          verify: 'NOLOG',
+          view: 'NOLOG'
         },
-        code: {
-          'c++': { output:'', status:'ERROR' },
-          c: { output:'', status:'ERROR' },
-          javascript: { output:'', status:'ERROR' }
-        },
-        convert: { output:'', status:'ERROR' },
-        execute: {
-          'c++': { output:'', status:'ERROR' },
-          c: { output:'', status:'ERROR' },
-          javascript: { output:'', status:'ERROR' }
-        },
-        parse: { output:'', status:'ERROR' },
-        run: { output:'', status:'ERROR' },
-        table: { output:'', status:'ERROR' },
-        traces: { output:'', status:'ERROR' },
-        triangle: {
-          'c++': { output:'', status:'ERROR' },
-          c: { output:'', status:'ERROR' },
-          javascript: { output:'', status:'ERROR' }
-        },
-        verify: { output:'', status:'ERROR' },
-        view: { output:'', status:'ERROR' }
-      };      
+        output: {}
+      };
 
       try {
         var outcome_string = fs.readFileSync(item+'/outcome.json');
