@@ -23,16 +23,25 @@
 # Code:
 
 SUBM := json/
-SRCS := $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/$(SUBM)json) || (find $(CDIR)/$(SUBM)json -name '*.scm')))
-SRCS += $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/$(SUBM)*.scm) || (find $(CDIR)/$(SUBM) -maxdepth 1 -name '*.scm')))
+SRCS := $(filter %.scm,$(shell $(GIT_LS_FILES) $(CDIR)/$(SUBM)json))
+SRCS += $(filter $(CDIR)/$(SUBM)%.scm,$(shell $(GIT_LS_FILES) $(CDIR)/$(SUBM)*.scm))
 
 include make/guile.mk
 
-SRCS := $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/language) || find $(CDIR)/language))
+ifeq ($(GUILE_EFFECTIVE_VERSION),2.0)
+$(shell rm -f $(CDIR)/system; ln -s 2.0/system $(CDIR)/system)
+SRCS := $(filter %.scm,$(shell $(GIT_LS_FILES) $(CDIR)/system))
+
+include make/guile.mk
+else
+$(shell rm -f $(CDIR)/system)
+endif
+
+SRCS := $(filter %.scm,$(shell $(GIT_LS_FILES) $(CDIR)/language))
 
 include make/guile.mk
 
-SRCS := $(filter %.scm,$(shell test -d .git && (git ls-files $(CDIR)/gaiag) || find $(CDIR)/gaiag))
+SRCS := $(filter %.scm,$(shell $(GIT_LS_FILES) $(CDIR)/gaiag))
 
 CLEAN:=$(CLEAN) $(BUILD)/ccache $(HOME)/.cache/guile
 
@@ -52,7 +61,7 @@ $(CDIR)-check: $(BUILD)/$(CDIR)
 	cd $(CDIR) && GUILE_AUTO_COMPILE=0 GUILE_LOAD_PATH=$(GLP) GUILE_LOAD_COMPILED_PATH=$(GLCP) ./test.sh
 
 SUBM := test-suite/
-SRCS := $(filter %.scm %.test,$(shell test -d .git && (git ls-files $(CDIR)/test-suite) || find $(CDIR)/test-suite))
+SRCS := $(filter %.scm %.test,$(shell $(GIT_LS_FILES) $(CDIR)/test-suite))
 
 include make/guile.mk
 
