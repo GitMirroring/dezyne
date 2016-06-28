@@ -84,10 +84,9 @@ var privates = {
     ln('      table, th, td {');
     ln('          border: 1px solid gray;');
     ln('      }');
-    ln('      td {');
-    ln('          text-align: center;');
-    ln('      }');
     ln('      td, th {');
+    ln('          text-align: center;');
+    ln('          font-size: 80%;');
     ln('          padding: 5px;');
     ln('      }');
     ln('      pre {');
