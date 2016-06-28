@@ -1,8 +1,7 @@
 verify: I: check: completeness: ok
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
-verify: Recursion: check: deterministic: fail
-i.e
+verify: Recursion: check: deterministic: ok
 verify: Recursion: check: completeness: ok
 verify: Recursion: check: illegal: ok
 verify: Recursion: check: deadlock: fail
