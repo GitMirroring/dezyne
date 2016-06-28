@@ -51,4 +51,32 @@ $(CDIR)-check: CDIR:=$(CDIR)
 $(CDIR)-check: $(BUILD)/$(CDIR)
 	cd $(CDIR) && GUILE_AUTO_COMPILE=0 GUILE_LOAD_PATH=$(GLP) GUILE_LOAD_COMPILED_PATH=$(GLCP) ./test.sh
 
+SUBM := test-suite/
+SRCS := $(filter %.scm %.test,$(shell test -d .git && (git ls-files $(CDIR)/test-suite) || find $(CDIR)/test-suite))
+
+include make/guile.mk
+
+coverage: $(CDIR)-coverage
+
+TOPDIR := $(shell pwd)
+$(CDIR)-coverage: CDIR:=$(CDIR)
+$(CDIR)-coverage: $(BUILD)/gaiag $(BUILD)/gaiag.lcov/gaiag.info
+
+$(BUILD)/gaiag.lcov/gaiag.info: CDIR:=$(CDIR)
+$(BUILD)/gaiag.lcov/gaiag.info:
+	mkdir -p $(BUILD)/gaiag.lcov
+	cd $(CDIR) && GUILE='guile --debug --no-auto-compile' ./test.sh --coverage < /dev/null
+	mv $(CDIR)/gaiag.info $(BUILD)/gaiag.lcov
+
+COVERAGE_REPORT:=$(BUILD)/gaiag.lcov/index.html
+COVERAGE_INFOS:=$(wildcard $(BUILD)/gaiag.lcov/*.info)
+COVERAGE_GAIAG:=$(COVERAGE_INFOS:%.info=%.info.gaiag)
+$(COVERAGE_REPORT): $(COVERAGE_GAIAG)
+	genhtml --output-dir=$(@D) --prefix=$(TOPDIR)/gaiag $^
+
+coverage: $(COVERAGE_REPORT)
+
+%.info.gaiag: %.info
+	lcov -r $< /usr/share\* /gnu/store\* $(TOPDIR) $(TOPDIR)/gaiag/module/system/\* $(TOPDIR)/gaiag/test-suite\* \*gaiag/coverage -o $@ | grep -v Removing
+
 include make/check.mk

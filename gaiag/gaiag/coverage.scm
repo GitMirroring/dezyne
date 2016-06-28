@@ -58,7 +58,10 @@ Examples:
      options)))
 
 (define (cover thunk file-name)
-  (call-with-values (lambda () (with-code-coverage (the-vm) thunk))
+  (call-with-values (lambda ()
+                      (if (defined? 'the-vm (resolve-module '(system vm vm)))
+                          (with-code-coverage (the-vm) thunk)
+                          (with-code-coverage thunk)))
     (lambda (data result)
       (let ((port (open-output-file (->string file-name))))
         (coverage-data->lcov data port)

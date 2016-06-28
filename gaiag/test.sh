@@ -33,6 +33,6 @@ build=${ABS_BUILD-$top/build}
 ccache=$build/ccache
 GUILE_AUTO_COMPILE=0
 GUILE_LOAD_PATH="$prefix:$prefix/json:$GUILE_LOAD_PATH"
-GUILE_LOAD_COMPILED_PATH="$ccache:$ccache/json:$GUILE_LOAD_COMPILED_PATH"
+GUILE_LOAD_COMPILED_PATH="$ccache:$ccache/json:$ccache/test-suite:$GUILE_LOAD_COMPILED_PATH"
 export GUILE_AUTO_COMPILE GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
 exec ${GUILE-guile} -e main test-suite/run-tests "$@" < /dev/null

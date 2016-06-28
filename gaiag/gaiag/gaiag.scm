@@ -122,9 +122,10 @@ Examples:
 (define (main args)
   (let* ((options (parse-opts args))
          (debug? (option-ref options 'debug #f))
-         (coverage? (option-ref options 'coverage #f)))
+         (coverage? (or (option-ref options 'coverage #f)
+                        (getenv "GAIAG_COVERAGE"))))
     (if coverage?
-        (cover (lambda () (main- args)) (list 'gaiag '.info))
+        (cover (lambda () (main- args)) (->string (getenv "ABS_BUILD") "/gaiag.lcov/gaiag-" (getpid) ".info"))
         (if debug?
          (call-with-error-handling (lambda () (main- args)))
          (main- args)))))
