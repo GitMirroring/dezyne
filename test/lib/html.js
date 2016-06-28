@@ -56,6 +56,7 @@ var privates = {
     
     ln('<!DOCTYPE html>');
     ln('<html>');
+    ln('  <title>Result of '+result.target+'</title>');
     ln('  <head>');
     ln('    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>');
     ln('    <script type="text/javascript">');
