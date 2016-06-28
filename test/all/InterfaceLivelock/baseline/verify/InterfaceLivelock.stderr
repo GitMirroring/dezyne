@@ -1,2 +1,2 @@
 all/InterfaceLivelock/InterfaceLivelock.dzn:13:16:i7: livelock in model BlindLoop
-all/InterfaceLivelock/InterfaceLivelock.dzn:3:1:i2: Component InterfaceLivelock is non-compliant with interface of provided port
+all/InterfaceLivelock/InterfaceLivelock.dzn:33:1:i2: Component InterfaceLivelock is non-compliant with interface of provided port
