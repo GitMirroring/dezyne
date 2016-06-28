@@ -45,7 +45,6 @@
 
   :export (
            ast-name
-           collect
            goops:clone
            om->list
            om2list
