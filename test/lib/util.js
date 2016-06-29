@@ -162,7 +162,9 @@ var util = {
     var shell = windows_p ? 'cmd.exe' : 'bash';
     var c = windows_p ? '/c' : '-c';
 
-    console.log (cmd.replace (/\r/g, '\\r'));
+    var printable_cmd = cmd.replace (/\r/g, '\\r');
+
+    console.log (printable_cmd);
 
     var future = q.defer ();
 
@@ -173,7 +175,7 @@ var util = {
 
     var p = child.spawn (shell, [c, ulimit + cmd], {env: env, detached: true, stdio:'pipe'});
 
-    var output = '';
+    var output = printable_cmd + '\n';
 
     p.stdout.on('data', function(data){process.stdout.write(data); output += data;});
     p.stderr.on('data', function(data){process.stderr.write(data); output += data;});
