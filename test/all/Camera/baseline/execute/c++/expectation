@@ -1,9 +1,0 @@
-setup
-return
-port.interrupt
-Driver.control_focus
-port.interrupt
-shoot
-return
-port.interrupt
-Driver.control_image

@@ -1,1 +1,1 @@
-{"skip":["c","javascript","run"],"comment":"handwritten c++ main does not accept a trace"}
+{"skip":["c","execute","run","triangle"],"comment":"handwritten main, no trace: cannot c, execute,run"}
