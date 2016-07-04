@@ -216,8 +216,11 @@ var aspects = {
                   outcome.output[aspect] = outcome.output[aspect] || comment(parameters.meta, aspect);
               });
             });
-            fs.writeFileSync('out/' + path.basename(dir) + '/outcome.json', JSON.stringify(outcome,null,2));
-            return result.status;
+            return util.spawn_sync_shell('mkdir -p out/' + path.basename(dir))
+              .then(function() {
+                fs.writeFileSync('out/' + path.basename(dir) + '/outcome.json', JSON.stringify(outcome,null,2));
+                return result.status;
+              });
           });
       });
   }
