@@ -21,5 +21,5 @@
 //
 // Code:
 
-var languages = ['c++', 'c', 'javascript'];
+var languages = ['c++', 'c', 'cs', 'javascript'];
 module.exports = languages;

@@ -1,6 +1,5 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
@@ -22,12 +21,26 @@
 # 
 # Code:
 
-ifeq ($(MAIN),)
-MAIN:=$(OUT)/main.js
+ifeq ($(HEADER),)
+HEADER:=$(OUT)/header.cs
 endif
+
+ifeq ($(MAIN),)
+MAIN:=$(OUT)/main.cs
+endif
+
+define MONO_SCRIPT
+#! /bin/sh
+mono --debug $$(dirname $$0)/test.exe "$$@"
+endef
+export MONO_SCRIPT
 
 default: $(OUT)/test
 
-$(OUT)/test: $(MAIN)
-	cp $(MAIN) $(OUT)/test
-	chmod +x $(OUT)/test
+$(OUT)/test: $(OUT)/test.exe
+	echo "$$MONO_SCRIPT" > $@
+	chmod +x $@
+
+$(OUT)/test.exe: $(HEADER) $(MAIN) $(wildcard $(OUT)/dzn/*.cs)
+	cp --force --backup $(MAIN) $(OUT)/main.cs
+	mcs -debug -out:$@ $^
