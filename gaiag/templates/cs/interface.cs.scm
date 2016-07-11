@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -37,6 +37,7 @@ public class #.scope_model  : Interface<#.scope_model .In, #.scope_model .Out> {
  (filter om:out? ((compose .elements .events) model))))
   }
   public #.scope_model() {
+    dzn_meta = new dzn.port.Meta ();
     inport = new In();
     outport = new Out();
   }

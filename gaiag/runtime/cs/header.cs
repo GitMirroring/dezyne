@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
@@ -39,10 +39,34 @@ public class RuntimeException : SystemException {
   public RuntimeException(String msg) : base(msg) {}
 };
 
-abstract public class Interface<I,O> where I: Interface<I,O>.In where O : Interface<I,O>.Out {
-  abstract public class Port {
+namespace dzn {
+  public class Meta {
     public String name;
-    public Component self;
+    public Meta parent;
+    public Meta (String name="", Meta parent=null) {this.name=name;this.parent=parent;}
+
+  };
+  namespace port {
+    public class Meta {
+      public class Provides {
+        public String name = null;
+        public Component component;
+        public dzn.Meta meta = new dzn.Meta();
+      };
+      public Provides provides = new Provides();
+      public class Requires {
+        public String name = null;
+        public Component component;
+        public dzn.Meta meta = new dzn.Meta();
+      };
+      public Requires requires = new Requires();
+    };
+  };
+};
+
+abstract public class Interface<I,O> where I: Interface<I,O>.In where O : Interface<I,O>.Out {
+  public dzn.port.Meta dzn_meta;
+  abstract public class Port {
   }
   abstract public class In : Port {
   }
@@ -63,9 +87,8 @@ abstract public class Interface<I,O> where I: Interface<I,O>.In where O : Interf
 abstract public class ComponentBase {
   public Locator locator;
   public Runtime runtime;
-  public SystemComponent parent;
-  public String name;
-  public ComponentBase(Locator locator, String name, SystemComponent parent) {this.locator = locator; this.parent = parent; this.name = name; this.runtime = locator.get<Runtime>(); this.runtime.components.Enqueue(this);}
+  public dzn.Meta dzn_meta;
+  public ComponentBase(Locator locator, String name, dzn.Meta parent) {this.locator = locator; this.dzn_meta = new dzn.Meta (name, parent); this.runtime = locator.get<Runtime>(); this.runtime.components.Enqueue(this);}
 }
 
 public class Component : ComponentBase {
@@ -73,21 +96,15 @@ public class Component : ComponentBase {
   public bool flushes;
   public Component deferred;
   public Queue<Action> q;
-  public Component(Locator locator, String name="", SystemComponent parent=null)
+  public Component(Locator locator, String name="", dzn.Meta parent=null)
     : base(locator, name, parent)
     {this.q = new Queue<Action>();}
 }
 
 abstract public class SystemComponent : ComponentBase {
-  public SystemComponent(Locator locator, String name, SystemComponent parent)
+  public SystemComponent(Locator locator, String name, dzn.Meta parent)
     : base(locator, name, parent)
     {}
-}
-
-public class Meta<I,O> where I: Interface<I,O>.In where O : Interface<I,O>.Out {
-  public Interface<I,O> i;
-  public String e;
-  public Meta(Interface<I,O> i, String e) {this.i = i; this.e = e;}
 }
 
 public class Runtime {
@@ -128,7 +145,7 @@ public class Runtime {
       }
     }
   }
-  public static R valued_helper<I,O,R>(Component c, Func<R> f, Meta<I,O> m) where I: Interface<I,O>.In where O : Interface<I,O>.Out where R : struct, IComparable, IConvertible, IFormattable {
+  public static R valued_helper<R>(Component c, Func<R> f) where R : struct, IComparable, IConvertible, IFormattable {
     if (c.handling) {
       throw new RuntimeException("a valued event cannot be deferred");
     }
@@ -149,40 +166,34 @@ public class Runtime {
       throw new RuntimeException("component already handling an event");
     }
   }
-  public static void callIn<I,O>(Component c, Action f, Meta<I,O> m) where I: Interface<I,O>.In where O : Interface<I,O>.Out {
-    traceIn(m.i, m.e);
+  public static void callIn(Component c, Action f, dzn.port.Meta m, String e) {
+    traceIn(m, e);
     handle(c, f);
-    traceOut(m.i, "return");
+    traceOut(m, "return");
   }
-  public static R callIn<I,O,R>(Component c, Func<R> f, Meta<I,O> m) where I: Interface<I,O>.In where O : Interface<I,O>.Out where R : struct, IComparable, IConvertible, IFormattable {
-    traceIn(m.i, m.e);
-    R r = valued_helper(c, f, m);
-    traceOut(m.i, r.GetType().Name + "_" + Enum.GetName(r.GetType(),r));
+  public static R callIn<R>(Component c, Func<R> f, dzn.port.Meta m, String e) where R : struct, IComparable, IConvertible, IFormattable {
+    traceIn(m, e);
+    R r = valued_helper(c, f);
+    traceOut(m, r.GetType().Name + "_" + Enum.GetName(r.GetType(),r));
     return r;
   }
-  public static void callOut<I,O>(Component c, Action f, Meta<I,O> m) where I: Interface<I,O>.In where O : Interface<I,O>.Out {
-    traceOut(m.i, m.e);
-    defer(m.i.inport.self, c, f);
+  public static void callOut(Component c, Action f, dzn.port.Meta m, String e) {
+    traceOut(m, e);
+    defer(m.provides.component, c, f);
   }
-  public static String path(ComponentBase o, String p) {
-    if (o == null) {
-      return "<external>" + (p == "" ? "" : "." + p);
-    }
-    if (o.parent != null) {
-      return path(o.parent, o.name + (p == "" ? p : ".") + p);
-    }
-    return o.name + (o.name != "" && p != "" ? "." : "") + p;
+  public static String path(dzn.Meta m, String p="") {
+    p = p == "" ? p : "." + p;
+    if (m == null) return "<external>" + p;
+    if (m.parent == null) return m.name + p;
+    return path(m.parent, m.name + p);
   }
-  public static String path<I,O>(Interface<I,O>.Port o, String p="") where I: Interface<I,O>.In where O : Interface<I,O>.Out {
-    return path(o.self, (o.name == null ? "" : o.name) + (p == "" ? p : ".") + p);
+  public static void traceIn(dzn.port.Meta m, String e) {
+    System.Console.Error.WriteLine(path(m.requires.meta, m.requires.name) + "." + e + " -> "
+                                   + path(m.provides.meta, m.provides.name) + "." + e);
   }
-  public static void traceIn<I,O>(Interface<I,O> i, String e) where I: Interface<I,O>.In where O : Interface<I,O>.Out {
-    System.Console.Error.WriteLine(path(i.outport) + "." + e + " -> "
-                                   + path(i.inport) + "." + e);
-  }
-  public static void traceOut<I,O>(Interface<I,O> i, String e) where I: Interface<I,O>.In where O : Interface<I,O>.Out {
-    System.Console.Error.WriteLine(path(i.inport) + "." + e + " -> "
-                                 + path(i.outport) + "." + e);
+  public static void traceOut(dzn.port.Meta m, String e) {
+    System.Console.Error.WriteLine(path(m.provides.meta, m.provides.name) + "." + e + " -> "
+                                   + path(m.requires.meta, m.requires.name) + "." + e);
   }
 }
 
@@ -192,11 +203,9 @@ public class Locator {
   public Locator():this(new Services()) {}
   public Locator(Services services) {this.services = services;}
   public static String key(Type c, String key) {
-    //System.Console.Error.WriteLine("KEY<TYPE> " + c.Name);
     return c.Name + key;
   }
   public static String key(Object o, String key) {
-    //System.Console.Error.WriteLine("KEY<object> " + o.GetType().Name);
     return Locator.key(o.GetType(), key);
   }
   public Locator set(Object o, String key="") {

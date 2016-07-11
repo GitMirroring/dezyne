@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -34,14 +34,15 @@ public class #.scope_model  : Component {#
     (map (init-port #{#'()
   public #((om:scope-join) interface)  #name;#}) ((compose .elements .ports) model))
 
-  public #.scope_model(Locator locator, String name="", SystemComponent parent=null) : base(locator, name, parent) {
+  public #.scope_model(Locator locator, String name="", dzn.Meta parent=null) : base(locator, name, parent) {
     this.flushes = true;#
 (map (init-member model #{#'()
     #(string-if (eq? expression (if #f #f)) "" #{#name  = #expression ;#})#}) (om:variables model))#
 (map (init-port #{#'()
     #name  = new #((om:scope-join) interface)();
-    #name .inport.name = "#name ";
-    #name .inport.self = this;#})
+    #name .dzn_meta.provides.name = "#name ";
+    #name .dzn_meta.provides.meta = this.dzn_meta;
+    #name .dzn_meta.provides.component = this;#})
     (filter om:provides? ((compose .elements .ports) model)))#
 (map (init-port #{#'()
 #(string-if injected?
@@ -50,14 +51,15 @@ public class #.scope_model  : Component {#
 #}
 #{
     #name  = new #((om:scope-join) interface)();
-    #name .outport.name = "#name ";
-    #name .outport.self = this;#})
+    #name .dzn_meta.requires.name = "#name ";
+    #name .dzn_meta.requires.component = this;
+    #name .dzn_meta.requires.meta = this.dzn_meta;#})
 #})
     (filter om:requires? ((compose .elements .ports) model)))#
 (map
    (lambda (port)
      (map (define-on model port #{#'()
-   #port .#direction port.#event  = (#formals) => {#(string-if (not (eq? return-type 'void)) #{return #})Runtime.call#(symbol-capitalize direction)<#((om:scope-name '_) interface) .In,#((om:scope-name '_) interface) .Out#(string-if (not (eq? return-type 'void)) #{, #return-type#})>(this, () => {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}, new Meta<#((om:scope-name '_) interface) .In,#((om:scope-name '_) interface) .Out>(this.#port , "#event"));};
+   #port .#direction port.#event  = (#formals) => {#(string-if (not (eq? return-type 'void)) #{return #})Runtime.call#(symbol-capitalize direction)#(string-if (not (eq? return-type 'void)) #{<#return-type >#})(this, () => {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}, this.#port .dzn_meta, "#event ");};
    #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))
   }#

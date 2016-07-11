@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 
 class main {
+  static bool flush = false;
   static bool relaxed = false;
 
   static String drop_prefix(String str, String prefix) {
@@ -91,9 +92,12 @@ class main {
 
   private static EventMap fillEventMap(#.scope_model  m) {
   V<int> v = new V<int> (0);
+  if (v.v == 0) {}
   Component c = new Component(m.locator);
-  c.flushes = true;
-  EventMap e = new EventMap();
+  c.flushes = flush;
+  c.dzn_meta.parent = null;
+  c.dzn_meta.name = "<external>";
+ EventMap e = new EventMap();
 #(map
     (lambda (port)
     (map (define-on model port #{
@@ -101,21 +105,45 @@ class main {
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
 #(map (init-port #{
-    m.#name .inport.self = c;
-    m.#name .inport.name = "<internal>";
-    e.Add("#name .<flush>", () => {System.Console.Error.WriteLine("#name .<flush>"); Runtime.flush (m.#name .inport.self);});
+
+    m.#name .dzn_meta.requires.name = "#name ";
+    m.#name .dzn_meta.requires.component = c;
+    m.#name .dzn_meta.requires.meta = c.dzn_meta;
+
+    if (flush) {
+      m.#name .dzn_meta.requires.component = c;
+      m.#name .dzn_meta.requires.name = "<internal>.#name ";
+    }
+#}) (filter om:provides? (om:ports model)))
+#(map (init-port #{
+
+    m.#name .dzn_meta.provides.name = "#name ";
+    m.#name .dzn_meta.provides.component = c;
+    m.#name .dzn_meta.provides.meta = c.dzn_meta;
+
+    if (flush) {
+      m.#name .dzn_meta.provides.component = c;
+      m.#name .dzn_meta.provides.name = "<internal>.#name ";
+    }
+    e.Add("#name .<flush>", () => {System.Console.Error.WriteLine("#name .<flush>"); Runtime.flush (m.#name .dzn_meta.provides.component);});
 #}) (filter om:requires? (om:ports model)))
 #(map
     (lambda (port)
     (map (define-on model port #{
         e.Add("#port .#event ", () => {m.#port .#direction port.#event(#((->join ", ") (map (lambda (p) (if (om:out-or-inout? p) 'v 0)) formal-objects)));});
 #}) (filter (om:dir-matches? port)
-       (om:events port)))) (om:ports model)) return e;
+       (om:events port)))) (om:ports model))
+ #(map (init-port #{
+     m.#name .dzn_meta.provides.name = "#name ";
+     m.#name .dzn_meta.requires.name = "#name ";
+ #}) (om:ports model)) return e;
 }
 
   public static void Main(String[] args) {
-    Locator locator = new Locator();
-    Runtime runtime = new Runtime(() => {System.Console.Error.WriteLine("illegal"); Environment.Exit(0);});
+    flush = args.Length > 0 && args[0] == "--flush";
+    relaxed = args.Length > 0 && args[0] == "--relaxed";
+    dzn.Locator locator = new dzn.Locator();
+    dzn.Runtime runtime = new dzn.Runtime(() => {System.Console.Error.WriteLine("illegal"); Environment.Exit(0);});
     #.scope_model  sut = new #.scope_model(locator.set(runtime), "sut");
     EventMap e = fillEventMap(sut);
     String s;
