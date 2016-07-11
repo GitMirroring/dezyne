@@ -303,10 +303,12 @@ var aspects = {
   ,
   code: function(parameters) {
     var language = parameters.meta.languages[0];
+    var imports = parameters.meta.imports || ""; 
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
     var main = parameters.dir + '/main' + ext[language];
     try {main = fs.lstatSync (main).isFile () && main;} catch (e){main=undefined;};
     var cmd = 'make DZN="' + dzn() + '"'
+        + ' IMPORTS=\"'+imports+'\"'
         + ' LANGUAGE='+language
         + ' IN='+parameters.dir
         + ' OUT='+out
@@ -377,13 +379,14 @@ var aspects = {
   parse: function(parameters) {
     var lstat = q.denodeify(fs.lstat);
     var baseline = parameters.dir + '/baseline/parse/' + parameters.model + '.stderr';
+    var imports = parameters.meta.imports || ""; 
 
     return lstat(baseline)
       .then (function(stats) {
-        return 'diff -uw '+baseline+' <(' + dzn() + ' -v parse '+parameters.filename+' |& sed "s,.\r,,g")';
+        return 'diff -uw '+baseline+' <(' + dzn() + ' -v parse '+imports+' '+parameters.filename+' |& sed "s,.\r,,g")';
       })
       .fail (function(err) {
-        return '[ "$(' + dzn() + ' parse '+parameters.filename+' |& sed \'s,.\r,,g\')" = "" ]';
+        return '[ "$(' + dzn() + ' parse '+imports+' '+parameters.filename+' |& sed \'s,.\r,,g\')" = "" ]';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd)
@@ -394,11 +397,12 @@ var aspects = {
   run: function(parameters) {
     return run_traces(parameters, 'run', function(trace){
       var model = parameters.meta.model || parameters.model;
+      var imports = parameters.meta.imports || ""; 
       return util.spawn_sync_shell(
         'diff -uw'
           + ' <(grep -v "<flush>" '+ trace + ')'
           + ' <(grep -v "<flush>" '+ trace + '|'
-          + ' ' + dzn(parameters.session) + ' run --strict --model=' + model + ' ' + parameters.filename + ' |&'
+          + ' ' + dzn(parameters.session) + ' run '+imports+' --strict --model=' + model + ' ' + parameters.filename + ' |&'
           + ' grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')')
         .fail (function(err) {console.log(err); return {status: -1, output: err}});
     });
@@ -413,7 +417,8 @@ var aspects = {
         var baseline = parameters.dir + '/baseline/table/'+parameters.model+ '-' + form + '.' + suffix;
         return lstat(baseline)
           .then (function(stats) {
-            var cmd = 'diff -uwB '+baseline+' <('+dzn()+' table --form=' + form + ' -o - '+parameters.filename + (suffix == 'html' ? '| w3m -dump -T text/html' : '') +')';
+            var imports = parameters.meta.imports || ""; 
+            var cmd = 'diff -uwB '+baseline+' <('+dzn()+' table '+imports+' --form=' + form + ' -o - '+parameters.filename + (suffix == 'html' ? '| w3m -dump -T text/html' : '') +')';
             return util.spawn_sync_shell(cmd)
               .fail (function(err) {console.log(err); return {status: -1, output: result.output + err}});
           })
@@ -436,7 +441,8 @@ var aspects = {
     var out = 'out/' + path.basename(parameters.dir);
     var flush = parameters.meta.flush ? ' --flush' : '';
     var illegal = ''; // TODO: config
-    var cmd = dzn() + ' traces -q 7 '+illegal+flush+' -m '+parameters.model+' -o '+out+' '+parameters.filename;
+    var imports = parameters.meta.imports || ""; 
+    var cmd = dzn() + ' traces '+imports+' -q 7 '+illegal+flush+' -m '+parameters.model+' -o '+out+' '+parameters.filename;
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
       .then(function(){return util.spawn_sync_shell(cmd);})
@@ -448,12 +454,14 @@ var aspects = {
     var dir = 'out/' + path.basename(parameters.dir)
     var out = dir + '/'+parameters.model;
     var err = out + '.stderr';
+    var imports = parameters.meta.imports || ""; 
     return lstat (baseline)
       .then (function(stats) {
         return 'mkdir -p '+dir+';'
           + '{ set -o pipefail;'
           + dzn(parameters.session)
           + ' --verbose verify --all --model='+parameters.model
+          + ' '+imports
           + ' '+parameters.filename
           + ' 2>'+err
           + '| bin/reorder > '+out
@@ -465,7 +473,10 @@ var aspects = {
       })
       .fail (function(err) {
         console.log ('verify: no baseline=' + baseline);
-        return 'out="$(' + dzn(parameters.session) + ' verify --all -m '+parameters.model+' '+parameters.filename+' 2>&1)" && [ "$out" = "" ] || { echo "verification output: \"$out\""; false; }';
+        return 'out="$(' + dzn(parameters.session) + ' verify --all -m '+parameters.model
+          + ' '+imports
+          + ' '+parameters.filename
+          + ' 2>&1)" && [ "$out" = "" ] || { echo "verification output: \"$out\""; false; }';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd);

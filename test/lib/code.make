@@ -38,7 +38,7 @@ ifeq ($(MAIN),)
 MODEL_OPT:=-m $(MODEL)
 endif
 
-all: $(wildcard $(IN)/*.dzn)
+all: $(wildcard $(IN)/*.dzn $(IN)/*/*.dzn)
 	mkdir -p $(OUT)/dzn
 	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls /share/runtime/$(LANGUAGE)))); do\
 	    ln -sf ../../../$(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/$$file $(OUT)/$$file;\
@@ -46,6 +46,7 @@ all: $(wildcard $(IN)/*.dzn)
 	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls /share/runtime/$(LANGUAGE)/dzn))); do\
 	    ln -sf ../../../../$(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/dzn/$$file $(OUT)/dzn/$$file;\
 	done
-	for file in $^; do $(DZN) code -l $(LANGUAGE) --depends $(MODEL_OPT) -o $(OUT) $$file; done
+	for file in $^; do $(DZN) code $(IMPORTS) -l $(LANGUAGE) --depends $(MODEL_OPT) -o $(OUT) $$file; done
 
 -include $(patsubst $(IN)/%.dzn, $(OUT)/%.d, $(wildcard $(IN)/*.dzn))
+-include $(patsubst $(IN)/%.dzn, $(OUT)/%.d, $(wildcard $(IN)/*/*.dzn))
