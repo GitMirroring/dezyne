@@ -206,7 +206,7 @@ var aspects = {
                 outcome.status[aspect] = result.parameters.outcome.status[aspect] || 'SKIPPED';
               }
             });
-            
+
             outcome.output = result.parameters.outcome.output;
             all_languages.each(function(language) {
               Object.keys(dependencies).each(function(aspect) {
@@ -342,9 +342,9 @@ var aspects = {
       var expectation = parameters.dir + '/baseline/execute/' + language + '/expectation';
       try {
         fs.lstatSync(expectation);
-        return util.spawn_sync_shell('diff -uw ' + expectation + ' <(set -o pipefail; cat '+ trace + ' | ' + out + '/test' + flush + ' |& bin/code2fdr || echo ERROR)');
+        return util.spawn_sync_shell('diff -uw ' + expectation + ' <(set -o pipefail; cat '+ trace + ' | ' + out + '/test' + flush + ' |& bin/code2fdr || echo "E""R""R""O""R")');
       } catch(e) {
-        return util.spawn_sync_shell('diff -uw ' + trace + ' <(set -o pipefail; cat '+ trace + ' | ' + out + '/test' + flush + ' |& bin/code2fdr || echo ERROR)')
+        return util.spawn_sync_shell('diff -uw ' + trace + ' <(set -o pipefail; cat '+ trace + ' | ' + out + '/test' + flush + ' |& bin/code2fdr || echo "E""R""R""O""R")')
       }
     });
   }
@@ -409,7 +409,7 @@ var aspects = {
   }
   ,
   table: function(parameters) {
-    
+
     function test_table(promise, args) {
       var suffix = args[0];
       var form = args[1];
