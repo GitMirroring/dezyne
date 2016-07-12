@@ -120,7 +120,7 @@ namespace dzn {
                 }
             }
         }
-        public static R valued_helper<R>(Component c, Func<R> f) where R : struct, IComparable, IConvertible, IFormattable {
+        public static R valued_helper<R>(Component c, Func<R> f) where R : struct, IComparable, IConvertible {
             if (c.dzn_handling) {
                 throw new RuntimeException("a valued event cannot be deferred");
             }
@@ -146,10 +146,17 @@ namespace dzn {
             handle(c, f);
             traceOut(m, "return");
         }
-        public static R callIn<R>(Component c, Func<R> f, port.Meta m, String e) where R : struct, IComparable, IConvertible, IFormattable {
+        public static R callIn<R>(Component c, Func<R> f, port.Meta m, String e) where R : struct, IComparable, IConvertible {
             traceIn(m, e);
             R r = valued_helper(c, f);
-            traceOut(m, r.GetType().Name + "_" + Enum.GetName(r.GetType(),r));
+            String s;
+            if (r.GetType().Equals(typeof(bool)))
+                s = (bool)Convert.ChangeType(r,typeof(bool)) ? "true" : "false";
+            else if (r.GetType().Equals(typeof(int)))
+                s = r.ToString();
+            else
+                s = r.GetType().Name + "_" + Enum.GetName(r.GetType(),r);
+            traceOut(m, s);
             return r;
         }
         public static void callOut(Component c, Action f, port.Meta m, String e) {

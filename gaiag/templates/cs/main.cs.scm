@@ -63,28 +63,32 @@ class main {
     System.Console.Error.WriteLine(prefix + e);
   }
 
-  static R? string_to_value<R>(String s) where R: struct, IComparable, IConvertible, IFormattable {
+  static R string_to_value<R>(String s) where R: struct, IComparable, IConvertible {
+    R r = new R();
+    String v = s.Substring(s.IndexOf(".")+1);
+    if (r.GetType().Equals(typeof(bool))) return (R)Convert.ChangeType(v,typeof(R));
+    if (r.GetType().Equals(typeof(int))) return (R)Convert.ChangeType(v,typeof(R));
     foreach (R e in Enum.GetValues(typeof(R))) {
       if (e.ToString().Equals(s)) {
         return e;
       }
     }
-    return null;
+    throw new System.ArgumentException("No such value: ", s);
   }
 
-  static R log_valued<R>(String prefix, String e, EventMap event_map, String event_prefix) where R: struct, IComparable, IConvertible, IFormattable {
+  static R log_valued<R>(String prefix, String e, EventMap event_map, String event_prefix) where R: struct, IComparable, IConvertible {
     System.Console.Error.WriteLine(prefix + e);
-    if (relaxed) {
-        R[] values = (R[])Enum.GetValues(typeof(R));
-        return values[0];
-    }
     String s = consume_synchronous_out_events(prefix, e, event_map);
-    R? r = string_to_value<R>(drop_prefix(s, event_prefix));
-    if (r != null) {
-      System.Console.Error.WriteLine(prefix + typeof(R).Name + "_" + r.ToString());
-      return (R)r;
-    }
-    return default(R);
+    R r = string_to_value<R>(drop_prefix(s, event_prefix));
+    String v;
+    if (r.GetType().Equals(typeof(bool)))
+      v = (bool)Convert.ChangeType(r,typeof(bool)) ? "true" : "false";
+    else if (r.GetType().Equals(typeof(int)))
+       v = r.ToString();
+    else
+       v = typeof(R).Name + "_" + r.ToString();
+    System.Console.Error.WriteLine(prefix + v);
+    return r;
   }
 
 
@@ -101,7 +105,7 @@ class main {
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction port.#event  = (#formals) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued<#(if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'dzn.Global reply-scope).#reply-name >("#port .", "#event ", e, "#port .#reply-name _");#})};
+    m.#port .#direction port.#event  = (#formals) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued<# (cond ((equal? return-type "bool") 'bool) ((equal? return-type "int") 'int) (else (list (if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'dzn.Global reply-scope) '. reply-name)))>("#port .", "#event ", e, "#port .#reply-name _");#})};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
 #(map (init-port #{
