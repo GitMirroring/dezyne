@@ -21,10 +21,6 @@
 # 
 # Code:
 
-ifeq ($(HEADER),)
-HEADER:=$(OUT)/header.cs
-endif
-
 ifeq ($(MAIN),)
 MAIN:=$(OUT)/main.cs
 endif
@@ -41,6 +37,6 @@ $(OUT)/test: $(OUT)/test.exe
 	echo "$$MONO_SCRIPT" > $@
 	chmod +x $@
 
-$(OUT)/test.exe: $(HEADER) $(MAIN) $(wildcard $(OUT)/dzn/*.cs)
+$(OUT)/test.exe: $(MAIN) $(wildcard $(OUT)/*cs $(OUT)/dzn/*.cs)
 	cp --force --backup $(MAIN) $(OUT)/main.cs
 	mcs -debug -out:$@ $^

@@ -1,2 +1,1 @@
-this.runtime.illegal();
-
+this.dzn_runtime.illegal();

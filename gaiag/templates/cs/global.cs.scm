@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,6 +21,8 @@
 ;;; 
 ;;; Code:
 
-public class DznGlobal {
+namespace dzn {
+public class Global {
   #(->string (map (declare-enum model) (om:enums)))
+}
 }

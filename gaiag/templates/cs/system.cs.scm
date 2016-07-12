@@ -23,7 +23,7 @@
 
 using System;
 
-class #.scope_model  : SystemComponent {
+class #.scope_model  : dzn.SystemComponent {
 #(map (init-instance #{
     public #((om:scope-name) component)  #name;
 #}) ((compose .elements .instances) model))#
@@ -31,16 +31,16 @@ class #.scope_model  : SystemComponent {
     public #((om:scope-join) interface)  #name;
 #}) ((compose .elements .ports) model))
 
-  public #.scope_model(Locator locator, String name="", SystemComponent parent=null) : base(locator, name, parent) {
+  public #.scope_model(dzn.Locator locator, String name="", dzn.Meta parent=null) : base(locator, name, parent) {
 #(map (init-instance #{
-    #name  = new #((om:scope-name) component)(locator, "#name ", this);
+    #name  = new #((om:scope-name) component)(locator, "#name ", this.dzn_meta);
 #}) (injected-instances model))#
 (string-if (pair? (injected-bindings model)) #{
     locator = locator.clone()#
     (map (init-bind model #{.set(#instance);#}) (injected-bindings model))
 #})#
 (map (init-instance #{
-    #name  = new #((om:scope-name) component)(locator, "#name ", this);
+    #name  = new #((om:scope-name) component)(locator, "#name ", this.dzn_meta);
 #}) (non-injected-instances model))#
 (map (init-bind model #{
     #port  = #instance;

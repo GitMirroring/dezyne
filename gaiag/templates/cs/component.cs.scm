@@ -23,7 +23,7 @@
 
 using System;
 
-public class #.scope_model  : Component {#
+public class #.scope_model  : dzn.Component {#
 (->string (map (declare-enum model) (om:enums (.behaviour model))))#
 (->string (map declare-integer (om:integers (.behaviour model))))
 #
@@ -34,8 +34,8 @@ public class #.scope_model  : Component {#
     (map (init-port #{#'()
   public #((om:scope-join) interface)  #name;#}) ((compose .elements .ports) model))
 
-  public #.scope_model(Locator locator, String name="", dzn.Meta parent=null) : base(locator, name, parent) {
-    this.flushes = true;#
+  public #.scope_model(dzn.Locator locator, String name="", dzn.Meta parent=null) : base(locator, name, parent) {
+    this.dzn_flushes = true;#
 (map (init-member model #{#'()
     #(string-if (eq? expression (if #f #f)) "" #{#name  = #expression ;#})#}) (om:variables model))#
 (map (init-port #{#'()
@@ -59,7 +59,7 @@ public class #.scope_model  : Component {#
 (map
    (lambda (port)
      (map (define-on model port #{#'()
-   #port .#direction port.#event  = (#formals) => {#(string-if (not (eq? return-type 'void)) #{return #})Runtime.call#(symbol-capitalize direction)#(string-if (not (eq? return-type 'void)) #{<#return-type >#})(this, () => {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}, this.#port .dzn_meta, "#event ");};
+   #port .#direction port.#event  = (#formals) => {#(string-if (not (eq? return-type 'void)) #{return #})dzn.Runtime.call#(symbol-capitalize direction)#(string-if (not (eq? return-type 'void)) #{<#return-type >#})(this, () => {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}, this.#port .dzn_meta, "#event ");};
    #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))
   }#

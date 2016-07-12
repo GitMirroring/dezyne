@@ -91,17 +91,17 @@ class main {
   private class EventMap : Dictionary<String, Action> {};
 
   private static EventMap fillEventMap(#.scope_model  m) {
-  V<int> v = new V<int> (0);
+  dzn.V<int> v = new dzn.V<int> (0);
   if (v.v == 0) {}
-  Component c = new Component(m.locator);
-  c.flushes = flush;
+  dzn.Component c = new dzn.Component(m.dzn_locator);
+  c.dzn_flushes = flush;
   c.dzn_meta.parent = null;
   c.dzn_meta.name = "<external>";
  EventMap e = new EventMap();
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction port.#event  = (#formals) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued<#(if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'DznGlobal reply-scope).#reply-name >("#port .", "#event ", e, "#port .#reply-name _");#})};
+    m.#port .#direction port.#event  = (#formals) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued<#(if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'dzn.Global reply-scope).#reply-name >("#port .", "#event ", e, "#port .#reply-name _");#})};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
 #(map (init-port #{
@@ -125,7 +125,7 @@ class main {
       m.#name .dzn_meta.provides.component = c;
       m.#name .dzn_meta.provides.name = "<internal>.#name ";
     }
-    e.Add("#name .<flush>", () => {System.Console.Error.WriteLine("#name .<flush>"); Runtime.flush (m.#name .dzn_meta.provides.component);});
+    e.Add("#name .<flush>", () => {System.Console.Error.WriteLine("#name .<flush>"); dzn.Runtime.flush (m.#name .dzn_meta.provides.component);});
 #}) (filter om:requires? (om:ports model)))
 #(map
     (lambda (port)

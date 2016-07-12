@@ -162,7 +162,7 @@
 (define (dump-interface o)
   (dump-global o)
   (let ((name ((om:scope-name) o)))
-    (dump-indented (list 'dzn name (code:extension o))
+    (dump-indented `(,@(code:dir o) ,name ,(code:extension o))
                    (lambda ()
                      (code-file 'interface (code:module o))))))
 
@@ -172,7 +172,7 @@
         (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
     (when (.behaviour o)
       (map dump interfaces)
-      (dump-indented (list 'dzn name (code:extension o))
+      (dump-indented `(,@(code:dir o) ,name ,(code:extension o))
                    (lambda ()
                      (code-file 'component (code:module o)))))
     (dump-main o)))
@@ -194,7 +194,7 @@
         (model (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
                            string->symbol)))
         (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
-    (dump-indented (list 'dzn name (code:extension o))
+    (dump-indented `(,@(code:dir o) ,name ,(code:extension o))
                    (lambda ()
                      (code-file 'system (code:module o))))
     (dump-main o)))
@@ -242,6 +242,10 @@
                   (cs . .cs)
                   (python . .py))
                 (language)))))
+
+(define (code:dir o)
+  (if (eq? (language) 'cs) '()
+      '(dzn)))
 
 (define* (code:module o)
   (let ((module (make-module 31 (list

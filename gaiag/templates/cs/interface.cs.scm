@@ -23,15 +23,15 @@
 
 using System;
 
-public class #.scope_model  : Interface<#.scope_model .In, #.scope_model .Out> {#
+public class #.scope_model  : dzn.Interface<#.scope_model .In, #.scope_model .Out> {#
 (->string (map (declare-enum model) (om:interface-enums model)))
-  new public class In : Interface<#.scope_model .In, #.scope_model .Out>.In {
+  new public class In : dzn.Interface<#.scope_model .In, #.scope_model .Out>.In {
 #((->join "\n") (map (declare-io model #{
     public #(lambda-type return-type formal-types)  #name ;#})
  (filter om:in? ((compose .elements .events) model)))
 )
   }
-  new public class Out : Interface<#.scope_model .In, #.scope_model .Out>.Out {
+  new public class Out : dzn.Interface<#.scope_model .In, #.scope_model .Out>.Out {
 #((->join "\n") (map (declare-io model #{
     public #(lambda-type return-type formal-types)  #name;#})
  (filter om:out? ((compose .elements .events) model))))
