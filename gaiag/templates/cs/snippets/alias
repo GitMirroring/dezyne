@@ -1,1 +1,1 @@
-#space dzn.V<#type > #alias  = #(string-if out? #{#name #} #{new dzn.V<#type >(#name);#})
+#space dzn.V<#type > #alias  = #(string-if out? #{#name; #} #{new dzn.V<#type >(#name);#})
