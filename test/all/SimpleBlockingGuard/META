@@ -1,1 +1,1 @@
-{"skip":["c","execute","run"],"comment":{"true":"system: cannot run","c":"blocking: not supported","execute":"deadlock: cannot execute"}}
+{"skip":["c","cs","execute","run"],"comment":{"true":"system: cannot run","c":"blocking: not supported","execute":"deadlock: cannot execute"}}

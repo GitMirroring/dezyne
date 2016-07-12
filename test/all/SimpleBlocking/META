@@ -1,1 +1,1 @@
-{"skip":["c"],"comment":"blocking: not supported"}
+{"skip":["c","cs"],"comment":"blocking: not supported"}

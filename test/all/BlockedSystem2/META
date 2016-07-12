@@ -1,1 +1,1 @@
-{"skip":["c","run"],"comment":{"true":"system: cannot run","c":"blocking: not supported"}}
+{"skip":["c","cs","run"],"comment":{"true":"system: cannot run","c":"blocking: not supported"}}
