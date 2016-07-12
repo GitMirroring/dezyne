@@ -4,8 +4,10 @@
 
 ##define CONNECT(provided, required)\
   {\
-	provided->out = required->out;\
-	required->in = provided->in;\
+        required->meta.provides = provided->meta.provides;\
+        provided->meta.requires = required->meta.requires;\
+        provided->out = required->out;\
+        required->in = provided->in;\
   }
 
 void #.scope_model _init(#.scope_model  *self, locator* dezyne_locator, dzn_meta_t* dzn_meta) {

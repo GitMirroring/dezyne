@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+//
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -21,23 +21,16 @@
 //
 // Code:
 
-import Alarm.dzn;
-import Siren.dzn;
+import ISiren.dzn;
 
-component AlarmSystem
+component Siren
 {
-  provides IConsole console;
-  requires ISiren siren;
-  requires ISensor sensor;
+  provides ISiren p;
+  requires ISiren r;
 
-  system
-    {
-      Alarm alarm;
-      Siren siren_;
-
-      console <=> alarm.console;
-      alarm.siren <=> siren_.p;
-      siren_.r <=> siren;
-      alarm.sensor <=> sensor;
-    }
+  behaviour
+  {
+    on p.turnon(): r.turnon();
+    on p.turnoff(): r.turnoff();
+  }
 }
