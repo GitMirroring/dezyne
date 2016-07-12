@@ -27,14 +27,14 @@ public class timer : Component {
 
   public itimer port;
 
-  public timer(Locator locator, String name="", SystemComponent parent=null) : base(locator, name, parent) {
-    this.flushes = true;
-    port = new itimer();
-    port.inport.name = "port";
-    port.inport.self = this;
-    port.inport.create = (Integer ms) => {Runtime.callIn<itimer.In,itimer.Out>(this, () => {port_create(ms);}, new Meta<itimer.In,itimer.Out>(this.port, "create"));};
+  public timer(dzn.Locator locator, String name="", dzn.Meta parent=null) : base(locator, name, parent) {
+    this.port = new itimer();
+    this.port.dzn_meta.provides.name = "port";
+    this.port.dzn_meta.provides.meta = this.dzn_meta;
+    this.port.dzn_meta.provides.component = this;
+    this.port.inport.create = (Integer ms) => {dzn.Runtime.callIn(this, () => {port_create(ms);}, this.dzn_meta, "create");};
 
-    port.inport.cancel = () => {Runtime.callIn<itimer.In,itimer.Out>(this, () => {port_cancel();}, new Meta<itimer.In,itimer.Out>(this.port, "cancel"));};
+    port.inport.cancel = () => {dzn.Runtime.callIn(this, () => {port_cancel();}, this.dzn_meta, "cancel");};
 
   }
   public void port_create(Integer ms) {

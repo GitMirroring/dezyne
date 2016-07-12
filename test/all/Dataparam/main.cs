@@ -56,8 +56,8 @@ class main {
   }
 
   public static void Main(String[] args) {
-    Locator locator = new Locator();
-    Runtime runtime = new Runtime();
+    dzn.Locator locator = new dzn.Locator();
+    dzn.Runtime runtime = new dzn.Runtime();
     Datasystem d = new Datasystem(locator.set(runtime), "d");
     d.port.outport.name = "port";
     d.port.outport.self = null;
@@ -73,11 +73,11 @@ class main {
     d.port.inport.e(123);
     assert(IDataparam.Status.No == d.port.inport.eer(123,345));
 
-    V<int> i = new V<int>(0);
+    dzn.V<int> i = new dzn.V<int>(0);
     d.port.inport.eo(i);
     assert(i.v == 234);
 
-    V<int> j = new V<int>(0);
+    dzn.V<int> j = new dzn.V<int>(0);
     d.port.inport.eoo(i,j);
     assert(i.v == 123 && j.v == 456);
 

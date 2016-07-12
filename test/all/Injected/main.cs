@@ -24,15 +24,15 @@ using System;
 
 class main {
   public static void Main(String[] args) {
-    Locator locator = new Locator();
-    Runtime runtime = new Runtime();
+    dzn.Locator locator = new dzn.Locator();
+    dzn.Runtime runtime = new dzn.Runtime();
     Injected sut = new Injected(locator.set(runtime), "sut");
 
     sut.t.outport.f = () => {System.Console.Error.WriteLine("f");};
 
     //sut.check_bindings ();
     //sut.dump_tree ();
-    
+
     sut.t.inport.e();
   }
 }

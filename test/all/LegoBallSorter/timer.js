@@ -21,25 +21,18 @@
 // Code:
 
 function timer(locator, meta) {
-  this.locator = locator;
-  this.rt = locator.get(new dzn.runtime());
-  this.rt.components = (this.rt.components || []).concat ([this]);
-  this.meta = meta;
-  this.flushes = true;
+  this._dzn = {};
+  this._dzn.locator = locator;
+  this._dzn.rt = locator.get(new dzn.runtime());
+  this._dzn.rt.components = (this.rt.components || []).concat ([this]);
+  this._dzn.meta = meta;
 
   this.port = new dzn.itimer({provides: {name: 'port', component: this}, requires: {}});
   this.port.in.create = function(ms) {
-    this.rt.call_in(this, function() {
-      { }
-    }.bind(this), [this.port, 'create']);
-  }.bind(this);
+  }
   this.port.in.cancel = function() {
-    this.rt.call_in(this, function() {
-      { }
-    }.bind(this), [this.port, 'cancel']);
-  }.bind(this);
-
-
+  }
+  this._dzn.rt.bind (this);
 };
 
 dzn.timer = timer;

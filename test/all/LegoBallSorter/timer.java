@@ -31,7 +31,6 @@ class timer extends Component {
 
   public timer(Locator locator, String name, SystemComponent parent) {
     super(locator, name, parent);
-    this.flushes = true;
     port = new itimer();
     port.in.name = "port";
     port.in.self = this;

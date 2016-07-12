@@ -30,7 +30,6 @@ class timer (runtime.Component):
 
     def __init__ (self, loc, name='', parent=None):
         runtime.Component.__init__ (self, loc, name, parent)
-        loc.get (runtime.Runtime).flushes (self)
         self.port = dzn.itimer (provides=runtime.Port ('port', self))
 
         self.port.inport.create = lambda *args: runtime.call_in (self, lambda: self.port_create (*args), (self.port, 'create'))
@@ -41,6 +40,3 @@ class timer (runtime.Component):
 
     def port_cancel (self):
         pass
-
-
-
