@@ -86,38 +86,21 @@ namespace dzn
   };
 
   template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
-  void blocking(dzn::pump& pump, const L& l)
+  void blocking(dzn::pump& pump, L&& l)
   {
     std::promise<void> p;
     pump([&]{l(); p.set_value();});
     return p.get_future().get();
   }
   template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
-  auto blocking(dzn::pump& pump, const L& l) -> decltype(l())
+  auto blocking(dzn::pump& pump, L&& l) -> decltype(l())
   {
     std::promise<decltype(l())> p;
     pump([&]{p.set_value(l());});
     return p.get_future().get();
   }
-  template <typename Lambda, typename Next, typename = typename std::enable_if<std::is_void<typename std::result_of<Lambda()>::type>::value>::type>
-  void blocking(dzn::pump& pump, const Lambda& lambda, Next&& next)
-  {
-    std::promise<void> p;
-    pump([&]{lambda(); p.set_value();});
-    next();
-    return p.get_future().get();
-  }
-  template <typename Lambda, typename Next, typename = typename std::enable_if<!std::is_void<typename std::result_of<Lambda()>::type>::value>::type>
-  auto blocking(dzn::pump& pump, const Lambda& lambda, Next&& next) -> decltype(lambda())
-  {
-    std::promise<decltype(lambda())> p;
-    pump([&]{p.set_value(lambda());});
-    next();
-    return p.get_future().get();
-  }
-
   template <typename Lambda, typename ... Args>
-  auto shell(dzn::pump& pump, Lambda&& lambda, Args&& ...args) -> decltype(lambda())
+  auto shell(dzn::pump& pump, const Lambda& lambda, Args&& ...args) -> decltype(lambda())
   {
     return blocking(pump, std::bind(lambda, std::forward<Args>(args)...));
   }
