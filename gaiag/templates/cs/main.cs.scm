@@ -105,7 +105,7 @@ class main {
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction port.#event  = (#formals) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued<# (cond ((equal? return-type "bool") 'bool) ((equal? return-type "int") 'int) (else (list (if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'dzn.Global reply-scope) '. reply-name)))>("#port .", "#event ", e, "#port .#reply-name _");#})};
+    m.#port .#direction port.#event  = (#formals) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued<# (cond ((equal? return-type "bool") 'bool) ((equal? return-type "int") 'int) (else (list (if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'dzn.global reply-scope) '. reply-name)))>("#port .", "#event ", e, "#port .#reply-name _");#})};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
 #(map (init-port #{

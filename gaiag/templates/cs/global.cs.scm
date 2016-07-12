@@ -22,7 +22,7 @@
 ;;; Code:
 
 namespace dzn {
-public class Global {
+namespace global {
   #(->string (map (declare-enum model) (om:enums)))
 }
 }
