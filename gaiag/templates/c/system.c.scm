@@ -2,14 +2,6 @@
 
 ##include <string.h>
 
-##define CONNECT(provided, required)\
-  {\
-        required->meta.provides = provided->meta.provides;\
-        provided->meta.requires = required->meta.requires;\
-        provided->out = required->out;\
-        required->in = provided->in;\
-  }
-
 void #.scope_model _init(#.scope_model  *self, locator* dezyne_locator, dzn_meta_t* dzn_meta) {
    memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
 #(map (init-instance #{
@@ -28,5 +20,5 @@ void #.scope_model _init(#.scope_model  *self, locator* dezyne_locator, dzn_meta
   self->#port  = self->#instance; #})
     (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
  # (map (connect-ports model #{
-    CONNECT(self->#provided , self->#required );
+    DZN_CONNECT(self->#provided , self->#required );
 #}) (filter (negate om:port-bind?) ((compose .elements .bindings) model))) }

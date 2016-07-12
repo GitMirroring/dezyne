@@ -31,30 +31,13 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <dzn/meta.h>
 #include <dzn/queue.h>
 #include <dzn/map.h>
 
 typedef struct {
 	int dummy;
 } runtime;
-
-typedef struct dzn_meta {
-  char const* name;
-  struct dzn_meta const* parent;
-} dzn_meta_t;
-
-typedef struct {
-  struct {
-    char const* port;
-    void* address;
-    dzn_meta_t const* meta;
-  } provides;
-  struct {
-    char const* port;
-    void* address;
-    dzn_meta_t const* meta;
-  } requires;
-} dzn_port_meta_t;
 
 typedef struct locator locator;
 typedef struct runtime_info runtime_info;
