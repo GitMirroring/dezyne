@@ -38,7 +38,7 @@ function dzn(session) {
   return '../client/bin/dzn --session=' + (session && session || 1);
 }
 
-var ext = {c:'.c','c++':'.cc',javascript:'.js'};
+var ext = {c:'.c','c++':'.cc','c++03':'.cc',javascript:'.js'};
 
 var default_meta = {
   skip: []

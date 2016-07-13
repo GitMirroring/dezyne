@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,5 +22,5 @@
 //
 // Code:
 
-var languages = ['c++', 'c', 'cs', 'javascript'];
+var languages = ['c++', 'c++03', 'c', 'cs', 'javascript'];
 module.exports = languages;

@@ -15,7 +15,7 @@
  (map (init-member model #{
 #name(#(if (not (eq? expression *unspecified*)) expression))#}) (om:variables model)))#
 (if (null? (om:variables model)) "" "\n, ") #
-((->join  "\n, ") (map (lambda (port) (list (.name port) "()")) (om:ports model)))
+((->join  "\n, ") (map (lambda (port) (list (.name port) (if (.injected port) (list "(dezyne_locator.get<" ((c++:scope-name) (.type port)) ">())") "()"))) (om:ports model)))
 {
 #((->join "\n") (map (lambda (port) (list "dzn_meta.ports_connected.push_back(boost::function<void()>(boost::bind(&::" ((c++:scope-name) (.type port)) "::check_bindings,&" (.name port) ")));"))
                       (om:ports model)))

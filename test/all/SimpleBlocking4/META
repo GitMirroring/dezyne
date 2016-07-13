@@ -1,1 +1,1 @@
-{"skip":["c","cs"],"comment":"blocking: not supported"}
+{"skip":["c","cs","c++03"],"comment":"blocking: not supported"}

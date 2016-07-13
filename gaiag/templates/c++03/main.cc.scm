@@ -80,6 +80,9 @@ namespace dzn
                                                                                                                  #{&log_valued< #((om:scope-join #f) reply-scope)::#reply-name ::type>, "#port .", "#event ", boost::ref(e), to_#((om:scope-join #f) reply-scope)_#reply-name , static_cast<const char*(*)(#((om:scope-join #f) reply-scope)::#reply-name ::type)>(to_string)#}));
      #}) (filter (negate (om:dir-matches? port)) (om:events port)))) (om:ports model))
  #(map (init-port #{
+     m.#name .meta.requires.port = "#name ";
+     #}) (filter om:provides? (om:ports model)))
+ #(map (init-port #{
      m.#name .meta.provides.address = c;
      m.#name .meta.provides.meta = &c->dzn_meta;
      e["#name .<flush>"] = boost::bind(log_flush, boost::ref(m.dzn_rt), boost::ref(m.#name .meta), "#name ");
