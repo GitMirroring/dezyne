@@ -200,14 +200,14 @@ var aspects = {
               if(haslanguage(aspect)) {
                 outcome.status[aspect] = {};
                 all_languages.each(function(language) {
-                  outcome.status[aspect][language] = result.parameters.outcome.status[aspect] && result.parameters.outcome.status[aspect][language] || 'SKIPPED';
+                  outcome.status[aspect][language] = result.parameters.outcome && result.parameters.outcome.status[aspect] && result.parameters.outcome.status[aspect][language] || 'SKIPPED';
                 });
               } else {
-                outcome.status[aspect] = result.parameters.outcome.status[aspect] || 'SKIPPED';
+                outcome.status[aspect] = result.parameters.outcome && result.parameters.outcome.status[aspect] || 'SKIPPED';
               }
             });
 
-            outcome.output = result.parameters.outcome.output;
+            outcome.output = result.parameters.outcome && result.parameters.outcome.output || '';
             all_languages.each(function(language) {
               Object.keys(dependencies).each(function(aspect) {
                 if(haslanguage(aspect))
@@ -303,7 +303,7 @@ var aspects = {
   ,
   code: function(parameters) {
     var language = parameters.meta.languages[0];
-    var imports = parameters.meta.imports || ""; 
+    var imports = parameters.meta.imports || "";
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
     var main = parameters.dir + '/main' + ext[language];
     try {main = fs.lstatSync (main).isFile () && main;} catch (e){main=undefined;};
@@ -379,7 +379,7 @@ var aspects = {
   parse: function(parameters) {
     var lstat = q.denodeify(fs.lstat);
     var baseline = parameters.dir + '/baseline/parse/' + parameters.model + '.stderr';
-    var imports = parameters.meta.imports || ""; 
+    var imports = parameters.meta.imports || "";
 
     return lstat(baseline)
       .then (function(stats) {
@@ -397,7 +397,7 @@ var aspects = {
   run: function(parameters) {
     return run_traces(parameters, 'run', function(trace){
       var model = parameters.meta.model || parameters.model;
-      var imports = parameters.meta.imports || ""; 
+      var imports = parameters.meta.imports || "";
       return util.spawn_sync_shell(
         'diff -uw'
           + ' <(grep -v "<flush>" '+ trace + ')'
@@ -417,7 +417,7 @@ var aspects = {
         var baseline = parameters.dir + '/baseline/table/'+parameters.model+ '-' + form + '.' + suffix;
         return lstat(baseline)
           .then (function(stats) {
-            var imports = parameters.meta.imports || ""; 
+            var imports = parameters.meta.imports || "";
             var cmd = 'diff -uwB '+baseline+' <('+dzn()+' table '+imports+' --form=' + form + ' -o - '+parameters.filename + (suffix == 'html' ? '| w3m -dump -T text/html' : '') +')';
             return util.spawn_sync_shell(cmd)
               .fail (function(err) {console.log(err); return {status: -1, output: result.output + err}});
@@ -441,7 +441,7 @@ var aspects = {
     var out = 'out/' + path.basename(parameters.dir);
     var flush = parameters.meta.flush ? ' --flush' : '';
     var illegal = ''; // TODO: config
-    var imports = parameters.meta.imports || ""; 
+    var imports = parameters.meta.imports || "";
     var cmd = dzn() + ' traces '+imports+' -q 7 '+illegal+flush+' -m '+parameters.model+' -o '+out+' '+parameters.filename;
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
@@ -454,7 +454,7 @@ var aspects = {
     var dir = 'out/' + path.basename(parameters.dir)
     var out = dir + '/'+parameters.model;
     var err = out + '.stderr';
-    var imports = parameters.meta.imports || ""; 
+    var imports = parameters.meta.imports || "";
     return lstat (baseline)
       .then (function(stats) {
         return 'mkdir -p '+dir+';'
