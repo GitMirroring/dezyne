@@ -28,7 +28,7 @@ interface I {
   }
 }
 
-component shadow_local {
+component local_shadow_local {
   provides I p;
   behaviour {
     on p.e(): {
