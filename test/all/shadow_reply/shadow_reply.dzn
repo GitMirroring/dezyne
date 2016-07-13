@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,105 +21,94 @@
 //
 // Code:
 
-interface I {
-  enum Status {Yes, No};
+interface I
+{
+  enum Status { Yes, No };
+
   in Status done();
 
-  behaviour {
+  behaviour
+  {
     bool dummy = false;
-
-    Status fun() {
+    Status fun ()
+    {
       return Status.Yes;
     }
-
-    Status fun_arg(Status s) {
+    Status fun_arg (Status s)
+    {
       return s;
     }
-
     on done:
     {
-      [dummy || !dummy]
-      {
-        [true]
-        {
-          Status s = fun();
-          reply(s);
-        }
-        [true]
-        {
-          Status s = fun_arg(Status.No);
-          reply(s);
-        }
-      }
+      [true] { Status s = fun(); reply (s); }
+      [true] { Status s = fun_arg (Status.No); reply (s); }
     }
   }
 }
 
-interface U {
-  enum Status {Ok, Nok};
+interface U
+{
+  enum Status { Ok, Nok };
+
   in Status what();
 
-  behaviour {
+  behaviour
+  {
     bool dummy = false;
-
-    Status fun() {
+    Status fun ()
+    {
       return Status.Ok;
     }
-
-    Status fun_arg(Status s) {
+    Status fun_arg (Status s)
+    {
       return s;
     }
-
     on what:
     {
-      [dummy || !dummy]
+      [true]
       {
-        [true]
-        {
-          Status s = fun();
-          reply(s);
-        }
-        [true]
-        {
-          Status s = fun_arg(Status.Nok);
-          reply(s);
-        }
+        Status s = fun(); reply(s);
+      }
+      [true]
+      {
+        Status s = fun_arg(Status.Nok); reply(s);
       }
     }
   }
 }
 
-component Reply5 {
+component shadow_reply
+{
   provides I i;
   requires U u;
 
-  behaviour {
+  behaviour
+  {
     bool dummy = false;
-
-    I.Status fun() {
+    I.Status fun ()
+    {
       return I.Status.Yes;
     }
-
-    I.Status fun_arg(I.Status s) {
+    I.Status fun_arg(I.Status s)
+    {
       return s;
     }
-
-    on i.done():
+    [true]
     {
-      [dummy || !dummy]
+      on i.done():
       {
         U.Status s = u.what();
         s = u.what();
-        if (s == U.Status.Ok) {
-          I.Status s = fun();
-          reply(s);
+
+        if(s == U.Status.Ok)
+        {
+          I.Status s = fun (); reply (s);
         }
-        else {
-          I.Status s = fun_arg(I.Status.No);
-          reply(s);
+        else
+        {
+          I.Status s = fun_arg(I.Status.No); reply (s);
         }
       }
     }
   }
 }
-
