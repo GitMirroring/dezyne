@@ -230,37 +230,13 @@
 
 (define (behaviour->csp model)
 
-  (define (void? o)
-    (om:void? model o))
-
-  (define (split-valued-void o)
-    "over een poort? ontvangen we valued of void triggers maar niet
-door elkaar want aan de achterkant staat dan een valued reply of void
-reply en die kun je niet mixen"
-    (receive (valued void) (partition void? ((compose .elements .triggers) o))
-      (let* ((statement (.statement o))
-             (valued-on (if (pair? valued)
-                            (list
-                             (make <on>
-                               :triggers (make <triggers> :elements valued)
-                               :statement statement))
-                            '()))
-             (void-on (if (pair? void)
-                          (list
-                           (make <on>
-                             :triggers (make <triggers> :elements void)
-                             :statement statement))
-                          '())))
-        (append void-on valued-on))))
-
-  (define (splitted-ons statement)
-    (append-map split-valued-void
-                (if (is-a? statement <on>) (list statement)
-                    (filter (is? <on>) statement))))
+  (define (list-of-ons statement)
+    (if (is-a? statement <on>) (list statement)
+        (filter (is? <on>) statement)))
 
   (define (guard->csp guard)
     (let* ((expression (csp-expression->string model (.expression guard) '()))
-           (ons (splitted-ons (.statement guard))))
+           (ons (list-of-ons (.statement guard))))
       (list
        "(" expression ") & (\n"
        (or (null-is-#f
@@ -375,9 +351,6 @@ reply en die kun je niet mixen"
     (($ <component>)
      (apply append (map (compose (lambda (x) (interface-events x predicate?)) om:import .type) ((compose .elements .ports) o))))))
 
-(define (modeling-event? event)
-  (member (.event event) '(optional inevitable)))
-
 (define (om:member-names model)
   (map .name (filter (lambda (x) (not (is-a? ((om:type model) (.type x)) <extern>))) (om:variables model))))
 
@@ -394,16 +367,8 @@ reply en die kun je niet mixen"
     ((h t ...) (find (is? <component>) o))
     (_ #f)))
 
-(define (om:modeling? o)
-  (match o
-    (($ <trigger>)
-     (and (not (.port o)) (modeling-event? o)))))
-
-(define (om:void? model o)
-  (and (not (om:modeling? o)) (not (om:typed? model o))))
-
 (define (modeling-events o)
-  (filter modeling-event? (om:find-triggers o)))
+  (filter om:modeling-event? (om:find-triggers o)))
 
 (define (required-modeling-events o)
   (apply append
@@ -768,8 +733,8 @@ reply en die kun je niet mixen"
                   (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                   (transformed-end (on->csp model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
                   (tail (on->csp model (statement) inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
-                  (real-triggers (filter (negate modeling-event?) triggers))
-                  (modeling-triggers (filter modeling-event? triggers))
+                  (real-triggers (filter (negate om:modeling-event?) triggers))
+                  (modeling-triggers (filter om:modeling-event? triggers))
                   (modeling-triggers (map .event modeling-triggers))
                   (trigger-in? (lambda (trigger) (om:in? (om:event model trigger))))
                   (IG (if ((provides-event? model) (car triggers)) "IIG & "  "IG & ")))
@@ -814,8 +779,8 @@ reply en die kun je niet mixen"
                   (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
                   (transformed-end (on->csp model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
                   (tail (on->csp model statement inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
-                  (real-triggers (filter (negate modeling-event?) triggers))
-                  (modeling-triggers (filter modeling-event? triggers))
+                  (real-triggers (filter (negate om:modeling-event?) triggers))
+                  (modeling-triggers (filter om:modeling-event? triggers))
                   (modeling-triggers (map .event modeling-triggers))
                   (trigger-in? (lambda (trigger) (om:in? (om:event model trigger)))))
              (receive (ins outs) (partition trigger-in? real-triggers)

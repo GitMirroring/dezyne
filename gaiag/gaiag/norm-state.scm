@@ -52,7 +52,7 @@
   ((compose
     remove-skip
     (aggregate-on)
-    (expand-on port-equal?)
+    (expand-on norm:port-equal?)
     aggregate-guard-g
     flatten-compound
     combine-guards
@@ -69,8 +69,8 @@
     remove-skip
     flatten-compound
     (prepend-true-guard)
-    (aggregate-on on-same-port-statement?)
-    (expand-on port-equal?)
+    (aggregate-on norm:on-same-port-voidness-statement?)
+    (expand-on norm:port-and-voidness-equal?)
     aggregate-guard-g
     flatten-compound
     combine-guards
@@ -91,18 +91,30 @@
     ((h t ...) (map (prepend-true-guard guard-seen?) o))
     (_ o)))
 
-(define (on-same-port-statement? lhs rhs)
+(define (norm:on-same-port-statement? model lhs rhs)
   (and (is-a? lhs <on>) (is-a? rhs <on>)
        (eq? ((compose .port car .elements .triggers) lhs)
             ((compose .port car .elements .triggers) rhs))
        (equal? (.statement lhs) (.statement rhs))))
 
-(define (port-equal? lhs rhs)
+(define (norm:on-same-port-voidness-statement? model lhs rhs)
+  (and (is-a? lhs <on>) (is-a? rhs <on>)
+       (let ((ltrigger ((compose car .elements .triggers) lhs))
+             (rtrigger ((compose car .elements .triggers) rhs)))
+         (norm:port-and-voidness-equal? model ltrigger rtrigger))
+       (equal? (.statement lhs) (.statement rhs))))
+
+(define (norm:port-equal? model lhs rhs)
   (and (is-a? lhs <trigger>) (is-a? rhs <trigger>)
        (eq? (.port lhs) (.port rhs))))
 
-(define (port-equal? lhs rhs)
+(define (norm:port-and-voidness-equal? model lhs rhs)
+    "over een poort? ontvangen we valued of void triggers maar niet
+door elkaar want aan de achterkant staat dan een valued reply of void
+reply en die kun je niet mixen"
   (and (is-a? lhs <trigger>) (is-a? rhs <trigger>)
+       (or (and (om:void? model lhs) (om:void? model rhs))
+           (and (not (om:void? model lhs)) (not (om:void? model rhs))))
        (eq? (.port lhs) (.port rhs))))
 
 (define (passdown-on o)

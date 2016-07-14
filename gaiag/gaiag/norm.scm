@@ -52,6 +52,8 @@
            passdown-blocking
            remove-otherwise
            remove-skip
+
+           norm:on-equal?
            ))
 
 (define (remove-skip o)
@@ -61,7 +63,7 @@
     ((h t ...) (map remove-skip o))
     (_ o)))
 
-(define* ((aggregate-on :optional (aggregate? om:on-statement-equal?)) o)
+(define* ((aggregate-on :optional (aggregate? norm:on-statement-equal?) model) o)
   "Aggregate ONs with same statement AND (AGGREGATE? a b) into one ON-statement."
   (match o
     (('compound ($ <on>) ..1)
@@ -73,7 +75,7 @@
              (if (null? ons)
                  '()
                  (receive (shared-ons remainder)
-                     (partition (lambda (x) (aggregate? (car ons) x)) ons)
+                     (partition (lambda (x) (aggregate? model (car ons) x)) ons)
                    (let ((aggregated-on
                           (if (>1 (length shared-ons))
                               (let* ((triggers
@@ -92,12 +94,17 @@
                               (car shared-ons))))
                      (cons aggregated-on (loop remainder)))))))))
     (('functions functions ...) o)
-    ((? (is? <ast>)) (om:map (aggregate-on aggregate?) o))
+    ((? (is? <component>)) (om:map (aggregate-on aggregate? o) o))
+    ((? (is? <interface>)) (om:map (aggregate-on aggregate? o) o))
+    ((? (is? <ast>)) (om:map (aggregate-on aggregate? model) o))
     (('skip) o)
-    ((h t ...) (map (aggregate-on aggregate?) o))
+    ((h t ...) (map (aggregate-on aggregate? model) o))
     (_ o)))
 
-(define (om:on-statement-equal? a b)
+(define (norm:on-equal? model a b)
+  (equal? a b))
+
+(define (norm:on-statement-equal? model a b)
   (and (is-a? a <on>) (is-a? b <on>)
        (equal? (om->list (.statement a)) (om->list (.statement b)))))
 
@@ -106,30 +113,31 @@
       (car statements)
       (make <compound> :elements statements)))
 
-
-(define* ((expand-on :optional (compare equal?)) o)
+(define* ((expand-on :optional (compare norm:on-equal?) model) o)
   (match o
     (('compound ($ <on>) ..1)
      (make <compound>
-       :elements (apply append (map (port-split-triggers compare) (cdr o)))))
+       :elements (apply append (map (port-split-triggers compare model) (cdr o)))))
     (($ <on> triggers statement)
-     (let ((ons ((port-split-triggers compare) o)))
+     (let ((ons ((port-split-triggers compare model) o)))
        (if (=1 (length ons))
            o
            (make <compound> :elements ons))))
-    ((? (is? <ast>)) (om:map (expand-on compare) o))
+    ((? (is? <component>)) (om:map (expand-on compare o) o))
+    ((? (is? <interface>)) (om:map (expand-on compare o) o))
+    ((? (is? <ast>)) (om:map (expand-on compare model) o))
     (('skip) o)
-    ((h t ...) (map (expand-on compare) o))
+    ((h t ...) (map (expand-on compare model) o))
     (_ o)))
 
-(define ((port-split-triggers compare) o)
+(define ((port-split-triggers compare model) o)
   (match o
     (($ <on>)
      (let loop ((triggers (.elements (.triggers o))))
        (if (null? triggers)
            '()
            (receive (shared-triggers remainder)
-               (partition (lambda (x) (compare (car triggers) x)) triggers)
+               (partition (lambda (x) (compare model (car triggers) x)) triggers)
              (let* ((triggers (append shared-triggers))
                     (shared-on
                      (make <on>

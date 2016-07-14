@@ -84,6 +84,8 @@
            om:interface
            om:interface-types
            om:interfaces
+           om:modeling?
+           om:modeling-event?
            om:model-with-behaviour
            om:name
            om:named
@@ -118,6 +120,7 @@
            om:types
            om:variable
            om:variables
+           om:void?
            ))
 
 (cond-expand
@@ -584,6 +587,16 @@
       (and (eq? (.direction port) 'requires)
            (eq? (.direction event) 'out))))
 
+(define (om:modeling-event? event)
+  (member (.event event) '(optional inevitable)))
+
+(define (om:modeling? o)
+  (match o
+    (($ <trigger>)
+     (and (not (.port o)) (om:modeling-event? o)))))
+
+(define (om:void? model o)
+  (and (not (om:modeling? o)) (not (om:typed? model o))))
 
 (define (om:id o) ((compose pointer-address scm->pointer) o))
 

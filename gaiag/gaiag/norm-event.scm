@@ -53,7 +53,7 @@
     aggregate-guard-s
     (group-ons)
     (aggregate-on)
-    (expand-on equal?)
+    (expand-on norm:on-equal?)
     aggregate-guard-s
     flatten-compound
     combine-ons
@@ -69,9 +69,9 @@
   ((compose
     remove-skip
     aggregate-guard-s
-    (aggregate-on om:triggers-equal?)
+    (aggregate-on norm:triggers-equal?)
     flatten-compound
-    (expand-on equal?)
+    (expand-on norm:on-equal?)
     aggregate-guard-s
     flatten-compound
     combine-ons
@@ -87,13 +87,13 @@
     remove-skip
     flatten-compound
     combine-guards
-    (aggregate-on om:triggers-equal?)
+    (aggregate-on norm:triggers-equal?)
     flatten-compound
     (passdown-blocking)
     flatten-compound
     passdown-guard
     flatten-compound
-    (expand-on equal?)
+    (expand-on norm:on-equal?)
     aggregate-guard-s
     flatten-compound
     combine-ons
@@ -104,7 +104,10 @@
     )
    o))
 
-(define* ((group-ons :optional (group? om:triggers-equal?)) o)
+(define (norm:triggers-equal? model l r)
+  (om:triggers-equal? l r))
+
+(define* ((group-ons :optional (group? norm:triggers-equal?)) o)
   "stable place ons with same group? next to eachother"
   (match o
     (('compound ($ <on>) ..1)
@@ -116,7 +119,7 @@
              (if (null? ons)
                  '()
                  (receive (grouped-ons remainder)
-                     (partition (lambda (x) (group? (car ons) x)) ons)
+                     (partition (lambda (x) (group? #f (car ons) x)) ons)
                    (append grouped-ons (loop remainder))))))))
      (('functions functions ...) o)
      ((? (is? <ast>)) (om:map (group-ons group?) o))
@@ -136,7 +139,7 @@
          (if (null? guards)
              '()
              (receive (shared-guards remainder)
-                 (partition (lambda (x) (guard-same-statement? (car guards) x)) guards)
+                 (partition (lambda (x) (norm:guard-same-statement? #f (car guards) x)) guards)
                (if (=1 (length shared-guards))
                    (cons (car shared-guards) (loop remainder))
                    (let* ((expression
@@ -156,7 +159,7 @@
      ((h t ...) (map aggregate-guard-s o))
      (_ o)))
 
-(define (guard-same-statement? lhs rhs)
+(define (norm:guard-same-statement? model lhs rhs)
   (and (is-a? lhs <guard>) (is-a? rhs <guard>)
        (equal? (om->list (.statement lhs)) (om->list (.statement rhs)))))
 

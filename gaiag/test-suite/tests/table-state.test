@@ -12,6 +12,7 @@
 
   :use-module (gaiag annotate)
   :use-module (gaiag dzn)
+  :use-module (gaiag misc)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
   :use-module (gaiag table-state))
@@ -21,6 +22,8 @@
 
 (define simplify-literal (@@ (gaiag table-state) simplify-literal))
 
+(module-define! (resolve-module '(gaiag dzn))
+                'language (lambda () 'dzn))
 (module-define! (resolve-module '(gaiag table-state))
                 'command-line
                         (lambda () '("test-suite/run-tests" "foo" "bar")))
@@ -350,6 +353,7 @@ interface i
 }
 "))
 
+
 (pass-if "table-state-guards"
   (or ;;(stderr "disabled: ~a\n" "table-state-guards")
   (diff-noisy-equal?
@@ -453,6 +457,7 @@ interface i
 ")))
 
 (pass-if "table-state-choice"
+  (or ;;(stderr "disabled: ~a\n" 'table-state-choice)
   (diff-noisy-equal?
    (dzn-table-state
     (ast:resolve*
@@ -491,11 +496,11 @@ interface i
       {}
   }
 }
-"))
+")))
 
 
 (pass-if "table-state-sort-triggers"
-  (or (stderr "disabled: ~a\n" "table-state-sort-triggers")
+  (or ;;(stderr "disabled: ~a\n" "table-state-sort-triggers")
    (diff-noisy-equal?
    (dzn-table-state
     (ast:resolve*
@@ -524,28 +529,26 @@ interface ISiren
 #})))
 "
 {
-    [true]
+    [!running]
     {
       on start:
-      {
-        [running]
-        running = !running;
-        [otherwise]
-        illegal;
-      }
+         illegal;
       on stop:
-      {
-        [running]
-        illegal;
-        [otherwise]
+         running = !running;
+    }
+    [running]
+    {
+       on start:
         running = !running;
-      }
-   }
+       on stop:
+        illegal;
+    }
 }
 ")))
 
 
 (pass-if "table-state-resolve-deep-otherwise"
+  (or ;;(stderr "disabled: ~a\n" "table-state-resolve-deep-otherwise")
   (diff-noisy-equal?
    (dzn-table-state
     (ast:resolve*
@@ -591,9 +594,10 @@ interface i
   on e:
   s = S.init;
 }
-"))
+")))
 
 (pass-if "table-state-expand-deep-otherwise"
+  (or ;;(stderr "disabled: ~a\n" "table-state-expand-deep-otherwise")
   (diff-noisy-equal?
    (dzn-table-state
     (ast:resolve*
@@ -634,9 +638,10 @@ interface i
    }
 }
 
-"))
+")))
 
 (pass-if "table-state-nested-compound"
+  (or ;;(stderr "disabled: ~a\n" "table-state-nested-compound")
   (diff-noisy-equal?
    (dzn-table-state
     (ast:resolve*
@@ -658,9 +663,10 @@ interface I
   on e:
   {}
 }
-"))
+")))
 
 (pass-if "table-state-other-enum"
+  (or ;;(stderr "disabled: ~a\n" "table-state-other-enum")
   (diff-noisy-equal?
    (dzn-table-state
     (ast:resolve*
@@ -699,9 +705,10 @@ interface I {
         illegal;
       }
 }
-"))
+")))
 
 (pass-if "table-state-collapse-inevitable"
+  (or ;; (stderr "disabled: ~a\n" "table-state-collapse-inevitable")
   (diff-noisy-equal?
    (dzn-table-state
     (ast:resolve*
@@ -764,9 +771,10 @@ interface I {
     illegal;
   }
 }
-"))
+")))
 
 (pass-if "table-state-expression-otherwise"
+  (or ;; (stderr "disabled: ~a\n" "table-state-expression-otherwise")
   (diff-noisy-equal?
    (dzn-table-state
     (ast:resolve*
@@ -805,10 +813,10 @@ interface I {
         illegal;
     }
 }
-"))
+")))
 
 (pass-if "table-state-non-det"
-  (or ;; (stderr "disabled: ~a\n" "table-state-non-det")
+  (or ;;(stderr "disabled: ~a\n" "table-state-non-det")
    (diff-noisy-equal?
    (dzn-table-state
     (ast:resolve*
@@ -869,8 +877,8 @@ interface I {
 ")))
 
 (pass-if "table-state-locations"
-         (or (and (not (pair? idle-init-busy-ast))
-                  (stderr "GOOPS: disabled: ~a\n" "table-state-locations"))
+   (or (and (not (pair? idle-init-busy-ast))
+            (stderr "GOOPS: disabled: ~a\n" "table-state-locations"))
    (pretty-noisy-equal?
    (extract-locations
     (test-table-state
