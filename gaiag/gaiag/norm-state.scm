@@ -31,6 +31,8 @@
   :use-module (gaiag list match)
   :use-module (ice-9 curried-definitions)
 
+  :use-module (language dezyne location)
+
   :use-module (srfi srfi-1)
 
   :use-module (gaiag om)
@@ -65,6 +67,8 @@
 (define (csp-norm-state o)
   ((compose
     remove-skip
+    flatten-compound
+    (prepend-true-guard)
     (aggregate-on on-same-port-statement?)
     (expand-on port-equal?)
     aggregate-guard-g
@@ -77,6 +81,15 @@
     add-skip
     )
    o))
+
+(define* ((prepend-true-guard :optional guard-seen?) o)
+  (match o
+    (($ <guard>) o)
+    (($ <on>) (if guard-seen? o
+                  (rsp o (make <guard> :expression 'true :statement o))))
+    ((? (is? <ast>)) (om:map (prepend-true-guard guard-seen?) o))
+    ((h t ...) (map (prepend-true-guard guard-seen?) o))
+    (_ o)))
 
 (define (on-same-port-statement? lhs rhs)
   (and (is-a? lhs <on>) (is-a? rhs <on>)
@@ -116,7 +129,7 @@
 (define (ast-> ast)
   ((compose
     om->list
-    ;;((@ (gaiag dzn) ast->dzn))
+    ((@ (gaiag dzn) ast->dzn))
     csp-norm-state
     ast:resolve
     ast->om

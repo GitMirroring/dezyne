@@ -60,10 +60,10 @@
     ((om:register csp->om #t) root)
     (ast-transform-return root (csp->om src))))
 
-(define (csp-transform* ast src)
+(define (on->csp* ast src)
   (let ((root (csp->om ast)))
     ((om:register csp->om #t) root)
-    (->string (csp-transform root (csp->om src)))))
+    (->string (on->csp root (csp->om src)))))
 
 (define (csp->om ast)
   ((compose ast->om csp->sugar ast->sugar) ast))
@@ -209,11 +209,11 @@ interface i
           csp-return-ast))
 
 
-(pass-if "csp-transform-return"
+(pass-if "on->csp-return"
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform* i-ast csp-return-ast)
+          (on->csp* i-ast csp-return-ast)
 
           ;; to:
           "i?x:{e} -> (
@@ -222,7 +222,7 @@ i.the_end' ->
 i_(s,b,c)
 )"))
 
-(define csp-transform-return-reply
+(define on->csp-return-reply
   '(on (triggers (trigger #f f (arguments)))
        (compound
         (reply (expression (literal (name i Status) Yes)) #f))))
@@ -238,16 +238,16 @@ i_(s,b,c)
                  (reply (expression (literal (name i Status) Yes)) #f))))
 
           ;; via:
-          csp-transform-return-reply
+          on->csp-return-reply
 ))
 
-(pass-if "csp-transform-return-reply"
+(pass-if "on->csp-return-reply"
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform*
+          (on->csp*
            i-ast
-           csp-transform-return-reply)
+           on->csp-return-reply)
 
           ;; to
           "i?x:{f} -> (
@@ -257,7 +257,7 @@ i.the_end' ->
 i_(s,b,c)
 )"))
 
-(define csp-transform-reply-via
+(define on->csp-reply-via
   '(on
       (triggers (trigger #f f (arguments)))
       (compound
@@ -274,9 +274,9 @@ i_(s,b,c)
                  (reply (expression (literal (name i Status) Yes)) #f))))
 
           ;; via:
-          csp-transform-reply-via))
+          on->csp-reply-via))
 
-(define csp-transform-compound-reply-via
+(define on->csp-compound-reply-via
   '(on
     (triggers (trigger #f e (arguments)))
     (compound
@@ -297,15 +297,15 @@ i_(s,b,c)
                   (reply (expression (literal (name i Status) Yes)) #f)))))
 
           ;; via:
-          csp-transform-compound-reply-via))
+          on->csp-compound-reply-via))
 
-(pass-if "csp-transform-compound-reply"
+(pass-if "on->csp-compound-reply"
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform*
+          (on->csp*
            i-ast
-           csp-transform-compound-reply-via)
+           on->csp-compound-reply-via)
 
           ;; to:
           "i?x:{e} -> (
@@ -331,11 +331,11 @@ i_(s,b,c)
           ;; via:
           (ast->om '(action (trigger #f h (arguments))))))
 
-(pass-if "csp-transform-action"
+(pass-if "on->csp-action"
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform*
+          (on->csp*
 
            i-ast
 
@@ -350,7 +350,7 @@ i_''!h ->
 P'(s, b, c)
 )"))
 
-(define csp-transform-illegal-action-via
+(define on->csp-illegal-action-via
   '(on
     (triggers (trigger #f e (arguments)))
     (compound (illegal) (voidreply))))
@@ -367,24 +367,24 @@ P'(s, b, c)
                   (illegal)))))
 
           ;; via:
-          csp-transform-illegal-action-via))
+          on->csp-illegal-action-via))
 
-(pass-if "csp-transform-illegal-action"
+(pass-if "on->csp-illegal-action"
          (csp-noisy-equal?
 
           ;; via:
-          (csp-transform*
+          (on->csp*
 
            i-ast
 
-           csp-transform-illegal-action-via)
+           on->csp-illegal-action-via)
 
           ;; to:
           "IG & i?x:{e} -> (
   illegal -> STOP
 )"))
 
-(define csp-transform-empty-compound-via
+(define on->csp-empty-compound-via
   '(on
     (triggers (trigger #f e (arguments)))
     (compound (voidreply))))
@@ -398,15 +398,15 @@ P'(s, b, c)
            '(on ((trigger #f e (arguments))) (compound)))
 
           ;; via:
-          csp-transform-empty-compound-via))
+          on->csp-empty-compound-via))
 
-(pass-if "csp-transform-empty-compound"
+(pass-if "on->csp-empty-compound"
          (csp-noisy-equal?
 
           ;; via:
-          (csp-transform*
+          (on->csp*
            i-ast
-           csp-transform-empty-compound-via)
+           on->csp-empty-compound-via)
 
           ;; to:
           "i?x:{e} -> (
@@ -415,7 +415,7 @@ P'(s, b, c)
   i_(s,b,c)
 )"))
 
-(define csp-transform-assign-via
+(define on->csp-assign-via
   '(assign
   s
   (expression true)))
@@ -427,20 +427,20 @@ P'(s, b, c)
           (ast-transform* i-ast '(assign s (expression true)))
 
           ;; via:
-          csp-transform-assign-via))
+          on->csp-assign-via))
 
-(pass-if "csp-transform-assign-bool"
+(pass-if "on->csp-assign-bool"
          (csp-noisy-equal?
 
           ;; via/from:
-          (csp-transform* i-ast csp-transform-assign-via)
+          (on->csp* i-ast on->csp-assign-via)
 
           ;; to:
           "let tmp' = true within
 let s = tmp' within
 "))
 
-(define csp-transform-assign-2-via
+(define on->csp-assign-2-via
   '(compound
   (variable
     la
@@ -466,13 +466,13 @@ let s = tmp' within
              (assign la (expression true))))
 
           ;; via:
-          csp-transform-assign-2-via))
+          on->csp-assign-2-via))
 
-(pass-if "csp-transform-assign-2-bool"
+(pass-if "on->csp-assign-2-bool"
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform* i-ast csp-transform-assign-2-via)
+          (on->csp* i-ast on->csp-assign-2-via)
 
           ;; to:
           "let la = true within
@@ -481,7 +481,7 @@ let tmp' = true within
 let la = tmp' within
 "))
 
-(define csp-transform-assign-enum-via
+(define on->csp-assign-enum-via
   '(assign
   s
   (expression (literal (name i S) S2))))
@@ -493,23 +493,23 @@ let la = tmp' within
      (ast-transform* i-ast '(assign s (expression (literal (name i S) S2))))
 
      ;; via:
-     csp-transform-assign-enum-via))
+     on->csp-assign-enum-via))
 
-(pass-if "csp-transform-assign-enum"
+(pass-if "on->csp-assign-enum"
          (csp-noisy-equal?
 
           ;; via/from:
-          (csp-transform* i-ast csp-transform-assign-enum-via)
+          (on->csp* i-ast on->csp-assign-enum-via)
 
           ;; to:
           "let tmp' = S_S2 within
 let s = tmp' within
 "))
 
-(pass-if "csp-transform-assign-int"
+(pass-if "on->csp-assign-int"
          (csp-noisy-equal?
 
-          (csp-transform* i-ast
+          (on->csp* i-ast
                           '(assign c (expression 0)))
 
           "let tmp' = 0 within
@@ -517,10 +517,10 @@ let c = tmp' within
 if not ((0 <= c and c <= 2)) then range_error -> illegal -> STOP else
 "))
 
-(pass-if "csp-transform-variable-int"
+(pass-if "on->csp-variable-int"
          (csp-noisy-equal?
 
-          (csp-transform*
+          (on->csp*
            i-ast
            '(compound
              (variable i (type (name i I02)) 2)
@@ -530,10 +530,10 @@ if not ((0 <= c and c <= 2)) then range_error -> illegal -> STOP else
 if not ((0 <= i and i <= 2)) then range_error -> illegal -> STOP else
 "))
 
-(pass-if "csp-transform-assign-int-function"
+(pass-if "on->csp-assign-int-function"
          (csp-noisy-equal?
 
-          (csp-transform* i-ast
+          (on->csp* i-ast
                           '(assign c (call f)))
 
           "let Cont_1'(s, b, c, res') =
@@ -543,10 +543,10 @@ within
 f(Cont_1')(s, b, c)
 "))
 
-(pass-if "csp-transform-variable-int-function"
+(pass-if "on->csp-variable-int-function"
          (csp-noisy-equal?
 
-          (csp-transform*
+          (on->csp*
            i-ast
            '(variable i (type (name i I02)) (call f)))
 
@@ -556,10 +556,10 @@ within
 f(Cont_2')(s, b, c)
 "))
 
-(pass-if "csp-transform-assign-local-int"
+(pass-if "on->csp-assign-local-int"
          (csp-noisy-equal?
 
-          (csp-transform*
+          (on->csp*
            i-ast
            '(compound
              (variable i (type (name i I02)) 2)
@@ -572,7 +572,7 @@ let i = tmp' within
 if not ((0 <= i and i <= 2)) then range_error -> illegal -> STOP else
 "))
 
-(pass-if "csp-transform-expression"
+(pass-if "on->csp-expression"
          (csp-noisy-equal?
 
           ;; from:
@@ -586,17 +586,17 @@ if not ((0 <= i and i <= 2)) then range_error -> illegal -> STOP else
           "(not ((((c != b) or true) and (c == b))))"))
 
 
-(define csp-transform-ifthenelse-via
+(define on->csp-ifthenelse-via
   '(if
     (expression b)
     (compound)
     (compound)))
 
-(pass-if "csp-transform-ifthenelse"
+(pass-if "on->csp-ifthenelse"
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform* i-ast csp-transform-ifthenelse-via)
+          (on->csp* i-ast on->csp-ifthenelse-via)
 
           ;; to:
           "(if b then
@@ -614,11 +614,11 @@ else
     b
     (expression true))))
 
-(pass-if "csp-transform-compound"
+(pass-if "on->csp-compound"
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform* i-ast ast-transform-compound)
+          (on->csp* i-ast ast-transform-compound)
 
           ;; to:
           "(if b then
@@ -631,7 +631,7 @@ let b = tmp' within
 "))
 
 
-(define csp-transform-via
+(define on->csp-via
   '(on
   (triggers (trigger #f e (arguments)))
   (compound
@@ -705,13 +705,13 @@ let b = tmp' within
                   (assign s (expression (literal (name i S) S2)))))))
 
           ;; via:
-          csp-transform-via))
+          on->csp-via))
 
-(pass-if "csp-transform"
+(pass-if "on->csp"
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform* i-ast csp-transform-via)
+          (on->csp* i-ast on->csp-via)
 
           ;; to:
           "i?x:{e} -> (
@@ -835,7 +835,7 @@ component c
 }
      #}))))
 
-(define c-csp-transform-return-via
+(define c-on->csp-return-via
   '(on
   (triggers (trigger j e (arguments)))
   (compound (voidreply))))
@@ -853,13 +853,13 @@ component c
                  (compound))))
 
           ;; via:
-          c-csp-transform-return-via))
+          c-on->csp-return-via))
 
-(pass-if "c-csp-transform-return"
+(pass-if "c-on->csp-return"
          (csp-noisy-equal?
 
           ;; via/from:
-          (csp-transform* c-ast c-csp-transform-return-via)
+          (on->csp* c-ast c-on->csp-return-via)
 
           ;; to:
           "j?x:{e} -> (
@@ -881,11 +881,11 @@ component c
           '(action (trigger j h (arguments)))))
 
 
-(pass-if "c-csp-transform-illegal-action"
+(pass-if "c-on->csp-illegal-action"
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform*
+          (on->csp*
 
            c-ast
 
@@ -897,11 +897,11 @@ component c
 illegal -> STOP
 )"))
 
-(pass-if "c-csp-transform-required-action"
+(pass-if "c-on->csp-required-action"
          (csp-noisy-equal?
 
           ;; from:
-          (csp-transform*
+          (on->csp*
 
            c-ast
 
@@ -911,11 +911,11 @@ illegal -> STOP
           "k!e -> k_'.return ->
 "))
 
-(pass-if "c-csp-transform-provided-action"
+(pass-if "c-on->csp-provided-action"
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform*
+          (on->csp*
 
            c-ast
 
@@ -930,11 +930,11 @@ j_''!h ->
 P'(s, b, c)
 )"))
 
-(pass-if "c-csp-transform-required-on"
+(pass-if "c-on->csp-required-on"
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform*
+          (on->csp*
 
            c-ast
 
@@ -1034,7 +1034,7 @@ P'(s, b, c)
        (on (triggers (trigger i foo (arguments)))
            (compound)))))))
 
-(define csp-transform-variable-valued-action-via
+(define on->csp-variable-valued-action-via
   '(on
   (triggers (trigger o bar (arguments)))
   (compound
@@ -1053,13 +1053,13 @@ P'(s, b, c)
            '(on (triggers (trigger o bar (arguments)))
                 (compound
                  (variable e (type (name ivar E)) (action (trigger i foo (arguments)))))))
-          csp-transform-variable-valued-action-via))
+          on->csp-variable-valued-action-via))
 
-(pass-if "csp-transform-variable-valued-action"
+(pass-if "on->csp-variable-valued-action"
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform* var-ast csp-transform-variable-valued-action-via)
+          (on->csp* var-ast on->csp-variable-valued-action-via)
 
           ;; to:
           "o_''?x:{bar} -> (
@@ -1069,14 +1069,14 @@ transition_end ->
 var_()
 )"))
 
-(pass-if "ast-csp-transform-variable-valued-action"
+(pass-if "ast-on->csp-variable-valued-action"
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform* var-ast
+          (on->csp* var-ast
                           (ast-transform*
                            var-ast
-                           csp-transform-variable-valued-action-via))
+                           on->csp-variable-valued-action-via))
 
           ;; via:
           "o_''?x:{bar} -> (
@@ -1086,7 +1086,7 @@ transition_end ->
 var_()
 )"))
 
-(define csp-transform-if-variable-valued-action-via
+(define on->csp-if-variable-valued-action-via
   '(on
   (triggers (trigger o bar (arguments)))
   (compound
@@ -1109,13 +1109,13 @@ var_()
                 (if (expression true)
                     (variable e (type (name ivar E)) (action (trigger i foo (arguments))))
                     #f)))
-          csp-transform-if-variable-valued-action-via))
+          on->csp-if-variable-valued-action-via))
 
-(pass-if "csp-transform-if-variable-valued-action"
+(pass-if "on->csp-if-variable-valued-action"
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform* var-ast csp-transform-if-variable-valued-action-via)
+          (on->csp* var-ast on->csp-if-variable-valued-action-via)
 
           ;; to:
           "o_''?x:{bar} -> (
@@ -1130,7 +1130,7 @@ var_()
 )
 )"))
 
-(define csp-transform-if-compound-variable-valued-action-via
+(define on->csp-if-compound-variable-valued-action-via
   '(on
     (triggers (trigger o bar (arguments)))
     (compound
@@ -1155,13 +1155,13 @@ var_()
                     (compound
                      (variable e (type (name ivar E)) (action (trigger i foo (arguments)))))
                     #f)))
-          csp-transform-if-compound-variable-valued-action-via))
+          on->csp-if-compound-variable-valued-action-via))
 
-(pass-if "csp-transform-if-compound-variable-valued-action"
+(pass-if "on->csp-if-compound-variable-valued-action"
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform* var-ast csp-transform-if-compound-variable-valued-action-via)
+          (on->csp* var-ast on->csp-if-compound-variable-valued-action-via)
 
           ;; to:
           "o_''?x:{bar} -> (
@@ -1176,14 +1176,14 @@ var_()
 )
 )"))
 
-(pass-if "ast-csp-transform-variable-valued-action"
+(pass-if "ast-on->csp-variable-valued-action"
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform* var-ast
+          (on->csp* var-ast
                           (ast-transform*
                            var-ast
-                           csp-transform-variable-valued-action-via))
+                           on->csp-variable-valued-action-via))
 
           ;; via:
           "o_''?x:{bar} -> (
@@ -1219,11 +1219,11 @@ var_()
           ;; via:
           csp-function-call-ast))
 
-(pass-if "csp-transform-function-call"
+(pass-if "on->csp-function-call"
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform* i-ast csp-function-call-ast)
+          (on->csp* i-ast csp-function-call-ast)
 
           ;; to:
           "i?x:{e} -> (
@@ -1237,11 +1237,11 @@ toggle(Cont_3')(s, b, c)
 
 ;; '
 
-(pass-if "csp-transform-function"
+(pass-if "on->csp-function"
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform* i-ast
+          (on->csp* i-ast
                          '(function toggle (signature (type void) (formals)) #f ()))
 
           ;; via:
@@ -1273,11 +1273,11 @@ P'(s, b, c)
           ;; via:
           csp-function-call-valued-ast))
 
-(pass-if "csp-transform-function-call-valued"
+(pass-if "on->csp-function-call-valued"
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform* i-ast csp-function-call-valued-ast)
+          (on->csp* i-ast csp-function-call-valued-ast)
 
           ;; to
           "i?x:{e} -> (
@@ -1317,11 +1317,11 @@ vtoggle(Cont_4')(s, b, c)
           ;; via:
           csp-function-call-valued-variable-ast))
 
-(pass-if "csp-transform-function-call-valued-variable"
+(pass-if "on->csp-function-call-valued-variable"
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform* i-ast csp-function-call-valued-variable-ast)
+          (on->csp* i-ast csp-function-call-valued-variable-ast)
 
           ;; to
           "i?x:{e} -> (
@@ -1334,7 +1334,7 @@ within
 vtoggle(Cont_5')(s, b, c)
 )"))
 
-(define csp-transform-function-arguments
+(define on->csp-function-arguments
   '(function
   g
   (signature
@@ -1358,13 +1358,13 @@ vtoggle(Cont_5')(s, b, c)
                                       (return (expression c)))))
 
           ;; via:
-          csp-transform-function-arguments))
+          on->csp-function-arguments))
 
-(pass-if "csp-transform-function-arguments"
+(pass-if "on->csp-function-arguments"
          (diff-noisy-equal?
 
           ;; via:
-          (csp-transform* i-ast csp-transform-function-arguments)
+          (on->csp* i-ast on->csp-function-arguments)
 
           ;; to:
           "g(P')(s, b, c, c) =
@@ -1399,11 +1399,11 @@ P'(s, b, c, c)
    ;; via:
    csp-function-call-arguments-via))
 
-(pass-if "csp-transform-function-call-arguments"
+(pass-if "on->csp-function-call-arguments"
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform* i-ast csp-function-call-arguments-via)
+          (on->csp* i-ast csp-function-call-arguments-via)
 
           ;; via:
           "i?x:{e} -> (
@@ -1455,11 +1455,11 @@ g(Cont_6')(s, b, c, b, b)
           ;; via:
           csp-reply-variable-ast-via))
 
-(pass-if "csp-transform-reply-variable"
+(pass-if "on->csp-reply-variable"
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform* reply-ast csp-reply-variable-ast-via)
+          (on->csp* reply-ast csp-reply-variable-ast-via)
 
           ;; to:
           "i?x:{done} -> (
@@ -1504,11 +1504,11 @@ Reply_(dummy)
           ;; via:
           csp-reply-function-ast-via))
 
-(pass-if "csp-transform-reply-function"
+(pass-if "on->csp-reply-function"
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform* reply-ast csp-reply-function-ast-via)
+          (on->csp* reply-ast csp-reply-function-ast-via)
 
           ;; to:
           "reply_fun(P')(dummy) =
@@ -1543,11 +1543,11 @@ P'(dummy)
           ;; via:
           csp-reply-function-formal-ast-via))
 
-(pass-if "csp-transform-reply-function-formal"
+(pass-if "on->csp-reply-function-formal"
          (diff-noisy-equal?
 
           ;; from/via:
-          (csp-transform* reply-ast csp-reply-function-formal-ast-via)
+          (on->csp* reply-ast csp-reply-function-formal-ast-via)
 
           ;; to:
           "reply_fun_arg(P')(dummy, s) =
@@ -1557,7 +1557,7 @@ P'(dummy)
 "))
 
 ;; OM-PARSER parser test
-(define csp-transform-OM-PARSER-variable-action-via
+(define on->csp-OM-PARSER-variable-action-via
   '(on
   (triggers (trigger i e (arguments)))
   (compound
@@ -1578,13 +1578,13 @@ P'(dummy)
                  (variable s (type (name UReply Status)) (action (trigger u what (arguments)))))))
 
           ;; via:
-          csp-transform-OM-PARSER-variable-action-via))
+          on->csp-OM-PARSER-variable-action-via))
 
-(pass-if "csp-transform-OM-PARSER-variable-action"
+(pass-if "on->csp-OM-PARSER-variable-action"
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform* reply-ast csp-transform-OM-PARSER-variable-action-via)
+          (on->csp* reply-ast on->csp-OM-PARSER-variable-action-via)
 
           ;; to:
           "i?x:{e} -> (
@@ -1596,7 +1596,7 @@ Reply_(dummy)
 )"))
 
 ;; OM-PARSER parser test
-(define csp-transform-OM-PARSER-variable-action-via
+(define on->csp-OM-PARSER-variable-action-via
   '(on
   (triggers (trigger i e (arguments)))
   (compound
@@ -1617,13 +1617,13 @@ Reply_(dummy)
                  (variable s (type (name UReply Status)) (action (trigger u what (arguments)))))))
 
           ;; via:
-          csp-transform-OM-PARSER-variable-action-via))
+          on->csp-OM-PARSER-variable-action-via))
 
-(pass-if "csp-transform-OM-PARSER-variable-action"
+(pass-if "on->csp-OM-PARSER-variable-action"
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform* reply-ast csp-transform-OM-PARSER-variable-action-via)
+          (on->csp* reply-ast on->csp-OM-PARSER-variable-action-via)
 
           ;; to:
           "i?x:{e} -> (
@@ -1635,7 +1635,7 @@ Reply_(dummy)
 )"))
 
 ;; OM-PARSER parser test
-(define csp-transform-OM-PARSER-assign-action-via
+(define on->csp-OM-PARSER-assign-action-via
   '(on
   (triggers (trigger i e (arguments)))
   (compound
@@ -1661,13 +1661,13 @@ Reply_(dummy)
                             (assign res (action (trigger u what (arguments)))))))
 
           ;; via:
-          csp-transform-OM-PARSER-assign-action-via))
+          on->csp-OM-PARSER-assign-action-via))
 
-(pass-if "csp-transform-OM-PARSER-assign-action"
+(pass-if "on->csp-OM-PARSER-assign-action"
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform* reply-ast csp-transform-OM-PARSER-assign-action-via)
+          (on->csp* reply-ast on->csp-OM-PARSER-assign-action-via)
 
           ;; to:
           "i?x:{e} -> (
@@ -1736,11 +1736,11 @@ Reply_(dummy)
           ;; via:
           csp-return-variable-c-ast))
 
-(pass-if "csp-transform-return-variable"
+(pass-if "on->csp-return-variable"
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform*
+          (on->csp*
 
            return-variable-c-ast
 
@@ -1783,11 +1783,11 @@ arguments_(b)
           ;; via:
           csp-field-sugar-ast))
 
-(pass-if "csp-transform-field-sugar"
+(pass-if "on->csp-field-sugar"
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform* i-ast csp-field-sugar-ast)
+          (on->csp* i-ast csp-field-sugar-ast)
 
           ;; to
           "(if (s == S_S1) then
@@ -1827,11 +1827,11 @@ else
           ;; via:
           csp-field-local-sugar-ast))
 
-(pass-if "csp-transform-field-local-sugar"
+(pass-if "on->csp-field-local-sugar"
          (diff-noisy-equal?
 
           ;; via/from:
-          (csp-transform* i-ast csp-field-local-sugar-ast)
+          (on->csp* i-ast csp-field-local-sugar-ast)
 
           ;; to
           "let t = S_S1 within
@@ -1908,11 +1908,11 @@ else
           ;; via:
           csp-callvalued-on))
 
-(pass-if "csp-transform-callvalued"
+(pass-if "on->csp-callvalued"
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform* callvalued-c-ast csp-callvalued-on)
+          (on->csp* callvalued-c-ast csp-callvalued-on)
           ;; via:
          "i?x:{e} -> (
 let tmp' = (not b) within
@@ -1986,11 +1986,11 @@ g(Cont_8')(b, b)
           csp-callvalued-on-2))
 
 
-(pass-if "csp-transform-callvalued-2"
+(pass-if "on->csp-callvalued-2"
          (diff-noisy-equal?
 
           ;; from:
-          (csp-transform* callvalued-c-ast csp-callvalued-on-2)
+          (on->csp* callvalued-c-ast csp-callvalued-on-2)
           ;; via:
          "i?x:{e} -> (
 let tmp' = (not b) within
@@ -2163,7 +2163,7 @@ h(Cont_10')(b, s, b)
 
 (pass-if "no-members"
          (diff-noisy-equal?
-          (csp-transform* member-i-ast '(on (triggers (trigger #f e (arguments))) (voidreply)))
+          (on->csp* member-i-ast '(on (triggers (trigger #f e (arguments))) (voidreply)))
           "imember?x:{e} -> (
 imember_'.return ->
 imember.the_end' ->
@@ -2215,7 +2215,7 @@ STOP)"))
 
 (pass-if "expression-csp"
          (diff-noisy-equal?
-          (csp-transform*
+          (on->csp*
            i-ast
            expression-via)
           "let t = false within

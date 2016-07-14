@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
@@ -34,7 +34,7 @@ channel #.scope_model _in'',#.scope_model _out'': {|#.scope_model _''|}
 channel #.scope_model _link'': {|#.scope_model _in'',#.scope_model _out''|}
                             
 IF_#.scope_model _(IG,CS) = let
-# (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
+# (->string (map (lambda (x) (on->csp model (ast-transform model x))) (om:functions model)))
 #(behaviour-interface->csp model)
 
 REORDER' = 

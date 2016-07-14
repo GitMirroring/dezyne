@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
@@ -41,7 +41,7 @@
 
 
 CO_#.scope_model _plain(IIG,IG) = let
-# (->string (map (lambda (x) (csp-transform model (ast-transform model x))) (om:functions model)))
+# (->string (map (lambda (x) (on->csp model (ast-transform model x))) (om:functions model)))
 #(behaviour-component->csp model)
 
 within #.scope_model _(#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values model))))

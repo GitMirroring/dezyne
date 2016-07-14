@@ -54,7 +54,7 @@
            csp-comma-list
            csp-component
            ast-transform
-           csp-transform
+           on->csp
            csp:norm
            csp-queue-size
            om->csp
@@ -234,6 +234,9 @@
     (om:void? model o))
 
   (define (split-valued-void o)
+    "over een poort? ontvangen we valued of void triggers maar niet
+door elkaar want aan de achterkant staat dan een valued reply of void
+reply en die kun je niet mixen"
     (receive (valued void) (partition void? ((compose .elements .triggers) o))
       (let* ((statement (.statement o))
              (valued-on (if (pair? valued)
@@ -251,43 +254,30 @@
         (append void-on valued-on))))
 
   (define (splitted-ons statement)
-    (apply append (map split-valued-void
-                       ;;((om:statements-of-type 'on) statement)
-                       (if (is-a? statement <on>)
-                           (list statement)
-                           (filter (is? <on>) statement)))))
+    (append-map split-valued-void
+                (if (is-a? statement <on>) (list statement)
+                    (filter (is? <on>) statement))))
+
+  (define (guard->csp guard)
+    (let* ((expression (csp-expression->string model (.expression guard) '()))
+           (ons (splitted-ons (.statement guard))))
+      (list
+       "(" expression ") & (\n"
+       (or (null-is-#f
+            ((->list-join "\n []\n  ")
+             (map (lambda (on) (on->csp model (ast-transform model on))) ons)))
+           "STOP")
+       ")")))
+
   (let ((default "STOP")
-        (model (flatten-compound model)))
+        (guards (let ((statement ((compose .statement .behaviour) model)))
+                  (if (is-a? statement <guard>)
+                      (list statement)
+                      (filter (is? <guard>) statement)))))
     (or (null-is-#f
          ((->list-join "\n[]\n")
-          (append
-           (map
-            (lambda (guard)
-              (let ((expression (csp-expression->string model (.expression guard) '()))
-                    (ons (splitted-ons (.statement guard))))
-                (list
-                 "(" expression ") & (\n"
-                 (or (null-is-#f
-                      ((->list-join "\n []\n  ")
-                       (map (lambda (on)
-                              (csp-transform model (ast-transform model on)))
-                            (let ((ons
-                                   (if (is-a? model <interface>)
-                                       ons
-                                       (append
-                                        (filter identity (map (statement-on-p/r (provides? model)) ons))
-                                        (filter identity (map (statement-on-p/r (requires? model)) ons))))))
-                              ons))))
-                     default)
-                 ")")))
-            ;;((om:statements-of-type 'guard) (om:statement (.behaviour model)))
-            (let ((statement ((compose .statement .behaviour) model)))
-              (if (is-a? statement <guard>)
-                  (list statement)
-                  (filter (is? <guard>) statement))))
-           (map (lambda (on) (csp-transform model (ast-transform model on)))
-                (splitted-ons ((compose .statement .behaviour) model))))))
-        default)))
+          (map guard->csp guards)))
+        "STOP")))
 
 (define (behaviour-component->csp model)
   (let* ((behaviour (behaviour->csp model))
@@ -731,11 +721,8 @@
               :statement (make <compound> :elements (list result (make <voidreply>)))))))))
     (_ o)))
 
-(define (csp-transform ast src)
-  (csp-transform-model (or (om:component ast) (om:interface ast)) src))
-
-(define* (csp-transform-model model o :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()) (indent 0) (tail '()) (function #f))
-
+(define* (on->csp model o :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()) (indent 0) (tail '()) (function #f))
+  
   (define (member? identifier) (and (not (local? identifier))
                                     (om:variable model identifier)))
   (define (local? identifier) (assoc-ref locals identifier))
@@ -757,7 +744,8 @@
       ((? unspecified?) 'void)
       (_ 'bool)))
 
-  (let* ((model-name ((om:scope-name) model))
+  (let* ((model (or (om:component model) (om:interface model)))
+         (model-name ((om:scope-name) model))
          (model- (symbol-append model-name '_))
          (channel (or channel (if (is-a? model <interface>) model-name (.name (om:port model)))))
          (space (make-string (* indent 2) #\space))
@@ -778,8 +766,8 @@
                        (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
                   (the-end (if (and (is-a? statement <blocking>) provided-on?) (make <the-end-blocking>) (make <the-end>)))
                   (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
-                  (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
-                  (tail (csp-transform-model model (statement) inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
+                  (transformed-end (on->csp model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
+                  (tail (on->csp model (statement) inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
                   (real-triggers (filter (negate modeling-event?) triggers))
                   (modeling-triggers (filter modeling-event? triggers))
                   (modeling-triggers (map .event modeling-triggers))
@@ -824,8 +812,8 @@
                        (or (is-a? model <interface>) ((provides-event? model) (car triggers)))))
                   (the-end (if (and (is-a? statement <blocking>) provided-on?) (make <the-end-blocking>) (make <the-end>)))
                   (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
-                  (transformed-end (csp-transform-model model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
-                  (tail (csp-transform-model model statement inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
+                  (transformed-end (on->csp model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
+                  (tail (on->csp model statement inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
                   (real-triggers (filter (negate modeling-event?) triggers))
                   (modeling-triggers (filter modeling-event? triggers))
                   (modeling-triggers (map .event modeling-triggers))
@@ -864,7 +852,7 @@
                                 (loop (cdr formals)
                                       (acons (.name (car formals)) (car formals) locals)))))
                   (tail (list (list "    " "P'(" (comma-space-join (om:member-names model)) ")\n" )))
-                  (transformed (csp-transform-model model statement inevitable-optional? channel provided-on? locals 2 tail name))
+                  (transformed (on->csp model statement inevitable-optional? channel provided-on? locals 2 tail name))
                   (lets (collect-def transformed)))
              (list
               (list name "(" "P'" ")" "(" (comma-space-join (append (om:member-names model) (map .name formals))) ") = \n")
@@ -883,14 +871,14 @@
 
           ;; compound statements
           (('compound statements ...)
-           (csp-transform-model model statements inevitable-optional? channel provided-on? locals indent tail function))
+           (on->csp model statements inevitable-optional? channel provided-on? locals indent tail function))
 
           (($ <if> expression then else)
            (let* ((expression (csp-expression->string model expression locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
-                  (then (csp-transform-model model then inevitable-optional? channel provided-on? locals (1+ indent) tail function))
-                  (else (csp-transform-model model (or else '()) inevitable-optional? channel provided-on? locals (1+ indent) tail function)))
+                  (then (on->csp model then inevitable-optional? channel provided-on? locals (1+ indent) tail function))
+                  (else (on->csp model (or else '()) inevitable-optional? channel provided-on? locals (1+ indent) tail function)))
              (list
                (list space "(if " expression " then \n")
                (list then "\n")
@@ -899,14 +887,14 @@
               )))
 
           (($ <blocking> stat)
-           (let* ((stat (csp-transform-model model stat inevitable-optional? channel provided-on? locals (1+ indent) tail function)))
+           (let* ((stat (on->csp model stat inevitable-optional? channel provided-on? locals (1+ indent) tail function)))
              (list
                (list stat "\n")
               )))
 
           ;; simple statements
           (($ <call> identifier arguments last?)
-           (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
+           (let* ((arguments (on->csp model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (continuation (list (list "Cont_" (fresh-number) "'"))))
@@ -932,7 +920,7 @@
 
           (($ <assign> identifier ($ <call> function arguments))
            ;;(stderr "arguments: ~a ~a\n" arguments (pair? arguments))
-           (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
+           (let* ((arguments (on->csp model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (continuation (list (list "Cont_" (fresh-number) "'"))))
@@ -963,7 +951,7 @@
              (check-range (list identifier) tail model locals indent))))
 
           (($ <variable> name type ($ <call> identifier arguments))
-           (let* ((arguments (csp-transform-model model arguments inevitable-optional? channel provided-on? locals))
+           (let* ((arguments (on->csp model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (continuation (list (list "Cont_" (fresh-number) "'"))))
@@ -1038,9 +1026,9 @@
 
           ;; other bits
           (('arguments arguments ...)
-           (map (lambda (x) (csp-transform-model model x inevitable-optional? channel provided-on? locals)) arguments))
+           (map (lambda (x) (on->csp model x inevitable-optional? channel provided-on? locals)) arguments))
 
-          (($ <expression> (and ($ <call>) (get! call))) (csp-transform-model model (call) inevitable-optional? channel))
+          (($ <expression> (and ($ <call>) (get! call))) (on->csp model (call) inevitable-optional? channel))
           (($ <expression>) (csp-expression->string model o locals))
 
           (($ <the-end>)
@@ -1067,8 +1055,8 @@
            (let* ((locals (match h
                                  (($ <variable> name) (acons name h locals))
                                  (_ locals)))
-                  (tail (csp-transform-model model t inevitable-optional? channel provided-on? locals indent tail function)))
-             (csp-transform-model model h inevitable-optional? channel provided-on? locals indent tail function)))
+                  (tail (on->csp model t inevitable-optional? channel provided-on? locals indent tail function)))
+             (on->csp model h inevitable-optional? channel provided-on? locals indent tail function)))
 
           (_ (stderr "TODO: ~a\n" o)
              (list
