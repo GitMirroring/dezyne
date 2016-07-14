@@ -1,5 +1,0 @@
-verify: range_function: check: completeness: ok
-verify: range_function: check: deadlock: fail
-range_function.e
-integer range error in model range_function
-verify: range_function: check: livelock: ok

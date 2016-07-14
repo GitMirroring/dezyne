@@ -1,3 +1,0 @@
-verify: running: check: completeness: ok
-verify: running: check: deadlock: ok
-verify: running: check: livelock: ok

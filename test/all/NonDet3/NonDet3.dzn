@@ -1,0 +1,136 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface NonDet3
+{
+  in void init();
+  in void work();
+  in void stop();
+  in void recover();
+  out void ok();
+  out void error();
+  out void stopped();
+  out void recovered();
+
+  behaviour
+  {
+    enum States {Powered, Ready, Working, Stopping, Error};
+    States mainState = States.Ready;
+
+    // on stop:
+    // {
+    //   [!mainState.Powered]
+    //     mainState = States.Stopping;
+    //   [otherwise]
+    //     illegal;
+    // }
+
+    {
+    [mainState.Powered]
+    {
+      on init:
+      {
+        [true] {ok; mainState = States.Ready;}
+        [true] {error; mainState = States.Error;}
+      }
+
+      on work, recover:
+        illegal;
+
+      on stop:
+        illegal;
+    }
+
+    [mainState.Ready]
+    {
+      on work:
+      mainState = States.Working;
+        
+      {
+        [true]
+          on stop:
+          mainState = States.Stopping;
+        [true]
+          on stop:
+          mainState = States.Ready;
+      }
+
+      on init, recover:
+        illegal;
+    }
+
+    [mainState.Working]
+    {
+      on inevitable:
+      {
+        [true]{ok; mainState = States.Ready;}
+        [true]{error; mainState = States.Error;}
+      }
+
+      // on inevitable:
+      // {
+      //   {error; mainState = States.Error;}
+      // }
+        
+      on stop:
+        mainState = States.Stopping;
+
+      // on stop:
+      //   mainState = States.Error;
+
+      on init, work, recover:
+        illegal;
+    }
+
+    [mainState.Stopping]
+    {
+      on inevitable:
+      {
+        [true]{ok; mainState = States.Ready;}
+        [true]{error; mainState = States.Error;}
+      }
+
+      on stop:
+        mainState = States.Stopping;
+
+      on init, work, recover:
+        illegal;
+    }
+
+    [mainState.Error]
+    {
+      on recover:
+      {
+        [true]{ok; mainState = States.Ready;}
+        [true]{error; mainState = States.Error;}
+      }
+
+      on stop:
+        ok;
+
+      on init, work:
+        illegal;
+    }
+    }
+  }
+}
