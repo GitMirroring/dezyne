@@ -1,8 +1,0 @@
-  States   Guard        Code           Next
-start
-[!running]       running = !running; !running
-[running]        illegal;
-stop
-[!running]       illegal;
-[running]        running = !running; running
-
