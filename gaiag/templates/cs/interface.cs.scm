@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -23,19 +24,22 @@
 
 using System;
 
-public class #.scope_model  : dzn.Interface<#.scope_model .In, #.scope_model .Out> {#
+public class #.scope_model {#
 (->string (map (declare-enum model) (om:interface-enums model)))
-  new public class In : dzn.Interface<#.scope_model .In, #.scope_model .Out>.In {
+  public class In {
 #((->join "\n") (map (declare-io model #{
     public #(lambda-type return-type formal-types)  #name ;#})
  (filter om:in? ((compose .elements .events) model)))
 )
   }
-  new public class Out : dzn.Interface<#.scope_model .In, #.scope_model .Out>.Out {
+  public class Out {
 #((->join "\n") (map (declare-io model #{
     public #(lambda-type return-type formal-types)  #name;#})
  (filter om:out? ((compose .elements .events) model))))
   }
+  public dzn.port.Meta dzn_meta;
+  public In inport;
+  public Out outport;
   public #.scope_model() {
     dzn_meta = new dzn.port.Meta ();
     inport = new In();

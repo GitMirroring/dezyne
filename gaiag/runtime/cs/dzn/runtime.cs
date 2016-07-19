@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,8 +22,6 @@
 //
 // Code:
 
-// -*-java-*-
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -37,26 +36,6 @@ namespace dzn {
 
         public class RuntimeException : SystemException {
         public RuntimeException(String msg) : base(msg) {}
-    }
-
-    abstract public class Interface<I,O> where I: Interface<I,O>.In where O : Interface<I,O>.Out {
-        public port.Meta dzn_meta;
-        abstract public class Port {
-        }
-        abstract public class In : Port {
-        }
-        abstract public class Out : Port {
-        }
-        private In in_;
-        private Out out_;
-        public I inport {
-            get { return (I) in_; }
-            set { this.in_ = value; }
-        }
-        public O outport {
-            get { return (O) out_; }
-            set { this.out_ = value; }
-        }
     }
 
     abstract public class ComponentBase {
