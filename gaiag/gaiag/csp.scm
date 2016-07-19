@@ -228,6 +228,36 @@
 
 (define (unspecified? x) (eq? x *unspecified*))
 
+(define (guards->trigger-to-guards-alist guards)
+  "collect alist of ((trigger . (guards))), e.g.
+   (((<trigger> port1 event1) . ((<guard1> expr1) (<guard2> expr2)))
+    ((<trigger> port2 event2) . ((<guard1> expr1) (<guard3> expr3)))
+    ...) 
+   - the statement of the guard is discarded
+   - the arguments on the trigger are discarded, only port-name event-name"
+  (let loop ((guards guards) (alist '()))
+    (if (null? guards) alist
+        (let* ((guard (car guards))
+               (statement (.statement guard))
+               (guard (make <guard> :expression (.expression guard)))
+               (ons (match statement
+                      (($ <on>) (list statement))
+                      (('compound statements ...) statements)))
+               (triggers (append-map (compose .elements .triggers) ons))
+               (triggers
+                (map (lambda (t)
+                       (make <trigger> :port (.port t) :event (.event t)))
+                     triggers))
+               (triggers (delete-duplicates triggers)))
+          (loop (cdr guards)
+                (let loop2 ((triggers triggers) (alist alist))
+                  (if (null? triggers) alist
+                      (let* ((trigger (car triggers))
+                             (entry (or (assoc-ref alist trigger) '())))
+                        (loop2 (cdr triggers)
+                               (assoc-set! alist
+                                           trigger (cons guard entry)))))))))))
+
 (define (behaviour->csp model)
 
   (define (list-of-ons statement)
@@ -245,11 +275,16 @@
            "STOP")
        ")")))
 
-  (let ((default "STOP")
-        (guards (let ((statement ((compose .statement .behaviour) model)))
-                  (if (is-a? statement <guard>)
-                      (list statement)
-                      (filter (is? <guard>) statement)))))
+  (let* ((default "STOP")
+         (guards (let ((statement ((compose .statement .behaviour) model)))
+                   (if (is-a? statement <guard>)
+                       (list statement)
+                       (filter (is? <guard>) statement))))
+         (trigger-to-guards-alist (guards->trigger-to-guards-alist guards)))
+    ;;paul: uncomment to see result; breaks dzn verify because of printing stderr
+    ;;(stderr "guards-by-trigger[~a]\n" (.name model))
+    ;;(pretty-print trigger-to-guards-alist (current-error-port))
+
     (or (null-is-#f
          ((->list-join "\n[]\n")
           (map guard->csp guards)))
