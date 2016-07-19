@@ -485,8 +485,15 @@ var aspects = {
   }
   ,
   view: function(parameters) {
-    console.log('view: TODO');
-    return q({status:0,output:'TODO'});
+    var baseline = parameters.dir + '/baseline/verify/' + parameters.model;
+    var dir = 'out/' + path.basename(parameters.dir)
+    var out = dir + '/'+parameters.model;
+    var err = out + '.stderr';
+    var imports = parameters.meta.imports || ""; 
+
+    var cmd = dzn() + ' view '+imports+' '+parameters.filename;
+    return util.spawn_sync_shell(cmd)
+      .fail (function(err) {console.log(err); return {status: -1, output: err}});
   }
   ,
 };
