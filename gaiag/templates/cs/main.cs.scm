@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
+;;; Copyright © 2015, 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -98,7 +98,7 @@ class main {
   dzn.V<int> v = new dzn.V<int> (0);
   if (v.v == 0) {}
   dzn.Component c = new dzn.Component(m.dzn_locator);
-  c.dzn_flushes = flush;
+  c.dzn_runtime.infos[c].flushes = flush;
   c.dzn_meta.parent = null;
   c.dzn_meta.name = "<external>";
  EventMap e = new EventMap();

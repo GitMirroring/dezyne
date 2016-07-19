@@ -42,17 +42,13 @@ namespace dzn {
         public Locator dzn_locator;
         public Runtime dzn_runtime;
         public Meta dzn_meta;
-        public ComponentBase(Locator locator, String name, Meta parent) {this.dzn_locator = locator; this.dzn_meta = new Meta (name, parent); this.dzn_runtime = locator.get<Runtime>(); this.dzn_runtime.components.Enqueue(this);}
+        public ComponentBase(Locator locator, String name, Meta parent) {this.dzn_locator = locator; this.dzn_meta = new Meta (name, parent); this.dzn_runtime = locator.get<Runtime>();}
     }
 
     public class Component : ComponentBase {
-        public bool dzn_handling;
-        public bool dzn_flushes;
-        public Component dzn_deferred;
-        public Queue<Action> dzn_q;
         public Component(Locator locator, String name="", Meta parent=null)
             : base(locator, name, parent)
-            {this.dzn_q = new Queue<Action>();}
+            {this.dzn_runtime.infos.Add(this, new Runtime.info ());}
     }
 
     abstract public class SystemComponent : ComponentBase {
@@ -62,58 +58,67 @@ namespace dzn {
     }
 
     public class Runtime {
-        public Queue<ComponentBase> components;
+
+	public class info {
+	    public bool handling;
+	    public Component deferred;
+	    public Queue<Action> q;
+	    public bool flushes;
+	    public info () {this.q = new Queue<Action>();}
+	}
+
+        public Dictionary<Component,info> infos;
         public Action illegal;
         public Runtime (Action illegal=null) {
             if (illegal == null) {
                 illegal = () => {throw new RuntimeException("illegal");};
             }
             this.illegal = illegal;
-            this.components = new Queue<ComponentBase> ();
+            this.infos = new Dictionary<Component,info> ();
         }
         public static bool external(Component c) {
-            return !c.dzn_runtime.components.Contains(c);
+            return c.dzn_runtime.infos[c] == null;
         }
         public static void flush(Component c) {
             if (!external(c)) {
-                while (c.dzn_q.Count > 0) {
-                    handle(c, c.dzn_q.Dequeue());
+                while (c.dzn_runtime.infos[c].q.Count > 0) {
+                    handle(c, c.dzn_runtime.infos[c].q.Dequeue());
                 }
-                if (c.dzn_deferred != null) {
-                    Component t = c.dzn_deferred;
-                    c.dzn_deferred = null;
-                    if (!t.dzn_handling) {
+                if (c.dzn_runtime.infos[c].deferred != null) {
+                    Component t = c.dzn_runtime.infos[c].deferred;
+                    c.dzn_runtime.infos[c].deferred = null;
+                    if (!t.dzn_runtime.infos[t].handling) {
                         flush(t);
                     }
                 }
             }
         }
         public static void defer(Component i, Component o, Action f) {
-            if (!(i !=null && i.dzn_flushes) && !o.dzn_handling) {
+            if (!(i !=null && i.dzn_runtime.infos[i].flushes) && !o.dzn_runtime.infos[o].handling) {
                 handle(o, f);
             }
             else {
-                o.dzn_q.Enqueue(f);
+                o.dzn_runtime.infos[o].q.Enqueue(f);
                 if (i != null) {
-                    i.dzn_deferred = o;
+                    i.dzn_runtime.infos[i].deferred = o;
                 }
             }
         }
         public static R valued_helper<R>(Component c, Func<R> f) where R : struct, IComparable, IConvertible {
-            if (c.dzn_handling) {
+            if (c.dzn_runtime.infos[c].handling) {
                 throw new RuntimeException("a valued event cannot be deferred");
             }
-            c.dzn_handling = true;
+            c.dzn_runtime.infos[c].handling = true;
             R r = f();
-            c.dzn_handling = false;
+            c.dzn_runtime.infos[c].handling = false;
             flush(c);
             return r;
         }
         public static void handle(Component c, Action f) {
-            if (!c.dzn_handling) {
-                c.dzn_handling = true;
+            if (!c.dzn_runtime.infos[c].handling) {
+                c.dzn_runtime.infos[c].handling = true;
                 f();
-                c.dzn_handling = false;
+                c.dzn_runtime.infos[c].handling = false;
                 flush(c);
             }
             else {

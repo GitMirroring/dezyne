@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -35,7 +36,7 @@ public class #.scope_model  : dzn.Component {#
   public #((om:scope-join) interface)  #name;#}) ((compose .elements .ports) model))
 
   public #.scope_model(dzn.Locator locator, String name="", dzn.Meta parent=null) : base(locator, name, parent) {
-    this.dzn_flushes = true;#
+    this.dzn_runtime.infos[this].flushes = true;#
 (map (init-member model #{#'()
     #(string-if (eq? expression (if #f #f)) "" #{#name  = #expression ;#})#}) (om:variables model))#
 (map (init-port #{#'()
