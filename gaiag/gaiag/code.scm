@@ -869,7 +869,7 @@
          (return-type-name (om:type-name type-type))
          (in-formals (filter om:in? ((compose .elements .formals) signature)))
          (in-formals (transform-formals-shadow-member model in-formals))
-         (capture-list (comma-join (map .name in-formals)))
+         (capture-list (comma-join (append (list "") (map .name in-formals))))
          (formals ((compose .elements .formals) signature))
          (formals (transform-formals-shadow-member model formals))
          (argument-list (map .name formals))
