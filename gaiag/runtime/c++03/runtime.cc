@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -30,13 +31,13 @@ namespace dzn {
 
 runtime::runtime(){}
 
-void trace_in(std::ostream& os, port::meta const& m, const char* e)
+void trace_in(std::ostream& os, port::meta const& m, const std::string& e)
 {
   os << path(m.requires.meta, m.requires.port) << "." << e << " -> "
      << path(m.provides.meta, m.provides.port) << "." << e << std::endl;
 }
 
-void trace_out(std::ostream& os, port::meta const& m, const char* e)
+void trace_out(std::ostream& os, port::meta const& m, const std::string& e)
 {
   os << path(m.provides.meta, m.provides.port) << "." << e << " -> "
      << path(m.requires.meta, m.requires.port) << "." << e << std::endl;

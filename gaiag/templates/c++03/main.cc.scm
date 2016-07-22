@@ -45,7 +45,7 @@ namespace dzn
   }
 
   template <typename R>
-  R log_valued(std::string prefix, std::string event, event_map& event_map, R (*string_to_value)(std::string), const char* (*value_to_string)(R))
+  R log_valued(std::string prefix, std::string event, event_map& event_map, R (*string_to_value)(std::string), std::string (*value_to_string)(R))
   {
     std::clog << prefix << event << std::endl;
     if (relaxed) return (R)0;
@@ -77,7 +77,7 @@ namespace dzn
  #(map
    (lambda (port)
      (map (define-on model port #{m.#port .#direction .#event  = boost::bind(#(string-if (eq? return-type 'void) #{&log_#direction , "#port .", "#event ", boost::ref(e)#}
-                                                                                                                 #{&log_valued< #((om:scope-join #f) reply-scope)::#reply-name ::type>, "#port .", "#event ", boost::ref(e), to_#((om:scope-join #f) reply-scope)_#reply-name , static_cast<const char*(*)(#((om:scope-join #f) reply-scope)::#reply-name ::type)>(to_string)#}));
+                                                                                                                 #{&log_valued< #(if (not (member reply-name '(void int bool))) (list ((om:scope-join #f) reply-scope) "::" reply-name "::type") reply-name)>, "#port .", "#event ", boost::ref(e), to_#((om:scope-join #f) reply-scope)_#reply-name , static_cast<std::string(*)(#(if (not (member reply-name '(void int bool))) (list ((om:scope-join #f) reply-scope) "::" reply-name "::type") reply-name))>(to_string)#}));
      #}) (filter (negate (om:dir-matches? port)) (om:events port)))) (om:ports model))
  #(map (init-port #{
      m.#name .meta.requires.port = "#name ";

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
 //
@@ -34,14 +35,18 @@
 #include <iostream>
 #include <map>
 #include <queue>
+#include <sstream>
 
-inline char const* to_string(bool b){return b ? "true" : "false";}
+inline void to__void(std::string){}
+inline std::string to_string(bool b){return b ? "true" : "false";}
 inline bool to__bool(std::string s){return s == "true";}
+inline std::string to_string(int i){std::stringstream ss; ss << i; return ss.str();}
+inline int to__int(std::string s){std::stringstream ss(s); int i; ss >> i; return i;}
 
 namespace dzn
 {
-  void trace_in(std::ostream&, port::meta const&, const char*);
-  void trace_out(std::ostream&, port::meta const&, const char*);
+  void trace_in(std::ostream&, port::meta const&, const std::string&);
+  void trace_out(std::ostream&, port::meta const&, const std::string&);
 
   inline void apply(const meta* m, const boost::function<void(const meta*)>& f)
   {

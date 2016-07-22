@@ -19,7 +19,7 @@ struct #.model
     dzn::runtime& dzn_rt;
     dzn::locator const& dzn_locator;
     #(->string (map (declare-enum model) (om:enums (.behaviour model))))#
-    (->string (map declare-integer (om:integers (.behaviour model))))#
+;;    (->string (map declare-integer (om:integers (.behaviour model))))#
     (map (init-member model #{
 #type  #name;
 #}) (om:variables model))#

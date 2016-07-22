@@ -1,6 +1,6 @@
 ##ifndef ENUM_TO_STRING_#((c++:scope-join #f '_) scope)_#name
 ##define ENUM_TO_STRING_#((c++:scope-join #f '_) scope)_#name  1
-inline const char* to_string(#((c++:scope-join #f) scope)::#name ::type v)
+inline std::string to_string(#((c++:scope-join #f) scope)::#name ::type v)
 {
   switch(v)
   {

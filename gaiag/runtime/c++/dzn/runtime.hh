@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -37,7 +38,7 @@
 inline void to__void(std::string){}
 inline std::string to_string(bool b){return b ? "true" : "false";}
 inline bool to__bool(std::string s){return s == "true";}
-inline std::string to_string(int i){static std::string s; s=std::to_string(i); return s.c_str();}
+inline std::string to_string(int i){return std::to_string(i);}
 inline int to__int(std::string s){return std::stoi (s);}
 
 namespace dzn
