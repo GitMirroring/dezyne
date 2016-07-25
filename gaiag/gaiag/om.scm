@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;; Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -415,7 +416,9 @@
        (not (eq? ((compose car om:scope+name) model) (car o)))))
 
 (define* ((om:scope-join :optional (model #f) (infix '_)) o)
-  (let* ((outer? (om:outer-scope? model o))
+  (let* ((infix (if (symbol? infix) infix
+		    (string->symbol infix)))
+	 (outer? (om:outer-scope? model o))
          (scope (if (not model) o
                     (if outer? (cons null-symbol o)
                         (om:drop-scope (.name model) o)))))
