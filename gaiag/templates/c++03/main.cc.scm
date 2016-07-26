@@ -52,12 +52,8 @@ namespace dzn
     std::string s = consume_synchronous_out_events(prefix, event, event_map);
 
     R r = string_to_value(s.erase(std::min(s.size(), s.find(prefix)), prefix.size()));
-    if (static_cast<int>(r) != -1)
-    {
-      std::clog << prefix << value_to_string(r) << std::endl;
-      return r;
-    }
-    throw std::runtime_error("\"" + s + "\" is not a reply value");
+    std::clog << prefix << value_to_string(r) << std::endl;
+    return r;
   }
 
   struct component
@@ -70,10 +66,6 @@ namespace dzn
     int dzn_i = 0;
     (void)dzn_i;
 
-##if !BLOCKING
-    rt.performs_flush(c) = true;
-##endif //!BLOCKING
-
  #(map
    (lambda (port)
      (map (define-on model port #{m.#port .#direction .#event  = boost::bind(#(string-if (eq? return-type 'void) #{&log_#direction , "#port .", "#event ", boost::ref(e)#}
@@ -85,6 +77,7 @@ namespace dzn
  #(map (init-port #{
      m.#name .meta.provides.address = c;
      m.#name .meta.provides.meta = &c->dzn_meta;
+     m.#name .meta.provides.port ="#name ";
      e["#name .<flush>"] = boost::bind(log_flush, boost::ref(m.dzn_rt), boost::ref(m.#name .meta), "#name ");
      #}) (filter om:requires? (om:ports model)))
   #(map
@@ -101,7 +94,7 @@ void illegal_handler()
   exit(0);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
   dzn::locator l;
   dzn::runtime rt;
@@ -119,6 +112,7 @@ int main()
   c.dzn_meta.parent = 0;
   c.dzn_meta.name = "<internal>";
   dzn::fill_event_map(rt, &c, sut, event_map);
+  if (argc > 1 && argv[1] == std::string("--flush")) rt.performs_flush(&c) = true;
 
   sut.check_bindings();
   sut.dump_tree();
