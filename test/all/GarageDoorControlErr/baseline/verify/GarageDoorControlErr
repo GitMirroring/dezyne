@@ -2,24 +2,7 @@ verify: DoorControlIF: check: completeness: ok
 verify: DoorControlIF: check: deadlock: ok
 verify: DoorControlIF: check: livelock: ok
 verify: GarageDoorControlErr: check: deterministic: ok
-verify: GarageDoorControlErr: check: completeness: fail
-doorControl.initialise
-limitSw.initialise
-limitSw.return
-motorControl.initialise
-motorControl.return
-doorControl.return
-switchPress.switchPressed
-switchPress.acknowledge
-switchPress.return
-limitSw.queryPosition
-limitSw.Position_Opened
-motorControl.setClose
-motorControl.return
-motorControl.start
-motorControl.return
-limitSw.doorClosing
-limitSw.return
+verify: GarageDoorControlErr: check: completeness: ok
 verify: GarageDoorControlErr: check: illegal: ok
 verify: GarageDoorControlErr: check: deadlock: fail
 doorControl.initialise

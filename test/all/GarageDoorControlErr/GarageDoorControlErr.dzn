@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -325,9 +326,7 @@ component GarageDoorControlErr
 		[state.NotReady]
 		{
 			on doorControl.initialise(): { limitSw.initialise(); motorControl.initialise(); state = State.Ready; }
-			on doorControl.reset(): illegal;
 			on switchPress.switchPressed(): { switchPress.acknowledge(); }
-			on timer.Timeout(), limitSw.doorClosed(), limitSw.doorOpened(), limitSw.proximityWarning(): illegal;
 		}		
 
 		// In the ready state wait for the wall switch to be pressed. Figure out where the door
@@ -363,8 +362,6 @@ component GarageDoorControlErr
 					state = State.Opening;				
 				}				
 			}
-			on doorControl.initialise(), timer.Timeout(), limitSw.doorOpened, limitSw.doorClosed, limitSw.proximityWarning: illegal;			
-			on doorControl.reset(): illegal;		
 		}
 
 		// When the door is opening, if the wall switch is pressed once, reverse it. It if it is pressed
@@ -390,10 +387,6 @@ component GarageDoorControlErr
 				state = State.Ready;
 				timer.CancelTimer();
 			}
-			on doorControl.initialise(): illegal;
-			on limitSw.proximityWarning(): illegal;
-			on limitSw.doorClosed(): illegal;
-			on doorControl.reset(): illegal;
 		}
 		
 		// When the door is closing, if the wall switch is pressed once, reverse it. It if it is pressed
@@ -418,7 +411,6 @@ component GarageDoorControlErr
 				motorControl.stop();
 				state = State.Ready;
 			}
-			on doorControl.initialise(): illegal;
 			
 			// If the door collides with something, stop & reverse it.
 			
@@ -431,7 +423,6 @@ component GarageDoorControlErr
 				limitSw.doorOpening();
 				state = State.Opening;
 			}
-			on doorControl.reset(): illegal;
 		}
 		
 		// If there's an error, the only thing that can happen is a reset.
@@ -441,8 +432,6 @@ component GarageDoorControlErr
 			on doorControl.reset(): state = State.Ready;
 			on limitSw.doorClosed(), limitSw.doorOpened(), limitSw.proximityWarning(): {}
 			on switchPress.switchPressed(): { switchPress.acknowledge(); }
-			on doorControl.initialise(): illegal;
-			on timer.Timeout(): illegal;
 		}
 		
 		on motorControl.powerWarning(): doorControl.warning();

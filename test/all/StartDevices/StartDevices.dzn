@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -54,16 +55,14 @@ component StartDevices
         state = States.Starting;        
         device1IF.turnon();
       }
-      on device1IF.ok(), device1IF.nok(), startIF.stopAll(): illegal;
     }
 
     [state.Starting]
     {
-      on startIF.startAll(), startIF.stopAll(): illegal;
       on device1IF.ok(): 
       {
         result2 = device2IF.turnon(); 
-        if (  result2 == Device2IF.Result.OK )
+        if ( result2 == Device2IF.Result.OK )
         {
           state = States.Started;
           startIF.allStarted();         
@@ -99,7 +98,6 @@ component StartDevices
         device2IF.turnoff();
         state = States.Idle;
       }
-      on startIF.startAll(), device1IF.ok(), device1IF.nok(): illegal;
     } 
   }
 }

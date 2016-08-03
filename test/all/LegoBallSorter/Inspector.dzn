@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -145,8 +146,6 @@ component Inspect
       s = State.Lost;
     }
 
-    on sensorSettleTimer.timeout(): [!s.Inspecting] illegal;
-
     [s.Lost]
     {
       on ctrl.stop(): stop();
@@ -157,29 +156,17 @@ component Inspect
           p = InspectPosition.Unknown;
           stage.calibrate();
         }
-
-      on ctrl.inspect(), ctrl.prepare(): illegal;
-      on stage.arrived(), stage.calibrated(): illegal;
     }
     [s.Calibrating]
     {
       on ctrl.stop(): stop();
       on stage.calibrated(): [p.Unknown] {stage.move(receiveX, receiveY); p = InspectPosition.Receive;}
-      on stage.calibrated(): [!p.Unknown] illegal;
       on stage.arrived(): [p.Receive] {ctrl.calibrated(); s = State.Ready;}
-      on stage.arrived(): [!p.Receive] illegal;
-
-      on ctrl.calibrate(), ctrl.inspect(), ctrl.prepare(): illegal;
     }
-    [!s.Calibrating] on stage.calibrated(): illegal;
-
     [s.Ready]
     {
       on ctrl.stop(): stop();
       on ctrl.inspect(): {s = State.Inspecting; stage.move(inspectX, inspectY);}
-
-      on ctrl.calibrate(), ctrl.prepare(): illegal;
-      on stage.arrived(): illegal;
     }
     [s.Inspecting]
     {
@@ -192,7 +179,6 @@ component Inspect
       }
       on stage.arrived(): [p.Accept] {ctrl.accepted(); s = State.Waiting;}
       on stage.arrived(): [p.Reject] {ctrl.rejected(); s = State.Waiting;}
-      on stage.arrived():  [p.Inspect] illegal;
 
       on sensorSettleTimer.timeout():
         { 
@@ -206,8 +192,6 @@ component Inspect
             p = InspectPosition.Reject;
           }
         }
-
-      on ctrl.calibrate(), ctrl.prepare(), ctrl.inspect(): illegal;
     }
     [s.Waiting]
     {
@@ -218,16 +202,11 @@ component Inspect
           p = InspectPosition.Receive;
           stage.move(receiveX, receiveY);
         }
-
-      on ctrl.calibrate(), ctrl.inspect(): illegal;
-      on stage.arrived(): illegal;
     }
     [s.Preparing]
     {
       on ctrl.stop(): stop();
       on stage.arrived(): {ctrl.prepared(); s = State.Ready;}
-
-      on ctrl.calibrate(), ctrl.prepare(), ctrl.inspect(): illegal;
     }
   }
 }

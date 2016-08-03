@@ -109,34 +109,26 @@ component MultipleProvides {
 
     [s0.Closed] {
       on p0.open(): { open(); s0 = State.Open; } 
-      on p0.action, p0.close: illegal;
     }
     [s1.Closed] {
       on p1.open(): { open(); s1 = State.Open; } 
-      on p1.action, p1.close: illegal;
     }
     [s0.Open] {
       on p0.close(): { s0 = State.Closed; close(); }
       on p0.action(): { action(Port.Port0); s0 = State.Busy; }
-      on p0.open: illegal;
     }
     [s1.Open] {
       on p1.close(): { s1 = State.Closed; close(); }
       on p1.action(): { action(Port.Port1); s1 = State.Busy; }
-      on p1.open: illegal;
     }
     [s0.Busy] {
       on r.completed(): 
         [handling.Port0] { p0.completed(); s0 = State.Open; handle_pending(); } 
-      on p0.open, p0.action, p0.close: illegal;
     }
     [s1.Busy] {
       on r.completed(): 
         [handling.Port1] { p1.completed(); s1 = State.Open; handle_pending(); } 
-      on p1.open, p1.action, p1.close: illegal;
     }
-    
-    [!(s0.Busy||s1.Busy)] on r.completed(): illegal;
   }   
 }
 

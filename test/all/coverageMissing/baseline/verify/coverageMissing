@@ -2,8 +2,9 @@ verify: Sensor: check: completeness: ok
 verify: Sensor: check: deadlock: ok
 verify: Sensor: check: livelock: ok
 verify: SensorComp: check: deterministic: ok
-verify: SensorComp: check: completeness: fail
+verify: SensorComp: check: completeness: ok
 verify: SensorComp: check: illegal: ok
 verify: SensorComp: check: deadlock: ok
 verify: SensorComp: check: compliance: fail
+sensor.deactivate
 verify: SensorComp: check: livelock: ok

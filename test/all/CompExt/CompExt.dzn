@@ -61,10 +61,8 @@ component Comp {
     [state.Idle] {
       on p.execute(): { r.execute(); state = State.Busy; }
       on p.cancel(): {}
-      on r.done: illegal;
     }
     [state.Busy] {
-      on p.execute: illegal;
       on p.cancel(): { r.cancel(); state = State.Idle; }
       on r.done(): { p.done(); state = State.Idle;}
     }
@@ -95,7 +93,6 @@ component CompErr {
       on r.done(): {} // ignore any delayed "done"'s
     }
     [state.Busy] {
-      on p.execute: illegal;
       on p.cancel(): { r.cancel(); state = State.Idle; }
       on r.done(): { p.done(); state = State.Idle; }
     }
@@ -154,17 +151,13 @@ component CompExt {
     [state.Idle] {
       on p.execute(): { r.execute(); state = State.Busy; }
       on p.cancel(): {}
-      on r.done, r.cancelled: illegal;
     }
     [state.Busy] {
       on p.cancel(): blocking { r.cancel(); state = State.Cancelling; }
-      on p.execute: illegal;
       on r.done(): { p.done(); state = State.Idle; }
-      on r.cancelled: illegal;
     }
     [state.Cancelling] {
       on r.cancelled(): { p.reply(); state = State.Idle;}
-      on p.execute, p.cancel: illegal;
       on r.done(): {} // ignore; race between "cancel" and "done" due to external
     }
   }

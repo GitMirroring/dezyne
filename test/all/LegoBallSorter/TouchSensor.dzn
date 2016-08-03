@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -98,11 +99,9 @@ component TouchSense
           disabled = false;
           reply(previous);
         }
-      on timer.timeout(): illegal;
     }
     [!disabled]
     {
-      on ctrl.enable(): illegal;
       on timer.timeout():
         {
           ITouchSense.TouchState current = getStatus();

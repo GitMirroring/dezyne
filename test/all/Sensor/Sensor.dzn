@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -22,17 +23,17 @@
 
 // purpose: Show multiple valued event calls after each other.
 interface I {
-	enum Result { Open, Closed, Error };
+  enum Result { Open, Closed, Error };
 	
-	in Result read();
+  in Result read();
 	
-	behaviour {
-		on read: { 
-			[true] reply(Result.Open);
-			[true] reply(Result.Closed);
-			[true] reply(Result.Error);
-		}
-	}
+  behaviour {
+    on read: { 
+      [true] reply(Result.Open);
+      [true] reply(Result.Closed);
+      [true] reply(Result.Error);
+    }
+  }
 }
 
 // The following sensor implementation performs a read of two actual 
@@ -42,21 +43,21 @@ interface I {
 // If they disagree or one of the sensors reports an error, an error 
 // is reported. 
 component Sensor {
-	provides I p;
-	requires I sensor0;
-	requires I sensor1;
+  provides I p;
+  requires I sensor0;
+  requires I sensor1;
 	
-	behaviour {
-		on p.read(): {
-			I.Result res0 = sensor0.read();
-			I.Result res1 = sensor1.read();
-			if (res0==res1) {
-				reply(res0);
-			}
-			else {
-				reply(I.Result.Error);
-			}
-		}
-	}
+  behaviour {
+    on p.read(): {
+      I.Result res0 = sensor0.read();
+      I.Result res1 = sensor1.read();
+      if (res0==res1) {
+        reply(res0);
+      }
+      else {
+        reply(I.Result.Error);
+      }
+    }
+  }
 }
 

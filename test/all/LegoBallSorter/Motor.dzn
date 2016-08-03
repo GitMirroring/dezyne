@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -95,7 +96,6 @@ component Move
 
     [moving][!pulsing]
     {
-      on ctrl.move(power, position), ctrl.pulse(p, i, d): illegal;
       on timer.timeout():
         {
           imotor.result_t arrive = motor.at(destination);
@@ -103,7 +103,6 @@ component Move
           if (arrive == imotor.result_t.yes) {ctrl.arrived(); moving = false;}
           else                               timer.create(time);
         }
-      on ctrl.zero(): illegal;
     }
     [!moving][!pulsing]
     {
@@ -120,14 +119,11 @@ component Move
           motor.run(power, invert);
           pulsing = true;
         }
-      on timer.timeout(): illegal;
       on ctrl.zero(): motor.zero();
     }
     [pulsing][!moving]
     {
-      on ctrl.move(pow, pos), ctrl.pulse(p, i, d): illegal;
       on timer.timeout(): {motor.coast(); ctrl.arrived(); pulsing = false;}
-      on ctrl.zero(): illegal;
     }
     on ctrl.run(power, invert): motor.run(power, invert);
     on ctrl.stop(): {motor.stop(); timer.cancel(); moving = false; pulsing = false;}

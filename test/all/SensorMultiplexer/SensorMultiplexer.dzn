@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -90,10 +91,6 @@ component SensorMultiplexer
         bSensor.Activate();
         state = States.Activated;
       }
-      on sensors.Deactivate(), 
-        aSensor.DetectedMovement(), 
-        bSensor.DetectedMovement():
-        illegal;
     }
     [state.Activated]
     { 
@@ -109,8 +106,6 @@ component SensorMultiplexer
         sensors.DetectedMovement();
         state = States.Triggered;
       }
-      on sensors.Activate():
-        illegal;
     }
     [state.Triggered]
     {
@@ -123,8 +118,6 @@ component SensorMultiplexer
       on aSensor.DetectedMovement(),
         bSensor.DetectedMovement():
       {}
-      on sensors.Activate():
-        illegal;
     }
   }
 }
@@ -149,10 +142,6 @@ component SensorMultiplexer2
         bSensor.Activate();
         state = States.Activated;
       }
-      on sensors.Deactivate(), 
-        aSensor.DetectedMovement(), 
-        bSensor.DetectedMovement():
-        illegal;
     }
     [state.Activated 
      || state.Triggered]
@@ -172,16 +161,12 @@ component SensorMultiplexer2
         sensors.DetectedMovement();
         state = States.Triggered;
       }
-      on sensors.Activate():
-        illegal;
     }
     [state.Triggered]
     {
       on aSensor.DetectedMovement(),
         bSensor.DetectedMovement():
       {}
-      on sensors.Activate():
-        illegal;
     }
   }
 }

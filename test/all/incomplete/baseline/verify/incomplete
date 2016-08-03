@@ -2,7 +2,7 @@ verify: iincomplete: check: completeness: ok
 verify: iincomplete: check: deadlock: ok
 verify: iincomplete: check: livelock: ok
 verify: incomplete: check: deterministic: ok
-verify: incomplete: check: completeness: fail
+verify: incomplete: check: completeness: ok
 verify: incomplete: check: illegal: ok
 verify: incomplete: check: deadlock: ok
 verify: incomplete: check: compliance: fail

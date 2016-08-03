@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -262,7 +263,6 @@ component Handle
         on feedPort.consumeNextBall(): {isLastBall = false; isBallAtInput = true; tryInputTransfer();}
         on feedPort.consumeLastBall(): {isLastBall = true; isBallAtInput = true; tryInputTransfer();}
         on inspector.prepared(): {isInspectorAtInput = true; tryInputTransfer();}
-        on inspector.accepted(), inspector.rejected(): illegal;
         on robot.arrived(): {isRobotAtInput = true; tryInputTransfer();}
         on robot.picked(), robot.placed(): illegal;
         on acceptPort.conveyed(): isAcceptEmpty = true;
@@ -276,7 +276,6 @@ component Handle
         on robot.picked(): [!isLastBall] {feedPort.produceBall(); isBallAtInput = false;}
         on robot.picked(): [isLastBall] {isBallAtInput = false;}
         on robot.placed(): {isInspectorAtInput = false; inspector.inspect(); isRobotAtInput = false; robot.move($(config.get("Position::Robot::X::OutputPick"))$, $(config.get("Position::Robot::Y::OutputPick"))$); o = Operation.PreparingOutput;}
-        on robot.arrived(): illegal;
         on acceptPort.conveyed(): isAcceptEmpty = true;
         on rejectPort.conveyed(): isRejectEmpty = true;
       }
@@ -284,10 +283,8 @@ component Handle
       {
         on feedPort.consumeNextBall(): {isLastBall = false; isBallAtInput = true;}
         on feedPort.consumeLastBall(): {isLastBall = true; isBallAtInput = true;}
-        on inspector.prepared(): illegal;
         on inspector.accepted(): {isBallAccepted = true; isInspectorAtOutput = true; tryOutputTransfer();}
         on inspector.rejected(): {isBallAccepted = false; isInspectorAtOutput = true; tryOutputTransfer();}
-        on robot.picked(), robot.placed(): illegal;
         on robot.arrived(): {isRobotAtOutput = true; tryOutputTransfer();}
         on acceptPort.conveyed(): {isAcceptEmpty = true; tryOutputTransfer();}
         on rejectPort.conveyed(): {isRejectEmpty = true; tryOutputTransfer();}
@@ -297,38 +294,19 @@ component Handle
         on feedPort.consumeNextBall(): {isLastBall = false; isBallAtInput = true;}
         on feedPort.consumeLastBall(): {isLastBall = true; isBallAtInput = true;}
         on inspector.prepared(): isInspectorAtInput = true;
-        on inspector.accepted(), inspector.rejected(): illegal;
         on robot.picked(): {isInspectorAtOutput = false; inspector.prepare();}
         on robot.placed(): [isBallAccepted] {isAcceptEmpty = false; acceptPort.convey(); sendRobotToInputPick(); if (isLastBall && !isBallAtInput) o = Operation.Finalizing; else o = Operation.PreparingInput;}
         on robot.placed(): [!isBallAccepted] {isRejectEmpty = false; rejectPort.convey(); sendRobotToInputPick(); if (isLastBall && !isBallAtInput) o = Operation.Finalizing; else o = Operation.PreparingInput;}
-        on robot.arrived(): illegal;
         on acceptPort.conveyed(): isAcceptEmpty = true;
         on rejectPort.conveyed(): isRejectEmpty = true;
       }
       [o.Finalizing]
       {
-        on feedPort.consumeNextBall(), feedPort.consumeLastBall(): illegal;
         on inspector.prepared(): {isInspectorAtInput = true; tryFinished();}
-        on inspector.accepted(), inspector.rejected(): illegal;
         on robot.arrived(): {isRobotAtInput = true; tryFinished();}
-        on robot.picked(), robot.placed(): illegal;
         on acceptPort.conveyed(): {isAcceptEmpty = true; tryFinished();}
         on rejectPort.conveyed(): {isRejectEmpty = true; tryFinished();}
       }
-    }
-
-    [!s.Operating]
-    {
-      // none of the operational output events of any of the subjects should arrive when not operational
-      on robot.arrived(), robot.picked(), robot.placed(): illegal;
-      on inspector.prepared(), inspector.accepted(), inspector.rejected(): illegal;
-      on feedPort.consumeNextBall(), feedPort.consumeLastBall(): illegal;
-      on acceptPort.conveyed(): illegal;
-      on rejectPort.conveyed(): illegal;
-    }
-    [!s.Calibrating]
-    {
-      on inspector.calibrated(), feedPort.calibrated(), robot.calibrated(): illegal;
     }
   }
 }
@@ -506,36 +484,23 @@ component Transfer
       [!isCalibrated]
       {
         on ctrl.calibrate(): {isCalibrated = false; isRetaining = true; calibrateZ();}
-        on ctrl.move(), ctrl.transfer(): illegal;
       }
       [isCalibrated]
       {
-        on ctrl.calibrate(): illegal;
         on ctrl.move(x, y): [isXYMoveAllowed] {truck.move(x); trolley.move(y); nMoving = 2; s = State.Moving;}
-        on ctrl.move(): [!isXYMoveAllowed] illegal;
         on ctrl.transfer(x, y): startPick(x, y);
       }
-
-      on hoist.calibrated(), gripper.calibrated(), trolley.homed(), truck.homed(): illegal;
-      on hoist.ready(), gripper.ready(), trolley.arrived(), truck.arrived(): illegal;
     }
 
     [s.Calibrating]
     {
       on hoist.calibrated(), gripper.calibrated(), trolley.homed(), truck.homed(): tryCalibrated();
       on gripper.ready(): tryCalibrated();
-
-      on ctrl.calibrate(), ctrl.move(), ctrl.transfer(): illegal;
-      on hoist.ready(), trolley.arrived(), truck.arrived(): illegal;
     }
 
     [s.Moving]
     {
       on truck.arrived(), trolley.arrived(): {nMoving = nMoving - 1; if (nMoving == 0) {s = State.Idle; ctrl.arrived();}}
-
-      on ctrl.calibrate(), ctrl.move(), ctrl.transfer(): illegal;
-      on hoist.calibrated(), gripper.calibrated(), trolley.homed(), truck.homed(): illegal;
-      on hoist.ready(), gripper.ready(): illegal;
     }
 
     [s.Transferring]
@@ -544,8 +509,6 @@ component Transfer
       {
         on hoist.ready(): gripper.retain();
         on gripper.ready(): {hoist.retain(); isRetaining = true; ts = TransferState.Raising;}
-
-        on trolley.arrived(), truck.arrived(): illegal;
       }
       [ts.Raising][isRetaining]
       {
@@ -572,8 +535,6 @@ component Transfer
             ts = TransferState.Placing;
           }
         }
-
-        on gripper.ready(), hoist.ready(): illegal;
       }
       [ts.Placing]
       {
@@ -584,8 +545,6 @@ component Transfer
           hoist.retain();
           ts = TransferState.Raising;
         }
-
-        on trolley.arrived(), truck.arrived(): illegal;
       }
       [ts.Raising][!isRetaining]
       {
@@ -596,11 +555,7 @@ component Transfer
           ts = TransferState.Idle;
           ctrl.placed();
         }
-        on gripper.ready(), trolley.arrived(), truck.arrived(): illegal;
       }
-
-      on ctrl.calibrate(), ctrl.move(), ctrl.transfer(): illegal;
-      on hoist.calibrated(), gripper.calibrated(), trolley.homed(), truck.homed(): illegal;
     }
   }
 }
@@ -699,25 +654,21 @@ component Lift
     [s.Lost]
     {
       on ctrl.calibrate(): {winch.calibrate(); s = State.Calibrating;}
-      on ctrl.retain(), ctrl.release(), winch.arrived(): illegal;
     }
     [s.Calibrating]
     {
       on winch.homed(): {winch.move($(config.get("Position::Robot::Z::Up"))$);} // end sensor pressed position
       on winch.arrived(): {ctrl.calibrated(); s = State.Ready; isHolding = true;}
-      on ctrl.calibrate(), ctrl.retain(), ctrl.release(): illegal;
     }
     [s.Ready]
     {
       [!isHolding]
       {
         on ctrl.retain(): {winch.move($(config.get("Position::Robot::Z::Up"))$); s = State.Moving;}
-        on ctrl.calibrate(), ctrl.release(), winch.arrived(): illegal;
       }
       [isHolding]
       {
         on ctrl.release(): {winch.move($(config.get("Position::Robot::Z::Down"))$); s = State.Moving;}
-        on ctrl.calibrate(), ctrl.retain(), winch.arrived(): illegal;
       }
     }
     [s.Moving]
@@ -728,11 +679,7 @@ component Lift
         s = State.Ready;
         isHolding = !isHolding;
       }
-
-      on ctrl.calibrate(), ctrl.retain(), ctrl.release(): illegal;
     }
-
-    [!s.Calibrating] on winch.homed(): illegal;
   }
 }
 
@@ -772,27 +719,22 @@ component Grip
     [s.Lost]
     {
       on ctrl.calibrate(): {gripper.calibrate(); s = State.Calibrating;}
-      on ctrl.retain(), ctrl.release(),  gripper.homed(), gripper.arrived(): illegal;
     }
     [s.Calibrating]
     {
       on gripper.homed(): {gripper.move($(config.get("Position::Robot::Gripper::Closed"))$);}
       on gripper.arrived(): {ctrl.calibrated(); s = State.Ready; isHolding = true;}
-      on ctrl.calibrate(), ctrl.retain(), ctrl.release(): illegal;
     }
     [s.Ready]
     {
       [!isHolding]
       {
         on ctrl.retain(): {s = State.Moving; gripper.move($(config.get("Position::Robot::Gripper::Closed"))$);}
-        on ctrl.release(): illegal;
       }
       [isHolding]
       {
         on ctrl.release(): {s = State.Moving; gripper.move($(config.get("Position::Robot::Gripper::Open"))$);}
-        on ctrl.retain(): illegal;
       }
-      on ctrl.calibrate(), gripper.homed(), gripper.arrived(): illegal;
     }
     [s.Moving]
     {
@@ -801,8 +743,6 @@ component Grip
         s = State.Ready;
         isHolding = !isHolding;
       }
-
-      on ctrl.calibrate(), ctrl.retain(), ctrl.release(), gripper.homed(): illegal;
     }
   }
 }

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -83,18 +84,12 @@ component ErrorPattern {
 
     [s.Uninitialized] {
       on p.initialize(): {s = State.Closed; a.initialize(); b.initialize(); }
-      on p.open, p.close: illegal;
-      on a.error, b.error: illegal;
     }
     [!s.Uninitialized] {
-      on p.initialize: illegal;
-
       [s.Closed] {
         on p.open(): {s = State.Open; a.open();	b.open(); }
-        on p.close: illegal;
       }
       [s.Open] {
-        on p.open: illegal;
         on p.close(): {s = State.Closed; a.close(); b.close(); }
       }
 

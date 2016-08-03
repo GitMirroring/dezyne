@@ -76,10 +76,6 @@ component AlarmConsole
       }
       on alarmConsole.KeyPressed(key):
       {}
-      on alarmSystem.Tripped,
-        alarmSystem.SwitchedOff,
-        alarmSystem.SwitchOffFailed:
-        illegal;
     }
 
     [state.Unarmed]
@@ -101,10 +97,6 @@ component AlarmConsole
           }
         }
       }
-      on alarmSystem.Tripped,
-        alarmSystem.SwitchedOff,
-        alarmSystem.SwitchOffFailed:
-        illegal;
     }
 
     [state.Armed]
@@ -127,9 +119,6 @@ component AlarmConsole
         statusUI.SignalTripped();
         state = States.Tripped;
       }
-      on alarmSystem.SwitchedOff,
-        alarmSystem.SwitchOffFailed:
-        illegal;
     }
 
     [state.Disarming]
@@ -167,10 +156,6 @@ component AlarmConsole
           state = States.Disarming;
         }
       }
-      on alarmSystem.Tripped,
-        alarmSystem.SwitchedOff,
-        alarmSystem.SwitchOffFailed:
-        illegal;
     }
   }
 }
@@ -221,8 +206,6 @@ component AlarmStatusUI
         rgbLed.EmitGreen();
       on alarmStatusUI.SignalTrippedWrongCode():
         startBlinking();
-      on blinkTimer.Timeout():
-        illegal;
     }
     [state.Blinking]
     {
@@ -268,10 +251,6 @@ component SensorMultiplexer
         bSensor.Activate();
         state = States.Activated;
       }
-      on sensors.Deactivate(),
-        aSensor.DetectedMovement(),
-        bSensor.DetectedMovement():
-        illegal;
     }
     [state.Activated ||
      state.Triggered]
@@ -291,16 +270,12 @@ component SensorMultiplexer
         sensors.DetectedMovement();
         state = States.Triggered;
       }
-      on sensors.Activate():
-        illegal;
     }
     [state.Triggered]
     {
       on aSensor.DetectedMovement(),
         bSensor.DetectedMovement():
       {}
-      on sensors.Activate():
-        illegal;
     }
   }
 }
@@ -621,10 +596,6 @@ component BurglarAlarm
           reply(IAlarmSystem.Result.Failed);
         }
       }
-      on alarmSystem.SwitchOff(pinCode),
-        preAlarmTimer.Timeout(),
-        sensors.DetectedMovement():
-        illegal;
     }
 
     [state.Activated_Idle]
@@ -650,9 +621,6 @@ component BurglarAlarm
         alarmSystem.Tripped();
         state = States.Activated_Tripped;
       }
-      on alarmSystem.SwitchOn(pinCode),
-        preAlarmTimer.Timeout():
-        illegal;
     }
 
     [state.Activated_AlarmMode]
@@ -673,9 +641,6 @@ component BurglarAlarm
       }
       on sensors.DetectedMovement():
       {}
-      on alarmSystem.SwitchOn(pinCode),
-        preAlarmTimer.Timeout():
-        illegal;
     }
 
     [state.Activated_Tripped]
@@ -701,9 +666,6 @@ component BurglarAlarm
         siren.TurnOn();
         state = States.Activated_AlarmMode;
       }
-      on alarmSystem.SwitchOn(pinCode),
-        sensors.DetectedMovement():
-        illegal;
     }
 
     [state.WrongCode_Retry]
@@ -728,8 +690,6 @@ component BurglarAlarm
       }
       on sensors.DetectedMovement():
       {}
-      on alarmSystem.SwitchOn(pinCode):
-        illegal;
     }
   }
 }

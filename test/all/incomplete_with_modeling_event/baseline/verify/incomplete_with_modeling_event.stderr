@@ -1,2 +1,2 @@
 all/incomplete_with_modeling_event/incomplete_with_modeling_event.dzn:1:1:i1: iincomplete_with_modeling_event is incomplete: 'iincomplete_with_modeling_event.e' not handled
-all/incomplete_with_modeling_event/incomplete_with_modeling_event.dzn:1:1:i3: incomplete_with_modeling_event is incomplete: 'p.e' not handled
+all/incomplete_with_modeling_event/incomplete_with_modeling_event.dzn:1:1:i3: Component incomplete_with_modeling_event is non-compliant with interface of provided port

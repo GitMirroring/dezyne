@@ -258,6 +258,10 @@
                                (assoc-set! alist
                                            trigger (cons guard entry)))))))))))
 
+(define (dump-me x)
+  (let ((foo (stderr "dump me: ~a\n" x)))
+    x))
+
 (define (behaviour->csp model)
 
   (define (list-of-ons statement)
@@ -274,7 +278,27 @@
              (map (lambda (on) (on->csp model (ast-transform model on))) ons)))
            "STOP")
        ")")))
+  
+  (define (list-of-triggers model)
+    (define (list-of-triggers-port ports predicate)
+      (append-map (lambda (port) (map (lambda (event) (make <trigger> :port (.name port) :event (.name event))) (filter predicate (om:events port)))) ports))
+    (append
+     (list-of-triggers-port (filter om:provides? (om:ports model)) om:in?)
+     (list-of-triggers-port (filter om:requires? (om:ports model)) om:out?)))
+  
+  (define (not-ored-guards guards) 
+    (let* ((guards (if guards guards (list)))
+           (expressions (map (lambda (guard) (csp-expression->string model (.expression guard) '())) guards)))
+      (if (null? expressions)
+          (list "true")
+          (list "not ((" ((->list-join ") or (") expressions) "))"))))
+  
+  (define (channel-suffix model port)
 
+     (if (equal? (.direction (car (filter (lambda (p) (equal? (.name p) port)) (.elements (.ports model))))) 'provides)
+         (list "")
+         (list "_''")))
+    
   (let* ((default "STOP")
          (guards (let ((statement ((compose .statement .behaviour) model)))
                    (if (is-a? statement <guard>)
@@ -287,7 +311,13 @@
 
     (or (null-is-#f
          ((->list-join "\n[]\n")
-          (map guard->csp guards)))
+          (append
+           (map guard->csp guards)
+           (let ((statement ((compose .statement .behaviour) model)))
+             (if (is-a? model <interface>)
+                 (list)
+                 (map (lambda (t) (list "IIG & (" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & " (.port t) (channel-suffix model (.port t)) "?" (.event t) "-> illegal -> STOP"))
+                      (list-of-triggers model)))))))
         "STOP")))
 
 (define (behaviour-component->csp model)

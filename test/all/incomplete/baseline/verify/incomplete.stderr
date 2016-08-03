@@ -1,2 +1,1 @@
-all/incomplete/incomplete.dzn:1:1:i3: incomplete is incomplete: 'r' not handled
 all/incomplete/incomplete.dzn:17:8:i10: p.return not allowed by port p
