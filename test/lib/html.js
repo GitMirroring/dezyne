@@ -1,7 +1,9 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 //
 // This file is part of Dezyne.
@@ -196,14 +198,16 @@ var privates = {
     result.items.each(function(item) {
       var hname = item.name.replace(/\//g,'-');
       var outcome = item.outcome;
-      Object.keys(outcome.output).each(function(aspect_language) {
-        var out = outcome.output[aspect_language];
-        ln('        <div id="'+hname+'-'+aspect_language.replace(/\+/g,'p')+'">');
-        ln('          <hr>');
-        ln('          <h3>'+item.name+'/'+aspect_language+'</h3>');
-        ln('          <pre>'+out+'</pre>');
-        ln('        </div>');
-      });
+      if (typeof outcome.output != "string") {
+        Object.keys(outcome.output).each(function(aspect_language) {
+          var out = outcome.output[aspect_language];
+          ln('        <div id="'+hname+'-'+aspect_language.replace(/\+/g,'p')+'">');
+          ln('          <hr>');
+          ln('          <h3>'+item.name+'/'+aspect_language+'</h3>');
+          ln('          <pre>'+out+'</pre>');
+          ln('        </div>');
+        });
+      }
     });
     ln('  </body>');
     ln('<html>');
