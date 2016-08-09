@@ -45,6 +45,9 @@ $(OUT)/%.o: $(IN)/%.cc
 	mkdir -p $(dir $@)
 	$(COMPILE.cc) -o $@ $<
 
+$(OUT)/pump.o: CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
+$(OUT)/main.o: CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
+
 ifneq ($(MAIN),)
 MAIN_O:=$(OUT)/$(patsubst %.cc,%.o,$(notdir $(MAIN)))
 $(MAIN_O): $(MAIN)

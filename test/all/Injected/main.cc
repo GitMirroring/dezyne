@@ -41,15 +41,10 @@ int main()
 
   Injected sut(l);
   sut.dzn_meta.name = "sut";
-#if (__cplusplus >= 201103L)
-  sut.t.meta.requires = {"t", 0};
-  sut.t.meta.provides = {"t", 0};
-#else
   sut.t.meta.requires.port = "t";
   sut.t.meta.requires.address = 0;
   sut.t.meta.provides.port = "t";
   sut.t.meta.provides.address = 0;
-#endif
   sut.t.out.f = f;
 
   sut.check_bindings();

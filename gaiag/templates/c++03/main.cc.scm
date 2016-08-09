@@ -1,126 +1,57 @@
-
-##include <dzn/runtime.hh>
-##include <dzn/locator.hh>
+##include <dzn/container.hh>
 
 ##include "#.scope_model .hh"
 
-##include <iostream>
-
-namespace dzn
+void
+connect_ports (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c)
 {
- static bool relaxed = false;
- typedef std::map<std::string, boost::function<void()> > event_map;
-
-  std::string consume_synchronous_out_events(std::string prefix, std::string event, event_map& event_map)
-  {
-    std::string s;
-
-    std::string match = prefix + event;
-    while (std::cin >> s) if (s==match) break;
-    while (std::cin >> s)
-    {
-      if (event_map.find(s) == event_map.end()) break;
-      event_map[s]();
-    }
-    return s;
-  }
-
-  void log_in(std::string prefix, std::string event, event_map& event_map)
-  {
-    std::clog << prefix << event << std::endl;
-    if (relaxed) return;
-    consume_synchronous_out_events(prefix, event, event_map);
-    std::clog << prefix << "return" << std::endl;
-  }
-
-  void log_out(std::string prefix, std::string event, event_map& event_map)
-  {
-    std::clog << prefix << event << std::endl;
-  }
-
-  void log_flush(dzn::runtime& rt, dzn::port::meta& meta, std::string name)
-  {
-    std::clog << name << ".<flush>" << std::endl;
-    rt.flush(meta.provides.address);
-  }
-
-  template <typename R>
-  R log_valued(std::string prefix, std::string event, event_map& event_map, R (*string_to_value)(std::string), std::string (*value_to_string)(R))
-  {
-    std::clog << prefix << event << std::endl;
-    if (relaxed) return (R)0;
-    std::string s = consume_synchronous_out_events(prefix, event, event_map);
-
-    R r = string_to_value(s.erase(std::min(s.size(), s.find(prefix)), prefix.size()));
-    std::clog << prefix << value_to_string(r) << std::endl;
-    return r;
-  }
-
-  struct component
-  {
-    meta dzn_meta;
+ #(map (lambda (port)
+       (map (define-on model port #{
+    c.system.#port .#direction .#event  = [&] (#formals) {
+    dzn::trace_#direction(std::clog, c.system.#port .meta, "#event ");
+    #(string-if (eq? direction 'out) #{c.match("#port .#event ");#}
+    #{c.match("#port .#event "); std::string tmp = c.match_return();
+    dzn::trace_out(std::clog, c.system.#port .meta, tmp.substr(tmp.rfind('.')+1).c_str());
+    return to_#((c++:scope-join #f '_) reply-scope)_#reply-name(tmp.substr(tmp.rfind('.')+1)); #})
   };
+  #}) (filter (negate (om:dir-matches? port)) (om:events port))))
+  (om:ports model))}
 
-  void fill_event_map(runtime& rt, component* c, #((om:scope-name (string->symbol "::")) model) & m, event_map& e)
-  {
-    int dzn_i = 0;
-    (void)dzn_i;
 
- #(map
-   (lambda (port)
-     (map (define-on model port #{m.#port .#direction .#event  = boost::bind(#(string-if (eq? return-type 'void) #{&log_#direction , "#port .", "#event ", boost::ref(e)#}
-                                                                                                                 #{&log_valued< #(if (not (member reply-name '(void int bool))) (list ((om:scope-join #f) reply-scope) "::" reply-name "::type") reply-name)>, "#port .", "#event ", boost::ref(e), to_#((om:scope-join #f) reply-scope)_#reply-name , static_cast<std::string(*)(#(if (not (member reply-name '(void int bool))) (list ((om:scope-join #f) reply-scope) "::" reply-name "::type") reply-name))>(to_string)#}));
-     #}) (filter (negate (om:dir-matches? port)) (om:events port)))) (om:ports model))
- #(map (init-port #{
-     m.#name .meta.requires.port = "#name ";
-     #}) (filter om:provides? (om:ports model)))
- #(map (init-port #{
-     m.#name .meta.provides.address = c;
-     m.#name .meta.provides.meta = &c->dzn_meta;
-     m.#name .meta.provides.port ="#name ";
-     e["#name .<flush>"] = boost::bind(log_flush, boost::ref(m.dzn_rt), boost::ref(m.#name .meta), "#name ");
-     #}) (filter om:requires? (om:ports model)))
-  #(map
-    (lambda (port)
-    (map (define-on model port #{
-       e["#port .#event "] = #(string-if (null? argument-list) #{m.#port .#direction .#event; #} #{ boost::bind(m.#port .#direction .#event , #(comma-join (map (lambda (i) "dzn_i") argument-list))); #})
-#}) (filter (om:dir-matches? port)
-       (om:events port)))) (om:ports model)) }
-  }
-
-void illegal_handler()
+std::map<std::string,std::function<void()> >
+event_map (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c)
 {
-  std::clog << "illegal" << std::endl;
-  exit(0);
+ #(map (init-port #{
+     c.system.#name .meta.requires.port = "#name ";
+ #}) (filter om:provides? (om:ports model)))
+ #(map (init-port #{
+     c.system.#name .meta.provides.address = &c;
+     c.system.#name .meta.provides.meta = &c.meta;
+     c.system.#name .meta.provides.port = "#name ";
+ #}) (filter om:requires? (om:ports model)))
+
+  return {
+  #((->join "\n  ,")
+    (append (map (lambda (port)
+       ((->join "\n  ,") (map (define-on model port #{{"#port .#event ",[&]{#(string-if (eq? reply-name 'void)
+       #{ #(c++:out-var-decls model formal-objects) c.system.#port .#direction .#event (#(c++:out-param-list model formal-objects));
+       #(string-if (eq? direction 'in) #{c.match("#port .return");#}) #}
+       #{ #(c++:out-var-decls model formal-objects) c.match("#port ." + to_string(c.system.#port .#direction .#event (#(c++:out-param-list model formal-objects)))); #})}} #})
+       (filter (om:dir-matches? port) (om:events port)))))
+
+  (om:ports model))
+  (map (init-port (if (not (eq? (glue) 'asd)) #{{"#name .<flush>",[&]{std::clog << "#name .<flush>" << std::endl; c.runtime.flush(&c);}}#}
+                                             #{{"#name .<flush>",[&]{std::clog << "#name .<flush>" << std::endl; g_singlethreaded->processCBs();}}#}))
+                                             (filter om:requires? (om:ports model)))))
+  };
 }
 
-int main(int argc, char* argv[])
+
+int
+main(int argc, char* argv[])
 {
-  dzn::locator l;
-  dzn::runtime rt;
-  l.set(rt);
+  dzn::container<#((om:scope-name (string->symbol "::")) model)> c(argc > 1 && argv[1] == std::string("--flush"));
 
-  dzn::illegal_handler ih;
-  ih.illegal = illegal_handler;
-  l.set(ih);
-
-  dzn::event_map event_map;
-  #((om:scope-name (string->symbol "::")) model)  sut(l);
-  sut.dzn_meta.name = "sut";
-
-  dzn::component c;
-  c.dzn_meta.parent = 0;
-  c.dzn_meta.name = "<internal>";
-  dzn::fill_event_map(rt, &c, sut, event_map);
-  if (argc > 1 && argv[1] == std::string("--flush")) rt.performs_flush(&c) = true;
-
-  sut.check_bindings();
-  sut.dump_tree();
-
-  std::string event;
-  while(std::cin >> event) {
-    if (event_map.find(event) != event_map.end()) {
-      event_map[event]();
-    }
-  }
+  connect_ports (c);
+  c(event_map (c), {#((->join ",") (map (lambda (port) (list "\"" (.name port) "\"")) (filter om:requires? (om:ports model))))});
 }
