@@ -1,3 +1,3 @@
 all/asyncasync_illegal2/asyncasync_illegal2.dzn:49:18:i73: illegal
-all/asyncasync_illegal2/asyncasync_illegal2.dzn:49:18:i73: deadlock in model asyncasync_illegal2
+all/asyncasync_illegal2/asyncasync_illegal2.dzn:46:6:i74: deadlock in model asyncasync_illegal2
 all/asyncasync_illegal2/asyncasync_illegal2.dzn:49:18:i73: Component asyncasync_illegal2 is non-compliant with interface of provided port
