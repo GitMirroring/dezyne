@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -81,6 +82,18 @@ component middle
   }
 }
 
+component wrapper
+{
+  provides itop t;
+  requires ibottom b;
+  system
+  {
+    middle m;
+    t <=> m.t;
+    m.b <=> b;
+  }
+}
+
 component bottom
 {
   provides ibottom b;
@@ -96,11 +109,14 @@ component Injected
   system
   {
     logger l;
-    middle m;
+    wrapper m;
+    
     bottom b;
+
 
     m.t <=> t;
     m.b <=> b.b;
-    l.log <=> *;
+
+    l.log <=> m.*;
   }
 }
