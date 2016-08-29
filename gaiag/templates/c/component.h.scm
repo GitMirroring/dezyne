@@ -10,7 +10,9 @@
 
 
 typedef struct {
+##if DZN_TRACING
     dzn_meta_t dzn_meta;
+##endif // !DZN_TRACING
     runtime_info dzn_info;
     #(map (init-member model #{
 #type  #name;
@@ -21,6 +23,10 @@ typedef struct {
 #((c:scope-join) interface) * #name;
 #}) ((compose .elements .ports) model))} #.scope_model;
 
-void #.scope_model _init(#.scope_model * self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
+void #.scope_model _init(#.scope_model * self, locator* dezyne_locator
+##if DZN_TRACING
+, dzn_meta_t* dzn_meta
+##endif // !DZN_TRACING
+);
 
 ##endif // #.COMPONENT _H

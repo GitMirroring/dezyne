@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,8 +25,10 @@
 /*
  * Generic map implementation.
  */
+#include <dzn/config.h>
 #include <dzn/map.h>
 
+#if DZN_LOCATOR_SERVICES
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -459,3 +461,4 @@ int main(char* argv, int argc)
     return 1;
 }
 #endif // MAP_TEST
+#endif // DZN_LOCATOR_SERVICES

@@ -5,42 +5,40 @@
 ##include <string.h>
 
 #(->string (map (declare-enum model) (om:enums (.behaviour model))))
+##if DZN_TRACING
 #(->string (map (enum-to-string model) (om:enums)))
-#(map
-  (lambda (port)
-    (map (define-on model port #{
-  typedef struct {int size;#return-type  (*f)(#((c:scope-name) interface) *#comma #((->join ", ") formal-types));#.scope_model * self;#((->join ";") formal-list)#(if (null? formal-list) "" ";")} args_#port _#event;
-#}) (filter (negate (om:dir-matches? port)) (om:events port))))
-  (filter om:provides? (om:ports model)))
+##endif // DZN_TRACING
 
 #(map
-  (lambda (port)
-    (map (define-on model port #{
-  typedef struct {int size;#return-type  (*f)(#.scope_model *#comma #((->join ", ") formal-types));#.scope_model * self;#((->join ";") formal-list)#(if (null? formal-list) "" ";")} args_#port _#event;
-#}) (filter (om:dir-matches? port) (om:events port))))
-  (om:ports model))
+  (define-helper model #f #{
+
+  typedef struct {uint8_t size;#return-type  (*f)(void*#comma #((->join ", ") formal-types));#.scope_model * self;#((->join ";") formal-list)#(if (null? formal-list) "" ";")} args_#signature-name;
+   #})
+   (delete-duplicates (map .signature (append-map (lambda (port) (om:events port)) (om:ports model))) (code:signature-equal? model)))
 
 #(map
-  (lambda (port)
-    (map (define-on model port #{
-  static void helper_#port _#event (void* args) {
-    args_#port _#event  *a = args;
+   (lambda (port)
+    (let ((signatures (delete-duplicates (map .signature (filter (negate (om:dir-matches? port)) (om:events port))) (code:signature-equal? model))))
+   (map
+      (define-helper model port #{
+
+  static void helper_out_#port _#signature-name (void* args) {
+    args_#signature-name  *a = args;
     a->f(a->self->#port #comma #(comma-space-join (map (lambda (x) (symbol-append 'a-> x)) argument-list)));
   }
 
-    #}) (filter (negate (om:dir-matches? port)) (om:events port))))
-  (filter om:provides? (om:ports model)))
+    #})
+      signatures)))
+    (filter om:provides? (om:ports model)))
 
 #(map
-  (lambda (port)
-    (map (define-on model port #{
-  static void helper_#port _#event(void* args) {
-    args_#port _#event  *a = args;
-    a->f(a->self#comma #(comma-space-join (map (lambda (x) (symbol-append 'a-> x)) argument-list)));
-  }
-
-#}) (filter (om:dir-matches? port) (om:events port))))
-  (om:ports model))
+   (define-helper model #f #{
+      static void helper_in_#signature-name (void* args) {
+      args_#signature-name  *a = args;
+      a->f(a->self#comma #((->join ", ") (map (lambda (x) (symbol-append 'a-> x)) argument-list)));
+     }
+   #})
+   (delete-duplicates (map .signature (append-map (lambda (port) (filter (om:dir-matches? port) (om:events port))) (om:ports model))) (code:signature-equal? model)))
 
 #(map (define-function model #{
   static #return-type  #name (#.scope_model * self#comma #formals);
@@ -68,12 +66,12 @@
   (lambda (port)
     (map (define-on model port #{
     static #return-type  call_in_#port _#event(#((c:scope-name) interface) * port#comma #formals) {
-    runtime_trace_#direction(&port->meta, "#event ");
-    args_#port _#event  a = {sizeof(args_#port _#event), #port _#event , port->meta.provides.address#comma #(comma-space-join argument-list)};
-    runtime_event(helper_#port _#event , &a);
+    RUNTIME_TRACE_#direction(&port->meta, "#event ");
+    args_#signature-name  a = {sizeof(args_#signature-name), (#return-type (*)(void*#comma #(comma-space-join formal-types)))#port _#event , port->meta.provides.address#comma #(comma-space-join argument-list)};
+    runtime_event(helper_#direction _#signature-name , &a);
 #(string-if (not (eq? type 'void))
 #{ #.scope_model * self_ = port->meta.provides.address;
-#}) runtime_trace_out(&port->meta, #(string-if (eq? type 'void) #{"return"#} #{#((c:scope-join) reply-scope)_#reply-name _to_string (self_->reply_#((c:scope-join) reply-scope)_#reply-name)#}));
+#})RUNTIME_TRACE_out(&port->meta, #(string-if (eq? type 'void) #{"return"#} #{#((c:scope-join) reply-scope)_#reply-name _to_string (self_->reply_#((c:scope-join) reply-scope)_#reply-name)#}));
 #(string-if (not (eq? type 'void))
 #{ return self_->reply_#((c:scope-join) reply-scope)_#reply-name;
 #}) }
@@ -83,17 +81,20 @@
   (lambda (port)
     (map (define-on model port #{
     static #return-type  call_out_#port _#event(#((c:scope-name) interface) * port#comma #formals) {
-    runtime_trace_#direction(&port->meta, "#event ");
-    args_#port _#event  a = {sizeof(args_#port _#event), #port _#event , port->meta.requires.address#comma #(comma-space-join argument-list)};
-    runtime_defer(port->meta.provides.address, port->meta.requires.address, helper_#port _#event , &a);
+    RUNTIME_TRACE_#direction(&port->meta, "#event ");
+    args_#signature-name  a = {sizeof(args_#signature-name), (#return-type (*)(void*#comma #(comma-space-join formal-types)))#port _#event , port->meta.requires.address#comma #(comma-space-join argument-list)};
+    runtime_defer(port->meta.provides.address, port->meta.requires.address, helper_in_#signature-name , &a);
 }
 
 #}) (filter om:out? (om:events port))))
     (filter om:requires? (om:ports model)))
-void #.scope_model _init (#.scope_model * self, locator* dezyne_locator, dzn_meta_t *dzn_meta) {
+void #.scope_model _init (#.scope_model * self, locator* dezyne_locator
+##if DZN_TRACING
+, dzn_meta_t *dzn_meta
+##endif // DZN_TRACING
+) {
   runtime_info_init(&self->dzn_info, dezyne_locator);
   self->dzn_info.performs_flush = true;
-  memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
   #(map (lambda (port) (->string (list "self->" (.name port) " = locator_get(dezyne_locator, \"" ((c:scope-name) (.type port)) "\");\n"))) (filter .injected (om:ports model)))#
 ((->join  ";\n")
  (filter (negate (compose string-null? string-trim))
@@ -101,36 +102,48 @@ void #.scope_model _init (#.scope_model * self, locator* dezyne_locator, dzn_met
    #(string-if (not (eq? expression *unspecified*)) #{ self->#name  = #expression#})#}) (om:variables model))))#
 (if (null? (om:variables model)) "" ";")
 #
+   (map (init-port #{
+      self->#name = &self->#name _;
+      self->#name ->meta.provides.address = self;
+      self->#name ->meta.requires.address = 0;
+      #(map (define-on model port #{
+        self->#port ->#direction .#event  = call_#direction _#port _#event;
+      #}) (filter om:in? (om:events port)))
+   #})
+    (filter om:provides? (om:ports model)))
+#
    (map
-    (lambda (port)
-      (string-join
-       (append
-        (list (->string (list "self->" (.name port) " = &self->" (.name port) "_;\n")))
-        (map (define-on model port #{
-   self->#port ->#direction .#event  = call_in_#port _#event;
-#}) (filter om:in? (om:events port)))
-        (list (->string (list "self->" (.name port) "->meta.provides.port = \"" (.name port) "\";\n")))
-        (list (->string (list "self->" (.name port) "->meta.provides.address = self;\n")))
-        (list (->string (list "self->" (.name port) "->meta.provides.meta = &self->dzn_meta;\n")))
-        (list (->string (list "self->" (.name port) "->meta.requires.port = \"" "\";\n")))
-        (list (->string (list "self->" (.name port) "->meta.requires.address = 0;\n")))
-        (list (->string (list "self->" (.name port) "->meta.requires.meta = 0;\n"))))))
-    (filter om:provides? (om:ports model)))#
+    (init-port #{
+      #(string-if (not (.injected port)) #{
+      self->#name = &self->#name _;
+      self->#name ->meta.requires.address = self;
+      self->#name ->meta.provides.address = 0;
+#})
+      #(map (define-on model port #{
+        self->#port ->#direction .#event  = call_#direction _#port _#event;
+      #}) (filter om:out? (om:events port)))
+   #})
+    (filter om:requires? (om:ports model)))
+##if DZN_TRACING
+  memcpy(&self->dzn_meta, dzn_meta, sizeof(dzn_meta_t));
+#
+   (map (init-port #{
+      self->#name ->meta.provides.port = "#name ";
+      self->#name ->meta.provides.meta = &self->dzn_meta;
+      self->#name ->meta.requires.port = "";
+      self->#name ->meta.requires.meta = 0;
+   #})
+    (filter om:provides? (om:ports model)))
+#
    (map
-    (lambda (port)
-      (string-join
-       (append
-        (if (.injected port)
-            '()
-            (append
-             (list (->string (list "self->" (.name port) " = &self->" (.name port) "_;\n")))
-             (list (->string (list "self->" (.name port) "->meta.provides.port = \"" "\";\n")))
-             (list (->string (list "self->" (.name port) "->meta.provides.address = 0;\n")))
-             (list (->string (list "self->" (.name port) "->meta.provides.meta = 0;\n")))
-             (list (->string (list "self->" (.name port) "->meta.requires.port = \"" (.name port) "\";\n")))
-             (list (->string (list "self->" (.name port) "->meta.requires.address = self;\n")))
-             (list (->string (list "self->" (.name port) "->meta.requires.meta = &self->dzn_meta;\n")))))
-        (map (define-on model port #{
-    self->#port ->#direction .#event  = call_out_#port _#event;
- #}) (filter om:out? (om:events port))))))
-    (filter om:requires? (om:ports model)))}
+    (init-port #{
+      #(string-if (not (.injected port)) #{
+      self->#name ->meta.provides.port = "";
+      self->#name ->meta.provides.meta = 0;
+      self->#name ->meta.requires.port = "#name ";
+      self->#name ->meta.requires.meta = &self->dzn_meta;
+#})
+   #})
+    (filter om:requires? (om:ports model)))
+##endif // DZN_TRACING
+}

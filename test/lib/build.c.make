@@ -36,7 +36,11 @@ $(foreach i,IN OUT,$(eval $(call CHECKPARAM,$(i))))
 SHELL:=bash
 CCACHE:=$(shell type -p ccache)
 CC:=$(CCACHE) gcc
-CFLAGS=-g -std=c99
+CFLAGS=--std=c99 -g -O0
+# Tiny: all/Tiny
+#CFLAGS=--std=c99 -g -DDZN_TINY=1
+#CFLAGS=--std=c99 -Os -DDZN_TINY=1
+
 CPPFLAGS=-I$(IN)
 GLOBALS_H=$(wildcard $(DIR)/globals.h)
 ifneq ($(GLOBALS_H),)
@@ -45,6 +49,7 @@ endif
 
 $(OUT)/%.o: $(IN)/%.c
 	mkdir -p $(dir $@)
+	$(COMPILE.c) -S -o $@.S $<
 	$(COMPILE.c) -o $@ $<
 
 ifneq ($(MAIN),)

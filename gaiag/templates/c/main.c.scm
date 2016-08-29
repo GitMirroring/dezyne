@@ -116,8 +116,10 @@ void #.scope_model _fill_event_map(#.scope_model * m, map* e) {
 
    component *comp = calloc(1, sizeof (component));
    comp->dzn_info.performs_flush = global_flush_p;
+##if DZN_TRACING
    comp->dzn_meta.parent = 0;
    comp->dzn_meta.name = "<external>";
+##endif // DZN_TRACING
 
    #(map
      (lambda (port)
@@ -133,15 +135,16 @@ void #.scope_model _fill_event_map(#.scope_model * m, map* e) {
      args->name = "#name ";
      c->self = args;
 
-     m->#name ->meta.requires.port = "#name ";
      m->#name ->meta.requires.address = comp;
+##if DZN_TRACING
+     m->#name ->meta.requires.port = "#name ";
      m->#name ->meta.requires.meta = &comp->dzn_meta;
-
      {
      if (global_flush_p) {
        comp->dzn_meta.name = "<internal>";
      }
      }
+##endif // DZN_TRACING
      map_put(e, "#name .<flush>", c);
      #}) (filter om:provides? (om:ports model)))
   #(map (init-port #{
@@ -152,15 +155,16 @@ void #.scope_model _fill_event_map(#.scope_model * m, map* e) {
      args->name = "#name ";
      c->self = args;
 
-     m->#name ->meta.provides.port = "#name ";
      m->#name ->meta.provides.address = comp;
+##if DZN_TRACING
+     m->#name ->meta.provides.port = "#name ";
      m->#name ->meta.provides.meta = &comp->dzn_meta;
-
      {
      if (global_flush_p) {
          comp->dzn_meta.name = "<internal>";
        }
      }
+##endif // DZN_TRACING
      map_put(e, "#name .<flush>", c);
      #}) (filter om:requires? (om:ports model)))
    #(map
@@ -174,8 +178,12 @@ void #.scope_model _fill_event_map(#.scope_model * m, map* e) {
 	    (om:events port)))) (om:ports model))
   }
 void illegal_print() {
+##if DZN_TRACING
 	fputs("illegal\n", stderr);
-	exit(0);
+	exit(1);
+##else // !DZN_TRACING
+    *(int*)0 = 0; // SEGFAULT here
+##endif // !DZN_TRACING
 }
 
 int main(int argc, char** argv) {
@@ -187,8 +195,14 @@ int main(int argc, char** argv) {
 	dezyne_locator.illegal = illegal_print;
 
 	#.scope_model  sut;
+##if DZN_TRACING
 	dzn_meta_t mt = {"sut", 0};
-	#.scope_model _init(&sut, &dezyne_locator, &mt);
+##endif // DZN_TRACING
+	#.scope_model _init(&sut, &dezyne_locator
+##if DZN_TRACING
+, &mt
+##endif // DZN_TRACING
+);
 
 	map event_map;
 	map_init(&event_map);

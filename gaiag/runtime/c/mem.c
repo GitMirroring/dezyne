@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -26,6 +27,7 @@
 
 #include <assert.h>
 
+#if DZN_DYNAMIC_QUEUES || DZN_LOCATOR_SERVICES
 void*
 dzn_calloc (size_t n, size_t size)
 {
@@ -39,3 +41,4 @@ dzn_malloc(size_t size)
 {
   return dzn_calloc(1, size);
 }
+#endif // DZN_DYNAMIC_QUEUES || DZN_LOCATOR_SERVICES

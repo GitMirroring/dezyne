@@ -29,14 +29,16 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include <dzn/meta.h>
+#if DZN_TRACING
+#include <stdio.h>
+#endif // DZN_TRACING
+
 #include <dzn/queue.h>
-#include <dzn/map.h>
 
 typedef struct {
-	int dummy;
+	uint8_t dummy;
 } runtime;
 
 typedef struct locator locator;
@@ -51,15 +53,11 @@ struct runtime_info {
 };
 
 typedef struct {
+#if DZN_TRACING
   dzn_meta_t dzn_meta;
+#endif // !DZN_TRACING
   runtime_info dzn_info;
 } component;
-
-typedef struct {
-  dzn_meta_t dzn_meta;
-  runtime_info dzn_info;
-  void* self;
-} component_header;
 
 void runtime_init (runtime*);
 void runtime_illegal_handler();
@@ -67,14 +65,26 @@ void runtime_info_init (runtime_info* info, locator* loc);
 void runtime_flush (runtime_info* self);
 void runtime_defer (void* src, void* tgt, void (*event)(void*), void* args);
 void runtime_event (void (*event)(void*), void* args);
+
+#if DZN_TRACING
+
+char* _bool_to_string (bool b);
+bool string_to__bool (char *s);
+char* _int_to_string (int8_t i);
+int8_t string_to__int (char *s);
+#define DZN_TRACE(msg) fprintf (stderr, "%s\n", msg)
 char* runtime_path (dzn_meta_t const* m, char* p);
 void runtime_trace_in (dzn_port_meta_t const* m, char const* e);
 void runtime_trace_out (dzn_port_meta_t const* m, char const* e);
-char* _bool_to_string (bool b);
-bool string_to__bool (char *s);
-char* _int_to_string (int i);
-int string_to__int (char *s);
+#define RUNTIME_TRACE_in runtime_trace_in
+#define RUNTIME_TRACE_out runtime_trace_out
 
-#define DZN_TRACE(msg) fprintf (stderr, "%s\n", msg)
+#else // !DZN_TRACING
+
+#define DZN_TRACE(msg)
+#define RUNTIME_TRACE_in(m,e)
+#define RUNTIME_TRACE_out(m,e)
+
+#endif // !DZN_TRACING
 
 #endif /* DZN_RUNTIME_H */

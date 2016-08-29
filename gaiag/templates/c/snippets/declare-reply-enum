@@ -1,1 +1,1 @@
-int reply_#((c:scope-join) scope)_#name;
+uint8_t reply_#((c:scope-join) scope)_#name;

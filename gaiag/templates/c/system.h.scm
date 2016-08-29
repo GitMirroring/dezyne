@@ -12,7 +12,9 @@
 ##include <dzn/locator.h>
 
 typedef struct {
-    dzn_meta_t dzn_meta;
+##if DZN_TRACING
+   dzn_meta_t dzn_meta;
+##endif // DZN_TRACING
 #(map (lambda (binding) (list ((c:scope-name) (.type (om:instance model (injected-instance-name binding)))) " "
                               (injected-instance-name binding) ";\n")) (injected-bindings model)) #
 (if (pair? (injected-bindings model)) (list "locator local_locator;\n")) #
@@ -24,6 +26,10 @@ typedef struct {
 #}) ((compose .elements .ports) model))
 } #.scope_model;
 
-void #.scope_model _init(#.scope_model *self, locator* dezyne_locator, dzn_meta_t* dzn_meta);
+void #.scope_model _init(#.scope_model *self, locator* dezyne_locator
+##if DZN_TRACING
+, dzn_meta_t* dzn_meta
+##endif // DZN_TRACING
+);
 
 ##endif // #.COMPONENT _H

@@ -366,6 +366,7 @@
 (define (om:type-name o)
   (match o
     (($ <enum>) 'enum)
+    (($ <extern> ('name name ...)) ((->symbol-join '_) name))    
     (($ <int>) 'int)
     (($ <type> 'bool) 'bool)
     (($ <type> 'void) 'void)))

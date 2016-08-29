@@ -64,8 +64,14 @@ int main()
   locator_init(&l, &rt);
 
   Dataparam d;
+#if defined(DZN_TRACING)
   dzn_meta_t m = {"d", 0};
-  Dataparam_init(&d,&l,&m);
+#endif
+  Dataparam_init(&d,&l
+#if defined(DZN_TRACING)
+                  ,&m
+#endif
+                  );
   d.port->meta.requires.port = "port";
 
   d.port->out.a0 = a0;

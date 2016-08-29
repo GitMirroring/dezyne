@@ -50,6 +50,7 @@
            code:import
            code:->code
            code:extension
+           code:signature-equal?
            enum-type
            ->code
            binding-name
@@ -59,6 +60,7 @@
            declare-integer
            declare-replies
            define-function
+           define-helper
            define-reply
            define-on
            connect-ports
@@ -867,6 +869,43 @@
     ((? (is? <statement>)) '())
     (#f '())))
 
+(define (code:formals->name model signature)
+  (let ((formals ((compose .elements .formals) signature)))
+    ((->join "_")
+     (cons*
+      ((compose om:type-name (om:type model) .type) signature)
+      (if (null? formals) '(void)
+          (map
+           (lambda (formal)
+             (let ((name ((compose om:type-name (om:type model) .type) formal)))
+               (if (om:out-or-inout? formal) (symbol-append name 'p)
+                   name)))
+           formals))))))
+
+(define (x-formal formal)
+  (make <formal> #:type (.type formal) #:name (.name formal) #:direction (if (om:out-or-inout? formal) 'out 'in)))
+
+(define ((code:signature-equal? model) a b)
+  (and (equal? (->code- model (.type a)) (->code- model (.type b)))
+       (equal? (map x-formal ((compose .elements .formals) a))
+               (map x-formal ((compose .elements .formals) b)))))
+
+(define ((define-helper model port string) signature)
+  (let* ((formals ((compose .elements .formals) signature))
+         (formal-list (map (lambda (x) (code:->code model x)) formals))
+         (formal-types (map (lambda (formal)
+                              (snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
+                            formals))
+         (return-type (->code- model (.type signature))))
+    (animate string `((argument-list ,(map .name formals))
+                      (comma ,(if (pair? formals) (sep) ""))
+                      (formal-list ,formal-list)
+                      (formal-types ,formal-types)
+                      (port ,(and=> port .name))
+                      (signature-name ,(code:formals->name model signature))
+                      (return-type ,return-type))
+             signature)))
+
 (define ((define-on model port string) event)
   (let* ((signature (.signature event))
          (type (.type signature))
@@ -878,6 +917,7 @@
          (in-formals (transform-formals-shadow-member model in-formals))
          (capture-list (comma-join (append (list "&") (map .name in-formals))))
          (formals ((compose .elements .formals) signature))
+         (signature-name (code:formals->name model signature))
          (formals (transform-formals-shadow-member model formals))
          (argument-list (map .name formals))
          (number (number->string (length argument-list)))
@@ -939,6 +979,7 @@
                        (comma ,comma)
                        (comma-space ,comma-space)
                        (type-type ,type-type)
+                       (signature-name ,signature-name)
                        (interface ,interface)
                        (number ,number)
                        (formals ,formals)
@@ -948,6 +989,7 @@
                        (reply-name ,reply-name)
                        (reply-type ,reply-type)
                        (reply-scope ,reply-scope)
+                       (reply-scope-name ,reply-scope-name)
                        (return-type ,return-type)
                        (return-type-name ,return-type-name)
                        (instance ,instance)
@@ -1014,7 +1056,8 @@
                     (direction ,.direction)
                     (external? ,.external)
                     (injected? ,.injected)
-                    (interface ,om:scope+name))
+                    (interface ,om:scope+name)
+                    (port ,port))
            port))
 
 (define (declare-replies o)

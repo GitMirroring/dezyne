@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -24,20 +25,22 @@
 #ifndef DZN_CLOSURE_H
 #define DZN_CLOSURE_H
 
-#ifndef DZN_STATIC_QUEUES
+#include <dzn/config.h>
+
+#if DZN_DYNAMIC_QUEUES
 
 typedef struct {
   void (*func)(void*);
   void *args;
-} closure;
+} dzn_closure;
 
-#else
+#else // !DZN_DYNAMIC_QUEUES
 
 typedef struct {
   void (*func)(void*);
   char args[DZN_MAX_ARGS_SIZE];
-} closure;
+} dzn_closure;
 
-#endif
+#endif // !DZN_DYNAMIC_QUEUES
 
 #endif /* DZN_CLOSURE_H */

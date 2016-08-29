@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -23,25 +24,25 @@
 
 #include <dzn/queue.h>
 
-#include <dzn/config.h>
-
 #include <assert.h>
-#include <stdlib.h>
 
+#if DZN_DYNAMIC_QUEUES
+#include <stdlib.h>
 #include <dzn/mem.h>
+#endif
 
 void
 queue_init(queue* self)
 {
-#ifndef DZN_STATIC_QUEUES
+#if DZN_DYNAMIC_QUEUES
   self->head = 0;
   self->tail = 0;
   self->size = 0;
-#else
+#else // !DZN_DYNAMIC_QUEUES
   self->head = self->element;
   self->tail = self->element;
   self->size = 0;
-#endif
+#endif // !DZN_DYNAMIC_QUEUES
 }
 
 bool
@@ -50,17 +51,16 @@ queue_empty (queue* self)
   return queue_size (self) == 0;
 }
 
-int
+uint8_t
 queue_size (queue* self)
 {
   return self->size;
 }
 
-#include <stdio.h>
 void
 queue_push (queue* self, void* e)
 {
-#ifndef DZN_STATIC_QUEUES
+#if DZN_DYNAMIC_QUEUES
   Node* n = (Node*) dzn_malloc (sizeof (Node));
   n->item = e;
   n->next = 0;
@@ -72,21 +72,21 @@ queue_push (queue* self, void* e)
   }
   self->tail = n;
   self->size++;
-#else
+#else // !DZN_DYNAMIC_QUEUES
   *(self->tail) = *((Node*)e);
   self->tail++;
-  if (self->tail - self->element == DZN_DEFAULT_QUEUE_SIZE) {
+  if (self->tail - self->element == DZN_QUEUE_SIZE) {
     self->tail = self->element;
   }
   self->size++;
-  assert (self->size <= DZN_DEFAULT_QUEUE_SIZE);
-#endif
+  assert (self->size <= DZN_QUEUE_SIZE);
+#endif // !DZN_DYNAMIC_QUEUES
 }
 
 void* 
 queue_pop (queue* self)
 {
-#ifndef DZN_STATIC_QUEUES
+#if DZN_DYNAMIC_QUEUES
   assert (self->size);
   Node* head = self->head;
   void* item = head->item;
@@ -94,26 +94,26 @@ queue_pop (queue* self)
   self->size--;
   free (head);
   return item;
-#else
+#else // !DZN_DYNAMIC_QUEUES
   assert (self->size);
   Node* res = self->head;
   self->head++;
-  if (self->head - self->element == DZN_DEFAULT_QUEUE_SIZE) {
+  if (self->head - self->element == DZN_QUEUE_SIZE) {
     self->head = self->element;
   }
   self->size--;
   return res;
-#endif
+#endif // !DZN_DYNAMIC_QUEUES
 }
 
 void* 
 queue_front (queue* self)
 {
-#ifndef DZN_STATIC_QUEUES
+#if DZN_DYNAMIC_QUEUES
   return self->head->item;
-#else
+#else // !DZN_DYNAMIC_QUEUES
   return self->head;
-#endif
+#endif // !DZN_DYNAMIC_QUEUES
 }
 
 #ifdef QUEUE_TEST
@@ -138,4 +138,4 @@ main ()
   // queue_pop (&q);
   return 0;
 }
-#endif
+#endif // QUEUE_TEST

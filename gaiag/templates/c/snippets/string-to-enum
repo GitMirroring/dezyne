@@ -1,4 +1,4 @@
-int string_to_#((c:scope-join) scope)_#name(char* s) {
+uint8_t string_to_#((c:scope-join) scope)_#name(char* s) {
   if (0) {
   ;
   }

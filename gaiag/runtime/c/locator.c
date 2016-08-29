@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -22,29 +23,22 @@
 
 #include <dzn/locator.h>
 
-#include <dzn/runtime.h>
+#if DZN_LOCATOR_SERVICES
 #include <stdlib.h>
-#include <string.h>
-
+#endif // DZN_LOCATOR_SERVICES
 
 void locator_init(locator* self, runtime* rt) {
   self->rt = rt;
   self->illegal = runtime_illegal_handler;  
+#if defined(DZN_LOCATOR_SERVICES)
   map_init (&self->services);
+#endif
 }
 
+#if DZN_LOCATOR_SERVICES
 int map_copy(map_element* elt, void* dst) {
   map* m = dst;
   return map_put (m, elt->key, elt->data);
-}
-
-locator* locator_clone(locator* self) {
-  locator* clone = malloc(sizeof(locator));
-  //memcpy(clone, self, sizeof(locator));
-  clone->rt = self->rt;
-  map_init (&clone->services);
-  map_iterate(&self->services, map_copy, &clone->services); 
-  return clone;
 }
 
 void* locator_get(locator* self, char* key) {
@@ -57,3 +51,17 @@ locator* locator_set(locator* self, char* key, void* value) {
   map_put (&self->services, key, value);
   return self;
 }
+#endif // DZN_LOCATOR_SERVICES
+
+locator* locator_clone(locator* self) {
+#if DZN_LOCATOR_SERVICES
+  locator* clone = malloc(sizeof(locator));
+  clone->rt = self->rt;
+  map_init (&clone->services);
+  map_iterate(&self->services, map_copy, &clone->services); 
+  return clone;
+#else // !DZN_LOCATOR_SERVICES
+  return self;
+#endif // !DZN_LOCATOR_SERVICES
+}
+

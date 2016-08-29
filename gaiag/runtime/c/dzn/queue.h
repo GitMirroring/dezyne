@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -27,32 +28,33 @@
 #include <dzn/config.h>
 
 #include <stdbool.h>
+#include <stdint.h>
 
-#ifndef DZN_STATIC_QUEUES
+#if DZN_DYNAMIC_QUEUES
 typedef struct Node {
     void* item;
     struct Node* next;
 } Node;
-#else
+#else // !DZN_DYNAMIC_QUEUES
 #include <dzn/closure.h>
 typedef struct Node {
-    closure item;
+    dzn_closure item;
 } Node;
-#endif
+#endif // !DZN_DYNAMIC_QUEUES
 
 typedef struct {
     Node* head;
     Node* tail;
-    int size;
-#ifdef DZN_STATIC_QUEUES
-    Node element[DZN_DEFAULT_QUEUE_SIZE];
-#endif
+    uint8_t size;
+#if !DZN_DYNAMIC_QUEUES
+    Node element[DZN_QUEUE_SIZE];
+#endif // !DZN_DYNAMIC_QUEUES
 } queue;
 
 void queue_init(queue*);
 bool queue_empty (queue*);
 void queue_push (queue*, void*);
-int queue_size (queue*);
+uint8_t queue_size (queue*);
 void* queue_front (queue*);
 void* queue_pop (queue*);
 

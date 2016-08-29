@@ -34,7 +34,7 @@
 #include <dzn/queue.h>
 
 typedef struct {
-  int size;
+  uint8_t size;
   void (*f)(void*);
   void* self;
 } arguments;
@@ -69,15 +69,15 @@ runtime_flush (runtime_info* info)
   queue* q = &info->q;
   while (!queue_empty (q))
   {
-#ifndef DZN_STATIC_QUEUES
-    closure* c = queue_pop (q);
+#if DZN_DYNAMIC_QUEUES
+    dzn_closure* c = queue_pop (q);
     runtime_handle_event (info, c->func, c->args);
     free (c->args);
     free (c);
-#else
-    closure c = *(closure*)queue_pop (q);
+#else // !DZN_DYNAMIC_QUEUES
+    dzn_closure c = *(dzn_closure*)queue_pop (q);
     runtime_handle_event (info, c.func, c.args);
-#endif
+#endif // !DZN_DYNAMIC_QUEUES
   }
   if (info->deferred)
   {
@@ -95,13 +95,13 @@ runtime_defer (void* vsrc, void* vtgt, void (*event)(void*), void* args)
   component* ctgt = vtgt;
   runtime_info* src = csrc?&csrc->dzn_info:0;
   runtime_info* tgt = ctgt?&ctgt->dzn_info:0;
-  if (!(src && src->performs_flush) && !(tgt->handling))
+  if (!(src && src->performs_flush) && !tgt->handling)
   {
     runtime_handle_event (tgt, event, args);
     return;
   }
-#ifndef DZN_STATIC_QUEUES
-  closure *c = dzn_malloc (sizeof (closure));
+#if DZN_DYNAMIC_QUEUES
+  dzn_closure *c = dzn_malloc (sizeof (dzn_closure));
   c->func = event;
   arguments *a = args;
   c->args = dzn_malloc (a->size);
@@ -109,16 +109,16 @@ runtime_defer (void* vsrc, void* vtgt, void (*event)(void*), void* args)
   queue_push (&tgt->q, c);
   if (src)
     src->deferred = tgt;
-#else
-  closure c;
+#else // !DZN_DYNAMIC_QUEUES
+  dzn_closure c;
   c.func = event;
   arguments *a = args;
   assert(a->size <= DZN_MAX_ARGS_SIZE);
   memcpy(&c.args, a, a->size);
-  queue_push (&tgt_info->q, &c);
+  queue_push (&tgt->q, &c);
   if (src)
     src->deferred = tgt;
-#endif
+#endif // !DZN_DYNAMIC_QUEUES
 }
 
 static void
@@ -145,6 +145,7 @@ runtime_event (void (*event)(void*), void* args)
   runtime_handle_event (&c->dzn_info, event, args);
 }
 
+#if DZN_TRACING
 char*
 runtime_path (dzn_meta_t const* m, char* p)
 {
@@ -196,15 +197,16 @@ string_to__bool (char *s)
 }
 
 char*
-_int_to_string (int i)
+_int_to_string (int8_t i)
 {
   static char buf[sizeof (i) * 2 + 1];
   sprintf (buf, "%d", i);
   return buf;
 }
 
-int
+int8_t
 string_to__int (char *s)
 {
   return atoi (s);
 }
+#endif // !DZN_TRACING

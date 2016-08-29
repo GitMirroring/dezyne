@@ -4,6 +4,6 @@ typedef enum {
     #((->join ", ") (map (lambda (f) (->string (list ((c:scope-join) scope) '_ name '_ f))) fields))
 } #((c:scope-join) scope)_#name;
 
-int string_to_#((c:scope-join) scope)_#name(char* s);
+uint8_t string_to_#((c:scope-join) scope)_#name(char* s);
 #(if (om:outer-scope? model (append scope+name '(foo))) "static ")char const* #((c:scope-join) scope)_#name _to_string(#((c:scope-join) scope)_#name  v);
 ##endif // ENUM_#((c:scope-join) scope)_#name
