@@ -82,18 +82,6 @@ component middle
   }
 }
 
-component wrapper
-{
-  provides itop t;
-  requires ibottom b;
-  system
-  {
-    middle m;
-    t <=> m.t;
-    m.b <=> b;
-  }
-}
-
 component bottom
 {
   provides ibottom b;
@@ -109,14 +97,11 @@ component Injected
   system
   {
     logger l;
-    wrapper m;
-    
+    middle m;
     bottom b;
-
 
     m.t <=> t;
     m.b <=> b.b;
-
-    l.log <=> m.*;
+    l.log <=> *;
   }
 }
