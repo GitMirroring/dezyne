@@ -351,12 +351,13 @@ var aspects = {
   ,
   convert: function(parameters) {
     var dm = parameters.dir + '/' + parameters.model + '.dm';
+    var imports = parameters.meta.imports || "";
     return lstat(dm)
       .then (function(stats) {
         var out = 'out/'+path.basename(parameters.dir);
         var cmd = 'mkdir -p '+out+'; '+
             'echo "'+dm+' -> '+out+'/'+parameters.model+'.dzn"; ' +
-            dzn()+' convert -g -o '+out+' '+dm+';'+
+            dzn()+' convert -g '+imports+' -o '+out+' '+dm+';'+
             'sed -i -e "s,in void on(),in void on1()," '+out+'/*.dzn';
         return util.spawn_sync_shell(cmd)
           .then (function (result) {
