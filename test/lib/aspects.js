@@ -166,60 +166,64 @@ var aspects = {
           console.error('dzn hello failed (is your server running?)');
           return result;
         }
+        return util.spawn_sync_shell('mkdir -p out && cp -r ' + dir + ' out')
+          .then(function() {
+            dir = 'out/' + path.basename(dir);
+            var meta = read_meta (dir, default_meta);
+            meta.languages = languages.length && languages || meta.languages;
 
-        var meta = read_meta (dir, default_meta);
-        meta.languages = languages.length && languages || meta.languages;
+            work = (work.length == 0
+                    ? Object.keys(dependencies)
+                    : work)
+              .filter (skip_filter (meta));
 
-        work = (work.length == 0
-                ? Object.keys(dependencies)
-                : work)
-          .filter (skip_filter (meta));
+            var derived = work.append_map(depend).unique()
+                .filter (skip_filter (meta));
+            work = work.filter(function(e) { return derived.indexOf(e) == -1;});
 
-        var derived = work.append_map(depend).unique()
-            .filter (skip_filter (meta));
-        work = work.filter(function(e) { return derived.indexOf(e) == -1;});
+            var modelname = path.basename(dir);
+            var filename = dir + '/' + modelname + '.dzn';
+            var parameters = {work: work, done: {}, dir: dir, model: modelname, filename: filename, meta: meta, session: session};
+            return meta.languages
+              .filter (skip_filter (meta))
+              .reduce(function(promise, language) {
 
-        var modelname = path.basename(dir);
-        var filename = dir + '/' + modelname + '.dzn';
-        var parameters = {work: work, done: {}, dir: dir, model: modelname, filename: filename, meta: meta, session: session};
-        return meta.languages
-          .filter (skip_filter (meta))
-          .reduce(function(promise, language) {
-            return promise.then(function(result1) {
-              var parameters = util.deep_copy(result1.parameters);
-              parameters.meta.languages = [ language ];
-              parameters.work = work;
-              return aspects.test(parameters).then (function(result2) {
-                return {status: result1.status || result2.status, parameters: result2.parameters}
-              });
-            });
-          }, q({status:0, parameters:parameters}))
-          .then (function(result) {
-            var outcome = {status:{},output:{}};
-            Object.keys(dependencies).each(function(aspect){
-              if(haslanguage(aspect)) {
-                outcome.status[aspect] = {};
-                all_languages.each(function(language) {
-                  outcome.status[aspect][language] = result.parameters.outcome && result.parameters.outcome.status[aspect] && result.parameters.outcome.status[aspect][language] || 'SKIPPED';
+                return promise.then(function(result1) {
+                  var parameters = util.deep_copy(result1.parameters);
+                  parameters.meta.languages = [ language ];
+                  parameters.work = work;
+                  return aspects.test(parameters).then (function(result2) {
+                    return {status: result1.status || result2.status, parameters: result2.parameters}
+                  });
                 });
-              } else {
-                outcome.status[aspect] = result.parameters.outcome && result.parameters.outcome.status[aspect] || 'SKIPPED';
-              }
-            });
+              }, q({status:0, parameters:parameters}))
+              .then (function(result) {
+                var outcome = {status:{},output:{}};
+                Object.keys(dependencies).each(function(aspect){
+                  if(haslanguage(aspect)) {
+                    outcome.status[aspect] = {};
+                    all_languages.each(function(language) {
+                      outcome.status[aspect][language] = result.parameters.outcome && result.parameters.outcome.status[aspect] && result.parameters.outcome.status[aspect][language] || 'SKIPPED';
+                    });
+                  } else {
+                    outcome.status[aspect] = result.parameters.outcome && result.parameters.outcome.status[aspect] || 'SKIPPED';
+                  }
+                });
 
-            outcome.output = result.parameters.outcome && result.parameters.outcome.output || '';
-            all_languages.each(function(language) {
-              Object.keys(dependencies).each(function(aspect) {
-                if(haslanguage(aspect))
-                  outcome.output[aspect + '-' + language] = outcome.output[aspect + '-' + language] || comment(parameters.meta, aspect, language);
-                else
-                  outcome.output[aspect] = outcome.output[aspect] || comment(parameters.meta, aspect);
-              });
-            });
-            return util.spawn_sync_shell('mkdir -p out/' + path.basename(dir))
-              .then(function() {
-                fs.writeFileSync('out/' + path.basename(dir) + '/outcome.json', JSON.stringify(outcome,null,2));
-                return result.status;
+                outcome.output = result.parameters.outcome && result.parameters.outcome.output || '';
+                all_languages.each(function(language) {
+                  Object.keys(dependencies).each(function(aspect) {
+                    if(haslanguage(aspect))
+                      outcome.output[aspect + '-' + language] = outcome.output[aspect + '-' + language] || comment(parameters.meta, aspect, language);
+                    else
+                      outcome.output[aspect] = outcome.output[aspect] || comment(parameters.meta, aspect);
+                  });
+                });
+                return util.spawn_sync_shell('mkdir -p out/' + path.basename(dir))
+                  .then(function() {
+                    fs.writeFileSync('out/' + path.basename(dir) + '/outcome.json', JSON.stringify(outcome,null,2));
+                    return result.status;
+                  });
               });
           });
       });
@@ -229,7 +233,6 @@ var aspects = {
     var language = parameters.meta.languages[0];
 
     function updateparameters(parameters, output, aspect, language) {
-      console.log(output);
       parameters.outcome = parameters.outcome || {};
       parameters.outcome.output = parameters.outcome.output || {};
       if(language) {
@@ -356,10 +359,8 @@ var aspects = {
         var out = 'out/'+path.basename(parameters.dir);
         var cmd = 'mkdir -p '+out+'; '+
             'echo "'+dm+' -> '+out+'/'+parameters.model+'.dzn"; ' +
-            dzn()+' convert -g -o '+out+' '+dm+'; ' +
-            'sed -i -e "s,\\(component \\w*\\)Comp,\\1," -e "s,Iasd.builtin.ITimer,ITimer," '+out+'/'+parameters.model+'Comp.dzn; ' +
-            'sed -i -e "s,in void on(),in void on1()," '+out+'/*.dzn; ' +
-            'mv '+out+'/'+parameters.model+'Comp.dzn '+out+'/'+parameters.model+'.dzn'
+            dzn()+' convert -g -o '+out+' '+dm+';'+
+            'sed -i -e "s,in void on(),in void on1()," '+out+'/*.dzn';
         return util.spawn_sync_shell(cmd)
           .then (function (result) {
             var parameters1 = util.deep_copy(parameters);
