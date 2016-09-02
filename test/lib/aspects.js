@@ -126,12 +126,9 @@ function run_traces(parameters, asp, app) {
     return files;
   }
 
-  return q.all([q.all(ls_traces(parameters.dir)),
-                q.all(ls_traces('out/'+path.basename(parameters.dir))).then(function(files){return random_selection(files);})]
-               .map(function (e) { return e.fail( function (e) { return []; }); }))
-    .then(function(files_list) {
-      return [].concat.apply([],files_list);
-    })
+  return q.all(ls_traces('out/'+path.basename(parameters.dir)))
+    .then(function(files){return random_selection(files);})
+    .fail(function(){return [];})
     .then(function(traces) {
       if (!traces.length) return {status: 1, output: "No traces available"};
       return traces.reduce(function(promise, trace) {
@@ -490,7 +487,7 @@ var aspects = {
     var dir = 'out/' + path.basename(parameters.dir)
     var out = dir + '/'+parameters.model;
     var err = out + '.stderr';
-    var imports = parameters.meta.imports || ""; 
+    var imports = parameters.meta.imports || "";
 
     var cmd = dzn() + ' view '+imports+' '+parameters.filename;
     return util.spawn_sync_shell(cmd)
