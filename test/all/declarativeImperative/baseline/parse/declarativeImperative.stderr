@@ -1,1 +1,1 @@
-all/declarativeImperative/declarativeImperative.dzn:9:7: Well-formedness error: Only imperative Statement allowed here
+out/declarativeImperative/declarativeImperative.dzn:9:7: Well-formedness error: Only imperative Statement allowed here

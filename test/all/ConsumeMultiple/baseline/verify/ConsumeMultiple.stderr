@@ -1,3 +1,3 @@
-all/ConsumeMultiple/ConsumeMultiple.dzn:25:18:i75: illegal
-all/ConsumeMultiple/ConsumeMultiple.dzn:64:8:i76: deadlock in model ConsumeMultiple
-all/ConsumeMultiple/ConsumeMultiple.dzn:25:18:i75: Component ConsumeMultiple is non-compliant with interface of provided port
+out/ConsumeMultiple/ConsumeMultiple.dzn:25:18:i75: illegal
+out/ConsumeMultiple/ConsumeMultiple.dzn:64:8:i76: deadlock in model ConsumeMultiple
+out/ConsumeMultiple/ConsumeMultiple.dzn:25:18:i75: Component ConsumeMultiple is non-compliant with interface of provided port

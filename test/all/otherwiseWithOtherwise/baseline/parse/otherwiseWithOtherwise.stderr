@@ -1,2 +1,2 @@
-all/otherwiseWithOtherwise/otherwiseWithOtherwise.dzn:8:7: Well-formedness error: Otherwise guard combined with second otherwise is not allowed
-all/otherwiseWithOtherwise/otherwiseWithOtherwise.dzn:9:7: Well-formedness error: Second otherwise defined here
+out/otherwiseWithOtherwise/otherwiseWithOtherwise.dzn:8:7: Well-formedness error: Otherwise guard combined with second otherwise is not allowed
+out/otherwiseWithOtherwise/otherwiseWithOtherwise.dzn:9:7: Well-formedness error: Second otherwise defined here

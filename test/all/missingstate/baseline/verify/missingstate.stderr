@@ -1,2 +1,2 @@
-all/missingstate/missingstate.dzn:7:21:i9: missingstate is incomplete: 'missingstate.e' not handled
-all/missingstate/missingstate.dzn:7:21:i9: deadlock in model missingstate
+out/missingstate/missingstate.dzn:7:21:i9: missingstate is incomplete: 'missingstate.e' not handled
+out/missingstate/missingstate.dzn:7:21:i9: deadlock in model missingstate

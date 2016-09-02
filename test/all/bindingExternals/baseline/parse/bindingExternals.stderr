@@ -1,2 +1,2 @@
-all/bindingExternals/bindingExternals.dzn:44:12: Well-formedness error: External port must be bound to external port: 'r2'
-all/bindingExternals/bindingExternals.dzn:45:5: Well-formedness error: External port must be bound to external port: 'r1'
+out/bindingExternals/bindingExternals.dzn:44:12: Well-formedness error: External port must be bound to external port: 'r2'
+out/bindingExternals/bindingExternals.dzn:45:5: Well-formedness error: External port must be bound to external port: 'r1'

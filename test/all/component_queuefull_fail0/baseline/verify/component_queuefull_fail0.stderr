@@ -1,3 +1,3 @@
-all/component_queuefull_fail0/component_queuefull_fail0.dzn:16:8:i31: queue full
-all/component_queuefull_fail0/component_queuefull_fail0.dzn:16:8:i31: queue full
-all/component_queuefull_fail0/component_queuefull_fail0.dzn:6:13:i33: p.c not handled
+out/component_queuefull_fail0/component_queuefull_fail0.dzn:16:8:i31: queue full
+out/component_queuefull_fail0/component_queuefull_fail0.dzn:16:8:i31: queue full
+out/component_queuefull_fail0/component_queuefull_fail0.dzn:6:13:i33: p.c not handled

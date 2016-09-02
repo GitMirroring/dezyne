@@ -1,1 +1,1 @@
-all/componentNeedsProvides/componentNeedsProvides.dzn:11:11: Well-formedness error: Component with behaviour must have at least one provides port: 'Alarm1'
+out/componentNeedsProvides/componentNeedsProvides.dzn:11:11: Well-formedness error: Component with behaviour must have at least one provides port: 'Alarm1'

@@ -1,2 +1,2 @@
-all/SimpleBlockingGuard/SimpleBlockingGuard.dzn:20:10:i24: deadlock in model SimpleBlockingGuard
-all/SimpleBlockingGuard/SimpleBlockingGuard.dzn:7:8:i24: pp.return not handled
+out/SimpleBlockingGuard/SimpleBlockingGuard.dzn:20:10:i24: deadlock in model SimpleBlockingGuard
+out/SimpleBlockingGuard/SimpleBlockingGuard.dzn:7:8:i24: pp.return not handled

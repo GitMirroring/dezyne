@@ -1,1 +1,1 @@
-all/functionValueDiscarded/functionValueDiscarded.dzn:13:7: Well-formedness error: Function value discarded: 'negate'
+out/functionValueDiscarded/functionValueDiscarded.dzn:13:7: Well-formedness error: Function value discarded: 'negate'

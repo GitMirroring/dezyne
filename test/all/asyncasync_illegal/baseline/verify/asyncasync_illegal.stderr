@@ -1,3 +1,3 @@
-all/asyncasync_illegal/asyncasync_illegal.dzn:12:13:i48: illegal
-all/asyncasync_illegal/asyncasync_illegal.dzn:40:6:i49: deadlock in model asyncasync_illegal
-all/asyncasync_illegal/asyncasync_illegal.dzn:12:13:i48: Component asyncasync_illegal is non-compliant with interface of provided port
+out/asyncasync_illegal/asyncasync_illegal.dzn:12:13:i48: illegal
+out/asyncasync_illegal/asyncasync_illegal.dzn:40:6:i49: deadlock in model asyncasync_illegal
+out/asyncasync_illegal/asyncasync_illegal.dzn:12:13:i48: Component asyncasync_illegal is non-compliant with interface of provided port

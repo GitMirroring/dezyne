@@ -1,2 +1,2 @@
-all/h/h.dzn:105:10:i9: ITransfer is incomplete: 'ITransfer.move,ITransfer.tcalibrate,ITransfer.transfer' not handled
-all/h/h.dzn:481:5:i9: ctrl.stop not handled
+out/h/h.dzn:105:10:i9: ITransfer is incomplete: 'ITransfer.move,ITransfer.tcalibrate,ITransfer.transfer' not handled
+out/h/h.dzn:481:5:i9: ctrl.stop not handled

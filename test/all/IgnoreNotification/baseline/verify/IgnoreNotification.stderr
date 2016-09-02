@@ -1,1 +1,1 @@
-all/IgnoreNotification/IgnoreNotification.dzn:21:4:i2: deadlock in model INotifier
+out/IgnoreNotification/IgnoreNotification.dzn:21:4:i2: deadlock in model INotifier
