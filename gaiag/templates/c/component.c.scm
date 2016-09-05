@@ -67,11 +67,11 @@
     (map (define-on model port #{
     static #return-type  call_in_#port _#event(#((c:scope-name) interface) * port#comma #formals) {
     RUNTIME_TRACE_#direction(&port->meta, "#event ");
-    args_#signature-name  a = {sizeof(args_#signature-name), (#return-type (*)(void*#comma #(comma-space-join formal-types)))#port _#event , port->meta.provides.address#comma #(comma-space-join argument-list)};
-    runtime_event(helper_#direction _#signature-name , &a);
-#(string-if (not (eq? type 'void))
-#{ #.scope_model * self_ = port->meta.provides.address;
-#})RUNTIME_TRACE_out(&port->meta, #(string-if (eq? type 'void) #{"return"#} #{#((c:scope-join) reply-scope)_#reply-name _to_string (self_->reply_#((c:scope-join) reply-scope)_#reply-name)#}));
+    #.scope_model * self_ = port->meta.provides.address;
+    runtime_start(&self_->dzn_info);
+    #port _#event(self_#comma #((->join ", ") argument-list));
+    runtime_finish(&self_->dzn_info);
+    RUNTIME_TRACE_out(&port->meta, #(string-if (eq? type 'void) #{"return"#} #{#((c:scope-join) reply-scope)_#reply-name _to_string (self_->reply_#((c:scope-join) reply-scope)_#reply-name)#}));
 #(string-if (not (eq? type 'void))
 #{ return self_->reply_#((c:scope-join) reply-scope)_#reply-name;
 #}) }

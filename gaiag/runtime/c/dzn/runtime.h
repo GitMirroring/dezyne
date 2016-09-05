@@ -65,6 +65,9 @@ void runtime_info_init (runtime_info* info, locator* loc);
 void runtime_flush (runtime_info* self);
 void runtime_defer (void* src, void* tgt, void (*event)(void*), void* args);
 void runtime_event (void (*event)(void*), void* args);
+void runtime_start (runtime_info* info);
+void runtime_finish (runtime_info* info);
+
 
 #if DZN_TRACING
 

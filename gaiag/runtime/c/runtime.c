@@ -124,17 +124,9 @@ runtime_defer (void* vsrc, void* vtgt, void (*event)(void*), void* args)
 static void
 runtime_handle_event (runtime_info* info, void (*event)(void*), void* args)
 {
-  if (!info->handling)
-  {
-    info->handling = true;
-    event (args);
-    info->handling = false;
-    runtime_flush (info);
-  }
-  else
-  {
-    assert(!"component already handling an event");
-  }
+  runtime_start(info);
+  event(args);
+  runtime_finish(info);
 }
 
 void
@@ -143,6 +135,26 @@ runtime_event (void (*event)(void*), void* args)
   arguments* a = args;
   component* c = a->self;
   runtime_handle_event (&c->dzn_info, event, args);
+}
+
+void
+runtime_start (runtime_info* info)
+{
+  if (!info->handling)
+  {
+    info->handling = true;
+  }
+  else
+  {
+    assert(!"component already handling an event");
+  }
+}
+
+void
+runtime_finish (runtime_info* info)
+{
+    info->handling = false;
+    runtime_flush (info);
 }
 
 #if DZN_TRACING
