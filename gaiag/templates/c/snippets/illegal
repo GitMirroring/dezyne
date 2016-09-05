@@ -1,1 +1,1 @@
-self->dzn_info.locator->illegal();
+DZN_ILLEGAL(self);
