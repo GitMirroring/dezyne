@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -255,7 +256,7 @@
           o
           (make <guard>
             :expression ((annotate-otherwise statements) (.expression o))
-            :statement statement))))
+            :statement statement)))) ;; FIXME recurse?
     (($ <otherwise>)
      (or (and-let* ((guards ((om:filter <guard>) statements))
                     (value (.value (guards-not-or guards))))
@@ -282,11 +283,12 @@
          (begin
            ;;(stderr "REMOVING OTHERWISE: ~a\n" o)
            ;;(stderr "STATEMENTS: ~a\n" statements)
+           ;;(stderr "STATEMENT: ~a\n" statement)
            (retain-source-properties
             o
             (make <guard>
               :expression (guards-not-or statements)
-              :statement (om:map (remove-otherwise keep-annotated?) statement))))))
+              :statement ((remove-otherwise keep-annotated?) statement))))))
     (('compound statements ...)
      (rsp o (make <compound> :elements (map (remove-otherwise keep-annotated? statements) statements))))
     ((? (is? <ast>)) (om:map (remove-otherwise keep-annotated? statements) o))
