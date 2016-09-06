@@ -35,7 +35,9 @@ endef
 
 $(foreach i,IN OUT,$(eval $(call CHECKPARAM,$(i))))
 
-CXX:=ccache g++
+SHELL:=bash
+CCACHE:=$(shell type -p ccache)
+CXX:=$(CCACHE) g++
 CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
 CPPFLAGS=-I$(IN)
 GLOBALS_H=$(wildcard $(DIR)/globals.h)

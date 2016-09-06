@@ -15,7 +15,8 @@ Missing dependencies, run
 EOF
     exit 1
 fi
-unset GUILE_AUTO_COMPILE GUILE_LOAD_COMPILED_PATH
+unset GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
+export GUILE_AUTO_COMPILE=0
 exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@"}
 !#
 
@@ -124,6 +125,7 @@ Usage: ./configure [OPTION]...
 (define required '())
 (define* (check-version command expected :optional (deb #f) (version-option '--version) (compare tuple<=))
   (stderr "checking for ~a~a..." command (if (pair? expected) (format #f " [~a]" (version->string expected)) ""))
+  (if *verbose?* (system (format "~a ~a" command version-option)))
   (let* ((actual (gulp-pipe (format #f "~a ~a 2>&1 | grep '[0-9]' | head -1" command version-option)))
          (actual (string->version actual))
          (pass? (and actual (compare expected actual))))
@@ -159,9 +161,7 @@ Usage: ./configure [OPTION]...
           (set! required (cons deb required))))))
 
 (define guix?
-  ;;(= 0 (system "guix --version 1>/dev/null 2>/dev/null")))
-  #f
-  )
+  (file-exists? "/gnu"))
 
 (define (main args)
   (let* ((verum? (file-exists? "/verum"))
@@ -180,17 +180,16 @@ Usage: ./configure [OPTION]...
     (check-version 'emacs '(23) 'emacs)
 ;;    (check-version 'guix '(0 9) 'guix)
     (check-version 'fakechroot '(2 16) 'fakechroot '-v)
+;;    (check-version 'fdr2 '() 'fdr2 'batch)
     (check-output 'fdr2 "fdr2 batch" "channel a\nassert a -> STOP [F= a -> SKIP\nassert a -> SKIP [F= a -> SKIP" "\nxfalse.*\ntrue")
     (check-version 'guile '(2 0) 'guile-2.0)
-    (if (equal? (gethostname) "build4")
-      (stderr "FIXME: guild check fails in chroot...\n")
-      (check-version 'guild '(2 0) 'guile-2.0-dev))
+    (check-version 'guild '(2 0) 'guile-2.0-dev)
     (check-version 'java '(1 7) 'openjdk-7-jre-headless '-version)
     (check-version 'javac '(1 7) 'openjdk-7-jdk '-version)
     (check-version 'markdown '())
     (check-version 'make '(4 0) 'make)
     (check-version 'makeinfo '(5 0) 'texinfo)
-;;    (check-version 'mcs '(3) 'mono-mcs)
+    (check-version 'mcs '(3) 'mono-mcs)
     (check-version 'node '(0 10))
     (check-version 'npm '(1 0))
     (check-version 'perl '(5))
@@ -218,6 +217,7 @@ Usage: ./configure [OPTION]...
       (lambda ()
         (stdout "CONFIG_MK:=t")
         (stdout "BUILD_TRIPLET:=~a\n" build-triplet)
+        (stdout "GUIX:=~a\n" (if guix? "guix" ""))
         (stdout "PREFIX:=~a\n" prefix)
         (stdout "SYSCONFDIR:=~a\n" sysconfdir)))
     (stdout "\nRun:

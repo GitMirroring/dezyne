@@ -27,10 +27,13 @@ $(CDIR)-check: CDIR:=$(CDIR)
 $(CDIR)-check:
 	$(MAKE) smoke
 
+ifeq ($(GUIX),)
 PROPER := $(PROPER) $(CDIR)/node_modules/.dummy
 $(CDIR)/node_modules/.dummy: CDIR:=$(CDIR)
 $(CDIR)/node_modules/.dummy: $(CDIR)/package.json
+	mkdir -p $(CDIR)/node_modules
 	cd $(CDIR) && npm install
 	touch $@
+endif
 
 include make/check.mk

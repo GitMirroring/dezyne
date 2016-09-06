@@ -169,7 +169,7 @@ var util = {
     var future = q.defer ();
 
     var env = process.env;
-    env.NODE_PATH = process.cwd() + '/node_modules';
+    env.NODE_PATH = process.cwd() + '/node_modules:' + env.NODE_PATH;
 
     var ulimit = 'ulimit -s 16384 -v 2097152;';
 

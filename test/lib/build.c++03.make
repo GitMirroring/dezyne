@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
+# Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -33,7 +34,9 @@ endef
 
 $(foreach i,IN OUT,$(eval $(call CHECKPARAM,$(i))))
 
-CXX:=ccache g++
+SHELL:=bash
+CCACHE:=$(shell type -p ccache)
+CXX:=$(CCACHE) g++
 CXXFLAGS=-g -std=c++03 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
 CPPFLAGS=-I$(IN)
 GLOBALS_H=$(wildcard $(DIR)/globals.h)
