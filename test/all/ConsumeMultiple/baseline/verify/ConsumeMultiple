@@ -1,5 +1,4 @@
 verify: ConsumeMultiple: check: deterministic: ok
-verify: ConsumeMultiple: check: completeness: ok
 verify: ConsumeMultiple: check: illegal: fail
 src.ntfA
 src.ack

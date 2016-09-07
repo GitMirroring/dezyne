@@ -5,7 +5,6 @@ verify: component_deterministic_fail1: check: deterministic: fail
 i.e
 i.return
 i.e
-verify: component_deterministic_fail1: check: completeness: ok
 verify: component_deterministic_fail1: check: illegal: ok
 verify: component_deterministic_fail1: check: deadlock: ok
 verify: component_deterministic_fail1: check: compliance: ok

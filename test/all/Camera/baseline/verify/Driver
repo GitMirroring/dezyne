@@ -1,5 +1,4 @@
 verify: Driver: check: deterministic: ok
-verify: Driver: check: completeness: ok
 verify: Driver: check: illegal: fail
 control.setup
 optics.prepare

@@ -1,5 +1,4 @@
 verify: C: check: deterministic: ok
-verify: C: check: completeness: ok
 verify: C: check: illegal: ok
 verify: C: check: deadlock: fail
 verify: C: check: compliance: fail

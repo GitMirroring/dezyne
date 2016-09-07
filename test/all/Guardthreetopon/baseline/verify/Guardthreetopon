@@ -1,5 +1,4 @@
 verify: Guardthreetopon: check: deterministic: ok
-verify: Guardthreetopon: check: completeness: ok
 verify: Guardthreetopon: check: illegal: ok
 verify: Guardthreetopon: check: deadlock: ok
 verify: Guardthreetopon: check: compliance: ok

@@ -5,7 +5,6 @@ verify: II: check: completeness: ok
 verify: II: check: deadlock: ok
 verify: II: check: livelock: ok
 verify: asyncsync_illegal: check: deterministic: ok
-verify: asyncsync_illegal: check: completeness: ok
 verify: asyncsync_illegal: check: illegal: ok
 verify: asyncsync_illegal: check: deadlock: ok
 verify: asyncsync_illegal: check: compliance: fail

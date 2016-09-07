@@ -200,7 +200,6 @@
 
 (define asserts-alist
   `(
-    ((component completeness) . ,(gulp-template 'asserts/component-completeness.csp.scm))
     ((component illegal) . "assert STOP [T= AS_#.scope_model _(false) \\ diff(Events,{illegal,queue_full})\n")
     ((component deterministic) . "assert CO_#.scope_model _(true,true) :[deterministic [F]]\n")
     ((component deadlock)  . "assert AS_#.scope_model _(false) :[deadlock free]\n")
@@ -232,7 +231,7 @@
   "collect alist of ((trigger . (guards))), e.g.
    (((<trigger> port1 event1) . ((<guard1> expr1) (<guard2> expr2)))
     ((<trigger> port2 event2) . ((<guard1> expr1) (<guard3> expr3)))
-    ...) 
+    ...)
    - the statement of the guard is discarded
    - the arguments on the trigger are discarded, only port-name event-name"
   (let loop ((guards guards) (alist '()))
@@ -278,27 +277,27 @@
              (map (lambda (on) (on->csp model (ast-transform model on))) ons)))
            "STOP")
        ")")))
-  
+
   (define (list-of-triggers model)
     (define (list-of-triggers-port ports predicate)
       (append-map (lambda (port) (map (lambda (event) (make <trigger> :port (.name port) :event (.name event))) (filter predicate (om:events port)))) ports))
     (append
      (list-of-triggers-port (filter om:provides? (om:ports model)) om:in?)
      (list-of-triggers-port (filter om:requires? (om:ports model)) om:out?)))
-  
-  (define (not-ored-guards guards) 
+
+  (define (not-ored-guards guards)
     (let* ((guards (if guards guards (list)))
            (expressions (map (lambda (guard) (csp-expression->string model (.expression guard) '())) guards)))
       (if (null? expressions)
           (list "true")
           (list "not ((" ((->list-join ") or (") expressions) "))"))))
-  
+
   (define (channel-suffix model port)
 
      (if (equal? (.direction (car (filter (lambda (p) (equal? (.name p) port)) (.elements (.ports model))))) 'provides)
          (list "")
          (list "_''")))
-    
+
   (let* ((default "STOP")
          (guards (let ((statement ((compose .statement .behaviour) model)))
                    (if (is-a? statement <guard>)
@@ -752,7 +751,7 @@
     (_ o)))
 
 (define* (on->csp model o :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()) (indent 0) (tail '()) (function #f))
-  
+
   (define (member? identifier) (and (not (local? identifier))
                                     (om:variable model identifier)))
   (define (local? identifier) (assoc-ref locals identifier))

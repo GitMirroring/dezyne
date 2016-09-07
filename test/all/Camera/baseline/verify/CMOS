@@ -1,5 +1,4 @@
 verify: CMOS: check: deterministic: ok
-verify: CMOS: check: completeness: ok
 verify: CMOS: check: illegal: ok
 verify: CMOS: check: deadlock: ok
 verify: CMOS: check: compliance: ok

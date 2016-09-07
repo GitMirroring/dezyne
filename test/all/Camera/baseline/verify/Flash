@@ -1,5 +1,4 @@
 verify: Flash: check: deterministic: ok
-verify: Flash: check: completeness: ok
 verify: Flash: check: illegal: ok
 verify: Flash: check: deadlock: ok
 verify: Flash: check: compliance: ok

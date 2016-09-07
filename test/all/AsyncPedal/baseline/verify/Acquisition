@@ -1,5 +1,4 @@
 verify: Acquisition: check: deterministic: ok
-verify: Acquisition: check: completeness: ok
 verify: Acquisition: check: illegal: ok
 verify: Acquisition: check: deadlock: ok
 verify: Acquisition: check: compliance: fail

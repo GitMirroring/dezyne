@@ -5,7 +5,6 @@ verify: IB: check: completeness: ok
 verify: IB: check: deadlock: ok
 verify: IB: check: livelock: ok
 verify: fork_required_out: check: deterministic: ok
-verify: fork_required_out: check: completeness: ok
 verify: fork_required_out: check: illegal: ok
 verify: fork_required_out: check: deadlock: ok
 verify: fork_required_out: check: compliance: fail

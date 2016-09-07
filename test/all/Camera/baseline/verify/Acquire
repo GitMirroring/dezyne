@@ -1,5 +1,4 @@
 verify: Acquire: check: deterministic: ok
-verify: Acquire: check: completeness: ok
 verify: Acquire: check: illegal: ok
 verify: Acquire: check: deadlock: ok
 verify: Acquire: check: compliance: ok

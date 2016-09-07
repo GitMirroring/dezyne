@@ -5,7 +5,6 @@ verify: Iterator: check: completeness: ok
 verify: Iterator: check: deadlock: ok
 verify: Iterator: check: livelock: ok
 verify: List: check: deterministic: ok
-verify: List: check: completeness: ok
 verify: List: check: illegal: ok
 verify: List: check: deadlock: ok
 verify: List: check: compliance: ok

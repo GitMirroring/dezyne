@@ -8,7 +8,6 @@ verify: StartControlIF: check: completeness: ok
 verify: StartControlIF: check: deadlock: ok
 verify: StartControlIF: check: livelock: ok
 verify: StartDevices: check: deterministic: ok
-verify: StartDevices: check: completeness: ok
 verify: StartDevices: check: illegal: fail
 startIF.startAll
 device1IF.turnon

@@ -2,7 +2,6 @@ verify: ilivelock: check: completeness: ok
 verify: ilivelock: check: deadlock: ok
 verify: ilivelock: check: livelock: fail
 verify: livelock2: check: deterministic: ok
-verify: livelock2: check: completeness: ok
 verify: livelock2: check: illegal: ok
 verify: livelock2: check: deadlock: ok
 verify: livelock2: check: compliance: ok

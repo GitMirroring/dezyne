@@ -11,7 +11,6 @@ verify: IShutter: check: completeness: ok
 verify: IShutter: check: deadlock: ok
 verify: IShutter: check: livelock: ok
 verify: OpticsControl: check: deterministic: ok
-verify: OpticsControl: check: completeness: ok
 verify: OpticsControl: check: illegal: ok
 verify: OpticsControl: check: deadlock: ok
 verify: OpticsControl: check: compliance: ok

@@ -2,7 +2,6 @@ verify: I: check: completeness: ok
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
 verify: asyncasync_illegal2: check: deterministic: ok
-verify: asyncasync_illegal2: check: completeness: ok
 verify: asyncasync_illegal2: check: illegal: fail
 p.e
 r.e

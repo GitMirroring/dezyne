@@ -2,7 +2,6 @@ verify: IIncomplete: check: completeness: ok
 verify: IIncomplete: check: deadlock: ok
 verify: IIncomplete: check: livelock: ok
 verify: Incomplete: check: deterministic: ok
-verify: Incomplete: check: completeness: ok
 verify: Incomplete: check: illegal: ok
 verify: Incomplete: check: deadlock: fail
 pp.missing

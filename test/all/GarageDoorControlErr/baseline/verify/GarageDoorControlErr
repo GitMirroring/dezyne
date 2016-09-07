@@ -2,7 +2,6 @@ verify: DoorControlIF: check: completeness: ok
 verify: DoorControlIF: check: deadlock: ok
 verify: DoorControlIF: check: livelock: ok
 verify: GarageDoorControlErr: check: deterministic: ok
-verify: GarageDoorControlErr: check: completeness: ok
 verify: GarageDoorControlErr: check: illegal: ok
 verify: GarageDoorControlErr: check: deadlock: fail
 doorControl.initialise

@@ -2,7 +2,6 @@ verify: I: check: completeness: ok
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
 verify: component_queuefull_fail0: check: deterministic: ok
-verify: component_queuefull_fail0: check: completeness: ok
 verify: component_queuefull_fail0: check: illegal: fail
 p.e
 r.e

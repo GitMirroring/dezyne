@@ -2,7 +2,6 @@ verify: IPedal: check: completeness: ok
 verify: IPedal: check: deadlock: ok
 verify: IPedal: check: livelock: ok
 verify: PedalPair: check: deterministic: ok
-verify: PedalPair: check: completeness: ok
 verify: PedalPair: check: illegal: ok
 verify: PedalPair: check: deadlock: ok
 verify: PedalPair: check: compliance: fail

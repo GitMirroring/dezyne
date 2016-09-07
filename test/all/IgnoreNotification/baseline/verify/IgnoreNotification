@@ -5,7 +5,6 @@ verify: INotifier: check: completeness: ok
 verify: INotifier: check: deadlock: fail
 verify: INotifier: check: livelock: ok
 verify: IgnoreNotification: check: deterministic: ok
-verify: IgnoreNotification: check: completeness: ok
 verify: IgnoreNotification: check: illegal: ok
 verify: IgnoreNotification: check: deadlock: ok
 verify: IgnoreNotification: check: compliance: ok

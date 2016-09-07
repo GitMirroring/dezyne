@@ -5,7 +5,6 @@ verify: II: check: completeness: ok
 verify: II: check: deadlock: ok
 verify: II: check: livelock: ok
 verify: SimpleBlockingDeadlock: check: deterministic: ok
-verify: SimpleBlockingDeadlock: check: completeness: ok
 verify: SimpleBlockingDeadlock: check: illegal: ok
 verify: SimpleBlockingDeadlock: check: deadlock: fail
 p.e

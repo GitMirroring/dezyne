@@ -8,7 +8,6 @@ verify: ITauTrigger: check: completeness: ok
 verify: ITauTrigger: check: deadlock: ok
 verify: ITauTrigger: check: livelock: ok
 verify: QTriggerModeling: check: deterministic: ok
-verify: QTriggerModeling: check: completeness: ok
 verify: QTriggerModeling: check: illegal: fail
 ict.start
 src.req

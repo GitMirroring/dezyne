@@ -1,5 +1,4 @@
 verify: Alarm: check: deterministic: ok
-verify: Alarm: check: completeness: ok
 verify: Alarm: check: illegal: fail
 console.arm
 sensor.enable

@@ -2,7 +2,6 @@ verify: IMultipleOutEventsOnSingleTau: check: completeness: ok
 verify: IMultipleOutEventsOnSingleTau: check: deadlock: ok
 verify: IMultipleOutEventsOnSingleTau: check: livelock: ok
 verify: MultipleOutEventsOnSingleTau: check: deterministic: ok
-verify: MultipleOutEventsOnSingleTau: check: completeness: ok
 verify: MultipleOutEventsOnSingleTau: check: illegal: fail
 rp.oa
 rp.ob

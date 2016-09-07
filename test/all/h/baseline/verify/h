@@ -8,7 +8,6 @@ ITransfer.return
 verify: ITransfer: check: deadlock: ok
 verify: ITransfer: check: livelock: ok
 verify: h: check: deterministic: ok
-verify: h: check: completeness: ok
 verify: h: check: illegal: ok
 verify: h: check: deadlock: ok
 verify: h: check: compliance: fail

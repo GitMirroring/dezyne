@@ -2,7 +2,6 @@ verify: IPedal: check: completeness: ok
 verify: IPedal: check: deadlock: ok
 verify: IPedal: check: livelock: ok
 verify: SyncPedal: check: deterministic: ok
-verify: SyncPedal: check: completeness: ok
 verify: SyncPedal: check: illegal: ok
 verify: SyncPedal: check: deadlock: ok
 verify: SyncPedal: check: compliance: fail
