@@ -22,11 +22,10 @@
 
 ;; guix.scm for Dezyne
 ;;
-;; To setup the guix-0.9.0 package manager on Ubuntu, run
+;; To setup the guix-0.11.0 package manager on Ubuntu, run
 ;;
-;;   wget http://192.168.32.138/guix_0.9.0-3_amd64.deb
-;;   wget http://192.168.32.138/guile-json_0.5.0-1_all.deb
-;;   sudo dpkg -i guix_0.9.0-3_amd64.deb guile-json_0.5.0-1_all.deb
+;;   wget http://192.168.32.138/guix_0.11.0-1_amd64.deb
+;;   sudo dpkg -i guix_0.11.0-1_amd64.deb
 ;;   sudo guix archive --authorize < /usr/share/guix/hydra.gnu.org.pub
 ;;
 ;; To build and install, run
@@ -55,6 +54,6 @@
 ;;   ln -s ~/src/guix ~/.config/guix/latest
 ;;
 
-(set! %load-path (cons "release" %load-path))
-(use-modules (dezyne))
+(set! %load-path (cons  (string-append (getenv "HOME") "src/guix") %load-path))
+(use-modules (gnu packages dezyne))
 dezyne-server
