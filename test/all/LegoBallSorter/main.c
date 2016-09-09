@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -20,115 +21,34 @@
 //
 // Code:
 
-#include "MachineConstants.h"
+/* -*-c-style:linux;indent-tabs-mode:t-*- */
 
-#include "imotor.h"
-#include "ilight.h"
-#include "itouch.h"
-#include "itimer_impl.h"
-#include "timer.h"
-
+#include <assert.h>
+#include <dzn/runtime.h>
+#include <dzn/locator.h>
+#include <dzn/map.h>
 
 #include "LegoBallSorter.h"
 
-#include <dzn/runtime.h>
-#include <dzn/locator.h>
-
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gtk/gtk.h>
-
-typedef struct { } GtkLego;
-void gtk_lego_update ()
-{
-}
-    
-typedef struct
-{
-  //: public itimer_impl
-  struct {
-    char const* name;
-    void* self;
-    void (*create)(itimer_impl* self,uint32_t ms);
-    void (*cancel)(itimer_impl* self);
-    
-  } in;
-  
-  struct {
-    char const* name;
-    void* self;
-    void (*timeout) (itimer_impl* self);
-    
-  } out;
-
-  guint connection;
-  itimer* port;
-  GtkLego* lego;
-} timer_impl;
-
-void
-timer_impl_init (timer_impl* self, locator* loc)
-{
-  //fprintf (stderr, "%s\n", __FUNCTION__);
-
-  self->in.name = "timer.in";
-  self->in.self = 0;
-  self->out.name = "itimer.out";
-  self->out.self = 0;
-
-  //self->connection = 0xdeadbeef;
-  self->connection = 12345;
-  self->port = locator_get (loc, "timer.port");
-  self->lego = locator_get (loc, "lego");
-}
-
-bool
-timer_impl_stupid_member (timer_impl* self)
-{
-  //fprintf (stderr, "%s\n", __FUNCTION__);
-  //fprintf (stderr, "%p: %d\n", self, self->connection);
-  gtk_lego_update (self->lego);
-  self->port->out.timeout (self->port);
-  return false;
-}
-
-void
-timer_impl_create (itimer_impl* self, int ms)
-{
-  //fprintf (stderr, "%s\n", __FUNCTION__);
-  timer_impl* t = (timer_impl*)self;
-  t->connection = g_timeout_add (ms, (GSourceFunc)timer_impl_stupid_member, (gpointer)self);
-  //fprintf (stderr, "%p: %d\n", t, t->connection);
-}
-
-void
-timer_impl_cancel (itimer_impl* self)
-{
-  //fprintf (stderr, "%s\n", __FUNCTION__);
-  timer_impl* t = (timer_impl*)self;
-  //fprintf (stderr, "%p: %d\n", t, t->connection);
-  g_source_remove (t->connection);
-}
-
-timer_impl*
-create_timer_impl (locator* loc)
-{
-  //fprintf (stderr, "%s\n", __FUNCTION__);
-  timer_impl *t = (timer_impl*)malloc (sizeof (timer_impl));
-  timer_impl_init (t, loc);
-  return t;
-}
-
 
 typedef struct {
 	void (*f)(void*);
 	void *self;
 } closure;
 
-map* global_event_map;
+typedef struct {
+	runtime_info* info;
+	char* name;
+} args_flush;
 
-static bool relaxed = true;
+map* global_event_map;
+bool global_flush_p;
+
+static bool relaxed = false;
 
 char* read_line() {
 	char *line = 0;
@@ -150,23 +70,25 @@ char* drop_prefix(char* string, char* prefix) {
 	return string;
 }
 
-char* consume_synchronous_out_events(map* event_map) {
-	read_line();
-	char* line;
-	while ((line = read_line()) != 0) {
+char* consume_synchronous_out_events(char* prefix, char* event, map* event_map) {
+	char* s;
+	char match[1024];
+	strcat(strcpy(match, prefix), event);
+	while ((s = read_line()) != 0) if (!strcmp(match, s)) break;
+	while ((s = read_line()) != 0) {
 		void *p = 0;
-		if (map_get(event_map, line, &p)) break;
+		if (map_get(event_map, s, &p)) break;
 		closure *c = p;
 		c->f(c->self);
-		free(line);
+		free(s);
 	}
-	return line;
+	return s ? s : "";
 }
 
 void log_in(char* prefix, char* event, map* event_map) {
 	fprintf(stderr, "%s%s\n", prefix, event);
 	if (relaxed) return;
-	consume_synchronous_out_events(event_map);
+	consume_synchronous_out_events(prefix, event, event_map);
 	fprintf(stderr, "%s%s\n", prefix, "return");
 }
 
@@ -175,16 +97,24 @@ void log_out(char* prefix, char* event, map* event_map) {
 	fprintf(stderr, "%s%s\n", prefix, event);
 }
 
+void log_flush(void* args) {
+	args_flush* a = args;
+	fprintf(stderr, "%s.<flush>\n", a->name);
+	runtime_flush(a->info);
+}
+
 int log_valued(char* prefix, char* event, map* event_map, int (*string_to_value)(char*), char* (*value_to_string)(int))
 {
 	fprintf(stderr, "%s%s\n", prefix, event);
 	if (relaxed) return 0;
-	char* s = consume_synchronous_out_events(event_map);
+	char* s = consume_synchronous_out_events(prefix, event, event_map);
 	int r = string_to_value(drop_prefix(s, prefix));
-	if ((int)r != -1) {
+	if ((int)r != INT_MIN) {
 		fprintf(stderr, "%s%s\n", prefix, value_to_string(r));
 		return r;
 	}
+	fprintf(stderr,"\"%s\": is not a reply value\n", s);
+	assert(!"not a reply value");
 	return 0;
 }
 
@@ -457,6 +387,13 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 	int dzn_i = 0;
 	void *p;
 	closure *c;
+	args_flush* args;
+
+	component *comp = calloc(1, sizeof (component));
+	comp->dzn_info.performs_flush = global_flush_p;
+	comp->dzn_meta.parent = 0;
+	comp->dzn_meta.name = "<external>";
+
 	m->ctrl->out.calibrated = LegoBallSorter_log_event_ctrl_out_calibrated;
 	m->ctrl->out.finished = LegoBallSorter_log_event_ctrl_out_finished;
 	m->brick1_aA->in.move = LegoBallSorter_log_event_brick1_aA_in_move;
@@ -546,6 +483,416 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 	m->brick4_s3->in.detect = LegoBallSorter_log_event_brick4_s3_in_detect;
 
 	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "ctrl";
+	c->self = args;
+
+	m->ctrl->meta.requires.port = "ctrl";
+	m->ctrl->meta.requires.address = comp;
+	m->ctrl->meta.requires.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "ctrl.<flush>", c);
+
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick1_aA";
+	c->self = args;
+
+	m->brick1_aA->meta.provides.port = "brick1_aA";
+	m->brick1_aA->meta.provides.address = comp;
+	m->brick1_aA->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick1_aA.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick1_aB";
+	c->self = args;
+
+	m->brick1_aB->meta.provides.port = "brick1_aB";
+	m->brick1_aB->meta.provides.address = comp;
+	m->brick1_aB->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick1_aB.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick1_aC";
+	c->self = args;
+
+	m->brick1_aC->meta.provides.port = "brick1_aC";
+	m->brick1_aC->meta.provides.address = comp;
+	m->brick1_aC->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick1_aC.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick1_s1";
+	c->self = args;
+
+	m->brick1_s1->meta.provides.port = "brick1_s1";
+	m->brick1_s1->meta.provides.address = comp;
+	m->brick1_s1->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick1_s1.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick1_s2";
+	c->self = args;
+
+	m->brick1_s2->meta.provides.port = "brick1_s2";
+	m->brick1_s2->meta.provides.address = comp;
+	m->brick1_s2->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick1_s2.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick1_s3";
+	c->self = args;
+
+	m->brick1_s3->meta.provides.port = "brick1_s3";
+	m->brick1_s3->meta.provides.address = comp;
+	m->brick1_s3->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick1_s3.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick1_s4";
+	c->self = args;
+
+	m->brick1_s4->meta.provides.port = "brick1_s4";
+	m->brick1_s4->meta.provides.address = comp;
+	m->brick1_s4->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick1_s4.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick2_aA";
+	c->self = args;
+
+	m->brick2_aA->meta.provides.port = "brick2_aA";
+	m->brick2_aA->meta.provides.address = comp;
+	m->brick2_aA->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick2_aA.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick2_aB";
+	c->self = args;
+
+	m->brick2_aB->meta.provides.port = "brick2_aB";
+	m->brick2_aB->meta.provides.address = comp;
+	m->brick2_aB->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick2_aB.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick2_s2";
+	c->self = args;
+
+	m->brick2_s2->meta.provides.port = "brick2_s2";
+	m->brick2_s2->meta.provides.address = comp;
+	m->brick2_s2->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick2_s2.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick2_s3";
+	c->self = args;
+
+	m->brick2_s3->meta.provides.port = "brick2_s3";
+	m->brick2_s3->meta.provides.address = comp;
+	m->brick2_s3->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick2_s3.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick2_s4";
+	c->self = args;
+
+	m->brick2_s4->meta.provides.port = "brick2_s4";
+	m->brick2_s4->meta.provides.address = comp;
+	m->brick2_s4->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick2_s4.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick3_aA";
+	c->self = args;
+
+	m->brick3_aA->meta.provides.port = "brick3_aA";
+	m->brick3_aA->meta.provides.address = comp;
+	m->brick3_aA->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick3_aA.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick3_aC";
+	c->self = args;
+
+	m->brick3_aC->meta.provides.port = "brick3_aC";
+	m->brick3_aC->meta.provides.address = comp;
+	m->brick3_aC->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick3_aC.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick3_s1";
+	c->self = args;
+
+	m->brick3_s1->meta.provides.port = "brick3_s1";
+	m->brick3_s1->meta.provides.address = comp;
+	m->brick3_s1->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick3_s1.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick3_s2";
+	c->self = args;
+
+	m->brick3_s2->meta.provides.port = "brick3_s2";
+	m->brick3_s2->meta.provides.address = comp;
+	m->brick3_s2->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick3_s2.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick3_s3";
+	c->self = args;
+
+	m->brick3_s3->meta.provides.port = "brick3_s3";
+	m->brick3_s3->meta.provides.address = comp;
+	m->brick3_s3->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick3_s3.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick4_aA";
+	c->self = args;
+
+	m->brick4_aA->meta.provides.port = "brick4_aA";
+	m->brick4_aA->meta.provides.address = comp;
+	m->brick4_aA->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick4_aA.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick4_aB";
+	c->self = args;
+
+	m->brick4_aB->meta.provides.port = "brick4_aB";
+	m->brick4_aB->meta.provides.address = comp;
+	m->brick4_aB->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick4_aB.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick4_aC";
+	c->self = args;
+
+	m->brick4_aC->meta.provides.port = "brick4_aC";
+	m->brick4_aC->meta.provides.address = comp;
+	m->brick4_aC->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick4_aC.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick4_s1";
+	c->self = args;
+
+	m->brick4_s1->meta.provides.port = "brick4_s1";
+	m->brick4_s1->meta.provides.address = comp;
+	m->brick4_s1->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick4_s1.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick4_s2";
+	c->self = args;
+
+	m->brick4_s2->meta.provides.port = "brick4_s2";
+	m->brick4_s2->meta.provides.address = comp;
+	m->brick4_s2->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick4_s2.<flush>", c);
+	c = malloc(sizeof (closure));
+	c->f = log_flush;
+	args = malloc(sizeof(args_flush));
+	args->info = &comp->dzn_info;
+	args->name = "brick4_s3";
+	c->self = args;
+
+	m->brick4_s3->meta.provides.port = "brick4_s3";
+	m->brick4_s3->meta.provides.address = comp;
+	m->brick4_s3->meta.provides.meta = &comp->dzn_meta;
+
+	{
+		if (global_flush_p) {
+			comp->dzn_meta.name = "<internal>";
+		}
+	}
+	map_put(e, "brick4_s3.<flush>", c);
+
+	c = malloc(sizeof (closure));
 	c->f = (void (*))m->ctrl->in.calibrate;
 	c->self = m->ctrl;
 	map_put(e, "ctrl.calibrate", c);
@@ -557,21 +904,20 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 	c->f = (void (*))m->ctrl->in.operate;
 	c->self = m->ctrl;
 	map_put(e, "ctrl.operate", c);
-}
 
+}
 void illegal_print() {
 	fputs("illegal\n", stderr);
 	exit(0);
 }
 
-int main() {
+int main(int argc, char** argv) {
+	global_flush_p = argc > 1 && !strcmp(argv[1], "--flush");
 	runtime dezyne_runtime;
 	runtime_init(&dezyne_runtime);
 	locator dezyne_locator;
 	locator_init(&dezyne_locator, &dezyne_runtime);
 	dezyne_locator.illegal = illegal_print;
-
-	locator_set (&dezyne_locator, "timer.create", create_timer_impl);
 
 	LegoBallSorter sut;
 	dzn_meta_t mt = {"sut", 0};

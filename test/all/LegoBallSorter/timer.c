@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -38,18 +39,14 @@ typedef struct {
 } timer_help;
 
 typedef struct {int size;void (*f)(itimer*);timer_help* self;} args_port_timeout;
-
-
-typedef struct {int size;void (*f)(timer_help*,uint32_t);timer_help* self;uint32_t ms;} args_port_create;
-typedef struct {int size;void (*f)(timer_help*);timer_help* self;} args_port_cancel;
+typedef struct {int size;void (*f)(timer*,Integer);timer_help** self;Integer ms;} args_port_create;
+typedef struct {int size;void (*f)(timer*);timer_help* self;} args_port_cancel;
 
 
 static void helper_port_timeout(void* args) {
 	args_port_timeout *a = args;
 	a->f(a->self->port);
 }
-
-
 
 static void helper_port_create(void* args) {
 	args_port_create *a = args;
@@ -61,12 +58,11 @@ static void helper_port_cancel(void* args) {
 	a->f(a->self);
 }
 
-
 void timer_impl_create (itimer_impl* self, int ms);
 
 void timer_impl_cancel (itimer_impl* self);
 
-static void port_create(timer_help* self,uint32_t ms) {
+static void port_create(timer_help* self, uint32_t ms) {
 	(void)self;
         // fprintf (stderr, "%s\n", __FUNCTION__);
         timer_impl_create (self->pimpl, ms);
@@ -78,17 +74,17 @@ static void port_cancel(timer_help* self) {
         timer_impl_cancel (self->pimpl);
 }
 
-static void call_in_port_create(itimer* self,uint32_t ms) {
-	runtime_trace_in(&self->in, &self->out, "create");
-	args_port_create a = {sizeof(args_port_create), port_create, self->in.self,ms};
+static void call_in_port_create(itimer* port,Integer ms) {
+	runtime_trace_in(&port->meta, "create");
+	args_port_create a = {sizeof(args_port_create), port_create, port->meta.provides.address,ms};
 	runtime_event(helper_port_create, &a);
-	runtime_trace_out(&self->in, &self->out, "return");
+	runtime_trace_out(&port->meta, "return");
 }
-static void call_in_port_cancel(itimer* self) {
-	runtime_trace_in(&self->in, &self->out, "cancel");
-	args_port_cancel a = {sizeof(args_port_cancel), port_cancel, self->in.self};
+static void call_in_port_cancel(itimer* port) {
+	runtime_trace_in(&port->meta, "cancel");
+	args_port_cancel a = {sizeof(args_port_cancel), port_cancel, port->meta.provides.address};
 	runtime_event(helper_port_cancel, &a);
-	runtime_trace_out(&self->in, &self->out, "return");
+	runtime_trace_out(&port->meta, "return");
 }
 
 void timer_init (timer* self, locator* dezyne_locator, dzn_meta_t *m) {
@@ -99,10 +95,12 @@ void timer_init (timer* self, locator* dezyne_locator, dzn_meta_t *m) {
 	help->port = &self->port_;
 	help->port->in.create = call_in_port_create;
 	help->port->in.cancel = call_in_port_cancel;
-	help->port->in.name = "port";
-	help->port->in.self = help;
-	help->port->out.name = "";
-	help->port->out.self = 0;
+	help->port->meta.provides.port= "port";
+	help->port->meta.provides.address = help;
+        help->port->meta.provides.meta = &help->dzn_meta;
+	help->port->meta.requires.port = "";
+	help->port->meta.requires.address = 0;
+        help->port->meta.requires.meta = 0;
         self->port = help->port;
 
         itimer_impl* (*f)(locator* loc) = locator_get (dezyne_locator, "timer.create");
