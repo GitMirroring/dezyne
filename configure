@@ -195,6 +195,7 @@ Usage: ./configure [OPTION]...
     (check-version 'npm '(1 0))
     (check-version 'perl '(5))
     (check-version 'pkg-config '(0 25))
+    (check-version 'phantomjs '(2 0))
     (check-version 'ps '(3) 'procps)
     (check-version 'python '(2 7))
     (check-version 'python2.7 '(2 7))
