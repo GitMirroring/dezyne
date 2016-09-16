@@ -150,7 +150,8 @@ namespace dzn {
         public static String path(Meta m, String p="") {
             p = p == "" ? p : "." + p;
             if (m == null) return "<external>" + p;
-            if (m.parent == null) return m.name + p;
+            if (m.parent == null)
+                return (m.name != "" ? m.name : "<external>") + p;
             return path(m.parent, m.name + p);
         }
         public static void traceIn(port.Meta m, String e) {

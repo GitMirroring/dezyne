@@ -439,28 +439,35 @@
       (('arguments arguments ...)
        ((join)
         (map (lambda (o) (expression->string model o locals)) arguments)))
-      (('compound) (snippet 'compound-empty `((space ,space))))
+      (('compound)
+       (snippet 'compound-empty `((space ,space))))
       (('compound statements ...)
-       (snippet
-        (symbol-append
-         (if compound? 'compound 'statements)
-         (if (is-a? (car statements) <guard>) '-guarded (string->symbol "")))
-        `((space ,space)
-          (statements
-           ,(let loop ((statements statements) (locals locals))
-              (if (null? statements)
-                  '()
-                  (let* ((statement (car statements))
-                         (variable? (is-a? statement <variable>))
-                         (locals (if variable? (acons (.name statement) statement locals)
-                                     locals)))
-                    (let ((statement (->code model (car statements) blocking? locals indent))
-                          (continuation (loop (cdr statements) locals)))
-                      (if variable?
-                          (list (snippet 'context `((space ,space)
-                                                    (statement ,statement)
-                                                    (continuation ,continuation))))
-                          (cons statement continuation))))))))))
+       (string-append
+        (snippet
+         (symbol-append
+          (if compound? 'compound 'statements)
+          (if (is-a? (car statements) <guard>) '-guarded (string->symbol "")))
+         `((space ,space)
+           (statements
+            ,(let loop ((statements statements) (locals locals))
+               (if (null? statements)
+                   '()
+                   (let* ((statement (car statements))
+                          (variable? (is-a? statement <variable>))
+                          (locals (if variable? (acons (.name statement) statement locals)
+                                      locals)))
+                     (let ((statement (->code model (car statements) blocking? locals indent))
+                           (continuation (loop (cdr statements) locals)))
+                       (if variable?
+                           (list (snippet 'context `((space ,space)
+                                                     (statement ,statement)
+                                                     (continuation ,continuation))))
+                           (cons statement continuation)))))))))
+        (if (or (om:imperative? src)
+                (is-a? (car statements) <on>)) ""
+            (string-append
+             (snippet 'else-illegal `((space ,space)
+                                      (illegal ,(snippet 'illegal `((space ,space))))))))))
       (($ <illegal>) (snippet 'illegal `((space ,space))))
       (($ <action> ($ <trigger> port-name event-name ('arguments arguments ...)))
        (let* ((port (om:port model port-name))
@@ -898,6 +905,7 @@
          (instance (and instance-binding (.instance instance-binding)))
          (instance-port (and instance-binding (.port instance-binding)))
          (blocking? #f)
+         (space "    ")
          (statement
           (or (and-let*
                (((is-a? model <component>))
@@ -915,9 +923,12 @@
                (parameterize ((statements.port port)
                               (statements.event event))
                  ;;(map (lambda (on) (code:->code model on blocking? locals 2 #f)) norm-event-ons)
-                 (if (null? ons)
-                     (code:->code model (make <compound> :elements guards) blocking? locals 2 #f)
-                     (code:->code model ons blocking? locals 2 #f))))
+                 (cond ((and (null? ons) (null? guards))
+                        (snippet 'illegal `((space ,space))))
+                       ((null? ons)
+                        (code:->code model (make <compound> :elements guards) blocking? locals 2 #f))
+                       (else
+                        (code:->code model ons blocking? locals 2 #f)))))
               "")))
     (animate string `((port ,(.name port))
                        (event ,(.name event))

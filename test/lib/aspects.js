@@ -38,7 +38,7 @@ function dzn(session) {
   return '../client/bin/dzn --session=' + (session && session || 1);
 }
 
-var ext = {c:'.c','c++':'.cc','c++03':'.cc',javascript:'.js'};
+var ext = {c:'.c','c++':'.cc','c++03':'.cc',cs:'.cs',javascript:'.js'};
 
 var default_meta = {
   skip: []
@@ -336,15 +336,31 @@ var aspects = {
   ,
   execute: function(parameters) {
     var language = parameters.meta.languages[0];
+    var interpreter = {
+      goops:'guile',
+      javascript:'node',
+      python: 'python',
+      cs: 'sh',
+    }[language] || '';
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
     var flush = parameters.meta.flush && ' --flush' || '';
     return run_traces(parameters, 'execute', function(trace) {
       var expectation = parameters.dir + '/baseline/execute/' + language + '/expectation';
       try {
+        var cmd = 'cat '+ trace + ' | ' + interpreter + ' ' + out + '/test' + flush;
         fs.lstatSync(expectation);
-        return util.spawn_sync_shell('diff -uw ' + expectation + ' <(set -o pipefail; cat '+ trace + ' | ' + out + '/test' + flush + ' |& bin/code2fdr || echo "E""R""R""O""R")');
+        return util.spawn_sync_shell(
+          'timeout 2 diff -uw ' + expectation
+            + ' <(set -o pipefail;'
+            + cmd
+            + ' |& bin/code2fdr'
+            + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');
       } catch(e) {
-        return util.spawn_sync_shell('diff -uw ' + trace + ' <(set -o pipefail; cat '+ trace + ' | ' + out + '/test' + flush + ' |& bin/code2fdr || echo "E""R""R""O""R")')
+        return util.spawn_sync_shell(
+          'timeout 2 diff -uw ' + trace + ' <(set -o pipefail;'
+            + cmd
+            + ' |& bin/code2fdr'
+            + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');
       }
     });
   }
