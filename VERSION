@@ -1,8 +1,3 @@
-# make and bash include
 VERSION=6
 CLIENT_VERSION=2.1.0
-
-# when releasing, set to version, e.g. 2.0.0
-# use branch for development
-SERVICE_VERSION=${BRANCH}
-# SERVICE_VERSION=2.0.0
+SERVICE_VERSION=2.1.1
