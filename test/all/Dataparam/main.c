@@ -55,6 +55,8 @@ void a6(IDataparam* self, int i0, int i1, int i2,int i3, int i4, int i5)
 
 int main()
 {
+  while (getchar() != EOF);
+
   runtime rt;
   runtime_init(&rt);
 
@@ -103,5 +105,6 @@ int main()
 
   assert(IDataparam_Status_Yes == d.port->in.eio2r(d.port,&i));
   assert(i == 246);
+
   return 0;
 }

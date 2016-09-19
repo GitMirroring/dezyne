@@ -32,6 +32,9 @@
 
 int main()
 {
+  std::string str;
+  while(std::cin >> str);
+
   dzn::locator l;
   dzn::runtime rt;
   l.set(rt);

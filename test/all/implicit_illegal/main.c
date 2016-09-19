@@ -35,6 +35,8 @@ void illegal_print() {
 
 int main()
 {
+  while (getchar() != EOF);
+
   runtime rt;
   runtime_init(&rt);
 

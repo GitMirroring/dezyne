@@ -59,6 +59,9 @@ void a6(int i0, int i1, int i2, int i3, int i4, int i5)
 
 int main()
 {
+  std::string str;
+  while(std::cin >> str);
+
   dzn::locator l;
   dzn::runtime rt;
   l.set(rt);
@@ -108,4 +111,6 @@ int main()
 
   assert(IDataparam::Status::Yes == sut.port.in.eio2r(i));
   assert(i == 246);
+
+  return 0;
 }
