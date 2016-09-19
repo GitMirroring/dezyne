@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,18 +22,40 @@
 //
 // Code:
 
-interface otherwiseNested {
+interface I {
   in void e();
+  out void f();
+  out void g();
   behaviour {
+    bool b = true;
+    bool c = true;
+
     on e: {
-      [true] {}
+      [b] {b = !b; f;}
       [otherwise] {
-        [true] {}                        
+        [c] {c = !c; g;}
         [otherwise] {
+          b = false; c = false;
         }
       }
     }
-  }     
+  }
 }
 
+component otherwiseNested {
+  provides I p;
+  behaviour {
+    bool b = true;
+    bool c = true;
 
+    on p.e(): {
+      [b] {b = !b; p.f();}
+      [otherwise] {
+        [c] {c = !c; p.g();}
+        [otherwise] {
+          b = false; c = false;
+        }
+      }
+    }
+  }
+}
