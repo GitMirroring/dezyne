@@ -1,0 +1,204 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+namespace i_ {
+namespace _i {
+namespace i_1 {
+namespace i1_ {	
+interface IConsole
+{
+    in void _i();
+    in void _i1();
+
+    out void detected();
+    out void deactivated();
+
+  behaviour
+  {
+    enum State { Disarmed, Armed, Triggered, Disarming };
+    State state = State.Disarmed;
+
+    [state.Disarmed]
+    {
+      on _i:           state = State.Armed;
+      on _i1:        illegal;
+    }
+    [state.Armed]
+    {
+      on _i1:        state = State.Disarming;
+      on optional:    { detected; state = State.Triggered; }
+      on _i:           illegal;
+    }
+    [state.Triggered]
+    {
+      on _i1:        state = State.Disarming;
+      on _i:           illegal;
+    }
+    [state.Disarming]
+    {
+      on inevitable:  { deactivated; state = State.Disarmed; }
+      on _i,
+         _i1:        illegal;
+    }
+  }
+}
+
+// This is the interface to a (movement) sensor used in the Alarm system.
+// The Sensor can be enabled and disabled, and the status of the Sensor after enabling
+// is reported via the triggered and disabled events. 
+interface ISensor
+{
+  in void i_1();
+  in void disable();
+
+  out void i_();
+  out void disabled();
+
+  behaviour
+  {
+    enum State { Disabled, Enabled, Disabling, Triggered };
+    State state = State.Disabled;
+
+    [state.Disabled]
+    {
+      on i_1:        state = State.Enabled;
+      on disable:       illegal;
+    }
+    [state.Enabled]
+    {
+      on i_1:        illegal;
+      on disable:       state = State.Disabling;
+      on optional:    { i_; state = State.Triggered; }
+    }
+    [state.Disabling]
+    {
+      on i_1,
+         disable:       illegal;
+      on inevitable:  { disabled; state = State.Disabled; }
+    }
+    [state.Triggered]
+    {
+      on i_1:        illegal;
+      on disable:       state = State.Disabling;
+    }
+  }
+}
+
+// This is the interface to a siren used in the Alarm system.
+// The Siren can be turned on and can be turned off.
+interface ISiren
+{
+  in void _i_();
+  in void turnoff();
+
+  behaviour
+  {
+    enum State { Off, On };
+    State state = State.Off;
+
+    [state.Off]
+    {
+      on _i_:        state = State.On;
+      on turnoff:       illegal;
+    }
+    [state.On]
+    {
+      on turnoff:       state = State.Off;
+      on _i_:        illegal;
+    }
+  }
+}
+
+// Component specification for an Alarm system which implements a Console, and
+// uses a (movement) Sensor and a Siren
+component namespace_assert
+{
+    provides IConsole console;
+    requires ISensor sensor;
+    requires ISiren siren;
+
+  behaviour
+  {
+    enum State { Disarmed, Armed, Triggered, Disarming };
+    State state = State.Disarmed;
+    bool sounding = false;
+
+    [state.Disarmed]
+    {
+      on console._i():         { sensor.i_1(); state = State.Armed; }
+      on console._i1(),
+         sensor.i_(),
+         sensor.disabled():       illegal;
+    }
+    [state.Armed]
+    {
+      on console._i():           illegal;
+      on console._i1():      { sensor.disable(); state = State.Disarming; }
+      on sensor.i_():    { console.detected();
+                                  siren._i_();
+                                  sounding = true;
+                                  state = State.Triggered;
+                                }
+      on sensor.disabled():       illegal;
+    }
+    [state.Disarming]
+    {
+      on console._i(),
+         console._i1():        illegal;
+      on sensor.i_():      illegal;
+      on sensor.disabled():
+          { [sounding]          { console.deactivated();
+                                  sounding = false;
+                                  state = State.Disarmed;
+                                }
+            [otherwise]         { console.deactivated();
+                                  state = State.Disarmed;
+                                }
+          }
+    }
+    [state.Triggered]
+    {
+      on console._i():           illegal;
+      on console._i1():      { sensor.disable();
+/*
+If the next line is left commented out then an illegal behaviour is spotted;
+the Alarm makes an attempt to turn on the Siren when that is already turned on.
+(run Verify and check the Sequence Diagram).
+
+The problem can easily be solved by turning off the Siren when Disarming the Alarm.
+Undo the commenting, press Update and re-run verification.
+*/
+                                  //siren.turnoff();
+                                  sounding = false;
+                                  state = State.Disarming;
+                                }
+      on sensor.i_(),
+         sensor.disabled():       illegal;
+    }
+  }
+}
+}
+}
+}
+
+}

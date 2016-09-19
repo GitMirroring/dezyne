@@ -1,0 +1,3 @@
+out/namespace_assert/namespace_assert.dzn:104:22:i167: illegal
+out/namespace_assert/namespace_assert.dzn:130:6:i168: deadlock in model i_._i.i_1.i1_.namespace_assert
+out/namespace_assert/namespace_assert.dzn:104:22:i167: Component i_._i.i_1.i1_.namespace_assert is non-compliant with interface of provided port
