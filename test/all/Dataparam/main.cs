@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -28,7 +29,7 @@ class main {
 
   static void assert(bool b) {
     if (!b) {
-      throw new RuntimeException("assertion failure");
+      throw new dzn.RuntimeException("assertion failure");
     }
   }
 
@@ -58,46 +59,46 @@ class main {
   public static void Main(String[] args) {
     dzn.Locator locator = new dzn.Locator();
     dzn.Runtime runtime = new dzn.Runtime();
-    Datasystem d = new Datasystem(locator.set(runtime), "d");
-    d.port.outport.name = "port";
-    d.port.outport.self = null;
+    Dataparam sut = new Dataparam(locator.set(runtime), "sut");
+    sut.port.dzn_meta.requires.name = "port";
+    sut.port.dzn_meta.requires.component = null;
 
-    d.port.outport.a0 = () => {a0();};
-    d.port.outport.a = (int p) => {a(p);};
-    d.port.outport.aa = (int p0, int p1) => {aa(p0, p1);};
-    d.port.outport.a6 = (int p0, int p1, int p2, int p3, int p4, int p5) => {a6(p0, p1, p2, p3, p4, p5);};
+    sut.port.outport.a0 = () => {a0();};
+    sut.port.outport.a = (int p) => {a(p);};
+    sut.port.outport.aa = (int p0, int p1) => {aa(p0, p1);};
+    sut.port.outport.a6 = (int p0, int p1, int p2, int p3, int p4, int p5) => {a6(p0, p1, p2, p3, p4, p5);};
 
-    assert(IDataparam.Status.Yes == d.port.inport.e0r());
-    d.port.inport.e0();
-    assert(IDataparam.Status.Yes == d.port.inport.er(123));
-    d.port.inport.e(123);
-    assert(IDataparam.Status.No == d.port.inport.eer(123,345));
+    assert(IDataparam.Status.Yes == sut.port.inport.e0r());
+    sut.port.inport.e0();
+    assert(IDataparam.Status.Yes == sut.port.inport.er(123));
+    sut.port.inport.e(123);
+    assert(IDataparam.Status.No == sut.port.inport.eer(123,345));
 
     dzn.V<int> i = new dzn.V<int>(0);
-    d.port.inport.eo(i);
+    sut.port.inport.eo(i);
     assert(i.v == 234);
 
     dzn.V<int> j = new dzn.V<int>(0);
-    d.port.inport.eoo(i,j);
+    sut.port.inport.eoo(i,j);
     assert(i.v == 123 && j.v == 456);
 
-    d.port.inport.eio(i.v,j);
+    sut.port.inport.eio(i.v,j);
     assert(i.v == 123 && j.v == i.v);
 
-    d.port.inport.eio2(i);
+    sut.port.inport.eio2(i);
     assert(i.v == 246);
 
 
-    assert(IDataparam.Status.Yes == d.port.inport.eor(i));
+    assert(IDataparam.Status.Yes == sut.port.inport.eor(i));
     assert(i.v == 234);
 
-    assert(IDataparam.Status.Yes == d.port.inport.eoor(i,j));
+    assert(IDataparam.Status.Yes == sut.port.inport.eoor(i,j));
     assert(i.v == 123 && j.v == 456);
 
-    assert(IDataparam.Status.Yes == d.port.inport.eior(i.v,j));
+    assert(IDataparam.Status.Yes == sut.port.inport.eior(i.v,j));
     assert(i.v == 123 && j.v == i.v);
 
-    assert(IDataparam.Status.Yes == d.port.inport.eio2r(i));
+    assert(IDataparam.Status.Yes == sut.port.inport.eio2r(i));
     assert(i.v == 246);
   }
 }

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,7 +24,7 @@
 #! /usr/bin/env node
 
 var dzn = typeof (dzn) !== undefined && dzn ? dzn : require (__dirname + '/dzn/runtime');
-dzn.extend (dzn, require (__dirname + '/dzn/Datasystem'));
+dzn.extend (dzn, require (__dirname + '/dzn/Dataparam'));
 
 /* handwritten dataparam.js */
 
@@ -53,8 +54,8 @@ function a6(i0, i1, i2,i3, i4, i5) {
 function main() {
   var loc = new dzn.locator();
   var rt = new dzn.runtime();
-  var d = new dzn.Datasystem(loc.set(rt), {name: 'd'});
-  d.port.meta.requires = {name: 'port', component: null};
+  var d = new dzn.Dataparam(loc.set(rt), {name: 'd'});
+  d.port._dzn.meta.requires = {name: 'port', component: null};
 
   d.port.out.a0 = a0;
   d.port.out.a = a;

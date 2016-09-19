@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -79,7 +80,7 @@ interface IDataparam
   }
 }
 
-component Dataparam
+component Dataparam_
 {
   provides IDataparam port;
 
@@ -197,13 +198,13 @@ component proxy
   }
 }
 
-component Datasystem
+component Dataparam
 {
   provides IDataparam port;
   system
   {
     proxy p;
-    Dataparam c;
+    Dataparam_ c;
 
     p.top <=> port;
     c.port <=> p.bottom;

@@ -1,5 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -26,7 +27,7 @@ import sys
 import os
 sys.path.insert (0, os.path.dirname (sys.argv[0]))
 #
-import dzn.Datasystem
+import dzn.Dataparam
 import locator
 import runtime
 from runtime import V
@@ -53,7 +54,7 @@ def a6 (i0, i1, i2,i3, i4, i5):
 def main ():
     loc = locator.Locator ()
     rt = runtime.Runtime ()
-    d = dzn.Datasystem (loc.set (rt), name='d')
+    d = dzn.Dataparam (loc.set (rt), name='d')
     d.port.outport.name = 'port'
     d.port.outport.self = None
 

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -48,7 +49,7 @@ class main {
   public static void main(String[] args) {
     Locator locator = new Locator();
     Runtime runtime = new Runtime();
-    Datasystem d = new Datasystem(locator.set(runtime), "d");
+    Dataparam d = new Dataparam(locator.set(runtime), "d");
     d.port.out.name = "port";
     d.port.out.self = null;
 

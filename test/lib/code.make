@@ -38,7 +38,7 @@ ifeq ($(MAIN),)
 MODEL_OPT:=-m $(MODEL)
 endif
 
-ifeq ($(TSS),)
+ifneq ($(TSS),)
 TSS_OPT:=-s $(MODEL)
 endif
 

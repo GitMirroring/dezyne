@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -48,5 +49,7 @@ public class #.scope_model {#
   public static void connect(#.scope_model  provided, #.scope_model  required) {
    provided.outport = required.outport;
    required.inport = provided.inport;
+   provided.dzn_meta.requires = required.dzn_meta.requires;
+   required.dzn_meta.provides = provided.dzn_meta.provides;
   }
 }

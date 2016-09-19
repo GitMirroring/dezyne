@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -43,7 +44,7 @@
 (define (main . args)
   (let* ((loc (make <dzn:locator>))
          (rt (make <dzn:runtime>))
-         (d (make <dzn:Datasystem>
+         (d (make <dzn:Dataparam>
               :locator (set loc rt)
               :name 'd
               :port.out (make <dzn:IDataparam.out>

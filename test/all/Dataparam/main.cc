@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -20,7 +21,7 @@
 //
 // Code:
 
-#include "Datasystem.hh"
+#include "Dataparam.hh"
 
 #include <dzn/locator.hh>
 #include <dzn/runtime.hh>
@@ -62,7 +63,7 @@ int main()
   dzn::runtime rt;
   l.set(rt);
 
-  Datasystem sut(l);
+  Dataparam sut(l);
 
   sut.dzn_meta.name = "sut";
   sut.port.meta.requires.port = "port";

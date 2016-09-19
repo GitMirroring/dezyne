@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -20,7 +21,7 @@
 //
 // Code:
 
-#include "Datasystem.h"
+#include "Dataparam.h"
 
 #include <dzn/locator.h>
 #include <dzn/runtime.h>
@@ -60,9 +61,9 @@ int main()
   locator l;
   locator_init(&l, &rt);
 
-  Datasystem d;
+  Dataparam d;
   dzn_meta_t m = {"d", 0};
-  Datasystem_init(&d,&l,&m);
+  Dataparam_init(&d,&l,&m);
   d.port->meta.requires.port = "port";
 
   d.port->out.a0 = a0;
