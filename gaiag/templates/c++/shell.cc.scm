@@ -24,7 +24,7 @@
  (lambda (port)
    (map (define-on model port #{
 #port .#direction .#event  = [&] (#formals) {
-    return dzn::shell(dzn_pump, [&#capture-list] {return #instance .#instance-port .#direction .#event(#arguments);});
+    return dzn::shell(dzn_pump, [#capture-list ] {return #instance .#instance-port .#direction .#event(#arguments);});
 };
 #}) (filter om:in? (om:events port))))
     (filter om:provides? (om:ports model)))#
@@ -32,7 +32,7 @@
     (lambda (port)
       (map (define-on model port #{
 #port .#direction .#event  = [&] (#formals) {
-    return dzn_pump([&#capture-list] {return #instance .#instance-port .#direction .#event(#arguments);});
+    return dzn_pump([#capture-list ] {return #instance .#instance-port .#direction .#event(#arguments);});
 };
 #}) (filter om:out? (om:events port))))
     (filter om:requires? (om:ports model)))#

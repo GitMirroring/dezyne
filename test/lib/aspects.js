@@ -304,6 +304,7 @@ var aspects = {
   code: function(parameters) {
     var language = parameters.meta.languages[0];
     var imports = parameters.meta.imports || "";
+    var tss = parameters.meta.tss;
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
     var main = parameters.dir + '/main' + ext[language];
     try {main = fs.lstatSync (main).isFile () && main;} catch (e){main=undefined;};
@@ -313,6 +314,7 @@ var aspects = {
         + ' IN='+parameters.dir
         + ' OUT='+out
         + (main ? ' MAIN='+main:'')
+        + (tss ? ' TSS='+tss:'')
         + ' MODEL='+parameters.model
         + ' -f '+'lib/code.make';
     return util.spawn_sync_shell(cmd)

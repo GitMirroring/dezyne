@@ -38,6 +38,10 @@ ifeq ($(MAIN),)
 MODEL_OPT:=-m $(MODEL)
 endif
 
+ifeq ($(TSS),)
+TSS_OPT:=-s $(MODEL)
+endif
+
 runtime-common:
 	mkdir -p $(OUT)/dzn
 	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls /share/runtime/$(LANGUAGE)))); do\
@@ -58,7 +62,7 @@ runtime: runtime-common
 endif
 
 code: $(wildcard $(IN)/*.dzn $(IN)/*/*.dzn)
-	for file in $^; do $(DZN) code $(IMPORTS) -l $(LANGUAGE) --depends $(MODEL_OPT) -o $(OUT) $$file; done
+	for file in $^; do $(DZN) code $(IMPORTS) -l $(LANGUAGE) --depends $(MODEL_OPT) $(TSS_OPT) -o $(OUT) $$file; done
 
 all: runtime code
 

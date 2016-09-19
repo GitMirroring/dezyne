@@ -560,7 +560,7 @@
 (define (om:in? o)
   (match o
     (($ <event>) (eq? (.direction o) 'in))
-    (($ <formal>) (eq? (.direction o) 'in))
+    (($ <formal>) (or (eq? (.direction o) 'in) (not (.direction o))))
     (($ <trigger>) #t)))
 
 (define (om:out? o)
