@@ -37,18 +37,25 @@ var output = {
   ,
   close: function(passed, failed) {
   
+    function nolanguages() {
+      var result = {};
+      languages.each ( function(lan) {
+        result[lan] = 'NOLOG';
+      }); 
+      return result;
+    }
     function read_outcome(item) {
       var outcome = {
         status: {
-          build: { 'c++': 'NOLOG', c: 'NOLOG', javascript: 'NOLOG' },
-          code: { 'c++': 'NOLOG', c: 'NOLOG', javascript: 'NOLOG' },
+          build: nolanguages(),
+          code: nolanguages(),
           convert: 'NOLOG',
-          execute: { 'c++': 'NOLOG', c: 'NOLOG', javascript: 'NOLOG' },
+          execute: nolanguages(),
           parse: 'NOLOG',
           run: 'NOLOG',
           table: 'NOLOG',
           traces: 'NOLOG',
-          triangle: { 'c++': 'NOLOG', c: 'NOLOG', javascript: 'NOLOG' },
+          triangle: nolanguages(),
           verify: 'NOLOG',
           view: 'NOLOG'
         },

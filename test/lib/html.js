@@ -177,16 +177,19 @@ var privates = {
       ln('    <tr>');
       ln('      <td>'+item.name+'</td>');
       Object.keys(outcome).each(function(aspect) {
+        function status2class(status) {
+          return (status=='FAILED'||status=='ERROR'||status=='NOLOG') ? 'fail' : 'pass';
+        }
         var aspoutcome = outcome[aspect];
         if (typeof aspoutcome !== 'string') {
           Object.keys(aspoutcome).each(function(language) {
             var status = aspoutcome[language];
-            var cl = (status=='FAILED'||status=='ERROR') ? 'fail' : 'pass';
+            var cl = status2class(status);
             ln('      <td class="'+cl+'"><a href="#'+hname+'-'+aspect+'-'+language.replace(/\+/g,'p')+'" class="'+cl+'">'+status+'</a></td>');
           });
         } else {
           var status = aspoutcome;
-          var cl = (status=='FAILED'||status=='ERROR') ? 'fail' : 'pass';
+          var cl = status2class(status);
           ln('      <td class="'+cl+'"><a href="#'+hname+'-'+aspect+'" class="'+cl+'">'+status+'</a></td>');
         }
       });
