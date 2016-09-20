@@ -317,8 +317,10 @@ var aspects = {
         + (tss ? ' TSS='+tss:'')
         + ' MODEL='+parameters.model
         + ' -f '+'lib/code.make';
+    console.log ('CMD:' + cmd);
     return util.spawn_sync_shell(cmd)
-      .fail (function(err) {console.log(err); return {status: -1, output: err}});
+    //.fail (function(err) {console.log(err); return {status: -1, output: err}});
+      .fail (function(err) {console.log (err.stack); return {status: -1, output: err.stack}});
   }
   ,
   build: function(parameters) {
@@ -348,8 +350,9 @@ var aspects = {
     var flush = parameters.meta.flush && ' --flush' || '';
     return run_traces(parameters, 'execute', function(trace) {
       var expectation = parameters.dir + '/baseline/execute/' + language + '/expectation';
+      var cmd = 'cat '+ trace + ' | ' + interpreter + ' ' + out + '/test' + flush;
+      console.log ('CMD:' + cmd);
       try {
-        var cmd = 'cat '+ trace + ' | ' + interpreter + ' ' + out + '/test' + flush;
         fs.lstatSync(expectation);
         return util.spawn_sync_shell(
           'timeout 10 diff -uw ' + expectation
@@ -364,7 +367,8 @@ var aspects = {
             + ' |& bin/code2fdr'
             + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');
       }
-    });
+    })
+      .fail (function(err) {console.log (err.stack); return {status: -1, output: err.stack}});
   }
   ,
   convert: function(parameters) {
