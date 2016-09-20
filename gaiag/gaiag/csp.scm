@@ -278,12 +278,14 @@
            "STOP")
        ")")))
 
-  (define (list-of-triggers model)
-    (define (list-of-triggers-port ports predicate)
-      (append-map (lambda (port) (map (lambda (event) (make <trigger> :port (.name port) :event (.name event))) (filter predicate (om:events port)))) ports))
-    (append
-     (list-of-triggers-port (filter om:provides? (om:ports model)) om:in?)
-     (list-of-triggers-port (filter om:requires? (om:ports model)) om:out?)))
+  (define (list-of-triggers-port ports predicate)
+    (append-map (lambda (port) (map (lambda (event) (make <trigger> :port (.name port) :event (.name event))) (filter predicate (om:events port)))) ports))
+  
+  (define (list-of-triggers-provides model)
+    (list-of-triggers-port (filter om:provides? (om:ports model)) om:in?))
+  
+  (define (list-of-triggers-requires model)
+    (list-of-triggers-port (filter om:requires? (om:ports model)) om:out?))
 
   (define (not-ored-guards guards)
     (let* ((guards (if guards guards (list)))
@@ -304,9 +306,6 @@
                        (list statement)
                        (filter (is? <guard>) statement))))
          (trigger-to-guards-alist (guards->trigger-to-guards-alist guards)))
-    ;;paul: uncomment to see result; breaks dzn verify because of printing stderr
-    ;;(stderr "guards-by-trigger[~a]\n" (.name model))
-    ;;(pretty-print trigger-to-guards-alist (current-error-port))
 
     (or (null-is-#f
          ((->list-join "\n[]\n")
@@ -315,8 +314,11 @@
            (let ((statement ((compose .statement .behaviour) model)))
              (if (is-a? model <interface>)
                  (list)
-                 (map (lambda (t) (list "IIG & (" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & " (.port t) (channel-suffix model (.port t)) "?" (.event t) "-> illegal -> STOP"))
-                      (list-of-triggers model)))))))
+                 (append 
+                  (map (lambda (t) (list "IIG & (" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & " (.port t) (channel-suffix model (.port t)) "?" (.event t) "-> illegal -> STOP"))
+                       (list-of-triggers-provides model))
+                  (map (lambda (t) (list "IG & (" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & " (.port t) (channel-suffix model (.port t)) "?" (.event t) "-> illegal -> STOP"))
+                      (list-of-triggers-requires model))))))))
         "STOP")))
 
 (define (behaviour-component->csp model)

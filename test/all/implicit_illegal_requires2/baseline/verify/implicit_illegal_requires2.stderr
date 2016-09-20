@@ -1,0 +1,3 @@
+out/implicit_illegal_requires2/implicit_illegal_requires2.dzn:13:20:i8: illegal
+out/implicit_illegal_requires2/implicit_illegal_requires2.dzn:13:20:i8: deadlock in model implicit_illegal_requires2
+out/implicit_illegal_requires2/implicit_illegal_requires2.dzn:22:13:i10: Component implicit_illegal_requires2 is non-compliant with interface of provided port
