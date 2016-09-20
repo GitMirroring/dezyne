@@ -1,2 +1,1 @@
-{"skip":["javascript","traces"], "comment":"handwritten trace; running javascript produces different prefixes on trace; building would work but it's all or nothing for a language atm."}
- 
+{"skip":["cs","javascript","run"], "comment":"handwritten trace; running javascript produces different prefixes on trace; building would work but it's all or nothing for a language atm."}

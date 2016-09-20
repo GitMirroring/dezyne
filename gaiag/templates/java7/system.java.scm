@@ -1,5 +1,5 @@
 class #.scope_model  extends SystemComponent {
-#(map (init-instance #{
+#(map (init-instance model #{
     #((om:scope-name) component)  #name;
 #}) ((compose .elements .instances) model))#
 (map (init-port #{
@@ -12,14 +12,14 @@ class #.scope_model  extends SystemComponent {
 
   public #.scope_model(Locator locator, String name, SystemComponent parent) {
   super(locator, name, parent);
-#(map (init-instance #{
+#(map (init-instance model #{
     #name  = new #((om:scope-name) component)(locator, "#name ", this);
 #}) (injected-instances model))#
 (string-if (pair? (injected-bindings model)) #{
     locator = locator.clone()#
     (map (init-bind model #{.set(#instance);#}) (injected-bindings model))
 #})#
-(map (init-instance #{
+(map (init-instance model #{
     #name  = new #((om:scope-name) component)(locator, "#name ", this);
 #}) (non-injected-instances model))#
 (map (init-bind model #{

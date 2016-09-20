@@ -44,6 +44,8 @@ int main()
   Injected sut;
   dzn_meta_t mt = {"sut", 0};
   Injected_init(&sut, &l, &mt);
+  sut.t->meta.requires.port = "t";
+  sut.t->meta.requires.address = 0;
   sut.t->out.f = f;
 
   sut.t->in.e(sut.t);

@@ -24,7 +24,7 @@
 using System;
 
 class #.scope_model  : dzn.SystemComponent {
-#(map (init-instance #{
+#(map (init-instance model #{
     public #((om:scope-name) component)  #name;
 #}) ((compose .elements .instances) model))#
 (map (init-port #{
@@ -32,14 +32,14 @@ class #.scope_model  : dzn.SystemComponent {
 #}) ((compose .elements .ports) model))
 
   public #.scope_model(dzn.Locator locator, String name="", dzn.Meta parent=null) : base(locator, name, parent) {
-#(map (init-instance #{
+#(map (init-instance model #{
     #name  = new #((om:scope-name) component)(locator, "#name ", this.dzn_meta);
 #}) (injected-instances model))#
 (string-if (pair? (injected-bindings model)) #{
     locator = locator.clone()#
     (map (init-bind model #{.set(#instance);#}) (injected-bindings model))
 #})#
-(map (init-instance #{
+(map (init-instance model #{
     #name  = new #((om:scope-name) component)(locator, "#name ", this.dzn_meta);
 #}) (non-injected-instances model))#
 (map (init-bind model #{

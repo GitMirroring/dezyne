@@ -149,20 +149,13 @@ char*
 runtime_path (dzn_meta_t const* m, char* p)
 {
   char buf[1024] = "";
-  if (!m) {
-    strcpy (buf, "<external>");
-    if (*p) strcat (buf, ".");
-    return strcpy (p, strcat (buf, p));
+  strcpy (buf, m ? m->name : "<external>");
+  if (*p) {
+    strcat (buf, ".");
+    strcat (buf, p);
   }
-  if (!m->parent)
-    {
-      strcat (buf, m->name);
-      if (p && *p)
-        strcat (buf, ".");
-      strcat (buf, p);
-      strcpy (p, buf);
-    }
-  if (!m->parent) return p;
+  strcpy (p, buf);
+  if (!m || !m->parent) return p;
   return runtime_path (m->parent, p);
 }
 

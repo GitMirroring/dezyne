@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -23,7 +23,7 @@
 component #.scope.model  {
   #(map (->dzn model) (om:ports model))
   system {
-  #(map (init-instance #{
+  #(map (init-instance model #{
   #((om:scope-name '.) component)  #name;
 #}) ((compose .elements .instances) model))
   #(map (init-binding model) ((compose .elements .bindings) model))  }

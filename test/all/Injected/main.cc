@@ -43,8 +43,6 @@ int main()
   sut.dzn_meta.name = "sut";
   sut.t.meta.requires.port = "t";
   sut.t.meta.requires.address = 0;
-  sut.t.meta.provides.port = "t";
-  sut.t.meta.provides.address = 0;
   sut.t.out.f = f;
 
   sut.check_bindings();

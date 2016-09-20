@@ -126,10 +126,10 @@ void #.scope_model _init (#.scope_model * self, locator* dezyne_locator, dzn_met
              (list (->string (list "self->" (.name port) " = &self->" (.name port) "_;\n")))
              (list (->string (list "self->" (.name port) "->meta.provides.port = \"" "\";\n")))
              (list (->string (list "self->" (.name port) "->meta.provides.address = 0;\n")))
-             (list (->string (list "self->" (.name port) "->meta.provides.meta = 0;\n")))))
-        (list (->string (list "self->" (.name port) "->meta.requires.port = \"" (.name port) "\";\n")))
-        (list (->string (list "self->" (.name port) "->meta.requires.address = self;\n")))
-        (list (->string (list "self->" (.name port) "->meta.requires.meta = &self->dzn_meta;\n")))
+             (list (->string (list "self->" (.name port) "->meta.provides.meta = 0;\n")))
+             (list (->string (list "self->" (.name port) "->meta.requires.port = \"" (.name port) "\";\n")))
+             (list (->string (list "self->" (.name port) "->meta.requires.address = self;\n")))
+             (list (->string (list "self->" (.name port) "->meta.requires.meta = &self->dzn_meta;\n")))))
         (map (define-on model port #{
     self->#port ->#direction .#event  = call_out_#port _#event;
  #}) (filter om:out? (om:events port))))))

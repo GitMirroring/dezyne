@@ -25,6 +25,7 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag c++03)
+  :use-module (gaiag animate)
   :use-module (gaiag om)
   :use-module (gaiag code)
   :use-module (gaiag c++)

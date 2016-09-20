@@ -27,7 +27,7 @@ struct #.model
 #(map (lambda (binding) (list ((c++:scope-name) (.type (om:instance model (injected-instance-name binding)))) " "
                               (injected-instance-name binding) ";\n")) (injected-bindings model)) #
 (if (pair? (injected-bindings model)) (list "dzn::locator dezyne_local_locator;\n")) #
-(map (init-instance #{
+(map (init-instance model #{
   #((c++:scope-name) component)  #name;
 #}) (non-injected-instances model))
 #(map (init-bind model #{ #((c++:scope-name) interface) & #port;

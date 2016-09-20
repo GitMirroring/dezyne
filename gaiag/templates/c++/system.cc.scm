@@ -11,7 +11,7 @@
               (list
                "dzn_meta" (c++:init-brace-open) "\"\",\"" .model "\",0,{"
                ((->join ",")
-                (map (init-instance #{&#name .dzn_meta#})
+                (map (init-instance model #{&#name .dzn_meta#})
                      (non-injected-instances model)))
                "},{}" (c++:init-brace-close)))
              "dzn_rt(dezyne_locator.get<dzn::runtime>())")
@@ -19,15 +19,19 @@
                  (injected-bindings model))
             (list (if (pair? (injected-bindings model))
                       (list "dezyne_local_locator(dezyne_locator.clone()" (map (lambda (binding) (list ".set(" (binding-name model (injected-binding binding)) ")"))  (injected-bindings model)) ")")))
-            (map (init-instance #{ #name (#(if (pair? (injected-bindings model)) "dezyne_local_locator" "dezyne_locator"))#})
+            (map (init-instance model #{ #name (#(if (pair? (injected-bindings model)) "dezyne_local_locator" "dezyne_locator"))#})
                  (non-injected-instances model))
             (map (init-bind model #{ #port(#instance)#})
                  (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) model))))))
 {
- #(map (init-instance #{#name .dzn_meta.parent = &dzn_meta;
-    #name .dzn_meta.name = "#name ";
+ #(map (init-instance model #{#name .dzn_meta.parent = &dzn_meta;
+    #name .dzn_meta.name = "#name ";#
+    (map (lambda (port) (animate #{#'()
+       #name .#port .meta.requires.port = "#port ";#}
+     `((name ,name)
+       (port ,port)))) injected-ports)
 #})
-       (non-injected-instances model))#
+       ((compose .elements .instances) model))#
  (map (connect-ports model #{
     connect(#provided , #required );
 #}) (filter (negate om:port-bind?) ((compose .elements .bindings) model))) }

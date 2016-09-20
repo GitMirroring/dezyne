@@ -9,11 +9,11 @@
               (list
                "dzn_meta" (c++:init-brace-open) "\"\",\"" .model "\",0,{"
                ((->join ",")
-                (map (init-instance #{&#name .dzn_meta#})
+                (map (init-instance model #{&#name .dzn_meta#})
                      (non-injected-instances model)))
                "},{}" (c++:init-brace-close))))
             (list "dzn_locator(locator.clone().set(dzn_runtime).set(dzn_pump))")
-            (map (init-instance #{ #name (dzn_locator)#})
+            (map (init-instance model #{ #name (dzn_locator)#})
                  (non-injected-instances model))
             (map (init-bind model #{ #port(#instance)#})
                  (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
@@ -49,7 +49,7 @@
 #}) (filter om:in? (om:events port))))
     (filter om:requires? (om:ports model)))
 
- #(map (init-instance #{#name .dzn_meta.parent = &dzn_meta;
+ #(map (init-instance model #{#name .dzn_meta.parent = &dzn_meta;
     #name .dzn_meta.name = "#name ";
 #})
        (non-injected-instances model))#
