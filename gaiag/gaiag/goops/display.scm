@@ -23,19 +23,10 @@
   :use-module (gaiag goops om)
 
   :export (
-           ast-name
            display-slots
            sdisplay
            star
            ))
-
-(define-method (ast-name (o <ast>))
-  (let ((name (string-drop (string-drop-right (symbol->string (class-name (class-of o))) 1) 1)))
-    (string->symbol
-     (if (string-prefix? "om:" name) (string-drop name 3) name))))
-
-(define-method (ast-name (o <list>))
-  (car o))
 
 ;; AST printing
 (define (star port) (display #\* port))

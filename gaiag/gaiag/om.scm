@@ -459,11 +459,10 @@
     (($ <on> t s) (filter identity ((collect predicate) s)))
     (($ <if> e t f) (append (filter identity ((collect predicate) t))
                             (filter identity ((collect predicate) f))))
-    ;;;; ((? (compose null-is-#f predicate)) (list o))
-    ;; TODO: component, interface, behaviour?
-    ;; (('root models ...)
-    ;;  (filter identity (apply append (map (collect predicate) models))))
-    ;; sharp axe method
+    ;; FIXME: recurse through whole AST
+    (($ <interface> name types events behaviour) (filter identity ((collect predicate) behaviour)))
+    (($ <component> name ports behaviour) (filter identity ((collect predicate) behaviour)))
+    (($ <behaviour> name types variables functions statement) (filter identity ((collect predicate) statement)))
     ((h t ...)
      (filter identity (apply append (map (collect predicate) o))))
     (_ '())))

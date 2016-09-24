@@ -53,11 +53,10 @@
 (define-syntax is-a?
   (syntax-rules ()
     ((_ rec rtd)
-     (begin
-       ;;(format (current-error-port) "IS-A? rec:~a, rtd:~a\n" rec rtd)
-       (or (and (pair? rec)
-                (eq? (car rec) rtd))
-           (and (struct? rec)
-                (eq? (struct-vtable rec) rtd)))))))
+     (or (and (pair? rec)
+              (or (eq? (car rec) rtd)
+                  (eq? (car rec) (ast-name rtd))))
+         (and (struct? rec)
+              (eq? (struct-vtable rec) rtd))))))
 
 (include-from-path "ice-9/match.upstream.scm")

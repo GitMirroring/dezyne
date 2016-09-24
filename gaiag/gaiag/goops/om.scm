@@ -71,6 +71,7 @@
               slot-set!
               )
   :export (
+           ast-name
            make
            is-a?
            .ast
@@ -221,8 +222,25 @@
 
 (define ast-list-names (map class-name ast-lists))
 
-(define (ast-name class)
-  (string->symbol (string-drop (string-drop-right (symbol->string (class-name class)) 1) 1)))
+(define (drop-<> o)
+  (string->symbol (string-drop (string-drop-right (symbol->string o) 1) 1)))
+
+(define-method (ast-name (o <ast>))
+  (if (member o ast-lists) 'dinges
+      (let ((name (string-drop (string-drop-right (symbol->string (class-name (class-of o))) 1) 1)))
+           (string->symbol
+            (if (string-prefix? "om:" name) (string-drop name 3) name)))))
+
+(define-method (ast-name (o <ast-list>))
+  (drop-<> (class-name o)))
+
+(define-method (ast-name (o <class>))
+  (if (member o ast-lists)
+      (drop-<> (class-name o))
+      o))
+
+(define-method (ast-name o)
+  o)
 
 (define (symbol->class x) (symbol-append '< x '>))
 
