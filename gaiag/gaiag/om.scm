@@ -38,8 +38,8 @@
 
   :use-module (srfi srfi-1)
 
-  ;;:use-module (gaiag goops goops) ;; GOOPS backend
-  :use-module (gaiag list goops)  ;; LIST backend
+  :use-module (gaiag goops goops) ;; GOOPS backend
+  ;;:use-module (gaiag list goops)  ;; LIST backend
 
   :use-module (gaiag list match)
   :use-module (gaiag annotate)
