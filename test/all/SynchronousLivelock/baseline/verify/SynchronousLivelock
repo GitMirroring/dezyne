@@ -10,3 +10,4 @@ verify: SynchronousLivelock: check: deadlock: ok
 verify: SynchronousLivelock: check: compliance: ok
 verify: SynchronousLivelock: check: livelock: fail
 pp.step
+listIt.getFirstElmt
