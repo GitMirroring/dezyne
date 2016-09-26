@@ -26,6 +26,7 @@
 #include <dzn/runtime.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 
 void f(itop* self)
 {
@@ -35,6 +36,8 @@ void f(itop* self)
 
 int main()
 {
+  while (getchar() != EOF);
+
   runtime rt;
   runtime_init(&rt);
 
