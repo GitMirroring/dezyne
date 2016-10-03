@@ -62,7 +62,7 @@ runtime: runtime-common
 endif
 
 code: $(wildcard $(IN)/*.dzn $(IN)/*/*.dzn)
-	for file in $^; do $(DZN) code $(IMPORTS) -l $(LANGUAGE) --depends $(MODEL_OPT) $(TSS_OPT) -o $(OUT) $$file; done
+	for file in $^; do $(DZN) code $(IMPORTS) $(CODE_OPTIONS) -l $(LANGUAGE) --depends $(MODEL_OPT) $(TSS_OPT) -o $(OUT) $$file; done
 
 all: runtime code
 

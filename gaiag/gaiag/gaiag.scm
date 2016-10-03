@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -41,7 +41,8 @@
                            (string-suffix? "guile" program)))
   (let* ((option-spec
 	  '((assert (single-char #\a))
-	    (coverage (single-char #\c))
+            (calling-context (single-char #\c) (value #t))
+	    (coverage)
 	    (debug (single-char #\d))
 	    (glue (single-char #\g) (value #t))
             (help (single-char #\h))
@@ -68,19 +69,20 @@
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
 Usage: gaiag [OPTION]... FILE
-  -a, --assert           generate all asserts inline, not in asserts.csp
-  -c, --coverage         write lcov coverage data to gaiag.info
-  -d, --debug            run with debugging
-  -g, --glue=TYPE        generate glue code for TYPE [dzn]
-  -h, --help             display this help
-  -j, --json             use json-friendly format; strings and hash tables
-  -m, --model=MODEL      use model named MODEL
-  -l, --language=LANG    generate output for language=LANG [ast]
-  -s, --shell=MODEL      generate thread safe system shell for MODEL
-  -t, --trail=TRAIL      specify trail TRAIL for trail-walker
-  -o, --output FILE      generate FILE containing the output
-  -O, --output-dir=DIR   generate output in DIR
-  -v, --version          display version
+  -a, --assert                generate all asserts inline, not in asserts.csp
+  -c, --calling-context=TYPE  generate additional first event parameter with type TYPE
+      --coverage              write lcov coverage data to gaiag.info
+  -d, --debug                 run with debugging
+  -g, --glue=TYPE             generate glue code for TYPE [dzn]
+  -h, --help                  display this help
+  -j, --json                  use json-friendly format; strings and hash tables
+  -m, --model=MODEL           use model named MODEL
+  -l, --language=LANG         generate output for language=LANG [ast]
+  -s, --shell=MODEL           generate thread safe system shell for MODEL
+  -t, --trail=TRAIL           specify trail TRAIL for trail-walker
+  -o, --output FILE           generate FILE containing the output
+  -O, --output-dir=DIR        generate output in DIR
+  -v, --version               display version
 
 Languages: c c++ cs csp dzn goops html java javascript python
            c++03 c++msvc11 java7

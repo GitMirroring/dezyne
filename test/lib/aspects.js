@@ -307,12 +307,14 @@ var aspects = {
   code: function(parameters) {
     var language = parameters.meta.languages[0];
     var imports = parameters.meta.imports || "";
+    var code_options = parameters.meta.code_options || "";
     var tss = parameters.meta.tss;
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
     var main = parameters.dir + '/main' + ext[language];
     try {main = (fs.lstatSync (main).isFile () || fs.lstatSync (main).isSymbolicLink ()) && main;} catch (e){main=undefined;};
     var cmd = 'make DZN="' + dzn() + '"'
         + ' IMPORTS=\"'+imports+'\"'
+        + ' CODE_OPTIONS=\"'+code_options+'\"'
         + ' LANGUAGE='+language
         + ' IN='+parameters.dir
         + ' OUT='+out
