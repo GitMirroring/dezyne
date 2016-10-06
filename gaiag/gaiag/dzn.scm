@@ -87,10 +87,10 @@
     (($ <illegal>) ((animate-snippet 'illegal)))
 
     (($ <assign> var ($ <call> function arguments))
-     ((->dzn model) (list 'assign var (list 'assign-call function arguments))))
+     ((->dzn model) (make <assign> :identifier var :expression (list 'assign-call function arguments))))
 
     (($ <assign> var ($ <action> trigger))
-     ((->dzn model) (list 'assign var (list 'assign-action trigger))))
+     ((->dzn model) (make <assign> :identifier var :expression (list 'assign-action trigger))))
 
     (($ <assign> var expression)
      (->string var " = " ((->dzn model) expression) ";\n"))
@@ -128,10 +128,10 @@
     (($ <return> expression) ((animate-snippet 'return `((expression ,((->dzn model) expression))))))
 
     (($ <variable> name type ($ <call> function arguments))
-     ((->dzn model) (list 'variable name type ((->dzn model) (list 'assign-call function arguments)))))
+     ((->dzn model) (make <variable> :name name :type type :expression ((->dzn model) (list 'assign-call function arguments)))))
 
     (($ <variable> name type ($ <action> trigger))
-     ((->dzn model) (list 'variable name type ((->dzn model) (list 'assign-action trigger)))))
+     ((->dzn model) (make <variable> :name name :type type :expression ((->dzn model) (list 'assign-action trigger)))))
 
     (($ <variable> name type ($ <expression> (? unspecified?)))
      (->string ((->dzn model) type) " " name ";\n"))
