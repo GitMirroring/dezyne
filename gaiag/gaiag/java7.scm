@@ -37,11 +37,19 @@
 
 (define ast-> ast:code)
 
-(define (action-type type formal-types)
-  (let ((formal-types
-         (map
-          (lambda (p) (if (string-prefix? "final " p) (substring p 6) p))
-          formal-types)))
-    (lambda-type type formal-types)))
+(define (action-type model type formals)
+  (let* ((formals (.elements formals))
+         (count (length formals))
+         (formal-types (map (lambda (formal)
+                                 (snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
+                            formals))
+         (formal-types
+          (map
+           (lambda (p) (if (string-prefix? "final " p) (substring p 6) p))
+           formal-types)))
+   (list
+    (if (eq? (.name type) 'void)
+        (list "Action" (if (>0 count) (list count "<" ((->join ", ") formal-types) ">") ""))
+        (list "ValuedAction" (if (>0 count) (list count "<" type ", " ((->join ", ") formal-types) ">") (list  "<" type ">")))))))
 
 (define ->type (@@ (gaiag java) ->type))

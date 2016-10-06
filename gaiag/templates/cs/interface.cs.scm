@@ -29,13 +29,13 @@ public class #.scope_model {#
 (->string (map (declare-enum model) (om:interface-enums model)))
   public class In {
 #((->join "\n") (map (declare-io model #{
-    public #(lambda-type return-type formal-types)  #name ;#})
+    public #(lambda-type model type formals)  #name ;#})
  (filter om:in? ((compose .elements .events) model)))
 )
   }
   public class Out {
 #((->join "\n") (map (declare-io model #{
-    public #(lambda-type return-type formal-types)  #name;#})
+    public #(lambda-type model type formals)  #name;#})
  (filter om:out? ((compose .elements .events) model))))
   }
   public dzn.port.Meta dzn_meta;

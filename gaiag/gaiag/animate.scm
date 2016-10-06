@@ -58,6 +58,7 @@
            clone-module
            populate-module
            snippet
+           gulp-snippet
            gulp-template
            prefix-dir
            template?
@@ -85,6 +86,7 @@
 (define template-dir (make-parameter (append (prefix-dir) '(templates))))
 (define (template-file name) (append (template-dir) (if (pair? name) name (list name))))
 (define (gulp-template name) (gulp-file (template-file name)))
+(define (gulp-snippet name) (gulp-template (list 'snippets name)))
 
 (define templates (make-parameter
                   `((test . ((foo . ,identity)

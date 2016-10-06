@@ -139,10 +139,11 @@
   (stderr "DEPRECATED:~a\n" where))
 
 ;;; AST-LIST shorthands
-(define* (om:events o)
-  (match o
-    (($ <interface>) ((compose .elements .events) o))
-    (($ <port>) ((compose om:events om:import .type) o))))
+(define* (om:events o #:optional (predicate? identity))
+  (filter predicate?
+          (match o
+            (($ <interface>) ((compose .elements .events) o))
+            (($ <port>) ((compose om:events om:import .type) o)))))
 
 (define* (om:enums :optional (model #f))
   (filter (is? <enum>) (om:types model)))

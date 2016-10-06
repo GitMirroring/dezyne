@@ -28,7 +28,9 @@
   :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
+  :use-module (srfi srfi-26)
 
+  :use-module (gaiag lexicals)
   :use-module (gaiag om)
 
   :use-module (gaiag animate)
@@ -57,6 +59,7 @@
            code:module
            declare-enum
            declare-io
+           declare-interface-event
            declare-integer
            declare-replies
            define-function
@@ -80,6 +83,8 @@
            injected-instance-port
            injected-instance-type
            language
+           locals
+           local-lexicals
            injected-instances
            non-injected-instances
            join
@@ -252,6 +257,7 @@
 (define* (code:module o)
   (let ((module (make-module 31 (list
                                  (resolve-module (list 'gaiag (language)))
+                                 (resolve-module '(gaiag lexicals))
                                  (resolve-module '(gaiag misc))))))
     (module-define! module 'model o)
     (module-define! module '.model (om:name o))
@@ -259,6 +265,10 @@
     (match o
       (($ <interface>)
        (module-define! module '.interface (om:name o))
+       (let ((events (.events o)))
+         (module-define! module 'events events)
+         (module-define! module 'in-events (filter om:in? (.elements events)))
+         (module-define! module 'out-events (filter om:out? (.elements events))))
        (module-define! module '.scope_interface ((om:scope-name) o))
        (module-define! module '.INTERFACE (string-upcase (symbol->string ((om:scope-name) o)))))
       ((? (is? <model>))
@@ -566,6 +576,7 @@
                 `((space ,space)
                   (expression ,(expression->string model expression locals)))))
       (($ <signature> type) (->code model type blocking? locals indent))
+      (($ <name> scope ... name) (om:scope+name src))
       (($ <type> 'bool) (snippet 'bool '()))
       (($ <type> 'void) 'void)
       ((and (? (is? <*type*>)) (? extern?))
@@ -818,21 +829,19 @@
 (define (declare-integer integer)
   (snippet 'declare-integer `((name int))))
 
-(define ((declare-io model string) event)
-  (let* ((name (.name event))
-         (signature (.signature event))
-         (type ((compose .name .type) signature))
-         (return-type (return-type model event))
-         (formals (.formals signature))
-         (formal-list (map (lambda (x) (code:->code model x)) (.elements formals)))
-         (formal-objects (.elements formals))
-         (formal-types (map (lambda (formal)
-                              (snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
-                             ((compose .elements .formals) signature)))
-         (comma (if (pair? (.elements formals)) (sep) ""))
-         (comma-space (if (pair? (.elements formals)) `(,(sep) " ") ""))
-         (formals (code:->code model formals)))
-    (animate string `((name ,name) (comma ,comma) (comma-space ,comma-space) (formals ,formals) (formal-list ,formal-list) (formal-objects ,formal-objects) (formal-types ,formal-types) (return-type ,return-type)))))
+(define (pair->list o) (list (car o) (cdr o)))
+(define (ast-cdr? o) ((compose (is? <ast>) cdr) o))
+
+(define ((declare-io model string) event) 
+  (parameterize ((any->string (cut ->code model <>)))
+    (let* ((name (list 'name (.name event)))
+           (signature (.signature event))
+           (formals (.formals signature))
+           (type (.type signature)))
+      (animate string (map pair->list (filter ast-cdr? (lexicals)))))))
+
+(define ((declare-interface-event model) event)
+  ((declare-io model (gulp-snippet 'declare-interface-event)) event))
 
 (define ((define-function model string) function)
   (let* ((signature (.signature function))

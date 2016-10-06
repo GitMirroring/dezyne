@@ -11,13 +11,13 @@ struct #.scope_model  {
   dzn_port_meta_t meta;
   struct {
    #(map (declare-io model
-          #{ #return-type  (*#name)(#.scope_model * self#comma #formals);
+          #{#type  (*#name)(#.scope_model * self#(if (pair? (.elements formals)) ", ") #formals) ;
 #}) (filter om:in? ((compose .elements .events) model)))
    } in;
 
   struct {
    #(map (declare-io model
-          #{ #return-type  (*#name) (#.scope_model * self#comma #formals);
+          #{#type  (*#name) (#.scope_model * self#(if (pair? (.elements formals)) ", ") #formals) ;
 #}) (filter om:out? ((compose .elements .events) model)))
  } out;
 };

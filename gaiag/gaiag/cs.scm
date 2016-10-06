@@ -24,10 +24,12 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag cs)
+  :use-module (srfi srfi-26)
   :use-module (ice-9 pretty-print)
 
   :use-module (gaiag om)
 
+  :use-module (gaiag animate)
   :use-module (gaiag code)
   :use-module (gaiag misc)
   :use-module (gaiag reader)
@@ -36,9 +38,13 @@
 
 (define ast-> ast:code)
 
-(define (lambda-type type formal-types)
-  (let ((count (length formal-types)))
+(define (lambda-type model type formals)
+  (let* ((formals (.elements formals))
+         (count (length formals))
+         (formal-types (map (lambda (formal)
+                                 (snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
+                            formals)))
    (list
-    (if (eq? type 'void)
+    (if (eq? (.name type) 'void)
         (list "Action" (if (>0 count) (list "<" ((->join ", ") formal-types) ">") ""))
         (list "Func" (if (>0 count) (list "<"((->join ", ") formal-types) "," type ">") (list  "<" type ">")))))))

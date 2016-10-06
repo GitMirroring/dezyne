@@ -7,8 +7,7 @@
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
  #(string-if (pair? (om:enums)) #{
-#})#
-  (->string (map (declare-enum model) (om:enums)))
+#})#(map (declare-enum model) (om:enums))
  #(string-if (pair? (om:enums)) #{
 #})
 struct #.interface
@@ -17,14 +16,13 @@ struct #.interface
   struct
   {
    #(map (declare-io model
-          #{std::function<#return-type  (#formals)> #name;
-#}) (filter om:in? ((compose .elements .events) model))) } in;
+          #{std::function<#type (#formals)> #name;
+#}) in-events) } in;
 
   struct
   {
-   #(map (declare-io model
-          #{std::function<#return-type  (#formals)> #name;
-#}) (filter om:out? ((compose .elements .events) model))) } out;
+    #(map (declare-interface-event model) (om:events model om:out?))
+  } out;
 
    dzn::port::meta meta;
 #(string-if (eq? (language) 'c++-msvc11) #{
@@ -37,11 +35,11 @@ struct #.interface
    void check_bindings() const
    {
    #(map (declare-io model
-         #{if (! in.#name) throw dzn::binding_error(meta, "in.#name");
-#}) (filter om:in? ((compose .elements .events) model)))
+         #{if (! in.#name) throw dzn::binding_error(meta, "in.#name ");
+#}) in-events)
    #(map (declare-io model
-         #{if (! out.#name) throw dzn::binding_error(meta, "out.#name");
-#}) (filter om:out? ((compose .elements .events) model)))
+         #{if (! out.#name) throw dzn::binding_error(meta, "out.#name ");
+#}) out-events)
    }
   };
 

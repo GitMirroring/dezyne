@@ -36,10 +36,14 @@
 
 (define ast-> ast:code)
 
-(define (lambda-type type formal-types)
-  (let ((count (length formal-types)))
+(define (lambda-type model type formals)
+  (let* ((formals (.elements formals))
+         (count (length formals))
+         (formal-types (map (lambda (formal)
+                                 (snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
+                            formals)))
    (list
-    (if (eq? type 'void)
+    (if (eq? (.name type) 'void)
         (list "Action" (if (>0 count) (list count "<" ((->join ", ") formal-types) ">") ""))
         (list "ValuedAction" (if (>0 count) (list count "<" type ", " ((->join ", ") formal-types) ">") (list  "<" type ">")))))))
 

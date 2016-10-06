@@ -18,13 +18,13 @@ struct #.interface
   struct
   {
    #(map (declare-io model
-          #{boost::function<#return-type  (#((->join ",") formal-types))> #name;
+          #{boost::function<#type  (#formals)> #name ;
 #}) (filter om:in? ((compose .elements .events) model))) } in;
 
   struct
   {
    #(map (declare-io model
-          #{boost::function<#return-type  (#((->join ",") formal-types))> #name;
+          #{boost::function<#type  (#formals)> #name ;
 #}) (filter om:out? ((compose .elements .events) model))) } out;
 
    dzn::port::meta meta;
