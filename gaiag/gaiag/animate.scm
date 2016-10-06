@@ -54,6 +54,7 @@
            animate-file
            animate-string
            animate-input
+           any->string
            populate-module
            snippet
            gulp-template
@@ -179,6 +180,8 @@
         (cons (1+ (ftell (current-input-port))) %start))
   (hash-read-string chr port))
 
+(define any->string (make-parameter ->string))
+
 (define (animate-input- module)
   (read-hash-extend #\{ start-hash-read-string)
   (while (and=> (*eof*-is-#f (read-delimited (make-string 1 #\#)))
@@ -195,7 +198,13 @@
                    (expr (read (current-input-port))))
               (catch #t
                 (lambda ()
-                  (display (->string (eval expr module)))
+                  (let ((o (eval expr module)))
+                    (display
+                     (match o
+                       ((? number?) o)
+                       ((? string?) o)
+                       ((? symbol?) (symbol->string o))
+                       (_ ((any->string) o)))))
                   (eat-one-space))
                 (lambda (key . args)
                   (let* ((options (car args))
