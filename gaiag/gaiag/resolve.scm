@@ -191,6 +191,7 @@
        (and-let* ((enum (or (type? (make <type> :name (make <name> :elements (list type))))))
                   ((member field ((compose .elements .fields) enum))))
                  enum))
+      (('name field) #f)
       (('name scope ... field)
        (and-let* ((enum (om:enum model (make <type> :name (make <name> :elements scope))))
                   ((member field ((compose .elements .fields) enum))))
