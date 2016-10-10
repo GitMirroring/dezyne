@@ -962,6 +962,8 @@
          (right-port (om:port model right))
          (port (and (om:port-bind? bind)
                     (if (not (.instance left)) (.port left) (.port right))))
+         (instance-port (and (om:port-bind? bind)
+                             (if (not (.instance left)) (.port right) (.port left))))
          (injected? (and (eq? port '*) port))
          (direction (or injected? (.direction (om:port model port))))
          (edir (or injected? (if (eq? direction 'provides) 'out 'in)))
@@ -973,7 +975,7 @@
                         (if (not (.instance left))
                             (binding-name model right)
                             (binding-name model left)))))
-    (animate string `((port ,port) (direction ,direction) (edir ,edir) (injected? ,injected?) (instance ,instance) (interface ,interface)))))
+    (animate string `((port ,port) (direction ,direction) (edir ,edir) (injected? ,injected?) (instance ,instance) (instance-port ,instance-port) (interface ,interface)))))
 
 (define ((init-instance model string) instance)
   (let* ((component (.type instance))

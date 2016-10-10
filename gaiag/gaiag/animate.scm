@@ -55,6 +55,7 @@
            animate-string
            animate-input
            any->string
+           clone-module
            populate-module
            snippet
            gulp-template
@@ -122,11 +123,20 @@
   (let ((file-name (components->file-name (template-file file-name))))
     (with-input-from-file file-name (lambda () (animate-input (get-module o p) file-name)))))
 
+(define* (clone-module #:optional (module (current-module)))
+  (let ((clone (make-module 31)))
+    (for-each (lambda (use) (module-use! clone use)) (module-uses module))    
+    (module-for-each (lambda (symbol var)
+                       (module-add! clone symbol var)) module)
+    clone))
+
 (define* (get-module o :optional (p #f))
-  (match o
-    ((? module?) o)
-    ((? list?) (populate-module (current-module) o p))
-    (_ (current-module))))
+  (save-module-excursion
+   (lambda ()
+     (match o
+       ((? module?) o)
+       ((? list?) (populate-module (clone-module) o p))
+       (_ (clone-module))))))
 
 (define* (line-column-location tell :optional (port (current-input-port)))
   (seek port 0 SEEK_SET)
