@@ -46,6 +46,9 @@
 (define om:< <)
 (define om:equal? equal?)
 
+(define-method (equal? (a <ast>) (b <ast>))
+  (equal? (om->list a) (om->list b)))
+
 (define-method (< (a <on>) (b <on>))
   (< (.triggers a) (.triggers b)))
 
