@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -57,6 +57,9 @@
 (define (c++:init-brace-open) "{")
 (define (c++:init-brace-close) "}")
 
+(define (c++:skel-file model)
+  ((->symbol-join '_) (append (drop-right (om:scope+name model) 1) '(skel) (take-right (om:scope+name model) 1))))
+
 (define (glue)
   (and=> (option-ref (parse-opts (command-line)) 'glue #f) string->symbol))
 
@@ -89,11 +92,15 @@
                       (module-define! module '.interface interface)
                       (module-define! module '.INTERFACE INTERFACE)
                       (dump-indented (symbol-append interface 'Component.h)
-                                     (lambda ()
-                                       (c++-file 'asdcomponent.h.scm module)))))
+                                     (cute c++-file 'asdcomponent.h.scm module))))
                   (filter om:requires? (om:ports o))))
-      (let ((name ((om:scope-name) o)))
-        ((@@ (gaiag c) dump-component) o)
+      (let ((name (if (.behaviour o) ((om:scope-name) o) (c++:skel-file o)))
+            (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
+        ((@@ (gaiag c) dump-main) o)
+        (dump-indented (symbol-append name (code:extension (make <interface>)))
+                       (cute c++-file (if (.behaviour o) 'component.hh.scm 'foreign.hh.scm) (code:module o)))
+        (dump-indented (symbol-append name (code:extension o))
+                       (cute c++-file (if (.behaviour o) 'component.cc.scm 'foreign.cc.scm) (code:module o)))
         ;; TODO: rename dzn glue templates
         (if (and (not (.behaviour o))
                  (map-file o))

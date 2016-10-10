@@ -39,7 +39,7 @@ SHELL:=bash
 CCACHE:=$(shell type -p ccache)
 CXX:=$(CCACHE) g++
 CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
-CPPFLAGS=-I$(IN)
+CPPFLAGS=-I$(IN) -I$(IN)/..
 GLOBALS_H=$(wildcard $(DIR)/globals.h)
 ifneq ($(GLOBALS_H),)
 CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
