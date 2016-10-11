@@ -261,6 +261,23 @@
                          (eq? name (class-name class)))))
        o))
 
+(define (.name o)
+  (match o
+    ((or 'bool 'void) o)
+    (_ (cadr o))))
+
+(define (.functions o)
+  (match o
+    (#f '(functions))))
+
+(define (.variables o)
+  (match o
+    (#f '(variables))))
+
+(define (.types o)
+  (match o
+    (#f '(types))))
+
 (define-class <named> (<ast>)
   (name :accessor .name :init-form (make <name>) :init-keyword :name))
 
