@@ -142,13 +142,6 @@
     (('name name ...) ((->symbol-join '.) name))
     (_ o)))
 
-(define ((om:ensure-scope scope) name)
-  (cond ((member name '(bool void)) name)
-        ((and (>2 (length name)) (eq? ((compose car om:scope) name) '*))
-         (cons 'name ((compose cddr) name)))
-        (else
-         (cons 'name (append scope (drop-prefix scope (.elements name)))))))
-
 (define (resolve- model o locals)
 
   (define (enum? identifier) (and=> (type? identifier) (is? <enum>)))
