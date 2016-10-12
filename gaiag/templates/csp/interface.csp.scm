@@ -32,6 +32,9 @@ channel #.scope_model _'': {#(comma-join (let ((out-events (interface-events mod
 channel #.scope_model _''': {inevitable,optional,modeling,silent}
 channel #.scope_model _in'',#.scope_model _out'': {|#.scope_model _''|}
 channel #.scope_model _link'': {|#.scope_model _in'',#.scope_model _out''|}
+                               
+channel cs_#.scope_model : {|#.scope_model _'''|}
+                               
                             
 IF_#.scope_model _(IG,CS) = let
 # (->string (map (lambda (x) (on->csp model (ast-transform model x))) (om:functions model)))
@@ -54,8 +57,10 @@ within sbisim(diamond(x))
 within compress((if CS
                 then #
 .scope_model _(#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import (.name model))))))
-                else #
-.scope_model _(#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import (.name model)))))) #(optional-chaos model))
+               [[cs_#.scope_model .x <- x | x <- extensions(cs_#.scope_model )]]
+                else (#
+.scope_model _(#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values (csp:import (.name model)))))) [|{|cs_#.scope_model |}|]STOP) #(optional-chaos model))
+                
                [[x<-#.scope_model _in'.x|x<-extensions(#.scope_model _in')]] [|{|#.scope_model ,#.scope_model _in',#.scope_model _'',#.scope_model _'''.inevitable,#.scope_model _'''.optional|}|] REORDER' [[#.scope_model _out'.x<-x|x<-extensions(#.scope_model _out')]] \ {|#.scope_model _in',#.scope_model .the_end'|})
 
 -- end of interface.csp.scm

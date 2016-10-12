@@ -4,7 +4,6 @@
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //

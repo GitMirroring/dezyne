@@ -315,7 +315,7 @@
              (if (is-a? model <interface>)
                  (list)
                  (append 
-                  (map (lambda (t) (list "IIG & (" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & " (.port t) (channel-suffix model (.port t)) "?" (.event t) "-> illegal -> STOP"))
+                  (map (lambda (t) (list "(" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & ill." (.port t) (channel-suffix model (.port t)) "?" (.event t) "-> illegal -> STOP"))
                        (list-of-triggers-provides model))
                   (map (lambda (t) (list "IG & (" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & " (.port t) (channel-suffix model (.port t)) "?" (.event t) "-> illegal -> STOP"))
                       (list-of-triggers-requires model))))))))
@@ -361,7 +361,7 @@
      "("
      (check-range (om:member-names model) behaviour model)
      "\n[]\n"
-     (list "CS & " ((om:scope-name) model) "_'''?x:{" (comma-join (delete-duplicates (map .event (modeling-events model)))) "} -> illegal -> STOP\n")
+     (list "cs_" ((om:scope-name) model) "." ((om:scope-name) model) "_'''?x:{" (comma-join (delete-duplicates (map .event (modeling-events model)))) "} -> illegal -> STOP\n")
      ")")))
 
 (define (csp-expression->string model src locals)
@@ -802,24 +802,22 @@
                   (real-triggers (filter (negate om:modeling-event?) triggers))
                   (modeling-triggers (filter om:modeling-event? triggers))
                   (modeling-triggers (map .event modeling-triggers))
-                  (trigger-in? (lambda (trigger) (om:in? (om:event model trigger))))
-                  (IG (if ((provides-event? model) (car triggers)) "IIG & "  "IG & ")))
+                  (trigger-in? (lambda (trigger) (om:in? (om:event model trigger)))))
              (receive (ins outs) (partition trigger-in? real-triggers)
                  ((->list-join "\n[]\n")
                   (append
                    (if (pair? ins)
                        (list
                         (list
-                         IG
-                         (if (is-a? model <interface>) model-name (.port (car ins)))
+                         (if (is-a? model <interface>) (list "IG & " model-name) (list "ill." (.port (car ins))))
                          (list "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} -> (\n")
                          tail
                          ")"))
                        (if (pair? modeling-triggers)
                            (list
                             (list
-                             IG
-                             (if (is-a? model <interface>) model-name channel)
+                             "IG & "
+                             model-name
                              (list "_'''?x:{" (comma-join modeling-triggers) "} -> (\n")
                              tail
                              ")"))
@@ -827,8 +825,7 @@
                    (if (pair? outs)
                        (list
                         (list
-                         IG
-                         (if (is-a? model <interface>) model-name (.port (car outs)))
+                         (list "IG & " (.port (car outs)))
                          (list "_''?x:{" (comma-join (map .event outs)) "} -> (\n")
                          tail
                          ")"))
