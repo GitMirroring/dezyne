@@ -534,8 +534,11 @@
 
 (define (om:declarative? o)
   (or (and (is-a? o <statement>)
-           (or (is-a? o <blocking>)
+           (or (is-a? o <bind>)
+               (is-a? o <binding>)
+               (is-a? o <blocking>)
                (is-a? o <guard>)
+               (is-a? o <instance>)
                (is-a? o <on>)
                (and (is-a? o <compound>)
                     (>0 (length (.elements o)))

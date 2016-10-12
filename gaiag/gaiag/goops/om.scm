@@ -256,9 +256,10 @@
            (and-let* ((type (car o))
                       ((symbol? type))
                       (name (symbol->class type)))
-                     (if (or (eq? class <ast>) (eq? class <ast-list>) (eq? class <statement>))
-                         (member name ast-list-names)
-                         (eq? name (class-name class)))))
+             (cond ((or (member class ast-lists)
+                        (eq? class <ast>)
+                        (eq? class <statement>)) (member name ast-list-names))
+                   (else (eq? name (class-name class))))))
        o))
 
 (define (.name o)
