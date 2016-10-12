@@ -147,6 +147,7 @@
             (state (match expression
                      (($ <field>) expression)
                      (('== ($ <var> name) number) expression)
+                     (($ <var> name) (state-var model name))
                      ((h t ...) (cadr expression))))
             (var (state-var model state))
             (inner (.statement o)))
