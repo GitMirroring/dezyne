@@ -51,7 +51,7 @@
 (define (norm-state o)
   ((compose
     remove-skip
-    (aggregate-on)
+    (aggregate-on norm:on-statement-equal?)
     (expand-on norm:port-equal?)
     aggregate-guard-g
     flatten-compound
@@ -81,15 +81,6 @@
     add-skip
     )
    o))
-
-(define* ((prepend-true-guard :optional guard-seen?) o)
-  (match o
-    (($ <guard>) o)
-    (($ <on>) (if guard-seen? o
-                  (rsp o (make <guard> :expression 'true :statement o))))
-    ((? (is? <ast>)) (om:map (prepend-true-guard guard-seen?) o))
-    ((h t ...) (map (prepend-true-guard guard-seen?) o))
-    (_ o)))
 
 (define (norm:on-same-port-statement? model lhs rhs)
   (and (is-a? lhs <on>) (is-a? rhs <on>)

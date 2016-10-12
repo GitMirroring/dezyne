@@ -53,6 +53,7 @@
            om:guard-equal?
            om:map
            om:triggers-equal?
+           om:port-event-equal?
            ))
 
 (define om->list identity)
@@ -77,6 +78,11 @@
   (match o
     (('trigger p e arguments) (list 'trigger p e))
     (_ o)))
+
+(define (om:port-event-equal? a b)
+  (and (is-a? a <on>) (is-a? b <on>)
+       (equal? (map remove-arguments (.triggers a))
+               (map remove-arguments (.triggers b)))))
 
 (define (om:triggers-equal? a b)
   (and (is-a? a <on>) (is-a? b <on>)

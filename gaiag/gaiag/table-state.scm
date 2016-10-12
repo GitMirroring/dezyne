@@ -337,7 +337,7 @@
 (define (table-state model o)
   ((compose
     flatten-compound
-    (aggregate-on)
+    (aggregate-on norm:on-statement-equal?)
     (prepend-guards model)
     switch-norm-event
     (annotate-otherwise)

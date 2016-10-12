@@ -23,13 +23,13 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag norm-event)
-  :use-module (ice-9 and-let-star)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 receive)
   :use-module (gaiag list match)
   :use-module (ice-9 curried-definitions)
 
   :use-module (srfi srfi-1)
+  :use-module (srfi srfi-26)
 
   :use-module (language dezyne location)
   :use-module (gaiag misc)
@@ -52,7 +52,7 @@
     remove-skip
     aggregate-guard-s
     (group-ons)
-    (aggregate-on)
+    (aggregate-on norm:on-statement-equal?)
     (expand-on norm:on-equal?)
     aggregate-guard-s
     flatten-compound
@@ -69,7 +69,7 @@
   ((compose
     remove-skip
     aggregate-guard-s
-    (aggregate-on norm:triggers-equal?)
+    (aggregate-on)
     flatten-compound
     (expand-on norm:on-equal?)
     aggregate-guard-s
@@ -88,6 +88,8 @@
     flatten-compound
     combine-guards
     (aggregate-on norm:triggers-equal?)
+    ;;(aggregate-on (lambda (. o) #t))
+    (rewrite-formals)
     flatten-compound
     (passdown-blocking)
     flatten-compound
@@ -103,9 +105,6 @@
     add-skip
     )
    o))
-
-(define (norm:triggers-equal? model l r)
-  (om:triggers-equal? l r))
 
 (define* ((group-ons :optional (group? norm:triggers-equal?)) o)
   "stable place ons with same group? next to eachother"
@@ -241,15 +240,100 @@
           (retain-source-properties
            expression
            (make <guard> :expression expression :statement o))))))
-    (_ (retain-source-properties
+    (_
+     (retain-source-properties
         expression
         (make <guard> :expression expression :statement o)))))
 
 (define (ast-> ast)
   ((compose
     om->list
-    ;;((@ (gaiag dzn) ast->dzn))
+    ((@ (gaiag dzn) ast->dzn))
     code-norm-event
     ast:resolve
     ast->om
     ) ast))
+
+(define (pair-eq? p) (eq? (car p) (cdr p)))
+
+(define* ((rewrite-formals :optional model (locals '())) o)
+
+  (define (member? identifier) (om:variable model identifier))
+  (define (local? identifier) (assoc-ref locals identifier))
+  (define (var? identifier) (or (member? identifier) (local? identifier)))
+  (define (extern? identifier) (and=> (var? identifier) (cut om:extern model <>)))
+  (define (extern-type? type) (om:extern model type))
+
+  (define (assoc-xref alist value)
+    (define (cdr-equal? x) (equal? (cdr x) value))
+    (and=> (find cdr-equal? alist) car))
+
+  (define ((rename mapping) o)
+    (match o
+      (($ <trigger> port event ('arguments)) o)
+      (($ <trigger> port event ('arguments arguments ...))
+       (make <trigger> :port port :event event
+             :arguments `(arguments ,@(map (rename mapping) arguments))))
+      (($ <expression> ($ <var> name))
+       (make <expression> :value (make <var> :name ((rename mapping) name))))
+      ((? symbol?) (or (assoc-ref mapping o) o))
+      ((? (is? <ast>)) (om:map (rename mapping) o))
+      ((h t ...) (map (rename mapping) o))
+      (_ o)))
+
+  (define (name->argument name)
+    (make <expression> :value (make <var> :name name)))
+
+  (match o
+    (($ <on> ('triggers (and ($ <trigger> port event ('arguments)) (get! trigger))) statement)
+     (let* ((trigger (trigger))
+            (formals (map .name ((compose .elements .formals .signature) (om:event model trigger))))
+            (arguments (map name->argument formals)))
+       (if (null? formals) o
+           (rsp o (make <on>
+                    :triggers `(triggers ,(make <trigger> :port port :event event :arguments `(arguments ,@arguments)))
+                    :statement statement)))))
+    (($ <on> ('triggers (and ($ <trigger> port event ('arguments arguments ...)) (get! trigger))) statement)
+     (let* ((trigger (trigger))
+            (members (map .name (om:variables model)))
+            (formals (map .name ((compose .elements .formals .signature) (om:event model trigger))))
+            (variables (map .name ((om:collect <variable>) o)))
+            (occupied (delete-duplicates (append members formals variables)))
+            (fresh (letrec ((fresh (lambda (name) (if (member name occupied) (fresh (symbol-append name 'x)) name)))) fresh))
+            (mapping (filter (negate pair-eq?)
+                             (map cons (map (compose .name .value) arguments) formals)))
+            (mapping (append (map cons formals (map (compose fresh cdr) mapping)) mapping)))
+       (if (null? mapping) o
+           (rsp o (make <on>
+                    :triggers `(triggers ,((rename mapping) trigger))
+                    :statement ((rename mapping) statement))))))
+
+    ;; TOP
+    (($ <enum>) o)
+    (($ <extern>) o)
+    (($ <int>) o)
+    (($ <interface>) o)
+    (($ <system>) o)
+    (($ <component> name ports behaviour)
+     (rsp o (make <component>
+              :name name
+              :ports ports
+              :behaviour ((rewrite-formals o) behaviour))))
+
+    (($ <behaviour> name types variables functions statement)
+     (make <behaviour>
+       :name name
+       :types types
+       :variables variables
+       :functions functions
+       :statement ((rewrite-formals model '()) statement)))
+
+    ((? (is? <ast>)) (om:map (rewrite-formals model locals) o))
+    ((h t ...) (map (rewrite-formals model locals) o))
+    (_ o)))
+
+;; (define ast (read-ast '../../test/all/normalize_alias_local/normalize_alias_local.dzn))
+;; (define om (ast->om ast))
+;; (define root (ast:resolve om))
+;; (define model (find (is? <component>) root))
+;; (define statement (.statement (.behaviour model)))

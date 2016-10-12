@@ -46,16 +46,38 @@
            annotate-otherwise
            aggregate-guard-g
            aggregate-on
+           append-true-guard
            combine-guards
            expand-on
            flatten-compound
            guards-not-or
            passdown-blocking
+           prepend-true-guard
            remove-otherwise
            remove-skip
 
            norm:on-equal?
+           norm:triggers-equal?
+           norm:on-statement-equal?
            ))
+
+(define* ((prepend-true-guard :optional guard-seen?) o)
+  (match o
+    (($ <guard>) o)
+    (($ <on>) (if guard-seen? o
+                  (rsp o (make <guard> :expression 'true :statement o))))
+    ((? (is? <ast>)) (om:map (prepend-true-guard guard-seen?) o))
+    ((h t ...) (map (prepend-true-guard guard-seen?) o))
+    (_ o)))
+
+(define* (append-true-guard o)
+  (match o
+    (($ <on> t ($ <guard>)) o)
+    (($ <on> t s)
+     (rsp o (make <on> :triggers t :statement (make <guard> :expression 'true :statement s))))
+    ((? (is? <ast>)) (om:map append-true-guard o))
+    ((h t ...) (map append-true-guard o))
+    (_ o)))
 
 (define (remove-skip o)
   (match o
@@ -64,7 +86,7 @@
     ((h t ...) (map remove-skip o))
     (_ o)))
 
-(define* ((aggregate-on :optional (aggregate? norm:on-statement-equal?) model) o)
+(define* ((aggregate-on :optional (aggregate? norm:triggers-equal?) model) o)
   "Aggregate ONs with same statement AND (AGGREGATE? a b) into one ON-statement."
   (match o
     (('compound ($ <on>) ..1)
@@ -104,6 +126,9 @@
 
 (define (norm:on-equal? model a b)
   (equal? a b))
+
+(define (norm:triggers-equal? model l r)
+  (om:triggers-equal? l r))
 
 (define (norm:on-statement-equal? model a b)
   (and (is-a? a <on>) (is-a? b <on>)

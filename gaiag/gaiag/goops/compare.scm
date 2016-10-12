@@ -39,6 +39,7 @@
            om:<
            om:equal?
            om:guard-equal?
+           om:port-event-equal?
            om:triggers-equal?
            )
   :re-export (< equal?))
@@ -123,6 +124,16 @@
 
 (define-method (om:guard-equal? (lhs <guard>) (rhs <guard>))
   (equal? (om->list (.expression lhs)) (om->list (.expression rhs))))
+
+(define-method (om:port-event-equal? a b)
+  #f)
+
+(define-method (remove-arguments (o <trigger>))
+  (make <trigger> :port (.port o) :event (.event o)))
+
+(define-method (om:port-event-equal? (a <on>) (b <on>))
+  (equal? (map remove-arguments ((compose .elements .triggers) a))
+          (map remove-arguments ((compose .elements .triggers) b))))
 
 (define-method (om:triggers-equal? a b)
   #f)

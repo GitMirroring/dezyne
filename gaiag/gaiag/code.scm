@@ -38,11 +38,10 @@
   :use-module (gaiag gaiag)
   :use-module (gaiag indent)
   :use-module (gaiag misc)
-;;  :use-module (gaiag norm-event)
-  :use-module (gaiag norm-state)
+  :use-module (gaiag norm-event)
   :use-module (gaiag reader)
   :use-module (gaiag resolve)
-;;  :use-module (gaiag wfc)
+  :use-module (gaiag wfc)
 
 
   :export (ast:code
@@ -114,8 +113,7 @@
 
 (define (code:om ast)
   ((compose
-    ;;code-norm-event
-    csp-norm-state
+    code-norm-event
     ;;ast:wfc
     ast:resolve
     ast->om
@@ -295,7 +293,6 @@
   (define (member? identifier) (and (not (local? identifier))
                                     (om:variable model identifier)))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
-  (define (alias? identifier) (and=> (local? identifier) (lambda (x) (and (symbol? x) x))))
   (define (formal? identifier) (and=> (var? identifier) (is? <formal>)))
   (define (identifier-snippet identifier)
     (cond ((member? identifier)
@@ -309,11 +306,10 @@
            (snippet 'local `((identifier ,identifier) (argument #f))))
           ((is-a? identifier <name>)
            (let* ((name (om:name identifier))
-                  (alias (or (alias? name) name))
-                  (formal (formal? alias))
+                  (formal (formal? name))
                   (type-name ((compose om:name (om:type model)) formal)))
              (snippet 'formal-out-identifier `((type ,type-name)
-                                               (name ,alias)))))
+                                               (name ,name)))))
           (else identifier)))
   (define (expression-type o locals)
     (match o
@@ -341,6 +337,7 @@
   (let ((port (statements.port))
         (event (statements.event))
         (space (make-string (* indent (if (eq? (language) 'python) 4 2)) #\space)))
+    
     (match src
       (() "")
       ('$empty-statement$ (snippet 'empty `((space ,space))))
@@ -350,20 +347,28 @@
               (statement (if (eq? statement '$empty-statement$)
                              (->code model statement blocking? locals (1+ indent))
                              statement)))
-         (snippet 'guard
-                  `((space ,space)
-                    (clause ,(expr->clause model src expression))
-                    (statement ,statement)))))
+         (string-append
+          (snippet 'guard
+                   `((space ,space)
+                     (clause ,(expr->clause model src expression))
+                     (statement ,statement)))
+          (if (not (om:last-guard? model src)) ""
+              (snippet 'else-illegal `((space ,space)
+                                       (illegal ,(snippet 'illegal `((space ,space))))))))))
       (($ <guard> expression statement)
        (let* ((statement (wrap-compound statement))
               (statement (->code- model statement blocking? locals (1+ indent)))
               (statement (if (eq? statement '$empty-statement$)
                              (->code model statement blocking? locals (1+ indent))
                              statement)))
-         (snippet 'guard
-                  `((space ,space)
-                    (clause ,(expr->clause model src expression))
-                    (statement ,statement)))))
+         (string-append
+          (snippet 'guard
+                   `((space ,space)
+                     (clause ,(expr->clause model src expression))
+                     (statement ,statement)))
+          (if (not (om:last-guard? model src)) ""
+              (snippet 'else-illegal `((space ,space)
+                                       (illegal ,(snippet 'illegal `((space ,space))))))))))
       (($ <if> expression then #f)
        (snippet 'if-then
                 `((space ,space)
@@ -402,39 +407,15 @@
                       (formals (transform-formals-shadow-member model formals))
                       (arguments ((compose .elements .arguments) trigger))
                       (argument-names (map (compose (lambda (n) (match n (('name name) name) (_ n))) .name .value) arguments)))
-                     (let* ((aliases
-                             (let loop ((formals formals)
-                                        (arguments argument-names))
-                               (if (null? arguments)
-                                   '()
-                                   (let* ((formal (car formals))
-                                          (type (->code model (.type formal) '(foo bar baz)))
-                                          (out? (member (.direction formal) '(inout out)))
-                                          (name (.name formal))
-                                          (alias (car arguments))
-                                          (rest (loop (cdr formals) (cdr arguments))))
-                                     (if (eq? alias name)
-                                         rest
-                                         (begin
-                                           (set! locals (acons alias (.name formal) locals))
-                                           (cons (snippet 'alias `((type ,type) (name ,name) (out? ,out?) (alias ,alias) (space ,space)))
-                                                 rest)))))))
-                            (blocking? (pair? ((om:collect <blocking>) statement)))
-                            (statement (->code model statement blocking? locals indent compound?))
-                            (statement (if (pair? aliases)
-                                           (snippet 'compound
-                                                    `((space ,space)
-                                                      (statements
-                                                       ,(snippet 'context
-                                                                 `((space ,space) (statement ,aliases) (continuation ,statement))))))
-                                           statement))
-                            (statement (if (or (not blocking?) (eq? (.direction port) 'requires)) statement
-                                           `(,(out-bindings model port formals arguments)
-                                             ,(snippet 'block
-                                                       `((space ,space)
-                                                         (statement ,statement)
-                                                         (port ,(.port trigger))))))))
-                       statement))
+             (let* ((blocking? (pair? ((om:collect <blocking>) statement)))
+                    (statement (->code model statement blocking? locals indent compound?))
+                    (statement (if (or (not blocking?) (eq? (.direction port) 'requires)) statement
+                                   `(,(out-bindings model port formals arguments)
+                                     ,(snippet 'block
+                                               `((space ,space)
+                                                 (statement ,statement)
+                                                (port ,(.port trigger))))))))
+               statement))
            '$empty-statement$))
       (($ <call> function ('arguments))
        (snippet 'call `((space ,space) (function ,function))))
@@ -454,32 +435,26 @@
       (('compound)
        (snippet 'compound-empty `((space ,space))))
       (('compound statements ...)
-       (string-append
-        (snippet
-         (symbol-append
-          (if compound? 'compound 'statements)
-          (if (is-a? (car statements) <guard>) '-guarded (string->symbol "")))
-         `((space ,space)
-           (statements
-            ,(let loop ((statements statements) (locals locals))
-               (if (null? statements)
-                   '()
-                   (let* ((statement (car statements))
-                          (variable? (is-a? statement <variable>))
-                          (locals (if variable? (acons (.name statement) statement locals)
-                                      locals)))
-                     (let ((statement (->code model (car statements) blocking? locals indent))
-                           (continuation (loop (cdr statements) locals)))
-                       (if variable?
-                           (list (snippet 'context `((space ,space)
-                                                     (statement ,statement)
-                                                     (continuation ,continuation))))
-                           (cons statement continuation)))))))))
-        (if (or (om:imperative? src)
-                (is-a? (car statements) <on>)) ""
-            (string-append
-             (snippet 'else-illegal `((space ,space)
-                                      (illegal ,(snippet 'illegal `((space ,space))))))))))
+       (snippet
+        (symbol-append
+         (if compound? 'compound 'statements)
+         (if (is-a? (car statements) <guard>) '-guarded (string->symbol "")))
+        `((space ,space)
+          (statements
+           ,(let loop ((statements statements) (locals locals))
+              (if (null? statements)
+                  '()
+                  (let* ((statement (car statements))
+                         (variable? (is-a? statement <variable>))
+                         (locals (if variable? (acons (.name statement) statement locals)
+                                     locals)))
+                    (let ((statement (->code model (car statements) blocking? locals indent))
+                          (continuation (loop (cdr statements) locals)))
+                      (if variable?
+                          (list (snippet 'context `((space ,space)
+                                                    (statement ,statement)
+                                                    (continuation ,continuation))))
+                          (cons statement continuation))))))))))
       (($ <illegal>) (snippet 'illegal `((space ,space))))
       (($ <action> ($ <trigger> port-name event-name ('arguments arguments ...)))
        (let* ((port (om:port model port-name))
@@ -669,22 +644,21 @@
 (define (om:top-statements o)
   ((compose .elements .statement .behaviour) o))
 
-(define (norm-event-om:first-guard? model guard)
-  (not
-   (and-let* ((parent (om:parent model guard))
-              (guards (null-is-#f (filter (is? <guard>) parent))))
-             (not (eq? guard (car guards))))))
-
 (define (om:first-guard? model guard)
   (not
    (and-let* ((parent (om:parent model guard))
-              (parent (cond ((is-a? parent <guard>) (.statement parent))
-                            ((is-a? parent <on>) (om:parent model parent))
-                            (else parent)))
-              (guards (filter (is? <guard>) parent))
-              (guards (filter (find-trigger (statements.port) (statements.event)) guards))
-              (guards (null-is-#f guards)))
-             (not (eq? guard (car guards))))))
+              ((not (is-a? parent <on>)))
+              ((is-a? parent <compound>))
+              (guards (null-is-#f (filter (is? <guard>) parent))))
+     (not (eq? guard (car guards))))))
+
+(define (om:last-guard? model guard)
+  (not
+   (and-let* ((parent (om:parent model guard))
+              ((not (is-a? parent <on>)))
+              ((is-a? parent <compound>))
+              (guards (null-is-#f (filter (is? <guard>) parent))))
+             (not (eq? guard (last guards))))))
 
 (define (bool-expression->string model o)
   (match o
@@ -955,30 +929,19 @@
          (instance-port (and instance-binding (.port instance-binding)))
          (blocking? #f)
          (space "    ")
+         (behaviour (and=> (is-a? model <component>) .behaviour))
+         (ons (if (not behaviour) '()
+                  ((compose .elements .statement) behaviour)))
+         (on (find (is-trigger? port event) ons))
          (statement
-          (or (and-let*
-               (((is-a? model <component>))
-                ((.behaviour model))
-                (component model)
-                (behaviour (.behaviour component))
-                (statement (.statement behaviour))
-;;                (norm-event-ons ((compose .elements .statement .behaviour) component))
-;;                (norm-event-ons (filter (is-trigger? port event) ons))
-                (guards (if (is-a? statement <guard>) (list statement)
-                            (filter (is? <guard>) statement)))
-                (ons ((om:statements-of-type 'on) statement))
-                (ons (filter (find-trigger port event) ons))
-                (guards (filter (find-trigger port event) guards)))
-               (parameterize ((statements.port port)
-                              (statements.event event))
-                 ;;(map (lambda (on) (code:->code model on blocking? locals 2 #f)) norm-event-ons)
-                 (cond ((and (null? ons) (null? guards))
-                        (snippet 'illegal `((space ,space))))
-                       ((null? ons)
-                        (code:->code model (make <compound> :elements guards) blocking? locals 2 #f))
-                       (else
-                        (code:->code model ons blocking? locals 2 #f)))))
-              "")))
+          (cond
+           ((and behaviour (is-a? model <component>))
+            (parameterize ((statements.port port)
+                           (statements.event event))
+              (if on
+                  (code:->code model on blocking? locals 2 #f)
+                  (snippet 'illegal `((space ,space))))))
+           (else ""))))
     (animate string `((port ,(.name port))
                        (event ,(.name event))
                        (argument-list ,argument-list)
