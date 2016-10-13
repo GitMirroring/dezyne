@@ -893,7 +893,7 @@ component c
                 (illegal)))
 
           ;; via:
-          "IIG & j?x:{e} -> (
+          "ill.j?x:{e} -> (
 illegal -> STOP
 )"))
 
