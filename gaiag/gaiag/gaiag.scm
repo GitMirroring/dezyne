@@ -35,7 +35,10 @@
 
   :export (main parse-opts))
 
+
 (define (parse-opts args)
+  (define (interactive?) (let ((program (car (command-line))))
+                           (string-suffix? "guile" program)))
   (let* ((option-spec
 	  '((assert (single-char #\a))
 	    (coverage (single-char #\c))
@@ -59,11 +62,11 @@
 	 (usage? (and (not help?) (null? files)))
 	 (version? (option-ref options 'version #f)))
     (or
+     (interactive?)
      (and version?
-	  (stdout "0.1\n")
-	  (exit 0))
-      (and (or help? usage?)
-	   ((or (and usage? stderr) stdout) "\
+	  (stdout "0.1\n"))
+     (and (or help? usage?)
+          ((or (and usage? stderr) stdout) "\
 Usage: gaiag [OPTION]... FILE
   -a, --assert           generate all asserts inline, not in asserts.csp
   -c, --coverage         write lcov coverage data to gaiag.info
