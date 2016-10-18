@@ -212,7 +212,7 @@
 (define statements.event (make-parameter #f))
 
 (define (language)
-  (string->symbol (option-ref (parse-opts (command-line)) 'language 'c++)))
+  (string->symbol (option-ref (parse-opts (command-line)) 'language "c++")))
 
 (define (code:extension o)
   (match o
