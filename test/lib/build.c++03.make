@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
+# Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 # Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
@@ -38,7 +39,7 @@ SHELL:=bash
 CCACHE:=$(shell type -p ccache)
 CXX:=$(CCACHE) g++
 CXXFLAGS=-g -std=c++03 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
-CPPFLAGS=-I$(IN)
+CPPFLAGS=-I$(IN) -I$(IN)/..
 GLOBALS_H=$(wildcard $(DIR)/globals.h)
 ifneq ($(GLOBALS_H),)
 CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
