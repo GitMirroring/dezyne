@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -276,6 +277,8 @@
              :arguments `(arguments ,@(map (rename mapping) arguments))))
       (($ <expression> ($ <var> name))
        (make <expression> :value (make <var> :name ((rename mapping) name))))
+      (($ <expression> ('<- ('name name) global))
+       (begin (stderr "HIERO ~a ~a mapping: ~a\n" name global mapping) (make <expression> :value `(<- (name ,((rename mapping) name)) ,global))))
       ((? symbol?) (or (assoc-ref mapping o) o))
       ((? (is? <ast>)) (om:map (rename mapping) o))
       ((h t ...) (map (rename mapping) o))
@@ -297,12 +300,25 @@
      (let* ((trigger (trigger))
             (members (map .name (om:variables model)))
             (formals (map .name ((compose .elements .formals .signature) (om:event model trigger))))
-            (variables (map .name ((om:collect <variable>) o)))
-            (occupied (delete-duplicates (append members formals variables)))
-            (fresh (letrec ((fresh (lambda (name) (if (member name occupied) (fresh (symbol-append name 'x)) name)))) fresh))
-            (mapping (filter (negate pair-eq?)
-                             (map cons (map (compose .name .value) arguments) formals)))
-            (mapping (append (map cons formals (map (compose fresh cdr) mapping)) mapping)))
+            (locals (map .name ((om:collect <variable>) o)))
+            (occupied members)
+            (fresh (letrec ((fresh (lambda (occupied name)
+                                     (if (member name occupied)
+                                         (fresh occupied (symbol-append name 'x))
+                                         name))))
+                     fresh)) ;; occupied name -> namex
+            (refresh (lambda (occupied names)
+                       (fold (lambda (name o)
+                               (cons (fresh o name) o))
+                             occupied names))) ;; occupied names -> (append namesx occupied)
+
+            (fresh-formals (list-head (refresh occupied formals) (length formals)))
+            (mapping (filter (negate pair-eq?) (map cons (map (compose .name .value) arguments) fresh-formals)))
+
+            (occupied (append (map cdr mapping) members))
+
+            (mapping (append (map cons locals (list-head (refresh occupied locals) (length locals))) mapping)))
+
        (if (null? mapping) o
            (rsp o (make <on>
                     :triggers `(triggers ,((rename mapping) trigger))

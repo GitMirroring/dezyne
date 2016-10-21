@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -265,6 +265,7 @@
 (define (.name o)
   (match o
     ((or 'bool 'void) o)
+    (('<- ('name name) rest) name)
     (_ (cadr o))))
 
 (define (.functions o)
