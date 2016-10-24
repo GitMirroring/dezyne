@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -47,40 +48,36 @@ int main()
 
   // play the example test trace
   cam.control.in.setup();
-  serve_interrupts();
+  Hardware::serve_interrupts();
 
   cam.control.in.shoot();
-  serve_interrupts();
+  Hardware::serve_interrupts();
 }
 
 
-std::map<Hardware*, std::pair<int,bool>> hardware;
-int cnt = 0;
+std::map<Hardware*, std::pair<int,bool>> Hardware::hardware;
+int Hardware::cnt = 0;
+
 Hardware::Hardware(const dzn::locator& l)
-: dzn_rt(l.get<dzn::runtime>())
-, dzn_locator(l)
-, port({{"port", this},{}})
+: skel::Hardware(l)
 {
-port.in.kick = [this]{port_kick();};
-port.in.cancel = [this]{port_cancel();};
-hardware[this].first = cnt++;
-hardware[this].second = true;
+  hardware[this].first = cnt++;
+  hardware[this].second = true;
 }
 void Hardware::port_kick() {
-hardware[this].second = false;
-std::cout << "Hardware["  << hardware[this].first << "].kick"<< std::endl;
-}
+    hardware[this].second = false;
+    std::cout << "Hardware["  << hardware[this].first << "].kick"<< std::endl;
+  }
 void Hardware::port_cancel() {
-hardware[this].second = true;
-std::cout << "Hardware["  << hardware[this].first << "].cancel"<< std::endl;
+  hardware[this].second = true;
+  std::cout << "Hardware["  << hardware[this].first << "].cancel"<< std::endl;
 }
-
-void serve_interrupts() {
+void Hardware::serve_interrupts() {
   for(auto& h : hardware) {
     if(! h.second.second) {
-	  h.second.second = true;
-	  std::cout << "Hardware[" << h.second.first << "].interrupt" << std::endl;
-	  h.first->port.out.interrupt();
+      h.second.second = true;
+      std::cout << "Hardware[" << h.second.first << "].interrupt" << std::endl;
+      h.first->port.out.interrupt();
     }
   }
 }
