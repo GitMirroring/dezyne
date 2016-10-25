@@ -8,10 +8,10 @@ connect_ports (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c
  #(map (lambda (port)
        (map (define-on model port #{
     c.system.#port .#direction .#event  = [&] (#formals) {
-    dzn::trace_#direction(std::clog, c.system.#port .meta, "#event ");
+    dzn::trace_#direction(std::clog, c.system.#port .meta, "#event "); std::clog << std::endl;
     #(string-if (eq? direction 'out) #{c.match("#port .#event ");#}
     #{c.match("#port .#event "); std::string tmp = c.match_return();
-    dzn::trace_out(std::clog, c.system.#port .meta, tmp.substr(tmp.rfind('.')+1).c_str());
+    dzn::trace_out(std::clog, c.system.#port .meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
     return to_#((c++:scope-join #f '_) reply-scope)_#reply-name(tmp.substr(tmp.rfind('.')+1)); #})
   };
   #}) (filter (negate (om:dir-matches? port)) (om:events port))))

@@ -140,7 +140,7 @@ namespace dzn
     , event(event)
     , reply("return")
     {
-      trace_in(os, meta, event);
+      trace_in(os, meta, event); os << " " << *c << std::endl;
       if(c->dzn_rt.handling(c))
       {
         collateral_block(c->dzn_locator);
@@ -160,7 +160,7 @@ namespace dzn
     }
     ~call_helper()
     {
-      trace_out(os, meta, reply.c_str());
+      trace_out(os, meta, reply.c_str()); os << std::endl;
     }
   };
 
@@ -175,7 +175,7 @@ namespace dzn
   void call_out(C* c, L&& l, const dzn::port::meta& meta, const char* event)
   {
     auto& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, meta, event);
+    trace_out(os, meta, event); os << " " << *c << std::endl;
     c->dzn_rt.defer(meta.provides.address, c, l);
   }
 }

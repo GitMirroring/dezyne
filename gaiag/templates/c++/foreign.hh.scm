@@ -1,6 +1,8 @@
 ##ifndef SKEL_#.COMPONENT _HH
 ##define SKEL_#.COMPONENT _HH
 
+##include <iostream>
+
 #(map (include-interface #{
 ##include "#interface .hh" #})
   (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
@@ -25,6 +27,11 @@ struct #.model
 
     void check_bindings() const;
     void dump_tree(std::ostream& os) const;
+  friend std::ostream& operator << (std::ostream& os, const #.model & m
+                                                  ) {
+    return os << "[" #(map (lambda (v s) (string-append ((init-member model #{ << m.#name #}) v) s))
+     (om:variables model) (cdr (append (make-list (length (om:variables model)) " << \",\" ") (list ""))))  << "]" ;
+  }
 private:
 #(map
   (lambda (port)

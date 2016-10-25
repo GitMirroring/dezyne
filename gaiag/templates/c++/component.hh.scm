@@ -31,8 +31,11 @@ struct #.model
 #}) ((compose .elements .ports) model))
     #.model (const dzn::locator&);
   void check_bindings() const;
-  void dump_tree(std::ostream& os=std::clog) const;
-
+  void dump_tree(std::ostream& os) const;
+  friend std::ostream& operator << (std::ostream& os, const #.model & m) {
+    return os << "[" #(map (lambda (v s) (string-append ((init-member model #{ << m.#name #}) v) s))
+     (om:variables model) (cdr (append (make-list (length (om:variables model)) " << \",\" ") (list ""))))  << "]" ;
+  }
 private:
 #(map
   (lambda (port)
