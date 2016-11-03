@@ -1,7 +1,9 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -486,6 +488,8 @@ var aspects = {
           + ' '+parameters.filename
           + ' 2>'+err
           + '| bin/reorder > '+out
+          + '| test ! -s '+baseline
+          + '| test ! -s '+baseline+'.stderr'
           + ';}'
           + ' || (diff -uw '+baseline+' '+out
           + '     && (test ! -s '+err

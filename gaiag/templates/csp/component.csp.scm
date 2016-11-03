@@ -149,7 +149,7 @@ end_required_modeling' = {#(comma-join (append-map (lambda (port)
 in_internals' = inter(extensions(IN'), {|#((->join ",") (map (lambda (x) (list (.name x) "_''")) (filter (negate .external) (om:ports model))))|})
 #(map (animate-pairs `((interface ,identity))
 #{IFD_#interface _(IG,CS) = 
-(IF_#interface _(IG,CS) [[x<-#interface _in''.x|x<-extensions(#interface _in'')]] \ {|#interface _'''|}) 
+(IF_#interface _(IG,CS) [[x<-#interface _in''.x|x<-extensions(#interface _in'')]]) 
 [|{|#interface _in'',#interface _out''|}|] 
 IQ'(#interface _in'',#interface _out'',#interface _link'',#(csp-queue-size)) 
 [[#interface _out''.x<-x|x<-extensions(#interface _out'')]] \ {|#interface _in''|}

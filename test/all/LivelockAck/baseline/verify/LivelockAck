@@ -8,8 +8,4 @@ verify: LivelockAck: check: deterministic: ok
 verify: LivelockAck: check: illegal: ok
 verify: LivelockAck: check: deadlock: ok
 verify: LivelockAck: check: compliance: ok
-verify: LivelockAck: check: livelock: fail
-p.e
-r.e
-r.return
-p.return
+verify: LivelockAck: check: livelock: ok
