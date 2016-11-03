@@ -1,6 +1,8 @@
 ##! /usr/bin/env node
 
+assert = require ('assert');
 var dzn = typeof (dzn) !== undefined && dzn ? dzn : require (__dirname + '/dzn/runtime');
+
 dzn.extend (dzn, require (__dirname + '/dzn/#.scope_model '));
 
 var relaxed = false;

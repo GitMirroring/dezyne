@@ -100,6 +100,11 @@ component Dataparam_
       return IDataparam.Status.Yes;
     }
 
+    // void fun(inout IDataparam.xint i) // TODO inout function
+    // {
+    //   i = $789$;
+    // }
+
     // IDataparam.xint xfunx (IDataparam.xint xi, IDataparam.xint xj)
     // {
     //   return $(xi + xj) / 2$;

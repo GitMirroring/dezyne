@@ -55,5 +55,5 @@
   ((->join ",")
    (map (lambda (f i)
           (if (member (.direction f) '(inout out))
-              "{value:0}" "0"))
+              "{value:0}" i))
         formal-objects (iota (length formal-objects)))))

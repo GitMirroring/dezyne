@@ -13,7 +13,7 @@
 ##include <string.h>
 
 typedef struct {
-  void (*f)(void*);
+  void (*f)(void*, ...);
   void *self;
 } closure;
 
@@ -214,7 +214,7 @@ int main(int argc, char** argv) {
 		void *p = 0;
 		if (!map_get(&event_map, line, &p)) {
         		closure *c = p;
-        		c->f(c->self);
+        		c->f(c->self, 0, 1, 2, 3, 4, 5);
 		}
 		free(line);
     	}
