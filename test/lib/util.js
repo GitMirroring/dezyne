@@ -141,7 +141,7 @@ var util = {
       });
     }
 
-    var promises = list.slice(0,max).map(function(e, i) {return e(1 + i);});
+    var promises = list.slice(0,max).map(function(e, i) {return e(100 + i);});
 
     return q.any(promises)
       .then(function(result){return next(result.session, promises);});

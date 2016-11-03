@@ -36,7 +36,7 @@ function haslanguage(aspect) {
 }
 
 function dzn(session) {
-  return '../client/bin/dzn --session=' + (session && session || 1);
+  return '../client/bin/dzn --session=' + (session && session || 100);
 }
 
 var ext = {c:'.c','c++':'.cc','c++03':'.cc',cs:'.cs',javascript:'.js'};
@@ -48,8 +48,6 @@ var default_meta = {
   , languages: all_languages
   , max: {code:undefined,run:50}
 };
-
-var session_counter = 0;
 
 function read_meta(dir, default_meta) {
   try {

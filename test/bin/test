@@ -183,7 +183,7 @@ function process_dir (dir, args, passed, failed) {
   try {fs.lstatSync(dm);} catch(e) {dm=undefined;}
   try {fs.lstatSync(run);} catch(e) {run=undefined;}
   if (dzn || dm || run)
-    return util.run(1 + session++ % args.options.jobs, dir, aspects_languages, !(args.options.quiet || args.options.summary))
+    return util.run(100 + (session++ % args.options.jobs), dir, aspects_languages, !(args.options.quiet || args.options.summary))
     .then(function(result) {
       result.exitcode === 0 ? ++passed.value : ++failed.value;
       output.log(dir, result);
