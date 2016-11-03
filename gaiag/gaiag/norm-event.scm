@@ -89,7 +89,6 @@
     flatten-compound
     combine-guards
     (aggregate-on norm:triggers-equal?)
-    ;;(aggregate-on (lambda (. o) #t))
     (rewrite-formals)
     flatten-compound
     (passdown-blocking)
@@ -278,7 +277,7 @@
       (($ <expression> ($ <var> name))
        (make <expression> :value (make <var> :name ((rename mapping) name))))
       (($ <expression> ('<- ('name name) global))
-       (begin (stderr "HIERO ~a ~a mapping: ~a\n" name global mapping) (make <expression> :value `(<- (name ,((rename mapping) name)) ,global))))
+       (make <expression> :value `(<- (name ,((rename mapping) name)) ,global)))
       ((? symbol?) (or (assoc-ref mapping o) o))
       ((? (is? <ast>)) (om:map (rename mapping) o))
       ((h t ...) (map (rename mapping) o))
@@ -308,8 +307,8 @@
                                          name))))
                      fresh)) ;; occupied name -> namex
             (refresh (lambda (occupied names)
-                       (fold (lambda (name o)
-                               (cons (fresh o name) o))
+                       (fold-right (lambda (name o)
+                                     (cons (fresh o name) o))
                              occupied names))) ;; occupied names -> (append namesx occupied)
 
             (fresh-formals (list-head (refresh occupied formals) (length formals)))

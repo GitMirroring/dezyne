@@ -23,7 +23,7 @@
 extern xint $int$;
 
 interface i {
-  in void e(xint foo);
+  in void e(xint foo, xint bla);
   out void a(xint foo);
 
   behaviour {
@@ -41,10 +41,15 @@ component normalize_alias {
     bool b = false;
     xint m;
 
-    on p.e(foo):
+    on p.e(foo, bla):
     [!b]
-    p.a(foo);
-    on p.e(bar):
+    {
+      xint test;
+      test = $0;assert(foo==0)$;
+      test = $0;assert(bla==1)$;
+      p.a(foo);
+    }
+    on p.e(bar, bla):
     [b]
     {
       p.a(bar);
