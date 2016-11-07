@@ -46,6 +46,7 @@
 	    (debug (single-char #\d))
 	    (glue (single-char #\g) (value #t))
             (help (single-char #\h))
+            (include (single-char #\I) (value #t))
             (json (single-char #\j))
             (language (single-char #\l) (value #t))
             (lts)
@@ -74,6 +75,7 @@ Usage: gaiag [OPTION]... FILE
       --coverage              write lcov coverage data to gaiag.info
   -d, --debug                 run with debugging
   -g, --glue=TYPE             generate glue code for TYPE [dzn]
+  -I, --include=DIR           append DIR to include path
   -h, --help                  display this help
   -j, --json                  use json-friendly format; strings and hash tables
   -m, --model=MODEL           use model named MODEL
@@ -115,7 +117,10 @@ Examples:
   (let* ((options (parse-opts args))
 	 (file-name (car (option-ref options '() '())))
          (language (string->symbol (option-ref options 'language "ast")))
-         (result (file->lang file-name language)))
+         (result (file->lang file-name language))
+         (opt-include? (lambda (o) (eq? (car o) 'include))))
+    (set! %include-path (append (map cdr (filter opt-include? options))
+                                (list (dirname file-name))))
     (match result
       ("" #t)
       ((? string?) (display result))

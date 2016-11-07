@@ -30,9 +30,9 @@
   :use-module (language dezyne parse)
   :use-module (language dezyne location)
   :use-module (language dezyne tokenize)
-  :export (dzn->ast find-file try-find-file parse-dzn read-dzn read-ast))
+  :export (dzn->ast find-file %include-path try-find-file parse-dzn read-dzn read-ast))
 
-(define *include-path* '("." "examples"))
+(define %include-path '("."))
 
 (define (dzn->ast o)
   (or (and-let* ((file-name (->string o))
@@ -63,8 +63,8 @@
           (read-dzn- file-name)))))
 
 (define (find-model-file o)
-  (let ((grep (lambda (dir) (gulp-pipe (format #f "/bin/grep -El '^(component|interface|enum|extern|int) ~a' ~a/~a.dzn ~a/*.dzn 2>/dev/null" o dir o dir)))))
-    (let loop ((path *include-path*))
+  (let ((grep (lambda (dir) (gulp-pipe (format #f "grep -El '^(component|interface|enum|extern|int) ~a' ~a/~a.dzn ~a/*.dzn 2>/dev/null" o dir o dir)))))
+    (let loop ((path %include-path))
       (if (null? path) #f
           (let* ((name (grep (car path)))
                  (name (and (not (string-null? name))
@@ -96,21 +96,21 @@
 (define* (find-file file-name :optional (extensions '(.dzn)))
   (let* ((file-name (if (pair? file-name) file-name (list file-name)))
          (resolved
-          (or (path-find-file *include-path* file-name)
+          (or (path-find-file %include-path file-name)
               (let loop ((extensions extensions))
                 (if (null? extensions)
                     #f
-                    (or (path-find-file *include-path*
+                    (or (path-find-file %include-path
                                         (append file-name (take extensions 1)))
                         (loop (cdr extensions)))))))
          (resolved (and (string? resolved) (string-drop-prefix "./" resolved)))
          (file-name (components->file-name file-name))
          (dir (or (and=> resolved dirname)
-                  (let ((message (format #f "gaiag: No such file or directory: ~a [~a]\n" file-name *include-path*)))
+                  (let ((message (format #f "gaiag: No such file or directory: `~a' [~a]\n" file-name %include-path)))
                     (stderr message)
                     (throw 'file-not-found message)))))
-    (when (not (member dir *include-path*))
-      (set! *include-path* (cons dir *include-path*)))
+    (when (not (member dir %include-path))
+      (set! %include-path (cons dir %include-path)))
     resolved))
 
 (define* (try-find-file file-name :optional (extensions '(.dzn)))
