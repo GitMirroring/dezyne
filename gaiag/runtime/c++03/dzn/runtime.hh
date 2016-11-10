@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
@@ -127,16 +128,8 @@ namespace dzn
     runtime& operator = (const runtime&);
   };
 
-  template <typename T>
-  boost::reference_wrapper<typename boost::remove_reference<T>::type> ref(T& t)
-  {
-    return boost::ref(t);
-  }
-  template <typename T>
-  boost::reference_wrapper<typename boost::remove_reference<const T>::type> ref(const T& t)
-  {
-    return boost::cref(t);
-  }
+  using boost::ref;
+
   template <typename C, typename P>
   void call_in(C* c, boost::function<void()> f, boost::tuple<P*, const char*, const char*> m)
   {
