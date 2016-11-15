@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,7 +24,6 @@
 #include "imotor.hh"
 #include "ilight.hh"
 #include "itouch.hh"
-#include "itimer_impl.hh"
 
 #include "LegoBallSorter.hh"
 
@@ -56,29 +56,6 @@ constexpr std::uint8_t PORT4 = 3;
 void connect(imotor& m, lego::USB::Device* brick, std::uint8_t port);
 void connect(itouch& t, lego::USB::Device* brick, std::uint8_t port);
 void connect(ilight& l, lego::USB::Device* brick, std::uint8_t port);
-
-struct timer_impl: public itimer_impl
-{
-  static size_t g_id;
-  size_t id;
-  itimer& port;
-  dzn::pump& p;
-
-  timer_impl(const dzn::locator& l)
-  : id(g_id++)
-  , port(l.get<itimer>())
-  , p(l.get<dzn::pump>())
-  {}
-  void create(int ms)
-  {
-    p.handle(id, ms, port.out.timeout);
-  }
-  void cancel()
-  {
-    p.remove(id);
-  }
-};
-size_t timer_impl::g_id = 0;
 
 lego::USB* usb_ptr = nullptr;
 
@@ -144,9 +121,6 @@ int main(int argc, char* argv[])
     std::unique_ptr<dzn::pump> tmp1(new dzn::pump);
     loc.set(*tmp1);
 
-    std::function<std::shared_ptr<itimer_impl>(const dzn::locator&)> create_timer_impl = [](const dzn::locator& l){return std::make_shared<timer_impl>(l);};
-    loc.set(create_timer_impl);
-
     LegoBallSorter sut(loc);
 
     std::unique_ptr<dzn::pump> tmp2(std::move(tmp1)); //now the pump is destroyed before the sut is
@@ -205,9 +179,9 @@ int main(int argc, char* argv[])
     bool stop = false;
     while(not stop && std::getline(std::cin, s)) {
       if(s.empty()) continue;
-      if(s[0] == 'c') pump.and_wait(sut.ctrl.in.calibrate);
-      if(s[0] == 'o') pump.and_wait(sut.ctrl.in.operate);
-      if(s[0] == 's') pump.and_wait(sut.ctrl.in.stop);
+      if(s[0] == 'c') dzn::blocking(pump, sut.ctrl.in.calibrate);
+      if(s[0] == 'o') dzn::blocking(pump, sut.ctrl.in.operate);
+      if(s[0] == 's') dzn::blocking(pump, sut.ctrl.in.stop);
       if(s[0] == 'q') stop = true;
     }
   }
