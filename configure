@@ -161,7 +161,8 @@ Usage: ./configure [OPTION]...
           (set! required (cons deb required))))))
 
 (define guix?
-  (file-exists? "/gnu"))
+  (and (file-exists? "/gnu")
+       (not (equal? (gulp-pipe "which bash") "/bin/bash"))))
 
 (define (main args)
   (let* ((verum? (file-exists? "/verum"))

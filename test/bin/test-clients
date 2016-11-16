@@ -1,0 +1,122 @@
+#!/usr/bin/guile \
+-e main -s
+!#
+
+(use-modules (srfi srfi-1))
+(use-modules (srfi srfi-2))
+(use-modules (srfi srfi-26))
+
+(define (pair?? ls)
+  (if (null? ls) #f
+      ls))
+
+(define (main args)
+  (let ((args (cdr args)))
+    (if (null? args)
+        (test clients daemons)
+        (let* ((args (map string->symbol args))
+               (clients (or (pair?? (filter (compose (cut member <> args) car) clients)) clients))
+               (daemons (or (pair?? (filter (compose (cut member <> args) car) daemons)) daemons)))
+          (test clients daemons)))))
+
+#! TODO
+
+simple/implicit:
+hello
+bye
+query
+ls
+cat
+test
+start
+kill
+
+elaborate:
+browse
+code
+convert
+parse
+run
+table
+verify
+view
+
+internal:
+traces
+debug
+
+!#
+
+(define dzn-hello
+ (string-append "[ \"$(echo root | $HOME/.npm/bin/dzn -u root -p -s http://localhost:3000 hello)\" = \"password: hello\" ]"))
+
+(define (dzn-daemon version)
+  "[ \"$(npm list -g --parseable --long dzn-daemon | grep -oE '@[0-9]\\.[0-9]\\.[0-9]:')\" = \"@" (symbol->string version) ":\" ]")
+
+(define dzn-query
+  "$HOME/.npm/bin/dzn query")
+
+(define dzn-test
+  "cd test && bin/test client")
+
+(define setup
+  '("pidof node && killall node || true"
+    "rm -f $HOME/.dzn.json"
+    "rm -rf $HOME/.npmrc"
+    "echo prefix=$HOME/.npm > $HOME/.npmrc"
+    "rm -rf $HOME/.npm"
+    "mkdir -p $HOME/.npm"
+    "test -e $HOME/.ccache || ln -s /home/buildmaster/.ccache $HOME/.ccache"
+    "make default db-setup dzn-client dzn-daemon"
+    "DEZYNE_PREFIX=build/prefix server/main.js --debug --config=localhost > build/server.log 2>&1 &"))
+
+(define teardown
+  "killall node")
+
+(define clients
+  (list
+   (cons 'dzn-2.0.0 "npm install -g https://hosting.verum.com/download/npm/dzn-2.0.0.tar.gz")
+   (cons 'dzn-2.1.0 "npm install -g https://hosting.verum.com/download/npm/dzn-2.1.0.tar.gz")))
+
+(define daemons
+  (cons
+   (cons 'no-daemon "true")
+   (let ((daemon-initial 3)
+         (daemon-latest 7))
+     ;;TODO keep previous daemons on hosting.
+     (let ((versions (map number->string (iota (+ 1 (- daemon-latest daemon-initial)) daemon-initial 1))))
+       (map (lambda (prefix number) (cons (string->symbol (string-append "daemon-0.0." number))
+                                          (string-append prefix number ".tar.gz")))
+            (append (make-list (- (length versions) 1) "npm install -g https://hosting.verum.com/download/npm/dzn-daemon-0.0.")
+                    '("npm install -g http://localhost:3000/download/npm/dzn-daemon-0.0."))
+            versions))
+     ;;until that time, do current version & candidate version
+     (list
+      (cons (string->symbol (string-append "daemon-0.0." (number->string (- daemon-latest 1)))) "npm install -g https://hosting.verum.com/download/npm/dzn-daemon-0.0.6.tar.gz")
+      (cons (string->symbol (string-append "daemon-0.0." (number->string daemon-latest))) "npm install -g http://localhost:3000/download/npm/dzn-daemon-0.0.7.tar.gz")))))
+
+(define (sh cmd)
+  (display (string-append "+" cmd)) (newline)
+  (if (not (eq? 0 (status:exit-val (system cmd))))
+      (begin (display "FAIL: ") (display cmd) (newline) (exit 1))))
+
+(define (script client daemon tests)
+  (map sh setup)
+  (sh (cdr client))
+  (sh (cdr daemon))
+  (map sh tests)
+  (sh teardown))
+
+(define (test clients daemons)
+  (map (lambda (client)
+         (map (lambda (daemon)
+                (display "TEST CASE: [")
+                (display (string-join
+                          (map symbol->string
+                               (list (car client)
+                                     (car daemon))) ", "))
+                (display "]")
+                (newline)
+                (script client daemon (list dzn-hello dzn-query dzn-test)))
+              daemons))
+       clients))
