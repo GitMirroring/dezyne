@@ -1,0 +1,70 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface IAsync {
+  in void e();
+  in void c();
+  out void cb1();
+  out void cb2();
+
+  behaviour {
+    bool idle = true;
+    bool first = true;
+    [idle] {
+      on e: { idle = false; first = true; }
+      on c: {}
+    }
+    [!idle && first] {
+      on e: illegal;
+      on c: idle = true;
+      on inevitable: { cb1; first = false; }
+    }
+    [!idle && !first] {
+      on e: illegal;
+      on c: idle = true;
+      on inevitable: { cb2; idle = true; }
+    }
+  }
+}
+
+subint int {0..2};
+
+component async_order {
+  provides IAsync p;
+  behaviour {
+    requires dzn.async i1;
+    requires dzn.async i2;
+    int num = 0;
+    [num==0] {
+      on p.e(): { i1.req(); i2.req(); num = 2; }
+      on p.c(): {}
+    [0<num] {
+      on p.e: illegal;
+      on p.c(): { num = 0; }
+      on i1.ack(): { p.cb1(); num = num-1; }
+      on i2.ack(): { p.cb2(); num = num-1; }
+    }
+  }
+}
+
+
