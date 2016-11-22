@@ -49,6 +49,10 @@
   (let ((file-name (match o
                      (('name scope ... name) (find-model-file name))
                      (_ o))))
+    (when (not file-name)
+      (let ((m (format #f "cannot find model: `~a'\n" o)))
+        (stderr m)
+        (throw (cons 'model-not-found m))))
     (let* ((file-name (->string file-name))
            (file-name (if (string= file-name "-") "-"
                           (find-file file-name)))
