@@ -21,29 +21,38 @@
 //
 // Code:
 
-extern T $int$;
+#include "async_hello.hh"
 
-interface i
-{
-  in void e(T t);
-  out void a(T t);
-  behaviour {
-    bool idle = true;
-    [idle] on e: idle=false;
-    [!idle] {
-      on inevitable: {idle=true;a;}
-      on e: illegal;
-    }
-  }
-}
+#include <dzn/locator.hh>
+#include <dzn/runtime.hh>
+#include <dzn/pump.hh>
 
-component async_hello
+#include <algorithm>
+#include <cassert>
+#include <iostream>
+#include <chrono>
+#include <thread>
+
+int main()
 {
-  provides i p;
-  behaviour {
-    requires dzn.async(T t) defer;
-    bool idle = true;
-    [idle] on p.e (t): {idle=false; defer.req (t);}
-    [!idle] on defer.ack (t): {idle=true;p.a (t);}
-  }
+  std::string str;
+  while(std::cin >> str);
+
+  dzn::locator loc;
+  dzn::runtime rt;
+  loc.set(rt);
+  dzn::pump pump;
+  loc.set(pump);
+
+  async_hello sut(loc);
+
+  sut.dzn_meta.name = "sut";
+  sut.p.meta.requires.port = "p";
+  sut.p.out.a = [] (int t) {std::clog << "p.a -> <external>.p.a [" <<  t << "]" << std::endl;};
+
+  dzn::blocking (pump, [&] {sut.p.in.e (0);});
+  //pump ([&] {sut.p.in.e (0);});
+
+  std::this_thread::sleep_for (std::chrono::milliseconds (1));
+  return 0;
 }

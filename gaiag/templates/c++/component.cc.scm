@@ -2,6 +2,9 @@
 
 ##include <dzn/locator.hh>
 ##include <dzn/runtime.hh>
+#(string-if (pair? (om:ports (.behaviour model))) #{
+##include <dzn/pump.hh>
+#})
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 #.model ::#.model (const dzn::locator& dezyne_locator)
@@ -14,7 +17,7 @@
   (map (init-member model #{
 #name(#(if (not (eq? expression *unspecified*)) expression))#}) (om:variables model))
   (map (define-reply #{reply_#((c++:scope-join #f '_) scope)_#name()#}) (om:reply-enums model))
-  (map (lambda (port) (list (.name port) "{" (if (.injected port) (list "dezyne_locator.get<" ((c++:scope-name) (.type port)) ">()") (list "{" (if (eq? (.direction port) 'requires) "{\"\",0,0},") "{\"" (.name port) "\",this,&dzn_meta}" (if (eq? (.direction port) 'provides) ",{\"\",0,0}") "}")) "}")) (om:ports model))))
+  (map (lambda (port) (list (.name port) "{" (if (.injected port) (list "dezyne_locator.get<" ((c++:scope-name) (.type port)) ">()") (list "{" (if (eq? (.direction port) 'requires) "{\"\",0,0},") "{\"" (.name port) "\",this,&dzn_meta}" (if (eq? (.direction port) 'provides) ",{\"\",0,0}") "}")) "}")) (append (om:ports model) (om:ports (.behaviour model))))))
   {
     dzn_rt.performs_flush(this) = true;
 #
@@ -29,8 +32,19 @@
       (map (define-on model port #{
 #port .#direction .#event  = [&] (#formals) { return dzn::call_out(this, [=]{return #port _#event (#arguments);}, this->#port .meta, "#event "); };
 #}) (filter om:out? (om:events port))))
-    (filter om:requires? (om:ports model)))
-}
+    (filter om:requires? (append (om:ports model) (om:ports (.behaviour model)))))#
+(string-if (pair? (om:ports (.behaviour model))) #{
+    dzn::pump& dzn_pump = dzn_locator.get<dzn::pump>();
+#})#
+(map
+    (lambda (port)
+      (map (define-on model port #{
+#(string-if (eq? event 'req) #{
+#port .#direction .#event  = [&] (#formals) {dzn_pump.handle(reinterpret_cast<size_t>(&#port), 0, [=] {#port _ack(#arguments);});}; #})#
+(string-if (eq? event 'clr) #{
+#port .#direction .#event  = [&] (#formals) {dzn_pump.remove(reinterpret_cast<size_t>(&#port));}; #})
+#}) (filter om:in? (om:events port))))
+    (om:ports (.behaviour model)))}
 
 #(map
   (lambda (port)
@@ -43,7 +57,7 @@
 #}) }
 
 #}) (filter (om:dir-matches? port) (om:events port))))
-  (om:ports model))#
+  (append (om:ports model) (om:ports (.behaviour model))))#
 ((->join "\n  ")(map (define-function model #{
   #scope-return-type  #.model ::#name (#formals)
   {

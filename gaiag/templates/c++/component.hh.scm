@@ -5,7 +5,7 @@
 
 #(map (include-interface #{
 ##include "#interface .hh"
-#}) (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
+#}) (delete-duplicates (append (om:ports model) (om:ports (.behaviour model))) (lambda (x y) (equal? (.type x) (.type y)))))
 
 namespace dzn {
 struct locator;
@@ -25,10 +25,10 @@ struct #.model
     (delete-duplicates (append-map (compose declare-replies code:import .type) ((compose .elements .ports) model)) equal?)#
     (map (init-port #{
     std::function<void ()> out_#name;
-#}) (filter om:provides? ((compose .elements .ports) model)))#
+#}) (filter om:provides? (om:ports model)))#
     (map (init-port #{
 #((c++:scope-join model) interface)  #name ;
-#}) ((compose .elements .ports) model))
+#}) (append (om:ports model) (om:ports (.behaviour model))))
     #.model (const dzn::locator&);
   void check_bindings() const;
   void dump_tree(std::ostream& os) const;
@@ -48,7 +48,7 @@ private:
     (map (define-on model port #{
 #return-type  #port _#event (#formals);
 #}) (filter om:out? (om:events port))))
-  (filter om:requires? (om:ports model)))#
+  (filter om:requires? (append (om:ports model) (om:ports (.behaviour model)))))#
 (map (define-function model #{
   #return-type  #name (#formals);
 #}) (om:functions model)) };

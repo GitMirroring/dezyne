@@ -26,24 +26,30 @@ extern T $int$;
 interface i
 {
   in void e(T t);
+  in void c(T t);
   out void a(T t);
   behaviour {
     bool idle = true;
-    [idle] on e: idle=false;
+    [idle] {
+      on e: idle=false;
+      on c: illegal;
+    }
     [!idle] {
+      on c: idle=true;
       on inevitable: {idle=true;a;}
       on e: illegal;
     }
   }
 }
 
-component async_hello
+component async_cancel
 {
   provides i p;
   behaviour {
     requires dzn.async(T t) defer;
     bool idle = true;
     [idle] on p.e (t): {idle=false; defer.req (t);}
+    [!idle] on p.c (t): {idle=true; defer.clr ();}
     [!idle] on defer.ack (t): {idle=true;p.a (t);}
   }
 }

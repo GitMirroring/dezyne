@@ -162,6 +162,7 @@
   (match o
     (($ <interface>) '())
     (($ <component> name ('ports ports ...)) ports)
+    (($ <behaviour> name types ('ports ports ...)) ports)
     (($ <system> name ('ports ports ...)) ports)))
 
 (define (om:instances o)
@@ -355,7 +356,10 @@
         (om:port model port))))
     (_ (find (if o (om:named o)
                  (lambda (x) (eq? (.direction x) 'provides)))
-             (.elements (.ports model))))))
+             (append (.elements (.ports model))
+                     (if (and (is-a? model <component>) (.behaviour model))
+                         (.elements (.ports (.behaviour model)))
+                         '()))))))
 
 (define (om:variable model o)
   (find (om:named o) (om:variables model)))
