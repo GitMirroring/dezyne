@@ -25,9 +25,11 @@
 
 #! /bin/sh
 # try: ./test.sh --debug
+set -x
 self=$(readlink -f $(cut -d '' -f2 < /proc/$$/cmdline))
 prefix=$(cd $(dirname $self) && pwd)
 [ "$(basename $prefix)" != "gaiag" ] && prefix=$prefix/gaiag
+dir=$(basename $prefix)
 top=$(cd $prefix/.. && pwd)
 build=${ABS_BUILD-$top/build}
 ccache=$build/ccache
@@ -35,4 +37,7 @@ GUILE_AUTO_COMPILE=0
 GUILE_LOAD_PATH="$prefix:$prefix/json:$GUILE_LOAD_PATH"
 GUILE_LOAD_COMPILED_PATH="$ccache:$ccache/json:$ccache/test-suite:$GUILE_LOAD_COMPILED_PATH"
 export GUILE_AUTO_COMPILE GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
-exec ${GUILE-guile} -e main test-suite/run-tests "$@" < /dev/null
+cd $dir
+#set -o pipefail
+#${GUILE-guile} -e main test-suite/run-tests "$@" < /dev/null |& sed "s@^test-suite/@$dir/test-suite/@"
+${GUILE-guile} -e main test-suite/run-tests "$@" < /dev/null

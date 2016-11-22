@@ -71,7 +71,7 @@
     )
 
    (program
-    (models *eoi*) : (cons 'root $1))
+    (models *eoi*) : (cons 'root (append template-interfaces $1)))
 
    (models
     () : '()
@@ -249,12 +249,14 @@
    (behaviour-spec
     (behaviour optional-identifier #{{}# optional-types #{}}#)
     : `(,$1 ,$2 ,$4)
-    (behaviour optional-identifier #{{}# optional-types functions/statements/variables #{}}#)
+    (behaviour optional-identifier #{{}# optional-types functions/ports/statements/variables #{}}#)
     : (receive (f r)
           (partition (lambda (x) (eq? (car x) 'function)) $5)
-        (receive (s v)
-            (partition (lambda (x) (not (eq? (car x) 'variable))) r)
-          `(,$1 ,$2 ,$4 ,(cons 'variables v) ,(cons 'functions f) ,(note-location (cons 'compound s) @1)))))
+        (receive (p r)
+            (partition (lambda (x) (eq? (car x) 'port)) r)
+          (receive (v r)
+              (partition (lambda (x) (eq? (car x) 'variable)) r)
+            `(,$1 ,$2 ,$4 (ports ,@p) (variables ,@v) (functions ,@f) ,(note-location `(compound ,@r) @1))))))
 
    (optional-identifier
     () : #f
@@ -268,6 +270,10 @@
     (formal) : `(formals ,$1)
     (formals #{,}# formal) : (append $1 (list $3)))
 
+   (optional-formals
+    () : '(formals)
+    (#{(}# formals #{)}#): $2)
+
    (formal
     (variable-type Identifier): (note-location `(formal ,$2 ,$1) @1)
     (formal-direction variable-type Identifier): (note-location `(formal ,$3 ,$2 ,$1) @1))
@@ -280,14 +286,28 @@
     (statement) : $1
     (variable) : $1)
 
-   (functions/statements/variables
+   (functions/ports/statements/variables
     () : '()
-    (functions/statements/variables function/statement/variable) : (append $1 (list $2)))
+    (functions/ports/statements/variables function/port/statement/variable) : (append $1 (list $2)))
 
-   (function/statement/variable
+   (function/port/statement/variable
+    (behaviour-port) : $1
     (function) : $1
     (statement) : $1
     (variable) : $1)
+
+   (behaviour-port
+    (port-direction name optional-formals Identifier #{\;}#) :
+    (let* ((port $4)
+           (type $2)
+           (formals $3)
+           (type (append type (map type-name (cdr formals)))))
+      (set! template-interfaces (cons (make-async-refine-interface type formals) template-interfaces))
+      `(port ,port ,type ,$1 #f #f)))
+
+   (behaviour-ports
+    () : '(ports)
+    (ports behaviour-port) : (append $1 (list $2)))
 
    (statement
     (blocking-statement) : $1
@@ -405,6 +425,41 @@
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))
+
+(define template-interfaces '())
+(define (type-name o)
+  (match o
+    (('formal name ('type ('name type))) type)))
+(define (make-async-refine-interface name formals)
+  `(interface
+    ,name
+    (events (event req (signature (type void) ,formals) in)
+            (event clr (signature (type void) ,formals) in)
+            (event ack (signature (type void) ,formals) out))
+    (behaviour
+     #f
+     (types)
+     (ports)
+     (variables
+      (variable idle (type bool) (expression true)))
+     (functions)
+     (compound
+      (guard (expression (name idle))
+        (compound
+         (on (triggers (trigger #f req (arguments)))
+             (assign idle (expression false)))
+         (on (triggers (trigger #f clr (arguments)))
+             (compound))))
+      (guard (expression (! (name idle)))
+        (compound
+         (on (triggers (trigger #f req (arguments)))
+             (illegal))
+         (on (triggers (trigger #f clr (arguments)))
+             (assign idle (expression true)))
+         (on (triggers (trigger #f inevitable (arguments)))
+             (compound
+              (action (trigger #f ack (arguments)))
+              (assign idle (expression true))))))))))
 
 (define (comp src e)
   (match src

@@ -58,7 +58,7 @@ TEST := $(TEST) $(CDIR)-check
 
 $(CDIR)-check: CDIR:=$(CDIR)
 $(CDIR)-check: $(BUILD)/$(CDIR)
-	cd $(CDIR) && GUILE_AUTO_COMPILE=0 GUILE_LOAD_PATH=$(GLP) GUILE_LOAD_COMPILED_PATH=$(GLCP) ./test.sh
+	GUILE_AUTO_COMPILE=0 GUILE_LOAD_PATH=$(GLP) GUILE_LOAD_COMPILED_PATH=$(GLCP) gaiag/test.sh
 
 SUBM := test-suite/
 SRCS := $(filter %.scm %.test,$(shell $(GIT_LS_FILES) $(CDIR)/test-suite))

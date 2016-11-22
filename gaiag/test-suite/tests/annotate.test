@@ -41,6 +41,7 @@
          (behaviour
            #f
            (types)
+           (ports)
            (variables)
            (functions)
            ((location "examples/loc.dzn" 4 2 50 #f)
@@ -71,6 +72,7 @@
          (behaviour
            #f
            (types)
+           (ports)
            (variables)
            (functions)
            ((location "examples/loc.dzn" 13 2 121 #f)
