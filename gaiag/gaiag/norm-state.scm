@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -132,7 +133,7 @@ reply en die kun je niet mixen"
 (define (ast-> ast)
   ((compose
     om->list
-    ((@ (gaiag dzn) ast->dzn))
+;;    ((@ (gaiag dzn) ast->dzn))
     csp-norm-state
     ast:resolve
     ast->om

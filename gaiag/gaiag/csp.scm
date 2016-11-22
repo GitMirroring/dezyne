@@ -91,6 +91,7 @@
   "")
 
 (define (generate-csp o)
+  (let ((o (internal-libs o)))
   (match o
     (($ <interface>)
      (and-let* ((root (make <root> :elements (list o))))
@@ -98,13 +99,13 @@
     (($ <component>)
      (and-let* ((interfaces (map csp:import (map .type ((compose .elements .ports) o))))
 
-                (root (make <root> :elements (append interfaces (list o)))))
+                (root (internal-libs (make <root> :elements (append interfaces (list o))))))
                (and-let* ((no-behaviour (null-is-#f (filter (negate .behaviour) interfaces)))
                           (message (format #f "gaiag: interface without behaviour: ~a\n"
                                            (comma-join (map .name no-behaviour)))))
                          (stderr message)
                          (throw 'csp message))
-               (model-generate-csp root o)))))
+               (model-generate-csp root o))))))
 
 (define (model-generate-csp root o)
   (let ((separate-asserts? (option-ref (parse-opts (command-line)) 'assert #f)))
@@ -1175,3 +1176,66 @@
 
 (define* ((animate-pairs pairs string) :optional parameter)
   (animate string (pairs->module pairs parameter)))
+
+(define (move-internal-ports o)
+  (match o
+    (($ <component> name ports behaviour) 
+     (make <component>
+       :name name
+       :ports (append ports (.elements (.ports behaviour)))
+       :behaviour (make <behaviour>
+                    :name (.name behaviour)
+                    :types (.types behaviour)
+                    :ports '(ports)
+                    :variables (.variables behaviour)
+                    :functions (.functions behaviour)
+                    :statement (.statement behaviour))))
+    ((? (is? <ast>)) (om:map move-internal-ports o))
+    ((h t ...) (map move-internal-ports o))
+    (_ o)))
+
+(define (add-internal-libs-behaviour o)
+  (match o
+    (($ <interface> name types events behaviour)
+     (if (dzn-async? name)
+         (make <interface>
+           :name name
+           :types types
+           :events events
+           :behaviour (async-behaviour))
+         o))
+     ((? (is? <ast>)) (om:map add-internal-libs-behaviour o))
+     ((h t ...) (map add-internal-libs-behaviour o))
+     (_ o)))
+
+(define (dzn-async? name)
+  (eq? (car (.elements name)) 'dzn)) 
+
+    
+(define (async-behaviour)    
+  ((compose .behaviour car cdr ast:resolve ast->om dzn->ast)
+"interface dzn.async {
+  in void req();
+  in void clr();
+  out void ack();
+
+  behaviour {
+    bool idle = true;
+    [idle] {
+      on req: idle = false;
+      on clr: {}
+    }
+    [!idle] {
+      on req: illegal;
+      on clr: idle = true;
+      on inevitable: { ack; idle = true; }
+    }
+  }
+}"))
+
+(define (internal-libs ast) 
+  ((compose
+    add-internal-libs-behaviour
+    move-internal-ports
+    ) ast))
+  
