@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -88,6 +89,7 @@
      (make <behaviour>
        :name name
        :types (ast->om- (or (null-is-#f (assoc 'types body)) '(types)))
+       :ports (ast->om- (or (null-is-#f (assoc 'ports body)) '(ports)))
        :variables (ast->om- (or (null-is-#f (assoc 'variables body)) '(variables)))
        :functions (ast->om- (or (null-is-#f (assoc 'functions body)) '(functions)))
        :statement (ast->om- (or (null-is-#f (assoc 'compound body)) '(compound)))))

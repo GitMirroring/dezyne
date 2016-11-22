@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -364,6 +365,7 @@
 (define-class <behaviour> (<ast>)
   (name :accessor .name :init-value #f :init-keyword :name)
   (types :accessor .types :init-form (make <types>) :init-keyword :types)
+  (ports :accessor .ports :init-form (make <ports>) :init-keyword :ports)
   (variables :accessor .variables :init-form (make <variables>) :init-keyword :variables)
   (functions :accessor .functions :init-form (make <functions>) :init-keyword :functions)
   (statement :accessor .statement :init-form (make <compound>) :init-keyword :statement))

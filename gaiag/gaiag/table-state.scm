@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -76,6 +77,7 @@
          (make <behaviour>
            :name ((compose .name .behaviour) o)
            :types ((compose .types .behaviour) o)
+           :ports ((compose .ports .behaviour) o)
            :variables ((compose .variables .behaviour) o)
            :functions ((compose .functions .behaviour) o)
            :statement statement))))
@@ -90,6 +92,7 @@
                      (make <behaviour>
                        :name ((compose .name .behaviour) o)
                        :types ((compose .types .behaviour) o)
+                       :ports ((compose .ports .behaviour) o)
                        :variables ((compose .variables .behaviour) o)
                        :functions ((compose .functions .behaviour) o)
                        :statement statement)))

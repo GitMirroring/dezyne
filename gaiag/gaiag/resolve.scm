@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
-;; Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;; Copyright © 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
@@ -540,10 +540,11 @@
          :ports ports
          :behaviour ((resolve o '()) behaviour)))
 
-    (($ <behaviour> name types variables functions statement)
+    (($ <behaviour> name types ports variables functions statement)
      (make <behaviour>
        :name name
        :types types
+       :ports ports
        :variables ((resolve model '()) variables)
        ;; om:map denx0r?
        :functions ((resolve model '()) functions)

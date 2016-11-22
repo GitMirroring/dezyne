@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -335,10 +336,11 @@
               :ports ports
               :behaviour ((rewrite-formals o) behaviour))))
 
-    (($ <behaviour> name types variables functions statement)
+    (($ <behaviour> name types ports variables functions statement)
      (make <behaviour>
        :name name
        :types types
+       :ports ports
        :variables variables
        :functions functions
        :statement ((rewrite-formals model '()) statement)))

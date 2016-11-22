@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;; Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -469,7 +471,7 @@
     ;; FIXME: recurse through whole AST
     (($ <interface> name types events behaviour) (filter identity ((collect predicate) behaviour)))
     (($ <component> name ports behaviour) (filter identity ((collect predicate) behaviour)))
-    (($ <behaviour> name types variables functions statement) (filter identity ((collect predicate) statement)))
+    (($ <behaviour> name types ports variables functions statement) (filter identity ((collect predicate) statement)))
     ((h t ...)
      (filter identity (apply append (map (collect predicate) o))))
     (_ '())))
