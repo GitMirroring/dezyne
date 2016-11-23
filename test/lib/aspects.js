@@ -108,16 +108,16 @@ function skip_filter (meta) {
   }
 }
 
-function run_traces(parameters, asp, app) {
+function ls_traces(dir) {
+  return q.denodeify(fs.readdir)(dir)
+    .then(function(entries) {
+      return entries
+        .filter(function(entry) {return /trace/.test(entry);})
+        .map(function(entry){ return dir + '/' + entry; });
+    });
+}
 
-  function ls_traces(dir) {
-    return q.denodeify(fs.readdir)(dir)
-      .then(function(entries) {
-        return entries
-          .filter(function(entry) {return /trace/.test(entry);})
-          .map(function(entry){ return dir + '/' + entry; });
-      });
-  }
+function run_traces(parameters, asp, app) {
 
   function random_selection(files) {
     if (parameters.meta.max && parameters.meta.max[asp] !== undefined) {
@@ -467,8 +467,9 @@ var aspects = {
     var cmd = dzn() + ' traces '+imports+' -q 7 '+illegal+flush+' -m '+parameters.model+' -o '+out+' '+parameters.filename;
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
-      .then(function(){return util.spawn_sync_shell(cmd);})
-      .fail (function(err) {console.log(err); return {status: -1, output: err}});
+      .then(function(){return ls_traces(out);})
+      .then(function(traces){if (!traces.length) traces = util.spawn_sync_shell(cmd);return traces;})
+      .fail(function(err) {console.log(err); return {status: -1, output: err}});
   }
   ,
   verify: function(parameters) {
