@@ -27,6 +27,7 @@
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 optargs)
   :use-module (ice-9 receive)
+  :use-module (ice-9 regex)   
   :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
   :use-module (srfi srfi-26)
@@ -1202,16 +1203,35 @@
            :name name
            :types types
            :events events
-           :behaviour (async-behaviour))
+           :behaviour ((rename-behaviour (.elements events)) (async-behaviour)))
          o))
      ((? (is? <ast>)) (om:map add-internal-libs-behaviour o))
      ((h t ...) (map add-internal-libs-behaviour o))
      (_ o)))
 
-(define (dzn-async? name)
-  (eq? (car (.elements name)) 'dzn)) 
+(define (demangle symbol)
+  (string->symbol (regexp-substitute #f (string-match "^i[0-9]+_" (symbol->string symbol)) 'post)))
 
-    
+(define (dzn-async? name)
+  (eq? (demangle (car (.elements name))) 'dzn)) 
+
+(define ((rename-behaviour events) o)
+  (define (rename events name)
+    (if (null? events) 
+        name
+        (if (eq? name (demangle (.name (car events))))
+            (.name (car events))
+            (rename (cdr events) name))))
+  (match o
+    (($ <trigger> port event arguments)
+         (make <trigger>
+           :port port
+           :event (rename events event)
+           :arguments arguments))
+     ((? (is? <ast>)) (om:map (rename-behaviour events) o))
+     ((h t ...) (map (rename-behaviour events) o))
+     (_ o)))
+
 (define (async-behaviour)    
   ((compose .behaviour car cdr ast:resolve ast->om dzn->ast)
 "interface dzn.async {
@@ -1220,15 +1240,15 @@
   out void ack();
 
   behaviour {
-    bool idle = true;
-    [idle] {
-      on req: idle = false;
+    bool dzn_idle = true;
+    [dzn_idle] {
+      on req: dzn_idle = false;
       on clr: {}
     }
-    [!idle] {
+    [!dzn_idle] {
       on req: illegal;
-      on clr: idle = true;
-      on inevitable: { ack; idle = true; }
+      on clr: dzn_idle = true;
+      on inevitable: { ack; dzn_idle = true; }
     }
   }
 }"))
