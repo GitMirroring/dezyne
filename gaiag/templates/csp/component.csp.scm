@@ -162,11 +162,20 @@ within compress((CO_#.scope_model _ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]]
                  SEMANTICS(IN',OUT',LINK',provided_in',provided_blocked',begin_required_modeling',end_required_modeling',in_internals') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|#(comma-join (apply append (list "IN'") (map (lambda (o) (list (.name o) (string-append (symbol->string (.name o)) "_'") (string-append (symbol->string (.name o)) "_'''"))) (om:required model))))|}|]
-                (# (let ((required_processes ((->join "\n                 ||| ") (map (lambda (port)
-(->string (list (if (.external port) "IFD_" "IF_") ((om:scope-name) port) '_"(true,false) [["((om:scope-name) port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]][["((om:scope-name) port) "_'.x<-" (.name port) "_'.x|x<-extensions("(.name port)"_')]]" (if (not (null? (filter om:out? (om:events port)))) (list "[["((om:scope-name) port) "_''.x<-" (.name port) "_''.x|x<-extensions("(.name port)"_'')]]")) (list "[["((om:scope-name) port) "_'''.x<-" (.name port) "_'''.x|x<-extensions("(.name port)"_''')]]"))))
- (filter om:requires? ((compose .elements .ports) model)))))) (if (string-null? required_processes) 'STOP required_processes))
-)[[x<-IN'.x|x<-extensions(IN')]])
-
+                # (let* ((required_processes ((->join "\n                 ||| ") 
+                                               (map (lambda (port)
+                                                      (->string (list (if (.external port) "IFD_" "IF_") ((om:scope-name) port) "_(true,false)"
+                                                                      "[[" ((om:scope-name) port) ".x<-" (.name port) ".x|x<-extensions("(.name port)")]]\n"
+                                                                      "[["((om:scope-name) port) "_'.x<-" (.name port) "_'.x|x<-extensions("(.name port)"_')]]\n"
+                                                                      (if (not (null? (filter om:out? (om:events port))))
+                                                                          (list "[["((om:scope-name) port) "_''.x<-" (.name port) "_''.x|x<-extensions("(.name port)"_'')]]\n"))
+                                                                      (list "[["((om:scope-name) port) "_'''.x<-" (.name port) "_'''.x|x<-extensions("(.name port)"_''')]]\n"))))
+                                                    (filter om:requires? ((compose .elements .ports) model)))))
+                         (hide_channels (append-map (lambda (i) (list (list i " ") (list i "_'" ) (list "IN'." i "_''" ) (list i "_'''")))
+                                                    (map .name (filter (compose dzn-async? .type) ((compose .elements .ports) model)))))
+                          (hide (if (null? hide_channels) '() (list "\\{|" (comma-join hide_channels) "|}"))))
+                     (list "(" (if (string-null? required_processes) 'STOP required_processes) ")" "[[x<-IN'.x|x<-extensions(IN')]]" hide)))
+                                                                                                    
 IF_SPEC = let
 
 compress(x) = let
