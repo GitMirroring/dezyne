@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
 //
@@ -58,9 +59,10 @@ component async_order {
     [num==0] {
       on p.e(): { i1.req(); i2.req(); num = 2; }
       on p.c(): {}
+    }
     [0<num] {
       on p.e: illegal;
-      on p.c(): { num = 0; }
+      on p.c(): { i1.clr(); i2.clr(); num = 0; }
       on i1.ack(): { p.cb1(); num = num-1; }
       on i2.ack(): { p.cb2(); num = num-1; }
     }

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,6 +26,7 @@ interface IAsync {
   in void e();
   in void c();
   out void cb();
+  out void ping();
 
   behaviour {
     bool idle = true;
@@ -37,7 +39,7 @@ interface IAsync {
       on c: idle = true;
       on inevitable: { cb; idle = true; }
     }
-    on optional: ping;
+    [idle] on optional: ping;
   }
 }
 
@@ -48,6 +50,7 @@ interface IPing {
   behaviour {
     on dummy: {}
     on optional: ping;
+  }
 }
 
 component async_prio {

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
 //
@@ -55,7 +56,7 @@ interface IAsync2 {
     [!idle] {
       on e: illegal;
       on c: idle = true;
-      on inevitable: { cb; idle = true; }
+      on inevitable: { cb1; cb2; idle = true; }
     }
   }
 }
@@ -66,15 +67,17 @@ component async_synccb2 {
   behaviour {
     requires dzn.async i;
     bool idle = true;
+    bool b = false;
     [idle] {
       on p.e(): { r.e(); idle = false; }
       on p.c(): i.clr();
+    }
     [!idle] {
       on p.e: illegal;
-      on p.c(): { i.clr(); idle = true; }
-      on i.ack(): { p.cb(); idle = true; }
-      on r.cb1(): i.req();
-      on r.cb2(); i.clr(); i.req();
+      on p.c(): { r.c(); idle = true; }
+      [b] on i.ack(): { p.cb(); idle = true; }
+      on r.cb1(): {i.req(); b = true;}
+      [b] on r.cb2(): {} // {i.clr(); i.req();}
     }
   }
 }
