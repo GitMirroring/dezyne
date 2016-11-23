@@ -30,8 +30,6 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <chrono>
-#include <thread>
 
 std::string
 read ()
@@ -70,26 +68,20 @@ int main()
   else if (trace == "p.c\np.return")
     {
       dzn::blocking (pump, [&] {sut.p.in.c ();});
-      std::this_thread::sleep_for (std::chrono::milliseconds (1));
     }
   else if (trace == "p.e\np.return\np.c\nr.c\nr.return\np.return")
     {
       dzn::blocking (pump, [&] {sut.p.in.e ();sut.p.in.c ();});
-      std::this_thread::sleep_for (std::chrono::milliseconds (1));
     }
   else if (trace == "p.e\np.return\nr.e\nr.return\np.c\nr.c\nr.return\np.return")
     {
       dzn::blocking (pump, [&] {sut.p.in.e ();});
-      std::this_thread::sleep_for (std::chrono::milliseconds (1));
       dzn::blocking (pump, [&] {sut.p.in.c ();});
-      std::this_thread::sleep_for (std::chrono::milliseconds (1));
     }
   else if (trace == "p.e\np.return\nr.e\nr.return\nr.cb\np.cb")
     {
       dzn::blocking (pump, [&] {sut.p.in.e ();});
-      std::this_thread::sleep_for (std::chrono::milliseconds (1));
       dzn::blocking (pump, [&] {sut.r.out.cb ();});
-      std::this_thread::sleep_for (std::chrono::milliseconds (1));
     }
   else
     {

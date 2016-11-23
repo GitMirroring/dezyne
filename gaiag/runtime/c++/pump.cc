@@ -143,6 +143,14 @@ namespace dzn
           queue.pop();
           if (lock) lock.unlock();
           f();
+
+          while(timers.size() && timers.begin()->first.expired())
+          {
+            auto t = *timers.begin();
+            timers.erase(timers.begin());
+            if (lock) lock.unlock();
+            t.second();
+          }
         }
       };
 

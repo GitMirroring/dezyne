@@ -30,8 +30,6 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <chrono>
-#include <thread>
 
 int main()
 {
@@ -50,13 +48,8 @@ int main()
   sut.p.meta.requires.port = "p";
   sut.p.out.a = [] (int t) {std::clog << "p.a -> <external>.p.a [" <<  t << "]" << std::endl;};
 
-  //dzn::blocking (pump, [&] {sut.p.in.e (0);});
-  //dzn::blocking (pump, [&] {sut.p.in.e (0);sut.p.in.c (0);});
-
   dzn::blocking (pump, [&] {sut.p.in.e (0);});
-  std::this_thread::sleep_for (std::chrono::milliseconds (1));
   dzn::blocking (pump, [&] {sut.p.in.e (0);sut.p.in.c (0);});
-  std::this_thread::sleep_for (std::chrono::milliseconds (1));
 
   return 0;
 }
