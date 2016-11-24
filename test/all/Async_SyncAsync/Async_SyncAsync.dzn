@@ -1,0 +1,61 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Henk Katerberg <henk.katerberg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// Test async refine interaction with synchronous provides port out
+// event.
+component Async_SyncAsync // also covered by async_synccb.dzn
+{
+  provides ISyncAsync pp;
+
+  behaviour
+  {
+    requires dzn.async() reflector;
+
+    on pp.ia(): {reflector.req(); pp.osync();}
+    on reflector.ack(): pp.oasync();
+  }
+
+  // component Async_SyncAsync shall at least perform trace
+  // pp.ia
+  // pp.osync
+  // pp.return
+  // pp.oasync
+}
+
+interface ISyncAsync
+{
+  in void ia();
+  out void osync();
+  out void oasync();
+
+  behaviour
+  {
+    bool is_active = false;
+
+    [!is_active] on ia: {is_active = true; osync;}
+    [is_active] on ia: illegal;
+
+    [is_active] on inevitable: {is_active = false; oasync;}
+  }
+}
+

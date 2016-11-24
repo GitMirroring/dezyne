@@ -1,0 +1,58 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Henk Katerberg <henk.katerberg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// Test basic async refine: defer <provides_port.event> in component
+// shall emit <provides_port.event> in new tau-trigger call context.
+component Async_Basic // equivalent to test/all/async_hello.dzn and also covered by test/all/async_simple.dzn
+{
+  provides IAsync pp;
+
+  behaviour
+  {
+    requires dzn.async() reflector;
+
+    on pp.ia(): reflector.req();
+    on reflector.ack(): pp.oa();
+  }
+
+  // component Async_Basic shall at least perform trace
+  // pp.ia
+  // pp.return
+  // pp.oa
+}
+
+interface IAsync
+{
+  in void ia();
+  out void oa();
+
+  behaviour
+  {
+    bool is_active = false;
+
+    [!is_active] on ia: is_active = true;
+    [is_active] on ia: illegal;
+    
+    [is_active] on inevitable: {oa; is_active = false;}
+  }
+}

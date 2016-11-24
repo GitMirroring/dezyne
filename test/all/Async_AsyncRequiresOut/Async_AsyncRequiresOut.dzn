@@ -1,0 +1,103 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Henk Katerberg <henk.katerberg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// Test defer interaction with requires port out event
+component Async_AsyncRequiresOut
+{
+  provides IAsyncOrder pp;
+  requires IAsync rp;
+
+  behaviour
+  {
+    requires dzn.async() reflector;
+    bool is_idle = true;
+    bool alt = true;
+
+    [alt]
+    {
+      [is_idle] on pp.ia(): {is_idle = false; rp.ia();}
+      on rp.oa(): {reflector.req(); pp.oa();}
+      on reflector.ack(): {is_idle = true; pp.ob(); alt = false;}
+    }
+    [otherwise]
+    {
+      [is_idle] on pp.ia(): {is_idle = false; reflector.req();}
+      on reflector.ack(): {rp.ia(); pp.oa();}
+      on rp.oa(): {is_idle = true; pp.ob(); alt = true;}
+    }
+    
+
+    // component Async_AsyncRequiresOut shall at least perform trace
+    // pp.ia
+    // rp.ia
+    // rp.return
+    // pp.return
+    // rp.oa
+    // pp.oa
+    // pp.ob
+    // pp.ia
+    // pp.return
+    // rp.ia
+    // rp.return
+    // pp.oa
+    // rp.oa
+    // pp.ob
+  }
+}
+
+interface IAsyncOrder
+{
+  in void ia();
+  out void oa();
+  out void ob();
+
+  behaviour
+  {
+    enum State {Idle, Working, Finalizing};
+    State s = State.Idle;
+
+    [s.Idle] on ia: s = State.Working;
+    [!s.Idle] on ia: illegal;
+
+    [s.Working] on inevitable: {oa; s = State.Finalizing;}
+
+    [s.Finalizing] on inevitable: {ob; s = State.Idle;}
+  }
+}
+
+interface IAsync
+{
+  in void ia();
+  out void oa();
+
+  behaviour
+  {
+    bool is_active = false;
+
+    [!is_active] on ia: is_active = true;
+    [is_active] on ia: illegal;
+    
+    [is_active] on inevitable: {oa; is_active = false;}
+  }
+}
+

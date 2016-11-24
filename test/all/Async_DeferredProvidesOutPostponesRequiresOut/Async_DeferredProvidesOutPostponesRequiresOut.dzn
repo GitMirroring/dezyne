@@ -1,0 +1,114 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Henk Katerberg <henk.katerberg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// Test if deferred provides out event has precedence over requires
+// port asynchronous out event.
+component Async_DeferredProvidesOutPostponesRequiresOut
+{
+  provides ISyncAsync pp;
+  requires ISync rps;
+  requires IAsync rpa;
+
+  behaviour
+  {
+    requires dzn.async() reflector;
+    
+    on pp.ia(): {rps.ia(); rpa.ia();}
+    on rps.oa(): {reflector.req(); pp.osync();} // requirement: reflector.ack() before rpa.oa
+    on reflector.ack(): pp.oasync();
+    on rpa.oa(): reflector.clr(); // requirement: shall have no effect
+
+    // component Async_DeferredProvidesOutPostponesRequiresOut shall at least perform trace
+    // pp.ia
+    // rps.ia
+    // rps.oa
+    // rps.return
+    // rpa.ia
+    // rpa.return
+    // pp.osync
+    // pp.return
+    // pp.oasync
+    // rpa.oa
+
+    // component Async_DeferredProvidesOutPostponesRequiresOut shall NOT perform trace
+    // pp.ia
+    // rps.ia
+    // rps.oa
+    // rps.return
+    // rpa.ia
+    // rpa.return
+    // pp.osync
+    // pp.return
+    // rpa.oa
+    // Error: reflector.ack must be handled before rpa.oa can occur.
+  }
+}
+
+
+interface ISync
+{
+  in void ia();
+  in void ib();
+  out void oa();
+  out void ob();
+
+  behaviour
+  {
+    on ia: oa;
+    on ib: ob;
+  }
+}
+
+interface IAsync
+{
+  in void ia();
+  out void oa();
+
+  behaviour
+  {
+    bool is_active = false;
+
+    [!is_active] on ia: is_active = true;
+    [is_active] on ia: illegal;
+    
+    [is_active] on inevitable: {oa; is_active = false;}
+  }
+}
+
+interface ISyncAsync
+{
+  in void ia();
+  out void osync();
+  out void oasync();
+
+  behaviour
+  {
+    bool is_active = false;
+
+    [!is_active] on ia: {is_active = true; osync;}
+    [is_active] on ia: illegal;
+
+    [is_active] on inevitable: {is_active = false; oasync;}
+  }
+}
+

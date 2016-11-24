@@ -1,0 +1,82 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Henk Katerberg <henk.katerberg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// Test async refine interaction with synchronous provides port out
+// event triggered by requires port synchronous out event.
+// Test if provides port synchronous out event has precedence over
+// deferred provides port (async) out event.
+component Async_SyncOutOvertakeDeferredOut
+{
+  provides ISyncAsync pp;
+  requires ISync rp;
+
+  behaviour
+  {
+    requires dzn.async() reflector;
+
+    on pp.ia(): rp.ia();
+    on rp.oa(): {reflector.req(); pp.osync();}
+    on reflector.ack(): pp.oasync();
+
+    // component Async_SyncOutOvertakeDeferredOut shall perform trace
+    // pp.ia
+    // rp.ia
+    // rp.oa
+    // rp.return
+    // pp.osync
+    // pp.return
+    // pp.oasync
+  }
+}
+
+interface ISyncAsync
+{
+  in void ia();
+  out void osync();
+  out void oasync();
+
+  behaviour
+  {
+    bool is_active = false;
+
+    [!is_active] on ia: {is_active = true; osync;}
+    [is_active] on ia: illegal;
+
+    [is_active] on inevitable: {is_active = false; oasync;}
+  }
+}
+
+interface ISync
+{
+  in void ia();
+  in void ib();
+  out void oa();
+  out void ob();
+
+  behaviour
+  {
+    on ia: oa;
+    on ib: ob;
+  }
+}
+
