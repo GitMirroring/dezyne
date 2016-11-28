@@ -21,6 +21,7 @@
 //
 // Code:
 
+// checker whether a clr resets temporary blocking of cb's 
 interface IAsync {
   in void e();
   in void c();

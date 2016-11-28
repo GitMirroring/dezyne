@@ -72,18 +72,20 @@ channel LINK' : {|IN',OUT'|}
 channel reorder_in, reorder_out : {|#(comma-join (map (lambda (x) (symbol-append x (string->symbol "_'"))) (map .name (om:provided model))))|}
 channel queue_full
 
-SEMANTICS(in',out',link',provided_in',provided_blocked',required_modeling',async_modeling',required_modeling_end',async_reqacks,in_internal') = let
+SEMANTICS(in',out',link',provided_in',provided_blocked',required_modeling',async_modeling',required_modeling_end',async_reqackclrs,in_internal') = let
 
-async_reqs = set(< req | (req,ack) <- async_reqacks >)
-async_acks = set(< ack | (req,ack) <- async_reqacks >)
+async_reqs = set(< req | (req,ack,clr) <- async_reqackclrs >)
+async_acks = set(< ack | (req,ack,clr) <- async_reqackclrs >)
+async_clrs = set(< clr | (req,ack,clr) <- async_reqackclrs >)
 
-ack2req(ack) = set(<req | (req,ack) <-async_reqacks>)
+ack2req(ack) = set(<req | (req,ack,clr) <- async_reqackclrs>)
+clr2req(clr) = set(<req | (req,ack,clr) <- async_reqackclrs>)
 
 Q' = let
 N' = #(csp-queue-size)
 external chase
-Cell = link'.in'?x' -> link'.out'!x' -> Cell
 Back = in'?x' -> (link'.out'!x' -> Back [] in'?x' -> queue_full -> STOP)
+Cell = link'.in'?x' -> link'.out'!x' -> Cell
 Front = Cell[[link'.out' <- out']]
 
 within
@@ -119,6 +121,8 @@ FillQ(c',blocked',requested') =
 (reorder_in?x': provided_blocked' -> Busy(c',<>,blocked',false,extensions_over_empty_channels_is_undefined,requested'))
 []
 ([]x':async_reqs @ x' -> FillQ(c',blocked',union(requested',{x'})))
+[]
+([]x':async_clrs @ x' -> FillQ(c',blocked',diff(requested',clr2req(x'))))
 
 Busy(c',r',blocked',pout',end',requested') =
 -- if blocked' then asynchronous out event else synchronous out event
@@ -141,6 +145,8 @@ Busy(c',r',blocked',pout',end',requested') =
 queue_full -> STOP
 []
 ([]x':async_reqs @ x' -> Busy(c',r',blocked',pout',end',union(requested',{x'})))
+[]
+([]x':async_clrs @ x' -> Busy(c',r',blocked',pout',end',diff(requested',clr2req(x'))))
 
 End(r',blocked',requested') = if r' == <> then Idle(blocked',requested') else reorder_out!head(r') -> Idle(false,requested')
 
@@ -160,7 +166,7 @@ begin_required_modeling' = {#(comma-join (required-modeling-events model))}
 begin_async_modeling' = {#(comma-join (async-modeling-events model))}
 end_required_modeling' = {#(comma-join (append-map (lambda (port) (list (->string (.name port) "_'''.modeling" ) (->string (.name port) "_'''.silent" )))
                                                    (filter om:requires? ((compose .elements .ports) model))))}
-async_reqacks = <#(comma-join (async-reqacks model))>
+async_reqackclrs = <#(comma-join (async-reqackclrs model))>
 in_internals' = inter(extensions(IN'), {|#((->join ",") (map (lambda (x) (list (.name x) "_''")) (filter (negate .external) (om:ports model))))|})
 #(map (animate-pairs `((interface ,identity))
 #{IFD_#interface _(IG,CS) = 
@@ -172,8 +178,8 @@ IQ'(#interface _in'',#interface _out'',#interface _link'',#(csp-queue-size))
 within compress((CO_#.scope_model _ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
                  [|{|#(comma-join (list "OUT',transition_begin,transition_end,reorder_in" 
                                         (comma-join (append-map (lambda (name) (list (list name) (list name "_'") (list name "_''"))) (map .name (om:provided model))))
-                                        (comma-join (async-reqs model))))|}|]
-                 SEMANTICS(IN',OUT',LINK',provided_in',provided_blocked',begin_required_modeling',begin_async_modeling',end_required_modeling',async_reqacks,in_internals') \ {|OUT',transition_begin,transition_end,reorder_in|}
+                                        (comma-join (async-reqclrs model))))|}|]
+                 SEMANTICS(IN',OUT',LINK',provided_in',provided_blocked',begin_required_modeling',begin_async_modeling',end_required_modeling',async_reqackclrs,in_internals') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|#(comma-join (apply append (list "IN'") (map (lambda (o) (list (.name o) (string-append (symbol->string (.name o)) "_'") (string-append (symbol->string (.name o)) "_'''"))) (om:required model))))|}|]
                 # (let* ((required_processes ((->join "\n                 ||| ") 

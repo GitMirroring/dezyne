@@ -452,14 +452,17 @@
                      (modeling-events (csp:import (.type port)))))
               (filter (compose dzn-async? .type) (filter om:requires? (om:ports o))))))
 
-(define (async-reqacks o)
+(define (async-reqackclrs o)
   (map (lambda (port) (list "("  (.name port) "." (.name (car (.elements (.events (csp:import (.type port)))))) "," 
-                            (.name port) "_''" "." (.name (cadr (.elements (.events (csp:import (.type port)))))) ")"))
+                            "IN'." (.name port) "_''" "." (.name (cadr (.elements (.events (csp:import (.type port)))))) ","
+                            (.name port) "." (.name (caddr (.elements (.events (csp:import (.type port)))))) ")"))
        (filter (compose dzn-async? .type) (filter om:requires? (om:ports o)))))
 
-(define (async-reqs o)
-  (map (lambda (port) (list (.name port) "." (.name (car (.elements (.events (csp:import (.type port))))))))
-       (filter (compose dzn-async? .type) (filter om:requires? (om:ports o)))))
+(define (async-reqclrs o)
+  (append-map (lambda (port) (list 
+                              (list (.name port) "." (.name (car (.elements (.events (csp:import (.type port)))))))
+                              (list (.name port) "." (.name (caddr (.elements (.events (csp:import (.type port)))))))))
+              (filter (compose dzn-async? .type) (filter om:requires? (om:ports o)))))
 
 (define (typed-elements o)
   (match o
