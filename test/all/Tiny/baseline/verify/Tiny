@@ -8,7 +8,6 @@ verify: ISiren: check: completeness: ok
 verify: ISiren: check: deadlock: ok
 verify: ISiren: check: livelock: ok
 verify: Tiny: check: deterministic: ok
-verify: Tiny: check: completeness: ok
 verify: Tiny: check: illegal: fail
 console.arm
 sensor.enable
