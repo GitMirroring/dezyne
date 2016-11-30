@@ -65,19 +65,23 @@ component async_synccb2 {
   provides IAsync p;
   requires IAsync2 r;
   behaviour {
+    enum State {S0,S1,S2,S3};
+    State s = State.S0;
     requires dzn.async i;
-    bool idle = true;
-    bool b = false;
-    [idle] {
-      on p.e(): { r.e(); idle = false; }
-      on p.c(): i.clr();
+
+    on p.c(): { r.c(); i.clr(); s = State.S0; }
+    
+    [s.S0] {
+      on p.e(): { r.e(); s = State.S1; }
     }
-    [!idle] {
-      on p.e: illegal;
-      on p.c(): { r.c(); idle = true; }
-      [b] on i.ack(): { p.cb(); idle = true; }
-      on r.cb1(): {i.req(); b = true;}
-      [b] on r.cb2(): {} // {i.clr(); i.req();}
+    [s.S1] {
+      on r.cb1(): { i.req(); s = State.S2; }
+    }
+    [s.S2] {
+      on r.cb2(): { s = State.S3; }
+    }
+    [s.S3] {
+      on i.ack(): { p.cb(); s = State.S0; }
     }
   }
 }
