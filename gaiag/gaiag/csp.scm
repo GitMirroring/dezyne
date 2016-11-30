@@ -445,17 +445,11 @@
                      (modeling-events (csp:import (.type port)))))
               (filter (compose not dzn-async? .type) (filter om:requires? (om:ports o))))))
 
-(define (async-modeling-events o)
-  (apply append
-         (map (lambda (port)
-                (map (lambda (event) (->string (list (.name port) '_'''. (.event event))))
-                     (modeling-events (csp:import (.type port)))))
-              (filter (compose dzn-async? .type) (filter om:requires? (om:ports o))))))
-
-(define (async-reqackclrs o)
+(define (async-reqackclrmods o)
   (map (lambda (port) (list "("  (.name port) "." (.name (car (.elements (.events (csp:import (.type port)))))) "," 
-                            "IN'." (.name port) "_''" "." (.name (cadr (.elements (.events (csp:import (.type port)))))) ","
-                            (.name port) "." (.name (caddr (.elements (.events (csp:import (.type port)))))) ")"))
+                            (.name port) "_''" "." (.name (cadr (.elements (.events (csp:import (.type port)))))) ","
+                            (.name port) "." (.name (caddr (.elements (.events (csp:import (.type port)))))) ","
+                            (.name port) "_'''" "." "inevitable" ")"))
        (filter (compose dzn-async? .type) (filter om:requires? (om:ports o)))))
 
 (define (async-reqclrs o)

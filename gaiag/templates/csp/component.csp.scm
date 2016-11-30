@@ -72,14 +72,20 @@ channel LINK' : {|IN',OUT'|}
 channel reorder_in, reorder_out : {|#(comma-join (map (lambda (x) (symbol-append x (string->symbol "_'"))) (map .name (om:provided model))))|}
 channel queue_full
 
-SEMANTICS(in',out',link',provided_in',provided_blocked',required_modeling',async_modeling',required_modeling_end',async_reqackclrs,in_internal') = let
+SEMANTICS(in',out',link',provided_in',provided_blocked',required_modeling',required_modeling_end',async_reqackclrmods,in_internal') = let
 
-async_reqs = set(< req | (req,ack,clr) <- async_reqackclrs >)
-async_acks = set(< ack | (req,ack,clr) <- async_reqackclrs >)
-async_clrs = set(< clr | (req,ack,clr) <- async_reqackclrs >)
+async_reqs = set(< req | (req,ack,clr,mod) <- async_reqackclrmods >)
+async_acks = set(< ack | (req,ack,clr,mod) <- async_reqackclrmods >)
+async_clrs = set(< clr | (req,ack,clr,mod) <- async_reqackclrmods >)
 
-ack2req(ack) = set(<req | (req,ack,clr) <- async_reqackclrs>)
-clr2req(clr) = set(<req | (req,ack,clr) <- async_reqackclrs>)
+req2mod(myreq) = set(<mod | (req,ack,clr,mod) <- async_reqackclrmods, myreq==req>)
+ack2req(myack) = set(<req | (req,ack,clr,mod) <- async_reqackclrmods, myack==ack>)
+clr2req(myclr) = set(<req | (req,ack,clr,mod) <- async_reqackclrmods, myclr==clr>)
+
+add(l, e) = if (member(e, set(l))) then l else l^<e>
+remove(l, S) = < e |  e <- l, not member(e, S) >
+
+first_mod(requested') = if null(requested') then {} else req2mod(head(requested'))
 
 Q' = let
 N' = #(csp-queue-size)
@@ -101,9 +107,9 @@ Idle(blocked', requested') = transition_begin -> Started(blocked', requested')
 Started(blocked',requested') = 
 (([] x':provided_in' @ x' -> FillQ(0,true,requested'))
 []
-(empty(requested') & ([] x':required_modeling' @ x' -> FillQ(0,blocked',requested')))
+(null(requested') & ([] x':required_modeling' @ x' -> FillQ(0,blocked',requested')))
 []
-([] x':async_modeling' @ x' -> FillQ(0,blocked',requested'))
+([] x':first_mod(requested') @ x' -> FillQ(0,blocked',requested'))
 []
 (in'?x' -> Busy(1,<>,blocked',false,extensions_over_empty_channels_is_undefined,requested')))
 
@@ -116,13 +122,13 @@ FillQ(c',blocked',requested') =
 [] -- synchronous out event
 ([]x':{|#(comma-join (map (lambda (port) (symbol-append (.name port) (string->symbol "_''"))) (om:provided model)))|} @ x' -> FillQ(c',blocked',requested'))
 [] -- component replies on the stimulus
-(reorder_in?x': diff(extensions(reorder_in),provided_blocked')  -> Busy(c',<x'>,blocked',false,extensions_over_empty_channels_is_undefined,requested'))
+(reorder_in?x': diff(extensions(reorder_in),provided_blocked') -> Busy(c',<x'>,blocked',false,extensions_over_empty_channels_is_undefined,requested'))
 [] -- component blocks port
 (reorder_in?x': provided_blocked' -> Busy(c',<>,blocked',false,extensions_over_empty_channels_is_undefined,requested'))
 []
-([]x':async_reqs @ x' -> FillQ(c',blocked',union(requested',{x'})))
+([]x':async_reqs @ x' -> FillQ(c',blocked',add(requested',x')))
 []
-([]x':async_clrs @ x' -> FillQ(c',blocked',diff(requested',clr2req(x'))))
+([]x':async_clrs @ x' -> FillQ(c',blocked',remove(requested',clr2req(x'))))
 
 Busy(c',r',blocked',pout',end',requested') =
 -- if blocked' then asynchronous out event else synchronous out event
@@ -134,7 +140,7 @@ Busy(c',r',blocked',pout',end',requested') =
 []
 (c' <= N' & in'?x':in_internal' -> Busy(c'+1,r',blocked',pout',end',requested')) -- accepting synchronous out events
 []
-(c' > 0 & out'?x' -> Busy(c'-1,r',blocked',pout',end',diff(requested',ack2req(x')))) -- handling queued out events
+(c' > 0 & out'?x' -> Busy(c'-1,r',blocked',pout',end',remove(requested',ack2req(x')))) -- handling queued out events
 []
 (r' == <> & reorder_in?x' -> Busy(c',<x'>,true,pout',end',requested')) -- reply to unblock port
 []
@@ -144,13 +150,13 @@ Busy(c',r',blocked',pout',end',requested') =
 []
 queue_full -> STOP
 []
-([]x':async_reqs @ x' -> Busy(c',r',blocked',pout',end',union(requested',{x'})))
+([]x':async_reqs @ x' -> Busy(c',r',blocked',pout',end',add(requested',x')))
 []
-([]x':async_clrs @ x' -> Busy(c',r',blocked',pout',end',diff(requested',clr2req(x'))))
+([]x':async_clrs @ x' -> Busy(c',r',blocked',pout',end',remove(requested',clr2req(x'))))
 
 End(r',blocked',requested') = if r' == <> then Idle(blocked',requested') else reorder_out!head(r') -> Idle(false,requested')
 
-within Idle(false,{})
+within Idle(false,<>)
 
 within Q' [|{|in',out',queue_full|}|] S'
 AS_#.scope_model _(IIG) = let
@@ -163,10 +169,9 @@ provided_in' = {#
 provided_blocked' = {#
  (comma-join (map (lambda (port) (list (.name port) "_'." "blocked")) (om:provided model)))}
 begin_required_modeling' = {#(comma-join (required-modeling-events model))}
-begin_async_modeling' = {#(comma-join (async-modeling-events model))}
 end_required_modeling' = {#(comma-join (append-map (lambda (port) (list (->string (.name port) "_'''.modeling" ) (->string (.name port) "_'''.silent" )))
                                                    (filter om:requires? ((compose .elements .ports) model))))}
-async_reqackclrs = <#(comma-join (async-reqackclrs model))>
+async_reqackclrmods = <#(comma-join (async-reqackclrmods model))>
 in_internals' = inter(extensions(IN'), {|#((->join ",") (map (lambda (x) (list (.name x) "_''")) (filter (negate .external) (om:ports model))))|})
 #(map (animate-pairs `((interface ,identity))
 #{IFD_#interface _(IG,CS) = 
@@ -179,7 +184,7 @@ within compress((CO_#.scope_model _ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]]
                  [|{|#(comma-join (list "OUT',transition_begin,transition_end,reorder_in" 
                                         (comma-join (append-map (lambda (name) (list (list name) (list name "_'") (list name "_''"))) (map .name (om:provided model))))
                                         (comma-join (async-reqclrs model))))|}|]
-                 SEMANTICS(IN',OUT',LINK',provided_in',provided_blocked',begin_required_modeling',begin_async_modeling',end_required_modeling',async_reqackclrs,in_internals') \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',provided_blocked',begin_required_modeling',end_required_modeling',async_reqackclrmods,in_internals') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|#(comma-join (apply append (list "IN'") (map (lambda (o) (list (.name o) (string-append (symbol->string (.name o)) "_'") (string-append (symbol->string (.name o)) "_'''"))) (om:required model))))|}|]
                 # (let* ((required_processes ((->join "\n                 ||| ") 
