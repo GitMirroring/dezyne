@@ -40,7 +40,7 @@
     (lambda (port)
       (map (define-on model port #{
 #(string-if (eq? event 'req) #{
-#port .#direction .#event  = [&] (#formals) {dzn_pump.handle(reinterpret_cast<size_t>(&#port), 0, [=] {#port _ack(#arguments);});}; #})#
+#port .#direction .#event  = [&] (#formals) {dzn_pump.handle(reinterpret_cast<size_t>(&#port), 0, [=] {#port _ack(#arguments);dzn_rt.flush(this);});}; #})#
 (string-if (eq? event 'clr) #{
 #port .#direction .#event  = [&] (#formals) {dzn_pump.remove(reinterpret_cast<size_t>(&#port));}; #})
 #}) (filter om:in? (om:events port))))
