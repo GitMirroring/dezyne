@@ -1,9 +1,9 @@
 verify: Sensor: check: completeness: ok
 verify: Sensor: check: deadlock: ok
 verify: Sensor: check: livelock: ok
-verify: SensorComp: check: deterministic: ok
-verify: SensorComp: check: illegal: ok
-verify: SensorComp: check: deadlock: ok
-verify: SensorComp: check: compliance: fail
+verify: coverageMissing: check: deterministic: ok
+verify: coverageMissing: check: illegal: ok
+verify: coverageMissing: check: deadlock: ok
+verify: coverageMissing: check: compliance: fail
 sensor.deactivate
-verify: SensorComp: check: livelock: ok
+verify: coverageMissing: check: livelock: ok

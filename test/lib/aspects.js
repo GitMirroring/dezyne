@@ -465,8 +465,9 @@ var aspects = {
     var out = 'out/' + path.basename(parameters.dir);
     var flush = parameters.meta.flush ? ' --flush' : '';
     var illegal = ''; // TODO: config
+    var model = parameters.meta.model || parameters.model;
     var imports = parameters.meta.imports || "";
-    var cmd = dzn() + ' traces '+imports+' -q 7 '+illegal+flush+' -m '+parameters.model+' -o '+out+' '+parameters.filename;
+    var cmd = dzn() + ' traces '+imports+' -q 7 '+illegal+flush+' -m '+model+' -o '+out+' '+parameters.filename;
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
       .then(function(){return ls_traces(out);})
@@ -480,12 +481,13 @@ var aspects = {
     var out = dir + '/'+parameters.model;
     var err = out + '.stderr';
     var imports = parameters.meta.imports || "";
+    var model = parameters.meta.model || parameters.model;
     return lstat (baseline)
       .then (function(stats) {
         return 'mkdir -p '+dir+';'
           + '{ set -o pipefail;'
           + dzn(parameters.session)
-          + ' --verbose verify --all --model='+parameters.model
+          + ' --verbose verify --all --model='+model
           + ' '+imports
           + ' '+parameters.filename
           + ' 2>'+err
@@ -500,7 +502,7 @@ var aspects = {
       })
       .fail (function(err) {
         console.log ('verify: no baseline=' + baseline);
-        return 'out="$(' + dzn(parameters.session) + ' verify --all -m '+parameters.model
+        return 'out="$(' + dzn(parameters.session) + ' verify --all -m '+model
           + ' '+imports
           + ' '+parameters.filename
           + ' 2>&1)" && [ "$out" = "" ] || { echo "verification output: \"$out\""; false; }';

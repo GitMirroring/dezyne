@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -74,7 +75,7 @@ interface I3
   }
 }
 
-component B
+component Blocked
 {
   provides I1 p;
   requires I3 r;
@@ -95,7 +96,7 @@ component BlockedSystem1
   system
   {
     A a;
-    B b;
+    Blocked b;
 
     p <=> a.p;
     a.r1 <=> b.p;
