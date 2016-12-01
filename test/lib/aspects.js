@@ -164,7 +164,9 @@ var aspects = {
           console.error('dzn hello failed (is your server running?)');
           return result;
         }
-        return util.spawn_sync_shell('mkdir -p out && cp -r ' + dir + ' out')
+        return util.spawn_sync_shell('mkdir -p out'
+                                     + ' && rm -rf out/' + path.basename (dir)
+                                     + ' && cp -as $PWD/' + dir + ' $PWD/out')
           .then(function() {
             dir = 'out/' + path.basename(dir);
             var meta = read_meta (dir, default_meta);
@@ -308,7 +310,7 @@ var aspects = {
     var tss = parameters.meta.tss;
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
     var main = parameters.dir + '/main' + ext[language];
-    try {main = fs.lstatSync (main).isFile () && main;} catch (e){main=undefined;};
+    try {main = (fs.lstatSync (main).isFile () || fs.lstatSync (main).isSymbolicLink ()) && main;} catch (e){main=undefined;};
     var cmd = 'make DZN="' + dzn() + '"'
         + ' IMPORTS=\"'+imports+'\"'
         + ' LANGUAGE='+language
@@ -328,7 +330,7 @@ var aspects = {
     var language = parameters.meta.languages[0];
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
     var main = parameters.dir + '/main' + ext[language];
-    try {main = fs.lstatSync (main).isFile () && main;} catch (e){main=undefined;};
+    try {main = (fs.lstatSync (main).isFile () || fs.lstatSync (main).isSymbolicLink ()) && main;} catch (e){main=undefined;};
     var cmd = 'make DIR='+parameters.dir
         + ' LANGUAGE='+language
         + ' OUT='+out
