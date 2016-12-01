@@ -1,0 +1,65 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// check whether an ack resets temporary blocking of cb's 
+interface IAsync {
+  in void e();
+  in void c();
+  out void cb();
+
+  behaviour {
+    bool idle = true;
+    [idle] {
+      on e: idle = false;
+      on c: {}
+    }
+    [!idle] {
+      on e: illegal;
+      on c: idle = true;
+      on inevitable: { cb; idle = true; }
+    }
+  }
+}
+
+
+component async_prio3 {
+  provides IAsync p;
+  requires IAsync r;
+  behaviour {
+    enum State { S0, S1, S2 };
+    requires dzn.async i;
+    State s = State.S0;
+    [s.S0] {
+      on p.e(): { i.req(); r.e(); s = State.S1; }
+    }
+    [s.S1] {
+      on i.ack(): { s = State.S2; } 
+    }
+    [s.S2] {
+      on r.cb(): { p.cb(); s = State.S0; }
+    }
+    on p.c(): { i.clr(); r.c(); s = State.S0; }
+  }
+}
+
+
