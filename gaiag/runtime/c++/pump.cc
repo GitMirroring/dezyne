@@ -1,8 +1,10 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -39,8 +41,10 @@ namespace dzn
   {
     l.get<dzn::pump>().block(p);
   }
-  void port_release(const locator& l, void* p)
+  void port_release(const locator& l, void* p, std::function<void()>& out_binding)
   {
+    if(out_binding) out_binding();
+    out_binding = nullptr;
     l.get<dzn::pump>().release(p);
   }
   static void debug(const std::string& s)

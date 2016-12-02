@@ -1,8 +1,10 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -122,7 +124,7 @@ namespace dzn
 
   void collateral_block(const locator&);
   void port_block(const locator&, void*);
-  void port_release(const locator&, void*);
+  void port_release(const locator&, void*, std::function<void()>&);
 
   template <typename C>
   struct call_helper

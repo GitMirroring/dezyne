@@ -1,0 +1,100 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+
+enum Result { Ok };
+ 
+interface IExample
+{
+       in Result Start();
+       in Result ValuedEvent();
+       in void VoidEvent();
+       in void Stop(); // Stop is always allowed
+      
+       enum States { Idle, Running };
+      
+       behaviour
+       {
+             States s = States.Idle;
+            
+             [s.Idle]
+             {
+                    on Start: { reply(Result.Ok); s = States.Running; }
+                    on Stop: {}
+                    on ValuedEvent, VoidEvent: illegal;
+             }
+            
+             [s.Running]
+             {
+                    on Stop:  s = States.Idle;
+                    on ValuedEvent: reply(Result.Ok);
+                    on VoidEvent: {}
+                    on Start: illegal;
+             }
+            
+       }
+}
+ 
+component Nullptr
+{
+       provides IExample api;
+       requires IExample usedComponent;
+      
+       behaviour
+       {
+             IExample.States s = IExample.States.Idle;
+            
+             [s.Idle]
+             {
+                    blocking on api.Start():
+                    {
+                           Result r = usedComponent.Start();
+                           s = IExample.States.Running;
+                           reply(r);
+                    }
+                    on api.Stop():
+                    {
+                           s = IExample.States.Idle;
+                    }
+             }
+            
+             [s.Running]
+             {
+                    on api.Stop():
+                    {
+                           usedComponent.Stop();
+                           s = IExample.States.Idle;
+                    }
+                    on api.ValuedEvent():
+                    {
+                           Result r = usedComponent.ValuedEvent();
+                           reply(r);
+                    }
+                    on api.VoidEvent():
+                    {
+                           usedComponent.VoidEvent();
+                    }
+             }
+       }
+}
+ 

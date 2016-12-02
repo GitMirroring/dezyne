@@ -1,3 +1,1 @@
-this->out_#port ();
-this->out_#port  = nullptr;
-dzn::port_release(dzn_locator, &this->#port);
+dzn::port_release(dzn_locator, &this->#port , this->out_#port);
