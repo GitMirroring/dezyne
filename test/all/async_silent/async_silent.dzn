@@ -1,0 +1,107 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// check whether silent transitions are consider when there is an outstanding req;
+//   if correctly so, this model should report an illegal error.
+interface IAsync {
+  in void e();
+  in void c();
+  out void cb();
+
+  behaviour {
+    bool idle = true;
+    [idle] {
+      on e: idle = false;
+      on c: {}
+    }
+    [!idle] {
+      on e: illegal;
+      on c: idle = true;
+      on inevitable: { cb; idle = true; }
+    }
+  }
+}
+
+interface IAsync2 {
+  enum Res { OK, NOK };
+
+  in void e();
+  in Res f();
+  in void c();
+  out void cb();
+
+  behaviour {
+    enum State { S0, S1, S2,S3 };
+    State s = State.S0;
+    [s.S0] {
+      on e: s = State.S1;
+      on c: {}
+      on f: illegal;
+    }
+    [s.S1] {
+      on e: illegal;
+      on c: s = State.S0;
+      on f: reply(Res.OK);
+      on inevitable: { cb; s = State.S0; }
+      on optional: s = State.S2;
+    }
+    [s.S2] {
+      on e: illegal;
+      on c: s = State.S0;
+      on f: reply(Res.NOK);
+      on inevitable: s = State.S3;
+      on inevitable: { cb; s = State.S0; }
+    }
+    [s.S3] {
+      on e: illegal;
+      on c: s = State.S0;
+      on f: reply(Res.OK);
+      on inevitable: { cb; s = State.S0; }
+    }
+  }
+}
+
+component async_silent {
+  provides IAsync p;
+  requires IAsync2 r;
+  behaviour {
+    requires dzn.async i;
+    bool idle = true;
+    [idle] {
+      on p.e(): { i.req(); r.e(); idle = false; }
+      on p.c(): i.clr();
+    }
+    [!idle] {
+      on p.e: illegal;
+      on p.c(): { i.clr(); r.c(); idle = true; }
+      on i.ack(): { 
+	IAsync2.Res res = r.f();
+        if (res == IAsync2.Res.NOK) 
+          illegal; // the model checker should report this illegal;
+      } 
+      on r.cb(): { p.cb(); idle = true; }
+    }
+  }
+}
+
+
