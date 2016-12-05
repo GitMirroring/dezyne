@@ -29,7 +29,7 @@ channel #.scope_model : {#(comma-join (append (interface-events model om:in?) (l
 channel #.scope_model _': {#(comma-join (reverse (append (return-values model) (list "blocked"))))}
 channel #.scope_model _in',#.scope_model _out': {#(comma-join (map (lambda (x) (list .scope_model "_'." x)) (append (return-values model) (list "blocked"))))}
 channel #.scope_model _'': {#(comma-join (let ((out-events (interface-events model om:out?))) (if (null? out-events) (list 'extensions_over_empty_channels_is_undefined) out-events)))}
-channel #.scope_model _''': {inevitable,optional,modeling,silent}
+channel #.scope_model _''': {|inevitable,optional,modeling,silent|}
 channel #.scope_model _in'',#.scope_model _out'': {|#.scope_model _''|}
 channel #.scope_model _link'': {|#.scope_model _in'',#.scope_model _out''|}
                                
@@ -47,7 +47,7 @@ Switch(c', P', Q') = P' [] c'?x' -> Star(c', Q')
 within
 #.scope_model ?x' -> Star(#.scope_model _'', (#.scope_model _in'?y' -> Star(#.scope_model _'', #.scope_model .the_end' -> #.scope_model _out'!y' -> REORDER') [] #.scope_model .the_end' -> REORDER'))
 []
-#.scope_model _'''?x':{inevitable,optional} -> Switch(#.scope_model _'', #.scope_model .the_end' -> #.scope_model _'''.silent -> REORDER', #.scope_model .the_end' -> #.scope_model _'''.modeling -> REORDER')
+#.scope_model _'''?x':{|inevitable,optional|} -> Switch(#.scope_model _'', #.scope_model .the_end' -> #.scope_model _'''.silent -> REORDER', #.scope_model .the_end' -> #.scope_model _'''.modeling -> REORDER')
 
 compress(x) = let
 transparent sbisim

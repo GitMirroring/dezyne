@@ -72,7 +72,7 @@ channel LINK' : {|IN',OUT'|}
 channel reorder_in, reorder_out : {|#(comma-join (map (lambda (x) (symbol-append x (string->symbol "_'"))) (map .name (om:provided model))))|}
 channel queue_full
 
-SEMANTICS(in',out',link',provided_in',provided_blocked',required_modeling',required_modeling_end',async_reqackclrmods,in_internal') = let
+SEMANTICS(in',out',link',provided_in',provided_blocked',required_modeling',required_silent',required_modeling_end',async_reqackclrmods,in_internal') = let
 
 async_reqs = set(< req | (req,ack,clr,mod) <- async_reqackclrmods >)
 async_acks = set(< ack | (req,ack,clr,mod) <- async_reqackclrmods >)
@@ -108,6 +108,8 @@ Started(blocked',requested') =
 (([] x':provided_in' @ x' -> FillQ(0,true,requested'))
 []
 (null(requested') & ([] x':required_modeling' @ x' -> FillQ(0,blocked',requested')))
+[]
+([] x':required_silent' @ x' -> FillQ(0,blocked',requested'))
 []
 ([] x':first_mod(requested') @ x' -> FillQ(0,blocked',requested'))
 []
@@ -168,7 +170,8 @@ provided_in' = {#
  (comma-join (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "." (.name event))) (filter om:in? (om:events port))))) (om:provided model)))}
 provided_blocked' = {#
  (comma-join (map (lambda (port) (list (.name port) "_'." "blocked")) (om:provided model)))}
-begin_required_modeling' = {#(comma-join (required-modeling-events model))}
+begin_required_modeling' = {#(comma-join (map (cut list <> ".false") (required-modeling-events model)))}
+begin_required_silent' = {#(comma-join (map (cut list <> ".true") (required-modeling-events model)))}
 end_required_modeling' = {#(comma-join (append-map (lambda (port) (list (->string (.name port) "_'''.modeling" ) (->string (.name port) "_'''.silent" )))
                                                    (filter om:requires? ((compose .elements .ports) model))))}
 async_reqackclrmods = <#(comma-join (async-reqackclrmods model))>
@@ -184,7 +187,7 @@ within compress((CO_#.scope_model _ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]]
                  [|{|#(comma-join (list "OUT',transition_begin,transition_end,reorder_in" 
                                         (comma-join (append-map (lambda (name) (list (list name) (list name "_'") (list name "_''"))) (map .name (om:provided model))))
                                         (comma-join (async-reqclrs model))))|}|]
-                 SEMANTICS(IN',OUT',LINK',provided_in',provided_blocked',begin_required_modeling',end_required_modeling',async_reqackclrmods,in_internals') \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',provided_blocked',begin_required_modeling',begin_required_silent',end_required_modeling',async_reqackclrmods,in_internals') \ {|OUT',transition_begin,transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|#(comma-join (apply append (list "IN'") (map (lambda (o) (list (.name o) (string-append (symbol->string (.name o)) "_'") (string-append (symbol->string (.name o)) "_'''"))) (om:required model))))|}|]
                 # (let* ((required_processes ((->join "\n                 ||| ") 

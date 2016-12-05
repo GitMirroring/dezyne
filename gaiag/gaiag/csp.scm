@@ -27,7 +27,7 @@
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 optargs)
   :use-module (ice-9 receive)
-  :use-module (ice-9 regex)   
+  :use-module (ice-9 regex)
   :use-module (ice-9 pretty-print)
   :use-module (srfi srfi-1)
   :use-module (srfi srfi-26)
@@ -282,10 +282,10 @@
 
   (define (list-of-triggers-port ports predicate)
     (append-map (lambda (port) (map (lambda (event) (make <trigger> :port (.name port) :event (.name event))) (filter predicate (om:events port)))) ports))
-  
+
   (define (list-of-triggers-provides model)
     (list-of-triggers-port (filter om:provides? (om:ports model)) om:in?))
-  
+
   (define (list-of-triggers-requires model)
     (list-of-triggers-port (filter om:requires? (om:ports model)) om:out?))
 
@@ -316,7 +316,7 @@
            (let ((statement ((compose .statement .behaviour) model)))
              (if (is-a? model <interface>)
                  (list)
-                 (append 
+                 (append
                   (map (lambda (t) (list "(" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & ill." (.port t) (channel-suffix model (.port t)) "?" (.event t) "-> illegal -> STOP"))
                        (list-of-triggers-provides model))
                   (map (lambda (t) (list "IG & (" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & " (.port t) (channel-suffix model (.port t)) "?" (.event t) "-> illegal -> STOP"))
@@ -363,7 +363,7 @@
      "("
      (check-range (om:member-names model) behaviour model)
      "\n[]\n"
-     (list "cs_" ((om:scope-name) model) "." ((om:scope-name) model) "_'''?x:{" (comma-join (delete-duplicates (map .event (modeling-events model)))) "} -> illegal -> STOP\n")
+     (list "cs_" ((om:scope-name) model) "." ((om:scope-name) model) "_'''?x:{|" (comma-join (delete-duplicates (map .event (modeling-events model)))) "|} -> illegal -> STOP\n")
      ")")))
 
 (define (csp-expression->string model src locals)
@@ -446,14 +446,14 @@
               (filter (compose not dzn-async? .type) (filter om:requires? (om:ports o))))))
 
 (define (async-reqackclrmods o)
-  (map (lambda (port) (list "("  (.name port) "." (.name (car (.elements (.events (csp:import (.type port)))))) "," 
+  (map (lambda (port) (list "("  (.name port) "." (.name (car (.elements (.events (csp:import (.type port)))))) ","
                             (.name port) "_''" "." (.name (cadr (.elements (.events (csp:import (.type port)))))) ","
                             (.name port) "." (.name (caddr (.elements (.events (csp:import (.type port)))))) ","
-                            (.name port) "_'''" "." "inevitable" ")"))
+                            (.name port) "_'''" "." "inevitable.false" ")"))
        (filter (compose dzn-async? .type) (filter om:requires? (om:ports o)))))
 
 (define (async-reqclrs o)
-  (append-map (lambda (port) (list 
+  (append-map (lambda (port) (list
                               (list (.name port) "." (.name (car (.elements (.events (csp:import (.type port)))))))
                               (list (.name port) "." (.name (caddr (.elements (.events (csp:import (.type port)))))))))
               (filter (compose dzn-async? .type) (filter om:requires? (om:ports o)))))
@@ -575,7 +575,7 @@
 (define (optional-chaos o) ;; FIXME: no test
   (let ((name ((om:scope-name) o)))
     (if (member 'optional (map .event (om:find-triggers o)))
-        (list " [|{" name "_'''.optional}|] " "CHAOS({" name "_'''.optional})")
+        (list " [|{|" name "_'''.optional|}|] " "CHAOS({|" name "_'''.optional|})")
         "")))
 
 (define (ast-transform ast src)
@@ -767,6 +767,18 @@
               :statement (make <compound> :elements (list result (make <voidreply>)))))))))
     (_ o)))
 
+(define (qualify-modelling-events ast o)
+  (match o
+    (($ <on> triggers statement)
+      (make <on>
+        :triggers triggers
+        :statement statement))
+    ((? (is? <ast>)) (om:map qualify-modelling-events o))
+    ((h t ...) (map qualify-modelling-events o))
+    (_ o)))
+
+
+
 (define* (on->csp model o :optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()) (indent 0) (tail '()) (function #f))
 
   (define (member? identifier) (and (not (local? identifier))
@@ -816,7 +828,7 @@
                   (tail (on->csp model (statement) inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
                   (real-triggers (filter (negate om:modeling-event?) triggers))
                   (modeling-triggers (filter om:modeling-event? triggers))
-                  (modeling-triggers (map .event modeling-triggers))
+                  (modeling-triggers (qualify-modeling-event (map .event modeling-triggers) statement))
                   (trigger-in? (lambda (trigger) (om:in? (om:event model trigger)))))
              (receive (ins outs) (partition trigger-in? real-triggers)
                  ((->list-join "\n[]\n")
@@ -859,7 +871,7 @@
                   (tail (on->csp model statement inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
                   (real-triggers (filter (negate om:modeling-event?) triggers))
                   (modeling-triggers (filter om:modeling-event? triggers))
-                  (modeling-triggers (map .event modeling-triggers))
+                  (modeling-triggers (qualify-modeling-event (map .event modeling-triggers) statement))
                   (trigger-in? (lambda (trigger) (om:in? (om:event model trigger)))))
              (receive (ins outs) (partition trigger-in? real-triggers)
                  ((->list-join "\n[]\n")
@@ -1105,6 +1117,12 @@
              (list
               (format #f "-- TODO: ~a\n" o)))))))
 
+(define (qualify-modeling-event events statement)
+  (map (lambda (e) (list e (if (pair? ((om:collect <action>) statement))
+                               ".false"
+                               ".true")))
+       events))
+
 (define (csp-queue-size) (option-ref (parse-opts (command-line)) 'queue-size 3))
 
 (define* (check-range identifiers statement model :optional (locals '()) (indent 0))
@@ -1193,7 +1211,7 @@
 
 (define (move-internal-ports o)
   (match o
-    (($ <component> name ports behaviour) 
+    (($ <component> name ports behaviour)
      (make <component>
        :name name
        :ports (append ports (.elements (.ports behaviour)))
@@ -1226,11 +1244,11 @@
   (string->symbol (regexp-substitute #f (string-match "^i[0-9]+_" (symbol->string symbol)) 'post)))
 
 (define (dzn-async? name)
-  (eq? (demangle (car (.elements name))) 'dzn)) 
+  (eq? (demangle (car (.elements name))) 'dzn))
 
 (define ((rename-behaviour events) o)
   (define (rename events name)
-    (if (null? events) 
+    (if (null? events)
         name
         (if (eq? name (demangle (.name (car events))))
             (.name (car events))
@@ -1245,7 +1263,7 @@
      ((h t ...) (map (rename-behaviour events) o))
      (_ o)))
 
-(define (async-behaviour)    
+(define (async-behaviour)
   ((compose .behaviour car cdr ast:resolve ast->om dzn->ast)
 "interface dzn.async {
   in void req();
@@ -1266,9 +1284,8 @@
   }
 }"))
 
-(define (internal-libs ast) 
+(define (internal-libs ast)
   ((compose
     add-internal-libs-behaviour
     move-internal-ports
     ) ast))
-  

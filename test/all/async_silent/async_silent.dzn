@@ -21,7 +21,7 @@
 //
 // Code:
 
-// check whether silent transitions are consider when there is an outstanding req;
+// check whether silent transitions are considered when there is an outstanding req;
 //   if correctly so, this model should report an illegal error.
 interface IAsync {
   in void e();

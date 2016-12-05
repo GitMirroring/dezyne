@@ -46,7 +46,7 @@ datatype event_enumeration_alphabet = #
               (interface-events model identity)
               (type-values model)
               (return-values model)
-              (list 'bool.Bool 'int.Int 'blocked 'the_end' 'inevitable 'optional 'modeling 'silent))))
+              (list 'bool.Bool 'int.Int 'blocked 'the_end' 'inevitable.Bool 'optional.Bool 'modeling 'silent))))
    symbol<)))
 
 IQ'(in',out',link',size') = let
