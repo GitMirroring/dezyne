@@ -129,13 +129,17 @@ namespace dzn
           condition.wait_until(lock, timers.begin()->first.t, [this]{return queue.size() || !running;});
         }
 
-        while(timers.size() && timers.begin()->first.expired())
-        {
-          auto t = *timers.begin();
-          timers.erase(timers.begin());
-          if (lock) lock.unlock();
-          t.second();
-        }
+        auto service_timers = [&] {
+          while(timers.size() && timers.begin()->first.expired())
+          {
+            auto t = *timers.begin();
+            timers.erase(timers.begin());
+            if (lock) lock.unlock();
+            t.second();
+          }
+        };
+
+        service_timers();
 
         if(queue.size())
         {
@@ -144,13 +148,7 @@ namespace dzn
           if (lock) lock.unlock();
           f();
 
-          while(timers.size() && timers.begin()->first.expired())
-          {
-            auto t = *timers.begin();
-            timers.erase(timers.begin());
-            if (lock) lock.unlock();
-            t.second();
-          }
+          service_timers();
         }
       };
 
