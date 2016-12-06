@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
     c.sut.check_bindings();
 
     dzn::apply(&c.sut.dzn_meta, [](const dzn::meta* m){
-        std::clog << m->parent << " " << m << " " << m->name << std::endl;
+        std::clog << m->parent << " " << m << " " << m->name << " " << m->rank << std::endl;
       });
 
     // run the event loop

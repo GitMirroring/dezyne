@@ -23,7 +23,7 @@
 # Code:
 
 CXX=g++ -pthread -std=c++11
-CXXFLAGS=-Wall
+CXXFLAGS=-g -Wall
 CPPFLAGS=-MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -I. -include MachineConstants.hh
 CCACHE=$(basename $(shell which ccache))
 

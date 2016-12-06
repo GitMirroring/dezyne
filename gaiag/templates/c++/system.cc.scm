@@ -9,7 +9,7 @@
             (list
              (->string
               (list
-               "dzn_meta" (c++:init-brace-open) "\"\",\"" .model "\",0,{"
+               "dzn_meta" (c++:init-brace-open) "\"\",\"" .model "\",0,0,{},{"
                ((->join ",")
                 (map (init-instance model #{&#name .dzn_meta#})
                      (non-injected-instances model)))
@@ -35,7 +35,10 @@
        ((compose .elements .instances) model))#
  (map (connect-ports model #{
     connect(#provided , #required );
-#}) (filter (negate om:port-bind?) ((compose .elements .bindings) model))) }
+#}) (filter (negate om:port-bind?) ((compose .elements .bindings) model)))
+    #(map (lambda (port) (animate #{dzn::rank(#port .meta.provides.meta, 0); #}
+    `((port ,(.name port))))) (filter om:provides? (om:ports model)))
+  }
 
   void #.model ::check_bindings() const
   {

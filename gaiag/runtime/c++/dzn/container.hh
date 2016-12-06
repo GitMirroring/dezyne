@@ -53,7 +53,7 @@ namespace dzn
     dzn::pump pump;
 
     container(bool flush, dzn::locator&& l = dzn::locator{})
-    : meta{"<internal>","container",0,{&system.dzn_meta},{[this]{system.check_bindings();}}}
+    : meta{"<internal>","container",0,0,{},{&system.dzn_meta},{[this]{system.check_bindings();}}}
     , locator(std::forward<dzn::locator>(l))
     , runtime()
     , system(locator.set(runtime).set(pump))

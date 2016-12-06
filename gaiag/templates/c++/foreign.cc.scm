@@ -6,7 +6,7 @@
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 namespace skel {
 #.model ::#.model (const dzn::locator& dezyne_locator)
-: dzn_meta#(c++:init-brace-open)"","#.model",0,{},{#((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports model)))}#(c++:init-brace-close)
+: dzn_meta#(c++:init-brace-open)"","#.model",0,0,{#(comma-join (map (lambda (port) (list "&" (.name port) ".meta")) (filter om:requires? (om:ports model))))},{},{#((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports model)))}#(c++:init-brace-close)
 , dzn_rt(dezyne_locator.get<dzn::runtime>())
 , dzn_locator(dezyne_locator)
 , #

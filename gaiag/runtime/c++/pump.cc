@@ -309,11 +309,11 @@ namespace dzn
     queue.push(std::move(e));
     condition.notify_one();
   }
-  void pump::handle(size_t id, size_t ms, const std::function<void()>& e)
+  void pump::handle(size_t id, size_t ms, const std::function<void()>& e, size_t rank)
   {
     assert(e);
     assert(std::find_if(timers.begin(), timers.end(), [id](const std::pair<deadline, std::function<void()>>& p){ return p.first.id == id; }) == timers.end());
-    timers.emplace(deadline(id, ms), e);
+    timers.emplace(deadline(id, ms, rank), e);
   }
   void pump::remove(size_t id)
   {

@@ -64,9 +64,19 @@ namespace dzn
     std::string name;
     std::string type;
     const meta* parent;
+    mutable size_t rank;
+    std::vector<const port::meta*> requires;
     std::vector<const meta*> children;
     std::vector<std::function<void()>> ports_connected;
   };
+
+  inline void rank(const dzn::meta* m, size_t r)
+  {
+    if(m) {
+      m->rank = std::max(m->rank, r);
+      for(auto i : m->requires) rank(i->provides.meta, m->rank + 1);
+    }
+  }
 
   inline std::string path(const meta* m, std::string p = std::string())
   {

@@ -1,0 +1,72 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface I
+{
+  in void e();
+  out void f();
+  out void g();
+
+  behaviour
+  {
+    subint Count {0..2};
+    Count count = 0;
+
+    [count != 0] on e: illegal;
+    [count == 0] on e: count = 1;
+    [count == 1] on inevitable: {count = 2; f;}
+    [count == 2] on inevitable: {count = 0; g;}
+  }
+}
+
+component C
+{
+  provides I p;
+  requires I r;
+
+  behaviour
+  {
+    requires dzn.async i;
+
+    on p.e(): {r.e(); i.req();}
+    on i.ack(): p.f();
+    on r.f(): p.g();
+    on r.g(): {}
+  }
+}
+
+component async_rank
+{
+  provides I p;
+  requires I r;
+
+  system
+  {
+    C c2;
+    C c1;
+
+    p <=> c1.p;
+    c1.r <=> c2.p;
+    c2.r <=> r;
+  }
+}
