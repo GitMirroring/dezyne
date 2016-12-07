@@ -1,0 +1,123 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface IA {
+  in void doAB();
+  in void doBA();
+
+  out void done();
+
+  behaviour {
+    bool idle = true;
+ 
+    [idle] {
+      on doAB: idle = false;
+      on doBA: idle = false;
+    }
+    [!idle] {
+      on doAB, doBA: illegal;
+      on inevitable: { done; idle = true; }
+    }
+  }
+}
+
+interface IB {
+  in void req();
+
+  out void ack();
+
+  behaviour {
+    bool idle = true;
+ 
+    [idle] 
+      on req: idle = false;
+    [!idle] {
+      on req: illegal;
+      on inevitable: { ack; idle = true; }
+    }
+  }
+}
+
+component A {
+  provides IA p;
+  requires IB r;
+  
+  behaviour {
+    enum State { S0, S1, S2, S3};
+
+    requires dzn.async i;
+
+    State s = State.S0;
+    
+    [s.S0] {
+      on p.doAB(): {
+        i.req(); r.req(); s = State.S1;
+      }
+      on p.doBA(): {
+        r.req(); i.req(); s = State.S1;
+      }
+    }
+    [s.S1] {
+      on i.ack(): s = State.S2;
+    }
+    [s.S2] {
+      on r.ack(): { p.done(); s = State.S0; }
+    }
+  }
+}
+
+component B {
+  provides IB p;
+  
+  behaviour {
+    enum State { S0, S1 };
+
+    requires dzn.async i;
+
+    State s = State.S0;
+    
+    [s.S0] {
+      on p.req(): {
+        i.req(); s = State.S1;
+      }
+    }
+    [s.S1] {
+      on i.ack(): {
+        p.ack(); s = State.S0;
+      }
+    }
+  }
+}
+
+component async_ranking {
+  provides IA p;
+
+  system {
+    A a;
+    B b;
+
+    p <=> a.p;
+    a.r <=> b.p;
+  }
+}
+
