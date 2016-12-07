@@ -36,6 +36,7 @@
 #include "lego_usb.hh"
 
 #include <cstdlib>
+#include <csignal>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -113,63 +114,64 @@ int main(int argc, char* argv[])
         exit (2);
       }
 
-    // create dezyne system
-    dzn::runtime rt;
-    dzn::locator loc;
-    loc.set(rt);
 
-    std::unique_ptr<dzn::pump> tmp1(new dzn::pump);
-    loc.set(*tmp1);
+    struct C {
+      dzn::locator loc;
+      dzn::runtime rt;
+      LegoBallSorter sut;
+      dzn::pump pump;
+      
+      C()
+      : sut(loc.set(rt).set(pump))
+      , pump()
+      {}
+    };
+    C c;
+    
+    c.sut.dzn_meta.name = "sut";
+    c.sut.ctrl.meta.requires = {"ctrl",0};
 
-    LegoBallSorter sut(loc);
+    c.sut.ctrl.out.calibrated = []{std::cout << "LegoBallSorter.calibrated" << std::endl;};
+    c.sut.ctrl.out.finished = []{std::cout << "LegoBallSorter.finished" << std::endl;};
 
-    std::unique_ptr<dzn::pump> tmp2(std::move(tmp1)); //now the pump is destroyed before the sut is
-    dzn::pump& pump = *tmp2;
+    connect(c.sut.brick1_aA, bricks.at("INPUT"), PORTA);
+    connect(c.sut.brick1_aB, bricks.at("INPUT"), PORTB);
+    connect(c.sut.brick1_aC, bricks.at("INPUT"), PORTC);
 
-    sut.dzn_meta.name = "sut";
-    sut.ctrl.meta.requires = {"ctrl",0};
-
-    sut.ctrl.out.calibrated = []{std::cout << "LegoBallSorter.calibrated" << std::endl;};
-    sut.ctrl.out.finished = []{std::cout << "LegoBallSorter.finished" << std::endl;};
-
-    connect(sut.brick1_aA, bricks.at("INPUT"), PORTA);
-    connect(sut.brick1_aB, bricks.at("INPUT"), PORTB);
-    connect(sut.brick1_aC, bricks.at("INPUT"), PORTC);
-
-    connect(sut.brick1_s1, bricks.at("INPUT"), PORT1);
-    connect(sut.brick1_s2, bricks.at("INPUT"), PORT2);
-    connect(sut.brick1_s3, bricks.at("INPUT"), PORT3);
-    connect(sut.brick1_s4, bricks.at("INPUT"), PORT4);
-
-
-    connect(sut.brick2_aA, bricks.at("OUTPUT"), PORTA);
-    connect(sut.brick2_aB, bricks.at("OUTPUT"), PORTB);
-
-    //connect(sut.brick2_s1, bricks.at("OUTPUT"), PORT1);
-    connect(sut.brick2_s2, bricks.at("OUTPUT"), PORT2);
-    connect(sut.brick2_s3, bricks.at("OUTPUT"), PORT3);
-    connect(sut.brick2_s4, bricks.at("OUTPUT"), PORT4);
+    connect(c.sut.brick1_s1, bricks.at("INPUT"), PORT1);
+    connect(c.sut.brick1_s2, bricks.at("INPUT"), PORT2);
+    connect(c.sut.brick1_s3, bricks.at("INPUT"), PORT3);
+    connect(c.sut.brick1_s4, bricks.at("INPUT"), PORT4);
 
 
-    connect(sut.brick3_aA, bricks.at("STAGE"), PORTA);
-    connect(sut.brick3_aC, bricks.at("STAGE"), PORTC);
+    connect(c.sut.brick2_aA, bricks.at("OUTPUT"), PORTA);
+    connect(c.sut.brick2_aB, bricks.at("OUTPUT"), PORTB);
 
-    connect(sut.brick3_s1, bricks.at("STAGE"), PORT1);
-    connect(sut.brick3_s2, bricks.at("STAGE"), PORT2);
-    connect(sut.brick3_s3, bricks.at("STAGE"), PORT3);
+    //connect(c.sut.brick2_s1, bricks.at("OUTPUT"), PORT1);
+    connect(c.sut.brick2_s2, bricks.at("OUTPUT"), PORT2);
+    connect(c.sut.brick2_s3, bricks.at("OUTPUT"), PORT3);
+    connect(c.sut.brick2_s4, bricks.at("OUTPUT"), PORT4);
 
 
-    connect(sut.brick4_aA, bricks.at("ROBOT"), PORTA);
-    connect(sut.brick4_aB, bricks.at("ROBOT"), PORTB);
-    connect(sut.brick4_aC, bricks.at("ROBOT"), PORTC);
+    connect(c.sut.brick3_aA, bricks.at("STAGE"), PORTA);
+    connect(c.sut.brick3_aC, bricks.at("STAGE"), PORTC);
 
-    connect(sut.brick4_s1, bricks.at("ROBOT"), PORT1);
-    connect(sut.brick4_s2, bricks.at("ROBOT"), PORT2);
-    connect(sut.brick4_s3, bricks.at("ROBOT"), PORT3);
+    connect(c.sut.brick3_s1, bricks.at("STAGE"), PORT1);
+    connect(c.sut.brick3_s2, bricks.at("STAGE"), PORT2);
+    connect(c.sut.brick3_s3, bricks.at("STAGE"), PORT3);
 
-    sut.check_bindings();
 
-    dzn::apply(&sut.dzn_meta, [](const dzn::meta* m){
+    connect(c.sut.brick4_aA, bricks.at("ROBOT"), PORTA);
+    connect(c.sut.brick4_aB, bricks.at("ROBOT"), PORTB);
+    connect(c.sut.brick4_aC, bricks.at("ROBOT"), PORTC);
+
+    connect(c.sut.brick4_s1, bricks.at("ROBOT"), PORT1);
+    connect(c.sut.brick4_s2, bricks.at("ROBOT"), PORT2);
+    connect(c.sut.brick4_s3, bricks.at("ROBOT"), PORT3);
+
+    c.sut.check_bindings();
+
+    dzn::apply(&c.sut.dzn_meta, [](const dzn::meta* m){
         std::clog << m->parent << " " << m << " " << m->name << std::endl;
       });
 
@@ -179,9 +181,9 @@ int main(int argc, char* argv[])
     bool stop = false;
     while(not stop && std::getline(std::cin, s)) {
       if(s.empty()) continue;
-      if(s[0] == 'c') dzn::blocking(pump, sut.ctrl.in.calibrate);
-      if(s[0] == 'o') dzn::blocking(pump, sut.ctrl.in.operate);
-      if(s[0] == 's') dzn::blocking(pump, sut.ctrl.in.stop);
+      if(s[0] == 'c') dzn::blocking(c.pump, c.sut.ctrl.in.calibrate);
+      if(s[0] == 'o') dzn::blocking(c.pump, c.sut.ctrl.in.operate);
+      if(s[0] == 's') dzn::blocking(c.pump, c.sut.ctrl.in.stop);
       if(s[0] == 'q') stop = true;
     }
   }
