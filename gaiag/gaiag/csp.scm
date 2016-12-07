@@ -65,6 +65,7 @@
            provides?
            requires?
            string-if
+           dzn-async?
            ))
 
 (define (om->csp om)
@@ -1240,11 +1241,16 @@
      ((h t ...) (map add-internal-libs-behaviour o))
      (_ o)))
 
+(define (generator-mangled? symbol)
+  (string-match "^i[0-9]+_" (symbol->string symbol)))
+
 (define (demangle symbol)
-  (string->symbol (regexp-substitute #f (string-match "^i[0-9]+_" (symbol->string symbol)) 'post)))
+  (let ((m (generator-mangled? symbol)))
+    (if (not m) symbol
+        (string->symbol (regexp-substitute #f m 'post)))))
 
 (define (dzn-async? name)
-  (eq? (demangle (car (.elements name))) 'dzn))
+  (eq? (demangle (car (cdr name))) 'dzn))
 
 (define ((rename-behaviour events) o)
   (define (rename events name)

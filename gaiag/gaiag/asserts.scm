@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -53,10 +54,12 @@
      (or (and-let* ((component-checks '(deterministic completeness illegal deadlock compliance livelock)))
                    (map (assert o) component-checks))
          '()))
-    (($ <interface>)
-     (or (and-let* ((interface-checks '(completeness deadlock livelock)))
-                   (map (assert o) interface-checks))
-         '()))
+    (($ <interface> name)
+     (if (dzn-async? name)
+         '()
+         (or (and-let* ((interface-checks '(completeness deadlock livelock)))
+                       (map (assert o) interface-checks))
+             '())))
     (('root models ...)
      (or (and-let* ((model (om:model-with-behaviour o)))
                    (assert-list-all model))
