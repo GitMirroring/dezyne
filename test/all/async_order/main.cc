@@ -46,48 +46,50 @@ int main()
 {
   std::string trace = read ();
 
-  dzn::locator loc;
-  dzn::runtime rt;
-  loc.set(rt);
+  struct C {
+    dzn::locator loc;
+    dzn::runtime rt;
+    async_order sut;
+    cb1_cancel c;
+    dzn::pump pump;
 
-  std::unique_ptr<dzn::pump> tmp1(new dzn::pump);
-  loc.set(*tmp1);
+    C()
+    : sut(loc.set(rt).set(pump))
+    , c(loc.set(rt).set(pump))
+    , pump()
+    {}
+  };
+  C c;
+  c.sut.dzn_meta.name = "sut";
+  c.sut.p.meta.requires.port = "p";
 
-  async_order sut(loc);
-  sut.dzn_meta.name = "sut";
-  sut.p.meta.requires.port = "p";
-
-  cb1_cancel c(loc);
-  c.dzn_meta.name = " ";
-  c.p.meta.requires.port = " ";
-
-  std::unique_ptr<dzn::pump> tmp2(std::move(tmp1)); //enter ~pump () first
-  dzn::pump& pump = *tmp2;
+  c.c.dzn_meta.name = " ";
+  c.c.p.meta.requires.port = " ";
 
   int t = 0;
-  sut.p.out.cb1 = [t] {std::clog << "sut.p.cb1 -> <external>.p.cb1 [" <<  t << "]" << std::endl;};
-  sut.p.out.cb2 = [t] {std::clog << "sut.p.cb2 -> <external>.p.cb2 [" <<  t << "]" << std::endl;};
+  c.sut.p.out.cb1 = [t] {std::clog << "sut.p.cb1 -> <external>.p.cb1 [" <<  t << "]" << std::endl;};
+  c.sut.p.out.cb2 = [t] {std::clog << "sut.p.cb2 -> <external>.p.cb2 [" <<  t << "]" << std::endl;};
 
   if (0);
   else if (trace == "p.e\np.return\np.c\np.return")
     {
-      dzn::blocking (pump, [&] {sut.p.in.e ();sut.p.in.c ();});
+      dzn::blocking (c.pump, [&] {c.sut.p.in.e ();c.sut.p.in.c ();});
     }
   else if (trace == "p.e\np.return\np.cb1\np.c\np.return")
     {
-      sut.dzn_meta.name = "<external>";
-      connect(sut.p, c.r);
-      c.p.out.cb1 = [t] {std::clog << "c.p.cb1 -> <external>.p.cb1 [" <<  t << "]" << std::endl;};
-      c.p.out.cb2 = [t] {std::clog << "c.p.cb2 -> <external>.p.cb2 [" <<  t << "]" << std::endl;};
-      dzn::blocking (pump, [&] {c.p.in.e ();});
+      c.sut.dzn_meta.name = "<external>";
+      connect(c.sut.p, c.c.r);
+      c.c.p.out.cb1 = [t] {std::clog << "c.p.cb1 -> <external>.p.cb1 [" <<  t << "]" << std::endl;};
+      c.c.p.out.cb2 = [t] {std::clog << "c.p.cb2 -> <external>.p.cb2 [" <<  t << "]" << std::endl;};
+      dzn::blocking (c.pump, [&] {c.c.p.in.e ();});
     }
   else if (trace == "p.e\np.return\np.cb1\np.cb2")
     {
-      dzn::blocking (pump, [&] {sut.p.in.e ();});
+      dzn::blocking (c.pump, [&] {c.sut.p.in.e ();});
     }
   else if (trace == "p.c\np.return")
     {
-      dzn::blocking (pump, [&] {sut.p.in.c ();});
+      dzn::blocking (c.pump, [&] {c.sut.p.in.c ();});
     }
   else
     {
