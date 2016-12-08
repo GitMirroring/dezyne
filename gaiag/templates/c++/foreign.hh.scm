@@ -4,8 +4,8 @@
 ##include <iostream>
 
 #(map (include-interface #{
-##include "#interface .hh" #})
-  (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
+##include "#interface .hh"
+#}) (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
 
 namespace dzn {
 struct locator;
