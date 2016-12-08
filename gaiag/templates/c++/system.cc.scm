@@ -13,7 +13,7 @@
                ((->join ",")
                 (map (init-instance model #{&#name .dzn_meta#})
                      (non-injected-instances model)))
-               "},{}" (c++:init-brace-close)))
+               "},{" ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports model))) "}" (c++:init-brace-close)))
              "dzn_rt(dezyne_locator.get<dzn::runtime>())")
             (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
                  (injected-bindings model))
