@@ -3,7 +3,6 @@
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
