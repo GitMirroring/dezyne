@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -35,3 +35,7 @@
 (define c++:scope-name (@@ (gaiag c++) c++:scope-name))
 (define (c++:init-brace-open) "(")
 (define (c++:init-brace-close) ")")
+(define c++:out-var-decls (@@ (gaiag c++) c++:out-var-decls))
+(define c++:out-param-list (@@ (gaiag c++) c++:out-param-list))
+(define c++:skel-file (@@ (gaiag c++) c++:skel-file))
+(define glue (@@ (gaiag c++) glue))
