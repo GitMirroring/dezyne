@@ -5,7 +5,7 @@
 
 #(map (include-component #{
 ##include "#component .hh"
-#}) ((compose .elements .instances) model))
+#}) (delete-duplicates ((compose .elements .instances) model)))
 
 #(map (include-interface #{
 ##include "#interface .hh"
