@@ -14,7 +14,6 @@ namespace skel {
  (append
   (map (init-member model #{
 #name(#(if (not (eq? expression *unspecified*)) expression))#}) (om:variables model))
-  (map (define-reply #{reply_#((c++:scope-join #f '_) scope)_#name()#}) (om:reply-enums model))
   (map (lambda (port) (list (.name port) "{" (if (.injected port) (list "dezyne_locator.get<" ((c++:scope-name) (.type port)) ">()") (list "{" (if (eq? (.direction port) 'requires) "{\"\",0,0},") "{\"" (.name port) "\",this,&dzn_meta}" (if (eq? (.direction port) 'provides) ",{\"\",0,0}") "}")) "}")) (om:ports model))))
   {
     //dzn_rt.performs_flush(this) = true; //only turn off when flush is performed explicitly

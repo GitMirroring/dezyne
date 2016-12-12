@@ -13,8 +13,7 @@ namespace skel {
  (append
   (list "dzn_locator(dezyne_locator)")
   (map (init-member model #{
-#name(#(if (not (eq? expression *unspecified*)) expression))#}) (om:variables model))
-  (map (define-reply #{reply_#((c++:scope-join #f '_) scope)_#name()#}) (om:reply-enums model))))
+#name(#(if (not (eq? expression *unspecified*)) expression))#}) (om:variables model))))
 {
  #(map (init-port #{#name .meta.provides.port = "#name ";
                    #name .meta.provides.address = this;

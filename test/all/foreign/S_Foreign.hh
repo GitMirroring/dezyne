@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -36,5 +37,6 @@ struct Foreign: public skel::Foreign
   : skel::Foreign(l)
   {}
   void p_e(){}
+  I::R::type p_f(){return I::R::r;}
 };
 }
