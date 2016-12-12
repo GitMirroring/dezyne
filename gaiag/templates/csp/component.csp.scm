@@ -102,63 +102,63 @@ within
 S'    = let
 N' = #(csp-queue-size)
  -- component receives a stimulus
-Idle(blocked', requested') = transition_begin -> Started(blocked', requested')
+Idle(blocked',requested',ack_context') = transition_begin -> Started(blocked',requested',ack_context')
 
-Started(blocked',requested') = 
-(([] x':provided_in' @ x' -> FillQ(0,true,requested'))
+Started(blocked',requested',ack_context') = 
+(null(requested') or not ack_context' & ([] x':provided_in' @ x' -> FillQ(0,true,requested',false))
 []
-(null(requested') & ([] x':required_modeling' @ x' -> FillQ(0,blocked',requested')))
+(null(requested') & ([] x':required_modeling' @ x' -> FillQ(0,blocked',requested',false)))
 []
-([] x':required_silent' @ x' -> FillQ(0,blocked',requested'))
+([] x':required_silent' @ x' -> FillQ(0,blocked',requested',ack_context'))
 []
-([] x':first_mod(requested') @ x' -> FillQ(0,blocked',requested'))
+([] x':first_mod(requested') @ x' -> FillQ(0,blocked',requested',true))
 []
-(in'?x' -> Busy(1,<>,blocked',false,extensions_over_empty_channels_is_undefined,requested')))
+(in'?x' -> Busy(1,<>,blocked',false,extensions_over_empty_channels_is_undefined,requested',false)))
 
-FillQ(c',blocked',requested') =
+FillQ(c',blocked',requested',ack_context') =
    -- as a result of the stimulus it starts filling its queue
-(c' <= N' & in'?x':in_internal' -> FillQ(c'+1,blocked',requested'))
+(c' <= N' & in'?x':in_internal' -> FillQ(c'+1,blocked',requested',ack_context'))
 [] -- component is done filling the queue or it turned out to be an empty required modeling event
 ([] x':required_modeling_end' @ x' -> 
-(Busy(c',<>,blocked',false,extensions_over_empty_channels_is_undefined,requested') [] ((c' == 0) & Started(blocked',requested'))))
+(Busy(c',<>,blocked',false,extensions_over_empty_channels_is_undefined,requested',ack_context') [] ((c' == 0) & Started(blocked',requested',ack_context'))))
 [] -- synchronous out event
-([]x':{|#(comma-join (map (lambda (port) (symbol-append (.name port) (string->symbol "_''"))) (om:provided model)))|} @ x' -> FillQ(c',blocked',requested'))
+([]x':{|#(comma-join (map (lambda (port) (symbol-append (.name port) (string->symbol "_''"))) (om:provided model)))|} @ x' -> FillQ(c',blocked',requested',false))
 [] -- component replies on the stimulus
-(reorder_in?x': diff(extensions(reorder_in),provided_blocked') -> Busy(c',<x'>,blocked',false,extensions_over_empty_channels_is_undefined,requested'))
+(reorder_in?x': diff(extensions(reorder_in),provided_blocked') -> Busy(c',<x'>,blocked',false,extensions_over_empty_channels_is_undefined,requested',ack_context'))
 [] -- component blocks port
-(reorder_in?x': provided_blocked' -> Busy(c',<>,blocked',false,extensions_over_empty_channels_is_undefined,requested'))
+(reorder_in?x': provided_blocked' -> Busy(c',<>,blocked',false,extensions_over_empty_channels_is_undefined,requested',ack_context'))
 []
-([]x':async_reqs @ x' -> FillQ(c',blocked',add(requested',x')))
+([]x':async_reqs @ x' -> FillQ(c',blocked',add(requested',x'),ack_context'))
 []
-([]x':async_clrs @ x' -> FillQ(c',blocked',remove(requested',clr2req(x'))))
+([]x':async_clrs @ x' -> FillQ(c',blocked',remove(requested',clr2req(x')),ack_context'))
 
-Busy(c',r',blocked',pout',end',requested') =
+Busy(c',r',blocked',pout',end',requested',ack_context') =
 -- if blocked' then asynchronous out event else synchronous out event
-#((->join "\n[]\n") (map (lambda (port) (list "([]x':{|" (.name port) "_''|} @ x' -> Busy(c',r',blocked',true," (.name port) "_'''.modeling,requested'))")) (om:provided model)))
+#((->join "\n[]\n") (map (lambda (port) (list "([]x':{|" (.name port) "_''|} @ x' -> Busy(c',r',blocked',true," (.name port) "_'''.modeling,requested',false))")) (om:provided model)))
 [] -- component is finished and outputs the void or reply event if present
-(c' == 0 & transition_end -> if (not blocked') and pout' then end' -> End(r',blocked',requested') else End(r',blocked',requested'))
+(c' == 0 & transition_end -> if (not blocked') and pout' then end' -> End(r',blocked',requested',ack_context') else End(r',blocked',requested',ack_context'))
 []
-(c' > 0 & transition_end -> transition_begin -> Busy(c',r',blocked',pout',end',requested')) -- handling synchronous out events
+(c' > 0 & transition_end -> transition_begin -> Busy(c',r',blocked',pout',end',requested',ack_context')) -- handling synchronous out events
 []
-(c' <= N' & in'?x':in_internal' -> Busy(c'+1,r',blocked',pout',end',requested')) -- accepting synchronous out events
+(c' <= N' & in'?x':in_internal' -> Busy(c'+1,r',blocked',pout',end',requested',ack_context')) -- accepting synchronous out events
 []
-(c' > 0 & out'?x' -> Busy(c'-1,r',blocked',pout',end',remove(requested',ack2req(x')))) -- handling queued out events
+(c' > 0 & out'?x' -> Busy(c'-1,r',blocked',pout',end',remove(requested',ack2req(x')),ack_context')) -- handling queued out events
 []
-(r' == <> & reorder_in?x' -> Busy(c',<x'>,true,pout',end',requested')) -- reply to unblock port
+(r' == <> & reorder_in?x' -> Busy(c',<x'>,true,pout',end',requested',ack_context')) -- reply to unblock port
 []
 (r' != <> & reorder_in?x': diff(extensions(reorder_in),provided_blocked') -> illegal -> STOP) -- another reply is not allowed
 []
-(r' != <> & reorder_in?x': provided_blocked' -> Busy(c',r',true,pout',end',requested')) -- ignore blocked if reply already given
+(r' != <> & reorder_in?x': provided_blocked' -> Busy(c',r',true,pout',end',requested',ack_context')) -- ignore blocked if reply already given
+[]
+([]x':async_reqs @ x' -> Busy(c',r',blocked',pout',end',add(requested',x'),ack_context')) -- req on async port
+[]
+([]x':async_clrs @ x' -> Busy(c',r',blocked',pout',end',remove(requested',clr2req(x')),ack_context')) -- clr on async port
 []
 queue_full -> STOP
-[]
-([]x':async_reqs @ x' -> Busy(c',r',blocked',pout',end',add(requested',x')))
-[]
-([]x':async_clrs @ x' -> Busy(c',r',blocked',pout',end',remove(requested',clr2req(x'))))
 
-End(r',blocked',requested') = if r' == <> then Idle(blocked',requested') else reorder_out!head(r') -> Idle(false,requested')
+End(r',blocked',requested',ack_context') = if r' == <> then Idle(blocked',requested',ack_context') else reorder_out!head(r') -> Idle(false,requested',ack_context')
 
-within Idle(false,<>)
+within Idle(false,<>,false)
 
 within Q' [|{|in',out',queue_full|}|] S'
 AS_#.scope_model _(IIG) = let
