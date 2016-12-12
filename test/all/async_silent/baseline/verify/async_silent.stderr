@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 out/async_silent/async_silent.dzn:77:11:i51: illegal
 out/async_silent/async_silent.dzn:77:11:i51: illegal
 out/async_silent/async_silent.dzn:77:11:i51: illegal
+=======
+out/async_silent/async_silent.dzn:38:5:i29: illegal
+out/async_silent/async_silent.dzn:71:6:i30: deadlock in model async_silent
+out/async_silent/async_silent.dzn:38:5:i29: Component async_silent is non-compliant with interface of provided port
+>>>>>>> 4d055b3... test: async_silent verify output modified by interpreter
