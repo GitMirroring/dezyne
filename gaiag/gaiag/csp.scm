@@ -205,7 +205,7 @@
   `(
     ((component illegal) . "assert STOP [T= AS_#.scope_model _(false) \\ diff(Events,{illegal,queue_full})\n")
     ((component deterministic) . "assert CO_#.scope_model _(true,true) :[deterministic [F]]\n")
-    ((component deadlock)  . "assert AS_#.scope_model _(false) :[deadlock free]\n")
+    ((component deadlock)  . "assert AS_#.scope_model _(false) :[deadlock free [F]]\n")
     ((component compliance) . ,(gulp-template 'asserts/component-compliance.csp.scm))
     ((component livelock)  .  "assert AS_#.scope_model _(true) \\ diff(Events,{|#(comma-join (append (required-modeling-events model) (list \"illegal\") (append-map (lambda (port) (map (cut symbol-append (.name port) <>) (map string->symbol (if (not (null? (filter om:out? (om:events port)))) (list \"\" \"_'\" \"_''\") (list \"\" \"_'\"))))) (om:provided model))))|}) :[livelock free]\n")
     ((interface completeness) . ,(gulp-template 'asserts/interface-completeness.csp.scm))
