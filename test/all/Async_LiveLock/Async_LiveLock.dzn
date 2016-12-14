@@ -1,0 +1,72 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Henk Katerberg <henk.katerberg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface IA
+{
+  in void e();
+  in void c();
+  out void cb();
+
+  behaviour
+  {
+    bool b = false;
+
+    [!b] on e: b = true;
+    [b] on e: illegal;
+
+    on c: {}
+
+    [b] on inevitable: {cb; b = false;}
+  }
+}
+
+component Async_LiveLock
+{
+  provides IA pp;
+
+  behaviour
+  {
+    requires dzn.async() refl;
+
+    bool b = false;
+    bool ll = false;
+
+    [!b && !ll] on pp.e(): {b = !b; refl.req();}
+    [!b && ll] on pp.e(): b = !b;
+    on pp.c(): {b = false; ll = false; refl.clr();} // Postponed indefinitely due to async-driven live-lock
+    [!ll] on refl.ack(): {pp.cb(); b = false; refl.req(); ll = !ll;}
+    [ll] on refl.ack(): {refl.req();} // LiveLock
+
+    // component Async_LiveLock shall be able to repeat the following trace:
+    // pp.e
+    // pp.return
+    // pp.c
+    // pp.return
+
+    // component Async_LiveLock shall report a livelock error for following trace:
+    // pp.e
+    // pp.return
+    // pp.cb
+    // Error: livelock
+  }
+}
