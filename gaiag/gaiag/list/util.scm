@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;;
 ;;; This file is part of Dezyne.
@@ -45,7 +45,7 @@
 
   :export (
            ast-name
-           goops:clone
+           clone
            om->list
            om2list
            om:<
@@ -58,7 +58,7 @@
 
 (define om->list identity)
 (define om2list identity)
-(define goops:clone identity)
+(define clone identity)
 
 (define (ast-name o)
   (and (pair? o) (car o)))

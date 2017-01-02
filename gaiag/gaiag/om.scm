@@ -245,7 +245,7 @@
     (($ <binding>) (or (om:instance model (.instance o))
                        (om:import (.type (om:port model (.port bind))))))
     (($ <bind>) (om:instance model (om:instance-binding? o)))
-    (($ <port>) (om:instance model (om:port-bind model o)))
+    (($ <port>) (om:instance model (om:instance-binding? (om:port-bind model (.name o)))))
     ((? boolean?) #f)))
 
 (define (om:port-bind? bind)

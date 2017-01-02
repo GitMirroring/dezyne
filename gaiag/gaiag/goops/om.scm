@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
@@ -34,6 +34,7 @@
                 <integer>
                 <list>
                 <null>
+                <object>
                 <procedure>
                 <string>
                 <symbol>
@@ -56,6 +57,7 @@
               <integer>
               <list>
               <null>
+              <object>
               <procedure>
               <string>
               <symbol>
@@ -74,6 +76,7 @@
   :export (
            ast-name
            make
+           symbol->class
            is-a?
            .ast
            .message
@@ -232,8 +235,8 @@
            (string->symbol
             (if (string-prefix? "om:" name) (string-drop name 3) name)))))
 
-(define-method (ast-name (o <ast-list>))
-  (drop-<> (class-name o)))
+(define-method (ast-name (o <list>))
+  (car o))
 
 (define-method (ast-name (o <class>))
   (if (member o ast-lists)

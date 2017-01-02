@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -27,6 +27,7 @@
 
 (define-module (gaiag goops util)
   :use-module (ice-9 curried-definitions)
+  :use-module (ice-9 optargs)
   :use-module (ice-9 pretty-print)
   :use-module (ice-9 match)
 
@@ -45,7 +46,7 @@
 
   :export (
            is?
-           goops:clone
+           clone
            om->list
            om2list
            om:map
@@ -72,22 +73,39 @@
   (match o
     ((? (is? <ast-list>)) (rsp o (cons (car o) (map f (.elements o)))))
     ((h t ...) (map f o))
-    ((? (is? <ast>)) (goops:clone o (om:map-initializer f)))
+    ((? (is? <ast>)) (clone o (om:map-initializer f)))
     (_ o)))
+
+(define ((om:identity-initializer o) name)
+  (list (symbol->keyword name) (slot-ref o name)))
 
 (define (((om:map-initializer f) o) name)
   (list (symbol->keyword name) (f (slot-ref o name))))
 
-(define ((om:identity-initializer o) name)
-  (om:map-initializer identity))
-
-(define-method (goops:clone (o <ast>))
-  (goops:clone o om:identity-initializer))
-
-(define-method (goops:clone (o <ast>) make-initializer)
+(define-method (clone (o <ast>) (make-initializer <procedure>))
  (let* ((class (class-of o))
         (slots (class-slots class))
         (names (map slot-definition-name slots))
         (initializers (map (make-initializer o) names))
         (arguments (cons class (apply append initializers))))
    (retain-source-properties o (apply make arguments))))
+
+(define-method (clone o . setters)
+  (let* ((class (class-of o))
+        (slots (class-slots class))
+        (names (map slot-definition-name slots))
+        (initializers (map (om:identity-initializer o) names))
+        (keywords (filter keyword? setters))
+        (initializers (filter (lambda (i) (not (member (car i) keywords))) initializers))
+        (initializers (append (apply append initializers) setters))
+        (arguments (cons class initializers)))
+   (apply make arguments)))
+
+(define-method (clone (o <ast>) . setters)
+  (retain-source-properties o (next-method)))
+
+(define-method (clone (o <list>) . setters)
+  (retain-source-properties
+   o
+   (let-keywords setters #f ((elements (.elements o)))
+                 (cons (car o) elements))))
