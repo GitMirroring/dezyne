@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -60,12 +60,16 @@ namespace dzn
     std::string name;
     std::string type;
     const meta* parent;
+    mutable size_t rank;
+    std::vector<const port::meta*> requires;
     std::vector<const meta*> children;
     std::vector<std::function<void()>> ports_connected;
-    meta(std::string&& name, std::string&& type, const meta* parent, std::vector<const meta*>&& children, std::vector<std::function<void()>>&& ports_connected)
+    meta(std::string&& name, std::string&& type, const meta* parent, size_t rank, std::vector<const port::meta*>&& requires, std::vector<const meta*>&& children, std::vector<std::function<void()>>&& ports_connected)
     : name(name)
     , type(type)
     , parent(parent)
+    , rank(rank)
+    , requires(requires)
     , children(children)
     , ports_connected(ports_connected)
     {}
