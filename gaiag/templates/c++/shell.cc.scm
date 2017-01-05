@@ -22,6 +22,20 @@
 {
 #(map
  (lambda (port)
+    (animate #{#'()
+       #instance .#port .meta.requires.port = #instance .#port .meta.provides.port;#}
+     `((instance ,(.name (om:instance model port)))
+       (port ,(.name port)))))
+     (filter om:provides? (om:ports model)))
+#(map
+ (lambda (port)
+    (animate #{#'()
+       #instance .#port .meta.provides.port = #instance .#port .meta.requires.port;#}
+     `((instance ,(.name (om:instance model port)))
+       (port ,(.name port)))))
+     (filter om:requires? (om:ports model)))
+#(map
+ (lambda (port)
    (map (define-on model port #{
 #port .#direction .#event  = [&] (#formals) {
     return dzn::shell(dzn_pump, [#capture-list ] {return #instance .#instance-port .#direction .#event(#arguments);});

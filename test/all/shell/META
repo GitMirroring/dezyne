@@ -1,3 +1,4 @@
-{"skip":["run","verify"]
-,"comment":"handwritten trace on a system component"
+{"skip":["run","verify","c","c++03","cs"]
+,"languages":["c++","c++-msvc11"]
+,"comment":"handwritten trace on a system component, thread safe shell"
 ,"tss":"true"}
