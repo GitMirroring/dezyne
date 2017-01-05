@@ -2,7 +2,7 @@
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -45,7 +45,7 @@ var default_meta = {
   skip: []
   , ignore: []
   , flush: false
-  , languages: all_languages
+  , languages: all_languages.filter (function (x) {return x != 'c++-msvc11';})
   , max: {code:undefined,run:50}
 };
 
