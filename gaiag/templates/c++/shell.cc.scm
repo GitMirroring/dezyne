@@ -7,7 +7,7 @@
             (list
              (->string
               (list
-               "dzn_meta" (c++:init-brace-open) "\"\",\"" .model "\",0,{"
+               "dzn_meta" (c++:init-brace-open) "\"\",\"" .model "\",0,0,{},{"
                ((->join ",")
                 (map (init-instance model #{&#name .dzn_meta#})
                      (non-injected-instances model)))
