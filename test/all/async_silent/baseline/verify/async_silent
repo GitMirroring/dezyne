@@ -10,7 +10,6 @@ p.e
 r.e
 r.return
 p.return
-r.silent
 r.f
 r.Res_NOK
 verify: async_silent: check: deadlock: fail
@@ -18,7 +17,6 @@ p.e
 r.e
 r.return
 p.return
-r.silent
 r.f
 r.Res_NOK
 verify: async_silent: check: compliance: fail
@@ -26,7 +24,6 @@ p.e
 r.e
 r.return
 p.return
-r.silent
 r.f
 r.Res_NOK
 verify: async_silent: check: livelock: ok
