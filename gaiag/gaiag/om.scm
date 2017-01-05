@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;; Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -242,6 +242,8 @@
      (find (lambda (x) (eq? (.name x) o)) ((compose .elements .instances) model)))
     (($ <binding>) (or (om:instance model (.instance o))
                        (om:import (.type (om:port model (.port bind))))))
+    (($ <bind>) (om:instance model (om:instance-binding? o)))
+    (($ <port>) (om:instance model (om:port-bind model o)))
     ((? boolean?) #f)))
 
 (define (om:port-bind? bind)
@@ -260,11 +262,14 @@
       (and (not (.instance (.right  bind)))
            (.left bind))))
 
-(define (om:port-bind system port)
-  (find (lambda (bind) (and=> (om:port-bind? bind)
-                              (lambda (b)
-                                (eq? (.port (om:port-binding? b)) port))))
-        ((compose .elements .bindings) system)))
+(define (om:port-bind system o)
+  (match o
+    ((? symbol?)
+     (find (lambda (bind) (and=> (om:port-bind? bind)
+                                 (lambda (b)
+                                   (eq? (.port (om:port-binding? b)) o))))
+           ((compose .elements .bindings) system)))
+    (($ <port>) (om:port-bind system (.name o)))))
 
 (define (om:bind system o)
   (let* ((binds ((compose .elements .bindings) system)))
