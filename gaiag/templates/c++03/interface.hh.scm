@@ -42,14 +42,16 @@ struct #.interface
 
   inline void connect (#.interface & provided, #.interface & required)
   {
-     provided.out = required.out;
-     required.in = provided.in;
-     provided.meta.requires = required.meta.requires;
-     required.meta.provides = provided.meta.provides;
-   }
-   #(->string (map (enum-to-string model) (om:interface-enums model)))
-   #(->string (map (enum-to-string model) (om:enums)))
-   #(->string (map (string-to-enum model) (om:interface-enums model)))
-   #(->string (map (string-to-enum model) (om:enums)))
+    provided.out = required.out;
+    required.in = provided.in;
+    provided.meta.requires = required.meta.requires;
+    required.meta.provides = provided.meta.provides;
+  }
 #(map (lambda (x) (list "}\n")) (om:scope model))
+
+#(->string (map (enum-to-string model) (om:interface-enums model)))
+#(->string (map (enum-to-string model) (om:enums)))
+#(->string (map (string-to-enum model) (om:interface-enums model)))
+#(->string (map (string-to-enum model) (om:enums)))
+
 ##endif // #.INTERFACE _HH

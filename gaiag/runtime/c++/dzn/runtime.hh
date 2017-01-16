@@ -3,7 +3,7 @@
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -155,7 +155,7 @@ namespace dzn
     auto operator()(L&& l) -> decltype(l())
     {
       auto r = c->dzn_rt.handle(c, l);
-      reply = to_string(r);
+      reply = ::to_string(r);
       return r;
     }
     ~call_helper()
