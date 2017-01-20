@@ -42,7 +42,7 @@ class #.scope_model  (runtime.Component):
     (filter om:requires? (om:ports model)))
 #(map
    (lambda (port)
-     (map (define-on model port #{
+     (map (define-on+ model port #{
     def #port _#event  (self#comma #arguments):
 #statement #(if (not (eq? type 'void))
 (list "        return self.reply_" ((om:scope-join #f) reply-scope) "_" reply-name))

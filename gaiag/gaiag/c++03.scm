@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
@@ -40,3 +40,5 @@
 (define c++:out-param-list (@@ (gaiag c++) c++:out-param-list))
 (define c++:skel-file (@@ (gaiag c++) c++:skel-file))
 (define glue (@@ (gaiag c++) glue))
+(define asd-interfaces (@@ (gaiag c++) asd-interfaces))
+(define event2->interface1-event1-alist (@@ (gaiag c++) event2->interface1-event1-alist))

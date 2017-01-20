@@ -52,7 +52,7 @@
 
 #(map
   (lambda (port)
-    (map (define-on model port #{
+    (map (define-on+ model port #{
   static #return-type  #port _#event(#.scope_model * self#comma #formals) {
     (void)self;
     #statement #

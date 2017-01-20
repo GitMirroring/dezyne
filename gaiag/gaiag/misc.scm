@@ -2,7 +2,7 @@
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
-;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -88,6 +88,7 @@
            symbol-prefix?
            symbol-capitalize
            symbol-upcase
+           symbol-upcase-first
            symbol-drop
            symbol-drop-right
            symbol-split
@@ -153,6 +154,10 @@
 
 (define (symbol-upcase symbol)
   ((compose string->symbol string-upcase symbol->string) symbol))
+
+(define (symbol-upcase-first sym)
+   (let ((str (symbol->string sym)))
+     (string-append (string-upcase (string-take str 1)) (string-drop str 1))))
 
 (define (symbol-drop symbol count)
   (define ((drop count) string) (string-drop string count))

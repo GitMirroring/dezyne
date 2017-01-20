@@ -48,7 +48,7 @@
 
 #(map
   (lambda (port)
-    (map (define-on model port #{
+    (map (define-on+ model port #{
   #return-type  #.model ::#port _#event (#formals)
   {
     #statement #

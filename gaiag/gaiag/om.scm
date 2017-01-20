@@ -3,7 +3,7 @@
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-;;; Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -31,6 +31,7 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
 
   #:use-module (system foreign)
   #:use-module (language dezyne location)
@@ -102,6 +103,7 @@
            om:parent
            om:parse-dzn
            om:port
+           om:port-event
            om:ports
            om:port-bind
            om:port-bind?
@@ -133,11 +135,13 @@
   (stderr "DEPRECATED:~a\n" where))
 
 ;;; AST-LIST shorthands
-(define* (om:events o #:optional (predicate? identity))
+(define* (om:events- o #:optional (predicate? identity))
   (filter predicate?
           (match o
             (($ <interface>) ((compose .elements .events) o))
             (($ <port>) ((compose om:events om:import .type) o)))))
+
+(define om:events (pure-funcq om:events-))
 
 (define* (om:enums #:optional (model #f))
   (filter (is? <enum>) (om:types model)))
@@ -185,12 +189,14 @@
     (($ <component>) o)
     (($ <system>) ((compose .elements .instances) o))))
 
-(define (om:ports o)
+(define (om:ports- o)
   (match o
     (($ <interface>) '())
     (($ <component> name ($ <ports> (ports ...))) ports)
     (($ <behaviour> name types ($ <ports> (ports ...))) ports)
     (($ <system> name ($ <ports> (ports ...))) ports)))
+
+(define om:ports (pure-funcq om:ports-))
 
 (define* (om:types #:optional (model #f))
   (append

@@ -35,7 +35,7 @@ namespace skel {
 (map
     (lambda (port)
       (map (define-on model port #{
-#port .#direction .#event  = boost::bind(&dzn::call_out<#.model , ::#((c++:scope-name) interface) #comma #((->join ",") formal-types)>, this, boost::function< #return-type(#((->join ",") formal-types))>(boost::bind(&#.model ::#port _#event , this #comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list))))))#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list)))), boost::make_tuple(&#port , "#event ", "return"));
+#port .#direction .#event  = boost::bind(&dzn::call_out<#.model , #((c++:scope-name) interface) #comma #((->join ",") formal-types)>, this, boost::function< #return-type(#((->join ",") formal-types))>(boost::bind(&#.model ::#port _#event , this #comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list))))))#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list)))), boost::make_tuple(&#port , "#event ", "return"));
 #}) (filter om:out? (om:events port))))
     (filter om:requires? (om:ports model)))
 }

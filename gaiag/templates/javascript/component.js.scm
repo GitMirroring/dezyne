@@ -29,7 +29,7 @@ dzn.extend (dzn, dzn_require (__dirname + '/#interface '));
 #})#}) (filter om:requires? ((compose .elements .ports) model)))#
 (map
    (lambda (port)
-     (map (define-on model port #{
+     (map (define-on+ model port #{
   this.#port .#direction .#event  = function(#arguments) {
   #statement #(string-if (not (eq? type 'void))
 #{ return this.reply_#((om:scope-join #f) reply-scope)_#reply-name;

@@ -1,78 +1,42 @@
-##include "#.model .hh"
-
-##include "asdInterfaces.h"
-
-##include <dzn/locator.hh>
-##include <dzn/runtime.hh>
+##include "#((om:scope-name) model) .hh"
 
 ##include "#.model Component.h"
 
-##include <boost/bind.hpp>
 ##include <boost/make_shared.hpp>
-##include <boost/ref.hpp>
-
-##include <map>
-
-struct SingleThreaded
-  : public asd::channels::ISingleThreaded
-{
-  void processCBs(){}
-};
-
-#(define ((gen1-interfaces dir?) model)
-   (let* ((port (om:port model))
-          (provided
-           (filter dir? ((compose .elements .events om:interface) port)))
-          (alist (event2->interface1-event1-alist port))
-          (gen1-provided (filter identity (map (lambda (x) (assoc (.name x) alist)) provided))))
-     (if (pair? gen1-provided) (list gen1-provided) '())))
-
-#(map (lambda (alist)
-        (let* ((entry (car alist))
-               (interface (second entry))
-               (component (symbol-drop interface 1))
-               (port-type ((c++:scope-name) (om:port model))))
-         (list "struct " component "\n: public " interface "\n"
-               "{\n"
-               port-type "& port;\n"
-               component "(" port-type "& port)\n"
-               ": port(port)\n"
-               "{}\n"
-               (map
-                (lambda (entry)
-                  (list "void " (third entry) "(){ port.out." (first entry) "(); }\n"))
-                alist)
-               "};\n")))
-      ((gen1-interfaces om:out?) model))
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
-static std::map<#.model *, boost::shared_ptr<#(om:name (om:port model)) Interface> > g_handwritten;
-
-#.model ::#.model (const dzn::locator& dezyne_locator)
-: dzn_meta{"glue","#.model",reinterpret_cast<const dzn::component*>(this),0,{},{#((->join ",") (map (lambda (port) (list "[this]{" (.name port) ".check_bindings();}")) (om:ports model)))}}
-, dzn_rt(dezyne_locator.get<dzn::runtime>())
-, dzn_locator(dezyne_locator)#
-(map (lambda (port) (if (eq? (.direction port) 'provides) (list "\n, " (.name port) "({{\"" (.name port) "\",this},{\"\",0}})") (list "\n, " (.name port) "({{\"\",0},{\"" (.name port) "\",this}})"))) ((compose .elements .ports) model))
+#.model ::#.model (const dzn::locator& locator)
+: skel::#.model(locator)
+, component(#.model Component::GetInstance())
 {
-  boost::shared_ptr< ::#(om:name (om:port model)) Interface> component = ::#.model Component::GetInstance() ;
-#(map (lambda (port) (->string (list "boost::shared_ptr< ::" (om:name port) "> api_" (.name port) ";\n"
-                                       "component->GetAPI(&api_" (.name port) ");\n")))
-        (filter om:provides? ((compose .elements .ports) model)))
-g_handwritten.insert (std::make_pair (this,component));
-#(map (lambda (alist)
-        (let* ((entry (car alist))
-               (interface (second entry))
-               (component (symbol-drop interface 1)))
-          (list "component->RegisterCB(boost::make_shared<" component ">(boost::ref(" (.name (om:port model)) ")));\n")))
-      ((gen1-interfaces om:out?) model))
-#(if (pair? ((gen1-interfaces om:out?) model)) "component->RegisterCB(boost::make_shared< ::SingleThreaded>()); //fixme")
-#(map (lambda (alist)
-        (let* ((entry (car alist))
-               (interface (second entry)))
-          (map
-           (lambda (entry)
-             (let ((port (om:port model)))
-              (list (.name port) ".in." (first entry) " = boost::bind(&::" (om:name port) "::" (third entry) ",api_" (.name port) ");\n")))
-           alist)))
-      ((gen1-interfaces om:in?) model))}
+#(map (lambda (api) (->string (list "component->GetAPI(&api_" api ");\n")))
+        (delete-duplicates (map second ((asd-interfaces om:in?) (om:interface model)))))
+#(map (lambda (cb)
+          (list "component->RegisterCB(boost::make_shared<" (symbol-drop cb 1) ">(boost::ref(" (.name (om:port model)) ")));\n"))
+      (delete-duplicates (map second ((asd-interfaces om:out?) (om:interface model)))))
+#(if (pair? (filter om:out? (om:events (om:port model))))
+     (list "component->RegisterCB(boost::make_shared<SingleThreaded>(this, boost::ref(dzn_rt)));\n"))
+  dzn_rt.performs_flush (this) = true;
+}
+#.model ::~#.model ()
+{
+#(map (lambda (api) (->string (list "api_" api ".reset();\n")))
+        (delete-duplicates (map second ((asd-interfaces om:in?) (om:interface model)))))
+ component.reset();
+ #.model Component::ReleaseInstance();
+}
+#(map
+  (lambda (event entry)
+    (list ((define-on model (om:port model) #{
+#return-type  #.model ::#port _#event (#
+(comma-join (map (lambda (formal)
+                   (list ((compose .value (om:type model)) formal) (if (eq? (.direction formal) 'in) " " "& ") (.name formal)))
+                 formal-objects)))
+{
+#}) event)
+(let ((arguments (comma-join (map .name ((compose .elements .formals .signature) event)))))
+  (if (equal? 'void (return-type model event))
+      (list "api_" (second entry) "->" (third entry) "(" arguments ");\n}\n")
+      (list "return static_cast<" (return-type model event) ">(api_" (second entry) "->" (third entry) "(" arguments ") - 1);\n}\n")))))
+(filter om:in? (om:events (om:port model))) ((asd-interfaces om:in?) (om:interface model)))
 #(map (lambda (x) (list "}\n")) (om:scope model))

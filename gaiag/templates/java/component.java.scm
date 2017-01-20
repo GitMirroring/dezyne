@@ -43,7 +43,7 @@ class #.scope_model  extends Component {#
   }#
 (map
    (lambda (port)
-     (map (define-on model port #{#'()
+     (map (define-on+ model port #{#'()
   public #return-type  #port _#event (#formals) {
   #statement #(if (not (eq? type 'void))
 (list "return reply_" ((om:scope-join #f) reply-scope) "_" reply-name ";\n")) };

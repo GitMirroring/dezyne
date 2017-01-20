@@ -70,6 +70,7 @@
            define-helper
            define-reply
            define-on
+           define-on+
            connect-ports
            enum-to-string
            string-to-enum
@@ -924,17 +925,12 @@
              (formals (map rename-formal ((compose .elements .formals) signature) formals)))
         (make <signature> #:type (.type signature) #:formals (make <formals> #:elements formals)))))
 
-(define ((define-on model port string) event)
+(define ((define-on+ model port string) event)
   (let* ((behaviour (and=> (as model <component>) .behaviour))
          (ons (if (not behaviour) '()
                   ((compose .elements .statement) behaviour)))
          (ons (filter (is-trigger? port event) ons))
-         (on (case (length ons)
-               ((0) #f)
-               (else (car ons))
-               ;;((1) (car ons))
-               ;;(else (error (format #f "multiple ons for port=~a event=~a"  (.name port) (.name event))))
-               ))
+         (on (and (pair? ons) (car ons)))
          (signature (.signature event))
          (signature (transform-signature signature on))
          (signature-name (code:formals->name model signature))
@@ -1018,6 +1014,85 @@
                        (instance ,instance)
                        (instance-port ,instance-port)
                        (statement ,statement)
+                       (type ,(.name type))))))
+
+(define ((define-on model port string) event)
+  (let* ((behaviour (and=> (as model <component>) .behaviour))
+         (ons (if (not behaviour) '()
+                  ((compose .elements .statement) behaviour)))
+         (ons (filter (is-trigger? port event) ons))
+         (on (and (pair? ons) (car ons)))
+         (signature (.signature event))
+         (signature (transform-signature signature on))
+         (signature-name (code:formals->name model signature))
+         (formals (.formals signature))
+         (formal-objects (.elements formals))
+         (formal-objects (if (calling-context)
+                              (cons (make <formal> #:name 'cc__ #:type (make <type> #:name `(name ,(calling-context)))) formal-objects)
+                              formal-objects))
+         (formals (make <formals> #:elements formal-objects))
+         (signature
+          (if (calling-context)
+              (make <signature> #:type (.type signature) #:formals formals)
+              signature))
+         (type (.type signature))
+         (type-type ((om:type model) type))
+         (interface (.type port))
+         (return-type (return-type model event))
+         (return-type-name (om:type-name type-type))
+         (in-formals (filter om:in? ((compose .elements .formals) signature)))
+         (capture-list (comma-join (append (list "&") (map .name in-formals))))
+         (formals ((compose .elements .formals) signature))
+         (argument-list (map .name formals))
+         (number (number->string (length argument-list)))
+         (arguments (comma-join argument-list))
+         (locals (let loop ((formals formals) (locals '()))
+                   (if (null? formals)
+                       locals
+                       (loop (cdr formals)
+                             (acons (.name (car formals)) (car formals) locals)))))
+         (comma (if (pair? formals) (sep) ""))
+         (comma-space (if (pair? formals) (sep) ""))
+         (formal-types (map (lambda (formal)
+                                 (snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
+                            formals))
+         (formal-list (map (lambda (x) (code:->code model x)) formals))
+         (formals (code:->code model (make <formals> #:elements formals)))
+         (reply-type (ast-name ((om:type model) type)))
+         (reply-name (if (eq? reply-type 'int) 'int (om:name type)))
+         (reply-scope (om:scope type-type))
+         (reply-scope-name (om:scope+name type-type))
+         (system (as model <system>))
+         (bind (and system (om:port-bind system (.name port))))
+         (instance-binding (and bind (om:instance-binding? bind)))
+         (instance (and instance-binding (.instance instance-binding)))
+         (instance-port (and instance-binding (.port instance-binding)))
+         (blocking? #f)
+         (space "    "))
+    (animate string `((port ,(.name port))
+                       (event ,(.name event))
+                       (argument-list ,argument-list)
+                       (arguments ,arguments)
+                       (direction ,(.direction event))
+                       (capture-list ,capture-list)
+                       (comma ,comma)
+                       (comma-space ,comma-space)
+                       (type-type ,type-type)
+                       (signature-name ,signature-name)
+                       (interface ,interface)
+                       (number ,number)
+                       (formals ,formals)
+                       (formal-list ,formal-list)
+                       (formal-objects ,formal-objects)
+                       (formal-types ,formal-types)
+                       (reply-name ,reply-name)
+                       (reply-type ,reply-type)
+                       (reply-scope ,reply-scope)
+                       (reply-scope-name ,reply-scope-name)
+                       (return-type ,return-type)
+                       (return-type-name ,return-type-name)
+                       (instance ,instance)
+                       (instance-port ,instance-port)
                        (type ,(.name type))))))
 
 (define ((init-bind model string) bind)
@@ -1201,3 +1276,38 @@
 (define (calling-context)
   (let ((type (option-ref (parse-opts (command-line)) 'calling-context #f)))
     (if type (string->symbol type) type)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;; helper functions/macros to identify bottlenecks ;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-syntax *match*
+  (syntax-rules ... ()
+    ((_ obj (pat exp ...) ...)
+     (match obj (pat (begin (map display (list "match " 'pat ":")) (newline)
+                            (measure-perf- '(exp ...) (lambda () exp ...)))) ...))))
+
+(define (measure-perf- label thunk)
+  (let ((t1 (get-internal-run-time))
+        (result (thunk))
+        (t2 (get-internal-run-time)))
+    (stderr "~a: ~a\n" (- t2 t1) label)
+    result))
+
+(define-syntax measure-perf
+  (syntax-rules ()
+    ((_ label exp)
+     (let ((t1 (get-internal-run-time))
+           (result ((lambda () exp)))
+           (t2 (get-internal-run-time)))
+       (stderr "~a: ~a\n" (- t2 t1) label)
+       result))))
+
+(define-syntax *let*
+  (syntax-rules ()
+    ((_ ((var val) ...) exp exp* ...)
+     (let* ((var (measure-perf 'var val)) ...)
+       (measure-perf '*let* exp exp* ...)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

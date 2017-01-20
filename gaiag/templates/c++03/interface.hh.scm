@@ -48,10 +48,8 @@ struct #.interface
     required.meta.provides = provided.meta.provides;
   }
 #(map (lambda (x) (list "}\n")) (om:scope model))
-
 #(->string (map (enum-to-string model) (om:interface-enums model)))
 #(->string (map (enum-to-string model) (om:enums)))
 #(->string (map (string-to-enum model) (om:interface-enums model)))
 #(->string (map (string-to-enum model) (om:enums)))
-
 ##endif // #.INTERFACE _HH

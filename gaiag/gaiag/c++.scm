@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2014, 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -113,28 +113,26 @@
                       (dump-indented (symbol-append interface 'Component.h)
                                      (cute c++-file 'asdcomponent.h.scm module))))
                   (filter om:requires? (om:ports o))))
-      (let ((name (if (.behaviour o) ((om:scope-name) o) (c++:skel-file o)))
+      (let ((name ((om:scope-name) o))
+            (skel-name (if (.behaviour o) ((om:scope-name) o) (c++:skel-file o)))
             (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
         ((@@ (gaiag c) dump-main) o)
-        (dump-indented (symbol-append name (code:extension (make <interface>)))
+        (dump-indented (symbol-append skel-name (code:extension (make <interface>)))
                        (cute c++-file (if (.behaviour o) 'component.hh.scm 'foreign.hh.scm) (code:module o)))
-        (dump-indented (symbol-append name (code:extension o))
+        (dump-indented (symbol-append skel-name (code:extension o))
                        (cute c++-file (if (.behaviour o) 'component.cc.scm 'foreign.cc.scm) (code:module o)))
         ;; TODO: rename dzn glue templates
-        (if (and (not (.behaviour o))
-                 (map-file o))
-            (dump-indented (symbol-append 'glue- name '.cc)
+        (when (and (not (.behaviour o)) (map-file o))
+            (dump-indented (symbol-append name '.hh)
+                           (lambda ()
+                             (c++-file 'glue-bottom-component.hh.scm (code:module o))))
+            (dump-indented (symbol-append name '.cc)
                            (lambda ()
                              (c++-file 'glue-bottom-component.cc.scm (code:module o))))))))
 
 (define (dump-system o)
   ((@@ (gaiag c) dump-system) o)
-  (let ((name ((om:scope-name) o)))
-    (if (map-file o)
-        (dump-indented (symbol-append name 'Interface.h)
-                       (lambda ()
-                         (c++-file 'glue-top-system-interface.hh.scm (code:module (om:interface (om:port o)))))))
-    ;;(stderr "MAP: ~a [~a] ==> ~a\n" (.name o) (om:port o) (map-file o))
+  (let ((name (om:name o)))
     (when (map-file o)
       (dump-indented (symbol-append name 'Component.h)
                     (lambda ()
@@ -168,7 +166,7 @@
           (filter dir? ((compose .elements .events) model)))
          (alist (event2->interface1-event1-alist (.name model)))
          (asd-provided (filter identity (map (lambda (x) (assoc (.name x) alist)) provided))))
-    (if (pair? asd-provided) (list asd-provided) '())))
+    (if (pair? asd-provided) asd-provided '())))
 
 (define (map-file o)
   (and (om:port o)

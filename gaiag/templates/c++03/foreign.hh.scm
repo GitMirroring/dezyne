@@ -8,8 +8,8 @@
 namespace dzn {
 struct locator;
 struct runtime;
-}#
-(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
+}
+#(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 namespace skel {
 struct #.model
 {
@@ -38,6 +38,6 @@ virtual #return-type  #port _#event (#formals) = 0;
 virtual #return-type  #port _#event (#formals) = 0;
 #}) (filter om:out? (om:events port))))
   (filter om:requires? (om:ports model)))};
-}#
-(map (lambda (x) (list "}\n")) (om:scope model))
+}
+#(map (lambda (x) (list "}\n")) (om:scope model))
 ##endif // SKEL_#.COMPONENT _HH
