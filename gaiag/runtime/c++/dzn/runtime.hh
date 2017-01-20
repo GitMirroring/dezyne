@@ -160,7 +160,7 @@ namespace dzn
     }
     ~call_helper()
     {
-      trace_out(os, meta, reply.c_str()); os << std::endl;
+      trace_out(os, meta, reply.c_str()); os << " " << *c << std::endl;
     }
   };
 
