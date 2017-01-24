@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -23,22 +23,24 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag evaluate)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 optargs)
-  :use-module (gaiag list match)
-  :use-module (srfi srfi-1)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 optargs)
+  #:use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
+  #:use-module (gaiag compare)
+  #:use-module (gaiag util)
 
-  :use-module (gaiag misc)
-  :use-module (gaiag norm)
-  :use-module (gaiag reader)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag norm)
+  #:use-module (gaiag reader)
 
-  :export (
+  #:export (
            eval-expression
            simplify-expression
            variable-state
@@ -50,7 +52,7 @@
            ))
 
 
-(define* ((variable-state model :optional (init .expression)) variable)
+(define* ((variable-state model #:optional (init .expression)) variable)
   (cons
    (.name variable)
    (eval-expression model '() (init variable))))
@@ -58,7 +60,7 @@
 (define (state-vector model)
   (map (variable-state model) (om:variables model)))
 
-(define* ((undefined-variable-state model :optional (init .expression)) variable)
+(define* ((undefined-variable-state model #:optional (init .expression)) variable)
   (cons
    (.name variable)
    ;;(eval-expression model '() (init variable))
@@ -68,7 +70,7 @@
 (define (undefined-state-vector model)
   (map (undefined-variable-state model (init-undefined model)) (om:variables model)))
 
-(define* ((undefined-variable-state model :optional (init .expression)) variable)
+(define* ((undefined-variable-state model #:optional (init .expression)) variable)
   (cons
    (.name variable)
    ;;(eval-expression model '() (init variable))
@@ -78,13 +80,13 @@
 (define ((init-undefined model) o)
   (let* ((type ((om:type model) o)))
     (match type
-      (_ (make <var> :name (.name o)))
+      (_ (make <var> #:name (.name o)))
 
       (_ *unspecified*)
-      (($ <enum> name field) (make <literal> :name name :field *unspecified*))
+      (($ <enum> name field) (make <literal> #:name name #:field *unspecified*))
       (($ <int> name range) *unspecified*)
       ;;(($ <type> 'bool) *unspecified*)
-      (($ <type> 'bool) (make <var> :name (.name o)))
+      (($ <type> 'bool) (make <var> #:name (.name o)))
       (_ (stderr "FIXME: INIT VAR: a\n" o))
       )))
 
@@ -100,7 +102,7 @@
 (define ((bool-var? model) x) (let ((v ((var? model) x)))
                                 (and (is-a? v <variable>) (bool? (.type v)))))
 (define ((int? model) x)
-  (is-a? ((om:type model) x) <int>))
+  (as ((om:type model) x) <int>))
 (define ((int-var? model) x)
   (let ((v ((var? model) x)))
     (and (is-a? v <variable>) ((int? model) v))))

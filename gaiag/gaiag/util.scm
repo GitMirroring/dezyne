@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -23,34 +23,54 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
+(define-module (gaiag util)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 optargs)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 match)
 
-(define-module (gaiag goops util)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 optargs)
-  :use-module (ice-9 pretty-print)
-  :use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
 
-  :use-module (srfi srfi-1)
+  #:use-module (language dezyne location)
 
-  :use-module (language dezyne location)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
 
-  :use-module (gaiag gaiag)
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
+  #:use-module (gaiag compare)
+  #:use-module (gaiag display)
 
-  :use-module (gaiag goops ast)
-  :use-module (gaiag goops compare)
-  :use-module (gaiag goops om)
-  :use-module (gaiag goops display)
+  #:use-module (gaiag gaiag)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
 
-  :export (
-           is?
-           clone
-           om->list
-           om2list
-           om:map
+  #:export (
+            ast-name
+            is?
+            as
+            clone
+            om->list
+            om2list
+            om:filter
+            om:find
+            om:map
+            symbol->class
            ))
+
+(define (drop-<> o)
+  (string->symbol (string-drop (string-drop-right (symbol->string o) 1) 1)))
+
+(define-method (ast-name (o <ast>))
+  (let ((name (string-drop (string-drop-right (symbol->string (class-name (class-of o))) 1) 1)))
+    (string->symbol
+     (if (string-prefix? "om:" name) (string-drop name 3) name))))
+
+(define-method (ast-name (o <class>))
+  (drop-<> (class-name o)))
+
+(define (symbol->class x) (symbol-append '< x '>))
+
+(define (as o c)
+  (and (is-a? o c) o))
 
 (define ((is? class) o)
   (and (is-a? o class) o))
@@ -60,19 +80,27 @@
       (with-output-to-string (lambda () (write om)))
     read))
 
-(define* (om2list o :optional (marker null-symbol))
+(define* (om2list o #:optional (marker null-symbol))
   (match o
-    ((and (? (is? <ast>)) (? (negate (is? <ast-list>)))) (cons (symbol-append (ast-name o) marker) (map om2list (om:children o))))
+    ((? (is? <ast>)) (cons (symbol-append (ast-name o) marker) (map om2list (om:children o))))
     ((h t ...) (map om2list o))
     (_ o)))
 
 (define-method (om:children (o <ast>))
   (map (lambda (slot) (slot-ref o (slot-definition-name slot))) ((compose class-slots class-of) o)))
 
+(define-method (om:children (o <ast-list>))
+  (.elements o))
+
+(define-method (om:filter pred (o <ast-list>))
+  (filter pred (.elements o)))
+
+(define-method (om:find pred (o <ast-list>))
+  (find pred (.elements o)))
+
 (define (om:map f o)
   (match o
-    ((? (is? <ast-list>)) (rsp o (cons (car o) (map f (.elements o)))))
-    ((h t ...) (map f o))
+    ((? (is? <ast-list>)) (clone o #:elements (map f (.elements o))))
     ((? (is? <ast>)) (clone o (om:map-initializer f)))
     (_ o)))
 
@@ -103,9 +131,3 @@
 
 (define-method (clone (o <ast>) . setters)
   (retain-source-properties o (next-method)))
-
-(define-method (clone (o <list>) . setters)
-  (retain-source-properties
-   o
-   (let-keywords setters #f ((elements (.elements o)))
-                 (cons (car o) elements))))

@@ -1,15 +1,14 @@
 ;; -*-scheme-*-
 
-(read-set! keywords 'prefix)
-
 (define-module (test-handler)
-  :use-module (test-suite lib)
-  :use-module (test-suite misc)
+  #:use-module (test-suite lib)
+  #:use-module (test-suite misc)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag om)
 
-  :use-module (gaiag reader)
-  :use-module (gaiag asserts))
+  #:use-module (gaiag reader)
+  #:use-module (gaiag asserts))
 
 (pass-if "asserts-first-dummy-test"
 	 #t)

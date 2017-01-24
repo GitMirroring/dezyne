@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -21,18 +21,18 @@
 ;;; 
 ;;; Code:
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag java)
-  :use-module (ice-9 pretty-print)
+  #:use-module (ice-9 pretty-print)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
 
-  :use-module (gaiag code)
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
+  #:use-module (gaiag code)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
 
-  :export (ast-> lambda-type ->type))
+  #:export (ast-> lambda-type ->type))
 
 (define ast-> ast:code)
 

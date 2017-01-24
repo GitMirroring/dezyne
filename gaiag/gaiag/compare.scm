@@ -1,7 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
+;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -24,25 +23,23 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
+(define-module (gaiag compare)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
 
-(define-module (gaiag goops compare)
-  :use-module (gaiag goops om)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag display)
+  #:use-module (gaiag util)
 
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
-  :use-module (gaiag goops display)
-  :use-module (gaiag goops om)
-  :use-module (gaiag goops util)
-
-  :export (
+  #:export (
            om:<
            om:equal?
            om:guard-equal?
            om:port-event-equal?
            om:triggers-equal?
            )
-  :re-export (< equal?))
+  #:re-export (< equal?))
 
 (define om:< <)
 (define om:equal? equal?)
@@ -99,28 +96,8 @@
 (define-method (< (a <symbol>) (b <boolean>))
   #f)
 
-(define-method (equal? (a <statement>) (b <statement>))
+(define-method (equal? (a <ast>) (b <ast>))
   (equal? (om2list a) (om2list b)))
-
-(define-method (equal? (a <trigger>) (b <trigger>))
-  (and (eq? (.port a) (.port b))
-       (eq? (.event a ) (.event b))
-       (equal? (om->list (.arguments a))
-               (om->list (.arguments b)))))
-
-(define-method (equal? (a <literal>) (b <literal>))
-  (and (equal? (.name a) (.name b))
-       (eq? (.field a) (.field b))))
-
-(define-method (equal? (a <field>) (b <field>))
-  (and (eq? (.identifier a) (.identifier b))
-       (eq? (.field a) (.field b))))
-
-(define-method (equal? (a <var>) (b <var>))
-  (eq? (.name a) (.name b)))
-
-(define-method (equal? (a <expression>) (b <expression>))
-  (equal? (om2list (.value a)) (om2list (.value b))))
 
 (define-method (om:guard-equal? (lhs <guard>) (rhs <guard>))
   (equal? (om->list (.expression lhs)) (om->list (.expression rhs))))

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -23,41 +23,51 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag dzn)
-  :use-module (gaiag list match)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 getopt-long)
-  :use-module (ice-9 pretty-print)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 pretty-print)
 
-  :use-module (json)
+  #:use-module (json)
 
-  :use-module (gaiag animate)
-  :use-module (gaiag gaiag)
-  :use-module (gaiag indent)
-  :use-module (gaiag json)
-  :use-module (gaiag code)
-  :use-module (gaiag misc)
-  :use-module (gaiag om)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve)
-;;  :use-module (gaiag wfc)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag om)
 
-  :export (
+  #:use-module (gaiag animate)
+  #:use-module (gaiag gaiag)
+  #:use-module (gaiag indent)
+  #:use-module (gaiag json)
+  #:use-module (gaiag code)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag resolve)
+  #:use-module (gaiag util)
+;;  #:use-module (gaiag wfc)
+
+  #:export (
            ast->
            ast->dzn
+           ;; <assign-action>
+           ;; <assign-call>
            ))
 
-(define* ((->dzn :optional (model #f)) o)
+(define-class <assign-call> (<call>))
+(define-class <assign-action> (<action>))
+
+(define* ((->dzn #:optional (model #f)) o)
+  (define (local-scope? scope)
+    (or (null? scope) (equal? (list (om:name model)) scope)))
   (define (unspecified? x) (eq? x *unspecified*))
 
   ;;(stderr "DZN: ~a\n" o)
   (match o
 
-    (('root models ...) ((->join "\n") (map (->dzn) models)))
+    (($ <root> (model* ...)) ((->join "\n") (map (->dzn) model*)))
 
-    (($ <import> ('name file ...)) ((animate-snippet 'import `((file ,file)))))
+    (($ <import> file) ((animate-snippet 'import `((file ,file)))))
 
     ((? (is? <model>))
      (or (module-variable (current-module) 'model) (module-define! (current-module) 'model o))
@@ -74,11 +84,11 @@
      ((animate-snippet 'on `((triggers ,((->dzn model) triggers))
                              (statement ,((->dzn model) statement))))))
 
-    (('compound)
-     ((animate-snippet 'compound-empty)))
+    (($ <compound> ())
+     ((animate-snippet 'compound-empty '())))
 
-    (('compound statements ...)
-     ((animate-snippet 'compound `((statements ,(map (->dzn model) statements))))))
+    (($ <compound> (statement* ...))
+     ((animate-snippet 'compound `((statements ,(map (->dzn model) statement*))))))
 
     (($ <action> trigger)
      ((animate-snippet 'action `((trigger ,((->dzn model) trigger))
@@ -87,20 +97,20 @@
     (($ <illegal>) ((animate-snippet 'illegal)))
 
     (($ <assign> var ($ <call> function arguments))
-     ((->dzn model) (make <assign> :identifier var :expression (list 'assign-call function arguments))))
+     ((->dzn model) (make <assign> #:identifier var #:expression (make <assign-call> #:identifier function #:arguments arguments))))
 
     (($ <assign> var ($ <action> trigger))
-     ((->dzn model) (make <assign> :identifier var :expression (list 'assign-action trigger))))
+     ((->dzn model) (make <assign> #:identifier var #:expression (make <assign-action> #:trigger trigger))))
 
     (($ <assign> var expression)
      (->string var " = " ((->dzn model) expression) ";\n"))
 
-    (('assign-call function arguments)
+    (($ <assign-call> function arguments)
      ((animate-snippet 'call-expression `((function ,function)
                                           (arguments ,((->dzn model) arguments))
                                           (location ,(location (om:function model function)))))))
 
-    (('assign-action action trigger)
+    (($ <assign-action> trigger)
      ((animate-snippet 'assign-action `((trigger ,((->dzn model) trigger))))))
 
     (($ <call> function arguments)
@@ -128,10 +138,10 @@
     (($ <return> expression) ((animate-snippet 'return `((expression ,((->dzn model) expression))))))
 
     (($ <variable> name type ($ <call> function arguments))
-     ((->dzn model) (make <variable> :name name :type type :expression ((->dzn model) (list 'assign-call function arguments)))))
+     ((->dzn model) (make <variable> #:name name #:type type #:expression ((->dzn model) (make <assign-call> #:identifier function #:arguments arguments)))))
 
     (($ <variable> name type ($ <action> trigger))
-     ((->dzn model) (make <variable> :name name :type type :expression ((->dzn model) (list 'assign-action trigger)))))
+     ((->dzn model) (make <variable> #:name name #:type type #:expression ((->dzn model) (make <assign-action> #:trigger trigger)))))
 
     (($ <variable> name type ($ <expression> (? unspecified?)))
      (->string ((->dzn model) type) " " name ";\n"))
@@ -153,11 +163,12 @@
 
     (($ <type> 'bool) ((animate-snippet 'bool)))
     (($ <type> 'void) ((animate-snippet 'void)))
-    (($ <type> ('name scope ... name))
-     ((animate-snippet 'type `((scope ,((dzn:scope-join model) scope))
-                               (dot ,(if (or (null? scope) (equal? (list (om:name model)) scope)) "" "."))
-                               (name ,name)))))
-
+    ((and ($ <type>) (= .name scoped.name))
+     (let* ((scope (.scope scoped.name))
+            (name (.name scoped.name)))
+       (if (local-scope? scope)
+           ((animate-snippet 'type `((scope ()) (dot "") (name ,name))))
+           ((animate-snippet 'type `((scope ,((dzn:scope-join model) scope)) (dot ".") (name ,name)))))))
     (($ <binding> #f port) ((animate-snippet 'binding-port `((port ,port)))))
     (($ <binding> instance port) ((animate-snippet 'binding `((instance ,instance) (port ,port)))))
 
@@ -166,6 +177,7 @@
                                                             (out? ,(om:out-or-inout? o))
                                                             (type ,((->dzn model) type))
                                                             (name ,name)))))
+
     (($ <trigger> #f event) ((animate-snippet 'itrigger `((event ,event)))))
     (($ <trigger> port event arguments) ((animate-snippet 'trigger `((event ,event) (port ,port) (arguments ,((->dzn model) arguments))))))
 
@@ -174,11 +186,12 @@
     (($ <expression>) #f)
     (($ <data> data) ((animate-snippet 'data `((data ,data)))))
     (($ <field> type field) (->string (list ((->dzn model) type) "." field)))
-    (($ <literal> ('name scope ... name) field)
-     ((animate-snippet 'literal `((scope ,((dzn:scope-join model) scope))
-                                  (dot ,(if (or (null? scope) (equal? (list (om:name model)) scope)) "" "."))
-                                  (name ,name)
-                                  (field ,field)))))
+    ((and ($ <literal>) (= .name scoped.name) (= .field field))
+     (let* ((scope (.scope scoped.name))
+            (name (.name scoped.name)))
+       (if (local-scope? scope)
+           ((animate-snippet 'literal `((scope ()) (dot "") (name ,name) (field ,field))))
+           ((animate-snippet 'literal `((scope ,((dzn:scope-join model) scope)) (dot ".") (name ,name) (field ,field)))))))
     (($ <var> identifier) ((->dzn model) identifier))
     (('! ($ <expression> expression)) (->string (list "!" (paren model expression))))
     (('! expression) (->string (list "!" (paren model expression))))
@@ -190,10 +203,11 @@
        (->string (list lhs " " op " " rhs ))))
 
 
-    (('arguments arguments ...) (->string "(" ((->join ", ") (map (->dzn model) arguments)) ")"))
-    ;;(('fields fields ...) ((->join ", ") fields))
-    ;;(((or 'triggers 'formals) t ...) ((->join ", ") (map (->dzn model) t)))
-    ((h t ...) ((->join ", ") (map (->dzn model) t)))
+    (($ <arguments> (argument* ...)) (->string "(" ((->join ", ") (map (->dzn model) argument*)) ")"))
+    (($ <fields> (field* ...)) ((->join ", ") (map (->dzn model) field*)))
+    (($ <formals> (formal* ...)) ((->join ", ") (map (->dzn model) formal*)))
+    (($ <triggers> (trigger* ...)) ((->join ", ") (map (->dzn model) trigger*)))
+
     ((? symbol?) (->string o))
     ((? string?) o)
     (() "")
@@ -207,7 +221,7 @@
 
 (define (paren model expression)
   (if (or (number? expression) (symbol? expression)
-          (is-a? expression <field>) (is-a? expression <literal>) (is-a? expression <var>))
+          (as expression <field>) (as expression <literal>) (as expression <var>))
       ((->dzn model) expression)
       ;;(->string expression)
       (->string (list "(" ((->dzn model) expression) ")"))))
@@ -224,16 +238,16 @@
 (define (statement->dzn model)
   (map (->dzn model) ((compose .elements .statement .behaviour) model)))
 
-(define* ((dzn:scope-join model :optional (infix '.)) o)
+(define* ((dzn:scope-join model #:optional (infix '.)) o)
   ((om:scope-join model infix) o))
 
-(define* ((animate-pairs pairs string) :optional parameter)
+(define* ((animate-pairs pairs string) #:optional parameter)
   (animate string (pairs->module pairs parameter)))
 
-(define* ((animate-snippet file-name :optional (pairs '())) :optional parameter)
+(define* ((animate-snippet file-name #:optional (pairs '())) #:optional parameter)
   (snippet file-name (pairs->module pairs parameter)))
 
-(define* (pairs->module key-procedure-pairs :optional (parameter #f))
+(define* (pairs->module key-procedure-pairs #:optional (parameter #f))
   (let ((module (dzn:module (and=> (module-variable (current-module) 'model)
                                    variable-ref))))
     (populate-module module key-procedure-pairs parameter)))
@@ -290,7 +304,9 @@
     (animate-file (symbol-append file-name '.dzn.scm) module)))
 
 (define (dzn:module o)
-  (let ((module (make-module 31 (list (resolve-module '(gaiag dzn))
+  (let ((module (make-module 31 (list (resolve-module '(oop goops))
+                                      (resolve-module '(gaiag goops))
+                                      (resolve-module '(gaiag dzn))
                                       (resolve-module '(gaiag misc))))))
     (module-define! module 'model o)
     (module-define! module '.model (and=> ((is? <model>) o) om:name))
@@ -302,7 +318,7 @@
     (if (member language '(dzn html)) language
         'dzn)))
 
-(define* ((ast->dzn :optional (model #f) (language (language))) o)
+(define* ((ast->dzn #:optional (model #f) (language (language))) o)
   (parameterize ((template-dir (append (prefix-dir) `(templates ,language))))
     (indent-string ((->dzn model) o))))
 

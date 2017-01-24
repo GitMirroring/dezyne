@@ -1,5 +1,5 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
-# Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 # Copyright © 2014, 2015 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2014 Jan Nieuwenhuizen <jan@avatar.nl>
@@ -44,18 +44,11 @@ all: compile
 tags:
 	etags $(shell git ls-files)
 
-compile:
-	$(GUILE) $(GUILE_FLAGS) module/language/dezyne/spec.scm
-
-compile-all: clean
-#	make -C .. PROJECTS=gaiag GUILE='$(GUILE) --debug' BUILD=build-debug VERBOSE=
-	$(GUILE) $(GUILE_FLAGS) module/language/dezyne/spec.scm
-	for i in $(SCRIPTS); do $(GUILE) $(GUILE_FLAGS) $$i; done
-	for i in $(SCM_SOURCES); do $(GUILE) $(GUILE_FLAGS) $$i; done
-	for i in $(SCM_TEST_SOURCES); do $(GUILE) $(GUILE_FLAGS) $$i; done
-
 clean:
-	rm -rf ~/.cache/guile out ../build/ccache
+	make -C .. gaiag-clean
+
+compile:
+	make -C .. build/gaiag
 
 test: check
 check: compile

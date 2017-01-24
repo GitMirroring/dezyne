@@ -16,16 +16,15 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
-
 (define-module (test-handler)
-  :use-module (test-suite lib)
-  :use-module (test-suite misc)
+  #:use-module (test-suite lib)
+  #:use-module (test-suite misc)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag om)
 
-  :use-module (gaiag reader)
-;;  :use-module (gaiag mangle)
+  #:use-module (gaiag reader)
+;;  #:use-module (gaiag mangle)
 
   ;;:use-module (gaiag goops om)
   ;;:use-module (gaiag goops map)

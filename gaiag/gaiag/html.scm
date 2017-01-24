@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,17 +21,16 @@
 ;;; 
 ;;; Code:
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag html)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 optargs)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 optargs)
 
-  :use-module (gaiag animate)
-  :use-module (gaiag dzn)
-  :use-module (gaiag misc)
-  :use-module (gaiag om)
-  :export (
+  #:use-module (gaiag animate)
+  #:use-module (gaiag dzn)
+  #:use-module (gaiag misc)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag om)
+  #:export (
            ast->
            ast->html
            ))
@@ -42,7 +41,7 @@
       (parameterize ((template-dir (append (prefix-dir) `(templates html))))
         (animate-file (symbol-append file-name '.html.scm) x)))))
 
-(define* ((ast->html :optional (model #f)) o)
+(define* ((ast->html #:optional (model #f)) o)
   (((@@ (gaiag dzn) ast->dzn) model 'html) o))
 
 (define (ast-> ast)

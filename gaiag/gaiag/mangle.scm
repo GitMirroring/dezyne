@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -16,22 +16,21 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag mangle)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 pretty-print)
-  :use-module (gaiag list match)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 match)
 
-  ;;  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
 
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag resolve)
 
-  :use-module (gaiag goops om)
-
-  :export (ast-> om:mangle mangle-prefix-alist))
+  #:export (ast-> om:mangle mangle-prefix-alist))
 
 (define-method (mangle (o <top>)) o)
 (define-method (mangle (o <named>))
@@ -39,38 +38,36 @@
     (let* ((element (slot-ref o name))
            (p (om:prefix o)))
       (list (symbol->keyword name)
-            (if (and (eq? name 'name)
-                     p)
-                ((prefix p) element)
-                element))))
+            ((prefix p) element)
+            element)))
   (om:clone o mangle-name-initializer))
 
 (define-method (mangle (o <port>))
   (make <port>
-    :name ((prefix (om:prefix o)) (.name o))
-    :direction (.direction o)
-    :type ((prefix (om:prefix 'interface)) (.type o))))
+    #:name ((prefix (om:prefix o)) (.name o))
+    #:direction (.direction o)
+    #:type ((prefix (om:prefix 'interface)) (.type o))))
 
 (define-method (mangle (o <trigger>))
   (make <trigger>
-    :port (and=> (.port o) (prefix (om:prefix 'port)))
-    :event ((prefix (om:prefix 'event)) (.event o))))
+    #:port (and=> (.port o) (prefix (om:prefix 'port)))
+    #:event ((prefix (om:prefix 'event)) (.event o))))
 
 (define-method (mangle (o <binding>))
   (make <binding>
-    :instance (and=> (.instance o) (prefix (om:prefix 'instance)))
-    :port (and=> (.port o) (prefix (om:prefix 'port)))))
+    #:instance (and=> (.instance o) (prefix (om:prefix 'instance)))
+    #:port (and=> (.port o) (prefix (om:prefix 'port)))))
 
 (define-method (mangle (o <instance>))
   (make <instance>
-    :name (and=> (.name o) (prefix (om:prefix 'instance)))
-    :type (and=> (.type o) (prefix (om:prefix 'component)))))
+    #:name (and=> (.name o) (prefix (om:prefix 'instance)))
+    #:type (and=> (.type o) (prefix (om:prefix 'component)))))
 
 (define-method (mangle (o <variable>))
   (make <variable>
-    :name ((prefix (om:prefix 'var)) (.name o))
-    :type (.type o)
-    :expression (.expression o)))
+    #:name ((prefix (om:prefix 'var)) (.name o))
+    #:type (.type o)
+    #:expression (.expression o)))
 
 (define mangle-prefix-alist
   (make-parameter '((event . ev)

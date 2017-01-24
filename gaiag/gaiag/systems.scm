@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -23,30 +24,33 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag systems)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 getopt-long)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 getopt-long)
 
-  :use-module (gaiag list match)
+  #:use-module (ice-9 match)
 
-  :use-module (gaiag om)
-  :use-module (gaiag gaiag)
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve))
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
+  #:use-module (gaiag util)
+  #:use-module (gaiag gaiag)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag resolve))
 
 (define (om->systems om)
   (let* ((name (and=> (option-ref (parse-opts (command-line)) 'model #f)
                       string->symbol)))
-    (let* ((systems (filter (is? <system>) om))
+    (let* ((systems (om:filter (is? <system>) om))
            (systems (if name (filter (om:named name) systems) systems)))
       (when (pair? systems)
         (stdout "~a\n" ((->join "\n") (map om:name systems))))
       (exit (or (not name) (pair? systems))))))
 
 (define (ast-> ast)
-  (let ((om ((om:register ast->om #t) ast)))
+  (let ((om ((om:register (compose ast:resolve ast->om) #t) ast)))
     (om->systems om))
+  (stderr "HIERO\n")
   "")

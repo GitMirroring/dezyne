@@ -16,16 +16,17 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
-
 (define-module (test-handler)
-  :use-module (test-suite lib)
-  :use-module (test-suite misc)
+  #:use-module (test-suite lib)
+  #:use-module (test-suite misc)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag om)
 
-  :use-module (gaiag reader)
-;;  :use-module (gaiag wfc)
+  #:use-module (gaiag reader)
+;;  #:use-module (gaiag wfc)
 )
 
 (define (dezyne->om o)
@@ -44,42 +45,43 @@
 
 (pass-if "wfc-second-on"
   (om-pretty-noisy-equal?
-   ((second-on)
-    (dezyne->om
-     #{
-       interface i { in void a; out void b;
-                        behaviour
-                        { [true] on a: [false] on a: b ;
-                          } } #}))
-   (list (wfc-error '(on (triggers (trigger #f a))
-                         (action (trigger #f b)))
-                    "second on"))))
+   (car ((second-on)
+     (dezyne->om
+      #{
+        interface i { in void a         ; out void b;
+                         behaviour
+                         { [true] on a: [false] on a: b ;
+                           } } #})))
+   (wfc-error '(on (triggers (trigger #f a))
+                   (action (trigger #f b)))
+              "second on")))
 
 (pass-if "wfc-mixing-declarative-imperative"
   (om-pretty-noisy-equal?
-   (mixing-declarative-imperative
-    (dezyne->om
-     #{
-       interface i { in void a; out void c;
-                        behaviour
-                        { bool b = false             ;
-                               [true] on a: c        ;
-                               b = true              ;
-                               } } #}))
-   (list (wfc-error '(assign b (expression true)) "mixing imperative"))))
+   (car
+    (mixing-declarative-imperative
+     (dezyne->om
+      #{
+        interface i { in void a         ; out void c;
+                         behaviour
+                         { bool b = false     ;
+                                [true] on a: c ;
+                                b = true       ;
+                                } } #})))
+   (wfc-error '(assign b (expression true)) "mixing imperative")))
 
 (pass-if "wfc-interface"
   (om-pretty-noisy-equal?
-   (interface
-    (dezyne->om
-     #{ interface i { } #} ))
-   (list
-    (wfc-error '(interface (name i)) "interface must have a behaviour"))))
+   (car
+    (interface
+     (dezyne->om
+      #{ interface i { } #} )))
+   (wfc-error '(interface (scope.name () i)) "interface must have a behaviour")))
 
 (pass-if "wfc-component"
   (om-pretty-noisy-equal?
-   (component
-    (dezyne->om
-     #{ component c { behaviour { } } #}))
-   (list
-    (wfc-error '(component (name c) (ports) (behaviour #f)) "component with behaviour must have one provides port"))))
+   (car
+    (component
+     (dezyne->om
+      #{ component c { behaviour { } } #})))
+   (wfc-error '(component (scope.name () c) (ports) (behaviour #f)) "component with behaviour must have one provides port")))

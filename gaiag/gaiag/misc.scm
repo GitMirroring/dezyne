@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
@@ -17,24 +17,23 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag misc)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 getopt-long)
-  :use-module (ice-9 popen)
-  :use-module (ice-9 pretty-print)
-  :use-module (ice-9 rdelim)
-  :use-module (ice-9 regex)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 popen)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 regex)
 
-  :use-module (srfi srfi-1)
+  #:use-module (srfi srfi-1)
 
-  :use-module (gaiag list match)
-  :use-module (gaiag fifo)
-  :use-module (gaiag gaiag)
+  #:use-module (ice-9 match)
+  #:use-module (gaiag fifo)
+  #:use-module (gaiag gaiag)
 
-  :export (
+  #:export (
+            ;;goops-prefix
            *eof*
            *eof*-is-#f
            ->join
@@ -102,6 +101,9 @@
            nl-comma-join
            pipe-join
            ))
+
+;; (define* ((goops-prefix #:optional (symbols '(<port>)) (prefix 'goops:)) o)
+;;   (if (member o symbols) (symbol-append prefix o) o))
 
 (define *eof* (call-with-input-string "" read-char))
 (define (null-is-#f o) (if (null? o) #f o))
@@ -327,7 +329,7 @@
        (and (equal? postfix (string-take-right string (string-length postfix)))
             postfix)))
 
-(define* (diff a b :optional (options " -u") (virtual-name-a "a") (virtual-name-b "b"))
+(define* (diff a b #:optional (options " -u") (virtual-name-a "a") (virtual-name-b "b"))
   (let ((file-name-a (fifo a))
         (file-name-b (fifo b)))
     (string-sub file-name-a virtual-name-a

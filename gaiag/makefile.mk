@@ -1,5 +1,5 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
-# Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2014 Henk Katerberg <henk.katerberg@yahoo.com>
 #
@@ -64,6 +64,9 @@ SUBM := test-suite/
 SRCS := $(filter %.scm %.test,$(shell $(GIT_LS_FILES) $(CDIR)/test-suite))
 
 include make/guile.mk
+
+gaiag-clean:
+	rm -rf  build/ccache ~/.cache/guile
 
 coverage: $(CDIR)-coverage
 

@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -23,33 +23,35 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag c)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 getopt-long)
-  :use-module (gaiag list match)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 pretty-print)
-  :use-module (srfi srfi-1)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (srfi srfi-1)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
+  #:use-module (gaiag util)
 
-  :use-module (gaiag animate)
-  :use-module (gaiag code)
-  :use-module (gaiag gaiag)
-  :use-module (gaiag indent)
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve)
-;;  :use-module (gaiag wfc)
+  #:use-module (gaiag animate)
+  #:use-module (gaiag code)
+  #:use-module (gaiag gaiag)
+  #:use-module (gaiag indent)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag resolve)
+;;  #:use-module (gaiag wfc)
 
-  :export (ast->))
+  #:export (ast->))
 
 (define (ast-> ast)
   (let ((om ((om:register code:om #t) ast)))
     (parameterize ((indenter (lambda () (indent 1))))
-      (map dump (filter (negate om:imported?) ((om:filter <model>) om)))))
+      (map dump (filter (negate om:imported?) ((om:filter:p <model>) om)))))
   "")
 
 (define* ((c:scope-join) o)

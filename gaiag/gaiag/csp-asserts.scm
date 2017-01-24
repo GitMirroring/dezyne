@@ -3,7 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -22,21 +22,23 @@
 ;;; 
 ;;; Code:
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag csp-asserts)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
+  #:use-module (gaiag resolve)
 
-  :use-module (gaiag asserts)
-  :use-module (gaiag csp)
+  #:use-module (gaiag asserts)
+  #:use-module (gaiag csp)
 
-  :export (
+  #:export (
            ast->
            ))
 
 (define (om->csp-asserts o)
-  (let ((om ((om:register ast->om #t) o)))
+  (let ((om ((om:register (compose ast:resolve ast->om) #t) o)))
     (om->csp om)
     (assert-list om)))
 

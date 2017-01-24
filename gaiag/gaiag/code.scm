@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -21,30 +21,34 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag code)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 getopt-long)
-  :use-module (gaiag list match)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 optargs)
-  :use-module (ice-9 pretty-print)
-  :use-module (srfi srfi-1)
-  :use-module (srfi srfi-26)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 optargs)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
 
-  :use-module (gaiag lexicals)
-  :use-module (gaiag om)
+  #:use-module (gaiag lexicals)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
+  #:use-module (gaiag util)
 
-  :use-module (gaiag animate)
-  :use-module (gaiag annotate)
-  :use-module (gaiag gaiag)
-  :use-module (gaiag indent)
-  :use-module (gaiag misc)
-  :use-module (gaiag norm-event)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve)
-  :use-module (gaiag wfc)
+  #:use-module (gaiag animate)
+  #:use-module (gaiag annotate)
+  #:use-module (gaiag gaiag)
+  #:use-module (gaiag indent)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag norm-event)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag resolve)
+  #:use-module (gaiag wfc)
 
 
-  :export (ast:code
+  #:export (ast:code
            code:om
            code-file
            code:identifier?
@@ -104,7 +108,7 @@
 
 (define (ast:code ast)
   (let ((om ((om:register code:om #t) ast)))
-    (map dump (filter (negate om:imported?) ((om:filter <model>) om)))
+    (map dump (filter (negate om:imported?) ((om:filter:p <model>) om)))
     (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
       (dump-header)))
   "")
@@ -121,11 +125,11 @@
     ) ast))
 
 (define (om:data-member-names model)
-  (map .name (filter (lambda (x) (is-a? ((om:type model) (.type x)) <extern>)) (om:variables model))))
+  (map .name (filter (lambda (x) (as ((om:type model) (.type x)) <extern>)) (om:variables model))))
 
 (define (transform-formals-shadow-member model formals)
   (define (rename formal)
-    (make <formal> :name (symbol-append 'dzn_ (.name formal)) :type (.type formal) :direction (.direction formal)))
+    (make <formal> #:name (symbol-append 'dzn_ (.name formal)) #:type (.type formal) #:direction (.direction formal)))
   (let* ((members (om:data-member-names model))
          (transform (lambda (f) (if (member (.name f) members) (rename f)
                                     f))))
@@ -134,7 +138,7 @@
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))
 
-(define (wrap-compound statement) (make <compound> :elements (list statement)))
+(define (wrap-compound statement) (make <compound> #:elements (list statement)))
 (define indenter (make-parameter indent))
 (define join (make-parameter (->join ", ")))
 (define sep (make-parameter ","))
@@ -210,7 +214,7 @@
    (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
      (animate-file (symbol-append file-name (code:extension model) '.scm) module))))
 
-(define* (code:->code model src :optional (blocking? #f) (locals '()) (indent 1) (compound? #t))
+(define* (code:->code model src #:optional (blocking? #f) (locals '()) (indent 1) (compound? #t))
   (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
     (->code model src blocking? locals indent compound?)))
 
@@ -257,7 +261,9 @@
   (let ((module (make-module 31 (list
                                  (resolve-module (list 'gaiag (language)))
                                  (resolve-module '(gaiag lexicals))
-                                 (resolve-module '(gaiag misc))))))
+                                 (resolve-module '(gaiag misc))
+                                 (resolve-module '(oop goops))
+                                 (resolve-module '(gaiag goops))))))
     (module-define! module 'model o)
     (module-define! module '.model (om:name o))
     (module-define! module '.scope_model ((om:scope-name) o))
@@ -274,7 +280,7 @@
        (module-define! module '.COMPONENT (string-upcase (symbol->string ((om:scope-name) o))))))
       module))
 
-(define* (->code model src :optional (blocking? #f) (locals '()) (indent 1) (compound? #t))
+(define* (->code model src #:optional (blocking? #f) (locals '()) (indent 1) (compound? #t))
   (let ((statement (->code- model src blocking? locals indent compound?)))
     (if (eq? statement '$empty-statement$)
         ""
@@ -282,7 +288,7 @@
 
 (define (unspecified? x) (eq? x *unspecified*))
 
-(define* (->code- model src :optional (blocking? #f) (locals '()) (indent 1) (compound? #t))
+(define* (->code- model src #:optional (blocking? #f) (locals '()) (indent 1) (compound? #t))
   (define (enum? identifier)
     (debug "ENUM?[~a] ==> ~a\n" identifier (om:enum model identifier))
     (om:enum model identifier))
@@ -305,13 +311,8 @@
                       (argument #f))))
           ((local? identifier)
            (snippet 'local `((identifier ,identifier) (argument #f))))
-          ((is-a? identifier <name>)
-           (let* ((name (om:name identifier))
-                  (formal (formal? name))
-                  (type-name ((compose om:name (om:type model)) formal)))
-             (snippet 'formal-out-identifier `((type ,type-name)
-                                               (name ,name)))))
           (else identifier)))
+
   (define (expression-type o locals)
     (match o
       (($ <expression> expression) (expression-type expression locals))
@@ -342,7 +343,7 @@
     (match src
       (() "")
       ('$empty-statement$ (snippet 'empty `((space ,space))))
-      (($ <guard> expression ('compound statements ...))
+      (($ <guard> expression ($ <compound> (statements ...)))
        (let* ((statement (.statement src))
               (statement (->code- model statement blocking? locals (1+ indent)))
               (statement (if (eq? statement '$empty-statement$)
@@ -376,7 +377,7 @@
                   (expression ,(expression->string model expression locals))
                   (then ,(->code model then blocking? locals (1+ indent))))))
       (($ <if> expression (and ($ <if> e t) (get! then)) else)
-       (->code- model (make <if> :expression expression :then (wrap-compound (then)) :else else) blocking? locals indent))
+       (->code- model (make <if> #:expression expression #:then (wrap-compound (then)) #:else else) blocking? locals indent))
       (($ <if> expression then else)
        (snippet 'if-then-else
                 `((space ,space)
@@ -401,13 +402,13 @@
       (($ <blocking> statement)
        (->code- model statement #t locals indent))
       (($ <on> triggers (and ($ <if> e t #f) (get! statement)))
-       (->code- model (make <on> :triggers triggers :statement (wrap-compound (statement))) blocking? locals indent))
+       (->code- model (make <on> #:triggers triggers #:statement (wrap-compound (statement))) blocking? locals indent))
       (($ <on> triggers statement)
        (or (and-let* ((signature (transform-signature (.signature event) src))
                       (formals ((compose .elements .formals) signature))
                       (trigger ((find-trigger port event) src))
                       (arguments ((compose .elements .arguments) trigger))
-                      (argument-names (map (compose (lambda (n) (match n (('name name) name) (_ n))) .name .value) arguments)))
+                      (argument-names (map (compose .name .value) arguments)))
              (let* ((blocking? (pair? ((om:collect <blocking>) statement)))
                     (statement (->code model statement blocking? locals indent compound?))
                     (statement (if (or (not blocking?) (eq? (.direction port) 'requires)) statement
@@ -418,9 +419,9 @@
                                                 (port ,(.port trigger))))))))
                statement))
            '$empty-statement$))
-      (($ <call> function ('arguments))
+      (($ <call> function ($ <arguments> ()))
        (snippet 'call `((space ,space) (function ,function))))
-      (($ <call> function ('arguments arguments ...))
+      (($ <call> function ($ <arguments> (arguments ...)))
        (let* ((formals ((compose .elements .formals .signature) (om:function model function)))
             (arguments ((join)
                         (map (lambda (e p)
@@ -430,12 +431,12 @@
                              arguments formals))))
          (snippet 'call-arguments
                   `((space ,space) (function ,function) (arguments ,arguments)))))
-      (('arguments arguments ...)
+      (($ <arguments> (arguments ...))
        ((join)
         (map (lambda (o) (expression->string model o locals)) arguments)))
-      (('compound)
+      (($ <compound> ())
        (snippet 'compound-empty `((space ,space))))
-      (('compound statements ...)
+      (($ <compound> (statements ...))
        (snippet
         (symbol-append
          (if compound? 'compound 'statements)
@@ -446,7 +447,7 @@
               (if (null? statements)
                   '()
                   (let* ((statement (car statements))
-                         (variable? (is-a? statement <variable>))
+                         (variable? (as statement <variable>))
                          (locals (if variable? (acons (.name statement) statement locals)
                                      locals)))
                     (let ((statement (->code model (car statements) blocking? locals indent))
@@ -457,7 +458,7 @@
                                                     (continuation ,continuation))))
                           (cons statement continuation))))))))))
       (($ <illegal>) (snippet 'illegal `((space ,space))))
-      (($ <action> ($ <trigger> port-name event-name ('arguments arguments ...)))
+      (($ <action> ($ <trigger> port-name event-name ($ <arguments> (arguments ...))))
        (let* ((port (om:port model port-name))
               (name (.type port))
               (interface (om:import name))
@@ -467,7 +468,7 @@
               (comma-space (if (pair? arguments) `(,(sep) " ") ""))
               (number (number->string (length arguments)))
               (formals ((compose .elements .formals .signature) event))
-              (formals (if (calling-context) (cons (make <formal> :name 'cc__ :type (calling-context)) formals)
+              (formals (if (calling-context) (cons (make <formal> #:name 'cc__ #:type (calling-context)) formals)
                            formals))
               (arguments (if (calling-context)
                            (cons 'cc__ arguments)
@@ -557,7 +558,7 @@
                 `((space ,space)
                   (expression ,(expression->string model expression locals)))))
       (($ <signature> type) (->code model type blocking? locals indent))
-      (($ <name> scope ... name) (om:scope+name src))
+      (($ <scope.name>) (om:scope+name src))
       (($ <type> 'bool) (snippet 'bool '()))
       (($ <type> 'void) 'void)
       ((and (? (is? <*type*>)) (? extern?))
@@ -574,7 +575,7 @@
       ((and ($ <type> name) (? int?))
        (snippet 'type-int `((space ,space) (scope-name ,(append (om:scope src) (list (om:name src)))) (scope ,(om:scope src)) (name ,(om:name src)))))
       (($ <type> name)
-       (snippet 'type `((scope-name ,(cdr name)) (space ,space) (scope ,(om:scope src)) (name ,(om:name src)))))
+       (snippet 'type `((scope-name ,(om:scope+name src)) (space ,space) (scope ,(.scope src)) (name ,(.name src)))))
       (($ <variable> name type (and ($ <action>) (get! action)))
        (snippet 'variable
                 `((space ,space)
@@ -593,11 +594,12 @@
                   (name ,name)
                   (type ,(->code model type))
                   (expression ,(expression->string model expression locals)))))
-      (('formals formals ...)
+      (($ <formals> (formals ...))
        ((join) (map (lambda (x) (->code model x)) formals)))
       (($ <formal> name type direction)
        (snippet 'formal `((name ,name) (type ,(->code model type)) (out? ,(member direction '(inout out))))))
       (($ <data> value) value)
+      (($ <var> name) name)
       ((? char?) (make-string 1 src))
       ((? string?) src)
       ('true (snippet 'true '()))
@@ -614,7 +616,7 @@
          (filter-map
           (lambda (formal argument)
             (and (om:out-or-inout? formal)
-                 (match argument (($ <expression> ('<- ('name alias) ($ <var> global)))
+                 (match argument (($ <expression> ('<- ($ <var> alias) ($ <var> global)))
                                   (snippet 'out-binding `((alias ,alias) (formal ,(.name formal)) (global ,global) (port (.name port)))))
                    (_ #f)))) formals arguments)))
     (snippet 'out-bindings
@@ -629,13 +631,13 @@
                             (eq? (.event t) (.name event))))
            ((compose .elements .triggers) o)))
     (($ <guard>) ((find-trigger port event) (.statement o)))
-    (('compound statements ...)
+    (($ <compound> (statements ...))
      (null-is-#f (filter identity (map (find-trigger port event) statements))))
     (_ #f)))
 
 (define ((is-trigger? port event) o)
   (match o
-    (($ <on> ('triggers ($ <trigger> p e)))
+    (($ <on> ($ <triggers> (($ <trigger> p e))))
      (and (eq? p (.name port)) (eq? e (.name event)) o))
     (_ #f)))
 
@@ -655,7 +657,7 @@
    (and-let* ((parent (om:parent model guard))
               ((not (is-a? parent <on>)))
               ((is-a? parent <compound>))
-              (guards (null-is-#f (filter (is? <guard>) parent))))
+              (guards (null-is-#f (om:filter (is? <guard>) parent))))
      (not (eq? guard (car guards))))))
 
 (define (om:last-guard? model guard)
@@ -663,20 +665,16 @@
    (and-let* ((parent (om:parent model guard))
               ((not (is-a? parent <on>)))
               ((is-a? parent <compound>))
-              (guards (null-is-#f (filter (is? <guard>) parent))))
+              (guards (null-is-#f (om:filter (is? <guard>) parent))))
              (not (eq? guard (last guards))))))
 
 (define (bool-expression->string model o)
   (match o
     (($ <literal> name field)
-     (debug "LIT!: ~a\n" o)
-     (debug "scope: ~a\n" (om:scope o))
-     (debug "name: ~a\n" (om:name o))
-     (debug "==> ~a\n" (snippet 'literal `((scope-name ,(cdr name)) (scope ,(om:scope o)) (name ,(om:name o)) (field ,field))))
-     (snippet 'literal `((scope-name ,(cdr name)) (scope ,(om:scope o)) (name ,(om:name o)) (field ,field))))
+     (snippet 'literal `((scope-name ,(om:scope+name name)) (scope ,(.scope name)) (name ,(.name name)) (field ,field))))
     (_ (expression->string model o))))
 
-(define* (expression->string model o :optional (locals '()) (argument #f))
+(define* (expression->string model o #:optional (locals '()) (argument #f))
 
   (define (enum? identifier) (om:enum model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
@@ -690,7 +688,7 @@
     (or (and-let* ((var (var? o))
                    (type (.type var))
                    (name (.name type))
-                   (literal (make <literal> :name name :field field)))
+                   (literal (make <literal> #:name name #:field field)))
                   (expression->string model literal locals))
         ""))
 
@@ -698,7 +696,7 @@
     ((? unspecified?) *unspecified*)
     (($ <expression> (? unspecified?)) *unspecified*)
     (($ <expression>) (expression->string model (.value o) locals argument))
-    (($ <action> ($ <trigger> port-name event-name ('arguments arguments ...)))
+    (($ <action> ($ <trigger> port-name event-name ($ <arguments> (arguments ...))))
      (let* ((port (om:port model port-name))
             (name (.type port))
             (interface (om:import name))
@@ -708,7 +706,7 @@
             (comma-space (if (pair? arguments) `(,(sep) " ") ""))
             (number (number->string (length arguments)))
             (formals ((compose .elements .formals .signature) event))
-            (formals (if (calling-context) (cons (make <formal> :name 'cc__ :type (calling-context)) formals)
+            (formals (if (calling-context) (cons (make <formal> #:name 'cc__ #:type (calling-context)) formals)
                          formals))
             (arguments (if (calling-context)
                            (cons 'cc__ arguments)
@@ -747,9 +745,9 @@
     (($ <field> identifier field)
      (snippet 'field-expression `((identifier ,identifier)
                                   (expression ,(enum-type identifier field)))))
-    (($ <call> function ('arguments))
+    (($ <call> function ($ <arguments> ()))
         (snippet 'call-expression `((function ,function))))
-    (($ <call> function ('arguments arguments ...))
+    (($ <call> function ($ <arguments> (arguments ...)))
      (let* ((formals ((compose .elements .formals .signature) (om:function model function)))
             (arguments ((join)
                         (map (lambda (e p)
@@ -819,17 +817,17 @@
 
 (define ((declare-io model string) event)
   (parameterize ((any->string (cut ->code model <>)))
-    (let* ((name (list 'name (.name event)))
-           (signature (.signature event))
+    (let* ((signature (.signature event))
            (formals (.formals signature))
-           (formals (if (calling-context) (make <formals> :elements (cons (make <formal> :name 'cc__ :type (calling-context)) (.elements formals)))
+           (formals (if (calling-context) (make <formals> #:elements (cons (make <formal> #:name 'cc__ #:type (calling-context)) (.elements formals)))
                         formals))
            (signature
             (if (calling-context)
-                (make <signature> :type (.type signature) :formals formals)
+                (make <signature> #:type (.type signature) #:formals formals)
                 signature))
            (type (.type signature)))
-      (animate string (map pair->list (filter ast-cdr? (lexicals)))))))
+      (animate string (cons `(name ,(.name event))
+                            (map pair->list (filter ast-cdr? (lexicals))))))))
 
 (define ((declare-interface-event model) event)
   ((declare-io model (gulp-snippet 'declare-interface-event)) event))
@@ -838,9 +836,8 @@
   (let* ((signature (.signature function))
          (return-type (code:->code model signature))
          (type (.type signature))
-         (name (.name type))
-         (scope-return-type (if (not (pair? name)) name
-                                (snippet 'type-scope-enum `((scope-name ,(cdr name)) (scope ,(om:scope type)) (name ,(om:name type))))))
+         (scope-return-type (if (not (pair? (om:scope type))) (om:name type)
+                                (snippet 'type-scope-enum `((scope-name ,(om:scope+name type)) (scope ,(om:scope type)) (name ,(om:name type))))))
          (name (.name function))
          (formals (.formals signature))
          (comma (if (null? (.elements formals)) "" (sep)))
@@ -864,7 +861,7 @@
 (define ((om:statements-of-type type) statement)
   (match statement
     ((? (om:statement-of-type type)) (list statement))
-    (('compound s ...) (filter identity (apply append (map (om:statements-of-type type) s))))
+    (($ <compound> (s ...)) (filter identity (apply append (map (om:statements-of-type type) s))))
     (($ <on> triggers statement) (filter identity ((om:statements-of-type type) statement)))
     ((? (is? <statement>)) '())
     (#f '())))
@@ -922,15 +919,19 @@
 
 (define (transform-signature signature on)
   (define (rename-formal formal name)
-    (make <formal> :name name :type (.type formal) :direction (.direction formal)))
+    (make <formal> #:name name #:type (.type formal) #:direction (.direction formal)))
+  (define (argument->name o)
+    (match o
+      (($ <expression> ($ <var> name)) name)
+      (($ <expression> ('<- ($ <var> name) x)) name)))
   (if (not on)
       signature
-      (let* ((formals (map (compose .name .value) ((compose .elements .arguments car .elements .triggers) on)))
+      (let* ((formals (map argument->name ((compose .elements .arguments car .elements .triggers) on)))
              (formals (map rename-formal ((compose .elements .formals) signature) formals)))
-        (make <signature> :type (.type signature) :formals `(formals ,@formals)))))
+        (make <signature> #:type (.type signature) #:formals (make <formals> #:elements formals)))))
 
 (define ((define-on model port string) event)
-  (let* ((behaviour (and=> (is-a? model <component>) .behaviour))
+  (let* ((behaviour (and=> (as model <component>) .behaviour))
          (ons (if (not behaviour) '()
                   ((compose .elements .statement) behaviour)))
          (on (find (is-trigger? port event) ons))
@@ -940,12 +941,12 @@
          (formals (.formals signature))
          (formal-objects (.elements formals))
          (formal-objects (if (calling-context)
-                              (cons (make <formal> :name 'cc__ :type (make <type> :name `(name ,(calling-context)))) formal-objects)
+                              (cons (make <formal> #:name 'cc__ #:type (make <type> #:name `(name ,(calling-context)))) formal-objects)
                               formal-objects))
-         (formals (make <formals> :elements formal-objects))
+         (formals (make <formals> #:elements formal-objects))
          (signature
           (if (calling-context)
-              (make <signature> :type (.type signature) :formals formals)
+              (make <signature> #:type (.type signature) #:formals formals)
               signature))
          (type (.type signature))
          (type-type ((om:type model) type))
@@ -969,12 +970,12 @@
                                  (snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
                             formals))
          (formal-list (map (lambda (x) (code:->code model x)) formals))
-         (formals (code:->code model (make <formals> :elements formals)))
+         (formals (code:->code model (make <formals> #:elements formals)))
          (reply-type (ast-name ((om:type model) type)))
          (reply-name (if (eq? reply-type 'int) 'int (om:name type)))
          (reply-scope (om:scope type-type))
          (reply-scope-name (om:scope+name type-type))
-         (system (is-a? model <system>))
+         (system (as model <system>))
          (bind (and system (om:port-bind system (.name port))))
          (instance-binding (and bind (om:instance-binding? bind)))
          (instance (and instance-binding (.instance instance-binding)))
@@ -1165,12 +1166,12 @@
     ((_ condition then else)
      (animate-string (if (null-is-#f condition) then else) (current-module)))))
 
-(define* (pairs->module key-procedure-pairs :optional (parameter #f))
+(define* (pairs->module key-procedure-pairs #:optional (parameter #f))
   (let ((module (code:module (and=> (module-variable (current-module) 'model)
                                     variable-ref))))
     (populate-module module key-procedure-pairs parameter)))
 
-(define* ((animate-pairs pairs string) :optional parameter)
+(define* ((animate-pairs pairs string) #:optional parameter)
   (animate string (pairs->module pairs parameter)))
 
 (define (debug . x) #t)

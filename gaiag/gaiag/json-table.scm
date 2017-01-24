@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;;
@@ -25,30 +25,31 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag json-table)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 pretty-print)
-  :use-module (gaiag list match)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 match)
 
-  :use-module (srfi srfi-1)
-  :use-module (srfi srfi-9)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-9)
 
-  :use-module (language dezyne location)
+  #:use-module (language dezyne location)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag util)
+  #:use-module (gaiag om)
 
-  :use-module (gaiag evaluate)
-  :use-module (gaiag html)
-  :use-module (gaiag json)
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve)
-  :use-module (gaiag run)
+  #:use-module (gaiag evaluate)
+  #:use-module (gaiag html)
+  #:use-module (gaiag json)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag resolve)
 
-  :export (json-init
+  #:export (json-init
            json-table-event
            json-table-state))
 
@@ -58,32 +59,32 @@
 
 (define ((json-table-event model) o)
   (match o
-    (('compound s ...)
+    (($ <compound> (s ...))
      `((table . ,(map (json-table-event model) s))))
     (($ <on> triggers (and ($ <guard> expression) (get! guard)))
      (let* ((state (.value expression))
             (var (state-var model expression)))
        `((event . ,(json-triggers o))
          (rules . ,((json-table- model var state) (guard))))))
-    (($ <on> triggers (and ('compound ($ <guard>) ...) (get! compound)))
+    (($ <on> triggers (and ($ <compound> (($ <guard>) ...)) (get! compound)))
      (let* ((var 'unknown)
-            (state (make <field> :identifier var :field '<unknown>)))
+            (state (make <field> #:identifier var #:field '<unknown>)))
        `((event . ,(json-triggers o))
          (rules . ,(apply append (map (json-table- model var state)
                                       (.elements (compound))))))))
     (($ <on> triggers statement)
      (let* ((var 'unknown)
-            (state (make <field> :identifier var :field '<unknown>)))
+            (state (make <field> #:identifier var #:field '<unknown>)))
        `((event . ,(json-triggers o))
          (rules . ,(list
-                    `((guard . ,(json-guard (make <guard> :expression 'true)))
+                    `((guard . ,(json-guard (make <guard> #:expression 'true)))
                       (actions . ,(json-action model statement))
                       (callbacks . ,(json-callback model statement))
                       (next . ,(json-next model var state statement))))))))
     (_ (stderr "catch all1:\n")
        `((event . ,(json-data-location '() o))
          (rules . ,(list
-                    `((guard . ,(json-guard (make <guard> :expression 'true)))
+                    `((guard . ,(json-guard (make <guard> #:expression 'true)))
                       (actions . ,(json-action model '()))
                       (callbacks . ,(json-callback model '()))
                       (next . ()))))))))
@@ -106,25 +107,25 @@
     (($ <field> var field)
      (let* ((var (om:variable model var))
             (enum ((om:type model) var)))
-       (make <literal> :name (.name enum) :field field)))
+       (make <literal> #:name (.name enum) #:field field)))
     (_ o )))
 
 (define ((value->state identifier) o)
   (match o
-    ((? number?) (make <field> :identifier identifier :field o))
-    ((? symbol?) (make <field> :identifier identifier :field o))
+    ((? number?) (make <field> #:identifier identifier #:field o))
+    ((? symbol?) (make <field> #:identifier identifier #:field o))
     (_ o)))
 
 (define ((json-table-state model) o)
   (match o
-    (('compound statements ...)
+    (($ <compound> (statements ...))
      `((table . ,(map (json-table-state model) statements))))
     (($ <guard> expression (and ($ <on> triggers statement) (get! on)))
      (let ((var (state-var model expression))
            (state (.value expression)))
        `((state . ,(json-state (->symbol state) o))
          (rules . ,((json-table- model var state) (on))))))
-    (($ <guard> expression (and ('compound ($ <on>) ...) (get! compound)))
+    (($ <guard> expression (and ($ <compound> (($ <on>) ...)) (get! compound)))
      (let ((var (state-var model expression))
            (state (.value expression)))
        `((state . ,(json-state (->symbol state) o))
@@ -159,7 +160,7 @@
              (actions . ,(json-action model statement))
              (callbacks . ,(json-callback model statement))
              (next . ,(json-next model var state statement)))))
-         (('compound)
+         (($ <compound> ())
           (list
            `((guard . ,(json-guard o))
              ;;(inner . ,(json-data-location '() '()))
@@ -167,7 +168,7 @@
              (callbacks . ,(json-callback model inner))
              (next . ,(json-next model var state inner))
              )))
-         ((and ($ <compound> ($ <guard>) ...) (get! compound))
+         ((and ($ <compound> (($ <guard>) ...)) (get! compound))
           (map (lambda (inner)
                  (let ((expression (.expression inner))
                        (statement (.statement inner)))
@@ -177,7 +178,7 @@
                      (callbacks . ,(json-callback model statement))
                      (next . ,(json-next model var state statement)))))
                (.elements (compound))))
-         (($ <guard> expression (and ($ <compound> ($ <guard>) (get! compound))))
+         (($ <guard> expression (and ($ <compound> (($ <guard>)) (get! compound))))
           (map (lambda (inner)
                  (let ((expression (.expression inner))
                        (statement (.statement inner)))
@@ -193,7 +194,7 @@
                (actions . ,(json-action model statement))
                (callbacks . ,(json-callback model statement))
                (next . ,(json-next model var state statement))))))))
-    (($ <on> triggers (and ($ <compound> ($ <guard> expression statement) ..1) (get! compound)))
+    (($ <on> triggers (and ($ <compound> (($ <guard> expression statement) ..1)) (get! compound)))
      (map (json-inner-guard model var state triggers)
           (map .expression (.elements (compound)))
           (map .statement (.elements (compound)))))
@@ -225,23 +226,23 @@
 
 (define (json-next- model var next o functions)
   (define (var? identifier) (eq? identifier var))
-  (let ((unknown (make <field> :identifier var :field '<unknown>)))
+  (let ((unknown (make <field> #:identifier var #:field '<unknown>)))
    (match o
-     (('compound statements ...)
+     (($ <compound> (statements ...))
       (let loop ((statements statements) (next next))
         (if (null? statements)
             next
             (loop (cdr statements) (json-next- model var next (car statements) functions)))))
      (($ <assign> (? var?) ($ <expression> ($ <literal> name field)))
-      (list (make <field> :identifier var :field field)))
+      (list (make <field> #:identifier var #:field field)))
      (($ <assign> (? var?) ($ <expression> ('! ($ <var> (? var?)))))
       (match next
-        ((('! ($ <var> (? var?)))) (list (make <var> :name var)))
-        (_ (list (list '! (make <var> :name var))))))
+        ((('! ($ <var> (? var?)))) (list (make <var> #:name var)))
+        (_ (list (list '! (make <var> #:name var))))))
      (($ <assign> (? var?) ($ <expression> 'false))
-      (list (list '! (make <var> :name var))))
+      (list (list '! (make <var> #:name var))))
      (($ <assign> (? var?) ($ <expression> 'true))
-      (list (make <var> :name var)))
+      (list (make <var> #:name var)))
      (($ <assign> (? var?) ($ <action>))
       (list unknown))
      (($ <assign> (? var?) ($ <call>))
@@ -317,9 +318,9 @@
                 (map (ast->html model) actions))
       '()))
 
-(define* (json-triggers o :optional (location o))
+(define* (json-triggers o #:optional (location o))
   (match o
-    (('triggers triggers ...)
+    (($ <triggers> (triggers ...))
      (json-data-location (map ->symbol triggers) location))
     (($ <on>)
      (json-data-location (map ->symbol ((compose .elements .triggers) o)) location))))
@@ -340,8 +341,8 @@
     ((identifier ($ <field> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." field)))
     ((identifier ($ <literal> name field)) (->symbol (list (->symbol identifier) " = " (->symbol name) "." (->symbol field))))
     (($ <literal> name field) (->symbol (list (->symbol name) "." (->symbol field))))
-    (('name scope ...) ((->symbol-join '.) scope))
-    (('triggers triggers ...) (->symbol ((->join ",") (map ->symbol triggers))))
+    (($ <scope.name> scope name) ((->symbol-join '.) (append scope (list name))))
+    (($ <triggers> (triggers ...)) (->symbol ((->join ",") (map ->symbol triggers))))
     (($ <trigger> #f event) (->symbol event))
     (($ <trigger> port event) (->symbol (list port "." event)))
     (('and lhs rhs) (->symbol (list '&& lhs rhs)))

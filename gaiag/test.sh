@@ -2,7 +2,7 @@
 #
 # This file is part of Gaiag.
 #
-# Copyright © 2014, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 # Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
@@ -25,7 +25,6 @@
 
 #! /bin/sh
 # try: ./test.sh --debug
-set -x
 self=$(readlink -f $(cut -d '' -f2 < /proc/$$/cmdline))
 prefix=$(cd $(dirname $self) && pwd)
 [ "$(basename $prefix)" != "gaiag" ] && prefix=$prefix/gaiag

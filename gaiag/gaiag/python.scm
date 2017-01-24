@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -15,18 +15,18 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag python)
-  :use-module (ice-9 pretty-print)
+  #:use-module (ice-9 pretty-print)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
 
-  :use-module (gaiag code)
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
+  #:use-module (gaiag code)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
 
-  :export (ast->))
+  #:export (ast->))
 
 (define (ast-> ast)
   (parameterize ((indenter #f)) (ast:code ast)))

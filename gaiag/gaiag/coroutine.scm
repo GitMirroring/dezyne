@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,14 +22,12 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag coroutine)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 optargs)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 optargs)
 
-  :use-module (gaiag misc)
-  :export (coroutine coroutine-to))
+  #:use-module (gaiag misc)
+  #:export (coroutine coroutine-to))
 
 (define-syntax-rule (let/cc var body ...)
   (call/cc (lambda (var) body ...)))
@@ -50,7 +48,7 @@
             (yield item)
             (loop (cdr todo)))))))
 
-(define* (coroutine routine :optional (start 'start))
+(define* (coroutine routine #:optional (start 'start))
   (lambda (cc+data)
     (or (pair? cc+data) (set! cc+data (cons cc+data start)))
     (let ((data (lambda () (cdr cc+data)))
@@ -77,7 +75,7 @@
             (if (not (procedure? (cc))) 'scheduler-done-2
                 (loop (append (cdr routines) (list (cons (cc) (data)))))))))))
 
-(define* (coroutine-to routine :optional (start 'start))
+(define* (coroutine-to routine #:optional (start 'start))
   (lambda* (:optional (cc+data #f))
     (or (pair? cc+data) (set! cc+data (cons cc+data start)))
     (let ((data (lambda () (cdr cc+data)))

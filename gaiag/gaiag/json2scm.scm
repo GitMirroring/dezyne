@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -16,17 +16,15 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag json2scm)
-  :use-module (system repl error-handling)
-  :use-module (ice-9 getopt-long)
-  :use-module (gaiag list match)
-  :use-module (ice-9 pretty-print)
+  #:use-module (system repl error-handling)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 pretty-print)
 
-  :use-module (json)
-  :use-module (gaiag misc)
-  :export (json->symbol-scm main))
+  #:use-module (json)
+  #:use-module (gaiag misc)
+  #:export (json->symbol-scm main))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -34,7 +32,7 @@
             (help (single-char #\h))
 	    (version (single-char #\v))))
 	 (options (getopt-long (command-line) option-spec
-                               :stop-at-first-non-option #t))
+                               #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
 	 (usage? (and (not help?) (>1 (length files))))

@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -25,23 +25,26 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag wfc)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 curried-definitions)
-  :use-module (gaiag list match)
-  :use-module (ice-9 optargs)
-  :use-module (ice-9 pretty-print)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 optargs)
+  #:use-module (ice-9 pretty-print)
 
-  :use-module (srfi srfi-1)
+  #:use-module (srfi srfi-1)
 
-  :use-module (language dezyne location)
+  #:use-module (language dezyne location)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag om)
 
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag resolve)
 
-  :export (
+  #:export (
            ast:wfc
            ))
 
@@ -57,32 +60,32 @@
   o)
 
 (define (wfc-error o message)
-  (make <error> :ast o :message (string-append "not well-formed: " message)))
+  (make <error> #:ast o #:message (string-append "not well-formed: " message)))
 
 (define (interface o)
   (match o
-    (('root elements ...) '(()) (append-map interface elements))
+    (($ <root> (elements ...)) '(()) (append-map interface elements))
     (($ <interface> name ($ <types>) ($ <events>) #f)
      (list (wfc-error o "interface must have a behaviour")))
     (_ '())))
 
 (define (component o)
   (match o
-    (('root elements ...) '(()) (append-map component elements))
-    (($ <component> name ('ports ports ...) ($ <behaviour>))
-     ((om:filter <error>)
+    (($ <root> (elements ...)) '(()) (append-map component elements))
+    (($ <component> name ($ <ports> (ports ...)) ($ <behaviour>))
+     ((om:filter:p <error>)
       (if (>0 (length (filter om:provides? ports))) '()
           (list (wfc-error o "component with behaviour must have one provides port")))))
     (_ '())))
 
-(define* ((second-on :optional (count 0)) o)
+(define* ((second-on #:optional (count 0)) o)
   (match o
-    (('root elements ...) (append-map (second-on) elements))
+    (($ <root> (elements ...)) (append-map (second-on) elements))
     (($ <system>) '())
     (($ <interface>) (or (and=> (.behaviour o) (second-on)) '()))
     (($ <component>) (or (and=> (.behaviour o) (second-on)) '()))
     (($ <behaviour>) (or (and=> (.statement o) (second-on)) '()))
-    (('compound statements ...) (map (second-on count) statements))
+    (($ <compound> (statements ...)) (map (second-on count) statements))
     (($ <on> triggers statement)
      (if (>0 count) (wfc-error o "second on")
          ((second-on (1+ count)) statement)))
@@ -91,12 +94,12 @@
 
 (define (mixing-declarative-imperative o)
   (match o
-    (('root elements ...) (append-map mixing-declarative-imperative elements))
+    (($ <root> (elements ...)) (append-map mixing-declarative-imperative elements))
     (($ <system>) '())
     (($ <interface>) (or (and=> (.behaviour o) mixing-declarative-imperative) '()))
     (($ <component>) (or (and=> (.behaviour o) mixing-declarative-imperative) '()))
     (($ <behaviour>) (or (and=> (.statement o) mixing-declarative-imperative) '()))
-    ((and ('compound statements ...) (? om:declarative?))
+    ((and ($ <compound> (statements ...)) (? om:declarative?))
      (append
       (or (and-let* ((imperative
                       (null-is-#f (filter om:imperative? statements)))
@@ -104,7 +107,7 @@
                     (list (wfc-error ast "mixing imperative")))
           '())
       (append-map mixing-declarative-imperative statements)))
-    (('compound statements ...)
+    (($ <compound> (statements ...))
      (append
       (or (and-let* ((declarative
                       (null-is-#f (filter om:declarative? statements)))

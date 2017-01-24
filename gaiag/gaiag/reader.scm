@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
@@ -17,20 +17,18 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag reader)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 match)
-  :use-module (srfi srfi-1)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
 
-  :use-module (system base language)
+  #:use-module (system base language)
 
-  :use-module (gaiag misc)
-  :use-module (language dezyne parse)
-  :use-module (language dezyne location)
-  :use-module (language dezyne tokenize)
-  :export (dzn->ast find-file %include-path try-find-file parse-dzn read-dzn read-ast))
+  #:use-module (gaiag misc)
+  #:use-module (language dezyne parse)
+  #:use-module (language dezyne location)
+  #:use-module (language dezyne tokenize)
+  #:export (dzn->ast find-file %include-path try-find-file parse-dzn read-dzn read-ast))
 
 (define %include-path '("."))
 
@@ -40,14 +38,15 @@
                 (read-dzn file-name))
       (parse-dzn o)))
 
-(define* (read-ast o :optional (register identity))
+(define* (read-ast o #:optional (register identity))
   (register (read-ast- o)))
 
 (define read-dzn read-ast)
 
 (define (read-ast- o)
   (let ((file-name (match o
-                     (('name scope ... name) (find-model-file name))
+                     ((and ($ <scope.name>) (= .name name)) (find-model-file name))
+                     ((t ...) #f)
                      (_ o))))
     (when (not file-name)
       (let ((m (format #f "cannot find model: `~a'\n" o)))
@@ -76,7 +75,7 @@
   (if (not (string-prefix? prefix string)) string
       (substring string (string-length prefix))))
 
-(define* (parse-dzn string :optional (register identity))
+(define* (parse-dzn string #:optional (register identity))
   (register (parse-dzn- string)))
 
 (define (parse-dzn- string)
@@ -93,7 +92,7 @@
 (define (path-find-file path file-name)
   (search-path path (components->file-name file-name)))
 
-(define* (find-file file-name :optional (extensions '(.dzn)))
+(define* (find-file file-name #:optional (extensions '(.dzn)))
   (let* ((file-name (if (pair? file-name) file-name (list file-name)))
          (resolved
           (or (path-find-file %include-path file-name)
@@ -113,7 +112,7 @@
       (set! %include-path (cons dir %include-path)))
     resolved))
 
-(define* (try-find-file file-name :optional (extensions '(.dzn)))
+(define* (try-find-file file-name #:optional (extensions '(.dzn)))
   (catch #t
     (lambda () (with-error-to-port
                    (open-output-file "/dev/null")

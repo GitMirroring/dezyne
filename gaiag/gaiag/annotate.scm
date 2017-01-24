@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -23,20 +23,18 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag annotate)
-  :use-module (ice-9 pretty-print)
+  #:use-module (ice-9 pretty-print)
 
-  :use-module (gaiag list match)
-  :use-module (ice-9 and-let-star)
-  :use-module (srfi srfi-9)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (srfi srfi-9)
 
-  :use-module (language dezyne location)
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
+  #:use-module (language dezyne location)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
 
-  :export (ast:annotate ast->annotate extract-locations))
+  #:export (ast:annotate ast->annotate extract-locations))
 
 (define (annotate-locations o)
   (match o

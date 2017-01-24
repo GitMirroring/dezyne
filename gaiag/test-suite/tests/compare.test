@@ -1,17 +1,18 @@
 ;; -*-mode:scheme-*-
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (test-handler)
 
-  :use-module (test-suite lib)
-  :use-module (test-suite misc)
+  #:use-module (test-suite lib)
+  #:use-module (test-suite misc)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
+  #:use-module (gaiag compare)
 
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve))
+  #:use-module (gaiag reader)
+  #:use-module (gaiag resolve))
 
 (pass-if "compare-first-dummy-test"
          #t)
@@ -29,19 +30,19 @@
          (om:< '(a) '(b)))
 
 (pass-if "compare-trigger"
-         (om:< (make <trigger> :event 'a)
-            (make <trigger> :event 'b)))
+         (om:< (make <trigger> #:event 'a)
+            (make <trigger> #:event 'b)))
 
 (pass-if "compare-trigger"
-         (om:< (make <trigger> :port 'a :event 'b)
-            (make <trigger> :port 'b :event 'a)))
+         (om:< (make <trigger> #:port 'a #:event 'b)
+            (make <trigger> #:port 'b #:event 'a)))
 
 (pass-if "compare-on"
          (om:< (make <on>
-              :triggers (make <triggers>
-                          :elements
-                          (list (make <trigger> :event 'a))))
+              #:triggers (make <triggers>
+                          #:elements
+                          (list (make <trigger> #:event 'a))))
             (make <on>
-              :triggers (make <triggers>
-                          :elements
-                          (list (make <trigger> :event 'b))))))
+              #:triggers (make <triggers>
+                          #:elements
+                          (list (make <trigger> #:event 'b))))))

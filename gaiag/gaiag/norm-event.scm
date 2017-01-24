@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -22,27 +22,30 @@
 ;;; 
 ;;; Code:
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag norm-event)
-  :use-module (ice-9 pretty-print)
-  :use-module (ice-9 receive)
-  :use-module (gaiag list match)
-  :use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 receive)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 curried-definitions)
 
-  :use-module (srfi srfi-1)
-  :use-module (srfi srfi-26)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
 
-  :use-module (language dezyne location)
-  :use-module (gaiag misc)
+  #:use-module (language dezyne location)
+  #:use-module (gaiag misc)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
+  #:use-module (gaiag compare)
+  #:use-module (gaiag util)
 
-  :use-module (gaiag norm)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve)
+  #:use-module (gaiag norm)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag resolve)
 
-  :export (
+  #:export (
            ast->
            code-norm-event
            norm-event
@@ -107,24 +110,23 @@
     )
    o))
 
-(define* ((group-ons :optional (group? norm:triggers-equal?)) o)
+(define* ((group-ons #:optional (group? norm:triggers-equal?)) o)
   "stable place ons with same group? next to eachother"
   (match o
-    (('compound ($ <on>) ..1)
-     (if (=1 (length (cdr o)))
+    (($ <compound> (($ <on>) ..1))
+     (if (=1 (length (.elements o)))
          o
          (make <compound>
-           :elements
-           (let loop ((ons (cdr o)))
+           #:elements
+           (let loop ((ons (.elements o)))
              (if (null? ons)
                  '()
                  (receive (grouped-ons remainder)
                      (partition (lambda (x) (group? #f (car ons) x)) ons)
                    (append grouped-ons (loop remainder))))))))
-     (('functions functions ...) o)
+     (($ <functions> (functions ...)) o)
+     (($ <skip>) o)
      ((? (is? <ast>)) (om:map (group-ons group?) o))
-     (('skip) o)
-     ((h t ...) (map (group-ons group?) o))
      (_ o)))
 
 (define (aggregate-guard-s o)
@@ -132,9 +134,9 @@
   ;; find all guands with matching statement
   ;; push all guards into first guard, discard the rest
   (match o
-    (('compound ($ <guard>) ..1)
+    (($ <compound> (($ <guard>) ..1))
      (make <compound>
-       :elements
+       #:elements
        (let loop ((guards (.elements o)))
          (if (null? guards)
              '()
@@ -149,14 +151,13 @@
                                    (delete-duplicates (map (compose .value .expression) shared-guards) om:equal?)))
                           (statement (.statement (car guards)))
                           (aggregated-guard (make <guard>
-                                              :expression (make <expression>
-                                                            :value expression)
-                                              :statement statement)))
+                                              #:expression (make <expression>
+                                                            #:value expression)
+                                              #:statement statement)))
                      (cons aggregated-guard (loop remainder)))))))))
-     (('functions functions ...) o)
+     (($ <functions> (functions ...)) o)
+     (($ <skip>) o)
      ((? (is? <ast>)) (om:map aggregate-guard-s o))
-     (('skip) o)
-     ((h t ...) (map aggregate-guard-s o))
      (_ o)))
 
 (define (norm:guard-same-statement? model lhs rhs)
@@ -166,9 +167,8 @@
 (define (combine-ons o)
   (match o
     (($ <on>) ((passdown-triggers (.triggers o)) (.statement o)))
+    (($ <skip>) o)
     ((? (is? <ast>)) (om:map combine-ons o))
-    (('skip) o)
-    ((h t ...) (map combine-ons o))
     (_ o)))
 
 (define ((passdown-triggers triggers) o)
@@ -177,74 +177,73 @@
      ((passdown-triggers
        (retain-source-properties
         (.triggers o)
-        (make <triggers> :elements (append triggers (.triggers o)))))
+        (make <triggers> #:elements (append (.elements triggers) (.elements (.triggers o))))))
       (.statement o)))
-    ((and ('compound s ...) (? om:declarative?))
+    ((and ($ <compound> (s ...)) (? om:declarative?))
      (retain-source-properties
       o
-      (make <compound> :elements (map (passdown-triggers triggers) s))))
-    (('compound statements ...)
-     (make <on> :triggers triggers :statement o))
+      (make <compound> #:elements (map (passdown-triggers triggers) s))))
+    (($ <compound> (statements ...))
+     (make <on> #:triggers triggers #:statement o))
     (_
      (retain-source-properties
       triggers
-      (make <on> :triggers triggers :statement o)))))
+      (make <on> #:triggers triggers #:statement o)))))
 
 (define (passdown-guard o)
   (match o
-    ((and ('compound s ...) (? om:imperative?)) o)
+    ((and ($ <compound> (s ...)) (? om:imperative?)) o)
     (($ <guard>) ((passdown-expression (retain-source-properties o (.expression o))) (.statement o)))
+    (($ <skip>) o)
     ((? (is? <ast>)) (om:map passdown-guard o))
-    (('skip) o)
-    ((h t ...) (map passdown-guard o))
     (_ o)))
 
-(define* ((passdown-expression expression :optional (seen-on? #f)) o)
+(define* ((passdown-expression expression #:optional (seen-on? #f)) o)
   (match o
     (($ <on>)
      (make <on>
-       :triggers (.triggers o)
-       :statement
+       #:triggers (.triggers o)
+       #:statement
        (retain-source-properties
         expression
         ((passdown-expression expression #t) (.statement o)))))
-    (('compound ($ <guard>) ..1) (=> failure)
+    (($ <compound> (($ <guard>) ..1)) (=> failure)
      (if seen-on?
          (retain-source-properties
           expression
-          (make <guard> :expression expression :statement o))
+          (make <guard> #:expression expression #:statement o))
          (failure)))
-    ((and ('compound s ...) (? om:declarative?))
+    ((and ($ <compound> (s ...)) (? om:declarative?))
      (retain-source-properties
       o
-      (make <compound> :elements (map (passdown-expression expression seen-on?) s))))
-    (('compound s ...)
+      (make <compound> #:elements (map (passdown-expression expression seen-on?) s))))
+    (($ <compound> (s ...))
      (retain-source-properties
       expression
-      (make <guard> :expression expression :statement o)))
+      (make <guard> #:expression expression #:statement o)))
     (($ <guard> e s)
      (let ((o ((passdown-expression e seen-on?) s)))
        (match o
          (($ <on> t s)
           (make <on>
-            :triggers t
-            :statement
+            #:triggers t
+            #:statement
             (retain-source-properties
              expression
-             (make <guard> :expression expression :statement s))))
-         ((and ('compound t ...) (? om:declarative?))
+             (make <guard> #:expression expression #:statement s))))
+         ((and ($ <compound> (t ...)) (? om:declarative?))
           (retain-source-properties
            o
            (make <compound>
-             :elements (map (passdown-expression expression seen-on?) t))))
+             #:elements (map (passdown-expression expression seen-on?) t))))
          (_
           (retain-source-properties
            expression
-           (make <guard> :expression expression :statement o))))))
+           (make <guard> #:expression expression #:statement o))))))
     (_
      (retain-source-properties
         expression
-        (make <guard> :expression expression :statement o)))))
+        (make <guard> #:expression expression #:statement o)))))
 
 (define (ast-> ast)
   ((compose
@@ -257,7 +256,7 @@
 
 (define (pair-eq? p) (eq? (car p) (cdr p)))
 
-(define* ((rewrite-formals :optional model (locals '())) o)
+(define* ((rewrite-formals #:optional model (locals '())) o)
 
   (define (member? identifier) (om:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
@@ -271,32 +270,31 @@
 
   (define ((rename mapping) o)
     (match o
-      (($ <trigger> port event ('arguments)) o)
-      (($ <trigger> port event ('arguments arguments ...))
-       (make <trigger> :port port :event event
-             :arguments `(arguments ,@(map (rename mapping) arguments))))
+      (($ <trigger> port event ($ <arguments> ())) o)
+      (($ <trigger> port event ($ <arguments> (argument* ...)))
+       (make <trigger> #:port port #:event event
+             #:arguments (make <arguments> #:elements (map (rename mapping) argument*))))
       (($ <expression> ($ <var> name))
-       (make <expression> :value (make <var> :name ((rename mapping) name))))
-      (($ <expression> ('<- ('name name) global))
-       (make <expression> :value `(<- (name ,((rename mapping) name)) ,global)))
+       (make <expression> #:value (make <var> #:name ((rename mapping) name))))
+      (($ <expression> ('<- ($ <var> name) global))
+       (clone o #:value `(<- ,(make <var> #:name ((rename mapping) name)) ,global)))
       ((? symbol?) (or (assoc-ref mapping o) o))
       ((? (is? <ast>)) (om:map (rename mapping) o))
-      ((h t ...) (map (rename mapping) o))
       (_ o)))
 
   (define (name->argument name)
-    (make <expression> :value (make <var> :name name)))
+    (make <expression> #:value (make <var> #:name name)))
 
   (match o
-    (($ <on> ('triggers (and ($ <trigger> port event ('arguments)) (get! trigger))) statement)
+    (($ <on> ($ <triggers> ((and ($ <trigger> port event ($ <arguments> ())) (get! trigger)))) statement)
      (let* ((trigger (trigger))
             (formals (map .name ((compose .elements .formals .signature) (om:event model trigger))))
             (arguments (map name->argument formals)))
        (if (null? formals) o
            (rsp o (make <on>
-                    :triggers `(triggers ,(make <trigger> :port port :event event :arguments `(arguments ,@arguments)))
-                    :statement statement)))))
-    (($ <on> ('triggers (and ($ <trigger> port event ('arguments arguments ...)) (get! trigger))) statement)
+                    #:triggers (make <triggers> #:elements (list (make <trigger> #:port port #:event event #:arguments (make <arguments> #:elements arguments))))
+                    #:statement statement)))))
+    (($ <on> ($ <triggers> ((and ($ <trigger> port event ($ <arguments> (argument* ...))) (get! trigger)))) statement)
      (let* ((trigger (trigger))
             (members (map .name (om:variables model)))
             (formals (map .name ((compose .elements .formals .signature) (om:event model trigger))))
@@ -313,7 +311,7 @@
                              occupied names))) ;; occupied names -> (append namesx occupied)
 
             (fresh-formals (list-head (refresh occupied formals) (length formals)))
-            (mapping (filter (negate pair-eq?) (map cons (map (compose .name .value) arguments) fresh-formals)))
+            (mapping (filter (negate pair-eq?) (map cons (map (compose .name .value) argument*) fresh-formals)))
 
             (occupied (append (map cdr mapping) members))
 
@@ -321,8 +319,8 @@
 
        (if (null? mapping) o
            (rsp o (make <on>
-                    :triggers `(triggers ,((rename mapping) trigger))
-                    :statement ((rename mapping) statement))))))
+                    #:triggers (make <triggers> #:elements (list ((rename mapping) trigger)))
+                    #:statement ((rename mapping) statement))))))
 
     ;; TOP
     (($ <enum>) o)
@@ -332,21 +330,20 @@
     (($ <system>) o)
     (($ <component> name ports behaviour)
      (rsp o (make <component>
-              :name name
-              :ports ports
-              :behaviour ((rewrite-formals o) behaviour))))
+              #:name name
+              #:ports ports
+              #:behaviour ((rewrite-formals o) behaviour))))
 
     (($ <behaviour> name types ports variables functions statement)
      (make <behaviour>
-       :name name
-       :types types
-       :ports ports
-       :variables variables
-       :functions functions
-       :statement ((rewrite-formals model '()) statement)))
+       #:name name
+       #:types types
+       #:ports ports
+       #:variables variables
+       #:functions functions
+       #:statement ((rewrite-formals model '()) statement)))
 
     ((? (is? <ast>)) (om:map (rewrite-formals model locals) o))
-    ((h t ...) (map (rewrite-formals model locals) o))
     (_ o)))
 
 ;; (define ast (read-ast '../../test/all/normalize_alias_local/normalize_alias_local.dzn))

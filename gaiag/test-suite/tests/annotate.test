@@ -1,14 +1,12 @@
 ;; -*-scheme-*-
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (test-handler)
-  :use-module (test-suite lib)
-  :use-module (test-suite misc)
+  #:use-module (test-suite lib)
+  #:use-module (test-suite misc)
 
-  :use-module (gaiag reader)
-  :use-module (gaiag annotate))
+  #:use-module (gaiag reader)
+  #:use-module (gaiag annotate))
 
 (define annotate-locations (@@ (gaiag annotate) annotate-locations))
 
@@ -22,7 +20,8 @@
   (root ((location "examples/loc.dzn" 0 0 0 #f)
          interface
          ((location "examples/loc.dzn" 0 10 10 #f)
-          name
+          scope.name
+          ()
           iloc)
          (types)
          (events
@@ -60,11 +59,12 @@
         ((location "examples/loc.dzn" 10 0 84 #f)
          component
          ((location "examples/loc.dzn" 10 10 94 #f)
-          name
+          scope.name
+          ()
           loc)
          (ports (port i
                       ((location "examples/loc.dzn" 12 11 111 #f)
-                       name
+                       dotted
                        iloc)
                       provides
                       #f
@@ -91,10 +91,12 @@
 
 (pass-if "annotate-extract"
   (pretty-noisy-equal?
+   ;;om-diff-noisy-equal?
    (extract-locations (read-dzn "examples/loc.dzn"))
    locations))
 
 (pass-if "annotate-apply"
   (pretty-noisy-equal?
+   ;;om-diff-noisy-equal?
    (extract-locations (annotate-locations (append ast (list locations))))
    locations))

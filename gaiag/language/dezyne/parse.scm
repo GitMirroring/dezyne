@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -76,16 +76,25 @@
    (models
     () : '()
     (models model) : (append $1 (list $2))
-    (models namespace name #{{}# models #{}}#) : (append $1 (map (add-scope $3) $5)))
+    (models namespace scope.name #{{}# models #{}}#) : (append $1 (map (add-scope $3) $5)))
 
-   (name
-    (#{.}# Identifier) : (note-location `(name * ,$2) @1)
-    (name-pair) : $1
-    (name #{.}# Identifier) : (append $1 `(,$3)))
+   (scope.name-pair
+    (Identifier) : (note-location `(scope.name () ,$1) @1)
+    (Identifier #{.}# Identifier) : (note-location `(scope.name (,$1) ,$3) @1))
 
-   (name-pair
-    (Identifier) : (note-location `(name ,$1) @1)
-    (Identifier #{.}# Identifier) : (note-location `(name ,$1 ,$3) @1))
+   (scope.name
+    (#{.}# Identifier) : (note-location `(scope.name (*) ,$2) @1)
+    (scope.name-pair) : $1
+    (scope.name #{.}# Identifier) : `(scope.name ,(append (cadr $1) (cddr $1)) ,$3))
+
+   (dotted-pair
+    (Identifier) : (note-location `(dotted ,$1) @1)
+    (Identifier #{.}# Identifier) : (note-location `(dotted ,$1 ,$3) @1))
+
+   (dotted
+    (#{.}# Identifier) : (note-location `(dotted * ,$2) @1)
+    (dotted-pair) : $1
+    (dotted #{.}# Identifier) : (append $1 `(,$3)))
 
    (model
     (import-spec) : $1
@@ -103,21 +112,21 @@
     (subint-spec): $1)
 
    (interface-spec
-    (interface name #{{}# events/types #{}}#)
+    (interface scope.name #{{}# events/types #{}}#)
     : (receive (e t)
           (partition event? $4)
         (note-location `(,$1 ,$2 ,(cons 'types (map (add-scope $2) t)) ,(cons 'events (map (add-scope $2) e))) @1))
-    (interface name #{{}# events/types behaviour-spec #{}}#)
+    (interface scope.name #{{}# events/types behaviour-spec #{}}#)
     : (receive (e t)
           (partition event? $4)
         (note-location `(,$1 ,$2 ,(cons 'types (map (add-scope $2) t)) ,(cons 'events (map (add-scope $2) e)) ,((add-scope $2) $5)) @1)))
 
    (component-spec
-    (component name #{{}# ports #{}}#)
+    (component scope.name #{{}# ports #{}}#)
     : (note-location `(,$1 ,$2 ,$4) @1)
-    (component name #{{}# ports behaviour-spec #{}}#)
+    (component scope.name #{{}# ports behaviour-spec #{}}#)
     : (note-location `(,$1 ,$2 ,$4 ,$5) @1)
-    (component name #{{}# ports system #{{}# instances/binds #{}}# #{}}#)
+    (component scope.name #{{}# ports system #{{}# instances/binds #{}}# #{}}#)
     : (receive (instances binds)
           (partition (lambda (x) (eq? (car x) 'instance)) $7)
         (note-location `(system ,$2 ,$4 ,(cons 'instances instances) ,(cons 'bindings binds)) @1)))
@@ -127,7 +136,7 @@
     (instances/binds instance/bind) : (append $1 (list $2)))
 
    (instance
-    (name Identifier #{\;}#) : `(instance ,$2 ,$1))
+    (dotted Identifier #{\;}#) : `(instance ,$2 ,$1))
 
    (instance/bind
     (instance) : $1
@@ -168,11 +177,11 @@
     (ports port) : (append $1 (list $2)))
 
    (port
-    (port-direction name Identifier #{\;}#) : `(port ,$3 ,$2 ,$1 #f #f)
-    (port-direction external name Identifier #{\;}#) : `(port ,$4 ,$3 ,$1 ,$2 #f)
-    (port-direction injected name Identifier #{\;}#) : `(port ,$4 ,$3 ,$1 #f ,$2)
-    (port-direction external injected name Identifier #{\;}#) : `(port ,$5 ,$4 ,$1 ,$2 ,$3)
-    (port-direction injected external name Identifier #{\;}#) : `(port ,$5 ,$4 ,$1 ,$3 ,$2))
+    (port-direction dotted Identifier #{\;}#) : `(port ,$3 ,$2 ,$1 #f #f)
+    (port-direction external dotted Identifier #{\;}#) : `(port ,$4 ,$3 ,$1 ,$2 #f)
+    (port-direction injected dotted Identifier #{\;}#) : `(port ,$4 ,$3 ,$1 #f ,$2)
+    (port-direction external injected dotted Identifier #{\;}#) : `(port ,$5 ,$4 ,$1 ,$2 ,$3)
+    (port-direction injected external dotted Identifier #{\;}#) : `(port ,$5 ,$4 ,$1 ,$3 ,$2))
 
    (port-direction
     (provides) : 'provides
@@ -185,24 +194,24 @@
    (variable-type
     (bool) : '(type bool)
     (void) : '(type void)
-    (name) : (note-location `(type ,$1) @1))
+    (dotted) : (note-location `(type ,$1) @1))
 
    (enum-spec
-    (enum Identifier #{{}# enum-fields #{}}# #{\;}#) : (note-location `(enum (name ,$2) ,$4) @1))
+    (enum Identifier #{{}# enum-fields #{}}# #{\;}#) : (note-location `(enum (scope.name () ,$2) ,$4) @1))
 
    (enum-fields
     (Identifier) : `(fields ,$1)
     (enum-fields #{,}# Identifier) : (append $1 (list $3)))
 
    (subint-spec
-    (subint Identifier #{{}# integer .. integer #{}}# #{\;}#) : (note-location `(int (name ,$2) (range ,$4 ,$6)) @1))
+    (subint Identifier #{{}# integer .. integer #{}}# #{\;}#) : (note-location `(int (scope.name () ,$2) (range ,$4 ,$6)) @1))
 
    (integer
     (NumericLiteral): $1
     (- NumericLiteral): (- $2))
 
    (extern-spec
-    (extern Identifier Data #{\;}#) : (note-location `(extern (name ,$2) ,$3) @1))
+    (extern Identifier Data #{\;}#) : (note-location `(extern (scope.name () ,$2) ,$3) @1))
 
    (expression
     (expr): `(expression ,$1))
@@ -211,7 +220,7 @@
     (false) : $1
     (true) : $1
     (integer) : $1
-    (name) : $1
+    (dotted) : $1
     (Data) : (note-location `(data ,$1) @1)
 
     (#{(}# expr #{)}#) : `(group ,$2)
@@ -297,7 +306,7 @@
     (variable) : $1)
 
    (behaviour-port
-    (port-direction name optional-formals Identifier #{\;}#) :
+    (port-direction dotted optional-formals Identifier #{\;}#) :
     (let* ((port $4)
            (type $2)
            (formals $3)
@@ -363,14 +372,14 @@
 
    (assignment-statement
     (Identifier = expression #{\;}#) : (note-location `(assign ,$1 ,$3) @1)
-    (Identifier #{.}# Identifier = expression #{\;}#) : (note-location `(assign (name ,$1 ,$3) ,$5) @1))
+    (Identifier #{.}# Identifier = expression #{\;}#) : (note-location `(assign (dotted ,$1 ,$3) ,$5) @1))
 
    (action
-    (name-pair #{(}# #{)}#) : (rsp $1 `(action ,(make-trigger $1)))
-    (name-pair #{(}# arguments #{)}#) : (rsp $1 `(action ,(make-trigger $1 $3))))
+    (dotted-pair #{(}# #{)}#) : (rsp $1 `(action ,(make-trigger $1)))
+    (dotted-pair #{(}# arguments #{)}#) : (rsp $1 `(action ,(make-trigger $1 $3))))
 
    (action-statement
-    (name-pair #{\;}#) : (rsp $1 `(action ,(make-trigger $1)))
+    (dotted-pair #{\;}#) : (rsp $1 `(action ,(make-trigger $1)))
     (action #{\;}#) : $1)
 
    (if-statement
@@ -403,25 +412,33 @@
 (define* (make-trigger o #:optional (arguments '(arguments)))
   (match o
     ((? symbol?) `(trigger #f o ,arguments))
-    (('name event) `(trigger #f ,event ,arguments))
-    (('name port event) `(trigger ,port ,event ,arguments))))
+    (('dotted event) `(trigger #f ,event ,arguments))
+    (('dotted port event) `(trigger ,port ,event ,arguments))))
 
 (define ((add-scope scope) o)
   (rsp o ((add-scope- scope) o)))
 
-(define ((add-scope- scope) o)
+(define ((add-scope- scope-name) o)
   ;;(stderr "ADD-SCOPE[~a]: ~a\n" scope o)
-  (if (or (and (pair? scope) (eq? (car scope) '*))) o
-      (match o
-        (('name '* scope ...) o)
-        (('name name) o)
-        (('name name ...) (append scope name))
-        (('guard expression statement)
-         `(guard ,expression ,((add-scope scope) statement)))
-        (((and (or 'enum 'extern 'int) (get! type)) ('name name ...) spec)
-         (list (type) (append scope name) spec))
-        ((h t ...) (map (add-scope scope) o))
-        (_ o))))
+  (let ((scope (append (cadr scope-name) (cddr scope-name))))
+    ;;(stderr "ADD-SCOPE[~a]: ~a\n" scope o)
+    (if (or (and (pair? scope) (eq? (car scope) '*))) o
+              (match o
+                (('dotted '* scope ...) o)
+                (('dotted name ...) `(dotted ,@(append scope name))) ;; FIXME
+
+                (('scope.name (* s ...) name) o)
+                (('scope.name (s ...) name) `(scope.name ,(append scope s) ,name))
+
+                (('guard expression statement)
+                 `(guard ,expression ,((add-scope scope-name) statement)))
+                (('expression value) o)
+
+                (((and (or 'enum 'extern 'int) (get! type)) ('scope.name (s ...) name) spec)
+                 (list (type) `(scope.name ,(append scope s) ,name) spec))
+
+                ((h t ...) (map (add-scope scope-name) o))
+                (_ o)))))
 
 (define (compile-tree-il exp env opts)
   (values (parse-tree-il (comp exp '())) env env))
@@ -429,7 +446,7 @@
 (define template-interfaces '())
 (define (type-name o)
   (match o
-    (('formal name ('type ('name type))) type)))
+    (('formal name ('type ('dotted type))) type)))
 (define (make-async-refine-interface name formals)
   `(interface
     ,name
@@ -444,13 +461,13 @@
       (variable idle (type bool) (expression true)))
      (functions)
      (compound
-      (guard (expression (name idle))
+      (guard (expression (dotted idle))
         (compound
          (on (triggers (trigger #f req (arguments)))
              (assign idle (expression false)))
          (on (triggers (trigger #f clr (arguments)))
              (compound))))
-      (guard (expression (! (name idle)))
+      (guard (expression (! (dotted idle)))
         (compound
          (on (triggers (trigger #f req (arguments)))
              (illegal))

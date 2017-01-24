@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2013, 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2013, 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -19,22 +19,27 @@
 (read-set! keywords 'prefix)
 
 (define-module (test-suite misc)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 regex)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 regex)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag om)
+  #:use-module (gaiag util)
 
-  :use-module (gaiag misc)
-  :use-module (gaiag csp)
+  #:use-module (gaiag misc)
+  ;;#:use-module (gaiag csp)
 
-  :export (fail
+  #:export (fail
            diff-noisy-equal?
 	   om-noisy-equal?
            om-pretty-noisy-equal?
 	   noisy-equal?
            pretty-noisy-equal?
+           om-diff-noisy-equal?
            whitespace-noisy-equal?)
-  :re-export (hash-read-string))
+  #:re-export (hash-read-string))
 
 (define (fail string . rest)
   (apply stderr (cons* string rest))
@@ -81,5 +86,9 @@
                     "actual")))
     (or (string-null? diff)
         (fail "~a" diff))))
+
+(define (om-diff-noisy-equal? actual expected)
+  (diff-noisy-equal? (pretty-string (if (is-a? actual <ast>) (om->list actual) actual))
+                     (pretty-string (om->list expected))))
 
 (read-hash-extend #\{ hash-read-string)

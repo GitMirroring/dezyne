@@ -3,7 +3,7 @@
 ;; Copyright © 2014  Rutger van Beusekom
 ;; Copyright © 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -18,26 +18,28 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag resolve)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 curried-definitions)
-  :use-module (gaiag list match)
-  :use-module (ice-9 pretty-print)
-  :use-module (ice-9 receive)
-  :use-module (srfi srfi-1)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 receive)
+  #:use-module (srfi srfi-1)
 
-  :use-module (language dezyne location)
+  #:use-module (language dezyne location)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag om)
+  #:use-module (gaiag util)
 
-  :use-module (gaiag reader)
-  :use-module (gaiag annotate)
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag annotate)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
 
-  :export (
+  #:export (
            ast:resolve
            om:resolve
            report-errors
@@ -45,23 +47,23 @@
 
 (define (ast:resolve o)
   (match o
-    (('root models ...) (resolve-root o))
+    (($ <root> (models ...)) (resolve-root o))
     ((? (is? <model>)) (resolve-model o))
     (_  o)))
 
 (define (resolve-error o symbol message)
-  (make <error> :ast o :message (format #f message symbol)))
+  (make <error> #:ast o #:message (format #f message symbol)))
 
 (define (undefined-error o identifier)
   (resolve-error o identifier "undefined identifier: ~a"))
 
 (define (type-mismatch o expected actual)
-  (make <error> :ast o :message (format #f "type mismatch: ~a expected, found: ~a" expected actual)))
+  (make <error> #:ast o #:message (format #f "type mismatch: ~a expected, found: ~a" expected actual)))
 
 (define (resolve-root o)
   (map om:register-type (om:types o))
   (let* ((resolved (make <root>
-                     :elements (map resolve-top-model (ast:reorder (.elements o)))))
+                     #:elements (map resolve-top-model (ast:reorder (.elements o)))))
          (errors (null-is-#f ((om:collect <error>) resolved))))
     (and=> errors report-errors)
     resolved))
@@ -69,7 +71,7 @@
 (define (ast:reorder o)
   (match o
     (($ <root>)
-     (make <root> :elements (ast:reorder (.elements o))))
+     (make <root> #:elements (ast:reorder (.elements o))))
     ((models ...)
      (append
                    (filter (is? <import>) models)
@@ -120,17 +122,11 @@
     (_ ((resolve o '()) o))))
 
 (define ((resolve model locals) o)
+
   (match o
-    (($ <system>) o)
     (($ <*type*>) o)
     (($ <import>) o)
     (_ (retain-source-properties o (resolve- model o locals)))))
-
-(define (resolve:import name)
-  (om:import name resolve:om))
-
-(define (resolve:om ast)
-  ((compose ast:resolve ast->om ast:public) ast))
 
 (define (type-equal? a b)
   (equal? (.name a) (.name b)))
@@ -139,14 +135,15 @@
   (match o
     (($ <type> name) (->symbol name))
     (($ <enum> name field) (->symbol name))
-    (('name name ...) ((->symbol-join '.) name))
+    (('dotted name ...) ((->symbol-join '.) name))
+    (($ <scope.name>) ((->symbol-join '.) (om:scope+name o))) 
     (_ o)))
 
 (define (resolve- model o locals)
 
-  (define (enum? identifier) (and=> (type? identifier) (is? <enum>)))
-  (define (extern? identifier) (and=> (type? identifier) (is? <extern>)))
-  (define (int? identifier) (and=> (type? identifier) (is? <int>)))
+  (define (as-enum identifier) (and=> (as-type identifier) (is? <enum>)))
+  (define (extern? identifier) (and=> (as-type identifier) (is? <extern>)))
+  (define (int? identifier) (and=> (as-type identifier) (is? <int>)))
 
   (define (event? identifier)
     (and (is-a? model <interface>)
@@ -164,50 +161,53 @@
 
   (define (enum-field? identifier)
     (lambda (field)
-      (and-let* ((enum (enum? identifier)))
+      (and-let* ((enum (as-enum identifier)))
                 (member field (.elements (.fields enum))))))
 
   (define (member-field? identifier)
     (lambda (field)
       (and-let* ((variable (var? identifier))
                  (type (.type variable))
-                 (enum (type? type)))
+                 (enum (as-type type)))
                 (member field (.elements (.fields enum))))))
 
-  (define (type? o)
+  (define (as-type o)
     (match o
-      (($ <type> ('name name)) (=> failure) (or ((om:type model) (make <type> :name (append (.name model) (list name)))) (failure)))
-      (($ <type> ('name '* rest ...)) ((om:type model) (make <type> :name (cons 'name rest))))
+      (($ <type> ('dotted '* scope ... name)) ((om:type model) (make <type> #:name (make <scope.name> #:scope scope #:name name))))
+      (($ <type> ('dotted scope ... name)) (=> failure)
+       (or ((om:type model) (make <type> #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name)))
+           ((om:type model) (make <type> #:name (make <scope.name> #:scope scope #:name name)))
+           (failure)))
       (_ ((om:type model) o))))
 
   (define (fake:type model o)
     (match o
       (($ <expression> expression) (fake:type model expression))
-      ('false (make <type> :name 'bool))
-      ('true (make <type> :name 'bool))
-      (($ <data>) (make <type> :name 'data))
-      ((? number?) (make <type> :name 'int))
-      (('name type field)
-       (and-let* ((enum (or (type? (make <type> :name (make <name> :elements (list type))))))
+      ('false (make <type> #:name 'bool))
+      ('true (make <type> #:name 'bool))
+      (($ <data>) (make <type> #:name 'data))
+      ((? number?) (make <type> #:name 'int))
+      (('dotted name field)
+       (and-let* ((enum (or (as-type (make <type> #:name (make <scope.name> #:name name)))
+                            (as-type (make <type> #:name (make <scope.name> #:scope (om:scope+name model) #:name name)))))
                   ((member field ((compose .elements .fields) enum))))
-                 enum))
-      (('name field) #f)
-      (('name scope ... field)
-       (and-let* ((enum (om:enum model (make <type> :name (make <name> :elements scope))))
+         enum))
+      (('dotted field) #f)
+      (('dotted scope ... name field)
+       (and-let* ((enum (om:enum model (make <type> #:name (make <scope.name> #:scope scope #:name name))))
                   ((member field ((compose .elements .fields) enum))))
-                 enum))
+         enum))
       (_ #f)))
 
   ;;(stderr "resolve: ~a\n" o)
   (match o
-    ('root o)
     (($ <var> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
 
-    (($ <assign> ('name port name) expression)
+    (($ <assign> ('dotted port name) expression)
      (make <assign>
-       :identifier (.identifier o)
-       :expression ((resolve model locals) expression)))
+       #:identifier (.identifier o)
+       #:expression ((resolve model locals) expression)))
 
     (($ <assign> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
@@ -219,7 +219,7 @@
     (($ <call> (and (? symbol?) (? (negate event-or-function?)) (get! identifier)))
      (resolve-error o (identifier) "undefined function or event: ~a"))
 
-    (($ <call> identifier ('arguments arguments ...)) (=> failure)
+    (($ <call> identifier ($ <arguments> (arguments ...))) (=> failure)
      (let* ((function (function? identifier))
             (formals ((compose .elements .formals .signature) function))
             (argument-count (length arguments))
@@ -228,7 +228,7 @@
            (resolve-error o identifier
                           (format #f "function ~a expects ~a arguments, found: ~a" "~a" formal-count argument-count)))))
 
-    (($ <variable> name (and (? (negate type?)) (get! type)) expression)
+    (($ <variable> name (and (? (negate as-type)) (get! type)) expression)
      (resolve-error (type) (->symbol (type)) "undefined type: ~a"))
 
     (($ <variable> name (and (? (negate extern?)) (get! type)) ($ <expression> (? unspecified?)))
@@ -236,9 +236,9 @@
 
     (($ <variable> name type expression) (=> failure)
      (or (and-let* ((e-type (fake:type model expression))
-                    (v-type (type? type))
+                    (v-type (as-type type))
                     ((not (type-equal? e-type v-type)))
-                    (actual (type? type))
+                    (actual (as-type type))
                     ((if (eq? (.name e-type) 'data)
                          (not (is-a? actual <extern>))))
                     ((if (eq? (.name e-type) 'int)
@@ -252,21 +252,21 @@
     ((or '== '!= '< '<= '> '>= 'group) o)
 
     (($ <formal> name type direction)
-     (make <formal> :name name :type ((resolve model locals) type) :direction direction))
+     (make <formal> #:name name #:type ((resolve model locals) type) #:direction direction))
 
-    (($ <call> identifier (and ('arguments arguments ...) (get! arguments)) last?)
-     (make <call> :identifier identifier :arguments ((resolve model locals) (arguments)) :last? last?))
+    (($ <call> identifier (and ($ <arguments> (arguments ...)) (get! arguments)) last?)
+     (make <call> #:identifier identifier #:arguments ((resolve model locals) (arguments)) #:last? last?))
 
-    (($ <type> name) (=> failure)
-     (or (and-let* ((type (type? o)))
-                   (make <type> :name (.name type)))
-         (and-let* ((type (type? (append (.name model) (cdr name)))))
-                   (make <type> :name (.name type)))
+    (($ <type>) (=> failure)
+     (or (and-let* ((type (as-type o)))
+           (make <type> #:name (.name type)))
+         (and-let* ((type (as-type (append (om:scope+name model) (.name type)))))
+           (make <type> #:name (.name type)))
          (failure)
          (undefined-error o name)))
 
     (($ <event> name signature direction)
-     (make <event> :name name :signature ((resolve model '()) signature) :direction direction))
+     (make <event> #:name name #:signature ((resolve model '()) signature) #:direction direction))
 
     (($ <data>) o)
     (($ <enum>) o)
@@ -277,218 +277,215 @@
     (($ <int>) o)
     (($ <literal>) o)
     (($ <otherwise>) (make <otherwise>))
-    (($ <port>) o)
+
+    ((and ($ <port>) (= .type ('dotted scope ... name)))
+     (clone o #:type (make <scope.name> #:scope scope #:name name)))
+
+    ((and ($ <port>) (= .type ($ <scope.name>))) ;; FIXME: import?
+     o)
+
     (($ <signature> type (? unspecified?))
      (make <signature>
-       :type ((resolve model locals) type)
-       :formals '(formals)))
+       #:type ((resolve model locals) type)
+       #:formals '(formals)))
     (($ <signature> type formals)
      (make <signature>
-       :type ((resolve model locals) type)
-       :formals ((resolve model locals) formals)))
+       #:type ((resolve model locals) type)
+       #:formals ((resolve model locals) formals)))
     (($ <trigger> port event arguments)
-     (make <trigger> :port port :event event :arguments ((resolve model locals) arguments)))
+     (make <trigger> #:port port #:event event #:arguments ((resolve model locals) arguments)))
     (($ <var>) o)
 
     ((? symbol?)
      (undefined-error 'programming-error o))
 
     (($ <action> ($ <trigger> #f (and (? function?) (get! identifier))))
-     (make <call> :identifier (identifier)))
+     (make <call> #:identifier (identifier)))
 
-    (($ <action> trigger) (make <action> :trigger ((resolve model locals) trigger)))
+    (($ <action> trigger) (make <action> #:trigger ((resolve model locals) trigger)))
 
     (($ <assign> identifier
         ($ <expression> ($ <call> (and (? event?) (get! event)))))
      (make <assign>
-       :identifier identifier
-       :expression (make <action> :trigger (make <trigger> :event (event)))))
+       #:identifier identifier
+       #:expression (make <action> #:trigger (make <trigger> #:event (event)))))
 
     (($ <assign> identifier ($ <expression> (and ($ <call>) (get! call))))
-     (make <assign> :identifier identifier
-           :expression ((resolve model locals) (call))))
+     (make <assign> #:identifier identifier
+           #:expression ((resolve model locals) (call))))
 
     (($ <assign> identifier ($ <call> (and (? event?) (get! event))))
      (make <assign>
-       :identifier identifier
-       :expression (make <action> :trigger (make <trigger> :event (event)))))
+       #:identifier identifier
+       #:expression (make <action> #:trigger (make <trigger> #:event (event)))))
 
     (($ <assign> identifier (and ($ <call>) (get! call)))
-     (make <assign> :identifier identifier
-           :expression ((resolve model locals) (call))))
+     (make <assign> #:identifier identifier
+           #:expression ((resolve model locals) (call))))
 
     (($ <assign> identifier
         ($ <expression> ($ <var> (and (? event?) (get! event)))))
      (make <assign>
-       :identifier identifier
-       :expression (make <action> :trigger (make <trigger> :event (event)))))
+       #:identifier identifier
+       #:expression (make <action> #:trigger (make <trigger> #:event (event)))))
 
     (($ <assign> identifier
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
      (make <assign>
-       :identifier identifier
-       :expression (make <call> :identifier (function))))
+       #:identifier identifier
+       #:expression (make <call> #:identifier (function))))
 
     (($ <assign> identifier
-        ($ <expression> ('name (and (? port?) (get! port)) event)))
+        ($ <expression> ('dotted (and (? port?) (get! port)) event)))
      (make <assign>
-       :identifier identifier
-       :expression (make <action>
-                     :trigger (make <trigger> :port (port) :event event))))
+       #:identifier identifier
+       #:expression (make <action>
+                     #:trigger (make <trigger> #:port (port) #:event event))))
 
     (($ <assign> identifier ($ <expression> (and ($ <action>) (get! action))))
      (make <assign>
-       :identifier identifier
-       :expression ((resolve model locals) (action))))
+       #:identifier identifier
+       #:expression ((resolve model locals) (action))))
 
     (($ <assign> identifier
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
      (make <assign>
-       :identifier identifier
-       :expression (make <call> :identifier (function))))
+       #:identifier identifier
+       #:expression (make <call> #:identifier (function))))
 
     (($ <assign> identifier (and ($ <expression>) (get! expression)))
      (make <assign>
-       :identifier identifier
-       :expression ((resolve model locals) (expression))))
+       #:identifier identifier
+       #:expression ((resolve model locals) (expression))))
 
     (($ <assign> identifier expression)
      (make <assign>
-       :identifier identifier
-       :expression ((resolve model locals) expression)))
+       #:identifier identifier
+       #:expression ((resolve model locals) expression)))
 
     (($ <formal> name type direction)
      (make <formal>
-       :name name
-       :type ((resolve model locals) type)
-       :direction direction))
+       #:name name
+       #:type ((resolve model locals) type)
+       #:direction direction))
 
     (($ <formal> name type)
      (make <formal>
-       :name name
-       :type ((resolve model locals) type)))
+       #:name name
+       #:type ((resolve model locals) type)))
 
     (($ <variable> name type
         ($ <expression> ($ <call> (and (? event?) (get! event)))))
      (make <variable>
-       :name name
-       :type ((resolve model locals) type)
-       :expression (make <action> :trigger
-                         (make <trigger> :event (event)))))
+       #:name name
+       #:type ((resolve model locals) type)
+       #:expression (make <action> #:trigger
+                         (make <trigger> #:event (event)))))
 
     (($ <variable> name type ($ <expression> (and ($ <call>) (get! call))))
      (make <variable>
-       :name name
-       :type ((resolve model locals) type)
-       :expression ((resolve model locals) (call))))
+       #:name name
+       #:type ((resolve model locals) type)
+       #:expression ((resolve model locals) (call))))
 
     (($ <variable> name type
         ($ <expression> ($ <var> (and (? event?) (get! event)))))
      (make <variable>
-       :type ((resolve model locals) type)
-       :name name
-       :expression (make <action> :trigger
-                         (make <trigger> :event (event)))))
+       #:type ((resolve model locals) type)
+       #:name name
+       #:expression (make <action> #:trigger
+                          (make <trigger> #:event (event)))))
 
     (($ <variable> name type ($ <expression> (and ($ <action>) (get! action))))
      (make <variable>
-       :name name
-       :type ((resolve model locals) type)
-       :expression ((resolve model locals) (action))))
+       #:name name
+       #:type ((resolve model locals) type)
+       #:expression ((resolve model locals) (action))))
 
-    (($ <variable> name type ($ <expression> ('name (and (? port?) (get! port)) event)))
+    (($ <variable> name type ($ <expression> ('dotted (and (? port?) (get! port)) event)))
      (make <variable>
-       :name name
-       :type ((resolve model locals) type)
-       :expression (make <action> :trigger (make <trigger> :port (port) :event event))))
+       #:name name
+       #:type ((resolve model locals) type)
+       #:expression (make <action> #:trigger (make <trigger> #:port (port) #:event event))))
 
     (($ <variable> name type
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
      (make <variable>
-       :name name
-       :type ((resolve model locals) type)
-       :expression (make <call> :identifier (function))))
+       #:name name
+       #:type ((resolve model locals) type)
+       #:expression (make <call> #:identifier (function))))
 
     (($ <variable> name type expression)
      (make <variable>
-       :name name
-       :type ((resolve model locals) type)
-       :expression ((resolve model locals) expression)))
+       #:name name
+       #:type ((resolve model locals) type)
+       #:expression ((resolve model locals) expression)))
 
-    (('name '* rest ...)
-     ((resolve model locals) (cons 'name rest)))
+    (('dotted '* scope ... name)
+     ((resolve model locals) (make <scope.name> #:scope scope #:name name)))
 
-    (('name name ...) (=> failure)
-     (or (and-let* (((pair? name))
-                    (enum (enum? o)))
-                   (.name enum))
+    (('dotted scope ... name) (=> failure)  ;;FIXME
+     (or (and (pair? scope)
+     (> (length scope) 1) (and=> (as (or (as-type (make <type> #:name (make <scope.name> #:scope scope #:name name)))
+                           (as-type (make <type> #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name)))) 
+                                 <enum>)
+                .name))
          (failure)))
 
-    (('name (and (? var?) (get! name)))
-     (make <var> :name (name)))
+    (('dotted (and (? var?) (get! name)))
+     (make <var> #:name (name)))
 
-    (('name name) (=> failure)
-     (or (and-let* ((type (type? (append (.name model) (list name)))))
-                   (.name type))
+    (('dotted name) (=> failure)
+     (or (and-let* ((type (as-type (append (om:scope+name model) (list name)))))
+           (.name type))
          (failure)))
 
-    (('name (and (? var?) (get! type)) (? (member-field? (type))))
-     (make <field> :identifier (type) :field (om:name o)))
+    (('dotted (and (? var?) (get! type)) (and (? (member-field? (type)) (get! field))))
+     (make <field> #:identifier (type) #:field (field)))
 
-    (('name scope name field) (=> failure)
-     (let* ((name `(name ,scope ,name))
-            (enum (enum? o)))
+    (('dotted scope ... name field) (=> failure)
+     (let ((enum (as (or (as-type (make <type> #:name (make <scope.name> #:scope scope #:name name)))
+                      (as-type (make <type> #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name))))
+                      <enum>)))
        (if (not enum) (failure)
-           (make <literal> :name (.name enum) :field field))))
+           (if (member field ((compose .elements .fields) enum))
+                   (make <literal> #:name (.name enum) #:field field)
+                   (and
+                    (resolve-error o field "undefined enum field: ~a")
+                   )))))
 
-    (('name (? var?) field)
+    (('dotted (? var?) field)
      (resolve-error o field "undefined enum field: ~a"))
 
-    (('name scope ... field) (=> failure)
-     (or (and-let* (((pair? scope))
-                    (enum (enum? (make <type> :name (make <name> :elements scope)))))
-                   (if (member field ((compose .elements .fields) enum))
-                       (make <literal> :name (.name enum) :field field)
-                       (and
-                        (resolve-error o field "undefined enum field: ~a"))))
-         (failure)))
-
     (($ <expression> value)
-     (make <expression> :value ((resolve model locals) value)))
+     (make <expression> #:value ((resolve model locals) value)))
 
-    (('name t ...)
+    (('dotted t ...)
+     (resolve-error o o "undefined dotted: ~a")
      o)
 
-    ;; (($ <function> name ($ <signature> type) recursive? statement)
-    ;;  (stderr "WIERD\n")
-    ;;  (make <function>
-    ;;    :name name
-    ;;    :signature ((resolve model locals) (.signature o))
-    ;;    :recursive (and ((recurses? model) name) 'recursive)
-    ;;    :statement ((resolve model locals) statement)))
-
-    (($ <function> name ($ <signature> type ('formals)) recursive? statement)
+    (($ <function> name ($ <signature> type ($ <formals> ())) recursive? statement)
      (make <function>
-       :name name
-       :signature ((resolve model locals) (.signature o))
-       :recursive (and ((recurses? model) name) 'recursive)
-       :statement ((resolve model locals) statement)))
+       #:name name
+       #:signature ((resolve model locals) (.signature o))
+       #:recursive (and ((recurses? model) name) 'recursive)
+       #:statement ((resolve model locals) statement)))
 
-    (($ <function> name ($ <signature> type ('formals formals ...)) recursive? statement)
+    (($ <function> name ($ <signature> type ($ <formals> (formals ...))) recursive? statement)
      (let ((locals (let loop ((formals formals) (locals locals))
                      (if (null? formals)
                          locals
                          (loop (cdr formals)
                                (acons (.name (car formals)) (car formals) locals))))))
        (make <function>
-         :name name
-         :signature ((resolve model locals) (.signature o))
-         :recursive (and ((recurses? model) name) 'recursive)
-         :statement ((resolve model locals) statement))))
+         #:name name
+         #:signature ((resolve model locals) (.signature o))
+         #:recursive (and ((recurses? model) name) 'recursive)
+         #:statement ((resolve model locals) statement))))
 
-    (('compound statements ...)
+    (($ <compound> (statements ...))
      (make <compound>
-       :elements
+       #:elements
        (let loop ((statements statements) (locals locals))
          (if (null? statements)
              '()
@@ -501,12 +498,12 @@
                  (cons resolved (loop (cdr statements) locals))))))))
 
     (($ <blocking> statement)
-       (make <blocking> :statement ((resolve model locals) statement)))
+       (make <blocking> #:statement ((resolve model locals) statement)))
 
     (($ <guard> expression statement)
        (make <guard>
-         :expression ((resolve model locals) expression)
-         :statement ((resolve model locals) statement)))
+         #:expression ((resolve model locals) expression)
+         #:statement ((resolve model locals) statement)))
 
     (($ <on> triggers statement)
      (let* ((triggers (resolve-on-triggers triggers))
@@ -517,86 +514,100 @@
                           (loop (cdr arguments)
                                 (let* ((argument (car arguments))
                                        (name ((compose .name .value) argument))
-                                       (binding-name (lambda (name) (if (pair? name) (om:name name) name)))
+                                       (binding-name (lambda (name) (if (is-a? name <var>) (.name name) name)))
                                        (name (binding-name name)))
                                   (acons name argument locals)))))))
        (make <on>
-         :triggers triggers
-         :statement ((resolve model locals) statement))))
+         #:triggers triggers
+         #:statement ((resolve model locals) statement))))
 
     (($ <interface> name types events behaviour)
      (make <interface>
-       :name name
-       :types types
-       :events ((resolve o '()) events)
-       :behaviour ((resolve o '()) behaviour)))
+       #:name name
+       #:types types
+       #:events ((resolve o '()) events)
+       #:behaviour ((resolve o '()) behaviour)))
 
-    (($ <component> name ports (? unspecified?))
-     (make <component> :name name :ports ports))
+    ((and ($ <component>) (= .behaviour (? unspecified?)))
+     (clone o
+            #:ports (make <ports> #:elements (map (resolve model '()) (om:ports o)))
+            #:behaviour #f))
 
-    (($ <component> name ports behaviour)
-       (make <component>
-         :name name
-         :ports ports
-         :behaviour ((resolve o '()) behaviour)))
+    (($ <component>)
+     (let ((o (clone o #:ports (make <ports> #:elements (map (resolve model '()) (om:ports o))))))
+      (clone o #:behaviour ((resolve o '()) (.behaviour o)))))
 
     (($ <behaviour> name types ports variables functions statement)
-     (make <behaviour>
-       :name name
-       :types types
-       :ports ports
-       :variables ((resolve model '()) variables)
-       ;; om:map denx0r?
-       :functions ((resolve model '()) functions)
-       :statement ((resolve model '()) statement)
-       ;;:functions (om:map (resolve model '()) functions)
-       ;;:statement (om:map (resolve model '()) statement)
-     ))
+     (let* ((ports (make <ports> #:elements (map (resolve model '()) (.elements ports))))
+            (model (clone model #:behaviour (clone o #:ports ports))))
+       (clone o
+              #:ports ports
+              #:variables ((resolve model '()) variables)
+              #:functions ((resolve model '()) functions)
+              #:statement ((resolve model '()) statement))))
+
+    (($ <system>)
+     (let ((o (clone o #:ports (make <ports> #:elements (map (resolve model '()) (om:ports o))))))
+       (clone o
+              #:instances ((resolve o '()) (.instances o))
+              #:bindings ((resolve o '()) (.bindings o)))))
 
     (($ <if> expression then else)
      (make <if>
-       :expression ((resolve model locals) expression)
-       :then ((resolve model locals) then)
-       :else (and (not (eq? else *unspecified*))
+       #:expression ((resolve model locals) expression)
+       #:then ((resolve model locals) then)
+       #:else (and (not (eq? else *unspecified*))
                   else ((resolve model locals) else))))
-    (('arguments arguments ...)
-     (make <arguments> :elements (map (resolve model locals) arguments)))
-    (('events events ...)
-     (cons 'events (map (resolve model '()) events)))
-    (('triggers triggers ...) o)
-    (('functions functions ...)
-     (make <functions> :elements (map (resolve model '()) functions)))
-    (('formals formals ...)
-     (make <formals> :elements (map (resolve model '()) formals)))
-    (('variables variables ...)
+    (($ <arguments> (arguments ...))
+     (make <arguments> #:elements (map (resolve model locals) arguments)))
+    (($ <bindings> (bindings ...))
+     (make <bindings> #:elements (map (resolve model locals) bindings)))
+    (($ <events> (events ...))
+     (make <events> #:elements (map (resolve model '()) events)))
+    (($ <triggers> (triggers ...)) o)
+    (($ <functions> (functions ...))
+     (make <functions> #:elements (map (resolve model '()) functions)))
+    (($ <formals> (formals ...))
+     (make <formals> #:elements (map (resolve model '()) formals)))
+    (($ <instances> (instances ...))
+     (make <instances> #:elements (map (resolve model locals) instances)))
+    (($ <binding>) o) ;; FIXME
+    ((and ($ <instance>) (= .type ($ <scope.name>)))
+     o)
+    ((and ($ <instance>) (= .type ('dotted scope ... name)))
+     (let* ((scoped (make <scope.name> #:scope scope #:name name))
+            (component (om:import scoped)))
+       (clone o #:type (.name component))))
+    (($ <variables> (variables ...))
      (let ((variables (map (range-check model) variables)))
-       (make <variables> :elements (map (resolve model '()) variables))))
+       (make <variables> #:elements (map (resolve model '()) variables))))
     (($ <reply> expression port)
-     (make <reply> :expression ((resolve model locals) expression) :port port))
+     (make <reply> #:expression ((resolve model locals) expression) #:port port))
     (($ <return> expression)
-     (make <return> :expression ((resolve model locals) expression)))
+     (make <return> #:expression ((resolve model locals) expression)))
     ((? (is? <ast>)) (om:map (lambda (o) ((resolve model locals) o)) o))
-    ((h t ...) (map (lambda (o) ((resolve model locals) o)) o))
+    ((? om:expression?) (map (lambda (o) ((resolve model locals) o)) o))
     (_ o)))
 
 (define (resolve-on-triggers o)
   (match o
-    (('triggers triggers ...) (om:map resolve-on-triggers o))
-    (($ <trigger> p e ('arguments)) o)
+    (($ <triggers> (triggers ...)) (om:map resolve-on-triggers o))
+    (($ <trigger> p e ($ <arguments> ())) o)
     (($ <trigger> p e arguments)
-     (rsp o (make <trigger> :port p :event e :arguments (resolve-on-triggers arguments))))
-    (('arguments arguments ...) (om:map resolve-on-triggers o))
-    (($ <expression> (and ('name name) (get! value)))
-     (rsp o (make <expression> :value (rsp (value) (make <var> :name name)))))
+     (rsp o (make <trigger> #:port p #:event e #:arguments (resolve-on-triggers arguments))))
+    (($ <arguments> (arguments ...)) (om:map resolve-on-triggers o))
+    (($ <expression> (and ('dotted name) (get! value)))
+     (rsp o (make <expression> #:value (rsp (value) (make <var> #:name name)))))
     (($ <expression> ($ <var> name)) o)
-    (($ <expression> ('<- ('name arg) ('name global)))
-     (make <expression> :value `(<- (name ,arg) ,(make <var> :name global))))
-    (($ <expression> ('<- ('name arg) ($ <var> global))) o)))
+    (($ <expression> ('<- ('dotted arg) ('dotted global)))
+     (make <expression> #:value `(<- ,(make <var> #:name arg) ,(make <var> #:name global))))
+    (($ <expression> ('<- ($ <var>) ($ <var>)))
+     o)))
 
 (define ((range-check model) variable)
-  (define (int-type? type) (om:integer model type))
+  (define (as-int-type type) (om:integer model type))
   (or variable
-      (and-let* ((int (int-type? (.type variable)))
+      (and-let* ((int (as-int-type (.type variable)))
                  (range (.range int))
                  (expression (.expression variable))
                  (value (evaluate model expression))
@@ -620,7 +631,7 @@
     (($ <var> name) (evaluate model (.expression (member? name))))
     (('group g) g)))
 
-(define* ((recurses? model :optional (seen '())) name)
+(define* ((recurses? model #:optional (seen '())) name)
   (define (return-call ast)
     (match ast
       (($ <call>) ast)

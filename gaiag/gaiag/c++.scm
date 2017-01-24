@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014, 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -16,42 +16,43 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag c++)
-  :use-module (srfi srfi-26)
-  :use-module (ice-9 curried-definitions)
-  :use-module (gaiag list match)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 getopt-long)
-  :use-module (ice-9 pretty-print)
-  :use-module (ice-9 receive)
-  :use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 receive)
+  #:use-module (srfi srfi-1)
 
-  :use-module (gaiag animate)
-  :use-module (gaiag c)
-  :use-module (gaiag code)
-  :use-module (gaiag gaiag)
-  :use-module (gaiag indent)
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve)
-;;  :use-module (gaiag wfc)
+  #:use-module (gaiag animate)
+  #:use-module (gaiag c)
+  #:use-module (gaiag code)
+  #:use-module (gaiag gaiag)
+  #:use-module (gaiag indent)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag resolve)
+;;  #:use-module (gaiag wfc)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag om)
 
-  :export (ast->
+  #:export (ast->
            asd-interfaces))
 
 (define (ast-> ast)
   (let ((om ((om:register code:om #t) ast)))
-    (map dump (filter (negate om:imported?) ((om:filter <model>) om))))
+    (map dump (filter (negate om:imported?) ((om:filter:p <model>) om))))
   "")
 
-(define* ((c++:scope-join :optional (model #f) (infix (string->symbol "::"))) o)
+(define* ((c++:scope-join #:optional (model #f) (infix (string->symbol "::"))) o)
   ((om:scope-join model infix) o))
 
-(define* ((c++:scope-name :optional (infix (string->symbol "::"))) o)
+(define* ((c++:scope-name #:optional (infix (string->symbol "::"))) o)
   ((om:scope-name infix) o))
 
 (define (c++:init-brace-open) "{")
@@ -179,7 +180,7 @@
               (partition (lambda (m) (eq? (car m) channel)) lst)
             (append (list (cons (caar same) (map cdr same))) (loop rest)))))))
 
-(define* ((stderr-identity :optional (identifier "#")) o) (stderr "~a:~a\n" identifier o) o)
+(define* ((stderr-identity #:optional (identifier "#")) o) (stderr "~a:~a\n" identifier o) o)
 (define (port->mapping-list port)
   ((compose
     mapping->channel

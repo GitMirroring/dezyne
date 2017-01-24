@@ -1,28 +1,30 @@
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-;;
-;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-;;
-;; Gaiag is free software: you can redistribute it and/or modify
-;; it under the terms of the GNU Affero General Public License as
-;; published by the Free Software Foundation, either version 3 of the
-;; License, or (at your option) any later version.
-;;
-;; Gaiag is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU Affero General Public License for more details.
-;;
-;; You should have received a copy of the GNU Affero General Public License
-;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
+;;; Dezyne --- Dezyne command line tools
+;;;
+;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; This file is part of Dezyne.
+;;;
+;;; Dezyne is free software: you can redistribute it and/or modify it
+;;; under the terms of the GNU Affero General Public License as
+;;; published by the Free Software Foundation, either version 3 of the
+;;; License, or (at your option) any later version.
+;;;
+;;; Dezyne is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;;; Affero General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU Affero General Public
+;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
+(define-module (gaiag display)
+  #:use-module (ice-9 pretty-print)
 
-(define-module (gaiag goops display)
-  :use-module (ice-9 pretty-print)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag util)
 
-  :use-module (gaiag goops om)
-
-  :export (
+  #:export (
            display-slots
            sdisplay
            star
@@ -49,7 +51,11 @@
                      (value (slot-ref o name)))
                 (when (not (eq? value '()))
                   (if (eq? name 'elements)
-                      (for-each (lambda (x) (sdisplay x port)) value)
+                      (if (pair? value)
+                          (for-each (lambda (x) (sdisplay x port)) value)
+                          (begin
+                            (format (current-error-port) "<<barf: elements not a pair>> ")
+                            barf))
                       (sdisplay (slot-ref o name) port)))))
             (class-slots (class-of o))))
 

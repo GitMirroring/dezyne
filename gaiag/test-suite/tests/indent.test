@@ -16,14 +16,12 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
-
 (define-module (test-handler)
-  :use-module (test-suite lib)
-  :use-module (test-suite misc)
+  #:use-module (test-suite lib)
+  #:use-module (test-suite misc)
 
-  :use-module (gaiag reader)
-  :use-module (gaiag indent))
+  #:use-module (gaiag reader)
+  #:use-module (gaiag indent))
 
 (pass-if "indent-first-dummy-test"
 	 #t)

@@ -1,5 +1,5 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
-;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
@@ -38,19 +38,22 @@
 ;; you should have received a copy of the gnu affero general public license
 ;; along with gaiag.  if not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag animate)
-  :use-module (gaiag list match)
-  :use-module (ice-9 optargs)
-  :use-module (ice-9 rdelim)
-  :use-module (srfi srfi-1)
-  :use-module (srfi srfi-26)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 optargs)
+  #:use-module (ice-9 rdelim)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
 
-  :use-module (gaiag misc)
-  :use-module (gaiag om)
+  #:use-module (gaiag misc)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
+  #:use-module (gaiag util)
 
-  :export (animate
+  #:use-module (gaiag resolve)
+
+  #:export (animate
            animate-file
            animate-string
            animate-input
@@ -98,7 +101,7 @@
            (pair? (assoc (ast-name x) (templates))))
       (and (list? x) (pair? (assoc (car x) (templates))))))
 
-(define* (populate-module module key-value-pairs :optional (o #f))
+(define* (populate-module module key-value-pairs #:optional (o #f))
   (let loop ((pairs key-value-pairs))
     (if (null? pairs)
         module
@@ -110,18 +113,18 @@
           (module-define! module key value)
           (loop (cdr pairs))))))
 
-(define* (animate string :optional (o #f) (p #f))
+(define* (animate string #:optional (o #f) (p #f))
   (with-output-to-string (lambda () (animate-string string o p))))
 
-(define* (snippet file-name :optional (o #f) (p #f))
+(define* (snippet file-name #:optional (o #f) (p #f))
   ;;(stderr "SNIPPET: ~a\n" file-name)
   (parameterize ((template-dir (append (template-dir) '(snippets))))
     (with-output-to-string (lambda () (animate-file file-name o p)))))
 
-(define* (animate-string string :optional (o #f) (p #f))
+(define* (animate-string string #:optional (o #f) (p #f))
   (with-input-from-string string (lambda () (animate-input (get-module o p)))))
 
-(define* (animate-file file-name :optional (o #f) (p #f))
+(define* (animate-file file-name #:optional (o #f) (p #f))
   (let ((file-name (components->file-name (template-file file-name))))
     (with-input-from-file file-name (lambda () (animate-input (get-module o p) file-name)))))
 
@@ -132,7 +135,7 @@
                        (module-add! clone symbol var)) module)
     clone))
 
-(define* (get-module o :optional (p #f))
+(define* (get-module o #:optional (p #f))
   (save-module-excursion
    (lambda ()
      (match o
@@ -140,7 +143,7 @@
        ((? list?) (populate-module (clone-module) o p))
        (_ (clone-module))))))
 
-(define* (line-column-location tell :optional (port (current-input-port)))
+(define* (line-column-location tell #:optional (port (current-input-port)))
   (seek port 0 SEEK_SET)
   (let loop ((line 1))
     (let ((string (read-delimited "\n" port)))

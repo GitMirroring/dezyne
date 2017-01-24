@@ -4,7 +4,7 @@
 ;;;
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -23,22 +23,24 @@
 ;;; 
 ;;; Code:
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag asserts)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 curried-definitions)
-  :use-module (gaiag list match)
-  :use-module (srfi srfi-1)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
 
-  :use-module (gaiag csp)
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag goops)
+  #:use-module (gaiag util)
+  #:use-module (gaiag om)
 
-    :use-module (gaiag om)
+  #:use-module (gaiag csp)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag resolve)
 
-  :export (
+  #:export (
            ast->
 	   assert-list
            ))
@@ -52,7 +54,7 @@
   (match o
     (($ <component>)
      (or (and-let* ((component-checks '(deterministic completeness illegal deadlock compliance livelock)))
-                   (map (assert o) component-checks))
+           (map (assert o) component-checks))
          '()))
     (($ <interface> name)
      (if (dzn-async? name)
@@ -60,17 +62,21 @@
          (or (and-let* ((interface-checks '(completeness deadlock livelock)))
                        (map (assert o) interface-checks))
              '())))
-    (('root models ...)
+    (($ <root> (models ...))
      (or (and-let* ((model (om:model-with-behaviour o)))
                    (assert-list-all model))
          '()))
-    (_ (assert-list ((om:register (compose ast->om ast:resolve #t)) o)))))
+    (_ (assert-list ((om:register (compose ast->om ast:resolve) #t) o)))))
 
 (define (assert-list-all o)
+  (define (scope.name< a b)
+    (list-symbol< (append (.scope a) (list (.name a)))
+                  (append (.scope b) (list (.name b)))))
+
   (match o
     (($ <component>)
      (append
-      (let ((interfaces (map om:import (delete-duplicates (sort (map .type ((compose .elements .ports) o)) list-symbol<)))))
+      (let ((interfaces (map om:import (delete-duplicates (sort (map .type (om:ports o)) scope.name<)))))
         (apply append (map assert-list interfaces)))
       (assert-list o)))
     (($ <interface>) (assert-list o))))

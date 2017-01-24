@@ -1,21 +1,22 @@
 ;; -*-mode:scheme-*-
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (test-handler)
 
-  :use-module (test-suite lib)
-  :use-module (test-suite misc)
+  #:use-module (test-suite lib)
+  #:use-module (test-suite misc)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag om)
 
-  :use-module (gaiag annotate)
-  :use-module (gaiag dzn)
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve)
-  :use-module (gaiag table-state))
+  #:use-module (gaiag annotate)
+  #:use-module (gaiag dzn)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag resolve)
+  #:use-module (gaiag table-state))
 
 (define (ast:resolve* ast)
   ((compose ast:resolve ast->om) ast))
@@ -29,7 +30,7 @@
                         (lambda () '("test-suite/run-tests" "foo" "bar")))
 
 (define (get-model o)
-  (car (filter (is? <model>) o)))
+  (car (om:filter (is? <model>) o)))
 
 (define (test-table-state o)
   ((compose .statement .behaviour) ((table table-state) (get-model o))))
@@ -40,6 +41,7 @@
 (pass-if "table-state-dummy-test"
          #t)
 
+;;(read-hash-extend #\{ hash-read-string)
 (define idle-init-busy-ast
   (get-model
    (ast:resolve*
@@ -68,34 +70,30 @@ interface i
   ((compose .statement .behaviour om:interface) idle-init-busy-ast))
 
 (pass-if "table-state-expression-state-field"
-  (let ((state (make <literal> :name '(name i S) :field 'idle)))
-   (om-pretty-noisy-equal?
-    (simplify-literal
-     (om:interface idle-init-busy-ast)
-     state
-     (make <field> :identifier 's :field 'idle))
-    #t)))
+  (let ((state (make <literal> #:name (make <scope.name> #:scope '(i) #:name 'S) #:field 'idle)))
+   (simplify-literal
+    (om:interface idle-init-busy-ast)
+    state
+    (make <field> #:identifier 's #:field 'idle))))
 
 (pass-if "table-state-expression-state-var"
-  (let ((state (make <literal> :name '(name i S) :field 'idle)))
+  (let ((state (make <literal> #:name (make <scope.name> #:scope '(i) #:name 'S) #:field 'idle)))
    (om-pretty-noisy-equal?
     (simplify-literal
      (om:interface idle-init-busy-ast)
      state
-     (make <var> :name 's))
+     (make <var> #:name 's))
     state)))
 
 (pass-if "table-state-expression-state-b-not-b"
-  (let ((state (make <literal> :name '(name i S) :field 'idle)))
-   (om-pretty-noisy-equal?
-    (simplify-literal
-     (om:interface idle-init-busy-ast)
-     state
-     (list
-      'or
-      (make <var> :name 'b)
-      (list '! (make <var> :name 'b))))
-    #t)))
+  (let ((state (make <literal> #:name (make <scope.name> #:scope '(i) #:name 'S) #:field 'idle)))
+   (simplify-literal
+    (om:interface idle-init-busy-ast)
+    state
+    (list
+     'or
+     (make <var> #:name 'b)
+     (list '! (make <var> #:name 'b))))))
 
 (pass-if "table-state-static"
   (om-pretty-noisy-equal?
@@ -160,19 +158,19 @@ interface i
  (on (triggers (trigger #f e (arguments)))
      (compound
       (action (trigger #f a (arguments)))
-      (assign s (expression (literal (name i S) idle))))))
+      (assign s (expression (literal (scope.name (i) S) idle))))))
 (guard
  (expression (field s idle))
  (on (triggers (trigger #f e (arguments)))
      (compound
       (action (trigger #f a (arguments)))
-      (assign s (expression (literal (name i S) busy))))))
+      (assign s (expression (literal (scope.name (i) S) busy))))))
 (guard
  (expression (field s busy))
  (on (triggers (trigger #f e (arguments)))
      (compound
       (action (trigger #f a (arguments)))
-      (assign s (expression (literal (name i S) init))))))
+      (assign s (expression (literal (scope.name (i) S) init))))))
 )))
 
 (pass-if "table-state-state-var-equals"
@@ -234,13 +232,13 @@ interface i
            (expression (var b))
            (compound
              (action (trigger #f a (arguments)))
-             (assign s (expression (literal (name i S) idle)))))))
+             (assign s (expression (literal (scope.name (i) S) idle)))))))
   (guard
     (expression (field s idle))
     (on (triggers (trigger #f e (arguments)))
          (compound
            (action (trigger #f a (arguments)))
-           (assign s (expression (literal (name i S) busy)))))))))
+           (assign s (expression (literal (scope.name (i) S) busy)))))))))
 
 (pass-if "table-state-expressions"
   (om-pretty-noisy-equal?
@@ -273,7 +271,7 @@ interface i
  (on (triggers (trigger #f e (arguments)))
      (compound
       (action (trigger #f a (arguments)))
-      (assign s (expression (literal (name i S) idle))))))
+      (assign s (expression (literal (scope.name (i) S) idle))))))
 (guard
  (expression (field s idle))
  (on (triggers (trigger #f e (arguments)))
@@ -281,7 +279,7 @@ interface i
       (expression (var b))
       (compound
        (action (trigger #f a (arguments)))
-       (assign s (expression (literal (name i S) busy)))))))
+       (assign s (expression (literal (scope.name (i) S) busy)))))))
 (guard
  (expression (field s busy))
  (on (triggers (trigger #f e (arguments)))
@@ -289,7 +287,7 @@ interface i
       (expression (! (var b)))
       (compound
        (action (trigger #f a (arguments)))
-       (assign s (expression (literal (name i S) init))))))))))
+       (assign s (expression (literal (scope.name (i) S) init))))))))))
 
 (pass-if "table-state-expressions-pretty"
   (diff-noisy-equal?
@@ -923,7 +921,7 @@ interface I {
          (expression
            ((location #f 12 10 150 #f)
             literal
-            (name table S)
+            (scope.name (table) S)
             idle)))
         ((location #f 13 6 164 #f)
          action

@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -24,22 +24,20 @@
 (define (main . args)
   ((@@ (dzn) main) (command-line)))
 
-(read-set! keywords 'prefix)
-
 (define-module (dzn)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 optargs)
-  :use-module (ice-9 rdelim)
-  :use-module (ice-9 q)
-  :use-module (oop goops)
-  :use-module (srfi srfi-1))
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 optargs)
+  #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 q)
+  #:use-module (oop goops)
+  #:use-module (srfi srfi-1))
 
 (define-syntax-rule (assert e)
   (or e (throw 'assert 'e)))
 
 (define-class <v> ()
-  (v :accessor .v :init-value 0 :init-keyword :v))
+  (v #:accessor .v #:init-value 0 #:init-keyword #:v))
 
 (define (stderr . args)
   (apply format (cons* (current-error-port) args)))
@@ -53,14 +51,14 @@
 (define-class <dzn:port-base> ())
 
 (define-class <dzn:interface> (<dzn:model>)
-  (in :accessor .in :init-value #f :init-keyword :in)
-  (out :accessor .out :init-value #f :init-keyword :out))
+  (in #:accessor .in #:init-value #f #:init-keyword #:in)
+  (out #:accessor .out #:init-value #f #:init-keyword #:out))
 
 (define-class <dzn:component-base> (<dzn:model>)
-  (locator :accessor .locator :init-value #f :init-keyword :locator)
-  (runtime :accessor .runtime :init-value #f)
-  (parent :accessor .parent :init-value #f :init-keyword :parent)
-  (name :accessor .name :init-value (symbol) :init-keyword :name))
+  (locator #:accessor .locator #:init-value #f #:init-keyword #:locator)
+  (runtime #:accessor .runtime #:init-value #f)
+  (parent #:accessor .parent #:init-value #f #:init-keyword #:parent)
+  (name #:accessor .name #:init-value (symbol) #:init-keyword #:name))
 
 (define-method (initialize (o <dzn:component-base>) args)
   (next-method)
@@ -68,10 +66,10 @@
   (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o))))
 
 (define-class <dzn:component> (<dzn:component-base>)
- (handling? :accessor .handling? :init-value #f :init-keyword :handling?)
- (flushes? :accessor .flushes? :init-value #f :init-keyword :flushes?)
- (deferred? :accessor .deferred? :init-value #f :init-keyword :deferred?)
- (q :accessor .q :init-form (make-q) :init-keyword :q))
+ (handling? #:accessor .handling? #:init-value #f #:init-keyword #:handling?)
+ (flushes? #:accessor .flushes? #:init-value #f #:init-keyword #:flushes?)
+ (deferred? #:accessor .deferred? #:init-value #f #:init-keyword #:deferred?)
+ (q #:accessor .q #:init-form (make-q) #:init-keyword #:q))
 
 (define-class <dzn:system> (<dzn:component-base>))
 
@@ -88,8 +86,8 @@
   (apply ((compose event dir port) o) args))
 
 (define-class <dzn:runtime> ()
-  (components :accessor .components :init-form (list) :init-keyword :components)
-  (illegal :accessor .illegal :init-value illegal :init-keyword :illegal))
+  (components #:accessor .components #:init-form (list) #:init-keyword #:components)
+  (illegal #:accessor .illegal #:init-value illegal #:init-keyword #:illegal))
 
 (define (external? o)
   (not (member o (.components (.runtime o)))))
@@ -151,7 +149,7 @@
   (apply trace-out m)
   (defer (.self (.in (car m))) o f))
 
-(define* (path o :optional (p ""))
+(define* (path o #:optional (p ""))
   (let* ((name (or (and o (symbol->string (.name o))) ""))
          (pp (string-append name
                             (if (and (not (string-null? name))
@@ -170,7 +168,7 @@
 
 
 (define-class <dzn:locator> ()
-  (services :accessor .services :init-form (list) :init-keyword :services))
+  (services #:accessor .services #:init-form (list) #:init-keyword #:services))
 
 (define-method (locator-key (type <class>) (key <symbol>))
   (symbol-append (class-name type) key))
@@ -223,4 +221,4 @@
   (assoc-ref (.services o) (locator-key x key)))
 
 (define-method (clone (o <dzn:locator>))
-  (make <dzn:locator> :services (list-copy (.services o))))
+  (make <dzn:locator> #:services (list-copy (.services o))))

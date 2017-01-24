@@ -1,39 +1,28 @@
 ;; -*-scheme-*-
 
-(read-set! keywords 'prefix)
-
 (define-module (test-suite tests csp)
-  :use-module (test-suite lib)
-  :use-module (test-suite misc)
+  #:use-module (test-suite lib)
+  #:use-module (test-suite misc)
 
-  :use-module (srfi srfi-1)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 pretty-print)
-  :use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 match)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag util)
+  #:use-module (gaiag om)
 
-  :use-module (gaiag csp)
-  :use-module (gaiag misc)
+  #:use-module (gaiag csp)
+  #:use-module (gaiag misc)
   ;;:use-module (gaiag reader)
-  :use-module (gaiag resolve)
+  #:use-module (gaiag resolve)
 )
 
 (define dzn->ast
   (compose ast:resolve ast->om (@ (gaiag reader) dzn->ast)))
-
-;; JUNKME
-(define (ast->sugar ast)
-  (match ast
-    (('on ('triggers t ...) statement) ast)
-    (('on triggers statement) (list 'on (cons 'triggers (map ast->trigger-sugar triggers)) statement))
-    (_ ast)))
-
-(define (ast->trigger-sugar ast)
-  (match ast
-    ((port event) (cons 'trigger ast))
-    ((? symbol?) (cons 'trigger (list #f ast)))
-    (_ ast)))
 
 (define ast-transform-return (@@ (gaiag csp) ast-transform-return))
 (define statement-on-p/r (@@ (gaiag csp) statement-on-p/r))
@@ -43,7 +32,7 @@
 (define csp-expression->string (@@ (gaiag csp) csp-expression->string))
 
 (define (csp-expression->string* ast expression locals)
-  (csp-expression->string (csp->om ast) (csp->sugar expression) locals))
+  (csp-expression->string (csp->om ast) (csp-ast->om expression) locals))
 
 (define (ast-transform* ast src)
   (let ((root (csp->om ast)))
@@ -56,64 +45,70 @@
     (purge-data root (csp->om src))))
 
 (define (ast-transform-return* ast src)
-  (let ((root (csp->om ast)))
-    ((om:register csp->om #t) root)
-    (ast-transform-return root (csp->om src))))
+  (let ((root (csp->resolved ast)))
+    ((om:register csp->resolved #t) root)
+    (ast-transform-return root (csp->resolved src))))
 
 (define (on->csp* ast src)
   (let ((root (csp->om ast)))
     ((om:register csp->om #t) root)
     (->string (on->csp root (csp->om src)))))
 
-(define (csp->om ast)
-  ((compose ast->om csp->sugar ast->sugar) ast))
+(define (csp->resolved ast)
+  ((compose
+   ast:resolve
+   csp->om) ast))
 
-(define (csp->sugar ast)
-  ;;(stderr "csp->sugar: ~a\n" ast)
+(define (csp->om ast)
+  ((compose
+   ast->om
+   csp-ast->om)
+   ast))
+
+(define (csp-ast->om ast)
   (match ast
     (('expression expression)
-     (make <expression> :value (csp->om expression)))
+     (make <expression> #:value (csp->om expression)))
     (('on ('triggers triggers ...) statement)
      (make <on>
-       :triggers (csp->om (cadr ast))
-       :statement (csp->om statement)))
+       #:triggers (csp->om (cadr ast))
+       #:statement (csp->om statement)))
     (('on triggers statement)
      (make <on>
-       :triggers (make <triggers>
-                   :elements (csp->om (map ast->trigger-sugar triggers)))
-       :statement (csp->om statement)))
+       #:triggers (make <triggers> #:elements (csp->om triggers))
+       #:statement (csp->om statement)))
     (('call name)
      (make <call>
-       :identifier name))
+       #:identifier name))
     (('call name arguments)
      (make <call>
-       :identifier name
-       :arguments (csp->om arguments)))
+       #:identifier name
+       #:arguments (csp->om arguments)))
     (('call name arguments last?)
      (make <call>
-       :identifier name
-       :arguments (csp->om arguments)
-       :last? last?))
+       #:identifier name
+       #:arguments (csp->om arguments)
+       #:last? last?))
     (('reply expression port)
      (make <reply>
-       :expression (csp->om expression)
-       :port port))
+       #:expression (csp->om expression)
+       #:port port))
     (('reply expression)
      (make <reply>
-       :expression (csp->om expression)))
+       #:expression (csp->om expression)))
     (('return expression)
      (make <return>
-       :expression (csp->om expression)))
+       #:expression (csp->om expression)))
     (('literal name field)
-     (make <literal> :name name :field field))
+     (make <literal> #:name (ast->om name) #:field field))
     (('variable name type expression)
      (make <variable>
-       :name name
-       :type (csp->om type)
-       :expression (csp->om expression)))
+       #:name name
+       #:type (csp->om type)
+       #:expression (csp->om expression)))
     (('voidreply) (make <voidreply>))
     (('skip) (make <skip>))
-    ((h t ...) (map csp->sugar ast))
+    ((h t ...) (map csp-ast->om ast))
     (_ ast)))
 
 (define (csp-noisy-equal? actual expected)
@@ -225,7 +220,7 @@ i_(s,b,c)
 (define on->csp-return-reply
   '(on (triggers (trigger #f f (arguments)))
        (compound
-        (reply (expression (literal (name i Status) Yes)) #f))))
+        (reply (expression (literal (scope.name (i) Status) Yes)) #f))))
 
 (pass-if "ast-transform-return-reply"
          (csp-pretty-noisy-equal?
@@ -235,7 +230,7 @@ i_(s,b,c)
            i-ast
            '(compound
              (on (triggers (trigger #f f (arguments)))
-                 (reply (expression (literal (name i Status) Yes)) #f))))
+                 (reply (expression (literal (scope.name (i) Status) Yes)) #f))))
 
           ;; via:
           on->csp-return-reply
@@ -261,7 +256,7 @@ i_(s,b,c)
   '(on
       (triggers (trigger #f f (arguments)))
       (compound
-       (reply (expression (literal (name i Status) Yes)) #f))))
+       (reply (expression (literal (scope.name (i) Status) Yes)) #f))))
 
 (pass-if "ast-transform-reply"
          (csp-pretty-noisy-equal?
@@ -271,7 +266,7 @@ i_(s,b,c)
            i-ast
            '(compound
              (on (triggers (trigger #f f (arguments)))
-                 (reply (expression (literal (name i Status) Yes)) #f))))
+                 (reply (expression (literal (scope.name (i) Status) Yes)) #f))))
 
           ;; via:
           on->csp-reply-via))
@@ -280,7 +275,7 @@ i_(s,b,c)
   '(on
     (triggers (trigger #f e (arguments)))
     (compound
-     (reply (expression (literal (name i Status) Yes)) #f)
+     (reply (expression (literal (scope.name (i) Status) Yes)) #f)
      (voidreply))))
 
 (pass-if "ast-transform-compound-reply"
@@ -294,7 +289,7 @@ i_(s,b,c)
            '(compound
              (on (triggers (trigger #f e (arguments)))
                  (compound
-                  (reply (expression (literal (name i Status) Yes)) #f)))))
+                  (reply (expression (literal (scope.name (i) Status) Yes)) #f)))))
 
           ;; via:
           on->csp-compound-reply-via))
@@ -342,7 +337,7 @@ i_(s,b,c)
            '(on (triggers (trigger #f e (arguments)))
                     (compound
                      (action (trigger #f h (arguments)))
-                     (return #f))))
+                     (return))))
 
           ;; via:
           "i?x:{e} -> (
@@ -370,7 +365,7 @@ P'(s, b, c)
           on->csp-illegal-action-via))
 
 (pass-if "on->csp-illegal-action"
-         (csp-noisy-equal?
+         (pretty-noisy-equal?
 
           ;; via:
           (on->csp*
@@ -395,13 +390,13 @@ P'(s, b, c)
           ;; from:
           (ast-transform*
            i-ast
-           '(on ((trigger #f e (arguments))) (compound)))
+           '(on (triggers (trigger #f e (arguments))) (compound)))
 
           ;; via:
           on->csp-empty-compound-via))
 
 (pass-if "on->csp-empty-compound"
-         (csp-noisy-equal?
+         (pretty-noisy-equal?
 
           ;; via:
           (on->csp*
@@ -430,7 +425,7 @@ P'(s, b, c)
           on->csp-assign-via))
 
 (pass-if "on->csp-assign-bool"
-         (csp-noisy-equal?
+         (pretty-noisy-equal?
 
           ;; via/from:
           (on->csp* i-ast on->csp-assign-via)
@@ -484,19 +479,19 @@ let la = tmp' within
 (define on->csp-assign-enum-via
   '(assign
   s
-  (expression (literal (name i S) S2))))
+  (expression (literal (scope.name (i) S) S2))))
 
 (pass-if "ast-transform-assign-enum"
     (csp-pretty-noisy-equal?
 
      ;; from:
-     (ast-transform* i-ast '(assign s (expression (literal (name i S) S2))))
+     (ast-transform* i-ast '(assign s (expression (literal (scope.name (i) S) S2))))
 
      ;; via:
      on->csp-assign-enum-via))
 
 (pass-if "on->csp-assign-enum"
-         (csp-noisy-equal?
+         (pretty-noisy-equal?
 
           ;; via/from:
           (on->csp* i-ast on->csp-assign-enum-via)
@@ -507,7 +502,7 @@ let s = tmp' within
 "))
 
 (pass-if "on->csp-assign-int"
-         (csp-noisy-equal?
+         (pretty-noisy-equal?
 
           (on->csp* i-ast
                           '(assign c (expression 0)))
@@ -518,12 +513,12 @@ if not ((0 <= c and c <= 2)) then range_error -> illegal -> STOP else
 "))
 
 (pass-if "on->csp-variable-int"
-         (csp-noisy-equal?
+         (pretty-noisy-equal?
 
           (on->csp*
            i-ast
            '(compound
-             (variable i (type (name i I02)) 2)
+             (variable i (type (scope.name (i) I02)) 2)
              (skip)))
 
           "let i = 2 within
@@ -531,7 +526,7 @@ if not ((0 <= i and i <= 2)) then range_error -> illegal -> STOP else
 "))
 
 (pass-if "on->csp-assign-int-function"
-         (csp-noisy-equal?
+         (pretty-noisy-equal?
 
           (on->csp* i-ast
                           '(assign c (call f)))
@@ -544,11 +539,11 @@ f(Cont_1')(s, b, c)
 "))
 
 (pass-if "on->csp-variable-int-function"
-         (csp-noisy-equal?
+         (pretty-noisy-equal?
 
           (on->csp*
            i-ast
-           '(variable i (type (name i I02)) (call f)))
+           '(variable i (type (scope.name (i) I02)) (call f)))
 
           "let Cont_2'(s, b, c, res') =
 let i = res' within
@@ -557,12 +552,12 @@ f(Cont_2')(s, b, c)
 "))
 
 (pass-if "on->csp-assign-local-int"
-         (csp-noisy-equal?
+         (pretty-noisy-equal?
 
           (on->csp*
            i-ast
            '(compound
-             (variable i (type (name i I02)) 2)
+             (variable i (type (scope.name (i) I02)) 2)
              (assign i 1)))
 
           "let i = 2 within
@@ -573,11 +568,11 @@ if not ((0 <= i and i <= 2)) then range_error -> illegal -> STOP else
 "))
 
 (pass-if "on->csp-expression"
-         (csp-noisy-equal?
+         (pretty-noisy-equal?
 
           ;; from:
           (csp-expression->string*
-           (find (is? <interface>) i-ast)
+           (om:find (is? <interface>) i-ast)
 
            '(expression (! (and (or (!= c  b) true) (== c b))))
            '())
@@ -608,8 +603,7 @@ else
   '(compound
     (if
      (expression b)
-     (compound)
-     #f)
+     (compound))
     (assign
     b
     (expression true))))
@@ -640,15 +634,13 @@ let b = tmp' within
         (expression (or c b))
         (compound
           (action (trigger #f f (arguments)))
-          (action (trigger #f g (arguments))))
-        #f)
+          (action (trigger #f g (arguments)))))
       (if
         (expression b)
         (compound
           (if
             (expression c)
-            (compound (action (trigger #f g (arguments))))
-            #f)
+            (compound (action (trigger #f g (arguments)))))
           (assign
             c
             (expression false))
@@ -668,7 +660,7 @@ let b = tmp' within
               (action (trigger #f g (arguments)))))))
       (assign
         s
-        (expression (literal (name i S) S2))))
+        (expression (literal (scope.name (i) S) S2))))
     (voidreply))))
 
 (pass-if "ast-transform"
@@ -685,13 +677,11 @@ let b = tmp' within
 
                   (if (expression (or c b))
                       (compound (action (trigger #f f (arguments)))
-                                (action (trigger #f g (arguments))))
-                      #f)
+                                (action (trigger #f g (arguments)))))
                   (if (expression b)
                       (compound
                        (if (expression c)
-                           (compound (action (trigger #f g (arguments))))
-                           #f)
+                           (compound (action (trigger #f g (arguments)))))
                        (assign c (expression false))
                        (action (trigger #f f (arguments))))
                       (compound
@@ -702,7 +692,7 @@ let b = tmp' within
                            (compound
                             (assign b (expression true))
                             (action (trigger #f g (arguments)))))))
-                  (assign s (expression (literal (name i S) S2)))))))
+                  (assign s (expression (literal (scope.name (i) S) S2)))))))
 
           ;; via:
           on->csp-via))
@@ -812,9 +802,10 @@ i_(s,b,c)
 
 
 (define c-ast
-  (append i-ast
-  (cdr
-  (dzn->ast
+  (make <root> #:elements
+        (append (.elements i-ast)
+  (.elements
+    (ast->om (dzn->ast
    #{
 component c
 {
@@ -833,7 +824,7 @@ component c
     }
   }
 }
-     #}))))
+     #}))))))
 
 (define c-on->csp-return-via
   '(on
@@ -856,7 +847,7 @@ component c
           c-on->csp-return-via))
 
 (pass-if "c-on->csp-return"
-         (csp-noisy-equal?
+         (pretty-noisy-equal?
 
           ;; via/from:
           (on->csp* c-ast c-on->csp-return-via)
@@ -898,7 +889,7 @@ illegal -> STOP
 )"))
 
 (pass-if "c-on->csp-required-action"
-         (csp-noisy-equal?
+         (pretty-noisy-equal?
 
           ;; from:
           (on->csp*
@@ -922,7 +913,7 @@ illegal -> STOP
            '(on (triggers (trigger j e (arguments)))
                     (compound
                      (action (trigger j h (arguments)))
-                     (return #f))))
+                     (return))))
 
           ;; via:
           "j?x:{e} -> (
@@ -939,7 +930,7 @@ P'(s, b, c)
            c-ast
 
            '(on (triggers (trigger k e (arguments)))
-                (return #f)))
+                (return)))
 
           ;; via:
           "k?x:{e} -> (
@@ -950,10 +941,11 @@ P'(s, b, c)
 ;; reply event
 
 (define reply-ast
-  '((interface
-     (name IReply)
-   (types (enum (name IReply Status) (fields Yes No)))
-   (events (event done (signature (type (name IReply Status))) in)
+  '(root 
+   (interface
+     (scope.name () IReply)
+   (types (enum (scope.name (IReply) Status) (fields Yes No)))
+   (events (event done (signature (type (scope.name (IReply) Status))) in)
            (event e (signature (type void)) in))
    (behaviour
     #f
@@ -966,13 +958,13 @@ P'(s, b, c)
           (compound
            (guard (expression true)
                     (compound
-                     (reply (expression (name IReply Status Yes)) #f)))
+                     (reply (expression (scope.name (IReply Status) Yes)) #f)))
            (guard (expression true)
-                  (compound (reply (expression (name IReply Status No)) #f))))))))
+                  (compound (reply (expression (scope.name (IReply Status) No)) #f))))))))
     (interface
-        (name UReply)
-      (types (enum (name UReply Status) (fields Ok Nok)))
-      (events (event what (signature (type (name UReply Status))) in))
+        (scope.name () UReply)
+      (types (enum (scope.name (UReply) Status) (fields Ok Nok)))
+      (events (event what (signature (type (scope.name (UReply) Status))) in))
       (behaviour
        #f
        (types)
@@ -983,13 +975,13 @@ P'(s, b, c)
         (on (triggers (trigger #f what (arguments)))
             (compound
              (guard (expression true)
-                    (compound (reply (expression (name UReply Status Ok)) #f)))
+                    (compound (reply (expression (scope.name (UReply Status) Ok)) #f)))
              (guard (expression true)
                     (compound
-                     (reply (expression (name UReply Status Nok)) #f))))))))
+                     (reply (expression (scope.name (UReply Status) Nok)) #f))))))))
     (component
-     (name Reply)
-     (ports (port i (name IReply) provides) (port u (name UReply) requires))
+     (scope.name () Reply)
+     (ports (port i (scope.name () IReply) provides) (port u (scope.name () UReply) requires))
      (behaviour
       #f
       (types)
@@ -1001,18 +993,19 @@ P'(s, b, c)
               (compound
                (on (triggers (trigger i done (arguments)))
                    (compound
-                    (variable s (type (name UReply Status)) (expression (name u what)))
-                    (if (expression (== (var s) (literal (name UReply Status) Ok)))
+                    (variable s (type (scope.name (UReply) Status)) (expression (dotted u what)))
+                    (if (expression (== (var s) (literal (scope.name (UReply) Status) Ok)))
                         (compound
-                         (reply (expression (literal (name IReply Status) Yes)) #f))
+                         (reply (expression (literal (scope.name (IReply) Status) Yes)) #f))
                         (compound
-                         (reply (expression (literal (name IReply Status) No)) #f))))))))))))
+                         (reply (expression (literal (scope.name (IReply) Status) No)) #f))))))))))))
 
 (define var-ast
-  '((interface
-        (name ivar)
-      (types (enum (name ivar E) (fields v)))
-      (events (event foo (signature (type (name ivar E))) in)
+  '(root
+    (interface
+        (scope.name () ivar)
+      (types (enum (scope.name (ivar) E) (fields v)))
+      (events (event foo (signature (type (scope.name (ivar) E))) in)
               (event bar (signature (type void)) out))
       (behaviour
        #f
@@ -1021,10 +1014,10 @@ P'(s, b, c)
        (functions)
        (compound
         (on (triggers (trigger #f foo (arguments)))
-            (reply (expression (literal (name ivar E) v)) #f)))))
+            (reply (expression (literal (scope.name (ivar) E) v)) #f)))))
     (component
-     (name var)
-     (ports (port i (name ivar) provides) (port o (name ivar) requires))
+     (scope.name () var)
+     (ports (port i (scope.name () ivar) provides) (port o (scope.name () ivar) requires))
      (behaviour
       #f
       (types)
@@ -1040,7 +1033,7 @@ P'(s, b, c)
   (compound
     (variable
       e
-      (type (name ivar E))
+      (type (scope.name (ivar) E))
       (action (trigger i foo (arguments))))
     (voidreply))))
 
@@ -1052,7 +1045,7 @@ P'(s, b, c)
            var-ast
            '(on (triggers (trigger o bar (arguments)))
                 (compound
-                 (variable e (type (name ivar E)) (action (trigger i foo (arguments)))))))
+                 (variable e (type (scope.name (ivar) E)) (action (trigger i foo (arguments)))))))
           on->csp-variable-valued-action-via))
 
 (pass-if "on->csp-variable-valued-action"
@@ -1094,9 +1087,8 @@ var_()
       (expression true)
       (variable
         e
-        (type (name ivar E))
-        (action (trigger i foo (arguments))))
-      #f)
+        (type (scope.name (ivar) E))
+        (action (trigger i foo (arguments)))))
     (voidreply))))
 
 (pass-if "ast-transform-ast-transform-if-variable-valued-action"
@@ -1107,8 +1099,7 @@ var_()
            var-ast
            '(on (triggers (trigger o bar (arguments)))
                 (if (expression true)
-                    (variable e (type (name ivar E)) (action (trigger i foo (arguments))))
-                    #f)))
+                    (variable e (type (scope.name (ivar) E)) (action (trigger i foo (arguments)))))))
           on->csp-if-variable-valued-action-via))
 
 (pass-if "on->csp-if-variable-valued-action"
@@ -1139,9 +1130,8 @@ var_()
       (compound
        (variable
           e
-          (type (name ivar E))
-          (action (trigger i foo (arguments)))))
-      #f)
+          (type (scope.name (ivar) E))
+          (action (trigger i foo (arguments))))))
      (voidreply))))
 
 (pass-if "ast-transform-ast-transform-if-compound-variable-valued-action"
@@ -1153,8 +1143,7 @@ var_()
            '(on (triggers (trigger o bar (arguments)))
                 (if (expression true)
                     (compound
-                     (variable e (type (name ivar E)) (action (trigger i foo (arguments)))))
-                    #f)))
+                     (variable e (type (scope.name (ivar) E)) (action (trigger i foo (arguments))))))))
           on->csp-if-compound-variable-valued-action-via))
 
 (pass-if "on->csp-if-compound-variable-valued-action"
@@ -1242,7 +1231,7 @@ toggle(Cont_3')(s, b, c)
 
           ;; from:
           (on->csp* i-ast
-                         '(function toggle (signature (type void) (formals)) #f ()))
+                         '(function toggle (signature (type void) (formals)) #f (compound)))
 
           ;; via:
           "toggle(P')(s, b, c) =
@@ -1424,17 +1413,17 @@ g(Cont_6')(s, b, c, b, b)
     (compound
       (variable
         s
-        (type (name UReply Status))
+        (type (scope.name (UReply) Status))
         (action (trigger u what (arguments))))
       (if
-       (expression (== s (literal (name UReply Status) Ok)))
+       (expression (== s (literal (scope.name (UReply) Status) Ok)))
         (compound
           (reply
-            (expression (literal (name IReply Status) Yes))
+            (expression (literal (scope.name (IReply) Status) Yes))
             #f))
         (compound
           (reply
-           (expression (literal (name IReply Status) No))
+           (expression (literal (scope.name (IReply) Status) No))
            #f)))))))
 
 (pass-if "ast-transform-reply-variable"
@@ -1447,10 +1436,10 @@ g(Cont_6')(s, b, c, b, b)
 
            '(on (triggers (trigger i done (arguments)))
                (compound
-                 (variable s (type (name UReply Status)) (action (trigger u what (arguments))))
-                 (if (expression (== s (literal (name UReply Status) Ok)))
-                     (compound (reply (expression (literal (name IReply Status) Yes)) #f))
-                     (compound (reply (expression (literal (name IReply Status) No)) #f))))))
+                 (variable s (type (scope.name (UReply) Status)) (action (trigger u what (arguments))))
+                 (if (expression (== s (literal (scope.name (UReply) Status) Ok)))
+                     (compound (reply (expression (literal (scope.name (IReply) Status) Yes)) #f))
+                     (compound (reply (expression (literal (scope.name (IReply) Status) No)) #f))))))
 
           ;; via:
           csp-reply-variable-ast-via))
@@ -1484,7 +1473,7 @@ Reply_(dummy)
   (signature (type void) (formals))
   #f
   (compound
-    (reply (expression (literal (name IReply Status) Yes)) #f))))
+    (reply (expression (literal (scope.name (IReply) Status) Yes)) #f))))
 
 (pass-if "ast-transform-reply-function"
          (csp-pretty-noisy-equal?
@@ -1499,7 +1488,7 @@ Reply_(dummy)
               (signature (type void) (formals))
               #f
               (compound
-               (reply (expression (literal (name IReply Status) Yes)) #f))))
+               (reply (expression (literal (scope.name (IReply) Status) Yes)) #f))))
 
           ;; via:
           csp-reply-function-ast-via))
@@ -1522,7 +1511,7 @@ P'(dummy)
   reply_fun_arg
   (signature
     (type void)
-    (formals (formal s (type (name IReply Status)) #f)))
+    (formals (formal s (type (scope.name (IReply) Status)) #f)))
   #f
   (compound (reply (expression (var s)) #f))))
 
@@ -1536,7 +1525,7 @@ P'(dummy)
               reply_fun_arg
               (signature
                 (type void)
-                (formals (formal s (type (name IReply Status)) #f)))
+                (formals (formal s (type (scope.name (IReply) Status)) #f)))
               #f
               (compound (reply (expression (var s)) #f))))
 
@@ -1563,7 +1552,7 @@ P'(dummy)
   (compound
     (variable
       s
-      (type (name UReply Status))
+      (type (scope.name (UReply) Status))
       (action (trigger u what (arguments))))
     (voidreply))))
 
@@ -1575,7 +1564,7 @@ P'(dummy)
            reply-ast
            '(on (triggers (trigger i e (arguments)))
                 (compound
-                 (variable s (type (name UReply Status)) (action (trigger u what (arguments)))))))
+                 (variable s (type (scope.name (UReply) Status)) (action (trigger u what (arguments)))))))
 
           ;; via:
           on->csp-OM-PARSER-variable-action-via))
@@ -1602,7 +1591,7 @@ Reply_(dummy)
   (compound
     (variable
       s
-      (type (name UReply Status))
+      (type (scope.name (UReply) Status))
       (action (trigger u what (arguments))))
     (voidreply))))
 
@@ -1614,7 +1603,7 @@ Reply_(dummy)
            reply-ast
            '(on (triggers (trigger i e (arguments)))
                 (compound
-                 (variable s (type (name UReply Status)) (action (trigger u what (arguments)))))))
+                 (variable s (type (scope.name (UReply) Status)) (action (trigger u what (arguments)))))))
 
           ;; via:
           on->csp-OM-PARSER-variable-action-via))
@@ -1642,8 +1631,8 @@ Reply_(dummy)
     (compound
       (variable
         res
-        (type (name UReply Status))
-        (expression (literal (name UReply Status) Ok)))
+        (type (scope.name (UReply) Status))
+        (expression (literal (scope.name (UReply) Status) Ok)))
       (assign
         res
         (action (trigger u what (arguments)))))
@@ -1655,9 +1644,9 @@ Reply_(dummy)
           ;; from:
           (ast-transform* reply-ast
                          '(on
-                           ((trigger i e (arguments)))
+                           (triggers (trigger i e (arguments)))
                            (compound
-                            (variable res (type (name UReply Status)) (expression (literal (name UReply Status) Ok)))
+                            (variable res (type (scope.name (UReply) Status)) (expression (literal (scope.name (UReply) Status) Ok)))
                             (assign res (action (trigger u what (arguments)))))))
 
           ;; via:
@@ -1681,14 +1670,15 @@ Reply_(dummy)
 
 
 (define return-variable-c-ast
-  '((interface (name IReturn)
+  '(root
+       (interface (scope.name () IReturn)
       (types)
       (events (event e (signature (type void)) in)
               (event f (signature (type void)) out))
       (behaviour #f (types) (variables) (functions) (compound)))
     (component
-     (name arguments)
-     (ports (port i (name IReturn) provides))
+     (scope.name () arguments)
+     (ports (port i (scope.name () IReturn) provides))
      (behaviour
       #f
       (types)
@@ -1713,8 +1703,7 @@ Reply_(dummy)
         (expression true))
       (if
         (expression (var c))
-        (compound (action (trigger i f (arguments))))
-        #f))
+        (compound (action (trigger i f (arguments))))))
     (voidreply))))
 
 (pass-if "ast-transform-return-variable"
@@ -1730,8 +1719,7 @@ Reply_(dummy)
                  (variable c (type bool) (expression true))
                  (if (expression (var c))
                      (compound
-                      (action (trigger i f (arguments))))
-                     #f))))
+                      (action (trigger i f (arguments))))))))
 
           ;; via:
           csp-return-variable-c-ast))
@@ -1744,8 +1732,7 @@ Reply_(dummy)
 
            return-variable-c-ast
 
-           csp-return-variable-c-ast
-           )
+           csp-return-variable-c-ast)
 
           ;; via:
           "i?x:{e} -> (
@@ -1765,8 +1752,7 @@ arguments_(b)
 (define csp-field-sugar-ast
   '(if
     (expression (field s S1))
-    (action (trigger #f g (arguments)))
-    #f))
+    (action (trigger #f g (arguments)))))
 
 (pass-if "ast-transform-field-sugar"
          (csp-pretty-noisy-equal?
@@ -1777,8 +1763,7 @@ arguments_(b)
            i-ast
 
            '(if (expression (field s S1))
-                (action (trigger #f g (arguments)))
-                #f))
+                (action (trigger #f g (arguments)))))
 
           ;; via:
           csp-field-sugar-ast))
@@ -1800,12 +1785,11 @@ else
   '(compound
   (variable
     t
-    (type (name i S))
-    (expression (literal (name i S) S1)))
+    (type (scope.name (i) S))
+    (expression (literal (scope.name (i) S) S1)))
   (if
     (expression (field t S1))
-    (action (trigger #f g (arguments)))
-    #f)))
+    (action (trigger #f g (arguments))))))
 
 (pass-if "ast-transform-field-local-sugar"
          (csp-pretty-noisy-equal?
@@ -1818,11 +1802,10 @@ else
            '(compound
              (variable
               t
-              (type (name i S))
-              (expression (literal (name i S) S1)))
+              (type (scope.name (i) S))
+              (expression (literal (scope.name (i) S) S1)))
              (if (expression (field t S1))
-                 (action (trigger #f g (arguments)))
-                 #f)))
+                 (action (trigger #f g (arguments))))))
 
           ;; via:
           csp-field-local-sugar-ast))
@@ -1842,14 +1825,15 @@ else
 "))
 
 (define callvalued-c-ast
-  '((interface (name IValued)
+  '(root
+       (interface (scope.name () IValued)
       (events (event e (signature (type void) (arguments)) in)
               (event f (signature (type void) (arguments)) out))
       (types)
       (behaviour #f (types) (variables) (functions) (compound)))
     (component
-     (name arguments)
-     (ports (port i (name IValued) provides #f))
+     (scope.name () arguments)
+     (ports (port i (scope.name () IValued) provides #f))
      (behaviour
       #f
       (types)
@@ -1875,8 +1859,7 @@ else
         (variable c (type bool) (call g (arguments (expression (var b))) #f))
         (assign b (call g (arguments (expression (var c))) #f))
         (if (expression (var c))
-            (compound (action (trigger i f (arguments))))
-            #f))))
+            (compound (action (trigger i f (arguments))))))))
 
 (define csp-callvalued-on
   '(on
@@ -1895,8 +1878,7 @@ else
         (call g (arguments (expression (var c))) #f))
       (if
         (expression (var c))
-        (compound (action (trigger i f (arguments))))
-        #f))
+        (compound (action (trigger i f (arguments))))))
     (voidreply))))
 
 (pass-if "ast-transform-callvalued"
@@ -1972,8 +1954,7 @@ g(Cont_8')(b, b)
               #f))
       (if
         (expression (var c))
-        (compound (action (trigger i f (arguments))))
-        #f))
+        (compound (action (trigger i f (arguments))))))
     (voidreply))))
 
 (pass-if "ast-transform-callvalued-2"
@@ -2078,8 +2059,7 @@ h(Cont_10')(b, s, b)
           (call g (arguments (expression (var d))) #f))
         (if
           (expression (var dd))
-          (compound (action (trigger i f (arguments))))
-          #f)))
+          (compound (action (trigger i f (arguments)))))))
     (voidreply))))
 
 (pass-if "ast-transform-callvalued-deep"
@@ -2094,28 +2074,21 @@ h(Cont_10')(b, s, b)
 (define component (om:component (ast->om c-ast)))
 
 (pass-if "provides?"
-  (csp-pretty-noisy-equal?
-   ((provides? component)
-    (ast->om '(trigger j e (arguments))))
-   #t))
+  ((provides? component)
+   (ast->om '(trigger j e (arguments)))))
 
 (pass-if "not provides?"
-  (csp-pretty-noisy-equal?
+  (not
    ((provides? component)
-    (ast->om '(trigger k e (arguments))))
-   #f))
+    (ast->om '(trigger k e (arguments))))))
 
 (pass-if "requires?"
-  (csp-pretty-noisy-equal?
-   ((requires? component)
-    (ast->om '(trigger k e (arguments))))
-   #t))
+  ((requires? component)
+   (ast->om '(trigger k e (arguments)))))
 
 (pass-if "not requires?"
-  (csp-pretty-noisy-equal?
-   ((requires? component)
-    (ast->om '(trigger j e (arguments))))
-   #f))
+ (not ((requires? component)
+    (ast->om '(trigger j e (arguments))))))
 
 (pass-if "statement-on-p/r"
   (csp-pretty-noisy-equal?
@@ -2125,11 +2098,10 @@ h(Cont_10')(b, s, b)
    '(on (triggers (trigger #f arm (arguments))) (compound))))
 
 (pass-if "statement-on-p/r-filter"
-  (csp-pretty-noisy-equal?
+  (not
    ((statement-on-p/r (provides? component))
     (ast->om
-     '(on (triggers (trigger #f arm (arguments))) (compound))))
-   #f))
+     '(on (triggers (trigger #f arm (arguments))) (compound))))))
 
 (pass-if "statement-on-p/r-filter"
   (csp-pretty-noisy-equal?
@@ -2139,7 +2111,8 @@ h(Cont_10')(b, s, b)
    '(on (triggers (trigger j e (arguments))) (compound))))
 
 (define member-i-ast
-  '((interface (name imember)
+  '(root
+       (interface (scope.name () imember)
       (types)
       (events (event e (signature (type void)) in))
       (behaviour
@@ -2150,16 +2123,17 @@ h(Cont_10')(b, s, b)
        (compound)))))
 
 (define member-c-ast
-  (append
-   member-i-ast
-   '((component (name c)
-               (ports)
-               (behaviour
-                B
-                (types)
-                (variables)
-                (functions)
-                (compound))))))
+  (cons 'root
+        (append
+         (cdr member-i-ast)
+    '((component (scope.name () c)
+                 (ports)
+                 (behaviour
+                  B
+                  (types)
+                  (variables)
+                  (functions)
+                  (compound)))))))
 
 (pass-if "no-members"
          (diff-noisy-equal?
@@ -2176,7 +2150,8 @@ imember_()
           "STOP"))
 
 (define guard-i-ast
-  '((interface (name iguard)
+  '(root
+       (interface (scope.name () iguard)
       (types)
       (events)
       (behaviour
@@ -2200,7 +2175,7 @@ STOP)"))
     (expression false))
   (assign
     t
-    (expression (== (var s) (literal (name i S) S1))))))
+    (expression (== (var s) (literal (scope.name (i) S) S1))))))
 
 (pass-if "expression"
          (csp-pretty-noisy-equal?
@@ -2210,7 +2185,7 @@ STOP)"))
             (variable t (type bool) (expression false))
             (assign t
                     (expression
-                     (== (var s) (literal (name i S) S1))))))
+                     (== (var s) (literal (scope.name (i) S) S1))))))
           expression-via))
 
 (pass-if "expression-csp"
@@ -2225,7 +2200,8 @@ let t = tmp' within
 
 
 (define behaviourless-component-ast
-  '((interface (name IBless)
+  '(root
+       (interface (scope.name () IBless)
       (types)
       (events (event e (signature (type void)) in))
       (behaviour
@@ -2235,13 +2211,13 @@ let t = tmp' within
        (functions)
        (compound (on (triggers (trigger #f e (arguments))) (compound)))))
     (component
-     (name C)
-     (ports (port i (name IBless) provides)))))
+     (scope.name () C)
+     (ports (port i (scope.name () IBless) provides)))))
 
 (pass-if "behaviourless-component-ast"
          (csp-noisy-equal? (om:model-with-behaviour
                             (ast->om behaviourless-component-ast))
-                           '(interface (name IBless)
+                           '(interface (scope.name () IBless)
                               (types)
                               (events (event e (signature (type void)) in))
                               (behaviour
@@ -2270,7 +2246,7 @@ let t = tmp' within
                              (trigger j ei
                                       (arguments (expression (var pi)))))
                             (compound
-                             (variable xl (type (name i xint)) (data 0)))))
+                             (variable xl (type (scope.name (i) xint)) (data 0)))))
           '(on (triggers
                 (trigger j ei (arguments (expression (var pi)))))
                (compound (skip)))))
@@ -2278,8 +2254,8 @@ let t = tmp' within
 (pass-if "purge-data-formal"
          (csp-pretty-noisy-equal?
           (purge-data* i-ast
-                       '(function funx (signature (type (name i S)) (formals (formal xi (type (name i xint))))) #f (compound)))
-          '(function funx (signature (type (name i S)) (formals)) #f (compound))))
+                       '(function funx (signature (type (scope.name (i) S)) (formals (formal xi (type (scope.name (i) xint))))) #f (compound)))
+          '(function funx (signature (type (scope.name (i) S)) (formals)) #f (compound))))
 
 (pass-if "purge-data-argument"
          (csp-pretty-noisy-equal?
@@ -2329,11 +2305,11 @@ let t = tmp' within
             '(function fun (signature (type void)) #f
                        (compound
                         (call rgun)
-                        (assign s #t)))))
+                        (assign s true)))))
           '(function fun (signature (type void)) #f
                      (compound
                       (call rgun)
-                      (assign s #t)))))
+                      (assign s true)))))
 
 (pass-if "tail-call-compound"
          (csp-pretty-noisy-equal?
@@ -2354,13 +2330,13 @@ let t = tmp' within
            (csp->om
             '(function fun (signature (type void)) #f
                        (compound
-                        (if (expression #t)
+                        (if (expression true)
                             (call rgun)
                             (call rgun))
                         (compound)))))
           '(function fun (signature (type void)) #f
                      (compound
-                      (if (expression #t)
+                      (if (expression true)
                           (call rgun (arguments) #t)
                           (call rgun (arguments) #t))
                       (compound)))))
@@ -2371,19 +2347,19 @@ let t = tmp' within
            (csp->om
             '(function fun (signature (type void)) #f
                        (compound
-                        (if (expression #t)
+                        (if (expression true)
                             (call rgun)
                             (call rgun))
                       (compound
-                       (if (expression #t)
+                       (if (expression true)
                            (compound)
                            (compound)))))))
           '(function fun (signature (type void)) #f
                      (compound
-                      (if (expression #t)
+                      (if (expression true)
                           (call rgun (arguments) #t)
                           (call rgun (arguments) #t))
                       (compound
-                       (if (expression #t)
+                       (if (expression true)
                            (compound)
                            (compound)))))))

@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -22,28 +22,30 @@
 ;;; 
 ;;; Code:
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag norm-state)
 
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 pretty-print)
-  :use-module (ice-9 receive)
-  :use-module (gaiag list match)
-  :use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 receive)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 curried-definitions)
 
-  :use-module (language dezyne location)
+  #:use-module (language dezyne location)
 
-  :use-module (srfi srfi-1)
+  #:use-module (srfi srfi-1)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
+  #:use-module (gaiag util)
 
-  :use-module (gaiag misc)
-  :use-module (gaiag norm)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag norm)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag resolve)
 
-  :export (
+  #:export (
            ast->
            norm-state
            csp-norm-state
@@ -83,6 +85,14 @@
     )
    o))
 
+(define* ((prepend-true-guard #:optional guard-seen?) o)
+  (match o
+    (($ <guard>) o)
+    (($ <on>) (if guard-seen? o
+                  (rsp o (make <guard> #:expression 'true #:statement o))))
+    ((? (is? <ast>)) (om:map (prepend-true-guard guard-seen?) o))
+    (_ o)))
+
 (define (norm:on-same-port-statement? model lhs rhs)
   (and (is-a? lhs <on>) (is-a? rhs <on>)
        (eq? ((compose .port car .elements .triggers) lhs)
@@ -113,22 +123,21 @@ reply en die kun je niet mixen"
   (match o
     (($ <on>) ((passdown-triggers (.triggers o)) (.statement o)))
     ((? (is? <ast>)) (om:map passdown-on o))
-    ((h t ...) (map passdown-on o))
     (_ o)))
 
 (define ((passdown-triggers triggers) o)
   (match o
-    (('compound statements ...)
+    (($ <compound> (statements ...))
        (match statements
          ((($ <guard>) ..1)
           (make <compound>
-            :elements (map (passdown-triggers triggers) statements)))
-         (_ (make <on> :triggers triggers :statement o))))
+            #:elements (map (passdown-triggers triggers) statements)))
+         (_ (make <on> #:triggers triggers #:statement o))))
     (($ <guard>)
      (make <guard>
-       :expression (.expression o)
-       :statement ((passdown-triggers triggers) (.statement o))))
-    (_ (make <on> :triggers triggers :statement o))))
+       #:expression (.expression o)
+       #:statement ((passdown-triggers triggers) (.statement o))))
+    (_ (make <on> #:triggers triggers #:statement o))))
 
 (define (ast-> ast)
   ((compose

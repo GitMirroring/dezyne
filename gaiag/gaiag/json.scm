@@ -1,5 +1,5 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
-;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -22,22 +22,23 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag json)
-  :use-module (srfi srfi-1)
-  :use-module (srfi srfi-9)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-9)
 
-  :use-module (ice-9 and-let-star)
-  :use-module (gaiag list match)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 match)
 
-  :use-module (language dezyne location)
-  :use-module (gaiag om)
+  #:use-module (language dezyne location)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
+  #:use-module (gaiag util)
 
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
 
-  :export (
+  #:export (
            json-location
            ))
 

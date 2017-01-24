@@ -1,0 +1,134 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ivar {
+  enum e {v};
+  extern xint $int&$;
+  enum mixed {v};
+  in e foo();
+  in mixed bar();
+  in void ei(out xint i);
+  in e eo(xint i);
+
+  behaviour {
+    enum state {one, two};
+    subint mode {0..3};
+    state m = state.one;
+    e r = e.v;
+    bool b = true;
+    mixed x = mixed.v;
+
+    void toggle() {}
+
+    bool g(bool ga, bool gb) {return true;}
+
+    state efun() {
+      return m;
+    }
+
+    on foo:
+    reply(e.v);
+  }
+}
+
+component var {
+  provides ivar i;
+  requires ivar o;
+
+  behaviour {
+    enum state {one, two};
+    subint mode {0..3};
+    state m = state.one;
+    ivar.e r = ivar.e.v;
+    ivar.e e = ivar.e.v;
+    bool b = true;
+    ivar.xint x = $0$;
+
+    void fun(bool a) {
+      a = true;
+    }
+
+    void rfun() {
+      rgun(true);
+    }
+
+    void rgun(bool a) {
+      rgun(true);
+    }
+
+    void fa(bool a) {
+      fb(true);
+    }
+
+    void fb(bool a) {
+      fc(true);
+    }
+
+    void fc(bool a) {
+      b = true;
+    }
+
+    void rfa(bool a) {
+      rfb(true);
+    }
+
+    void rfb(bool a) {
+      rfc(true);
+    }
+
+    void rfc(bool a) {
+      rfa(true);
+    }
+
+    void rbfa(bool a) {rbfb(true);}
+
+    void rbfb(bool a) {
+      rbfc(true);
+    }
+
+    void rbfc(bool a) {
+      fa(true);
+      fb(true);
+      {
+        fc(true);
+        rbfa(true);
+      }
+    }
+
+    state efun() {
+      return m;
+    }
+
+    on i.foo():
+    {
+      ivar.e e = o.foo();
+      e = o.foo();
+      reply(e);
+    }
+
+    on i.ei(i):
+    {
+      i = $0$;
+    }
+  }
+}

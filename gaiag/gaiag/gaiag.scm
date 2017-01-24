@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2014, 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -20,20 +20,23 @@
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gaiag gaiag)
-  :use-module (ice-9 getopt-long)
-  :use-module (ice-9 pretty-print)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 pretty-print)
 
-  :use-module (gaiag list match)
+  #:use-module (ice-9 match)
 
-  :use-module (system repl error-handling)
+  #:use-module (system repl error-handling)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
+  #:use-module (gaiag util)
 
-  :use-module (gaiag coverage)
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
+  #:use-module (gaiag coverage)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
 
-  :export (main parse-opts))
+  #:export (main parse-opts))
 
 
 (define (parse-opts args)
@@ -58,7 +61,7 @@
             (queue-size (single-char #\q) (value #t))
 	    (version (single-char #\v))))
 	 (options (getopt-long args option-spec
-		   :stop-at-first-non-option #t))
+		   #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
 	 (usage? (and (not help?) (null? files)))

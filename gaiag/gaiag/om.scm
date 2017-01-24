@@ -26,29 +26,33 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag om)
-  :use-module (ice-9 and-let-star)
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 getopt-long)
-  :use-module (ice-9 optargs)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 match)
 
-  :use-module (system foreign)
-  :use-module (language dezyne location)
+  #:use-module (system foreign)
+  #:use-module (language dezyne location)
 
-  :use-module (srfi srfi-1)
+  #:use-module (srfi srfi-1)
 
-  :use-module (gaiag goops goops) ;; GOOPS backend
-  ;;:use-module (gaiag list goops)  ;; LIST backend
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag compare)
+  #:use-module (gaiag util)
+  #:use-module (gaiag resolve)
 
-  :use-module (gaiag list match)
-  :use-module (gaiag annotate)
-  :use-module (gaiag macros)
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
+  #:use-module (gaiag annotate)
+  #:use-module (gaiag macros)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag reader)
 
-  :export (
+  #:export (
+           om:port*
+
+
            om:bind
            om:bind-other-port
            om:binding
@@ -61,13 +65,13 @@
            om:component
            om:declarative?
            om:dir-matches?
-           om:drop-scope
            om:enum
            om:enums
            om:event
            om:events
+           om:expression?
            om:extern
-           om:filter
+           om:filter:p
            om:find-triggers
            om:function
            om:functions
@@ -90,6 +94,7 @@
            om:model-with-behaviour
            om:name
            om:named
+           om:operator?
            om:out-formals
            om:out-or-inout?
            om:out?
@@ -124,18 +129,6 @@
            om:void?
            ))
 
-(cond-expand
- (goops-om
-  (cond-expand-provide (current-module) '(goops-om))
-  (re-export-modules
-   (gaiag goops goops)))
- (list-om
-  (cond-expand-provide (current-module) '(list-om))
-  (re-export-modules
-   (gaiag list goops)))
- (else
-  ))
-
 (define (deprecated . where)
   (stderr "DEPRECATED:~a\n" where))
 
@@ -146,24 +139,45 @@
             (($ <interface>) ((compose .elements .events) o))
             (($ <port>) ((compose om:events om:import .type) o)))))
 
-(define* (om:enums :optional (model #f))
+(define* (om:enums #:optional (model #f))
   (filter (is? <enum>) (om:types model)))
 
-(define* (om:externs :optional (model #f))
+(define* (om:externs #:optional (model #f))
   (filter (is? <extern>) (om:types model)))
 
-(define* (om:integers :optional (model #f))
+(define* (om:integers #:optional (model #f))
   (filter (is? <int>) (om:types model)))
+
+
+;;; list lookup
+
+;; WIP
+(define-method (om:argument* (o <arguments>)) (.elements o))
+(define-method (om:binding* (o <bindings>)) (.elements o))
+(define-method (om:statement* (o <compound>)) (.elements o))
+(define-method (om:event* (o <events>)) (.elements o))
+(define-method (om:field* (o <fields>)) (.elements o))
+(define-method (om:formal* (o <formals>)) (.elements o))
+(define-method (om:function* (o <functions>)) (.elements o))
+(define-method (om:instance* (o <instances>)) (.elements o))
+(define-method (om:port* (o <ports>)) (.elements o))
+(define-method (om:model* (o <root>)) (.elements o))
+(define-method (om:trigger* (o <triggers>)) (.elements o))
+(define-method (om:type* (o <types>)) (.elements o))
+(define-method (om:variable* (o <variables>)) (.elements o))
+
+(define-method (om:argument* (o <trigger>)) ((compose om:argument* .arguments) o))
+(define-method (om:binding* (o <system>)) ((compose om:binding* .bindings) o))
+(define-method (om:function* (o <behaviour>)) ((compose om:function* .functions) o))
+(define-method (om:statement* (o <behaviour>)) ((compose om:statement* .statement) o))
+
+
+(define (om:bindings o)
+  (match o
+    (($ <system>) ((compose .elements .bindings) o))))
 
 (define (om:functions model)
   ((compose .elements .functions .behaviour) model))
-
-(define (om:ports o)
-  (match o
-    (($ <interface>) '())
-    (($ <component> name ('ports ports ...)) ports)
-    (($ <behaviour> name types ('ports ports ...)) ports)
-    (($ <system> name ('ports ports ...)) ports)))
 
 (define (om:instances o)
   (match o
@@ -171,20 +185,17 @@
     (($ <component>) o)
     (($ <system>) ((compose .elements .instances) o))))
 
-(define (om:bindings o)
+(define (om:ports o)
   (match o
-    (($ <system>) ((compose .elements .bindings) o))))
+    (($ <interface>) '())
+    (($ <component> name ($ <ports> (ports ...))) ports)
+    (($ <behaviour> name types ($ <ports> (ports ...))) ports)
+    (($ <system> name ($ <ports> (ports ...))) ports)))
 
-(define (om:provided o)
-  (filter om:provides? (om:ports o)))
-
-(define (om:required o)
-  (filter om:requires? (om:ports o)))
-
-(define* (om:types :optional (model #f))
+(define* (om:types #:optional (model #f))
   (append
    (match model
-     (('root models ...) (filter (is? <*type*>) models))
+     (($ <root> (models ...)) (filter (is? <*type*>) models))
      (($ <behaviour> b types) (.elements types))
      (($ <interface> name types events ($ <behaviour> b btypes)) (append (.elements btypes) (.elements types)))
      (($ <component> name ports ($ <behaviour> b btypes))
@@ -196,15 +207,25 @@
      ((? unspecified?) '()))
    (globals)))
 
-(define (om:variables o)
+(define-method (om:variables (o <model>))
   (match o
-    ((or ($ <interface>) ($ <component>))
-     ((compose .elements .variables .behaviour) o))
-    (_ '())))
+    (($ <system>) '())
+    ((= .behaviour #f) '())
+    (_ ((compose .elements .variables .behaviour) o))))
+
+
+
+
+(define (om:provided o)
+  (filter om:provides? (om:ports o)))
+
+(define (om:required o)
+  (filter om:requires? (om:ports o)))
+
 
 (define (om:interface-enums o)
   (match o
-    (($ <interface>) (filter (is? <enum>) (.types o)))
+    (($ <interface>) (om:filter (is? <enum>) (.types o)))
     (($ <port>) (om:enums o))
     (($ <component>)
      (append-map om:interface-enums ((compose .elements .ports) o)))
@@ -219,11 +240,11 @@
 ;;   (find (om:named o) (om:events model)))
 
 (define (om:enum model identifier)
-  (is-a? ((om:type model) identifier) <enum>))
+  (as ((om:type model) identifier) <enum>))
 (define (om:extern model identifier)
-  (is-a? ((om:type model) identifier) <extern>))
+  (as ((om:type model) identifier) <extern>))
 (define (om:integer model identifier)
-  (is-a? ((om:type model) identifier) <int>))
+  (as ((om:type model) identifier) <int>))
 
 (define (om:event o trigger)
   (match (cons o trigger)
@@ -321,8 +342,12 @@
 (define (om:instance-name bind)
   (or (.instance (.left bind)) (.instance (.right bind))))
 
-(define (om:component system o)
+(define* (om:component system #:optional o)
   (match o
+    (#f (match system
+          (($ <component>) system)
+          (($ <root>) (om:find (is? <component>) system))
+          (_ #f)))
     ((? symbol?) (om:component system (om:instance system o)))
     (($ <binding> #f port)
      ;;#f
@@ -340,10 +365,11 @@
     (($ <port>) (om:import (.type o)))
     (($ <interface>) o)
     ((? (is? <model>)) (om:interface (om:port o)))
-    (('name name ...) (cached-model o))
+    (($ <scope.name>) (cached-model o))
+    (($ <root>) (om:find (is? <interface>) o))
     ((h t ...) (find (is? <interface>) o))))
 
-(define* (om:port model :optional (o #f))
+(define* (om:port model #:optional (o #f))
   (match o
     (($ <binding>)
      (let* ((port (.port o)))
@@ -368,38 +394,30 @@
 
 ;;; TYPES
 
-(define ((om:type model) o)
-  (let ((r ((om:type- model) o)))
-    ;;(stderr "\nom:type[~a]: ~a ==> ~a\n" (.name model) o r)
-    ;;(stderr "TYPES[~a]: ~a\n" (.name model) (om:types model))
-    r))
-
 (define (om:type-name o)
   (match o
     (($ <enum>) 'enum)
-    (($ <extern> ('name name ...)) ((->symbol-join '_) name))    
+    (($ <extern>) ((->symbol-join '_) (om:scope+name o)))
     (($ <int>) 'int)
     (($ <type> 'bool) 'bool)
     (($ <type> 'void) 'void)))
 
-(define ((om:type- model) o)
+(define ((om:type model) o)
   (match o
-    ((? symbol?) (find (om:named `(name ,@(cdr (.name model)) ,o)) (om:types model)))
-    (('name scope ... name) (find (om:named o) (om:types model)))
+    ((? symbol?) (find (om:named (make <scope.name> #:scope (om:scope+name model) #:name o)) (om:types model)))
     (($ <type> 'bool) o)
     (($ <type> 'void) o)
     (($ <type> name)
      (or (find (om:named name) (om:types model))
          (find (om:scoped (om:scope+name model) name) (om:types))))
-    (($ <variable> name type expression) ((om:type- model) type))
-    (($ <formal> name type) ((om:type- model) type))
-    (($ <formal> name type direction) ((om:type- model) type))
-    (#f #f)))
+    (($ <variable> name type expression) ((om:type model) type))
+    (($ <formal> name type) ((om:type model) type))
+    (($ <formal> name type direction) ((om:type model) type))))
 
 (define ((om:named name) ast)
   ;;(stderr "\nom:named[~a]: ~a" name ast)
   (match name
-    ((? symbol?) (or (eq? name (.name ast)) ((om:named `(name ,name)) ast)))
+    ((? symbol?) (or (eq? name (.name ast)) ((om:named (make <scope.name> #:name name)) ast)))
     (_ (equal? (.name ast) name))))
 
 (define ((om:scoped scope name) ast)
@@ -409,34 +427,41 @@
 
 (define ((om:scoped- scope name) ast)
   (if (null? (om:scope name)) (eq? (om:name ast) (om:name name))
-      (equal? (append scope (om:scope+name ast)) (cdr name))))
+      (equal? (append scope (om:scope+name ast)) (om:scope+name name))))
 
 ;;; NAME/NAMESPACE/SCOPE
 (define (om:scope+name o)
+  ;;(stderr "om:scope+name o=~a\n" o)
   (match o
-    (('name name ...) name)
+    (($ <scope.name>) (append (.scope o) (list (.name o))))
     (($ <instance> x name) (om:scope+name name))
     (($ <port> x name) (om:scope+name name))
     (($ <type> 'bool) '(bool))
     (($ <type> 'void) '(void))
-    ((? (is? <named>)) ((compose om:scope+name .name) o))))
+    ((? (is? <scoped>)) ((compose om:scope+name .name) o))))
 
-(define* ((om:scope-name :optional (infix '_)) o)
+(define* ((om:scope-name #:optional (infix '_)) o)
   (let ((infix (if (symbol? infix) infix
                    (string->symbol infix))))
     ((->symbol-join infix) (om:scope+name o))))
 
-(define (om:outer-scope? model o)
-  (and model (>1 (length o))
-       (not (eq? ((compose car om:scope+name) model) (car o)))))
+(define (om:outer-scope? model o) ;; FIXME
+  (let ((model-scope (om:scope+name model)))
+    (and
+     (>1 (length o)) ;; huh?
+     (not (and
+           (>= (length o) (length model-scope))
+           (equal? model-scope (list-head o (length model-scope))))))))
 
-(define* ((om:scope-join :optional (model #f) (infix '_)) o)
+(define* ((om:scope-join #:optional (model #f) (infix '_)) o)
+  (define (global-scope?)
+    (and model (>1 (length o))
+         (not (eq? ((compose car om:scope+name) model) (car o)))))
   (let* ((infix (if (symbol? infix) infix
 		    (string->symbol infix)))
-	 (outer? (om:outer-scope? model o))
          (scope (if (not model) o
-                    (if outer? (cons null-symbol o)
-                        (om:drop-scope (.name model) o)))))
+                    (if (global-scope?) (cons null-symbol o)
+                        (drop-prefix (om:scope+name model) o)))))
     ((->symbol-join infix) scope)))
 
 (define (om:name o)
@@ -444,12 +469,6 @@
 
 (define (om:scope o)
   (drop-right (om:scope+name o) 1))
-
-(define (om:drop-scope scope o)
-  (drop-prefix (cdr scope) o))
-
-
-
 
 ;;; UTILITIES
 
@@ -464,7 +483,7 @@
 (define ((collect predicate) o)
   (match o
     ((? (compose null-is-#f predicate)) (list o))
-    (('compound statements ...)
+    (($ <compound> (statements ...))
      (filter identity (apply append (map (collect predicate) statements))))
     (($ <blocking> s) (filter identity ((collect predicate) s)))
     (($ <guard> e s) (filter identity ((collect predicate) s)))
@@ -484,26 +503,28 @@
     ((? procedure?) ((collect x) o))
     (_ ((collect (is? x)) o))))
 
-(define ((om:filter x) o)
-  (match x
-    (symbol? (filter (is? x) o))
-    (procedure? (filter x o))))
+(define ((om:filter:p x) o)
+  (let ((filter (if (is-a? o <ast>) om:filter filter)))
+    (match x
+      (symbol? (filter (is? x) o))
+      (procedure? (filter x o)))))
 
-(define* (om:find-triggers ast :optional (found '()))
+(define* (om:find-triggers ast #:optional (found '()))
   (match ast
     ((or ($ <interface>) ($ <component>))
      (or (and=> (.behaviour ast) om:find-triggers) '()))
     (($ <behaviour>) (or (and=> (.statement ast) om:find-triggers) '()))
-    (('compound statements ...)
+    (($ <compound> (statements ...))
      (delete-duplicates (sort (append (apply append (map om:find-triggers statements))) om:<)))
     (($ <blocking>) (om:find-triggers (.statement ast) found))
     (($ <on>) (om:find-triggers (.triggers ast)))
-    (('triggers triggers ...) triggers)
+    (($ <triggers> (triggers ...)) triggers)
     (($ <guard>) (om:find-triggers (.statement ast) found))
     (($ <system>) (append-map om:find-triggers (map (lambda (i) (om:component ast i)) (om:instances ast))))
     (_ '())))
 
 (define (om:interface-types o)
+  ;;(stderr "om:interface-types o=~a\n" o)
   (match o
     (($ <interface>) (om:public-types o))
     (($ <port>) ((compose om:public-types om:import .type) o))
@@ -534,7 +555,7 @@
      (filter om:out-or-inout? (append-map (compose .elements .formals .signature) (om:events o))))
     (_ '())))
 
-(define* (om:typed? o :optional (trigger #f))
+(define* (om:typed? o #:optional (trigger #f))
   (if trigger
       (om:typed? (om:event o trigger))
       (match o
@@ -546,12 +567,12 @@
 
 (define (om:declarative? o)
   (or (and (is-a? o <statement>)
-           (or (is-a? o <bind>)
-               (is-a? o <binding>)
-               (is-a? o <blocking>)
-               (is-a? o <guard>)
-               (is-a? o <instance>)
-               (is-a? o <on>)
+           (or (as o <bind>)
+               (as o <binding>)
+               (as o <blocking>)
+               (as o <guard>)
+               (as o <instance>)
+               (as o <on>)
                (and (is-a? o <compound>)
                     (>0 (length (.elements o)))
                     (om:declarative? (car (.elements o))))))
@@ -564,8 +585,8 @@
 
 ;; JUNK ME
 (define (om:models-with-behaviour o)
-  (filter .behaviour (append (filter (is? <component>) o)
-                             (filter (is? <interface>) o))))
+  (filter .behaviour (append (om:filter (is? <component>) o)
+                             (om:filter (is? <interface>) o))))
 
 (define (om:model-with-behaviour o)
   (and-let* ((models (null-is-#f (om:models-with-behaviour o))))
@@ -603,6 +624,38 @@
 
 (define (om:modeling-event? event)
   (member (.event event) '(optional inevitable)))
+
+(define om:binary-operators
+  '(
+    <
+    <=
+    >
+    >=
+    +
+    -
+    and
+    or
+    ==
+    !=
+    ))
+
+(define om:unary-operators
+  '(
+    group
+    !
+    ))
+
+(define om:operators
+  (append om:binary-operators om:unary-operators))
+
+(define (om:operator? o)
+  (memq o om:operators))
+
+(define (om:expression? o)
+  (match o
+    (($ <expression>) o)
+    (((? om:operator?) h t ...) o)
+    (_ #f)))
 
 (define (om:modeling? o)
   (match o
@@ -644,7 +697,7 @@
 (define (om:interfaces)
   (filter (is? <interface>) *ast-alist*))
 
-(define (cache-model name o)
+(define (cache-model! name o)
   (set! *ast-alist* (assoc-set! *ast-alist* name o))
   o)
 
@@ -656,35 +709,30 @@
 
 (define (om:register-model o)
   (if (not (cached-model (.name o)))
-      (cache-model (.name o) o))
+      (cache-model! (.name o) o))
   o)
 
 (define om:register-type om:register-model)
 
-(define* ((om:register transform :optional (clear? #f)) ast)
+(define* ((om:register transform #:optional (clear? #f)) ast)
   (let ((om (transform ast)))
     (if clear?
         (set! *ast-alist* (filter (lambda (x) (is-a? (cdr x) <*type*>)) *ast-alist*)))
-    (for-each om:register-model (filter (is? <model>) om))
-    (for-each om:register-type (filter (is? <*type*>) om))
+    (for-each om:register-model (om:filter (is? <model>) om))
+    (for-each om:register-type (om:filter (is? <*type*>) om))
     om))
 
-(define* (import-ast name #:optional (transform ast->om))
-  (and-let* ((name (if (pair? name) name (list 'name name)))
-             (ast (null-is-#f (read-ast name (om:register transform))))
+(define* (import-ast name #:optional (transform (compose ast:resolve ast->om)))
+  (and-let* ((ast (null-is-#f (read-ast name (om:register transform))))
              (models (null-is-#f (filter (is? <model>) ast))))
-            (find (lambda (model) (equal? (.name model) name)) models)))
+    (find (lambda (model) (equal? (.name model) name)) models)))
 
-(define* (om:import name #:optional (transform ast->om))
-  (let ((name (match name
-                (('name '* name ...) (cons 'name name))
-                (('name n ...) name)
-                (_ (list 'name name)))))
-    (or (cached-model name)
-        (and-let* ((ast (import-ast name transform)))
-                  (cache-model name ast)))))
+(define* (om:import name #:optional (transform (compose ast:resolve ast->om)))
+  (or (cached-model name)
+      (and-let* ((ast (import-ast name transform)))
+        (cache-model! name ast))))
 
-(define* (om:parse-dzn string :optional (register (om:register ast->om)))
+(define* (om:parse-dzn string #:optional (register (om:register (compose ast:resolve ast->om))))
   (parse-dzn string register))
 
 ;;;; OM handling

@@ -19,10 +19,10 @@
 (read-set! keywords 'prefix)
 
 (define-module (test-handler)
-  :use-module (test-suite lib)
-  :use-module (test-suite misc)
+  #:use-module (test-suite lib)
+  #:use-module (test-suite misc)
 
-  :use-module (gaiag reader))
+  #:use-module (gaiag reader))
 
 (pass-if "parse-first-dummy-test"
 	 #t)
@@ -32,11 +32,11 @@
    (dzn->ast
     #{ interface i { } #}
     )
-   '(root (interface (name i) (types) (events)))))
+   '(root (interface (scope.name () i) (types) (events)))))
 
 (pass-if "parse-component"
   (pretty-noisy-equal?
    (dzn->ast
     #{ component c { } #}
     )
-   '(root (component (name c) (ports)))))
+   '(root (component (scope.name () c) (ports)))))

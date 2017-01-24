@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,19 +21,19 @@
 ;;; 
 ;;; Code:
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag java7)
-  :use-module (ice-9 pretty-print)
+  #:use-module (ice-9 pretty-print)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
 
-  :use-module (gaiag code)
-  :use-module (gaiag misc)
-  :use-module (gaiag java)
-  :use-module (gaiag reader)
+  #:use-module (gaiag code)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag java)
+  #:use-module (gaiag reader)
 
-  :export (ast-> action-type ->type))
+  #:export (ast-> action-type ->type))
 
 (define ast-> ast:code)
 

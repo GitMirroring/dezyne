@@ -1,5 +1,5 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
-;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -22,30 +22,294 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag goops)
-  :use-module (ice-9 pretty-print)
+  #:use-module (ice-9 match)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:export (
+           .ast
+           .message
+           <error>
 
-  :use-module (gaiag om)
+           .arguments
+           .behaviour
+           .bindings
+           .direction
+           .elements
+           .else
+           .event
+           .events
+           .expression
+           .external
+           .field
+           .fields
+           .from
+           .functions
+           .identifier
+           .injected
+           .instance
+           .instances
+           .last?
+           .left
+           .name
+           .formals
+           .port
+           .ports
+           .range
+           .recursive
+           .right
+           .scope
+           .signature
+           .statement
+           .then
+           .to
+           .trigger
+           .triggers
+           .type
+           .types
+           .value
+           .variables
+           <action>
+           <arguments>
+           <assign>
+           <ast>
+           <ast-list>
+           <behaviour>
+           <bind>
+           <binding>
+           <bindings>
+           <blocking>
+           <call>
+           <component>
+           <compound>
+           <data>
+           <declarative>
+           <enum>
+           <event>
+           <events>
+           <expression>
+           <extern>
+           <field>
+           <fields>
+           <function>
+           <functions>
+           <guard>
+           <if>
+           <illegal>
+           <imperative>
+           <import>
+           <instance>
+           <instances>
+           <int>
+           <interface>
+           <literal>
+           <model>
+           <named>
+           <on>
+           <otherwise>
+           <formal>
+           <formals>
+           <port>
+           <ports>
+           <range>
+           <reply>
+           <return>
+           <root>
+           <scoped>
+           <scope.name>
+           <signature>
+           <statement>
+           <system>
+           <trigger>
+           <triggers>
+           <type>
+           <*type*>
+           <types>
+           <value>
+           <var>
+           <variable>
+           <variables>
+           ))
 
-  :use-module (gaiag code)
-  :use-module (gaiag misc)
-  :use-module (gaiag reader)
+(define (.name o)
+  (match o
+    ((or 'bool 'void) o)
+    (_ (cadr o))))
 
-  :export (ast->))
+(define-class <ast> ())
 
-(define (ast-> ast)
-  (parameterize ((indenter #f) (sep " ") (join (->join " "))) (ast:code ast)))
-;;(define (ast-> ast) (parameterize ((indenter pretty-printer)) (ast:code ast)))
+(define-class <ast-list> (<ast>)
+  (elements #:getter .elements #:init-form (list) #:init-keyword #:elements))
 
-(define (pretty-printer) (pretty-print (read) :width 120 :max-expr-width 80))
+(define-class <statement> (<ast>))
 
-(define (pretty-printer)
-  (let loop ((sexp (read)))
-    (if (eq? sexp *eof*)
-        #f
-        (begin
-         (pretty-print sexp :width 120 :max-expr-width 80)
-         (newline)
-         (loop (read))))))
+(define-class <arguments> (<ast-list>))
+(define-class <bindings> (<ast-list>))
+(define-class <compound> (<ast-list> <statement>))
+(define-class <events> (<ast-list>))
+(define-class <fields> (<ast-list>))
+(define-class <formals> (<ast-list>))
+(define-class <functions> (<ast-list>))
+(define-class <instances> (<ast-list>))
+(define-class <ports> (<ast-list>))
+(define-class <root> (<ast-list>))
+(define-class <triggers> (<ast-list>))
+(define-class <types> (<ast-list>))
+(define-class <variables> (<ast-list>))
+
+(define-class <named> (<ast>)
+  (name #:getter .name #:init-form #f #:init-keyword #:name))
+
+(define-class <scope.name> (<ast>)
+  (scope #:getter .scope #:init-form (list) #:init-keyword #:scope)
+  (name #:getter .name #:init-form #f #:init-keyword #:name))
+
+(define-class <scoped> (<ast>)
+  (name #:getter .name #:init-form (make <scope.name>) #:init-keyword #:name))
+
+(define-class <model> (<scoped>))
+
+(define-class <import> (<named>))
+
+(define-class <interface> (<model>)
+  (types #:getter .types #:init-form (make <types>) #:init-keyword #:types)
+  (events #:getter .events #:init-form (make <events>) #:init-keyword #:events)
+  (behaviour #:getter .behaviour #:init-value #f #:init-keyword #:behaviour))
+
+(define-class <*type*> (<scoped>))
+(define-class <type> (<*type*>))
+
+(define-class <signature> (<ast>)
+  (type #:getter .type #:init-form (make <type>) #:init-keyword #:type)
+  (formals #:getter .formals #:init-form (make <formals>) #:init-keyword #:formals))
+
+(define-class <event> (<named>)
+  (signature #:getter .signature #:init-form (make <signature>) #:init-keyword #:signature)
+  (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
+
+(define-class <port> (<named>)
+  (type #:getter .type #:init-form (make <scope.name>) #:init-keyword #:type)
+  (direction #:getter .direction #:init-value #f #:init-keyword #:direction)
+  (external #:getter .external #:init-value #f #:init-keyword #:external)
+  (injected #:getter .injected #:init-value #f #:init-keyword #:injected))
+
+(define-class <trigger> (<ast>)
+  (port #:getter .port #:init-value #f #:init-keyword #:port)
+  (event #:getter .event #:init-value #f #:init-keyword #:event)
+  (arguments #:getter .arguments #:init-form (make <arguments>) #:init-keyword #:arguments))
+
+(define-class <expression> (<ast>)
+  (value #:getter .value #:init-value *unspecified* #:init-keyword #:value))
+
+(define-class <otherwise> (<expression>))
+
+(define-class <var> (<ast>)
+  (name #:getter .name #:init-value #f #:init-keyword #:name))
+
+(define-class <field> (<ast>)
+  (identifier #:getter .identifier #:init-value #f #:init-keyword #:identifier)
+  (field #:getter .field #:init-value #f #:init-keyword #:field))
+
+(define-class <literal> (<scoped>)
+  (field #:getter .field #:init-value #f #:init-keyword #:field))
+
+(define-class <formal> (<named>)
+  (type #:getter .type #:init-form (make <type>) #:init-keyword #:type)
+  (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
+
+(define-class <component> (<model>)
+  (ports #:getter .ports #:init-form (make <ports>) #:init-keyword #:ports)
+  (behaviour #:getter .behaviour #:init-value #f #:init-keyword #:behaviour))
+
+(define-class <system> (<model>)
+  (ports #:getter .ports #:init-form (make <ports>) #:init-keyword #:ports)
+  (instances #:getter .instances #:init-form (make <instances>) #:init-keyword #:instances)
+  (bindings #:getter .bindings #:init-form (make <bindings>) #:init-keyword #:bindings))
+
+(define-class <enum> (<type>)
+  (fields #:getter .fields #:init-form (list) #:init-keyword #:fields))
+
+(define-class <extern> (<type>)
+  (value #:getter .value #:init-value #f #:init-keyword #:value))
+
+(define-class <data> (<ast>)
+  (value #:getter .value #:init-value #f #:init-keyword #:value))
+
+(define-class <int> (<type>)
+  (range #:getter .range #:init-form (make <range>) #:init-keyword #:range))
+
+(define-class <range> (<ast>)
+  (from #:getter .from #:init-value 0 #:init-keyword #:from)
+  (to #:getter .to #:init-value 0 #:init-keyword #:to))
+
+(define-class <behaviour> (<named>)
+  (types #:getter .types #:init-form (make <types>) #:init-keyword #:types)
+  (ports #:getter .ports #:init-form (make <ports>) #:init-keyword #:ports)
+  (variables #:getter .variables #:init-form (make <variables>) #:init-keyword #:variables)
+  (functions #:getter .functions #:init-form (make <functions>) #:init-keyword #:functions)
+  (statement #:getter .statement #:init-form (make <compound>) #:init-keyword #:statement))
+
+(define-class <function> (<named>)
+  (signature #:getter .signature #:init-form (make <signature>) #:init-keyword #:signature)
+  (recursive #:getter .recursive #:init-value #f #:init-keyword #:recursive)
+  (statement #:getter .statement #:init-value #f #:init-keyword #:statement))
+
+;;; statements
+(define-class <declarative> (<statement>))
+(define-class <imperative> (<statement>))
+
+(define-class <action> (<imperative>)
+  (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger))
+
+(define-class <assign> (<imperative>)
+  (identifier #:getter .identifier #:init-value #f #:init-keyword #:identifier)
+  (expression #:getter .expression #:init-form (make <expression>) #:init-keyword #:expression))
+
+(define-class <call> (<imperative>)
+  (identifier #:getter .identifier #:init-value #f #:init-keyword #:identifier)
+  (arguments #:getter .arguments #:init-form (make <arguments>) #:init-keyword #:arguments)
+  (last? #:getter .last? #:init-value #f #:init-keyword #:last?))
+
+
+(define-class <guard> (<declarative>)
+  (expression #:getter .expression #:init-form (make <expression>) #:init-keyword #:expression)
+  (statement #:getter .statement #:init-value #f #:init-keyword #:statement))
+
+(define-class <if> (<imperative>)
+  (expression #:getter .expression #:init-form (make <expression>) #:init-keyword #:expression)
+  (then #:getter .then #:init-value #f #:init-keyword #:then)
+  (else #:getter .else #:init-value #f #:init-keyword #:else))
+
+(define-class <illegal> (<imperative>))
+
+(define-class <blocking> (<declarative>)
+  (statement #:getter .statement #:init-value #f #:init-keyword #:statement))
+
+(define-class <on> (<declarative>)
+  (triggers #:getter .triggers #:init-form (make <triggers>) #:init-keyword #:triggers)
+  (statement #:getter .statement #:init-value #f #:init-keyword #:statement))
+
+(define-class <reply> (<imperative>)
+  (expression #:getter .expression #:init-value #f #:init-keyword #:expression)
+  (port #:getter .port #:init-value #f #:init-keyword #:port))
+
+(define-class <return> (<imperative>)
+  (expression #:getter .expression #:init-value #f #:init-keyword #:expression))
+
+(define-class <variable> (<named> <imperative>)
+  (type #:getter .type #:init-form (make <type> #:name 'bool) #:init-keyword #:type)
+  (expression #:getter .expression #:init-form (make <expression>) #:init-keyword #:expression))
+
+(define-class <bind> (<statement>)
+  (left #:getter .left #:init-value #f #:init-keyword #:left)
+  (right #:getter .right #:init-value #f #:init-keyword #:right))
+
+(define-class <binding> (<statement>)
+  (instance #:getter .instance #:init-value #f #:init-keyword #:instance)
+  (port #:getter .port #:init-value #f #:init-keyword #:port))
+
+(define-class <instance> (<named> <statement>)
+  (type #:getter .type #:init-form (make <scope.name>) #:init-keyword #:type))
+
+(define-class <error> (<ast>)
+  (ast #:getter .ast #:init-value #f #:init-keyword #:ast)
+  (message #:getter .message #:init-value "" #:init-keyword #:message))

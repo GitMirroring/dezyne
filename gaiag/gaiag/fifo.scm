@@ -18,9 +18,9 @@
 (read-set! keywords 'prefix)
 
 (define-module (gaiag fifo)
-  :use-module (ice-9 receive)
-  :use-module (rnrs io ports)
-  :export (fifo))
+  #:use-module (ice-9 receive)
+  #:use-module (rnrs io ports)
+  #:export (fifo))
 
 (define (fifo string)
   (let ((file-name (tmpnam)))

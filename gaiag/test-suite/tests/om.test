@@ -1,18 +1,22 @@
 ;; -*-scheme-*-
 
-(read-set! keywords 'prefix)
-
 (define-module (test-handler)
-  :use-module (test-suite lib)
-  :use-module (test-suite misc)
+  #:use-module (test-suite lib)
+  #:use-module (test-suite misc)
 
-  :use-module (gaiag om))
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag om)
+
+  #:use-module (gaiag misc))
 
 (pass-if "om-first-dummy-test"
          #t)
 
 (pass-if "find-triggers"
-  (om-pretty-noisy-equal?
-   (om:find-triggers
-    (ast->om '(on (arm) (compound))))
-   '((trigger #f arm))))
+         (om-pretty-noisy-equal?
+          (car
+           (om:find-triggers
+            (ast->om '(on (triggers (trigger #f arm (arguments))) (compound)))))
+          '(trigger #f arm (arguments))))

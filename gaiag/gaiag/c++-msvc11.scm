@@ -21,14 +21,13 @@
 ;;; 
 ;;; Code:
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag c++-msvc11)
-  :use-module (gaiag animate)
-  :use-module (gaiag om)
-  :use-module (gaiag code)
-  :use-module (gaiag c++)
-  :export (ast->)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag animate)
+  #:use-module (gaiag om)
+  #:use-module (gaiag code)
+  #:use-module (gaiag c++)
+  #:export (ast->)
   )
 
 (define ast-> (@@ (gaiag c++) ast->))

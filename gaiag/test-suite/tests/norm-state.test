@@ -16,15 +16,18 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
-
 (define-module (test-handler)
-  :use-module (test-suite lib)
-  :use-module (test-suite misc)
+  #:use-module (test-suite lib)
+  #:use-module (test-suite misc)
 
-  :use-module (gaiag om)
-  :use-module (gaiag reader)
-  :use-module (gaiag norm-state))
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag om)
+
+  #:use-module (gaiag reader)
+  #:use-module (gaiag norm-state)
+  #:use-module (gaiag resolve))
 
 (define (csp-norm-state* ast)
   ((compose csp-norm-state ast->om) ast))
@@ -39,7 +42,7 @@
                            #{
                              interface i { in void a; out void b;
                                           behaviour { on a: [true] { } } } #})))
-          '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) out))
+          '(interface (scope.name () i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true) (on (triggers (trigger #f a (arguments))) (compound))))))))
@@ -52,7 +55,7 @@
                              interface i { in void a; out void b;
                                               behaviour { on a: [true] b;
                                                              } } #})))
-          '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) out))
+          '(interface (scope.name () i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -68,7 +71,7 @@
                                               out void d;
                                               behaviour { on a,b,c: [true] d;
                                                           } } #})))
-          '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
+          '(interface (scope.name () i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
                                         (event d (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
@@ -87,7 +90,7 @@
                                                           on b: [true] e;
                                                           on c: [true] f;
                                                           } } #})))
-          '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
+          '(interface (scope.name () i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
                                         (event d (signature (type void)) out) (event e (signature (type void)) out) (event f (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
@@ -119,7 +122,7 @@
                       (action (trigger siren turnoff (arguments)))
                       (assign
                        state
-                       (expression (literal (name States) Disarmed)))
+                       (expression (literal (scope.name () States) Disarmed)))
                       (assign sounding (expression false))))
                     (guard
                      (otherwise)
@@ -128,7 +131,7 @@
                       (assign
                        state
                        (expression
-                        (literal (name States) Disarmed)))))))))))
+                        (literal (scope.name () States) Disarmed)))))))))))
           '(compound
             (guard
              (expression (field state Disarming))
@@ -148,7 +151,7 @@
                   (action (trigger siren turnoff (arguments)))
                   (assign
                    state
-                   (expression (literal (name States) Disarmed)))
+                   (expression (literal (scope.name () States) Disarmed)))
                   (assign sounding (expression false)))))
             (guard
              (expression
@@ -159,7 +162,7 @@
                   (action (trigger console deactivated (arguments)))
                   (assign
                    state
-                   (expression (literal (name States) Disarmed)))))))))
+                   (expression (literal (scope.name () States) Disarmed)))))))))
 
 (pass-if "csp-norm-state-function-call"
          (om-pretty-noisy-equal?
@@ -170,7 +173,7 @@
                                               behaviour
                                               { void foo(){ if(true){}} on a,b,c: [true] d ;
                                                      } } #})))
-          '(interface (name i) (types) (events (event a (signature (type void)) in) (event d (signature (type void)) out))
+          '(interface (scope.name () i) (types) (events (event a (signature (type void)) in) (event d (signature (type void)) out))
                       (behaviour #f
                                  (types)
                                  (variables)
@@ -192,7 +195,7 @@
                                               behaviour
                                               { on a,b,c: [true] d ;
                                                    } } #})))
-          '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
+          '(interface (scope.name () i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
                                         (event d (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
@@ -209,7 +212,7 @@
                              component c { behaviour { [true] on i.a: illegal;
                                                        [false] on i.b,i.c,j.a: illegal;
                                                           } } #})))
-          '(component (name c)
+          '(component (scope.name () c)
             (ports)
             (behaviour
              #f
@@ -236,7 +239,7 @@
                                               out void d;
                                               behaviour { on a,b,c: [true] d;
                                                           } } #})))
-          '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
+          '(interface (scope.name () i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
                                         (event d (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
@@ -254,7 +257,7 @@
                                                           on b: [true] d;
                                                           on c: [true] d;
                                                           } } #})))
-          '(interface (name i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
+          '(interface (scope.name () i) (types) (events (event a (signature (type void)) in) (event b (signature (type void)) in) (event c (signature (type void)) in)
                                         (event d (signature (type void)) out))
                       (behaviour #f (types) (variables) (functions)
                                  (compound
@@ -273,7 +276,7 @@
                                                           on j.a:     [true] j.d;
                                                           on j.b:     [true] j.e;
                                                           } } #})))
-          '(component (name c) (ports)
+          '(component (scope.name () c) (ports)
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -296,7 +299,7 @@
                                                           on j.a: [true] j.d;
                                                           on j.b: [true] j.e;
                                                           } } #})))
-          '(component (name c) (ports)
+          '(component (scope.name () c) (ports)
                       (behaviour #f (types) (variables) (functions)
                                  (compound
                                   (guard (expression true)
@@ -313,30 +316,30 @@
           (csp-norm-state*
            '(compound
              (compound
-              (guard (expression (value state Disarmed))
+              (guard (expression (dotted state Disarmed))
                      (on (triggers (trigger console arm (arguments)))
                          (compound
                           (action (trigger sensor enable (arguments)))
-                          (assign state (expression (value States Armed))))))
-              (guard (expression (value state Disarmed))
+                          (assign state (expression (dotted States Armed))))))
+              (guard (expression (dotted state Disarmed))
                      (on (triggers
                           (trigger console disarm (arguments))
                           (trigger sensor triggered (arguments))
                           (trigger sensor disabled (arguments)))
                          (illegal))))
              (compound
-              (guard (expression (value state Armed))
+              (guard (expression (dotted state Armed))
                      (on (triggers (trigger console arm (arguments))) (illegal))))))
           '(compound
             (guard
-             (expression (value state Disarmed))
+             (expression (dotted state Disarmed))
              (compound
               (on (triggers (trigger console arm (arguments)))
                   (compound
                    (action (trigger sensor enable (arguments)))
                    (assign
                     state
-                    (expression (value States Armed)))))
+                    (expression (dotted States Armed)))))
               (on (triggers (trigger console disarm (arguments)))
                   (illegal))
               (on (triggers
@@ -344,14 +347,14 @@
                    (trigger sensor disabled (arguments)))
                   (illegal))))
             (guard
-             (expression (value state Armed))
+             (expression (dotted state Armed))
              (on (triggers (trigger console arm (arguments)))
                  (illegal))))))
 
 (pass-if "csp-norm-state-nested-guards"
          (om-pretty-noisy-equal?
           (csp-norm-state*
-           (cadr (ast:resolve (ast->om (dzn->ast
+           (car (.elements (ast:resolve (ast->om (dzn->ast
                            #{
 interface norm_nested_guards
 {
@@ -372,19 +375,19 @@ interface norm_nested_guards
     }
   }
 }
-#})))))
+#}))))))
 '(interface
-  (name norm_nested_guards)
-  (types (enum (name norm_nested_guards Reply) (fields Ok Nok)))
-  (events (event e (signature (type (name norm_nested_guards Reply))) in))
+  (scope.name () norm_nested_guards)
+  (types (enum (scope.name (norm_nested_guards) Reply) (fields Ok Nok)))
+  (events (event e (signature (type (scope.name (norm_nested_guards) Reply))) in))
   (behaviour
     #f
-    (types (enum (name norm_nested_guards State) (fields Foo)))
+    (types (enum (scope.name (norm_nested_guards) State) (fields Foo)))
     (variables
       (variable
         state
-        (type (name norm_nested_guards State))
-        (expression (literal (name norm_nested_guards State) Foo)))
+        (type (scope.name (norm_nested_guards) State))
+        (expression (literal (scope.name (norm_nested_guards) State) Foo)))
       (variable
         bar
         (type bool)
@@ -396,6 +399,6 @@ interface norm_nested_guards
           (and (and (field state Foo) (var bar)) true))
         (compound
           (on (triggers (trigger #f e (arguments)))
-              (reply (expression (literal (name norm_nested_guards Reply) Ok))))
+              (reply (expression (literal (scope.name (norm_nested_guards) Reply) Ok))))
           (on (triggers (trigger #f e (arguments)))
-              (reply (expression (literal (name norm_nested_guards Reply) Nok)))))))))))
+              (reply (expression (literal (scope.name (norm_nested_guards) Reply) Nok)))))))))))

@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,31 +22,33 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag table-event)
-  :use-module (ice-9 and-let-star)
-  :use-module (gaiag list match)
-  :use-module (ice-9 getopt-long)
-  :use-module (ice-9 pretty-print)
-  :use-module (srfi srfi-1)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (srfi srfi-1)
 
-  :use-module (language dezyne location)
+  #:use-module (language dezyne location)
 
-  :use-module (gaiag om)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag ast2om)
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
+  #:use-module (gaiag util)
 
-  :use-module (gaiag misc)
-  :use-module (gaiag gaiag)
-  :use-module (gaiag json-table)
-  :use-module (gaiag norm)
-  :use-module (gaiag norm-event)
-  :use-module (gaiag norm-state)
-  :use-module (gaiag reader)
-  :use-module (gaiag resolve)
-  :use-module (gaiag dzn)
-  :use-module (gaiag table-state)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag gaiag)
+  #:use-module (gaiag json-table)
+  #:use-module (gaiag norm)
+  #:use-module (gaiag norm-event)
+  #:use-module (gaiag norm-state)
+  #:use-module (gaiag reader)
+  #:use-module (gaiag resolve)
+  #:use-module (gaiag dzn)
+  #:use-module (gaiag table-state)
 
-  :export (ast-> table-event))
+  #:export (ast-> table-event))
 
 (define (table-event model o)
   ((compose
@@ -60,7 +62,8 @@
 (define (ast-> ast)
   ((compose
     dzn-table
-    (lambda (x) (filter identity x))
+    (lambda (x) (if (is-a? x <ast>) (make <root> #:elements (om:filter identity x))
+                    (filter identity x)))
     (mangle-table json-table-event)
     (table table-event)
     ast:resolve
