@@ -1,0 +1,86 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+component CompletenessReplyValueNotSet
+{
+  provides I pp;
+  requires ISync rp;
+  
+  behaviour
+  {
+    on pp.ia(): rp.ia(); // Completeness:: pp.ia reply value not set
+    on rp.ok(): {}
+    on rp.fail(): {}
+  }
+  // Simulate CompletenessReplyValueNotSet =>
+  //   pp.ia reply value not set
+  // when performing trace:
+  //   pp.ia
+  //   rp.ia
+  //   rp.ok
+  //   rp.return
+}
+
+interface I
+{
+  in bool ia();
+  
+  behaviour
+  {
+    on ia: reply(true);
+    on ia: reply(false);
+  }
+}
+
+interface ISync
+{
+  in void ia();
+  out void ok();
+  out void fail();
+  
+  behaviour
+  {
+    on ia: ok;
+    on ia: fail;
+  }
+}
+
+component Deadlock_ReplyValueNotSet
+{
+  provides I pp;
+  
+  behaviour
+  {
+    on pp.ia(): {}// deadlock in model CompletenessReplyValueNotSet
+  }
+  // Expected error message: Completeness: pp.ia reply value not set.
+  
+  // Analysis: 
+  // User selects pp.ia => simulator runs up to the point where on pp.ia would 
+  // return. The return is an observable step which should be in the input 
+  // trace. It is not yet in the trace. Hence, interpreter does not attempt 
+  // return. replaytrace attempts to extend the trace with return (either 
+  // pp.true or pp.false) which fails because both trigger programError(
+  // "Completenes: pp.ia reply value not set". => deadlock (no eligible events). 
+}
+

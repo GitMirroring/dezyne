@@ -1,0 +1,188 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface GlobalVariableDeclarationFailed
+{
+  in void ia();
+  
+  behaviour
+  {
+    subint Count {0..5};
+    Count c = 6;
+
+    on ia: c = 0;
+  }
+  
+  // Simulate GlobalVariableDeclarationFailed =>
+  // Global variable declaration failed. Range error for variable c
+}
+
+
+/*
+
+interface GlobalVariableDeclarationFailed_DataExpression1
+{
+  in void ia();
+  
+  behaviour
+  {
+    bool b = $true$; // bool initialized by a DataExpression1
+    on ia: b = true;
+  }
+  
+  // Simulate GlobalVariableDeclarationFailed_DataExpression =>
+  // type mismatch: 'bool' expected, found: '$data$
+  
+  // This error is produced by the parser, not by the simulator. 
+}
+
+interface GlobalVariableDeclarationFailed_DataExpression2
+{
+  in void ia();
+  
+  behaviour
+  {
+    bool b = $true$ || false; // bool initialized by OrExpression containing a DataExpression
+    on ia: b = true;
+  }
+  
+  // Simulate GlobalVariableDeclarationFailed_DataExpression2 =>
+  // '||' requires a boolean first argument
+  
+  // This error is produced by parser/TypeChecker.cpp, not by the simulator.
+}
+
+interface GlobalVariableDeclarationFailed_DataExpression3
+{
+  in void ia();
+  
+  behaviour
+  {
+    bool init() {return $false$;}
+
+    bool b = init();
+    on ia: b = true;
+  }
+  
+  // Simulate GlobalVariableDeclarationFailed_DataExpression3 =>
+  // Return type does not match function type. 
+  
+  // This error is produced by parser, not by the simulator
+}
+
+interface GlobalVariableDeclarationFailed_FunctionCall
+{
+  in void ia();
+  
+  behaviour
+  {
+    bool init() {return false;}
+
+    bool b = init();
+    on ia: b = true;
+  }
+  
+  // Simulate GlobalVariableDeclarationFailed_FunctionCall =>
+  // Well-formedness error: Function calls are not allowed here  
+  
+  // This error is produced by well-formedness check, not by simulator.
+}
+
+interface IA
+{
+  in void ia();
+  behaviour
+  {
+    on ia: {}
+  }
+}
+
+interface IB
+{
+  in bool get();
+  behaviour
+  {
+    on get: reply(true);
+    on get: reply(false);
+  }
+}
+  
+
+component GlobalVariableDeclarationFailed_ActionExpression
+{
+  provides IA pp;
+  requires IB rp;
+  
+  behaviour
+  {
+    bool init() { return false;}
+    bool b = rp.get();
+    
+    on pp.ia(): b = false;
+  }
+  
+  // Simulate GlobalVariableDeclarationFailed_ActionExpression =>
+  // Well-formedness error: Actions are not allowed here
+
+  // This error is produced by well-formedness check, not by simulator.
+}
+
+interface GlobalVariableDeclarationFailed_FunctionCall2
+{
+  in void ia();
+  
+  behaviour
+  {
+    subint Count {0..5};
+    bool init() {return false;}
+
+    Count b = init();
+    on ia: b = 0;
+  }
+  
+  // Simulate GlobalVariableDeclarationFailed_FunctionCall2 =>
+  // Parsing failed: type mismatch: 'Count' expected, found: 'bool'
+
+  // This error is produced by the parser, not by the simulator.
+}
+
+interface GlobalVariableDeclarationFailed_IntRangeError
+{
+  in void ia();
+  
+  behaviour
+  {
+    subint Count {0..5};
+
+    Count b = 6;
+    on ia: b = 0;
+  }
+  
+  // Simulate GlobalVariableDeclarationFailed_FunctionCall2 =>
+  // Parsing failed: type mismatch: 'Count' expected, found: 'bool'
+
+  // This error is produced by the parser, not by the simulator.
+}
+
+*/
+
