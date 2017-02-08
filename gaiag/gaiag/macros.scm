@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -24,10 +24,8 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag macros)
-  :export (
+  #:export (
            re-export-modules
            ))
 

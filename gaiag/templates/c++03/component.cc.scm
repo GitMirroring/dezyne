@@ -36,20 +36,9 @@
                    #}) (filter om:requires? ((compose .elements .ports) model)))
 
 dzn_rt.performs_flush(this) = true;
-#
-(map
- (lambda (port)
-   (stderr "DEFINE-ON1\n")
-   (map (define-on model port #{#port .#direction .#event  = boost::bind(&#(string-if (eq? return-type 'void) "dzn::call_in< " #{dzn::rcall_in< #(if (not (member reply-name '(void int bool))) (list ((om:scope-join model "::") reply-scope) "::" reply-name "::type") reply-name), #})#.model ,::#((c++:scope-name) interface) #comma #((->join ",") formal-types)  >,this,boost::function< #return-type(#((->join ",") formal-types)) >(boost::bind(&#.model ::#port _#event ,this#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list))))))#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list)))),boost::make_tuple(&#port , "#event ", "return"));
-#}) (filter om:in? (om:events port))))
-    (filter om:provides? (om:ports model)))#
-(map
- (lambda (port)
-   (stderr "DEFINE-ON2\n")
-   (map (define-on model port #{
-#port .#direction .#event  = boost::bind(&dzn::call_out<#.model , #((c++:scope-name) interface) #comma #((->join ",") formal-types)  >, this, boost::function< #return-type(#((->join ",") formal-types)) >(boost::bind(&#.model ::#port _#event , this #comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list))))))#comma #((->join ",") (map (lambda (x) (->string '_ (+ 1 x))) (iota (length formal-list)))), boost::make_tuple(&#port , "#event ", "return"));
-#}) (filter om:out? (om:events port))))
- (filter om:requires? (om:ports model)))
+
+#map:x:call
+#map:x:rcall
 #(string-if (pair? (om:ports (.behaviour model))) #{
     dzn::pump& dzn_pump = dzn_locator.get<dzn::pump>();
 #})#(map
@@ -62,19 +51,8 @@ dzn_rt.performs_flush(this) = true;
 #}) (filter om:in? (om:events port))))
     (om:ports (.behaviour model)))}
 
-#(map
-(lambda (port)
-  (stderr "DEFINE-ON3\n")
-    (map (define-on+ model port #{
-  #return-type  #.model ::#port _#event (#formals)
-  {
-    #statement #
-    (string-if (not (eq? type 'void))
-#{  return reply_#((om:scope-join #f) reply-scope)_#reply-name ;
-#}) }
-#}) (filter (om:dir-matches? port) (om:events port))))
-  (append (om:ports model) (om:ports (.behaviour model))))#
-((->join "\n  ")(map (define-function model #{
+#map:x:on
+#((->join "\n  ")(map (define-function model #{
   #scope-return-type  #.model ::#name (#formals)
   {
     #statements }

@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -50,6 +50,8 @@
            code-norm-event
            norm-event
            table-norm-event
+           ast:direction
+           ast:in-port-event
            ))
 
 (define (norm-event o)
@@ -89,6 +91,7 @@
 
 (define (code-norm-event o)
   ((compose
+    (add-illegals)
     remove-skip
     flatten-compound
     combine-guards
@@ -256,6 +259,51 @@
     ) ast))
 
 (define (pair-eq? p) (eq? (car p) (cdr p)))
+
+(define-method (ast:direction (o <port-event>))
+  (.direction (.event o)))
+
+(define-method (ast:in-port-event (o <component>))
+  (append
+   (append-map (lambda (port)
+                 (map (lambda (event) (make <port-event> #:port port #:event event))
+                      (filter om:in? (om:events port))))
+               (filter om:provides? (om:ports o)))
+   (append-map (lambda (port)
+                 (map (lambda (event) (make <port-event> #:port port #:event event))
+                      (filter om:out? (om:events port))))
+               (filter om:requires? (om:ports o)))))
+
+(define-method (port-event->illegal (o <port-event>))
+  (make <on>
+    #:triggers (make <triggers>
+                 #:elements (list (make <trigger>
+                                    #:port (.name (.port o))
+                                    #:event (.name (.event o)))))
+    #:statement (make <illegal>)))
+
+(define* ((add-illegals #:optional model) o)
+  (match o
+    ((and ($ <component>) (= .behaviour behaviour))
+     (clone o #:behaviour ((add-illegals o) behaviour)))
+
+    ((and ($ <behaviour>) (= .statement statement))
+     (let* ((port-events (ast:in-port-event model))
+            (ons (.elements statement))
+            (on-triggers (append-map (compose .elements .triggers) ons))
+            (port-events (filter
+                          (lambda (port-event)
+                            (not (find (lambda (trigger)
+                                         (and (eq? (.name (.port port-event)) (.port trigger))
+                                              (eq? (.name (.event port-event)) (.event trigger))))
+                                       on-triggers))) port-events))
+            (ons (append ons (map port-event->illegal port-events))))
+       (if (null? ons) o
+           (clone o #:statement (clone statement #:elements ons)))))
+    (($ <interface>) o)
+    (($ <system>) o)
+    ((? (is? <ast>)) (om:map (add-illegals model) o))
+    (_ o)))
 
 (define* ((rewrite-formals #:optional model (locals '())) o)
 

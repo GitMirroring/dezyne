@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -22,8 +23,6 @@
 ;;; Code:
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
-(read-set! keywords 'prefix)
 
 (define-module (gaiag table-state)
   #:use-module (ice-9 and-let-star)

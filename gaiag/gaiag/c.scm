@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -36,7 +36,6 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
   #:use-module (gaiag util)
-
   #:use-module (gaiag animate)
   #:use-module (gaiag code)
   #:use-module (gaiag gaiag)
@@ -113,7 +112,7 @@
 
 (define (c-file file-name module)
   (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
-    (animate-file file-name module)))
+    (code:animate-file file-name module)))
 
 (define (c-name o)
   (let* ((type (ast-name o))

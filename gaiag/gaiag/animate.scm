@@ -1,6 +1,6 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -125,12 +125,20 @@
   (with-input-from-string string (lambda () (animate-input (get-module o p)))))
 
 (define* (animate-file file-name #:optional (o #f) (p #f))
-  (let ((file-name (components->file-name (template-file file-name))))
-    (with-input-from-file file-name (lambda () (animate-input (get-module o p) file-name)))))
+  (let* ((module (get-module o p))
+         (model-var (module-variable module 'model))
+         (model (if model-var (variable-ref model-var) #f))
+         (previous-ast (module-ref module 'ast))
+         (file-name (components->file-name (template-file file-name))))
+    (module-define! module 'ast (if p p model))
+    (let ((return (with-input-from-file file-name
+                    (lambda () (animate-input module file-name)))))
+      (module-define! module 'ast previous-ast)
+      return)))
 
 (define* (clone-module #:optional (module (current-module)))
   (let ((clone (make-module 31)))
-    (for-each (lambda (use) (module-use! clone use)) (module-uses module))    
+    (for-each (lambda (use) (module-use! clone use)) (module-uses module))
     (module-for-each (lambda (symbol var)
                        (module-add! clone symbol var)) module)
     clone))
@@ -138,10 +146,13 @@
 (define* (get-module o #:optional (p #f))
   (save-module-excursion
    (lambda ()
-     (match o
-       ((? module?) o)
-       ((? list?) (populate-module (clone-module) o p))
-       (_ (clone-module))))))
+     (let ((module (match o
+                     ((? module?) o)
+                     ((? list?) (populate-module (clone-module) o p))
+                     (_ (clone-module)))))
+       (if (not (module-variable module 'ast))
+           (module-define! module 'ast #f))
+       module))))
 
 (define* (line-column-location tell #:optional (port (current-input-port)))
   (seek port 0 SEEK_SET)
@@ -157,8 +168,9 @@
   (with-input-from-file file-name (lambda () (line-column-location tell))))
 
 (define (relative-file-name file-name)
-  (if (not (string-prefix? (getcwd) file-name)) file-name
-      (string-drop file-name (1+ (string-length (getcwd))))))
+  (let ((file-name (->string file-name)))
+   (if (not (string-prefix? (getcwd) file-name)) file-name
+       (string-drop file-name (1+ (string-length (getcwd)))))))
 
 (define* (animate-input module #:optional (file-name "<stdin>"))
   (catch #t
@@ -189,7 +201,7 @@
              (before-error (string-take string safe-column))
              (before-error-white (make-string column #\space))
              (after-error (string-drop string safe-column))
-             (message 
+             (message
               (format #f "~a:~a:~a: ~a: ~a\n~a\n~a~a\n" file-name line column key error before-error before-error-white after-error)))
         (stderr "~a" message)
         (apply throw (cons key args))))))
@@ -224,6 +236,7 @@
                        ((? number?) o)
                        ((? string?) o)
                        ((? symbol?) (symbol->string o))
+                       ((? procedure?) (eval (list o module (module-ref module 'ast)) module))
                        (_ ((any->string) o)))))
                   (eat-one-space))
                 (lambda (key . args)

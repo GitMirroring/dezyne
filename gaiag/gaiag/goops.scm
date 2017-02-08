@@ -1,5 +1,6 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -29,6 +30,7 @@
            .ast
            .message
            <error>
+           <port-event>
 
            .arguments
            .behaviour
@@ -313,3 +315,7 @@
 (define-class <error> (<ast>)
   (ast #:getter .ast #:init-value #f #:init-keyword #:ast)
   (message #:getter .message #:init-value "" #:init-keyword #:message))
+
+(define-class <port-event> (<ast>)
+  (port #:accessor .port #:init-value #f #:init-keyword #:port)
+  (event #:accessor .event #:init-value #f #:init-keyword #:event))

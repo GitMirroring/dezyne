@@ -37,7 +37,6 @@ dzn::async<#type  (#formal-types)> #name ;
     #.model (const dzn::locator&);
   void check_bindings() const;
   void dump_tree() const;
-
 private:
 #(map
   (lambda (port)

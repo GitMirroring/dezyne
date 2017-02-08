@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,7 +23,7 @@
 
 (define-module (gaiag lexicals)
   #:use-module (system syntax)
-  :export (local-lexicals lexicals))
+  #:export (local-lexicals lexicals))
 
 (eval-when (expand load eval)
   (define (local-lexicals id)

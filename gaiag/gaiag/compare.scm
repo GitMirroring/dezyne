@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -106,7 +107,7 @@
   #f)
 
 (define-method (remove-arguments (o <trigger>))
-  (make <trigger> :port (.port o) :event (.event o)))
+  (make <trigger> #:port (.port o) #:event (.event o)))
 
 (define-method (om:port-event-equal? (a <on>) (b <on>))
   (equal? (map remove-arguments ((compose .elements .triggers) a))

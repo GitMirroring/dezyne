@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -68,11 +68,11 @@
 
 (define-class <skip> (<ast>))
 
-(define* ((prepend-true-guard :optional guard-seen?) o)
+(define* ((prepend-true-guard #:optional guard-seen?) o)
   (match o
     (($ <guard>) o)
     (($ <on>) (if guard-seen? o
-                  (rsp o (make <guard> :expression 'true :statement o))))
+                  (rsp o (make <guard> #:expression 'true #:statement o))))
     ((? (is? <ast>)) (om:map (prepend-true-guard guard-seen?) o))
     (_ o)))
 
@@ -80,7 +80,7 @@
   (match o
     (($ <on> t ($ <guard>)) o)
     (($ <on> t s)
-     (rsp o (make <on> :triggers t :statement (make <guard> :expression 'true :statement s))))
+     (rsp o (make <on> #:triggers t #:statement (make <guard> #:expression 'true #:statement s))))
     ((? (is? <ast>)) (om:map append-true-guard o))
     (_ o)))
 

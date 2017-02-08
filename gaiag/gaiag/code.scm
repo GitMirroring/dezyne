@@ -18,8 +18,6 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag code)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 getopt-long)
@@ -106,6 +104,7 @@
 
            animate-pairs
 
+           code:animate-file
            ))
 
 (define (ast:code ast)
@@ -185,8 +184,8 @@
     (when (.behaviour o)
       (map dump interfaces)
       (dump-indented `(,@(code:dir o) ,name ,(code:extension o))
-                   (lambda ()
-                     (code-file 'component (code:module o)))))
+                     (lambda ()
+                       (code-file 'component (code:module o)))))
     (dump-main o)))
 
 (define (dump-main o)
@@ -216,7 +215,7 @@
 (define (code-file file-name module)
   (let ((model (module-ref module 'model)))
    (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
-     (animate-file (symbol-append file-name (code:extension model) '.scm) module))))
+     (code:animate-file (symbol-append file-name (code:extension model) '.scm) module))))
 
 (define* (code:->code model src #:optional (blocking? #f) (locals '()) (indent 1) (compound? #t))
   (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
@@ -409,10 +408,10 @@
        (->code- model (make <on> #:triggers triggers #:statement (wrap-compound (statement))) blocking? locals indent))
       (($ <on> triggers statement)
        (or (and-let* ((signature (transform-signature (.signature event) src))
-                      (trigger ((find-trigger port event) src)))
+                      (trigger (car (.elements triggers))))
              (let* ((blocking? (pair? ((om:collect <blocking>) statement)))
                     (statement (->code model statement blocking? locals indent compound?))
-                    (statement (if (or (not blocking?) (eq? (.direction port) 'requires)) statement
+                    (statement (if (or (not blocking?) (and port (eq? (.direction port) 'requires))) statement
                                    `(,(snippet 'block
                                                `((space ,space)
                                                  (statement ,statement)
@@ -1326,3 +1325,286 @@
        (measure-perf '*let* exp exp* ...)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;    template procedures: map procedure name to template and                 ;;
+;;                         pass the appropriate ast type                      ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; requirements:
+;; - trivially define a new template function by name
+;; - trivially define which part of the passed ast is to be available in the template
+;; - trivially map such a template function over a list of ast or parts of ast
+;; - allow template functions to recurse (and therefore do not self reference ;-)
+
+;; TODO:
+;; - robust template approach => resolve dependency between mapped and primitive naming, x:* prefix
+;; - proper mapped, mapped-prefix, mapped-infix naming conventions
+;; - remove need for ->code (MORTAL SIN)
+;; - fix return in statement
+;; - animate: disallow all scheme from template, i.e. only allow strings and procedures
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                                                                            ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(define-syntax define-template
+  (syntax-rules ()
+    ((_ name f)
+     (define-public (name module ast)
+       (let* ((filename (string-drop (symbol->string 'name) 2))
+              (o (f ast)))
+         (cond ((symbol? o) (display o))
+               ((string? o) (display o))
+               ((char? o) (display o))
+               ((list? o) (map (lambda (ast) (animate-file filename module ast)) o))
+               (#t (animate-file filename module o))))
+       ""))))
+
+(define (infix lst separator)
+  (let loop ((lst lst))
+    (if (null? (cdr lst))
+        lst
+        (cons (car lst) (cons separator (loop (cdr lst)))))))
+
+(define-syntax x:map
+  (syntax-rules ()
+    ((_ template lst)
+     (map template lst))))
+
+(define-syntax x:map-infix
+  (syntax-rules ()
+    ((_ template lst separator)
+     (if (pair? lst)
+         (let loop ((a lst))
+           (template (car a))
+           (when (pair? (cdr a))
+             (display separator)
+             (loop (cdr a))))))))
+
+(define-syntax define-mapped
+  (syntax-rules ()
+    ((_ name f)
+     (define-public (name module ast)
+       (x:map (cut (module-ref module
+                               (string->symbol (string-drop (symbol->string 'name) 4))) module <>)
+              (f ast)) ""))))
+
+(define-syntax define-mapped-prefix
+  (syntax-rules ()
+    ((_ name f separator)
+     (define-public (name module ast)
+       (x:map (cut (module-ref module
+                               (string->symbol (string-drop (symbol->string 'name) 4))) module <>)
+              (append-map (lambda (o) (list separator o)) (f ast))) ""))))
+
+(define-syntax define-mapped-infix
+  (syntax-rules ()
+    ((_ name f  separator)
+     (define-public (name module ast)
+       (x:map-infix (cut (module-ref module
+                                        (string->symbol (string-drop (symbol->string 'name) 4))) module <>)
+                       (f ast) separator) ""))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                                                                            ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(define-template x:code-formal-type (lambda (o)
+                                      (let ((code (code:->code ((ast:model) o) o)))
+                                        (string-append (code:->code ((ast:model) o) (.type o)) (if (not (eq? 'in (.direction o))) "&" ""))))) ;; MORTAL SIN HERE!!?
+
+(define-template x:on identity)
+
+(define-mapped map:x:on ast:on)
+
+(define-template x:return ast:return-type)
+
+(define-template x:reply (lambda (o)
+                           (if (eq? 'void (om:name o))
+                               ""
+                               (let ((type (ast-name ((om:type ((ast:model) o)) o))))
+                                (string-append " this->reply_" (->string ((om:scope-join #f) (om:scope o))) "_" (->string (if (eq? 'int type) type (om:name o)))))))) ;; MORTAL SIN HERE!!?
+
+(define-template x:return-type ast:return-type)
+
+(define-template x:model-name (compose om:name (ast:model)))
+
+(define-template x:port-type ast:port-type)
+
+(define-template x:port-name ast:port-name)
+
+(define-template x:event-name ast:event-name)
+
+(define-template x:argument_n identity)
+
+(define-mapped-prefix map:x:argument_n ast:formal-to-argument_n #\,)
+
+(define-template x:argument identity)
+
+(define-mapped-infix map:x:argument ast:formal-to-argument #\,)
+
+(define-template x:out-argument identity)
+
+(define-mapped-prefix map:x:out-argument ast:out-formal-to-argument #\,)
+
+(define-template x:formal-type identity)
+
+(define-mapped-prefix cmx:x:formal-type ast:formal #\,)
+
+(define-mapped-infix mcx:x:formal-type ast:formal #\,)
+
+(define-template x:formal (lambda (o) (code:->code ((ast:model) o) o))) ;; MORTAL SIN HERE!!?
+
+(define-mapped-infix map:x:formal ast:formal #\,)
+
+(define-template x:statement ast:statement)
+
+(define-template x:type (lambda (o) (code:->code ((ast:model) o) o))) ;; MORTAL SIN HERE!!?
+
+(define-template x:call identity)
+
+(define-template x:rcall identity)
+
+(define-template x:req identity)
+
+(define-template x:clr identity)
+
+(define-mapped map:x:call (lambda (o) (filter (lambda (pe) (eq? 'void (.name (ast:return-type pe)))) (ast:in-port-event o))))
+
+(define-mapped map:x:rcall (lambda (o) (filter (lambda (pe) (not (eq? 'void (.name (ast:return-type pe))))) (ast:in-port-event o))))
+
+(define-mapped map:x:req ast:req-events)
+
+(define-mapped map:x:clr ast:clr-events)
+
+(define-template x:direction ast:direction)
+
+(define-template x:event-decl identity)
+
+(define-mapped map:x:event-decl ast:in-port-event)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   ast accessors; must return an ast type or a: string, number or symbol   ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-method (ast:req-events (o <component>))
+  (append-map (lambda (port)
+                (map (lambda (event) (make <port-event> #:port port #:event event))
+                     (filter (conjoin om:in? (compose (cut eq? 'req <>) .name)) (om:events port))))
+              (om:ports (.behaviour o))))
+
+(define-method (ast:clr-events (o <component>))
+  (append-map (lambda (port)
+                (map (lambda (event) (make <port-event> #:port port #:event event))
+                     (filter (conjoin om:in? (compose (cut eq? 'clr <>) .name)) (om:events port))))
+              (om:ports (.behaviour o))))
+
+(define ast:decl (make-parameter (lambda (o) #f)))
+(define ast:model (make-parameter (lambda (o) #f)))
+
+(define-method (ast:statement (o <on>)) ;; MORTAL SIN HERE!!?
+  (with-throw-handler #t
+    (lambda ()
+      (let ((port (ast:port o))
+            (event (ast:event o))
+            (blocking? #f)
+            (locals '()))
+        (parameterize ((statements.port port)
+                       (statements.event event))
+          (code:->code ((ast:model) o) o blocking? locals 2 #f))))
+    (lambda (key . args)
+      (display-backtrace (make-stack #t) (current-error-port))
+      (stderr "key: ~a; args: ~a\n" key args)
+      (exit 1))))
+
+(define-method (ast:statement (o <boolean>))
+  (snippet 'illegal `((space ,space))))
+
+(define-method (ast:on (o <component>))
+  (let ((behaviour (.behaviour o)))
+    (if (not behaviour) '()
+        ((compose .elements .statement) behaviour))))
+
+(define-method (ast:formal-to-argument_n (o <port-event>)) ;; MORTAL SIN HERE!!?
+  (map (compose (cut string-append "_" <>) number->string) (iota (length (ast:formal o)) 1 1)))
+
+(define-method (ast:formal-to-argument (o <port-event>)) ;; MORTAL SIN HERE!!?
+  (map .name (ast:formal o)))
+
+(define-method (ast:out-formal-to-argument (o <port-event>)) ;; MORTAL SIN HERE!!?
+  (map (lambda (formal) (string-append "&" (symbol->string (.name formal)))) (filter om:out-or-inout? (ast:formal o))))
+
+(define-method (ast:formal (o <port-event>))
+  ((compose .elements .formals .signature .event) o))
+
+(define-method (ast:formal (o <on>))
+  (let* ((trigger ((compose car .elements .triggers) o))
+         (event (om:event ((ast:model) o) trigger)))
+    (map (lambda (name formal)
+           (clone formal #:name name))
+         (map (compose .name .value) ((compose .elements .arguments) trigger))
+         ((compose .elements .formals .signature) event))))
+
+(define-method (ast:port (o <on>))
+  (om:port ((ast:model) o) (.port (car ((compose .elements .triggers) o)))))
+
+(define-method (ast:event (o <on>))
+  (ast:event (car ((compose .elements .triggers) o))))
+
+(define-method (ast:port-type (o <port-event>))
+  ((->join "::") (om:scope+name ((compose .type .port) o)))) ;; MORTAL SIN HERE!!?
+
+(define-method (ast:port-name (o <port-event>))
+  (ast:port-name (.port o)))
+
+(define-method (ast:port-name (o <on>))
+  ((compose .port car .elements .triggers) o))
+
+(define-method (ast:port-name (o <port>))
+  (.name o))
+
+
+(define-method (ast:event-name (o <port-event>))
+  (ast:event-name (.event o)))
+
+(define-method (ast:event-name (o <on>))
+  ((compose .event car .elements .triggers) o))
+
+(define-method (ast:event-name (o <event>))
+  (.name o))
+
+(define-method (ast:event-name (o <on>))
+  ((compose .event car .elements .triggers) o))
+
+
+(define-method (ast:model-decl model (o <trigger>))
+  (om:event model o))
+
+
+
+(define-method (ast:return-type (o <port-event>))
+  (ast:return-type (.event o)))
+
+(define-method (ast:return-type (o <event>))
+  ((compose .type .signature) o))
+
+(define-method (ast:return-type (o <on>))
+  (ast:return-type (car ((compose .elements .triggers) o))))
+
+(define-method (ast:return-type (o <trigger>))
+  (ast:return-type (ast:event o)))
+
+
+
+
+(define-method (ast:event (o <trigger>))
+  ((ast:decl) o))
+
+(define (code:animate-file file-name module)
+  (parameterize ((ast:decl (lambda (p) (ast:model-decl (module-ref module 'model) p)))
+                 (ast:model (lambda (_) (module-ref module 'model))))
+    (animate-file file-name module)))

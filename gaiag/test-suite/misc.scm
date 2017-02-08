@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2013, 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -15,8 +15,6 @@
 ;;
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
-
-(read-set! keywords 'prefix)
 
 (define-module (test-suite misc)
   #:use-module (ice-9 and-let-star)

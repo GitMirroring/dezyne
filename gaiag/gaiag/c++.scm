@@ -143,7 +143,7 @@
 
 (define (c++-file file-name module)
   (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
-    (animate-file file-name module)))
+    (code:animate-file file-name module)))
 
 (define (event2->interface1-event1-alist- string)
   (and-let* ((string string)

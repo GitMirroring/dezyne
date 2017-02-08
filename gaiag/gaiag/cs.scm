@@ -22,8 +22,6 @@
 ;;; 
 ;;; Code:
 
-(read-set! keywords 'prefix)
-
 (define-module (gaiag cs)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 pretty-print)
@@ -77,5 +75,5 @@
                 (list init))))
         formal-objects (iota (length formal-objects)))))
 
-(define* ((cs:scope-join :optional (model #f) (infix (string->symbol "."))) o)
+(define* ((cs:scope-join #:optional (model #f) (infix (string->symbol "."))) o)
   ((om:scope-join model infix) o))

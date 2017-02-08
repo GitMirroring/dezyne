@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2012--2014  Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -14,8 +15,6 @@
 ;;
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
-
-(read-set! keywords 'prefix)
 
 (define-module (gaiag fifo)
   #:use-module (ice-9 receive)
