@@ -405,18 +405,14 @@
        (->code- model (make <on> #:triggers triggers #:statement (wrap-compound (statement))) blocking? locals indent))
       (($ <on> triggers statement)
        (or (and-let* ((signature (transform-signature (.signature event) src))
-                      (formals ((compose .elements .formals) signature))
-                      (trigger ((find-trigger port event) src))
-                      (arguments ((compose .elements .arguments) trigger))
-                      (argument-names (map (compose .name .value) arguments)))
+                      (trigger ((find-trigger port event) src)))
              (let* ((blocking? (pair? ((om:collect <blocking>) statement)))
                     (statement (->code model statement blocking? locals indent compound?))
                     (statement (if (or (not blocking?) (eq? (.direction port) 'requires)) statement
-                                   `(,(out-bindings model port formals arguments)
-                                     ,(snippet 'block
+                                   `(,(snippet 'block
                                                `((space ,space)
                                                  (statement ,statement)
-                                                (port ,(.port trigger))))))))
+                                                 (port ,(.port trigger))))))))
                statement))
            '$empty-statement$))
       (($ <call> function ($ <arguments> ()))
@@ -600,6 +596,13 @@
        (snippet 'formal `((name ,name) (type ,(->code model type)) (out? ,(member direction '(inout out))))))
       (($ <data> value) value)
       (($ <var> name) name)
+      (($ <out-bindings>)
+       (let ((statements (map (lambda (x) (->code model x)) (.elements src))))
+         (snippet 'out-bindings
+                  `((port ,(.name port))
+                    (statements ,statements)))))
+      ((and ($ <expression>) (= .value ('<- ($ <var> formal) ($ <var> global))))
+       (snippet 'out-binding `((formal ,formal) (global ,global))))
       ((? char?) (make-string 1 src))
       ((? string?) src)
       ('true (snippet 'true '()))
@@ -610,18 +613,6 @@
       ((h t ...) (map (lambda (x) (->code model x blocking? locals indent)) src))
       ((? unspecified?) #f)
       (_ (throw 'match-error (format #f "~a:code:->code: no match: ~a\n" (current-source-location) src))))))
-
-(define (out-bindings model port formals arguments)
-  (let ((statements
-         (filter-map
-          (lambda (formal argument)
-            (and (om:out-or-inout? formal)
-                 (match argument (($ <expression> ('<- ($ <var> alias) ($ <var> global)))
-                                  (snippet 'out-binding `((alias ,alias) (formal ,(.name formal)) (global ,global) (port (.name port)))))
-                   (_ #f)))) formals arguments)))
-    (snippet 'out-bindings
-             `((port ,(.name port))
-               (statements ,statements)))))
 
 (define ((find-trigger port event) o)
   (match o
@@ -934,7 +925,13 @@
   (let* ((behaviour (and=> (as model <component>) .behaviour))
          (ons (if (not behaviour) '()
                   ((compose .elements .statement) behaviour)))
-         (on (find (is-trigger? port event) ons))
+         (ons (filter (is-trigger? port event) ons))
+         (on (case (length ons)
+               ((0) #f)
+               (else (car ons))
+               ;;((1) (car ons))
+               ;;(else (error (format #f "multiple ons for port=~a event=~a"  (.name port) (.name event))))
+               ))
          (signature (.signature event))
          (signature (transform-signature signature on))
          (signature-name (code:formals->name model signature))

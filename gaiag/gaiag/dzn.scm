@@ -182,6 +182,9 @@
     (($ <trigger> port event arguments) ((animate-snippet 'trigger `((event ,event) (port ,port) (arguments ,((->dzn model) arguments))))))
 
     (('group expression) (->string (list "(" ((->dzn model) expression) ")")))
+    (($ <out-bindings>) (->string (map (->dzn model) (.elements o))))
+    (($ <expression> ('<- formal global))
+     ((animate-snippet 'out-binding `((formal ,((->dzn model) formal)) (global ,((->dzn model) global))))))
     (($ <expression> expression) (expression->dzn model expression))
     (($ <expression>) #f)
     (($ <data> data) ((animate-snippet 'data `((data ,data)))))
@@ -195,7 +198,7 @@
     (($ <var> identifier) ((->dzn model) identifier))
     (('! ($ <expression> expression)) (->string (list "!" (paren model expression))))
     (('! expression) (->string (list "!" (paren model expression))))
-    (((or 'or 'and '<- '== '!= '< '<= '> '>= '+ '-) lhs rhs)
+    (((or 'or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)
      (let* ((lhs ((->dzn model) lhs))
             (rhs ((->dzn model) rhs))
             (op (car o))

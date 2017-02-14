@@ -93,6 +93,7 @@
     flatten-compound
     combine-guards
     (aggregate-on norm:triggers-equal?)
+    (binding-into-blocking)
     (rewrite-formals)
     flatten-compound
     (passdown-blocking)
@@ -269,13 +270,13 @@
     (and=> (find cdr-equal? alist) car))
 
   (define ((rename mapping) o)
+    ;;(stderr "rename o=~a\n" o)
     (match o
       (($ <trigger> port event ($ <arguments> ())) o)
       (($ <trigger> port event ($ <arguments> (argument* ...)))
-       (make <trigger> #:port port #:event event
-             #:arguments (make <arguments> #:elements (map (rename mapping) argument*))))
+       (clone o #:arguments (make <arguments> #:elements (map (rename mapping) argument*))))
       (($ <expression> ($ <var> name))
-       (make <expression> #:value (make <var> #:name ((rename mapping) name))))
+       (clone o #:value (make <var> #:name ((rename mapping) name))))
       (($ <expression> ('<- ($ <var> name) global))
        (clone o #:value `(<- ,(make <var> #:name ((rename mapping) name)) ,global)))
       ((? symbol?) (or (assoc-ref mapping o) o))
@@ -285,15 +286,20 @@
   (define (name->argument name)
     (make <expression> #:value (make <var> #:name name)))
 
+  (define (arg->name arg)
+    (match arg
+      (($ <expression> ('<- ($ <var> x) y)) x)
+      (($ <expression> ($ <var> x)) x)))
+
+  ;;(stderr "rewrite o=~a\n" o)
   (match o
     (($ <on> ($ <triggers> ((and ($ <trigger> port event ($ <arguments> ())) (get! trigger)))) statement)
      (let* ((trigger (trigger))
             (formals (map .name ((compose .elements .formals .signature) (om:event model trigger))))
             (arguments (map name->argument formals)))
        (if (null? formals) o
-           (rsp o (make <on>
-                    #:triggers (make <triggers> #:elements (list (make <trigger> #:port port #:event event #:arguments (make <arguments> #:elements arguments))))
-                    #:statement statement)))))
+           (clone o
+                  #:triggers (make <triggers> #:elements (list (clone trigger #:arguments (make <arguments> #:elements arguments))))))))
     (($ <on> ($ <triggers> ((and ($ <trigger> port event ($ <arguments> (argument* ...))) (get! trigger)))) statement)
      (let* ((trigger (trigger))
             (members (map .name (om:variables model)))
@@ -311,39 +317,70 @@
                              occupied names))) ;; occupied names -> (append namesx occupied)
 
             (fresh-formals (list-head (refresh occupied formals) (length formals)))
-            (mapping (filter (negate pair-eq?) (map cons (map (compose .name .value) argument*) fresh-formals)))
+            (mapping (filter (negate pair-eq?) (map cons (map arg->name argument*) fresh-formals)))
 
             (occupied (append (map cdr mapping) members))
 
             (mapping (append (map cons locals (list-head (refresh occupied locals) (length locals))) mapping)))
 
        (if (null? mapping) o
-           (rsp o (make <on>
-                    #:triggers (make <triggers> #:elements (list ((rename mapping) trigger)))
-                    #:statement ((rename mapping) statement))))))
+           (clone o
+                  #:triggers (make <triggers> #:elements (list ((rename mapping) trigger)))
+                  #:statement ((rename mapping) statement)))))
 
-    ;; TOP
-    (($ <enum>) o)
-    (($ <extern>) o)
-    (($ <int>) o)
+    ((and ($ <component>) (= .behaviour behaviour))
+     (clone o #:behaviour ((rewrite-formals o) behaviour)))
+
+    ((and ($ <behaviour>) (= .statement statement))
+     (clone o #:statement ((rewrite-formals model '()) statement)))
+
     (($ <interface>) o)
     (($ <system>) o)
-    (($ <component> name ports behaviour)
-     (rsp o (make <component>
-              #:name name
-              #:ports ports
-              #:behaviour ((rewrite-formals o) behaviour))))
-
-    (($ <behaviour> name types ports variables functions statement)
-     (make <behaviour>
-       #:name name
-       #:types types
-       #:ports ports
-       #:variables variables
-       #:functions functions
-       #:statement ((rewrite-formals model '()) statement)))
-
     ((? (is? <ast>)) (om:map (rewrite-formals model locals) o))
+    (_ o)))
+
+(define* ((binding-into-blocking #:optional model (locals '())) o)
+  (define (out-binding? arg)
+    (match arg
+      (($ <expression> ('<- x y)) arg)
+      (_ #f)))
+
+  (define (out-binding->arg arg)
+    (match arg
+      (($ <expression> ('<- x y)) (clone arg #:value x))
+      (_ arg)))
+
+  (define ((passdown-out-bindings out-bindings) o)
+    (match o
+    ((and ($ <compound>) (? om:declarative?))
+     (clone o #:elements (map (passdown-out-bindings out-bindings) (.elements o))))
+    ((? om:declarative?) (clone o #:statement ((passdown-out-bindings out-bindings) (.statement o))))
+    (($ <compound>) (clone o #:elements (cons out-bindings (.elements o))))
+    (_ (make <compound> #:elements (cons out-bindings (list o))))))
+
+  ;;(stderr "bib o=~a\n" o)
+  (match o
+    ((and ($ <on>) (= .triggers triggers) (= .statement statement))
+     (let* ((trigger (car (.elements triggers)))
+            (arguments (.elements (.arguments trigger)))
+            (out-bindings (filter out-binding? arguments))
+            (out-bindings (and (pair? out-bindings) (make <out-bindings> #:elements out-bindings)))
+            (arguments (map out-binding->arg arguments)))
+       (if (not out-bindings) o
+        (clone o
+               #:triggers (clone triggers
+                                 #:elements (list (clone trigger #:arguments (make <arguments> #:elements arguments))))
+               #:statement ((passdown-out-bindings out-bindings) statement)))))
+
+    ((and ($ <component>) (= .behaviour behaviour))
+     (clone o #:behaviour ((binding-into-blocking o) behaviour)))
+
+    ((and ($ <behaviour>) (= .statement statement))
+     (clone o #:statement ((binding-into-blocking model '()) statement)))
+
+    (($ <interface>) o)
+    (($ <system>) o)
+    ((? (is? <ast>)) (om:map (binding-into-blocking model locals) o))
     (_ o)))
 
 ;; (define ast (read-ast '../../test/all/normalize_alias_local/normalize_alias_local.dzn))

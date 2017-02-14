@@ -89,7 +89,7 @@
                    (c-i (append (filter (is? <component>) models) models))
                    ((pair? c-i)))
           (generate-csp (car c-i)))
-        (let* ((models (filter (is? <model>) om))
+        (let* ((models (om:filter (is? <model>) om))
                (models (comma-join (map .name models)))
                (message (if name
                             "gaiag: no model [name=~a] with behaviour\n"

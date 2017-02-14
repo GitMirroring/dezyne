@@ -106,6 +106,7 @@
            <named>
            <on>
            <otherwise>
+           <out-bindings>
            <formal>
            <formals>
            <port>
@@ -141,9 +142,12 @@
   (elements #:getter .elements #:init-form (list) #:init-keyword #:elements))
 
 (define-class <statement> (<ast>))
+(define-class <declarative> (<statement>))
+(define-class <imperative> (<statement>))
 
 (define-class <arguments> (<ast-list>))
 (define-class <bindings> (<ast-list>))
+(define-class <out-bindings> (<ast-list> <imperative>))
 (define-class <compound> (<ast-list> <statement>))
 (define-class <events> (<ast-list>))
 (define-class <fields> (<ast-list>))
@@ -252,10 +256,6 @@
   (signature #:getter .signature #:init-form (make <signature>) #:init-keyword #:signature)
   (recursive #:getter .recursive #:init-value #f #:init-keyword #:recursive)
   (statement #:getter .statement #:init-value #f #:init-keyword #:statement))
-
-;;; statements
-(define-class <declarative> (<statement>))
-(define-class <imperative> (<statement>))
 
 (define-class <action> (<imperative>)
   (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger))
