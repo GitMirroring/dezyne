@@ -8,7 +8,7 @@
 
 (define url "https://test2.verum.com")
 (define client-versions '("2.1.0" "2.2.0"))
-(define daemon-versions '("0.0.8"))
+(define daemon-versions '("0.0.7" "0.0.8"))
 
 (define (test-case client daemon)
   (format #t "  [~a, ~a]\n" (car client) (car daemon)))
