@@ -1,2 +1,2 @@
-out/Recursion/Recursion.dzn:22:7:i11: deadlock in model Recursion
+out/Recursion/Recursion.dzn:22:7:i11: livelock in model Recursion
 out/Recursion/Recursion.dzn:22:7:i11: livelock in model Recursion

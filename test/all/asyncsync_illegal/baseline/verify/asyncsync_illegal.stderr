@@ -1,1 +1,1 @@
-out/asyncsync_illegal/asyncsync_illegal.dzn:66:28:i31: p.ac not allowed by port p
+out/asyncsync_illegal/asyncsync_illegal.dzn:66:20:i30: p.ac not allowed by port p

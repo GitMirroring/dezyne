@@ -1,4 +1,4 @@
-out/SyncCBLivelockExternal/SyncCBLivelockExternal.dzn:14:15:i23: p.return not allowed by port p
-out/SyncCBLivelockExternal/SyncCBLivelockExternal.dzn:5:8:i54: deadlock in model SyncCBLivelockExternal
+out/SyncCBLivelockExternal/SyncCBLivelockExternal.dzn:14:8:i18: p.return not allowed by port p
+out/SyncCBLivelockExternal/SyncCBLivelockExternal.dzn:5:8:i54: Invalid event trace
 out/SyncCBLivelockExternal/SyncCBLivelockExternal.dzn:14:8:i18: p.return not allowed by port p
 out/SyncCBLivelockExternal/SyncCBLivelockExternal.dzn:14:8:i18: p.return not allowed by port p

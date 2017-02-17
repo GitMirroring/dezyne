@@ -28,7 +28,7 @@ interface ReplyNotAllowedForModellingEvent
   
   behaviour
   {
-    on ia: reply();
+    on ia: {}
     on optional: {oa; reply();}
   }
   // Simulating ReplyNotAllowedForModellingEvent =>

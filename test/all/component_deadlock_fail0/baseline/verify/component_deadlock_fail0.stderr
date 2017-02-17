@@ -1,2 +1,2 @@
 out/component_deadlock_fail0/component_deadlock_fail0.dzn:15:6:i3: deadlock in model component_deadlock_fail0
-out/component_deadlock_fail0/component_deadlock_fail0.dzn:15:6:i12: Component component_deadlock_fail0 is non-compliant with interface of provided port
+out/component_deadlock_fail0/component_deadlock_fail0.dzn:15:22:i11: illegal

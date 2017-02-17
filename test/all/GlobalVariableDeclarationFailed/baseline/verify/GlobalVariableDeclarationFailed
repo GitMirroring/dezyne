@@ -1,0 +1,3 @@
+verify: GlobalVariableDeclarationFailed: check: completeness: fail
+verify: GlobalVariableDeclarationFailed: check: deadlock: fail
+verify: GlobalVariableDeclarationFailed: check: livelock: ok

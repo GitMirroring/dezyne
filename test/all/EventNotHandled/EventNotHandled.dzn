@@ -34,12 +34,12 @@ component EventNotHandled
   }
   
   // Simulate EventNotHandled =>
-  //   pp.ia not handled
+  //   pp.ia (implicitly) illegal
   // when performing trace:
   //   pp.ia
 
   // Simulate EventNotHandled =>
-  //   rp.oa not handled
+  //   rp.oa (implicitly) illegal
   // when performing trace:
   //   rp.oa
 }

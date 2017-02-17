@@ -35,7 +35,7 @@ component EventNotAllowedByPort
   // EventNotAllowedByPort shall report error
   //   pp.oa not allowed by port pp
   // when simulating trace:
-  //   pp.oa
+  //   rp.oa
 }
 
 interface IA
@@ -48,7 +48,7 @@ interface IA
     bool b = false;
     
     on ia: b = true;
-    [b] on inevitable: {b = false; oa;}
+    [b] on optional: {b = false; oa;}
   }
 }
 

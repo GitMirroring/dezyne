@@ -1,1 +1,1 @@
-out/range_function/range_function.dzn:11:8:i4: integer range error in model range_function
+out/range_function/range_function.dzn:11:8:i4: Function actual parameter declaration failed. Range error for variable s
