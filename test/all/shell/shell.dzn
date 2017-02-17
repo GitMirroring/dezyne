@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -36,21 +36,25 @@ interface I
 
 component C
 {
-  provides I p;
+  provides I p_inner;
+  requires I r_inner;
 
   behaviour
   {
-    on p.return_to_sender(i,j): {j=i; p.foo(i); reply(true);}
+    on p_inner.return_to_sender(i,j): {bool b = r_inner.return_to_sender(i,j); reply(b);}
+    on r_inner.foo(i): p_inner.foo(i);
   }
 }
 
 component shell
 {
-  provides I p;
+  provides I p_outer;
+  requires I r_outer;
 
   system
   {
     C c;
-    p<=>c.p;
+    p_outer<=>c.p_inner;
+    c.r_inner<=>r_outer;
   }
 }

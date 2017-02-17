@@ -21,19 +21,31 @@
             ))
 {
 #(map
- (lambda (port)
-    (animate #{#'()
-       #instance .#port .meta.requires.port = #instance .#port .meta.provides.port;#}
-     `((instance ,(.name (om:instance model port)))
-       (port ,(.name port)))))
-     (filter om:provides? (om:ports model)))
+  (lambda (port)
+    (let* ((binding (om:port-bind model (.name port)))
+          (instance-binding (om:instance-binding? binding))
+          (instance-port (.port instance-binding))
+          (instance (.name (om:instance model port)))
+          (port (.name port)))
+      (animate #{#instance .#instance-port .meta.requires.port = "#port ";
+               #}
+                 `((instance-port ,instance-port)
+                   (instance ,instance)
+                   (port ,port)))))
+      (filter om:provides? (om:ports model)))
 #(map
  (lambda (port)
-    (animate #{#'()
-       #instance .#port .meta.provides.port = #instance .#port .meta.requires.port;#}
-     `((instance ,(.name (om:instance model port)))
-       (port ,(.name port)))))
-     (filter om:requires? (om:ports model)))
+   (let* ((binding (om:port-bind model (.name port)))
+          (instance-binding (om:instance-binding? binding))
+          (instance-port (.port instance-binding))
+          (instance (.name (om:instance model port)))
+          (port (.name port)))
+     (animate #{#instance .#instance-port .meta.provides.port = "#port ";
+              #}
+                `((instance-port ,instance-port)
+                  (instance ,instance)
+                  (port ,port)))))
+   (filter om:requires? (om:ports model)))
 #(map
  (lambda (port)
    (map (define-on model port #{

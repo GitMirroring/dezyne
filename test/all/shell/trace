@@ -1,3 +1,6 @@
-p.return_to_sender
-p.foo
-p.true
+p_outer.return_to_sender
+r_outer.return_to_sender
+r_outer.true
+p_outer.true
+r_outer.foo
+p_outer.foo
