@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,105 +28,107 @@
 #include <iostream>
 
 namespace dzn {
+  std::ostream debug(std::clog.rdbuf());
+  //std::ostream debug(nullptr);
 
-runtime::runtime(){}
+  runtime::runtime(){}
 
-void trace_in(std::ostream& os, port::meta const& m, const std::string& e)
-{
-  os << path(m.requires.meta, m.requires.port) << "." << e << " -> "
-     << path(m.provides.meta, m.provides.port) << "." << e << std::endl;
-}
-
-void trace_out(std::ostream& os, port::meta const& m, const std::string& e)
-{
-  os << path(m.provides.meta, m.provides.port) << "." << e << " -> "
-     << path(m.requires.meta, m.requires.port) << "." << e << std::endl;
-}
-
-bool runtime::external(void* scope) {
-  return (queues.find(scope) == queues.end());
-}
-
-bool& runtime::handling(void* scope)
-{
-  return boost::get<0>(queues[scope]);
-}
-
-void*& runtime::deferred(void* scope)
-{
-  return boost::get<1>(queues[scope]);
-}
-
-std::queue<boost::function<void()> >& runtime::queue(void* scope)
-{
-  return boost::get<2>(queues[scope]);
-}
-
-bool& runtime::performs_flush(void* scope)
-{
-  return boost::get<3>(queues[scope]);
-}
-
-void runtime::flush(void* scope)
-{
-#ifdef DEBUG_RUNTIME
-  std::cout << path(scope) << " flush" << std::endl;
-#endif
-  if(!external(scope))
+  void trace_in(std::ostream& os, port::meta const& m, const std::string& e)
   {
-    std::queue<boost::function<void()> >& q = queue(scope);
-    while(!q.empty())
+    os << path(m.requires.meta, m.requires.port) << "." << e << " -> "
+       << path(m.provides.meta, m.provides.port) << "." << e << std::endl;
+  }
+
+  void trace_out(std::ostream& os, port::meta const& m, const std::string& e)
+  {
+    os << path(m.provides.meta, m.provides.port) << "." << e << " -> "
+       << path(m.requires.meta, m.requires.port) << "." << e << std::endl;
+  }
+
+  bool runtime::external(void* scope) {
+    return (queues.find(scope) == queues.end());
+  }
+
+  bool& runtime::handling(void* scope)
+  {
+    return boost::get<0>(queues[scope]);
+  }
+
+  void*& runtime::deferred(void* scope)
+  {
+    return boost::get<1>(queues[scope]);
+  }
+
+  std::queue<boost::function<void()> >& runtime::queue(void* scope)
+  {
+    return boost::get<2>(queues[scope]);
+  }
+
+  bool& runtime::performs_flush(void* scope)
+  {
+    return boost::get<3>(queues[scope]);
+  }
+
+  void runtime::flush(void* scope)
+  {
+#ifdef DEBUG_RUNTIME
+    std::cout << path(scope) << " flush" << std::endl;
+#endif
+    if(!external(scope))
     {
-      boost::function<void()> event = q.front();
-      q.pop();
-      handle(scope, event);
-    }
-    if (deferred(scope)) {
-      void* tgt = deferred(scope);
-      deferred(scope) = NULL;
-      if (!handling(tgt)) {
-        runtime::flush(tgt);
+      std::queue<boost::function<void()> >& q = queue(scope);
+      while(!q.empty())
+      {
+        boost::function<void()> event = q.front();
+        q.pop();
+        handle(scope, event);
+      }
+      if (deferred(scope)) {
+        void* tgt = deferred(scope);
+        deferred(scope) = NULL;
+        if (!handling(tgt)) {
+          runtime::flush(tgt);
+        }
       }
     }
   }
-}
 
-void runtime::defer(void* src, void* tgt, const boost::function<void()>& event)
-{
+  void runtime::defer(void* src, void* tgt, const boost::function<void()>& event)
+  {
 #ifdef DEBUG_RUNTIME
-  std::cout << path(tgt) << " defer" << std::endl;
+    std::cout << path(tgt) << " defer" << std::endl;
 #endif
 
-  if(!(src && performs_flush(src)) && !handling(tgt))
-  {
-    handle(tgt, event);
-  }
-  else
-  {
-    deferred(src) = tgt;
-    queue(tgt).push(event);
-  }
-}
-
-void runtime::handle(void* scope, const boost::function<void()>& event)
-{
-  bool& handle = handling(scope);
-
-#ifdef DEBUG_RUNTIME
-  std::cout << path(scope) << " handle " << std::boolalpha << handle << std::endl;
-#endif
-
-  if(!handle)
-  {
+    if(!(src && performs_flush(src)) && !handling(tgt))
     {
-      scoped_value<bool> sv(handle, true);
-      event();
+      handle(tgt, event);
     }
-    flush(scope);
+    else
+    {
+      deferred(src) = tgt;
+      queue(tgt).push(event);
+    }
   }
-  else
+
+  void runtime::handle(void* scope, const boost::function<void()>& event)
   {
-    throw std::logic_error("component already handling an event");
+    bool& handle = handling(scope);
+
+#ifdef DEBUG_RUNTIME
+    std::cout << path(scope) << " handle " << std::boolalpha << handle << std::endl;
+#endif
+
+    if(!handle)
+    {
+      {
+        scoped_value<bool> sv(handle, true);
+        event();
+      }
+      flush(scope);
+    }
+    else
+    {
+      throw std::logic_error("component already handling an event");
+    }
   }
-}
 }

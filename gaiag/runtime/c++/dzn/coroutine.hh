@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
@@ -32,10 +32,6 @@
 #include <dzn/context.hh>
 #endif
 
-#ifdef DEBUG_RUNTIME
-#include <iostream>
-#endif
-
 namespace dzn
 {
 #if HAVE_BOOST_COROUTINE
@@ -47,9 +43,7 @@ namespace dzn
 
   struct coroutine
   {
-    static int g_id;
     int id;
-
     dzn::context context;
     dzn::yield yield;
     void* port;
@@ -58,8 +52,9 @@ namespace dzn
     bool skip_block;
     template <typename Worker>
     coroutine(Worker&& worker)
-    : id(g_id++)
+    : id(-2)
     , context([this, worker](dzn::yield& yield){
+        this->id = context::get_id();
         this->yield = std::move(yield);
         worker();
       })
@@ -68,12 +63,6 @@ namespace dzn
     , released(false)
     , skip_block(false)
     {}
-    ~coroutine()
-    {
-#ifdef DEBUG_RUNTIME
-      std::cout << __FUNCTION__ << ": " << id << std::endl;
-#endif
-    }
     void yield_to(dzn::coroutine& c)
     {
       this->yield(c.context);

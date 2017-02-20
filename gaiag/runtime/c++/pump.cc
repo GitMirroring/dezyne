@@ -3,7 +3,7 @@
 // Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -46,19 +46,6 @@ namespace dzn
     out_binding = nullptr;
     l.get<dzn::pump>().release(p);
   }
-  static void debug(const std::string& s)
-  {
-#ifdef DEBUG_RUNTIME
-    std::cout << s << std::endl;
-#endif
-  }
-
-  static void debug(const std::string& s, int id)
-  {
-#ifdef DEBUG_RUNTIME
-    std::cout << '[' << id << "] " << s << std::endl;
-#endif
-  }
 
   static std::list<coroutine>::iterator find_self(std::list<coroutine>& coroutines)
   {
@@ -77,10 +64,8 @@ namespace dzn
   {
     auto self = find_self(coroutines);
     self->finished = true;
-    debug("finish coroutine", self->id);
+    debug << "[" << self->id << "] finish coroutine" << std::endl;
   }
-
-  int coroutine::g_id = 0;
 
   pump::pump()
   : collateral_block_lambda([this]{collateral_block();})
@@ -155,25 +140,26 @@ namespace dzn
       coroutine zero;
       create_context();
 
-      exit = [&]{debug("enter exit"); zero.release();};
+      exit = [&]{debug << "enter exit" << std::endl; zero.release();};
 
       std::unique_lock<std::mutex> lock(mutex);
       while(running || queue.size() || collateral_blocked.size())
       {
-        assert(coroutines.size());
         if (lock) lock.unlock();
+        assert(coroutines.size());
+
         coroutines.back().call(zero);
+
         lock.lock();
-        coroutines.remove_if([](dzn::coroutine& c){if(c.finished) debug("removing", c.id); return c.finished;});
+
+        remove_finished_coroutines();
       }
-      debug("finish pump");
+      debug << "finish pump" << std::endl;
       assert(queue.empty());
     }
     catch(const std::exception& e)
     {
-#ifdef DEBUG_RUNTIME
-      std::cout << "oops: " << e.what() << std::endl;
-#endif
+      debug << "oops: " << e.what() << std::endl;
       std::terminate();
     }
   }
@@ -183,16 +169,12 @@ namespace dzn
         try
         {
           auto self = find_self(coroutines);
-          debug("create context", self->id);
+          debug << "[" << self->id << "] create context" << std::endl;
           while((running || queue.size()) && !self->released)
           {
             worker();
-            if(!self->released)
-            {
-              collateral_release(self);
-            }
+            if(!self->released) collateral_release(self);
           }
-
           if(self->released) finish(coroutines);
 
           if(switch_context) decltype(switch_context)(std::move(switch_context))();
@@ -208,9 +190,7 @@ namespace dzn
 #endif
         catch(const std::exception& e)
         {
-#ifdef DEBUG_RUNTIME
-          std::cout << "oops: " << e.what() << std::endl;
-#endif
+          debug << "oops: " << e.what() << std::endl;
           std::terminate();
         }
       });
@@ -218,13 +198,13 @@ namespace dzn
   void pump::collateral_block()
   {
     auto self = find_self(coroutines);
-    debug("collateral_block", self->id);
+    debug << "[" << self->id << "] collateral_block" << std::endl;
 
     collateral_blocked.splice(collateral_blocked.end(), coroutines, self);
     create_context();
     self->yield_to(coroutines.back());
 
-    debug("collateral_unblock", self->id);
+    debug << "[" << self->id << "] collateral_unblock" << std::endl;
   }
   void pump::collateral_release(std::list<coroutine>::iterator self)
   {
@@ -245,30 +225,24 @@ namespace dzn
     }
 
     auto self = find_self(coroutines);
-#if 0 //DEAD CODE? verify and remove .skip_block member
-    if(self->skip_block)
-    {
-      self->skip_block = false;
-      return;
-    }
-#endif
 
     self->port = p;
 
-    debug("block", self->id);
+    debug << "[" << self->id << "] block" << std::endl;
 
     create_context();
 
     self->yield_to(coroutines.back());
-    debug("entered context", self->id);
-#ifdef DEBUG_RUNTIME
-    std::cout << "routines: ";
-    for (auto& c: coroutines) {
-      std::clog << c.id << " ";
+    debug << "[" << self->id << "] entered context" << std::endl;
+    if (debug.rdbuf())
+    {
+      debug << "routines: ";
+      for (auto& c: coroutines) {
+        debug << c.id << " ";
+      }
+      debug << std::endl;
     }
-    std::cout << std::endl;
-#endif
-    coroutines.remove_if([](dzn::coroutine& c){if(c.finished) debug("removing",c.id); return c.finished;});
+    remove_finished_coroutines();
   }
   void pump::release(void* p)
   {
@@ -277,20 +251,20 @@ namespace dzn
     auto blocked = find_blocked(coroutines, p);
     if(blocked == coroutines.end())
     {
-    debug("skip block", self->id);
+    debug << "[" << self->id << "] skip block" << std::endl;
       skip_block.insert(p);
       return;
     }
 
-    debug("unblock", blocked->id);
-    debug("released", self->id);
+    debug << "[" << blocked->id << "] unblock" << std::endl;
+    debug << "[" << self->id << "] released" << std::endl;
     self->released = true;
 
     switch_context = [blocked,self] {
       blocked->port = nullptr;
 
-      debug("switch from", self->id);
-      debug("to", blocked->id);
+      debug << "[" << self->id << "] switch from" << std::endl;
+      debug << "[" << blocked->id << "] to" << std::endl;
 
       self->yield_to(*blocked);
     };
@@ -319,5 +293,12 @@ namespace dzn
   {
     auto it = std::find_if(timers.begin(), timers.end(), [id](const std::pair<deadline, std::function<void()>>& p){ return p.first.id == id; });
     if(it != timers.end()) timers.erase(it);
+  }
+  void pump::remove_finished_coroutines()
+  {
+    coroutines.remove_if([](dzn::coroutine& c){
+        if(c.finished) debug << "[" << c.id << "] removing" << std::endl;
+        return c.finished;
+      });
   }
 }

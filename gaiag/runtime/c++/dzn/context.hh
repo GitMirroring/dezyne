@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -27,12 +27,15 @@
 #include <cassert>
 #include <condition_variable>
 #include <functional>
+#include <map>
 #include <mutex>
 #include <stdexcept>
 #include <thread>
 
 namespace dzn
 {
+  extern std::ostream debug;
+
 class context
 {
   enum State {INITIAL, RELEASED, BLOCKED, FINAL};
@@ -66,6 +69,7 @@ public:
   , thread([this] {
       try
       {
+        debug << "[" << get_id () << "] create" << std::endl;
         std::unique_lock<std::mutex> lock(mutex);
         while(state != FINAL)
         {
@@ -102,6 +106,7 @@ public:
   context(Work&& work)
   : context()
   {
+    std::unique_lock<std::mutex> lock(mutex);
     this->work = std::move(work);
   }
   ~context()
@@ -109,9 +114,15 @@ public:
     std::unique_lock<std::mutex> lock(mutex);
     do_finish(lock);
   }
-  std::thread::id get_id()
+  static int get_id()
   {
-    return thread.get_id();
+    static std::mutex mutex;
+    static std::map<std::thread::id,int> m;
+    std::unique_lock<std::mutex> lock(mutex);
+    std::thread::id i = std::this_thread::get_id();
+    if (m.find(i)==m.end())
+      m[i] = m.size() - 1;
+    return m[i];
   }
   void finish()
   {
@@ -130,22 +141,8 @@ public:
   }
   void call(context& c)
   {
+    debug << "[" << get_id () << "] call" << std::endl;
     std::unique_lock<std::mutex> lock(mutex);
-    do_release(lock);
-
-    std::unique_lock<std::mutex> lock2(c.mutex);
-    c.state = BLOCKED;
-
-    lock.unlock();
-
-    do { c.condition.wait(lock2); } while(c.state == BLOCKED);
-  }
-  template <typename Work>
-  void yield(Work&& work, context& c)
-  {
-    std::unique_lock<std::mutex> lock(mutex);
-    this->work = std::move(work);
-    this->rel = [&]{c.release();};
     do_release(lock);
 
     std::unique_lock<std::mutex> lock2(c.mutex);
@@ -167,7 +164,9 @@ private:
   {
     state = BLOCKED;
     condition.notify_one();
+    debug << "[" << get_id () << "] do_block0" << std::endl;
     do { condition.wait(lock); } while(state == BLOCKED);
+    debug << "[" << get_id () << "] do_block1" << std::endl;
     if(state == FINAL) throw unwind();
   }
   void do_release(std::unique_lock<std::mutex>&)
@@ -176,10 +175,13 @@ private:
       throw std::runtime_error("not allowed to release a call which is " +
                                to_string(state));
     state = RELEASED;
+    debug << "[" << get_id () << "] do_release0" << std::endl;
     condition.notify_one();
+    debug << "[" << get_id () << "] do_release1" << std::endl;
   }
   void do_finish(std::unique_lock<std::mutex>& lock)
   {
+    debug << "[" << get_id () << "] finish0" << std::endl;
     state = FINAL;
     lock.unlock();
     condition.notify_all();
