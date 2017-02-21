@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
@@ -22,6 +22,7 @@
 //
 // Code:
 
+// -*-java-*-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
