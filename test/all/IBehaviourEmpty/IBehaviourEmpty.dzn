@@ -21,18 +21,15 @@
 //
 // Code:
 
-interface DeadlockInModel
+interface IBehaviourEmpty
 {
   in void ia();
-  out void oa();
   
   behaviour
   {
-    bool b = false;
-    on ia: illegal;
-    [b] on inevitable: oa;
   }
-  // Simulating DeadlockInModel =>
-  //   deadlock in model Deadlock
-  // when simulating empty trace
+  // Simulate IBehaviourEmpty =>
+  //   IBehaviourEmpty is incomplete: 'ia' not handled
+  // for trace
+  //   ia
 }

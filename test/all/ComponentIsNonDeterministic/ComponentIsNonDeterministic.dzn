@@ -21,18 +21,30 @@
 //
 // Code:
 
-interface DeadlockInModel
+component ComponentIsNonDeterministic
 {
-  in void ia();
-  out void oa();
+  provides I pp;
   
   behaviour
   {
-    bool b = false;
-    on ia: illegal;
-    [b] on inevitable: oa;
+    [true] on pp.ia(): pp.oa();
+    [true] on pp.ia(): pp.ob();
   }
-  // Simulating DeadlockInModel =>
-  //   deadlock in model Deadlock
-  // when simulating empty trace
+
+  // Verifying model ComponentIsNonDeterministic =>
+  //   Component ComponentIsNonDeterministic is non-deterministic due to overlapping guards
+  // For trace
+  //   pp.ia
+}
+
+interface I
+{
+  in void ia();
+  out void oa();
+  out void ob();
+  
+  behaviour
+  {
+    on ia: {}
+  }
 }

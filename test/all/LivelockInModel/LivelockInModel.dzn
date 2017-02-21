@@ -21,18 +21,23 @@
 //
 // Code:
 
-interface DeadlockInModel
+component LivelockInModel
 {
-  in void ia();
-  out void oa();
+  provides I pp;
   
   behaviour
   {
-    bool b = false;
-    on ia: illegal;
-    [b] on inevitable: oa;
+    void fn() {fn();}
+    
+    on pp.ia(): fn();
   }
-  // Simulating DeadlockInModel =>
-  //   deadlock in model Deadlock
-  // when simulating empty trace
+}
+
+interface I
+{
+  in void ia();
+  behaviour
+  {
+    on ia: {}
+  }
 }

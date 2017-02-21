@@ -21,18 +21,19 @@
 //
 // Code:
 
-interface DeadlockInModel
+interface ModelIsIncomplete
 {
   in void ia();
-  out void oa();
   
   behaviour
   {
-    bool b = false;
-    on ia: illegal;
-    [b] on inevitable: oa;
+    bool b = true;
+    [b] on ia: b = false;
   }
-  // Simulating DeadlockInModel =>
-  //   deadlock in model Deadlock
-  // when simulating empty trace
+  
+  // Verifying model ModelIsIncomplete =>
+  //   ModelIsIncomplete is incomplete: 'ModelIsIncomplete.ia' not handled
+  // for trace
+  //   ia
+  //   return
 }

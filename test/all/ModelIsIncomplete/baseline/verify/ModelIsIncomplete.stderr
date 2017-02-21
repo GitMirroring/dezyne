@@ -1,0 +1,2 @@
+out/ModelIsIncomplete/ModelIsIncomplete.dzn:8:12:i7: ModelIsIncomplete is incomplete: 'ModelIsIncomplete.ia' not handled
+out/ModelIsIncomplete/ModelIsIncomplete.dzn:8:12:i7: deadlock in model ModelIsIncomplete

@@ -64,23 +64,3 @@ interface ISync
     on ia: fail;
   }
 }
-
-component Deadlock_ReplyValueNotSet
-{
-  provides I pp;
-  
-  behaviour
-  {
-    on pp.ia(): {}// deadlock in model CompletenessReplyValueNotSet
-  }
-  // Expected error message: Completeness: pp.ia reply value not set.
-  
-  // Analysis: 
-  // User selects pp.ia => simulator runs up to the point where on pp.ia would 
-  // return. The return is an observable step which should be in the input 
-  // trace. It is not yet in the trace. Hence, interpreter does not attempt 
-  // return. replaytrace attempts to extend the trace with return (either 
-  // pp.true or pp.false) which fails because both trigger programError(
-  // "Completenes: pp.ia reply value not set". => deadlock (no eligible events). 
-}
-

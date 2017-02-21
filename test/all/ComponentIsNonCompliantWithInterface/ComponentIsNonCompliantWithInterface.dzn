@@ -21,18 +21,32 @@
 //
 // Code:
 
-interface DeadlockInModel
+component ComponentIsNonCompliantWithInterface
+{
+  provides I pp;
+  
+  behaviour
+  {
+    on pp.ia(): {}
+  }
+  
+  // Verifying ComponentIsNonCompliantWithInterface =>
+  //   pp.oa not handled
+  // for trace
+  //   pp.ia
+  //   pp.return
+}
+
+interface I
 {
   in void ia();
   out void oa();
   
   behaviour
   {
-    bool b = false;
-    on ia: illegal;
-    [b] on inevitable: oa;
+    bool b = true;
+    [b] on ia: b = false;
+    [!b] on ia: illegal;
+    [!b] on inevitable: {oa; b = true;}
   }
-  // Simulating DeadlockInModel =>
-  //   deadlock in model Deadlock
-  // when simulating empty trace
 }

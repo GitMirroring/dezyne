@@ -21,27 +21,46 @@
 //
 // Code:
 
-component InvalidEventTrace
+component QueueFull
 {
-  provides I pp;
+  provides IP pp;
+  requires IR rp;
   
   behaviour
   {
-    on pp.ia(): {}
+    on pp.ia(): rp.ia();
+    on rp.oa(): {}
   }
-
-  // Simulating InvalidEventTrace =>
-  //   Invalid event trace
-  // when performing trace
-  //   oa
+  
+  // Verifying model QueueFull =>
+  //   queue full
+  // For trace
+  //   pp.ia
+  //   rp.ia
+  //   rp.oa
+  //   rp.oa
+  //   rp.oa
+  //   rp.oa
+  //   rp.return
 }
 
-interface I
+interface IP
 {
   in void ia();
   
   behaviour
   {
     on ia: {}
-  }  
+  }
+}
+
+interface IR
+{
+  in void ia();
+  out void oa();
+  
+  behaviour
+  {
+    on ia: {oa; oa; oa; oa;}
+  }
 }
