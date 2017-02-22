@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
@@ -90,11 +90,18 @@ namespace dzn
   {}
   pump::~pump()
   {
+    stop();
+  }
+  void pump::stop()
+  {
     std::unique_lock<std::mutex> lock(mutex);
-    running = false;
-    condition.notify_one();
-    if (lock) lock.unlock();
-    task.wait();
+    if(running)
+    {
+      running = false;
+      condition.notify_one();
+      if (lock) lock.unlock();
+      task.wait();
+    }
   }
   void pump::wait()
   {

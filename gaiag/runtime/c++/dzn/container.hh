@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -61,6 +61,12 @@ namespace dzn
     {
       runtime.performs_flush(this) = flush;
       system.dzn_meta.name = "sut";
+    }
+    ~container()
+    {
+      dzn::pump* p = system.dzn_locator.template try_get<dzn::pump>(); //only shells have a pump
+      //resolve the race condition between the shell pump dtor and the container pump dtor
+      if(p != &pump) pump([p] {p->stop();});
     }
     std::string match_return()
     {

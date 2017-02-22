@@ -15,6 +15,7 @@
                      (non-injected-instances model)))
                "},{" ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports model))) "}" (c++:init-brace-close)))
              "dzn_rt(dezyne_locator.get<dzn::runtime>())")
+            (list "dzn_locator(dezyne_locator)")
             (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
                  (injected-bindings model))
             (list (if (pair? (injected-bindings model))
