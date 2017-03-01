@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
@@ -22,23 +21,34 @@
 //
 // Code:
 
-interface running
-{
-  in void start();
-  in void stop();
-
-  behaviour
-  {
-    bool runs = false;
-    [!runs]
-    {
-      on start: runs = !runs;
-      on stop: illegal;
-    }
-    [otherwise]
-    {
-      on start: illegal;
-      on stop: runs = !runs;
-    }
+interface I1 {
+  enum I1 { E1, E2 }; //<<<<<<<<<<<<
+  in void e();
+  behaviour {
+    on e: {}
   }
 }
+
+component NameClash {
+  provides I1 NameClash; //<<<<<<<<<<<<<<<<<<
+  behaviour {
+    on NameClash.e(): {}
+  }
+}
+
+component NameClash2 {
+  provides I1 p;
+  behaviour {
+    enum NameClash2 { E1, E2 }; //<<<<<<<<<<<<<<<<<<
+    on p.e(): {}
+  }
+}
+
+component NameClash3 {
+  provides I1 p;
+  behaviour {
+    bool NameClash3 = false; // <<<<<<<<<<<<<<<<<<<<<
+    on p.e(): {}
+  }
+}
+
