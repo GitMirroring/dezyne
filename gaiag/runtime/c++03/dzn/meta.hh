@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -28,7 +29,6 @@
 #include <boost/bind/protect.hpp>
 #include <boost/function.hpp>
 
-#include <cassert>
 #include <string>
 #include <stdexcept>
 #include <vector>
@@ -74,18 +74,6 @@ namespace dzn
     const meta* parent;
     std::vector<const meta*> children;
     std::vector<boost::function<void()> > ports_connected;
-  };
-
-  struct illegal_handler
-  {
-    illegal_handler()
-    : illegal(boost::bind(&illegal_handler::throw_handler, this))
-    {}
-    void throw_handler()
-    {
-      throw std::runtime_error("illegal");
-    }
-    boost::function<void()> illegal;
   };
 
   inline std::string path(const meta* m, std::string p = std::string())
