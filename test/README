@@ -1,3 +1,15 @@
+see-hekje
+
+bin/test blocking/block cs |& sed -e 's@.cs(@.cs:@' -e 's@,@:@' -e 's@):@:error:@'
+
+
+
+cat out/block/block.trace.0 | sh out/block/cs/test |& sed -e "s,/home,@/home," -e 's,\(@.*[^ ]\),\1:error:bla,' | tr @ '\n'
+
+
+mcs -debug -out:out/block/cs/test.exe out/block/cs/main.cs out/block/cs/II.cs out/block/cs/block.cs out/block/cs/I.cs out/block/cs/dzn/pump.cs out/block/cs/dzn/context.cs out/block/cs/dzn/meta.cs out/block/cs/dzn/runtime.cs out/block/cs/dzn/coroutine.cs out/block/cs/dzn/container.cs out/block/cs/dzn/locator.cs |& sed -e 's@.cs(@.cs:@' -e 's@,@:@' -e 's@):@:error:@'
+
+
 DZN TEST FRAMEWORK
 ==================
 

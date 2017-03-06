@@ -1,1 +1,1 @@
-##error blocking not supported
+#formal  = new dzn.V<#type >(this.#global);

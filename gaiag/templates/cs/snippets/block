@@ -1,1 +1,4 @@
-##error blocking not supported
+#statement
+this.dzn_runtime.infos[this].handling = false;
+dzn.Runtime.flush(this);
+dzn.pump.port_block(this.dzn_locator, this.#port);

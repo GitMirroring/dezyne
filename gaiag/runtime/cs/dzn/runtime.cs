@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
@@ -52,7 +53,7 @@ namespace dzn {
             {this.dzn_runtime.infos.Add(this, new Runtime.info ());}
     }
 
-    abstract public class SystemComponent : ComponentBase {
+    abstract public class SystemComponent : Component {
         public SystemComponent(Locator locator, String name, Meta parent)
             : base(locator, name, parent)
             {}

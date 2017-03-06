@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -199,6 +199,7 @@ if (typeof (module) !== 'undefined') {
 function pump() {
   this.id = 0;
   this.zero = {id:this.id};
+  this.self = {id:this.id};
   this.running = false;
   this.skip_block = [];
   this.coroutines = [];
@@ -207,11 +208,6 @@ function pump() {
 
   this.at = function (id) {
     return this.coroutines.find (function (c){return c.id == id;});
-  }.bind (this);
-
-  this.find_self = function () {
-    return this.self;
-    //return this.coroutines.find (function (c) {return c.fiber === fibers.current;});
   }.bind (this);
 
   this.worker = function () {
@@ -241,7 +237,7 @@ function pump() {
   }.bind (this);
 
   this.collateral_block = function () {
-    var self = this.find_self ();
+    var self = this.self;
     debug('collateral_block', self.id);
     this.collateral_blocked.push (self);
     var coroutine = this.create_context ();
@@ -265,15 +261,15 @@ function pump() {
         .concat (this.skip_block.slice (skip+1));
       return;
     }
-    var self = this.find_self ();
+    var self = this.self;
     debug('block', self.id);
     self.port = port;
     fibers.yield (this.create_context ());
-    debug('entered context', this.find_self ().id);
+    debug('entered context', this.self.id);
   }.bind (this);
 
   this.release = function (port) {
-    var self = this.find_self ();
+    var self = this.self;
     debug('release', self.id);
 
     var blocked = this.coroutines.find (function (c){return c.port == port;});

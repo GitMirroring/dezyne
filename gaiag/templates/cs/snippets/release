@@ -1,1 +1,2 @@
-##error blocking not supported
+dzn.pump.port_release(this.dzn_locator, this.#port , this.out_#port);
+

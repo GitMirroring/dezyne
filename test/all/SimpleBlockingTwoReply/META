@@ -1,1 +1,1 @@
-{"known":["c:build","cs:build","c++03:build","execute"],"comment":"blocking: not supported, error model"}
+{"known":["c:build","c++03:build","execute"],"comment":"blocking: not supported, error model"}

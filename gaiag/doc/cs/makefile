@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -26,6 +27,10 @@ default: all
 all: test.exe
 
 test.exe: ../../runtime/cs/dzn/context.cs ../../runtime/cs/dzn/coroutine.cs test.cs
+	rm -f $@
+	mcs -debug -out:$@ $^ |& sed -e 's@[.]cs(@.cs:@' -e 's@,@:@' -e 's@): @:@'
+
+pump.exe: ../../runtime/cs/dzn/context.cs ../../runtime/cs/dzn/coroutine.cs ../../runtime/cs/dzn/pump.cs test.cs
 	rm -f $@
 	mcs -debug -out:$@ $^ |& sed -e 's@[.]cs(@.cs:@' -e 's@,@:@' -e 's@): @:@'
 

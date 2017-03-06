@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -26,7 +26,8 @@
 using System;
 
 public class #.scope_model {#
-(->string (map (declare-enum model) (om:interface-enums model)))
+ (->string (map (declare-enum model) (om:interface-enums model)))
+ public static string to_string(bool b) {return b ? "true" : "false";}
   public class In {
 #((->join "\n") (map (declare-io model #{
     public #(lambda-type model type formals)  #name ;#})

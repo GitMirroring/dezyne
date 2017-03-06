@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -26,6 +27,7 @@
 (define-module (gaiag cs)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 curried-definitions)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
   #:use-module (gaiag goops)
@@ -36,7 +38,11 @@
   #:use-module (gaiag misc)
   #:use-module (gaiag reader)
 
-  #:export (ast-> lambda-type))
+  #:export (ast->
+           lambda-type
+           cs:out-var-decls
+           cs:out-param-list
+           ))
 
 (define ast-> ast:code)
 
@@ -50,3 +56,26 @@
     (if (eq? (.name type) 'void)
         (list "Action" (if (>0 count) (list "<" ((->join ", ") formal-types) ">") ""))
         (list "Func" (if (>0 count) (list "<"((->join ", ") formal-types) "," type ">") (list  "<" type ">")))))))
+
+;; FIXME: c&p c++
+(define (cs:out-var-decls model formal-objects)
+  (map (lambda (f i)
+         (if (member (.direction f) '(inout out))
+             (let* ((type (->code model (.type f)))
+                    (init (if (equal? type "int") i)))
+               (list "dzn.V<" type "> _" i " = new dzn.V<" type ">(" init "); "))))
+       formal-objects (iota (length formal-objects))))
+
+;; FIXME: c&p c++
+(define (cs:out-param-list model formal-objects)
+  ((->join ",")
+   (map (lambda (f i)
+          (if (member (.direction f) '(inout out))
+              (list "_" i)
+              (let* ((type (->code model (.type f)))
+                     (init (if (equal? type "int") i)))
+                (list init))))
+        formal-objects (iota (length formal-objects)))))
+
+(define* ((cs:scope-join :optional (model #f) (infix (string->symbol "."))) o)
+  ((om:scope-join model infix) o))

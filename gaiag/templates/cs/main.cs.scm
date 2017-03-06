@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2015, 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -23,138 +23,66 @@
 ;;; 
 ;;; Code:
 
+// -*-java-*-
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 class main {
-  static bool flush = false;
-  static bool relaxed = false;
 
-  static String drop_prefix(String str, String prefix) {
-    if (str.StartsWith(prefix)) {
-      return str.Substring(prefix.Length);
-    }
-    return str;
-  }
+    static void connect_ports (dzn.container<#((om:scope-name) model)> c)
+{
+ #(map (lambda (port)
+       (map (define-on model port #{
+    c.system.#port .#direction port.#event  = (#formals) => {
+    dzn.Runtime.traceIn(c.system.#port .dzn_meta, "#event "); System.Console.Error.WriteLine("");
+    #(string-if (eq? direction 'out) #{c.match("#port .#event ");#}
+    #{c.match("#port .#event "); String tmp = c.match_return();
+    dzn.Runtime.traceOut(c.system.#port .dzn_meta, tmp.Split('.')[1]); System.Console.Error.WriteLine("");
+    return#(if (not (eq? reply-name 'void)) (list " dzn.container<" ((om:scope-name (string->symbol ".")) model) ">.string_to_value<" (cond ((equal? return-type "bool") 'bool) ((equal? return-type "int") 'int) (else (list (if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'dzn.global reply-scope) '. reply-name))) ">(tmp.Split('.')[1])"));#})
+  };
+  #}) (filter (negate (om:dir-matches? port)) (om:events port))))
+  (om:ports model))}
 
-  static String consume_synchronous_out_events(String e, String prefix, EventMap event_map) {
-    String s;
-    String match = e + prefix;
-    while ((s = System.Console.ReadLine()) != null)
-      if (s == match)
-        break;
-    while ((s = System.Console.ReadLine()) != null) {
-      if (!event_map.ContainsKey(s)) {
-        break;
-      }
-      event_map[s]();
-    }
-    return s;
-  }
-
-  static void log_in(String prefix, String e, EventMap event_map) {
-    System.Console.Error.WriteLine(prefix + e);
-    if (relaxed) return;
-    consume_synchronous_out_events(prefix, e, event_map);
-    System.Console.Error.WriteLine(prefix + "return");
-  }
-
-  static void log_out(String prefix, String e, EventMap event_map) {
-    System.Console.Error.WriteLine(prefix + e);
-  }
-
-  static R string_to_value<R>(String s) where R: struct, IComparable, IConvertible {
-    R r = new R();
-    String v = s.Substring(s.IndexOf(".")+1);
-    if (r.GetType().Equals(typeof(bool))) return (R)Convert.ChangeType(v,typeof(R));
-    if (r.GetType().Equals(typeof(int))) return (R)Convert.ChangeType(v,typeof(R));
-    foreach (R e in Enum.GetValues(typeof(R))) {
-      if (e.ToString().Equals(s)) {
-        return e;
-      }
-    }
-    throw new System.ArgumentException("No such value: ", s);
-  }
-
-  static R log_valued<R>(String prefix, String e, EventMap event_map, String event_prefix) where R: struct, IComparable, IConvertible {
-    System.Console.Error.WriteLine(prefix + e);
-    String s = consume_synchronous_out_events(prefix, e, event_map);
-    R r = string_to_value<R>(drop_prefix(s, event_prefix));
-    String v;
-    if (r.GetType().Equals(typeof(bool)))
-      v = (bool)Convert.ChangeType(r,typeof(bool)) ? "true" : "false";
-    else if (r.GetType().Equals(typeof(int)))
-       v = r.ToString();
-    else
-       v = typeof(R).Name + "_" + r.ToString();
-    System.Console.Error.WriteLine(prefix + v);
-    return r;
-  }
-
-
-  private class EventMap : Dictionary<String, Action> {};
-
-  private static EventMap fillEventMap(#.scope_model  m) {
-  dzn.V<int> v = new dzn.V<int> (0);
-  if (v.v == 0) {}
-  dzn.Component c = new dzn.Component(m.dzn_locator);
-  c.dzn_runtime.infos[c].flushes = flush;
-  c.dzn_meta.parent = null;
-  c.dzn_meta.name = "<external>";
- EventMap e = new EventMap();
-#(map
-    (lambda (port)
-    (map (define-on model port #{
-    m.#port .#direction port.#event  = (#formals) => {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued<# (cond ((equal? return-type "bool") 'bool) ((equal? return-type "int") 'int) (else (list (if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'dzn.global reply-scope) '. reply-name)))>("#port .", "#event ", e, "#port .#reply-name _");#})};
-#}) (filter (negate (om:dir-matches? port))
-       (om:events port)))) (om:ports model))
-#(map (init-port #{
-
-    m.#name .dzn_meta.requires.name = "#name ";
-    m.#name .dzn_meta.requires.component = c;
-    m.#name .dzn_meta.requires.meta = c.dzn_meta;
-
-    if (flush) {
-      m.#name .dzn_meta.requires.component = c;
-      m.#name .dzn_meta.requires.name = "<internal>.#name ";
-    }
-#}) (filter om:provides? (om:ports model)))
-#(map (init-port #{
-
-    m.#name .dzn_meta.provides.name = "#name ";
-    m.#name .dzn_meta.provides.component = c;
-    m.#name .dzn_meta.provides.meta = c.dzn_meta;
-
-    if (flush) {
-      m.#name .dzn_meta.provides.component = c;
-      m.#name .dzn_meta.provides.name = "<internal>.#name ";
-    }
-    e.Add("#name .<flush>", () => {System.Console.Error.WriteLine("#name .<flush>"); dzn.Runtime.flush (m.#name .dzn_meta.provides.component);});
-#}) (filter om:requires? (om:ports model)))
-#(map
-    (lambda (port)
-    (map (define-on model port #{
-        e.Add("#port .#event ", () => {m.#port .#direction port.#event(#((->join ", ") (map (lambda (p) (if (om:out-or-inout? p) 'v 0)) formal-objects)));});
-#}) (filter (om:dir-matches? port)
-       (om:events port)))) (om:ports model))
+static Dictionary<String, Action> event_map (dzn.container<#((om:scope-name) model)> c)
+{
  #(map (init-port #{
-     m.#name .dzn_meta.provides.name = "#name ";
-     m.#name .dzn_meta.requires.name = "#name ";
- #}) (om:ports model)) return e;
-}
+     c.system.#name .dzn_meta.requires.name = "#name ";
+ #}) (filter om:provides? (om:ports model)))
+ #(map (init-port #{
+     c.system.#name .dzn_meta.provides.component = c;
+     c.system.#name .dzn_meta.provides.meta = c.dzn_meta;
+     c.system.#name .dzn_meta.provides.name = "#name ";
 
-  public static void Main(String[] args) {
-    flush = args.Length > 0 && args[0] == "--flush";
-    relaxed = args.Length > 0 && args[0] == "--relaxed";
-    dzn.Locator locator = new dzn.Locator();
-    dzn.Runtime runtime = new dzn.Runtime(() => {System.Console.Error.WriteLine("illegal"); Environment.Exit(0);});
-    #.scope_model  sut = new #.scope_model(locator.set(runtime), "sut");
-    EventMap e = fillEventMap(sut);
-    String s;
-    while ((s = System.Console.ReadLine()) != null) {
-      if (e.ContainsKey(s)) {
-        e[s]();
-      }
-    }
+ #}) (filter om:requires? (om:ports model)))
+
+     Dictionary<String, Action> lookup = new Dictionary<String, Action>();
+  #((->join "\n  ")
+    (append (map (lambda (port)
+       ((->join "\n  ") (map (define-on model port #{lookup.Add("#port .#event ",()=>{#(string-if (eq? reply-name 'void)
+       #{ #(cs:out-var-decls model formal-objects) c.system.#port .#direction port.#event (#(cs:out-param-list model formal-objects));
+       #(string-if (eq? direction 'in) #{c.match("#port .return");#}) #}
+                     #{ #(cs:out-var-decls model formal-objects) c.match("#port ." + c.to_string<#(cond ((equal? return-type "bool") 'bool) ((equal? return-type "int") 'int) (else (list (if (null? reply-scope) 'dzn.global ((->join "_") reply-scope)) '. reply-name)))>(c.system.#port .#direction port.#event (#(cs:out-param-list model formal-objects)))); #})}); #})
+       (filter (om:dir-matches? port) (om:events port)))))
+
+  (om:ports model))
+  (map (init-port (if (not (eq? "(glue)" 'asd)) #{lookup.Add("#name .<flush>",()=>{System.Console.Error.WriteLine("#name .<flush>"); dzn.Runtime.flush(c.system);});#}
+                                             #{{"#name .<flush>",()=>{System.Console.Error.WriteLine("#name .<flush>"); g_singlethreaded.processCBs();}}#}))
+                                             (filter om:requires? (om:ports model)))))
+    return lookup;
   }
+
+  public static void Main(String[] args)
+  {
+    Debug.Listeners.Add(new TextWriterTraceListener(Console.Error));
+    Debug.AutoFlush = true;
+
+    Func<dzn.Locator,String,dzn.Meta,dzn.Component> new_system = (loc,name,meta)=>{
+        return new #((om:scope-name) model)(loc,name,meta);
+    };
+    using(dzn.container<#((om:scope-name) model)> c = new dzn.container<#((om:scope-name) model)>(new_system, args.Length>0 && args[0] == "--flush")) {
+    connect_ports (c);
+    c.run(event_map (c), new List<String> {#((->join ",") (map (lambda (port) (list "\"" (.name port) "\"")) (filter om:requires? (om:ports model))))});
+  }
+}
 }
