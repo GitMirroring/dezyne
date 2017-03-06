@@ -12,19 +12,19 @@
 #(map
   (define-helper model #f #{
 
-  typedef struct {uint8_t size;#return-type  (*f)(void*#comma #((->join ", ") formal-types));#.scope_model * self;#((->join ";") formal-list)#(if (null? formal-list) "" ";")} args_#signature-name;
+  typedef struct {uint8_t size;#return-type  (*f)(void*#comma #((->join ", ") formal-types));#.scope_model * self;#((->join ";") formal-numbered-list)#(if (null? formal-list) "" ";")} args_#signature-name;
    #})
-   (delete-duplicates (map .signature (append-map (lambda (port) (om:events port)) (om:ports model))) (code:signature-equal? model)))
+   (delete-duplicates (map .signature (append-map (lambda (port) (filter (om:dir-matches? port) (om:events port))) (om:ports model))) (code:signature-types-equal? model)))
 
 #(map
    (lambda (port)
-    (let ((signatures (delete-duplicates (map .signature (filter (negate (om:dir-matches? port)) (om:events port))) (code:signature-equal? model))))
+     (let ((signatures (delete-duplicates (map .signature (append-map (lambda (port) (filter (om:dir-matches? port) (om:events port))) (om:ports model))) (code:signature-types-equal? model))))
    (map
       (define-helper model port #{
 
   static void helper_out_#port _#signature-name (void* args) {
     args_#signature-name  *a = args;
-    a->f(a->self->#port #comma #(comma-space-join (map (lambda (x) (symbol-append 'a-> x)) argument-list)));
+    a->f(a->self->#port #comma #(comma-space-join (map (lambda (x) (symbol-append 'a->_ (number->symbol x))) (iota (length argument-list)))));
   }
 
     #})
@@ -35,10 +35,10 @@
    (define-helper model #f #{
       static void helper_in_#signature-name (void* args) {
       args_#signature-name  *a = args;
-      a->f(a->self#comma #((->join ", ") (map (lambda (x) (symbol-append 'a-> x)) argument-list)));
+      a->f(a->self#comma #((->join ", ") (map (lambda (x) (symbol-append 'a->_ (number->symbol x))) (iota (length argument-list)))));
      }
    #})
-   (delete-duplicates (map .signature (append-map (lambda (port) (filter (om:dir-matches? port) (om:events port))) (om:ports model))) (code:signature-equal? model)))
+   (delete-duplicates (map .signature (append-map (lambda (port) (filter (om:dir-matches? port) (om:events port))) (om:ports model))) (code:signature-types-equal? model)))
 
 #(map (define-function model #{
   static #return-type  #name (#.scope_model * self#comma #formals);

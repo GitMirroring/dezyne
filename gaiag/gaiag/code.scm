@@ -3,7 +3,7 @@
 ;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
-;; Copyright © 2014, 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -52,6 +52,7 @@
            code:->code
            code:extension
            code:signature-equal?
+           code:signature-types-equal?
            enum-type
            ->code
            binding-name
@@ -889,16 +890,30 @@
        (equal? (map x-formal ((compose .elements .formals) a))
                (map x-formal ((compose .elements .formals) b)))))
 
+(define* ((type-equal? model) a b)
+  (or (equal? a b)
+      (and (om:enum model a) (om:enum model b))))
+
+(define ((code:signature-types-equal? model) a b)
+  (and ((type-equal? model) (.type a) (.type b))
+       (equal? (map om:out-or-inout? ((compose .elements .formals) a))
+               (map om:out-or-inout? ((compose .elements .formals) b)))
+       (every (type-equal? model)
+              (map .type ((compose .elements .formals) a))
+              (map .type ((compose .elements .formals) b)))))
+
 (define ((define-helper model port string) signature)
   (let* ((formals ((compose .elements .formals) signature))
          (formal-list (map (lambda (x) (code:->code model x)) formals))
          (formal-types (map (lambda (formal)
                               (snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
                             formals))
+         (formal-numbered-list (map (lambda (type number) (list type " _" number)) formal-types (iota (length formal-types))))
          (return-type (->code- model (.type signature))))
     (animate string `((argument-list ,(map .name formals))
                       (comma ,(if (pair? formals) (sep) ""))
                       (formal-list ,formal-list)
+                      (formal-numbered-list ,formal-numbered-list)
                       (formal-types ,formal-types)
                       (port ,(and=> port .name))
                       (signature-name ,(code:formals->name model signature))
