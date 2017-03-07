@@ -2,8 +2,8 @@
 ##define SKEL_#.COMPONENT _HH
 
 #(map (include-interface #{
-##include "#interface .hh" #})
-  (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
+##include "#interface .hh"
+#}) (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
 
 namespace dzn {
 struct locator;
