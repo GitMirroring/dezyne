@@ -45,9 +45,27 @@
            asd-interfaces))
 
 (define (ast-> ast)
-  (let ((om ((om:register code:om #t) ast)))
-    (map dump (filter (negate om:imported?) ((om:filter:p <model>) om))))
+  (let* ((om ((om:register code:om #t) ast))
+         (models ((om:filter:p <model>) om))
+         (models (filter (negate om:imported?) models))
+         ;; Generator-synthesized models look non-imported, filter harder
+         (models (filter (negate dzn-async?) models)))
+    (map dump models))
   "")
+
+(define (dzn-async? o)
+  (or (gaiag-dzn-async? o)
+      (generator-dzn-async? o)))
+
+(define (gaiag-dzn-async? o)
+  (equal? ((compose .scope .name) o) '(dzn async)))
+
+(define (generator-dzn-async? o)
+  (let* ((name (.name o))
+         (scope (.scope name)))
+    (and (pair? scope)
+         (eq? (car scope) 'dzn)
+         (symbol-prefix? 'async (.name name)))))
 
 (define* ((c++:scope-join #:optional (model #f) (infix (string->symbol "::"))) o)
   ((om:scope-join model infix) o))
