@@ -448,35 +448,38 @@
   (match o
     (('formal name ('type ('dotted type))) type)))
 (define (make-async-refine-interface name formals)
-  `(interface
-    ,name
-    (events (event req (signature (type void) ,formals) in)
-            (event clr (signature (type void) ,formals) in)
-            (event ack (signature (type void) ,formals) out))
-    (behaviour
-     #f
-     (types)
-     (ports)
-     (variables
-      (variable idle (type bool) (expression true)))
-     (functions)
-     (compound
-      (guard (expression (dotted idle))
+  (match name
+    (('dotted scope ... name)
+     `(interface
+       (scope.name ,scope ,name)
+       (types)
+       (events (event req (signature (type void) ,formals) in)
+               (event clr (signature (type void) ,formals) in)
+               (event ack (signature (type void) ,formals) out))
+       (behaviour
+        #f
+        (types)
+        (ports)
+        (variables
+         (variable idle (type bool) (expression true)))
+        (functions)
         (compound
-         (on (triggers (trigger #f req (arguments)))
-             (assign idle (expression false)))
-         (on (triggers (trigger #f clr (arguments)))
-             (compound))))
-      (guard (expression (! (dotted idle)))
-        (compound
-         (on (triggers (trigger #f req (arguments)))
-             (illegal))
-         (on (triggers (trigger #f clr (arguments)))
-             (assign idle (expression true)))
-         (on (triggers (trigger #f inevitable (arguments)))
-             (compound
-              (action (trigger #f ack (arguments)))
-              (assign idle (expression true))))))))))
+         (guard (expression (dotted idle))
+           (compound
+            (on (triggers (trigger #f req (arguments)))
+                (assign idle (expression false)))
+            (on (triggers (trigger #f clr (arguments)))
+                (compound))))
+         (guard (expression (! (dotted idle)))
+           (compound
+            (on (triggers (trigger #f req (arguments)))
+                (illegal))
+            (on (triggers (trigger #f clr (arguments)))
+                (assign idle (expression true)))
+            (on (triggers (trigger #f inevitable (arguments)))
+                (compound
+                 (action (trigger #f ack (arguments)))
+                 (assign idle (expression true))))))))))))
 
 (define (comp src e)
   (match src
