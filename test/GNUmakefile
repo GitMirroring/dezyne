@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-# Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -28,6 +28,7 @@ DZN:=../client/bin/dzn
 # quick check target
 check: prerequisite
 	bin/test -j16 check
+	bin/test view view
 
 regression: prerequisite
 	bin/test -j16 regression-test

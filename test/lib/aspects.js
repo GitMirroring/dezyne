@@ -77,8 +77,11 @@ var dependencies = {
   view:     ['convert'],
 };
 
+var default_aspects = Object.keys(dependencies).filter (function (e) {return ['view'].indexOf (e) == -1;});
+
 function depend(e) {
-  return dependencies[e].concat(dependencies[e].append_map(depend));
+  var deps = dependencies[e] || ['convert'];
+  return deps.concat(deps.append_map(depend));
 }
 
 function comment(meta, aspect, language) {
@@ -94,7 +97,8 @@ function skip_filter (meta) {
     return meta.skip.indexOf(e) == -1;
   }
   function filter_dependency(e) {
-    return depend(e).filter(function(a) { return meta.skip.indexOf(a) != -1; }).length == 0;
+    var deps = depend(e) || [];
+    return deps.filter(function(a) { return meta.skip.indexOf(a) != -1; }).length == 0;
   }
   return function (e) {
     var language = meta.languages.length === 1 && meta.languages[0];
@@ -171,7 +175,7 @@ var aspects = {
             meta.languages = languages.length && languages || meta.languages;
 
             work = (work.length == 0
-                    ? Object.keys(dependencies)
+                    ? default_aspects
                     : work)
               .filter (skip_filter (meta));
 
