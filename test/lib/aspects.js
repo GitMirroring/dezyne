@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
@@ -245,13 +245,19 @@ var aspects = {
       return parameters;
     }
 
-    function testcase(aspect,dependencies,language) {
+    function testcase(aspect,dependencies,language,retry) {
+      retry = retry === undefined && 2 || retry;
       if (dependencies.status) {
         return {status: dependencies.status,
                 parameters: updateparameters(dependencies.parameters, "Not executed because prerequisite did not succeed", aspect, language)};
       }
       return aspects[aspect](dependencies.parameters)
         .then(function(result) {
+          if(result.status && retry) {
+            var msg = '[RETRY] ' + dependencies.parameters.filename + ' : ' + (2 - retry);
+            console.log (msg);
+            return testcase(aspect,dependencies,language,retry-1).then(function(o){o.output += msg + '\n'; return o;});
+          }
           return {status: result.status, parameters: updateparameters(dependencies.parameters, result.output, aspect, language)};
         });
     }
