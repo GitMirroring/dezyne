@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
@@ -27,6 +27,7 @@
 #! /usr/bin/env node
 
 var fs = require('fs');
+var path = require('path');
 
 var privates = {
   read: function() {
@@ -50,11 +51,11 @@ var privates = {
   ,
   transform: function(result) {
     var html = '';
-    
+
     function ln(line) {
       html += line + '\n';
     }
-    
+
     ln('<!DOCTYPE html>');
     ln('<html>');
     ln('  <title>Result of '+result.target+'</title>');
@@ -175,7 +176,9 @@ var privates = {
       var hname = item.name.replace(/\//g,'-');
       var outcome = item.outcome.status;
       ln('    <tr>');
-      ln('      <td>'+item.name+'</td>');
+      var base = path.basename (item.name);
+      var file = '../' + item.name + '/' + base + '.dzn';
+      ln('      <td><a href="' + file +'">'+item.name+'</a></td>');
       Object.keys(outcome).each(function(aspect) {
         function status2class(status) {
           return (status=='FAILED'||status=='ERROR'||status=='NOLOG') ? 'fail' : 'pass';
