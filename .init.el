@@ -12,12 +12,12 @@
   (interactive)
   (save-excursion
     (shell (get-buffer-create "*daemon*"))
-    (insert "cd ~/development.git/daemon && make debug")
+    (insert "cd ~/development/daemon && make debug")
     (comint-send-input))
   (save-excursion
     (shell (get-buffer-create "*server*"))
-    (insert "cd ~/development.git/server && make debug")
+    (insert "cd ~/development/server && make debug")
     (comint-send-input))
   (shell)
-  (insert "cd ~/development.git && make hello")
+  (insert "cd ~/development && make hello")
   (comint-send-input))
