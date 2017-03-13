@@ -1,1 +1,1 @@
-{"skip":["execute","run"],"comment":"error model: infinite recursion"}
+{"known":["execute"],"comment":"error model: infinite recursion"}

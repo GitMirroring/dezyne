@@ -1,1 +1,1 @@
-{"skip":["build","run","triangle"],"comment":"error interface model: cannot build,run"}
+{"known":["build","run","triangle"],"comment":"error interface model: cannot build,run"}

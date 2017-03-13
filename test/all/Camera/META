@@ -1,1 +1,1 @@
-{"skip":["c","cs","c++03","execute","run","triangle"],"comment":"handwritten main, no trace: cannot c, cs, c++03, execute,run"}
+{"known":["c:build","cs:build","c++03:build","execute","run"],"comment":"handwritten main, no trace: cannot c, cs, c++03, execute,run"}

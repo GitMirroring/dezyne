@@ -1,1 +1,1 @@
-{"skip":["run","verify"],"comment":"namespace: cannot run or verify"}
+{"known":["run","verify"],"comment":"namespace: cannot run or verify"}

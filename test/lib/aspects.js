@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-// Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2016, 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -43,6 +43,7 @@ var ext = {c:'.c','c++':'.cc','c++03':'.cc',cs:'.cs',javascript:'.js'};
 
 var default_meta = {
   skip: []
+  , known: []
   , ignore: []
   , flush: false
   , languages: all_languages.filter (function (x) {return x != 'c++-msvc11';})
@@ -110,6 +111,15 @@ function skip_filter (meta) {
   }
 }
 
+function known (meta, aspect, language) {
+  if (language) {
+    if (meta.known.indexOf(language) != -1) return true;
+    if (meta.known.indexOf(language+":"+aspect) != -1) return true;
+  }
+  if (meta.known.indexOf(aspect) != -1) return true;
+  return false;
+}
+
 function ls_traces(dir) {
   return q.denodeify(fs.readdir)(dir)
     .then(function(entries) {
@@ -150,7 +160,8 @@ var aspects = {
   }
   ,
   all: function(session, work, languages, dir) {
-
+    var startTime = new Date();
+    
     function find_key(v, e) {
       Object.keys(dependencies).indexOf(e) == -1 && console.error(e + ' not listed');
       return v && dependencies[e];
@@ -200,7 +211,9 @@ var aspects = {
                 });
               }, q({status:0, parameters:parameters}))
               .then (function(result) {
-                var outcome = {status:{},output:{}};
+                var endTime = new Date();
+                var elapsed = util.elapsedTime(startTime, endTime, true);
+                var outcome = {elapsed:elapsed,status:{},output:{}};
                 Object.keys(dependencies).each(function(aspect){
                   if(haslanguage(aspect)) {
                     outcome.status[aspect] = {};
@@ -248,8 +261,15 @@ var aspects = {
     function testcase(aspect,dependencies,language,retry) {
       retry = retry === undefined && 2 || retry;
       if (dependencies.status) {
-        return {status: dependencies.status,
+        var result = {status: dependencies.status,
                 parameters: updateparameters(dependencies.parameters, "Not executed because prerequisite did not succeed", aspect, language)};
+        result.parameters.outcome.status = result.parameters.outcome.status || {};
+        if(haslanguage(aspect)) {
+          result.parameters.outcome.status[aspect] = result.parameters.outcome.status[aspect] || {};
+          result.parameters.outcome.status[aspect][language] = 'SKIPPED';
+        }
+        else result.parameters.outcome.status[aspect] = 'SKIPPED';
+        return result;
       }
       return aspects[aspect](dependencies.parameters)
         .then(function(result) {
@@ -292,14 +312,19 @@ var aspects = {
           return aspects.test(parameters1)
             .then(function(result2){return testcase(aspect, result2, haslanguage(aspect) && language);})
             .then(function(result2){
-              var status = result2.status ? (result2.status == -1 ? 'ERROR' : 'FAILED') : 'OK';
+              var knwn = known(parameters.meta, aspect, language);
+              var status = result2.status ? (result2.status == -1 ? 'ERROR' : (knwn ? 'KNOWN' : 'FAILED')) : (knwn ? 'SOLVED' : 'OK');
               result2.parameters.outcome = result2.parameters.outcome || {};
               result2.parameters.outcome.status = result2.parameters.outcome.status || {};
               if(haslanguage(aspect)) {
                 result2.parameters.outcome.status[aspect] = result2.parameters.outcome.status[aspect] || {};
+                status = result2.parameters.outcome.status[aspect][language] || status;
                 result2.parameters.outcome.status[aspect][language] = status;
               }
-              else result2.parameters.outcome.status[aspect] = status;
+              else {
+                status = result2.parameters.outcome.status[aspect] || status;
+                result2.parameters.outcome.status[aspect] = status;
+              }
               console.log(header + '[' + status + ']');
               return result2;
             })
@@ -476,8 +501,9 @@ var aspects = {
     var flush = parameters.meta.flush ? ' --flush' : '';
     var illegal = ''; // TODO: config
     var model = parameters.meta.model || parameters.model;
+    var queue = parameters.meta.queue || 7;
     var imports = parameters.meta.imports || "";
-    var cmd = dzn() + ' traces '+imports+' -q 7 '+illegal+flush+' -m '+model+' -o '+out+' '+parameters.filename;
+    var cmd = dzn() + ' traces '+imports+' -q ' + queue + ' ' + illegal+flush+' -m '+model+' -o '+out+' '+parameters.filename;
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
       .then(function(){return ls_traces(out);})

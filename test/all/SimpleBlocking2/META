@@ -1,1 +1,2 @@
-{"skip":["c","cs","c++03"],"comment":"blocking: not supported"}
+
+{"known":["c:build","cs:build","c++03:build"],"comment":"blocking: not supported"}

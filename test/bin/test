@@ -19,7 +19,7 @@ var output = {
         output.write = require(scriptfile).write;
       }
       catch (error) {
-        console.error("Don't know how to create " + fileExtension + '-file (missing ' + path.basename(scriptfile) + ')');
+        console.error("Don't know how to create " + format + '-file (missing ' + path.basename(scriptfile) + ')');
         process.exit(2);
       }
       var outputDir = path.dirname(outputFilePath);
@@ -35,13 +35,12 @@ var output = {
     output.result.items = [];
   }
   ,
-  close: function(passed, failed) {
-  
+  close: function() {
     function nolanguages() {
       var result = {};
       languages.each ( function(lan) {
         result[lan] = 'NOLOG';
-      }); 
+      });
       return result;
     }
     function read_outcome(item) {
@@ -78,15 +77,15 @@ var output = {
 
     output.result.endTime = new Date();
     output.result.elapsedTime = util.elapsedTime(output.result.startTime, output.result.endTime, false);
-    output.result.passed = passed;
-    output.result.failed = failed;
+    output.result.items.each(function(item) {
+      item.outcome = read_outcome(path.dirname (output.filePath)+'/'+path.basename(item.name));
+    });
+    set_status(output.result);
     if (output.write) {
-      output.result.items.each(function(item) {
-        item.outcome = read_outcome(path.dirname (output.filePath)+'/'+path.basename(item.name));
-      });
       output.write(output.result, output.filePath);
       console.log ('See file://' + path.resolve (output.filePath));
     }
+    return output.result;
   }
   ,
   log: function(name, result) {
@@ -218,6 +217,47 @@ function process_dir (dir, args, passed, failed) {
     });
 }
 
+function set_status(result) {
+  result.status = {passed: 0, solved: 0, known: 0, failed: 0};
+  result.items.each(function(item) {
+    var outcome = item.outcome.status;
+    var passed = 0;
+    var solved = 0;
+    var known = 0;
+    var failed = 0;
+    Object.keys(outcome).each(function(aspect) {
+      function checkstatus(status) {
+        if (status=='FAILED'||status=='ERROR'||status=='NOLOG') failed++;
+        else if (status=='KNOWN') known++;
+        else if (status=='SOLVED') solved++;
+        else passed++;
+      }
+      var aspoutcome = outcome[aspect];
+      if (typeof aspoutcome !== 'string') {
+        Object.keys(aspoutcome).each(function(language) {
+          checkstatus(aspoutcome[language]);
+        });
+      } else {
+        checkstatus(aspoutcome);
+      }
+    });
+    if (failed) {
+      item.status = 'FAILED';
+      result.status.failed++;
+    } else if (known) {
+      item.status = 'KNOWN';
+      result.exitcode = 0;
+      result.status.known++;
+    } else if (solved) {
+      item.status = 'SOLVED';
+      result.status.solved++;
+    } else {
+      item.status = 'PASSED';
+      result.status.passed++;
+    }
+  });
+}
+
 function main() {
   var args = parse_opts(process.argv);
 
@@ -237,11 +277,9 @@ function main() {
       return execute(dir, args);
     })
     .then(function(results) {
-      exitcodes = results.map(function(result){return result.result.exitcode;});
-      console.log('EXITCODES: ' + exitcodes);
-      var passed = exitcodes.filter(function(e){return e == 0;}).length;
-      output.close(passed, exitcodes.length - passed);
-      var x = exitcodes.reduce(function(a, b){return a || b; }, 0);
+      var outcome = output.close();
+      console.log('STATUS: ' + JSON.stringify(outcome.status));
+      var x = outcome.status.failed;
       process.exit(x);
     })
     .fail(function(err) {

@@ -1,1 +1,1 @@
-{"skip":["traces","execute","run"],"comment":"error model: cannot traces,execute,run"}
+{"known":["execute","run"],"comment":"error model: cannot execute,run"}

@@ -1,1 +1,1 @@
-{"skip":["build","execute","run","triangle"],"comment":"need CFLAGS, handwritten main: cannot build,execute,run"}
+{"known":["build","execute","run","triangle"],"comment":"need CFLAGS, handwritten main: cannot build,execute,run"}

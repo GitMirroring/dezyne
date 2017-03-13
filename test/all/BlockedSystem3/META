@@ -1,1 +1,1 @@
-{"skip":["c","cs","c++03","run"],"model":"Blocked","comment":{"true":"system: cannot run","c":"blocking: not supported"}}
+{"known":["c:build","cs:build","c++03:build","run"],"model":"Blocked","comment":{"true":"system: cannot run","c":"blocking: not supported"}}

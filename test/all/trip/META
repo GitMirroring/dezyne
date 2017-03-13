@@ -1,4 +1,4 @@
-{ "skip": ["run", "traces", "execute"] 
+{ "known": ["run", "traces", "execute"] 
 , "comment": "FIXME: running manually crafted system traces is broken?"
 , "model":"trap"
 }

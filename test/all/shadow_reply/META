@@ -1,1 +1,1 @@
-{"skip":["c","cs","javascript"],"comment":"shadow local: not supported"}
+{"known":["c:build","cs:build","javascript:build"],"comment":"shadow local: not supported"}

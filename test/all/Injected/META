@@ -1,1 +1,1 @@
-{"skip":["cs","javascript","run"], "comment":"handwritten trace; running javascript produces different prefixes on trace; building would work but it's all or nothing for a language atm."}
+{"known":["cs:execute","javascript:execute","run"], "comment":"handwritten trace; running javascript produces different prefixes on trace."}

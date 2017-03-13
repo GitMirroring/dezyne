@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-// Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2016, 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 //
@@ -44,6 +44,20 @@ var privates = {
     });
   }
   ,
+  overall_status: function(result) {
+    if (result.status.failed) return 'fail';
+    if (result.status.known) return 'known';
+    if (result.status.solved) return 'solved';
+    if (result.status.passed) return 'pass';
+  }
+  ,
+  display_status: function(status) {
+    if (status == 'fail') return '[FAIL]';
+    if (status == 'known') return '[KNOWN]';
+    if (status == 'solved') return '[SOLVED]';
+    if (status == 'pass') return '[PASS]';
+  }
+  ,
   write: function(result) {
     var fileContent = privates.transform(result);
     console.log(fileContent);
@@ -73,6 +87,16 @@ var privates = {
     ln('          if ($target) $target.css("background", "white");');
     ln('          $target = jQuery(this.hash);');
     ln('          $target.css("background", "#FFCCCC");');
+    ln('        });');
+    ln('        jQuery("a.known").click(function(event){');
+    ln('          if ($target) $target.css("background", "white");');
+    ln('          $target = jQuery(this.hash);');
+    ln('          $target.css("background", "#FFFFCC");');
+    ln('        });');
+    ln('        jQuery("a.solved").click(function(event){');
+    ln('          if ($target) $target.css("background", "white");');
+    ln('          $target = jQuery(this.hash);');
+    ln('          $target.css("background", "#CCCCFF");');
     ln('        });');
     ln('      });');
     ln('    </script>');
@@ -110,6 +134,12 @@ var privates = {
     ln('      .fail {');
     ln('        background: #FFCCCC;');
     ln('      }');
+    ln('      .known {');
+    ln('        background: #FFFFCC;');
+    ln('      }');
+    ln('      .solved {');
+    ln('        background: #CCCCFF;');
+    ln('      }');
     ln('      .pass {');
     ln('        color: black;');
     ln('        background: #CCFFCC;');
@@ -117,8 +147,8 @@ var privates = {
     ln('    </style>');
     ln('  </head>');
     ln('  <body>');
-    var lcStatus = (result.failed) ? 'fail' : 'pass';
-    var ucStatus = (result.failed) ? '[FAIL]' : '[PASS]';
+    var lcStatus = privates.overall_status(result);
+    var ucStatus = privates.display_status(lcStatus);
     ln('    <h1 id="target" class="' + lcStatus + '">Target: ' + result.target + ' ' + ucStatus + '</h1>');
     ln('    <table>');
     ln('      <tr>');
@@ -128,6 +158,8 @@ var privates = {
     ln('        <th>Elapsed time</th>');
     ln('        <th>Total tests</th>');
     ln('        <th>Passed</th>');
+    ln('        <th>Solved</th>');
+    ln('        <th>Known</th>');
     ln('        <th>Failed</th>');
     ln('      </tr>');
     ln('      <tr>');
@@ -135,9 +167,11 @@ var privates = {
     ln('        <td>' + result.startTime.toLocaleTimeString() + '</td>');
     ln('        <td>' + result.endTime.toLocaleTimeString() + '</td>');
     ln('        <td>' + result.elapsedTime + '</td>');
-    ln('        <td>' + (result.passed + result.failed) + '</td>');
-    ln('        <td>' + result.passed + '</td>');
-    ln('        <td>' + result.failed + '</td>');
+    ln('        <td>' + (result.status.passed + result.status.solved + result.status.known + result.status.failed) + '</td>');
+    ln('        <td>' + result.status.passed + '</td>');
+    ln('        <td>' + result.status.solved + '</td>');
+    ln('        <td>' + result.status.known + '</td>');
+    ln('        <td>' + result.status.failed + '</td>');
     ln('      </tr>');
     ln('    </table>');
     ln('    <p></p>');
@@ -146,6 +180,7 @@ var privates = {
     if (result.items.length) {
       ln('    <tr>');
       ln('      <th>ITEM</th>');
+      ln('      <th>time</th>');
 
       var outcome = result.items[0].outcome.status;
       Object.keys(outcome).each(function(aspect) {
@@ -158,6 +193,7 @@ var privates = {
       });
       ln('    </tr>');
       ln('    <tr>');
+      ln('      <th> </th>');
       ln('      <th> </th>');
 
       Object.keys(outcome).each(function(aspect) {
@@ -173,16 +209,20 @@ var privates = {
       ln('    </tr>');
     }
     result.items.each(function(item) {
+      function status2class(status) {
+        if (status=='FAILED'||status=='ERROR'||status=='NOLOG') return 'fail';
+        if (status=='KNOWN') return 'known';
+        if (status=='SOLVED') return 'solved';
+        return 'pass';
+      }
       var hname = item.name.replace(/\//g,'-');
       var outcome = item.outcome.status;
       ln('    <tr>');
       var base = path.basename (item.name);
       var file = '../' + item.name + '/' + base + '.dzn';
-      ln('      <td><a href="' + file +'">'+item.name+'</a></td>');
+      ln('      <td class="'+status2class(item.status)+'"><a href="' + file +'">'+item.name+'</a></td>');
+      ln('      <td>'+item.outcome.elapsed+'</a></td>');
       Object.keys(outcome).each(function(aspect) {
-        function status2class(status) {
-          return (status=='FAILED'||status=='ERROR'||status=='NOLOG') ? 'fail' : 'pass';
-        }
         var aspoutcome = outcome[aspect];
         if (typeof aspoutcome !== 'string') {
           Object.keys(aspoutcome).each(function(language) {
@@ -218,7 +258,6 @@ var privates = {
     ln('<html>');
     return html;
   }
-  ,
 }
 
 var publics = {
