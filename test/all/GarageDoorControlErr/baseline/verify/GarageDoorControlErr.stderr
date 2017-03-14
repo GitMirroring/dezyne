@@ -1,3 +1,3 @@
 out/GarageDoorControlErr/GarageDoorControlErr.dzn:122:4:i10: MotorControlIF is incomplete: 'MotorControlIF.stop' not handled
 out/GarageDoorControlErr/GarageDoorControlErr.dzn:346:4:i122: deadlock in model GarageDoorControlErr
-out/GarageDoorControlErr/GarageDoorControlErr.dzn:248:21:i127: doorControl.error not handled
+out/GarageDoorControlErr/GarageDoorControlErr.dzn:248:21:i127: doorControl.error not performed by component

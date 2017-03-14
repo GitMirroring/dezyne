@@ -31,7 +31,7 @@ component ComponentIsNonCompliantWithInterface
   }
   
   // Verifying ComponentIsNonCompliantWithInterface =>
-  //   pp.oa not handled
+  //   pp.oa not performed by component
   // for trace
   //   pp.ia
   //   pp.return
