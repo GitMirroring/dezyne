@@ -1,3 +1,4 @@
-{"skip":["table","view","code","traces"]
-,"comment":"interpreter error message test model"
+{"known":["c++:build","c++03:build","c:build"]
+,"skip":["execute"]
+,"comment":"invalid value assignment not detected in 'execute'"
 }

@@ -28,7 +28,6 @@ component IllegalValueInAssignment_AssignmentStatement
   behaviour
   {
     subint Count {0..5};
-    Count Init() {return 6;}
     Count i = 0;
     
     on pp.ia(): i = 6;
