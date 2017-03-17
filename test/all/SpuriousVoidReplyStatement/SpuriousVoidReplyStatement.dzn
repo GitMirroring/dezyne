@@ -31,7 +31,7 @@ component SpuriousVoidReplyStatement
   }
   // Simulating SpuriousVoidReplyStatement =>
   //   Void reply not allowed in non-blocking action.
-  // when simulating trace:
+  // if the following trace is performed:
   //   pp.ia
 }
 

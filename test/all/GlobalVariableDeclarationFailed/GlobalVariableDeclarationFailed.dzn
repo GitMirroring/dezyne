@@ -35,5 +35,5 @@ interface GlobalVariableDeclarationFailed
   
   // Simulate GlobalVariableDeclarationFailed =>
   //   Global variable declaration failed. Range error for variable c
-  // for empty trace.
+  // if empty trace is performed
 }

@@ -36,6 +36,6 @@ interface IllegalValueInAssignment_IReturnStatement
   
   // Simulate IllegalValueInAssignment_IReturnStatement =>
   //   Illegal value in assignment: Range error for variable c
-  // when simulating trace
+  // if the following trace is performed:
   //   ia
 }

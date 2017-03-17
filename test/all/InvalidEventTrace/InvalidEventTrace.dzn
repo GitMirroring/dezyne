@@ -32,7 +32,7 @@ component InvalidEventTrace
 
   // Simulating InvalidEventTrace =>
   //   Invalid event trace
-  // when performing trace
+  // if the following trace is performed:
   //   oa
 }
 

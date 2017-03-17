@@ -36,7 +36,7 @@ component IllegalValueInAssignment_ActionExpressionReturn
 
   // Simulate IllegalValueInAssignment_ActionExpressionReturn =>
   //   Illegal value in assignment: Range error for variable i
-  // when executing trace:
+  // if the following trace is performed:
   //   pp.ia
   //   rp.ia
   //   rp.12

@@ -31,7 +31,7 @@ component MainProgramCompletelyEmpty
 
   // Simulating MainProgramCompletelyEmpty =>
   //   pp.ia (implicitly) illegal
-  // when performing trace
+  // if the following trace is performed:
   //   pp.ia
 }
       

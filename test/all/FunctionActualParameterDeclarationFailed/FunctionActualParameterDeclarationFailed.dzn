@@ -34,6 +34,6 @@ interface FunctionActualParameterDeclarationFailed
   }
   // Simulating FunctionActualParameterDeclarationFailed =>
   //   Function actual parameter declaration failed. Range error for variable c
-  // when performing trace
+  // if the following trace is performed:
   //   ia
 }

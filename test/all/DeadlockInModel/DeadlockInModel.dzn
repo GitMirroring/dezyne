@@ -34,5 +34,5 @@ interface DeadlockInModel
   }
   // Simulating DeadlockInModel =>
   //   deadlock in model Deadlock
-  // when simulating empty trace
+  // if empty trace is performed
 }

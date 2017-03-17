@@ -33,7 +33,7 @@ component ReplyNotAllowedOnRequiresPort
   }
   // Simulating ReplyNotAllowedOnRequiresPort =>
   //   Reply not allowed on 'requires' port: 'rp'
-  // when simulating trace:
+  // if the following trace is performed:
   //   rp.oa
 }
 

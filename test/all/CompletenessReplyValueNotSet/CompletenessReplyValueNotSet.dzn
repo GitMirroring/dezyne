@@ -34,7 +34,7 @@ component CompletenessReplyValueNotSet
   }
   // Simulate CompletenessReplyValueNotSet =>
   //   pp.ia reply value not set
-  // when performing trace:
+  // if following trace is performed:
   //   pp.ia
   //   rp.ia
   //   rp.ok

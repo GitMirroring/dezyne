@@ -35,7 +35,7 @@ component IllegalValueInAssignment_AssignmentStatement
 
   // Simulate IllegalValueInAssignment_AssignmentStatement =>
   //   Illegal value in assignment: Range error for variable i
-  // when executing trace:
+  // if the following trace is performed:
   //   pp.ia
 }
 

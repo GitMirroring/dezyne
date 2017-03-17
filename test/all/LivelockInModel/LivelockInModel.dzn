@@ -31,6 +31,10 @@ component LivelockInModel
     
     on pp.ia(): fn();
   }
+  // Simulating component 'LivelockInModel' =>
+  //   Livelock in model LivelockInModel
+  // if the following trace is performed:
+  //   pp.ia
 }
 
 interface I

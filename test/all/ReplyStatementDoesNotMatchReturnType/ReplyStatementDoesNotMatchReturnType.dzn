@@ -33,7 +33,7 @@ component ReplyStatementDoesNotMatchReturnType
   }
   // Simulating ReplyStatementDoesNotMatchReturnType =>
   //   Reply statement does not match event return type.
-  // when performing trace:
+  // if the following trace is performed:
   //   pp.ia
   //   rp.ia
   //   rp.oa

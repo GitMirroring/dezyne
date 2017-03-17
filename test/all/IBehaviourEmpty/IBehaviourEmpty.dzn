@@ -30,6 +30,6 @@ interface IBehaviourEmpty
   }
   // Simulate IBehaviourEmpty =>
   //   IBehaviourEmpty is incomplete: 'ia' not handled
-  // for trace
+  // if the following trace is performed:
   //   ia
 }

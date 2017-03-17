@@ -35,7 +35,7 @@ component OutEventsOnProvidesPortNotAllowed
   // Simulating OutEventsOnProvidesPortNotAllowed
   //   Out-events on provides port PORT_B not allowed. Only out-events on
   //   provides port PORT_A allowed in current call context.
-  // when performing trace
+  // if the following trace is performed:
   //   ppa.ia
   //   ppb.oa
 }

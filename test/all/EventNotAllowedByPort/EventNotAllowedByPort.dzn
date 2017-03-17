@@ -32,9 +32,9 @@ component EventNotAllowedByPort
     on rp.oa(): pp.oa();
   }
   
-  // EventNotAllowedByPort shall report error
+  // Simulating EventNotAllowedByPort shall report error
   //   pp.oa not allowed by port pp
-  // when simulating trace:
+  // if empty trace is performed
   //   rp.oa
 }
 

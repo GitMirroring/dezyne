@@ -34,7 +34,7 @@ component ReplyNotAllowedPortNotBlocked
   
   // Simulating ReplyNotAllowedPortNotBlocked =>
   //   Reply not allowed: port 'pp' not blocked.
-  // when simulating trace:
+  // if the following trace is performed:
   //   rp.oa
 }
 
