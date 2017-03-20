@@ -1,3 +1,3 @@
-{"known":["execute"]
-,"comment":"test hangup until timeout"
+{"known":["run","execute"]
+,"comment":"run - test trace invalid (needed for documentation), execute - test hangup until timeout"
 }

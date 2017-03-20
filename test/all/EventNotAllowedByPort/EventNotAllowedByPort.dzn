@@ -34,8 +34,9 @@ component EventNotAllowedByPort
   
   // Simulating EventNotAllowedByPort shall report error
   //   pp.oa not allowed by port pp
-  // if empty trace is performed
+  // for trace
   //   rp.oa
+  //   pp.oa
 }
 
 interface IA
