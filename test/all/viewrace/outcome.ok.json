@@ -1,0 +1,70 @@
+{
+  "elapsed": "0",
+  "status": {
+    "build": {
+      "c++": "SKIPPED",
+      "c++03": "SKIPPED",
+      "c": "SKIPPED",
+      "cs": "SKIPPED",
+      "javascript": "SKIPPED"
+    },
+    "code": {
+      "c++": "SKIPPED",
+      "c++03": "SKIPPED",
+      "c": "SKIPPED",
+      "cs": "SKIPPED",
+      "javascript": "SKIPPED"
+    },
+    "convert": "SKIPPED",
+    "execute": {
+      "c++": "SKIPPED",
+      "c++03": "SKIPPED",
+      "c": "SKIPPED",
+      "cs": "SKIPPED",
+      "javascript": "SKIPPED"
+    },
+    "parse": "SKIPPED",
+    "run": "SKIPPED",
+    "table": "SKIPPED",
+    "traces": "SKIPPED",
+    "triangle": {
+      "c++": "SKIPPED",
+      "c++03": "SKIPPED",
+      "c": "SKIPPED",
+      "cs": "SKIPPED",
+      "javascript": "SKIPPED"
+    },
+    "verify": "SKIPPED",
+    "view": "OK"
+  },
+  "output": {
+    "convert": "",
+    "verify": "",
+    "build-c++": "",
+    "code-c++": "",
+    "execute-c++": "",
+    "parse": "",
+    "run": "",
+    "table": "",
+    "traces": "",
+    "triangle-c++": "",
+    "view": "",
+    "build-c++03": "",
+    "code-c++03": "",
+    "execute-c++03": "",
+    "triangle-c++03": "",
+    "build-c": "",
+    "code-c": "",
+    "execute-c": "",
+    "triangle-c": "",
+    "build-cs": "",
+    "code-cs": "",
+    "execute-cs": "",
+    "triangle-cs": "",
+    "build-javascript": "",
+    "code-javascript": "",
+    "execute-javascript": "",
+    "triangle-javascript": ""
+  }
+}
+
