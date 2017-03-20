@@ -78,6 +78,7 @@
            init-bind
            init-instance
            init-member
+           init-async-port
            init-port
            injected-binding
            injected-binding?
@@ -1077,6 +1078,25 @@
                     (interface ,om:scope+name)
                     (port ,port))
            port))
+
+(define ((init-async-port model string) port)
+  (let* ((signature (.signature (car (om:events port))))
+         (type (->code model (.type signature)))
+         (formals ((compose .elements .formals) signature))
+         (formal-types (map (lambda (formal)
+                              (snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
+                            formals)))
+   (animate string `((scope ,om:scope)
+                     (name ,.name)
+                     (direction ,.direction)
+                     (external? ,.external)
+                     (injected? ,.injected)
+                     (interface ,om:scope+name)
+                     (port ,port)
+                     (signature ,signature)
+                     (formal-types ,formal-types)
+                     (type ,type))
+            port)))
 
 (define (declare-replies o)
   (debug "reply-types: ~a\n" (om:reply-types o))

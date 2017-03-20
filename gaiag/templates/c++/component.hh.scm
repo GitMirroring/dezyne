@@ -5,7 +5,7 @@
 
 #(map (include-interface #{
 ##include "#interface .hh"
-#}) (delete-duplicates (append (om:ports model) (om:ports (.behaviour model))) (lambda (x y) (equal? (.type x) (.type y)))))
+#}) (delete-duplicates (om:ports model)  (lambda (x y) (equal? (.type x) (.type y)))))
 
 namespace dzn {
 struct locator;
@@ -28,7 +28,10 @@ struct #.model
 #}) (filter om:provides? (om:ports model)))#
     (map (init-port #{
 #((c++:scope-join model) interface)  #name ;
-#}) (append (om:ports model) (om:ports (.behaviour model))))
+#}) (om:ports model))#
+    (map (init-async-port model #{
+dzn::async<#type  (#formal-types)> #name ;
+#}) (om:ports (.behaviour model)))
     #.model (const dzn::locator&);
   void check_bindings() const;
   void dump_tree(std::ostream& os) const;

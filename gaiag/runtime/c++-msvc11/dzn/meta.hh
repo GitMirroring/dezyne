@@ -76,6 +76,14 @@ namespace dzn
     meta() {}
   };
 
+  inline void rank(const dzn::meta* m, size_t r)
+  {
+    if(m) {
+      m->rank = std::max(m->rank, r);
+      for(auto i : m->requires) rank(i->provides.meta, m->rank + 1);
+    }
+  }
+
   inline std::string path(const meta* m, std::string p = std::string())
   {
     p = p.empty() ? p : "." + p;
@@ -89,6 +97,29 @@ namespace dzn
     binding_error(const port::meta& m, const std::string& msg)
     : std::runtime_error("not connected: " + path(m.provides.address ? m.provides.meta : m.requires.meta, m.provides.address ? m.provides.port : m.requires.port) + "." + msg)
     {}
+  };
+
+  template <typename Signature>
+  struct async
+  {
+    struct {
+      std::function<Signature> req;
+      std::function<void()> clr;
+    } in;
+    struct {
+      std::function<Signature> ack;
+    } out;
+
+    dzn::port::meta meta;
+
+    inline async(const dzn::port::meta& m) : meta(m) {}
+
+    void check_bindings() const
+    {
+      if (! in.req) throw dzn::binding_error(meta, "in.req");
+      if (! in.clr) throw dzn::binding_error(meta, "in.clr");
+      if (! out.ack) throw dzn::binding_error(meta, "out.ack");
+    }
   };
 }
 #endif

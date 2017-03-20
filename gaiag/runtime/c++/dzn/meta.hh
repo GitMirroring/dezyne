@@ -93,5 +93,28 @@ namespace dzn
                                                   m.provides.address ? m.provides.port : m.requires.port) + "." + msg)
     {}
   };
+
+  template <typename Signature>
+  struct async
+  {
+    struct {
+      std::function<Signature> req;
+      std::function<void()> clr;
+    } in;
+    struct {
+      std::function<Signature> ack;
+    } out;
+
+    dzn::port::meta meta;
+
+    inline async(const dzn::port::meta& m) : meta(m) {}
+
+    void check_bindings() const
+    {
+      if (! in.req) throw dzn::binding_error(meta, "in.req");
+      if (! in.clr) throw dzn::binding_error(meta, "in.clr");
+      if (! out.ack) throw dzn::binding_error(meta, "out.ack");
+    }
+  };
 }
 #endif //DZN_META_HH

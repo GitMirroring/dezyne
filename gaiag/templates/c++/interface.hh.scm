@@ -29,7 +29,7 @@ struct #.interface
    inline #.interface(dzn::port::meta &&m) : meta(std::move(m)){}
 #}
 #{
-   inline #.interface(dzn::port::meta m) : meta(m) {}
+   inline #.interface(const dzn::port::meta& m) : meta(m) {}
 #})
 
    void check_bindings() const
