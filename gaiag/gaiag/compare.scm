@@ -75,7 +75,8 @@
      (stable-sort (.elements b) <)))
 
 (define-method (< (a <trigger>) (b <trigger>))
-  (< (list (.port.name a) (.event a)) (list (.port.name b) (.event b))))
+  (< (list (.port.name a) (.event.name a))
+     (list (.port.name b) (.event.name b))))
 
 (define-method (< (a <list>) (b <list>))
   (cond

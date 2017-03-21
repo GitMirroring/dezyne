@@ -463,9 +463,10 @@
                                                     (continuation ,continuation))))
                           (cons statement continuation))))))))))
       (($ <illegal>) (snippet 'illegal `((space ,space))))
-      (($ <action> (and ($ <trigger>) (= .port port) (= .event event-name) (= .arguments ($ <arguments> (arguments ...)))))
+      (($ <action> (and ($ <trigger>) (= .port port) (= .event event) (= .arguments ($ <arguments> (arguments ...)))))
        (let* ((name (.type port))
               (port-name (.name port))
+              (event-name (.name event))
               (interface (om:import name))
               (event (om:event interface event-name))
               (direction (.direction event))
@@ -632,7 +633,7 @@
     (($ <blocking>) ((find-trigger port event) (.statement o)))
     (($ <on>)
      (find (lambda (t) (and (eq? (.port.name t) (.name port))
-                            (eq? (.event t) (.name event))))
+                            (eq? (.event.name t) (.name event))))
            ((compose .elements .triggers) o)))
     (($ <guard>) ((find-trigger port event) (.statement o)))
     (($ <compound> (statements ...))
@@ -644,7 +645,7 @@
     (($ <on>)
      (let ((trigger ((compose car .elements .triggers) o)))
        (and (eq? (.port.name trigger) (.name port))
-            (eq? (.event trigger) (.name event)) o)))
+            (eq? (.event.name trigger) (.name event)) o)))
     (_ #f)))
 
 (define (expr->clause model guard expression)
@@ -702,9 +703,10 @@
     ((? unspecified?) *unspecified*)
     (($ <expression> (? unspecified?)) *unspecified*)
     (($ <expression>) (expression->string model (.value o) locals argument))
-    (($ <action> (and ($ <trigger>) (= .port port) (= .event event-name) (= .arguments ($ <arguments> (arguments ...)))))
+    (($ <action> (and ($ <trigger>) (= .port port) (= .event event) (= .arguments ($ <arguments> (arguments ...)))))
      (let* ((port-name (.name port))
             (name (.type port))
+            (event-name (.name event))
             (interface (om:import name))
             (event (om:event interface event-name))
             (direction (.direction event))
@@ -1574,13 +1576,13 @@
   (ast:event-name (.event o)))
 
 (define-method (ast:event-name (o <on>))
-  ((compose .event car .elements .triggers) o))
+  ((compose .name .event car .elements .triggers) o))
 
 (define-method (ast:event-name (o <event>))
   (.name o))
 
 (define-method (ast:event-name (o <on>))
-  ((compose .event car .elements .triggers) o))
+  ((compose .name .event car .elements .triggers) o))
 
 
 (define-method (ast:model-decl model (o <trigger>))

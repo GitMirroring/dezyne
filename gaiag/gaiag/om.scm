@@ -91,7 +91,6 @@
            om:interface-types
            om:interfaces
            om:modeling?
-           om:modeling-event?
            om:model-with-behaviour
            om:name
            om:named
@@ -254,12 +253,16 @@
 
 (define (om:event o trigger)
   (match (cons o trigger)
+    ((($ <port>) . (? symbol?))
+     (find (lambda (x) (eq? (.name x) trigger)) (om:events o)))
     ((($ <interface>) . (? symbol?))
      (find (lambda (x) (eq? (.name x) trigger)) (.elements (.events o))))
     ((($ <interface>)  . (? (is? <trigger>)))
-     (om:event o (.event trigger)))
+     (if (not (as (.event trigger) <event>)) (om:event o (.event trigger))
+         (.event trigger)))
     ((($ <component>)  . (? (is? <trigger>)))
-     (om:event (om:interface (.port trigger)) (.event trigger)))
+     (if (not (as (.event trigger) <event>)) (om:event (om:interface (.port trigger)) (.event trigger))
+         (.event trigger)))
     (_ #f)))
 
 (define (om:function model o)
@@ -568,6 +571,7 @@
         (($ <event>)
          (let ((type ((compose .type .signature) o)))
            (and (not (eq? (.name type) 'void)) type)))
+        ((? (is? <modeling-event>)) #f)
         ((? boolean?) #f))))
 
 
@@ -601,12 +605,14 @@
 (define (om:in? o)
   (match o
     (($ <event>) (eq? (.direction o) 'in))
+    ((? (is? <modeling-event>)) #t)
     (($ <formal>) (or (eq? (.direction o) 'in) (not (.direction o))))
     (($ <trigger>) #t)))
 
 (define (om:out? o)
   (match o
     (($ <event>) (eq? (.direction o) 'out))
+    ((? (is? <modeling-event>)) #f)
     (($ <formal>) (eq? (.direction o) 'out))
     (($ <trigger>) #f)))
 
@@ -627,9 +633,6 @@
            (eq? (.direction event) 'in))
       (and (eq? (.direction port) 'requires)
            (eq? (.direction event) 'out))))
-
-(define (om:modeling-event? event)
-  (member (.event event) '(optional inevitable)))
 
 (define om:binary-operators
   '(
@@ -663,10 +666,8 @@
     (((? om:operator?) h t ...) o)
     (_ #f)))
 
-(define (om:modeling? o)
-  (match o
-    (($ <trigger>)
-     (and (not (.port o)) (om:modeling-event? o)))))
+(define-method (om:modeling? (o <trigger>))
+  (is-a? (.event o) <modeling-event>))
 
 (define (om:void? model o)
   (and (not (om:modeling? o)) (not (om:typed? model o))))

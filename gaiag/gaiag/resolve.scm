@@ -145,9 +145,10 @@
   (define (extern? identifier) (and=> (as-type identifier) (is? <extern>)))
   (define (int? identifier) (and=> (as-type identifier) (is? <int>)))
 
-  (define (event? identifier)
-    (and (is-a? model <interface>)
-         (not (var? identifier)) (om:event model identifier)))
+  (define (event? o)
+    (or (as o <event>)
+        (and (is-a? model <interface>)
+             (not (var? o)) (om:event model o))))
   (define (function? identifier) (om:function model identifier))
   (define (member? identifier) (om:variable model identifier))
   (define (port? o) (or (as o <port>)
@@ -157,8 +158,8 @@
   (define (var? identifier) (or (local? identifier) (member? identifier)))
   (define (unspecified? x) (eq? x *unspecified*))
 
-  (define (event-or-function? identifier)
-    (or (function? identifier) (event? identifier)))
+  (define (event-or-function? o)
+    (or (function? o) (event? o)))
 
   (define (enum-field? identifier)
     (lambda (field)
@@ -200,7 +201,6 @@
          enum))
       (_ #f)))
 
-  ;;(stderr "resolve: ~a\n" o)
   (match o
     (($ <var> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
@@ -293,14 +293,21 @@
      (make <signature>
        #:type ((resolve model locals) type)
        #:formals ((resolve model locals) formals)))
-    (($ <trigger> port event arguments) (=> failure)
-     (let ((port-ref (port? port)))
-       (if (and port (not port-ref)) (failure)
-        (clone o #:port port-ref #:arguments ((resolve model locals) arguments)))))
-    (($ <trigger> port event arguments)
-     (stderr "resolve: o=~s\n" o)
-     barf
-     (resolve-error o port "undefined port: ~a"))
+    (($ <trigger> #f e arguments) (=> failure)
+     (let ((event (event? e)))
+       (if (not event) (failure)
+           (clone o #:event event #:arguments ((resolve model locals) arguments)))))
+    (($ <trigger> #f event arguments)
+     (resolve-error o event "undefined event: ~a"))
+    (($ <trigger> p e arguments) (=> failure)
+     (let ((port (port? p)))
+       (if (not port) (resolve-error o p "undefined port: ~a")
+           (let ((event (or (as e <event>) (om:event port e))))
+             (if (not event) (resolve-error o e "undefined event: ~a")
+                 (clone o
+                        #:port port
+                        #:event event
+                        #:arguments ((resolve model locals) arguments)))))))
     (($ <var>) o)
 
     ((? symbol?)
@@ -315,7 +322,7 @@
         ($ <expression> ($ <call> (and (? event?) (get! event)))))
      (make <assign>
        #:identifier identifier
-       #:expression (make <action> #:trigger (make <trigger> #:event (event)))))
+       #:expression (make <action> #:trigger (make <trigger> #:event (event? event)))))
 
     (($ <assign> identifier ($ <expression> (and ($ <call>) (get! call))))
      (make <assign> #:identifier identifier
@@ -324,7 +331,7 @@
     (($ <assign> identifier ($ <call> (and (? event?) (get! event))))
      (make <assign>
        #:identifier identifier
-       #:expression (make <action> #:trigger (make <trigger> #:event (event)))))
+       #:expression (make <action> #:trigger (make <trigger> #:event (event? event)))))
 
     (($ <assign> identifier (and ($ <call>) (get! call)))
      (make <assign> #:identifier identifier
@@ -334,7 +341,7 @@
         ($ <expression> ($ <var> (and (? event?) (get! event)))))
      (make <assign>
        #:identifier identifier
-       #:expression (make <action> #:trigger (make <trigger> #:event (event)))))
+       #:expression (make <action> #:trigger (make <trigger> #:event (event? event)))))
 
     (($ <assign> identifier
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
@@ -347,7 +354,7 @@
      (make <assign>
        #:identifier identifier
        #:expression (make <action>
-                     #:trigger (make <trigger> #:port (port) #:event event))))
+                      #:trigger ((resolve model) (make <trigger> #:port (port) #:event event)))))
 
     (($ <assign> identifier ($ <expression> (and ($ <action>) (get! action))))
      (make <assign>
@@ -387,7 +394,7 @@
        #:name name
        #:type ((resolve model locals) type)
        #:expression (make <action> #:trigger
-                         (make <trigger> #:event (event)))))
+                          (make <trigger> #:event (event? event)))))
 
     (($ <variable> name type ($ <expression> (and ($ <call>) (get! call))))
      (make <variable>
@@ -401,7 +408,7 @@
        #:type ((resolve model locals) type)
        #:name name
        #:expression (make <action> #:trigger
-                          (make <trigger> #:event (event)))))
+                          (make <trigger> #:event (event? event)))))
 
     (($ <variable> name type ($ <expression> (and ($ <action>) (get! action))))
      (make <variable>
@@ -413,7 +420,7 @@
      (make <variable>
        #:name name
        #:type ((resolve model locals) type)
-       #:expression (make <action> #:trigger (make <trigger> #:port (port) #:event event))))
+       #:expression (make <action> #:trigger ((resolve model) (make <trigger> #:port (port) #:event event)))))
 
     (($ <variable> name type
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
@@ -598,29 +605,36 @@
     (_ o)))
 
 (define ((resolve-on-triggers model) o)
+  (define (event? o)
+    (or (as o <event>)
+        (and (is-a? model <interface>) (om:event model o))))
   (define (port? o)
-    ;;(stderr "AS <port>[~s]: ~s~\n" o (as o <port>))
     (or (as o <port>)
         (and (is-a? model <component>) (om:port model o))))
   (match o
     (($ <triggers> (triggers ...)) (om:map (resolve-on-triggers model) o))
-    (($ <trigger> port event arguments) (=> failure)
-     (let ((port-ref (port? port)))
-       (if (and port (not port-ref)) (failure)
-           (clone o #:port port-ref #:arguments ((resolve-on-triggers model) arguments)))))
-    (($ <trigger> port event arguments)
-     (stderr "resolve-on-triggers: o=~s\n" o)
-     (stderr "resolve-on-triggers: model=~s\n" model)
-     barf-res
-     (resolve-error o port "undefined port: ~a"))
+    (($ <trigger> #f 'inevitable) (clone o #:event ast:inevitable))
+    (($ <trigger> #f 'optional) (clone o #:event ast:optional))
+    (($ <trigger> #f e arguments)
+     (let ((event (event? e)))
+       (if (not event) (resolve-error o e "undefined event: ~a")
+           (clone o #:event event #:arguments ((resolve-on-triggers model) arguments)))))
+    (($ <trigger> p e arguments)
+     (let ((port (port? p)))
+       (if (not port) (resolve-error o p "undefined port: ~a")
+           (let ((event (or (as e <event>) (om:event port e))))
+             (if (not event) (resolve-error o e "undefined event: ~a")
+                 (clone o
+                        #:port port
+                        #:event event
+                        #:arguments ((resolve-on-triggers model) arguments)))))))
     (($ <arguments> (arguments ...)) (om:map (resolve-on-triggers model) o))
     (($ <expression> (and ('dotted name) (get! value)))
      (rsp o (make <expression> #:value (rsp (value) (make <var> #:name name)))))
     (($ <expression> ($ <var> name)) o)
     (($ <expression> ('<- ('dotted arg) ('dotted global)))
      (make <expression> #:value `(<- ,(make <var> #:name arg) ,(make <var> #:name global))))
-    (($ <expression> ('<- ($ <var>) ($ <var>)))
-     o)))
+    (($ <expression> ('<- ($ <var>) ($ <var>))) o)))
 
 (define ((range-check model) variable)
   (define (as-int-type type) (om:integer model type))

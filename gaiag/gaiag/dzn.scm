@@ -177,8 +177,8 @@
                                                             (type ,((->dzn model) type))
                                                             (name ,name)))))
 
-    (($ <trigger> #f event) ((animate-snippet 'itrigger `((event ,event)))))
-    ((and ($ <trigger>) (= .port.name port) (= .event event) (= .arguments arguments)) ((animate-snippet 'trigger `((event ,event) (port ,port) (arguments ,((->dzn model) arguments))))))
+    ((and ($ <trigger>) (= .port #f) (= .event.name event)) ((animate-snippet 'itrigger `((event ,event)))))
+    ((and ($ <trigger>) (= .port.name port) (= .event.name event) (= .arguments arguments)) ((animate-snippet 'trigger `((event ,event) (port ,port) (arguments ,((->dzn model) arguments))))))
     (('group expression) (->string (list "(" ((->dzn model) expression) ")")))
     (($ <out-bindings>) (->string (map (->dzn model) (.elements o))))
     (($ <expression> ('<- formal global))

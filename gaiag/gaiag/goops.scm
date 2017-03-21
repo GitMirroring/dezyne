@@ -32,6 +32,9 @@
            <error>
            <port-event>
            .port.name
+           .event.name
+           ast:inevitable
+           ast:optional
 
            .arguments
            .behaviour
@@ -100,14 +103,17 @@
            <illegal>
            <imperative>
            <import>
+           <inevitable>
            <instance>
            <instances>
            <int>
            <interface>
            <literal>
            <model>
+           <modeling-event>
            <named>
            <on>
+           <optional>
            <otherwise>
            <out-bindings>
            <formal>
@@ -193,6 +199,20 @@
   (signature #:getter .signature #:init-form (make <signature>) #:init-keyword #:signature)
   (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
 
+(define-class <modeling-event> (<event>))
+(define-method (.direction (o <modeling-event>)) 'in)
+(define void-signature (make <signature>))
+(define-method (.signature (o <modeling-event>) void-signature))
+
+(define-class <inevitable> (<modeling-event>))
+(define-method (.name (o <inevitable>)) 'inevitable)
+
+(define-class <optional> (<modeling-event>))
+(define-method (.name (o <optional>)) 'optional)
+
+(define ast:inevitable (make <inevitable>))
+(define ast:optional (make <optional>))
+
 (define-class <port> (<named>)
   (type #:getter .type #:init-form (make <scope.name>) #:init-keyword #:type)
   (direction #:getter .direction #:init-value #f #:init-keyword #:direction)
@@ -205,7 +225,7 @@
   (arguments #:getter .arguments #:init-form (make <arguments>) #:init-keyword #:arguments))
 
 (define-method (.port.name (o <trigger>)) (and=> (.port o) .name))
-;;(define-method (.event (o <trigger>)) (and=> (.event-ref o) .name))
+(define-method (.event.name (o <trigger>)) (and=> (.event o) .name))
 
 (define-class <expression> (<ast>)
   (value #:getter .value #:init-value *unspecified* #:init-keyword #:value))

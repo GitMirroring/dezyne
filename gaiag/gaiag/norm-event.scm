@@ -252,7 +252,7 @@
 (define (ast-> ast)
   ((compose
     om->list
-    ((@ (gaiag dzn) ast->dzn))
+    ;;((@ (gaiag dzn) ast->dzn))
     code-norm-event
     ast:resolve
     ast->om
@@ -282,7 +282,7 @@
     #:triggers (make <triggers>
                  #:elements (list (make <trigger>
                                     #:port (.port o)
-                                    #:event (.name (.event o))
+                                    #:event (.event o)
                                     #:arguments (.arguments o))))
     #:statement (make <illegal>)))
 
@@ -298,8 +298,8 @@
             (port-events (filter
                           (lambda (port-event)
                             (not (find (lambda (trigger)
-                                         (and (eq? (.name (.port port-event)) (.name (.port trigger)))
-                                              (eq? (.name (.event port-event)) (.event trigger))))
+                                         (and (eq? (.name (.port port-event)) (.port.name trigger))
+                                              (eq? (.name (.event port-event)) (.event.name trigger))))
                                        on-triggers))) port-events))
             (ons (append ons (map port-event->illegal port-events))))
        (if (null? ons) o

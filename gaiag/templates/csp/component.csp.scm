@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014, 2015, 2016, 2017 Paul Hoogendijk <paul.hoogendijk@verum.com>
@@ -172,8 +172,8 @@ provided_in' = {#
  (comma-join (map (lambda (port) (comma-join (map (lambda (event) (list (.name port) "." (.name event))) (filter om:in? (om:events port))))) (om:provided model)))}
 provided_blocked' = {#
  (comma-join (map (lambda (port) (list (.name port) "_'." "blocked")) (om:provided model)))}
-begin_required_modeling' = {#(comma-join (map (cut list <> ".false") (required-modeling-events model)))}
-begin_required_silent' = {#(comma-join (map (cut list <> ".true") (required-modeling-events model)))}
+begin_required_modeling' = {#(comma-join (map (cut list <> ".false") (required-modeling-triggers model)))}
+begin_required_silent' = {#(comma-join (map (cut list <> ".true") (required-modeling-triggers model)))}
 end_required_modeling' = {#(comma-join (append-map (lambda (port) (list (->string (.name port) "_'''.modeling" ) (->string (.name port) "_'''.silent" )))
                                                    (filter om:requires? ((compose .elements .ports) model))))}
 async_reqackclrmods = <#(comma-join (async-reqackclrmods model))>
