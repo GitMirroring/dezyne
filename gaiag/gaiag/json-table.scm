@@ -344,7 +344,7 @@
     (($ <scope.name> scope name) ((->symbol-join '.) (append scope (list name))))
     (($ <triggers> (triggers ...)) (->symbol ((->join ",") (map ->symbol triggers))))
     (($ <trigger> #f event) (->symbol event))
-    (($ <trigger> port event) (->symbol (list port "." event)))
+    ((and ($ <trigger>) (= .port.name port) (= .event event)) (->symbol (list port "." event)))
     (('and lhs rhs) (->symbol (list '&& lhs rhs)))
     (('or lhs rhs) (->symbol (list '#{||}# lhs rhs)))
     (((or '< '<= '> '>= '+ '- '&& '#{||}# '== '!=) lhs rhs)

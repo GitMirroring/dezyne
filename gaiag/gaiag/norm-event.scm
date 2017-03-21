@@ -281,7 +281,7 @@
   (make <on>
     #:triggers (make <triggers>
                  #:elements (list (make <trigger>
-                                    #:port (.name (.port o))
+                                    #:port (.port o)
                                     #:event (.name (.event o))
                                     #:arguments (.arguments o))))
     #:statement (make <illegal>)))
@@ -298,7 +298,7 @@
             (port-events (filter
                           (lambda (port-event)
                             (not (find (lambda (trigger)
-                                         (and (eq? (.name (.port port-event)) (.port trigger))
+                                         (and (eq? (.name (.port port-event)) (.name (.port trigger)))
                                               (eq? (.name (.event port-event)) (.event trigger))))
                                        on-triggers))) port-events))
             (ons (append ons (map port-event->illegal port-events))))
@@ -345,14 +345,14 @@
 
   ;;(stderr "rewrite o=~a\n" o)
   (match o
-    (($ <on> ($ <triggers> ((and ($ <trigger> port event ($ <arguments> ())) (get! trigger)))) statement)
+    (($ <on> ($ <triggers> ((and ($ <trigger>) (= .arguments ($ <arguments> ())) (get! trigger)))) statement)
      (let* ((trigger (trigger))
             (formals (map .name ((compose .elements .formals .signature) (om:event model trigger))))
             (arguments (map name->argument formals)))
        (if (null? formals) o
            (clone o
                   #:triggers (make <triggers> #:elements (list (clone trigger #:arguments (make <arguments> #:elements arguments))))))))
-    (($ <on> ($ <triggers> ((and ($ <trigger> port event ($ <arguments> (argument* ...))) (get! trigger)))) statement)
+    (($ <on> ($ <triggers> ((and ($ <trigger>) (= .arguments ($ <arguments> (argument* ...))) (get! trigger)))) statement)
      (let* ((trigger (trigger))
             (members (map .name (om:variables model)))
             (formals (map .name ((compose .elements .formals .signature) (om:event model trigger))))

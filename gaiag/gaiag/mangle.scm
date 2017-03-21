@@ -48,11 +48,6 @@
     #:direction (.direction o)
     #:type ((prefix (om:prefix 'interface)) (.type o))))
 
-(define-method (mangle (o <trigger>))
-  (make <trigger>
-    #:port (and=> (.port o) (prefix (om:prefix 'port)))
-    #:event ((prefix (om:prefix 'event)) (.event o))))
-
 (define-method (mangle (o <binding>))
   (make <binding>
     #:instance (and=> (.instance o) (prefix (om:prefix 'instance)))

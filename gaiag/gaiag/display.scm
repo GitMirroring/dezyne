@@ -31,7 +31,8 @@
            ))
 
 ;; AST printing
-(define (star port) (display #\* port))
+(define (ast port) (display #\* port))
+(define (ref port) (display #\@ port))
 
 (define-method (sdisplay (o <ast>) port)
   (display #\space port)
@@ -64,22 +65,19 @@
       (sdisplay "*unspecified*" port)
       (sdisplay (.value o) port)))
 
-(define-method (display-slots (o <if>) port)
-  (sdisplay (.expression o) port)
-  (sdisplay (.then o) port)
-  (and=> (.else o) (lambda (x) (sdisplay x port))))
+(define-method (display-slots (o <trigger>) port)
+  (when (.port o)
+    (sdisplay (.port.name o) port)
+    (ref port))
+  (sdisplay (.event o) port)
+  (sdisplay (.arguments o) port))
 
 (define-method (display-slots (o <return>) port)
   (and=> (.expression o) (lambda (x) (sdisplay x port))))
 
-(define-method (display-slots (o <signature>) port)
-  (sdisplay (.type o) port)
-  (if (pair? (.elements (.formals o)))
-      (sdisplay (.formals o) port)))
-
 (define-method (write (o <ast>) port)
   (display "(" port)
   (display (ast-name o) port)
-  (star port)
+  (ast port)
   (display-slots o port)
   (display #\) port))

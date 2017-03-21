@@ -259,7 +259,7 @@
     ((($ <interface>)  . (? (is? <trigger>)))
      (om:event o (.event trigger)))
     ((($ <component>)  . (? (is? <trigger>)))
-     (om:event (om:interface (om:port o (.port trigger))) (.event trigger)))
+     (om:event (om:interface (.port trigger)) (.event trigger)))
     (_ #f)))
 
 (define (om:function model o)

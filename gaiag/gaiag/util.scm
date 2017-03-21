@@ -76,9 +76,14 @@
   (and (is-a? o class) o))
 
 (define (om->list om)
-  (with-input-from-string
-      (with-output-to-string (lambda () (write om)))
-    read))
+  (catch #t
+    (lambda ()
+      (with-input-from-string
+          (with-output-to-string (lambda () (write om)))
+        read))
+    (lambda (key . args)
+      (stderr "om->list om=~a\n" om)
+      (apply throw (cons key args)))))
 
 (define* (om2list o #:optional (marker null-symbol))
   (match o

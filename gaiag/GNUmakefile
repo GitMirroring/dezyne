@@ -42,7 +42,7 @@ default: all
 all: compile
 
 tags:
-	etags $(shell git ls-files)
+	etags $(shell git ls-files -- gaiag json language gaiag test-suite)
 
 clean:
 	make -C .. gaiag-clean

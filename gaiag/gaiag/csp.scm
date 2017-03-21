@@ -38,6 +38,7 @@
   #:use-module (gaiag ast2om)
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
+  #:use-module (gaiag compare)
   #:use-module (gaiag util)
 
   #:use-module (gaiag gaiag)
@@ -251,10 +252,7 @@
                       (($ <on>) (list statement))
                       (($ <compound> (statements ...)) statements)))
                (triggers (append-map (compose .elements .triggers) ons))
-               (triggers
-                (map (lambda (t)
-                       (make <trigger> #:port (.port t) #:event (.event t)))
-                     triggers))
+               (triggers (map om:remove-arguments triggers))
                (triggers (delete-duplicates triggers)))
           (loop (cdr guards)
                 (let loop2 ((triggers triggers) (alist alist))
@@ -287,7 +285,7 @@
        ")")))
 
   (define (list-of-triggers-port ports predicate)
-    (append-map (lambda (port) (map (lambda (event) (make <trigger> #:port (.name port) #:event (.name event))) (filter predicate (om:events port)))) ports))
+    (append-map (lambda (port) (map (lambda (event) (make <trigger> #:port port #:event (.name event))) (filter predicate (om:events port)))) ports))
 
   (define (list-of-triggers-provides model)
     (list-of-triggers-port (filter om:provides? (om:ports model)) om:in?))
@@ -323,9 +321,9 @@
              (if (is-a? model <interface>)
                  (list)
                  (append
-                  (map (lambda (t) (list "(" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & ill." (.port t) (channel-suffix model (.port t)) "?" (.event t) "-> illegal -> STOP"))
+                  (map (lambda (t) (list "(" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & ill." (.port.name t) (channel-suffix model (.port.name t)) "?" (.event t) "-> illegal -> STOP"))
                        (list-of-triggers-provides model))
-                  (map (lambda (t) (list "IG & (" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & " (.port t) (channel-suffix model (.port t)) "?" (.event t) "-> illegal -> STOP"))
+                  (map (lambda (t) (list "IG & (" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & " (.port.name t) (channel-suffix model (.port.name t)) "?" (.event t) "-> illegal -> STOP"))
                       (list-of-triggers-requires model))))))))
         "STOP")))
 
@@ -544,7 +542,7 @@
        (filter
 	(lambda (port)
           (and (equal? (.direction port) direction)
-               (equal? (.port event) (.name port))))
+               (equal? (.port.name event) (.name port))))
 	(.elements (.ports component))))
       #f))
 
@@ -825,7 +823,7 @@
                    (or (and (is-a? model <interface>) (not inevitable-optional?))
                        (or (as model <interface>) ((provides-event? model) (car triggers)))))
                   (the-end (if (and (is-a? statement <blocking>) provided-on?) (make <the-end-blocking>) (make <the-end>)))
-                  (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
+                  (channel (if (is-a? model <interface>) model-name (.port.name (car triggers))))
                   (transformed-end (on->csp model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
                   (tail (on->csp model (statement) inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
                   (real-triggers (filter (negate om:modeling-event?) triggers))
@@ -838,7 +836,7 @@
                    (if (pair? ins)
                        (list
                         (list
-                         (if (is-a? model <interface>) (list "IG & " model-name) (list "ill." (.port (car ins))))
+                         (if (is-a? model <interface>) (list "IG & " model-name) (list "ill." (.port.name (car ins))))
                          (list "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} -> (\n")
                          tail
                          ")"))
@@ -854,7 +852,7 @@
                    (if (pair? outs)
                        (list
                         (list
-                         (list "IG & " (.port (car outs)))
+                         (list "IG & " (.port.name (car outs)))
                          (list "_''?x:{" (comma-join (map .event outs)) "} -> (\n")
                          tail
                          ")"))
@@ -868,7 +866,7 @@
                    (or (and (is-a? model <interface>) (not inevitable-optional?))
                        (or (as model <interface>) ((provides-event? model) (car triggers)))))
                   (the-end (if (and (is-a? statement <blocking>) provided-on?) (make <the-end-blocking>) (make <the-end>)))
-                  (channel (if (is-a? model <interface>) model-name (.port (car triggers))))
+                  (channel (if (is-a? model <interface>) model-name (.port.name (car triggers))))
                   (transformed-end (on->csp model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
                   (tail (on->csp model statement inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
                   (real-triggers (filter (negate om:modeling-event?) triggers))
@@ -881,7 +879,7 @@
                    (if (pair? ins)
                        (list
                         (list
-                         (if (is-a? model <interface>) model-name (.port (car ins)))
+                         (if (is-a? model <interface>) model-name (.port.name (car ins)))
                          (list "?x:{" (comma-join (append modeling-triggers (map .event ins))) "} -> (\n")
                          tail
                          ")"))
@@ -896,7 +894,7 @@
                    (if (pair? outs)
                        (list
                         (list
-                         (if (is-a? model <interface>) model-name (.port (car outs)))
+                         (if (is-a? model <interface>) model-name (.port.name (car outs)))
                          (list "_''?x:{" (comma-join (map .event outs)) "} -> (\n")
                          tail
                          ")"))
@@ -965,7 +963,7 @@
                     tail))
                   (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
 
-          (($ <assign> identifier ($ <action> (and ($ <trigger> port event) (get! trigger))))
+          (($ <assign> identifier ($ <action> (and ($ <trigger>) (= .port.name port) (= .event event) (get! trigger))))
            (let* ((type ((compose .type .signature) (om:event model (trigger))))
                   (values (if (eq? (.name type) 'void) 'return (comma-join (typed-elements ((om:type model) type)))))
                   (constructor (if (eq? (.name type) 'bool) "bool." ""))
@@ -997,7 +995,7 @@
               (list space "let " identifier " = " "tmp'" " within\n")
               (check-range (list identifier) tail model locals indent))))
 
-          (($ <variable> identifier type ($ <action> (and ($ <trigger> port event) (get! trigger))))
+          (($ <variable> identifier type ($ <action> (and ($ <trigger>) (= .port.name port) (= .event event) (get! trigger))))
            (let* ((type ((compose .type .signature) (om:event model (trigger))))
                  (values (if (eq? (.name type) 'void) 'return (comma-join (typed-elements ((om:type model) type)))))
                  (constructor (if (eq? (.name type) 'bool) "bool." ""))
@@ -1051,7 +1049,7 @@
           (($ <action> trigger)
            (let* ((event-name (.event trigger))
                   (suffix (if (om:out? (om:event model trigger)) "_''" ""))
-                  (channel (if (is-a? model <interface>) model-name (.port trigger)
+                  (channel (if (is-a? model <interface>) model-name (.port.name trigger)
                                ))
                   (channel-return (if ((requires-event? model) trigger) (list " -> " channel "_'.return")))
                   (channel (list channel suffix)))
@@ -1254,11 +1252,8 @@
             (.name (car events))
             (rename (cdr events) name))))
   (match o
-    (($ <trigger> port event arguments)
-         (make <trigger>
-           #:port port
-           #:event (rename events event)
-           #:arguments arguments))
+    ((and ($ <trigger>) (= .event event))
+         (clone o #:event (rename events event)))
      ((? (is? <ast>)) (om:map (rename-behaviour events) o))
      ((h t ...) (map (rename-behaviour events) o))
      (_ o)))

@@ -39,6 +39,7 @@
            om:guard-equal?
            om:port-event-equal?
            om:triggers-equal?
+           om:remove-arguments
            )
   #:re-export (< equal?))
 
@@ -74,7 +75,7 @@
      (stable-sort (.elements b) <)))
 
 (define-method (< (a <trigger>) (b <trigger>))
-  (< (list (.port a) (.event a)) (list (.port b) (.event b))))
+  (< (list (.port.name a) (.event a)) (list (.port.name b) (.event b))))
 
 (define-method (< (a <list>) (b <list>))
   (cond
@@ -106,12 +107,12 @@
 (define-method (om:port-event-equal? a b)
   #f)
 
-(define-method (remove-arguments (o <trigger>))
-  (make <trigger> #:port (.port o) #:event (.event o)))
+(define-method (om:remove-arguments (o <trigger>))
+  (clone o #:arguments (make <arguments>)))
 
 (define-method (om:port-event-equal? (a <on>) (b <on>))
-  (equal? (map remove-arguments ((compose .elements .triggers) a))
-          (map remove-arguments ((compose .elements .triggers) b))))
+  (equal? (map om:remove-arguments ((compose .elements .triggers) a))
+          (map om:remove-arguments ((compose .elements .triggers) b))))
 
 (define-method (om:triggers-equal? a b)
   #f)

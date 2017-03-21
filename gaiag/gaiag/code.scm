@@ -415,7 +415,7 @@
                                    `(,(snippet 'block
                                                `((space ,space)
                                                  (statement ,statement)
-                                                 (port ,(.port trigger))))))))
+                                                 (port ,(.port.name trigger))))))))
                statement))
            '$empty-statement$))
       (($ <call> function ($ <arguments> ()))
@@ -463,9 +463,9 @@
                                                     (continuation ,continuation))))
                           (cons statement continuation))))))))))
       (($ <illegal>) (snippet 'illegal `((space ,space))))
-      (($ <action> ($ <trigger> port-name event-name ($ <arguments> (arguments ...))))
-       (let* ((port (om:port model port-name))
-              (name (.type port))
+      (($ <action> (and ($ <trigger>) (= .port port) (= .event event-name) (= .arguments ($ <arguments> (arguments ...)))))
+       (let* ((name (.type port))
+              (port-name (.name port))
               (interface (om:import name))
               (event (om:event interface event-name))
               (direction (.direction event))
@@ -631,7 +631,7 @@
   (match o
     (($ <blocking>) ((find-trigger port event) (.statement o)))
     (($ <on>)
-     (find (lambda (t) (and (eq? (.port t) (.name port))
+     (find (lambda (t) (and (eq? (.port.name t) (.name port))
                             (eq? (.event t) (.name event))))
            ((compose .elements .triggers) o)))
     (($ <guard>) ((find-trigger port event) (.statement o)))
@@ -641,8 +641,10 @@
 
 (define ((is-trigger? port event) o)
   (match o
-    (($ <on> ($ <triggers> (($ <trigger> p e))))
-     (and (eq? p (.name port)) (eq? e (.name event)) o))
+    (($ <on>)
+     (let ((trigger ((compose car .elements .triggers) o)))
+       (and (eq? (.port.name trigger) (.name port))
+            (eq? (.event trigger) (.name event)) o)))
     (_ #f)))
 
 (define (expr->clause model guard expression)
@@ -700,8 +702,8 @@
     ((? unspecified?) *unspecified*)
     (($ <expression> (? unspecified?)) *unspecified*)
     (($ <expression>) (expression->string model (.value o) locals argument))
-    (($ <action> ($ <trigger> port-name event-name ($ <arguments> (arguments ...))))
-     (let* ((port (om:port model port-name))
+    (($ <action> (and ($ <trigger>) (= .port port) (= .event event-name) (= .arguments ($ <arguments> (arguments ...)))))
+     (let* ((port-name (.name port))
             (name (.type port))
             (interface (om:import name))
             (event (om:event interface event-name))
@@ -1550,7 +1552,7 @@
          ((compose .elements .formals .signature) event))))
 
 (define-method (ast:port (o <on>))
-  (om:port ((ast:model) o) (.port (car ((compose .elements .triggers) o)))))
+  ((compose .port car .elements .triggers) o))
 
 (define-method (ast:event (o <on>))
   (ast:event (car ((compose .elements .triggers) o))))
@@ -1562,7 +1564,7 @@
   (ast:port-name (.port o)))
 
 (define-method (ast:port-name (o <on>))
-  ((compose .port car .elements .triggers) o))
+  ((compose .name .port car .elements .triggers) o))
 
 (define-method (ast:port-name (o <port>))
   (.name o))

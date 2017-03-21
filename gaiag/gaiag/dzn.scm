@@ -62,7 +62,6 @@
     (or (null? scope) (equal? (list (om:name model)) scope)))
   (define (unspecified? x) (eq? x *unspecified*))
 
-  ;;(stderr "DZN: ~a\n" o)
   (match o
 
     (($ <root> (model* ...)) ((->join "\n") (map (->dzn) model*)))
@@ -179,8 +178,7 @@
                                                             (name ,name)))))
 
     (($ <trigger> #f event) ((animate-snippet 'itrigger `((event ,event)))))
-    (($ <trigger> port event arguments) ((animate-snippet 'trigger `((event ,event) (port ,port) (arguments ,((->dzn model) arguments))))))
-
+    ((and ($ <trigger>) (= .port.name port) (= .event event) (= .arguments arguments)) ((animate-snippet 'trigger `((event ,event) (port ,port) (arguments ,((->dzn model) arguments))))))
     (('group expression) (->string (list "(" ((->dzn model) expression) ")")))
     (($ <out-bindings>) (->string (map (->dzn model) (.elements o))))
     (($ <expression> ('<- formal global))

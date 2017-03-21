@@ -31,6 +31,7 @@
            .message
            <error>
            <port-event>
+           .port.name
 
            .arguments
            .behaviour
@@ -202,6 +203,9 @@
   (port #:getter .port #:init-value #f #:init-keyword #:port)
   (event #:getter .event #:init-value #f #:init-keyword #:event)
   (arguments #:getter .arguments #:init-form (make <arguments>) #:init-keyword #:arguments))
+
+(define-method (.port.name (o <trigger>)) (and=> (.port o) .name))
+;;(define-method (.event (o <trigger>)) (and=> (.event-ref o) .name))
 
 (define-class <expression> (<ast>)
   (value #:getter .value #:init-value *unspecified* #:init-keyword #:value))

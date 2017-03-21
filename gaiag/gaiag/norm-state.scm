@@ -95,8 +95,8 @@
 
 (define (norm:on-same-port-statement? model lhs rhs)
   (and (is-a? lhs <on>) (is-a? rhs <on>)
-       (eq? ((compose .port car .elements .triggers) lhs)
-            ((compose .port car .elements .triggers) rhs))
+       (eq? ((compose .name .port car .elements .triggers) lhs)
+            ((compose .name .port car .elements .triggers) rhs))
        (equal? (.statement lhs) (.statement rhs))))
 
 (define (norm:on-same-port-voidness-statement? model lhs rhs)
@@ -108,7 +108,7 @@
 
 (define (norm:port-equal? model lhs rhs)
   (and (is-a? lhs <trigger>) (is-a? rhs <trigger>)
-       (eq? (.port lhs) (.port rhs))))
+       (eq? (.port.name lhs) (.port.name rhs))))
 
 (define (norm:port-and-voidness-equal? model lhs rhs)
     "over een poort? ontvangen we valued of void triggers maar niet
@@ -117,7 +117,7 @@ reply en die kun je niet mixen"
   (and (is-a? lhs <trigger>) (is-a? rhs <trigger>)
        (or (and (om:void? model lhs) (om:void? model rhs))
            (and (not (om:void? model lhs)) (not (om:void? model rhs))))
-       (eq? (.port lhs) (.port rhs))))
+       (eq? (.port.name lhs) (.port.name rhs))))
 
 (define (passdown-on o)
   (match o
