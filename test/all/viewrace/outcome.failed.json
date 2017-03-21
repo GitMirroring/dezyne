@@ -35,7 +35,7 @@
       "javascript": "SKIPPED"
     },
     "verify": "SKIPPED",
-    "view": "FAILED"
+    "view": "KNOWN"
   },
   "output": {
     "convert": "",
