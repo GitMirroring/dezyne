@@ -39,7 +39,7 @@ function dzn(session) {
   return '../client/bin/dzn --session=' + (session && session || 100);
 }
 
-var ext = {c:'.c','c++':'.cc','c++03':'.cc',cs:'.cs',javascript:'.js'};
+var ext = {c:'.c','c++':'.cc','c++03':'.cc','c++-msvc11':'.cc',cs:'.cs',javascript:'.js'};
 
 var default_meta = {
   skip: []
@@ -161,7 +161,7 @@ var aspects = {
   ,
   all: function(session, work, languages, dir) {
     var startTime = new Date();
-    
+
     function find_key(v, e) {
       Object.keys(dependencies).indexOf(e) == -1 && console.error(e + ' not listed');
       return v && dependencies[e];
