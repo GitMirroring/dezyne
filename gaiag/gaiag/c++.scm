@@ -115,7 +115,7 @@
                   (filter om:requires? (om:ports o))))
       (let ((name ((om:scope-name) o))
             (skel-name (if (.behaviour o) ((om:scope-name) o) (c++:skel-file o)))
-            (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
+            (interfaces (map .type ((compose .elements .ports) o))))
         ((@@ (gaiag c) dump-main) o)
         (dump-indented (symbol-append skel-name (code:extension (make <interface>)))
                        (cute c++-file (if (.behaviour o) 'component.hh.scm 'foreign.hh.scm) (code:module o)))

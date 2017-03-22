@@ -24,7 +24,7 @@ struct #.model
     (map (init-member model #{
 #type  #name;
 #}) (om:variables model))#
-    (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
+    (delete-duplicates (map (compose declare-replies .type) ((compose .elements .ports) model)))#
     (map (init-port #{
     boost::function<void ()> out_#name;
 #}) (filter om:provides? (om:ports model)))#

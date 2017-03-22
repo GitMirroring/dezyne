@@ -4,7 +4,7 @@ class #.scope_model  extends Component {#
 #
     (map (init-member model #{#'()
   #type  #name;#}) (om:variables model))#
-    (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
+    (delete-duplicates (map (compose declare-replies .type) ((compose .elements .ports) model)))
 #
     (map (init-port #{#'()
   #((om:scope-join) interface)  #name;#}) ((compose .elements .ports) model))

@@ -22,7 +22,7 @@ struct #.model
     (map (init-member model #{
 #type  #name;
 #}) (om:variables model))#
-    (delete-duplicates (append-map (compose declare-replies code:import .type) ((compose .elements .ports) model)) equal?)#
+    (delete-duplicates (append-map (compose declare-replies .type) ((compose .elements .ports) model)) equal?)#
     (map (init-port #{
     std::function<void ()> out_#name;
 #}) (filter om:provides? (om:ports model)))#

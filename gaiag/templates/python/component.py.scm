@@ -14,7 +14,7 @@ class #.scope_model  (runtime.Component):
     (map (init-member model #{
 #(string-if (eq? expression *unspecified*) "" #{         self.#name  = #expression
 #})#}) (om:variables model))#
-    (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
+    (delete-duplicates (map (compose declare-replies .type) ((compose .elements .ports) model)))#
     (map (init-port #{
         self.#name  = dzn.#((om:scope-join) interface)  (provides=runtime.Port ('#name ', self))
 #}) (filter om:provides? ((compose .elements .ports) model)))#

@@ -78,7 +78,7 @@
 
 (define (dump-component o)
   (let ((name ((om:scope-name) o))
-        (interfaces (map code:import (map .type ((compose .elements .ports) o)))))
+        (interfaces (map .type ((compose .elements .ports) o))))
     (dump-indented (symbol-append name (code:extension (make <interface>)))
                    (lambda ()
                      (c-file (c-header o) (code:module o))))
@@ -90,7 +90,7 @@
 
 (define (dump-system o)
   (let ((name ((om:scope-name) o))
-        (interfaces (map code:import (map .type ((compose .elements .ports) o))))
+        (interfaces (map .type ((compose .elements .ports) o)))
         (components (map code:import (map .type ((compose .elements .instances) o)))))
     (dump-indented (symbol-append name (code:extension (make <interface>)))
                    (lambda ()

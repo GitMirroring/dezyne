@@ -53,7 +53,6 @@
   #:export (
            om:port*
 
-
            om:bind
            om:bind-other-port
            om:binding
@@ -570,7 +569,7 @@
             (types (delete-duplicates (map (compose .type .signature) events))))
        (filter-map (om:type o) types)))
     (($ <component>)
-     (delete-duplicates (append-map (compose om:reply-types om:import .type) ((compose .elements .ports) o))))
+     (delete-duplicates (append-map (compose om:reply-types .type) ((compose .elements .ports) o))))
     (_ '())))
 
 (define (om:out-formals o)

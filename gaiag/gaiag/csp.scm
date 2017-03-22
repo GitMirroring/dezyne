@@ -162,7 +162,7 @@
   (match o
     (($ <interface>) '())
     (($ <component>)
-     (map om:import (delete-duplicates (map (compose .name .type) ((compose .elements .ports) o)))))))
+     (delete-duplicates (map .type ((compose .elements .ports) o)) om:scope.name-equal?))))
 
 (define (assembly-lts o)
   (match o
@@ -349,7 +349,7 @@
      ")")))
 
 (define (behaviour-interface->csp model)
-  (let* ((behaviour (behaviour->csp (csp:import (.name model))))
+  (let* ((behaviour (behaviour->csp model))
          (lets (collect-def behaviour))
          (inside #f))
     (list

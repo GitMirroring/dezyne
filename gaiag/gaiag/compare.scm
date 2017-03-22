@@ -39,6 +39,7 @@
            om:guard-equal?
            om:triggers-equal?
            om:remove-formals
+           om:scope.name-equal?
            )
   #:re-export (< equal?))
 
@@ -107,7 +108,7 @@
                    ((compose .name .port) b)))
        (equal? ((compose .name .event) a)
                ((compose .name .event) b))
-       (equal? (.arguments a) (.arguments b))))
+       (equal? (.formals a) (.formals b))))
 
 (define-method (om:guard-equal? (lhs <guard>) (rhs <guard>))
   (equal? (om->list (.expression lhs)) (om->list (.expression rhs))))
@@ -124,3 +125,10 @@
 (define-method (om:triggers-equal? (a <on>) (b <on>))
   (equal? ((compose .elements .triggers) a)
           ((compose .elements .triggers) b)))
+
+(define-method (om:scope.name-equal? (a <scoped>) (b <scoped>))
+  (let ((a (.name a))
+        (b (.name b)))
+    (equal? (append (.scope a) (list (.name a)))
+            (append (.scope b) (list (.name b))))))
+

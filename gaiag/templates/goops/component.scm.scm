@@ -3,7 +3,7 @@
 (map (init-member model #{#'()
   (#name  :accessor .#name  :init-value #(if (eq? expression *unspecified*) "#f" expression))#})
      (om:variables model))#
-  (delete-duplicates (append-map (compose declare-replies code:import .type)
+  (delete-duplicates (append-map (compose declare-replies .type)
                                  ((compose .elements .ports) model)))#
   (map (init-port #{#'()
   (#name  :accessor .#name  :init-value ##f)#})

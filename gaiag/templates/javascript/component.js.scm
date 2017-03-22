@@ -15,7 +15,7 @@ dzn.extend (dzn, dzn_require (__dirname + '/#interface '));
   #(map (init-member model #{
   #(string-if (eq? expression *unspecified*) "" #{this.#name  = #expression ;
 #})#}) (om:variables model))#
-    (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))
+    (delete-duplicates (map (compose declare-replies .type) ((compose .elements .ports) model)))
 #
     (map (init-port #{
   this.#name  = new dzn.#((om:scope-join #f '.) interface)({provides: {name: '#name ', component: this}, requires: {}});

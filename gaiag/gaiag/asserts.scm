@@ -32,8 +32,9 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
   #:use-module (gaiag ast2om)
   #:use-module (gaiag goops)
-  #:use-module (gaiag util)
   #:use-module (gaiag om)
+  #:use-module (gaiag compare)
+  #:use-module (gaiag util)
 
   #:use-module (gaiag csp)
   #:use-module (gaiag misc)
@@ -69,16 +70,10 @@
     (_ (assert-list ((om:register (compose ast->om ast:resolve) #t) o)))))
 
 (define (assert-list-all o)
-  (define (scope.name< a b)
-    (let ((a (.name a))
-          (b (.name b)))
-      (list-symbol< (append (.scope a) (list (.name a)))
-                    (append (.scope b) (list (.name b))))))
-
   (match o
     (($ <component>)
      (append
-      (let ((interfaces (delete-duplicates (sort (map .type (om:ports o)) scope.name<))))
+      (let ((interfaces (delete-duplicates (sort (map .type (om:ports o)) om:scope.name-equal?))))
         (apply append (map assert-list interfaces)))
       (assert-list o)))
     (($ <interface>) (assert-list o))))
