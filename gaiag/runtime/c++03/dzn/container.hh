@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
+// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -44,27 +45,33 @@ namespace dzn
     dzn::runtime runtime;
     System system;
 
-    std::map<std::string, std::function<void()>> lookup;
+    std::map<std::string, boost::function<void()>> lookup;
 
     std::queue<std::string> expect;
-    std::mutex mutex;
-    std::condition_variable condition;
+    boost::mutex mutex;
+    boost::condition_variable condition;
 
     dzn::pump pump;
 
-    container(bool flush, dzn::locator&& l = dzn::locator{})
+    container(bool flush, const dzn::locator& l = dzn::locator())
     : meta("<internal>","container",0)
-    , locator(std::forward<dzn::locator>(l))
+    , locator(l.clone().set(runtime).set(pump))
     , runtime()
-    , system(locator.set(runtime).set(pump))
+    , system(locator)
     , pump()
     {
       runtime.performs_flush(this) = flush;
       system.dzn_meta.name = "sut";
     }
+    ~container()
+    {
+      dzn::pump* p = system.dzn_locator.template try_get<dzn::pump>(); //only shells have a pump
+      //resolve the race condition between the shell pump dtor and the container pump dtor
+      if(p != &pump) pump([p] {p->stop();});
+    }
     std::string match_return()
     {
-      std::unique_lock<std::mutex> lock(mutex);
+      boost::unique_lock<boost::mutex> lock(mutex);
       condition.wait(lock, [this]{return not expect.empty();});
       std::string tmp = expect.front(); expect.pop();
       auto it = lookup.find(tmp);
@@ -84,9 +91,9 @@ namespace dzn
       if(actual != tmp)
         throw std::runtime_error("unmatched expectation: \"" + actual + "\" got: \"" + tmp + "\"");
     }
-    void operator()(std::map<std::string, std::function<void()>>&& lookup, std::set<std::string>&& required_ports)
+    void operator()(const std::map<std::string, boost::function<void()>>& lookup, const std::set<std::string>& required_ports)
     {
-      this->lookup = std::move(lookup);
+      this->lookup = lookup;
 
       std::string port;
       std::string str;
@@ -102,7 +109,7 @@ namespace dzn
             if(port.empty() || port != p) port = p;
             else port.clear();
           }
-          std::unique_lock<std::mutex> lock(mutex);
+          boost::unique_lock<boost::mutex> lock(mutex);
           condition.notify_one();
           expect.push(str);
         }

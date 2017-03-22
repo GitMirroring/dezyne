@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 # Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 #
@@ -51,15 +51,7 @@ runtime-common:
 	    ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/dzn/$$file $(OUT)/dzn/$$file;\
 	done
 
-ifeq ($(LANGUAGE),c++03)
 runtime: runtime-common
-	ln -sf $(DEVELOPMENT)/gaiag/runtime/c++/pump.cc $(OUT)/
-	ln -sf $(DEVELOPMENT)/gaiag/runtime/c++/dzn/pump.hh $(OUT)/dzn/
-	ln -sf $(DEVELOPMENT)/gaiag/runtime/c++/dzn/context.hh $(OUT)/dzn/
-	ln -sf $(DEVELOPMENT)/gaiag/runtime/c++/dzn/coroutine.hh $(OUT)/dzn/
-else
-runtime: runtime-common
-endif
 
 code: $(wildcard $(IN)/*.dzn $(IN)/*/*.dzn)
 	for file in $^; do $(DZN) code $(IMPORTS) $(CODE_OPTIONS) -l $(LANGUAGE) --depends $(MODEL_OPT) $(TSS_OPT) -o $(OUT) $$file; done

@@ -67,14 +67,26 @@ namespace dzn
     : name(name)
     , type(type)
     , parent(parent)
+    , rank()
     {}
     meta () {}
     std::string name;
     std::string type;
     const meta* parent;
+    mutable size_t rank;
+    std::vector<const port::meta*> requires;
     std::vector<const meta*> children;
     std::vector<boost::function<void()> > ports_connected;
   };
+
+  inline void rank(const dzn::meta* m, size_t r)
+  {
+    if(m) {
+      m->rank = std::max(m->rank, r);
+      for(std::vector<const port::meta*>::const_iterator i = m->requires.begin(); i != m->requires.end(); ++i)
+        rank((*i)->provides.meta, m->rank + 1);
+    }
+  }
 
   inline std::string path(const meta* m, std::string p = std::string())
   {
@@ -89,6 +101,27 @@ namespace dzn
     binding_error(const port::meta& m, const std::string& msg)
     : std::runtime_error("not connected: " + path(m.provides.address ? m.provides.meta : m.requires.meta, m.provides.address ? m.provides.port : m.requires.port) + "." + msg)
     {}
+  };
+
+  template <typename Signature>
+  struct async
+  {
+    struct {
+      boost::function<Signature> req;
+      boost::function<void()> clr;
+    } in;
+    struct {
+      boost::function<Signature> ack;
+    } out;
+
+    dzn::port::meta meta;
+
+    void check_bindings() const
+    {
+      if (! in.req) throw dzn::binding_error(meta, "in.req");
+      if (! in.clr) throw dzn::binding_error(meta, "in.clr");
+      if (! out.ack) throw dzn::binding_error(meta, "out.ack");
+    }
   };
 }
 #endif

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -36,18 +37,25 @@ int main()
   std::string str;
   while(std::cin >> str);
 
-  dzn::locator loc;
-  dzn::runtime rt;
-  loc.set(rt);
-  dzn::pump pump;
-  loc.set(pump);
+  struct C
+  {
+    dzn::locator loc;
+    dzn::runtime rt;
+    async_hello sut;
+    dzn::pump pump;
 
-  async_hello sut(loc);
+    C()
+    : sut(loc.set(rt).set(pump))
+    , pump()
+    {
+      sut.dzn_meta.name = "sut";
+      sut.p.meta.requires.port = "p";
+    }
+  };
+  C c;
 
-  sut.dzn_meta.name = "sut";
-  sut.p.meta.requires.port = "p";
-  sut.p.out.a = [] (int t) {std::clog << "p.a -> <external>.p.a [" <<  t << "]" << std::endl;};
+  c.sut.p.out.a = [] (int t) {std::clog << "p.a -> <external>.p.a [" <<  t << "]" << std::endl;};
 
-  dzn::blocking (pump, [&] {sut.p.in.e (0);});
+  dzn::blocking (c.pump, [&] {c.sut.p.in.e (0);});
   return 0;
 }

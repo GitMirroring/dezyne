@@ -5,6 +5,7 @@
 ##include "#interface .hh"
 #}) (delete-duplicates (om:ports model) (lambda (x y) (eq? (.type x) (.type y)))))
 
+##include <dzn/meta.hh>
 ##include <dzn/runtime.hh>
 
 namespace dzn {
@@ -25,8 +26,14 @@ struct #.model
 #}) (om:variables model))#
     (delete-duplicates (map (compose declare-replies code:import .type) ((compose .elements .ports) model)))#
     (map (init-port #{
+    boost::function<void ()> out_#name;
+#}) (filter om:provides? (om:ports model)))#
+    (map (init-port #{
 #((c++:scope-join model) interface)  #name ;
-#}) ((compose .elements .ports) model))
+#}) ((compose .elements .ports) model))#
+    (map (init-async-port model #{
+dzn::async<#type  (#formal-types)> #name ;
+#}) (om:ports (.behaviour model)))
     #.model (const dzn::locator&);
   void check_bindings() const;
   void dump_tree() const;
@@ -43,7 +50,7 @@ private:
     (map (define-on model port #{
 #return-type  #port _#event (#formals);
 #}) (filter om:out? (om:events port))))
-  (filter om:requires? (om:ports model)))#
+  (filter om:requires? (append (om:ports model) (om:ports (.behaviour model)))))#
 (map (define-function model #{
   #return-type  #name (#formals);
 #}) (om:functions model)) };

@@ -8,7 +8,8 @@
              (->string
               (list
                "dzn_meta(\"\",\"" .model "\",0)"))
-               "dzn_rt(dezyne_locator.get<dzn::runtime>())")
+               "dzn_rt(dezyne_locator.get<dzn::runtime>())"
+               "dzn_locator(dezyne_locator)")
             (map (lambda (binding) (list (injected-instance-name binding) "(dezyne_locator)"))
                  (injected-bindings model))
             (list (if (pair? (injected-bindings model))
@@ -31,7 +32,10 @@
        ((compose .elements .instances) model))#
  (map (connect-ports model #{
     connect(#provided , #required );
-#}) (filter (negate om:port-bind?) ((compose .elements .bindings) model))) }
+#}) (filter (negate om:port-bind?) ((compose .elements .bindings) model)))#
+(map (lambda (port) (animate #{dzn::rank(#port .meta.provides.meta, 0); #}
+   `((port ,(.name port))))) (filter om:provides? (om:ports model)))
+}
 
   void #.model ::check_bindings() const
   {

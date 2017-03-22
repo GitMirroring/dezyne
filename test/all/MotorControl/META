@@ -1,1 +1,1 @@
-{"known":["c","cs","c++03"],"comment":"blocking: not supported"}
+{"known":["c"],"comment":"blocking: not supported"}

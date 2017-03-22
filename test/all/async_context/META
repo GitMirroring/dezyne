@@ -1,1 +1,1 @@
-{"skip":["c","cs","c++03","javascript"],"comment":{"true":"async-refine: not supported"}}
+{"skip":["c","cs","javascript"],"comment":{"true":"async-refine: not supported"}}

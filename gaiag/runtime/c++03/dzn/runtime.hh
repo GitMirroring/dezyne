@@ -46,6 +46,27 @@ inline int to__int(std::string s){std::stringstream ss(s); int i; ss >> i; retur
 
 namespace dzn
 {
+  class assign
+  {
+    std::vector<boost::function<void()> > _;
+    template <typename LHS, typename RHS>
+    static void helper(LHS& lhs, const RHS& rhs)
+    {
+      lhs = rhs;
+    }
+  public:
+    template <typename LHS, typename RHS>
+    assign& operator()(LHS& lhs, const RHS& rhs)
+    {
+      _.push_back(boost::bind(&assign::helper<LHS,RHS>, lhs, rhs));
+      return *this;
+    }
+    void operator()()
+    {
+      for(std::vector<boost::function<void()> >::const_iterator it = _.begin(); it != _.end(); ++it) (*it)();
+    }
+  };
+
   void trace_in(std::ostream&, port::meta const&, const std::string&);
   void trace_out(std::ostream&, port::meta const&, const std::string&);
 
@@ -127,6 +148,10 @@ namespace dzn
     runtime(const runtime&);
     runtime& operator = (const runtime&);
   };
+
+  void collateral_block(const locator&);
+  void port_block(const locator&, void*);
+  void port_release(const locator&, void*, boost::function<void()>&);
 
   using boost::ref;
 
@@ -301,6 +326,44 @@ namespace dzn
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
     trace_out(os, boost::get<0>(m)->meta, boost::get<1>(m));
     c->dzn_rt.defer(boost::get<0>(m)->meta.provides.address, c, boost::bind(f, a0, a1, a2, a3, a4, a5));
+  }
+
+  void call_async_helper(const locator&, const meta&, size_t, const boost::function<void()>& f, const boost::function<void()>& g);
+
+  template <typename C>
+  void call_async(C* c, void* id, const boost::function<void()>& f)
+  {
+    call_async_helper(c->dzn_locator, c->dzn_meta, reinterpret_cast<size_t>(id), boost::bind(f), boost::bind(&runtime::flush, &c->dzn_rt, c));
+  }
+  template <typename C, typename A0>
+  void call_async(C* c, void* id, const boost::function<void(A0)>& f, A0 a0)
+  {
+    call_async_helper(c->dzn_locator, c->dzn_meta, reinterpret_cast<size_t>(id), boost::bind(f, a0), boost::bind(&runtime::flush, &c->dzn_rt, c));
+  }
+  template <typename C, typename A0, typename A1>
+  void call_async(C* c, void* id, const boost::function<void(A0, A1)>& f, A0 a0, A1 a1)
+  {
+    call_async_helper(c->dzn_locator, c->dzn_meta, reinterpret_cast<size_t>(id), boost::bind(f, a0, a1), boost::bind(&runtime::flush, &c->dzn_rt, c));
+  }
+  template <typename C, typename A0, typename A1, typename A2>
+  void call_async(C* c, void* id, const boost::function<void(A0, A1, A2)>& f, A0 a0, A1 a1, A2 a2)
+  {
+    call_async_helper(c->dzn_locator, c->dzn_meta, reinterpret_cast<size_t>(id), boost::bind(f, a0, a1, a2), boost::bind(&runtime::flush, &c->dzn_rt, c));
+  }
+  template <typename C, typename A0, typename A1, typename A2, typename A3>
+  void call_async(C* c, void* id, const boost::function<void(A0, A1, A2, A3)>& f, A0 a0, A1 a1, A2 a2, A3 a3)
+  {
+    call_async_helper(c->dzn_locator, c->dzn_meta, reinterpret_cast<size_t>(id), boost::bind(f, a0, a1, a2, a3), boost::bind(&runtime::flush, &c->dzn_rt, c));
+  }
+  template <typename C, typename A0, typename A1, typename A2, typename A3, typename A4>
+  void call_async(C* c, void* id, const boost::function<void(A0, A1, A2, A3, A4)>& f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4)
+  {
+    call_async_helper(c->dzn_locator, c->dzn_meta, reinterpret_cast<size_t>(id), boost::bind(f, a0, a1, a2, a3, a4), boost::bind(&runtime::flush, &c->dzn_rt, c));
+  }
+  template <typename C, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
+  void call_async(C* c, void* id, const boost::function<void(A0, A1, A2, A3, A4, A5)>& f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5)
+  {
+    call_async_helper(c->dzn_locator, c->dzn_meta, reinterpret_cast<size_t>(id), boost::bind(f, a0, a1, a2, a3, a4, a5), boost::bind(&runtime::flush, &c->dzn_rt, c));
   }
 }
 #endif

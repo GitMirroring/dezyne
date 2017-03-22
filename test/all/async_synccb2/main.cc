@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -46,42 +47,49 @@ int main()
 {
   std::string trace = read ();
 
-  dzn::locator loc;
-  dzn::runtime rt;
-  loc.set(rt);
-  dzn::pump pump;
-  loc.set(pump);
+  struct C
+  {
+    dzn::locator loc;
+    dzn::runtime rt;
+    async_synccb2 sut;
+    dzn::pump pump;
+    
+    C()
+    : sut(loc.set(rt).set(pump))
+    , pump()
+    {
+      sut.dzn_meta.name = "sut";
+      sut.p.meta.requires.port = "p";
+      sut.r.meta.provides.port = "r";
+    }
+  };
+  C c;
 
-  async_synccb2 sut(loc);
-
-  sut.dzn_meta.name = "sut";
-  sut.p.meta.requires.port = "p";
-  sut.r.meta.provides.port = "r";
   int t = 0;
 
-  sut.p.out.cb = [t] {std::clog << "sut.p.cb -> <external>.p.cb [" <<  t << "]" << std::endl;};
-  sut.r.in.e = [t] {std::clog << "sut.r.e -> <external>.r.e [" <<  t << "]" << std::endl;
-                    std::clog << "sut.r.return -> <external>.r.return" << std::endl;};
-  sut.r.in.c = [t] {std::clog << "sut.r.c -> <external>.r.c [" <<  t << "]" << std::endl;
-                    std::clog << "sut.r.return -> <external>.r.return" << std::endl;};
+  c.sut.p.out.cb = [t] {std::clog << "sut.p.cb -> <external>.p.cb [" <<  t << "]" << std::endl;};
+  c.sut.r.in.e = [t] {std::clog << "sut.r.e -> <external>.r.e [" <<  t << "]" << std::endl;
+                      std::clog << "sut.r.return -> <external>.r.return" << std::endl;};
+  c.sut.r.in.c = [t] {std::clog << "sut.r.c -> <external>.r.c [" <<  t << "]" << std::endl;
+                      std::clog << "sut.r.return -> <external>.r.return" << std::endl;};
 
   if (0);
   else if (trace == "p.e\nr.e\nr.return\np.return\np.c\nr.c\nr.return\np.return")
     {
-      dzn::blocking (pump, [&] {sut.p.in.e ();});
-      dzn::blocking (pump, [&] {sut.p.in.c ();});
+      dzn::blocking (c.pump, [&] {c.sut.p.in.e ();});
+      dzn::blocking (c.pump, [&] {c.sut.p.in.c ();});
     }
   else if (trace == "p.e\nr.e\nr.return\np.return\nr.cb1\nr.cb2\np.c\nr.c\nr.return\np.return")
     {
-      dzn::blocking (pump, [&] {sut.p.in.e ();sut.r.out.cb1 ();sut.r.out.cb2 ();sut.p.in.c ();});
+      dzn::blocking (c.pump, [&] {c.sut.p.in.e ();c.sut.r.out.cb1 ();c.sut.r.out.cb2 ();c.sut.p.in.c ();});
     }
   else if (trace == "p.e\nr.e\nr.return\np.return\nr.cb1\nr.cb2\np.cb")
     {
-      dzn::blocking (pump, [&] {sut.p.in.e ();sut.r.out.cb1 ();sut.r.out.cb2 ();});
+      dzn::blocking (c.pump, [&] {c.sut.p.in.e ();c.sut.r.out.cb1 ();c.sut.r.out.cb2 ();});
     }
   else if (trace == "p.c\nr.c\nr.return\np.return")
     {
-      dzn::blocking (pump, [&] {sut.p.in.c ();});
+      dzn::blocking (c.pump, [&] {c.sut.p.in.c ();});
     }
   else
     {

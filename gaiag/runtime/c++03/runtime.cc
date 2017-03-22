@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
@@ -23,14 +23,19 @@
 // Code:
 
 #include <dzn/runtime.hh>
+#include <dzn/pump.hh>
 
 #include <algorithm>
 #include <iostream>
 
 namespace dzn {
-  std::ostream debug(std::clog.rdbuf());
-  //std::ostream debug(nullptr);
+  //std::ostream debug(std::clog.rdbuf());
+  std::ostream debug(0);
 
+  void collateral_block(const locator& l)
+  {
+    if(dzn::pump* p = l.try_get<dzn::pump>()) p->collateral_block_lambda();
+  }
   runtime::runtime(){}
 
   void trace_in(std::ostream& os, port::meta const& m, const std::string& e)
@@ -130,5 +135,12 @@ namespace dzn {
     {
       throw std::logic_error("component already handling an event");
     }
+  }
+
+  inline void compose_sequence(const boost::function<void()>& f, const boost::function<void()>& g) {f(); g();}
+
+  void call_async_helper(const locator& l, const meta& m, size_t id, const boost::function<void()>& f, const boost::function<void()>& g)
+  {
+    if(dzn::pump* p = l.try_get<dzn::pump>()) p->handle(id, 0, boost::bind(compose_sequence,f,g), m.rank);
   }
 }

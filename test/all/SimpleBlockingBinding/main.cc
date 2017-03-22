@@ -26,7 +26,7 @@
 #include "SimpleBlockingBinding.hh"
 
 void
-connect_ports (dzn::container<SimpleBlockingBinding>& c)
+connect_ports (dzn::container<SimpleBlockingBinding, std::function<void()> >& c)
 {
   c.system.r.in.e = [&] () {
     dzn::trace_in(std::clog, c.system.r.meta, "e"); std::clog << std::endl;
@@ -37,8 +37,8 @@ connect_ports (dzn::container<SimpleBlockingBinding>& c)
 }
 
 
-std::map<std::string,std::function<void()> >
-event_map (dzn::container<SimpleBlockingBinding>& c)
+std::map<std::string, std::function<void()> >
+event_map (dzn::container<SimpleBlockingBinding, std::function<void()> >& c)
 {
   c.system.p.meta.requires.port = "p";
 
@@ -61,7 +61,7 @@ event_map (dzn::container<SimpleBlockingBinding>& c)
 int
 main(int argc, char* argv[])
 {
-  dzn::container<SimpleBlockingBinding> c(argc > 1 && argv[1] == std::string("--flush"));
+  dzn::container<SimpleBlockingBinding, std::function<void()> > c(argc > 1 && argv[1] == std::string("--flush"));
 
   connect_ports (c);
   c(event_map (c), {"r"});

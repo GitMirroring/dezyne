@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -34,29 +34,35 @@ int main()
 {
   std::cin.ignore(std::numeric_limits<std::streamsize>::max());
 
-  dzn::locator loc;
-  dzn::runtime rt;
-  loc.set(rt);
-  dzn::pump pump;
-  loc.set(pump);
+  struct C
+  {
+    dzn::locator loc;
+    dzn::runtime rt;
+    async_rank sut;
+    dzn::pump pump;
+    
+    C()
+    : sut(loc.set(rt).set(pump))
+    , pump()
+    {
+      sut.dzn_meta.name = "sut";
+      sut.p.meta.requires.port = "p";
+      sut.r.meta.provides.port = "r";
+    }
+  };
+  C c;
 
-  async_rank sut(loc);
+  dzn::apply(&c.sut.dzn_meta, [](const dzn::meta* m){std::clog << m->parent << " " << m << " " << m->name << " " << m->rank << std::endl;});
 
-  dzn::apply(&sut.dzn_meta, [](const dzn::meta* m){std::clog << m->parent << " " << m << " " << m->name << " " << m->rank << std::endl;});
+  c.sut.p.out.f = [] {std::clog << "sut.p.f -> <external>.p.f" << std::endl;};
+  c.sut.p.out.g = [] {std::clog << "sut.p.g -> <external>.p.g" << std::endl;};
 
-  sut.dzn_meta.name = "sut";
-  sut.p.meta.requires.port = "p";
-  sut.r.meta.provides.port = "r";
-
-  sut.p.out.f = [] {std::clog << "sut.p.f -> <external>.p.f" << std::endl;};
-  sut.p.out.g = [] {std::clog << "sut.p.g -> <external>.p.g" << std::endl;};
-
-  sut.r.in.e = [] {
+  c.sut.r.in.e = [] {
     std::clog << "sut.r.e -> <external>.r.e" << std::endl;
     std::clog << "<external>.r.return -> sut.r.return" << std::endl;
   };
 
-  dzn::blocking(pump, sut.p.in.e);
-  dzn::blocking(pump, sut.r.out.f);
-  dzn::blocking(pump, sut.r.out.g);
+  dzn::blocking(c.pump, c.sut.p.in.e);
+  dzn::blocking(c.pump, c.sut.r.out.f);
+  dzn::blocking(c.pump, c.sut.r.out.g);
 }

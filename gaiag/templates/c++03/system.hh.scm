@@ -22,8 +22,9 @@ struct #.model
 {
    dzn::meta dzn_meta;
    dzn::runtime& dzn_rt;
+   const dzn::locator& dzn_locator;
 #(map (lambda (binding) (list ((c++:scope-name) (.type (om:instance model (injected-instance-name binding)))) " "
-                              (injected-instance-name binding) ";\n")) (injected-bindings model)) #
+                              (injected-instance-name binding) ";\n")) (injected-bindings model))#
 (if (pair? (injected-bindings model)) (list "dzn::locator dzn_local_locator;\n")) #
 (map (init-instance model #{
   #((c++:scope-name) component)  #name;

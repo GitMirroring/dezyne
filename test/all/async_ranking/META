@@ -1,1 +1,1 @@
-{"skip":["c","cs","c++03","javascript","run"],"comment":{"true":"system: cannot run","c":"async-refine: not supported"}}
+{"skip":["c","cs","javascript","run"],"comment":{"true":"system: cannot run","c":"async-refine: not supported"}}

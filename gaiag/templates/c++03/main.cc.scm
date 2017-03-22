@@ -18,7 +18,7 @@ connect_ports (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c
   (om:ports model))}
 
 
-std::map<std::string,std::function<void()> >
+std::map<std::string,boost::function<void()> >
 event_map (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c)
 {
  #(map (init-port #{

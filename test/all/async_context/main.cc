@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -46,31 +47,38 @@ int main()
 {
   std::string trace = read ();
 
-  dzn::locator loc;
-  dzn::runtime rt;
-  loc.set(rt);
-  dzn::pump pump;
-  loc.set(pump);
+  struct C
+  {
+    dzn::locator loc;
+    dzn::runtime rt;
+    async_context sut;
+    dzn::pump pump;
 
-  async_context sut(loc);
+    C()
+    : sut(loc.set(rt).set(pump))
+    , pump()
+    {
+      sut.dzn_meta.name = "sut";
+      sut.p.meta.requires.port = "p";
+    }
+  };
+  C c;
 
-  sut.dzn_meta.name = "sut";
-  sut.p.meta.requires.port = "p";
   int t = 0;
-  sut.p.out.cb = [t] {std::clog << "sut.p.cb -> <external>.p.cb [" <<  t << "]" << std::endl;};
+  c.sut.p.out.cb = [t] {std::clog << "sut.p.cb -> <external>.p.cb [" <<  t << "]" << std::endl;};
 
   if (0);
   else if (trace == "p.c\np.return")
     {
-      dzn::blocking (pump, [&] {sut.p.in.c ();});
+      dzn::blocking (c.pump, [&] {c.sut.p.in.c ();});
     }
   else if (trace == "p.e\np.return\np.c\np.return")
     {
-      dzn::blocking (pump, [&] {sut.p.in.e ();sut.p.in.c ();});
+      dzn::blocking (c.pump, [&] {c.sut.p.in.e ();c.sut.p.in.c ();});
     }
   else if (trace == "p.e\np.return\np.cb")
     {
-      dzn::blocking (pump, [&] {sut.p.in.e ();});
+      dzn::blocking (c.pump, [&] {c.sut.p.in.e ();});
     }
   else
     {
