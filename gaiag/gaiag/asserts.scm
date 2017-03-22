@@ -70,13 +70,15 @@
 
 (define (assert-list-all o)
   (define (scope.name< a b)
-    (list-symbol< (append (.scope a) (list (.name a)))
-                  (append (.scope b) (list (.name b)))))
+    (let ((a (.name a))
+          (b (.name b)))
+      (list-symbol< (append (.scope a) (list (.name a)))
+                    (append (.scope b) (list (.name b))))))
 
   (match o
     (($ <component>)
      (append
-      (let ((interfaces (map om:import (delete-duplicates (sort (map .type (om:ports o)) scope.name<)))))
+      (let ((interfaces (delete-duplicates (sort (map .type (om:ports o)) scope.name<))))
         (apply append (map assert-list interfaces)))
       (assert-list o)))
     (($ <interface>) (assert-list o))))

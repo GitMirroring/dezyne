@@ -101,6 +101,14 @@
 (define-method (equal? (a <ast>) (b <ast>))
   (equal? (om2list a) (om2list b)))
 
+(define-method (equal? (a <trigger>) (b <trigger>))
+  (and (or (eq? (.port a) (.port b))
+           (equal? ((compose .name .port) a)
+                   ((compose .name .port) b)))
+       (equal? ((compose .name .event) a)
+               ((compose .name .event) b))
+       (equal? (.arguments a) (.arguments b))))
+
 (define-method (om:guard-equal? (lhs <guard>) (rhs <guard>))
   (equal? (om->list (.expression lhs)) (om->list (.expression rhs))))
 

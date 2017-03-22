@@ -202,7 +202,7 @@ within compress((CO_#.scope_model _ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]]
                                                                       (list "[["((om:scope-name) port) "_'''.x<-" (.name port) "_'''.x|x<-extensions("(.name port)"_''')]]\n"))))
                                                     (filter om:requires? ((compose .elements .ports) model)))))
                          (hide_channels (append-map (lambda (i) (list (list i " ") (list i "_'" ) (list "IN'." i "_''" ) (list i "_'''")))
-                                                    (map .name (filter (compose dzn-async? .type) ((compose .elements .ports) model)))))
+                                                    (map .name (filter (compose dzn-async? .name .type) ((compose .elements .ports) model)))))
                           (hide (if (null? hide_channels) '() (list "\\{|" (comma-join hide_channels) "|}"))))
                      (list "(" (if (string-null? required_processes) 'STOP required_processes) ")" "[[x<-IN'.x|x<-extensions(IN')]]" hide)))
                                                                                                     

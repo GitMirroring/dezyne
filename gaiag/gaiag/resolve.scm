@@ -151,6 +151,13 @@
     (or (as o <event>)
         (and (is-a? model <interface>)
              (not (var? o)) (om:event model o))))
+
+  (define (interface? o)
+    (match o
+      (($ <interface>) o)
+      (($ <scope.name>) (om:interface o))
+      (('dotted scope ... name) (om:interface (make <scope.name> #:scope scope #:name name)))))
+
   (define (function? identifier) (om:function model identifier))
   (define (member? identifier) (om:variable model identifier))
   (define (port? o) (or (as o <port>)
@@ -277,11 +284,14 @@
     (($ <otherwise>) (make <otherwise>))
 
     ((and ($ <port>) (= .type ('dotted scope ... name)))
-     (clone o #:type (make <scope.name> #:scope scope #:name name)))
-
-    ((and ($ <port>) (= .type ($ <scope.name>))) ;; FIXME: import?
-     o)
-
+     (let* ((name (make <scope.name> #:scope scope #:name name))
+            (type (interface? name)))
+       (if (not type) (resolve-error o type "undefined interface: ~a")
+           (clone o #:type type))))
+    ((and ($ <port>) (= .type type))
+     (let ((type (interface? type)))
+       (if (not type) (resolve-error o type "undefined interface: ~a")
+           (clone o #:type type))))
     (($ <signature> type (? unspecified?))
      (make <signature>
        #:type ((resolve model locals) type)
@@ -567,7 +577,7 @@
 
     (($ <component>)
      (let ((o (clone o #:ports (make <ports> #:elements (map (resolve model '()) (om:ports o))))))
-      (clone o #:behaviour ((resolve o '()) (.behaviour o)))))
+       (clone o #:behaviour ((resolve o '()) (.behaviour o)))))
 
     (($ <behaviour> name types ports variables functions statement)
      (let* ((ports (make <ports> #:elements (map (resolve model '()) (.elements ports))))

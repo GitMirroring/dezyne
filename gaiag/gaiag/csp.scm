@@ -113,7 +113,7 @@
        (and-let* ((root (make <root> #:elements (list o))))
          (model-generate-csp root o)))
       (($ <component>)
-       (and-let* ((interfaces (map csp:import (map .type ((compose .elements .ports) o))))
+       (and-let* ((interfaces (map .type ((compose .elements .ports) o)))
                   
                   (root (internal-libs (make <root> #:elements (append interfaces (list o))))))
          (and-let* ((no-behaviour (null-is-#f (filter (negate .behaviour) interfaces)))
@@ -162,7 +162,7 @@
   (match o
     (($ <interface>) '())
     (($ <component>)
-     (map om:import (delete-duplicates (map .type ((compose .elements .ports) o)))))))
+     (map om:import (delete-duplicates (map (compose .name .type) ((compose .elements .ports) o)))))))
 
 (define (assembly-lts o)
   (match o
@@ -408,7 +408,7 @@
       (_ (throw 'match-error (format #f "~a:no match: ~a" (current-source-location) src))))))
 
 (define* (port-events port #:optional (predicate? identity)) ;; FIXME: no test
-  (let ((interface (csp:import (.type port))))
+  (let ((interface (.type port)))
     (interface-events interface predicate?)))
 
 (define (interface-events o predicate?) ;; FIXME: no test
@@ -419,7 +419,7 @@
             (events (map .name events)))
        (delete-duplicates (sort (append events) symbol<))))
     (($ <component>)
-     (apply append (map (compose (lambda (x) (interface-events x predicate?)) om:import .type) ((compose .elements .ports) o))))))
+     (apply append (map (compose (lambda (x) (interface-events x predicate?)) .type) ((compose .elements .ports) o))))))
 
 (define (om:member-names model)
   (map .name (filter (lambda (x) (not (is-a? (.type x) <extern>))) (om:variables model))))
@@ -438,21 +438,21 @@
          (map (lambda (port)
                 (map (lambda (trigger)
                        (->string (list (.name port) '_'''. (.event.name trigger))))
-                     (modeling-triggers (csp:import (.type port)))))
-              (filter (compose not dzn-async? .type) (filter om:requires? (om:ports o))))))
+                     (modeling-triggers (.type port))))
+              (filter (compose not dzn-async? .name .type) (filter om:requires? (om:ports o))))))
 
 (define (async-reqackclrmods o)
-  (map (lambda (port) (list "("  (.name port) "." (.name (car (.elements (.events (csp:import (.type port)))))) ","
-                            (.name port) "_''" "." (.name (cadr (.elements (.events (csp:import (.type port)))))) ","
-                            (.name port) "." (.name (caddr (.elements (.events (csp:import (.type port)))))) ","
+  (map (lambda (port) (list "("  (.name port) "." (.name (car (.elements (.events (.type port))))) ","
+                            (.name port) "_''" "." (.name (cadr (.elements (.events (.type port))))) ","
+                            (.name port) "." (.name (caddr (.elements (.events (.type port))))) ","
                             (.name port) "_'''" "." "inevitable.false" ")"))
-       (filter (compose dzn-async? .type) (filter om:requires? (om:ports o)))))
+       (filter (compose dzn-async? .name .type) (filter om:requires? (om:ports o)))))
 
 (define (async-reqclrs o)
   (append-map (lambda (port) (list
-                              (list (.name port) "." (.name (car (.elements (.events (csp:import (.type port)))))))
-                              (list (.name port) "." (.name (caddr (.elements (.events (csp:import (.type port)))))))))
-              (filter (compose dzn-async? .type) (filter om:requires? (om:ports o)))))
+                              (list (.name port) "." (.name (car (.elements (.events (.type port))))))
+                              (list (.name port) "." (.name (caddr (.elements (.events (.type port))))))))
+              (filter (compose dzn-async? .name .type) (filter om:requires? (om:ports o)))))
 
 (define (typed-elements o)
   (match o
@@ -475,7 +475,7 @@
     (($ <component>)
      (delete-duplicates
       (append
-       (apply append (map (compose type-values om:import .type) ((compose .elements .ports) o)))
+       (apply append (map (compose type-values .type) ((compose .elements .ports) o)))
        (apply append (map typed-elements (types o))))))))
 
 (define (types o)
@@ -487,11 +487,11 @@
       (append
        (apply append
               (map types
-                   (map (compose om:import .type) ((compose .elements .ports) o))))
+                   (map .type ((compose .elements .ports) o))))
        (append (om:types o) (om:types)))))))
 
 (define (return-values-port port) ;; FIMXE: no test
-  (let ((interface (csp:import (.type port))))
+  (let ((interface (.type port)))
     (return-values interface)))
 
 (define (return-values o) ;; FIMXE: no test
@@ -499,7 +499,7 @@
     (($ <interface>)
      (add-return-if-empty (map (return-value o) (om:reply-types o))))
     (($ <component>)
-     (apply append (map (compose return-values om:import .type) ((compose .elements .ports) o))))))
+     (apply append (map (compose return-values .type) ((compose .elements .ports) o))))))
 
 (define ((return-value model) o)
   (match o
@@ -1253,8 +1253,8 @@
     (if (not m) symbol
         (string->symbol (regexp-substitute #f m 'post)))))
 
-(define (dzn-async? name)
-  (let ((scope (.scope name)))
+(define-method (dzn-async? (o <scope.name>))
+  (let ((scope (.scope o)))
     (and (pair? scope)
          (eq? (demangle (car scope)) 'dzn))))
 

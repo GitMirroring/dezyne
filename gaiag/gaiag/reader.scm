@@ -28,6 +28,10 @@
   #:use-module (language dezyne parse)
   #:use-module (language dezyne location)
   #:use-module (language dezyne tokenize)
+
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag goops)
+
   #:export (dzn->ast find-file %include-path try-find-file parse-dzn read-dzn read-ast))
 
 (define %include-path '("."))

@@ -138,7 +138,7 @@
   (filter predicate?
           (match o
             (($ <interface>) ((compose .elements .events) o))
-            (($ <port>) ((compose om:events om:import .type) o)))))
+            (($ <port>) ((compose om:events .type) o)))))
 
 (define om:events (pure-funcq om:events-))
 
@@ -367,11 +367,11 @@
     (($ <binding> instance port) (om:component system instance))
     (($ <bind>) (om:component system (om:instance-name o)))
     (($ <instance> name type) (om:import type))
-    (($ <port> name type) (om:import type))))
+    (($ <port> name type) (om:interface (.type o)))))
 
 (define (om:interface o)
   (match o
-    (($ <port>) (om:import (.type o)))
+    (($ <port>) (om:interface (.type o)))
     (($ <interface>) o)
     ((? (is? <model>)) (om:interface (om:port o)))
     (($ <scope.name>) (cached-model o))
@@ -551,7 +551,7 @@
   ;;(stderr "om:interface-types o=~a\n" o)
   (match o
     (($ <interface>) (om:public-types o))
-    (($ <port>) ((compose om:public-types om:import .type) o))
+    (($ <port>) ((compose om:public-types .type) o))
     ((? (is? <model>)) (append-map om:interface-types (om:ports o)))))
 
 (define (om:public-types o)
@@ -749,7 +749,8 @@
     (find (lambda (model) (equal? (.name model) name)) models)))
 
 (define* (om:import name #:optional (transform (compose ast:resolve ast->om)))
-  (or (cached-model name)
+  (or (as name <model>)
+      (cached-model name)
       (and-let* ((ast (import-ast name transform)))
         (cache-model! name ast))))
 
