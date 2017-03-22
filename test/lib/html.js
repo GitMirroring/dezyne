@@ -64,6 +64,12 @@ var privates = {
   }
   ,
   transform: function(result) {
+    var cfail   = 'rgba(255,200,200,.75)';
+    var cknown  = 'rgba(255,255,200,.75)';
+    var csolved = 'rgba(200,200,255,.75)';
+    var cpass   = 'rgba(200,255,200,.75)';
+    var cwhite  = 'rgba(255,255,255,.75)';
+    
     var html = '';
 
     function ln(line) {
@@ -81,24 +87,36 @@ var privates = {
     ln('        jQuery("a.pass").click(function(event){');
     ln('          if ($target) $target.css("background", "white");');
     ln('          $target = jQuery(this.hash);');
-    ln('          $target.css("background", "#CCFFCC");');
+    ln('          $target.css("background", "'+cpass+'");');
     ln('        });');
     ln('        jQuery("a.fail").click(function(event){');
     ln('          if ($target) $target.css("background", "white");');
     ln('          $target = jQuery(this.hash);');
-    ln('          $target.css("background", "#FFCCCC");');
+    ln('          $target.css("background", "'+cfail+'");');
     ln('        });');
     ln('        jQuery("a.known").click(function(event){');
     ln('          if ($target) $target.css("background", "white");');
     ln('          $target = jQuery(this.hash);');
-    ln('          $target.css("background", "#FFFFCC");');
+    ln('          $target.css("background", "'+cknown+'");');
     ln('        });');
     ln('        jQuery("a.solved").click(function(event){');
     ln('          if ($target) $target.css("background", "white");');
     ln('          $target = jQuery(this.hash);');
-    ln('          $target.css("background", "#CCCCFF");');
+    ln('          $target.css("background", "'+csolved+'");');
     ln('        });');
     ln('      });');
+    ln('      var show = {"pass": true,"solved": true, "known": true, "fail": true };');
+    ln('      function hideRows(result) {');
+    ln('        var text = show[result] ? "display:none;" : "";');
+    ln('        show[result] = ! show[result];');
+    ln('        var bt = document.querySelector("button."+result);');
+    ln('        bt.style.opacity=show[result] ? 1 : .5;');
+    ln('        var items = document.querySelectorAll("tr."+result);');
+    ln('        for (var i = 0; i < items.length; ++i) {');
+    ln('          var item = items[i];');
+    ln('          item.style.cssText = text;');
+    ln('        }');
+    ln('      }');
     ln('    </script>');
     ln('    <title>' + result.title + '</title>');
     ln('    <style>');
@@ -110,6 +128,9 @@ var privates = {
     ln('      }');
     ln('      table, th, td {');
     ln('          border: 1px solid gray;');
+    ln('      }');
+    ln('      tr:nth-child(odd){');
+    ln('          background-color: #CCCCCC');
     ln('      }');
     ln('      td, th {');
     ln('          text-align: center;');
@@ -132,17 +153,26 @@ var privates = {
     ln('        color: blue;');
     ln('      }');
     ln('      .fail {');
-    ln('        background: #FFCCCC;');
+    ln('        background: '+cfail+';');
     ln('      }');
     ln('      .known {');
-    ln('        background: #FFFFCC;');
+    ln('        background: '+cknown+';');
     ln('      }');
     ln('      .solved {');
-    ln('        background: #CCCCFF;');
+    ln('        background: '+csolved+';');
     ln('      }');
     ln('      .pass {');
     ln('        color: black;');
-    ln('        background: #CCFFCC;');
+    ln('        background: '+cpass+';');
+    ln('      }');
+    ln('      .white {');
+    ln('        background: '+cwhite+';');
+    ln('      }');
+    ln('      button {');
+    ln('        background-color: rgba(255,255,255,0);');
+    ln('        padding: 4px 32px;');
+    ln('        text-align: center;');
+    ln('        font-size: 100%;');
     ln('      }');
     ln('    </style>');
     ln('  </head>');
@@ -152,26 +182,26 @@ var privates = {
     ln('    <h1 id="target" class="' + lcStatus + '">Target: ' + result.target + ' ' + ucStatus + '</h1>');
     ln('    <table>');
     ln('      <tr>');
-    ln('        <th>Date</th>');
-    ln('        <th>Start time</th>');
-    ln('        <th>End time</th>');
-    ln('        <th>Elapsed time</th>');
-    ln('        <th>Total tests</th>');
-    ln('        <th>Passed</th>');
-    ln('        <th>Solved</th>');
-    ln('        <th>Known</th>');
-    ln('        <th>Failed</th>');
+    ln('        <th class="white">Date</th>');
+    ln('        <th class="white">Start time</th>');
+    ln('        <th class="white">End time</th>');
+    ln('        <th class="white">Elapsed time</th>');
+    ln('        <th class="white">Total tests</th>');
+    ln('        <th class="white">Passed</th>');
+    ln('        <th class="white">Solved</th>');
+    ln('        <th class="white">Known</th>');
+    ln('        <th class="white">Failed</th>');
     ln('      </tr>');
     ln('      <tr>');
-    ln('        <td>' + result.startTime.toLocaleDateString() + '</td>');
-    ln('        <td>' + result.startTime.toLocaleTimeString() + '</td>');
-    ln('        <td>' + result.endTime.toLocaleTimeString() + '</td>');
-    ln('        <td>' + result.elapsedTime + '</td>');
-    ln('        <td>' + (result.status.passed + result.status.solved + result.status.known + result.status.failed) + '</td>');
-    ln('        <td>' + result.status.passed + '</td>');
-    ln('        <td>' + result.status.solved + '</td>');
-    ln('        <td>' + result.status.known + '</td>');
-    ln('        <td>' + result.status.failed + '</td>');
+    ln('        <td class="white">' + result.startTime.toLocaleDateString() + '</td>');
+    ln('        <td class="white">' + result.startTime.toLocaleTimeString() + '</td>');
+    ln('        <td class="white">' + result.endTime.toLocaleTimeString() + '</td>');
+    ln('        <td class="white">' + result.elapsedTime + '</td>');
+    ln('        <td class="white">' + (result.status.passed + result.status.solved + result.status.known + result.status.failed) + '</td>');
+    ln('        <td class="pass"><button id="button" class="pass" onclick="hideRows(\'pass\')">' + result.status.passed + '</button></td>');
+    ln('        <td class="solved"><button id="button" class="solved" onclick="hideRows(\'solved\')">' + result.status.solved + '</button></td>');
+    ln('        <td class="known"><button id="button" class="known" onclick="hideRows(\'known\')">' + result.status.known + '</button></td>');
+    ln('        <td class="fail"><button id="button" class="fail" onclick="hideRows(\'fail\')">' + result.status.failed + '</button></td>');
     ln('      </tr>');
     ln('    </table>');
     ln('    <p></p>');
@@ -179,8 +209,8 @@ var privates = {
     ln('    <table>');
     if (result.items.length) {
       ln('    <tr>');
-      ln('      <th>ITEM</th>');
-      ln('      <th>time</th>');
+      ln('      <th class="white">ITEM</th>');
+      ln('      <th class="white">time</th>');
 
       var outcome = result.items[0].outcome.status;
       Object.keys(outcome).each(function(aspect) {
@@ -189,21 +219,21 @@ var privates = {
         if (typeof aspoutcome !== 'string') {
           len = Object.keys(aspoutcome).length;
         }
-        ln('      <th colspan = "'+len+'">'+aspect+'</th>');
+        ln('      <th class="white" colspan = "'+len+'">'+aspect+'</th>');
       });
       ln('    </tr>');
       ln('    <tr>');
-      ln('      <th> </th>');
-      ln('      <th> </th>');
+      ln('      <th class="white"> </th>');
+      ln('      <th class="white"> </th>');
 
       Object.keys(outcome).each(function(aspect) {
         var aspoutcome = outcome[aspect];
         if (typeof aspoutcome !== 'string') {
           Object.keys(aspoutcome).each(function(language) {
-            ln('      <th>'+language+'</th>');
+            ln('      <th class="white">'+language+'</th>');
           });
         } else {
-          ln('      <th> </th>');
+          ln('      <th class="white"> </th>');
         }
       });
       ln('    </tr>');
@@ -217,11 +247,11 @@ var privates = {
       }
       var hname = item.name.replace(/\//g,'-');
       var outcome = item.outcome.status;
-      ln('    <tr>');
+      ln('    <tr class="'+status2class(item.status)+'">');
       var base = path.basename (item.name);
       var file = '../' + item.name + '/' + base + '.dzn';
       ln('      <td class="'+status2class(item.status)+'"><a href="' + file +'">'+item.name+'</a></td>');
-      ln('      <td>'+item.outcome.elapsed+'</a></td>');
+      ln('      <td class="white">'+item.outcome.elapsed+'</a></td>');
       Object.keys(outcome).each(function(aspect) {
         var aspoutcome = outcome[aspect];
         if (typeof aspoutcome !== 'string') {
