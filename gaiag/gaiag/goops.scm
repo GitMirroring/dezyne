@@ -30,7 +30,7 @@
            .ast
            .message
            <error>
-           <port-event>
+
            .port.name
            .event.name
            ast:inevitable
@@ -339,8 +339,3 @@
 (define-class <error> (<ast>)
   (ast #:getter .ast #:init-value #f #:init-keyword #:ast)
   (message #:getter .message #:init-value "" #:init-keyword #:message))
-
-(define-class <port-event> (<ast>)
-  (port #:accessor .port #:init-value #f #:init-keyword #:port)
-  (event #:accessor .event #:init-value #f #:init-keyword #:event)
-  (arguments #:getter .arguments #:init-form (make <arguments>) #:init-keyword #:arguments))

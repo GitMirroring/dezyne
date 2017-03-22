@@ -51,7 +51,7 @@
            norm-event
            table-norm-event
            ast:direction
-           ast:in-port-event
+           ast:in-trigger
            ))
 
 (define (norm-event o)
@@ -260,30 +260,26 @@
 
 (define (pair-eq? p) (eq? (car p) (cdr p)))
 
-(define-method (ast:direction (o <port-event>))
+(define-method (ast:direction (o <trigger>))
   (.direction (.event o)))
 
 (define-method (formal->argument (o <formal>))
   (make <expression> #:value (make <var> #:name (.name o))))
 
-(define-method (ast:in-port-event (o <component>))
+(define-method (ast:in-trigger (o <component>))
   (append
    (append-map (lambda (port)
-                 (map (lambda (event) (make <port-event> #:port port #:event event #:arguments (make <arguments> #:elements (map formal->argument ((compose .elements .formals .signature) event)))))
+                 (map (lambda (event) (make <trigger> #:port port #:event event #:arguments (make <arguments> #:elements (map formal->argument ((compose .elements .formals .signature) event)))))
                       (filter om:in? (om:events port))))
                (filter om:provides? (om:ports o)))
    (append-map (lambda (port)
-                 (map (lambda (event) (make <port-event> #:port port #:event event #:arguments (make <arguments> #:elements (map formal->argument ((compose .elements .formals .signature) event)))))
+                 (map (lambda (event) (make <trigger> #:port port #:event event #:arguments (make <arguments> #:elements (map formal->argument ((compose .elements .formals .signature) event)))))
                       (filter om:out? (om:events port))))
                (filter om:requires? (om:ports o)))))
 
-(define-method (port-event->illegal (o <port-event>))
+(define-method (trigger->illegal (o <trigger>))
   (make <on>
-    #:triggers (make <triggers>
-                 #:elements (list (make <trigger>
-                                    #:port (.port o)
-                                    #:event (.event o)
-                                    #:arguments (.arguments o))))
+    #:triggers (make <triggers> #:elements (list o))
     #:statement (make <illegal>)))
 
 (define* ((add-illegals #:optional model) o)
@@ -292,16 +288,17 @@
      (clone o #:behaviour ((add-illegals o) behaviour)))
 
     ((and ($ <behaviour>) (= .statement statement))
-     (let* ((port-events (ast:in-port-event model))
+     (let* ((triggers (ast:in-trigger model))
             (ons (.elements statement))
             (on-triggers (append-map (compose .elements .triggers) ons))
-            (port-events (filter
-                          (lambda (port-event)
-                            (not (find (lambda (trigger)
-                                         (and (eq? (.name (.port port-event)) (.port.name trigger))
-                                              (eq? (.name (.event port-event)) (.event.name trigger))))
-                                       on-triggers))) port-events))
-            (ons (append ons (map port-event->illegal port-events))))
+            (triggers (filter
+                       (lambda (trigger)
+                         (not (find (lambda (on-trigger)
+                                      (and (eq? (.port.name trigger) (.port.name on-trigger))
+                                           (eq? (.event.name trigger) (.event.name on-trigger))))
+                                    on-triggers)))
+                       triggers))
+            (ons (append ons (map trigger->illegal triggers))))
        (if (null? ons) o
            (clone o #:statement (clone statement #:elements ons)))))
     (($ <interface>) o)

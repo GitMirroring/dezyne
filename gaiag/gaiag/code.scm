@@ -1475,9 +1475,9 @@
 
 (define-template x:clr identity)
 
-(define-mapped map:x:call (lambda (o) (filter (lambda (pe) (eq? 'void (.name (ast:return-type pe)))) (ast:in-port-event o))))
+(define-mapped map:x:call (lambda (o) (filter (lambda (pe) (eq? 'void (.name (ast:return-type pe)))) (ast:in-trigger o))))
 
-(define-mapped map:x:rcall (lambda (o) (filter (lambda (pe) (not (eq? 'void (.name (ast:return-type pe))))) (ast:in-port-event o))))
+(define-mapped map:x:rcall (lambda (o) (filter (lambda (pe) (not (eq? 'void (.name (ast:return-type pe))))) (ast:in-trigger o))))
 
 (define-mapped map:x:req ast:req-events)
 
@@ -1487,7 +1487,7 @@
 
 (define-template x:event-decl identity)
 
-(define-mapped map:x:event-decl ast:in-port-event)
+(define-mapped map:x:event-decl ast:in-trigger)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   ast accessors; must return an ast type or a: string, number or symbol   ;;
@@ -1495,13 +1495,13 @@
 
 (define-method (ast:req-events (o <component>))
   (append-map (lambda (port)
-                (map (lambda (event) (make <port-event> #:port port #:event event))
+                (map (lambda (event) (make <trigger> #:port port #:event event))
                      (filter (conjoin om:in? (compose (cut eq? 'req <>) .name)) (om:events port))))
               (om:ports (.behaviour o))))
 
 (define-method (ast:clr-events (o <component>))
   (append-map (lambda (port)
-                (map (lambda (event) (make <port-event> #:port port #:event event))
+                (map (lambda (event) (make <trigger> #:port port #:event event))
                      (filter (conjoin om:in? (compose (cut eq? 'clr <>) .name)) (om:events port))))
               (om:ports (.behaviour o))))
 
@@ -1531,16 +1531,16 @@
     (if (not behaviour) '()
         ((compose .elements .statement) behaviour))))
 
-(define-method (ast:formal-to-argument_n (o <port-event>)) ;; MORTAL SIN HERE!!?
+(define-method (ast:formal-to-argument_n (o <trigger>)) ;; MORTAL SIN HERE!!?
   (map (compose (cut string-append "_" <>) number->string) (iota (length (ast:formal o)) 1 1)))
 
-(define-method (ast:formal-to-argument (o <port-event>)) ;; MORTAL SIN HERE!!?
+(define-method (ast:formal-to-argument (o <trigger>)) ;; MORTAL SIN HERE!!?
   (map .name (ast:formal o)))
 
-(define-method (ast:out-formal-to-argument (o <port-event>)) ;; MORTAL SIN HERE!!?
+(define-method (ast:out-formal-to-argument (o <trigger>)) ;; MORTAL SIN HERE!!?
   (map (lambda (formal) (string-append "&" (symbol->string (.name formal)))) (filter om:out-or-inout? (ast:formal o))))
 
-(define-method (ast:formal (o <port-event>))
+(define-method (ast:formal (o <trigger>))
   ((compose .elements .formals .signature .event) o))
 
 (define-method (ast:formal (o <on>))
@@ -1557,10 +1557,10 @@
 (define-method (ast:event (o <on>))
   (ast:event (car ((compose .elements .triggers) o))))
 
-(define-method (ast:port-type (o <port-event>))
+(define-method (ast:port-type (o <trigger>))
   ((->join "::") (om:scope+name ((compose .type .port) o)))) ;; MORTAL SIN HERE!!?
 
-(define-method (ast:port-name (o <port-event>))
+(define-method (ast:port-name (o <trigger>))
   (ast:port-name (.port o)))
 
 (define-method (ast:port-name (o <on>))
@@ -1570,7 +1570,7 @@
   (.name o))
 
 
-(define-method (ast:event-name (o <port-event>))
+(define-method (ast:event-name (o <trigger>))
   (ast:event-name (.event o)))
 
 (define-method (ast:event-name (o <on>))
@@ -1586,7 +1586,7 @@
 (define-method (ast:model-decl model (o <trigger>))
   (.event o)) ;;FIXME
 
-(define-method (ast:return-type (o <port-event>))
+(define-method (ast:return-type (o <trigger>))
   (ast:return-type (.event o)))
 
 (define-method (ast:return-type (o <event>))
@@ -1602,7 +1602,7 @@
 
 
 (define-method (ast:event (o <trigger>))
-  ((ast:decl) o))
+  (.event o))
 
 (define (code:animate-file file-name module)
   (parameterize ((ast:decl (lambda (p) (ast:model-decl (module-ref module 'model) p)))
