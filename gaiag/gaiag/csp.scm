@@ -624,7 +624,7 @@
 
     (($ <on> triggers statement)
      (let* ((t (filter (negate om:modeling?) (.elements triggers)))
-            (events (map (lambda (x) (om:event model x)) t))
+            (events (map .event t))
             (formals (apply append (map (compose .elements .formals .signature) events)))
             (arguments (apply append (map (compose .elements .arguments) t)))
             (binding-name (lambda (name) (if (pair? name) (om:name name) name)))
@@ -962,7 +962,7 @@
                   (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
 
           (($ <assign> identifier ($ <action> (and ($ <trigger>) (= .port.name port) (= .event.name event) (get! trigger))))
-           (let* ((type ((compose .type .signature) (om:event model (trigger))))
+           (let* ((type ((compose .type .signature) (.event (trigger))))
                   (values (if (eq? (.name type) 'void) 'return (comma-join (typed-elements ((om:type model) type)))))
                   (constructor (if (eq? (.name type) 'bool) "bool." ""))
                   (constructor (if (is-a? ((om:type model) type) <int>) "int." constructor)))
@@ -994,7 +994,7 @@
               (check-range (list identifier) tail model locals indent))))
 
           (($ <variable> identifier type ($ <action> (and ($ <trigger>) (= .port.name port) (= .event.name event) (get! trigger))))
-           (let* ((type ((compose .type .signature) (om:event model (trigger))))
+           (let* ((type ((compose .type .signature) (.event (trigger))))
                  (values (if (eq? (.name type) 'void) 'return (comma-join (typed-elements ((om:type model) type)))))
                  (constructor (if (eq? (.name type) 'bool) "bool." ""))
                  (constructor (if (is-a? ((om:type model) type) <int>) "int." constructor)))

@@ -468,7 +468,6 @@
               (port-name (.name port))
               (event-name (.name event))
               (interface (om:import name))
-              (event (om:event interface event-name))
               (direction (.direction event))
               (comma (if (pair? arguments) (sep) ""))
               (comma-space (if (pair? arguments) `(,(sep) " ") ""))
@@ -708,7 +707,6 @@
             (name (.type port))
             (event-name (.name event))
             (interface (om:import name))
-            (event (om:event interface event-name))
             (direction (.direction event))
             (comma (if (pair? arguments) (sep) ""))
             (comma-space (if (pair? arguments) `(,(sep) " ") ""))
@@ -1547,7 +1545,7 @@
 
 (define-method (ast:formal (o <on>))
   (let* ((trigger ((compose car .elements .triggers) o))
-         (event (om:event ((ast:model) o) trigger)))
+         (event (.event trigger)))
     (map (lambda (name formal)
            (clone formal #:name name))
          (map (compose .name .value) ((compose .elements .arguments) trigger))
@@ -1586,9 +1584,7 @@
 
 
 (define-method (ast:model-decl model (o <trigger>))
-  (om:event model o))
-
-
+  (.event o)) ;;FIXME
 
 (define-method (ast:return-type (o <port-event>))
   (ast:return-type (.event o)))

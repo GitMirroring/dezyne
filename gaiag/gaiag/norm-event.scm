@@ -347,7 +347,7 @@
   (match o
     (($ <on> ($ <triggers> ((and ($ <trigger>) (= .arguments ($ <arguments> ())) (get! trigger)))) statement)
      (let* ((trigger (trigger))
-            (formals (map .name ((compose .elements .formals .signature) (om:event model trigger))))
+            (formals (map .name ((compose .elements .formals .signature) (.event trigger))))
             (arguments (map name->argument formals)))
        (if (null? formals) o
            (clone o
@@ -355,7 +355,7 @@
     (($ <on> ($ <triggers> ((and ($ <trigger>) (= .arguments ($ <arguments> (argument* ...))) (get! trigger)))) statement)
      (let* ((trigger (trigger))
             (members (map .name (om:variables model)))
-            (formals (map .name ((compose .elements .formals .signature) (om:event model trigger))))
+            (formals (map .name ((compose .elements .formals .signature) (.event trigger))))
             (locals (map .name ((om:collect <variable>) o)))
             (occupied members)
             (fresh (letrec ((fresh (lambda (occupied name)
