@@ -101,9 +101,9 @@ int log_valued(char* prefix, char* event, map* event_map, int (*string_to_value)
 #(map
  (lambda (port)
    (map (define-on model port #{
-   #(string-if (not (eq? type 'void)) #{int#} #{void#})  #.scope_model _log_event_#port _#direction _#event (#((c:scope-name) interface) * m) {
+   #(string-if (not (is-a? type-type <void>)) #{int#} #{void#})  #.scope_model _log_event_#port _#direction _#event (#((c:scope-name) interface) * m) {
    (void)m;
-   #(string-if (eq? return-type 'void) #{
+   #(string-if (is-a? type-type <void>) #{
    log_#direction("#port .", "#event ", global_event_map);#}#{
    return log_valued("#port .", "#event ", global_event_map, string_to_#((om:scope-join #f) reply-scope)_#reply-name , #((om:scope-join #f) reply-scope)_#reply-name _to_string);#})}
 #}) (filter (negate (om:dir-matches? port))

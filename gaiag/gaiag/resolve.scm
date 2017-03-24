@@ -75,7 +75,7 @@
     ((models ...)
      (append
                    (filter (is? <import>) models)
-                   (filter (is? <*type*>) models)
+                   (filter (is? <type>) models)
                    (filter (is? <interface>) models)
                    (filter (is? <component>) models)
                    (filter (is? <system>) models)))
@@ -124,12 +124,14 @@
 (define ((resolve model locals) o)
 
   (match o
-    (($ <*type*>) o)
+    (($ <type>) (retain-source-properties o (resolve- model o locals)))
+    ((? (is? <type>)) o)
     (($ <import>) o)
     (_ (retain-source-properties o (resolve- model o locals)))))
 
 (define (type-equal? a b)
-  (equal? (.name a) (.name b)))
+  (cond ((is-a? a <enum>) (equal? a b))
+        (else (eq? (class-of a) (class-of b)))))
 
 (define (->symbol o)
   (match o
@@ -185,10 +187,10 @@
   (define (fake:type model o)
     (match o
       (($ <expression> expression) (fake:type model expression))
-      ('false (make <type> #:name 'bool))
-      ('true (make <type> #:name 'bool))
-      (($ <data>) (make <type> #:name 'data))
-      ((? number?) (make <type> #:name 'int))
+      ('false (make <bool>))
+      ('true (make <bool>))
+      (($ <data>) (make <extern>))
+      ((? number?) (make <int>))
       (('dotted name field)
        (and-let* ((enum (or (as-type (make <type> #:name (make <scope.name> #:name name)))
                             (as-type (make <type> #:name (make <scope.name> #:scope (om:scope+name model) #:name name)))))
@@ -240,11 +242,11 @@
                     (v-type (as-type type))
                     ((not (type-equal? e-type v-type)))
                     (actual (as-type type))
-                    ((if (eq? (.name e-type) 'data)
+                    ((if (is-a? e-type <extern>)
                          (not (is-a? actual <extern>))))
-                    ((if (eq? (.name e-type) 'int)
+                    ((if (is-a? e-type <int>)
                          (not (is-a? actual <int>)))))
-                   (type-mismatch expression (->symbol (.name v-type)) (->symbol e-type)))
+           (type-mismatch expression (->symbol (.name v-type)) (->symbol e-type)))
          (failure)))
 
     ((or 'false 'true) o)
@@ -258,20 +260,16 @@
     (($ <call> identifier (and ($ <arguments> (arguments ...)) (get! arguments)) last?)
      (make <call> #:identifier identifier #:arguments ((resolve model locals) (arguments)) #:last? last?))
 
-    (($ <type>) (=> failure)
-     (or (and-let* ((type (as-type o)))
-           (make <type> #:name (.name type)))
-         (and-let* ((type (as-type (append (om:scope+name model) (.name type)))))
-           (make <type> #:name (.name type)))
-         (failure)
-         (undefined-error o name)))
+    (($ <type>)
+     (or (as-type o)
+         (as-type (append (om:scope+name model) (.name o)))
+         (undefined-error o (.name o))))
 
-    (($ <event> name signature direction)
-     (make <event> #:name name #:signature ((resolve model '()) signature) #:direction direction))
+    ((and ($ <event>) (= .signature signature))
+     (clone o #:signature ((resolve model '()) signature)))
 
     (($ <data>) o)
     (($ <enum>) o)
-    (($ <event>) o)
     (($ <extern>) o)
     (($ <field>) o)
     (($ <illegal>) o)
@@ -290,13 +288,15 @@
        #:type ((resolve model locals) type)
        #:formals '(formals)))
     (($ <signature> type formals)
-     (make <signature>
-       #:type ((resolve model locals) type)
-       #:formals ((resolve model locals) formals)))
+     (clone o
+            #:type ((resolve model locals) type)
+            #:formals ((resolve model locals) formals)))
     (($ <trigger> #f e arguments) (=> failure)
      (let ((event (event? e)))
        (if (not event) (failure)
-           (clone o #:event event #:arguments ((resolve model locals) arguments)))))
+           (clone o
+                  #:event event
+                  #:arguments ((resolve model locals) arguments)))))
     (($ <trigger> #f event arguments)
      (resolve-error o event "undefined event: ~a"))
     (($ <trigger> p e arguments) (=> failure)
@@ -354,7 +354,7 @@
      (make <assign>
        #:identifier identifier
        #:expression (make <action>
-                      #:trigger ((resolve model) (make <trigger> #:port (port) #:event event)))))
+                      #:trigger ((resolve model locals) (make <trigger> #:port (port) #:event event)))))
 
     (($ <assign> identifier ($ <expression> (and ($ <action>) (get! action))))
      (make <assign>
@@ -420,7 +420,7 @@
      (make <variable>
        #:name name
        #:type ((resolve model locals) type)
-       #:expression (make <action> #:trigger ((resolve model) (make <trigger> #:port (port) #:event event)))))
+       #:expression (make <action> #:trigger ((resolve model locals) (make <trigger> #:port (port) #:event event)))))
 
     (($ <variable> name type
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
@@ -536,11 +536,8 @@
          #:statement ((resolve model locals) statement))))
 
     (($ <interface> name types events behaviour)
-     (make <interface>
-       #:name name
-       #:types types
-       #:events ((resolve o '()) events)
-       #:behaviour ((resolve o '()) behaviour)))
+     (let ((o (clone o #:events ((resolve o '()) events))))
+       (clone o #:behaviour ((resolve o '()) behaviour))))
 
     ((and ($ <component>) (= .behaviour (? unspecified?)))
      (clone o
@@ -618,7 +615,9 @@
     (($ <trigger> #f e arguments)
      (let ((event (event? e)))
        (if (not event) (resolve-error o e "undefined event: ~a")
-           (clone o #:event event #:arguments ((resolve-on-triggers model) arguments)))))
+           (clone o
+                  #:event event
+                  #:arguments ((resolve-on-triggers model) arguments)))))
     (($ <trigger> p e arguments)
      (let ((port (port? p)))
        (if (not port) (resolve-error o p "undefined port: ~a")

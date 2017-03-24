@@ -48,7 +48,7 @@
            (lambda (p) (if (string-prefix? "final " p) (substring p 6) p))
            formal-types)))
    (list
-    (if (eq? (.name type) 'void)
+    (if (is-a? type <void>)
         (list "Action" (if (>0 count) (list count "<" ((->join ", ") formal-types) ">") ""))
         (list "ValuedAction" (if (>0 count) (list count "<" type ", " ((->join ", ") formal-types) ">") (list  "<" type ">")))))))
 

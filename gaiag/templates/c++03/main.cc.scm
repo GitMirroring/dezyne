@@ -33,7 +33,7 @@ event_map (dzn::container<#((om:scope-name (string->symbol "::")) model), std::f
   return {
   #((->join "\n  ,")
     (append (map (lambda (port)
-       ((->join "\n  ,") (map (define-on model port #{{"#port .#event ",[&]{#(string-if (eq? reply-name 'void)
+       ((->join "\n  ,") (map (define-on model port #{{"#port .#event ",[&]{#(string-if (is-a? type-type <void>)
        #{ #(c++:out-var-decls model formal-objects) c.system.#port .#direction .#event (#(c++:out-param-list model formal-objects));
        #(string-if (eq? direction 'in) #{c.match("#port .return");#}) #}
        #{ #(c++:out-var-decls model formal-objects) c.match("#port ." + to_string(c.system.#port .#direction .#event (#(c++:out-param-list model formal-objects)))); #})}} #})

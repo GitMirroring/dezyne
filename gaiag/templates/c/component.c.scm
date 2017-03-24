@@ -56,7 +56,7 @@
   static #return-type  #port _#event(#.scope_model * self#comma #formals) {
     (void)self;
     #statement #
-    (if (not (eq? type 'void))
+    (if (not (is-a? type-type <void>))
 (list "    return self->reply_" ((c:scope-join) reply-scope) "_" reply-name ";\n"
       )) }
 
@@ -71,8 +71,8 @@
     runtime_start(&self_->dzn_info);
     #port _#event(self_#comma #((->join ", ") argument-list));
     runtime_finish(&self_->dzn_info);
-    RUNTIME_TRACE_out(&port->meta, #(string-if (eq? type 'void) #{"return"#} #{#((c:scope-join) reply-scope)_#reply-name _to_string (self_->reply_#((c:scope-join) reply-scope)_#reply-name)#}));
-#(string-if (not (eq? type 'void))
+    RUNTIME_TRACE_out(&port->meta, #(string-if (is-a? type-type <void>) #{"return"#} #{#((c:scope-join) reply-scope)_#reply-name _to_string (self_->reply_#((c:scope-join) reply-scope)_#reply-name)#}));
+#(string-if (not (is-a? type-type <void>))
 #{ return self_->reply_#((c:scope-join) reply-scope)_#reply-name;
 #}) }
 #}) (filter om:in? (om:events port))))

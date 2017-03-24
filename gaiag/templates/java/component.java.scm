@@ -37,7 +37,7 @@ class #.scope_model  extends Component {#
 (map
    (lambda (port)
      (map (define-on model port #{#'()
-  #port .#direction .#event  = (#formals) -> {#(string-if (not (eq? return-type 'void)) #{return #})Runtime.call#(symbol-capitalize direction)(this, () -> {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}, new Meta(this.#port , "#event"));};
+  #port .#direction .#event  = (#formals) -> {#(string-if (not (is-a? type-type <void>)) #{return #})Runtime.call#(symbol-capitalize direction)(this, () -> {#(string-if (not (is-a? type-type <void>)) #{return #})#port _#event(#arguments);}, new Meta(this.#port , "#event"));};
    #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))
   }#
@@ -45,7 +45,7 @@ class #.scope_model  extends Component {#
    (lambda (port)
      (map (define-on+ model port #{#'()
   public #return-type  #port _#event (#formals) {
-  #statement #(if (not (eq? type 'void))
+  #statement #(if (not (is-a? type-type <void>))
 (list "return reply_" ((om:scope-join #f) reply-scope) "_" reply-name ";\n")) };
 #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))#

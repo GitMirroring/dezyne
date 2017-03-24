@@ -31,7 +31,7 @@ class #.scope_model  (runtime.Component):
    (map
     (lambda (port)
       (map (define-on model port #{
-        self.#port .#direction port.#event  = lambda *args: runtime.#(string-if (eq? return-type 'void) "" "r")call_in (self, lambda: self.#port _#event  (*args), (self.#port , '#event '#(string-if (not (eq? type 'void))#{, self.#port .#reply-name _to_string#})))
+        self.#port .#direction port.#event  = lambda *args: runtime.#(string-if (is-a? type-type <void>) "" "r")call_in (self, lambda: self.#port _#event  (*args), (self.#port , '#event '#(string-if (not (is-a? type-type <void>))#{, self.#port .#reply-name _to_string#})))
 #}) (filter om:in? (om:events port))))
     (filter om:provides? (om:ports model)))#
    (map
@@ -44,7 +44,7 @@ class #.scope_model  (runtime.Component):
    (lambda (port)
      (map (define-on+ model port #{
     def #port _#event  (self#comma #arguments):
-#statement #(if (not (eq? type 'void))
+#statement #(if (not (is-a? type-type <void>))
 (list "        return self.reply_" ((om:scope-join #f) reply-scope) "_" reply-name))
 
 #}) (filter (om:dir-matches? port) (om:events port))))

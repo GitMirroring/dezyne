@@ -123,17 +123,16 @@
         o)))
 
 
-(define (bool? x) (and (is-a? x <*type*>) (eq? (.name x) 'bool)))
-(define (var-bool? x) (and (is-a? x <variable>) (bool? (.type x))))
+(define (var-bool? x) (and (is-a? x <variable>) (is-a? (.type x) <bool>)))
 
 (define ((var? model) identifier) (om:variable model identifier))
 (define ((bool-var? model) x) (let ((v ((var? model) x)))
-                                (and (is-a? v <variable>) (bool? (.type v)))))
+                                (and (is-a? v <variable>) (is-a? (.type v) <bool>))))
 (define ((int? model) x)
-  (as ((om:type model) x) <int>))
+  (is-a? ((om:type model) x) <int>))
 (define ((int-var? model) x)
   (let ((v ((var? model) x)))
-    (and (is-a? v <variable>) ((int? model) v))))
+    (and (is-a? v <variable>) (is-a? (.type v) <int>))))
 
 (define ((prepend-guards model) o)
   (let* ((variables ((compose .elements .variables .behaviour) model))
@@ -146,7 +145,7 @@
              (let* ((var (find int-var? variables))
                     (range (.range type)))
                (make <enum> #:name (.name type) #:fields (make <fields> #:elements (iota (- (.to range) (.from range) -1) (.from range))))))
-            (($ <type> 'bool)
+            (($ <bool>)
              (let ((var (find var-bool? variables)))
                (make <enum> #:name (make <scope.name> #:name (.name var)) #:fields (make <fields> #:elements '(false true)))))
             (_  (make <enum> #:name (make <scope.name> #:name '<Temp>) #:fields (make <fields> #:elements '(<Initial>))))))

@@ -78,14 +78,14 @@ struct ASD#api : public #api
     ((animate-pairs  `((event ,identity)
                        (asd-event ,asd-event)
                        (reply-type ,(return-type interface (om:event interface event)))
-                       (asd-reply-type ,(if (eq? 'void (return-type interface (om:event interface event))) 'void (->string api "::PseudoStimulus")))
+                       (asd-reply-type ,(if (is-a? (return-type interface (om:event interface event)) <void>) 'void (->string api "::PseudoStimulus")))
                        (direction ,(lambda (e) (.direction (om:event interface event))))
                        (asd-formals ,(event->asd-formals-code interface))
                        (arguments ,(event->arguments-code interface)))
 #{
   #asd-reply-type  #asd-event (#asd-formals)
   {
-   return #(string-if (not (eq? 'void asd-reply-type)) #{static_cast<#asd-reply-type >(port.#direction .#event (#arguments))#} #{port.#direction .#event (#arguments)#});
+   return #(string-if (not (is-a? asd-reply-type <void>)) #{static_cast<#asd-reply-type >(port.#direction .#event (#arguments))#} #{port.#direction .#event (#arguments)#});
   }
 #}
     ) event))) (map car (cdr mapping)) (map cadr (cdr mapping)))
@@ -293,6 +293,6 @@ component = #(symbol-drop-right .model 4)Component::GetInstance();
                        (formals ,(mapping->formals-code interface))
                        (arguments ,(mapping->arguments-code interface)))
 #{
-#port .in.#event  = [=](#formals){return call_helper(#port .meta, "#event ")([&]{#(string-if (not (eq? 'void reply-type)) #{return static_cast<#reply-type >(api_#asd-interface ->#asd-event (#arguments))#} #{api_#asd-interface ->#asd-event (#arguments)#});});};
+#port .in.#event  = [=](#formals){return call_helper(#port .meta, "#event ")([&]{#(string-if (not (is-a? reply-type <void>)) #{return static_cast<#reply-type >(api_#asd-interface ->#asd-event (#arguments))#} #{api_#asd-interface ->#asd-event (#arguments)#});});};
 #}) mapping-list)) ((asd-interfaces om:in?) (om:interface port))))}
 #(map (lambda (x) (list "}\n")) (om:scope model))

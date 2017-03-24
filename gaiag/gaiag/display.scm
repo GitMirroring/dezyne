@@ -46,6 +46,8 @@
   (display #\space port)
   (display o port))
 
+(define expand? (getenv "GAIAG_EXPAND"))
+
 (define-method (display-slots (o <ast>) port)
   (for-each
    (lambda (slot)
@@ -58,7 +60,8 @@
                     (begin
                       (format (current-error-port) "<<barf: elements not a pair>> ")
                       barf)))
-               ((and (is-a? value <ast>)
+               ((and (not expand?)
+                     (is-a? value <ast>)
                      (not (is-a? o <ast-list>))
                      (is-a? o <trigger>) ;; REMOVEME after handling all port slots
                      (member name '(event port)))

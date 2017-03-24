@@ -69,7 +69,7 @@ def #.scope_model _fill_event_map (m):
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction port.#event  = lambda *args: #(string-if (eq? return-type 'void) #{log_#direction ('#port .', '#event ', e)#}#{log_valued ('#port .', '#event ', e, lambda s: dzn.#((om:scope-name) interface) .#reply-name .__dict__.get (drop_prefix(s, '#port .#reply-name _'), None), dzn.#((om:scope-name) interface) .#reply-name _to_string)#})
+    m.#port .#direction port.#event  = lambda *args: #(string-if (is-a? type-type <void>) #{log_#direction ('#port .', '#event ', e)#}#{log_valued ('#port .', '#event ', e, lambda s: dzn.#((om:scope-name) interface) .#reply-name .__dict__.get (drop_prefix(s, '#port .#reply-name _'), None), dzn.#((om:scope-name) interface) .#reply-name _to_string)#})
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))     return e
 

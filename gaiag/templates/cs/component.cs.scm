@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
@@ -66,7 +66,7 @@ public class #.scope_model  : dzn.Component {#
 (map
    (lambda (port)
      (map (define-on model port #{#'()
-   this.#port .#direction port.#event  = (#formals) => {#(string-if (not (eq? return-type 'void)) #{return #})dzn.Runtime.call#(symbol-capitalize direction)#(string-if (not (eq? return-type 'void)) #{<#return-type >#})(this, () => {#(string-if (not (eq? return-type 'void)) #{return #})#port _#event(#arguments);}, this.#port .dzn_meta, "#event ");};
+   this.#port .#direction port.#event  = (#formals) => {#(string-if (not (is-a? type-type <void>)) #{return #})dzn.Runtime.call#(symbol-capitalize direction)#(string-if (not (is-a? type-type <void>)) #{<#return-type >#})(this, () => {#(string-if (not (is-a? type-type <void>)) #{return #})#port _#event(#arguments);}, this.#port .dzn_meta, "#event ");};
    #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))
   }#
@@ -74,7 +74,7 @@ public class #.scope_model  : dzn.Component {#
    (lambda (port)
      (map (define-on+ model port #{#'()
   public #return-type  #port _#event (#formals) {
-  #statement #(if (not (eq? type 'void))
+  #statement #(if (not (is-a? type-type <void>))
 (list "return this.reply_" ((om:scope-join #f) reply-scope) "_" reply-name ";\n")) }
 #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))#

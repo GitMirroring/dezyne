@@ -421,13 +421,13 @@
      (apply append (map (compose (lambda (x) (interface-events x predicate?)) om:import .type) ((compose .elements .ports) o))))))
 
 (define (om:member-names model)
-  (map .name (filter (lambda (x) (not (is-a? ((om:type model) (.type x)) <extern>))) (om:variables model))))
+  (map .name (filter (lambda (x) (not (is-a? (.type x) <extern>))) (om:variables model))))
 
 (define (om:member-types model)
-  (map (om:type model) (filter (lambda (x) (not (is-a? ((om:type model) (.type x)) <extern>))) (om:variables model))))
+  (map (om:type model) (filter (lambda (x) (not (is-a? (.type x) <extern>))) (om:variables model))))
 
 (define (om:member-values model)
-  (map (compose .value .expression) (filter (lambda (x) (not (is-a? ((om:type model) (.type x)) <extern>))) (om:variables model))))
+  (map (compose .value .expression) (filter (lambda (x) (not (is-a? (.type x) <extern>))) (om:variables model))))
 
 (define (modeling-triggers o)
   (filter om:modeling? (om:find-triggers o)))
@@ -455,7 +455,7 @@
 
 (define (typed-elements o)
   (match o
-    (($ <type> 'bool)
+    (($ <bool>)
      (list 'bool.false 'bool.true))
     (($ <int> name ($ <range> from to))
      (map (lambda (i) (symbol-append 'int. (number->symbol i))) (iota (1+ (- to from)) from)))
@@ -502,7 +502,7 @@
 
 (define ((return-value model) o)
   (match o
-    (($ <type> 'bool) (list 'bool.false 'bool.true))
+    (($ <bool>) (list 'bool.false 'bool.true))
     ((and ($ <enum>) (= .fields fields))
      (map (lambda (field) (symbol-append ((om:scope-join model) (om:scope+name o)) '_ field)) (.elements fields)))
     (($ <int> name ($ <range> from to))
@@ -781,7 +781,7 @@
                                     (om:variable model identifier)))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
-  (define (bool? identifier) (and (var? identifier) (eq? (and=> ((om:type model) (var? identifier)) .name) 'bool)))
+  (define (bool? identifier) (and (var? identifier) (is-a? (.type (var? identifier)) <bool>)))
   (define (expression-type o locals)
     (match o
       (($ <expression> expression) (expression-type expression locals))
@@ -963,16 +963,15 @@
 
           (($ <assign> identifier ($ <action> (and ($ <trigger>) (= .port.name port) (= .event.name event) (get! trigger))))
            (let* ((type ((compose .type .signature) (.event (trigger))))
-                  (values (if (eq? (.name type) 'void) 'return (comma-join (typed-elements ((om:type model) type)))))
-                  (constructor (if (eq? (.name type) 'bool) "bool." ""))
-                  (constructor (if (is-a? ((om:type model) type) <int>) "int." constructor)))
+                  (values (if (is-a? type <void>) 'return (comma-join (typed-elements type))))
+                  (constructor (if (is-a? type <bool>) "bool." ""))
+                  (constructor (if (is-a? type <int>) "int." constructor)))
              (list
               (list space (or port channel) (if (om:out? (.event (trigger))) "_''") "!" event " ->\n")
               (list space (or port channel) "_'?" constructor identifier ":{" values "} ->\n")
               (check-range (list identifier) tail model locals indent))))
 
           (($ <assign> identifier ($ <call> function arguments))
-           ;;(stderr "arguments: ~a ~a\n" arguments (pair? arguments))
            (let* ((arguments (on->csp model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
@@ -995,9 +994,9 @@
 
           (($ <variable> identifier type ($ <action> (and ($ <trigger>) (= .port.name port) (= .event.name event) (get! trigger))))
            (let* ((type ((compose .type .signature) (.event (trigger))))
-                 (values (if (eq? (.name type) 'void) 'return (comma-join (typed-elements ((om:type model) type)))))
-                 (constructor (if (eq? (.name type) 'bool) "bool." ""))
-                 (constructor (if (is-a? ((om:type model) type) <int>) "int." constructor)))
+                 (values (if (is-a? type <void>) 'return (comma-join (typed-elements type))))
+                 (constructor (if (is-a? type <bool>) "bool." ""))
+                 (constructor (if (is-a? type <int>) "int." constructor)))
              (list
              (list space (or port channel) (if (om:out? (.event (trigger))) "_''") "!" event " ->\n")
              (list space (or port channel) "_'?" constructor identifier ":{" values "} ->\n")

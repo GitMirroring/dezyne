@@ -143,14 +143,16 @@
      ((->dzn model) (make <variable> #:name name #:type type #:expression ((->dzn model) (make <assign-action> #:trigger trigger)))))
 
     (($ <variable> name type ($ <expression> (? unspecified?)))
-     (->string ((->dzn model) type) " " name ";\n"))
+     (->string (type->dzn model type) " " name ";\n"))
 
     (($ <variable> name type expression)
-     (->string ((->dzn model) type) " " name " = " ((->dzn model) expression) ";\n"))
+     (->string (type->dzn model type) " " name " = " ((->dzn model) expression) ";\n"))
 
+    (($ <bool>) ((animate-snippet 'bool)))
     (($ <enum>) ((declare-enum model) o))
     (($ <extern>) ((declare-extern model) o))
     (($ <int>) ((declare-int model) o))
+    (($ <void>) ((animate-snippet 'void)))
 
     (($ <port> name type direction external injected)
      ((animate-snippet 'declare-port `((direction ,direction)
@@ -160,21 +162,14 @@
                                        (injected? ,injected)))
       o))
 
-    (($ <type> 'bool) ((animate-snippet 'bool)))
-    (($ <type> 'void) ((animate-snippet 'void)))
-    ((and ($ <type>) (= .name scoped.name))
-     (let* ((scope (.scope scoped.name))
-            (name (.name scoped.name)))
-       (if (local-scope? scope)
-           ((animate-snippet 'type `((scope ()) (dot "") (name ,name))))
-           ((animate-snippet 'type `((scope ,((dzn:scope-join model) scope)) (dot ".") (name ,name)))))))
+
     (($ <binding> #f port) ((animate-snippet 'binding-port `((port ,port)))))
     (($ <binding> instance port) ((animate-snippet 'binding `((instance ,instance) (port ,port)))))
 
-    (($ <formal> name type (or #f 'in)) (->string (list ((->dzn model) type) " " name)))
+    (($ <formal> name type (or #f 'in)) (->string (list (type->dzn model type) " " name)))
     (($ <formal> name type dir) ((animate-snippet 'formal `((dir ,(if (not (om:out-or-inout? o)) "" dir))
                                                             (out? ,(om:out-or-inout? o))
-                                                            (type ,((->dzn model) type))
+                                                            (type ,(type->dzn model type))
                                                             (name ,name)))))
 
     ((and ($ <trigger>) (= .port #f) (= .event.name event)) ((animate-snippet 'itrigger `((event ,event)))))
@@ -216,6 +211,31 @@
     (#f ((animate-snippet 'false)))
     (#t ((animate-snippet 'true)))
     (_ (->string o))))
+
+(define-method (type->dzn model (o <type>))
+  (define (local-scope? scope)
+    (or (null? scope) (equal? (list (om:name model)) scope)))
+  (match o
+    (($ <bool>) ((animate-snippet 'bool)))
+    (($ <void>) ((animate-snippet 'void)))
+    ((and ($ <enum>) (= .name type))
+     (let* ((scope (.scope type))
+            (name (.name type)))
+       (if (local-scope? scope)
+           ((animate-snippet 'type `((scope ()) (dot "") (name ,name))))
+           ((animate-snippet 'type `((scope ,((dzn:scope-join model) scope)) (dot ".") (name ,name)))))))
+    ((and ($ <extern>) (= .name type))
+     (let* ((scope (.scope type))
+            (name (.name type)))
+       (if (local-scope? scope)
+           ((animate-snippet 'type `((scope ()) (dot "") (name ,name))))
+           ((animate-snippet 'type `((scope ,((dzn:scope-join model) scope)) (dot ".") (name ,name)))))))
+    ((and ($ <int>) (= .name type))
+     (let* ((scope (.scope type))
+            (name (.name type)))
+       (if (local-scope? scope)
+           ((animate-snippet 'type `((scope ()) (dot "") (name ,name))))
+           ((animate-snippet 'type `((scope ,((dzn:scope-join model) scope)) (dot ".") (name ,name)))))))))
 
 (define (location o)
   ((compose scm->json-string json-location) o))
@@ -270,7 +290,7 @@
                     `((direction ,.direction)
                       (formals ,(compose (->dzn model) .formals .signature))
                       (name ,.name)
-                      (type ,((->dzn model) ((compose .type .signature) event)))
+                      (type ,(type->dzn model ((compose .type .signature) event)))
                       (scope.type ,(compose (om:scope-name '.) .type .signature))))
    event))
 
@@ -279,7 +299,7 @@
                     `((formals ,(compose (->dzn model) .formals .signature))
                       (name ,.name)
                       (statement ,(compose (->dzn model) .statement))
-                      (type ,((->dzn model) ((compose .type .signature) function)))))
+                      (type ,(type->dzn model ((compose .type .signature) function)))))
    function))
 
 (define ((init-binding model) binding)

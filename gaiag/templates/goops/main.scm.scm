@@ -62,7 +62,7 @@
         (map (define-on model port #{
       (set! (.#event  (.#direction  (.#port  o)))
        (lambda (. args)#
-        (string-if (eq? return-type 'void) #{#'()
+        (string-if (is-a? type-type <void>) #{#'()
       (log-#direction  '#port . '#event  e)#}#{#'()
     (log-valued '#port . '#event  e (lambda (s) (assoc-ref #(if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'global ((om:scope-join #f) reply-scope)) -#reply-name -alist (string->symbol (drop-prefix s "#port .#reply-name _")))) (lambda (r) (symbol-append '#reply-name _ (assoc-xref #(if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'global ((om:scope-join #f) reply-scope)) -#reply-name -alist r))))#})))
 #})

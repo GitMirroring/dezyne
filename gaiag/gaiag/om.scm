@@ -200,7 +200,7 @@
 (define* (om:types #:optional (model #f))
   (append
    (match model
-     (($ <root> (models ...)) (filter (is? <*type*>) models))
+     (($ <root> (models ...)) (filter (is? <type>) models))
      (($ <behaviour> b types) (.elements types))
      (($ <interface> name types events ($ <behaviour> b btypes)) (append (.elements btypes) (.elements types)))
      (($ <component> name ports ($ <behaviour> b btypes))
@@ -408,14 +408,25 @@
     (($ <enum>) 'enum)
     (($ <extern>) ((->symbol-join '_) (om:scope+name o)))
     (($ <int>) 'int)
+    (($ <bool>) 'bool)
+    (($ <void>) 'void)
+    ;; FIXME
     (($ <type> 'bool) 'bool)
     (($ <type> 'void) 'void)))
 
 (define ((om:type model) o)
   (match o
     ((? symbol?) (find (om:named (make <scope.name> #:scope (om:scope+name model) #:name o)) (om:types model)))
-    (($ <type> 'bool) o)
-    (($ <type> 'void) o)
+
+    (($ <bool>) o)
+    (($ <enum>) o)
+    (($ <data>) o)
+    (($ <extern>) o)
+    (($ <void>) o)
+    (($ <int>) o)
+
+    (($ <type> 'bool) (make <bool>))
+    (($ <type> 'void) (make <void>))
     (($ <type> name)
      (or (find (om:named name) (om:types model))
          (find (om:scoped (om:scope+name model) name) (om:types))))
@@ -445,6 +456,10 @@
     (($ <scope.name>) (append (.scope o) (list (.name o))))
     (($ <instance> x name) (om:scope+name name))
     (($ <port> x name) (om:scope+name name))
+
+    (($ <bool>) '(bool))
+    (($ <void>) '(void))
+    ;; FIXME
     (($ <type> 'bool) '(bool))
     (($ <type> 'void) '(void))
     ((? (is? <scoped>)) ((compose om:scope+name .name) o))))
@@ -570,10 +585,9 @@
       (match o
         (($ <event>)
          (let ((type ((compose .type .signature) o)))
-           (and (not (eq? (.name type) 'void)) type)))
+           (not (is-a? type <void>))))
         ((? (is? <modeling-event>)) #f)
         ((? boolean?) #f))))
-
 
 (define (om:declarative? o)
   (or (and (is-a? o <statement>)
@@ -712,7 +726,7 @@
   (assoc-ref *ast-alist* name))
 
 (define (globals)
-  (filter (is? <*type*>) (map cdr *ast-alist*)))
+  (filter (is? <type>) (map cdr *ast-alist*)))
 
 (define (om:register-model o)
   (if (not (cached-model (.name o)))
@@ -724,9 +738,9 @@
 (define* ((om:register transform #:optional (clear? #f)) ast)
   (let ((om (transform ast)))
     (if clear?
-        (set! *ast-alist* (filter (lambda (x) (is-a? (cdr x) <*type*>)) *ast-alist*)))
+        (set! *ast-alist* (filter (lambda (x) (is-a? (cdr x) <type>)) *ast-alist*)))
     (for-each om:register-model (om:filter (is? <model>) om))
-    (for-each om:register-type (om:filter (is? <*type*>) om))
+    (for-each om:register-type (om:filter (is? <type>) om))
     om))
 
 (define* (import-ast name #:optional (transform (compose ast:resolve ast->om)))

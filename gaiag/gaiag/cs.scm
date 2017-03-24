@@ -51,7 +51,7 @@
                                  (snippet 'formal-type `((type ,(->code model (.type formal))) (out? ,(member (.direction formal) '(inout out))))))
                             formals)))
    (list
-    (if (eq? (.name type) 'void)
+    (if (is-a? type <void>)
         (list "Action" (if (>0 count) (list "<" ((->join ", ") formal-types) ">") ""))
         (list "Func" (if (>0 count) (list "<"((->join ", ") formal-types) "," type ">") (list  "<" type ">")))))))
 

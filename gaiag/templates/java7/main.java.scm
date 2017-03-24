@@ -90,7 +90,7 @@ class main<R> {
 #(map
     (lambda (port)
     (map (define-on model port #{
-    m.#port .#direction .#event  = new #(action-type model (.type signature) (.formals signature))() {public #return-type  action(#formals) {#(string-if (eq? return-type 'void) #{log_#direction("#port .", "#event ", e);#}#{return log_valued("#port .", "#event ", e, "#port .#reply-name _", #(if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'DznGlobal reply-scope).#reply-name .class);#})};};
+    m.#port .#direction .#event  = new #(action-type model (.type signature) (.formals signature))() {public #return-type  action(#formals) {#(string-if (is-a? type-type <void>) #{log_#direction("#port .", "#event ", e);#}#{return log_valued("#port .", "#event ", e, "#port .#reply-name _", #(if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'DznGlobal reply-scope).#reply-name .class);#})};};
 #}) (filter (negate (om:dir-matches? port))
        (om:events port)))) (om:ports model))
 #(map (init-port #{

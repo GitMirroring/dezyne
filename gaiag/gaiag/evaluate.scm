@@ -98,14 +98,11 @@
 
 (define ((var? model) identifier) (om:variable model identifier))
 
-(define (bool? x) (and (is-a? x <*type*>) (eq? (.name x) 'bool)))
 (define ((bool-var? model) x) (let ((v ((var? model) x)))
-                                (and (is-a? v <variable>) (bool? (.type v)))))
-(define ((int? model) x)
-  (as ((om:type model) x) <int>))
+                                (and (is-a? v <variable>) (is-a? (.type v) <bool>))))
 (define ((int-var? model) x)
   (let ((v ((var? model) x)))
-    (and (is-a? v <variable>) ((int? model) v))))
+    (and (is-a? v <variable>) (is-a? (.type v) <int>))))
 
 (define (unspecified? x) (eq? x *unspecified*))
 

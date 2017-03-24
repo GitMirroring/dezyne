@@ -84,6 +84,7 @@
            <binding>
            <bindings>
            <blocking>
+           <bool>
            <call>
            <component>
            <compound>
@@ -132,12 +133,12 @@
            <trigger>
            <triggers>
            <type>
-           <*type*>
            <types>
            <value>
            <var>
            <variable>
            <variables>
+           <void>
            ))
 
 (define (.name o)
@@ -188,11 +189,17 @@
   (events #:getter .events #:init-form (make <events>) #:init-keyword #:events)
   (behaviour #:getter .behaviour #:init-value #f #:init-keyword #:behaviour))
 
-(define-class <*type*> (<scoped>))
-(define-class <type> (<*type*>))
+(define-class <type> (<scoped>))
+
+(define-class <bool> (<type>))
+;;(define-method (.name (o <bool>) 'bool))
+
+(define-class <void> (<type>))
+;;(define-method (.name (o <void>) 'void))
+
 
 (define-class <signature> (<ast>)
-  (type #:getter .type #:init-form (make <type>) #:init-keyword #:type)
+  (type #:getter .type #:init-form (make <void>) #:init-keyword #:type)
   (formals #:getter .formals #:init-form (make <formals>) #:init-keyword #:formals))
 
 (define-class <event> (<named>)
@@ -243,7 +250,7 @@
   (field #:getter .field #:init-value #f #:init-keyword #:field))
 
 (define-class <formal> (<named>)
-  (type #:getter .type #:init-form (make <type>) #:init-keyword #:type)
+  (type #:getter .type #:init-form (make <bool>) #:init-keyword #:type)
   (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
 
 (define-class <component> (<model>)
@@ -255,13 +262,13 @@
   (instances #:getter .instances #:init-form (make <instances>) #:init-keyword #:instances)
   (bindings #:getter .bindings #:init-form (make <bindings>) #:init-keyword #:bindings))
 
+(define-class <data> (<ast>)
+  (value #:getter .value #:init-value #f #:init-keyword #:value))
+
 (define-class <enum> (<type>)
   (fields #:getter .fields #:init-form (list) #:init-keyword #:fields))
 
 (define-class <extern> (<type>)
-  (value #:getter .value #:init-value #f #:init-keyword #:value))
-
-(define-class <data> (<ast>)
   (value #:getter .value #:init-value #f #:init-keyword #:value))
 
 (define-class <int> (<type>)
@@ -322,7 +329,7 @@
   (expression #:getter .expression #:init-value #f #:init-keyword #:expression))
 
 (define-class <variable> (<named> <imperative>)
-  (type #:getter .type #:init-form (make <type> #:name 'bool) #:init-keyword #:type)
+  (type #:getter .type #:init-form (make <bool>) #:init-keyword #:type)
   (expression #:getter .expression #:init-form (make <expression>) #:init-keyword #:expression))
 
 (define-class <bind> (<statement>)

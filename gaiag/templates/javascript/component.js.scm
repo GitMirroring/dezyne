@@ -31,7 +31,7 @@ dzn.extend (dzn, dzn_require (__dirname + '/#interface '));
    (lambda (port)
      (map (define-on+ model port #{
   this.#port .#direction .#event  = function(#arguments) {
-  #statement #(string-if (not (eq? type 'void))
+  #statement #(string-if (not (is-a? type-type <void>))
 #{ return this.reply_#((om:scope-join #f) reply-scope)_#reply-name;
 #}) };
 #}) (filter (om:dir-matches? port) (om:events port))))

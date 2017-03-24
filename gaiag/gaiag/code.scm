@@ -564,23 +564,17 @@
                   (expression ,(expression->string model expression locals)))))
       (($ <signature> type) (->code model type blocking? locals indent))
       (($ <scope.name>) (om:scope+name src))
-      (($ <type> 'bool) (snippet 'bool '()))
-      (($ <type> 'void) 'void)
-      ((and (? (is? <*type*>)) (? extern?))
-       (let* ((extern (extern? src))
-              (value (.value extern)))
+
+      (($ <bool>) (snippet 'bool '()))
+      (($ <extern>)
+       (let ((value (.value src)))
          (snippet 'type-extern `((space ,space) (value ,value)))))
-      ((and ($ <type> name) (? enum?))
-       (debug "\ntype: ~a\n" src)
-       (debug "scope: ~a\n" (om:scope src))
-       (debug "name: ~a\n" (om:name src))
-       (debug "scope-name: ~a\n" (append (om:scope src) (list (om:name src))))
-       (debug "we are here: ~a=> ~a\n" src        (snippet 'type-enum `((space ,space) (scope-name ,(append (om:scope src) (list (om:name src)))) (scope ,(om:scope src)) (name ,(om:name src)))))
+      (($ <enum>)
        (snippet 'type-enum `((space ,space) (scope-name ,(append (om:scope src) (list (om:name src)))) (scope ,(om:scope src)) (name ,(om:name src)))))
-      ((and ($ <type> name) (? int?))
+      (($ <int>)
        (snippet 'type-int `((space ,space) (scope-name ,(append (om:scope src) (list (om:name src)))) (scope ,(om:scope src)) (name ,(om:name src)))))
-      (($ <type> name)
-       (snippet 'type `((scope-name ,(om:scope+name src)) (space ,space) (scope ,(.scope (.name src))) (name ,(.name src)))))
+      (($ <void>) 'void)
+
       (($ <variable> name type (and ($ <action>) (get! action)))
        (snippet 'variable
                 `((space ,space)
@@ -985,7 +979,7 @@
          (formal-list (map (lambda (x) (code:->code model x)) formals))
          (formals (code:->code model (make <formals> #:elements formals)))
          (reply-type (ast-name ((om:type model) type)))
-         (reply-name (if (eq? reply-type 'int) 'int (om:name type)))
+         (reply-name (if (is-a? type-type <int>) 'int (om:name type)))
          (reply-scope (om:scope type-type))
          (reply-scope-name (om:scope+name type-type))
          (system (as model <system>))
@@ -1194,10 +1188,9 @@
             port)))
 
 (define (declare-replies o)
-  (debug "reply-types: ~a\n" (om:reply-types o))
   (map (lambda (x)
          (let ((s (match x
-                    (($ <type> 'bool) 'declare-reply-bool)
+                    (($ <bool>) 'declare-reply-bool)
                     (($ <enum>) 'declare-reply-enum)
                     (($ <int>) 'declare-reply-int))))
            (snippet s `((scope ,(om:scope x))
@@ -1426,10 +1419,10 @@
 (define-template x:return ast:return-type)
 
 (define-template x:reply (lambda (o)
-                           (if (eq? 'void (om:name o))
+                           (if (is-a? o <void>)
                                ""
                                (let ((type (ast-name ((om:type ((ast:model) o)) o))))
-                                (string-append " this->reply_" (->string ((om:scope-join #f) (om:scope o))) "_" (->string (if (eq? 'int type) type (om:name o)))))))) ;; MORTAL SIN HERE!!?
+                                (string-append " this->reply_" (->string ((om:scope-join #f) (om:scope o))) "_" (->string (if (is-a? o <int>) type (om:name o)))))))) ;; MORTAL SIN HERE!!?
 
 (define-template x:return-type ast:return-type)
 
@@ -1475,9 +1468,9 @@
 
 (define-template x:clr identity)
 
-(define-mapped map:x:call (lambda (o) (filter (lambda (pe) (eq? 'void (.name (ast:return-type pe)))) (ast:in-trigger o))))
+(define-mapped map:x:call (lambda (o) (filter (lambda (t) (is-a? (ast:return-type t) <void>)) (ast:in-trigger o))))
 
-(define-mapped map:x:rcall (lambda (o) (filter (lambda (pe) (not (eq? 'void (.name (ast:return-type pe))))) (ast:in-trigger o))))
+(define-mapped map:x:rcall (lambda (o) (filter (lambda (t) (not (is-a? (ast:return-type t) <void>))) (ast:in-trigger o))))
 
 (define-mapped map:x:req ast:req-events)
 
