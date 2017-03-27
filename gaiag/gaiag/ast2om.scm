@@ -67,7 +67,11 @@
 (define (ast->om-- o)
   (match o
 
-    (('action trigger) (make <action> #:trigger (ast->om- trigger)))
+    (('action event) (make <action> #:event event))
+
+    (('action port event) (make <action> #:port port #:event event))
+
+    (('action port event arguments) (make <action> #:port port #:event event #:arguments (ast->om- arguments)))
 
     (('arguments arguments ...) (make <arguments>
                                   #:elements (map ast->om- arguments)))

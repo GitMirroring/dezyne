@@ -89,9 +89,16 @@
     (($ <compound> (statement* ...))
      ((animate-snippet 'compound `((statements ,(map (->dzn model) statement*))))))
 
-    (($ <action> trigger)
-     ((animate-snippet 'action `((trigger ,((->dzn model) trigger))
-                                 (location ,(location o))))))
+    ((and ($ <action>) (= .port #f) (= .event.name event))
+     (let ((trigger ((animate-snippet 'itrigger `((event ,event))))))
+      ((animate-snippet 'action `((trigger ,trigger)
+                                  (location ,(location o)))))))
+
+    ((and ($ <action>) (= .port.name port) (= .event.name event) (= .arguments arguments))
+     (let* ((arguments ((->dzn model) arguments))
+            (trigger ((animate-snippet 'trigger `((event ,event) (port ,port) (arguments ,arguments))))))
+      ((animate-snippet 'action `((trigger ,trigger)
+                                  (location ,(location o)))))))
 
     (($ <illegal>) ((animate-snippet 'illegal)))
 

@@ -166,14 +166,14 @@
   (define (enum-field? identifier)
     (lambda (field)
       (and-let* ((enum (as-enum identifier)))
-                (member field (.elements (.fields enum))))))
+        (member field (.elements (.fields enum))))))
 
   (define (member-field? identifier)
     (lambda (field)
       (and-let* ((variable (var? identifier))
                  (type (.type variable))
                  (enum (as-type type)))
-                (member field (.elements (.fields enum))))))
+        (member field (.elements (.fields enum))))))
 
   (define (as-type o)
     (match o
@@ -203,6 +203,7 @@
          enum))
       (_ #f)))
 
+  ;;(stderr "resolve o=~a\n" o)
   (match o
     (($ <var> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
@@ -215,8 +216,7 @@
     (($ <assign> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
 
-    (($ <action> ($ <trigger> #f
-                    (and (? (negate event-or-function?)) (get! identifier))))
+    (($ <action> #f (and (? (negate event-or-function?)) (get! identifier)))
      (resolve-error o (identifier) "undefined function or event: ~a"))
 
     (($ <call> (and (? symbol?) (? (negate event-or-function?)) (get! identifier)))
@@ -235,7 +235,7 @@
      (resolve-error (type) (->symbol (type)) "undefined type: ~a"))
 
     (($ <variable> name (and (? (negate extern?)) (get! type)) ($ <expression> (? unspecified?)))
-      (resolve-error o name "undefined variable value: ~a"))
+     (resolve-error o name "undefined variable value: ~a"))
 
     (($ <variable> name type expression) (=> failure)
      (or (and-let* ((e-type (fake:type model expression))
@@ -313,25 +313,44 @@
     ((? symbol?)
      (undefined-error 'programming-error o))
 
-    (($ <action> ($ <trigger> #f (and (? function?) (get! identifier))))
+    (($ <action> #f (and (? function?) (get! identifier)))
      (make <call> #:identifier (identifier)))
 
-    (($ <action> trigger) (make <action> #:trigger ((resolve model locals) trigger)))
+    (($ <action> #f e arguments) (=> failure)
+     (let ((event (event? e)))
+       (if (not event) (failure)
+           (clone o
+                  #:event event
+                  #:arguments ((resolve model locals) arguments)))))
+
+    (($ <action> #f event arguments)
+     (resolve-error o event "undefined event: ~a"))
+
+    (($ <action> p e arguments) (=> failure)
+     (let ((port (port? p)))
+       (if (not port) (resolve-error o p "undefined port: ~a")
+           (let ((event (or (as e <event>) (om:event port e))))
+             (if (not event) (resolve-error o e "undefined event: ~a")
+                 (clone o
+                        #:port port
+                        #:event event
+                        #:arguments ((resolve model locals) arguments)))))))
 
     (($ <assign> identifier
         ($ <expression> ($ <call> (and (? event?) (get! event)))))
      (make <assign>
        #:identifier identifier
-       #:expression (make <action> #:trigger (make <trigger> #:event (event? event)))))
+       #:expression (make <action> #:event (event? event))))
 
     (($ <assign> identifier ($ <expression> (and ($ <call>) (get! call))))
      (make <assign> #:identifier identifier
            #:expression ((resolve model locals) (call))))
 
+    ;; FIXME: expr/call-> decide which one to produce in parser
     (($ <assign> identifier ($ <call> (and (? event?) (get! event))))
      (make <assign>
        #:identifier identifier
-       #:expression (make <action> #:trigger (make <trigger> #:event (event? event)))))
+       #:expression (make <action> #:event (event? event))))
 
     (($ <assign> identifier (and ($ <call>) (get! call)))
      (make <assign> #:identifier identifier
@@ -341,7 +360,7 @@
         ($ <expression> ($ <var> (and (? event?) (get! event)))))
      (make <assign>
        #:identifier identifier
-       #:expression (make <action> #:trigger (make <trigger> #:event (event? event)))))
+       #:expression (make <action> #:event (event? event))))
 
     (($ <assign> identifier
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
@@ -353,8 +372,7 @@
         ($ <expression> ('dotted (and (? port?) (get! port)) event)))
      (make <assign>
        #:identifier identifier
-       #:expression (make <action>
-                      #:trigger ((resolve model locals) (make <trigger> #:port (port) #:event event)))))
+       #:expression ((resolve model locals) (make <action> #:port (port) #:event event))))
 
     (($ <assign> identifier ($ <expression> (and ($ <action>) (get! action))))
      (make <assign>
@@ -393,8 +411,7 @@
      (make <variable>
        #:name name
        #:type ((resolve model locals) type)
-       #:expression (make <action> #:trigger
-                          (make <trigger> #:event (event? event)))))
+       #:expression (make <action> #:event (event? event))))
 
     (($ <variable> name type ($ <expression> (and ($ <call>) (get! call))))
      (make <variable>
@@ -407,8 +424,7 @@
      (make <variable>
        #:type ((resolve model locals) type)
        #:name name
-       #:expression (make <action> #:trigger
-                          (make <trigger> #:event (event? event)))))
+       #:expression (make <action> #:event (event? event))))
 
     (($ <variable> name type ($ <expression> (and ($ <action>) (get! action))))
      (make <variable>
@@ -420,7 +436,7 @@
      (make <variable>
        #:name name
        #:type ((resolve model locals) type)
-       #:expression (make <action> #:trigger ((resolve model locals) (make <trigger> #:port (port) #:event event)))))
+       #:expression ((resolve model locals) (make <action> #:port (port) #:event event))))
 
     (($ <variable> name type
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
@@ -438,12 +454,12 @@
     (('dotted '* scope ... name)
      ((resolve model locals) (make <scope.name> #:scope scope #:name name)))
 
-    (('dotted scope ... name) (=> failure)  ;;FIXME
+    (('dotted scope ... name) (=> failure) ;;FIXME
      (or (and (pair? scope)
-     (> (length scope) 1) (and=> (as (or (as-type (make <type> #:name (make <scope.name> #:scope scope #:name name)))
-                           (as-type (make <type> #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name)))) 
-                                 <enum>)
-                .name))
+              (> (length scope) 1) (and=> (as (or (as-type (make <type> #:name (make <scope.name> #:scope scope #:name name)))
+                                                  (as-type (make <type> #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name)))) 
+                                              <enum>)
+                                          .name))
          (failure)))
 
     (('dotted (and (? var?) (get! name)))
@@ -459,14 +475,14 @@
 
     (('dotted scope ... name field) (=> failure)
      (let ((enum (as (or (as-type (make <type> #:name (make <scope.name> #:scope scope #:name name)))
-                      (as-type (make <type> #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name))))
-                      <enum>)))
+                         (as-type (make <type> #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name))))
+                     <enum>)))
        (if (not enum) (failure)
            (if (member field ((compose .elements .fields) enum))
-                   (make <literal> #:name (.name enum) #:field field)
-                   (and
-                    (resolve-error o field "undefined enum field: ~a")
-                   )))))
+               (make <literal> #:name (.name enum) #:field field)
+               (and
+                (resolve-error o field "undefined enum field: ~a")
+                )))))
 
     (('dotted (? var?) field)
      (resolve-error o field "undefined enum field: ~a"))
@@ -512,12 +528,12 @@
                  (cons resolved (loop (cdr statements) locals))))))))
 
     (($ <blocking> statement)
-       (make <blocking> #:statement ((resolve model locals) statement)))
+     (make <blocking> #:statement ((resolve model locals) statement)))
 
     (($ <guard> expression statement)
-       (make <guard>
-         #:expression ((resolve model locals) expression)
-         #:statement ((resolve model locals) statement)))
+     (make <guard>
+       #:expression ((resolve model locals) expression)
+       #:statement ((resolve model locals) statement)))
 
     (($ <on> triggers statement)
      (let* ((triggers ((resolve-on-triggers model) triggers))
@@ -568,7 +584,7 @@
        #:expression ((resolve model locals) expression)
        #:then ((resolve model locals) then)
        #:else (and (not (eq? else *unspecified*))
-                  else ((resolve model locals) else))))
+                   else ((resolve model locals) else))))
     (($ <arguments> (arguments ...))
      (make <arguments> #:elements (map (resolve model locals) arguments)))
     (($ <bindings> (bindings ...))

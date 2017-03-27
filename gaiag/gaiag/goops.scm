@@ -291,7 +291,12 @@
   (statement #:getter .statement #:init-value #f #:init-keyword #:statement))
 
 (define-class <action> (<imperative>)
-  (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger))
+  (port #:getter .port #:init-value #f #:init-keyword #:port)
+  (event #:getter .event #:init-value #f #:init-keyword #:event)
+  (arguments #:getter .arguments #:init-form (make <arguments>) #:init-keyword #:arguments))
+
+(define-method (.port.name (o <action>)) (and=> (.port o) .name))
+(define-method (.event.name (o <action>)) (and=> (.event o) .name))
 
 (define-class <assign> (<imperative>)
   (identifier #:getter .identifier #:init-value #f #:init-keyword #:identifier)

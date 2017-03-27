@@ -63,17 +63,34 @@
                ((and (not expand?)
                      (is-a? value <ast>)
                      (not (is-a? o <ast-list>))
-                     (is-a? o <trigger>) ;; REMOVEME after handling all port slots
-                     (member name '(event port)))
-                (sdisplay (and=> value .name) port)
-                (if value (ref port)))
+                     (or (and (or (is-a? o <port>) ;; REMOVEME after handling all port, type slots, name slots
+                                  (is-a? o <action>)
+                                  (is-a? o <trigger>)
+                                  (is-a? o <port>))
+                              (member name '(event port type)))
+                         (is-a? o <var>)))
+                (display #\space port)
+                (display-ref (and=> value .name) port))
                (else (sdisplay value port))))))
    (class-slots (class-of o))))
 
+(define-method (display-ref (o <top>) port)
+  (display o port)
+  (ref port))
+
+(define-method (display-ref (o <scope.name>) port)
+  (display (string-join (map symbol->string (append (.scope o) (list (.name o)))) ".") port)
+  (ref port))
+
+(define-method (display-ref (o <variable>) port)
+  (display (.name o) port)
+  (ref port))
+
 (define-method (display-slots (o <expression>) port)
-  (if (eq? (.value o) *unspecified*)
-      (sdisplay "*unspecified*" port)
-      (sdisplay (.value o) port)))
+  (let ((value (.value o)))
+    (cond ((eq? value *unspecified*)
+           (sdisplay "*unspecified*" port))
+          (else (sdisplay value port)))))
 
 (define-method (display-slots (o <return>) port)
   (and=> (.expression o) (lambda (x) (sdisplay x port))))

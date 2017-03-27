@@ -375,11 +375,11 @@
     (Identifier #{.}# Identifier = expression #{\;}#) : (note-location `(assign (dotted ,$1 ,$3) ,$5) @1))
 
    (action
-    (dotted-pair #{(}# #{)}#) : (rsp $1 `(action ,(make-trigger $1)))
-    (dotted-pair #{(}# arguments #{)}#) : (rsp $1 `(action ,(make-trigger $1 $3))))
+    (dotted-pair #{(}# #{)}#) : (rsp $1 `(action ,@(cdr $1)))
+    (dotted-pair #{(}# arguments #{)}#) : (rsp $1 `(action ,@(cdr $1) ,$3)))
 
    (action-statement
-    (dotted-pair #{\;}#) : (rsp $1 `(action ,(make-trigger $1)))
+    (dotted-pair #{\;}#) : (rsp $1 `(action ,@(cdr $1)))
     (action #{\;}#) : $1)
 
    (if-statement
@@ -478,7 +478,7 @@
                 (assign idle (expression true)))
             (on (triggers (trigger #f inevitable (arguments)))
                 (compound
-                 (action (trigger #f ack (arguments)))
+                 (action #f ack (arguments))
                  (assign idle (expression true))))))))))))
 
 (define (comp src e)
