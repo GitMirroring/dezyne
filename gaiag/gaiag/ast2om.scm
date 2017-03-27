@@ -65,8 +65,8 @@
   (retain-source-properties ast (ast->om-- ast)))
 
 (define (ast->om-- o)
-  (match o
 
+  (match o
     (('action event) (make <action> #:event event))
 
     (('action port event) (make <action> #:port port #:event event))
@@ -213,6 +213,12 @@
 
     (('otherwise value) (make <otherwise> #:value value))
 
+    (('formal name #f #f)
+     (make <formal> #:name name))
+
+    (('formal-binding name #f #f variable)
+     (make <formal-binding> #:name name #:variable variable))
+
     (('formal name type)
      (make <formal> #:name name #:type (ast->om- type)))
 
@@ -263,7 +269,7 @@
      (make <trigger>
        #:port port
        #:event event
-       #:arguments (ast->om- arguments)))
+       #:formals (ast->om- arguments)))
 
     (('triggers triggers ...)
      (make <triggers> #:elements (map ast->om- triggers)))

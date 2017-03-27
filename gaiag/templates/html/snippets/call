@@ -1,1 +1,1 @@
-<span title='ctrl: go to definition' onclick='if (event.ctrlKey) CONTEXT.click(#location);'>#function #arguments;</span>
+<span title='ctrl: go to definition' onclick='if (event.ctrlKey) CONTEXT.click(#location);'>#function(#arguments);</span>

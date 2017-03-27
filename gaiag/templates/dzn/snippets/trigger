@@ -1,1 +1,1 @@
-#port .#event #arguments
+#port .#event (#formals)

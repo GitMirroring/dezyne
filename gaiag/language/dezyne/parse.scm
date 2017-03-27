@@ -229,7 +229,6 @@
     (expr && expr) : `(and ,$1 ,$3)
     (expr #{||}# expr) : `(or ,$1 ,$3)
 
-    (expr <- expr) : `(<- ,$1 ,$3)
     (expr == expr) : `(== ,$1 ,$3)
     (expr != expr) : `(!= ,$1 ,$3)
     (expr < expr) : `(< ,$1 ,$3)
@@ -286,6 +285,14 @@
    (formal
     (variable-type Identifier): (note-location `(formal ,$2 ,$1) @1)
     (formal-direction variable-type Identifier): (note-location `(formal ,$3 ,$2 ,$1) @1))
+
+   (trigger-formals
+    (trigger-formal) : `(formals ,$1)
+    (trigger-formals #{,}# trigger-formal) : (append $1 (list $3)))
+
+   (trigger-formal
+    (Identifier): (note-location `(formal ,$1 #f #f) @1)
+    (Identifier <- Identifier): (note-location `(formal-binding ,$1 #f #f ,$3) @1))
 
    (statements
     () : (list 'compound)
@@ -360,12 +367,12 @@
     (triggers #{,}# trigger) : (append $1 (list $3)))
 
    (trigger
-    (Identifier) : (note-location `(trigger #f ,$1 (arguments)) @1)
-    (Identifier #{(}# #{)}#) : (note-location `(trigger #f ,$1 (arguments)) @1)
-    (Identifier #{.}# Identifier) : (note-location `(trigger ,$1 ,$3 (arguments)) @1)
-    (Identifier #{.}# Identifier #{(}# #{)}#) : (note-location `(trigger ,$1 ,$3 (arguments)) @1)
-    (Identifier #{(}# arguments #{)}#) : (note-location `(trigger #f ,$1 ,$3) @1)
-    (Identifier #{.}# Identifier #{(}# arguments #{)}#) : (note-location `(trigger ,$1 ,$3 ,$5) @1))
+    (Identifier) : (note-location `(trigger #f ,$1 (formals)) @1)
+    (Identifier #{(}# #{)}#) : (note-location `(trigger #f ,$1 (formals)) @1)
+    (Identifier #{.}# Identifier) : (note-location `(trigger ,$1 ,$3 (formals)) @1)
+    (Identifier #{.}# Identifier #{(}# #{)}#) : (note-location `(trigger ,$1 ,$3 (formals)) @1)
+    (Identifier #{(}# trigger-formals #{)}#) : (note-location `(trigger #f ,$1 ,$3) @1)
+    (Identifier #{.}# Identifier #{(}# trigger-formals #{)}#) : (note-location `(trigger ,$1 ,$3 ,$5) @1))
 
    (illegal-statement
     (illegal #{\;}#) : (note-location `(illegal) @1))

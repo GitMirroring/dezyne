@@ -96,7 +96,9 @@
 
     ((and ($ <action>) (= .port.name port) (= .event.name event) (= .arguments arguments))
      (let* ((arguments ((->dzn model) arguments))
-            (trigger ((animate-snippet 'trigger `((event ,event) (port ,port) (arguments ,arguments))))))
+            (trigger ((animate-snippet 'action-trigger `((event ,event) (port ,port) (arguments ,arguments))))))
+       (stderr "arguments=~a\n" arguments)
+       (stderr "trigger=~a\n" trigger)
       ((animate-snippet 'action `((trigger ,trigger)
                                   (location ,(location o)))))))
 
@@ -105,8 +107,8 @@
     (($ <assign> var ($ <call> function arguments))
      ((->dzn model) (make <assign> #:identifier var #:expression (make <assign-call> #:identifier function #:arguments arguments))))
 
-    (($ <assign> var ($ <action> trigger))
-     ((->dzn model) (make <assign> #:identifier var #:expression (make <assign-action> #:trigger trigger))))
+    (($ <assign> var (and ($ <action>) (= .port port) (= .event event) (= .arguments arguments)))
+     ((->dzn model) (make <assign> #:identifier var #:expression (make <assign-action> #:port port #:event event #:arguments arguments))))
 
     (($ <assign> var expression)
      (->string var " = " ((->dzn model) expression) ";\n"))
@@ -116,8 +118,9 @@
                                           (arguments ,((->dzn model) arguments))
                                           (location ,(location (om:function model function)))))))
 
-    (($ <assign-action> trigger)
-     ((animate-snippet 'assign-action `((trigger ,((->dzn model) trigger))))))
+    ((and ($ <assign-action>) (= .port.name port) (= .event.name event) (= .arguments arguments))
+     (let ((arguments ((->dzn model) arguments)))
+       ((animate-snippet 'action-trigger `((event ,event) (port ,port) (arguments ,arguments))))))
 
     (($ <call> function arguments)
      ((animate-snippet 'call `((function ,function)
@@ -146,8 +149,8 @@
     (($ <variable> name type ($ <call> function arguments))
      ((->dzn model) (make <variable> #:name name #:type type #:expression ((->dzn model) (make <assign-call> #:identifier function #:arguments arguments)))))
 
-    (($ <variable> name type ($ <action> trigger))
-     ((->dzn model) (make <variable> #:name name #:type type #:expression ((->dzn model) (make <assign-action> #:trigger trigger)))))
+    (($ <variable> name type (and ($ <action>) (= .port port) (= .event event) (= .arguments arguments)))
+     ((->dzn model) (make <variable> #:name name #:type type #:expression ((->dzn model) (make <assign-action> #:port port #:event event #:arguments arguments)))))
 
     (($ <variable> name type ($ <expression> (? unspecified?)))
      (->string (type->dzn model type) " " name ";\n"))
@@ -173,6 +176,7 @@
     (($ <binding> #f port) ((animate-snippet 'binding-port `((port ,port)))))
     (($ <binding> instance port) ((animate-snippet 'binding `((instance ,instance) (port ,port)))))
 
+    (($ <formal> name #f #f) (.name o))
     (($ <formal> name type (or #f 'in)) (->string (list (type->dzn model type) " " name)))
     (($ <formal> name type dir) ((animate-snippet 'formal `((dir ,(if (not (om:out-or-inout? o)) "" dir))
                                                             (out? ,(om:out-or-inout? o))
@@ -180,10 +184,10 @@
                                                             (name ,name)))))
 
     ((and ($ <trigger>) (= .port #f) (= .event.name event)) ((animate-snippet 'itrigger `((event ,event)))))
-    ((and ($ <trigger>) (= .port.name port) (= .event.name event) (= .arguments arguments)) ((animate-snippet 'trigger `((event ,event) (port ,port) (arguments ,((->dzn model) arguments))))))
+    ((and ($ <trigger>) (= .port.name port) (= .event.name event) (= .formals formals)) ((animate-snippet 'trigger `((event ,event) (port ,port) (formals ,((->dzn model) formals))))))
     (('group expression) (->string (list "(" ((->dzn model) expression) ")")))
     (($ <out-bindings>) (->string (map (->dzn model) (.elements o))))
-    (($ <expression> ('<- formal global))
+    ((and ($ <formal-binding>) (= .name formal) (= .variable.name global))
      ((animate-snippet 'out-binding `((formal ,((->dzn model) formal)) (global ,((->dzn model) global))))))
     (($ <expression> expression) (expression->dzn model expression))
     (($ <expression>) #f)
@@ -205,8 +209,7 @@
             (op (match op ('and "&&") ('or "||") (_ op))))
        (->string (list lhs " " op " " rhs ))))
 
-
-    (($ <arguments> (argument* ...)) (->string "(" ((->join ", ") (map (->dzn model) argument*)) ")"))
+    (($ <arguments> (argument* ...)) ((->join ", ") (map (->dzn model) argument*)))
     (($ <fields> (field* ...)) ((->join ", ") (map (->dzn model) field*)))
     (($ <formals> (formal* ...)) ((->join ", ") (map (->dzn model) formal*)))
     (($ <triggers> (trigger* ...)) ((->join ", ") (map (->dzn model) trigger*)))

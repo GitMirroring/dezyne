@@ -203,7 +203,6 @@
          enum))
       (_ #f)))
 
-  ;;(stderr "resolve o=~a\n" o)
   (match o
     (($ <var> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
@@ -536,17 +535,16 @@
        #:statement ((resolve model locals) statement)))
 
     (($ <on> triggers statement)
-     (let* ((triggers ((resolve-on-triggers model) triggers))
-            (arguments (append-map (compose .elements .arguments) (.elements triggers)))
-            (locals (let loop ((arguments arguments) (locals locals))
-                      (if (null? arguments)
+     (let* ((triggers ((resolve-triggers model) triggers))
+            
+            (on-formals (append-map (compose .elements .formals) (.elements triggers)))
+            (locals (let loop ((on-formals on-formals) (locals locals))
+                      (if (null? on-formals)
                           locals
-                          (loop (cdr arguments)
-                                (let* ((argument (car arguments))
-                                       (name ((compose .name .value) argument))
-                                       (binding-name (lambda (name) (if (is-a? name <var>) (.name name) name)))
-                                       (name (binding-name name)))
-                                  (acons name argument locals)))))))
+                          (loop (cdr on-formals)
+                                (let* ((on-formal ((resolve-triggers model) (car on-formals)))
+                                       (name (.name on-formal)))
+                                  (acons name on-formal locals)))))))
        (make <on>
          #:triggers triggers
          #:statement ((resolve model locals) statement))))
@@ -617,39 +615,35 @@
     ((? om:expression?) (map (lambda (o) ((resolve model locals) o)) o))
     (_ o)))
 
-(define ((resolve-on-triggers model) o)
+(define ((resolve-triggers model) o)
+
   (define (event? o)
     (or (as o <event>)
         (and (is-a? model <interface>) (om:event model o))))
+  (define (member? identifier) (om:variable model identifier))
   (define (port? o)
     (or (as o <port>)
         (and (is-a? model <component>) (om:port model o))))
   (match o
-    (($ <triggers> (triggers ...)) (om:map (resolve-on-triggers model) o))
+    (($ <triggers> (triggers ...)) (om:map (resolve-triggers model) o))
     (($ <trigger> #f 'inevitable) (clone o #:event ast:inevitable))
     (($ <trigger> #f 'optional) (clone o #:event ast:optional))
-    (($ <trigger> #f e arguments)
+    (($ <trigger> #f e formals)
      (let ((event (event? e)))
        (if (not event) (resolve-error o e "undefined event: ~a")
-           (clone o
-                  #:event event
-                  #:arguments ((resolve-on-triggers model) arguments)))))
-    (($ <trigger> p e arguments)
+           (clone o #:event event #:formals (om:map (resolve-triggers model) formals)))))
+    (($ <trigger> p e formals)
      (let ((port (port? p)))
        (if (not port) (resolve-error o p "undefined port: ~a")
            (let ((event (or (as e <event>) (om:event port e))))
              (if (not event) (resolve-error o e "undefined event: ~a")
-                 (clone o
-                        #:port port
-                        #:event event
-                        #:arguments ((resolve-on-triggers model) arguments)))))))
-    (($ <arguments> (arguments ...)) (om:map (resolve-on-triggers model) o))
-    (($ <expression> (and ('dotted name) (get! value)))
-     (rsp o (make <expression> #:value (rsp (value) (make <var> #:name name)))))
-    (($ <expression> ($ <var> name)) o)
-    (($ <expression> ('<- ('dotted arg) ('dotted global)))
-     (make <expression> #:value `(<- ,(make <var> #:name arg) ,(make <var> #:name global))))
-    (($ <expression> ('<- ($ <var>) ($ <var>))) o)))
+                 (clone o #:port port #:event event #:formals (om:map (resolve-triggers model) formals)))))))
+    (($ <formal>) o)
+    ((and ($ <formal-binding>) (= .variable v))
+     (let ((variable (or (as v <variable>)
+                         (member? v))))
+       (if (not variable) (resolve-error o v "undeclared identifier: ~a")
+           (clone o #:variable variable))))))
 
 (define ((range-check model) variable)
   (define (as-int-type type) (om:integer model type))

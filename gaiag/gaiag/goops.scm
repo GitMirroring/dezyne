@@ -33,6 +33,7 @@
 
            .port.name
            .event.name
+           .variable.name
            ast:inevitable
            ast:optional
 
@@ -73,6 +74,7 @@
            .type
            .types
            .value
+           .variable
            .variables
            <action>
            <arguments>
@@ -118,6 +120,7 @@
            <otherwise>
            <out-bindings>
            <formal>
+           <formal-binding>
            <formals>
            <port>
            <ports>
@@ -229,7 +232,7 @@
 (define-class <trigger> (<ast>)
   (port #:getter .port #:init-value #f #:init-keyword #:port)
   (event #:getter .event #:init-value #f #:init-keyword #:event)
-  (arguments #:getter .arguments #:init-form (make <arguments>) #:init-keyword #:arguments))
+  (formals #:getter .formals #:init-form (make <formals>) #:init-keyword #:formals))
 
 (define-method (.port.name (o <trigger>)) (and=> (.port o) .name))
 (define-method (.event.name (o <trigger>)) (and=> (.event o) .name))
@@ -250,8 +253,13 @@
   (field #:getter .field #:init-value #f #:init-keyword #:field))
 
 (define-class <formal> (<named>)
-  (type #:getter .type #:init-form (make <bool>) #:init-keyword #:type)
+  (type #:getter .type #:init-form #f #:init-keyword #:type)
   (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
+
+(define-class <formal-binding> (<formal>)
+  (variable #:getter .variable #:init-form #f #:init-keyword #:variable))
+
+(define-method (.variable.name (o <formal-binding>)) (and=> (.variable o) .name))
 
 (define-class <component> (<model>)
   (ports #:getter .ports #:init-form (make <ports>) #:init-keyword #:ports)
@@ -334,7 +342,7 @@
   (expression #:getter .expression #:init-value #f #:init-keyword #:expression))
 
 (define-class <variable> (<named> <imperative>)
-  (type #:getter .type #:init-form (make <bool>) #:init-keyword #:type)
+  (type #:getter .type #:init-form #f #:init-keyword #:type)
   (expression #:getter .expression #:init-form (make <expression>) #:init-keyword #:expression))
 
 (define-class <bind> (<statement>)

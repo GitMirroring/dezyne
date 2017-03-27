@@ -263,19 +263,16 @@
 (define-method (ast:direction (o <trigger>))
   (.direction (.event o)))
 
-(define-method (formal->argument (o <formal>))
-  (make <expression> #:value (make <var> #:name (.name o))))
-
 (define-method (ast:in-trigger (o <component>))
   (append
    (append-map (lambda (port)
-                 (map (lambda (event) (make <trigger> #:port port #:event event #:arguments (make <arguments> #:elements (map formal->argument ((compose .elements .formals .signature) event)))))
+                 (map (lambda (event) (make <trigger> #:port port #:event event #:formals ((compose .formals .signature) event)))
                       (filter om:in? (om:events port))))
                (filter om:provides? (om:ports o)))
    (append-map (lambda (port)
-                 (map (lambda (event) (make <trigger> #:port port #:event event #:arguments (make <arguments> #:elements (map formal->argument ((compose .elements .formals .signature) event)))))
+                 (map (lambda (event) (make <trigger> #:port port #:event event #:formals ((compose .formals .signature) event)))
                       (filter om:out? (om:events port))))
-               (filter om:requires? (om:ports o)))))
+               (filter om:requires? (om:ports o) ))))
 
 (define-method (trigger->illegal (o <trigger>))
   (make <on>
@@ -321,9 +318,9 @@
   (define ((rename mapping) o)
     ;;(stderr "rename o=~a\n" o)
     (match o
-      (($ <trigger> port event ($ <arguments> ())) o)
-      (($ <trigger> port event ($ <arguments> (argument* ...)))
-       (clone o #:arguments (make <arguments> #:elements (map (rename mapping) argument*))))
+      (($ <trigger> port event ($ <formals> ())) o)
+      (($ <trigger> port event ($ <formals> (on-formal* ...)))
+       (clone o #:formals (make <formals> #:elements (map (rename mapping) on-formal*))))
       (($ <expression> ($ <var> name))
        (clone o #:value (make <var> #:name ((rename mapping) name))))
       (($ <expression> ('<- ($ <var> name) global))
@@ -332,24 +329,19 @@
       ((? (is? <ast>)) (om:map (rename mapping) o))
       (_ o)))
 
-  (define (name->argument name)
-    (make <expression> #:value (make <var> #:name name)))
-
-  (define (arg->name arg)
-    (match arg
-      (($ <expression> ('<- ($ <var> x) y)) x)
-      (($ <expression> ($ <var> x)) x)))
+  (define (name->on-formal name)
+    (make <formal> #:name name))
 
   ;;(stderr "rewrite o=~a\n" o)
   (match o
-    (($ <on> ($ <triggers> ((and ($ <trigger>) (= .arguments ($ <arguments> ())) (get! trigger)))) statement)
+    (($ <on> ($ <triggers> ((and ($ <trigger>) (= .formals ($ <formals> ())) (get! trigger)))) statement)
      (let* ((trigger (trigger))
             (formals (map .name ((compose .elements .formals .signature) (.event trigger))))
-            (arguments (map name->argument formals)))
+            (on-formals (map name->on-formal formals)))
        (if (null? formals) o
            (clone o
-                  #:triggers (make <triggers> #:elements (list (clone trigger #:arguments (make <arguments> #:elements arguments))))))))
-    (($ <on> ($ <triggers> ((and ($ <trigger>) (= .arguments ($ <arguments> (argument* ...))) (get! trigger)))) statement)
+                  #:triggers (make <triggers> #:elements (list (clone trigger #:formals (make <formals> #:elements on-formals))))))))
+    (($ <on> ($ <triggers> ((and ($ <trigger>) (= .formals ($ <formals> (on-formal* ...))) (get! trigger)))) statement)
      (let* ((trigger (trigger))
             (members (map .name (om:variables model)))
             (formals (map .name ((compose .elements .formals .signature) (.event trigger))))
@@ -366,7 +358,7 @@
                              occupied names))) ;; occupied names -> (append namesx occupied)
 
             (fresh-formals (list-head (refresh occupied formals) (length formals)))
-            (mapping (filter (negate pair-eq?) (map cons (map arg->name argument*) fresh-formals)))
+            (mapping (filter (negate pair-eq?) (map cons (map .name on-formal*) fresh-formals)))
 
             (occupied (append (map cdr mapping) members))
 
@@ -389,37 +381,32 @@
     (_ o)))
 
 (define* ((binding-into-blocking #:optional model (locals '())) o)
-  (define (out-binding? arg)
-    (match arg
-      (($ <expression> ('<- x y)) arg)
-      (_ #f)))
 
-  (define (out-binding->arg arg)
-    (match arg
-      (($ <expression> ('<- x y)) (clone arg #:value x))
-      (_ arg)))
+  (define (formal-binding->formal o)
+    (match o
+      (($ <formal-binding>) (make <formal> #:name (.name o) #:type (.type o) #:direction (.direction o)))
+      (_ o)))
 
-  (define ((passdown-out-bindings out-bindings) o)
+  (define ((passdown-formal-bindings formal-bindings) o)
     (match o
     ((and ($ <compound>) (? om:declarative?))
-     (clone o #:elements (map (passdown-out-bindings out-bindings) (.elements o))))
-    ((? om:declarative?) (clone o #:statement ((passdown-out-bindings out-bindings) (.statement o))))
-    (($ <compound>) (clone o #:elements (cons out-bindings (.elements o))))
-    (_ (make <compound> #:elements (cons out-bindings (list o))))))
+     (clone o #:elements (map (passdown-formal-bindings formal-bindings) (.elements o))))
+    ((? om:declarative?) (clone o #:statement ((passdown-formal-bindings formal-bindings) (.statement o))))
+    (($ <compound>) (clone o #:elements (cons formal-bindings (.elements o))))
+    (_ (make <compound> #:elements (cons formal-bindings (list o))))))
 
-  ;;(stderr "bib o=~a\n" o)
   (match o
     ((and ($ <on>) (= .triggers triggers) (= .statement statement))
      (let* ((trigger (car (.elements triggers)))
-            (arguments (.elements (.arguments trigger)))
-            (out-bindings (filter out-binding? arguments))
-            (out-bindings (and (pair? out-bindings) (make <out-bindings> #:elements out-bindings)))
-            (arguments (map out-binding->arg arguments)))
-       (if (not out-bindings) o
+            (on-formals (.elements (.formals trigger)))
+            (formal-bindings (filter (is? <formal-binding>) on-formals))
+            (formal-bindings (and (pair? formal-bindings) (make <out-bindings> #:elements formal-bindings)))
+            (on-formals (map formal-binding->formal on-formals)))
+       (if (not formal-bindings) o
         (clone o
                #:triggers (clone triggers
-                                 #:elements (list (clone trigger #:arguments (make <arguments> #:elements arguments))))
-               #:statement ((passdown-out-bindings out-bindings) statement)))))
+                                 #:elements (list (clone trigger #:formals (make <formals> #:elements on-formals))))
+               #:statement ((passdown-formal-bindings formal-bindings) statement)))))
 
     ((and ($ <component>) (= .behaviour behaviour))
      (clone o #:behaviour ((binding-into-blocking o) behaviour)))
