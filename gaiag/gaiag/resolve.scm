@@ -157,7 +157,7 @@
                         (and (is-a? model <component>) (om:port model o))))
 
   (define (local? identifier) (assoc-ref locals identifier))
-  (define (var? identifier) (or (local? identifier) (member? identifier)))
+  (define (var? v) (or (as v <variable>) (as v <formal>) (local? v) (member? v)))
   (define (unspecified? x) (eq? x *unspecified*))
 
   (define (event-or-function? o)
@@ -307,7 +307,11 @@
                         #:port port
                         #:event event
                         #:arguments ((resolve model locals) arguments)))))))
-    (($ <var>) o)
+
+    ((and ($ <var>) (= .variable v)) (=> failure)
+     (let ((variable (var? v)))
+       (if (not variable) (resolve-error o v "undeclared identifier: ~a")
+           (clone o #:variable variable))))
 
     ((? symbol?)
      (undefined-error 'programming-error o))
@@ -454,19 +458,22 @@
      ((resolve model locals) (make <scope.name> #:scope scope #:name name)))
 
     (('dotted scope ... name) (=> failure) ;;FIXME
-     (or (and (pair? scope)
-              (> (length scope) 1) (and=> (as (or (as-type (make <type> #:name (make <scope.name> #:scope scope #:name name)))
-                                                  (as-type (make <type> #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name)))) 
-                                              <enum>)
-                                          .name))
+     (or ((resolve model locals)
+          (and (pair? scope)
+               (> (length scope) 1) (and=> (as (or (as-type (make <type> #:name (make <scope.name> #:scope scope #:name name)))
+                                                   (as-type (make <type> #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name)))) 
+                                               <enum>)
+                                           .name)))
          (failure)))
 
     (('dotted (and (? var?) (get! name)))
-     (make <var> #:name (name)))
+     (let ((variable (var? (name))))
+       (make <var> #:variable ((resolve model locals) variable))))
 
     (('dotted name) (=> failure)
-     (or (and-let* ((type (as-type (append (om:scope+name model) (list name)))))
-           (.name type))
+     (or ((resolve model locals)
+          (and-let* ((type (as-type (append (om:scope+name model) (list name)))))
+            (.name type)))
          (failure)))
 
     (('dotted (and (? var?) (get! type)) (and (? (member-field? (type)) (get! field))))
@@ -564,10 +571,12 @@
 
     (($ <behaviour> name types ports variables functions statement)
      (let* ((ports (make <ports> #:elements (map (resolve model '()) (.elements ports))))
-            (model (clone model #:behaviour (clone o #:ports ports))))
+            (model (clone model #:behaviour (clone o #:ports ports)))
+            (o (clone o
+                      #:ports ports
+                      #:variables ((resolve model '()) variables)))
+            (model (clone model #:behaviour o)))
        (clone o
-              #:ports ports
-              #:variables ((resolve model '()) variables)
               #:functions ((resolve model '()) functions)
               #:statement ((resolve model '()) statement))))
 
@@ -620,7 +629,7 @@
   (define (event? o)
     (or (as o <event>)
         (and (is-a? model <interface>) (om:event model o))))
-  (define (member? identifier) (om:variable model identifier))
+  (define (member? m) (or (as m <variable>) (om:variable model m)))
   (define (port? o)
     (or (as o <port>)
         (and (is-a? model <component>) (om:port model o))))
@@ -631,13 +640,27 @@
     (($ <trigger> #f e formals)
      (let ((event (event? e)))
        (if (not event) (resolve-error o e "undefined event: ~a")
-           (clone o #:event event #:formals (om:map (resolve-triggers model) formals)))))
+           (clone o #:event event))))
     (($ <trigger> p e formals)
      (let ((port (port? p)))
        (if (not port) (resolve-error o p "undefined port: ~a")
            (let ((event (or (as e <event>) (om:event port e))))
              (if (not event) (resolve-error o e "undefined event: ~a")
-                 (clone o #:port port #:event event #:formals (om:map (resolve-triggers model) formals)))))))
+                 (let* ((resolve-formal (lambda (e f)
+                                          (let ((f (clone f 
+                                                          #:type (.type e)
+                                                          #:direction (.direction e))))
+                                                ((resolve-triggers model) f))))
+                        (event-formals ((compose .elements .formals .signature) event))
+                        (formals (.elements formals))
+                        (formal-count (length formals))
+                        (formals (map resolve-formal
+                                      event-formals
+                                      (append (list-head formals formal-count)
+                                              (list-tail event-formals formal-count))))
+                        ;; FIXME: resolve-error check length if not <illegal>
+                        (formals (make <formals> #:elements formals)))
+                   (clone o #:port port #:event event #:formals formals)))))))
     (($ <formal>) o)
     ((and ($ <formal-binding>) (= .variable v))
      (let ((variable (or (as v <variable>)

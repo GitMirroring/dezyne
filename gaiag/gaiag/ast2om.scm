@@ -278,7 +278,7 @@
 
     (('types types ...) (make <types> #:elements (map ast->om- types)))
 
-    (('var name) (make <var> #:name name))
+    (('var name) (make <var> #:variable name))
 
     (('variable name type)
      (make <variable> #:name name #:type (ast->om- type) #:expression (make <expression>)))

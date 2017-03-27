@@ -243,7 +243,9 @@
 (define-class <otherwise> (<expression>))
 
 (define-class <var> (<ast>)
-  (name #:getter .name #:init-value #f #:init-keyword #:name))
+  (variable #:getter .variable #:init-value #f #:init-keyword #:variable))
+
+(define-method (.variable.name (o <var>)) (and=> (.variable o) .name))
 
 (define-class <field> (<ast>)
   (identifier #:getter .identifier #:init-value #f #:init-keyword #:identifier)

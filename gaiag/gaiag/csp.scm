@@ -384,7 +384,8 @@
   (let* ((model-name ((om:scope-name) model))
          (model- (symbol-append model-name '_)))
     (match src
-      (($ <var> identifier) (list (->string identifier)))
+      ((and ($ <var>) (= .variable.name identifier))
+       (list (->string identifier)))
       (($ <expression>) (csp-expression->string model (.value src) locals))
       ((or (? number?) (? string?) (? symbol?)) (list src))
       (($ <field> identifier field)
@@ -785,11 +786,9 @@
     (match o
       (($ <expression> expression) (expression-type expression locals))
       (($ <literal>) 'enum)
-      (($ <var> name) (let* ((var (var? name))
-                        (type ((om:type model) var)))
-                        (if (is-a? type <int>)
-                            'int
-                            (om:name type))))
+      ((and ($ <var>) (= .variable variable))
+       (let ((type (.type variable)))
+         (if (is-a? type <int>) 'int (om:name type))))
       ((? number?) 'int)
       ('false 'bool)
       ('true 'bool)

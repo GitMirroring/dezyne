@@ -167,11 +167,11 @@
              (expression
               (match state
                 (($ <literal> ($ <scope.name> () (and (? (bool-var? model)) (get! type))) 'true)
-                 (make <expression> #:value (make <var> #:name (type))))
+                 (make <expression> #:value (make <var> #:variable (om:variable model (type)))))
                 (($ <literal> ($ <scope.name> () (and (? (bool-var? model)) (get! type))) 'false)
-                 (make <expression> #:value (list '! (make <var> #:name (type)))))
+                 (make <expression> #:value (list '! (make <var> #:variable (om:variable model (type))))))
                 (($ <literal> ($ <scope.name> () (and (? (int? model)) (get! type))) v)
-                 (make <expression> #:value (list '== (make <var> #:name (.identifier field)) v)))
+                 (make <expression> #:value (list '== (make <var> #:variable (make <variable> #:name (.identifier field))) v)))
                 (_ (make <expression> #:value (make-state-field model state))))))
             (retain-source-properties
              (salvage-source-location model state expression field o)
@@ -179,8 +179,7 @@
 
 (define (salvage-source-location model state expression field o)
   (let* ((expression2 (make <expression>
-                        #:value (list '== (make <var>
-                                           #:name (.identifier field))
+                        #:value (list '== (make <var> #:variable (make <variable> #:name (.identifier field)))
                                      state)))
          (guards (filter (lambda (g)
                            (let ((e (.expression g)))
@@ -202,13 +201,10 @@
   (make <field> #:identifier (state-identifier model state) #:field (.field state)))
 
 (define* ((simplify model #:optional (state (make <literal>)) (top? #f)) o)
-  (debug "simplify: ~a\n" o)
-  ;;(pretty-print (om->list o));;-goeps
   (match o
     (($ <compound> (statements ...))
      (let* ((statements
              (let loop ((statements statements))
-               (debug "loop\n")
                (if (null? statements)
                    '()
                    (let* ((statement ((simplify model state) (car statements))))
@@ -269,13 +265,10 @@
                   (_ (make <guard> #:expression expression #:statement statement))))))
 
     (($ <on> triggers statement)
-     (debug "ON: 2\n")
      (and-let* ((statement ((simplify model state) statement)))
                (make <on> #:triggers triggers #:statement statement)))
 
-    (
-     ($ <if> expression then #f) ;;-goeps
-      ;;+goeps ($ <if> expression then) ;; FIXOZOR ME
+    (($ <if> expression then #f)
      (or (and-let* ((value (simplify-literal model state expression))
                     (expression (make <expression> #:value value))
                     (then ((simplify model state) then)))

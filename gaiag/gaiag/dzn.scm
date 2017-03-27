@@ -24,6 +24,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
 (define-module (gaiag dzn)
+  #:use-module (srfi srfi-26)
   #:use-module (ice-9 match)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 getopt-long)
@@ -97,8 +98,6 @@
     ((and ($ <action>) (= .port.name port) (= .event.name event) (= .arguments arguments))
      (let* ((arguments ((->dzn model) arguments))
             (trigger ((animate-snippet 'action-trigger `((event ,event) (port ,port) (arguments ,arguments))))))
-       (stderr "arguments=~a\n" arguments)
-       (stderr "trigger=~a\n" trigger)
       ((animate-snippet 'action `((trigger ,trigger)
                                   (location ,(location o)))))))
 
@@ -184,7 +183,9 @@
                                                             (name ,name)))))
 
     ((and ($ <trigger>) (= .port #f) (= .event.name event)) ((animate-snippet 'itrigger `((event ,event)))))
-    ((and ($ <trigger>) (= .port.name port) (= .event.name event) (= .formals formals)) ((animate-snippet 'trigger `((event ,event) (port ,port) (formals ,((->dzn model) formals))))))
+    ((and ($ <trigger>) (= .port.name port) (= .event.name event) (= .formals formals))
+     (let ((formals (clone formals #:elements (map (cut clone <> #:type #f #:direction #f) (.elements formals)))))
+       ((animate-snippet 'trigger `((event ,event) (port ,port) (formals ,((->dzn model) formals)))))))
     (('group expression) (->string (list "(" ((->dzn model) expression) ")")))
     (($ <out-bindings>) (->string (map (->dzn model) (.elements o))))
     ((and ($ <formal-binding>) (= .name formal) (= .variable.name global))
@@ -199,7 +200,7 @@
        (if (local-scope? scope)
            ((animate-snippet 'literal `((scope ()) (dot "") (name ,name) (field ,field))))
            ((animate-snippet 'literal `((scope ,((dzn:scope-join model) scope)) (dot ".") (name ,name) (field ,field)))))))
-    (($ <var> identifier) ((->dzn model) identifier))
+    ((and ($ <var>) (= .variable.name identifier)) ((->dzn model) identifier))
     (('! ($ <expression> expression)) (->string (list "!" (paren model expression))))
     (('! expression) (->string (list "!" (paren model expression))))
     (((or 'or 'and '== '!= '< '<= '> '>= '+ '-) lhs rhs)

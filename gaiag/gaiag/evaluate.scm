@@ -78,17 +78,8 @@
    ))
 
 (define ((init-undefined model) o)
-  (let* ((type ((om:type model) o)))
-    (match type
-      (_ (make <var> #:name (.name o)))
-
-      (_ *unspecified*)
-      (($ <enum> name field) (make <literal> #:name name #:field *unspecified*))
-      (($ <int> name range) *unspecified*)
-      ;;(($ <type> 'bool) *unspecified*)
-      (($ <type> 'bool) (make <var> #:name (.name o)))
-      (_ (stderr "FIXME: INIT VAR: a\n" o))
-      )))
+  (let ((type ((om:type model) o)))
+    (make <var> #:variable o)))
 
 (define (var state identifier) (assoc-ref state identifier))
 
@@ -123,7 +114,7 @@
     (#t #t)
     ('false #f)
     ('true #t)
-    (($ <var> identifier) (var state identifier))
+    ((and ($ <var>) (= .variable.name identifier)) (var state identifier))
     (($ <field> (and (? (var? model)) (get! identifier)) field)
      (eq? (.field (var state (identifier))) field))
     (($ <literal> name field) o)
@@ -168,12 +159,13 @@
   (let ((e (simplify-expression- model state o)))
     (match e
       ((? boolean?) e)
-      (($ <var> name) e)
+      ((and ($ <var>) (= .variable.name e)) e)
       (($ <literal>) e)
       (_ e))))
 
 (define (simplify-expression- model state o)
   (define (unspec v f) (if (is-a? v <var>) o (f v)))
+
   (match o
     (#f #f)
     (#t #t)
@@ -189,21 +181,24 @@
          (#f #f)
          (_ o))))
 
-    (($ <var> (and (? (bool-var? model)) (get! identifier)))
-     (let ((var (var state (identifier))))
+    ;; FIXME: use .variable, do not go through .name and lookup-by-name
+    ((and ($ <var>) (= .variable.name (? (bool-var? model))))
+     (let ((var (var state (.variable.name o))))
        (match var
          (($ <literal> name field) (eq? field 'true))
          (#f o)
          (_ var))))
 
-    (($ <var> (and (? (int-var? model)) (get! identifier)))
-     (let ((var (var state (identifier))))
+    ;; FIXME: use .variable, do not go through .name and lookup-by-name
+    ((and ($ <var>) (and (= .variable.name (? (int-var? model)))))
+     (let ((var (var state (.variable.name o))))
        (match var
          (($ <literal> name field) field)
          ((? number?) var)
          (_ var))))
 
-    (($ <var> identifier)
+    ;; FIXME: use .variable, do not go through .name and lookup-by-name
+    ((and ($ <var>) (= .variable.name identifier))
      (or (var state identifier) o))
 
     (($ <field> (and (? (var? model)) (get! identifier)) field)
