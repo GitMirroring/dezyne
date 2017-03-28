@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -31,8 +31,8 @@
 
 namespace dzn
 {
-  std::ostream debug(std::clog.rdbuf());
-  //std::ostream debug(nullptr);
+  //std::ostream debug(std::clog.rdbuf());
+  std::ostream debug(nullptr);
 
   void collateral_block(const locator& l)
   {
