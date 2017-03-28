@@ -263,14 +263,17 @@
 (define-method (ast:direction (o <port-event>))
   (.direction (.event o)))
 
+(define-method (formal->argument (o <formal>))
+  (make <expression> #:value (make <var> #:name (.name o))))
+
 (define-method (ast:in-port-event (o <component>))
   (append
    (append-map (lambda (port)
-                 (map (lambda (event) (make <port-event> #:port port #:event event))
+                 (map (lambda (event) (make <port-event> #:port port #:event event #:arguments (make <arguments> #:elements (map formal->argument ((compose .elements .formals .signature) event)))))
                       (filter om:in? (om:events port))))
                (filter om:provides? (om:ports o)))
    (append-map (lambda (port)
-                 (map (lambda (event) (make <port-event> #:port port #:event event))
+                 (map (lambda (event) (make <port-event> #:port port #:event event #:arguments (make <arguments> #:elements (map formal->argument ((compose .elements .formals .signature) event)))))
                       (filter om:out? (om:events port))))
                (filter om:requires? (om:ports o)))))
 
@@ -279,7 +282,8 @@
     #:triggers (make <triggers>
                  #:elements (list (make <trigger>
                                     #:port (.name (.port o))
-                                    #:event (.name (.event o)))))
+                                    #:event (.name (.event o))
+                                    #:arguments (.arguments o))))
     #:statement (make <illegal>)))
 
 (define* ((add-illegals #:optional model) o)

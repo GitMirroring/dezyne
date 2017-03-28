@@ -318,4 +318,5 @@
 
 (define-class <port-event> (<ast>)
   (port #:accessor .port #:init-value #f #:init-keyword #:port)
-  (event #:accessor .event #:init-value #f #:init-keyword #:event))
+  (event #:accessor .event #:init-value #f #:init-keyword #:event)
+  (arguments #:getter .arguments #:init-form (make <arguments>) #:init-keyword #:arguments))

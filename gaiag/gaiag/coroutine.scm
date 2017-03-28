@@ -76,7 +76,7 @@
                 (loop (append (cdr routines) (list (cons (cc) (data)))))))))))
 
 (define* (coroutine-to routine #:optional (start 'start))
-  (lambda* (:optional (cc+data #f))
+  (lambda* (#:optional (cc+data #f))
     (or (pair? cc+data) (set! cc+data (cons cc+data start)))
     (let ((data (lambda () (cdr cc+data)))
           (cc (lambda () (and (pair? cc+data) (car cc+data))))
