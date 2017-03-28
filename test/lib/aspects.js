@@ -505,7 +505,7 @@ var aspects = {
   traces: function(parameters) {
     var out = 'out/' + path.basename(parameters.dir);
     var flush = parameters.meta.flush ? ' --flush' : '';
-    var illegal = ''; // TODO: config
+    var illegal = parameters.meta.trace_illegals ? '-i ' : '';
     var model = parameters.meta.model || parameters.model;
     var queue = parameters.meta.queue || 7;
     var imports = parameters.meta.imports || "";

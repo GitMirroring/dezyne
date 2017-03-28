@@ -59,6 +59,7 @@ namespace dzn
     , system(locator.set(runtime).set(pump))
     , pump()
     {
+      locator.get<illegal_handler>().illegal = []{std::clog << "illegal" << std::endl; std::exit(0);};
       runtime.performs_flush(this) = flush;
       system.dzn_meta.name = "sut";
     }

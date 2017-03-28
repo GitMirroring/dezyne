@@ -30,7 +30,7 @@ event_map (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c)
      c.system.#name .meta.provides.port = "#name ";
  #}) (filter om:requires? (om:ports model)))
 
-  return {
+  return {{"illegal", []{std::clog << "illegal" << std::endl; std::exit(0);}},
   #((->join "\n  ,")
     (append (map (lambda (port)
        ((->join "\n  ,") (map (define-on model port #{{"#port .#event ",[&]{#(string-if (eq? reply-name 'void)
