@@ -30,7 +30,6 @@
 #include <dzn/meta.hh>
 #include <dzn/locator.hh>
 #include <algorithm>
-#include <cassert>
 #include <iostream>
 #include <map>
 #include <queue>

@@ -25,6 +25,7 @@
 #ifndef DZN_META_HH
 #define DZN_META_HH
 
+#include <algorithm>
 #include <functional>
 #include <string>
 #include <stdexcept>

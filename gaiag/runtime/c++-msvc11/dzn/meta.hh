@@ -25,7 +25,7 @@
 #ifndef META_HH
 #define META_HH
 
-#include <cassert>
+#include <algorithm>
 #include <functional>
 #include <string>
 #include <stdexcept>
