@@ -5,7 +5,7 @@
 ;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2014, 2015, 2016, 2017 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -131,6 +131,8 @@ FillQ(c',blocked',requested',ack_context') =
 ([]x':async_reqs @ x' -> FillQ(c',blocked',add(requested',x'),ack_context'))
 []
 ([]x':async_clrs @ x' -> FillQ(c',blocked',remove(requested',clr2req(x')),ack_context'))
+[]
+queue_full -> STOP
 
 Busy(c',r',blocked',pout',end',requested',ack_context') =
 -- if blocked' then asynchronous out event else synchronous out event
