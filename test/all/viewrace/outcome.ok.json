@@ -4,6 +4,7 @@
     "build": {
       "c++": "SKIPPED",
       "c++03": "SKIPPED",
+      "c++-msvc11": "SKIPPED",
       "c": "SKIPPED",
       "cs": "SKIPPED",
       "javascript": "SKIPPED"
@@ -11,6 +12,7 @@
     "code": {
       "c++": "SKIPPED",
       "c++03": "SKIPPED",
+      "c++-msvc11": "SKIPPED",
       "c": "SKIPPED",
       "cs": "SKIPPED",
       "javascript": "SKIPPED"
@@ -19,6 +21,7 @@
     "execute": {
       "c++": "SKIPPED",
       "c++03": "SKIPPED",
+      "c++-msvc11": "SKIPPED",
       "c": "SKIPPED",
       "cs": "SKIPPED",
       "javascript": "SKIPPED"
@@ -30,6 +33,7 @@
     "triangle": {
       "c++": "SKIPPED",
       "c++03": "SKIPPED",
+      "c++-msvc11": "SKIPPED",
       "c": "SKIPPED",
       "cs": "SKIPPED",
       "javascript": "SKIPPED"

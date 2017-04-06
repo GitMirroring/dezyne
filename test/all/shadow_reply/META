@@ -1,1 +1,1 @@
-{"known":["c:build","cs:build","javascript:build"],"comment":"shadow local: not supported"}
+{"known":["cs:build"],"comment":"shadow local: not supported"}

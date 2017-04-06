@@ -1,1 +1,1 @@
-{"known":["build","run","triangle"],"comment":"error interface model: cannot build,run"}
+{"known":["build","triangle"],"comment":"error interface model: cannot build"}
