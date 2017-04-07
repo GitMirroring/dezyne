@@ -25,31 +25,56 @@ extern int $int$;
 
 interface I
 {
+  in void simple();
   in bool return_to_sender(int i, out int j);
   out void foo(int i);
 
   behaviour
   {
+    on simple: foo;
     on return_to_sender: {foo; reply(true);}
+  }
+}
+
+interface II
+{
+  in void simple();
+  in bool return_to_sender(int i, out int j);
+  out void foo(int i);
+
+  behaviour
+  {
+    bool idle = true;
+    [idle] {
+      on simple: idle = false;
+      on return_to_sender: {idle = false; reply(true);}
+    }
+    [!idle] {
+      on return_to_sender: illegal;
+      on inevitable: {idle = true; foo;}
+    }
   }
 }
 
 component C
 {
   provides I p_inner;
-  requires I r_inner;
+  requires II r_inner;
 
   behaviour
   {
-    on p_inner.return_to_sender(i,j): {bool b = r_inner.return_to_sender(i,j); reply(b);}
-    on r_inner.foo(i): p_inner.foo(i);
+    bool b = false;
+    on p_inner.simple(): blocking {b = false; r_inner.simple();}
+    on p_inner.return_to_sender(i,j): blocking {b = r_inner.return_to_sender(i,j);}
+    [b] on r_inner.foo(i): {p_inner.foo(i); p_inner.reply(b);}
+    [!b] on r_inner.foo(i): p_inner.reply();
   }
 }
 
 component shell
 {
   provides I p_outer;
-  requires I r_outer;
+  requires II r_outer;
 
   system
   {

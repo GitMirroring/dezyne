@@ -1,4 +1,4 @@
-{"known":["run","c","c++03","cs"]
-,"languages":["c++","c++-msvc11"]
+{"known":["run","c","c++03"]
+,"languages":["cs","c++","c++-msvc11"]
 ,"comment":"handwritten trace on a system component, thread safe shell"
 ,"tss":"true"}
