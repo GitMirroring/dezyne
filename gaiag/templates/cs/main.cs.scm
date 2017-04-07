@@ -35,10 +35,10 @@ class main {
  #(map (lambda (port)
        (map (define-on model port #{
     c.system.#port .#direction port.#event  = (#formals) => {
-    dzn.Runtime.traceIn(c.system.#port .dzn_meta, "#event "); System.Console.Error.WriteLine("");
+    dzn.Runtime.traceIn(c.system.#port .dzn_meta, "#event "); //System.Console.Error.WriteLine("");
     #(string-if (eq? direction 'out) #{c.match("#port .#event ");#}
     #{c.match("#port .#event "); String tmp = c.match_return();
-    dzn.Runtime.traceOut(c.system.#port .dzn_meta, tmp.Split('.')[1]); System.Console.Error.WriteLine("");
+    dzn.Runtime.traceOut(c.system.#port .dzn_meta, tmp.Split('.')[1]); //System.Console.Error.WriteLine("");
     return#(if (not (eq? reply-name 'void)) (list " dzn.container<" ((om:scope-name (string->symbol ".")) model) ">.string_to_value<" (cond ((equal? return-type "bool") 'bool) ((equal? return-type "int") 'int) (else (list (if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'dzn.global reply-scope) '. reply-name))) ">(tmp.Split('.')[1])"));#})
   };
   #}) (filter (negate (om:dir-matches? port)) (om:events port))))
@@ -74,13 +74,12 @@ static Dictionary<String, Action> event_map (dzn.container<#((om:scope-name) mod
 
   public static void Main(String[] args)
   {
-    Debug.Listeners.Add(new TextWriterTraceListener(Console.Error));
-    Debug.AutoFlush = true;
+    if(Array.Exists(args, s => s == "--debug")) {
+      Debug.Listeners.Add(new TextWriterTraceListener(Console.Error));
+      Debug.AutoFlush = true;
+    }
 
-    Func<dzn.Locator,String,dzn.Meta,dzn.Component> new_system = (loc,name,meta)=>{
-        return new #((om:scope-name) model)(loc,name,meta);
-    };
-    using(dzn.container<#((om:scope-name) model)> c = new dzn.container<#((om:scope-name) model)>(new_system, args.Length>0 && args[0] == "--flush")) {
+    using(dzn.container<#((om:scope-name) model)> c = new dzn.container<#((om:scope-name) model)>((loc,name)=>{return new #((om:scope-name) model)(loc,name);}, Array.Exists(args, s => s == "--flush"))) {
     connect_ports (c);
     c.run(event_map (c), new List<String> {#((->join ",") (map (lambda (port) (list "\"" (.name port) "\"")) (filter om:requires? (om:ports model))))});
   }

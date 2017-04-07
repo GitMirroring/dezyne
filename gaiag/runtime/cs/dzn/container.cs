@@ -21,11 +21,11 @@
 //
 // Code:
 
-// -*-java-*-
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 
 namespace dzn
 {
@@ -37,15 +37,15 @@ namespace dzn
     public Queue<String> expect;
     public pump pump;
 
-    public container(Func<Locator,String,Meta,Component> new_system, bool flush, Locator locator)
+    public container(Func<Locator,String,Component> new_system, bool flush, Locator locator)
     : base(locator, "<internal>", null)
     {
       this.pump = new pump();
       this.expect = new Queue<String>();
-      this.system = (TSystem)new_system(locator.set(this.pump),"sut",null);
+      this.system = (TSystem)new_system(locator.set(this.pump),"sut");
       this.system.dzn_runtime.infos[this].flushes = flush;
     }
-    public container(Func<Locator,String,Meta,Component> new_system, bool flush)
+    public container(Func<Locator,String,Component> new_system, bool flush)
     : this (new_system, flush, new Locator().set(new Runtime()))
     {}
     ~container()
@@ -56,28 +56,28 @@ namespace dzn
     {
       if (gc)
       {
+        pump p = system.dzn_locator.get<pump>();
+        if(p != this.pump) pump.execute(() => {p.stop();});
         this.pump.Dispose();
-        this.expect = null;
-        this.system = null;
-        this.pump = null;
+        p.Dispose();
       }
     }
     public void Dispose()
     {
+      Debug.WriteLine("container.Dispose");
       Dispose(true);
       GC.SuppressFinalize(this);
     }
     public String match_return()
     {
       lock(this) {
-        while (expect.Count == 0) System.Threading.Monitor.Wait(this);
+        while (expect.Count == 0) Monitor.Wait(this);
         String tmp = this.expect.Dequeue();
-        Debug.WriteLine("perform: " + tmp);
         Action e = this.lookup.ContainsKey(tmp) ? this.lookup[tmp] : null;
         while(e != null)
         {
           e();
-          while (this.expect.Count == 0) System.Threading.Monitor.Wait(this);
+          while (this.expect.Count == 0) Monitor.Wait(this);
           tmp = this.expect.Dequeue();
           e = this.lookup.ContainsKey(tmp) ? this.lookup[tmp] : null;
         }
@@ -98,7 +98,6 @@ namespace dzn
 
       while((str = System.Console.ReadLine()) != null)
       {
-        Debug.WriteLine("event: " + str);
         Action e = this.lookup.ContainsKey(str) ? this.lookup[str] : null;
         if(e == null || port != "")
         {
@@ -109,8 +108,7 @@ namespace dzn
             else port = "";
           }
           lock(this) {
-            Debug.WriteLine("queueing: " + str);
-            System.Threading.Monitor.Pulse(this);
+            Monitor.Pulse(this);
             this.expect.Enqueue(str);
           }
         }
@@ -119,6 +117,7 @@ namespace dzn
           pump.execute(e);
           port = "";
         }
+        Thread.Sleep(100);
       }
     }
     public static R string_to_value<R>(String s) where R: struct, IComparable, IConvertible {

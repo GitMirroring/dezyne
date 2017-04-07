@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,8 +22,6 @@
 //
 // Code:
 
-// -*-java-*-
-
 using System;
 using System.Collections.Generic;
 
@@ -39,7 +38,7 @@ namespace dzn {
             return Locator.key(o.GetType(), key);
         }
         public Locator set(Object o, String key="") {
-            services.Add(Locator.key(o,key), o);
+            services[Locator.key(o,key)] = o;
             return this;
         }
         public R get<R>(String key="") {

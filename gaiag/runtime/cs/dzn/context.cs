@@ -22,8 +22,6 @@
 //
 // Code:
 
-//#define DEBUG
-// -*-java-*-
 using System;
 using System.Reflection;
 using System.Threading;
@@ -38,6 +36,10 @@ namespace dzn
   public class logic_error : runtime_error {
     public logic_error(String msg) : base(msg) {}
   }
+  public class forced_unwind: runtime_error
+  {
+    public forced_unwind(): base("forced_unwind") {}
+  };
   public class context : IDisposable
   {
     static Dictionary<int,int> m = new Dictionary<int,int>();
@@ -55,43 +57,40 @@ namespace dzn
       throw new logic_error("UNKNOWN STATE");
     }
 
-    public class unwind: runtime_error
-    {
-      public unwind(): base("unwind") {}
-    };
-
     State state;
     Action rel;
     Action<Action<context>> work;
-    System.Threading.Thread thread;
+    Thread thread;
     public context()
     {
       this.state = State.INITIAL;
       this.work = null;
-      this.thread = new System.Threading.Thread
-      (() => {
-        Debug.WriteLine("[" + this.get_id() + "] create");
-        try
+      this.thread = new Thread(() =>
         {
-          lock(this) {
-            while(this.state != State.FINAL)
-            {
-              do_block(this);
-              if(this.state == State.FINAL) break;
-              if(this.work == null) break;
-              System.Threading.Monitor.Exit(this);
-              this.work((c) => {this.yield(c);});
-              System.Threading.Monitor.Enter(this);
-              if(state == State.FINAL) break;
-              if(this.rel != null) this.rel();
+          try
+          {
+            Debug.WriteLine("[" + this.get_id() + "] create");
+            lock(this) {
+              while(this.state != State.FINAL)
+              {
+                do_block(this);
+                if(this.state == State.FINAL) break;
+                if(this.work == null) break;
+                Monitor.Exit(this);
+                this.work((c) => {this.yield(c);});
+                Monitor.Enter(this);
+                if(state == State.FINAL) break;
+                if(this.rel != null) this.rel();
+              }
             }
           }
-        }
-        catch(unwind){}
-      });
+          catch (forced_unwind) {
+            Debug.WriteLine("[" + this.get_id() + "] ignoring forced_unwind");
+          }
+        });
       this.thread.Start();
       lock(this) {
-        while(state != State.BLOCKED) System.Threading.Monitor.Wait(this);
+        while(state != State.BLOCKED) Monitor.Wait(this);
       }
     }
     public context(bool b)
@@ -109,8 +108,10 @@ namespace dzn
     }
     protected virtual void Dispose(bool gc)
     {
-      if (gc) {
-        lock(this) {
+      if (gc)
+      {
+        lock(this)
+        {
           do_finish(this);
           rel = null;
           work = null;
@@ -125,8 +126,8 @@ namespace dzn
     }
     public int get_id()
     {
-      lock(this) {
-        int i = System.Threading.Thread.CurrentThread.ManagedThreadId;
+      lock(m) {
+        int i = Thread.CurrentThread.ManagedThreadId;
         if (!m.ContainsKey(i)) m.Add(i,m.Count);
         return m[i];
       }
@@ -155,12 +156,12 @@ namespace dzn
       lock(this) {
         do_release(this);
 
-        System.Threading.Monitor.Enter(c);
+        Monitor.Enter(c);
         c.state = State.BLOCKED;
       }
 
-      do { System.Threading.Monitor.Wait(c); } while(c.state == State.BLOCKED);
-      System.Threading.Monitor.Exit(c);
+      do { Monitor.Wait(c); } while(c.state == State.BLOCKED);
+      Monitor.Exit(c);
     }
     public void yield(context to)
     {
@@ -173,11 +174,11 @@ namespace dzn
     private void do_block(Object mutex)
     {
       state = State.BLOCKED;
-      System.Threading.Monitor.Pulse(this);
+      Monitor.Pulse(this);
       Debug.WriteLine("[" + this.get_id() + "] do_block0");
-      do { System.Threading.Monitor.Wait(mutex); } while(state == State.BLOCKED);
+      do { Monitor.Wait(mutex); } while(state == State.BLOCKED);
       Debug.WriteLine("[" + this.get_id() + "] do_block1");
-      if(state == State.FINAL) throw new unwind();
+      if(state == State.FINAL) throw new forced_unwind();
     }
     private void do_release(Object mutex)
     {
@@ -186,15 +187,15 @@ namespace dzn
                                 + to_string(state));
       state = State.RELEASED;
       Debug.WriteLine("[" + this.get_id() + "] do_release0");
-      System.Threading.Monitor.Pulse(mutex);
+      Monitor.Pulse(mutex);
       Debug.WriteLine("[" + this.get_id() + "] do_release1");
     }
     private void do_finish(Object mutex)
     {
       Debug.WriteLine("[" + this.get_id() + "] finish0");
       state = State.FINAL;
-      System.Threading.Monitor.PulseAll(this);
-      System.Threading.Monitor.Exit(mutex);
+      Monitor.PulseAll(this);
+      Monitor.Exit(mutex);
       System.Diagnostics.Debug.Assert(this.thread != null);
       this.thread.Join();
     }

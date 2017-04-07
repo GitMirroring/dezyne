@@ -21,8 +21,6 @@
 //
 // Code:
 
-//#define DEBUG
-// -*-java-*-
 using System;
 using System.Linq;
 using System.Threading;
@@ -91,26 +89,10 @@ namespace dzn
     }
     protected virtual void Dispose(bool gc)
     {
-      if (gc)
-      {
-        lock(this) {
-          this.running = false;
-          Monitor.Pulse(this);
-        }
-        this.task.Join();
-
-        this.worker = null;
-        this.next_event = null;
-        this.switch_context = null;
-        this.collateral_block_lambda = null;
-        this.exit = null;
-        this.coroutines.Dispose();
-        this.coroutines = null;
+      stop();
+      if(gc) {
         this.collateral_blocked.Dispose();
-        this.collateral_blocked = null;
-        this.skip_block = null;
-        this.queue = null;
-        this.task = null;
+        this.coroutines.Dispose();
       }
     }
     public void Dispose()
@@ -118,33 +100,59 @@ namespace dzn
       Dispose(true);
       GC.SuppressFinalize(this);
     }
-
+    public void stop()
+    {
+      lock(this)
+      {
+        this.running = false;
+        Monitor.Pulse(this);
+        Monitor.Exit(this);
+        this.task.Join();
+      }
+    }
+    public void wait()
+    {
+      lock(this)
+      {
+        while(this.queue.Count != 0) {
+          Monitor.Wait(this);
+        }
+      }
+    }
     public void run()
     {
-      this.worker = () => {
-        lock(this) {
-          if(this.queue.Count!=0) {
-            Action f = this.queue.Dequeue();
-            Monitor.Exit(this);
-            f();
-          }
-        }
-      };
       try {
-        coroutine zero = new coroutine();
-        create_context();
+        this.worker = () => {
+          lock(this) {
+            if(this.queue.Count == 0) {
+              Monitor.Pulse(this);
+            }
+            while(this.queue.Count == 0 && running) {
+              Monitor.Wait(this);
+            }
+            if(this.queue.Count != 0) {
+              Action f = this.queue.Dequeue();
+              Monitor.Exit(this);
+              f();
+            }
+          }
+        };
 
-        this.exit = ()=>{Debug.WriteLine("enter exit"); zero.release();};
+        coroutine zero = new coroutine();
+        this.exit = ()=>{Debug.WriteLine("exit"); zero.release();};
+        create_context();
 
         lock(this) {
           while(this.running || this.queue.Count!=0 || this.collateral_blocked.Count!=0)
           {
             Monitor.Exit(this);
+
             Debug.Assert(this.coroutines.Count!=0);
 
             this.coroutines.Last().call(zero);
 
             Monitor.Enter(this);
+
             this.coroutines.RemoveAll((c) => {
                 if(!c.finished) return false;
                 Debug.WriteLine("[" + c.id + "] removing");
@@ -155,42 +163,43 @@ namespace dzn
           Debug.WriteLine("finish pump");
           Debug.Assert(this.queue.Count==0);
         }
-      } catch(Exception e) {
+      }
+      catch(Exception e) {
         Console.Error.WriteLine("oops: " + e);
         System.Environment.Exit(1);
       }
     }
-    public coroutine create_context()
+    public void create_context()
     {
-      this.coroutines.Add
-      (new coroutine
-       (()=>{
-         try
-         {
-           coroutine self = find_self(this.coroutines);
-           Debug.WriteLine("[" + self.id + "] create context");
-           while((this.running || this.queue.Count != 0) && !self.released)
-           {
-             worker();
-             if(!self.released) collateral_release(self);
-           }
-           if(self.released) finish(this.coroutines);
-           if(this.switch_context != null) {
-             Action switch_context = this.switch_context;
-             this.switch_context = null;
-             switch_context();
-           }
-           if(!self.released) collateral_release(self);
+      this.coroutines.Add (new coroutine (() =>
+        {
+          try
+          {
+            coroutine self = find_self(this.coroutines);
+            Debug.WriteLine("[" + self.id + "] create context");
+            while((this.running || this.queue.Count != 0) && !self.released)
+            {
+              worker();
+              if(!self.released) collateral_release(self);
+            }
+            if(self.released) finish(this.coroutines);
+            if(this.switch_context != null) {
+              Action switch_context = this.switch_context;
+              this.switch_context = null;
+              switch_context();
+            }
+            if(!self.released) collateral_release(self);
 
-           this.exit();
-         }
-         catch (context.unwind) {}
-         catch(Exception e) {
-           Console.Error.WriteLine("oops: " + e);
-           System.Environment.Exit(1);
-         }
-       }));
-      return this.coroutines.Last();
+            this.exit();
+          }
+          catch (forced_unwind) {
+            Debug.WriteLine("ignoring forced_unwind");
+          }
+          catch (Exception e) {
+            Console.Error.WriteLine("oops: " + e);
+            System.Environment.Exit(1);
+          }
+        }));
     }
     public void collateral_block()
     {
@@ -199,7 +208,7 @@ namespace dzn
       this.collateral_blocked.Add(self);
       this.coroutines.Remove(self);
       create_context();
-      self.yield_to(coroutines.Last());
+      self.yield_to(this.coroutines.Last());
       Debug.WriteLine("[" + self.id + "] collateral_unblock");
     }
     public void collateral_release(coroutine self)
@@ -224,7 +233,7 @@ namespace dzn
       Debug.WriteLine("[" + self.id + "] block");
       create_context();
       self.yield_to(this.coroutines.Last());
-      Debug.WriteLine("[" + self.id + "] entered context");
+      Debug.WriteLine("[" + self.id + "] re-entered context");
       Debug.Write("routines: ");
       foreach (coroutine c in this.coroutines){ Debug.Write(c.id + " ");}
       Debug.WriteLine("");
@@ -260,35 +269,68 @@ namespace dzn
     }
     public void execute(Action e)
     {
-      Debug.Assert(e!=null);
+      Debug.Assert(e != null);
       lock(this) {
         this.queue.Enqueue(e);
         Monitor.Pulse(this);
       }
     }
+    public class promise: IDisposable
+    {
+      Barrier barrier;
+      public promise()
+      {
+        barrier = new Barrier(2);
+      }
+      ~promise()
+      {
+        Dispose();
+      }
+      public void Dispose()
+      {
+        if(barrier != null) {
+          barrier.Dispose();
+          barrier = null;
+        }
+      }
+      public void set()
+      {
+        barrier.SignalAndWait();
+      }
+      public void get()
+      {
+        barrier.SignalAndWait();
+      }
+    }
+    public class promise<T>: promise
+    {
+      T value;
+      public promise(): base()
+      {}
+      public void set(T value)
+      {
+        this.value = value;
+        base.set();
+      }
+      public new T get()
+      {
+        base.get();
+        return value;
+      }
+    }
     public void blocking(Action e)
     {
-      Task promise = new Task(e);
-      this.execute(() => {promise.RunSynchronously();});
-      promise.Wait();
+      using(promise p = new promise()) {
+        this.execute(()=>{e(); p.set();});
+        p.get();
+      }
     }
     public T blocking<T>(Func<T> e)
     {
-      Task<T> promise = new Task<T>(e);
-      this.execute(()=>{promise.RunSynchronously();});
-      promise.Wait();
-      return promise.Result;
+      using(promise<T> p = new promise<T>()) {
+        this.execute(()=>{p.set(e());});
+        return p.get();
+      }
     }
-    // public void handle(size_t id, size_t ms, const std::function<void()>& e)
-    // {
-    //     assert(e);
-    //     assert(std::find_if(timers.begin(), timers.end(), [id](const std::pair<deadline, std::function<void()>>& p){ return p.first.id == id; }) == timers.end());
-    //     timers.emplace(deadline(id, ms), e);
-    // }
-    // public void remove(size_t id)
-    // {
-    //     auto it = std::find_if(timers.begin(), timers.end(), [id](const std::pair<deadline, std::function<void()>>& p){ return p.first.id == id; });
-    //     if(it != timers.end()) timers.erase(it);
-    // }
   }
 }

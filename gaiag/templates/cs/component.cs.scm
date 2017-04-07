@@ -45,6 +45,7 @@ public class #.scope_model  : dzn.Component {#
 (map (init-member model #{#'()
     #(string-if (eq? expression (if #f #f)) "" #{this.#name  = #expression ;#})#}) (om:variables model))#
 (map (init-port #{#'()
+    this.out_#name  = null;
     this.#name  = new #((om:scope-join) interface)();
     this.#name .dzn_meta.provides.name = "#name ";
     this.#name .dzn_meta.provides.meta = this.dzn_meta;
