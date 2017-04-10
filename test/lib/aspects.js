@@ -260,6 +260,12 @@ var aspects = {
 
     function testcase(aspect,dependencies,language,retry) {
       retry = retry === undefined && 2 || retry;
+      if(parameters.meta.known)
+      {
+        if(parameters.meta.known[aspect]) retry = 0;
+        if(parameters.meta.known[aspect + ':' + language]) retry = 0;
+        if(parameters.meta.known[language + ':' + aspect]) retry = 0;
+      }
       if (dependencies.status) {
         var result = {status: dependencies.status,
                 parameters: updateparameters(dependencies.parameters, "Not executed because prerequisite did not succeed", aspect, language)};
