@@ -31,9 +31,8 @@
 
 namespace dzn
 {
-  //std::ostream debug(std::clog.rdbuf());
   std::ostream debug(nullptr);
-
+  
   void collateral_block(const locator& l)
   {
     if(auto p = l.try_get<dzn::pump>()) p->collateral_block_lambda();

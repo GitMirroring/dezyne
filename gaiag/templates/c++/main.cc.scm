@@ -2,6 +2,9 @@
 
 ##include "#.scope_model .hh"
 
+##include <algorithm>
+##include <cstring>
+
 void
 connect_ports (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c)
 {
@@ -50,7 +53,8 @@ event_map (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c)
 int
 main(int argc, char* argv[])
 {
-  dzn::container<#((om:scope-name (string->symbol "::")) model)> c(argc > 1 && argv[1] == std::string("--flush"));
+  if(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--debug") == 0;})) dzn::debug.rdbuf(std::clog.rdbuf());
+  dzn::container<#((om:scope-name (string->symbol "::")) model)> c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
 
   connect_ports (c);
   c(event_map (c), {#((->join ",") (map (lambda (port) (list "\"" (.name port) "\"")) (filter om:requires? (om:ports model))))});

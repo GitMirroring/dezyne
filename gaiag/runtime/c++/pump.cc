@@ -30,10 +30,6 @@
 #include <algorithm>
 #include <cassert>
 
-#ifdef DEBUG_RUNTIME
-#include <iostream>
-#endif
-
 namespace dzn
 {
   void port_block(const locator& l, void* p)
@@ -84,7 +80,7 @@ namespace dzn
     {
       running = false;
       condition.notify_one();
-      if (lock) lock.unlock();
+      lock.unlock();
       task.wait();
     }
   }
@@ -145,7 +141,8 @@ namespace dzn
       std::unique_lock<std::mutex> lock(mutex);
       while(running || queue.size() || collateral_blocked.size())
       {
-        if (lock) lock.unlock();
+        lock.unlock();
+
         assert(coroutines.size());
 
         coroutines.back().call(zero);
@@ -183,11 +180,7 @@ namespace dzn
 
           exit();
         }
-#if HAVE_BOOST_COROUTINE
-        catch(const boost::coroutines::detail::forced_unwind&) {throw;}
-#else
-        catch(const context::unwind&) {}
-#endif
+        catch(const forced_unwind&) { debug << "ignoring forced_unwind" << std::endl; }
         catch(const std::exception& e)
         {
           debug << "oops: " << e.what() << std::endl;

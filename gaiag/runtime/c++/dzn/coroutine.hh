@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -37,7 +37,9 @@ namespace dzn
 #if HAVE_BOOST_COROUTINE
   typedef boost::coroutines::symmetric_coroutine<void>::call_type context;
   typedef boost::coroutines::symmetric_coroutine<void>::yield_type yield;
+  typedef boost::coroutines::detail::forced_unwind forced_unwind;
 #else
+  typedef context::forced_unwind forced_unwind;
   typedef std::function<void(dzn::context&)> yield;
 #endif
 

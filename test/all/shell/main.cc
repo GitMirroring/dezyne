@@ -25,6 +25,9 @@
 
 #include "shell.hh"
 
+#include <algorithm>
+#include <cstring>
+
 void
 connect_ports (dzn::container<shell>& c)
 {
@@ -63,7 +66,8 @@ event_map (dzn::container<shell>& c)
 int
 main(int argc, char* argv[])
 {
-  dzn::container<shell> c(argc > 1 && argv[1] == std::string("--flush"));
+  if(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--debug") == 0;})) dzn::debug.rdbuf(std::clog.rdbuf());
+  dzn::container<shell> c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
   connect_ports (c);
   c(event_map (c), {"r_outer"});
 }

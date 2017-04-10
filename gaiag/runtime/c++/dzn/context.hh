@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -57,9 +58,9 @@ class context
   std::condition_variable condition;
   std::thread thread;
 public:
-  struct unwind: public std::runtime_error
+  struct forced_unwind: public std::runtime_error
   {
-    unwind(): std::runtime_error("unwind") {}
+    forced_unwind(): std::runtime_error("forced_unwind") {}
   };
   context()
   : state(INITIAL)
@@ -85,7 +86,7 @@ public:
           if(this->rel) this->rel();
         }
       }
-      catch(const unwind&){}
+      catch(const forced_unwind&) { debug << "ignoring forced_unwind" << std::endl; }
     })
   {
     std::unique_lock<std::mutex> lock(mutex);
@@ -167,7 +168,7 @@ private:
     debug << "[" << get_id () << "] do_block0" << std::endl;
     do { condition.wait(lock); } while(state == BLOCKED);
     debug << "[" << get_id () << "] do_block1" << std::endl;
-    if(state == FINAL) throw unwind();
+    if(state == FINAL) throw forced_unwind();
   }
   void do_release(std::unique_lock<std::mutex>&)
   {
