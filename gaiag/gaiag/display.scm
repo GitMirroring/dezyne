@@ -66,7 +66,8 @@
                      (or (and (or (is-a? o <port>) ;; REMOVEME after handling all port, type slots, name slots
                                   (is-a? o <action>)
                                   (is-a? o <trigger>)
-                                  (is-a? o <port>))
+                                  (is-a? o <port>)
+                                  (is-a? o <variable>))
                               (member name '(event port type)))
                          (is-a? o <var>)))
                 (display #\space port)

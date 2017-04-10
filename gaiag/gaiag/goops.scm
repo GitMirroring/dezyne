@@ -195,11 +195,12 @@
 (define-class <type> (<scoped>))
 
 (define-class <bool> (<type>))
-;;(define-method (.name (o <bool>) 'bool))
+(define-method (initialize (o <bool>) . initargs)
+  (next-method o (list #:name (make <scope.name> #:name 'bool))))
 
 (define-class <void> (<type>))
-;;(define-method (.name (o <void>) 'void))
-
+(define-method (initialize (o <void>) . initargs)
+  (next-method o (list #:name (make <scope.name> #:name 'void))))
 
 (define-class <signature> (<ast>)
   (type #:getter .type #:init-form (make <void>) #:init-keyword #:type)
