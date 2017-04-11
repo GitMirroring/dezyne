@@ -1,26 +1,26 @@
-;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Gaiag --- Guile in Asd In Asd in Guile.
+;;; Copyright © 2014, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
-;;; This file is part of Dezyne.
+;;; This file is part of Gaiag.
 ;;;
-;;; Dezyne is free software: you can redistribute it and/or modify it
+;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
 ;;; published by the Free Software Foundation, either version 3 of the
 ;;; License, or (at your option) any later version.
 ;;;
-;;; Dezyne is distributed in the hope that it will be useful, but
+;;; Gaiag is distributed in the hope that it will be useful, but
 ;;; WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ;;; Affero General Public License for more details.
 ;;;
 ;;; You should have received a copy of the GNU Affero General Public
-;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+;;; License along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 ;;; 
 ;;; Commentary:
 ;;; 
 ;;; Code:
 
-;;; (json) --- Guile JSON implementation.
+;;; (json syntax) --- Guile JSON implementation.
 
 ;; Copyright (C) 2013 Aleix Conchillo Flaque <aconchillo@gmail.com>
 ;;
@@ -47,21 +47,31 @@
 
 ;;; Code:
 
-(define-module (json)
-  #:use-module (json builder)
-  #:use-module (json parser)
-  #:use-module (json syntax))
+(define-module (json syntax)
+  #:export (json))
 
-(define-syntax re-export-modules
-  (syntax-rules ()
-    ((_ (mod ...) ...)
-     (begin
-       (module-use! (module-public-interface (current-module))
-                    (resolve-interface '(mod ...)))
-       ...))))
+;;
+;; Public procedures
+;;
 
-(re-export-modules (json builder)
-                   (json parser)
-                   (json syntax))
+(define-syntax json
+  (lambda (x)
+    (syntax-case x (unquote array object)
+      ((_ val) (or (string? (syntax->datum #'val))
+                   (number? (syntax->datum #'val))
+                   (boolean? (syntax->datum #'val))
+                   (null? (syntax->datum #'val)))
+       #'val)
 
-;;; (json) ends here
+      ((_ (unquote val))
+       #'val)
+
+      ((_ (array x ...))
+       #'(list (json x) ...))
+
+      ((_ (object (k v) ...))
+       #'(let ((pairs (make-hash-table)))
+           (hash-set! pairs (syntax->datum #'k) (json v)) ...
+           pairs)))))
+
+;;; (json syntax) ends here

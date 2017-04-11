@@ -22,28 +22,18 @@
 # 
 # Code:
 
-SUBM := json/
-SRCS := $(filter %.scm,$(shell $(GIT_LS_FILES) $(CDIR)/$(SUBM)json))
-SRCS += $(filter $(CDIR)/$(SUBM)%.scm,$(shell $(GIT_LS_FILES) $(CDIR)/$(SUBM)*.scm))
+SRCS := $(shell $(GIT_LS_FILES) $(CDIR)/*.scm $(CDIR)/json/*.scm $(CDIR)/language/dezyne/*.scm $(CDIR)/gaiag/*.scm)
+
+CLEAN:=$(CLEAN) $(HOME)/.cache/guile
+GOBJS := $(SRCS:%.scm=%.go)
+
+$(CDIR)-clean: CDIR:=$(CDIR)
+$(CDIR)-clean: GOBJS:=$(GOBJS)
+$(CDIR)-clean:
+	@echo cleaning .go files
+	$(VERBOSE)rm -rf $(GOBJS) $(HOME)/.cache/guile
 
 include make/guile.mk
-
-ifeq ($(GUILE_EFFECTIVE_VERSION),2.0)
-$(shell rm -f $(CDIR)/system; ln -s 2.0/system $(CDIR)/system)
-SRCS := $(filter %.scm,$(shell $(GIT_LS_FILES) $(CDIR)/system))
-
-include make/guile.mk
-else
-$(shell rm -f $(CDIR)/system)
-endif
-
-SRCS := $(filter %.scm,$(shell $(GIT_LS_FILES) $(CDIR)/language))
-
-include make/guile.mk
-
-SRCS := $(filter %.scm,$(shell $(GIT_LS_FILES) $(CDIR)/gaiag))
-
-CLEAN:=$(CLEAN) $(BUILD)/ccache $(HOME)/.cache/guile
 
 TARG := gaiag
 include make/guile.mk
@@ -59,14 +49,6 @@ TEST := $(TEST) $(CDIR)-check
 $(CDIR)-check: CDIR:=$(CDIR)
 $(CDIR)-check: $(BUILD)/$(CDIR)
 	GUILE_AUTO_COMPILE=0 GUILE_LOAD_PATH=$(GLP) GUILE_LOAD_COMPILED_PATH=$(GLCP) gaiag/test.sh
-
-SUBM := test-suite/
-SRCS := $(filter %.scm %.test,$(shell $(GIT_LS_FILES) $(CDIR)/test-suite))
-
-include make/guile.mk
-
-gaiag-clean:
-	rm -rf  build/ccache ~/.cache/guile
 
 coverage: $(CDIR)-coverage
 

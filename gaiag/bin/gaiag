@@ -21,13 +21,10 @@
        (prefix (dirname (dirname path)))
        (prefix (if (string=? (basename prefix) "gaiag")
                    prefix
-                   (string-append prefix "/gaiag")))
-       (ccache (string-append prefix "/../build/ccache"))
-       (ccache (if (file-exists? ccache)
-                   ccache
-                   (string-append prefix "/../lib/ccache"))))
+
+(string-append prefix "/gaiag"))))
   (set! %load-path (append (list prefix (string-append prefix "/json")) %load-path))
-  (set! %load-compiled-path (append (list ccache (string-append ccache "/json")) %load-compiled-path))
+  (set! %load-compiled-path (append (list prefix (string-append prefix "/json")) %load-compiled-path))
   ;; (format (current-error-port) "%load-path ~a\n" %load-path )
   ;; (format (current-error-port) "%load-compiled-path ~a\n" %load-compiled-path )
 )

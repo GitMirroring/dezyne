@@ -73,17 +73,17 @@
   (let* ((canary "language/dezyne/spec")
          (canary.go (string-append canary ".go"))
          (canary.scm (string-append canary ".scm"))
-	 (file (or (and=> (search-path %load-compiled-path canary.go) dirname)
-		   (%search-load-path canary.scm)
-		   (let ((message
-			  (string-join
-			   (list "gaiag: Installation error: templates not found"
-				 (format #f "gaiag: No such file or directory: ~a [~a]" canary.go %load-compiled-path)
-				 (format #f "gaiag: No such file or directory: ~a [~a]" canary.scm %load-path)) "\n")))
-		     (stderr message)
-		     (throw 'installation-error message)))))
+	 (prefix (or (and=> (search-path %load-compiled-path canary.go) (cut string-drop-right <> (string-length canary.go)))
+                     (and=> (%search-load-path canary.scm) (cut string-drop-right <> (string-length canary.scm)))
+                     (let ((message
+                            (string-join
+                             (list "gaiag: Installation error: templates not found"
+                                   (format #f "gaiag: No such file or directory: ~a [~a]" canary.go %load-compiled-path)
+                                   (format #f "gaiag: No such file or directory: ~a [~a]" canary.scm %load-path)) "\n")))
+                       (stderr message)
+                       (throw 'installation-error message)))))
     (append
-     ((compose file-name->components dirname dirname dirname dirname) file)
+     ((compose file-name->components dirname) prefix)
      '(gaiag))))
 
 (define template-dir (make-parameter (append (prefix-dir) '(templates))))
