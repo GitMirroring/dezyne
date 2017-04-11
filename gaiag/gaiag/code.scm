@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
+;; Copyright © 2016, 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
@@ -387,20 +387,20 @@
                   (expression ,(expression->string model expression locals))
                   (then ,(->code model then blocking? locals (1+ indent)))
                   (else ,(->code model else blocking? locals (1+ indent))))))
-      (($ <assign> identifier (and ($ <action>) (get! action)))
+      (($ <assign> variable (and ($ <action>) (get! action)))
         (snippet 'assign
                  `((space ,space)
-                   (identifier ,(identifier-snippet identifier))
+                   (identifier ,(identifier-snippet (.name variable)))
                    (expression ,(expression->string model (action) locals)))))
-      (($ <assign> identifier (and ($ <call>) (get! call)))
+      (($ <assign> variable (and ($ <call>) (get! call)))
          (snippet 'assign
                   `((space ,space)
-                    (identifier ,(identifier-snippet identifier))
+                    (identifier ,(identifier-snippet (.name variable)))
                     (expression ,(expression->string model (call) locals)))))
-      (($ <assign> identifier expression)
+      (($ <assign> variable expression)
        (snippet 'assign
                 `((space ,space)
-                  (identifier ,(identifier-snippet identifier))
+                  (identifier ,(identifier-snippet (.name variable)))
                   (expression ,(expression->string model expression locals)))))
       (($ <blocking> statement)
        (->code- model statement #t locals indent))

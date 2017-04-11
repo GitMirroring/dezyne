@@ -1,10 +1,13 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
+;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015, 2016, 2017 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014, 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -586,10 +589,8 @@
   (define (member? identifier) (om:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
-  (define (extern? identifier) (and=> (var? identifier) (lambda (x) (om:extern model x))))
   (define (extern-type? type) (om:extern model type))
-
-
+  (define (extern? variable) (extern-type? (.type variable)))
   (define (purge-formal-list function arguments)
     (let ((types (map .type ((compose .elements .formals .signature) function))))
       (let loop ((arguments arguments) (types types))
@@ -716,8 +717,8 @@
              #:then (or then- then)
              #:else (or else- else)))))
 
-    (($ <assign> identifier (and ($ <call>) (get! call)))
-     (make <assign> #:identifier identifier #:expression (mark-last (call))))
+    (($ <assign> variable (and ($ <call>) (get! call)))
+     (make <assign> #:variable variable #:expression (mark-last (call))))
 
     (($ <variable> name type (and ($ <call>) (get! call)))
      (make <variable> #:name name #:type type #:expression (mark-last (call))))
@@ -959,20 +960,22 @@
                     tail))
                   (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
 
-          (($ <assign> identifier (and ($ <action>) (= .port port) (= .event event)))
+          (($ <assign> variable (and ($ <action>) (= .port port) (= .event event)))
            (let* ((type ((compose .type .signature) event))
                   (event-name (.name event))
                   (port-name (and=> port .name))
+                  (variable-name (and=> variable .name))
                   (values (if (is-a? type <void>) 'return (comma-join (typed-elements type))))
                   (constructor (if (is-a? type <bool>) "bool." ""))
                   (constructor (if (is-a? type <int>) "int." constructor)))
              (list
               (list space (or port-name channel) (if (om:out? event) "_''") "!" event-name " ->\n")
-              (list space (or port-name channel) "_'?" constructor identifier ":{" values "} ->\n")
-              (check-range (list identifier) tail model locals indent))))
+              (list space (or port-name channel) "_'?" constructor variable-name ":{" values "} ->\n")
+              (check-range (list variable-name) tail model locals indent))))
 
-          (($ <assign> identifier ($ <call> function arguments))
+          (($ <assign> variable ($ <call> function arguments))
            (let* ((arguments (on->csp model arguments inevitable-optional? channel provided-on? locals))
+                  (variable-name (and=> variable .name))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (continuation (list (list "Cont_" (fresh-number) "'"))))
@@ -981,16 +984,17 @@
                space
                (list
                 (list continuation "(" (comma-space-join (append (om:member-names model) (list "res'"))) ")" " =\n")
-                (list space "let " identifier " = res' within\n")
-                (check-range (list identifier) tail model locals indent)))
+                (list space "let " variable-name " = res' within\n")
+                (check-range (list variable-name) tail model locals indent)))
               (list space function "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
 
-          (($ <assign> identifier expression)
-           (let* ((expression (csp-expression->string model expression locals)))
+          (($ <assign> variable expression)
+           (let* ((expression (csp-expression->string model expression locals))
+                  (variable-name (and=> variable .name)))
              (list
               (list space "let " "tmp'" " = " expression " within\n")
-              (list space "let " identifier " = " "tmp'" " within\n")
-              (check-range (list identifier) tail model locals indent))))
+              (list space "let " variable-name " = " "tmp'" " within\n")
+              (check-range (list variable-name) tail model locals indent))))
 
           (($ <variable> identifier type (and ($ <action>) (= .port port) (= .event event)))
            (let* ((type ((compose .type .signature) event))

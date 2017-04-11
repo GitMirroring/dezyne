@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -104,13 +105,13 @@
     (($ <illegal>) ((animate-snippet 'illegal)))
 
     (($ <assign> var ($ <call> function arguments))
-     ((->dzn model) (make <assign> #:identifier var #:expression (make <assign-call> #:identifier function #:arguments arguments))))
+     ((->dzn model) (make <assign> #:variable var #:expression (make <assign-call> #:identifier function #:arguments arguments))))
 
     (($ <assign> var (and ($ <action>) (= .port port) (= .event event) (= .arguments arguments)))
-     ((->dzn model) (make <assign> #:identifier var #:expression (make <assign-action> #:port port #:event event #:arguments arguments))))
+     ((->dzn model) (make <assign> #:variable var #:expression (make <assign-action> #:port port #:event event #:arguments arguments))))
 
     (($ <assign> var expression)
-     (->string var " = " ((->dzn model) expression) ";\n"))
+     (->string (.name var) " = " ((->dzn model) expression) ";\n"))
 
     (($ <assign-call> function arguments)
      ((animate-snippet 'call-expression `((function ,function)

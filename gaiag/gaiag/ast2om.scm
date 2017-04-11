@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -76,9 +77,9 @@
     (('arguments arguments ...) (make <arguments>
                                   #:elements (map ast->om- arguments)))
 
-    (('assign identifier expression) (make <assign>
-                                       #:identifier identifier
-                                       #:expression (ast->om- expression)))
+    (('assign variable expression) (make <assign>
+                                     #:variable variable
+                                     #:expression (ast->om- expression)))
 
     (('behaviour) (make <behaviour>))
 

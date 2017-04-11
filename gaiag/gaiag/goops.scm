@@ -1,5 +1,6 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
@@ -310,8 +311,10 @@
 (define-method (.event.name (o <action>)) (and=> (.event o) .name))
 
 (define-class <assign> (<imperative>)
-  (identifier #:getter .identifier #:init-value #f #:init-keyword #:identifier)
+  (variable #:getter .variable #:init-value #f #:init-keyword #:variable)
   (expression #:getter .expression #:init-form (make <expression>) #:init-keyword #:expression))
+
+(define-method (.variable.name (o <assign>)) (and=> (.variable o) .name))
 
 (define-class <call> (<imperative>)
   (identifier #:getter .identifier #:init-value #f #:init-keyword #:identifier)

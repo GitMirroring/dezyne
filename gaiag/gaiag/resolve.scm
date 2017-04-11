@@ -1,8 +1,10 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
+;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -216,7 +218,7 @@
 
     (($ <assign> ('dotted port name) expression)
      (make <assign>
-       #:identifier (.identifier o)
+       #:variable (.variable o)
        #:expression ((resolve model locals) expression)))
 
     (($ <assign> (and (? (negate var?)) (get! identifier)))
@@ -349,63 +351,65 @@
                         #:event event
                         #:arguments ((resolve model locals) arguments)))))))
 
-    (($ <assign> identifier
+    (($ <assign> variable
         ($ <expression> ($ <call> (and (? event?) (get! event)))))
      (make <assign>
-       #:identifier identifier
+       #:variable (var? variable)
        #:expression (make <action> #:event (event? event))))
 
-    (($ <assign> identifier ($ <expression> (and ($ <call>) (get! call))))
-     (make <assign> #:identifier identifier
-           #:expression ((resolve model locals) (call))))
+    (($ <assign> variable ($ <expression> (and ($ <call>) (get! call))))
+     (make <assign> 
+       #:variable (var? variable)
+       #:expression ((resolve model locals) (call))))
 
     ;; FIXME: expr/call-> decide which one to produce in parser
-    (($ <assign> identifier ($ <call> (and (? event?) (get! event))))
+    (($ <assign> variable ($ <call> (and (? event?) (get! event))))
      (make <assign>
-       #:identifier identifier
+       #:variable (var? variable)
        #:expression (make <action> #:event (event? event))))
 
-    (($ <assign> identifier (and ($ <call>) (get! call)))
-     (make <assign> #:identifier identifier
-           #:expression ((resolve model locals) (call))))
+    (($ <assign> variable (and ($ <call>) (get! call)))
+     (make <assign> 
+       #:variable (var? variable)
+       #:expression ((resolve model locals) (call))))
 
-    (($ <assign> identifier
+    (($ <assign> variable
         ($ <expression> ($ <var> (and (? event?) (get! event)))))
      (make <assign>
-       #:identifier identifier
+       #:variable (var? variable)
        #:expression (make <action> #:event (event? event))))
 
-    (($ <assign> identifier
+    (($ <assign> variable
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
      (make <assign>
-       #:identifier identifier
+       #:variable (var? variable)
        #:expression (make <call> #:identifier (function))))
 
-    (($ <assign> identifier
+    (($ <assign> variable
         ($ <expression> ('dotted (and (? port?) (get! port)) event)))
      (make <assign>
-       #:identifier identifier
+       #:variable (var? variable)
        #:expression ((resolve model locals) (make <action> #:port (port) #:event event))))
 
-    (($ <assign> identifier ($ <expression> (and ($ <action>) (get! action))))
+    (($ <assign> variable ($ <expression> (and ($ <action>) (get! action))))
      (make <assign>
-       #:identifier identifier
+       #:variable (var? variable)
        #:expression ((resolve model locals) (action))))
 
-    (($ <assign> identifier
+    (($ <assign> variable
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
      (make <assign>
-       #:identifier identifier
+       #:variable (var? variable)
        #:expression (make <call> #:identifier (function))))
 
-    (($ <assign> identifier (and ($ <expression>) (get! expression)))
+    (($ <assign> variable (and ($ <expression>) (get! expression)))
      (make <assign>
-       #:identifier identifier
+       #:variable (var? variable)
        #:expression ((resolve model locals) (expression))))
 
-    (($ <assign> identifier expression)
+    (($ <assign> variable expression)
      (make <assign>
-       #:identifier identifier
+       #:variable (var? variable)
        #:expression ((resolve model locals) expression)))
 
     (($ <formal> name type direction)
