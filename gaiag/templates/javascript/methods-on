@@ -1,0 +1,4 @@
+#x:method {
+  #x:on-statement
+  #x:return
+};

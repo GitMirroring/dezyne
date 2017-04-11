@@ -1,0 +1,36 @@
+##ifndef #x:upcase-model-name _HH
+##define #x:upcase-model-name _HH
+
+##include <iostream>
+
+#x:interface-include
+
+namespace dzn {
+struct locator;
+struct runtime;
+}
+
+#x:open-namespace
+struct #x:model-name
+{
+  dzn::meta dzn_meta;
+  dzn::runtime& dzn_rt;
+  dzn::locator const& dzn_locator;
+  #x:enum-definer
+  #x:variable-member-declare
+  #x:reply-member-declare
+  #x:out-binding-lambda
+  #x:provided-port-declare
+  #x:required-port-declare
+  #x:async-port-declare
+  #x:model-name (const dzn::locator&);
+  void check_bindings() const;
+  void dump_tree(std::ostream& os) const;
+  friend std::ostream& operator << (std::ostream& os, const #x:model-name & m)  {
+    return os << "[" << #x:stream-member "]" ;
+  }
+  private:
+  #x:method-declare
+  #x:function-declare };
+#x:close-namespace
+##endif // #x:upcase-model-name _HH

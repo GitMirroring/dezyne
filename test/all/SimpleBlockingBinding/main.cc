@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,6 +26,10 @@
 
 #include "SimpleBlockingBinding.hh"
 
+int to_int(std::string s){return std::stoi (s);}
+bool to_bool(std::string s){return s == "true";}
+void to_void(std::string){}
+
 void
 connect_ports (dzn::container<SimpleBlockingBinding, std::function<void()> >& c)
 {
@@ -32,7 +37,7 @@ connect_ports (dzn::container<SimpleBlockingBinding, std::function<void()> >& c)
     dzn::trace_in(std::clog, c.system.r.meta, "e"); std::clog << std::endl;
     c.match("r.e"); std::string tmp = c.match_return();
     dzn::trace_out(std::clog, c.system.r.meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
-    return to__void(tmp.substr(tmp.rfind('.')+1));
+    return to_void(tmp.substr(tmp.rfind('.')+1));
   };
 }
 

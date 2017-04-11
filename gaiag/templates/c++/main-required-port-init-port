@@ -1,0 +1,3 @@
+c.system.#.name .meta.provides.address = &c;
+c.system.#.name .meta.provides.meta = &c.meta;
+c.system.#.name .meta.provides.port = "#.name ";

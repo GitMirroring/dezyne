@@ -1,0 +1,31 @@
+dzn_require = typeof (require) !== 'undefined' ? require : function () {return {};};
+dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');
+dzn = dzn || {};
+#x:interface-include
+
+dzn.#x:model-name  = function (locator, meta) {
+  this._dzn = {};
+  this._dzn.locator = locator;
+  this._dzn.rt = locator.get(new dzn.runtime());
+  this._dzn.rt.components = (this._dzn.rt.components || []).concat ([this]);
+  this._dzn.meta = meta;
+  this._dzn.meta.ports = [#x:all-ports-meta-list ];
+  this._dzn.meta.children = [];
+  this._dzn.flushes = true;
+
+  #x:enum-definer
+  #x:variable-member-initializer
+  #x:injected-member-initializer
+  #x:provided-member-initializer
+  #x:required-member-initializer
+  #x:async-member-initializer
+
+  #x:methods
+  #x:functions
+
+  this._dzn.rt.bind(this);
+};
+
+if (typeof (module) !== 'undefined') {
+  module.exports = dzn;
+}

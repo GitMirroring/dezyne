@@ -1,0 +1,10 @@
+##ifndef ENUM_#ast:scope+name
+##define ENUM_#ast:scope+name  1
+struct #om:name
+{
+  enum type
+  {
+    #x:asd-voidreply #x:enum-field-definer
+  };
+};
+##endif // ENUM_#ast:scope+name

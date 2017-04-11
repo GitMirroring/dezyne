@@ -138,7 +138,7 @@
     (($ <type> name) (->symbol name))
     (($ <enum> name field) (->symbol name))
     (('dotted name ...) ((->symbol-join '.) name))
-    (($ <scope.name>) ((->symbol-join '.) (om:scope+name o))) 
+    (($ <scope.name>) ((->symbol-join '.) (om:scope+name o)))
     (_ o)))
 
 (define (resolve- model o locals)
@@ -326,10 +326,10 @@
                         #:event event
                         #:arguments ((resolve model locals) arguments)))))))
 
-    ((and ($ <var>) (= .variable v)) (=> failure)
+    ((and ($ <var>) (= .variable v))
      (let ((variable (var? v)))
        (if (not variable) (resolve-error o v "undeclared identifier: ~a")
-           (clone o #:variable variable))))
+           (clone o #:variable ((resolve model locals) variable)))))
 
     ((? symbol?)
      (undefined-error 'programming-error o))
@@ -481,7 +481,7 @@
      (or ((resolve model locals)
           (and (pair? scope)
                (> (length scope) 1) (and=> (as (or (as-type (make <type> #:name (make <scope.name> #:scope scope #:name name)))
-                                                   (as-type (make <type> #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name)))) 
+                                                   (as-type (make <type> #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name))))
                                                <enum>)
                                            .name)))
          (failure)))
@@ -563,7 +563,7 @@
 
     (($ <on> triggers statement)
      (let* ((triggers ((resolve-triggers model) triggers))
-            
+
             (on-formals (append-map (compose .elements .formals) (.elements triggers)))
             (locals (let loop ((on-formals on-formals) (locals locals))
                       (if (null? on-formals)
@@ -667,7 +667,7 @@
            (let ((event (or (as e <event>) (om:event port e))))
              (if (not event) (resolve-error o e "undefined event: ~a")
                  (let* ((resolve-formal (lambda (e f)
-                                          (let ((f (clone f 
+                                          (let ((f (clone f
                                                           #:type (.type e)
                                                           #:direction (.direction e))))
                                                 ((resolve-triggers model) f))))

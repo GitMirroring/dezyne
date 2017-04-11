@@ -1,0 +1,1 @@
+this.#.name  = new dzn.#x:port-type ({provides: {name: '#.name ', component: this}, requires: {}});

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
@@ -29,6 +29,7 @@
 #include <dzn/meta.hh>
 #include <dzn/locator.hh>
 
+#include <boost/bind.hpp>
 #include <boost/tuple/tuple.hpp>
 
 #include <algorithm>
@@ -38,14 +39,21 @@
 #include <queue>
 #include <sstream>
 
-inline void to__void(std::string){}
 inline std::string to_string(bool b){return b ? "true" : "false";}
-inline bool to__bool(std::string s){return s == "true";}
 inline std::string to_string(int i){std::stringstream ss; ss << i; return ss.str();}
-inline int to__int(std::string s){std::stringstream ss(s); int i; ss >> i; return i;}
 
 namespace dzn
 {
+  class vector: public std::vector<const port::meta*>
+  {
+  public:
+    vector& operator()(const port::meta* m)
+    {
+      push_back(m);
+      return *this;
+    }
+  };
+
   class assign
   {
     std::vector<boost::function<void()> > _;
@@ -92,14 +100,14 @@ namespace dzn
     dzn::apply(m, check_bindings_helper);
   }
 
-  inline void dump_tree_helper(const meta* m)
+  inline void dump_tree_helper(std::ostream& os,  const meta* m)
   {
-    std::clog << path(m) << ":" << m->type << std::endl;
+    os << path(m) << ":" << m->type << std::endl;
   }
 
-  inline void dump_tree(const meta* m)
+  inline void dump_tree(std::ostream& os, const meta* m)
   {
-    dzn::apply(m, dump_tree_helper);
+    dzn::apply(m, boost::bind(dump_tree_helper, boost::ref(os), _1));
   }
 
   struct runtime

@@ -1,0 +1,26 @@
+dzn_require = typeof (require) !== 'undefined' ? require : function () {return {};};
+dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');
+dzn = dzn || {};
+#x:component-include
+#x:interface-include
+
+dzn.#x:model-name  = function (locator, meta) {
+  this._dzn = {};
+  this._dzn.locator = locator;
+  this._dzn.rt = locator.get(new dzn.runtime());
+  this._dzn.rt.top = this._dzn.rt.top || this;
+  this._dzn.rt.components = (this._dzn.rt.components || []).concat ([this]);
+  this._dzn.meta = meta;
+  this._dzn.meta.ports = [#x:all-ports-meta-list ];
+  this._dzn.meta.children = [#x:meta-child ];
+
+  #x:injected-instance-initializer
+  #x:injected-binding-initializer
+  #x:non-injected-instance-initializer
+  #x:bind-connect
+  #x:system-port-connect
+};
+
+if (typeof (module) !== 'undefined') {
+  module.exports = dzn;
+}

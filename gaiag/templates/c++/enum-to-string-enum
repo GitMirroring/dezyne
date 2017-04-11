@@ -1,0 +1,11 @@
+##ifndef ENUM_TO_STRING_#ast:scope+name
+##define ENUM_TO_STRING_#ast:scope+name  1
+inline std::string to_string(#ast:scope+name-:: ::type v)
+{
+  switch(v)
+  {
+    #x:enum-field-to-string
+  }
+  return "";
+}
+##endif // ENUM_TO_STRING_#ast:scope+name

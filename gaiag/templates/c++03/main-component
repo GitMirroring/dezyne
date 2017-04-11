@@ -1,0 +1,38 @@
+##include <dzn/container.hh>
+
+##include "#x:scoped-model-name .hh"
+
+##include <algorithm>
+##include <cstring>
+
+int to_int(std::string s){return std::stoi (s);}
+bool to_bool(std::string s){return s == "true";}
+void to_void(std::string){}
+
+void
+connect_ports (dzn::container<#ast:scope+name-:: , boost::function<void()> >& c)
+{
+  #x:main-port-connect-in #x:main-port-connect-out }
+
+std::map<std::string,boost::function<void()> >
+event_map (dzn::container<#ast:scope+name-:: , boost::function<void()> >& c)
+{
+  #x:main-provided-port-init
+  #x:main-required-port-init
+
+  return {{"illegal", []{std::clog << "illegal" << std::endl; std::exit(0);}}
+          #x:main-event-map-void
+          #x:main-event-map-valued
+          #x:main-event-map-flush
+          #x:main-event-map-flush-asd };
+}
+
+int
+main(int argc, char* argv[])
+{
+  if(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--debug") == 0;})) dzn::debug.rdbuf(std::clog.rdbuf());
+  dzn::container<#ast:scope+name-:: , boost::function<void()> > c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
+
+  connect_ports (c);
+  c(event_map (c), {#x:main-required-port-name });
+}

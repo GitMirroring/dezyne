@@ -1,0 +1,1 @@
+#.port.name .#.event.direction .#.event.name  = [=](#x:formals){return dzn_pump->remove(reinterpret_cast<size_t>(&#.port.name));};

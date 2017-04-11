@@ -1,0 +1,1 @@
+dzn::port_release(dzn_locator, &this->#.port.name , this->out_#.port.name);

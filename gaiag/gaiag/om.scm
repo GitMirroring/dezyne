@@ -61,6 +61,7 @@
            om:binding-other
            om:binding-other-port
            om:blocking?
+           om:blocking-compound?
            om:instance-name
            om:collect
            om:component
@@ -501,6 +502,14 @@
     (($ <component>)
      (and-let* ((behaviour (.behaviour o))
                 (blocking ((om:collect <blocking>) behaviour)))
+       (pair? blocking)))
+    (_ #f)))
+
+(define (om:blocking-compound? o)
+  (match o
+    (($ <component>)
+     (and-let* ((behaviour (.behaviour o))
+                (blocking ((om:collect <blocking-compound>) behaviour)))
        (pair? blocking)))
     (_ #f)))
 

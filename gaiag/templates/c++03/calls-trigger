@@ -1,0 +1,1 @@
+#.port.name .#.event.direction .#.event.name  = boost::bind(&dzn::call_#x:direction < #x:model-name ,::#x:port-type #x:prefix-formals-type >,this,boost::function< #x:return-type (#x:formals-type) > (boost::bind(&#x:model-name ::#.port.name _#.event.name ,this#x:prefix-arguments-n))#x:prefix-arguments-n ,boost::make_tuple(&#.port.name , "#.event.name ", "return"));

@@ -1,0 +1,1 @@
+#.port.name .#.event.direction .#.event.name  = boost::bind(&dzn::pump::remove, dzn_pump, reinterpret_cast<size_t>(&#.port.name));

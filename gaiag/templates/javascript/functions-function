@@ -1,0 +1,1 @@
+this.#.name = function (#x:formals) #x:statement

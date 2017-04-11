@@ -1,0 +1,36 @@
+##include "#x:scoped-model-name .hh"
+
+##include <dzn/locator.hh>
+##include <dzn/runtime.hh>
+##include <dzn/pump.hh>
+
+#x:open-namespace
+#x:model-name ::#x:model-name(const dzn::locator& dezyne_locator)
+: #x:meta
+, dzn_rt(dezyne_locator.get<dzn::runtime>())
+, dzn_locator(dezyne_locator)
+#x:variable-member-initializer
+#x:injected-member-initializer
+#x:provided-member-initializer
+#x:required-member-initializer
+#x:async-member-initializer
+{
+  dzn_rt.performs_flush(this) = true;
+  dzn::pump* dzn_pump = dzn_locator.try_get<dzn::pump>();
+  #x:calls
+  #x:rcalls
+  #x:reqs
+  #x:clrs
+}
+
+#x:methods
+#x:functions
+void #x:model-name ::check_bindings() const
+{
+  dzn::check_bindings(&dzn_meta);
+}
+void #x:model-name ::dump_tree(std::ostream& os) const
+{
+  dzn::dump_tree(os, &dzn_meta);
+}
+#x:close-namespace

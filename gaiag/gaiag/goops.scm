@@ -34,6 +34,7 @@
 
            .port.name
            .event.name
+           .event.direction
            .variable.name
            .function.name
            ast:inevitable
@@ -88,12 +89,15 @@
            <binding>
            <bindings>
            <blocking>
+           <blocking-compound>
            <bool>
            <call>
            <component>
+           <component-model>
            <compound>
            <data>
            <declarative>
+           <declarative-compound>
            <enum>
            <event>
            <events>
@@ -120,6 +124,7 @@
            <on>
            <optional>
            <otherwise>
+           <otherwise-guard>
            <out-bindings>
            <formal>
            <formal-binding>
@@ -162,8 +167,14 @@
 
 (define-class <arguments> (<ast-list>))
 (define-class <bindings> (<ast-list>))
-(define-class <out-bindings> (<ast-list> <imperative>))
+(define-class <out-bindings> (<ast-list> <imperative>)
+  (port #:getter .port #:init-value #f #:init-keyword #:port))
 (define-class <compound> (<ast-list> <statement>))
+(define-class <blocking-compound> (<compound>)
+  (port #:getter .port #:init-value #f #:init-keyword #:port))
+(define-method (.port.name (o <blocking-compound>)) (and=> (.port o) .name))
+
+(define-class <declarative-compound> (<ast-list> <declarative>))
 (define-class <events> (<ast-list>))
 (define-class <fields> (<ast-list>))
 (define-class <formals> (<ast-list>))
@@ -237,6 +248,7 @@
   (event #:getter .event #:init-value #f #:init-keyword #:event)
   (formals #:getter .formals #:init-form (make <formals>) #:init-keyword #:formals))
 
+(define-method (.port.name (o <out-bindings>)) (and=> (.port o) .name))
 (define-method (.port.name (o <trigger>)) (and=> (.port o) .name))
 (define-method (.event.name (o <trigger>)) (and=> (.event o) .name))
 
@@ -267,11 +279,13 @@
 
 (define-method (.variable.name (o <formal-binding>)) (and=> (.variable o) .name))
 
-(define-class <component> (<model>)
+(define-class <component-model> (<model>))
+
+(define-class <component> (<component-model>)
   (ports #:getter .ports #:init-form (make <ports>) #:init-keyword #:ports)
   (behaviour #:getter .behaviour #:init-value #f #:init-keyword #:behaviour))
 
-(define-class <system> (<model>)
+(define-class <system> (<component-model>)
   (ports #:getter .ports #:init-form (make <ports>) #:init-keyword #:ports)
   (instances #:getter .instances #:init-form (make <instances>) #:init-keyword #:instances)
   (bindings #:getter .bindings #:init-form (make <bindings>) #:init-keyword #:bindings))
@@ -311,6 +325,12 @@
 
 (define-method (.port.name (o <action>)) (and=> (.port o) .name))
 (define-method (.event.name (o <action>)) (and=> (.event o) .name))
+(define-method (.event.direction (o <action>)) (and=> (.event o) .direction))
+
+(define-method (.port.name (o <trigger>)) (and=> (.port o) .name))
+(define-method (.event.name (o <trigger>)) (and=> (.event o) .name))
+(define-method (.event.direction (o <trigger>)) (and=> (.event o) .direction))
+
 
 (define-class <assign> (<imperative>)
   (variable #:getter .variable #:init-value #f #:init-keyword #:variable)
@@ -330,6 +350,8 @@
   (expression #:getter .expression #:init-form (make <expression>) #:init-keyword #:expression)
   (statement #:getter .statement #:init-value #f #:init-keyword #:statement))
 
+(define-class <otherwise-guard> (<guard>))
+
 (define-class <if> (<imperative>)
   (expression #:getter .expression #:init-form (make <expression>) #:init-keyword #:expression)
   (then #:getter .then #:init-value #f #:init-keyword #:then)
@@ -347,6 +369,8 @@
 (define-class <reply> (<imperative>)
   (expression #:getter .expression #:init-value #f #:init-keyword #:expression)
   (port #:getter .port #:init-value #f #:init-keyword #:port))
+
+(define-method (.port.name (o <reply>)) (and=> (.port o) .name))
 
 (define-class <return> (<imperative>)
   (expression #:getter .expression #:init-value #f #:init-keyword #:expression))

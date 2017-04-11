@@ -58,9 +58,7 @@
          (cond ((eq? name 'elements)
                 (if (pair? value)
                     (for-each (lambda (x) (sdisplay x port)) value)
-                    (begin
-                      (format (current-error-port) "<<barf: elements not a pair>> ")
-                      barf)))
+                    (format (current-error-port) "<<barf: elements not a pair>> ")))
                ((and (not expand?)
                      (or (is-a? value <port>)
                          (is-a? value <event>)

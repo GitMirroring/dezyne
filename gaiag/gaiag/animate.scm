@@ -236,7 +236,7 @@
                        ((? number?) o)
                        ((? string?) o)
                        ((? symbol?) (symbol->string o))
-                       ((? procedure?) (eval (list o module (module-ref module 'ast)) module))
+                       ((? procedure?) (eval (list o (module-ref module 'ast)) module))
                        (_ ((any->string) o)))))
                   (eat-one-space))
                 (lambda (key . args)

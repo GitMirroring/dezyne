@@ -1,0 +1,1 @@
+std::function<void ()> out_#.name;

@@ -1,0 +1,1 @@
+std::function<#x:reply-type (#x:formals)> #.name;

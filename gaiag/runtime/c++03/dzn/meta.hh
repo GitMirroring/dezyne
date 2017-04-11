@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -41,10 +41,6 @@ namespace dzn
   {
     struct meta
     {
-      meta()
-      : provides()
-      , requires()
-      {}
       struct detail
       {
         detail()
@@ -52,22 +48,36 @@ namespace dzn
         , address()
         , meta()
         {}
+        detail(const char* port, void* address, const dzn::meta* meta)
+        : port(port)
+        , address(address)
+        , meta(meta)
+        {}
         std::string port;
         void* address;
         const dzn::meta* meta;
       };
       detail provides;
       detail requires;
+      meta()
+      : provides()
+      , requires()
+      {}
+      meta(const detail& provides, const detail& requires)
+      : provides(provides)
+      , requires(requires)
+      {}
     };
   }
 
   struct meta
   {
-    meta(const std::string& name, const std::string& type, const meta* parent)
+    meta(const std::string& name, const std::string& type, const meta* parent, const std::vector<const port::meta*>& requires = std::vector<const port::meta*>())
     : name(name)
     , type(type)
     , parent(parent)
     , rank()
+    , requires(requires)
     {}
     meta () {}
     std::string name;
@@ -115,6 +125,10 @@ namespace dzn
     } out;
 
     dzn::port::meta meta;
+
+    async(const dzn::port::meta& meta)
+    : meta(meta)
+    {}
 
     void check_bindings() const
     {

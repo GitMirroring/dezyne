@@ -1,5 +1,7 @@
 ##include "#.scope_model .hh"
 
+##include <dzn/runtime.hh>
+
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 #.model ::#.model (const dzn::locator& dezyne_locator)
 : #((->join "\n, ")
@@ -41,8 +43,8 @@
   {
     dzn::check_bindings(&dzn_meta);
   }
-  void #.model ::dump_tree() const
+  void #.model ::dump_tree(std::ostream& os) const
   {
-    dzn::dump_tree(&dzn_meta);
+    dzn::dump_tree(os, &dzn_meta);
   }
 #(map (lambda (x) (list "}\n")) (om:scope model))

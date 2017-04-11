@@ -1,5 +1,0 @@
-#x:return-type  #x:model-name ::#x:port-name _#x:event-name  (#map:x:formal)
-{
-  #x:statement
-  #x:return
-}

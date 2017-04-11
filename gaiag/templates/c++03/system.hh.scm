@@ -33,7 +33,7 @@ struct #.model
 #}) (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
   #.model (const dzn::locator&);
   void check_bindings() const;
-  void dump_tree() const;
+  void dump_tree(std::ostream& os=std::clog) const;
 };
 #(map (lambda (x) (list "}\n")) (om:scope model))
 ##endif // #.COMPONENT _HH

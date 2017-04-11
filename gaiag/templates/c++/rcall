@@ -1,1 +1,0 @@
-#x:port-name .#x:direction .#x:event-name  = [&](#map:x:formal){return dzn::call_#x:direction(this,[=#map:x:out-argument ]{ return #x:port-name _#x:event-name(#map:x:argument);}, this->#x:port-name .meta, "#x:event-name ");};
