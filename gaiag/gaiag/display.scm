@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -61,15 +62,16 @@
                       (format (current-error-port) "<<barf: elements not a pair>> ")
                       barf)))
                ((and (not expand?)
-                     (is-a? value <ast>)
-                     (not (is-a? o <ast-list>))
-                     (or (and (or (is-a? o <port>) ;; REMOVEME after handling all port, type slots, name slots
-                                  (is-a? o <action>)
-                                  (is-a? o <trigger>)
-                                  (is-a? o <port>)
-                                  (is-a? o <variable>))
-                              (member name '(event port type)))
-                         (is-a? o <var>)))
+                     (or (is-a? value <port>)
+                         (is-a? value <event>)
+                         (is-a? value <interface>)
+                         (is-a? value <variable>)
+                         (and (is-a? value <type>) (not (eq? (class-of value) <type>)))
+                         (is-a? value <function>)
+                         (is-a? value <component>)
+                         (is-a? value <system>)
+                         (is-a? value <instance>))
+                     (not (is-a? o <ast-list>)))
                 (display #\space port)
                 (display-ref (and=> value .name) port))
                (else (sdisplay value port))))))
@@ -84,6 +86,10 @@
   (ref port))
 
 (define-method (display-ref (o <variable>) port)
+  (display (.name o) port)
+  (ref port))
+
+(define-method (display-ref (o <type>) port)
   (display (.name o) port)
   (ref port))
 
