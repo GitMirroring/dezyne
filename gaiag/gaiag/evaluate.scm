@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -89,11 +90,9 @@
 
 (define ((var? model) identifier) (om:variable model identifier))
 
-(define ((bool-var? model) x) (let ((v ((var? model) x)))
-                                (and (is-a? v <variable>) (is-a? (.type v) <bool>))))
-(define ((int-var? model) x)
-  (let ((v ((var? model) x)))
-    (and (is-a? v <variable>) (is-a? (.type v) <int>))))
+(define (bool-var? v) (and (is-a? v <variable>) (is-a? (.type v) <bool>)))
+
+(define (int-var? v) (and (is-a? v <variable>) (is-a? (.type v) <int>)))
 
 (define (unspecified? x) (eq? x *unspecified*))
 
@@ -117,7 +116,7 @@
     ((and ($ <var>) (= .variable.name identifier)) (var state identifier))
     (($ <field> (and (? (var? model)) (get! identifier)) field)
      (eq? (.field (var state (identifier))) field))
-    (($ <literal> name field) o)
+    (($ <literal> type field) o)
     (('! expr) (not (eval-expression model state expr)))
     (('and a b) (and (eval-expression model state a)
                      (eval-expression model state b)))
@@ -181,23 +180,20 @@
          (#f #f)
          (_ o))))
 
-    ;; FIXME: use .variable, do not go through .name and lookup-by-name
-    ((and ($ <var>) (= .variable.name (? (bool-var? model))))
+    ((and ($ <var>) (= .variable (? bool-var?)))
      (let ((var (var state (.variable.name o))))
        (match var
-         (($ <literal> name field) (eq? field 'true))
+         (($ <literal> type field) (eq? field 'true))
          (#f o)
          (_ var))))
 
-    ;; FIXME: use .variable, do not go through .name and lookup-by-name
-    ((and ($ <var>) (and (= .variable.name (? (int-var? model)))))
+    ((and ($ <var>) (and (= .variable (? int-var?))))
      (let ((var (var state (.variable.name o))))
        (match var
-         (($ <literal> name field) field)
+         (($ <literal> type field) field)
          ((? number?) var)
          (_ var))))
 
-    ;; FIXME: use .variable, do not go through .name and lookup-by-name
     ((and ($ <var>) (= .variable.name identifier))
      (or (var state identifier) o))
 
@@ -207,11 +203,12 @@
            (eq? (.field v) field)
            o)))
 
-    (($ <literal> name field) o)
+    (($ <literal> type field) o)
 
     (('== a b)
-     (let ((a (simplify-expression model state a))
-           (b (simplify-expression model state b)))
+     (let* ((a1 (simplify-expression model state a))
+           (b1 (simplify-expression model state b))
+           (a a1) (b b1))
        (or (om:equal? a b)
            (match (cons a b)
              ((($ <literal>) . ($ <literal>)) #f)

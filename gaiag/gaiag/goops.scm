@@ -253,7 +253,8 @@
   (identifier #:getter .identifier #:init-value #f #:init-keyword #:identifier)
   (field #:getter .field #:init-value #f #:init-keyword #:field))
 
-(define-class <literal> (<scoped>)
+(define-class <literal> (<ast>)
+  (type #:getter .type #:init-value #f #:init-keyword #:type)
   (field #:getter .field #:init-value #f #:init-keyword #:field))
 
 (define-class <formal> (<named>)

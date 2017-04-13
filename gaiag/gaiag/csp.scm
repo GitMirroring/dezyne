@@ -4,10 +4,8 @@
 ;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015, 2016, 2017 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014, 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -397,8 +395,8 @@
               (name (and=> type om:name)))
          (list "("
                identifier " == " name "_" field ")")))
-      ((and ($ <literal>) (= .name scoped) (= .field field))
-       ((->symbol-join '_) `(,(.name scoped) ,field)))
+      ((and ($ <literal>) (= .type type) (= .field field))
+       ((->symbol-join '_) `(,(.name (.name type)) ,field)))
       (('group expression) (list "(" (csp-expression->string model expression locals) ")"))
       (('! expression) (->string (list "(" "not " (paren expression) ")")))
       (((or 'and 'or '== '!= '< '<= '> '>= '+ '-) lhs rhs)

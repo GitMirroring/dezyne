@@ -4,7 +4,6 @@
 ;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -282,7 +281,10 @@
     (($ <field>) o)
     (($ <illegal>) o)
     (($ <int>) o)
-    (($ <literal>) o)
+    (($ <literal> (? (is? <type>))) o)
+    (($ <literal>)
+      (let ((type (make <type> #:name (.type o))))
+        (clone o #:type ((resolve model locals) type))))
     (($ <otherwise>) (make <otherwise>))
 
     ((and ($ <port>) (= .type ('dotted scope ... name)))
@@ -499,7 +501,7 @@
                      <enum>)))
        (if (not enum) (failure)
            (if (member field ((compose .elements .fields) enum))
-               (make <literal> #:name (.name enum) #:field field)
+               (make <literal> #:type (.name enum) #:field field)
                (and
                 (resolve-error o field "undefined enum field: ~a")
                 )))))

@@ -3,8 +3,10 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -107,7 +109,7 @@
     (($ <field> var field)
      (let* ((var (om:variable model var))
             (enum ((om:type model) var)))
-       (make <literal> #:name (.name enum) #:field field)))
+       (make <literal> #:type enum #:field field)))
     (_ o )))
 
 (define ((value->state identifier) o)
@@ -233,7 +235,7 @@
         (if (null? statements)
             next
             (loop (cdr statements) (json-next- model var next (car statements) functions)))))
-     (($ <assign> (? var?) ($ <expression> ($ <literal> name field)))
+     (($ <assign> (? var?) ($ <expression> ($ <literal> type field)))
       (list (make <field> #:identifier var #:field field)))
      (($ <assign> (? var?) ($ <expression> ('! ($ <var> (? var?)))))
       (match next
@@ -339,8 +341,8 @@
     (($ <field> type field) (->symbol (list (->symbol type) "." field)))
     (('! ($ <expression> value)) (symbol-append '! (->symbol value)))
     ((identifier ($ <field> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." field)))
-    ((identifier ($ <literal> name field)) (->symbol (list (->symbol identifier) " = " (->symbol name) "." (->symbol field))))
-    (($ <literal> name field) (->symbol (list (->symbol name) "." (->symbol field))))
+    ((identifier ($ <literal> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." (->symbol field))))
+    (($ <literal> type field) (->symbol (list (->symbol type) "." (->symbol field))))
     (($ <scope.name> scope name) ((->symbol-join '.) (append scope (list name))))
     (($ <triggers> (triggers ...)) (->symbol ((->join ",") (map ->symbol triggers))))
     ((and ($ <trigger>) (= .event.name event)) (->symbol event))

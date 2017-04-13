@@ -201,7 +201,7 @@
        #:events (ast->om- (or (null-is-#f (assoc 'events body)) '(events)))
        #:behaviour (and=> (null-is-#f (assoc 'behaviour body)) ast->om-)))
 
-    (('literal name field) (make <literal> #:name (ast->om- name) #:field field))
+    (('literal name field) (make <literal> #:type (ast->om- name) #:field field))
 
     (('dotted name ...) o)
 

@@ -493,20 +493,22 @@
                       (number ,number)
                       (comma ,comma)
                       (comma-space ,comma-space)))))
-      (($ <reply> (and ($ <expression> ($ <literal> name field)) (get! expression)) port)
+      (($ <reply> (and ($ <expression> ($ <literal> type field)) (get! expression)) port)
        (debug "reply0: ~a\n" (expression))
-       (let ((port (reply-port port)))
+       (let ((port (reply-port port))
+             (scope ((compose om:scope .name) type))
+             (name ((compose om:name .name) type)))
          (->string
           (list (snippet 'reply
                          `((space ,space)
-                           (scope ,(om:scope name))
-                           (name ,(om:name name))
+                           (scope ,scope)
+                           (name ,name)
                            (expression ,(expression->string
                                          model (expression) locals))))
                 (if (om:blocking? model)  (snippet 'release
                                                    `((space ,space)
-                                                     (scope ,(om:scope name))
-                                                     (name ,(om:name name))
+                                                     (scope ,scope)
+                                                     (name ,name)
                                                      (port ,port))))))))
       (($ <reply> (and ($ <expression>) (= .value (and ($ <var>) (= .variable.name name))) (get! expression)) port)
        (let* ((var (var? name))
@@ -666,8 +668,8 @@
 
 (define (bool-expression->string model o)
   (match o
-    (($ <literal> name field)
-     (snippet 'literal `((scope-name ,(om:scope+name name)) (scope ,(.scope name)) (name ,(.name name)) (field ,field))))
+    (($ <literal> type field)
+     (snippet 'literal `((scope-name ,(om:scope+name (.name type))) (scope ,(.scope (.name type))) (name ,(.name (.name type))) (field ,field))))
     (_ (expression->string model o))))
 
 (define* (expression->string model o #:optional (locals '()) (argument #f))
@@ -683,8 +685,7 @@
   (define (enum-type o field)
     (or (and-let* ((var (var? o))
                    (type (.type var))
-                   (name (.name type))
-                   (literal (make <literal> #:name name #:field field)))
+                   (literal (make <literal> #:type type #:field field)))
                   (expression->string model literal locals))
         ""))
 

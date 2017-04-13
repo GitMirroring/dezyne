@@ -1,7 +1,9 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -126,10 +128,10 @@
 (define (var-bool? x) (and (is-a? x <variable>) (is-a? (.type x) <bool>)))
 
 (define ((var? model) identifier) (om:variable model identifier))
-(define ((bool-var? model) x) (let ((v ((var? model) x)))
-                                (and (is-a? v <variable>) (is-a? (.type v) <bool>))))
-(define ((int? model) x)
-  (is-a? ((om:type model) x) <int>))
+(define (bool? x)
+    (and (is-a? x <variable>) (is-a? (.type x) <bool>)))
+(define (int? x)
+    (and (is-a? x <variable>) (is-a? (.type x) <int>)))
 (define ((int-var? model) x)
   (let ((v ((var? model) x)))
     (and (is-a? v <variable>) (is-a? (.type v) <int>))))
@@ -144,15 +146,15 @@
             (($ <int>)
              (let* ((var (find int-var? variables))
                     (range (.range type)))
-               (make <enum> #:name (.name type) #:fields (make <fields> #:elements (iota (- (.to range) (.from range) -1) (.from range))))))
+               (make <enum> #:name var #:fields (make <fields> #:elements (iota (- (.to range) (.from range) -1) (.from range))))))
             (($ <bool>)
              (let ((var (find var-bool? variables)))
-               (make <enum> #:name (make <scope.name> #:name (.name var)) #:fields (make <fields> #:elements '(false true)))))
+               (make <enum> #:name var #:fields (make <fields> #:elements '(false true)))))
             (_  (make <enum> #:name (make <scope.name> #:name '<Temp>) #:fields (make <fields> #:elements '(<Initial>))))))
          (fields ((compose .elements .fields) enum))
          (states (map (lambda (field)
                         (make <literal>
-                          #:name (.name enum)
+                          #:type enum
                           #:field field)) fields))
          (guards (filter identity
                          (map (lambda (state)
@@ -166,12 +168,12 @@
              (field (make-state-field model state))
              (expression
               (match state
-                (($ <literal> ($ <scope.name> () (and (? (bool-var? model)) (get! type))) 'true)
-                 (make <expression> #:value (make <var> #:variable (om:variable model (type)))))
-                (($ <literal> ($ <scope.name> () (and (? (bool-var? model)) (get! type))) 'false)
-                 (make <expression> #:value (list '! (make <var> #:variable (om:variable model (type))))))
-                (($ <literal> ($ <scope.name> () (and (? (int? model)) (get! type))) v)
-                 (make <expression> #:value (list '== (make <var> #:variable (make <variable> #:name (.identifier field))) v)))
+                (($ <literal> ($ <enum> (and (? bool?) (get! type))) 'true)
+                 (make <expression> #:value (make <var> #:variable (type))))
+                (($ <literal> ($ <enum> (and (? bool?) (get! type))) 'false)
+                 (make <expression> #:value (list '! (make <var> #:variable (type)))))
+                (($ <literal> ($ <enum> (and (? int?) (get! type))) v)
+                 (make <expression> #:value (list '== (make <var> #:variable (type)) v)))
                 (_ (make <expression> #:value (make-state-field model state))))))
             (retain-source-properties
              (salvage-source-location model state expression field o)
@@ -179,8 +181,7 @@
 
 (define (salvage-source-location model state expression field o)
   (let* ((expression2 (make <expression>
-                        #:value (list '== (make <var> #:variable (make <variable> #:name (.identifier field)))
-                                     state)))
+                        #:value (list '== (make <var> #:variable (.identifier field)) state)))
          (guards (filter (lambda (g)
                            (let ((e (.expression g)))
                              (and (source-location g)
@@ -190,17 +191,22 @@
     (and (pair? guards) (car guards))))
 
 (define (state-var model state)
-  (define (type? v) (equal? ((compose .name .type) v) (.name state)))
+  (define (type? v) (equal? (.type v) (.type state)))
   (find (lambda (v)
-          (or (type? v) (var-bool? v))) ((compose .elements .variables .behaviour) model)))
+          (type? v)) ((compose .elements .variables .behaviour) model)))
 
 (define (state-identifier model state)
   (or (and=> (state-var model state) .name) '<state>))
 
 (define (make-state-field model state)
-  (make <field> #:identifier (state-identifier model state) #:field (.field state)))
+  (make <field> #:identifier (or (state-var model state) '<state>) #:field (.field state)))
 
 (define* ((simplify model #:optional (state (make <literal>)) (top? #f)) o)
+  (let ((r ((simplify- model state top?) o)))
+    ;;(stderr "simplify ~a => ~a\n" o r)
+    r))
+
+(define* ((simplify- model #:optional (state (make <literal>)) (top? #f)) o)
   (match o
     (($ <compound> (statements ...))
      (let* ((statements
