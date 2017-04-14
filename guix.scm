@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -84,7 +85,7 @@
         (_ #f)))))
 
 (define-public dezyne.git
-  (let ((version "2.3.4")
+  (let ((version "development")
         (revision "0")
         (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
     (package
