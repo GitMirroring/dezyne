@@ -144,7 +144,7 @@
 
     (('expression expression) (make <expression> #:value (ast->om- expression)))
 
-    (('field identifier field) (make <field> #:identifier identifier #:field field))
+    (('field identifier field) (make <field> #:variable identifier #:field field))
 
     (('fields fields ...) (make <fields> #:elements fields))
 

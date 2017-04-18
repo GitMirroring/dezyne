@@ -55,7 +55,7 @@
 
 (define* ((variable-state model #:optional (init .expression)) variable)
   (cons
-   (.name variable)
+   variable
    (eval-expression model '() (init variable))))
 
 (define (state-vector model)
@@ -63,7 +63,7 @@
 
 (define* ((undefined-variable-state model #:optional (init .expression)) variable)
   (cons
-   (.name variable)
+   variable
    ;;(eval-expression model '() (init variable))
    (init variable)
    ))
@@ -71,24 +71,17 @@
 (define (undefined-state-vector model)
   (map (undefined-variable-state model (init-undefined model)) (om:variables model)))
 
-(define* ((undefined-variable-state model #:optional (init .expression)) variable)
-  (cons
-   (.name variable)
-   ;;(eval-expression model '() (init variable))
-   (init variable)
-   ))
-
 (define ((init-undefined model) o)
   (let ((type ((om:type model) o)))
     (make <var> #:variable o)))
 
-(define (var state identifier) (assoc-ref state identifier))
+(define (var-field state variable) (assoc-ref state variable))
 
-(define (var! state identifier value)
+(define (var! state variable value)
   ;;; FIXME (map (lambda (x) (if (eq? identifier (car x)) (cons (car x) (cdr x)) x)) state)
-  (assoc-set! (copy-tree state) identifier value))
+  (assoc-set! (copy-tree state) variable value))
 
-(define ((var? model) identifier) (om:variable model identifier))
+(define (var? variable) (is-a? variable <variable>))
 
 (define (bool-var? v) (and (is-a? v <variable>) (is-a? (.type v) <bool>)))
 
@@ -113,9 +106,9 @@
     (#t #t)
     ('false #f)
     ('true #t)
-    ((and ($ <var>) (= .variable.name identifier)) (var state identifier))
-    (($ <field> (and (? (var? model)) (get! identifier)) field)
-     (eq? (.field (var state (identifier))) field))
+    ((and ($ <var>) (= .variable.name identifier)) (var-field state identifier))
+    (($ <field> (and (? var?) (get! identifier)) field)
+     (eq? (.field (var-field state (identifier))) field))
     (($ <literal> type field) o)
     (('! expr) (not (eval-expression model state expr)))
     (('and a b) (and (eval-expression model state a)
@@ -147,7 +140,7 @@
                  (eval-expression model state b)))
     (('>= a b) (>= (eval-expression model state a)
                    (eval-expression model state b)))
-    ((? symbol?) (eval-expression model state (var state o)))
+    ((? symbol?) (eval-expression model state (var-field state o)))
     ((? boolean?) o)
     ((? number?) o)
     (($ <data> value) o)
@@ -156,15 +149,11 @@
 
 (define (simplify-expression model state o)
   (let ((e (simplify-expression- model state o)))
-    (match e
-      ((? boolean?) e)
-      ((and ($ <var>) (= .variable.name e)) e)
-      (($ <literal>) e)
-      (_ e))))
+    ;;(stderr "simplify-expression ~a => ~a\n" o e)
+    e))
 
 (define (simplify-expression- model state o)
   (define (unspec v f) (if (is-a? v <var>) o (f v)))
-
   (match o
     (#f #f)
     (#t #t)
@@ -181,27 +170,28 @@
          (_ o))))
 
     ((and ($ <var>) (= .variable (? bool-var?)))
-     (let ((var (var state (.variable.name o))))
-       (match var
-         (($ <literal> type field) (eq? field 'true))
+     (let ((field (var-field state (.variable o))))
+       (match field
          (#f o)
-         (_ var))))
+         (_ (eq? field 'true)))))
 
     ((and ($ <var>) (and (= .variable (? int-var?))))
-     (let ((var (var state (.variable.name o))))
-       (match var
-         (($ <literal> type field) field)
-         ((? number?) var)
-         (_ var))))
+     (let ((field (var-field state (.variable o))))
+       (match field
+         (#f o)
+         (_ field))))
 
-    ((and ($ <var>) (= .variable.name identifier))
-     (or (var state identifier) o))
+    ((and ($ <var>) (= .variable variable))
+     (let ((field (var-field state (.variable o))))
+       (match field
+         (#f o)
+         (_ (make <literal> #:type (.type (.variable o)) #:field field)))))
 
-    (($ <field> (and (? (var? model)) (get! identifier)) field)
-     (let ((v (var state (identifier))))
-       (if (is-a? v <literal>)
-           (eq? (.field v) field)
-           o)))
+    (($ <field> (and (? var?) (get! variable)) field)
+     (let ((f (var-field state (variable))))
+       (match f
+         (#f o)
+         (_ (eq? f field)))))
 
     (($ <literal> type field) o)
 

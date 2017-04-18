@@ -250,7 +250,7 @@
 (define-method (.variable.name (o <var>)) (and=> (.variable o) .name))
 
 (define-class <field> (<ast>)
-  (identifier #:getter .identifier #:init-value #f #:init-keyword #:identifier)
+  (variable #:getter .variable #:init-value #f #:init-keyword #:variable)
   (field #:getter .field #:init-value #f #:init-keyword #:field))
 
 (define-class <literal> (<ast>)

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -47,10 +48,10 @@ component Simpleint2 {
     subint S {0..1};
     S s = 0;
 
-    [s.0]
+    [s == 0]
     on p.e():
     s = 1;
-    [s.1]
+    [s == 1]
     on p.e():
     {
       p.a();

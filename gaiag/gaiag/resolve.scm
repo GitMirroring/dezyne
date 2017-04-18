@@ -223,6 +223,9 @@
     (($ <assign> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
 
+    (($ <field> (and (? (negate var?)) (get! identifier)))
+     (undefined-error o (identifier)))
+
     (($ <action> #f (and (? (negate event-or-function?)) (get! identifier)))
      (resolve-error o (identifier) "undefined function or event: ~a"))
 
@@ -278,7 +281,8 @@
     (($ <data>) o)
     (($ <enum>) o)
     (($ <extern>) o)
-    (($ <field>) o)
+    ((and ($ <field>) (= .variable variable)) 
+        (clone o #:variable (var? variable)))
     (($ <illegal>) o)
     (($ <int>) o)
     (($ <literal> (? (is? <type>))) o)
@@ -492,8 +496,8 @@
             (.name type)))
          (failure)))
 
-    (('dotted (and (? var?) (get! type)) (and (? (member-field? (type)) (get! field))))
-     (make <field> #:identifier (type) #:field (field)))
+    (('dotted (and (? var?) (get! variable)) (and (? (member-field? (variable)) (get! field))))
+     (make <field> #:variable (variable) #:field (field)))
 
     (('dotted scope ... name field) (=> failure)
      (let ((enum (as (or (as-type (make <type> #:name (make <scope.name> #:scope scope #:name name)))

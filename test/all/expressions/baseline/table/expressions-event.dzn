@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -34,12 +35,12 @@ interface I {
 
     on e:
     {
-      [state.0]
+      [state == 0]
       {
         state = 3;
         a;
       }
-      [state.3 || state.2 || state.1]
+      [state == 3 || state == 2 || state == 1]
       {
         state = state - 1;
         if (c < state) c = c + 1;
@@ -60,12 +61,12 @@ component expressions {
 
     on i.e():
     {
-      [state.0]
+      [state == 0]
       {
         state = 3;
         i.a();
       }
-      [state.3 || state.2 || state.1]
+      [state == 3 || state == 2 || state == 1]
       {
         state = state - 1;
         if (c < state) c = c + 1;

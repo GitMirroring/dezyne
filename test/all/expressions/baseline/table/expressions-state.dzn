@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -32,13 +33,13 @@ interface I {
     State state = 3;
     State c = 0;
 
-    [state.0]
+    [state == 0]
     on e:
     {
       state = 3;
       a;
     }
-    [state.1]
+    [state == 1]
     on e:
     {
       state = state - 1;
@@ -46,7 +47,7 @@ interface I {
       else if (c <= state + 1) lo;
       else if (c > state) hi;
     }
-    [state.2]
+    [state == 2]
     on e:
     {
       state = state - 1;
@@ -54,7 +55,7 @@ interface I {
       else if (c <= state + 1) lo;
       else if (c > state) hi;
     }
-    [state.3]
+    [state == 3]
     on e:
     {
       state = state - 1;
@@ -73,13 +74,13 @@ component expressions {
     State state = 3;
     State c = 0;
 
-    [state.0]
+    [state == 0]
     on i.e():
     {
       state = 3;
       i.a();
     }
-    [state.1]
+    [state == 1]
     on i.e():
     {
       state = state - 1;
@@ -87,7 +88,7 @@ component expressions {
       else if (c <= state + 1) i.lo();
       else if (c > state) i.hi();
     }
-    [state.2]
+    [state == 2]
     on i.e():
     {
       state = state - 1;
@@ -95,7 +96,7 @@ component expressions {
       else if (c <= state + 1) i.lo();
       else if (c > state) i.hi();
     }
-    [state.3]
+    [state == 3]
     on i.e():
     {
       state = state - 1;

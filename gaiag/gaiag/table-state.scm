@@ -3,7 +3,6 @@
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -115,7 +114,7 @@
                    ((is-a? statement <guard>))
                    (field ((compose .value .expression) statement))
                    ((is-a? field <field>))
-                   ((eq? (.identifier field) '<state>))
+                   ((eq? (.name (.variable field)) '<state>))
                    ((eq? (.field field) '<Initial>)))
                   (make <compound>
                     #:elements (list
@@ -137,6 +136,26 @@
     (and (is-a? v <variable>) (is-a? (.type v) <int>))))
 
 (define ((prepend-guards model) o)
+  (let* ((variables ((compose .elements .variables .behaviour) model))
+         (variable (find (lambda (v) (not (is-a? (.type v) <extern>))) variables))
+         (type (and=> variable .type))
+         (variable (or variable (make <variable> #:name '<state>)))
+         (fields
+          (match type
+            (($ <enum>) (.elements (.fields type)))
+            (($ <int>)
+             (let ((range (.range type)))
+               (iota (- (.to range) (.from range) -1) (.from range))))
+            (($ <bool>) '(false true))
+            (_  '(<Initial>))))
+         (states (map (lambda (field) (make <field> #:variable variable #:field field)) fields))
+         (guards (filter identity
+                         (map (lambda (field)
+                                (prepend-guard model variable field o))
+                              fields))))
+    (retain-source-properties o (make <compound> #:elements guards))))
+
+(define ((prepend-guards-- model) o)
   (let* ((variables ((compose .elements .variables .behaviour) model))
          (types (map (om:type model) variables))
          (type (find (lambda (t) (negate (is? <extern>))) types))
@@ -162,26 +181,25 @@
                               states))))
     (retain-source-properties o (make <compound> #:elements guards))))
 
-(define (prepend-guard model state o)
+(define (prepend-guard model variable field o)
   (and-let* ((statement o)
-             (statement (flatten-compound ((simplify model state #t) (flatten-compound o))))
-             (field (make-state-field model state))
+             (statement (flatten-compound ((simplify model variable field #t) (flatten-compound o))))
+             (var (make <var> #:variable variable))
              (expression
-              (match state
-                (($ <literal> ($ <enum> (and (? bool?) (get! type))) 'true)
-                 (make <expression> #:value (make <var> #:variable (type))))
-                (($ <literal> ($ <enum> (and (? bool?) (get! type))) 'false)
-                 (make <expression> #:value (list '! (make <var> #:variable (type)))))
-                (($ <literal> ($ <enum> (and (? int?) (get! type))) v)
-                 (make <expression> #:value (list '== (make <var> #:variable (type)) v)))
-                (_ (make <expression> #:value (make-state-field model state))))))
+              (match (.type variable)
+                (($ <bool>)
+                 (match field
+                   ('true (make <expression> #:value var))
+                   ('false (make <expression> #:value (list '! var)))))
+                (($ <int>) (make <expression> #:value (list '== var field)))
+                (_ (make <expression> #:value (make <field> #:variable variable #:field field))))))
             (retain-source-properties
-             (salvage-source-location model state expression field o)
+             (salvage-source-location model variable expression field o)
              (make <guard> #:expression expression #:statement statement))))
 
-(define (salvage-source-location model state expression field o)
+(define (salvage-source-location model variable expression field o)
   (let* ((expression2 (make <expression>
-                        #:value (list '== (make <var> #:variable (.identifier field)) state)))
+                        #:value (list '== (make <var> #:variable variable) field)))
          (guards (filter (lambda (g)
                            (let ((e (.expression g)))
                              (and (source-location g)
@@ -199,21 +217,21 @@
   (or (and=> (state-var model state) .name) '<state>))
 
 (define (make-state-field model state)
-  (make <field> #:identifier (or (state-var model state) '<state>) #:field (.field state)))
+  (make <field> #:variable (or (state-var model state) '<state>) #:field (.field state)))
 
-(define* ((simplify model #:optional (state (make <literal>)) (top? #f)) o)
-  (let ((r ((simplify- model state top?) o)))
-    ;;(stderr "simplify ~a => ~a\n" o r)
+(define* ((simplify model variable field #:optional (top? #f)) o)
+  (let ((r ((simplify- model variable field top?) o)))
+    ;;(stderr "simplify ~a with variable:~a, field:~a=> ~a\n" o variable field r)
     r))
 
-(define* ((simplify- model #:optional (state (make <literal>)) (top? #f)) o)
+(define* ((simplify- model variable field #:optional (top? #f)) o)
   (match o
     (($ <compound> (statements ...))
      (let* ((statements
              (let loop ((statements statements))
                (if (null? statements)
                    '()
-                   (let* ((statement ((simplify model state) (car statements))))
+                   (let* ((statement ((simplify model variable field) (car statements))))
                      (if statement
                          (cons statement (loop (cdr statements)))
                          (loop (cdr statements))))))))
@@ -226,21 +244,21 @@
         (else
          (retain-source-properties o (make <compound>
                                        #:elements
-                                       ((simplify model state) statements)))))))
+                                       ((simplify model variable field) statements)))))))
 
     (($ <on> triggers ($ <guard> ($ <expression> #t) statement)) (=> failure)
-     (if (.field state)
+     (if field
          (retain-source-properties
           o
           (make <on>
             #:triggers triggers
-            #:statement ((simplify model state) statement)))
+            #:statement ((simplify model variable field) statement)))
          (failure)))
 
     (($ <guard> expression1 ($ <guard> expression2 statement))
      (and-let*
-      ((statement ((simplify model state) statement))
-       (value (simplify-literal model state (list 'and (.value expression1) (.value expression2))))
+      ((statement ((simplify model variable field) statement))
+       (value (simplify-literal model variable field (list 'and (.value expression1) (.value expression2))))
        (expression (cond ((and (om:equal? (.value expression1) value)
                                (is-a? expression1 <otherwise>))
                           expression1)
@@ -249,14 +267,14 @@
                           expression2)
                          (else (make <expression> #:value value))))
        (guard (retain-source-properties o (make <guard> #:expression expression #:statement statement))))
-      ((simplify model state) guard)))
+      ((simplify model variable field) guard)))
 
     (($ <guard> expression statement)
-     (and-let* ((value (simplify-literal model state expression))
+     (and-let* ((value (simplify-literal model variable field expression))
                 (expression (if (is-a? value <otherwise>)
                                 value
                                 (make <expression> #:value value)))
-                (statement ((simplify model state) statement)))
+                (statement ((simplify model variable field) statement)))
                (retain-source-properties
                 o
                 (match value
@@ -271,39 +289,38 @@
                   (_ (make <guard> #:expression expression #:statement statement))))))
 
     (($ <on> triggers statement)
-     (and-let* ((statement ((simplify model state) statement)))
+     (and-let* ((statement ((simplify model variable field) statement)))
                (make <on> #:triggers triggers #:statement statement)))
 
     (($ <if> expression then #f)
-     (or (and-let* ((value (simplify-literal model state expression))
+     (or (and-let* ((value (simplify-literal model variable field expression))
                     (expression (make <expression> #:value value))
-                    (then ((simplify model state) then)))
+                    (then ((simplify model variable field) then)))
                    (match value
                      (#t then)
-                     (($ <literal>) (and (om:equal? value state) then))
+                     (($ <literal>) (and (om:equal? value field) then))
                      (_ (retain-source-properties o (make <if> #:expression expression #:then then)))))
          (make <compound>)))
 
     (($ <if> expression then else)
-     (or (and-let* ((value (simplify-literal model state expression))
+     (or (and-let* ((value (simplify-literal model variable field expression))
                     (expression (make <expression> #:value value)))
-                   (let ((then ((simplify model state) then))
-                         (else ((simplify model state) else)))
+                   (let ((then ((simplify model variable field) then))
+                         (else ((simplify model variable field) else)))
                      (match value
                        (#t then)
-                       (($ <literal>) (and (om:equal? value state) then))
+                       (($ <literal>) (and (om:equal? value field) then))
                        (_ (retain-source-properties o (make <if> #:expression expression #:then then #:else else))))))
-         (and-let* ((then ((simplify model state) else))
+         (and-let* ((then ((simplify model variable field) else))
                     (expression (list '! (.value expression))))
                    (retain-source-properties o (make <if> #:expression expression #:then then)))
          (make <compound>)))
 
-    ((and (? (negate (is? <ast>))) (h t ...)) (map (simplify model state) o))
+    ((and (? (negate (is? <ast>))) (h t ...)) (map (simplify model variable field) o))
     (_ o)))
 
-(define (simplify-literal model literal o)
-  (let* ((state (append `((,(state-identifier model literal) . ,literal))
-                        (undefined-state-vector model))))
+(define (simplify-literal model variable field o)
+  (let* ((state (append `((,variable . ,field)) '())))
     (simplify-expression model state o)))
 
 (define ((mangle-table json-table) o)

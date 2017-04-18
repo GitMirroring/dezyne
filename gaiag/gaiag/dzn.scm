@@ -194,7 +194,7 @@
     (($ <expression> expression) (expression->dzn model expression))
     (($ <expression>) #f)
     (($ <data> data) ((animate-snippet 'data `((data ,data)))))
-    (($ <field> type field) (->string (list ((->dzn model) type) "." field)))
+    (($ <field> variable field) (->string (list (.name variable) "." field)))
     ((and ($ <literal>) (= .type type) (= .field field))
      (let* ((scope (.scope (.name type)))
             (name (.name (.name type))))
