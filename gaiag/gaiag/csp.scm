@@ -2,7 +2,7 @@
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
-;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;; Copyright © 2014, 2015, 2016, 2017 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
@@ -790,8 +790,11 @@
     (match o
       (($ <expression> expression) (expression-type expression locals))
       (($ <literal>) 'enum)
-      (($ <var> name) (let ((var (var? name)))
-                        (om:name ((om:type model) var))))
+      (($ <var> name) (let* ((var (var? name))
+                        (type ((om:type model) var)))
+                        (if (is-a? type <int>)
+                            'int
+                            (om:name type))))
       ((? number?) 'int)
       ('false 'bool)
       ('true 'bool)

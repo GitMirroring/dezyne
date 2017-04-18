@@ -2,7 +2,7 @@ verify: I: check: completeness: ok
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
 verify: SyncCBLivelockExternal: check: deterministic: ok
-verify: SyncCBLivelockExternal: check: illegal: fail
+verify: SyncCBLivelockExternal: check: illegal: fail                
 p.e
 r.e
 r.return
@@ -17,7 +17,7 @@ r.return
 p.return
 p.e
 r.e
-verify: SyncCBLivelockExternal: check: deadlock: fail
+verify: SyncCBLivelockExternal: check: deadlock: fail                
 p.e
 r.e
 r.return
@@ -32,17 +32,12 @@ r.return
 p.return
 p.e
 r.e
-queue_full
-r.return
-p.return
-r.cb
-r.e
-verify: SyncCBLivelockExternal: check: compliance: fail
+verify: SyncCBLivelockExternal: check: compliance: fail                
 p.e
 r.e
 r.return
 p.return
-verify: SyncCBLivelockExternal: check: livelock: fail
+verify: SyncCBLivelockExternal: check: livelock: fail                
 p.e
 r.e
 r.return
