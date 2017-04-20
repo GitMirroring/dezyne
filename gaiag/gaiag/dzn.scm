@@ -105,7 +105,7 @@
     (($ <illegal>) ((animate-snippet 'illegal)))
 
     (($ <assign> var ($ <call> function arguments))
-     ((->dzn model) (make <assign> #:variable var #:expression (make <assign-call> #:identifier function #:arguments arguments))))
+     ((->dzn model) (make <assign> #:variable var #:expression (make <assign-call> #:function function #:arguments arguments))))
 
     (($ <assign> var (and ($ <action>) (= .port port) (= .event event) (= .arguments arguments)))
      ((->dzn model) (make <assign> #:variable var #:expression (make <assign-action> #:port port #:event event #:arguments arguments))))
@@ -114,7 +114,7 @@
      (->string (.name var) " = " ((->dzn model) expression) ";\n"))
 
     (($ <assign-call> function arguments)
-     ((animate-snippet 'call-expression `((function ,function)
+     ((animate-snippet 'call-expression `((function ,(.name function))
                                           (arguments ,((->dzn model) arguments))
                                           (location ,(location (om:function model function)))))))
 
@@ -123,9 +123,9 @@
        ((animate-snippet 'action-trigger `((event ,event) (port ,port) (arguments ,arguments))))))
 
     (($ <call> function arguments)
-     ((animate-snippet 'call `((function ,function)
+     ((animate-snippet 'call `((function ,(.name function))
                                (arguments ,((->dzn model) arguments))
-                               (location ,(location (om:function model function)))))))
+                               (location ,(location function))))))
 
     (($ <if> expression then #f)
      ((animate-snippet 'if-then `((expression ,((->dzn model) expression))
@@ -147,7 +147,7 @@
     (($ <return> expression) ((animate-snippet 'return `((expression ,((->dzn model) expression))))))
 
     (($ <variable> name type ($ <call> function arguments))
-     ((->dzn model) (make <variable> #:name name #:type type #:expression ((->dzn model) (make <assign-call> #:identifier function #:arguments arguments)))))
+     ((->dzn model) (make <variable> #:name name #:type type #:expression ((->dzn model) (make <assign-call> #:function function #:arguments arguments)))))
 
     (($ <variable> name type (and ($ <action>) (= .port port) (= .event event) (= .arguments arguments)))
      ((->dzn model) (make <variable> #:name name #:type type #:expression ((->dzn model) (make <assign-action> #:port port #:event event #:arguments arguments)))))

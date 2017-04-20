@@ -255,11 +255,10 @@
              (updates (map (lambda (s) (eval-expression model s expression)) states)))
         (map (value->state var) updates)))
      (($ <call>)
-      (let* ((identifier (.identifier o))
-             (function (om:function model identifier)))
-        (if (member identifier functions)
+      (let* ((function (.function o)))
+        (if (member function functions)
             next
-            (json-next- model var next (.statement function) (cons identifier functions)))))
+            (json-next- model var next (.statement function) (cons function functions)))))
      (($ <blocking> statement)
       (json-next- model var next statement functions))
      (($ <guard> expression statement)
@@ -304,7 +303,7 @@
       (($ <action>) (list o))
       (($ <assign> name (and ($ <action>) (get! action))) (list (action)))
       (($ <variable> name type (and ($ <action>) (get! action))) (list (action)))
-      (($ <call> (and (? non-recursive?) (get! function))) (return-actions (function? (function))))
+      (($ <call> (and (? non-recursive?) (get! function))) (return-actions (function)))
       (($ <function> name signature #f statement) (return-actions statement))
       (_ '())))
 

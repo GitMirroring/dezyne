@@ -123,7 +123,6 @@
     (_ ((resolve o '()) o))))
 
 (define ((resolve model locals) o)
-
   (match o
     (($ <type>) (retain-source-properties o (resolve- model o locals)))
     ((? (is? <type>)) o)
@@ -232,13 +231,13 @@
     (($ <call> (and (? symbol?) (? (negate event-or-function?)) (get! identifier)))
      (resolve-error o (identifier) "undefined function or event: ~a"))
 
-    (($ <call> identifier ($ <arguments> (arguments ...))) (=> failure)
-     (let* ((function (function? identifier))
+    (($ <call> function ($ <arguments> (arguments ...))) (=> failure)
+     (let* ((function (or (as function <function>) (function? function)))
             (formals ((compose .elements .formals .signature) function))
             (argument-count (length arguments))
             (formal-count (length formals)))
        (if (= argument-count formal-count) (failure)
-           (resolve-error o identifier
+           (resolve-error o (.name function)
                           (format #f "function ~a expects ~a arguments, found: ~a" "~a" formal-count argument-count)))))
 
     (($ <variable> name (and (? (negate as-type)) (get! type)) expression)
@@ -267,8 +266,9 @@
     (($ <formal> name type direction)
      (make <formal> #:name name #:type ((resolve model locals) type) #:direction direction))
 
-    (($ <call> identifier (and ($ <arguments> (arguments ...)) (get! arguments)) last?)
-     (make <call> #:identifier identifier #:arguments ((resolve model locals) (arguments)) #:last? last?))
+    (($ <call> function (and ($ <arguments> (arguments ...)) (get! arguments)) last?)
+     (let* ((function (or (as function <function>) (function? function))))
+       (make <call> #:function function #:arguments ((resolve model locals) (arguments)) #:last? last?)))
 
     (($ <type>)
      (or (as-type o)
@@ -334,8 +334,8 @@
     ((? symbol?)
      (undefined-error 'programming-error o))
 
-    (($ <action> #f (and (? function?) (get! identifier)))
-     (make <call> #:identifier (identifier)))
+    (($ <action> #f (and (? function?) (get! function)))
+     (make <call> #:function (function? (function))))
 
     (($ <action> #f e arguments) (=> failure)
      (let ((event (event? e)))
@@ -389,7 +389,7 @@
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
      (make <assign>
        #:variable (var? variable)
-       #:expression (make <call> #:identifier (function))))
+       #:expression (make <call> #:function (function? (function)))))
 
     (($ <assign> variable
         ($ <expression> ('dotted (and (? port?) (get! port)) event)))
@@ -406,7 +406,7 @@
         ($ <expression> ($ <var> (and (? function?) (get! function)))))
      (make <assign>
        #:variable (var? variable)
-       #:expression (make <call> #:identifier (function))))
+       #:expression (make <call> #:function (function? (function)))))
 
     (($ <assign> variable (and ($ <expression>) (get! expression)))
      (make <assign>
@@ -466,7 +466,7 @@
      (make <variable>
        #:name name
        #:type ((resolve model locals) type)
-       #:expression (make <call> #:identifier (function))))
+       #:expression (make <call> #:function (function? (function)))))
 
     (($ <variable> name type expression)
      (make <variable>
@@ -722,11 +722,13 @@
       (($ <assign> name (and ($ <call>) (get! call))) (call))
       (($ <variable> name type (and ($ <call>) (get! call))) (call))
       (_ #f)))
+  (define (.function-name call)
+    (or (and=> (as (.function call) <function>) .name) (.function call)))
   (and-let* ((function (om:function model name))
              (compound (.statement function))
              (calls (null-is-#f ((om:collect return-call) compound)))
              (names (delete-duplicates (sort (map
-                                              (compose .identifier return-call)
+                                              (compose .function-name return-call)
                                               calls) symbol<))))
             (or (member name seen)
                 (any identity

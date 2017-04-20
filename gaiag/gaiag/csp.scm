@@ -615,10 +615,10 @@
                (let ((purged (model-purge-data model statement locals)))
                  (cons purged (loop (cdr statements) locals))))))))
 
-    (($ <call> identifier ($ <arguments> (arguments ...)) last?)
+    (($ <call> function ($ <arguments> (arguments ...)) last?)
        (make <call>
-         #:identifier identifier
-         #:arguments (make <arguments> #:elements (purge-formal-list (om:function model identifier) arguments))
+         #:function function
+         #:arguments (make <arguments> #:elements (purge-formal-list function arguments))
          #:last? last?))
 
     (($ <on> triggers statement)
@@ -701,8 +701,8 @@
                              (loop (cdr statements) (cons statement collect))))))))
                (make <compound> #:elements statements)))
 
-    (($ <call> identifier arguments)
-     (make <call> #:identifier identifier #:arguments arguments #:last? #t))
+    (($ <call> function arguments)
+     (make <call> #:function function #:arguments arguments #:last? #t))
 
     (($ <if> expression then else)
      (let ((then- (mark-last then))
@@ -942,20 +942,20 @@
               )))
 
           ;; simple statements
-          (($ <call> identifier arguments last?)
+          (($ <call> function arguments last?)
            (let* ((arguments (on->csp model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (continuation (list (list "Cont_" (fresh-number) "'"))))
              (if last?
-                 (list space identifier "(" "P'" ")" "(" (comma-space-join (append (om:member-names model) arguments (list ))) ") -- tail recursion" "\n")
+                 (list space (.name function) "(" "P'" ")" "(" (comma-space-join (append (om:member-names model) arguments (list ))) ") -- tail recursion" "\n")
                  (list
                   (def-cont
                    space
                    (list
                     (list continuation "(" (comma-space-join (om:member-names model)) ")" " =\n")
                     tail))
-                  (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
+                  (list space (.name function) "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
 
           (($ <assign> variable (and ($ <action>) (= .port port) (= .event event)))
            (let* ((type ((compose .type .signature) event))
@@ -983,7 +983,7 @@
                 (list continuation "(" (comma-space-join (append (om:member-names model) (list "res'"))) ")" " =\n")
                 (list space "let " variable-name " = res' within\n")
                 (check-range (list variable-name) tail model locals indent)))
-              (list space function "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
+              (list space (.name function) "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
 
           (($ <assign> variable expression)
            (let* ((expression (csp-expression->string model expression locals))
@@ -1005,7 +1005,7 @@
              (list space (or port-name channel) "_'?" constructor identifier ":{" values "} ->\n")
              (check-range (list identifier) tail model locals indent))))
 
-          (($ <variable> name type ($ <call> identifier arguments))
+          (($ <variable> name type ($ <call> function arguments))
            (let* ((arguments (on->csp model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
@@ -1017,7 +1017,7 @@
                 (list continuation "(" (comma-space-join (append (om:member-names model) (list "res'"))) ")" " =\n")
                 (list space "let " name " = res' within\n")
                 (check-range (list name) tail model locals indent)))
-              (list space identifier "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
+              (list space (.name function) "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
 
           (($ <variable> name type expression)
            (let* ((expression (csp-expression->string model expression locals)))

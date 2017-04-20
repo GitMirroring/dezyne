@@ -102,16 +102,16 @@
 
     (('blocking statement) (make <blocking> #:statement (ast->om- statement)))
 
-    (('call identifier) (make <call> #:identifier identifier))
+    (('call function) (make <call> #:function function))
 
-    (('call identifier arguments)
+    (('call function arguments)
      (make <call>
-       #:identifier identifier
+       #:function function
        #:arguments (ast->om- (or (null-is-#f arguments) '(arguments)))))
 
-    (('call identifier arguments last?)
+    (('call function arguments last?)
      (make <call>
-       #:identifier identifier
+       #:function function
        #:arguments (ast->om- (or (null-is-#f arguments) '(arguments)))
        #:last? last?))
 

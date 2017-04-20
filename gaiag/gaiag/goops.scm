@@ -35,6 +35,7 @@
            .port.name
            .event.name
            .variable.name
+           .function.name
            ast:inevitable
            ast:optional
 
@@ -51,8 +52,8 @@
            .field
            .fields
            .from
+           .function
            .functions
-           .identifier
            .injected
            .instance
            .instances
@@ -318,9 +319,11 @@
 (define-method (.variable.name (o <assign>)) (and=> (.variable o) .name))
 
 (define-class <call> (<imperative>)
-  (identifier #:getter .identifier #:init-value #f #:init-keyword #:identifier)
+  (function #:getter .function #:init-value #f #:init-keyword #:function)
   (arguments #:getter .arguments #:init-form (make <arguments>) #:init-keyword #:arguments)
   (last? #:getter .last? #:init-value #f #:init-keyword #:last?))
+
+(define-method (.function.name (o <call>)) (and=> (.function o) .name))
 
 
 (define-class <guard> (<declarative>)
