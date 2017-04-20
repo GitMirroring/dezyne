@@ -29,7 +29,7 @@
   #:use-module (gaiag animate)
   #:use-module (gaiag c)
   #:use-module (gaiag code)
-  #:use-module (gaiag gaiag)
+  #:use-module (gaiag command-line)
   #:use-module (gaiag indent)
   #:use-module (gaiag misc)
   #:use-module (gaiag reader)
@@ -80,7 +80,7 @@
   ((->symbol-join '_) (append (drop-right (om:scope+name model) 1) '(skel) (take-right (om:scope+name model) 1))))
 
 (define (glue)
-  (and=> (option-ref (parse-opts (command-line)) 'glue #f) string->symbol))
+  (and=> (command-line:get 'glue #f) string->symbol))
 
 (define (dump o)
   (match o

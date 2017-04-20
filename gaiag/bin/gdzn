@@ -27,4 +27,4 @@
   (set! %load-path (append (list prefix (string-append prefix "/json")) %load-path))
   (set! %load-compiled-path (append (list prefix (string-append prefix "/json")) %load-compiled-path)))
 
-((@ (gaiag scm2json) main) (command-line))
+((@ (gaiag gdzn) main) (command-line))

@@ -38,7 +38,6 @@
   #:use-module (gaiag util)
 
   #:use-module (gaiag misc)
-  #:use-module (gaiag gaiag)
   #:use-module (gaiag json-table)
   #:use-module (gaiag norm)
   #:use-module (gaiag norm-event)

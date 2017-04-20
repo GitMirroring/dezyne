@@ -39,7 +39,6 @@
   #:use-module (gaiag compare)
   #:use-module (gaiag display)
 
-  #:use-module (gaiag gaiag)
   #:use-module (gaiag misc)
   #:use-module (gaiag reader)
 

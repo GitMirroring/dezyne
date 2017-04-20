@@ -37,7 +37,7 @@
 
   #:use-module (gaiag animate)
   #:use-module (gaiag annotate)
-  #:use-module (gaiag gaiag)
+  #:use-module (gaiag command-line)
   #:use-module (gaiag indent)
   #:use-module (gaiag misc)
   #:use-module (gaiag norm-event)
@@ -190,8 +190,7 @@
 
 (define (dump-main o)
   (and-let* ((name ((om:scope-name) o))
-             (model (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
-                                string->symbol)))
+             (model (and (and=> (command-line:get 'model #f) string->symbol)))
              ((eq? model name))
              ;;(main (symbol-append 'main (code:extension o) '.scm))
              ;;((file-exists? main))
@@ -202,10 +201,9 @@
 
 (define (dump-system o)
   (let* ((name ((om:scope-name) o))
-         (model (and (and=> (option-ref (parse-opts (command-line)) 'model #f)
-                            string->symbol)))
+         (model (and (and=> (command-line:get 'model #f) string->symbol)))
          (interfaces (map .type ((compose .elements .ports) o)))
-         (shell (option-ref (parse-opts (command-line)) 'shell #f))
+         (shell (command-line:get 'shell #f))
          (template (if (and shell (eq? name (string->symbol shell))) 'shell 'system)))
     (dump-indented `(,@(code:dir o) ,name ,(code:extension o))
                    (lambda ()
@@ -225,7 +223,7 @@
 (define statements.event (make-parameter #f))
 
 (define (language)
-  (string->symbol (option-ref (parse-opts (command-line)) 'language "c++")))
+  (string->symbol (command-line:get 'language "c++")))
 
 (define (code:extension o)
   (match o
@@ -1280,7 +1278,7 @@
 ;;(define debug stderr)
 
 (define (calling-context)
-  (let ((type (option-ref (parse-opts (command-line)) 'calling-context #f)))
+  (let ((type (command-line:get 'calling-context #f)))
     (if type (make <type> #:name (make <scope.name> #:scope '() #:name (string->symbol type))) #f)))
 
 

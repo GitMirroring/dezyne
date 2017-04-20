@@ -22,7 +22,7 @@
 # 
 # Code:
 
-SRCS := $(shell $(GIT_LS_FILES) $(CDIR)/*.scm $(CDIR)/json/*.scm $(CDIR)/language/dezyne/*.scm $(CDIR)/gaiag/*.scm)
+SRCS := $(shell $(GIT_LS_FILES) $(CDIR)/*.scm $(CDIR)/json/*.scm $(CDIR)/language/dezyne/*.scm $(CDIR)/gaiag/*.scm $(CDIR)/gaiag/commands/*.scm)
 
 CLEAN:=$(CLEAN) $(HOME)/.cache/guile
 GOBJS := $(SRCS:%.scm=%.go)
@@ -36,6 +36,9 @@ $(CDIR)-clean:
 include make/guile.mk
 
 TARG := gaiag
+include make/guile.mk
+
+TARG := gdzn
 include make/guile.mk
 
 TARG := scm2json

@@ -39,7 +39,7 @@
   #:use-module (gaiag om)
 
   #:use-module (gaiag animate)
-  #:use-module (gaiag gaiag)
+  #:use-module (gaiag command-line)
   #:use-module (gaiag indent)
   #:use-module (gaiag json)
   #:use-module (gaiag code)
@@ -347,7 +347,7 @@
     module))
 
 (define (language)
-  (let ((language (string->symbol (option-ref (parse-opts (command-line)) 'language "dzn"))))
+  (let ((language (string->symbol (command-line:get 'language "dzn"))))
     (if (member language '(dzn html)) language
         'dzn)))
 

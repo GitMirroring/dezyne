@@ -31,7 +31,7 @@
 
   #:use-module (ice-9 match)
   #:use-module (gaiag fifo)
-  #:use-module (gaiag gaiag)
+  #:use-module (gaiag command-line)
 
   #:export (
             ;;goops-prefix
@@ -250,7 +250,7 @@
   (dump-output file-name (lambda () (display string))))
 
 (define (dump-output file-name thunk)
-  (let* ((dir (option-ref (parse-opts (command-line)) 'output-dir #f))
+  (let* ((dir (command-line:get 'output))
          (file-name (cond ((not dir) file-name)
                           ((pair? file-name) (cons dir file-name))
                           (else (cons dir (list file-name)))))
@@ -265,9 +265,10 @@
 
 (define (gulp-pipe command)
   (let* ((port (open-pipe command OPEN_READ))
-         (output (read-string port)))
-    (close-port port)
-    (string-trim-right output #\newline)))
+         (output (read-string port))
+         (status (close-pipe port)))
+    (if (zero? status) (string-trim-right output #\newline)
+        (error (format #f "pipe failed: ~s" command)))))
 
 (define (logf port string . rest)
   (apply format (cons* port string rest))

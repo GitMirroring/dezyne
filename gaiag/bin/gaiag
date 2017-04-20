@@ -15,18 +15,16 @@
           path
           (string-split path #\/)))
 
-
 (let* ((path (car (command-line)))
        (path (readlink-f path))
        (prefix (dirname (dirname path)))
        (prefix (if (string=? (basename prefix) "gaiag")
                    prefix
-
-(string-append prefix "/gaiag"))))
+                   (string-append prefix "/gaiag"))))
+  (if (not (getenv "DEZYNE_PREFIX"))
+      (setenv "DEZYNE_PREFIX" (string-append prefix "/..")))
+  (setenv "PATH" (string-append (string-append prefix "/../bin:") (getenv "PATH")))
   (set! %load-path (append (list prefix (string-append prefix "/json")) %load-path))
-  (set! %load-compiled-path (append (list prefix (string-append prefix "/json")) %load-compiled-path))
-  ;; (format (current-error-port) "%load-path ~a\n" %load-path )
-  ;; (format (current-error-port) "%load-compiled-path ~a\n" %load-compiled-path )
-)
+  (set! %load-compiled-path (append (list prefix (string-append prefix "/json")) %load-compiled-path)))
 
 ((@ (gaiag gaiag) main) (command-line))

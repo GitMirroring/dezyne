@@ -46,6 +46,7 @@
   #:use-module (gaiag resolve)
 
   #:use-module (gaiag annotate)
+  #:use-module (gaiag command-line)
   #:use-module (gaiag macros)
   #:use-module (gaiag misc)
   #:use-module (gaiag reader)
@@ -767,19 +768,17 @@
                (model-file (if (string? model-file) (string->symbol model-file) model-file)))
               (eq? (basename- file) (basename- model-file)))))
 
-(define (parse-opts x)  ((@@ (gaiag gaiag) parse-opts) x))
-
 (define (om:imported? o)
   (if (assoc 'imported? (source-properties o))
       (source-property o 'imported?)
-      (and-let* (((>2 (length (command-line))))
-                 (file (car (option-ref (parse-opts (command-line)) '() '(#f)))))
-                (cond
-                 ((string= file "-") #f)
-                 ((string= file "/dev/stdin") #f)
-                 ((string-suffix? ".scm" file) #f)
-                 (else (not (in-file? o file)))))))
-
+      (let ((files (command-line:get '() '(#f))))
+        (and (pair? files)
+             (let ((file (car files)))
+               (cond
+                ((string= file "-") #f)
+                ((string= file "/dev/stdin") #f)
+                ((string-suffix? ".scm" file) #f)
+                (else (not (in-file? o file)))))))))
 
 (define (ast-> ast)
   ((compose

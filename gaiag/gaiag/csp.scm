@@ -42,7 +42,7 @@
   #:use-module (gaiag compare)
   #:use-module (gaiag util)
 
-  #:use-module (gaiag gaiag)
+  #:use-module (gaiag command-line)
 ;;  #:use-module (gaiag mangle)
   #:use-module (gaiag misc)
   #:use-module (gaiag norm)
@@ -83,8 +83,7 @@
 (define-class <voidreply> (<ast>))
 
 (define (om->csp om)
-  (let* ((name (and=> (option-ref (parse-opts (command-line)) 'model #f)
-                      string->symbol)))
+  (let* ((name (and (and=> (command-line:get 'model #f) string->symbol))))
     (or (and-let* ((models (om:filter (lambda (x) (or (as x <interface>) (as x <component>))) om))
                    (models (null-is-#f (filter .behaviour models)))
                    (models (if name (filter (om:named name) models) models))
@@ -125,18 +124,18 @@
          (model-generate-csp root o))))))
 
 (define (model-generate-csp root o)
-  (let ((separate-asserts? (option-ref (parse-opts (command-line)) 'assert #f)))
+  (let ((separate-asserts? (command-line:get 'assert #f)))
     (and-let* ((norm ((om:register csp:norm #t) root))
                (name ((om:scope-name) o))
                (model (om:model-with-behaviour norm))
-               (file-name (option-ref (parse-opts (command-line)) 'output (list name '.csp))))
+               (file-name (command-line:get 'output-file (list name '.csp))))
               (dump-output file-name (lambda ()
                                        (csp-file 'combinators.csp.scm (csp:module model))
                                        (csp-model model)
                                        (if separate-asserts?
                                            (animate-string "\ninclude \"asserts.csp\"\n")
                                            (csp-asserts model))
-                                       (if (option-ref (parse-opts (command-line)) 'lts #f)
+                                       (if (command-line:get 'lts #f)
                                            (let ((models (append (interfaces model) (list model))))
                                              (map csp-lts models)
                                              (assembly-lts model)))))
@@ -1123,7 +1122,7 @@
                                ".true")))
        events))
 
-(define (csp-queue-size) (option-ref (parse-opts (command-line)) 'queue-size 3))
+(define (csp-queue-size) (command-line:get 'queue-size 3))
 
 (define* (check-range identifiers statement model #:optional (locals '()) (indent 0))
   (define (member? identifier) (om:variable model identifier))
