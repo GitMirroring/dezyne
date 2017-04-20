@@ -238,6 +238,7 @@
 
 (define (flatten-compound o)
   (match o
+    ((? om:imperative?) o)
     (($ <compound> (statements ...))
      (let ((top (flatten-compound- o)))
        (retain-source-properties
@@ -251,6 +252,7 @@
 
 (define (flatten-compound- o)
   (match o
+    ((? om:imperative?) o)
     (($ <compound> (statement))
      (flatten-compound- statement))
     (($ <compound> (statements ...))
