@@ -66,6 +66,7 @@
                          (is-a? value <event>)
                          (is-a? value <interface>)
                          (is-a? value <variable>)
+                         (is-a? value <formal>)
                          (and (is-a? value <type>) (not (eq? (class-of value) <type>)))
                          (is-a? value <function>)
                          (is-a? value <component>)
