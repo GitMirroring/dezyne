@@ -78,7 +78,8 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                    "PATH=bin:../bin:$PATH" ;; FIXME
                    " generate -l scm -L -o -"
                    (string-join imports " -I " 'prefix)
-                   (if (not model-opt) "" (string-append " -m " model-opt))
+                   ;; Must NOT forward --model to generate: that will cut other models
+                   ;; (if (not model-opt) "" (string-append " -m " model-opt))
                    " " file-name)))
     (if debug? (stderr "command: ~a\n" command))
     (with-input-from-string (gulp-pipe command) read)))

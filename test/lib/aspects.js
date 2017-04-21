@@ -39,6 +39,10 @@ function dzn(session) {
   return (process.env['DZN'] || ( __dirname + '/../../client/bin/dzn') + ' --session=' + (session && session || 100));
 }
 
+function gdzn(session) {
+  return '../gaiag/bin/gdzn'
+}
+
 var ext = {c:'.c','c++':'.cc','c++03':'.cc','c++-msvc11':'.cc',cs:'.cs',javascript:'.js'};
 
 var default_meta = {
@@ -351,7 +355,8 @@ var aspects = {
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
     var main = parameters.dir + '/main' + ext[language];
     try {main = (fs.lstatSync (main).isFile () || fs.lstatSync (main).isSymbolicLink ()) && main;} catch (e){main=undefined;};
-    var cmd = 'make DZN="' + dzn() + '"'
+    var cmd = 'make'
+        + ' DZN="' + gdzn() + '"'
         + ' IMPORTS=\"'+imports+'\"'
         + ' CODE_OPTIONS=\"'+code_options+'\"'
         + ' LANGUAGE='+language
