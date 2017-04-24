@@ -158,6 +158,16 @@
       (($ <scope.name>) (om:interface o))
       (('dotted scope ... name) (om:interface (make <scope.name> #:scope scope #:name name)))))
 
+  (define (component? o)
+    (match o
+      (($ <component>) o)
+      (($ <system>) o)
+      (($ <scope.name>) (om:component o))
+      (('dotted scope ... name) (om:component (make <scope.name> #:scope scope #:name name)))))
+
+  (define (instance? identifier)
+    (om:instance model identifier))
+
   (define (function? identifier) (om:function model identifier))
   (define (member? identifier) (om:variable model identifier))
   (define (port? o) (or (as o <port>)
@@ -616,10 +626,9 @@
               #:statement ((resolve model '()) statement))))
 
     (($ <system>)
-     (let ((o (clone o #:ports (make <ports> #:elements (map (resolve model '()) (om:ports o))))))
-       (clone o
-              #:instances ((resolve o '()) (.instances o))
-              #:bindings ((resolve o '()) (.bindings o)))))
+     (let* ((o (clone o #:ports (make <ports> #:elements (map (resolve model '()) (om:ports o)))))
+            (o (clone o #:instances ((resolve o '()) (.instances o)))))
+       (clone o #:bindings ((resolve o '()) (.bindings o)))))
 
     (($ <if> expression then else)
      (make <if>
@@ -641,13 +650,24 @@
      (make <formals> #:elements (map (resolve model '()) formals)))
     (($ <instances> (instances ...))
      (make <instances> #:elements (map (resolve model locals) instances)))
-    (($ <binding>) o) ;; FIXME
-    ((and ($ <instance>) (= .type ($ <scope.name>)))
-     o)
     ((and ($ <instance>) (= .type ('dotted scope ... name)))
-     (let* ((scoped (make <scope.name> #:scope scope #:name name))
-            (component (om:import scoped)))
-       (clone o #:type (.name component))))
+     (let* ((name (make <scope.name> #:scope scope #:name name))
+            (type (component? name)))
+       (if (not type) (resolve-error o type "undefined component: ~a")
+           (clone o #:type type))))
+    ((and ($ <instance>) (= .type type))
+     (let ((type (component? type)))
+       (if (not type) (resolve-error o type "undefined component: ~a")
+           (clone o #:type type))))
+    (($ <binding>)
+     (let* ((instance (.instance o))
+            (inst (instance? instance))
+            (component (or (and=> inst .type) model))
+            (port (.port o))
+            (port (om:port component port)))
+       (if (and instance (not inst))
+           (resolve-error o instance "undeclared instance: ~a")
+           (make <binding> #:instance inst #:port port))))
     (($ <variables> (variables ...))
      (let ((variables (map (range-check model) variables)))
        (make <variables> #:elements (map (resolve model '()) variables))))

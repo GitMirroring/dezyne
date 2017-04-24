@@ -22,7 +22,7 @@
 {
 #(map
   (lambda (port)
-    (let* ((binding (om:port-bind model (.name port)))
+    (let* ((binding (om:port-bind model port))
           (instance-binding (om:instance-binding? binding))
           (instance-port (.port instance-binding))
           (instance (.name (om:instance model port)))
@@ -35,7 +35,7 @@
       (filter om:provides? (om:ports model)))
 #(map
  (lambda (port)
-   (let* ((binding (om:port-bind model (.name port)))
+   (let* ((binding (om:port-bind model port))
           (instance-binding (om:instance-binding? binding))
           (instance-port (.port instance-binding))
           (instance (.name (om:instance model port)))

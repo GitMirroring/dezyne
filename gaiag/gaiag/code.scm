@@ -220,6 +220,7 @@
 
 (define (unspecified? x) (eq? x *unspecified*))
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;; helper functions/macros to identify bottlenecks ;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -405,9 +406,9 @@
 (define-method (ast:port-name (o <bind>))
   (let* ((model ((ast:model) o))
          (left (.left o))
-         (left-port (om:port model left))
+         (left-port (.port left))
          (right (.right o))
-         (right-port (om:port model right))
+         (right-port (.port right))
          (port (and (om:port-bind? o)
                     (if (not (.instance left)) (.port left) (.port right)))))
     port))
@@ -415,9 +416,9 @@
 (define-method (ast:instance-name (o <bind>))
   (let* ((model ((ast:model) o))
          (left (.left o))
-         (left-port (om:port model left))
+         (left-port (.port left))
          (right (.right o))
-         (right-port (om:port model right))
+         (right-port (.port right))
          (instance (and (om:port-bind? o)
                         (if (not (.instance left))
                             (binding-name model right)
@@ -884,7 +885,7 @@
 
 (define-method (code:component-port (o <port>)) ;; MORTAL SIN HERE!!?
   (let* ((model ((ast:model) o))
-         (bind (om:port-bind model (.name o))))
+         (bind (om:port-bind model o)))
     (om:instance-binding? bind)))
 
 (define-method (code:non-injected-bindings (o <system>))
@@ -896,9 +897,9 @@
 (define-method (code:bind-provided-required (o <bind>))
   (let* ((model ((ast:model) o))
          (left (.left o))
-         (left-port (om:port model left))
+         (left-port (.port left))
          (right (.right o))
-         (right-port (om:port model right)))
+         (right-port (.port right)))
     (if (om:provides? left-port)
                                 (cons left right)
                                 (cons right left))))

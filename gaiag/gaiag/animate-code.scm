@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -618,16 +619,16 @@
 
 (define ((connect-ports model snippet) bind)
   (let* ((left (.left bind))
-         (left-port (om:port model left))
+         (left-port (.port left))
          (right (.right bind))
-         (right-port (om:port model right))
+         (right-port (.port right))
          (provided-required (if (om:provides? left-port)
                                 (cons left right)
                                 (cons right left)))
          (interface (.type left-port))
          (provided (binding-name model (car provided-required)))
          (required (binding-name model (cdr provided-required))))
-    (animate snippet `((interface ,interface) (provided ,provided) (required ,required)))))
+    (animate snippet `((interface ,(.name interface)) (provided ,provided) (required ,required)))))
 
 (define ((declare-enum model) enum)
   (let* ((fields ((compose .elements .fields) enum))
@@ -815,7 +816,7 @@
          (reply-scope (om:scope type-type))
          (reply-scope-name (om:scope+name type-type))
          (system (as model <system>))
-         (bind (and system (om:port-bind system (.name port))))
+         (bind (and system (om:port-bind system port)))
          (instance-binding (and bind (om:instance-binding? bind)))
          (instance (and instance-binding (.instance instance-binding)))
          (instance-port (and instance-binding (.port instance-binding)))
@@ -853,8 +854,8 @@
                        (reply-scope-name ,reply-scope-name)
                        (return-type ,return-type)
                        (return-type-name ,return-type-name)
-                       (instance ,instance)
-                       (instance-port ,instance-port)
+                       (instance ,(and instance (.name instance)))
+                       (instance-port ,(and instance-port (.name instance-port)))
                        (statement ,statement)
                        (type ,(.name type))))))
 
@@ -905,7 +906,7 @@
          (reply-scope (om:scope type-type))
          (reply-scope-name (om:scope+name type-type))
          (system (as model <system>))
-         (bind (and system (om:port-bind system (.name port))))
+         (bind (and system (om:port-bind system port)))
          (instance-binding (and bind (om:instance-binding? bind)))
          (instance (and instance-binding (.instance instance-binding)))
          (instance-port (and instance-binding (.port instance-binding)))
@@ -933,31 +934,32 @@
                        (reply-scope-name ,reply-scope-name)
                        (return-type ,return-type)
                        (return-type-name ,return-type-name)
-                       (instance ,instance)
-                       (instance-port ,instance-port)
+                       (instance ,(and instance (.name instance)))
+                       (instance-port ,(and instance-port (.name instance-port)))
                        (type ,(.name type))))))
 
 (define ((init-bind model string) bind)
   (let* ((left (.left bind))
-         (left-port (om:port model left))
+         (left-port (.port left))
          (right (.right bind))
-         (right-port (om:port model right))
+         (right-port (.port right))
          (port (and (om:port-bind? bind)
                     (if (not (.instance left)) (.port left) (.port right))))
          (instance-port (and (om:port-bind? bind)
                              (if (not (.instance left)) (.port right) (.port left))))
-         (injected? (and (eq? port '*) port))
-         (direction (or injected? (.direction (om:port model port))))
+         (injected? (and (eq? (.name port) '*) port))
+         (direction (or injected? (.direction port)))
          (edir (or injected? (if (eq? direction 'provides) 'out 'in)))
-         (interface (if (not injected?) (om:port model port)
+         (interface (if (not injected?) port
                         (if left-port left-port
                             right-port)))
          (interface (.type interface))
          (instance (and (om:port-bind? bind)
                         (if (not (.instance left))
-                            (binding-name model right)
-                            (binding-name model left)))))
-    (animate string `((port ,port) (direction ,direction) (edir ,edir) (injected? ,injected?) (instance ,instance) (instance-port ,instance-port) (interface ,interface)))))
+                            (.instance right)
+                            (.instance left)))))
+    (animate string `((port ,(.name port)) (direction ,direction) (edir ,edir) (injected? ,injected?) (instance ,(.name instance)) 
+                    (instance-port ,(.name instance-port)) (interface ,(.name interface))))))
 
 (define ((init-instance model string) instance)
   (let* ((component (.type instance))
@@ -1040,7 +1042,7 @@
 
 (define (binding-name model bind)
   (let ((instance (om:instance model bind))
-        (port (om:port model bind)))
+        (port (.port bind)))
     (snippet 'binding
                `((instance ,(match instance
                                 (($ <instance>) (.name instance))
@@ -1050,24 +1052,22 @@
                             (($ <interface>) (list "x" (.name port)))))))))
 
 (define (injected-binding? binding)
-  (or (eq? '* (.port (.left binding)))
-      (eq? '* (.port (.right binding)))))
+  (or (eq? '* (.name (.port (.left binding))))
+      (eq? '* (.name (.port (.right binding))))))
 
 (define (injected-binding binding)
-  (cond ((eq? '* (.port (.left binding))) (.right binding))
-        ((eq? '* (.port (.right binding))) (.left binding))
+  (cond ((eq? '* (.name (.port (.left binding)))) (.right binding))
+        ((eq? '* (.name (.port (.right binding)))) (.left binding))
         (else #f)))
 
 (define (injected-bindings model)
   (filter injected-binding? ((compose .elements .bindings) model)))
 
 (define (injected-instance-name binding)
-  (or (.instance (.left binding)) (.instance (.right binding))))
+  (.name (or (.instance (.left binding)) (.instance (.right binding)))))
 
 (define (injected-instance-port binding)
-  (if (.instance (.left binding))
-      (.port (.left binding))
-      (.port (.right binding))))
+  (.name (.port (if (.instance (.left binding)) (.left binding) (.right binding)))))
 
 (define (injected-instance-type model binding)
   (.type (om:instance model (if (.instance (.left binding))

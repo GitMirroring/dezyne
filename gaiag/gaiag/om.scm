@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -228,9 +230,9 @@
 (define (om:ports- o)
   (match o
     (($ <interface>) '())
-    (($ <component> name ($ <ports> (ports ...))) ports)
-    (($ <behaviour> name types ($ <ports> (ports ...))) ports)
-    (($ <system> name ($ <ports> (ports ...))) ports)))
+    (($ <component>) ((compose .elements .ports) o))
+    (($ <behaviour>) ((compose .elements .ports) o))
+    (($ <system>) ((compose .elements .ports) o))))
 
 (define om:ports (pure-funcq om:ports-))
 
@@ -309,10 +311,10 @@
   (match o
     ((? symbol?)
      (find (lambda (x) (eq? (.name x) o)) ((compose .elements .instances) model)))
-    (($ <binding>) (or (om:instance model (.instance o))
-                       (om:import (.type (om:port model (.port bind))))))
+    (($ <binding>) (or (.instance o)
+                       (.type (.port o))))
     (($ <bind>) (om:instance model (om:instance-binding? o)))
-    (($ <port>) (om:instance model (om:instance-binding? (om:port-bind model (.name o)))))
+    (($ <port>) (om:instance model (om:instance-binding? (om:port-bind model o))))
     ((? boolean?) #f)))
 
 (define (om:port-bind? bind)
@@ -322,23 +324,20 @@
 (define (om:port-binding? bind)
   (or (and (not (.instance (.left bind)))
            (.left bind))
-      (and (not (.instance (.right  bind)))
+      (and (not (.instance (.right bind)))
            (.right bind))))
 
 (define (om:instance-binding? bind)
   (or (and (not (.instance (.left bind)))
            (.right bind))
-      (and (not (.instance (.right  bind)))
+      (and (not (.instance (.right bind)))
            (.left bind))))
 
-(define (om:port-bind system o)
-  (match o
-    ((? symbol?)
-     (find (lambda (bind) (and=> (om:port-bind? bind)
-                                 (lambda (b)
-                                   (eq? (.port (om:port-binding? b)) o))))
-           ((compose .elements .bindings) system)))
-    (($ <port>) (om:port-bind system (.name o)))))
+(define (om:port-bind system port)
+  (find (lambda (bind) (and=> (om:port-bind? bind)
+                              (lambda (b)
+                                (equal? (.port (om:port-binding? b)) port)))) ;; FIXME: WHY DOES eq? NOT WORK HERE??????
+        ((compose .elements .bindings) system)))
 
 (define (om:bind system o)
   (let* ((binds ((compose .elements .bindings) system)))
@@ -393,6 +392,7 @@
     (#f (match system
           (($ <component>) system)
           (($ <root>) (om:find (is? <component>) system))
+          (($ <scope.name>) (cached-model system))
           (_ #f)))
     ((? symbol?) (om:component system (om:instance system o)))
     (($ <binding> #f port)
@@ -415,17 +415,19 @@
     (($ <root>) (om:find (is? <interface>) o))
     ((h t ...) (find (is? <interface>) o))))
 
+
 (define* (om:port model #:optional (o #f))
   (match o
     (($ <binding>)
      (let* ((port (.port o)))
        (or
-        (and-let* ((name (.instance o))
+        (and-let* ((name (.name (.instance o)))
                    (instance (om:instance model name))
                    (type (and=> instance .type))
                    (component (om:import type)))
                   (om:port component port))
         (om:port model port))))
+    ('* (make <port> #:name '* #:direction 'requires))
     (_ (find (if o (om:named o)
                  (lambda (x) (eq? (.direction x) 'provides)))
              (append (.elements (.ports model))

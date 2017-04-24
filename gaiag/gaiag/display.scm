@@ -71,6 +71,7 @@
                          (is-a? value <function>)
                          (is-a? value <component>)
                          (is-a? value <system>)
+                         (is-a? value <port>)
                          (is-a? value <instance>))
                      (not (is-a? o <ast-list>)))
                 (display #\space port)
