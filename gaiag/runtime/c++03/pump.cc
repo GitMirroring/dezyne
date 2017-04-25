@@ -107,18 +107,6 @@ namespace dzn
       idle.wait(lock);
     }
   }
-  void pump::service_timers(boost::unique_lock<boost::mutex>& lock)
-  {
-    if(!lock) lock.lock();
-    while(timers.size() && timers.begin()->first.expired())
-    {
-      boost::function<void()> f(timers.begin()->second);
-      timers.erase(timers.begin());
-      lock.unlock();
-      f();
-      lock.lock();
-    }
-  }
   void pump::worker_helper()
   {
     boost::unique_lock<boost::mutex> lock(mutex);
@@ -137,16 +125,23 @@ namespace dzn
         condition.wait_until(lock, timers.begin()->first.t);
     }
 
-    service_timers(lock);
-
     if(queue.size())
     {
       boost::function<void()> f;
       std::swap(queue.front(), f);
       queue.pop();
-      if (lock) lock.unlock();
+      lock.unlock();
       f();
-      service_timers(lock);
+      lock.lock();
+    }
+
+    while(timers.size() && timers.begin()->first.expired())
+    {
+      boost::function<void()> f(timers.begin()->second);
+      timers.erase(timers.begin());
+      lock.unlock();
+      f();
+      lock.lock();
     }
   }
   void pump::operator()()

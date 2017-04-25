@@ -110,26 +110,22 @@ namespace dzn
           condition.wait_until(lock, timers.begin()->first.t, [this]{return queue.size() || !running;});
         }
 
-        auto service_timers = [&] {
-          while(timers.size() && timers.begin()->first.expired())
-          {
-            auto t = *timers.begin();
-            timers.erase(timers.begin());
-            if (lock) lock.unlock();
-            t.second();
-            lock.lock();
-          }
-        };
-
-        service_timers();
-
         if(queue.size())
         {
           std::function<void()> f(std::move(queue.front()));
           queue.pop();
-          if (lock) lock.unlock();
+          lock.unlock();
           f();
-          service_timers();
+          lock.lock();
+        }
+
+        while(timers.size() && timers.begin()->first.expired())
+        {
+          auto f(timers.begin()->second);
+          timers.erase(timers.begin());
+          lock.unlock();
+          f();
+          lock.lock();
         }
       };
 

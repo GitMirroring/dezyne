@@ -81,7 +81,6 @@ namespace dzn
     ~pump();
     void stop();
     void wait();
-    void service_timers(boost::unique_lock<boost::mutex>&);
     void worker_helper();
     void operator()();
 
