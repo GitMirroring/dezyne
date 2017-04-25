@@ -27,6 +27,7 @@ DZN:=../client/bin/dzn
 
 # quick check target
 check: prerequisite
+	bin/test -j16 hello
 	bin/test -j16 check
 	bin/test view view
 
