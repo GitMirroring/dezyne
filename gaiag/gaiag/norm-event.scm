@@ -178,13 +178,12 @@
                    (cons (car shared-guards) (loop remainder))
                    (let* ((expression
                            (reduce (lambda (x y)
-                                     (list 'or x y))
+                                     (make <or> #:left x #:right y))
                                    '()
-                                   (delete-duplicates (map (compose .value .expression) shared-guards) om:equal?)))
+                                   (delete-duplicates (map (compose .expression) shared-guards) om:equal?)))
                           (statement (.statement (car guards)))
                           (aggregated-guard (make <guard>
-                                              #:expression (make <expression>
-                                                            #:value expression)
+                                              #:expression expression
                                               #:statement statement)))
                      (cons aggregated-guard (loop remainder)))))))))
      (($ <functions> (functions ...)) o)

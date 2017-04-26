@@ -49,7 +49,7 @@
 
 (define (ast-> ast)
   (let ((om ((om:register code:om #t) ast)))
-    (parameterize ((indenter (lambda () (indent 1))))
+    (parameterize ((code:indenter (lambda () (indent 1))))
       (map dump (filter (negate om:imported?) ((om:filter:p <model>) om)))))
   "")
 
@@ -91,7 +91,7 @@
 (define (dump-system o)
   (let ((name ((om:scope-name) o))
         (interfaces (map .type ((compose .elements .ports) o)))
-        (components (map code:import (map .type ((compose .elements .instances) o)))))
+        (components (map .type ((compose .elements .instances) o))))
     (dump-indented (symbol-append name (code:extension (make <interface>)))
                    (lambda ()
                      (c-file (c-header o) (code:module o))))

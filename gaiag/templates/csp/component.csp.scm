@@ -46,7 +46,7 @@ CO_#.scope_model _plain(IIG,IG) = let
 # (->string (map (lambda (x) (on->csp model (ast-transform model x))) (om:functions model)))
 #(behaviour-component->csp model)
 
-COMP = #.scope_model _(#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values model))))
+COMP = #.scope_model _(#(comma-space-join (om:member-values model)))
 within if (IIG) then COMP[[ill.x <- x | x <- extensions(ill)]] else COMP[|{|ill|}|]STOP  
 
 CO_#.scope_model _(IIG,IG) =

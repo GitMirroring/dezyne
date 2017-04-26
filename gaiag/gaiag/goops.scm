@@ -62,6 +62,7 @@
            .left
            .name
            .formals
+           .operator
            .port
            .ports
            .range
@@ -101,7 +102,6 @@
            <enum>
            <event>
            <events>
-           <expression>
            <extern>
            <field>
            <fields>
@@ -149,6 +149,29 @@
            <variable>
            <variables>
            <void>
+
+           <expression>
+           <bool-expr>
+           <data-expr>
+           <enum-expr>
+           <int-expr>
+           <void-expr>
+           <value>
+           <binary>
+           <unary>
+
+           <and>
+           <equal>
+           <greater-equal>
+           <greater>
+           <group>
+           <less-equal>
+           <less>
+           <minus>
+           <not-equal>
+           <not>
+           <or>
+           <plus>
            ))
 
 (define (.name o)
@@ -205,7 +228,15 @@
   (events #:getter .events #:init-form (make <events>) #:init-keyword #:events)
   (behaviour #:getter .behaviour #:init-value #f #:init-keyword #:behaviour))
 
+
+
 (define-class <type> (<scoped>))
+
+(define-class <enum> (<type>)
+  (fields #:getter .fields #:init-form (list) #:init-keyword #:fields))
+
+(define-class <extern> (<type>)
+  (value #:getter .value #:init-value #f #:init-keyword #:value))
 
 (define-class <bool> (<type>))
 (define-method (initialize (o <bool>) . initargs)
@@ -215,18 +246,31 @@
 (define-method (initialize (o <void>) . initargs)
   (next-method o (list #:name (make <scope.name> #:name 'void))))
 
+(define-class <int> (<type>)
+  (range #:getter .range #:init-form (make <range>) #:init-keyword #:range))
+
+(define-class <range> (<ast>)
+  (from #:getter .from #:init-value 0 #:init-keyword #:from)
+  (to #:getter .to #:init-value 0 #:init-keyword #:to))
+
 (define-class <signature> (<ast>)
   (type #:getter .type #:init-form (make <void>) #:init-keyword #:type)
   (formals #:getter .formals #:init-form (make <formals>) #:init-keyword #:formals))
+
+
+
+
+(define void-signature (make <signature>))
 
 (define-class <event> (<named>)
   (signature #:getter .signature #:init-form (make <signature>) #:init-keyword #:signature)
   (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
 
 (define-class <modeling-event> (<event>))
-(define-method (.direction (o <modeling-event>)) 'in)
-(define void-signature (make <signature>))
 (define-method (.signature (o <modeling-event>) void-signature))
+
+
+(define-method (.direction (o <modeling-event>)) 'in)
 
 (define-class <inevitable> (<modeling-event>))
 (define-method (.name (o <inevitable>)) 'inevitable)
@@ -252,25 +296,78 @@
 (define-method (.port.name (o <trigger>)) (and=> (.port o) .name))
 (define-method (.event.name (o <trigger>)) (and=> (.event o) .name))
 
-(define-class <expression> (<ast>)
+
+(define-class <expression> (<ast>))
+
+(define-class <value> (<expression>)
   (value #:getter .value #:init-value *unspecified* #:init-keyword #:value))
 
-(define-class <otherwise> (<expression>))
+(define-class <binary> (<expression>)
+  (left #:getter .left #:init-value *unspecified* #:init-keyword #:left)
+  (right #:getter .right #:init-value *unspecified* #:init-keyword #:right))
 
-(define-class <var> (<ast>)
+(define-class <unary> (<expression>)
+  (expression #:getter .expression #:init-expression *unspecified* #:init-keyword #:expression))
+
+(define-class <group> (<unary>))
+
+(define-class <bool-expr> (<expression>))
+(define-class <enum-expr> (<expression>))
+(define-class <int-expr> (<expression>))
+(define-class <data-expr> (<expression>))
+(define-class <void-expr> (<expression>))
+
+(define-class <not> (<unary> <bool-expr>))
+(define-class <and> (<binary> <bool-expr>))
+(define-class <equal> (<binary> <bool-expr>))
+(define-class <greater-equal> (<binary> <bool-expr>))
+(define-class <greater> (<binary> <bool-expr>))
+(define-class <less-equal> (<binary> <bool-expr>))
+(define-class <less> (<binary> <bool-expr>))
+(define-class <minus> (<binary> <int-expr>))
+(define-class <not-equal> (<binary> <bool-expr>))
+(define-class <or> (<binary> <bool-expr>))
+(define-class <plus> (<binary> <int-expr>))
+
+(define-method (.operator (o <binary>))
+  (assoc-ref
+   '((<and> . "&&")
+     (<equal> . "==")
+     (<greater-equal> . ">=")
+     (<greater> . ">")
+     (<less-equal> . "<=")
+     (<less> . "<")
+     (<minus> . "-")
+     (<not-equal> . "!=")
+     (<or> . "||")
+     (<plus> . "+")) (class-name (class-of o))))
+
+(define-class <data> (<data-expr>)
+  (value #:getter .value #:init-value #f #:init-keyword #:value))
+
+(define-class <var> (<expression>)
   (variable #:getter .variable #:init-value #f #:init-keyword #:variable))
 
 (define-method (.variable.name (o <var>)) (and=> (.variable o) .name))
 
-(define-class <field> (<ast>)
+(define-class <variable> (<named> <imperative> <expression>)
+  (type #:getter .type #:init-form #f #:init-keyword #:type)
+  (expression #:getter .expression #:init-form (make <expression>) #:init-keyword #:expression))
+
+(define-class <field> (<bool-expr>)
   (variable #:getter .variable #:init-value #f #:init-keyword #:variable)
   (field #:getter .field #:init-value #f #:init-keyword #:field))
 
-(define-class <literal> (<ast>)
+(define-method (.variable.name (o <field>)) (and=> (.variable o) .name))
+
+(define-class <literal> (<enum-expr>)
   (type #:getter .type #:init-value #f #:init-keyword #:type)
   (field #:getter .field #:init-value #f #:init-keyword #:field))
 
-(define-class <formal> (<named>)
+(define-class <otherwise> (<expression>) ;; FIXME: make <guard-otherwise/guard-else> instead
+  (value #:getter .value #:init-value *unspecified* #:init-keyword #:value))
+
+(define-class <formal> (<named> <expression>)
   (type #:getter .type #:init-form #f #:init-keyword #:type)
   (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
 
@@ -290,22 +387,6 @@
   (instances #:getter .instances #:init-form (make <instances>) #:init-keyword #:instances)
   (bindings #:getter .bindings #:init-form (make <bindings>) #:init-keyword #:bindings))
 
-(define-class <data> (<ast>)
-  (value #:getter .value #:init-value #f #:init-keyword #:value))
-
-(define-class <enum> (<type>)
-  (fields #:getter .fields #:init-form (list) #:init-keyword #:fields))
-
-(define-class <extern> (<type>)
-  (value #:getter .value #:init-value #f #:init-keyword #:value))
-
-(define-class <int> (<type>)
-  (range #:getter .range #:init-form (make <range>) #:init-keyword #:range))
-
-(define-class <range> (<ast>)
-  (from #:getter .from #:init-value 0 #:init-keyword #:from)
-  (to #:getter .to #:init-value 0 #:init-keyword #:to))
-
 (define-class <behaviour> (<named>)
   (types #:getter .types #:init-form (make <types>) #:init-keyword #:types)
   (ports #:getter .ports #:init-form (make <ports>) #:init-keyword #:ports)
@@ -318,7 +399,7 @@
   (recursive #:getter .recursive #:init-value #f #:init-keyword #:recursive)
   (statement #:getter .statement #:init-value #f #:init-keyword #:statement))
 
-(define-class <action> (<imperative>)
+(define-class <action> (<imperative> <expression>)
   (port #:getter .port #:init-value #f #:init-keyword #:port)
   (event #:getter .event #:init-value #f #:init-keyword #:event)
   (arguments #:getter .arguments #:init-form (make <arguments>) #:init-keyword #:arguments))
@@ -338,7 +419,7 @@
 
 (define-method (.variable.name (o <assign>)) (and=> (.variable o) .name))
 
-(define-class <call> (<imperative>)
+(define-class <call> (<imperative> <expression>)
   (function #:getter .function #:init-value #f #:init-keyword #:function)
   (arguments #:getter .arguments #:init-form (make <arguments>) #:init-keyword #:arguments)
   (last? #:getter .last? #:init-value #f #:init-keyword #:last?))
@@ -374,10 +455,6 @@
 
 (define-class <return> (<imperative>)
   (expression #:getter .expression #:init-value #f #:init-keyword #:expression))
-
-(define-class <variable> (<named> <imperative>)
-  (type #:getter .type #:init-form #f #:init-keyword #:type)
-  (expression #:getter .expression #:init-form (make <expression>) #:init-keyword #:expression))
 
 (define-class <bind> (<statement>)
   (left #:getter .left #:init-value #f #:init-keyword #:left)

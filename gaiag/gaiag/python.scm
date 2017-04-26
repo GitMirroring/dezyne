@@ -29,4 +29,4 @@
   #:export (ast->))
 
 (define (ast-> ast)
-  (parameterize ((indenter #f)) (ast:code ast)))
+  (parameterize ((code:indenter #f)) (ast:code ast)))

@@ -27,6 +27,7 @@
   #:use-module (srfi srfi-1)
 
   #:use-module (gaiag animate)
+  #:use-module (gaiag animate-code)
   #:use-module (gaiag c)
   #:use-module (gaiag code)
   #:use-module (gaiag command-line)

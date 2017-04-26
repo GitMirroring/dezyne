@@ -56,10 +56,10 @@ within sbisim(diamond(x))
 
 within compress((if CS
                 then #
-.scope_model _(#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values model))))
+.scope_model _(#(comma-space-join (om:member-values model)))
                [[cs_#.scope_model .x <- x | x <- extensions(cs_#.scope_model )]]
                 else (#
-.scope_model _(#(comma-space-join (map (lambda (x) (csp-expression->string model x '())) (om:member-values model)))) [|{|cs_#.scope_model |}|]STOP) #(optional-chaos model))
+.scope_model _(#(comma-space-join (om:member-values model))) [|{|cs_#.scope_model |}|]STOP) #(optional-chaos model))
                 
                [[x<-#.scope_model _in'.x|x<-extensions(#.scope_model _in')]] [|{|#.scope_model ,#.scope_model _in',#.scope_model _'',#.scope_model _'''.inevitable,#.scope_model _'''.optional|}|] REORDER' [[#.scope_model _out'.x<-x|x<-extensions(#.scope_model _out')]] \ {|#.scope_model _in',#.scope_model .the_end'|})
 

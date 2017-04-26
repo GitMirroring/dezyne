@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -39,12 +40,9 @@ interface IHandle {
       on hcalibrate:
       s = State.Calibrating;
       on operate:
-      {
-        [true]
-        illegal;
-        [true]
-        {}
-      }
+      illegal;
+      on operate:
+      {}
     }
     [s.Calibrating]
     {
@@ -53,11 +51,8 @@ interface IHandle {
       on hcalibrate:
       illegal;
       on operate:
-      {
-        [true]
-        illegal;
-        [true]
-        {}
+      illegal;
+      on operate:
       }
       on inevitable:
       {
@@ -70,31 +65,22 @@ interface IHandle {
       on stop:
       s = State.Lost;
       on hcalibrate:
-      {
-        [true]
-        illegal;
-        [true]
-        {}
-      }
+      illegal;
+      on hcalibrate:
+      {}
       on operate:
-      {
-        [true]
-        s = State.Operating;
-        [true]
-        finished;
-      }
+      s = State.Operating;
+      on operate:
+      finished;
     }
     [s.Operating]
     {
       on stop:
       s = State.Lost;
       on hcalibrate, operate:
-      {
-        [true]
-        illegal;
-        [true]
-        {}
-      }
+      illegal;
+      on hcalibrate, operate:
+      {}
       on inevitable:
       {
         s = State.Idle;

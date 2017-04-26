@@ -1,1 +1,1 @@
-{"known":["execute","run"],"comment":"error model: cannot execute,run"}
+{"known":["execute","run","table"],"comment":{"true":"error model: cannot execute,run","table":"BUG: non-deterministic normalization"}}

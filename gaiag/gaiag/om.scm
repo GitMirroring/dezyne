@@ -52,6 +52,8 @@
   #:use-module (gaiag reader)
 
   #:export (
+           ast:expression-type
+
            om:port*
 
            om:bind
@@ -133,6 +135,40 @@
 
 (define (deprecated . where)
   (stderr "DEPRECATED:~a\n" where))
+
+(define-method (ast:expression-type (o <ast>))
+  (match o
+    (($ <bool>) o)
+    (($ <enum>) o)
+    (($ <extern>) o)
+    (($ <int>) o)
+    (($ <void>) o)
+
+    (($ <literal>) (.type o))
+    (($ <var>) ((compose .type .variable) o))
+
+    ((? (is? <bool-expr>)) (make <bool>))
+    ((? (is? <data-expr>)) (make <extern>))
+    ((? (is? <enum-expr>)) (make <enum>))
+    ((? (is? <int-expr>)) (make <int>))
+    ((? (is? <void-expr>)) (make <void>))
+
+    ((and ($ <value>) (= .value o))
+     (match o
+       ((? number?) (make <int>))
+       ((or 'true 'false) (make <bool>))
+       ((? unspecified?) (make <void>))
+       (#f (make <void>))))
+
+    (($ <group>) (= (.expression o)) (ast:expression-type o))
+    ((? unspecified?) (make <void>))
+    (($ <expression>) (make <void>))
+
+    (($ <signature>) (.type o))
+    (($ <event>) ((compose ast:expression-type .signature) o))
+    (($ <trigger>) ((compose ast:expression-type .event) o))
+    ;; FIXME: async port only?
+    (($ <port>) ((compose ast:expression-type car om:events) o))))
 
 ;;; AST-LIST shorthands
 (define* (om:events- o #:optional (predicate? identity))
@@ -407,11 +443,11 @@
 (define (om:type-name o)
   (match o
     (($ <enum>) 'enum)
-    (($ <extern>) ((->symbol-join '_) (om:scope+name o)))
+    (($ <extern>) ((->symbol-join '_) (om:scope+name o))) ;; FIXME: -> 'data
     (($ <int>) 'int)
     (($ <bool>) 'bool)
     (($ <void>) 'void)
-    ;; FIXME
+    ;; FIXME: move to resolver
     (($ <type> 'bool) 'bool)
     (($ <type> 'void) 'void)))
 
@@ -452,7 +488,7 @@
 
 ;;; NAME/NAMESPACE/SCOPE
 (define (om:scope+name o)
-  ;;(stderr "om:scope+name o=~a\n" o)
+  ;; (stderr "om:scope+name o=~a\n" o)
   (match o
     (($ <scope.name>) (append (.scope o) (list (.name o))))
     (($ <instance> x name) (om:scope+name name))

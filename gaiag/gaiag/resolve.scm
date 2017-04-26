@@ -508,7 +508,7 @@
          (failure)))
 
     (('dotted (and (? var?) (get! variable)) (and (? (member-field? (variable)) (get! field))))
-     (make <field> #:variable (variable) #:field (field)))
+     (make <field> #:variable (var? (variable)) #:field (field)))
 
     (('dotted scope ... name field) (=> failure)
      (let ((enum (as (or (as-type (make <type> #:name (make <scope.name> #:scope scope #:name name)))
@@ -516,16 +516,20 @@
                      <enum>)))
        (if (not enum) (failure)
            (if (member field ((compose .elements .fields) enum))
-               (make <literal> #:type (.name enum) #:field field)
-               (and
-                (resolve-error o field "undefined enum field: ~a")
-                )))))
+               (make <literal> #:type enum #:field field)
+               (resolve-error o field "undefined enum field: ~a")))))
 
     (('dotted (? var?) field)
      (resolve-error o field "undefined enum field: ~a"))
 
-    (($ <expression> value)
-     (make <expression> #:value ((resolve model locals) value)))
+    ((and (? (is? <value>)) (= .value value))
+     (clone o #:value ((resolve model locals) value)))
+
+    ((and (? (is? <unary>)) (= .expression expression))
+     (clone o #:expression ((resolve model locals) expression)))
+
+    ((and (? (is? <binary>)) (= .left left) (= .right right))
+     (clone o #:left ((resolve model locals) left) #:right ((resolve model locals) right)))
 
     (('dotted t ...)
      (resolve-error o o "undefined dotted: ~a")

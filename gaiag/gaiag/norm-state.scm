@@ -89,7 +89,7 @@
   (match o
     (($ <guard>) o)
     (($ <on>) (if guard-seen? o
-                  (rsp o (make <guard> #:expression 'true #:statement o))))
+                  (rsp o (make <guard> #:expression (make <value> #:value 'true) #:statement o))))
     ((? (is? <ast>)) (om:map (prepend-true-guard guard-seen?) o))
     (_ o)))
 

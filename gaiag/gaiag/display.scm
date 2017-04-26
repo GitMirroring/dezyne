@@ -54,7 +54,9 @@
    (lambda (slot)
      (let* ((name (slot-definition-name slot))
             (value (slot-ref o name)))
-       (when (not (eq? value '()))
+       (when (and value
+                  (not (null? value))
+                  (not (eq? value *unspecified*)))
          (cond ((eq? name 'elements)
                 (if (pair? value)
                     (for-each (lambda (x) (sdisplay x port)) value)
@@ -91,15 +93,6 @@
 (define-method (display-ref (o <type>) port)
   (display (.name o) port)
   (ref port))
-
-(define-method (display-slots (o <expression>) port)
-  (let ((value (.value o)))
-    (cond ((eq? value *unspecified*)
-           (sdisplay "*unspecified*" port))
-          (else (sdisplay value port)))))
-
-(define-method (display-slots (o <return>) port)
-  (and=> (.expression o) (lambda (x) (sdisplay x port))))
 
 (define-method (write (o <ast>) port)
   (display "(" port)

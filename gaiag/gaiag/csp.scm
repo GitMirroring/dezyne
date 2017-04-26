@@ -370,24 +370,24 @@
      (list "cs_" ((om:scope-name) model) "." ((om:scope-name) model) "_'''?x:{|" (comma-join (delete-duplicates (map .event.name (modeling-triggers model)))) "|} -> illegal -> STOP\n")
      ")")))
 
-(define (csp-expression->string model src locals)
+(define (csp-expression->string model o locals)
   (define (member? identifier) (om:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
 
   (define (paren expression)
-    (let ((value (if (is-a? expression <expression>) (.value expression) expression)))
+    (let ((value (if (is-a? expression <value>) (.value expression) expression)))
       (if (or (number? value) (symbol? value) (as value <var>))
           (csp-expression->string model expression locals)
           (list "(" (csp-expression->string model expression locals) ")"))))
 
   (let* ((model-name ((om:scope-name) model))
          (model- (symbol-append model-name '_)))
-    (match src
+    (match o
       ((and ($ <var>) (= .variable.name identifier))
        (list (->string identifier)))
-      (($ <expression>) (csp-expression->string model (.value src) locals))
-      ((or (? number?) (? string?) (? symbol?)) (list src))
+      (($ <value>) (csp-expression->string model (.value o) locals))
+      ((or (? number?) (? string?) (? symbol?)) (list o))
       (($ <field> variable field)
        (let* ((type (.type variable))
               (name (om:name type)))
@@ -395,16 +395,21 @@
                (.name variable) " == " name "_" field ")")))
       ((and ($ <literal>) (= .type type) (= .field field))
        ((->symbol-join '_) `(,(.name (.name type)) ,field)))
-      (('group expression) (list "(" (csp-expression->string model expression locals) ")"))
-      (('! expression) (->string (list "(" "not " (paren expression) ")")))
-      (((or 'and 'or '== '!= '< '<= '> '>= '+ '-) lhs rhs)
-       (let ((lhs (csp-expression->string model lhs locals))
-             (rhs (csp-expression->string model rhs locals))
-             (op (car src)))
+      (($ <group> expression) (list "(" (csp-expression->string model expression locals) ")"))
+      (($ <not> expression) (->string (list "(" "not " (paren expression) ")")))
+      ((and (or ($ <and>) ($ <or>)) (= .left left) (= .right right))
+       (let ((left (csp-expression->string model left locals))
+             (right (csp-expression->string model right locals))
+             (op (ast-name (class-of o))))
+         (list "(" left " " op " " right ")")))
+      ((? (is? <binary>))
+       (let ((lhs (csp-expression->string model (.left o) locals))
+             (rhs (csp-expression->string model (.right o) locals))
+             (op (.operator o)))
          (list "(" lhs " " op " " rhs ")")))
       (($ <data> value) (list "false"))
       (*unspecified* #f)
-      (_ (throw 'match-error (format #f "~a:no match: ~a" (current-source-location) src))))))
+      (_ (throw 'match-error (format #f "~a:no match: ~a" (current-source-location) o))))))
 
 (define* (port-events port #:optional (predicate? identity)) ;; FIXME: no test
   (let ((interface (.type port)))
@@ -427,7 +432,7 @@
   (map (om:type model) (filter (lambda (x) (not (is-a? (.type x) <extern>))) (om:variables model))))
 
 (define (om:member-values model)
-  (map (compose .value .expression) (filter (lambda (x) (not (is-a? (.type x) <extern>))) (om:variables model))))
+  (map (compose (cut csp-expression->string model <> '()) .expression) (filter (lambda (x) (not (is-a? (.type x) <extern>))) (om:variables model))))
 
 (define (modeling-triggers o)
   (filter om:modeling? (om:find-triggers o)))
@@ -779,22 +784,10 @@
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
   (define (bool? identifier) (and (var? identifier) (is-a? (.type (var? identifier)) <bool>)))
+
   (define (expression-type o locals)
-    (match o
-      (($ <expression> expression) (expression-type expression locals))
-      (($ <literal>) 'enum)
-      ((and ($ <var>) (= .variable variable))
-       (let ((type (.type variable)))
-         (if (is-a? type <int>) 'int (om:name type))))
-      ((? number?) 'int)
-      ('false 'bool)
-      ('true 'bool)
-      (((or '+ '- '* '/) lhs rhs) 'int)
-      (((or 'or 'and '== '!= '< '<= '> '>=) lhs rhs) 'bool)
-      (('- _) 'int)
-      (('! _) 'bool)
-      ((? unspecified?) 'void)
-      (_ 'bool)))
+    (let ((type (ast:expression-type o)))
+      (om:type-name type)))
 
   (let* ((model (or (om:component model) (om:interface model)))
          (model-name ((om:scope-name) model))
@@ -1063,7 +1056,7 @@
           (($ <return> #f)
            (list (list "    " "P'(" (comma-space-join (om:member-names model)) ")\n" )))
 
-          (($ <return> ($ <expression> expression))
+          (($ <return> expression)
            (let ((expression (csp-expression->string model expression locals)))
              (list (list "    " "P'(" (comma-space-join (append (om:member-names model) (list expression)) ) ")\n" ))))
 
@@ -1083,7 +1076,7 @@
            (map (lambda (x) (on->csp model x inevitable-optional? channel provided-on? locals)) arguments))
 
           (($ <expression> (and ($ <call>) (get! call))) (on->csp model (call) inevitable-optional? channel))
-          (($ <expression>) (csp-expression->string model o locals))
+          ((? (is? <expression>)) (csp-expression->string model o locals))
 
           (($ <the-end>)
            (let ((component? (as model <component>)))

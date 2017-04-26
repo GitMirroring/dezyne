@@ -140,10 +140,6 @@
 
     (('events events ...) (make <events> #:elements (map ast->om- events)))
 
-    (('expression) (make <expression>))
-
-    (('expression expression) (make <expression> #:value (ast->om- expression)))
-
     (('field identifier field) (make <field> #:variable identifier #:field field))
 
     (('fields fields ...) (make <fields> #:elements fields))
@@ -290,16 +286,30 @@
     (('variables variables ...)
      (make <variables> #:elements (map ast->om- variables)))
 
-    (((? om:operator?) h t ...) (cons (car o) (map ast->om- (cdr o))))
-
     (('<- x y) (list '<- (ast->om- x) (ast->om- y)))
 
-    ((? number?) o)
+    ((or 'bool 'void) o)
 
-    ((? symbol?) o)
+    (('expression) (make <value>))
+    (('expression expression) (ast->om- expression))
+    (('! expression) (make <not> #:expression (ast->om- expression)))
+    (('group expression) (make <group> #:expression (ast->om- expression)))
 
-    ((? (is? <ast>)) o) ;; FIXME: csp.test:csp->om
-    ))
+    (('+ left right) (make <plus> #:left (ast->om- left) #:right (ast->om- right)))
+    (('- left right) (make <minus> #:left (ast->om- left) #:right (ast->om- right)))
+    (('< left right) (make <less> #:left (ast->om- left) #:right (ast->om- right)))
+    (('<= left right) (make <less-equal> #:left (ast->om- left) #:right (ast->om- right)))
+    (('== left right) (make <equal> #:left (ast->om- left) #:right (ast->om- right)))
+    (('!= left right) (make <not-equal> #:left (ast->om- left) #:right (ast->om- right)))
+    (('> left right) (make <greater> #:left (ast->om- left) #:right (ast->om- right)))
+    (('>= left right) (make <greater-equal> #:left (ast->om- left) #:right (ast->om- right)))
+    (('and left right) (make <and> #:left (ast->om- left) #:right (ast->om- right)))
+    (('or left right) (make <or> #:left (ast->om- left) #:right (ast->om- right)))
+    ;;(('expression (and (or (? number?) 'false 'true) (get! value))) (make <value> #:value (value)))
+    ((? number?) (make <value> #:value o))
+    ((? symbol?) (make <value> #:value o))
+
+    ((? (is? <ast>)) o)))
 
 (define ((mark-imported o) entry)
   (set-source-property! o 'imported? (cdr entry)))

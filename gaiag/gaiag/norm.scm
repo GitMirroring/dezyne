@@ -220,13 +220,8 @@
   (match o
     (($ <guard>)
      ((passdown-expression
-       (make <expression> #:value
-             (if (om:equal? (.value expression)
-                            (.value (.expression o)))
-                 (.value expression)
-                 (list 'and
-                       (.value expression)
-                       (.value (.expression o))))))
+       (if (om:equal? expression (.expression o)) expression
+                 (make <and> #:left expression #:right (.expression o))))
       (.statement o)))
     ((and ($ <compound> (statements ...)) (? om:declarative?))
      (let ((statements statements))
@@ -274,22 +269,16 @@
   (define (virgin-otherwise? x) (or (eq? x 'otherwise) (eq? x *unspecified*)))
   (match o
     (($ <guard> ($ <otherwise> value) statement) (=> failure)
-     (if (or (not (virgin-otherwise? value)) (null? statements))
-         (failure)
-         (retain-source-properties
-          o
-          (make <guard>
-            #:expression ((annotate-otherwise statements) (.expression o))
-            #:statement statement)))) ;; FIXME recurse?
+     (if (or (not (virgin-otherwise? value)) (null? statements)) (failure)
+         (clone o #:expression ((annotate-otherwise statements) (.expression o)))))
     (($ <otherwise>)
      (or (and-let* ((guards ((om:filter:p <guard>) statements))
-                    (value (.value (guards-not-or guards))))
+                    ;;(value (.value (guards-not-or guards))) ;; FIXME
+                    (value (guards-not-or guards)))
                    (make <otherwise> #:value value))
          o))
     (($ <compound> (statements ...))
-     (retain-source-properties
-      o (make <compound>
-          #:elements (map (annotate-otherwise statements) statements))))
+     (clone o #:elements (map (annotate-otherwise statements) statements)))
     (($ <skip>) o)
     ((? (is? <ast>)) (om:map (annotate-otherwise statements) o))
     (_ o)))
@@ -298,22 +287,14 @@
   (define (virgin-otherwise? x) (or (eq? x 'otherwise) (eq? x *unspecified*))) ;; FIXME *unspecified*
   (match o
     (($ <guard> ($ <otherwise> value) statement) (=> failure)
-     ;;(stderr "otherwise[~a] virgin? ~a\n" o (virgin-otherwise? value))
      (if (or (and keep-annotated?
                   (not (virgin-otherwise? value)))
              (null? statements))
          (failure)
-         (begin
-           ;;(stderr "REMOVING OTHERWISE: ~a\n" o)
-           ;;(stderr "STATEMENTS: ~a\n" statements)
-           ;;(stderr "STATEMENT: ~a\n" statement)
-           (retain-source-properties
-            o
-            (make <guard>
-              #:expression (guards-not-or statements)
-              #:statement ((remove-otherwise keep-annotated?) statement))))))
+         (clone o #:expression (guards-not-or statements)
+                #:statement ((remove-otherwise keep-annotated?) statement))))
     (($ <compound> (statements ...))
-     (rsp o (make <compound> #:elements (map (remove-otherwise keep-annotated? statements) statements))))
+     (clone o #:elements (map (remove-otherwise keep-annotated? statements) statements)))
     (($ <skip>) o)
     ((? (is? <ast>)) (om:map (remove-otherwise keep-annotated? statements) o))
     (_ o)))
@@ -321,14 +302,12 @@
 (define (guards-not-or o)
   (let* ((expressions (map .expression o))
          (others (remove (is? <otherwise>) expressions))
-         (values (map .value others))
          (expression (reduce (lambda (g0 g1)
-                               (if (equal? g0 g1) g0 (list 'or g0 g1)))
-                             '() values)))
+                               (if (equal? g0 g1) g0 (make <or> #:left g0 #:right g1)))
+                             '() others)))
     (match expression
-      (('! expression)
-       (make <expression> #:value expression))
-      (_ (make <expression> #:value (list '! expression))))))
+      (($ <not> expression) expression)
+      (_ (make <not> #:expression expression)))))
 
 (define* ((passdown-blocking #:optional (blocking? #f)) o)
   (define block? (lambda (x) blocking?))

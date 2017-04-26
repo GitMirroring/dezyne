@@ -110,14 +110,14 @@
                    ((=1 (length statements)))
                    (statement (car statements))
                    ((is-a? statement <guard>))
-                   (field ((compose .value .expression) statement))
+                   (field (.expression statement))
                    ((is-a? field <field>))
                    ((eq? (.name (.variable field)) '<state>))
                    ((eq? (.field field) '<Initial>)))
                   (make <compound>
                     #:elements (list
                                (make <guard>
-                                 #:expression (make <expression> #:value 'true)
+                                 #:expression (make <value> #:value 'true)
                                  #:statement (.statement statement)))))
         o)))
 
@@ -187,17 +187,16 @@
               (match (.type variable)
                 (($ <bool>)
                  (match field
-                   ('true (make <expression> #:value var))
-                   ('false (make <expression> #:value (list '! var)))))
-                (($ <int>) (make <expression> #:value (list '== var field)))
-                (_ (make <expression> #:value (make <field> #:variable variable #:field field))))))
+                   ('true (make <value> #:value var))
+                   ('false (make <not> #:expression var))))
+                (($ <int>) (make <equal> #:left var #:right field))
+                (_ (make <field> #:variable variable #:field field)))))
             (retain-source-properties
              (salvage-source-location model variable expression field o)
              (make <guard> #:expression expression #:statement statement))))
 
 (define (salvage-source-location model variable expression field o)
-  (let* ((expression2 (make <expression>
-                        #:value (list '== (make <var> #:variable variable) field)))
+  (let* ((expression2 (make <equal> #:left (make <var> #:variable variable) #:right field))
          (guards (filter (lambda (g)
                            (let ((e (.expression g)))
                              (and (source-location g)
@@ -256,14 +255,14 @@
     (($ <guard> expression1 ($ <guard> expression2 statement))
      (and-let*
       ((statement ((simplify model variable field) statement))
-       (value (simplify-literal model variable field (list 'and (.value expression1) (.value expression2))))
-       (expression (cond ((and (om:equal? (.value expression1) value)
+       (value (simplify-literal model variable field (make <and> #:left expression1 #:right expression2)))
+       (expression (cond ((and (om:equal? expression1 value)
                                (is-a? expression1 <otherwise>))
                           expression1)
-                         ((and (om:equal? (.value expression2) value)
+                         ((and (om:equal? expression2 value)
                                (is-a? expression2 <otherwise>))
                           expression2)
-                         (else (make <expression> #:value value))))
+                         (else (make <value> #:value value))))
        (guard (retain-source-properties o (make <guard> #:expression expression #:statement statement))))
       ((simplify model variable field) guard)))
 
@@ -271,12 +270,13 @@
      (and-let* ((value (simplify-literal model variable field expression))
                 (expression (if (is-a? value <otherwise>)
                                 value
-                                (make <expression> #:value value)))
+                                (make <value> #:value value)))
                 (statement ((simplify model variable field) statement)))
+       (stderr "expr=~a value=~a\n" expression value)
                (retain-source-properties
                 o
                 (match value
-                  (#t (if (om:declarative? statement)
+                  (#t (if #t;;(om:declarative? statement) FIXME...
                           statement
                           (make <guard> #:expression expression #:statement statement)))
                   (($ <literal>)
@@ -292,7 +292,7 @@
 
     (($ <if> expression then #f)
      (or (and-let* ((value (simplify-literal model variable field expression))
-                    (expression (make <expression> #:value value))
+                    (expression (make <value> #:value value))
                     (then ((simplify model variable field) then)))
                    (match value
                      (#t then)
@@ -302,7 +302,7 @@
 
     (($ <if> expression then else)
      (or (and-let* ((value (simplify-literal model variable field expression))
-                    (expression (make <expression> #:value value)))
+                    (expression (make <value> #:value value)))
                    (let ((then ((simplify model variable field) then))
                          (else ((simplify model variable field) else)))
                      (match value
@@ -310,7 +310,7 @@
                        (($ <literal>) (and (om:equal? value field) then))
                        (_ (retain-source-properties o (make <if> #:expression expression #:then then #:else else))))))
          (and-let* ((then ((simplify model variable field) else))
-                    (expression (list '! (.value expression))))
+                    (expression (make <not> #:expression expression)))
                    (retain-source-properties o (make <if> #:expression expression #:then then)))
          (make <compound>)))
 
