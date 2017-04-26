@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2015, 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
@@ -39,7 +39,7 @@ class main {
     #(string-if (eq? direction 'out) #{c.match("#port .#event ");#}
     #{c.match("#port .#event "); String tmp = c.match_return();
     dzn.Runtime.traceOut(c.system.#port .dzn_meta, tmp.Split('.')[1]); //System.Console.Error.WriteLine("");
-    return#(if (not (eq? reply-name 'void)) (list " dzn.container<" ((om:scope-name (string->symbol ".")) model) ">.string_to_value<" (cond ((equal? return-type "bool") 'bool) ((equal? return-type "int") 'int) (else (list (if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'dzn.global reply-scope) '. reply-name))) ">(tmp.Split('.')[1])"));#})
+    return#(if (not (eq? reply-name 'void)) (list " dzn.container<" ((om:scope-name (string->symbol "_")) model) ">.string_to_value<" (cond ((equal? return-type "bool") 'bool) ((equal? return-type "int") 'int) (else (list (if (or (null? reply-scope) (om:outer-scope? model reply-scope)) 'dzn.global reply-scope) '. reply-name))) ">(tmp.Split('.')[1])"));#})
   };
   #}) (filter (negate (om:dir-matches? port)) (om:events port))))
   (om:ports model))}
