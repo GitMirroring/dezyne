@@ -75,7 +75,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
          (model-opt (option-ref options 'model #f))
          (debug? (find (cut equal? <> "--debug") (command-line)))
          (command (string-append
-                   "PATH=bin:../bin:$PATH" ;; FIXME
+                   "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
                    " generate -l scm -L -o -"
                    (string-join imports " -I " 'prefix)
                    ;; Must NOT forward --model to generate: that will cut other models
