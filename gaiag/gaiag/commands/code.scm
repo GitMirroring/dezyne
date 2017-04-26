@@ -35,7 +35,8 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((depends) ;; FIXME
+          '((debug (single-char #\d))
+            (depends) ;; FIXME
             (glue (single-char #\g) (value #t))
             (calling-context (single-char #\c) (value #t))
             (gaiag (single-char #\G))
@@ -73,7 +74,8 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
   (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (model-opt (option-ref options 'model #f))
-         (debug? (find (cut equal? <> "--debug") (command-line)))
+         (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
+         (debug? (option-ref options 'debug #f))
          (command (string-append
                    "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
                    " generate -l scm -L -o -"
@@ -81,7 +83,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                    ;; Must NOT forward --model to generate: that will cut other models
                    ;; (if (not model-opt) "" (string-append " -m " model-opt))
                    " " file-name)))
-    (if debug? (stderr "command: ~a\n" command))
+    (if gdzn-debug? (stderr "command: ~a\n" command))
     (with-input-from-string (gulp-pipe command) read)))
 
 (define (file->ast options file-name)
@@ -98,7 +100,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
          (ast (file->ast options file-name))
          (module (resolve-module `(gaiag ,language)))
          (ast-> (module-ref module 'ast->))
-         (debug? (find (cut equal? <> "--debug") (command-line))))
-    (if debug? (stderr "AST:\n ~s\n" ast))
+         (gdzn-debug? (find (cut equal? <> "--debug") (command-line))))
+    (if gdzn-debug? (stderr "AST:\n ~s\n" ast))
     (ast-> ast)
     *unspecified*))
