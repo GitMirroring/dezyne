@@ -13,7 +13,7 @@
 (pass-if "annotate-first-dummy-test"
   #t)
 
-(define ast (read-ast "examples/loc.dzn"))
+(define ast (read-ast "gaiag/examples/loc.dzn"))
 
 (define locations
   '(locations
@@ -52,10 +52,9 @@
                 trigger
                 #f
                 e
-                (arguments)))
+                (formals)))
              ((location "examples/loc.dzn" 6 10 74 #f)
-              action
-              (trigger #f a (arguments)))))))
+              action a)))))
         ((location "examples/loc.dzn" 10 0 84 #f)
          component
          ((location "examples/loc.dzn" 10 10 94 #f)
@@ -84,15 +83,14 @@
                 trigger
                 i
                 e
-                (arguments)))
+                (formals)))
              ((location "examples/loc.dzn" 15 14 149 #f)
-              action
-              (trigger i a (arguments))))))))))
+              action i a))))))))
 
 (pass-if "annotate-extract"
   (pretty-noisy-equal?
-   ;;om-diff-noisy-equal?
-   (extract-locations (read-dzn "examples/loc.dzn"))
+   ;;diff-noisy-equal?
+   (extract-locations (read-dzn "gaiag/examples/loc.dzn"))
    locations))
 
 (pass-if "annotate-apply"

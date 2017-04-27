@@ -24,6 +24,7 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag ast2om)
   #:use-module (gaiag om)
+  #:use-module (gaiag resolve)
 
   #:use-module (gaiag reader)
 ;;  #:use-module (gaiag wfc)
@@ -52,8 +53,8 @@
                          behaviour
                          { [true] on a: [false] on a: b ;
                            } } #})))
-   (wfc-error '(on (triggers (trigger #f a))
-                   (action (trigger #f b)))
+   (wfc-error '(on (triggers (trigger #f a@))
+                   (action b@))
               "second on")))
 
 (pass-if "wfc-mixing-declarative-imperative"
@@ -68,7 +69,7 @@
                                 [true] on a: c ;
                                 b = true       ;
                                 } } #})))
-   (wfc-error '(assign b (expression true)) "mixing imperative")))
+   (wfc-error '(assign b@ (expression true)) "mixing imperative")))
 
 (pass-if "wfc-interface"
   (om-pretty-noisy-equal?

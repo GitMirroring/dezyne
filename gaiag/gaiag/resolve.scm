@@ -246,6 +246,9 @@
     (($ <variable> name (and (? (negate extern?)) (get! type)) ($ <expression> (? unspecified?)))
      (resolve-error o name "undefined variable value: ~a"))
 
+    (($ <variable> name (and (? (negate extern?)) (get! type)) ($ <value> (? unspecified?)))
+     (resolve-error o name "undefined variable value: ~a"))
+
     (($ <variable> name type expression) (=> failure)
      (or (and-let* ((e-type (fake:type model expression))
                     (v-type (as-type type))
@@ -357,13 +360,12 @@
                         #:event event
                         #:arguments ((resolve model locals) arguments)))))))
 
-    (($ <assign> variable
-        ($ <expression> ($ <call> (and (? event?) (get! event)))))
+    (($ <assign> variable ($ <call> (and (? event?) (get! event))))
      (make <assign>
        #:variable (var? variable)
        #:expression (make <action> #:event (event? event))))
 
-    (($ <assign> variable ($ <expression> (and ($ <call>) (get! call))))
+    (($ <assign> variable (and ($ <call>) (get! call)))
      (make <assign> 
        #:variable (var? variable)
        #:expression ((resolve model locals) (call))))
@@ -379,36 +381,42 @@
        #:variable (var? variable)
        #:expression ((resolve model locals) (call))))
 
-    (($ <assign> variable
-        ($ <expression> ($ <var> (and (? event?) (get! event)))))
+    (($ <assign> variable ('dotted (and (? event?) (get! event))))
      (make <assign>
        #:variable (var? variable)
        #:expression (make <action> #:event (event? event))))
 
-    (($ <assign> variable
-        ($ <expression> ($ <var> (and (? function?) (get! function)))))
+    (($ <assign> variable ($ <var> (and (? event?) (get! event))))
+     (make <assign>
+       #:variable (var? variable)
+       #:expression (make <action> #:event (event? event))))
+
+    (($ <assign> variable ('dotted (and (? function?) (get! function))))
      (make <assign>
        #:variable (var? variable)
        #:expression (make <call> #:function (function? (function)))))
 
-    (($ <assign> variable
-        ($ <expression> ('dotted (and (? port?) (get! port)) event)))
+    (($ <assign> variable ($ <var> (and (? function?) (get! function))))
+     (make <assign>
+       #:variable (var? variable)
+       #:expression (make <call> #:function (function? (function)))))
+
+    (($ <assign> variable ('dotted (and (? port?) (get! port)) event))
      (make <assign>
        #:variable (var? variable)
        #:expression ((resolve model locals) (make <action> #:port (port) #:event event))))
 
-    (($ <assign> variable ($ <expression> (and ($ <action>) (get! action))))
+    (($ <assign> variable (and ($ <action>) (get! action)))
      (make <assign>
        #:variable (var? variable)
        #:expression ((resolve model locals) (action))))
 
-    (($ <assign> variable
-        ($ <expression> ($ <var> (and (? function?) (get! function)))))
+    (($ <assign> variable ($ <var> (and (? function?) (get! function))))
      (make <assign>
        #:variable (var? variable)
        #:expression (make <call> #:function (function? (function)))))
 
-    (($ <assign> variable (and ($ <expression>) (get! expression)))
+    (($ <assign> variable (and ($ <value>) (get! expression)))
      (make <assign>
        #:variable (var? variable)
        #:expression ((resolve model locals) (expression))))
@@ -429,40 +437,43 @@
        #:name name
        #:type ((resolve model locals) type)))
 
-    (($ <variable> name type
-        ($ <expression> ($ <call> (and (? event?) (get! event)))))
+    (($ <variable> name type ($ <call> (and (? event?) (get! event))))
      (make <variable>
        #:name name
        #:type ((resolve model locals) type)
        #:expression (make <action> #:event (event? event))))
 
-    (($ <variable> name type ($ <expression> (and ($ <call>) (get! call))))
+    (($ <variable> name type ($ <value> (and ($ <call>) (get! call))))
      (make <variable>
        #:name name
        #:type ((resolve model locals) type)
        #:expression ((resolve model locals) (call))))
 
-    (($ <variable> name type
-        ($ <expression> ($ <var> (and (? event?) (get! event)))))
+    (($ <variable> name type ($ <value> ($ <var> (and (? event?) (get! event)))))
      (make <variable>
        #:type ((resolve model locals) type)
        #:name name
        #:expression (make <action> #:event (event? event))))
 
-    (($ <variable> name type ($ <expression> (and ($ <action>) (get! action))))
+    (($ <variable> name type ($ <value> (and ($ <action>) (get! action))))
      (make <variable>
        #:name name
        #:type ((resolve model locals) type)
        #:expression ((resolve model locals) (action))))
 
-    (($ <variable> name type ($ <expression> ('dotted (and (? port?) (get! port)) event)))
+    (($ <variable> name type ('dotted (and (? port?) (get! port)) event))
      (make <variable>
        #:name name
        #:type ((resolve model locals) type)
        #:expression ((resolve model locals) (make <action> #:port (port) #:event event))))
 
-    (($ <variable> name type
-        ($ <expression> ($ <var> (and (? function?) (get! function)))))
+    (($ <variable> name type ('dotted (and (? function?) (get! function))))
+     (make <variable>
+       #:name name
+       #:type ((resolve model locals) type)
+       #:expression (make <call> #:function (function? (function)))))
+
+    (($ <variable> name type ($ <var> (and (? function?) (get! function))))
      (make <variable>
        #:name name
        #:type ((resolve model locals) type)

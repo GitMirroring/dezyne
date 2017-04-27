@@ -239,7 +239,7 @@
           (let ((run-tests
                  (lambda ()
                    (for-each (lambda (test)
-                               (display (string-append "Running " test "\n"))
+                               (display (string-append "Running gaiag/" test "\n"))
                                (with-test-prefix test
                                                  (load (test-file-name test))))
                              tests))))

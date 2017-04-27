@@ -30,19 +30,19 @@
          (om:< '(a) '(b)))
 
 (pass-if "compare-trigger"
-         (om:< (make <trigger> #:event 'a)
-            (make <trigger> #:event 'b)))
+         (om:< (make <trigger> #:event (make <event> #:name 'a))
+               (make <trigger> #:event (make <event> #:name 'b))))
 
 (pass-if "compare-trigger"
-         (om:< (make <trigger> #:port 'a #:event 'b)
-            (make <trigger> #:port 'b #:event 'a)))
+         (om:< (make <trigger> #:port (make <port> #:name 'a) #:event (make <event> #:name 'a))
+            (make <trigger> #:port (make <port> #:name 'b) #:event (make <event> #:name 'b))))
 
 (pass-if "compare-on"
          (om:< (make <on>
               #:triggers (make <triggers>
                           #:elements
-                          (list (make <trigger> #:event 'a))))
+                          (list (make <trigger> #:event (make <event> #:name 'a)))))
             (make <on>
               #:triggers (make <triggers>
                           #:elements
-                          (list (make <trigger> #:event 'b))))))
+                          (list (make <trigger> #:event (make <event> #:name 'b)))))))

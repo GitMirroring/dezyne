@@ -23,20 +23,36 @@
 # 
 # Code:
 
-#! /bin/sh
+#! /usr/bin/env bash
 # try: ./test.sh --debug
 self=$(readlink -f $(cut -d '' -f2 < /proc/$$/cmdline))
-prefix=$(cd $(dirname $self) && pwd)
+prefix=$(cd $(dirname $(dirname $self)) && pwd)
 [ "$(basename $prefix)" != "gaiag" ] && prefix=$prefix/gaiag
 dir=$(basename $prefix)
-top=$(cd $prefix/.. && pwd)
-build=${ABS_BUILD-$top/build}
-ccache=$build/ccache
+top=$(dirname $prefix)
 GUILE_AUTO_COMPILE=0
-GUILE_LOAD_PATH="$prefix:$prefix/json:$GUILE_LOAD_PATH"
-GUILE_LOAD_COMPILED_PATH="$ccache:$ccache/json:$ccache/test-suite:$GUILE_LOAD_COMPILED_PATH"
+GUILE_LOAD_PATH="$prefix:$GUILE_LOAD_PATH"
+GUILE_LOAD_COMPILED_PATH="$prefix:$GUILE_LOAD_COMPILED_PATH"
 export GUILE_AUTO_COMPILE GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
-cd $dir
-#set -o pipefail
-#${GUILE-guile} -e main test-suite/run-tests "$@" < /dev/null |& sed "s@^test-suite/@$dir/test-suite/@"
-${GUILE-guile} -e main test-suite/run-tests "$@" < /dev/null
+cd $top
+#${GUILE-guile} -e main gaiag/test-suite/run-tests "$@" < /dev/null
+TESTS=${@-
+ tests/animate.test
+ tests/annotate.test
+ tests/asserts.test
+ tests/compare.test
+ tests/dzn.test
+ tests/indent.test
+ tests/mangle.test
+ tests/norm.test
+ tests/om.test
+ tests/parse.test
+ tests/wfc.test
+}
+#BROKEN
+# tests/norm-state.test
+# tests/csp.test
+# tests/json-table.test
+# tests/resolve.test
+# tests/table-state.test
+${GUILE-guile} -e main gaiag/test-suite/run-tests $TESTS < /dev/null

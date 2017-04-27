@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -653,7 +653,7 @@
     (if label
 	(begin
           (if (not (eq? result 'pass))
-              (format port "~a:~a:" (assoc-ref location 'filename) (1+ (assoc-ref location 'line))))
+              (format port "gaiag/~a:~a:" (assoc-ref location 'filename) (1+ (assoc-ref location 'line))))
 	  (display label port)
 	  (display ": " port)
 	  (display (format-test-name name) port)

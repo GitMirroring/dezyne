@@ -20,10 +20,10 @@
   )
 
 (define namespace-om
-  ((compose ast:resolve ast->om dzn->ast) 'test-suite/tests/namespace.dzn))
+  ((compose ast:resolve ast->om dzn->ast) 'gaiag/test-suite/tests/namespace.dzn))
 
 (define resolve-om
-  ((compose ast:resolve ast->om dzn->ast) 'test-suite/tests/resolve.dzn))
+  ((compose ast:resolve ast->om dzn->ast) 'gaiag/test-suite/tests/resolve.dzn))
 
 (define (resolve-namespace-interface)
   (om:find (is? <interface>) namespace-om))
@@ -65,26 +65,26 @@
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-interface)
-           '(on (triggers (trigger #f e (arguments)))
+           '(on (triggers (trigger #f foo (formals)))
                 (compound
-                 (action (trigger #f toggle (arguments))))))
-          '(on (triggers (trigger #f e (arguments)))
+                 (action #f toggle (arguments)))))
+          '(on (triggers (trigger #f foo@ (formals)))
                (compound
-                (call toggle (arguments) #f)))))
+                (call toggle@ (arguments) #f)))))
 
 (pass-if "ast:resolve-variable-valued-function-call"
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-interface)
-           '(root (variable e (type (dotted ivar e)) (expression (var efun)))))
-          '(root (variable e (type (scope.name (ivar) e)) (call efun (arguments) #f)))))
+           '(root (variable e (type (dotted ivar e)) (expression (dotted efun)))))
+          '(root (variable e ivar.e@ (call efun@ (arguments) #f)))))
 
 (pass-if "ast:resolve-assign-valued-function-call"
          (om-pretty-noisy-equal?
           (ast:resolve*
            (resolve-interface)
-           '(assign m (expression (var efun))))
-          '(assign m (call efun (arguments) #f))))
+           '(assign m (expression (dotted efun))))
+          '(assign m@ (call efun@ (arguments) #f))))
 
 (pass-if "ast:resolve-variable-valued-action"
          (om-pretty-noisy-equal?
@@ -96,7 +96,7 @@
                  (variable e (type (dotted ivar e)) (expression (dotted o foo))))))
           '(on (triggers (trigger o foo (arguments)))
                (compound
-                (variable e (type (scope.name (ivar) e)) (action (trigger o foo (arguments))))))))
+                (variable e ivar.e@ (action o@ foo@ (arguments)))))))
 
 (pass-if "ast:resolve-variable-valued-action-arguments"
          (om-pretty-noisy-equal?
@@ -365,18 +365,18 @@
           '(compound
             (variable i (type (scope.name (ivar) xint)) (expression (data 0))))))
 
-(pass-if "ast:resolve-extern-on"
-         (om-pretty-noisy-equal?
-          (ast:resolve*
-           (resolve-component)
-           '(on (triggers
-                 (trigger i ei (arguments (expression (var i)))))
-                (compound
-                 (assign i (expression (data #{0 + 1}#))))))
-           '(on (triggers
-                 (trigger i ei (arguments (expression (var i)))))
-                (compound
-                 (assign i (expression (data #{0 + 1}#)))))))
+;; (pass-if "ast:resolve-extern-on"
+;;          (om-pretty-noisy-equal?
+;;           (ast:resolve*
+;;            (resolve-component)
+;;            '(on (triggers
+;;                  (trigger i ei (formals (dotted i))))
+;;                 (compound
+;;                  (assign i (data #{0 + 1}#))))
+;;            '(on (triggers
+;;                  (trigger i ei (formals (expression (var i)))))
+;;                 (compound
+;;                  (assign i (data #{0 + 1}#)))))))
 
 (pass-if "ast:resolve-recursive"
          (om-pretty-noisy-equal?

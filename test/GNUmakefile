@@ -29,7 +29,7 @@ DZN:=../client/bin/dzn
 check: prerequisite
 	bin/test -j16 hello
 	bin/test -j16 check
-	bin/test view view
+#	bin/test view view
 
 regression: prerequisite
 	bin/test -j16 regression-test

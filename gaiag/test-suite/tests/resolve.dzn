@@ -47,7 +47,11 @@ interface ivar {
     }
 
     on foo:
-    reply(e.v);
+      {
+        e x = efun; 
+        reply(e.v);
+        }
+    
   }
 }
 

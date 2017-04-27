@@ -100,7 +100,7 @@
      (make <return>
        #:expression (csp->om expression)))
     (('literal name field)
-     (make <literal> #:name (ast->om name) #:field field))
+     (make <literal> #:type (ast->om name) #:field field))
     (('variable name type expression)
      (make <variable>
        #:name name
@@ -176,12 +176,12 @@ interface i
 
 (define ast-return-ast
   '(compound
-    (on (triggers (trigger #f e (arguments)))
+    (on (triggers (trigger #f e (formals)))
         (compound))))
 
 (define csp-return-ast
   '(on
-    (triggers (trigger #f e (arguments)))
+    (triggers (trigger #f e (formals)))
     (compound (voidreply))))
 
 (pass-if "ast-transform-return-return"
@@ -191,7 +191,7 @@ interface i
           (ast-transform-return* i-ast ast-return-ast)
 
           ;; via:
-          '(on (triggers (trigger #f e (arguments)))
+          '(on (triggers (trigger #f e (formals)))
                (compound (voidreply)))))
 
 (pass-if "ast-transform-return"
@@ -218,7 +218,7 @@ i_(s,b,c)
 )"))
 
 (define on->csp-return-reply
-  '(on (triggers (trigger #f f (arguments)))
+  '(on (triggers (trigger #f f (formals)))
        (compound
         (reply (expression (literal (scope.name (i) Status) Yes)) #f))))
 
@@ -229,7 +229,7 @@ i_(s,b,c)
           (ast-transform-return*
            i-ast
            '(compound
-             (on (triggers (trigger #f f (arguments)))
+             (on (triggers (trigger #f f (formals)))
                  (reply (expression (literal (scope.name (i) Status) Yes)) #f))))
 
           ;; via:
@@ -254,7 +254,7 @@ i_(s,b,c)
 
 (define on->csp-reply-via
   '(on
-      (triggers (trigger #f f (arguments)))
+      (triggers (trigger #f f (formals)))
       (compound
        (reply (expression (literal (scope.name (i) Status) Yes)) #f))))
 
@@ -265,7 +265,7 @@ i_(s,b,c)
           (ast-transform*
            i-ast
            '(compound
-             (on (triggers (trigger #f f (arguments)))
+             (on (triggers (trigger #f f (formals)))
                  (reply (expression (literal (scope.name (i) Status) Yes)) #f))))
 
           ;; via:
@@ -273,7 +273,7 @@ i_(s,b,c)
 
 (define on->csp-compound-reply-via
   '(on
-    (triggers (trigger #f e (arguments)))
+    (triggers (trigger #f e (formals)))
     (compound
      (reply (expression (literal (scope.name (i) Status) Yes)) #f)
      (voidreply))))
@@ -287,7 +287,7 @@ i_(s,b,c)
            i-ast
 
            '(compound
-             (on (triggers (trigger #f e (arguments)))
+             (on (triggers (trigger #f e (formals)))
                  (compound
                   (reply (expression (literal (scope.name (i) Status) Yes)) #f)))))
 
@@ -321,10 +321,10 @@ i_(s,b,c)
 
            i-ast
 
-           '(action (trigger #f h (arguments))))
+           '(action #f h (arguments)))
 
           ;; via:
-          (ast->om '(action (trigger #f h (arguments))))))
+          (ast->om '(action #f h (arguments)))))
 
 (pass-if "on->csp-action"
          (diff-noisy-equal?
@@ -334,9 +334,9 @@ i_(s,b,c)
 
            i-ast
 
-           '(on (triggers (trigger #f e (arguments)))
+           '(on (triggers (trigger #f e (formals)))
                     (compound
-                     (action (trigger #f h (arguments)))
+                     (action #f h (arguments))
                      (return))))
 
           ;; via:

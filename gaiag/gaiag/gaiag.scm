@@ -40,8 +40,12 @@
 
 
 (define (parse-opts args)
-  (define (interactive?) (let ((program (car (command-line))))
-                           (string-suffix? "guile" program)))
+  (define (interactive?)
+    (let ((program (car (command-line))))
+      (string-suffix? "guile" program)))
+  (define (test-suite?)
+    (let ((program (car (command-line))))
+      (string-suffix? "run-tests" program)))
   (let* ((option-spec
 	  '((assert (single-char #\a))
             (calling-context (single-char #\c) (value #t))
@@ -68,6 +72,7 @@
 	 (version? (option-ref options 'version #f)))
     (or
      (interactive?)
+     (test-suite?)
      (and version?
 	  (stdout "0.1\n"))
      (and (or help? usage?)

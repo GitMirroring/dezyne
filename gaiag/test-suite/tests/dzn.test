@@ -61,14 +61,15 @@ interface i {
 (pass-if "dzn-provides"
   (let ((dzn #{
 interface Interface {
+  in void e();
   behaviour {
   }
 }
 
 component c {
-  provides Interface identifier;
+  provides Interface i;
   behaviour {
-    on i.a():
+    on i.e():
        illegal;
   }
 }

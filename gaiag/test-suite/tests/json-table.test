@@ -52,7 +52,7 @@ interface I
          (pretty-noisy-equal?
           (json-callback
            i-ast
-           (make <action> #:trigger (make <trigger> #:event 'e)))
+           (make <action> #:trigger (make <trigger> #:event (make <event> #:name 'e))))
           '("<span class=\"event\">e</span>;\n")))
 
 (pass-if "json-table-json-callback-if"
@@ -60,8 +60,8 @@ interface I
           (json-callback
            i-ast
            (make <if>
-             #:then (make <action> #:trigger (make <trigger> #:event 'e))
-             #:else (make <action> #:trigger (make <trigger> #:event 'f))))
+             #:then (make <action> #:trigger (make <trigger> #:event (make <event> #:name 'e)))
+             #:else (make <action> #:trigger (make <trigger> #:event (make <event> #:name 'f)))))
           '("<span class=\"event\">e</span>;\n"
             "<span class=\"event\">f</span>;\n")))
 
@@ -70,8 +70,8 @@ interface I
           (json-callback
            i-ast
            (make <if>
-             #:then (make <action> #:trigger (make <trigger> #:event 'e))
-             #:else (make <action> #:trigger (make <trigger> #:event 'e))))
+             #:then (make <action> #:trigger (make <trigger> #:event (make <event> #:name 'e)))
+             #:else (make <action> #:trigger (make <trigger> #:event (make <event> #:name 'e)))))
           '("<span class=\"event\">e</span>;\n"
             "<span class=\"event\">e</span>;\n")))
 
