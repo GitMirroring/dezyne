@@ -37,6 +37,7 @@
   #:use-module (gaiag util)
 
   #:use-module (gaiag animate)
+  #:use-module (gaiag animate-code)
   #:use-module (gaiag command-line)
   #:use-module (gaiag indent)
   #:use-module (gaiag misc)
@@ -736,43 +737,6 @@
 (define-template x:check-bindings-list (lambda (o) ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports o)))))
 
 (define-template x:interface-include om:ports)
-(define-template x:component-include om:instances)
-
-(define-template x:instance-type (lambda (o) (ast:scope+name (.type o))))
-
-(define-template x:meta-child om:instances 'meta-child-infix)
-
-(define-template x:injected-instance-initializer (lambda (o) (if (null? (injected-bindings o)) ""
-                                                                o)))
-
-(define-template x:non-injected-instance-initializer non-injected-instances)
-
-(define-template x:injected-binding-initializer (lambda (o) (injected-bindings o)))
-
-(define-template x:bind-connect (lambda (o) (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) o)))))
-
-(define-template x:bind-provided code:bind-provided)
-(define-template x:bind-required code:bind-required)
-
-(define-method (code:bind-provided-required (o <bind>))
-  (let* ((model ((ast:model) o))
-         (left (.left o))
-         (left-port (om:port model left))
-         (right (.right o))
-         (right-port (om:port model right)))
-    (if (om:provides? left-port)
-                                (cons left right)
-                                (cons right left))))
-
-(define-method (code:bind-provided (o <bind>))
-  ((compose car code:bind-provided-required) o))
-
-(define-method (code:bind-required (o <bind>))
-  ((compose cdr code:bind-provided-required) o))
-
-(define-template x:binding-name (lambda (o) (binding-name ((ast:model) o) o)))
-
-(define-template x:system-port-connect (lambda (o) (filter (negate om:port-bind?) ((compose .elements .bindings) o))))
 
 (define-template x:in-event-definer (lambda (o) (filter om:in? (om:events o))) 'event-definer-infix)
 (define-template x:out-event-definer (lambda (o) (filter om:out? (om:events o))) 'event-definer-infix)
@@ -852,6 +816,72 @@
 (define-template x:stream-member om:variables 'stream-comma-infix)
 (define-template x:method-declare code:ons)
 (define-template x:function-declare code:functions)
+
+;; header-system
+
+(define-template x:meta-child om:instances 'meta-child-infix)
+(define-template x:component-include om:instances)
+
+(define-template x:provided-port-reference-declare (lambda (o) (filter om:provides? (om:ports o))))
+(define-template x:required-port-reference-declare (lambda (o) (filter om:requires? (om:ports o))))
+
+(define-template x:injected-instance-declare code:injected-instances)
+(define-template x:injected-binding-declare injected-bindings)
+(define-template x:non-injected-instance-declare non-injected-instances)
+
+(define-template x:type code:x:type)
+(define-method (ast:scope+name-:: (o <scope.name>))
+  (string-join (map symbol->string (om:scope+name o)) "::"))
+(define-method (code:x:type (o <bind>))
+  ((compose ast:scope+name-:: .type (cut om:instance ((ast:model) o) <>) injected-instance-name) o))
+
+(define-method (code:x:type (o <instance>))
+  (ast:scope+name-:: (.type o)))
+
+(define-template x:name code:x:name)
+(define-method (code:x:name (o <bind>))
+  (injected-instance-name o))
+
+(define-method (ast:scope+name (o <instance>))
+  ((compose ast:scope+name (cut om:component ((ast:model) o) <>)) o))
+
+;; source-system
+(define-template x:meta-child om:instances 'meta-child-infix)
+(define-template x:injected-instance-initializer code:injected-instances)
+
+(define-method (code:injected-instances (o <system>))
+  (if (null? (injected-bindings o)) ""
+      o))
+
+(define-template x:non-injected-instance-initializer non-injected-instances)
+(define-template x:injected-binding-initializer injected-bindings)
+(define-template x:bind-connect code:non-injected-bindings)
+
+(define-method (code:non-injected-bindings (o <system>))
+  (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) o))))
+
+(define-template x:bind-provided code:bind-provided)
+(define-template x:bind-required code:bind-required)
+
+(define-method (code:bind-provided-required (o <bind>))
+  (let* ((model ((ast:model) o))
+         (left (.left o))
+         (left-port (om:port model left))
+         (right (.right o))
+         (right-port (om:port model right)))
+    (if (om:provides? left-port)
+                                (cons left right)
+                                (cons right left))))
+
+(define-method (code:bind-provided (o <bind>))
+  ((compose car code:bind-provided-required) o))
+
+(define-method (code:bind-required (o <bind>))
+  ((compose cdr code:bind-provided-required) o))
+
+(define-template x:binding-name (lambda (o) (binding-name ((ast:model) o) o)))
+
+(define-template x:system-port-connect (lambda (o) (filter (negate om:port-bind?) ((compose .elements .bindings) o))))
 
 ;; main-component
 (define code:reply-scope+name ast:scope+name)
@@ -1014,7 +1044,7 @@
               (x:pand 'source-interface (module-ref module 'model) module))
              ((member file-name '(Xsystem.cc.scm))
               (x:pand 'source-system (module-ref module 'model) module))
-             ((member file-name '(Xsystem.hh.scm))
+             ((member file-name '(system.hh.scm))
               (x:pand 'header-system (module-ref module 'model) module))
              ((member file-name '(main.cc.scm))
               (x:pand 'main-component (module-ref module 'model) module))

@@ -5,14 +5,14 @@
 
 #(map (lambda (x) (list " namespace " x " {\n")) (om:scope model))
 namespace skel {
-#.model ::#.model (const dzn::locator& dezyne_locator)
+#.model ::#.model (const dzn::locator& dzn_locator)
 : dzn_meta("","#.model",0)
-, dzn_rt(dezyne_locator.get<dzn::runtime>())
-, #((->join  "\n, ") (map (lambda (port) (list (.name port) (if (.injected port) (list "(dezyne_locator.get<" ((c++:scope-name) (.type port)) ">())") "(dzn::port::meta())"))) (om:ports model)))
+, dzn_rt(dzn_locator.get<dzn::runtime>())
+, #((->join  "\n, ") (map (lambda (port) (list (.name port) (if (.injected port) (list "(dzn_locator.get<" ((c++:scope-name) (.type port)) ">())") "(dzn::port::meta())"))) (om:ports model)))
 , #
 ((->join  "\n, ")
  (append
-  (list "dzn_locator(dezyne_locator)")
+  (list "dzn_locator(dzn_locator)")
   (map (init-member model #{
 #name(#(if (not (eq? expression *unspecified*)) expression))#}) (om:variables model))))
 {

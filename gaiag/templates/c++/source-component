@@ -5,10 +5,10 @@
 ##include <dzn/pump.hh>
 
 #x:open-namespace
-#x:model-name ::#x:model-name(const dzn::locator& dezyne_locator)
+#x:model-name ::#x:model-name(const dzn::locator& dzn_locator)
 : #x:meta
-, dzn_rt(dezyne_locator.get<dzn::runtime>())
-, dzn_locator(dezyne_locator)
+, dzn_rt(dzn_locator.get<dzn::runtime>())
+, dzn_locator(dzn_locator)
 #x:variable-member-initializer
 #x:injected-member-initializer
 #x:provided-member-initializer

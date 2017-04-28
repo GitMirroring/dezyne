@@ -1,0 +1,26 @@
+##ifndef #x:upcase-model-name _HH
+##define #x:upcase-model-name _HH
+
+##include <iostream>
+##include <dzn/locator.hh>
+
+#x:component-include
+#x:interface-include
+
+#x:open-namespace
+struct #x:model-name
+{
+  dzn::meta dzn_meta;
+  dzn::runtime& dzn_rt;
+  dzn::locator const& dzn_locator;
+  #x:injected-binding-declare
+  #x:injected-instance-declare
+  #x:non-injected-instance-declare
+  #x:provided-port-reference-declare
+  #x:required-port-reference-declare
+  #x:model-name (const dzn::locator&);
+  void check_bindings() const;
+  void dump_tree(std::ostream& os=std::clog) const;
+};
+#x:close-namespace
+##endif // #x:upcase-model-name _HH

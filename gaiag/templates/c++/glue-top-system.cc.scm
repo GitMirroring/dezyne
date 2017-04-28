@@ -116,12 +116,12 @@ void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded> st)
 }
 };
 
-dzn::locator dezyne_locator;
-dzn::runtime dezyne_runtime;
+dzn::locator dzn_locator;
+dzn::runtime dzn_runtime;
 
 boost::shared_ptr<#(om:name (om:port model)) Interface> #.model Component::GetInstance ()
 {
-  dezyne_locator.set(dezyne_runtime);
-  return boost::make_shared<#.model Glue> (dezyne_locator);
+  dzn_locator.set(dzn_runtime);
+  return boost::make_shared<#.model Glue> (dzn_locator);
 }
 void #.model Component::ReleaseInstance () {}

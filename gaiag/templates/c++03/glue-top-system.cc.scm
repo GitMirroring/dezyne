@@ -12,8 +12,8 @@
 struct #.model Glue
 : public #.model Component
 {
-  dzn::runtime dezyne_runtime;
-  dzn::locator dezyne_locator;
+  dzn::runtime dzn_runtime;
+  dzn::locator dzn_locator;
  #((c++:scope-name) model)  component;
 
 #(define (api port) (->string (list ((om:scope-name) port) "_API")))#
@@ -60,7 +60,7 @@ struct #.model Glue
 boost::shared_ptr<asd::channels::ISingleThreaded> st;
 
 #.model Glue ()
-: component(dezyne_locator.set(dezyne_runtime))
+: component(dzn_locator.set(dzn_runtime))
 #(map (lambda (interface)
         (let ((port-name (.name (om:port model))))
           (list ", api_" interface
