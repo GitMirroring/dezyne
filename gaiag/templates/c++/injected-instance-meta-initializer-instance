@@ -1,0 +1,3 @@
+#.name .dzn_meta.parent = &dzn_meta;
+#.name .dzn_meta.name = "#.name";
+#.name .#x:port-name .meta.requires.port = "#x:port-name";

@@ -673,7 +673,9 @@
     (if (is-a? (ast:expression-type expression) <void>) ""
         o)))
 
-(define-template x:port-name (lambda (o) ((compose .name .port car .elements .triggers) o)))
+(define-template x:port-name code:port-name)
+(define-method (code:port-name (o <on>))
+  ((compose .name .port car .elements .triggers) o))
 
 (define-template x:block identity)
 (define-template x:port-release (lambda (o) (if (om:blocking-compound? ((ast:model) o)) o "")))
@@ -730,6 +732,7 @@
 ;; FIXME: all/vs requires
 (define-template x:all-ports-meta-list om:ports 'meta-infix)
 
+;; FIXME => x:required-ports-meta-list
 (define-template x:ports-meta-list (lambda (o) (filter om:requires? (om:ports o))) 'meta-infix)
 
 ;;(define-template x:ports-meta-list (lambda (o) (comma-join (map (lambda (port) (list "&" (.name port) ".meta")) (filter om:requires? (om:ports o))))))
@@ -768,16 +771,11 @@
 (define asd? #f) ;; FIXME: asd glue
 (define-template x:asd-voidreply (lambda (o) (if asd? "__ASD_VoidReply, " "")))
 
-(define-method (.name.name (o <enum>))
-  (symbol->string ((compose .name .name) o)))
-(export .name.name)
+(define ((symbol->enum-field enum) o)
+  (make <enum-field> #:type enum #:field o))
 
 (define-method (.type.name (o <enum-field>))
   (symbol->string ((compose .name .name .type) o)))
-(export .type.name)
-
-(define ((symbol->enum-field enum) o)
-  (make <enum-field> #:type enum #:field o))
 
 (define-template x:enum-field-definer (lambda (o) (map (symbol->enum-field o) ((compose .elements .fields) o))) 'comma-infix)
 
@@ -819,15 +817,20 @@
 
 ;; header-system
 
-(define-template x:meta-child om:instances 'meta-child-infix)
+(define-template x:meta-child code:instances 'meta-child-infix)
+(define-method (code:instances (o <component>))
+  '())
+(define-method (code:instances (o <system>))
+  (om:instances o))
 (define-template x:component-include om:instances)
 
 (define-template x:provided-port-reference-declare (lambda (o) (filter om:provides? (om:ports o))))
 (define-template x:required-port-reference-declare (lambda (o) (filter om:requires? (om:ports o))))
 
-(define-template x:injected-instance-declare code:injected-instances)
+(define-template x:injected-instance-declare code:injected-instances-system)
 (define-template x:injected-binding-declare injected-bindings)
 (define-template x:non-injected-instance-declare non-injected-instances)
+(define-template x:system-rank ast:provided)
 
 (define-template x:type code:x:type)
 (define-method (ast:scope+name-:: (o <scope.name>))
@@ -847,15 +850,42 @@
 
 ;; source-system
 (define-template x:meta-child om:instances 'meta-child-infix)
+(define-template x:injected-instance-system-initializer code:injected-instances-system)
 (define-template x:injected-instance-initializer code:injected-instances)
 
-(define-method (code:injected-instances (o <system>))
+(define-method (code:injected-instances-system (o <system>))
   (if (null? (injected-bindings o)) ""
       o))
 
+(define-method (code:injected-instances (o <system>))
+  (if (null? (injected-bindings o)) ""
+      (injected-instances o)))
+
+(define-method (code:port-name (o <instance>)) ;; MORTAL SIN HERE!!?
+  (.name (om:port (om:component ((ast:model) o) o))))
+
+(define-template x:component-port code:component-port)
+(define-template x:provided-port-reference-initializer ast:provided)
+(define-template x:required-port-reference-initializer ast:required)
 (define-template x:non-injected-instance-initializer non-injected-instances)
 (define-template x:injected-binding-initializer injected-bindings)
+(define-template x:instance-initializer om:instances)
 (define-template x:bind-connect code:non-injected-bindings)
+
+(define-template x:injected-instance-meta-initializer injected-instances)
+(define-template x:non-injected-instance-meta-initializer non-injected-instances)
+
+(define-template x:dzn-locator code:dzn-locator)
+
+(define-method (code:dzn-locator (o <instance>)) ;; MORTAL SIN HERE!!?
+  (let* ((model ((ast:model) o)))
+    (if (null? (injected-bindings model)) ""
+        "_local")))
+
+(define-method (code:component-port (o <port>)) ;; MORTAL SIN HERE!!?
+  (let* ((model ((ast:model) o))
+         (bind (om:port-bind model (.name o))))
+    (om:instance-binding? bind)))
 
 (define-method (code:non-injected-bindings (o <system>))
   (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) o))))
@@ -1042,7 +1072,8 @@
               (x:pand 'header-component (module-ref module 'model) module))
              ((member file-name '(interface.hh.scm))
               (x:pand 'source-interface (module-ref module 'model) module))
-             ((member file-name '(Xsystem.cc.scm))
+             ((and (member file-name '(system.cc.scm))
+                   (not (member (language) '(c++03 c++-msvc11))))
               (x:pand 'source-system (module-ref module 'model) module))
              ((member file-name '(system.hh.scm))
               (x:pand 'header-system (module-ref module 'model) module))

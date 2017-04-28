@@ -1,0 +1,31 @@
+##include "#x:scoped-model-name .hh"
+
+##include <dzn/runtime.hh>
+
+#x:open-namespace
+#x:model-name ::#x:model-name(const dzn::locator& dzn_locator)
+: #x:meta
+, dzn_rt(dzn_locator.get<dzn::runtime>())
+, dzn_locator(dzn_locator)
+#x:injected-instance-initializer
+#x:injected-instance-system-initializer
+#x:non-injected-instance-initializer
+#x:provided-port-reference-initializer
+#x:required-port-reference-initializer
+{
+  #x:injected-instance-meta-initializer
+  #x:non-injected-instance-meta-initializer
+
+  #x:system-port-connect
+  #x:system-rank
+}
+
+void #x:model-name ::check_bindings() const
+{
+  dzn::check_bindings(&dzn_meta);
+}
+void #x:model-name ::dump_tree(std::ostream& os) const
+{
+  dzn::dump_tree(os, &dzn_meta);
+}
+#x:close-namespace

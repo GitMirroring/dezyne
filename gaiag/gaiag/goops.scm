@@ -36,6 +36,8 @@
            .event.name
            .event.direction
            .variable.name
+           .name.name
+           .type.name
            .function.name
            ast:inevitable
            ast:optional
@@ -234,6 +236,9 @@
 
 (define-class <enum> (<type>)
   (fields #:getter .fields #:init-form (list) #:init-keyword #:fields))
+
+(define-method (.name.name (o <enum>))
+  (symbol->string ((compose .name .name) o)))
 
 (define-class <extern> (<type>)
   (value #:getter .value #:init-value #f #:init-keyword #:value))
@@ -466,6 +471,8 @@
 
 (define-class <instance> (<named> <statement>)
   (type #:getter .type #:init-form (make <scope.name>) #:init-keyword #:type))
+
+(define-method (.type.name (o <instance>)) (and=> (.type o) .name))
 
 (define-class <error> (<ast>)
   (ast #:getter .ast #:init-value #f #:init-keyword #:ast)
