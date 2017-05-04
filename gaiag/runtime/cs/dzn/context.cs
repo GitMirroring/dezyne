@@ -70,7 +70,7 @@ namespace dzn
           try
           {
             Debug.WriteLine("[" + this.get_id() + "] create");
-            lock(this) {
+            context.lck(this, () => {
               while(this.state != State.FINAL)
               {
                 do_block(this);
@@ -82,25 +82,25 @@ namespace dzn
                 if(state == State.FINAL) break;
                 if(this.rel != null) this.rel();
               }
-            }
+              });
           }
           catch (forced_unwind) {
             Debug.WriteLine("[" + this.get_id() + "] ignoring forced_unwind");
           }
         });
       this.thread.Start();
-      lock(this) {
-        while(state != State.BLOCKED) Monitor.Wait(this);
-      }
+      context.lck(this, () => {
+          while(state != State.BLOCKED) Monitor.Wait(this);
+        });
     }
     public context(bool b)
     {
     }
     public context(Action<Action<context>> work) : this ()
     {
-      lock(this) {
-        this.work = work;
-      }
+      context.lck(this, () => {
+          this.work = work;
+        });
     }
     ~context()
     {
@@ -110,13 +110,12 @@ namespace dzn
     {
       if (gc)
       {
-        lock(this)
-        {
-          do_finish(this);
-          rel = null;
-          work = null;
-          thread = null;
-        }
+        context.lck(this, () => {
+            do_finish(this);
+            rel = null;
+            work = null;
+            thread = null;
+          });
       }
     }
     public void Dispose()
@@ -126,39 +125,39 @@ namespace dzn
     }
     public int get_id()
     {
-      lock(m) {
-        int i = Thread.CurrentThread.ManagedThreadId;
-        if (!m.ContainsKey(i)) m.Add(i,m.Count);
-        return m[i];
-      }
+      return context.lck(m, () => {
+          int i = Thread.CurrentThread.ManagedThreadId;
+          if (!m.ContainsKey(i)) m.Add(i,m.Count);
+          return m[i];
+        });
     }
     public void finish()
     {
-      lock(this) {
-        do_finish(this);
-      }
+      context.lck(this, () => {
+          do_finish(this);
+        });
     }
     public void block()
     {
-      lock(this) {
-        do_block(this);
-      }
+      context.lck(this, () => {
+          do_block(this);
+        });
     }
     public void release()
     {
-      lock(this) {
-        do_release(this);
-      }
+      context.lck(this, () => {
+          do_release(this);
+        });
     }
     public void call(context c)
     {
       Debug.WriteLine("[" + this.get_id() + "] call");
-      lock(this) {
-        do_release(this);
+      context.lck(this, () => {
+          do_release(this);
 
-        Monitor.Enter(c);
-        c.state = State.BLOCKED;
-      }
+          Monitor.Enter(c);
+          c.state = State.BLOCKED;
+        });
 
       do { Monitor.Wait(c); } while(c.state == State.BLOCKED);
       Monitor.Exit(c);
@@ -166,10 +165,10 @@ namespace dzn
     public void yield(context to)
     {
       if(to == this) return;
-      lock(this) {
-        to.release();
-        do_block(this);
-      }
+      context.lck(this, () => {
+          to.release();
+          do_block(this);
+        });
     }
     private void do_block(Object mutex)
     {
@@ -198,6 +197,16 @@ namespace dzn
       Monitor.Exit(mutex);
       System.Diagnostics.Debug.Assert(this.thread != null);
       this.thread.Join();
+    }
+    public static void lck(object o, Action f) {
+      Monitor.Enter(o);
+      try { f(); }
+      finally { if(Monitor.IsEntered(o)) Monitor.Exit(o); }
+    }
+    public static T lck<T>(object o, Func<T> f) {
+      Monitor.Enter(o);
+      try { return f(); }
+      finally { if(Monitor.IsEntered(o)) Monitor.Exit(o); }
     }
   };
 }

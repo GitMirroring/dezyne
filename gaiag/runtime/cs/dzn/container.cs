@@ -70,19 +70,19 @@ namespace dzn
     }
     public String match_return()
     {
-      lock(this) {
-        while (expect.Count == 0) Monitor.Wait(this);
-        String tmp = this.expect.Dequeue();
-        Action e = this.lookup.ContainsKey(tmp) ? this.lookup[tmp] : null;
-        while(e != null)
-        {
-          e();
-          while (this.expect.Count == 0) Monitor.Wait(this);
-          tmp = this.expect.Dequeue();
-          e = this.lookup.ContainsKey(tmp) ? this.lookup[tmp] : null;
-        }
-        return tmp;
-      }
+      return context.lck(this, () => {
+          while (expect.Count == 0) Monitor.Wait(this);
+          String tmp = this.expect.Dequeue();
+          Action e = this.lookup.ContainsKey(tmp) ? this.lookup[tmp] : null;
+          while(e != null)
+          {
+            e();
+            while (this.expect.Count == 0) Monitor.Wait(this);
+            tmp = this.expect.Dequeue();
+            e = this.lookup.ContainsKey(tmp) ? this.lookup[tmp] : null;
+          }
+          return tmp;
+        });
     }
     public void match(String actual)
     {
@@ -107,10 +107,10 @@ namespace dzn
             if(port == "" || port != p) port = p;
             else port = "";
           }
-          lock(this) {
-            Monitor.Pulse(this);
-            this.expect.Enqueue(str);
-          }
+          context.lck(this, () => {
+              Monitor.Pulse(this);
+              this.expect.Enqueue(str);
+            });
         }
         else
         {

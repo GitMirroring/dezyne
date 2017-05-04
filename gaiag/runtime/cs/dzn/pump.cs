@@ -102,67 +102,65 @@ namespace dzn
     }
     public void stop()
     {
-      lock(this)
-      {
-        this.running = false;
-        Monitor.Pulse(this);
-        Monitor.Exit(this);
-        this.task.Join();
-      }
+      context.lck(this, () => {
+          this.running = false;
+          Monitor.Pulse(this);
+          Monitor.Exit(this);
+          this.task.Join();
+        });
     }
     public void wait()
     {
-      lock(this)
-      {
-        while(this.queue.Count != 0) {
-          Monitor.Wait(this);
-        }
-      }
+      context.lck(this, () => {
+          while(this.queue.Count != 0) {
+            Monitor.Wait(this);
+          }
+        });
     }
     public void run()
     {
       try {
         this.worker = () => {
-          lock(this) {
-            if(this.queue.Count == 0) {
-              Monitor.Pulse(this);
-            }
-            while(this.queue.Count == 0 && running) {
-              Monitor.Wait(this);
-            }
-            if(this.queue.Count != 0) {
-              Action f = this.queue.Dequeue();
-              Monitor.Exit(this);
-              f();
-            }
-          }
+          context.lck(this, () => {
+              if(this.queue.Count == 0) {
+                Monitor.Pulse(this);
+              }
+              while(this.queue.Count == 0 && running) {
+                Monitor.Wait(this);
+              }
+              if(this.queue.Count != 0) {
+                Action f = this.queue.Dequeue();
+                Monitor.Exit(this);
+                f();
+              }
+            });
         };
 
         coroutine zero = new coroutine();
         this.exit = ()=>{Debug.WriteLine("exit"); zero.release();};
         create_context();
 
-        lock(this) {
-          while(this.running || this.queue.Count!=0 || this.collateral_blocked.Count!=0)
-          {
-            Monitor.Exit(this);
+        context.lck(this, () => {
+            while(this.running || this.queue.Count!=0 || this.collateral_blocked.Count!=0)
+            {
+              Monitor.Exit(this);
 
-            Debug.Assert(this.coroutines.Count!=0);
+              Debug.Assert(this.coroutines.Count!=0);
 
-            this.coroutines.Last().call(zero);
+              this.coroutines.Last().call(zero);
 
-            Monitor.Enter(this);
+              Monitor.Enter(this);
 
-            this.coroutines.RemoveAll((c) => {
-                if(!c.finished) return false;
-                Debug.WriteLine("[" + c.id + "] removing");
-                c.Dispose();
-                return true;
-              });
-          }
-          Debug.WriteLine("finish pump");
-          Debug.Assert(this.queue.Count==0);
-        }
+              this.coroutines.RemoveAll((c) => {
+                  if(!c.finished) return false;
+                  Debug.WriteLine("[" + c.id + "] removing");
+                  c.Dispose();
+                  return true;
+                });
+            }
+            Debug.WriteLine("finish pump");
+            Debug.Assert(this.queue.Count==0);
+          });
       }
       catch(Exception e) {
         Console.Error.WriteLine("oops: " + e);
@@ -270,10 +268,10 @@ namespace dzn
     public void execute(Action e)
     {
       Debug.Assert(e != null);
-      lock(this) {
-        this.queue.Enqueue(e);
-        Monitor.Pulse(this);
-      }
+      context.lck(this, () => {
+          this.queue.Enqueue(e);
+          Monitor.Pulse(this);
+        });
     }
     public class promise: IDisposable
     {
