@@ -332,10 +332,11 @@
       (and (not (.instance (.right bind)))
            (.left bind))))
 
+
 (define (om:port-bind system port)
   (find (lambda (bind) (and=> (om:port-bind? bind)
                               (lambda (b)
-                                (equal? (.port (om:port-binding? b)) port)))) ;; FIXME: WHY DOES eq? NOT WORK HERE??????
+				(equal? (.port (om:port-binding? b)) port)))) ;; FIXME: WHY DOES eq? NOT WORK HERE??????
         ((compose .elements .bindings) system)))
 
 (define (om:bind system o)
@@ -765,11 +766,11 @@
   (filter (is? <interface>) *ast-alist*))
 
 (define (cache-model! name o)
-  (set! *ast-alist* (assoc-set! *ast-alist* name o))
+  (set! *ast-alist* (assoc-set! *ast-alist* (om2list name) o))
   o)
 
 (define (cached-model name)
-  (assoc-ref *ast-alist* name))
+  (assoc-ref *ast-alist* (om2list name)))
 
 (define (globals)
   (filter (is? <type>) (map cdr *ast-alist*)))

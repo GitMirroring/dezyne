@@ -26,6 +26,7 @@
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 receive)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
 
   #:use-module (language dezyne location)
 
@@ -42,7 +43,6 @@
 
   #:export (
            ast:resolve
-           om:resolve
            report-errors
            ))
 
@@ -63,24 +63,23 @@
 
 (define (resolve-root o)
   (map om:register-type (om:types o))
-  (let* ((resolved (make <root>
-                     #:elements (map resolve-top-model (ast:reorder (.elements o)))))
+  (let* ((resolved ((compose-root
+                     (cut resolve-selection <> <system>)
+                     (cut resolve-selection <> <component>)
+                     (cut resolve-selection <> <interface>)
+                     (cut resolve-selection <> <type>)
+                     (cut resolve-selection <> <import>))
+                    o))
          (errors (null-is-#f ((om:collect <error>) resolved))))
     (and=> errors report-errors)
     resolved))
 
-(define (ast:reorder o)
-  (match o
-    (($ <root>)
-     (make <root> #:elements (ast:reorder (.elements o))))
-    ((models ...)
-     (append
-                   (filter (is? <import>) models)
-                   (filter (is? <type>) models)
-                   (filter (is? <interface>) models)
-                   (filter (is? <component>) models)
-                   (filter (is? <system>) models)))
-    (_ o)))
+(define-method (resolve-selection (o <root>) class)
+  (make <root>
+    #:elements (receive (selection rest)
+                        (partition (is? class) (.elements o))
+                        (append (map resolve-top-model selection) rest))))
+
 
 (define (report-error o)
   (and-let* ((ast (.ast o))
@@ -308,11 +307,13 @@
      (let* ((name (make <scope.name> #:scope scope #:name name))
             (type (interface? name)))
        (if (not type) (resolve-error o type "undefined interface: ~a")
-           (clone o #:type type))))
+           o;(clone o #:type type)
+           )))
     ((and ($ <port>) (= .type type))
      (let ((type (interface? type)))
        (if (not type) (resolve-error o type "undefined interface: ~a")
-           (clone o #:type type))))
+           o;(clone o #:type type)
+           )))
     (($ <signature> type (? unspecified?))
      (make <signature>
        #:type ((resolve model locals) type)
@@ -770,7 +771,7 @@
                      (map (recurses? model (cons name seen)) names)))))
 
 (define (ast-> ast)
-  ((compose
+  ((compose-root
     om->list
     ast:resolve
     ast->om

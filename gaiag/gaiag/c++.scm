@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -51,7 +52,7 @@
          (models (filter (negate om:imported?) models))
          ;; Generator-synthesized models look non-imported, filter harder
          (models (filter (negate dzn-async?) models)))
-    (map dump models))
+    (parameterize ((ast:root om)) (map dump models)))
   "")
 
 (define (dzn-async? o)

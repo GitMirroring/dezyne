@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -45,9 +46,6 @@
 
 (define om:< <)
 (define om:equal? equal?)
-
-(define-method (equal? (a <ast>) (b <ast>))
-  (equal? (om->list a) (om->list b)))
 
 (define-method (< (a <on>) (b <on>))
   (< (.triggers a) (.triggers b)))
@@ -99,15 +97,23 @@
 (define-method (< (a <symbol>) (b <boolean>))
   #f)
 
-(define-method (equal? (a <ast>) (b <ast>))
-  (equal? (om2list a) (om2list b)))
+(define-method (equal? (a <scope.name>) (b <scope.name>))
+  (and (equal? (.scope a) (.scope b)) (equal? (.name a) (.name b))))
+(define-method (equal? (a <port>) (b <port>))
+  (and (equal? (.name a) (.name b)) (equal? (.name (.type a)) (.name (.type b)))))
+
+;(define-method (equal? (a <ast>) (b <ast>))
+;  (equal? (om2list a) (om2list b)))
 
 (define-method (equal? (a <trigger>) (b <trigger>))
+  (define (name o)
+    (if (is-a? o <named>) (.name o) o))
+  
   (and (or (eq? (.port a) (.port b))
-           (equal? ((compose .name .port) a)
-                   ((compose .name .port) b)))
-       (equal? ((compose .name .event) a)
-               ((compose .name .event) b))
+           (equal? (name (.port a))
+                   (name (.port b))))
+       (equal? (name (.event a))
+               (name (.event b)))
        (equal? (.formals a) (.formals b))))
 
 (define-method (om:guard-equal? (lhs <guard>) (rhs <guard>))

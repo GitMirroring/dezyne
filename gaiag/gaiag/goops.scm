@@ -26,7 +26,10 @@
 
 (define-module (gaiag goops)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
+  #:use-module (srfi srfi-1)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  
   #:export (
            .ast
            .message
@@ -177,6 +180,9 @@
            <plus>
            ))
 
+(define (stderr format-string . o)
+  (apply format (append (list (current-error-port) format-string) o)))
+
 (define (.name o)
   (match o
     ((or 'bool 'void) o)
@@ -287,11 +293,38 @@
 (define ast:inevitable (make <inevitable>))
 (define ast:optional (make <optional>))
 
+(define (symbol-join ls)
+  (reduce (lambda (a b) (symbol-append a '. b)) (string->symbol "") ls))
+
+(define-method (.scope+name (o <top>))
+  (match o (('dotted scope ... name) (symbol-join (cdr o)))))
+
+(define-method (.scope+name (o <scope.name>))
+  (symbol-join (append (.scope o) (list (.name o)))))
+
 (define-class <port> (<named>)
-  (type #:getter .type #:init-form (make <scope.name>) #:init-keyword #:type)
+  (type #:getter .type@ #:init-form (make <scope.name>) #:init-keyword #:type)
   (direction #:getter .direction #:init-value #f #:init-keyword #:direction)
   (external #:getter .external #:init-value #f #:init-keyword #:external)
   (injected #:getter .injected #:init-value #f #:init-keyword #:injected))
+(define-public ast:root (make-parameter 'error-ast:root-not-set))
+(define (resolve root class o)
+  (cond ((eq? <interface> class)
+         (find (lambda (m)
+                 (and (is-a? m class)
+                      (equal? o (.scope+name (.name m)))))
+               (.elements root)))))
+
+(define resolve (pure-funcq resolve))
+(define-public (compose-root . f)
+  (lambda (o)
+    (fold-right
+     (lambda (elem previous)
+       (parameterize ((ast:root previous)) (elem previous))) o f)))
+
+(define-method (.type (o <port>))
+  (resolve (ast:root) <interface> (.scope+name (.type@ o))))
+
 
 (define-class <trigger> (<ast>)
   (port #:getter .port #:init-value #f #:init-keyword #:port)

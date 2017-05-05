@@ -71,7 +71,7 @@
   "")
 
 (define (code:om ast)
-  ((compose
+  ((compose-root
     (lambda (o)
       (let ((model-names (map (compose .name car) (@@ (gaiag om) *ast-alist*))))
         (if (and (member (language) '(c++ c++03 c++-msvc11 xjavascript))

@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -30,6 +31,7 @@
   #:use-module (ice-9 match)
 
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
 
   #:use-module (language dezyne location)
 
@@ -108,30 +110,42 @@
     ((? (is? <ast>)) (clone o (om:map-initializer f)))
     (_ o)))
 
-(define ((om:identity-initializer o) name)
-  (list (symbol->keyword name) (slot-ref o name)))
-
 (define (((om:map-initializer f) o) name)
   (list (symbol->keyword name) (f (slot-ref o name))))
+
+(define (pk o)
+  (stderr ";; ~a\n" o)
+  o)
 
 (define-method (clone (o <ast>) (make-initializer <procedure>))
  (let* ((class (class-of o))
         (slots (class-slots class))
         (names (map slot-definition-name slots))
-        (initializers (map (make-initializer o) names))
-        (arguments (cons class (apply append initializers))))
-   (retain-source-properties o (apply make arguments))))
+	(bar (lambda (name) (list (symbol->keyword name) (slot-ref o name))))
+        (changed (map (make-initializer o) names))
+        (original (map bar names)))
+   (if (eq? original changed) o
+       (retain-source-properties o (apply make (cons class (apply append changed)))))))
+
+(define (my-equal? a b)
+  (or (eq? a b)
+      (and (pair? a) (pair? b) (every identity (map my-equal? a b)))))
 
 (define-method (clone o . setters)
   (let* ((class (class-of o))
         (slots (class-slots class))
         (names (map slot-definition-name slots))
-        (initializers (map (om:identity-initializer o) names))
-        (keywords (filter keyword? setters))
-        (initializers (filter (lambda (i) (not (member (car i) keywords))) initializers))
-        (initializers (append (apply append initializers) setters))
-        (arguments (cons class initializers)))
-   (apply make arguments)))
+	(bar (lambda (name) (list (symbol->keyword name) (slot-ref o name))))
+    	(paired-members (map bar names))
+    	(paired-setters (fold (lambda (elem previous) (if (or (null? previous) (pair? (car previous)))
+    							  (cons elem previous)
+    							  (cons (list (car previous) elem) (cdr previous))))
+    			      '() setters))
+        (changed (lset-difference eq? paired-setters paired-members))
+    	(unchanged (lset-difference (lambda (a b) (eq? (car a) (car b))) paired-members changed)))
+    (if (null? changed) o
+    	(apply make (cons class (apply append (append unchanged changed)))))))
 
 (define-method (clone (o <ast>) . setters)
   (retain-source-properties o (next-method)))
+

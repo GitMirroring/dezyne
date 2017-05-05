@@ -1,7 +1,9 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -117,7 +119,7 @@
    o))
 
 (define (code-norm-event o)
-  ((compose
+  ((compose-root
     add-reply-port
     (add-illegals)
     remove-skip
