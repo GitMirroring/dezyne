@@ -954,12 +954,12 @@
                         (if left-port left-port
                             right-port)))
          (interface (.type interface))
-         (instance (and (om:port-bind? bind)
+         (instance (and (om:port-bind? bind)  ;; FIXME: actually: binding-name
                         (if (not (.instance left))
-                            (.instance right)
-                            (.instance left)))))
-    (animate string `((port ,(.name port)) (direction ,direction) (edir ,edir) (injected? ,injected?) (instance ,(.name instance)) 
-                    (instance-port ,(.name instance-port)) (interface ,(.name interface))))))
+                            (binding-name model right)
+                            (binding-name model left)))))
+    (animate string `((port ,(.name port)) (direction ,direction) (edir ,edir) (injected? ,injected?) (instance ,instance)
+                      (instance-port ,(.name instance-port)) (interface ,(.name interface))))))
 
 (define ((init-instance model string) instance)
   (let* ((component (.type instance))
