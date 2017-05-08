@@ -39,6 +39,7 @@
            .name.name
            .type.name
            .function.name
+           .instance.name
            ast:inevitable
            ast:optional
 
@@ -468,6 +469,9 @@
 (define-class <binding> (<statement>)
   (instance #:getter .instance #:init-value #f #:init-keyword #:instance)
   (port #:getter .port #:init-value #f #:init-keyword #:port))
+
+(define-method (.instance.name (o <binding>)) (and=> (.instance o) .name))
+(define-method (.port.name (o <binding>)) (and=> (.port o) .name))
 
 (define-class <instance> (<named> <statement>)
   (type #:getter .type #:init-form (make <scope.name>) #:init-keyword #:type))
