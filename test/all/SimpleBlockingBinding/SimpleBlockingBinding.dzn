@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -48,7 +48,7 @@ component SimpleBlockingBinding {
   provides I p;
   requires II r;
   behaviour {
-    xint g = $0$;
+    xint g = $123$;
     bool busy = false;
     [!busy] {
        on p.e(n <- g): blocking { n = g; r.e(); busy = true; }
@@ -56,8 +56,7 @@ component SimpleBlockingBinding {
     }
     [busy] {
        on p.e(): illegal;
-       on r.cb(): { g = $1$; p.reply(); busy = false; }
+       on r.cb(): { g = $456$; p.reply(); busy = false; }
     }
   }
 }
-

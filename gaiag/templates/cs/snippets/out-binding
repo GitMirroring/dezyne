@@ -1,1 +1,1 @@
-#formal  = new dzn.V<#type >(this.#global);
+#formal .v  = this.#global;

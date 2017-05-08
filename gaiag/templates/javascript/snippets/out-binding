@@ -1,1 +1,1 @@
-#formal  = this.#global;
+#formal .value = this.#global;
