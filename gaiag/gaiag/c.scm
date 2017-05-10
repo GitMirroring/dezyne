@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -49,7 +50,7 @@
 
 (define (ast-> ast)
   (let ((om ((om:register code:om #t) ast)))
-    (parameterize ((code:indenter (lambda () (indent 1))))
+    (parameterize ((ast:root om) (code:indenter (lambda () (indent 1))))
       (map dump (filter (negate om:imported?) ((om:filter:p <model>) om)))))
   "")
 
