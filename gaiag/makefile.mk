@@ -1,7 +1,9 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
 # Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2014 Henk Katerberg <henk.katerberg@yahoo.com>
+# Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 #
 # This file is part of Gaiag.
 #
@@ -47,7 +49,7 @@ include make/guile.mk
 TARG := json2scm
 include make/guile.mk
 
-TEST := $(TEST) $(CDIR)-check
+#TEST := $(TEST) $(CDIR)-check
 
 $(CDIR)-check: CDIR:=$(CDIR)
 $(CDIR)-check: $(BUILD)/$(CDIR)
