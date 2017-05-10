@@ -24,7 +24,7 @@
   (lambda (port)
     (let* ((binding (om:port-bind model port))
           (instance-binding (om:instance-binding? binding))
-          (instance-port (.port instance-binding))
+          (instance-port (.name (.port instance-binding)))
           (instance (.name (om:instance model port)))
           (port (.name port)))
       (animate #{#instance .#instance-port .meta.requires.port = "#port ";
@@ -37,7 +37,7 @@
  (lambda (port)
    (let* ((binding (om:port-bind model port))
           (instance-binding (om:instance-binding? binding))
-          (instance-port (.port instance-binding))
+          (instance-port (.name (.port instance-binding)))
           (instance (.name (om:instance model port)))
           (port (.name port)))
      (animate #{#instance .#instance-port .meta.provides.port = "#port ";
