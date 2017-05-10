@@ -47,6 +47,7 @@
   #:use-module (gaiag annotate)
   #:use-module (gaiag code)
   #:use-module (gaiag command-line)
+  #:use-module (gaiag compare)
   #:use-module (gaiag indent)
   #:use-module (gaiag misc)
   #:use-module (gaiag norm-event)
@@ -730,12 +731,12 @@
                (map x-formal ((compose .elements .formals) b)))))
 
 (define* ((type-equal? model) a b)
-  (or (equal? a b)
+  (or (om:list-equal? a b)
       (and (om:enum model a) (om:enum model b))))
 
 (define ((code:signature-types-equal? model) a b)
   (and ((type-equal? model) (.type a) (.type b))
-       (equal? (map om:out-or-inout? ((compose .elements .formals) a))
+       (om:list-equal? (map om:out-or-inout? ((compose .elements .formals) a))
                (map om:out-or-inout? ((compose .elements .formals) b)))
        (every (type-equal? model)
               (map .type ((compose .elements .formals) a))

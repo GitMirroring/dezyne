@@ -38,6 +38,7 @@
            om:<
            om:equal?
            om:guard-equal?
+           om:list-equal?
            om:triggers-equal?
            om:remove-formals
            om:scope.name-equal?
@@ -102,21 +103,21 @@
 (define-method (equal? (a <port>) (b <port>))
   (and (equal? (.name a) (.name b)) (equal? (.name (.type a)) (.name (.type b)))))
 
-(define-method (list-equal? a b)
+(define-method (om:list-equal? a b)
  (equal? (om2list a) (om2list b)))
 
 (define-method (equal? (a <trigger>) (b <trigger>))
   (define (name o)
     (if (is-a? o <named>) (.name o) o))
   (and (or (eq? (.port a) (.port b))
-           (list-equal? (name (.port a))
+           (om:list-equal? (name (.port a))
                    (name (.port b))))
-       (list-equal? (name (.event a))
+       (om:list-equal? (name (.event a))
                (name (.event b)))
-       (list-equal? (.formals a) (.formals b))))
+       (om:list-equal? (.formals a) (.formals b))))
 
 (define-method (om:guard-equal? (lhs <guard>) (rhs <guard>))
-  (list-equal? (.expression lhs) (.expression rhs)))
+  (om:list-equal? (.expression lhs) (.expression rhs)))
 
 (define-method (om:port-event-equal? a b)
   #f)
