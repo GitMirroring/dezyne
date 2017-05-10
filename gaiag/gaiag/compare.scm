@@ -102,22 +102,21 @@
 (define-method (equal? (a <port>) (b <port>))
   (and (equal? (.name a) (.name b)) (equal? (.name (.type a)) (.name (.type b)))))
 
-;(define-method (equal? (a <ast>) (b <ast>))
-;  (equal? (om2list a) (om2list b)))
+(define-method (list-equal? a b)
+ (equal? (om2list a) (om2list b)))
 
 (define-method (equal? (a <trigger>) (b <trigger>))
   (define (name o)
     (if (is-a? o <named>) (.name o) o))
-  
   (and (or (eq? (.port a) (.port b))
-           (equal? (name (.port a))
+           (list-equal? (name (.port a))
                    (name (.port b))))
-       (equal? (name (.event a))
+       (list-equal? (name (.event a))
                (name (.event b)))
-       (equal? (.formals a) (.formals b))))
+       (list-equal? (.formals a) (.formals b))))
 
 (define-method (om:guard-equal? (lhs <guard>) (rhs <guard>))
-  (equal? (om->list (.expression lhs)) (om->list (.expression rhs))))
+  (list-equal? (.expression lhs) (.expression rhs)))
 
 (define-method (om:port-event-equal? a b)
   #f)
@@ -129,8 +128,8 @@
   #f)
 
 (define-method (om:triggers-equal? (a <on>) (b <on>))
-  (equal? ((compose .elements .triggers) a)
-          ((compose .elements .triggers) b)))
+  (equal? ((compose om2list .elements .triggers) a)
+          ((compose om2list .elements .triggers) b)))
 
 (define-method (om:scope.name-equal? (a <scoped>) (b <scoped>))
   (let ((a (.name a))

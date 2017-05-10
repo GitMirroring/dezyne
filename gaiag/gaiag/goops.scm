@@ -213,7 +213,16 @@
 (define-class <functions> (<ast-list>))
 (define-class <instances> (<ast-list>))
 (define-class <ports> (<ast-list>))
-(define-class <root> (<ast-list>))
+
+(define g-root-id 0)
+(define (nextid)
+  (set! g-root-id (+ g-root-id 1))
+  ;;(stderr "nextid: ~a\n" g-root-id)
+  g-root-id)
+
+(define-class <root> (<ast-list>)
+  (id #:getter .id #:init-thunk nextid #:init-keyword #:id))
+
 (define-class <triggers> (<ast-list>))
 (define-class <types> (<ast-list>))
 (define-class <variables> (<ast-list>))
@@ -309,6 +318,8 @@
   (injected #:getter .injected #:init-value #f #:init-keyword #:injected))
 (define-public ast:root (make-parameter 'error-ast:root-not-set))
 (define (resolve root class o)
+  ;;(stderr "current root: ~a\n" (.id root))
+  (when (not (eq? g-root-id (.id root))) (throw 'wrong-root))
   (cond ((eq? <interface> class)
          (find (lambda (m)
                  (and (is-a? m class)

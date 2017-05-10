@@ -101,8 +101,8 @@
            (throw 'csp message))))))
 
 (define (ast-> ast)
-  (let ((om ((om:register (compose ast:resolve ast->om) #t) ast)))
-    (om->csp om))
+  (let ((om ((om:register (compose-root ast:resolve ast->om) #t) ast)))
+    (parameterize ((ast:root om)) (om->csp om)))
   "")
 
 (define (generate-csp o)
@@ -111,7 +111,7 @@
     (match o
       (($ <interface>)
        (and-let* ((root (make <root> #:elements (list o))))
-         (model-generate-csp root o)))
+                 (parameterize ((ast:root root)) (model-generate-csp root o))))
       (($ <component>)
        (and-let* ((interfaces (map .type ((compose .elements .ports) o)))
                   
@@ -121,25 +121,26 @@
                                      (comma-join (map .name no-behaviour)))))
            (stderr message)
            (throw 'csp message))
-         (model-generate-csp root o))))))
+         (parameterize ((ast:root root)) (model-generate-csp root o)))))))
 
 (define (model-generate-csp root o)
   (let ((separate-asserts? (command-line:get 'assert #f)))
     (and-let* ((norm ((om:register csp:norm #t) root))
                (name ((om:scope-name) o))
-               (model (om:model-with-behaviour norm))
+               (model (parameterize ((ast:root norm))(om:model-with-behaviour norm)))
                (file-name (command-line:get 'output-file (list name '.csp))))
-              (dump-output file-name (lambda ()
-                                       (csp-file 'combinators.csp.scm (csp:module model))
-                                       (csp-model model)
-                                       (if separate-asserts?
-                                           (animate-string "\ninclude \"asserts.csp\"\n")
-                                           (csp-asserts model))
-                                       (if (command-line:get 'lts #f)
-                                           (let ((models (append (interfaces model) (list model))))
-                                             (map csp-lts models)
-                                             (assembly-lts model)))))
-              (if separate-asserts? (dump-output "asserts.csp" (lambda () (csp-asserts model)))))))
+              (parameterize ((ast:root norm))
+               (dump-output file-name (lambda ()
+                                        (csp-file 'combinators.csp.scm (csp:module model))
+                                        (csp-model model)
+                                        (if separate-asserts?
+                                            (animate-string "\ninclude \"asserts.csp\"\n")
+                                            (csp-asserts model))
+                                        (if (command-line:get 'lts #f)
+                                            (let ((models (append (interfaces model) (list model))))
+                                              (map csp-lts models)
+                                              (assembly-lts model)))))
+               (if separate-asserts? (dump-output "asserts.csp" (lambda () (csp-asserts model))))))))
 
 (define (csp:import name)
   (om:import name csp:norm))
@@ -1273,7 +1274,7 @@
 }"))
 
 (define (internal-libs ast)
-  ((compose
+  ((compose-root
     add-internal-libs-behaviour
     move-internal-ports
     ) ast))
