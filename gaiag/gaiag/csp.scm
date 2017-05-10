@@ -83,26 +83,28 @@
 (define-class <voidreply> (<ast>))
 
 (define (om->csp om)
-  (let* ((name (and (and=> (command-line:get 'model #f) string->symbol))))
-    (or (and-let* ((models (om:filter (lambda (x) (or (as x <interface>) (as x <component>))) om))
-                   (models (null-is-#f (filter .behaviour models)))
-                   (models (if name (filter (om:named name) models) models))
-                   (c-i (append (filter (is? <component>) models) models))
-                   ((pair? c-i)))
-          (generate-csp (car c-i)))
-        (let* ((models (om:filter (is? <model>) om))
-               (models (comma-join (map .name models)))
-               (message (if name
-                            "gaiag: no model [name=~a] with behaviour\n"
-                            "gaiag: no model with behaviour\n"))
-               (message (format #f message name)))
-          (stderr message)
-          (if name ;; only exit with failure if name was given
-           (throw 'csp message))))))
+  (parameterize
+   ((ast:root om))
+   (let* ((name (and (and=> (command-line:get 'model #f) string->symbol))))
+     (or (and-let* ((models (om:filter (lambda (x) (or (as x <interface>) (as x <component>))) om))
+                    (models (null-is-#f (filter .behaviour models)))
+                    (models (if name (filter (om:named name) models) models))
+                    (c-i (append (filter (is? <component>) models) models))
+                    ((pair? c-i)))
+                   (generate-csp (car c-i)))
+         (let* ((models (om:filter (is? <model>) om))
+                (models (comma-join (map .name models)))
+                (message (if name
+                             "gaiag: no model [name=~a] with behaviour\n"
+                             "gaiag: no model with behaviour\n"))
+                (message (format #f message name)))
+           (stderr message)
+           (if name ;; only exit with failure if name was given
+               (throw 'csp message)))))))
 
 (define (ast-> ast)
   (let ((om ((om:register (compose-root ast:resolve ast->om) #t) ast)))
-    (parameterize ((ast:root om)) (om->csp om)))
+    (om->csp om))
   "")
 
 (define (generate-csp o)
