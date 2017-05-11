@@ -64,6 +64,9 @@
            csp-queue-size
            ast->csp
            om->csp
+           csp:ast->om
+           demangle
+           csp-asserts
 
            animate-pairs
            assign
@@ -83,66 +86,62 @@
 (define-class <the-end-blocking> (<ast>))
 (define-class <voidreply> (<ast>))
 
-(define* (om->csp om #:optional file-name)
+(define* (om->csp om #:key file-name (separate-asserts? (command-line:get 'assert #f)))
   (parameterize ((ast:root om))
-    (let ((name (and (and=> (command-line:get 'model #f) string->symbol))))
-      (or (and-let* ((models (om:filter (lambda (x) (or (as x <interface>) (as x <component>))) om))
-                     (models (null-is-#f (filter .behaviour models)))
-                     (models (if name (filter (om:named name) models) models))
-                     (c-i (append (filter (is? <component>) models) models))
-                     ((pair? c-i))
-                     (model (car c-i))
-                     (file-name (or file-name (command-line:get 'output-file (list name '.csp)))))
-            (generate-csp model file-name))
-          (let* ((models (om:filter (is? <model>) om))
-                 (models (comma-join (map .name models)))
-                 (message (if name
-                              "gaiag: no model [name=~a] with behaviour\n"
-                              "gaiag: no model with behaviour\n"))
-                 (message (format #f message name)))
-            (stderr message)
-            (if name ;; only exit with failure if name was given
-                (throw 'csp message)))))))
+    (or (and-let* ((models (om:filter (lambda (x) (or (as x <interface>) (as x <component>))) om))
+                   (models (null-is-#f (filter .behaviour models)))
+                   (c-i (append (filter (is? <component>) models) models))
+                   ((pair? c-i))
+                   (model (car c-i))
+                   (name ((om:scope-name '.) model))
+                   (file-name (or file-name (command-line:get 'output-file (list name '.csp)))))
+          (generate-csp model #:file-name file-name #:separate-asserts? separate-asserts?))
+        (let* ((models (om:filter (is? <model>) om))
+               (models (comma-join (map .name models)))
+               (message "gaiag: no model with behaviour\n"))
+          (stderr message)
+          (throw 'csp message)))))
 
-(define* (ast->csp ast #:optional file-name)
-  (let ((om ((om:register csp:norm #t) ast)))
-    (parameterize ((ast:root om)) (om->csp root file-name))))
+(define (csp:ast->om ast)
+  ((om:register csp:norm #t) ast))
+
+(define* (ast->csp ast #:key file-name (separate-asserts? (command-line:get 'assert #f)))
+  (om->csp (csp:ast->om ast) #:file-name file-name #:separate-asserts? separate-asserts?))
 
 (define (ast-> ast)
   (ast->csp ast)
   "")
 
-(define* (generate-csp o #:optional (file-name "-"))
-  (let ((o (internal-libs o)))
+(define* (generate-csp o #:key (file-name "-") (separate-asserts? (command-line:get 'assert #f)))
+  (match o
+    (($ <interface>)
+     (and-let* ((root (make <root> #:elements (list o))))
+       (parameterize ((ast:root root)) (model-generate-csp root o #:file-name file-name #:separate-asserts? separate-asserts?))))
+    (($ <component>)
+     (and-let* ((root (make <root> #:elements (list o)))
+                (interfaces (map .type ((compose .elements .ports) o)))
+                (root (make <root> #:elements (append interfaces (list o)))))
+       (and-let* ((no-behaviour (null-is-#f (filter (negate .behaviour) interfaces)))
+                  (message (format #f "gaiag: interface without behaviour: ~a\n"
+                                   (comma-join (map .name no-behaviour)))))
+         (stderr message)
+         (throw 'csp message))
+       (parameterize ((ast:root root)) (model-generate-csp root o #:file-name file-name #:separate-asserts? separate-asserts?))))))
 
-    (match o
-      (($ <interface>)
-       (and-let* ((root (make <root> #:elements (list o))))
-         (parameterize ((ast:root root)) (model-generate-csp root o file-name))))
-      (($ <component>)
-       (and-let* ((interfaces (map .type ((compose .elements .ports) o)))
-                  
-                  (root (internal-libs (make <root> #:elements (append interfaces (list o))))))
-         (and-let* ((no-behaviour (null-is-#f (filter (negate .behaviour) interfaces)))
-                    (message (format #f "gaiag: interface without behaviour: ~a\n"
-                                     (comma-join (map .name no-behaviour)))))
-           (stderr message)
-           (throw 'csp message))
-         (parameterize ((ast:root root)) (model-generate-csp root o file-name)))))))
-
-(define* (model-generate-csp root model #:optional (file-name "-"))
-  (let ((separate-asserts? (command-line:get 'assert #f)))
-    (dump-output file-name (lambda ()
-                             (csp-file 'combinators.csp.scm (csp:module model))
-                             (csp-model model)
-                             (if separate-asserts?
-                                 (animate-string "\ninclude \"asserts.csp\"\n")
-                                 (csp-asserts model))
-                             (if (command-line:get 'lts #f)
-                                 (let ((models (append (interfaces model) (list model))))
-                                   (map csp-lts models)
-                                   (assembly-lts model)))))
-    (if separate-asserts? (dump-output "asserts.csp" (lambda () (csp-asserts model))))))
+(define* (model-generate-csp root model #:key (file-name "-") (separate-asserts? (command-line:get 'assert #f)))
+  (dump-output file-name (lambda ()
+                           (csp-file 'combinators.csp.scm (csp:module model))
+                           (csp-model model)
+                           (if separate-asserts?
+                               (if (equal? file-name "-") ""
+                                   (animate-string "\ninclude \"asserts.csp\"\n"))
+                               (csp-asserts model))
+                           (if (command-line:get 'lts #f)
+                               (let ((models (append (interfaces model) (list model))))
+                                 (map csp-lts models)
+                                 (assembly-lts model)))))
+  (if (and separate-asserts? (not (equal? file-name "-")))
+      (dump-output "asserts.csp" (lambda () (csp-asserts model)))))
 
 (define (csp:import name)
   (om:import name csp:norm))
@@ -150,6 +149,7 @@
 (define (csp:norm ast)
   ((compose-root
     csp-norm-state
+    internal-libs
     ast:resolve
     ast->om
     ) ast))
@@ -1120,7 +1120,7 @@
                                ".true")))
        events))
 
-(define (csp-queue-size) (command-line:get 'queue-size 3))
+(define (csp-queue-size) (command-line:get 'queue_size 3))
 
 (define* (check-range identifiers statement model #:optional (locals '()) (indent 0))
   (define (member? identifier) (om:variable model identifier))
@@ -1209,9 +1209,11 @@
 (define (move-internal-ports o)
   (match o
     ((and ($ <component>) (= .ports ports) (= .behaviour behaviour))
-     (clone o
-            #:ports (make <ports> #:elements (append (om:port* ports) (om:ports behaviour)))
-            #:behaviour (clone behaviour #:ports (make <ports>))))
+     (if (not behaviour)
+         o
+         (clone o
+                #:ports (make <ports> #:elements (append (om:port* ports) (om:ports behaviour)))
+                #:behaviour (clone behaviour #:ports (make <ports>)))))
     ((? (is? <ast>)) (om:map move-internal-ports o))
     (_ o)))
 
@@ -1244,12 +1246,18 @@
      ((? (is? <ast>)) (om:map add-internal-libs-behaviour o))
      (_ o)))
 
-(define (demangle symbol)
-  (define (generator-mangled? symbol)
-    (string-match "^i[0-9]+_" (symbol->string symbol)))
-  (let ((m (generator-mangled? symbol)))
-    (if (not m) symbol
-        (string->symbol (regexp-substitute #f m 'post)))))
+(define (demangle o)
+  (define (generator-mangled? o)
+    (string-match "^i[0-9]+_" (symbol->string o)))
+  (match o
+    ((? symbol?) (let ((m (generator-mangled? o)))
+                   (if (not m) o
+                       (let* ((s (regexp-substitute #f m 'post))
+                              (m (string-match "_i_" s)))
+                         (if (not m) (string->symbol s)
+                             (string->symbol (regexp-substitute #f m 'pre "_i" 'post)))))))
+    ((and ($ <scope.name>) (= .scope scope) (= .name name))
+     ((->symbol-join '.) (map demangle (append scope (list name)))))))
 
 (define-method (dzn-async? (o <scope.name>))
   (let ((scope (.scope o)))

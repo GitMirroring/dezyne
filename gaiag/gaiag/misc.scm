@@ -250,15 +250,14 @@
   (dump-output file-name (lambda () (display string))))
 
 (define (dump-output file-name thunk)
-  (let* ((dir (command-line:get 'output))
-         (file-name (cond ((not dir) file-name)
-                          ((pair? file-name) (cons dir file-name))
-                          (else (cons dir (list file-name)))))
-         (name (components->file-name file-name)))
-    (if (string=? name "-") (thunk)
-        (begin
-          (mkdir-p (dirname name))
-          (with-output-to-file name thunk)))))
+  (if (equal? file-name "-") (thunk)
+      (let* ((dir (command-line:get 'output))
+             (file-name (cond ((not dir) file-name)
+                              ((pair? file-name) (cons dir file-name))
+                              (else (cons dir (list file-name)))))
+             (name (components->file-name file-name)))
+        (mkdir-p (dirname name))
+        (with-output-to-file name thunk))))
 
 (define (gulp-file file-name)
   (with-input-from-file (components->file-name file-name) read-string))

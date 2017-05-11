@@ -22,6 +22,7 @@
 ;;; 
 ;;; Code:
 
+
 (define-module (gaiag csp-asserts)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
@@ -39,7 +40,8 @@
 
 (define (om->csp-asserts o)
   (let ((om (csp:ast->om o)))
-    (om->csp om)
-    (assert-list om)))
+    (parameterize ((ast:root om))
+      (om->csp om)
+      (assert-list om))))
 
 (define ast-> om->csp-asserts)

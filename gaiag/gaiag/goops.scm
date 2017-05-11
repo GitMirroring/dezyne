@@ -319,7 +319,7 @@
 (define-public ast:root (make-parameter 'error-ast:root-not-set))
 (define (resolve root class o)
   ;;(stderr "current root: ~a\n" (.id root))
-  (when (not (eq? g-root-id (.id root))) (throw 'wrong-root))
+  ;;(when (not (eq? g-root-id (.id root))) (throw 'wrong-root))
   (cond ((eq? <interface> class)
          (find (lambda (m)
                  (and (is-a? m class)

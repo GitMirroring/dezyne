@@ -39,7 +39,7 @@
 (define* (command-line:get option #:optional default)
   (let* ((files (option-ref (parse-opts (command-line)) '() '(#f)))
          (file (car files))
-         (commands '("code"))
+         (commands '("code" "traces"))
          (command (and=> (member file commands) (compose string->symbol car)))
          (option (if command option
                      (or (assoc-ref gaiag-options option) option)))
