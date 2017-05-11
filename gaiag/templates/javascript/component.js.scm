@@ -1,7 +1,7 @@
 #(javascript:preamble model)#
 (map (include-interface #{
 dzn.extend (dzn, dzn_require (__dirname + '/#interface '));
-#}) (delete-duplicates (om:ports model) (lambda (x y) (equal? (.type x) (.type y)))))
+#}) (delete-duplicates (om:ports model) (lambda (x y) (om:equal? (.type x) (.type y)))))
 #(javascript:namespace model).#.model  = function (locator, meta) {
   this._dzn = {};
   this._dzn.locator = locator;

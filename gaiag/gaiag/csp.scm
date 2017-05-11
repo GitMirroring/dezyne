@@ -246,7 +246,7 @@
     ...)
    - the statement of the guard is discarded
    - the arguments on the trigger are discarded, only port-name event-name"
-  (let loop ((guards guards) (alist '()))
+   (let loop ((guards guards) (alist '()))
     (if (null? guards) alist
         (let* ((guard (car guards))
                (statement (.statement guard))
@@ -261,10 +261,10 @@
                 (let loop2 ((triggers triggers) (alist alist))
                   (if (null? triggers) alist
                       (let* ((trigger (car triggers))
-                             (entry (or (assoc-ref alist trigger) '())))
+                             (entry (or (assoc-ref alist (om2list trigger)) '())))
                         (loop2 (cdr triggers)
                                (assoc-set! alist
-                                           trigger (cons guard entry)))))))))))
+                                           (om2list trigger) (cons guard entry)))))))))))
 
 (define (dump-me x)
   (let ((foo (stderr "dump me: ~a\n" x)))
@@ -297,6 +297,7 @@
     (list-of-triggers-port (filter om:requires? (om:ports model)) om:out?))
 
   (define (not-ored-guards guards)
+;    (stderr "not-ored-guards ~a\n" guards)
     (let* ((guards (if guards guards (list)))
            (expressions (map (lambda (guard) (csp-expression->string model (.expression guard) '())) guards)))
       (if (null? expressions)
@@ -314,8 +315,9 @@
                    (if (is-a? statement <guard>)
                        (list statement)
                        (om:filter (is? <guard>) statement))))
-         (trigger-to-guards-alist (guards->trigger-to-guards-alist guards)))
-
+         (trigger-to-guards-alist (guards->trigger-to-guards-alist guards))
+;         (foo (stderr "trigger-to-guards-alist ~a\n" trigger-to-guards-alist))
+         (fnd (lambda (t) (cdr (find (compose (cut om:equal? t <>) car) trigger-to-guards-alist)))))
     (or (null-is-#f
          ((->list-join "\n[]\n")
           (append
@@ -324,9 +326,9 @@
              (if (is-a? model <interface>)
                  (list)
                  (append
-                  (map (lambda (t) (list "(" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & ill." (.port.name t) (channel-suffix model (.port.name t)) "?" (.event.name t) "-> illegal -> STOP"))
+                  (map (lambda (t) (list "(" (not-ored-guards (assoc-ref trigger-to-guards-alist (om2list t))) ") & ill." (.port.name t) (channel-suffix model (.port.name t)) "?" (.event.name t) "-> illegal -> STOP"))
                        (list-of-triggers-provides model))
-                  (map (lambda (t) (list "IG & (" (not-ored-guards (assoc-ref trigger-to-guards-alist t)) ") & " (.port.name t) (channel-suffix model (.port.name t)) "?" (.event.name t) "-> illegal -> STOP"))
+                  (map (lambda (t) (list "IG & (" (not-ored-guards (assoc-ref trigger-to-guards-alist (om2list t))) ") & " (.port.name t) (channel-suffix model (.port.name t)) "?" (.event.name t) "-> illegal -> STOP"))
                       (list-of-triggers-requires model))))))))
         "STOP")))
 

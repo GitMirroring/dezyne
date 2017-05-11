@@ -38,7 +38,6 @@
            om:<
            om:equal?
            om:guard-equal?
-           om:list-equal?
            om:triggers-equal?
            om:remove-formals
            om:scope.name-equal?
@@ -46,7 +45,7 @@
   #:re-export (< equal?))
 
 (define om:< <)
-(define om:equal? equal?)
+(define-method (om:equal? a b) (equal? (om2list a) (om2list b)))
 
 (define-method (< (a <on>) (b <on>))
   (< (.triggers a) (.triggers b)))
@@ -98,26 +97,23 @@
 (define-method (< (a <symbol>) (b <boolean>))
   #f)
 
-(define-method (equal? (a <scope.name>) (b <scope.name>))
-  (and (equal? (.scope a) (.scope b)) (equal? (.name a) (.name b))))
-(define-method (equal? (a <port>) (b <port>))
-  (and (equal? (.name a) (.name b)) (equal? (.name (.type a)) (.name (.type b)))))
+;; (define-method (om:equal? (a <scope.name>) (b <scope.name>))
+;;   (and (equal? (.scope a) (.scope b)) (equal? (.name a) (.name b))))
+(define-method (om:equal? (a <port>) (b <port>))
+  (and (equal? (.name a) (.name b)) (om:equal? (.name (.type a)) (.name (.type b)))))
 
-(define-method (om:list-equal? a b)
- (equal? (om2list a) (om2list b)))
-
-(define-method (equal? (a <trigger>) (b <trigger>))
+(define-method (om:equal? (a <trigger>) (b <trigger>))
   (define (name o)
     (if (is-a? o <named>) (.name o) o))
   (and (or (eq? (.port a) (.port b))
-           (om:list-equal? (name (.port a))
+           (om:equal? (name (.port a))
                    (name (.port b))))
-       (om:list-equal? (name (.event a))
+       (om:equal? (name (.event a))
                (name (.event b)))
-       (om:list-equal? (.formals a) (.formals b))))
+       (om:equal? (.formals a) (.formals b))))
 
 (define-method (om:guard-equal? (lhs <guard>) (rhs <guard>))
-  (om:list-equal? (.expression lhs) (.expression rhs)))
+  (om:equal? (.expression lhs) (.expression rhs)))
 
 (define-method (om:port-event-equal? a b)
   #f)
@@ -129,12 +125,9 @@
   #f)
 
 (define-method (om:triggers-equal? (a <on>) (b <on>))
-  (equal? ((compose om2list .elements .triggers) a)
-          ((compose om2list .elements .triggers) b)))
+  (om:equal? ((compose .elements .triggers) a)
+          ((compose .elements .triggers) b)))
 
 (define-method (om:scope.name-equal? (a <scoped>) (b <scoped>))
-  (let ((a (.name a))
-        (b (.name b)))
-    (equal? (append (.scope a) (list (.name a)))
-            (append (.scope b) (list (.name b))))))
+  (om:equal? (.name a) (.name b)))
 

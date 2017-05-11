@@ -153,32 +153,6 @@
                               fields))))
     (retain-source-properties o (make <compound> #:elements guards))))
 
-(define ((prepend-guards-- model) o)
-  (let* ((variables ((compose .elements .variables .behaviour) model))
-         (types (map (om:type model) variables))
-         (type (find (lambda (t) (negate (is? <extern>))) types))
-         (enum
-          (match type
-            (($ <enum>) type)
-            (($ <int>)
-             (let* ((var (find int-var? variables))
-                    (range (.range type)))
-               (make <enum> #:name var #:fields (make <fields> #:elements (iota (- (.to range) (.from range) -1) (.from range))))))
-            (($ <bool>)
-             (let ((var (find var-bool? variables)))
-               (make <enum> #:name var #:fields (make <fields> #:elements '(false true)))))
-            (_  (make <enum> #:name (make <scope.name> #:name '<Temp>) #:fields (make <fields> #:elements '(<Initial>))))))
-         (fields ((compose .elements .fields) enum))
-         (states (map (lambda (field)
-                        (make <literal>
-                          #:type enum
-                          #:field field)) fields))
-         (guards (filter identity
-                         (map (lambda (state)
-                                (prepend-guard model state o))
-                              states))))
-    (retain-source-properties o (make <compound> #:elements guards))))
-
 (define (prepend-guard model variable field o)
   (and-let* ((statement o)
              (statement (flatten-compound ((simplify model variable field #t) (flatten-compound o))))
@@ -206,7 +180,7 @@
     (and (pair? guards) (car guards))))
 
 (define (state-var model state)
-  (define (type? v) (equal? (.type v) (.type state)))
+  (define (type? v) (om:equal? (.type v) (.type state)))
   (find (lambda (v)
           (type? v)) ((compose .elements .variables .behaviour) model)))
 
@@ -266,13 +240,12 @@
        (guard (retain-source-properties o (make <guard> #:expression expression #:statement statement))))
       ((simplify model variable field) guard)))
 
-    (($ <guard> expression statement)
-     (and-let* ((value (simplify-literal model variable field expression))
+    (($ <guard> expr statement)
+     (and-let* ((value (simplify-literal model variable field expr))
                 (expression (if (is-a? value <otherwise>)
                                 value
                                 (make <value> #:value value)))
                 (statement ((simplify model variable field) statement)))
-       (stderr "expr=~a value=~a\n" expression value)
                (retain-source-properties
                 o
                 (match value
@@ -280,7 +253,7 @@
                           statement
                           (make <guard> #:expression expression #:statement statement)))
                   (($ <literal>)
-                   (and (om:equal? value state)
+                   (and (om:equal? value field)
                         (if (om:declarative? statement)
                             statement
                             (make <guard> #:expression expression #:statement statement))))
@@ -318,7 +291,7 @@
     (_ o)))
 
 (define (simplify-literal model variable field o)
-  (let* ((state (append `((,variable . ,field)) '())))
+  (let* ((state (acons (om2list variable) field '())))
     (simplify-expression model state o)))
 
 (define ((mangle-table json-table) o)

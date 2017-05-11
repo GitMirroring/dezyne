@@ -33,6 +33,7 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag ast2om)
+  #:use-module (gaiag compare)
   #:use-module (gaiag om)
   #:use-module (gaiag util)
 
@@ -78,7 +79,7 @@
   (make <root>
     #:elements (receive (selection rest)
                         (partition (is? class) (.elements o))
-                        (append (map resolve-top-model selection) rest))))
+                        (append rest (map resolve-top-model selection)))))
 
 
 (define (report-error o)
@@ -129,7 +130,7 @@
     (_ (retain-source-properties o (resolve- model o locals)))))
 
 (define (type-equal? a b)
-  (cond ((is-a? a <enum>) (equal? a b))
+  (cond ((is-a? a <enum>) (om:equal? a b))
         (else (eq? (class-of a) (class-of b)))))
 
 (define (->symbol o)

@@ -52,7 +52,7 @@ struct #port-glue Glue
 
   static const char* name(int i)
   {
-    static const char* n[] = {#((->join ",") (map (lambda (p) (list "\"" (.name p) "\"")) (filter (lambda (p) (equal? (.type port) (.type p))) (om:ports model))))};
+    static const char* n[] = {#((->join ",") (map (lambda (p) (list "\"" (.name p) "\"")) (filter (lambda (p) (om:equal? (.type port) (.type p))) (om:ports model))))};
     return n[i];
   }
 
@@ -150,7 +150,7 @@ void #asd-component Component::ReleaseInstance(){}
 
 #}) port))
 
-(delete-duplicates (filter om:requires? (om:ports model)) (lambda (a b) (equal? (.type a) (.type b))))
+(delete-duplicates (filter om:requires? (om:ports model)) (lambda (a b) (om:equal? (.type a) (.type b))))
 )
 
 

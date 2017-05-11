@@ -342,12 +342,10 @@
                                                      (name ,name)
                                                      (port ,port-name))))))))
       (($ <reply> (and ($ <var>) (= .variable.name name) (get! expression)) port)
-       ;;(stderr "reply1: ~a\n" (expression))
        (let* ((var (var? name))
               (type (.type var))
               (port (reply-port port))
               (port-name (or (and=> (as port <port>) .name) port)))
-         (stderr "reply1: port-name=~a\n" port-name)
          (->string (list
                     (snippet 'reply
                              `((space ,space)
@@ -727,16 +725,16 @@
 
 (define ((code:signature-equal? model) a b)
   (and (equal? (->code- model (.type a)) (->code- model (.type b)))
-       (equal? (map x-formal ((compose .elements .formals) a))
+       (om:equal? (map x-formal ((compose .elements .formals) a))
                (map x-formal ((compose .elements .formals) b)))))
 
 (define* ((type-equal? model) a b)
-  (or (om:list-equal? a b)
+  (or (om:equal? a b)
       (and (om:enum model a) (om:enum model b))))
 
 (define ((code:signature-types-equal? model) a b)
   (and ((type-equal? model) (.type a) (.type b))
-       (om:list-equal? (map om:out-or-inout? ((compose .elements .formals) a))
+       (om:equal? (map om:out-or-inout? ((compose .elements .formals) a))
                (map om:out-or-inout? ((compose .elements .formals) b)))
        (every (type-equal? model)
               (map .type ((compose .elements .formals) a))

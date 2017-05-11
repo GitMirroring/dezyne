@@ -39,6 +39,7 @@
   #:use-module (gaiag animate)
   #:use-module (gaiag animate-code)
   #:use-module (gaiag command-line)
+  #:use-module (gaiag compare)
   #:use-module (gaiag indent)
   #:use-module (gaiag misc)
   #:use-module (gaiag norm-event)
@@ -101,7 +102,7 @@
 
 (define (dump-global o)
   (and-let* (((null-is-#f (om:enums)))
-             (template (template-file `(,(language) global ,(symbol-append (code:extension o) '.scm))))
+             (template (template-file `(global ,(symbol-append (code:extension o) '.scm))))
              ((file-exists? (components->file-name template))))
             (dump-indented (list 'dzn 'global (code:extension o))
                            (lambda ()
@@ -803,7 +804,7 @@
                                                   (is-a? b <int>))
                                              (and (is-a? a <void>)
                                                   (is-a? b <void>))
-                                             (equal? a b))))))
+                                             (om:equal? a b))))))
 
 (define-template x:variable-member-declare (lambda (o) (om:variables o)))
 

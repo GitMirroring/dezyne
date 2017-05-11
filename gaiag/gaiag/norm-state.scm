@@ -1,7 +1,9 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -40,6 +42,7 @@
   #:use-module (gaiag om)
   #:use-module (gaiag util)
 
+  #:use-module (gaiag compare)
   #:use-module (gaiag misc)
   #:use-module (gaiag norm)
   #:use-module (gaiag reader)
@@ -95,20 +98,20 @@
 
 (define (norm:on-same-port-statement? model lhs rhs)
   (and (is-a? lhs <on>) (is-a? rhs <on>)
-       (eq? ((compose .name .port car .elements .triggers) lhs)
-            ((compose .name .port car .elements .triggers) rhs))
-       (equal? (.statement lhs) (.statement rhs))))
+       (equal? ((compose .name .port car .elements .triggers) lhs)
+               ((compose .name .port car .elements .triggers) rhs))
+       (om:equal? (.statement lhs) (.statement rhs))))
 
 (define (norm:on-same-port-voidness-statement? model lhs rhs)
   (and (is-a? lhs <on>) (is-a? rhs <on>)
        (let ((ltrigger ((compose car .elements .triggers) lhs))
              (rtrigger ((compose car .elements .triggers) rhs)))
          (norm:port-and-voidness-equal? model ltrigger rtrigger))
-       (equal? (.statement lhs) (.statement rhs))))
+       (om:equal? (.statement lhs) (.statement rhs))))
 
 (define (norm:port-equal? model lhs rhs)
   (and (is-a? lhs <trigger>) (is-a? rhs <trigger>)
-       (eq? (.port.name lhs) (.port.name rhs))))
+       (equal? (.port.name lhs) (.port.name rhs))))
 
 (define (norm:port-and-voidness-equal? model lhs rhs)
     "over een poort? ontvangen we valued of void triggers maar niet
@@ -117,7 +120,7 @@ reply en die kun je niet mixen"
   (and (is-a? lhs <trigger>) (is-a? rhs <trigger>)
        (or (and (om:void? model lhs) (om:void? model rhs))
            (and (not (om:void? model lhs)) (not (om:void? model rhs))))
-       (eq? (.port.name lhs) (.port.name rhs))))
+       (equal? (.port.name lhs) (.port.name rhs))))
 
 (define (passdown-on o)
   (match o

@@ -1,7 +1,9 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -128,17 +130,17 @@
     (_ o)))
 
 (define (norm:on-equal? model a b)
-  (equal? a b))
+  (om:equal? a b))
 
 (define (norm:triggers-equal? model l r)
   (om:triggers-equal? l r))
 
 (define (norm:on-statement-equal? model a b)
   (and (is-a? a <on>) (is-a? b <on>)
-       (equal? (om->list (.statement a)) (om->list (.statement b)))))
+       (om:equal? (.statement a) (.statement b))))
 
 (define (on-statement statements)
-  (if (every identity (map (lambda (x) (equal? (om->list x) (om->list (car statements)))) statements))
+  (if (every identity (map (lambda (x) (om:equal? x (car statements))) statements))
       (car statements)
       (make <compound> #:elements statements)))
 
@@ -303,7 +305,7 @@
   (let* ((expressions (map .expression o))
          (others (remove (is? <otherwise>) expressions))
          (expression (reduce (lambda (g0 g1)
-                               (if (equal? g0 g1) g0 (make <or> #:left g0 #:right g1)))
+                               (if (om:equal? g0 g1) g0 (make <or> #:left g0 #:right g1)))
                              '() others)))
     (match expression
       (($ <not> expression) expression)

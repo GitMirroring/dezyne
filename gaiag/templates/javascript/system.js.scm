@@ -4,7 +4,7 @@ dzn.extend (dzn_require (__dirname + '/#component '));
 #}) (delete-duplicates ((compose .elements .instances) model)))#
 (map (include-interface #{
 dzn.extend (dzn_require (__dirname + '/#interface '));
-#}) (delete-duplicates (om:ports model) (lambda (x y) (equal? (.type x) (.type y)))))
+#}) (delete-duplicates (om:ports model) (lambda (x y) (om:equal? (.type x) (.type y)))))
 #(javascript:namespace model).#.model  = function (locator, meta) {
   this._dzn = {};
   this._dzn.locator = locator;

@@ -336,7 +336,7 @@
 (define (om:port-bind system port)
   (find (lambda (bind) (and=> (om:port-bind? bind)
                               (lambda (b)
-				(equal? (.port (om:port-binding? b)) port)))) ;; FIXME: WHY DOES eq? NOT WORK HERE??????
+				(om:equal? (.port (om:port-binding? b)) port))))
         ((compose .elements .bindings) system)))
 
 (define (om:bind system o)
@@ -344,8 +344,8 @@
     (match o
       ((? symbol?) ;; FIXME: port need not be unique
        (deprecated (current-source-location))
-       (find (lambda (bind) (or (eq? (.port (.left bind)) o)
-                                (eq? (.port (.right bind)) o)))
+       (find (lambda (bind) (or (om:equal? (.port (.left bind)) o)
+                                (om:equal? (.port (.right bind)) o)))
            binds))
       (($ <binding> instance port)
        (find (lambda (bind)
@@ -466,7 +466,7 @@
 
     (($ <type> 'bool) (make <bool>))
     (($ <type> 'void) (make <void>))
-    (($ <type> name)
+    ((and ($ <type>) (= .name name))
      (or (find (om:named name) (om:types model))
          (find (om:scoped (om:scope+name model) name) (om:types))))
     (($ <variable> name type expression) ((om:type model) type))
@@ -474,10 +474,10 @@
     (($ <formal> name type direction) ((om:type model) type))))
 
 (define ((om:named name) ast)
-  ;;(stderr "\nom:named[~a]: ~a" name ast)
+;  (stderr "\nom:named[~a]: ~a" name ast)
   (match name
     ((? symbol?) (or (eq? name (.name ast)) ((om:named (make <scope.name> #:name name)) ast)))
-    (_ (equal? (.name ast) name))))
+    (_ (om:equal? (.name ast) name))))
 
 (define ((om:scoped scope name) ast)
   (let ((r ((om:scoped- scope name) ast)))

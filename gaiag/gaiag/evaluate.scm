@@ -75,11 +75,11 @@
   (let ((type ((om:type model) o)))
     (make <var> #:variable o)))
 
-(define (var-field state variable) (assoc-ref state variable))
+(define (var-field state variable) (assoc-ref state (om2list variable)))
 
 (define (var! state variable value)
   ;;; FIXME (map (lambda (x) (if (eq? identifier (car x)) (cons (car x) (cdr x)) x)) state)
-  (assoc-set! (copy-tree state) variable value))
+  (assoc-set! (copy-tree state) (om2list variable) value))
 
 (define (var? variable) (is-a? variable <variable>))
 
@@ -149,7 +149,7 @@
 
 (define (simplify-expression model state o)
   (let ((e (simplify-expression- model state o)))
-    ;;(stderr "simplify-expression ~a => ~a\n" o e)
+;;    (stderr "simplify-expression ~a => ~a\n" o e)
     e))
 
 (define (simplify-expression- model state o)

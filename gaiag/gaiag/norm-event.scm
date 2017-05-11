@@ -194,7 +194,7 @@
 
 (define (norm:guard-same-statement? model lhs rhs)
   (and (is-a? lhs <guard>) (is-a? rhs <guard>)
-       (equal? (om->list (.statement lhs)) (om->list (.statement rhs)))))
+       (om:equal? (.statement lhs) (.statement rhs))))
 
 (define (combine-ons o)
   (match o
