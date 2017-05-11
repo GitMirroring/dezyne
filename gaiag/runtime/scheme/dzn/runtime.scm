@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -20,18 +21,35 @@
 ;;; 
 ;;; Code:
 
-
-(define (main . args)
-  ((@@ (dzn) main) (command-line)))
-
-(define-module (dzn)
+(define-module (dzn runtime)
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 q)
   #:use-module (oop goops)
-  #:use-module (srfi srfi-1))
+  #:use-module (srfi srfi-1)
+  #:export (<dzn:locator>
+            <dzn:interface>
+            <dzn:component>
+            <dzn:port-base>
+            <dzn:system>
+            <dzn:runtime>
+            .name
+            .self
+            .locator
+            .runtime
+            .in
+            .out
+            .illegal
+            set
+            connect-ports
+            action
+            call-in
+            rcall-in
+            call-out
+            stderr
+            <v>))
 
 (define-syntax-rule (assert e)
   (or e (throw 'assert 'e)))
@@ -48,7 +66,9 @@
 
 (define-class <dzn:model> ())
 
-(define-class <dzn:port-base> ())
+(define-class <dzn:port-base> ()
+  (name #:accessor .name #:init-value (symbol) #:init-keyword #:name)
+  (self #:accessor .self #:init-value #f #:init-keyword #:self))
 
 (define-class <dzn:interface> (<dzn:model>)
   (in #:accessor .in #:init-value #f #:init-keyword #:in)

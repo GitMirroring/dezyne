@@ -44,7 +44,7 @@
 
 (define (fill-event-alist o)
   (let* ((dzn-i 0)
-         (c (make <dzn:component> :locator (.locator o) :flushes? ##t))
+         (c (make <dzn:component> ##:locator (.locator o) ##:flushes? ##t))
          (e `(#
      (map
         (lambda (port)
@@ -72,8 +72,8 @@
 (define (main . args)
   (let* ((print-illegal (lambda () (stderr "illegal\n") (exit 0)))
          (locator (make <dzn:locator>))
-         (runtime (make <dzn:runtime> :illegal print-illegal))
-         (sut (make <dzn:#.scope_model > :locator (set locator runtime) :name 'sut))
+         (runtime (make <dzn:runtime> ##:illegal print-illegal))
+         (sut (make <dzn:#.scope_model > ##:locator (set locator runtime) ##:name 'sut))
          (event-alist (fill-event-alist sut)))
     (while (and-let*
             ((s (read-line))
