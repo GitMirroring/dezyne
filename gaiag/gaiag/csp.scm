@@ -62,6 +62,7 @@
            on->csp
            csp:norm
            csp-queue-size
+           ast->csp
            om->csp
 
            animate-pairs
@@ -82,38 +83,42 @@
 (define-class <the-end-blocking> (<ast>))
 (define-class <voidreply> (<ast>))
 
-(define (om->csp om)
-  (parameterize
-   ((ast:root om))
-   (let* ((name (and (and=> (command-line:get 'model #f) string->symbol))))
-     (or (and-let* ((models (om:filter (lambda (x) (or (as x <interface>) (as x <component>))) om))
-                    (models (null-is-#f (filter .behaviour models)))
-                    (models (if name (filter (om:named name) models) models))
-                    (c-i (append (filter (is? <component>) models) models))
-                    ((pair? c-i)))
-                   (generate-csp (car c-i)))
-         (let* ((models (om:filter (is? <model>) om))
-                (models (comma-join (map .name models)))
-                (message (if name
-                             "gaiag: no model [name=~a] with behaviour\n"
-                             "gaiag: no model with behaviour\n"))
-                (message (format #f message name)))
-           (stderr message)
-           (if name ;; only exit with failure if name was given
-               (throw 'csp message)))))))
+(define* (om->csp om #:optional file-name)
+  (parameterize ((ast:root om))
+    (let ((name (and (and=> (command-line:get 'model #f) string->symbol))))
+      (or (and-let* ((models (om:filter (lambda (x) (or (as x <interface>) (as x <component>))) om))
+                     (models (null-is-#f (filter .behaviour models)))
+                     (models (if name (filter (om:named name) models) models))
+                     (c-i (append (filter (is? <component>) models) models))
+                     ((pair? c-i))
+                     (model (car c-i))
+                     (file-name (or file-name (command-line:get 'output-file (list name '.csp)))))
+            (generate-csp model file-name))
+          (let* ((models (om:filter (is? <model>) om))
+                 (models (comma-join (map .name models)))
+                 (message (if name
+                              "gaiag: no model [name=~a] with behaviour\n"
+                              "gaiag: no model with behaviour\n"))
+                 (message (format #f message name)))
+            (stderr message)
+            (if name ;; only exit with failure if name was given
+                (throw 'csp message)))))))
+
+(define* (ast->csp ast #:optional file-name)
+  (let ((om ((om:register csp:norm #t) ast)))
+    (parameterize ((ast:root om)) (om->csp root file-name))))
 
 (define (ast-> ast)
-  (let ((om ((om:register (compose-root ast:resolve ast->om) #t) ast)))
-    (om->csp om))
+  (ast->csp ast)
   "")
 
-(define (generate-csp o)
+(define* (generate-csp o #:optional (file-name "-"))
   (let ((o (internal-libs o)))
 
     (match o
       (($ <interface>)
        (and-let* ((root (make <root> #:elements (list o))))
-                 (parameterize ((ast:root root)) (model-generate-csp root o))))
+         (parameterize ((ast:root root)) (model-generate-csp root o file-name))))
       (($ <component>)
        (and-let* ((interfaces (map .type ((compose .elements .ports) o)))
                   
@@ -123,32 +128,27 @@
                                      (comma-join (map .name no-behaviour)))))
            (stderr message)
            (throw 'csp message))
-         (parameterize ((ast:root root)) (model-generate-csp root o)))))))
+         (parameterize ((ast:root root)) (model-generate-csp root o file-name)))))))
 
-(define (model-generate-csp root o)
+(define* (model-generate-csp root model #:optional (file-name "-"))
   (let ((separate-asserts? (command-line:get 'assert #f)))
-    (and-let* ((norm ((om:register csp:norm #t) root))
-               (name ((om:scope-name) o))
-               (model (parameterize ((ast:root norm))(om:model-with-behaviour norm)))
-               (file-name (command-line:get 'output-file (list name '.csp))))
-              (parameterize ((ast:root norm))
-               (dump-output file-name (lambda ()
-                                        (csp-file 'combinators.csp.scm (csp:module model))
-                                        (csp-model model)
-                                        (if separate-asserts?
-                                            (animate-string "\ninclude \"asserts.csp\"\n")
-                                            (csp-asserts model))
-                                        (if (command-line:get 'lts #f)
-                                            (let ((models (append (interfaces model) (list model))))
-                                              (map csp-lts models)
-                                              (assembly-lts model)))))
-               (if separate-asserts? (dump-output "asserts.csp" (lambda () (csp-asserts model))))))))
+    (dump-output file-name (lambda ()
+                             (csp-file 'combinators.csp.scm (csp:module model))
+                             (csp-model model)
+                             (if separate-asserts?
+                                 (animate-string "\ninclude \"asserts.csp\"\n")
+                                 (csp-asserts model))
+                             (if (command-line:get 'lts #f)
+                                 (let ((models (append (interfaces model) (list model))))
+                                   (map csp-lts models)
+                                   (assembly-lts model)))))
+    (if separate-asserts? (dump-output "asserts.csp" (lambda () (csp-asserts model))))))
 
 (define (csp:import name)
   (om:import name csp:norm))
 
 (define (csp:norm ast)
-  ((compose
+  ((compose-root
     csp-norm-state
     ast:resolve
     ast->om
