@@ -166,7 +166,7 @@
       (('dotted scope ... name) (om:component (make <scope.name> #:scope scope #:name name)))))
 
   (define (instance? identifier)
-    (om:instance model identifier))
+    (or (as identifier <instance>) (om:instance model identifier)))
 
   (define (function? identifier) (om:function model identifier))
   (define (member? identifier) (om:variable model identifier))
