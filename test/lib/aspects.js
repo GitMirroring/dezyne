@@ -514,7 +514,8 @@ var aspects = {
     var model = parameters.meta.model || parameters.model;
     var queue = parameters.meta.queue || 7;
     var imports = parameters.meta.imports || "";
-    var cmd = dzn() + ' traces '+imports+' -q ' + queue + ' ' + illegal+flush+' -m '+model+' -o '+out+' '+parameters.filename;
+    var cmd = gdzn()
+        + ' traces '+imports+' -q ' + queue + ' ' + illegal+flush+' -m '+model+' -o '+out+' '+parameters.filename;
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
       .then(function(){return ls_traces(out);})
