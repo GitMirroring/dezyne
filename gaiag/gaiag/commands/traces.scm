@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -157,7 +158,7 @@ errors."
         (gdzn-debug? (find (cut equal? <> "--debug") (command-line))))
     (if gdzn-debug? (stderr "CSP:\n ~s\n" csp))
     ;; FIXME: string processing, should generate CSP for process from model+template
-    (let* ((asserts (assert-list root))
+    (let* ((asserts (parameterize ((ast:root root)) (assert-list root)))
            (csp-asserts (with-output-to-string (lambda () (parameterize ((ast:root root)) (csp-asserts model)))))
            (csp-asserts (string-trim-right csp-asserts))
            (main-assert (last (string-split csp-asserts #\newline)))

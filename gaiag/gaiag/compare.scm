@@ -45,7 +45,9 @@
   #:re-export (< equal?))
 
 (define om:< <)
-(define-method (om:equal? a b) (equal? (om2list a) (om2list b)))
+(define-method (om:equal? a b)
+  (or  (and (is-a? a <ast>) (is-a? b <ast>) (= (.id a) (.id b)))
+       (equal? (om2list a) (om2list b))))
 
 (define-method (< (a <on>) (b <on>))
   (< (.triggers a) (.triggers b)))

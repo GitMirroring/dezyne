@@ -65,11 +65,9 @@
                        (map (assert o) interface-checks))
              '())))
     (($ <root> (models ...))
-     (or (parameterize ((ast:root o))
-                       (and-let* ((model (om:model-with-behaviour o)))
-                                 (assert-list-all model)))
-         '()))
-    (_  (assert-list ((om:register (compose ast->om ast:resolve) #t) o)))))
+     (or (and-let* ((model (om:model-with-behaviour o)))
+                   (assert-list-all model))
+         '()))))
 
 (define (assert-list-all o)
   (match o
@@ -81,7 +79,7 @@
     (($ <interface>) (assert-list o))))
 
 (define (ast-> o)
-  ((compose
+  ((compose-root
     assert-list
     ast->om
     ) o))

@@ -39,10 +39,6 @@
   (display #\space port)
   (display o port))
 
-(define-method (sdisplay (o <ast>) port)
-  (display #\space port)
-  (display o port))
-
 (define-method (sdisplay (o <top>) port)
   (display #\space port)
   (display o port))
@@ -99,5 +95,7 @@
   (display "(" port)
   (display (ast-name o) port)
   (ast port)
+;  (display " " port)
+;  (display (.id o) port)
   (display-slots o port)
   (display #\) port))

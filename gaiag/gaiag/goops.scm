@@ -25,10 +25,13 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
 (define-module (gaiag goops)
+  #:use-module (system foreign)
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
   #:use-module (srfi srfi-1)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+
+  #:use-module (oop goops describe)
   
   #:export (
            .ast
@@ -45,7 +48,7 @@
            .instance.name
            ast:inevitable
            ast:optional
-
+           
            .arguments
            .behaviour
            .bindings
@@ -58,16 +61,17 @@
            .external
            .field
            .fields
+           .formals
            .from
            .function
            .functions
+           .id
            .injected
            .instance
            .instances
            .last?
            .left
            .name
-           .formals
            .operator
            .port
            .ports
@@ -190,6 +194,9 @@
 
 (define-class <ast> ())
 
+(define-method (.id (o <ast>))
+  (pointer-address (scm->pointer o)))
+
 (define-class <ast-list> (<ast>)
   (elements #:getter .elements #:init-form (list) #:init-keyword #:elements))
 
@@ -214,14 +221,13 @@
 (define-class <instances> (<ast-list>))
 (define-class <ports> (<ast-list>))
 
+(define-class <root> (<ast-list>))
 (define g-root-id 0)
-(define (nextid)
-  (set! g-root-id (+ g-root-id 1))
-  ;;(stderr "nextid: ~a\n" g-root-id)
-  g-root-id)
-
-(define-class <root> (<ast-list>)
-  (id #:getter .id #:init-thunk nextid #:init-keyword #:id))
+(define-method (initialize (o <root>) . initargs)
+  (let ((root (apply next-method (cons o initargs))))
+    (set! g-root-id (.id root))
+    ;(stderr "initialize root; id ~a\n" (.id root))
+    root))
 
 (define-class <triggers> (<ast-list>))
 (define-class <types> (<ast-list>))
@@ -331,6 +337,7 @@
   (lambda (o)
     (fold-right
      (lambda (elem previous)
+       ;(if (is-a? previous <ast>) (stderr "ast:root set to ~a\n\n" (.id previous)))
        (parameterize ((ast:root previous)) (elem previous))) o f)))
 
 (define-method (.type (o <port>))

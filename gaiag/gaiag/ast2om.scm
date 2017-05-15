@@ -66,7 +66,6 @@
   (retain-source-properties ast (ast->om-- ast)))
 
 (define (ast->om-- o)
-
   (match o
     (('action event) (make <action> #:event event))
 

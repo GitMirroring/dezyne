@@ -125,7 +125,8 @@
         (changed (map (make-initializer o) names))
         (original (map bar names)))
    (if (eq? original changed) o
-       (retain-source-properties o (apply make (cons class (apply append changed)))))))
+       (let* ((cloned (apply make (cons class (apply append changed)))))
+         (retain-source-properties o cloned)))))
 
 (define (my-equal? a b)
   (or (eq? a b)

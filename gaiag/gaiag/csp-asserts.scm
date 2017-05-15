@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -30,6 +31,7 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
   #:use-module (gaiag resolve)
+  #:use-module (gaiag misc)
 
   #:use-module (gaiag asserts)
   #:use-module (gaiag csp)
