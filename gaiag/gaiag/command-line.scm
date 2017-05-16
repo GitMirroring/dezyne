@@ -29,10 +29,6 @@
   #:use-module (gaiag gaiag)
   #:export (command-line:get))
 
-(define gaiag-options
-  '((output . output-dir)
-    (output-file . output)))
-
 (define multi-options
   '(import))
 
@@ -41,8 +37,6 @@
          (file (car files))
          (commands '("code" "traces"))
          (command (and=> (member file commands) (compose string->symbol car)))
-         (option (if command option
-                     (or (assoc-ref gaiag-options option) option)))
          (parse-opts (if (not command) parse-opts
                          (let ((module (resolve-module `(gaiag commands ,command))))
                            (module-ref module 'parse-opts))))

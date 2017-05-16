@@ -94,7 +94,7 @@
                    ((pair? c-i))
                    (model (car c-i))
                    (name ((om:scope-name '.) model))
-                   (file-name (or file-name (command-line:get 'output-file (list name '.csp)))))
+                   (file-name (or file-name (command-line:get 'output (list name '.csp)))))
           (generate-csp model #:file-name file-name #:separate-asserts? separate-asserts?))
         (let* ((models (om:filter (is? <model>) om))
                (models (comma-join (map .name models)))

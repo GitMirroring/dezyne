@@ -61,7 +61,6 @@
             (shell (single-char #\s) (value #t))
             (trail (single-char #\t) (value #t))
             (output (single-char #\o) (value #t))
-            (output-dir (single-char #\O) (value #t))
             (queue-size (single-char #\q) (value #t))
 	    (version (single-char #\v))))
 	 (options (getopt-long args option-spec
@@ -90,8 +89,7 @@ Usage: gaiag [OPTION]... FILE
   -l, --language=LANG         generate output for language=LANG [ast]
   -s, --shell=MODEL           generate thread safe system shell for MODEL
   -t, --trail=TRAIL           specify trail TRAIL for trail-walker
-  -o, --output FILE           generate FILE containing the output
-  -O, --output-dir=DIR        generate output in DIR
+  -o, --output=FILE           generate output in FILE
   -v, --version               display version
 
 Languages: c c++ cs csp dzn goops html java javascript python
