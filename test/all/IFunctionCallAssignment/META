@@ -1,2 +1,1 @@
-{"known":["build"],"comment":"interface model: cannot build"}
-
+{"skip":["build"],"comment":"interface model: cannot build"}

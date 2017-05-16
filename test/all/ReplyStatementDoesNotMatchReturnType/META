@@ -1,3 +1,2 @@
-{"known":["c++:build","c++03:build","c:build","cs:build","javascript:execute"]
-,"comment":"reply of invalid type => compile error. ISSUE: test shall pass if compile fails"
-}
+{"skip":["build"]
+,"comment":"reply of invalid type => compile error. TODO: make test pass when compile/execute fails"}
