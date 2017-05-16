@@ -124,7 +124,7 @@
 	(bar (lambda (name) (list (symbol->keyword name) (slot-ref o name))))
         (changed (map (make-initializer o) names))
         (original (map bar names)))
-   (if (eq? original changed) o
+   (if (equal? original changed) o
        (let* ((cloned (apply make (cons class (apply append changed)))))
          (retain-source-properties o cloned)))))
 

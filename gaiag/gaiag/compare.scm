@@ -26,6 +26,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
 (define-module (gaiag compare)
+  #:use-module (srfi srfi-1)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
   #:use-module (gaiag goops)
 
@@ -45,9 +46,19 @@
   #:re-export (< equal?))
 
 (define om:< <)
+
 (define-method (om:equal? a b)
-  (or  (and (is-a? a <ast>) (is-a? b <ast>) (= (.id a) (.id b)))
-       (equal? (om2list a) (om2list b))))
+  (equal? (om2list a) (om2list b)))
+
+(define-method (members (o <ast>))
+  (let ((names (map slot-definition-name (class-slots (class-of o)))))
+    (map (lambda (name) (slot-ref o name)) names)))
+
+(define-method (om:equal? (a <ast>) (b <ast>))
+  (or (= (.id a) (.id b))
+      (and (eq? (class-name (class-of a)) (class-name (class-of b)))
+           (every om:equal? (members a) (members b)))))
+
 
 (define-method (< (a <on>) (b <on>))
   (< (.triggers a) (.triggers b)))
@@ -103,6 +114,7 @@
 ;;   (and (equal? (.scope a) (.scope b)) (equal? (.name a) (.name b))))
 (define-method (om:equal? (a <port>) (b <port>))
   (and (equal? (.name a) (.name b)) (om:equal? (.name (.type a)) (.name (.type b)))))
+
 
 (define-method (om:equal? (a <trigger>) (b <trigger>))
   (define (name o)
