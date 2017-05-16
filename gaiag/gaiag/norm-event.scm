@@ -57,8 +57,8 @@
            ast:out-triggers
            ))
 
-(define (norm-event o)
-  ((compose
+(define-method (norm-event (o <root>))
+  ((compose-root
     remove-skip
     aggregate-guard-s
     (group-ons)
@@ -278,7 +278,7 @@
         (make <guard> #:expression expression #:statement o)))))
 
 (define (ast-> ast)
-  ((compose
+  ((compose-root
     om->list
     ;;((@ (gaiag dzn) ast->dzn))
     code-norm-event

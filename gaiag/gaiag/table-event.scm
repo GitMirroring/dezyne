@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -59,7 +60,7 @@
     ) o))
 
 (define (ast-> ast)
-  ((compose
+  ((compose-root
     dzn-table
     (lambda (x) (if (is-a? x <ast>) (make <root> #:elements (om:filter identity x))
                     (filter identity x)))

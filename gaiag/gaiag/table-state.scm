@@ -337,7 +337,7 @@
     ) o))
 
 (define (ast-> ast)
-  ((compose
+  ((compose-root
     dzn-table
     (lambda (x) (if (is-a? x <ast>) (make <root> #:elements (om:filter identity x))
                     (filter identity x)))

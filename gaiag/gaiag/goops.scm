@@ -324,7 +324,7 @@
   (injected #:getter .injected #:init-value #f #:init-keyword #:injected))
 (define-public ast:root (make-parameter 'error-ast:root-not-set))
 (define (resolve root class o)
-  ;;(stderr "current root: ~a\n" (.id root))
+  ;(stderr ".type ~a; \nroot = ~a\n" o (.id root))
   ;;(when (not (eq? g-root-id (.id root))) (throw 'wrong-root))
   (cond ((eq? <interface> class)
          (find (lambda (m)
@@ -337,7 +337,7 @@
   (lambda (o)
     (fold-right
      (lambda (elem previous)
-       ;(if (is-a? previous <ast>) (stderr "ast:root set to ~a\n\n" (.id previous)))
+       ;(if (is-a? previous <ast>) (when (not (is-a? previous <root>)) (stderr "ast:root set to ~a\n\n" (.id previous)) barf))
        (parameterize ((ast:root previous)) (elem previous))) o f)))
 
 (define-method (.type (o <port>))
