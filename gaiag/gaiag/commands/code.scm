@@ -43,6 +43,7 @@
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (language (single-char #\l) (value #t))
+            (mangle (single-char #\M))
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))
             (shell (single-char #\s) (value #t))
@@ -62,6 +63,7 @@ FIXME:      --depends[=TYPE]        generate dependency for DZN-FILE and write t
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path
   -l, --language=LANG         generate code for language=LANG [c++]
+  -M, --mangle                enable generator mangling
   -m, --model=MODEL           generate main for MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
   -s, --shell=MODEL           generate thread safe system shell for MODEL
@@ -74,14 +76,19 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
   (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (model-opt (option-ref options 'model #f))
+         (mangle-opt (option-ref options 'mangle #f))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
          (debug? (option-ref options 'debug #f))
+         (language (string->symbol (option-ref options 'language "c++")))
          (command (string-append
                    "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
                    " generate -l scm -L -o -"
+                   (if (not mangle-opt) "" " -M")
                    (string-join imports " -I " 'prefix)
-                   ;; Must NOT forward --model to generate: that will cut other models
-                   ;; (if (not model-opt) "" (string-append " -m " model-opt))
+                   ;; Only forward --model to generate for CSP, not
+                   ;; for executable code: generator cuts models
+                   (if (or (not (equal? language "csp")) (not model-opt)) ""
+                       (string-append " -m " model-opt))
                    " " file-name)))
     (if gdzn-debug? (stderr "command: ~a\n" command))
     (with-input-from-string (gulp-pipe command) read)))
