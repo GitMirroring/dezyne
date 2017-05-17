@@ -114,5 +114,9 @@ public #.scope_model(dzn.Locator locator, String name="", dzn.Meta parent=null) 
       (map (define-on model port #{
     #instance .#instance-port .inport.#event  = (#formals) => {#(string-if (not (eq? return-type 'void)) #{return #}) #port .inport.#event(#arguments);};
 #}) (filter om:in? (om:events port))))
-    (filter om:requires? (om:ports model)))}
+      (filter om:requires? (om:ports model)))
+#(map (connect-ports model #{
+    #((om:scope-name '_) interface) .connect(#provided , #required);
+#}) (filter (negate om:port-bind?) ((compose .elements .bindings) model)))
+    }
 }

@@ -50,6 +50,7 @@ interface II
       on return_to_sender: {idle = false; reply(true);}
     }
     [!idle] {
+      on simple: illegal;
       on return_to_sender: illegal;
       on inevitable: {idle = true; foo;}
     }
@@ -67,7 +68,20 @@ component C
     on p_inner.simple(): blocking {b = false; r_inner.simple();}
     on p_inner.return_to_sender(i,j): blocking {b = r_inner.return_to_sender(i,j);}
     [b] on r_inner.foo(i): {p_inner.foo(i); p_inner.reply(b);}
-    [!b] on r_inner.foo(i): p_inner.reply();
+    [!b] on r_inner.foo(i): {p_inner.foo(i); p_inner.reply();}
+  }
+}
+
+component B
+{
+  provides I p_proxy_inner;
+  requires I r_proxy_inner;
+
+  behaviour
+  {
+    on p_proxy_inner.simple(): r_proxy_inner.simple();
+    on p_proxy_inner.return_to_sender(i,j): {bool b = r_proxy_inner.return_to_sender(i,j); reply(b);}
+    on r_proxy_inner.foo(i): p_proxy_inner.foo(i);
   }
 }
 
@@ -78,8 +92,10 @@ component shell
 
   system
   {
+    B b;
     C c;
-    p_outer<=>c.p_inner;
+    p_outer<=>b.p_proxy_inner;
+    b.r_proxy_inner<=>c.p_inner;
     c.r_inner<=>r_outer;
   }
 }
