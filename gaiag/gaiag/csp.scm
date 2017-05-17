@@ -1285,8 +1285,8 @@
   }
 }"))
 
-(define (internal-libs ast)
+(define-method (internal-libs (o <root>))
   ((compose-root
     add-internal-libs-behaviour
     move-internal-ports
-    ) ast))
+    ) o))

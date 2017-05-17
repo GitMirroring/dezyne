@@ -62,7 +62,7 @@
 (define (type-mismatch o expected actual)
   (make <error> #:ast o #:message (format #f "type mismatch: ~a expected, found: ~a" expected actual)))
 
-(define (resolve-root o)
+(define-method (resolve-root (o <root>))
   (map om:register-type (om:types o))
   (let* ((resolved ((compose-root
                      (cut resolve-selection <> <system>)

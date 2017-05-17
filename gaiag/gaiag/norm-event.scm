@@ -117,7 +117,7 @@
     add-skip)
    o))
 
-(define (code-norm-event o)
+(define-method (code-norm-event (o <root>))
   ((compose-root
     add-reply-port
     (add-illegals)
