@@ -1,0 +1,34 @@
+##include "#x:scoped-model-name .hh"
+
+#x:open-namespace
+#x:model-name ::#x:model-name(const dzn::locator& locator)
+: #x:meta
+, dzn_locator(locator.clone().set(dzn_rt).set(dzn_pump))
+#x:injected-instance-initializer
+#x:injected-instance-system-initializer
+#x:non-injected-instance-initializer
+#x:provided-port-reference-initializer
+#x:required-port-reference-initializer
+, dzn_pump()
+{
+  #x:shell-provided-meta-initializer
+  #x:shell-required-meta-initializer
+
+  #x:shell-provided-in
+  #x:shell-required-out
+  #x:shell-provided-out
+  #x:shell-required-in
+
+  #x:shell-non-injected-instance-meta
+  #x:system-port-connect
+}
+
+void #x:model-name ::check_bindings() const
+{
+  dzn::check_bindings(&dzn_meta);
+}
+void #x:model-name ::dump_tree(std::ostream& os) const
+{
+  dzn::dump_tree(os, &dzn_meta);
+}
+#x:close-namespace

@@ -1,0 +1,1 @@
+#x:instance-name .#x:instance-port-name .meta.provides.port = "#.name";

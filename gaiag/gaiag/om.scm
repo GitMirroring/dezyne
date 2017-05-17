@@ -845,7 +845,8 @@
     (find (lambda (m)
              (equal? o (.name m)))
           (append ((compose .elements .ports) root)
-                  (if (.behaviour root) ((compose .elements .ports .behaviour) root) '()))))))
+                  (if (and (is-a? root <component>) (.behaviour root))
+                      ((compose .elements .ports .behaviour) root) '()))))))
 
 (define name-resolve (pure-funcq name-resolve))
 

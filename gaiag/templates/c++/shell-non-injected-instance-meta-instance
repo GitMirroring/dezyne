@@ -1,0 +1,2 @@
+#.name .dzn_meta.parent = &dzn_meta;
+#.name .dzn_meta.name = "#.name";

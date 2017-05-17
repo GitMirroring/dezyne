@@ -47,6 +47,7 @@
 
   #:export (ast:code
             ast:scope+name
+            ast:other-direction
             code-file
             code:animate-file
             code:extension
@@ -876,6 +877,8 @@
 (define-template x:bind-connect code:non-injected-bindings)
 
 (define-template x:constructor-meta-initializer non-injected-instances)
+(define-template x:shell-provided-meta-initializer ast:provided)
+(define-template x:shell-required-meta-initializer ast:required)
 (define-template x:injected-instance-meta-initializer injected-instances)
 (define-template x:non-injected-instance-meta-initializer non-injected-instances)
 
@@ -885,6 +888,43 @@
 ;;;;(define-template x:non-injected-instance-reference-declare non-injected-instances)
 (define-template x:provided-port-instance-declare (lambda (o) (filter om:provides? (om:ports o))))
 (define-template x:required-port-instance-declare (lambda (o) (filter om:requires? (om:ports o))))
+
+;; shell-source-system
+(define-template x:instance-meta-initializer identity)
+(define-template x:shell-provided-in ast:provided-in-triggers)
+(define-template x:shell-required-out ast:required-out-triggers)
+(define-template x:shell-provided-out ast:provided-out-triggers)
+(define-template x:shell-required-in ast:required-in-triggers)
+(define-template x:capture-list identity)
+(define-template x:capture code:capture-arguments 'capture-prefix)
+(define-template x:shell-non-injected-instance-meta non-injected-instances)
+
+(define-method (code:capture-arguments (o <trigger>))
+  (map .name (filter (negate om:out-or-inout?) (ast:formals o))))
+
+(define-method (ast:other-direction (o <event>))
+  (assoc-ref `((in . out)
+               (out . in))
+             (.direction o)))
+
+(define-method (ast:other-direction (o <trigger>))
+  ((compose ast:other-direction .event) o))
+
+(define-template x:instance-name code:instance-name)
+
+(define-method (code:instance-name (o <trigger>)) ;; MORTAL SIN HERE!!?
+  ((compose code:instance-name (cut .port ((ast:model) o) <>)) o))
+
+(define-method (code:instance-name (o <port>)) ;; MORTAL SIN HERE!!?
+  (.name (om:instance ((ast:model) o) o)))
+
+(define-template x:instance-port-name code:instance-port-name)
+(define-method (code:instance-port-name (o <trigger>)) ;; MORTAL SIN HERE!!?
+  ((compose code:instance-port-name (cut .port ((ast:model) o) <>)) o))
+(define-method (code:instance-port-name (o <port>)) ;; MORTAL SIN HERE!!?
+  (let* ((bind (om:port-bind ((ast:model) o) o))
+         (instance-bind (om:instance-binding? bind)))
+    (.port.name instance-bind)))
 
 ;; foreign-header-component
 ;;(define-template x:pure-virtual-method-declare code:syntesize-ons)
@@ -1099,6 +1139,8 @@
               (x:pand 'header-system (module-ref module 'model) module))
              ((member file-name '(shell.hh.scm))
               (x:pand 'shell-header-system (module-ref module 'model) module))
+             ((member file-name '(shell.cc.scm))
+              (x:pand 'shell-source-system (module-ref module 'model) module))
              ((member file-name '(foreign.hh.scm))
               (x:pand 'foreign-header-component (module-ref module 'model) module))
              ((member file-name '(main.cc.scm))
