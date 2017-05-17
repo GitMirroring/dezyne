@@ -1,5 +1,5 @@
-##ifndef #x:upcase-model-name _HH
-##define #x:upcase-model-name _HH
+##ifndef SKEL_#x:upcase-model-name _HH
+##define SKEL_#x:upcase-model-name _HH
 
 ##include <iostream>
 
@@ -11,19 +11,16 @@ struct runtime;
 }
 
 #x:open-namespace
+namespace skel {
 struct #x:model-name
 {
   dzn::meta dzn_meta;
   dzn::runtime& dzn_rt;
   dzn::locator const& dzn_locator;
-  #x:enum-definer
-  #x:variable-member-declare
-  #x:reply-member-declare
-  #x:out-binding-lambda
   #x:provided-port-declare
   #x:required-port-declare
-  #x:async-port-declare
   #x:model-name (const dzn::locator&);
+  virtual ~#x:model-name ();
   void check_bindings() const;
   void dump_tree(std::ostream& os) const;
   friend std::ostream& operator << (std::ostream& os, const #x:model-name & m)  {
@@ -31,7 +28,7 @@ struct #x:model-name
     return os << "[" << #x:stream-member "]" ;
   }
   private:
-  #x:method-declare
-  #x:function-declare };
+  #x:pure-virtual-method-declare };
+}
 #x:close-namespace
-##endif // #x:upcase-model-name _HH
+##endif // SKEL_#x:upcase-model-name _HH

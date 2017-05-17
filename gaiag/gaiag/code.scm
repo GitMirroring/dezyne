@@ -886,6 +886,18 @@
 (define-template x:provided-port-instance-declare (lambda (o) (filter om:provides? (om:ports o))))
 (define-template x:required-port-instance-declare (lambda (o) (filter om:requires? (om:ports o))))
 
+;; foreign-header-component
+;;(define-template x:pure-virtual-method-declare code:syntesize-ons)
+(define-template x:pure-virtual-method-declare ast:in-triggers)
+(define-template x:declare-method code:trigger)
+(define-template x:declare-pure-virtual-method identity)
+
+(define-method (trigger->on (o <trigger>))
+  (make <on> #:triggers (make <triggers> #:elements (list o)) #:statement (make <compound>)))
+
+(define-method (code:syntesize-ons (o <component>))
+  (map trigger->on (ast:in-triggers o)))
+
 (define-method (code:dzn-locator (o <instance>)) ;; MORTAL SIN HERE!!?
   (let* ((model ((ast:model) o)))
     (if (null? (injected-bindings model)) ""
@@ -1087,6 +1099,8 @@
               (x:pand 'header-system (module-ref module 'model) module))
              ((member file-name '(shell.hh.scm))
               (x:pand 'shell-header-system (module-ref module 'model) module))
+             ((member file-name '(foreign.hh.scm))
+              (x:pand 'foreign-header-component (module-ref module 'model) module))
              ((member file-name '(main.cc.scm))
               (x:pand 'main-component (module-ref module 'model) module))
              (else (animate-file file-name module))))))
