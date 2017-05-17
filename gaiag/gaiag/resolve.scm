@@ -76,7 +76,7 @@
     resolved))
 
 (define-method (resolve-selection (o <root>) class)
-  (make <root>
+  (clone o
     #:elements (receive (selection rest)
                         (partition (is? class) (.elements o))
                         (append rest (map resolve-top-model selection)))))
@@ -194,7 +194,8 @@
 
   (define (as-type o)
     (match o
-      (($ <type> ('dotted '* scope ... name)) ((om:type model) (make <type> #:name (make <scope.name> #:scope scope #:name name))))
+      (($ <type> ('dotted '* scope ... name))
+       ((om:type model) (make <type> #:name (make <scope.name> #:scope scope #:name name))))
       (($ <type> ('dotted scope ... name)) (=> failure)
        (or ((om:type model) (make <type> #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name)))
            ((om:type model) (make <type> #:name (make <scope.name> #:scope scope #:name name)))
@@ -220,6 +221,41 @@
          enum))
       (_ #f)))
 
+  (define (resolve-assign-expression o)
+    (match o
+           (($ <call> (and (? event?) (get! event)))
+            (make <action> #:event (event? event)))
+
+           (($ <call>)
+            ((resolve model locals) o))
+
+            (('dotted (and (? event?) (get! event)))
+             (make <action> #:event (event? event)))
+
+            (($ <var> (and (? event?) (get! event)))
+             (make <action> #:event (event? event)))
+
+            (('dotted (and (? function?) (get! function)))
+             (make <call> #:function (function? (function))))
+
+            (($ <var> (and (? function?) (get! function)))
+             (make <call> #:function (function? (function))))
+
+            (('dotted (and (? port?) (get! port)) event)
+             ((resolve model locals) (make <action> #:port (port) #:event event)))
+
+            (($ <action>)
+             ((resolve model locals) o))
+
+            (($ <var> (and (? function?) (get! function)))
+             (make <call> #:function (function? (function))))
+
+            ((and ($ <value>) (get! expression))
+             ((resolve model locals) (expression)))
+
+            (_
+             ((resolve model locals) o))))
+  
   (match o
     (($ <var> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
@@ -277,11 +313,11 @@
     ((or '== '!= '< '<= '> '>= 'group) o)
 
     (($ <formal> name type direction)
-     (make <formal> #:name name #:type ((resolve model locals) type) #:direction direction))
+     (clone o #:type ((resolve model locals) type)))
 
     (($ <call> function (and ($ <arguments> (arguments ...)) (get! arguments)) last?)
      (let* ((function (or (as function <function>) (function? function))))
-       (make <call> #:function function #:arguments ((resolve model locals) (arguments)) #:last? last?)))
+       (clone o #:function function #:arguments ((resolve model locals) (arguments)))))
 
     (($ <type>)
      (or (as-type o)
@@ -302,7 +338,7 @@
     (($ <literal>)
       (let ((type (make <type> #:name (.type o))))
         (clone o #:type ((resolve model locals) type))))
-    (($ <otherwise>) (make <otherwise>))
+    (($ <otherwise>) o)
 
     ((and ($ <port>) (= .type ('dotted scope ... name)))
      (let* ((name (make <scope.name> #:scope scope #:name name))
@@ -315,10 +351,6 @@
        (if (not type) (resolve-error o type "undefined interface: ~a")
            o;(clone o #:type type)
            )))
-    (($ <signature> type (? unspecified?))
-     (make <signature>
-       #:type ((resolve model locals) type)
-       #:formals '(formals)))
     (($ <signature> type formals)
      (clone o
             #:type ((resolve model locals) type)
@@ -372,71 +404,10 @@
                         #:event event
                         #:arguments ((resolve model locals) arguments)))))))
 
-    (($ <assign> variable ($ <call> (and (? event?) (get! event))))
-     (make <assign>
-       #:variable (var? variable)
-       #:expression (make <action> #:event (event? event))))
-
-    (($ <assign> variable (and ($ <call>) (get! call)))
-     (make <assign> 
-       #:variable (var? variable)
-       #:expression ((resolve model locals) (call))))
-
-    ;; FIXME: expr/call-> decide which one to produce in parser
-    (($ <assign> variable ($ <call> (and (? event?) (get! event))))
-     (make <assign>
-       #:variable (var? variable)
-       #:expression (make <action> #:event (event? event))))
-
-    (($ <assign> variable (and ($ <call>) (get! call)))
-     (make <assign> 
-       #:variable (var? variable)
-       #:expression ((resolve model locals) (call))))
-
-    (($ <assign> variable ('dotted (and (? event?) (get! event))))
-     (make <assign>
-       #:variable (var? variable)
-       #:expression (make <action> #:event (event? event))))
-
-    (($ <assign> variable ($ <var> (and (? event?) (get! event))))
-     (make <assign>
-       #:variable (var? variable)
-       #:expression (make <action> #:event (event? event))))
-
-    (($ <assign> variable ('dotted (and (? function?) (get! function))))
-     (make <assign>
-       #:variable (var? variable)
-       #:expression (make <call> #:function (function? (function)))))
-
-    (($ <assign> variable ($ <var> (and (? function?) (get! function))))
-     (make <assign>
-       #:variable (var? variable)
-       #:expression (make <call> #:function (function? (function)))))
-
-    (($ <assign> variable ('dotted (and (? port?) (get! port)) event))
-     (make <assign>
-       #:variable (var? variable)
-       #:expression ((resolve model locals) (make <action> #:port (port) #:event event))))
-
-    (($ <assign> variable (and ($ <action>) (get! action)))
-     (make <assign>
-       #:variable (var? variable)
-       #:expression ((resolve model locals) (action))))
-
-    (($ <assign> variable ($ <var> (and (? function?) (get! function))))
-     (make <assign>
-       #:variable (var? variable)
-       #:expression (make <call> #:function (function? (function)))))
-
-    (($ <assign> variable (and ($ <value>) (get! expression)))
-     (make <assign>
-       #:variable (var? variable)
-       #:expression ((resolve model locals) (expression))))
-
     (($ <assign> variable expression)
      (make <assign>
        #:variable (var? variable)
-       #:expression ((resolve model locals) expression)))
+       #:expression (resolve-assign-expression expression)))
 
     (($ <formal> name type direction)
      (make <formal>
@@ -449,53 +420,11 @@
        #:name name
        #:type ((resolve model locals) type)))
 
-    (($ <variable> name type ($ <call> (and (? event?) (get! event))))
-     (make <variable>
-       #:name name
-       #:type ((resolve model locals) type)
-       #:expression (make <action> #:event (event? event))))
-
-    (($ <variable> name type ($ <value> (and ($ <call>) (get! call))))
-     (make <variable>
-       #:name name
-       #:type ((resolve model locals) type)
-       #:expression ((resolve model locals) (call))))
-
-    (($ <variable> name type ($ <value> ($ <var> (and (? event?) (get! event)))))
-     (make <variable>
-       #:type ((resolve model locals) type)
-       #:name name
-       #:expression (make <action> #:event (event? event))))
-
-    (($ <variable> name type ($ <value> (and ($ <action>) (get! action))))
-     (make <variable>
-       #:name name
-       #:type ((resolve model locals) type)
-       #:expression ((resolve model locals) (action))))
-
-    (($ <variable> name type ('dotted (and (? port?) (get! port)) event))
-     (make <variable>
-       #:name name
-       #:type ((resolve model locals) type)
-       #:expression ((resolve model locals) (make <action> #:port (port) #:event event))))
-
-    (($ <variable> name type ('dotted (and (? function?) (get! function))))
-     (make <variable>
-       #:name name
-       #:type ((resolve model locals) type)
-       #:expression (make <call> #:function (function? (function)))))
-
-    (($ <variable> name type ($ <var> (and (? function?) (get! function))))
-     (make <variable>
-       #:name name
-       #:type ((resolve model locals) type)
-       #:expression (make <call> #:function (function? (function)))))
-
     (($ <variable> name type expression)
      (make <variable>
        #:name name
        #:type ((resolve model locals) type)
-       #:expression ((resolve model locals) expression)))
+       #:expression (resolve-assign-expression expression)))
 
     (('dotted '* scope ... name)
      ((resolve model locals) (make <scope.name> #:scope scope #:name name)))

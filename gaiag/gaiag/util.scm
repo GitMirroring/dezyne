@@ -125,8 +125,10 @@
         (changed (map (make-initializer o) names))
         (original (map bar names)))
    (if (equal? original changed) o
-       (let* ((cloned (apply make (cons class (apply append changed)))))
-         (retain-source-properties o cloned)))))
+       (begin
+         ;(stderr "clone\n")
+         (let* ((cloned (apply make (cons class (apply append changed)))))
+                   (retain-source-properties o cloned))))))
 
 (define (my-equal? a b)
   (or (eq? a b)
@@ -145,7 +147,9 @@
         (changed (lset-difference eq? paired-setters paired-members))
     	(unchanged (lset-difference (lambda (a b) (eq? (car a) (car b))) paired-members changed)))
     (if (null? changed) o
-    	(apply make (cons class (apply append (append unchanged changed)))))))
+    	(begin
+          ;(stderr "clone1\n")
+          (apply make (cons class (apply append (append unchanged changed))))))))
 
 (define-method (clone (o <ast>) . setters)
   (retain-source-properties o (next-method)))

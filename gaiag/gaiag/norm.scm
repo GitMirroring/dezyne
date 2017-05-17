@@ -168,11 +168,9 @@
                (partition (lambda (x) (compare model (car triggers) x)) triggers)
              (let* ((triggers (append shared-triggers))
                     (shared-on
-                     (make <on>
+                     (clone o
                        #:triggers
-                       (retain-source-properties
-                        (.triggers o)
-                        (make <triggers> #:elements triggers))
+                       (clone (.triggers o) #:elements triggers)
                        #:statement (.statement o))))
                (cons shared-on (loop remainder)))))))
     (_ o)))
@@ -185,7 +183,7 @@
     (($ <compound> (($ <guard>) ..1))
      (if (=1 (length (.elements o)))
          o
-         (make <compound>
+         (clone o
            #:elements
            (let loop ((guards (.elements o)))
              (if ( null? guards)
@@ -194,7 +192,7 @@
                      (partition (lambda (x) (om:guard-equal? (car guards) x)) guards)
                    (let ((aggregated-guard
                           (if (>1 (length shared-guards))
-                              (make <guard>
+                              (clone (car shared-guards)
                                 #:expression (.expression (car shared-guards))
                                 #:statement (wrap-compound-as-needed (map .statement shared-guards)))
                               (car shared-guards))))
@@ -226,10 +224,7 @@
       (.statement o)))
     ((and ($ <compound> (statements ...)) (? om:declarative?))
      (let ((statements statements))
-       (retain-source-properties
-        o
-        (make <compound>
-          #:elements (map (passdown-expression expression) statements)))))
+       (clone o #:elements (map (passdown-expression expression) statements))))
     (_ (make <guard> #:expression expression #:statement o))))
 
 (define (flatten-compound o)
@@ -237,11 +232,9 @@
     ((? om:imperative?) o)
     (($ <compound> (statements ...))
      (let ((top (flatten-compound- o)))
-       (retain-source-properties
-        o
-        (if (is-a? top <compound>)
-            top
-            (make <compound> #:elements (list top))))))
+       (if (is-a? top <compound>)
+           (retain-source-properties o top)
+           (clone o #:elements (list top)))))
     (($ <skip>) o)
     ((? (is? <ast>)) (om:map flatten-compound o))
     (_ o)))
@@ -252,10 +245,7 @@
     (($ <compound> (statement))
      (flatten-compound- statement))
     (($ <compound> (statements ...))
-     (retain-source-properties
-      o
-      (make <compound> #:elements
-            (apply append (map flatten-compound-compound statements)))))
+     (clone o #:elements (apply append (map flatten-compound-compound statements))))
     (($ <skip>) o)
     ((? (is? <ast>)) (om:map flatten-compound- o))
     (_ o)))
@@ -276,7 +266,7 @@
      (or (and-let* ((guards ((om:filter:p <guard>) statements))
                     ;;(value (.value (guards-not-or guards))) ;; FIXME
                     (value (guards-not-or guards)))
-                   (make <otherwise> #:value value))
+                   (clone o #:value value))
          o))
     (($ <compound> (statements ...))
      (clone o #:elements (map (annotate-otherwise statements) statements)))
@@ -315,17 +305,17 @@
   ;;(if blocking? (stderr "passdown-blocking[~a]: o=~a\n" blocking? o))
   (match o
     (($ <blocking> (and (? om:declarative?) ($ <compound> (statements ...))))
-     (make <compound> #:elements (map (passdown-blocking #t) statements)))
+     (clone (.statement o) #:elements (map (passdown-blocking #t) statements)))
     (($ <blocking> ($ <guard> expression statement))
-     (make <guard> #:expression expression #:statement ((passdown-blocking #t) statement)))
+     (clone (.statement o) #:statement ((passdown-blocking #t) statement)))
     (($ <blocking> ($ <on> triggers statement))
-     (make <on> #:triggers triggers #:statement ((passdown-blocking #t) statement)))
+     (clone (.statement o) #:statement ((passdown-blocking #t) statement)))
     (($ <guard> expression statement)
-     (rsp o (make <guard> #:expression expression #:statement ((passdown-blocking blocking?) statement))))
+     (clone o #:statement ((passdown-blocking blocking?) statement)))
     (($ <on> triggers statement)
-     (rsp o (make <on> #:triggers triggers #:statement ((passdown-blocking blocking?) statement))))
+     (clone o #:statement ((passdown-blocking blocking?) statement)))
     ((and ($ <compound> (statements ...)) (? om:declarative?))
-     (make <compound> #:elements (map (passdown-blocking blocking?) statements)))
+     (clone o #:elements (map (passdown-blocking blocking?) statements)))
     ((and (? block?) (? om:imperative?))
      (if (not blocking?) o
          (make <blocking> #:statement o)))
@@ -338,6 +328,7 @@
 
 (define (add-skip o)
   (match o
+    ((? om:imperative?) o)
     (($ <compound> ()) (rsp o (make <skip>)))
     ((? (is? <ast>)) (om:map add-skip o))
     (_ o)))

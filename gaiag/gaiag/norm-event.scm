@@ -149,8 +149,7 @@
     (($ <compound> (($ <on>) ..1))
      (if (=1 (length (.elements o)))
          o
-         (make <compound>
-           #:elements
+         (clone o #:elements
            (let loop ((ons (.elements o)))
              (if (null? ons)
                  '()
@@ -168,8 +167,7 @@
   ;; push all guards into first guard, discard the rest
   (match o
     (($ <compound> (($ <guard>) ..1))
-     (make <compound>
-       #:elements
+     (clone o #:elements
        (let loop ((guards (.elements o)))
          (if (null? guards)
              '()
@@ -212,9 +210,7 @@
         (make <triggers> #:elements (append (.elements triggers) (.elements (.triggers o))))))
       (.statement o)))
     ((and ($ <compound> (s ...)) (? om:declarative?))
-     (retain-source-properties
-      o
-      (make <compound> #:elements (map (passdown-triggers triggers) s))))
+     (clone o #:elements (map (passdown-triggers triggers) s)))
     (($ <compound> (statements ...))
      (make <on> #:triggers triggers #:statement o))
     (_
@@ -231,9 +227,13 @@
     (_ o)))
 
 (define* ((passdown-expression expression #:optional (seen-on? #f)) o)
+  (define (make-guard o)
+    (retain-source-properties
+      expression
+      (make <guard> #:expression expression #:statement o)))
   (match o
     (($ <on>)
-     (make <on>
+     (clone o
        #:triggers (.triggers o)
        #:statement
        (retain-source-properties
@@ -241,41 +241,23 @@
         ((passdown-expression expression #t) (.statement o)))))
     (($ <compound> (($ <guard>) ..1)) (=> failure)
      (if seen-on?
-         (retain-source-properties
-          expression
-          (make <guard> #:expression expression #:statement o))
+         (make-guard o)
          (failure)))
     ((and ($ <compound> (s ...)) (? om:declarative?))
-     (retain-source-properties
-      o
-      (make <compound> #:elements (map (passdown-expression expression seen-on?) s))))
+     (clone o #:elements (map (passdown-expression expression seen-on?) s)))
     (($ <compound> (s ...))
-     (retain-source-properties
-      expression
-      (make <guard> #:expression expression #:statement o)))
+     (make-guard o))
     (($ <guard> e s)
      (let ((o ((passdown-expression e seen-on?) s)))
        (match o
          (($ <on> t s)
-          (make <on>
-            #:triggers t
-            #:statement
-            (retain-source-properties
-             expression
-             (make <guard> #:expression expression #:statement s))))
+          (clone o #:statement (make-guard s)))
          ((and ($ <compound> (t ...)) (? om:declarative?))
-          (retain-source-properties
-           o
-           (make <compound>
-             #:elements (map (passdown-expression expression seen-on?) t))))
+          (clone o #:elements (map (passdown-expression expression seen-on?) t)))
          (_
-          (retain-source-properties
-           expression
-           (make <guard> #:expression expression #:statement o))))))
+          (make-guard o)))))
     (_
-     (retain-source-properties
-        expression
-        (make <guard> #:expression expression #:statement o)))))
+     (make-guard o))))
 
 (define (ast-> ast)
   ((compose-root
