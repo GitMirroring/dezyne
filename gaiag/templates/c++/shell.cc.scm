@@ -12,7 +12,7 @@
                 (map (init-instance model #{&#name .dzn_meta#})
                      (non-injected-instances model)))
                "},{" ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports model))) "}" (c++:init-brace-close))))
-            (list "dzn_locator(locator.clone().set(dzn_runtime).set(dzn_pump))")
+            (list "dzn_locator(locator.clone().set(dzn_rt).set(dzn_pump))")
             (map (init-instance model #{ #name (dzn_locator)#})
                  (non-injected-instances model))
             (map (init-bind model #{ #port(#instance)#})

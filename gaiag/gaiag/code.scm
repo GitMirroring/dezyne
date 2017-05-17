@@ -881,6 +881,11 @@
 
 (define-template x:dzn-locator code:dzn-locator)
 
+;; shell-header-system
+;;;;(define-template x:non-injected-instance-reference-declare non-injected-instances)
+(define-template x:provided-port-instance-declare (lambda (o) (filter om:provides? (om:ports o))))
+(define-template x:required-port-instance-declare (lambda (o) (filter om:requires? (om:ports o))))
+
 (define-method (code:dzn-locator (o <instance>)) ;; MORTAL SIN HERE!!?
   (let* ((model ((ast:model) o)))
     (if (null? (injected-bindings model)) ""
@@ -1080,6 +1085,8 @@
               (x:pand 'source-system (module-ref module 'model) module))
              ((member file-name '(system.hh.scm))
               (x:pand 'header-system (module-ref module 'model) module))
+             ((member file-name '(shell.hh.scm))
+              (x:pand 'shell-header-system (module-ref module 'model) module))
              ((member file-name '(main.cc.scm))
               (x:pand 'main-component (module-ref module 'model) module))
              (else (animate-file file-name module))))))
