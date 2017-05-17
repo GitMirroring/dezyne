@@ -13,6 +13,7 @@
 #x:provided-port-reference-initializer
 #x:required-port-reference-initializer
 {
+  #x:constructor-meta-initializer
   #x:injected-instance-meta-initializer
   #x:non-injected-instance-meta-initializer
 

@@ -875,6 +875,7 @@
 (define-template x:instance-initializer om:instances)
 (define-template x:bind-connect code:non-injected-bindings)
 
+(define-template x:constructor-meta-initializer non-injected-instances)
 (define-template x:injected-instance-meta-initializer injected-instances)
 (define-template x:non-injected-instance-meta-initializer non-injected-instances)
 
@@ -1075,8 +1076,7 @@
               (x:pand 'header-component (module-ref module 'model) module))
              ((member file-name '(interface.hh.scm))
               (x:pand 'source-interface (module-ref module 'model) module))
-             ((and (member file-name '(system.cc.scm))
-                   (not (member (language) '(c++03 c++-msvc11))))
+             ((member file-name '(system.cc.scm))
               (x:pand 'source-system (module-ref module 'model) module))
              ((member file-name '(system.hh.scm))
               (x:pand 'header-system (module-ref module 'model) module))
