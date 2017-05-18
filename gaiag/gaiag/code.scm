@@ -406,7 +406,7 @@
 
 (export ast:scope+name-::)
 
-(define-method (ast:port-name (o <bind>))
+(define-method (ast:port-name (o <bind>)) ;; MORTAL SIN HERE!!?
   (let* ((model ((ast:model) o))
          (left (.left o))
          (left-port (.port left))
@@ -416,18 +416,33 @@
                     (if (not (.instance left)) (.port left) (.port right)))))
     port))
 (export ast:port-name)
-(define-method (ast:instance-name (o <bind>))
+(define-method (ast:instance-name (o <bind>)) ;; MORTAL SIN HERE!!?
   (let* ((model ((ast:model) o))
          (left (.left o))
          (left-port (.port left))
          (right (.right o))
          (right-port (.port right))
-         (instance (and (om:port-bind? o)
-                        (if (not (.instance left))
-                            (binding-name model right)
-                            (binding-name model left)))))
-    instance))
+         (bind (and (om:port-bind? o)
+                    (if (.instance left) left right)))
+         ;;(instance-name (code:binding-name model bind))
+         )
+    bind))
 (export ast:instance-name)
+
+(define-method (ast:instance-name (o <binding>))
+  o)
+
+;; (define (code:binding-name model bind)
+;;   (let ((instance (om:instance model bind))
+;;         (port (.port bind)))
+;;     (snippet 'binding
+;;                `((instance ,(match instance
+;;                                 (($ <instance>) (.name instance))
+;;                                 (($ <interface>) (.name instance))))
+;;                  (port ,(match port
+;;                             (($ <port>) (.name port))
+;;                             (($ <interface>) (list "x" (.name port)))))))))
+
 
 (define-template x:non-void-reply identity #f)
 
@@ -927,6 +942,12 @@
 (define-method (code:instance-name (o <port>)) ;; MORTAL SIN HERE!!?
   (.name (om:instance ((ast:model) o) o)))
 
+(define-method (code:instance-name (o <bind>))
+  (ast:instance-name o))
+
+(define-method (code:instance-name (o <binding>))
+  (ast:instance-name o))
+
 (define-template x:instance-port-name code:instance-port-name)
 (define-method (code:instance-port-name (o <trigger>)) ;; MORTAL SIN HERE!!?
   ((compose code:instance-port-name (cut .port ((ast:model) o) <>)) o))
@@ -979,7 +1000,8 @@
 (define-method (code:bind-required (o <bind>))
   ((compose cdr code:bind-provided-required) o))
 
-(define-template x:binding-name (lambda (o) (binding-name ((ast:model) o) o)))
+;;;(define-template x:binding-name (lambda (o) (binding-name ((ast:model) o) o)))
+(define-template x:binding-name ast:instance-name)
 
 (define-template x:system-port-connect (lambda (o) (filter (negate om:port-bind?) ((compose .elements .bindings) o))))
 
