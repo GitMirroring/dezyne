@@ -1143,6 +1143,8 @@
               (x:pand 'shell-source-system (module-ref module 'model) module))
              ((member file-name '(foreign.hh.scm))
               (x:pand 'foreign-header-component (module-ref module 'model) module))
+             ((member file-name '(foreign.cc.scm))
+              (x:pand 'foreign-source-component (module-ref module 'model) module))
              ((member file-name '(main.cc.scm))
               (x:pand 'main-component (module-ref module 'model) module))
              (else (animate-file file-name module))))))
