@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,35 +21,4 @@
 //
 // Code:
 
-#include "AlarmSystemComponent.h"
 
-#include <boost/make_shared.hpp>
-
-#include <iostream>
-
-struct CB: public IConsoleCB
-{
-  boost::shared_ptr<IConsole> api;
-  CB(  boost::shared_ptr<IConsole> api)
-  : api(api)
-  {}
-  void Tripped()
-  {
-    std::cout << "ConsoleCB.Tripped" << std::endl;
-  }
-  void Deactivated()
-  {
-    std::cout << "ConsoleCB.Deactivated" << std::endl;
-  }
-};
-
-int main()
-{
-  boost::shared_ptr<IConsoleInterface> alarm_system = AlarmSystemComponent::GetInstance();
-  boost::shared_ptr<IConsole> api;
-  alarm_system->GetAPI(&api);
-  alarm_system->RegisterCB(boost::make_shared<CB>(api));
-
-  api->SwitchOn();
-  api->SwitchOff();
-}

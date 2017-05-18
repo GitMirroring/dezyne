@@ -32,6 +32,7 @@
   #:use-module (ice-9 match)
   #:use-module (gaiag fifo)
   #:use-module (gaiag command-line)
+  #:use-module (gaiag shell-util)
 
   #:export (
             ;;goops-prefix
@@ -68,7 +69,6 @@
            gulp-port
            hash-read-string
            hash-table->alist
-           mkdir-p
            null-is-#f
            number->symbol
            one-is-#f
@@ -216,20 +216,6 @@
   (if (pair? components)
       (components->file-name- components)
       (->string components)))
-
-(define (mkdir-p dir . mode)
-  (define (mkdir-p-helper dir . rest)
-    (if (not (string-null? dir))
-	(catch 'system-error
-	       (lambda ()
-		 (apply mkdir (cons dir mode)))
-	       (lambda args
-		 (if (!= EEXIST (system-error-errno args))
-		     (apply throw args)))))
-    (or (null? rest)
-	(apply mkdir-p-helper
-	       (cons (string-append dir "/" (car rest)) (cdr rest)))))
-  (apply mkdir-p-helper (string-split dir #\/)))
 
 (define* (regexp-split regex str #:optional (flags 0))
   (let ((ret (fold-matches

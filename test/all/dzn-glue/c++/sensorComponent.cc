@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,17 +21,17 @@
 //
 // Code:
 
-import ISiren.dzn;
-//import ILogger.dzn;
+#include "sensorComponent.h"
 
-component Siren
+#include <boost/make_shared.hpp>
+
+boost::shared_ptr<sensor::sensorInterface>
+sensorComponent::GetInstance ()
 {
-  provides dzn.ISiren siren;
-  //requires injected ILogger logger;
+  return boost::make_shared<sensorComponent>();
+}
 
-  // behaviour
-  // {
-  //   on siren.turnon(): { }//logger.log(); }
-  //   on siren.turnoff(): { }//logger.log(); }
-  // }
+void
+sensorComponent::ReleaseInstance ()
+{
 }

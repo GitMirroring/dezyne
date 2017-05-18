@@ -120,7 +120,8 @@
                             (loop (spawn-filter fg? job src (car commands))
                                   (cdr commands))))
                       (spawn-filter fg? job #f (car commands))))))
-    (wait job)
-    output))
+    (let* ((status (wait job))
+           (status (or (status:term-sig status) (status:exit-val status))))
+      (if (zero? status) output status))))
 
 ;;(display (pipeline->string '("ls") '("cat")))

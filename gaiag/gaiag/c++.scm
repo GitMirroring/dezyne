@@ -157,7 +157,7 @@
 
 (define (event2->interface1-event1-alist port)
   (event2->interface1-event1-alist-
-   (gulp-file (find-file (map-file-name port) '(.map)))))
+   ((compose gulp-file map-file) port)))
 
 (define (assoc-xref alist value)
   (define (cdr-equal? x) (equal? (cdr x) value))
@@ -171,8 +171,12 @@
     (if (pair? asd-provided) asd-provided '())))
 
 (define (map-file o)
-  (and (om:port o)
-       (try-find-file (map-file-name o) '(.map))))
+  (let* ((files (command-line:get '() '()))
+         (map-files (filter (cut string-suffix? ".map" <>) files))
+         (map-file-name (string-append (symbol->string (map-file-name o)) ".map"))
+         (map-files (if (pair? map-files) map-files (list map-file-name))))
+    (and=> (find (lambda (f) (equal? (basename f) map-file-name)) map-files)
+           try-find-file)))
 
 (define (map-file-name o)
   (match o
@@ -203,9 +207,8 @@
   ((compose
     mapping->channel
     string->mapping
-    gulp-file
-    (cut find-file <> '(.map)))
-   (map-file-name port)))
+    gulp-file)
+   (map-file port)))
 
 (define ((event->formals interface) event)
    ((compose .formals .signature) (om:event interface event)))

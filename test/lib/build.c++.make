@@ -39,7 +39,7 @@ SHELL:=bash
 CCACHE:=$(shell type -p ccache)
 CXX:=$(CCACHE) g++
 CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
-CPPFLAGS=-I$(IN) -I$(IN)/..
+CPPFLAGS=-I$(OUT) -I$(OUT)/.. -I$(IN) -I$(IN)/.. -I../externals/asd_cpp_runtime
 GLOBALS_H=$(wildcard $(DIR)/globals.h)
 ifneq ($(GLOBALS_H),)
 CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
@@ -56,7 +56,10 @@ $(MAIN_O): $(MAIN)
 	$(COMPILE.cc) -o $@ $<
 endif
 
-$(OUT)/test: $(patsubst $(IN)/%.cc, $(OUT)/%.o, $(wildcard $(IN)/*.cc)) $(MAIN_O)
+$(OUT)/test: $(patsubst $(IN)/%.cc, $(OUT)/%.o, $(wildcard $(IN)/*.cc))
+$(OUT)/test: $(patsubst %.cc, %.o,$(wildcard $(OUT)/*.cc))
+$(OUT)/test: $(patsubst %.cpp, %.o,$(wildcard $(OUT)/*.cpp))
+$(OUT)/test: $(MAIN_O)
 	mkdir -p $(dir $@)
 	$(LINK.cc) -o $@ $^ $(LDFLAGS)
 

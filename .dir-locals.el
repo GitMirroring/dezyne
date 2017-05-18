@@ -12,7 +12,4 @@
        (lambda (dir) (add-to-list 'geiser-guile-load-path dir))
        (mapcar
         #'prefix-dir-locals-dir
-        '("build/ccache/json"
-          "build/ccache"
-          "gaiag/json"
-          "gaiag"))))))))
+        '("gaiag"))))))))

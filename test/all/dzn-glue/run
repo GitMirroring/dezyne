@@ -1,0 +1,181 @@
+#! /bin/bash
+# -*- scheme -*-
+set -x
+exec ${GUILE-guile} --no-auto-compile -L ../gaiag -C ../gaiag -L all/dzn-glue -e '(run)' -s "$0" ${1+"$@"}
+!#
+
+(define-module (run)
+  #:use-module (srfi srfi-26)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (json)
+  #:use-module (gaiag shell-util)
+  #:use-module (ice-9 popen)
+  #:use-module (ice-9 rdelim)
+  ;;#:use-module (gash pipe)
+  #:export (main))
+
+(define dry-run #f)
+(define x-trace #t)
+
+(define (stdout . args)
+  (map display args) (newline) (force-output))
+
+(define (throw-on-error status command)
+  (if (zero? status) status
+      (throw 'pipe status command)))
+
+(define (read-pipe* command)
+  (let* ((command (string-append (string-join command " ") " 2>&1"))
+         (port (open-pipe command OPEN_READ))
+         (output (read-string port))
+         (status (close-pipe port)))
+    (display output)
+    status))
+
+(define* (assert-pipe command #:optional (dry-run dry-run))
+  (when x-trace (stdout "+ " command))
+  (format (current-error-port) "command=~s\n" command)
+  (if dry-run
+      0
+      (throw-on-error (read-pipe* command) command)))
+
+(define ((asd->dzn dzn out) dm-file)
+  (assert-pipe `(,dzn "--session=100" "-v" "convert" "-g" "-s" "-m" "-o" ,out ,dm-file)))
+
+(define ((dzn->code dzn dir out language model map-files) dzn-file)
+  (assert-pipe `(,dzn
+                 "code" "-l" ,language
+                 "--glue=dzn"
+                 "-o" ,(string-append out "/" language)
+                 "-m" ,model
+                 ,dzn-file
+                 ,@map-files)))
+
+(define (convert dzn dir out)
+  (let* ((dir (string-append dir "/"))
+         (im-files (find-files dir ".*[.]im$"))
+         (dm-files (find-files dir ".*[.]dm$")))
+    (for-each (asd->dzn dzn out) im-files)
+    (for-each (asd->dzn dzn out) dm-files)
+
+    ;; FIXME: fail silently, skip trying to get past opaque build3.oban failure
+    ;;(delete-file (string-append out "/console.dzn"))
+    (assert-pipe `("rm" "-f" ,(string-append out "/console.dzn")))
+
+
+    (substitute* (string-append out "/Isiren.map")
+      (("on on\n") "on on1\n"))
+    (substitute* (find-files out ".*.dzn")
+      (("interface (glue[.])*")
+       (string-append "interface glue."))
+      (("component (glue[.])*")
+       (string-append "component glue.")))))
+
+(define (code dzn model dir out language)
+  (let* ((dzn-files (find-files out ".*[.]dzn$"))
+         (map-files (find-files out ".*[.]map$")))
+    (for-each (dzn->code dzn dir out language model map-files) dzn-files)
+    (assert-pipe
+    `("make"
+      ,(string-append "DZN=" dzn)
+      ,(string-append "MODEL=" model)
+      ,(string-append "DIR=" out)
+      ,(string-append "LANGUAGE=" language)
+      "IN=foobar" 
+      ,(string-append "OUT=" out "/" language)
+      "-f"
+      "lib/code.make"
+      "runtime"))))
+
+(define (build model dir out language)
+  (assert-pipe
+   `("make"
+     ,(string-append "DIR=" dir)
+     ,(string-append "LANGUAGE=" language)
+     ,(string-append "OUT=" out "/" language)
+     ,(string-append "INCLUDES=" out "/" language)
+     "IN=all/dzn-glue/c++"
+     "-f" ,(string-append "lib/build." language ".make"))))
+
+(define (execute dir out language)
+  (assert-pipe (list (string-append out "/" language "/test"))))
+
+(define (with-result-and-output thunk)
+  (let* ((result 'foo)
+         (output (with-output-to-string
+                   (lambda ()
+                     (let ((status (catch #t
+                                     (lambda ()
+                                       (thunk)
+                                       'OK)
+                                     (lambda (key . args)
+                                       (format #t "error executing: ~a\n" args)
+                                       'FAILED))))
+                       (set! result status))))))
+    (cons result output)))
+
+(define (results->json languages . results)
+  (scm->json-string
+   (let loop ((results results))
+     (if (null? (cdr results)) (car results)
+         (alist-append (car results)
+                       (loop (cdr results)))))))
+
+(define (alist-append a b)
+  (let ((keys (map car a)))
+    (map (lambda (key a b) (cons key (append a b))) keys (map cdr a) (map cdr b))))
+
+(define (stage->alist stage results languages)
+  `((status . ((,stage . ,(if (null? languages) (car results)
+                              (map (lambda (language result) (cons language result))
+                                   languages (map car results))))))
+    (output . ,(if (null? languages) (list (cons stage (cdr results)))
+                   (map (lambda (language output) (cons (string-append stage "-" language) output))
+                        languages (map cdr results))))))
+
+(define (main args)
+  (let* ((dir (dirname (car args)))
+         (dzn "../client/bin/dzn")
+         (gdzn "../gaiag/bin/gdzn")
+         (model "alarm")
+         (out (string-append "out/" (substring dir (1+ (string-index dir #\/)))))
+         (languages '("c++" "c++03")))
+
+    (when (file-exists? out) (delete-file-recursively out))
+    (mkdir-p out)
+-
+    (with-output-to-file (string-append out "/outcome.json")
+      (lambda ()
+        (display
+         (results->json
+          languages
+          (stage->alist "convert"
+                        (with-result-and-output (lambda ()
+                                                  (format #t "dir:~s\n" dir)
+                                                  (format #t "dm-files:~s\n" (find-files dir ".*[.]dm$"))
+                                                  (format #t "%load-path:~s\n" %load-path)
+                                                  (format #t "%load-compiled-path:~s\n" %load-compiled-path)
+                                                  (convert dzn dir out))) '())
+          (stage->alist "code"
+                        (map (lambda (language)
+                               (with-result-and-output (lambda () (code dzn model dir out language))))
+                             languages)
+                        languages)
+          (stage->alist "build"
+                        (map (lambda (language)
+                               (with-result-and-output (lambda () (build model dir out language))))
+                             languages)
+                        languages)
+          (stage->alist "execute"
+                        (map (lambda (language)
+                               (with-result-and-output (lambda () (execute dir out language))))
+                             languages)
+                        languages)))))))
+
+;; REPL
+;; (define dir "all/dzn-glue")
+;; (define dzn "../client/bin/dzn")
+;; (define gdzn "../gaiag/bin/gdzn")
+;; (define model "alarm")
+;; (define out (string-append "out/" (substring dir (1+ (string-index dir #\/)))))
+;; (define languages '("c++" "c++03"))

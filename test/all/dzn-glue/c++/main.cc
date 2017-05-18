@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,11 +21,35 @@
 //
 // Code:
 
-#include "ISensorInterface.h"
+#include "alarmComponent.h"
 
-class SensorComponent: public ISensorInterface
+#include <boost/make_shared.hpp>
+
+#include <iostream>
+
+struct CB: public alarm::console_cb
 {
-public:
-  static boost::shared_ptr<ISensorInterface> GetInstance();
-  static void ReleaseInstance();
+  boost::shared_ptr<alarm::console_api> api;
+  CB(  boost::shared_ptr<alarm::console_api> api)
+  : api(api)
+  {}
+  void detected()
+  {
+    std::cout << "console_cb.detected" << std::endl;
+  }
+  void deactivated()
+  {
+    std::cout << "console_cb.deactivated" << std::endl;
+  }
 };
+
+int main()
+{
+  boost::shared_ptr<alarm::alarmInterface> alarm_system = alarmComponent::GetInstance();
+  boost::shared_ptr<alarm::console_api> api;
+  alarm_system->GetAPI(&api);
+  alarm_system->RegisterCB(boost::make_shared<CB>(api));
+
+  api->arm();
+  api->disarm();
+}

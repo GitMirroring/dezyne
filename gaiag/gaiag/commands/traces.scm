@@ -41,6 +41,7 @@
   #:use-module (gaiag command-line)
   #:use-module (gaiag reader)
 
+  #:use-module (gaiag shell-util)
   #:use-module (gash pipe)
 
   #:export (parse-opts
@@ -127,31 +128,6 @@ errors."
 
                       ;; Don't follow symlinks.
                       lstat)))
-
-(define (mkdir-p dir)
-  "Create directory DIR and all its ancestors."
-  (define absolute?
-    (string-prefix? "/" dir))
-
-  (define not-slash
-    (char-set-complement (char-set #\/)))
-
-  (let loop ((components (string-tokenize dir not-slash))
-             (root       (if absolute?
-                             ""
-                             ".")))
-    (match components
-      ((head tail ...)
-       (let ((path (string-append root "/" head)))
-         (catch 'system-error
-           (lambda ()
-             (mkdir path)
-             (loop tail path))
-           (lambda args
-             (if (= EEXIST (system-error-errno args))
-                 (loop tail path)
-                 (apply throw args))))))
-      (() #t))))
 
 (define (model->traces options root model)
   (let ((csp (with-output-to-string (lambda () (om->csp root #:file-name "-" #:separate-asserts? #t))))

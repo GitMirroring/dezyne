@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,38 +21,17 @@
 //
 // Code:
 
-namespace dzn {
-interface ISiren
+#include "sirenComponent.h"
+
+#include <boost/make_shared.hpp>
+
+boost::shared_ptr<siren::sirenInterface>
+sirenComponent::GetInstance ()
 {
-  in void turnon();
-  in void turnoff();
-
-  behaviour c
-  {
-    enum States {
-        Off,
-        On
-    };
-    States state = States.Off;
-
-    [state.Off]
-    {
-      on turnon:
-      {
-        state = States.On;
-      }
-      on turnoff:
-        illegal;
-    }
-    [state.On]
-    {
-      on turnoff:
-      {
-        state = States.Off;
-      }
-      on turnon:
-        illegal;
-    }
-  }
+  return boost::make_shared<sirenComponent>();
 }
+
+void
+sirenComponent::ReleaseInstance ()
+{
 }
