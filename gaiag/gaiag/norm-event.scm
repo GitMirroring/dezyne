@@ -57,20 +57,37 @@
            ast:out-triggers
            ))
 
+(define* ((perf label) o)
+  ;(stderr "TIME ~a: ~a\n" label (get-internal-run-time))
+  o)
+
 (define-method (norm-event (o <root>))
   ((compose-root
+    (perf 'remove-skip)
     remove-skip
+    (perf 'aggregate-guard-s)
     aggregate-guard-s
+    (perf 'group-ons)
     (group-ons)
+    (perf 'aggregate-on-norm:on-statement-equal?)
     (aggregate-on norm:on-statement-equal?)
+    (perf 'expand-on-norm:on-equal?)
     (expand-on norm:on-equal?)
+    (perf 'aggregate-guard-s)
     aggregate-guard-s
+    (perf 'flatten-compound)
     flatten-compound
+    (perf 'combine-ons)
     combine-ons
+    (perf 'passdown-guard)
     passdown-guard
+    (perf 'passdown-blocking)
     (passdown-blocking)
+    (perf 'remove-otherwise)
     (remove-otherwise)
+    (perf 'add-skip)
     add-skip
+    (perf 'identity)
     identity
     )
    o))
@@ -119,28 +136,51 @@
 
 (define-method (code-norm-event (o <root>))
   ((compose-root
+    (perf 'add-reply-port)
     add-reply-port
+    (perf 'add-illegals)
     (add-illegals)
+    (perf 'remove-skip)
     remove-skip
+    (perf 'on-compound)
     on-compound
+    (perf 'flatten-compound)
     flatten-compound
+    (perf 'combine-guards)
     combine-guards
+    (perf 'aggregate-on-norm:triggers-equal?)
     (aggregate-on norm:triggers-equal?)
+    (perf 'binding-into-blocking)
     (binding-into-blocking)
+    (perf 'rewrite-formals)
     (rewrite-formals)
+    (perf 'flatten-compound)
     flatten-compound
+    (perf 'passdown-blocking)
     (passdown-blocking)
+    (perf 'flatten-compound)
     flatten-compound
+    (perf 'passdown-guard)
     passdown-guard
+    (perf 'flatten-compound)
     flatten-compound
+    (perf 'expand-on-norm:on-equal?)
     (expand-on norm:on-equal?)
+    (perf 'aggregate-guard-s)
     aggregate-guard-s
+    (perf 'flatten-compound)
     flatten-compound
+    (perf 'combine-ons)
     combine-ons
+    (perf 'passdown-blocking)
     (passdown-blocking)
+    (perf 'passdown-guard)
     passdown-guard
+    (perf 'remove-otherwise)
     (remove-otherwise)
-    add-skip)
+    (perf 'add-skip)
+    add-skip
+    (perf 'START))
    o))
 
 (define* ((group-ons #:optional (group? norm:triggers-equal?)) o)

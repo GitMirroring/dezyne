@@ -126,13 +126,9 @@
         (original (map bar names)))
    (if (equal? original changed) o
        (begin
-         ;(stderr "clone\n")
+         ;(stderr "clone2\n")
          (let* ((cloned (apply make (cons class (apply append changed)))))
                    (retain-source-properties o cloned))))))
-
-(define (my-equal? a b)
-  (or (eq? a b)
-      (and (pair? a) (pair? b) (every identity (map my-equal? a b)))))
 
 (define-method (clone o . setters)
   (let* ((class (class-of o))
@@ -144,7 +140,7 @@
     							  (cons elem previous)
     							  (cons (list (car previous) elem) (cdr previous))))
     			      '() setters))
-        (changed (lset-difference eq? paired-setters paired-members))
+        (changed (lset-difference equal? paired-setters paired-members))
     	(unchanged (lset-difference (lambda (a b) (eq? (car a) (car b))) paired-members changed)))
     (if (null? changed) o
     	(begin
