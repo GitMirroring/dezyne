@@ -1,0 +1,3 @@
+{"skip":["javascript","c","cs"]
+,"comment":"std::string only available for c"
+}
