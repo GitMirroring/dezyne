@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
@@ -25,6 +25,9 @@
 
 #ifndef DZN_COROUTINE_HH
 #define DZN_COROUTINE_HH
+
+#undef BOOST_COROUTINES_NO_DEPRECATION_WARNING
+#define BOOST_COROUTINES_NO_DEPRECATION_WARNING 1
 
 #include <boost/coroutine/all.hpp>
 

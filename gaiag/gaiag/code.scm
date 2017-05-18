@@ -464,14 +464,23 @@
 (define-method (code:formal-type (o <port>))
   ((compose .elements .formals .signature car om:events) o))
 
-(define-template x:type-name (lambda (o)
-                               ;;(stderr "TYPE-NAME: ~a\n" o)
+(define (code:->string o)
+  (match o
+    ((? number?) (number->string o))
+    ((? symbol?) (symbol->string o))
+    ((? string?) o)))
+
+(define-template x:type-name (lambda (o) ;; MORTAL SIN HERE!!?
                                (let* ((scope-name (ast:type-name o))
                                       (name (.name scope-name))
-                                      (scope (.scope scope-name)))
-                                 (if (member name '(void bool int))
-                                     (append scope (list name))
-                                     (cons "" (append scope (list name "type"))))))
+                                      (scope (.scope scope-name))
+                                      (type (or (as o <type>) (.type o))))
+                                 (map code:->string
+                                      (if (or (is-a? type <bool>)
+                                              (is-a? type <extern>)
+                                              (is-a? type <int>)
+                                              (is-a? type <void>)) (append scope (list name))
+                                              (cons (symbol) (append scope (list name 'type)))))))
   'type-infix)
 
 (define-method (ast:type-name (o <int>)) (make <scope.name> #:name 'int))
@@ -527,7 +536,7 @@
 (define-template x:data code:data)
 
 (define-method (code:data (o <data>))
-  (.value o))
+  (code:->string (.value o)))
 
 (define-template x:expression code:expression)
 

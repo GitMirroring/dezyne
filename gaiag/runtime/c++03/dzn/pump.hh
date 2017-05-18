@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
@@ -27,6 +27,9 @@
 #define DZN_PUMP_HH
 
 #include <dzn/coroutine.hh>
+
+#undef BOOST_THREAD_PROVIDES_FUTURE
+#define BOOST_THREAD_PROVIDES_FUTURE 1
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
