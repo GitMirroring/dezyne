@@ -117,6 +117,7 @@ namespace dzn
             timers.erase(timers.begin());
             if (lock) lock.unlock();
             t.second();
+            lock.lock();
           }
         };
 
@@ -128,7 +129,6 @@ namespace dzn
           queue.pop();
           if (lock) lock.unlock();
           f();
-
           service_timers();
         }
       };
