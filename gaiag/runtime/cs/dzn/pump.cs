@@ -63,9 +63,33 @@ namespace dzn
       self.finished = true;
       Debug.WriteLine("[" + self.id + "] finish coroutine");
     }
-
+    public struct Deadline: IComparable
+    {
+      public int id;
+      public DateTime t;
+      public int rank;
+      public Deadline(int id, DateTime t, int rank)
+      {
+        this.id = id;
+        this.t = t;
+        this.rank = rank;
+      }
+      public bool expired()
+      {
+        return DateTime.Now >= t;
+      }
+      public int CompareTo(Object o)
+      {
+        Deadline d = (Deadline)o;
+        if(rank == d.rank && t == d.t && id == d.id) return 0;
+        if(rank < d.rank ||
+           rank == d.rank && t < d.t ||
+           rank == d.rank && t == d.t && id < d.id) return -1;
+        return 1;
+      }
+    };
     public Action worker;
-    public Action next_event;
+    public Dictionary<Deadline, Action> timers = new Dictionary<Deadline, Action>();
     public Action switch_context;
     public Action collateral_block_lambda;
     public Action exit;
@@ -125,13 +149,37 @@ namespace dzn
               if(this.queue.Count == 0) {
                 Monitor.Pulse(this);
               }
-              while(this.queue.Count == 0 && running) {
-                Monitor.Wait(this);
+              if(this.timers.Count == 0) {
+                while(this.queue.Count == 0 && running) {
+                  Monitor.Wait(this);
+                }
+              } else {
+                IEnumerator<KeyValuePair<Deadline, Action>> t = timers.OrderBy(k => k.Key).GetEnumerator();
+                t.MoveNext();
+                bool timedout = false;
+                TimeSpan wait = t.Current.Key.t - DateTime.Now;
+                while(!timedout && this.queue.Count == 0 && running && wait.Ticks > 0) {
+                  timedout = !Monitor.Wait(this, wait);
+                }
               }
+
+              Action service_timers = () => {
+                IEnumerator<KeyValuePair<Deadline, Action>> t = timers.OrderBy(k => k.Key.t).GetEnumerator();
+                while(timers.Count != 0 && t.MoveNext() && t.Current.Key.expired()) {
+                  if(Monitor.IsEntered(this)) Monitor.Exit(this);
+                  t.Current.Value();
+                  Monitor.Enter(this);
+                  this.timers.Remove(t.Current.Key);
+                }
+              };
+
+              service_timers();
+
               if(this.queue.Count != 0) {
                 Action f = this.queue.Dequeue();
                 Monitor.Exit(this);
                 f();
+                service_timers();
               }
             });
         };
@@ -272,6 +320,19 @@ namespace dzn
           this.queue.Enqueue(e);
           Monitor.Pulse(this);
         });
+    }
+    public void handle(int id, int ms, Action e)
+    {
+      handle(id, ms, e, int.MaxValue);
+    }
+    public void handle(int id, int ms, Action e, int rank)
+    {
+      Debug.Assert(this.timers.Where(kv => kv.Key.id == id).Count() == 0);
+      this.timers.Add(new Deadline(id, DateTime.Now.AddMilliseconds(ms), rank), e);
+    }
+    public void remove(int id)
+    {
+      this.timers.Remove(this.timers.Where(kv => kv.Key.id == id).Single().Key);
     }
     public class promise: IDisposable
     {
