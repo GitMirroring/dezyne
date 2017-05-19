@@ -51,6 +51,7 @@
             clone
             om->list
             om2list
+            om:children
             om:filter
             om:find
             om:map

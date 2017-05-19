@@ -443,7 +443,7 @@
 ;; c++03
 (define-template x:port-type ast:port-type)
 (define-method (ast:port-type (o <trigger>))
-  ((->join "::") (om:scope+name ((compose .type .port) o)))) ;; MORTAL SIN HERE!!?
+  ((->join "::") (om:scope+name ((compose .type (cut .port ((ast:model) o) <>)) o)))) ;; MORTAL SIN HERE!!?
 
 (define-method (ast:port-type (o <port>))  ;; MORTAL SIN HERE!!?
   (cond ((member (language) '(javascript))
@@ -678,7 +678,7 @@
 
 (define-template x:port-name code:port-name)
 (define-method (code:port-name (o <on>))
-  ((compose .name .port car .elements .triggers) o))
+  ((compose .port.name car .elements .triggers) o))
 
 (define-template x:block identity)
 (define-template x:port-release (lambda (o) (if (om:blocking-compound? ((ast:model) o)) o "")))
@@ -988,13 +988,13 @@
 
 (define-method (ast:req-events (o <component>))
   (append-map (lambda (port)
-                (map (lambda (event) (make <trigger> #:port port #:event event #:formals ((compose .formals .signature) event)))
+                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
                      (filter (conjoin om:in? (compose (cut eq? 'req <>) .name)) (om:events port))))
               (om:ports (.behaviour o))))
 
 (define-method (ast:clr-events (o <component>))
   (append-map (lambda (port)
-                (map (lambda (event) (make <trigger> #:port port #:event event #:formals ((compose .formals .signature) event)))
+                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
                      (filter (conjoin om:in? (compose (cut eq? 'clr <>) .name)) (om:events port))))
               (om:ports (.behaviour o))))
 

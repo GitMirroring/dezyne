@@ -369,7 +369,7 @@
            (let ((event (or (as e <event>) (om:event port e))))
              (if (not event) (resolve-error o e "undefined event: ~a")
                  (clone o
-                        #:port port
+                        ;;#:port port
                         #:event event
                         #:arguments ((resolve model locals) arguments)))))))
 
@@ -400,7 +400,7 @@
            (let ((event (or (as e <event>) (om:event port e))))
              (if (not event) (resolve-error o e "undefined event: ~a")
                  (clone o
-                        #:port port
+                        ;;#:port port
                         #:event event
                         #:arguments ((resolve model locals) arguments)))))))
 
@@ -646,7 +646,10 @@
                                               (list-tail event-formals formal-count))))
                         ;; FIXME: resolve-error check length if not <illegal>
                         (formals (make <formals> #:elements formals)))
-                   (clone o #:port port #:event event #:formals formals)))))))
+                   (clone o
+                          ;;#:port port
+                          #:event event
+                          #:formals formals)))))))
     (($ <formal>) o)
     ((and ($ <formal-binding>) (= .variable v))
      (let ((variable (or (as v <variable>)

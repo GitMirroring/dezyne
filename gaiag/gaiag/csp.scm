@@ -288,7 +288,7 @@
        ")")))
 
   (define (list-of-triggers-port ports predicate)
-    (append-map (lambda (port) (map (lambda (event) (make <trigger> #:port port #:event event)) (filter predicate (om:events port)))) ports))
+    (append-map (lambda (port) (map (lambda (event) (make <trigger> #:port (.name port) #:event event)) (filter predicate (om:events port)))) ports))
 
   (define (list-of-triggers-provides model)
     (list-of-triggers-port (filter om:provides? (om:ports model)) om:in?))
@@ -336,7 +336,6 @@
   (let* ((behaviour (behaviour->csp model))
          (lets (collect-def behaviour))
          (inside #f))
-
     (list
      (if (not inside)
          (if (pair? lets)
@@ -954,10 +953,9 @@
                     tail))
                   (list space (.name function) "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
 
-          (($ <assign> variable (and ($ <action>) (= .port port) (= .event event)))
+          (($ <assign> variable (and ($ <action>) (= .port.name port-name) (= .event event)))
            (let* ((type ((compose .type .signature) event))
                   (event-name (.name event))
-                  (port-name (and=> port .name))
                   (variable-name (and=> variable .name))
                   (values (if (is-a? type <void>) 'return (comma-join (typed-elements type))))
                   (constructor (if (is-a? type <bool>) "bool." ""))
@@ -990,9 +988,8 @@
               (list space "let " variable-name " = " "tmp'" " within\n")
               (check-range (list variable-name) tail model locals indent))))
 
-          (($ <variable> identifier type (and ($ <action>) (= .port port) (= .event event)))
+          (($ <variable> identifier type (and ($ <action>) (= .port.name port-name) (= .event event)))
            (let* ((type ((compose .type .signature) event))
-                  (port-name (and=> port .name))
                   (event-name (.name event))
                   (values (if (is-a? type <void>) 'return (comma-join (typed-elements type))))
                   (constructor (if (is-a? type <bool>) "bool." ""))
@@ -1043,11 +1040,11 @@
                   (list space port "_'.return -> \n")
                   tail))))
 
-          ((and ($ <action>) (= .port port) (= .event event))
+          ((and ($ <action>) (= .port.name port-name) (= .event event))
            (let* ((event-name  (.name event))
                   (suffix (if (om:out? event) "_''" ""))
-                  (channel (if (is-a? model <interface>) model-name (.name port)))
-                  (trigger (make <trigger> #:port port #:event event))
+                  (channel (if (is-a? model <interface>) model-name port-name))
+                  (trigger (make <trigger> #:port port-name #:event event))
                   (channel-return (if ((requires-trigger? model) trigger) (list " -> " channel "_'.return")))
                   (channel (list channel suffix)))
              (list
@@ -1172,16 +1169,16 @@
         "STOP"))) ;; FIXME: JCN??
 
 (define (collect-def l)
-      (match l
-             (('def t ...) (remove-def (append (list t) (apply append (map collect-def t)))))
-             ((h t ...) (remove-def (apply append (map collect-def l))))
-             (_ '())))
+  (match l
+         (('def t ...) (remove-def (append (list t) (apply append (map collect-def t)))))
+         ((h t ...) (remove-def (apply append (map collect-def l))))
+         (_ '())))
 
 (define (remove-def l)
-      (match l
-             (('def t ...) '())
-             ((h t ...) (map remove-def l))
-             (_ l)))
+  (match l
+         (('def t ...) '())
+         ((h t ...) (map remove-def l))
+         (_ l)))
 
 (define (def-cont space l)
   (let ((inline #t))

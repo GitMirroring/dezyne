@@ -31,8 +31,6 @@
   #:use-module (srfi srfi-1)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
 
-  #:use-module (oop goops describe)
-  
   #:export (
            .ast
            .message
@@ -74,6 +72,7 @@
            .name
            .operator
            .port
+           .port@
            .ports
            .range
            .recursive
@@ -86,6 +85,7 @@
            .trigger
            .triggers
            .type
+           .type@
            .types
            .value
            .variable
@@ -208,6 +208,8 @@
 (define-class <bindings> (<ast-list>))
 (define-class <out-bindings> (<ast-list> <imperative>)
   (port #:getter .port #:init-value #f #:init-keyword #:port))
+(define-method (.port.name (o <out-bindings>)) (and=> (.port o) .name))
+
 (define-class <compound> (<ast-list> <statement>))
 (define-class <blocking-compound> (<compound>)
   (port #:getter .port #:init-value #f #:init-keyword #:port))
@@ -308,50 +310,19 @@
 (define ast:inevitable (make <inevitable>))
 (define ast:optional (make <optional>))
 
-(define (symbol-join ls)
-  (reduce (lambda (a b) (symbol-append a '. b)) (string->symbol "") ls))
-
-(define-method (.scope+name (o <top>))
-  (match o (('dotted scope ... name) (symbol-join (cdr o)))))
-
-(define-method (.scope+name (o <scope.name>))
-  (symbol-join (append (.scope o) (list (.name o)))))
-
 (define-class <port> (<named>)
   (type #:getter .type@ #:init-form (make <scope.name>) #:init-keyword #:type)
   (direction #:getter .direction #:init-value #f #:init-keyword #:direction)
   (external #:getter .external #:init-value #f #:init-keyword #:external)
   (injected #:getter .injected #:init-value #f #:init-keyword #:injected))
-(define-public ast:root (make-parameter 'error-ast:root-not-set))
-(define (resolve root class o)
-  ;(stderr ".type ~a; \nroot = ~a\n" o (.id root))
-  ;;(when (not (eq? g-root-id (.id root))) (throw 'wrong-root))
-  (cond ((eq? <interface> class)
-         (find (lambda (m)
-                 (and (is-a? m class)
-                      (equal? o (.scope+name (.name m)))))
-               (.elements root)))))
-
-(define resolve (pure-funcq resolve))
-(define-public (compose-root . f)
-  (lambda (o)
-    (fold-right
-     (lambda (elem previous)
-       ;(if (is-a? previous <ast>) (when (not (is-a? previous <root>)) (stderr "ast:root set to ~a\n\n" (.id previous)) barf))
-       (parameterize ((ast:root previous)) (elem previous))) o f)))
-
-(define-method (.type (o <port>))
-  (resolve (ast:root) <interface> (.scope+name (.type@ o))))
-
 
 (define-class <trigger> (<ast>)
-  (port #:getter .port #:init-value #f #:init-keyword #:port)
+  (port #:getter .port@ #:init-value #f #:init-keyword #:port)
   (event #:getter .event #:init-value #f #:init-keyword #:event)
   (formals #:getter .formals #:init-form (make <formals>) #:init-keyword #:formals))
-
-(define-method (.port.name (o <out-bindings>)) (and=> (.port o) .name))
-(define-method (.port.name (o <trigger>)) (and=> (.port o) .name))
+(define-method (.port.name (o <trigger>)) (.port@ o))
 (define-method (.event.name (o <trigger>)) (and=> (.event o) .name))
+(define-method (.event.direction (o <trigger>)) (and=> (.event o) .direction))
 
 
 (define-class <expression> (<ast>))
@@ -457,18 +428,12 @@
   (statement #:getter .statement #:init-value #f #:init-keyword #:statement))
 
 (define-class <action> (<imperative> <expression>)
-  (port #:getter .port #:init-value #f #:init-keyword #:port)
+  (port #:getter .port@ #:init-value #f #:init-keyword #:port)
   (event #:getter .event #:init-value #f #:init-keyword #:event)
   (arguments #:getter .arguments #:init-form (make <arguments>) #:init-keyword #:arguments))
-
-(define-method (.port.name (o <action>)) (and=> (.port o) .name))
+(define-method (.port.name (o <action>)) (.port@ o))
 (define-method (.event.name (o <action>)) (and=> (.event o) .name))
 (define-method (.event.direction (o <action>)) (and=> (.event o) .direction))
-
-(define-method (.port.name (o <trigger>)) (and=> (.port o) .name))
-(define-method (.event.name (o <trigger>)) (and=> (.event o) .name))
-(define-method (.event.direction (o <trigger>)) (and=> (.event o) .direction))
-
 
 (define-class <assign> (<imperative>)
   (variable #:getter .variable #:init-value #f #:init-keyword #:variable)

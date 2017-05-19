@@ -58,6 +58,7 @@
            ))
 
 (define* ((perf label) o)
+  ;(stderr "\n\nresult after ~a: ~a\n\n" label o)
   ;(stderr "TIME ~a: ~a\n" label (get-internal-run-time))
   o)
 
@@ -316,22 +317,22 @@
 (define-method (ast:in-triggers (o <component-model>))
   (append
    (append-map (lambda (port)
-                 (map (lambda (event) (make <trigger> #:port port #:event event #:formals ((compose .formals .signature) event)))
+                 (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
                       (filter om:in? (om:events port))))
                (filter om:provides? (om:ports o)))
    (append-map (lambda (port)
-                 (map (lambda (event) (make <trigger> #:port port #:event event #:formals ((compose .formals .signature) event)))
+                 (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
                       (filter om:out? (om:events port))))
                (filter om:requires? (om:ports o) ))))
 
 (define-method (ast:out-triggers (o <component-model>))
   (append
    (append-map (lambda (port)
-                 (map (lambda (event) (make <trigger> #:port port #:event event #:formals ((compose .formals .signature) event)))
+                 (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
                       (filter om:out? (om:events port))))
                (filter om:provides? (om:ports o)))
    (append-map (lambda (port)
-                 (map (lambda (event) (make <trigger> #:port port #:event event #:formals ((compose .formals .signature) event)))
+                 (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
                       (filter om:in? (om:events port))))
                (filter om:requires? (om:ports o) ))))
 
@@ -364,24 +365,30 @@
     ((? (is? <ast>)) (om:map (add-illegals-auwe-meuk model) o))
     (_ o)))
 
-(define* (add-reply-port o #:optional (port #f) (block? #f)) ;; requires (= 1 (length (.triggers on)))
+(define* (add-reply-port o #:optional (port #f) (block? #f) (model #f)) ;; requires (= 1 (length (.triggers on)))
+  ;(stderr "add-reply-report o = ~a; port = ~a: model = ~a\n" o port model)
   (match o
     (($ <reply>) (let ((port? (.port o))) (if (and port? (not (symbol? port?))) o (clone o #:port port))))
-    (($ <blocking>) (if block?
-                        (make <blocking-compound> #:port port #:elements (let ((s (.statement o)))
-                                                                           (if (is-a? s <compound>) (map (cut add-reply-port <> port block?) (.elements s))
-                                                                               (list (add-reply-port s port block?)))))
-                        (add-reply-port (.statement o) port block?)))
-    (($ <on>) (clone o #:statement (add-reply-port (.statement o)
-                                                   (if port port ((compose .port car .elements .triggers) o))
-                                                   (eq? 'provides ((compose .direction .port car .elements .triggers) o)))))
-    (($ <guard>) (clone o #:statement (add-reply-port (.statement o) port block?)))
-    (($ <compound>) (clone o #:elements (map (cut add-reply-port <> port block?) (.elements o))))
-    ((and ($ <behaviour>) (= .statement statement)) (clone o #:statement (add-reply-port statement port block?)))
-    ((and ($ <component>) (= .behaviour behaviour)) (clone o #:behaviour (add-reply-port behaviour (if (= 1 (length (filter om:provides? (om:ports o)))) (om:port o) #f) block?)))
+    (($ <blocking>)
+     (if block?
+         (make <blocking-compound>
+           #:port port
+           #:elements (let ((s (.statement o)))
+                        (if (is-a? s <compound>) (map (cut add-reply-port <> port block? model) (.elements s))
+                            (list (add-reply-port s port block? model)))))
+         (add-reply-port (.statement o) port block? model)))
+    (($ <on>)
+     (clone o #:statement (add-reply-port (.statement o)
+                                          (if port port ((compose (cut .port model <>) car .elements .triggers) o))
+                                          (eq? 'provides ((compose .direction (cut .port model <>) car .elements .triggers) o))
+                                          model)))
+    (($ <guard>) (clone o #:statement (add-reply-port (.statement o) port block? model)))
+    (($ <compound>) (clone o #:elements (map (cut add-reply-port <> port block? model) (.elements o))))
+    ((and ($ <behaviour>) (= .statement statement)) (clone o #:statement (add-reply-port statement port block? model)))
+    ((and ($ <component>) (= .behaviour behaviour)) (clone o #:behaviour (add-reply-port behaviour (if (= 1 (length (filter om:provides? (om:ports o)))) (om:port o) #f) block? o)))
     (($ <system>) o)
     (($ <interface>) o)
-    ((? (is? <ast>)) (om:map (cut add-reply-port <> port block?) o))
+    ((? (is? <ast>)) (om:map (cut add-reply-port <> port block? model) o))
     (_ o)))
 
 (define* ((add-illegals #:optional model) o)
@@ -509,7 +516,7 @@
      (let* ((trigger (car (.elements triggers)))
             (on-formals (.elements (.formals trigger)))
             (formal-bindings (filter (is? <formal-binding>) on-formals))
-            (formal-bindings (and (pair? formal-bindings) (make <out-bindings> #:elements formal-bindings #:port (.port trigger))))
+            (formal-bindings (and (pair? formal-bindings) (make <out-bindings> #:elements formal-bindings #:port (.port model trigger))))
             (on-formals (map formal-binding->formal on-formals)))
        (if (not formal-bindings) o
         (clone o

@@ -299,7 +299,7 @@
      (if (not (as (.event trigger) <event>)) (om:event o (.event trigger))
          (.event trigger)))
     ((($ <component>)  . (? (is? <trigger>)))
-     (if (not (as (.event trigger) <event>)) (om:event (om:interface (.port trigger)) (.event trigger))
+     (if (not (as (.event trigger) <event>)) (om:event (om:interface ((.port o) trigger)) (.event trigger))
          (.event trigger)))
     (_ #f)))
 
@@ -311,7 +311,7 @@
     ((? symbol?)
      (find (lambda (x) (eq? (.name x) o)) ((compose .elements .instances) model)))
     (($ <binding>) (or (.instance o)
-                       (.type (.port o))))
+                       (.type ((.port model) o))))
     (($ <bind>) (om:instance model (om:instance-binding? o)))
     (($ <port>) (om:instance model (om:instance-binding? (om:port-bind model o))))
     ((? boolean?) #f)))
@@ -826,6 +826,62 @@
                 ((string= file "/dev/stdin") #f)
                 ((string-suffix? ".scm" file) #f)
                 (else (not (in-file? o file)))))))))
+
+;;; MOVED FROM GOOPS
+
+(define (symbol-join ls)
+  (reduce (lambda (a b) (symbol-append a '. b)) (string->symbol "") ls))
+
+(define-method (.scope+name (o <top>))
+  (match o (('dotted scope ... name) (symbol-join (cdr o)))))
+
+(define-method (.scope+name (o <scope.name>))
+  (symbol-join (append (.scope o) (list (.name o)))))
+
+(define (name-resolve root class o)
+  ;;(stderr "name-resolve ~a; class = ~a; root = ~a\n" o class root)
+  ;;(when (not (eq? g-root-id (.id root))) (throw 'wrong-root))
+  (cond
+   ((eq? <interface> class)
+    (find (lambda (m)
+             (and (is-a? m class)
+                  (equal? o (.scope+name (.name m)))))
+           (.elements root)))
+   ((eq? <port> class)
+    (find (lambda (m)
+             (equal? o (.name m)))
+          (append ((compose .elements .ports) root)
+                  (if (.behaviour root) ((compose .elements .ports .behaviour) root) '()))))))
+
+(define name-resolve (pure-funcq name-resolve))
+
+(define-public ast:root (make-parameter 'error-ast:root-not-set))
+
+(define-public (compose-root . f)
+  (lambda (o)
+    (fold-right
+     (lambda (elem previous)
+       ;(if (is-a? previous <ast>) (when (not (is-a? previous <root>)) (stderr "ast:root set to ~a\n\n" (.id previous)) barf))
+       (parameterize ((ast:root previous)) (elem previous))) o f)))
+
+(define-method (.type (o <port>))
+  (name-resolve (ast:root) <interface> (.scope+name (.type@ o))))
+
+(define-method (contains? container (o <ast>))
+  (and (is-a? container <ast>)
+       (or (eq? container o)
+           (any (lambda (e) (contains? e o)) (om:children container)))))
+
+(define-method (find-model (o <ast>))
+  (find (lambda (m) (and (is-a? m <model>) (contains? m o))) (.elements (ast:root))))
+
+(define-method (.port (model <component-model>) (o <trigger>))
+  ;;(stderr ".port ~a ~a\n" model o)
+  (and (.port@ o) (name-resolve model <port> (.port@ o))))
+
+(define-method (.port (model <component-model>) (o <action>))
+  ;;(stderr ".port ~a ~a\n" model o)
+  (and (.port@ o) (name-resolve model <port> (.port@ o))))
 
 (define (ast-> ast)
   ((compose
