@@ -57,10 +57,13 @@
            ast:out-triggers
            ))
 
+(define g-time (get-internal-run-time))
 (define* ((perf label) o)
-  ;(stderr "\n\nresult after ~a: ~a\n\n" label o)
-  ;(stderr "TIME ~a: ~a\n" label (get-internal-run-time))
-  o)
+  (let* ((time (get-internal-run-time))
+         ;(foo (stderr "TIME ~a: ~a\n" label (- time g-time)))
+         )
+    (set! g-time time)
+    o))
 
 (define-method (norm-event (o <root>))
   ((compose-root
@@ -226,6 +229,12 @@
                                               #:expression expression
                                               #:statement statement)))
                      (cons aggregated-guard (loop remainder)))))))))
+     ((and (? (is? <component>) (= .behaviour behaviour)))
+      (clone o #:behaviour (aggregate-guard-s behaviour)))
+     ((and (? (is? <interface>) (= .behaviour behaviour)))
+      (clone o #:behaviour (aggregate-guard-s behaviour)))
+     ((? (is? <component-model>)) o)
+     ((? om:imperative?) o)
      (($ <functions> (functions ...)) o)
      (($ <skip>) o)
      ((? (is? <ast>)) (om:map aggregate-guard-s o))
@@ -237,66 +246,62 @@
 
 (define (combine-ons o)
   (match o
-    (($ <on>) ((passdown-triggers (.triggers o)) (.statement o)))
+    (($ <on>) ((passdown-on- o) (.statement o)))
     (($ <skip>) o)
+    (($ <functions> (functions ...)) o)
+    ((and (? (is? <component>) (= .behaviour behaviour)))
+     (clone o #:behaviour (combine-ons behaviour)))
+    ((and (? (is? <interface>) (= .behaviour behaviour)))
+     (clone o #:behaviour (combine-ons behaviour)))
+    ((? (is? <component-model>)) o)
     ((? (is? <ast>)) (om:map combine-ons o))
     (_ o)))
 
-(define ((passdown-triggers triggers) o)
+(define ((passdown-on- on) o)
   (match o
-    (($ <on>)
-     ((passdown-triggers
-       (retain-source-properties
-        (.triggers o)
-        (make <triggers> #:elements (append (.elements triggers) (.elements (.triggers o))))))
-      (.statement o)))
     ((and ($ <compound> (s ...)) (? om:declarative?))
-     (clone o #:elements (map (passdown-triggers triggers) s)))
-    (($ <compound> (statements ...))
-     (make <on> #:triggers triggers #:statement o))
+     (clone o #:elements (map (passdown-on- on) s)))
     (_
-     (retain-source-properties
-      triggers
-      (make <on> #:triggers triggers #:statement o)))))
+     (clone on #:statement o))))
 
 (define (passdown-guard o)
   (match o
     ((and ($ <compound> (s ...)) (? om:imperative?)) o)
-    (($ <guard>) ((passdown-expression (retain-source-properties o (.expression o))) (.statement o)))
+    (($ <guard>) ((passdown-guard- o) (.statement o)))
     (($ <skip>) o)
+    ((and (? (is? <component>) (= .behaviour behaviour)))
+     (clone o #:behaviour (passdown-guard behaviour)))
+    ((and (? (is? <interface>) (= .behaviour behaviour)))
+     (clone o #:behaviour (passdown-guard behaviour)))
+    ((? (is? <component-model>)) o)
+    (($ <functions> (functions ...)) o)
     ((? (is? <ast>)) (om:map passdown-guard o))
     (_ o)))
 
-(define* ((passdown-expression expression #:optional (seen-on? #f)) o)
+(define* ((passdown-guard- guard #:optional (seen-on? #f)) o)
   (define (make-guard o)
-    (retain-source-properties
-      expression
-      (make <guard> #:expression expression #:statement o)))
+    (clone guard #:statement o))
   (match o
     (($ <on>)
      (clone o
-       #:triggers (.triggers o)
-       #:statement
-       (retain-source-properties
-        expression
-        ((passdown-expression expression #t) (.statement o)))))
+       #:statement ((passdown-guard- guard #t) (.statement o))))
     (($ <compound> (($ <guard>) ..1)) (=> failure)
      (if seen-on?
          (make-guard o)
          (failure)))
     ((and ($ <compound> (s ...)) (? om:declarative?))
-     (clone o #:elements (map (passdown-expression expression seen-on?) s)))
+     (clone o #:elements (map (passdown-guard- guard seen-on?) s)))
     (($ <compound> (s ...))
      (make-guard o))
     (($ <guard> e s)
-     (let ((o ((passdown-expression e seen-on?) s)))
-       (match o
+     (let ((oo  ((passdown-guard- o seen-on?) s)))
+       (match oo
          (($ <on> t s)
-          (clone o #:statement (make-guard s)))
+          (clone oo #:statement (make-guard s)))
          ((and ($ <compound> (t ...)) (? om:declarative?))
-          (clone o #:elements (map (passdown-expression expression seen-on?) t)))
+          (clone oo #:elements (map (passdown-guard- guard seen-on?) t)))
          (_
-          (make-guard o)))))
+          (make-guard oo)))))
     (_
      (make-guard o))))
 
@@ -539,8 +544,7 @@
 (define (on-compound o)
   (match o
     ((and ($ <on>) (= .statement ($ <compound>))) o)
-
-    ((and ($ <on>)) o
+    (($ <on>)
      (clone o #:statement (make <compound> #:elements (list (.statement o)))))
 
     ((and ($ <component>) (= .behaviour behaviour))
@@ -550,7 +554,8 @@
      (clone o #:statement (on-compound statement)))
 
     (($ <interface>) o)
-    (($ <system>) o)
+    ((? (is? <component-model>)) o)
+    (($ <functions> (functions ...)) o)
     ((? (is? <ast>)) (om:map on-compound o))
     (_ o)))
 

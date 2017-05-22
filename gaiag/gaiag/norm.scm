@@ -87,7 +87,14 @@
 
 (define (remove-skip o)
   (match o
+    ((? om:imperative?) o)
     (($ <skip>) (rsp o (make <compound>)))
+    (($ <functions> (functions ...)) o)
+    ((and (? (is? <component>) (= .behaviour behaviour)))
+     (clone o #:behaviour (remove-skip behaviour)))
+    ((and (? (is? <interface>) (= .behaviour behaviour)))
+     (clone o #:behaviour (remove-skip behaviour)))
+    ((? (is? <component-model>)) o)
     ((? (is? <ast>)) (om:map remove-skip o))
     (_ o)))
 
@@ -122,9 +129,13 @@
                               (car shared-ons))))
                      (cons aggregated-on (loop remainder)))))))))
     (($ <functions> (functions ...)) o)
-    ((? (is? <component>)) (om:map (aggregate-on aggregate? o) o))
-    ((? (is? <interface>)) (om:map (aggregate-on aggregate? o) o))
+    ((and (? (is? <component>) (= .behaviour behaviour)))
+     (clone o #:behaviour ((aggregate-on aggregate? o) behaviour)))
+    ((and (? (is? <interface>) (= .behaviour behaviour)))
+     (clone o #:behaviour ((aggregate-on aggregate? o) behaviour)))
+    ((? (is? <component-model>)) o)
     (($ <skip>) o)
+    ((? om:imperative?) o)
     ((? (is? <ast>)) (om:map (aggregate-on aggregate? model) o))
     (_ o)))
 
@@ -154,6 +165,12 @@
            (make <compound> #:elements ons))))
     ((? (is? <component>)) (om:map (expand-on compare o) o))
     ((? (is? <interface>)) (om:map (expand-on compare o) o))
+    (($ <functions> (functions ...)) o)
+    ((and (? (is? <component>) (= .behaviour behaviour)))
+     (clone o #:behaviour ((expand-on compare o) behaviour)))
+    ((and (? (is? <interface>) (= .behaviour behaviour)))
+     (clone o #:behaviour ((expand-on compare o) behaviour)))
+    ((? (is? <component-model>)) o)
     (($ <skip>) o)
     ((? (is? <ast>)) (om:map (expand-on compare model) o))
     (_ o)))
@@ -169,9 +186,7 @@
              (let* ((triggers (append shared-triggers))
                     (shared-on
                      (clone o
-                       #:triggers
-                       (clone (.triggers o) #:elements triggers)
-                       #:statement (.statement o))))
+                       #:triggers (clone (.triggers o) #:elements triggers))))
                (cons shared-on (loop remainder)))))))
     (_ o)))
 
@@ -198,6 +213,11 @@
                               (car shared-guards))))
                      (cons aggregated-guard (loop remainder)))))))))
     (($ <functions> (functions ...)) o)
+    ((and (? (is? <component>) (= .behaviour behaviour)))
+     (clone o #:behaviour (aggregate-guard-g behaviour)))
+    ((and (? (is? <interface>) (= .behaviour behaviour)))
+     (clone o #:behaviour (aggregate-guard-g behaviour)))
+    ((? (is? <component-model>)) o)
     (($ <skip>) o)
     ((? (is? <ast>)) (om:map aggregate-guard-g o))
     (_ o)))
@@ -212,6 +232,12 @@
     (($ <guard>)
      ((passdown-expression (.expression o)) (.statement o)))
     (($ <skip>) o)
+    (($ <functions> (functions ...)) o)
+    ((and (? (is? <component>) (= .behaviour behaviour)))
+     (clone o #:behaviour (combine-guards behaviour)))
+    ((and (? (is? <interface>) (= .behaviour behaviour)))
+     (clone o #:behaviour (combine-guards behaviour)))
+    ((? (is? <component-model>)) o)
     ((? (is? <ast>)) (om:map combine-guards o))
     (_ o)))
 
@@ -236,6 +262,12 @@
            (retain-source-properties o top)
            (clone o #:elements (list top)))))
     (($ <skip>) o)
+    (($ <functions> (functions ...)) o)
+    ((and (? (is? <component>) (= .behaviour behaviour)))
+     (clone o #:behaviour (flatten-compound behaviour)))
+    ((and (? (is? <interface>) (= .behaviour behaviour)))
+     (clone o #:behaviour (flatten-compound behaviour)))
+    ((? (is? <component-model>)) o)
     ((? (is? <ast>)) (om:map flatten-compound o))
     (_ o)))
 
@@ -277,6 +309,7 @@
 (define* ((remove-otherwise #:optional (keep-annotated? #t) (statements '())) o)
   (define (virgin-otherwise? x) (or (eq? x 'otherwise) (eq? x *unspecified*))) ;; FIXME *unspecified*
   (match o
+    ((? om:imperative?) o)
     (($ <guard> ($ <otherwise> value) statement) (=> failure)
      (if (or (and keep-annotated?
                   (not (virgin-otherwise? value)))
@@ -287,6 +320,12 @@
     (($ <compound> (statements ...))
      (clone o #:elements (map (remove-otherwise keep-annotated? statements) statements)))
     (($ <skip>) o)
+    (($ <functions> (functions ...)) o)
+    ((and (? (is? <component>) (= .behaviour behaviour)))
+     (clone o #:behaviour ((remove-otherwise keep-annotated? statements) behaviour)))
+    ((and (? (is? <interface>) (= .behaviour behaviour)))
+     (clone o #:behaviour ((remove-otherwise keep-annotated? statements) behaviour)))
+    ((? (is? <component-model>)) o)
     ((? (is? <ast>)) (om:map (remove-otherwise keep-annotated? statements) o))
     (_ o)))
 
@@ -316,13 +355,19 @@
      (clone o #:statement ((passdown-blocking blocking?) statement)))
     ((and ($ <compound> (statements ...)) (? om:declarative?))
      (clone o #:elements (map (passdown-blocking blocking?) statements)))
-    ((and (? block?) (? om:imperative?))
+    ((? om:imperative?)
      (if (not blocking?) o
          (make <blocking> #:statement o)))
     (($ <skip>)
      ;;(stderr "SKIP:\n")
      (if (not blocking?) o
-                 (make <blocking> #:statement o)))
+         (make <blocking> #:statement o)))
+    (($ <functions> (functions ...)) o)
+    ((and (? (is? <component>) (= .behaviour behaviour)))
+     (clone o #:behaviour ((passdown-blocking blocking?) behaviour)))
+    ((and (? (is? <interface>) (= .behaviour behaviour)))
+     (clone o #:behaviour ((passdown-blocking blocking?) behaviour)))
+    ((? (is? <component-model>)) o)
     ((? (is? <ast>)) (om:map (passdown-blocking blocking?) o))
     (_ o)))
 
@@ -330,5 +375,11 @@
   (match o
     ((? om:imperative?) o)
     (($ <compound> ()) (rsp o (make <skip>)))
+    (($ <functions> (functions ...)) o)
+    ((and (? (is? <component>) (= .behaviour behaviour)))
+     (clone o #:behaviour (add-skip behaviour)))
+    ((and (? (is? <interface>) (= .behaviour behaviour)))
+     (clone o #:behaviour (add-skip behaviour)))
+    ((? (is? <component-model>)) o)
     ((? (is? <ast>)) (om:map add-skip o))
     (_ o)))

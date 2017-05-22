@@ -478,18 +478,18 @@
 (define-class <return> (<imperative>)
   (expression #:getter .expression #:init-value #f #:init-keyword #:expression))
 
-(define-class <bind> (<statement>)
+(define-class <bind> (<declarative>)
   (left #:getter .left #:init-value #f #:init-keyword #:left)
   (right #:getter .right #:init-value #f #:init-keyword #:right))
 
-(define-class <binding> (<statement>)
+(define-class <binding> (<ast>)
   (instance #:getter .instance #:init-value #f #:init-keyword #:instance)
   (port #:getter .port #:init-value #f #:init-keyword #:port))
 
 (define-method (.instance.name (o <binding>)) (and=> (.instance o) .name))
 (define-method (.port.name (o <binding>)) (and=> (.port o) .name))
 
-(define-class <instance> (<named> <statement>)
+(define-class <instance> (<named> <declarative>)
   (type #:getter .type #:init-form (make <scope.name>) #:init-keyword #:type))
 
 (define-method (.type.name (o <instance>)) (and=> (.type o) .name))
