@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -28,7 +29,7 @@
 
 struct Hardware: public skel::Hardware
 {
-  static std::map<Hardware*, std::pair<int,bool>> hardware;
+  static std::map<Hardware*, std::pair<int,bool> > hardware;
   static int cnt;
 
   Hardware(const dzn::locator&);
