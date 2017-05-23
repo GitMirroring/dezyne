@@ -32,16 +32,22 @@ struct #.model Glue
                 (map
                  (lambda (dzn asd)
                    (let* ((event (om:event (om:interface model) dzn))
+                          (void? (is-a? (.type (.signature event)) <void>))
                           (formals (.elements (.formals (.signature event))))
                           (arguments (comma-join (map .name formals)))
                           (formals (comma-join (map (lambda (formal)
                                            (list (if (eq? (.direction formal) 'in) "const ") "asd::value< " ((compose .value (om:type model)) formal) " >::type& " (.name formal)))
                                          formals)))
                           (port (om:port model)))
-                     (list "::" (om:name model) "::" interface "::PseudoStimulus " asd "(" formals ")\n"
-                           "{\n"
-                           "return static_cast< ::" (om:name model) "::" interface "::PseudoStimulus>(1 + api.in." dzn "(" arguments "));\n"
-                           "}\n")))
+                     (if void?
+                         (list "void " asd "(" formals ")\n"
+                               "{\n"
+                               "api.in." dzn "(" arguments ");\n"
+                               "}\n")
+                         (list "::" (om:name model) "::" interface "::PseudoStimulus " asd "(" formals ")\n"
+                               "{\n"
+                               (list "return static_cast< ::" (om:name model) "::" interface "::PseudoStimulus>(1 + api.in." dzn "(" arguments "));\n")
+                               "}\n"))))
                  dzn-events asd-events)
                 "};\n")))
       (map (lambda (api)
