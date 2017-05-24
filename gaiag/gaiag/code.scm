@@ -456,6 +456,8 @@
 
 (define-template x:upcase-model-name (compose string-upcase (->join "_") om:scope+name (ast:model)))
 
+(define-template x:capitalize-model-name (compose string-capitalize symbol->string .name .name (ast:model)))
+
 ;; c++03
 (define-template x:port-type ast:port-type)
 (define-method (ast:port-type (o <trigger>))
@@ -1178,4 +1180,6 @@
               (x:pand 'foreign-source-component (module-ref module 'model) module))
              ((member file-name '(main.cc.scm))
               (x:pand 'main-component (module-ref module 'model) module))
+             ((member file-name '(glue-top-system.hh.scm))
+              (x:pand 'glue-top-header-system (module-ref module 'model) module))             
              (else (animate-file file-name module))))))

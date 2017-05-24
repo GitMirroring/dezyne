@@ -1,0 +1,12 @@
+##ifndef #x:upcase-model-name COMPONENT_H
+##define #x:upcase-model-name COMPONENT_H
+
+##include "#x:model-name #x:capitalize-model-name Interface.h"
+
+struct #x:model-name Component
+: public #x:model-name ::#x:model-name Interface
+{
+  static boost::shared_ptr<#x:model-name ::#x:model-name Interface> GetInstance();
+  static void ReleaseInstance();
+};
+##endif
