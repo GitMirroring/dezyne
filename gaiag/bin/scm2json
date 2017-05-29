@@ -1,20 +1,35 @@
-#! /bin/sh
-# -*- scheme -*-
-self=$(readlink -f $(cut -d '' -f2 < /proc/$$/cmdline))
-bin=$(cd $(dirname $self) && pwd)
-prefix=$(cd $bin/.. && pwd)
-[ "$(basename $prefix)" != "gaiag" ] && prefix=$prefix/gaiag
-top=$(cd $prefix/.. && pwd)
-build=${ABS_BUILD-$top/build}
-[ ! -d "$ccache" ] && ccache=$top/lib/ccache
-[ ! -d "$ccache" ] && ccache=$build/ccache
-GUILE_AUTO_COMPILE=0
-GUILE_LOAD_PATH="$prefix:$prefix/json:$GUILE_LOAD_PATH"
-GUILE_LOAD_COMPILED_PATH="$ccache:$ccache/json:$GUILE_LOAD_COMPILED_PATH"
-export GUILE_AUTO_COMPILE GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
-exec ${GUILE-guile} --debug -e main -s $0 "$@"
+#! /usr/bin/env guile
+-*- scheme -*-
 !#
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
+(set! %load-should-auto-compile #f)
 
-(define (main . args)
-  ((@ (gaiag scm2json) main) (command-line)))
+(use-modules (srfi srfi-1))
+
+(define (readlink-f path)
+  (define (try-readlink path)
+    (catch #t
+      (lambda () (readlink path))
+      (lambda (key . parameters) path)))
+  (reduce (lambda (next previous)
+            (try-readlink (string-append previous "/" next)))
+          path
+          (string-split path #\/)))
+
+
+(let* ((path (car (command-line)))
+       (path (readlink-f path))
+       (prefix (dirname (dirname path)))
+       (prefix (if (string=? (basename prefix) "gaiag")
+                   prefix
+                   (string-append prefix "/gaiag")))
+       (ccache (string-append prefix "/../build/ccache"))
+       (ccache (if (file-exists? ccache)
+                   ccache
+                   (string-append prefix "/../lib/ccache"))))
+  (set! %load-path (append (list prefix (string-append prefix "/json")) %load-path))
+  (set! %load-compiled-path (append (list ccache (string-append ccache "/json")) %load-compiled-path))
+  ;; (format (current-error-port) "%load-path ~a\n" %load-path )
+  ;; (format (current-error-port) "%load-compiled-path ~a\n" %load-compiled-path )
+)
+
+((@ (gaiag scm2json) main) (command-line))
