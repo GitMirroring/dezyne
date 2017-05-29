@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -20,40 +20,77 @@
 ;;; 
 ;;; Code:
 
-;; guix.scm for Dezyne
+;;; guix.scm -- Guix package definition
+
+;;; Borrowing code from:
+;;; guile-sdl2 --- FFI bindings for SDL2
+;;; Copyright © 2015 David Thompson <davet@gnu.org>
+
+;;; Commentary:
 ;;
-;; To setup the guix-0.11.0 package manager on Ubuntu, run
-;;
-;;   wget http://192.168.32.138/guix_0.11.0-1_amd64.deb
-;;   sudo dpkg -i guix_0.11.0-1_amd64.deb
-;;   sudo guix archive --authorize < /usr/share/guix/hydra.gnu.org.pub
-;;
-;; To build and install, run
+;; GNU Guix development package.  To build and install, run:
 ;;
 ;;   guix package -f guix.scm
 ;;
-;; To setup a Dezyne build environment, run
+;; To build it, but not install it, run:
 ;;
-;;   guix environment -f guix.scm --ad-hoc ccache git
+;;   guix build -f guix.scm
 ;;
-;; To build and run a vm with multiple services, run
+;; To use as the basis for a development environment, run:
 ;;
-;;   make guix-vm
-;;   make run-guix-vm
+;;   guix environment -l guix.scm
 ;;
-;; To track guix development, do
-;;
-;;   mkdir -p ~/src
-;;   cd ~/src
-;;   git clone http://git.savannah.gnu.org/cgit/guix.git/
-;;   cd guix
-;;   guix environment guix
-;;   ./bootstrap
-;;   make
-;;   mkdir -p ~/.config/guix
-;;   ln -s ~/src/guix ~/.config/guix/latest
-;;
+;;; Code:
 
-(set! %load-path (cons  (string-append (getenv "HOME") "src/guix") %load-path))
-(use-modules (gnu packages dezyne))
-dezyne-server
+(use-modules (srfi srfi-1)
+             (srfi srfi-26)
+             (ice-9 match)
+             (ice-9 popen)
+             (ice-9 rdelim)
+             (gnu packages)
+             (gnu packages base)
+             (gnu packages commencement)
+             (gnu packages cross-base)
+             (gnu packages dezyne)
+             (gnu packages gcc)
+             (gnu packages guile)
+             (gnu packages package-management)
+             (gnu packages perl)
+             ((guix build utils) #:select (with-directory-excursion))
+             (guix build-system gnu)
+             (guix build-system trivial)
+             (guix gexp)
+             (guix git-download)
+             ((guix licenses) #:prefix license:)
+             (guix packages))
+
+(define %source-dir (dirname (current-filename)))
+
+(define git-file?
+  (let* ((pipe (with-directory-excursion %source-dir
+                 (open-pipe* OPEN_READ "git" "ls-files")))
+         (files (let loop ((lines '()))
+                  (match (read-line pipe)
+                    ((? eof-object?)
+                     (reverse lines))
+                    (line
+                     (loop (cons line lines))))))
+         (status (close-pipe pipe)))
+    (lambda (file stat)
+      (match (stat:type stat)
+        ('directory #t)
+        ((or 'regular 'symlink)
+         (any (cut string-suffix? <> file) files))
+        (_ #f)))))
+
+(define-public dezyne.git
+  (let ((version "2.3.4")
+        (revision "0")
+        (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
+    (package
+      (inherit dezyne)
+      (version (string-append version "-" revision "." (string-take commit 7)))
+      (source (local-file %source-dir #:recursive? #t #:select? git-file?)))))
+
+;; Return it here so `guix build/environment/package' can consume it directly.
+dezyne.git
