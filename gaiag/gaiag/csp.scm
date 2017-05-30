@@ -87,7 +87,7 @@
 (define-class <voidreply> (<ast>))
 
 (define* (om->csp om #:key file-name (separate-asserts? (command-line:get 'assert #f)))
-  (parameterize ((ast:root om))
+  (ast:set-scope om
     (or (and-let* ((models (om:filter (lambda (x) (or (as x <interface>) (as x <component>))) om))
                    (models (null-is-#f (filter .behaviour models)))
                    (c-i (append (filter (is? <component>) models) models))
@@ -116,7 +116,7 @@
   (match o
     (($ <interface>)
      (and-let* ((root (make <root> #:elements (list o))))
-       (parameterize ((ast:root root)) (model-generate-csp root o #:file-name file-name #:separate-asserts? separate-asserts?))))
+       (ast:set-scope root (model-generate-csp root o #:file-name file-name #:separate-asserts? separate-asserts?))))
     (($ <component>)
      (and-let* ((root (make <root> #:elements (list o)))
                 (interfaces (map .type ((compose .elements .ports) o)))
@@ -126,7 +126,7 @@
                                    (comma-join (map .name no-behaviour)))))
          (stderr message)
          (throw 'csp message))
-       (parameterize ((ast:root root)) (model-generate-csp root o #:file-name file-name #:separate-asserts? separate-asserts?))))))
+       (ast:set-scope root (model-generate-csp root o #:file-name file-name #:separate-asserts? separate-asserts?))))))
 
 (define* (model-generate-csp root model #:key (file-name "-") (separate-asserts? (command-line:get 'assert #f)))
   (dump-output file-name (lambda ()

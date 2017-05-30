@@ -52,7 +52,7 @@
          (models (filter (negate om:imported?) models))
          ;; Generator-synthesized models look non-imported, filter harder
          (models (filter (negate dzn-async?) models)))
-    (parameterize ((ast:root om)) (map dump models)))
+    (ast:set-scope om (map dump models)))
   "")
 
 (define (dzn-async? o)

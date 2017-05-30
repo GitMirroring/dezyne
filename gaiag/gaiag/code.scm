@@ -67,10 +67,11 @@
 
 (define (ast:code ast)
   (let ((om ((om:register code:om #t) ast)))
-    (parameterize ((ast:root om)
-                   (template-dir (append (prefix-dir) `(templates ,(language)))))
-                  (map dump (filter (negate om:imported?) ((om:filter:p <model>) om)))
-                  (dump-header)))
+    (ast:set-scope
+     om
+     (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+                   (map dump (filter (negate om:imported?) ((om:filter:p <model>) om)))
+                   (dump-header))))
   "")
 
 (define (code:om ast)

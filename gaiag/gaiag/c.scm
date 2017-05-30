@@ -50,8 +50,10 @@
 
 (define (ast-> ast)
   (let ((om ((om:register code:om #t) ast)))
-    (parameterize ((ast:root om) (code:indenter (lambda () (indent 1))))
-      (map dump (filter (negate om:imported?) ((om:filter:p <model>) om)))))
+    (ast:set-scope
+     om
+     (parameterize ((code:indenter (lambda () (indent 1))))
+                   (map dump (filter (negate om:imported?) ((om:filter:p <model>) om))))))
   "")
 
 (define* ((c:scope-join) o)

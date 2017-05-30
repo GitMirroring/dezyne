@@ -54,7 +54,8 @@
 
   #:export (
            ast:expression-type
-
+           ast:set-scope
+           
            om:port*
 
            om:bind
@@ -850,25 +851,57 @@
 
 (define name-resolve (pure-funcq name-resolve))
 
-(define-public ast:root (make-parameter 'error-ast:root-not-set))
+(define ast:scope (make-parameter 'error-ast:scope-not-set))
+
+(define-syntax ast:set-scope
+  (syntax-rules ()
+    ((_ o e1 e2 ...)
+     (parameterize ((ast:scope (list o))) e1 e2 ...))))
+
+(define-syntax ast:extend-scope
+  (syntax-rules ()
+    ((_ o e1 e2 ...)
+     (parameterize ((ast:scope (cons o (ast:scope)))) e1 e2 ...))))
+
+(define-syntax ast:set-model-scope
+  (syntax-rules ()
+    ((_ o e1 e2 ...)
+     (let* ((prev (get-model-scope))
+            (parent (if prev (cdr prev) (get-root-scope))))
+       (parameterize ((ast:scope (cons o parent))) e1 e2 ...)))))
+
+(define (get-root-scope)
+  (let ((scope (ast:scope)))
+    (find-tail (lambda (e)
+            (if (is-a? e <ast>)
+                (is-a? e <root>)
+                (eq? (car e) 'root)))
+          scope)))
+
+(define (get-model-scope)
+  (let ((scope (ast:scope)))
+    (find-tail (lambda (e)
+            (if (is-a? e <ast>)
+                (is-a? e <model>)
+                (eq? (car e) 'model)))
+          scope)))
 
 (define-public (compose-root . f)
   (lambda (o)
     (fold-right
      (lambda (elem previous)
-       ;(if (is-a? previous <ast>) (when (not (is-a? previous <root>)) (stderr "ast:root set to ~a\n\n" (.id previous)) barf))
-       (parameterize ((ast:root previous)) (elem previous))) o f)))
+       (ast:set-scope previous (elem previous))) o f)))
 
 (define-method (.type (o <port>))
-  (name-resolve (ast:root) <interface> (.scope+name (.type@ o))))
+  (name-resolve (car (get-root-scope)) <interface> (.scope+name (.type@ o))))
 
 (define-method (contains? container (o <ast>))
   (and (is-a? container <ast>)
        (or (eq? container o)
            (any (lambda (e) (contains? e o)) (om:children container)))))
 
-(define-method (find-model (o <ast>))
-  (find (lambda (m) (and (is-a? m <model>) (contains? m o))) (.elements (ast:root))))
+;; (define-method (find-model (o <ast>))
+;;   (find (lambda (m) (and (is-a? m <model>) (contains? m o))) (.elements (car (get-root-scope)))))
 
 (define-method (.port (model <component-model>) (o <trigger>))
   ;;(stderr ".port ~a ~a\n" model o)
@@ -877,6 +910,14 @@
 (define-method (.port (model <component-model>) (o <action>))
   ;;(stderr ".port ~a ~a\n" model o)
   (and (.port@ o) (name-resolve model <port> (.port@ o))))
+
+(define-method (.port (o <trigger>))
+  ;;(stderr ".port ~a\n" o)
+  (and (.port@ o) (name-resolve (car (get-model-scope)) <port> (.port@ o))))
+
+(define-method (.port (o <action>))
+  ;;(stderr ".port ~a\n" o)
+  (and (.port@ o) (name-resolve (car (get-model-scope)) <port> (.port@ o))))
 
 (define (ast-> ast)
   ((compose

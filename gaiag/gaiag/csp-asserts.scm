@@ -42,7 +42,7 @@
 
 (define (om->csp-asserts o)
   (let ((om (csp:ast->om o)))
-    (parameterize ((ast:root om))
+    (ast:set-scope om
       (om->csp om)
       (assert-list om))))
 
