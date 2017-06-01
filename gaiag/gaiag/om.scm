@@ -55,6 +55,9 @@
   #:export (
            ast:expression-type
            ast:set-scope
+           ast:set-model-scope
+           ast:root-scope
+           ast:model-scope
            
            om:port*
 
@@ -866,11 +869,11 @@
 (define-syntax ast:set-model-scope
   (syntax-rules ()
     ((_ o e1 e2 ...)
-     (let* ((prev (get-model-scope))
-            (parent (if prev (cdr prev) (get-root-scope))))
+     (let* ((prev (ast:scope-model))
+            (parent (if prev (cdr prev) (ast:scope-root))))
        (parameterize ((ast:scope (cons o parent))) e1 e2 ...)))))
 
-(define (get-root-scope)
+(define (ast:scope-root)
   (let ((scope (ast:scope)))
     (find-tail (lambda (e)
             (if (is-a? e <ast>)
@@ -878,13 +881,17 @@
                 (eq? (car e) 'root)))
           scope)))
 
-(define (get-model-scope)
+(define (ast:scope-model)
   (let ((scope (ast:scope)))
     (find-tail (lambda (e)
             (if (is-a? e <ast>)
                 (is-a? e <model>)
                 (eq? (car e) 'model)))
           scope)))
+
+(define (ast:root-scope) (car (ast:scope-root)))
+
+(define (ast:model-scope) (car (ast:scope-model)))
 
 (define-public (compose-root . f)
   (lambda (o)
@@ -893,7 +900,7 @@
        (ast:set-scope previous (elem previous))) o f)))
 
 (define-method (.type (o <port>))
-  (name-resolve (car (get-root-scope)) <interface> (.scope+name (.type@ o))))
+  (name-resolve (car (ast:scope-root)) <interface> (.scope+name (.type@ o))))
 
 (define-method (contains? container (o <ast>))
   (and (is-a? container <ast>)
@@ -901,7 +908,7 @@
            (any (lambda (e) (contains? e o)) (om:children container)))))
 
 ;; (define-method (find-model (o <ast>))
-;;   (find (lambda (m) (and (is-a? m <model>) (contains? m o))) (.elements (car (get-root-scope)))))
+;;   (find (lambda (m) (and (is-a? m <model>) (contains? m o))) (.elements (car (ast:scope-root)))))
 
 (define-method (.port (model <component-model>) (o <trigger>))
   ;;(stderr ".port ~a ~a\n" model o)
@@ -913,11 +920,11 @@
 
 (define-method (.port (o <trigger>))
   ;;(stderr ".port ~a\n" o)
-  (and (.port@ o) (name-resolve (car (get-model-scope)) <port> (.port@ o))))
+  (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
 
 (define-method (.port (o <action>))
   ;;(stderr ".port ~a\n" o)
-  (and (.port@ o) (name-resolve (car (get-model-scope)) <port> (.port@ o))))
+  (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
 
 (define (ast-> ast)
   ((compose

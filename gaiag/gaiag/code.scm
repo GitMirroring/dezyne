@@ -407,8 +407,8 @@
 
 (export ast:scope+name-::)
 
-(define-method (ast:port-name (o <bind>)) ;; MORTAL SIN HERE!!?
-  (let* ((model ((ast:model) o))
+(define-method (ast:port-name (o <bind>))
+  (let* ((model (ast:model-scope))
          (left (.left o))
          (left-port (.port left))
          (right (.right o))
@@ -417,8 +417,8 @@
                     (if (not (.instance left)) (.port left) (.port right)))))
     port))
 (export ast:port-name)
-(define-method (ast:instance-name (o <bind>)) ;; MORTAL SIN HERE!!?
-  (let* ((model ((ast:model) o))
+(define-method (ast:instance-name (o <bind>))
+  (let* ((model (ast:model-scope))
          (left (.left o))
          (left-port (.port left))
          (right (.right o))
@@ -453,16 +453,16 @@
 
 (define-method (code:return-type (o <function>)) ((compose .type .signature) o))
 
-(define-template x:model-name (compose om:name (ast:model)))
+(define-template x:model-name (compose om:name (lambda (_) (ast:model-scope))))
 
-(define-template x:upcase-model-name (compose string-upcase (->join "_") om:scope+name (ast:model)))
+(define-template x:upcase-model-name (compose string-upcase (->join "_") om:scope+name (lambda (_) (ast:model-scope))))
 
-(define-template x:capitalize-model-name (compose string-capitalize symbol->string .name .name (ast:model)))
+(define-template x:capitalize-model-name (compose string-capitalize symbol->string .name .name (lambda (o) (ast:model-scope))))
 
 ;; c++03
 (define-template x:port-type ast:port-type)
 (define-method (ast:port-type (o <trigger>))
-  ((->join "::") (om:scope+name ((compose .type (cut .port ((ast:model) o) <>)) o)))) ;; MORTAL SIN HERE!!?
+  ((->join "::") (om:scope+name ((compose .type .port) o)))) ;; MORTAL SIN HERE!!?
 
 (define-method (ast:port-type (o <port>))  ;; MORTAL SIN HERE!!?
   (cond ((member (language) '(javascript))
@@ -691,8 +691,8 @@
                                    ;; checking name (as done now) is not good enough
                                    ;; we schould check .variable pointer equality
                                    ;; that does not work, however; someone makes a copy is clone
-                                   ;; (memq o (om:variables ((ast:model) o)))
-                                   (if (memq (.variable.name o) (map .name (om:variables ((ast:model) o))))
+                                   ;; (memq o (om:variables (ast:model-scope))
+                                   (if (memq (.variable.name o) (map .name (om:variables (ast:model-scope))))
                                        (x:member-name (.variable o))
                                        (symbol->string (.variable.name o)))))
 
@@ -709,7 +709,7 @@
   ((compose .port.name car .elements .triggers) o))
 
 (define-template x:block identity)
-(define-template x:port-release (lambda (o) (if (om:blocking-compound? ((ast:model) o)) o "")))
+(define-template x:port-release (lambda (o) (if (om:blocking-compound? (ast:model-scope)) o "")))
 
 (define-template x:on-statement code:on-statement)
 (define-method (.statement (o <statement>)) o)
@@ -867,7 +867,7 @@
 (define-method (ast:scope+name-:: (o <scope.name>))
   (string-join (map symbol->string (om:scope+name o)) "::"))
 (define-method (code:x:type (o <bind>))
-  ((compose ast:scope+name-:: .type (cut om:instance ((ast:model) o) <>) injected-instance-name) o))
+  ((compose ast:scope+name-:: .type (cut om:instance (ast:model-scope) <>) injected-instance-name) o))
 
 (define-method (code:x:type (o <instance>))
   (ast:scope+name-:: (.type o)))
@@ -877,7 +877,7 @@
   (injected-instance-name o))
 
 (define-method (ast:scope+name (o <instance>))
-  ((compose ast:scope+name (cut om:component ((ast:model) o) <>)) o))
+  ((compose ast:scope+name (cut om:component (ast:model-scope) <>)) o))
 
 ;; source-system
 (define-template x:meta-child om:instances 'meta-child-infix)
@@ -893,7 +893,7 @@
       (injected-instances o)))
 
 (define-method (code:port-name (o <instance>)) ;; MORTAL SIN HERE!!?
-  (.name (om:port (om:component ((ast:model) o) o))))
+  (.name (om:port (om:component (ast:model-scope) o))))
 
 (define-template x:component-port code:component-port)
 (define-template x:provided-port-reference-initializer ast:provided)
@@ -940,10 +940,10 @@
 (define-template x:instance-name code:instance-name)
 
 (define-method (code:instance-name (o <trigger>)) ;; MORTAL SIN HERE!!?
-  ((compose code:instance-name (cut .port ((ast:model) o) <>)) o))
+  ((compose code:instance-name (cut .port (ast:model-scope) <>)) o))
 
 (define-method (code:instance-name (o <port>)) ;; MORTAL SIN HERE!!?
-  (.name (om:instance ((ast:model) o) o)))
+  (.name (om:instance (ast:model-scope) o)))
 
 (define-method (code:instance-name (o <bind>))
   (ast:instance-name o))
@@ -953,9 +953,9 @@
 
 (define-template x:instance-port-name code:instance-port-name)
 (define-method (code:instance-port-name (o <trigger>)) ;; MORTAL SIN HERE!!?
-  ((compose code:instance-port-name (cut .port ((ast:model) o) <>)) o))
+  ((compose code:instance-port-name (cut .port (ast:model-scope) <>)) o))
 (define-method (code:instance-port-name (o <port>)) ;; MORTAL SIN HERE!!?
-  (let* ((bind (om:port-bind ((ast:model) o) o))
+  (let* ((bind (om:port-bind (ast:model-scope) o))
          (instance-bind (om:instance-binding? bind)))
     (.port.name instance-bind)))
 
@@ -972,12 +972,12 @@
   (map trigger->on (ast:in-triggers o)))
 
 (define-method (code:dzn-locator (o <instance>)) ;; MORTAL SIN HERE!!?
-  (let* ((model ((ast:model) o)))
+  (let* ((model (ast:model-scope)))
     (if (null? (injected-bindings model)) ""
         "_local")))
 
 (define-method (code:component-port (o <port>)) ;; MORTAL SIN HERE!!?
-  (let* ((model ((ast:model) o))
+  (let* ((model (ast:model-scope))
          (bind (om:port-bind model o)))
     (om:instance-binding? bind)))
 
@@ -988,7 +988,7 @@
 (define-template x:bind-required code:bind-required)
 
 (define-method (code:bind-provided-required (o <bind>))
-  (let* ((model ((ast:model) o))
+  (let* ((model (ast:model-scope))
          (left (.left o))
          (left-port (.port left))
          (right (.right o))
@@ -1003,7 +1003,6 @@
 (define-method (code:bind-required (o <bind>))
   ((compose cdr code:bind-provided-required) o))
 
-;;;(define-template x:binding-name (lambda (o) (binding-name ((ast:model) o) o)))
 (define-template x:binding-name ast:instance-name)
 
 (define-template x:system-port-connect (lambda (o) (filter (negate om:port-bind?) ((compose .elements .bindings) o))))
@@ -1090,8 +1089,6 @@
                      (filter (conjoin om:in? (compose (cut eq? 'clr <>) .name)) (om:events port))))
               (om:ports (.behaviour o))))
 
-(define ast:model (make-parameter (lambda (o) #f)))
-
 (define-method (code:functions (o <component>))
   (om:functions o))
 
@@ -1157,11 +1154,12 @@
 
 (define (code:animate-file file-name module)
   (let ((model-names (map (compose .name car) (@@ (gaiag om) *ast-alist*))))
-    (parameterize ((ast:model (lambda (_) (module-ref module 'model))))
-      ;; use old animate+component.js.scm for
-      ;; services/scripts/verification.dzn, daemon/lib/Controller.dzn
-      ;; until regression test passes
-      (cond  ((member file-name '(component.cc.scm))
+    (ast:set-model-scope
+     (module-ref module 'model)
+     ;; use old animate+component.js.scm for
+     ;; services/scripts/verification.dzn, daemon/lib/Controller.dzn
+     ;; until regression test passes
+     (cond  ((member file-name '(component.cc.scm))
               (x:pand 'source-component (module-ref module 'model) module))
              ((member file-name '(component.hh.scm))
               (x:pand 'header-component (module-ref module 'model) module))

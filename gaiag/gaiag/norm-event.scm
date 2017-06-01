@@ -382,7 +382,7 @@
     ((? (is? <ast>)) (om:map (add-illegals-auwe-meuk model) o))
     (_ o)))
 
-(define* (add-reply-port o #:optional (port #f) (block? #f) (model #f)) ;; requires (= 1 (length (.triggers on)))
+(define* (add-reply-port o #:optional (port #f) (block? #f)) ;; requires (= 1 (length (.triggers on)))
   ;(stderr "add-reply-report o = ~a; port = ~a: model = ~a\n" o port model)
   (match o
     (($ <reply>) (let ((port? (.port o))) (if (and port? (not (symbol? port?))) o (clone o #:port port))))
@@ -391,21 +391,20 @@
          (make <blocking-compound>
            #:port port
            #:elements (let ((s (.statement o)))
-                        (if (is-a? s <compound>) (map (cut add-reply-port <> port block? model) (.elements s))
-                            (list (add-reply-port s port block? model)))))
-         (add-reply-port (.statement o) port block? model)))
+                        (if (is-a? s <compound>) (map (cut add-reply-port <> port block?) (.elements s))
+                            (list (add-reply-port s port block?)))))
+         (add-reply-port (.statement o) port block?)))
     (($ <on>)
      (clone o #:statement (add-reply-port (.statement o)
-                                          (if port port ((compose (cut .port model <>) car .elements .triggers) o))
-                                          (eq? 'provides ((compose .direction (cut .port model <>) car .elements .triggers) o))
-                                          model)))
-    (($ <guard>) (clone o #:statement (add-reply-port (.statement o) port block? model)))
-    (($ <compound>) (clone o #:elements (map (cut add-reply-port <> port block? model) (.elements o))))
-    ((and ($ <behaviour>) (= .statement statement)) (clone o #:statement (add-reply-port statement port block? model)))
-    ((and ($ <component>) (= .behaviour behaviour)) (clone o #:behaviour (add-reply-port behaviour (if (= 1 (length (filter om:provides? (om:ports o)))) (om:port o) #f) block? o)))
+                                          (if port port ((compose (cut .port <>) car .elements .triggers) o))
+                                          (eq? 'provides ((compose .direction (cut .port <>) car .elements .triggers) o)))))
+    (($ <guard>) (clone o #:statement (add-reply-port (.statement o) port block?)))
+    (($ <compound>) (clone o #:elements (map (cut add-reply-port <> port block?) (.elements o))))
+    ((and ($ <behaviour>) (= .statement statement)) (clone o #:statement (add-reply-port statement port block?)))
+    ((and ($ <component>) (= .behaviour behaviour)) (clone o #:behaviour (ast:set-model-scope o (add-reply-port behaviour (if (= 1 (length (filter om:provides? (om:ports o)))) (om:port o) #f) block?))))
     (($ <system>) o)
     (($ <interface>) o)
-    ((? (is? <ast>)) (om:map (cut add-reply-port <> port block? model) o))
+    ((? (is? <ast>)) (om:map (cut add-reply-port <> port block?) o))
     (_ o)))
 
 (define* ((add-illegals #:optional model) o)
@@ -513,7 +512,7 @@
     ((? (is? <ast>)) (om:map (rewrite-formals model locals) o))
     (_ o)))
 
-(define* ((binding-into-blocking #:optional model (locals '())) o)
+(define* ((binding-into-blocking #:optional (locals '())) o)
 
   (define (formal-binding->formal o)
     (match o
@@ -533,7 +532,7 @@
      (let* ((trigger (car (.elements triggers)))
             (on-formals (.elements (.formals trigger)))
             (formal-bindings (filter (is? <formal-binding>) on-formals))
-            (formal-bindings (and (pair? formal-bindings) (make <out-bindings> #:elements formal-bindings #:port (.port model trigger))))
+            (formal-bindings (and (pair? formal-bindings) (make <out-bindings> #:elements formal-bindings #:port (.port trigger))))
             (on-formals (map formal-binding->formal on-formals)))
        (if (not formal-bindings) o
         (clone o
@@ -542,14 +541,14 @@
                #:statement ((passdown-formal-bindings formal-bindings) statement)))))
 
     ((and ($ <component>) (= .behaviour behaviour))
-     (clone o #:behaviour ((binding-into-blocking o) behaviour)))
+     (clone o #:behaviour (ast:set-model-scope o ((binding-into-blocking) behaviour))))
 
     ((and ($ <behaviour>) (= .statement statement))
-     (clone o #:statement ((binding-into-blocking model '()) statement)))
+     (clone o #:statement ((binding-into-blocking '()) statement)))
 
     (($ <interface>) o)
     (($ <system>) o)
-    ((? (is? <ast>)) (om:map (binding-into-blocking model locals) o))
+    ((? (is? <ast>)) (om:map (binding-into-blocking locals) o))
     (_ o)))
 
 
