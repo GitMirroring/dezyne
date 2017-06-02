@@ -484,10 +484,10 @@
 
 (define-class <binding> (<ast>)
   (instance #:getter .instance #:init-value #f #:init-keyword #:instance)
-  (port #:getter .port #:init-value #f #:init-keyword #:port))
+  (port #:getter .port@ #:init-value #f #:init-keyword #:port))
 
 (define-method (.instance.name (o <binding>)) (and=> (.instance o) .name))
-(define-method (.port.name (o <binding>)) (and=> (.port o) .name))
+(define-method (.port.name (o <binding>)) (.port@ o))
 
 (define-class <instance> (<named> <declarative>)
   (type #:getter .type #:init-form (make <scope.name>) #:init-keyword #:type))

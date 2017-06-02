@@ -348,32 +348,32 @@
     (match o
       ((? symbol?) ;; FIXME: port need not be unique
        (deprecated (current-source-location))
-       (find (lambda (bind) (or (om:equal? (.port (.left bind)) o)
-                                (om:equal? (.port (.right bind)) o)))
+       (find (lambda (bind) (or (om:equal? (.port.name (.left bind)) o)
+                                (om:equal? (.port.name (.right bind)) o)))
            binds))
-      (($ <binding> instance port)
+      (($ <binding> instance port-name)
        (find (lambda (bind)
                (or (and (eq? (.instance (.left bind)) instance)
-                                     (eq? (.port (.left bind)) port))
+                                     (eq? (.port.name (.left bind)) port-name))
                                 (and (eq? (.instance (.right bind)) instance)
-                                     (eq? (.port (.right bind)) port))))
+                                     (eq? (.port.name (.right bind)) port-name))))
              binds)))))
 
-(define (om:bind-other-port bind port) ;; FIXME: port need not be unique
+(define (om:bind-other-port bind port-name) ;; FIXME: port need not be unique
   (deprecated (current-source-location))
-  (if (eq? (.port (.left bind)) port) (.right bind) (.left bind)))
+  (if (eq? (.port.name (.left bind)) port-name) (.right bind) (.left bind)))
 
 (define (om:binding system o)
   (match o
     ((? symbol?)
      (deprecated (current-source-location))
      (let ((bind (om:bind system o)))
-       (if (eq? (.port (.left bind)) o) (.left bind) (.right bind))))
-    (($ <binding> instance port)
+       (if (eq? (.port.name (.left bind)) o) (.left bind) (.right bind))))
+    (($ <binding> instance port-name)
      (let ((bind (om:bind system o)))
        (and bind
             (if (and (eq? (.instance (.left bind)) instance)
-                     (eq? (.port (.left bind)) port)) (.left bind)
+                     (eq? (.port.name (.left bind)) port-name)) (.left bind)
                      (.right bind)))))))
 
 (define (om:binding-other-port system port) ;; FIXME: port need not be unique
@@ -384,7 +384,7 @@
 (define (om:binding-other system binding)
   (let ((bind (om:bind system binding)))
     (if (and (eq? (.instance (.left bind)) (.instance binding))
-             (eq? (.port (.left bind)) (.port binding)))
+             (eq? (.port.name (.left bind)) (.port.name binding)))
         (.right bind)
         (.left bind))))
 
@@ -399,13 +399,13 @@
           (($ <scope.name>) (cached-model system))
           (_ #f)))
     ((? symbol?) (om:component system (om:instance system o)))
-    (($ <binding> #f port)
+    (($ <binding> #f port-name)
      ;;#f
      ;;(om:component system (om:binding-other-port system port))
-     (let* ((bind (om:bind system port))
+     (let* ((bind (om:bind system port-name))
             (instance (om:instance-name bind)))
        (om:component system instance)))
-    (($ <binding> instance port) (om:component system instance))
+    (($ <binding> instance port-name) (om:component system instance))
     (($ <bind>) (om:component system (om:instance-name o)))
     (($ <instance> name type) (om:import type))
     (($ <port> name type) (om:interface (.type o)))))
@@ -419,6 +419,10 @@
     (($ <root>) (om:find (is? <interface>) o))
     ((h t ...) (find (is? <interface>) o))))
 
+(define-method (behaviour-ports (o <component-model>))
+  (if (and (is-a? o <component>) (.behaviour o))
+      ((compose .elements .ports .behaviour) o)
+      '()))
 
 (define* (om:port model #:optional (o #f))
   (match o
@@ -435,9 +439,7 @@
     (_ (find (if o (om:named o)
                  (lambda (x) (eq? (.direction x) 'provides)))
              (append (.elements (.ports model))
-                     (if (and (is-a? model <component>) (.behaviour model))
-                         (.elements (.ports (.behaviour model)))
-                         '()))))))
+                     (behaviour-ports model))))))
 
 (define (om:variable model o)
   (find (om:named o) (om:variables model)))
@@ -849,8 +851,7 @@
     (find (lambda (m)
              (equal? o (.name m)))
           (append ((compose .elements .ports) root)
-                  (if (and (is-a? root <component>) (.behaviour root))
-                      ((compose .elements .ports .behaviour) root) '()))))))
+                  (behaviour-ports root))))))
 
 (define name-resolve (pure-funcq name-resolve))
 
@@ -925,6 +926,11 @@
 (define-method (.port (o <action>))
   ;;(stderr ".port ~a\n" o)
   (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
+
+(define-method (.port (o <binding>))
+  (if (.instance o)
+      (name-resolve (.type (.instance o)) <port> (.port@ o))
+      (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
 
 (define (ast-> ast)
   ((compose

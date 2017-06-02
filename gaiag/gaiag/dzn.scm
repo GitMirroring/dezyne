@@ -173,8 +173,8 @@
       o))
 
 
-    (($ <binding> #f port) ((animate-snippet 'binding-port `((port ,(.name port))))))
-    (($ <binding> instance port) ((animate-snippet 'binding `((instance ,(.name instance)) (port ,(.name port))))))
+    (($ <binding> #f port-name) ((animate-snippet 'binding-port `((port ,port-name)))))
+    (($ <binding> instance port-name) ((animate-snippet 'binding `((instance ,(.name instance)) (port ,port-name)))))
 
     (($ <formal> name #f #f) (.name o))
     (($ <formal> name type (or #f 'in)) (->string (list (type->dzn model type) " " name)))
