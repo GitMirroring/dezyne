@@ -25,7 +25,9 @@
 
 (define-module (gaiag gdzn)
   #:use-module (ice-9 getopt-long)
+  #:use-module (srfi srfi-26)
   #:use-module (gaiag misc)
+  #:use-module (gaiag shell-util)
   #:export (main))
 
 (define (parse-opts args)
@@ -39,18 +41,30 @@
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
 	 (usage? (and (not help?) (null? files)))
-	 (version? (option-ref options 'version #f)))
+	 (version? (option-ref options 'version #f))
+         (commands-dir (string-append
+                        (or (and=> (current-filename) dirname)
+                            (string-append (getenv "DEZYNE_PREFIX") "/gaiag/gaiag/"))
+                        "/commands/"))
+         (commands (map (cut basename <> ".go") (find-files commands-dir ".*.go"))))
     (or
      (and version?
 	  (stdout "0.1\n"))
      (and (or help? usage?)
-          ((or (and usage? stderr) stdout) "\
+          ((or (and usage? stderr) stdout)
+           (string-append "\
 Usage: gdzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -d, --debug        enable debug ouput
   -h, --help         display this help
   -v, --verbose      be more verbose, show progress
   -V, --version      display version
-")
+
+Commands:"
+                          (string-join commands "\n  " 'prefix)
+"
+
+Use \"gdzn COMMAND --help\" for command-specific information.
+"))
 	   (exit (or (and usage? 2) 0)))
      options)))
 
