@@ -36,6 +36,9 @@ $(CDIR)-clean:
 
 include make/guile.mk
 
+TARG := script-preamble.scm
+include make/guile.mk
+
 TARG := gaiag
 include make/guile.mk
 
@@ -47,6 +50,11 @@ include make/guile.mk
 
 TARG := json2scm
 include make/guile.mk
+
+$(BUILD)/gaiag: $(BUILD)/script-preamble.scm
+$(BUILD)/gdzn: $(BUILD)/script-preamble.scm
+$(BUILD)/json2scm: $(BUILD)/script-preamble.scm
+$(BUILD)/scm2json: $(BUILD)/script-preamble.scm
 
 #TEST := $(TEST) $(CDIR)-check
 
