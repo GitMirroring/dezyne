@@ -29,7 +29,7 @@
 #include <cstring>
 
 void
-connect_ports (dzn::container<shell>& c)
+connect_ports (dzn::container<shell, std::function<void()> >& c)
 {
   c.system.p_outer.out.foo = [&] (int i) {
     dzn::trace_out(std::clog, c.system.p_outer.meta, "foo"); std::clog << std::endl;
@@ -45,7 +45,7 @@ connect_ports (dzn::container<shell>& c)
 
 
 std::map<std::string,std::function<void()> >
-event_map (dzn::container<shell>& c)
+event_map (dzn::container<shell, std::function<void()> >& c)
 {
   c.system.p_outer.meta.requires.port = "p_outer";
 
@@ -67,7 +67,7 @@ int
 main(int argc, char* argv[])
 {
   if(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--debug") == 0;})) dzn::debug.rdbuf(std::clog.rdbuf());
-  dzn::container<shell> c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
+  dzn::container<shell, std::function<void()> > c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
   connect_ports (c);
   c(event_map (c), {"r_outer"});
 }

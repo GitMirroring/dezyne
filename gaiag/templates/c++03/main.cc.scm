@@ -3,7 +3,7 @@
 ##include "#.scope_model .hh"
 
 void
-connect_ports (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c)
+connect_ports (dzn::container<#((om:scope-name (string->symbol "::")) model), std::function<void()>>& c)
 {
  #(map (lambda (port)
        (map (define-on model port #{
@@ -19,7 +19,7 @@ connect_ports (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c
 
 
 std::map<std::string,boost::function<void()> >
-event_map (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c)
+event_map (dzn::container<#((om:scope-name (string->symbol "::")) model), std::function<void()>>& c)
 {
  #(map (init-port #{
      c.system.#name .meta.requires.port = "#name ";
@@ -50,7 +50,7 @@ event_map (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c)
 int
 main(int argc, char* argv[])
 {
-  dzn::container<#((om:scope-name (string->symbol "::")) model)> c(argc > 1 && argv[1] == std::string("--flush"));
+  dzn::container<#((om:scope-name (string->symbol "::")) model), std::function<void()>> c(argc > 1 && argv[1] == std::string("--flush"));
 
   connect_ports (c);
   c(event_map (c), {#((->join ",") (map (lambda (port) (list "\"" (.name port) "\"")) (filter om:requires? (om:ports model))))});

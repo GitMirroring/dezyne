@@ -58,7 +58,7 @@ namespace dzn
     template <typename LHS, typename RHS>
     assign& operator()(LHS& lhs, const RHS& rhs)
     {
-      _.push_back(boost::bind(&assign::helper<LHS,RHS>, lhs, rhs));
+      _.push_back(boost::bind(&assign::helper<LHS,RHS>, boost::ref(lhs), boost::cref(rhs)));
       return *this;
     }
     void operator()()

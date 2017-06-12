@@ -6,7 +6,7 @@
 ##include <cstring>
 
 void
-connect_ports (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c)
+connect_ports (dzn::container<#((om:scope-name (string->symbol "::")) model), std::function<void()>>& c)
 {
  #(map (lambda (port)
        (map (define-on model port #{
@@ -14,7 +14,7 @@ connect_ports (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c
     dzn::trace_#direction(std::clog, c.system.#port .meta, "#event "); std::clog << std::endl;
     #(string-if (eq? direction 'out) #{c.match("#port .#event ");#}
     #{c.match("#port .#event "); std::string tmp = c.match_return();
-    dzn::trace_out(std::clog, c.system.#port .meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
+    dzn::trace_out(std::clog, c.system.#port m.meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
     return to_#((c++:scope-join #f '_) reply-scope)_#reply-name(tmp.substr(tmp.rfind('.')+1)); #})
   };
   #}) (filter (negate (om:dir-matches? port)) (om:events port))))
@@ -22,7 +22,7 @@ connect_ports (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c
 
 
 std::map<std::string,std::function<void()> >
-event_map (dzn::container<#((om:scope-name (string->symbol "::")) model)>& c)
+event_map (dzn::container<#((om:scope-name (string->symbol "::")) model), std::function<void()>>& c)
 {
  #(map (init-port #{
      c.system.#name .meta.requires.port = "#name ";
@@ -54,7 +54,7 @@ int
 main(int argc, char* argv[])
 {
   if(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--debug") == 0;})) dzn::debug.rdbuf(std::clog.rdbuf());
-  dzn::container<#((om:scope-name (string->symbol "::")) model)> c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
+  dzn::container<#((om:scope-name (string->symbol "::")) model), std::function<void()>> c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
 
   connect_ports (c);
   c(event_map (c), {#((->join ",") (map (lambda (port) (list "\"" (.name port) "\"")) (filter om:requires? (om:ports model))))});

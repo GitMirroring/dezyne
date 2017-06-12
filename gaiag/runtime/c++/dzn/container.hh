@@ -36,7 +36,7 @@
 
 namespace dzn
 {
-  template <typename System>
+  template <typename System, typename Function>
   struct container
   {
     dzn::meta meta;
@@ -44,7 +44,7 @@ namespace dzn
     dzn::runtime runtime;
     System system;
 
-    std::map<std::string, std::function<void()>> lookup;
+    std::map<std::string, Function> lookup;
 
     std::queue<std::string> expect;
     std::mutex mutex;
@@ -91,7 +91,7 @@ namespace dzn
       if(actual != tmp)
         throw std::runtime_error("unmatched expectation: \"" + actual + "\" got: \"" + tmp + "\"");
     }
-    void operator()(std::map<std::string, std::function<void()>>&& lookup, std::set<std::string>&& required_ports)
+    void operator()(std::map<std::string, Function>&& lookup, std::set<std::string>&& required_ports)
     {
       this->lookup = std::move(lookup);
 
