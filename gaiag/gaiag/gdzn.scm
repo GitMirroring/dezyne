@@ -34,6 +34,7 @@
   (let* ((option-spec
 	  '((debug (single-char #\d))
             (help (single-char #\h))
+	    (session (single-char #\S) (value #t))
 	    (verbose (single-char #\v))
 	    (version (single-char #\V))))
 	 (options (getopt-long args option-spec
@@ -54,10 +55,11 @@
           ((or (and usage? stderr) stdout)
            (string-append "\
 Usage: gdzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
-  -d, --debug        enable debug ouput
-  -h, --help         display this help
-  -v, --verbose      be more verbose, show progress
-  -V, --version      display version
+  -d, --debug            enable debug ouput
+  -h, --help             display this help
+  -S, --session=SESSION  use session=SESSION [1]
+  -v, --verbose          be more verbose, show progress
+  -V, --version          display version
 
 Commands:"
                           (string-join commands "\n  " 'prefix)

@@ -62,6 +62,7 @@
             (trail (single-char #\t) (value #t))
             (output (single-char #\o) (value #t))
             (queue-size (single-char #\q) (value #t))
+	    (session (single-char #\S) (value #t)) ;; FIXME
 	    (version (single-char #\v))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))

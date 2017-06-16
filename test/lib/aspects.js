@@ -40,7 +40,8 @@ function dzn(session) {
 }
 
 function gdzn(session) {
-  return '../gaiag/bin/gdzn'
+  if (process.env['GDZN'] == '*dzn*') return dzn (session);
+  return (process.env['GDZN'] || ( __dirname + '/../../gaiag/bin/gdzn') + ' --session=' + (session && session || 100));
 }
 
 var ext = {c:'.c','c++':'.cc','c++03':'.cc','c++-msvc11':'.cc',cs:'.cs',javascript:'.js'};
