@@ -36,7 +36,7 @@ function haslanguage(aspect) {
 }
 
 function dzn(session) {
-  return '../client/bin/dzn --session=' + (session && session || 100);
+  return __dirname + '/../../client/bin/dzn --session=' + (session && session || 100);
 }
 
 var ext = {c:'.c','c++':'.cc','c++03':'.cc','c++-msvc11':'.cc',cs:'.cs',javascript:'.js'};
@@ -179,7 +179,7 @@ var aspects = {
         }
         return util.spawn_sync_shell('mkdir -p out'
                                      + ' && rm -rf out/' + path.basename (dir)
-                                     + ' && cp -as $PWD/' + dir + ' $PWD/out')
+                                     + ' && cp -as --no-preserve=mode ' + path.resolve (dir) + ' $PWD/out')
           .then(function() {
             dir = 'out/' + path.basename(dir);
             var meta = read_meta (dir, default_meta);
@@ -360,7 +360,7 @@ var aspects = {
         + (main ? ' MAIN='+main:'')
         + (tss ? ' TSS='+tss:'')
         + ' MODEL='+parameters.model
-        + ' -f '+'lib/code.make';
+        + ' -f '+ __dirname + '/code.make';
     console.log ('CMD:' + cmd);
     return util.spawn_sync_shell(cmd)
     //.fail (function(err) {console.log(err); return {status: -1, output: err}});
@@ -377,7 +377,7 @@ var aspects = {
         + ' OUT='+out
         + ' IN='+out
         + (main ? ' MAIN='+main : '')
-        + ' -f '+'lib/build.' + language + '.make';
+        + ' -f '+ __dirname + '/build.' + language + '.make';
     return util.spawn_sync_shell(cmd)
       .fail (function(err) {console.log(err); return {status: -1, output: err}});
   }
@@ -402,13 +402,13 @@ var aspects = {
           'timeout 10 diff -uw ' + expectation
             + ' <(set -o pipefail;'
             + cmd
-            + ' |& bin/code2fdr'
+            + ' |& ' + __dirname + '/../bin/code2fdr'
             + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');
       } catch(e) {
         return util.spawn_sync_shell(
           'timeout 10 diff -uw ' + trace + ' <(set -o pipefail;'
             + cmd
-            + ' |& bin/code2fdr'
+            + ' |& ' + __dirname + '/../bin/code2fdr'
             + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');
       }
     })
@@ -533,7 +533,7 @@ var aspects = {
           + ' '+imports
           + ' '+parameters.filename
           + ' 2>'+err
-          + '| bin/reorder > '+out
+          + '| ' + __dirname + '/../bin/reorder > '+out
           + '| test ! -s '+baseline
           + '| test ! -s '+baseline+'.stderr'
           + ';}'

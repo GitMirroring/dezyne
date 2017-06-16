@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-# Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 #
 # This file is part of Dezyne.
@@ -25,7 +25,7 @@
 .PHONY:all default
 default: all
 
-DEVELOPMENT:=..
+DEVELOPMENT:=$(shell readlink -f $(dir $(filter %/code.make,$(MAKEFILE_LIST)))../../)
 define CHECKPARAM
 ifeq ($(origin $(1)), undefined)
 $$(error $(1) undefined)
@@ -45,18 +45,18 @@ endif
 runtime-common:
 	mkdir -p $(OUT)/dzn
 	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls /share/runtime/$(LANGUAGE)))); do\
-	    ln -sf ../../../$(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/$$file $(OUT)/$$file;\
+	    ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/$$file $(OUT)/$$file;\
 	done
 	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls /share/runtime/$(LANGUAGE)/dzn))); do\
-	    ln -sf ../../../../$(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/dzn/$$file $(OUT)/dzn/$$file;\
+	    ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/dzn/$$file $(OUT)/dzn/$$file;\
 	done
 
 ifeq ($(LANGUAGE),c++03)
 runtime: runtime-common
-	ln -sf ../../../$(DEVELOPMENT)/gaiag/runtime/c++/pump.cc $(OUT)/
-	ln -sf ../../../../$(DEVELOPMENT)/gaiag/runtime/c++/dzn/pump.hh $(OUT)/dzn/
-	ln -sf ../../../../$(DEVELOPMENT)/gaiag/runtime/c++/dzn/context.hh $(OUT)/dzn/
-	ln -sf ../../../../$(DEVELOPMENT)/gaiag/runtime/c++/dzn/coroutine.hh $(OUT)/dzn/
+	ln -sf $(DEVELOPMENT)/gaiag/runtime/c++/pump.cc $(OUT)/
+	ln -sf $(DEVELOPMENT)/gaiag/runtime/c++/dzn/pump.hh $(OUT)/dzn/
+	ln -sf $(DEVELOPMENT)/gaiag/runtime/c++/dzn/context.hh $(OUT)/dzn/
+	ln -sf $(DEVELOPMENT)/gaiag/runtime/c++/dzn/coroutine.hh $(OUT)/dzn/
 else
 runtime: runtime-common
 endif

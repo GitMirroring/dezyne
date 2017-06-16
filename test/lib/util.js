@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -209,7 +209,7 @@ var util = {
     var lstat = q.denodeify(fs.lstat);
     return lstat(testdir + '/run')
       .then(function(stats) { return {run: testdir + '/run', args: [session].concat(aspects_languages)}; })
-      .fail(function(err) { return {run: 'bin/run', args: [session, util.relative (testdir)].concat(aspects_languages)}; })
+      .fail(function(err) { return {run: __dirname + '/../bin/run', args: [session, util.relative (testdir)].concat(aspects_languages)}; })
       .then(function(call) {
         var stdout = '';
         var stderr = '';
