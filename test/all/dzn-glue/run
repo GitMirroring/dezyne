@@ -84,7 +84,7 @@ exec ${GUILE-guile} --no-auto-compile -L ../gaiag -C ../gaiag -L all/dzn-glue -e
       "IN=foobar" 
       ,(string-append "OUT=" out "/" language)
       "-f"
-      "lib/code.make"
+      ,(string-append (or (and=> (current-filename) dirname) ".") "/lib/code.make")
       "runtime"))))
 
 (define (build model dir out language)
@@ -95,7 +95,7 @@ exec ${GUILE-guile} --no-auto-compile -L ../gaiag -C ../gaiag -L all/dzn-glue -e
      ,(string-append "OUT=" out "/" language)
      ,(string-append "INCLUDES=" out "/" language)
      "IN=all/dzn-glue/c++"
-     "-f" ,(string-append "lib/build." language ".make"))))
+     "-f" ,(string-append (or (and=> (current-filename) dirname) ".") "/lib/build." language ".make"))))
 
 (define (execute dir out language)
   (assert-pipe (list (string-append out "/" language "/test"))))
