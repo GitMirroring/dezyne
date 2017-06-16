@@ -238,6 +238,7 @@
 (define (dump-output file-name thunk)
   (if (equal? file-name "-") (thunk)
       (let* ((dir (command-line:get 'output))
+             (dir (and dir (string-index dir #\/) dir))
              (file-name (cond ((not dir) file-name)
                               ((pair? file-name) (cons dir file-name))
                               (else (cons dir (list file-name)))))
