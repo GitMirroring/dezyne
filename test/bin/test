@@ -269,17 +269,7 @@ function main() {
   var name = 'Test Framework';
   var title = 'Regression Tests';
 
-  util.spawn_sync_shell('make -C .. hello')
-    .then(function(result) {
-      if(result.status != 0) {
-        console.error('dzn hello failed (is your server running?)');
-        q.reject(result);
-      }
-      return result;
-    })
-    .then (function(result) {
-       return util.spawn_sync_shell('mkdir -p ' + path.dirname (args.options.output))
-    })
+  util.spawn_sync_shell('mkdir -p ' + path.dirname (args.options.output))
     .then (function () {
       return output.open(name, title, dir, args.options.output);
     })
