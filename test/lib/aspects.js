@@ -36,7 +36,7 @@ function haslanguage(aspect) {
 }
 
 function dzn(session) {
-  return __dirname + '/../../client/bin/dzn --session=' + (session && session || 100);
+  return (process.env['DZN'] || ( __dirname + '/../../client/bin/dzn') + ' --session=' + (session && session || 100));
 }
 
 var ext = {c:'.c','c++':'.cc','c++03':'.cc','c++-msvc11':'.cc',cs:'.cs',javascript:'.js'};
