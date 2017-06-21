@@ -155,9 +155,11 @@ puts [myism transitions]
 puts [myism numeric_alphabet]
 puts [myism alphabet]
 " (dirname tmp.csp) (basename tmp.csp) process))
-           (prefix (getenv "DEZYNE_PREFIX"))
-           (services (if (access? (string-append prefix "/root") R_OK) prefix
-                         (string-append prefix "/services")))
+           (bin ((compose dirname car) (command-line)))
+           (prefix (dirname bin))
+           (prefix (if (file-exists? (string-append prefix "/services")) prefix
+                       (dirname prefix)))
+           (services (string-append prefix "/services"))
            (traces.py (string-append services "/scripts/traces.py"))
            (foo (if gdzn-debug? (stderr "traces.py=~s\n" traces.py)))
            (flush-opt (option-ref options 'flush #f))
