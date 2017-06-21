@@ -26,17 +26,17 @@
 (define-module (gaiag commands verify)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (gaiag json2scm)
   #:use-module (ice-9 getopt-long)
-  #:use-module (gaiag csp)
   #:use-module (gaiag misc)
-  #:use-module (gaiag command-line)
-  #:use-module (gaiag reader)
   #:export (parse-opts
             main))
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((debug (single-char #\d))
+          '((all (single-char #\a))
+            (debug (single-char #\d))
             (gaiag (single-char #\G))
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
@@ -53,6 +53,7 @@
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
 Usage: gdzn verify [OPTION]... DZN-FILE [MAP-FILE]...
+  -a, --all                   run all checks
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path
   -m, --model=MODEL           generate main for MODEL
@@ -63,36 +64,61 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
 	   (exit (or (and usage? 2) 0)))
      options)))
 
-(define (generator-read-ast options file-name)
-  (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
-         (imports (filter-map import-opt options))
-         (model-opt (option-ref options 'model #f))
-         (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
-         (debug? (option-ref options 'debug #f))
-         (command (string-append
-                   "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
-                   " generate -l scm -L -o -"
-                   (string-join imports " -I " 'prefix)
-                   (if (not model-opt) "" (string-append " -m " model-opt))
-                   " " file-name)))
-    (if gdzn-debug? (stderr "command: ~a\n" command))
-    (with-input-from-string (gulp-pipe command) read)))
+(use-modules (ice-9 pretty-print))
 
-(define (file->ast options file-name)
-  (let ((gaiag? (option-ref options 'gaiag #f)))
-    (if gaiag? (read-ast file-name)
-        (generator-read-ast options file-name))))
+(define ((result->string file-name) result)
+  (let* ((check (assoc-ref result 'assert))
+         (model (assoc-ref result 'model))
+         (file-name "out/Alarm/Alarm.dzn")
+         (trace (assoc-ref result 'trace))
+         (trace (map symbol->string trace))
+         (trace (apply string-join `(,trace "\n" prefix))))
+    (if (not (string-null? trace))
+        (let* ((micro-trace (reverse (assoc-ref result 'sequence)))
+               (error (car micro-trace))
+               (message (assoc-ref error 'message))
+               (location (find (lambda (e) (and=> (assoc-ref e 'selection)
+                                                  (compose (cut assoc-ref <> 'file) car)))
+                               (map cdr micro-trace)))
+               (location (and=> (assoc-ref location 'selection) car))
+               (file (assoc-ref location 'file))
+               (line (assoc-ref location 'line))
+               (column (assoc-ref location 'column))
+               (index (assoc-ref location 'index)))
+          (format (current-error-port) "~a:~a:~a:i~a: ~a\n" file-name line column index message)
+          (format #f "verify: ~a: check: ~a: ~a~a" model check "fail" trace))
+        (let ((gdzn-verbose? (or (find (cut equal? <> "--verbose") (command-line))
+                                 (find (cut equal? <> "-v") (command-line)))))
+          (if gdzn-verbose?
+              (format #f "verify: ~a: check: ~a: ~a~a" model check "ok" trace)
+              "")))))
+
+(define (verify all? model file-name)
+  (let* ((bin ((compose dirname car) (command-line)))
+         (prefix (dirname bin))
+         (prefix (if (file-exists? (string-append prefix "/services")) prefix
+                     (dirname prefix)))
+         (services (string-append prefix "/services"))
+         (verify.js (string-append services "/scripts/verify.js"))
+         (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
+         (command (string-append
+                   verify.js " " file-name " " model
+                   " | " bin "/json2scm"))
+         (sexp (with-input-from-string (gulp-pipe command) read))
+         (progress (append-map (lambda (e) (or (assoc-ref e 'progress)
+                                               (assoc-ref e 'result) '()
+                                               '())) sexp))
+         (traces (filter (lambda (p) (pair? (assoc-ref p 'trace))) progress))
+         (results (filter (lambda (p) (assoc-ref p 'assert)) progress))
+         (results (if (or all? (null? results)) results (list (car results))))
+         (output (map (result->string file-name) results)))
+    (display (apply string-join `(,output "\n" suffix)))
+    (if (pair? traces) (exit 1))))
 
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (file-name (car files))
-         (map-files (cdr args))
-         (language (string->symbol (option-ref options 'language "c++")))
-         (ast (file->ast options file-name))
-         (csp (with-output-to-string (lambda () (ast->csp ast "-"))))
-         (gdzn-debug? (find (cut equal? <> "--debug") (command-line))))
-    (if gdzn-debug? (stderr "AST:\n ~s\n" ast))
-    (if gdzn-debug? (stderr "CSP:\n ~s\n" csp))
-    ;;(ast-> ast)
-    *unspecified*))
+         (model (option-ref options 'model #f))
+         (all? (option-ref options 'all #f)))
+    (verify all? model file-name)))

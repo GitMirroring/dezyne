@@ -58,7 +58,9 @@ Examples:
 (define (json->symbol-scm src)
   (match src
     ((? string?) (string->symbol src))
+    ((? hash-table?) (json->symbol-scm (hash-table->alist src)))
     ((h ...) (map json->symbol-scm src))
+    ((h . t) (cons (json->symbol-scm h) (json->symbol-scm t)))
     (_ src)))
 
 (define (->scm files)
