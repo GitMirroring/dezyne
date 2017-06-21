@@ -44,9 +44,9 @@
 	 (usage? (and (not help?) (null? files)))
 	 (version? (option-ref options 'version #f))
          (commands-dir (string-append
-                        (or (and=> (current-filename) dirname)
-                            (string-append (getenv "DEZYNE_PREFIX") "/gaiag/gaiag/"))
-                        "/commands/"))
+                        (if (getenv "DEZYNE_PREFIX") (string-append (getenv "DEZYNE_PREFIX") "/gaiag")
+                            (dirname (car (command-line))))
+                        "/gaiag/commands"))
          (commands (map (cut basename <> ".go") (find-files commands-dir ".*.go"))))
     (or
      (and version?
