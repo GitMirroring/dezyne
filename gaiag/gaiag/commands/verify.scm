@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -69,7 +70,6 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
 (define ((result->string file-name) result)
   (let* ((check (assoc-ref result 'assert))
          (model (assoc-ref result 'model))
-         (file-name "out/Alarm/Alarm.dzn")
          (trace (assoc-ref result 'trace))
          (trace (map symbol->string trace))
          (trace (apply string-join `(,trace "\n" prefix))))
