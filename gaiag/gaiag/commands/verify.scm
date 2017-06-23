@@ -59,7 +59,7 @@ Usage: gdzn verify [OPTION]... DZN-FILE [MAP-FILE]...
   -I, --import=DIR+           add DIR to import path
   -m, --model=MODEL           generate main for MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
-  -q, --queue_size=SIZE       use queue size=SIZE for verification
+  -q, --queue-size=SIZE       use queue size=SIZE for verification [3]
 FIXME:  -V, --version=VERSION       use service version=VERSION
 ")
 	   (exit (or (and usage? 2) 0)))
@@ -95,23 +95,24 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
               (format #f "verify: ~a: check: ~a: ~a~a" model check "ok" trace)
               "")))))
 
-(define (verify all? model file-name)
+(define (verify options file-name)
   (let* ((bin ((compose dirname car) (command-line)))
          (prefix (dirname bin))
          (prefix (if (file-exists? (string-append prefix "/services")) prefix
                      (dirname prefix)))
          (services (string-append prefix "/services"))
+         (model (option-ref options 'model #f))
+         (all? (option-ref options 'all #f))
+         (q (option-ref options 'queue-size "3"))
          (verify.js (string-append services "/scripts/verify.js"))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
          (command (string-append
-                   verify.js " " file-name " " model
+                   verify.js " " file-name " " model " " q
                    " | " bin "/json2scm"))
          (sexp (with-input-from-string (gulp-pipe command) read))
          (progress (append-map (lambda (e) (or (assoc-ref e 'progress)
                                                (assoc-ref e 'result) '()
                                                '())) sexp))
-         ;; (foo (stderr "progress: ~s\n" progress))
-         ;; (foo (pretty-print progress (current-error-port)))
          (traces (filter (lambda (p) (pair? (assoc-ref p 'sequence))) progress))
          (results (filter (lambda (p) (assoc-ref p 'assert)) progress))
          (results (if (or all? (null? results)) results (list (car results))))
@@ -122,7 +123,5 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
-         (file-name (car files))
-         (model (option-ref options 'model #f))
-         (all? (option-ref options 'all #f)))
-    (verify all? model file-name)))
+         (file-name (car files)))
+    (verify options file-name)))
