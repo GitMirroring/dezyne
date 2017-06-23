@@ -31,6 +31,7 @@
   #:use-module (gaiag json2scm)
   #:use-module (ice-9 getopt-long)
   #:use-module (gaiag misc)
+  #:use-module (gaiag commands parse)
   #:export (parse-opts
             main))
 
@@ -124,4 +125,5 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (file-name (car files)))
+    (assert-generator-parse options file-name)
     (verify options file-name)))

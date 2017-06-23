@@ -27,7 +27,9 @@
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
   #:use-module (gaiag misc)
-  #:export (parse-opts
+  #:export (assert-generator-parse
+            generator-parse
+            parse-opts
             main))
 
 (define (parse-opts args)
@@ -50,7 +52,7 @@ Usage: gdzn parse [OPTION]... [FILE]...
           (exit 0)))
     options))
 
-(define (generator options file-name)
+(define (generator-parse options file-name)
   (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
@@ -62,12 +64,15 @@ Usage: gdzn parse [OPTION]... [FILE]...
     (if gdzn-debug? (stderr "command: ~a\n" command))
     (display (gulp-pipe command))))
 
+(define (assert-generator-parse options file-name)
+  (catch #t
+    (lambda _
+      (generator-parse options file-name))
+    (lambda _
+      (exit 1))))
+
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (files (map (lambda (f) (if (not (string-prefix? "/" f)) f (string-drop f 1))) files)))
-    (catch #t
-      (lambda _
-        (generator options (car files)))
-      (lambda _
-        (exit 1)))))
+    (assert-generator-parse options (car files))))
