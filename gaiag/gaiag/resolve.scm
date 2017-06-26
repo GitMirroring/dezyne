@@ -340,17 +340,17 @@
         (clone o #:type ((resolve model locals) type))))
     (($ <otherwise>) o)
 
-    ((and ($ <port>) (= .type ('dotted scope ... name)))
+    ((and ($ <port>) (= .type@ ('dotted scope ... name)))
      (let* ((name (make <scope.name> #:scope scope #:name name))
             (type (interface? name)))
        (if (not type) (resolve-error o type "undefined interface: ~a")
-           o;(clone o #:type type)
-           )))
+           (clone o #:type (.name type)))))
+
     ((and ($ <port>) (= .type type))
      (let ((type (interface? type)))
        (if (not type) (resolve-error o type "undefined interface: ~a")
-           o;(clone o #:type type)
-           )))
+           o)))
+
     (($ <signature> type formals)
      (clone o
             #:type ((resolve model locals) type)
