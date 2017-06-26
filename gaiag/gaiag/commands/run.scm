@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -63,10 +64,11 @@ Usage: gdzn run [OPTION]... [FILE]...
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
          (command (string-append
                    "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
-                   " replaytrace "
+                   " seqdiag "
                    (string-append " -m " model-opt)
                    ;;(string-join imports " -I " 'prefix)
-                   " " file-name)))
+                   " " file-name
+		   "| /home/hank/development/interpreter/test/trace2net.js")))
     (if gdzn-debug? (stderr "command: ~a\n" command))
     (let ((trace (gulp-pipe command)))
       (if strict?
