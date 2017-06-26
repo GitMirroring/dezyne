@@ -55,7 +55,14 @@
   #:use-module (gaiag resolve)
 
   #:export (ast->
-           mangle-table prepend-guards dzn-table remove-initial simplify table table-state))
+            ast->table-state
+            mangle-table
+            prepend-guards
+            dzn-table
+            remove-initial
+            simplify
+            table
+            table-state))
 
 ;;(define debug stderr)
 (define (debug . args) #t)
@@ -336,13 +343,18 @@
     (annotate-otherwise)
     ) o))
 
+(define (ast->table-state ast)
+  ((compose-root
+    (table table-state)
+    ast:resolve
+    ast->om)
+   ast))
+
 (define (ast-> ast)
   ((compose-root
     dzn-table
     (lambda (x) (if (is-a? x <ast>) (make <root> #:elements (om:filter identity x))
                     (filter identity x)))
     (mangle-table json-table-state)
-    (table table-state)
-    ast:resolve
-    ast->om
-    ) ast))
+    ast->table-state)
+   ast))

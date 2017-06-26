@@ -35,7 +35,7 @@
 (define* (command-line:get option #:optional default)
   (let* ((files (option-ref (parse-opts (command-line)) '() '(#f)))
          (file (car files))
-         (commands '("code" "traces"))
+         (commands '("code" "table" "traces"))
          (command (and=> (member file commands) (compose string->symbol car)))
          (parse-opts (if (not command) parse-opts
                          (let ((module (resolve-module `(gaiag commands ,command))))

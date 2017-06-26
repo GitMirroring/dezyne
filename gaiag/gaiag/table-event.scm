@@ -48,7 +48,9 @@
   #:use-module (gaiag dzn)
   #:use-module (gaiag table-state)
 
-  #:export (ast-> table-event))
+  #:export (ast->
+            table-event
+            ast->table-event))
 
 (define (table-event model o)
   ((compose
@@ -59,13 +61,18 @@
     (annotate-otherwise)
     ) o))
 
+(define (ast->table-event ast)
+  ((compose-root
+    (table table-event)
+    ast:resolve
+    ast->om)
+   ast))
+
 (define (ast-> ast)
   ((compose-root
     dzn-table
     (lambda (x) (if (is-a? x <ast>) (make <root> #:elements (om:filter identity x))
                     (filter identity x)))
     (mangle-table json-table-event)
-    (table table-event)
-    ast:resolve
-    ast->om
-    ) ast))
+    ast->table-event)
+   ast))

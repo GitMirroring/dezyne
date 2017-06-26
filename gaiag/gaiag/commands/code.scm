@@ -35,11 +35,11 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((debug (single-char #\d))
+          '((calling-context (single-char #\c) (value #t))
+            (debug (single-char #\d))
             (depends) ;; FIXME
-            (glue (single-char #\g) (value #t))
-            (calling-context (single-char #\c) (value #t))
             (gaiag (single-char #\G))
+            (glue (single-char #\g) (value #t))
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (language (single-char #\l) (value #t))
@@ -57,8 +57,8 @@
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
 Usage: gdzn code [OPTION]... DZN-FILE [MAP-FILE]...
-FIXME:      --depends[=TYPE]        generate dependency for DZN-FILE and write to DZN-FILE.TYPE, default is stdout
   -c, --calling-context=TYPE  generate extra parameter of TYPE for every event
+FIXME:      --depends[=TYPE]        generate dependency for DZN-FILE and write to DZN-FILE.TYPE, default is stdout
   -g, --glue=TYPE             generate glue for TYPE [dzn]
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path
