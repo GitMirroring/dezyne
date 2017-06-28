@@ -1,7 +1,9 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016, 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -184,7 +186,7 @@ var aspects = {
         }
         return util.spawn_sync_shell('mkdir -p out'
                                      + ' && rm -rf out/' + path.basename (dir)
-                                     + ' && cp -as --no-preserve=mode ' + path.resolve (dir) + ' $PWD/out')
+                                     + ' && cp -as --no-preserve=mode,ownership ' + path.resolve (dir) + ' $PWD/out')
           .then(function() {
             dir = 'out/' + path.basename(dir);
             var meta = read_meta (dir, default_meta);
