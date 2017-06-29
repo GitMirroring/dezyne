@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -20,20 +20,13 @@
 # 
 # Code:
 
-CLEAN := $(CLEAN)
+.PHONY: test install-test
 
-TEST := $(TEST) $(CDIR)-check
-$(CDIR)-check: CDIR:=$(CDIR)
-$(CDIR)-check:
-	$(MAKE) smoke
+test: client daemon
 
-ifeq ($(GUIX),)
-PROPER := $(PROPER) $(CDIR)/node_modules/.dummy
-$(CDIR)/node_modules/.dummy: CDIR:=$(CDIR)
-$(CDIR)/node_modules/.dummy: $(CDIR)/package.json
-	mkdir -p $(CDIR)/node_modules
-	cd $(CDIR) && npm install
-	touch $@
-endif
-
-include make/check.mk
+install-test: test
+	mkdir -p $(DESTDIR)$(PREFIX)
+	tar -cf- test | tar -xf- -C $(DESTDIR)$(PREFIX)
+	tar -cf- daemon | tar -xf- -C $(DESTDIR)$(PREFIX)
+	tar -cf- client | tar -xf- -C $(DESTDIR)$(PREFIX)
+	tar -cf- gaiag/runtime | tar -xf- -C $(DESTDIR)$(PREFIX)
