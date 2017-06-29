@@ -2,7 +2,7 @@
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016, 2017 Rob Wieringa <Rob.Wieringa@verum.com>
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 //
 // This file is part of Dezyne.
@@ -249,8 +249,11 @@ var privates = {
       var outcome = item.outcome.status;
       ln('    <tr class="'+status2class(item.status)+'">');
       var base = path.basename (item.name);
-      var file = '../' + item.name + '/' + base + '.dzn';
-      ln('      <td class="'+status2class(item.status)+'"><a href="' + file +'">'+item.name+'</a></td>');
+      var file = item.name;
+      try {var f = file + '/' + base + '.dm'; file = fs.realpathSync (f);} catch (e) {}
+      try {var f = file + '/' + base + '.dzn'; file = fs.realpathSync (f);} catch (e) {}
+      var dir = path.basename (path.dirname (item.name));
+      ln('      <td class="'+status2class(item.status)+'"><a href="' + file +'">'+dir+'/'+ base+'</a></td>');
       ln('      <td class="white">'+item.outcome.elapsed+'</a></td>');
       Object.keys(outcome).each(function(aspect) {
         var aspoutcome = outcome[aspect];
