@@ -56,6 +56,10 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
   (let* ((dir (string-append dir "/"))
          (im-files (find-files dir ".*[.]im$"))
          (dm-files (find-files dir ".*[.]dm$")))
+    (format #t "dir:~s\n" dir)
+    (format #t "im-files:~s\n" im-files)
+    (format #t "dm-files:~s\n" dm-files)
+
     (for-each (asd->dzn dzn out) im-files)
     (for-each (asd->dzn dzn out) dm-files)
 
@@ -136,8 +140,11 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
 
 (define (main args)
   (let* ((dir (dirname (car args)))
+         (foo (format (current-error-port) "dir: ~a\n" dir))
          (test ((compose dirname dirname) dir))
-         (development (dirname test))
+         (foo (format (current-error-port) "test: ~a\n" test))
+         (development (if (equal? test ".") ".." (dirname test)))
+         (foo (format (current-error-port) "development: ~a\n" development))
          (dzn (or (getenv "DZN") (string-append development "/client/bin/dzn")))
          (gdzn (or (getenv "GDZN") (string-append development "/gaiag/bin/gdzn")))
          (gdzn (if (equal? gdzn "*dzn*") dzn gdzn))
@@ -154,12 +161,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
          (results->json
           languages
           (stage->alist "convert"
-                        (with-result-and-output (lambda ()
-                                                  (format #t "dir:~s\n" dir)
-                                                  (format #t "dm-files:~s\n" (find-files dir ".*[.]dm$"))
-                                                  (format #t "%load-path:~s\n" %load-path)
-                                                  (format #t "%load-compiled-path:~s\n" %load-compiled-path)
-                                                  (convert dzn dir out))) '())
+                        (with-result-and-output (lambda () (convert dzn dir out))) '())
           (stage->alist "code"
                         (map (lambda (language)
                                (with-result-and-output (lambda () (code test dzn model dir out language))))

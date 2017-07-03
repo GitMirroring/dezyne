@@ -33,6 +33,7 @@
   #:use-module (sxml simple)
   #:use-module (gaiag misc)
   #:use-module (gash glob)
+  #:use-module (gaiag shell-util)
   #:export (assert-generator-parse
             generator-parse
             parse-opts
@@ -89,17 +90,22 @@ Usage: gdzn parse [OPTION]... [FILE]...
          (files (append interfaces (list file-name)))
          (commands (map (cut string-append
                           "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
-                          " asd -a no-system -l gen2 -I " (dirname file-name) " "
+                          " asd"
+                          (if system? "" " -a no-system ")
+                          " -l gen2"
+                          " -I " (dirname file-name)
                           (string-join imports " -I " 'prefix)
-                          output " "
-                          <>) files)))
+                          output
+                          " " <>) files)))
     (stderr "command: ~a\n" commands)
+    (mkdir-p output-dir)
     (display (map gulp-pipe commands))
-    (let* ((pattern (string-append output-dir "/*.dzn"))
-           (stub? (lambda (file-name)
-                    (string-contains (with-input-from-file file-name read-string) "This is a stub")))
-           (dzn-files (glob pattern)))
-      (for-each delete-file (filter stub? dzn-files)))))
+    (if (not system?)
+        (let* ((pattern (string-append output-dir "/*.dzn"))
+            (stub? (lambda (file-name)
+                     (string-contains (with-input-from-file file-name read-string) "This is a stub")))
+            (dzn-files (glob pattern)))
+       (for-each delete-file (filter stub? dzn-files))))))
 
 (define (assert-generator-parse options file-name)
   (catch #t
