@@ -1,7 +1,8 @@
 #! /bin/bash
 # -*- scheme -*-
 set -x
-exec ${GUILE-guile} --no-auto-compile -L ../gaiag -C ../gaiag -L all/dzn-glue -e '(run)' -s "$0" ${1+"$@"}
+test=$(dirname $0)/../..
+exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $test/all/dzn-glue -e '(run)' -s "$0" ${1+"$@"}
 !#
 
 (define-module (run)
@@ -71,7 +72,7 @@ exec ${GUILE-guile} --no-auto-compile -L ../gaiag -C ../gaiag -L all/dzn-glue -e
       (("component (glue[.])*")
        (string-append "component glue.")))))
 
-(define (code dzn model dir out language)
+(define (code test dzn model dir out language)
   (let* ((dzn-files (find-files out ".*[.]dzn$"))
          (map-files (find-files out ".*[.]map$")))
     (for-each (dzn->code dzn dir out language model map-files) dzn-files)
@@ -84,10 +85,10 @@ exec ${GUILE-guile} --no-auto-compile -L ../gaiag -C ../gaiag -L all/dzn-glue -e
       "IN=foobar" 
       ,(string-append "OUT=" out "/" language)
       "-f"
-      ,(string-append (or (and=> (current-filename) dirname) ".") "/lib/code.make")
+      ,(string-append test "/lib/code.make")
       "runtime"))))
 
-(define (build model dir out language)
+(define (build test model dir out language)
   (assert-pipe
    `("make"
      ,(string-append "DIR=" dir)
@@ -95,7 +96,7 @@ exec ${GUILE-guile} --no-auto-compile -L ../gaiag -C ../gaiag -L all/dzn-glue -e
      ,(string-append "OUT=" out "/" language)
      ,(string-append "INCLUDES=" out "/" language)
      "IN=all/dzn-glue/c++"
-     "-f" ,(string-append (or (and=> (current-filename) dirname) ".") "/lib/build." language ".make"))))
+     "-f" ,(string-append test "/lib/build." language ".make"))))
 
 (define (execute dir out language)
   (assert-pipe (list (string-append out "/" language "/test"))))
@@ -135,10 +136,13 @@ exec ${GUILE-guile} --no-auto-compile -L ../gaiag -C ../gaiag -L all/dzn-glue -e
 
 (define (main args)
   (let* ((dir (dirname (car args)))
-         (dzn "../client/bin/dzn")
-         (gdzn "../gaiag/bin/gdzn")
+         (test ((compose dirname dirname) dir))
+         (development (dirname test))
+         (dzn (or (getenv "DZN") (string-append development "/client/bin/dzn")))
+         (gdzn (or (getenv "GDZN") (string-append development "/gaiag/bin/gdzn")))
+         (gdzn (if (equal? gdzn "*dzn*") dzn gdzn))
          (model "alarm")
-         (out (string-append "out/" (substring dir (1+ (string-index dir #\/)))))
+         (out (string-append "out/" (substring dir (1+ (string-rindex dir #\/)))))
          (languages '("c++" "c++03")))
 
     (when (file-exists? out) (delete-file-recursively out))
@@ -158,12 +162,12 @@ exec ${GUILE-guile} --no-auto-compile -L ../gaiag -C ../gaiag -L all/dzn-glue -e
                                                   (convert dzn dir out))) '())
           (stage->alist "code"
                         (map (lambda (language)
-                               (with-result-and-output (lambda () (code dzn model dir out language))))
+                               (with-result-and-output (lambda () (code test dzn model dir out language))))
                              languages)
                         languages)
           (stage->alist "build"
                         (map (lambda (language)
-                               (with-result-and-output (lambda () (build model dir out language))))
+                               (with-result-and-output (lambda () (build test model dir out language))))
                              languages)
                         languages)
           (stage->alist "execute"
