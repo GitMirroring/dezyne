@@ -63,12 +63,76 @@ var privates = {
     console.log(fileContent);
   }
   ,
+  summary_per_aspect: function(result) {
+    var summary = {};
+
+    function status_or(status1, status2) {
+      if (status1 == 'fail' || status2 == 'fail') return 'fail';
+      if (status1 == 'known' || status2 == 'known') return 'known';
+      if (status1 == 'solved' || status2 == 'solved') return 'solved';
+      if (status1 == 'pass' || status2 == 'pass') return 'pass';
+      return null;
+    }
+
+    var outcome = result.items[0].outcome.status;
+    Object.keys(outcome).each(function(aspect) {
+      summary[aspect] = {};
+      var aspoutcome = outcome[aspect];
+      if (typeof aspoutcome !== 'string') {
+        summary[aspect].lan = {};
+        Object.keys(aspoutcome).each(function(language) {
+          summary[aspect].lan[language] = 'pass';
+        });
+      } else {
+        summary[aspect] = 'pass';
+      }
+    });
+
+    result.items.each(function(item) {
+      function status2class(status) {
+        if (status=='FAILED'||status=='ERROR'||status=='NOLOG') return 'fail';
+        if (status=='KNOWN') return 'known';
+        if (status=='SOLVED') return 'solved';
+        return 'pass';
+      }
+      var outcome = item.outcome.status;
+      Object.keys(outcome).each(function(aspect) {
+        var aspoutcome = outcome[aspect];
+        if (typeof aspoutcome !== 'string') {
+          Object.keys(aspoutcome).each(function(language) {
+            var status = status2class(aspoutcome[language]);
+            summary[aspect].lan[language] = status_or(status,summary[aspect].lan[language]);
+          });
+        } else {
+          var status = status2class(aspoutcome);
+          summary[aspect] = status_or(status,summary[aspect]);
+        }
+      });
+    });
+
+    Object.keys(summary).each(function(aspect) {
+      //console.log('1.-- summary[aspect] = ' + JSON.stringify(summary[aspect]));
+      if (summary[aspect].lan) {
+        var status = 'pass';
+        Object.keys(summary[aspect].lan).each(function(language) {
+          status = status_or(status,summary[aspect].lan[language]);
+        });
+        summary[aspect].status = status;
+      } 
+      //console.log('3.-- summary[aspect] = ' + JSON.stringify(summary[aspect]));
+    });
+    return summary;
+  }
+  ,
   transform: function(result) {
     var cfail   = 'rgba(255,200,200,.75)';
     var cknown  = 'rgba(255,255,200,.75)';
     var csolved = 'rgba(200,200,255,.75)';
     var cpass   = 'rgba(200,255,200,.75)';
     var cwhite  = 'rgba(255,255,255,.75)';
+    
+    var summary = privates.summary_per_aspect(result);
+    //console.log('summary = ' + JSON.stringify(summary));
     
     var html = '';
 
@@ -218,8 +282,12 @@ var privates = {
         var len = 1;
         if (typeof aspoutcome !== 'string') {
           len = Object.keys(aspoutcome).length;
+          var cl = summary[aspect].status;
+          ln('      <th class="'+cl+'" colspan = "'+len+'">'+aspect+'</th>');
+        } else {
+          var cl = summary[aspect];
+          ln('      <th class="'+cl+'">'+aspect+'</th>');
         }
-        ln('      <th class="white" colspan = "'+len+'">'+aspect+'</th>');
       });
       ln('    </tr>');
       ln('    <tr>');
@@ -230,10 +298,12 @@ var privates = {
         var aspoutcome = outcome[aspect];
         if (typeof aspoutcome !== 'string') {
           Object.keys(aspoutcome).each(function(language) {
-            ln('      <th class="white">'+language+'</th>');
+            var cl = summary[aspect].lan[language];
+            ln('      <th class="'+cl+'">'+language+'</th>');
           });
         } else {
-          ln('      <th class="white"> </th>');
+          var cl = summary[aspect];
+          ln('      <th class="'+cl+'"> </th>');
         }
       });
       ln('    </tr>');
