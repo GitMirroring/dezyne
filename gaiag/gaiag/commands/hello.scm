@@ -52,6 +52,5 @@ Usage: gdzn hello [OPTION]...
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
-         (files (map (lambda (f) (if (not (string-prefix? "/" f)) f (string-drop f 1))) files))
          (debug? (find (cut equal? <> "--debug") (command-line))))
     (display "hello\n")))

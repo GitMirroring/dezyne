@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -109,6 +110,5 @@ Usage: gdzn parse [OPTION]... [FILE]...
 
 (define (main args)
   (let* ((options (parse-opts args))
-         (files (option-ref options '() '()))
-         (files (map (lambda (f) (if (not (string-prefix? "/" f)) f (string-drop f 1))) files)))
+         (files (option-ref options '() '())))
     (assert-generator-parse options (car files))))
