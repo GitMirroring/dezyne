@@ -107,8 +107,14 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
          (q (option-ref options 'queue-size "3"))
          (verify.js (string-append services "/scripts/verify.js"))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
+         (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
+         (imports (filter-map import-opt options))
          (command (string-append
-                   verify.js " " file-name " " model " " q
+                   verify.js
+                   " --model=" model
+                   " --queue=" q
+                   (string-join imports " -I " 'prefix)
+                   " " file-name
                    " | " bin "/json2scm"))
          (sexp (with-input-from-string (gulp-pipe command) read))
          (progress (append-map (lambda (e) (or (assoc-ref e 'progress)
