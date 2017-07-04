@@ -86,14 +86,14 @@ Usage: gdzn parse [OPTION]... [FILE]...
          (output (if output-dir (string-append  " -o " output-dir) ""))
          (system? (option-ref options 'system #f))
          (model (with-input-from-file file-name (lambda () (xml->sxml (current-input-port)))))
-         (interfaces (map (cut string-append (dirname file-name) "/" <>) (asd-interfaces model)))
+         (imports (cons* (dirname file-name) (dirname (canonicalize-path file-name)) imports))
+         (interfaces (map (cut search-path imports <>) (asd-interfaces model)))
          (files (append interfaces (list file-name)))
          (commands (map (cut string-append
                           "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
                           " asd"
                           (if system? "" " -a no-system ")
                           " -l gen2"
-                          " -I " (dirname file-name)
                           (string-join imports " -I " 'prefix)
                           output
                           " " <>) files)))
