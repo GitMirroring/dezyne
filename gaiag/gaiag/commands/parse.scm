@@ -74,5 +74,7 @@ Usage: gdzn parse [OPTION]... [FILE]...
 
 (define (main args)
   (let* ((options (parse-opts args))
-         (files (option-ref options '() '())))
-    (assert-generator-parse options (car files))))
+         (files (option-ref options '() '()))
+         (gdzn-verbose? (find (lambda (o) (or (equal? o "--verbose") (equal? o "-v"))) (command-line))))
+    (assert-generator-parse options (car files))
+    (if gdzn-verbose? (display "parse: no errors found"))))
