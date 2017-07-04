@@ -68,7 +68,7 @@ Usage: gdzn run [OPTION]... [FILE]...
                    (string-append " -m " model-opt)
                    ;;(string-join imports " -I " 'prefix)
                    " " file-name
-		   "| trace2net.js")))
+		   "| trace2net.js --illegal")))
     (if gdzn-debug? (stderr "command: ~a\n" command))
     (let ((trace (gulp-pipe command)))
       (if strict?
