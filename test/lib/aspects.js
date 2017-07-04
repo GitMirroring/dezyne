@@ -103,6 +103,23 @@ function imports_string (imports) {
   return (imports || []).map (function (o){return '-I ' + o.replace (/^all\//, fs.realpathSync (__dirname + '/../all') + '/');}).join (' ');
 }
 
+function ordered_dependencies() {
+  var result = [];
+  function add_dependencies(aspect) {
+    if (result.indexOf(aspect) == -1) {
+      dependencies[aspect].forEach(function(dep) {
+        add_dependencies(dep);
+      });
+      result.push(aspect);
+    }
+  }
+  var order = ['parse', 'verify', 'triangle', 'table', 'view'] ;
+  order.forEach(function(aspect) {
+    add_dependencies(aspect);
+  });
+  return result;
+}
+
 function skip_filter (meta) {
   function filter_aspect(e) {
     return meta.skip.indexOf(e) == -1;
@@ -169,6 +186,23 @@ var aspects = {
     return Object.keys(dependencies);
   }
   ,
+  empty_outcome: function() {
+    function nolanguages() {
+      var result = {};
+      all_languages.each ( function(lan) {
+        result[lan] = 'NOLOG';
+      });
+      return result;
+    }
+    var order = ordered_dependencies();
+    var status = {};
+    order.each(function(aspect) {
+      status[aspect] = haslanguage(aspect) ? nolanguages() : 'NOLOG';
+    });
+    var result = {status: status, output: {}, order: order};
+    return result;
+  }
+  ,
   all: function(session, work, languages, dir) {
     var startTime = new Date();
 
@@ -223,7 +257,7 @@ var aspects = {
               .then (function(result) {
                 var endTime = new Date();
                 var elapsed = util.elapsedTime(startTime, endTime, true);
-                var outcome = {elapsed:elapsed,status:{},output:{}};
+                var outcome = {elapsed:elapsed,status:{},output:{},order:ordered_dependencies()};
                 Object.keys(dependencies).each(function(aspect){
                   if(haslanguage(aspect)) {
                     outcome.status[aspect] = {};

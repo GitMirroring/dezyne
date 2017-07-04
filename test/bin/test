@@ -44,22 +44,7 @@ var output = {
       return result;
     }
     function read_outcome(item) {
-      var outcome = {
-        status: {
-          build: nolanguages(),
-          code: nolanguages(),
-          convert: 'NOLOG',
-          execute: nolanguages(),
-          parse: 'NOLOG',
-          run: 'NOLOG',
-          table: 'NOLOG',
-          traces: 'NOLOG',
-          triangle: nolanguages(),
-          verify: 'NOLOG',
-          view: 'NOLOG'
-        },
-        output: {}
-      };
+      var outcome = aspects.empty_outcome();
 
       try {
         var outcome_string = fs.readFileSync(item+'/outcome.json');
