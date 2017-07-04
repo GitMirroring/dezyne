@@ -55,6 +55,7 @@ Usage: gdzn parse [OPTION]... [FILE]...
 (define (generator-parse options file-name)
   (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
+         (imports (cons* (dirname file-name) (dirname (canonicalize-path file-name)) imports))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
          (command (string-append
                    "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
