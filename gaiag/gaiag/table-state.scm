@@ -314,9 +314,9 @@
          (if json?
              (and-let* ((behaviour (.behaviour o))
                         (statement (.statement behaviour)))
-               (append
-                (json-init o)
-                ((json-table o) statement)))
+                       (ast:set-model-scope o (append
+                                               (json-init o)
+                                               ((json-table o) statement))))
              o)))
       ;;(#f (if (not json?) o (list (make-hash-table))))
       ;;((or #t #f) (and json? (list (make-hash-table))))

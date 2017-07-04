@@ -50,6 +50,7 @@
 (define (ast:resolve o)
   (match o
     (($ <root> (models ...)) (resolve-root o))
+    (($ <call>) ((resolve (ast:model-scope) '()) o))
     ((? (is? <model>)) (resolve-model o))
     (_  o)))
 
@@ -223,38 +224,38 @@
 
   (define (resolve-assign-expression o)
     (match o
-           (($ <call> (and (? event?) (get! event)))
-            (make <action> #:event (event? event)))
+      (($ <call> (and (? event?) (get! event)))
+       (make <action> #:event (event? event)))
 
-           (($ <call>)
-            ((resolve model locals) o))
+      (($ <call>)
+       ((resolve model locals) o))
 
-            (('dotted (and (? event?) (get! event)))
-             (make <action> #:event (event? event)))
+      (('dotted (and (? event?) (get! event)))
+       (make <action> #:event (event? event)))
 
-            (($ <var> (and (? event?) (get! event)))
-             (make <action> #:event (event? event)))
+      (($ <var> (and (? event?) (get! event)))
+       (make <action> #:event (event? event)))
 
-            (('dotted (and (? function?) (get! function)))
-             (make <call> #:function (function? (function))))
+      (('dotted (and (? function?) (get! function)))
+       (make <call> #:function (function? (function))))
 
-            (($ <var> (and (? function?) (get! function)))
-             (make <call> #:function (function? (function))))
+      (($ <var> (and (? function?) (get! function)))
+       (make <call> #:function (function? (function))))
 
-            (('dotted (and (? port?) (get! port)) event)
-             ((resolve model locals) (make <action> #:port (port) #:event event)))
+      (('dotted (and (? port?) (get! port)) event)
+       ((resolve model locals) (make <action> #:port (port) #:event event)))
 
-            (($ <action>)
-             ((resolve model locals) o))
+      (($ <action>)
+       ((resolve model locals) o))
 
-            (($ <var> (and (? function?) (get! function)))
-             (make <call> #:function (function? (function))))
+      (($ <var> (and (? function?) (get! function)))
+       (make <call> #:function (function? (function))))
 
-            ((and ($ <value>) (get! expression))
-             ((resolve model locals) (expression)))
+      ((and ($ <value>) (get! expression))
+       ((resolve model locals) (expression)))
 
-            (_
-             ((resolve model locals) o))))
+      (_
+       ((resolve model locals) o))))
   
   (match o
     (($ <var> (and (? (negate var?)) (get! identifier)))

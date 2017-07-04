@@ -69,8 +69,9 @@
     (set! g-time time)
     o))
 
-(define-method (norm-event (o <root>))
-  ((compose-root
+;; norm-event used for <root> and other <ast>
+(define-method (norm-event (o <ast>))
+  (((if (is-a? o <root>) compose-root compose)
     (perf 'remove-skip)
     remove-skip
     (perf 'aggregate-guard-s)
