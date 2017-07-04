@@ -99,6 +99,10 @@ function comment(meta, aspect, language) {
     || '';
 }
 
+function imports_string (imports) {
+  return (imports || []).map (function (o){return '-I ' + o.replace (/^all\//, fs.realpathSync (__dirname + '/../all') + '/');}).join (' ');
+}
+
 function skip_filter (meta) {
   function filter_aspect(e) {
     return meta.skip.indexOf(e) == -1;
@@ -351,7 +355,7 @@ var aspects = {
   ,
   code: function(parameters) {
     var language = parameters.meta.languages[0];
-    var imports = parameters.meta.imports || "";
+    var imports = imports_string (parameters.meta.imports);
     var code_options = parameters.meta.code_options || "";
     var tss = parameters.meta.tss;
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
@@ -424,7 +428,7 @@ var aspects = {
   ,
   convert: function(parameters) {
     var dm = parameters.dir + '/' + parameters.model + '.dm';
-    var imports = parameters.meta.imports || "";
+    var imports = imports_string (parameters.meta.imports);
     return lstat(dm)
       .then (function(stats) {
         var out = 'out/'+path.basename(parameters.dir);
@@ -451,8 +455,7 @@ var aspects = {
   parse: function(parameters) {
     var lstat = q.denodeify(fs.lstat);
     var baseline = parameters.dir + '/baseline/parse/' + parameters.model + '.stderr';
-    var imports = parameters.meta.imports || "";
-
+    var imports = imports_string (parameters.meta.imports);
     return lstat(baseline)
       .then (function(stats) {
         return 'diff -uw '+baseline+' <(' + dzn() + ' -v parse '+imports+' '+parameters.filename+' |& sed "s,.\r,,g")';
@@ -469,7 +472,7 @@ var aspects = {
   run: function(parameters) {
     return run_traces(parameters, 'run', function(trace){
       var model = parameters.meta.model || parameters.model;
-      var imports = parameters.meta.imports || "";
+      var imports = imports_string (parameters.meta.imports);
       return util.spawn_sync_shell(
         'diff -uw'
           + ' <(grep -v "<flush>" '+ trace + ')'
@@ -489,7 +492,7 @@ var aspects = {
         var baseline = parameters.dir + '/baseline/table/'+parameters.model+ '-' + form + '.' + suffix;
         return lstat(baseline)
           .then (function(stats) {
-            var imports = parameters.meta.imports || "";
+            var imports = imports_string (parameters.meta.imports);
             var cmd = 'diff -uwB '+baseline+' <('+dzn()+' table '+imports+' --form=' + form + ' -o - '+parameters.filename + (suffix == 'html' ? '| w3m -dump -T text/html' : '') +')';
             return util.spawn_sync_shell(cmd)
               .fail (function(err) {console.log(err); return {status: -1, output: result.output + err}});
@@ -515,7 +518,7 @@ var aspects = {
     var illegal = parameters.meta.trace_illegals ? '-i ' : '';
     var model = parameters.meta.model || parameters.model;
     var queue = parameters.meta.queue || 7;
-    var imports = parameters.meta.imports || "";
+    var imports = imports_string (parameters.meta.imports);
     var cmd = gdzn()
         + ' traces '+imports+' -q ' + queue + ' ' + illegal+flush+' -m '+model+' -o '+out+' '+parameters.filename;
     return lstat(out)
@@ -530,7 +533,7 @@ var aspects = {
     var dir = 'out/' + path.basename(parameters.dir)
     var out = dir + '/'+parameters.model;
     var err = out + '.stderr';
-    var imports = parameters.meta.imports || "";
+    var imports = imports_string (parameters.meta.imports);
     var model = parameters.meta.model || parameters.model;
     return lstat (baseline)
       .then (function(stats) {
@@ -568,8 +571,7 @@ var aspects = {
     var dir = 'out/' + path.basename(parameters.dir)
     var out = dir + '/'+parameters.model;
     var err = out + '.stderr';
-    var imports = parameters.meta.imports || "";
-
+    var imports = imports_string (parameters.meta.imports);
     var cmd = dzn() + ' view '+imports+' '+parameters.filename;
     return util.spawn_sync_shell(cmd)
       .fail (function(err) {console.log(err); return {status: -1, output: err}});

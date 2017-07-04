@@ -1,2 +1,2 @@
-{"imports":"-I all/importPath/subdir -I all/importPath/foo"}
+{"imports":["all/importPath/subdir","all/importPath/foo"]}
 

@@ -1,2 +1,2 @@
-{"imports":"-I out/alarmImportComp/Subdir"}
+{"imports":["out/alarmImportComp/Subdir"]}
 
