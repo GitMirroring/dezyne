@@ -27,6 +27,7 @@
 
 default: $(OUT)/test
 
+DEVELOPMENT:=$(shell readlink -f $(dir $(filter %/code.make,$(MAKEFILE_LIST)))../../)
 define CHECKPARAM
 ifeq ($(origin $(1)), undefined)
 $$(error $(1) undefined)
@@ -39,7 +40,7 @@ SHELL:=bash
 CCACHE:=$(shell type -p ccache)
 CXX:=$(CCACHE) g++
 CXXFLAGS=-g -std=c++03 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
-CPPFLAGS=-DBOOST_THREAD_PROVIDES_FUTURE -I$(OUT) -I$(OUT)/.. -I$(IN) -I$(IN)/.. -I../externals/asd_cpp_runtime
+CPPFLAGS=-DBOOST_THREAD_PROVIDES_FUTURE -I$(OUT) -I$(OUT)/.. -I$(IN) -I$(IN)/.. -I$(DEVELOPMENT)/externals/asd_cpp_runtime
 GLOBALS_H=$(wildcard $(DIR)/globals.h)
 ifneq ($(GLOBALS_H),)
 CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)

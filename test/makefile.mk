@@ -30,3 +30,4 @@ install-test: test
 	tar -cf- test | tar -xf- -C $(DESTDIR)$(PREFIX)
 	tar -cf- gaiag/runtime | tar -xf- -C $(DESTDIR)$(PREFIX)
 	tar -cf- client/commands/traces.js | tar -xf- -C $(DESTDIR)$(PREFIX)
+	tar -cf- externals/asd_cpp_runtime | tar -xf- -C $(DESTDIR)$(PREFIX)
