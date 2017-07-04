@@ -22,11 +22,10 @@
 
 .PHONY: test install-test
 
-test: client daemon
+test:
+	@:
 
 install-test: test
 	mkdir -p $(DESTDIR)$(PREFIX)
 	tar -cf- test | tar -xf- -C $(DESTDIR)$(PREFIX)
-	tar -cf- daemon | tar -xf- -C $(DESTDIR)$(PREFIX)
-	tar -cf- client | tar -xf- -C $(DESTDIR)$(PREFIX)
 	tar -cf- gaiag/runtime | tar -xf- -C $(DESTDIR)$(PREFIX)
