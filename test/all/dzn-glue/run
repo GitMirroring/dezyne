@@ -99,7 +99,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
      ,(string-append "LANGUAGE=" language)
      ,(string-append "OUT=" out "/" language)
      ,(string-append "INCLUDES=" out "/" language)
-     "IN=all/dzn-glue/c++"
+     ,(string-append "IN=" dir "/" language)
      "-f" ,(string-append test "/lib/build." language ".make"))))
 
 (define (execute dir out language)
