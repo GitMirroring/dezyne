@@ -109,6 +109,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
+         (imports (cons* (dirname file-name) (dirname (canonicalize-path file-name)) imports))
          (command (string-append
                    verify.js
                    " --model=" model
