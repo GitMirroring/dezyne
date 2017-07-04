@@ -27,7 +27,7 @@
 
 default: $(OUT)/test
 
-DEVELOPMENT:=$(shell readlink -f $(dir $(filter %/code.make,$(MAKEFILE_LIST)))../../)
+DEVELOPMENT:=$(shell readlink -f $(dir $(filter %/build.c++.make,$(MAKEFILE_LIST)))../../)
 define CHECKPARAM
 ifeq ($(origin $(1)), undefined)
 $$(error $(1) undefined)
