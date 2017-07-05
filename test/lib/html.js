@@ -65,6 +65,7 @@ var privates = {
   ,
   summary_per_aspect: function(result) {
     var summary = {};
+    var order = (result.items.length) ? result.items[0].outcome.order : [];
 
     function status_or(status1, status2) {
       if (status1 == 'fail' || status2 == 'fail') return 'fail';
@@ -74,10 +75,10 @@ var privates = {
       return null;
     }
 
-    var outcome = result.items[0].outcome.status;
-    Object.keys(outcome).each(function(aspect) {
+    var outcome = (result.items.length) ? result.items[0].outcome.status : [];
+    order.each(function(aspect) {
       summary[aspect] = {};
-      var aspoutcome = outcome[aspect];
+      var aspoutcome = outcome[aspect] || 'NOLOG';
       if (typeof aspoutcome !== 'string') {
         summary[aspect].lan = {};
         Object.keys(aspoutcome).each(function(language) {
@@ -96,8 +97,8 @@ var privates = {
         return 'pass';
       }
       var outcome = item.outcome.status;
-      Object.keys(outcome).each(function(aspect) {
-        var aspoutcome = outcome[aspect];
+      order.each(function(aspect) {
+        var aspoutcome = outcome[aspect] || 'NOLOG';
         if (typeof aspoutcome !== 'string') {
           Object.keys(aspoutcome).each(function(language) {
             var status = status2class(aspoutcome[language]);
@@ -111,7 +112,6 @@ var privates = {
     });
 
     Object.keys(summary).each(function(aspect) {
-      //console.log('1.-- summary[aspect] = ' + JSON.stringify(summary[aspect]));
       if (summary[aspect].lan) {
         var status = 'pass';
         Object.keys(summary[aspect].lan).each(function(language) {
@@ -119,7 +119,6 @@ var privates = {
         });
         summary[aspect].status = status;
       }
-      //console.log('3.-- summary[aspect] = ' + JSON.stringify(summary[aspect]));
     });
     return summary;
   }
@@ -132,7 +131,6 @@ var privates = {
     var cwhite  = 'rgba(255,255,255,.75)';
 
     var summary = privates.summary_per_aspect(result);
-    //console.log('summary = ' + JSON.stringify(summary));
 
     var html = '';
 
@@ -322,9 +320,9 @@ var privates = {
       ln('      <th class="white">ITEM</th>');
       ln('      <th class="white">time</th>');
 
-      var outcome = result.items[0].outcome.status;
+      var outcome = (result.items.length) ? result.items[0].outcome.status : [];
       order.each(function(aspect) {
-        var aspoutcome = outcome[aspect];
+        var aspoutcome = outcome[aspect] || 'NOLOG';
         var len = 1;
         if (typeof aspoutcome !== 'string') {
           len = Object.keys(aspoutcome).length;
@@ -341,7 +339,7 @@ var privates = {
       ln('      <th class="white"> </th>');
 
       order.each(function(aspect) {
-        var aspoutcome = outcome[aspect];
+        var aspoutcome = outcome[aspect] || 'NOLOG';
         if (typeof aspoutcome !== 'string') {
           Object.keys(aspoutcome).each(function(language) {
             var cl = summary[aspect].lan[language];
@@ -372,7 +370,7 @@ var privates = {
       ln('      <td class="'+status2class(item.status)+'"><a href="' + file +'">'+dir+'/'+ base+'</a></td>');
       ln('      <td class="white">'+item.outcome.elapsed+'</a></td>');
       order.each(function(aspect) {
-        var aspoutcome = outcome[aspect];
+        var aspoutcome = outcome[aspect] || 'NOLOG';
         if (typeof aspoutcome !== 'string') {
           Object.keys(aspoutcome).each(function(language) {
             var status = aspoutcome[language];
@@ -393,7 +391,7 @@ var privates = {
     ln('    </table>');
 
     result.items.each(function(item) {
-        var hname = m(item.name);
+      var hname = m(item.name);
       var outcome = item.outcome;
       if (typeof outcome.output != "string") {
         Object.keys(outcome.output).each(function(aspect_language) {
