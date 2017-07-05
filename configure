@@ -160,7 +160,7 @@ Usage: ./configure [OPTION]...
 
 (define guix?
   (and (file-exists? "/gnu")
-       (not (equal? (gulp-pipe "which bash") "/bin/bash"))))
+       (not (equal? (gulp-pipe "type -p bash") "/bin/bash"))))
 
 (define (main args)
   (let* ((verum? (file-exists? "/verum"))
