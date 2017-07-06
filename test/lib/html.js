@@ -63,9 +63,36 @@ var privates = {
     console.log(fileContent);
   }
   ,
+  all_languages(result) {
+    if (result.items.length == 0) return [];
+    var first = result.items[0].outcome;
+    // pre: first is complete in its first language dependent aspect
+    var order = first.order;
+    var languages = [];
+    var outcome = first.status;
+    order.each(function(aspect) {
+      var aspoutcome = outcome[aspect] || 'SKIPPED';
+      if (typeof aspoutcome !== 'string' && languages.length==0) {
+        Object.keys(aspoutcome).each(function(language) {
+          languages.push(language);
+        });
+      }
+    });
+    return languages;
+  }
+  ,
+  status2class: function(status) {
+    if (status=='FAILED'||status=='ERROR'||status=='NOLOG') return 'fail';
+    if (status=='KNOWN') return 'known';
+    if (status=='SOLVED') return 'solved';
+    return 'pass';
+  }
+  ,
   summary_per_aspect: function(result) {
     var summary = {};
+
     var order = (result.items.length) ? result.items[0].outcome.order : [];
+    var languages = privates.all_languages(result);
 
     function status_or(status1, status2) {
       if (status1 == 'fail' || status2 == 'fail') return 'fail';
@@ -76,13 +103,15 @@ var privates = {
     }
 
     var outcome = (result.items.length) ? result.items[0].outcome.status : [];
+    
+    // pre: first item is complete is all its aspects
     order.each(function(aspect) {
       summary[aspect] = {};
-      var aspoutcome = outcome[aspect] || 'NOLOG';
+      var aspoutcome = outcome[aspect] || 'SKIPPED';
       if (typeof aspoutcome !== 'string') {
-        summary[aspect].lan = {};
-        Object.keys(aspoutcome).each(function(language) {
-          summary[aspect].lan[language] = 'pass';
+        summary[aspect].languages = {};
+        languages.each(function(language) {
+          summary[aspect].languages[language] = 'pass';
         });
       } else {
         summary[aspect] = 'pass';
@@ -90,32 +119,26 @@ var privates = {
     });
 
     result.items.each(function(item) {
-      function status2class(status) {
-        if (status=='FAILED'||status=='ERROR'||status=='NOLOG') return 'fail';
-        if (status=='KNOWN') return 'known';
-        if (status=='SOLVED') return 'solved';
-        return 'pass';
-      }
       var outcome = item.outcome.status;
       order.each(function(aspect) {
-        var aspoutcome = outcome[aspect] || 'NOLOG';
-        if (typeof aspoutcome !== 'string') {
-          Object.keys(aspoutcome).each(function(language) {
-            var status = status2class(aspoutcome[language]);
-            summary[aspect].lan[language] = status_or(status,summary[aspect].lan[language]);
+        var aspoutcome = outcome[aspect] || 'SKIPPED';
+        if (typeof summary[aspect] !== 'string') {
+          languages.each(function(language) {
+            var status = privates.status2class(aspoutcome[language] || 'SKIPPED');
+            summary[aspect].languages[language] = status_or(status,summary[aspect].languages[language]);
           });
         } else {
-          var status = status2class(aspoutcome);
+          var status = privates.status2class(aspoutcome);
           summary[aspect] = status_or(status,summary[aspect]);
         }
       });
     });
 
     Object.keys(summary).each(function(aspect) {
-      if (summary[aspect].lan) {
+      if (summary[aspect].languages) {
         var status = 'pass';
-        Object.keys(summary[aspect].lan).each(function(language) {
-          status = status_or(status,summary[aspect].lan[language]);
+        languages.each(function(language) {
+          status = status_or(status,summary[aspect].languages[language]);
         });
         summary[aspect].status = status;
       }
@@ -131,6 +154,8 @@ var privates = {
     var cwhite  = 'rgba(255,255,255,.75)';
 
     var summary = privates.summary_per_aspect(result);
+    var order = (result.items.length) ? result.items[0].outcome.order : [];
+    var languages = privates.all_languages(result);
 
     var html = '';
 
@@ -312,20 +337,16 @@ var privates = {
     ln('    </table>');
     ln('    <p></p>');
 
-    var order = (result.items.length) ? result.items[0].outcome.order : [];
-
     ln('    <table id="details">');
     if (result.items.length) {
       ln('    <tr>');
       ln('      <th class="white">ITEM</th>');
       ln('      <th class="white">time</th>');
 
-      var outcome = (result.items.length) ? result.items[0].outcome.status : [];
       order.each(function(aspect) {
-        var aspoutcome = outcome[aspect] || 'NOLOG';
         var len = 1;
-        if (typeof aspoutcome !== 'string') {
-          len = Object.keys(aspoutcome).length;
+        if (summary[aspect].languages) {
+          len = Object.keys(summary[aspect].languages).length;
           var cl = summary[aspect].status;
           ln('      <th class="'+cl+' '+aspect+'" colspan="'+len+'">'+aspect+'</th>');
         } else {
@@ -339,10 +360,9 @@ var privates = {
       ln('      <th class="white"> </th>');
 
       order.each(function(aspect) {
-        var aspoutcome = outcome[aspect] || 'NOLOG';
-        if (typeof aspoutcome !== 'string') {
-          Object.keys(aspoutcome).each(function(language) {
-            var cl = summary[aspect].lan[language];
+        if (summary[aspect].languages) {
+          languages.each(function(language) {
+            var cl = summary[aspect].languages[language];
               ln('      <th class="'+cl+' '+aspect+' '+p(language)+'">'+language+'</th>');
           });
         } else {
@@ -352,36 +372,31 @@ var privates = {
       });
       ln('    </tr>');
     }
+
     result.items.each(function(item) {
-      function status2class(status) {
-        if (status=='FAILED'||status=='ERROR'||status=='NOLOG') return 'fail';
-        if (status=='KNOWN') return 'known';
-        if (status=='SOLVED') return 'solved';
-        return 'pass';
-      }
       var hname = m(item.name);
       var outcome = item.outcome.status;
-      ln('    <tr class="'+status2class(item.status)+'">');
+      ln('    <tr class="'+privates.status2class(item.status)+'">');
       var base = path.basename (item.name);
       var file = item.name;
       try {var f = file + '/' + base + '.dm'; file = fs.realpathSync (f);} catch (e) {}
       try {var f = file + '/' + base + '.dzn'; file = fs.realpathSync (f);} catch (e) {}
       var dir = path.basename (path.dirname (item.name));
-      ln('      <td class="'+status2class(item.status)+'"><a href="' + file +'">'+dir+'/'+ base+'</a></td>');
+      ln('      <td class="'+privates.status2class(item.status)+'"><a href="' + file +'">'+dir+'/'+ base+'</a></td>');
       ln('      <td class="white">'+item.outcome.elapsed+'</a></td>');
       order.each(function(aspect) {
-        var aspoutcome = outcome[aspect] || 'NOLOG';
-        if (typeof aspoutcome !== 'string') {
-          Object.keys(aspoutcome).each(function(language) {
-            var status = aspoutcome[language];
-            var cl = status2class(status);
+        var aspoutcome = outcome[aspect] || 'SKIPPED';
+        if (summary[aspect].languages) {
+          languages.each(function(language) {
+            var status = aspoutcome[language] || 'SKIPPED';
+            var cl = privates.status2class(status);
             ln('      <td class="'+cl+' '+aspect+' '+p(language)+'">'
                +'<a href="#'+hname+'-'+aspect+'-'+p(language)+'" class="'+cl+' '+aspect+' '+p(language)+'">'
                +status+'</a></td>');
           });
         } else {
           var status = aspoutcome;
-          var cl = status2class(status);
+          var cl = privates.status2class(status);
           ln('      <td class="'+cl+' '+aspect+'">'
              +'<a href="#'+hname+'-'+aspect+'" class="'+cl+' '+aspect+'">'+status+'</a></td>');
         }
@@ -393,7 +408,7 @@ var privates = {
     result.items.each(function(item) {
       var hname = m(item.name);
       var outcome = item.outcome;
-      if (typeof outcome.output != "string") {
+      if (typeof outcome.output !== 'string') {
         Object.keys(outcome.output).each(function(aspect_language) {
           var out = outcome.output[aspect_language];
             ln('        <div id="'+hname+'-'+p(aspect_language)+'">');
