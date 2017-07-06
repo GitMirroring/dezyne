@@ -84,14 +84,14 @@
          (any (cut string-suffix? <> file) files))
         (_ #f)))))
 
-(define-public dezyne.git
+(define-public dezyne-services.git
   (let ((version "development")
         (revision "0")
         (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
     (package
-      (inherit dezyne)
+      (inherit dezyne-services)
       (version (string-append version "-" revision "." (string-take commit 7)))
       (source (local-file %source-dir #:recursive? #t #:select? git-file?)))))
 
 ;; Return it here so `guix build/environment/package' can consume it directly.
-dezyne.git
+dezyne-services.git
