@@ -86,6 +86,7 @@ function parse_opts(argv) {
     ['h', 'help', 'display this help and exit'],
     ['j', 'jobs=JOBS', 'run a maximum of JOBS in parallel, default is 1'],
     ['o', 'output=OUTPUT', 'write output to OUTPUT [out/TARGET.html]'],
+    ['c', 'collect', 'do not execute, but collect results from previous runs'],
     ['q', 'quiet', 'suppress test summary lines on stdout'],
     ['s', 'summary', 'show only summary lines on stdout'],
   ]);
@@ -155,6 +156,14 @@ function execute(dir, args) {
   return util.parallel_n(worklist, args.options.jobs);
 }
 
+function collect(dir) {
+  get_testdir_list(dir)
+    .map(function(item) {
+      console.log('[....] ' + item);
+      output.log(item, ''); //FIXME write the result to output
+    });
+  return 0;
+}
 
 function process_dir (dir, args, passed, failed) {
   var aspects_languages = args.argv.slice(1);
@@ -259,7 +268,11 @@ function main() {
       return output.open(name, title, dir, args.options.output);
     })
     .then(function (){
-      return execute(dir, args);
+      if (args.options.collect) {
+        return collect(dir);
+      } else {
+        return execute(dir, args);
+      }
     })
     .then(function(results) {
       var outcome = output.close();
