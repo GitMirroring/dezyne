@@ -117,32 +117,33 @@ All test results are collected in the _test/out_ directory,
 and upon completion gathered in an html page.
 Each aspect test results in one of five states:
 
-* __Failed__: the test did not succeed
-* __Known__: the test failed as expected (specified in the META file)
-* __Solved__: the test succeeded, but was masked as known in META.
-* __Skipped__: the test was skipped 
+* __FAILED__: the test did not succeed
+* __KNOWN__: the test failed as expected (specified in the META file)
+* __SOLVED__: the test succeeded, but was masked as known in META.
+* __SKIPPED__: the test was skipped 
   (either because that was specified in META, or because one of its dependencies 
   did not succeed)
 * __OK__: the test succeeded.
 
 A _grand total_ is computed for the test: 
 
-* If one of the tests returns _Failed_, the total result is __Failed__
-* else, if one of the tests returns _Known_, the total result is __Known__
-* else, if one of the tests returns _Solved_, the total result is __Solved__
-* else, the total result is __Passed__
+* If one of the tests returns _FAILED_, the total result is __Failed__, depicted in _red_
+* else, if one of the tests returns _KNOWN_, the total result is __Known__, depicted in _yellow_
+* else, if one of the tests returns _SOLVED_, the total result is __Solved__, depicted in _blue_
+* else, the total result is __Passed__, depicted in _green_
 
 The test results are presented in a summary table and in detail, 
 as depicted in the screen shot below
 
-<img src="hello.jpg" width="800" style="border:1px solid grey"/>
+<img src="hello.png" width="800" style="border:1px solid grey"/>
 
-The summary can be filtered on each of the four total statuses by pressing the 
-corresponding toggle button. 
+The summary can be filtered on each of the four overall statuses by pressing the 
+corresponding colored toggle button in the grand total table.
 In the screen shot below _Passed_ has been filtered out.
 
 
-<img src="hello2.jpg" width="800" style="border:1px solid grey"/>
+<img src="hello1.png" width="800" style="border:1px solid grey"/>
 
+By default only _Failed_ results are visible in the table.
 
 
