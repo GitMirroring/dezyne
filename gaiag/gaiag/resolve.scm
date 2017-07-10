@@ -3,7 +3,7 @@
 ;; Copyright © 2014  Rutger van Beusekom
 ;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@
 
   #:use-module (language dezyne location)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag ast2om)
   #:use-module (gaiag compare)
@@ -68,6 +68,7 @@
   (let* ((resolved ((compose-root
                      (cut resolve-selection <> <system>)
                      (cut resolve-selection <> <component>)
+                     (cut resolve-selection <> <foreign>)
                      (cut resolve-selection <> <interface>)
                      (cut resolve-selection <> <type>)
                      (cut resolve-selection <> <import>))
@@ -117,9 +118,7 @@
 
 (define (resolve-model o)
   (match o
-    (($ <interface>)
-     ((compose om:register-model (resolve o '())) o))
-    (($ <component>)
+    ((or ($ <interface>) ($ <component>) ($ <foreign>))
      ((compose om:register-model (resolve o '())) o))
     (_ ((resolve o '()) o))))
 
@@ -161,8 +160,7 @@
 
   (define (component? o)
     (match o
-      (($ <component>) o)
-      (($ <system>) o)
+      (($ <component-model>) o)
       (($ <scope.name>) (om:component o))
       (('dotted scope ... name) (om:component (make <scope.name> #:scope scope #:name name)))))
 
@@ -173,7 +171,7 @@
 
   (define (member? identifier) (om:variable model identifier))
   (define (port? o) (or (as o <port>)
-                        (and (is-a? model <component>) (om:port model o))))
+                        (and (or (is-a? model <component>) (is-a? model <foreign>)) (om:port model o))))
 
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? v) (or (as v <variable>) (as v <formal>) (local? v) (member? v)))
@@ -257,7 +255,7 @@
 
       (_
        ((resolve model locals) o))))
-  
+
   (match o
     (($ <var> (and (? (negate var?)) (get! identifier)))
      (undefined-error o (identifier)))
@@ -331,7 +329,7 @@
     (($ <data>) o)
     (($ <enum>) o)
     (($ <extern>) o)
-    ((and ($ <field>) (= .variable variable)) 
+    ((and ($ <field>) (= .variable variable))
         (clone o #:variable (var? variable)))
     (($ <illegal>) o)
     (($ <int>) o)
@@ -537,6 +535,9 @@
      (let ((o (clone o #:events ((resolve o '()) events))))
        (clone o #:behaviour ((resolve o '()) behaviour))))
 
+    (($ <foreign>)
+     (clone o #:ports (make <ports> #:elements (map (resolve model '()) (om:ports o)))))
+
     ((and ($ <component>) (= .behaviour (? unspecified?)))
      (clone o
             #:ports (make <ports> #:elements (map (resolve model '()) (om:ports o)))
@@ -582,19 +583,21 @@
      (make <formals> #:elements (map (resolve model '()) formals)))
     (($ <instances> (instances ...))
      (make <instances> #:elements (map (resolve model locals) instances)))
-    ((and ($ <instance>) (= .type ('dotted scope ... name)))
+    ((and ($ <instance>) (= .type.name ('dotted scope ... name)))
      (let* ((name (make <scope.name> #:scope scope #:name name))
             (type (component? name)))
        (if (not type) (resolve-error o type "undefined component: ~a")
-           (clone o #:type type))))
-    ((and ($ <instance>) (= .type type))
-     (let ((type (component? type)))
+           o)))
+    ((and ($ <instance>) (= .type.name type-name))
+     (let ((type (component? type-name)))
        (if (not type) (resolve-error o type "undefined component: ~a")
-           (clone o #:type type))))
+           o)))
     (($ <binding>)
      (let* ((instance (.instance o))
             (inst (instance? instance))
+            ;;(foo (stderr "INST: ~a .TYPE: ~a\n" inst (and=> inst .type)))
             (component (or (and=> inst .type) model))
+            ;;(foo (stderr "COMPONENT: ~a\n" component))
             (port-name (.port.name o))
             (port (om:port component port-name)))
        (if (and instance (not inst))

@@ -29,8 +29,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
-  #:use-module (gaiag lexicals)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))  #:use-module (gaiag lexicals)
   #:use-module (gaiag ast2om)
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
@@ -44,13 +43,16 @@
   #:use-module (gaiag misc)
   #:use-module (gaiag norm-event)
   #:use-module (gaiag resolve)
+  #:use-module (language dezyne location)
 
   #:export (ast:code
             ast:scope+name
             ast:other-direction
             code-file
             code:animate-file
+            code:dump-file
             code:extension
+            code:file-name
             code:indenter
             code:module
             code:om
@@ -60,6 +62,7 @@
             dump-indented
             dump-main
             dump-system
+            glue
             language
             pipe))
 
@@ -113,7 +116,7 @@
 (define (dump o)
   (match o
     (($ <interface>) (dump-interface o))
-    (($ <component>) (dump-component o))
+    ((or ($ <component>) ($ <foreign>)) (dump-component o))
     (($ <system>) (dump-system o))))
 
 (define (dump-interface o)
@@ -131,7 +134,7 @@
   (dump-global o)
   (let ((name ((om:scope-name) o))
         (interfaces (map .type ((compose .elements .ports) o))))
-    (when (.behaviour o)
+    (when (not (is-a? o <foreign>))
       (map dump interfaces)
       (dump-indented `(,@(code:dir o) ,name ,(code:extension o))
                      (lambda ()
@@ -180,7 +183,7 @@
                   (cs . .cs)
                   (python . .py))
                 (language)))
-    ((or ($ <component>) ($ <system>))
+    ((or ($ <foreign>) ($ <component>) ($ <system>))
      (assoc-ref '((c . .c)
                   (c++ . .cc)
                   (c++03 . .cc)
@@ -326,15 +329,18 @@
                 ;;(stderr "PAIR [~a,t=~a,f=~a] ~a\n" (class-name (class-of ast)) (and type (class-name type)) filename (class-name (class-of (car o))))
                 (let* ((sexp (if (not sep) '("")
                                  (with-input-from-string (gulp-template sep) read)))
-                       (join (lambda (o) (apply string-join (cons o sexp))))
-                       (ast-name (symbol->string (ast-name (if (is-a? (car o) type) type (class-of (car o))))))
-                       (filename (if (equal? filename ast-name) filename
-                                     (string-append filename "-" ast-name))))
-                  (display (join (map (lambda (ast) (with-output-to-string
-                                                      (lambda () (if (or (char? ast)
-                                                                         (string? ast)
-                                                                         (symbol? ast)) (display ast)
-                                                                         (x:pand filename ast))))) o)))))
+                       (join (lambda (o) (apply string-join (cons o sexp)))))
+                  (display (join (map (lambda (ast)
+                                        (with-output-to-string
+                                          (lambda () (if (or (char? ast)
+                                                             (string? ast)
+                                                             (symbol? ast)) (display ast)
+                                                             (let* ((ast-name (symbol->string (ast-name (if (is-a? ast type) type (class-of ast)))))
+                                                                    (filename (if (equal? filename ast-name) filename
+                                                                                  (string-append filename "-" ast-name))))
+                                                               (if (is-a? ast <model>)
+                                                                   (ast:set-model-scope ast (x:pand filename ast))
+                                                                   (x:pand filename ast))))))) o)))))
                ((null? o) #f)
                ((is-a? o <ast>)
                 ;;(stderr "ATOM [~a,t=~a,f=~a] ~a\n" (class-name (class-of ast)) (and type (class-name type)) filename (class-name (class-of o)))
@@ -643,6 +649,11 @@
                                               (name (symbol->string (.name scope+name))))
                                          (string-join (append scope (list name)) "_"))))
 
+(define-template x:scope-name (lambda (o)
+                                (let* ((scope+name (.name o))
+                                       (scope (map symbol->string (.scope scope+name))))
+                                  (string-join scope "_" 'suffix))))
+
 (define-template x:reply-type code:reply-type)
 
 (define-method (code:reply-type (o <ast>)) ;; MORTAL SIN HERE!!?
@@ -770,7 +781,7 @@
 
 (define-template x:check-bindings-list (lambda (o) ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports o)))))
 
-(define-template x:interface-include om:ports)
+(define-template x:interface-include (lambda (o) (map (lambda (p) (string-append "#include \"" (code:file-name p) ".hh\"\n")) (om:ports o))))
 
 (define-template x:in-event-definer (lambda (o) (filter om:in? (om:events o))) 'event-definer-infix)
 (define-template x:out-event-definer (lambda (o) (filter om:out? (om:events o))) 'event-definer-infix)
@@ -820,7 +831,7 @@
 
 (define-template x:async-member-initializer (lambda (o) (om:ports (.behaviour o))))
 
-(define-template x:scope-name (lambda (port) (let ((scope-name ((compose .name .type) port))) (append (.scope scope-name) (list (.name scope-name))))) 'type-infix)
+(define-template x:scoped-port-name (lambda (port) (let ((scope-name ((compose .name .type) port))) (append (.scope scope-name) (list (.name scope-name))))) 'type-infix)
 
 (define-template x:reply-member-declare ast:reply-types)
 
@@ -853,7 +864,15 @@
   '())
 (define-method (code:instances (o <system>))
   (om:instances o))
-(define-template x:component-include om:instances)
+
+(define-template x:include-guard (lambda (o) (if (model2file) o "")))
+(define-template x:endif (lambda (o) (if (model2file) o "")))
+
+(define-template x:component-include (if (model2file) om:instances
+                                         (lambda (o) (filter (disjoin (compose (is? <foreign>) .type)
+                                                                      (conjoin om:imported? (lambda (i) (not (equal? (source-file o)
+                                                                                                                     (source-file (.type i)))))))
+                                                             (om:instances o)))))
 
 (define-template x:provided-port-reference-declare (lambda (o) (filter om:provides? (om:ports o))))
 (define-template x:required-port-reference-declare (lambda (o) (filter om:requires? (om:ports o))))
@@ -910,6 +929,10 @@
 (define-template x:non-injected-instance-meta-initializer non-injected-instances)
 
 (define-template x:dzn-locator code:dzn-locator)
+
+(define-template x:header- (lambda (o) (filter (is? <interface>) (.elements o))))
+(define-template x:header (lambda (o) (topological-sort (filter (negate (is? <interface>)) (.elements o)))))
+(define-template x:source (lambda (o) (topological-sort (.elements o))))
 
 ;; shell-header-system
 ;;;;(define-template x:non-injected-instance-reference-declare non-injected-instances)
@@ -1152,33 +1175,80 @@
 (define-method (code:return (o <on>))
   ((compose .type .signature .event code:trigger) o))
 
+(define (code:dump-file file-name module)
+  (dump-output (string-append file-name ".hh")
+               (lambda ()
+                 (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+                   (x:pand 'header-root (module-ref module 'root) module))))
+  (if (pair? (filter (negate (disjoin (is? <data>) (is? <interface>))) (.elements (module-ref module 'root))))
+      (dump-output (string-append file-name ".cc")
+                   (lambda ()
+                     (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+                       (x:pand 'source-root (module-ref module 'root) module))))))
+
 (define (code:animate-file file-name module)
-  (let ((model-names (map (compose .name car) (@@ (gaiag om) *ast-alist*))))
-    (ast:set-model-scope
-     (module-ref module 'model)
-     ;; use old animate+component.js.scm for
-     ;; services/scripts/verification.dzn, daemon/lib/Controller.dzn
-     ;; until regression test passes
-     (cond  ((member file-name '(component.cc.scm))
-              (x:pand 'source-component (module-ref module 'model) module))
-             ((member file-name '(component.hh.scm))
-              (x:pand 'header-component (module-ref module 'model) module))
-             ((member file-name '(interface.hh.scm))
-              (x:pand 'source-interface (module-ref module 'model) module))
-             ((member file-name '(system.cc.scm))
-              (x:pand 'source-system (module-ref module 'model) module))
-             ((member file-name '(system.hh.scm))
-              (x:pand 'header-system (module-ref module 'model) module))
-             ((member file-name '(shell.hh.scm))
-              (x:pand 'shell-header-system (module-ref module 'model) module))
-             ((member file-name '(shell.cc.scm))
-              (x:pand 'shell-source-system (module-ref module 'model) module))
-             ((member file-name '(foreign.hh.scm))
-              (x:pand 'foreign-header-component (module-ref module 'model) module))
-             ((member file-name '(foreign.cc.scm))
-              (x:pand 'foreign-source-component (module-ref module 'model) module))
-             ((member file-name '(main.cc.scm))
-              (x:pand 'main-component (module-ref module 'model) module))
-             ((member file-name '(glue-top-system.hh.scm))
-              (x:pand 'glue-top-header-system (module-ref module 'model) module))             
-             (else (animate-file file-name module))))))
+  (ast:set-model-scope
+   (module-ref module 'model)
+   ;; use old animate+component.js.scm for
+   ;; services/scripts/verification.dzn, daemon/lib/Controller.dzn
+   ;; until regression test passes
+   (cond  ((member file-name '(component.cc.scm))
+           (x:pand 'source-component (module-ref module 'model) module))
+          ((member file-name '(component.hh.scm))
+           (x:pand 'header-component (module-ref module 'model) module))
+          ((member file-name '(interface.hh.scm))
+           (x:pand 'header-interface (module-ref module 'model) module))
+          ((member file-name '(system.cc.scm))
+           (x:pand 'source-system (module-ref module 'model) module))
+          ((member file-name '(system.hh.scm))
+           (x:pand 'header-system (module-ref module 'model) module))
+          ((member file-name '(shell.hh.scm))
+           (x:pand 'shell-header-system (module-ref module 'model) module))
+          ((member file-name '(shell.cc.scm))
+           (x:pand 'shell-source-system (module-ref module 'model) module))
+          ((member file-name '(foreign.hh.scm))
+           (x:pand 'foreign-header-component (module-ref module 'model) module))
+          ((member file-name '(foreign.cc.scm))
+           (x:pand 'foreign-source-component (module-ref module 'model) module))
+          ((member file-name '(main.hh.scm))
+           #t)
+          ((member file-name '(main.cc.scm))
+           (x:pand 'main-component (module-ref module 'model) module))
+          ((member file-name '(glue-top-system.hh.scm))
+           (x:pand 'glue-top-header-system (module-ref module 'model) module))
+          (else (animate-file file-name module)))))
+
+
+(define-method (code:file-name (o <port>))
+  (code:file-name (.type o)))
+
+(define-method (code:file-name (o <instance>))
+  (code:file-name (.type o)))
+
+(define (glue)
+  (and=> (command-line:get 'glue #f) string->symbol))
+
+(define (model2file)
+  (let ((deprecated (command-line:get 'deprecated #f)))
+    (and deprecated (string-contains deprecated "model2file"))))
+
+(define-method (code:file-name (o <interface>))
+  (if (model2file)
+      ((compose symbol->string (om:scope-name) .name) o)
+      (basename (symbol->string (source-file o)) ".dzn")))
+
+(define-method (code:file-name (o <foreign>))
+  ((compose symbol->string (om:scope-name) .name) o))
+
+(define-method (code:file-name (o <component>))
+  (if (model2file)
+      ((compose symbol->string (om:scope-name) .name) o)
+      (basename (symbol->string (source-file o)) ".dzn")))
+
+(define-method (code:file-name (o <system>))
+  (if (or (model2file) (glue))
+      ((compose symbol->string (om:scope-name) .name) o)
+      (basename (symbol->string (source-file o)) ".dzn")))
+
+(define-method (code:file-name (o <root>))
+  (basename (symbol->string (source-file o)) ".dzn"))

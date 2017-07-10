@@ -3,7 +3,10 @@
 
 ##include <iostream>
 
+##define INTERFACE_ONLY
+
 #x:interface-include
+##undef INTERFACE_ONLY
 
 namespace dzn {
 struct locator;
@@ -21,11 +24,11 @@ struct #x:model-name
   #x:required-port-declare
   #x:model-name (const dzn::locator&);
   virtual ~#x:model-name ();
+  virtual std::ostream& stream_members(std::ostream& os) const { return os; }
   void check_bindings() const;
   void dump_tree(std::ostream& os) const;
   friend std::ostream& operator << (std::ostream& os, const #x:model-name & m)  {
-    (void)m;
-    return os << "[" << #x:stream-member "]" ;
+    return m.stream_members(os);
   }
   private:
   #x:pure-virtual-method-declare };

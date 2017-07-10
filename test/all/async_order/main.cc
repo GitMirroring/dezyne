@@ -22,7 +22,6 @@
 // Code:
 
 #include "async_order.hh"
-#include "cb1_cancel.hh"
 
 #include <dzn/locator.hh>
 #include <dzn/runtime.hh>

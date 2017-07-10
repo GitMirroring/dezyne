@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -71,11 +72,11 @@
     )
 
    (program
-    (models *eoi*) : (cons 'root (append template-interfaces $1)))
+    (models *eoi*) : (rsp $1 (cons 'root (append template-interfaces $1))))
 
    (models
     () : '()
-    (models model) : (append $1 (list $2))
+    (models model) : (rsp $2 (append $1 (list $2)))
     (models namespace scope.name #{{}# models #{}}#) : (append $1 (map (add-scope $3) $5)))
 
    (scope.name-pair
@@ -97,6 +98,7 @@
     (dotted #{.}# Identifier) : (append $1 `(,$3)))
 
    (model
+    (Data) : (note-location `(data ,$1) @1)
     (import-spec) : $1
     (type) : $1
     (interface-spec) : $1
@@ -123,7 +125,7 @@
 
    (component-spec
     (component scope.name #{{}# ports #{}}#)
-    : (note-location `(,$1 ,$2 ,$4) @1)
+    : (note-location `(foreign ,$2 ,$4) @1)
     (component scope.name #{{}# ports behaviour-spec #{}}#)
     : (note-location `(,$1 ,$2 ,$4 ,$5) @1)
     (component scope.name #{{}# ports system #{{}# instances/binds #{}}# #{}}#)

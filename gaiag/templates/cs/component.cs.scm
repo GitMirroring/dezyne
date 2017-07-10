@@ -4,7 +4,6 @@
 ;;; Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
 ;;; This file is part of Dezyne.

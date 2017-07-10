@@ -1,0 +1,8 @@
+##ifndef #code:file-name _HH
+##define #code:file-name _HH
+#x:header-
+##ifndef INTERFACE_ONLY
+////////////////////////////////////////////////////////////////////////////////
+#x:header
+##endif // INTERFACE_ONLY
+##endif // #code:file-name _HH

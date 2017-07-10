@@ -39,7 +39,7 @@
 
   #:use-module (srfi srfi-1)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag ast2om)
   #:use-module (gaiag compare)
@@ -58,7 +58,7 @@
            ast:set-model-scope
            ast:root-scope
            ast:model-scope
-           
+
            om:port*
 
            om:bind
@@ -229,15 +229,15 @@
 (define (om:instances o)
   (match o
     (($ <interface>) '())
+    (($ <foreign>) o)
     (($ <component>) o)
     (($ <system>) ((compose .elements .instances) o))))
 
 (define (om:ports- o)
   (match o
     (($ <interface>) '())
-    (($ <component>) ((compose .elements .ports) o))
-    (($ <behaviour>) ((compose .elements .ports) o))
-    (($ <system>) ((compose .elements .ports) o))))
+    ((? (is? <component-model>)) ((compose .elements .ports) o))
+    (($ <behaviour>) ((compose .elements .ports) o))))
 
 (define om:ports (pure-funcq om:ports-))
 
@@ -249,8 +249,7 @@
      (($ <interface> name types events ($ <behaviour> b btypes)) (append (.elements btypes) (.elements types)))
      (($ <component> name ports ($ <behaviour> b btypes))
       (append (.elements btypes) (om:interface-types model)))
-     (($ <component> name ports) (om:interface-types model))
-     (($ <system> name ports) (om:interface-types model))
+     ((? (is? <component-model>) name ports) (om:interface-types model))
      (($ <import> name) '())
      (#f '())
      ((? unspecified?) '()))
@@ -276,9 +275,7 @@
   (match o
     (($ <interface>) (om:filter (is? <enum>) (.types o)))
     (($ <port>) (om:enums o))
-    (($ <component>)
-     (append-map om:interface-enums ((compose .elements .ports) o)))
-    (($ <system>)
+    ((? (is? <component-model>))
      (append-map om:interface-enums ((compose .elements .ports) o)))))
 
 
@@ -315,7 +312,8 @@
 (define (om:instance model o)
   (match o
     ((? symbol?)
-     (find (lambda (x) (eq? (.name x) o)) ((compose .elements .instances) model)))
+     (find (lambda (x) ;;(stderr "om:instance: ~a; ~a\n" o x)
+                   (eq? (.name x) o)) ((compose .elements .instances) model)))
     (($ <binding>) (or (.instance o)
                        (.type ((.port model) o))))
     (($ <bind>) (om:instance model (om:instance-binding? o)))
@@ -396,9 +394,12 @@
 (define* (om:component system #:optional o)
   (match o
     (#f (match system
+          (($ <foreign>) system)
           (($ <component>) system)
-          (($ <root>) (om:find (is? <component>) system))
-          (($ <scope.name>) (cached-model system))
+          (($ <root>) (om:find (disjoin (is? <component>) (is? <foreign>)) system))
+          (($ <scope.name>) ;(cached-model system)
+           (find (lambda (x) ;;(stderr "KANARIE: ~a ~a\n" system (.name x))
+                         (om:equal? system (.name x))) (filter (negate (is? <data>)) (.elements (car (ast:scope-root))))))
           (_ #f)))
     ((? symbol?) (om:component system (om:instance system o)))
     (($ <binding> #f port-name)
@@ -501,8 +502,8 @@
   ;; (stderr "om:scope+name o=~a\n" o)
   (match o
     (($ <scope.name>) (append (.scope o) (list (.name o))))
-    (($ <instance> x name) (om:scope+name name))
-    (($ <port> x name) (om:scope+name name))
+    (($ <instance>) (om:scope+name (.type.name o)))
+    (($ <port>) (om:scope+name (.type.name o)))
 
     (($ <bool>) '(bool))
     (($ <void>) '(void))
@@ -624,7 +625,7 @@
      (let* ((events (filter om:typed? (om:events o)))
             (types (delete-duplicates (map (compose .type .signature) events))))
        (filter-map (om:type o) types)))
-    (($ <component>)
+    ((or ($ <component>) ($ <foreign>))
      (delete-duplicates (append-map (compose om:reply-types .type) ((compose .elements .ports) o))))
     (_ '())))
 
@@ -844,14 +845,14 @@
   ;;(stderr "name-resolve ~a; class = ~a; root = ~a\n" o class root)
   ;;(when (not (eq? g-root-id (.id root))) (throw 'wrong-root))
   (cond
-   ((eq? <interface> class)
+   ((or (eq? <interface> class) (eq? <system> class) (eq? <component> class) (eq? <foreign> class))
     (find (lambda (m)
-             (and (is-a? m class)
-                  (equal? o (.scope+name (.name m)))))
-           (.elements root)))
+            (and (is-a? m class)
+                 (equal? o (.scope+name (.name m)))))
+          (.elements root)))
    ((eq? <port> class)
     (find (lambda (m)
-             (equal? o (.name m)))
+            (equal? o (.name m)))
           (append ((compose .elements .ports) root)
                   (behaviour-ports root))))
    ((eq? <function> class)
@@ -891,10 +892,10 @@
 (define (ast:scope-model)
   (let ((scope (ast:scope)))
     (find-tail (lambda (e)
-            (if (is-a? e <ast>)
-                (is-a? e <model>)
-                (eq? (car e) 'model)))
-          scope)))
+                 (if (is-a? e <ast>)
+                     (is-a? e <model>)
+                     (eq? (car e) 'model)))
+               scope)))
 
 (define (ast:root-scope) (car (ast:scope-root)))
 
@@ -908,6 +909,11 @@
 
 (define-method (.type (o <port>))
   (name-resolve (car (ast:scope-root)) <interface> (.scope+name (.type@ o))))
+
+(define-method (.type (o <instance>))
+  (or (name-resolve (car (ast:scope-root)) <system> (.scope+name (.type@ o)))
+      (name-resolve (car (ast:scope-root)) <component> (.scope+name (.type@ o)))
+      (name-resolve (car (ast:scope-root)) <foreign> (.scope+name (.type@ o)))))
 
 (define-method (contains? container (o <ast>))
   (and (is-a? container <ast>)

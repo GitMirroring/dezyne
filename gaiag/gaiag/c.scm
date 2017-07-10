@@ -31,8 +31,7 @@
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 pretty-print)
   #:use-module (srfi srfi-1)
-
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag ast2om)
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
@@ -65,6 +64,7 @@
 (define (dump o)
   (match o
     (($ <interface>) (dump-interface o))
+    (($ <foreign>) #t)
     (($ <component>) (dump-component o))
     (($ <system>) (dump-system o))))
 
@@ -92,7 +92,8 @@
     (dump-main o)))
 
 (define (dump-system o)
-  (let ((name ((om:scope-name) o))
+  (let* ((name ((om:scope-name) o))
+        (foo (stderr "c:dump-system: ~a\n" name))
         (interfaces (map .type ((compose .elements .ports) o)))
         (components (map .type ((compose .elements .instances) o))))
     (dump-indented (symbol-append name (code:extension (make <interface>)))

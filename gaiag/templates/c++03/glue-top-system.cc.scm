@@ -1,7 +1,5 @@
 ##include "#.model Component.h"
 
-//BOO
-
 ##include <dzn/locator.hh>
 ##include <dzn/runtime.hh>
 

@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2014, 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -27,7 +27,7 @@
 
   #:use-module (system repl error-handling)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
   #:use-module (gaiag util)
@@ -51,6 +51,7 @@
             (calling-context (single-char #\c) (value #t))
 	    (coverage)
 	    (debug (single-char #\d))
+            (deprecated (value #t))
 	    (glue (single-char #\g) (value #t))
             (help (single-char #\h))
             (include (single-char #\I) (value #t))
@@ -82,6 +83,7 @@ Usage: gaiag [OPTION]... FILE
   -c, --calling-context=TYPE  generate additional first event parameter with type TYPE
       --coverage              write lcov coverage data to gaiag.info
   -d, --debug                 run with debugging
+      --deprecated=LIST       use previous implementation for feature in LIST of elements {model2file}
   -g, --glue=TYPE             generate glue code for TYPE [dzn]
   -I, --include=DIR           append DIR to include path
   -h, --help                  display this help

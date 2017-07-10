@@ -1,5 +1,5 @@
-##ifndef #x:upcase-model-name _HH
-##define #x:upcase-model-name _HH
+// ##ifndef #x:upcase-model-name _HH
+// ##define #x:upcase-model-name _HH
 
 ##include <iostream>
 
@@ -34,4 +34,5 @@ struct #x:model-name
   #x:method-declare
   #x:function-declare };
 #x:close-namespace
-##endif // #x:upcase-model-name _HH
+// ##endif // #x:upcase-model-name _HH
+////////////////////////////////////////////////////////////////////////////////

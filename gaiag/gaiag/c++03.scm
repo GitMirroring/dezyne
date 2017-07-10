@@ -24,7 +24,7 @@
 
 (define-module (gaiag c++03)
   #:use-module (gaiag animate)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag om)
   #:use-module (gaiag code)
   #:use-module (gaiag c++)

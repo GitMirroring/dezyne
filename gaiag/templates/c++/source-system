@@ -1,4 +1,4 @@
-##include "#x:scoped-model-name .hh"
+##include "#code:file-name .hh"
 
 ##include <dzn/runtime.hh>
 
@@ -30,3 +30,4 @@ void #x:model-name ::dump_tree(std::ostream& os) const
   dzn::dump_tree(os, &dzn_meta);
 }
 #x:close-namespace
+////////////////////////////////////////////////////////////////////////////////

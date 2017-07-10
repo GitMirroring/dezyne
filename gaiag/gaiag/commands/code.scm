@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -38,6 +39,7 @@
           '((calling-context (single-char #\c) (value #t))
             (debug (single-char #\d))
             (depends) ;; FIXME
+            (deprecated (value #t))
             (gaiag (single-char #\G))
             (glue (single-char #\g) (value #t))
             (help (single-char #\h))

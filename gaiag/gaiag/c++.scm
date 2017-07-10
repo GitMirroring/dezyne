@@ -36,12 +36,15 @@
   #:use-module (gaiag misc)
   #:use-module (gaiag reader)
   #:use-module (gaiag resolve)
+  #:use-module (gaiag util)
 ;;  #:use-module (gaiag wfc)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag ast2om)
   #:use-module (gaiag om)
+
+  #:use-module (language dezyne location)
 
   #:export (ast->
            asd-interfaces))
@@ -51,8 +54,28 @@
          (models ((om:filter:p <model>) om))
          (models (filter (negate om:imported?) models))
          ;; Generator-synthesized models look non-imported, filter harder
-         (models (filter (negate dzn-async?) models)))
-    (ast:set-scope om (map dump models)))
+         (models (filter (negate dzn-async?) models))
+         (deprecated (command-line:get 'deprecated #f)))
+    (ast:set-scope om
+                   (if (and deprecated (string-contains deprecated "model2file"))
+                       (map dump models)
+                       (let* ((main (command-line:get 'model #f))
+                              (main (and main (find (compose (cut eq? (string->symbol main) <>) (om:scope-name)) models)))
+                              (module (make-module 31 `(,(resolve-module '(gaiag animate-code)))))
+                              (models (sort (filter (disjoin (is? <data>)
+                                                             (conjoin (negate dzn-async?) (negate om:imported?) (negate (is? <foreign>))))
+                                                    (.elements om))
+                                            (lambda (a b) (or (and (is-a? <interface> a)
+                                                                   (is-a? <component> b))
+                                                              (and (is-a? <interface> a)
+                                                                   (is-a? <system> b))
+                                                              (and (is-a? <component> a)
+                                                                   (is-a? <system> b)))))))
+                         (module-define! module 'root (clone om #:elements (if (glue) (filter (negate (is? <system>)) models) models)))
+                         (code:dump-file (basename (symbol->string (source-file om)) ".dzn") module)
+                         (map dump-component (filter (is? <foreign>) (.elements om)))
+                         (if (glue) (map dump-system (filter (is? <system>) (.elements om))))
+                         (when main ((@@ (gaiag c) dump-main) main))))))
   "")
 
 (define (dzn-async? o)
@@ -81,13 +104,10 @@
 (define (c++:skel-file model)
   ((->symbol-join '_) (append (drop-right (om:scope+name model) 1) '(skel) (take-right (om:scope+name model) 1))))
 
-(define (glue)
-  (and=> (command-line:get 'glue #f) string->symbol))
-
 (define (dump o)
   (match o
     (($ <interface>) (dump-interface o))
-    (($ <component>) (dump-component o))
+    ((or ($ <component>) ($ <foreign>)) (dump-component o))
     (($ <system>) (dump-system o))))
 
 (define (dump-interface o)
@@ -116,15 +136,15 @@
                                      (cute c++-file 'asdcomponent.h.scm module))))
                   (filter om:requires? (om:ports o))))
       (let ((name ((om:scope-name) o))
-            (skel-name (if (.behaviour o) ((om:scope-name) o) (c++:skel-file o)))
+            (skel-name (if (is-a? o <foreign>) (c++:skel-file o) ((om:scope-name) o)))
             (interfaces (map .type ((compose .elements .ports) o))))
         ((@@ (gaiag c) dump-main) o)
         (dump-indented (symbol-append skel-name (code:extension (make <interface>)))
-                       (cute c++-file (if (.behaviour o) 'component.hh.scm 'foreign.hh.scm) (code:module o)))
+                       (cute c++-file (if (is-a? o <foreign>) 'foreign.hh.scm 'component.hh.scm) (code:module o)))
         (dump-indented (symbol-append skel-name (code:extension o))
-                       (cute c++-file (if (.behaviour o) 'component.cc.scm 'foreign.cc.scm) (code:module o)))
+                       (cute c++-file (if (is-a? o <foreign>) 'foreign.cc.scm 'component.cc.scm) (code:module o)))
         ;; TODO: rename dzn glue templates
-        (when (and (not (.behaviour o)) (map-file o))
+        (when (and (is-a? o <foreign>) (map-file o))
             (dump-indented (symbol-append name '.hh)
                            (lambda ()
                              (c++-file 'glue-bottom-component.hh.scm (code:module o))))
@@ -180,7 +200,7 @@
 
 (define (map-file-name o)
   (match o
-    ((or ($ <component>) ($ <system>)) (map-file-name (om:port o)))
+    ((or ($ <foreign>) ($ <component>) ($ <system>)) (map-file-name (om:port o)))
     (_ (om:name o)) ;; dzn::IConsole ==> IConsole.map
     (_ ((om:scope-name) o)))) ;; dzn::IConsole ==> dzn_IConsole.map
 

@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -57,7 +58,7 @@
   (and-let* (((supports-source-properties? o))
              (loc (source-property o 'loc))
              (properties (source-location->user-source-properties loc))
-             (file-name (assoc-ref properties 'filename)))
+             (file-name (or (assoc-ref properties 'filename) (source-location-input loc))))
             (string->symbol file-name)))
 
 (define* (syntax-error-handler message #:optional token)

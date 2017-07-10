@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -38,7 +39,7 @@
 
 (define (annotate-locations o)
   (match o
-    (('root t ... ('locations locations ...)) (annotate-locations- o (car locations)) (cons 'root t))
+    (('root t ... ('locations locations ...)) (annotate-locations- o (car locations)) (rsp o (cons 'root t)))
     (_ o)))
 
 (define (ast:annotate o)
@@ -73,7 +74,7 @@
 (define (annotate-location o loc)
   (and-let* ((loc (null-is-#f (cdr loc)))
              (loc (apply make-source-location loc)))
-            (set-source-property! o 'loc loc)))
+    (set-source-property! o 'loc loc)))
 
 (define (extract-locations o)
   (match o
@@ -102,21 +103,24 @@
   o)
 
 (define (annotate-imported o)
-  (match o
-    (('root models ...) (cons 'root (map annotate-imported models)))
-    (('interface body ... (and ('imported . imported)))
-     (mark-imported (cons 'interface body) imported))
-    (('component body ... (and ('imported . imported)))
-     (mark-imported (cons 'component body) imported))
-    (('system body ... (and ('imported . imported)))
-     (mark-imported (cons 'system body) imported))
-    (('enum body ... (and ('imported . imported)))
-     (mark-imported (cons 'enum body) imported))
-    (('extern body ... (and ('imported . imported)))
-     (mark-imported (cons 'enum body) imported))
-    (('int body ... (and ('imported . imported)))
-     (mark-imported (cons 'enum body) imported))
-    (_ o)))
+  (rsp o
+       (match o
+         (('root models ...) (cons 'root (map annotate-imported models)))
+         (('interface body ... (and ('imported . imported)))
+          (mark-imported (cons 'interface body) imported))
+         (('foreign body ... (and ('imported . imported)))
+          (mark-imported (cons 'foreign body) imported))
+         (('component body ... (and ('imported . imported)))
+          (mark-imported (cons 'component body) imported))
+         (('system body ... (and ('imported . imported)))
+          (mark-imported (cons 'system body) imported))
+         (('enum body ... (and ('imported . imported)))
+          (mark-imported (cons 'enum body) imported))
+         (('extern body ... (and ('imported . imported)))
+          (mark-imported (cons 'enum body) imported))
+         (('int body ... (and ('imported . imported)))
+          (mark-imported (cons 'enum body) imported))
+         (_ o))))
 
 (define (ast-> ast)
   (let ((annotated (ast->annotate ast)))

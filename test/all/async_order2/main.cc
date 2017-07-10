@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +22,6 @@
 // Code:
 
 #include "async_order2.hh"
-#include "cb1_cancel.hh"
 
 #include <dzn/locator.hh>
 #include <dzn/runtime.hh>

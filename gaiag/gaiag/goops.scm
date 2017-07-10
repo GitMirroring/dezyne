@@ -29,7 +29,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
   #:use-module (srfi srfi-1)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
 
   #:export (
            .ast
@@ -46,7 +46,7 @@
            .instance.name
            ast:inevitable
            ast:optional
-           
+
            .arguments
            .behaviour
            .bindings
@@ -115,6 +115,7 @@
            <extern>
            <field>
            <fields>
+           <foreign>
            <function>
            <functions>
            <guard>
@@ -404,14 +405,15 @@
 
 (define-method (.variable.name (o <formal-binding>)) (and=> (.variable o) .name))
 
-(define-class <component-model> (<model>))
+(define-class <component-model> (<model>)
+  (ports #:getter .ports #:init-form (make <ports>) #:init-keyword #:ports))
+
+(define-class <foreign> (<component-model>))
 
 (define-class <component> (<component-model>)
-  (ports #:getter .ports #:init-form (make <ports>) #:init-keyword #:ports)
   (behaviour #:getter .behaviour #:init-value #f #:init-keyword #:behaviour))
 
 (define-class <system> (<component-model>)
-  (ports #:getter .ports #:init-form (make <ports>) #:init-keyword #:ports)
   (instances #:getter .instances #:init-form (make <instances>) #:init-keyword #:instances)
   (bindings #:getter .bindings #:init-form (make <bindings>) #:init-keyword #:bindings))
 
@@ -488,9 +490,10 @@
 (define-method (.port.name (o <binding>)) (.port@ o))
 
 (define-class <instance> (<named> <declarative>)
-  (type #:getter .type #:init-form (make <scope.name>) #:init-keyword #:type))
+  (type #:getter .type@ #:init-form (make <scope.name>) #:init-keyword #:type))
 
-(define-method (.type.name (o <instance>)) (and=> (.type o) .name))
+(define-method (.type.name (o <instance>)) (.type@ o))
+(define-method (.type.name (o <port>)) (.type@ o))
 
 (define-class <error> (<ast>)
   (ast #:getter .ast #:init-value #f #:init-keyword #:ast)
