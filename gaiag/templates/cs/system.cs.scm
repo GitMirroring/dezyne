@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,6 +23,7 @@
 ;;; Code:
 
 using System;
+using System.Collections.Generic;
 
 class #.scope_model  : dzn.SystemComponent {
 #(map (init-instance model #{
@@ -47,5 +49,25 @@ class #.scope_model  : dzn.SystemComponent {
 #}) (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) model))))
 # (map (connect-ports model #{
     #((om:scope-name '_) interface) .connect(#provided , #required);
-#}) (filter (negate om:port-bind?) ((compose .elements .bindings) model)))}
+#}) (filter (negate om:port-bind?) ((compose .elements .bindings) model)))
+    this.dzn_meta.requires = new List<dzn.port.Meta> {
+    #(map (init-port #{
+        this.#name .dzn_meta,
+    #})(filter om:requires? ((compose .elements .ports) model)))
+    };
+    this.dzn_meta.children = new List<dzn.Meta> {
+    #(map (init-instance model #{
+        #name .dzn_meta,
+    #}) ((compose .elements .instances) model))
+    };
+    this.dzn_meta.ports_connected = new List<Action> {
+    #(map (init-port #{
+        #name .check_bindings,
+    #})((compose .elements .ports) model))
+    };
+}
+public void check_bindings()
+    {
+        dzn.RuntimeHelper.check_bindings(this.dzn_meta);
+    }
 }

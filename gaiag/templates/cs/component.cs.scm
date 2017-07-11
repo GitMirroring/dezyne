@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -25,6 +27,7 @@
 ;;; Code:
 
 using System;
+using System.Collections.Generic;
 
 public class #.scope_model  : dzn.Component {#
 (->string (map (declare-enum model) (om:enums (.behaviour model))))#
@@ -64,8 +67,20 @@ public class #.scope_model  : dzn.Component {#
     this.#name .dzn_meta.requires.component = this;
     this.#name .dzn_meta.requires.meta = this.dzn_meta;#})
 #})
-    (filter om:requires? ((compose .elements .ports) model)))#
-(map
+    (filter om:requires? ((compose .elements .ports) model)))
+    this.dzn_meta.requires = new List<dzn.port.Meta> {
+#(map (init-port #{
+    this.#name .dzn_meta,
+#})(filter om:requires? ((compose .elements .ports) model)))
+};
+this.dzn_meta.children = new List<dzn.Meta> { };
+this.dzn_meta.ports_connected = new List<Action>
+		{
+    #(map (init-port #{
+        #name .check_bindings,
+    #})((compose .elements .ports) model))
+    };
+#(map
    (lambda (port)
      (map (define-on model port #{#'()
    this.#port .#direction port.#event  = (#formals) => {#(string-if (not (is-a? type-type <void>)) #{return #})dzn.Runtime.call#(symbol-capitalize direction)#(string-if (not (is-a? type-type <void>)) #{<#return-type >#})(this, () => {#(string-if (not (is-a? type-type <void>)) #{return #})#port _#event(#arguments);}, this.#port .dzn_meta, "#event ");};
@@ -84,4 +99,8 @@ public class #.scope_model  : dzn.Component {#
    public #return-type  #name  (#formals) {
 #statements }
 #}) (om:functions model))
+public void check_bindings()
+    {
+        dzn.RuntimeHelper.check_bindings(this.dzn_meta);
+    }
 }

@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
 ;;; Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
+;;; Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -29,10 +31,11 @@ public class #.scope_model {#
  (->string (map (declare-enum model) (om:interface-enums model)))
  public static string to_string(bool b) {return b ? "true" : "false";}
   public class In {
-#((->join "\n") (map (declare-io model #{
-    public #(lambda-type model type formals)  #name ;#})
+#(map (declare-io model #{
+    public #(lambda-type model type formals)  #name ;
+    #})
  (filter om:in? ((compose .elements .events) model)))
-)
+
   }
   public class Out {
 #((->join "\n") (map (declare-io model #{
@@ -52,5 +55,14 @@ public class #.scope_model {#
    required.inport = provided.inport;
    provided.dzn_meta.requires = required.dzn_meta.requires;
    required.dzn_meta.provides = provided.dzn_meta.provides;
+  }
+  public void check_bindings()
+  {
+  #(map (declare-io model #{
+      if (inport.#name	== null) throw new dzn.binding_error(dzn_meta, "inport.#name ");
+  #}) (filter om:in? ((compose .elements .events) model)))
+  #(map (declare-io model #{
+      if (outport.#name	 == null) throw new dzn.binding_error(dzn_meta, "outport.#name ");
+  #}) (filter om:out? ((compose .elements .events) model)))
   }
 }
