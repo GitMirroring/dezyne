@@ -61,7 +61,7 @@
            .fields
            .formals
            .from
-           .function
+           .function@
            .functions
            .id
            .injected
@@ -442,12 +442,10 @@
 (define-method (.variable.name (o <assign>)) (and=> (.variable o) .name))
 
 (define-class <call> (<imperative> <expression>)
-  (function #:getter .function #:init-value #f #:init-keyword #:function)
+  (function #:getter .function@ #:init-value #f #:init-keyword #:function)
   (arguments #:getter .arguments #:init-form (make <arguments>) #:init-keyword #:arguments)
   (last? #:getter .last? #:init-value #f #:init-keyword #:last?))
-
-(define-method (.function.name (o <call>)) (and=> (.function o) .name))
-
+(define-method (.function.name (o <call>)) (.function@ o))
 
 (define-class <guard> (<declarative>)
   (expression #:getter .expression #:init-form (make <expression>) #:init-keyword #:expression)

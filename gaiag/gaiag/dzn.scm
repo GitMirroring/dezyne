@@ -104,8 +104,8 @@
 
     (($ <illegal>) ((animate-snippet 'illegal)))
 
-    (($ <assign> var ($ <call> function arguments))
-     ((->dzn model) (make <assign> #:variable var #:expression (make <assign-call> #:function function #:arguments arguments))))
+    (($ <assign> var ($ <call> function-name arguments))
+     ((->dzn model) (make <assign> #:variable var #:expression (make <assign-call> #:function function-name #:arguments arguments))))
 
     (($ <assign> var (and ($ <action>) (= .port.name port-name) (= .event event) (= .arguments arguments)))
      ((->dzn model) (make <assign> #:variable var #:expression (make <assign-action> #:port port-name #:event event #:arguments arguments))))
@@ -113,19 +113,19 @@
     (($ <assign> var expression)
      (->string (.name var) " = " ((->dzn model) expression) ";\n"))
 
-    (($ <assign-call> function arguments)
-     ((animate-snippet 'call-expression `((function ,(.name function))
+    (($ <assign-call> function-name arguments)
+     ((animate-snippet 'call-expression `((function ,function-name)
                                           (arguments ,((->dzn model) arguments))
-                                          (location ,(location (om:function model function)))))))
+                                          (location ,(location (om:function model function-name)))))))
 
     ((and ($ <assign-action>) (= .port.name port-name) (= .event.name event) (= .arguments arguments))
      (let ((arguments ((->dzn model) arguments)))
        ((animate-snippet 'action-trigger `((event ,event) (port ,port-name) (arguments ,arguments))))))
 
-    (($ <call> function arguments)
-     ((animate-snippet 'call `((function ,(.name function))
+    (($ <call> function-name arguments)
+     ((animate-snippet 'call `((function ,function-name)
                                (arguments ,((->dzn model) arguments))
-                               (location ,(location function))))))
+                               (location ,(location function-name))))))
 
     (($ <if> expression then #f)
      ((animate-snippet 'if-then `((expression ,((->dzn model) expression))
@@ -146,8 +146,8 @@
 
     (($ <return> expression) ((animate-snippet 'return `((expression ,((->dzn model) expression))))))
 
-    (($ <variable> name type ($ <call> function arguments))
-     ((->dzn model) (make <variable> #:name name #:type type #:expression ((->dzn model) (make <assign-call> #:function function #:arguments arguments)))))
+    (($ <variable> name type ($ <call> function-name arguments))
+     ((->dzn model) (make <variable> #:name name #:type type #:expression ((->dzn model) (make <assign-call> #:function function-name #:arguments arguments)))))
 
     (($ <variable> name type (and ($ <action>) (= .port.name port-name) (= .event event) (= .arguments arguments)))
      ((->dzn model) (make <variable> #:name name #:type type #:expression ((->dzn model) (make <assign-action> #:port port-name #:event event #:arguments arguments)))))

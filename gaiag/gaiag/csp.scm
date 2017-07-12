@@ -315,9 +315,7 @@
                    (if (is-a? statement <guard>)
                        (list statement)
                        (om:filter (is? <guard>) statement))))
-         (trigger-to-guards-alist (guards->trigger-to-guards-alist guards))
-;         (foo (stderr "trigger-to-guards-alist ~a\n" trigger-to-guards-alist))
-         (fnd (lambda (t) (cdr (find (compose (cut om:equal? t <>) car) trigger-to-guards-alist)))))
+         (trigger-to-guards-alist (guards->trigger-to-guards-alist guards)))
     (or (null-is-#f
          ((->list-join "\n[]\n")
           (append
@@ -587,10 +585,9 @@
 
 (define (purge-data root o)
   (let ((model (or (om:component root) (om:interface root))))
-    (model-purge-data model o)))
+    (ast:set-model-scope model (model-purge-data model o))))
 
 (define* (model-purge-data model o #:optional (locals '()))
-
   (define (member? identifier) (om:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
@@ -610,7 +607,7 @@
   (match o
 
     (($ <compound> (statements ...))
-     (make <compound>
+     (clone o
        #:elements
        (let loop ((statements statements) (locals locals))
          (if (null? statements)
@@ -623,11 +620,8 @@
                (let ((purged (model-purge-data model statement locals)))
                  (cons purged (loop (cdr statements) locals))))))))
 
-    (($ <call> function ($ <arguments> (arguments ...)) last?)
-       (make <call>
-         #:function function
-         #:arguments (make <arguments> #:elements (purge-formal-list function arguments))
-         #:last? last?))
+    (($ <call> function-name ($ <arguments> (arguments ...)) last?)
+     (clone o #:arguments (make <arguments> #:elements (purge-formal-list (.function o) arguments))))
 
     (($ <on> triggers statement)
      (let* ((t (filter (negate om:modeling?) (.elements triggers)))
@@ -645,9 +639,7 @@
                           (loop (cdr formals)
                                 (cdr on-formals)
                                 (acons (car on-formals) (car formals) locals))))))
-       (make <on>
-         #:triggers triggers
-         #:statement (model-purge-data model statement locals))))
+       (clone o #:statement (model-purge-data model statement locals))))
 
     (($ <function> name ($ <signature> type ($ <formals> (formals ...))) recursive? statement)
      (let* ((locals (let loop ((formals formals) (locals locals))
@@ -655,12 +647,10 @@
                           locals
                           (loop (cdr formals)
                                 (acons (.name (car formals)) (car formals) locals))))))
-       (make <function>
-         #:name name
+       (clone o
          #:signature (make <signature>
                       #:type type
                       #:formals (make <formals> #:elements (purge-formal-list o formals)))
-         #:recursive recursive?
          #:statement (model-purge-data model statement locals))))
 
     (($ <assign> (? extern?) expression) (make <skip>))
@@ -686,11 +676,7 @@
 (define (tail-call o)
   (match o
     (($ <function> name signature recursive? statement)
-     (make <function>
-       #:name name
-       #:signature signature
-       #:recursive recursive?
-       #:statement (or (mark-last statement) statement)))
+     (clone o #:statement (or (mark-last statement) statement)))
     (_ o)))
 
 (define (mark-last o)
@@ -707,26 +693,25 @@
                          (if marked?
                              (reverse (append collect (cons marked? (cdr statements))))
                              (loop (cdr statements) (cons statement collect))))))))
-               (make <compound> #:elements statements)))
+               (clone o #:elements statements)))
 
-    (($ <call> function arguments)
-     (make <call> #:function function #:arguments arguments #:last? #t))
+    (($ <call> function-name arguments)
+     (clone o #:last? #t))
 
     (($ <if> expression then else)
      (let ((then- (mark-last then))
            (else- (and else (mark-last else))))
        (if (and (not then-) (not else-))
            #f
-           (make <if>
-             #:expression expression
+           (clone o
              #:then (or then- then)
              #:else (or else- else)))))
 
     (($ <assign> variable (and ($ <call>) (get! call)))
-     (make <assign> #:variable variable #:expression (mark-last (call))))
+     (clone o #:expression (mark-last (call))))
 
     (($ <variable> name type (and ($ <call>) (get! call)))
-     (make <variable> #:name name #:type type #:expression (mark-last (call))))
+     (clone o #:expression (mark-last (call))))
 
     (($ <skip>) #f)
 
@@ -744,7 +729,7 @@
                   (cons (car statements) (loop (cdr statements)))))))
        (if (=1 (length result))
            (car result)
-           (make <compound> #:elements result))))
+           (clone o #:elements result))))
     (($ <on> triggers statement)
      (let* ((model (or (om:component ast) (om:interface ast)))
             (members (om:member-names model))
@@ -752,29 +737,18 @@
        (let ((result (ast-transform-return ast statement)))
          (match result
            (($ <blocking> statement)
-            (make <on>
-              #:triggers triggers
-              #:statement result))
+            (clone o #:statement result))
            (($ <compound> ())
-            (make <on>
-              #:triggers triggers
-              #:statement (make <compound> #:elements (list (make <voidreply>)))))
+            (clone o #:statement (make <compound> #:elements (list (make <voidreply>)))))
            ((? valued-triggers?)
-            (make <on>
-              #:triggers triggers
-              #:statement (make <compound> #:elements (list result))))
-           (_
-            (make <on>
-              #:triggers triggers
-              #:statement (make <compound> #:elements (list result (make <voidreply>)))))))))
+            (clone o #:statement (make <compound> #:elements (list result))))
+           (_ (clone o #:statement (make <compound> #:elements (list result (make <voidreply>)))))))))
     (_ o)))
 
 (define (qualify-modelling-events ast o)
   (match o
     (($ <on> triggers statement)
-      (make <on>
-        #:triggers triggers
-        #:statement statement))
+      (clone o #:statement statement))
     ((? (is? <ast>)) (om:map qualify-modelling-events o))
     ((h t ...) (map qualify-modelling-events o))
     (_ o)))
@@ -938,20 +912,20 @@
               )))
 
           ;; simple statements
-          (($ <call> function arguments last?)
+          (($ <call> function-name arguments last?)
            (let* ((arguments (on->csp model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
                   (continuation (list (list "Cont_" (fresh-number) "'"))))
              (if last?
-                 (list space (.name function) "(" "P'" ")" "(" (comma-space-join (append (om:member-names model) arguments (list ))) ") -- tail recursion" "\n")
+                 (list space function-name "(" "P'" ")" "(" (comma-space-join (append (om:member-names model) arguments (list ))) ") -- tail recursion" "\n")
                  (list
                   (def-cont
                    space
                    (list
                     (list continuation "(" (comma-space-join (om:member-names model)) ")" " =\n")
                     tail))
-                  (list space (.name function) "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
+                  (list space function-name "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n")))))
 
           (($ <assign> variable (and ($ <action>) (= .port.name port-name) (= .event event)))
            (let* ((type ((compose .type .signature) event))
@@ -965,7 +939,7 @@
               (list space (or port-name channel) "_'?" constructor variable-name ":{" values "} ->\n")
               (check-range (list variable-name) tail model locals indent))))
 
-          (($ <assign> variable ($ <call> function arguments))
+          (($ <assign> variable ($ <call> function-name arguments))
            (let* ((arguments (on->csp model arguments inevitable-optional? channel provided-on? locals))
                   (variable-name (and=> variable .name))
                   (s (make-string 2 #\space))
@@ -978,7 +952,7 @@
                 (list continuation "(" (comma-space-join (append (om:member-names model) (list "res'"))) ")" " =\n")
                 (list space "let " variable-name " = res' within\n")
                 (check-range (list variable-name) tail model locals indent)))
-              (list space (.name function) "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
+              (list space function-name "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
 
           (($ <assign> variable expression)
            (let* ((expression (csp-expression->string model expression locals))
@@ -999,7 +973,7 @@
              (list space (or port-name channel) "_'?" constructor identifier ":{" values "} ->\n")
              (check-range (list identifier) tail model locals indent))))
 
-          (($ <variable> name type ($ <call> function arguments))
+          (($ <variable> name type ($ <call> function-name arguments))
            (let* ((arguments (on->csp model arguments inevitable-optional? channel provided-on? locals))
                   (s (make-string 2 #\space))
                   (tail (map (lambda (x) (if (def? x) x (if (pair? x) (cons s x) (list s x)))) tail))
@@ -1011,7 +985,7 @@
                 (list continuation "(" (comma-space-join (append (om:member-names model) (list "res'"))) ")" " =\n")
                 (list space "let " name " = res' within\n")
                 (check-range (list name) tail model locals indent)))
-              (list space (.name function) "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
+              (list space function-name "(" continuation ")" "(" (comma-space-join (append (om:member-names model) arguments)) ")" "\n"))))
 
           (($ <variable> name type expression)
            (let* ((expression (csp-expression->string model expression locals)))
@@ -1234,11 +1208,7 @@
   (match o
     (($ <interface> name types events behaviour)
      (if (dzn-async? name)
-         (make <interface>
-           #:name name
-           #:types types
-           #:events events
-           #:behaviour ((rename-behaviour (.elements events)) (async-behaviour)))
+         (clone o #:behaviour ((rename-behaviour (.elements events)) (async-behaviour)))
          o))
      ((? (is? <ast>)) (om:map add-internal-libs-behaviour o))
      (_ o)))

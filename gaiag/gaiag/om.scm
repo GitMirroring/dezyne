@@ -136,6 +136,8 @@
            om:variable
            om:variables
            om:void?
+
+           .function
            ))
 
 (define (deprecated . where)
@@ -851,7 +853,11 @@
     (find (lambda (m)
              (equal? o (.name m)))
           (append ((compose .elements .ports) root)
-                  (behaviour-ports root))))))
+                  (behaviour-ports root))))
+   ((eq? <function> class)
+    (find (lambda (m)
+             (equal? o (.name m)))
+          ((compose .elements .functions .behaviour) root)))))
 
 (define name-resolve (pure-funcq name-resolve))
 
@@ -931,6 +937,15 @@
   (if (.instance o)
       (name-resolve (.type (.instance o)) <port> (.port@ o))
       (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
+
+(define-method (.function (model <model>) (o <call>))
+;;  (stderr ".function ~a ~a\n" model o)
+  (and (.function@ o) (name-resolve model <function> (.function@ o))))
+
+(define-method (.function (o <call>))
+;;  (stderr ".function ~a\n" o)
+;;  (stderr ".function ~a ~a\n" (car (ast:scope-model)) o)
+  (and (.function@ o) (name-resolve (car (ast:scope-model)) <function> (.function@ o))))
 
 (define (ast-> ast)
   ((compose

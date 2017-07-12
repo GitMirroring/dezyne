@@ -50,7 +50,7 @@
 (define (ast:resolve o)
   (match o
     (($ <root> (models ...)) (resolve-root o))
-    (($ <call>) ((resolve (ast:model-scope) '()) o))
+;;    (($ <call>) ((resolve (ast:model-scope) '()) o))
     ((? (is? <model>)) (resolve-model o))
     (_  o)))
 
@@ -170,6 +170,7 @@
     (or (as identifier <instance>) (om:instance model identifier)))
 
   (define (function? identifier) (om:function model identifier))
+
   (define (member? identifier) (om:variable model identifier))
   (define (port? o) (or (as o <port>)
                         (and (is-a? model <component>) (om:port model o))))
@@ -237,10 +238,10 @@
        (make <action> #:event (event? event)))
 
       (('dotted (and (? function?) (get! function)))
-       (make <call> #:function (function? (function))))
+       (make <call> #:function (.name (function? (function)))))
 
       (($ <var> (and (? function?) (get! function)))
-       (make <call> #:function (function? (function))))
+       (make <call> #:function (.name (function? (function)))))
 
       (('dotted (and (? port?) (get! port)) event)
        ((resolve model locals) (make <action> #:port (port) #:event event)))
@@ -249,7 +250,7 @@
        ((resolve model locals) o))
 
       (($ <var> (and (? function?) (get! function)))
-       (make <call> #:function (function? (function))))
+       (make <call> #:function (.name (function? (function)))))
 
       ((and ($ <value>) (get! expression))
        ((resolve model locals) (expression)))
@@ -278,13 +279,13 @@
     (($ <call> (and (? symbol?) (? (negate event-or-function?)) (get! identifier)))
      (resolve-error o (identifier) "undefined function or event: ~a"))
 
-    (($ <call> function ($ <arguments> (arguments ...))) (=> failure)
-     (let* ((function (or (as function <function>) (function? function)))
+    (($ <call> function-name ($ <arguments> (arguments ...))) (=> failure)
+     (let* ((function (function? function-name))
             (formals ((compose .elements .formals .signature) function))
             (argument-count (length arguments))
             (formal-count (length formals)))
        (if (= argument-count formal-count) (failure)
-           (resolve-error o (.name function)
+           (resolve-error o function-name
                           (format #f "function ~a expects ~a arguments, found: ~a" "~a" formal-count argument-count)))))
 
     (($ <variable> name (and (? (negate as-type)) (get! type)) expression)
@@ -316,9 +317,8 @@
     (($ <formal> name type direction)
      (clone o #:type ((resolve model locals) type)))
 
-    (($ <call> function (and ($ <arguments> (arguments ...)) (get! arguments)) last?)
-     (let* ((function (or (as function <function>) (function? function))))
-       (clone o #:function function #:arguments ((resolve model locals) (arguments)))))
+    (($ <call> function-name (and ($ <arguments> (arguments ...)) (get! arguments)) last?)
+     (clone o #:arguments ((resolve model locals) (arguments))))
 
     (($ <type>)
      (or (as-type o)
@@ -383,7 +383,7 @@
      (undefined-error 'programming-error o))
 
     (($ <action> #f (and (? function?) (get! function)))
-     (make <call> #:function (function? (function))))
+     (make <call> #:function (.name (function? (function)))))
 
     (($ <action> #f e arguments) (=> failure)
      (let ((event (event? e)))
@@ -548,14 +548,14 @@
 
     (($ <behaviour> name types ports variables functions statement)
      (let* ((ports (make <ports> #:elements (map (resolve model '()) (.elements ports))))
-            (model (clone model #:behaviour (clone o #:ports ports)))
-            (o (clone o
-                      #:ports ports
-                      #:variables ((resolve model '()) variables)))
+            (o (clone o #:ports ports))
+            (model (clone model #:behaviour o))
+            (functions (make <functions> #:elements (ast:set-model-scope model (map (resolve model '()) (.elements functions)))))
+            (o (clone o #:functions functions))
+            (model (clone model #:behaviour o))
+            (o (clone o #:variables (ast:set-model-scope model ((resolve model '()) variables))))
             (model (clone model #:behaviour o)))
-       (clone o
-              #:functions ((resolve model '()) functions)
-              #:statement ((resolve model '()) statement))))
+       (clone o #:statement (ast:set-model-scope model ((resolve model '()) statement)))))
 
     (($ <system>)
      (let* ((o (clone o #:ports (make <ports> #:elements (map (resolve model '()) (om:ports o)))))
