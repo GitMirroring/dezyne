@@ -59,6 +59,7 @@ Usage: gdzn run [OPTION]... [FILE]...
 (define (replay-trace options file-name)
   (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
+         (imports (cons* (dirname file-name) (dirname (canonicalize-path file-name)) imports))
          (model-opt (option-ref options 'model #f))
          (strict? (option-ref options 'strict #f))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
@@ -66,9 +67,11 @@ Usage: gdzn run [OPTION]... [FILE]...
                    "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
                    " seqdiag "
                    (string-append " -m " model-opt)
-                   " <(generate" " -p"
-                   (string-join imports " -I " 'prefix)
-                   " " file-name ")"
+                   ;; seqdiag does not support -I
+                   ;;(string-join imports " -I " 'prefix)
+                   ;; generate's pretty-print has problems with async, namespaces
+                   ;;" <(generate" " -p" (string-join imports " -I " 'prefix) " " file-name ")"
+                   " " file-name
 		   "| trace2net.js --illegal")))
     (if gdzn-debug? (stderr "command: ~a\n" command))
     (let ((trace (gulp-pipe command)))
