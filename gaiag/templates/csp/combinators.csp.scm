@@ -5,7 +5,7 @@
 ;;; Copyright © 2014, 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2014, 2015, 2016, 2017 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -29,7 +29,7 @@
 channel illegal
 channel range_error
 channel type_error
-channel transition_begin, transition_end
+channel transition_end
 channel extensions_over_empty_channels_is_undefined
 
 COMPLETE'(A') = ([]x:A' @ x-> COMPLETE'(A'))

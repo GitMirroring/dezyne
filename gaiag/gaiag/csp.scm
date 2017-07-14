@@ -346,7 +346,7 @@
               "let\n"
               ((->join "\n") lets)
               "within\n")))
-     "transition_begin -> (\n"
+     "(\n"
      (check-range (om:member-names model) behaviour model)
      ")")))
 
@@ -763,6 +763,11 @@
   (define (var? identifier) (or (member? identifier) (local? identifier)))
   (define (bool? identifier) (and (var? identifier) (is-a? (.type (var? identifier)) <bool>)))
 
+  (define (communicate events)
+    (if (or (not (pair? events)) (eq? (length events) 1))
+        (list "." events)
+        (list "?x:{" (comma-join events) "}")))
+
   (define (expression-type o locals)
     (let ((type (ast:expression-type o)))
       (om:type-name type)))
@@ -801,7 +806,7 @@
                        (list
                         (list
                          (if (is-a? model <interface>) (list "IG & " model-name) (list "ill." (.port.name (car ins))))
-                         (list "?x:{" (comma-join (append modeling-triggers (map .event.name ins))) "} -> (\n")
+                         (list (communicate (append modeling-triggers (map .event ins))) " -> (\n")
                          tail
                          ")"))
                        (if (pair? modeling-triggers)
@@ -809,7 +814,7 @@
                             (list
                              "IG & "
                              model-name
-                             (list "_'''?x:{" (comma-join modeling-triggers) "} -> (\n")
+                             (list "_'''" (communicate modeling-triggers) " -> (\n")
                              tail
                              ")"))
                            '()))
@@ -817,7 +822,7 @@
                        (list
                         (list
                          (list "IG & " (.port.name (car outs)))
-                         (list "_''?x:{" (comma-join (map .event.name outs)) "} -> (\n")
+                         (list "_''" (communicate (map .event.name outs)) " -> (\n")
                          tail
                          ")"))
                         '()))))))
@@ -844,14 +849,14 @@
                        (list
                         (list
                          (if (is-a? model <interface>) model-name (.port.name (car ins)))
-                         (list "?x:{" (comma-join (append modeling-triggers (map .event.name ins))) "} -> (\n")
+                         (list (communicate (append modeling-triggers (map .event.name ins))) " -> (\n")
                          tail
                          ")"))
                        (if (pair? modeling-triggers)
                            (list
                             (list
                              (if (is-a? model <interface>) model-name channel)
-                             (list "_'''?x:{" (comma-join modeling-triggers) "} ->(\n")
+                             (list "_'''" (communicate modeling-triggers) " ->(\n")
                              tail
                              ")"))
                             '()))
@@ -859,7 +864,7 @@
                        (list
                         (list
                          (if (is-a? model <interface>) model-name (.port.name (car outs)))
-                         (list "_''?x:{" (comma-join (map .event.name outs)) "} -> (\n")
+                         (list "_''" (communicate (map .event.name outs)) " -> (\n")
                          tail
                          ")"))
                        '()))))))

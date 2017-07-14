@@ -102,9 +102,7 @@ within
 S'    = let
 N' = #(csp-queue-size)
  -- component receives a stimulus
-Idle(blocked',requested',ack_context') = transition_begin -> Started(blocked',requested',ack_context')
-
-Started(blocked',requested',ack_context') = 
+Idle(blocked',requested',ack_context') = 
 (null(requested') or not ack_context' & ([] x':provided_in' @ x' -> FillQ(0,true,requested',false))
 []
 (null(requested') & ([] x':required_modeling' @ x' -> FillQ(0,blocked',requested',false)))
@@ -120,7 +118,7 @@ FillQ(c',blocked',requested',ack_context') =
 (c' <= N' & in'?x':in_internal' -> FillQ(c'+1,blocked',requested',ack_context'))
 [] -- component is done filling the queue or it turned out to be an empty required modeling event
 ([] x':required_modeling_end' @ x' -> 
-(Busy(c',<>,blocked',false,extensions_over_empty_channels_is_undefined,requested',ack_context') [] ((c' == 0) & Started(blocked',requested',ack_context'))))
+(Busy(c',<>,blocked',false,extensions_over_empty_channels_is_undefined,requested',ack_context') [] ((c' == 0) & Idle(blocked',requested',ack_context'))))
 [] -- synchronous out event
 ([]x':{|#(comma-join (map (lambda (port) (symbol-append (.name port) (string->symbol "_''"))) (om:provided model)))|} @ x' -> FillQ(c',blocked',requested',false))
 [] -- component replies on the stimulus
@@ -140,7 +138,7 @@ Busy(c',r',blocked',pout',end',requested',ack_context') =
 [] -- component is finished and outputs the void or reply event if present
 (c' == 0 & transition_end -> if (not blocked') and pout' then end' -> End(r',blocked',requested',ack_context') else End(r',blocked',requested',ack_context'))
 []
-(c' > 0 & transition_end -> transition_begin -> Busy(c',r',blocked',pout',end',requested',ack_context')) -- handling synchronous out events
+(c' > 0 & transition_end -> Busy(c',r',blocked',pout',end',requested',ack_context')) -- handling synchronous out events
 []
 (c' <= N' & in'?x':in_internal' -> Busy(c'+1,r',blocked',pout',end',requested',ack_context')) -- accepting synchronous out events
 []
@@ -186,10 +184,10 @@ IQ'(#interface _in'',#interface _out'',#interface _link'',#(csp-queue-size))
 [[#interface _out''.x<-x|x<-extensions(#interface _out'')]] \ {|#interface _in''|}
 #}) (delete-duplicates (map (compose om:name .type) (filter .external (om:ports model)))))
 within compress((CO_#.scope_model _ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]] [[x<-reorder_in.x|x<-extensions(reorder_in)]]
-                 [|{|#(comma-join (list "OUT',transition_begin,transition_end,reorder_in" 
+                 [|{|#(comma-join (list "OUT',transition_end,reorder_in" 
                                         (comma-join (append-map (lambda (name) (list (list name) (list name "_'") (list name "_''"))) (map .name (om:provided model))))
                                         (comma-join (async-reqclrs model))))|}|]
-                 SEMANTICS(IN',OUT',LINK',provided_in',provided_blocked',begin_required_modeling',begin_required_silent',end_required_modeling',async_reqackclrmods,in_internals') \ {|OUT',transition_begin,transition_end,reorder_in|}
+                 SEMANTICS(IN',OUT',LINK',provided_in',provided_blocked',begin_required_modeling',begin_required_silent',end_required_modeling',async_reqackclrmods,in_internals') \ {|OUT',transition_end,reorder_in|}
                  ) [[reorder_out.x<-x|x<-extensions(reorder_out)]]
                 [|{|#(comma-join (apply append (list "IN'") (map (lambda (o) (list (.name o) (string-append (symbol->string (.name o)) "_'") (string-append (symbol->string (.name o)) "_'''"))) (om:required model))))|}|]
                 # (let* ((required_processes ((->join "\n                 ||| ") 
