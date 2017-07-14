@@ -23,24 +23,25 @@
 
 (use-modules (srfi srfi-1))
 
-(define (readlink-f path)
-  (define (try-readlink path)
-    (catch #t
-      (lambda () (readlink path))
-      (lambda (key . parameters) path)))
-  (reduce (lambda (next previous)
-            (try-readlink (string-append previous "/" next)))
-          path
-          (string-split path #\/)))
+(define* (get-prefix #:key (resolve? #t))
+  (let* ((path (car (command-line)))
+         (path (if (string-index path #\/) path
+                   (search-path (string-split (getenv "PATH") #\:) path)))
+         (path (if resolve? (canonicalize-path path) path))
+         (prefix ((compose dirname dirname) path)))
+    prefix))
 
-(let* ((path (car (command-line)))
-       (path (readlink-f path))
-       (prefix (dirname (dirname path)))
-       (prefix (if (string=? (basename prefix) "gaiag")
-                   prefix
-                   (string-append prefix "/gaiag"))))
+(let* ((prefix (get-prefix))
+       (gaiag (if (string=? (basename prefix) "gaiag")
+                  prefix
+                  (string-append prefix "/gaiag"))))
   (if (not (getenv "DEZYNE_PREFIX"))
-      (setenv "DEZYNE_PREFIX" (string-append prefix "/..")))
-  (setenv "PATH" (string-append (string-append prefix "/../bin:") (getenv "PATH")))
-  (set! %load-path (append (list prefix ".") %load-path))
-  (set! %load-compiled-path (append (list prefix ".") %load-compiled-path)))
+      (setenv "DEZYNE_PREFIX" prefix))
+  (setenv "PATH" (string-append (string-append prefix "/bin:") (getenv "PATH")))
+  (set! %load-path (append (list gaiag ".") %load-path))
+  (set! %load-compiled-path (append (list gaiag ".") %load-compiled-path))
+  (when (getenv "GDZN_DEBUG")
+    (format (current-error-port) "prefix: ~a\n" prefix)
+    (format (current-error-port) "gaiag: ~a\n" gaiag)
+    (format (current-error-port) "lp: ~a\n" %load-path)
+    (format (current-error-port) "lcp: ~a\n" %load-compiled-path)))
