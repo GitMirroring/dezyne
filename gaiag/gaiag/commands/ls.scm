@@ -69,7 +69,7 @@ Usage: gdzn ls [OPTION]... [FILE]...
          (recursive? (option-ref options 'recursive #f))
          (prefix (get-prefix))
          (services (if (access? (string-append prefix "/root") R_OK) prefix
-                       (string-append prefix "/services")))
+                       (string-append (getenv "DEZYNE_PREFIX") "/services")))
          (root (string-append services "/root/fs")))
     ;;(stderr "root=~a\n" root)
     (chdir root)
