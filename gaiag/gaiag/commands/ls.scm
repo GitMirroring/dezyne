@@ -53,13 +53,21 @@ Usage: gdzn ls [OPTION]... [FILE]...
           (exit 0)))
     options))
 
+(define* (get-prefix #:key (resolve? #t))
+  (let* ((path (car (command-line)))
+         (path (if (string-index path #\/) path
+                   (search-path (string-split (getenv "PATH") #\:) path)))
+         (path (if resolve? (canonicalize-path path) path))
+         (prefix ((compose dirname dirname) path)))
+    prefix))
+
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (files (map (lambda (f) (if (not (string-prefix? "/" f)) f (string-drop f 1))) files))
          (debug? (find (cut equal? <> "--debug") (command-line)))
          (recursive? (option-ref options 'recursive #f))
-         (prefix (getenv "DEZYNE_PREFIX"))
+         (prefix (get-prefix))
          (services (if (access? (string-append prefix "/root") R_OK) prefix
                        (string-append prefix "/services")))
          (root (string-append services "/root/fs")))
