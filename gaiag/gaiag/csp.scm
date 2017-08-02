@@ -806,7 +806,7 @@
                        (list
                         (list
                          (if (is-a? model <interface>) (list "IG & " model-name) (list "ill." (.port.name (car ins))))
-                         (list (communicate (append modeling-triggers (map .event ins))) " -> (\n")
+                         (list (communicate (append modeling-triggers (map .event.name ins))) " -> (\n")
                          tail
                          ")"))
                        (if (pair? modeling-triggers)
