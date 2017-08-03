@@ -5,21 +5,21 @@ verify: IR: check: completeness: ok
 verify: IR: check: deadlock: ok
 verify: IR: check: livelock: ok
 verify: QueueFull2: check: deterministic: ok
-verify: QueueFull2: check: illegal: fail                
+verify: QueueFull2: check: illegal: fail
 pp.ia
 rp.ia
 rp.oa
 rp.oa
 rp.oa
 rp.oa
-verify: QueueFull2: check: deadlock: fail                
+verify: QueueFull2: check: deadlock: fail
 pp.ia
 rp.ia
 rp.oa
 rp.oa
 rp.oa
 rp.oa
-verify: QueueFull2: check: compliance: fail                
+verify: QueueFull2: check: compliance: fail
 pp.ia
 rp.ia
 rp.oa
