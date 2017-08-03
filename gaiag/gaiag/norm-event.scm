@@ -380,6 +380,7 @@
            (clone o #:statement (clone statement #:elements ons)))))
     (($ <interface>) o)
     (($ <system>) o)
+    (($ <foreign>) o)
     ((? (is? <ast>)) (om:map (add-illegals-auwe-meuk model) o))
     (_ o)))
 
@@ -404,6 +405,7 @@
     ((and ($ <behaviour>) (= .statement statement)) (clone o #:statement (add-reply-port statement port block?)))
     ((and ($ <component>) (= .behaviour behaviour)) (clone o #:behaviour (ast:set-model-scope o (add-reply-port behaviour (if (= 1 (length (filter om:provides? (om:ports o)))) (om:port o) #f) block?))))
     (($ <system>) o)
+    (($ <foreign>) o)
     (($ <interface>) o)
     ((? (is? <ast>)) (om:map (cut add-reply-port <> port block?) o))
     (_ o)))
@@ -433,6 +435,7 @@
          (failure)))
     (($ <interface>) o)
     (($ <system>) o)
+    (($ <foreign>) o)
     ((? (is? <ast>)) (om:map (add-illegals model) o))
     (_ o)))
 
@@ -510,6 +513,7 @@
 
     (($ <interface>) o)
     (($ <system>) o)
+    (($ <foreign>) o)
     ((? (is? <ast>)) (om:map (rewrite-formals model locals) o))
     (_ o)))
 
@@ -549,6 +553,7 @@
 
     (($ <interface>) o)
     (($ <system>) o)
+    (($ <foreign>) o)
     ((? (is? <ast>)) (om:map (binding-into-blocking locals) o))
     (_ o)))
 

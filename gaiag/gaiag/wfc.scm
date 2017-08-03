@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2014, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -80,6 +81,7 @@
   (match o
     (($ <root> (elements ...)) (append-map (second-on) elements))
     (($ <system>) '())
+    (($ <foreign>) '())
     (($ <interface>) (or (and=> (.behaviour o) (second-on)) '()))
     (($ <component>) (or (and=> (.behaviour o) (second-on)) '()))
     (($ <behaviour>) (or (and=> (.statement o) (second-on)) '()))
@@ -94,6 +96,7 @@
   (match o
     (($ <root> (elements ...)) (append-map mixing-declarative-imperative elements))
     (($ <system>) '())
+    (($ <foreign>) '())
     (($ <interface>) (or (and=> (.behaviour o) mixing-declarative-imperative) '()))
     (($ <component>) (or (and=> (.behaviour o) mixing-declarative-imperative) '()))
     (($ <behaviour>) (or (and=> (.statement o) mixing-declarative-imperative) '()))

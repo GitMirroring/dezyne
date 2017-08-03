@@ -284,6 +284,7 @@
            (map (mangle-table json-table) models)
            (make <root> #:elements (map (mangle-table json-table) models))))
       (($ <system>) (and (not json?) o))
+      (($ <foreign>) (and (not json?) o))
       ((? (is? <model>))
        (let ((json? (command-line:get 'json #f)))
          (if json?

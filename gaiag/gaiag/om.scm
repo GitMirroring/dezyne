@@ -258,6 +258,7 @@
 (define-method (om:variables (o <model>))
   (match o
     (($ <system>) '())
+    (($ <foreign>) '())
     ((= .behaviour #f) '())
     (_ ((compose .elements .variables .behaviour) o))))
 
@@ -741,6 +742,7 @@
 (define (om:parent o t)
   (match o
     (($ <system>) #f)
+    (($ <foreign>) #f)
     ((? (is? <model>))
      (om:parent ((compose .statement .behaviour) o) t))
     (($ <blocking>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
