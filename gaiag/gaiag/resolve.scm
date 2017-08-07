@@ -81,7 +81,8 @@
   (clone o
     #:elements (receive (selection rest)
                         (partition (is? class) (.elements o))
-                        (append rest (map resolve-top-model selection)))))
+                        (let ((resolved (map resolve-top-model selection)))
+                          (append rest resolved )))))
 
 
 (define (report-error o)
@@ -113,7 +114,7 @@
 (define (resolve-top-model o)
   (match o
     ((? (is? <model>))
-     ((compose om:register-model resolve-model) o))
+     (resolve-model o))
     (_ ((resolve o '()) o))))
 
 (define (resolve-model o)
@@ -124,7 +125,7 @@
 
 (define ((resolve model locals) o)
   (match o
-    (($ <type>) (retain-source-properties o (resolve- model o locals)))
+    (($ <type>) (resolve- model o locals))
     ((? (is? <type>)) o)
     (($ <import>) o)
     (_ (retain-source-properties o (resolve- model o locals)))))
@@ -195,10 +196,10 @@
   (define (as-type o)
     (match o
       (($ <type> ('dotted '* scope ... name))
-       ((om:type model) (make <type> #:name (make <scope.name> #:scope scope #:name name))))
+       ((om:type model) (clone o #:name (make <scope.name> #:scope scope #:name name))))
       (($ <type> ('dotted scope ... name)) (=> failure)
-       (or ((om:type model) (make <type> #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name)))
-           ((om:type model) (make <type> #:name (make <scope.name> #:scope scope #:name name)))
+       (or ((om:type model) (clone o #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name)))
+           ((om:type model) (clone o #:name (make <scope.name> #:scope scope #:name name)))
            (failure)))
       (_ ((om:type model) o))))
 

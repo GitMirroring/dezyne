@@ -931,8 +931,8 @@
 (define-template x:dzn-locator code:dzn-locator)
 
 (define-template x:header- (lambda (o) (filter (is? <interface>) (.elements o))))
-(define-template x:header (lambda (o) (topological-sort (filter (negate (is? <interface>)) (.elements o)))))
-(define-template x:source (lambda (o) (topological-sort (.elements o))))
+(define-template x:header (lambda (o) (topological-sort (filter (negate (disjoin (is? <type>) (is? <interface>))) (.elements o)))))
+(define-template x:source (lambda (o) (topological-sort (filter (negate (is? <type>)) (.elements o)))))
 
 ;; shell-header-system
 ;;;;(define-template x:non-injected-instance-reference-declare non-injected-instances)
