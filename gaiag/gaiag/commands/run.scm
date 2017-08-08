@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -67,8 +68,7 @@ Usage: gdzn run [OPTION]... [FILE]...
                    "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
                    " seqdiag "
                    (string-append " -m " model-opt)
-                   ;; seqdiag does not support -I
-                   ;;(string-join imports " -I " 'prefix)
+                   (string-join imports " -I " 'prefix)
                    ;; generate's pretty-print has problems with async, namespaces
                    ;;" <(generate" " -p" (string-join imports " -I " 'prefix) " " file-name ")"
                    " " file-name
