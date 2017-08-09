@@ -1,2 +1,0 @@
-viewrace.dzn:12:12: Well-formedness error: Variable declaration only allowed within OnEventStatement
-viewrace.dzn:13:7: Well-formedness error: Only imperative Statement allowed here
