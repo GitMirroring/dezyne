@@ -54,12 +54,14 @@
   #:use-module (gaiag norm-event)
   #:use-module (gaiag reader)
   #:use-module (gaiag resolve)
+  #:use-module (gaiag xpand)
 
-  #:export (
+  #:export (ast:code
            code:identifier?
            code:->code
            code:signature-equal?
            code:signature-types-equal?
+           code:animate-file
            enum-type
            ->code
            binding-name
@@ -105,6 +107,15 @@
 
            animate-pairs
            ))
+
+(define (ast:code ast)
+  (let ((om ((om:register code:om #t) ast)))
+    (ast:set-scope
+     om
+     (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+                   (map dump (filter (negate om:imported?) ((om:filter:p <model>) om)))
+                   (dump-header))))
+  "")
 
 (define (code:import name)
   (om:import name code:om))
@@ -1122,3 +1133,41 @@
 (define (calling-context)
   (let ((type (command-line:get 'calling-context #f)))
     (if type (make <type> #:name (make <scope.name> #:scope '() #:name (string->symbol type))) #f)))
+
+(define (dump-header)
+  (and-let* ((header (template-file `(header ,(code:extension (make <component>)))))
+             (header (components->file-name header))
+             ((file-exists? header)))
+            (dump-string (basename header) (gulp-file header))))
+
+(define (code:animate-file file-name module)
+  (ast:set-model-scope
+   (module-ref module 'model)
+   ;; use old animate+component.js.scm for
+   ;; services/scripts/verification.dzn, daemon/lib/Controller.dzn
+   ;; until regression test passes
+   (cond  ((member file-name '(component.cc.scm))
+           (x:pand 'source-component (module-ref module 'model) module))
+          ((member file-name '(component.hh.scm))
+           (x:pand 'header-component (module-ref module 'model) module))
+          ((member file-name '(interface.hh.scm))
+           (x:pand 'header-interface (module-ref module 'model) module))
+          ((member file-name '(system.cc.scm))
+           (x:pand 'source-system (module-ref module 'model) module))
+          ((member file-name '(system.hh.scm))
+           (x:pand 'header-system (module-ref module 'model) module))
+          ((member file-name '(shell.hh.scm))
+           (x:pand 'shell-header-system (module-ref module 'model) module))
+          ((member file-name '(shell.cc.scm))
+           (x:pand 'shell-source-system (module-ref module 'model) module))
+          ((member file-name '(foreign.hh.scm))
+           (x:pand 'foreign-header-component (module-ref module 'model) module))
+          ((member file-name '(foreign.cc.scm))
+           (x:pand 'foreign-source-component (module-ref module 'model) module))
+          ((member file-name '(main.hh.scm))
+           #t)
+          ((member file-name '(main.cc.scm))
+           (x:pand 'main-component (module-ref module 'model) module))
+          ((member file-name '(glue-top-system.hh.scm))
+           (x:pand 'glue-top-header-system (module-ref module 'model) module))
+          (else (animate-file file-name module)))))

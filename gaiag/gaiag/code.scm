@@ -29,7 +29,8 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))  #:use-module (gaiag lexicals)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (gaiag lexicals)
   #:use-module (gaiag ast2om)
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
@@ -43,22 +44,43 @@
   #:use-module (gaiag misc)
   #:use-module (gaiag norm-event)
   #:use-module (gaiag resolve)
+  #:use-module (gaiag xpand)
+
   #:use-module (language dezyne location)
 
-  #:export (ast:code
-            ast:scope+name
-            ast:other-direction
+  #:export (ast:scope+name
+            ast:other-direection
+            ast:type-name
+            ast:void-in-triggers
+            ast:valued-in-triggers
+            ast:formals
+            code:expression
+            code:trigger
+            code:non-injected-bindings
+            model2file
+            code:ons
+            code:functions
+            ast:provided
+            code:instances
+            ast:out-triggers-in-events
+            ast:out-triggers-out-events
+            ast:required
+            code:reply-type
+            code:reply-scope+name
+
             code-file
-            code:animate-file
+            code:file-name
             code:dump-file
             code:extension
-            code:file-name
             code:indenter
             code:module
             code:om
+            code:->string
+            symbol->enum-field
+            dump
             dump-component
             dump-global
-            dump-header
+            dump-interface
             dump-indented
             dump-main
             dump-system
@@ -67,15 +89,6 @@
             pipe))
 
 (define code:indenter (make-parameter indent))
-
-(define (ast:code ast)
-  (let ((om ((om:register code:om #t) ast)))
-    (ast:set-scope
-     om
-     (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
-                   (map dump (filter (negate om:imported?) ((om:filter:p <model>) om)))
-                   (dump-header))))
-  "")
 
 (define (code:om ast)
   ((compose-root
@@ -99,11 +112,6 @@
                    (lambda () (pipe thunk (lambda () ((code:indenter)))))
                    thunk)))
 
-(define (dump-header)
-  (and-let* ((header (template-file `(header ,(code:extension (make <component>)))))
-             (header (components->file-name header))
-             ((file-exists? header)))
-            (dump-string (basename header) (gulp-file header))))
 
 (define (dump-global o)
   (and-let* (((null-is-#f (om:enums)))
@@ -260,119 +268,8 @@
      (let* ((var (measure-perf 'var val)) ...)
        (measure-perf '*let* exp exp* ...)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;    template procedures: map procedure name to template and                 ;;
-;;                         pass the appropriate ast type                      ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; requirements:
-;; - trivially define a new template function by name
-;; - trivially define which part of the passed ast is to be available in the template
-;; - trivially map such a template function over a list of ast or parts of ast
-;; - allow template functions to recurse (and therefore do not self reference ;-)
-
-;; TODO:
-;; - remove need for ->code (MORTAL SIN)
-;; - cleanup (scope+)type expansion
-;;      x:type, x:reply-type, x:reply-type, x:return-type, x:formal-type, ast:scope+name-*
-;; - sort-out OM: AST: and CODE: prefixes
-;; - system, foreign, shell
-;; - asd/dzn-glue?
-;; - non-c++ languages (c, javascript)
-;; - rewrite toplevel entry point; apply root ast to source FILE.dzn -> FILE.cc + FILE.hh
-;; - use Guile hash reader instead of PEG
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;                                                                            ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define debug? (command-line:get 'debug #f))
-(define* (x:pand filename o #:optional (module (current-module)))
-  (define (tree->string t)
-    (match t
-      (('script t ...) (tree->string t))
-      (('pegprocedure s) (display (->string (eval (list (string->symbol (string-drop s 1)) o) module))))
-      ((? string?) (display t))
-      ((t ...) (map tree->string t))
-      (_ #f)))
-  (define-peg-string-patterns
-    "script       <-- pegtext*
-     pegtext      <-  (!pegprocedure (escape '#' / .))* pegprocedure?
-     pegsep       <   [ ]?
-     escape       <   '#'
-     pegprocedure <-- '#' ('='/'.'/':'/'-'/'+'/[a-zA-Z0-9_])+ pegsep")
-  ;; (stderr "X:PAND: ~a\n" o)
-  (let* ((result (match-pattern script (gulp-template filename)))
-         (end (peg:end result))
-         (tree (peg:tree result)))
-    (if debug?
-        (format #t "/* ~a */\n" filename))
-    ;; (stderr "tree: ~s\n" tree)
-    ;; (stderr "   => ~a\n" filename)
-    (tree->string tree)))
-
-(define-syntax define-template
-  (syntax-rules ()
-    ((_ name f sep type)
-     (define-public (name ast)
-       (let* ((module (current-module))
-              (filename (string-drop (symbol->string 'name) 2))
-              (o (f ast)))
-         (cond ((char? o) (display o))
-               ((number? o) (display o))
-               ((symbol? o) (display o))
-               ((string? o) (display o))
-               ((pair? o)
-                ;;(stderr "PAIR [~a,t=~a,f=~a] ~a\n" (class-name (class-of ast)) (and type (class-name type)) filename (class-name (class-of (car o))))
-                (let* ((sexp (if (not sep) '("")
-                                 (with-input-from-string (gulp-template sep) read)))
-                       (join (lambda (o) (apply string-join (cons o sexp)))))
-                  (display (join (map (lambda (ast)
-                                        (with-output-to-string
-                                          (lambda () (if (or (char? ast)
-                                                             (string? ast)
-                                                             (symbol? ast)) (display ast)
-                                                             (let* ((ast-name (symbol->string (ast-name (if (is-a? ast type) type (class-of ast)))))
-                                                                    (filename (if (equal? filename ast-name) filename
-                                                                                  (string-append filename "-" ast-name))))
-                                                               (if (is-a? ast <model>)
-                                                                   (ast:set-model-scope ast (x:pand filename ast))
-                                                                   (x:pand filename ast))))))) o)))))
-               ((null? o) #f)
-               ((is-a? o <ast>)
-                ;;(stderr "ATOM [~a,t=~a,f=~a] ~a\n" (class-name (class-of ast)) (and type (class-name type)) filename (class-name (class-of o)))
-                (let* ((ast-name (symbol->string (ast-name (if (is-a? o type) type (class-of o)))))
-                       (filename (if (equal? filename ast-name) filename
-                                     (string-append filename "-" ast-name))))
-                  (x:pand filename o)))
-               (#t (x:pand filename o))))
-       ""))
-    ((_ name f sep)
-     (define-template name f sep #f))
-    ((_ name f)
-     (define-template name f #f))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;                                                                            ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(define-template x:code-formal-type FIXME-code:formal-type)
-
-(define-method (FIXME-code:formal-type (o <formal>)) ;; MORTAL SIN HERE!!?
-  (let* ((type (.type o))
-         (type (match type
-                 (($ <extern>) (symbol->string (.value type)))
-                 (_ (code:reply-type-type type)))))
-    (string-append type (if (not (eq? 'in (.direction o))) "&" ""))))
-
-(define-template x:on identity)
-
-(define-template x:call identity)
+(define-template x:non-void-reply identity #f)
 
 (define-template x:reply (lambda (o)
                            (if (is-a? o <void>)
@@ -430,34 +327,12 @@
          (right (.right o))
          (right-port (.port right))
          (bind (and (om:port-bind? o)
-                    (if (.instance left) left right)))
-         ;;(instance-name (code:binding-name model bind))
-         )
+                    (if (.instance left) left right))))
     bind))
 (export ast:instance-name)
 
 (define-method (ast:instance-name (o <binding>))
   o)
-
-;; (define (code:binding-name model bind)
-;;   (let ((instance (om:instance model bind))
-;;         (port (.port bind)))
-;;     (snippet 'binding
-;;                `((instance ,(match instance
-;;                                 (($ <instance>) (.name instance))
-;;                                 (($ <interface>) (.name instance))))
-;;                  (port ,(match port
-;;                             (($ <port>) (.name port))
-;;                             (($ <interface>) (list "x" (.name port)))))))))
-
-
-(define-template x:non-void-reply identity #f)
-
-(define-template x:return-type code:return-type #f <type>)
-
-(define-method (code:return-type (o <trigger>)) ((compose .type .signature .event) o))
-
-(define-method (code:return-type (o <function>)) ((compose .type .signature) o))
 
 (define-template x:model-name (compose om:name (lambda (_) (ast:model-scope))))
 
@@ -465,7 +340,6 @@
 
 (define-template x:capitalize-model-name (compose string-capitalize symbol->string .name .name (lambda (o) (ast:model-scope))))
 
-;; c++03
 (define-template x:port-type ast:port-type)
 (define-method (ast:port-type (o <trigger>))
   ((->join "::") (om:scope+name ((compose .type .port) o)))) ;; MORTAL SIN HERE!!?
@@ -477,35 +351,6 @@
          ((->join "::") (om:scope+name (.type o))))))
 
 (define-template x:method code:trigger)
-
-(define-template x:declare-method code:trigger)
-
-
-(define-template x:formal-type code:formal-type)
-(define-method (code:formal-type (o <formal>))
-  o)
-
-(define-method (code:formal-type (o <port>))
-  ((compose .elements .formals .signature car om:events) o))
-
-(define (code:->string o)
-  (match o
-    ((? number?) (number->string o))
-    ((? symbol?) (symbol->string o))
-    ((? string?) o)))
-
-(define-template x:type-name (lambda (o) ;; MORTAL SIN HERE!!?
-                               (let* ((scope-name (ast:type-name o))
-                                      (name (.name scope-name))
-                                      (scope (.scope scope-name))
-                                      (type (or (as o <type>) (.type o))))
-                                 (map code:->string
-                                      (if (or (is-a? type <bool>)
-                                              (is-a? type <extern>)
-                                              (is-a? type <int>)
-                                              (is-a? type <void>)) (append scope (list name))
-                                              (cons (symbol) (append scope (list name 'type)))))))
-  'type-infix)
 
 (define-method (ast:type-name (o <int>)) (make <scope.name> #:name 'int))
 (define-method (ast:type-name (o <void>)) (make <scope.name> #:name 'void))
@@ -523,15 +368,11 @@
 (define-method (ast:type-name (o <extern>))
   (make <scope.name> #:name (.value o)))
 
-(define-template x:calls ast:void-in-triggers)
-(define-template x:rcalls ast:valued-in-triggers)
 (define-template x:formals ast:formals 'formal-infix)
 (define-template x:formals-type ast:formals 'formal-infix)
-(define-template x:prefix-formals-type ast:formals 'formal-prefix)
 
 (define-template x:methods code:ons)
 (define-template x:functions code:functions)
-(define-template x:call identity)
 
 (define-method (ast:void-in-triggers (o <component-model>))
   (filter
@@ -543,12 +384,6 @@
    (lambda (t) (not (is-a? ((compose .type .signature .event) t) <void>)))
    (ast:in-triggers o)))
 
-(define-template x:reqs ast:req-events)
-
-(define-template x:clrs ast:clr-events)
-
-(define-template x:direction ast:direction)
-
 (define-template x:field code:field-expression) ;; MORTAL SIN HERE!!?
 
 (define-method (code:field-expression (o <field>))
@@ -559,12 +394,17 @@
 
 (define-template x:data code:data)
 
+(define (code:->string o)
+  (match o
+    ((? number?) (number->string o))
+    ((? symbol?) (symbol->string o))
+    ((? string?) o)))
+
 (define-method (code:data (o <data>))
   (code:->string (.value o)))
 
 (define-template x:expression code:expression)
 
-(define-template x:variable-expression (compose code:expression .expression) #f <expression>)
 (define-template x:left (compose code:expression .left) #f <expression>)
 (define-template x:right (compose code:expression .right) #f <expression>)
 
@@ -643,17 +483,6 @@
     ((? unspecified?) "")
     (_ (.expression o))))
 
-(define-template x:scoped-model-name (lambda (o)
-                                       (let* ((scope+name (.name o))
-                                              (scope (map symbol->string (.scope scope+name)))
-                                              (name (symbol->string (.name scope+name))))
-                                         (string-join (append scope (list name)) "_"))))
-
-(define-template x:scope-name (lambda (o)
-                                (let* ((scope+name (.name o))
-                                       (scope (map symbol->string (.scope scope+name))))
-                                  (string-join scope "_" 'suffix))))
-
 (define-template x:reply-type code:reply-type)
 
 (define-method (code:reply-type (o <ast>)) ;; MORTAL SIN HERE!!?
@@ -667,20 +496,9 @@
 (define-method (code:reply-type (o <reply>))
   ((compose code:reply-type .expression) o))
 
-(define-template x:reply-type-type code:reply-type-type)
-
-(define-method (code:reply-type-type (o <ast>))
-  (let ((type (ast:expression-type o)))
-    (match type
-      (($ <bool>) "bool")
-      (($ <int>) "int")
-      (($ <enum>) (string-join (cons "" (map symbol->string (append (om:scope+name type) '(type)))) "::"))
-      (($ <void>) "void"))))
-
 (define-template x:then .then #f <statement>)
 
 (define-template x:else (lambda (o) (or (.else o) '())) #f <statement>)
-
 
 (define-template x:declarative-or-imperative code:declarative-or-imperative)
 
@@ -688,14 +506,13 @@
   (if (om:imperative? o) o
       (make <declarative-compound> #:elements o)))
 
-(define-template x:on-statements .elements #f <statement>)
-
-
 (define-template x:guard-statements .elements #f <statement>)
 
 (define-template x:out-bindings .elements)
 
 (define-template x:statements .elements #f <statement>)
+
+(define-template x:member-name identity)
 
 (define-template x:variable-name (lambda (o)
                                    ;; FIXME: is (.variable o) a member?
@@ -707,17 +524,11 @@
                                        (x:member-name (.variable o))
                                        (symbol->string (.variable.name o)))))
 
-(define-template x:member-name identity)
-
 (define-template x:assign-reply code:assign-reply)
 (define-method (code:assign-reply (o <reply>))
   (let ((expression (.expression o)))
     (if (is-a? (ast:expression-type expression) <void>) ""
         o)))
-
-(define-template x:port-name code:port-name)
-(define-method (code:port-name (o <on>))
-  ((compose .port.name car .elements .triggers) o))
 
 (define-template x:block identity)
 (define-template x:port-release (lambda (o) (if (om:blocking-compound? (ast:model-scope)) o "")))
@@ -762,56 +573,12 @@
 
 (define-method (.expression (o <top>)) #f)
 
-(define-template x:pump-include (lambda (o) (if (pair? (om:ports (.behaviour o)))
-                                                "#include <dzn/pump.hh>"
-                                                "")))
-
-(define-template x:open-namespace (lambda (o) (map (lambda (x) (string-join (list " namespace " (symbol->string x) " {") "")) (om:scope o))))
-(define-template x:close-namespace (lambda (o) (map (lambda (x) "}\n") (om:scope o))))
-
-(define-template x:meta identity)
-
-;; FIXME: all/vs requires
 (define-template x:all-ports-meta-list om:ports 'meta-infix)
-
-;; FIXME => x:required-ports-meta-list
-(define-template x:ports-meta-list (lambda (o) (filter om:requires? (om:ports o))) 'meta-infix)
-
-;;(define-template x:ports-meta-list (lambda (o) (comma-join (map (lambda (port) (list "&" (.name port) ".meta")) (filter om:requires? (om:ports o))))))
-
-(define-template x:check-bindings-list (lambda (o) ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports o)))))
-
-(define-template x:interface-include (lambda (o) (map (lambda (p) (string-append "#include \"" (code:file-name p) ".hh\"\n")) (om:ports o))))
 
 (define-template x:in-event-definer (lambda (o) (filter om:in? (om:events o))) 'event-definer-infix)
 (define-template x:out-event-definer (lambda (o) (filter om:out? (om:events o))) 'event-definer-infix)
 
-(define-template x:global-enum-definer (lambda (o) (om:enums)))
-
 (define-template x:enum-definer (lambda (o) (append (om:enums o) (om:enums))))
-
-(define-template x:check-in-binding (lambda (o) (filter om:in? (om:events o))))
-(define-template x:check-out-binding (lambda (o) (filter om:out? (om:events o))))
-
-(define-template x:interface-enum-to-string ast:enum-to-string)
-(define-template x:interface-string-to-enum ast:enum-to-string)
-(define-method (ast:enum-to-string (o <interface>))
-  (append (om:enums) (om:enums o)))
-
-(define-template x:enum-field-to-string ast:enum-field-to-string)
-(define-method (ast:enum-field-to-string (o <enum>))
-  (map (symbol->enum-field o) ((compose .elements .fields) o)))
-;;(export ast:enum-field-to-string)
-
-(define-template x:string-to-enum ast:string-to-enum)
-(define-method (ast:string-to-enum (o <model>))
-  (om:enums o))
-(define-method (ast:string-to-enum (o <enum>))
-  (map (symbol->enum-field o) ((compose .elements .fields) o)))
-;;(export ast:string-to-enum)
-
-(define asd? #f) ;; FIXME: asd glue
-(define-template x:asd-voidreply (lambda (o) (if asd? "__ASD_VoidReply, " "")))
 
 (define ((symbol->enum-field enum) o)
   (make <enum-field> #:type enum #:field o))
@@ -829,183 +596,15 @@
 
 (define-template x:required-member-initializer (lambda (o) (filter (conjoin (negate .injected) om:requires?) (om:ports o))))
 
-(define-template x:async-member-initializer (lambda (o) (om:ports (.behaviour o))))
-
-(define-template x:scoped-port-name (lambda (port) (let ((scope-name ((compose .name .type) port))) (append (.scope scope-name) (list (.name scope-name))))) 'type-infix)
-
-(define-template x:reply-member-declare ast:reply-types)
-
-(define-method (ast:reply-types o)
-  (let ((lst (om:reply-types o)))
-    (delete-duplicates lst (lambda (a b) (or (and (is-a? a <bool>)
-                                                  (is-a? b <bool>))
-                                             (and (is-a? a <int>)
-                                                  (is-a? b <int>))
-                                             (and (is-a? a <void>)
-                                                  (is-a? b <void>))
-                                             (om:equal? a b))))))
-
-(define-template x:variable-member-declare (lambda (o) (om:variables o)))
-
-(define-template x:out-binding-lambda (lambda (o) (filter om:provides? (om:ports o))))
-
-(define-template x:provided-port-declare (lambda (o) (filter om:provides? (om:ports o))))
-(define-template x:required-port-declare (lambda (o) (filter om:requires? (om:ports o))))
-(define-template x:async-port-declare (lambda (o) (om:ports (.behaviour o))))
-
-(define-template x:stream-member om:variables 'stream-comma-infix)
-(define-template x:method-declare code:ons)
-(define-template x:function-declare code:functions)
-
-;; header-system
-
-(define-template x:meta-child code:instances 'meta-child-infix)
 (define-method (code:instances (o <component>))
   '())
 (define-method (code:instances (o <system>))
   (om:instances o))
 
-(define-template x:include-guard (lambda (o) (if (model2file) o "")))
-(define-template x:endif (lambda (o) (if (model2file) o "")))
-
-(define-template x:component-include (if (model2file) om:instances
-                                         (lambda (o) (filter (disjoin (compose (is? <foreign>) .type)
-                                                                      (conjoin om:imported? (lambda (i) (not (equal? (source-file o)
-                                                                                                                     (source-file (.type i)))))))
-                                                             (om:instances o)))))
-
-(define-template x:provided-port-reference-declare (lambda (o) (filter om:provides? (om:ports o))))
-(define-template x:required-port-reference-declare (lambda (o) (filter om:requires? (om:ports o))))
-
-(define-template x:injected-instance-declare code:injected-instances-system)
-(define-template x:injected-binding-declare injected-bindings)
-(define-template x:non-injected-instance-declare non-injected-instances)
-(define-template x:system-rank ast:provided)
-
-(define-template x:type code:x:type)
-(define-method (ast:scope+name-:: (o <scope.name>))
-  (string-join (map symbol->string (om:scope+name o)) "::"))
-(define-method (code:x:type (o <bind>))
-  ((compose ast:scope+name-:: .type (cut om:instance (ast:model-scope) <>) injected-instance-name) o))
-
-(define-method (code:x:type (o <instance>))
-  (ast:scope+name-:: (.type o)))
-
-(define-template x:name code:x:name)
-(define-method (code:x:name (o <bind>))
-  (injected-instance-name o))
-
-(define-method (ast:scope+name (o <instance>))
-  ((compose ast:scope+name (cut om:component (ast:model-scope) <>)) o))
-
-;; source-system
-(define-template x:meta-child om:instances 'meta-child-infix)
-(define-template x:injected-instance-system-initializer code:injected-instances-system)
-(define-template x:injected-instance-initializer code:injected-instances)
-
-(define-method (code:injected-instances-system (o <system>))
-  (if (null? (injected-bindings o)) ""
-      o))
-
-(define-method (code:injected-instances (o <system>))
-  (if (null? (injected-bindings o)) ""
-      (injected-instances o)))
-
-(define-method (code:port-name (o <instance>)) ;; MORTAL SIN HERE!!?
-  (.name (om:port (om:component (ast:model-scope) o))))
-
-(define-template x:component-port code:component-port)
-(define-template x:provided-port-reference-initializer ast:provided)
-(define-template x:required-port-reference-initializer ast:required)
 (define-template x:non-injected-instance-initializer non-injected-instances)
 (define-template x:injected-binding-initializer injected-bindings)
 (define-template x:instance-initializer om:instances)
 (define-template x:bind-connect code:non-injected-bindings)
-
-(define-template x:constructor-meta-initializer non-injected-instances)
-(define-template x:shell-provided-meta-initializer ast:provided)
-(define-template x:shell-required-meta-initializer ast:required)
-(define-template x:injected-instance-meta-initializer injected-instances)
-(define-template x:non-injected-instance-meta-initializer non-injected-instances)
-
-(define-template x:dzn-locator code:dzn-locator)
-
-(define-template x:header- (lambda (o) (filter (is? <interface>) (.elements o))))
-(define-template x:header (lambda (o) (topological-sort (filter (negate (disjoin (is? <type>) (is? <interface>))) (.elements o)))))
-(define-template x:source (lambda (o) (topological-sort (filter (negate (is? <type>)) (.elements o)))))
-
-;; shell-header-system
-;;;;(define-template x:non-injected-instance-reference-declare non-injected-instances)
-(define-template x:provided-port-instance-declare (lambda (o) (filter om:provides? (om:ports o))))
-(define-template x:required-port-instance-declare (lambda (o) (filter om:requires? (om:ports o))))
-
-;; shell-source-system
-(define-template x:instance-meta-initializer identity)
-(define-template x:shell-provided-in ast:provided-in-triggers)
-(define-template x:shell-required-out ast:required-out-triggers)
-(define-template x:shell-provided-out ast:provided-out-triggers)
-(define-template x:shell-required-in ast:required-in-triggers)
-(define-template x:capture-list identity)
-(define-template x:capture code:capture-arguments 'capture-prefix)
-(define-template x:shell-non-injected-instance-meta non-injected-instances)
-
-(define-method (code:capture-arguments (o <trigger>))
-  (map .name (filter (negate om:out-or-inout?) (ast:formals o))))
-
-(define-method (ast:other-direction (o <event>))
-  (assoc-ref `((in . out)
-               (out . in))
-             (.direction o)))
-
-(define-method (ast:other-direction (o <trigger>))
-  ((compose ast:other-direction .event) o))
-
-(define-template x:instance-name code:instance-name)
-
-(define-method (code:instance-name (o <trigger>)) ;; MORTAL SIN HERE!!?
-  ((compose code:instance-name (cut .port (ast:model-scope) <>)) o))
-
-(define-method (code:instance-name (o <port>)) ;; MORTAL SIN HERE!!?
-  (.name (om:instance (ast:model-scope) o)))
-
-(define-method (code:instance-name (o <bind>))
-  (ast:instance-name o))
-
-(define-method (code:instance-name (o <binding>))
-  (ast:instance-name o))
-
-(define-template x:instance-port-name code:instance-port-name)
-(define-method (code:instance-port-name (o <trigger>)) ;; MORTAL SIN HERE!!?
-  ((compose code:instance-port-name (cut .port (ast:model-scope) <>)) o))
-(define-method (code:instance-port-name (o <port>)) ;; MORTAL SIN HERE!!?
-  (let* ((bind (om:port-bind (ast:model-scope) o))
-         (instance-bind (om:instance-binding? bind)))
-    (.port.name instance-bind)))
-
-;; foreign-header-component
-;;(define-template x:pure-virtual-method-declare code:syntesize-ons)
-(define-template x:pure-virtual-method-declare ast:in-triggers)
-(define-template x:declare-method code:trigger)
-(define-template x:declare-pure-virtual-method identity)
-
-(define-method (trigger->on (o <trigger>))
-  (make <on> #:triggers (make <triggers> #:elements (list o)) #:statement (make <compound>)))
-
-(define-method (code:syntesize-ons (o <component>))
-  (map trigger->on (ast:in-triggers o)))
-
-(define-method (code:dzn-locator (o <instance>)) ;; MORTAL SIN HERE!!?
-  (let* ((model (ast:model-scope)))
-    (if (null? (injected-bindings model)) ""
-        "_local")))
-
-(define-method (code:component-port (o <port>)) ;; MORTAL SIN HERE!!?
-  (let* ((model (ast:model-scope))
-         (bind (om:port-bind model o)))
-    (om:instance-binding? bind)))
-
-(define-method (code:non-injected-bindings (o <system>))
-  (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) o))))
 
 (define-template x:bind-provided code:bind-provided)
 (define-template x:bind-required code:bind-required)
@@ -1030,6 +629,7 @@
 
 (define-template x:system-port-connect (lambda (o) (filter (negate om:port-bind?) ((compose .elements .bindings) o))))
 
+(define debug? (command-line:get 'debug #f))
 ;; main-component
 (define code:reply-scope+name ast:scope+name)
 ;; reply-type-name-{int,bool} do not work not with /* file-name */ in generated main-component
@@ -1057,61 +657,6 @@
 (define-method (ast:out-triggers-out-events (o <component-model>))
   (filter (compose om:out? .event) (ast:out-triggers o)))
 
-(define-template x:reply-type-name code:reply-scope+name)
-(define-template x:main-out-arg-define code:main-out-arg-define)
-(define-template x:main-out-arg-define-formal code:main-out-arg-define-formal 'formal-infix)
-(define-template x:main-out-arg-define-formal-int identity)
-(define-template x:main-out-arg code:main-out-arg 'argument-infix)
-
-(define-method (code:main-out-arg-define (o <trigger>))
-  (let ((formals ((compose .elements .formals) o)))
-    (map (lambda (f i) (clone f #:name i))
-         formals (iota (length formals)))))
-
-(define-method (code:main-out-arg-define-formal (o <formal>)) ;; MORTAL SIN HERE!!?
-  (let ((type ((compose .value .type) o)))
-    (if (not (om:out-or-inout? o)) ""
-        (if (equal? type 'int) (x:main-out-arg-define-formal-int o)
-            "/*FIXME*/"))))
-
-(define-method (code:main-out-arg (o <trigger>))
-  (let ((formals ((compose .elements .formals) o)))
-    (map (lambda (f i) (if (not (om:out-or-inout? f)) (clone f #:name i)
-                           (clone f #:name (string-append "_" (number->string i)))))
-         formals (iota (length formals)))))
-
-(define-template x:main-port-connect-in ast:out-triggers-in-events)
-(define-template x:main-port-connect-out ast:out-triggers-out-events)
-(define-template x:main-provided-port-init ast:provided)
-(define-template x:main-required-port-init ast:required)
-
-(define-template x:main-event-map-void ast:void-in-triggers 'event-map-prefix)
-(define-template x:main-event-map-valued ast:valued-in-triggers 'event-map-prefix)
-(define-template x:main-event-map-flush (if (and #f asd?) (const '()) ast:required) 'event-map-prefix)
-(define-template x:main-event-map-flush-asd (if (and #f asd?) ast:required (const '())) 'event-map-prefix)
-
-(define-template x:main-event-map-match-return code:main-event-map-match-return)
-(define-method (code:main-event-map-match-return (o <trigger>))
-  (if (om:in? (.event o)) o ""))
-
-(define-template x:main-required-port-name ast:required 'main-port-name-infix)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   ast accessors; must return an ast type or a: string, number or symbol   ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define-method (ast:req-events (o <component>))
-  (append-map (lambda (port)
-                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
-                     (filter (conjoin om:in? (compose (cut eq? 'req <>) .name)) (om:events port))))
-              (om:ports (.behaviour o))))
-
-(define-method (ast:clr-events (o <component>))
-  (append-map (lambda (port)
-                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
-                     (filter (conjoin om:in? (compose (cut eq? 'clr <>) .name)) (om:events port))))
-              (om:ports (.behaviour o))))
-
 (define-method (code:functions (o <component>))
   (om:functions o))
 
@@ -1120,16 +665,6 @@
     (if (not behaviour) '()
         ((compose .elements .statement) behaviour))))
 
-(define-template x:arguments-n ast:argument_n 'argument-infix <expression>)
-(define-template x:prefix-arguments-n ast:argument_n 'argument-prefix <expression>)
-
-(define-template x:argument_n identity)
-
-(define-method (ast:argument_n (o <trigger>))
-  (map
-   (lambda (f i) (clone f #:name (string-append "_"  (number->string i))))
-   (ast:formals o)
-   (iota (length (ast:formals o)) 1 1)))
 
 (define-template x:arguments ast:arguments 'argument-infix <expression>)
 
@@ -1175,7 +710,7 @@
 (define-method (code:return (o <on>))
   ((compose .type .signature .event code:trigger) o))
 
-(define (code:dump-file file-name module)
+(define (code:dump-file file-name module) ;; FIXME: c++ (c-like?) only
   (dump-output (string-append file-name ".hh")
                (lambda ()
                  (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
@@ -1185,39 +720,6 @@
                    (lambda ()
                      (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
                        (x:pand 'source-root (module-ref module 'root) module))))))
-
-(define (code:animate-file file-name module)
-  (ast:set-model-scope
-   (module-ref module 'model)
-   ;; use old animate+component.js.scm for
-   ;; services/scripts/verification.dzn, daemon/lib/Controller.dzn
-   ;; until regression test passes
-   (cond  ((member file-name '(component.cc.scm))
-           (x:pand 'source-component (module-ref module 'model) module))
-          ((member file-name '(component.hh.scm))
-           (x:pand 'header-component (module-ref module 'model) module))
-          ((member file-name '(interface.hh.scm))
-           (x:pand 'header-interface (module-ref module 'model) module))
-          ((member file-name '(system.cc.scm))
-           (x:pand 'source-system (module-ref module 'model) module))
-          ((member file-name '(system.hh.scm))
-           (x:pand 'header-system (module-ref module 'model) module))
-          ((member file-name '(shell.hh.scm))
-           (x:pand 'shell-header-system (module-ref module 'model) module))
-          ((member file-name '(shell.cc.scm))
-           (x:pand 'shell-source-system (module-ref module 'model) module))
-          ((member file-name '(foreign.hh.scm))
-           (x:pand 'foreign-header-component (module-ref module 'model) module))
-          ((member file-name '(foreign.cc.scm))
-           (x:pand 'foreign-source-component (module-ref module 'model) module))
-          ((member file-name '(main.hh.scm))
-           #t)
-          ((member file-name '(main.cc.scm))
-           (x:pand 'main-component (module-ref module 'model) module))
-          ((member file-name '(glue-top-system.hh.scm))
-           (x:pand 'glue-top-header-system (module-ref module 'model) module))
-          (else (animate-file file-name module)))))
-
 
 (define-method (code:file-name (o <port>))
   (code:file-name (.type o)))

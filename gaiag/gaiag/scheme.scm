@@ -29,13 +29,11 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
 
-  #:use-module (gaiag code)
   #:use-module (gaiag animate-code)
+  #:use-module (gaiag code)
 
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
-
-  #:export (ast->))
+  #:use-module (gaiag reader))
 
 (define (ast-> ast)
   (parameterize ((code:indenter #f) (sep " ") (join (->join " "))) (ast:code ast)))

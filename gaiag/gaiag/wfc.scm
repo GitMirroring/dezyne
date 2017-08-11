@@ -42,6 +42,7 @@
   #:use-module (gaiag misc)
   #:use-module (gaiag reader)
   #:use-module (gaiag resolve)
+  #:use-module (gaiag util)
 
   #:export (
            ast:wfc

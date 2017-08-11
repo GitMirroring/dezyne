@@ -37,15 +37,13 @@
   #:use-module (gaiag om)
   #:use-module (gaiag util)
   #:use-module (gaiag animate)
+  #:use-module (gaiag animate-code)
   #:use-module (gaiag code)
   #:use-module (gaiag command-line)
   #:use-module (gaiag indent)
   #:use-module (gaiag misc)
   #:use-module (gaiag reader)
-  #:use-module (gaiag resolve)
-;;  #:use-module (gaiag wfc)
-
-  #:export (ast->))
+  #:use-module (gaiag resolve))
 
 (define (ast-> ast)
   (let ((om ((om:register code:om #t) ast)))

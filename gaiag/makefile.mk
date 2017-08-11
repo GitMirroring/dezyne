@@ -29,6 +29,7 @@ SRCS := $(shell $(GIT_LS_FILES)\
   $(CDIR)/gash/*.scm\
   $(CDIR)/language/dezyne/*.scm\
   $(CDIR)/gaiag/*.scm\
+  $(CDIR)/gaiag/deprecated/*.scm\
   $(CDIR)/gaiag/commands/*.scm\
 )
 

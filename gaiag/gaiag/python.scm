@@ -17,17 +17,11 @@
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gaiag python)
-  #:use-module (ice-9 pretty-print)
-
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag om)
-
+  #:use-module (gaiag animate-code)
   #:use-module (gaiag code)
-  #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
-
-  #:export (ast->))
+  #:use-module (gaiag reader))
 
 (define (ast-> ast)
   (parameterize ((code:indenter #f)) (ast:code ast)))

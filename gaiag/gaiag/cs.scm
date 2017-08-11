@@ -33,7 +33,6 @@
 
   #:use-module (gaiag animate)
   #:use-module (gaiag animate-code)
-  #:use-module (gaiag code)
   #:use-module (gaiag misc)
   #:use-module (gaiag reader)
 

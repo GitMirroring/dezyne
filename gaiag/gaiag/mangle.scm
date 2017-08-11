@@ -30,6 +30,7 @@
   #:use-module (gaiag misc)
   #:use-module (gaiag reader)
   #:use-module (gaiag resolve)
+  #:use-module (gaiag util)
 
   #:export (ast-> om:mangle mangle-prefix-alist))
 
@@ -41,7 +42,7 @@
       (list (symbol->keyword name)
             ((prefix p) element)
             element)))
-  (om:clone o mangle-name-initializer))
+  (clone o mangle-name-initializer))
 
 (define-method (mangle (o <port>))
   (make <port>
@@ -81,6 +82,6 @@
 
 (define ((prefix p) name) (if p (symbol-append p '_ name) name))
 
-(define (om:mangle ast) (om:map* mangle ast))
+(define (om:mangle ast) (om:map mangle ast))
 (define (ast-> ast)
   ((compose om->list om:mangle ast:resolve ast->om) ast))
