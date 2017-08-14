@@ -1,9 +1,10 @@
 dzn_require = typeof (require) !== 'undefined' ? require : function () {return {};};
 dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');
 dzn = dzn || {};
+#x:javascript-namespace-setup
 #x:interface-include
 
-dzn.#x:model-name  = function (locator, meta) {
+dzn.#x:type-name  = function (locator, meta) {
   this._dzn = {};
   this._dzn.locator = locator;
   this._dzn.rt = locator.get(new dzn.runtime());
@@ -15,6 +16,7 @@ dzn.#x:model-name  = function (locator, meta) {
 
   #x:enum-definer
   #x:variable-member-initializer
+  #x:reply-member-initializer
   #x:injected-member-initializer
   #x:provided-member-initializer
   #x:required-member-initializer

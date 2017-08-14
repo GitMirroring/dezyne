@@ -1,1 +1,1 @@
-this.#.name #x:=expression;
+this.#.name  = #x:=expression;

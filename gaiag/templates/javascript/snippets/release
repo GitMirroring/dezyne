@@ -1,4 +1,0 @@
-//this.out_#port ();
-this.out_#port  && this.out_#port ();
-this.out_#port  = undefined;
-this._dzn.locator.get (new dzn.pump()).release(this.#port);

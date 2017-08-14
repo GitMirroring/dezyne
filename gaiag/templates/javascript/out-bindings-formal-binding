@@ -1,1 +1,1 @@
-../c++/out-bindings-formal-binding
+#.name .value = this.#.variable.name;

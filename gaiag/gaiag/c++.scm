@@ -62,72 +62,14 @@
 (define-method (c++:name (o <bind>))  ;; FIXME
   (injected-instance-name o))
 
-(define-method (code:injected-instances-system (o <system>))
-  (if (null? (injected-bindings o)) ""
-      o))
-
-(define-method (code:injected-instances (o <system>))
-  (if (null? (injected-bindings o)) ""
-      (injected-instances o)))
-
-(define-method (code:port-name (o <instance>)) ;; MORTAL SIN HERE!!?
-  (.name (om:port (om:component (ast:model-scope) o))))
-
 (define-method (code:capture-arguments (o <trigger>))
   (map .name (filter (negate om:out-or-inout?) (code:formals o))))
-
-
-(define-method (c++:port-type (o <trigger>))
-  ((->join "::") (code:scope+name ((compose .type .port) o)))) ;; MORTAL SIN HERE!!?
-
-(define-method (c++:port-type (o <port>))  ;; MORTAL SIN HERE!!?
-  (cond ((member (language) '(javascript))
-         ((->join ".") (code:scope+name (.type o))))
-        ((member (language) '(c++ c++03 c++-msvc11))
-         ((->join "::") (code:scope+name (.type o))))))
 
 (define-method (c++:formal-type (o <formal>)) o)
 (define-method (c++:formal-type (o <port>)) ((compose .elements .formals .signature car om:events) o))
 
 (define-method (c++:return-type (o <trigger>)) ((compose .type .signature .event) o))
 (define-method (c++:return-type (o <function>)) ((compose .type .signature) o))
-
-(define-method (c++:type-name (o <bind>))
-  ((compose c++:type-name .type (cut om:instance (ast:model-scope) <>) injected-instance-name) o))
-
-(define-method (c++:type-name (o <enum-field>))
-  (code:scope+name o))
-
-(define-method (c++:type-name (o <literal>))
-  (map code:->string (cons (symbol) (code:scope+name o))))
-
-(define-method (c++:type-name o)
-  (let* ((type (or (as o <model>) (as o <type>) (.type o)))
-         (scope+name (code:scope+name type)))
-    (map code:->string
-         (match type
-           (($ <enum>) (cons (symbol) (append scope+name (list 'type))))
-           (($ <extern>) (list (.value type)))
-           ((or ($ <bool>) ($ <int>) ($ <void>)) scope+name)
-           (_ (cons (symbol) scope+name))))))
-
-(define-method (c++:type-name (o <event>))
-  ((compose c++:type-name .type .signature) o))
-
-(define-method (c++:type-name (o <enum-field>))
-  (map code:->string (cons (symbol) (code:scope+name o))))
-
-(define-method (c++:type-name (o <literal>))
-  (map code:->string (cons (symbol) (code:scope+name o))))
-
-(define (c++:scoped-model-name o)
-  (let* ((scope+name (.name o))
-         (scope (map symbol->string (.scope scope+name)))
-         (name (symbol->string (.name scope+name))))
-    (string-join (append scope (list name)) "_")))
-
-(define-method (code:port-name (o <on>))
-  ((compose .port.name car .elements .triggers) o))
 
 (define (c++:pump-include o) (if (pair? (om:ports (.behaviour o))) "#include <dzn/pump.hh>" ""))
 
@@ -152,14 +94,6 @@
     (if (null? (injected-bindings model)) ""
         "_local")))
 
-(define-method (code:component-port (o <port>)) ;; MORTAL SIN HERE!!?
-  (let* ((model (ast:model-scope))
-         (bind (om:port-bind model o)))
-    (om:instance-binding? bind)))
-
-(define-method (code:non-injected-bindings (o <system>))
-  (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) o))))
-
 (define-method (code:main-out-arg-define (o <trigger>))
   (let ((formals ((compose .elements .formals) o)))
     (map (lambda (f i) (clone f #:name i))
@@ -171,15 +105,6 @@
         (if (equal? type 'int) o
             "/*FIXME*/"))))
 
-(define-method (code:main-out-arg (o <trigger>))
-  (let ((formals ((compose .elements .formals) o)))
-    (map (lambda (f i) (if (not (om:out-or-inout? f)) (clone f #:name i)
-                           (clone f #:name (string-append "_" (number->string i)))))
-         formals (iota (length formals)))))
-
-(define-method (code:main-event-map-match-return (o <trigger>))
-  (if (om:in? (.event o)) o ""))
-
 (define-method (c++:argument_n (o <trigger>))
   (map
    (lambda (f i) (clone f #:name (string-append "_"  (number->string i))))
@@ -189,12 +114,11 @@
 
 ;;; templates
 
-(define-template x:port-type c++:port-type)
 (define-template x:name c++:name)
 (define-template x:declare-method code:trigger)
 (define-template x:formal-type c++:formal-type)
 (define-template x:return-type c++:return-type #f <type>)
-(define-template x:type-name c++:type-name 'type-infix)
+;;;(define-template x:c++:type-name c++:type-name 'type-infix) ;; JUNKME
 (define-template x:calls ast:void-in-triggers)
 (define-template x:rcalls ast:valued-in-triggers)
 (define-template x:prefix-formals-type code:formals 'formal-prefix)
@@ -203,22 +127,12 @@
 (define-template x:direction ast:direction)
 (define-template x:variable-expression (compose code:expression .expression) #f <expression>)
 
-(define-template x:scoped-model-name c++:scoped-model-name)
-
-(define-template x:scope (compose .scope .name) 'name-infix)
-
-(define-template x:scope-prefix (compose .scope .name) 'name-suffix)
-
-(define-template x:port-name code:port-name)
-
 (define-template x:open-namespace (lambda (o) (map (lambda (x) (string-join (list " namespace " (symbol->string x) " {") "")) (om:scope o))))
 (define-template x:close-namespace (lambda (o) (map (lambda (x) "}\n") (om:scope o))))
 
 (define-template x:meta identity)
 (define-template x:ports-meta-list (lambda (o) (filter om:requires? (om:ports o))) 'meta-infix)
 (define-template x:check-bindings-list (lambda (o) ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports o)))))
-
-(define-template x:interface-include (lambda (o) (map (lambda (p) (string-append "#include \"" (code:file-name p) ".hh\"\n")) (om:ports o))))
 
 (define-template x:global-enum-definer (lambda (o) (om:enums)))
 (define-template x:check-in-binding (lambda (o) (filter om:in? (om:events o))))
@@ -233,8 +147,6 @@
 (define-template x:string-to-enum c++:string->enum)
 
 (define-template x:asd-voidreply (lambda (o) (if asd? "__ASD_VoidReply, " "")))
-
-(define-template x:async-member-initializer (lambda (o) (om:ports (.behaviour o))))
 
 (define-template x:scoped-port-name (lambda (port) (let ((scope-name ((compose .name .type) port))) (append (.scope scope-name) (list (.name scope-name))))) 'type-infix)
 
@@ -251,15 +163,8 @@
 (define-template x:method-declare code:ons)
 (define-template x:function-declare code:functions)
 
-(define-template x:meta-child code:instances 'meta-child-infix)
 (define-template x:include-guard (lambda (o) (if (model2file) o "")))
 (define-template x:endif (lambda (o) (if (model2file) o "")))
-
-(define-template x:component-include (if (model2file) om:instances
-                                         (lambda (o) (filter (disjoin (compose (is? <foreign>) .type)
-                                                                      (conjoin om:imported? (lambda (i) (not (equal? (source-file o)
-                                                                                                                     (source-file (.type i)))))))
-                                                             (om:instances o)))))
 
 (define-template x:provided-port-reference-declare (lambda (o) (filter om:provides? (om:ports o))))
 (define-template x:required-port-reference-declare (lambda (o) (filter om:requires? (om:ports o))))
@@ -270,12 +175,6 @@
 (define-template x:system-rank ast:provided)
 
 ;; source-system
-(define-template x:meta-child om:instances 'meta-child-infix)
-(define-template x:injected-instance-system-initializer code:injected-instances-system)
-(define-template x:injected-instance-initializer code:injected-instances)
-
-
-(define-template x:component-port code:component-port)
 (define-template x:provided-port-reference-initializer ast:provided)
 (define-template x:required-port-reference-initializer ast:required)
 
@@ -314,30 +213,16 @@
 (define-template x:capture code:capture-arguments 'capture-prefix)
 (define-template x:shell-non-injected-instance-meta non-injected-instances)
 
-(define-template x:instance-name code:instance-name)
-(define-template x:instance-port-name code:instance-port-name)
-
 ;; foreign-header-component
 (define-template x:pure-virtual-method-declare ast:in-triggers)
 (define-template x:declare-method code:trigger)
 (define-template x:declare-pure-virtual-method identity)
 
+;; main
 (define-template x:main-out-arg-define code:main-out-arg-define)
 (define-template x:main-out-arg-define-formal identity)
-(define-template x:main-out-arg code:main-out-arg 'argument-infix)
 
-(define-template x:main-port-connect-in ast:out-triggers-in-events)
-(define-template x:main-port-connect-out ast:out-triggers-out-events)
-(define-template x:main-provided-port-init ast:provided)
-(define-template x:main-required-port-init ast:required)
-
-(define-template x:main-event-map-void ast:void-in-triggers 'event-map-prefix)
-(define-template x:main-event-map-valued ast:valued-in-triggers 'event-map-prefix)
-(define-template x:main-event-map-flush (if (and #f asd?) (const '()) ast:required) 'event-map-prefix)
 (define-template x:main-event-map-flush-asd (if (and #f asd?) ast:required (const '())) 'event-map-prefix)
-
-(define-template x:main-event-map-match-return code:main-event-map-match-return)
-(define-template x:main-required-port-name ast:required 'main-port-name-infix)
 
 (define-template x:prefix-arguments-n c++:argument_n 'argument-prefix <expression>)
 

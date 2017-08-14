@@ -1143,13 +1143,15 @@
    ;; use old animate+component.js.scm for
    ;; services/scripts/verification.dzn, daemon/lib/Controller.dzn
    ;; until regression test passes
-   (cond  ((member file-name '(component.cc.scm))
+   (cond  ((member file-name '(component.cc.scm component.js.scm))
            (x:pand 'source-component (module-ref module 'model) module))
           ((member file-name '(component.hh.scm))
            (x:pand 'header-component (module-ref module 'model) module))
+          ((member file-name '(interface.js.scm))
+           (x:pand 'source-interface (module-ref module 'model) module))
           ((member file-name '(interface.hh.scm))
            (x:pand 'header-interface (module-ref module 'model) module))
-          ((member file-name '(system.cc.scm))
+          ((member file-name '(system.cc.scm system.js.scm))
            (x:pand 'source-system (module-ref module 'model) module))
           ((member file-name '(system.hh.scm))
            (x:pand 'header-system (module-ref module 'model) module))
@@ -1163,7 +1165,7 @@
            (x:pand 'foreign-source-component (module-ref module 'model) module))
           ((member file-name '(main.hh.scm))
            #t)
-          ((member file-name '(main.cc.scm))
+          ((member file-name '(main.cc.scm main.js.scm))
            (x:pand 'main-component (module-ref module 'model) module))
           ((member file-name '(glue-top-system.hh.scm))
            (x:pand 'glue-top-header-system (module-ref module 'model) module))

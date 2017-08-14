@@ -32,28 +32,20 @@
   #:use-module (gaiag deprecated code)
   #:use-module (gaiag misc)
   #:use-module (gaiag reader)
-
-  #:export (ast->))
+  #:use-module (gaiag xpand))
 
 (define ast-> ast:code)
 
-(define (javascript:namespace model)
-  ((->join ".") (cons 'dzn (om:scope model))))
+(define-template x:main-provided-flush-init om:provided)
+(define-template x:main-required-flush-init om:required)
 
-(define (javascript:preamble model)
+(define (javascript:namespace-setup o)
   (->string
-   "dzn_require = typeof (require) !== 'undefined' ? require : function () {return {};};\n"
-   "dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');\n"
-   (let loop ((todo (cons 'dzn (om:scope model))) (namespace '()))
+   (let loop ((todo (cons 'dzn (om:scope o))) (namespace '()))
      (if (null? todo) '()
          (let* ((namespace (append namespace (list (car todo))))
-                (o ((->join ".") namespace)))
-           (append (list o " = " o " || {};\n" )
+                (x ((->join ".") namespace)))
+           (append (list x " = " x " || {};\n" )
                    (loop (cdr todo) namespace)))))))
 
-(define (javascript:out-param-list model formal-objects)
-  ((->join ",")
-   (map (lambda (f i)
-          (if (member (.direction f) '(inout out))
-              "{value:0}" i))
-        formal-objects (iota (length formal-objects)))))
+(define-template x:javascript-namespace-setup javascript:namespace-setup)

@@ -1,1 +1,2 @@
-../c++/statement-out-bindings
+this.out_#.port.name  = function () {
+#x:out-bindings };

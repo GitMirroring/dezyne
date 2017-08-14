@@ -1,1 +1,1 @@
-var #.name #x:=expression;
+var #.name  = {value:#x:=expression};

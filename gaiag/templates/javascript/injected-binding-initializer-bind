@@ -1,1 +1,1 @@
-.set(this.#ast:instance-name)
+.set(this.#x:instance-name)

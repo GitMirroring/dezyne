@@ -1,1 +1,1 @@
-#.variable.name  = #x:expression;
+#x:variable-name  = #x:expression;

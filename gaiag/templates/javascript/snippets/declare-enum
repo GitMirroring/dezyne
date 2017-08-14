@@ -1,5 +1,0 @@
-
-this.#name  = {
-   #((->join ", ")
-     (map (lambda (x) (list x ": '" name "_" x "'")) fields))
-};

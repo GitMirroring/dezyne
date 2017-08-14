@@ -1,1 +1,1 @@
-dzn.extend (dzn, dzn_require (__dirname + '/#x:instance-type '));
+dzn.extend (dzn, dzn_require (__dirname + '/#x:type-name '));

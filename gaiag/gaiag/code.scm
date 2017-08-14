@@ -55,10 +55,13 @@
 
             code:expression
             code:trigger
+            code:injected-instances
             code:non-injected-bindings
+            code:injected-instances-system
             model2file
             code:ons
             code:functions
+            code:port-name
             code:instance-port-name
             code:instances
             code:reply-type
@@ -87,9 +90,36 @@
             pipe))
 
 ;;; ast extension
+(define-class <argument> (<named> <expression>)
+  (type #:getter .type #:init-form #f #:init-keyword #:type)
+  (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
+
 (define-class <enum-field> (<ast>)
   (type #:getter .type #:init-form #f #:init-keyword #:type)
   (field #:getter .field #:init-value #f #:init-keyword #:field))
+
+(define-class <file-name> (<ast>)
+  (name #:getter .name #:init-form #f #:init-keyword #:name))
+
+(define-class <model-scope> (<ast>))
+
+(define-class <out-formal> (<variable>))
+
+(define-class <local> (<variable>))
+
+(define-method (code:class-member? (o <variable>)) ; MORTAL SIN HERE!!?
+  ;; FIXME: is (.variable o) a member?
+  ;; checking name (as done now) is not good enough
+  ;; we schould check .variable pointer equality
+  ;; that does not work, however; someone makes a copy is clone
+  ;;(memq o (om:variables (ast:model-scope)))
+  (memq (.name o) (map .name (om:variables (ast:model-scope)))))
+
+(define-method (code:port-type (o <trigger>))
+  (code:scope+name ((compose .type .port) o)))
+
+(define-method (code:port-type (o <port>))
+  (code:scope+name (.type o)))
 
 (define-method (code:scope+name o)
   (om:scope+name o))
@@ -115,6 +145,17 @@
 (define-method (code:scope+name (o <bind>))
   ((compose code:scope+name .type (cut om:instance (ast:model-scope) <>) injected-instance-name) o))
 
+(define-method (code:non-injected-bindings (o <system>))
+  (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) o))))
+
+(define-method (code:injected-instances-system (o <system>))
+  (if (null? (injected-bindings o)) ""
+      o))
+
+(define-method (code:injected-instances (o <system>))
+  (if (null? (injected-bindings o)) ""
+      (injected-instances o)))
+
 ;;; code:ast querying
 (define (code:reply-types o)
   (let ((lst (om:reply-types o)))
@@ -125,6 +166,12 @@
                                              (and (is-a? a <void>)
                                                   (is-a? b <void>))
                                              (om:equal? a b))))))
+
+(define-method (code:port-name (o <on>))
+  ((compose .port.name car .elements .triggers) o))
+
+(define-method (code:port-name (o <instance>))
+  (.name (om:port (om:component (ast:model-scope) o))))
 
 (define-method (code:port-name (o <bind>))
   (let* ((model (ast:model-scope))
@@ -178,14 +225,33 @@
 (define-method (code:return (o <on>))
   ((compose .type .signature .event code:trigger) o))
 
-(define-method (code:arguments (o <trigger>))
-  (map .name (code:formals o)))
+(define-method (code:variable->argument (o <variable>) (f <formal>))
+  (if (or (code:class-member? o)
+          (eq? (.direction f) 'in)) o
+      (make <argument> #:name (.name o) #:type (.type o))))
+
+(define-method (code:variable->argument (o <var>) (f <formal>))
+  (code:variable->argument (.variable o) f))
+
+(define-method (code:variable->argument (o <formal>) (f <formal>))
+  (if (eq? (.direction f) 'in) o
+      (make <argument> #:name (.name o) #:type (.type o) #:direction (.direction o))))
+
+(define-method (code:variable->argument o f)
+  o)
 
 (define-method (code:arguments (o <call>))
-  ((compose .elements .arguments) o))
+  (map code:variable->argument
+       ((compose .elements .arguments) o)
+       ((compose .elements .formals .signature .function) o)))
 
 (define-method (code:arguments (o <action>))
-  ((compose .elements .arguments) o))
+  (map code:variable->argument
+       ((compose .elements .arguments) o)
+       ((compose .elements .formals .signature .event) o)))
+
+(define-method (code:arguments (o <trigger>))
+  (map .name (code:formals o)))
 
 (define-method (code:out-argument (o <trigger>))
   (filter om:out-or-inout? (code:formals o)))
@@ -209,14 +275,6 @@
            (clone formal #:name name))
          (map .name ((compose .elements .formals) trigger))
          ((compose .elements .formals .signature) event))))
-
-(define-method (code:field-expression (o <field>))
-  (string-join
-   (cons "" (map symbol->string (append (code:scope+name ((compose .type .variable) o))
-                                        (list (.field o)))))
-   "::"))
-
-
 
 (define-method (code:assign-reply (o <reply>))
   (let ((expression (.expression o)))
@@ -288,6 +346,10 @@
 (define-method (code:bind-required (o <bind>))
   ((compose cdr code:bind-provided-required) o))
 
+(define-method (code:component-port (o <port>)) ;; MORTAL SIN HERE!!?
+  (let* ((model (ast:model-scope))
+         (bind (om:port-bind model o)))
+    (om:instance-binding? bind)))
 
 (define (code:->string o)
   (match o
@@ -302,15 +364,21 @@
   (.expression o))
 
 (define-method (code:expression-expand (o <var>))
-  o)
+  (.variable o))
 
 (define-method (code:expression-expand (o <field>))
-  o)
+  (make <literal> #:type ((compose .type .variable) o) #:field (.field o)))
 
 (define-method (code:expression-expand (o <variable>))
-  o)
+  (code:variable-name o))
+
+(define-method (code:expression-expand (o <formal>))
+  (code:variable-name o))
 
 (define-method (code:expression-expand (o <reply>))
+  o)
+
+(define-method (code:expression (o <field>))
   o)
 
 (define-method (code:expression (o <and>))
@@ -326,13 +394,13 @@
   (.expression o))
 
 (define-method (code:expression (o <formal>))
-  (.name o))
+  (code:variable-name o))
 
 (define-method (code:expression (o <variable>))
-  (.name o))
+  (code:variable-name o))
 
 (define-method (code:expression (o <return>))
-  (if (or (not (.expression o)) (eq? (.expression o) *unspecified*)) ""
+  (if (or (not (.expression o)) (eq? (.expression o) *unspecified*)) ""  ; MORTAL SIN HERE!!?
           (.expression o)))
 
 (define-method (code:expression (o <var>))
@@ -347,10 +415,16 @@
 (define-method (code:expression (o <reply>))
   (.expression o))
 
+(define-class <unspecified> (<ast>))
+
+(define-method (code:unspecified)
+  (if (memq (language) '(c++ c++03 c++-msvc11)) "" ; MORTAL SIN HERE!!?
+      (make <unspecified>))) ; FIXME: or javascript: "undefined"  here?
+
 (define-method (code:=expression (o <ast>))
   (match (.expression o)
-    ((and ($ <value>) (= .value (? unspecified?))) "")
-    ((? unspecified?) "")
+    ((and ($ <value>) (= .value (? unspecified?))) (code:unspecified))
+    ((? unspecified?) (code:unspecified))
     (_ (.expression o))))
 
 (define-method (code:reply-type (o <ast>))
@@ -363,10 +437,132 @@
   (if (om:imperative? o) o
       (make <declarative-compound> #:elements o)))
 
+(define-method (code:scope.name (o <literal>))
+  (code:scope.name (.type o)))
+
+(define-method (code:scope.name (o <ast>))
+  (.name o))
+
+(define-method (code:variable-name (o <argument>))
+  o)
+
+(define-method (code:variable-name (o <variable>))
+  (cond ((memq (language) '(c++ c++03 c++-msvc11)) o) ; MORTAL SIN HERE!!?
+        ((code:class-member? o) o)
+        (else (make <local> #:name (.name o) #:type (.type o) #:expression (.expression o)))))
+
+(define-method (code:variable-name (o <formal>))
+  (cond ((memq (language) '(c++ c++03 c++-msvc11)) o) ; MORTAL SIN HERE!!?
+        ((om:out-or-inout? o) (make <out-formal> #:name (.name o) #:type (.type o)))
+        (else o)))
+
+(define-method (code:variable-name (o <ast>))
+  ((compose code:variable-name .variable) o))
+
+;; type
+(define (code:cons-empty-symbol o)
+  (if (memq (language) '(c++ c++03 c++-msvc11)) (cons (symbol) o) ; MORTAL SIN HERE!!?
+      o))
+
+(define-method (code:type-name (o <bind>))
+  ((compose code:type-name .type (cut om:instance (ast:model-scope) <>) injected-instance-name) o))
+
+(define-method (code:type-name (o <enum-field>))
+  (code:scope+name o))
+
+(define-method (code:type-name o)
+  (let* ((type (or (as o <model>) (as o <type>) (.type o)))
+         (scope+name (code:scope+name type)))
+    (map code:->string
+         (match type
+           (($ <enum>) (code:cons-empty-symbol (append scope+name (list 'type))))
+           (($ <extern>) (list (.value type)))
+           ((or ($ <bool>) ($ <int>) ($ <void>)) scope+name)
+           (_ (code:cons-empty-symbol scope+name))))))
+
+(define-method (code:type-name (o <event>))
+  ((compose code:type-name .type .signature) o))
+
+(define-method (code:type-name (o <enum-field>))
+  (map code:->string (code:cons-empty-symbol (code:scope+name o))))
+
+(define-method (code:type-name (o <literal>))
+  (map code:->string (code:cons-empty-symbol (code:scope+name o))))
+
+(define-method (code:field-expression (o <field>))
+  (map code:->string (code:cons-empty-symbol
+                      (append (code:scope+name ((compose .type .variable) o))
+                              (list (.field o))))))
+
+(define-method (code:main-out-arg (o <trigger>)) ; MORTAL SIN HERE!!?
+  (let ((formals ((compose .elements .formals) o)))
+    (map
+     (lambda (f i) (cond ((not (om:out-or-inout? f)) (clone f #:name i))
+                         ((memq (language) '(c++ c++03 c++-msvc11)) (string-append "_" (number->string i)))
+                         (else (make <out-formal> #:name i))))
+     formals (iota (length formals)))))
+
+(define-method (code:main-event-map-match-return (o <trigger>))
+  (if (om:in? (.event o)) o ""))
+
+(define-method (code:scope-type-scope o)
+  ((compose .scope code:scope.name) o))
+
+(define-method (code:scope-type-scope (o <field>))
+  ((compose code:scope-type-scope .type .variable) o))
+
+(define-method (code:scope-type-name o)
+  ((compose .name code:scope.name) o))
+
+(define-method (code:scope-type-name (o <field>))
+  ((compose code:scope-type-name .type .variable) o))
+
+;;
+
 ;;; code: generic templates
+(define-template x:async-member-initializer (lambda (o) (om:ports (.behaviour o))))
+
+(define-template x:scope (compose .scope .name) 'name-infix)
+(define-template x:scope-type-scope code:scope-type-scope 'type-infix)
+(define-template x:scope-type-name code:scope-type-name 'type-infix)
+(define-template x:scope-prefix (compose .scope .name) 'name-suffix)
+
 (define-template x:scope+name code:scope+name 'name-infix)
+(define-template x:scoped-model-name code:scope+name 'name-infix);; c++ compat, junk me
+
+(define-template x:type-name code:type-name 'type-infix)
+
+(define-template x:port-name code:port-name)
+(define-template x:port-type code:port-type 'type-infix)
+
+(define-template x:interface-include (lambda (o) (map (compose (cut make <file-name> #:name <>) code:file-name) (om:ports o))))
+
+(define-template x:component-include
+  (if (model2file) om:instances
+      (lambda (o) (filter (disjoin (compose (is? <foreign>) .type)
+                                   (conjoin om:imported? (lambda (i) (not (equal? (source-file o)
+                                                                                  (source-file (.type i)))))))
+                          (om:instances o)))))
 
 (define-template x:non-void-reply identity #f)
+
+(define-method (code:enum-literal (o <literal>))
+  (map code:->string (cons (symbol) (code:scope+name o))))
+
+(define-method (code:enum-scope (o <field>))
+  ((compose code:enum-scope .type .variable) o))
+
+(define-method (code:enum-scope (o <literal>))
+  ((compose code:enum-scope .type) o))
+
+(define-method (code:enum-scope (o <enum>))
+  (let ((scope ((compose .scope .name) o))
+        (model-scope (om:scope+name (ast:model-scope))))
+    (if (or (null? scope) (equal? scope model-scope)) (make <model-scope>)
+        o)))
+
+(define-template x:enum-literal code:enum-literal 'type-infix)
+(define-template x:enum-scope code:enum-scope 'type-infix)
 
 (define-template x:reply (lambda (o)
                            (if (is-a? o <void>)
@@ -387,7 +583,7 @@
 (define-template x:methods code:ons)
 (define-template x:functions code:functions)
 
-(define-template x:field code:field-expression)
+(define-template x:field code:field-expression 'type-infix)
 
 (define-template x:data code:data)
 
@@ -415,19 +611,11 @@
 
 (define-template x:statements .elements #f <statement>)
 
-(define-template x:member-name identity)
-
-(define-template x:variable-name (lambda (o)
-                                   ;; FIXME: is (.variable o) a member?
-                                   ;; checking name (as done now) is not good enough
-                                   ;; we schould check .variable pointer equality
-                                   ;; that does not work, however; someone makes a copy is clone
-                                   ;; (memq o (om:variables (ast:model-scope))
-                                   (if (memq (.variable.name o) (map .name (om:variables (ast:model-scope))))
-                                       (x:member-name (.variable o))
-                                       (symbol->string (.variable.name o)))))
+(define-template x:variable-name code:variable-name)
 
 (define-template x:assign-reply code:assign-reply)
+
+(define-template x:meta-child om:instances 'meta-child-infix)
 
 (define-template x:block identity)
 (define-template x:port-release (lambda (o) (if (om:blocking-compound? (ast:model-scope)) o "")))
@@ -449,13 +637,20 @@
 
 (define-template x:enum-field-definer (lambda (o) (map (symbol->enum-field o) ((compose .elements .fields) o))) 'comma-infix)
 
-(define-template x:variable-member-initializer (lambda (o) (om:variables o)))
+(define-template x:variable-member-initializer om:variables)
+
+(define-template x:reply-member-initializer code:reply-types)
 
 (define-template x:injected-member-initializer (lambda (o) (filter .injected (om:ports o))))
 
 (define-template x:provided-member-initializer (lambda (o) (filter om:provides? (om:ports o))))
 
 (define-template x:required-member-initializer (lambda (o) (filter (conjoin (negate .injected) om:requires?) (om:ports o))))
+
+(define-template x:instance-name code:instance-name)
+(define-template x:instance-port-name code:instance-port-name)
+
+(define-template x:injected-instance-initializer code:injected-instances)
 
 (define-template x:non-injected-instance-initializer non-injected-instances)
 (define-template x:injected-binding-initializer injected-bindings)
@@ -465,8 +660,11 @@
 (define-template x:bind-provided code:bind-provided)
 (define-template x:bind-required code:bind-required)
 
-
 (define-template x:binding-name code:instance-name)
+
+(define-template x:component-port code:component-port)
+
+(define-template x:injected-instance-system-initializer code:injected-instances-system)
 
 (define-template x:system-port-connect (lambda (o) (filter (negate om:port-bind?) ((compose .elements .bindings) o))))
 
@@ -476,6 +674,22 @@
 
 (define-template x:return code:return #f <type>)
 
+
+;; main
+(define-template x:main-port-connect-in ast:out-triggers-in-events)
+(define-template x:main-port-connect-in-void ast:out-triggers-void-in-events)
+(define-template x:main-port-connect-in-valued ast:out-triggers-valued-in-events)
+(define-template x:main-port-connect-out ast:out-triggers-out-events)
+(define-template x:main-provided-port-init ast:provided)
+(define-template x:main-required-port-init ast:required)
+
+(define-template x:main-out-arg code:main-out-arg 'argument-infix)
+(define-template x:main-event-map-void ast:void-in-triggers 'event-map-prefix)
+(define-template x:main-event-map-valued ast:valued-in-triggers 'event-map-prefix)
+(define-template x:main-event-map-flush ast:required 'event-map-prefix)
+
+(define-template x:main-event-map-match-return code:main-event-map-match-return)
+(define-template x:main-required-port-name ast:required 'main-port-name-infix)
 
 
 ;;; dump to file
@@ -491,12 +705,6 @@
                      (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
                        (x:pand 'source-root (module-ref module 'root) module))))))
 
-(define-method (code:file-name (o <port>))
-  (code:file-name (.type o)))
-
-(define-method (code:file-name (o <instance>))
-  (code:file-name (.type o)))
-
 (define (glue)
   (and=> (command-line:get 'glue #f) string->symbol))
 
@@ -504,6 +712,12 @@
   (let ((deprecated (or (command-line:get 'deprecated #f) (getenv "DZN_DEPRECATED"))))
     (or (not (memq (language) '(c++ c++03 c++-msvc11)))
         (and deprecated (string-contains deprecated "model2file")))))
+
+(define-method (code:file-name (o <port>))
+  (code:file-name (.type o)))
+
+(define-method (code:file-name (o <instance>))
+  (code:file-name (.type o)))
 
 (define-method (code:file-name (o <interface>))
   (if (model2file)
@@ -532,7 +746,7 @@
   ((compose-root
     (lambda (o)
       (let ((model-names (map (compose .name car) (@@ (gaiag om) *ast-alist*))))
-        (if (and (member (language) '(c++ c++03 c++-msvc11 xjavascript))
+        (if (and (member (language) '(c++ c++03 c++-msvc11 javascript))
                  (not (member 'iclient_socket model-names))
                  (not (member 'imodelchecker model-names)))
             (code-norm-event o)

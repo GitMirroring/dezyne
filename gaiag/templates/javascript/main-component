@@ -1,0 +1,117 @@
+##! /usr/bin/env node
+
+assert = require ('assert');
+var dzn = typeof (dzn) !== undefined && dzn ? dzn : require (__dirname + '/dzn/runtime');
+
+dzn.extend (dzn, require (__dirname + '/dzn/#x:scope+name '));
+
+var relaxed = false;
+var lines = [];
+function read_line() {
+  if (lines.length) {
+    return lines.pop();
+  }
+  return '';
+}
+
+function peek_line() {
+  return lines.slice(-1)[0];
+}
+
+function drop_prefix(string, prefix) {
+  if (string.indexOf(prefix) === 0) {
+    return string.slice(prefix.length);
+  }
+  return string;
+}
+
+function consume_synchronous_out_events(prefix, event, event_map) {
+  var s;
+  while (s = read_line()) if (s === prefix + event) break;
+  while (s = read_line()) {
+    if (!event_map[s]) {
+      break;
+    }
+    event_map[s]();
+  }
+  return s && s.split ('.').last ();
+}
+
+function log_in(prefix, event, event_map) {
+  console.error(prefix + event);
+  if (relaxed) return;
+  consume_synchronous_out_events(prefix, event, event_map);
+  console.error(prefix + 'return');
+}
+
+function log_out(prefix, event) {
+  console.error(prefix + event);
+}
+
+function type_helper(value, type) {
+  if (type === 'int') return parseInt (value);
+  if (type === 'bool') return value === 'false' ? false : true;
+  return value;
+}
+
+function log_valued(prefix, event, event_map) {
+  console.error(prefix + event);
+  if (relaxed) return 0;
+  var s = consume_synchronous_out_events(prefix, event, event_map);
+  if (s !== undefined) {
+     console.error(prefix + s);
+     return s;
+  }
+  throw 'runtime error: "' + s + '" is not a reply value'
+}
+
+function #x:model-name _fill_event_map(m)
+{
+  var c = new dzn.component(m._dzn.locator, {provides:{}});
+  c._dzn.flushes = dzn.flush;
+
+  var e = {
+          'illegal': function () {console.stderr ('illegal'); process.exit (0);}
+          #x:main-event-map-void
+          #x:main-event-map-valued
+          #x:main-event-map-flush
+          };
+
+  if (dzn.flush) {
+     #x:main-provided-flush-init
+     #x:main-required-flush-init
+  }
+
+  #x:main-provided-port-init
+  #x:main-required-port-init
+
+  #x:main-port-connect-in-void
+  #x:main-port-connect-in-valued
+  #x:main-port-connect-out
+
+  return e;
+}
+
+function main () {
+  dzn.flush = process.argv.length > 2 && process.argv[2] === '--flush';
+  dzn.relaxed = process.argv.length > 2 && process.argv[2] === '--relaxed';
+  var loc = new dzn.locator();
+  var pump = new dzn.pump();
+  loc.set(pump);
+  var rt = new dzn.runtime(function() {console.error('illegal');process.exit(0);});
+  var sut = new dzn.#x:type-name (loc.set(rt), {name:'sut'});
+
+  var event_map = #x:model-name _fill_event_map(sut);
+
+  var fs = require ('fs');
+  lines = fs.readFileSync('/dev/stdin', 'ascii').toString().trim().split ('\n').reverse ();
+  var s;
+  pump.queue = {pop:function(){var s=read_line(); return s?event_map[s]:undefined;},peek:peek_line};
+  while (s = pump.queue.peek ()) {
+    if (event_map[s]) {
+      pump.pump (event_map[s]);
+    }
+  }
+}
+
+main ();

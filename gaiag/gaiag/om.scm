@@ -76,6 +76,8 @@
            ast:set-scope
            ast:valued-in-triggers
            ast:void-in-triggers
+           ast:out-triggers-valued-in-events
+           ast:out-triggers-void-in-events
 
            ast:port*
 
@@ -294,6 +296,15 @@
 (define-method (ast:out-triggers-out-events (o <component-model>))
   (filter (compose om:out? .event) (ast:out-triggers o)))
 
+(define-method (ast:out-triggers-void-in-events (o <component-model>))
+  (filter
+   (lambda (t) (is-a? ((compose .type .signature .event) t) <void>))
+   (ast:out-triggers-in-events o)))
+
+(define-method (ast:out-triggers-valued-in-events (o <component-model>))
+  (filter
+   (lambda (t) (not (is-a? ((compose .type .signature .event) t) <void>)))
+   (ast:out-triggers-in-events o)))
 
 ;;; deprecated om: interface
 
@@ -780,7 +791,7 @@
 
 (define (om:out-or-inout? o)
   (match o
-    (($ <formal>)
+    (? (is? <formal>)
      (or (eq? (.direction o) 'out)
          (eq? (.direction o) 'inout)))))
 
