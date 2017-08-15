@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -37,6 +38,7 @@
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
   #:use-module (gaiag om)
+  #:use-module (gaiag util)
 
   #:export (define-template
              x:pand))
@@ -66,41 +68,43 @@
     ;; (stderr "   => ~a\n" filename)
     (tree->string tree)))
 
+(define (type->template module filename type sep o)
+  (cond ((char? o) (display o))
+        ((number? o) (display o))
+        ((symbol? o) (display o))
+        ((string? o) (display o))
+        ((pair? o)
+         ;;(stderr "PAIR [~a,t=~a,f=~a] ~a\n" (class-name (class-of ast)) (and type (class-name type)) filename (class-name (class-of (car o))))
+         (let* ((sexp (if (not sep) '("")
+                          (with-input-from-string (gulp-template sep) read)))
+                (join (lambda (o) (apply string-join (cons o sexp)))))
+           (display (join (map (lambda (ast)
+                                 (with-output-to-string
+                                   (lambda () (if (or (char? ast)
+                                                      (string? ast)
+                                                      (symbol? ast)) (display ast)
+                                                      (let* ((name (symbol->string (ast-name (if (is-a? ast type) type (class-of ast)))))
+                                                             (filename (if (equal? filename name) filename
+                                                                           (string-append filename "-" name))))
+                                                        (if (is-a? ast <model>)
+                                                            (ast:set-model-scope ast (x:pand filename ast))
+                                                            (x:pand filename ast))))))) o)))))
+        ((null? o) #f)
+        ((is-a? o <ast>)
+         ;;(stderr "ATOM [~a,t=~a,f=~a] ~a\n" (class-name (class-of ast)) (and type (class-name type)) filename (class-name (class-of o)))
+         (let* ((name (symbol->string (ast-name (if (is-a? o type) type (class-of o)))))
+                (filename (if (equal? filename name) filename
+                              (string-append filename "-" name))))
+           (x:pand filename o)))
+        (#t (x:pand filename o))))
+
 (define-syntax define-template
   (syntax-rules ()
     ((_ name f sep type)
      (define-public (name ast)
        (let* ((module (current-module))
-              (filename (string-drop (symbol->string 'name) 2))
-              (o (f ast)))
-         (cond ((char? o) (display o))
-               ((number? o) (display o))
-               ((symbol? o) (display o))
-               ((string? o) (display o))
-               ((pair? o)
-                ;;(stderr "PAIR [~a,t=~a,f=~a] ~a\n" (class-name (class-of ast)) (and type (class-name type)) filename (class-name (class-of (car o))))
-                (let* ((sexp (if (not sep) '("")
-                                 (with-input-from-string (gulp-template sep) read)))
-                       (join (lambda (o) (apply string-join (cons o sexp)))))
-                  (display (join (map (lambda (ast)
-                                        (with-output-to-string
-                                          (lambda () (if (or (char? ast)
-                                                             (string? ast)
-                                                             (symbol? ast)) (display ast)
-                                                             (let* ((ast-name (symbol->string (ast-name (if (is-a? ast type) type (class-of ast)))))
-                                                                    (filename (if (equal? filename ast-name) filename
-                                                                                  (string-append filename "-" ast-name))))
-                                                               (if (is-a? ast <model>)
-                                                                   (ast:set-model-scope ast (x:pand filename ast))
-                                                                   (x:pand filename ast))))))) o)))))
-               ((null? o) #f)
-               ((is-a? o <ast>)
-                ;;(stderr "ATOM [~a,t=~a,f=~a] ~a\n" (class-name (class-of ast)) (and type (class-name type)) filename (class-name (class-of o)))
-                (let* ((ast-name (symbol->string (ast-name (if (is-a? o type) type (class-of o)))))
-                       (filename (if (equal? filename ast-name) filename
-                                     (string-append filename "-" ast-name))))
-                  (x:pand filename o)))
-               (#t (x:pand filename o))))
+              (filename (string-drop (symbol->string 'name) 2)))
+         (type->template module filename type sep (f ast)))
        ""))
     ((_ name f sep)
      (define-template name f sep #f))
