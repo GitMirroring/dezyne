@@ -51,8 +51,6 @@
   #:use-module (gaiag shell-util)
   #:use-module (gaiag templates)
 
-  #:use-module (gaiag location)
-
   #:export (ast->dzn
             dzn-async?
             dzn:annotate-shells
@@ -181,7 +179,7 @@
 (define-method (dzn:model (o <root>))
   (if (dzn:glue)
       (let ((models (ast:model* o)))
-        (if (null? (filter (negate (disjoin om:imported? (is? <foreign>))) models))
+        (if (null? (filter (negate (disjoin ast:imported? (is? <foreign>))) models))
               (filter (is? <foreign>) models)
               (topological-sort
                (map dzn:annotate-shells
@@ -191,9 +189,12 @@
                             (.elements o))))))
       (topological-sort
        (map dzn:annotate-shells
-            (filter (negate (disjoin (is? <data>) (is? <type>) dzn-async?
+            (filter (negate (disjoin (is? <data>) (is? <type>) (is? <namespace>) dzn-async?
                                      (conjoin ast:imported? (negate (is? <foreign>)))))
                     (.elements o))))))
+
+(define-method (dzn:model (o <namespace>))
+  (.elements o))
 
 (define-method (dzn:model (o <ast>))
   o)
@@ -430,14 +431,11 @@
 (define-method (dzn:to (o <type>))
   ((compose .to .range) o))
 
-(define-generic source-file)
-(define-method (source-file (o <ast>)) ((compose source-file .node) o))
-
 (define-method (dzn:dump (o <ast>))
   (let* ((dir (command-line:get 'output "."))
          (stdout? (equal? dir "-"))
          (dir (string-append dir "/" (dzn:dir o)))
-         (base (basename (symbol->string (source-file o)) ".dzn")))
+         (base (basename (symbol->string (ast:source-file o)) ".dzn")))
     (let* ((ext (symbol->string (dzn:extension (make <component>))))
            (file-name (string-append dir base ext)))
       (if stdout? ((dzn:indent (cut (%x:source) o)))

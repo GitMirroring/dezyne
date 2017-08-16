@@ -32,7 +32,6 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (gaiag misc)
-  #:use-module (gaiag location)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
 
   #:export (
@@ -54,6 +53,7 @@
             void-signature
 
             clone
+            has-slot?
             tree-collect
             tree-collect-shallow
             tree-map
@@ -66,15 +66,19 @@
            .ast
            .behaviour
            .bindings
+           .column
            .direction
            .elements
            .else
+           .end-column
+           .end-line
            .event.name
            .events
            .expression
            .external
            .field
            .fields
+           .file-name
            .formals
            .from
            .function.name
@@ -84,17 +88,23 @@
            .instances
            .last?
            .left
+           .length
+           .line
+           .location
            .message
            .name
+           .offset
            .port
            .ports
            .range
            .recursive
            .right
            .scope
+           .sexp
            .signature
            .silent?
            .statement
+           .string
            .then
            .to
            .trigger
@@ -104,7 +114,10 @@
            .value
            .variable.name
            .variables
+
            <action-node>
+           <action-or-call-node>
+           <action-or-call>
            <action>
            <and-node>
            <and>
@@ -125,6 +138,8 @@
            <binding>
            <bindings-node>
            <bindings>
+           <block-comment-node>
+           <block-comment>
            <blocking-compound-node>
            <blocking-compound>
            <blocking-node>
@@ -135,8 +150,8 @@
            <bool>
            <call-node>
            <call>
-           <stack-node>
-           <stack>
+           <comment-node>
+           <comment>
            <component-model-node>
            <component-model>
            <component-node>
@@ -149,10 +164,10 @@
            <data>
            <declarative-compound-node>
            <declarative-compound>
-           <declarative-node>
-           <declarative>
            <declarative-illegal-node>
            <declarative-illegal>
+           <declarative-node>
+           <declarative>
            <direction>
            <enum-expr-node>
            <enum-expr>
@@ -223,9 +238,16 @@
            <less-equal>
            <less-node>
            <less>
+           <line-comment-node>
+           <line-comment>
            <literal-node>
            <literal>
+           <local-node>
            <local>
+           <location-node>
+           <location>
+           <location-end-node>
+           <location-end>
            <minus-node>
            <minus>
            <model-node>
@@ -235,6 +257,8 @@
            <modeling-event>
            <named-node>
            <named>
+           <namespace-node>
+           <namespace>
            <not-equal-node>
            <not-equal>
            <not-node>
@@ -268,6 +292,10 @@
            <root>
            <scope.name-node>
            <scope.name>
+           <selection-node>
+           <selection>
+           <sexp-node>
+           <sexp>
            <shell-system-node>
            <shell-system>
            <signature-node>
@@ -275,6 +303,8 @@
            <silent-trigger-node>
            <silent-trigger>
            <skip>
+           <stack-node>
+           <stack>
            <statement-node>
            <statement>
            <system-node>
@@ -367,8 +397,45 @@
 (define-method (make-wrapper (o <ast-list-node>) p) (make <ast-list> #:parent p #:node o))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define-ast <sexp> (<ast>)
+  (sexp))
 
-(define-ast <statement> (<ast>))
+(define-ast <location> (<ast>)
+  (file-name)
+  (line)
+  (column)
+  (end-line)
+  (end-column)
+  (offset)
+  (length))
+
+(define-ast <locationed> (<ast>)
+  (location))                           ; <location>
+
+(define-ast <comment> (<locationed>)
+  (string))
+
+(define-ast <named> (<locationed>)
+  (name)                                ; <scope.name>
+  (comment))
+
+;;(define-ast <root> (<locationed> <ast-list>))
+(define-ast <root> (<ast-list> <locationed>))
+
+(define-ast <scope.name> (<ast>)
+  (scope #:init-form (list))
+  (name))
+
+(define-ast <namespace> (<named> <ast-list>))
+
+(define-method (.name.name (o <namespace>))
+  ((compose .name .name) o))
+
+
+(define-ast <block-comment> (<comment>))
+(define-ast <line-comment> (<comment>))
+
+(define-ast <statement> (<locationed>))
 (define-ast <declarative> (<statement>))
 (define-ast <imperative> (<statement>))
 
@@ -391,7 +458,7 @@
 (define-ast <instances> (<ast-list>))
 (define-ast <ports> (<ast-list>))
 
-(define-ast <root> (<ast-list>))
+
 (define g-root-id 0)
 (define-method (initialize (o <root-node>) . initargs)
   (let ((root (apply next-method (cons o initargs))))
@@ -401,13 +468,6 @@
 (define-ast <triggers> (<ast-list>))
 (define-ast <types> (<ast-list>))
 (define-ast <variables> (<ast-list>))
-
-(define-ast <named> (<ast>)
-  (name))
-
-(define-ast <scope.name> (<ast>)
-  (scope #:init-form (list))
-  (name))
 
 (define-ast <import> (<named>))
 
@@ -451,7 +511,7 @@
   (to #:init-value 0))
 
 (define-ast <signature> (<ast>)
-  (type.name #:init-form (make <void-node>))
+  (type.name #:init-form (make <scope.name> #:name 'void))
   (formals #:init-form (make <formals-node>)))
 
 (define void-signature (make <signature-node>))
@@ -476,9 +536,15 @@
 
 (define-ast <port> (<named>)
   (type.name #:init-form (make <scope.name-node>))
-  (direction)
+  (direction)                           ; symbol 'provides / 'requires
   (external)
   (injected))
+
+;; (define-method (.scope.name (o <named>))
+;;   (slot-ref o 'name))
+
+;; (define-method (.name (o <port>))
+;;   ((compose .name .scope.name) o))
 
 (define-ast <trigger> (<ast>)
   (port.name)
@@ -487,7 +553,7 @@
 
 (define-ast <silent-trigger> (<trigger>))
 
-(define-ast <expression> (<ast>))
+(define-ast <expression> (<locationed>))
 
 (define-ast <literal> (<expression>)
   (value #:init-value 'void))
@@ -589,6 +655,9 @@
 (define-ast <action> (<imperative> <expression>)
   (port.name)
   (event.name)
+  (arguments #:init-form (make <arguments-node>)))
+
+(define-ast <action-or-call> (<named> <imperative> <expression>)
   (arguments #:init-form (make <arguments-node>)))
 
 (define-ast <assign> (<imperative>)
@@ -726,8 +795,17 @@
         (apply clone (cons o (apply append changed)))
         )))
 
-(define-method (tree-map f (o <ast-list>)) (clone o #:elements (map f (.elements o))))
+(define-method (slot-names (o <class>))
+  (map slot-definition-name (class-slots o)))
+(define-method (slot-names (o <object>))
+  ((compose slot-names class-of) o))
+(define-method (slot-names (o <ast>))
+  ((compose slot-names .node) o))
+(define-method (has-slot? (o <object>) name)
+  (memq name (slot-names o)))
 
+(define-method (tree-map f (o <ast-list>)) (clone o #:elements (map f (.elements o))))
+(define-method (tree-map f (o <namespace>)) (clone o #:elements (map f (.elements o)) #:name (f (.name o))))
 
 (define-method (tree-collect predicate o) (if (predicate o) (list o) (list)))
 
@@ -775,10 +853,10 @@
 
 
 (define-method (clone-base-node (o <ast-node>) . setters)
-  (retain-source-properties o (apply clone-base (cons o setters))))
+  (apply clone-base (cons o setters)))
 
 (define-method (clone-base-ast (o <ast>) . setters)
-  (retain-source-properties o (apply clone-base (cons o setters))))
+  (apply clone-base (cons o setters)))
 
 
 (define-method (clone (o <ast-node>) . setters)

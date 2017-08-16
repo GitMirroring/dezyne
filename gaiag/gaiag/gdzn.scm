@@ -39,6 +39,7 @@
             (help (single-char #\h))
             (html (single-char #\H))
             (json (single-char #\j))
+	    (peg (single-char #\p))
 	    (session (single-char #\S) (value #t))
 	    (verbose (single-char #\v))
 	    (version (single-char #\V))))
@@ -61,6 +62,7 @@ Usage: gdzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -h, --help             display this help
   -H, --html             output html
   -j, --json             output json
+  -p, --peg              use PEG parser (experimental)
   -S, --session=SESSION  use session=SESSION [1]
   -v, --verbose          be more verbose, show progress
   -V, --version          display version

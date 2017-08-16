@@ -35,8 +35,6 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
 
-  #:use-module (gaiag location)
-
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag deprecated om)
@@ -206,7 +204,7 @@
 (define ((json-inner-guard model var state triggers) guard statement)
   `((triggers . ,(json-triggers
                   triggers
-                  (if (source-location triggers) triggers
+                  (if (ast:location triggers) triggers
                       statement)))
     (guard . ,(->symbol guard))
     (actions . ,(json-action model statement))

@@ -25,10 +25,14 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
+
+  #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
+  #:use-module (gaiag util)
   #:use-module (gaiag shell-util)
   #:export (assert-parse
             dump-model-stream
@@ -67,6 +71,7 @@
   (let* ((option-spec
           '((help (single-char #\h))
             (import (single-char #\I) (value #t))
+            (output (single-char #\o) (value #t))
 	    (version (single-char #\V) (value #t))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
@@ -77,29 +82,39 @@
           (stdout "\
 Usage: gdzn parse [OPTION]... [FILE]...
   -h, --help             display this help and exit
-  -I, --import=DIR+           add DIR to import path
+  -I, --import=DIR+      add DIR to import path
+  -o, --output=FILE      write ast to FILE
   -V, --version=VERSION  use service version=VERSION
 ")
           (exit 0)))
     options))
 
-(define (parse-with-options options file-name)
-  (let* ((gaiag? (option-ref options 'gaiag #f))
+(define (parse options file-name)
+  (let* ((peg? (gdzn:command-line:get 'peg #f))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (language (string->symbol (option-ref options 'language "c++"))))
-    (parse-file file-name #:gaiag? gaiag? #:imports imports)))
+    (parse-file file-name #:peg? peg? #:imports imports)))
+
+(define parse-with-options parse)
 
 (define (assert-parse options file-name)
   (catch #t
     (lambda _
-      (parse-with-options options file-name))
+      (parse options file-name))
     (lambda _
       (exit 1))))
 
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
-         (gdzn-verbose? (find (lambda (o) (or (equal? o "--verbose") (equal? o "-v"))) (command-line))))
-    (assert-parse options (car files))
-    (if gdzn-verbose? (display "parse: no errors found"))))
+         (debug? (gdzn:command-line:get 'debug #f))
+         (peg? (gdzn:command-line:get 'peg #f)) ;; assert-parse eats error message
+         (ast ((if (or debug? peg?) parse assert-parse) options (car files))))
+    (if (or debug? peg?)
+        (let ((file-name (option-ref options 'output "-"))
+              (sexp (om->list ast)))
+          (if (equal? file-name "-") (pretty-print sexp)
+              (with-output-to-file file-name (cut pretty-print sexp))))
+        (when (gdzn:command-line:get 'verbose)
+          (display "parse: no errors found")))))

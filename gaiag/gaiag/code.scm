@@ -51,7 +51,6 @@
   #:use-module (gaiag parse)
   #:use-module (gaiag templates)
 
-  #:use-module (gaiag location)
 
   #:export (asd-interfaces
             map-file
@@ -173,14 +172,14 @@
   (code:dump root)
   (when (dzn:glue)
     ;;(for-each code:dump (filter (is? <foreign>) (ast:model* root)))
-    (for-each code:dump-glue (filter (conjoin (is? <system>) (negate om:imported?)) (ast:model* root)))))
+    (for-each code:dump-glue (filter (conjoin (is? <system>) (negate ast:imported?)) (ast:model* root)))))
 
 
 (define (code:component-include o)
  (filter (disjoin
           (compose (is? <foreign>) .type)
-          (conjoin om:imported? (lambda (i) (not (equal? (source-file o)
-                                                         (source-file (.type i)))))))
+          (conjoin (compose ast:imported? .type) (lambda (i) (not (equal? (ast:source-file o)
+                                                            (ast:source-file (.type i)))))))
          (om:instances o)))
 
 (define (code:language)
@@ -590,7 +589,7 @@
 (define-method (code:scope-type-name (o <field-test>))
   ((compose code:scope-type-name .type .variable) o))
 
-(define (code:x-header- o) (filter (conjoin (negate om:imported?) (is? <interface>)) (.elements o)))
+(define (code:x-header- o) (filter (conjoin (negate ast:imported?) (is? <interface>)) (.elements o)))
 
 (define-method (code:reply (o <type>))
   o)
@@ -606,7 +605,7 @@
 (define-method (code:interface-include o)
   (map (compose (cut make <file-name> #:name <>) code:file-name)
        (delete-duplicates
-        (filter (compose (cut (negate equal?) (source-file o) <>) source-file .type)
+        (filter (compose (cut (negate equal?) (ast:source-file o) <>) ast:source-file .type)
                 (ast:port* o)))))
 
 (define-method (code:interface-include (o <foreign>))
@@ -649,8 +648,8 @@
            ;;                   (disjoin (negate ast:imported?)
            ;;                            (conjoin (is? <foreign>)
            ;;                                     (compose negate
-           ;;                                              (cut equal? (source-file o) <>)
-           ;;                                              source-file)))))
+           ;;                                              (cut equal? (ast:source-file o) <>)
+           ;;                                              ast:source-file)))))
                           (.elements o)))
          (non-interface-models (filter (negate (is? <interface>)) objects)))
     (pair? non-interface-models)))
@@ -659,7 +658,7 @@
   (let* ((dir (command-line:get 'output "."))
          (stdout? (equal? dir "-"))
          (dir (string-append dir "/" (dzn:dir o)))
-         (base (basename (symbol->string (source-file o)) ".dzn"))
+         (base (basename (ast:source-file o) ".dzn"))
          (foreign-conflict? (find (lambda (o) (and (is-a? o <foreign>)
                                                    (not (ast:imported? o))
                                                    (equal? base (code:file-name o)))) (ast:model* o))))
@@ -735,11 +734,8 @@
 (define-method (code:file-name (o <instance>))
   (code:file-name (.type o)))
 
-(define-generic source-file)
-(define-method (source-file (o <ast>)) ((compose source-file .node) o))
-
 (define-method (code:file-name (o <interface>))
-  (basename (symbol->string (source-file o)) ".dzn"))
+  (basename (ast:source-file o) ".dzn"))
 
 (define-method (code:file-name (o <foreign>))
   ((compose symbol->string (om:scope-name) .name) o))
@@ -747,15 +743,15 @@
 (define-method (code:file-name (o <component>))
   (if (code:model2file?)
       ((compose symbol->string (om:scope-name) .name) o)
-      (basename (symbol->string (source-file o)) ".dzn")))
+      (basename (ast:source-file o) ".dzn")))
 
 (define-method (code:file-name (o <system>))
   (if (or (code:model2file?) (dzn:glue))
       ((compose symbol->string (om:scope-name) .name) o)
-      (basename (symbol->string (source-file o)) ".dzn")))
+      (basename (ast:source-file o) ".dzn")))
 
 (define-method (code:file-name (o <root>))
-  (basename (symbol->string (source-file o)) ".dzn"))
+  (basename (ast:source-file o) ".dzn"))
 
 (define (code:om ast)
   ((compose
@@ -857,7 +853,7 @@
             (append (list (cons (caar same) (map cdr same))) (loop rest)))))))
 
 (define-method (code:pump? (o <root>))
-  (filter (conjoin (negate om:imported?) (is? <component>) (compose pair? ast:req-events)) (ast:model* o)))
+  (filter (conjoin (negate ast:imported?) (is? <component>) (compose pair? ast:req-events)) (ast:model* o)))
 
 (define-method (code:pump? (o <component>))
   (if ((compose pair? ast:req-events) o) o

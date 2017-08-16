@@ -32,8 +32,6 @@
 
   #:use-module (srfi srfi-1)
 
-  #:use-module (gaiag location)
-
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag om)

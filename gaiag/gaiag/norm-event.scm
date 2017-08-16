@@ -32,7 +32,6 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
-  #:use-module (gaiag location)
   #:use-module (gaiag misc)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
@@ -197,7 +196,7 @@
     (($ <component>) o)
     (($ <guard>) o)
     (($ <on>) (if guard-seen? o
-                  (rsp o (make <guard> #:expression (make <literal> #:value 'true) #:statement o))))
+                  (make <guard> #:expression (make <literal> #:value 'true) #:statement o #:location (ast:location o))))
     ((? (is? <ast>)) (tree-map (interface-prepend-true-guard guard-seen?) o))
     (_ o)))
 

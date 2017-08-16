@@ -29,21 +29,25 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (system base language)
-
-  #:use-module (gaiag misc)
-  #:use-module (gaiag location)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (gaiag goops)
   #:use-module (gash job)
   #:use-module (gash pipe)
+  #:use-module (gaiag util)
+
+  #:use-module (gaiag misc)
+  #:use-module (gaiag command-line)
+  #:use-module (gaiag grammar)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag peg)
+
 
   #:export (%include-path parse-file try-find-file))
 
 (define ast-> pretty-print)
 
-(define* (parse-file file-name #:key gaiag? (imports '()))
-  (if (not gaiag?) (generator-parse-file file-name #:imports imports)
-      (gaiag-parse-file file-name)))
+(define* (parse-file file-name #:key peg? (imports '()))
+  (if peg? (peg:parse-file file-name)
+      (generator-parse-file file-name #:imports imports)))
 
 (define %include-path '("."))
 
@@ -66,23 +70,14 @@
         (handle-error job error)
         ast))))
 
-(define (gaiag-parse-file o)
-  (let ((file-name (match o
-                     ((and ($ <scope.name>) (= .name name)) (find-model-file name))
-                     ((t ...) #f)
-                     (_ o))))
-    (when (not file-name)
-      (let ((m (format #f "cannot find model: `~a'\n" o)))
-        (stderr m)
-        (throw (cons 'model-not-found m))))
-    (let* ((file-name (->string file-name))
-           (file-name (if (string= file-name "-") "-"
-                          (find-file file-name)))
-           (file (if (string= file-name "-") (current-input-port)
-                     (open-input-file file-name))))
-      (if (eq? (peek-char file) #\()
-          (read file)
-          (error (format #f ".scm file expected: ~s\n" file-name))))))
+(define (peg:parse-file file-name)
+  (let* ((string (with-input-from-file file-name read-string))
+         (parse-tree (peg:parse string))
+         (gdzn-debug? (gdzn:command-line:get 'debug)))
+    (when gdzn-debug?
+      (stderr "parse-tree:\n")
+      (pretty-print (om->list parse-tree)))
+    (parse-tree->ast parse-tree #:string string #:file-name file-name)))
 
 (define (find-model-file o)
   (let ((grep (lambda (dir) (gulp-pipe (format #f "grep -El '^(component|interface|enum|extern|int) ~a' ~a/~a.dzn ~a/*.dzn 2>/dev/null ||:" o dir o dir)))))

@@ -41,67 +41,47 @@
   #:use-module (gaiag resolve)
   #:use-module (gaiag util)
 
-  #:use-module (gaiag annotate)
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
 
-  #:use-module (gaiag location)
-
   #:export (
            om:behaviour-ports
            om:bind
-           om:bind-other-port
-           om:binding
-           om:bindings
-           om:binding-other
-           om:binding-other-port
-           om:blocking?
            om:blocking-compound?
            om:instance-name
            om:collect
            om:declarative?
            om:enums
-           om:event
            om:events
            om:filter:p
-           om:find-triggers
            om:functions
            om:globals
            om:imperative?
-           om:imported?
            om:in?
            om:instances
            om:instance-name
            om:instance-binding?
-           om:interface-enums
-           om:interface-types
-           om:interfaces
+           ;; om:interface-types
            om:name
            om:named
-           om:operator?
-           om:out-formals
            om:out-or-inout?
            om:out?
            om:port
-           om:port-event
            om:ports
            om:port-bind
            om:port-bind?
-           om:port-binding?
-           om:public-types
+           ;; om:port-binding?
+           ;; om:public-types
            om:provided
-           om:reply-enums
            om:reply-types
            om:required
            om:scope
            om:scope+name
-           om:scope-join ;; JUNKME
            om:scope-name
            om:type
            om:typed?
-           om:type-name
-           om:types
+           ;; om:types
            om:variables
            om:void?
            ))
@@ -116,10 +96,6 @@
             (($ <port>) ((compose om:events .type) o)))))
 
 (define om:events (pure-funcq om:events-))
-
-(define (om:bindings o)
-  (match o
-    (($ <system>) ((compose .elements .bindings) o))))
 
 (define (om:functions model)
   ((compose .elements .functions .behaviour) model))
@@ -174,15 +150,6 @@
 (define (om:required o)
   (filter ast:requires? (om:ports o)))
 
-
-(define (om:interface-enums o)
-  (match o
-    (($ <interface>) (om:filter (is? <enum>) (.types o)))
-    (($ <port>) (om:enums o))
-    ((? (is? <component-model>))
-     (append-map om:interface-enums (ast:port* o)))))
-
-
 ;;; SINGLE-LOOKUP
 
 (define (om:port-bind? bind)
@@ -224,35 +191,6 @@
                                      (eq? (.port.name (.right bind)) port-name))))
              binds)))))
 
-(define (om:bind-other-port bind port-name) ;; FIXME: port need not be unique
-  (deprecated (current-source-location))
-  (if (eq? (.port.name (.left bind)) port-name) (.right bind) (.left bind)))
-
-(define (om:binding system o)
-  (match o
-    ((? symbol?)
-     (deprecated (current-source-location))
-     (let ((bind (om:bind system o)))
-       (if (eq? (.port.name (.left bind)) o) (.left bind) (.right bind))))
-    ((and ($ <binding>) (= .instance.name instance-name) (= .port.name port-name))
-     (let ((bind (om:bind system o)))
-       (and bind
-            (if (and (eq? (.instance.name (.left bind)) instance-name)
-                     (eq? (.port.name (.left bind)) port-name)) (.left bind)
-                     (.right bind)))))))
-
-(define (om:binding-other-port system port) ;; FIXME: port need not be unique
-  (deprecated (current-source-location))
-  (let* ((bind (om:bind system port)))
-    (om:bind-other-port bind port)))
-
-(define (om:binding-other system binding)
-  (let ((bind (om:bind system binding)))
-    (if (and (eq? (.instance.name (.left bind)) (.instance.name binding))
-             (eq? (.port.name (.left bind)) (.port.name binding)))
-        (.right bind)
-        (.left bind))))
-
 (define (om:instance-name bind)
   (or (.instance.name (.left bind)) (.instance.name (.right bind))))
 
@@ -281,14 +219,6 @@
 (define (unspecified? x) (eq? x *unspecified*))
 
 ;;; TYPES
-
-(define (om:type-name o)
-  (match o
-    (($ <enum>) 'enum)
-    (($ <extern>) ((->symbol-join '_) (om:scope+name o))) ;; FIXME: -> 'data
-    (($ <int>) 'int)
-    (($ <bool>) 'bool)
-    (($ <void>) 'void)))
 
 (define ((om:type model) o)             ; deprecated
   (or (as o <type>)
@@ -320,17 +250,6 @@
                    (string->symbol infix))))
     ((->symbol-join infix) (om:scope+name o))))
 
-(define* ((om:scope-join #:optional (model #f) (infix '_)) o)
-  (define (global-scope?)
-    (and model (>1 (length o))
-         (not (eq? ((compose car om:scope+name) model) (car o)))))
-  (let* ((infix (if (symbol? infix) infix
-		    (string->symbol infix)))
-         (scope (if (not model) o
-                    (if (global-scope?) (cons null-symbol o)
-                        (drop-prefix (om:scope+name model) o)))))
-    ((->symbol-join infix) scope)))
-
 (define (om:name o)
   ((compose last om:scope+name) o))
 
@@ -338,14 +257,6 @@
   (drop-right (om:scope+name o) 1))
 
 ;;; UTILITIES
-
-(define (om:blocking? o)
-  (match o
-    (($ <component>)
-     (and-let* ((behaviour (.behaviour o))
-                (blocking ((om:collect <blocking>) behaviour)))
-       (pair? blocking)))
-    (_ #f)))
 
 (define (om:blocking-compound? o)
   (match o
@@ -395,20 +306,6 @@
       (symbol? (filter (is? x) o))
       (procedure? (filter x o)))))
 
-(define* (om:find-triggers ast #:optional (found '()))
-  (match ast
-    ((or ($ <interface>) ($ <component>))
-     (or (and=> (.behaviour ast) om:find-triggers) '()))
-    (($ <behaviour>) (or (and=> (.statement ast) om:find-triggers) '()))
-    (($ <compound>)
-     (delete-duplicates (sort (append (apply append (map om:find-triggers (ast:statement* ast)))) om:<)))
-    (($ <blocking>) (om:find-triggers (.statement ast) found))
-    (($ <on>) (om:find-triggers (.triggers ast)))
-    (($ <triggers>) (ast:trigger* ast))
-    (($ <guard>) (om:find-triggers (.statement ast) found))
-    (($ <system>) (append-map om:find-triggers (map (lambda (i) (resolve:component ast i)) (om:instances ast))))
-    (_ '())))
-
 (define (om:interface-types o)
   ;;(stderr "om:interface-types o=~a\n" o)
   (match o
@@ -431,9 +328,6 @@
         ((? (is? <modeling-event>)) #f)
         ((? boolean?) #f))))
 
-(define (om:reply-enums o)
-  (om:reply-types o #:pred (is? <enum>)))
-
 (define* (om:reply-types o #:key (pred om:typed?))
   (match o
     (($ <interface>)
@@ -442,12 +336,6 @@
        (filter-map (om:type o) types)))
     ((or ($ <component>) ($ <foreign>))
      (delete-duplicates (append-map (compose (cut om:reply-types <> #:pred pred) .type) (ast:port* o))))
-    (_ '())))
-
-(define (om:out-formals o)
-  (match o
-    (($ <interface>)
-     (filter om:out-or-inout? (append-map (compose .elements .formals .signature) (om:events o))))
     (_ '())))
 
 (define (om:declarative? o)
@@ -489,21 +377,6 @@
 
 (define (in-file? o file)
   (let ((file (if (string? file) (string->symbol file) file)))
-    (and-let* ((model-file (source-file o))
+    (and-let* ((model-file (ast:source-file o))
                (model-file (if (string? model-file) (string->symbol model-file) model-file)))
               (eq? (basename- file) (basename- model-file)))))
-
-(define-method (om:imported? o)
-  (if (assoc 'imported? (source-properties o))
-      (source-property o 'imported?)
-      (let ((files (command-line:get '() '(#f))))
-        (and (pair? files)
-             (let ((file (car files)))
-               (cond
-                ((string= file "-") #f)
-                ((string= file "/dev/stdin") #f)
-                ((string-suffix? ".scm" file) #f)
-                (else (not (in-file? o file)))))))))
-
-(define-method (om:imported? (o <model>)) ;; FIXME
-  (om:imported? (.node o)))

@@ -30,8 +30,6 @@
   #:use-module (ice-9 poe)
   #:use-module (ice-9 pretty-print)
 
-  #:use-module (gaiag location)
-
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -43,7 +41,6 @@
   #:use-module (gaiag resolve)
   #:use-module (gaiag util)
 
-  #:use-module (gaiag annotate)
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
@@ -60,6 +57,7 @@
            ast:in?
            ast:in-triggers
            ast:imported?
+           ast:location
            ast:optional?
            ast:other-direction
            ast:out?
@@ -74,6 +72,7 @@
            ast:required+async
            ast:required-in-triggers
            ast:required-out-triggers
+           ast:source-file
            ast:valued-in-triggers
            ast:void-in-triggers
            ast:out-triggers-valued-in-events
@@ -339,9 +338,6 @@
 (define-method (ast:eq? (a <ast>) (b <ast>))
   (equal? (ast:id-path a) (ast:id-path b)))
 
-(define-method (ast:imported? (o <ast>))
-  (assoc-ref (source-properties (.node o)) 'imported?))
-
 (define-method (ast:type (o <action>))
   ((compose ast:type .event) o))
 (define-method (ast:type (o <bool>)) o)
@@ -407,6 +403,25 @@
         ((is-a? o <bool-expr>) (make <bool>))
         ((is-a? o <int-expr>) (make <int>))
         (else (make <void>))))
+
+(define-method (ast:location (o <locationed>))
+  (.location o))
+
+(define-method (ast:location (o <root>))
+  (.location o))
+
+(define-method (ast:location (o <ast-list>))
+  (let ((elements (.elements o)))
+    (if (null? elements) (ast:location (.parent o))
+         (ast:location (car elements)))))
+
+(define-method (ast:location o) #f)
+
+(define-method (ast:source-file (o <ast>))
+  (or (and=> (ast:location o) .file-name) (ast:source-file (.parent o))))
+
+(define-method (ast:imported? (o <ast>))
+  (not (equal? (ast:source-file o) (ast:source-file (parent o <root>)))))
 
 (define (ast-> ast)
   ((compose

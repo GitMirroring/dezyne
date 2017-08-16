@@ -31,8 +31,6 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 curried-definitions)
 
-  #:use-module (gaiag location)
-
   #:use-module (srfi srfi-1)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
@@ -93,7 +91,7 @@
   (match o
     (($ <guard>) o)
     (($ <on>) (if guard-seen? o
-                  (rsp o (make <guard> #:expression (make <literal> #:value 'true) #:statement o))))
+                  (make <guard> #:expression (make <literal> #:value 'true) #:statement #:location (ast:location o))))
     ((? (is? <ast>)) (tree-map (prepend-true-guard guard-seen?) o))
     (_ o)))
 

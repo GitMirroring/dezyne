@@ -33,8 +33,6 @@
   #:use-module (ice-9 pretty-print)
   #:use-module (srfi srfi-1)
 
-  #:use-module (gaiag location)
-
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
@@ -137,11 +135,11 @@
                          (map (lambda (field)
                                 (prepend-guard model variable field o))
                               fields)))
-         (compound (retain-source-properties o (make <compound> #:elements guards))))
+         (compound (make <compound> #:elements guards #:location (ast:location o))))
     (clone compound #:parent (.parent o))))
 
 (define (prepend-guard model variable field o)
-  ;;(stderr "prepend-guard ~a --- ~a --- ~a\n" variable field o)
+;;  (stderr "prepend-guard ~a --- ~a --- ~a\n" variable field o)
   (and-let* ((statement o)
              (statement (flatten-compound ((simplify model variable field #t) (flatten-compound o))))
              (var (clone (make <var> #:variable.name (.name variable)) #:parent o))
@@ -153,21 +151,20 @@
                    ('false (make <not> #:expression var))))
                 (($ <int>) (make <equal> #:left var #:right (make <literal> #:value field)))
                 (_ (make <field-test> #:variable.name (.name variable) #:field field))))
-             (guard (retain-source-properties
-                     (salvage-source-location model variable expression field o)
-                     (make <guard> #:expression expression #:statement statement))))
-    (clone guard #:parent (.parent o)))
-  )
+             (guard
+                 (let ((location (salvage-source-location model variable expression field o)))
+                   (make <guard> #:expression expression #:statement statement #:location location))))
+            (clone guard #:parent (.parent o))))
 
 (define (salvage-source-location model variable expression field o)
   (let* ((expression2 (make <equal> #:left (make <var> #:variable.name (.name variable)) #:right (make <literal> #:value field)))
          (guards (filter (lambda (g)
                            (let ((e (.expression g)))
-                             (and (source-location g)
+                             (and (ast:location g)
                                   (or (om:equal? e expression)
                                       (om:equal? e expression2)))))
                          ((om:collect <guard>) o))))
-    (and (pair? guards) (car guards))))
+    (and (pair? guards) (ast:location (car guards)))))
 
 (define (state-var model state)
   (define (type? v) (om:equal? (.type v) (.type state)))
@@ -233,12 +230,12 @@
          ((and ($ <literal>) (= .value 'false)) #f)
          ((and ($ <literal>) (= .value 'true))
           (if #t ;;(om:declarative? statement) FIXME...
-              (retain-source-properties o statement)
+              (clone statement #:location (ast:location o))
               (clone o #:expression value #:statement statement)))
          (($ <enum-literal>)
           (and (om:equal? value field)
                (if (om:declarative? statement)
-                   (retain-source-properties o statement)
+                   (clone statement #:location (ast:location o))
                    (clone o #:expression value #:statement statement))))
          (_ (clone o #:expression value #:statement statement)))))
 
@@ -304,10 +301,15 @@
 
 (define (table-state model o)
   ((compose
+;;    (lambda (o) (pke 'flatten-compound o))
     flatten-compound
+;;    (lambda (o) (pke 'aggregate-on o))
     (aggregate-on norm:on-statement-equal?)
+;;    (lambda (o) (pke 'prepend-guards o))
     (prepend-guards model)
+;;    (lambda (o) (pke 'switch-norm-event o))
     switch-norm-event
+;;    (lambda (o) (pke 'annotate-otherwise o))
     (annotate-otherwise)
     ) o))
 

@@ -47,7 +47,6 @@
   #:use-module (gaiag deprecated om)
   #:use-module (gaiag ast)
 
-  #:use-module (gaiag location)
   #:use-module (gaiag templates)
 
   #:export (c++:argument_n

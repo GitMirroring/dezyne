@@ -29,8 +29,6 @@
   #:use-module (ice-9 pretty-print)
   #:use-module (srfi srfi-1)
 
-  #:use-module (gaiag location)
-
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag deprecated om)
   #:use-module (gaiag goops)

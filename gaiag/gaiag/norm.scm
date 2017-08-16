@@ -32,8 +32,6 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 curried-definitions)
 
-  #:use-module (gaiag location)
-
   #:use-module (srfi srfi-1)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
@@ -73,7 +71,7 @@
   (match o
     (($ <guard>) o)
     (($ <on>) (if guard-seen? o
-                  (rsp o (make <guard> #:expression (make <literal> #:value 'true) #:statement o))))
+                  (make <guard> #:expression (make <literal> #:value 'true) #:statement o #:location (ast:location o))))
     ((? (is? <ast>)) (tree-map (prepend-true-guard guard-seen?) o))
     (_ o)))
 
@@ -81,14 +79,14 @@
   (match o
     ((and ($ <on>) (= .statement ($ <guard>))) o)
     ((and ($ <on>) (= .triggers t) (= .statement s))
-     (rsp o (make <on> #:triggers t #:statement (make <guard> #:expression (make <literal> #:value 'true) #:statement s))))
+     (make <on> #:triggers t #:statement (make <guard> #:expression (make <literal> #:value 'true) #:statement s #:location (ast:location o))))
     ((? (is? <ast>)) (tree-map append-true-guard o))
     (_ o)))
 
 (define (remove-skip o)
   (match o
     ((? om:imperative?) o)
-    (($ <skip>) (rsp o (make <compound>)))
+    (($ <skip>) (make <compound> #:location (ast:location o)))
     (($ <functions>) o)
     ((and (? (is? <component>) (= .behaviour behaviour)))
      (clone o #:behaviour (remove-skip behaviour)))
@@ -119,14 +117,12 @@
                    (let ((aggregated-on
                           (if (>1 (length shared-ons))
                               (let* ((triggers
-                                      (retain-source-properties
-                                       (.triggers (car ons))
-                                       (make <triggers>
-                                         #:elements
-                                         (delete-duplicates
-                                          (apply append
-                                                 (map (compose .elements .triggers) shared-ons))
-                                          om:equal?))))
+                                      (make <triggers>
+                                        #:elements
+                                        (delete-duplicates
+                                         (apply append
+                                                (map (compose .elements .triggers) shared-ons))
+                                         om:equal?)))
                                      (statement (on-statement (map .statement shared-ons))))
                                 (make <on>
                                   #:triggers triggers
@@ -264,7 +260,7 @@
     (($ <compound>)
      (let ((top (flatten-compound- o)))
        (if (is-a? top <compound>)
-           (retain-source-properties o top)
+           (clone top #:location (ast:location o))
            (clone o #:elements (list top)))))
     (($ <skip>) o)
     (($ <functions>) o)
@@ -379,7 +375,7 @@
 (define (add-skip o)
   (match o
     ((? om:imperative?) o)
-    ((and ($ <compound>) (= .elements ())) (rsp o (make <skip>)))
+    ((and ($ <compound>) (= .elements ())) (make <skip> #:location (ast:location o)))
     (($ <functions>) o)
     ((and (? (is? <component>) (= .behaviour behaviour)))
      (clone o #:behaviour (add-skip behaviour)))
@@ -392,6 +388,6 @@
 (define (transform-compounds o)
   (match o
     ((? om:imperative?) o)
-    (($ <compound>) (rsp o (make <declarative-compound> #:elements (.elements (tree-map transform-compounds o)))))
+    (($ <compound>) (make <declarative-compound> #:elements (.elements (tree-map transform-compounds o)) #:location (ast:location o)))
     ((? (is? <ast>)) (tree-map transform-compounds o))
     (_ o)))
