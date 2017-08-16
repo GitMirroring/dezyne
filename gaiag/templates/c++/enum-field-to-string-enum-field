@@ -1,1 +1,1 @@
-case #ast:scope+name-:: : return "#.type.name _#.field ";
+case ::#x:type-name : return "#.type.name _#.field ";

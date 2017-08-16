@@ -52,14 +52,35 @@
            code-norm-event
            norm-event
            table-norm-event
-           ast:direction
-           ast:in-triggers
-           ast:out-triggers
-           ast:provided-in-triggers
-           ast:provided-out-triggers
-           ast:required-in-triggers
-           ast:required-out-triggers
            ))
+
+(define-syntax *match*
+  (syntax-rules ... ()
+    ((_ obj (pat exp ...) ...)
+     (match obj (pat (begin (map display (list "match " 'pat ":")) (newline)
+                            (measure-perf- '(exp ...) (lambda () exp ...)))) ...))))
+
+(define (measure-perf- label thunk)
+  (let ((t1 (get-internal-run-time))
+        (result (thunk))
+        (t2 (get-internal-run-time)))
+    (stderr "~a: ~a\n" (- t2 t1) label)
+    result))
+
+(define-syntax measure-perf
+  (syntax-rules ()
+    ((_ label exp)
+     (let ((t1 (get-internal-run-time))
+           (result ((lambda () exp)))
+           (t2 (get-internal-run-time)))
+       (stderr "~a: ~a\n" (- t2 t1) label)
+       result))))
+
+(define-syntax *let*
+  (syntax-rules ()
+    ((_ ((var val) ...) exp exp* ...)
+     (let* ((var (measure-perf 'var val)) ...)
+       (measure-perf '*let* exp exp* ...)))))
 
 (define g-time (get-internal-run-time))
 (define* ((perf label) o)
@@ -310,50 +331,6 @@
     (_
      (make-guard o))))
 
-(define (ast-> ast)
-  ((compose-root
-    om->list
-    ;;((@ (gaiag dzn) ast->dzn))
-    code-norm-event
-    ast:resolve
-    ast->om
-    ) ast))
-
-(define (pair-eq? p) (eq? (car p) (cdr p)))
-
-(define-method (ast:direction (o <trigger>))
-  (.direction (.event o)))
-
-(define-method (ast:provided-in-triggers (o <component-model>))
-  (append-map (lambda (port)
-                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
-                     (filter om:in? (om:events port))))
-              (filter om:provides? (om:ports o))))
-
-(define-method (ast:required-out-triggers (o <component-model>))
-  (append-map (lambda (port)
-                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
-                     (filter om:out? (om:events port))))
-              (filter om:requires? (om:ports o) )))
-
-(define-method (ast:in-triggers (o <component-model>))
-  (append (ast:provided-in-triggers o) (ast:required-out-triggers o)))
-
-(define-method (ast:provided-out-triggers (o <component-model>))
-  (append-map (lambda (port)
-                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
-                     (filter om:out? (om:events port))))
-              (filter om:provides? (om:ports o))))
-
-(define-method (ast:required-in-triggers (o <component-model>))
-  (append-map (lambda (port)
-                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
-                     (filter om:in? (om:events port))))
-              (filter om:requires? (om:ports o) )))
-
-(define-method (ast:out-triggers (o <component-model>))
-  (append (ast:provided-out-triggers o) (ast:required-in-triggers o)))
-
 (define-method (trigger->illegal (o <trigger>))
   (make <on>
     #:triggers (make <triggers> #:elements (list o))
@@ -442,6 +419,7 @@
 (define* ((rewrite-formals #:optional model (locals '())) o)
 
   (define (member? identifier) (om:variable model identifier))
+  (define (pair-eq? p) (eq? (car p) (cdr p)))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
   (define (extern? identifier) (and=> (var? identifier) (cut om:extern model <>)))
@@ -576,8 +554,11 @@
     ((? (is? <ast>)) (om:map on-compound o))
     (_ o)))
 
-;; (define ast (read-ast '../../test/all/normalize_alias_local/normalize_alias_local.dzn))
-;; (define om (ast->om ast))
-;; (define root (ast:resolve om))
-;; (define model (find (is? <component>) root))
-;; (define statement (.statement (.behaviour model)))
+(define (ast-> ast)
+  ((compose-root
+    om->list
+    ;;((@ (gaiag dzn) ast->dzn))
+    code-norm-event
+    ast:resolve
+    ast->om
+    ) ast))

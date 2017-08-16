@@ -1,1 +1,1 @@
-#x:type-name  #.name #x:=expression;
+#x:c++:type-name-type  #.name #x:=expression;

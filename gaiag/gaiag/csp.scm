@@ -1188,7 +1188,7 @@
      (if (not behaviour)
          o
          (clone o
-                #:ports (make <ports> #:elements (append (om:port* ports) (om:ports behaviour)))
+                #:ports (make <ports> #:elements (append (ast:port* ports) (ast:port* behaviour)))
                 #:behaviour (clone behaviour #:ports (make <ports>)))))
     ((? (is? <ast>)) (om:map move-internal-ports o))
     (_ o)))

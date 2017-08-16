@@ -53,13 +53,27 @@
   #:use-module (gaiag reader)
 
   #:export (
+           ast:direction
            ast:expression-type
-           ast:set-scope
-           ast:set-model-scope
-           ast:root-scope
+           ast:in-triggers
            ast:model-scope
+           ast:other-direction
+           ast:out-triggers
+           ast:out-triggers-in-events
+           ast:out-triggers-out-events
+           ast:provided
+           ast:provided-in-triggers
+           ast:provided-out-triggers
+           ast:required
+           ast:required-in-triggers
+           ast:required-out-triggers
+           ast:root-scope
+           ast:set-model-scope
+           ast:set-scope
+           ast:valued-in-triggers
+           ast:void-in-triggers
 
-           om:port*
+           ast:port*
 
            om:bind
            om:bind-other-port
@@ -143,6 +157,28 @@
 (define (deprecated . where)
   (stderr "DEPRECATED:~a\n" where))
 
+;;; ast: accessors
+
+(define-method (ast:argument* (o <arguments>)) (.elements o))
+(define-method (ast:binding* (o <bindings>)) (.elements o))
+(define-method (ast:statement* (o <compound>)) (.elements o))
+(define-method (ast:event* (o <events>)) (.elements o))
+(define-method (ast:field* (o <fields>)) (.elements o))
+(define-method (ast:formal* (o <formals>)) (.elements o))
+(define-method (ast:function* (o <functions>)) (.elements o))
+(define-method (ast:instance* (o <instances>)) (.elements o))
+(define-method (ast:port* (o <ports>)) (.elements o))
+(define-method (ast:port* (o <behaviour>)) ((compose .elements .ports) o))
+(define-method (ast:model* (o <root>)) (.elements o))
+(define-method (ast:trigger* (o <triggers>)) (.elements o))
+(define-method (ast:type* (o <types>)) (.elements o))
+(define-method (ast:variable* (o <variables>)) (.elements o))
+
+(define-method (ast:argument* (o <trigger>)) ((compose ast:argument* .arguments) o))
+(define-method (ast:binding* (o <system>)) ((compose ast:binding* .bindings) o))
+(define-method (ast:function* (o <behaviour>)) ((compose ast:function* .functions) o))
+(define-method (ast:statement* (o <behaviour>)) ((compose ast:statement* .statement) o))
+
 (define-method (ast:expression-type (o <ast>))
   (match o
     (($ <bool>) o)
@@ -177,7 +213,75 @@
     ;; FIXME: async port only?
     (($ <port>) ((compose ast:expression-type car om:events) o))))
 
-;;; AST-LIST shorthands
+(define-method (ast:other-direction (o <event>))
+  (assoc-ref `((in . out)
+               (out . in))
+             (.direction o)))
+
+(define-method (ast:other-direction (o <trigger>))
+  ((compose ast:other-direction .event) o))
+
+(define-method (ast:provided (o <component-model>))
+  (filter om:provides? ((compose .elements .ports) o)))
+
+(define-method (ast:required (o <component-model>))
+  (filter om:requires? ((compose .elements .ports) o)))
+
+(define-method (ast:direction (o <trigger>))
+  (.direction (.event o)))
+
+(define-method (ast:provided-in-triggers (o <component-model>))
+  (append-map (lambda (port)
+                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (filter om:in? (om:events port))))
+              (filter om:provides? (om:ports o))))
+
+(define-method (ast:required-out-triggers (o <component-model>))
+  (append-map (lambda (port)
+                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (filter om:out? (om:events port))))
+              (filter om:requires? (om:ports o) )))
+
+(define-method (ast:in-triggers (o <component-model>))
+  (append (ast:provided-in-triggers o) (ast:required-out-triggers o)))
+
+(define-method (ast:provided-out-triggers (o <component-model>))
+  (append-map (lambda (port)
+                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (filter om:out? (om:events port))))
+              (filter om:provides? (om:ports o))))
+
+(define-method (ast:required-in-triggers (o <component-model>))
+  (append-map (lambda (port)
+                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (filter om:in? (om:events port))))
+              (filter om:requires? (om:ports o) )))
+
+(define-method (ast:out-triggers (o <component-model>))
+  (append (ast:provided-out-triggers o) (ast:required-in-triggers o)))
+
+(define-method (ast:void-in-triggers (o <component-model>))
+  (filter
+   (lambda (t) (is-a? ((compose .type .signature .event) t) <void>))
+   (ast:in-triggers o)))
+
+(define-method (ast:valued-in-triggers (o <component-model>))
+  (filter
+   (lambda (t) (not (is-a? ((compose .type .signature .event) t) <void>)))
+   (ast:in-triggers o)))
+
+(define-method (trigger-in-event? (o <trigger>))
+  ((compose om:in? .event) o))
+
+(define-method (ast:out-triggers-in-events (o <component-model>))
+  (filter (compose om:in? .event) (ast:out-triggers o)))
+
+(define-method (ast:out-triggers-out-events (o <component-model>))
+  (filter (compose om:out? .event) (ast:out-triggers o)))
+
+
+;;; deprecated om: interface
+
 (define* (om:events- o #:optional (predicate? identity))
   (filter predicate?
           (match o
@@ -195,28 +299,6 @@
 (define* (om:integers #:optional (model #f))
   (filter (is? <int>) (om:types model)))
 
-
-;;; list lookup
-
-;; WIP
-(define-method (om:argument* (o <arguments>)) (.elements o))
-(define-method (om:binding* (o <bindings>)) (.elements o))
-(define-method (om:statement* (o <compound>)) (.elements o))
-(define-method (om:event* (o <events>)) (.elements o))
-(define-method (om:field* (o <fields>)) (.elements o))
-(define-method (om:formal* (o <formals>)) (.elements o))
-(define-method (om:function* (o <functions>)) (.elements o))
-(define-method (om:instance* (o <instances>)) (.elements o))
-(define-method (om:port* (o <ports>)) (.elements o))
-(define-method (om:model* (o <root>)) (.elements o))
-(define-method (om:trigger* (o <triggers>)) (.elements o))
-(define-method (om:type* (o <types>)) (.elements o))
-(define-method (om:variable* (o <variables>)) (.elements o))
-
-(define-method (om:argument* (o <trigger>)) ((compose om:argument* .arguments) o))
-(define-method (om:binding* (o <system>)) ((compose om:binding* .bindings) o))
-(define-method (om:function* (o <behaviour>)) ((compose om:function* .functions) o))
-(define-method (om:statement* (o <behaviour>)) ((compose om:statement* .statement) o))
 
 
 (define (om:bindings o)
@@ -499,18 +581,20 @@
       (equal? (append scope (om:scope+name ast)) (om:scope+name name))))
 
 ;;; NAME/NAMESPACE/SCOPE
-(define (om:scope+name o)
+(define-method (om:scope+name o)
   ;; (stderr "om:scope+name o=~a\n" o)
   (match o
     (($ <scope.name>) (append (.scope o) (list (.name o))))
     (($ <instance>) (om:scope+name (.type.name o)))
     (($ <port>) (om:scope+name (.type.name o)))
+    (($ <formal>) ((compose om:scope+name .type) o))
+    (($ <literal>) (append (om:scope+name (.type o)) (list (.field o))))
 
-    (($ <bool>) '(bool))
-    (($ <void>) '(void))
-    ;; FIXME
-    (($ <type> 'bool) '(bool))
-    (($ <type> 'void) '(void))
+    ;; (($ <bool>) '(bool))
+    ;; (($ <void>) '(void))
+    ;; ;; FIXME
+    ;; (($ <type> 'bool) '(bool))
+    ;; (($ <type> 'void) '(void))
     ((? (is? <scoped>)) ((compose om:scope+name .name) o))))
 
 (define* ((om:scope-name #:optional (infix '_)) o)

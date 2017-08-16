@@ -1,6 +1,6 @@
 ##ifndef ENUM_TO_STRING_#ast:scope+name
 ##define ENUM_TO_STRING_#ast:scope+name  1
-inline std::string to_string(#ast:scope+name-:: ::type v)
+inline std::string to_string(#x:c++:type-name-type  v)
 {
   switch(v)
   {
