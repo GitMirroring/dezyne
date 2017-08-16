@@ -1,9 +1,9 @@
-##ifndef STRING_TO_ENUM_#ast:scope+name
-##define STRING_TO_ENUM_#ast:scope+name  1
-inline #x:c++:type-name-type  to_#ast:scope+name(std::string s)
+##ifndef STRING_TO_ENUM_#x:scope+name
+##define STRING_TO_ENUM_#x:scope+name  1
+inline #x:type-name  to_#x:scope+name(std::string s)
 {
-  static std::map<std::string, #x:c++:type-name-type > m = {
+  static std::map<std::string, #x:type-name > m = {
       #x:string-to-enum };
   return m.at(s);
 }
-##endif // STRING_TO_ENUM_#ast:scope+name
+##endif // STRING_TO_ENUM_#x:scope+name

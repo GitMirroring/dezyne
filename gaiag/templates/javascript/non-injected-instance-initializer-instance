@@ -1,1 +1,1 @@
-this.#.name  = new dzn.#ast:scope+name(this._dzn.locator, {parent: this, name: '#.name '});
+this.#.name  = new dzn.#x:scope+name(this._dzn.locator, {parent: this, name: '#.name '});

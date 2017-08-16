@@ -49,22 +49,22 @@
   #:use-module (language dezyne location)
 
   #:export (<enum-field>
-            ast:scope+name
-            ast:type-name
-            ast:formals
-            ast:instance-name
-            
+            code:formals
+            code:instance-name
+
             code:expression
             code:trigger
             code:non-injected-bindings
             model2file
             code:ons
             code:functions
+            code:instance-port-name
             code:instances
             code:reply-type
             code:reply-scope+name
             code:reply-types
-            
+            code:scope+name
+
             code-file
             code:file-name
             code:dump-file
@@ -90,20 +90,29 @@
   (type #:getter .type #:init-form #f #:init-keyword #:type)
   (field #:getter .field #:init-value #f #:init-keyword #:field))
 
-(define-method (om:scope+name (o <enum-field>))
-  (append ((compose om:scope+name .type) o) (list (.field o))))
+(define-method (code:scope+name o)
+  (om:scope+name o))
 
-;; (define-method (ast:type-name (o <enum-field>))
-;;   (append ((compose om:scope+name .type) o) (list (.field o))))
+(define-method (code:scope+name (o <event>))
+  ((compose code:scope+name .signature) o))
 
-(define-method (om:scope+name (o <bind>))
-  ((compose om:scope+name .type (cut om:instance (ast:model-scope) <>) injected-instance-name) o))
+(define-method (code:scope+name (o <extern>))
+  (list (.value o)))
 
-;; (define-method (ast:type-name (o <formal>))
-;;   ((compose om:scope+name .type) o))
+(define-method (code:scope+name (o <int>))
+  '(int))
 
-;; (define-method (ast:type-name (o <instance>))
-;;   ((compose om:scope+name .type) o))
+(define-method (code:scope+name (o <signature>))
+  ((compose code:scope+name .type) o))
+
+(define-method (code:scope+name (o <trigger>))
+  ((compose code:scope+name .event) o))
+
+(define-method (code:scope+name (o <enum-field>))
+  (append ((compose code:scope+name .type) o) (list (.field o))))
+
+(define-method (code:scope+name (o <bind>))
+  ((compose code:scope+name .type (cut om:instance (ast:model-scope) <>) injected-instance-name) o))
 
 ;;; code:ast querying
 (define (code:reply-types o)
@@ -116,7 +125,7 @@
                                                   (is-a? b <void>))
                                              (om:equal? a b))))))
 
-(define-method (ast:port-name (o <bind>))
+(define-method (code:port-name (o <bind>))
   (let* ((model (ast:model-scope))
          (left (.left o))
          (left-port (.port left))
@@ -126,7 +135,7 @@
                     (if (not (.instance left)) (.port left) (.port right)))))
     port))
 
-(define-method (ast:instance-name (o <bind>))
+(define-method (code:instance-name (o <bind>))
   (let* ((model (ast:model-scope))
          (left (.left o))
          (left-port (.port left))
@@ -136,28 +145,23 @@
                     (if (.instance left) left right))))
     bind))
 
-(define-method (ast:instance-name (o <binding>))
+(define-method (code:instance-name (o <binding>))
   o)
 
-(define-method (ast:scope+name (o <scope.name>))
-  (string-join (map symbol->string (append (.scope o) (list (.name o)))) "_"))
+(define-method (code:instance-name (o <port>))
+  (.name (om:instance (ast:model-scope) o)))
 
-(define-method (ast:scope+name (o <scoped>))
-  ((compose ast:scope+name .name) o))
+(define-method (code:instance-name (o <trigger>))
+  ((compose code:instance-name (cut .port (ast:model-scope) <>)) o))
 
-(define-method (ast:scope+name (o <port>))
-  ((compose ast:scope+name .type) o))
+(define-method (code:instance-port-name (o <port>))
+  (let* ((bind (om:port-bind (ast:model-scope) o))
+         (instance-bind (om:instance-binding? bind)))
+    (.port.name instance-bind)))
 
-(define-method (ast:scope+name (o <event>))
-  ((compose ast:scope+name .type .signature) o))
+(define-method (code:instance-port-name (o <trigger>))
+  ((compose code:instance-port-name (cut .port (ast:model-scope) <>)) o))
 
-(define-method (ast:scope+name (o <trigger>))
-  ((compose ast:scope+name .event) o))
-
-(define code:reply-scope+name ast:scope+name)
-(define-method (code:reply-scope+name (o <bool>)) o)
-(define-method (code:reply-scope+name (o <int>)) o)
-(define-method (code:reply-scope+name (o <void>)) o)
 (define-method (code:functions (o <component>))
   (om:functions o))
 
@@ -173,57 +177,31 @@
 (define-method (code:return (o <on>))
   ((compose .type .signature .event code:trigger) o))
 
+(define-method (code:arguments (o <trigger>))
+  (map .name (code:formals o)))
 
-(define-method (ast:port-type (o <trigger>))
-  ((->join "::") (om:scope+name ((compose .type .port) o)))) ;; MORTAL SIN HERE!!?
-
-(define-method (ast:port-type (o <port>))  ;; MORTAL SIN HERE!!?
-  (cond ((member (language) '(javascript))
-         ((->join ".") (om:scope+name (.type o))))
-        ((member (language) '(c++ c++03 c++-msvc11))
-         ((->join "::") (om:scope+name (.type o))))))
-
-(define-method (ast:type-name (o <int>)) (make <scope.name> #:name 'int))
-(define-method (ast:type-name (o <void>)) (make <scope.name> #:name 'void))
-(define-method (ast:type-name (o <bool>)) (make <scope.name> #:name 'bool))
-
-(define-method (ast:type-name (o <event>))
-  ((compose .name .type .signature) o))
-
-(define-method (ast:type-name (o <type>))
-  (.name o))
-
-(define-method (ast:type-name (o <variable>))
-  (ast:type-name (.type o)))
-
-(define-method (ast:type-name (o <extern>))
-  (make <scope.name> #:name (.value o)))
-
-(define-method (ast:arguments (o <trigger>))
-  (map .name (ast:formals o)))
-
-(define-method (ast:arguments (o <call>))
+(define-method (code:arguments (o <call>))
   ((compose .elements .arguments) o))
 
-(define-method (ast:arguments (o <action>))
+(define-method (code:arguments (o <action>))
   ((compose .elements .arguments) o))
 
-(define-method (ast:out-argument (o <trigger>))
-  (filter om:out-or-inout? (ast:formals o)))
+(define-method (code:out-argument (o <trigger>))
+  (filter om:out-or-inout? (code:formals o)))
 
-(define-method (ast:formals (o <function>))
+(define-method (code:formals (o <function>))
   ((compose .elements .formals .signature) o))
 
-(define-method (ast:formals (o <action>))
+(define-method (code:formals (o <action>))
   ((compose .elements .formals .signature .event) o))
 
-(define-method (ast:formals (o <trigger>))
+(define-method (code:formals (o <trigger>))
   ((compose .elements .formals) o))
 
-(define-method (ast:formals (o <event>))
+(define-method (code:formals (o <event>))
   ((compose .elements .formals .signature) o))
 
-(define-method (ast:formals (o <on>))
+(define-method (code:formals (o <on>))
   (let* ((trigger ((compose car .elements .triggers) o))
          (event (.event trigger)))
     (map (lambda (name formal)
@@ -233,7 +211,7 @@
 
 (define-method (code:field-expression (o <field>))
   (string-join
-   (cons "" (map symbol->string (append (om:scope+name ((compose .type .variable) o))
+   (cons "" (map symbol->string (append (code:scope+name ((compose .type .variable) o))
                                         (list (.field o)))))
    "::"))
 
@@ -374,14 +352,8 @@
     ((? unspecified?) "")
     (_ (.expression o))))
 
-
-(define-method (code:reply-type (o <ast>)) ;; MORTAL SIN HERE!!?
-  (let ((type (ast:expression-type o)))
-    (match type
-      (($ <bool>) "bool")
-      (($ <int>) "int")
-      (($ <enum>) (string-join (map symbol->string (om:scope+name type)) "_"))
-      (($ <void>) "void"))))
+(define-method (code:reply-type (o <ast>))
+  ((compose code:scope+name ast:expression-type) o))
 
 (define-method (code:reply-type (o <reply>))
   ((compose code:reply-type .expression) o))
@@ -390,8 +362,9 @@
   (if (om:imperative? o) o
       (make <declarative-compound> #:elements o)))
 
-
 ;;; code: generic templates
+(define-template x:scope+name code:scope+name 'name-infix)
+
 (define-template x:non-void-reply identity #f)
 
 (define-template x:reply (lambda (o)
@@ -401,20 +374,19 @@
 
 (define-template x:model-name (compose om:name (lambda (_) (ast:model-scope))))
 
-(define-template x:upcase-model-name (compose string-upcase (->join "_") om:scope+name (lambda (_) (ast:model-scope))))
+(define-template x:upcase-model-name (compose string-upcase (->join "_") code:scope+name (lambda (_) (ast:model-scope))))
 
 (define-template x:capitalize-model-name (compose string-capitalize symbol->string .name .name (lambda (o) (ast:model-scope))))
 
-(define-template x:port-type ast:port-type)
 (define-template x:method code:trigger)
 
-(define-template x:formals ast:formals 'formal-infix)
-(define-template x:formals-type ast:formals 'formal-infix)
+(define-template x:formals code:formals 'formal-infix)
+(define-template x:formals-type code:formals 'formal-infix)
 
 (define-template x:methods code:ons)
 (define-template x:functions code:functions)
 
-(define-template x:field code:field-expression) ;; MORTAL SIN HERE!!?
+(define-template x:field code:field-expression)
 
 (define-template x:data code:data)
 
@@ -428,7 +400,7 @@
 
 
 (define-template x:=expression code:=expression #f <expression>)
-(define-template x:reply-type code:reply-type)
+(define-template x:reply-type code:reply-type 'name-infix)
 (define-template x:then .then #f <statement>)
 
 (define-template x:else (lambda (o) (or (.else o) '())) #f <statement>)
@@ -493,13 +465,13 @@
 (define-template x:bind-required code:bind-required)
 
 
-(define-template x:binding-name ast:instance-name)
+(define-template x:binding-name code:instance-name)
 
 (define-template x:system-port-connect (lambda (o) (filter (negate om:port-bind?) ((compose .elements .bindings) o))))
 
-(define-template x:arguments ast:arguments 'argument-infix <expression>)
+(define-template x:arguments code:arguments 'argument-infix <expression>)
 
-(define-template x:out-arguments ast:out-argument 'argument-prefix <expression>)
+(define-template x:out-arguments code:out-argument 'argument-prefix <expression>)
 
 (define-template x:return code:return #f <type>)
 

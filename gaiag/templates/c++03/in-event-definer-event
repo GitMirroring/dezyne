@@ -1,1 +1,1 @@
-boost::function< #x:reply-type-type (#x:formals)> #.name;
+boost::function< #x:type-name (#x:formals)> #.name;

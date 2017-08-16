@@ -1,6 +1,6 @@
-##ifndef ENUM_TO_STRING_#ast:scope+name
-##define ENUM_TO_STRING_#ast:scope+name  1
-inline std::string to_string(#x:c++:type-name-type  v)
+##ifndef ENUM_TO_STRING_#x:scope+name
+##define ENUM_TO_STRING_#x:scope+name  1
+inline std::string to_string(#x:type-name  v)
 {
   switch(v)
   {
@@ -8,4 +8,4 @@ inline std::string to_string(#x:c++:type-name-type  v)
   }
   return "";
 }
-##endif // ENUM_TO_STRING_#ast:scope+name
+##endif // ENUM_TO_STRING_#x:scope+name

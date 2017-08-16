@@ -1,1 +1,1 @@
-#x:c++:type-name-type  reply_#ast:scope+name;
+#x:type-name  reply_#x:scope+name;

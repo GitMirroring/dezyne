@@ -38,6 +38,7 @@
   #:use-module (language dezyne location)
 
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
@@ -53,6 +54,7 @@
   #:use-module (gaiag reader)
 
   #:export (
+           ast:clr-events
            ast:direction
            ast:expression-type
            ast:in-triggers
@@ -64,6 +66,7 @@
            ast:provided
            ast:provided-in-triggers
            ast:provided-out-triggers
+           ast:req-events
            ast:required
            ast:required-in-triggers
            ast:required-out-triggers
@@ -235,6 +238,18 @@
                 (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
                      (filter om:in? (om:events port))))
               (filter om:provides? (om:ports o))))
+
+(define-method (ast:req-events (o <component>))
+  (append-map (lambda (port)
+                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (filter (conjoin om:in? (compose (cut eq? 'req <>) .name)) (om:events port))))
+              (om:ports (.behaviour o))))
+
+(define-method (ast:clr-events (o <component>))
+  (append-map (lambda (port)
+                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (filter (conjoin om:in? (compose (cut eq? 'clr <>) .name)) (om:events port))))
+              (om:ports (.behaviour o))))
 
 (define-method (ast:required-out-triggers (o <component-model>))
   (append-map (lambda (port)
@@ -582,19 +597,17 @@
 
 ;;; NAME/NAMESPACE/SCOPE
 (define-method (om:scope+name o)
-  ;; (stderr "om:scope+name o=~a\n" o)
   (match o
-    (($ <scope.name>) (append (.scope o) (list (.name o))))
-    (($ <instance>) (om:scope+name (.type.name o)))
-    (($ <port>) (om:scope+name (.type.name o)))
+    (($ <bool>) '(bool))
+    (($ <void>) '(void))
+    (($ <event>) ((compose om:scope+name .signature) o))
     (($ <formal>) ((compose om:scope+name .type) o))
+    (($ <instance>) (om:scope+name (.type.name o)))
     (($ <literal>) (append (om:scope+name (.type o)) (list (.field o))))
-
-    ;; (($ <bool>) '(bool))
-    ;; (($ <void>) '(void))
-    ;; ;; FIXME
-    ;; (($ <type> 'bool) '(bool))
-    ;; (($ <type> 'void) '(void))
+    (($ <port>) (om:scope+name (.type.name o)))
+    (($ <scope.name>) (append (.scope o) (list (.name o))))
+    (($ <signature>) ((compose om:scope+name .type) o))
+    (($ <trigger>) ((compose om:scope+name .event) o))
     ((? (is? <scoped>)) ((compose om:scope+name .name) o))))
 
 (define* ((om:scope-name #:optional (infix '_)) o)

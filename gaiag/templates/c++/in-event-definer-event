@@ -1,1 +1,1 @@
-std::function<#x:reply-type-type (#x:formals)> #.name;
+std::function<#x:type-name (#x:formals)> #.name;

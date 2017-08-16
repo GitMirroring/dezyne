@@ -1,4 +1,4 @@
-##include "#x:scope-name skel_#x:model-name .hh"
+##include "#x:scope-prefix skel_#x:model-name .hh"
 
 ##include <dzn/locator.hh>
 ##include <dzn/runtime.hh>
