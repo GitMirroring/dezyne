@@ -26,11 +26,13 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 optargs)
 
-  #:use-module (gaiag animate)
+  #:use-module (gaiag deprecated animate)
   #:use-module (gaiag dzn)
   #:use-module (gaiag misc)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag om)
+  #:use-module (gaiag xpand)
+
   #:export (
            ast->
            ast->html

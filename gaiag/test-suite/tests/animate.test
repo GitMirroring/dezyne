@@ -22,7 +22,7 @@
 
   #:use-module (ice-9 pretty-print)
 
-  #:use-module (gaiag animate)
+  #:use-module (gaiag deprecated animate)
   #:use-module (gaiag c++)
   #:use-module (gaiag misc)
   #:use-module (gaiag reader))

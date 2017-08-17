@@ -36,8 +36,9 @@
   #:use-module (gaiag om)
   #:use-module (gaiag util)
 
-  #:use-module (gaiag animate)
-  #:use-module (gaiag animate-code)
+  #:use-module (gaiag deprecated animate)
+  #:use-module (gaiag deprecated code)
+
   #:use-module (gaiag command-line)
   #:use-module (gaiag compare)
   #:use-module (gaiag indent)
@@ -652,7 +653,7 @@
                                  (resolve-module '(gaiag misc))
                                  (resolve-module '(oop goops))
                                  (resolve-module '(gaiag goops))
-                                 (resolve-module '(gaiag animate-code))))))
+                                 (resolve-module '(gaiag deprecated code))))))
     (module-define! module 'model o)
     (module-define! module '.model (om:name o))
     (module-define! module '.scope_model ((om:scope-name) o))

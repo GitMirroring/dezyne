@@ -33,9 +33,10 @@
   #:use-module (ice-9 receive)
   #:use-module (srfi srfi-1)
 
-  #:use-module (gaiag animate)
+  #:use-module (gaiag deprecated animate)
+  #:use-module (gaiag deprecated code)
+
   #:use-module (gaiag c)
-  #:use-module (gaiag animate-code)
   #:use-module (gaiag code)
   #:use-module (gaiag command-line)
   #:use-module (gaiag indent)
@@ -48,6 +49,7 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag ast2om)
   #:use-module (gaiag om)
+  #:use-module (gaiag xpand)
 
   #:use-module (language dezyne location)
 
@@ -153,10 +155,6 @@
 (define (event2->interface1-event1-alist port)
   (event2->interface1-event1-alist-
    ((compose gulp-file map-file) port)))
-
-(define (assoc-xref alist value)
-  (define (cdr-equal? x) (equal? (cdr x) value))
-  (and=> (find cdr-equal? alist) car))
 
 (define ((asd-interfaces dir?) model)
   (let* ((provided

@@ -39,16 +39,17 @@
   #:use-module (gaiag ast2om)
   #:use-module (gaiag om)
 
-  #:use-module (gaiag animate)
+  #:use-module (gaiag deprecated animate)
+  #:use-module (gaiag deprecated code)
+
   #:use-module (gaiag command-line)
   #:use-module (gaiag indent)
   #:use-module (gaiag json)
-  #:use-module (gaiag animate-code)
   #:use-module (gaiag misc)
   #:use-module (gaiag reader)
   #:use-module (gaiag resolve)
   #:use-module (gaiag util)
-;;  #:use-module (gaiag wfc)
+  #:use-module (gaiag xpand)
 
   #:export (
            ast->

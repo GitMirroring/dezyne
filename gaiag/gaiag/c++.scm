@@ -27,9 +27,7 @@
   #:use-module (ice-9 receive)
   #:use-module (srfi srfi-1)
 
-  #:use-module (gaiag animate)
-
-  #:use-module (gaiag animate-code) ; FIXME: injected-binding?, injected-bindings
+  #:use-module (gaiag deprecated code) ; FIXME: injected-binding?, injected-bindings
   #:use-module (gaiag norm-event)
 
   #:use-module (gaiag c)
@@ -435,7 +433,7 @@
                        (map (@ (gaiag deprecated c++) dump) models)
                        (let* ((main (command-line:get 'model #f))
                               (main (and main (find (compose (cut eq? (string->symbol main) <>) (om:scope-name)) models)))
-                              (module (make-module 31 `(,(resolve-module '(gaiag animate-code))
+                              (module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
                                                         ,(resolve-module '(gaiag c++)))))
                               (models (sort (filter (disjoin (is? <data>)
                                                              (conjoin (negate dzn-async?) (negate om:imported?) (negate (is? <foreign>))))

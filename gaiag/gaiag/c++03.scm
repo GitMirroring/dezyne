@@ -23,7 +23,6 @@
 ;;; Code:
 
 (define-module (gaiag c++03)
-  #:use-module (gaiag animate)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag om)
   #:use-module (gaiag c++)
@@ -35,3 +34,4 @@
 (define glue (@@ (gaiag deprecated c++) glue))
 (define asd-interfaces (@@ (gaiag deprecated c++) asd-interfaces))
 (define event2->interface1-event1-alist (@@ (gaiag deprecated c++) event2->interface1-event1-alist))
+

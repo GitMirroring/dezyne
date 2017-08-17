@@ -32,7 +32,7 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (ice-9 match)
-  #:use-module (gaiag animate)
+  #:use-module (gaiag deprecated animate)
   #:use-module (gaiag asserts)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
@@ -41,6 +41,7 @@
   #:use-module (gaiag om)
   #:use-module (gaiag compare)
   #:use-module (gaiag util)
+  #:use-module (gaiag xpand)
 
   #:use-module (gaiag command-line)
 ;;  #:use-module (gaiag mangle)

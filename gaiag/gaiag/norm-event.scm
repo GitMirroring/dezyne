@@ -425,10 +425,6 @@
   (define (extern? identifier) (and=> (var? identifier) (cut om:extern model <>)))
   (define (extern-type? type) (om:extern model type))
 
-  (define (assoc-xref alist value)
-    (define (cdr-equal? x) (equal? (cdr x) value))
-    (and=> (find cdr-equal? alist) car))
-
   (define ((rename mapping) o)
     ;;(stderr "rename o=~a\n" o)
     (match o

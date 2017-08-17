@@ -29,7 +29,7 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
 
-  #:use-module (gaiag animate-code)
+  #:use-module (gaiag deprecated code)
   #:use-module (gaiag code)
 
   #:use-module (gaiag misc)

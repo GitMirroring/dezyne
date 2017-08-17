@@ -19,8 +19,8 @@
 (define-module (gaiag python)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag animate-code)
   #:use-module (gaiag code)
+  #:use-module (gaiag deprecated code)
   #:use-module (gaiag reader))
 
 (define (ast-> ast)

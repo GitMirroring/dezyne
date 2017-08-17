@@ -30,18 +30,43 @@
   #:use-module (ice-9 peg)
   #:use-module (ice-9 peg codegen)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-
-  #:use-module (gaiag animate) ; gulp-template
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
   #:use-module (gaiag om)
   #:use-module (gaiag util)
 
   #:export (define-template
+             gulp-template
+             prefix-dir
+             template?
+             template-dir
+             template-file
              x:pand))
+
+(define (prefix-dir) ;; FIXME
+  (let* ((canary "language/dezyne/spec")
+         (canary.go (string-append canary ".go"))
+         (canary.scm (string-append canary ".scm"))
+	 (prefix (or (and=> (search-path %load-compiled-path canary.go) (cut string-drop-right <> (string-length canary.go)))
+                     (and=> (%search-load-path canary.scm) (cut string-drop-right <> (string-length canary.scm)))
+                     (let ((message
+                            (string-join
+                             (list "gaiag: Installation error: templates not found"
+                                   (format #f "gaiag: No such file or directory: ~a [~a]" canary.go %load-compiled-path)
+                                   (format #f "gaiag: No such file or directory: ~a [~a]" canary.scm %load-path)) "\n")))
+                       (stderr message)
+                       (throw 'installation-error message)))))
+    (append
+     ((compose file-name->components dirname) prefix)
+     '(gaiag))))
+
+(define template-dir (make-parameter (append (prefix-dir) '(templates))))
+(define (template-file name) (append (template-dir) (if (pair? name) name (list name))))
+(define (gulp-template name) (gulp-file (template-file name)))
 
 (define* (x:pand filename o #:optional (module (current-module)))
   (define (tree->string t)

@@ -1,8 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -25,7 +23,7 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(define-module (gaiag animate-code)
+(define-module (gaiag deprecated code)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
@@ -44,7 +42,7 @@
   #:use-module (gaiag om)
   #:use-module (gaiag util)
 
-  #:use-module (gaiag animate)
+  #:use-module (gaiag deprecated animate)
   #:use-module (gaiag annotate)
   #:use-module (gaiag code)
   #:use-module (gaiag command-line)
