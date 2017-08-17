@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -82,10 +82,11 @@ int main()
   assert(IDataparam::Status::Yes == sut.port.in.e0r());
   sut.port.in.e0();
   assert(IDataparam::Status::Yes == sut.port.in.er(123));
-  sut.port.in.e(123);
+  int i = 123;
+  sut.port.in.e(i);
+  assert(i == 123);
   assert(IDataparam::Status::No == sut.port.in.eer(123,345));
 
-  int i = 0;
   sut.port.in.eo(i);
   assert(i == 234);
 
