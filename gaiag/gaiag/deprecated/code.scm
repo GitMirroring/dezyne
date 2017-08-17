@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -1156,9 +1157,9 @@
           ((member file-name '(system.hh.scm))
            (x:pand 'header-system (module-ref module 'model) module))
           ((member file-name '(shell.hh.scm))
-           (x:pand 'shell-header-system (module-ref module 'model) module))
+           (x:pand 'header-shell-system (module-ref module 'model) module))
           ((member file-name '(shell.cc.scm))
-           (x:pand 'shell-source-system (module-ref module 'model) module))
+           (x:pand 'source-shell-system (module-ref module 'model) module))
           ((member file-name '(foreign.hh.scm))
            (x:pand 'foreign-header-component (module-ref module 'model) module))
           ((member file-name '(foreign.cc.scm))

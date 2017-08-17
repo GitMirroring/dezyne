@@ -328,7 +328,7 @@
     (($ <interface>) '())
     (($ <foreign>) o)
     (($ <component>) o)
-    (($ <system>) ((compose .elements .instances) o))))
+    ((? (is? <system>)) ((compose .elements .instances) o))))
 
 (define (om:ports- o)
   (match o

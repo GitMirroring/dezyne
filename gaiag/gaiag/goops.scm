@@ -148,6 +148,7 @@
            <root>
            <scoped>
            <scope.name>
+           <shell-system>
            <signature>
            <statement>
            <system>
@@ -416,6 +417,8 @@
 (define-class <system> (<component-model>)
   (instances #:getter .instances #:init-form (make <instances>) #:init-keyword #:instances)
   (bindings #:getter .bindings #:init-form (make <bindings>) #:init-keyword #:bindings))
+
+(define-class <shell-system> (<system>))
 
 (define-class <behaviour> (<named>)
   (types #:getter .types #:init-form (make <types>) #:init-keyword #:types)

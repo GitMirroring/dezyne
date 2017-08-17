@@ -287,9 +287,17 @@
 
 (define-template x:dzn-locator code:dzn-locator)
 
+(define (annotate-shells o)
+  (if (and (is-a? o <system>)
+           (equal? (command-line:get 'shell #f) (symbol->string (.name (.name o)))))
+      (make <shell-system> #:ports (.ports o) #:name (.name o) #:instances (.instances o) #:bindings (.bindings o))
+      o))
+
 (define-template x:header- (lambda (o) (filter (is? <interface>) (.elements o))))
-(define-template x:header (lambda (o) (topological-sort (filter (negate (disjoin (is? <type>) (is? <interface>))) (.elements o)))))
-(define-template x:source (lambda (o) (topological-sort (filter (negate (is? <type>)) (.elements o)))))
+(define-template x:header (lambda (o) (topological-sort (filter (negate (disjoin (is? <type>) (is? <interface>))) (map annotate-shells (.elements o))))))
+(define-template x:source
+  (lambda (o)
+    (topological-sort (filter (negate (is? <type>)) (map annotate-shells (.elements o))))))
 
 ;; shell-header-system
 (define-template x:provided-port-instance-declare (lambda (o) (filter om:provides? (om:ports o))))
@@ -450,4 +458,3 @@
                          (if (glue) (map dump-system (filter (is? <system>) (.elements om))))
                          (when main ((@@ (gaiag c) dump-main) main))))))
   "")
-
