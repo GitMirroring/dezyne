@@ -5,6 +5,6 @@ verify: OutEventsOnProvidesPortNotAllowed: check: deterministic: ok
 verify: OutEventsOnProvidesPortNotAllowed: check: illegal: ok
 verify: OutEventsOnProvidesPortNotAllowed: check: deadlock: ok
 verify: OutEventsOnProvidesPortNotAllowed: check: compliance: fail
-ppb.ia
-ppa.oa
+ppa.ia
+ppb.oa
 verify: OutEventsOnProvidesPortNotAllowed: check: livelock: ok
