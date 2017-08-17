@@ -37,7 +37,7 @@ class #.scope_model  extends Component {#
 (map
    (lambda (port)
      (map (define-on model port #{#'()
-  #port .#direction .#event  = new #(action-type model (.type signature) (.formals signature)() {public #return-type  action(#formals) {#(string-if (not (is-a? type-type <void>)) #{return #})Runtime.call#(symbol-capitalize direction)(#.scope_model .this, new #(action-type return-type '()) () {public #return-type  action() {#(string-if (not (is-a? type-type <void>)) #{return #})#port _#event(#arguments);}}, new Meta(#.scope_model .this.#port , "#event"));};};
+  #port .#direction .#event  = new #(action-type model (.type signature) (.formals signature))() {public #return-type  action(#formals) {#(string-if (not (is-a? type-type <void>)) #{return #})Runtime.call#(symbol-capitalize direction)(#.scope_model .this, new #(action-type model return-type (make <formals>)) () {public #return-type  action() {#(string-if (not (is-a? type-type <void>)) #{return #})#port _#event(#arguments);}}, new Meta(#.scope_model .this.#port , "#event"));};};
    #}) (filter (om:dir-matches? port) (om:events port))))
    (om:ports model))
   };#

@@ -944,6 +944,7 @@
                        (reply-scope-name ,reply-scope-name)
                        (return-type ,return-type)
                        (return-type-name ,return-type-name)
+                       (signature ,signature)
                        (instance ,(and instance (.name instance)))
                        (instance-port ,(and instance-port (.name instance-port)))
                        (type ,(.name type))))))
