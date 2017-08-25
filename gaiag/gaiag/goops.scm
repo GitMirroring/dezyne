@@ -474,9 +474,9 @@
 
 (define-class <reply> (<imperative>)
   (expression #:getter .expression #:init-value #f #:init-keyword #:expression)
-  (port #:getter .port #:init-value #f #:init-keyword #:port))
+  (port #:getter .port@ #:init-value #f #:init-keyword #:port))
 
-(define-method (.port.name (o <reply>)) (and=> (.port o) .name))
+(define-method (.port.name (o <reply>)) (.port@ o))
 
 (define-class <return> (<imperative>)
   (expression #:getter .expression #:init-value #f #:init-keyword #:expression))

@@ -941,8 +941,6 @@
   (symbol-join (append (.scope o) (list (.name o)))))
 
 (define (name-resolve root class o)
-  ;;(stderr "name-resolve ~a; class = ~a; root = ~a\n" o class root)
-  ;;(when (not (eq? g-root-id (.id root))) (throw 'wrong-root))
   (cond
    ((or (eq? <interface> class) (eq? <system> class) (eq? <component> class) (eq? <foreign> class))
     (find (lambda (m)
@@ -1019,23 +1017,19 @@
        (or (eq? container o)
            (any (lambda (e) (contains? e o)) (om:children container)))))
 
-;; (define-method (find-model (o <ast>))
-;;   (find (lambda (m) (and (is-a? m <model>) (contains? m o))) (.elements (car (ast:scope-root)))))
-
 (define-method (.port (model <component-model>) (o <trigger>))
-  ;;(stderr ".port ~a ~a\n" model o)
   (and (.port@ o) (name-resolve model <port> (.port@ o))))
 
 (define-method (.port (model <component-model>) (o <action>))
-  ;;(stderr ".port ~a ~a\n" model o)
   (and (.port@ o) (name-resolve model <port> (.port@ o))))
 
 (define-method (.port (o <trigger>))
-  ;;(stderr ".port ~a\n" o)
   (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
 
 (define-method (.port (o <action>))
-  ;;(stderr ".port ~a\n" o)
+  (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
+
+(define-method (.port (o <reply>))
   (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
 
 (define-method (.port (o <binding>))
@@ -1044,12 +1038,9 @@
       (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
 
 (define-method (.function (model <model>) (o <call>))
-;;  (stderr ".function ~a ~a\n" model o)
   (and (.function@ o) (name-resolve model <function> (.function@ o))))
 
 (define-method (.function (o <call>))
-;;  (stderr ".function ~a\n" o)
-;;  (stderr ".function ~a ~a\n" (car (ast:scope-model)) o)
   (and (.function@ o) (name-resolve (car (ast:scope-model)) <function> (.function@ o))))
 
 (define (ast-> ast)
