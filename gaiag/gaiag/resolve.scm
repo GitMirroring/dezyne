@@ -331,7 +331,7 @@
     (($ <enum>) o)
     (($ <extern>) o)
     ((and ($ <field>) (= .variable variable))
-        (clone o #:variable (var? variable)))
+     (clone o #:variable ((resolve model locals) (var? variable))))
     (($ <illegal>) o)
     (($ <int>) o)
     (($ <literal> (? (is? <type>))) o)
