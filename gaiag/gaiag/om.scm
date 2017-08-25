@@ -58,6 +58,8 @@
            ast:direction
            ast:expression-type
            ast:in-triggers
+           ast:scope
+           ast:extend-scope
            ast:model-scope
            ast:other-direction
            ast:out-triggers

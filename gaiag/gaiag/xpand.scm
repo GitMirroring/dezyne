@@ -111,8 +111,8 @@
                                                       (let* ((name (symbol->string (ast-name (if (is-a? ast type) type (class-of ast)))))
                                                              (filename (if (equal? filename name) filename
                                                                            (string-append filename "-" name))))
-                                                        (if (is-a? ast <model>)
-                                                            (ast:set-model-scope ast (x:pand filename ast))
+                                                        (if (not (eq? o (car (ast:scope))))
+                                                            (ast:extend-scope ast (x:pand filename ast))
                                                             (x:pand filename ast))))))) o)))))
         ((null? o) #f)
         ((is-a? o <ast>)
@@ -120,7 +120,9 @@
          (let* ((name (symbol->string (ast-name (if (is-a? o type) type (class-of o)))))
                 (filename (if (equal? filename name) filename
                               (string-append filename "-" name))))
-           (x:pand filename o)))
+	   (if (not (eq? o (car (ast:scope))))
+	       (ast:extend-scope o (x:pand filename o))
+	       (x:pand filename o))))
         (#t (x:pand filename o))))
 
 (define-syntax define-template
