@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
@@ -44,7 +45,7 @@ interface I {
     {
       state = state - 1;
       if (c < state) c = c + 1;
-      else if (c <= state + 1) lo;
+      else if (c >= state || c > state) if (c <= state + 1) lo;
       else if (c > state) hi;
     }
     [state == 2]
@@ -52,7 +53,7 @@ interface I {
     {
       state = state - 1;
       if (c < state) c = c + 1;
-      else if (c <= state + 1) lo;
+      else if (c >= state || c > state) if (c <= state + 1) lo;
       else if (c > state) hi;
     }
     [state == 3]
@@ -60,7 +61,7 @@ interface I {
     {
       state = state - 1;
       if (c < state) c = c + 1;
-      else if (c <= state + 1) lo;
+      else if (c >= state || c > state) if (c <= state + 1) lo;
       else if (c > state) hi;
     }
   }
@@ -86,7 +87,7 @@ component expressions {
       state = state - 1;
       if (c < state) c = c + 1;
       else if (c <= state + 1) i.lo();
-      else if (c > state) i.hi();
+      else if (c >= state || c > state) if (c > state) i.hi();
     }
     [state == 2]
     on i.e():
@@ -94,7 +95,7 @@ component expressions {
       state = state - 1;
       if (c < state) c = c + 1;
       else if (c <= state + 1) i.lo();
-      else if (c > state) i.hi();
+      else if (c >= state || c > state) if (c > state) i.hi();
     }
     [state == 3]
     on i.e():
@@ -102,8 +103,7 @@ component expressions {
       state = state - 1;
       if (c < state) c = c + 1;
       else if (c <= state + 1) i.lo();
-      else if (c > state) i.hi();
+      else if (c >= state || c > state) if (c > state) i.hi();
     }
   }
 }
-
