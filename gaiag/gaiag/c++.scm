@@ -163,8 +163,8 @@
 (define-template x:method-declare code:ons)
 (define-template x:function-declare code:functions)
 
-(define-template x:include-guard (lambda (o) (if (model2file) o "")))
-(define-template x:endif (lambda (o) (if (model2file) o "")))
+(define-template x:include-guard (lambda (o) (if (code:model2file?) o "")))
+(define-template x:endif (lambda (o) (if (code:model2file?) o "")))
 
 (define-template x:provided-port-reference-declare (lambda (o) (filter om:provides? (om:ports o))))
 (define-template x:required-port-reference-declare (lambda (o) (filter om:requires? (om:ports o))))
@@ -186,18 +186,8 @@
 
 (define-template x:dzn-locator code:dzn-locator)
 
-(define (annotate-shells o)
-  (if (and (is-a? o <system>)
-           (equal? (command-line:get 'shell #f) (symbol->string (.name (.name o)))))
-      (make <shell-system> #:ports (.ports o) #:name (.name o) #:instances (.instances o) #:bindings (.bindings o))
-      o))
-
-(define-template x:header- (lambda (o) (filter (is? <interface>) (.elements o))))
-(define-template x:header (lambda (o) (topological-sort (filter (negate (disjoin (is? <type>) (is? <interface>))) (map annotate-shells (.elements o))))))
 (define-template x:header-data (lambda (o) (filter (is? <data>) (.elements o))))
-(define-template x:source
-  (lambda (o)
-    (topological-sort (filter (negate (is? <type>)) (map annotate-shells (.elements o))))))
+(define-template x:header (lambda (o) (topological-sort (filter (negate (disjoin (is? <type>) (is? <interface>))) (map code:annotate-shells (.elements o))))))
 
 ;; shell-header-system
 (define-template x:provided-port-instance-declare (lambda (o) (filter om:provides? (om:ports o))))
@@ -322,7 +312,7 @@
          ;; Generator-synthesized models look non-imported, filter harder
          (models (filter (negate dzn-async?) models)))
     (ast:set-scope om
-                   (if (model2file)
+                   (if (code:model2file?)
                        (map (@@ (gaiag deprecated c++) dump) models)
                        (let* ((main (command-line:get 'model #f))
                               (main (and main (find (compose (cut eq? (string->symbol main) <>) (om:scope-name)) models)))

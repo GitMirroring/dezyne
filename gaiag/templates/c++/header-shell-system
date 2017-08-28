@@ -8,7 +8,7 @@
 ##include <dzn/pump.hh>
 
 #x:component-include
-#x:interface-include
+#x:model2file-interface-include
 
 #x:open-namespace
 struct #x:model-name

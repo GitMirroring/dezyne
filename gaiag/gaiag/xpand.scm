@@ -85,15 +85,15 @@
   ;; (stderr "X:PAND: ~a\n" o)
   (let* ((result (match-pattern script (gulp-template filename)))
          (end (peg:end result))
-         (tree (peg:tree result))
-         (debug? (command-line:get 'debug #f)))
-    (if debug?
-        (format #t "/* ~a */\n" filename))
+         (tree (peg:tree result)))
     ;; (stderr "tree: ~s\n" tree)
     ;; (stderr "   => ~a\n" filename)
     (tree->string tree)))
 
 (define (type->template module filename type sep o)
+  (let ((debug? (command-line:get 'debug #f)))
+    (if debug?
+        (format #t "/* ~a */\n" filename)))
   (cond ((char? o) (display o))
         ((number? o) (display o))
         ((symbol? o) (display o))

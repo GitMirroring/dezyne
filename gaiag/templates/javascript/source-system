@@ -3,7 +3,7 @@ dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');
 dzn = dzn || {};
 #x:javascript-namespace-setup
 #x:component-include
-#x:interface-include
+#x:model2file-interface-include
 
 dzn.#x:type-name  = function (locator, meta) {
   this._dzn = {};

@@ -52,13 +52,14 @@
   #:export (<enum-field>
             code:formals
             code:instance-name
+            code:annotate-shells
 
             code:expression
             code:trigger
             code:injected-instances
             code:non-injected-bindings
             code:injected-instances-system
-            model2file
+            code:model2file?
             code:ons
             code:functions
             code:port-name
@@ -106,6 +107,15 @@
 (define-class <out-formal> (<variable>))
 
 (define-class <local> (<variable>))
+
+(define (code:source o)
+  (topological-sort (filter (negate (is? <type>)) (map code:annotate-shells (.elements o)))))
+
+(define (code:annotate-shells o)
+  (if (and (is-a? o <system>)
+           (equal? (command-line:get 'shell #f) (symbol->string (.name (.name o)))))
+      (make <shell-system> #:ports (.ports o) #:name (.name o) #:instances (.instances o) #:bindings (.bindings o))
+      o))
 
 (define-method (code:class-member? (o <variable>)) ; MORTAL SIN HERE!!?
   ;; FIXME: is (.variable o) a member?
@@ -517,9 +527,14 @@
 (define-method (code:scope-type-name (o <field>))
   ((compose code:scope-type-name .type .variable) o))
 
+(define (code:x-header- o) (filter (is? <interface>) (.elements o)))
+
 ;;
 
 ;;; code: generic templates
+(define-template x:header- code:x-header-)
+(define-template x:source code:source)
+
 (define-template x:async-member-initializer (lambda (o) (om:ports (.behaviour o))))
 
 (define-template x:scope (compose .scope .name) 'name-infix)
@@ -535,14 +550,23 @@
 (define-template x:port-name code:port-name)
 (define-template x:port-type code:port-type 'type-infix)
 
-(define-template x:interface-include (lambda (o) (map (compose (cut make <file-name> #:name <>) code:file-name) (om:ports o))))
+(define (code:interface-include o)
+  (map (compose (cut make <file-name> #:name <>) code:file-name) (om:ports o)))
 
-(define-template x:component-include
-  (if (model2file) om:instances
-      (lambda (o) (filter (disjoin (compose (is? <foreign>) .type)
-                                   (conjoin om:imported? (lambda (i) (not (equal? (source-file o)
-                                                                                  (source-file (.type i)))))))
-                          (om:instances o)))))
+(define (code:model2file-interface-include o)
+  (or (and (code:model2file?) (code:interface-include o))
+      ""))
+
+(define (code:component-include o)
+ (if (code:model2file?) (om:instances o)
+     (filter (disjoin (compose (is? <foreign>) .type)
+                      (conjoin om:imported? (lambda (i) (not (equal? (source-file o)
+                                                                     (source-file (.type i)))))))
+             (om:instances o))))
+
+(define-template x:interface-include code:interface-include)
+(define-template x:model2file-interface-include code:model2file-interface-include)
+(define-template x:component-include code:component-include)
 
 (define-template x:non-void-reply identity #f)
 
@@ -708,10 +732,9 @@
 (define (glue)
   (and=> (command-line:get 'glue #f) string->symbol))
 
-(define (model2file)
-  (let ((deprecated (or (command-line:get 'deprecated #f) (getenv "DZN_DEPRECATED"))))
-    (or (not (memq (language) '(c++ c++03 c++-msvc11)))
-        (and deprecated (string-contains deprecated "model2file")))))
+(define (code:model2file?)
+  (and=> (or (command-line:get 'deprecated #f) (getenv "DZN_DEPRECATED"))
+         (cut string-contains <> "model2file")))
 
 (define-method (code:file-name (o <port>))
   (code:file-name (.type o)))
@@ -720,7 +743,7 @@
   (code:file-name (.type o)))
 
 (define-method (code:file-name (o <interface>))
-  (if (model2file)
+  (if (code:model2file?)
       ((compose symbol->string (om:scope-name) .name) o)
       (basename (symbol->string (source-file o)) ".dzn")))
 
@@ -728,12 +751,12 @@
   ((compose symbol->string (om:scope-name) .name) o))
 
 (define-method (code:file-name (o <component>))
-  (if (model2file)
+  (if (code:model2file?)
       ((compose symbol->string (om:scope-name) .name) o)
       (basename (symbol->string (source-file o)) ".dzn")))
 
 (define-method (code:file-name (o <system>))
-  (if (or (model2file) (glue))
+  (if (or (code:model2file?) (glue))
       ((compose symbol->string (om:scope-name) .name) o)
       (basename (symbol->string (source-file o)) ".dzn")))
 
@@ -804,6 +827,7 @@
 (define (dump-main o)
   (and-let* ((name ((om:scope-name) o))
              (model (and (and=> (command-line:get 'model #f) string->symbol)))
+             ((is-a? o <component-model>))
              ((eq? model name)))
             (dump-indented (symbol-append 'main (code:extension o))
                            (lambda ()

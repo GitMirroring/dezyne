@@ -4,7 +4,6 @@
 ##include <iostream>
 
 ##define INTERFACE_ONLY
-
 #x:interface-include
 ##undef INTERFACE_ONLY
 
