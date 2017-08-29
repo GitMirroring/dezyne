@@ -83,17 +83,22 @@
      escape       <   '#'
      pegprocedure <-- '#' ('='/'.'/':'/'-'/'+'/[a-zA-Z0-9_])+ pegsep")
   ;; (stderr "X:PAND: ~a\n" o)
-  (let* ((result (match-pattern script (gulp-template filename)))
+  (let* ((debug? (command-line:get 'debug #f))
+         (result (match-pattern script (gulp-template filename)))
          (end (peg:end result))
          (tree (peg:tree result)))
+    (if debug?
+        (format #t "/*\ntemplates/~a/~a:0:expand */\n" (language) filename))
     ;; (stderr "tree: ~s\n" tree)
     ;; (stderr "   => ~a\n" filename)
     (tree->string tree)))
 
 (define (type->template module filename type sep o)
   (let ((debug? (command-line:get 'debug #f)))
-    (if debug?
-        (format #t "/* ~a */\n" filename)))
+    (if (and debug?
+             (not (pair? o))
+             (not (is-a? o <ast>)))
+        (format #t "/*\ntemplates/~a/~a:0:expand */\n" (language) filename)))
   (cond ((char? o) (display o))
         ((number? o) (display o))
         ((symbol? o) (display o))

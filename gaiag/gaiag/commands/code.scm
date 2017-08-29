@@ -110,6 +110,6 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
          (module (resolve-module `(gaiag ,language)))
          (ast-> (module-ref module 'ast->))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line))))
-    (if gdzn-debug? (stderr "AST:\n ~s\n" ast))
+    ;;(if gdzn-debug? (stderr "AST:\n ~s\n" ast))
     (ast-> ast)
     *unspecified*))

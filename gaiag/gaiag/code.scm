@@ -88,7 +88,6 @@
             dump-main
             dump-system
             glue
-            language
             pipe))
 
 ;;; ast extension
@@ -857,9 +856,6 @@
   (let ((model (module-ref module 'model)))
    (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
      (code:animate-file (symbol-append file-name (code:extension model) '.scm) module))))
-
-(define (language)
-  (string->symbol (command-line:get 'language "c++")))
 
 (define (code:extension o)
   (match o

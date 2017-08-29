@@ -27,7 +27,8 @@
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 getopt-long)
   #:use-module (gaiag gaiag)
-  #:export (command-line:get))
+  #:export (command-line:get
+            language))
 
 (define multi-options
   '(import))
@@ -45,3 +46,6 @@
          (multi-opt (lambda (option) (lambda (o) (and (eq? (car o) option) (cdr o))))))
     (if (not (member option multi-options)) (option-ref options option default)
         (filter-map (multi-opt option) options))))
+
+(define (language)
+  (string->symbol (command-line:get 'language "c++")))
