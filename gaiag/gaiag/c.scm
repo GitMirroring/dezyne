@@ -91,7 +91,6 @@
 
 (define (dump-system o)
   (let* ((name ((om:scope-name) o))
-        (foo (stderr "c:dump-system: ~a\n" name))
         (interfaces (map .type ((compose .elements .ports) o)))
         (components (map .type ((compose .elements .instances) o))))
     (dump-indented (symbol-append name (code:extension (make <interface>)))

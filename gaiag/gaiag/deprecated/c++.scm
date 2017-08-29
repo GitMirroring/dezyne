@@ -98,8 +98,8 @@
     ((or ($ <component>) ($ <foreign>)) (dump-component o))
     (($ <system>) (dump-system o))))
 
-(define (dump-interface o)
-  ((@@ (gaiag c) dump-interface) o))
+(define dump-interface (@@ (gaiag c) dump-interface))
+(define dump-system (@@ (gaiag c) dump-system))
 
 (define (dump-component o)
   (if (and (glue)

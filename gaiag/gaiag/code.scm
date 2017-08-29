@@ -501,8 +501,9 @@
   (and=> (command-line:get 'glue #f) string->symbol))
 
 (define (model2file)
-  (let ((deprecated (command-line:get 'deprecated #f)))
-    (and deprecated (string-contains deprecated "model2file"))))
+  (let ((deprecated (or (command-line:get 'deprecated #f) (getenv "DZN_DEPRECATED"))))
+    (or (not (memq (language) '(c++ c++03 c++-msvc11)))
+        (and deprecated (string-contains deprecated "model2file")))))
 
 (define-method (code:file-name (o <interface>))
   (if (model2file)

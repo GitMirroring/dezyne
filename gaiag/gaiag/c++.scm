@@ -435,11 +435,10 @@
          (models ((om:filter:p <model>) om))
          (models (filter (negate om:imported?) models))
          ;; Generator-synthesized models look non-imported, filter harder
-         (models (filter (negate dzn-async?) models))
-         (deprecated (command-line:get 'deprecated #f)))
+         (models (filter (negate dzn-async?) models)))
     (ast:set-scope om
-                   (if (and deprecated (string-contains deprecated "model2file"))
-                       (map (@ (gaiag deprecated c++) dump) models)
+                   (if (model2file)
+                       (map (@@ (gaiag deprecated c++) dump) models)
                        (let* ((main (command-line:get 'model #f))
                               (main (and main (find (compose (cut eq? (string->symbol main) <>) (om:scope-name)) models)))
                               (module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
