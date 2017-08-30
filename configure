@@ -58,6 +58,7 @@ exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@
 
 (define PREFIX "/var/lib/dezyne")
 (define GDZN (or (getenv "GDZN") "gdzn"))
+(define GOJS (or (getenv "GOJS") "/gnu/store/qapf0651kbb98zp1z6ikak05qnf3yphw-gojs-1.6.15.73fc41e1b41c289246994a7e5a6a32b7"))
 (define GUILE_EFFECTIVE_VERSION (effective-version))
 (define GUILE (or (getenv "guile") "guile"))
 (define SYSCONFDIR "/etc")
@@ -218,6 +219,7 @@ Usage: ./configure [OPTION]...
         (stdout "GUIX:=~a\n" (if guix? "guix" ""))
         (stdout "GUILE_EFFECTIVE_VERSION:=~a\n" GUILE_EFFECTIVE_VERSION)
         (stdout "GDZN:=~a\n" GDZN)
+        (stdout "GOJS:=~a\n" GOJS)
         (stdout "PREFIX:=~a\n" prefix)
         (stdout "SYSCONFDIR:=~a\n" sysconfdir)))
     (with-output-to-file "pre-inst-env"
