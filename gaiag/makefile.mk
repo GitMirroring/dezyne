@@ -24,8 +24,6 @@
 # Code:
 
 SRCS := $(shell $(GIT_LS_FILES)\
-  $(CDIR)/*.scm\
-  $(CDIR)/json/*.scm\
   $(CDIR)/gash/*.scm\
   $(CDIR)/language/dezyne/*.scm\
   $(CDIR)/gaiag/*.scm\
@@ -33,14 +31,11 @@ SRCS := $(shell $(GIT_LS_FILES)\
   $(CDIR)/gaiag/commands/*.scm\
 )
 
-CLEAN:=$(CLEAN) $(HOME)/.cache/guile
 GOBJS := $(SRCS:%.scm=%.go)
 
 $(CDIR)-clean: CDIR:=$(CDIR)
 $(CDIR)-clean: GOBJS:=$(GOBJS)
-$(CDIR)-clean:
-	@echo cleaning .go files
-	$(VERBOSE)rm -rf $(GOBJS) $(HOME)/.cache/guile
+$(CDIR)-clean: clean-go
 
 include make/guile.mk
 
