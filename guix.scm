@@ -50,13 +50,13 @@
              (ice-9 rdelim)
              (gnu packages)
              (gnu packages base)
+             (gnu packages ccache)
              (gnu packages commencement)
-             (gnu packages cross-base)
              (gnu packages dezyne)
              (gnu packages gcc)
              (gnu packages guile)
              (gnu packages package-management)
-             (gnu packages perl)
+             (gnu packages version-control)
              ((guix build utils) #:select (with-directory-excursion))
              (guix build-system gnu)
              (guix build-system trivial)
@@ -91,7 +91,11 @@
     (package
       (inherit dezyne-services)
       (version (string-append version "-" revision "." (string-take commit 7)))
-      (source (local-file %source-dir #:recursive? #t #:select? git-file?)))))
+      (source (local-file %source-dir #:recursive? #t #:select? git-file?))
+      (native-inputs `(("dezyne-services" ,dezyne-services)
+                       ("ccache" ,ccache)
+                       ("git" ,git)
+                       ,@(package-native-inputs dezyne-services))))))
 
 ;; Return it here so `guix build/environment/package' can consume it directly.
 dezyne-services.git
