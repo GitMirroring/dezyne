@@ -1,5 +1,0 @@
-gen1-interface  gen1-event    gen2-event
-ISensor          Enable        enable
-ISensor          Disable       disable
-ISensorCB        Triggered     triggered
-ISensorCB        Disabled      disabled
