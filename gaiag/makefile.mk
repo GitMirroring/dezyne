@@ -61,6 +61,7 @@ include make/guile.mk
 
 $(BUILD)/gaiag: $(BUILD)/script-preamble.scm
 $(BUILD)/gdzn: $(BUILD)/script-preamble.scm
+$(BUILD)/gdzn: $(BUILD)/generate
 $(BUILD)/json2scm: $(BUILD)/script-preamble.scm
 $(BUILD)/scm2json: $(BUILD)/script-preamble.scm
 

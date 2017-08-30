@@ -59,7 +59,7 @@
 
     (or
      (and version?
-	  (stdout "0.1\n"))
+	  ((stdout "gdzn 0.0\n") (exit 0)))
      (and (or help? usage?)
           ((or (and usage? stderr) stdout)
            (string-append "\

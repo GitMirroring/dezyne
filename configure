@@ -21,6 +21,7 @@ exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@
 !#
 
 (define-module (configure)
+  #:use-module (srfi srfi-26)
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 getopt-long)
@@ -50,7 +51,15 @@ exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@
 
 (define *verbose?* #f)
 
+(define* (PATH-search-path name #:key (default name) warn?)
+  (or (search-path (string-split (getenv "PATH") #\:) name)
+      (and (and warn? (format (current-error-port) "warning: not found: ~a\n" name))
+           default)))
+
 (define PREFIX "/var/lib/dezyne")
+(define GDZN (or (getenv "GDZN") "gdzn"))
+(define GUILE_EFFECTIVE_VERSION (effective-version))
+(define GUILE (or (getenv "guile") "guile"))
 (define SYSCONFDIR "/etc")
 (define BUILD_TRIPLET (gulp-pipe "gcc -dumpmachine 2>/dev/null"))
 
@@ -120,19 +129,29 @@ Usage: ./configure [OPTION]...
              (version (car (reverse version)))
              (version (string-tokenize version (char-set-complement (char-set #\.)))))  (map string->number version)))
 
+(define optional '())
 (define required '())
-(define* (check-version command expected #:optional (deb #f) (version-option '--version) (compare tuple<=))
-  (stderr "checking for ~a~a..." command (if (pair? expected) (format #f " [~a]" (version->string expected)) ""))
-  (if *verbose?* (system (format "~a ~a" command version-option)))
-  (let* ((actual (gulp-pipe (format #f "~a ~a 2>&1 | grep '[0-9]' | head -1" command version-option)))
-         (actual (string->version actual))
-         (pass? (and actual (compare expected actual))))
-    (stderr "~a ~a\n" (if pass? (if (pair? actual) "" " yes") (if actual " no, found" "")) (version->string actual))
-    (if (not pass?)
-        (begin
-          (if *verbose?* (stderr "~a\n" actual))
-          (set! required (cons (or deb command) required))))
-    pass?))
+(define* (check-version name expected
+                        #:key
+                        optional?
+                        (deb #f)
+                        (version-option '--version)
+                        (compare tuple<=)
+                        (command name))
+  (stderr "checking for ~a~a..." name
+          (if (null? expected) ""
+              (format #f " [~a]" (version->string expected))))
+  (let* ((output (gulp-pipe (format #f "~a ~a 2>&1" command version-option)))
+         (actual (string->version output))
+         (pass? (and actual (compare expected actual)))
+         (pass? (PATH-search-path command)))
+    (stderr "~a ~a\n" (if pass? (if (pair? actual) "" " yes")
+                          (if actual " no, found" "")) (version->string actual))
+    (or pass?
+        (if (not (pair? name)) (begin (if optional? (set! optional (cons (or deb name) optional))
+                                          (set! required (cons (or deb name) required)))
+                                      pass?)
+            (check-version (cdr name) expected deb version-option compare)))))
 
 (define* (check-pkg-config package expected #:optional (deb #f))
   (check-version (format #f "pkg-config --modversion ~a" package) expected deb))
@@ -170,8 +189,15 @@ Usage: ./configure [OPTION]...
          (target-triplet (option-ref options 'target BUILD_TRIPLET))
          (prefix (option-ref options 'prefix PREFIX))
          (sysconfdir (option-ref options 'sysconfdir SYSCONFDIR))
-         (verbose? (option-ref options 'verbose #f)))
+         (verbose? (option-ref options 'verbose #f))
+         (srcdir (dirname (car (command-line))))
+         (abs-top-srcdir (canonicalize-path srcdir))
+         (builddir (getcwd))
+         (abs-top-builddir (canonicalize-path builddir)))
     (set! *verbose?* verbose?)
+    (if (check-version GDZN '(0) #:optional? #t)
+        (set! GDZN (PATH-search-path GDZN #:warn? #t))
+        (set! GDZN "$(BUILD)/gdzn"))
     (when (pair? required)
           (stderr "\nMissing dependencies, run\n\n")
           (if guix?
@@ -179,16 +205,27 @@ Usage: ./configure [OPTION]...
               (stderr "    sudo apt-get install ~a\n" ((->string " ") required)))
           (exit 1))
     (with-output-to-file ".config.mk"
-      (lambda ()
+      (lambda _
         (stdout "build:=~a\n" build-triplet)
         (stdout "host:=~a\n" host-triplet)
         (stdout "target:=~a\n" target-triplet)
-        (stdout "srcdir:=.\n")
+        (stdout "srcdir:=~a\n" srcdir)
+        (stdout "builddir:=~a\n" builddir)
+        (stdout "abs-top-builddir:=~a\n" abs-top-builddir)
+        (stdout "abs-top-srcdir:=~a\n" abs-top-srcdir)
         (stdout "CONFIG_MK:=t\n")
         (stdout "BUILD_TRIPLET:=~a\n" build-triplet)
         (stdout "GUIX:=~a\n" (if guix? "guix" ""))
+        (stdout "GUILE_EFFECTIVE_VERSION:=~a\n" GUILE_EFFECTIVE_VERSION)
+        (stdout "GDZN:=~a\n" GDZN)
         (stdout "PREFIX:=~a\n" prefix)
         (stdout "SYSCONFDIR:=~a\n" sysconfdir)))
+    (with-output-to-file "pre-inst-env"
+      (lambda _
+        (let* ((pre-inst-env (with-input-from-file (string-append abs-top-srcdir "/build-aux/pre-inst-env.in") read-string))
+               (pre-inst-env (regexp-substitute/global #f "@abs_top_srcdir@" pre-inst-env 'pre abs-top-srcdir 'post)))
+          (regexp-substitute/global (current-output-port) "@abs_top_builddir@" pre-inst-env 'pre abs-top-builddir 'post))))
+    (chmod "pre-inst-env" #o755)
     (stdout "\nRun:
   make            to build Dezyne
   make help       for help on other targets\n")))
