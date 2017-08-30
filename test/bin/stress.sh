@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -24,7 +24,7 @@
 #! /bin/bash -e
 
 CONFIG=${1-localhost}
-DZN=${DZN-../client/bin/dzn}
+DZN=${DZN-../dzn/bin/dzn}
 
 if bunyan --version; then
 BUNYAN="bunyan --no-color -l 30"

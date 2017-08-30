@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2015 Ladislau Posta <ladislau.posta@verum.com>
 # Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2015 Henk Katerberg <henk.katerberg@yahoo.com>
@@ -32,7 +32,7 @@ DIRECTORIES:=$(notdir $(shell find . -mindepth 1 -type d | grep -Ev 'baseline|bi
 .SECONDARY:
 .SUFFIXES:
 SHELL:=/bin/bash
-DZN:=../client/bin/dzn
+DZN:=../dzn/bin/dzn
 OUT:=out
 CCACHE:=$(shell type -p ccache)
 #TRIANGLE_MAX:=cat
@@ -90,7 +90,7 @@ endif
 GOAL_LANGUAGES:=$(strip $(GOAL_LANGUAGES))
 
 # put your local overrides here, e.g.,
-# DZN:=~/development.git/client/bin/dzn
+# DZN:=~/development.git/dzn/bin/dzn
 -include .local.make
 
 ifneq ($(MAKELEVEL),1)
@@ -106,7 +106,7 @@ Options:
   see make --help
 
 Variables:
-  DZN={dzn|~/development.git/client/bin/dzn} [$(DZN)]
+  DZN={dzn|~/development.git/dzn/bin/dzn} [$(DZN)]
   ALL_LANGUAGES='...' [$(ALL_LANGUAGES)]
   CODE_LANGUAGES='...' [$(CODE_LANGUAGES)]
   OUT=<dir> [$(OUT)]

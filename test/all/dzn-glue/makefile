@@ -44,7 +44,7 @@ SRC := $(patsubst I%.dzn, I%.hh, $(IDZN)) $(patsubst %.dzn, glue_%.cc, $(COMP) $
 DZN := $(COMP) $(IDZN) $(STUB)
 
 TOP:= ../../../
-DZN := $(TOP)/client/bin/dzn
+DZN := $(TOP)/dzn/bin/dzn
 
 CONVERT = $(DZN) -v convert -g -s -m $(1) $(2)
 GENERATE = $(DZN) code -l $(LANGUAGE) -g dzn $(1) *.map

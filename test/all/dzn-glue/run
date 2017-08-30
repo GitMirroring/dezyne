@@ -139,7 +139,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
          (foo (format (current-error-port) "test: ~a\n" test))
          (development (if (equal? test ".") ".." (dirname test)))
          (foo (format (current-error-port) "development: ~a\n" development))
-         (dzn (or (getenv "DZN") (string-append development "/client/bin/dzn")))
+         (dzn (or (getenv "DZN") (string-append development "/dzn/bin/dzn")))
          (model "alarm")
          (out (string-append "out/" (substring dir (1+ (string-rindex dir #\/)))))
          (languages '("c++" "c++03")))
@@ -173,7 +173,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
 
 ;; REPL
 ;; (define dir "all/dzn-glue")
-;; (define dzn "../client/bin/dzn")
+;; (define dzn "../dzn/bin/dzn")
 ;; (define gdzn "../gaiag/bin/gdzn")
 ;; (define model "alarm")
 ;; (define out (string-append "out/" (substring dir (1+ (string-index dir #\/)))))

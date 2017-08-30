@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 # Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 #
@@ -44,8 +44,8 @@ DZN_HELLO:=$(shell timeout 2 $(DZN) hello || { echo "timeout running: dzn hello"
 endif
 
 ifeq ($(DEVELOPMENT),)
-DEVELOPMENT_DZN:=$(filter %/client/bin/dzn,$(DZN))
-DEVELOPMENT:=$(DEVELOPMENT_DZN:/client/bin/dzn=)
+DEVELOPMENT_DZN:=$(filter %/dzn/bin/dzn,$(DZN))
+DEVELOPMENT:=$(DEVELOPMENT_DZN:/dzn/bin/dzn=)
 DEVELOPMENT:=$(shell cd $(DEVELOPMENT) && pwd)
 ifeq ($(VERBOSE),debug)
 $(info Using dzn shortcut $(DEVELOPMENT))

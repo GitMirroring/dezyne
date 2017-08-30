@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
@@ -38,7 +38,7 @@ runtime:
 	touch runtime
 
 code: $(wildcard *.dzn)
-	for f in $^; do ../../../client/bin/dzn -v code -l c++ $$f; done
+	for f in $^; do ../../../dzn/bin/dzn -v code -l c++ $$f; done
 	touch code
 
 lego: $(patsubst %.cc, %.o, $(filter-out gui.cc main.cc, $(wildcard *.cc)))

@@ -23,7 +23,7 @@ ultimately goes beyond 400,000 call to ((run)), bailing out.
 
 * ERROR traces
 
-   ../client/bin/dzn run -t <(echo rp.oa rp.ob pp.oa pp.ob pp.ca rp.ca rp.return pp.return pp.ca rp.ca) regression/MultipleOutEventsOnSingleTau.dzn
+   ../dzn/bin/dzn run -t <(echo rp.oa rp.ob pp.oa pp.ob pp.ca rp.ca rp.return pp.return pp.ca rp.ca) regression/MultipleOutEventsOnSingleTau.dzn
 
 gives
 
@@ -31,7 +31,7 @@ illegal
 trace:rp.oa,rp.ob,pp.oa,pp.ob,pp.ca,rp.ca,rp.return,pp.return,pp.ca,rp.ca
 eligible:
 09:01:40 janneke@drakenvlieg:~/vc/verum/development/test
-$ ../client/bin/dzn run -t <(echo rp.oa rp.ob pp.oa pp.ob pp.ca rp.ca rp.return pp.return pp.ca rp.ca) regression/MultipleOutEventsOnSingleTau.dzn
+$ ../dzn/bin/dzn run -t <(echo rp.oa rp.ob pp.oa pp.ob pp.ca rp.ca rp.return pp.return pp.ca rp.ca) regression/MultipleOutEventsOnSingleTau.dzn
 
 
 * TODO
