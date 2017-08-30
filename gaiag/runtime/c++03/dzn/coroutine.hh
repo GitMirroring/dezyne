@@ -47,7 +47,8 @@ namespace dzn
     bool finished;
     bool released;
     bool skip_block;
-    coroutine() {} //HAX0R
+    coroutine() {}
+    coroutine(const coroutine&) {}
     template <typename Worker>
     coroutine(Worker worker)
     : id(++g_id)

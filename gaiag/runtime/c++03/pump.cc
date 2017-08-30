@@ -213,7 +213,7 @@ namespace dzn
   {
     coroutines.push_back(coroutine());
     coroutines.back().~coroutine();
-    new (&coroutines.back()) dzn::coroutine(boost::function<void()>(boost::bind(&pump::create_context_helper, this))); //HAX0R
+    new (&coroutines.back()) dzn::coroutine(boost::function<void()>(boost::bind(&pump::create_context_helper, this)));
   }
   void pump::collateral_block()
   {
