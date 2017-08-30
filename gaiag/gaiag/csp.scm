@@ -1097,7 +1097,7 @@
                                ".true")))
        events))
 
-(define (csp-queue-size) (command-line:get 'queue_size 3))
+(define (csp-queue-size) (command-line:get 'queue-size 3))
 
 (define* (check-range identifiers statement model #:optional (locals '()) (indent 0))
   (define (member? identifier) (om:variable model identifier))
