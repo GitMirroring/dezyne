@@ -15,6 +15,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
   ;;#:use-module (gash pipe)
   #:export (main))
 
+(define global-status 0)
 (define dry-run #f)
 (define x-trace #t)
 
@@ -23,7 +24,9 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
 
 (define (throw-on-error status command)
   (if (zero? status) status
-      (throw 'pipe status command)))
+      (begin
+        (set! global-status (or global-status 1))
+        (throw 'pipe status command))))
 
 (define (read-pipe* command)
   (let* ((command (string-append (string-join command " ") " 2>&1"))
@@ -146,8 +149,6 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
          (development (if (equal? test ".") ".." (dirname test)))
          (foo (format (current-error-port) "development: ~a\n" development))
          (dzn (or (getenv "DZN") (string-append development "/client/bin/dzn")))
-         (gdzn (or (getenv "GDZN") (string-append development "/gaiag/bin/gdzn")))
-         (gdzn (if (equal? gdzn "*dzn*") dzn gdzn))
          (model "alarm")
          (out (string-append "out/" (substring dir (1+ (string-rindex dir #\/)))))
          (languages '("c++" "c++03")))
@@ -176,7 +177,8 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
                         (map (lambda (language)
                                (with-result-and-output (lambda () (execute dir out language))))
                              languages)
-                        languages)))))))
+                        languages)))))
+    (exit global-status)))
 
 ;; REPL
 ;; (define dir "all/dzn-glue")

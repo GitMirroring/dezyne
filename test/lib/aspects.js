@@ -40,11 +40,6 @@ function dzn(session) {
   return (process.env['DZN'] || ( __dirname + '/../../client/bin/dzn') + ' --session=' + (session && session || 100));
 }
 
-function gdzn(session) {
-  if (process.env['GDZN'] == '*dzn*') return dzn (session);
-  return (process.env['GDZN'] || ( __dirname + '/../../gaiag/bin/gdzn') + ' --session=' + (session && session || 100));
-}
-
 var ext = {c:'.c','c++':'.cc','c++03':'.cc','c++-msvc11':'.cc',cs:'.cs',javascript:'.js'};
 
 var default_meta = {
@@ -396,7 +391,7 @@ var aspects = {
     var main = parameters.dir + '/main' + ext[language];
     try {main = (fs.lstatSync (main).isFile () || fs.lstatSync (main).isSymbolicLink ()) && main;} catch (e){main=undefined;};
     var cmd = 'make'
-        + ' DZN="' + gdzn() + '"'
+        + ' DZN="' + dzn() + '"'
         + ' IMPORTS=\"'+imports+'\"'
         + ' CODE_OPTIONS=\"'+code_options+'\"'
         + ' LANGUAGE='+language
@@ -553,7 +548,7 @@ var aspects = {
     var model = parameters.meta.model || parameters.model;
     var queue = parameters.meta.queue || 7;
     var imports = imports_string (parameters.meta.imports);
-    var cmd = gdzn()
+    var cmd = dzn()
         + ' traces '+imports+' -q ' + queue + ' ' + illegal+flush+' -m '+model+' -o '+out+' '+parameters.filename;
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})

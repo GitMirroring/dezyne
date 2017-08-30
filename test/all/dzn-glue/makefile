@@ -44,12 +44,10 @@ SRC := $(patsubst I%.dzn, I%.hh, $(IDZN)) $(patsubst %.dzn, glue_%.cc, $(COMP) $
 DZN := $(COMP) $(IDZN) $(STUB)
 
 TOP:= ../../../
-CDZN := $(TOP)/client/bin/dzn
-GDZN := $(TOP)/gaiag/bin/gdzn
+DZN := $(TOP)/client/bin/dzn
 
-CONVERT = $(CDZN) -v convert -g -s -m $(1) $(2)
-GENERATE = $(GDZN) code -l $(LANGUAGE) -g dzn $(1) *.map
-#GENERATE = $(CDZN) -v code -l $(LANGUAGE) -g dzn $(1) *.map
+CONVERT = $(DZN) -v convert -g -s -m $(1) $(2)
+GENERATE = $(DZN) code -l $(LANGUAGE) -g dzn $(1) *.map
 
 default: generate
 
@@ -107,15 +105,15 @@ CXXFLAGS = -O2
 pump.cc runtime.cc:
 	mkdir -p dzn
 ifeq ($(LANGUAGE),c++)
-	$(CDZN) cat /share/runtime/$(LANGUAGE)/dzn/context.hh > dzn/context.hh
+	$(DZN) cat /share/runtime/$(LANGUAGE)/dzn/context.hh > dzn/context.hh
 endif
-	$(CDZN) cat /share/runtime/$(LANGUAGE)/dzn/coroutine.hh > dzn/coroutine.hh
-	$(CDZN) cat /share/runtime/$(LANGUAGE)/dzn/pump.hh > dzn/pump.hh
-	$(CDZN) cat /share/runtime/$(LANGUAGE)/dzn/locator.hh > dzn/locator.hh
-	$(CDZN) cat /share/runtime/$(LANGUAGE)/dzn/meta.hh > dzn/meta.hh
-	$(CDZN) cat /share/runtime/$(LANGUAGE)/dzn/runtime.hh > dzn/runtime.hh
-	$(CDZN) cat /share/runtime/$(LANGUAGE)/pump.cc > pump.cc
-	$(CDZN) cat /share/runtime/$(LANGUAGE)/runtime.cc > runtime.cc
+	$(DZN) cat /share/runtime/$(LANGUAGE)/dzn/coroutine.hh > dzn/coroutine.hh
+	$(DZN) cat /share/runtime/$(LANGUAGE)/dzn/pump.hh > dzn/pump.hh
+	$(DZN) cat /share/runtime/$(LANGUAGE)/dzn/locator.hh > dzn/locator.hh
+	$(DZN) cat /share/runtime/$(LANGUAGE)/dzn/meta.hh > dzn/meta.hh
+	$(DZN) cat /share/runtime/$(LANGUAGE)/dzn/runtime.hh > dzn/runtime.hh
+	$(DZN) cat /share/runtime/$(LANGUAGE)/pump.cc > pump.cc
+	$(DZN) cat /share/runtime/$(LANGUAGE)/runtime.cc > runtime.cc
 
 runtime.o: runtime.cc
 pump.o: pump.cc
