@@ -115,7 +115,7 @@
        (loop rest `(#f ,kw ,@result))))))
 
 (define (optimization-options file)
-  (if (string-contains file "gnu/packages/")
+  (if (getenv "GO_FAST")
       %lightweight-optimizations                  ;build faster
       '()))
 
