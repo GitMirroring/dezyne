@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -22,6 +23,7 @@
 // Code:
 
 #include "alarmComponent.h"
+#include "sirenComponent.h"
 
 #include <boost/make_shared.hpp>
 
@@ -45,7 +47,8 @@ struct CB: public alarm::console_cb
 
 int main()
 {
-  boost::shared_ptr<alarm::alarmInterface> alarm_system = alarmComponent::GetInstance();
+
+  boost::shared_ptr<alarm::alarmInterface> alarm_system = alarmComponent::GetInstance(123);
   boost::shared_ptr<alarm::console_api> api;
   alarm_system->GetAPI(&api);
   alarm_system->RegisterCB(boost::make_shared<CB>(api));

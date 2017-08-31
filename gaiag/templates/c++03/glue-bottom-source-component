@@ -1,0 +1,24 @@
+##include "#x:scoped-model-name .hh"
+
+##include "#x:model-name Component.h"
+
+##include <boost/make_shared.hpp>
+
+#x:open-namespace
+#x:model-name ::#x:model-name (const dzn::locator& locator)
+: skel::#x:model-name(locator)
+, component(#x:asd-constructor)
+{
+  #x:asd-get-api
+  #x:asd-cb-instance-init
+  #x:asd-register-cb
+  #x:asd-register-st
+  dzn_rt.performs_flush (this) = true;
+}
+#x:model-name ::~#x:model-name ()
+{
+  component.reset();
+  #x:model-name Component::ReleaseInstance();
+}
+#x:asd-method-definition
+#x:close-namespace

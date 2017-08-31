@@ -21,6 +21,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 regex)
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 pretty-print)
@@ -46,7 +47,19 @@
   #:use-module (gaiag om)
   #:use-module (gaiag xpand)
 
-  #:use-module (language dezyne location))
+  #:use-module (language dezyne location)
+
+  #:export (.asd-channel
+            .asd-event
+            <glue-event>))
+
+(define-class <glue-event> (<event>)
+  (asd-channel #:getter .asd-channel #:init-value #f #:init-keyword #:asd-channel)
+  (asd-event #:getter .asd-event #:init-value #f #:init-keyword #:asd-event))
+
+(define-class <glue-system> (<system>)
+  (asd-in #:getter .asd-in #:init-form (list) #:init-keyword #:asd-in)
+  (asd-out #:getter .asd-out #:init-form (list) #:init-keyword #:asd-out))
 
 (define asd-interfaces (@@ (gaiag deprecated c++) asd-interfaces))
 (define c++:scope-join (@@ (gaiag deprecated c++) c++:scope-join))
@@ -67,6 +80,12 @@
 
 (define-method (c++:formal-type (o <formal>)) o)
 (define-method (c++:formal-type (o <port>)) ((compose .elements .formals .signature car om:events) o))
+
+(define-method (c++:return-type (o <void>))
+  "void")
+
+(define-method (c++:return-type (o <glue-event>))
+  (c++:return-type (.type (.signature o))))
 
 (define-method (c++:return-type (o <trigger>)) ((compose .type .signature .event) o))
 (define-method (c++:return-type (o <function>)) ((compose .type .signature) o))
@@ -218,6 +237,297 @@
 
 (define-template x:c++:type-ref c++:type-ref)
 
+;; glue-top-source-glue-system
+(define-public (parse-component-map component)
+  (or (and-let* ((files (command-line:get '() '()))
+                 (map-files (filter (cut string-suffix? ".map" <>) files))
+                 (file-name (string-append (symbol->string ((om:scope-name) component)) ".map"))
+                 (file-name (find (lambda (f) (equal? (basename f) file-name)) map-files))
+                 (lines (filter (negate (disjoin (cut string-every char-set:blank <>)
+                                                 (cut string-prefix? "//" <>))) (string-split (gulp-file file-name) #\newline)))
+                 (words-list (map (cut string-split <> #\space) lines)))
+        (filter (compose (negate (cut equal? "usr" <>)) car) words-list))
+      '()))
+
+(define (c++:construction-signature component)
+  (or (and-let* ((words-list (parse-component-map component))
+                 (parameters (map (lambda (lst)
+                                    (cond((equal? (car lst) "simple") (string-append (cadr lst) " " (caddr lst)))
+                                         ((equal? (car lst) "service") (string-append "boost::shared_ptr<" (cadr lst) "::" (cadr lst) "Interface> " (caddr lst)))
+                                         (#t (string-append "boost::shared_ptr<" (cadr lst) "Component> " (caddr lst)))))
+                                  words-list))
+                 (signature (string-join parameters ",")))
+        signature)
+      ""))
+
+(define (c++:construction-include component)
+  (or (and-let* ((words-list (parse-component-map component))
+                 (parameters (map (lambda (lst)
+                                    (cond((equal? (car lst) "simple") "")
+                                         ((equal? (car lst) "service") (string-append "#include \"" (cadr lst) (string-upcase (cadr lst) 0 1) "Interface.h\"\n"))
+                                         (#t "")))
+                                  words-list))
+                 (signature (string-join parameters ",")))
+        signature)
+      ""))
+
+(define (c++:construction-parameters component)
+  (or (and-let* ((words-list (parse-component-map component))
+                 (parameters (map caddr words-list)))
+        (string-join parameters ","))
+      ""))
+
+(define (c++:construction-parameters-locator-set component)
+    (or (and-let* ((words-list (parse-component-map component))
+                   (parameters (map (compose (lambda (o) (string-append ".set(" o ",\"" o "\")")) caddr) words-list)))
+          (string-join parameters ","))
+        ""))
+
+(define (c++:construction-parameters-locator-get component)
+    (or (and-let* ((words-list (parse-component-map component))
+                   (parameters (map (compose (lambda (o) (string-append ".get<" ">(\"" o "\">)")) caddr) words-list)))
+          (string-join parameters ","))
+        ""))
+
+(define (c++:asd-constructor component)
+  (let* ((name (symbol->string ((om:scope-name) component)))
+         (files (command-line:get '() '()))
+         (map-files (filter (cut string-suffix? ".map" <>) files))
+         (lines (append-map (lambda (map-file)
+                              (string-split (gulp-file map-file) #\newline))
+                            map-files))
+         (lines (filter (negate (disjoin (cut string-every char-set:blank <>)
+                                         (cut string-prefix? "//" <>))) lines))
+         (words-list (map (cut string-split <> #\space) lines))
+         (usr-list (filter (lambda (o)
+                             (and (equal? "usr" (first o))
+                                  (equal? name (string-append "glue_" (second o)))))
+                           words-list)))
+    (if (null? usr-list)
+        (string-append (symbol->string (.name (.name component))) "Component::GetInstance()")
+        (let* ((matches-list (map (lambda (third) (string-match "[(]([^)]*)[)]" third))
+                                  (map third usr-list)))
+               (matches-list (filter identity matches-list))
+               (parameters-list (map (cut match:substring <> 1) matches-list)))
+          (string-append
+           (symbol->string (.name (.name component))) "Component::GetInstance("
+           (string-join
+            (map (lambda (parameters)
+                   (string-join (map (lambda (parameter)
+                                       (let* ((entry (find (compose (cut equal? parameter <>) third) words-list))
+                                              (type (second entry))
+                                              (type (if (equal? "simple" (first entry)) type (string-append "boost::shared_ptr<" type "::" type "Interface> "))))
+                                         (string-append "locator.get<" type ">(\"" parameter "\")")))
+                                     (string-split parameters #\,)) ","))
+                 parameters-list)
+            ",")
+           ")")))))
+
+(define (c++:asd-api-instance-declaration component)
+  (map (lambda (api) (->string (list "boost::shared_ptr< ::" (.name (.name component)) "::" api "> api_" api ";\n")))
+       (delete-duplicates (map second ((asd-interfaces om:in?) (om:interface component))))))
+
+(define (c++:asd-api-instance-init component)
+  (map (lambda (interface)
+         (let ((port-name (.name (om:port component))))
+           (->string (list ", api_" interface
+                           "(boost::make_shared<" interface ">(boost::ref(component." port-name ")))\n"))))
+       (delete-duplicates (map second ((asd-interfaces om:in?) (om:interface component))))))
+
+(define (c++:asd-cb-instance-declaration component)
+  (map (lambda (cb) (->string (list "boost::shared_ptr< ::" (.name (.name component)) "::" cb "> cb_" cb ";\n")))
+       (delete-duplicates (map second ((asd-interfaces om:out?) (om:interface component))))))
+
+(define (c++:asd-cb-instance-init component)
+  (map (lambda (cb) (->string (list "cb_" cb " = boost::make_shared<" cb ">(boost::ref(" (.name (om:port component)) "));\n")))
+       (delete-duplicates (map second ((asd-interfaces om:out?) (om:interface component))))))
+
+(define (c++:asd-cb-event-init component)
+  (map (lambda (entry)
+         (let* ((event (first entry))
+                (interface (second entry))
+                (event (om:event (om:interface component) event))
+                (formals (.elements (.formals (.signature event))))
+                (port (om:port component))
+                (port-name (.name port)))
+           (->string (list "component." port-name ".out." (first entry)
+                           " = boost::bind(&" (om:name component) "Glue::" (first entry) ","
+                           (comma-join (list "this" (comma-join (map (compose (cut string-append "_" <>) number->string) (iota (length formals) 1 1))))) ");\n"))))
+       ((asd-interfaces om:out?) (om:interface component))))
+
+(define (c++:asd-cb-definition component)
+  (map (lambda (entry)
+        (let* ((name (car entry))
+               (dzn-events (cadr entry))
+               (asd-events (caddr entry)))
+          (->string (list "struct " name ": public ::" (om:name component) "::" name "\n{\n"
+                 ((c++:scope-name) (om:port component)) "& port;\n"
+                 name "(" ((c++:scope-name) (om:port component)) "& port)\n"
+                 ": port(port)\n"
+                 "{}\n"
+                 (map (lambda (asd dzn)
+                        (let* ((event (om:event (om:interface component) dzn))
+                               (formals (.elements (.formals (.signature event))))
+                               (arguments (map .name formals))
+                               (formals (map (lambda (formal)
+                                               (list (if (eq? (.direction formal) 'in) "const ")
+                                                     "asd::value<" ((compose om:type-name (om:type component)) formal) ">::type& " (.name formal)))
+                                             formals)))
+                          (list "void " asd "(" formals "){\nport.out." dzn "(" arguments ");\n}\n")))
+                      asd-events dzn-events)
+                 "};\n"))))
+      (map (lambda (name)
+             (let* ((lst (filter (lambda (entry) (eq? name (second entry))) ((asd-interfaces om:out?) (om:interface component))))
+                    (dzn-events (map first lst))
+                    (asd-events (map third lst)))
+              (list name dzn-events asd-events)))
+           (delete-duplicates (map second ((asd-interfaces om:out?) (om:interface component)))))))
+
+(define (c++:asd-get-api component)
+  (map (lambda (api) (->string (list "component->GetAPI(&api_" api ");\n")))
+       (delete-duplicates (map second ((asd-interfaces om:in?) (om:interface component))))))
+
+(define (c++:asd-register-cb component)
+  (map (lambda (cb) (->string (list "component->RegisterCB(cb_" cb ");\n")))
+       (delete-duplicates (map second ((asd-interfaces om:out?) (om:interface component))))))
+
+(define (c++:asd-register-st component)
+  (if (pair? (filter om:out? (om:events (om:port component))))
+      (->string (list "component->RegisterCB(boost::make_shared<SingleThreaded>(this, boost::ref(dzn_rt)));\n"))
+      ""))
+
+(define (c++:asd-method-declaration model)
+  (map
+   (lambda (dzn asd)
+     (make <glue-event> #:name (.name dzn) #:signature (.signature dzn) #:direction (.direction dzn) #:asd-channel (cadr asd) #:asd-event (caddr asd)))
+   (filter om:in? (om:events (om:port model))) ((asd-interfaces om:in?) (om:interface model))))
+
+(define (c++:asd-method-definition model)
+  (map
+   (lambda (dzn asd)
+     (make <glue-event> #:name (.name dzn) #:signature (.signature dzn) #:direction (.direction dzn) #:asd-channel (cadr asd) #:asd-event (caddr asd)))
+   (filter om:in? (om:events (om:port model))) ((asd-interfaces om:in?) (om:interface model))))
+
+(define (c++:asd-cb-method-definition model)
+  (map (lambda (entry)
+         (let* ((event-name (first entry))
+                (interface (second entry))
+                (event (om:event (om:interface model) event-name))
+                (formals (.elements (.formals (.signature event))))
+                (arguments (comma-join (map .name formals)))
+                (formals (comma-join (map (lambda (formal)
+                                            (list ((compose .value (om:type model)) formal) (if (eq? (.direction formal) 'in) " " "& ") (.name formal)))
+                                          formals)))
+                (port (om:port model))
+                (port-name (.name port)))
+           (->string (list "void " (first entry) "(" formals ")\n"
+                           "{\n"
+                           "cb_" interface "->" (third entry) "(" arguments ");\n"
+                           "st->processCBs();\n"
+                           "}\n"))))
+       ((asd-interfaces om:out?) (om:interface model))))
+
+(define (c++:asd-api-definition model)
+  (map (lambda (entry)
+         (let ((name (.name (.name model)))
+               (port-type ((c++:scope-name) (om:port model)))
+               (interface (car entry))
+               (dzn-events (cadr entry))
+               (asd-events (caddr entry)))
+           (->string (list "struct " interface "\n: public ::" name "::" interface "\n"
+                           "{\n"
+                           port-type "& api;\n"
+                           interface "(" port-type "& api)\n"
+                           ": api(api)\n"
+                           "{}\n"
+                           (map
+                            (lambda (dzn asd)
+                              (let* ((event (om:event (om:interface model) dzn))
+                                     (void? (is-a? (.type (.signature event)) <void>))
+                                     (formals (.elements (.formals (.signature event))))
+                                     (arguments (comma-join (map .name formals)))
+                                     (formals (comma-join (map (lambda (formal)
+                                                                 (list (if (eq? (.direction formal) 'in) "const ") "asd::value< " ((compose .value (om:type model)) formal) " >::type& " (.name formal)))
+                                                               formals)))
+                                     (port (om:port model)))
+                                (if void?
+                                    (list "void " asd "(" formals ")\n"
+                                          "{\n"
+                                          "api.in." dzn "(" arguments ");\n"
+                                          "}\n")
+                                    (list "::" (om:name model) "::" interface "::PseudoStimulus " asd "(" formals ")\n"
+                                          "{\n"
+                                          (list "return static_cast< ::" (om:name model) "::" interface "::PseudoStimulus>(1 + api.in." dzn "(" arguments "));\n")
+                                          "}\n"))))
+                            dzn-events asd-events)
+                           "};\n"))))
+       (map (lambda (api)
+              (let* ((lst (filter (lambda (entry) (eq? api (second entry))) ((asd-interfaces om:in?) (om:interface model))))
+                     (dzn-events (map first lst))
+                     (asd-events (map third lst)))
+                (list api dzn-events asd-events)))
+            (delete-duplicates (map second ((asd-interfaces om:in?) (om:interface model)))))))
+
+(define (c++:asd-get-api-definition model)
+  (map (lambda (interface)
+         (let ((port-type ((c++:scope-name) (om:port model))))
+           (->string (list "void GetAPI(boost::shared_ptr< ::" (om:name model) "::" interface ">* api)\n"
+                           "{\n"
+                           "*api = api_" interface ";\n"
+                           "}\n"))))
+       (delete-duplicates (map second ((asd-interfaces om:in?) (om:interface model))))))
+
+(define (c++:asd-register-cb-definition model)
+  (map (lambda (interface)
+         (let ((port-type ((c++:scope-name) (om:port model))))
+           (->string (list "void RegisterCB(boost::shared_ptr< ::" (om:name model) "::" interface "> cb)\n"
+                           "{\n"
+                           "cb_" interface " = cb;\n"
+                           "}\n"))))
+       (delete-duplicates (map second ((asd-interfaces om:out?) (om:interface model))))))
+
+(define-template x:construction-include c++:construction-include)
+
+(define-template x:construction-signature c++:construction-signature)
+
+(define-template x:construction-parameters c++:construction-parameters)
+
+(define-template x:construction-parameters-locator-set c++:construction-parameters-locator-set)
+
+(define-template x:construction-parameters-locator-get c++:construction-parameters-locator-get)
+
+(define-template x:asd-constructor c++:asd-constructor)
+
+(define-template x:asd-api-instance-declaration c++:asd-api-instance-declaration)
+
+(define-template x:asd-api-instance-init c++:asd-api-instance-init)
+
+(define-template x:asd-api-definition c++:asd-api-definition)
+
+(define-template x:asd-cb-definition c++:asd-cb-definition)
+
+(define-template x:asd-cb-instance-declaration c++:asd-cb-instance-declaration)
+
+(define-template x:asd-cb-instance-init c++:asd-cb-instance-init)
+
+(define-template x:asd-cb-event-init c++:asd-cb-event-init)
+
+(define-template x:asd-get-api c++:asd-get-api)
+
+(define-template x:asd-register-cb c++:asd-register-cb)
+
+(define-template x:asd-register-st c++:asd-register-st)
+
+(define-template x:asd-method-declaration c++:asd-method-declaration)
+
+(define-template x:asd-method-definition c++:asd-method-definition)
+
+(define-template x:asd-cb-method-definition c++:asd-cb-method-definition)
+
+(define-template x:asd-get-api-definition c++:asd-get-api-definition)
+
+(define-template x:asd-register-cb-definition c++:asd-register-cb-definition)
+
 ;;; dump to file
 
 (define (dzn-async? o)
@@ -246,7 +556,12 @@
 (define (dump-interface o)
   ((@@ (gaiag c) dump-interface) o))
 
-(define c++-file (@ (gaiag deprecated c++) c++-file)) ;; FIXME
+(define c++-file (@@ (gaiag deprecated c++) c++-file)) ;; FIXME
+
+(define map-file (@@ (gaiag deprecated c++) map-file))
+
+(define map-file-name (@@ (gaiag deprecated c++) map-file-name))
+
 (define (dump-component o)
   (if (and (glue)
            (eq? (glue) 'asd)
@@ -279,31 +594,48 @@
                        (cute c++-file (if (is-a? o <foreign>) 'foreign.cc.scm 'component.cc.scm) (code:module o)))
         ;; TODO: rename dzn glue templates
         (when (and (is-a? o <foreign>) (map-file o))
-            (dump-indented (symbol-append name '.hh)
+          (let* ((module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
+                                           ,(resolve-module '(gaiag c++)))))
+                 (om (ast:root-scope)))
+            (module-define! module 'root om)
+            (dump-indented (string-append (symbol->string name) ".hh")
                            (lambda ()
-                             (c++-file 'glue-bottom-component.hh.scm (code:module o))))
-            (dump-indented (symbol-append name '.cc)
+                             (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+                               (ast:set-model-scope o (x:pand 'glue-bottom-header-component o module)))))
+            (dump-indented (string-append (symbol->string name) ".cc")
                            (lambda ()
-                             (c++-file 'glue-bottom-component.cc.scm (code:module o))))))))
+                             (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+                               (ast:set-model-scope o (x:pand 'glue-bottom-source-component o module))))))
+          ))))
 
 (define (dump-system o)
   ((@@ (gaiag c) dump-system) o)
   (if (map-file o) ((@ (gaiag deprecated c++) dump-system-glue) o)))
 
-(define (map-file o)
-  (let* ((files (command-line:get '() '()))
-         (map-files (filter (cut string-suffix? ".map" <>) files))
-         (map-file-name (string-append (symbol->string (map-file-name o)) ".map"))
-         (map-files (if (pair? map-files) map-files (list map-file-name))))
-    (and=> (find (lambda (f) (equal? (basename f) map-file-name)) map-files)
-           try-find-file)))
+(define ((triplet->interfaces dir) triplet)
+  (define (mapping->event dzn-event asd-event)
+    (make <glue-event> #:name dzn-event #:asd-event asd-event #:direction dir))
+  (let ((name (car triplet))
+        (dzn-events (cadr triplet))
+        (asd-events (caddr triplet)))
+   (make <interface>
+     #:name (car triplet)
+     #:events (make <events> #:elements (map mapping->event dzn-events asd-events)))))
 
-(define (map-file-name o)
-  (match o
-    ((or ($ <foreign>) ($ <component>) ($ <system>)) (map-file-name (om:port o)))
-    (_ (om:name o)) ;; dzn::IConsole ==> IConsole.map
-    (_ ((om:scope-name) o)))) ;; dzn::IConsole ==> dzn_IConsole.map
-
+(define (dump-glue-system o)
+  (let* ((name (om:name o))
+         (module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
+                                   ,(resolve-module '(gaiag c++)))))
+         (om (ast:root-scope)))
+    (module-define! module 'root om)
+    (dump-indented (string-append (symbol->string name) "Component.h")
+                   (lambda ()
+                     (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+                       (ast:set-model-scope o (x:pand 'glue-top-header-system o module)))))
+    (dump-indented (string-append (symbol->string name) "Component.cpp")
+                   (lambda ()
+                     (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+                       (ast:set-model-scope o (x:pand 'glue-top-source-system o module)))))))
 
 (define (ast-> ast)
   (let* ((om ((om:register code:om #t) ast))
@@ -321,9 +653,9 @@
                               (models (filter (disjoin (is? <data>)
                                                        (negate (disjoin dzn-async? om:imported? (is? <foreign>))))
                                               (.elements om))))
-                         (module-define! module 'root (clone om #:elements (if (glue) (filter (negate (is? <system>)) models) models)))
+                         (module-define! module 'root (clone om #:elements models))
                          (code:dump-file (basename (symbol->string (source-file om)) ".dzn") module)
                          (map dump-component (filter (is? <foreign>) (.elements om)))
-                         (if (glue) (map dump-system (filter (is? <system>) (.elements om))))
+                         (when (glue) (map dump-glue-system (filter (is? <system>) (.elements om))))
                          (when main ((@@ (gaiag c) dump-main) main))))))
   "")

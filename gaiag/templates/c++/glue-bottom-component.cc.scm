@@ -1,1 +1,0 @@
-../c++03/glue-bottom-component.cc.scm

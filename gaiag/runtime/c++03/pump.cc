@@ -298,7 +298,7 @@ namespace dzn
     queue.push(e);
     condition.notify_one();
   }
-  inline bool timer_p(size_t id, const std::pair<pump::deadline, boost::function<void()>>& p)
+  inline bool timer_p(size_t id, const std::pair<pump::deadline, boost::function<void()> >& p)
   {
     return p.first.id == id;
   }

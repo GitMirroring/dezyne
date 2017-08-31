@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -26,7 +27,7 @@
 #include <boost/make_shared.hpp>
 
 boost::shared_ptr<siren::sirenInterface>
-sirenComponent::GetInstance ()
+sirenComponent::GetInstance (int)
 {
   return boost::make_shared<sirenComponent>();
 }

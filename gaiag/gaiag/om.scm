@@ -777,7 +777,7 @@
 
 (define (om:in? o)
   (match o
-    (($ <event>) (eq? (.direction o) 'in))
+    ((? (is? <event>)) (eq? (.direction o) 'in))
     ((? (is? <modeling-event>)) #t)
     (($ <formal>) (or (eq? (.direction o) 'in) (not (.direction o))))
     (($ <trigger>) #t)))

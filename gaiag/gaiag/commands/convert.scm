@@ -92,7 +92,7 @@ Usage: gdzn parse [OPTION]... [FILE]...
          (commands (map (cut string-append
                           "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
                           " asd"
-                          (if system? "" " -a no-system ")
+                          (if system? " -a glue " " -a no-system,glue ")
                           " -l gen2"
                           (string-join imports " -I " 'prefix)
                           output

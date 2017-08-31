@@ -44,6 +44,7 @@
   #:use-module (gaiag indent)
   #:use-module (gaiag misc)
   #:use-module (gaiag norm-event)
+  #:use-module (gaiag reader)
   #:use-module (gaiag resolve)
   #:use-module (gaiag xpand)
 
@@ -265,6 +266,9 @@
 
 (define-method (code:out-argument (o <trigger>))
   (filter om:out-or-inout? (code:formals o)))
+
+(define-method (code:parameters (o <event>))
+  (map .name ((compose .elements .formals .signature) o)))
 
 (define-method (code:formals (o <function>))
   ((compose .elements .formals .signature) o))
@@ -568,6 +572,8 @@
 (define-template x:model2file-interface-include code:model2file-interface-include)
 (define-template x:component-include code:component-include)
 
+(define-template x:scope::name code:scope+name 'type-infix)
+
 (define-template x:non-void-reply identity #f)
 
 (define-method (code:enum-literal (o <literal>))
@@ -595,12 +601,13 @@
 
 (define-template x:model-name (compose om:name (lambda (_) (ast:model-scope))))
 
-(define-template x:upcase-model-name (compose string-upcase (->join "_") code:scope+name (lambda (_) (ast:model-scope))))
+(define-template x:capitalize-model-name (compose (cut string-upcase <> 0 1) symbol->string om:name (lambda (_) (ast:model-scope))))
 
-(define-template x:capitalize-model-name (compose string-capitalize symbol->string .name .name (lambda (o) (ast:model-scope))))
+(define-template x:upcase-model-name (compose string-upcase (->join "_") om:scope+name (lambda (_) (ast:model-scope))))
 
 (define-template x:method code:trigger)
 
+(define-template x:parameters code:parameters 'formal-infix)
 (define-template x:formals code:formals 'formal-infix)
 (define-template x:formals-type code:formals 'formal-infix)
 
@@ -698,6 +705,8 @@
 
 (define-template x:return code:return #f <type>)
 
+(define-method (code:return (o <on>))
+  ((compose .type .signature .event code:trigger) o))
 
 ;; main
 (define-template x:main-port-connect-in ast:out-triggers-in-events)

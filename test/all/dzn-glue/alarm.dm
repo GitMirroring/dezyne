@@ -4,11 +4,11 @@
 		<CodeGenerationLanguage>csp</CodeGenerationLanguage>
 		<CodeGenerationVersion>9.2.1</CodeGenerationVersion>
 		<DateCreated>20131013T142119</DateCreated>
-		<DateModified>20131104T082818</DateModified>
+		<DateModified>20170828T150510</DateModified>
 		<Guid>66D86251A0AA42DB88ABD0FED55C7F87</Guid>
-		<ModelSignature>BASE64_sHHAklk3F+JDpg39yc0PGs0WTENlOgtNpjOIVJSq2AS8QepziO7HRknSl9ICNZlouSDTF2CiZuSeTV26IcGkGeik3WF83yF72H2UEwDGTsoopYRaarLEbi4Abtm2AjBlr+ITCwNw9oaXTn8llOegTd6Ij/TaawtdaeNMDtlV1NWdHKPLlFBdMXBtMkB3taFcUfr/A0NR5tInA18kxOGVo01Q6jEHoT6L8+tGqc9O3W5OaMbpB3jya9HGQpG6FgOILEG8704q25yvxpIiHZuJ9x580XxgW0Q1srJqLKDmWAxJU/xYes6D5POxBPp9HearpiNrN2ewgO6ttWaT8qCAzg==</ModelSignature>
+		<ModelSignature>BASE64_qU9xMfk39vMaUgNCEID/vjrBFpMmrwjqduJUNm40vFKxvovSK1nQGzgIFwS34uyaEnonywHH/AFiwVhwKS7G38tFtOtk8Vn8sZaO1TVps2vcYU+O35d/LTJW986scdMlAWeP3gXSQPmRt4Lj6AmXoexptlhI3ogczfMogOBSTYtVnLzuKkUeBwX9K71VR+2500cTqddARMNOK8+xJGGlZMLXquR0cksGhkIepWvntYaUsGNIhv17mKgO33nH6cEJ/sc9CpAlCwbyIlq7wQvV5pnSrTN6fu2LlQgGVtDM1/MmGZxQhkkTe227BJ/XpT3WQ+KjR1cHs+zdiKtfdCN40w==</ModelSignature>
 		<Name>alarm</Name>
-		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.2(52253)</ToolVersion>
+		<ToolVersion>ASD:Suite&#32;ModelBuilder&#32;9.2.7(52388)</ToolVersion>
 		<AbstractInterface>
 			<AbstractInterface ID="1171">
 				<Guid>C87A6402319E4BBABE71CE5B8DC9EACF</Guid>
@@ -90,32 +90,43 @@
 			</BuiltInInterface>
 		</BuiltInInterface>
 		<CodeGeneratorSettings>
-			<CodeGenInfo ID="1186">
+			<CodeGenInfo ID="1305">
 				<Language>c</Language>
 				<UseOldTracing>1</UseOldTracing>
 				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
 			</CodeGenInfo>
-			<CodeGenInfo ID="1187">
+			<CodeGenInfo ID="1306">
 				<Language>cpp</Language>
 				<UseOldTracing>1</UseOldTracing>
 				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
 			</CodeGenInfo>
-			<CodeGenInfo ID="1188">
+			<CodeGenInfo ID="1307">
 				<Language>csharp</Language>
 				<UseOldTracing>1</UseOldTracing>
 				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
 			</CodeGenInfo>
-			<CodeGenInfo ID="1189">
+			<CodeGenInfo ID="1308">
+				<Language>csp</Language>
+				<UseOldTracing>1</UseOldTracing>
+				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
+			</CodeGenInfo>
+			<CodeGenInfo ID="1309">
 				<Language>java</Language>
 				<UseOldTracing>1</UseOldTracing>
 				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
 			</CodeGenInfo>
-			<CodeGenInfo ID="1190">
+			<CodeGenInfo ID="1310">
 				<Language>tinyc</Language>
 				<UseOldTracing>1</UseOldTracing>
 				<UseServiceNameInQualifiedNames>0</UseServiceNameInQualifiedNames>
 			</CodeGenInfo>
 		</CodeGeneratorSettings>
+		<ConstructionParameters>
+			<SimpleParameter ID="1311">
+				<Name>s</Name>
+				<Type>int</Type>
+			</SimpleParameter>
+		</ConstructionParameters>
 		<ImplementedService>
 			<ServiceDependency ID="1191">
 				<ModelGuid>F7EB30AA2502459B9AA08F29111D78BA</ModelGuid>
@@ -540,7 +551,7 @@
 				<Dependency>1276</Dependency>
 			</ServiceReference>
 			<ServiceReference ID="1277">
-				<Construction>siren</Construction>
+				<Construction>siren(s)</Construction>
 				<Guid>5FFF1CFDA552420CA5289CE20030CA5B</Guid>
 				<Name>siren</Name>
 				<Dependency>1278</Dependency>

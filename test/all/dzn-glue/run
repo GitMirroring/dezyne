@@ -20,7 +20,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
 (define x-trace #t)
 
 (define (stdout . args)
-  (map display args) (newline) (force-output))
+  (map (cut display <> (current-error-port)) args) (newline) (force-output (current-error-port)))
 
 (define (throw-on-error status command)
   (if (zero? status) status
@@ -68,16 +68,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
 
     ;; FIXME: fail silently, skip trying to get past opaque build3.oban failure
     ;;(delete-file (string-append out "/console.dzn"))
-    (assert-pipe `("rm" "-f" ,(string-append out "/console.dzn")))
-
-
-    (substitute* (string-append out "/Isiren.map")
-      (("on on\n") "on on1\n"))
-    (substitute* (find-files out ".*.dzn")
-      (("interface (glue[.])*")
-       (string-append "interface glue."))
-      (("component (glue[.])*")
-       (string-append "component glue.")))))
+    (assert-pipe `("rm" "-f" ,(string-append out "/glue_console.dzn")))))
 
 (define (code test dzn model dir out language)
   (let* ((dzn-files (find-files out ".*[.]dzn$"))
@@ -89,7 +80,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
       ,(string-append "MODEL=" model)
       ,(string-append "DIR=" out)
       ,(string-append "LANGUAGE=" language)
-      "IN=foobar" 
+      "IN=foobar"
       ,(string-append "OUT=" out "/" language)
       "-f"
       ,(string-append test "/lib/code.make")

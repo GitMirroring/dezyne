@@ -28,9 +28,6 @@
 
 #include <dzn/coroutine.hh>
 
-#undef BOOST_THREAD_PROVIDES_FUTURE
-#define BOOST_THREAD_PROVIDES_FUTURE 1
-
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/thread.hpp>

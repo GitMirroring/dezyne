@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -44,7 +45,7 @@ public:
   void off(){}
   void on(){}
 
-  static boost::shared_ptr<siren::sirenInterface> GetInstance();
+  static boost::shared_ptr<siren::sirenInterface> GetInstance(int);
   static void ReleaseInstance();
 };
 

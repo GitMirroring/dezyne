@@ -72,6 +72,7 @@
            null-is-#f
            number->symbol
            one-is-#f
+           pke
            pretty-string
            regex-split
            stderr
@@ -266,6 +267,13 @@
 
 (define (stdout string . rest)
   (apply logf (cons* (current-output-port) string rest)))
+
+(define (pke . stuff)
+  (newline (current-error-port))
+  (display ";;; " (current-error-port))
+  (write stuff (current-error-port))
+  (newline (current-error-port))
+  (car (last-pair stuff)))
 
 (define (->string h . t)
   (let ((src (if (pair? t) (cons h t) h)))

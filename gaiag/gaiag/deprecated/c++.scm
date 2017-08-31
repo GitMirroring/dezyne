@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -55,7 +56,8 @@
 
   #:export (c++-file
             dump-system-glue
-            asd-interfaces))
+            asd-interfaces
+            system->glue-system))
 
 (define (dump-system-glue o)
   (let ((name (om:name o)))
@@ -152,21 +154,22 @@
              (lst (filter pair? lst)))
             (fold (lambda (e r) (acons (third e) (take e 2) r)) '() lst)))
 
-(define (event2->interface1-event1-alist port)
+(define (event2->interface1-event1-alist port-or-model)
   (event2->interface1-event1-alist-
-   ((compose gulp-file map-file) port)))
+   ((compose gulp-file map-file) port-or-model)))
 
-(define ((asd-interfaces dir?) model)
-  (let* ((provided
+(define* ((asd-interfaces #:optional (dir? identity)) model)
+  (let* ((interfaces
           (filter dir? ((compose .elements .events) model)))
-         (alist (event2->interface1-event1-alist (.name model)))
-         (asd-provided (filter identity (map (lambda (x) (assoc (.name x) alist)) provided))))
-    (if (pair? asd-provided) asd-provided '())))
+         (alist (event2->interface1-event1-alist model))
+         (interfaces (filter-map (lambda (x) (assoc (.name x) alist)) interfaces)))
+    (if (pair? interfaces) interfaces '())))
 
 (define (map-file o)
   (let* ((files (command-line:get '() '()))
          (map-files (filter (cut string-suffix? ".map" <>) files))
          (map-file-name (string-append (symbol->string (map-file-name o)) ".map"))
+         ;;(foo (stderr "we kijken hier naar: ~a\n" map-file-name))
          (map-files (if (pair? map-files) map-files (list map-file-name))))
     (and=> (find (lambda (f) (equal? (basename f) map-file-name)) map-files)
            try-find-file)))
@@ -174,7 +177,6 @@
 (define (map-file-name o)
   (match o
     ((or ($ <foreign>) ($ <component>) ($ <system>)) (map-file-name (om:port o)))
-    (_ (om:name o)) ;; dzn::IConsole ==> IConsole.map
     (_ ((om:scope-name) o)))) ;; dzn::IConsole ==> dzn_IConsole.map
 
 (define (string->mapping string)
@@ -193,3 +195,47 @@
           (receive (same rest)
               (partition (lambda (m) (eq? (car m) channel)) lst)
             (append (list (cons (caar same) (map cdr same))) (loop rest)))))))
+
+(define-class <glue-event> (<event>)
+  (asd #:getter .asd #:init-value #f #:init-keyword #:asd))
+
+(define-class <glue-system> (<system>)
+  (asd-in #:getter .asd-in #:init-form (list) #:init-keyword #:asd-in)
+  (asd-out #:getter .asd-out #:init-form (list) #:init-keyword #:asd-out))
+
+(define ((triplet->interfaces dir) triplet)
+  (define (mapping->event dzn-event asd-event)
+    (make <glue-event> #:name dzn-event #:asd asd-event #:direction dir))
+  (let ((name (car triplet))
+        (dzn-events (cadr triplet))
+        (asd-events (caddr triplet)))
+   (make <interface>
+     #:name (car triplet)
+     #:events (make <events> #:elements (map mapping->event dzn-events asd-events)))))
+
+(define (voodoo dir? o)
+  (map (lambda (api)
+         (let* ((lst (filter (lambda (entry) (eq? api (second entry))) ((asd-interfaces dir?) (om:interface o))))
+                (dzn-events (map first lst))
+                (asd-events (map third lst)))
+           (list api dzn-events asd-events)))
+       (delete-duplicates (map second ((asd-interfaces dir?) (om:interface o))))))
+
+(define (glue-interfaces dir o)
+  (map (triplet->interfaces dir) (voodoo (if (eq? dir 'in) om:in? om:out?) o)))
+
+(define-method (system->glue-system (o <system>))
+  ;; (stderr "interfaces:~s\n" ((asd-interfaces identity) (om:interface o)))
+  ;; (stderr "interfaces in:~s\n" ((asd-interfaces om:in?) (om:interface o)))
+  ;; (stderr "interfaces out:~s\n" ((asd-interfaces om:out?) (om:interface o)))
+  ;; (stderr "map second:~s\n" (map second ((asd-interfaces om:in?) (om:interface o))))
+  (let ((asd-in (glue-interfaces 'in o))
+        (asd-out (glue-interfaces 'out o)))
+    (pke "glue-system:" (make <glue-system>
+                          #:name (.name o)
+                          #:ports (.ports o)
+                          #:instances (.instances o)
+                          #:bindings (.bindings o)
+                          #:asd-in asd-in
+                          #:asd-out asd-out)))
+  o)
