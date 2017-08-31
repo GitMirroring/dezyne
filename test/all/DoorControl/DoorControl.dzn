@@ -1,0 +1,279 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface LimitSwitchIF
+{
+  enum Position { Opened, Closed, Unknown };
+  in void motorActive();
+  in void motorStopped();
+  out void doorOpened();
+  out void doorClosed();
+  out void proximityWarning();
+  in Position queryPosition();
+  in void initialise();
+	
+  behaviour
+  {
+    enum State { NOT_READY, READY };
+    enum MotorState { Active, Stopped };
+    Position state = Position.Unknown;
+    MotorState motor = MotorState.Stopped;
+    State ready = State.NOT_READY;
+		
+    [ready.NOT_READY]
+    {
+      on initialise: ready = State.READY;
+      on motorActive, motorStopped, queryPosition: illegal;
+    }
+    [ready.READY]
+    {
+      [state.Opened && motor.Active]
+      {
+        //				on optional: { doorClosed; state = Position.Closed; }
+        on optional: state = Position.Unknown;
+      }
+      [state.Closed && motor.Active]
+      {
+        //				on optional: { doorOpened; state = Position.Opened; }
+        on optional: state = Position.Unknown;
+      }
+      [state.Unknown && motor.Active]
+      {
+        on optional: { doorOpened; state = Position.Opened; }
+        on optional: { doorClosed; state = Position.Closed; }
+      }
+      [motor.Active]
+      {
+        on optional: proximityWarning;	
+      } 
+      [true] on queryPosition: reply ( state );		
+      [true] on motorActive: motor = MotorState.Active;
+      [true] on motorStopped: motor = MotorState.Stopped;
+      [true] on initialise: illegal;
+    }
+  }
+}
+
+interface MotorControlIF
+{
+  in void initialise();
+  in void start();
+  in void stop();
+  in void setOpen();
+  in void setClose();
+  out void driveFault();
+  out void powerWarning();
+	
+  behaviour
+  {
+    enum State { NotReady, Ready };
+    enum OnOff { MotorOn, MotorOff };
+    enum Direction { DoorOpen, DoorClose };
+
+		
+    OnOff motor = OnOff.MotorOff;
+    Direction dir = Direction.DoorOpen;
+    State state = State.NotReady;
+		
+    [state.Ready]
+    {
+      [motor.MotorOff]
+      {
+        on start: motor = OnOff.MotorOn;
+        on setOpen: dir = Direction.DoorOpen;
+        on setClose: dir = Direction.DoorClose;
+        on stop: illegal;
+      }
+      [motor.MotorOn]
+      {
+        on stop: motor = OnOff.MotorOff;
+        on start, setOpen, setClose: illegal;		
+        on optional: { driveFault; motor = OnOff.MotorOff; }
+        on optional: powerWarning;
+      }
+      on initialise: illegal;			
+    }		
+    [state.NotReady]
+    {
+      on initialise: 
+        { 
+          state = State.Ready; 
+          motor = OnOff.MotorOff;
+        }
+      on start, stop, setOpen, setClose: illegal;
+    }
+  }
+}
+
+
+interface SwitchPressIF
+{
+  out void switchPressed();
+	
+  behaviour
+  {
+    on inevitable: switchPressed;
+  }
+}
+
+interface DoorControlIF
+{
+  in void initialise();
+  in void reset();
+  out void warning();
+  out void error();
+	
+  behaviour
+  {
+    enum State { NotReady, Ready, Error };
+    State state = State.NotReady;
+		
+    [state.NotReady]
+    {
+      on initialise: state = State.Ready;
+      on reset: illegal;
+    }
+    [state.Ready]
+    {
+      on initialise: illegal;
+      on reset: illegal;
+      on inevitable: warning;
+      on inevitable: { error; state = State.Error; }
+    }
+    [state.Error]
+    {
+      on reset: state = State.Ready;
+      on initialise: illegal;
+    }
+  }
+}
+
+component DoorControl
+{
+  provides DoorControlIF doorControl;
+  requires SwitchPressIF switchPress;
+  requires MotorControlIF motorControl;
+  requires LimitSwitchIF limitSw;
+	
+  behaviour
+  {
+    enum State { NotReady, Ready, Opening, Closing, Error };
+    State state = State.NotReady;
+    LimitSwitchIF.Position position = LimitSwitchIF.Position.Unknown;
+		
+    [state.NotReady]
+    {
+      on doorControl.initialise(): { limitSw.initialise(); motorControl.initialise(); state = State.Ready; }
+      on doorControl.reset(): illegal;
+      on switchPress.switchPressed(): {}
+      on limitSw.doorClosed(), limitSw.doorOpened(), limitSw.proximityWarning(): illegal;
+    }		
+    [state.Ready]
+    {
+      on switchPress.switchPressed():
+        {
+          position = limitSw.queryPosition();
+				
+          if ( position == LimitSwitchIF.Position.Opened )
+          {
+            motorControl.setClose();
+            motorControl.start();	
+            limitSw.motorActive();
+            state = State.Closing;				
+          }
+          else if ( position == LimitSwitchIF.Position.Closed || 
+                    position == LimitSwitchIF.Position.Unknown )
+          {
+            motorControl.setOpen();
+            motorControl.start();
+            limitSw.motorActive();	
+            state = State.Opening;				
+          }				
+        }
+      on doorControl.initialise(), limitSw.doorOpened, limitSw.doorClosed, limitSw.proximityWarning: illegal;			
+      on doorControl.reset(): illegal;		
+    }
+    [state.Opening]
+    {
+      on switchPress.switchPressed():
+        {
+          motorControl.stop();
+          motorControl.setClose();
+          motorControl.start();
+          state = State.Closing;
+        }
+      on limitSw.doorOpened():
+        {
+          motorControl.stop();
+          limitSw.motorStopped();
+          state = State.Ready;
+        }
+      on doorControl.initialise(): illegal;
+      on limitSw.proximityWarning(): {}
+      on limitSw.doorClosed(): {}
+      on doorControl.reset(): illegal;
+    }
+    [state.Closing]
+    {
+      on switchPress.switchPressed():
+        {
+          motorControl.stop();
+          motorControl.setOpen();
+          motorControl.start();
+          state = State.Opening;
+        }
+      on limitSw.doorClosed():
+        {
+          motorControl.stop();
+          limitSw.motorStopped();
+          state = State.Ready;
+        }
+      on limitSw.doorOpened(): {}
+      on doorControl.initialise(): illegal;
+      on limitSw.proximityWarning(): 
+        {
+          motorControl.stop();
+          motorControl.setOpen();
+          motorControl.start();
+          state = State.Opening;
+        }
+      on doorControl.reset(): illegal;
+    }
+    [state.Error]
+    {
+      on doorControl.reset(): state = State.Ready;
+      on limitSw.doorClosed(), limitSw.doorOpened(), limitSw.proximityWarning(): {}
+      on switchPress.switchPressed(): {}
+      on doorControl.initialise(): illegal;
+    }
+					
+    on motorControl.powerWarning(): doorControl.warning();
+    on motorControl.driveFault():
+      {
+        //			motorControl.stop();
+        limitSw.motorStopped();
+        doorControl.error();
+        state = State.Error;
+      }				
+  }
+}

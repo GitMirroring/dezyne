@@ -1,0 +1,132 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ClientIF
+{
+	enum Result { OK, NOK };
+	in Result startAll();
+	
+	behaviour
+	{
+		enum States { All };
+		
+		on startAll: reply(Result.OK);
+		on startAll: reply(Result.NOK);
+	}
+}
+
+interface DeviceIF
+{
+	enum Result { OK, NOK };
+	in void turnon();
+	in void turnoff();
+	out void ok();
+	out void nok();
+	
+	behaviour
+	{
+		enum State { Off, On };
+		State state = State.Off;
+		
+		[state.Off]
+		{
+			on turnon: { ok; state = State.On; }
+			on turnon: { nok; }
+			on turnoff: illegal;
+		}
+		
+		[state.On]
+		{
+			on turnon: illegal;
+			on turnoff: { state = State.Off; }
+		}
+	}
+}
+
+component OutEventSetReply
+{
+	provides ClientIF clientIF;
+	requires DeviceIF deviceIF;
+	
+	behaviour
+	{
+		subint Count {0..5};
+		enum States { Idle, Starting, Retrying, Started };
+		States state = States.Idle;
+		Count count = 0;
+		
+		[state.Idle]
+		{
+			on clientIF.startAll():
+			{
+				count = 0;
+				deviceIF.turnon();
+				state = States.Starting;
+				if (false) reply(ClientIF.Result.OK); // required but not executed
+			}
+			on deviceIF.ok(), deviceIF.nok(): illegal;
+		}
+		
+		[state.Starting]
+		{
+			on deviceIF.ok():
+			{
+				state = States.Started;
+			}
+			on deviceIF.nok():
+			{
+				state = States.Retrying;
+				count = count + 1;
+				deviceIF.turnon();
+			}
+			on clientIF.startAll(): illegal;
+		}
+		
+		[state.Retrying]
+		{
+			on clientIF.startAll(): illegal;
+			on deviceIF.ok(): {}
+			on deviceIF.nok():
+			{
+				if ( count < 5 )
+				{
+					count = count + 1;
+					deviceIF.turnon();
+				}
+				else
+				{
+					reply(ClientIF.Result.NOK);  // Not allowed!
+//					state = States.Idle;
+				}				
+			}
+		}
+
+// Completeness error: entire state missing.		
+//		[state.Started]
+//		{
+//			on clientIF.startAll(): reply(ClientIF.Result.OK);
+//			on deviceIF.ok(): {}
+//			on deviceIF.nok(): {}
+//		}
+	}
+} 
