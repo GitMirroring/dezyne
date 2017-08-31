@@ -130,6 +130,7 @@
         (lambda ()
           (compile-file file
                         #:output-file go
+                        #:canonicalization 'absolute
                         #:opts `(#:warnings ,warnings
                                  ,@(optimization-options file))))))))
 
