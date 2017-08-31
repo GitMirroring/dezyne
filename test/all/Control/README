@@ -1,2 +1,2 @@
-cp ../daemon/lib/Controller.dzn all/Controller/
+cp ../dzn-daemon/lib/Controller.dzn all/Controller/
 sed -i s,//behaviour,/**/behaviour, all/Controller/Controller.dzn

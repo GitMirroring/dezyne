@@ -1141,7 +1141,7 @@
   (ast:set-model-scope
    (module-ref module 'model)
    ;; use old animate+component.js.scm for
-   ;; services/scripts/verification.dzn, daemon/lib/Controller.dzn
+   ;; services/scripts/verification.dzn, dzn-daemon/lib/Controller.dzn
    ;; until regression test passes
    (cond  ((member file-name '(component.cc.scm component.js.scm))
            (x:pand 'source-component (module-ref module 'model) module))
