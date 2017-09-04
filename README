@@ -1,57 +1,77 @@
-                                                              -*- org -*-
+-*- org -*-
+
+#+TITLE The Dezyne server, services, client.
+
 Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]].
 
 * Setup Guix
 
 ** On Ubuntu
 
-  $ sudo -i
-  # wget -O setup-guix.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-guix.sh;hb=refs/heads/master'
-  # wget -O setup-guix-user.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-guix-user.sh;hb=refs/heads/master'
-  # wget -O setup-guix-offload-user.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-guix-offload.sh;hb=refs/heads/master'
-  # wget -O setup-postgres.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-postgres.sh;hb=refs/heads/master'
-  # wget -O setup-shepherd.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-shepherd.sh;hb=refs/heads/master'
-  # chmod +x setup-guix.sh setup-guix-user.sh setup-guix-offload.sh setup-postgres.sh setup-shepherd.sh
-  # ./setup-guix.sh
+   As root (sudo -i) do
+   #+BEGIN_SRC bash
+   wget -O setup-guix.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-guix.sh;hb=refs/heads/master'
+   wget -O setup-guix-user.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-guix-user.sh;hb=refs/heads/master'
+   wget -O setup-guix-offload-user.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-guix-offload.sh;hb=refs/heads/master'
+   wget -O setup-postgres.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-postgres.sh;hb=refs/heads/master'
+   wget -O setup-shepherd.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-shepherd.sh;hb=refs/heads/master'
+   chmod +x setup-guix.sh setup-guix-user.sh setup-guix-offload.sh setup-postgres.sh setup-shepherd.sh
+   ./setup-guix.sh
+   #+END_SRC
 
-  $ wget -O setup-guix-user.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-guix-user.sh;hb=refs/heads/master'
-  $ chmod +x setup-guix-user.sh
-  $ ./setup-guix-user.sh
+   As user do
+   #+BEGIN_SRC bash
+   wget -O setup-guix-user.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-guix-user.sh;hb=refs/heads/master'
+   chmod +x setup-guix-user.sh
+   ./setup-guix-user.sh
+   #+END_SRC
 
 ** Or install [[https://gnu.org/s/guix][GuixSD]]
 
 * Get it
 
-  $ mkdir -p src
-  $ cd src && git clone git.oban.verum.com:~buildmaster/development.git
+  #+BEGIN_SRC bash
+  mkdir -p src
+  cd src && git clone git.oban.verum.com:~buildmaster/development.git
+  #+END_SRC
 
 * Build it
 
-  $ guix environment -l guix.scm
-  $ ./configure
-  $ make
+  #+BEGIN_SRC bash
+  guix environment -l guix.scm
+  ./configure
+  make
+  #+END_SRC
 
 ** Run uninstalled programs
 
-  $ ./pre-inst-env build/gdzn ...
-  $ ./pre-inst-env dzn/bin/dzn ...
+  #+BEGIN_SRC bash
+  ./pre-inst-env build/gdzn ...
+  ./pre-inst-env dzn/bin/dzn ...
+  #+END_SRC
 
 ** Run regression test
 
-  $ guix environment dezyne-regression-test
-  $ ./pre-inst-env test/bin/test test/hello/helloworld
+  #+BEGIN_SRC bash
+  guix environment dezyne-regression-test
+  ./pre-inst-env test/bin/test test/hello/helloworld
 
-  $ ./pre-inst-env test/bin/test test/regression-test
+  ./pre-inst-env test/bin/test test/regression-test
+  #+END_SRC
 
 * Create a persistent build environment
 
 ** in your default profile
 
-  $ guix package -m release/manifest.scm
+  #+BEGIN_SRC bash
+  guix package -m release/manifest.scm
+  #+END_SRC
 
 ** or in a special named profile
 
-  $ guix package -p ~/.config/guix/verum -m release/manifest.scm
+  #+BEGIN_SRC bash
+  guix package -p ~/.config/guix/verum -m release/manifest.scm
+  #+END_SRC
 
 * Editing Scheme files
 
