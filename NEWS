@@ -1,0 +1,36 @@
+                                                              -*- org -*-
+#+TITLE: Dezyne NEWS – history of user-visible changes
+#+STARTUP: content hidestars showall
+
+* Changes in 2.4.1 (since 2.4.0)
+** Code generation
+*** The c++03 runtime now uses a boost compatible workaround for lacking move semantics
+*** Using ‘reply()’ in a function called from a ‘blocking’ context has been fixed
+** Verification
+*** The queue-size option has been fixed
+
+* Changes in 2.4.0 (since 2.3.4)
+** Code generation
+*** The c++ code generators use file2file mode by default
+Generating code for a DZN file ‘model.dzn’ now produces ‘model.hh’ and
+‘model.cc’.  The old behaviour can be selected using
+‘--deprecated=model2file’
+*** The c# runtime now has a ‘check_bindings’ function
+*** The interface of c++ and c++03 runtime: changed
+*** The container interface the c++ languages (‘container.hh’) has been changed
+*** The c++03 code generator now supports ‘blocking’
+*** The c++03 code now depends on boost 1.58 or newer
+** Model verification
+*** Verification performance of some models has been improved
+** Noteworthy bug fixes
+*** Authentication with the dzn client is robust against parallel execution
+*** Handle output from model checker where lines are broken in two parts
+   (https://zoho.verum.com/7327)
+*** Dollar expressions can now contain DZN keywords
+   (https://zoho.verum.com/7310)
+*** Parameters in on-clauses for unused notification events are no longer removed.
+    (https://zoho.verum.com/7309)
+*** The ASD converter now renames variables that conflict with DZN keywords
+    (https://zoho.verum.com/7308)
+*** Type declarations can now appear anywhere in the toplevel of a behaviour
+    (https://zoho.verum.com/6747)
