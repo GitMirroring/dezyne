@@ -155,7 +155,12 @@
   (receive (systems other) (partition (is? <system>) lst)
     (append
      (stable-sort other
-                  (lambda (a b) (and (is-a? a <interface>) (or (is-a? b <component>) (is-a? b <foreign>)))))
+                  (lambda (a b)
+                    (or (and (is-a? a <data>)
+                             (or (is-a? b <interface>)
+                                 (is-a? b <component>)))
+                        (and (is-a? a <interface>)
+                             (is-a? b <component>)))))
      (reverse ((lambda (dag)
                  (if (null? dag)
                      '()

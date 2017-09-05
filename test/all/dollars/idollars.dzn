@@ -25,7 +25,7 @@ import includes.dzn;
 
 interface idollars
 {
-  in void e();
+  in void e(in foobar fb);
 
   behaviour
   {
