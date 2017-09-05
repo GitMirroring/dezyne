@@ -1,4 +1,6 @@
 -*- org -*-
+#+OPTIONS: toc:2          only include two levels in TOC
++OPTIONS: xtoc:nil        no default TOC at all
 
 #+TITLE The Dezyne server, services, client.
 
