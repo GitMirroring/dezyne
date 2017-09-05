@@ -293,17 +293,16 @@
 
 (define (json-callback model o)
 
-  (define (function? ref)  (ast:resolve ref))
+  (define (function? ref) (and=> (ast:resolve ref) .function))
   (define (recursive? ref) (.recursive (function? ref)))
-  (define (non-recursive? ref)
-    (not (recursive? ref)))
+  (define non-recursive? (compose negate recursive?))
 
   (define (return-action o)
     (match o
       (($ <action>) (list o))
       (($ <assign> name (and ($ <action>) (get! action))) (list (action)))
       (($ <variable> name type (and ($ <action>) (get! action))) (list (action)))
-      (($ <call> (and (? non-recursive?) (get! function))) (return-actions (function)))
+      ((and ($ <call>) (? non-recursive?)) (return-actions (function? o)))
       (($ <function> name signature #f statement) (return-actions statement))
       (_ '())))
 
@@ -362,7 +361,7 @@
 
     ((and ($ <group>) (= .expression expression)) (->symbol (list '#{(}# expression '#{)}# )))
     ((and ($ <not>) (= .expression expression)) (->symbol (list '! expression)))
-    
+
     (((h t ...)) (->symbol (car o)))
     ((h t ...) (apply symbol-append (map ->symbol o)))
     ((? (is? <ast>)) (->symbol (om->list o)))

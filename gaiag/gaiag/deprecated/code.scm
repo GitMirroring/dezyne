@@ -116,9 +116,6 @@
                    (dump-header))))
   "")
 
-(define (code:import name)
-  (om:import name code:om))
-
 (define (om:data-member-names model)
   (map .name (filter (lambda (x) (as ((om:type model) (.type x)) <extern>)) (om:variables model))))
 
@@ -1093,7 +1090,7 @@
                                       (.right binding)))))
 
 (define (injected-instance-interface model binding)
-  (.type (om:port (code:import (injected-instance-type model binding)))))
+  (.type (om:port (injected-instance-type model binding))))
 
 (define (injected-instances model)
   (let ((injected-instance-names (map injected-instance-name (injected-bindings model))))

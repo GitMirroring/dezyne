@@ -56,7 +56,6 @@
   #:export (
            ast->
            behaviour->csp
-           csp:import
            csp-comma-list
            csp-component
            ast-transform
@@ -143,9 +142,6 @@
                                  (assembly-lts model)))))
   (if (and separate-asserts? (not (equal? file-name "-")))
       (dump-output "asserts.csp" (lambda () (csp-asserts model)))))
-
-(define (csp:import name)
-  (om:import name csp:norm))
 
 (define (csp:norm ast)
   ((compose-root

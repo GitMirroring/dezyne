@@ -45,7 +45,6 @@
   #:use-module (gaiag ast2om)
   #:use-module (gaiag compare)
   #:use-module (gaiag util)
-  #:use-module (gaiag resolve)
 
   #:use-module (gaiag annotate)
   #:use-module (gaiag command-line)
@@ -104,7 +103,6 @@
            om:function
            om:functions
            om:imperative?
-           om:import
            om:imported?
            om:in?
            om:integers
@@ -510,8 +508,8 @@
        (om:component system instance)))
     (($ <binding> instance port-name) (om:component system instance))
     (($ <bind>) (om:component system (om:instance-name o)))
-    (($ <instance> name type) (om:import type))
-    (($ <port> name type) (om:interface (.type o)))))
+    (($ <instance>) (.type o))
+    (($ <port>) (om:interface (.type o)))))
 
 (define (om:interface o)
   (match o
@@ -535,7 +533,7 @@
         (and-let* ((name (.name (.instance o)))
                    (instance (om:instance model name))
                    (type (and=> instance .type))
-                   (component (om:import type)))
+                   (component type))
                   (om:port component port))
         (om:port model port))))
     ('* (make <port> #:name '* #:direction 'requires))
@@ -893,20 +891,6 @@
     (for-each om:register-model (om:filter (is? <model>) om))
     (for-each om:register-type (om:filter (is? <type>) om))
     om))
-
-(define* (import-ast name #:optional (transform (compose ast:resolve ast->om)))
-  (and-let* ((ast (null-is-#f (read-ast name (om:register transform))))
-             (models (null-is-#f (filter (is? <model>) ast))))
-    (find (lambda (model) (equal? (.name model) name)) models)))
-
-(define* (om:import name #:optional (transform (compose ast:resolve ast->om)))
-  (or (as name <model>)
-      (cached-model name)
-      (and-let* ((ast (import-ast name transform)))
-        (cache-model! name ast))))
-
-(define* (om:parse-dzn string #:optional (register (om:register (compose ast:resolve ast->om))))
-  (parse-dzn string register))
 
 ;;;; OM handling
 

@@ -50,7 +50,7 @@
 (define (ast:resolve o)
   (match o
     (($ <root> (models ...)) (resolve-root o))
-;;    (($ <call>) ((resolve (ast:model-scope) '()) o))
+    (($ <call>) ((resolve (ast:model-scope) '()) o))
     ((? (is? <model>)) (resolve-model o))
     (_  o)))
 
