@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -93,6 +94,11 @@
     ;; (stderr "   => ~a\n" filename)
     (tree->string tree)))
 
+(define (reduce-sexp l)
+  (unfold null? (compose (cut apply list <>) (cut list-head <> 2)) cddr l))
+
+(define (xassoc key alist) (find (compose (cut equal? key <>) cdr) alist))
+
 (define (type->template module filename type sep o)
   (let ((debug? (command-line:get 'debug #f)))
     (if (and debug?
@@ -107,7 +113,22 @@
          ;;(stderr "PAIR [~a,t=~a,f=~a] ~a\n" (class-name (class-of ast)) (and type (class-name type)) filename (class-name (class-of (car o))))
          (let* ((sexp (if (not sep) '("")
                           (with-input-from-string (gulp-template sep) read)))
-                (join (lambda (o) (apply string-join (cons o sexp)))))
+		(grammars (if sep (reduce-sexp sexp)))
+		(delimiter (if (= 1 (length sexp))
+			       sexp
+			       (or (xassoc '(infix) grammars)
+				   (xassoc '(suffix) grammars)
+				   (xassoc '(prefix) grammars))))
+		(pre (if (= 1 (length sexp))
+			 ""
+			 (or (and=> (xassoc '(pre) grammars)
+				    car) "")))
+		(post (if (= 1 (length sexp))
+			  ""
+			  (or (and=> (xassoc '(post) grammars)
+				     car) "")))
+                (join (lambda (o) (apply string-join (cons o delimiter))))
+		(join (lambda (o) (string-append pre (join o) post))))
            (display (join (map (lambda (ast)
                                  (with-output-to-string
                                    (lambda () (if (or (char? ast)
