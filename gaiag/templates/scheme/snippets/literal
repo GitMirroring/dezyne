@@ -1,1 +1,0 @@
-(assoc-ref #(string-if (null? scope) #{global#} #{#((om:scope-join #f) scope)#})-#name -alist '#field)

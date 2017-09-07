@@ -1,3 +1,0 @@
-
-(define #(string-if (null? scope) #{global#} #{#((om:scope-join #f) scope)#})-#name -alist
-  '(#((->join "\n    ") (map (lambda (f i) `("(" ,f " . " ,i ")")) fields (iota length)))))

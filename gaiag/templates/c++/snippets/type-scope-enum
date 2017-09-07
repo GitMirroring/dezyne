@@ -1,1 +1,0 @@
-#((c++:scope-join #f) scope-name) ::type

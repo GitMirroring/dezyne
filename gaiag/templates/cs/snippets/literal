@@ -1,1 +1,0 @@
-#(if (null? scope) 'dzn.global ((om:scope-join) scope)).#name .#field

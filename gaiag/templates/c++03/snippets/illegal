@@ -1,1 +1,0 @@
-dzn_locator.get<dzn::illegal_handler>().illegal();

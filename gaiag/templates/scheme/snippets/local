@@ -1,1 +1,0 @@
-#(string-if (not (eq? argument 'out)) #{(.v #identifier)#} #{#identifier#})

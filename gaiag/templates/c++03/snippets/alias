@@ -1,2 +1,0 @@
-#type #(if out? "&")  #alias  = #name;
-(void)#alias;

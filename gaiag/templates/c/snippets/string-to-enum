@@ -1,9 +1,0 @@
-uint8_t string_to_#((c:scope-join) scope)_#name(char* s) {
-  if (0) {
-  ;
-  }
-  #((->join "\n") (map (lambda (field) (->string (list "else if (!strcmp (s, " "\"" name "_" field "\")) {\n"
-     "return " ((c:scope-join) scope) '_ name '_ field ";\n"
-     "}"))) fields))
-   return INT_MIN;
-}

@@ -1,1 +1,0 @@
-this->out_#port  = dzn::assign()#(map (lambda (assignment) (list "(" (car assignment) ",this->" (cdr assignment) ")" )) assignments);
