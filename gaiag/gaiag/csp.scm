@@ -102,9 +102,6 @@
           (stderr message)
           (throw 'csp message)))))
 
-(define (csp:ast->om ast)
-  ((om:register csp:norm #t) ast))
-
 (define* (ast->csp ast #:key file-name (separate-asserts? (command-line:get 'assert #f)))
   (om->csp (csp:ast->om ast) #:file-name file-name #:separate-asserts? separate-asserts?))
 
@@ -150,6 +147,8 @@
     ast:resolve
     ast->om
     ) ast))
+
+(define csp:ast->om csp:norm)
 
 (define ((demangle-var model) var)
   (or (and-let* (((member (.name model) '(co_mangle co_argument2 if_I)))

@@ -64,7 +64,6 @@
   (make <error> #:ast o #:message (format #f "type mismatch: ~a expected, found: ~a" expected actual)))
 
 (define-method (resolve-root (o <root>))
-  (map om:register-type (om:types o))
   (let* ((resolved ((compose-root
                      (cut resolve-selection <> <system>)
                      (cut resolve-selection <> <component>)
@@ -120,7 +119,7 @@
 (define (resolve-model o)
   (match o
     ((or ($ <interface>) ($ <component>) ($ <foreign>))
-     ((compose om:register-model (resolve o '())) o))
+     ((resolve o '()) o))
     (_ ((resolve o '()) o))))
 
 (define ((resolve model locals) o)

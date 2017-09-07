@@ -49,7 +49,6 @@
       (exit (or (not name) (pair? systems))))))
 
 (define (ast-> ast)
-  (let ((om ((om:register (compose ast:resolve ast->om) #t) ast)))
+  (let ((om ((compose ast:resolve ast->om) ast)))
     (om->systems om))
-  (stderr "HIERO\n")
   "")

@@ -137,9 +137,6 @@
            om:public-types
            om:provided
            om:provides?
-           om:register
-           om:register-model
-           om:register-type
            om:reply-enums
            om:reply-types
            om:required
@@ -527,7 +524,7 @@
     (($ <port>) (om:interface (.type o)))
     (($ <interface>) o)
     ((? (is? <model>)) (om:interface (om:port o)))
-    (($ <scope.name>) (cached-model o))
+    (($ <scope.name>) (find (om:named o) ((compose .elements ast:root-scope))))
     (($ <root>) (om:find (is? <interface>) o))
     ((h t ...) (find (is? <interface>) o))))
 
@@ -871,37 +868,8 @@
                      (loop (cdr elements))))))))
     (_ #f)))
 
-
-;;;; reading/caching
-(define *ast-alist* '())
-
-(define (om:interfaces)
-  (filter (is? <interface>) *ast-alist*))
-
-(define (cache-model! name o)
-  (set! *ast-alist* (assoc-set! *ast-alist* (om2list name) o))
-  o)
-
-(define (cached-model name)
-  (assoc-ref *ast-alist* (om2list name)))
-
 (define (globals)
-  (filter (is? <type>) (map cdr *ast-alist*)))
-
-(define (om:register-model o)
-  (if (not (cached-model (.name o)))
-      (cache-model! (.name o) o))
-  o)
-
-(define om:register-type om:register-model)
-
-(define* ((om:register transform #:optional (clear? #f)) ast)
-  (let ((om (transform ast)))
-    (if clear?
-        (set! *ast-alist* (filter (lambda (x) (is-a? (cdr x) <type>)) *ast-alist*)))
-    (for-each om:register-model (om:filter (is? <model>) om))
-    (for-each om:register-type (om:filter (is? <type>) om))
-    om))
+  (filter (is? <type>) ((compose .elements ast:root-scope))))
 
 ;;;; OM handling
 

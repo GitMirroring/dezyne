@@ -36,22 +36,18 @@
 
 (define (ast-transform* ast src)
   (let ((root (csp->om ast)))
-    ((om:register csp:norm #t) root)
     (ast-transform-return root (purge-data root (csp->om src)))))
 
 (define (purge-data* ast src)
   (let ((root (csp->om ast)))
-    ((om:register csp:norm #t) root)
     (purge-data root (csp->om src))))
 
 (define (ast-transform-return* ast src)
   (let ((root (csp->resolved ast)))
-    ((om:register csp->resolved #t) root)
     (ast-transform-return root (csp->resolved src))))
 
 (define (on->csp* ast src)
   (let ((root (csp->om ast)))
-    ((om:register csp->om #t) root)
     (->string (on->csp root (csp->om src)))))
 
 (define (csp->resolved ast)
@@ -941,7 +937,7 @@ P'(s, b, c)
 ;; reply event
 
 (define reply-ast
-  '(root 
+  '(root
    (interface
      (scope.name () IReply)
    (types (enum (scope.name (IReply) Status) (fields Yes No)))
