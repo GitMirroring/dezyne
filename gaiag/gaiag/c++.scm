@@ -18,20 +18,18 @@
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gaiag c++)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
   #:use-module (ice-9 regex)
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 pretty-print)
-  #:use-module (ice-9 receive)
-  #:use-module (srfi srfi-1)
 
-  #:use-module (gaiag deprecated code) ; FIXME: injected-binding?, injected-bindings
   #:use-module (gaiag norm-event)
 
-  #:use-module (gaiag c)
   #:use-module (gaiag code)
   #:use-module (gaiag command-line)
   #:use-module (gaiag indent)
@@ -53,6 +51,37 @@
             .asd-event
             <glue-event>))
 
+(define (ast-> ast)
+  (let ((root (code:om ast)))
+    (ast:set-scope root (c++:root-> root)))
+  "")
+
+(define (c++:root-> root)
+  (if (code:model2file?) (code:model2file root)
+      (code:file2file root))
+  (let ((main (command-line:get 'model #f)))
+    (when main
+      (let* ((models (filter (is? <model>) (.elements root)))
+             (main? (compose (cut eq? (string->symbol main) <>) (om:scope-name)))
+             (main-model (and main (find main? models))))
+        (and=> main-model code:dump-main)))))
+
+(define (code:file2file root)
+  (let* ((objects (filter (disjoin (is? <data>)
+                                   (negate (disjoin dzn-async? om:imported? (is? <foreign>))))
+                          (.elements root)))
+         (root* (clone root #:elements objects)))
+    (c++:dump root*)
+    (for-each c++:dump (filter (is? <foreign>) (.elements root)))
+    (when (glue) (for-each c++:dump-glue (filter (is? <system>) objects)))))
+
+(define (code:model2file root)
+  (let* ((models (map (is? <model>) (.elements root)))
+         (models (filter (negate om:imported?) models))
+         ;; Generator-synthesized models look non-imported, filter harder
+         (models (filter (negate dzn-async?) models)))
+    (for-each c++:dump models)))
+
 (define-class <glue-event> (<event>)
   (asd-channel #:getter .asd-channel #:init-value #f #:init-keyword #:asd-channel)
   (asd-event #:getter .asd-event #:init-value #f #:init-keyword #:asd-event))
@@ -61,11 +90,10 @@
   (asd-in #:getter .asd-in #:init-form (list) #:init-keyword #:asd-in)
   (asd-out #:getter .asd-out #:init-form (list) #:init-keyword #:asd-out))
 
-(define asd-interfaces (@@ (gaiag deprecated c++) asd-interfaces))
-(define c++:scope-join (@@ (gaiag deprecated c++) c++:scope-join))
-(define c++:scope-name (@@ (gaiag deprecated c++) c++:scope-name))
-
 (define asd? #f) ;; FIXME: asd glue
+
+(define* ((c++:scope-name #:optional (infix (string->symbol "::"))) o) ;; JUNKME
+  ((om:scope-name infix) o))
 
 ;;; ast accessors / template helpers
 
@@ -530,132 +558,40 @@
 
 ;;; dump to file
 
-(define (dzn-async? o)
-  (or (gaiag-dzn-async? o)
-      (generator-dzn-async? o)))
+(define-method (c++:dump (o <root>))
+  (let ((name (basename (symbol->string (source-file o)) ".dzn")))
+    (code:x:pand o 'header (string-append name (symbol->string (code:extension (make <interface>)))))
+    (when (pair? (filter (negate (disjoin (is? <data>) (is? <interface>))) (.elements o)))
+      (code:x:pand o 'source (string-append name (symbol->string (code:extension (make <component>))))))))
 
-(define (gaiag-dzn-async? o)
-  (equal? ((compose .scope .name) o) '(dzn async)))
+(define-method (c++:dump (o <interface>))
+  (let ((name ((om:scope-name) o)))
+    (code:x:pand o 'header (symbol-append name (code:extension (make <interface>))))))
 
-(define (generator-dzn-async? o)
-  (let* ((name (.name o))
-         (scope (.scope name)))
-    (and (pair? scope)
-         (eq? (car scope) 'dzn)
-         (symbol-prefix? 'async (.name name)))))
+(define-method (c++:dump (o <component>))
+  (let ((name ((om:scope-name) o)))
+    (code:x:pand o 'header (symbol-append name (code:extension (make <interface>))))
+    (code:x:pand o 'source (symbol-append name (code:extension (make <component>))))))
 
-(define (c++:skel-file model)
-  ((->symbol-join '_) (append (drop-right (code:scope+name model) 1) '(skel) (take-right (code:scope+name model) 1))))
+(define-method (c++:dump (o <foreign>))
+  (let ((name (code:skel-file o)))
+    (code:x:pand o 'foreign-header (symbol-append name (code:extension (make <interface>))))
+    (code:x:pand o 'foreign-source (symbol-append name (code:extension (make <component>)))))
+  (when (map-file o)
+    (let ((name ((om:scope-name) o)))
+      (code:x:pand o 'glue-bottom-header (symbol-append name (code:extension (make <interface>))))
+      (code:x:pand o 'glue-bottom-source (symbol-append name (code:extension (make <component>)))))))
 
-(define (dump o)
-  (match o
-    (($ <interface>) (dump-interface o))
-    ((or ($ <component>) ($ <foreign>)) (dump-component o))
-    (($ <system>) (dump-system o))))
+(define-method (c++:dump (o <system>))
+  (let* ((name ((om:scope-name) o))
+         (shell (command-line:get 'shell #f))
+         (template (if (and shell (eq? name (string->symbol shell))) '-shell (symbol))))
+    (code:x:pand o (symbol-append 'header template) (symbol-append name (code:extension (make <interface>))))
+    (code:x:pand o (symbol-append 'source template) (symbol-append name (code:extension (make <component>)))))
+  (when (map-file o)
+    (c++:dump-glue o)))
 
-(define (dump-interface o)
-  ((@@ (gaiag c) dump-interface) o))
-
-(define c++-file (@@ (gaiag deprecated c++) c++-file)) ;; FIXME
-
-(define map-file (@@ (gaiag deprecated c++) map-file))
-
-(define map-file-name (@@ (gaiag deprecated c++) map-file-name))
-
-(define (dump-component o)
-  (if (and (glue)
-           (eq? (glue) 'asd)
-           (map-file o))
-      ;; TODO: asd glue templates
-      (let ((name ((om:scope-name) o)))
-        (dump-indented (symbol-append name '.hh)
-                       (lambda ()
-                         (c++-file 'asd.hh.scm (code:module o))))
-        (dump-indented (symbol-append name '.cc)
-                       (lambda ()
-                         (c++-file 'asd.cc.scm (code:module o))))
-        ((@@ (gaiag c) dump-main) o)
-        (for-each (lambda (port)
-                    (let* ((module (code:module o))
-                           (interface (symbol-drop (last (.type port)) 1))
-                           (INTERFACE (symbol-upcase interface)))
-                      (module-define! module '.interface interface)
-                      (module-define! module '.INTERFACE INTERFACE)
-                      (dump-indented (symbol-append interface 'Component.h)
-                                     (cute c++-file 'asdcomponent.h.scm module))))
-                  (filter om:requires? (om:ports o))))
-      (let ((name ((om:scope-name) o))
-            (skel-name (if (is-a? o <foreign>) (c++:skel-file o) ((om:scope-name) o)))
-            (interfaces (map .type ((compose .elements .ports) o))))
-        ((@@ (gaiag c) dump-main) o)
-        (dump-indented (symbol-append skel-name (code:extension (make <interface>)))
-                       (cute c++-file (if (is-a? o <foreign>) 'foreign.hh.scm 'component.hh.scm) (code:module o)))
-        (dump-indented (symbol-append skel-name (code:extension o))
-                       (cute c++-file (if (is-a? o <foreign>) 'foreign.cc.scm 'component.cc.scm) (code:module o)))
-        ;; TODO: rename dzn glue templates
-        (when (and (is-a? o <foreign>) (map-file o))
-          (let* ((module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
-                                           ,(resolve-module '(gaiag c++)))))
-                 (om (ast:root-scope)))
-            (module-define! module 'root om)
-            (dump-indented (string-append (symbol->string name) ".hh")
-                           (lambda ()
-                             (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
-                               (ast:set-model-scope o (x:pand 'glue-bottom-header-component o module)))))
-            (dump-indented (string-append (symbol->string name) ".cc")
-                           (lambda ()
-                             (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
-                               (ast:set-model-scope o (x:pand 'glue-bottom-source-component o module))))))
-          ))))
-
-(define (dump-system o)
-  ((@@ (gaiag c) dump-system) o)
-  (if (map-file o) ((@ (gaiag deprecated c++) dump-system-glue) o)))
-
-(define ((triplet->interfaces dir) triplet)
-  (define (mapping->event dzn-event asd-event)
-    (make <glue-event> #:name dzn-event #:asd-event asd-event #:direction dir))
-  (let ((name (car triplet))
-        (dzn-events (cadr triplet))
-        (asd-events (caddr triplet)))
-   (make <interface>
-     #:name (car triplet)
-     #:events (make <events> #:elements (map mapping->event dzn-events asd-events)))))
-
-(define (dump-glue-system o)
-  (let* ((name (om:name o))
-         (module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
-                                   ,(resolve-module '(gaiag c++)))))
-         (om (ast:root-scope)))
-    (module-define! module 'root om)
-    (dump-indented (string-append (symbol->string name) "Component.h")
-                   (lambda ()
-                     (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
-                       (ast:set-model-scope o (x:pand 'glue-top-header-system o module)))))
-    (dump-indented (string-append (symbol->string name) "Component.cpp")
-                   (lambda ()
-                     (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
-                       (ast:set-model-scope o (x:pand 'glue-top-source-system o module)))))))
-
-(define (ast-> ast)
-  (let* ((om ((om:register code:om #t) ast))
-         (models ((om:filter:p <model>) om))
-         (models (filter (negate om:imported?) models))
-         ;; Generator-synthesized models look non-imported, filter harder
-         (models (filter (negate dzn-async?) models)))
-    (ast:set-scope om
-                   (if (code:model2file?)
-                       (map (@@ (gaiag deprecated c++) dump) models)
-                       (let* ((main (command-line:get 'model #f))
-                              (main (and main (find (compose (cut eq? (string->symbol main) <>) (om:scope-name)) models)))
-                              (module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
-                                                        ,(resolve-module '(gaiag c++)))))
-                              (models (filter (disjoin (is? <data>)
-                                                       (negate (disjoin dzn-async? om:imported? (is? <foreign>))))
-                                              (.elements om))))
-                         (module-define! module 'root (clone om #:elements models))
-                         (code:dump-file (basename (symbol->string (source-file om)) ".dzn") module)
-                         (map dump-component (filter (is? <foreign>) (.elements om)))
-                         (when (glue) (map dump-glue-system (filter (is? <system>) (.elements om))))
-                         (when main ((@@ (gaiag c) dump-main) main))))))
-  "")
+(define-method (c++:dump-glue (o <system>))
+  (let ((name (om:name o)))
+    (code:x:pand o 'glue-top-header (symbol-append name 'Component.h))
+    (code:x:pand o 'glue-top-source (symbol-append name 'Component.cpp))))

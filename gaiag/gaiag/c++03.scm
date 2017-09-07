@@ -29,9 +29,8 @@
   #:export (ast->))
 
 (define ast-> (@@ (gaiag c++) ast->))
-(define c++:scope-join (@@ (gaiag deprecated c++) c++:scope-join))
-(define c++:scope-name (@@ (gaiag deprecated c++) c++:scope-name))
-(define glue (@@ (gaiag deprecated c++) glue))
-(define asd-interfaces (@@ (gaiag deprecated c++) asd-interfaces))
-(define event2->interface1-event1-alist (@@ (gaiag deprecated c++) event2->interface1-event1-alist))
 
+;;(define c++:scope-name (@@ (gaiag c++) c++:scope-name))
+;;(define glue (@@ (gaiag code) glue))
+;;(define asd-interfaces (@@ (gaiag code) asd-interfaces))
+;;(define event2->interface1-event1-alist (@@ (gaiag code) event2->interface1-event1-alist))

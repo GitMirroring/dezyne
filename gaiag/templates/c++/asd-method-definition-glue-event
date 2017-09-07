@@ -1,1 +1,4 @@
-../c++03/asd-method-definition-glue-event
+#x:return-type  #x:model-name ::#x:model-name Port_#.name (#x:formals)
+{
+  api_#.asd-channel ->#.asd-event (#x:parameters);
+}

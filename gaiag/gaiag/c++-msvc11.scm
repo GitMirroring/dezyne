@@ -28,7 +28,3 @@
   #:export (ast->))
 
 (define ast-> (@@ (gaiag c++) ast->))
-(define c++:scope-join (@@ (gaiag c++) c++:scope-join))
-(define c++:scope-name (@@ (gaiag c++) c++:scope-name))
-(define c++:skel-file (@@ (gaiag c++) c++:skel-file))
-(define glue (@@ (gaiag c++) glue))

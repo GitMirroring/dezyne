@@ -40,7 +40,6 @@
   #:use-module (gaiag om)
 
   #:use-module (gaiag deprecated animate)
-  #:use-module (gaiag deprecated code)
 
   #:use-module (gaiag command-line)
   #:use-module (gaiag indent)
@@ -299,6 +298,13 @@
     ((animate-snippet 'declare-int
                       `((scope ,(om:scope int)) (name ,(om:name int)) (range ,range) (from ,(.from range)) (to ,(.to range))))
      int)))
+
+(define ((declare-enum model) enum)
+  (let* ((fields ((compose .elements .fields) enum))
+         (length (length fields))
+         (asd? #f))
+   (snippet 'declare-enum
+            `((scope+name ,(om:scope+name enum)) (scope ,(om:scope enum)) (name ,(om:name enum)) (fields ,fields) (length ,length) (asd? ,asd?)))))
 
 (define ((declare-event model) event)
   ((animate-snippet 'declare-event

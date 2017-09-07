@@ -62,6 +62,7 @@
            populate-module
            snippet
            gulp-snippet
+           string-if
            template?
            templates))
 
@@ -76,6 +77,13 @@
   (or (and (is-a? x <ast>)
            (pair? (assoc (ast-name x) (templates))))
       (and (list? x) (pair? (assoc (car x) (templates))))))
+
+(define-syntax string-if
+  (syntax-rules ()
+    ((_ condition then)
+     (animate-string (if (null-is-#f condition) then "") (current-module)))
+    ((_ condition then else)
+     (animate-string (if (null-is-#f condition) then else) (current-module)))))
 
 (define* (populate-module module key-value-pairs #:optional (o #f))
   (let loop ((pairs key-value-pairs))

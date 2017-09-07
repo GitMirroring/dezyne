@@ -1,1 +1,45 @@
-../c++03/glue-top-source-system
+##include "#x:model-name Component.h"
+
+##include <dzn/locator.hh>
+##include <dzn/runtime.hh>
+
+##include "#x:scoped-model-name .hh"
+
+##include <boost/bind.hpp>
+##include <boost/function.hpp>
+##include <boost/make_shared.hpp>
+
+struct #x:model-name Glue
+: public #x:model-name Component
+{
+  dzn::runtime dzn_runtime;
+  dzn::locator dzn_locator;
+  #x:scope::name  component;
+
+  #x:asd-api-definition
+  #x:asd-api-instance-declaration
+  #x:asd-cb-instance-declaration
+  boost::shared_ptr<asd::channels::ISingleThreaded> st;
+
+#x:model-name Glue (#x:construction-signature)
+: component(dzn_locator.set(dzn_runtime)#x:construction-parameters-locator-set)
+#x:asd-api-instance-init
+{
+ #x:asd-cb-event-init
+}
+
+#x:asd-cb-method-definition
+#x:asd-get-api-definition
+#x:asd-register-cb-definition
+
+void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded> st)
+{
+  this->st = st;
+}
+};
+
+boost::shared_ptr<#x:model-name ::#x:model-name Interface> #x:model-name Component::GetInstance (#x:construction-signature)
+{
+  return boost::make_shared<#x:model-name Glue> (#x:construction-parameters);
+}
+void #x:model-name Component::ReleaseInstance () {}

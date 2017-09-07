@@ -26,6 +26,8 @@
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 peg)
   #:use-module (ice-9 peg codegen)
+  #:use-module (ice-9 receive)
+
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -35,9 +37,6 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
   #:use-module (gaiag util)
-
-  #:use-module (gaiag deprecated animate)
-  #:use-module (gaiag deprecated code)
 
   #:use-module (gaiag command-line)
   #:use-module (gaiag compare)
@@ -51,9 +50,19 @@
   #:use-module (language dezyne location)
 
   #:export (<enum-field>
+            dzn-async?
+            asd-interfaces
+            map-file
+            injected-bindings
+            injected-instances
+            non-injected-instances
+            injected-instance-name
+
             code:formals
             code:instance-name
             code:annotate-shells
+            code:skel-file
+            event2->interface1-event1-alist
 
             code:expression
             code:trigger
@@ -70,25 +79,54 @@
             code:reply-scope+name
             code:reply-types
             code:scope+name
+            code:x:pand
 
             code-file
             code:file-name
-            code:dump-file
+            code:dump
             code:extension
             code:indenter
+            code:dump-main
             code:module
             code:om
             code:->string
             symbol->enum-field
-            dump
-            dump-component
-            dump-global
-            dump-interface
             dump-indented
-            dump-main
             dump-system
             glue
             pipe))
+
+(define (ast-> ast)
+  (let ((root (code:om ast)))
+    (ast:set-scope root (code:root-> root)))
+  "")
+
+(define (code:root-> root)
+  (if (code:model2file?) (code:model2file root)
+      (code:file2file root))
+  (let ((main (command-line:get 'model #f)))
+    (when main
+      (let* ((models (filter (is? <model>) (.elements root)))
+             (main? (compose (cut eq? (string->symbol main) <>) (om:scope-name)))
+             (main-model (and main (find main? models))))
+        (and=> main-model code:dump-main)))))
+
+(define (code:file2file root)
+  (let* ((objects (filter (disjoin (is? <data>)
+                                   (negate (disjoin dzn-async? om:imported? (is? <foreign>))))
+                          (.elements root)))
+         (root* (clone root #:elements objects)))
+    (code:dump root*)
+    (when (code:foreign?)
+      (for-each code:dump (filter (is? <foreign>) (.elements root))))
+    (when (glue) (for-each code:dump-glue (filter (is? <system>) objects)))))
+
+(define (code:model2file root)
+  (let* ((models (map (is? <model>) (.elements root)))
+         (models (filter (negate om:imported?) models))
+         ;; Generator-synthesized models look non-imported, filter harder
+         (models (filter (negate dzn-async?) models)))
+    (for-each code:dump models)))
 
 ;;; ast extension
 (define-class <argument> (<named> <expression>)
@@ -107,6 +145,32 @@
 (define-class <out-formal> (<variable>))
 
 (define-class <local> (<variable>))
+
+;;; ast accessors
+(define (injected-binding? binding)
+  (or (eq? '* (.port.name (.left binding)))
+      (eq? '* (.port.name (.right binding)))))
+
+(define (injected-binding binding)
+  (cond ((eq? '* (.port.name (.left binding))) (.right binding))
+        ((eq? '* (.port.name (.right binding))) (.left binding))
+        (else #f)))
+
+(define (injected-bindings model)
+  (filter injected-binding? ((compose .elements .bindings) model)))
+
+(define (injected-instance-name binding)
+  (or (.instance.name (.left binding)) (.instance.name (.right binding))))
+
+(define (injected-instances model)
+  (let ((injected-instance-names (map injected-instance-name (injected-bindings model))))
+    (filter (lambda (instance) (member (.name instance) injected-instance-names))
+            ((compose .elements .instances) model))))
+
+(define (non-injected-instances model)
+  (let ((injected-instance-names (map injected-instance-name (injected-bindings model))))
+    (filter (lambda (instance) (not (member (.name instance) injected-instance-names)))
+            ((compose .elements .instances) model))))
 
 (define (code:source o)
   (topological-sort (filter (negate (is? <type>)) (map code:annotate-shells (.elements o)))))
@@ -714,6 +778,8 @@
 (define-template x:main-port-connect-out ast:out-triggers-out-events)
 (define-template x:main-provided-port-init ast:provided)
 (define-template x:main-required-port-init ast:required)
+(define-template x:main-provided-flush-init om:provided)
+(define-template x:main-required-flush-init om:required)
 
 (define-template x:main-out-arg code:main-out-arg 'argument-infix)
 (define-template x:main-event-map-void ast:void-in-triggers 'event-map-prefix)
@@ -726,16 +792,76 @@
 
 ;;; dump to file
 
-(define (code:dump-file file-name module) ;; FIXME: c++ (c-like?) only
-  (dump-output (string-append file-name ".hh")
-               (lambda ()
-                 (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
-                   (x:pand 'header-root (module-ref module 'root) module))))
-  (if (pair? (filter (negate (disjoin (is? <data>) (is? <interface>))) (.elements (module-ref module 'root))))
-      (dump-output (string-append file-name ".cc")
-                   (lambda ()
-                     (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
-                       (x:pand 'source-root (module-ref module 'root) module))))))
+(define-method (code:x:pand (o <ast>) template file-name)
+  (let ((module (make-module 31 `(,(resolve-module '(gaiag code))
+                                  ,(resolve-module `(gaiag ,(language))))))
+        (file-name (if (string? file-name) file-name (symbol->string file-name)))) ;; FIXME
+    (module-define! module 'root (ast:root-scope))
+    (dump-indented (string-append (if (eq? template 'main) "" (code:dir o)) ;; FIXME
+                                  file-name)
+                  (lambda _
+                    (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+                      (if (not (is-a? o <model>)) (x:pand (symbol-append template '- (ast-name o)) o module)
+                          (ast:set-model-scope o (x:pand (symbol-append template '- (ast-name o)) o module))))))))
+
+(define-method (code:dump (o <root>))
+  (let ((name (basename (symbol->string (source-file o)) ".dzn")))
+    (code:x:pand o 'header (string-append name (symbol->string (code:extension (make <interface>)))))
+    (when (pair? (filter (negate (disjoin (is? <data>) (is? <interface>))) (.elements o)))
+      (code:x:pand o 'source (string-append name (symbol->string (code:extension (make <component>))))))))
+
+;; FIXME:  'global todo
+;; (define-method (code:dump (o <enum>))
+;;   (code:x:pand o 'header (symbol-append name (code:extension (make <interface>))))
+;;   (and-let* (((null-is-#f (om:enums)))
+;;              (template (template-file `(global ,(symbol-append (code:extension o) '.scm))))
+;;              ((file-exists? (components->file-name template))))
+;;             (dump-indented (list 'dzn 'global (code:extension o))
+;;                            (lambda ()
+;;                              (code-file 'global (code:module o))))))
+
+(define-method (code:dump (o <interface>))
+  (let ((name ((om:scope-name) o)))
+    (if (code:header?) (code:x:pand o 'header (symbol-append name (code:extension (make <interface>))))
+        (code:x:pand o 'source (symbol-append name (code:extension (make <interface>)))))))
+
+(define-method (code:dump (o <component>))
+  (let ((name ((om:scope-name) o)))
+    (when (code:header?)
+      (code:x:pand o 'header (symbol-append name (code:extension (make <interface>)))))
+    (code:x:pand o 'source (symbol-append name (code:extension (make <component>))))))
+
+(define-method (code:dump (o <foreign>))
+  (let ((name (code:skel-file o)))
+    (when (code:header?)
+      (code:x:pand o 'foreign-header (symbol-append name (code:extension (make <interface>)))))
+    (code:x:pand o 'foreign-source (symbol-append name (code:extension (make <component>)))))
+  (when (map-file o)
+    (let ((name ((om:scope-name) o)))
+      (code:x:pand o 'glue-bottom-header (symbol-append name (code:extension (make <interface>))))
+      (code:x:pand o 'glue-bottom-source (symbol-append name (code:extension (make <component>)))))))
+
+(define-method (code:dump (o <system>))
+  (let* ((name ((om:scope-name) o))
+         (shell (command-line:get 'shell #f))
+         (template (if (and shell (eq? name (string->symbol shell))) 'shell- (symbol))))
+    (when (code:header?)
+      (code:x:pand o (symbol-append template 'header) (symbol-append name (code:extension (make <interface>)))))
+    (code:x:pand o (symbol-append template 'source) (symbol-append name (code:extension (make <component>)))))
+  (when (map-file o)
+    (code:dump-glue o)))
+
+(define (code:dump-main o)
+  (and-let* ((name ((om:scope-name) o))
+             (model (and (and=> (command-line:get 'model #f) string->symbol)))
+             ((is-a? o <component-model>))
+             ((eq? model name)))
+    (code:x:pand o 'main (symbol-append 'main (code:extension o)))))
+
+(define-method (code:dump-glue (o <system>))
+  (let ((name (om:name o)))
+    (code:x:pand o 'glue-top-header (symbol-append name 'Component.h))
+    (code:x:pand o 'glue-top-source (symbol-append name 'Component.cpp))))
 
 (define (glue)
   (and=> (command-line:get 'glue #f) string->symbol))
@@ -775,13 +901,7 @@
 
 (define (code:om ast)
   ((compose-root
-    (lambda (o)
-      (let ((model-names (map (compose .name car) (@@ (gaiag om) *ast-alist*))))
-        (if (and (member (language) '(c++ c++03 c++-msvc11 javascript))
-                 (not (member 'iclient_socket model-names))
-                 (not (member 'imodelchecker model-names)))
-            (code-norm-event o)
-            (code-norm-event-auwe-meuk o))))
+    code-norm-event
     ast:resolve
     ast->om
     ) ast))
@@ -795,67 +915,15 @@
                    (lambda () (pipe thunk (lambda () ((code:indenter)))))
                    thunk)))
 
+(define (code:foreign?)
+  (member (language) '(c++ c++03 c++-msvc11)))
 
-(define (dump-global o)
-  (and-let* (((null-is-#f (om:enums)))
-             (template (template-file `(global ,(symbol-append (code:extension o) '.scm))))
-             ((file-exists? (components->file-name template))))
-            (dump-indented (list 'dzn 'global (code:extension o))
-                           (lambda ()
-                             (code-file 'global (code:module o))))))
-
-(define (dump o)
-  (match o
-    (($ <interface>) (dump-interface o))
-    ((or ($ <component>) ($ <foreign>)) (dump-component o))
-    (($ <system>) (dump-system o))))
-
-(define (dump-interface o)
-  (dump-global o)
-  (let ((name ((om:scope-name) o)))
-    (dump-indented `(,@(code:dir o) ,name ,(code:extension o))
-                   (lambda ()
-                     (code-file 'interface (code:module o))))))
+(define (code:header?)
+  (member (language) '(c c++ c++03 c++-msvc11)))
 
 (define (code:dir o)
   (if (eq? (language) 'cs) '()
       '(dzn)))
-
-(define (dump-component o)
-  (dump-global o)
-  (let ((name ((om:scope-name) o))
-        (interfaces (map .type ((compose .elements .ports) o))))
-    (when (not (is-a? o <foreign>))
-      (map dump interfaces)
-      (dump-indented `(,@(code:dir o) ,name ,(code:extension o))
-                     (lambda ()
-                       (code-file 'component (code:module o)))))
-    (dump-main o)))
-
-(define (dump-main o)
-  (and-let* ((name ((om:scope-name) o))
-             (model (and (and=> (command-line:get 'model #f) string->symbol)))
-             ((is-a? o <component-model>))
-             ((eq? model name)))
-            (dump-indented (symbol-append 'main (code:extension o))
-                           (lambda ()
-                             (code-file 'main (code:module o))))))
-
-(define (dump-system o)
-  (let* ((name ((om:scope-name) o))
-         (model (and (and=> (command-line:get 'model #f) string->symbol)))
-         (interfaces (map .type ((compose .elements .ports) o)))
-         (shell (command-line:get 'shell #f))
-         (template (if (and shell (eq? name (string->symbol shell))) 'shell 'system)))
-    (dump-indented `(,@(code:dir o) ,name ,(code:extension o))
-                   (lambda ()
-                     (code-file template (code:module o))))
-    (dump-main o)))
-
-(define (code-file file-name module)
-  (let ((model (module-ref module 'model)))
-   (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
-     (code:animate-file (symbol-append file-name (code:extension model) '.scm) module))))
 
 (define (code:extension o)
   (match o
@@ -887,29 +955,78 @@
                 (language)))))
 
 (define (code:dir o)
-  (if (eq? (language) 'cs) '()
-      '(dzn)))
+  (if (member (language) '(javascript)) "dzn/" ""))
 
-(define* (code:module o)
-  (let ((module (make-module 31 (list
-                                 (resolve-module (list 'gaiag (language)))
-                                 (resolve-module '(gaiag lexicals))
-                                 (resolve-module '(gaiag misc))
-                                 (resolve-module '(oop goops))
-                                 (resolve-module '(gaiag goops))
-                                 (resolve-module '(gaiag deprecated code))))))
-    (module-define! module 'model o)
-    (module-define! module '.model (om:name o))
-    (module-define! module '.scope_model ((om:scope-name) o))
-    (match o
-      (($ <interface>)
-       (module-define! module '.interface (om:name o))
-       (let ((events (.events o)))
-         (module-define! module 'events events)
-         (module-define! module 'in-events (filter om:in? (.elements events)))
-         (module-define! module 'out-events (filter om:out? (.elements events))))
-       (module-define! module '.scope_interface ((om:scope-name) o))
-       (module-define! module '.INTERFACE (string-upcase (symbol->string ((om:scope-name) o)))))
-      ((? (is? <model>))
-       (module-define! module '.COMPONENT (string-upcase (symbol->string ((om:scope-name) o))))))
-      module))
+(define (code:module root)
+  (let ((module (make-module 31 `(,(resolve-module '(gaiag code))
+                                  ,(resolve-module `(gaiag ,(language)))))))
+    (module-define! module 'root root)
+    module))
+
+(define (dzn-async? o)
+  (or (gaiag-dzn-async? o)
+      (generator-dzn-async? o)))
+
+(define (gaiag-dzn-async? o)
+  (equal? ((compose .scope .name) o) '(dzn async)))
+
+(define (generator-dzn-async? o)
+  (let* ((name (.name o))
+         (scope (.scope name)))
+    (and (pair? scope)
+         (eq? (car scope) 'dzn)
+         (symbol-prefix? 'async (.name name)))))
+
+(define (code:skel-file model)
+  ((->symbol-join '_) (append (drop-right (code:scope+name model) 1) '(skel) (take-right (code:scope+name model) 1))))
+
+
+;;  glue
+
+(define (event2->interface1-event1-alist- string)
+  (and-let* ((string string)
+             (lst (string-split string #\newline))
+             (lst (filter (lambda (x) (not (string-prefix? "//" x))) lst))
+             (lst (map (lambda (o) (map string->symbol (string-tokenize o char-set:graphic))) lst))
+             (lst (filter pair? lst)))
+            (fold (lambda (e r) (acons (third e) (take e 2) r)) '() lst)))
+
+(define (event2->interface1-event1-alist port-or-model)
+  (event2->interface1-event1-alist-
+   ((compose gulp-file map-file) port-or-model)))
+
+(define* ((asd-interfaces #:optional (dir? identity)) model)
+  (let* ((interfaces
+          (filter dir? ((compose .elements .events) model)))
+         (alist (event2->interface1-event1-alist model))
+         (interfaces (filter-map (lambda (x) (assoc (.name x) alist)) interfaces)))
+    (if (pair? interfaces) interfaces '())))
+
+(define (map-file o)
+  (let* ((files (command-line:get '() '()))
+         (map-files (filter (cut string-suffix? ".map" <>) files))
+         (map-file-name (string-append (symbol->string (map-file-name o)) ".map"))
+         (map-files (if (pair? map-files) map-files (list map-file-name))))
+    (and=> (find (lambda (f) (equal? (basename f) map-file-name)) map-files)
+           try-find-file)))
+
+(define (map-file-name o)
+  (match o
+    ((or ($ <foreign>) ($ <component>) ($ <system>)) (map-file-name (om:port o)))
+    (_ ((om:scope-name) o)))) ;; dzn::IConsole ==> dzn_IConsole.map
+
+(define (string->mapping string)
+  (and-let* ((string string)
+             (lst (string-split string #\newline))
+             (lst (filter (lambda (x) (not (string-prefix? "//" x))) lst))
+             (lst (map (lambda (o) (map string->symbol (string-tokenize o char-set:graphic))) lst))
+             (lst (filter pair? lst)))
+    lst))
+
+(define (mapping->channel mapping)
+  (let loop ((lst mapping))
+    (if (null? lst) '()
+        (let ((channel (caar lst)))
+          (receive (same rest)
+              (partition (lambda (m) (eq? (car m) channel)) lst)
+            (append (list (cons (caar same) (map cdr same))) (loop rest)))))))
