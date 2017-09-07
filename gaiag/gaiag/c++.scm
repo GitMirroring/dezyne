@@ -57,14 +57,15 @@
   "")
 
 (define (c++:root-> root)
-  (if (code:model2file?) (code:model2file root)
-      (code:file2file root))
-  (let ((main (command-line:get 'model #f)))
-    (when main
-      (let* ((models (filter (is? <model>) (.elements root)))
-             (main? (compose (cut eq? (string->symbol main) <>) (om:scope-name)))
-             (main-model (and main (find main? models))))
-        (and=> main-model code:dump-main)))))
+  (parameterize ((language (code:language)))
+    (if (code:model2file?) (code:model2file root)
+        (code:file2file root))
+    (let ((main (command-line:get 'model #f)))
+      (when main
+        (let* ((models (filter (is? <model>) (.elements root)))
+               (main? (compose (cut eq? (string->symbol main) <>) (om:scope-name)))
+               (main-model (and main (find main? models))))
+          (and=> main-model code:dump-main))))))
 
 (define (code:file2file root)
   (let* ((objects (filter (disjoin (is? <data>)

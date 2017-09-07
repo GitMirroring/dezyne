@@ -1,0 +1,6 @@
+interface #x:type  {
+  #x:define-type
+  #x:in-event
+  #x:out-event
+  #x:behaviour
+}

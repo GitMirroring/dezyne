@@ -1,1 +1,0 @@
-#direction  #(string-if external? "external ")#(string-if injected? "injected ")#((om:scope-name) interface)  #name ;

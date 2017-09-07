@@ -24,8 +24,6 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 optargs)
-  #:use-module (ice-9 peg)
-  #:use-module (ice-9 peg codegen)
   #:use-module (ice-9 receive)
 
   #:use-module (srfi srfi-1)
@@ -59,6 +57,7 @@
             injected-instance-name
 
             code:formals
+            code:language
             code:instance-name
             code:annotate-shells
             code:skel-file
@@ -92,6 +91,7 @@
             code:->string
             symbol->enum-field
             dump-indented
+            code:indent
             dump-system
             glue
             pipe))
@@ -102,14 +102,18 @@
   "")
 
 (define (code:root-> root)
-  (if (code:model2file?) (code:model2file root)
-      (code:file2file root))
-  (let ((main (command-line:get 'model #f)))
-    (when main
-      (let* ((models (filter (is? <model>) (.elements root)))
-             (main? (compose (cut eq? (string->symbol main) <>) (om:scope-name)))
-             (main-model (and main (find main? models))))
-        (and=> main-model code:dump-main)))))
+  (parameterize ((language (code:language)))
+    (if (code:model2file?) (code:model2file root)
+        (code:file2file root))
+    (let ((main (command-line:get 'model #f)))
+      (when main
+        (let* ((models (filter (is? <model>) (.elements root)))
+               (main? (compose (cut eq? (string->symbol main) <>) (om:scope-name)))
+               (main-model (and main (find main? models))))
+          (and=> main-model code:dump-main))))))
+
+(define (code:language)
+  (string->symbol (command-line:get 'language "c++")))
 
 (define (code:file2file root)
   (let* ((objects (filter (disjoin (is? <data>)
@@ -342,6 +346,9 @@
 (define-method (code:formals (o <trigger>))
   ((compose .elements .formals) o))
 
+(define-method (code:formals (o <signature>))
+  ((compose .elements .formals) o))
+
 (define-method (code:formals (o <event>))
   ((compose .elements .formals .signature) o))
 
@@ -504,6 +511,10 @@
     ((? unspecified?) (code:unspecified))
     (_ (.expression o))))
 
+(define-method (code:=expression (o <extern>)) ; MORTAL SIN HERE!!?
+  (if (not (.value o)) ""
+      o))
+
 (define-method (code:reply-type (o <ast>))
   ((compose code:scope+name ast:expression-type) o))
 
@@ -547,12 +558,16 @@
 (define-method (code:type-name (o <enum-field>))
   (code:scope+name o))
 
+(define (code:append-type-symbol o)
+  (if (memq (language) '(c++ c++03 c++-msvc11)) (append o (list 'type)) ; MORTAL SIN HERE!!?
+      o))
+
 (define-method (code:type-name o)
   (let* ((type (or (as o <model>) (as o <type>) (.type o)))
          (scope+name (code:scope+name type)))
     (map code:->string
          (match type
-           (($ <enum>) (code:cons-empty-symbol (append scope+name (list 'type))))
+           (($ <enum>) (code:cons-empty-symbol (code:append-type-symbol scope+name)))
            (($ <extern>) (list (.value type)))
            ((or ($ <bool>) ($ <int>) ($ <void>)) scope+name)
            (_ (code:cons-empty-symbol scope+name))))))
@@ -600,7 +615,7 @@
 
 ;;; code: generic templates
 (define-template x:header- code:x-header-)
-(define-template x:source code:source)
+(define-template x:source code:source 'newline-infix)
 
 (define-template x:async-member-initializer (lambda (o) (om:ports (.behaviour o))))
 
@@ -640,7 +655,7 @@
 (define-template x:non-void-reply identity #f)
 
 (define-method (code:enum-literal (o <literal>))
-  (map code:->string (cons (symbol) (code:scope+name o))))
+  (map code:->string (code:cons-empty-symbol (code:scope+name o))))
 
 (define-method (code:enum-scope (o <field>))
   ((compose code:enum-scope .type .variable) o))
@@ -676,8 +691,6 @@
 
 (define-template x:methods code:ons)
 (define-template x:functions code:functions)
-
-(define-template x:field code:field-expression 'type-infix)
 
 (define-template x:data code:data)
 
@@ -909,11 +922,13 @@
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))
 
-(define (dump-indented file-name thunk)
-  (dump-output file-name
-               (if (code:indenter)
-                   (lambda () (pipe thunk (lambda () ((code:indenter)))))
-                   thunk)))
+(define (code:indent thunk)
+  (if (code:indenter)
+      (lambda () (pipe thunk (lambda () ((code:indenter)))))
+      thunk))
+
+(define (dump-indented file-name thunk) ;; JUNKME
+  (dump-output file-name (code:indent thunk)))
 
 (define (code:foreign?)
   (member (language) '(c++ c++03 c++-msvc11)))

@@ -267,6 +267,9 @@
 (define-class <extern> (<type>)
   (value #:getter .value #:init-value #f #:init-keyword #:value))
 
+(define-method (.name.name (o <extern>))
+  (symbol->string ((compose .name .name) o)))
+
 (define-class <bool> (<type>))
 (define-method (initialize (o <bool>) . initargs)
   (next-method o (list #:name (make <scope.name> #:name 'bool))))

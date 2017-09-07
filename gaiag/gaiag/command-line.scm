@@ -45,5 +45,4 @@
     (if (not (member option multi-options)) (option-ref options option default)
         (filter-map (multi-opt option) options))))
 
-(define (language)
-  (string->symbol (command-line:get 'language "c++")))
+(define language (make-parameter 'c++))

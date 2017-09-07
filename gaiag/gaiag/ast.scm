@@ -68,7 +68,18 @@
            ast:modeling?
            ast:typed?
 
-           ast:port*))
+           ast:argument*
+           ast:binding*
+           ast:field*
+           ast:formal*
+           ast:instance*
+           ast:model*
+           ast:port*
+           ast:statement*
+           ast:trigger*
+           ast:type*
+           ast:variable*
+           ))
 
 (define (deprecated . where)
   (stderr "DEPRECATED:~a\n" where))
@@ -94,7 +105,15 @@
 (define-method (ast:argument* (o <action>)) ((compose ast:argument* .arguments) o))
 (define-method (ast:binding* (o <system>)) ((compose ast:binding* .bindings) o))
 (define-method (ast:function* (o <behaviour>)) ((compose ast:function* .functions) o))
+(define-method (ast:field* (o <enum>)) ((compose ast:field* .fields) o))
+(define-method (ast:formal* (o <signature>)) ((compose ast:formal* .formals) o))
+(define-method (ast:formal* (o <trigger>)) ((compose ast:formal* .formals) o))
+(define-method (ast:instance* (o <system>)) ((compose ast:instance* .instances) o))
 (define-method (ast:statement* (o <behaviour>)) ((compose ast:statement* .statement) o))
+(define-method (ast:variable* (o <behaviour>)) ((compose ast:variable* .variables) o))
+(define-method (ast:trigger* (o <on>)) ((compose ast:trigger* .triggers) o))
+(define-method (ast:type* (o <interface>)) ((compose ast:type* .types) o))
+(define-method (ast:type* (o <behaviour>)) ((compose ast:type* .types) o))
 
 (define-method (ast:expression-type (o <ast>))
   (match o

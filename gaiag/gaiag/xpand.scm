@@ -136,6 +136,7 @@
            (display (join (map (lambda (ast)
                                  (with-output-to-string
                                    (lambda () (if (or (char? ast)
+                                                      (number? ast)
                                                       (string? ast)
                                                       (symbol? ast)) (display ast)
                                                       (let* ((name (symbol->string (ast-name (if (is-a? ast type) type (class-of ast)))))
@@ -145,7 +146,7 @@
                                                             (x:pand file-name ast))))))) o)))))
         ((null? o) #f)
         ((is-a? o <ast>)
-         ;;(stderr "ATOM [~a,t=~a,f=~a] ~a\n" (class-name (class-of ast)) (and type (class-name type)) file-name (class-name (class-of o)))
+         ;;(stderr "ATOM [~a,t=~a,f=~a] ~a\n" (class-name (class-of o)) (and type (class-name type)) file-name (class-name (class-of o)))
          (let* ((name (symbol->string (ast-name (if (is-a? o type) type (class-of o)))))
                 (file-name (string-append file-name "@" name)))
 	   (if (not (eq? o (car (ast:scope))))

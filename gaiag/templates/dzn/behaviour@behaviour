@@ -1,0 +1,5 @@
+behaviour {
+  #x:async-port
+  #x:define-type
+  #x:declare-variable
+  #x:dzn-statement}

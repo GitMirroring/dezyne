@@ -24,348 +24,254 @@
 ;;; Code:
 
 (define-module (gaiag dzn)
-  #:use-module (srfi srfi-26)
-  #:use-module (ice-9 match)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 getopt-long)
-  #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 optargs)
 
-  #:use-module (json)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
   #:use-module (gaiag ast)
   #:use-module (gaiag deprecated om)
-  #:use-module (gaiag deprecated animate)
+  #:use-module (gaiag code)
+  #:use-module (gaiag util)
 
   #:use-module (gaiag command-line)
+  #:use-module (gaiag compare)
   #:use-module (gaiag indent)
-  #:use-module (gaiag json)
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
   #:use-module (gaiag resolve)
-  #:use-module (gaiag util)
   #:use-module (gaiag xpand)
 
-  #:export (
-           ast->
-           ast->dzn
-           ;; <assign-action>
-           ;; <assign-call>
-           ))
+  #:use-module (language dezyne location)
 
-(define-class <assign-call> (<call>))
-(define-class <assign-action> (<action>))
+  #:export (ast->dzn))
 
-(define* ((->dzn #:optional (model #f)) o)
-  (define (local-scope? scope)
-    (or (null? scope) (equal? (list (om:name model)) scope)))
-  (define (unspecified? x) (eq? x *unspecified*))
+(define (ast-> ast)
+  (let ((root (dzn:om ast)))
+    (ast:set-scope root (dzn:root-> root)))
+  "")
 
-  (match o
+(define (dzn:root-> root)
+  (parameterize ((language (dzn:language)))
+    (if (dzn:model2file?) (dzn:model2file root)
+        (dzn:file2file root))))
 
-    (($ <root> (model* ...)) ((->join "\n") (map (->dzn) model*)))
+(define (dzn:file2file root)
+  (let* ((objects (filter (disjoin (is? <data>)
+                                   (negate (disjoin dzn-async? om:imported? (is? <foreign>))))
+                          (ast:model* root)))
+         (root* (clone root #:elements objects)))
+    (dzn:dump root*)
+    (when (code:foreign?)
+      (for-each dzn:dump (filter (is? <foreign>) (ast:model* root))))))
 
-    (($ <import> file) ((animate-snippet 'import `((file ,file)))))
+(define (dzn:model2file root)
+  (let* ((models (map (is? <model>) (ast:model* root)))
+         (models (filter (negate om:imported?) models))
+         ;; Generator-synthesized models look non-imported, filter harder
+         (models (filter (negate dzn-async?) models)))
+    (for-each dzn:dump models)))
 
-    ((? (is? <model>))
-     (or (module-variable (current-module) 'model) (module-define! (current-module) 'model o))
-     (model->dzn o))
+(define (dzn:om ast)
+  ((compose-root
+    ast:resolve
+    parse->om
+    ) ast))
 
-    (($ <blocking> statement)
-     ((animate-snippet 'blocking `((statement ,((->dzn model) statement))))))
-
-    (($ <guard> expression statement)
-     ((animate-snippet 'guard `((expression ,((->dzn model) expression))
-                                (statement ,((->dzn model) statement))))))
-
-    (($ <on> triggers statement)
-     ((animate-snippet 'on `((triggers ,((->dzn model) triggers))
-                             (statement ,((->dzn model) statement))))))
-
-    (($ <compound> ())
-     ((animate-snippet 'compound-empty '())))
-
-    (($ <compound> (statement* ...))
-     ((animate-snippet 'compound `((statements ,(map (->dzn model) statement*))))))
-
-    ((and ($ <action>) (= .port.name #f) (= .event.name event))
-     (let ((trigger ((animate-snippet 'itrigger `((event ,event))))))
-      ((animate-snippet 'action `((trigger ,trigger)
-                                  (location ,(location o)))))))
-
-    ((and ($ <action>) (= .port.name port-name) (= .event.name event) (= .arguments arguments))
-     (let* ((arguments ((->dzn model) arguments))
-            (trigger ((animate-snippet 'action-trigger `((event ,event) (port ,port-name) (arguments ,arguments))))))
-      ((animate-snippet 'action `((trigger ,trigger)
-                                  (location ,(location o)))))))
-
-    (($ <illegal>) ((animate-snippet 'illegal)))
-
-    (($ <assign> var ($ <call> function-name arguments))
-     ((->dzn model) (make <assign> #:variable var #:expression (make <assign-call> #:function function-name #:arguments arguments))))
-
-    (($ <assign> var (and ($ <action>) (= .port.name port-name) (= .event event) (= .arguments arguments)))
-     ((->dzn model) (make <assign> #:variable var #:expression (make <assign-action> #:port port-name #:event event #:arguments arguments))))
-
-    (($ <assign> var expression)
-     (->string (.name var) " = " ((->dzn model) expression) ";\n"))
-
-    (($ <assign-call> function-name arguments)
-     ((animate-snippet 'call-expression `((function ,function-name)
-                                          (arguments ,((->dzn model) arguments))
-                                          (location ,(location (om:function model function-name)))))))
-
-    ((and ($ <assign-action>) (= .port.name port-name) (= .event.name event) (= .arguments arguments))
-     (let ((arguments ((->dzn model) arguments)))
-       ((animate-snippet 'action-trigger `((event ,event) (port ,port-name) (arguments ,arguments))))))
-
-    (($ <call> function-name arguments)
-     ((animate-snippet 'call `((function ,function-name)
-                               (arguments ,((->dzn model) arguments))
-                               (location ,(location function-name))))))
-
-    (($ <if> expression then #f)
-     ((animate-snippet 'if-then `((expression ,((->dzn model) expression))
-                                  (then ,((->dzn model) then))))))
-
-    (($ <if> expression then else)
-     ((animate-snippet 'if-then-else `((expression ,((->dzn model) expression))
-                                       (then ,((->dzn model) then))
-                                       (else ,((->dzn model) else))))))
-
-    (($ <otherwise> value) ((animate-snippet 'otherwise)))
-
-    (($ <reply> expression #f) ((animate-snippet 'reply `((expression ,((->dzn model) expression))))))
-
-    (($ <reply> expression port) ((animate-snippet 'reply-port `((expression ,((->dzn model) expression)) (port ,port)))))
-
-    (($ <return> #f) ((animate-snippet 'return-void)))
-
-    (($ <return> expression) ((animate-snippet 'return `((expression ,((->dzn model) expression))))))
-
-    (($ <variable> name type ($ <call> function-name arguments))
-     ((->dzn model) (make <variable> #:name name #:type type #:expression ((->dzn model) (make <assign-call> #:function function-name #:arguments arguments)))))
-
-    (($ <variable> name type (and ($ <action>) (= .port.name port-name) (= .event event) (= .arguments arguments)))
-     ((->dzn model) (make <variable> #:name name #:type type #:expression ((->dzn model) (make <assign-action> #:port port-name #:event event #:arguments arguments)))))
-
-    (($ <variable> name type ($ <value> (? unspecified?)))
-     (->string (type->dzn model type) " " name ";\n"))
-
-    (($ <variable> name type expression)
-     (->string (type->dzn model type) " " name " = " ((->dzn model) expression) ";\n"))
-
-    (($ <bool>) ((animate-snippet 'bool)))
-    (($ <enum>) ((declare-enum model) o))
-    (($ <extern>) ((declare-extern model) o))
-    (($ <int>) ((declare-int model) o))
-    (($ <void>) ((animate-snippet 'void)))
-
-    (($ <port> name type direction external injected)
-     ((animate-snippet 'declare-port `((direction ,direction)
-                                       (name ,name)
-                                       (interface ,type)
-                                       (external? ,external)
-                                       (injected? ,injected)))
-      o))
-
-
-    (($ <binding> #f port-name) ((animate-snippet 'binding-port `((port ,port-name)))))
-    (($ <binding> instance port-name) ((animate-snippet 'binding `((instance ,(.name instance)) (port ,port-name)))))
-
-    (($ <formal> name #f #f) (.name o))
-    (($ <formal> name type (or #f 'in)) (->string (list (type->dzn model type) " " name)))
-    (($ <formal> name type dir) ((animate-snippet 'formal `((dir ,(if (not (om:out-or-inout? o)) "" dir))
-                                                            (out? ,(om:out-or-inout? o))
-                                                            (type ,(type->dzn model type))
-                                                            (name ,name)))))
-
-    ((and ($ <trigger>) (= .port.name #f) (= .event.name event)) ((animate-snippet 'itrigger `((event ,event)))))
-    ((and ($ <trigger>) (= .port.name port-name) (= .event.name event) (= .formals formals))
-     (let ((formals (clone formals #:elements (map (cut clone <> #:type #f #:direction #f) (.elements formals)))))
-       ((animate-snippet 'trigger `((event ,event) (port ,port-name) (formals ,((->dzn model) formals)))))))
-    (($ <out-bindings>) (->string (map (->dzn model) (.elements o))))
-    ((and ($ <formal-binding>) (= .name formal) (= .variable.name global))
-     ((animate-snippet 'out-binding `((formal ,((->dzn model) formal)) (global ,((->dzn model) global))))))
-    (($ <expression> expression) (expression->dzn model expression))
-    (($ <expression>) #f)
-    (($ <data> (? unspecified?)) "")
-    (($ <data> data) ((animate-snippet 'data `((data ,data)))))
-    (($ <field> variable field) (->string (list (.name variable) "." field)))
-    ((and ($ <literal>) (= .type type) (= .field field))
-     (let* ((scope (.scope (.name type)))
-            (name (.name (.name type))))
-       (if (local-scope? scope)
-           ((animate-snippet 'literal `((scope ()) (dot "") (name ,name) (field ,field))))
-           ((animate-snippet 'literal `((scope ,((dzn:scope-join model) scope)) (dot ".") (name ,name) (field ,field)))))))
-    ((and ($ <var>) (= .variable.name identifier)) ((->dzn model) identifier))
-    (($ <not> expression) (->string (list "!" (paren model expression))))
-    (($ <group> expression) (->string (list "(" ((->dzn model) expression) ")")))
-    ((? (is? <binary>))
-     (let* ((lhs ((->dzn model) (.left o)))
-            (rhs ((->dzn model) (.right o)))
-            (op (.operator o)))
-       (->string (list lhs " " op " " rhs ))))
-    (($ <value> #f) "")
-    (($ <value> (? unspecified?)) "")
-    (($ <value> value) ((->dzn model) value))
-    (($ <arguments> (argument* ...)) ((->join ", ") (map (->dzn model) argument*)))
-    (($ <fields> (field* ...)) ((->join ", ") (map (->dzn model) field*)))
-    (($ <formals> (formal* ...)) ((->join ", ") (map (->dzn model) formal*)))
-    (($ <triggers> (trigger* ...)) ((->join ", ") (map (->dzn model) trigger*)))
-
-    ((? symbol?) (->string o))
-    ((? string?) o)
-    (() "")
-    ((? unspecified?) "")
-    (#f ((animate-snippet 'false)))
-    (#t ((animate-snippet 'true)))
-    (_ (->string o))))
-
-(define-method (type->dzn model (o <type>))
-  (define (local-scope? scope)
-    (or (null? scope) (equal? (list (om:name model)) scope)))
-  (match o
-    (($ <bool>) ((animate-snippet 'bool)))
-    (($ <void>) ((animate-snippet 'void)))
-    ((and ($ <enum>) (= .name type))
-     (let* ((scope (.scope type))
-            (name (.name type)))
-       (if (local-scope? scope)
-           ((animate-snippet 'type `((scope ()) (dot "") (name ,name))))
-           ((animate-snippet 'type `((scope ,((dzn:scope-join model) scope)) (dot ".") (name ,name)))))))
-    ((and ($ <extern>) (= .name type))
-     (let* ((scope (.scope type))
-            (name (.name type)))
-       (if (local-scope? scope)
-           ((animate-snippet 'type `((scope ()) (dot "") (name ,name))))
-           ((animate-snippet 'type `((scope ,((dzn:scope-join model) scope)) (dot ".") (name ,name)))))))
-    ((and ($ <int>) (= .name type))
-     (let* ((scope (.scope type))
-            (name (.name type)))
-       (if (local-scope? scope)
-           ((animate-snippet 'type `((scope ()) (dot "") (name ,name))))
-           ((animate-snippet 'type `((scope ,((dzn:scope-join model) scope)) (dot ".") (name ,name)))))))))
-
-(define (location o)
-  ((compose scm->json-string json-location) o))
-
-(define (paren model expression)
-  (if (or (number? expression) (symbol? expression)
-          (as expression <field>) (as expression <literal>) (as expression <var>))
-      ((->dzn model) expression)
-      ;;(->string expression)
-      (->string (list "(" ((->dzn model) expression) ")"))))
-
-(define (expression->dzn model src)
-  (let ((unparen (lambda (s) (if (and s
-                                      (string-prefix? "(" s)
-                                      (string-postfix? ")" s))
-                                 (string-drop (string-drop-right s 1) 1)
-                                 s))))
-    (and=> src (compose unparen (->dzn model)))))
-
-
-(define (statement->dzn model)
-  (map (->dzn model) ((compose .elements .statement .behaviour) model)))
-
-(define* ((dzn:scope-join model #:optional (infix '.)) o)
-  ((om:scope-join model infix) o))
-
-(define* ((animate-pairs pairs string) #:optional parameter)
-  (animate string (pairs->module pairs parameter)))
-
-(define* ((animate-snippet file-name #:optional (pairs '())) #:optional parameter)
-  (snippet file-name (pairs->module pairs parameter)))
-
-(define* (pairs->module key-procedure-pairs #:optional (parameter #f))
-  (let ((module (dzn:module (and=> (module-variable (current-module) 'model)
-                                   variable-ref))))
-    (populate-module module key-procedure-pairs parameter)))
-
-(define ((declare-extern model) extern)
-  (let* ((value (.value extern)))
-    ((animate-snippet 'declare-extern
-                      `((scope ,(om:scope extern)) (name ,(om:name extern)) (value ,value)))
-     extern)))
-
-(define ((declare-int model) int)
-  (let* ((range (.range int)))
-    ((animate-snippet 'declare-int
-                      `((scope ,(om:scope int)) (name ,(om:name int)) (range ,range) (from ,(.from range)) (to ,(.to range))))
-     int)))
-
-(define ((declare-enum model) enum)
-  (let* ((fields ((compose .elements .fields) enum))
-         (length (length fields))
-         (asd? #f))
-   (snippet 'declare-enum
-            `((scope+name ,(om:scope+name enum)) (scope ,(om:scope enum)) (name ,(om:name enum)) (fields ,fields) (length ,length) (asd? ,asd?)))))
-
-(define ((declare-event model) event)
-  ((animate-snippet 'declare-event
-                    `((direction ,.direction)
-                      (formals ,(compose (->dzn model) .formals .signature))
-                      (name ,.name)
-                      (type ,(type->dzn model ((compose .type .signature) event)))
-                      (scope.type ,(compose (om:scope-name '.) .type .signature))))
-   event))
-
-(define ((define-function model) function)
-  ((animate-snippet 'function
-                    `((formals ,(compose (->dzn model) .formals .signature))
-                      (name ,.name)
-                      (statement ,(compose (->dzn model) .statement))
-                      (type ,(type->dzn model ((compose .type .signature) function)))))
-   function))
-
-(define ((init-binding model) binding)
-  ((animate-snippet 'bind
-                    `((left ,(compose (->dzn model) .left))
-                      (right ,(compose (->dzn model) .right))))
-   binding))
-
-(define-syntax-rule (pseudo-pipe producer consumer)
-  (with-input-from-string
-      (with-output-to-string (lambda () producer))
-    (lambda () consumer)))
-
-(define (model->dzn o)
-  (with-output-to-string (lambda () (dump-model o))))
-
-(define (dump-model o)
-  (pseudo-pipe (dzn-file o) (indent)))
-
-(define (dzn-file o)
-  (let ((file-name (ast-name o))
-        (module (dzn:module o)))
-    (animate-file (symbol-append file-name '.dzn.scm) module)))
-
-(define (dzn:module o)
-  (let ((module (make-module 31 (list (resolve-module '(oop goops))
-                                      (resolve-module '(gaiag goops))
-                                      (resolve-module '(gaiag dzn))
-                                      (resolve-module '(gaiag misc))))))
-    (module-define! module 'model o)
-    (module-define! module '.model (and=> ((is? <model>) o) om:name))
-    (module-define! module '.scope.model (and=> ((is? <model>) o) (om:scope-name '.)))
-    module))
-
-(define (language)
+(define (dzn:language)
   (let ((language (string->symbol (command-line:get 'language "dzn"))))
     (if (member language '(dzn html)) language
         'dzn)))
 
-(define* ((ast->dzn #:optional (model #f) (language (language))) o)
-  (parameterize ((template-dir (append (prefix-dir) `(templates ,language))))
-    (indent-string ((->dzn model) o))))
+(define* ((ast->dzn #:optional (model #f) (dzn:language (dzn:language))) o)
+  (parameterize ((language dzn:language))
+    (ast:set-scope o ((dzn:x:pand-display o 'source))))
+  "")
 
-(define (ast-> ast)
-  ((compose
-    (ast->dzn)
-    ast:resolve
-    parse->om
-    )
-   ast))
+;;; dzn: generic templates
+
+;;(define-template x:source code:source)
+
+(define-template x:type dzn:type 'type-infix)
+(define-method (dzn:type o)
+  (let* ((type (or (as o <model>) (as o <type>) (.type o)))
+         (scope (om:scope type))
+         (model-scope (om:scope+name (ast:model-scope))))
+    (if (equal? scope model-scope) (list (om:name type))
+        (om:scope+name type))))
+
+(define-template x:dzn-enum-literal dzn:enum-literal 'type-infix)
+(define-method (dzn:enum-literal (o <literal>))
+  (dzn:scope+name o))
+
+(define-method (dzn:scope+name (o <literal>))
+  (append (dzn:type o) (list (.field o))))
+
+(define-method (dzn:type (o <event>))
+  ((compose dzn:type .type .signature) o))
+
+(define-template x:define-type ast:type* 'newline-infix)
+(define-template x:field ast:field* 'field-infix)
+(define-template x:in-event (lambda (o) (filter om:in? (om:events o))) 'newline-infix)
+(define-template x:out-event (lambda (o) (filter om:out? (om:events o))) 'newline-infix)
+(define-template x:provided-port (lambda (o) (filter om:provides? (om:ports o))) 'newline-infix)
+(define-template x:required-port (lambda (o) (filter om:requires? (om:ports o))) 'newline-infix)
+
+(define-template x:behaviour .behaviour)
+(define-template x:async-port ast:port* 'newline-infix)
+(define-template x:declare-variable ast:variable* 'newline-infix)
+(define-template x:range (lambda (o) (list ((compose .from .range) o) ((compose .to .range) o))) 'range-infix)
+
+(define-template x:trigger ast:trigger* 'comma-infix)
+(define-method (dzn:formal-type (o <formal>)) o)
+(define-method (dzn:formal-type (o <port>)) ((compose ast:formal* .signature car om:events) o))
+(define-template x:formal-type dzn:formal-type)
+
+(define-template x:direction dzn:direction)
+(define-method (dzn:direction (o <formal>)) ; MORTAL SIN HERE!!?
+  (case (.direction o)
+    ((#f) "")
+    ((in) "in ")
+    ((inout) "inout ")
+    ((out) "out ")))
+
+(define-template x:port-prefix dzn:port-prefix 'port-suffix)
+(define-method (dzn:port-prefix (o <action>))
+  (if (not (.port o)) ""
+      (list (.port o))))
+
+(define-method (dzn:port-prefix (o <binding>))
+  (if (not (.port o)) ""
+      (list (.port o))))
+
+(define-method (dzn:port-prefix (o <trigger>))
+  (if (not (.port o)) ""
+      (list (.port o))))
+
+(define-template x:signature dzn:signature 'space-infix)
+(define-method (dzn:signature (o <event>))
+  (.signature o))
+(define-method (dzn:signature (o <port>))
+  (list ((compose om:name .type) o) 't))
+
+(define-template x:formal ast:formal* 'formal-infix)
+
+(define-template x:trigger-signature (lambda (o) (if (not (.port o)) "" o)))
+(define-template x:trigger-formal (lambda (o) (ast:formal* o)) 'formal-infix)
+
+(define-template x:argument ast:argument* 'argument-infix <expression>)
+(define-template x:action-arguments dzn:action-arguments 'argument-grammar <expression>)
+(define-method (dzn:action-arguments (o <action>)) ; MORTAL SIN HERE!!?
+  (if (not (.port o)) ""
+      (if (null? (ast:argument* o)) (list "")
+          (ast:argument* o))))
+
+(define-method (dzn:signature (o <event>))
+  (.signature o))
+
+(define-class <skip> (<statement>))
+
+(define-template x:dzn-statement dzn:statement)
+(define-method (dzn:statement (o <statement>))
+  o)
+
+(define-method (dzn:statement (o <compound>))
+  (if (null? (ast:statement* o)) (make <skip>)
+      o))
+
+(define-method (dzn:statement (o <behaviour>))
+  ((compose dzn:expand-statement .statement) o))
+
+(define-template x:expand-statement dzn:expand-statement #f <statement>)
+(define-method (dzn:expand-statement (o <statement>))
+  o)
+
+(define-method (dzn:expand-statement (o <compound>))
+  (if (null? (ast:statement* o)) (make <skip>)
+      (ast:statement* o)))
+
+(define-method (dzn:expand-statement (o <blocking>))
+  (.statement o))
+
+(define-method (dzn:expand-statement (o <on>))
+  (.statement o))
+
+(define-method (dzn:expand-statement (o <guard>))
+  (.statement o))
+
+(define-template x:reply-port dzn:reply-port 'dot-suffix)
+(define-method (dzn:reply-port (o <reply>))
+  (if (not (.port o)) '()
+      (list (.port o))))
+
+(define-template x:expand-blocking dzn:expand-blocking #f <statement>)
+(define-method (dzn:expand-blocking (o <blocking>))
+  (.statement o))
+
+(define-template x:system identity)
+(define-template x:declare-instance ast:instance* 'newline-infix)
+(define-template x:instance (lambda (o) (if (not (.instance o)) "" (list (.instance o)))) 'dot-suffix)
+(define-template x:binding ast:binding* 'newline-infix)
+
+(define code:dir (@@ (gaiag code) code:dir))
+(define code:foreign? (@@ (gaiag code) code:foreign?))
+(define code:header? (@@ (gaiag code) code:foreign?))
+
+;;; dump to file
+(define-method (dzn:x:pand (o <ast>) template file-name)
+  (let ((file-name (if (and file-name (symbol? file-name)) (symbol->string file-name) file-name))) ;; FIXME
+    (dump-output (string-append (if (eq? template 'main) "" (code:dir o)) ;; FIXME AAARRRGH
+                                file-name)
+                 (dzn:x:pand-display o template))))
+
+(define-method (dzn:x:pand-display (o <ast>) template)
+  (let ((module (make-module 31 `(,(resolve-module '(gaiag code))
+                                  ,(resolve-module `(gaiag ,(language)))))))
+    (module-define! module 'root (ast:root-scope))
+    (code:indent
+     (lambda _
+       (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+        (if (not (is-a? o <model>)) (x:pand (symbol-append template '@ (ast-name o)) o module)
+            (ast:set-model-scope o (x:pand (symbol-append template '@ (ast-name o)) o module))))))))
+
+(define-method (dzn:dump (o <root>))
+  (let ((name (basename (symbol->string (source-file o)) ".dzn")))
+    (when (code:header?)
+      (dzn:x:pand o 'header (string-append name (symbol->string (code:extension (make <interface>))))))
+    (when (pair? (filter (negate (disjoin (is? <data>) (is? <interface>))) (ast:model* o)))
+      (dzn:x:pand o 'source (string-append name (symbol->string (code:extension (make <component>))))))))
+
+(define-method (dzn:dump (o <interface>))
+  (let ((name ((om:scope-name) o)))
+    (if (code:header?) (dzn:x:pand o 'header (symbol-append name (code:extension (make <interface>))))
+        (dzn:x:pand o 'source (symbol-append name (code:extension (make <interface>)))))))
+
+(define-method (dzn:dump (o <component>))
+  (let ((name ((om:scope-name) o)))
+    (when (code:header?)
+      (dzn:x:pand o 'header (symbol-append name (code:extension (make <interface>)))))
+    (dzn:x:pand o 'source (symbol-append name (code:extension (make <component>))))))
+
+(define-method (dzn:dump (o <foreign>))
+  (let ((name (code:skel-file o)))
+    (when (code:header?)
+      (dzn:x:pand o 'foreign-header (symbol-append name (code:extension (make <interface>)))))
+    (dzn:x:pand o 'foreign-source (symbol-append name (code:extension (make <component>))))))
+
+(define-method (dzn:dump (o <system>))
+  (let* ((name ((om:scope-name) o))
+         (shell (command-line:get 'shell #f))
+         (template (if (and shell (eq? name (string->symbol shell))) 'shell- (symbol))))
+    (when (code:header?)
+      (dzn:x:pand o (symbol-append template 'header) (symbol-append name (code:extension (make <interface>)))))
+    (dzn:x:pand o (symbol-append template 'source) (symbol-append name (code:extension (make <component>))))))
+
+(define (dzn:model2file?)
+  (and=> (or (command-line:get 'deprecated #f) (getenv "DZN_DEPRECATED"))
+         (cut string-contains <> "model2file")))

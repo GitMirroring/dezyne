@@ -1,0 +1,5 @@
+component #x:type  {
+   #x:provided-port
+   #x:required-port
+   #x:behaviour
+}
