@@ -99,6 +99,27 @@
 
 (define (xassoc key alist) (find (compose (cut equal? key <>) cdr) alist))
 
+(define* (string-join+ lst #:optional (grammar '("")))
+  "Like STRING-JOIN, allowing \"PRE\" 'pre and \"POST\" 'post in GRAMMAR"
+  ;; (stderr "string-join+ lst=~s\n" lst)
+  ;; (stderr "            grammar=~s\n" grammar)
+  (let* ((grammar? (> (length grammar) 1))
+         (g-alist (if (not grammar?) (car grammar)
+                       (reduce-sexp grammar)))
+         (delimiter (if (not grammar?) grammar
+                        (or (xassoc '(infix) g-alist)
+                            (xassoc '(suffix) g-alist)
+                            (xassoc '(prefix) g-alist)
+                            '(""))))
+         (pre (if (not grammar?) ""
+                  (or (and=> (xassoc '(pre) g-alist)
+                             car) "")))
+         (post (if (not grammar?) ""
+                   (or (and=> (xassoc '(post) g-alist)
+                              car) ""))))
+    ;;(stderr "            delim=~s\n" delimiter)
+    (string-append pre (apply string-join (cons lst delimiter)) post)))
+
 (define (type->template module filename type sep o)
   (let ((debug? (command-line:get 'debug #f)))
     (if (and debug?
@@ -110,25 +131,10 @@
         ((symbol? o) (display o))
         ((string? o) (display o))
         ((pair? o)
-         ;;(stderr "PAIR [~a,t=~a,f=~a] ~a\n" (class-name (class-of ast)) (and type (class-name type)) filename (class-name (class-of (car o))))
+         ;;(stderr "PAIR [~a,t=~a,f=~a] ~a\n" (class-name (class-of o)) (and type (class-name type)) file-name (class-name (class-of (car o))))
          (let* ((sexp (if (not sep) '("")
                           (with-input-from-string (gulp-template sep) read)))
-		(grammars (if sep (reduce-sexp sexp)))
-		(delimiter (if (= 1 (length sexp))
-			       sexp
-			       (or (xassoc '(infix) grammars)
-				   (xassoc '(suffix) grammars)
-				   (xassoc '(prefix) grammars))))
-		(pre (if (= 1 (length sexp))
-			 ""
-			 (or (and=> (xassoc '(pre) grammars)
-				    car) "")))
-		(post (if (= 1 (length sexp))
-			  ""
-			  (or (and=> (xassoc '(post) grammars)
-				     car) "")))
-                (join (lambda (o) (apply string-join (cons o delimiter))))
-		(join (lambda (o) (string-append pre (join o) post))))
+                (join (lambda (o) (apply string-join+ (cons o (list sexp))))))
            (display (join (map (lambda (ast)
                                  (with-output-to-string
                                    (lambda () (if (or (char? ast)
