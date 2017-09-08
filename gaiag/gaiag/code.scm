@@ -801,8 +801,8 @@
                                   file-name)
                   (lambda _
                     (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
-                      (if (not (is-a? o <model>)) (x:pand (symbol-append template '- (ast-name o)) o module)
-                          (ast:set-model-scope o (x:pand (symbol-append template '- (ast-name o)) o module))))))))
+                      (if (not (is-a? o <model>)) (x:pand (symbol-append template '@ (ast-name o)) o module)
+                          (ast:set-model-scope o (x:pand (symbol-append template '@ (ast-name o)) o module))))))))
 
 (define-method (code:dump (o <root>))
   (let ((name (basename (symbol->string (source-file o)) ".dzn")))
