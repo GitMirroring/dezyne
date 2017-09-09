@@ -126,7 +126,7 @@
            <instances>
            <int>
            <interface>
-           <literal>
+           <enum-literal>
            <model>
            <modeling-event>
            <named>
@@ -391,7 +391,7 @@
 
 (define-method (.variable.name (o <field>)) (and=> (.variable o) .name))
 
-(define-class <literal> (<enum-expr>)
+(define-class <enum-literal> (<enum-expr>)
   (type #:getter .type #:init-value #f #:init-keyword #:type)
   (field #:getter .field #:init-value #f #:init-keyword #:field))
 

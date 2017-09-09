@@ -417,7 +417,7 @@
   (if (om:imperative? o) o
       (make <declarative-compound> #:elements o)))
 
-(define-method (code:scope.name (o <literal>))
+(define-method (code:scope.name (o <enum-literal>))
   (code:scope.name (.type o)))
 
 (define-method (code:scope.name (o <ast>))
@@ -483,7 +483,7 @@
 (define-method (code:type-name (o <enum-field>))
   (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
 
-(define-method (code:type-name (o <literal>))
+(define-method (code:type-name (o <enum-literal>))
   (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
 
 (define-method (code:field-expression (o <field>))
@@ -558,13 +558,13 @@
 
 (define-template x:non-void-reply identity #f)
 
-(define-method (code:enum-literal (o <literal>))
+(define-method (code:enum-literal (o <enum-literal>))
   (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
 
 (define-method (code:enum-scope (o <field>))
   ((compose code:enum-scope .type .variable) o))
 
-(define-method (code:enum-scope (o <literal>))
+(define-method (code:enum-scope (o <enum-literal>))
   ((compose code:enum-scope .type) o))
 
 (define-method (code:enum-scope (o <enum>))

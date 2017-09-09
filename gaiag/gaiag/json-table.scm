@@ -103,7 +103,7 @@
     (($ <field> x (and (or 'true 'false) (get! bool))) (bool))
     (($ <field> var field)
      (let* ((enum ((om:type model) var)))
-       (make <literal> #:type enum #:field field)))
+       (make <enum-literal> #:type enum #:field field)))
     (($ <equal> ($ <var> variable) ($ <value> val)) val)
     (_ o )))
 
@@ -230,7 +230,7 @@
         (if (null? statements)
             next
             (loop (cdr statements) (json-next- model var next (car statements) functions)))))
-     (($ <assign> (? var?) ($ <literal> type field))
+     (($ <assign> (? var?) ($ <enum-literal> type field))
       (list (make <field> #:variable (variable var) #:field field)))
      (($ <assign> (? var?) ($ <not> ($ <var> (? var?))))
       (match next
@@ -340,8 +340,8 @@
     (($ <field> variable (and (? number?) (get! number))) (->symbol (list (.name variable) '== (number))))
     (($ <field> variable field) (->symbol (list (->symbol (.name variable)) "." field)))
     ((identifier ($ <field> variable field)) (->symbol (list (->symbol identifier) " = " (->symbol (.name variable)) "." field)))
-    ((identifier ($ <literal> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." (->symbol field))))
-    (($ <literal> type field) (->symbol (list (->symbol type) "." (->symbol field))))
+    ((identifier ($ <enum-literal> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." (->symbol field))))
+    (($ <enum-literal> type field) (->symbol (list (->symbol type) "." (->symbol field))))
     (($ <scope.name> scope name) ((->symbol-join '.) (append scope (list name))))
     (($ <triggers> (triggers ...)) (->symbol ((->join ",") (map ->symbol triggers))))
     ((and ($ <trigger>) (= .event.name event)) (->symbol event))

@@ -136,7 +136,7 @@
     ((and ($ <var>) (= .variable.name identifier)) (var-field state identifier))
     (($ <field> (and (? var?) (get! identifier)) field)
      (eq? (.field (var-field state (identifier))) field))
-    (($ <literal> type field) o)
+    (($ <enum-literal> type field) o)
     (($ <not> expr) (not (eval-expression model state expr)))
     (($ <and> a b) (and (eval-expression model state a)
                         (eval-expression model state b)))
@@ -214,7 +214,7 @@
      (let ((field (var-field state (.variable o))))
        (match field
          (#f o)
-         (_ (make <literal> #:type (.type (.variable o)) #:field field)))))
+         (_ (make <enum-literal> #:type (.type (.variable o)) #:field field)))))
 
     (($ <field> (and (? var?) (get! variable)) field)
      (let ((f (var-field state (variable))))
@@ -222,7 +222,7 @@
          (#f o)
          (_ (eq? f field)))))
 
-    (($ <literal> type field) o)
+    (($ <enum-literal> type field) o)
 
     (($ <equal> a b)
      (let* ((a1 (simplify-expression model state a))
@@ -230,7 +230,7 @@
            (a a1) (b b1))
        (or (om:equal? a b)
            (match (cons a b)
-             ((($ <literal>) . ($ <literal>)) #f)
+             ((($ <enum-literal>) . ($ <enum-literal>)) #f)
              (((? number?) . (? number?)) (eq? a b))
              (_ (clone o #:left a #:right b))))))
 

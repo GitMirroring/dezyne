@@ -123,7 +123,7 @@
     (($ <int>) o)
     (($ <void>) o)
 
-    (($ <literal>) (.type o))
+    (($ <enum-literal>) (.type o))
     (($ <var>) ((compose .type .variable) o))
 
     ((? (is? <bool-expr>)) (make <bool>))

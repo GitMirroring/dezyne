@@ -401,7 +401,7 @@
               (name (om:name type)))
          (list "("
                (.name variable) " == " name "_" field ")")))
-      ((and ($ <literal>) (= .type type) (= .field field))
+      ((and ($ <enum-literal>) (= .type type) (= .field field))
        ((->symbol-join '_) `(,(.name (.name type)) ,field)))
       (($ <group> expression) (list "(" (csp-expression->string model expression locals) ")"))
       (($ <not> expression) (->string (list "(" "not " (paren expression) ")")))
@@ -668,7 +668,7 @@
     ((? (is? <event>)) o)
     (($ <event>) o)
     (($ <field>) o)
-    (($ <literal>) o)
+    (($ <enum-literal>) o)
     (($ <otherwise>) o)
     (($ <port>) o)
     (($ <trigger>) o)

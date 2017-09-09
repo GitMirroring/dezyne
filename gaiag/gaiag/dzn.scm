@@ -210,7 +210,7 @@
   (.variable o))
 
 (define-method (dzn:expression-expand (o <field>))
-  (make <literal> #:type ((compose .type .variable) o) #:field (.field o)))
+  (make <enum-literal> #:type ((compose .type .variable) o) #:field (.field o)))
 
 (define-method (dzn:expression-expand (o <variable>))
   (.name o))
@@ -230,10 +230,10 @@
   (memq (.name o) (map .name (om:variables (ast:model-scope)))))
 
 (define-template x:enum-literal dzn:enum-literal 'type-infix)
-(define-method (dzn:enum-literal (o <literal>))
+(define-method (dzn:enum-literal (o <enum-literal>))
   (dzn:scope+name o))
 
-(define-method (dzn:scope+name (o <literal>))
+(define-method (dzn:scope+name (o <enum-literal>))
   (append (dzn:type o) (list (.field o))))
 
 (define-method (dzn:type (o <event>))

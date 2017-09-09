@@ -199,7 +199,7 @@
        #:events (parse->om- (or (null-is-#f (assoc 'events body)) '(events)))
        #:behaviour (and=> (null-is-#f (assoc 'behaviour body)) parse->om-)))
 
-    (('literal name field) (make <literal> #:type (parse->om- name) #:field field))
+    (('enum-literal name field) (make <enum-literal> #:type (parse->om- name) #:field field))
 
     (('dotted name ...) o)
 

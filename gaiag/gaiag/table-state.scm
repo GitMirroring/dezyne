@@ -228,7 +228,7 @@
                   (if #t ;;(om:declarative? statement) FIXME...
                       (retain-source-properties o statement)
                       (clone o #:expression value #:statement statement)))
-                 (($ <literal>)
+                 (($ <enum-literal>)
                   (and (om:equal? value field)
                        (if (om:declarative? statement)
                            (retain-source-properties o statement)
@@ -245,7 +245,7 @@
                    (match value
                      (($ <value> 'true) then)
                      (($ <value> 'false) #f)
-                     (($ <literal>) (and (om:equal? value field) then))
+                     (($ <enum-literal>) (and (om:equal? value field) then))
                      (_ (clone o #:expression value #:then then))))
          (make <compound>)))
 
@@ -256,7 +256,7 @@
                      (match value
                        (($ <value> 'true) then)
                        (($ <value> 'false) else)
-                       (($ <literal>) (and (om:equal? value field) then))
+                       (($ <enum-literal>) (and (om:equal? value field) then))
                        (_ (clone o #:expression value #:then then #:else else)))))
          (and-let* ((then ((simplify model variable field) else))
                     (expression (make <not> #:expression expression)))

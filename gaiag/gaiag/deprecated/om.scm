@@ -358,7 +358,7 @@
     (($ <event>) ((compose om:scope+name .signature) o))
     (($ <formal>) ((compose om:scope+name .type) o))
     (($ <instance>) (om:scope+name (.type.name o)))
-    (($ <literal>) (append (om:scope+name (.type o)) (list (.field o))))
+    (($ <enum-literal>) (append (om:scope+name (.type o)) (list (.field o))))
     (($ <port>) (om:scope+name (.type.name o)))
     (($ <scope.name>) (append (.scope o) (list (.name o))))
     (($ <signature>) ((compose om:scope+name .type) o))
