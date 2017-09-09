@@ -1,0 +1,13 @@
+<html>
+  <head>
+    <style>
+#x:css
+    </style>
+    <link rel="stylesheet" type="text/css" href="css/dzn.css">
+  </head>
+  <body>
+    <pre>
+#x:source
+    </pre>
+  </body>
+</html>

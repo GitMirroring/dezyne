@@ -27,6 +27,9 @@
   #:use-module (ice-9 optargs)
 
   #:use-module (gaiag deprecated animate)
+  #:use-module (gaiag command-line)
+  #:use-module (gaiag ast)
+  #:use-module (gaiag resolve)
   #:use-module (gaiag dzn)
   #:use-module (gaiag misc)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
@@ -38,17 +41,19 @@
            ast->html
            ))
 
-(define (animate file-name x)
-  (with-output-to-string
-    (lambda ()
-      (parameterize ((template-dir (append (prefix-dir) `(templates html))))
-        (animate-file (symbol-append file-name '.html.scm) x)))))
-
-(define* ((ast->html #:optional (model #f)) o)
-  (((@@ (gaiag dzn) ast->dzn) model 'html) o))
-
 (define (ast-> ast)
-  (let ((ast ((@@ (gaiag dzn) ast->) ast))
-        (style (gulp-template '(html dzn.css))))
-    (animate 'template `((ast ,ast)
-                         (style ,style)))))
+  (let ((root (dzn:om ast)))
+    (ast:set-scope root (dzn:root-> root)))
+  "")
+
+(define (dzn:root-> root)
+  (parameterize ((language 'html))
+    (if (dzn:model2file?) (dzn:model2file root)
+        (dzn:file2file root))))
+
+(define* ((ast->html #:optional (model #f) (dzn:language 'html)) o)
+  (parameterize ((language dzn:language))
+    (ast:set-scope o ((dzn:x:pand-display o 'source))))
+  "")
+
+(define-template x:css (lambda (o) (gulp-template 'dzn.css)))

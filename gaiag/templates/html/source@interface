@@ -1,0 +1,6 @@
+<span class="component"><span class="keyword">interface</span> #x:type  {
+  #x:define-type
+  #x:in-event
+  #x:out-event
+  #x:behaviour
+}</span>

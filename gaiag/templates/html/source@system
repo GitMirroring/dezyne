@@ -1,0 +1,5 @@
+<span class="component"><span class="keyword">component</span> #x:type  {
+   #x:provided-port
+   #x:required-port
+   #x:system
+}</span>

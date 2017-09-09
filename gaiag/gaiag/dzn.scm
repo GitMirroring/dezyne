@@ -56,7 +56,12 @@
             dzn:extension
             dzn:expression
             dzn:indent
-            dzn:->string))
+            dzn:->string
+            dzn:om
+            dzn:file2file
+            dzn:model2file?
+            dzn:model2file
+            dzn:x:pand-display))
 
 (define-class <unspecified> (<ast>))
 
@@ -99,6 +104,7 @@
                   (c++03 . .hh)
                   (c++-msvc11 . .hh)
                   (dzn . .dzn)
+                  (html . .html)
                   (scheme . .scm)
                   (java . .java)
                   (java7 . .java)
@@ -112,6 +118,7 @@
                   (c++03 . .cc)
                   (c++-msvc11 . .cc)
                   (dzn . .dzn)
+                  (html . .html)
                   (scheme . .scm)
                   (java . .java)
                   (java7 . .java)

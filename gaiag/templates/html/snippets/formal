@@ -1,1 +1,0 @@
-#(if out? (->string "<span class=\"keyword\">" dir "</span> ")) #type  #name

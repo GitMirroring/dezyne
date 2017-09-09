@@ -1,0 +1,5 @@
+<span class="keyword">behaviour</span> {
+  #x:async-port
+  #x:define-type
+  #x:declare-variable
+  #x:statement}
