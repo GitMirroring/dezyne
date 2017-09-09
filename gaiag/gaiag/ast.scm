@@ -132,7 +132,7 @@
     ((? (is? <int-expr>)) (make <int>))
     ((? (is? <void-expr>)) (make <void>))
 
-    ((and ($ <value>) (= .value o))
+    ((and ($ <literal>) (= .value o))
      (match o
        ((? number?) (make <int>))
        ((or 'true 'false) (make <bool>))

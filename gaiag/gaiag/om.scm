@@ -292,7 +292,7 @@
 
     ((or 'bool 'void) o)
 
-    (('expression) (make <value>))
+    (('expression) (make <literal>))
     (('expression expression) (parse->om- expression))
     (('! expression) (make <not> #:expression (parse->om- expression)))
     (('group expression) (make <group> #:expression (parse->om- expression)))
@@ -307,9 +307,9 @@
     (('>= left right) (make <greater-equal> #:left (parse->om- left) #:right (parse->om- right)))
     (('and left right) (make <and> #:left (parse->om- left) #:right (parse->om- right)))
     (('or left right) (make <or> #:left (parse->om- left) #:right (parse->om- right)))
-    ;;(('expression (and (or (? number?) 'false 'true) (get! value))) (make <value> #:value (value)))
-    ((? number?) (make <value> #:value o))
-    ((? symbol?) (make <value> #:value o))
+    ;;(('expression (and (or (? number?) 'false 'true) (get! value))) (make <literal> #:value (value)))
+    ((? number?) (make <literal> #:value o))
+    ((? symbol?) (make <literal> #:value o))
 
     ((? (is? <ast>)) o)))
 

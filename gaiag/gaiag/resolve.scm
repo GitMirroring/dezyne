@@ -363,7 +363,7 @@
       (($ <var> (and (? function?) (get! function)))
        (make <call> #:function (.name (function? (function)))))
 
-      ((and ($ <value>) (get! expression))
+      ((and ($ <literal>) (get! expression))
        ((resolve model locals) (expression)))
 
       (_
@@ -405,7 +405,7 @@
     (($ <variable> name (and (? (negate extern?)) (get! type)) ($ <expression> (? unspecified?)))
      (resolve-error o name "undefined variable value: ~a"))
 
-    (($ <variable> name (and (? (negate extern?)) (get! type)) ($ <value> (? unspecified?)))
+    (($ <variable> name (and (? (negate extern?)) (get! type)) ($ <literal> (? unspecified?)))
      (resolve-error o name "undefined variable value: ~a"))
 
     (($ <variable> name type expression) (=> failure)
@@ -575,7 +575,7 @@
     (('dotted (? var?) field)
      (resolve-error o field "undefined enum field: ~a"))
 
-    ((and (? (is? <value>)) (= .value value))
+    ((and (? (is? <literal>)) (= .value value))
      (clone o #:value ((resolve model locals) value)))
 
     ((and (? (is? <unary>)) (= .expression expression))

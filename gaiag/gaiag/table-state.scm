@@ -102,7 +102,7 @@
                   (make <compound>
                     #:elements (list
                                (make <guard>
-                                 #:expression (make <value> #:value 'true)
+                                 #:expression (make <literal> #:value 'true)
                                  #:statement (.statement statement)))))
         o)))
 
@@ -149,14 +149,14 @@
                  (match field
                    ('true var)
                    ('false (make <not> #:expression var))))
-                (($ <int>) (make <equal> #:left var #:right (make <value> #:value field)))
+                (($ <int>) (make <equal> #:left var #:right (make <literal> #:value field)))
                 (_ (make <field> #:variable variable #:field field)))))
             (retain-source-properties
              (salvage-source-location model variable expression field o)
              (make <guard> #:expression expression #:statement statement))))
 
 (define (salvage-source-location model variable expression field o)
-  (let* ((expression2 (make <equal> #:left (make <var> #:variable variable) #:right (make <value> #:value field)))
+  (let* ((expression2 (make <equal> #:left (make <var> #:variable variable) #:right (make <literal> #:value field)))
          (guards (filter (lambda (g)
                            (let ((e (.expression g)))
                              (and (source-location g)
@@ -223,8 +223,8 @@
      (and-let* ((value (simplify-literal model variable field expr))
                 (statement ((simplify model variable field) statement)))
                (match value
-                 (($ <value> 'false) #f)
-                 (($ <value> 'true)
+                 (($ <literal> 'false) #f)
+                 (($ <literal> 'true)
                   (if #t ;;(om:declarative? statement) FIXME...
                       (retain-source-properties o statement)
                       (clone o #:expression value #:statement statement)))
@@ -243,8 +243,8 @@
      (or (and-let* ((value (simplify-literal model variable field expression))
                     (then ((simplify model variable field) then)))
                    (match value
-                     (($ <value> 'true) then)
-                     (($ <value> 'false) #f)
+                     (($ <literal> 'true) then)
+                     (($ <literal> 'false) #f)
                      (($ <enum-literal>) (and (om:equal? value field) then))
                      (_ (clone o #:expression value #:then then))))
          (make <compound>)))
@@ -254,8 +254,8 @@
                    (let ((then ((simplify model variable field) then))
                          (else ((simplify model variable field) else)))
                      (match value
-                       (($ <value> 'true) then)
-                       (($ <value> 'false) else)
+                       (($ <literal> 'true) then)
+                       (($ <literal> 'false) else)
                        (($ <enum-literal>) (and (om:equal? value field) then))
                        (_ (clone o #:expression value #:then then #:else else)))))
          (and-let* ((then ((simplify model variable field) else))
@@ -271,9 +271,9 @@
          (simple (simplify-expression model state o)))
     (match simple
       ((? (is? <expression>)) simple)
-      (#t (make <value> #:value 'true))
-      (#f (make <value> #:value 'false))
-      (_ (make <value> #:value simple)))))
+      (#t (make <literal> #:value 'true))
+      (#f (make <literal> #:value 'false))
+      (_ (make <literal> #:value simple)))))
 
 (define ((mangle-table json-table) o)
   (let ((json? (command-line:get 'json #f)))

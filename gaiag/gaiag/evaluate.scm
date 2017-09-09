@@ -123,7 +123,7 @@
 
 (define (eval-expression- model state o)
   (match o
-    (($ <value> value) (eval-expression model state value))
+    (($ <literal> value) (eval-expression model state value))
     (($ <otherwise> 'otherwise)
      (let* ((guard (om:parent model o))
             (compound (om:parent model guard))
@@ -189,7 +189,7 @@
     ('false #f)
     ('true #t)
 
-    (($ <value> value) (simplify-expression model state value))
+    (($ <literal> value) (simplify-expression model state value))
 
     (($ <otherwise> expression)
      (let ((value (simplify-expression model state expression)))

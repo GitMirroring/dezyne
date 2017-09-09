@@ -154,7 +154,7 @@
            <triggers>
            <type>
            <types>
-           <value>
+           <literal>
            <var>
            <variable>
            <variables>
@@ -166,7 +166,7 @@
            <enum-expr>
            <int-expr>
            <void-expr>
-           <value>
+           <literal>
            <binary>
            <unary>
 
@@ -330,7 +330,7 @@
 
 (define-class <expression> (<ast>))
 
-(define-class <value> (<expression>)
+(define-class <literal> (<expression>)
   (value #:getter .value #:init-value *unspecified* #:init-keyword #:value))
 
 (define-class <binary> (<expression>)

@@ -159,7 +159,7 @@
 (define-template x:=expression dzn:=expression #f <expression>)
 (define-method (dzn:=expression (o <ast>))
   (match (.expression o)
-    ((and ($ <value>) (= .value (? unspecified?))) (dzn:unspecified))
+    ((and ($ <literal>) (= .value (? unspecified?))) (dzn:unspecified))
     ((? unspecified?) (dzn:unspecified))
     (_ (.expression o))))
 

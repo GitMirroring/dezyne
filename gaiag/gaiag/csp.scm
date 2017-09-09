@@ -384,7 +384,7 @@
   (define (var? identifier) (or (member? identifier) (local? identifier)))
 
   (define (paren expression)
-    (let ((value (if (is-a? expression <value>) (.value expression) expression)))
+    (let ((value (if (is-a? expression <literal>) (.value expression) expression)))
       (if (or (number? value) (symbol? value) (as value <var>))
           (csp-expression->string model expression locals)
           (list "(" (csp-expression->string model expression locals) ")"))))
@@ -394,7 +394,7 @@
     (match o
       ((and ($ <var>) (= .variable.name identifier))
        (list (->string identifier)))
-      (($ <value>) (csp-expression->string model (.value o) locals))
+      (($ <literal>) (csp-expression->string model (.value o) locals))
       ((or (? number?) (? string?) (? symbol?)) (list o))
       (($ <field> variable field)
        (let* ((type (.type variable))
