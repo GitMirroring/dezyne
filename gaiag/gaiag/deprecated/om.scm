@@ -64,7 +64,6 @@
            om:enums
            om:event
            om:events
-           om:expression?
            om:filter:p
            om:find-triggers
            om:function
@@ -524,38 +523,6 @@
            (eq? (.direction event) 'in))
       (and (eq? (.direction port) 'requires)
            (eq? (.direction event) 'out))))
-
-(define om:binary-operators
-  '(
-    <
-    <=
-    >
-    >=
-    +
-    -
-    and
-    or
-    ==
-    !=
-    ))
-
-(define om:unary-operators
-  '(
-    group
-    !
-    ))
-
-(define om:operators
-  (append om:binary-operators om:unary-operators))
-
-(define (om:operator? o)
-  (memq o om:operators))
-
-(define (om:expression? o)
-  (match o
-    (($ <expression>) o)
-    (((? om:operator?) h t ...) o)
-    (_ #f)))
 
 ;;;; OM handling
 
