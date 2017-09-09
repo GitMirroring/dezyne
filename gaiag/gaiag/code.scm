@@ -486,7 +486,7 @@
 (define-method (code:type-name (o <enum-literal>))
   (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
 
-(define-method (code:field-expression (o <field>))
+(define-method (code:field-expression (o <field-test>))
   (map dzn:->string (code:cons-empty-symbol
                       (append (code:scope+name ((compose .type .variable) o))
                               (list (.field o))))))
@@ -505,13 +505,13 @@
 (define-method (code:scope-type-scope o)
   ((compose .scope code:scope.name) o))
 
-(define-method (code:scope-type-scope (o <field>))
+(define-method (code:scope-type-scope (o <field-test>))
   ((compose code:scope-type-scope .type .variable) o))
 
 (define-method (code:scope-type-name o)
   ((compose .name code:scope.name) o))
 
-(define-method (code:scope-type-name (o <field>))
+(define-method (code:scope-type-name (o <field-test>))
   ((compose code:scope-type-name .type .variable) o))
 
 (define (code:x-header- o) (filter (is? <interface>) (.elements o)))
@@ -561,7 +561,7 @@
 (define-method (code:enum-literal (o <enum-literal>))
   (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
 
-(define-method (code:enum-scope (o <field>))
+(define-method (code:enum-scope (o <field-test>))
   ((compose code:enum-scope .type .variable) o))
 
 (define-method (code:enum-scope (o <enum-literal>))

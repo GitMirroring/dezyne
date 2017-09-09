@@ -67,13 +67,13 @@
          (rules . ,((json-table- model var expression) (guard))))))
     (($ <on> triggers (and ($ <compound> (($ <guard>) ...)) (get! compound)))
      (let* ((var 'unknown)
-            (state (make <field> #:variable (make <variable> #:name var) #:field '<unknown>)))
+            (state (make <field-test> #:variable (make <variable> #:name var) #:field '<unknown>)))
        `((event . ,(json-triggers o))
          (rules . ,(apply append (map (json-table- model var state)
                                       (.elements (compound))))))))
     (($ <on> triggers statement)
      (let* ((var 'unknown)
-            (state (make <field> #:variable (make <variable> #:name var) #:field '<unknown>)))
+            (state (make <field-test> #:variable (make <variable> #:name var) #:field '<unknown>)))
        `((event . ,(json-triggers o))
          (rules . ,(list
                     `((guard . ,(json-guard (make <guard> #:expression (make <literal> #:value 'true))))
@@ -90,8 +90,8 @@
 
 (define (state-var model o)
   (match o
-    (($ <field> variable) (.name variable))
-    (($ <or> ($ <field> variable field)) (.name variable))
+    (($ <field-test> variable) (.name variable))
+    (($ <or> ($ <field-test> variable field)) (.name variable))
     (($ <var> variable) (.name variable))
     (($ <not> ($ <var> variable)) (.name variable))
     (($ <equal> ($ <var> variable)) (.name variable))
@@ -99,9 +99,9 @@
 
 (define ((state->value model) o)
   (match o
-    (($ <field> x (and (? number?) (get! number))) (number))
-    (($ <field> x (and (or 'true 'false) (get! bool))) (bool))
-    (($ <field> var field)
+    (($ <field-test> x (and (? number?) (get! number))) (number))
+    (($ <field-test> x (and (or 'true 'false) (get! bool))) (bool))
+    (($ <field-test> var field)
      (let* ((enum ((om:type model) var)))
        (make <enum-literal> #:type enum #:field field)))
     (($ <equal> ($ <var> variable) ($ <literal> val)) val)
@@ -109,8 +109,8 @@
 
 (define ((value->state model var) o)
   (match o
-    ((? number?) (make <field> #:variable (om:variable model var) #:field o))
-    ((? symbol?) (make <field> #:variable (om:variable model var) #:field o))
+    ((? number?) (make <field-test> #:variable (om:variable model var) #:field o))
+    ((? symbol?) (make <field-test> #:variable (om:variable model var) #:field o))
     (_ o)))
 
 (define ((json-table-state model) o)
@@ -141,7 +141,7 @@
      (let* ((statement (.statement o))
             (expression (.expression o))
             (state (match expression
-                     (($ <field>) expression)
+                     (($ <field-test>) expression)
                      (($ <equal> ($ <var> vexpresssion) number) expression)
                      (($ <var> vexpression) (state-var model vexpression))
                      ((h t ...) (cadr expression))
@@ -223,7 +223,7 @@
 (define (json-next- model var next o functions)
   (define (var? variable) (eq? (.name variable) var))
   (define (variable var) (om:variable model var))
-  (let ((unknown (make <field> #:variable (variable var) #:field '<unknown>)))
+  (let ((unknown (make <field-test> #:variable (variable var) #:field '<unknown>)))
    (match o
      (($ <compound> (statements ...))
       (let loop ((statements statements) (next next))
@@ -231,7 +231,7 @@
             next
             (loop (cdr statements) (json-next- model var next (car statements) functions)))))
      (($ <assign> (? var?) ($ <enum-literal> type field))
-      (list (make <field> #:variable (variable var) #:field field)))
+      (list (make <field-test> #:variable (variable var) #:field field)))
      (($ <assign> (? var?) ($ <not> ($ <var> (? var?))))
       (match next
         ((($ <not> (and ($ <var> (? var?)) (get! var)))) (list (var)))
@@ -274,7 +274,7 @@
   (match state
     ((h ...)
      (append o state))
-    (($ <field>) (add-state o (list state)))))
+    (($ <field-test>) (add-state o (list state)))))
 
 (define (json-data-location data location)
   `((data . ,data)
@@ -337,9 +337,9 @@
     (($ <expression> expression) (->symbol expression))
     ((and ($ <var>) (= .variable.name identifier)) identifier)
     ((and ($ <literal>) (= .value value)) (->symbol value))
-    (($ <field> variable (and (? number?) (get! number))) (->symbol (list (.name variable) '== (number))))
-    (($ <field> variable field) (->symbol (list (->symbol (.name variable)) "." field)))
-    ((identifier ($ <field> variable field)) (->symbol (list (->symbol identifier) " = " (->symbol (.name variable)) "." field)))
+    (($ <field-test> variable (and (? number?) (get! number))) (->symbol (list (.name variable) '== (number))))
+    (($ <field-test> variable field) (->symbol (list (->symbol (.name variable)) "." field)))
+    ((identifier ($ <field-test> variable field)) (->symbol (list (->symbol identifier) " = " (->symbol (.name variable)) "." field)))
     ((identifier ($ <enum-literal> type field)) (->symbol (list (->symbol identifier) " = " (->symbol type) "." (->symbol field))))
     (($ <enum-literal> type field) (->symbol (list (->symbol type) "." (->symbol field))))
     (($ <scope.name> scope name) ((->symbol-join '.) (append scope (list name))))

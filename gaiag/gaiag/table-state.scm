@@ -96,7 +96,7 @@
                    (statement (car statements))
                    ((is-a? statement <guard>))
                    (field (.expression statement))
-                   ((is-a? field <field>))
+                   ((is-a? field <field-test>))
                    ((eq? (.name (.variable field)) '<state>))
                    ((eq? (.field field) '<Initial>)))
                   (make <compound>
@@ -131,7 +131,7 @@
                (iota (- (.to range) (.from range) -1) (.from range))))
             (($ <bool>) '(false true))
             (_  '(<Initial>))))
-         (states (map (lambda (field) (make <field> #:variable variable #:field field)) fields))
+         (states (map (lambda (field) (make <field-test> #:variable variable #:field field)) fields))
          (guards (filter identity
                          (map (lambda (field)
                                 (prepend-guard model variable field o))
@@ -150,7 +150,7 @@
                    ('true var)
                    ('false (make <not> #:expression var))))
                 (($ <int>) (make <equal> #:left var #:right (make <literal> #:value field)))
-                (_ (make <field> #:variable variable #:field field)))))
+                (_ (make <field-test> #:variable variable #:field field)))))
             (retain-source-properties
              (salvage-source-location model variable expression field o)
              (make <guard> #:expression expression #:statement statement))))
@@ -174,7 +174,7 @@
   (or (and=> (state-var model state) .name) '<state>))
 
 (define (make-state-field model state)
-  (make <field> #:variable (or (state-var model state) '<state>) #:field (.field state)))
+  (make <field-test> #:variable (or (state-var model state) '<state>) #:field (.field state)))
 
 (define* ((simplify model variable field #:optional (top? #f)) o)
   (let ((r ((simplify- model variable field top?) o)))

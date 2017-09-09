@@ -142,7 +142,7 @@
 
     (('events events ...) (make <events> #:elements (map parse->om- events)))
 
-    (('field identifier field) (make <field> #:variable identifier #:field field))
+    (('field-test identifier field) (make <field-test> #:variable identifier #:field field))
 
     (('fields fields ...) (make <fields> #:elements fields))
 

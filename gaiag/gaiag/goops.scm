@@ -111,7 +111,7 @@
            <event>
            <events>
            <extern>
-           <field>
+           <field-test>
            <fields>
            <foreign>
            <function>
@@ -385,11 +385,11 @@
   (type #:getter .type #:init-form #f #:init-keyword #:type)
   (expression #:getter .expression #:init-form (make <expression>) #:init-keyword #:expression))
 
-(define-class <field> (<bool-expr>)
+(define-class <field-test> (<bool-expr>)
   (variable #:getter .variable #:init-value #f #:init-keyword #:variable)
   (field #:getter .field #:init-value #f #:init-keyword #:field))
 
-(define-method (.variable.name (o <field>)) (and=> (.variable o) .name))
+(define-method (.variable.name (o <field-test>)) (and=> (.variable o) .name))
 
 (define-class <enum-literal> (<enum-expr>)
   (type #:getter .type #:init-value #f #:init-keyword #:type)

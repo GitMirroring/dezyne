@@ -396,7 +396,7 @@
        (list (->string identifier)))
       (($ <literal>) (csp-expression->string model (.value o) locals))
       ((or (? number?) (? string?) (? symbol?)) (list o))
-      (($ <field> variable field)
+      (($ <field-test> variable field)
        (let* ((type (.type variable))
               (name (om:name type)))
          (list "("
@@ -667,7 +667,7 @@
 
     ((? (is? <event>)) o)
     (($ <event>) o)
-    (($ <field>) o)
+    (($ <field-test>) o)
     (($ <enum-literal>) o)
     (($ <otherwise>) o)
     (($ <port>) o)
