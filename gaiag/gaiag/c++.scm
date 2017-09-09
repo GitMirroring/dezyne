@@ -146,7 +146,7 @@
 (define-template x:close-namespace (lambda (o) (map (lambda (x) "}\n") (om:scope o))))
 
 (define-template x:meta identity)
-(define-template x:ports-meta-list (lambda (o) (filter om:requires? (om:ports o))) 'meta-infix)
+(define-template x:ports-meta-list (lambda (o) (filter ast:requires? (om:ports o))) 'meta-infix)
 (define-template x:check-bindings-list (lambda (o) ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports o)))))
 
 (define-template x:global-enum-definer (lambda (o) (filter (is? <enum>) (om:globals))))
@@ -169,9 +169,9 @@
 
 (define-template x:variable-member-declare (lambda (o) (om:variables o)))
 
-(define-template x:out-binding-lambda (lambda (o) (filter om:provides? (om:ports o))))
-(define-template x:provided-port-declare (lambda (o) (filter om:provides? (om:ports o))))
-(define-template x:required-port-declare (lambda (o) (filter om:requires? (om:ports o))))
+(define-template x:out-binding-lambda (lambda (o) (filter ast:provides? (om:ports o))))
+(define-template x:provided-port-declare (lambda (o) (filter ast:provides? (om:ports o))))
+(define-template x:required-port-declare (lambda (o) (filter ast:requires? (om:ports o))))
 (define-template x:async-port-declare (lambda (o) (om:ports (.behaviour o))))
 
 (define-template x:stream-member om:variables 'stream-comma-infix)
@@ -181,8 +181,8 @@
 (define-template x:include-guard (lambda (o) (if (code:model2file?) o "")))
 (define-template x:endif (lambda (o) (if (code:model2file?) o "")))
 
-(define-template x:provided-port-reference-declare (lambda (o) (filter om:provides? (om:ports o))))
-(define-template x:required-port-reference-declare (lambda (o) (filter om:requires? (om:ports o))))
+(define-template x:provided-port-reference-declare (lambda (o) (filter ast:provides? (om:ports o))))
+(define-template x:required-port-reference-declare (lambda (o) (filter ast:requires? (om:ports o))))
 
 (define-template x:injected-instance-declare code:injected-instances-system)
 (define-template x:injected-binding-declare injected-bindings)
@@ -205,8 +205,8 @@
 (define-template x:header (lambda (o) (topological-sort (filter (negate (disjoin (is? <type>) (is? <interface>))) (map code:annotate-shells (.elements o))))))
 
 ;; shell-header-system
-(define-template x:provided-port-instance-declare (lambda (o) (filter om:provides? (om:ports o))))
-(define-template x:required-port-instance-declare (lambda (o) (filter om:requires? (om:ports o))))
+(define-template x:provided-port-instance-declare (lambda (o) (filter ast:provides? (om:ports o))))
+(define-template x:required-port-instance-declare (lambda (o) (filter ast:requires? (om:ports o))))
 
 ;; shell-source-system
 (define-template x:instance-meta-initializer identity)

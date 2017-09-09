@@ -126,7 +126,7 @@ errors."
            (csp-asserts (string-trim-right csp-asserts))
            (main-assert (last (string-split csp-asserts #\newline)))
            (process (cadr (string-split main-assert #\space)))
-           (provided-ports (filter om:provides? (om:ports model)))
+           (provided-ports (filter ast:provides? (om:ports model)))
            (foo (if gdzn-debug? (stderr "provides: ~a\n" provided-ports)))
            (provided (map (compose symbol->string .name) provided-ports))
            (tmp (tmpnam))

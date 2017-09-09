@@ -297,10 +297,10 @@
     (append-map (lambda (port) (map (lambda (event) (make <trigger> #:port (.name port) #:event event)) (filter predicate (om:events port)))) ports))
 
   (define (list-of-triggers-provides model)
-    (list-of-triggers-port (filter om:provides? (om:ports model)) om:in?))
+    (list-of-triggers-port (filter ast:provides? (om:ports model)) om:in?))
 
   (define (list-of-triggers-requires model)
-    (list-of-triggers-port (filter om:requires? (om:ports model)) om:out?))
+    (list-of-triggers-port (filter ast:requires? (om:ports model)) om:out?))
 
   (define (not-ored-guards guards)
 ;    (stderr "not-ored-guards ~a\n" guards)
@@ -451,20 +451,20 @@
                 (map (lambda (trigger)
                        (->string (list (.name port) '_'''. (.event.name trigger))))
                      (modeling-triggers (.type port))))
-              (filter (compose not dzn-async? .name .type) (filter om:requires? (om:ports o))))))
+              (filter (compose not dzn-async? .name .type) (filter ast:requires? (om:ports o))))))
 
 (define (async-reqackclrmods o)
   (map (lambda (port) (list "("  (.name port) "." (.name (car (.elements (.events (.type port))))) ","
                             (.name port) "_''" "." (.name (cadr (.elements (.events (.type port))))) ","
                             (.name port) "." (.name (caddr (.elements (.events (.type port))))) ","
                             (.name port) "_'''" "." "inevitable.false" ")"))
-       (filter (compose dzn-async? .name .type) (filter om:requires? (om:ports o)))))
+       (filter (compose dzn-async? .name .type) (filter ast:requires? (om:ports o)))))
 
 (define (async-reqclrs o)
   (append-map (lambda (port) (list
                               (list (.name port) "." (.name (car (.elements (.events (.type port))))))
                               (list (.name port) "." (.name (caddr (.elements (.events (.type port))))))))
-              (filter (compose dzn-async? .name .type) (filter om:requires? (om:ports o)))))
+              (filter (compose dzn-async? .name .type) (filter ast:requires? (om:ports o)))))
 
 (define (typed-elements o)
   (match o

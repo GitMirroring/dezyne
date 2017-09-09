@@ -173,7 +173,7 @@ provided_blocked' = {#
 begin_required_modeling' = {#(comma-join (map (cut list <> ".false") (required-modeling-triggers model)))}
 begin_required_silent' = {#(comma-join (map (cut list <> ".true") (required-modeling-triggers model)))}
 end_required_modeling' = {#(comma-join (append-map (lambda (port) (list (->string (.name port) "_'''.modeling" ) (->string (.name port) "_'''.silent" )))
-                                                   (filter om:requires? ((compose .elements .ports) model))))}
+                                                   (filter ast:requires? ((compose .elements .ports) model))))}
 async_reqackclrmods = <#(comma-join (async-reqackclrmods model))>
 in_internals' = inter(extensions(IN'), {|#((->join ",") (map (lambda (x) (list (.name x) "_''")) (filter (negate .external) (om:ports model))))|})
 #(map (animate-pairs `((interface ,identity))
@@ -198,7 +198,7 @@ within compress((CO_#.scope_model _ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]]
                                                                       (if (not (null? (filter om:out? (om:events port))))
                                                                           (list "[["((om:scope-name) port) "_''.x<-" (.name port) "_''.x|x<-extensions("(.name port)"_'')]]\n"))
                                                                       (list "[["((om:scope-name) port) "_'''.x<-" (.name port) "_'''.x|x<-extensions("(.name port)"_''')]]\n"))))
-                                                    (filter om:requires? ((compose .elements .ports) model)))))
+                                                    (filter ast:requires? ((compose .elements .ports) model)))))
                          (hide_channels (append-map (lambda (i) (list (list i " ") (list i "_'" ) (list "IN'." i "_''" ) (list i "_'''")))
                                                     (map .name (filter (compose dzn-async? .name .type) ((compose .elements .ports) model)))))
                           (hide (if (null? hide_channels) '() (list "\\{|" (comma-join hide_channels) "|}"))))

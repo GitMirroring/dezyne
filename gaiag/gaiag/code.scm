@@ -392,7 +392,7 @@
          (left-port (.port left))
          (right (.right o))
          (right-port (.port right)))
-    (if (om:provides? left-port)
+    (if (ast:provides? left-port)
                                 (cons left right)
                                 (cons right left))))
 
@@ -635,9 +635,9 @@
 
 (define-template x:injected-member-initializer (lambda (o) (filter .injected (om:ports o))))
 
-(define-template x:provided-member-initializer (lambda (o) (filter om:provides? (om:ports o))))
+(define-template x:provided-member-initializer (lambda (o) (filter ast:provides? (om:ports o))))
 
-(define-template x:required-member-initializer (lambda (o) (filter (conjoin (negate .injected) om:requires?) (om:ports o))))
+(define-template x:required-member-initializer (lambda (o) (filter (conjoin (negate .injected) ast:requires?) (om:ports o))))
 
 (define-template x:instance-name code:instance-name)
 (define-template x:instance-port-name code:instance-port-name)

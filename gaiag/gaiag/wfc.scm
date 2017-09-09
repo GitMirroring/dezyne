@@ -75,7 +75,7 @@
     (($ <root> (elements ...)) '(()) (append-map component elements))
     (($ <component> name ($ <ports> (ports ...)) ($ <behaviour>))
      ((om:filter:p <error>)
-      (if (>0 (length (filter om:provides? ports))) '()
+      (if (>0 (length (filter ast:provides? ports))) '()
           (list (wfc-error o "component with behaviour must have one provides port")))))
     (_ '())))
 

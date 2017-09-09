@@ -60,7 +60,6 @@
            om:collect
            om:component
            om:declarative?
-           om:dir-matches?
            om:enums
            om:event
            om:events
@@ -94,11 +93,9 @@
            om:port-binding?
            om:public-types
            om:provided
-           om:provides?
            om:reply-enums
            om:reply-types
            om:required
-           om:requires?
            om:scope
            om:scope+name
            om:scope-join ;; JUNKME
@@ -172,10 +169,10 @@
 
 
 (define (om:provided o)
-  (filter om:provides? (om:ports o)))
+  (filter ast:provides? (om:ports o)))
 
 (define (om:required o)
-  (filter om:requires? (om:ports o)))
+  (filter ast:requires? (om:ports o)))
 
 
 (define (om:interface-enums o)
@@ -511,18 +508,6 @@
     (? (is? <formal>)
      (or (eq? (.direction o) 'out)
          (eq? (.direction o) 'inout)))))
-
-(define (om:provides? o)
-  (eq? (.direction o) 'provides))
-
-(define (om:requires? o)
-  (eq? (.direction o) 'requires))
-
-(define ((om:dir-matches? port) event)
-  (or (and (eq? (.direction port) 'provides)
-           (eq? (.direction event) 'in))
-      (and (eq? (.direction port) 'requires)
-           (eq? (.direction event) 'out))))
 
 ;;;; OM handling
 

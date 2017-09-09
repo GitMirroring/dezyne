@@ -67,6 +67,8 @@
            ast:out-triggers-void-in-events
            ast:modeling?
            ast:typed?
+           ast:provides?
+           ast:requires?
 
            ast:argument*
            ast:binding*
@@ -149,6 +151,12 @@
     ;; FIXME: async port only?
     (($ <port>) ((compose ast:expression-type car om:events) o))))
 
+(define-method (ast:provides? (o <port>))
+  (eq? (.direction o) 'provides))
+
+(define-method (ast:requires? (o <port>))
+  (eq? (.direction o) 'requires))
+
 (define-method (ast:other-direction (o <event>))
   (assoc-ref `((in . out)
                (out . in))
@@ -158,10 +166,10 @@
   ((compose ast:other-direction .event) o))
 
 (define-method (ast:provided (o <component-model>))
-  (filter om:provides? ((compose .elements .ports) o)))
+  (filter ast:provides? ((compose .elements .ports) o)))
 
 (define-method (ast:required (o <component-model>))
-  (filter om:requires? ((compose .elements .ports) o)))
+  (filter ast:requires? ((compose .elements .ports) o)))
 
 (define-method (ast:direction (o <trigger>))
   (.direction (.event o)))
@@ -170,7 +178,7 @@
   (append-map (lambda (port)
                 (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
                      (filter om:in? (om:events port))))
-              (filter om:provides? (om:ports o))))
+              (filter ast:provides? (om:ports o))))
 
 (define-method (ast:req-events (o <component>))
   (append-map (lambda (port)
@@ -188,7 +196,7 @@
   (append-map (lambda (port)
                 (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
                      (filter om:out? (om:events port))))
-              (filter om:requires? (om:ports o) )))
+              (filter ast:requires? (om:ports o) )))
 
 (define-method (ast:in-triggers (o <component-model>))
   (append (ast:provided-in-triggers o) (ast:required-out-triggers o)))
@@ -197,13 +205,13 @@
   (append-map (lambda (port)
                 (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
                      (filter om:out? (om:events port))))
-              (filter om:provides? (om:ports o))))
+              (filter ast:provides? (om:ports o))))
 
 (define-method (ast:required-in-triggers (o <component-model>))
   (append-map (lambda (port)
                 (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
                      (filter om:in? (om:events port))))
-              (filter om:requires? (om:ports o) )))
+              (filter ast:requires? (om:ports o) )))
 
 (define-method (ast:out-triggers (o <component-model>))
   (append (ast:provided-out-triggers o) (ast:required-in-triggers o)))

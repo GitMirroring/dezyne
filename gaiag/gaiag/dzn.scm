@@ -262,8 +262,8 @@
 (define-template x:field ast:field* 'field-infix)
 (define-template x:in-event (lambda (o) (filter om:in? (om:events o))) 'newline-infix)
 (define-template x:out-event (lambda (o) (filter om:out? (om:events o))) 'newline-infix)
-(define-template x:provided-port (lambda (o) (filter om:provides? (om:ports o))) 'newline-infix)
-(define-template x:required-port (lambda (o) (filter om:requires? (om:ports o))) 'newline-infix)
+(define-template x:provided-port (lambda (o) (filter ast:provides? (om:ports o))) 'newline-infix)
+(define-template x:required-port (lambda (o) (filter ast:requires? (om:ports o))) 'newline-infix)
 
 (define-template x:behaviour .behaviour)
 (define-template x:async-port ast:port* 'newline-infix)
