@@ -1,1 +1,1 @@
-#.port.name .#.event.direction .#.event.name  = [&](#x:formals){return dzn::call_#.event.direction(this,[=#x:out-arguments ]{ return #.port.name _#.event.name(#x:arguments);}, this->#.port.name .meta, "#.event.name ");};
+#.port.name .#.event.direction .#.event.name  = [&](#x:formals){return dzn::call_#.event.direction(this,[=#x:out-arguments ]{ return #.port.name _#.event.name(#x:code-arguments);}, this->#.port.name .meta, "#.event.name ");};

@@ -101,8 +101,8 @@
 (define-method (ast:type* (o <types>)) (.elements o))
 (define-method (ast:variable* (o <variables>)) (.elements o))
 
-(define-method (ast:argument* (o <call>)) ((compose ast:argument* .arguments) o))
 (define-method (ast:argument* (o <action>)) ((compose ast:argument* .arguments) o))
+(define-method (ast:argument* (o <call>)) ((compose ast:argument* .arguments) o))
 (define-method (ast:binding* (o <system>)) ((compose ast:binding* .bindings) o))
 (define-method (ast:function* (o <behaviour>)) ((compose ast:function* .functions) o))
 (define-method (ast:field* (o <enum>)) ((compose ast:field* .fields) o))

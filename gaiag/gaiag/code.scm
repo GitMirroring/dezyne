@@ -38,7 +38,7 @@
 
   #:use-module (gaiag command-line)
   #:use-module (gaiag compare)
-  #:use-module (gaiag indent)
+  #:use-module (gaiag dzn)
   #:use-module (gaiag misc)
   #:use-module (gaiag norm-event)
   #:use-module (gaiag parse)
@@ -48,7 +48,6 @@
   #:use-module (language dezyne location)
 
   #:export (<enum-field>
-            dzn-async?
             asd-interfaces
             map-file
             injected-bindings
@@ -84,17 +83,11 @@
             code:file-name
             code:dump
             code:extension
-            code:indenter
             code:dump-main
             code:module
             code:om
-            code:->string
             symbol->enum-field
-            dump-indented
-            code:indent
-            dump-system
-            glue
-            pipe))
+            glue))
 
 (define (ast-> ast)
   (let ((root (code:om ast)))
@@ -144,11 +137,11 @@
 (define-class <file-name> (<ast>)
   (name #:getter .name #:init-form #f #:init-keyword #:name))
 
+(define-class <local> (<variable>))
+
 (define-class <model-scope> (<ast>))
 
 (define-class <out-formal> (<variable>))
-
-(define-class <local> (<variable>))
 
 ;;; ast accessors
 (define (injected-binding? binding)
@@ -175,9 +168,6 @@
   (let ((injected-instance-names (map injected-instance-name (injected-bindings model))))
     (filter (lambda (instance) (not (member (.name instance) injected-instance-names)))
             ((compose .elements .instances) model))))
-
-(define (code:source o)
-  (topological-sort (filter (negate (is? <type>)) (map code:annotate-shells (.elements o)))))
 
 (define (code:annotate-shells o)
   (if (and (is-a? o <system>)
@@ -365,7 +355,6 @@
     (if (is-a? (ast:expression-type expression) <void>) ""
         o)))
 
-(define-method (.statement (o <statement>)) o)
 (define-method (code:on-statement (o <statement>))
   (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
       (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
@@ -376,18 +365,6 @@
        (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
        o)))
 
-
-(define-method (code:non-blocking-identity (o <function>))
-  (.statement o))
-
-(define-method (code:non-blocking-identity (o <statement>))
-  (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
-      (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
-      o))
-
-(define-method (code:statement (o <statement>)) o)
-
-
 (define-method (code:guard-statement (o <statement>))
   (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
       (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
@@ -397,11 +374,6 @@
    (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
        (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
        o)))
-
-
-(define-method (.expression (o <value>)) (.value o))
-
-(define-method (.expression (o <top>)) #f)
 
 (define ((symbol->enum-field enum) o)
   (make <enum-field> #:type enum #:field o))
@@ -435,86 +407,6 @@
          (bind (om:port-bind model o)))
     (om:instance-binding? bind)))
 
-(define (code:->string o)
-  (match o
-    ((? number?) (number->string o))
-    ((? symbol?) (symbol->string o))
-    ((? string?) o)))
-
-(define-method (code:data (o <data>))
-  (code:->string (.value o)))
-
-(define-method (code:expression-expand (o <not>))
-  (.expression o))
-
-(define-method (code:expression-expand (o <var>))
-  (.variable o))
-
-(define-method (code:expression-expand (o <field>))
-  (make <literal> #:type ((compose .type .variable) o) #:field (.field o)))
-
-(define-method (code:expression-expand (o <variable>))
-  (code:variable-name o))
-
-(define-method (code:expression-expand (o <formal>))
-  (code:variable-name o))
-
-(define-method (code:expression-expand (o <reply>))
-  o)
-
-(define-method (code:expression (o <field>))
-  o)
-
-(define-method (code:expression (o <and>))
-  o)
-
-(define-method (code:expression (o <action>))
-  o)
-
-(define-method (code:expression (o <call>))
-  o)
-
-(define-method (code:expression (o <statement>))
-  (.expression o))
-
-(define-method (code:expression (o <formal>))
-  (code:variable-name o))
-
-(define-method (code:expression (o <variable>))
-  (code:variable-name o))
-
-(define-method (code:expression (o <return>))
-  (if (or (not (.expression o)) (eq? (.expression o) *unspecified*)) ""  ; MORTAL SIN HERE!!?
-          (.expression o)))
-
-(define-method (code:expression (o <var>))
-  (.variable o))
-
-(define-method (code:expression (o <unary>))
-  o)
-
-(define-method (code:expression (o <top>))
-  o)
-
-(define-method (code:expression (o <reply>))
-  (.expression o))
-
-(define-class <unspecified> (<ast>))
-
-(define-method (code:unspecified)
-  (if (memq (language) '(c++ c++03 c++-msvc11)) "" ; MORTAL SIN HERE!!?
-      (make <unspecified>))) ; FIXME: or javascript: "undefined"  here?
-
-(define-method (code:=expression (o <ast>))
-  (match (.expression o)
-    ((and ($ <value>) (= .value (? unspecified?))) (code:unspecified))
-    ((? unspecified?) (code:unspecified))
-    (_ (.expression o))))
-
-(define-method (code:=expression (o <extern>)) ; MORTAL SIN HERE!!?
-  (if (not (.value o)) ""
-      o))
-
 (define-method (code:reply-type (o <ast>))
   ((compose code:scope+name ast:expression-type) o))
 
@@ -530,6 +422,19 @@
 
 (define-method (code:scope.name (o <ast>))
   (.name o))
+
+(define-method (code:expression (o <top>))
+  (dzn:expression o))
+
+(define-method (code:expression (o <formal>))
+  (code:variable-name o))
+
+(define-method (code:expression (o <variable>))
+  (code:variable-name o))
+
+(define-method (code:expression (o <return>))
+  (if (or (not (.expression o)) (eq? (.expression o) *unspecified*)) ""  ; MORTAL SIN HERE!!?
+          (.expression o)))
 
 (define-method (code:variable-name (o <argument>))
   o)
@@ -565,7 +470,7 @@
 (define-method (code:type-name o)
   (let* ((type (or (as o <model>) (as o <type>) (.type o)))
          (scope+name (code:scope+name type)))
-    (map code:->string
+    (map dzn:->string
          (match type
            (($ <enum>) (code:cons-empty-symbol (code:append-type-symbol scope+name)))
            (($ <extern>) (list (.value type)))
@@ -576,13 +481,13 @@
   ((compose code:type-name .type .signature) o))
 
 (define-method (code:type-name (o <enum-field>))
-  (map code:->string (code:cons-empty-symbol (code:scope+name o))))
+  (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
 
 (define-method (code:type-name (o <literal>))
-  (map code:->string (code:cons-empty-symbol (code:scope+name o))))
+  (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
 
 (define-method (code:field-expression (o <field>))
-  (map code:->string (code:cons-empty-symbol
+  (map dzn:->string (code:cons-empty-symbol
                       (append (code:scope+name ((compose .type .variable) o))
                               (list (.field o))))))
 
@@ -615,7 +520,6 @@
 
 ;;; code: generic templates
 (define-template x:header- code:x-header-)
-(define-template x:source code:source 'newline-infix)
 
 (define-template x:async-member-initializer (lambda (o) (om:ports (.behaviour o))))
 
@@ -655,7 +559,7 @@
 (define-template x:non-void-reply identity #f)
 
 (define-method (code:enum-literal (o <literal>))
-  (map code:->string (code:cons-empty-symbol (code:scope+name o))))
+  (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
 
 (define-method (code:enum-scope (o <field>))
   ((compose code:enum-scope .type .variable) o))
@@ -669,7 +573,7 @@
     (if (or (null? scope) (equal? scope model-scope)) (make <model-scope>)
         o)))
 
-(define-template x:enum-literal code:enum-literal 'type-infix)
+(define-template x:code-enum-literal code:enum-literal 'type-infix)
 (define-template x:enum-scope code:enum-scope 'type-infix)
 
 (define-template x:reply (lambda (o)
@@ -677,7 +581,6 @@
                                ""
                                (begin (display " ") (x:non-void-reply o))))) ;; MORTAL SIN HERE!!?
 
-(define-template x:model-name (compose om:name (lambda (_) (ast:model-scope))))
 
 (define-template x:capitalize-model-name (compose (cut string-upcase <> 0 1) symbol->string om:name (lambda (_) (ast:model-scope))))
 
@@ -692,22 +595,7 @@
 (define-template x:methods code:ons)
 (define-template x:functions code:functions)
 
-(define-template x:data code:data)
-
-(define-template x:expression code:expression)
-
-(define-template x:left (compose code:expression .left) #f <expression>)
-(define-template x:right (compose code:expression .right) #f <expression>)
-
-(define-template x:expression-expand code:expression-expand #f <expression>)
-
-
-
-(define-template x:=expression code:=expression #f <expression>)
 (define-template x:reply-type code:reply-type 'name-infix)
-(define-template x:then .then #f <statement>)
-
-(define-template x:else (lambda (o) (or (.else o) '())) #f <statement>)
 
 (define-template x:declarative-or-imperative code:declarative-or-imperative)
 
@@ -730,9 +618,6 @@
 (define-template x:on-statement code:on-statement)
 
 (define-template x:guard-statement code:guard-statement)
-
-
-(define-template x:statement code:non-blocking-identity)
 
 (define-template x:all-ports-meta-list om:ports 'meta-infix)
 
@@ -775,7 +660,7 @@
 
 (define-template x:system-port-connect (lambda (o) (filter (negate om:port-bind?) ((compose .elements .bindings) o))))
 
-(define-template x:arguments code:arguments 'argument-infix <expression>)
+(define-template x:code-arguments code:arguments 'argument-infix <expression>)
 
 (define-template x:out-arguments code:out-argument 'argument-prefix <expression>)
 
@@ -804,63 +689,67 @@
 
 
 ;;; dump to file
-
 (define-method (code:x:pand (o <ast>) template file-name)
-  (let ((module (make-module 31 `(,(resolve-module '(gaiag code))
-                                  ,(resolve-module `(gaiag ,(language))))))
-        (file-name (if (string? file-name) file-name (symbol->string file-name)))) ;; FIXME
+  (let ((file-name (if (and file-name (symbol? file-name)) (symbol->string file-name) file-name))) ;; FIXME
+    (dump-output (string-append (if (eq? template 'main) "" (dzn:dir o)) ;; FIXME AAARRRGH
+                                file-name)
+                 (code:x:pand-display o template))))
+
+(define-method (code:x:pand-display (o <ast>) template)
+  (let ((module (make-module 31 `(,(resolve-module '(gaiag dzn))
+                                  ,(resolve-module '(gaiag code))
+                                  ,(resolve-module `(gaiag ,(language)))))))
     (module-define! module 'root (ast:root-scope))
-    (dump-indented (string-append (if (eq? template 'main) "" (code:dir o)) ;; FIXME
-                                  file-name)
-                  (lambda _
-                    (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
-                      (if (not (is-a? o <model>)) (x:pand (symbol-append template '@ (ast-name o)) o module)
-                          (ast:set-model-scope o (x:pand (symbol-append template '@ (ast-name o)) o module))))))))
+    (dzn:indent
+     (lambda _
+       (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+        (if (not (is-a? o <model>)) (x:pand (symbol-append template '@ (ast-name o)) o module)
+            (ast:set-model-scope o (x:pand (symbol-append template '@ (ast-name o)) o module))))))))
 
 (define-method (code:dump (o <root>))
   (let ((name (basename (symbol->string (source-file o)) ".dzn")))
-    (code:x:pand o 'header (string-append name (symbol->string (code:extension (make <interface>)))))
+    (code:x:pand o 'header (string-append name (symbol->string (dzn:extension (make <interface>)))))
     (when (pair? (filter (negate (disjoin (is? <data>) (is? <interface>))) (.elements o)))
-      (code:x:pand o 'source (string-append name (symbol->string (code:extension (make <component>))))))))
+      (code:x:pand o 'source (string-append name (symbol->string (dzn:extension (make <component>))))))))
 
 ;; FIXME:  'global todo
 ;; (define-method (code:dump (o <enum>))
-;;   (code:x:pand o 'header (symbol-append name (code:extension (make <interface>))))
+;;   (code:x:pand o 'header (symbol-append name (dzn:extension (make <interface>))))
 ;;   (and-let* (((null-is-#f (filter (is? <enum>) (om:globals))))
-;;              (template (template-file `(global ,(symbol-append (code:extension o) '.scm))))
+;;              (template (template-file `(global ,(symbol-append (dzn:extension o) '.scm))))
 ;;              ((file-exists? (components->file-name template))))
-;;             (dump-indented (list 'dzn 'global (code:extension o))
+;;             (dzn:dump-indented (list 'dzn 'global (dzn:extension o))
 ;;                            (lambda ()
 ;;                              (code-file 'global (code:module o))))))
 
 (define-method (code:dump (o <interface>))
   (let ((name ((om:scope-name) o)))
-    (if (code:header?) (code:x:pand o 'header (symbol-append name (code:extension (make <interface>))))
-        (code:x:pand o 'source (symbol-append name (code:extension (make <interface>)))))))
+    (if (code:header?) (code:x:pand o 'header (symbol-append name (dzn:extension (make <interface>))))
+        (code:x:pand o 'source (symbol-append name (dzn:extension (make <interface>)))))))
 
 (define-method (code:dump (o <component>))
   (let ((name ((om:scope-name) o)))
     (when (code:header?)
-      (code:x:pand o 'header (symbol-append name (code:extension (make <interface>)))))
-    (code:x:pand o 'source (symbol-append name (code:extension (make <component>))))))
+      (code:x:pand o 'header (symbol-append name (dzn:extension (make <interface>)))))
+    (code:x:pand o 'source (symbol-append name (dzn:extension (make <component>))))))
 
 (define-method (code:dump (o <foreign>))
   (let ((name (code:skel-file o)))
     (when (code:header?)
-      (code:x:pand o 'foreign-header (symbol-append name (code:extension (make <interface>)))))
-    (code:x:pand o 'foreign-source (symbol-append name (code:extension (make <component>)))))
+      (code:x:pand o 'foreign-header (symbol-append name (dzn:extension (make <interface>)))))
+    (code:x:pand o 'foreign-source (symbol-append name (dzn:extension (make <component>)))))
   (when (map-file o)
     (let ((name ((om:scope-name) o)))
-      (code:x:pand o 'glue-bottom-header (symbol-append name (code:extension (make <interface>))))
-      (code:x:pand o 'glue-bottom-source (symbol-append name (code:extension (make <component>)))))))
+      (code:x:pand o 'glue-bottom-header (symbol-append name (dzn:extension (make <interface>))))
+      (code:x:pand o 'glue-bottom-source (symbol-append name (dzn:extension (make <component>)))))))
 
 (define-method (code:dump (o <system>))
   (let* ((name ((om:scope-name) o))
          (shell (command-line:get 'shell #f))
          (template (if (and shell (eq? name (string->symbol shell))) 'shell- (symbol))))
     (when (code:header?)
-      (code:x:pand o (symbol-append template 'header) (symbol-append name (code:extension (make <interface>)))))
-    (code:x:pand o (symbol-append template 'source) (symbol-append name (code:extension (make <component>)))))
+      (code:x:pand o (symbol-append template 'header) (symbol-append name (dzn:extension (make <interface>)))))
+    (code:x:pand o (symbol-append template 'source) (symbol-append name (dzn:extension (make <component>)))))
   (when (map-file o)
     (code:dump-glue o)))
 
@@ -869,7 +758,7 @@
              (model (and (and=> (command-line:get 'model #f) string->symbol)))
              ((is-a? o <component-model>))
              ((eq? model name)))
-    (code:x:pand o 'main (symbol-append 'main (code:extension o)))))
+    (code:x:pand o 'main (symbol-append 'main (dzn:extension o)))))
 
 (define-method (code:dump-glue (o <system>))
   (let ((name (om:name o)))
@@ -910,8 +799,6 @@
 (define-method (code:file-name (o <root>))
   (basename (symbol->string (source-file o)) ".dzn"))
 
-(define code:indenter (make-parameter indent))
-
 (define (code:om ast)
   ((compose-root
     code-norm-event
@@ -919,55 +806,11 @@
     parse->om
     ) ast))
 
-(define (pipe producer consumer)
-  (with-input-from-string (with-output-to-string producer) consumer))
-
-(define (code:indent thunk)
-  (if (code:indenter)
-      (lambda () (pipe thunk (lambda () ((code:indenter)))))
-      thunk))
-
-(define (dump-indented file-name thunk) ;; JUNKME
-  (dump-output file-name (code:indent thunk)))
-
 (define (code:foreign?)
   (member (language) '(c++ c++03 c++-msvc11)))
 
 (define (code:header?)
   (member (language) '(c c++ c++03 c++-msvc11)))
-
-(define (code:dir o)
-  (if (eq? (language) 'cs) '()
-      '(dzn)))
-
-(define (code:extension o)
-  (match o
-    (($ <interface>)
-     (assoc-ref '((c . .h)
-                  (c++ . .hh)
-                  (c++03 . .hh)
-                  (c++-msvc11 . .hh)
-                  (dzn . .dzn)
-                  (scheme . .scm)
-                  (java . .java)
-                  (java7 . .java)
-                  (javascript . .js)
-                  (cs . .cs)
-                  (python . .py))
-                (language)))
-    ((or ($ <foreign>) ($ <component>) ($ <system>))
-     (assoc-ref '((c . .c)
-                  (c++ . .cc)
-                  (c++03 . .cc)
-                  (c++-msvc11 . .cc)
-                  (dzn . .dzn)
-                  (scheme . .scm)
-                  (java . .java)
-                  (java7 . .java)
-                  (javascript . .js)
-                  (cs . .cs)
-                  (python . .py))
-                (language)))))
 
 (define (code:dir o)
   (if (member (language) '(javascript)) "dzn/" ""))
@@ -977,20 +820,6 @@
                                   ,(resolve-module `(gaiag ,(language)))))))
     (module-define! module 'root root)
     module))
-
-(define (dzn-async? o)
-  (or (gaiag-dzn-async? o)
-      (generator-dzn-async? o)))
-
-(define (gaiag-dzn-async? o)
-  (equal? ((compose .scope .name) o) '(dzn async)))
-
-(define (generator-dzn-async? o)
-  (let* ((name (.name o))
-         (scope (.scope name)))
-    (and (pair? scope)
-         (eq? (car scope) 'dzn)
-         (symbol-prefix? 'async (.name name)))))
 
 (define (code:skel-file model)
   ((->symbol-join '_) (append (drop-right (code:scope+name model) 1) '(skel) (take-right (code:scope+name model) 1))))

@@ -37,7 +37,6 @@
   #:use-module (gaiag om)
   #:use-module (gaiag ast)
   #:use-module (gaiag deprecated om)
-  #:use-module (gaiag code)
   #:use-module (gaiag util)
 
   #:use-module (gaiag command-line)
@@ -50,7 +49,16 @@
 
   #:use-module (language dezyne location)
 
-  #:export (ast->dzn))
+  #:export (ast->dzn
+            dzn-async?
+            dzn:dir
+            dzn:dump
+            dzn:extension
+            dzn:expression
+            dzn:indent
+            dzn:->string))
+
+(define-class <unspecified> (<ast>))
 
 (define (ast-> ast)
   (let ((root (dzn:om ast)))
@@ -67,9 +75,50 @@
                                    (negate (disjoin dzn-async? om:imported? (is? <foreign>))))
                           (ast:model* root)))
          (root* (clone root #:elements objects)))
-    (dzn:dump root*)
-    (when (code:foreign?)
-      (for-each dzn:dump (filter (is? <foreign>) (ast:model* root))))))
+    (dzn:dump root*)))
+
+(define-public (dzn-async? o)
+  (or (gaiag-dzn-async? o)
+      (generator-dzn-async? o)))
+
+(define (gaiag-dzn-async? o)
+  (equal? ((compose .scope .name) o) '(dzn async)))
+
+(define (generator-dzn-async? o)
+  (let* ((name (.name o))
+         (scope (.scope name)))
+    (and (pair? scope)
+         (eq? (car scope) 'dzn)
+         (symbol-prefix? 'async (.name name)))))
+
+(define (dzn:extension o)
+  (match o
+    (($ <interface>)
+     (assoc-ref '((c . .h)
+                  (c++ . .hh)
+                  (c++03 . .hh)
+                  (c++-msvc11 . .hh)
+                  (dzn . .dzn)
+                  (scheme . .scm)
+                  (java . .java)
+                  (java7 . .java)
+                  (javascript . .js)
+                  (cs . .cs)
+                  (python . .py))
+                (language)))
+    ((or ($ <foreign>) ($ <component>) ($ <system>))
+     (assoc-ref '((c . .c)
+                  (c++ . .cc)
+                  (c++03 . .cc)
+                  (c++-msvc11 . .cc)
+                  (dzn . .dzn)
+                  (scheme . .scm)
+                  (java . .java)
+                  (java7 . .java)
+                  (javascript . .js)
+                  (cs . .cs)
+                  (python . .py))
+                (language)))))
 
 (define (dzn:model2file root)
   (let* ((models (map (is? <model>) (ast:model* root)))
@@ -95,8 +144,31 @@
   "")
 
 ;;; dzn: generic templates
+(define-template x:source dzn:source 'newline-infix)
+(define (dzn:source o)
+  (topological-sort (filter (negate (is? <type>)) (map dzn:annotate-shells (.elements o)))))
 
-;;(define-template x:source code:source)
+(define (dzn:annotate-shells o)
+  (if (and (is-a? o <system>)
+           (equal? (command-line:get 'shell #f) (symbol->string (.name (.name o)))))
+      (make <shell-system> #:ports (.ports o) #:name (.name o) #:instances (.instances o) #:bindings (.bindings o))
+      o))
+
+(define-template x:model-name (compose om:name (lambda (_) (ast:model-scope))))
+
+(define-template x:=expression dzn:=expression #f <expression>)
+(define-method (dzn:=expression (o <ast>))
+  (match (.expression o)
+    ((and ($ <value>) (= .value (? unspecified?))) (dzn:unspecified))
+    ((? unspecified?) (dzn:unspecified))
+    (_ (.expression o))))
+
+(define-method (dzn:=expression (o <extern>)) ; MORTAL SIN HERE!!?
+  (if (not (.value o)) ""
+      o))
+
+(define-method (dzn:unspecified)
+  (make <unspecified>))
 
 (define-template x:type dzn:type 'type-infix)
 (define-method (dzn:type o)
@@ -106,7 +178,58 @@
     (if (equal? scope model-scope) (list (om:name type))
         (om:scope+name type))))
 
-(define-template x:dzn-enum-literal dzn:enum-literal 'type-infix)
+(define-template x:expression dzn:expression)
+
+(define-template x:left (compose dzn:expression .left) #f <expression>)
+(define-template x:right (compose dzn:expression .right) #f <expression>)
+
+(define-template x:expression-expand dzn:expression-expand #f <expression>)
+
+(define-method (dzn:expression (o <top>))
+  o)
+(define-method (dzn:expression (o <assign>))
+  (.expression o))
+(define-method (dzn:expression (o <if>))
+  (.expression o))
+(define-method (dzn:expression (o <guard>))
+  (.expression o))
+(define-method (dzn:expression (o <reply>))
+  (.expression o))
+
+(define-method (dzn:expression (o <return>))
+  (if (or (not (.expression o)) (eq? (.expression o) *unspecified*)) ""  ; MORTAL SIN HERE!!?
+          (.expression o)))
+
+(define-method (dzn:expression (o <var>))
+  (.variable o))
+
+(define-method (dzn:expression-expand (o <not>))
+  (.expression o))
+
+(define-method (dzn:expression-expand (o <var>))
+  (.variable o))
+
+(define-method (dzn:expression-expand (o <field>))
+  (make <literal> #:type ((compose .type .variable) o) #:field (.field o)))
+
+(define-method (dzn:expression-expand (o <variable>))
+  (.name o))
+
+(define-method (dzn:expression-expand (o <formal>))
+  (.name o))
+
+(define-method (dzn:expression-expand (o <reply>))
+  o)
+
+(define-method (dzn:class-member? (o <variable>)) ; MORTAL SIN HERE!!?
+  ;; FIXME: is (.variable o) a member?
+  ;; checking name (as done now) is not good enough
+  ;; we schould check .variable pointer equality
+  ;; that does not work, however; someone makes a copy is clone
+  ;;(memq o (om:variables (ast:model-scope)))
+  (memq (.name o) (map .name (om:variables (ast:model-scope)))))
+
+(define-template x:enum-literal dzn:enum-literal 'type-infix)
 (define-method (dzn:enum-literal (o <literal>))
   (dzn:scope+name o))
 
@@ -115,6 +238,18 @@
 
 (define-method (dzn:type (o <event>))
   ((compose dzn:type .type .signature) o))
+
+(define-template x:then .then #f <statement>)
+(define-template x:else (lambda (o) (or (.else o) '())) #f <statement>)
+
+(define-template x:data (compose dzn:->string .value))
+(define (dzn:->string o)
+  (match o
+    ((? number?) (number->string o))
+    ((? symbol?) (symbol->string o))
+    ((? string?) o)))
+
+(define-template x:arguments ast:argument* 'argument-infix <expression>)
 
 (define-template x:define-type ast:type* 'newline-infix)
 (define-template x:field ast:field* 'field-infix)
@@ -139,6 +274,11 @@
     ((#f) "")
     ((in) "in ")
     ((inout) "inout ")
+    ((out) "out ")))
+
+(define-method (dzn:direction (o <trigger>))
+  (case ((compose .direction .event) o)
+    ((in) "in ")
     ((out) "out ")))
 
 (define-template x:port-prefix dzn:port-prefix 'port-suffix)
@@ -177,7 +317,7 @@
 
 (define-class <skip> (<statement>))
 
-(define-template x:dzn-statement dzn:statement)
+(define-template x:statement dzn:statement)
 (define-method (dzn:statement (o <statement>))
   o)
 
@@ -185,8 +325,15 @@
   (if (null? (ast:statement* o)) (make <skip>)
       o))
 
+(define-method (dzn:statement (o <guard>))
+  (if (not (is-a? (.expression o) <otherwise>)) o
+      (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))))
+
 (define-method (dzn:statement (o <behaviour>))
   ((compose dzn:expand-statement .statement) o))
+
+(define-method (dzn:statement (o <function>))
+  (.statement o))
 
 (define-template x:expand-statement dzn:expand-statement #f <statement>)
 (define-method (dzn:expand-statement (o <statement>))
@@ -219,22 +366,32 @@
 (define-template x:instance (lambda (o) (if (not (.instance o)) "" (list (.instance o)))) 'dot-suffix)
 (define-template x:binding ast:binding* 'newline-infix)
 
-(define code:dir (@@ (gaiag code) code:dir))
-(define code:foreign? (@@ (gaiag code) code:foreign?))
-(define code:header? (@@ (gaiag code) code:foreign?))
-
 ;;; dump to file
+(define dzn:indenter (make-parameter indent))
+
+(define (pipe producer consumer)
+  (with-input-from-string (with-output-to-string producer) consumer))
+
+(define (dzn:indent thunk)
+  (if (dzn:indenter)
+      (lambda () (pipe thunk (lambda () ((dzn:indenter)))))
+      thunk))
+
+(define (dzn:dir o)
+  (if (memq (language) '(javascript)) "dzn/"
+      ""))
+
 (define-method (dzn:x:pand (o <ast>) template file-name)
   (let ((file-name (if (and file-name (symbol? file-name)) (symbol->string file-name) file-name))) ;; FIXME
-    (dump-output (string-append (if (eq? template 'main) "" (code:dir o)) ;; FIXME AAARRRGH
+    (dump-output (string-append (if (eq? template 'main) "" (dzn:dir o)) ;; FIXME AAARRRGH
                                 file-name)
                  (dzn:x:pand-display o template))))
 
 (define-method (dzn:x:pand-display (o <ast>) template)
-  (let ((module (make-module 31 `(,(resolve-module '(gaiag code))
+  (let ((module (make-module 31 `(,(resolve-module '(gaiag dzn))
                                   ,(resolve-module `(gaiag ,(language)))))))
     (module-define! module 'root (ast:root-scope))
-    (code:indent
+    (dzn:indent
      (lambda _
        (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
         (if (not (is-a? o <model>)) (x:pand (symbol-append template '@ (ast-name o)) o module)
@@ -242,35 +399,22 @@
 
 (define-method (dzn:dump (o <root>))
   (let ((name (basename (symbol->string (source-file o)) ".dzn")))
-    (when (code:header?)
-      (dzn:x:pand o 'header (string-append name (symbol->string (code:extension (make <interface>))))))
     (when (pair? (filter (negate (disjoin (is? <data>) (is? <interface>))) (ast:model* o)))
-      (dzn:x:pand o 'source (string-append name (symbol->string (code:extension (make <component>))))))))
+      (dzn:x:pand o 'source (string-append name (symbol->string (dzn:extension (make <component>))))))))
 
 (define-method (dzn:dump (o <interface>))
   (let ((name ((om:scope-name) o)))
-    (if (code:header?) (dzn:x:pand o 'header (symbol-append name (code:extension (make <interface>))))
-        (dzn:x:pand o 'source (symbol-append name (code:extension (make <interface>)))))))
+    (dzn:x:pand o 'source (symbol-append name (dzn:extension (make <interface>))))))
 
 (define-method (dzn:dump (o <component>))
   (let ((name ((om:scope-name) o)))
-    (when (code:header?)
-      (dzn:x:pand o 'header (symbol-append name (code:extension (make <interface>)))))
-    (dzn:x:pand o 'source (symbol-append name (code:extension (make <component>))))))
-
-(define-method (dzn:dump (o <foreign>))
-  (let ((name (code:skel-file o)))
-    (when (code:header?)
-      (dzn:x:pand o 'foreign-header (symbol-append name (code:extension (make <interface>)))))
-    (dzn:x:pand o 'foreign-source (symbol-append name (code:extension (make <component>))))))
+    (dzn:x:pand o 'source (symbol-append name (dzn:extension (make <component>))))))
 
 (define-method (dzn:dump (o <system>))
   (let* ((name ((om:scope-name) o))
          (shell (command-line:get 'shell #f))
          (template (if (and shell (eq? name (string->symbol shell))) 'shell- (symbol))))
-    (when (code:header?)
-      (dzn:x:pand o (symbol-append template 'header) (symbol-append name (code:extension (make <interface>)))))
-    (dzn:x:pand o (symbol-append template 'source) (symbol-append name (code:extension (make <component>))))))
+    (dzn:x:pand o (symbol-append template 'source) (symbol-append name (dzn:extension (make <component>))))))
 
 (define (dzn:model2file?)
   (and=> (or (command-line:get 'deprecated #f) (getenv "DZN_DEPRECATED"))

@@ -51,37 +51,7 @@
             .asd-event
             <glue-event>))
 
-(define (ast-> ast)
-  (let ((root (code:om ast)))
-    (ast:set-scope root (c++:root-> root)))
-  "")
-
-(define (c++:root-> root)
-  (parameterize ((language (code:language)))
-    (if (code:model2file?) (code:model2file root)
-        (code:file2file root))
-    (let ((main (command-line:get 'model #f)))
-      (when main
-        (let* ((models (filter (is? <model>) (.elements root)))
-               (main? (compose (cut eq? (string->symbol main) <>) (om:scope-name)))
-               (main-model (and main (find main? models))))
-          (and=> main-model code:dump-main))))))
-
-(define (code:file2file root)
-  (let* ((objects (filter (disjoin (is? <data>)
-                                   (negate (disjoin dzn-async? om:imported? (is? <foreign>))))
-                          (.elements root)))
-         (root* (clone root #:elements objects)))
-    (c++:dump root*)
-    (for-each c++:dump (filter (is? <foreign>) (.elements root)))
-    (when (glue) (for-each c++:dump-glue (filter (is? <system>) objects)))))
-
-(define (code:model2file root)
-  (let* ((models (map (is? <model>) (.elements root)))
-         (models (filter (negate om:imported?) models))
-         ;; Generator-synthesized models look non-imported, filter harder
-         (models (filter (negate dzn-async?) models)))
-    (for-each c++:dump models)))
+(define ast-> (@@ (gaiag code) ast->))
 
 (define-class <glue-event> (<event>)
   (asd-channel #:getter .asd-channel #:init-value #f #:init-keyword #:asd-channel)
@@ -164,15 +134,12 @@
 
 (define-template x:name c++:name)
 (define-template x:declare-method code:trigger)
-(define-template x:formal-type c++:formal-type)
 (define-template x:return-type c++:return-type #f <type>)
-;;;(define-template x:c++:type-name c++:type-name 'type-infix) ;; JUNKME
 (define-template x:calls ast:void-in-triggers)
 (define-template x:rcalls ast:valued-in-triggers)
 (define-template x:prefix-formals-type code:formals 'formal-prefix)
 (define-template x:reqs ast:req-events)
 (define-template x:clrs ast:clr-events)
-(define-template x:direction ast:direction)
 (define-template x:variable-expression (compose code:expression .expression) #f <expression>)
 
 (define-template x:open-namespace (lambda (o) (map (lambda (x) (string-join (list " namespace " (symbol->string x) " {") "")) (om:scope o))))
@@ -556,43 +523,3 @@
 (define-template x:asd-get-api-definition c++:asd-get-api-definition)
 
 (define-template x:asd-register-cb-definition c++:asd-register-cb-definition)
-
-;;; dump to file
-
-(define-method (c++:dump (o <root>))
-  (let ((name (basename (symbol->string (source-file o)) ".dzn")))
-    (code:x:pand o 'header (string-append name (symbol->string (code:extension (make <interface>)))))
-    (when (pair? (filter (negate (disjoin (is? <data>) (is? <interface>))) (.elements o)))
-      (code:x:pand o 'source (string-append name (symbol->string (code:extension (make <component>))))))))
-
-(define-method (c++:dump (o <interface>))
-  (let ((name ((om:scope-name) o)))
-    (code:x:pand o 'header (symbol-append name (code:extension (make <interface>))))))
-
-(define-method (c++:dump (o <component>))
-  (let ((name ((om:scope-name) o)))
-    (code:x:pand o 'header (symbol-append name (code:extension (make <interface>))))
-    (code:x:pand o 'source (symbol-append name (code:extension (make <component>))))))
-
-(define-method (c++:dump (o <foreign>))
-  (let ((name (code:skel-file o)))
-    (code:x:pand o 'foreign-header (symbol-append name (code:extension (make <interface>))))
-    (code:x:pand o 'foreign-source (symbol-append name (code:extension (make <component>)))))
-  (when (map-file o)
-    (let ((name ((om:scope-name) o)))
-      (code:x:pand o 'glue-bottom-header (symbol-append name (code:extension (make <interface>))))
-      (code:x:pand o 'glue-bottom-source (symbol-append name (code:extension (make <component>)))))))
-
-(define-method (c++:dump (o <system>))
-  (let* ((name ((om:scope-name) o))
-         (shell (command-line:get 'shell #f))
-         (template (if (and shell (eq? name (string->symbol shell))) '-shell (symbol))))
-    (code:x:pand o (symbol-append 'header template) (symbol-append name (code:extension (make <interface>))))
-    (code:x:pand o (symbol-append 'source template) (symbol-append name (code:extension (make <component>)))))
-  (when (map-file o)
-    (c++:dump-glue o)))
-
-(define-method (c++:dump-glue (o <system>))
-  (let ((name (om:name o)))
-    (code:x:pand o 'glue-top-header (symbol-append name 'Component.h))
-    (code:x:pand o 'glue-top-source (symbol-append name 'Component.cpp))))
