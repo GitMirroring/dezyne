@@ -32,7 +32,6 @@
   #:use-module (srfi srfi-26)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (gaiag lexicals)
   #:use-module (gaiag deprecated om)
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
