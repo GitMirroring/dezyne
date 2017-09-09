@@ -21,14 +21,13 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag commands table)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag om)
+  #:use-module (gaiag parse)
   #:use-module (gaiag shell-util)
   #:export (parse-opts
             main))
@@ -64,25 +63,12 @@ FIXME  -d, --diagram          produce svg diagram output
 	   (exit (or (and usage? 2) 0)))
      options)))
 
-(define* (generator-read-ast options file-name)
-  (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
+(define* (file->ast options file-name #:key mangle?)
+  (let* ((gaiag? (option-ref options 'gaiag #f))
+         (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
-         (model-opt (option-ref options 'model #f))
-         (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
-         (debug? (option-ref options 'debug #f))
-         (command (string-append
-                   "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
-                   " generate -l scm -L -o -"
-                   (string-join imports " -I " 'prefix)
-                   (if (not model-opt) "" (string-append " -m " model-opt))
-                   " " file-name)))
-    (if gdzn-debug? (stderr "command: ~a\n" command))
-    (with-input-from-string (gulp-pipe command) read)))
-
-(define (file->ast options file-name)
-  (let ((gaiag? (option-ref options 'gaiag #f)))
-    (if gaiag? (read-ast file-name)
-        (generator-read-ast options file-name))))
+         (model (option-ref options 'model #f)))
+    (parse-file file-name #:generator? (not gaiag?) #:imports imports #:model model)))
 
 (define (main args)
   (let* ((options (parse-opts args))

@@ -22,8 +22,6 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag annotate)
   #:use-module (ice-9 pretty-print)
 
@@ -33,7 +31,6 @@
 
   #:use-module (language dezyne location)
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
 
   #:export (ast:annotate ast->annotate extract-locations))
 

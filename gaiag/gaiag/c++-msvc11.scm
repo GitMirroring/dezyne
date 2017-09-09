@@ -23,7 +23,7 @@
 
 (define-module (gaiag c++-msvc11)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (gaiag om)
+  #:use-module (gaiag ast)
   #:use-module (gaiag c++)
   #:export (ast->))
 

@@ -31,15 +31,16 @@
   #:use-module (srfi srfi-1)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (gaiag ast2om)
+  #:use-module (gaiag deprecated om)
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
+  #:use-module (gaiag ast)
   #:use-module (gaiag compare)
   #:use-module (gaiag util)
 
   #:use-module (gaiag csp)
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
   #:use-module (gaiag resolve)
 
   #:export (
@@ -65,7 +66,8 @@
                        (map (assert o) interface-checks))
              '())))
     (($ <root> (models ...))
-     (or (and-let* ((model (om:model-with-behaviour o)))
+     (or (and-let* ((model (find .behaviour (append (om:filter (is? <component>) o)
+                                                    (om:filter (is? <interface>) o)))))
                    (assert-list-all model))
          '()))))
 
@@ -81,5 +83,5 @@
 (define (ast-> o)
   ((compose-root
     assert-list
-    ast->om
+    parse->om
     ) o))

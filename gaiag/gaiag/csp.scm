@@ -36,9 +36,10 @@
   #:use-module (gaiag asserts)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (gaiag ast2om)
+  #:use-module (gaiag deprecated om)
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
+  #:use-module (gaiag ast)
   #:use-module (gaiag compare)
   #:use-module (gaiag util)
   #:use-module (gaiag xpand)
@@ -48,7 +49,7 @@
   #:use-module (gaiag misc)
   #:use-module (gaiag norm)
   #:use-module (gaiag norm-state)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
   #:use-module (gaiag resolve)
 ;; #:use-module (gaiag wfc)
 
@@ -64,7 +65,7 @@
            csp-queue-size
            ast->csp
            om->csp
-           csp:ast->om
+           csp:parse->om
            demangle
            csp-asserts
 
@@ -103,7 +104,7 @@
           (throw 'csp message)))))
 
 (define* (ast->csp ast #:key file-name (separate-asserts? (command-line:get 'assert #f)))
-  (om->csp (csp:ast->om ast) #:file-name file-name #:separate-asserts? separate-asserts?))
+  (om->csp (csp:parse->om ast) #:file-name file-name #:separate-asserts? separate-asserts?))
 
 (define (ast-> ast)
   (ast->csp ast)
@@ -145,10 +146,10 @@
     csp-norm-state
     internal-libs
     ast:resolve
-    ast->om
+    parse->om
     ) ast))
 
-(define csp:ast->om csp:norm)
+(define csp:parse->om csp:norm)
 
 (define ((demangle-var model) var)
   (or (and-let* (((member (.name model) '(co_mangle co_argument2 if_I)))
@@ -232,6 +233,15 @@
 
 (define (valued? model o)
   (om:typed? model (car ((compose .elements .triggers) o))))
+
+(define* (om:typed? o #:optional (trigger #f))
+  (if trigger (om:typed? (.event trigger))
+      (match o
+        (($ <event>)
+         (let ((type ((compose .type .signature) o)))
+           (not (is-a? type <void>))))
+        ((? (is? <modeling-event>)) #f)
+        ((? boolean?) #f))))
 
 (define (unspecified? x) (eq? x *unspecified*))
 
@@ -433,7 +443,7 @@
   (map (compose (cut csp-expression->string model <> '()) .expression) (filter (lambda (x) (not (is-a? (.type x) <extern>))) (om:variables model))))
 
 (define (modeling-triggers o)
-  (filter om:modeling? (om:find-triggers o)))
+  (filter ast:modeling? (om:find-triggers o)))
 
 (define (required-modeling-triggers o)
   (apply append
@@ -484,13 +494,13 @@
   (filter
    (negate (is? <extern>))
    (match o
-     (($ <interface>) (append (om:types o) (om:types)))
+     (($ <interface>) (append (om:types o) (om:globals)))
      (($ <component>)
       (append
        (apply append
               (map types
                    (map .type ((compose .elements .ports) o))))
-       (append (om:types o) (om:types)))))))
+       (append (om:types o) (om:globals)))))))
 
 (define (return-values-port port) ;; FIMXE: no test
   (let ((interface (.type port)))
@@ -587,7 +597,7 @@
   (define (member? identifier) (om:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
-  (define (extern-type? type) (om:extern model type))
+  (define (extern-type? type) (as type <extern>))
   (define (extern? variable) (extern-type? (.type variable)))
   (define (purge-formal-list function arguments)
     (let ((types (map .type ((compose .elements .formals .signature) function))))
@@ -620,7 +630,7 @@
      (clone o #:arguments (make <arguments> #:elements (purge-formal-list (.function o) arguments))))
 
     (($ <on> triggers statement)
-     (let* ((t (filter (negate om:modeling?) (.elements triggers)))
+     (let* ((t (filter (negate ast:modeling?) (.elements triggers)))
             (events (map .event t))
             (formals (apply append (map (compose .elements .formals .signature) events)))
             (on-formals (apply append (map (compose .elements .formals) t)))
@@ -791,8 +801,8 @@
                   (channel (if (is-a? model <interface>) model-name (.port.name (car triggers))))
                   (transformed-end (on->csp model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
                   (tail (on->csp model (statement) inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
-                  (real-triggers (filter (negate om:modeling?) triggers))
-                  (modeling-triggers (filter om:modeling? triggers))
+                  (real-triggers (filter (negate ast:modeling?) triggers))
+                  (modeling-triggers (filter ast:modeling? triggers))
                   (modeling-triggers (qualify-modeling-event (map .event.name modeling-triggers) statement))
                   (trigger-in? (lambda (trigger) (om:in? (.event trigger)))))
              (receive (ins outs) (partition trigger-in? real-triggers)
@@ -834,8 +844,8 @@
                   (channel (if (is-a? model <interface>) model-name (.port.name (car triggers))))
                   (transformed-end (on->csp model the-end inevitable-optional? channel provided-on? locals (1+ indent)))
                   (tail (on->csp model statement inevitable-optional? channel provided-on? locals (1+ indent) transformed-end function))
-                  (real-triggers (filter (negate om:modeling?) triggers))
-                  (modeling-triggers (filter om:modeling? triggers))
+                  (real-triggers (filter (negate ast:modeling?) triggers))
+                  (modeling-triggers (filter ast:modeling? triggers))
                   (modeling-triggers (qualify-modeling-event (map .event.name modeling-triggers) statement))
                   (trigger-in? (lambda (trigger) (om:in? (.event trigger)))))
              (receive (ins outs) (partition trigger-in? real-triggers)
@@ -1098,7 +1108,7 @@
   (define (member? identifier) (om:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (local? identifier) (member? identifier)))
-  (define (int-type? type) (om:integer model type))
+  (define (int-type? type) (as type <int>))
   (define (int? identifier) (and=> (var? identifier)
                                    (lambda (var) (int-type? (.type var)))))
   (define (range-guard identifier)
@@ -1233,7 +1243,7 @@
          (eq? (demangle (car scope)) 'dzn))))
 
 (define (async-behaviour)
-  ((compose .behaviour car .elements ast:resolve ast->om dzn->ast)
+  ((compose .behaviour car .elements ast:resolve parse->om parse-string)
 "interface dzn.async {
   in void req();
   in void clr();

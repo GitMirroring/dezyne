@@ -1,8 +1,8 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
-;; Copyright © 2014, 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -17,9 +17,10 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with Gaiag.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (gaiag reader)
-  #:use-module (ice-9 and-let-star)
+(define-module (gaiag parse)
+  #:use-module (ice-9 optargs)
   #:use-module (ice-9 match)
+
   #:use-module (srfi srfi-1)
 
   #:use-module (system base language)
@@ -32,22 +33,28 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
 
-  #:export (dzn->ast find-file %include-path try-find-file parse-dzn read-dzn read-ast))
+  #:export (%include-path parse-file parse-string try-find-file))
+
+(define ast-> identity)
+
+(define* (parse-file file-name #:key generator? (imports '()) mangle? model)
+  (if generator? (generator-parse-file file-name #:imports imports #:mangle? mangle? #:model model)
+      (gaiag-parse-file file-name)))
 
 (define %include-path '("."))
 
-(define (dzn->ast o)
-  (or (and-let* ((file-name (->string o))
-                 ((file-exists? file-name)))
-                (read-dzn file-name))
-      (parse-dzn o)))
+(define* (generator-parse-file file-name #:key (imports '()) mangle? model)
+  (let* ((command (string-append
+                   "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
+                   " generate -l scm -L -o -"
+                   (if (not mangle?) "" " -M")
+                   (string-join imports " -I " 'prefix)
+                   (if (not model) ""
+                       (string-append " -m " model))
+                   " " file-name)))
+    (with-input-from-string (gulp-pipe command) read)))
 
-(define* (read-ast o #:optional (register identity))
-  (register (read-ast- o)))
-
-(define read-dzn read-ast)
-
-(define (read-ast- o)
+(define (gaiag-parse-file o)
   (let ((file-name (match o
                      ((and ($ <scope.name>) (= .name name)) (find-model-file name))
                      ((t ...) #f)
@@ -79,10 +86,7 @@
   (if (not (string-prefix? prefix string)) string
       (substring string (string-length prefix))))
 
-(define* (parse-dzn string #:optional (register identity))
-  (register (parse-dzn- string)))
-
-(define (parse-dzn- string)
+(define (parse-string string)
   (read-hash-extend #\{ hash-read-string)
   (with-input-from-string string
     (lambda () (dzn-reader (current-input-port) (current-module)))))

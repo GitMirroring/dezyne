@@ -21,15 +21,13 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag commands ls)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
   #:export (parse-opts
             main))
 

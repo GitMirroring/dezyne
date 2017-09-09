@@ -23,8 +23,6 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag dzn)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 match)
@@ -36,16 +34,16 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag ast2om)
   #:use-module (gaiag om)
-
+  #:use-module (gaiag ast)
+  #:use-module (gaiag deprecated om)
   #:use-module (gaiag deprecated animate)
 
   #:use-module (gaiag command-line)
   #:use-module (gaiag indent)
   #:use-module (gaiag json)
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
   #:use-module (gaiag resolve)
   #:use-module (gaiag util)
   #:use-module (gaiag xpand)
@@ -368,6 +366,6 @@
   ((compose
     (ast->dzn)
     ast:resolve
-    ast->om
+    parse->om
     )
    ast))

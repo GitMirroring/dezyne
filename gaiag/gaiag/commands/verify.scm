@@ -22,8 +22,6 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag commands verify)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
@@ -132,5 +130,5 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (file-name (car files)))
-    (assert-generator-parse options file-name)
+    (assert-parse options file-name)
     (verify options file-name)))

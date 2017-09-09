@@ -24,13 +24,7 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag util)
-
-  #:export (
-           display-slots
-           sdisplay
-           star
-           ))
+  #:use-module (gaiag util))
 
 ;; AST printing
 (define (ast port) (display #\* port))

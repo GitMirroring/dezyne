@@ -25,992 +25,293 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag om)
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 curried-definitions)
-  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 poe)
-
-  #:use-module (system foreign)
-  #:use-module (language dezyne location)
-
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag ast2om)
-  #:use-module (gaiag compare)
   #:use-module (gaiag util)
-
   #:use-module (gaiag annotate)
-  #:use-module (gaiag command-line)
-  #:use-module (gaiag macros)
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
 
-  #:export (
-           ast:clr-events
-           ast:direction
-           ast:expression-type
-           ast:in-triggers
-           ast:scope
-           ast:extend-scope
-           ast:model-scope
-           ast:other-direction
-           ast:out-triggers
-           ast:out-triggers-in-events
-           ast:out-triggers-out-events
-           ast:provided
-           ast:provided-in-triggers
-           ast:provided-out-triggers
-           ast:req-events
-           ast:required
-           ast:required-in-triggers
-           ast:required-out-triggers
-           ast:root-scope
-           ast:set-model-scope
-           ast:set-scope
-           ast:valued-in-triggers
-           ast:void-in-triggers
-           ast:out-triggers-valued-in-events
-           ast:out-triggers-void-in-events
+  #:use-module (language dezyne location)
 
-           ast:port*
+  #:export (parse->om))
 
-           om:bind
-           om:bind-other-port
-           om:binding
-           om:bindings
-           om:binding-other
-           om:binding-other-port
-           om:blocking?
-           om:blocking-compound?
-           om:instance-name
-           om:collect
-           om:component
-           om:declarative?
-           om:dir-matches?
-           om:enum
-           om:enums
-           om:event
-           om:events
-           om:expression?
-           om:extern
-           om:filter:p
-           om:find-triggers
-           om:function
-           om:functions
-           om:imperative?
-           om:imported?
-           om:in?
-           om:integers
-           om:instance
-           om:instances
-           om:instance-name
-           om:instance-binding?
-           om:interface-enums
-           om:integer
-           om:interface
-           om:interface-types
-           om:interfaces
-           om:modeling?
-           om:model-with-behaviour
-           om:name
-           om:named
-           om:operator?
-           om:out-formals
-           om:out-or-inout?
-           om:out?
-           om:outer-scope?
-           om:parent
-           om:parse-dzn
-           om:port
-           om:port-event
-           om:ports
-           om:port-bind
-           om:port-bind?
-           om:port-binding?
-           om:public-types
-           om:provided
-           om:provides?
-           om:reply-enums
-           om:reply-types
-           om:required
-           om:requires?
-           om:scope
-           om:scope+name
-           om:scope-join ;; JUNKME
-           om:scope-name
-           om:type
-           om:type-name
-           om:typed?
-           om:types
-           om:variable
-           om:variables
-           om:void?
+(define (ast-> o) (parse->om o))
 
-           .function
-           ))
+(define (ast:model? x)
+  (and (pair? x) (member (car x) '(component import interface system type))))
 
-(define (deprecated . where)
-  (stderr "DEPRECATED:~a\n" where))
+(define (parse->om ast)
+  (or (as ast <ast>)
+      (let* ((ast (if (and (pair? ast)
+                           (not (ast:model? ast))
+                           (not (eq? (car ast) 'root))
+                           (ast:model? (car ast)))
+                      (make <root> #:elements ast)
+                      ast))
+             (ast (if (and (pair? ast) (assoc-ref ast 'locations))
+                      (ast->annotate ast) ast)))
+        (parse->om- ast))))
 
-;;; ast: accessors
+(define (parse->om- ast)
+  (retain-source-properties ast (parse->om-- ast)))
 
-(define-method (ast:argument* (o <arguments>)) (.elements o))
-(define-method (ast:binding* (o <bindings>)) (.elements o))
-(define-method (ast:statement* (o <compound>)) (.elements o))
-(define-method (ast:event* (o <events>)) (.elements o))
-(define-method (ast:field* (o <fields>)) (.elements o))
-(define-method (ast:formal* (o <formals>)) (.elements o))
-(define-method (ast:function* (o <functions>)) (.elements o))
-(define-method (ast:instance* (o <instances>)) (.elements o))
-(define-method (ast:port* (o <ports>)) (.elements o))
-(define-method (ast:port* (o <behaviour>)) ((compose .elements .ports) o))
-(define-method (ast:model* (o <root>)) (.elements o))
-(define-method (ast:trigger* (o <triggers>)) (.elements o))
-(define-method (ast:type* (o <types>)) (.elements o))
-(define-method (ast:variable* (o <variables>)) (.elements o))
-
-(define-method (ast:argument* (o <trigger>)) ((compose ast:argument* .arguments) o))
-(define-method (ast:binding* (o <system>)) ((compose ast:binding* .bindings) o))
-(define-method (ast:function* (o <behaviour>)) ((compose ast:function* .functions) o))
-(define-method (ast:statement* (o <behaviour>)) ((compose ast:statement* .statement) o))
-
-(define-method (ast:expression-type (o <ast>))
+(define (parse->om-- o)
   (match o
-    (($ <bool>) o)
-    (($ <enum>) o)
-    (($ <extern>) o)
-    (($ <int>) o)
-    (($ <void>) o)
-
-    (($ <literal>) (.type o))
-    (($ <var>) ((compose .type .variable) o))
-
-    ((? (is? <bool-expr>)) (make <bool>))
-    ((? (is? <data-expr>)) (make <extern>))
-    ((? (is? <enum-expr>)) (make <enum>))
-    ((? (is? <int-expr>)) (make <int>))
-    ((? (is? <void-expr>)) (make <void>))
-
-    ((and ($ <value>) (= .value o))
-     (match o
-       ((? number?) (make <int>))
-       ((or 'true 'false) (make <bool>))
-       ((? unspecified?) (make <void>))
-       (#f (make <void>))))
-
-    (($ <group>) (= (.expression o)) (ast:expression-type o))
-    ((? unspecified?) (make <void>))
-    (($ <expression>) (make <void>))
-
-    (($ <signature>) (.type o))
-    (($ <event>) ((compose ast:expression-type .signature) o))
-    (($ <trigger>) ((compose ast:expression-type .event) o))
-    ;; FIXME: async port only?
-    (($ <port>) ((compose ast:expression-type car om:events) o))))
-
-(define-method (ast:other-direction (o <event>))
-  (assoc-ref `((in . out)
-               (out . in))
-             (.direction o)))
-
-(define-method (ast:other-direction (o <trigger>))
-  ((compose ast:other-direction .event) o))
-
-(define-method (ast:provided (o <component-model>))
-  (filter om:provides? ((compose .elements .ports) o)))
-
-(define-method (ast:required (o <component-model>))
-  (filter om:requires? ((compose .elements .ports) o)))
-
-(define-method (ast:direction (o <trigger>))
-  (.direction (.event o)))
-
-(define-method (ast:provided-in-triggers (o <component-model>))
-  (append-map (lambda (port)
-                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
-                     (filter om:in? (om:events port))))
-              (filter om:provides? (om:ports o))))
-
-(define-method (ast:req-events (o <component>))
-  (append-map (lambda (port)
-                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
-                     (filter (conjoin om:in? (compose (cut eq? 'req <>) .name)) (om:events port))))
-              (om:ports (.behaviour o))))
-
-(define-method (ast:clr-events (o <component>))
-  (append-map (lambda (port)
-                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
-                     (filter (conjoin om:in? (compose (cut eq? 'clr <>) .name)) (om:events port))))
-              (om:ports (.behaviour o))))
-
-(define-method (ast:required-out-triggers (o <component-model>))
-  (append-map (lambda (port)
-                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
-                     (filter om:out? (om:events port))))
-              (filter om:requires? (om:ports o) )))
-
-(define-method (ast:in-triggers (o <component-model>))
-  (append (ast:provided-in-triggers o) (ast:required-out-triggers o)))
-
-(define-method (ast:provided-out-triggers (o <component-model>))
-  (append-map (lambda (port)
-                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
-                     (filter om:out? (om:events port))))
-              (filter om:provides? (om:ports o))))
-
-(define-method (ast:required-in-triggers (o <component-model>))
-  (append-map (lambda (port)
-                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
-                     (filter om:in? (om:events port))))
-              (filter om:requires? (om:ports o) )))
-
-(define-method (ast:out-triggers (o <component-model>))
-  (append (ast:provided-out-triggers o) (ast:required-in-triggers o)))
-
-(define-method (ast:void-in-triggers (o <component-model>))
-  (filter
-   (lambda (t) (is-a? ((compose .type .signature .event) t) <void>))
-   (ast:in-triggers o)))
-
-(define-method (ast:valued-in-triggers (o <component-model>))
-  (filter
-   (lambda (t) (not (is-a? ((compose .type .signature .event) t) <void>)))
-   (ast:in-triggers o)))
-
-(define-method (trigger-in-event? (o <trigger>))
-  ((compose om:in? .event) o))
+    (('action event) (make <action> #:event event))
 
-(define-method (ast:out-triggers-in-events (o <component-model>))
-  (filter (compose om:in? .event) (ast:out-triggers o)))
+    (('action port event) (make <action> #:port port #:event event))
 
-(define-method (ast:out-triggers-out-events (o <component-model>))
-  (filter (compose om:out? .event) (ast:out-triggers o)))
+    (('action port event arguments) (make <action> #:port port #:event event #:arguments (parse->om- arguments)))
 
-(define-method (ast:out-triggers-void-in-events (o <component-model>))
-  (filter
-   (lambda (t) (is-a? ((compose .type .signature .event) t) <void>))
-   (ast:out-triggers-in-events o)))
+    (('arguments arguments ...) (make <arguments>
+                                  #:elements (map parse->om- arguments)))
 
-(define-method (ast:out-triggers-valued-in-events (o <component-model>))
-  (filter
-   (lambda (t) (not (is-a? ((compose .type .signature .event) t) <void>)))
-   (ast:out-triggers-in-events o)))
+    (('assign variable expression) (make <assign>
+                                     #:variable variable
+                                     #:expression (parse->om- expression)))
 
-;;; deprecated om: interface
+    (('behaviour) (make <behaviour>))
 
-(define* (om:events- o #:optional (predicate? identity))
-  (filter predicate?
-          (match o
-            (($ <interface>) ((compose .elements .events) o))
-            (($ <port>) ((compose om:events .type) o)))))
+    (('behaviour name body ...)
+     (make <behaviour>
+       #:name name
+       #:types (parse->om- (or (null-is-#f (assoc 'types body)) '(types)))
+       #:ports (parse->om- (or (null-is-#f (assoc 'ports body)) '(ports)))
+       #:variables (parse->om- (or (null-is-#f (assoc 'variables body)) '(variables)))
+       #:functions (parse->om- (or (null-is-#f (assoc 'functions body)) '(functions)))
+       #:statement (parse->om- (or (null-is-#f (assoc 'compound body)) '(compound)))))
 
-(define om:events (pure-funcq om:events-))
+    (('bind left right)
+     (make <bind> #:left (parse->om- left) #:right (parse->om- right)))
 
-(define* (om:enums #:optional (model #f))
-  (filter (is? <enum>) (om:types model)))
+    (('binding instance port) (make <binding> #:instance instance #:port port))
 
-(define* (om:externs #:optional (model #f))
-  (filter (is? <extern>) (om:types model)))
+    (('bindings bindings ...)
+     (make <bindings> #:elements (map parse->om- bindings)))
 
-(define* (om:integers #:optional (model #f))
-  (filter (is? <int>) (om:types model)))
-
-
-
-(define (om:bindings o)
-  (match o
-    (($ <system>) ((compose .elements .bindings) o))))
-
-(define (om:functions model)
-  ((compose .elements .functions .behaviour) model))
-
-(define (om:instances o)
-  (match o
-    (($ <interface>) '())
-    (($ <foreign>) o)
-    (($ <component>) o)
-    ((? (is? <system>)) ((compose .elements .instances) o))))
-
-(define (om:ports- o)
-  (match o
-    (($ <interface>) '())
-    ((? (is? <component-model>)) ((compose .elements .ports) o))
-    (($ <behaviour>) ((compose .elements .ports) o))))
-
-(define om:ports (pure-funcq om:ports-))
-
-(define* (om:types #:optional (model #f))
-  (append
-   (match model
-     (($ <root> (models ...)) (filter (is? <type>) models))
-     (($ <behaviour> b types) (.elements types))
-     (($ <interface> name types events ($ <behaviour> b btypes)) (append (.elements btypes) (.elements types)))
-     (($ <component> name ports ($ <behaviour> b btypes))
-      (append (.elements btypes) (om:interface-types model)))
-     ((? (is? <component-model>) name ports) (om:interface-types model))
-     (($ <import> name) '())
-     (#f '())
-     ((? unspecified?) '()))
-   (globals)))
-
-(define-method (om:variables (o <model>))
-  (match o
-    (($ <system>) '())
-    (($ <foreign>) '())
-    ((= .behaviour #f) '())
-    (_ ((compose .elements .variables .behaviour) o))))
-
-
-
-
-(define (om:provided o)
-  (filter om:provides? (om:ports o)))
-
-(define (om:required o)
-  (filter om:requires? (om:ports o)))
-
-
-(define (om:interface-enums o)
-  (match o
-    (($ <interface>) (om:filter (is? <enum>) (.types o)))
-    (($ <port>) (om:enums o))
-    ((? (is? <component-model>))
-     (append-map om:interface-enums ((compose .elements .ports) o)))))
-
-
-;;; SINGLE-LOOKUP
-
-;; FIXME -- whut?
-;; (define (om:event model o)
-;;   (find (om:named o) (om:events model)))
-
-(define (om:enum model identifier)
-  (as ((om:type model) identifier) <enum>))
-(define (om:extern model identifier)
-  (as ((om:type model) identifier) <extern>))
-(define (om:integer model identifier)
-  (as ((om:type model) identifier) <int>))
-
-(define (om:event o trigger)
-  (match (cons o trigger)
-    ((($ <port>) . (? symbol?))
-     (find (lambda (x) (eq? (.name x) trigger)) (om:events o)))
-    ((($ <interface>) . (? symbol?))
-     (find (lambda (x) (eq? (.name x) trigger)) (.elements (.events o))))
-    ((($ <interface>)  . (? (is? <trigger>)))
-     (if (not (as (.event trigger) <event>)) (om:event o (.event trigger))
-         (.event trigger)))
-    ((($ <component>)  . (? (is? <trigger>)))
-     (if (not (as (.event trigger) <event>)) (om:event (om:interface ((.port o) trigger)) (.event trigger))
-         (.event trigger)))
-    (_ #f)))
-
-(define (om:function model o)
-  (find (om:named o) (om:functions model)))
-
-(define (om:instance model o)
-  (match o
-    ((? symbol?)
-     (find (lambda (x) ;;(stderr "om:instance: ~a; ~a\n" o x)
-                   (eq? (.name x) o)) ((compose .elements .instances) model)))
-    (($ <binding>) (or (.instance o)
-                       (.type ((.port model) o))))
-    (($ <bind>) (om:instance model (om:instance-binding? o)))
-    (($ <port>) (om:instance model (om:instance-binding? (om:port-bind model o))))
-    ((? boolean?) #f)))
-
-(define (om:port-bind? bind)
-  (and (om:port-binding? bind)
-       bind))
-
-(define (om:port-binding? bind)
-  (or (and (not (.instance (.left bind)))
-           (.left bind))
-      (and (not (.instance (.right bind)))
-           (.right bind))))
-
-(define (om:instance-binding? bind)
-  (or (and (not (.instance (.left bind)))
-           (.right bind))
-      (and (not (.instance (.right bind)))
-           (.left bind))))
-
-
-(define (om:port-bind system port)
-  (find (lambda (bind) (and=> (om:port-bind? bind)
-                              (lambda (b)
-				(om:equal? (.port (om:port-binding? b)) port))))
-        ((compose .elements .bindings) system)))
-
-(define (om:bind system o)
-  (let* ((binds ((compose .elements .bindings) system)))
-    (match o
-      ((? symbol?) ;; FIXME: port need not be unique
-       (deprecated (current-source-location))
-       (find (lambda (bind) (or (om:equal? (.port.name (.left bind)) o)
-                                (om:equal? (.port.name (.right bind)) o)))
-           binds))
-      (($ <binding> instance port-name)
-       (find (lambda (bind)
-               (or (and (eq? (.instance (.left bind)) instance)
-                                     (eq? (.port.name (.left bind)) port-name))
-                                (and (eq? (.instance (.right bind)) instance)
-                                     (eq? (.port.name (.right bind)) port-name))))
-             binds)))))
-
-(define (om:bind-other-port bind port-name) ;; FIXME: port need not be unique
-  (deprecated (current-source-location))
-  (if (eq? (.port.name (.left bind)) port-name) (.right bind) (.left bind)))
-
-(define (om:binding system o)
-  (match o
-    ((? symbol?)
-     (deprecated (current-source-location))
-     (let ((bind (om:bind system o)))
-       (if (eq? (.port.name (.left bind)) o) (.left bind) (.right bind))))
-    (($ <binding> instance port-name)
-     (let ((bind (om:bind system o)))
-       (and bind
-            (if (and (eq? (.instance (.left bind)) instance)
-                     (eq? (.port.name (.left bind)) port-name)) (.left bind)
-                     (.right bind)))))))
-
-(define (om:binding-other-port system port) ;; FIXME: port need not be unique
-  (deprecated (current-source-location))
-  (let* ((bind (om:bind system port)))
-    (om:bind-other-port bind port)))
-
-(define (om:binding-other system binding)
-  (let ((bind (om:bind system binding)))
-    (if (and (eq? (.instance (.left bind)) (.instance binding))
-             (eq? (.port.name (.left bind)) (.port.name binding)))
-        (.right bind)
-        (.left bind))))
-
-(define (om:instance-name bind)
-  (or (.instance (.left bind)) (.instance (.right bind))))
-
-(define* (om:component system #:optional o)
-  (match o
-    (#f (match system
-          (($ <foreign>) system)
-          (($ <component>) system)
-          (($ <root>) (om:find (disjoin (is? <component>) (is? <foreign>)) system))
-          (($ <scope.name>) ;(cached-model system)
-           (find (lambda (x) ;;(stderr "KANARIE: ~a ~a\n" system (.name x))
-                         (om:equal? system (.name x))) (filter (negate (is? <data>)) (.elements (car (ast:scope-root))))))
-          (_ #f)))
-    ((? symbol?) (om:component system (om:instance system o)))
-    (($ <binding> #f port-name)
-     ;;#f
-     ;;(om:component system (om:binding-other-port system port))
-     (let* ((bind (om:bind system port-name))
-            (instance (om:instance-name bind)))
-       (om:component system instance)))
-    (($ <binding> instance port-name) (om:component system instance))
-    (($ <bind>) (om:component system (om:instance-name o)))
-    (($ <instance>) (.type o))
-    (($ <port>) (om:interface (.type o)))))
-
-(define (om:interface o)
-  (match o
-    (($ <port>) (om:interface (.type o)))
-    (($ <interface>) o)
-    ((? (is? <model>)) (om:interface (om:port o)))
-    (($ <scope.name>) (find (om:named o) ((compose .elements ast:root-scope))))
-    (($ <root>) (om:find (is? <interface>) o))
-    ((h t ...) (find (is? <interface>) o))))
-
-(define-method (behaviour-ports (o <component-model>))
-  (if (and (is-a? o <component>) (.behaviour o))
-      ((compose .elements .ports .behaviour) o)
-      '()))
-
-(define* (om:port model #:optional (o #f))
-  (match o
-    (($ <binding>)
-     (let* ((port (.port o)))
-       (or
-        (and-let* ((name (.name (.instance o)))
-                   (instance (om:instance model name))
-                   (type (and=> instance .type))
-                   (component type))
-                  (om:port component port))
-        (om:port model port))))
-    ('* (make <port> #:name '* #:direction 'requires))
-    (_ (find (if o (om:named o)
-                 (lambda (x) (eq? (.direction x) 'provides)))
-             (append (.elements (.ports model))
-                     (behaviour-ports model))))))
-
-(define (om:variable model o)
-  (find (om:named o) (om:variables model)))
-
-(define (unspecified? x) (eq? x *unspecified*))
-
-;;; TYPES
-
-(define (om:type-name o)
-  (match o
-    (($ <enum>) 'enum)
-    (($ <extern>) ((->symbol-join '_) (om:scope+name o))) ;; FIXME: -> 'data
-    (($ <int>) 'int)
-    (($ <bool>) 'bool)
-    (($ <void>) 'void)
-    ;; FIXME: move to resolver
-    (($ <type> 'bool) 'bool)
-    (($ <type> 'void) 'void)))
-
-(define ((om:type model) o)
-  (match o
-    ((? symbol?) (find (om:named (make <scope.name> #:scope (om:scope+name model) #:name o)) (om:types model)))
-
-    (($ <bool>) o)
-    (($ <enum>) o)
-    (($ <data>) o)
-    (($ <extern>) o)
-    (($ <void>) o)
-    (($ <int>) o)
-
-    (($ <type> 'bool) (make <bool>))
-    (($ <type> 'void) (make <void>))
-    ((and ($ <type>) (= .name name))
-     (or (find (om:named name) (om:types model))
-         (find (om:scoped (om:scope+name model) name) (om:types))))
-    (($ <variable> name type expression) ((om:type model) type))
-    (($ <formal> name type) ((om:type model) type))
-    (($ <formal> name type direction) ((om:type model) type))))
-
-(define ((om:named name) ast)
-;  (stderr "\nom:named[~a]: ~a" name ast)
-  (match name
-    ((? symbol?) (or (eq? name (.name ast)) ((om:named (make <scope.name> #:name name)) ast)))
-    (_ (om:equal? (.name ast) name))))
-
-(define ((om:scoped scope name) ast)
-  (let ((r ((om:scoped- scope name) ast)))
-    ;;(stderr "\nom:scoped[~a, ~a]: ~a ==> ~a\n" scope name ast r)
-    r))
-
-(define ((om:scoped- scope name) ast)
-  (if (null? (om:scope name)) (eq? (om:name ast) (om:name name))
-      (equal? (append scope (om:scope+name ast)) (om:scope+name name))))
-
-;;; NAME/NAMESPACE/SCOPE
-(define-method (om:scope+name o)
-  (match o
-    (($ <bool>) '(bool))
-    (($ <void>) '(void))
-    (($ <event>) ((compose om:scope+name .signature) o))
-    (($ <formal>) ((compose om:scope+name .type) o))
-    (($ <instance>) (om:scope+name (.type.name o)))
-    (($ <literal>) (append (om:scope+name (.type o)) (list (.field o))))
-    (($ <port>) (om:scope+name (.type.name o)))
-    (($ <scope.name>) (append (.scope o) (list (.name o))))
-    (($ <signature>) ((compose om:scope+name .type) o))
-    (($ <trigger>) ((compose om:scope+name .event) o))
-    ((? (is? <scoped>)) ((compose om:scope+name .name) o))))
-
-(define* ((om:scope-name #:optional (infix '_)) o)
-  (let ((infix (if (symbol? infix) infix
-                   (string->symbol infix))))
-    ((->symbol-join infix) (om:scope+name o))))
-
-(define (om:outer-scope? model o) ;; FIXME
-  (let ((model-scope (om:scope+name model)))
-    (and
-     (>1 (length o)) ;; huh?
-     (not (and
-           (>= (length o) (length model-scope))
-           (equal? model-scope (list-head o (length model-scope))))))))
-
-(define* ((om:scope-join #:optional (model #f) (infix '_)) o)
-  (define (global-scope?)
-    (and model (>1 (length o))
-         (not (eq? ((compose car om:scope+name) model) (car o)))))
-  (let* ((infix (if (symbol? infix) infix
-		    (string->symbol infix)))
-         (scope (if (not model) o
-                    (if (global-scope?) (cons null-symbol o)
-                        (drop-prefix (om:scope+name model) o)))))
-    ((->symbol-join infix) scope)))
-
-(define (om:name o)
-  ((compose last om:scope+name) o))
-
-(define (om:scope o)
-  (drop-right (om:scope+name o) 1))
-
-;;; UTILITIES
-
-(define (om:blocking? o)
-  (match o
-    (($ <component>)
-     (and-let* ((behaviour (.behaviour o))
-                (blocking ((om:collect <blocking>) behaviour)))
-       (pair? blocking)))
-    (_ #f)))
-
-(define (om:blocking-compound? o)
-  (match o
-    (($ <component>)
-     (and-let* ((behaviour (.behaviour o))
-                (blocking ((om:collect <blocking-compound>) behaviour)))
-       (pair? blocking)))
-    (_ #f)))
-
-(define ((collect predicate) o)
-  (match o
-    ((? (compose null-is-#f predicate)) (list o))
-    (($ <compound> (statements ...))
-     (filter identity (apply append (map (collect predicate) statements))))
-    (($ <blocking> s) (filter identity ((collect predicate) s)))
-    (($ <guard> e s) (filter identity ((collect predicate) s)))
-    (($ <on> t s) (filter identity ((collect predicate) s)))
-    (($ <if> e t f) (append (filter identity ((collect predicate) t))
-                            (filter identity ((collect predicate) f))))
-    ;; FIXME: recurse through whole AST
-    (($ <interface> name types events behaviour) (filter identity ((collect predicate) behaviour)))
-    (($ <component> name ports behaviour) (filter identity ((collect predicate) behaviour)))
-    (($ <behaviour> name types ports variables functions statement) (filter identity ((collect predicate) statement)))
-    ((h t ...)
-     (filter identity (apply append (map (collect predicate) o))))
-    (_ '())))
-
-(define ((om:collect x) o)
-  (match x
-    ((? procedure?) ((collect x) o))
-    (_ ((collect (is? x)) o))))
-
-(define ((om:filter:p x) o)
-  (let ((filter (if (is-a? o <ast>) om:filter filter)))
-    (match x
-      (symbol? (filter (is? x) o))
-      (procedure? (filter x o)))))
-
-(define* (om:find-triggers ast #:optional (found '()))
-  (match ast
-    ((or ($ <interface>) ($ <component>))
-     (or (and=> (.behaviour ast) om:find-triggers) '()))
-    (($ <behaviour>) (or (and=> (.statement ast) om:find-triggers) '()))
-    (($ <compound> (statements ...))
-     (delete-duplicates (sort (append (apply append (map om:find-triggers statements))) om:<)))
-    (($ <blocking>) (om:find-triggers (.statement ast) found))
-    (($ <on>) (om:find-triggers (.triggers ast)))
-    (($ <triggers> (triggers ...)) triggers)
-    (($ <guard>) (om:find-triggers (.statement ast) found))
-    (($ <system>) (append-map om:find-triggers (map (lambda (i) (om:component ast i)) (om:instances ast))))
-    (_ '())))
-
-(define (om:interface-types o)
-  ;;(stderr "om:interface-types o=~a\n" o)
-  (match o
-    (($ <interface>) (om:public-types o))
-    (($ <port>) ((compose om:public-types .type) o))
-    ((? (is? <model>)) (append-map om:interface-types (om:ports o)))))
-
-(define (om:public-types o)
-  ;;(stderr "PUBLIC[~a]: ~a\n" (.name o) ((compose .elements .types) o))
-  (match o
-    ((? (is? <interface>)) ((compose .elements .types) o))
-    (_ '())))
-
-(define (om:reply-enums o)
-  (filter (is? <enum>) (om:reply-types o)))
-
-(define (om:reply-types o)
-  (match o
-    (($ <interface>)
-     (let* ((events (filter om:typed? (om:events o)))
-            (types (delete-duplicates (map (compose .type .signature) events))))
-       (filter-map (om:type o) types)))
-    ((or ($ <component>) ($ <foreign>))
-     (delete-duplicates (append-map (compose om:reply-types .type) ((compose .elements .ports) o))))
-    (_ '())))
-
-(define (om:out-formals o)
-  (match o
-    (($ <interface>)
-     (filter om:out-or-inout? (append-map (compose .elements .formals .signature) (om:events o))))
-    (_ '())))
-
-(define* (om:typed? o #:optional (trigger #f))
-  (if trigger
-      (om:typed? (om:event o trigger))
-      (match o
-        (($ <event>)
-         (let ((type ((compose .type .signature) o)))
-           (not (is-a? type <void>))))
-        ((? (is? <modeling-event>)) #f)
-        ((? boolean?) #f))))
-
-(define (om:declarative? o)
-  (or (is-a? o <declarative>)
-      (and (is-a? o <compound>)
-                    (>0 (length (.elements o)))
-                    (om:declarative? (car (.elements o))))
-      (and (pair? o)
-           (om:declarative? (car o)))))
-
-(define (om:imperative? o)
-  (and (is-a? o <statement>)
-       (not (om:declarative? o))))
-
-;; JUNK ME
-(define (om:models-with-behaviour o)
-  (filter .behaviour (append (om:filter (is? <component>) o)
-                             (om:filter (is? <interface>) o))))
-
-(define (om:model-with-behaviour o)
-  (and-let* ((models (null-is-#f (om:models-with-behaviour o))))
-            (car models)))
-
-(define (om:in? o)
-  (match o
-    ((? (is? <event>)) (eq? (.direction o) 'in))
-    ((? (is? <modeling-event>)) #t)
-    (($ <formal>) (or (eq? (.direction o) 'in) (not (.direction o))))
-    (($ <trigger>) #t)))
-
-(define (om:out? o)
-  (match o
-    (($ <event>) (eq? (.direction o) 'out))
-    ((? (is? <modeling-event>)) #f)
-    (($ <formal>) (eq? (.direction o) 'out))
-    (($ <trigger>) #f)))
-
-(define (om:out-or-inout? o)
-  (match o
-    (? (is? <formal>)
-     (or (eq? (.direction o) 'out)
-         (eq? (.direction o) 'inout)))))
-
-(define (om:provides? o)
-  (eq? (.direction o) 'provides))
-
-(define (om:requires? o)
-  (eq? (.direction o) 'requires))
-
-(define ((om:dir-matches? port) event)
-  (or (and (eq? (.direction port) 'provides)
-           (eq? (.direction event) 'in))
-      (and (eq? (.direction port) 'requires)
-           (eq? (.direction event) 'out))))
-
-(define om:binary-operators
-  '(
-    <
-    <=
-    >
-    >=
-    +
-    -
-    and
-    or
-    ==
-    !=
-    ))
-
-(define om:unary-operators
-  '(
-    group
-    !
-    ))
-
-(define om:operators
-  (append om:binary-operators om:unary-operators))
-
-(define (om:operator? o)
-  (memq o om:operators))
-
-(define (om:expression? o)
-  (match o
-    (($ <expression>) o)
-    (((? om:operator?) h t ...) o)
-    (_ #f)))
-
-(define-method (om:modeling? (o <trigger>))
-  (is-a? (.event o) <modeling-event>))
-
-(define (om:void? model o)
-  (and (not (om:modeling? o)) (not (om:typed? model o))))
-
-(define (om:id o) ((compose pointer-address scm->pointer) o))
-
-(define (om:parent o t)
-  (match o
-    (($ <system>) #f)
-    (($ <foreign>) #f)
-    ((? (is? <model>))
-     (om:parent ((compose .statement .behaviour) o) t))
-    (($ <blocking>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
-                        (om:parent (.statement o) t)))
-    (($ <guard>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
-                     (and (eq? (om:id (.expression o)) (om:id t)) o)
-                     (om:parent (.statement o) t)))
-    (($ <on>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
-                  (om:parent (.statement o) t)))
-    ((? (is? <ast-list>))
-     (if (member (om:id t) (map om:id (.elements o)))
-         o
-         (let loop ((elements (.elements o)))
-           (if (null? elements)
-               #f
-               (let ((parent (om:parent (car elements) t)))
-                 (if parent parent
-                     (loop (cdr elements))))))))
-    (_ #f)))
-
-(define (globals)
-  (filter (is? <type>) ((compose .elements ast:root-scope))))
-
-;;;; OM handling
-
-(define (basename- o)
-  (string->symbol (basename (symbol->string o))))
-
-(define (in-file? o file)
-  (let ((file (if (string? file) (string->symbol file) file)))
-    (and-let* ((model-file (source-file o))
-               (model-file (if (string? model-file) (string->symbol model-file) model-file)))
-              (eq? (basename- file) (basename- model-file)))))
-
-(define (om:imported? o)
-  (if (assoc 'imported? (source-properties o))
-      (source-property o 'imported?)
-      (let ((files (command-line:get '() '(#f))))
-        (and (pair? files)
-             (let ((file (car files)))
-               (cond
-                ((string= file "-") #f)
-                ((string= file "/dev/stdin") #f)
-                ((string-suffix? ".scm" file) #f)
-                (else (not (in-file? o file)))))))))
-
-;;; MOVED FROM GOOPS
-
-(define (symbol-join ls)
-  (reduce (lambda (a b) (symbol-append a '. b)) (string->symbol "") ls))
-
-(define-method (.scope+name (o <top>))
-  (match o (('dotted scope ... name) (symbol-join (cdr o)))))
-
-(define-method (.scope+name (o <scope.name>))
-  (symbol-join (append (.scope o) (list (.name o)))))
-
-(define (name-resolve root class o)
-  (cond
-   ((or (eq? <interface> class) (eq? <system> class) (eq? <component> class) (eq? <foreign> class))
-    (find (lambda (m)
-            (and (is-a? m class)
-                 (equal? o (.scope+name (.name m)))))
-          (.elements root)))
-   ((eq? <port> class)
-    (find (lambda (m)
-            (equal? o (.name m)))
-          (append ((compose .elements .ports) root)
-                  (behaviour-ports root))))
-   ((eq? <function> class)
-    (find (lambda (m)
-             (equal? o (.name m)))
-          ((compose .elements .functions .behaviour) root)))))
-
-(define name-resolve (pure-funcq name-resolve))
-
-(define ast:scope (make-parameter 'error-ast:scope-not-set))
-
-(define-syntax ast:set-scope
-  (syntax-rules ()
-    ((_ o e1 e2 ...)
-     (parameterize ((ast:scope (list o))) e1 e2 ...))))
-
-(define-syntax ast:extend-scope
-  (syntax-rules ()
-    ((_ o e1 e2 ...)
-     (parameterize ((ast:scope (cons o (ast:scope)))) e1 e2 ...))))
-
-(define-syntax ast:set-model-scope
-  (syntax-rules ()
-    ((_ o e1 e2 ...)
-     (let* ((prev (ast:scope-model))
-            (parent (if prev (cdr prev) (ast:scope-root))))
-       (parameterize ((ast:scope (cons o parent))) e1 e2 ...)))))
-
-(define (ast:scope-root)
-  (let ((scope (ast:scope)))
-    (find-tail (lambda (e)
-            (if (is-a? e <ast>)
-                (is-a? e <root>)
-                (eq? (car e) 'root)))
-          scope)))
-
-(define (ast:scope-model)
-  (let ((scope (ast:scope)))
-    (find-tail (lambda (e)
-                 (if (is-a? e <ast>)
-                     (is-a? e <model>)
-                     (eq? (car e) 'model)))
-               scope)))
-
-(define (ast:root-scope) (car (ast:scope-root)))
-
-(define (ast:model-scope) (car (ast:scope-model)))
-
-(define-public (compose-root . f)
-  (lambda (o)
-    (fold-right
-     (lambda (elem previous)
-       (ast:set-scope previous (elem previous))) o f)))
-
-(define-method (.type (o <port>))
-  (name-resolve (car (ast:scope-root)) <interface> (.scope+name (.type@ o))))
-
-(define-method (.type (o <instance>))
-  (or (name-resolve (car (ast:scope-root)) <system> (.scope+name (.type@ o)))
-      (name-resolve (car (ast:scope-root)) <component> (.scope+name (.type@ o)))
-      (name-resolve (car (ast:scope-root)) <foreign> (.scope+name (.type@ o)))))
-
-(define-method (contains? container (o <ast>))
-  (and (is-a? container <ast>)
-       (or (eq? container o)
-           (any (lambda (e) (contains? e o)) (om:children container)))))
-
-(define-method (.port (model <component-model>) (o <trigger>))
-  (and (.port@ o) (name-resolve model <port> (.port@ o))))
-
-(define-method (.port (model <component-model>) (o <action>))
-  (and (.port@ o) (name-resolve model <port> (.port@ o))))
-
-(define-method (.port (o <trigger>))
-  (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
-
-(define-method (.port (o <action>))
-  (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
-
-(define-method (.port (o <reply>))
-  (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
-
-(define-method (.port (o <binding>))
-  (if (.instance o)
-      (name-resolve (.type (.instance o)) <port> (.port@ o))
-      (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
-
-(define-method (.function (model <model>) (o <call>))
-  (and (.function@ o) (name-resolve model <function> (.function@ o))))
-
-(define-method (.function (o <call>))
-  (and (.function@ o) (name-resolve (car (ast:scope-model)) <function> (.function@ o))))
-
-(define (ast-> ast)
-  ((compose
-    om->list
-    ast->om
-    ast->annotate
-    ) ast))
+    (('blocking statement) (make <blocking> #:statement (parse->om- statement)))
+
+    (('call function) (make <call> #:function function))
+
+    (('call function arguments)
+     (make <call>
+       #:function function
+       #:arguments (parse->om- (or (null-is-#f arguments) '(arguments)))))
+
+    (('call function arguments last?)
+     (make <call>
+       #:function function
+       #:arguments (parse->om- (or (null-is-#f arguments) '(arguments)))
+       #:last? last?))
+
+    (('foreign name body ...)
+     (and=> (assoc 'imported body) (mark-imported o))
+     (make <foreign>
+       #:name (parse->om- name)
+       #:ports (parse->om- (or (null-is-#f (assoc 'ports body)) '(ports)))))
+
+    (('component name body ...)
+     (and=> (assoc 'imported body) (mark-imported o))
+      (make <component>
+        #:name (parse->om- name)
+        #:ports (parse->om- (or (null-is-#f (assoc 'ports body)) '(ports)))
+        #:behaviour (and=> (null-is-#f (assoc 'behaviour body)) parse->om-)))
+
+    (('compound statements ...)
+     (make <compound> #:elements (map parse->om- statements)))
+
+    (('data value) (make <data> #:value value))
+
+    (('enum name fields) (make <enum> #:name (parse->om- name) #:fields (parse->om- fields)))
+
+    (('extern name value)
+     (make <extern> #:name (parse->om- name) #:value value))
+
+    (('event name signature direction)
+     (make <event>
+       #:name name
+       #:signature (parse->om- signature)
+       #:direction direction))
+
+    (('events events ...) (make <events> #:elements (map parse->om- events)))
+
+    (('field identifier field) (make <field> #:variable identifier #:field field))
+
+    (('fields fields ...) (make <fields> #:elements fields))
+
+    (('function name signature recursive? statement)
+     (make <function>
+       #:name name
+       #:signature (parse->om- signature)
+       #:recursive recursive?
+       #:statement (parse->om- statement)))
+
+    (('functions functions ...)
+     (make <functions> #:elements (map parse->om- functions)))
+
+    (('guard expression statement)
+     (make <guard>
+       #:expression (parse->om- expression)
+       #:statement (parse->om- statement)))
+
+    (('if expression then)
+     (make <if>
+       #:expression (parse->om- expression)
+       #:then (parse->om- then)))
+
+    (('if expression then else)
+     (make <if>
+       #:expression (parse->om- expression)
+       #:then (parse->om- then)
+       #:else (parse->om- else)))
+
+    (('illegal) (make <illegal>))
+
+    (('import name) (make <import> #:name (parse->om- name)))
+
+    (('int name range)
+     (make <int> #:name (parse->om- name) #:range (parse->om- range)))
+
+    (('instance name type) (make <instance> #:name name #:type (parse->om- type)))
+
+    (('instances instances ...)
+     (make <instances> #:elements (map parse->om- instances)))
+
+    (('interface name types events #f)
+     (make <interface>
+       #:name (parse->om- name)
+       #:types (parse->om- types)
+       #:events (parse->om- events)
+       #:behaviour #f))
+
+    (('interface name body ...)
+     (and=> (assoc 'imported body) (mark-imported o))
+     (make <interface>
+       #:name (parse->om- name)
+       #:types (parse->om- (or (null-is-#f (assoc 'types body)) '(types)))
+       #:events (parse->om- (or (null-is-#f (assoc 'events body)) '(events)))
+       #:behaviour (and=> (null-is-#f (assoc 'behaviour body)) parse->om-)))
+
+    (('literal name field) (make <literal> #:type (parse->om- name) #:field field))
+
+    (('dotted name ...) o)
+
+    (('scope.name scope name) (make <scope.name> #:scope scope #:name name))
+
+    (('on triggers statement)
+     (make <on> #:triggers (parse->om- triggers) #:statement (parse->om- statement)))
+
+    (('otherwise) (make <otherwise> #:value 'otherwise))
+
+    (('otherwise value) (make <otherwise> #:value value))
+
+    (('formal name #f #f)
+     (make <formal> #:name name))
+
+    (('formal-binding name #f #f variable)
+     (make <formal-binding> #:name name #:variable variable))
+
+    (('formal name type)
+     (make <formal> #:name name #:type (parse->om- type)))
+
+    (('formal name type direction)
+     (make <formal> #:name name #:type (parse->om- type) #:direction direction))
+
+    (('formals formals ...)
+     (make <formals> #:elements (map parse->om- formals)))
+
+    (('port name type direction external-injected ...)
+     (make <port>
+       #:name name
+       #:type (parse->om- type)
+       #:direction direction
+       #:external (find (lambda (x) (eq? x 'external)) external-injected)
+       #:injected (find (lambda (x) (eq? x 'injected)) external-injected)))
+
+    (('ports ports ...) (make <ports> #:elements (map parse->om- ports)))
+
+    (('range from to) (make <range> #:from from #:to to))
+
+    (('reply expression) (make <reply> #:expression (parse->om- expression)))
+
+    (('reply expression port) (make <reply> #:expression (parse->om- expression) #:port port))
+
+    (('return) (make <return>))
+
+    (('return expression) (make <return> #:expression (parse->om- expression)))
+
+    (('root elements ...) (make <root> #:elements (map parse->om- elements)))
+
+    (('signature type formals)
+     (make <signature> #:type (parse->om- type) #:formals (parse->om- formals)))
+
+    (('signature type) (make <signature> #:type (parse->om- type)))
+
+    (('system name ports instances bindings)
+     (and=> (assoc 'imported (cddr o)) (mark-imported o))
+     (make <system>
+        #:name (parse->om- name)
+        #:ports (parse->om- ports)
+        #:instances (parse->om- instances)
+        #:bindings (parse->om- bindings)))
+
+    (('trigger port event) (make <trigger> #:port port #:event event))
+
+    (('trigger port event arguments)
+     (make <trigger>
+       #:port port
+       #:event event
+       #:formals (parse->om- arguments)))
+
+    (('triggers triggers ...)
+     (make <triggers> #:elements (map parse->om- triggers)))
+
+    (('type name) (make <type> #:name (parse->om- name)))
+
+    (('types types ...) (make <types> #:elements (map parse->om- types)))
+
+    (('var name) (make <var> #:variable name))
+
+    (('variable name type)
+     (make <variable> #:name name #:type (parse->om- type) #:expression (make <expression>)))
+
+    (('variable name type expression)
+     (make <variable> #:name name #:type (parse->om- type) #:expression (parse->om- expression)))
+
+    (('variables variables ...)
+     (make <variables> #:elements (map parse->om- variables)))
+
+    (('<- x y) (list '<- (parse->om- x) (parse->om- y)))
+
+    ((or 'bool 'void) o)
+
+    (('expression) (make <value>))
+    (('expression expression) (parse->om- expression))
+    (('! expression) (make <not> #:expression (parse->om- expression)))
+    (('group expression) (make <group> #:expression (parse->om- expression)))
+
+    (('+ left right) (make <plus> #:left (parse->om- left) #:right (parse->om- right)))
+    (('- left right) (make <minus> #:left (parse->om- left) #:right (parse->om- right)))
+    (('< left right) (make <less> #:left (parse->om- left) #:right (parse->om- right)))
+    (('<= left right) (make <less-equal> #:left (parse->om- left) #:right (parse->om- right)))
+    (('== left right) (make <equal> #:left (parse->om- left) #:right (parse->om- right)))
+    (('!= left right) (make <not-equal> #:left (parse->om- left) #:right (parse->om- right)))
+    (('> left right) (make <greater> #:left (parse->om- left) #:right (parse->om- right)))
+    (('>= left right) (make <greater-equal> #:left (parse->om- left) #:right (parse->om- right)))
+    (('and left right) (make <and> #:left (parse->om- left) #:right (parse->om- right)))
+    (('or left right) (make <or> #:left (parse->om- left) #:right (parse->om- right)))
+    ;;(('expression (and (or (? number?) 'false 'true) (get! value))) (make <value> #:value (value)))
+    ((? number?) (make <value> #:value o))
+    ((? symbol?) (make <value> #:value o))
+
+    ((? (is? <ast>)) o)))
+
+(define ((mark-imported o) entry)
+  (set-source-property! o 'imported? (cdr entry)))

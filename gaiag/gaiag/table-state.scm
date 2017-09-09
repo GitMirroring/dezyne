@@ -23,8 +23,6 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag table-state)
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 curried-definitions)
@@ -38,8 +36,9 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag ast2om)
   #:use-module (gaiag om)
+  #:use-module (gaiag deprecated om)
+  #:use-module (gaiag ast)
   #:use-module (gaiag compare)
   #:use-module (gaiag util)
 
@@ -51,7 +50,7 @@
   #:use-module (gaiag norm)
   #:use-module (gaiag norm-event)
   #:use-module (gaiag norm-state)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
   #:use-module (gaiag resolve)
 
   #:export (ast->
@@ -324,7 +323,7 @@
   ((compose-root
     (table table-state)
     ast:resolve
-    ast->om)
+    parse->om)
    ast))
 
 (define (ast-> ast)

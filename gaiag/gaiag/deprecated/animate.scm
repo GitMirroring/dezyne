@@ -48,7 +48,7 @@
   #:use-module (gaiag misc)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag om)
+  #:use-module (gaiag deprecated om)
   #:use-module (gaiag resolve)
   #:use-module (gaiag util)
   #:use-module (gaiag xpand)

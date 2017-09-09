@@ -36,14 +36,15 @@
   #:use-module (gaiag misc)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (gaiag ast2om)
+  #:use-module (gaiag deprecated om)
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
+  #:use-module (gaiag ast)
   #:use-module (gaiag compare)
   #:use-module (gaiag util)
 
   #:use-module (gaiag norm)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
   #:use-module (gaiag resolve)
 
   #:export (
@@ -422,8 +423,8 @@
   (define (pair-eq? p) (eq? (car p) (cdr p)))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
-  (define (extern? identifier) (and=> (var? identifier) (cut om:extern model <>)))
-  (define (extern-type? type) (om:extern model type))
+  (define (extern? identifier) (and=> (var? identifier) (cut as <> <extern>)))
+  (define (extern-type? type) (as type <extern>))
 
   (define ((rename mapping) o)
     ;;(stderr "rename o=~a\n" o)
@@ -556,5 +557,5 @@
     ;;((@ (gaiag dzn) ast->dzn))
     code-norm-event
     ast:resolve
-    ast->om
+    parse->om
     ) ast))

@@ -22,8 +22,6 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag systems)
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 getopt-long)
@@ -31,13 +29,14 @@
   #:use-module (ice-9 match)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (gaiag ast2om)
+  #:use-module (gaiag deprecated om)
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
+  #:use-module (gaiag ast)
   #:use-module (gaiag util)
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
   #:use-module (gaiag resolve))
 
 (define (om->systems om)
@@ -49,6 +48,6 @@
       (exit (or (not name) (pair? systems))))))
 
 (define (ast-> ast)
-  (let ((om ((compose ast:resolve ast->om) ast)))
+  (let ((om ((compose ast:resolve parse->om) ast)))
     (om->systems om))
   "")

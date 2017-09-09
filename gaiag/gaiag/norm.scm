@@ -40,10 +40,11 @@
   #:use-module (gaiag compare)
   #:use-module (gaiag util)
 
-  #:use-module (gaiag om)
+  #:use-module (gaiag ast)
+  #:use-module (gaiag deprecated om)
 
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
   #:use-module (gaiag resolve)
 
   #:export (

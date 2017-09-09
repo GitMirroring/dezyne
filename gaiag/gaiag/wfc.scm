@@ -36,11 +36,12 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag ast2om)
   #:use-module (gaiag om)
+  #:use-module (gaiag deprecated om)
+  #:use-module (gaiag ast)
 
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
   #:use-module (gaiag resolve)
   #:use-module (gaiag util)
 
@@ -129,5 +130,5 @@
     om->list
     ast:wfc
     ast:resolve
-    ast->om
+    parse->om
     ) ast))

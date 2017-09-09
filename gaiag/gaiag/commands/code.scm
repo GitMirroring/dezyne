@@ -22,15 +22,14 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag commands code)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag om)
+  #:use-module (gaiag commands parse)
   #:export (parse-opts
             main))
 
@@ -74,39 +73,13 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
 	   (exit (or (and usage? 2) 0)))
      options)))
 
-(define (generator-read-ast options file-name)
-  (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
-         (imports (filter-map import-opt options))
-         (model-opt (option-ref options 'model #f))
-         (mangle-opt (option-ref options 'mangle #f))
-         (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
-         (debug? (option-ref options 'debug #f))
-         (language (string->symbol (option-ref options 'language "c++")))
-         (command (string-append
-                   "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
-                   " generate -l scm -L -o -"
-                   (if (not mangle-opt) "" " -M")
-                   (string-join imports " -I " 'prefix)
-                   ;; Only forward --model to generate for CSP, not
-                   ;; for executable code: generator cuts models
-                   (if (or (not (equal? language "csp")) (not model-opt)) ""
-                       (string-append " -m " model-opt))
-                   " " file-name)))
-    (if gdzn-debug? (stderr "command: ~a\n" command))
-    (with-input-from-string (gulp-pipe command) read)))
-
-(define (file->ast options file-name)
-  (let ((gaiag? (option-ref options 'gaiag #f)))
-    (if gaiag? (read-ast file-name)
-        (generator-read-ast options file-name))))
-
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (file-name (car files))
          (map-files (cdr args))
          (language (string->symbol (option-ref options 'language "c++")))
-         (ast (file->ast options file-name))
+         (ast (parse-with-options options file-name))
          (module (resolve-module `(gaiag ,language)))
          (ast-> (module-ref module 'ast->))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line))))

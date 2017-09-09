@@ -25,7 +25,7 @@
   #:use-module (ice-9 rdelim)
 
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
 
   #:export (indent indent-string))
 

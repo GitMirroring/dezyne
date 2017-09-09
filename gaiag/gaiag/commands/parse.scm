@@ -20,15 +20,14 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag commands parse)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
   #:use-module (gaiag misc)
-  #:export (assert-generator-parse
-            generator-parse
+  #:use-module (gaiag parse)
+  #:export (assert-parse
+            parse-with-options
             parse-opts
             main))
 
@@ -52,23 +51,22 @@ Usage: gdzn parse [OPTION]... [FILE]...
           (exit 0)))
     options))
 
-(define (generator-parse options file-name)
-  (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
+(define* (parse-with-options options file-name #:key mangle?)
+  (let* ((gaiag? (option-ref options 'gaiag #f))
+         (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
-         (imports (cons* (dirname file-name) (dirname (canonicalize-path file-name)) imports))
-         (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
-         (command (string-append
-                   "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
-                   " generate "
-                   (string-join imports " -I " 'prefix)
-                   " " file-name)))
-    (if gdzn-debug? (stderr "command: ~a\n" command))
-    (display (gulp-pipe command))))
+         (language (string->symbol (option-ref options 'language "c++")))
+         (mangle? (option-ref options 'mangle #f))
+         (model (option-ref options 'model #f))
+         ;; Only forward --model to generate for CSP, not
+         ;; for executable code: generator cuts models
+         (model (and (equal? language "csp") model)))
+    (parse-file file-name #:generator? (not gaiag?) #:imports imports #:mangle? mangle? #:model model)))
 
-(define (assert-generator-parse options file-name)
+(define (assert-parse options file-name)
   (catch #t
     (lambda _
-      (generator-parse options file-name))
+      (parse-with-options options file-name))
     (lambda _
       (exit 1))))
 
@@ -76,5 +74,5 @@ Usage: gdzn parse [OPTION]... [FILE]...
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (gdzn-verbose? (find (lambda (o) (or (equal? o "--verbose") (equal? o "-v"))) (command-line))))
-    (assert-generator-parse options (car files))
+    (assert-parse options (car files))
     (if gdzn-verbose? (display "parse: no errors found"))))

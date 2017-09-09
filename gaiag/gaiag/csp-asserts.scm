@@ -27,9 +27,9 @@
 (define-module (gaiag csp-asserts)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (gaiag ast2om)
+  #:use-module (gaiag deprecated om)
   #:use-module (gaiag goops)
-  #:use-module (gaiag om)
+  #:use-module (gaiag ast)
   #:use-module (gaiag resolve)
   #:use-module (gaiag misc)
 
@@ -41,7 +41,7 @@
            ))
 
 (define (om->csp-asserts o)
-  (let ((om (csp:ast->om o)))
+  (let ((om (csp:parse->om o)))
     (ast:set-scope om
       (om->csp om)
       (assert-list om))))

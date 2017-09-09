@@ -22,8 +22,6 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag goops)
   #:use-module (system foreign)
   #:use-module (ice-9 match)

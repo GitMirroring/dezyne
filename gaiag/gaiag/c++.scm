@@ -34,15 +34,15 @@
   #:use-module (gaiag command-line)
   #:use-module (gaiag indent)
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
   #:use-module (gaiag resolve)
   #:use-module (gaiag compare)
   #:use-module (gaiag util)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag ast2om)
-  #:use-module (gaiag om)
+  #:use-module (gaiag deprecated om)
+  #:use-module (gaiag ast)
   #:use-module (gaiag xpand)
 
   #:use-module (language dezyne location)
@@ -128,7 +128,7 @@
   (map (symbol->enum-field o) ((compose .elements .fields) o)))
 
 (define-method (c++:enum->string (o <interface>))
-  (append (om:enums) (om:enums o)))
+  (append (filter (is? <enum>) (om:globals)) (om:enums o)))
 
 (define-method (trigger->on (o <trigger>))
   (make <on> #:triggers (make <triggers> #:elements (list o)) #:statement (make <compound>)))
@@ -181,7 +181,7 @@
 (define-template x:ports-meta-list (lambda (o) (filter om:requires? (om:ports o))) 'meta-infix)
 (define-template x:check-bindings-list (lambda (o) ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports o)))))
 
-(define-template x:global-enum-definer (lambda (o) (om:enums)))
+(define-template x:global-enum-definer (lambda (o) (filter (is? <enum>) (om:globals))))
 (define-template x:check-in-binding (lambda (o) (filter om:in? (om:events o))))
 (define-template x:check-out-binding (lambda (o) (filter om:out? (om:events o))))
 
@@ -374,7 +374,7 @@
   (map (lambda (entry)
          (let* ((event (first entry))
                 (interface (second entry))
-                (event (om:event (om:interface component) event))
+                (event (resolve:event (om:interface component) event))
                 (formals (.elements (.formals (.signature event))))
                 (port (om:port component))
                 (port-name (.name port)))
@@ -394,7 +394,7 @@
                  ": port(port)\n"
                  "{}\n"
                  (map (lambda (asd dzn)
-                        (let* ((event (om:event (om:interface component) dzn))
+                        (let* ((event (resolve:event (om:interface component) dzn))
                                (formals (.elements (.formals (.signature event))))
                                (arguments (map .name formals))
                                (formals (map (lambda (formal)
@@ -440,7 +440,7 @@
   (map (lambda (entry)
          (let* ((event-name (first entry))
                 (interface (second entry))
-                (event (om:event (om:interface model) event-name))
+                (event (resolve:event (om:interface model) event-name))
                 (formals (.elements (.formals (.signature event))))
                 (arguments (comma-join (map .name formals)))
                 (formals (comma-join (map (lambda (formal)
@@ -470,7 +470,7 @@
                            "{}\n"
                            (map
                             (lambda (dzn asd)
-                              (let* ((event (om:event (om:interface model) dzn))
+                              (let* ((event (resolve:event (om:interface model) dzn))
                                      (void? (is-a? (.type (.signature event)) <void>))
                                      (formals (.elements (.formals (.signature event))))
                                      (arguments (comma-join (map .name formals)))

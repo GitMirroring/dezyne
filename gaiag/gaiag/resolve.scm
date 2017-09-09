@@ -23,8 +23,10 @@
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 receive)
+  #:use-module (system foreign)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -32,19 +34,32 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag ast2om)
-  #:use-module (gaiag compare)
   #:use-module (gaiag om)
+  #:use-module (gaiag deprecated om)
+  #:use-module (gaiag compare)
+  #:use-module (gaiag ast)
   #:use-module (gaiag util)
 
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
   #:use-module (gaiag annotate)
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
 
   #:export (
            ast:resolve
            report-errors
+
+           ast:extend-scope
+           ast:model-scope
+           ast:root-scope
+           ast:scope
+           ast:scope-model
+           ast:scope-root
+           ast:set-scope
+           ast:set-model-scope
+           .function
+
+           resolve:event
            ))
 
 (define (ast:resolve o)
@@ -141,6 +156,71 @@
     (($ <scope.name>) ((->symbol-join '.) (om:scope+name o)))
     (_ o)))
 
+;; Pre-resolve by-name lookups
+(define* (resolve:types #:optional (model #f))
+  (append
+   (match model
+     (($ <root> (models ...)) (filter (is? <type>) models))
+     (($ <behaviour> b types) (.elements types))
+     (($ <interface> name types events ($ <behaviour> b btypes)) (append (.elements btypes) (.elements types)))
+     (($ <component> name ports ($ <behaviour> b btypes))
+      (append (.elements btypes) (om:interface-types model)))
+     ((? (is? <component-model>) name ports) (om:interface-types model))
+     (($ <import> name) '())
+     (#f '())
+     ((? unspecified?) '()))
+   (resolve:globals)))
+
+(define (resolve:globals)
+  (filter (is? <type>) ((compose .elements ast:root-scope))))
+
+(define (resolve:event o trigger)
+  (match (cons o trigger)
+    ((($ <port>) . (? symbol?))
+     (find (lambda (x) (eq? (.name x) trigger)) (om:events o)))
+    ((($ <interface>) . (? symbol?))
+     (find (lambda (x) (eq? (.name x) trigger)) (.elements (.events o))))
+    ((($ <interface>)  . (? (is? <trigger>)))
+     (if (not (as (.event trigger) <event>)) (resolve:event o (.event trigger))
+         (.event trigger)))
+    ((($ <component>)  . (? (is? <trigger>)))
+     (if (not (as (.event trigger) <event>)) (resolve:event (om:interface ((.port o) trigger)) (.event trigger))
+         (.event trigger)))
+    (_ #f)))
+
+(define ((resolve:type model) o)
+  (match o
+    ((? symbol?) (find (resolve:named (make <scope.name> #:scope (om:scope+name model) #:name o)) (resolve:types model)))
+
+    (($ <bool>) o)
+    (($ <enum>) o)
+    (($ <data>) o)
+    (($ <extern>) o)
+    (($ <void>) o)
+    (($ <int>) o)
+
+    (($ <type> 'bool) (make <bool>))
+    (($ <type> 'void) (make <void>))
+    ((and ($ <type>) (= .name name))
+     (or (find (resolve:named name) (resolve:types model))
+         (find (resolve:scoped (om:scope+name model) name) (resolve:types))))
+    (($ <variable> name type expression) ((resolve:type model) type))
+    (($ <formal> name type) ((resolve:type model) type))
+    (($ <formal> name type direction) ((resolve:type model) type))))
+
+(define ((resolve:named name) ast)
+;  (stderr "\nom:named[~a]: ~a" name ast)
+  (match name
+    ((? symbol?) (or (eq? name (.name ast)) ((resolve:named (make <scope.name> #:name name)) ast)))
+    (_ (om:equal? (.name ast) name))))
+
+(define ((resolve:scoped scope name) ast)
+  (if (null? (om:scope name)) (eq? (om:name ast) (om:name name))
+      (equal? (append scope (om:scope+name ast)) (om:scope+name name))))
+
+(define (resolve:enum model identifier)
+  (as ((resolve:type model) identifier) <enum>))
+
 (define (resolve- model o locals)
 
   (define (as-enum identifier) (and=> (as-type identifier) (is? <enum>)))
@@ -150,7 +230,7 @@
   (define (event? o)
     (or (as o <event>)
         (and (is-a? model <interface>)
-             (not (var? o)) (om:event model o))))
+             (not (var? o)) (resolve:event model o))))
 
   (define (interface? o)
     (match o
@@ -195,12 +275,12 @@
   (define (as-type o)
     (match o
       (($ <type> ('dotted '* scope ... name))
-       ((om:type model) (clone o #:name (make <scope.name> #:scope scope #:name name))))
+       ((resolve:type model) (clone o #:name (make <scope.name> #:scope scope #:name name))))
       (($ <type> ('dotted scope ... name)) (=> failure)
-       (or ((om:type model) (clone o #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name)))
-           ((om:type model) (clone o #:name (make <scope.name> #:scope scope #:name name)))
+       (or ((resolve:type model) (clone o #:name (make <scope.name> #:scope (append (om:scope+name model) scope) #:name name)))
+           ((resolve:type model) (clone o #:name (make <scope.name> #:scope scope #:name name)))
            (failure)))
-      (_ ((om:type model) o))))
+      (_ ((resolve:type model) o))))
 
   (define (fake:type model o)
     (match o
@@ -216,7 +296,7 @@
          enum))
       (('dotted field) #f)
       (('dotted scope ... name field)
-       (and-let* ((enum (om:enum model (make <type> #:name (make <scope.name> #:scope scope #:name name))))
+       (and-let* ((enum (resolve:enum model (make <type> #:name (make <scope.name> #:scope scope #:name name))))
                   ((member field ((compose .elements .fields) enum))))
          enum))
       (_ #f)))
@@ -365,7 +445,7 @@
     (($ <trigger> p e arguments) (=> failure)
      (let ((port (port? p)))
        (if (not port) (resolve-error o p "undefined port: ~a")
-           (let ((event (or (as e <event>) (om:event port e))))
+           (let ((event (or (as e <event>) (resolve:event port e))))
              (if (not event) (resolve-error o e "undefined event: ~a")
                  (clone o
                         ;;#:port port
@@ -396,7 +476,7 @@
     (($ <action> p e arguments) (=> failure)
      (let ((port (port? p)))
        (if (not port) (resolve-error o p "undefined port: ~a")
-           (let ((event (or (as e <event>) (om:event port e))))
+           (let ((event (or (as e <event>) (resolve:event port e))))
              (if (not event) (resolve-error o e "undefined event: ~a")
                  (clone o
                         ;;#:port port
@@ -620,7 +700,7 @@
 
   (define (event? o)
     (or (as o <event>)
-        (and (is-a? model <interface>) (om:event model o))))
+        (and (is-a? model <interface>) (resolve:event model o))))
   (define (member? m) (or (as m <variable>) (om:variable model m)))
   (define (port? o)
     (or (as o <port>)
@@ -636,7 +716,7 @@
     (($ <trigger> p e formals)
      (let ((port (port? p)))
        (if (not port) (resolve-error o p "undefined port: ~a")
-           (let ((event (or (as e <event>) (om:event port e))))
+           (let ((event (or (as e <event>) (resolve:event port e))))
              (if (not event) (resolve-error o e "undefined event: ~a")
                  (let* ((resolve-formal (lambda (e f)
                                           (let ((f (clone f
@@ -664,7 +744,7 @@
            (clone o #:variable variable))))))
 
 (define ((range-check model) variable)
-  (define (as-int-type type) (om:integer model type))
+  (define (as-int-type type) (as type <int>))
   (or variable
       (and-let* ((int (as-int-type (.type variable)))
                  (range (.range int))
@@ -709,9 +789,120 @@
                 (any identity
                      (map (recurses? model (cons name seen)) names)))))
 
+
+
+(define-method (.scope+name (o <top>))
+  (match o (('dotted scope ... name) (symbol-join (cdr o)))))
+
+(define-method (.scope+name (o <scope.name>))
+  (symbol-join (append (.scope o) (list (.name o)))))
+
+(define (name-resolve root class o)
+  (cond
+   ((or (eq? <interface> class) (eq? <system> class) (eq? <component> class) (eq? <foreign> class))
+    (find (lambda (m)
+            (and (is-a? m class)
+                 (equal? o (.scope+name (.name m)))))
+          (.elements root)))
+   ((eq? <port> class)
+    (find (lambda (m)
+            (equal? o (.name m)))
+          (append ((compose .elements .ports) root)
+                  (om:behaviour-ports root))))
+   ((eq? <function> class)
+    (find (lambda (m)
+             (equal? o (.name m)))
+          ((compose .elements .functions .behaviour) root)))))
+
+(define name-resolve (pure-funcq name-resolve))
+
+(define ast:scope (make-parameter 'error-ast:scope-not-set))
+
+(define-syntax ast:set-scope
+  (syntax-rules ()
+    ((_ o e1 e2 ...)
+     (parameterize ((ast:scope (list o))) e1 e2 ...))))
+
+(define-syntax ast:extend-scope
+  (syntax-rules ()
+    ((_ o e1 e2 ...)
+     (parameterize ((ast:scope (cons o (ast:scope)))) e1 e2 ...))))
+
+(define-syntax ast:set-model-scope
+  (syntax-rules ()
+    ((_ o e1 e2 ...)
+     (let* ((prev (ast:scope-model))
+            (parent (if prev (cdr prev) (ast:scope-root))))
+       (parameterize ((ast:scope (cons o parent))) e1 e2 ...)))))
+
+(define (ast:scope-root)
+  (let ((scope (ast:scope)))
+    (find-tail (lambda (e)
+            (if (is-a? e <ast>)
+                (is-a? e <root>)
+                (eq? (car e) 'root)))
+          scope)))
+
+(define (ast:scope-model)
+  (let ((scope (ast:scope)))
+    (find-tail (lambda (e)
+                 (if (is-a? e <ast>)
+                     (is-a? e <model>)
+                     (eq? (car e) 'model)))
+               scope)))
+
+(define (ast:root-scope) (car (ast:scope-root)))
+
+(define (ast:model-scope) (car (ast:scope-model)))
+
+(define-public (compose-root . f)
+  (lambda (o)
+    (fold-right
+     (lambda (elem previous)
+       (ast:set-scope previous (elem previous))) o f)))
+
+(define-method (.type (o <port>))
+  (name-resolve (car (ast:scope-root)) <interface> (.scope+name (.type@ o))))
+
+(define-method (.type (o <instance>))
+  (or (name-resolve (car (ast:scope-root)) <system> (.scope+name (.type@ o)))
+      (name-resolve (car (ast:scope-root)) <component> (.scope+name (.type@ o)))
+      (name-resolve (car (ast:scope-root)) <foreign> (.scope+name (.type@ o)))))
+
+(define-method (contains? container (o <ast>))
+  (and (is-a? container <ast>)
+       (or (eq? container o)
+           (any (lambda (e) (contains? e o)) (om:children container)))))
+
+(define-method (.port (model <component-model>) (o <trigger>))
+  (and (.port@ o) (name-resolve model <port> (.port@ o))))
+
+(define-method (.port (model <component-model>) (o <action>))
+  (and (.port@ o) (name-resolve model <port> (.port@ o))))
+
+(define-method (.port (o <trigger>))
+  (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
+
+(define-method (.port (o <action>))
+  (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
+
+(define-method (.port (o <reply>))
+  (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
+
+(define-method (.port (o <binding>))
+  (if (.instance o)
+      (name-resolve (.type (.instance o)) <port> (.port@ o))
+      (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
+
+(define-method (.function (model <model>) (o <call>))
+  (and (.function@ o) (name-resolve model <function> (.function@ o))))
+
+(define-method (.function (o <call>))
+  (and (.function@ o) (name-resolve (car (ast:scope-model)) <function> (.function@ o))))
+
 (define (ast-> ast)
   ((compose-root
     om->list
     ast:resolve
-    ast->om
+    parse->om
     ) ast))

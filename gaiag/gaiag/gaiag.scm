@@ -29,12 +29,11 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag om)
+  #:use-module (gaiag ast)
   #:use-module (gaiag util)
 
-  #:use-module (gaiag coverage)
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
 
   #:export (main parse-opts))
 
@@ -49,10 +48,10 @@
   (let* ((option-spec
 	  '((assert (single-char #\a))
             (calling-context (single-char #\c) (value #t))
-	    (coverage)
 	    (debug (single-char #\d))
             (deprecated (value #t))
 	    (glue (single-char #\g) (value #t))
+	    (generator (single-char #\G))
             (help (single-char #\h))
             (include (single-char #\I) (value #t))
             (json (single-char #\j))
@@ -81,10 +80,10 @@
 Usage: gaiag [OPTION]... FILE
   -a, --assert                generate all asserts inline, not in asserts.csp
   -c, --calling-context=TYPE  generate additional first event parameter with type TYPE
-      --coverage              write lcov coverage data to gaiag.info
   -d, --debug                 run with debugging
       --deprecated=LIST       use previous implementation for feature in LIST of elements {model2file}
   -g, --glue=TYPE             generate glue code for TYPE [dzn]
+  -G, --generator             use C++ parser
   -I, --include=DIR           append DIR to include path
   -h, --help                  display this help
   -j, --json                  use json-friendly format; strings and hash tables
@@ -97,25 +96,24 @@ Usage: gaiag [OPTION]... FILE
 
 Languages: c c++ cs csp dzn goops html java javascript python
            c++03 c++msvc11 java7
-           ast annotate om norm-event norm-state resolve
-           run table-event table-state wfc
+           parse annotate goops resolve norm-event norm-state
+           table-event table-state wfc
 
 Examples:
-  ./gaiag examples/Alarm.dzn
-  ./gaiag -l dzn examples/Alarm.scm
-  ./gaiag -l csp examples/Alarm.dzn
-  ./gaiag -l csp -o alarm.csp examples/Alarm.dzn
-  ./gaiag -l c++ examples/Alarm.dzn
-  ./gaiag -l wfc examples/wfc/wfc-double-on.dzn
-  ./gaiag -l run -t '(arm)' examples/IConsole.dzn ./gaiag -l run -t '(console.arm)' -j examples/Alarm.dzn | ./scm2json | ../dzn/pretty
+  gaiag test/hello/helloworld.dzn
+  gaiag -l dzn test/hello/helloworld.dzn
+  gaiag -l csp test/hello/helloworld.dzn
+  gaiag -l csp -o helloworld.csp test/hello/helloworld.dzn
+  gaiag -l c++ test/hello/helloworld.dzn
+  gaiag -l wfc test/hello/helloworld.dzn
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))
 
-(define (file->lang file-name language)
+(define* (file->lang file-name language #:key generator?)
   (catch 'syntax-error
     (lambda ()
-      ((module-ref (resolve-module `(gaiag ,language)) 'ast->) (read-ast file-name)))
+      ((module-ref (resolve-module `(gaiag ,language)) 'ast->) (parse-file file-name #:generator? generator?)))
     (lambda (key x message location token d . r)
       (let ((file-name (or (assoc-ref location 'filename) file-name))
             (line (or (assoc-ref location 'line) ""))
@@ -125,8 +123,9 @@ Examples:
 (define (main- args)
   (let* ((options (parse-opts args))
 	 (file-name (car (option-ref options '() '())))
+         (generator? (option-ref option-ref 'generator #f))
          (language (string->symbol (option-ref options 'language "ast")))
-         (result (file->lang file-name language))
+         (result (file->lang file-name language #:generator? generator?))
          (opt-include? (lambda (o) (eq? (car o) 'include))))
     (set! %include-path (append (map cdr (filter opt-include? options))
                                 (list (dirname file-name))))
@@ -140,11 +139,7 @@ Examples:
 
 (define (main args)
   (let* ((options (parse-opts args))
-         (debug? (option-ref options 'debug #f))
-         (coverage? (or (option-ref options 'coverage #f)
-                        (getenv "GAIAG_COVERAGE"))))
-    (if coverage?
-        (cover (lambda () (main- args)) (->string (getenv "ABS_BUILD") "/gaiag.lcov/gaiag-" (getpid) ".info"))
+         (debug? (option-ref options 'debug #f)))
         (if debug?
          (call-with-error-handling (lambda () (main- args)))
-         (main- args)))))
+         (main- args))))

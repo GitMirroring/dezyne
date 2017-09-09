@@ -23,24 +23,24 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag evaluate)
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 match)
+  #:use-module (system foreign)
   #:use-module (srfi srfi-1)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag om)
+  #:use-module (gaiag deprecated om)
+  #:use-module (gaiag ast)
   #:use-module (gaiag compare)
   #:use-module (gaiag util)
 
   #:use-module (gaiag misc)
   #:use-module (gaiag norm)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
 
   #:export (
            eval-expression
@@ -94,6 +94,32 @@
   (let ((r (eval-expression- model state o)))
     ;;(stderr "eval-expression ~a => ~a\n" o r)
     r))
+
+(define (om:id o) ((compose pointer-address scm->pointer) o))
+
+(define (om:parent o t)
+  (match o
+    (($ <system>) #f)
+    (($ <foreign>) #f)
+    ((? (is? <model>))
+     (om:parent ((compose .statement .behaviour) o) t))
+    (($ <blocking>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
+                        (om:parent (.statement o) t)))
+    (($ <guard>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
+                     (and (eq? (om:id (.expression o)) (om:id t)) o)
+                     (om:parent (.statement o) t)))
+    (($ <on>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
+                  (om:parent (.statement o) t)))
+    ((? (is? <ast-list>))
+     (if (member (om:id t) (map om:id (.elements o)))
+         o
+         (let loop ((elements (.elements o)))
+           (if (null? elements)
+               #f
+               (let ((parent (om:parent (car elements) t)))
+                 (if parent parent
+                     (loop (cdr elements))))))))
+    (_ #f)))
 
 (define (eval-expression- model state o)
   (match o

@@ -33,9 +33,10 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag lexicals)
-  #:use-module (gaiag ast2om)
+  #:use-module (gaiag deprecated om)
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
+  #:use-module (gaiag ast)
   #:use-module (gaiag util)
 
   #:use-module (gaiag command-line)
@@ -43,7 +44,7 @@
   #:use-module (gaiag indent)
   #:use-module (gaiag misc)
   #:use-module (gaiag norm-event)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
   #:use-module (gaiag resolve)
   #:use-module (gaiag xpand)
 
@@ -726,7 +727,7 @@
 (define-template x:in-event-definer (lambda (o) (filter om:in? (om:events o))) 'event-definer-infix)
 (define-template x:out-event-definer (lambda (o) (filter om:out? (om:events o))) 'event-definer-infix)
 
-(define-template x:enum-definer (lambda (o) (append (om:enums o) (om:enums))))
+(define-template x:enum-definer (lambda (o) (append (om:enums o) (filter (is? <enum>) (om:globals)))))
 
 
 (define-template x:enum-field-definer (lambda (o) (map (symbol->enum-field o) ((compose .elements .fields) o))) 'comma-infix)
@@ -813,7 +814,7 @@
 ;; FIXME:  'global todo
 ;; (define-method (code:dump (o <enum>))
 ;;   (code:x:pand o 'header (symbol-append name (code:extension (make <interface>))))
-;;   (and-let* (((null-is-#f (om:enums)))
+;;   (and-let* (((null-is-#f (filter (is? <enum>) (om:globals))))
 ;;              (template (template-file `(global ,(symbol-append (code:extension o) '.scm))))
 ;;              ((file-exists? (components->file-name template))))
 ;;             (dump-indented (list 'dzn 'global (code:extension o))
@@ -903,7 +904,7 @@
   ((compose-root
     code-norm-event
     ast:resolve
-    ast->om
+    parse->om
     ) ast))
 
 (define (pipe producer consumer)

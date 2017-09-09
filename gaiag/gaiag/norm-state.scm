@@ -36,15 +36,16 @@
   #:use-module (srfi srfi-1)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (gaiag ast2om)
+  #:use-module (gaiag deprecated om)
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
+  #:use-module (gaiag ast)
   #:use-module (gaiag util)
 
   #:use-module (gaiag compare)
   #:use-module (gaiag misc)
   #:use-module (gaiag norm)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
   #:use-module (gaiag resolve)
 
   #:export (
@@ -116,10 +117,14 @@
     "over een poort? ontvangen we valued of void triggers maar niet
 door elkaar want aan de achterkant staat dan een valued reply of void
 reply en die kun je niet mixen"
-  (and (is-a? lhs <trigger>) (is-a? rhs <trigger>)
-       (or (and (om:void? model lhs) (om:void? model rhs))
-           (and (not (om:void? model lhs)) (not (om:void? model rhs))))
-       (equal? (.port.name lhs) (.port.name rhs))))
+
+    (define (void? model o)
+      (and (not (ast:modeling? o)) (not (ast:typed? o))))
+
+    (and (is-a? lhs <trigger>) (is-a? rhs <trigger>)
+         (or (and (void? model lhs) (void? model rhs))
+             (and (not (void? model lhs)) (not (void? model rhs))))
+         (equal? (.port.name lhs) (.port.name rhs))))
 
 (define (passdown-on o)
   (match o
@@ -147,5 +152,5 @@ reply en die kun je niet mixen"
 ;;    ((@ (gaiag dzn) ast->dzn))
     csp-norm-state
     ast:resolve
-    ast->om
+    parse->om
     ) ast))

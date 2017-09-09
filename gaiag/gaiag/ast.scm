@@ -20,9 +20,229 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag ast)
-  #:export (ast->))
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
 
-(define ast-> identity)
+  #:use-module (language dezyne location)
+
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag om)
+  #:use-module (gaiag deprecated om)
+  #:use-module (gaiag compare)
+  #:use-module (gaiag resolve)
+  #:use-module (gaiag util)
+
+  #:use-module (gaiag annotate)
+  #:use-module (gaiag command-line)
+  #:use-module (gaiag misc)
+  #:use-module (gaiag parse)
+
+  #:export (
+           ast:clr-events
+           ast:direction
+           ast:expression-type
+           ast:in-triggers
+           ast:other-direction
+           ast:out-triggers
+           ast:out-triggers-in-events
+           ast:out-triggers-out-events
+           ast:provided
+           ast:provided-in-triggers
+           ast:provided-out-triggers
+           ast:req-events
+           ast:required
+           ast:required-in-triggers
+           ast:required-out-triggers
+           ast:valued-in-triggers
+           ast:void-in-triggers
+           ast:out-triggers-valued-in-events
+           ast:out-triggers-void-in-events
+           ast:modeling?
+           ast:typed?
+
+           ast:port*))
+
+(define (deprecated . where)
+  (stderr "DEPRECATED:~a\n" where))
+
+;;; ast: accessors
+
+(define-method (ast:argument* (o <arguments>)) (.elements o))
+(define-method (ast:binding* (o <bindings>)) (.elements o))
+(define-method (ast:statement* (o <compound>)) (.elements o))
+(define-method (ast:event* (o <events>)) (.elements o))
+(define-method (ast:field* (o <fields>)) (.elements o))
+(define-method (ast:formal* (o <formals>)) (.elements o))
+(define-method (ast:function* (o <functions>)) (.elements o))
+(define-method (ast:instance* (o <instances>)) (.elements o))
+(define-method (ast:port* (o <ports>)) (.elements o))
+(define-method (ast:port* (o <behaviour>)) ((compose .elements .ports) o))
+(define-method (ast:model* (o <root>)) (.elements o))
+(define-method (ast:trigger* (o <triggers>)) (.elements o))
+(define-method (ast:type* (o <types>)) (.elements o))
+(define-method (ast:variable* (o <variables>)) (.elements o))
+
+(define-method (ast:argument* (o <call>)) ((compose ast:argument* .arguments) o))
+(define-method (ast:argument* (o <action>)) ((compose ast:argument* .arguments) o))
+(define-method (ast:binding* (o <system>)) ((compose ast:binding* .bindings) o))
+(define-method (ast:function* (o <behaviour>)) ((compose ast:function* .functions) o))
+(define-method (ast:statement* (o <behaviour>)) ((compose ast:statement* .statement) o))
+
+(define-method (ast:expression-type (o <ast>))
+  (match o
+    (($ <bool>) o)
+    (($ <enum>) o)
+    (($ <extern>) o)
+    (($ <int>) o)
+    (($ <void>) o)
+
+    (($ <literal>) (.type o))
+    (($ <var>) ((compose .type .variable) o))
+
+    ((? (is? <bool-expr>)) (make <bool>))
+    ((? (is? <data-expr>)) (make <extern>))
+    ((? (is? <enum-expr>)) (make <enum>))
+    ((? (is? <int-expr>)) (make <int>))
+    ((? (is? <void-expr>)) (make <void>))
+
+    ((and ($ <value>) (= .value o))
+     (match o
+       ((? number?) (make <int>))
+       ((or 'true 'false) (make <bool>))
+       ((? unspecified?) (make <void>))
+       (#f (make <void>))))
+
+    (($ <group>) (= (.expression o)) (ast:expression-type o))
+    ((? unspecified?) (make <void>))
+    (($ <expression>) (make <void>))
+
+    (($ <signature>) (.type o))
+    (($ <event>) ((compose ast:expression-type .signature) o))
+    (($ <trigger>) ((compose ast:expression-type .event) o))
+    ;; FIXME: async port only?
+    (($ <port>) ((compose ast:expression-type car om:events) o))))
+
+(define-method (ast:other-direction (o <event>))
+  (assoc-ref `((in . out)
+               (out . in))
+             (.direction o)))
+
+(define-method (ast:other-direction (o <trigger>))
+  ((compose ast:other-direction .event) o))
+
+(define-method (ast:provided (o <component-model>))
+  (filter om:provides? ((compose .elements .ports) o)))
+
+(define-method (ast:required (o <component-model>))
+  (filter om:requires? ((compose .elements .ports) o)))
+
+(define-method (ast:direction (o <trigger>))
+  (.direction (.event o)))
+
+(define-method (ast:provided-in-triggers (o <component-model>))
+  (append-map (lambda (port)
+                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (filter om:in? (om:events port))))
+              (filter om:provides? (om:ports o))))
+
+(define-method (ast:req-events (o <component>))
+  (append-map (lambda (port)
+                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (filter (conjoin om:in? (compose (cut eq? 'req <>) .name)) (om:events port))))
+              (om:ports (.behaviour o))))
+
+(define-method (ast:clr-events (o <component>))
+  (append-map (lambda (port)
+                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (filter (conjoin om:in? (compose (cut eq? 'clr <>) .name)) (om:events port))))
+              (om:ports (.behaviour o))))
+
+(define-method (ast:required-out-triggers (o <component-model>))
+  (append-map (lambda (port)
+                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (filter om:out? (om:events port))))
+              (filter om:requires? (om:ports o) )))
+
+(define-method (ast:in-triggers (o <component-model>))
+  (append (ast:provided-in-triggers o) (ast:required-out-triggers o)))
+
+(define-method (ast:provided-out-triggers (o <component-model>))
+  (append-map (lambda (port)
+                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (filter om:out? (om:events port))))
+              (filter om:provides? (om:ports o))))
+
+(define-method (ast:required-in-triggers (o <component-model>))
+  (append-map (lambda (port)
+                (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (filter om:in? (om:events port))))
+              (filter om:requires? (om:ports o) )))
+
+(define-method (ast:out-triggers (o <component-model>))
+  (append (ast:provided-out-triggers o) (ast:required-in-triggers o)))
+
+(define-method (ast:void-in-triggers (o <component-model>))
+  (filter
+   (lambda (t) (is-a? ((compose .type .signature .event) t) <void>))
+   (ast:in-triggers o)))
+
+(define-method (ast:valued-in-triggers (o <component-model>))
+  (filter
+   (lambda (t) (not (is-a? ((compose .type .signature .event) t) <void>)))
+   (ast:in-triggers o)))
+
+(define-method (trigger-in-event? (o <trigger>))
+  ((compose om:in? .event) o))
+
+(define-method (ast:out-triggers-in-events (o <component-model>))
+  (filter (compose om:in? .event) (ast:out-triggers o)))
+
+(define-method (ast:out-triggers-out-events (o <component-model>))
+  (filter (compose om:out? .event) (ast:out-triggers o)))
+
+(define-method (ast:out-triggers-void-in-events (o <component-model>))
+  (filter
+   (lambda (t) (is-a? ((compose .type .signature .event) t) <void>))
+   (ast:out-triggers-in-events o)))
+
+(define-method (ast:out-triggers-valued-in-events (o <component-model>))
+  (filter
+   (lambda (t) (not (is-a? ((compose .type .signature .event) t) <void>)))
+   (ast:out-triggers-in-events o)))
+
+(define-method (ast:modeling? (o <event>))
+  #f)
+
+(define-method (ast:modeling? (o <modeling-event>))
+  #t)
+
+(define-method (ast:modeling? (o <trigger>))
+  ((compose ast:modeling? .event) o))
+
+(define-method (ast:typed? (o <event>))
+  (let ((type ((compose .type .signature) o)))
+    (not (as type <void>))))
+
+(define-method (ast:typed? (o <signature>))
+  (not (as (.type o) <void>)))
+
+(define-method (ast:typed? (o <trigger>))
+  ((compose ast:typed? .event) o))
+
+(define-method (ast:typed? (o <modeling-event>))
+  #f)
+
+(define (ast-> ast)
+  ((compose
+    om->list
+    parse->om
+    ast->annotate
+    ) ast))

@@ -23,8 +23,6 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag xpand)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
@@ -37,7 +35,7 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
-  #:use-module (gaiag om)
+  #:use-module (gaiag resolve)
   #:use-module (gaiag util)
 
   #:export (define-template

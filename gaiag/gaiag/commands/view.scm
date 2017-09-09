@@ -21,8 +21,6 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag commands view)
   #:use-module (ice-9 getopt-long)
   #:use-module (gaiag misc)

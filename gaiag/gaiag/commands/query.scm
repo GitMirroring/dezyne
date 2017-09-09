@@ -21,8 +21,6 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag commands query)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)

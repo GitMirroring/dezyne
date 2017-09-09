@@ -23,8 +23,6 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag util)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 optargs)
@@ -44,8 +42,8 @@
   #:use-module (gaiag display)
 
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
-  #:use-module (gaiag om)
+  #:use-module (gaiag parse)
+  #:use-module (gaiag ast)
 
   #:export (
             ast-name
@@ -59,6 +57,7 @@
             om:find
             om:map
             symbol->class
+            symbol-join
             topological-sort
            ))
 
@@ -72,6 +71,9 @@
 
 (define-method (ast-name (o <class>))
   (drop-<> (class-name o)))
+
+(define (symbol-join ls)
+  (reduce (lambda (a b) (symbol-append a '. b)) (string->symbol "") ls))
 
 (define (symbol->class x) (symbol-append '< x '>))
 

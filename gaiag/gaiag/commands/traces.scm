@@ -23,8 +23,6 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag commands traces)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
@@ -38,9 +36,11 @@
 
   #:use-module (gaiag goops)
   #:use-module (gaiag util)
-  #:use-module (gaiag om)
+  #:use-module (gaiag ast)
+  #:use-module (gaiag deprecated om)
+  #:use-module (gaiag resolve)
   #:use-module (gaiag command-line)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
 
   #:use-module (gaiag shell-util)
   #:use-module (gash pipe)
@@ -81,26 +81,12 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
           (exit (or (and usage? 2) 0)))
      options)))
 
-(define* (generator-read-ast options file-name #:key mangle?)
-  (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
+(define* (parse-with-options options file-name #:key mangle?)
+  (let* ((gaiag? (option-ref options 'gaiag #f))
+         (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
-         (model-opt (option-ref options 'model #f))
-         (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
-         (debug? (option-ref options 'debug #f))
-         (command (string-append
-                   "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
-                   " generate -l scm -L -o -"
-                   (if mangle? " -M" "")
-                   (string-join imports " -I " 'prefix)
-                   (if (not model-opt) "" (string-append " -m " model-opt))
-                   " " file-name)))
-    (if gdzn-debug? (stderr "command: ~a\n" command))
-    (with-input-from-string (gulp-pipe command) read)))
-
-(define* (file->ast options file-name #:key mangle?)
-  (let ((gaiag? (option-ref options 'gaiag #f)))
-    (if gaiag? (read-ast file-name)
-        (generator-read-ast options file-name #:mangle? mangle?))))
+         (model (option-ref options 'model #f)))
+    (parse-file file-name #:generator? (not gaiag?) #:imports imports #:mangle? mangle? #:model model)))
 
 (define ((om:mangle-named name) ast)
   (match name
@@ -195,14 +181,15 @@ puts [myism alphabet]
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (file-name (car files))
-         (ast (file->ast options file-name #:mangle? #t))
+         (ast (parse-with-options options file-name #:mangle? #t))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
          (foo (if gdzn-debug? (stderr "AST:\n ~s\n" ast)))
-         (root (csp:ast->om ast))
+         (root (csp:parse->om ast))
          (model-name (option-ref options 'model #f))
          (models (filter (is? <model>) (.elements root)))
          (model (if model-name (find (om:mangle-named (string->symbol model-name)) models)
-                    (om:model-with-behaviour root))))
+                    (find .behaviour (append (om:filter (is? <component>) root)
+                                             (om:filter (is? <interface>) root))))))
     (if (not model) (if model-name (error "no such model:" model-name)
                         (let ((names (map (compose demangle .name) models)))
                           (error "no model with behaviour:" names)))

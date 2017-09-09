@@ -22,8 +22,6 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag commands convert)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
@@ -34,9 +32,7 @@
   #:use-module (gaiag misc)
   #:use-module (gash glob)
   #:use-module (gaiag shell-util)
-  #:export (assert-generator-parse
-            generator-parse
-            parse-opts
+  #:export (parse-opts
             main))
 
 (define (parse-opts args)
@@ -76,7 +72,7 @@ Usage: gdzn parse [OPTION]... [FILE]...
     ((_ ...) (apply append (filter pair? (map asd-interfaces o))))
     (_ #f)))
 
-(define (generator-parse options file-name)
+(define (asd-parse options file-name)
   (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
@@ -107,14 +103,14 @@ Usage: gdzn parse [OPTION]... [FILE]...
             (dzn-files (glob pattern)))
        (for-each delete-file (filter stub? dzn-files))))))
 
-(define (assert-generator-parse options file-name)
+(define (assert-asd-parse options file-name)
   (catch #t
     (lambda _
-      (generator-parse options file-name))
+      (asd-parse options file-name))
     (lambda _
       (exit 1))))
 
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '())))
-    (assert-generator-parse options (car files))))
+    (assert-asd-parse options (car files))))

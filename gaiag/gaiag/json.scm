@@ -21,8 +21,6 @@
 ;;; 
 ;;; Code:
 
-;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
-
 (define-module (gaiag json)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
@@ -33,11 +31,11 @@
   #:use-module (language dezyne location)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag om)
+  #:use-module (gaiag ast)
   #:use-module (gaiag util)
 
   #:use-module (gaiag misc)
-  #:use-module (gaiag reader)
+  #:use-module (gaiag parse)
 
   #:export (
            json-location
