@@ -59,7 +59,12 @@
            ast:set-model-scope
            .function
 
+           resolve:component
            resolve:event
+           resolve:function
+           resolve:instance
+           resolve:interface
+           resolve:variable
            ))
 
 (define (ast:resolve o)
@@ -204,9 +209,6 @@
      ((? unspecified?) '()))
    (resolve:globals)))
 
-(define (resolve:globals)
-  (filter (is? <type>) ((compose .elements ast:root-scope))))
-
 (define (resolve:event o trigger)
   (match (cons o trigger)
     ((($ <port>) . (? symbol?))
@@ -217,9 +219,57 @@
      (if (not (as (.event trigger) <event>)) (resolve:event o (.event trigger))
          (.event trigger)))
     ((($ <component>)  . (? (is? <trigger>)))
-     (if (not (as (.event trigger) <event>)) (resolve:event (om:interface ((.port o) trigger)) (.event trigger))
+     (if (not (as (.event trigger) <event>)) (resolve:event (resolve:interface ((.port o) trigger)) (.event trigger))
          (.event trigger)))
     (_ #f)))
+
+(define (resolve:globals)
+  (filter (is? <type>) ((compose .elements ast:root-scope))))
+
+(define (resolve:function model o)
+  (find (om:named o) (om:functions model)))
+
+(define (resolve:instance model o)
+  (match o
+    ((? symbol?)
+     (find (lambda (x) ;;(stderr "om:instance: ~a; ~a\n" o x)
+                   (eq? (.name x) o)) ((compose .elements .instances) model)))
+    (($ <binding>) (or (.instance o)
+                       (.type ((.port model) o))))
+    (($ <bind>) (resolve:instance model (om:instance-binding? o)))
+    (($ <port>) (resolve:instance model (om:instance-binding? (om:port-bind model o))))
+    ((? boolean?) #f)))
+
+(define* (resolve:component system #:optional o)
+  (match o
+    (#f (match system
+          (($ <foreign>) system)
+          (($ <component>) system)
+          (($ <root>) (om:find (disjoin (is? <component>) (is? <foreign>)) system))
+          (($ <scope.name>) ;(cached-model system)
+           (find (lambda (x) ;;(stderr "KANARIE: ~a ~a\n" system (.name x))
+                         (om:equal? system (.name x))) (filter (negate (is? <data>)) (.elements (car (ast:scope-root))))))
+          (_ #f)))
+    ((? symbol?) (resolve:component system (resolve:instance system o)))
+    (($ <binding> #f port-name)
+     ;;#f
+     ;;(resolve:component system (om:binding-other-port system port))
+     (let* ((bind (om:bind system port-name))
+            (instance (om:instance-name bind)))
+       (resolve:component system instance)))
+    (($ <binding> instance port-name) (resolve:component system instance))
+    (($ <bind>) (resolve:component system (om:instance-name o)))
+    (($ <instance>) (.type o))
+    (($ <port>) (resolve:interface (.type o)))))
+
+(define (resolve:interface o)
+  (match o
+    (($ <port>) (resolve:interface (.type o)))
+    (($ <interface>) o)
+    ((? (is? <model>)) (resolve:interface (om:port o)))
+    (($ <scope.name>) (find (om:named o) ((compose .elements ast:root-scope))))
+    (($ <root>) (om:find (is? <interface>) o))
+    ((h t ...) (find (is? <interface>) o))))
 
 (define ((resolve:type model) o)
   (match o
@@ -254,6 +304,9 @@
 (define (resolve:enum model identifier)
   (as ((resolve:type model) identifier) <enum>))
 
+(define (resolve:variable model o)
+  (find (om:named o) (om:variables model)))
+
 (define (resolve- model o locals)
 
   (define (as-enum identifier) (and=> (as-type identifier) (is? <enum>)))
@@ -268,21 +321,21 @@
   (define (interface? o)
     (match o
       (($ <interface>) o)
-      (($ <scope.name>) (om:interface o))
-      (('dotted scope ... name) (om:interface (make <scope.name> #:scope scope #:name name)))))
+      (($ <scope.name>) (resolve:interface o))
+      (('dotted scope ... name) (resolve:interface (make <scope.name> #:scope scope #:name name)))))
 
   (define (component? o)
     (match o
       (($ <component-model>) o)
-      (($ <scope.name>) (om:component o))
-      (('dotted scope ... name) (om:component (make <scope.name> #:scope scope #:name name)))))
+      (($ <scope.name>) (resolve:component o))
+      (('dotted scope ... name) (resolve:component (make <scope.name> #:scope scope #:name name)))))
 
   (define (instance? identifier)
-    (or (as identifier <instance>) (om:instance model identifier)))
+    (or (as identifier <instance>) (resolve:instance model identifier)))
 
-  (define (function? identifier) (om:function model identifier))
+  (define (function? identifier) (resolve:function model identifier))
 
-  (define (member? identifier) (om:variable model identifier))
+  (define (member? identifier) (resolve:variable model identifier))
   (define (port? o) (or (as o <port>)
                         (and (or (is-a? model <component>) (is-a? model <foreign>)) (om:port model o))))
 
@@ -734,7 +787,7 @@
   (define (event? o)
     (or (as o <event>)
         (and (is-a? model <interface>) (resolve:event model o))))
-  (define (member? m) (or (as m <variable>) (om:variable model m)))
+  (define (member? m) (or (as m <variable>) (resolve:variable model m)))
   (define (port? o)
     (or (as o <port>)
         (and (is-a? model <component>) (om:port model o))))
@@ -792,7 +845,7 @@
       variable))
 
 (define (evaluate model o)
-  (define (member? identifier) (om:variable model identifier))
+  (define (member? identifier) (resolve:variable model identifier))
   (match o
     (($ <expression> expression) (evaluate model expression))
     ((? number?) o)
@@ -812,7 +865,7 @@
       (_ #f)))
   (define (.function-name call)
     (or (and=> (as (.function call) <function>) .name) (.function call)))
-  (and-let* ((function (om:function model name))
+  (and-let* ((function (resolve:function model name))
              (compound (.statement function))
              (calls (null-is-#f ((om:collect return-call) compound)))
              (names (delete-duplicates (sort (map

@@ -111,6 +111,7 @@
 (define-method (ast:formal* (o <signature>)) ((compose ast:formal* .formals) o))
 (define-method (ast:formal* (o <trigger>)) ((compose ast:formal* .formals) o))
 (define-method (ast:instance* (o <system>)) ((compose ast:instance* .instances) o))
+(define-method (ast:port* (o <component-model>)) ((compose ast:port* .ports) o))
 (define-method (ast:statement* (o <behaviour>)) ((compose ast:statement* .statement) o))
 (define-method (ast:variable* (o <behaviour>)) ((compose ast:variable* .variables) o))
 (define-method (ast:trigger* (o <on>)) ((compose ast:trigger* .triggers) o))

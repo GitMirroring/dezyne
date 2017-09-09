@@ -211,7 +211,7 @@
   (append ((compose code:scope+name .type) o) (list (.field o))))
 
 (define-method (code:scope+name (o <bind>))
-  ((compose code:scope+name .type (cut om:instance (ast:model-scope) <>) injected-instance-name) o))
+  ((compose code:scope+name .type (cut resolve:instance (ast:model-scope) <>) injected-instance-name) o))
 
 (define-method (code:non-injected-bindings (o <system>))
   (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) o))))
@@ -239,7 +239,7 @@
   ((compose .port.name car .elements .triggers) o))
 
 (define-method (code:port-name (o <instance>))
-  (.name (om:port (om:component (ast:model-scope) o))))
+  (.name (om:port (resolve:component (ast:model-scope) o))))
 
 (define-method (code:port-name (o <bind>))
   (let* ((model (ast:model-scope))
@@ -265,7 +265,7 @@
   o)
 
 (define-method (code:instance-name (o <port>))
-  (.name (om:instance (ast:model-scope) o)))
+  (.name (resolve:instance (ast:model-scope) o)))
 
 (define-method (code:instance-name (o <trigger>))
   ((compose code:instance-name (cut .port (ast:model-scope) <>)) o))
@@ -458,7 +458,7 @@
       o))
 
 (define-method (code:type-name (o <bind>))
-  ((compose code:type-name .type (cut om:instance (ast:model-scope) <>) injected-instance-name) o))
+  ((compose code:type-name .type (cut resolve:instance (ast:model-scope) <>) injected-instance-name) o))
 
 (define-method (code:type-name (o <enum-field>))
   (code:scope+name o))

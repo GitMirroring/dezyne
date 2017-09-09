@@ -419,7 +419,7 @@
 
 (define* ((rewrite-formals #:optional model (locals '())) o)
 
-  (define (member? identifier) (om:variable model identifier))
+  (define (member? identifier) (resolve:variable model identifier))
   (define (pair-eq? p) (eq? (car p) (cdr p)))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))

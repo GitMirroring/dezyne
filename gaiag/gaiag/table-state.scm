@@ -109,7 +109,7 @@
 
 (define (var-bool? x) (and (is-a? x <variable>) (is-a? (.type x) <bool>)))
 
-(define ((var? model) identifier) (om:variable model identifier))
+(define ((var? model) identifier) (resolve:variable model identifier))
 (define (bool? x)
     (and (is-a? x <variable>) (is-a? (.type x) <bool>)))
 (define (int? x)

@@ -319,37 +319,42 @@
             ",")
            ")")))))
 
+(define-method (provided-interface (o <component-model>))
+  (let ((ports (ast:port* o)))
+    (if (= (length ports) 1) ((compose .type car) ports)
+        (error (format #f "expected one provided port, found: ~s\n" (length ports))))))
+
 (define (c++:asd-api-instance-declaration component)
   (map (lambda (api) (->string (list "boost::shared_ptr< ::" (.name (.name component)) "::" api "> api_" api ";\n")))
-       (delete-duplicates (map second ((asd-interfaces om:in?) (om:interface component))))))
+       (delete-duplicates (map second ((asd-interfaces om:in?) (provided-interface component))))))
 
 (define (c++:asd-api-instance-init component)
   (map (lambda (interface)
          (let ((port-name (.name (om:port component))))
            (->string (list ", api_" interface
                            "(boost::make_shared<" interface ">(boost::ref(component." port-name ")))\n"))))
-       (delete-duplicates (map second ((asd-interfaces om:in?) (om:interface component))))))
+       (delete-duplicates (map second ((asd-interfaces om:in?) (provided-interface component))))))
 
 (define (c++:asd-cb-instance-declaration component)
   (map (lambda (cb) (->string (list "boost::shared_ptr< ::" (.name (.name component)) "::" cb "> cb_" cb ";\n")))
-       (delete-duplicates (map second ((asd-interfaces om:out?) (om:interface component))))))
+       (delete-duplicates (map second ((asd-interfaces om:out?) (provided-interface component))))))
 
 (define (c++:asd-cb-instance-init component)
   (map (lambda (cb) (->string (list "cb_" cb " = boost::make_shared<" cb ">(boost::ref(" (.name (om:port component)) "));\n")))
-       (delete-duplicates (map second ((asd-interfaces om:out?) (om:interface component))))))
+       (delete-duplicates (map second ((asd-interfaces om:out?) (provided-interface component))))))
 
 (define (c++:asd-cb-event-init component)
   (map (lambda (entry)
          (let* ((event (first entry))
                 (interface (second entry))
-                (event (resolve:event (om:interface component) event))
+                (event (resolve:event (provided-interface component) event))
                 (formals (.elements (.formals (.signature event))))
                 (port (om:port component))
                 (port-name (.name port)))
            (->string (list "component." port-name ".out." (first entry)
                            " = boost::bind(&" (om:name component) "Glue::" (first entry) ","
                            (comma-join (list "this" (comma-join (map (compose (cut string-append "_" <>) number->string) (iota (length formals) 1 1))))) ");\n"))))
-       ((asd-interfaces om:out?) (om:interface component))))
+       ((asd-interfaces om:out?) (provided-interface component))))
 
 (define (c++:asd-cb-definition component)
   (map (lambda (entry)
@@ -362,7 +367,7 @@
                  ": port(port)\n"
                  "{}\n"
                  (map (lambda (asd dzn)
-                        (let* ((event (resolve:event (om:interface component) dzn))
+                        (let* ((event (resolve:event (provided-interface component) dzn))
                                (formals (.elements (.formals (.signature event))))
                                (arguments (map .name formals))
                                (formals (map (lambda (formal)
@@ -373,19 +378,19 @@
                       asd-events dzn-events)
                  "};\n"))))
       (map (lambda (name)
-             (let* ((lst (filter (lambda (entry) (eq? name (second entry))) ((asd-interfaces om:out?) (om:interface component))))
+             (let* ((lst (filter (lambda (entry) (eq? name (second entry))) ((asd-interfaces om:out?) (provided-interface component))))
                     (dzn-events (map first lst))
                     (asd-events (map third lst)))
               (list name dzn-events asd-events)))
-           (delete-duplicates (map second ((asd-interfaces om:out?) (om:interface component)))))))
+           (delete-duplicates (map second ((asd-interfaces om:out?) (provided-interface component)))))))
 
 (define (c++:asd-get-api component)
   (map (lambda (api) (->string (list "component->GetAPI(&api_" api ");\n")))
-       (delete-duplicates (map second ((asd-interfaces om:in?) (om:interface component))))))
+       (delete-duplicates (map second ((asd-interfaces om:in?) (provided-interface component))))))
 
 (define (c++:asd-register-cb component)
   (map (lambda (cb) (->string (list "component->RegisterCB(cb_" cb ");\n")))
-       (delete-duplicates (map second ((asd-interfaces om:out?) (om:interface component))))))
+       (delete-duplicates (map second ((asd-interfaces om:out?) (provided-interface component))))))
 
 (define (c++:asd-register-st component)
   (if (pair? (filter om:out? (om:events (om:port component))))
@@ -396,19 +401,19 @@
   (map
    (lambda (dzn asd)
      (make <glue-event> #:name (.name dzn) #:signature (.signature dzn) #:direction (.direction dzn) #:asd-channel (cadr asd) #:asd-event (caddr asd)))
-   (filter om:in? (om:events (om:port model))) ((asd-interfaces om:in?) (om:interface model))))
+   (filter om:in? (om:events (om:port model))) ((asd-interfaces om:in?) (provided-interface model))))
 
 (define (c++:asd-method-definition model)
   (map
    (lambda (dzn asd)
      (make <glue-event> #:name (.name dzn) #:signature (.signature dzn) #:direction (.direction dzn) #:asd-channel (cadr asd) #:asd-event (caddr asd)))
-   (filter om:in? (om:events (om:port model))) ((asd-interfaces om:in?) (om:interface model))))
+   (filter om:in? (om:events (om:port model))) ((asd-interfaces om:in?) (provided-interface model))))
 
 (define (c++:asd-cb-method-definition model)
   (map (lambda (entry)
          (let* ((event-name (first entry))
                 (interface (second entry))
-                (event (resolve:event (om:interface model) event-name))
+                (event (resolve:event (provided-interface model) event-name))
                 (formals (.elements (.formals (.signature event))))
                 (arguments (comma-join (map .name formals)))
                 (formals (comma-join (map (lambda (formal)
@@ -421,7 +426,7 @@
                            "cb_" interface "->" (third entry) "(" arguments ");\n"
                            "st->processCBs();\n"
                            "}\n"))))
-       ((asd-interfaces om:out?) (om:interface model))))
+       ((asd-interfaces om:out?) (provided-interface model))))
 
 (define (c++:asd-api-definition model)
   (map (lambda (entry)
@@ -438,7 +443,7 @@
                            "{}\n"
                            (map
                             (lambda (dzn asd)
-                              (let* ((event (resolve:event (om:interface model) dzn))
+                              (let* ((event (resolve:event (provided-interface model) dzn))
                                      (void? (is-a? (.type (.signature event)) <void>))
                                      (formals (.elements (.formals (.signature event))))
                                      (arguments (comma-join (map .name formals)))
@@ -458,11 +463,11 @@
                             dzn-events asd-events)
                            "};\n"))))
        (map (lambda (api)
-              (let* ((lst (filter (lambda (entry) (eq? api (second entry))) ((asd-interfaces om:in?) (om:interface model))))
+              (let* ((lst (filter (lambda (entry) (eq? api (second entry))) ((asd-interfaces om:in?) (provided-interface model))))
                      (dzn-events (map first lst))
                      (asd-events (map third lst)))
                 (list api dzn-events asd-events)))
-            (delete-duplicates (map second ((asd-interfaces om:in?) (om:interface model)))))))
+            (delete-duplicates (map second ((asd-interfaces om:in?) (provided-interface model)))))))
 
 (define (c++:asd-get-api-definition model)
   (map (lambda (interface)
@@ -471,7 +476,7 @@
                            "{\n"
                            "*api = api_" interface ";\n"
                            "}\n"))))
-       (delete-duplicates (map second ((asd-interfaces om:in?) (om:interface model))))))
+       (delete-duplicates (map second ((asd-interfaces om:in?) (provided-interface model))))))
 
 (define (c++:asd-register-cb-definition model)
   (map (lambda (interface)
@@ -480,7 +485,7 @@
                            "{\n"
                            "cb_" interface " = cb;\n"
                            "}\n"))))
-       (delete-duplicates (map second ((asd-interfaces om:out?) (om:interface model))))))
+       (delete-duplicates (map second ((asd-interfaces om:out?) (provided-interface model))))))
 
 (define-template x:construction-include c++:construction-include)
 

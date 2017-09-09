@@ -58,25 +58,21 @@
            om:blocking-compound?
            om:instance-name
            om:collect
-           om:component
            om:declarative?
            om:enums
            om:event
            om:events
            om:filter:p
            om:find-triggers
-           om:function
            om:functions
            om:globals
            om:imperative?
            om:imported?
            om:in?
-           om:instance
            om:instances
            om:instance-name
            om:instance-binding?
            om:interface-enums
-           om:interface
            om:interface-types
            om:interfaces
            om:name
@@ -103,7 +99,6 @@
            om:type
            om:type-name
            om:types
-           om:variable
            om:variables
            om:void?
            ))
@@ -185,20 +180,6 @@
 
 ;;; SINGLE-LOOKUP
 
-(define (om:function model o)
-  (find (om:named o) (om:functions model)))
-
-(define (om:instance model o)
-  (match o
-    ((? symbol?)
-     (find (lambda (x) ;;(stderr "om:instance: ~a; ~a\n" o x)
-                   (eq? (.name x) o)) ((compose .elements .instances) model)))
-    (($ <binding>) (or (.instance o)
-                       (.type ((.port model) o))))
-    (($ <bind>) (om:instance model (om:instance-binding? o)))
-    (($ <port>) (om:instance model (om:instance-binding? (om:port-bind model o))))
-    ((? boolean?) #f)))
-
 (define (om:port-bind? bind)
   (and (om:port-binding? bind)
        bind))
@@ -270,37 +251,6 @@
 (define (om:instance-name bind)
   (or (.instance (.left bind)) (.instance (.right bind))))
 
-(define* (om:component system #:optional o)
-  (match o
-    (#f (match system
-          (($ <foreign>) system)
-          (($ <component>) system)
-          (($ <root>) (om:find (disjoin (is? <component>) (is? <foreign>)) system))
-          (($ <scope.name>) ;(cached-model system)
-           (find (lambda (x) ;;(stderr "KANARIE: ~a ~a\n" system (.name x))
-                         (om:equal? system (.name x))) (filter (negate (is? <data>)) (.elements (car (ast:scope-root))))))
-          (_ #f)))
-    ((? symbol?) (om:component system (om:instance system o)))
-    (($ <binding> #f port-name)
-     ;;#f
-     ;;(om:component system (om:binding-other-port system port))
-     (let* ((bind (om:bind system port-name))
-            (instance (om:instance-name bind)))
-       (om:component system instance)))
-    (($ <binding> instance port-name) (om:component system instance))
-    (($ <bind>) (om:component system (om:instance-name o)))
-    (($ <instance>) (.type o))
-    (($ <port>) (om:interface (.type o)))))
-
-(define (om:interface o)
-  (match o
-    (($ <port>) (om:interface (.type o)))
-    (($ <interface>) o)
-    ((? (is? <model>)) (om:interface (om:port o)))
-    (($ <scope.name>) (find (om:named o) ((compose .elements ast:root-scope))))
-    (($ <root>) (om:find (is? <interface>) o))
-    ((h t ...) (find (is? <interface>) o))))
-
 (define-method (om:behaviour-ports (o <component-model>))
   (if (and (is-a? o <component>) (.behaviour o))
       ((compose .elements .ports .behaviour) o)
@@ -312,7 +262,7 @@
      (let* ((port (.port o)))
        (or
         (and-let* ((name (.name (.instance o)))
-                   (instance (om:instance model name))
+                   (instance (resolve:instance model name))
                    (type (and=> instance .type))
                    (component type))
                   (om:port component port))
@@ -322,9 +272,6 @@
                  (lambda (x) (eq? (.direction x) 'provides)))
              (append (.elements (.ports model))
                      (om:behaviour-ports model))))))
-
-(define (om:variable model o)
-  (find (om:named o) (om:variables model)))
 
 (define (unspecified? x) (eq? x *unspecified*))
 
@@ -442,7 +389,7 @@
     (($ <on>) (om:find-triggers (.triggers ast)))
     (($ <triggers> (triggers ...)) triggers)
     (($ <guard>) (om:find-triggers (.statement ast) found))
-    (($ <system>) (append-map om:find-triggers (map (lambda (i) (om:component ast i)) (om:instances ast))))
+    (($ <system>) (append-map om:find-triggers (map (lambda (i) (resolve:component ast i)) (om:instances ast))))
     (_ '())))
 
 (define (om:interface-types o)

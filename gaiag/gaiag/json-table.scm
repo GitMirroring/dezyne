@@ -109,8 +109,8 @@
 
 (define ((value->state model var) o)
   (match o
-    ((? number?) (make <field-test> #:variable (om:variable model var) #:field o))
-    ((? symbol?) (make <field-test> #:variable (om:variable model var) #:field o))
+    ((? number?) (make <field-test> #:variable (resolve:variable model var) #:field o))
+    ((? symbol?) (make <field-test> #:variable (resolve:variable model var) #:field o))
     (_ o)))
 
 (define ((json-table-state model) o)
@@ -222,7 +222,7 @@
 
 (define (json-next- model var next o functions)
   (define (var? variable) (eq? (.name variable) var))
-  (define (variable var) (om:variable model var))
+  (define (variable var) (resolve:variable model var))
   (let ((unknown (make <field-test> #:variable (variable var) #:field '<unknown>)))
    (match o
      (($ <compound> (statements ...))

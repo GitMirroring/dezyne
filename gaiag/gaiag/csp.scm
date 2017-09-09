@@ -379,7 +379,7 @@
      ")")))
 
 (define (csp-expression->string model o locals)
-  (define (member? identifier) (om:variable model identifier))
+  (define (member? identifier) (resolve:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
 
@@ -590,11 +590,11 @@
   (ast-transform-return ast (purge-data ast (tail-call src))))
 
 (define (purge-data root o)
-  (let ((model (or (om:component root) (om:interface root))))
+  (let ((model (or (resolve:component root) (resolve:interface root))))
     (ast:set-model-scope model (model-purge-data model o))))
 
 (define* (model-purge-data model o #:optional (locals '()))
-  (define (member? identifier) (om:variable model identifier))
+  (define (member? identifier) (resolve:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
   (define (extern-type? type) (as type <extern>))
@@ -737,7 +737,7 @@
            (car result)
            (clone o #:elements result))))
     (($ <on> triggers statement)
-     (let* ((model (or (om:component ast) (om:interface ast)))
+     (let* ((model (or (resolve:component ast) (resolve:interface ast)))
             (members (om:member-names model))
             (valued-triggers? (lambda (x) (om:typed? model ((compose car .elements) triggers)))))
        (let ((result (ast-transform-return ast statement)))
@@ -764,7 +764,7 @@
 (define* (on->csp model o #:optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()) (indent 0) (tail '()) (function #f))
 
   (define (member? identifier) (and (not (local? identifier))
-                                    (om:variable model identifier)))
+                                    (resolve:variable model identifier)))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (member? identifier) (local? identifier)))
   (define (bool? identifier) (and (var? identifier) (is-a? (.type (var? identifier)) <bool>)))
@@ -778,7 +778,7 @@
     (let ((type (ast:expression-type o)))
       (om:type-name type)))
 
-  (let* ((model (or (om:component model) (om:interface model)))
+  (let* ((model (or (resolve:component model) (resolve:interface model)))
          (model-name ((om:scope-name) model))
          (model- (symbol-append model-name '_))
          (channel (or channel (if (is-a? model <interface>) model-name (.name (om:port model)))))
@@ -1105,7 +1105,7 @@
 (define (csp-queue-size) (command-line:get 'queue-size 3))
 
 (define* (check-range identifiers statement model #:optional (locals '()) (indent 0))
-  (define (member? identifier) (om:variable model identifier))
+  (define (member? identifier) (resolve:variable model identifier))
   (define (local? identifier) (assoc-ref locals identifier))
   (define (var? identifier) (or (local? identifier) (member? identifier)))
   (define (int-type? type) (as type <int>))
