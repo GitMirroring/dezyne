@@ -263,6 +263,9 @@
 (define-method (dzn:type (o <event>))
   ((compose dzn:type .type .signature) o))
 
+(define-method (dzn:type (o <function>))
+  ((compose dzn:type .type .signature) o))
+
 (define-template x:then .then #f <statement>)
 (define-template x:else (lambda (o) (or (.else o) '())) #f <statement>)
 
@@ -286,6 +289,8 @@
 (define-template x:async-port ast:port* 'newline-infix)
 (define-template x:declare-variable ast:variable* 'newline-infix)
 (define-template x:range (lambda (o) (list ((compose .from .range) o) ((compose .to .range) o))) 'range-infix)
+
+(define-template x:define-function ast:function* 'newline-infix)
 
 (define-template x:trigger ast:trigger* 'comma-infix)
 (define-method (dzn:formal-type (o <formal>)) o)
@@ -358,6 +363,9 @@
 (define-template x:expand-statement dzn:expand-statement #f <statement>)
 (define-method (dzn:expand-statement (o <statement>))
   o)
+
+(define-method (dzn:expand-statement (o <function>))
+  ((compose dzn:expand-statement .statement) o))
 
 (define-method (dzn:expand-statement (o <compound>))
   (if (null? (ast:statement* o)) (make <skip>)

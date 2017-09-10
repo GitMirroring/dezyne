@@ -74,6 +74,7 @@
            ast:binding*
            ast:field*
            ast:formal*
+           ast:function*
            ast:instance*
            ast:model*
            ast:port*
@@ -108,8 +109,10 @@
 (define-method (ast:binding* (o <system>)) ((compose ast:binding* .bindings) o))
 (define-method (ast:function* (o <behaviour>)) ((compose ast:function* .functions) o))
 (define-method (ast:field* (o <enum>)) ((compose ast:field* .fields) o))
+(define-method (ast:formal* (o <function>)) ((compose ast:formal* .signature) o))
 (define-method (ast:formal* (o <signature>)) ((compose ast:formal* .formals) o))
 (define-method (ast:formal* (o <trigger>)) ((compose ast:formal* .formals) o))
+(define-method (ast:function* (o <behaviour>)) ((compose ast:function* .functions) o))
 (define-method (ast:instance* (o <system>)) ((compose ast:instance* .instances) o))
 (define-method (ast:port* (o <component-model>)) ((compose ast:port* .ports) o))
 (define-method (ast:statement* (o <behaviour>)) ((compose ast:statement* .statement) o))
