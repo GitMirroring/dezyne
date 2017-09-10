@@ -1,1 +1,1 @@
-{"known":["c:build","cs:build"],"skip":["execute","verify","run"],"comment":"livelock model"}
+{"known":["c:build","cs:build"],"known":["table"],"skip":["execute","verify","run"],"comment":"livelock model"}

@@ -515,30 +515,41 @@ var aspects = {
   table: function(parameters) {
 
     function test_table(promise, args) {
+      var out = 'out/'+path.basename(parameters.dir)+'/table';
       var suffix = args[0];
       var form = args[1];
+      var base = path.basename(parameters.dir);
       return promise.then(function(result1) {
-        var baseline = parameters.dir + '/baseline/table/'+parameters.model+ '-' + form + '.' + suffix;
-        return lstat(baseline)
-          .then (function(stats) {
+        return util.spawn_sync_shell('mkdir -p ' + out)
+          .then(function(result1) {
             var imports = imports_string (parameters.meta.imports);
-            var cmd = 'diff -uwB '+baseline+' <('+dzn()+' table '+imports+' --form=' + form + ' -o - '+parameters.filename + (suffix == 'html' ? '| w3m -dump -T text/html' : '') +')';
-            return util.spawn_sync_shell(cmd)
-              .fail (function(err) {console.log(err); return {status: -1, output: result.output + err}});
+            var cmd = (form == 'dzn')
+                ? dzn()+' code -l dzn '+imports+' -o - '+parameters.filename +'>'+out+'/'+base+'-'+form+suffix+'-barf'
+                : dzn()+' table '+imports+' --form='+form+' -o - '+parameters.filename + (suffix == '.html' ? '| w3m -dump -T text/html' : '') +'>'+out+'/'+base+'-'+form+suffix+'-barf';
+            console.log ('CMD:' + cmd);
+            return util.spawn_sync_shell(cmd);
+          })
+          .then (function(result) {
+            var cmd = (suffix == '.dzn')
+                ? dzn()+' parse '+out+'/'+base+'-'+form+suffix + '-barf'
+                : 'true';
+            console.log ('CMD:' + cmd);
+            return util.spawn_sync_shell(cmd);
           })
           .then (function(result2) { return {status: result1.status || result2.status, output: result1.output + result2.output}; })
-          .fail (function(err) {
-            const comment = 'table: [SKIPPED] no baseline '+baseline;
+          .fail (function(e) {
+            const comment = 'table: [SKIPPED] error='+e.message;
             console.log(comment);
             return {status: result1.status, output: result1.output + comment};
           });
-      });
-    }
+      })
+    };
 
-    return [['dzn','state'],
-            ['dzn','event'],
-            ['html','state'],
-            ['html','event']].reduce(test_table, q({status:0, output:''}));
+    return [['.dzn','dzn'],
+            ['.dzn','state'],
+            ['.dzn','event'],
+            ['.html','state'],
+            ['.html','event']].reduce(test_table, q({status:0, output:''}));
   }
   ,
   traces: function(parameters) {

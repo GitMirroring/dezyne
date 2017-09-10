@@ -410,8 +410,10 @@
       ""))
 
 (define-method (dzn:x:pand (o <ast>) template file-name)
+  (stderr "DUMP file-name=~s\n" file-name)
   (let ((file-name (if (and file-name (symbol? file-name)) (symbol->string file-name) file-name))) ;; FIXME
-    (dump-output (string-append (if (eq? template 'main) "" (dzn:dir o)) ;; FIXME AAARRRGH
+    (dump-output (string-append (if (or (equal? file-name "-")
+                                        (eq? template 'main)) "" (dzn:dir o)) ;; FIXME AAARRRGH
                                 file-name)
                  (dzn:x:pand-display o template))))
 
