@@ -1,5 +1,5 @@
 #x:method
 {
-  #x:expand-statement
+  #x:expand-on
   #x:return
 }

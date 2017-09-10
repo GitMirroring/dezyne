@@ -61,7 +61,9 @@
             dzn:file2file
             dzn:model2file?
             dzn:model2file
-            dzn:x:pand-display))
+            dzn:x:pand-display
+            dzn:statement
+            dzn:expand-statement))
 
 (define-class <unspecified> (<ast>))
 

@@ -350,6 +350,18 @@
          (map .name ((compose .elements .formals) trigger))
          ((compose .elements .formals .signature) event))))
 
+(define-method (code:expand-on (o <statement>))
+  (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
+      (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
+      o))
+
+(define-method (code:expand-on (o <on>))
+  ((compose dzn:statement ) o)
+  (let ((o (.statement o)))
+   (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
+       (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
+       o)))
+
 (define-method (code:assign-reply (o <reply>))
   (let ((expression (.expression o)))
     (if (is-a? (ast:expression-type expression) <void>) ""
@@ -584,7 +596,7 @@
 (define-template x:block identity)
 (define-template x:port-release (lambda (o) (if (om:blocking-compound? (ast:model-scope)) o "")))
 
-
+(define-template x:expand-on code:expand-on)
 
 (define-template x:all-ports-meta-list om:ports 'meta-infix)
 
