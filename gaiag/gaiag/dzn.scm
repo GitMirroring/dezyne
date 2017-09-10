@@ -83,6 +83,7 @@
                                    (negate (disjoin dzn-async? om:imported? (is? <foreign>))))
                           (ast:model* root)))
          (root* (clone root #:elements objects)))
+    (for-each dzn:dump (filter (is? <foreign>) (.elements root)))
     (dzn:dump root*)))
 
 (define-public (dzn-async? o)
@@ -437,6 +438,10 @@
     (dzn:x:pand o 'source (symbol-append name (dzn:extension (make <interface>))))))
 
 (define-method (dzn:dump (o <component>))
+  (let ((name ((om:scope-name) o)))
+    (dzn:x:pand o 'source (symbol-append name (dzn:extension (make <component>))))))
+
+(define-method (dzn:dump (o <foreign>))
   (let ((name ((om:scope-name) o)))
     (dzn:x:pand o 'source (symbol-append name (dzn:extension (make <component>))))))
 
