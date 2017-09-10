@@ -355,26 +355,6 @@
     (if (is-a? (ast:expression-type expression) <void>) ""
         o)))
 
-(define-method (code:on-statement (o <statement>))
-  (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
-      (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
-      o))
-(define-method (code:on-statement (o <on>))
-  (let ((o (.statement o)))
-   (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
-       (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
-       o)))
-
-(define-method (code:guard-statement (o <statement>))
-  (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
-      (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
-      o))
-(define-method (code:guard-statement (o <guard>))
-  (let ((o (.statement o)))
-   (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
-       (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
-       o)))
-
 (define ((symbol->enum-field enum) o)
   (make <enum-field> #:type enum #:field o))
 
@@ -412,10 +392,6 @@
 
 (define-method (code:reply-type (o <reply>))
   ((compose code:reply-type .expression) o))
-
-(define-method (code:declarative-or-imperative (o <compound>))
-  (if (om:imperative? o) o
-      (make <declarative-compound> #:elements o)))
 
 (define-method (code:scope.name (o <enum-literal>))
   (code:scope.name (.type o)))
@@ -597,14 +573,7 @@
 
 (define-template x:reply-type code:reply-type 'name-infix)
 
-(define-template x:declarative-or-imperative code:declarative-or-imperative)
-
-
-(define-template x:guard-statements .elements #f <statement>)
-
 (define-template x:out-bindings .elements)
-
-(define-template x:statements .elements #f <statement>)
 
 (define-template x:variable-name code:variable-name)
 
@@ -615,9 +584,7 @@
 (define-template x:block identity)
 (define-template x:port-release (lambda (o) (if (om:blocking-compound? (ast:model-scope)) o "")))
 
-(define-template x:on-statement code:on-statement)
 
-(define-template x:guard-statement code:guard-statement)
 
 (define-template x:all-ports-meta-list om:ports 'meta-infix)
 

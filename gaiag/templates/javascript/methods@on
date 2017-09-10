@@ -1,4 +1,4 @@
 #x:method {
-  #x:on-statement
+  #x:expand-statement
   #x:return
 };
