@@ -81,7 +81,7 @@
 (define-method (c++:formal-type (o <port>)) ((compose .elements .formals .signature car om:events) o))
 
 (define-method (c++:return-type (o <void>))
-  "void")
+  o)
 
 (define-method (c++:return-type (o <glue-event>))
   (c++:return-type (.type (.signature o))))

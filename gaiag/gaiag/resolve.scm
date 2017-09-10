@@ -937,9 +937,8 @@
                      (eq? (car e) 'model)))
                scope)))
 
-(define (ast:root-scope) (car (ast:scope-root)))
-
-(define (ast:model-scope) (car (ast:scope-model)))
+(define (ast:root-scope) (and=> (ast:scope-root) car))
+(define (ast:model-scope) (and=> (ast:scope-model) car))
 
 (define-public (compose-root . f)
   (lambda (o)

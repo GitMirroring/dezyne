@@ -65,6 +65,7 @@
             dzn:statement
             dzn:expand-statement))
 
+(define-class <direction> (<named>))
 (define-class <unspecified> (<ast>))
 
 (define (ast-> ast)
@@ -153,9 +154,17 @@
   "")
 
 ;;; dzn: generic templates
+;; Hmmm, `source' means filter-out types, must later add global types...
+;; => x:source all
+;;    x:models no types
+;;    x:globals no models
 (define-template x:source dzn:source 'newline-infix)
 (define (dzn:source o)
   (topological-sort (filter (negate (is? <type>)) (map dzn:annotate-shells (.elements o)))))
+
+(define-template x:global dzn:global 'newline-infix)
+(define (dzn:global o)
+  (filter (is? <type>) (.elements o)))
 
 (define (dzn:annotate-shells o)
   (if (and (is-a? o <system>)
@@ -186,6 +195,12 @@
          (model-scope (om:scope+name (ast:model-scope))))
     (if (equal? scope model-scope) (list (om:name type))
         (om:scope+name type))))
+
+(define-method (dzn:type (o <bool>))
+  o)
+
+(define-method (dzn:type (o <void>))
+  o)
 
 (define-template x:expression dzn:expression)
 
@@ -278,17 +293,13 @@
 (define-template x:formal-type dzn:formal-type)
 
 (define-template x:direction dzn:direction)
-(define-method (dzn:direction (o <formal>)) ; MORTAL SIN HERE!!?
-  (case (.direction o)
-    ((#f) "")
-    ((in) "in ")
-    ((inout) "inout ")
-    ((out) "out ")))
+
+(define-method (dzn:direction (o <ast>)) ; MORTAL SIN HERE!!?
+  (if (not (.direction o)) ""
+      (make <direction> #:name (.direction o))))
 
 (define-method (dzn:direction (o <trigger>))
-  (case ((compose .direction .event) o)
-    ((in) "in ")
-    ((out) "out ")))
+  ((compose dzn:direction .event) o))
 
 (define-template x:port-prefix dzn:port-prefix 'port-suffix)
 (define-method (dzn:port-prefix (o <action>))

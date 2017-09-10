@@ -1,1 +1,1 @@
-in #x:type  #.name#x:signature;
+#x:direction  #x:type  #.name#x:signature;
