@@ -287,7 +287,9 @@
   (json-data-location data o))
 
 (define (json-action model o)
-  (json-data-location ((ast->html model) o) o))
+  (ast:set-model-scope
+   model
+   (json-data-location (ast->html o) o)))
 
 (define (json-callback model o)
 
@@ -312,7 +314,7 @@
   (or (and-let* (((is-a? model <interface>))
                  ((is-a? o <statement>))
                  (actions (return-actions o)))
-                (map (ast->html model) actions))
+        (ast:set-model-scope model (map ast->html actions)))
       '()))
 
 (define* (json-triggers o #:optional (location o))

@@ -35,6 +35,7 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag ast)
   #:use-module (gaiag xpand)
+  #:use-module (gaiag goops)
 
   #:export (
            ast->
@@ -51,9 +52,8 @@
     (if (dzn:model2file?) (dzn:model2file root)
         (dzn:file2file root))))
 
-(define* ((ast->html #:optional (model #f) (dzn:language 'html)) o)
-  (parameterize ((language dzn:language))
-    (ast:set-scope o ((dzn:x:pand-display o 'source))))
-  "")
+(define-method (ast->html (o <statement>))
+  (parameterize ((language 'html))
+    (with-output-to-string (dzn:x:pand-display o 'statement))))
 
 (define-template x:css (lambda (o) (gulp-template 'dzn.css)))
