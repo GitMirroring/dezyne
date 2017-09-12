@@ -63,7 +63,6 @@ Usage: gdzn run [OPTION]... [FILE]...
          (strict? (option-ref options 'strict #f))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
          (command (string-append
-                   "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
                    " seqdiag "
                    (string-append " -m " model-opt)
                    (string-join imports " -I " 'prefix)

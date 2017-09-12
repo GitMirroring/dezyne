@@ -1,5 +1,0 @@
-#! /usr/bin/env guile
--*- scheme -*-
-!#
-(include "script-preamble.scm")
-((@ (gaiag json2scm) main) (command-line))

@@ -1,0 +1,12 @@
+#!@GUILE@ --no-auto-compile
+-*- scheme -*-
+!#
+
+(set! %load-path (append '("@guilemoduledir@") %load-path))
+(set! %load-compiled-path (append '("@guileobjectdir@") %load-compiled-path))
+
+(unless (getenv "DZN_UNINSTALLED")
+  (set! %load-path (append '("@abs_top_srcdir@/gaiag") %load-path))
+  (set! %load-compiled-path (append '("@abs_top_builddir@/gaiag") %load-compiled-path)))
+
+((@ (gaiag scm2json) main) (command-line))

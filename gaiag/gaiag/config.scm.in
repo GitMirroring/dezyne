@@ -1,0 +1,78 @@
+;;; Dezyne --- Dezyne command line tools
+;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; This file is part of Dezyne.
+;;;
+;;; Dezyne is free software: you can redistribute it and/or modify it
+;;; under the terms of the GNU Affero General Public License as
+;;; published by the Free Software Foundation, either version 3 of the
+;;; License, or (at your option) any later version.
+;;;
+;;; Dezyne is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;;; Affero General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU Affero General Public
+;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+;;;
+;;; Commentary:
+;;;
+;;; Code:
+
+(define-module (gaiag config)
+  #:export (%service-version
+            %bindir
+            %sbindir
+            %datadir
+            %localstatedir
+            %prefix
+            %service-bindir
+            %sysconfdir
+            %command-dir
+            %service-dir
+            %template-dir))
+
+;;; Commentary:
+;;;
+;;; Compile-time configuration of gdzn.  When adding a substitution variable
+;;; here, make sure to have configure substitute it.
+;;;
+;;; Code:
+
+(define %prefix
+  (or (and (getenv "DZN_UNINSTALLED") (getenv "PREFIX"))
+      "@prefix@"))
+
+(define %datadir
+  (or (and (getenv "DZN_UNINSTALLED") %prefix)
+      "@datadir@"))
+
+(define %bindir
+  (or (and (getenv "DZN_UNINSTALLED") (string-append %prefix "/bin"))
+      "@bindir@"))
+
+(define %service-bindir
+  (string-append %datadir "/bin"))
+
+(define %sbindir
+  (or (and (getenv "DZN_UNINSTALLED") (string-append %prefix "/sbin"))
+      "@sbindir@"))
+
+(define %template-dir
+  (string-append %datadir "/gaiag/templates"))
+
+(define %command-dir
+  (string-append %datadir "/gaiag/gaiag/commands"))
+
+(define %service-dir
+  (string-append %datadir "/services"))
+
+(define %service-version
+  "@SERVICE_VERSION@")
+
+(define %localstatedir
+  "@localstatedir@")
+
+(define %sysconfdir
+  "@sysconfdir@")

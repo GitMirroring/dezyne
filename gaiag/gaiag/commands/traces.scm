@@ -34,6 +34,7 @@
   #:use-module (gaiag asserts)
   #:use-module (gaiag misc)  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
 
+  #:use-module (gaiag config)
   #:use-module (gaiag goops)
   #:use-module (gaiag util)
   #:use-module (gaiag ast)
@@ -143,11 +144,7 @@ puts [myism numeric_alphabet]
 puts [myism alphabet]
 " (dirname tmp.csp) (basename tmp.csp) process))
            (bin ((compose dirname car) (command-line)))
-           (prefix (dirname bin))
-           (prefix (if (file-exists? (string-append prefix "/services")) prefix
-                       (dirname prefix)))
-           (services (string-append prefix "/services"))
-           (traces.py (string-append services "/scripts/traces.py"))
+           (traces.py (string-append %service-dir "/scripts/traces.py"))
            (foo (if gdzn-debug? (stderr "traces.py=~s\n" traces.py)))
            (flush-opt (option-ref options 'flush #f))
            (illegal-opt (option-ref options 'illegal #f))

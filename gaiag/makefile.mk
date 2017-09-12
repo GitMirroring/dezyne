@@ -27,19 +27,18 @@ SRCS := $(shell $(GIT_LS_FILES)\
   $(CDIR)/gash/*.scm\
   $(CDIR)/language/dezyne/*.scm\
   $(CDIR)/gaiag/*.scm\
+  $(CDIR)/gaiag/*.scm.in\
   $(CDIR)/gaiag/deprecated/*.scm\
   $(CDIR)/gaiag/commands/*.scm\
 )
 
+SRCS := $(SRCS:%.scm.in=%.scm)
 GOBJS := $(SRCS:%.scm=%.go)
 
 $(CDIR)-clean: CDIR:=$(CDIR)
 $(CDIR)-clean: GOBJS:=$(GOBJS)
 $(CDIR)-clean: clean-go
 
-include make/guile.mk
-
-TARG := script-preamble.scm
 include make/guile.mk
 
 TARG := gaiag
@@ -54,11 +53,8 @@ include make/guile.mk
 TARG := json2scm
 include make/guile.mk
 
-$(BUILD)/gaiag: $(BUILD)/script-preamble.scm
-$(BUILD)/gdzn: $(BUILD)/script-preamble.scm
-$(BUILD)/gdzn: $(BUILD)/generate
-$(BUILD)/json2scm: $(BUILD)/script-preamble.scm
-$(BUILD)/scm2json: $(BUILD)/script-preamble.scm
+$(BIN)/gaiag: $(BIN)/generate
+$(BIN)/gdzn: $(BIN)/generate
 
 #TEST := $(TEST) $(CDIR)-check
 

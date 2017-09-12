@@ -25,6 +25,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
+  #:use-module (gaiag config)
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
   #:use-module (gaiag parse)
@@ -51,25 +52,16 @@ Usage: gdzn ls [OPTION]... [FILE]...
           (exit 0)))
     options))
 
-(define* (get-prefix #:key (resolve? #t))
-  (let* ((path (car (command-line)))
-         (path (if (string-index path #\/) path
-                   (search-path (string-split (getenv "PATH") #\:) path)))
-         (path (if resolve? (canonicalize-path path) path))
-         (prefix ((compose dirname dirname) path)))
-    prefix))
-
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (files (map (lambda (f) (if (not (string-prefix? "/" f)) f (string-drop f 1))) files))
          (debug? (find (cut equal? <> "--debug") (command-line)))
          (recursive? (option-ref options 'recursive #f))
-         (prefix (get-prefix))
-         (services (if (access? (string-append prefix "/root") R_OK) prefix
-                       (string-append (getenv "DEZYNE_PREFIX") "/services")))
-         (root (string-append services "/root/fs")))
-    ;;(stderr "root=~a\n" root)
+         (root (string-append %datadir "/root/fs"))
+         (gdzn-debug? (find (cut equal? <> "--debug") (command-line))))
+    (when gdzn-debug?
+      (stderr "root=~a\n" root))
     (chdir root)
     (let* ((string (gulp-pipe
                     (string-append "ls -1 -F -L"

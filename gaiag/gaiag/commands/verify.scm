@@ -26,8 +26,9 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 curried-definitions)
-  #:use-module (gaiag json2scm)
   #:use-module (ice-9 getopt-long)
+  #:use-module (gaiag config)
+  #:use-module (gaiag json2scm)
   #:use-module (gaiag misc)
   #:use-module (gaiag commands parse)
   #:export (parse-opts
@@ -96,14 +97,11 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
 
 (define (verify options file-name)
   (let* ((bin ((compose dirname car) (command-line)))
-         (prefix (dirname bin))
-         (prefix (if (file-exists? (string-append prefix "/services")) prefix
-                     (dirname prefix)))
-         (services (string-append prefix "/services"))
          (model (option-ref options 'model #f))
+         (model (or model (error "verify: model not set")))
          (all? (option-ref options 'all #f))
          (q (option-ref options 'queue-size "3"))
-         (verify.js (string-append services "/scripts/verify.js"))
+         (verify.js (string-append %service-dir "/scripts/verify.js"))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))

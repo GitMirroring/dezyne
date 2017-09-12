@@ -45,7 +45,6 @@
 
 (define* (generator-parse-file file-name #:key (imports '()) mangle? model)
   (let* ((command (string-append
-                   "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
                    " generate -l scm -L -o -"
                    (if (not mangle?) "" " -M")
                    (string-join imports " -I " 'prefix)

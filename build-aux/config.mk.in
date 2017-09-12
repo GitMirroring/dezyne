@@ -1,0 +1,17 @@
+build:=@build@
+host:=@host@
+target:=@target@
+srcdir:=@srcdir@
+builddir:=@builddir@
+abs-top-builddir:=@abs_top_builddir@
+abs-top-srcdir:=@abs_top_srcdir@
+CONFIG_MK:=t
+BUILD_TRIPLET:=@build@
+GUIX:=@guix@
+GUILE_EFFECTIVE_VERSION:=@GUILE_EFFECTIVE_VERSION@
+GDZN:=@gdzn@
+GOJS:=@gojs@
+PREFIX:=@prefix@
+bindir:=@bindir@
+datadir:=@datadir@
+SYSCONFDIR:=@sysconfdir@

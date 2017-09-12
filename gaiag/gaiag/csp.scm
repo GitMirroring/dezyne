@@ -200,10 +200,10 @@
     (let* ((class (car assert))
            (model (cadr assert))
            (check (caddr assert))
-           (template (assoc-ref asserts-alist (list class check))))
+           (template (assoc-ref (asserts-alist) (list class check))))
       (animate-string template (csp:module o)))))
 
-(define asserts-alist
+(define (asserts-alist)
   `(
     ((component illegal) . "assert STOP [T= AS_#.scope_model _(false) \\ diff(Events,{illegal,queue_full})\n")
     ((component deterministic) . "assert CO_#.scope_model _(true,true) :[deterministic [F]]\n")
@@ -228,7 +228,7 @@
     module))
 
 (define (csp-file file-name module)
-  (parameterize ((template-dir (append (prefix-dir) '(templates csp))))
+  (parameterize ((template-dir (string-append (template-dir) "/csp")))
     (animate-file file-name module)))
 
 (define (valued? model o)

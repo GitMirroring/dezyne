@@ -15,12 +15,15 @@ Missing dependencies, run
 EOF
     exit 1
 fi
+. $(dirname $0)/VERSION
+export SERVICE_VERSION
 unset GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
 export GUILE_AUTO_COMPILE=0
 exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@"}
 !#
 
 (define-module (configure)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 curried-definitions)
@@ -56,18 +59,22 @@ exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@
       (and (and warn? (format (current-error-port) "warning: not found: ~a\n" name))
            default)))
 
-(define PREFIX "/var/lib/dezyne")
 (define GDZN (or (getenv "GDZN") "gdzn"))
 (define GOJS (or (getenv "GOJS") "/gnu/store/qapf0651kbb98zp1z6ikak05qnf3yphw-gojs-1.6.15.73fc41e1b41c289246994a7e5a6a32b7"))
 (define GUILE_EFFECTIVE_VERSION (effective-version))
-(define GUILE (or (getenv "guile") "guile"))
+(define GUILE (PATH-search-path (or (getenv "guile") "guile")))
 (define SYSCONFDIR "/etc")
+(define LOCALSTATEDIR "/var")
 (define BUILD_TRIPLET (gulp-pipe "gcc -dumpmachine 2>/dev/null"))
+(define SRCDIR (dirname (car (command-line))))
+(define SERVICE_VERSION (getenv "SERVICE_VERSION"))
 
 (define (parse-opts args)
   (let* ((option-spec
   	  '((build (value #t))
             (help (single-char #\h))
+            (bindir (value #t))
+            (datadir (value #t))
             (prefix (value #t))
             (sysconfdir (value #t))
             (verbose (single-char #\v))
@@ -76,7 +83,7 @@ exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@
          (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
          (files (option-ref options '() '()))
-         (prefix (option-ref options '() PREFIX))
+         (prefix (option-ref options '() #f))
          (usage? (and (not help?) #f)))
     (if (pair? files)
         (stderr "ignoring files: ~a\n" files))
@@ -84,10 +91,13 @@ exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@
              ((or (and usage? stderr) stdout) "\
 Usage: ./configure [OPTION]...
   -h, --help           display this help
-  --prefix=DIR         install in PREFIX [~a]
-  --sysconfdir=DIR     read-only single-machine data [PREFIX/etc]
   -v, --verbose        be verbose
-" PREFIX)
+  --prefix=DIR         install architecture-independent files in PREFIX [~a]
+
+  --bindir=DIR         user executables [PREFIX/bin]
+  --datadir=DIR        read-only data [PREFIX]
+  --sysconfdir=DIR     read-only single-machine data [PREFIX/etc]
+" (or prefix (getcwd)))
              (exit (or (and usage? 2) 0)))
         options)))
 
@@ -188,46 +198,101 @@ Usage: ./configure [OPTION]...
          (build-triplet (option-ref options 'build BUILD_TRIPLET))
          (host-triplet (option-ref options 'host BUILD_TRIPLET))
          (target-triplet (option-ref options 'target BUILD_TRIPLET))
-         (prefix (option-ref options 'prefix PREFIX))
+         (prefix (option-ref options 'prefix #f))
+         (datarootdir prefix)
+
          (sysconfdir (option-ref options 'sysconfdir SYSCONFDIR))
+         (localstatedir (option-ref options 'localstatedir LOCALSTATEDIR))
+
+         (package-name "dezyne-services") ; hmm
+         (datadir (option-ref options 'datadir
+                              (if prefix (string-append prefix "/services/" SERVICE_VERSION)
+                                  (getcwd))))
+
+         (guilemoduledir (option-ref options 'guilemoduledir (string-append datadir "/gaiag")))
+         (guileobjectdir guilemoduledir)
+         (prefix (or prefix (getcwd)))
+         (bindir (option-ref options 'bindir (string-append prefix "/bin")))
+         (libdir (option-ref options 'libdir prefix))
+
          (verbose? (option-ref options 'verbose #f))
-         (srcdir (dirname (car (command-line))))
+         (srcdir SRCDIR)
          (abs-top-srcdir (canonicalize-path srcdir))
          (builddir (getcwd))
          (abs-top-builddir (canonicalize-path builddir)))
+    (define* (substitute file-name pairs
+                         #:key (target (if (string-suffix? ".in" file-name)
+                                           (string-drop-right file-name 3) target)))
+      (with-output-to-file target
+        (lambda _
+          (display
+           (fold (lambda (o result)
+                  (regexp-substitute/global #f (car o) result 'pre (cdr o) 'post))
+                (with-input-from-file file-name read-string) pairs)))))
     (set! *verbose?* verbose?)
     (if (check-version GDZN '(0) #:optional? #t)
         (set! GDZN (PATH-search-path GDZN #:warn? #t))
-        (set! GDZN "$(BUILD)/gdzn"))
+        (set! GDZN "./pre-inst-env gdzn"))
     (when (pair? required)
           (stderr "\nMissing dependencies, run\n\n")
           (if guix?
-              (stderr "    guix environment -l package.scm\n")
+              (stderr "    guix environment -l guix.scm\n")
               (stderr "    sudo apt-get install ~a\n" ((->string " ") required)))
           (exit 1))
-    (with-output-to-file ".config.mk"
-      (lambda _
-        (stdout "build:=~a\n" build-triplet)
-        (stdout "host:=~a\n" host-triplet)
-        (stdout "target:=~a\n" target-triplet)
-        (stdout "srcdir:=~a\n" srcdir)
-        (stdout "builddir:=~a\n" builddir)
-        (stdout "abs-top-builddir:=~a\n" abs-top-builddir)
-        (stdout "abs-top-srcdir:=~a\n" abs-top-srcdir)
-        (stdout "CONFIG_MK:=t\n")
-        (stdout "BUILD_TRIPLET:=~a\n" build-triplet)
-        (stdout "GUIX:=~a\n" (if guix? "guix" ""))
-        (stdout "GUILE_EFFECTIVE_VERSION:=~a\n" GUILE_EFFECTIVE_VERSION)
-        (stdout "GDZN:=~a\n" GDZN)
-        (stdout "GOJS:=~a\n" GOJS)
-        (stdout "PREFIX:=~a\n" prefix)
-        (stdout "SYSCONFDIR:=~a\n" sysconfdir)))
-    (with-output-to-file "pre-inst-env"
-      (lambda _
-        (let* ((pre-inst-env (with-input-from-file (string-append abs-top-srcdir "/build-aux/pre-inst-env.in") read-string))
-               (pre-inst-env (regexp-substitute/global #f "@abs_top_srcdir@" pre-inst-env 'pre abs-top-srcdir 'post)))
-          (regexp-substitute/global (current-output-port) "@abs_top_builddir@" pre-inst-env 'pre abs-top-builddir 'post))))
-    (chmod "pre-inst-env" #o755)
+
+    (let ((pairs `(("@abs_top_builddir@" . ,abs-top-builddir)
+                   ("@abs_top_srcdir@" . ,abs-top-srcdir)
+                   ("@prefix@" . ,prefix)
+
+                   ("@bindir@" . ,bindir)
+                   ("@datadir@" . ,datadir)
+                   ("@sysconfdir@" . ,sysconfdir)
+                   ("@localstatedir@" . ,localstatedir)
+
+                   ("@guilemoduledir@" . ,guilemoduledir)
+                   ("@guileobjectdir@" . ,guileobjectdir)
+
+                   ("@srcdir@" . ,srcdir)
+                   ("@builddir@" . ,builddir)
+
+                   ("@build@" . ,build-triplet)
+                   ("@host@" . ,host-triplet)
+                   ("@target@" . ,target-triplet)
+
+                   ("@prefix@" . ,prefix)
+                   ("@SERVICE_VERSION@" . ,SERVICE_VERSION)
+
+                   ("@guix@" . ,(if guix? "guix" ""))
+                   ("@GUILE_EFFECTIVE_VERSION@" . ,GUILE_EFFECTIVE_VERSION)
+                   ("@GUILE@" . ,GUILE)
+                   ("@gdzn@" . ,GDZN)
+                   ("@gojs@" . ,GOJS))))
+      (substitute (string-append abs-top-srcdir "/build-aux/config.mk.in")
+                  pairs
+                  #:target ".config.mk")
+      (substitute (string-append abs-top-srcdir "/build-aux/pre-inst-env.in")
+                  pairs
+                  #:target "pre-inst-env")
+      (substitute (string-append abs-top-srcdir "/gaiag/gaiag/config.scm.in") pairs)
+      (chmod "pre-inst-env" #o755)
+      (for-each (lambda (o)
+                  (substitute (string-append abs-top-srcdir "/" o) pairs)
+                  (chmod (string-drop-right o 3) #o755))
+                '("dzn/lib/version.js.in"
+                  "dzn-daemon/lib/version.js.in"
+                  "gaiag/gaiag/config.scm.in"
+                  "server/version.js.in"
+                  "server/install.js.in"
+                  "services/lib/version.js.in"
+                  "services/root/js/version.js.in"))
+      (for-each (lambda (o)
+                  (substitute (string-append abs-top-srcdir "/" o) pairs)
+                  (chmod (string-drop-right o 3) #o755))
+                '("bin/gaiag.in"
+                  "bin/gdzn.in"
+                  "bin/scm2json.in"
+                  "bin/json2scm.in"))
+      )
     (stdout "\nRun:
   make            to build Dezyne
   make help       for help on other targets\n")))

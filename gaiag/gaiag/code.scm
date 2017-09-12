@@ -681,7 +681,7 @@
     (module-define! module 'root (ast:root-scope))
     (dzn:indent
      (lambda _
-       (parameterize ((template-dir (append (prefix-dir) `(templates ,(language)))))
+       (parameterize ((template-dir (string-append (template-dir) "/" (symbol->string (language)))))
         (if (not (is-a? o <model>)) (x:pand (symbol-append template '@ (ast-name o)) o module)
             (ast:set-model-scope o (x:pand (symbol-append template '@ (ast-name o)) o module))))))))
 

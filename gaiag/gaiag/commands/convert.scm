@@ -86,13 +86,12 @@ Usage: gdzn parse [OPTION]... [FILE]...
          (interfaces (map (cut search-path imports <>) (asd-interfaces model)))
          (files (append interfaces (list file-name)))
          (commands (map (cut string-append
-                          "PATH=" (dirname (car (command-line))) ":bin:../bin:$PATH" ;; FIXME
-                          " asd"
-                          (if system? " -a glue " " -a no-system,glue ")
-                          " -l gen2"
-                          (string-join imports " -I " 'prefix)
-                          output
-                          " " <>) files)))
+                             " asd"
+                             (if system? " -a glue " " -a no-system,glue ")
+                             " -l gen2"
+                             (string-join imports " -I " 'prefix)
+                             output
+                             " " <>) files)))
     (stderr "command: ~a\n" commands)
     (mkdir-p output-dir)
     (display (map gulp-pipe commands))

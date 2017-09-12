@@ -48,17 +48,24 @@ Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]].
 ** Run uninstalled programs
 
   #+BEGIN_SRC bash
-  ./pre-inst-env build/gdzn ...
-  ./pre-inst-env dzn/bin/dzn ...
+   ./pre-inst-env gdzn ...
+  ./pre-inst-env dzn ...
   #+END_SRC
 
 ** Run regression test
 
   #+BEGIN_SRC bash
   guix environment dezyne-regression-test
-  ./pre-inst-env test/bin/test test/hello/helloworld
+  ./pre-inst-env test test/hello/helloworld
 
-  ./pre-inst-env test/bin/test test/regression-test
+  ./pre-inst-env test test/regression
+  #+END_SRC
+
+*** Run regression through node dzn client, daemon and server
+
+  #+BEGIN_SRC bash
+  guix environment dezyne-regression-test
+  DZN=dzn ./pre-inst-env test test/hello/helloworld
   #+END_SRC
 
 * Create a persistent build environment

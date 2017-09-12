@@ -25,17 +25,11 @@
   #:use-module (ice-9 getopt-long)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (gaiag config)
   #:use-module (gaiag misc)
   #:use-module (gaiag shell-util)
-  #:export (main))
-
-(define* (get-prefix #:key (resolve? #t))
-  (let* ((path (car (command-line)))
-         (path (if (string-index path #\/) path
-                   (search-path (string-split (getenv "PATH") #\:) "gdzn")))
-         (path (if resolve? (canonicalize-path path) path))
-         (prefix ((compose dirname dirname) path)))
-    prefix))
+  #:export (main
+            parse-opts))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -50,10 +44,7 @@
 	 (files (option-ref options '() '()))
 	 (usage? (and (not help?) (null? files)))
 	 (version? (option-ref options 'version #f))
-         (prefix (get-prefix))
-         (services-dir (dirname prefix))
-         (commands-dir (string-append prefix  "/gaiag/gaiag/commands"))
-         (commands (map (cut basename <> ".go") (find-files commands-dir ".*.go"))))
+         (commands (map (cut basename <> ".go") (find-files %command-dir ".*.go"))))
 
     (or
      (and version?
@@ -87,4 +78,5 @@ Use \"gdzn COMMAND --help\" for command-specific information.
   (let* ((options (parse-opts args))
          (command (option-ref options '() '()))
          (debug? (option-ref options 'debug #f)))
+    (setenv "PATH" (string-append %service-bindir ":" (getenv "PATH")))
     (run-command command)))
