@@ -53,6 +53,7 @@
              (gnu packages ccache)
              (gnu packages commencement)
              (gnu packages dezyne)
+             (gnu packages databases)
              (gnu packages gcc)
              (gnu packages guile)
              (gnu packages package-management)
@@ -95,6 +96,7 @@
       (native-inputs `(("dezyne-services" ,dezyne-services)
                        ("ccache" ,ccache)
                        ("git" ,git)
+                       ("postgresql" ,postgresql)
                        ,@(package-native-inputs dezyne-services))))))
 
 ;; Return it here so `guix build/environment/package' can consume it directly.
