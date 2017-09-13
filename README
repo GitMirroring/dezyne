@@ -48,7 +48,7 @@ Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]].
 ** Run uninstalled programs
 
   #+BEGIN_SRC bash
-   ./pre-inst-env gdzn ...
+  ./pre-inst-env gdzn ...
   ./pre-inst-env dzn ...
   #+END_SRC
 
@@ -82,8 +82,21 @@ Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]].
   guix package -p ~/.config/guix/verum -m release/manifest.scm
   #+END_SRC
 
+
 * Editing Scheme files
 
-** Setup paredit
+You should not code dialect of Lisp without Paredit.  Add to you
+~/.emacs init file
 
-** Run Geiser
+  #+BEGIN_SRC elisp
+  (when (require 'paredit nil t)
+    (add-hook 'scheme-mode-hook #'enable-paredit-mode)
+    (add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode))
+  #+END_SRC
+
+Geiser gives you jump to definition (M-.) and jump-to-documentation
+(C-d-d).
+
+  #+BEGIN_SRC elisp
+  (when (require 'geiser nil t) (add-hook 'scheme-mode-hook #'geiser-mode))
+  #+END_SRC
