@@ -554,7 +554,6 @@
 (define (ast-> ast)
   ((compose-root
     om->list
-    ;;((@ (gaiag dzn) ast->dzn))
     code-norm-event
     ast:resolve
     parse->om

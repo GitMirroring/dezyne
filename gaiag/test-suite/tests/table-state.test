@@ -36,7 +36,7 @@
   ((compose .statement .behaviour) ((table table-state) (get-model o))))
 
 (define (dzn-table-state o)
- ((ast->dzn (get-model o)) (test-table-state o)))
+ (ast->dzn (test-table-state o)))
 
 (pass-if "table-state-dummy-test"
          #t)

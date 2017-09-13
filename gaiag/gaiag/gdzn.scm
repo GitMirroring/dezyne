@@ -35,6 +35,8 @@
   (let* ((option-spec
 	  '((debug (single-char #\d))
             (help (single-char #\h))
+            (html (single-char #\H))
+            (json (single-char #\j))
 	    (session (single-char #\S) (value #t))
 	    (verbose (single-char #\v))
 	    (version (single-char #\V))))
@@ -55,6 +57,8 @@
 Usage: gdzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -d, --debug            enable debug ouput
   -h, --help             display this help
+  -H, --html             output html
+  -j, --json             output json
   -S, --session=SESSION  use session=SESSION [1]
   -v, --verbose          be more verbose, show progress
   -V, --version          display version

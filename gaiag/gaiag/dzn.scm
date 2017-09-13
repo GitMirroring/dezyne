@@ -149,10 +149,11 @@
     (if (member language '(dzn html)) language
         'dzn)))
 
-(define* ((ast->dzn #:optional (model #f) (dzn:language (dzn:language))) o)
-  (parameterize ((language dzn:language))
-    (ast:set-scope o ((dzn:x:pand-display o 'source))))
-  "")
+(define* (ast->dzn o #:optional (dzn:language (dzn:language)))
+  (with-output-to-string
+    (lambda _
+      (parameterize ((language dzn:language))
+        (ast:set-scope o ((dzn:x:pand-display o 'source)))))))
 
 ;;; dzn: generic templates
 ;; Hmmm, `source' means filter-out types, must later add global types...

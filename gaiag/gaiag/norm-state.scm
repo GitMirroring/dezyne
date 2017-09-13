@@ -149,7 +149,6 @@ reply en die kun je niet mixen"
 (define (ast-> ast)
   ((compose
     om->list
-;;    ((@ (gaiag dzn) ast->dzn))
     csp-norm-state
     ast:resolve
     parse->om

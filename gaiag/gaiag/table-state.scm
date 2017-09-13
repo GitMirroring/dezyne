@@ -69,7 +69,7 @@
 (define ((table table-statement) o)
   (match o
     (($ <root> (models ...))
-     (let ((name (and (and=> (command-line:get 'model #f) string->symbol))))
+     (let ((name (and (and=> (gdzn:command-line:get 'model #f) string->symbol))))
        (or (and-let* ((models (.elements o))
                       ((pair? models))
                       (models (null-is-#f (filter (negate om:imported?) models)))
@@ -88,7 +88,7 @@
     (_ o)))
 
 (define (remove-initial o)
-  (let ((json? (command-line:get 'json #f)))
+  (let ((json? (gdzn:command-line:get 'json #f)))
     (or (and-let* (((not json?))
                    ((is-a? o <compound>))
                    (statements (.elements o))
@@ -276,7 +276,7 @@
       (_ (make <literal> #:value simple)))))
 
 (define ((mangle-table json-table) o)
-  (let ((json? (command-line:get 'json #f)))
+  (let ((json? (gdzn:command-line:get 'json #f)))
     (match o
       (($ <root> (models ...))
        (if json?
@@ -285,7 +285,7 @@
       (($ <system>) (and (not json?) o))
       (($ <foreign>) (and (not json?) o))
       ((? (is? <model>))
-       (let ((json? (command-line:get 'json #f)))
+       (let ((json? (gdzn:command-line:get 'json #f)))
          (if json?
              (and-let* ((behaviour (.behaviour o))
                         (statement (.statement behaviour)))
@@ -300,11 +300,11 @@
 
 (define (dzn-table o)
   (match o
-    (($ <root> (t ...)) ((ast->dzn) o))
+    (($ <root> (t ...)) (ast->dzn o))
     (_ o)))
 
 (define (switch-norm-event o)
-  (let ((json? (command-line:get 'json #f)))
+  (let ((json? (gdzn:command-line:get 'json #f)))
     (if json?
         (norm-event o)
         (table-norm-event o))))

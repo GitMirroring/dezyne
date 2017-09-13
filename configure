@@ -288,8 +288,7 @@ Usage: ./configure [OPTION]...
       (for-each (lambda (o)
                   (substitute (string-append abs-top-srcdir "/" o) pairs)
                   (chmod (string-drop-right o 3) #o755))
-                '("bin/gaiag.in"
-                  "bin/gdzn.in"
+                '("bin/gdzn.in"
                   "bin/scm2json.in"
                   "bin/json2scm.in"))
       )

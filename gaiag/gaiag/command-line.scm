@@ -24,8 +24,9 @@
 (define-module (gaiag command-line)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 getopt-long)
-  #:use-module (gaiag gaiag)
+  #:use-module (gaiag gdzn)
   #:export (command-line:get
+            gdzn:command-line:get
             language))
 
 (define multi-options
@@ -36,13 +37,16 @@
          (file (car files))
          (commands '("code" "table" "traces"))
          (command (and=> (member file commands) (compose string->symbol car)))
-         (parse-opts (if (not command) parse-opts
-                         (let ((module (resolve-module `(gaiag commands ,command))))
-                           (module-ref module 'parse-opts))))
+         (parse-opts (let ((module (resolve-module `(gaiag commands ,command))))
+                           (module-ref module 'parse-opts)))
          (options (if command (parse-opts files)
                       (parse-opts (command-line))))
          (multi-opt (lambda (option) (lambda (o) (and (eq? (car o) option) (cdr o))))))
     (if (not (member option multi-options)) (option-ref options option default)
         (filter-map (multi-opt option) options))))
+
+(define* (gdzn:command-line:get option #:optional default)
+  (let ((options (parse-opts (command-line))))
+    (option-ref options option default)))
 
 (define language (make-parameter 'c++))
