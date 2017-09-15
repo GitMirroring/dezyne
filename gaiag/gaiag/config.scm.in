@@ -27,6 +27,7 @@
             %datadir
             %localstatedir
             %prefix
+            %root-dir
             %service-bindir
             %sysconfdir
             %command-dir
@@ -51,6 +52,10 @@
 (define %bindir
   (or (and (getenv "DZN_UNINSTALLED") (string-append %prefix "/bin"))
       "@bindir@"))
+
+(define %root-dir
+  (or (and (getenv "DZN_UNINSTALLED") (string-append %prefix "/services/root"))
+      (string-append %datadir "/root")))
 
 (define %service-bindir
   (string-append %datadir "/bin"))

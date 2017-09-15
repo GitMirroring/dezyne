@@ -58,7 +58,7 @@ Usage: gdzn ls [OPTION]... [FILE]...
          (files (map (lambda (f) (if (not (string-prefix? "/" f)) f (string-drop f 1))) files))
          (debug? (find (cut equal? <> "--debug") (command-line)))
          (recursive? (option-ref options 'recursive #f))
-         (root (string-append %datadir "/root/fs"))
+         (root (string-append %root-dir "/fs"))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line))))
     (when gdzn-debug?
       (stderr "root=~a\n" root))
