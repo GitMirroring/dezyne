@@ -204,6 +204,16 @@
 (define-method (dzn:type (o <void>))
   o)
 
+(define-template x:external dzn:external)
+(define-method (dzn:external (o <port>))
+  (if (not (.external o)) ""
+      o))
+
+(define-template x:injected dzn:injected)
+(define-method (dzn:injected (o <port>))
+  (if (not (.injected o)) ""
+      o))
+
 (define-template x:expression dzn:expression)
 
 (define-template x:left (compose dzn:expression .left) #f <expression>)

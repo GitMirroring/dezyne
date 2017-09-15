@@ -1,1 +1,1 @@
-requires #x:type  #.name;
+requires #x:external #x:injected #x:type  #.name;
