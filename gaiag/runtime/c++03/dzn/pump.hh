@@ -99,16 +99,28 @@ namespace dzn
   };
 
   template <typename L>
-  void blocking_helper(boost::promise<void>& p, const L& l)
+  void shell_helper(boost::promise<void>& p, const L& l)
   {
     l();
     p.set_value();
   }
+  template <typename R, typename L>
+  void shell_helper(boost::promise<R>& p, const L& l)
+  {
+    p.set_value(l());
+  }
   template <typename L>
-  void blocking(dzn::pump& pump, const L& l)
+  void shell(dzn::pump& pump, const L& l)
   {
     boost::promise<void> p;
-    pump(boost::function<void()>(boost::bind(&blocking_helper<L>, boost::ref(p), l)));
+    pump(boost::function<void()>(boost::bind(&shell_helper<L>, boost::ref(p), l)));
+    return p.get_future().get();
+  }
+  template <typename R, typename L>
+  R shell(dzn::pump& pump, const L& l)
+  {
+    boost::promise<R> p;
+    pump(boost::function<void()>(boost::bind(&shell_helper<R, L>, boost::ref(p), l)));
     return p.get_future().get();
   }
 }

@@ -67,7 +67,7 @@ namespace dzn
     {
       dzn::pump* p = system.dzn_locator.template try_get<dzn::pump>(); //only shells have a pump
       //resolve the race condition between the shell pump dtor and the container pump dtor
-      if(p != &pump) pump([p] {p->stop();});
+      if(p && p != &pump) pump([p] {p->stop();});
     }
     std::string match_return()
     {

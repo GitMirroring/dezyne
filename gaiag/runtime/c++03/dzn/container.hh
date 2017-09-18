@@ -55,9 +55,9 @@ namespace dzn
 
     container(bool flush, const dzn::locator& l = dzn::locator())
     : meta("<internal>","container",0)
-    , locator(l.clone().set(runtime).set(pump))
+    , locator(l.clone())
     , runtime()
-    , system(locator)
+    , system(locator.set(runtime).set(pump))
     , pump()
     {
       runtime.performs_flush(this) = flush;
@@ -67,7 +67,7 @@ namespace dzn
     {
       dzn::pump* p = system.dzn_locator.template try_get<dzn::pump>(); //only shells have a pump
       //resolve the race condition between the shell pump dtor and the container pump dtor
-      if(p != &pump) pump([p] {p->stop();});
+      if(p && p != &pump) pump([p] {p->stop();});
     }
     std::string match_return()
     {
@@ -118,6 +118,7 @@ namespace dzn
           pump(it->second);
           port.clear();
         }
+        boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
       }
     }
   };

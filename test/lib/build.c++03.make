@@ -47,6 +47,10 @@ CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
 endif
 LDFLAGS:=-lboost_coroutine -lboost_context -lboost_thread -lboost_chrono -lboost_system
 
+ifneq ($(TSS),)
+$(OUT)/$(TSS).o: CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
+endif
+
 $(OUT)/%.o: $(IN)/%.cc
 	mkdir -p $(dir $@)
 	$(COMPILE.cc) -o $@ $<

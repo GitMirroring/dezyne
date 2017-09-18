@@ -645,9 +645,6 @@
 
 (define-template x:return code:return #f <type>)
 
-(define-method (code:return (o <on>))
-  ((compose .type .signature .event code:trigger) o))
-
 ;; main
 (define-template x:main-port-connect-in ast:out-triggers-in-events)
 (define-template x:main-port-connect-in-void ast:out-triggers-void-in-events)

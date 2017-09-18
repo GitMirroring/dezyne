@@ -189,6 +189,12 @@
 (define-template x:non-injected-instance-declare non-injected-instances)
 (define-template x:system-rank ast:provided)
 
+(define-method (c++:optional-return (o <trigger>))
+  (let ((type ((compose .type .signature .event) o)))
+    (if (is-a? type <void>) "") type))
+
+(define-template x:optional-return c++:optional-return)
+
 ;; source-system
 (define-template x:provided-port-reference-initializer ast:provided)
 (define-template x:required-port-reference-initializer ast:required)

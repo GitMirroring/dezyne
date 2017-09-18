@@ -65,6 +65,16 @@ function read_meta(dir, default_meta) {
   return default_meta;
 }
 
+function has_main(dir, language) {
+  var main = dir + '/main' + ext[language];
+  try {main = (fs.lstatSync (main).isFile () || fs.lstatSync (main).isSymbolicLink ()) && main;} catch (e){main=undefined;};
+  if(!main) {
+    main = dir + '/' + language + '/main' + ext[language];
+    try {main = (fs.lstatSync (main).isFile () || fs.lstatSync (main).isSymbolicLink ()) && main;} catch (e){main=undefined;};
+  }
+  return main;
+}
+
 var dependencies = {
   build:    ['code'],
   code:     ['convert'],
@@ -388,8 +398,7 @@ var aspects = {
     var code_options = parameters.meta.code_options || "";
     var tss = parameters.meta.tss;
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
-    var main = parameters.dir + '/main' + ext[language];
-    try {main = (fs.lstatSync (main).isFile () || fs.lstatSync (main).isSymbolicLink ()) && main;} catch (e){main=undefined;};
+    var main = has_main(parameters.dir, language);
     var cmd = 'make'
         + ' DZN="' + dzn() + '"'
         + ' IMPORTS=\"'+imports+'\"'
@@ -410,12 +419,12 @@ var aspects = {
   build: function(parameters) {
     var language = parameters.meta.languages[0];
     var out = 'out/'+path.basename(parameters.dir)+'/'+language;
-    var main = parameters.dir + '/main' + ext[language];
-    try {main = (fs.lstatSync (main).isFile () || fs.lstatSync (main).isSymbolicLink ()) && main;} catch (e){main=undefined;};
+    var main = has_main(parameters.dir, language);
     var cmd = 'make DIR='+parameters.dir
         + ' LANGUAGE='+language
         + ' OUT='+out
         + ' IN='+out
+        + (parameters.meta.tss ? ' TSS='+ parameters.model : '')
         + (main ? ' MAIN='+main : '')
         + ' -f '+ __dirname + '/build.' + language + '.make';
     return util.spawn_sync_shell(cmd)
