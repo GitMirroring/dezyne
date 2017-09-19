@@ -1,6 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -92,6 +93,7 @@
 (define-method (ast:argument* (o <arguments>)) (.elements o))
 (define-method (ast:binding* (o <bindings>)) (.elements o))
 (define-method (ast:statement* (o <compound>)) (.elements o))
+(define-method (ast:statement* (o <declarative-compound>)) (.elements o))
 (define-method (ast:event* (o <events>)) (.elements o))
 (define-method (ast:field* (o <fields>)) (.elements o))
 (define-method (ast:formal* (o <formals>)) (.elements o))

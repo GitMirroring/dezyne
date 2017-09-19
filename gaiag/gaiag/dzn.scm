@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -39,6 +41,7 @@
   #:use-module (gaiag deprecated om)
   #:use-module (gaiag util)
 
+  #:use-module (gaiag config)
   #:use-module (gaiag command-line)
   #:use-module (gaiag compare)
   #:use-module (gaiag indent)
@@ -149,11 +152,19 @@
     (if (member language '(dzn html)) language
         'dzn)))
 
+
 (define* (ast->dzn o #:optional (dzn:language (dzn:language)))
   (with-output-to-string
     (lambda _
       (parameterize ((language dzn:language))
         (ast:set-scope o ((dzn:x:pand-display o 'source)))))))
+(define-generic ast->dzn)
+(define-method (ast->dzn (o <statement>))
+  (parameterize ((language 'dzn))
+    (with-output-to-string (dzn:x:pand-display o 'statement))))
+(define-method (ast->dzn (o <function>))
+  (parameterize ((language 'dzn))
+    (with-output-to-string (dzn:x:pand-display o 'source))))
 
 ;;; dzn: generic templates
 ;; Hmmm, `source' means filter-out types, must later add global types...
@@ -380,6 +391,10 @@
   ((compose dzn:expand-statement .statement) o))
 
 (define-method (dzn:expand-statement (o <compound>))
+  (if (null? (ast:statement* o)) (make <skip>)
+      (ast:statement* o)))
+
+(define-method (dzn:expand-statement (o <declarative-compound>))
   (if (null? (ast:statement* o)) (make <skip>)
       (ast:statement* o)))
 
