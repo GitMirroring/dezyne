@@ -38,6 +38,7 @@
 
   #:use-module (gaiag command-line)
   #:use-module (gaiag compare)
+  #:use-module (gaiag config)
   #:use-module (gaiag dzn)
   #:use-module (gaiag misc)
   #:use-module (gaiag norm-event)
@@ -95,15 +96,14 @@
   "")
 
 (define (code:root-> root)
-  (parameterize ((language (code:language)))
-    (if (code:model2file?) (code:model2file root)
-        (code:file2file root))
-    (let ((main (command-line:get 'model #f)))
-      (when main
-        (let* ((models (filter (is? <model>) (.elements root)))
-               (main? (compose (cut eq? (string->symbol main) <>) (om:scope-name)))
-               (main-model (and main (find main? models))))
-          (and=> main-model code:dump-main))))))
+  (if (code:model2file?) (code:model2file root)
+      (code:file2file root))
+  (let ((main (command-line:get 'model #f)))
+    (when main
+      (let* ((models (filter (is? <model>) (.elements root)))
+             (main? (compose (cut eq? (string->symbol main) <>) (om:scope-name)))
+             (main-model (and main (find main? models))))
+        (and=> main-model code:dump-main)))))
 
 (define (code:language)
   (string->symbol (command-line:get 'language "c++")))
@@ -681,7 +681,7 @@
     (module-define! module 'root (ast:root-scope))
     (dzn:indent
      (lambda _
-       (parameterize ((template-dir (string-append (template-dir) "/" (symbol->string (language)))))
+       (parameterize ((template-dir (string-append %template-dir "/" (symbol->string (language)))))
         (if (not (is-a? o <model>)) (x:pand (symbol-append template '@ (ast-name o)) o module)
             (ast:set-model-scope o (x:pand (symbol-append template '@ (ast-name o)) o module))))))))
 

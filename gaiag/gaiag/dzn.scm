@@ -4,7 +4,6 @@
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -450,7 +449,7 @@
     (module-define! module 'root (ast:root-scope))
     (dzn:indent
      (lambda _
-       (parameterize ((template-dir (string-append (template-dir) "/" (symbol->string (language)))))
+       (parameterize ((template-dir (string-append %template-dir "/" (symbol->string (language)))))
         (if (not (is-a? o <model>)) (x:pand (symbol-append template '@ (ast-name o)) o module)
             (ast:set-model-scope o (x:pand (symbol-append template '@ (ast-name o)) o module))))))))
 

@@ -45,6 +45,7 @@
   #:use-module (gaiag xpand)
 
   #:use-module (gaiag command-line)
+  #:use-module (gaiag config)
 ;;  #:use-module (gaiag mangle)
   #:use-module (gaiag misc)
   #:use-module (gaiag norm)
@@ -228,7 +229,7 @@
     module))
 
 (define (csp-file file-name module)
-  (parameterize ((template-dir (string-append (template-dir) "/csp")))
+  (parameterize ((template-dir (string-append %template-dir "/csp")))
     (animate-file file-name module)))
 
 (define (valued? model o)
