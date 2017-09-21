@@ -16,7 +16,7 @@ EOF
     exit 1
 fi
 . $(dirname $0)/VERSION
-export SERVICE_VERSION
+export VERSION CLIENT_VERSION SERVICE_VERSION
 unset GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
 export GUILE_AUTO_COMPILE=0
 exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@"}
@@ -67,6 +67,8 @@ exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@
 (define LOCALSTATEDIR "/var")
 (define BUILD_TRIPLET (gulp-pipe "gcc -dumpmachine 2>/dev/null"))
 (define SRCDIR (dirname (car (command-line))))
+(define VERSION (getenv "VERSION"))
+(define CLIENT_VERSION (getenv "CLIENT_VERSION"))
 (define SERVICE_VERSION (getenv "SERVICE_VERSION"))
 
 (define (parse-opts args)
@@ -260,6 +262,8 @@ Usage: ./configure [OPTION]...
                    ("@target@" . ,target-triplet)
 
                    ("@prefix@" . ,prefix)
+                   ("@VERSION@" . ,VERSION)
+                   ("@CLIENT_VERSION@" . ,CLIENT_VERSION)
                    ("@SERVICE_VERSION@" . ,SERVICE_VERSION)
 
                    ("@guix@" . ,(if guix? "guix" ""))

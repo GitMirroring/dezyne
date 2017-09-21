@@ -40,6 +40,7 @@
 
       (defun dzn-setup-devel ()
         (interactive)
+        (shell-command "killall node nodejs")
         (let ((top (locate-dominating-file default-directory ".dir-locals.el")))
           (save-excursion
             (shell (get-buffer-create "*daemon*"))
