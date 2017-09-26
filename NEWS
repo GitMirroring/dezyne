@@ -5,6 +5,18 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.5.0 (since 2.4.1)
+** Code generation
+  - The javascript code generator now uses file2file mode.
+  - The c++ code generator passes ASD construction parameters via glue.
+  - The c, c#, java, java7, python and scheme code generators are not
+    available in this release; for these languages please use 2.4.1 or
+    earlier.
+** ASD Converter
+   - The ASD converter produces ‘.map’ files for Components with
+     construction parameter information that is used by the glue code
+     generator.
+
 * Changes in 2.4.1 (since 2.4.0)
 ** DZN language
   - Dollar expressions can now be used at toplevel
@@ -20,8 +32,7 @@
 ** Code generation
   - The c++ code generators use file2file mode by default
     Generating code for a DZN file ‘model.dzn’ now produces
-    ‘model.hh’ and ‘model.cc’.  The old behaviour can be selected
-    using ‘--deprecated=model2file’
+    ‘model.hh’ and ‘model.cc’
   - The c# runtime now has a ‘check_bindings’ function
   - The interface of the c++ and c++03 runtime has been modified
   - The container interface the c++ languages (‘container.hh’) has been changed
