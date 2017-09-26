@@ -1,1 +1,1 @@
-{"skip":["java"],"comment":"int data type"}
+{"skip":["java"],"known":["table"],"comment":"int data type"}

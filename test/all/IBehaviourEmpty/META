@@ -1,3 +1,4 @@
 {"skip":["build"]
+,"known":["table"]
 ,"comment":"interface cannot build due to no 'main'"
 }

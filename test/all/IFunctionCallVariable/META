@@ -1,1 +1,1 @@
-{"skip":["build"],"comment":"interface model: cannot build"}
+{"skip":["build"],"known":["table"],"comment":"interface model: cannot build"}

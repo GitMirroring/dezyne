@@ -1,2 +1,1 @@
-{"imports":["all/importPath/subdir","all/importPath/foo"]}
-
+{"imports":["all/importPath/subdir","all/importPath/foo"],"known":["table"]}
