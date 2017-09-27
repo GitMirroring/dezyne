@@ -9,6 +9,10 @@
 ** Code generation
   - The javascript code generator now uses file2file mode.
   - The c++ code generator passes ASD construction parameters via glue.
+  - The c++ code generator skips retrieving the pump pointer when
+    async is not used.
+  - The c++03 code generator now supports thread safe shell, but only
+    if there is enough c++11 support available in the compiler.
   - The c, c#, java, java7, python and scheme code generators are not
     available in this release; for these languages please use 2.4.1 or
     earlier.
