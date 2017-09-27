@@ -138,6 +138,7 @@
 (define-template x:calls ast:void-in-triggers)
 (define-template x:rcalls ast:valued-in-triggers)
 (define-template x:prefix-formals-type code:formals 'formal-prefix)
+(define-template x:pump (lambda (o) (if (null? (ast:req-events o)) "" o)))
 (define-template x:reqs ast:req-events)
 (define-template x:clrs ast:clr-events)
 (define-template x:variable-expression (compose code:expression .expression) #f <expression>)

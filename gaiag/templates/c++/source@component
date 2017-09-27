@@ -16,7 +16,7 @@
 #x:async-member-initializer
 {
   dzn_rt.performs_flush(this) = true;
-  dzn::pump* dzn_pump = dzn_locator.try_get<dzn::pump>();
+  #x:pump
   #x:calls
   #x:rcalls
   #x:reqs
