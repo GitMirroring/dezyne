@@ -150,11 +150,11 @@ puts [myism alphabet]
            (illegal-opt (option-ref options 'illegal #f))
            (dir (option-ref options 'output "."))
            (foo (mkdir-p dir))
-
+           (json? (gdzn:command-line:get 'json #f))
            (traces (pipeline->string `("echo" ,script)
                                      '("fdr2tix" "-insecure" "-nowindow")
                                      `("python" ,traces.py
-                                       "--out" ,dir
+                                       ,@(if json? '() `("--out" ,dir))
                                        ,@(if (not illegal-opt) '() '("--illegal"))
                                        ,@(if (is-a? model <interface>) '("--interface") '())
                                        ,@(if (not flush-opt) '() '("--flush"))
@@ -162,8 +162,8 @@ puts [myism alphabet]
                                        ,@(append-map (lambda (p) (list "--provided" p)) provided)
                                        "-")))
 
-           (traces (string-trim-right traces))
-           (traces (string-split traces #\newline)))
+           (traces (string-trim-right traces)))
+      (when json? (display traces))
       (when gdzn-debug?
         (stderr "asserts=~s\n" asserts)
         (stderr "main-assert=~s\n" main-assert)
