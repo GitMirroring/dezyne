@@ -30,7 +30,25 @@
 
 #include <algorithm>
 #include <cassert>
+#include <future>
 #include <iostream>
+
+namespace dzn {
+  template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
+  void blocking(dzn::pump& pump, L&& l)
+  {
+    std::promise<void> p;
+    pump([&]{l(); p.set_value();});
+    return p.get_future().get();
+  }
+  template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
+  auto blocking(dzn::pump& pump, L&& l) -> decltype(l())
+  {
+    std::promise<decltype(l())> p;
+    pump([&]{p.set_value(l());});
+    return p.get_future().get();
+  }
+}
 
 std::string
 read ()

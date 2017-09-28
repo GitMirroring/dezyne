@@ -94,24 +94,19 @@ namespace dzn
     void remove_finished_coroutines();
   };
 
-  template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
-  void blocking(dzn::pump& pump, L&& l)
+  template <typename L, typename ... Args, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
+  void shell(dzn::pump& pump, L&& l, Args&& ...args)
   {
     std::promise<void> p;
-    pump([&]{l(); p.set_value();});
+    pump([&]{l(std::forward<Args>(args)...); p.set_value();});
     return p.get_future().get();
   }
-  template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
-  auto blocking(dzn::pump& pump, L&& l) -> decltype(l())
+  template <typename L, typename ... Args, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
+  auto shell(dzn::pump& pump, L&& l, Args&& ...args) -> decltype(l(std::forward<Args>(args)...))
   {
-    std::promise<decltype(l())> p;
-    pump([&]{p.set_value(l());});
+    std::promise<decltype(l(std::forward<Args>(args)...))> p;
+    pump([&]{p.set_value(l(std::forward<Args>(args)...));});
     return p.get_future().get();
-  }
-  template <typename Lambda, typename ... Args>
-  auto shell(dzn::pump& pump, const Lambda& lambda, Args&& ...args) -> decltype(lambda())
-  {
-    return blocking(pump, std::bind(lambda, std::forward<Args>(args)...));
   }
 }
 

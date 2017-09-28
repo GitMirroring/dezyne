@@ -27,8 +27,26 @@
 #include <dzn/runtime.hh>
 #include <dzn/pump.hh>
 
+#include <future>
 #include <iostream>
 #include <limits>
+
+namespace dzn {
+  template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
+  void blocking(dzn::pump& pump, L&& l)
+  {
+    std::promise<void> p;
+    pump([&]{l(); p.set_value();});
+    return p.get_future().get();
+  }
+  template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
+  auto blocking(dzn::pump& pump, L&& l) -> decltype(l())
+  {
+    std::promise<decltype(l())> p;
+    pump([&]{p.set_value(l());});
+    return p.get_future().get();
+  }
+}
 
 int main()
 {
@@ -40,7 +58,7 @@ int main()
     dzn::runtime rt;
     async_rank sut;
     dzn::pump pump;
-    
+
     C()
     : sut(loc.set(rt).set(pump))
     , pump()
