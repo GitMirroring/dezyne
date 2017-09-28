@@ -13,11 +13,7 @@ Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]].
    As root (sudo -i) do
    #+BEGIN_SRC bash
    wget -O setup-guix.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-guix.sh;hb=refs/heads/master'
-   wget -O setup-guix-user.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-guix-user.sh;hb=refs/heads/master'
-   wget -O setup-guix-offload-user.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-guix-offload.sh;hb=refs/heads/master'
-   wget -O setup-postgres.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-postgres.sh;hb=refs/heads/master'
-   wget -O setup-shepherd.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-shepherd.sh;hb=refs/heads/master'
-   chmod +x setup-guix.sh setup-guix-user.sh setup-guix-offload.sh setup-postgres.sh setup-shepherd.sh
+   chmod +x setup-guix.sh
    ./setup-guix.sh
    #+END_SRC
 
