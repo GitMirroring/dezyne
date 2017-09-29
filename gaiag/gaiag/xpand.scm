@@ -64,7 +64,7 @@
      pegtext      <-  (!pegprocedure (escape '#' / .))* pegprocedure?
      pegsep       <   [ ]?
      escape       <   '#'
-     pegprocedure <-- '#' ('='/'.'/':'/'-'/'+'/[a-zA-Z0-9_])+ pegsep")
+     pegprocedure <-- '#' ('='/'.'/':'/'-'/'+'/'?'/[a-zA-Z0-9_])+ pegsep")
   ;; (stderr "X:PAND: ~a\n" o)
   (let* ((debug? (command-line:get 'debug #f))
          (result (match-pattern script (gulp-template filename)))
