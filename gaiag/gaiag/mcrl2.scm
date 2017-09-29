@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -69,6 +70,7 @@
       (($ <compound>) (map (annotate-path path) (.elements o)))
       (($ <functions>) (map (annotate-path path) (.elements o)))
       (($ <function>) ((annotate-path path) (.statement o)))
+      (($ <return>) ((annotate-path path) (.expression o)))
       (($ <blocking>) ((annotate-path path) (.statement o)))
       (($ <guard>) ((annotate-path path) (.statement o)))
       (($ <on>) ((annotate-path path) (.statement o)))
@@ -302,6 +304,15 @@
 (define (references o)
   ((om:collect (lambda (o) (and (is-a? o <call>) (not (.last? o))))) o))
 
+(define-template x:valued-return
+  (lambda (o)
+    (or (.expression o) "")) #f <expression>)
+
+(define-template x:return-type return-type )
+
+(define-method (return-type (o <ast>))
+  )
+
 (define-template x:mcrl2-return-process
   (lambda (o)
     (let ((models (models-with-calls o)))
@@ -331,6 +342,9 @@
 	  ((compose (cut filter (is? <int>) <>) .elements .types .behaviour) o)))
 (define-method (get-ints (o <component>))
   ((compose (cut filter (is? <int>) <>) .elements .types .behaviour) o))
+
+(define-template x:print-ast
+  (lambda (o) (stderr "AST: ~a\n" o) (->string o)))
 
 (define-template x:pretty-print-dzn
   (lambda (o)
@@ -459,13 +473,14 @@
 		   (locals o (ast:scope))))
        ", " 'infix))))
 
-(define-template x:function-parameters
+(define-template x:call-parameters
   (lambda (o)
     (append (map
 	     (lambda (f e) (make <call-parameter> #:name (.name f) #:expression e))
 	     ((compose .elements .formals .signature .function) o)
-	     ((compose .elements .arguments) o))
-	    (list (make <cont-parameter> #:continuation (call-continuation o))))) 'comma-infix)
+	     ((compose .elements .arguments) o)))) 'comma-suffix)
+(define-template x:cont-parameter
+  (lambda (o) (make <cont-parameter> #:continuation (call-continuation o))))
 
 (define (cont-locals o)
   (let* ((cont (process-continuation- o (cons #f (ast:parent o))))
@@ -483,8 +498,6 @@
 
 (define-template x:call-continuation .continuation)
 
-;;(define-template x:call-expression (compose mcrl2-expression .expression))
-
 (define-template x:globals-init init-globals)
 
 (define-template x:mcrl2-statement-process mcrl2:statement-process)
@@ -493,8 +506,6 @@
 (define-template x:mcrl2-port-identifier mcrl2:port-identifier)
 (define-template x:mcrl2-child-identifier mcrl2:child-identifier)
 
-(define-template x:if-expression (compose mcrl2-expression .expression))
-(define-template x:assign-expression (compose mcrl2-expression .expression))
 (define-template x:mcrl2-statement-then .then #f <statement>)
 (define-template x:mcrl2-statement-else .else #f <statement>)
 (define-template x:if-else-identifier
@@ -504,14 +515,12 @@
 		   (($ <compound>) ((compose car .elements) elsestmt))
 		   (_ elsestmt))))))
 
-(define (mcrl2:guard-value o) ((compose mcrl2-expression .expression) o))
-
 (define-template x:component-reply-in-stmt
   (lambda (o)
     (if (and (is-a? (ast:model-scope) <component>) (ast:requires? (.port o)))
 	o
 	"")))
-(define-template x:guard-expression mcrl2:guard-value)
+
 (define-template x:on-event-union .elements 'union-infix)
 (define-template x:on-event-process .elements)
 (define-template x:on-trigger separate-trigger-type)
@@ -656,6 +665,13 @@
 
 (define-class <interface-type> (<interface-index>)
   (type #:getter .type #:init-value #f #:init-keyword #:type))
+
+(define-template x:assign-by-call? assign-by-call?)
+
+(define-method (assign-by-call? (o <assign>))
+  (if (is-a? (.expression o) <call>)
+      (.expression o)
+      ""))
 
 (define-class <refs> (<type>))
 (define-class <cont> (<type>)

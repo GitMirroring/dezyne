@@ -1,10 +1,13 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
+;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
+;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -75,7 +78,6 @@
 
            animate-pairs
            assign
-           om:typed?
            provides?
            requires?
            string-if
