@@ -705,6 +705,12 @@
 	 process
 	 (loop ((compose car .elements) process)))))
 
+(define-method (mcrl2:value (o <expression>))
+  (match o
+    (($ <enum-literal>) (string-append ((compose ->string om:name) (ast:model-scope)) "'State'" (->string (.field o))))
+    (($ <literal>) (.value o))))
+
+;;TODO: stop returning ASCII, start returning objects
 (define-method (globals-from-scope scope)
   (let* ((behaviour (.behaviour scope))
 	 (vars ((compose .elements .variables) behaviour)))
@@ -713,7 +719,7 @@
 	      "false"
 	      (string-append "reply_" (symbol->string (mcrl2:provided-port-type scope)) "0(void)"))
 	     (append-map (lambda (v)
-			   (list ((compose ->string .value .expression) v))) vars))
+			   (list ((compose ->string mcrl2:value .expression) v))) vars))
      ", " 'infix)))
 
 (define-method (init-globals (o <component>))
