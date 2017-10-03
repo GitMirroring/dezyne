@@ -70,6 +70,7 @@
       (($ <compound>) (map (annotate-path path) (.elements o)))
       (($ <functions>) (map (annotate-path path) (.elements o)))
       (($ <function>) ((annotate-path path) (.statement o)))
+      (($ <assign>) ((annotate-path path) (.expression o)))
       (($ <return>) ((annotate-path path) (.expression o)))
       (($ <blocking>) ((annotate-path path) (.statement o)))
       (($ <guard>) ((annotate-path path) (.statement o)))
@@ -301,17 +302,19 @@
 
 (define-template x:references references 'pipe-infix)
 (define-template x:resolve-reference references 'else-infix)
+(define-template x:return-types typed-calls 'comma-suffix)
+(define (typed-calls o)
+  (filter (lambda (t) (not (is-a? t <void>))) (map (compose .type .signature .function) (references o))))
 (define (references o)
-  ((om:collect (lambda (o) (and (is-a? o <call>) (not (.last? o))))) o))
+  (let* ((assignbycalls ((om:collect (lambda (o) (and (is-a? o <assign>) (is-a? (.expression o) <call>)))) o))
+         (callsinassigns (map .expression assignbycalls))
+         (calls ((om:collect (lambda (o) (and (is-a? o <call>) (not (.last? o))))) o))
+         (calls (filter (lambda (o) (not (memq o callsinassigns))) calls)))
+    (append assignbycalls calls)))
 
 (define-template x:valued-return
   (lambda (o)
     (or (.expression o) "")) #f <expression>)
-
-(define-template x:return-type return-type )
-
-(define-method (return-type (o <ast>))
-  )
 
 (define-template x:mcrl2-return-process
   (lambda (o)
@@ -360,11 +363,18 @@
 
 (define-template x:mcrl2-component-process .behaviour)
 
-(define (mcrl2:expand-types o)
+(define-method (mcrl2:expand-types o)
   (let ((t (.type o)))
     (match t
-      (($ <enum>) (string-append ((compose symbol->string mcrl2:interface-name) o) "'" ((compose symbol->string .name .name) t)))
-      (($ <void>) 'Void))))
+      (($ <enum-literal>) (string-append ((compose ->string mcrl2:interface-name) o) "'" ((compose ->string .name .name) t)))
+      (($ <void>) 'Void)
+      (($ <bool>) 'Bool))))
+
+(define-method (mcrl2:expand-types (o <call>))
+  (mcrl2:expand-types ((compose .signature .function) o)))
+
+(define-method (mcrl2:expand-types (o <assign>))
+  (mcrl2:expand-types (.expression o)))
 
 (define-template x:mcrl2-type-name mcrl2:expand-types)
 (define-template x:action-union-struct om:ports 'pipe-infix)
@@ -420,7 +430,7 @@
 (define-method (mcrl2-type (o <type>))
   (match o
     (($ <bool>) "Bool")
-    (($ <enum>) (string-join (map symbol->string (om:scope+name (.name o))) "'" 'infix))
+    (($ <enum-literal>) (string-join (map symbol->string (om:scope+name (.name o))) "'" 'infix))
     (($ <int>) (string-join (map symbol->string (om:scope+name (.name o))) "'" 'infix))
     (($ <refs>) (string-append (->string (om:name (ast:model-scope))) "'" "Refs"))))
 
@@ -473,12 +483,15 @@
 		   (locals o (ast:scope))))
        ", " 'infix))))
 
-(define-template x:call-parameters
-  (lambda (o)
-    (append (map
-	     (lambda (f e) (make <call-parameter> #:name (.name f) #:expression e))
-	     ((compose .elements .formals .signature .function) o)
-	     ((compose .elements .arguments) o)))) 'comma-suffix)
+(define-template x:call-parameters call-parameters 'comma-suffix)
+(define-method (call-parameters (o <call>))
+  (append (map
+           (lambda (f e) (make <call-parameter> #:name (.name f) #:expression e))
+           ((compose .elements .formals .signature .function) o)
+           ((compose .elements .arguments) o))))
+(define-method (call-parameters (o <assign>))
+  (call-parameters (.expression o)))
+
 (define-template x:cont-parameter
   (lambda (o) (make <cont-parameter> #:continuation (call-continuation o))))
 
@@ -493,6 +506,7 @@
   (if (.last? o)
       "cont"
       o))
+
 (define-template x:next-call-context cont-locals 'param-list-grammar <variable>)
 (define-template x:init-locals-from-cont cont-locals 'comma-infix <variable>)
 
@@ -669,9 +683,10 @@
 (define-template x:assign-by-call? assign-by-call?)
 
 (define-method (assign-by-call? (o <assign>))
-  (if (is-a? (.expression o) <call>)
-      (.expression o)
+  (if (is-a? (.expression o) <call>) o
       ""))
+
+(define-template x:assign-function-name (compose .function.name .expression))
 
 (define-class <refs> (<type>))
 (define-class <cont> (<type>)
@@ -680,6 +695,8 @@
 (define-class <call-parameter> (<ast>)
   (name #:getter .name #:init-value #f #:init-keyword #:name)
   (expression #:getter .expression #:init-value #f #:init-keyword #:expression))
+(define-method (dzn-type (o <call>))
+ ((compose mcrl2-type dzn-type .function) o))
 (define-method (dzn:expression (o <call-parameter>))
   (.expression o))
 (define-class <cont-parameter> (<ast>)

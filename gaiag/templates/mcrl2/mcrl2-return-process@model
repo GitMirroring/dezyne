@@ -1,2 +1,2 @@
 
-proc #x:model-name'return(#x:process-parameters, cont: #x:model-name'Refs) = tau . #x:resolve-reference ;
+proc #x:model-name'return(#x:process-parameters, #x:return-types cont: #x:model-name'Refs) = tau . #x:resolve-reference ;

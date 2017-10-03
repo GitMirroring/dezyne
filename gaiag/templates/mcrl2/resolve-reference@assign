@@ -1,0 +1,1 @@
+is'#x:mcrl2-process-name'#x:mcrl2-process-identifier'assignref(cont) -> #x:mcrl2-process-name'#x:mcrl2-process-identifier'assign(#x:init-locals-from-cont)
