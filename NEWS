@@ -5,6 +5,10 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.5.1 (since 2.5.0)
+** Code generation
+  - c++* thread safe shell now supports enum and subint reply types
+
 * Changes in 2.5.0 (since 2.4.1)
 ** Code generation
   - The javascript code generator now uses file2file mode.
