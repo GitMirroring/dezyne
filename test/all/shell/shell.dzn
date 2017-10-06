@@ -23,35 +23,46 @@
 
 extern int $int$;
 
+enum Enum {OK,NOK};
+
+subint Int {0..1};
+
 interface I
 {
-  in void simple();
-  in bool return_to_sender(int i, out int j);
+  in Int return_int();
+  in bool return_bool();
+  in Enum return_enum(int i, out int j);
   out void foo(int i);
 
   behaviour
   {
-    on simple: foo;
-    on return_to_sender: {foo; reply(true);}
+    on return_int: {foo; reply(0);}
+    on return_bool: {foo; reply(true);}
+    on return_enum: {foo; reply(Enum.OK);}
+    on return_enum: {reply(Enum.NOK);}
   }
 }
 
 interface II
 {
-  in void simple();
-  in bool return_to_sender(int i, out int j);
+  in Int return_int();
+  in bool return_bool();
+  in Enum return_enum(int i, out int j);
   out void foo(int i);
 
   behaviour
   {
     bool idle = true;
     [idle] {
-      on simple: idle = false;
-      on return_to_sender: {idle = false; reply(true);}
+      on return_int: {idle = false; reply(0);}
+      on return_bool: {idle = false; reply(true);}
+      on return_enum: {idle = false; reply(Enum.OK);}
+      on return_enum: {reply(Enum.NOK);}
     }
     [!idle] {
-      on simple: illegal;
-      on return_to_sender: illegal;
+      on return_int: illegal;
+      on return_bool: illegal;
+      on return_enum: illegal;
       on inevitable: {idle = true; foo;}
     }
   }
@@ -64,11 +75,15 @@ component C
 
   behaviour
   {
+    Int i = 1;
     bool b = false;
-    on p_inner.simple(): blocking {b = false; r_inner.simple();}
-    on p_inner.return_to_sender(i,j): blocking {b = r_inner.return_to_sender(i,j);}
+    Enum r = Enum.NOK;
+    on p_inner.return_int(): blocking {b = false; i = r_inner.return_int();}
+    on p_inner.return_bool(): blocking {b = r_inner.return_bool();}
+    on p_inner.return_enum(i,j): blocking {b = false; r = r_inner.return_enum(i,j); if(r.NOK) reply(r);}
     [b] on r_inner.foo(i): {p_inner.foo(i); p_inner.reply(b);}
-    [!b] on r_inner.foo(i): {p_inner.foo(i); p_inner.reply();}
+    [!b] [i==1] on r_inner.foo(j): {p_inner.foo(j); p_inner.reply(r);}
+    [!b] [i==0] on r_inner.foo(j): {p_inner.foo(j); p_inner.reply(i); i = 1;}
   }
 }
 
@@ -79,8 +94,9 @@ component B
 
   behaviour
   {
-    on p_proxy_inner.simple(): r_proxy_inner.simple();
-    on p_proxy_inner.return_to_sender(i,j): {bool b = r_proxy_inner.return_to_sender(i,j); reply(b);}
+    on p_proxy_inner.return_int(): {Int i = r_proxy_inner.return_int(); reply(i);}
+    on p_proxy_inner.return_bool(): {bool b = r_proxy_inner.return_bool(); reply(b);}
+    on p_proxy_inner.return_enum(i,j): {Enum r = r_proxy_inner.return_enum(i,j); reply(r);}
     on r_proxy_inner.foo(i): p_proxy_inner.foo(i);
   }
 }

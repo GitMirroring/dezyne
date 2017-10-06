@@ -204,7 +204,8 @@
 (define-method (dzn:type o)
   (let* ((type (or (as o <model>) (as o <type>) (.type o)))
          (scope (om:scope type))
-         (model-scope (om:scope+name (ast:model-scope))))
+         (model-scope (ast:model-scope))
+         (model-scope (and model-scope (om:scope+name model-scope))))
     (if (equal? scope model-scope) (list (om:name type))
         (om:scope+name type))))
 

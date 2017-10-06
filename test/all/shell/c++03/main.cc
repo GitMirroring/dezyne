@@ -33,23 +33,34 @@ bool to_bool(std::string s){return s == "true";}
 void to_void(std::string){}
 
 void
-connect_ports (dzn::container<shell, std::function<void()> >& c)
+connect_ports (dzn::container<::shell, boost::function<void()> >& c)
 {
+  c.system.r_outer.in.return_int = [&] () {
+    dzn::trace_in(std::clog, c.system.r_outer.meta, "return_int"); std::clog << std::endl;
+    c.match("r_outer.return_int"); std::string tmp = c.match_return();
+    dzn::trace_out(std::clog, c.system.r_outer.meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
+    return to_int(tmp.substr(tmp.rfind('.')+1));
+  };
+  c.system.r_outer.in.return_bool = [&] () {
+    dzn::trace_in(std::clog, c.system.r_outer.meta, "return_bool"); std::clog << std::endl;
+    c.match("r_outer.return_bool"); std::string tmp = c.match_return();
+    dzn::trace_out(std::clog, c.system.r_outer.meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
+    return to_bool(tmp.substr(tmp.rfind('.')+1));
+  };
+  c.system.r_outer.in.return_enum = [&] (int i, int& j) {
+    dzn::trace_in(std::clog, c.system.r_outer.meta, "return_enum"); std::clog << std::endl;
+    c.match("r_outer.return_enum"); std::string tmp = c.match_return();
+    dzn::trace_out(std::clog, c.system.r_outer.meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
+    return to_Enum(tmp.substr(tmp.rfind('.')+1));
+  };
   c.system.p_outer.out.foo = [&] (int i) {
     dzn::trace_out(std::clog, c.system.p_outer.meta, "foo"); std::clog << std::endl;
     c.match("p_outer.foo");
   };
-  c.system.r_outer.in.return_to_sender = [&] (int i, int& j) {
-    dzn::trace_in(std::clog, c.system.r_outer.meta, "return_to_sender"); std::clog << std::endl;
-    c.match("r_outer.return_to_sender"); std::string tmp = c.match_return();
-    dzn::trace_out(std::clog, c.system.r_outer.meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
-    return to_bool(tmp.substr(tmp.rfind('.')+1));
-  };
 }
 
-
-std::map<std::string,std::function<void()> >
-event_map (dzn::container<shell, std::function<void()> >& c)
+std::map<std::string,boost::function<void()> >
+event_map (dzn::container<::shell, boost::function<void()> >& c)
 {
   c.system.p_outer.meta.requires.port = "p_outer";
 
@@ -58,20 +69,22 @@ event_map (dzn::container<shell, std::function<void()> >& c)
   c.system.r_outer.meta.provides.port = "r_outer";
 
 
-  return {
-    {"illegal",                  []{std::clog << "illegal" << std::endl; std::exit(0);}},
-    {"p_outer.return_to_sender", [&]{boost::thread([&]{int _1 = 1; c.match("p_outer." + to_string(c.system.p_outer.in.return_to_sender(int(0),_1))); }).detach();}},
-    {"r_outer.foo",              [&]{c.system.r_outer.out.foo(int(0));}},
-    {"r_outer.<flush>",          [&]{std::clog << "r_outer.<flush>" << std::endl; c.runtime.flush(&c);}}
+  return {{"illegal", []{std::clog << "illegal" << std::endl; std::exit(0);}}
+    , {"r_outer.foo",[&]{int _0 = 0; c.system.r_outer.out.foo(0);}}
+    , {"p_outer.return_int",[&]{boost::thread([&]{c.match("p_outer." + to_string(c.system.p_outer.in.return_int()));}).detach();}}
+    , {"p_outer.return_bool",[&]{boost::thread([&]{c.match("p_outer." + to_string(c.system.p_outer.in.return_bool()));}).detach();}}
+    , {"p_outer.return_enum",[&]{boost::thread([&]{int _0 = 0; int _1 = 1; c.match("p_outer." + to_string(c.system.p_outer.in.return_enum(0, _1)));}).detach();}}
+    , {"r_outer.<flush>",[&]{std::clog << "r_outer.<flush>" << std::endl; c.runtime.flush(&c);}}
+
   };
 }
-
 
 int
 main(int argc, char* argv[])
 {
   if(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--debug") == 0;})) dzn::debug.rdbuf(std::clog.rdbuf());
-  dzn::container<shell, std::function<void()> > c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
+  dzn::container<::shell, boost::function<void()> > c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
+
   connect_ports (c);
   c(event_map (c), {"r_outer"});
 }

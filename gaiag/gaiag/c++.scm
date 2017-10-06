@@ -83,6 +83,9 @@
 (define-method (c++:return-type (o <void>))
   o)
 
+(define-method (c++:return-type (o <type>))
+  o)
+
 (define-method (c++:return-type (o <glue-event>))
   (c++:return-type (.type (.signature o))))
 
