@@ -584,12 +584,14 @@ var aspects = {
     var err = out + '.stderr';
     var imports = imports_string (parameters.meta.imports);
     var model = parameters.meta.model || parameters.model;
+    var model_opt = parameters.meta.model === false ? '' : ' --model=' + model;
     return lstat (baseline)
       .then (function(stats) {
         return 'mkdir -p '+dir+';'
           + '{ set -o pipefail;'
           + dzn(parameters.session)
-          + ' --verbose verify --all --model='+model
+          + ' --verbose verify --all '
+          + model_opt
           + ' '+imports
           + ' '+parameters.filename
           + ' 2>'+err
