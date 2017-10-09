@@ -5,6 +5,23 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.6.0 (since 2.5.3)
+  - The interpreter now shows the content of the queues in the
+    watch-window.
+** Command line client
+  - The ‘dzn hello’ command now returns with a dedicated exit status 3
+    in case no server connection could be made
+** Model verification
+  - All models in a DZN file are now verified by default, unless the
+    explicit ‘-m,--model=MODEL’ option is used.
+  - The --queue_size option (broken since 2.5.0) has been fixed
+** Verification view
+  - The new verification view displays for each check the number of
+    states and transitions the verification engine had to consider.
+** Documentation
+  - The text of the DZN files in the regression test matrix can now be
+    downloaded.
+
 * Changes in 2.5.3 (since 2.5.2)
 ** Noteworthy bug fixes
   - Globally declared enums which are not used as event reply type
@@ -42,6 +59,7 @@
 ** Known issue:
    - Global declared enum not referenced as a reply type not supported
      in verification.
+   - The queue_size option gives an error: ‘gdzn: no such option: -q’
 
 * Changes in 2.4.1 (since 2.4.0)
 ** DZN language
@@ -52,7 +70,7 @@
   - Using ‘reply()’ in a function called from a ‘blocking’ context
     has been fixed
 ** Verification
-  - The queue-size option has been fixed
+  - The queue_size option has been fixed
 
 * Changes in 2.4.0 (since 2.3.4)
 ** Code generation
