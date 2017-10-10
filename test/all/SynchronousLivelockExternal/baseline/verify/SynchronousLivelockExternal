@@ -11,3 +11,5 @@ verify: SynchronousLivelockExternal: check: compliance: ok
 verify: SynchronousLivelockExternal: check: livelock: fail
 pp.step
 listIt.getFirstElmt
+listIt.IsPastEnd_No
+listIt.getNextElmt
