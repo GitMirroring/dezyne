@@ -58,6 +58,45 @@
   #:export (mcrl2:om
 	    root->))
 
+(define-class <mcrl2-interface> (<ast>)
+  (interface #:getter .interface #:init-value #f #:init-keyword #:interface))
+(define-class <interface-index> (<mcrl2-interface>)
+  (index #:getter .index #:init-value 0 #:init-keyword #:index))
+(define-class <interface-event> (<mcrl2-interface>)
+  (event #:getter .event #:init-value #f #:init-keyword #:event))
+(define-class <enum-name-field> (<ast>)
+  (name #:getter .name #:init-value #f #:init-keyword #:name)
+  (field #:getter .field #:init-value #f #:init-keyword #:field))
+(define-class <interface-type> (<interface-index>)
+  (type #:getter .type #:init-value #f #:init-keyword #:type))
+(define-class <refs> (<type>))
+(define-class <cont> (<type>)
+  (name #:getter .name #:init-value "cont" #:init-keyword #:name)
+  (type #:getter .type #:init-value (make <refs>) #:init-keyword #:type))
+(define-class <call-parameter> (<ast>)
+  (name #:getter .name #:init-value #f #:init-keyword #:name)
+  (expression #:getter .expression #:init-value #f #:init-keyword #:expression))
+(define-class <cont-parameter> (<ast>)
+  (name #:getter .name #:init-value "cont" #:init-keyword #:name)
+  (continuation #:getter .continuation #:init-value #f #:init-keyword #:continuation))
+(define-class <assign-call> (<ast>)
+  (assign #:getter .assign #:init-value #f #:init-keyword #:assign)
+  (call #:getter .call #:init-value #f #:init-keyword #:call))
+(define-class <assign-action> (<ast>)
+  (assign #:getter .assign #:init-value #f #:init-keyword #:assign)
+  (action #:getter .action #:init-value #f #:init-keyword #:action))
+(define-class <variable-call> (<ast>)
+  (variable #:getter .variable #:init-value #f #:init-keyword #:variable)
+  (call #:getter .call #:init-value #f #:init-keyword #:call))
+(define-class <variable-action> (<ast>)
+  (variable #:getter .variable #:init-value #f #:init-keyword #:variable)
+  (action #:getter .action #:init-value #f #:init-keyword #:action))
+
+(define-method (.event.name (o <assign-action>)) ((compose .event.name .action) o))
+(define-method (.event.name (o <variable-action>)) ((compose .event.name .action) o))
+(define-method (.variable.name (o <assign-action>)) ((compose .variable.name .assign) o))
+(define-method (.name (o <variable-action>)) ((compose .name .variable) o))
+
 (define annotate-path-alist '())
 
 (define ((annotate-path path) o)
@@ -201,7 +240,7 @@
 (define (mcrl2:om ast)
   ((compose-root
     (annotate-path '())
-   ;; (lambda (o) (stderr "AST ~a\n" o) o)
+;;    (lambda (o) (stderr "AST final ~a\n" o) o)
     flatten-compound
     ast-complete-elses
     ast-annotate-illegals
@@ -290,6 +329,18 @@
 (define-template x:integers get-ints 'newline-indent-suffix)
 (define-template x:enum-struct get-enums 'newline-indent-suffix)
 
+(define-template x:mcrl2-reply-type mcrl2:reply-type)
+
+(define-method (mcrl2:reply-type (o <reply>))
+  (let ((expr (.expression o)))
+    (match expr
+      (($ <literal>) (if (number? (.value expr))
+                         'Int
+                         'Bool))
+      ((? (is? <bool-expr>)) 'Bool)
+      (($ <var>) ((compose mcrl2:expand-types .variable) expr))
+      (_ (mcrl2:expand-types (.type expr))))))
+
 (define-template x:mcrl2-references-sort models-with-calls 'newline-infix <model>)
 
 (define (models-with-calls o)
@@ -327,11 +378,15 @@
   (lambda (o) (map
 	       (lambda (x) (make <enum-name-field> #:name (.name.name o) #:field x))
 	       ((compose .elements .fields) o))) 'pipe-infix)
-(define-template x:reply-union-struct
-  (lambda (o) (let ((reply-types (code:reply-types o #:pred (const #t))))
+(define-template x:reply-union-struct mcrl2:reply-types 'pipe-infix)
+
+(define-template x:provided-port-reply-types mcrl2:reply-types 'union-suffix)
+
+(define-method (mcrl2:reply-types (o <ast>))
+  (let ((reply-types (code:reply-types o #:pred (const #t))))
 		(map
 		 (lambda (x i) (make <interface-type> #:interface o #:type x #:index i))
-		 reply-types (iota (length reply-types))))) 'pipe-infix)
+		 reply-types (iota (length reply-types)))))
 
 (define-method (get-enums (o <interface>))
   (append ((compose (cut filter (is? <enum>) <>) .elements .types) o)
@@ -366,7 +421,7 @@
 (define-method (mcrl2:expand-types o)
   (let ((t (.type o)))
     (match t
-      (($ <enum-literal>) (string-append ((compose ->string mcrl2:interface-name) o) "'" ((compose ->string .name .name) t)))
+      (($ <enum>) (string-append ((compose ->string mcrl2:interface-name) o) "'" ((compose ->string .name .name) t)))
       (($ <void>) 'Void)
       (($ <bool>) 'Bool))))
 
@@ -375,6 +430,12 @@
 
 (define-method (mcrl2:expand-types (o <assign>))
   (mcrl2:expand-types (.expression o)))
+
+(define-method (mcrl2:expand-types (o <assign-action>))
+  (mcrl2:expand-types ((compose .signature .event .action) o)))
+
+(define-method (mcrl2:expand-types (o <variable-action>))
+  (mcrl2:expand-types (.variable o)))
 
 (define-template x:mcrl2-type-name mcrl2:expand-types)
 (define-template x:action-union-struct om:ports 'pipe-infix)
@@ -560,7 +621,9 @@
   (match o
     (($ <action>) (port (.port o)))
     (($ <the-end>) ((compose port .port .trigger) o))
-    (($ <on>) ((compose port .port car .elements .triggers) o))))
+    (($ <on>) ((compose port .port car .elements .triggers) o))
+    (($ <assign-action>) ((compose trigger-port .action) o))
+    (($ <variable-action>) ((compose trigger-port .action) o))))
 
 (define-template x:trigger-port-type trigger-port-type)
 (define-method (port-type p)
@@ -571,7 +634,10 @@
   (match o
     (($ <action>) (port-type (.port o)))
     (($ <the-end>) ((compose port-type .port .trigger) o))
-    (($ <on>) ((compose port-type .port car .elements .triggers) o))))
+    (($ <on>) ((compose port-type .port car .elements .triggers) o))
+    (($ <assign-action>) ((compose trigger-port-type .action) o))
+    (($ <variable-action>) ((compose trigger-port-type .action) o))))
+
 (define-template x:trigger-port-type-reply trigger-port-type-reply)
 (define-method (trigger-port-type-reply (o <the-end>))
   (let* ((trigger (.trigger o))
@@ -586,6 +652,10 @@
     (if (ast:provides? port)
 	(om:name (.type port))
 	port)))
+(define-method (trigger-port-type-reply (o <assign-action>))
+  ((compose trigger-port-type-reply .action) o))
+(define-method (trigger-port-type-reply (o <variable-action>))
+  ((compose trigger-port-type-reply .action) o))
 
 (define-method (illegal-or-dillegal (o <ast>) scope)
   (let* ((parent (cadr scope)))
@@ -664,44 +734,33 @@
      (lambda (p) (not (null? (filter om:out? ((compose .elements .events .type) p)))))
      required-ports)))
 
-(define-class <mcrl2-interface> (<ast>)
-  (interface #:getter .interface #:init-value #f #:init-keyword #:interface))
+(define-template x:assign-type assign-type)
 
-(define-class <interface-index> (<mcrl2-interface>)
-  (index #:getter .index #:init-value 0 #:init-keyword #:index))
+(define-method (assign-type (o <assign>))
+  (let ((e (.expression o)))
+    (match e
+      (($ <call>) (make <assign-call> #:assign o #:call e))
+      (($ <action>) (make <assign-action> #:assign o #:action e))
+      (_ o))))
 
-(define-class <interface-event> (<mcrl2-interface>)
-  (event #:getter .event #:init-value #f #:init-keyword #:event))
+(define-template x:variable-declaration variable-declaration)
 
-(define-class <enum-name-field> (<ast>)
-  (name #:getter .name #:init-value #f #:init-keyword #:name)
-  (field #:getter .field #:init-value #f #:init-keyword #:field))
-
-(define-class <interface-type> (<interface-index>)
-  (type #:getter .type #:init-value #f #:init-keyword #:type))
-
-(define-template x:assign-by-call? assign-by-call?)
-
-(define-method (assign-by-call? (o <assign>))
-  (if (is-a? (.expression o) <call>) o
-      ""))
+(define-method (variable-declaration (o <variable>))
+  (let ((e (.expression o)))
+    (match e
+      (($ <call>) (make <variable-call> #:variable o #:call e))
+      (($ <action>) (make <variable-action> #:variable o #:action e))
+      (_ o))))
 
 (define-template x:assign-function-name (compose .function.name .expression))
+(define-template x:action-type action-type)
+(define-method (action-type (o <ast>))
+  ((compose mcrl2-type .type .signature .event .action) o))
 
-(define-class <refs> (<type>))
-(define-class <cont> (<type>)
-  (name #:getter .name #:init-value "cont" #:init-keyword #:name)
-  (type #:getter .type #:init-value (make <refs>) #:init-keyword #:type))
-(define-class <call-parameter> (<ast>)
-  (name #:getter .name #:init-value #f #:init-keyword #:name)
-  (expression #:getter .expression #:init-value #f #:init-keyword #:expression))
 (define-method (dzn-type (o <call>))
  ((compose mcrl2-type dzn-type .function) o))
 (define-method (dzn:expression (o <call-parameter>))
   (.expression o))
-(define-class <cont-parameter> (<ast>)
-  (name #:getter .name #:init-value "cont" #:init-keyword #:name)
-  (continuation #:getter .continuation #:init-value #f #:init-keyword #:continuation))
 
 (define-method (process-continuation- (o <ast>) scope)
   (let* ((parent (cadr scope)))
@@ -734,7 +793,7 @@
     (string-join
      (append (list
 	      "false"
-	      (string-append "reply_" (symbol->string (mcrl2:provided-port-type scope)) "0(void)"))
+	      (string-append "reply_" (symbol->string (mcrl2:provided-port-type scope)) "'Void(void)"))
 	     (append-map (lambda (v)
 			   (list ((compose ->string mcrl2:value .expression) v))) vars))
      ", " 'infix)))

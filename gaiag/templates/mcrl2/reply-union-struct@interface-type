@@ -1,1 +1,1 @@
-reply_#x:interface-name #.index(x#.index _0_#x:interface-name'ReplyUnion: #x:mcrl2-type-name)?is_reply_#x:interface-name #.index
+reply_#x:interface-name'#x:mcrl2-type-name(replyValue: #x:mcrl2-type-name)?is_reply_#x:interface-name'#x:mcrl2-type-name

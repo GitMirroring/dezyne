@@ -1,2 +1,2 @@
 #x:pretty-print-dzn
-     #x:mcrl2-process-name'#x:mcrl2-process-identifier(#x:process-parameters) = #x:assign-by-call? #x:process-continuation(#.variable.name  = #x:expression);
+     #x:mcrl2-process-name'#x:mcrl2-process-identifier(#x:process-parameters) = #x:assign-type;
