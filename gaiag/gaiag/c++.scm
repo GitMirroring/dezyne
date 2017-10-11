@@ -195,7 +195,7 @@
 
 (define-method (c++:optional-return (o <trigger>))
   (let ((type ((compose .type .signature .event) o)))
-    (if (is-a? type <void>) "") type))
+    (if (is-a? type <void>) "" type)))
 
 (define-template x:optional-return c++:optional-return #f <type>)
 

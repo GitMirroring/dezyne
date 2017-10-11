@@ -35,6 +35,12 @@ void to_void(std::string){}
 void
 connect_ports (dzn::container<::shell, boost::function<void()> >& c)
 {
+  c.system.r_outer.in.return_void = [&] () {
+    dzn::trace_in(std::clog, c.system.r_outer.meta, "return_void"); std::clog << std::endl;
+    c.match("r_outer.return_void"); std::string tmp = c.match_return();
+    dzn::trace_out(std::clog, c.system.r_outer.meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
+    return to_void(tmp.substr(tmp.rfind('.')+1));
+  };
   c.system.r_outer.in.return_int = [&] () {
     dzn::trace_in(std::clog, c.system.r_outer.meta, "return_int"); std::clog << std::endl;
     c.match("r_outer.return_int"); std::string tmp = c.match_return();
@@ -71,11 +77,11 @@ event_map (dzn::container<::shell, boost::function<void()> >& c)
 
   return {{"illegal", []{std::clog << "illegal" << std::endl; std::exit(0);}}
     , {"r_outer.foo",[&]{int _0 = 0; c.system.r_outer.out.foo(0);}}
+    , {"p_outer.return_void",[&]{boost::thread([&]{c.system.p_outer.in.return_void(); c.match("p_outer.return");}).detach();}}
     , {"p_outer.return_int",[&]{boost::thread([&]{c.match("p_outer." + to_string(c.system.p_outer.in.return_int()));}).detach();}}
     , {"p_outer.return_bool",[&]{boost::thread([&]{c.match("p_outer." + to_string(c.system.p_outer.in.return_bool()));}).detach();}}
     , {"p_outer.return_enum",[&]{boost::thread([&]{int _0 = 0; int _1 = 1; c.match("p_outer." + to_string(c.system.p_outer.in.return_enum(0, _1)));}).detach();}}
     , {"r_outer.<flush>",[&]{std::clog << "r_outer.<flush>" << std::endl; c.runtime.flush(&c);}}
-
   };
 }
 
