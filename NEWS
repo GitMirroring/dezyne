@@ -5,6 +5,17 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.5.3 (since 2.5.2)
+** Noteworthy bug fixes
+  - Globally declared enums which are not used as event reply type
+    no longer cause a crash in verification (bug introduced in 2.5.0)
+  - dzn convert now has a ‘--glue’ option.  The glue namespace is
+    only added when this option is used.
+
+* Changes in 2.5.2 (since 2.5.1)
+** Code generation
+  - c++* fix void event in thread safe shell
+
 * Changes in 2.5.1 (since 2.5.0)
 ** Code generation
   - c++* thread safe shell now supports enum and subint reply types
@@ -24,6 +35,9 @@
    - The ASD converter produces ‘.map’ files for Components with
      construction parameter information that is used by the glue code
      generator.
+** Known issue:
+   - Global declared enum not referenced as a reply type not supported
+     in verification.
 
 * Changes in 2.4.1 (since 2.4.0)
 ** DZN language
