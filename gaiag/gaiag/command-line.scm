@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -35,7 +36,7 @@
 (define* (command-line:get option #:optional default)
   (let* ((files (option-ref (parse-opts (command-line)) '() '(#f)))
          (file (car files))
-         (commands '("code" "table" "traces"))
+         (commands '("code" "table" "traces" "verify"))
          (command (and=> (member file commands) (compose string->symbol car)))
          (parse-opts (let ((module (resolve-module `(gaiag commands ,command))))
                            (module-ref module 'parse-opts)))

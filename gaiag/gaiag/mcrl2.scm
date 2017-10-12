@@ -341,6 +341,12 @@
       (($ <var>) ((compose mcrl2:expand-types .variable) expr))
       (_ (mcrl2:expand-types (.type expr))))))
 
+(define-method (mcrl2:reply-type (o <action>))
+  ((compose mcrl2:expand-types .signature .event) o))
+
+(define-method (mcrl2:reply-type (o <the-end>))
+  ((compose mcrl2:expand-types .signature .event .trigger) o))
+
 (define-template x:mcrl2-references-sort models-with-calls 'newline-infix <model>)
 
 (define (models-with-calls o)
@@ -491,7 +497,7 @@
 (define-method (mcrl2-type (o <type>))
   (match o
     (($ <bool>) "Bool")
-    (($ <enum-literal>) (string-join (map symbol->string (om:scope+name (.name o))) "'" 'infix))
+    (($ <enum>) (string-join (map symbol->string (om:scope+name (.name o))) "'" 'infix))
     (($ <int>) (string-join (map symbol->string (om:scope+name (.name o))) "'" 'infix))
     (($ <refs>) (string-append (->string (om:name (ast:model-scope))) "'" "Refs"))))
 
@@ -783,7 +789,7 @@
 
 (define-method (mcrl2:value (o <expression>))
   (match o
-    (($ <enum-literal>) (string-append ((compose ->string om:name) (ast:model-scope)) "'State'" (->string (.field o))))
+    (($ <enum-literal>) (string-append ((compose ->string om:scope .type) o) "'State'" (->string (.field o))))
     (($ <literal>) (.value o))))
 
 ;;TODO: stop returning ASCII, start returning objects
@@ -793,18 +799,23 @@
     (string-join
      (append (list
 	      "false"
-	      (string-append "reply_" (->string (mcrl2:provided-port-type scope)) (mcrl2:initial-reply-union scope)))
+	      (string-append "reply_" (->string (mcrl2:provided-port-type scope)) "'" (mcrl2:init-reply-value scope)))
 	     (append-map (lambda (v)
 			   (list ((compose ->string mcrl2:value .expression) v))) vars))
      ", " 'infix)))
 
-(define-method (mcrl2:initial-reply-union (o <ast>))
-  (let ((reply-type (car (code:reply-types o))))
+(define-template x:mcrl2-init-reply-value mcrl2:init-reply-value)
+
+(define-method (mcrl2:init-reply-value (o <ast>))
+  (let ((reply-type (car (code:reply-types o #:pred (const #t)))))
     (match reply-type
-      (($ <bool>) "'Bool(false)")
-      (($ <void>) "'Void(void)")
-      (($ <int>) "'Int(0)")
-      (($ <enum>) (string-append "'" (.name.name reply-type) ((compose ->string car .fields) reply-type))))))
+      (($ <bool>) "Bool(false)")
+      (($ <void>) "Void(void)")
+      (($ <int>) "Int(0)")
+      (($ <enum>) (string-append (.name.name reply-type) ((compose ->string car .fields) reply-type))))))
+
+(define-method (mcrl2:init-reply-value (o <port>))
+  (mcrl2:init-reply-value (.type o)))
 
 (define-method (init-globals (o <component>))
   (globals-from-scope (ast:model-scope)))

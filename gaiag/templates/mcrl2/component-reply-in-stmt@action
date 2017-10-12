@@ -1,1 +1,1 @@
-#x:trigger-port'reply_in(#x:trigger-port-type'Actions'#x:on-event-trigger , reply_#x:trigger-port-type-reply) . 
+#x:trigger-port'reply_in(#x:trigger-port-type'Actions'#x:on-event-trigger , reply_#x:trigger-port-type'#x:mcrl2-reply-type(void)) . 

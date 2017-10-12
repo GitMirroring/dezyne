@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -32,7 +33,7 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
 
   #:use-module (gaiag goops)
-  #:use-module (gaiag om)
+  #:use-module (gaiag deprecated om)
   #:use-module (gaiag util)
   #:use-module (gaiag misc)
   #:use-module (scmcrl2 traces)

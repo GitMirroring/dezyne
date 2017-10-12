@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
+;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -163,12 +165,11 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
 
 (define (verify-mcrl2 options file-name)
   (let* ((modelname (option-ref options 'model #f))
-	 (ast (file->ast options file-name))
+	 (ast (parse-with-options options file-name))
          (module (resolve-module `(gaiag mcrl2)))
          (root-> (module-ref module 'root->))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
 	 (root (mcrl2:om ast)))
-    ;;(if gdzn-debug? (stderr "AST:\n ~s\n" root))
     (with-output-to-file "verify.mcrl2" (cut root-> root))
     (pk (mcrl2:verify file-name modelname root))
     *unspecified*))
