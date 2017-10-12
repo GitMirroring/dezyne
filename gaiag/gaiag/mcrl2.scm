@@ -793,10 +793,18 @@
     (string-join
      (append (list
 	      "false"
-	      (string-append "reply_" (symbol->string (mcrl2:provided-port-type scope)) "'Void(void)"))
+	      (string-append "reply_" (->string (mcrl2:provided-port-type scope)) (mcrl2:initial-reply-union scope)))
 	     (append-map (lambda (v)
 			   (list ((compose ->string mcrl2:value .expression) v))) vars))
      ", " 'infix)))
+
+(define-method (mcrl2:initial-reply-union (o <ast>))
+  (let ((reply-type (car (code:reply-types o))))
+    (match reply-type
+      (($ <bool>) "'Bool(false)")
+      (($ <void>) "'Void(void)")
+      (($ <int>) "'Int(0)")
+      (($ <enum>) (string-append "'" (.name.name reply-type) ((compose ->string car .fields) reply-type))))))
 
 (define-method (init-globals (o <component>))
   (globals-from-scope (ast:model-scope)))
