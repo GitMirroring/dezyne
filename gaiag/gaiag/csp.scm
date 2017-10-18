@@ -115,7 +115,7 @@
   (match o
     (($ <interface>)
      (and-let* ((root (make <root> #:elements (list o))))
-       (ast:set-scope root (model-generate-csp root o #:file-name file-name #:separate-asserts? separate-asserts?))))
+       (model-generate-csp o #:file-name file-name #:separate-asserts? separate-asserts?)))
     (($ <component>)
      (and-let* ((root (make <root> #:elements (list o)))
                 (interfaces (map .type ((compose .elements .ports) o)))
@@ -125,9 +125,9 @@
                                    (comma-join (map .name no-behaviour)))))
          (stderr message)
          (throw 'csp message))
-       (ast:set-scope root (model-generate-csp root o #:file-name file-name #:separate-asserts? separate-asserts?))))))
+       (model-generate-csp o #:file-name file-name #:separate-asserts? separate-asserts?)))))
 
-(define* (model-generate-csp root model #:key (file-name "-") (separate-asserts? (command-line:get 'assert #f)))
+(define* (model-generate-csp model #:key (file-name "-") (separate-asserts? (command-line:get 'assert #f)))
   (dump-output file-name (lambda ()
                            (csp-file 'combinators.csp.scm (csp:module model))
                            (csp-model model)
@@ -495,7 +495,7 @@
   (filter
    (negate (is? <extern>))
    (match o
-     (($ <interface>) (append (om:types o) (om:globals)))
+          (($ <interface>) (append (om:types o) (om:globals)))
      (($ <component>)
       (append
        (apply append
