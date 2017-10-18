@@ -44,11 +44,12 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
       (throw-on-error (read-pipe* command) command)))
 
 (define ((asd->dzn dzn out) dm-file)
-  (assert-pipe `(,dzn "--session=100" "-v" "convert" "-g" "-s" "-m" "-o" ,out ,dm-file)))
+  (assert-pipe `(,dzn "--session=100" "-v" "convert" "--globals" "--glue" "--system" "--map" "--output" ,out ,dm-file)))
 
 (define ((dzn->code dzn dir out language model map-files) dzn-file)
   (assert-pipe `(,dzn
                  "code" "-l" ,language
+                 "-I" ,out ;; FIXME:  dzn bug
                  "--glue=dzn"
                  "-o" ,(string-append out "/" language)
                  "-m" ,model

@@ -38,6 +38,7 @@
 (define (parse-opts args)
   (let* ((option-spec
           '((help (single-char #\h))
+            (glue)
             (globals (single-char #\g))
             (import (single-char #\I) (value #t))
             (map (single-char #\m))
@@ -53,6 +54,7 @@
           (stdout "\
 Usage: gdzn parse [OPTION]... [FILE]...
   -g, --globals          create or extend GlobalTypes.dzn with externals
+      --glue             generate interfaces in namespace \"glue\"
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
   -m, --map              generate map file for stub generation
@@ -80,6 +82,7 @@ Usage: gdzn parse [OPTION]... [FILE]...
          (map? (option-ref options 'map #f))
          (output-dir (option-ref options 'output #f))
          (output (if output-dir (string-append  " -o " output-dir) ""))
+         (glue? (option-ref options 'glue #f))
          (system? (option-ref options 'system #f))
          (model (with-input-from-file file-name (lambda () (xml->sxml (current-input-port)))))
          (imports (cons* (dirname file-name) (dirname (canonicalize-path file-name)) imports))
@@ -87,7 +90,8 @@ Usage: gdzn parse [OPTION]... [FILE]...
          (files (append interfaces (list file-name)))
          (commands (map (cut string-append
                              " asd"
-                             (if system? " -a glue " " -a no-system,glue ")
+                             (if glue? " -a glue" "")
+                             (if system? "" " -a no-system")
                              " -l gen2"
                              (string-join imports " -I " 'prefix)
                              output
