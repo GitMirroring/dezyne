@@ -2,7 +2,7 @@
 
 ##include <dzn/locator.hh>
 ##include <dzn/runtime.hh>
-##include <dzn/pump.hh>
+#x:pump-include
 
 #x:open-namespace
 #x:model-name ::#x:model-name(const dzn::locator& dzn_locator)

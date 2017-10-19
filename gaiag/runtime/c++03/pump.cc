@@ -24,6 +24,7 @@
 // Code:
 
 #include <dzn/locator.hh>
+#include <dzn/meta.hh>
 #include <dzn/pump.hh>
 
 #include <algorithm>
@@ -47,6 +48,15 @@ namespace dzn
     if(out_binding) out_binding();
     out_binding = 0;
     l.get<dzn::pump>().release(p);
+  }
+  void collateral_block(const locator& l)
+  {
+    l.get<dzn::pump>().collateral_block_lambda();
+  }
+  inline void compose_sequence(const boost::function<void()>& f, const boost::function<void()>& g) {f(); g();}
+  void call_async_helper(const locator& l, const meta& m, size_t id, const boost::function<void()>& f, const boost::function<void()>& g)
+  {
+    l.get<dzn::pump>().handle(id, 0, boost::bind(compose_sequence,f,g), m.rank);
   }
 
   inline bool unblocked_p(const coroutine& c)

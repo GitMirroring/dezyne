@@ -123,6 +123,7 @@ namespace dzn
     pump(boost::function<void()>(boost::bind(&shell_helper<R, L>, boost::ref(p), l)));
     return p.get_future().get();
   }
+  void collateral_block(const locator&);
 }
 
 #endif //DZN_PUMP_HH

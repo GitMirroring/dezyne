@@ -2,7 +2,6 @@
 
 ##include <dzn/locator.hh>
 ##include <dzn/runtime.hh>
-##include <dzn/pump.hh>
 
 #x:open-namespace
 namespace skel {
@@ -16,7 +15,6 @@ namespace skel {
 {
   //only turn off when flush is performed explicitly
   //dzn_rt.performs_flush(this) = true;
-  dzn::pump* dzn_pump = dzn_locator.try_get<dzn::pump>();
   #x:calls
   #x:rcalls
 }

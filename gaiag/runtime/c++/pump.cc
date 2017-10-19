@@ -42,6 +42,10 @@ namespace dzn
     out_binding = nullptr;
     l.get<dzn::pump>().release(p);
   }
+  void collateral_block(const locator& l)
+  {
+    l.get<dzn::pump>().collateral_block_lambda();
+  }
 
   static std::list<coroutine>::iterator find_self(std::list<coroutine>& coroutines)
   {

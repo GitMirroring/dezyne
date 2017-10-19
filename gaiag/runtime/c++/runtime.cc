@@ -32,11 +32,7 @@
 namespace dzn
 {
   std::ostream debug(nullptr);
-  
-  void collateral_block(const locator& l)
-  {
-    if(auto p = l.try_get<dzn::pump>()) p->collateral_block_lambda();
-  }
+
   runtime::runtime(){}
 
   void trace_in(std::ostream& os, port::meta const& m, const char* e)
