@@ -11,6 +11,10 @@
     no longer cause a crash in verification (bug introduced in 2.5.0)
   - dzn convert now has a ‘--glue’ option.  The glue namespace is
     only added when this option is used.
+** Code generation
+  - c++* only depends on pump when blocking or async are used
+  - this relaxes the boost dependency on 1.58+ for coroutine to any
+    previous version supporting bind, function and tuple.
 
 * Changes in 2.5.2 (since 2.5.1)
 ** Code generation
