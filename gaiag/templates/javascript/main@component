@@ -71,7 +71,7 @@ function #x:model-name _fill_event_map(m)
   c._dzn.flushes = dzn.flush;
 
   var e = {
-          'illegal': function () {console.stderr ('illegal'); process.exit (0);}
+          'illegal': function () {console.error ('illegal'); process.exit (0);}
           #x:main-event-map-void
           #x:main-event-map-valued
           #x:main-event-map-flush
