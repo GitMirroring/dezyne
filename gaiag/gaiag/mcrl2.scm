@@ -25,6 +25,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 (define-module (gaiag mcrl2)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-19)
   #:use-module (srfi srfi-26)
 
   #:use-module (ice-9 curried-definitions)
@@ -237,36 +238,73 @@
     om2list
     ) root))
 
+;; (define T (current-time time-process))
+
+;; (define (time name)
+;;   (lambda (o) (let* ((t (current-time time-process))
+;;                      (diff (time-difference t T)))
+;;                (stderr "~a: ~a\n" diff name)
+;;                (set! T t)
+;;                o)))
+
 (define (mcrl2:om ast)
   ((compose-root
+;;    (time '(annotate-path '()))
     (annotate-path '())
 ;;    (lambda (o) (stderr "AST final ~a\n" o) o)
+;;  (time 'flatten-compound)
     flatten-compound
+;;    (time 'ast-complete-elses)
     ast-complete-elses
+;;    (time 'ast-annotate-illegals)
     ast-annotate-illegals
+;;    (time 'ast-transform-event-ends)
     ast-transform-event-ends
+;;    (time 'transform-compounds)
     transform-compounds
+;;    (time 'flatten-compound)
     flatten-compound
+;;    (time '(root-purge-data))
     (root-purge-data)
+;;    (time '(root-add-voidreply))
     (root-add-voidreply)
+;;    (time 'ast-tail-calls)
     ast-tail-calls
+;;    (time 'ast-add-skips)
     ast-add-skips
+;;    (time 'aggregate-guard-g)
     aggregate-guard-g
+;;    (time '(expand-on))
     (expand-on)
+;;    (time 'flatten-compound)
     flatten-compound
+;;    (time '(prepend-true-guard))
     (prepend-true-guard)
+;;    (time '(aggregate-on norm:on-same-port-voidness-statement?))
     (aggregate-on norm:on-same-port-voidness-statement?)
+;;    (time '(expand-on norm:port-and-voidness-equal?))
     (expand-on norm:port-and-voidness-equal?)
+;;    (time 'aggregate-guard-g)
     aggregate-guard-g
+;;    (time 'flatten-compound)
     flatten-compound
+;;    (time 'combine-guards)
     combine-guards
+;;    (time 'passdown-on)
     passdown-on
+;;    (time 'flatten-compound)
     flatten-compound
+;;    (time '(passdown-blocking))
     (passdown-blocking)
+;;    (time '(remove-otherwise))
     (remove-otherwise)
+;;    (time 'om:models)
     om:models
+;;    (time 'ast:resolve)
     ast:resolve
+;;    (time 'parse->om)
     parse->om
+;;    (time 'code-initial)
     ) ast))
 
 (define (root->mcrl2 root)
@@ -274,7 +312,8 @@
                                   ,(resolve-module '(gaiag mcrl2))))))
     (module-define! module 'root root)
     (parameterize ((template-dir (string-append %template-dir "/mcrl2")))
-      (x:pand 'source@root (module-ref module 'root) module))))
+      (x:pand 'source@root (module-ref module 'root) module)
+      (peg-parse 'dummy #t))))
 
 (define (ast-> ast)
   (let* ((files (gdzn:command-line:get '() #f))
@@ -413,8 +452,10 @@
 (define-template x:pretty-print-dzn
   (lambda (o)
     (string-join (string-split (string-trim-right
-				(ast->dzn (or (and=> (as o <behaviour>) .statement) o)))
-                               #\newline) "\n     % " 'prefix)))
+        			(ast->dzn (or (and=> (as o <behaviour>) .statement) o)))
+                               #\newline) "\n     % " 'prefix))
+  ;; (lambda (o) "")
+  )
 
 (define-template x:mcrl2-interface-process
   (lambda (o)
@@ -448,6 +489,7 @@
 
 (define-template x:mcrl2-process-name identity #f <ast>)
 (define-template x:function-scope (lambda (o) (function-scope o (ast:parent o))))
+
 (define-method (function-scope (o <ast>) scope)
   (if (pair? (cdr scope))
       (let ((parent (cadr scope)))
@@ -834,6 +876,7 @@
 (define-method (mcrl2:statement-process (o <assign>)) o)
 (define-method (mcrl2:statement-process (o <variable>)) o)
 (define-method (mcrl2:statement-process (o <function>)) (.statement o))
+(define-method (mcrl2:statement-process (o <call>)) o)
 (define-method (mcrl2:child-identifier (o <behaviour>)) (mcrl2:process-identifier (first-process (.statement o))))
 (define-method (mcrl2:child-identifier (o <function>)) (mcrl2:process-identifier (first-process (.statement o))))
 (define-method (mcrl2:child-identifier (o <guard>)) (mcrl2:process-identifier (.statement o)))

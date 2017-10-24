@@ -45,11 +45,34 @@
              template?
              template-dir
              template-file
-             x:pand))
+             x:pand
+             peg-parse))
 
 (define template-dir (make-parameter %template-dir))
 (define (template-file name) (append (list (template-dir)) (if (pair? name) name (list name))))
 (define (gulp-template name) (gulp-file (template-file name)))
+
+(define-peg-string-patterns
+        "script       <-- pegtext*
+     pegtext      <-  (!pegprocedure (escape '#' / .))* pegprocedure?
+     pegsep       <   [ ]?
+     escape       <   '#'
+     pegprocedure <-- '#' ('='/'.'/':'/'-'/'+'/'?'/[a-zA-Z0-9_])+ pegsep")
+
+(define peg-parse
+  (let ((alist (with-input-from-file "/home/johri/development/compiled-alist" read)))
+    ;;(alist '())
+    (lambda (filename . save?)
+
+      (if (pair? save?)
+          (with-output-to-file "/home/johri/development/compiled-alist" (lambda () (write alist)))
+          (or (assoc-ref alist filename)
+              (let* ((result (match-pattern script (gulp-template filename)))
+                     (end (peg:end result))
+                     (tree (peg:tree result)))
+
+                (set! alist (acons filename tree alist))
+                tree))))))
 
 (define* (x:pand filename o #:optional (module (current-module)))
   (define (tree->string t)
@@ -57,19 +80,12 @@
       (('script t ...) (tree->string t))
       (('pegprocedure s) (display (->string (eval (list (string->symbol (string-drop s 1)) o) module))))
       ((? string?) (display t))
-      ((t ...) (map tree->string t))
+      ((t ...) (for-each tree->string t))
       (_ #f)))
-  (define-peg-string-patterns
-    "script       <-- pegtext*
-     pegtext      <-  (!pegprocedure (escape '#' / .))* pegprocedure?
-     pegsep       <   [ ]?
-     escape       <   '#'
-     pegprocedure <-- '#' ('='/'.'/':'/'-'/'+'/'?'/[a-zA-Z0-9_])+ pegsep")
+
   ;; (stderr "X:PAND: ~a\n" o)
   (let* ((debug? (command-line:get 'debug #f))
-         (result (match-pattern script (gulp-template filename)))
-         (end (peg:end result))
-         (tree (peg:tree result)))
+         (tree (peg-parse filename)))
     (if debug?
         (format #t "/*\ntemplates/~a/~a:0:expand */\n" (language) filename))
     ;; (stderr "tree: ~s\n" tree)
