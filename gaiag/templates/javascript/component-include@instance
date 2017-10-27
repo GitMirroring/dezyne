@@ -1,1 +1,1 @@
-dzn.extend (dzn, dzn_require (__dirname + '/#x:type-name '));
+dzn.extend (dzn, dzn_require (__dirname + '/#code:file-name '));
