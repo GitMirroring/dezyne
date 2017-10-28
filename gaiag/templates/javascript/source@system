@@ -6,12 +6,7 @@ dzn = dzn || {};
 #x:model2file-interface-include
 
 dzn.#x:type-name  = function (locator, meta) {
-  this._dzn = {};
-  this._dzn.locator = locator;
-  this._dzn.rt = locator.get(new dzn.runtime());
-  this._dzn.rt.top = this._dzn.rt.top || this;
-  this._dzn.rt.components = (this._dzn.rt.components || []).concat ([this]);
-  this._dzn.meta = meta;
+  dzn.runtime.init (this, locator, meta);
   this._dzn.meta.ports = [#x:all-ports-meta-list ];
   this._dzn.meta.children = [#x:meta-child ];
 

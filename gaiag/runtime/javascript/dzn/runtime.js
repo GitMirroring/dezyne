@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
@@ -133,7 +133,7 @@ function runtime(illegal) {
     var p;
     if (p = locator.get(new pump())) {p.collateral_block();}
   }.bind (this);
-  
+
   this.handle = function(c, f) {
     if (c._dzn.handling) this.collateral_block (c._dzn.locator);
     if (c._dzn.handling)
@@ -184,6 +184,14 @@ function runtime(illegal) {
       });
   };
 }
+
+runtime.init = function (o, locator, meta) {
+  o._dzn = {};
+  o._dzn.locator = locator;
+  o._dzn.rt = locator.get (new runtime());
+  o._dzn.rt.components = (o._dzn.rt.components || []).concat ([o]);
+  o._dzn.meta = meta;
+};
 
 function identity (x) {return x;}
 function debug_print (msg, id) {if (true) console.log ('[' + id + '] ' + msg);}
@@ -254,7 +262,7 @@ function pump() {
       fibers.yield (this.coroutines.last ());
     }
   }.bind (this);
-  
+
   this.block = function (port) {
     var skip = this.skip_block.indexOf (port);
     if (skip !== -1) {
