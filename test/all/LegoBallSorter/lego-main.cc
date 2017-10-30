@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -118,14 +119,14 @@ int main(int argc, char* argv[])
       dzn::runtime rt;
       LegoBallSorter sut;
       dzn::pump pump;
-      
+
       C()
       : sut(loc.set(rt).set(pump))
       , pump()
       {}
     };
     C c;
-    
+
     c.sut.dzn_meta.name = "sut";
     c.sut.ctrl.meta.requires = {"ctrl",0};
 
@@ -179,9 +180,9 @@ int main(int argc, char* argv[])
     bool stop = false;
     while(not stop && std::getline(std::cin, s)) {
       if(s.empty()) continue;
-      if(s[0] == 'c') dzn::blocking(c.pump, c.sut.ctrl.in.calibrate);
-      if(s[0] == 'o') dzn::blocking(c.pump, c.sut.ctrl.in.operate);
-      if(s[0] == 's') dzn::blocking(c.pump, c.sut.ctrl.in.stop);
+      if(s[0] == 'c') dzn::shell(c.pump, c.sut.ctrl.in.calibrate);
+      if(s[0] == 'o') dzn::shell(c.pump, c.sut.ctrl.in.operate);
+      if(s[0] == 's') dzn::shell(c.pump, c.sut.ctrl.in.stop);
       if(s[0] == 'q') stop = true;
     }
   }

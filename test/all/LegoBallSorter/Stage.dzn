@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -60,13 +61,13 @@ component Stage
 {
   provides IMove2D ctrl;
 
-  requires imotor xMotorHw;
-  requires itouch xHomeSensorHw;
-  requires itouch xEndSensorHw;
+  requires IMove xMotor;
+  requires ITouchSense xHomeSensor;
+  requires ITouchSense xEndSensor;
 
-  requires imotor yMotorHw;
-  requires itouch yHomeSensorHw;
-  requires itouch yEndSensorHw;
+  requires IMove yMotor;
+  requires ITouchSense yHomeSensor;
+  requires ITouchSense yEndSensor;
 
   system
   {
@@ -78,13 +79,13 @@ component Stage
     bhv.xAxis <=> xAxis.ctrl;
     bhv.yAxis <=> yAxis.ctrl;
 
-    xAxis.motorHw <=> xMotorHw;
-    xAxis.homeSensorHw <=> xHomeSensorHw;
-    xAxis.endSensorHw <=> xEndSensorHw;
+    xAxis.motor <=> xMotor;
+    xAxis.homeSensor <=> xHomeSensor;
+    xAxis.endSensor <=> xEndSensor;
 
-    yAxis.motorHw <=> yMotorHw;
-    yAxis.homeSensorHw <=> yHomeSensorHw;
-    yAxis.endSensorHw <=> yEndSensorHw;
+    yAxis.motor <=> yMotor;
+    yAxis.homeSensor <=> yHomeSensor;
+    yAxis.endSensor <=> yEndSensor;
   }
 }
 

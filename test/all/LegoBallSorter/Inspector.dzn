@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -21,6 +22,9 @@
 //
 // Code:
 
+ import Motor.dzn;
+import TouchSensor.dzn;
+import LightSensor.dzn;
 import Stage.dzn;
 import lego.dzn;
 
@@ -82,44 +86,42 @@ interface IInspect
 component Inspector
 {
   provides IInspect ctrl;
-  requires ilight sensor;
 
-  requires imotor stageXMotorHw;
-  requires itouch stageXHomeSensorHw;
-  requires itouch stageXEndSensorHw;
+  requires IMove stageXMotor;
+  requires ITouchSense stageXHomeSensor;
+  requires ITouchSense stageXEndSensor;
 
-  requires imotor stageYMotorHw;
-  requires itouch stageYHomeSensorHw;
-  requires itouch stageYEndSensorHw;
+  requires IMove stageYMotor;
+  requires ITouchSense stageYHomeSensor;
+  requires ITouchSense stageYEndSensor;
+
+  requires ILightSense sensor;
 
   system
   {
     Inspect bhv;
     Stage stage;
-    timer sensorSettletimer;
 
     ctrl <=> bhv.ctrl;
     bhv.sensor <=> sensor;
     bhv.stage <=> stage.ctrl;
 
-    stage.xMotorHw <=> stageXMotorHw;
-    stage.xHomeSensorHw <=> stageXHomeSensorHw;
-    stage.xEndSensorHw <=> stageXEndSensorHw;
+    stage.xMotor <=> stageXMotor;
+    stage.xHomeSensor <=> stageXHomeSensor;
+    stage.xEndSensor <=> stageXEndSensor;
 
-    stage.yMotorHw <=> stageYMotorHw;
-    stage.yHomeSensorHw <=> stageYHomeSensorHw;
-    stage.yEndSensorHw <=> stageYEndSensorHw;
+    stage.yMotor <=> stageYMotor;
+    stage.yHomeSensor <=> stageYHomeSensor;
+    stage.yEndSensor <=> stageYEndSensor;
 
-    bhv.sensorSettleTimer <=> sensorSettletimer.port;
   }
 }
 
 component Inspect
 {
   provides IInspect ctrl;
-  requires ilight sensor;
   requires IMove2D stage;
-  requires itimer sensorSettleTimer;
+  requires ILightSense sensor;
 
   behaviour
   {
@@ -139,9 +141,8 @@ component Inspect
 
     void stop()
     {
-      sensorSettleTimer.cancel();
+      sensor.cancel();
       stage.stop();
-      sensor.turnoff();
       p = InspectPosition.Unknown;
       s = State.Lost;
     }
@@ -174,24 +175,13 @@ component Inspect
       on stage.arrived(): [p.Receive]
       {
         p = InspectPosition.Inspect;
-        sensor.turnon();
-        sensorSettleTimer.create($100$);
+        sensor.measure();
       }
       on stage.arrived(): [p.Accept] {ctrl.accepted(); s = State.Waiting;}
       on stage.arrived(): [p.Reject] {ctrl.rejected(); s = State.Waiting;}
 
-      on sensorSettleTimer.timeout():
-        { 
-          ilight.status ballStatus = sensor.detect();
-          sensor.turnoff();
-          if (ballStatus == ilight.status.accept) {
-            stage.move(acceptX, acceptY);
-            p = InspectPosition.Accept;
-          } else {
-            stage.move(rejectX, rejectY);
-            p = InspectPosition.Reject;
-          }
-        }
+      on sensor.accept(): { stage.move(acceptX, acceptY); p = InspectPosition.Accept; }
+      on sensor.reject(): { stage.move(rejectX, rejectY); p = InspectPosition.Reject; }
     }
     [s.Waiting]
     {

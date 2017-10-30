@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -29,29 +30,8 @@ import lego.dzn;
 component HomeConstrainedAxis
 {
   provides IConstrainedMove ctrl;
-  requires imotor motorHw; // required by motor
-  requires itouch homeSensorHw; // required by sensor
-
-  system
-  {
-    HomeConstrainedMove bhv;
-    Motor motor;
-    TouchSensor homeSensor;
-
-    ctrl <=> bhv.ctrl;
-    bhv.motor <=> motor.ctrl;
-    bhv.homeSensor <=> homeSensor.ctrl;
-
-    motor.hw <=> motorHw;
-    homeSensor.hw <=> homeSensorHw;
-  }
-}
-
-component HomeConstrainedMove
-{
-  provides IConstrainedMove ctrl;
-  requires IMove motor;
-  requires ITouchSense homeSensor;
+  requires IMove motor; // required by motor
+  requires ITouchSense homeSensor; // required by sensor
 
   behaviour
   {

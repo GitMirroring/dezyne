@@ -1,0 +1,106 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import MaterialHandler.dzn;
+import Inspector.dzn;
+import Conveyor.dzn;
+import FeedPort.dzn;
+import Feeder.dzn;
+import lego.dzn;
+
+component BallSorter
+{
+  provides IHandle ctrl;
+
+  requires ILightSense light1; //<=> inspector.sensor; // inspect light sensor
+  requires IMove move6; //<=> inspector.stageXMotor; // stage x
+  requires ITouchSense touch6; //<=> inspector.stageXHomeSensor;  // stage x home
+  requires ITouchSense touch1; //<=> inspector.stageXEndSensor; // stage x home
+  requires IMove move7; //<=> inspector.stageYMotor; // stage y
+  requires ITouchSense touch10; //<=> inspector.stageYHomeSensor; // stage y home
+  requires ITouchSense touch9; //<=> inspector.stageYEndSensor; // stage y end
+  requires IMove move3; //<=> track.motor; // feeder
+  requires ITouchSense touch4; //<=> track.endSensor; // feeder retracted switch
+  requires IMove move2; //<=> input.motor; // input
+  requires ITouchSense touch2; //<=> input.sensor;  // input
+  requires IMove move5; //<=> accept.motor; // accept
+  requires ITouchSense touch8; //<=> accept.sensor; // accept
+  requires IMove move4; //<=> reject.motor; // reject
+  requires ITouchSense touch7; //<=> reject.sensor; // reject
+  requires IMove move8; //<=> handler.hoistMotor; // robot hoist
+  requires ITouchSense touch13; //<=> handler.hoistEndSensor; // hoist home
+  requires IMove move9; //<=> handler.gripperMotor; // robot gripper
+  requires ITouchSense touch11;
+  requires IMove move1; //<=> handler.trolleyMotor; // robot trolley
+  requires ITouchSense touch12; //<=> handler.trolleyHomeSensor; // extender home
+  requires IMove move10; //<=> handler.truckMotor; // truck
+  requires ITouchSense touch3; //<=> handler.truckHomeSensor; // robot truck home
+  //requires ITouchSense touch5; //<=> handler.truckEndSensor; // robot truck end
+
+
+  system
+  {
+    MaterialHandler handler;
+    Inspector inspector;
+    FeedPort input;
+    Conveyor accept;
+    Conveyor reject;
+    Feeder track;
+
+    ctrl <=> handler.ctrl;
+    handler.feedPort <=> input.ctrl;
+    handler.inspector <=> inspector.ctrl;
+    handler.acceptPort <=> accept.ctrl;
+    handler.rejectPort <=> reject.ctrl;
+
+    input.feeder <=> track.ctrl;
+
+    move1 <=> handler.trolleyMotor; // robot trolley
+    move2 <=> input.motor; // input
+    move3 <=> track.motor; // feeder
+    touch1 <=> inspector.stageXEndSensor; // stage x end
+    touch2 <=> input.sensor; // input
+    touch3 <=> handler.truckHomeSensor; // robot truck home
+    touch4 <=> track.endSensor; // feeder retracted switch
+
+    move4 <=> reject.motor; // reject
+    move5 <=> accept.motor; // accept
+    //touch5 <=> handler.truckEndSensor; // robot truck end
+    touch6 <=> inspector.stageXHomeSensor; // stage x home
+    touch7 <=> reject.sensor; // reject
+    touch8 <=> accept.sensor; // accept
+
+    move6 <=> inspector.stageXMotor; // stage x
+    move7 <=> inspector.stageYMotor; // stage y
+    light1 <=> inspector.sensor; // inspect light sensor
+    touch9 <=> inspector.stageYEndSensor;  // stage y end
+    touch10 <=> inspector.stageYHomeSensor; // stage y home
+
+    move8 <=> handler.hoistMotor; // robot hoist
+    move9 <=> handler.gripperMotor; // robot gripper
+    move10 <=> handler.truckMotor; // truck
+    touch11 <=> handler.gripperEndSensor;
+    touch12 <=> handler.trolleyEndSensor; // extender home
+    touch13 <=> handler.hoistEndSensor; // hoist home
+  }
+}

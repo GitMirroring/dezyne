@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -91,15 +92,15 @@ component MaterialHandler
   requires IConvey rejectPort;
 
   // required by aggregate components
-  requires imotor hoistMotorHw;
-  requires itouch hoistEndSensorHw;
-  requires imotor gripperMotorhw;
-  requires itouch gripperEndSensorHw;
-  requires imotor trolleyMotorHw;
-  requires itouch trolleyEndSensorHw;
-  requires imotor truckMotorHw;
-  requires itouch truckHomeSensorHw;
-  //requires itouch truckEndSensorHw;
+  requires IMove hoistMotor;
+  requires ITouchSense hoistEndSensor;
+  requires IMove gripperMotor;
+  requires ITouchSense gripperEndSensor;
+  requires IMove trolleyMotor;
+  requires ITouchSense trolleyEndSensor;
+  requires IMove truckMotor;
+  requires ITouchSense truckHomeSensor;
+  //requires ITouchSense truckEndSensorHw;
 
   system
   {
@@ -113,15 +114,15 @@ component MaterialHandler
     bhv.acceptPort <=> acceptPort;
     bhv.rejectPort <=> rejectPort;
 
-    robot.gripperMotorhw <=> gripperMotorhw;
-    robot.gripperEndSensorHw <=> gripperEndSensorHw;
-    robot.hoistEndSensorHw <=> hoistEndSensorHw;
-    robot.hoistMotorHw <=> hoistMotorHw;
-    robot.trolleyEndSensorHw <=> trolleyEndSensorHw;
-    robot.trolleyMotorHw <=> trolleyMotorHw;
-    //robot.truckEndSensorHw <=> truckEndSensorHw;//bestaat niet meer
-    robot.truckHomeSensorHw <=> truckHomeSensorHw;
-    robot.truckMotorHw <=> truckMotorHw;
+    robot.gripperMotor <=> gripperMotor;
+    robot.gripperEndSensor <=> gripperEndSensor;
+    robot.hoistEndSensor <=> hoistEndSensor;
+    robot.hoistMotor <=> hoistMotor;
+    robot.trolleyEndSensor <=> trolleyEndSensor;
+    robot.trolleyMotor <=> trolleyMotor;
+    //robot.truckEndSensor <=> truckEndSensor;//bestaat niet meer
+    robot.truckHomeSensor <=> truckHomeSensor;
+    robot.truckMotor <=> truckMotor;
   }
 }
 
@@ -377,15 +378,15 @@ component Robot
   provides ITransfer ctrl;
 
   // required by aggregate components
-  requires imotor hoistMotorHw;
-  requires itouch hoistEndSensorHw;
-  requires imotor gripperMotorhw;
-  requires itouch gripperEndSensorHw;
-  requires imotor trolleyMotorHw;
-  requires itouch trolleyEndSensorHw;
-  requires imotor truckMotorHw;
-  requires itouch truckHomeSensorHw;
-  //requires itouch truckEndSensorHw;
+  requires IMove hoistMotor;
+  requires ITouchSense hoistEndSensor;
+  requires IMove gripperMotor;
+  requires ITouchSense gripperEndSensor;
+  requires IMove trolleyMotor;
+  requires ITouchSense trolleyEndSensor;
+  requires IMove truckMotor;
+  requires ITouchSense truckHomeSensor;
+  //requires ITouchSense truckEndSensor;
 
 
   system
@@ -402,15 +403,15 @@ component Robot
     bhv.trolley <=> trolley.ctrl;
     bhv.truck <=> truck.ctrl;
 
-    hoist.motorHw <=> hoistMotorHw;
-    hoist.endSensorHw <=> hoistEndSensorHw;
-    gripper.motorHw <=> gripperMotorhw;
-    gripper.endSensorHw <=> gripperEndSensorHw;
-    trolley.motorHw <=> trolleyMotorHw;
-    trolley.endSensorHw <=> trolleyEndSensorHw;
-    truck.motorHw <=> truckMotorHw;
-    truck.homeSensorHw <=> truckHomeSensorHw;
-    //truck.endSensorHw <=> truckEndSensorHw;
+    hoist.motor <=> hoistMotor;
+    hoist.endSensor <=> hoistEndSensor;
+    gripper.motor <=> gripperMotor;
+    gripper.endSensor <=> gripperEndSensor;
+    trolley.motor <=> trolleyMotor;
+    trolley.endSensor <=> trolleyEndSensor;
+    truck.motor <=> truckMotor;
+    truck.homeSensor <=> truckHomeSensor;
+    //truck.endSensor <=> truckEndSensor;
   }
 }
 
@@ -623,8 +624,8 @@ component Hoist
 {
   provides IRetain ctrl;
 
-  requires imotor motorHw; // required by HalfConstrainedAxis winch
-  requires itouch endSensorHw; // required by HalfConstrainedAxis winch
+  requires IMove motor; // required by HalfConstrainedAxis winch
+  requires ITouchSense endSensor; // required by HalfConstrainedAxis winch
 
   system
   {
@@ -633,8 +634,8 @@ component Hoist
 
     ctrl <=> bhv.ctrl;
     bhv.winch <=> winch.ctrl;
-    winch.motorHw <=> motorHw;
-    winch.endSensorHw <=> endSensorHw;
+    winch.motor <=> motor;
+    winch.endSensor <=> endSensor;
   }
 }
 
@@ -687,8 +688,8 @@ component Gripper
 {
   provides IRetain ctrl;
 
-  requires imotor motorHw; // required by motor
-  requires itouch endSensorHw;
+  requires IMove motor; // required by motor
+  requires ITouchSense endSensor;
 
   system
   {
@@ -698,8 +699,8 @@ component Gripper
     ctrl <=> bhv.ctrl;
     bhv.gripper <=> gripper.ctrl;
 
-    gripper.motorHw <=> motorHw;
-    gripper.endSensorHw <=> endSensorHw;
+    gripper.motor <=> motor;
+    gripper.endSensor <=> endSensor;
   }
 }
 
