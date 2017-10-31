@@ -1,1 +1,1 @@
-{"trace_illegals":"true","known":["execute"],"comment":"verify only"}
+{"trace_illegals":"true","known":["c++03:execute"],"comment":"verify only"}

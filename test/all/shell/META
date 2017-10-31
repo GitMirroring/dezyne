@@ -1,4 +1,4 @@
-{"known":["run","c","table"]
+{"known":["run","c"]
 ,"languages":["c++","c++-msvc11","c++03"]
 ,"comment":"handwritten trace on a system component, thread safe shell, table no alpha reduction in pretty print"
 ,"tss":"true"}

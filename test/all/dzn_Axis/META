@@ -1,1 +1,1 @@
-{"model":"dzn.Axis","known":["cs","run","verify"],"comment":"namespace: cannot run or verify"}
+{"model":"dzn.Axis","known":["cs","verify"],"comment":"namespace: cannot verify"}

@@ -1,4 +1,3 @@
-{"known":["c++:build","c++03:build","c:build"]
-,"skip":["execute"]
+{"skip":["execute"]
 ,"comment":"invalid value assignment not detected in 'execute'"
 }
