@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -356,7 +357,7 @@ function check_bindings(component) {
     Object.keys(component[p].in).map(function(e){if(!component[p].in[e]) throw new Error(component._dzn.meta.name + '.' + p + '.in.' + e + ' not connected');});
     Object.keys(component[p].out).map(function(e){if(!component[p].out[e]) throw new Error(component._dzn.meta.name + '.' + p + '.out.' + e + ' not connected');});
   });
-  component._dzn.meta.children.map(function(c){check_bindings(component[c]);});
+  if (component._dzn.meta.children) component._dzn.meta.children.map(function(c){check_bindings(component[c]);});
 }
 
 var dzn = extend (typeof (dzn !== 'undefined') && dzn ? dzn : {}, {
