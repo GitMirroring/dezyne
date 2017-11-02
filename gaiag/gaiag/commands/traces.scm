@@ -59,7 +59,7 @@
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))
-            (queue-size (single-char #\q) (value #t))
+            (queue_size (single-char #\q) (value #t))
 	    (version (single-char #\V) (value #t))))
 	 (options (getopt-long args option-spec
                                #:stop-at-first-non-option #t))

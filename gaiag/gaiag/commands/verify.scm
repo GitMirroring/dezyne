@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -51,7 +52,7 @@
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))
-            (queue (single-char #\q) (value #t))
+            (queue_size (single-char #\q) (value #t))
 	    (version (single-char #\V) (value #t))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
@@ -67,7 +68,7 @@ Usage: gdzn verify [OPTION]... DZN-FILE [MAP-FILE]...
   -I, --import=DIR+           add DIR to import path
   -m, --model=MODEL           generate main for MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
-  -q, --queue-size=SIZE       use queue size=SIZE for verification [3]
+  -q, --queue_size=SIZE       use queue size=SIZE for verification [3]
 FIXME:  -V, --version=VERSION       use service version=VERSION
 ")
 	   (exit (or (and usage? 2) 0)))
@@ -120,7 +121,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
 (define (verify-model options file-name model)
   (let* ((bin ((compose dirname car) (command-line)))
          (all? (option-ref options 'all #f))
-         (q (option-ref options 'queue-size "3"))
+         (q (option-ref options 'queue_size "3"))
          (verify.js (string-append %service-dir "/scripts/verify.js"))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))

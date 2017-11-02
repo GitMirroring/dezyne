@@ -566,7 +566,7 @@ var aspects = {
     var flush = parameters.meta.flush ? ' --flush' : '';
     var illegal = parameters.meta.trace_illegals ? '-i ' : '';
     var model = parameters.meta.model || parameters.model;
-    var queue = parameters.meta.queue || 7;
+    var queue = parameters.meta.queue || 3;
     var imports = imports_string (parameters.meta.imports);
     var cmd = dzn()
         + ' traces '+imports+' -q ' + queue + ' ' + illegal+flush+' -m '+model+' -o '+out+' '+parameters.filename;
@@ -582,6 +582,7 @@ var aspects = {
     var dir = 'out/' + path.basename(parameters.dir)
     var out = dir + '/'+parameters.model;
     var err = out + '.stderr';
+    var queue = parameters.meta.queue || 3;
     var imports = imports_string (parameters.meta.imports);
     var model = parameters.meta.model || parameters.model;
     var model_opt = parameters.meta.model === false ? '' : ' --model=' + model;
@@ -593,6 +594,7 @@ var aspects = {
           + ' --verbose verify --all '
           + model_opt
           + ' '+imports
+          +' -q ' + queue
           + ' '+parameters.filename
           + ' 2>'+err
           + '| ' + __dirname + '/../bin/reorder > '+out
@@ -606,8 +608,10 @@ var aspects = {
       })
       .fail (function(err) {
         console.log ('verify: no baseline=' + baseline);
-        return 'out="$(' + dzn(parameters.session) + ' verify --all -m '+model
+        return 'out="$(' + dzn(parameters.session) + ' verify --all '
+          + model_opt
           + ' '+imports
+          +' -q ' + queue
           + ' '+parameters.filename
           + ' 2>&1)" && [ "$out" = "" ] || { echo "verification output: \"$out\""; false; }';
       })

@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -47,6 +48,7 @@
             (mangle (single-char #\M))
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))
+            (queue_size (single-char #\q) (value #t))
             (shell (single-char #\s) (value #t))
 	    (version (single-char #\V) (value #t))))
 	 (options (getopt-long args option-spec
