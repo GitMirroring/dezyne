@@ -1,7 +1,9 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
 # Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 # Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+# Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 # Copyright © 2014 Henk Katerberg <henk.katerberg@yahoo.com>
 #
 # This file is part of Gaiag.
@@ -29,6 +31,7 @@ SRCS := $(shell $(GIT_LS_FILES)\
   $(CDIR)/gaiag/*.scm.in\
   $(CDIR)/gaiag/deprecated/*.scm\
   $(CDIR)/gaiag/commands/*.scm\
+  $(CDIR)/scmcrl2/*.scm\
 )
 
 SRCS := $(SRCS:%.scm.in=%.scm)

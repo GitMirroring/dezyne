@@ -65,7 +65,7 @@
 
 (define (create-lps mcrl2)
   (let ((lps (string-append (basename mcrl2 ".mcrl2") ".lps")))
-    (system (string-append "mcrl22lps -bf -lstack " mcrl2 " " lps))
+    (system (string-append "mcrl22lps -b " mcrl2 " " lps))
     lps))
 
 (define (reduce-lps lps)
@@ -74,7 +74,7 @@
   lps)
 
 (define (reduce-lts lts)
-  (system (string-append "ltsconvert -ebranching-bisim " lts " " lts))
+  (system (string-append "ltsconvert -edpbranching-bisim " lts " " lts))
   lts)
 
 ;; (define (gen-mcrl2 schemefile component)
@@ -103,7 +103,7 @@
     (blockingcall (string-append "ltscompare -v -c -pfailures-divergence --tau=" taus " " complts " " provlts " 2>&1"))))
 
 (define (verifyall lps taus)
-  (blockingcall (string-append "lps2lts -aillegal --deadlock --divergence -t1 -v --tau=\"" taus "\" " lps " " (basename lps ".lps") ".aut" " 2>&1")))
+  (blockingcall (string-append "lps2lts -aillegal --deadlock --divergence -t1 -v --tau=\"" taus "\" " lps " " (basename lps ".lps") ".aut 2>&1")))
 
 (define (blockingcall command)
   (let* ((port (open-input-pipe command))
@@ -125,23 +125,49 @@
   (let* ((taus (find-taus ast modelname))
 	 (lpsfile (create-lps "verify.mcrl2"))
 	 (output (verifyall lpsfile taus)))
-    (interpret-results output file-name modelname)))
+    (interpret-results output modelname)))
 
-(define (interpret-results output file-name modelname)
-  (or (make-trace (check-refinement output) "refinement" modelname file-name)
-      (or (make-trace (check-illegal output) "illegal" modelname file-name)
-	  (or (make-trace (check-deadlock output) "deadlock" modelname file-name)
-	      (make-trace (check-livelock output) "livelock" modelname file-name)))))
+;; (define (interpret-results output file-name modelname)
+;;   (or (make-trace (check-refinement output) "refinement" modelname file-name)
+;;       (or (make-trace (check-illegal output) "illegal" modelname file-name)
+;; 	  (or (make-trace (check-deadlock output) "deadlock" modelname file-name)
+;; 	      (make-trace (check-livelock output) "livelock" modelname file-name)))))
 
-(define (check-refinement string)
+(define (interpret-results output modelname)
+  (let ((compliance (check-refinement output modelname))
+        (illegal (check-illegal output modelname))
+        (deadlock (check-deadlock output modelname))
+        (livelock (check-livelock output modelname)))
+    (or compliance illegal deadlock livelock)))
+
+(define (check-refinement string modelname)
   (let ((sub (regexp-exec (make-regexp "The LTS in (.*) is not included in the LTS .*") string)))
-    (if sub "counter_example_failures_divergence_refinement.trc" #f)))
+    (if sub (begin
+              (stdout "verify: ~a: check: compliance: fail\n" modelname)
+              (stdout "~a" (make-trace "counter_example_failures_divergence_refinement.trc" "refinement" modelname))
+              #t)
+         #f)))
 
-(define (check-illegal string)
-  (let ((sub (regexp-exec (make-regexp "Detected action 'illegal' .* and saved to '(.*)'") string))) (if sub (match:substring sub 1) #f)))
+(define (check-illegal string modelname)
+  (let ((sub (regexp-exec (make-regexp "Detected action 'illegal' .* and saved to '(.*)'") string)))
+    (if sub (begin
+              (stdout "verify: ~a: check: illegal: fail\n" modelname)
+              (stdout "~a" (make-trace (match:substring sub 1) "illegal" modelname))
+              #t)
+        #f)))
 
-(define (check-deadlock string)
-  (let ((sub (regexp-exec (make-regexp "deadlock-detect: deadlock found and saved to '(.*)'") string))) (if sub (match:substring sub 1) #f)))
+(define (check-deadlock string modelname)
+  (let ((sub (regexp-exec (make-regexp "deadlock-detect: deadlock found and saved to '(.*)'") string)))
+    (if sub (begin
+              (stdout "verify: ~a: check: deadlock: fail\n" modelname)
+              (stdout "~a" (make-trace (match:substring sub 1) "deadlock" modelname))
+              #t)
+        #f)))
 
-(define (check-livelock string)
-  (let ((sub (regexp-exec (make-regexp "Trace to the divergencing state is saved to '([^'\n]*)") string))) (if sub (match:substring sub 1) #f)))
+(define (check-livelock string modelname)
+  (let ((sub (regexp-exec (make-regexp "Trace to the divergencing state is saved to '([^'\n]*)") string)))
+    (if sub (begin
+              (stdout "verify: ~a: check: livelock: fail\n" modelname)
+              (stdout "~a" (make-trace (match:substring sub 1) "livelock" modelname))
+              #t)
+        #f)))

@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -26,7 +27,7 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
   #:use-module (srfi srfi-1)
-  
+
   #:export (make-trace))
 
 (define (find-aliases mcrl2file)
@@ -65,19 +66,21 @@
 	 (trace (regexp-substitute/global #f "\\bno_reply_error\\b" trace 'pre "" 'post))
          (trace (regexp-substitute/global #f "\\btau\\b" trace 'pre "" 'post))
 	 (trace (regexp-substitute/global #f "([\n])[\n]+" trace 'pre 1 'post)))
-    (with-output-to-file destfile (lambda () (display trace)))))
+    ;;   (with-output-to-file destfile (lambda () (display trace)))
+    trace
+
+    ))
 
 (define (make-json-trace modelname tracefile dznfile outfile)
   (system (string-append "seqdiag -m " modelname " -t " tracefile " " dznfile " > " outfile))
   outfile)
 
-(define (make-trace tracefile option modelname file-name)
-  (if tracefile (begin
-		  (let ((outfile (string-append modelname option ".trc")))
-		    (system (string-append "tracepp " tracefile " > trace1.txt"))
-		    (rename-lts-actions "trace1.txt" outfile)
-		    (make-json-trace modelname outfile file-name (string-append outfile ".json"))))
-      #f))
+(define (make-trace tracefile option modelname)
+  (let ((outfile (string-append modelname option ".trc")))
+    (system (string-append "tracepp " tracefile " > trace1.txt"))
+    (rename-lts-actions "trace1.txt" outfile)
+    ;;(make-json-trace modelname outfile file-name (string-append outfile ".json"))
+    ))
 
 ;; (define (filter-tau-flush tracefile option component)
 ;;   (with-input-from-file tracefile

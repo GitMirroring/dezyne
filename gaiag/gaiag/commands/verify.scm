@@ -170,8 +170,8 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
 	 (root (mcrl2:om ast)))
     (with-output-to-file "verify.mcrl2" (cut root-> root))
-    (pk (mcrl2:verify file-name modelname root))
-    *unspecified*))
+    (if (mcrl2:verify file-name modelname root) (exit 1))
+    ""))
 
 (define (main args)
   (let* ((options (parse-opts args))
