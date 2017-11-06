@@ -56,7 +56,8 @@
   #:use-module (gaiag xpand)
 
   #:export (mcrl2:om
-	    root->))
+	    root->
+            globals-from-scope))
 
 (define-class <mcrl2-interface> (<ast>)
   (interface #:getter .interface #:init-value #f #:init-keyword #:interface))
@@ -662,6 +663,13 @@
   ((compose trigger-port-type-reply .action) o))
 (define-method (trigger-port-type-reply (o <variable-action>))
   ((compose trigger-port-type-reply .action) o))
+
+(define-template x:required-port-the-end required-port-the-end)
+(define-method (required-port-the-end (o <the-end>))
+  (let* ((trigger (.trigger o))
+         (port (.port trigger)))
+    (if port (string-append "'" (mcrl2:init-reply-value (.type port)))
+        "")))
 
 (define-method (illegal-or-dillegal (o <ast>) scope)
   (let* ((parent (cadr scope)))

@@ -64,5 +64,3 @@ proc
      #x:mcrl2-required-with-out-event
 
      #x:mcrl2-component-implementation
-
-init #x:model-name'Implementation();

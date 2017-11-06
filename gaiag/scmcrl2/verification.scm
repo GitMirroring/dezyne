@@ -35,22 +35,15 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag deprecated om)
   #:use-module (gaiag util)
+  #:use-module (gaiag mcrl2)
   #:use-module (gaiag misc)
+  #:use-module (gaiag resolve)
   #:use-module (scmcrl2 traces)
 
   #:export (mcrl2:verify))
 
 (define (hidden-actions)
   (list "return" "event" "optional" "inevitable" "flush"))
-
-;; (define (required-ports o)
-;;   (match o
-;; 	 (('root x ...) (append-map required-ports (cdr o)))
-;; 	 (('component x ...) (append-map required-ports (cdr o)))
-;; 	 (('ports x ...) (append-map required-ports (cdr o)))
-;; 	 (('port portname porttype 'provides x y) '())
-;; 	 (('port portname porttype 'requires x y) (list portname))
-;; 	 (_ '())))
 
 (define (find-taus ast modelname)
   (let* ((component (find (lambda (x) (equal? (symbol->string(om:name x)) modelname)) (filter (is? <component>) (.elements ast))))
@@ -63,9 +56,11 @@
 			     req-ports)
 		 "," 'infix)))
 
-(define (create-lps mcrl2)
-  (let ((lps (string-append (basename mcrl2 ".mcrl2") ".lps")))
-    (system (string-append "mcrl22lps -b " mcrl2 " " lps))
+(define (create-lps mcrl2 modelname lpstype ast)
+  (let ((lps (string-append (basename mcrl2 ".mcrl2") "_" lpstype ".lps")))
+    (match lpstype
+      ("deterministic" (system (string-append "cat - " mcrl2 " <<< \"\n\ninit " modelname "'Behaviour(" (ast:set-scope ast (globals-from-scope (find (lambda (x) (equal? (symbol->string(om:name x)) modelname)) (filter (is? <component>) (.elements ast))))) ");\" | mcrl22lps -b > " lps)))
+      ("" (system (string-append "cat - " mcrl2 " <<< \"\n\ninit " modelname "'Implementation();\" | mcrl22lps -b > " lps))))
     lps))
 
 (define (reduce-lps lps)
@@ -77,9 +72,9 @@
   (system (string-append "ltsconvert -edpbranching-bisim " lts " " lts))
   lts)
 
-;; (define (gen-mcrl2 schemefile component)
-;;   (system (string-append "generate_mcrl2.py -c " component " " schemefile))
-;;   (string-append (basename schemefile ".out") "_" component "_component.mcrl2"))
+(define (verifydeterministic lps)
+  (let ((ltsname (string-append (basename lps ".lps") ".aut")))
+    (blockingcall (string-append "lps2lts " lps " " ltsname " && ltsinfo " ltsname " 2>&1"))))
 
 (define (verifydeadlock lps)
   (blockingcall (string-append "lps2lts --deadlock -t1 -v " lps " " (basename lps ".lps") ".aut" " 2>&1")))
@@ -88,7 +83,7 @@
   (blockingcall (string-append "lps2lts -aillegal -t1 -v " lps " " (basename lps ".lps") ".aut" " 2>&1")))
 
 (define (verifylivelock lps taus)
-  (blockingcall (string-append "lps2lts --divergence -t1 -v --tau=" taus " " lps " " (basename lps ".lps") ".aut" " 2>&1")))
+  (blockingcall (string-append "lps2lts --divergence -t1 -v --tau=\"" taus "\" " lps " " (basename lps ".lps") ".aut" " 2>&1")))
 
 ;; TODO
 (define (verifyrefinement lps taus)
@@ -111,34 +106,31 @@
     (close-pipe port)
     str))
 
-;; (define (doverification file-name model option)
-;;   (let* ((mcrl2file (gen-mcrl2 schemefile (symbol->string component)))
-;; 	 (lpsfile (create-lps mcrl2file))
-;; 	 (taus (find-taus schemefile)))
-;;     (cond ((equal? option "--verify-provided-interface") (verifyrefinement lpsfile taus))
-;; 	  ((equal? option "--verify-absence-of-illegals") (verifyillegal lpsfile))
-;; 	  ((equal? option "--verify-deadlock-freedom") (verifydeadlock lpsfile))
-;; 	  ((equal? option "--verify-livelock-freedom") (verifylivelock lpsfile taus))
-;; 	  ((equal? option "--all") (verifyall lpsfile taus)))))
-
 (define (mcrl2:verify file-name modelname ast)
   (let* ((taus (find-taus ast modelname))
-	 (lpsfile (create-lps "verify.mcrl2"))
-	 (output (verifyall lpsfile taus)))
+;;	 (lpsfile (create-lps "verify.mcrl2"))
+         (deterministic-lps (create-lps "verify.mcrl2" modelname "deterministic" ast))
+         (lpsfile (create-lps "verify.mcrl2" modelname "" ast))
+         (output (verifydeterministic deterministic-lps))
+	 (output (string-append output (verifyillegal lpsfile)))
+         (output (string-append output (verifydeadlock lpsfile)))
+         ;;(output (string-append output (verifyrefinement lpsfile taus)))
+         (output (string-append output (verifylivelock lpsfile taus)))
+         )
     (interpret-results output modelname)))
-
-;; (define (interpret-results output file-name modelname)
-;;   (or (make-trace (check-refinement output) "refinement" modelname file-name)
-;;       (or (make-trace (check-illegal output) "illegal" modelname file-name)
-;; 	  (or (make-trace (check-deadlock output) "deadlock" modelname file-name)
-;; 	      (make-trace (check-livelock output) "livelock" modelname file-name)))))
 
 (define (interpret-results output modelname)
   (let ((compliance (check-refinement output modelname))
         (illegal (check-illegal output modelname))
         (deadlock (check-deadlock output modelname))
-        (livelock (check-livelock output modelname)))
+        (livelock (check-livelock output modelname))
+        (deterministic (check-deterministic output modelname)))
     (or compliance illegal deadlock livelock)))
+
+(define (check-deterministic string modelname)
+  (let ((sub (regexp-exec (make-regexp "LTS is deterministic") string)))
+    (if sub (begin (stdout "verify: ~a: check: deterministic: ok\n" modelname) #f)
+        (begin (stdout "verify: ~a: check: deterministic: fail\n" modelname) #t))))
 
 (define (check-refinement string modelname)
   (let ((sub (regexp-exec (make-regexp "The LTS in (.*) is not included in the LTS .*") string)))
@@ -146,23 +138,23 @@
               (stdout "verify: ~a: check: compliance: fail\n" modelname)
               (stdout "~a" (make-trace "counter_example_failures_divergence_refinement.trc" "refinement" modelname))
               #t)
-         #f)))
+         (begin (stdout "verify: ~a: check: compliance: ok\n" modelname) #f))))
 
 (define (check-illegal string modelname)
-  (let ((sub (regexp-exec (make-regexp "Detected action 'illegal' .* and saved to '(.*)'") string)))
+  (let ((sub (regexp-exec (make-regexp "Detected action 'illegal' .* and saved to '([^'\n]*)'") string)))
     (if sub (begin
               (stdout "verify: ~a: check: illegal: fail\n" modelname)
               (stdout "~a" (make-trace (match:substring sub 1) "illegal" modelname))
               #t)
-        #f)))
+        (begin (stdout "verify: ~a: check: illegal: ok\n" modelname) #f))))
 
 (define (check-deadlock string modelname)
-  (let ((sub (regexp-exec (make-regexp "deadlock-detect: deadlock found and saved to '(.*)'") string)))
+  (let ((sub (regexp-exec (make-regexp "deadlock-detect: deadlock found and saved to '([^'\n]*)'") string)))
     (if sub (begin
               (stdout "verify: ~a: check: deadlock: fail\n" modelname)
               (stdout "~a" (make-trace (match:substring sub 1) "deadlock" modelname))
               #t)
-        #f)))
+        (begin (stdout "verify: ~a: check: deadlock: ok\n" modelname) #f))))
 
 (define (check-livelock string modelname)
   (let ((sub (regexp-exec (make-regexp "Trace to the divergencing state is saved to '([^'\n]*)") string)))
@@ -170,4 +162,4 @@
               (stdout "verify: ~a: check: livelock: fail\n" modelname)
               (stdout "~a" (make-trace (match:substring sub 1) "livelock" modelname))
               #t)
-        #f)))
+        (begin (stdout "verify: ~a: check: livelock: ok\n" modelname) #f))))

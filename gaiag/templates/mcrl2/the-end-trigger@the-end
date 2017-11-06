@@ -1,1 +1,12 @@
-#x:trigger-port'reply_out(#x:trigger-port-type'Actions'#x:on-event-trigger , reply_#x:trigger-port-type'#x:mcrl2-reply-type(void))
+#x:trigger-port'reply_out(#x:trigger-port-type'Actions'#x:on-event-trigger , reply_#x:trigger-port-type #x:required-port-the-end)
+
+
+
+
+
+
+
+
+
+
+
