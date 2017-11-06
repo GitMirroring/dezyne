@@ -1,1 +1,1 @@
-{"known":["c:build","cs:build"],"known":["table"],"skip":["execute","verify","run"],"comment":"compliance error"}
+{"known":["c:build","cs:build"],"known":["table"],"skip":["execute","verify","mcrl2","run"],"comment":"compliance error"}

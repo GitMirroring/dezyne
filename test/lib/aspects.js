@@ -1,9 +1,12 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 // Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 // Copyright © 2016, 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -80,6 +83,7 @@ var dependencies = {
   code:     ['convert'],
   convert:  [],
   execute:  ['traces', 'build'],
+  mcrl2:    ['convert'],
   parse:    ['convert'],
   run:      ['traces'],
   table:    ['convert'],
@@ -118,7 +122,7 @@ function ordered_dependencies() {
       result.push(aspect);
     }
   }
-  var order = ['parse', 'verify', 'triangle', 'table', 'view'] ;
+  var order = ['parse', 'verify', 'mcrl2', 'triangle', 'table', 'view'] ;
   order.forEach(function(aspect) {
     add_dependencies(aspect);
   });
@@ -579,7 +583,7 @@ var aspects = {
   ,
   verify: function(parameters) {
     var baseline = parameters.dir + '/baseline/verify/' + parameters.model;
-    var dir = 'out/' + path.basename(parameters.dir)
+    var dir = 'out/' + path.basename(parameters.dir) + '/verify'
     var out = dir + '/'+parameters.model;
     var err = out + '.stderr';
     var queue = parameters.meta.queue ? '-q ' + parameters.meta.queue : '';
@@ -603,8 +607,8 @@ var aspects = {
           + ';}'
           + ' || (diff -uw '+baseline+' '+out
           + '     && (test ! -s '+err
-          + '         || sed -i s,.\r,,g '+err+';'
-          + '            diff -u '+baseline+'.stderr '+err+'))';
+          + '         || (sed -i s,.\r,,g '+err+';'
+          + '            diff -u '+baseline+'.stderr '+err+')))';
       })
       .fail (function(err) {
         console.log ('verify: no baseline=' + baseline);
@@ -620,6 +624,44 @@ var aspects = {
       })
       .fail (function(err) {console.log(err); return {status: -1, output: err}});
   }
+  ,
+  mcrl2: function(parameters) {
+    var baseline = parameters.dir + '/baseline/mcrl2/' + parameters.model;
+    var dir = 'out/' + path.basename(parameters.dir) + '/mcrl2'
+    var out = dir + '/'+parameters.model;
+    var err = out + '.stderr';
+    var imports = imports_string (parameters.meta.imports);
+    var model = parameters.meta.model || parameters.model;
+    return lstat (baseline)
+      .then (function(stats) {
+        return 'mkdir -p '+dir+';'
+          + '{ set -o pipefail;'
+          + dzn(parameters.session)
+          + ' --verbose verify --all -M --model='+model
+          + ' '+imports
+          + ' '+parameters.filename
+          + ' 2>'+err
+          + '| ' + __dirname + '/../bin/reorder > '+out
+          + '| test ! -s '+baseline
+          + '| test ! -s '+baseline+'.stderr'
+          + ';}'
+          + ' || (diff -uw '+baseline+' '+out
+          + '     && (test ! -s '+err
+          + '         || (sed -i s,.\r,,g '+err+';'
+          + '            diff -u '+baseline+'.stderr '+err+')))';
+      })
+      .fail (function(err) {
+        console.log ('mcrl2 verify: no baseline=' + baseline);
+        return 'out="$(' + dzn(parameters.session) + ' verify --all -M -m '+model
+          + ' '+imports
+          + ' '+parameters.filename
+          + ' 2>&1)" && [ "$out" = "" ] || { echo "verification output: \"$out\""; false; }';
+      })
+      .then (function(cmd) {
+        return util.spawn_sync_shell(cmd);
+      })
+      .fail (function(err) {console.log(err); return {status: -1, output: err}});
+   }
   ,
   view: function(parameters) {
     var baseline = parameters.dir + '/baseline/verify/' + parameters.model;

@@ -1,1 +1,1 @@
-{"known":["c:build","cs:build","execute","run","table","verify"],"comment":"handwritten main, no trace: cannot c, cs, execute, run, verify"}
+{"known":["c:build","cs:build","execute","run","table","verify", "mcrl2"],"comment":"handwritten main, no trace: cannot c, cs, execute, run, verify"}
