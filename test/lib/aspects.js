@@ -566,10 +566,10 @@ var aspects = {
     var flush = parameters.meta.flush ? ' --flush' : '';
     var illegal = parameters.meta.trace_illegals ? '-i ' : '';
     var model = parameters.meta.model || parameters.model;
-    var queue = parameters.meta.queue || 3;
+    var queue = parameters.meta.queue ? '-q ' + parameters.meta.queue : '';
     var imports = imports_string (parameters.meta.imports);
     var cmd = dzn()
-        + ' traces '+imports+' -q ' + queue + ' ' + illegal+flush+' -m '+model+' -o '+out+' '+parameters.filename;
+        + ' traces ' + imports + ' ' + queue + ' ' + illegal+flush+' -m '+model+' -o '+out+' '+parameters.filename;
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
       .then(function(){return ls_traces(out);})
@@ -582,7 +582,7 @@ var aspects = {
     var dir = 'out/' + path.basename(parameters.dir)
     var out = dir + '/'+parameters.model;
     var err = out + '.stderr';
-    var queue = parameters.meta.queue || 3;
+    var queue = parameters.meta.queue ? '-q ' + parameters.meta.queue : '';
     var imports = imports_string (parameters.meta.imports);
     var model = parameters.meta.model || parameters.model;
     var model_opt = parameters.meta.model === false ? '' : ' --model=' + model;
@@ -594,7 +594,7 @@ var aspects = {
           + ' --verbose verify --all '
           + model_opt
           + ' '+imports
-          +' -q ' + queue
+          + ' '+queue
           + ' '+parameters.filename
           + ' 2>'+err
           + '| ' + __dirname + '/../bin/reorder > '+out
@@ -611,7 +611,7 @@ var aspects = {
         return 'out="$(' + dzn(parameters.session) + ' verify --all '
           + model_opt
           + ' '+imports
-          +' -q ' + queue
+          + ' '+queue
           + ' '+parameters.filename
           + ' 2>&1)" && [ "$out" = "" ] || { echo "verification output: \"$out\""; false; }';
       })
