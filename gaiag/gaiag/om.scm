@@ -42,7 +42,12 @@
 
   #:export (parse->om))
 
-(define (ast-> o) (parse->om o))
+(define (ast-> o)
+  ((compose
+    pretty-print
+    om->list
+    parse->om
+    ) o))
 
 (define (ast:model? x)
   (and (pair? x) (member (car x) '(component import interface system type))))

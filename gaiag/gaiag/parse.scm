@@ -20,6 +20,7 @@
 (define-module (gaiag parse)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 pretty-print)
 
   #:use-module (srfi srfi-1)
 
@@ -35,7 +36,7 @@
 
   #:export (%include-path parse-file parse-string try-find-file))
 
-(define ast-> identity)
+(define ast-> pretty-print)
 
 (define* (parse-file file-name #:key generator? (imports '()) mangle? model)
   (if generator? (generator-parse-file file-name #:imports imports #:mangle? mangle? #:model model)

@@ -147,7 +147,8 @@ reply en die kun je niet mixen"
     (_ (make <on> #:triggers triggers #:statement o))))
 
 (define (ast-> ast)
-  ((compose
+  ((compose-root
+    pretty-print
     om->list
     csp-norm-state
     ast:resolve

@@ -987,6 +987,7 @@
 
 (define (ast-> ast)
   ((compose-root
+    pretty-print
     om->list
     ast:resolve
     parse->om

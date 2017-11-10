@@ -553,6 +553,7 @@
 
 (define (ast-> ast)
   ((compose-root
+    pretty-print
     om->list
     code-norm-event
     ast:resolve
