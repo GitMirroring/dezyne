@@ -58,34 +58,36 @@
                            (not (ast:model? ast))
                            (not (eq? (car ast) 'root))
                            (ast:model? (car ast)))
-                      (make <root> #:elements ast)
+                      (make <root-node> #:elements ast)
                       ast))
              (ast (if (and (pair? ast) (assoc-ref ast 'locations))
-                      (ast->annotate ast) ast)))
-        (parse->om- ast))))
+                      (ast->annotate ast) ast))
+             (ast (parse->om- ast)))
+        (make <root> #:node ast)
+        )))
 
 (define (parse->om- ast)
   (retain-source-properties ast (parse->om-- ast)))
 
 (define (parse->om-- o)
   (match o
-    (('action event) (make <action> #:event event))
+    (('action event) (make <action-node> #:event event))
 
-    (('action port event) (make <action> #:port port #:event event))
+    (('action port event) (make <action-node> #:port port #:event event))
 
-    (('action port event arguments) (make <action> #:port port #:event event #:arguments (parse->om- arguments)))
+    (('action port event arguments) (make <action-node> #:port port #:event event #:arguments (parse->om- arguments)))
 
-    (('arguments arguments ...) (make <arguments>
+    (('arguments arguments ...) (make <arguments-node>
                                   #:elements (map parse->om- arguments)))
 
-    (('assign variable expression) (make <assign>
+    (('assign variable expression) (make <assign-node>
                                      #:variable variable
                                      #:expression (parse->om- expression)))
 
-    (('behaviour) (make <behaviour>))
+    (('behaviour) (make <behaviour-node>))
 
     (('behaviour name body ...)
-     (make <behaviour>
+     (make <behaviour-node>
        #:name name
        #:types (parse->om- (or (null-is-#f (assoc 'types body)) '(types)))
        #:ports (parse->om- (or (null-is-#f (assoc 'ports body)) '(ports)))
@@ -94,103 +96,103 @@
        #:statement (parse->om- (or (null-is-#f (assoc 'compound body)) '(compound)))))
 
     (('bind left right)
-     (make <bind> #:left (parse->om- left) #:right (parse->om- right)))
+     (make <bind-node> #:left (parse->om- left) #:right (parse->om- right)))
 
-    (('binding instance port) (make <binding> #:instance instance #:port port))
+    (('binding instance port) (make <binding-node> #:instance instance #:port port))
 
     (('bindings bindings ...)
-     (make <bindings> #:elements (map parse->om- bindings)))
+     (make <bindings-node> #:elements (map parse->om- bindings)))
 
-    (('blocking statement) (make <blocking> #:statement (parse->om- statement)))
+    (('blocking statement) (make <blocking-node> #:statement (parse->om- statement)))
 
-    (('call function) (make <call> #:function function))
+    (('call function) (make <call-node> #:function function))
 
     (('call function arguments)
-     (make <call>
+     (make <call-node>
        #:function function
        #:arguments (parse->om- (or (null-is-#f arguments) '(arguments)))))
 
     (('call function arguments last?)
-     (make <call>
+     (make <call-node>
        #:function function
        #:arguments (parse->om- (or (null-is-#f arguments) '(arguments)))
        #:last? last?))
 
     (('foreign name body ...)
      (and=> (assoc 'imported body) (mark-imported o))
-     (make <foreign>
+     (make <foreign-node>
        #:name (parse->om- name)
        #:ports (parse->om- (or (null-is-#f (assoc 'ports body)) '(ports)))))
 
     (('component name body ...)
      (and=> (assoc 'imported body) (mark-imported o))
-      (make <component>
-        #:name (parse->om- name)
-        #:ports (parse->om- (or (null-is-#f (assoc 'ports body)) '(ports)))
-        #:behaviour (and=> (null-is-#f (assoc 'behaviour body)) parse->om-)))
+     (make <component-node>
+       #:name (parse->om- name)
+       #:ports (parse->om- (or (null-is-#f (assoc 'ports body)) '(ports)))
+       #:behaviour (and=> (null-is-#f (assoc 'behaviour body)) parse->om-)))
 
     (('compound statements ...)
-     (make <compound> #:elements (map parse->om- statements)))
+     (make <compound-node> #:elements (map parse->om- statements)))
 
-    (('data value) (make <data> #:value value))
+    (('data value) (make <data-node> #:value value))
 
-    (('enum name fields) (make <enum> #:name (parse->om- name) #:fields (parse->om- fields)))
+    (('enum name fields) (make <enum-node> #:name (parse->om- name) #:fields (parse->om- fields)))
 
     (('extern name value)
-     (make <extern> #:name (parse->om- name) #:value value))
+     (make <extern-node> #:name (parse->om- name) #:value value))
 
     (('event name signature direction)
-     (make <event>
+     (make <event-node>
        #:name name
        #:signature (parse->om- signature)
        #:direction direction))
 
-    (('events events ...) (make <events> #:elements (map parse->om- events)))
+    (('events events ...) (make <events-node> #:elements (map parse->om- events)))
 
-    (('field-test identifier field) (make <field-test> #:variable identifier #:field field))
+    (('field-test identifier field) (make <field-test-node> #:variable identifier #:field field))
 
-    (('fields fields ...) (make <fields> #:elements fields))
+    (('fields fields ...) (make <fields-node> #:elements fields))
 
     (('function name signature recursive? statement)
-     (make <function>
+     (make <function-node>
        #:name name
        #:signature (parse->om- signature)
        #:recursive recursive?
        #:statement (parse->om- statement)))
 
     (('functions functions ...)
-     (make <functions> #:elements (map parse->om- functions)))
+     (make <functions-node> #:elements (map parse->om- functions)))
 
     (('guard expression statement)
-     (make <guard>
+     (make <guard-node>
        #:expression (parse->om- expression)
        #:statement (parse->om- statement)))
 
     (('if expression then)
-     (make <if>
+     (make <if-node>
        #:expression (parse->om- expression)
        #:then (parse->om- then)))
 
     (('if expression then else)
-     (make <if>
+     (make <if-node>
        #:expression (parse->om- expression)
        #:then (parse->om- then)
        #:else (parse->om- else)))
 
-    (('illegal) (make <illegal>))
+    (('illegal) (make <illegal-node>))
 
-    (('import name) (make <import> #:name (parse->om- name)))
+    (('import name) (make <import-node> #:name (parse->om- name)))
 
     (('int name range)
-     (make <int> #:name (parse->om- name) #:range (parse->om- range)))
+     (make <int-node> #:name (parse->om- name) #:range (parse->om- range)))
 
-    (('instance name type) (make <instance> #:name name #:type (parse->om- type)))
+    (('instance name type) (make <instance-node> #:name name #:type (parse->om- type)))
 
     (('instances instances ...)
-     (make <instances> #:elements (map parse->om- instances)))
+     (make <instances-node> #:elements (map parse->om- instances)))
 
     (('interface name types events #f)
-     (make <interface>
+     (make <interface-node>
        #:name (parse->om- name)
        #:types (parse->om- types)
        #:events (parse->om- events)
@@ -198,123 +200,123 @@
 
     (('interface name body ...)
      (and=> (assoc 'imported body) (mark-imported o))
-     (make <interface>
+     (make <interface-node>
        #:name (parse->om- name)
        #:types (parse->om- (or (null-is-#f (assoc 'types body)) '(types)))
        #:events (parse->om- (or (null-is-#f (assoc 'events body)) '(events)))
        #:behaviour (and=> (null-is-#f (assoc 'behaviour body)) parse->om-)))
 
-    (('enum-literal name field) (make <enum-literal> #:type (parse->om- name) #:field field))
+    (('enum-literal name field) (make <enum-literal-node> #:type (parse->om- name) #:field field))
 
     (('dotted name ...) o)
 
-    (('scope.name scope name) (make <scope.name> #:scope scope #:name name))
+    (('scope.name scope name) (make <scope.name-node> #:scope scope #:name name))
 
     (('on triggers statement)
-     (make <on> #:triggers (parse->om- triggers) #:statement (parse->om- statement)))
+     (make <on-node> #:triggers (parse->om- triggers) #:statement (parse->om- statement)))
 
-    (('otherwise) (make <otherwise> #:value 'otherwise))
+    (('otherwise) (make <otherwise-node> #:value 'otherwise))
 
-    (('otherwise value) (make <otherwise> #:value value))
+    (('otherwise value) (make <otherwise-node> #:value value))
 
     (('formal name #f #f)
-     (make <formal> #:name name))
+     (make <formal-node> #:name name))
 
     (('formal-binding name #f #f variable)
-     (make <formal-binding> #:name name #:variable variable))
+     (make <formal-binding-node> #:name name #:variable variable))
 
     (('formal name type)
-     (make <formal> #:name name #:type (parse->om- type)))
+     (make <formal-node> #:name name #:type (parse->om- type)))
 
     (('formal name type direction)
-     (make <formal> #:name name #:type (parse->om- type) #:direction direction))
+     (make <formal-node> #:name name #:type (parse->om- type) #:direction direction))
 
     (('formals formals ...)
-     (make <formals> #:elements (map parse->om- formals)))
+     (make <formals-node> #:elements (map parse->om- formals)))
 
     (('port name type direction external-injected ...)
-     (make <port>
+     (make <port-node>
        #:name name
        #:type (parse->om- type)
        #:direction direction
        #:external (find (lambda (x) (eq? x 'external)) external-injected)
        #:injected (find (lambda (x) (eq? x 'injected)) external-injected)))
 
-    (('ports ports ...) (make <ports> #:elements (map parse->om- ports)))
+    (('ports ports ...) (make <ports-node> #:elements (map parse->om- ports)))
 
-    (('range from to) (make <range> #:from from #:to to))
+    (('range from to) (make <range-node> #:from from #:to to))
 
-    (('reply expression) (make <reply> #:expression (parse->om- expression)))
+    (('reply expression) (make <reply-node> #:expression (parse->om- expression)))
 
-    (('reply expression port) (make <reply> #:expression (parse->om- expression) #:port port))
+    (('reply expression port) (make <reply-node> #:expression (parse->om- expression) #:port port))
 
-    (('return) (make <return>))
+    (('return) (make <return-node>))
 
-    (('return expression) (make <return> #:expression (parse->om- expression)))
+    (('return expression) (make <return-node> #:expression (parse->om- expression)))
 
-    (('root elements ...) (make <root> #:elements (map parse->om- elements)))
+    (('root elements ...) (make <root-node> #:elements (map parse->om- elements)))
 
     (('signature type formals)
-     (make <signature> #:type (parse->om- type) #:formals (parse->om- formals)))
+     (make <signature-node> #:type (parse->om- type) #:formals (parse->om- formals)))
 
-    (('signature type) (make <signature> #:type (parse->om- type)))
+    (('signature type) (make <signature-node> #:type (parse->om- type)))
 
     (('system name ports instances bindings)
      (and=> (assoc 'imported (cddr o)) (mark-imported o))
-     (make <system>
+     (make <system-node>
         #:name (parse->om- name)
         #:ports (parse->om- ports)
         #:instances (parse->om- instances)
         #:bindings (parse->om- bindings)))
 
-    (('trigger port event) (make <trigger> #:port port #:event event))
+    (('trigger port event) (make <trigger-node> #:port port #:event event))
 
     (('trigger port event arguments)
-     (make <trigger>
+     (make <trigger-node>
        #:port port
        #:event event
        #:formals (parse->om- arguments)))
 
     (('triggers triggers ...)
-     (make <triggers> #:elements (map parse->om- triggers)))
+     (make <triggers-node> #:elements (map parse->om- triggers)))
 
-    (('type name) (make <type> #:name (parse->om- name)))
+    (('type name) (make <type-node> #:name (parse->om- name)))
 
-    (('types types ...) (make <types> #:elements (map parse->om- types)))
+    (('types types ...) (make <types-node> #:elements (map parse->om- types)))
 
-    (('var name) (make <var> #:variable name))
+    (('var name) (make <var-node> #:variable name))
 
     (('variable name type)
-     (make <variable> #:name name #:type (parse->om- type) #:expression (make <expression>)))
+     (make <variable-node> #:name name #:type (parse->om- type) #:expression (make <expression-node>)))
 
     (('variable name type expression)
-     (make <variable> #:name name #:type (parse->om- type) #:expression (parse->om- expression)))
+     (make <variable-node> #:name name #:type (parse->om- type) #:expression (parse->om- expression)))
 
     (('variables variables ...)
-     (make <variables> #:elements (map parse->om- variables)))
+     (make <variables-node> #:elements (map parse->om- variables)))
 
     (('<- x y) (list '<- (parse->om- x) (parse->om- y)))
 
     ((or 'bool 'void) o)
 
-    (('expression) (make <literal>))
+    (('expression) (make <literal-node>))
     (('expression expression) (parse->om- expression))
-    (('! expression) (make <not> #:expression (parse->om- expression)))
-    (('group expression) (make <group> #:expression (parse->om- expression)))
+    (('! expression) (make <not-node> #:expression (parse->om- expression)))
+    (('group expression) (make <group-node> #:expression (parse->om- expression)))
 
-    (('+ left right) (make <plus> #:left (parse->om- left) #:right (parse->om- right)))
-    (('- left right) (make <minus> #:left (parse->om- left) #:right (parse->om- right)))
-    (('< left right) (make <less> #:left (parse->om- left) #:right (parse->om- right)))
-    (('<= left right) (make <less-equal> #:left (parse->om- left) #:right (parse->om- right)))
-    (('== left right) (make <equal> #:left (parse->om- left) #:right (parse->om- right)))
-    (('!= left right) (make <not-equal> #:left (parse->om- left) #:right (parse->om- right)))
-    (('> left right) (make <greater> #:left (parse->om- left) #:right (parse->om- right)))
-    (('>= left right) (make <greater-equal> #:left (parse->om- left) #:right (parse->om- right)))
-    (('and left right) (make <and> #:left (parse->om- left) #:right (parse->om- right)))
-    (('or left right) (make <or> #:left (parse->om- left) #:right (parse->om- right)))
-    ;;(('expression (and (or (? number?) 'false 'true) (get! value))) (make <literal> #:value (value)))
-    ((? number?) (make <literal> #:value o))
-    ((? symbol?) (make <literal> #:value o))
+    (('+ left right) (make <plus-node> #:left (parse->om- left) #:right (parse->om- right)))
+    (('- left right) (make <minus-node> #:left (parse->om- left) #:right (parse->om- right)))
+    (('< left right) (make <less-node> #:left (parse->om- left) #:right (parse->om- right)))
+    (('<= left right) (make <less-equal-node> #:left (parse->om- left) #:right (parse->om- right)))
+    (('== left right) (make <equal-node> #:left (parse->om- left) #:right (parse->om- right)))
+    (('!= left right) (make <not-equal-node> #:left (parse->om- left) #:right (parse->om- right)))
+    (('> left right) (make <greater-node> #:left (parse->om- left) #:right (parse->om- right)))
+    (('>= left right) (make <greater-equal-node> #:left (parse->om- left) #:right (parse->om- right)))
+    (('and left right) (make <and-node> #:left (parse->om- left) #:right (parse->om- right)))
+    (('or left right) (make <or-node> #:left (parse->om- left) #:right (parse->om- right)))
+    ;;(('expression (and (or (? number?) 'false 'true) (get! value))) (make <literal-node> #:value (value)))
+    ((? number?) (make <literal-node> #:value o))
+    ((? symbol?) (make <literal-node> #:value o))
 
     ((? (is? <ast>)) o)))
 

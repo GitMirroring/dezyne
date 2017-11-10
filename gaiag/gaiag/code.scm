@@ -59,7 +59,6 @@
             code:formals
             code:language
             code:instance-name
-            code:annotate-shells
             code:skel-file
             event2->interface1-event1-alist
 
@@ -109,14 +108,10 @@
   (string->symbol (command-line:get 'language "c++")))
 
 (define (code:file2file root)
-  (let* ((objects (filter (disjoin (is? <data>)
-                                   (negate (disjoin dzn-async? om:imported? (is? <foreign>))))
-                          (.elements root)))
-         (root* (clone root #:elements objects)))
-    (code:dump root*)
-    (when (code:foreign?)
-      (for-each code:dump (filter (is? <foreign>) (.elements root))))
-    (when (glue) (for-each code:dump-glue (filter (is? <system>) objects)))))
+  (code:dump root)
+  (when (code:foreign?)
+    (for-each code:dump (filter (is? <foreign>) (.elements root))))
+  (when (glue) (for-each code:dump-glue (filter (conjoin (is? <system>) (negate om:imported?)) (.elements root)))))
 
 (define (code:model2file root)
   (let* ((models (map (is? <model>) (.elements root)))
@@ -126,22 +121,27 @@
     (for-each code:dump models)))
 
 ;;; ast extension
-(define-class <argument> (<named> <expression>)
+(define-class <argument-node> (<named-node> <expression-node>)
   (type #:getter .type #:init-form #f #:init-keyword #:type)
   (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
 
-(define-class <enum-field> (<ast>)
+(define-class <enum-field-node> (<ast-node>)
   (type #:getter .type #:init-form #f #:init-keyword #:type)
   (field #:getter .field #:init-value #f #:init-keyword #:field))
 
-(define-class <file-name> (<ast>)
+(define-class <file-name-node> (<ast-node>)
   (name #:getter .name #:init-form #f #:init-keyword #:name))
 
-(define-class <local> (<variable>))
+(define-class <local-node> (<variable-node>))
+(define-class <model-scope-node> (<ast-node>))
+(define-class <out-formal-node> (<variable-node>))
 
-(define-class <model-scope> (<ast>))
-
-(define-class <out-formal> (<variable>))
+(wrap <argument-node> <argument> (<named> <expression>))
+(wrap <enum-field-node> <enum-field> (<ast>))
+(wrap <file-name-node> <file-name> (<ast>))
+(wrap <local-node> <local> (<variable>))
+(wrap <model-scope-node> <model-scope> (<ast>))
+(wrap <out-formal-node> <out-formal> (<variable>))
 
 ;;; ast accessors
 (define (injected-binding? binding)
@@ -168,12 +168,6 @@
   (let ((injected-instance-names (map injected-instance-name (injected-bindings model))))
     (filter (lambda (instance) (not (member (.name instance) injected-instance-names)))
             ((compose .elements .instances) model))))
-
-(define (code:annotate-shells o)
-  (if (and (is-a? o <system>)
-           (equal? (command-line:get 'shell #f) (symbol->string (.name (.name o)))))
-      (make <shell-system> #:ports (.ports o) #:name (.name o) #:instances (.instances o) #:bindings (.bindings o))
-      o))
 
 (define-method (code:class-member? (o <variable>)) ; MORTAL SIN HERE!!?
   ;; FIXME: is (.variable o) a member?
@@ -296,7 +290,7 @@
 (define-method (code:variable->argument (o <variable>) (f <formal>))
   (if (or (code:class-member? o)
           (eq? (.direction f) 'in)) o
-      (make <argument> #:name (.name o) #:type (.type o))))
+          (make <argument> #:name (.name o) #:type (.type o))))
 
 (define-method (code:variable->argument (o <var>) (f <formal>))
   (code:variable->argument (.variable o) f))
@@ -338,7 +332,8 @@
 
 (define (add-calling-context-formal formals)
   (let ((calling-context (command-line:get 'calling-context #f)))
-    (if calling-context (cons (make <formal> #:name 'cc__ #:direction 'out #:type (make <extern> #:value calling-context)) formals)
+    (if calling-context (cons (make <formal> #:name 'cc__ #:direction 'out #:type (make <extern> #:value calling-context))
+                              formals)
         formals)))
 
 (define-method (code:formals (o <function>))
@@ -517,14 +512,15 @@
 (define-method (code:scope-type-name (o <field-test>))
   ((compose code:scope-type-name .type .variable) o))
 
-(define (code:x-header- o) (filter (is? <interface>) (.elements o)))
+(define (code:x-header- o) (filter (conjoin (negate om:imported?) (is? <interface>)) (.elements o)))
 
 ;;
 
 ;;; code: generic templates
 (define-template x:header- code:x-header-)
 
-(define-template x:async-member-initializer (lambda (o) (om:ports (.behaviour o))))
+(use-modules (ice-9 pretty-print))
+(define-template x:async-member-initializer (lambda (o) (ast:port* (.behaviour o))))
 
 (define-template x:scope (compose .scope .name) 'name-infix)
 (define-template x:scope-type-scope code:scope-type-scope 'type-infix)
@@ -548,7 +544,8 @@
 
 (define (code:component-include o)
  (if (code:model2file?) (om:instances o)
-     (filter (disjoin (compose (is? <foreign>) .type)
+     (filter (disjoin
+              (compose (is? <foreign>) .type)
                       (conjoin om:imported? (lambda (i) (not (equal? (source-file o)
                                                                      (source-file (.type i)))))))
              (om:instances o))))
@@ -701,20 +698,13 @@
             (ast:set-model-scope o (x:pand (symbol-append template '@ (ast-name o)) o module))))))))
 
 (define-method (code:dump (o <root>))
-  (let ((name (basename (symbol->string (source-file o)) ".dzn")))
+  (let ((name (basename (symbol->string (source-file o)) ".dzn"))
+        (objects (filter (disjoin (is? <data>)
+                                   (negate (disjoin dzn-async? om:imported? (is? <foreign>))))
+                          (.elements o))))
     (code:x:pand o 'header (string-append name (symbol->string (dzn:extension (make <interface>)))))
-    (when (pair? (filter (negate (disjoin (is? <data>) (is? <interface>))) (.elements o)))
+    (when (pair? (filter (negate (is? <interface>)) objects))
       (code:x:pand o 'source (string-append name (symbol->string (dzn:extension (make <component>))))))))
-
-;; FIXME:  'global todo
-;; (define-method (code:dump (o <enum>))
-;;   (code:x:pand o 'header (symbol-append name (dzn:extension (make <interface>))))
-;;   (and-let* (((null-is-#f (filter (is? <enum>) (om:globals))))
-;;              (template (template-file `(global ,(symbol-append (dzn:extension o) '.scm))))
-;;              ((file-exists? (components->file-name template))))
-;;             (dzn:dump-indented (list 'dzn 'global (dzn:extension o))
-;;                            (lambda ()
-;;                              (code-file 'global (code:module o))))))
 
 (define-method (code:dump (o <interface>))
   (let ((name ((om:scope-name) o)))
@@ -771,6 +761,9 @@
 
 (define-method (code:file-name (o <instance>))
   (code:file-name (.type o)))
+
+(define-generic source-file)
+(define-method (source-file (o <ast>)) ((compose source-file .node) o))
 
 (define-method (code:file-name (o <interface>))
   (if (code:model2file?)

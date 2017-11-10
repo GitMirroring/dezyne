@@ -93,7 +93,7 @@
     (($ <guard>) o)
     (($ <on>) (if guard-seen? o
                   (rsp o (make <guard> #:expression (make <literal> #:value 'true) #:statement o))))
-    ((? (is? <ast>)) (om:map (prepend-true-guard guard-seen?) o))
+    ((? (is? <ast>)) (tree-map (prepend-true-guard guard-seen?) o))
     (_ o)))
 
 (define (norm:on-same-port-statement? model lhs rhs)
@@ -129,25 +129,23 @@ reply en die kun je niet mixen"
 (define (passdown-on o)
   (match o
     (($ <on>) ((passdown-triggers (.triggers o)) (.statement o)))
-    ((? (is? <ast>)) (om:map passdown-on o))
+    ((? (is? <ast>)) (tree-map passdown-on o))
     (_ o)))
 
 (define ((passdown-triggers triggers) o)
   (match o
-    (($ <compound> (statements ...))
+    (($ <compound>)
+     (let ((statements (.elements o)))
        (match statements
          ((($ <guard>) ..1)
-          (make <compound>
-            #:elements (map (passdown-triggers triggers) statements)))
-         (_ (make <on> #:triggers triggers #:statement o))))
+          (clone o #:elements (map (passdown-triggers triggers) statements)))
+         (_ (make <on> #:triggers triggers #:statement o)))))
     (($ <guard>)
-     (make <guard>
-       #:expression (.expression o)
-       #:statement ((passdown-triggers triggers) (.statement o))))
+     (clone o #:statement ((passdown-triggers triggers) (.statement o))))
     (_ (make <on> #:triggers triggers #:statement o))))
 
 (define (ast-> ast)
-  ((compose-root
+  ((compose
     pretty-print
     om->list
     csp-norm-state

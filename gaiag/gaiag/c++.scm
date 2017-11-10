@@ -30,6 +30,7 @@
 
   #:use-module (gaiag norm-event)
 
+  #:use-module (gaiag dzn)
   #:use-module (gaiag code)
   #:use-module (gaiag command-line)
   #:use-module (gaiag indent)
@@ -53,13 +54,16 @@
 
 (define ast-> (@@ (gaiag code) ast->))
 
-(define-class <glue-event> (<event>)
+(define-class <glue-event-node> (<event-node>)
   (asd-channel #:getter .asd-channel #:init-value #f #:init-keyword #:asd-channel)
   (asd-event #:getter .asd-event #:init-value #f #:init-keyword #:asd-event))
 
-(define-class <glue-system> (<system>)
+(define-class <glue-system-node> (<system-node>)
   (asd-in #:getter .asd-in #:init-form (list) #:init-keyword #:asd-in)
   (asd-out #:getter .asd-out #:init-form (list) #:init-keyword #:asd-out))
+
+(wrap <glue-event-node> <glue-event> (<event>))
+(wrap <glue-system-node> <glue-system> (<system>))
 
 (define asd? #f) ;; FIXME: asd glue
 
@@ -213,7 +217,7 @@
 (define-template x:dzn-locator code:dzn-locator)
 
 (define-template x:header-data (lambda (o) (filter (is? <data>) (.elements o))))
-(define-template x:header (lambda (o) (topological-sort (filter (negate (disjoin (is? <type>) (is? <interface>))) (map code:annotate-shells (.elements o))))))
+(define-template x:header (lambda (o) (topological-sort (map dzn:annotate-shells (filter (negate (disjoin om:imported? (is? <type>) (is? <interface>))) (.elements o))))))
 
 ;; shell-header-system
 (define-template x:provided-port-instance-declare (lambda (o) (filter ast:provides? (om:ports o))))
@@ -411,13 +415,15 @@
 (define (c++:asd-method-declaration model)
   (map
    (lambda (dzn asd)
-     (make <glue-event> #:name (.name dzn) #:signature (.signature dzn) #:direction (.direction dzn) #:asd-channel (cadr asd) #:asd-event (caddr asd)))
+     (clone (make <glue-event> #:name (.name dzn) #:signature (.signature dzn) #:direction (.direction dzn) #:asd-channel (cadr asd) #:asd-event (caddr asd))
+            #:parent model))
    (filter om:in? (om:events (om:port model))) ((asd-interfaces om:in?) (provided-interface model))))
 
 (define (c++:asd-method-definition model)
   (map
    (lambda (dzn asd)
-     (make <glue-event> #:name (.name dzn) #:signature (.signature dzn) #:direction (.direction dzn) #:asd-channel (cadr asd) #:asd-event (caddr asd)))
+     (clone (make <glue-event> #:name (.name dzn) #:signature (.signature dzn) #:direction (.direction dzn) #:asd-channel (cadr asd) #:asd-event (caddr asd))
+            #:parent model))
    (filter om:in? (om:events (om:port model))) ((asd-interfaces om:in?) (provided-interface model))))
 
 (define (c++:asd-cb-method-definition model)

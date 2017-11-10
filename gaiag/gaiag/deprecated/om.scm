@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -131,20 +132,22 @@
 (define (om:ports- o)
   (match o
     (($ <interface>) '())
-    ((? (is? <component-model>)) ((compose .elements .ports) o))
+    ((? (is? <component-model>)) (ast:port* o))
     (($ <behaviour>) ((compose .elements .ports) o))))
 
 (define om:ports (pure-funcq om:ports-))
 
 (define (om:types o)
   (match o
-    (($ <root> (models ...)) (filter (is? <type>) models))
-    (($ <behaviour> b types) (.elements types))
-    (($ <interface> name types events ($ <behaviour> b btypes)) (append (.elements btypes) (.elements types)))
-    (($ <component> name ports ($ <behaviour> b btypes))
-     (append (.elements btypes) (om:interface-types o)))
-    ((? (is? <component-model>) name ports) (om:interface-types o))
-    (($ <import> name) '())
+    (($ <root>) (filter (is? <type>) (ast:model* o)))
+    (($ <behaviour>) (ast:type* o))
+    (($ <interface>)
+     (append ((compose .elements .types .behaviour) o)
+             ((compose .elements .types) o)))
+    ((and ($ <component>) (not (= .behaviour #f)))
+     (append ((compose .elements .types .behaviour) o) (om:interface-types o)))
+    ((? (is? <component-model>)) (om:interface-types o))
+    (($ <import>) '())
     (#f '())
     ((? unspecified?) '())))
 
@@ -175,7 +178,7 @@
     (($ <interface>) (om:filter (is? <enum>) (.types o)))
     (($ <port>) (om:enums o))
     ((? (is? <component-model>))
-     (append-map om:interface-enums ((compose .elements .ports) o)))))
+     (append-map om:interface-enums (ast:port* o)))))
 
 
 ;;; SINGLE-LOOKUP
@@ -211,7 +214,7 @@
        (find (lambda (bind) (or (om:equal? (.port.name (.left bind)) o)
                                 (om:equal? (.port.name (.right bind)) o)))
            binds))
-      (($ <binding> instance port-name)
+      ((and ($ <binding>) (= .instance instance) (= .port port-name))
        (find (lambda (bind)
                (or (and (eq? (.instance (.left bind)) instance)
                                      (eq? (.port.name (.left bind)) port-name))
@@ -229,7 +232,7 @@
      (deprecated (current-source-location))
      (let ((bind (om:bind system o)))
        (if (eq? (.port.name (.left bind)) o) (.left bind) (.right bind))))
-    (($ <binding> instance port-name)
+    ((and ($ <binding>) (= .instance instance) (= .port port-name))
      (let ((bind (om:bind system o)))
        (and bind
             (if (and (eq? (.instance (.left bind)) instance)
@@ -265,12 +268,12 @@
                    (instance (resolve:instance model name))
                    (type (and=> instance .type))
                    (component type))
-                  (om:port component port))
+          (om:port component port))
         (om:port model port))))
     ('* (make <port> #:name '* #:direction 'requires))
     (_ (find (if o (om:named o)
                  (lambda (x) (eq? (.direction x) 'provides)))
-             (append (.elements (.ports model))
+             (append (ast:port* model)
                      (om:behaviour-ports model))))))
 
 (define (unspecified? x) (eq? x *unspecified*))
@@ -307,7 +310,9 @@
     (($ <scope.name>) (append (.scope o) (list (.name o))))
     (($ <signature>) ((compose om:scope+name .type) o))
     (($ <trigger>) ((compose om:scope+name .event) o))
-    ((? (is? <scoped>)) ((compose om:scope+name .name) o))))
+    ((? (is? <scoped>)) ((compose om:scope+name .name) o))
+    ((? (is? <model>)) ((compose om:scope+name .name) o)) ;; FIXME
+    ))
 
 (define* ((om:scope-name #:optional (infix '_)) o)
   (let ((infix (if (symbol? infix) infix
@@ -352,17 +357,17 @@
 (define ((collect predicate) o)
   (match o
     ((? (compose null-is-#f predicate)) (list o))
-    (($ <compound> (statements ...))
-     (filter identity (apply append (map (collect predicate) statements))))
-    (($ <blocking> s) (filter identity ((collect predicate) s)))
-    (($ <guard> e s) (filter identity ((collect predicate) s)))
-    (($ <on> t s) (filter identity ((collect predicate) s)))
-    (($ <if> e t f) (append (filter identity ((collect predicate) t))
-                            (filter identity ((collect predicate) f))))
+    (($ <compound>)
+     (filter identity (apply append (map (collect predicate) (ast:statement* o)))))
+    (($ <blocking>) (filter identity ((collect predicate) (.statement o))))
+    (($ <guard>) (filter identity ((collect predicate) (.statement o))))
+    (($ <on>) (filter identity ((collect predicate) (.statement o))))
+    (($ <if>) (append (filter identity ((collect predicate) (.then o)))
+                      (filter identity ((collect predicate) (.else o)))))
     ;; FIXME: recurse through whole AST
-    (($ <interface> name types events behaviour) (filter identity ((collect predicate) behaviour)))
-    (($ <component> name ports behaviour) (filter identity ((collect predicate) behaviour)))
-    (($ <behaviour> name types ports variables functions statement) (filter identity ((collect predicate) statement)))
+    (($ <interface>) (filter identity ((collect predicate) (.behaviour o))))
+    (($ <component>) (filter identity ((collect predicate) (.behaviour o))))
+    (($ <behaviour>) (filter identity ((collect predicate) (.statement o))))
     ((h t ...)
      (filter identity (apply append (map (collect predicate) o))))
     (_ '())))
@@ -383,11 +388,11 @@
     ((or ($ <interface>) ($ <component>))
      (or (and=> (.behaviour ast) om:find-triggers) '()))
     (($ <behaviour>) (or (and=> (.statement ast) om:find-triggers) '()))
-    (($ <compound> (statements ...))
-     (delete-duplicates (sort (append (apply append (map om:find-triggers statements))) om:<)))
+    (($ <compound>)
+     (delete-duplicates (sort (append (apply append (map om:find-triggers (ast:statement* ast)))) om:<)))
     (($ <blocking>) (om:find-triggers (.statement ast) found))
     (($ <on>) (om:find-triggers (.triggers ast)))
-    (($ <triggers> (triggers ...)) triggers)
+    (($ <triggers>) (ast:trigger* ast))
     (($ <guard>) (om:find-triggers (.statement ast) found))
     (($ <system>) (append-map om:find-triggers (map (lambda (i) (resolve:component ast i)) (om:instances ast))))
     (_ '())))
@@ -415,7 +420,7 @@
             (types (delete-duplicates (map (compose .type .signature) events))))
        (filter-map (om:type o) types)))
     ((or ($ <component>) ($ <foreign>))
-     (delete-duplicates (append-map (compose om:reply-types .type) ((compose .elements .ports) o))))
+     (delete-duplicates (append-map (compose om:reply-types .type) (ast:port* o))))
     (_ '())))
 
 (define (om:out-formals o)
@@ -467,7 +472,7 @@
                (model-file (if (string? model-file) (string->symbol model-file) model-file)))
               (eq? (basename- file) (basename- model-file)))))
 
-(define (om:imported? o)
+(define-method (om:imported? o)
   (if (assoc 'imported? (source-properties o))
       (source-property o 'imported?)
       (let ((files (command-line:get '() '(#f))))
@@ -478,3 +483,6 @@
                 ((string= file "/dev/stdin") #f)
                 ((string-suffix? ".scm" file) #f)
                 (else (not (in-file? o file)))))))))
+
+(define-method (om:imported? (o <model>)) ;; FIXME
+  (om:imported? (.node o)))

@@ -68,7 +68,7 @@
 
 (define ((table table-statement) o)
   (match o
-    (($ <root> (models ...))
+    (($ <root>)
      (let ((name (and (and=> (gdzn:command-line:get 'model #f) string->symbol))))
        (or (and-let* ((models (.elements o))
                       ((pair? models))
@@ -182,7 +182,7 @@
 
 (define* ((simplify- model variable field #:optional (top? #f)) o)
   (match o
-    (($ <compound> (statements ...))
+    ((and ($ <compound>) (= .elements statements))
      (let* ((statements
              (let loop ((statements statements))
                (if (null? statements)
@@ -200,74 +200,78 @@
         (else
          (clone o #:elements ((simplify model variable field) statements))))))
 
-    (($ <on> triggers ($ <guard> ($ <expression> #t) statement)) (=> failure)
-     (if field
+    ((and ($ <on>) (= .statement ($ <guard>)) (= (compose .expression .statement) #t)) (=> failure)
+     (let ((statement ((compose .statement .statement) 0)))
+       (if field
          (clone o #:statement ((simplify model variable field) statement))
-         (failure)))
+         (failure))))
 
-    (($ <guard> expression1 ($ <guard> expression2 statement))
+    ((and ($ <guard>) (= .statement ($ <guard>)))
      (and-let*
-      ((statement ((simplify model variable field) statement))
-       (value (simplify-literal model variable field (make <and> #:left expression1 #:right expression2)))
-       (expression (cond ((and (om:equal? expression1 value)
-                               (is-a? expression1 <otherwise>))
-                          expression1)
-                         ((and (om:equal? expression2 value)
-                               (is-a? expression2 <otherwise>))
-                          expression2)
-                         (else value)))
-       (guard (clone o #:expression expression #:statement statement)))
-      ((simplify model variable field) guard)))
+         ((expression1 (.expression o))
+          (expression2 ((compose .expression .statement) o))
+          (statement ((compose .statement .statement) o))
+          (statement ((simplify model variable field) statement))
+          (value (simplify-literal model variable field (make <and> #:left expression1 #:right expression2)))
+          (expression (cond ((and (om:equal? expression1 value)
+                                  (is-a? expression1 <otherwise>))
+                             expression1)
+                            ((and (om:equal? expression2 value)
+                                  (is-a? expression2 <otherwise>))
+                             expression2)
+                            (else value)))
+          (guard (clone o #:expression expression #:statement statement)))
+       ((simplify model variable field) guard)))
 
-    (($ <guard> expr statement)
+    ((and ($ <guard>) (= .expression expr) (= .statement statement))
      (and-let* ((value (simplify-literal model variable field expr))
                 (statement ((simplify model variable field) statement)))
-               (match value
-                 (($ <literal> 'false) #f)
-                 (($ <literal> 'true)
-                  (if #t ;;(om:declarative? statement) FIXME...
-                      (retain-source-properties o statement)
-                      (clone o #:expression value #:statement statement)))
-                 (($ <enum-literal>)
-                  (and (om:equal? value field)
-                       (if (om:declarative? statement)
-                           (retain-source-properties o statement)
-                           (clone o #:expression value #:statement statement))))
-                 (_ (clone o #:expression value #:statement statement)))))
+       (match value
+         ((and ($ <literal>) (= .value 'false)) #f)
+         ((and ($ <literal>) (= .value 'true))
+          (if #t ;;(om:declarative? statement) FIXME...
+              (retain-source-properties o statement)
+              (clone o #:expression value #:statement statement)))
+         (($ <enum-literal>)
+          (and (om:equal? value field)
+               (if (om:declarative? statement)
+                   (retain-source-properties o statement)
+                   (clone o #:expression value #:statement statement))))
+         (_ (clone o #:expression value #:statement statement)))))
 
-    (($ <on> triggers statement)
+    ((and ($ <on>) (= .statement statement))
      (and-let* ((statement ((simplify model variable field) statement)))
-               (make <on> #:triggers triggers #:statement statement)))
+       (clone o #:statement statement)))
 
-    (($ <if> expression then #f)
+    ((and ($ <if>) (= .expression expression) (= .then then) (= .else #f))
      (or (and-let* ((value (simplify-literal model variable field expression))
                     (then ((simplify model variable field) then)))
-                   (match value
-                     (($ <literal> 'true) then)
-                     (($ <literal> 'false) #f)
-                     (($ <enum-literal>) (and (om:equal? value field) then))
-                     (_ (clone o #:expression value #:then then))))
+           (match value
+             ((and ($ <literal>) (= .value 'true)) then)
+             ((and ($ <literal>) (= .value 'false)) #f)
+             (($ <enum-literal>) (and (om:equal? value field) then))
+             (_ (clone o #:expression value #:then then))))
          (make <compound>)))
 
-    (($ <if> expression then else)
+    ((and ($ <if>) (= .expression expression) (= .then then) (= .else else))
      (or (and-let* ((value (simplify-literal model variable field expression)))
-                   (let ((then ((simplify model variable field) then))
-                         (else ((simplify model variable field) else)))
-                     (match value
-                       (($ <literal> 'true) then)
-                       (($ <literal> 'false) else)
-                       (($ <enum-literal>) (and (om:equal? value field) then))
-                       (_ (clone o #:expression value #:then then #:else else)))))
-         (and-let* ((then ((simplify model variable field) else))
-                    (expression (make <not> #:expression expression)))
-                   (clone o #:expression expression #:then then))
+           (let ((then ((simplify model variable field) then))
+                 (else ((simplify model variable field) else)))
+             (match value
+               ((and ($ <literal>) (= .value 'true)) then)
+               ((and ($ <literal>) (= .value 'false)) else)
+               (($ <enum-literal>) (and (om:equal? value field) then)) ;; TODO
+               (_ (clone o #:expression value #:then then #:else else)))))
+         (and-let* ((then ((simplify model variable field) (.else o)))
+                    (expression (make <not> #:expression (.expression o))))
+           (clone o #:expression expression #:then then))
          (make <compound>)))
 
     ((and (? (negate (is? <ast>))) (h t ...)) (map (simplify model variable field) o))
     (_ o)))
 
 (define (simplify-literal model variable field o)
-  (let* ((state (acons (om2list variable) field '()))
+  (let* ((state (acons (om->list variable) field '()))
          (simple (simplify-expression model state o)))
     (match simple
       ((? (is? <expression>)) simple)
@@ -278,10 +282,10 @@
 (define ((mangle-table json-table) o)
   (let ((json? (gdzn:command-line:get 'json #f)))
     (match o
-      (($ <root> (models ...))
+      ((and ($ <root>) (= .elements models))
        (if json?
            (map (mangle-table json-table) models)
-           (make <root> #:elements (map (mangle-table json-table) models))))
+           (clone o #:elements (map (mangle-table json-table) (.elements o)))))
       (($ <system>) (and (not json?) o))
       (($ <foreign>) (and (not json?) o))
       ((? (is? <model>))
@@ -300,7 +304,7 @@
 
 (define (dzn-table o)
   (match o
-    (($ <root> (t ...)) (ast->dzn o))
+    (($ <root>) (ast->dzn o))
     (_ o)))
 
 (define (switch-norm-event o)

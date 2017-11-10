@@ -25,6 +25,7 @@
 
 (define-module (gaiag compare)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
 
@@ -46,17 +47,17 @@
 (define om:< <)
 
 (define-method (om:equal? a b)
-  (equal? (om2list a) (om2list b)))
+  (equal? (om->list a) (om->list b)))
 
-(define-method (members (o <ast>))
-  (let ((names (map slot-definition-name (class-slots (class-of o)))))
-    (map (lambda (name) (slot-ref o name)) names)))
+(define-method (children (o <ast>))
+  (let* ((node (.node o))
+         (getters (map slot-definition-getter (class-slots (class-of node)))))
+    (map (cut <> node) getters)))
 
 (define-method (om:equal? (a <ast>) (b <ast>))
   (or (= (.id a) (.id b))
       (and (eq? (class-name (class-of a)) (class-name (class-of b)))
-           (every om:equal? (members a) (members b)))))
-
+           (every om:equal? (children a) (children b)))))
 
 (define-method (< (a <on>) (b <on>))
   (< (.triggers a) (.triggers b)))
@@ -139,4 +140,7 @@
           ((compose .elements .triggers) b)))
 
 (define-method (om:scope.name-equal? (a <scoped>) (b <scoped>))
+  (om:equal? (.name a) (.name b)))
+
+(define-method (om:scope.name-equal? (a <model>) (b <model>))
   (om:equal? (.name a) (.name b)))

@@ -1,8 +1,10 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -73,6 +75,7 @@
 
            ast:argument*
            ast:binding*
+           ast:event*
            ast:field*
            ast:formal*
            ast:function*
@@ -95,6 +98,7 @@
 (define-method (ast:statement* (o <compound>)) (.elements o))
 (define-method (ast:statement* (o <declarative-compound>)) (.elements o))
 (define-method (ast:event* (o <events>)) (.elements o))
+(define-method (ast:event* (o <interface>)) ((compose ast:event* .events) o))
 (define-method (ast:field* (o <fields>)) (.elements o))
 (define-method (ast:formal* (o <formals>)) (.elements o))
 (define-method (ast:function* (o <functions>)) (.elements o))
@@ -172,10 +176,10 @@
   ((compose ast:other-direction .event) o))
 
 (define-method (ast:provided (o <component-model>))
-  (filter ast:provides? ((compose .elements .ports) o)))
+  (filter ast:provides? (ast:port* o)))
 
 (define-method (ast:required (o <component-model>))
-  (filter ast:requires? ((compose .elements .ports) o)))
+  (filter ast:requires? (ast:port* o)))
 
 (define-method (ast:direction (o <trigger>))
   (.direction (.event o)))

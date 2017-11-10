@@ -3,8 +3,10 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2014, 2015, 2016, 2017 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -173,7 +175,7 @@ provided_blocked' = {#
 begin_required_modeling' = {#(comma-join (map (cut list <> ".false") (required-modeling-triggers model)))}
 begin_required_silent' = {#(comma-join (map (cut list <> ".true") (required-modeling-triggers model)))}
 end_required_modeling' = {#(comma-join (append-map (lambda (port) (list (->string (.name port) "_'''.modeling" ) (->string (.name port) "_'''.silent" )))
-                                                   (filter ast:requires? ((compose .elements .ports) model))))}
+                                                   (filter ast:requires? (ast:port* model))))}
 async_reqackclrmods = <#(comma-join (async-reqackclrmods model))>
 in_internals' = inter(extensions(IN'), {|#((->join ",") (map (lambda (x) (list (.name x) "_''")) (filter (negate .external) (om:ports model))))|})
 #(map (animate-pairs `((interface ,identity))
@@ -198,9 +200,9 @@ within compress((CO_#.scope_model _ (IIG,true) [[x<-OUT'.x|x<-extensions(OUT')]]
                                                                       (if (not (null? (filter om:out? (om:events port))))
                                                                           (list "[["((om:scope-name) port) "_''.x<-" (.name port) "_''.x|x<-extensions("(.name port)"_'')]]\n"))
                                                                       (list "[["((om:scope-name) port) "_'''.x<-" (.name port) "_'''.x|x<-extensions("(.name port)"_''')]]\n"))))
-                                                    (filter ast:requires? ((compose .elements .ports) model)))))
+                                                    (filter ast:requires? (ast:port* model)))))
                          (hide_channels (append-map (lambda (i) (list (list i " ") (list i "_'" ) (list "IN'." i "_''" ) (list i "_'''")))
-                                                    (map .name (filter (compose dzn-async? .name .type) ((compose .elements .ports) model)))))
+                                                    (map .name (filter (compose dzn-async? .name .type) (ast:port* model)))))
                           (hide (if (null? hide_channels) '() (list "\\{|" (comma-join hide_channels) "|}"))))
                      (list "(" (if (string-null? required_processes) 'STOP required_processes) ")" "[[x<-IN'.x|x<-extensions(IN')]]" hide)))
                                                                                                     

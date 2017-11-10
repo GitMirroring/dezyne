@@ -53,6 +53,7 @@
 
   #:export (ast->dzn
             dzn-async?
+            dzn:annotate-shells
             dzn:dir
             dzn:dump
             dzn:extension
@@ -67,8 +68,10 @@
             dzn:statement
             dzn:expand-statement))
 
-(define-class <direction> (<named>))
-(define-class <unspecified> (<ast>))
+(define-class <direction-node> (<named-node>))
+(define-class <unspecified-node> (<ast-node>))
+(wrap <direction-node> <direction> (<named>))
+(wrap <unspecified-node> <unspecified> (<ast>))
 
 (define (ast-> ast)
   (let ((root (dzn:om ast)))
@@ -172,7 +175,10 @@
 ;;    x:globals no models
 (define-template x:source dzn:source 'newline-infix)
 (define (dzn:source o)
-  (topological-sort (filter (negate (is? <type>)) (map dzn:annotate-shells (.elements o)))))
+  (topological-sort
+   (map dzn:annotate-shells
+        (filter (negate (disjoin om:imported? (is? <foreign>) (is? <type>)))
+                (.elements o)))))
 
 (define-template x:global dzn:global 'newline-infix)
 (define (dzn:global o)
@@ -439,7 +445,6 @@
       ""))
 
 (define-method (dzn:x:pand (o <ast>) template file-name)
-  (stderr "DUMP file-name=~s\n" file-name)
   (let ((file-name (if (and file-name (symbol? file-name)) (symbol->string file-name) file-name))) ;; FIXME
     (dump-output (string-append (if (or (equal? file-name "-")
                                         (eq? template 'main)) "" (dzn:dir o)) ;; FIXME AAARRRGH
@@ -455,6 +460,9 @@
        (parameterize ((template-dir (string-append %template-dir "/" (symbol->string (language)))))
         (if (not (is-a? o <model>)) (x:pand (symbol-append template '@ (ast-name o)) o module)
             (ast:set-model-scope o (x:pand (symbol-append template '@ (ast-name o)) o module))))))))
+
+(define-generic source-file)
+(define-method (source-file (o <ast>)) ((compose source-file .node) o))
 
 (define-method (dzn:dump (o <root>))
   (let ((name (basename (symbol->string (source-file o)) ".dzn")))

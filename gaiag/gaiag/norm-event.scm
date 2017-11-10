@@ -49,7 +49,6 @@
 
   #:export (
            ast->
-           code-norm-event-auwe-meuk
            code-norm-event
            norm-event
            table-norm-event
@@ -86,7 +85,7 @@
 (define g-time (get-internal-run-time))
 (define* ((perf label) o)
   (let* ((time (get-internal-run-time))
-         ;(foo (stderr "TIME ~a: ~a\n" label (- time g-time)))
+         ;;(foo (stderr "TIME ~a: ~a\n" label (- time g-time)))
          )
     (set! g-time time)
     o))
@@ -140,31 +139,6 @@
     )
    o))
 
-(define (code-norm-event-auwe-meuk o)
-  ((compose
-    (add-illegals-auwe-meuk)
-    remove-skip
-    on-compound
-    flatten-compound
-    combine-guards
-    (aggregate-on norm:triggers-equal?)
-    (binding-into-blocking)
-    (rewrite-formals)
-    flatten-compound
-    (passdown-blocking)
-    flatten-compound
-    passdown-guard
-    flatten-compound
-    (expand-on norm:on-equal?)
-    aggregate-guard-s
-    flatten-compound
-    combine-ons
-    (passdown-blocking)
-    passdown-guard
-    (remove-otherwise)
-    add-skip)
-   o))
-
 (define-method (code-norm-event (o <root>))
   ((compose-root
     (perf 'add-reply-port)
@@ -212,60 +186,60 @@
     (perf 'add-skip)
     add-skip
     (perf 'START))
-   o))
+   o)
+  )
 
 (define* ((group-ons #:optional (group? norm:triggers-equal?)) o)
   "stable place ons with same group? next to eachother"
   (match o
-    (($ <compound> (($ <on>) ..1))
-     (if (=1 (length (.elements o)))
-         o
-         (clone o #:elements
+    ((and ($ <compound>) (= .elements (($ <on>) ..1)))
+     (clone o #:elements
            (let loop ((ons (.elements o)))
              (if (null? ons)
                  '()
                  (receive (grouped-ons remainder)
                      (partition (lambda (x) (group? #f (car ons) x)) ons)
-                   (append grouped-ons (loop remainder))))))))
-     (($ <functions> (functions ...)) o)
+                   (append grouped-ons (loop remainder)))))))
+     (($ <functions>) o)
      (($ <skip>) o)
-     ((? (is? <ast>)) (om:map (group-ons group?) o))
+     ((? (is? <ast>)) (tree-map (group-ons group?) o))
      (_ o)))
 
 (define (aggregate-guard-s o)
   "Aggregate guards with matching statement into one guard-statement."
   ;; find all guands with matching statement
   ;; push all guards into first guard, discard the rest
+  (define (or-guard-expressions shared-guards)
+    (reduce (lambda (x y)
+              (make <or> #:left x #:right y))
+            '()
+            (delete-duplicates (map (compose .expression) shared-guards) om:equal?)))
   (match o
-    (($ <compound> (($ <guard>) ..1))
+    ((and ($ <compound>) (= .elements (($ <guard> ..1))))
      (clone o #:elements
-       (let loop ((guards (.elements o)))
-         (if (null? guards)
-             '()
-             (receive (shared-guards remainder)
-                 (partition (lambda (x) (norm:guard-same-statement? #f (car guards) x)) guards)
-               (if (=1 (length shared-guards))
-                   (cons (car shared-guards) (loop remainder))
-                   (let* ((expression
-                           (reduce (lambda (x y)
-                                     (make <or> #:left x #:right y))
-                                   '()
-                                   (delete-duplicates (map (compose .expression) shared-guards) om:equal?)))
-                          (statement (.statement (car guards)))
-                          (aggregated-guard (make <guard>
-                                              #:expression expression
-                                              #:statement statement)))
-                     (cons aggregated-guard (loop remainder)))))))))
-     ((and (? (is? <component>) (= .behaviour behaviour)))
-      (clone o #:behaviour (aggregate-guard-s behaviour)))
-     ((and (? (is? <interface>) (= .behaviour behaviour)))
-      (clone o #:behaviour (aggregate-guard-s behaviour)))
-     ((? (is? <component-model>)) o)
-     ((? om:imperative?) o)
-     (($ <functions> (functions ...)) o)
-     (($ <skip>) o)
-     ((? (is? <ast>)) (om:map aggregate-guard-s o))
-     (_ o)))
+            (let loop ((guards (.elements o)))
+              (if (null? guards)
+                  '()
+                  (receive (shared-guards remainder)
+                      (partition (lambda (x) (norm:guard-same-statement? #f (car guards) x)) guards)
+                    (if (=1 (length shared-guards))
+                        (append shared-guards (loop remainder))
+                        (let* ((expression (or-guard-expressions shared-guards))
+                               (statement (.statement (car guards)))
+                               (aggregated-guard (clone (car guards)
+                                                        #:expression expression
+                                                        #:statement statement)))
+                          (cons aggregated-guard (loop remainder)))))))))
+    ((? (is? <component>))
+     (clone o #:behaviour (aggregate-guard-s (.behaviour o))))
+    ((? (is? <interface>))
+     (clone o #:behaviour (aggregate-guard-s (.behaviour o))))
+    ((? (is? <component-model>)) o)
+    ((? om:imperative?) o)
+    (($ <functions>) o)
+    (($ <skip>) o)
+    ((? (is? <ast>)) (tree-map aggregate-guard-s o))
+    (_ o)))
 
 (define (norm:guard-same-statement? model lhs rhs)
   (and (is-a? lhs <guard>) (is-a? rhs <guard>)
@@ -275,34 +249,34 @@
   (match o
     (($ <on>) ((passdown-on- o) (.statement o)))
     (($ <skip>) o)
-    (($ <functions> (functions ...)) o)
-    ((and (? (is? <component>) (= .behaviour behaviour)))
-     (clone o #:behaviour (combine-ons behaviour)))
-    ((and (? (is? <interface>) (= .behaviour behaviour)))
-     (clone o #:behaviour (combine-ons behaviour)))
+    (($ <functions>) o)
+    ((? (is? <component>))
+     (clone o #:behaviour (combine-ons (.behaviour o))))
+    ((? (is? <interface>))
+     (clone o #:behaviour (combine-ons (.behaviour o))))
     ((? (is? <component-model>)) o)
-    ((? (is? <ast>)) (om:map combine-ons o))
+    ((? (is? <ast>)) (tree-map combine-ons o))
     (_ o)))
 
 (define ((passdown-on- on) o)
   (match o
-    ((and ($ <compound> (s ...)) (? om:declarative?))
-     (clone o #:elements (map (passdown-on- on) s)))
+    ((and ($ <compound>) (? om:declarative?))
+     (clone o #:elements (map (passdown-on- on) (.elements o))))
     (_
      (clone on #:statement o))))
 
 (define (passdown-guard o)
   (match o
-    ((and ($ <compound> (s ...)) (? om:imperative?)) o)
+    ((and ($ <compound>) (? om:imperative?)) o)
     (($ <guard>) ((passdown-guard- o) (.statement o)))
     (($ <skip>) o)
-    ((and (? (is? <component>) (= .behaviour behaviour)))
-     (clone o #:behaviour (passdown-guard behaviour)))
-    ((and (? (is? <interface>) (= .behaviour behaviour)))
-     (clone o #:behaviour (passdown-guard behaviour)))
+    ((? (is? <component>))
+     (clone o #:behaviour (passdown-guard (.behaviour o))))
+    ((? (is? <interface>))
+     (clone o #:behaviour (passdown-guard (.behaviour o))))
     ((? (is? <component-model>)) o)
-    (($ <functions> (functions ...)) o)
-    ((? (is? <ast>)) (om:map passdown-guard o))
+    (($ <functions>) o)
+    ((? (is? <ast>)) (tree-map passdown-guard o))
     (_ o)))
 
 (define* ((passdown-guard- guard #:optional (seen-on? #f)) o)
@@ -310,57 +284,26 @@
     (clone guard #:statement o))
   (match o
     (($ <on>)
-     (clone o
-       #:statement ((passdown-guard- guard #t) (.statement o))))
-    (($ <compound> (($ <guard>) ..1)) (=> failure)
-     (if seen-on?
-         (make-guard o)
-         (failure)))
-    ((and ($ <compound> (s ...)) (? om:declarative?))
-     (clone o #:elements (map (passdown-guard- guard seen-on?) s)))
-    (($ <compound> (s ...))
+     (clone o #:statement ((passdown-guard- guard #t) (.statement o))))
+    ((and ($ <compound>) (= .elements (($ <guard>) ..1)) (? (const seen-on?)))
      (make-guard o))
-    (($ <guard> e s)
-     (let ((oo  ((passdown-guard- o seen-on?) s)))
-       (match oo
-         (($ <on> t s)
-          (clone oo #:statement (make-guard s)))
-         ((and ($ <compound> (t ...)) (? om:declarative?))
-          (clone oo #:elements (map (passdown-guard- guard seen-on?) t)))
-         (_
-          (make-guard oo)))))
-    (_
-     (make-guard o))))
+    ((and ($ <compound>) (? om:declarative?))
+     (clone o #:elements (map (passdown-guard- guard seen-on?) (.elements o))))
+    (($ <compound>) (make-guard o))
+    (($ <guard>)
+     (let ((o ((passdown-guard- o seen-on?) (.statement o))))
+       (match o
+         (($ <on>)
+          (clone o #:statement (make-guard (.statement o))))
+         ((and ($ <compound>) (? om:declarative?))
+          (clone o #:elements (map (passdown-guard- guard seen-on?) (.elements o))))
+         (_ (make-guard o)))))
+    (_ (make-guard o))))
 
 (define-method (trigger->illegal (o <trigger>))
   (make <on>
     #:triggers (make <triggers> #:elements (list o))
     #:statement (make <illegal>)))
-
-(define* ((add-illegals-auwe-meuk #:optional model) o)
-  (match o
-    ((and ($ <component>) (= .behaviour behaviour))
-     (clone o #:behaviour ((add-illegals-auwe-meuk o) behaviour)))
-
-    ((and ($ <behaviour>) (= .statement statement))
-     (let* ((triggers (ast:in-triggers model))
-            (ons (.elements statement))
-            (on-triggers (append-map (compose .elements .triggers) ons))
-            (triggers (filter
-                       (lambda (trigger)
-                         (not (find (lambda (on-trigger)
-                                      (and (eq? (.port.name trigger) (.port.name on-trigger))
-                                           (eq? (.event.name trigger) (.event.name on-trigger))))
-                                    on-triggers)))
-                       triggers))
-            (ons (append ons (map trigger->illegal triggers))))
-       (if (null? ons) o
-           (clone o #:statement (clone statement #:elements ons)))))
-    (($ <interface>) o)
-    (($ <system>) o)
-    (($ <foreign>) o)
-    ((? (is? <ast>)) (om:map (add-illegals-auwe-meuk model) o))
-    (_ o)))
 
 (define* (add-reply-port o #:optional (port #f) (block? #f)) ;; requires (= 1 (length (.triggers on)))
   ;(stderr "add-reply-report o = ~a; port = ~a: model = ~a\n" o port model)
@@ -380,22 +323,21 @@
                                           (eq? 'provides ((compose .direction .port car .elements .triggers) o)))))
     (($ <guard>) (clone o #:statement (add-reply-port (.statement o) port block?)))
     (($ <compound>) (clone o #:elements (map (cut add-reply-port <> port block?) (.elements o))))
-    ((and ($ <behaviour>) (= .statement statement)) (clone o #:statement (add-reply-port statement port block?)))
-    ((and ($ <component>) (= .behaviour behaviour)) (clone o #:behaviour (ast:set-model-scope o (add-reply-port behaviour (if (= 1 (length (filter ast:provides? (om:ports o)))) (om:port o) #f) block?))))
+    (($ <behaviour>) (clone o #:statement (add-reply-port (.statement o) port block?)))
+    (($ <component>) (clone o #:behaviour (ast:set-model-scope o (add-reply-port (.behaviour o) (if (= 1 (length (filter ast:provides? (om:ports o)))) (om:port o) #f) block?))))
     (($ <system>) o)
     (($ <foreign>) o)
     (($ <interface>) o)
-    ((? (is? <ast>)) (om:map (cut add-reply-port <> port block?) o))
+    ((? (is? <ast>)) (tree-map (cut add-reply-port <> port block?) o))
     (_ o)))
 
 (define* ((add-illegals #:optional model) o)
   (match o
-    ((and ($ <component>) (= .behaviour behaviour))
-     (clone o #:behaviour ((add-illegals o) behaviour)))
-
-    ((and ($ <behaviour>) (= .statement statement))
+    (($ <component>)
+     (clone o #:behaviour ((add-illegals o) (.behaviour o))))
+    (($ <behaviour>)
      (let* ((triggers (ast:in-triggers model))
-            (ons (.elements statement))
+            (ons (.elements (.statement o)))
             (on-triggers (append-map (compose .elements .triggers) ons))
             (triggers (filter
                        (lambda (trigger)
@@ -406,7 +348,7 @@
                        triggers))
             (ons (append (map (add-illegals model) ons) (map trigger->illegal triggers))))
        (if (null? ons) o
-           (clone o #:statement (clone statement #:elements ons)))))
+           (clone o #:statement (clone (.statement o) #:elements ons)))))
     ((and ($ <compound>) (? om:declarative?)) (=> failure)
      (if (and (pair? (.elements o)) (is-a? (car (.elements o)) <guard>) (null? (filter (is? <otherwise>) (.elements o))))
          (clone o #:elements (append (.elements o) (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal>)))))
@@ -414,7 +356,7 @@
     (($ <interface>) o)
     (($ <system>) o)
     (($ <foreign>) o)
-    ((? (is? <ast>)) (om:map (add-illegals model) o))
+    ((? (is? <ast>)) (tree-map (add-illegals model) o))
     (_ o)))
 
 (define* ((rewrite-formals #:optional model (locals '())) o)
@@ -429,15 +371,11 @@
   (define ((rename mapping) o)
     ;;(stderr "rename o=~a\n" o)
     (match o
-      (($ <trigger> port event ($ <formals> ())) o)
-      (($ <trigger> port event ($ <formals> (on-formal* ...)))
-       (clone o #:formals (make <formals> #:elements (map (rename mapping) on-formal*))))
-      ;; (($ <expression> ($ <var> name))
-      ;;  (clone o #:value (make <var> #:name ((rename mapping) name))))
-      ;; (($ <expression> ('<- ($ <var> name) global))
-      ;;  (clone o #:value `(<- ,(make <var> #:name ((rename mapping) name)) ,global)))
+      ((and ($ <trigger>) (? (compose null? ast:formal*))) o)
+      (($ <trigger>)
+       (clone o #:formals (clone (.formals o) #:elements (map (rename mapping) ((compose .elements .formals) o)))))
       ((? symbol?) (or (assoc-ref mapping o) o))
-      ((? (is? <ast>)) (om:map (rename mapping) o))
+      ((? (is? <ast>)) (tree-map (rename mapping) o))
       (_ o)))
 
   (define (name->on-formal name)
@@ -445,15 +383,13 @@
 
   ;;(stderr "rewrite o=~a\n" o)
   (match o
-    (($ <on> ($ <triggers> ((and ($ <trigger>) (= .formals ($ <formals> ())) (get! trigger)))) statement)
-     (let* ((trigger (trigger))
-            (formals (map .name ((compose .elements .formals .signature) (.event trigger))))
-            (on-formals (map name->on-formal formals)))
+    ((and ($ <on>) (? (compose (cut equal? 1 <>) length ast:trigger*)) (? (compose null? ast:formal* car ast:trigger*)))
+     (let* ((trigger ((compose car .elements .triggers) o))
+            (formals ((compose .elements .formals .signature) (.event trigger))))
        (if (null? formals) o
-           (clone o
-                  #:triggers (make <triggers> #:elements (list (clone trigger #:formals (make <formals> #:elements on-formals))))))))
-    (($ <on> ($ <triggers> ((and ($ <trigger>) (= .formals ($ <formals> (on-formal* ...))) (get! trigger)))) statement)
-     (let* ((trigger (trigger))
+           (clone o #:triggers (clone (.triggers o) #:elements (list (clone trigger #:formals (clone (.formals trigger) #:elements formals))))))))
+    ((and ($ <on>) (? (compose (cut equal? 1 <>) length ast:trigger*)))
+     (let* ((trigger ((compose car .elements .triggers) o))
             (members (map .name (om:variables model)))
             (formals (map .name ((compose .elements .formals .signature) (.event trigger))))
             (locals (map .name ((om:collect <variable>) o)))
@@ -466,10 +402,10 @@
             (refresh (lambda (occupied names)
                        (fold-right (lambda (name o)
                                      (cons (fresh o name) o))
-                             occupied names))) ;; occupied names -> (append namesx occupied)
+                                   occupied names))) ;; occupied names -> (append namesx occupied)
 
             (fresh-formals (list-head (refresh occupied formals) (length formals)))
-            (mapping (filter (negate pair-eq?) (map cons (map .name on-formal*) fresh-formals)))
+            (mapping (filter (negate pair-eq?) (map cons (map .name ((compose .elements .formals) trigger)) fresh-formals)))
 
             (occupied (append (map cdr mapping) members))
 
@@ -477,19 +413,19 @@
 
        (if (null? mapping) o
            (clone o
-                  #:triggers (make <triggers> #:elements (list ((rename mapping) trigger)))
-                  #:statement ((rename mapping) statement)))))
+                  #:triggers (clone (.triggers o) #:elements (list ((rename mapping) trigger)))
+                  #:statement ((rename mapping) (.statement o))))))
 
-    ((and ($ <component>) (= .behaviour behaviour))
-     (clone o #:behaviour ((rewrite-formals o) behaviour)))
+    (($ <component>)
+     (clone o #:behaviour ((rewrite-formals o) (.behaviour o))))
 
-    ((and ($ <behaviour>) (= .statement statement))
-     (clone o #:statement ((rewrite-formals model '()) statement)))
+    (($ <behaviour>)
+     (clone o #:statement ((rewrite-formals model '()) (.statement o))))
 
     (($ <interface>) o)
     (($ <system>) o)
     (($ <foreign>) o)
-    ((? (is? <ast>)) (om:map (rewrite-formals model locals) o))
+    ((? (is? <ast>)) (tree-map (rewrite-formals model locals) o))
     (_ o)))
 
 (define* ((binding-into-blocking #:optional (locals '())) o)
@@ -508,28 +444,28 @@
     (_ (make <compound> #:elements (cons formal-bindings (list o))))))
 
   (match o
-    ((and ($ <on>) (= .triggers triggers) (= .statement statement))
-     (let* ((trigger (car (.elements triggers)))
-            (on-formals (.elements (.formals trigger)))
+    (($ <on>)
+     (let* ((trigger ((compose car .elements .triggers) o))
+            (on-formals ((compose .elements .formals) trigger))
             (formal-bindings (filter (is? <formal-binding>) on-formals))
             (formal-bindings (and (pair? formal-bindings) (make <out-bindings> #:elements formal-bindings #:port (.port trigger))))
             (on-formals (map formal-binding->formal on-formals)))
        (if (not formal-bindings) o
-        (clone o
-               #:triggers (clone triggers
-                                 #:elements (list (clone trigger #:formals (make <formals> #:elements on-formals))))
-               #:statement ((passdown-formal-bindings formal-bindings) statement)))))
+           (clone o
+                  #:triggers (clone (.triggers o)
+                                    #:elements (list (clone trigger #:formals (make <formals> #:elements on-formals))))
+                  #:statement ((passdown-formal-bindings formal-bindings) (.statement o))))))
 
-    ((and ($ <component>) (= .behaviour behaviour))
-     (clone o #:behaviour (ast:set-model-scope o ((binding-into-blocking) behaviour))))
+    (($ <component>)
+     (clone o #:behaviour (ast:set-model-scope o ((binding-into-blocking) (.behaviour o)))))
 
-    ((and ($ <behaviour>) (= .statement statement))
-     (clone o #:statement ((binding-into-blocking '()) statement)))
+    (($ <behaviour>)
+     (clone o #:statement ((binding-into-blocking '()) (.statement o))))
 
     (($ <interface>) o)
     (($ <system>) o)
     (($ <foreign>) o)
-    ((? (is? <ast>)) (om:map (binding-into-blocking locals) o))
+    ((? (is? <ast>)) (tree-map (binding-into-blocking locals) o))
     (_ o)))
 
 
@@ -539,16 +475,16 @@
     (($ <on>)
      (clone o #:statement (make <compound> #:elements (list (.statement o)))))
 
-    ((and ($ <component>) (= .behaviour behaviour))
-     (clone o #:behaviour (on-compound behaviour)))
+    ((and ($ <component>))
+     (clone o #:behaviour (on-compound (.behaviour o))))
 
-    ((and ($ <behaviour>) (= .statement statement))
-     (clone o #:statement (on-compound statement)))
+    ((and ($ <behaviour>))
+     (clone o #:statement (on-compound (.statement o))))
 
     (($ <interface>) o)
     ((? (is? <component-model>)) o)
-    (($ <functions> (functions ...)) o)
-    ((? (is? <ast>)) (om:map on-compound o))
+    (($ <functions>) o)
+    ((? (is? <ast>)) (tree-map on-compound o))
     (_ o)))
 
 (define (ast-> ast)
