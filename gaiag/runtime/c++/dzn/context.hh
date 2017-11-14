@@ -40,7 +40,7 @@ namespace dzn
 class context
 {
   enum State {INITIAL, RELEASED, BLOCKED, FINAL};
-  inline std::string to_string(State state)
+  static std::string to_string(State state)
   {
     switch(state)
     {
@@ -115,15 +115,15 @@ public:
     std::unique_lock<std::mutex> lock(mutex);
     do_finish(lock);
   }
-  static int get_id()
+  static size_t get_id()
   {
     static std::mutex mutex;
-    static std::map<std::thread::id,int> m;
+    static std::map<std::thread::id, size_t> m;
     std::unique_lock<std::mutex> lock(mutex);
     std::thread::id i = std::this_thread::get_id();
-    if (m.find(i)==m.end())
-      m[i] = m.size() - 1;
-    return m[i];
+    auto it = m.find(i);
+    if (it == m.end()) it = m.emplace(i, m.size()).first;
+    return it->second;
   }
   void finish()
   {
