@@ -308,15 +308,20 @@
 (define-method (code:variable->argument o f)
   o)
 
+(define (add-calling-context-argument arguments)
+  (let ((calling-context (command-line:get 'calling-context #f)))
+    (if calling-context (cons 'cc__ arguments)
+        arguments)))
+
 (define-method (code:arguments (o <call>))
   (map code:variable->argument
-       ((compose .elements .arguments) o)
-       ((compose .elements .formals .signature .function) o)))
+       (add-calling-context-argument ((compose .elements .arguments) o))
+       (add-calling-context-formal ((compose .elements .formals .signature .function) o))))
 
 (define-method (code:arguments (o <action>))
   (map code:variable->argument
-       ((compose .elements .arguments) o)
-       ((compose .elements .formals .signature .event) o)))
+       (add-calling-context-argument ((compose .elements .arguments) o))
+       (add-calling-context-formal ((compose .elements .formals .signature .event) o))))
 
 (define-method (code:arguments (o <trigger>))
   (map .name (code:formals o)))
@@ -325,30 +330,40 @@
   (filter om:out-or-inout? (code:formals o)))
 
 (define-method (code:parameters (o <event>))
-  (map .name ((compose .elements .formals .signature) o)))
+  (let ((parameters (map .name ((compose .elements .formals .signature) o)))
+        (calling-context (command-line:get 'calling-context #f)))
+    (if calling-context
+        (cons 'cc__ parameters)
+        parameters)))
+
+(define (add-calling-context-formal formals)
+  (let ((calling-context (command-line:get 'calling-context #f)))
+    (if calling-context (cons (make <formal> #:name 'cc__ #:direction 'out #:type (make <extern> #:value calling-context)) formals)
+        formals)))
 
 (define-method (code:formals (o <function>))
-  ((compose .elements .formals .signature) o))
+  (add-calling-context-formal ((compose .elements .formals .signature) o)))
 
 (define-method (code:formals (o <action>))
-  ((compose .elements .formals .signature .event) o))
+  (add-calling-context-formal ((compose .elements .formals .signature .event) o)))
 
 (define-method (code:formals (o <trigger>))
-  ((compose .elements .formals) o))
+  (add-calling-context-formal ((compose .elements .formals) o)))
 
 (define-method (code:formals (o <signature>))
-  ((compose .elements .formals) o))
+  (add-calling-context-formal ((compose .elements .formals) o)))
 
 (define-method (code:formals (o <event>))
-  ((compose .elements .formals .signature) o))
+  (add-calling-context-formal ((compose .elements .formals .signature) o)))
 
 (define-method (code:formals (o <on>))
-  (let* ((trigger ((compose car .elements .triggers) o))
-         (event (.event trigger)))
-    (map (lambda (name formal)
-           (clone formal #:name name))
-         (map .name ((compose .elements .formals) trigger))
-         ((compose .elements .formals .signature) event))))
+  (add-calling-context-formal
+   (let* ((trigger ((compose car .elements .triggers) o))
+          (event (.event trigger)))
+     (map (lambda (name formal)
+            (clone formal #:name name))
+          (map .name ((compose .elements .formals) trigger))
+          ((compose .elements .formals .signature) event)))))
 
 (define-method (code:expand-on (o <statement>))
   (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
