@@ -307,11 +307,16 @@
 
 (define (mcrl2:interface-name o) ((compose om:name .interface) o))
 (define (mcrl2:interfaces o) (delete-duplicates (map .type (om:ports o))))
+(define-method (mcrl2:provided-port-type (o <ast>)) ((compose mcrl2:provided-port-type car (lambda (o) (filter (is? <component>) (.elements o)))) o))
 (define-method (mcrl2:provided-port-type (o <component>)) ((compose om:name .type car om:provided) o)) ;;TODO: only works for single provides port
 (define-method (mcrl2:provided-port-type (o <interface>)) (om:name o))
+(define-method (mcrl2:provided-port-name (o <ast>)) ((compose mcrl2:provided-port-name car (lambda (o) (filter (is? <component>) (.elements o)))) o))
 (define-method (mcrl2:provided-port-name (o <component>)) ((compose .name car om:provided) o))
 (define-method (mcrl2:provided-port-name (o <interface>)) (om:name o))
 (define-template x:component (lambda (o) (filter (is? <component>) (.elements o))))
+(define-template x:mcrl2-component-name (lambda (o) (om:name (car (filter (is? <component>) (.elements o))))))
+(define-template x:mcrl2-provided-port-type mcrl2:provided-port-type)
+(define-template x:mcrl2-provided-port-name mcrl2:provided-port-name)
 (define-template x:provided-port-type (lambda (o) (mcrl2:provided-port-type (ast:model-scope))))
 (define-template x:provided-port-name (lambda (o) (mcrl2:provided-port-name (ast:model-scope))))
 (define-template x:sort-interface mcrl2:interfaces 'newline-indent-infix)
@@ -387,13 +392,13 @@
 	       ((compose .elements .fields) o))) 'pipe-infix)
 (define-template x:reply-union-struct mcrl2:reply-types 'pipe-infix)
 
-(define-template x:provided-port-reply-types mcrl2:reply-types 'union-suffix)
+(define-template x:provided-port-reply-types (compose mcrl2:reply-types .type car om:provided) 'union-suffix)
 
 (define-method (mcrl2:reply-types (o <ast>))
   (let ((reply-types (code:reply-types o #:pred (const #t))))
-		(map
-		 (lambda (x i) (make <interface-type> #:interface o #:type x #:index i))
-		 reply-types (iota (length reply-types)))))
+    (map
+     (lambda (x i) (make <interface-type> #:interface o #:type x #:index i))
+     reply-types (iota (length reply-types)))))
 
 (define-method (get-enums (o <interface>))
   (append ((compose (cut filter (is? <enum>) <>) .elements .types) o)
@@ -684,8 +689,14 @@
 	"Illegal"
 	(illegal-or-dillegal o (ast:scope)))))
 
+(define-template x:mcrl2-constrained-behaviour identity)
+(define-template x:mcrl2-optional-unconstrained identity)
+(define-template x:mcrl2-optional-constrained identity)
+(define-template x:mcrl2-run2completion identity)
+(define-template x:mcrl2-implementation identity)
+
+
 (define-template x:mcrl2-component-queues identity)
-(define-template x:mcrl2-component-run2completion identity)
 (define-template x:required-ports-completion om:required 'union-prefix)
 (define-template x:required-port-queue om:required 'union-suffix)
 (define-template x:inevitable-optional-queue
@@ -705,7 +716,6 @@
 	"delta")))
 (define-template x:run2completion-port-with-out-event required-ports-with-out 'union-suffix)
 (define-template x:provided-run2completion-port-with-out-event required-ports-with-out 'union-suffix)
-(define-template x:mcrl2-component-implementation identity)
 (define-template x:rename-required-ports om:required 'comma-suffix)
 (define-template x:rename-provided-ports (compose car om:provided))
 (define-template x:hidden-actions identity)
@@ -825,7 +835,13 @@
 (define-method (mcrl2:init-reply-value (o <port>))
   (mcrl2:init-reply-value (.type o)))
 
+(define-method (init-globals (o <ast>))
+  ((compose init-globals car (lambda (o) (filter (is? <component>) (.elements o)))) o))
+
 (define-method (init-globals (o <component>))
+  (globals-from-scope o))
+
+(define-method (init-globals (o <interface>))
   (globals-from-scope (ast:model-scope)))
 
 (define-method (init-globals (o <port>))
@@ -842,6 +858,7 @@
 (define-method (mcrl2:statement-process (o <assign>)) o)
 (define-method (mcrl2:statement-process (o <variable>)) o)
 (define-method (mcrl2:statement-process (o <function>)) (.statement o))
+(define-method (mcrl2:statement-process (o <call>)) o)
 (define-method (mcrl2:child-identifier (o <behaviour>)) (mcrl2:process-identifier (first-process (.statement o))))
 (define-method (mcrl2:child-identifier (o <function>)) (mcrl2:process-identifier (first-process (.statement o))))
 (define-method (mcrl2:child-identifier (o <guard>)) (mcrl2:process-identifier (.statement o)))

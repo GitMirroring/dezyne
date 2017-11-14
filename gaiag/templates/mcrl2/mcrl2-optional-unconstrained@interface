@@ -1,0 +1,3 @@
+#x:model-name'optional_unconstrained = 
+         #x:model-name'optional_begin_oc . (#x:model-name'optional_end_oc . #x:model-name'optional_unconstrained + #x:model-name'optional_end_oc . #x:model-name'optional_constrained) +
+         #x:model-name'inevitable_begin_oc . (#x:model-name'inevitable_end_oc . #x:model-name'optional_unconstrained + #x:model-name'inevitable_end_oc . #x:model-name'optional_constrained);

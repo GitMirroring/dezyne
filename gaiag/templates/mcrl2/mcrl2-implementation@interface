@@ -1,0 +1,19 @@
+#x:model-name'Implementation = hide({internal, #x:model-name'optional_allow, #x:model-name'inevitable_allow},
+         rename({#x:model-name'out' -> #x:model-name'event, #x:model-name'in' -> #x:model-name'event},
+           allow({illegal, internal, double_reply_error, no_reply_error, #x:model-name'inevitable_allow, #x:model-name'optional_allow, #x:model-name'out', #x:model-name'in', #x:model-name'flush, #x:model-name'return},
+             comm({#x:model-name'inevitable_begin_rc | #x:model-name'inevitable -> #x:model-name'inevitable_allow, #x:model-name'inevitable_end_rc | #x:model-name'inevitable_end -> #x:model-name'inevitable_allow, #x:model-name'optional_begin_rc | #x:model-name'optional -> #x:model-name'optional_allow, #x:model-name'optional_end_rc | #x:model-name'optional_end -> #x:model-name'optional_allow, #x:model-name'out_rc | #x:model-name'out -> #x:model-name'out', #x:model-name'in_rc | #x:model-name'in -> #x:model-name'in', #x:model-name'reply_out_rc | #x:model-name'reply_out -> #x:model-name'return},
+               (#x:model-name'Run_to_Completion() || #x:model-name'Behaviour(#x:globals-init))
+             )
+           )
+         )
+       );
+
+     #x:model-name'Implementation_constrained = hide({internal, #x:model-name'optional_allow, #x:model-name'inevitable_allow},
+         rename({#x:model-name'out' -> #x:model-name'event, #x:model-name'in' -> #x:model-name'event},
+           allow({illegal, internal, double_reply_error, no_reply_error, #x:model-name'inevitable_allow, #x:model-name'optional_allow, #x:model-name'out', #x:model-name'in', #x:model-name'flush, #x:model-name'return},
+             comm({#x:model-name'inevitable_begin_rc | #x:model-name'inevitable -> #x:model-name'inevitable_allow, #x:model-name'inevitable_end_rc | #x:model-name'inevitable_end -> #x:model-name'inevitable_allow, #x:model-name'optional_begin_rc | #x:model-name'optional -> #x:model-name'optional_allow, #x:model-name'optional_end_rc | #x:model-name'optional_end -> #x:model-name'optional_allow, #x:model-name'out_rc | #x:model-name'out -> #x:model-name'out', #x:model-name'in_rc | #x:model-name'in -> #x:model-name'in', #x:model-name'reply_out_rc | #x:model-name'reply_out -> #x:model-name'return},
+               (#x:model-name'Run_to_Completion() || #x:model-name'Behaviour_constrained(#x:globals-init))
+             )
+           )
+         )
+       );

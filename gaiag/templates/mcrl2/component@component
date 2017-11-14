@@ -55,7 +55,7 @@ proc
 
      #x:mcrl2-component-queues
 
-     #x:mcrl2-component-run2completion
+     #x:mcrl2-run2completion
 
      #x:mcrl2-component-rc-required-port
 
@@ -63,4 +63,4 @@ proc
 
      #x:mcrl2-required-with-out-event
 
-     #x:mcrl2-component-implementation
+     #x:mcrl2-implementation

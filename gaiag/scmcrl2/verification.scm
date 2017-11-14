@@ -32,12 +32,14 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
 
+  #:use-module (gaiag config)
   #:use-module (gaiag goops)
   #:use-module (gaiag deprecated om)
   #:use-module (gaiag util)
   #:use-module (gaiag mcrl2)
   #:use-module (gaiag misc)
   #:use-module (gaiag resolve)
+  #:use-module (gaiag xpand)
   #:use-module (scmcrl2 traces)
 
   #:export (mcrl2:verify))
@@ -47,7 +49,7 @@
 
 (define (find-taus ast modelname)
   (let* ((component (find (lambda (x) (equal? (symbol->string(om:name x)) modelname)) (filter (is? <component>) (.elements ast))))
-	 (req-ports (map (lambda (r) (om:name r)) (om:required component))))
+	 (req-ports (map (lambda (r) (.name r)) (om:required component))))
     (string-join (append-map (lambda (p)
 			       (let ((portname (symbol->string p)))
 				 (map (lambda (h)
@@ -56,12 +58,20 @@
 			     req-ports)
 		 "," 'infix)))
 
-(define (create-lps mcrl2 modelname lpstype ast)
-  (let ((lps (string-append (basename mcrl2 ".mcrl2") "_" lpstype ".lps")))
+(define-method (mcrl2:init ast template)
+  (let ((module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
+                                  ,(resolve-module '(gaiag mcrl2))))))
+    (module-define! module 'ast ast)
+    (parameterize ((template-dir (string-append %template-dir "/mcrl2")))
+      (with-output-to-string (lambda () (ast:set-scope ast (x:pand template ast module)))))))
+
+(define (create-lps mcrl2 lpstype ast)
+  (let ((lps (string-append (basename mcrl2 ".mcrl2") "_" (->string lpstype) ".lps")))
     (match lpstype
-      ("deterministic" (system (string-append "cat - " mcrl2 " <<< \"\n\ninit " modelname "'Behaviour(" (ast:set-scope ast (globals-from-scope (find (lambda (x) (equal? (symbol->string(om:name x)) modelname)) (filter (is? <component>) (.elements ast))))) ");\" | mcrl22lps -b > " lps)))
-      ("" (system (string-append "cat - " mcrl2 " <<< \"\n\ninit " modelname "'Implementation();\" | mcrl22lps -b > " lps))))
-    lps))
+      ('deterministic (system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'determinism-init@ast) " | mcrl22lps -b -lstack > " lps)))
+      ('component (system (string-append "cat - " mcrl2 " <<< " (pk (mcrl2:init ast 'component-init@ast)) " | mcrl22lps -b -lstack > " lps)))
+      ('provided (system (string-append "cat - " mcrl2 " <<< " (pk (mcrl2:init ast 'compliance-init@ast)) " | mcrl22lps -b -lstack > " lps))))
+    (reduce-lps lps)))
 
 (define (reduce-lps lps)
   (system (string-append "lpsconstelm -st " lps " " lps))
@@ -85,17 +95,14 @@
 (define (verifylivelock lps taus)
   (blockingcall (string-append "lps2lts --divergence -t1 -v --tau=\"" taus "\" " lps " " (basename lps ".lps") ".aut" " 2>&1")))
 
-;; TODO
-(define (verifyrefinement lps taus)
-  (let* ((provmcrl2 (string-append (basename lps "component.lps") "provided.mcrl2"))
-	 (provlps (create-lps provmcrl2))
-	 (provlts (string-append (basename provlps ".lps") ".aut"))
-	 (complts (string-append (basename lps ".lps") ".aut")))
+(define (verifyrefinement complps provlps taus)
+  (let* ((provlts (string-append (basename provlps ".lps") ".aut"))
+	 (complts (string-append (basename complps ".lps") ".aut")))
     (system (string-append "lps2lts " provlps " " provlts))
-    (system (string-append "lps2lts " lps " " complts))
+    (system (string-append "lps2lts " complps " " complts))
     (reduce-lts provlts)
     (reduce-lts complts)
-    (blockingcall (string-append "ltscompare -v -c -pfailures-divergence --tau=" taus " " complts " " provlts " 2>&1"))))
+    (blockingcall (pk (string-append "ltscompare -v -c -pfailures-divergence --tau=\"" taus "\" " complts " " provlts " 2>&1")))))
 
 (define (verifyall lps taus)
   (blockingcall (string-append "lps2lts -aillegal --deadlock --divergence -t1 -v --tau=\"" taus "\" " lps " " (basename lps ".lps") ".aut 2>&1")))
@@ -108,15 +115,14 @@
 
 (define (mcrl2:verify file-name modelname ast)
   (let* ((taus (find-taus ast modelname))
-;;	 (lpsfile (create-lps "verify.mcrl2"))
-         (deterministic-lps (create-lps "verify.mcrl2" modelname "deterministic" ast))
-         (lpsfile (create-lps "verify.mcrl2" modelname "" ast))
+         (deterministic-lps (create-lps "verify.mcrl2" 'deterministic ast))
+         (provided-lps (create-lps "verify.mcrl2" 'provided ast))
+         (lpsfile (create-lps "verify.mcrl2" 'component ast))
          (output (verifydeterministic deterministic-lps))
 	 (output (string-append output (verifyillegal lpsfile)))
          (output (string-append output (verifydeadlock lpsfile)))
-         ;;(output (string-append output (verifyrefinement lpsfile taus)))
-         (output (string-append output (verifylivelock lpsfile taus)))
-         )
+         (output (string-append output (verifyrefinement lpsfile provided-lps taus)))
+         (output (string-append output (verifylivelock lpsfile taus))))
     (interpret-results output modelname)))
 
 (define (interpret-results output modelname)
