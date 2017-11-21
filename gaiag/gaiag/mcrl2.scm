@@ -101,7 +101,6 @@
 (define annotate-path-alist '())
 
 (define ((annotate-path path) o)
-  ;;(stderr "\nannotate-path of: ~a\n" o)
   (set! annotate-path-alist (acons o path annotate-path-alist))
   (let ((path (cons o path)))
     (match o
@@ -123,6 +122,61 @@
 
 (define-method (ast:parent (o <ast>))
   (assq-ref annotate-path-alist o))
+
+(define-method (trigger->illegal (o <trigger>))
+  (make <on>
+    #:triggers (make <triggers> #:elements (list o))
+    #:statement (make <illegal>)))
+
+(define* ((ast-add-illegals #:optional model) o)
+  ;;  (stderr "ast-add-illegals: ~a\n" o)
+  (match o
+    ((and ($ <component>) (= .behaviour behaviour))
+     (clone o #:behaviour ((ast-add-illegals o) behaviour)))
+
+    ((and ($ <behaviour>) (= .statement statement))
+     (clone o #:statement ((ast-add-illegals model) statement)))
+
+    (($ <guard>) (clone o #:statement ((ast-add-illegals model) (.statement o))))
+
+    (($ <on>)
+     (let* ((triggers (ast:in-triggers model))
+            (on-triggers ((compose .elements .triggers) o))
+      ;;      (foo (stderr "on-triggers: ~a\n" on-triggers))
+            (triggers (filter
+                       (lambda (trigger)
+                         (not (find (lambda (on-trigger)
+                                      (and (eq? (.port.name trigger) (.port.name on-trigger))
+                                           (eq? (.event.name trigger) (.event.name on-trigger))))
+                                    on-triggers)))
+                       triggers))
+    ;;        (foo (stderr "unused triggers (implicit illegals): ~a\n" triggers))
+  ;;          (foo (stderr "trigger->illegal triggers: ~a\n\n\n" (map trigger->illegal triggers)))
+            )
+       (make <compound> #:elements (append (list o) (map trigger->illegal triggers)))))
+
+    ((and ($ <compound>) (? om:declarative?)) (=> failure)
+;;     (stderr "compound: ~a\n\n\n\n" o)
+     (if (and (pair? (.elements o)) (is-a? (car (.elements o)) <guard>))
+         (clone o #:elements (map (ast-add-illegals model) (.elements o)))
+         (if (is-a? (car (.elements o)) <on>)
+             (let* ((triggers (ast:in-triggers model))
+                    (ons (.elements o))
+                    (on-triggers (append-map (compose .elements .triggers) ons))
+                    (triggers (filter
+                       (lambda (trigger)
+                         (not (find (lambda (on-trigger)
+                                      (and (eq? (.port.name trigger) (.port.name on-trigger))
+                                           (eq? (.event.name trigger) (.event.name on-trigger))))
+                                    on-triggers)))
+                       triggers)))
+               (clone o #:elements (append (.elements o) (map trigger->illegal triggers))))
+             o)))
+    (($ <interface>) o)
+    (($ <system>) o)
+    (($ <foreign>) o)
+    ((? (is? <ast>)) (om:map (ast-add-illegals model) o))
+    (_ o)))
 
 (define (ast-add-skips o)
   (match o
@@ -255,6 +309,9 @@
     aggregate-guard-g
     (expand-on)
     flatten-compound
+;;    (lambda (o) (stderr "AST POST add: \n") (pretty-print (om->list o) (current-error-port)) o)
+    (ast-add-illegals)
+;;    (lambda (o) (stderr "AST pre add: \n") (pretty-print (om->list o) (current-error-port)) o)
     (prepend-true-guard)
     (aggregate-on norm:on-same-port-voidness-statement?)
     (expand-on norm:port-and-voidness-equal?)
@@ -679,7 +736,14 @@
 (define-method (illegal-or-dillegal (o <ast>) scope)
   (let* ((parent (cadr scope)))
     (match parent
-      (($ <on>) "Dillegal")
+      (($ <on>)
+       (let* ((trigger ((compose car .elements .triggers) parent))
+              (port (.port trigger)))
+         (if port
+             (if (ast:requires? port)
+                 "Illegal"
+                 "Dillegal")
+             "Dillegal")))
       (($ <if>) "Illegal")
       (_ (illegal-or-dillegal parent (cdr scope))))))
 

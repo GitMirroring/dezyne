@@ -69,8 +69,8 @@
   (let ((lps (string-append (basename mcrl2 ".mcrl2") "_" (->string lpstype) ".lps")))
     (match lpstype
       ('deterministic (system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'determinism-init@ast) " | mcrl22lps -b -lstack > " lps)))
-      ('component (system (string-append "cat - " mcrl2 " <<< " (pk (mcrl2:init ast 'component-init@ast)) " | mcrl22lps -b -lstack > " lps)))
-      ('provided (system (string-append "cat - " mcrl2 " <<< " (pk (mcrl2:init ast 'compliance-init@ast)) " | mcrl22lps -b -lstack > " lps))))
+      ('component (system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'component-init@ast) " | mcrl22lps -b -lstack > " lps)))
+      ('provided (system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'compliance-init@ast) " | mcrl22lps -b -lstack > " lps))))
     (reduce-lps lps)))
 
 (define (reduce-lps lps)
@@ -102,7 +102,7 @@
     (system (string-append "lps2lts " complps " " complts))
     (reduce-lts provlts)
     (reduce-lts complts)
-    (blockingcall (pk (string-append "ltscompare -v -c -pfailures-divergence --tau=\"" taus "\" " complts " " provlts " 2>&1")))))
+    (blockingcall (string-append "ltscompare -v -c -pfailures-divergence --tau=\"" taus "\" " complts " " provlts " 2>&1"))))
 
 (define (verifyall lps taus)
   (blockingcall (string-append "lps2lts -aillegal --deadlock --divergence -t1 -v --tau=\"" taus "\" " lps " " (basename lps ".lps") ".aut 2>&1")))
@@ -139,10 +139,10 @@
         (begin (stdout "verify: ~a: check: deterministic: fail\n" modelname) #t))))
 
 (define (check-refinement string modelname)
-  (let ((sub (regexp-exec (make-regexp "The LTS in (.*) is not included in the LTS .*") string)))
+  (let ((sub (regexp-exec (make-regexp "Saved trace to file (.*)\nThe LTS in (.*) is not included in the LTS .*") string)))
     (if sub (begin
               (stdout "verify: ~a: check: compliance: fail\n" modelname)
-              (stdout "~a" (make-trace "counter_example_failures_divergence_refinement.trc" "refinement" modelname))
+              (stdout "~a" (make-trace (match:substring sub 1) "refinement" modelname))
               #t)
          (begin (stdout "verify: ~a: check: compliance: ok\n" modelname) #f))))
 
