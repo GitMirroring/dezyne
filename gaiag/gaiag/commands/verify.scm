@@ -168,9 +168,21 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
          (module (resolve-module `(gaiag mcrl2)))
          (root-> (module-ref module 'root->))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
+         (gdzn-verbose? (or (find (cut equal? <> "--verbose") (command-line))
+                            (find (cut equal? <> "-v") (command-line))))
 	 (root (mcrl2:om ast)))
+;;    (system "mkdir mcrl2_temp")
+    (chdir "mcrl2_temp/")
     (with-output-to-file "verify.mcrl2" (cut root-> root))
-    (if (mcrl2:verify file-name modelname root) (exit 1))
+    (if (mcrl2:verify (string-append "../" file-name) modelname root gdzn-verbose?)
+        (begin
+          (chdir "../")
+;;          (system "rm -rf mcrl2_temp")
+          (exit 1))
+        (begin
+          (chdir "../")
+  ;;        (system "rm -rf mcrl2_temp")
+          ))
     ""))
 
 (define (main args)

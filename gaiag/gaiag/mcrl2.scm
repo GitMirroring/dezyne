@@ -129,7 +129,7 @@
     #:statement (make <illegal>)))
 
 (define* ((ast-add-illegals #:optional model) o)
-  ;;  (stderr "ast-add-illegals: ~a\n" o)
+  ;;    (stderr "ast-add-illegals: ~a\n" o)
   (match o
     ((and ($ <component>) (= .behaviour behaviour))
      (clone o #:behaviour ((ast-add-illegals o) behaviour)))
@@ -142,21 +142,16 @@
     (($ <on>)
      (let* ((triggers (ast:in-triggers model))
             (on-triggers ((compose .elements .triggers) o))
-      ;;      (foo (stderr "on-triggers: ~a\n" on-triggers))
             (triggers (filter
                        (lambda (trigger)
                          (not (find (lambda (on-trigger)
                                       (and (eq? (.port.name trigger) (.port.name on-trigger))
                                            (eq? (.event.name trigger) (.event.name on-trigger))))
                                     on-triggers)))
-                       triggers))
-    ;;        (foo (stderr "unused triggers (implicit illegals): ~a\n" triggers))
-  ;;          (foo (stderr "trigger->illegal triggers: ~a\n\n\n" (map trigger->illegal triggers)))
-            )
+                       triggers)))
        (make <compound> #:elements (append (list o) (map trigger->illegal triggers)))))
 
     ((and ($ <compound>) (? om:declarative?)) (=> failure)
-;;     (stderr "compound: ~a\n\n\n\n" o)
      (if (and (pair? (.elements o)) (is-a? (car (.elements o)) <guard>))
          (clone o #:elements (map (ast-add-illegals model) (.elements o)))
          (if (is-a? (car (.elements o)) <on>)
@@ -164,12 +159,12 @@
                     (ons (.elements o))
                     (on-triggers (append-map (compose .elements .triggers) ons))
                     (triggers (filter
-                       (lambda (trigger)
-                         (not (find (lambda (on-trigger)
-                                      (and (eq? (.port.name trigger) (.port.name on-trigger))
-                                           (eq? (.event.name trigger) (.event.name on-trigger))))
-                                    on-triggers)))
-                       triggers)))
+                               (lambda (trigger)
+                                 (not (find (lambda (on-trigger)
+                                              (and (eq? (.port.name trigger) (.port.name on-trigger))
+                                                   (eq? (.event.name trigger) (.event.name on-trigger))))
+                                            on-triggers)))
+                               triggers)))
                (clone o #:elements (append (.elements o) (map trigger->illegal triggers))))
              o)))
     (($ <interface>) o)
@@ -306,12 +301,10 @@
     (root-add-voidreply)
     ast-tail-calls
     ast-add-skips
+    (ast-add-illegals)
     aggregate-guard-g
     (expand-on)
     flatten-compound
-;;    (lambda (o) (stderr "AST POST add: \n") (pretty-print (om->list o) (current-error-port)) o)
-    (ast-add-illegals)
-;;    (lambda (o) (stderr "AST pre add: \n") (pretty-print (om->list o) (current-error-port)) o)
     (prepend-true-guard)
     (aggregate-on norm:on-same-port-voidness-statement?)
     (expand-on norm:port-and-voidness-equal?)
@@ -362,7 +355,9 @@
     (($ <behaviour>) o)
     (_ #f)))
 
-(define (mcrl2:interface-name o) ((compose om:name .interface) o))
+(define-method (mcrl2:interface-name (o <enum-literal>)) ((compose ->string .scope .name .type) o))
+
+(define-method (mcrl2:interface-name (o <ast>)) ((compose om:name .interface) o))
 (define (mcrl2:interfaces o) (delete-duplicates (map .type (om:ports o))))
 (define-method (mcrl2:provided-port-type (o <ast>)) ((compose mcrl2:provided-port-type car (lambda (o) (filter (is? <component>) (.elements o)))) o))
 (define-method (mcrl2:provided-port-type (o <component>)) ((compose om:name .type car om:provided) o)) ;;TODO: only works for single provides port
@@ -402,6 +397,7 @@
                          'Bool))
       ((? (is? <bool-expr>)) 'Bool)
       (($ <var>) ((compose mcrl2:expand-types .variable) expr))
+      (($ <enum-literal>) (mcrl2:expand-types expr))
       (_ (mcrl2:expand-types (.type expr))))))
 
 (define-method (mcrl2:reply-type (o <action>))
@@ -492,7 +488,8 @@
     (match t
       (($ <enum>) (string-append ((compose ->string mcrl2:interface-name) o) "'" ((compose ->string .name .name) t)))
       (($ <void>) 'Void)
-      (($ <bool>) 'Bool))))
+      (($ <bool>) 'Bool)
+      (($ <int>) 'Int))))
 
 (define-method (mcrl2:expand-types (o <call>))
   (mcrl2:expand-types ((compose .signature .function) o)))
@@ -515,7 +512,7 @@
   (if (pair? (cdr scope))
       (let ((parent (cadr scope)))
 	(match parent
-	  (($ <function>) (string-append "'" ((compose ->string .name) parent)))
+	  (($ <function>) (string-append "'function'" ((compose ->string .name) parent)))
 	  (_ (function-scope parent (cdr scope)))))
       ""))
 
@@ -561,7 +558,7 @@
   (match o
     (($ <bool>) "Bool")
     (($ <enum>) (string-join (map symbol->string (om:scope+name (.name o))) "'" 'infix))
-    (($ <int>) (string-join (map symbol->string (om:scope+name (.name o))) "'" 'infix))
+    (($ <int>) "Int") ;;(string-join (map symbol->string (om:scope+name (.name o))) "'" 'infix)
     (($ <refs>) (string-append (->string (om:name (ast:model-scope))) "'" "Refs"))))
 
 ;; (define-method (mcrl2-expression (o <expression>))
@@ -730,7 +727,9 @@
 (define-method (required-port-the-end (o <the-end>))
   (let* ((trigger (.trigger o))
          (port (.port trigger)))
-    (if port (string-append "'" (mcrl2:init-reply-value (.type port)))
+    (if port (if (ast:requires? port)
+                 (string-append "'" (mcrl2:init-reply-value (.type port)))
+                 "")
         "")))
 
 (define-method (illegal-or-dillegal (o <ast>) scope)
@@ -850,6 +849,11 @@
 (define-method (dzn:expression (o <call-parameter>))
   (.expression o))
 
+(define-template x:mcrl2-enum-literal mcrl2:enum-literal)
+
+(define-method (mcrl2:enum-literal (o <enum-literal>))
+  (string-append ((compose ->string .scope .name .type) o) "'" ((compose ->string .name .name .type) o) "'" ((compose ->string .field) o)))
+
 (define-method (process-continuation- (o <ast>) scope)
   (let* ((parent (cadr scope)))
     (match parent
@@ -894,7 +898,9 @@
       (($ <bool>) "Bool(false)")
       (($ <void>) "Void(void)")
       (($ <int>) "Int(0)")
-      (($ <enum>) (string-append (.name.name reply-type) ((compose ->string car .fields) reply-type))))))
+      (($ <enum>) (string-append ((compose ->string .scope .name) reply-type) "'" (.name.name reply-type) "("
+                                 ((compose ->string .scope .name) reply-type) "'" (.name.name reply-type) "'"
+                                 ((compose ->string car .elements .fields) reply-type) ")")))))
 
 (define-method (mcrl2:init-reply-value (o <port>))
   (mcrl2:init-reply-value (.type o)))
@@ -923,6 +929,7 @@
 (define-method (mcrl2:statement-process (o <variable>)) o)
 (define-method (mcrl2:statement-process (o <function>)) (.statement o))
 (define-method (mcrl2:statement-process (o <call>)) o)
+(define-method (mcrl2:statement-process (o <action>)) o)
 (define-method (mcrl2:child-identifier (o <behaviour>)) (mcrl2:process-identifier (first-process (.statement o))))
 (define-method (mcrl2:child-identifier (o <function>)) (mcrl2:process-identifier (first-process (.statement o))))
 (define-method (mcrl2:child-identifier (o <guard>)) (mcrl2:process-identifier (.statement o)))

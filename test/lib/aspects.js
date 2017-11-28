@@ -629,7 +629,7 @@ var aspects = {
     var out = dir + '/'+parameters.model;
     var err = out + '.stderr';
     var imports = imports_string (parameters.meta.imports);
-    var model = parameters.meta.model || parameters.model;
+    var model = parameters.meta.mcrl2_model || parameters.meta.model || parameters.model;
     return lstat (baseline)
       .then (function(stats) {
         return 'mkdir -p '+dir+';'

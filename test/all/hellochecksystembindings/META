@@ -1,1 +1,1 @@
-{"skip":["run"],"comment":"execute will assert on failed check_bindings"}
+{"skip":["run"],"mcrl2_model":"hellocheckcompbindings","comment":"execute will assert on failed check_bindings"}

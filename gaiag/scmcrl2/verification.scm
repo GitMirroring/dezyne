@@ -113,7 +113,7 @@
     (close-pipe port)
     str))
 
-(define (mcrl2:verify file-name modelname ast)
+(define (mcrl2:verify file-name modelname ast verbose?)
   (let* ((taus (find-taus ast modelname))
          (deterministic-lps (create-lps "verify.mcrl2" 'deterministic ast))
          (provided-lps (create-lps "verify.mcrl2" 'provided ast))
@@ -123,49 +123,57 @@
          (output (string-append output (verifydeadlock lpsfile)))
          (output (string-append output (verifyrefinement lpsfile provided-lps taus)))
          (output (string-append output (verifylivelock lpsfile taus))))
-    (interpret-results output modelname)))
+    (interpret-results output modelname verbose?)))
 
-(define (interpret-results output modelname)
-  (let ((compliance (check-refinement output modelname))
-        (illegal (check-illegal output modelname))
-        (deadlock (check-deadlock output modelname))
-        (livelock (check-livelock output modelname))
-        (deterministic (check-deterministic output modelname)))
-    (or compliance illegal deadlock livelock)))
+(define (interpret-results output modelname verbose?)
+  (let ((compliance (check-refinement output modelname verbose?))
+        (illegal (check-illegal output modelname verbose?))
+        (deadlock (check-deadlock output modelname verbose?))
+        (livelock (check-livelock output modelname verbose?))
+        (deterministic (check-deterministic output modelname verbose?)))
+    (or compliance illegal deadlock livelock deterministic)))
 
-(define (check-deterministic string modelname)
+(define (check-deterministic string modelname verbose?)
   (let ((sub (regexp-exec (make-regexp "LTS is deterministic") string)))
-    (if sub (begin (stdout "verify: ~a: check: deterministic: ok\n" modelname) #f)
+    (if sub (if verbose? (begin (stdout "verify: ~a: check: deterministic: ok\n" modelname) #f) #f)
         (begin (stdout "verify: ~a: check: deterministic: fail\n" modelname) #t))))
 
-(define (check-refinement string modelname)
+(define (check-refinement string modelname verbose?)
   (let ((sub (regexp-exec (make-regexp "Saved trace to file (.*)\nThe LTS in (.*) is not included in the LTS .*") string)))
     (if sub (begin
               (stdout "verify: ~a: check: compliance: fail\n" modelname)
               (stdout "~a" (make-trace (match:substring sub 1) "refinement" modelname))
               #t)
-         (begin (stdout "verify: ~a: check: compliance: ok\n" modelname) #f))))
+        (if verbose?
+            (begin (stdout "verify: ~a: check: compliance: ok\n" modelname) #f)
+            #f))))
 
-(define (check-illegal string modelname)
+(define (check-illegal string modelname verbose?)
   (let ((sub (regexp-exec (make-regexp "Detected action 'illegal' .* and saved to '([^'\n]*)'") string)))
     (if sub (begin
               (stdout "verify: ~a: check: illegal: fail\n" modelname)
               (stdout "~a" (make-trace (match:substring sub 1) "illegal" modelname))
               #t)
-        (begin (stdout "verify: ~a: check: illegal: ok\n" modelname) #f))))
+        (if verbose?
+            (begin (stdout "verify: ~a: check: illegal: ok\n" modelname) #f)
+            #f))))
 
-(define (check-deadlock string modelname)
+(define (check-deadlock string modelname verbose?)
   (let ((sub (regexp-exec (make-regexp "deadlock-detect: deadlock found and saved to '([^'\n]*)'") string)))
     (if sub (begin
               (stdout "verify: ~a: check: deadlock: fail\n" modelname)
               (stdout "~a" (make-trace (match:substring sub 1) "deadlock" modelname))
               #t)
-        (begin (stdout "verify: ~a: check: deadlock: ok\n" modelname) #f))))
+        (if verbose?
+            (begin (stdout "verify: ~a: check: deadlock: ok\n" modelname) #f)
+            #f))))
 
-(define (check-livelock string modelname)
+(define (check-livelock string modelname verbose?)
   (let ((sub (regexp-exec (make-regexp "Trace to the divergencing state is saved to '([^'\n]*)") string)))
     (if sub (begin
               (stdout "verify: ~a: check: livelock: fail\n" modelname)
               (stdout "~a" (make-trace (match:substring sub 1) "livelock" modelname))
               #t)
-        (begin (stdout "verify: ~a: check: livelock: ok\n" modelname) #f))))
+        (if verbose?
+            (begin (stdout "verify: ~a: check: livelock: ok\n" modelname) #f)
+            #f))))
