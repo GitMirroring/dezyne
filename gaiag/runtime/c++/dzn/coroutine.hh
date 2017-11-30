@@ -70,14 +70,14 @@ namespace dzn
       this->yield(c.context);
     }
 #if HAVE_BOOST_COROUTINE
-    coroutine() : id(-1), context() {}
+    coroutine() : id(-1), context(), port(), finished(), released(), skip_block() {}
     void call(dzn::coroutine&)
     {
       this->context();
     }
     void release(){}
 #else // !HAVE_BOOST_COROUTINE
-    coroutine() : id(-1), context(false) {}
+    coroutine() : id(-1), context(false), port(), finished(), released(), skip_block() {}
     void call(dzn::coroutine& c)
     {
       this->context.call(c.context);
