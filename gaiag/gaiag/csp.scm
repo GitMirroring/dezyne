@@ -593,7 +593,7 @@
 
 (define (purge-data root o)
   (let ((model (or (resolve:component root) (resolve:interface root))))
-    (ast:set-model-scope model (model-purge-data model o))))
+    (model-purge-data model o)))
 
 (define* (model-purge-data model o #:optional (locals '()))
   (define (member? identifier) (resolve:variable model identifier))

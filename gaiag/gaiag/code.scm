@@ -174,8 +174,8 @@
   ;; checking name (as done now) is not good enough
   ;; we schould check .variable pointer equality
   ;; that does not work, however; someone makes a copy is clone
-  ;;(memq o (om:variables (ast:model-scope)))
-  (memq (.name o) (map .name (om:variables (ast:model-scope)))))
+  ;;(memq o (om:variables (parent <model> o)))
+  (memq (.name o) (map .name (om:variables (parent <model> o)))))
 
 (define-method (code:port-type (o <trigger>))
   (code:scope+name ((compose .type .port) o)))
@@ -205,7 +205,7 @@
   (append ((compose code:scope+name .type) o) (list (.field o))))
 
 (define-method (code:scope+name (o <bind>))
-  ((compose code:scope+name .type (cut resolve:instance (ast:model-scope) <>) injected-instance-name) o))
+  ((compose code:scope+name .type (cut resolve:instance (parent <model> o) <>) injected-instance-name) o))
 
 (define-method (code:non-injected-bindings (o <system>))
   (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) o))))
@@ -233,10 +233,10 @@
   ((compose .port.name car .elements .triggers) o))
 
 (define-method (code:port-name (o <instance>))
-  (.name (om:port (resolve:component (ast:model-scope) o))))
+  (.name (om:port (resolve:component (parent <model> o) o))))
 
 (define-method (code:port-name (o <bind>))
-  (let* ((model (ast:model-scope))
+  (let* ((model (parent <model> o))
          (left (.left o))
          (left-port (.port left))
          (right (.right o))
@@ -246,7 +246,7 @@
     port))
 
 (define-method (code:instance-name (o <bind>))
-  (let* ((model (ast:model-scope))
+  (let* ((model (parent <model> o))
          (left (.left o))
          (left-port (.port left))
          (right (.right o))
@@ -259,18 +259,18 @@
   o)
 
 (define-method (code:instance-name (o <port>))
-  (.name (resolve:instance (ast:model-scope) o)))
+  (.name (resolve:instance (parent <model> o) o)))
 
 (define-method (code:instance-name (o <trigger>))
-  ((compose code:instance-name (cut .port (ast:model-scope) <>)) o))
+  ((compose code:instance-name (cut .port (parent <model> o) <>)) o))
 
 (define-method (code:instance-port-name (o <port>))
-  (let* ((bind (om:port-bind (ast:model-scope) o))
+  (let* ((bind (om:port-bind (parent <model> o) o))
          (instance-bind (om:instance-binding? bind)))
     (.port.name instance-bind)))
 
 (define-method (code:instance-port-name (o <trigger>))
-  ((compose code:instance-port-name (cut .port (ast:model-scope) <>)) o))
+  ((compose code:instance-port-name (cut .port (parent <model> o) <>)) o))
 
 (define-method (code:functions (o <component>))
   (om:functions o))
@@ -389,7 +389,7 @@
   (om:instances o))
 
 (define-method (code:bind-provided-required (o <bind>))
-  (let* ((model (ast:model-scope))
+  (let* ((model (parent <model> o))
          (left (.left o))
          (left-port (.port left))
          (right (.right o))
@@ -405,7 +405,7 @@
   ((compose cdr code:bind-provided-required) o))
 
 (define-method (code:component-port (o <port>)) ;; MORTAL SIN HERE!!?
-  (let* ((model (ast:model-scope))
+  (let* ((model (parent <model> o))
          (bind (om:port-bind model o)))
     (om:instance-binding? bind)))
 
@@ -456,7 +456,7 @@
       o))
 
 (define-method (code:type-name (o <bind>))
-  ((compose code:type-name .type (cut resolve:instance (ast:model-scope) <>) injected-instance-name) o))
+  ((compose code:type-name .type (cut resolve:instance (parent <model> o) <>) injected-instance-name) o))
 
 (define-method (code:type-name (o <enum-field>))
   (code:scope+name o))
@@ -569,7 +569,7 @@
 
 (define-method (code:enum-scope (o <enum>))
   (let ((scope ((compose .scope .name) o))
-        (model-scope (om:scope+name (ast:model-scope))))
+        (model-scope (om:scope+name (parent <model> o))))
     (if (or (null? scope) (equal? scope model-scope)) (make <model-scope>)
         o)))
 
@@ -582,9 +582,7 @@
                                (begin (display " ") (x:non-void-reply o))))) ;; MORTAL SIN HERE!!?
 
 
-(define-template x:capitalize-model-name (compose (cut string-upcase <> 0 1) symbol->string om:name (lambda (_) (ast:model-scope))))
-
-(define-template x:decapitalize-model-name (compose (cut string-downcase <> 0 1) symbol->string om:name (lambda (_) (ast:model-scope))))
+(define-template x:capitalize-model-name (compose (cut string-upcase <> 0 1) symbol->string om:name (lambda (o) (parent <model> o))))
 
 (define-template x:decapitalize-model-name (compose (cut string-downcase <> 0 1) symbol->string om:name (lambda (o) (parent <model> o))))
 (define-template x:upcase-model-name (compose string-upcase (->join "_") om:scope+name (lambda (o) (parent <model> o))))
@@ -609,7 +607,7 @@
 (define-template x:meta-child om:instances 'meta-child-infix)
 
 (define-template x:block identity)
-(define-template x:port-release (lambda (o) (if (om:blocking-compound? (ast:model-scope)) o "")))
+(define-template x:port-release (lambda (o) (if (om:blocking-compound? (parent <model> o)) o "")))
 
 (define-template x:expand-on code:expand-on)
 
@@ -695,7 +693,7 @@
      (lambda _
        (parameterize ((template-dir (string-append %template-dir "/" (symbol->string (language)))))
         (if (not (is-a? o <model>)) (x:pand (symbol-append template '@ (ast-name o)) o module)
-            (ast:set-model-scope o (x:pand (symbol-append template '@ (ast-name o)) o module))))))))
+            (x:pand (symbol-append template '@ (ast-name o)) o module)))))))
 
 (define-method (code:dump (o <root>))
   (let ((name (basename (symbol->string (source-file o)) ".dzn"))

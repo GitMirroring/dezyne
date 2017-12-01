@@ -286,6 +286,7 @@
            <plus-node>
 
            .node
+           .parent
 ;;           .node-elements
 ))
 
@@ -771,8 +772,8 @@
 
 (define-method (make-instance (class <class>) . initargs)
   (if (and (member <ast> (class-precedence-list class))
-           (not (member #:node initargs))
-           (not (member #:parent initargs))) (apply construct (cons class initargs))
+           (not (memq #:node initargs))
+           (not (memq #:parent initargs))) (apply construct (cons class initargs))
            ;; FIXME: copy of body in (oop goops)
            (let ((instance (allocate-instance class initargs)))
              (initialize instance initargs)
@@ -799,7 +800,8 @@
 
 (define-method (clone-base o . setters)
   (let* ((class (class-of o))
-         (setters (map node setters))
+         (setters (if (memq #:parent setters) setters
+                      (map node setters)))
          (slots (class-slots class))
          (names (map slot-definition-name slots))
          (make-pair (lambda (name) (list (symbol->keyword name) (slot-ref o name))))
@@ -827,9 +829,10 @@
   (apply clone-base-node (cons o setters)))
 
 (define-method (clone (o <ast>) . setters)
-  (clone-base-ast o #:node (apply clone-base-node (cons (.node o) setters))))
+  (if (or (memq #:node setters) (memq #:parent setters))
+      (apply clone-base-ast (cons o setters))
+      (clone-base-ast o #:node (apply clone-base-node (cons (.node o) setters)))))
 
 (define-method (parent class o) #f)
 (define-method (parent class (o <ast>))
-  (let ((p (.parent o)))
-    (if (is-a? p class) p (parent class p))))
+  (if (is-a? o class) o (parent class (.parent o))))

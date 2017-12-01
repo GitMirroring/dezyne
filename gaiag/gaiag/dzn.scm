@@ -190,7 +190,7 @@
       (make <shell-system> #:ports (.ports o) #:name (.name o) #:instances (.instances o) #:bindings (.bindings o))
       o))
 
-(define-template x:model-name (compose om:name (lambda (_) (ast:model-scope))))
+(define-template x:model-name (compose om:name (lambda (o) (parent <model> o))))
 
 (define-template x:=expression dzn:=expression #f <expression>)
 (define-method (dzn:=expression (o <ast>))
@@ -212,7 +212,7 @@
       (om:scope+name o)
       (let* ((type (or (as o <type>) (.type o)))
              (scope (om:scope type))
-             (model-scope (ast:model-scope))
+             (model-scope (parent <model> o))
              (model-scope (or (and model-scope (om:scope+name model-scope)) '()))
              (common (or (list-index (negate eq?) scope model-scope) (min (length scope) (length model-scope)))))
         (drop (om:scope+name type) common))))
@@ -281,8 +281,8 @@
   ;; checking name (as done now) is not good enough
   ;; we schould check .variable pointer equality
   ;; that does not work, however; someone makes a copy is clone
-  ;;(memq o (om:variables (ast:model-scope)))
-  (memq (.name o) (map .name (om:variables (ast:model-scope)))))
+  ;;(memq o (om:variables (parent <model> o)))
+  (memq (.name o) (map .name (om:variables (parent <model> o)))))
 
 (define-template x:enum-literal dzn:enum-literal 'type-infix)
 (define-method (dzn:enum-literal (o <enum-literal>))
@@ -459,7 +459,7 @@
      (lambda _
        (parameterize ((template-dir (string-append %template-dir "/" (symbol->string (language)))))
         (if (not (is-a? o <model>)) (x:pand (symbol-append template '@ (ast-name o)) o module)
-            (ast:set-model-scope o (x:pand (symbol-append template '@ (ast-name o)) o module))))))))
+            (x:pand (symbol-append template '@ (ast-name o)) o module)))))))
 
 (define-generic source-file)
 (define-method (source-file (o <ast>)) ((compose source-file .node) o))

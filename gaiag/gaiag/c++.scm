@@ -108,14 +108,8 @@
 (define-method (c++:enum->string (o <interface>))
   (append (filter (is? <enum>) (om:globals)) (om:enums o)))
 
-(define-method (trigger->on (o <trigger>))
-  (make <on> #:triggers (make <triggers> #:elements (list o)) #:statement (make <compound>)))
-
-(define-method (code:syntesize-ons (o <component>))
-  (map trigger->on (ast:in-triggers o)))
-
 (define-method (code:dzn-locator (o <instance>)) ;; MORTAL SIN HERE!!?
-  (let* ((model (ast:model-scope)))
+  (let* ((model (parent <model> o)))
     (if (null? (injected-bindings model)) ""
         "_local")))
 

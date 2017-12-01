@@ -51,12 +51,9 @@
            report-errors
 
            ast:extend-scope
-           ast:model-scope
            ast:root-scope
            ast:scope
-           ast:scope-model
            ast:set-scope
-           ast:set-model-scope
            .function
 
            resolve:component
@@ -70,7 +67,7 @@
 (define (ast:resolve o)
   (match o
     (($ <root>) (resolve-root o))
-    (($ <call>) ((resolve (ast:model-scope) '()) o))
+    (($ <call>) ((resolve (parent <model> o) '()) o))
     ((? (is? <model>)) (resolve-model o))
     (_  o)))
 
@@ -678,12 +675,12 @@
      (let* ((ports (make <ports> #:elements (map (resolve model '()) ((compose .elements .ports) o))))
             (o (clone o #:ports ports))
             (model (clone model #:behaviour o))
-            (functions (make <functions> #:elements (ast:set-model-scope model (map (resolve model '()) ((compose .elements .functions) o)))))
+            (functions (make <functions> #:elements (map (resolve model '()) ((compose .elements .functions) o))))
             (o (clone o #:functions functions))
             (model (clone model #:behaviour o))
-            (o (clone o #:variables (ast:set-model-scope model ((resolve model '()) (.variables o)))))
+            (o (clone o #:variables ((resolve model '()) (.variables o))))
             (model (clone model #:behaviour o)))
-       (clone o #:statement (ast:set-model-scope model ((resolve model '()) (.statement o))))))
+       (clone o #:statement ((resolve model '()) (.statement o)))))
 
     (($ <system>)
      (let* ((o (clone o #:ports (make <ports> #:elements (map (resolve model '()) (om:ports o)))))
@@ -861,13 +858,6 @@
     ((_ o e1 e2 ...)
      (parameterize ((ast:scope (cons o (ast:scope)))) e1 e2 ...))))
 
-(define-syntax ast:set-model-scope
-  (syntax-rules ()
-    ((_ o e1 e2 ...)
-     (let* ((prev (ast:scope-model))
-            (parent (if prev (cdr prev) (ast:scope-root))))
-       (parameterize ((ast:scope (cons o parent))) e1 e2 ...)))))
-
 (define (ast:scope-root)
   (let ((scope (ast:scope)))
     (find-tail (lambda (e)
@@ -885,7 +875,6 @@
                scope)))
 
 (define (ast:root-scope) (and=> (ast:scope-root) car))
-(define (ast:model-scope) (and=> (ast:scope-model) car))
 
 (define-public (compose-root . f)
   (lambda (o)
@@ -913,24 +902,24 @@
   (and (.port@ o) (name-resolve model <port> (.port@ o))))
 
 (define-method (.port (o <trigger>))
-  (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
+  (and (.port@ o) (name-resolve (parent <model> o) <port> (.port@ o))))
 
 (define-method (.port (o <action>))
-  (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
+  (and (.port@ o) (name-resolve (parent <model> o) <port> (.port@ o))))
 
 (define-method (.port (o <reply>))
-  (and (.port@ o) (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
+  (and (.port@ o) (name-resolve (parent <model> o) <port> (.port@ o))))
 
 (define-method (.port (o <binding>))
   (if (.instance o)
       (name-resolve (.type (.instance o)) <port> (.port@ o))
-      (name-resolve (car (ast:scope-model)) <port> (.port@ o))))
+      (name-resolve (parent <model> o) <port> (.port@ o))))
 
 (define-method (.function (model <model>) (o <call>))
   (and (.function@ o) (name-resolve model <function> (.function@ o))))
 
 (define-method (.function (o <call>))
-  (and (.function@ o) (name-resolve (car (ast:scope-model)) <function> (.function@ o))))
+  (and (.function@ o) (name-resolve (parent <model> o) <function> (.function@ o))))
 
 (define (ast-> ast)
   ((compose-root

@@ -324,7 +324,7 @@
     (($ <guard>) (clone o #:statement (add-reply-port (.statement o) port block?)))
     (($ <compound>) (clone o #:elements (map (cut add-reply-port <> port block?) (.elements o))))
     (($ <behaviour>) (clone o #:statement (add-reply-port (.statement o) port block?)))
-    (($ <component>) (clone o #:behaviour (ast:set-model-scope o (add-reply-port (.behaviour o) (if (= 1 (length (filter ast:provides? (om:ports o)))) (om:port o) #f) block?))))
+    (($ <component>) (clone o #:behaviour (add-reply-port (.behaviour o) (if (= 1 (length (filter ast:provides? (om:ports o)))) (om:port o) #f) block?)))
     (($ <system>) o)
     (($ <foreign>) o)
     (($ <interface>) o)
@@ -457,7 +457,7 @@
                   #:statement ((passdown-formal-bindings formal-bindings) (.statement o))))))
 
     (($ <component>)
-     (clone o #:behaviour (ast:set-model-scope o ((binding-into-blocking) (.behaviour o)))))
+     (clone o #:behaviour ((binding-into-blocking) (.behaviour o))))
 
     (($ <behaviour>)
      (clone o #:statement ((binding-into-blocking '()) (.statement o))))
