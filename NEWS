@@ -5,6 +5,13 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.6.1 (since 2.6.0)
+** Code generation
+  - The c++ code now avoids triggering some Visual Studio compiler warnings.
+  - Calling context has been enhanced.
+** ASD Converter
+   - The ASD converter now forwards user-defined includes to DZN.
+
 * Changes in 2.6.0 (since 2.5.3)
   - The interpreter now shows the content of the queues in the
     watch-window.
