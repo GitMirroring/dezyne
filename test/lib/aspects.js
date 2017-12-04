@@ -89,7 +89,7 @@ var dependencies = {
   view:     ['convert'],
 };
 
-var default_aspects = Object.keys(dependencies).filter (function (e) {return ['view'].indexOf (e) == -1;});
+var default_aspects = Object.keys(dependencies).filter (function (e) {return ['table','view'].indexOf (e) == -1;});
 
 function depend(e) {
   var deps = dependencies[e] || ['convert'];
