@@ -75,7 +75,7 @@
 
 (define (ast-> ast)
   (let ((root (dzn:om ast)))
-    (ast:set-scope root (dzn:root-> root)))
+    (dzn:root-> root))
   "")
 
 (define (dzn:root-> root)
@@ -144,7 +144,7 @@
     (for-each dzn:dump models)))
 
 (define (dzn:om ast)
-  ((compose-root
+  ((compose
     ast:resolve
     parse->om
     ) ast))
@@ -159,7 +159,7 @@
   (with-output-to-string
     (lambda _
       (parameterize ((language dzn:language))
-        (ast:set-scope o ((dzn:x:pand-display o 'source)))))))
+        ((dzn:x:pand-display o 'source))))))
 (define-generic ast->dzn)
 (define-method (ast->dzn (o <statement>))
   (parameterize ((language 'dzn))
@@ -454,7 +454,7 @@
 (define-method (dzn:x:pand-display (o <ast>) template)
   (let ((module (make-module 31 `(,(resolve-module '(gaiag dzn))
                                   ,(resolve-module `(gaiag ,(language)))))))
-    (module-define! module 'root (ast:root-scope))
+    (module-define! module 'root (parent <root> o))
     (dzn:indent
      (lambda _
        (parameterize ((template-dir (string-append %template-dir "/" (symbol->string (language)))))

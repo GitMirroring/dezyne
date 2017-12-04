@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -44,7 +45,7 @@
 
 (define (ast-> ast)
   (let ((root (dzn:om ast)))
-    (ast:set-scope root (dzn:root-> root)))
+    (dzn:root-> root))
   "")
 
 (define (dzn:root-> root)

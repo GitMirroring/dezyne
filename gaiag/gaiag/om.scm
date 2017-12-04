@@ -208,8 +208,6 @@
 
     (('enum-literal name field) (make <enum-literal-node> #:type (parse->om- name) #:field field))
 
-    (('dotted name ...) o)
-
     (('scope.name scope name) (make <scope.name-node> #:scope scope #:name name))
 
     (('on triggers statement)
@@ -279,6 +277,10 @@
 
     (('triggers triggers ...)
      (make <triggers-node> #:elements (map parse->om- triggers)))
+
+    (('type 'bool) (make <bool-node>))
+
+    (('type 'void) (make <void-node>))
 
     (('type name) (make <type-node> #:name (parse->om- name)))
 

@@ -62,14 +62,14 @@
     ) o))
 
 (define (ast->table-event ast)
-  ((compose-root
+  ((compose
     (table table-event)
     ast:resolve
     parse->om)
    ast))
 
 (define (ast-> ast)
-  ((compose-root
+  ((compose
     dzn-table
     (lambda (x) (if (is-a? x <ast>) (make <root> #:elements (om:filter identity x))
                     (filter identity x)))

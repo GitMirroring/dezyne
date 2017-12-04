@@ -81,7 +81,7 @@
     (($ <interface>) (assert-list o))))
 
 (define (ast-> o)
-  ((compose-root
+  ((compose
     assert-list
     parse->om
     ) o))

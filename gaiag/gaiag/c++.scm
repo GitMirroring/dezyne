@@ -106,7 +106,7 @@
   (map (symbol->enum-field o) ((compose .elements .fields) o)))
 
 (define-method (c++:enum->string (o <interface>))
-  (append (filter (is? <enum>) (om:globals)) (om:enums o)))
+  (append (filter (is? <enum>) (om:globals o)) (om:enums o)))
 
 (define-method (code:dzn-locator (o <instance>)) ;; MORTAL SIN HERE!!?
   (let* ((model (parent <model> o)))
@@ -152,7 +152,7 @@
 (define-template x:ports-meta-list (lambda (o) (filter ast:requires? (om:ports o))) 'meta-infix)
 (define-template x:check-bindings-list (lambda (o) ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports o)))))
 
-(define-template x:global-enum-definer (lambda (o) (filter (is? <enum>) (om:globals))))
+(define-template x:global-enum-definer (lambda (o) (filter (is? <enum>) (om:globals o))))
 (define-template x:check-in-binding (lambda (o) (filter om:in? (om:events o))))
 (define-template x:check-out-binding (lambda (o) (filter om:out? (om:events o))))
 

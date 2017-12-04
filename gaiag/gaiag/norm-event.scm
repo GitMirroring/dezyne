@@ -92,7 +92,7 @@
 
 ;; norm-event used for <root> and other <ast>
 (define-method (norm-event (o <ast>))
-  (((if (is-a? o <root>) compose-root compose)
+  (((if (is-a? o <root>) compose compose)
     (perf 'remove-skip)
     remove-skip
     (perf 'aggregate-guard-s)
@@ -140,7 +140,7 @@
    o))
 
 (define-method (code-norm-event (o <root>))
-  ((compose-root
+  ((compose
     (perf 'add-reply-port)
     add-reply-port
     (perf 'add-illegals)
@@ -488,7 +488,7 @@
     (_ o)))
 
 (define (ast-> ast)
-  ((compose-root
+  ((compose
     pretty-print
     om->list
     code-norm-event

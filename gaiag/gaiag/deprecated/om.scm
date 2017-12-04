@@ -151,8 +151,8 @@
     (#f '())
     ((? unspecified?) '())))
 
-(define (om:globals)
-  (filter (is? <type>) ((compose .elements ast:root-scope))))
+(define (om:globals o)
+  (filter (is? <type>) (.elements (parent <root> o))))
 
 (define-method (om:variables (o <model>))
   (match o

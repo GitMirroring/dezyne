@@ -122,8 +122,8 @@ errors."
         (gdzn-debug? (find (cut equal? <> "--debug") (command-line))))
     (if gdzn-debug? (stderr "CSP:\n ~s\n" csp))
     ;; FIXME: string processing, should generate CSP for process from model+template
-    (let* ((asserts (ast:set-scope root (assert-list root)))
-           (csp-asserts (with-output-to-string (lambda () (ast:set-scope root (csp-asserts model)))))
+    (let* ((asserts (assert-list root))
+           (csp-asserts (with-output-to-string (lambda () (csp-asserts model))))
            (csp-asserts (string-trim-right csp-asserts))
            (main-assert (last (string-split csp-asserts #\newline)))
            (process (cadr (string-split main-assert #\space)))

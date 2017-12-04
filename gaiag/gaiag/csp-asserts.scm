@@ -42,8 +42,7 @@
 
 (define (om->csp-asserts o)
   (let ((om (csp:parse->om o)))
-    (ast:set-scope om
-      (om->csp om)
-      (assert-list om))))
+    (om->csp om)
+    (assert-list om)))
 
 (define ast-> om->csp-asserts)

@@ -104,19 +104,18 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
 
 (define (models-for-verification options file-name)
   (let* ((ast (parse-with-options options file-name))
-         (root ((compose-root ast:resolve parse->om) ast)))
-    (ast:set-scope root
-                   (let* ((models (ast:model* root))
-                          (components (filter (conjoin (is? <component>) .behaviour) models))
-                          (component-names (map (compose symbol->string (om:scope-name)) components))
-                          (interfaces (filter (is? <interface>) models))
-                          (interface-names (map (compose symbol->string (om:scope-name)) interfaces))
-                          (interface-names (let loop ((components components) (interface-names interface-names))
-                                             (if (null? components) interface-names
-                                                 (let ((component-interfaces (map (compose symbol->string (om:scope-name) .type) (ast:port* (car components)))))
-                                                   (loop (cdr components)
-                                                         (filter (negate (cut member <> component-interfaces)) interface-names)))))))
-                     (append interface-names component-names)))))
+         (root ((compose ast:resolve parse->om) ast)))
+    (let* ((models (ast:model* root))
+           (components (filter (conjoin (is? <component>) .behaviour) models))
+           (component-names (map (compose symbol->string (om:scope-name)) components))
+           (interfaces (filter (is? <interface>) models))
+           (interface-names (map (compose symbol->string (om:scope-name)) interfaces))
+           (interface-names (let loop ((components components) (interface-names interface-names))
+                              (if (null? components) interface-names
+                                  (let ((component-interfaces (map (compose symbol->string (om:scope-name) .type) (ast:port* (car components)))))
+                                    (loop (cdr components)
+                                          (filter (negate (cut member <> component-interfaces)) interface-names)))))))
+      (append interface-names component-names))))
 
 (define (verify-model options file-name model)
   (let* ((bin ((compose dirname car) (command-line)))

@@ -91,7 +91,7 @@
 
 (define (ast-> ast)
   (let ((root (code:om ast)))
-    (ast:set-scope root (code:root-> root)))
+    (code:root-> root))
   "")
 
 (define (code:root-> root)
@@ -616,7 +616,7 @@
 (define-template x:in-event-definer (lambda (o) (filter om:in? (om:events o))) 'event-definer-infix)
 (define-template x:out-event-definer (lambda (o) (filter om:out? (om:events o))) 'event-definer-infix)
 
-(define-template x:enum-definer (lambda (o) (append (om:enums o) (filter (is? <enum>) (om:globals)))))
+(define-template x:enum-definer (lambda (o) (append (om:enums o) (filter (is? <enum>) (om:globals o)))))
 
 
 (define-template x:enum-field-definer (lambda (o) (map (symbol->enum-field o) ((compose .elements .fields) o))) 'comma-infix)
@@ -688,7 +688,7 @@
   (let ((module (make-module 31 `(,(resolve-module '(gaiag dzn))
                                   ,(resolve-module '(gaiag code))
                                   ,(resolve-module `(gaiag ,(language)))))))
-    (module-define! module 'root (ast:root-scope))
+    (module-define! module 'root (parent <root> o))
     (dzn:indent
      (lambda _
        (parameterize ((template-dir (string-append %template-dir "/" (symbol->string (language)))))
@@ -785,7 +785,7 @@
   (basename (symbol->string (source-file o)) ".dzn"))
 
 (define (code:om ast)
-  ((compose-root
+  ((compose
     code-norm-event
     ast:resolve
     parse->om

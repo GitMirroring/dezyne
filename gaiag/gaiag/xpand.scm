@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -124,17 +126,14 @@
                                                       (symbol? ast)) (display ast)
                                                       (let* ((name (symbol->string (ast-name (if (is-a? ast type) type (class-of ast)))))
                                                              (file-name (string-append file-name "@" name)))
-                                                        (if (not (eq? o (car (ast:scope))))
-                                                            (ast:extend-scope ast (x:pand file-name ast))
-                                                            (x:pand file-name ast))))))) o)))))
+                                                        (x:pand file-name ast))))))
+                               o)))))
         ((null? o) #f)
         ((is-a? o <ast>)
          ;;(stderr "ATOM [~a,t=~a,f=~a] ~a\n" (class-name (class-of o)) (and type (class-name type)) file-name (class-name (class-of o)))
          (let* ((name (symbol->string (ast-name (if (is-a? o type) type (class-of o)))))
                 (file-name (string-append file-name "@" name)))
-	   (if (not (eq? o (car (ast:scope))))
-	       (ast:extend-scope o (x:pand file-name o))
-	       (x:pand file-name o))))
+	   (x:pand file-name o)))
         (#t (x:pand file-name o))))
 
 (define-syntax define-template

@@ -91,20 +91,19 @@
 (wrap <voidreply-node> <voidreply> (<ast>))
 
 (define* (om->csp om #:key file-name (separate-asserts? (command-line:get 'assert #f)))
-  (ast:set-scope om
-    (or (and-let* ((models (om:filter (lambda (x) (or (as x <interface>) (as x <component>))) om))
-                   (models (null-is-#f (filter .behaviour models)))
-                   (c-i (append (filter (is? <component>) models) models))
-                   ((pair? c-i))
-                   (model (car c-i))
-                   (name ((om:scope-name '.) model))
-                   (file-name (or file-name (command-line:get 'output (list name '.csp)))))
-          (generate-csp model #:file-name file-name #:separate-asserts? separate-asserts?))
-        (let* ((models (om:filter (is? <model>) om))
-               (models (comma-join (map .name models)))
-               (message "gaiag: no model with behaviour\n"))
-          (stderr message)
-          (throw 'csp message)))))
+  (or (and-let* ((models (om:filter (lambda (x) (or (as x <interface>) (as x <component>))) om))
+                 (models (null-is-#f (filter .behaviour models)))
+                 (c-i (append (filter (is? <component>) models) models))
+                 ((pair? c-i))
+                 (model (car c-i))
+                 (name ((om:scope-name '.) model))
+                 (file-name (or file-name (command-line:get 'output (list name '.csp)))))
+        (generate-csp model #:file-name file-name #:separate-asserts? separate-asserts?))
+      (let* ((models (om:filter (is? <model>) om))
+             (models (comma-join (map .name models)))
+             (message "gaiag: no model with behaviour\n"))
+        (stderr message)
+        (throw 'csp message))))
 
 (define* (ast->csp ast #:key file-name (separate-asserts? (command-line:get 'assert #f)))
   (om->csp (csp:parse->om ast) #:file-name file-name #:separate-asserts? separate-asserts?))
@@ -145,7 +144,7 @@
       (dump-output "asserts.csp" (lambda () (csp-asserts model)))))
 
 (define (csp:norm ast)
-  ((compose-root
+  ((compose
     csp-norm-state
     internal-libs
     ast:resolve
@@ -494,13 +493,13 @@
   (filter
    (negate (is? <extern>))
    (match o
-          (($ <interface>) (append (om:types o) (om:globals)))
+          (($ <interface>) (append (om:types o) (om:globals o)))
      (($ <component>)
       (append
        (apply append
               (map types
                    (map .type (ast:port* o))))
-       (append (om:types o) (om:globals)))))))
+       (append (om:types o) (om:globals o)))))))
 
 (define (return-values-port port) ;; FIMXE: no test
   (let ((interface (.type port)))
@@ -1301,7 +1300,7 @@
 
 (define-method (internal-libs o) o)
 (define-method (internal-libs (o <root>))
-  ((compose-root
+  ((compose
     add-internal-libs-behaviour
     move-internal-ports
     ) o))
