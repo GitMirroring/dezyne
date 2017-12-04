@@ -142,50 +142,12 @@
     (($ <import>) o)
     (_ (retain-source-properties o (resolve- model o locals)))))
 
-(define (type-equal? a b)
-  (cond ((is-a? a <enum>) (om:equal? a b))
-        (else (eq? (class-of a) (class-of b)))))
-
 (define (->symbol o)
   (match o
     (($ <type>) (->symbol (.name o)))
     (($ <enum>) (->symbol (.name o)))
     (($ <scope.name>) ((->symbol-join '.) (om:scope+name o)))
     (_ o)))
-
-;; Pre-resolve by-name lookups
-(define resolve:binary-operators
-  '(
-    <
-    <=
-    >
-    >=
-    +
-    -
-    and
-    or
-    ==
-    !=
-    ))
-
-(define resolve:unary-operators
-  '(
-    group
-    !
-    ))
-
-(define resolve:operators
-  (append resolve:binary-operators resolve:unary-operators))
-
-(define (resolve:operator? o)
-  (memq o resolve:operators))
-
-(define (resolve:expression? o)
-  (match o
-    (($ <expression>) o)
-    (((? resolve:operator?) h t ...) o)
-    (_ #f)))
-
 
 (define* (resolve:types root #:optional (model #f))
   (append
@@ -603,7 +565,6 @@
     ((and ($ <return>) (= .expression expression))
      (clone o #:expression ((resolve model locals) expression)))
     ((? (is? <ast>)) (tree-map (lambda (o) ((resolve model locals) o)) o))
-    ((? resolve:expression?) (map (lambda (o) ((resolve model locals) o)) o))
     (_ o)))
 
 (define ((resolve-triggers model) o)
