@@ -46,7 +46,7 @@
   #:use-module (gaiag resolve)
   #:use-module (gaiag xpand)
 
-  #:use-module (language dezyne location)
+  #:use-module (gaiag location)
 
   #:export (<enum-field>
             asd-interfaces

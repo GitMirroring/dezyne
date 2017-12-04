@@ -29,7 +29,7 @@
   #:use-module (ice-9 and-let-star)
   #:use-module (srfi srfi-9)
 
-  #:use-module (language dezyne location)
+  #:use-module (gaiag location)
   #:use-module (gaiag misc)
 
   #:export (ast:annotate ast->annotate extract-locations))

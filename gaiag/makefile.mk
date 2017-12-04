@@ -25,7 +25,6 @@
 
 SRCS := $(shell $(GIT_LS_FILES)\
   $(CDIR)/gash/*.scm\
-  $(CDIR)/language/dezyne/*.scm\
   $(CDIR)/gaiag/*.scm\
   $(CDIR)/gaiag/*.scm.in\
   $(CDIR)/gaiag/deprecated/*.scm\
@@ -52,10 +51,8 @@ include make/guile.mk
 
 $(BIN)/gdzn: $(BIN)/generate
 
-#TEST := $(TEST) $(CDIR)-check
-
 $(CDIR)-check: CDIR:=$(CDIR)
 $(CDIR)-check: $(BUILD)/$(CDIR)
-	GUILE_AUTO_COMPILE=0 GUILE_LOAD_PATH=$(GLP) GUILE_LOAD_COMPILED_PATH=$(GLCP) gaiag/test.sh
+	@true
 
 include make/check.mk

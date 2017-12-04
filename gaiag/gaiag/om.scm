@@ -38,7 +38,7 @@
   #:use-module (gaiag annotate)
   #:use-module (gaiag misc)
 
-  #:use-module (language dezyne location)
+  #:use-module (gaiag location)
 
   #:export (parse->om))
 

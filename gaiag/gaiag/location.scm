@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;;
+;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -23,7 +23,7 @@
 
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 
-(define-module (language dezyne location)
+(define-module (gaiag location)
   #:use-module (system base lalr)
 
   #:use-module (ice-9 match)

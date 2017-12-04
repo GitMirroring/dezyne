@@ -29,7 +29,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
 
-  #:use-module (language dezyne location)
+  #:use-module (gaiag location)
 
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)

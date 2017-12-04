@@ -27,14 +27,11 @@
   #:use-module (system base language)
 
   #:use-module (gaiag misc)
-  #:use-module (language dezyne parse)
-  #:use-module (language dezyne location)
-  #:use-module (language dezyne tokenize)
-
+  #:use-module (gaiag location)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
 
-  #:export (%include-path parse-file parse-string try-find-file))
+  #:export (%include-path parse-file try-find-file))
 
 (define ast-> pretty-print)
 
@@ -70,7 +67,7 @@
                      (open-input-file file-name))))
       (if (eq? (peek-char file) #\()
           (read file)
-          (read-dzn- file-name)))))
+          (error (format #f ".scm file expected: ~s\n" file-name))))))
 
 (define (find-model-file o)
   (let ((grep (lambda (dir) (gulp-pipe (format #f "grep -El '^(component|interface|enum|extern|int) ~a' ~a/~a.dzn ~a/*.dzn 2>/dev/null ||:" o dir o dir)))))
@@ -85,17 +82,6 @@
 (define (string-drop-prefix prefix string)
   (if (not (string-prefix? prefix string)) string
       (substring string (string-length prefix))))
-
-(define (parse-string string)
-  (read-hash-extend #\{ hash-read-string)
-  (with-input-from-string string
-    (lambda () (dzn-reader (current-input-port) (current-module)))))
-
-(define (dzn-reader port env)
-  ((make-parser) (make-tokenizer port) syntax-error-handler))
-
-(define (read-dzn- file-name)
-  (dzn-reader (open-file file-name "r") (current-module)))
 
 (define (path-find-file path file-name)
   (search-path path (components->file-name file-name)))

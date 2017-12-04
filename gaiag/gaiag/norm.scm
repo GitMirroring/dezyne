@@ -31,7 +31,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 curried-definitions)
 
-  #:use-module (language dezyne location)
+  #:use-module (gaiag location)
 
   #:use-module (srfi srfi-1)
 

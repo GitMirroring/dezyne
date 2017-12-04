@@ -30,7 +30,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
-  #:use-module (language dezyne location)
+  #:use-module (gaiag location)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (oop goops describe)

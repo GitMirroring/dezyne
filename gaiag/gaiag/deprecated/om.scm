@@ -45,7 +45,7 @@
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
 
-  #:use-module (language dezyne location)
+  #:use-module (gaiag location)
 
   #:export (
            om:behaviour-ports

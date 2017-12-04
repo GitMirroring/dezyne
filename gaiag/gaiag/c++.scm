@@ -46,7 +46,7 @@
   #:use-module (gaiag ast)
   #:use-module (gaiag xpand)
 
-  #:use-module (language dezyne location)
+  #:use-module (gaiag location)
 
   #:export (.asd-channel
             .asd-event
