@@ -356,6 +356,7 @@
     (_ #f)))
 
 (define-method (mcrl2:interface-name (o <enum-literal>)) ((compose ->string .scope .name .type) o))
+(define-method (mcrl2:interface-name (o <formal>)) ((compose ->string .scope .name .type) o))
 
 (define-method (mcrl2:interface-name (o <ast>)) ((compose om:name .interface) o))
 (define (mcrl2:interfaces o) (delete-duplicates (map .type (om:ports o))))
@@ -489,7 +490,8 @@
       (($ <enum>) (string-append ((compose ->string mcrl2:interface-name) o) "'" ((compose ->string .name .name) t)))
       (($ <void>) 'Void)
       (($ <bool>) 'Bool)
-      (($ <int>) 'Int))))
+      (($ <int>) 'Int)
+      (($ <formal>) (mcrl2:expand-types t)))))
 
 (define-method (mcrl2:expand-types (o <call>))
   (mcrl2:expand-types ((compose .signature .function) o)))
