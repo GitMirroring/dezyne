@@ -844,6 +844,16 @@
 (define-method (action-type (o <ast>))
   ((compose mcrl2-type .type .signature .event .action) o))
 
+(define-template x:check-integer-bounds check-integer-bounds)
+(define-method (check-integer-bounds (o <ast>))
+  (let* ((action (.action o))
+         (type ((compose .type .signature .event) action)))
+    (if (is-a? type <int>)
+        type
+        "")))
+(define-template x:range-from (compose ->string .from .range))
+(define-template x:range-to (compose ->string .to .range))
+
 (define-method (dzn-type (o <call>))
  ((compose mcrl2-type dzn-type .function) o))
 (define-method (dzn:expression (o <call-parameter>))

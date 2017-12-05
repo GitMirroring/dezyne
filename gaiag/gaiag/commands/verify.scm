@@ -171,17 +171,17 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
          (gdzn-verbose? (or (find (cut equal? <> "--verbose") (command-line))
                             (find (cut equal? <> "-v") (command-line))))
 	 (root (mcrl2:om ast)))
-;;    (system "mkdir mcrl2_temp")
+    (system "mkdir -p mcrl2_temp")
     (chdir "mcrl2_temp/")
     (with-output-to-file "verify.mcrl2" (cut root-> root))
     (if (mcrl2:verify (string-append "../" file-name) modelname root gdzn-verbose?)
         (begin
           (chdir "../")
-;;          (system "rm -rf mcrl2_temp")
+          (system "rm -rf mcrl2_temp")
           (exit 1))
         (begin
           (chdir "../")
-  ;;        (system "rm -rf mcrl2_temp")
+          (system "rm -rf mcrl2_temp")
           ))
     ""))
 
