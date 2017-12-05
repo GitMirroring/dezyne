@@ -3,13 +3,11 @@ sort #x:sort-interface
      ActionUnion = struct #x:action-union-struct;
      Void = struct void;
 
-map  #x:map-interface-name
-     #x:model-name'IG: Bool;
+map  #x:provided-port-name'allow_dillegals : Bool;
+     #x:model-name'allow_dillegals : Bool;
      QueueLength: Nat;
 
-eqn  #x:eqn-interface-name
-     #x:model-name'IG = true;
-     QueueLength = 3;
+eqn  QueueLength = 3;
 
 act  #x:interface-action-alphabet
      #x:model-name'store_global_in;
@@ -34,6 +32,7 @@ act  #x:interface-action-alphabet
      internal;
      illegal;
      dillegal;
+     block_illegal;
      double_reply_error;
      no_reply_error;
      empty_queue;

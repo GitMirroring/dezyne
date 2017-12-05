@@ -44,17 +44,20 @@
 
   #:export (mcrl2:verify))
 
-(define (hidden-actions)
-  (list "return" "event" "optional" "inevitable" "flush"))
+(define (compliance-hidden-actions)
+  (list "return" "optional" "inevitable" "event" "flush"))
 
-(define (find-taus ast modelname)
+(define (livelock-hidden-actions)
+  (list "return" "event" "flush"))
+
+(define (find-taus ast modelname hidden-actions)
   (let* ((component (find (lambda (x) (equal? (symbol->string(om:name x)) modelname)) (filter (is? <component>) (.elements ast))))
 	 (req-ports (map (lambda (r) (.name r)) (om:required component))))
     (string-join (append-map (lambda (p)
 			       (let ((portname (symbol->string p)))
 				 (map (lambda (h)
 					(string-append portname "'" h) )
-				      (hidden-actions))))
+				      hidden-actions)))
 			     req-ports)
 		 "," 'infix)))
 
@@ -114,15 +117,16 @@
     str))
 
 (define (mcrl2:verify file-name modelname ast verbose?)
-  (let* ((taus (find-taus ast modelname))
+  (let* ((livelock-taus (find-taus ast modelname (livelock-hidden-actions)))
+         (compliance-taus (find-taus ast modelname (compliance-hidden-actions)))
          (deterministic-lps (create-lps "verify.mcrl2" 'deterministic ast))
          (provided-lps (create-lps "verify.mcrl2" 'provided ast))
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
          (output (verifydeterministic deterministic-lps))
 	 (output (string-append output (verifyillegal lpsfile)))
          (output (string-append output (verifydeadlock lpsfile)))
-         (output (string-append output (verifyrefinement lpsfile provided-lps taus)))
-         (output (string-append output (verifylivelock lpsfile taus))))
+         (output (string-append output (verifyrefinement lpsfile provided-lps compliance-taus)))
+         (output (string-append output (verifylivelock lpsfile livelock-taus))))
     (interpret-results output modelname verbose?)))
 
 (define (interpret-results output modelname verbose?)

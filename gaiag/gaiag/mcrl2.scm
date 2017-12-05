@@ -290,7 +290,7 @@
 (define (mcrl2:om ast)
   ((compose-root
     (annotate-path '())
-;;    (lambda (o) (stderr "AST final ~a\n" o) o)
+;;    (lambda (o) ((compose pretty-print om->list) o) o)
     flatten-compound
     ast-complete-elses
     ast-annotate-illegals
@@ -359,7 +359,8 @@
 (define-method (mcrl2:interface-name (o <formal>)) ((compose ->string .scope .name .type) o))
 
 (define-method (mcrl2:interface-name (o <ast>)) ((compose om:name .interface) o))
-(define (mcrl2:interfaces o) (delete-duplicates (map .type (om:ports o))))
+(define (mcrl2:ports o) (append (om:ports o) ((compose .elements .ports .behaviour) o)))
+(define (mcrl2:interfaces o) (delete-duplicates (map .type (mcrl2:ports o))))
 (define-method (mcrl2:provided-port-type (o <ast>)) ((compose mcrl2:provided-port-type car (lambda (o) (filter (is? <component>) (.elements o)))) o))
 (define-method (mcrl2:provided-port-type (o <component>)) ((compose om:name .type car om:provided) o)) ;;TODO: only works for single provides port
 (define-method (mcrl2:provided-port-type (o <interface>)) (om:name o))
@@ -382,7 +383,7 @@
 (define-template x:eqn-interface-name mcrl2:interfaces 'newline-indent-infix)
 (define-template x:global-interface-reply mcrl2:interfaces 'newline-indent-infix)
 (define-template x:interface-action-alphabet mcrl2:interfaces 'newline-indent-infix)
-(define-template x:port-action-alphabet (compose .elements .ports) 'newline-indent-infix)
+(define-template x:port-action-alphabet mcrl2:ports 'newline-indent-infix)
 (define-template x:port-interface-name (compose om:name .type))
 (define-template x:event-name (compose .name .event))
 (define-template x:integers get-ints 'newline-indent-suffix)
@@ -738,8 +739,7 @@
   (let* ((parent (cadr scope)))
     (match parent
       (($ <on>)
-       (let* ((trigger ((compose car .elements .triggers) parent))
-              (port (.port trigger)))
+       (let ((port ((compose .port car .elements .triggers) parent)))
          (if port
              (if (ast:requires? port)
                  "Illegal"
@@ -747,6 +747,14 @@
              "Dillegal")))
       (($ <if>) "Illegal")
       (_ (illegal-or-dillegal parent (cdr scope))))))
+
+(define-template x:block-illegals mcrl2:block-illegals)
+(define-method (mcrl2:block-illegals (o <on>))
+  (let ((port ((compose .port car .elements .triggers) o))
+        (statement ((compose car .elements .statement) o)))
+    (if (and port (ast:provides? port) (is-a? statement <illegal>))
+        o
+        "")))
 
 (define-template x:illegal-type
   (lambda (o)
@@ -887,7 +895,7 @@
 
 (define-method (mcrl2:value (o <expression>))
   (match o
-    (($ <enum-literal>) (string-append ((compose ->string om:scope .type) o) "'State'" (->string (.field o))))
+    (($ <enum-literal>) (mcrl2:enum-literal o))
     (($ <literal>) (.value o))))
 
 ;;TODO: stop returning ASCII, start returning objects

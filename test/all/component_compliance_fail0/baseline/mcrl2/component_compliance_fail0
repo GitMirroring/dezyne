@@ -1,0 +1,5 @@
+verify: component_compliance_fail0: check: deterministic: ok
+verify: component_compliance_fail0: check: illegal: ok
+verify: component_compliance_fail0: check: deadlock: ok
+verify: component_compliance_fail0: check: compliance: fail
+verify: component_compliance_fail0: check: livelock: ok

@@ -1,0 +1,9 @@
+verify: component_deadlock_fail1: check: deterministic: ok
+verify: component_deadlock_fail1: check: illegal: ok
+verify: component_deadlock_fail1: check: deadlock: fail
+i.e
+i.return
+verify: component_deadlock_fail1: check: compliance: fail
+i.e
+i.return
+verify: component_deadlock_fail1: check: livelock: ok
