@@ -87,7 +87,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (model (option-ref options 'model #f)))
-    (parse-file file-name #:generator? (not gaiag?) #:imports imports #:mangle? mangle? #:model model)))
+    (parse-file file-name #:gaiag? gaiag? #:imports imports #:mangle? mangle? #:model model)))
 
 (define ((om:mangle-named name) ast)
   (match name

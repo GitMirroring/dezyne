@@ -35,8 +35,8 @@
 
 (define ast-> pretty-print)
 
-(define* (parse-file file-name #:key generator? (imports '()) mangle? model)
-  (if generator? (generator-parse-file file-name #:imports imports #:mangle? mangle? #:model model)
+(define* (parse-file file-name #:key gaiag? (imports '()) mangle? model)
+  (if (not gaiag?) (generator-parse-file file-name #:imports imports #:mangle? mangle? #:model model)
       (gaiag-parse-file file-name)))
 
 (define %include-path '("."))

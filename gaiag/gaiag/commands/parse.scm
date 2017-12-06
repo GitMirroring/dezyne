@@ -61,7 +61,7 @@ Usage: gdzn parse [OPTION]... [FILE]...
          ;; Only forward --model to generate for CSP, not
          ;; for executable code: generator cuts models
          (model (and (equal? language "csp") model)))
-    (parse-file file-name #:generator? (not gaiag?) #:imports imports #:mangle? mangle? #:model model)))
+    (parse-file file-name #:gaiag? gaiag? #:imports imports #:mangle? mangle? #:model model)))
 
 (define (assert-parse options file-name)
   (catch #t
