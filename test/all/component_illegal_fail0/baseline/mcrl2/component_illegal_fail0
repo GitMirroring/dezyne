@@ -1,3 +1,5 @@
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
 verify: component_illegal_fail0: check: deterministic: ok
 verify: component_illegal_fail0: check: illegal: fail
 i.e

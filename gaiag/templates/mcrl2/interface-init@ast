@@ -1,0 +1,5 @@
+"
+
+eqn  #x:model-name'allow_dillegals = false;
+
+init #x:model-name'Implementation_constrained();"

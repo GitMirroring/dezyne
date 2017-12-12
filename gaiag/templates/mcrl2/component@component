@@ -3,7 +3,7 @@ sort #x:sort-interface
      ActionUnion = struct #x:action-union-struct;
      Void = struct void;
 
-map  #x:provided-port-name'allow_dillegals : Bool;
+map  #x:interfaces-allow-dillegals
      #x:model-name'allow_dillegals : Bool;
      QueueLength: Nat;
 

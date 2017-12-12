@@ -164,6 +164,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
 
 (define (verify-mcrl2 options file-name)
   (let* ((modelname (option-ref options 'model #f))
+         (all? (option-ref options 'all #f))
 	 (ast (parse-with-options options file-name))
          (module (resolve-module `(gaiag mcrl2)))
          (root-> (module-ref module 'root->))
@@ -174,7 +175,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
     (system "mkdir -p mcrl2_temp")
     (chdir "mcrl2_temp/")
     (with-output-to-file "verify.mcrl2" (cut root-> root))
-    (if (mcrl2:verify (string-append "../" file-name) modelname root gdzn-verbose?)
+    (if (mcrl2:verify modelname root gdzn-verbose? all?)
         (begin
           (chdir "../")
           (system "rm -rf mcrl2_temp")

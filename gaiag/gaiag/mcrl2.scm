@@ -379,6 +379,7 @@
 					      (lambda (x) (make <interface-event> #:interface o #:event x))
 					      ((compose .elements .events) o))) 'pipe-infix)
 (define-template x:interface-name mcrl2:interface-name)
+(define-template x:interfaces-allow-dillegals mcrl2:interfaces 'newline-indent-infix)
 (define-template x:map-interface-name mcrl2:interfaces 'newline-indent-infix)
 (define-template x:eqn-interface-name mcrl2:interfaces 'newline-indent-infix)
 (define-template x:global-interface-reply mcrl2:interfaces 'newline-indent-infix)
@@ -750,9 +751,10 @@
 
 (define-template x:block-illegals mcrl2:block-illegals)
 (define-method (mcrl2:block-illegals (o <on>))
-  (let ((port ((compose .port car .elements .triggers) o))
-        (statement ((compose car .elements .statement) o)))
-    (if (and port (ast:provides? port) (is-a? statement <illegal>))
+  (let* ((port ((compose .port car .elements .triggers) o))
+         (statement ((compose car .elements .statement) o)))
+    (if (or (and port (ast:provides? port) (is-a? statement <illegal>))
+            (and (is-a? (ast:model-scope) <interface>) (is-a? statement <illegal>)))
         o
         "")))
 

@@ -27,6 +27,7 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
   #:use-module (srfi srfi-1)
+  #:use-module (gaiag misc)
 
   #:export (make-trace))
 
@@ -64,11 +65,12 @@
 	 (trace (regexp-substitute/global #f "\\billegal\\b" trace 'pre "" 'post))
 	 (trace (regexp-substitute/global #f "\\bdouble_reply_error\\b" trace 'pre "" 'post))
 	 (trace (regexp-substitute/global #f "\\bno_reply_error\\b" trace 'pre "" 'post))
-         (trace (regexp-substitute/global #f "\\btau\\b" trace 'pre "" 'post))
+         (trace (regexp-substitute/global #f "\\btau\n" trace 'pre "" 'post))
 	 (trace (regexp-substitute/global #f "([\n])[\n]+" trace 'pre 1 'post)))
     ;;   (with-output-to-file destfile (lambda () (display trace)))
-    trace
-
+    (if (string=? trace "\n")
+        ""
+        trace)
     ))
 
 (define (make-json-trace modelname tracefile dznfile outfile)
@@ -81,13 +83,3 @@
     (rename-lts-actions "trace1.txt" outfile)
     ;;(make-json-trace modelname outfile file-name (string-append outfile ".json"))
     ))
-
-;; (define (filter-tau-flush tracefile option component)
-;;   (with-input-from-file tracefile
-;;     (lambda ()
-;;       (let ((input (filter (negate string-null?) (string-split (read-string (current-input-port)) #\newline))))
-;; 	(with-output-to-file (string-append component option ".trc")
-;; 	  (lambda () (display (string-join (filter (lambda (o)
-;; 						     (and (not (equal? o "tau"))
-;; 							  (not (string-suffix? "<flush>" o) )))
-;; 						   input) "\n" 'suffix))))))))

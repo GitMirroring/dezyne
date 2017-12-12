@@ -29,6 +29,7 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
 
@@ -50,9 +51,9 @@
 (define (livelock-hidden-actions)
   (list "return" "event" "flush"))
 
-(define (find-taus ast modelname hidden-actions)
-  (let* ((component (find (lambda (x) (equal? (symbol->string(om:name x)) modelname)) (filter (is? <component>) (.elements ast))))
-	 (req-ports (map (lambda (r) (.name r)) (om:required component))))
+(define (find-taus component modelname hidden-actions)
+  (let ((req-ports (if component (map (lambda (r) (.name r)) (om:required component))
+                       '())))
     (string-join (append-map (lambda (p)
 			       (let ((portname (symbol->string p)))
 				 (map (lambda (h)
@@ -76,6 +77,11 @@
       ('provided (system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'compliance-init@ast) " | mcrl22lps -b -lstack > " lps))))
     (reduce-lps lps)))
 
+(define (create-if-lps mcrl2 ast)
+  (let ((lps (string-append (basename mcrl2 ".mcrl2") "_" ((compose ->string om:name) ast) ".lps")))
+    (system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'interface-init@ast) " | mcrl22lps -b -lstack > " lps))
+    (reduce-lps lps)))
+
 (define (reduce-lps lps)
   (system (string-append "lpsconstelm -st " lps " " lps))
   (system (string-append "lpsparelm " lps " " lps))
@@ -90,13 +96,13 @@
     (blockingcall (string-append "lps2lts " lps " " ltsname " && ltsinfo " ltsname " 2>&1"))))
 
 (define (verifydeadlock lps)
-  (blockingcall (string-append "lps2lts --deadlock -t1 -v " lps " " (basename lps ".lps") ".aut" " 2>&1")))
+  (blockingcall (string-append "lps2lts --deadlock -t1 -v " lps " " (basename lps ".lps") ".aut 2>&1")))
 
 (define (verifyillegal lps)
-  (blockingcall (string-append "lps2lts -aillegal -t1 -v " lps " " (basename lps ".lps") ".aut" " 2>&1")))
+  (blockingcall (string-append "lps2lts -aillegal -t1 -v " lps " " (basename lps ".lps") ".aut 2>&1")))
 
 (define (verifylivelock lps taus)
-  (blockingcall (string-append "lps2lts --divergence -t1 -v --tau=\"" taus "\" " lps " " (basename lps ".lps") ".aut" " 2>&1")))
+  (blockingcall (string-append "lps2lts --divergence -t1 -v --tau=\"" taus "\" " lps " " (basename lps ".lps") ".aut 2>&1")))
 
 (define (verifyrefinement complps provlps taus)
   (let* ((provlts (string-append (basename provlps ".lps") ".aut"))
@@ -116,9 +122,17 @@
     (close-pipe port)
     str))
 
-(define (mcrl2:verify file-name modelname ast verbose?)
-  (let* ((livelock-taus (find-taus ast modelname (livelock-hidden-actions)))
-         (compliance-taus (find-taus ast modelname (compliance-hidden-actions)))
+(define (mcrl2:verify-interface interface verbose?)
+  (let* ((iflps (create-if-lps "verify.mcrl2" interface))
+         (output (verifydeadlock iflps))
+         (output (string-append output (verifylivelock iflps ""))))
+    (interpret-if-results output ((compose ->string om:name) interface) verbose?)))
+
+(define (mcrl2:verify-component modelname ast verbose? all?)
+  (let* ((component (find (lambda (x) (equal? (symbol->string (om:name x)) modelname)) (filter (is? <component>) (.elements ast))))
+         (interfaces (ast:set-scope ast (delete-duplicates (map .type (om:ports component)))))
+         (livelock-taus (find-taus component modelname (livelock-hidden-actions)))
+         (compliance-taus (find-taus component modelname (compliance-hidden-actions)))
          (deterministic-lps (create-lps "verify.mcrl2" 'deterministic ast))
          (provided-lps (create-lps "verify.mcrl2" 'provided ast))
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
@@ -127,7 +141,26 @@
          (output (string-append output (verifydeadlock lpsfile)))
          (output (string-append output (verifyrefinement lpsfile provided-lps compliance-taus)))
          (output (string-append output (verifylivelock lpsfile livelock-taus))))
-    (interpret-results output modelname verbose?)))
+    (if all?
+        (pair? (filter identity (append (map (cut mcrl2:verify-interface <> verbose?) interfaces)
+                                        (list (interpret-results output modelname verbose?)))))
+        (or (pair? (filter identity (map (cut mcrl2:verify-interface <> verbose?) interfaces)))
+            (interpret-results output modelname verbose?)))))
+
+
+(define (mcrl2:verify modelname ast verbose? all?)
+  (if (and all? (not modelname))
+      (let ((components (filter (is? <component>) (.elements ast))))
+        (pair? (filter identity (map (lambda (c) (mcrl2:verify-component (->string (om:name c)) ast verbose? all?)) components))))
+      (let ((model (find (lambda (x) (equal? (symbol->string (om:name x)) modelname)) (filter (is? <model>) (.elements ast)))))
+        (if (is-a? model <component>)
+            (mcrl2:verify-component modelname ast verbose? #f)
+            (mcrl2:verify-interface model verbose?)))))
+
+(define (interpret-if-results output modelname verbose?)
+  (let ((deadlock (check-deadlock output modelname verbose?))
+        (livelock (check-livelock output modelname verbose?)))
+    (or deadlock livelock)))
 
 (define (interpret-results output modelname verbose?)
   (let ((compliance (check-refinement output modelname verbose?))
