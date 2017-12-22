@@ -4,14 +4,14 @@
 
 ##include <dzn/runtime.hh>
 
-##include "#x:model-name #x:capitalize-model-name Interface.h"
+##include "#x:model-name Interface.h"
 
 #x:open-namespace
 struct #x:model-name : public skel::#x:model-name
 {
   #x:model-name (const dzn::locator&);
   ~#x:model-name ();
-  boost::shared_ptr< ::#x:model-name ::#x:model-name Interface> component;
+  boost::shared_ptr< ::#x:model-name Interface> component;
   #x:asd-api-instance-declaration
   #x:asd-cb-definition
   struct SingleThreaded: public asd::channels::ISingleThreaded

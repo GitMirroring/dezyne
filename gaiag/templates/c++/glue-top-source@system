@@ -38,7 +38,7 @@ void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded> st)
 }
 };
 
-boost::shared_ptr<#x:model-name ::#x:model-name Interface> #x:model-name Component::GetInstance (#x:construction-signature)
+boost::shared_ptr<#x:model-name Interface> #x:model-name Component::GetInstance (#x:construction-signature)
 {
   return boost::make_shared<#x:model-name Glue> (#x:construction-parameters);
 }

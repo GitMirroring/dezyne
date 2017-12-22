@@ -26,7 +26,7 @@
 
 #include <boost/make_shared.hpp>
 
-boost::shared_ptr<siren::sirenInterface>
+boost::shared_ptr<sirenInterface>
 sirenComponent::GetInstance (int)
 {
   return boost::make_shared<sirenComponent>();

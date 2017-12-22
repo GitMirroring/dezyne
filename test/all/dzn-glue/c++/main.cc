@@ -29,10 +29,10 @@
 
 #include <iostream>
 
-struct CB: public alarm::console_cb
+struct CB: public ::console_cb
 {
-  boost::shared_ptr<alarm::console_api> api;
-  CB(  boost::shared_ptr<alarm::console_api> api)
+  boost::shared_ptr<::console_api> api;
+  CB(  boost::shared_ptr<::console_api> api)
   : api(api)
   {}
   void detected()
@@ -48,8 +48,8 @@ struct CB: public alarm::console_cb
 int main()
 {
 
-  boost::shared_ptr<alarm::alarmInterface> alarm_system = alarmComponent::GetInstance(123);
-  boost::shared_ptr<alarm::console_api> api;
+  boost::shared_ptr<::alarmInterface> alarm_system = alarmComponent::GetInstance(123);
+  boost::shared_ptr<::console_api> api;
   alarm_system->GetAPI(&api);
   alarm_system->RegisterCB(boost::make_shared<CB>(api));
 

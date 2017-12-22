@@ -3,7 +3,6 @@
 ##include <dzn/locator.hh>
 ##include <dzn/runtime.hh>
 
-#x:open-namespace
 namespace skel {
 #x:model-name ::#x:model-name(const dzn::locator& dzn_locator)
 : #x:meta
@@ -22,6 +21,4 @@ namespace skel {
 #x:model-name ::~#x:model-name()
 {
 }
-
 }
-#x:close-namespace

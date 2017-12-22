@@ -12,7 +12,6 @@ struct locator;
 struct runtime;
 }
 
-#x:open-namespace
 namespace skel {
 struct #x:model-name
 {
@@ -32,5 +31,4 @@ struct #x:model-name
   private:
   #x:pure-virtual-method-declare };
 }
-#x:close-namespace
 ##endif // SKEL_#x:upcase-model-name _HH

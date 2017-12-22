@@ -336,7 +336,7 @@
         (error (format #f "expected one provided port, found: ~s\n" (length ports))))))
 
 (define (c++:asd-api-instance-declaration component)
-  (map (lambda (api) (->string (list "boost::shared_ptr< ::" (.name (.name component)) "::" api "> api_" api ";\n")))
+  (map (lambda (api) (->string (list "boost::shared_ptr< ::" api "> api_" api ";\n")))
        (delete-duplicates (map second ((asd-interfaces om:in?) (provided-interface component))))))
 
 (define (c++:asd-api-instance-init component)
@@ -347,7 +347,7 @@
        (delete-duplicates (map second ((asd-interfaces om:in?) (provided-interface component))))))
 
 (define (c++:asd-cb-instance-declaration component)
-  (map (lambda (cb) (->string (list "boost::shared_ptr< ::" (.name (.name component)) "::" cb "> cb_" cb ";\n")))
+  (map (lambda (cb) (->string (list "boost::shared_ptr< ::" cb "> cb_" cb ";\n")))
        (delete-duplicates (map second ((asd-interfaces om:out?) (provided-interface component))))))
 
 (define (c++:asd-cb-instance-init component)
@@ -372,7 +372,7 @@
         (let* ((name (car entry))
                (dzn-events (cadr entry))
                (asd-events (caddr entry)))
-          (->string (list "struct " name ": public ::" (om:name component) "::" name "\n{\n"
+          (->string (list "struct " name ": public ::" name "\n{\n"
                  ((c++:scope-name) (om:port component)) "& port;\n"
                  name "(" ((c++:scope-name) (om:port component)) "& port)\n"
                  ": port(port)\n"
@@ -446,7 +446,7 @@
                (interface (car entry))
                (dzn-events (cadr entry))
                (asd-events (caddr entry)))
-           (->string (list "struct " interface "\n: public ::" name "::" interface "\n"
+           (->string (list "struct " interface "\n: public ::" interface "\n"
                            "{\n"
                            port-type "& api;\n"
                            interface "(" port-type "& api)\n"
@@ -467,9 +467,9 @@
                                           "{\n"
                                           "api.in." dzn "(" arguments ");\n"
                                           "}\n")
-                                    (list "::" (om:name model) "::" interface "::PseudoStimulus " asd "(" formals ")\n"
+                                    (list "::" interface "::PseudoStimulus " asd "(" formals ")\n"
                                           "{\n"
-                                          (list "return static_cast< ::" (om:name model) "::" interface "::PseudoStimulus>(1 + api.in." dzn "(" arguments "));\n")
+                                          (list "return static_cast< ::" interface "::PseudoStimulus>(1 + api.in." dzn "(" arguments "));\n")
                                           "}\n"))))
                             dzn-events asd-events)
                            "};\n"))))
@@ -483,7 +483,7 @@
 (define (c++:asd-get-api-definition model)
   (map (lambda (interface)
          (let ((port-type ((c++:scope-name) (om:port model))))
-           (->string (list "void GetAPI(boost::shared_ptr< ::" (om:name model) "::" interface ">* api)\n"
+           (->string (list "void GetAPI(boost::shared_ptr< ::" interface ">* api)\n"
                            "{\n"
                            "*api = api_" interface ";\n"
                            "}\n"))))
@@ -492,7 +492,7 @@
 (define (c++:asd-register-cb-definition model)
   (map (lambda (interface)
          (let ((port-type ((c++:scope-name) (om:port model))))
-           (->string (list "void RegisterCB(boost::shared_ptr< ::" (om:name model) "::" interface "> cb)\n"
+           (->string (list "void RegisterCB(boost::shared_ptr< ::" interface "> cb)\n"
                            "{\n"
                            "cb_" interface " = cb;\n"
                            "}\n"))))
