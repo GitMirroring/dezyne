@@ -1,6 +1,7 @@
 ;;; GNU Guix --- Functional package management for GNU
 /Kammer <taylanbayirli@gmail.com>
 ;;; Copyright © 2016, 2017 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -117,7 +118,7 @@
 (define (optimization-options file)
   (if (getenv "GO_FAST")
       %lightweight-optimizations                  ;build faster
-      '()))
+      %default-optimizations))
 
 (define (compile-file* file output-mutex)
   (let ((go (scm->go file)))
