@@ -29,8 +29,11 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 peg)
   #:use-module (ice-9 peg codegen)
+  #:use-module (ice-9 poe)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-19)
   #:use-module (srfi srfi-26)
+
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag config)
@@ -51,20 +54,61 @@
 (define (template-file name) (append (list (template-dir)) (if (pair? name) name (list name))))
 (define (gulp-template name) (gulp-file (template-file name)))
 
-(define* (x:pand filename o #:optional (module (current-module)))
-  (define (tree->string t)
-    (match t
-      (('script t ...) (tree->string t))
-      (('pegprocedure s) (display (->string (eval (list (string->symbol (string-drop s 1)) o) module))))
-      ((? string?) (display t))
-      ((t ...) (map tree->string t))
-      (_ #f)))
-  (define-peg-string-patterns
+(define DEPTH 0)
+
+(define (zero-time)
+  (let ((t (current-time time-process)))
+    (set-time-second! t 0)
+    (set-time-nanosecond! t 0)
+    t))
+
+(define T0 (zero-time))
+
+(define (time-decimal t)
+  (* 1.0 (+ (time-second t) (/ (time-nanosecond t) 1000000000)))
+  )
+
+(define-syntax time
+  (syntax-rules ()
+    ((_ T S)
+     (let* ((foo (set! DEPTH (+ DEPTH 1)))
+            (t0 (current-time time-process))
+            (s S)
+            (t1 (current-time time-process))
+            (t (time-difference t1 t0))
+            (foo (set! DEPTH (- DEPTH 1))))
+       (when (eq? DEPTH 0)
+         (set! T (add-duration T t))
+         (stderr "--- ~a ~f ~f\n" 'T (time-decimal t) (time-decimal T)))
+       s))))
+
+
+(define (my-eval symbol module o) (->string ((module-ref module symbol) o)))
+(define my-eval (pure-funcq my-eval))
+
+(define (funct symbol module o)
+  ;(stderr "module: ~a symbol: ~a\n" module symbol)
+;  (->string (time T0 (eval (list (string->symbol symbol) o) module)))
+;  (time T0 (my-eval (string->symbol symbol) module o))
+  (->string (eval (list (string->symbol symbol) o) module)))
+
+
+(define-peg-string-patterns
     "script       <-- pegtext*
      pegtext      <-  (!pegprocedure (escape '#' / .))* pegprocedure?
      pegsep       <   [ ]?
      escape       <   '#'
      pegprocedure <-- '#' ('='/'.'/':'/'-'/'+'/'?'/[a-zA-Z0-9_])+ pegsep")
+
+(define (x:pand filename o module)
+  (define (tree->string t)
+    (match t
+      (('script t ...) (tree->string t))
+      (('pegprocedure s) (display (funct (string-drop s 1) module o)))
+      ((? string?) (display t))
+      ((t ...) (map tree->string t))
+      (_ #f)))
+
   ;; (stderr "X:PAND: ~a\n" o)
   (let* ((debug? (command-line:get 'debug #f))
          (result (match-pattern script (gulp-template filename)))
@@ -135,11 +179,13 @@
 	   (x:pand file-name o)))
         (#t (x:pand file-name o))))
 
+(define-public this-module (make-parameter #f))
+
 (define-syntax define-template
   (syntax-rules ()
     ((_ name f sep type)
      (define-public (name ast)
-       (let* ((module (current-module))
+       (let* ((module (this-module))
               (file-name (string-drop (symbol->string 'name) 2)))
          (type->template module file-name type sep (f ast)))
        ""))
