@@ -1,5 +1,5 @@
 #x:pretty-print-dzn
-     #x:mcrl2-process-name'#x:mcrl2-process-identifier (#x:process-parameters) = #x:mcrl2-process-name'#x:mcrl2-child-identifier();
+     #x:mcrl2-process-name'#x:mcrl2-process-identifier (#x:process-parameters) = #x:check-range-error #x:mcrl2-process-name'#x:mcrl2-child-identifier();
      #x:mcrl2-statement-process
      #x:mcrl2-function-process
 

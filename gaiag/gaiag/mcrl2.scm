@@ -308,9 +308,12 @@
     (prepend-true-guard)
     (aggregate-on norm:on-same-port-voidness-statement?)
     (expand-on norm:port-and-voidness-equal?)
+    (lambda (o) (stderr "Post aggregate: \n") ((compose pretty-print om->list) o) o)
     aggregate-guard-g
     flatten-compound
+    (lambda (o) (stderr "Post combine: \n") ((compose pretty-print om->list) o) o)
     combine-guards
+    (lambda (o) (stderr "Pre combine: \n") ((compose pretty-print om->list) o) o)
     passdown-on
     flatten-compound
     (passdown-blocking)
@@ -320,12 +323,15 @@
     parse->om
     ) ast))
 
+;;(use-modules (statprof))
 (define (root->mcrl2 root)
   (let ((module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
                                   ,(resolve-module '(gaiag mcrl2))))))
     (module-define! module 'root root)
-    (parameterize ((template-dir (string-append %template-dir "/mcrl2")))
-      (x:pand 'source@root (module-ref module 'root) module))))
+    (parameterize ((this-module module) (template-dir (string-append %template-dir "/mcrl2")))
+      (x:pand 'source@root (module-ref module 'root) module)
+;;      (statprof (lambda () (x:pand 'source@root (module-ref module 'root) module)) #:count-calls? #t)
+      )))
 
 (define (ast-> ast)
   (let* ((files (gdzn:command-line:get '() #f))
@@ -473,10 +479,12 @@
   (lambda (o) (stderr "AST: ~a\n" o) (->string o)))
 
 (define-template x:pretty-print-dzn
+;;  (const "")
   (lambda (o)
     (string-join (string-split (string-trim-right
-				(ast->dzn (or (and=> (as o <behaviour>) .statement) o)))
-                               #\newline) "\n     % " 'prefix)))
+        			(ast->dzn (or (and=> (as o <behaviour>) .statement) o)))
+                               #\newline) "\n     % " 'prefix))
+  )
 
 (define-template x:mcrl2-interface-process
   (lambda (o)
@@ -856,6 +864,21 @@
 (define-method (action-type (o <ast>))
   ((compose mcrl2-type .type .signature .event .action) o))
 
+(define-template x:check-range-error mcrl2:range-error)
+
+(define-method (mcrl2:range-error (o <behaviour>))
+  (filter (lambda (o) (is-a? (.type o) <int>)) ((compose  .elements .variables) o)))
+
+(define-method (mcrl2:range-error (o <variable>))
+  (if (is-a? (.type o) <int>)
+      o
+      ""))
+
+(define-method (mcrl2:range-error (o <assign>))
+  (if (is-a? (.type (.variable o)) <int>)
+      o
+      ""))
+
 (define-template x:check-integer-bounds check-integer-bounds)
 (define-method (check-integer-bounds (o <ast>))
   (let* ((action (.action o))
@@ -863,8 +886,20 @@
     (if (is-a? type <int>)
         type
         "")))
-(define-template x:range-from (compose ->string .from .range))
-(define-template x:range-to (compose ->string .to .range))
+(define-template x:range-from mcrl2:range-from)
+(define-method (mcrl2:range-from (o <variable>))
+  (mcrl2:range-from (.type o)))
+(define-method (mcrl2:range-from (o <assign>))
+  (mcrl2:range-from (.variable o)))
+(define-method (mcrl2:range-from (o <int>))
+  ((compose ->string .from .range) o))
+(define-template x:range-to mcrl2:range-to)
+(define-method (mcrl2:range-to (o <assign>))
+  (mcrl2:range-to (.variable o)))
+(define-method (mcrl2:range-to (o <variable>))
+  (mcrl2:range-to (.type o)))
+(define-method (mcrl2:range-to (o <int>))
+  ((compose ->string .to .range) o))
 
 (define-method (dzn-type (o <call>))
  ((compose mcrl2-type dzn-type .function) o))

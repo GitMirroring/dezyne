@@ -35,6 +35,7 @@ act  #x:interface-action-alphabet
      block_illegal;
      double_reply_error;
      no_reply_error;
+     range_error;
      empty_queue;
      empty_queue_c;
      queue_empty;

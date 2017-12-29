@@ -1,1 +1,1 @@
-illegal, dillegal, double_reply_error, no_reply_error, empty_queue_c, #x:required-port-allowed-parallel-actions #x:provided-port-allowed-parallel-actions
+illegal, dillegal, double_reply_error, no_reply_error, empty_queue_c, range_error, #x:required-port-allowed-parallel-actions #x:provided-port-allowed-parallel-actions

@@ -41,6 +41,7 @@
 (define (rename-lts-actions srcfile destfile)
   (let* ((sorted-names (find-aliases "verify.mcrl2"))
 	 (trace (call-with-input-file srcfile read-string))
+;;         (foo (stderr "trace: ~a\n" trace))
 	 ;; Remove reply variable wrappers
 	 (trace (regexp-substitute/global #f "\\breply_[^(]*\\(([^)]*)\\)" trace 'pre 1 'post))
 	 ;; Remove void return arguments
@@ -52,7 +53,7 @@
 	 (trace (let lp ((trc trace) (names sorted-names))
 		  (if (equal? names '())
 		      trc
-		      (lp (regexp-substitute/global #f (string-append (car names) "'") trc 'pre "" 'post) (cdr names)))))
+		      (lp (regexp-substitute/global #f (string-append "\\b" (car names) "'") trc 'pre "" 'post) (cdr names)))))
 	 ;; Remove numeric prefixes
 	 (trace (regexp-substitute/global #f "\\bi\\d+_" trace 'pre "" 'post))
 	 (trace (regexp-substitute/global #f "'event\\(" trace 'pre "." 'post))

@@ -1,1 +1,1 @@
-internal, queue_empty, illegal, dillegal, double_reply_error, no_reply_error, #x:required-port-allowed-actions #x:provided-port-allowed-actions
+internal, queue_empty, illegal, dillegal, double_reply_error, no_reply_error, range_error, #x:required-port-allowed-actions #x:provided-port-allowed-actions
