@@ -1,10 +1,10 @@
 "
 
-eqn  #x:mcrl2-provided-port-type'allow_dillegals = true;
+eqn  #x:mcrl2-provided-port-type'allow_dillegals = false;
      #x:mcrl2-component-name'allow_dillegals = true;
 
 init hide({#x:mcrl2-provided-port-type'inevitable, #x:mcrl2-provided-port-type'optional},
-    rename({illegal -> dillegal, #x:mcrl2-provided-port-type'event -> #x:mcrl2-provided-port-name'event, #x:mcrl2-provided-port-type'return -> #x:mcrl2-provided-port-name'return, #x:mcrl2-provided-port-type'flush -> #x:mcrl2-provided-port-name'flush},
+    rename({#x:mcrl2-provided-port-type'event -> #x:mcrl2-provided-port-name'event, #x:mcrl2-provided-port-type'return -> #x:mcrl2-provided-port-name'return, #x:mcrl2-provided-port-type'flush -> #x:mcrl2-provided-port-name'flush},
       #x:mcrl2-provided-port-type'Implementation_constrained
     )
   );"

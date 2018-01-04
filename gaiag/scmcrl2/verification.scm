@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -111,7 +111,8 @@
     (system (string-append "lps2lts " complps " " complts))
     (reduce-lts provlts)
     (reduce-lts complts)
-    (blockingcall (string-append "ltscompare -v -c -pfailures-divergence --tau=\"" taus "\" " complts " " provlts " 2>&1"))))
+;;    (blockingcall (string-append "ltscompare -v -c -pfailures-divergence --tau=\"" taus "\" " complts " " provlts " 2>&1"))
+    (blockingcall (string-append "ltscompare -v -c -pweak-failures --tau=\"" taus "\" " complts " " provlts " 2>&1"))))
 
 (define (verifyall lps taus)
   (blockingcall (string-append "lps2lts -aillegal --deadlock --divergence -t1 -v --tau=\"" taus "\" " lps " " (basename lps ".lps") ".aut 2>&1")))
@@ -139,8 +140,8 @@
          (output (verifydeterministic deterministic-lps))
 	 (output (string-append output (verifyillegal lpsfile)))
          (output (string-append output (verifydeadlock lpsfile)))
-         (output (string-append output (verifyrefinement lpsfile provided-lps compliance-taus)))
-         (output (string-append output (verifylivelock lpsfile livelock-taus))))
+         (output (string-append output (verifylivelock lpsfile livelock-taus)))
+         (output (string-append output (verifyrefinement lpsfile provided-lps compliance-taus))))
     (if all?
         (pair? (filter identity (append (map (cut mcrl2:verify-interface <> verbose?) interfaces)
                                         (list (interpret-results output modelname verbose?)))))

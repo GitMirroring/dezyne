@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -306,8 +306,10 @@
     (root-add-voidreply)
     ast-tail-calls
     ast-add-skips
+    (expand-on)
     norm-state
     code-norm-event
+    om:models
     ast:resolve
     parse->om
     ) ast))
