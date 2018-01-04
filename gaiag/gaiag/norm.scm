@@ -1,7 +1,9 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -135,7 +137,9 @@
     ((and (? (is? <component>) (= .behaviour behaviour)))
      (clone o #:behaviour ((aggregate-on aggregate? o) behaviour)))
     ((and (? (is? <interface>) (= .behaviour behaviour)))
-     (clone o #:behaviour ((aggregate-on aggregate? o) behaviour)))
+     ;;(stderr "interface hit: ~a \n\n ~a \n\n" o behaviour)
+     ;;(clone o #:behaviour ((aggregate-on aggregate? o) behaviour))
+     o)
     ((? (is? <component-model>)) o)
     (($ <skip>) o)
     ((? om:imperative?) o)
