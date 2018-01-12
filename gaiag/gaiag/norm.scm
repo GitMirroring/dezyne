@@ -3,7 +3,6 @@
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -394,6 +393,6 @@
 (define (transform-compounds o)
   (match o
     ((? om:imperative?) o)
-    (($ <compound>) (rsp o (make <declarative-compound> #:elements (.elements (om:map transform-compounds o)))))
-    ((? (is? <ast>)) (om:map transform-compounds o))
+    (($ <compound>) (rsp o (make <declarative-compound> #:elements (.elements (tree-map transform-compounds o)))))
+    ((? (is? <ast>)) (tree-map transform-compounds o))
     (_ o)))

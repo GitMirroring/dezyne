@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -362,7 +362,7 @@
     (($ <compound>)
      (filter identity (apply append (map (collect predicate) (ast:statement* o)))))
     (($ <functions>)
-     (filter identity (apply append (map (collect predicate) (ast:function* o))))
+     (filter identity (apply append (map (collect predicate) (ast:function* o)))))
     (($ <function>) (filter identity ((collect predicate) (.statement o))))
     (($ <assign>) (filter identity ((collect predicate) (.expression o))))
     (($ <blocking>) (filter identity ((collect predicate) (.statement o))))
@@ -374,8 +374,8 @@
     (($ <interface>) (filter identity ((collect predicate) (.behaviour o))))
     (($ <component>) (filter identity ((collect predicate) (.behaviour o))))
     (($ <behaviour>) (append
-                      (filter identity ((collect predicate) (.statement o))))
-                      (filter identity ((collect predicate) (.functions o))))
+                      (filter identity ((collect predicate) (.statement o)))
+                      (filter identity ((collect predicate) (.functions o)))))
     ((h t ...)
      (filter identity (apply append (map (collect predicate) o))))
     (_ '())))

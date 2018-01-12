@@ -60,39 +60,52 @@
 	    root->
             globals-from-scope))
 
-(define-class <mcrl2-interface> (<ast>)
+(define-class <mcrl2-interface-node> (<ast-node>)
   (interface #:getter .interface #:init-value #f #:init-keyword #:interface))
-(define-class <interface-index> (<mcrl2-interface>)
+(define-class <interface-index-node> (<mcrl2-interface-node>)
   (index #:getter .index #:init-value 0 #:init-keyword #:index))
-(define-class <interface-event> (<mcrl2-interface>)
+(define-class <interface-event-node> (<mcrl2-interface-node>)
   (event #:getter .event #:init-value #f #:init-keyword #:event))
-(define-class <enum-name-field> (<ast>)
+(define-class <enum-name-field-node> (<ast-node>)
   (name #:getter .name #:init-value #f #:init-keyword #:name)
   (field #:getter .field #:init-value #f #:init-keyword #:field))
-(define-class <interface-type> (<interface-index>)
+(define-class <interface-type-node> (<interface-index-node>)
   (type #:getter .type #:init-value #f #:init-keyword #:type))
 (define-class <refs> (<type>))
 (define-class <cont> (<type>)
   (name #:getter .name #:init-value "cont" #:init-keyword #:name)
   (type #:getter .type #:init-value (make <refs>) #:init-keyword #:type))
-(define-class <call-parameter> (<ast>)
+(define-class <call-parameter-node> (<ast-node>)
   (name #:getter .name #:init-value #f #:init-keyword #:name)
   (expression #:getter .expression #:init-value #f #:init-keyword #:expression))
-(define-class <cont-parameter> (<ast>)
+(define-class <cont-parameter-node> (<ast-node>)
   (name #:getter .name #:init-value "cont" #:init-keyword #:name)
   (continuation #:getter .continuation #:init-value #f #:init-keyword #:continuation))
-(define-class <assign-call> (<ast>)
+(define-class <assign-call-node> (<ast-node>)
   (assign #:getter .assign #:init-value #f #:init-keyword #:assign)
   (call #:getter .call #:init-value #f #:init-keyword #:call))
-(define-class <assign-action> (<ast>)
+(define-class <assign-action-node> (<ast-node>)
   (assign #:getter .assign #:init-value #f #:init-keyword #:assign)
   (action #:getter .action #:init-value #f #:init-keyword #:action))
-(define-class <variable-call> (<ast>)
+(define-class <variable-call-node> (<ast-node>)
   (variable #:getter .variable #:init-value #f #:init-keyword #:variable)
   (call #:getter .call #:init-value #f #:init-keyword #:call))
-(define-class <variable-action> (<ast>)
+(define-class <variable-action-node> (<ast-node>)
   (variable #:getter .variable #:init-value #f #:init-keyword #:variable)
   (action #:getter .action #:init-value #f #:init-keyword #:action))
+
+(wrap <mcrl2-interface-node> <mcrl2-interface> (<ast>))
+(wrap <interface-index-node> <interface-index> (<mcrl2-interface>))
+(wrap <interface-event-node> <interface-event> (<mcrl2-interface>))
+(wrap <enum-name-field-node> <enum-name-field> (<ast>))
+(wrap <interface-type-node> <interface-type> (<interface-index>))
+(wrap <call-parameter-node> <call-parameter> (<ast>))
+(wrap <cont-parameter-node> <cont-parameter> (<ast>))
+(wrap <assign-call-node> <assign-call> (<ast>))
+(wrap <assign-action-node> <assign-action> (<ast>))
+(wrap <variable-call-node> <variable-call> (<ast>))
+(wrap <variable-action-node> <variable-action> (<ast>))
+
 
 (define-method (.event.name (o <assign-action>)) ((compose .event.name .action) o))
 (define-method (.event.name (o <variable-action>)) ((compose .event.name .action) o))
@@ -174,7 +187,7 @@
 ;;     (($ <interface>) o)
 ;;     (($ <system>) o)
 ;;     (($ <foreign>) o)
-;;     ((? (is? <ast>)) (om:map (ast-add-illegals model) o))
+;;     ((? (is? <ast>)) (tree-map (ast-add-illegals model) o))
 ;;     (_ o)))
 
 (define (ast-add-skips o)
@@ -186,13 +199,13 @@
     ((and (? (is? <interface>) (= .behaviour behaviour)))
      (clone o #:behaviour (ast-add-skips behaviour)))
     ((? (is? <component-model>)) o)
-    ((? (is? <ast>)) (om:map ast-add-skips o))
+    ((? (is? <ast>)) (tree-map ast-add-skips o))
     (_ o)))
 
 (define (ast-complete-elses o)
   (match o
     ((and ($ <if>) (= .else #f)) (ast-complete-elses (clone o #:else (make <skip>))))
-    ((? (is? <ast>)) (om:map ast-complete-elses o))
+    ((? (is? <ast>)) (tree-map ast-complete-elses o))
     (_ o)))
 
 (define* (annotate-illegal o #:optional (trigger #f))
@@ -207,19 +220,19 @@
 (define (ast-tail-calls o)
   (match o
     (($ <function>) (tail-call o))
-    ((? (is? <ast>)) (om:map ast-tail-calls o))
+    ((? (is? <ast>)) (tree-map ast-tail-calls o))
     (_ o)))
 
 (define (ast-annotate-illegals o)
   (match o
     (($ <on>) (annotate-illegal o))
-    ((? (is? <ast>)) (om:map ast-annotate-illegals o))
+    ((? (is? <ast>)) (tree-map ast-annotate-illegals o))
     (_ o)))
 
 (define (ast-transform-event-ends o)
   (match o
     (($ <on>) (clone o #:statement (clone (.statement o) #:elements (append ((compose .elements .statement) o) (list (make <the-end> #:trigger ((compose car .elements .triggers) o)))))))
-    ((? (is? <ast>)) (om:map ast-transform-event-ends o))
+    ((? (is? <ast>)) (tree-map ast-transform-event-ends o))
     (_ o)))
 
 (define* ((root-add-voidreply #:optional (model #f)) o)
@@ -293,9 +306,9 @@
 
 
 (define (mcrl2:om ast)
-  ((compose-root
+  ((compose
     (annotate-path '())
-;;    (lambda (o) ((compose pretty-print om->list) o) o)
+    (lambda (o) ((compose pretty-print om->list) o) o)
     flatten-compound
     ast-complete-elses
     ast-annotate-illegals
@@ -369,9 +382,8 @@
          (ast? (command-line:get 'ast #f))
          (->mcrl2 (if ast? root->sexp
                       root->mcrl2)))
-    (ast:set-scope root
-                   (if (equal? file-name "-") (->mcrl2 root)
-                       (with-output-to-file file-name (cut ->mcrl2 root))))
+    (if (equal? file-name "-") (->mcrl2 root)
+        (with-output-to-file file-name (cut ->mcrl2 root)))
     ""))
 
 ;;to be revisited
@@ -400,7 +412,7 @@
 (define-template x:mcrl2-component-name (lambda (o) (om:name (car (filter (is? <component>) (.elements o))))))
 (define-template x:mcrl2-provided-port-type mcrl2:provided-port-type)
 (define-template x:mcrl2-provided-port-name mcrl2:provided-port-name)
-(define-template x:provided-port-type (lambda (o) (mcrl2:provided-port-type (ast:model-scope))))
+(define-template x:provided-port-type (lambda (o) (mcrl2:provided-port-type o)))
 (define-template x:provided-port-name (lambda (o) (mcrl2:provided-port-name (ast:model-scope))))
 (define-template x:sort-interface mcrl2:interfaces 'newline-indent-infix)
 (define-template x:sort-component identity 'newline-indent-infix)
@@ -542,14 +554,12 @@
 (define-template x:action-union-struct om:ports 'pipe-infix)
 
 (define-template x:mcrl2-process-name identity #f <ast>)
-(define-template x:function-scope (lambda (o) (function-scope o (ast:parent o))))
-(define-method (function-scope (o <ast>) scope)
-  (if (pair? (cdr scope))
-      (let ((parent (cadr scope)))
-	(match parent
-	  (($ <function>) (string-append "'function'" ((compose ->string .name) parent)))
-	  (_ (function-scope parent (cdr scope)))))
-      ""))
+(define-template x:function-scope (lambda (o) (function-scope o)))
+(define-method (function-scope (o <ast>))
+  (match o
+    (($ <function>) (string-append "'function'" ((compose ->string .name) o)))
+    (($ <behaviour>) "")
+    (_ ((compose function-scope .parent) o))))
 
 (define-template x:mcrl2-statement
   (lambda (o)
@@ -574,7 +584,7 @@
 	(next-alist '()))
     (lambda (o)
       (let* ((id (.id o))
-	     (sid ((compose .id ast:model-scope)))
+	     (sid ((compose .id (cut parent <model> <>)) o))
 	     (key (cons id sid))
 	     (next (assq-ref next-alist sid))
 	     (next (or next -1)))

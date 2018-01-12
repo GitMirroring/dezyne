@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
-;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
+;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015, 2016, 2017 Paul Hoogendijk <paul.hoogendijk@verum.com>
@@ -88,14 +88,14 @@
            <voidreply>
            ))
 
-(define-class <the-end-node> (<ast-node>)
+(define-class <the-end-node> (<statement-node>)
   (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger))
-(define-class <the-end-blocking-node> (<ast-node>))
-(define-class <voidreply-node> (<ast-node>))
+(define-class <the-end-blocking-node> (<statement-node>))
+(define-class <voidreply-node> (<statement-node>))
 
-(wrap <the-end-node> <the-end> (<ast>))
-(wrap <the-end-blocking-node> <the-end-blocking> (<ast>))
-(wrap <voidreply-node> <voidreply> (<ast>))
+(wrap <the-end-node> <the-end> (<statement>))
+(wrap <the-end-blocking-node> <the-end-blocking> (<statement>))
+(wrap <voidreply-node> <voidreply> (<statement>))
 
 (define* (om->csp om #:key file-name (separate-asserts? (command-line:get 'assert #f)))
   (or (and-let* ((models (om:filter (lambda (x) (or (as x <interface>) (as x <component>))) om))
@@ -602,37 +602,37 @@
     (let ((types (map .type ((compose .elements .formals .signature) function))))
       (let loop ((arguments arguments) (types types))
         (if (null? arguments)
-                arguments
-                (append
-                 (if (extern-type? (car types))
-                     '()
-                     (list (car arguments)))
-                 (loop (cdr arguments) (cdr types)))))))
+            arguments
+            (append
+             (if (extern-type? (car types))
+                 '()
+                 (list (car arguments)))
+             (loop (cdr arguments) (cdr types)))))))
 
   (match o
 
     (($ <compound>)
      (clone o
-       #:elements
-       (let loop ((statements ((compose .elements) o)) (locals locals))
-         (if (null? statements)
-             '()
-             (let* ((statement (car statements))
-                    (locals (match statement
-                              (($ <variable>)
-                               (acons (.name statement) statement locals))
-                              (_ locals))))
-               (let ((purged (model-purge-data model statement locals)))
-                 (cons purged (loop (cdr statements) locals))))))))
+            #:elements
+            (let loop ((statements ((compose .elements) o)) (locals locals))
+              (if (null? statements)
+                  '()
+                  (let* ((statement (car statements))
+                         (locals (match statement
+                                   (($ <variable>)
+                                    (acons (.name statement) statement locals))
+                                   (_ locals))))
+                    (let ((purged (model-purge-data model statement locals)))
+                      (cons purged (loop (cdr statements) locals))))))))
 
     (($ <call>)
      (clone o #:arguments (clone (.arguments o) #:elements (purge-formal-list (.function o) ((compose .elements .arguments) o)))))
 
     (($ <action>)
-     (clone o #:trigger (model-purge-data model (.event o) locals)))
+     (clone o #:arguments (clone (.arguments o))))
 
     (($ <trigger>)
-     (clone o #:arguments (make <arguments>)))
+     (clone o #:formals (make <formals>)))
 
     (($ <triggers>)
      (clone o #:elements (map (cut model-purge-data model <> locals) (.elements o))))
@@ -654,7 +654,7 @@
                                 (cdr on-formals)
                                 (acons (car on-formals) (car formals) locals))))))
        (clone o #:statement (model-purge-data model (.statement o) locals)
- 	      #:triggers (model-purge-data model triggers locals))))
+ 	      #:triggers (model-purge-data model (.triggers o) locals))))
 
     (($ <function>)
      (let* ((formals ((compose .elements .formals .signature) o))
@@ -664,9 +664,9 @@
                           (loop (cdr formals)
                                 (acons (.name (car formals)) (car formals) locals))))))
        (clone o
-         #:signature (clone (.signature o)
-                      #:formals (make <formals> #:elements (purge-formal-list o formals)))
-         #:statement (model-purge-data model (.statement o) locals))))
+              #:signature (clone (.signature o)
+                                 #:formals (make <formals> #:elements (purge-formal-list o formals)))
+              #:statement (model-purge-data model (.statement o) locals))))
 
     ((and ($ <assign>) (? (compose extern? .variable))) (make <skip>))
 
