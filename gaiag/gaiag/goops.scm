@@ -1,7 +1,9 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -306,9 +308,6 @@
 ;;   "BARF: (.name <bool>")
 
 (define-class <ast-node> ())
-
-(define-method (.id (o <object>))
-  (pointer-address (scm->pointer o)))
 
 (define-class <ast-node-list> (<ast-node>)
 ;;  (elements #:getter .node-elements #:init-form (list) #:init-keyword #:elements)
@@ -625,6 +624,10 @@
   (node #:getter .node #:init-value #f #:init-keyword #:node)
   (parent #:getter .parent #:init-value #f #:init-keyword #:parent))
 
+(define-method (.id (o <object>))
+  (pointer-address (scm->pointer o)))
+
+(define-method (.id (o <ast>))  (.id (.node o)))
 
 (define-class <ast-list> (<ast>))
 

@@ -67,7 +67,7 @@
                                   ,(resolve-module '(gaiag mcrl2))))))
     (module-define! module 'ast ast)
     (parameterize ((template-dir (string-append %template-dir "/mcrl2")))
-      (with-output-to-string (lambda () (ast:set-scope ast (x:pand template ast module)))))))
+      (with-output-to-string (lambda () (x:pand template ast module))))))
 
 (define (create-lps mcrl2 lpstype ast)
   (let ((lps (string-append (basename mcrl2 ".mcrl2") "_" (->string lpstype) ".lps")))
@@ -131,7 +131,7 @@
 
 (define (mcrl2:verify-component modelname ast verbose? all?)
   (let* ((component (find (lambda (x) (equal? (symbol->string (om:name x)) modelname)) (filter (is? <component>) (.elements ast))))
-         (interfaces (ast:set-scope ast (delete-duplicates (map .type (om:ports component)))))
+         (interfaces (delete-duplicates (map .type (om:ports component))))
          (livelock-taus (find-taus component modelname (livelock-hidden-actions)))
          (compliance-taus (find-taus component modelname (compliance-hidden-actions)))
          (deterministic-lps (create-lps "verify.mcrl2" 'deterministic ast))
@@ -149,14 +149,15 @@
             (interpret-results output modelname verbose?)))))
 
 
-(define (mcrl2:verify modelname ast verbose? all?)
-  (if (and all? (not modelname))
-      (let ((components (filter (is? <component>) (.elements ast))))
-        (pair? (filter identity (map (lambda (c) (mcrl2:verify-component (->string (om:name c)) ast verbose? all?)) components))))
+(define (mcrl2:verify modelname ast verbose?)
+  (if modelname
       (let ((model (find (lambda (x) (equal? (symbol->string (om:name x)) modelname)) (filter (is? <model>) (.elements ast)))))
         (if (is-a? model <component>)
             (mcrl2:verify-component modelname ast verbose? #f)
-            (mcrl2:verify-interface model verbose?)))))
+            (mcrl2:verify-interface model verbose?)))
+      (let ((components (filter (is? <component>) (.elements ast))))
+        (pair? (filter identity (map (lambda (c) (mcrl2:verify-component (->string (om:name c)) ast verbose? all?)) components))))
+      ))
 
 (define (interpret-if-results output modelname verbose?)
   (let ((deadlock (check-deadlock output modelname verbose?))

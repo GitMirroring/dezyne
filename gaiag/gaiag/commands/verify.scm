@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
@@ -163,27 +163,33 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
           (loop (cdr models) (append traces (verify-model options file-name (car models))))))))
 
 (define (verify-mcrl2 options file-name)
-  (let* ((modelname (option-ref options 'model #f))
+  (let* ((model (option-ref options 'model #f))
+         (models (if model (list model) (models-for-verification options file-name)))
          (all? (option-ref options 'all #f))
 	 (ast (parse-with-options options file-name))
+         (ast ((compose ast:resolve parse->om) ast))
          (module (resolve-module `(gaiag mcrl2)))
          (root-> (module-ref module 'root->))
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
          (gdzn-verbose? (or (find (cut equal? <> "--verbose") (command-line))
-                            (find (cut equal? <> "-v") (command-line))))
-	 (root (mcrl2:om ast)))
+                            (find (cut equal? <> "-v") (command-line)))))
     (system "mkdir -p mcrl2_temp")
     (chdir "mcrl2_temp/")
-    (with-output-to-file "verify.mcrl2" (cut root-> root))
-    (if (mcrl2:verify modelname root gdzn-verbose? all?)
-        (begin
-          (chdir "../")
-          (system "rm -rf mcrl2_temp")
-          (exit 1))
-        (begin
-          (chdir "../")
-          (system "rm -rf mcrl2_temp")
-          ))
+    (let loop ((models models) (errors #f))
+      (if (and (or (null? models) (not all?)) errors)
+          (begin
+            (chdir "../")
+            (system "rm -rf mcrl2_temp")
+            (exit 1)))
+      (if (null? models)
+          (begin
+            (chdir "../")
+            (system "rm -rf mcrl2_temp"))
+          (let*
+              ((ast-model (make <root> #:elements (filter (lambda (o) (or (not (is-a? o <component>)) (and (is-a? o <component>) (equal? ((compose ->string om:name) o) (car models))))) (ast:model* ast))))
+               (root (mcrl2:om ast-model)))
+            (with-output-to-file "verify.mcrl2" (cut root-> root))
+            (loop (cdr models) (or (mcrl2:verify (car models) root gdzn-verbose?))))))
     ""))
 
 (define (main args)
