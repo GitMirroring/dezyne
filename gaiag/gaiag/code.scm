@@ -589,7 +589,8 @@
 
 (define-template x:decapitalize-model-name (compose (cut string-downcase <> 0 1) symbol->string om:name (lambda (_) (ast:model-scope))))
 
-(define-template x:upcase-model-name (compose string-upcase (->join "_") om:scope+name (lambda (_) (ast:model-scope))))
+(define-template x:decapitalize-model-name (compose (cut string-downcase <> 0 1) symbol->string om:name (lambda (o) (parent <model> o))))
+(define-template x:upcase-model-name (compose string-upcase (->join "_") om:scope+name (lambda (o) (parent <model> o))))
 
 (define-template x:method code:trigger)
 
