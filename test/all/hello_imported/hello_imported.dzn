@@ -23,6 +23,7 @@
 
 #file "hello_import.dzn"
 //import interfaces.dzn;
+//import components.dzn;
 
 component hello_import
 {
@@ -54,5 +55,18 @@ interface iworld
   behaviour
   {
     on world: {}
+  }
+}
+#imported "components.dzn"
+//import interfaces.dzn;
+
+component comp {
+  provides ihello h;
+
+  behaviour
+  {
+    on h.hello(): {
+      f(); // this error will not be detected!
+    }
   }
 }
