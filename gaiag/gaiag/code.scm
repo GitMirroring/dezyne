@@ -3,7 +3,7 @@
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2016, 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
-;; Copyright © 2014, 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -586,6 +586,8 @@
 
 
 (define-template x:capitalize-model-name (compose (cut string-upcase <> 0 1) symbol->string om:name (lambda (_) (ast:model-scope))))
+
+(define-template x:decapitalize-model-name (compose (cut string-downcase <> 0 1) symbol->string om:name (lambda (_) (ast:model-scope))))
 
 (define-template x:upcase-model-name (compose string-upcase (->join "_") om:scope+name (lambda (_) (ast:model-scope))))
 
