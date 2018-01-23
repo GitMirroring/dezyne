@@ -1,4 +1,4 @@
 #x:return-type  #x:model-name ::#x:decapitalize-model-name Port_#.name (#x:formals)
 {
-  api_#.asd-channel ->#.asd-event (#x:parameters);
+  return api_#.asd-channel ->#.asd-event (#x:parameters);
 }
