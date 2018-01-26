@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -364,7 +364,8 @@
   (let ((module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
                                   ,(resolve-module '(gaiag mcrl2))))))
     (module-define! module 'root root)
-    (parameterize ((this-module module) (template-dir (string-append %template-dir "/mcrl2")))
+    (parameterize (;;(this-module module)
+                   (template-dir (string-append %template-dir "/mcrl2")))
       (x:pand 'source@root (module-ref module 'root) module)
 ;;      (statprof (lambda () (x:pand 'source@root (module-ref module 'root) module)) #:count-calls? #t)
       )))
