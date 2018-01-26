@@ -180,8 +180,9 @@
 
 (define (check-refinement string file-name modelname verbose?)
   (let ((sub (regexp-exec (make-regexp "Saved trace to file (.*)\nThe LTS in (.*) is not included in the LTS .*") string)))
-    (if sub (if (not (gdzn:command-line:get 'json))
-              (stdout "verify: ~a: check: compliance: fail\n" modelname)
+    (if sub (begin
+              (if (not (gdzn:command-line:get 'json))
+                  (stdout "verify: ~a: check: compliance: fail\n" modelname))
               (stdout "~a" (make-trace (match:substring sub 1) "refinement" file-name modelname)))
         (if verbose?
             (begin (stdout "verify: ~a: check: compliance: ok\n" modelname) #f)
@@ -189,8 +190,9 @@
 
 (define (check-illegal string file-name modelname verbose?)
   (let ((sub (regexp-exec (make-regexp "Detected action 'illegal' .* and saved to '([^'\n]*)'") string)))
-    (if sub (if (not (gdzn:command-line:get 'json))
-              (stdout "verify: ~a: check: illegal: fail\n" modelname)
+    (if sub (begin
+              (if (not (gdzn:command-line:get 'json))
+                  (stdout "verify: ~a: check: illegal: fail\n" modelname))
               (stdout "~a" (make-trace (match:substring sub 1) "illegal" file-name modelname)))
         (if verbose?
             (begin (stdout "verify: ~a: check: illegal: ok\n" modelname) #f)
@@ -198,8 +200,9 @@
 
 (define (check-deadlock string file-name modelname verbose?)
   (let ((sub (regexp-exec (make-regexp "deadlock-detect: deadlock found and saved to '([^'\n]*)'") string)))
-    (if sub (if (not (gdzn:command-line:get 'json))
-              (stdout "verify: ~a: check: deadlock: fail\n" modelname)
+    (if sub (begin
+              (if (not (gdzn:command-line:get 'json))
+                  (stdout "verify: ~a: check: deadlock: fail\n" modelname))
               (stdout "~a" (make-trace (match:substring sub 1) "deadlock" file-name modelname)))
         (if verbose?
             (begin (stdout "verify: ~a: check: deadlock: ok\n" modelname) #f)
@@ -207,8 +210,9 @@
 
 (define (check-livelock string file-name modelname verbose?)
   (let ((sub (regexp-exec (make-regexp "Trace to the divergencing state is saved to '([^'\n]*)") string)))
-    (if sub (if (not (gdzn:command-line:get 'json))
-              (stdout "verify: ~a: check: livelock: fail\n" modelname)
+    (if sub (begin
+              (if (not (gdzn:command-line:get 'json))
+                  (stdout "verify: ~a: check: livelock: fail\n" modelname))
               (stdout "~a" (make-trace (match:substring sub 1) "livelock" file-name modelname)))
         (if verbose?
             (begin (stdout "verify: ~a: check: livelock: ok\n" modelname) #f)

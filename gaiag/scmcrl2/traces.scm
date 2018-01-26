@@ -27,6 +27,7 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
 
@@ -76,12 +77,15 @@
     ))
 
 (define (make-json-trace modelname tracefile dznfile outfile)
-  (system (string-append "seqdiag -m " modelname " -t " tracefile " " dznfile " > " outfile))
-  (if (gdzn:command-line:get 'json) (display (gulp-file outfile)))
-  "")
+  (let ((command (string-append "seqdiag -m " modelname " -t " tracefile " " dznfile " > " outfile)))
+    (if (gdzn:command-line:get 'debug) (stderr "seqdiag command: ~s\n" command))
+    (system command))
+  (if (gdzn:command-line:get 'json) (display (gulp-file outfile))))
 
 (define (make-trace tracefile option file-name modelname)
   (let ((outfile (string-append modelname option ".trc")))
     (system (string-append "tracepp " tracefile " > trace1.txt"))
-    (rename-lts-actions "trace1.txt" outfile)
-    (make-json-trace modelname outfile file-name (string-append outfile ".json"))))
+    (let ((trace (rename-lts-actions "trace1.txt" outfile)))
+      (with-output-to-file outfile (cut display trace))
+      (make-json-trace modelname outfile file-name (string-append outfile ".json"))
+      (if (gdzn:command-line:get 'json) "" trace))))

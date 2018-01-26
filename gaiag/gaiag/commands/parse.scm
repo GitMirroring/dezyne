@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -24,12 +24,43 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 regex)
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
+  #:use-module (gaiag shell-util)
   #:export (assert-parse
+            dump-model-stream
             parse-with-options
             parse-opts
             main))
+
+(define (dump-model-stream)
+  (let loop ((port #f) (files '()) (importeds '()))
+    (let ((line (read-line)))
+      (cond ((eof-object? line)
+             (begin
+               (when port (close port))
+               (values files importeds)))
+            ((string-match "^#file \"([^\"]+)\"" line)
+             => (lambda (m)
+                  (when port (close port))
+                  (let ((file-name (match:substring m 1)))
+                    (loop (open-output-file (basename file-name)) (append files (list file-name)) importeds))))
+            ((string-match "^#imported \"([^\"]+)\"" line)
+             => (lambda (m)
+                  (when port (close port))
+                  (let ((file-name (match:substring m 1)))
+                    (loop (open-output-file (basename file-name)) files (append importeds (list file-name))))))
+            ((string-match "^//#(import \\s*([^;]+)\\s*;\\s*)" line)
+             => (lambda (m)
+                  (display (match:substring m 1) port)
+                  (newline port)
+                  (loop port files importeds)))
+            (else
+             (display line port)
+             (newline port)
+             (loop port files importeds))))))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -51,7 +82,7 @@ Usage: gdzn parse [OPTION]... [FILE]...
           (exit 0)))
     options))
 
-(define* (parse-with-options options file-name #:key mangle?)
+(define* (parse-with-options options file-name #:key mangle? csp?)
   (let* ((gaiag? (option-ref options 'gaiag #f))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
@@ -60,7 +91,8 @@ Usage: gdzn parse [OPTION]... [FILE]...
          (model (option-ref options 'model #f))
          ;; Only forward --model to generate for CSP, not
          ;; for executable code: generator cuts models
-         (model (and (equal? language "csp") model)))
+         (csp? (or csp? (equal? language "csp")))
+         (model (and csp? model)))
     (parse-file file-name #:gaiag? gaiag? #:imports imports #:mangle? mangle? #:model model)))
 
 (define (assert-parse options file-name)

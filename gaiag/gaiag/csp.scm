@@ -6,7 +6,7 @@
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015, 2016, 2017 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -80,6 +80,7 @@
            requires?
            string-if
            dzn-async?
+           csp:mangle-named
 
 	   .trigger
 
@@ -159,6 +160,12 @@
     ) ast))
 
 (define csp:parse->om csp:norm)
+
+(define ((csp:mangle-named name) ast)
+  (match name
+    ((? symbol?) (eq? name ((compose demangle .name) ast)))
+    (($ <scope.name>)
+     ((csp:mangle-named ((om:scope-name '.) name)) ast))))
 
 (define ((demangle-var model) var)
   (or (and-let* (((member (.name model) '(co_mangle co_argument2 if_I)))

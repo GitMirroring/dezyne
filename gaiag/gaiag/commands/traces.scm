@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
@@ -88,12 +88,6 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
          (imports (filter-map import-opt options))
          (model (option-ref options 'model #f)))
     (parse-file file-name #:gaiag? gaiag? #:imports imports #:mangle? mangle? #:model model)))
-
-(define ((om:mangle-named name) ast)
-  (match name
-    ((? symbol?) (eq? name ((compose demangle .name) ast)))
-    (($ <scope.name>)
-     ((om:mangle-named ((om:scope-name '.) name)) ast))))
 
 (define* (delete-file-recursively dir)
   "Delete DIR recursively, like `rm -rf', without following symlinks.  Report but ignore
@@ -184,7 +178,7 @@ puts [myism alphabet]
          (root (csp:parse->om ast))
          (model-name (option-ref options 'model #f))
          (models (filter (is? <model>) (.elements root)))
-         (model (if model-name (find (om:mangle-named (string->symbol model-name)) models)
+         (model (if model-name (find (csp:mangle-named (string->symbol model-name)) models)
                     (find .behaviour (append (om:filter (is? <component>) root)
                                              (om:filter (is? <interface>) root))))))
     (if (not model) (if model-name (error "no such model:" model-name)
