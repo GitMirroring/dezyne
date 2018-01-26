@@ -1,0 +1,10 @@
+verify: compliance_requires_illegal: check: deterministic: ok
+verify: compliance_requires_illegal: check: illegal: fail
+pp.ia
+rp.ib
+verify: compliance_requires_illegal: check: deadlock: ok
+verify: compliance_requires_illegal: check: compliance: fail
+pp.ia
+verify: compliance_requires_illegal: check: livelock: ok
+verify: i: check: deadlock: ok
+verify: i: check: livelock: ok

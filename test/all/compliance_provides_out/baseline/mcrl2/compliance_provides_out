@@ -1,0 +1,10 @@
+verify: compliance_provides_out: check: deterministic: ok
+verify: compliance_provides_out: check: illegal: ok
+verify: compliance_provides_out: check: deadlock: ok
+verify: compliance_provides_out: check: compliance: fail
+p.hello
+verify: compliance_provides_out: check: livelock: ok
+verify: i: check: deadlock: ok
+verify: i: check: livelock: ok
+verify: reflect: check: deadlock: ok
+verify: reflect: check: livelock: ok
