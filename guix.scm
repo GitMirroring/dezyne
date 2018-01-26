@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -96,6 +96,7 @@
       (native-inputs `(("dezyne-services" ,dezyne-services)
                        ("ccache" ,ccache)
                        ("git" ,git)
+                       ("mcrl2" ,mcrl2)
                        ("postgresql" ,postgresql)
                        ,@(package-native-inputs dezyne-services))))))
 
