@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
@@ -189,7 +189,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
               ((ast-model (make <root> #:elements (filter (lambda (o) (or (not (is-a? o <component>)) (and (is-a? o <component>) (equal? ((compose ->string om:name) o) (car models))))) (ast:model* ast))))
                (root (mcrl2:om ast-model)))
             (with-output-to-file "verify.mcrl2" (cut root-> root))
-            (loop (cdr models) (or (mcrl2:verify (car models) root gdzn-verbose?))))))
+            (loop (cdr models) (or (mcrl2:verify file-name (car models) root gdzn-verbose?))))))
     ""))
 
 (define (main args)

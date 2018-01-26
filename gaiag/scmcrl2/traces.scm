@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -28,6 +28,7 @@
   #:use-module (ice-9 regex)
   #:use-module (srfi srfi-1)
   #:use-module (gaiag misc)
+  #:use-module (gaiag command-line)
 
   #:export (make-trace))
 
@@ -76,11 +77,11 @@
 
 (define (make-json-trace modelname tracefile dznfile outfile)
   (system (string-append "seqdiag -m " modelname " -t " tracefile " " dznfile " > " outfile))
-  outfile)
+  (if (gdzn:command-line:get 'json) (display (gulp-file outfile)))
+  "")
 
-(define (make-trace tracefile option modelname)
+(define (make-trace tracefile option file-name modelname)
   (let ((outfile (string-append modelname option ".trc")))
     (system (string-append "tracepp " tracefile " > trace1.txt"))
     (rename-lts-actions "trace1.txt" outfile)
-    ;;(make-json-trace modelname outfile file-name (string-append outfile ".json"))
-    ))
+    (make-json-trace modelname outfile file-name (string-append outfile ".json"))))

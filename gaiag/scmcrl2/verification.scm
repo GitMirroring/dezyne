@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -33,6 +33,7 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
 
+  #:use-module (gaiag command-line)
   #:use-module (gaiag config)
   #:use-module (gaiag goops)
   #:use-module (gaiag deprecated om)
@@ -123,13 +124,13 @@
     (close-pipe port)
     str))
 
-(define (mcrl2:verify-interface interface verbose?)
+(define (mcrl2:verify-interface file-name interface verbose?)
   (let* ((iflps (create-if-lps "verify.mcrl2" interface))
          (output (verifydeadlock iflps))
          (output (string-append output (verifylivelock iflps ""))))
-    (interpret-if-results output ((compose ->string om:name) interface) verbose?)))
+    (interpret-if-results output file-name ((compose ->string om:name) interface) verbose?)))
 
-(define (mcrl2:verify-component modelname ast verbose? all?)
+(define (mcrl2:verify-component file-name modelname ast verbose? all?)
   (let* ((component (find (lambda (x) (equal? (symbol->string (om:name x)) modelname)) (filter (is? <component>) (.elements ast))))
          (interfaces (delete-duplicates (map .type (om:ports component))))
          (livelock-taus (find-taus component modelname (livelock-hidden-actions)))
@@ -143,76 +144,72 @@
          (output (string-append output (verifylivelock lpsfile livelock-taus)))
          (output (string-append output (verifyrefinement lpsfile provided-lps compliance-taus))))
     (if all?
-        (pair? (filter identity (append (map (cut mcrl2:verify-interface <> verbose?) interfaces)
-                                        (list (interpret-results output modelname verbose?)))))
-        (or (pair? (filter identity (map (cut mcrl2:verify-interface <> verbose?) interfaces)))
-            (interpret-results output modelname verbose?)))))
+        (pair? (filter identity (append (map (cut mcrl2:verify-interface file-name <> verbose?) interfaces)
+                                        (list (interpret-results output file-name modelname verbose?)))))
+        (or (pair? (filter identity (map (cut mcrl2:verify-interface file-name <> verbose?) interfaces)))
+            (interpret-results output file-name modelname verbose?)))))
 
 
-(define (mcrl2:verify modelname ast verbose?)
+(define (mcrl2:verify file-name modelname ast verbose? all?)
   (if modelname
       (let ((model (find (lambda (x) (equal? (symbol->string (om:name x)) modelname)) (filter (is? <model>) (.elements ast)))))
         (if (is-a? model <component>)
-            (mcrl2:verify-component modelname ast verbose? #f)
-            (mcrl2:verify-interface model verbose?)))
+            (mcrl2:verify-component file-name modelname ast verbose? #f)
+            (mcrl2:verify-interface file-name model verbose?)))
       (let ((components (filter (is? <component>) (.elements ast))))
-        (pair? (filter identity (map (lambda (c) (mcrl2:verify-component (->string (om:name c)) ast verbose? all?)) components))))
+        (pair? (filter identity (map (lambda (c) (mcrl2:verify-component file-name (->string (om:name c)) ast verbose? all?)) components))))
       ))
 
-(define (interpret-if-results output modelname verbose?)
-  (let ((deadlock (check-deadlock output modelname verbose?))
-        (livelock (check-livelock output modelname verbose?)))
+(define (interpret-if-results output file-name modelname verbose?)
+  (let ((deadlock (check-deadlock output file-name modelname verbose?))
+        (livelock (check-livelock output file-name modelname verbose?)))
     (or deadlock livelock)))
 
-(define (interpret-results output modelname verbose?)
-  (let ((compliance (check-refinement output modelname verbose?))
-        (illegal (check-illegal output modelname verbose?))
-        (deadlock (check-deadlock output modelname verbose?))
-        (livelock (check-livelock output modelname verbose?))
-        (deterministic (check-deterministic output modelname verbose?)))
+(define (interpret-results output file-name modelname verbose?)
+  (let ((compliance (check-refinement output file-name modelname verbose?))
+        (illegal (check-illegal output file-name modelname verbose?))
+        (deadlock (check-deadlock output file-name modelname verbose?))
+        (livelock (check-livelock output file-name modelname verbose?))
+        (deterministic (check-deterministic output file-name modelname verbose?)))
     (or compliance illegal deadlock livelock deterministic)))
 
-(define (check-deterministic string modelname verbose?)
+(define (check-deterministic string file-name modelname verbose?)
   (let ((sub (regexp-exec (make-regexp "LTS is deterministic") string)))
     (if sub (if verbose? (begin (stdout "verify: ~a: check: deterministic: ok\n" modelname) #f) #f)
         (begin (stdout "verify: ~a: check: deterministic: fail\n" modelname) #t))))
 
-(define (check-refinement string modelname verbose?)
+(define (check-refinement string file-name modelname verbose?)
   (let ((sub (regexp-exec (make-regexp "Saved trace to file (.*)\nThe LTS in (.*) is not included in the LTS .*") string)))
-    (if sub (begin
+    (if sub (if (not (gdzn:command-line:get 'json))
               (stdout "verify: ~a: check: compliance: fail\n" modelname)
-              (stdout "~a" (make-trace (match:substring sub 1) "refinement" modelname))
-              #t)
+              (stdout "~a" (make-trace (match:substring sub 1) "refinement" file-name modelname)))
         (if verbose?
             (begin (stdout "verify: ~a: check: compliance: ok\n" modelname) #f)
             #f))))
 
-(define (check-illegal string modelname verbose?)
+(define (check-illegal string file-name modelname verbose?)
   (let ((sub (regexp-exec (make-regexp "Detected action 'illegal' .* and saved to '([^'\n]*)'") string)))
-    (if sub (begin
+    (if sub (if (not (gdzn:command-line:get 'json))
               (stdout "verify: ~a: check: illegal: fail\n" modelname)
-              (stdout "~a" (make-trace (match:substring sub 1) "illegal" modelname))
-              #t)
+              (stdout "~a" (make-trace (match:substring sub 1) "illegal" file-name modelname)))
         (if verbose?
             (begin (stdout "verify: ~a: check: illegal: ok\n" modelname) #f)
             #f))))
 
-(define (check-deadlock string modelname verbose?)
+(define (check-deadlock string file-name modelname verbose?)
   (let ((sub (regexp-exec (make-regexp "deadlock-detect: deadlock found and saved to '([^'\n]*)'") string)))
-    (if sub (begin
+    (if sub (if (not (gdzn:command-line:get 'json))
               (stdout "verify: ~a: check: deadlock: fail\n" modelname)
-              (stdout "~a" (make-trace (match:substring sub 1) "deadlock" modelname))
-              #t)
+              (stdout "~a" (make-trace (match:substring sub 1) "deadlock" file-name modelname)))
         (if verbose?
             (begin (stdout "verify: ~a: check: deadlock: ok\n" modelname) #f)
             #f))))
 
-(define (check-livelock string modelname verbose?)
+(define (check-livelock string file-name modelname verbose?)
   (let ((sub (regexp-exec (make-regexp "Trace to the divergencing state is saved to '([^'\n]*)") string)))
-    (if sub (begin
+    (if sub (if (not (gdzn:command-line:get 'json))
               (stdout "verify: ~a: check: livelock: fail\n" modelname)
-              (stdout "~a" (make-trace (match:substring sub 1) "livelock" modelname))
-              #t)
+              (stdout "~a" (make-trace (match:substring sub 1) "livelock" file-name modelname)))
         (if verbose?
             (begin (stdout "verify: ~a: check: livelock: ok\n" modelname) #f)
             #f))))
