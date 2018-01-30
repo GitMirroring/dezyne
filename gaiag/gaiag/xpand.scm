@@ -66,7 +66,7 @@
      escape       <   '#'
      pegprocedure <-- '#' ('='/'.'/':'/'-'/'+'/'?'/[a-zA-Z0-9_])+ pegsep")
   ;; (stderr "X:PAND: ~a\n" o)
-  (let* ((debug? (command-line:get 'debug #f))
+  (let* ((debug? (gdzn:command-line:get 'debug #f))
          (result (match-pattern script (gulp-template filename)))
          (end (peg:end result))
          (tree (peg:tree result)))
@@ -103,7 +103,7 @@
     (string-append pre (apply string-join (cons lst delimiter)) post)))
 
 (define (type->template module file-name type sep o)
-  (let ((debug? (command-line:get 'debug #f)))
+  (let ((debug? (gdzn:command-line:get 'debug #f)))
     (if (and debug?
              (not (pair? o))
              (not (is-a? o <ast>)))

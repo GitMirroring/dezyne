@@ -206,16 +206,18 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
       (if (and (or (null? models) (not all?)) errors)
           (begin
             (chdir "../")
-            (if (not gdzn-debug?) (system "rm -rf mcrl2_temp"))
+            ;;(if (not gdzn-debug?) (system "rm -rf mcrl2_temp"))
             (set! error? 1)))
       (if (null? models)
           (begin
             (chdir "../")
-            (if (not gdzn-debug?) (system "rm -rf mcrl2_temp")))
+            ;;(if (not gdzn-debug?) (system "rm -rf mcrl2_temp"))
+            )
           (let*
               ((ast-model (make <root> #:elements (filter (lambda (o) (or (not (is-a? o <component>)) (and (is-a? o <component>) (equal? ((compose ->string om:name) o) (car models))))) (ast:model* root))))
                (root (mcrl2:om ast-model)))
-            (with-output-to-file "verify.mcrl2" (cut root-> root))
+            (parameterize ((language 'mcrl2))
+             (with-output-to-file "verify.mcrl2" (cut root-> root)))
             (loop (cdr models) (or (mcrl2:verify file-name (car models) root gdzn-verbose? all?))))))
     ""))
 

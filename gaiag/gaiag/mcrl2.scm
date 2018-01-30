@@ -61,6 +61,7 @@
 	    root->
             globals-from-scope))
 
+(define %model (make-parameter '***%model-not-set***))
 (define-class <mcrl2-interface-node> (<ast-node>)
   (interface #:getter .interface #:init-value #f #:init-keyword #:interface))
 (define-class <interface-index-node> (<mcrl2-interface-node>)
@@ -363,9 +364,11 @@
 ;;(use-modules (statprof))
 (define (root->mcrl2 root)
   (let ((module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
-                                  ,(resolve-module '(gaiag mcrl2))))))
+                                  ,(resolve-module '(gaiag mcrl2)))))
+        (model (find (is? <component>) (ast:model* root))))
     (module-define! module 'root root)
     (parameterize (;;(this-module module)
+                   (%model model)
                    (template-dir (string-append %template-dir "/mcrl2")))
       (x:pand 'source@root (module-ref module 'root) module)
 ;;      (statprof (lambda () (x:pand 'source@root (module-ref module 'root) module)) #:count-calls? #t)
@@ -439,6 +442,13 @@
 
 (define-template x:mcrl2-reply-type mcrl2:reply-type)
 
+(define-template x:mcrl2-model-name mcrl2:model-name)
+
+(define-method (mcrl2:model-name (o <ast>))
+  (let ((model (or (parent <model> o)
+                   (%model))))
+    (om:name model)))
+
 (define-method (mcrl2:reply-type (o <reply>))
   (let ((expr (.expression o)))
     (match expr
@@ -491,7 +501,7 @@
 
 (define-template x:enum-field-struct
   (lambda (o) (map
-	       (lambda (x) (make <enum-name-field> #:name (.name.name o) #:field x))
+	       (lambda (x) (clone (make <enum-name-field> #:name (.name.name o) #:field x) #:parent o))
 	       ((compose .elements .fields) o))) 'pipe-infix)
 (define-template x:reply-union-struct mcrl2:reply-types 'pipe-infix)
 
@@ -778,7 +788,7 @@
 	(if (ast:provides? port)
 	    (om:name (.type port))
 	    port)
-	(om:name (pk "parent:"(parent <model> o))))))
+	(om:name (parent <model> o)))))
 (define-method (trigger-port-type-reply (o <action>))
   (let ((port (.port o)))
     (if (ast:provides? port)
