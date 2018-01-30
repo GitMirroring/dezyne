@@ -6,5 +6,3 @@ p.hello
 verify: compliance_provides_out: check: livelock: ok
 verify: i: check: deadlock: ok
 verify: i: check: livelock: ok
-verify: reflect: check: deadlock: ok
-verify: reflect: check: livelock: ok
