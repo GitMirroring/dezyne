@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -70,8 +70,8 @@
            norm:on-statement-equal?
            ))
 
-(define-class <skip-node> (<ast-node>))
-(wrap <skip-node> <skip> (<ast>))
+(define-class <skip-node> (<imperative-node>))
+(wrap <skip-node> <skip> (<imperative>))
 
 (define* ((prepend-true-guard #:optional guard-seen?) o)
   (match o
