@@ -1,0 +1,1 @@
+sum arg: #x:mcrl2-type-name . #x:mcrl2-provided-port-name'reply_out_rc(f, reply_#x:provided-port-type'#x:mcrl2-type-name(arg)) . #x:mcrl2-component-name'RC_provided_port_in(b = true, r = reply_#x:provided-port-type'#x:mcrl2-type-name(arg))

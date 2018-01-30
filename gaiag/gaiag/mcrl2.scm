@@ -250,7 +250,8 @@
 	   (($ <interface>)
 	    (clone o #:behaviour ((root-add-voidreply model) (.behaviour o))))
 	   (($ <behaviour>)
-	    (clone o #:statement (ast-transform-return model (.statement o)))))))
+	    (clone o #:statement (ast-transform-return model (.statement o))))
+           (_ o))))
 
 (define* ((root-purge-data #:optional (model #f)) o)
   (let ((model (or model o)))
@@ -274,7 +275,8 @@
 		   #:types (make <types> #:elements (purge-data model (.elements (.types o))))
 		   #:variables (make <variables> #:elements (filter (lambda (x) (not (om:extern model x))) (.elements (.variables o))))
 		   #:functions (make <functions> #:elements (purge-data model (.elements (.functions o))))
-		   #:statement (purge-data model (.statement o)))))))
+		   #:statement (purge-data model (.statement o))))
+           (_ o))))
 
 (define (om:models o)
   (clone o #:elements (filter (conjoin (is? <model>) om:behaviour?) (.elements o))))
@@ -327,7 +329,6 @@
     (expand-on)
     norm-state
     code-norm-event
-    om:models
     ) root))
 
 ;; (define (mcrl2:om ast)
@@ -419,7 +420,7 @@
 (define-method (mcrl2:provided-port-type (o <root>)) ((compose mcrl2:provided-port-type (lambda (o) (find (is? <component>) (.elements o)))) (parent <root> o)))
 (define-method (mcrl2:provided-port-type (o <component>)) ((compose om:name .type car om:provided) o)) ;;TODO: only works for single provides port
 (define-method (mcrl2:provided-port-type (o <interface>)) (om:name o))
-(define-method (mcrl2:provided-port-name (o <interface-type>)) ((compose mcrl2:provided-port-name (lambda (o) (find (is? <component>) (.elements o))) (cut parent <root> <>)) o))
+(define-method (mcrl2:provided-port-name (o <type>)) ((compose mcrl2:provided-port-name (lambda (o) (find (is? <component>) (.elements o))) (cut parent <root> <>)) o))
 (define-method (mcrl2:provided-port-name (o <root>)) ((compose mcrl2:provided-port-name (lambda (o) (find (is? <component>) (.elements o)))) o))
 (define-method (mcrl2:provided-port-name (o <component>)) ((compose .name car om:provided) o))
 (define-method (mcrl2:provided-port-name (o <interface>)) (om:name o))
@@ -430,6 +431,7 @@
 (define-template x:mcrl2-provided-port-name mcrl2:provided-port-name)
 (define-template x:provided-port-type (lambda (o) (mcrl2:provided-port-type o)))
 (define-template x:provided-port-name (lambda (o) (mcrl2:provided-port-name (parent <model> o))))
+(define-template x:global-type om:globals 'newline-indent-infix)
 (define-template x:sort-interface mcrl2:interfaces 'newline-indent-infix)
 (define-template x:sort-component identity 'newline-indent-infix)
 (define-template x:action-struct (lambda (o) (map
@@ -455,6 +457,9 @@
   (let ((model (or (parent <model> o)
                    (%model))))
     (om:name model)))
+;; (define-method (mcrl2:scope-name (o <ast>))
+;;   (or (and=> (parent <model> o) (compose ->string om:name))
+;;       "global'"))
 
 (define-method (mcrl2:reply-type (o <reply>))
   (let ((expr (.expression o)))
@@ -463,8 +468,8 @@
                          'Int
                          'Bool))
       ((? (is? <bool-expr>)) 'Bool)
-      (($ <var>) ((compose mcrl2:expand-types .variable) expr))
-      (($ <enum-literal>) (mcrl2:expand-types expr))
+      (($ <var>) ((compose mcrl2:expand-types .type .variable) expr))
+      (($ <enum-literal>)  ((compose mcrl2:expand-types .type) expr))
       (_ (mcrl2:expand-types (.type expr))))))
 
 (define-method (mcrl2:reply-type (o <action>))
@@ -510,15 +515,25 @@
   (lambda (o) (map
 	       (lambda (x) (clone (make <enum-name-field> #:name (.name.name o) #:field x) #:parent o))
 	       ((compose .elements .fields) o))) 'pipe-infix)
-(define-template x:reply-union-struct mcrl2:reply-types 'pipe-infix)
+(define-template x:reply-union-struct mcrl2:reply-types 'pipe-infix <type>)
 
-(define-template x:provided-port-reply-types (compose mcrl2:reply-types .type car om:provided) 'union-suffix)
-
-(define-method (mcrl2:reply-types (o <ast>))
-  (let ((reply-types (code:reply-types o #:pred (const #t))))
-    (map
-     (lambda (x i) (make <interface-type> #:interface o #:type x #:index i))
-     reply-types (iota (length reply-types)))))
+(define-method (scope o) (let ((name (.scope (.name o))))
+                           (if (null? name)
+                               (list "global'")
+                               name)))
+(define-method (scope (o <enum-name-field>)) (scope (.parent o)))
+(define-template x:scope scope 'type-infix)
+(define-template x:provided-port-reply-types om:provided)
+(define-template x:mcrl2-reply-types mcrl2:reply-types 'union-suffix <type>)
+(define-method (mcrl2:reply-types (o <port>)) (mcrl2:reply-types (.type o)))
+(define-method (mcrl2:reply-types (o <interface>))
+  (code:reply-types o #:pred (const #t))
+  ;;TODO #:index ??
+  ;; (let ((reply-types (code:reply-types o #:pred (const #t))))
+  ;;   (map
+  ;;    (lambda (x i) (make <interface-type> #:interface o #:type x #:index i))
+  ;;    reply-types (iota (length reply-types))))
+  )
 
 (define-method (get-enums (o <interface>))
   (append ((compose (cut filter (is? <enum>) <>) .elements .types) o)
@@ -552,14 +567,15 @@
 
 (define-template x:mcrl2-component-process .behaviour)
 
+(define-method (mcrl2:expand-types (o <type>))
+  (match o
+    (($ <enum>) (string-join (list (mcrl2:scope-name o) ((compose ->string .name .name) o)) "'"))
+    (($ <void>) 'Void)
+    (($ <bool>) 'Bool)
+    (($ <int>) 'Int)))
+
 (define-method (mcrl2:expand-types o)
-  (let ((t (.type o)))
-    (match t
-      (($ <enum>) (string-append ((compose ->string mcrl2:interface-name) o) "'" ((compose ->string .name .name) t)))
-      (($ <void>) 'Void)
-      (($ <bool>) 'Bool)
-      (($ <int>) 'Int)
-      (($ <formal>) (mcrl2:expand-types t)))))
+  (mcrl2:expand-types (.type o)))
 
 (define-method (mcrl2:expand-types (o <call>))
   (mcrl2:expand-types ((compose .signature .function) o)))

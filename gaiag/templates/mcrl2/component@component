@@ -1,4 +1,5 @@
-sort #x:sort-interface
+sort #x:global-type
+     #x:sort-interface
      #x:sort-component
      ActionUnion = struct #x:action-union-struct;
      Void = struct void;
