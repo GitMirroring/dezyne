@@ -1,1 +1,1 @@
-sum e: #x:port-type'Actions. #.name'out_queue_rc(e) . #x:model-name'RC_#.name _required_port_in_blocked(b, e)
+sum e: #x:port-type'Actions. #.name'out_queue_rc(e) . #x:mcrl2-model-name'RC_#.name _required_port_in_blocked(b, e)

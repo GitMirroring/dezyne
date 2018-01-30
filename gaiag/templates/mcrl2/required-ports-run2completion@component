@@ -1,3 +1,3 @@
 #x:run2completion-port-with-out-event
-         (b) -> empty_queue . #x:provided-port-name'flush . #x:model-name'Run_to_Completion() <> empty_queue . #x:model-name'Run_to_Completion() +
-         sum f: #x:provided-port-type'Actions. #x:provided-port-name'out_rc(f) . #x:model-name'RC_required_port_in(b = true)
+         (b) -> empty_queue . #x:provided-port-name'flush . #x:mcrl2-model-name'Run_to_Completion() <> empty_queue . #x:mcrl2-model-name'Run_to_Completion() +
+         sum f: #x:provided-port-type'Actions. #x:provided-port-name'out_rc(f) . #x:mcrl2-model-name'RC_required_port_in(b = true)

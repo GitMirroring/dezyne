@@ -3,4 +3,4 @@
      #x:mcrl2-statement-process
      #x:mcrl2-function-process
      
-     #x:model-name'Behaviour(#x:process-parameters) = #x:model-name'0();
+     #x:mcrl2-model-name'Behaviour(#x:process-parameters) = #x:mcrl2-model-name'0();

@@ -1,2 +1,2 @@
 #x:pretty-print-dzn
-     #x:mcrl2-process-name'#x:mcrl2-process-identifier (#x:process-parameters) = #x:model-name'function'return(#x:valued-return);
+     #x:mcrl2-process-name'#x:mcrl2-process-identifier (#x:process-parameters) = #x:mcrl2-model-name'function'return(#x:valued-return);

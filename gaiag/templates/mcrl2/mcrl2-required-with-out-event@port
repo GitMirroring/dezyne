@@ -1,8 +1,8 @@
-#x:model-name'RC_#.name _required_port_in_blocked(b: Bool, e: #x:port-type'Actions) = 
-         #.name'reply_out_rc(e, reply_#x:port-type'#x:mcrl2-init-reply-value) . #x:model-name'RC_required_port_in(b) +
-         sum f: #x:provided-port-type'Actions. #x:provided-port-name'out_rc(f) . #x:model-name'RC_#.name _required_port_in_blocked(b = true);
+#x:mcrl2-model-name'RC_#.name _required_port_in_blocked(b: Bool, e: #x:port-type'Actions) = 
+         #.name'reply_out_rc(e, reply_#x:port-type'#x:mcrl2-init-reply-value) . #x:mcrl2-model-name'RC_required_port_in(b) +
+         sum f: #x:provided-port-type'Actions. #x:provided-port-name'out_rc(f) . #x:mcrl2-model-name'RC_#.name _required_port_in_blocked(b = true);
 
-     #x:model-name'RC_#.name _provided_port_in_blocked(f: #x:provided-port-type'Actions, b: Bool, r: #x:provided-port-type'ReplyUnion, e: #x:port-type'Actions) = 
-         #.name'reply_out_rc(e, reply_#x:port-type'#x:mcrl2-init-reply-value) . #x:model-name'RC_provided_port_in(f, b, r) +
-         sum arg: Void. #x:provided-port-name'reply_out_rc(f, reply_#x:provided-port-type'Void(arg)) . #x:model-name'RC_#.name _provided_port_in_blocked(b = true) +
-         sum f: #x:provided-port-type'Actions. #x:provided-port-name'out_rc(f) . #x:model-name'RC_#.name _provided_port_in_blocked();
+     #x:mcrl2-model-name'RC_#.name _provided_port_in_blocked(f: #x:provided-port-type'Actions, b: Bool, r: #x:provided-port-type'ReplyUnion, e: #x:port-type'Actions) = 
+         #.name'reply_out_rc(e, reply_#x:port-type'#x:mcrl2-init-reply-value) . #x:mcrl2-model-name'RC_provided_port_in(f, b, r) +
+         sum arg: Void. #x:provided-port-name'reply_out_rc(f, reply_#x:provided-port-type'Void(arg)) . #x:mcrl2-model-name'RC_#.name _provided_port_in_blocked(b = true) +
+         sum f: #x:provided-port-type'Actions. #x:provided-port-name'out_rc(f) . #x:mcrl2-model-name'RC_#.name _provided_port_in_blocked();

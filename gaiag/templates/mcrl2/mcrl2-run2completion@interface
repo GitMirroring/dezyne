@@ -1,16 +1,16 @@
-#x:model-name'Run_to_Completion = 
-         sum e: #x:model-name'Actions. #x:model-name'in_rc(e) . #x:model-name'Run_to_Completion_event(e) +
-         #x:model-name'optional_begin_rc . #x:model-name'Run_to_Completion_optional(false) +
-         #x:model-name'inevitable_begin_rc . #x:model-name'Run_to_Completion_inevitable(false);
+#x:mcrl2-model-name'Run_to_Completion = 
+         sum e: #x:mcrl2-model-name'Actions. #x:mcrl2-model-name'in_rc(e) . #x:mcrl2-model-name'Run_to_Completion_event(e) +
+         #x:mcrl2-model-name'optional_begin_rc . #x:mcrl2-model-name'Run_to_Completion_optional(false) +
+         #x:mcrl2-model-name'inevitable_begin_rc . #x:mcrl2-model-name'Run_to_Completion_inevitable(false);
 
-     #x:model-name'Run_to_Completion_event(e: #x:model-name'Actions) = 
-         sum e1: #x:model-name'Actions. #x:model-name'out_rc(e1) . #x:model-name'Run_to_Completion_event(e) +
-         sum r: #x:model-name'ReplyUnion. #x:model-name'reply_out_rc(e, r) . #x:model-name'Run_to_Completion;
+     #x:mcrl2-model-name'Run_to_Completion_event(e: #x:mcrl2-model-name'Actions) = 
+         sum e1: #x:mcrl2-model-name'Actions. #x:mcrl2-model-name'out_rc(e1) . #x:mcrl2-model-name'Run_to_Completion_event(e) +
+         sum r: #x:mcrl2-model-name'ReplyUnion. #x:mcrl2-model-name'reply_out_rc(e, r) . #x:mcrl2-model-name'Run_to_Completion;
 
-     #x:model-name'Run_to_Completion_optional(b: Bool) = 
-         (b) -> #x:model-name'optional_end_rc . #x:model-name'flush . #x:model-name'Run_to_Completion <> #x:model-name'optional_end_rc . #x:model-name'Run_to_Completion +
-         sum e1: #x:model-name'Actions. #x:model-name'out_rc(e1) . #x:model-name'Run_to_Completion_optional(true);
+     #x:mcrl2-model-name'Run_to_Completion_optional(b: Bool) = 
+         (b) -> #x:mcrl2-model-name'optional_end_rc . #x:mcrl2-model-name'flush . #x:mcrl2-model-name'Run_to_Completion <> #x:mcrl2-model-name'optional_end_rc . #x:mcrl2-model-name'Run_to_Completion +
+         sum e1: #x:mcrl2-model-name'Actions. #x:mcrl2-model-name'out_rc(e1) . #x:mcrl2-model-name'Run_to_Completion_optional(true);
 
-     #x:model-name'Run_to_Completion_inevitable(b: Bool) = 
-         (b) -> #x:model-name'inevitable_end_rc . #x:model-name'flush . #x:model-name'Run_to_Completion <> #x:model-name'inevitable_end_rc . #x:model-name'Run_to_Completion +
-         sum e1: #x:model-name'Actions. #x:model-name'out_rc(e1) . #x:model-name'Run_to_Completion_inevitable(true);
+     #x:mcrl2-model-name'Run_to_Completion_inevitable(b: Bool) = 
+         (b) -> #x:mcrl2-model-name'inevitable_end_rc . #x:mcrl2-model-name'flush . #x:mcrl2-model-name'Run_to_Completion <> #x:mcrl2-model-name'inevitable_end_rc . #x:mcrl2-model-name'Run_to_Completion +
+         sum e1: #x:mcrl2-model-name'Actions. #x:mcrl2-model-name'out_rc(e1) . #x:mcrl2-model-name'Run_to_Completion_inevitable(true);
