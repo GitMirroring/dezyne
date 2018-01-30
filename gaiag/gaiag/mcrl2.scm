@@ -309,7 +309,7 @@
     ) root))
 
 
-(define (mcrl2:om ast)
+(define (mcrl2:om root) ;; FIXME: already root/om
   ((compose
     (annotate-path '())
 ;;    (lambda (o) ((compose pretty-print om->list) o) o)
@@ -327,7 +327,7 @@
     norm-state
     code-norm-event
     om:models
-    ) ast))
+    ) root))
 
 ;; (define (mcrl2:om ast)
 ;;   ((compose-root
@@ -363,15 +363,20 @@
 
 ;;(use-modules (statprof))
 (define (root->mcrl2 root)
-  (let ((module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
-                                  ,(resolve-module '(gaiag mcrl2)))))
-        (model (find (is? <component>) (ast:model* root))))
+  (let* ((module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
+                                   ,(resolve-module '(gaiag mcrl2)))))
+         (model-name (and=> (command-line:get 'model #f) string->symbol))
+         (model (or (and model-name
+                         (find (om:named model-name) (ast:model* root)))
+                    (find (is? <component>) (ast:model* root))
+                    (find (is? <interface>) (ast:model* root)))))
+    (stderr "model: ~a\n" model)
     (module-define! module 'root root)
-    (parameterize (;;(this-module module)
+    (parameterize ( ;;(this-module module)
                    (%model model)
                    (template-dir (string-append %template-dir "/mcrl2")))
       (x:pand 'source@root (module-ref module 'root) module)
-;;      (statprof (lambda () (x:pand 'source@root (module-ref module 'root) module)) #:count-calls? #t)
+      ;;      (statprof (lambda () (x:pand 'source@root (module-ref module 'root) module)) #:count-calls? #t)
       )))
 
 (define (ast-> ast)
@@ -383,7 +388,8 @@
          (file-name (cond ((equal? dir "-") dir)
 			  (dir (string-append dir "/" file-name))
 			  (else file-name)))
-	 (root (mcrl2:om ast))
+         (root ((compose ast:resolve parse->om) ast))
+	 (root (mcrl2:om root))
          (ast? (command-line:get 'ast #f))
          (->mcrl2 (if ast? root->sexp
                       root->mcrl2)))
