@@ -1,6 +1,6 @@
 ;;; Gash --- Guile As SHell
 ;;; Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@gmail.com>
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Gash.
 ;;;
@@ -90,26 +90,23 @@
 
 
 (define (pipeline fg? . commands)
-  (let ((job (new-job)))
-    (if (> (length commands) 1)
-        (let loop ((src (spawn-source fg? job (car commands)))
-                   (commands (cdr commands)))
-          (if (null? (cdr commands))
-              (spawn-sink fg? job src (car commands))
-              (loop (spawn-filter fg? job src (car commands))
-                    (cdr commands))))
-        (spawn-sink fg? job #f (car commands)))
-    (if fg? (wait job))))
+  (let* ((job (new-job))
+         (port (if (> (length commands) 1)
+                   (let loop ((src (spawn-source fg? job (car commands)))
+                              (commands (cdr commands)))
+                     (if (null? (cdr commands))
+                         (spawn-filter fg? job src (car commands))
+                         (loop (spawn-filter fg? job src (car commands))
+                               (cdr commands))))
+                   (spawn-filter fg? job #f (car commands)))))
+    (if fg? (wait job) (values job port))))
 
 ;;(pipeline #f (list "ls" "/"))
 ;;(pipeline #f (list "ls" "/") (list "grep" "o") (list "tr" "o" "e"))
 
 
 (define (pipeline->string . commands)
-
-  (let* ((gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
-         (foo (if gdzn-debug? (stderr "pipeline->string: " commands)))
-         (fg? #f)
+  (let* ((fg? #f)
          (job (new-job))
          (output (read-string
                   (if (> (length commands) 1)

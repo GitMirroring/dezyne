@@ -31,7 +31,8 @@
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
 
-  #:export (make-trace))
+  #:export (make-trace
+            make-trace-file))
 
 (define (find-aliases mcrl2file)
   (let* ((mcrl2-text (call-with-input-file "verify.mcrl2" read-string))
@@ -40,9 +41,8 @@
 		   (list-matches "\\b([a-zA-Z0-9_']*)\\s*=\\s*struct\\b" mcrl2-text))))
     aliases))
 
-(define (rename-lts-actions srcfile destfile)
+(define (rename-lts-actions trace)
   (let* ((sorted-names (find-aliases "verify.mcrl2"))
-	 (trace (call-with-input-file srcfile read-string))
 ;;         (foo (stderr "trace: ~a\n" trace))
 	 ;; Remove reply variable wrappers
 	 (trace (regexp-substitute/global #f "\\breply_[^(]*\\(([^)]*)\\)" trace 'pre 1 'post))
@@ -70,7 +70,6 @@
 	 (trace (regexp-substitute/global #f "\\bno_reply_error\\b" trace 'pre "" 'post))
          (trace (regexp-substitute/global #f "\\btau\n" trace 'pre "" 'post))
 	 (trace (regexp-substitute/global #f "([\n])[\n]+" trace 'pre 1 'post)))
-    ;;   (with-output-to-file destfile (lambda () (display trace)))
     (if (string=? trace "\n")
         ""
         trace)
@@ -85,7 +84,13 @@
 (define (make-trace tracefile option file-name modelname)
   (let ((outfile (string-append modelname option ".trc")))
     (system (string-append "tracepp " tracefile " > trace1.txt"))
-    (let ((trace (rename-lts-actions "trace1.txt" outfile)))
+    (let ((trace (rename-lts-actions "trace1.txt")))
       (with-output-to-file outfile (cut display trace))
       (make-json-trace modelname outfile file-name (string-append outfile ".json"))
       (if (gdzn:command-line:get 'json) "" trace))))
+
+(define (make-trace-file tracefile option file-name modelname)
+  (let ((outfile (format #f "~a~a.trc" modelname option))
+        (trace-file "trace1.txt"))
+    (system (string-append "tracepp " tracefile " > " trace-file))
+    (rename-lts-actions (call-with-input-file trace-file read-string))))

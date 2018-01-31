@@ -4,7 +4,7 @@
 // Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016, 2017 Rob Wieringa <Rob.Wieringa@verum.com>
-// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -91,7 +91,7 @@ var dependencies = {
   view:     ['convert'],
 };
 
-var default_aspects = Object.keys(dependencies).filter (function (e) {return ['table','view'].indexOf (e) == -1;});
+var default_aspects = Object.keys(dependencies).filter (function (e) {return ['table','verify','view'].indexOf (e) == -1;});
 
 function depend(e) {
   var deps = dependencies[e] || ['convert'];
@@ -310,7 +310,7 @@ var aspects = {
     }
 
     function testcase(aspect,dependencies,language,retry) {
-      retry = retry === undefined && 2 || retry;
+      retry = 0; //retry === undefined && 2 || retry;
       if(parameters.meta.known)
       {
         if(parameters.meta.known[aspect]) retry = 0;
