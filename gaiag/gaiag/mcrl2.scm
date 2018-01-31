@@ -257,7 +257,7 @@
   (let ((model (or model o)))
     (match o
 	   (($ <root>)
-	    (clone o #:elements (map (root-purge-data) (.elements o))))
+	    (clone o #:elements (map (root-purge-data) (filter (negate (is? <extern>)) (.elements o)))))
 	   (($ <component>)
 	    (clone o #:behaviour ((root-purge-data model) (.behaviour o))))
 	   (($ <interface>)
@@ -521,7 +521,7 @@
 (define-method (scope o) (let ((name (.scope (.name o))))
                            (if (null? name)
                                (list "global'")
-                               name)))
+                               (map symbol->string name))))
 (define-method (scope (o <enum-name-field>)) (scope (.parent o)))
 (define-method (scope (o <event>)) ((compose scope .type .signature) o))
 (define-method (scope (o <reply>)) (scope (.type (.expression o))))
@@ -839,7 +839,7 @@
   (let* ((trigger (.trigger o))
          (port (.port trigger)))
     (if port (if (ast:requires? port)
-                 (string-append "'" (mcrl2:init-reply-value (.type port)))
+                 (mcrl2:init-reply-value (.type port))
                  "")
         "")))
 
