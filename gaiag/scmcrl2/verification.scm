@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -44,7 +45,14 @@
   #:use-module (gaiag xpand)
   #:use-module (scmcrl2 traces)
 
-  #:export (mcrl2:verify))
+  #:export (mcrl2:verify
+            component-lts))
+
+;;(define system-old system)
+
+;;(define (system cmd)
+;;  (stderr "system: ~a\n" cmd)
+;;  (system-old cmd))
 
 (define (compliance-hidden-actions)
   (list "return" "optional" "inevitable" "event" "flush"))
@@ -91,6 +99,17 @@
 (define (reduce-lts lts)
   (system (string-append "ltsconvert -edpbranching-bisim " lts " " lts))
   lts)
+
+(define (component-lts modelname ast verbose?)
+  (let* ((component (find (lambda (x) (equal? (symbol->string (om:name x)) modelname)) (filter (is? <component>) (.elements ast))))
+         (lps (create-lps "verify.mcrl2" 'component ast))
+         (lts (create-lts lps))
+         (lts (reduce-lts lts)))
+    lts))
+
+(define (create-lts lps)
+  (system (string-append "lps2lts -v " lps " " (basename lps ".lps") ".aut 2>&1"))
+  (string-append (basename lps ".lps") ".aut"))
 
 (define (verifydeterministic lps)
   (let ((ltsname (string-append (basename lps ".lps") ".aut")))
