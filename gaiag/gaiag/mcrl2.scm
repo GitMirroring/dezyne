@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -442,6 +444,7 @@
 (define-template x:interfaces-allow-dillegals mcrl2:interfaces 'newline-indent-infix)
 (define-template x:map-interface-name mcrl2:interfaces 'newline-indent-infix)
 (define-template x:eqn-interface-name mcrl2:interfaces 'newline-indent-infix)
+(define-template x:eqn-allow-dillegals (lambda (o) (mcrl2:interfaces (car (filter (is? <component>) (.elements o))))) 'newline-indent-infix)
 (define-template x:global-interface-reply mcrl2:interfaces 'newline-indent-infix)
 (define-template x:interface-action-alphabet mcrl2:interfaces 'newline-indent-infix)
 (define-template x:port-action-alphabet mcrl2:ports 'newline-indent-infix)
