@@ -420,6 +420,7 @@
 (define-method (mcrl2:provided-port-type (o <root>)) ((compose mcrl2:provided-port-type (lambda (o) (find (is? <component>) (.elements o)))) (parent <root> o)))
 (define-method (mcrl2:provided-port-type (o <component>)) ((compose om:name .type car om:provided) o)) ;;TODO: only works for single provides port
 (define-method (mcrl2:provided-port-type (o <interface>)) (om:name o))
+(define-method (mcrl2:provided-port-name (o <event>)) ((compose mcrl2:provided-port-name .type .signature) o))
 (define-method (mcrl2:provided-port-name (o <type>)) ((compose mcrl2:provided-port-name (lambda (o) (find (is? <component>) (.elements o))) (cut parent <root> <>)) o))
 (define-method (mcrl2:provided-port-name (o <root>)) ((compose mcrl2:provided-port-name (lambda (o) (find (is? <component>) (.elements o)))) o))
 (define-method (mcrl2:provided-port-name (o <component>)) ((compose .name car om:provided) o))
@@ -457,9 +458,9 @@
   (let ((model (or (parent <model> o)
                    (%model))))
     (om:name model)))
-;; (define-method (mcrl2:scope-name (o <ast>))
-;;   (or (and=> (parent <model> o) (compose ->string om:name))
-;;       "global'"))
+(define-method (mcrl2:scope-name (o <ast>))
+  (or (and=> (parent <model> o) (compose ->string om:name))
+      "global'"))
 
 (define-method (mcrl2:reply-type (o <reply>))
   (let ((expr (.expression o)))
@@ -522,12 +523,16 @@
                                (list "global'")
                                name)))
 (define-method (scope (o <enum-name-field>)) (scope (.parent o)))
+(define-method (scope (o <event>)) ((compose scope .type .signature) o))
+(define-method (scope (o <reply>)) (scope (.type (.expression o))))
 (define-template x:scope scope 'type-infix)
 (define-template x:provided-port-reply-types om:provided)
 (define-template x:mcrl2-reply-types mcrl2:reply-types 'union-suffix <type>)
 (define-method (mcrl2:reply-types (o <port>)) (mcrl2:reply-types (.type o)))
 (define-method (mcrl2:reply-types (o <interface>))
-  (code:reply-types o #:pred (const #t))
+  (let ((events (om:events o)))
+    (delete-duplicates events (lambda (a b) (om:equal? ((compose .type .signature) a) ((compose .type .signature) b)))))
+;;  (code:reply-types o #:pred (const #t))
   ;;TODO #:index ??
   ;; (let ((reply-types (code:reply-types o #:pred (const #t))))
   ;;   (map
@@ -567,9 +572,10 @@
 
 (define-template x:mcrl2-component-process .behaviour)
 
+(define-method (mcrl2:expand-types (o <enum-literal>)) (.type o))
 (define-method (mcrl2:expand-types (o <type>))
   (match o
-    (($ <enum>) (string-join (list (mcrl2:scope-name o) ((compose ->string .name .name) o)) "'"))
+    (($ <enum>) (string-join (append (scope o) ((compose list ->string .name .name) o)) "'"))
     (($ <void>) 'Void)
     (($ <bool>) 'Bool)
     (($ <int>) 'Int)))
@@ -579,6 +585,9 @@
 
 (define-method (mcrl2:expand-types (o <call>))
   (mcrl2:expand-types ((compose .signature .function) o)))
+
+(define-method (mcrl2:expand-types (o <event>))
+  (mcrl2:expand-types ((compose .type .signature) o)))
 
 (define-method (mcrl2:expand-types (o <assign>))
   (mcrl2:expand-types (.expression o)))
@@ -637,21 +646,26 @@
     (lambda (o)
       (let* ((id (.id o))
 	     (sid ((compose .id (cut parent <model> <>)) o))
-             (id (+ id ((compose .id .parent) o)))
+             ;;FIXME get unique identifier
+             (parent (.parent o))
+             (grandparent (.parent parent))
+             (pid (.id parent))
+             (ppid (.id grandparent))
+             (id (+ id (* 3((compose .id .parent) o)) (* 5((compose .id .parent .parent) o))))
 	     (key (cons id sid))
 	     (next (assq-ref next-alist sid))
 	     (next (or next -1)))
 	(number->string (or (assoc-ref id-alist key)
 			    (let ((next (1+ next)))
-				   (set! id-alist (acons key next id-alist))
-				   (set! next-alist (assoc-set! next-alist sid next))
-				   next)))))))
+                              (set! id-alist (acons key next id-alist))
+                              (set! next-alist (assoc-set! next-alist sid next))
+                              next)))))))
 
 (define-template x:next-call-reference
   (lambda (o)
     (mcrl2:process-identifier (process-continuation o))))
 
-(define-template x:mcrl2-type (compose mcrl2-type .type))
+(define-template x:mcrl2-type .type)
 (define-method (mcrl2-type (o <type>))
   (match o
     (($ <bool>) "Bool")
@@ -681,9 +695,7 @@
 
 (define-method (locals (o <ast>))
   (let* ((vars (locals- o '())))
-   ;; (stderr "locals: v: ~a\n" vars)
-    (append-map (lambda (v)
-		  (list (string-append (->string (.name v)) ": " (mcrl2-type (.type v))))) vars)))
+    vars))
 
 (define-method (locals- (o <ast>) result)
   (if ((is? <behaviour>) o)
@@ -697,18 +709,11 @@
 					    (list (clone (make <cont> #:type (clone (make <refs>) #:parent parent)) #:parent parent))))
 	      (else (locals- parent result))))))
 
-(define-template x:process-parameters
-  (lambda (o)
-    (let ((provided-port-type ((compose ->string mcrl2:provided-port-type (cut parent <model> <>)) o)))
-      (string-join
-       (append (list
-		"br: Bool"
-		(string-append "reply_" provided-port-type ": " provided-port-type "'ReplyUnion"))
-	       (globals o)
-	       (if (is-a? o <model>)
-		   '()
-		   (locals o)))
-       ", " 'infix))))
+(define-template x:process-parameters identity #f <ast>)
+(define-method (variables-in-scope (o <model>)) (globals o))
+(define-method (variables-in-scope (o <ast>))
+  (append (globals o) (locals o)))
+(define-template x:variables-in-scope variables-in-scope 'comma-prefix)
 
 (define-template x:call-parameters call-parameters 'comma-suffix)
 (define-method (call-parameters (o <call>))
@@ -739,7 +744,12 @@
 
 (define-template x:call-continuation .continuation)
 
-(define-template x:globals-init init-globals)
+(define-method (model-from-scope (o <root>)) ((compose car (lambda (o) (filter (is? <component>) (.elements o)))) o))
+(define-method (model-from-scope (o <port>)) (.type o))
+(define-method (model-from-scope (o <model>)) o)
+
+(define-template x:globals-init model-from-scope #f <model>)
+(define-template x:global-vars-init globals-from-scope 'comma-prefix)
 
 (define-template x:mcrl2-statement-process mcrl2:statement-process)
 (define-template x:mcrl2-function-process (compose .elements .functions))
@@ -1022,44 +1032,20 @@
     (($ <enum-literal>) (mcrl2:enum-literal o))
     (($ <literal>) (.value o))))
 
-;;TODO: stop returning ASCII, start returning objects
 (define-method (globals-from-scope scope)
   (let* ((behaviour (.behaviour scope))
 	 (vars ((compose .elements .variables) behaviour)))
-    (string-join
-     (append (list
-	      "false"
-	      (string-append "reply_" (->string (mcrl2:provided-port-type scope)) "'" (mcrl2:init-reply-value scope)))
-	     (append-map (lambda (v)
-			   (list ((compose ->string mcrl2:value .expression) v))) vars))
-     ", " 'infix)))
+    vars))
 
 (define-template x:mcrl2-init-reply-value mcrl2:init-reply-value)
+(define-template x:initial-enum-field (compose car .elements .fields))
 
 (define-method (mcrl2:init-reply-value (o <ast>))
   (let ((reply-type (car (code:reply-types o #:pred (const #t)))))
-    (match reply-type
-      (($ <bool>) "Bool(false)")
-      (($ <void>) "Void(void)")
-      (($ <int>) "Int(0)")
-      (($ <enum>) (string-append ((compose ->string .scope .name) reply-type) "'" (.name.name reply-type) "("
-                                 ((compose ->string .scope .name) reply-type) "'" (.name.name reply-type) "'"
-                                 ((compose ->string car .elements .fields) reply-type) ")")))))
+    reply-type))
 
 (define-method (mcrl2:init-reply-value (o <port>))
   (mcrl2:init-reply-value (.type o)))
-
-(define-method (init-globals (o <ast>))
-  ((compose init-globals car (lambda (o) (filter (is? <component>) (.elements o)))) o))
-
-(define-method (init-globals (o <component>))
-  (globals-from-scope o))
-
-(define-method (init-globals (o <interface>))
-  (globals-from-scope o))
-
-(define-method (init-globals (o <port>))
-  (globals-from-scope (.type o)))
 
 (define-method (mcrl2:statement-process (o <behaviour>)) (.statement o))
 (define-method (mcrl2:statement-process (o <compound>)) (.elements o))
