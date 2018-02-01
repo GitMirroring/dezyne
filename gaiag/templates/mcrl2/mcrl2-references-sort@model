@@ -1,1 +1,1 @@
-sort #x:mcrl2-model-name'Refs = struct #x:references ;
+sort #x:model-name'Refs = struct #x:references ;

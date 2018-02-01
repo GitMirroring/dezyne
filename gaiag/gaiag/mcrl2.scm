@@ -486,22 +486,22 @@
 (define (models-with-calls o)
   (append-map
    (lambda (m)
-     (if (pair? ((om:collect <call>) m))
+     (if (pair? ((compose ast:function* .behaviour) m))
 	 (list m)
 	 '()))
    (append (mcrl2:interfaces o) (list o))))
 
 (define-template x:references references 'pipe-infix)
 (define-template x:resolve-reference references 'else-infix)
-(define-template x:return-types typed-calls 'comma-suffix)
-(define (typed-calls o)
-  (filter (lambda (t) (not (is-a? t <void>))) (map (compose .type .signature .function) (references o))))
+(define-template x:return-types typed-functions 'comma-suffix)
+(define (typed-functions o)
+  (filter (lambda (f) (not (is-a? ((compose .type .signature) f) <void>))) ((compose ast:function* .behaviour) o)))
 (define (references o)
-  (let* ((assignbycalls ((om:collect (lambda (o) (and (is-a? o <assign>) (is-a? (.expression o) <call>)))) o))
+  (let* ((variablebycalls ((om:collect (lambda (o) (and (is-a? o <variable>) (is-a? (.expression o) <call>)))) o))
+         (assignbycalls ((om:collect (lambda (o) (and (is-a? o <assign>) (is-a? (.expression o) <call>)))) o))
          (callsinassigns (map .expression assignbycalls))
-         (calls ((om:collect (lambda (o) (and (is-a? o <call>) (not (.last? o))))) o))
-         (calls (filter (lambda (o) (not (memq o callsinassigns))) calls)))
-    (append assignbycalls calls)))
+         (calls ((om:collect (lambda (o) (and (is-a? o <call>) (not (or (is-a? (.parent o) <assign>) (is-a? (.parent o) <variable>))) (not (.last? o))))) o)))
+    (append variablebycalls assignbycalls calls)))
 
 (define-template x:valued-return
   (lambda (o)
@@ -520,6 +520,12 @@
 	       ((compose .elements .fields) o))) 'pipe-infix)
 (define-template x:reply-union-struct mcrl2:reply-types 'pipe-infix <type>)
 
+(define-template x:global? global?)
+(define-method (global? o) (let ((name (.scope (.name o))))
+                           (if (and (null? name) (is-a? o <enum>))
+                               (list "global''")
+                               "")))
+(define-method (global? (o <event>)) ((compose global? .type .signature) o))
 (define-method (scope o) (let ((name (.scope (.name o))))
                            (if (null? name)
                                (list "global'")
@@ -529,6 +535,8 @@
 (define-method (scope (o <reply>)) (scope (.type (.expression o))))
 (define-template x:scope scope 'type-infix)
 (define-template x:provided-port-reply-types om:provided)
+(define-template x:mcrl2-reply-union-declaration identity)
+(define-template x:event-type (compose .type .signature))
 (define-template x:mcrl2-reply-types mcrl2:reply-types 'union-suffix <type>)
 (define-method (mcrl2:reply-types (o <port>)) (mcrl2:reply-types (.type o)))
 (define-method (mcrl2:reply-types (o <interface>))
@@ -576,11 +584,7 @@
 
 (define-method (mcrl2:expand-types (o <enum-literal>)) (.type o))
 (define-method (mcrl2:expand-types (o <type>))
-  (match o
-    (($ <enum>) (string-join (append (scope o) ((compose list ->string .name .name) o)) "'"))
-    (($ <void>) 'Void)
-    (($ <bool>) 'Bool)
-    (($ <int>) 'Int)))
+  o)
 
 (define-method (mcrl2:expand-types o)
   (mcrl2:expand-types (.type o)))
@@ -589,6 +593,9 @@
   (mcrl2:expand-types ((compose .signature .function) o)))
 
 (define-method (mcrl2:expand-types (o <event>))
+  (mcrl2:expand-types ((compose .type .signature) o)))
+
+(define-method (mcrl2:expand-types (o <function>))
   (mcrl2:expand-types ((compose .type .signature) o)))
 
 (define-method (mcrl2:expand-types (o <assign>))
@@ -600,10 +607,16 @@
 (define-method (mcrl2:expand-types (o <variable-action>))
   (mcrl2:expand-types (.variable o)))
 
+(define-template x:assign-call-var-name (compose .variable.name .assign))
+(define-template x:variable-call-var-name (compose .name .variable))
 (define-template x:mcrl2-type-name mcrl2:expand-types)
 (define-template x:action-union-struct om:ports 'pipe-infix)
 
 (define-template x:mcrl2-process-name identity #f <ast>)
+(define-template x:function-name function-name)
+(define-method (function-name (o <ast>))
+  (let ((parent (parent <function> o)))
+    (.name parent)))
 (define-template x:function-scope function-scope)
 (define-method (function-scope (o <ast>))
   (let ((parent (parent <function> o)))
@@ -725,6 +738,8 @@
            ((compose .elements .arguments) o))))
 (define-method (call-parameters (o <assign>))
   (call-parameters (.expression o)))
+(define-method (call-parameters (o <variable>))
+  (call-parameters (.expression o)))
 
 (define-template x:cont-parameter
   (lambda (o) (make <cont-parameter> #:continuation (call-continuation o))))
@@ -801,8 +816,7 @@
     (($ <action>) (port (.port o) o))
     (($ <the-end>) ((compose (cut port <> o) .port .trigger) o))
     (($ <on>) ((compose (cut port <> o) .port car .elements .triggers) o))
-    (($ <assign-action>) ((compose trigger-port .action) o))
-    (($ <variable-action>) ((compose trigger-port .action) o))))
+    (($ <variable>) ((compose trigger-port .expression) o))))
 
 (define-template x:trigger-port-type trigger-port-type)
 (define-method (port-type p o)
@@ -814,8 +828,7 @@
     (($ <action>) (port-type (.port o) o))
     (($ <the-end>) ((compose (cut port-type <> o) .port .trigger) o))
     (($ <on>) ((compose (cut port-type <> o) .port car .elements .triggers) o))
-    (($ <assign-action>) ((compose trigger-port-type .action) o))
-    (($ <variable-action>) ((compose trigger-port-type .action) o))))
+    (($ <variable>) ((compose trigger-port-type .expression) o))))
 
 (define-template x:trigger-port-type-reply trigger-port-type-reply)
 (define-method (trigger-port-type-reply (o <the-end>))
@@ -943,25 +956,38 @@
      (lambda (p) (not (null? (filter om:out? ((compose .elements .events .type) p)))))
      required-ports)))
 
-(define-template x:assign-type assign-type)
-
-(define-method (assign-type (o <assign>))
+(define-template x:assign-by-call? assign-by-call?)
+(define-method (assign-by-call? (o <assign>))
   (let ((e (.expression o)))
-    (match e
-      (($ <call>) (make <assign-call> #:assign o #:call e))
-      (($ <action>) (make <assign-action> #:assign o #:action e))
-      (_ o))))
-
-(define-template x:variable-declaration variable-declaration)
-
-(define-method (variable-declaration (o <variable>))
+    (if (is-a? e <call>)
+        o
+        "")))
+(define-template x:assign-by-action? assign-by-action?)
+(define-method (assign-by-action? (o <assign>))
   (let ((e (.expression o)))
-    (match e
-      (($ <call>) (make <variable-call> #:variable o #:call e))
-      (($ <action>) (make <variable-action> #:variable o #:action e))
-      (_ o))))
+    (if (is-a? e <action>)
+        o
+        "")))
 
-(define-template x:assign-function-name (compose .function.name .expression))
+(define-template x:var-decl-by-call? var-decl-by-call?)
+(define-method (var-decl-by-call? (o <variable>))
+  (let ((e (.expression o)))
+    (if (is-a? e <call>)
+        o
+        "")))
+(define-template x:var-decl-by-action? var-decl-by-action?)
+(define-method (var-decl-by-action? (o <variable>))
+  (let ((e (.expression o)))
+    (if (is-a? e <action>)
+        o
+        "")))
+(define-template x:variable-expression .expression)
+(define-template x:assign-expression .expression)
+
+(define-method (assign-function-name o) ((compose .function.name .call) o))
+(define-template x:assign-function-name assign-function-name)
+(define-template x:var-action-name (compose .name .event .expression))
+(define-template x:call-function-name (compose .function.name .expression))
 (define-template x:action-type action-type)
 (define-method (action-type (o <ast>))
   ((compose mcrl2-type .type .signature .event .action) o))
@@ -983,7 +1009,7 @@
 
 (define-template x:check-integer-bounds check-integer-bounds)
 (define-method (check-integer-bounds (o <ast>))
-  (let* ((action (.action o))
+  (let* ((action ((compose .expression) o))
          (type ((compose .type .signature .event) action)))
     (if (is-a? type <int>)
         type
