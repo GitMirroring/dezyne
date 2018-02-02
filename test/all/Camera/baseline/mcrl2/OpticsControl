@@ -1,0 +1,13 @@
+verify: IFlash: check: deadlock: ok
+verify: IFlash: check: livelock: ok
+verify: ILens: check: deadlock: ok
+verify: ILens: check: livelock: ok
+verify: IOptics: check: deadlock: ok
+verify: IOptics: check: livelock: ok
+verify: IShutter: check: deadlock: ok
+verify: IShutter: check: livelock: ok
+verify: OpticsControl: check: deterministic: ok
+verify: OpticsControl: check: illegal: ok
+verify: OpticsControl: check: deadlock: ok
+verify: OpticsControl: check: compliance: ok
+verify: OpticsControl: check: livelock: ok

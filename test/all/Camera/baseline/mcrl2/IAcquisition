@@ -1,0 +1,2 @@
+verify: IAcquisition: check: deadlock: ok
+verify: IAcquisition: check: livelock: ok

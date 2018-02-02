@@ -1,0 +1,2 @@
+verify: IGuardthreetopon: check: deadlock: ok
+verify: IGuardthreetopon: check: livelock: ok

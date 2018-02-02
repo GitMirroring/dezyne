@@ -1,0 +1,8 @@
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: LivelockInModel: check: deterministic: ok
+verify: LivelockInModel: check: illegal: ok
+verify: LivelockInModel: check: deadlock: ok
+verify: LivelockInModel: check: compliance: ok
+verify: LivelockInModel: check: livelock: fail
+pp.ia

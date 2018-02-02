@@ -1,0 +1,12 @@
+verify: IIncomplete: check: deadlock: ok
+verify: IIncomplete: check: livelock: ok
+verify: Incomplete: check: deterministic: ok
+verify: Incomplete: check: illegal: ok
+verify: Incomplete: check: deadlock: fail
+pp.missing
+pp.return
+verify: Incomplete: check: compliance: fail
+pp.missing
+pp.return
+pp.missing
+verify: Incomplete: check: livelock: ok

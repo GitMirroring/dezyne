@@ -1,0 +1,12 @@
+verify: EventNotHandled: check: deterministic: ok
+verify: EventNotHandled: check: illegal: fail
+rp.oa
+verify: EventNotHandled: check: deadlock: fail
+rp.oa
+verify: EventNotHandled: check: compliance: fail
+pp.ia
+verify: EventNotHandled: check: livelock: ok
+verify: IA: check: deadlock: ok
+verify: IA: check: livelock: ok
+verify: IB: check: deadlock: ok
+verify: IB: check: livelock: ok

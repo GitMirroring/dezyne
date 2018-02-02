@@ -1,0 +1,2 @@
+out/RequiredOptional/RequiredOptional.dzn:1:1:i1: deadlock in model IRequiredOptional
+out/RequiredOptional/RequiredOptional.dzn:1:1:i3: deadlock in model RequiredOptional

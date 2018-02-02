@@ -1,0 +1,2 @@
+verify: ICallTrigger: check: deadlock: ok
+verify: ICallTrigger: check: livelock: ok

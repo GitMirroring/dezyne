@@ -1,0 +1,2 @@
+verify: SwitchPressIF: check: deadlock: ok
+verify: SwitchPressIF: check: livelock: ok

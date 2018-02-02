@@ -1,0 +1,2 @@
+verify: NonDetHiddenTransition: check: deadlock: ok
+verify: NonDetHiddenTransition: check: livelock: fail

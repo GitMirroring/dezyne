@@ -1,0 +1,3 @@
+verify: IRequiredOptional: check: deadlock: fail
+deadlock in model IRequiredOptional
+verify: IRequiredOptional: check: livelock: ok

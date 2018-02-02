@@ -1,0 +1,8 @@
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: Recursion: check: deterministic: ok
+verify: Recursion: check: illegal: ok
+verify: Recursion: check: deadlock: ok
+verify: Recursion: check: compliance: ok
+verify: Recursion: check: livelock: fail
+i.e

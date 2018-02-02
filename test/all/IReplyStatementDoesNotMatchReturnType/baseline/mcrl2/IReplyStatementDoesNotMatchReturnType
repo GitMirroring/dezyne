@@ -1,0 +1,3 @@
+verify: IReplyStatementDoesNotMatchReturnType: check: deadlock: fail
+IReplyStatementDoesNotMatchReturnType.ia
+verify: IReplyStatementDoesNotMatchReturnType: check: livelock: ok

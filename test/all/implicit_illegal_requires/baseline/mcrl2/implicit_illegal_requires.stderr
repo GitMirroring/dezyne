@@ -1,0 +1,3 @@
+out/implicit_illegal_requires/implicit_illegal_requires.dzn:9:1:i1: deadlock in model i
+out/implicit_illegal_requires/implicit_illegal_requires.dzn:9:1:i3: deadlock in model implicit_illegal_requires
+out/implicit_illegal_requires/implicit_illegal_requires.dzn:21:13:i10: illegal

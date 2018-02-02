@@ -1,0 +1,5 @@
+verify: missingstate: check: deadlock: fail
+missingstate.e
+missingstate.a
+missingstate.return
+verify: missingstate: check: livelock: ok

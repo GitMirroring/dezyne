@@ -1,0 +1,2 @@
+verify: IConsole: check: deadlock: ok
+verify: IConsole: check: livelock: ok

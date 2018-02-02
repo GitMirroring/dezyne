@@ -1,0 +1,2 @@
+verify: ITransfer: check: deadlock: ok
+verify: ITransfer: check: livelock: ok

@@ -1,0 +1,9 @@
+verify: ComponentIsNonCompliantWithInterface: check: deterministic: ok
+verify: ComponentIsNonCompliantWithInterface: check: illegal: ok
+verify: ComponentIsNonCompliantWithInterface: check: deadlock: ok
+verify: ComponentIsNonCompliantWithInterface: check: compliance: fail
+pp.ia
+pp.return
+verify: ComponentIsNonCompliantWithInterface: check: livelock: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok

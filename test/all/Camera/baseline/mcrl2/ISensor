@@ -1,0 +1,2 @@
+verify: ISensor: check: deadlock: ok
+verify: ISensor: check: livelock: ok

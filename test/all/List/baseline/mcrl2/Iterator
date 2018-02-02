@@ -1,0 +1,2 @@
+verify: Iterator: check: deadlock: ok
+verify: Iterator: check: livelock: ok

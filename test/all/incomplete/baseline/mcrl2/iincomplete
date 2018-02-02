@@ -1,0 +1,2 @@
+verify: iincomplete: check: deadlock: ok
+verify: iincomplete: check: livelock: ok

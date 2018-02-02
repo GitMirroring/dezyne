@@ -1,0 +1,2 @@
+verify: IMemory: check: deadlock: ok
+verify: IMemory: check: livelock: ok

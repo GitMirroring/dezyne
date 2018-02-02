@@ -1,0 +1,2 @@
+out/Incomplete/Incomplete.dzn:9:8:i13: deadlock in model Incomplete
+out/Incomplete/Incomplete.dzn:9:8:i17: pp.missing (implicitly) illegal

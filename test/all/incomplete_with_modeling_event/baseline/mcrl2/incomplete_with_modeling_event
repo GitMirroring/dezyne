@@ -1,0 +1,8 @@
+verify: iincomplete_with_modeling_event: check: deadlock: ok
+verify: iincomplete_with_modeling_event: check: livelock: ok
+verify: incomplete_with_modeling_event: check: deterministic: ok
+verify: incomplete_with_modeling_event: check: illegal: ok
+verify: incomplete_with_modeling_event: check: deadlock: ok
+verify: incomplete_with_modeling_event: check: compliance: fail
+p.e
+verify: incomplete_with_modeling_event: check: livelock: ok

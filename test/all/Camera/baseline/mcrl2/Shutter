@@ -1,0 +1,7 @@
+verify: IShutter: check: deadlock: ok
+verify: IShutter: check: livelock: ok
+verify: Shutter: check: deterministic: ok
+verify: Shutter: check: illegal: ok
+verify: Shutter: check: deadlock: ok
+verify: Shutter: check: compliance: ok
+verify: Shutter: check: livelock: ok

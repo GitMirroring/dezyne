@@ -1,0 +1,2 @@
+verify: isingle_tau_to_multiple_tau_should_not_refine: check: deadlock: ok
+verify: isingle_tau_to_multiple_tau_should_not_refine: check: livelock: ok

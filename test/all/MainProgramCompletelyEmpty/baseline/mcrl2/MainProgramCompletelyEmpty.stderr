@@ -1,0 +1,2 @@
+out/MainProgramCompletelyEmpty/MainProgramCompletelyEmpty.dzn:1:1:i2: deadlock in model MainProgramCompletelyEmpty
+out/MainProgramCompletelyEmpty/MainProgramCompletelyEmpty.dzn:21:8:i5: pp.ia (implicitly) illegal

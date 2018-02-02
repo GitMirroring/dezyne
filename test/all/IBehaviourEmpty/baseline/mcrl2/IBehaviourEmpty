@@ -1,0 +1,2 @@
+verify: IBehaviourEmpty: check: deadlock: fail
+verify: IBehaviourEmpty: check: livelock: ok
