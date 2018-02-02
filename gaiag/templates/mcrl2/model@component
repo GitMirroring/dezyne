@@ -1,0 +1,67 @@
+sort #x:global-type
+     #x:sort-interface
+     #x:sort-component
+     ActionUnion = struct #x:action-union-struct;
+     Void = struct void;
+
+map  #x:interfaces-allow-dillegals
+     #x:mcrl2-model-name'allow_dillegals : Bool;
+     QueueLength: Nat;
+
+eqn  QueueLength = 3;
+
+act  #x:interface-action-alphabet
+     #x:mcrl2-model-name'store_global_in;
+     #x:mcrl2-model-name'store_reply_in: #x:provided-port-type'ReplyUnion;
+     #x:mcrl2-model-name'load_reply_out: #x:provided-port-type'ReplyUnion;
+     #x:mcrl2-model-name'store_reply: #x:provided-port-type'ReplyUnion;
+     #x:mcrl2-model-name'load_global_in;
+     #x:mcrl2-model-name'store_global;
+     #x:mcrl2-model-name'load_global;
+     #x:mcrl2-model-name'store_reply_out: #x:provided-port-type'ReplyUnion;
+     #x:mcrl2-model-name'store_flags: Bool;
+     #x:mcrl2-model-name'load_flags_out: Bool;
+     #x:mcrl2-model-name'store_flags_in: Bool;
+     #x:mcrl2-model-name'store_global_out;
+     #x:mcrl2-model-name'store_flags_out: Bool;
+     #x:mcrl2-model-name'load_reply_in: #x:provided-port-type'ReplyUnion;
+     #x:mcrl2-model-name'load_reply: #x:provided-port-type'ReplyUnion;
+     #x:mcrl2-model-name'load_global_out;
+     #x:mcrl2-model-name'load_flags: Bool;
+     #x:mcrl2-model-name'load_flags_in: Bool;
+     #x:port-action-alphabet
+     internal;
+     illegal;
+     dillegal;
+     block_illegal;
+     double_reply_error;
+     no_reply_error;
+     range_error;
+     empty_queue;
+     empty_queue_c;
+     queue_empty;
+
+glob #x:global-interface-reply
+
+proc
+     Illegal = illegal . Illegal;
+
+     Dillegal = dillegal . Dillegal;
+
+     #x:mcrl2-interface-process
+
+     #x:mcrl2-component-process
+
+#x:mcrl2-references-sort #x:mcrl2-return-process
+
+     #x:mcrl2-component-queues
+
+     #x:mcrl2-run2completion
+
+     #x:mcrl2-component-rc-required-port
+
+     #x:mcrl2-component-rc-provided-port
+
+     #x:mcrl2-required-with-out-event
+
+     #x:mcrl2-implementation
