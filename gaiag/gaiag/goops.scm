@@ -392,6 +392,9 @@
 (define-class <int-node> (<type-node>)
   (range #:getter .range #:init-form (make <range-node>) #:init-keyword #:range))
 
+(define-method (.name.name (o <int-node>))
+  ((compose symbol->string .name .name) o))
+
 (define-class <range-node> (<ast-node>)
   (from #:getter .from #:init-value 0 #:init-keyword #:from)
   (to #:getter .to #:init-value 0 #:init-keyword #:to))
