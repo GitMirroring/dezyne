@@ -600,7 +600,10 @@
   (mcrl2:expand-types (.type o)))
 
 (define-method (mcrl2:expand-types (o <call>))
-  (mcrl2:expand-types ((compose .signature .function) o)))
+  ((compose mcrl2:expand-types .signature .function) o))
+
+(define-method (mcrl2:expand-types (o <action>))
+  ((compose mcrl2:expand-types .signature .event) o))
 
 (define-method (mcrl2:expand-types (o <event>))
   (mcrl2:expand-types ((compose .type .signature) o)))
@@ -826,7 +829,8 @@
     (($ <action>) (port (.port o) o))
     (($ <the-end>) ((compose (cut port <> o) .port .trigger) o))
     (($ <on>) ((compose (cut port <> o) .port car .elements .triggers) o))
-    (($ <variable>) ((compose trigger-port .expression) o))))
+    (($ <variable>) ((compose trigger-port .expression) o))
+    (($ <assign>) ((compose trigger-port .expression) o))))
 
 (define-template x:trigger-port-type trigger-port-type)
 (define-method (port-type p o)
@@ -838,7 +842,8 @@
     (($ <action>) (port-type (.port o) o))
     (($ <the-end>) ((compose (cut port-type <> o) .port .trigger) o))
     (($ <on>) ((compose (cut port-type <> o) .port car .elements .triggers) o))
-    (($ <variable>) ((compose trigger-port-type .expression) o))))
+    (($ <variable>) ((compose trigger-port-type .expression) o))
+    (($ <assign>) ((compose trigger-port-type .expression) o))))
 
 (define-template x:trigger-port-type-reply trigger-port-type-reply)
 (define-method (trigger-port-type-reply (o <the-end>))
@@ -994,8 +999,9 @@
 (define-template x:variable-expression .expression)
 (define-template x:assign-expression .expression)
 
-(define-method (assign-function-name o) ((compose .function.name .call) o))
-(define-template x:assign-function-name assign-function-name)
+
+(define-template x:assign-function-name (compose .function.name .call))
+(define-template x:assign-action-name (compose .name .event .expression))
 (define-template x:var-action-name (compose .name .event .expression))
 (define-template x:call-function-name (compose .function.name .expression))
 (define-template x:action-type action-type)
