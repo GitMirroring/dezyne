@@ -494,8 +494,18 @@
 (define-template x:references references 'pipe-infix)
 (define-template x:resolve-reference references 'else-infix)
 (define-template x:return-types typed-functions 'comma-suffix)
+(define-template x:other-function-returns other-functions 'comma-prefix)
+(define-template x:init-return-value (compose .type .signature))
+(define (other-functions o)
+  (let* ((function (parent <function> o))
+         (model (parent <model> function))
+         (functions (typed-functions model))
+         (functions (filter (lambda (f) (not (om:equal? f function))) functions)))
+    functions))
+
 (define (typed-functions o)
   (filter (lambda (f) (not (is-a? ((compose .type .signature) f) <void>))) ((compose ast:function* .behaviour) o)))
+
 (define (references o)
   (let* ((variablebycalls ((om:collect (lambda (o) (and (is-a? o <variable>) (is-a? (.expression o) <call>)))) o))
          (assignbycalls ((om:collect (lambda (o) (and (is-a? o <assign>) (is-a? (.expression o) <call>)))) o))
