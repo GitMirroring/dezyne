@@ -35,6 +35,23 @@ var output = {
     output.result.items = [];
   }
   ,
+  read_outcome: function(item) {
+    var outcome = aspects.empty_outcome();
+
+    try {
+      var outcome_string = fs.readFileSync(item+'/outcome.json');
+      try {
+        outcome = JSON.parse (outcome_string);
+      } catch (e) {
+        console.log('[ERROR]: '+ item + '/outcome.json is not a valid JSON object');
+      }
+      return outcome;
+    } catch (e) {
+      console.log('[ERROR]: '+ item + '/outcome.json is missing');
+    }
+    return outcome;
+  }
+  ,
   close: function() {
     function nolanguages() {
       var result = {};
@@ -43,27 +60,11 @@ var output = {
       });
       return result;
     }
-    function read_outcome(item) {
-      var outcome = aspects.empty_outcome();
-
-      try {
-        var outcome_string = fs.readFileSync(item+'/outcome.json');
-        try {
-          outcome = JSON.parse (outcome_string);
-        } catch (e) {
-          console.log('[ERROR]: '+ item + '/outcome.json is not a valid JSON object');
-        }
-        return outcome;
-      } catch (e) {
-        console.log('[ERROR]: '+ item + '/outcome.json is missing');
-      }
-      return outcome;
-    }
 
     output.result.endTime = new Date();
     output.result.elapsedTime = util.elapsedTime(output.result.startTime, output.result.endTime, false);
     output.result.items.each(function(item) {
-      item.outcome = read_outcome(path.dirname (output.filePath)+'/'+path.basename(item.name));
+      item.outcome = output.read_outcome(path.dirname (output.filePath)+'/'+path.basename(item.name));
     });
     set_status(output.result);
     if (output.write) {
@@ -87,6 +88,7 @@ function parse_opts(argv) {
     ['j', 'jobs=JOBS', 'run a maximum of JOBS in parallel, default is 1'],
     ['o', 'output=OUTPUT', 'write output to OUTPUT [out/TARGET.html]'],
     ['c', 'collect', 'do not execute, but collect results from previous runs'],
+    ['f', 'failedonly', 'execute failed items from previous run'],
     ['q', 'quiet', 'suppress test summary lines on stdout'],
     ['s', 'summary', 'show only summary lines on stdout'],
   ]);
@@ -154,6 +156,47 @@ function execute(dir, args) {
           });
       }});
   return util.parallel_n(worklist, args.options.jobs);
+}
+
+function executefailedonly(dir, args) {
+  var worklist = get_testdir_list(dir)
+      .filter(function(item) {
+        var outcome = output.read_outcome(path.dirname (output.filePath)+'/'+path.basename(item));
+        if (outcome) {
+          outcome = outcome.status;
+          failed = 0;
+          Object.keys(outcome).each(function(aspect) {
+            function checkstatus(status) {
+              if (status=='FAILED'||status=='ERROR'||status=='NOLOG') failed++;
+            }
+            var aspoutcome = outcome[aspect];
+            if (typeof aspoutcome !== 'string') {
+              Object.keys(aspoutcome).each(function(language) {
+                checkstatus(aspoutcome[language]);
+              });
+            } else {
+              checkstatus(aspoutcome);
+            }
+          });
+          return failed>0
+        } else return true;
+      })
+      .map(function(item) {
+        console.log("filtered item: %j",item);
+        return function(session) {
+          console.log('[....] ' + item);
+          return util.run(session, item, args.argv.slice(1), !(args.options.quiet || args.options.summary))
+            .then(function(result) {
+              output.log(item, result); //FIXME write the result to output
+              console.log((result.exitcode === 0 ? '[PASS] ' : '[FAIL] ') + item);
+              return {item:item, result:result, session:session};
+            });
+        }});
+  if (worklist.length) {
+    return util.parallel_n(worklist, args.options.jobs);
+  } else {
+    return 0;
+  }
 }
 
 function collect(dir) {
@@ -267,9 +310,11 @@ function main() {
     .then (function () {
       return output.open(name, title, dir, args.options.output);
     })
-    .then(function (){
+    .then(function () {
       if (args.options.collect) {
         return collect(dir);
+      } else if (args.options.failedonly) {
+        return executefailedonly(dir, args);
       } else {
         return execute(dir, args);
       }
