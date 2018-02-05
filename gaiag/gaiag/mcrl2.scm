@@ -255,30 +255,31 @@
 	    (clone o #:statement (ast-transform-return model (.statement o))))
            (_ o))))
 
-(define* ((root-purge-data #:optional (model #f)) o)
-  (let ((model (or model o)))
-    (match o
-	   (($ <root>)
-	    (clone o #:elements (map (root-purge-data) (filter (negate (is? <extern>)) (.elements o)))))
-	   (($ <component>)
-	    (clone o #:behaviour ((root-purge-data model) (.behaviour o))))
-	   (($ <interface>)
-	    (clone o
-		   #:events ((root-purge-data model) (.events o))
-		   #:behaviour ((root-purge-data model) (.behaviour o))))
-	   (($ <events>)
-	    (clone o #:elements (map (root-purge-data model) (.elements o))))
-	   (($ <event>)
-	    (clone o #:signature ((root-purge-data model) (.signature o))))
-	   (($ <signature>)
-	    (clone o #:formals (make <formals>)))
-	   (($ <behaviour>)
-	    (clone o
-		   #:types (make <types> #:elements (purge-data model (.elements (.types o))))
-		   #:variables (make <variables> #:elements (filter (lambda (x) (not (om:extern model x))) (.elements (.variables o))))
-		   #:functions (make <functions> #:elements (purge-data model (.elements (.functions o))))
-		   #:statement (purge-data model (.statement o))))
-           (_ o))))
+(define (root-purge-data o)
+  (match o
+    (($ <action>)
+     (clone o #:arguments (make <arguments>)))
+
+    (($ <trigger>)
+     (clone o #:formals (make <formals>)))
+
+    ((? (is? <ast-list>))
+     (clone o #:elements (filter-map root-purge-data (.elements o))))
+
+    (($ <extern>) #f)
+    (($ <assign>)
+     (and (not (is-a? (.type (.variable o)) <extern>))
+          (clone o #:expression (root-purge-data (.expression o)))))
+    (($ <formal>) (and (not (is-a? (.type o) <extern>)) o))
+    (($ <variable>) (and (not (is-a? (.type o) <extern>))
+                         (clone o #:expression (root-purge-data (.expression o)))))
+
+    (($ <var>) (and (not (is-a? ((compose .type .variable) o) <extern>))
+                    o))
+
+    ((and ($ <return>) (= .expression ($ <data-expr>))) (clone o #:expression #f))
+    ((? (is? <ast>)) (tree-map root-purge-data o))
+    (_ o)))
 
 (define (om:models o)
   (clone o #:elements (filter (conjoin (is? <model>) om:behaviour?) (.elements o))))
@@ -317,14 +318,14 @@
 (define (mcrl2:om root) ;; FIXME: already root/om
   ((compose
     (annotate-path '())
-;;    (lambda (o) ((compose pretty-print om->list) o) o)
     flatten-compound
     ast-complete-elses
     ast-annotate-illegals
     ast-transform-event-ends
     transform-compounds
     flatten-compound
-    (root-purge-data)
+    ;;(lambda (o) (pretty-print (om->list o) (current-error-port)) o)
+    root-purge-data
     (root-add-voidreply)
     ast-tail-calls
     ast-add-skips

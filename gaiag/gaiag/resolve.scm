@@ -468,12 +468,12 @@
          (if (null? statements)
              '()
              (let* ((statement (car statements))
+                    (statement ((resolve model locals) statement))
                     (locals (match statement
                               (($ <variable>)
-                               (acons (.name statement) statement locals))
+                               (acons (.name statement) ((resolve model locals) statement) locals))
                               (_ locals))))
-               (let ((resolved ((resolve model locals) (car statements))))
-                 (cons resolved (loop (cdr statements) locals))))))))
+               (cons statement (loop (cdr statements) locals)))))))
 
     (($ <blocking>)
      (clone o #:statement ((resolve model locals) (.statement o))))
@@ -521,10 +521,13 @@
      (let* ((ports (clone (.ports o) #:elements (map (resolve model '()) ((compose .elements .ports) o))))
             (o (clone o #:ports ports))
             (model (clone model #:behaviour o))
+
+            (o (clone o #:variables ((resolve model '()) (.variables o))))
+            (model (clone model #:behaviour o))
+
             (functions (clone (.functions o) #:elements (map (resolve model '()) ((compose .elements .functions) o))))
             (o (clone o #:functions functions))
-            (model (clone model #:behaviour o))
-            (o (clone o #:variables ((resolve model '()) (.variables o))))
+
             (model (clone model #:behaviour o)))
        (clone o #:statement ((resolve model '()) (.statement o)))))
 
