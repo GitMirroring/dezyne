@@ -2,7 +2,7 @@
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -353,7 +353,8 @@
      (if (and (pair? (.elements o)) (is-a? (car (.elements o)) <guard>) (null? (filter (is? <otherwise>) (.elements o))))
          (clone o #:elements (append (.elements o) (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal>)))))
          (failure)))
-    (($ <interface>) o)
+    (($ <interface>)
+     (clone o #:behaviour ((add-illegals o) (.behaviour o))))
     (($ <system>) o)
     (($ <foreign>) o)
     ((? (is? <ast>)) (tree-map (add-illegals model) o))

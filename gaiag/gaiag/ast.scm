@@ -3,7 +3,7 @@
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
-;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -216,6 +216,10 @@
 
 (define-method (ast:in-triggers (o <component-model>))
   (append (ast:provided-in-triggers o) (ast:required-out-triggers o)))
+
+(define-method (ast:in-triggers (o <interface>))
+  (map (lambda (event) (make <trigger> #:event event #:formals ((compose .formals .signature) event)))
+       (ast:event* o)))
 
 (define-method (ast:provided-out-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)

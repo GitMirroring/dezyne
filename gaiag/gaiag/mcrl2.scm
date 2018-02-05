@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -1072,7 +1074,8 @@
 
 (define-method (first-process (o <ast>))
   (let loop ((process o))
-     (if (not (is-a? process <compound>))
+    (if (or (not (is-a? process <compound>))
+            (null? (.elements process)))
 	 process
 	 (loop ((compose car .elements) process)))))
 
