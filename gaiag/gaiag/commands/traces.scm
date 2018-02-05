@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -127,7 +127,7 @@ errors."
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
          (gdzn-verbose? (or (find (cut equal? <> "--verbose") (command-line))
                             (find (cut equal? <> "-v") (command-line))))
-         (root ((compose ast:resolve parse->om) ast))
+         (root ((compose ast:resolve tick-names parse->om) ast))
          (root (mcrl2:om root))
          (cwd (getcwd))
          (tmp (string-append (tmpnam) "-traces"))

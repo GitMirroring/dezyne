@@ -36,6 +36,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 receive)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
 
@@ -61,6 +62,7 @@
   #:use-module (gaiag xpand)
 
   #:export (mcrl2:om
+            tick-names
 	    root->
             globals-from-scope))
 
@@ -255,6 +257,78 @@
 	    (clone o #:statement (ast-transform-return model (.statement o))))
            (_ o))))
 
+(define %count (make-parameter 0))
+(define (tick-names o)
+  (parameterize ((%count 0))
+    ((tick-names- '()) o)))
+
+(define ((tick-names- names) o)
+  (define (append-tick o)
+    (and o (let ((count (or (assoc-ref names o) 0)))
+             (symbol-append o (string->symbol (string-append "'" (if (zero? count) "" (number->string count))))))))
+  (match o
+    (($ <root>) (let ((r (tree-map (tick-names- names) o)))
+                  ;; (stderr "root:")
+                  ;; (pretty-print (om->list r) (current-error-port))
+                  r))
+    (($ <behaviour>)
+     (let ((names (map (cut cons <> 0) (map .name (ast:variable* o)))))
+       (clone o
+              #:variables ((compose (tick-names- names) .variables) o)
+              #:functions ((compose (tick-names- names) .functions) o)
+              #:statement ((compose (tick-names- names) .statement) o))))
+    (($ <var>) (clone o #:variable ((compose append-tick .variable) o)))
+    (($ <field-test>) (clone o #:variable ((compose append-tick .variable) o)))
+    ;; (($ <scope-name>) (clone o #:scope (map append-tick (.scope o))
+    ;;                          #:name (append-tick o)))
+    ;; (($ <action>) (clone o #:port ((compose append-tick .port@) o)
+    ;;                       #:event ((compose append-tick .event) o)))
+    ;; (($ <event>) (clone o #:name ((compose append-tick .name) o)))
+    ;; (($ <port>) (clone o #:name ((compose append-tick .name) o)))
+    ;; (($ <trigger>) (clone o #:port ((compose append-tick .port@) o)
+    ;;                       #:event ((compose append-tick .event) o)))
+    ;; (($ <enum-literal>) (clone o #:field ((compose append-tick .field) o)))
+    (($ <formal>) (clone o #:name ((compose append-tick .name) o)))
+    (($ <function>)
+     (let* ((signature (.signature o))
+            (type ((compose (tick-names- names) .type) signature)))
+       (receive (names formals)
+           (let loop ((formals (ast:formal* signature)) (bumped '()) (names names))
+             (define (bump-tick name)
+               (%count (1+ (%count)))
+               (acons name (%count) names))
+             (if (null? formals) (values names bumped)
+                 (let* ((formal (car formals))
+                        (names (bump-tick (.name formal)))
+                        (formal ((tick-names- names) formal)))
+                   (loop (cdr formals) (append bumped (list formal)) names))))
+         (clone o #:name ((compose append-tick .name) o)
+                #:signature (clone signature #:type type #:formals (clone (.formals signature) #:elements formals))
+                #:statement ((compose (tick-names- names) .statement) o)))))
+    (($ <call>) (clone o
+                       #:function ((compose append-tick .function@) o)
+                       #:arguments ((compose (tick-names- names) .arguments) o)))
+    (($ <assign>) (clone o #:variable ((compose append-tick .variable) o)
+                         #:expression ((compose (tick-names- names) .expression) o)))
+    (($ <variable>) (clone o #:name ((compose append-tick .name) o)
+                           #:expression ((compose (tick-names- names) .expression) o)))
+    (($ <compound>)
+     (clone o
+            #:elements
+            (let loop ((statements (ast:statement* o)) (names names))
+              (define (bump-tick name)
+                (%count (1+ (%count)))
+                (acons name (%count) names))
+              (if (null? statements) '()
+                  (let* ((statement (car statements))
+                         (names (if (is-a? statement <variable>)
+                                    (bump-tick (.name statement))
+                                    names))
+                         (statement ((tick-names- names) statement)))
+                    (cons statement (loop (cdr statements) names)))))))
+    ((? (is? <ast>)) (tree-map (tick-names- names) o))
+    (_ o)))
+
 (define (root-purge-data o)
   (match o
     (($ <action>)
@@ -332,6 +406,7 @@
     (expand-on)
     norm-state
     code-norm-event
+    ;;(lambda (o) (pretty-print (om->list o) (current-error-port)) o)
     ) root))
 
 ;; (define (mcrl2:om ast)
@@ -393,7 +468,7 @@
          (file-name (cond ((equal? dir "-") dir)
 			  (dir (string-append dir "/" file-name))
 			  (else file-name)))
-         (root ((compose ast:resolve parse->om) ast))
+         (root ((compose ast:resolve tick-names parse->om) ast))
 	 (root (mcrl2:om root))
          (ast? (command-line:get 'ast #f))
          (->mcrl2 (if ast? root->sexp
