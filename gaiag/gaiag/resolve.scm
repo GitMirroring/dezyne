@@ -3,7 +3,7 @@
 ;; Copyright © 2014  Rutger van Beusekom
 ;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;; Copyright © 2014, 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -449,14 +449,15 @@
      (clone o #:left ((resolve model locals) left) #:right ((resolve model locals) right)))
 
     (($ <function>)
-     (let* ((formals ((compose .elements .formals .signature) o))
+     (let* ((signature ((resolve model locals) (.signature o)))
+            (formals ((compose .elements .formals) signature))
             (locals (let loop ((formals formals) (locals locals))
                      (if (null? formals)
                          locals
                          (loop (cdr formals)
                                (acons (.name (car formals)) (car formals) locals))))))
        (clone o
-         #:signature ((resolve model locals) (.signature o))
+         #:signature signature
          #:recursive (and ((recurses? model) (.name o)) 'recursive)
          #:statement ((resolve model locals) (.statement o)))))
 
