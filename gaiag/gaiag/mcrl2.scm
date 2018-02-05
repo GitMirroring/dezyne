@@ -724,8 +724,7 @@
   (let* ((parent (parent <model> o))
 	 (behaviour (.behaviour parent))
 	 (vars ((compose .elements .variables) behaviour)))
-    (append-map (lambda (v)
-		  (list (string-append (symbol->string (.name v)) ": " (mcrl2-type (.type v))))) vars)))
+    vars))
 
 (define-method (locals (o <ast>))
   (let* ((vars (locals- o '())))
