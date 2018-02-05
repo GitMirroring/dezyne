@@ -134,7 +134,7 @@ errors."
          (foo (mkdir tmp)))
     (chdir tmp)
     (with-output-to-file "verify.mcrl2" (cut root-> root))
-    (let* ((lts (component-lts modelname root gdzn-verbose?)))
+    (let* ((lts (component-lts modelname root)))
       (chdir cwd)
       (string-append tmp "/" lts))
     ))

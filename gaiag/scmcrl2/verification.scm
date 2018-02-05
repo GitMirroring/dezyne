@@ -88,6 +88,7 @@
     (match lpstype
       ('deterministic (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'determinism-init@ast) " | mcrl22lps -b -lstack > " lps)))
       ('component (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'component-init@ast) " | mcrl22lps -b -lstack > " lps)))
+      ('interface (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'interface-init@ast) " | mcrl22lps -b -lstack > " lps)))
       ('provided (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'compliance-init@ast) " | mcrl22lps -b -lstack > " lps))))
     (reduce-lps lps)))
 
@@ -105,9 +106,10 @@
   (assert-system (string-append "ltsconvert -edpbranching-bisim " lts " " lts))
   lts)
 
-(define (component-lts model-name ast verbose?)
+(define (component-lts model-name ast)
   (let* ((component (find (lambda (x) (equal? (symbol->string (om:name x)) model-name)) (filter (is? <component>) (.elements ast))))
-         (lps (create-lps "verify.mcrl2" 'component ast))
+         (interface (find (lambda (x) (equal? (symbol->string (om:name x)) model-name)) (filter (is? <interface>) (.elements ast))))
+         (lps (create-lps "verify.mcrl2" (if component 'component 'interface) (if component ast interface)))
          (lts (create-lts lps))
          (lts (reduce-lts lts)))
     lts))
