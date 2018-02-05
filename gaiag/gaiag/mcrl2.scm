@@ -542,12 +542,6 @@
 	       ((compose .elements .fields) o))) 'pipe-infix)
 (define-template x:reply-union-struct mcrl2:reply-types 'pipe-infix <type>)
 
-(define-template x:global? global?)
-(define-method (global? o) (let ((name (.scope (.name o))))
-                           (if (and (null? name) (is-a? o <enum>))
-                               (list "global''")
-                               "")))
-(define-method (global? (o <event>)) ((compose global? .type .signature) o))
 (define-method (scope o) (let ((name (.scope (.name o))))
                            (if (null? name)
                                (list "global'")
