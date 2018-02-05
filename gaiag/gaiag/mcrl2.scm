@@ -4,7 +4,6 @@
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -501,9 +500,9 @@
 (define-template x:references references 'pipe-infix)
 (define-template x:resolve-reference references 'else-infix)
 (define-template x:return-types typed-functions 'comma-suffix)
-(define-template x:other-function-returns other-functions 'comma-prefix)
+(define-template x:other-function-returns other-function-returns 'comma-infix)
 (define-template x:init-return-value (compose .type .signature))
-(define (other-functions o)
+(define (other-function-returns o)
   (let* ((function (parent <function> o))
          (model (parent <model> function))
          (functions (typed-functions model))
@@ -523,6 +522,12 @@
 (define-template x:valued-return
   (lambda (o)
     (or (.expression o) "")) #f <expression>)
+
+(define-template x:valued-comma
+  (lambda (o)
+    (or (and (.expression o)
+             (pair? (other-function-returns o))
+             ",") "")) #f <expression>)
 
 (define-template x:mcrl2-return-process
   (lambda (o)
