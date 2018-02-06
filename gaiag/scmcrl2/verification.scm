@@ -86,10 +86,10 @@
 (define (create-lps mcrl2 lpstype ast)
   (let ((lps (string-append (basename mcrl2 ".mcrl2") "_" (->string lpstype) ".lps")))
     (match lpstype
-      ('deterministic (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'determinism-init@ast) " | mcrl22lps -b -lstack > " lps)))
-      ('component (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'component-init@ast) " | mcrl22lps -b -lstack > " lps)))
-      ('interface (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'interface-init@ast) " | mcrl22lps -b -lstack > " lps)))
-      ('provided (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'compliance-init@ast) " | mcrl22lps -b -lstack > " lps))))
+      ('deterministic (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'determinism-init@ast) " | mcrl22lps -b -lstack 2> mcrl22lps-deterministic.stderr > " lps)))
+      ('component (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'component-init@ast) " | mcrl22lps -b -lstack 2> mcrl22lps-component.stderr > " lps)))
+      ('interface (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'interface-init@ast) " | mcrl22lps -b -lstack 2> mcrl22lps-interface.stderr > " lps)))
+      ('provided (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'compliance-init@ast) " | mcrl22lps -b -lstack 2> mcrl22lps-provided.stderr > " lps))))
     (reduce-lps lps)))
 
 (define (create-if-lps mcrl2 lpstype ast)
