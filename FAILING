@@ -12,23 +12,22 @@ DONE
 * Injected, Alarm_mangle: mcrl2 generator: (test running parallel issue)
 * addint (int-expressions added to type matcher)
 * amended version of hellodata
+* Reply3: mcrl2 function continuation duplicate
 * Reply4: mcrl2 code generator
+* shadow_reply: mcrl2 implement shadowing of variables
 
 JOHRI
 * CompletenessReplyValueNotSet: mcrl2 parse error (missing reply)
 * silentoptional: void reply on modeling event => fix ast transformation
 
-* Reply3: mcrl2 function continuation duplicate
 * verify: mcrl2: Double declaration of recognizer is'verify'142'ref.
-
-* range: mcrl2 parameter list mismatch (function dispatch)
 
 
 NAMESPACE
 * foreign: empty root "S_Component" cannot be found
 
 TODO
-* shadow_reply: mcrl2 implement shadowing of variables
+* range: mcrl2 parameter list mismatch (function dispatch)
 * IReplyStatementDoesNotMatchReturnType,
 ReplyNotAllowedForModellingEvent, ReplyNotAllowedByRequiresPort: mcrl2
 parse error (wrong reply type)
