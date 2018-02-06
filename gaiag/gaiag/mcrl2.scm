@@ -199,6 +199,19 @@
 ;;     ((? (is? <ast>)) (tree-map (ast-add-illegals model) o))
 ;;     (_ o)))
 
+(define (add-skip-after-assign o)
+  (match o
+    (($ <compound>)
+     (let* ((statements (map add-skip-after-assign (ast:statement* o)))
+            (statements (if (and (pair? statements)
+                                 (or (is-a? (last statements) <assign>)
+                                     (is-a? (last statements) <variable>)))
+                            (append statements (list (make <skip>)))
+                            statements)))
+       (clone o #:elements statements)))
+    ((? (is? <ast>)) (tree-map add-skip-after-assign o))
+    (_ o)))
+
 (define (ast-add-skips o)
   (match o
     ((and ($ <compound>) (= .elements '())) (make <skip>))
@@ -392,6 +405,7 @@
 (define (mcrl2:om root) ;; FIXME: already root/om
   ((compose
     (annotate-path '())
+    add-skip-after-assign
     flatten-compound
     ast-complete-elses
     ast-annotate-illegals
