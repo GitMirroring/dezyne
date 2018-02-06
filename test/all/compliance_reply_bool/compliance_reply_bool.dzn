@@ -1,0 +1,50 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface I
+{
+  in bool ia();
+  in bool ib();
+
+  behaviour
+  {
+    on ia: reply(true);
+    on ib: reply(true);
+    on ib: reply(false);
+  }
+}
+
+component compliance_reply_bool
+{
+  provides I pp;
+  requires I rp;
+
+  behaviour
+  {
+    bool bb = false;
+    [!bb] on pp.ia(): {bb = true; bool b = rp.ib(); reply(true);}
+    [bb] on pp.ia(): {bool b = rp.ib(); reply(b);}
+
+    on pp.ib(): {bool b = rp.ib(); reply(false);}
+  }
+}
