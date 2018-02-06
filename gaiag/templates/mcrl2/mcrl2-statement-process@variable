@@ -1,2 +1,2 @@
 #x:pretty-print-dzn
-     #x:mcrl2-process-name'#x:mcrl2-process-identifier(#x:process-parameters) = #x:var-decl-by-call? #x:var-decl-by-action? #x:process-continuation(#.name  = #x:variable-expression);
+     #x:mcrl2-process-name'#x:mcrl2-process-identifier(#x:process-parameters) = #x:var-decl-by-call? #x:var-decl-by-action? #x:process-continuation(#x:variable-in-scope?);

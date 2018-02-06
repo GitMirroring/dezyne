@@ -1137,6 +1137,21 @@
 (define-method (mcrl2:enum-literal (o <enum-literal>))
   (string-append ((compose ->string .scope .name .type) o) "'" ((compose ->string .name .name .type) o) "'" ((compose ->string .field) o)))
 
+(define-template x:variable-in-scope? mcrl2:variable-in-scope?)
+(define-template x:assign-in-scope? mcrl2:variable-in-scope?)
+(define-method (mcrl2:variable-in-scope? (o <assign>))
+  (let* ((cont (process-continuation o))
+         (cont-scope (variables-in-scope cont)))
+    (if (member (.variable o) cont-scope (lambda (a b) (eq? (.id a) (.id b))))
+        o
+        "")))
+(define-method (mcrl2:variable-in-scope? (o <variable>))
+  (let* ((cont (process-continuation o))
+         (cont-scope (variables-in-scope cont)))
+    (if (member o cont-scope (lambda (a b) (eq? (.id a) (.id b))))
+        o
+        "")))
+
 (define-method (process-continuation (o <ast>))
   (let* ((parent (.parent o)))
     (match parent
