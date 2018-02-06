@@ -555,6 +555,7 @@
       ((? (is? <bool-expr>)) 'Bool)
       (($ <var>) ((compose mcrl2:expand-types .type .variable) expr))
       (($ <enum-literal>)  ((compose mcrl2:expand-types .type) expr))
+      ((? (is? <int-expr>)) 'Int)
       (_ (mcrl2:expand-types (.type expr))))))
 
 (define-method (mcrl2:reply-type (o <action>))
