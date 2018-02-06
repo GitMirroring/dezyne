@@ -16,17 +16,7 @@ device2IF.Result_NOK
 startIF.startFailed
 startIF.startAll
 device1IF.turnon
-verify: StartDevices: check: deadlock: fail
-startIF.startAll
-device1IF.turnon
-device1IF.return
-startIF.return
-device1IF.ok
-device2IF.turnon
-device2IF.Result_NOK
-startIF.startFailed
-startIF.startAll
-device1IF.turnon
+verify: StartDevices: check: deadlock: ok
 verify: StartDevices: check: compliance: fail
 startIF.startAll
 device1IF.turnon

@@ -2,9 +2,7 @@ verify: ActionIsIllegal: check: deterministic: ok
 verify: ActionIsIllegal: check: illegal: fail
 pp.ia
 rp.ia
-verify: ActionIsIllegal: check: deadlock: fail
-pp.ia
-rp.ia
+verify: ActionIsIllegal: check: deadlock: ok
 verify: ActionIsIllegal: check: compliance: fail
 pp.ia
 rp.ia

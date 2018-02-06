@@ -10,13 +10,7 @@ rp.oa
 rp.oa
 rp.oa
 rp.oa
-verify: QueueFull: check: deadlock: fail
-pp.ia
-rp.ia
-rp.oa
-rp.oa
-rp.oa
-rp.oa
+verify: QueueFull: check: deadlock: ok
 verify: QueueFull: check: compliance: fail
 pp.ia
 rp.ia

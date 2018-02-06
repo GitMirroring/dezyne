@@ -4,6 +4,6 @@ verify: II: check: deadlock: ok
 verify: II: check: livelock: ok
 verify: range_runaway: check: deterministic: ok
 verify: range_runaway: check: illegal: fail
-verify: range_runaway: check: deadlock: fail
+verify: range_runaway: check: deadlock: ok
 verify: range_runaway: check: compliance: fail
 verify: range_runaway: check: livelock: ok

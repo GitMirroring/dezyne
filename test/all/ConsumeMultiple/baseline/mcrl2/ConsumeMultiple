@@ -8,15 +8,7 @@ src.done
 src.return
 src.ntfA
 src.done
-verify: ConsumeMultiple: check: deadlock: fail
-src.ntfA
-src.ack
-src.return
-src.ntfB
-src.done
-src.return
-src.ntfA
-src.done
+verify: ConsumeMultiple: check: deadlock: ok
 verify: ConsumeMultiple: check: compliance: fail
 src.ntfA
 src.ack

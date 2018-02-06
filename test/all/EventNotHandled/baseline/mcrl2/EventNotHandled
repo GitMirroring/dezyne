@@ -1,8 +1,7 @@
 verify: EventNotHandled: check: deterministic: ok
 verify: EventNotHandled: check: illegal: fail
 rp.oa
-verify: EventNotHandled: check: deadlock: fail
-rp.oa
+verify: EventNotHandled: check: deadlock: ok
 verify: EventNotHandled: check: compliance: fail
 pp.ia
 verify: EventNotHandled: check: livelock: ok

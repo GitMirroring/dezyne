@@ -27,28 +27,7 @@ console.return
 sensor.i_
 console.detected
 siren._i_
-verify: i_._i.i_1.i1_.namespace_assert: check: deadlock: fail
-console._i
-sensor.i_1
-sensor.return
-console.return
-sensor.i_
-console.detected
-siren._i_
-siren.return
-console._i1
-sensor.disable
-sensor.return
-console.return
-sensor.disabled
-console.deactivated
-console._i
-sensor.i_1
-sensor.return
-console.return
-sensor.i_
-console.detected
-siren._i_
+verify: i_._i.i_1.i1_.namespace_assert: check: deadlock: ok
 verify: i_._i.i_1.i1_.namespace_assert: check: compliance: fail
 console._i
 sensor.i_1

@@ -22,14 +22,7 @@ pp.test
 rp.Init
 rp.return
 rp.BridgeOpen
-verify: silent_fail: check: deadlock: fail
-pp.test
-rp.Init
-rp.return
-rp.BridgeOpen
-rp.return
-pp.return
-rp.BarDown
+verify: silent_fail: check: deadlock: ok
 verify: silent_fail: check: compliance: fail
 pp.test
 rp.Init

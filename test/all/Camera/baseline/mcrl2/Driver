@@ -13,20 +13,7 @@ control.return
 control.setup
 optics.prepare
 illegal
-verify: Driver: check: deadlock: fail
-control.setup
-optics.prepare
-optics.return
-acquisition.contrast_gradient
-acquisition.return
-control.return
-control.release
-acquisition.cancel
-acquisition.return
-control.return
-control.setup
-optics.prepare
-deadlock in model Driver
+verify: Driver: check: deadlock: ok
 verify: Driver: check: compliance: fail
 control.setup
 optics.prepare

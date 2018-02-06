@@ -21,28 +21,7 @@ console.return
 sensor.triggered
 console.detected
 siren.turnon
-verify: Alarm: check: deadlock: fail
-console.arm
-sensor.enable
-sensor.return
-console.return
-sensor.triggered
-console.detected
-siren.turnon
-siren.return
-console.disarm
-sensor.disable
-sensor.return
-console.return
-sensor.disabled
-console.deactivated
-console.arm
-sensor.enable
-sensor.return
-console.return
-sensor.triggered
-console.detected
-siren.turnon
+verify: Alarm: check: deadlock: ok
 verify: Alarm: check: compliance: fail
 console.arm
 sensor.enable
