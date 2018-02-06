@@ -94,7 +94,7 @@
 
 (define (create-if-lps mcrl2 lpstype ast)
   (let ((lps (string-append (basename mcrl2 ".mcrl2") "_" ((compose ->string om:name) ast) ".lps")))
-    (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'interface-init@ast) " | mcrl22lps -b -lstack > " lps))
+    (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'interface-init@ast) " | mcrl22lps -b > " lps))
     (reduce-lps lps)))
 
 (define (reduce-lps lps)
