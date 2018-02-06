@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -43,33 +44,27 @@
 
 (define (rename-lts-actions trace)
   (let* ((sorted-names (find-aliases "verify.mcrl2"))
-;;         (foo (stderr "trace: ~a\n" trace))
-	 ;; Remove reply variable wrappers
-	 (trace (regexp-substitute/global #f "\\breply_[^(]*\\(([^)]*)\\)" trace 'pre 1 'post))
-	 ;; Remove void return arguments
-	 (trace (regexp-substitute/global #f "('return\\([^,]+),\\s*void\\)" trace 'pre 1 ")" 'post))
-	 ;; Return statements with two arguments need special handling.
-	 ;; Only the part of the second argument after the single quote needs to be kept.
-	 (trace (regexp-substitute/global #f "'return\\(['\\w]+,\\s*\\w+'(\\w+)\\)" trace 'pre "." 1 'post))
-	 ;; Remove sort names
-	 (trace (let lp ((trc trace) (names sorted-names))
-		  (if (equal? names '())
-		      trc
-		      (lp (regexp-substitute/global #f (string-append "\\b" (car names) "'") trc 'pre "" 'post) (cdr names)))))
-	 ;; Remove numeric prefixes
-	 (trace (regexp-substitute/global #f "\\bi\\d+_" trace 'pre "" 'post))
-	 (trace (regexp-substitute/global #f "'event\\(" trace 'pre "." 'post))
- 	 (trace (regexp-substitute/global #f "\\b\\w+'flush\\b" trace 'pre "" 'post))
-	 (trace (regexp-substitute/global #f "\\b\\(" trace 'pre "." 'post))
-	 (trace (regexp-substitute/global #f "\\)" trace 'pre "" 'post))
-	 (trace (regexp-substitute/global #f "'return\\.\\w+" trace 'pre ".return" 'post))
-	 (trace (regexp-substitute/global #f "\\b\\w+'inevitable\\b" trace 'pre "" 'post))
-	 (trace (regexp-substitute/global #f "\\b\\w+'optional\\b" trace 'pre "" 'post))
-	 (trace (regexp-substitute/global #f "\\billegal\\b" trace 'pre "" 'post))
-	 (trace (regexp-substitute/global #f "\\bdouble_reply_error\\b" trace 'pre "" 'post))
-	 (trace (regexp-substitute/global #f "\\bno_reply_error\\b" trace 'pre "" 'post))
+         (trace (regexp-substitute/global #f "\\breply_[^(]*\\(([^)]*)\\)" trace 'pre 1 'post))
+         (trace (regexp-substitute/global #f "('return\\([^,]+),\\s*void\\)" trace 'pre 1 ")" 'post))
+         (trace (regexp-substitute/global #f "'return\\([^,]+,\\s*\\w+'([^)]+)\\)" trace 'pre "." 1 'post))
+         (trace (let lp ((trc trace) (names sorted-names))
+                  (if (equal? names '())
+                      trc
+                      (lp (regexp-substitute/global #f (string-append "\\b" (car names) "'") trc 'pre "" 'post) (cdr names)))))
+         (trace (regexp-substitute/global #f "\\bi\\d+_" trace 'pre "" 'post))
+         (trace (regexp-substitute/global #f "'event\\(" trace 'pre "." 'post))
+         (trace (regexp-substitute/global #f "\\b\\w+'flush\\b" trace 'pre "" 'post))
+         (trace (regexp-substitute/global #f "\\b\\(" trace 'pre "." 'post))
+         (trace (regexp-substitute/global #f "\\)" trace 'pre "" 'post))
+         (trace (regexp-substitute/global #f "'return\\.\\w+" trace 'pre ".return" 'post))
+         (trace (regexp-substitute/global #f "\\b\\w+'inevitable\\b" trace 'pre "" 'post))
+         (trace (regexp-substitute/global #f "\\b\\w+'optional\\b" trace 'pre "" 'post))
+         (trace (regexp-substitute/global #f "\\billegal\\b" trace 'pre "" 'post))
+         (trace (regexp-substitute/global #f "\\bdouble_reply_error\\b" trace 'pre "" 'post))
+         (trace (regexp-substitute/global #f "\\bno_reply_error\\b" trace 'pre "" 'post))
          (trace (regexp-substitute/global #f "\\btau\n" trace 'pre "" 'post))
-	 (trace (regexp-substitute/global #f "([\n])[\n]+" trace 'pre 1 'post)))
+         (trace (regexp-substitute/global #f "([\n])[\n]+" trace 'pre 1 'post))
+         (trace (regexp-substitute/global #f "'" trace 'pre "_" 'post)))
     (if (string=? trace "\n")
         ""
         trace)
