@@ -30,6 +30,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 receive)
 
@@ -218,16 +219,20 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
               (let*
                   ((model (find (lambda (o) (equal? ((compose ->string om:name) o) (car models))) (ast:model* root)))
                    (component? (is-a? model <component>))
-                   (elements (append (list model)
+                   (elements (append (match model
+                                       (($ <system>) '())
+                                       (_  (list model)))
                                      (filter (negate (is? <model>)) (ast:model* root))
                                      (if component?
                                          (filter (is? <interface>) (ast:model* root))
-                                         '())))
-                   (ast-model (make <root> #:elements elements))
-                   (root (mcrl2:om ast-model)))
-                (parameterize ((language 'mcrl2))
-                  (with-output-to-file "verify.mcrl2" (cut root-> root)))
-                (loop (cdr models) (or (mcrl2:verify file-name (car models) root gdzn-verbose? all?)))))))
+                                         '()))))
+                (if (pair? elements)
+                    (let* ((ast-model (make <root> #:elements elements))
+                           (root (mcrl2:om ast-model)))
+                      (parameterize ((language 'mcrl2))
+                        (with-output-to-file "verify.mcrl2" (cut root-> root)))
+                      (loop (cdr models) (or (mcrl2:verify file-name (car models) root gdzn-verbose? all?))))
+                    (loop (cdr models) errors))))))
     ""))
 
 (define (main args)
