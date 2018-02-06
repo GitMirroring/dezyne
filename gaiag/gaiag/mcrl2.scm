@@ -1202,6 +1202,7 @@
 (define-method (mcrl2:statement-process (o <function>)) (.statement o))
 (define-method (mcrl2:statement-process (o <call>)) o)
 (define-method (mcrl2:statement-process (o <action>)) o)
+(define-method (mcrl2:statement-process (o <reply>)) o)
 (define-method (mcrl2:child-identifier (o <behaviour>)) (mcrl2:process-identifier (first-process (.statement o))))
 (define-method (mcrl2:child-identifier (o <function>)) (mcrl2:process-identifier (first-process (.statement o))))
 (define-method (mcrl2:child-identifier (o <guard>)) (mcrl2:process-identifier (.statement o)))

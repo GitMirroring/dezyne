@@ -8,6 +8,9 @@ DONE
 * ifreply: mcrl2 child-identifier for if: empty compound replace by skip?
 * implicit_illegal_requires: mcrl2 empty interface behaviour
 * StartDevices: mcrl2 naming conflict count (mangling?)
+* local_shadow_local: mcrl2:statement-process for reply missing (in combination with if or outside of compound)
+* Injected, Alarm_mangle: mcrl2 generator: (test running parallel issue)
+* addint (int-expressions added to type matcher)
 
 JOHRI
 * CompletenessReplyValueNotSet: mcrl2 parse error (missing reply)
@@ -28,8 +31,6 @@ NAMESPACE
 
 TODO
 * shadow_reply: mcrl2 implement shadowing of variables
-* local_shadow_local: mcrl2:statement-process for reply missing (in combination with if or outside of compound)
-* Injected, Alarm_mangle: mcrl2 generator: (test running parallel issue)
 * IReplyStatementDoesNotMatchReturnType,
 ReplyNotAllowedForModellingEvent, ReplyNotAllowedByRequiresPort: mcrl2
 parse error (wrong reply type)
