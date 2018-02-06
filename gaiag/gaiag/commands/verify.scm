@@ -210,12 +210,13 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
       (if (and (or (null? models) (not all?)) errors)
           (begin
             (chdir cwd)
-            (if (not gdzn-debug?) (delete-file-recursively tmp))
+            ;;(if (not gdzn-debug?) (delete-file-recursively tmp))
             (set! error? 1))
           (if (null? models)
               (begin
                 (chdir cwd)
-                (if (not gdzn-debug?) (delete-file-recursively tmp)))
+                ;;(if (not gdzn-debug?) (delete-file-recursively tmp))
+                )
               (let*
                   ((model (find (lambda (o) (equal? ((compose ->string om:name) o) (car models))) (ast:model* root)))
                    (component? (is-a? model <component>))
