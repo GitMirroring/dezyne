@@ -11,17 +11,15 @@ DONE
 * local_shadow_local: mcrl2:statement-process for reply missing (in combination with if or outside of compound)
 * Injected, Alarm_mangle: mcrl2 generator: (test running parallel issue)
 * addint (int-expressions added to type matcher)
+* amended version of hellodata
+* Reply4: mcrl2 code generator
 
 JOHRI
 * CompletenessReplyValueNotSet: mcrl2 parse error (missing reply)
 * silentoptional: void reply on modeling event => fix ast transformation
 
-* amended version of hellodata
-
 * Reply3: mcrl2 function continuation duplicate
 * verify: mcrl2: Double declaration of recognizer is'verify'142'ref.
-
-* Reply4: mcrl2 code generator
 
 * range: mcrl2 parameter list mismatch (function dispatch)
 

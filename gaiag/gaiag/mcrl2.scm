@@ -824,6 +824,7 @@
 (define-method (variables-in-scope (o <ast>))
   (append (globals o) (locals o)))
 (define-template x:variables-in-scope variables-in-scope 'comma-prefix)
+(define-template x:variable-names-in-scope locals 'comma-prefix)
 
 (define-template x:call-parameters call-parameters 'comma-suffix)
 (define-method (call-parameters (o <call>))
@@ -1137,6 +1138,8 @@
 (define-method (mcrl2:enum-literal (o <enum-literal>))
   (string-append ((compose ->string .scope .name .type) o) "'" ((compose ->string .name .name .type) o) "'" ((compose ->string .field) o)))
 
+(define-template x:next-process-parameters process-continuation #f <statement>)
+
 (define-template x:variable-in-scope? mcrl2:variable-in-scope?)
 (define-template x:assign-in-scope? mcrl2:variable-in-scope?)
 (define-method (mcrl2:variable-in-scope? (o <assign>))
@@ -1179,6 +1182,7 @@
 	 (vars ((compose .elements .variables) behaviour)))
     vars))
 
+(define-template x:init-type-value .type)
 (define-template x:mcrl2-init-reply-value mcrl2:init-reply-value)
 (define-template x:initial-enum-field (compose car .elements .fields))
 
