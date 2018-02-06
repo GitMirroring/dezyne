@@ -1,0 +1,35 @@
+
+DONE
+* Unlisted tests imply Incorrect baseline
+* Dataparam: resolve
+* IBehaviourEmpty: mcrl2 generator (empty behaviour)
+* List, SynchronousLivelock: mcrl2 comma in function return
+* OK_NOK, VerifyWithGlobal, externaltypes: mcrl2 global scope in template
+* ifreply: mcrl2 child-identifier for if: empty compound replace by skip?
+* implicit_illegal_requires: mcrl2 empty interface behaviour
+* StartDevices: mcrl2 naming conflict count (mangling?)
+
+JOHRI
+* CompletenessReplyValueNotSet: mcrl2 parse error (missing reply)
+* silentoptional: void reply on modeling event => fix ast transformation
+
+* amended version of hellodata
+
+* Reply3: mcrl2 function continuation duplicate
+* verify: mcrl2: Double declaration of recognizer is'verify'142'ref.
+
+* Reply4: mcrl2 code generator
+
+* range: mcrl2 parameter list mismatch (function dispatch)
+
+
+NAMESPACE
+* foreign: empty root "S_Component" cannot be found
+
+TODO
+* shadow_reply: mcrl2 implement shadowing of variables
+* local_shadow_local: mcrl2:statement-process for reply missing (in combination with if or outside of compound)
+* Injected, Alarm_mangle: mcrl2 generator: (test running parallel issue)
+* IReplyStatementDoesNotMatchReturnType,
+ReplyNotAllowedForModellingEvent, ReplyNotAllowedByRequiresPort: mcrl2
+parse error (wrong reply type)
