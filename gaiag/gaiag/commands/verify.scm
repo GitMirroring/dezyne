@@ -218,7 +218,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                 ;;(if (not gdzn-debug?) (delete-file-recursively tmp))
                 )
               (let*
-                  ((model (find (lambda (o) (equal? ((compose ->string om:name) o) (car models))) (ast:model* root)))
+                  ((model (find (lambda (o) (equal? ((compose symbol->string (om:scope-name)) o) (car models))) (ast:model* root)))
                    (component? (is-a? model <component>))
                    (elements (append (match model
                                        (($ <system>) '())

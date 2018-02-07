@@ -93,7 +93,7 @@
     (reduce-lps lps)))
 
 (define (create-if-lps mcrl2 lpstype ast)
-  (let ((lps (string-append (basename mcrl2 ".mcrl2") "_" ((compose ->string om:name) ast) ".lps")))
+  (let ((lps (string-append (basename mcrl2 ".mcrl2") "_" ((compose ->string (om:scope-name)) ast) ".lps")))
     (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'interface-init@ast) " | mcrl22lps -b > " lps))
     (reduce-lps lps)))
 
@@ -107,8 +107,8 @@
   lts)
 
 (define (component-lts model-name ast)
-  (let* ((component (find (lambda (x) (equal? (symbol->string (om:name x)) model-name)) (filter (is? <component>) (.elements ast))))
-         (interface (find (lambda (x) (equal? (symbol->string (om:name x)) model-name)) (filter (is? <interface>) (.elements ast))))
+  (let* ((component (find (lambda (x) (equal? (symbol->string ((om:scope-name) x)) model-name)) (filter (is? <component>) (.elements ast))))
+         (interface (find (lambda (x) (equal? (symbol->string ((om:scope-name) x)) model-name)) (filter (is? <interface>) (.elements ast))))
          (lps (create-lps "verify.mcrl2" (if component 'component 'interface) (if component ast interface)))
          (lts (create-lts lps))
          (lts (reduce-lts lts)))
@@ -174,10 +174,10 @@
   (let* ((iflps (create-if-lps "verify.mcrl2" 'interface interface))
          (output (verifydeadlock iflps))
          (output (string-append output (verifylivelock iflps ""))))
-    (interpret-if-results output file-name ((compose ->string om:name) interface) verbose?)))
+    (interpret-if-results output file-name ((compose ->string (om:scope-name)) interface) verbose?)))
 
 (define (mcrl2:verify-component file-name model-name ast verbose? all?)
-  (let* ((component (find (lambda (x) (equal? (symbol->string (om:name x)) model-name)) (filter (is? <component>) (.elements ast))))
+  (let* ((component (find (lambda (x) (equal? (symbol->string ((om:scope-name) x)) model-name)) (filter (is? <component>) (.elements ast))))
          (interfaces (delete-duplicates (map .type (om:ports component))))
          (livelock-taus (find-taus component model-name (livelock-hidden-actions)))
          (compliance-taus (find-taus component model-name (compliance-hidden-actions)))
@@ -196,7 +196,7 @@
             (interpret-results output file-name model-name verbose?)))))
 
 (define (mcrl2:verify-component file-name model-name ast verbose? all?)
-  (let* ((component (find (lambda (x) (equal? (symbol->string (om:name x)) model-name)) (filter (is? <component>) (.elements ast))))
+  (let* ((component (find (lambda (x) (equal? (symbol->string ((om:scope-name) x)) model-name)) (filter (is? <component>) (.elements ast))))
          (interfaces (delete-duplicates (map .type (om:ports component))))
          (asserts (append
                    (append-map
@@ -218,14 +218,14 @@
                 fail?))))))
 
 (define ((mcrl2:verify-interface-deadlock model) file-name ast verbose? all?)
-  (let* ((model-name ((compose ->string om:name) model))
+  (let* ((model-name ((compose ->string (om:scope-name)) model))
          (lpsfile (create-if-lps "verify.mcrl2" 'interface model))
          (result (verifydeadlock lpsfile)))
     (if (number? result) (exit result)
         (check-deadlock result file-name model-name verbose?))))
 
 (define ((mcrl2:verify-interface-livelock model) file-name ast verbose? all?)
-  (let* ((model-name ((compose ->string om:name) model))
+  (let* ((model-name ((compose ->string (om:scope-name)) model))
          (livelock-taus "")
          (lpsfile (create-if-lps "verify.mcrl2" 'interface model))
          (result (verifylivelock lpsfile livelock-taus)))
@@ -233,28 +233,28 @@
         (check-livelock result file-name model-name verbose?))))
 
 (define ((mcrl2:verify-component-deterministic model) file-name ast verbose? all?)
-  (let* ((model-name ((compose ->string om:name) model))
+  (let* ((model-name ((compose ->string (om:scope-name)) model))
          (deterministic-lps (create-lps "verify.mcrl2" 'deterministic ast))
          (result (verifydeterministic deterministic-lps)))
     (if (number? result) (exit result)
         (check-deterministic result file-name model-name verbose?))))
 
 (define ((mcrl2:verify-component-illegal model) file-name ast verbose? all?)
-  (let* ((model-name ((compose ->string om:name) model))
+  (let* ((model-name ((compose ->string (om:scope-name)) model))
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
          (result (verifyillegal lpsfile)))
     (if (number? result) (exit result)
         (check-illegal result file-name model-name verbose?))))
 
 (define ((mcrl2:verify-component-deadlock model) file-name ast verbose? all?)
-  (let* ((model-name ((compose ->string om:name) model))
+  (let* ((model-name ((compose ->string (om:scope-name)) model))
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
          (result (verifydeadlock lpsfile)))
     (if (number? result) (exit result)
         (check-deadlock result file-name model-name verbose?))))
 
 (define ((mcrl2:verify-component-livelock model) file-name ast verbose? all?)
-  (let* ((model-name ((compose ->string om:name) model))
+  (let* ((model-name ((compose ->string (om:scope-name)) model))
          (livelock-taus (find-taus model model-name (livelock-hidden-actions)))
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
          (result (verifylivelock lpsfile livelock-taus)))
@@ -262,7 +262,7 @@
         (check-livelock result file-name model-name verbose?))))
 
 (define ((mcrl2:verify-component-refinement model) file-name ast verbose? all?)
-  (let* ((model-name ((compose ->string om:name) model))
+  (let* ((model-name ((compose ->string (om:scope-name)) model))
          (compliance-taus (find-taus model model-name (compliance-hidden-actions)))
          (provided-lps (create-lps "verify.mcrl2" 'provided ast))
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
@@ -272,12 +272,12 @@
 
 (define (mcrl2:verify file-name model-name ast verbose? all?)
   (if model-name
-      (let ((model (find (lambda (x) (equal? (symbol->string (om:name x)) model-name)) (filter (is? <model>) (.elements ast)))))
+      (let ((model (find (lambda (x) (equal? (symbol->string ((om:scope-name) x)) model-name)) (filter (is? <model>) (.elements ast)))))
         (if (is-a? model <component>)
             (mcrl2:verify-component file-name model-name ast verbose? all?)
             (mcrl2:verify-interface file-name model verbose?)))
       (let ((components (filter (is? <component>) (.elements ast))))
-        (pair? (filter identity (map (lambda (c) (mcrl2:verify-component file-name (->string (om:name c)) ast verbose? all?)) components))))
+        (pair? (filter identity (map (lambda (c) (mcrl2:verify-component file-name (->string ((om:scope-name) c)) ast verbose? all?)) components))))
       ))
 
 (define (interpret-if-results output file-name model-name verbose?)
