@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;; Copyright © 2014, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -69,6 +69,7 @@
            ast:out-triggers-void-in-events
            ast:modeling?
            ast:typed?
+           ast:path
            ast:provides?
            ast:requires?
 
@@ -288,6 +289,9 @@
 
 (define-method (ast:typed? (o <modeling-event>))
   #f)
+
+(define-method (ast:path (o <ast>))
+  (unfold (negate identity) identity .parent o))
 
 (define (ast-> ast)
   ((compose
