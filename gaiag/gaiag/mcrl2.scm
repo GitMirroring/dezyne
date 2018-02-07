@@ -1141,9 +1141,13 @@
       ""))
 
 (define-template x:check-integer-bounds check-integer-bounds)
-(define-method (check-integer-bounds (o <ast>))
-  (let* ((action ((compose .expression) o))
-         (type ((compose .type .signature .event) action)))
+(define-template x:check-event-integer-bounds check-integer-bounds)
+(define-method (check-integer-bounds (o <variable>))
+  (check-integer-bounds (.expression o)))
+(define-method (check-integer-bounds (o <action>))
+  (check-integer-bounds (.event o)))
+(define-method (check-integer-bounds (o <event>))
+  (let ((type ((compose .type .signature) o)))
     (if (is-a? type <int>)
         type
         "")))
