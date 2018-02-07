@@ -266,11 +266,12 @@
            (match result
              (($ <blocking>)
               (clone o #:statement result))
-             ((? modeling?) (clone o #:statement (make <compound> #:elements (list result))))
-             ((? valued-triggers?)
-              (clone o #:statement (make <compound> #:elements (list result))))
+             ;;FIXME: fixes silentoptional, breaks compliance_provides_out
+             ;;((? modeling?) (clone o #:statement (make <compound> #:elements (list result))))
              ((and ($ <compound>) (= .elements (? null?)))
               (clone o #:statement (make <compound> #:elements (list (make <voidreply>)))))
+             ((? valued-triggers?)
+              (clone o #:statement (make <compound> #:elements (list result))))
              (_ (clone o #:statement (make <compound> #:elements (list result (make <voidreply>)))))))))
       ((? (is? <ast>)) (tree-map (root-add-voidreply model) o))
       (_ o))))
