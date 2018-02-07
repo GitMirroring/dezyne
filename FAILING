@@ -21,9 +21,7 @@ JOHRI
 * CompletenessReplyValueNotSet: mcrl2 parse error (missing reply)
 * range: add x:check-range-error to 'normal' assigns
 * silentoptional: void reply on modeling event => fix ast transformation WIP
-
-NAMESPACE
-* foreign: empty root "S_Component" cannot be found
+* inner_space: dillegals/namespace?
 
 TODO
 * IReplyStatementDoesNotMatchReturnType,
