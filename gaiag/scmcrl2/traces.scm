@@ -67,8 +67,7 @@
          (trace (regexp-substitute/global #f "'" trace 'pre "_" 'post)))
     (if (string=? trace "\n")
         ""
-        trace)
-    ))
+        (string-trim trace))))
 
 (define (make-json-trace modelname tracefile dznfile outfile)
   (let ((command (string-append "seqdiag -m " modelname " -t " tracefile " " dznfile " > " outfile)))
