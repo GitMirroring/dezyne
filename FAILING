@@ -17,13 +17,18 @@ DONE
 * shadow_reply: mcrl2 implement shadowing of variables
 * verify: mcrl2: Double declaration of recognizer is'verify'142'ref.
 * range: add x:check-range-error to 'normal' assigns
+* CompletenessReplyValueNotSet: mcrl2 parse error (missing reply)
 
 JOHRI
-* CompletenessReplyValueNotSet: mcrl2 parse error (missing reply)
 * silentoptional: void reply on modeling event => fix ast transformation WIP
 * inner_space: dillegals/namespace?
+* unused_function: be smarter with sort Refs / return process generation; possibly check if the AST contains any <call> objects; sounds "expensive" or dirty
 
 TODO
 * IReplyStatementDoesNotMatchReturnType,
-ReplyNotAllowedForModellingEvent, ReplyNotAllowedOnRequiresPort: mcrl2
-parse error (wrong reply type)
+ReplyNotAllowedForModellingEvent, ReplyNotAllowedOnRequiresPort, ReplyNotAllowedPortNotBlocked, SpuriousVoidReplyStatement: mcrl2 parse error (wrong reply type)
+* SynchronousOut / complete / requires_twice / reply_reorder now fail verification? Compliance trace, but not sure what's going wrong
+* ifreply now shows a deadlock, correctly I think; there exists a path where you do not send a reply to a typed event. No baseline, so fails test
+* incomplete_with_model_event no longer shows a compliance error
+* range_member (and possible others too): add a check-integer-bound to the model-name'0 process iff the parameter list contains an integer
+* silent_fail shows correct verification results but no traces at all
