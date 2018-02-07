@@ -46,7 +46,7 @@
   (let* ((sorted-names (find-aliases "verify.mcrl2"))
          (trace (regexp-substitute/global #f "\\breply_[^(]*\\(([^)]*)\\)" trace 'pre 1 'post))
          (trace (regexp-substitute/global #f "('return\\([^,]+),\\s*void\\)" trace 'pre 1 ")" 'post))
-         (trace (regexp-substitute/global #f "'return\\([^,]+,\\s*\\w+'([^)]+)\\)" trace 'pre "." 1 'post))
+         (trace (regexp-substitute/global #f "'return\\([^,]+,\\s*(\\w+[^)]+)\\)" trace 'pre "." 1 'post))
          (trace (let lp ((trc trace) (names sorted-names))
                   (if (equal? names '())
                       trc
