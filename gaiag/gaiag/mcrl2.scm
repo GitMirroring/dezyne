@@ -261,7 +261,8 @@
              (clone o #:elements statements))))
       (($ <on>)
        (let* ((valued-triggers? (const (ast:typed? ((compose car ast:trigger*) o))))
-              (modeling? (const (is-a? ((compose .event car ast:trigger*) o) <modeling-event>))))
+              (modeling? (const (is-a? ((compose .event car ast:trigger*) o) <modeling-event>)))
+              (port ((compose .port car ast:trigger*) o)))
          (let ((result ((root-add-voidreply model) (.statement o))))
            (match result
              (($ <blocking>)
@@ -271,6 +272,8 @@
              ((and ($ <compound>) (= .elements (? null?)))
               (clone o #:statement (make <compound> #:elements (list (make <voidreply>)))))
              ((? valued-triggers?)
+              (clone o #:statement (make <compound> #:elements (list result))))
+             ((? (const (and port (ast:requires? port))))
               (clone o #:statement (make <compound> #:elements (list result))))
              (_ (clone o #:statement (make <compound> #:elements (list result (make <voidreply>)))))))))
       ((? (is? <ast>)) (tree-map (root-add-voidreply model) o))
@@ -726,6 +729,7 @@
 
 (define-template x:assign-call-var-name (compose .variable.name .assign))
 (define-template x:variable-call-var-name (compose .name .variable))
+(define-template x:mcrl2-provided-port-type-name (compose mcrl2:expand-types car ast:event* .type car om:provided (cut parent <model> <>)))
 (define-template x:mcrl2-type-name mcrl2:expand-types)
 (define-template x:action-union-struct om:ports 'pipe-infix)
 
@@ -1121,6 +1125,10 @@
 
 (define-method (mcrl2:range-error (o <function>))
   (filter (lambda (o) (is-a? (.type o) <int>)) ((compose ast:formal* .signature) o)))
+(define-method (mcrl2:range-error (o <event>))
+  (if (is-a? (.type (.signature o)) <int>)
+      o
+      ""))
 
 (define-method (mcrl2:range-error (o <variable>))
   (if (is-a? (.type o) <int>)
@@ -1142,6 +1150,8 @@
 (define-template x:range-from mcrl2:range-from)
 (define-method (mcrl2:range-from (o <formal>))
   (mcrl2:range-from (.type o)))
+(define-method (mcrl2:range-from (o <event>))
+  (mcrl2:range-from (.type (.signature o))))
 (define-method (mcrl2:range-from (o <variable>))
   (mcrl2:range-from (.type o)))
 (define-method (mcrl2:range-from (o <assign>))
@@ -1149,6 +1159,8 @@
 (define-method (mcrl2:range-from (o <int>))
   ((compose ->string .from .range) o))
 (define-template x:range-to mcrl2:range-to)
+(define-method (mcrl2:range-to (o <event>))
+  (mcrl2:range-to (.type (.signature o))))
 (define-method (mcrl2:range-to (o <assign>))
   (mcrl2:range-to (.variable o)))
 (define-method (mcrl2:range-to (o <formal>))

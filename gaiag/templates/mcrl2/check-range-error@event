@@ -1,0 +1,1 @@
+(!(#x:range-from  <= arg  && #x:range-to  >= arg)) -> range_error . delta <> 

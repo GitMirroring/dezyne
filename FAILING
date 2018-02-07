@@ -16,10 +16,10 @@ DONE
 * Reply4: mcrl2 code generator
 * shadow_reply: mcrl2 implement shadowing of variables
 * verify: mcrl2: Double declaration of recognizer is'verify'142'ref.
+* range: add x:check-range-error to 'normal' assigns
 
 JOHRI
 * CompletenessReplyValueNotSet: mcrl2 parse error (missing reply)
-* range: add x:check-range-error to 'normal' assigns
 * silentoptional: void reply on modeling event => fix ast transformation WIP
 * inner_space: dillegals/namespace?
 
