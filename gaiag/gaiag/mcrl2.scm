@@ -1070,7 +1070,12 @@
     (filter
      (lambda (p) (not (null? (filter om:out? ((compose .elements .events .type) p)))))
      required-ports)))
-
+(define-template x:range-error-normal-assign? normal-assign?)
+(define-method (normal-assign? o)
+  (let ((e (.expression o)))
+    (if (not (or (is-a? e <call>) (is-a? e <action>)))
+        o
+        "")))
 (define-template x:assign-by-call? assign-by-call?)
 (define-method (assign-by-call? (o <assign>))
   (let ((e (.expression o)))
@@ -1108,10 +1113,14 @@
 (define-method (action-type (o <ast>))
   ((compose mcrl2-type .type .signature .event .action) o))
 
-(define-template x:check-range-error mcrl2:range-error)
+(define-template x:check-range-error mcrl2:range-error #f <type>)
+(define-template x:check-range-error-call mcrl2:range-error)
 
 (define-method (mcrl2:range-error (o <behaviour>))
-  (filter (lambda (o) (is-a? (.type o) <int>)) ((compose  .elements .variables) o)))
+  (filter (lambda (o) (is-a? (.type o) <int>)) (ast:variable* o)))
+
+(define-method (mcrl2:range-error (o <function>))
+  (filter (lambda (o) (is-a? (.type o) <int>)) ((compose ast:formal* .signature) o)))
 
 (define-method (mcrl2:range-error (o <variable>))
   (if (is-a? (.type o) <int>)
@@ -1131,6 +1140,8 @@
         type
         "")))
 (define-template x:range-from mcrl2:range-from)
+(define-method (mcrl2:range-from (o <formal>))
+  (mcrl2:range-from (.type o)))
 (define-method (mcrl2:range-from (o <variable>))
   (mcrl2:range-from (.type o)))
 (define-method (mcrl2:range-from (o <assign>))
@@ -1140,6 +1151,8 @@
 (define-template x:range-to mcrl2:range-to)
 (define-method (mcrl2:range-to (o <assign>))
   (mcrl2:range-to (.variable o)))
+(define-method (mcrl2:range-to (o <formal>))
+  (mcrl2:range-to (.type o)))
 (define-method (mcrl2:range-to (o <variable>))
   (mcrl2:range-to (.type o)))
 (define-method (mcrl2:range-to (o <int>))

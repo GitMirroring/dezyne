@@ -1,0 +1,3 @@
+verify: range: check: deadlock: fail
+range.e
+verify: range: check: livelock: ok

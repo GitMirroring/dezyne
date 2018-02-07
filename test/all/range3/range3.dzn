@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +21,7 @@
 //
 // Code:
 
-interface range
+interface range3
 {
   in void e();
   out void a();
@@ -29,20 +29,10 @@ interface range
   behaviour
   {
     subint State {0..3};
-
-    State state = 3; //4; // TODO: static resolver/wfc check
-
-    State f ()
-    {
-      return 5;
-    }
-
+    State state = 3;
     on e:
     {
       state = 4;
-      state = f();
-      State x = 6;
-      State y = f();
       a;
     }
   }
