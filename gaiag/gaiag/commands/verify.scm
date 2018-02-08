@@ -194,7 +194,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
 (define error? 0)
 (define (verify-mcrl2 options file-name)
   (let* ((model (option-ref options 'model #f))
-	 (ast (parse-with-options options file-name))
+	 (ast (assert-parse options file-name))
          (root ((compose ast:resolve tick-names parse->om) ast))
          (models (if model (list model) (models-for-verification root)))
          (all? (option-ref options 'all #f))
@@ -248,7 +248,8 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
         (receive (files importeds)
             (if (equal? (car files) "-") (dump-model-stream)
                 (values files '()))
-          (let ((file-name (canonicalize-path (car files))))
+          (let ((file-name (car files) ;;(canonicalize-path (car files)) ; breaks parser errors of symlinked files
+                 ))
             (let* ((stdout (with-output-to-string (cut verify-mcrl2 options file-name)))
                    (foo (if gdzn-debug? (stderr "stdout:~s\n" stdout))))
               (display stdout)
