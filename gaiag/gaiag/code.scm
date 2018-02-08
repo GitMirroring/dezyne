@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2016, 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -600,8 +600,6 @@
 (define-template x:functions code:functions)
 
 (define-template x:reply-type code:reply-type 'name-infix)
-
-(define-template x:out-bindings .elements)
 
 (define-template x:variable-name code:variable-name)
 

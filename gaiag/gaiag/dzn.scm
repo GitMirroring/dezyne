@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
@@ -408,6 +408,8 @@
 
 (define-method (dzn:expand-statement (o <blocking>))
   (.statement o))
+
+(define-template x:out-bindings .elements)
 
 (define-method (dzn:expand-statement (o <on>))
   (.statement o))
