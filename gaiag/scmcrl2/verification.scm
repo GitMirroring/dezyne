@@ -81,7 +81,6 @@
       (with-output-to-string (lambda () (x:pand template ast module))))))
 
 (define (assert-system command)
-  (stderr "assert-system: ~s\n" command)
   (let ((status (system (string-append "set -o pipefail; " command))))
     (or (zero? status)
         (begin
