@@ -3,7 +3,7 @@
 // Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 // Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-// Copyright © 2016, 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2016, 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -643,7 +643,9 @@ var aspects = {
           + '| test ! -s '+baseline
           + '| test ! -s '+baseline+'.stderr'
           + ';}'
-          + ' || (diff -uw '+baseline+' '+out
+          + ' || grep "verify:" '+baseline+' > '+baseline+'.filtered'
+          + ' || grep "verify:" '+out+' > '+out+'.filtered'
+          + ' || (diff -uw '+baseline+'.filtered '+out+'filtered'
           + '     && (test ! -s '+err
           + '         || (sed -i s,.\r,,g '+err+';'
           + '            diff -u '+baseline+'.stderr '+err+')))';
