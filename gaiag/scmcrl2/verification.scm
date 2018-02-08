@@ -81,6 +81,7 @@
       (with-output-to-string (lambda () (x:pand template ast module))))))
 
 (define (assert-system command)
+  (stderr "assert-system: ~s\n" command)
   (let ((status (system (string-append "set -o pipefail; " command))))
     (or (zero? status)
         (begin
@@ -106,16 +107,22 @@
   (assert-system (string-append "lpsparelm " lps " " lps))
   lps)
 
-(define (reduce-lts lts)
-  (assert-system (string-append "ltsconvert -edpbranching-bisim " lts " " lts))
-  lts)
+(define* (reduce-lts lts #:optional trace)
+  (if trace
+      (begin
+        (assert-system (string-append "ltsconvert -etrace " lts " " lts))
+        lts)
+      (begin
+        (assert-system (string-append "ltsconvert -edpbranching-bisim " lts " " lts))
+        lts)
+      ))
 
 (define (component-lts model-name ast)
   (let* ((component (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <component>) (.elements ast))))
          (interface (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <interface>) (.elements ast))))
          (lps (create-lps "verify.mcrl2" (if component 'component 'interface) (if component ast interface)))
          (lts (create-lts lps))
-         (lts (reduce-lts lts)))
+         (lts (reduce-lts lts #t)))
     lts))
 
 (define (create-lts lps)
