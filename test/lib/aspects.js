@@ -653,7 +653,7 @@ var aspects = {
         return 'out="$(' + dzn(parameters.session) + ' verify --all -M -m '+model
           + ' '+imports
           + ' '+parameters.filename
-          + ' 2>&1)" && [ "$out" = "" ] || { echo "verification output: \"$out\""; false; }';
+          + ' 2>&1)" && [ "$out" = "" ] || { echo "verification output: \'$out\'"; false; }';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd);
