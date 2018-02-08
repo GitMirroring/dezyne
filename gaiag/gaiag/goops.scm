@@ -1,7 +1,7 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
@@ -91,7 +91,7 @@
            .types
 	   .type.name
            .value
-           .variable
+           .variable@
            .variables
            <action>
            <arguments>
@@ -491,19 +491,19 @@
   (value #:getter .value #:init-value #f #:init-keyword #:value))
 
 (define-class <var-node> (<expression-node>)
-  (variable #:getter .variable #:init-value #f #:init-keyword #:variable))
+  (variable #:getter .variable@ #:init-value #f #:init-keyword #:variable))
 
-(define-method (.variable.name (o <var-node>)) (and=> (.variable o) .name))
+(define-method (.variable.name (o <var-node>)) (.variable@ o))
 
 (define-class <variable-node> (<named-node> <imperative-node> <expression-node>)
   (type #:getter .type #:init-form #f #:init-keyword #:type)
   (expression #:getter .expression #:init-form (make <expression-node>) #:init-keyword #:expression))
 
 (define-class <field-test-node> (<bool-expr-node>)
-  (variable #:getter .variable #:init-value #f #:init-keyword #:variable)
+  (variable #:getter .variable@ #:init-value #f #:init-keyword #:variable)
   (field #:getter .field #:init-value #f #:init-keyword #:field))
 
-(define-method (.variable.name (o <field-test-node>)) (and=> (.variable o) .name))
+(define-method (.variable.name (o <field-test-node>)) (.variable@ o))
 
 (define-class <enum-literal-node> (<enum-expr-node>)
   (type #:getter .type #:init-value #f #:init-keyword #:type)
@@ -517,9 +517,9 @@
   (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
 
 (define-class <formal-binding-node> (<formal-node>)
-  (variable #:getter .variable #:init-form #f #:init-keyword #:variable))
+  (variable #:getter .variable@ #:init-form #f #:init-keyword #:variable))
 
-(define-method (.variable.name (o <formal-binding-node>)) (and=> (.variable o) .name))
+(define-method (.variable.name (o <formal-binding-node>)) (.variable@ o))
 
 (define-class <component-model-node> (<model-node>)
   (ports #:getter .ports #:init-form (make <ports-node>) #:init-keyword #:ports))
@@ -556,10 +556,10 @@
 (define-method (.event.direction (o <action-node>)) (and=> (.event o) .direction))
 
 (define-class <assign-node> (<imperative-node>)
-  (variable #:getter .variable #:init-value #f #:init-keyword #:variable)
+  (variable #:getter .variable@ #:init-value #f #:init-keyword #:variable)
   (expression #:getter .expression #:init-form (make <expression-node>) #:init-keyword #:expression))
 
-(define-method (.variable.name (o <assign-node>)) (and=> (.variable o) .name))
+(define-method (.variable.name (o <assign-node>)) (.variable@ o))
 
 (define-class <call-node> (<imperative-node> <expression-node>)
   (function #:getter .function@ #:init-value #f #:init-keyword #:function)

@@ -291,17 +291,20 @@
   (match o
     (($ <root>) (tree-map (tick-names- names) o))
     (($ <behaviour>)
-     (let ((names (map (cut cons <> 0) (map .name (ast:variable* o)))))
-       (clone o
-              #:variables ((compose (tick-names- names) .variables) o)
-              #:functions ((compose (tick-names- names) .functions) o)
-              #:statement ((compose (tick-names- names) .statement) o))))
-    (($ <var>) (clone o #:variable ((compose append-tick .variable) o)))
-    (($ <field-test>) (clone o #:variable ((compose append-tick .variable) o)))
+     (let* ((names (map (cut cons <> 0) (map .name (ast:variable* o))))
+            (o (clone o
+               #:variables ((compose (tick-names- names) .variables) o)))
+            (o (clone o
+               #:functions ((compose (tick-names- names) .functions) o)))
+            (o (clone o
+               #:statement ((compose (tick-names- names) .statement) o))))
+       o))
+    (($ <var>) (clone o #:variable ((compose append-tick .variable.name) o)))
+    (($ <field-test>) (clone o #:variable ((compose append-tick .variable.name) o)))
     (($ <formal>) (clone o #:name ((compose append-tick .name) o)))
     (($ <formal-binding>) (clone o
                                  #:name ((compose append-tick .name) o)
-                                 #:variable ((compose append-tick .variable) o)))
+                                 #:variable ((compose append-tick .variable.name) o)))
     (($ <function>)
      (let* ((signature (.signature o))
             (type ((compose (tick-names- names) .type) signature)))
@@ -321,7 +324,7 @@
     (($ <call>) (clone o
                        #:function ((compose append-tick .function@) o)
                        #:arguments ((compose (tick-names- names) .arguments) o)))
-    (($ <assign>) (clone o #:variable ((compose append-tick .variable) o)
+    (($ <assign>) (clone o #:variable ((compose append-tick .variable.name) o)
                          #:expression ((compose (tick-names- names) .expression) o)))
     (($ <variable>) (clone o #:name ((compose append-tick .name) o)
                            #:expression ((compose (tick-names- names) .expression) o)))
@@ -1201,13 +1204,13 @@
 (define-method (mcrl2:variable-in-scope? (o <assign>))
   (let* ((cont (process-continuation o))
          (cont-scope (variables-in-scope cont)))
-    (if (member (.variable o) cont-scope (lambda (a b) (eq? (.id a) (.id b))))
+    (if (member (.variable o) cont-scope (lambda (a b) (eq? (.name a) (.name b)))) ;; FIXME: fix resolving: too many <variable> clones made!!
         o
         "")))
 (define-method (mcrl2:variable-in-scope? (o <variable>))
   (let* ((cont (process-continuation o))
          (cont-scope (variables-in-scope cont)))
-    (if (member o cont-scope (lambda (a b) (eq? (.id a) (.id b))))
+    (if (member o cont-scope (lambda (a b) (eq? (.name a) (.name b)))) ;; FIXME: fix resolving: too many <variable> clones made!!
         o
         "")))
 
