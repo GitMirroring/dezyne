@@ -119,12 +119,12 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
 (define (models-for-verification root)
   (let* ((models (ast:model* root))
          (components (filter (conjoin (is? <component>) .behaviour) models))
-         (component-names (map (compose symbol->string (om:scope-name)) components))
+         (component-names (map (compose symbol->string verify:scope-name) components))
          (interfaces (filter (is? <interface>) models))
-         (interface-names (map (compose symbol->string (om:scope-name)) interfaces))
+         (interface-names (map (compose symbol->string verify:scope-name) interfaces))
          (interface-names (let loop ((components components) (interface-names interface-names))
                             (if (null? components) interface-names
-                                (let ((component-interfaces (map (compose symbol->string (om:scope-name) .type) (ast:port* (car components)))))
+                                (let ((component-interfaces (map (compose symbol->string verify:scope-name .type) (ast:port* (car components)))))
                                   (loop (cdr components)
                                         (filter (negate (cut member <> component-interfaces)) interface-names)))))))
     (append interface-names component-names)))
@@ -218,7 +218,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                 ;;(if (not gdzn-debug?) (delete-file-recursively tmp))
                 )
               (let*
-                  ((model (find (lambda (o) (equal? ((compose symbol->string (om:scope-name)) o) (car models))) (ast:model* root)))
+                  ((model (find (lambda (o) (equal? ((compose symbol->string verify:scope-name) o) (car models))) (ast:model* root)))
                    (component? (is-a? model <component>))
                    (elements (append (match model
                                        (($ <system>) '())
