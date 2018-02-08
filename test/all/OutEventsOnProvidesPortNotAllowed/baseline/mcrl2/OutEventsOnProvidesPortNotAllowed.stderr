@@ -1,0 +1,1 @@
+out/OutEventsOnProvidesPortNotAllowed/OutEventsOnProvidesPortNotAllowed.dzn:8:18:i11: Out-events on provides port ppb not allowed. Only out-events on provides port ppa allowed in current call context.
