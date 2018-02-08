@@ -643,12 +643,15 @@ var aspects = {
           + '| test ! -s '+baseline
           + '| test ! -s '+baseline+'.stderr'
           + ';}'
-          + ' || grep "verify:" '+baseline+' > '+baseline+'.filtered'
-          + ' || grep "verify:" '+out+' > '+out+'.filtered'
-          + ' || (diff -uw '+baseline+'.filtered '+out+'filtered'
+          + ' || { '
+          +   ' grep "verify:" '+baseline+' > '+out+'-baseline.filtered;'
+          + '   grep "verify:" '+out+' > '+out+'.filtered;'
+          + '   (diff -uw '+baseline+' '+out+';' // just print -- ignore exit status
+          + '    diff -uw '+out+'-baseline.filtered '+out+'.filtered'
           + '     && (test ! -s '+err
           + '         || (sed -i s,.\r,,g '+err+';'
-          + '            diff -u '+baseline+'.stderr '+err+')))';
+          + '            diff -u '+baseline+'.stderr '+err+')));'
+          + ' }';
       })
       .fail (function(err) {
         console.log ('mcrl2 verify: no baseline=' + baseline);
