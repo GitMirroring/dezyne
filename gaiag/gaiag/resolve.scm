@@ -4,7 +4,7 @@
 ;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -253,6 +253,7 @@
     (($ <compound>) (or (find (cut var? <> id) (filter (is? <variable>) (ast:statement* o))) (var? (.parent o) id)))
     (($ <function>) (or (find (cut var? <> id) ((compose ast:formal* .signature) o)) (var? (.parent o) id)))
     (($ <formal>) (and (eq? (.name o) id) o))
+    (($ <formal-binding>) (or (and (eq? (.name o) id) o) (.parent o) id))
     (($ <on>) (or (find (cut var? <> id) (append-map ast:formal* (ast:trigger* o))) (var? (.parent o) id)))
     (($ <variable>) (and (eq? (.name o) id) o))
     ((? (lambda (o) (is-a? (.parent o) <variable>))) (var? ((compose .parent .parent) o) id))
