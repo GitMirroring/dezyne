@@ -568,10 +568,31 @@
   (let ((model (or (parent <model> o)
                    (%model))))
     (mcrl2:scope-name model)))
+
+;; (define (mcrl2:model-name- o)
+;;   ((om:scope-name (string->symbol "'")) o))
+
+;; (use-modules (ice-9 poe))
+;; (define mcrl2:model-name- (pure-funcq mcrl2:model-name-))
+
+;; (define (mcrl2:model-name o)
+;;   (and=> (or (parent <model> o) (%model)) mcrl2:model-name-))
+
+;; (define (mcrl2:parent- model o) (or (parent <model> o) model))
+;; (define mcrl2:parent- (pure-funcq mcrl2:parent-))
+
+;; (define (mcrl2:model-name o)
+;;   (and=> (or (mcrl2:parent- (%model) o)) mcrl2:model-name-))
+
 (define-method (mcrl2:scope-name (o <ast>))
   (or (and=> (parent <model> o) mcrl2:model-name)
       "global'"))
 
+;; (define (mcrl2:scope-name o)
+;;   (or (and=> (parent <model> o) mcrl2:model-name)
+;;       "global'"))
+
+;; (define mcrl2:scope-name (pure-funcq mcrl2:scope-name))
 
 (define-method (mcrl2:reply-type (o <reply>))
   (let ((expr (.expression o)))

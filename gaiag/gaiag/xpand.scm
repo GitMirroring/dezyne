@@ -64,7 +64,7 @@
      pegtext      <-  (!pegprocedure (escape '#' / .))* pegprocedure?
      pegsep       <   [ ]?
      escape       <   '#'
-     pegprocedure <-- '#' ('='/'.'/':'/'-'/'+'/'?'/[a-zA-Z0-9_])+ pegsep")
+     pegprocedure <-- '#' [-!$%&'*+,./0-9:<=>?A-Z^_a-z{|}~]([-!#$%&'*+,./0-9:<=>?A-Z^_a-z{|}~])* pegsep")
   ;; (stderr "X:PAND: ~a\n" o)
   (let* ((debug? (gdzn:command-line:get 'debug #f))
          (result (match-pattern script (gulp-template filename)))
@@ -102,6 +102,13 @@
     ;;(stderr "            delim=~s\n" delimiter)
     (string-append pre (apply string-join (cons lst delimiter)) post)))
 
+(use-modules (gaiag deprecated animate))
+(define (x:pand-animate file-name o module)
+  (animate-file file-name module o))
+
+;; code -l mcrl Alarm: x:pand (peg): 9.4s, xpand-animate: 6.6s
+(define x:pand x:pand-animate)
+
 (define (type->template module file-name type sep o)
   (let ((debug? (gdzn:command-line:get 'debug #f)))
     (if (and debug?
@@ -134,8 +141,6 @@
                 (file-name (string-append file-name "@" name)))
 	   (x:pand file-name o (current-module))))
         (#t (x:pand file-name o (current-module)))))
-
-(define-public this-module (make-parameter #f))
 
 (define-syntax define-template
   (syntax-rules ()
