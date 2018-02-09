@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-// Copyright © 2016, 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2016, 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
 //
@@ -103,7 +103,7 @@ var privates = {
     }
 
     var outcome = (result.items.length) ? result.items[0].outcome.status : [];
-    
+
     // pre: first item is complete is all its aspects
     order.each(function(aspect) {
       summary[aspect] = {};
@@ -263,6 +263,9 @@ var privates = {
     ln('          font-size: 80%;');
     ln('          padding: 5px;');
     ln('      }');
+    ln('      td.item, th.item {');
+    ln('          text-align: left;');
+    ln('      }');
     ln('      pre {');
     ln('        display: inline;');
     ln('      }');
@@ -340,7 +343,7 @@ var privates = {
     ln('    <table id="details">');
     if (result.items.length) {
       ln('    <tr>');
-      ln('      <th class="white">ITEM</th>');
+      ln('      <th class="white item">ITEM</th>');
       ln('      <th class="white">time</th>');
 
       order.each(function(aspect) {
@@ -382,7 +385,7 @@ var privates = {
       try {var f = file + '/' + base + '.dm'; file = fs.realpathSync (f);} catch (e) {}
       try {var f = file + '/' + base + '.dzn'; file = fs.realpathSync (f);} catch (e) {}
       var dir = path.basename (path.dirname (item.name));
-      ln('      <td class="'+privates.status2class(item.status)+'"><a href="' + file +'">'+dir+'/'+ base+'</a></td>');
+      ln('      <td class="'+privates.status2class(item.status)+' item"><a href="' + file +'">'+dir+'/'+ base+'</a></td>');
       ln('      <td class="white">'+item.outcome.elapsed+'</a></td>');
       order.each(function(aspect) {
         var aspoutcome = outcome[aspect] || 'SKIPPED';

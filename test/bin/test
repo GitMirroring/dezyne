@@ -129,6 +129,7 @@ var session = 0;
 
 function get_testdir_list(dir) {
   var entries = fs.readdirSync (dir);
+  entries.sort();
   if (entries.find (function (entry) { return /[.]dzn$/.test (entry) || /[.]dm$/.test (entry) || entry === 'run';}))
     return [dir];
 
