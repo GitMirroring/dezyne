@@ -220,7 +220,10 @@
 
 (define-method (ast:in-triggers (o <interface>))
   (map (lambda (event) (make <trigger> #:event event #:formals ((compose .formals .signature) event)))
-       (ast:event* o)))
+       (filter ast:in? (ast:event* o))))
+
+(define-method (ast:in? (o <event>))
+  (eq? 'in (.direction o)))
 
 (define-method (ast:provided-out-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)

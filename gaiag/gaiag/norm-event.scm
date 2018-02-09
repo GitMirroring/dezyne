@@ -355,10 +355,17 @@
                                       (and (eq? (.port.name trigger) (.port.name on-trigger))
                                            (eq? (.event.name trigger) (.event.name on-trigger))))
                                     on-triggers)))
-                       triggers))
-            (ons (append (map (add-illegals model) ons) (map trigger->illegal triggers))))
-       (if (null? ons) o
-           (clone o #:statement (clone (.statement o) #:elements ons)))))
+                       triggers)))
+       (receive (modeling ons)
+           (partition (compose (is? <modeling-event>) .event car ast:trigger*) ons)
+         (let ((ons (append modeling (map (add-illegals model) ons) (map trigger->illegal triggers))))
+           (if (null? ons) o
+               (clone o #:statement (clone (.statement o) #:elements ons)))))))
+    ;; NOTE: not needed: on-compound asserts each on has a compound
+    ;; (($ <guard>) (=> failure)
+    ;;  (make <compound>
+    ;;    #:elements (list o
+    ;;                     (make <guard> #:expression (make <otherwise>) #:statement (make <illegal>)))))
     ((and ($ <compound>) (? om:declarative?)) (=> failure)
      (if (and (pair? (.elements o)) (is-a? (car (.elements o)) <guard>) (null? (filter (is? <otherwise>) (.elements o))))
          (clone o #:elements (append (.elements o) (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal>)))))
@@ -486,15 +493,18 @@
     (($ <on>)
      (clone o #:statement (make <compound> #:elements (list (.statement o)))))
 
-    ((and ($ <component>))
+    (($ <component>)
      (clone o #:behaviour (on-compound (.behaviour o))))
 
-    ((and ($ <behaviour>))
+    (($ <behaviour>)
      (clone o #:statement (on-compound (.statement o))))
 
-    (($ <interface>) o)
+    (($ <interface>)
+     (clone o #:behaviour (on-compound (.behaviour o))))
+
     ((? (is? <component-model>)) o)
     (($ <functions>) o)
+
     ((? (is? <ast>)) (tree-map on-compound o))
     (_ o)))
 

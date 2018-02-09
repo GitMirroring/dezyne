@@ -1,7 +1,26 @@
 verify: DoorControlIF: check: deadlock: ok
 verify: DoorControlIF: check: livelock: ok
 verify: GarageDoorControlErr: check: deterministic: ok
-verify: GarageDoorControlErr: check: illegal: ok
+verify: GarageDoorControlErr: check: illegal: fail
+doorControl.initialise
+limitSw.initialise
+limitSw.return
+motorControl.initialise
+motorControl.return
+doorControl.return
+switchPress.switchPressed
+switchPress.acknowledge
+switchPress.return
+limitSw.queryPosition
+limitSw.Position_Unknown
+motorControl.setOpen
+motorControl.return
+motorControl.start
+motorControl.return
+limitSw.doorOpening
+limitSw.return
+motorControl.driveFault
+motorControl.stop
 verify: GarageDoorControlErr: check: deadlock: fail
 doorControl.initialise
 limitSw.initialise
@@ -21,6 +40,7 @@ motorControl.return
 limitSw.doorOpening
 limitSw.return
 motorControl.driveFault
+motorControl.stop
 verify: GarageDoorControlErr: check: compliance: fail
 doorControl.initialise
 limitSw.initialise
@@ -40,6 +60,7 @@ motorControl.return
 limitSw.doorOpening
 limitSw.return
 motorControl.driveFault
+motorControl.stop
 verify: GarageDoorControlErr: check: livelock: ok
 verify: ITimer: check: deadlock: ok
 verify: ITimer: check: livelock: ok
