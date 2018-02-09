@@ -184,10 +184,20 @@
     (perf 'remove-otherwise)
     (remove-otherwise)
     (perf 'add-skip)
+    (interface-prepend-true-guard)
     add-skip
     (perf 'START))
    o)
   )
+
+(define* ((interface-prepend-true-guard #:optional guard-seen?) o)
+  (match o
+    (($ <component>) o)
+    (($ <guard>) o)
+    (($ <on>) (if guard-seen? o
+                  (rsp o (make <guard> #:expression (make <literal> #:value 'true) #:statement o))))
+    ((? (is? <ast>)) (tree-map (interface-prepend-true-guard guard-seen?) o))
+    (_ o)))
 
 (define* ((group-ons #:optional (group? norm:triggers-equal?)) o)
   "stable place ons with same group? next to eachother"

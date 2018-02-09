@@ -3,7 +3,7 @@
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -136,9 +136,7 @@
     ((and (? (is? <component>) (= .behaviour behaviour)))
      (clone o #:behaviour ((aggregate-on aggregate? o) behaviour)))
     ((and (? (is? <interface>) (= .behaviour behaviour)))
-     ;;(stderr "interface hit: ~a \n\n ~a \n\n" o behaviour)
-     ;;(clone o #:behaviour ((aggregate-on aggregate? o) behaviour))
-     o)
+     (clone o #:behaviour ((aggregate-on aggregate? o) behaviour)))
     ((? (is? <component-model>)) o)
     (($ <skip>) o)
     ((? om:imperative?) o)
