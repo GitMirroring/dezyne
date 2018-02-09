@@ -1,1 +1,1 @@
-#x:block-illegals #x:trigger-port'in(#x:trigger-port-type'Actions'#x:on-event-trigger)
+#x:block-illegals #x:trigger-port'in(#x:trigger-port-type'#x:on-event-trigger-dir'#x:on-event-trigger)

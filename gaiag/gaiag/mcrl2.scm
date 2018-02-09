@@ -547,6 +547,7 @@
 (define-template x:port-action-alphabet mcrl2:ports 'newline-indent-infix)
 (define-template x:port-interface-name (compose mcrl2:model-name .type))
 (define-template x:event-name (compose .name .event))
+(define-template x:event-dir (compose .direction .event))
 (define-template x:integers get-ints 'newline-indent-suffix)
 (define-template x:enum-struct get-enums 'newline-indent-suffix)
 
@@ -930,6 +931,13 @@
     (($ <on>) ((compose .event.name car .elements .triggers) o))
     (($ <action>) (.event.name o))
     (($ <the-end>) ((compose .event.name .trigger) o))
+    (($ <illegal>) (.event o))))
+(define-template x:on-event-trigger-dir mcrl2:on-event-trigger-dir)
+(define (mcrl2:on-event-trigger-dir o)
+  (match o
+    (($ <on>) ((compose .direction .event car .elements .triggers) o))
+    (($ <action>) ((compose .direction .event) o))
+    (($ <the-end>) ((compose .direction .event .trigger) o))
     (($ <illegal>) (.event o))))
 (define-template x:trigger-port trigger-port)
 (define-method (port p o)

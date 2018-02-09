@@ -43,14 +43,11 @@
     aliases))
 
 (define (rename-lts-actions trace)
-  (let* ((sorted-names (find-aliases "verify.mcrl2"))
-         (trace (regexp-substitute/global #f "\\breply_[^(]*\\(([^)]*)\\)" trace 'pre 1 'post))
+  (let* ((trace (regexp-substitute/global #f "\\breply_[^(]*\\(([^)]*)\\)" trace 'pre 1 'post))
          (trace (regexp-substitute/global #f "('return\\([^,]+),\\s*void\\)" trace 'pre 1 ")" 'post))
          (trace (regexp-substitute/global #f "'return\\([^,]+,\\s*(\\w+[^)]+)\\)" trace 'pre "." 1 'post))
-         (trace (let lp ((trc trace) (names sorted-names))
-                  (if (equal? names '())
-                      trc
-                      (lp (regexp-substitute/global #f (string-append "\\b" (car names) "'") trc 'pre "" 'post) (cdr names)))))
+         (trace (regexp-substitute/global #f "\\w+'in'" trace 'pre "" 'post))
+         (trace (regexp-substitute/global #f "\\w+'out'" trace 'pre "" 'post))
          (trace (regexp-substitute/global #f "\\bi\\d+_" trace 'pre "" 'post))
          (trace (regexp-substitute/global #f "'event\\(" trace 'pre "." 'post))
          (trace (regexp-substitute/global #f "\\b\\w+'flush\\b" trace 'pre "" 'post))
