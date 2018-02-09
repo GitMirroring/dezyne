@@ -1,1 +1,1 @@
-m.#.port.name .#.event.direction .#.event.name  = function() {return type_helper(log_valued('#.port.name .', '#.event.name ', e), '#x:reply-type');};
+m.#.port.name .#.event.direction .#.event.name  = function() {return type_helper(log_valued('#.port.name .', '#.event.name ', e), '#x:reply-type ');};

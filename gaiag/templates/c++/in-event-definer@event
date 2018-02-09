@@ -1,1 +1,1 @@
-std::function<#x:type-name (#x:formals)> #.name;
+std::function< #x:type-name (#x:formals)> #.name;

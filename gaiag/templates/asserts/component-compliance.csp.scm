@@ -4,7 +4,7 @@
 ;;;
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2014, 2015 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -23,4 +23,4 @@
 ;;; 
 ;;; Code:
 
-assert IF_SPEC [F= AS_#.scope_model _(true) \ diff(Events,{|illegal,#(comma-join (append-map csp-channels (om:provided model)))|})
+assert IF_SPEC [F= AS_ #.scope_model _(true) \ diff(Events,{|illegal, #(comma-join (append-map csp-channels (om:provided model)))|})

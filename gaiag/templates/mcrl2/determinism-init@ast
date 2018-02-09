@@ -1,6 +1,6 @@
 "
 
-eqn  #x:mcrl2-provided-port-type'allow_dillegals = true;
-     #x:mcrl2-component-name'allow_dillegals = true;
+eqn  #x:mcrl2-provided-port-type 'allow_dillegals = true;
+     #x:mcrl2-component-name 'allow_dillegals = true;
 
-init #x:mcrl2-component-name'Behaviour(#x:globals-init);"
+init #x:mcrl2-component-name 'Behaviour(#x:globals-init);"

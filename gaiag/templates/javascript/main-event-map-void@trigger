@@ -1,1 +1,1 @@
-'#.port.name .#.event.name': function () {m.#.port.name .#.event.direction .#.event.name(#x:main-out-arg);}
+'#.port.name .#.event.name ': function () {m.#.port.name .#.event.direction .#.event.name(#x:main-out-arg);}

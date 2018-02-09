@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,4 +22,4 @@
 ;;; 
 ;;; Code:
 
-LTS_#(.name model)  = IF_#(.name model) _#((compose .name .behaviour) model)(false,false)
+LTS_ #(.name model)  = IF_ #(.name model) _ #((compose .name .behaviour) model)(false,false)

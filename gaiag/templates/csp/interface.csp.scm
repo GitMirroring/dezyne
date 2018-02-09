@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2014, 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
@@ -25,18 +25,18 @@
 
 -- interface.csp.scm
 
-channel #.scope_model : {#(comma-join (append (interface-events model om:in?) (list "the_end'") ))}
-channel #.scope_model _': {#(comma-join (reverse (append (return-values model) (list "blocked"))))}
-channel #.scope_model _in',#.scope_model _out': {#(comma-join (map (lambda (x) (list .scope_model "_'." x)) (append (return-values model) (list "blocked"))))}
-channel #.scope_model _'': {#(comma-join (let ((out-events (interface-events model om:out?))) (if (null? out-events) (list 'extensions_over_empty_channels_is_undefined) out-events)))}
+channel #.scope_model : { #(comma-join (append (interface-events model om:in?) (list "the_end'") ))}
+channel #.scope_model _': { #(comma-join (reverse (append (return-values model) (list "blocked"))))}
+channel #.scope_model _in', #.scope_model _out': { #(comma-join (map (lambda (x) (list .scope_model "_'." x)) (append (return-values model) (list "blocked"))))}
+channel #.scope_model _'': { #(comma-join (let ((out-events (interface-events model om:out?))) (if (null? out-events) (list 'extensions_over_empty_channels_is_undefined) out-events)))}
 channel #.scope_model _''': {|inevitable,optional,modeling,silent|}
-channel #.scope_model _in'',#.scope_model _out'': {|#.scope_model _''|}
-channel #.scope_model _link'': {|#.scope_model _in'',#.scope_model _out''|}
+channel #.scope_model _in'', #.scope_model _out'': {| #.scope_model _''|}
+channel #.scope_model _link'': {| #.scope_model _in'', #.scope_model _out''|}
                                
-channel cs_#.scope_model : {|#.scope_model _'''|}
+channel cs_ #.scope_model : {| #.scope_model _'''|}
                                
                             
-IF_#.scope_model _(IG,CS) = let
+IF_ #.scope_model _(IG,CS) = let
 # (->string (map (lambda (x) (on->csp model (ast-transform model x))) (om:functions model)))
 #(behaviour-interface->csp model)
 
@@ -57,10 +57,10 @@ within sbisim(diamond(x))
 within compress((if CS
                 then #
 .scope_model _(#(comma-space-join (om:member-values model)))
-               [[cs_#.scope_model .x <- x | x <- extensions(cs_#.scope_model )]]
+               [[cs_ #.scope_model .x <- x | x <- extensions(cs_ #.scope_model )]]
                 else (#
-.scope_model _(#(comma-space-join (om:member-values model))) [|{|cs_#.scope_model |}|]STOP) #(optional-chaos model))
+.scope_model _(#(comma-space-join (om:member-values model))) [|{|cs_ #.scope_model |}|]STOP) #(optional-chaos model))
                 
-               [[x<-#.scope_model _in'.x|x<-extensions(#.scope_model _in')]] [|{|#.scope_model ,#.scope_model _in',#.scope_model _'',#.scope_model _'''.inevitable,#.scope_model _'''.optional|}|] REORDER' [[#.scope_model _out'.x<-x|x<-extensions(#.scope_model _out')]] \ {|#.scope_model _in',#.scope_model .the_end'|})
+               [[x<- #.scope_model _in'.x|x<-extensions(#.scope_model _in')]] [|{| #.scope_model , #.scope_model _in', #.scope_model _'', #.scope_model _'''.inevitable, #.scope_model _'''.optional|}|] REORDER' [[ #.scope_model _out'.x<-x|x<-extensions(#.scope_model _out')]] \ {| #.scope_model _in', #.scope_model .the_end'|})
 
 -- end of interface.csp.scm

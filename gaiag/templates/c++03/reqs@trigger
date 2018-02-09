@@ -1,1 +1,1 @@
-#.port.name .#.event.direction .#.event.name  = boost::bind(&dzn::call_async< #x:model-name #x:prefix-formals-type >, this, &#.port.name, boost::function<void(#x:formals-type)>(boost::bind(&#x:model-name ::#.port.name _ack,this#x:prefix-arguments-n))#x:prefix-arguments-n);
+#.port.name .#.event.direction .#.event.name  = boost::bind(&dzn::call_async< #x:model-name #x:prefix-formals-type >, this, & #.port.name , boost::function<void(#x:formals-type)>(boost::bind(& #x:model-name ::#.port.name _ack,this #x:prefix-arguments-n))#x:prefix-arguments-n);

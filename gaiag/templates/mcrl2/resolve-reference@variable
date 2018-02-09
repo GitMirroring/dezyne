@@ -1,1 +1,1 @@
-is'#x:mcrl2-process-name'#x:mcrl2-process-identifier'variableref(cont) -> #x:mcrl2-process-name'#x:mcrl2-process-identifier'variable(#x:init-locals-from-cont)
+is'#x:mcrl2-process-name '#x:mcrl2-process-identifier 'variableref(cont) -> #x:mcrl2-process-name '#x:mcrl2-process-identifier 'variable(#x:init-locals-from-cont)

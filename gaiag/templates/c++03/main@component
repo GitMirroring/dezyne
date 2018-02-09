@@ -10,12 +10,12 @@ bool to_bool(std::string s){return s == "true";}
 void to_void(std::string){}
 
 void
-connect_ports (dzn::container<#x:type-name , boost::function<void()> >& c)
+connect_ports (dzn::container< #x:type-name , boost::function<void()> >& c)
 {
   #x:main-port-connect-in #x:main-port-connect-out }
 
 std::map<std::string,boost::function<void()> >
-event_map (dzn::container<#x:type-name , boost::function<void()> >& c)
+event_map (dzn::container< #x:type-name , boost::function<void()> >& c)
 {
   #x:main-provided-port-init
   #x:main-required-port-init
@@ -31,8 +31,8 @@ int
 main(int argc, char* argv[])
 {
   if(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--debug") == 0;})) dzn::debug.rdbuf(std::clog.rdbuf());
-  dzn::container<#x:type-name , boost::function<void()> > c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
+  dzn::container< #x:type-name , boost::function<void()> > c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
 
   connect_ports (c);
-  c(event_map (c), {#x:main-required-port-name });
+  c(event_map (c), { #x:main-required-port-name });
 }

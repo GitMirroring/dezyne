@@ -4,7 +4,7 @@
 ;;;
 ;;; Copyright © 2014, 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2015, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -23,9 +23,9 @@
 ;;; 
 ;;; Code:
 
-assert COMPLETE'({|#
+assert COMPLETE'({| #
 (comma-join (append (map (lambda (event) (list .scope_model "." (.name event))) (filter om:in? (.elements (.events model))))
-                    (map (lambda (trigger) (list .scope_model "_'''." (.event.name trigger))) (modeling-triggers model))))|}) [F= IF_#.scope_model _(true,true) \ diff(Events,{|#
+                    (map (lambda (trigger) (list .scope_model "_'''." (.event.name trigger))) (modeling-triggers model))))|}) [F= IF_ #.scope_model _(true,true) \ diff(Events,{| #
 (comma-join (append (map (lambda (event) (list .scope_model "." (.name event))) (filter om:in? (.elements (.events model))))
                     (map (lambda (trigger) (list .scope_model "_'''." (.event.name trigger))) (modeling-triggers model))
                     (list 'illegal)))|})

@@ -1,1 +1,1 @@
-<span class="port">#x:port-prefix </span> <span class="event">#.event.name </span>#x:action-arguments
+<span class="port"> #x:port-prefix </span> <span class="event"> #.event.name </span> #x:action-arguments

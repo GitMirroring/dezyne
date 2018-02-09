@@ -15,7 +15,7 @@
   #x:asd-register-st
   dzn_rt.performs_flush (this) = true;
 }
-#x:model-name ::~#x:model-name ()
+#x:model-name ::~ #x:model-name ()
 {
   component.reset();
   #x:model-name Component::ReleaseInstance();

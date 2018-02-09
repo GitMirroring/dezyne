@@ -1,5 +1,5 @@
 "
 
-eqn  #x:mcrl2-model-name'allow_dillegals = true;
+eqn  #x:mcrl2-model-name 'allow_dillegals = true;
 
-init #x:mcrl2-model-name'Implementation_constrained();"
+init #x:mcrl2-model-name 'Implementation_constrained();"

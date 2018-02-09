@@ -1,4 +1,4 @@
-#x:communicate-required-port-actions #x:rename-required-port-actions rename({#x:rename-out-reply-in-req-port},
-                         #x:mcrl2-model-name'Behaviour(#x:globals-init)
+#x:communicate-required-port-actions #x:rename-required-port-actions rename({#x:rename-out-reply-in-req-port },
+                         #x:mcrl2-model-name 'Behaviour(#x:globals-init)
                        ))
                      )

@@ -1,2 +1,2 @@
 #x:pretty-print-dzn
-     #x:mcrl2-process-name'#x:mcrl2-process-identifier(#x:process-parameters) = (br) -> double_reply_error . delta <> #x:process-continuation (reply_#x:provided-port-type  = reply_#x:provided-port-type'Void(void), br = true);
+     #x:mcrl2-process-name '#x:mcrl2-process-identifier(#x:process-parameters) = (br) -> double_reply_error . delta <> #x:process-continuation (reply_#x:provided-port-type  = reply_#x:provided-port-type 'Void(void), br = true);

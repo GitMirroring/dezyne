@@ -1,1 +1,1 @@
-#x:mcrl2-model-name'allow_dillegals : Bool;
+#x:mcrl2-model-name 'allow_dillegals : Bool;

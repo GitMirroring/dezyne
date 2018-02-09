@@ -1,2 +1,2 @@
 #x:pretty-print-dzn
-     #x:mcrl2-process-name'#x:mcrl2-process-identifier(#x:process-parameters) = #x:assign-by-call? #x:assign-by-action? #x:range-error-normal-assign? #x:process-continuation(#x:variable-in-scope?);
+     #x:mcrl2-process-name '#x:mcrl2-process-identifier(#x:process-parameters) = #x:assign-by-call? #x:assign-by-action? #x:range-error-normal-assign? #x:process-continuation(#x:variable-in-scope?);

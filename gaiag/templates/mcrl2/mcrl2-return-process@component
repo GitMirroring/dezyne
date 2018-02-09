@@ -1,2 +1,2 @@
 
-proc return(#x:process-parameters, cont: #x:mcrl2-model-name'Refs) = internal . #x:resolve-reference ;
+proc return(#x:process-parameters, cont: #x:mcrl2-model-name 'Refs) = internal . #x:resolve-reference ;

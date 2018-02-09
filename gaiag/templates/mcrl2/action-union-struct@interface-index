@@ -1,1 +1,1 @@
-action_union_#x:mcrl2-port-index(x#x:mcrl2-port-index _0_ActionUnion: #x:port-interface-name'Actions)?is_action_union_#x:mcrl2-port-index
+action_union_#x:mcrl2-port-index(x#x:mcrl2-port-index _0_ActionUnion: #x:port-interface-name 'Actions)?is_action_union_#x:mcrl2-port-index

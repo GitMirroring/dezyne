@@ -1,1 +1,1 @@
-enum #x:type  {#x:field};
+enum #x:type  {#x:field };

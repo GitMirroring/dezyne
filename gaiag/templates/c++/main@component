@@ -34,5 +34,5 @@ main(int argc, char* argv[])
   dzn::container< #x:type-name , std::function<void()>> c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
 
   connect_ports (c);
-  c(event_map (c), {#x:main-required-port-name });
+  c(event_map (c), { #x:main-required-port-name });
 }

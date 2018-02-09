@@ -1,1 +1,1 @@
-#.port.name .#.event.direction .#.event.name  = [=](#x:formals){return dzn_pump->handle(reinterpret_cast<size_t>(&#.port.name), 0, [=#x:out-arguments ]{#.port.name _ack(#x:code-arguments);dzn_rt.flush(this);}, dzn_meta.rank);};
+#.port.name .#.event.direction .#.event.name  = [=](#x:formals){return dzn_pump->handle(reinterpret_cast<size_t>(& #.port.name), 0, [= #x:out-arguments ]{ #.port.name _ack(#x:code-arguments);dzn_rt.flush(this);}, dzn_meta.rank);};

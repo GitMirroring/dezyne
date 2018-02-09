@@ -1,1 +1,1 @@
-br: Bool, reply_#x:mcrl2-provided-port-type : #x:mcrl2-provided-port-type'ReplyUnion #x:variables-in-scope
+br: Bool, reply_#x:mcrl2-provided-port-type : #x:mcrl2-provided-port-type 'ReplyUnion #x:variables-in-scope

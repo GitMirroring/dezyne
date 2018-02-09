@@ -1,1 +1,1 @@
-#x:trigger-port'out(#x:trigger-port-type'in'#.event.name) . (sum reply: #x:mcrl2-type-name . #x:check-integer-bounds #x:trigger-port'reply_in(#x:trigger-port-type'in'#.event.name, reply_#x:trigger-port-type'#x:mcrl2-type-name(reply)) . #x:process-continuation(#.variable.name  = reply))
+#x:trigger-port 'out(#x:trigger-port-type 'in'#.event.name) . (sum reply: #x:mcrl2-type-name . #x:check-integer-bounds #x:trigger-port 'reply_in(#x:trigger-port-type 'in'#.event.name , reply_#x:trigger-port-type '#x:mcrl2-type-name(reply)) . #x:process-continuation(#.variable.name  = reply))

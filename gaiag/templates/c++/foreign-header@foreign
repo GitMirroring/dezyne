@@ -21,7 +21,7 @@ struct #x:model-name
   #x:provided-port-declare
   #x:required-port-declare
   #x:model-name (const dzn::locator&);
-  virtual ~#x:model-name ();
+  virtual ~ #x:model-name ();
   virtual std::ostream& stream_members(std::ostream& os) const { return os; }
   void check_bindings() const;
   void dump_tree(std::ostream& os) const;

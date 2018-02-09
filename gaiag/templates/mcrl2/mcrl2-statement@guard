@@ -1,3 +1,3 @@
-(#x:guard-expression) -> #x:mcrl2-process-name'#x:mcrl2-child-identifier();
+(#x:guard-expression) -> #x:mcrl2-process-name '#x:mcrl2-child-identifier();
 
 #x:mcrl2-statement-process
