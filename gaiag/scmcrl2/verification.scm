@@ -130,9 +130,8 @@
 
 (define (verifydeterministic lps)
   (let* ((ltsname (string-append (basename lps ".lps") ".aut"))
-         (lps2lts (list "lps2lts" lps ltsname))
-         (ltsinfo (list "ltsinfo" ltsname))
-         (commands (list "bash" "-c" (string-append (string-join lps2lts " ") " && " (string-join ltsinfo " ") " 2>&1"))))
+         (lps2lts (list "lps2lts" "--nondeterminism" "--trace" lps ltsname))
+         (commands (list "bash" "-c" (string-append (string-join lps2lts " ") " 2>&1"))))
     (pipeline->string commands)))
 
 (define (verifydeadlock lps)
@@ -337,10 +336,10 @@
   #t)
 
 (define (check-deterministic string file-name model-name verbose?)
-  (let ((match? (not (regexp-exec (make-regexp "LTS is deterministic") string)))
+  (let ((match? (regexp-exec (make-regexp "Nondeterministic state found and saved to '([^'\n]*)'.*") string))
         (assert 'deterministic)
         (model-type 'component))
-    (if match? (let ((trace ""))
+    (if match? (let ((trace (make-trace-file (match:substring match? 1) assert file-name model-name)))
                  (assert-fail file-name model-type model-name assert trace verbose?))
         (assert-ok model-type model-name assert verbose?))))
 
