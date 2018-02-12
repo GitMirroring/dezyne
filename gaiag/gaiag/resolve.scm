@@ -64,7 +64,7 @@
 (define (ast:resolve o)
   (match o
     (($ <root>) (resolve-root o))
-    (($ <call>) ((resolve (parent <model> o) '()) o))
+    (($ <call>) ((resolve (parent <model> o)) o))
     ((? (is? <model>)) (resolve-model o))
     (_  o)))
 
@@ -128,20 +128,20 @@
   (match o
     ((? (is? <model>))
      (resolve-model o))
-    (_ ((resolve o '()) o))))
+    (_ ((resolve o) o))))
 
 (define (resolve-model o)
   (match o
     ((or ($ <interface>) ($ <component>) ($ <foreign>))
-     ((resolve o '()) o))
-    (_ ((resolve o '()) o))))
+     ((resolve o) o))
+    (_ ((resolve o) o))))
 
-(define ((resolve model locals) o)
+(define ((resolve model) o)
   (match o
-    (($ <type>) (resolve- model o locals))
+    (($ <type>) (resolve- model o))
     ((? (is? <type>)) o)
     (($ <import>) o)
-    (_ (retain-source-properties o (resolve- model o locals)))))
+    (_ (retain-source-properties o (resolve- model o)))))
 
 (define (->symbol o)
   (match o
@@ -199,7 +199,7 @@
     ((and ($ <binding>) (= .instance #f))
      ;;#f
      ;;(resolve:component system (om:binding-other-port system port))
-     (let* ((bind (om:bind system (.port@ o)))
+     (let* ((bind (om:bind system (.port.name o)))
             (instance (om:instance-name bind)))
        (resolve:component system instance)))
     (($ <binding>) (resolve:component system (.instance o)))
@@ -263,7 +263,7 @@
 (define (resolve:variable model o)
   (find (om:named o) (om:variables model)))
 
-(define (resolve- model o locals)
+(define (resolve- model o)
 
   (define (as-enum identifier) (and=> (as-type identifier) (is? <enum>)))
   (define (extern? identifier) (and=> (as-type identifier) (is? <extern>)))
@@ -311,16 +311,16 @@
   (define (resolve-assign-expression o)
     (match o
       (($ <call>)
-       ((resolve model locals) o))
+       ((resolve model) o))
 
       (($ <action>)
-       ((resolve model locals) o))
+       ((resolve model) o))
 
       ((and ($ <literal>) (get! expression))
-       ((resolve model locals) (expression)))
+       ((resolve model) (expression)))
 
       (_
-       ((resolve model locals) o))))
+       ((resolve model) o))))
 
   (match o
     ((and ($ <var>) (= .variable.name (? (negate (cut var? o <>)))))
@@ -359,10 +359,10 @@
     ((or '== '!= '< '<= '> '>= 'group) o)
 
     (($ <formal>)
-     (clone o #:type ((resolve model locals) (.type o))))
+     (clone o #:type ((resolve model) (.type o))))
 
     ((and ($ <call>))
-     (clone o #:arguments ((resolve model locals) (.arguments o))))
+     (clone o #:arguments ((resolve model) (.arguments o))))
 
     (($ <type>)
      (or (as-type o)
@@ -370,7 +370,7 @@
          (undefined-error o (.name o))))
 
     ((and ($ <event>) (= .signature signature))
-     (clone o #:signature ((resolve model '()) signature)))
+     (clone o #:signature ((resolve model) signature)))
 
     (($ <data>) o)
     (($ <enum>) o)
@@ -391,10 +391,10 @@
 
     (($ <signature>)
      (clone o
-            #:type ((resolve model locals) (.type o))
-            #:formals ((resolve model locals) (.formals o))))
+            #:type ((resolve model) (.type o))
+            #:formals ((resolve model) (.formals o))))
     ((and ($ <trigger>) (= .port #f) (? (compose (cut event? o <>) .event)))
-     (clone o #:arguments ((resolve model locals) (.arguments o))))
+     (clone o #:arguments ((resolve model) (.arguments o))))
     ((and ($ <trigger>) (= .port #f))
      (resolve-error o (.event o) "undefined event: ~a"))
     ((and ($ <trigger>)) (=> failure)
@@ -406,7 +406,7 @@
              (if (not event) (resolve-error o e "undefined event: ~a")
                  (clone o
                         #:event event
-                        #:arguments ((resolve model locals) (.arguments o))))))))
+                        #:arguments ((resolve model) (.arguments o))))))))
 
     ((and ($ <var>) (= .variable.name v))
      (let ((variable (var? o v)))
@@ -417,7 +417,7 @@
      (undefined-error 'programming-error o))
 
     ((and ($ <action>) (= .port #f) (? (compose (cut event? o <>) .event)) (= .event event) (= .arguments arguments))
-     (clone o #:event (event? o event) #:arguments ((resolve model locals) arguments)))
+     (clone o #:event (event? o event) #:arguments ((resolve model) arguments)))
 
     ((and ($ <action>) (= .port #f))
      (resolve-error o (.event o) "undefined event: ~a"))
@@ -429,127 +429,106 @@
              (if (not event) (resolve-error o e "undefined event: ~a")
                  (clone o
                         #:event event
-                        #:arguments ((resolve model locals) arguments)))))))
+                        #:arguments ((resolve model) arguments)))))))
 
     (($ <assign>)
      (clone o
             #:expression (resolve-assign-expression (.expression o))))
 
     (($ <formal>)
-     (clone o #:type ((resolve model locals) (.type o))))
+     (clone o #:type ((resolve model) (.type o))))
 
     (($ <variable>)
      (clone o
-            #:type ((resolve model locals) (.type o))
+            #:type ((resolve model) (.type o))
             #:expression (resolve-assign-expression (.expression o))))
 
     ((and (? (is? <literal>)) (= .value value))
-     (clone o #:value ((resolve model locals) value)))
+     (clone o #:value ((resolve model) value)))
 
     ((and (? (is? <unary>)) (= .expression expression))
-     (clone o #:expression ((resolve model locals) expression)))
+     (clone o #:expression ((resolve model) expression)))
 
     ((and (? (is? <binary>)) (= .left left) (= .right right))
-     (clone o #:left ((resolve model locals) left) #:right ((resolve model locals) right)))
+     (clone o #:left ((resolve model) left) #:right ((resolve model) right)))
 
     (($ <function>)
-     (let* ((signature ((resolve model locals) (.signature o)))
-            (formals ((compose .elements .formals) signature))
-            (locals (let loop ((formals formals) (locals locals))
-                      (if (null? formals)
-                          locals
-                          (loop (cdr formals)
-                                (acons (.name (car formals)) (car formals) locals))))))
-       (clone o
-              #:signature signature
+     (clone o
+              #:signature ((resolve model) (.signature o))
               #:recursive (and ((recurses? model) (.name o)) 'recursive)
-              #:statement ((resolve model locals) (.statement o)))))
+              #:statement ((resolve model) (.statement o))))
 
     (($ <compound>)
      (clone o
             #:elements
-            (let loop ((statements (.elements o)) (locals locals))
+            (let loop ((statements (.elements o)))
               (if (null? statements)
                   '()
                   (let* ((statement (car statements))
-                         (statement ((resolve model locals) statement))
-                         (locals (match statement
-                                   (($ <variable>)
-                                    (acons (.name statement) ((resolve model locals) statement) locals))
-                                   (_ locals))))
-                    (cons statement (loop (cdr statements) locals)))))))
+                         (statement ((resolve model) statement)))
+                    (cons statement (loop (cdr statements))))))))
 
     (($ <blocking>)
-     (clone o #:statement ((resolve model locals) (.statement o))))
+     (clone o #:statement ((resolve model) (.statement o))))
 
     (($ <guard>)
      (clone o
-            #:expression ((resolve model locals) (.expression o))
-            #:statement ((resolve model locals) (.statement o))))
+            #:expression ((resolve model) (.expression o))
+            #:statement ((resolve model) (.statement o))))
 
     (($ <on>)
-     (let* ((triggers ((resolve-triggers model) (.triggers o)))
-
-            (on-formals (append-map (compose .elements .formals) (.elements triggers)))
-            (locals (let loop ((on-formals on-formals) (locals locals))
-                      (if (null? on-formals)
-                          locals
-                          (loop (cdr on-formals)
-                                (let* ((on-formal ((resolve-triggers model) (car on-formals)))
-                                       (name (.name on-formal)))
-                                  (acons name on-formal locals)))))))
-       (clone o
-              #:triggers triggers
-              #:statement ((resolve model locals) (.statement o)))))
+     (clone o
+            #:triggers ((resolve-triggers model) (.triggers o))
+            #:statement ((resolve model) (.statement o))))
 
     (($ <interface>)
-     (let ((o (clone o #:events ((resolve o '()) (.events o)))))
-       (clone o #:behaviour ((resolve o '()) (.behaviour o)))))
+     (let ((o (clone o #:events ((resolve o) (.events o)))))
+       (clone o #:behaviour ((resolve o) (.behaviour o)))))
 
     (($ <foreign>)
-     (clone o #:ports (clone (.ports o) #:elements (map (resolve model '()) (om:ports o)))))
+     (clone o #:ports (clone (.ports o) #:elements (map (resolve model) (om:ports o)))))
 
     ((and ($ <component>) (= .behaviour (? unspecified?)))
      (clone o
-            #:ports (clone (.ports o) #:elements (map (resolve model '()) (om:ports o)))
+            #:ports (clone (.ports o) #:elements (map (resolve model) (om:ports o)))
             #:behaviour #f))
 
     (($ <component>)
      (let* ((ports (ast:port* o))
-            (elements (map (resolve model '()) ports))
+            (elements (map (resolve model) ports))
             (ports (clone (.ports o) #:elements elements))
             (o (clone o #:ports ports)))
-       (clone o #:behaviour ((resolve o '()) (.behaviour o)))))
+       (clone o #:behaviour ((resolve o) (.behaviour o)))))
 
     (($ <behaviour>)
-     (let* ((ports (clone (.ports o) #:elements (map (resolve model '()) ((compose .elements .ports) o))))
+     (let* ((ports (clone (.ports o) #:elements (map (resolve model) ((compose .elements .ports) o))))
             (o (clone o #:ports ports))
             (model (clone model #:behaviour o))
 
-            (o (clone o #:variables ((resolve model '()) (.variables o))))
+            (o (clone o #:variables ((resolve model) (.variables o))))
             (model (clone model #:behaviour o))
 
-            (functions (clone (.functions o) #:elements (map (resolve model '()) ((compose .elements .functions) o))))
+            (functions (clone (.functions o) #:elements (map (resolve model) ((compose .elements .functions) o))))
             (o (clone o #:functions functions))
 
             (model (clone model #:behaviour o)))
-       (clone o #:statement ((resolve model '()) (.statement o)))))
+       (clone o #:statement ((resolve model) (.statement o)))))
 
     (($ <system>)
-     (let* ((o (clone o #:ports (clone (.ports o) #:elements (map (resolve model '()) (om:ports o)))))
-            (o (clone o #:instances ((resolve o '()) (.instances o)))))
-       (clone o #:bindings ((resolve o '()) (.bindings o)))))
+     (let* ((o (clone o #:ports (clone (.ports o) #:elements (map (resolve model) (om:ports o)))))
+            (o (clone o #:instances ((resolve o) (.instances o)))))
+       (clone o #:bindings ((resolve o) (.bindings o)))))
 
     ((and ($ <if>) (= .expression expression) (= .then then) (= .else else))
      (clone o
-            #:expression ((resolve model locals) expression)
-            #:then ((resolve model locals) then)
+            #:expression ((resolve model) expression)
+            #:then ((resolve model) then)
             #:else (and (not (eq? else *unspecified*))
-                        else ((resolve model locals) else))))
+                        else ((resolve model) else))))
     ((or ($ <arguments>) ($ <bindings>) ($ <events>) ($ <triggers>) ($ <instances>))
-     (clone o #:elements (map (resolve model locals) (.elements o))))
+     (clone o #:elements (map (resolve model) (.elements o))))
     ((or ($ <functions>) ($ <formals>))
-     (clone o #:elements (map (resolve model '()) (.elements o))))
+     (clone o #:elements (map (resolve model) (.elements o))))
     ((and ($ <instance>) (= .type.name type-name))
      (let ((type (component? type-name)))
        (if (not type) (resolve-error o type "undefined component: ~a")
@@ -565,14 +544,14 @@
            (clone o #:instance inst))))
     (($ <variables>)
      (let ((variables (map (range-check model) (.elements o))))
-       (clone o #:elements (map (resolve model '()) variables))))
+       (clone o #:elements (map (resolve model) variables))))
     ((and ($ <reply>) (= .expression expression) (= .port p))
      (let ((port (port? p)))
        (if (and p (not port)) (resolve-error o p "undefined port: ~a")
-           (clone o #:expression ((resolve model locals) expression)))))
+           (clone o #:expression ((resolve model) expression)))))
     ((and ($ <return>) (= .expression expression))
-     (clone o #:expression ((resolve model locals) expression)))
-    ((? (is? <ast>)) (tree-map (lambda (o) ((resolve model locals) o)) o))
+     (clone o #:expression ((resolve model) expression)))
+    ((? (is? <ast>)) (tree-map (lambda (o) ((resolve model) o)) o))
     (_ o)))
 
 (define ((resolve-triggers model) o)
@@ -688,12 +667,12 @@
 (define name-resolve (pure-funcq name-resolve))
 
 (define-method (.type (o <port>))
-  (name-resolve (parent <root> o) <interface> (.scope+name (.type@ o))))
+  (name-resolve (parent <root> o) <interface> (.scope+name (.type.name o))))
 
 (define-method (.type (o <instance>))
-  (or (name-resolve (parent <root> o) <system> (.scope+name (.type@ o)))
-      (name-resolve (parent <root> o) <component> (.scope+name (.type@ o)))
-      (name-resolve (parent <root> o) <foreign> (.scope+name (.type@ o)))))
+  (or (name-resolve (parent <root> o) <system> (.scope+name (.type.name o)))
+      (name-resolve (parent <root> o) <component> (.scope+name (.type.name o)))
+      (name-resolve (parent <root> o) <foreign> (.scope+name (.type.name o)))))
 
 (define-method (contains? container (o <ast>))
   (and (is-a? container <ast>)
@@ -701,42 +680,42 @@
            (any (lambda (e) (contains? e o)) (om:children container)))))
 
 (define-method (.port (model <component-model>) (o <trigger>))
-  (and (.port@ o) (name-resolve model <port> (.port@ o))))
+  (and (.port.name o) (name-resolve model <port> (.port.name o))))
 
 (define-method (.port (model <component-model>) (o <action>))
-  (and (.port@ o) (name-resolve model <port> (.port@ o))))
+  (and (.port.name o) (name-resolve model <port> (.port.name o))))
 
 (define-method (.port (o <trigger>))
-  (and (.port@ o) (name-resolve (parent <model> o) <port> (.port@ o))))
+  (and (.port.name o) (name-resolve (parent <model> o) <port> (.port.name o))))
 
 (define-method (.port (o <action>))
-  (and (.port@ o) (name-resolve (parent <model> o) <port> (.port@ o))))
+  (and (.port.name o) (name-resolve (parent <model> o) <port> (.port.name o))))
 
 (define-method (.port (o <reply>))
-  (and (.port@ o) (name-resolve (parent <model> o) <port> (.port@ o))))
+  (and (.port.name o) (name-resolve (parent <model> o) <port> (.port.name o))))
 
 (define-method (.port (o <binding>))
   (if (.instance o)
-      (name-resolve (.type (.instance o)) <port> (.port@ o))
-      (name-resolve (parent <model> o) <port> (.port@ o))))
+      (name-resolve (.type (.instance o)) <port> (.port.name o))
+      (name-resolve (parent <model> o) <port> (.port.name o))))
 
 (define-method (.function (model <model>) (o <call>))
-  (and (.function@ o) (name-resolve model <function> (.function@ o))))
+  (and (.function.name o) (name-resolve model <function> (.function.name o))))
 
 (define-method (.function (o <call>))
-  (name-resolve (parent <model> o) <function> (.function@ o)))
+  (name-resolve (parent <model> o) <function> (.function.name o)))
 
 (define-method (.variable (o <var>))
-  (var? o (.variable@ o)))
+  (var? o (.variable.name o)))
 
 (define-method (.variable (o <field-test>))
-  (var? o (.variable@ o)))
+  (var? o (.variable.name o)))
 
 (define-method (.variable (o <assign>))
-  (var? o (.variable@ o)))
+  (var? o (.variable.name o)))
 
 (define-method (.variable (o <formal-binding>))
-  (var? o (.variable@ o)))
+  (var? o (.variable.name o)))
 
 (define (ast-> ast)
   ((compose

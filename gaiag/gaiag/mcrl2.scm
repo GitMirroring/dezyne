@@ -322,7 +322,7 @@
                 #:signature (clone signature #:type type #:formals (clone (.formals signature) #:elements formals))
                 #:statement ((compose (tick-names- names) .statement) o)))))
     (($ <call>) (clone o
-                       #:function ((compose append-tick .function@) o)
+                       #:function ((compose append-tick .function.name) o)
                        #:arguments ((compose (tick-names- names) .arguments) o)))
     (($ <assign>) (clone o #:variable ((compose append-tick .variable.name) o)
                          #:expression ((compose (tick-names- names) .expression) o)))

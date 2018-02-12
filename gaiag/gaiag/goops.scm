@@ -63,7 +63,6 @@
            .fields
            .formals
            .from
-           .function@
            .functions
            .id
            .injected
@@ -74,7 +73,6 @@
            .name
            .operator
            .port
-           .port@
            .ports
            .range
            .recursive
@@ -87,11 +85,9 @@
            ;;.trigger
            .triggers
            .type
-           .type@
            .types
 	   .type.name
            .value
-           .variable@
            .variables
            <action>
            <arguments>
@@ -433,6 +429,8 @@
   (external #:getter .external #:init-value #f #:init-keyword #:external)
   (injected #:getter .injected #:init-value #f #:init-keyword #:injected))
 
+(define-method (.type.name (o <port-node>)) (.type@ o))
+
 (define-class <trigger-node> (<ast-node>)
   (port #:getter .port@ #:init-value #f #:init-keyword #:port)
   (event #:getter .event #:init-value #f #:init-keyword #:event)
@@ -612,7 +610,6 @@
   (type #:getter .type@ #:init-form (make <scope.name-node>) #:init-keyword #:type))
 
 (define-method (.type.name (o <instance-node>)) (.type@ o))
-(define-method (.type.name (o <port-node>)) (.type@ o))
 
 (define-class <error-node> (<ast-node>)
   (ast #:getter .ast #:init-value #f #:init-keyword #:ast)

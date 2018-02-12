@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -33,6 +33,7 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
+  #:use-module (gaiag resolve)
   #:use-module (gaiag deprecated om)
   #:use-module (gaiag ast)
   #:use-module (gaiag compare)
@@ -198,19 +199,19 @@
          (#f #f)
          (_ o))))
 
-    ((and ($ <var>) (= .variable (? bool-var?)))
+    ((and ($ <var>) (= .variable.name (? bool-var?)))
      (let ((field (var-field state (.variable o))))
        (match field
          (#f o)
          (_ (eq? field 'true)))))
 
-    ((and ($ <var>) (and (= .variable (? int-var?))))
+    ((and ($ <var>) (and (= .variable.name (? int-var?))))
      (let ((field (var-field state (.variable o))))
        (match field
          (#f o)
          (_ field))))
 
-    ((and ($ <var>) (= .variable variable))
+    ((and ($ <var>) (= .variable.name variable))
      (let ((field (var-field state (.variable o))))
        (match field
          (#f o)
