@@ -406,7 +406,8 @@
 
 (define (mcrl2:om root) ;; FIXME: already root/om
   ((compose
-    (annotate-path '())
+;;    (annotate-path '())
+;;    (lambda (o) (pretty-print (om->list o) (current-error-port)) o)
     flatten-compound
     ast-complete-elses
     ast-annotate-illegals
@@ -551,7 +552,13 @@
 (define-template x:enum-struct get-enums 'newline-indent-suffix)
 
 (define-template x:mcrl2-reply-type mcrl2:reply-type)
-
+(define-template x:mcrl2-reply-expression mcrl2:reply-expression #f <expression>)
+(define-method (mcrl2:reply-expression (o <reply>))
+  (let* ((e (.expression o))
+         (t (ast:expression-type e)))
+    (if (is-a? t <void>)
+        o
+        e)))
 (define-template x:mcrl2-model-name mcrl2:model-name)
 
 (define-method (mcrl2:model-name (o <model>))
@@ -564,17 +571,10 @@
   (or (and=> (parent <model> o) mcrl2:model-name)
       "global'"))
 
+
 (define-method (mcrl2:reply-type (o <reply>))
   (let ((expr (.expression o)))
-    (match expr
-      (($ <literal>) (if (number? (.value expr))
-                         'Int
-                         'Bool))
-      ((? (is? <bool-expr>)) 'Bool)
-      (($ <var>) ((compose mcrl2:expand-types .type .variable) expr))
-      (($ <enum-literal>)  ((compose mcrl2:expand-types .type) expr))
-      ((? (is? <int-expr>)) 'Int)
-      (_ (mcrl2:expand-types (.type expr))))))
+    (ast:expression-type expr)))
 
 (define-method (mcrl2:reply-type (o <action>))
   ((compose mcrl2:expand-types .signature .event) o))
