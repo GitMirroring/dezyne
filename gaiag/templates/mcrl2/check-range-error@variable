@@ -1,1 +1,1 @@
-(!(#x:range-from  <= #x:expression  && #x:range-to  >= #x:expression)) -> range_error . delta <>
+(!(#x:range-from  <= #x:expression-expand  && #x:range-to  >= #x:expression-expand)) -> range_error . delta <>
