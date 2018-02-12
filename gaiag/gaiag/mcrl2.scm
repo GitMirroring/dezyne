@@ -267,8 +267,7 @@
            (match result
              (($ <blocking>)
               (clone o #:statement result))
-             ;;FIXME: fixes silentoptional, breaks compliance_provides_out
-             ;;((? modeling?) (clone o #:statement (make <compound> #:elements (list result))))
+             ((? modeling?) (clone o #:statement (make <compound> #:elements (list result))))
              ((and ($ <compound>) (= .elements (? null?)))
               (clone o #:statement (make <compound> #:elements (list (make <voidreply>)))))
              ((? valued-triggers?)
@@ -614,7 +613,8 @@
          (callsinassigns (map .expression assignbycalls))
          (calls ((om:collect (lambda (o) (and (is-a? o <call>) (not (or (is-a? (.parent o) <assign>) (is-a? (.parent o) <variable>))) (not (.last? o))))) o))
          (refs (delete-duplicates (append variablebycalls assignbycalls calls) (lambda (a b) (eq? (.id (process-continuation a)) (.id (process-continuation b)))))))
-    (or (pair? refs)
+    (if (pair? refs)
+        refs
         o)))
 
 (define-template x:valued-return
@@ -921,6 +921,16 @@
         o
         "")))
 (define-template x:the-end-trigger separate-trigger-type)
+(define-template x:non-modeling-trigger non-modeling-trigger)
+(define-template x:modeling-trigger modeling-trigger)
+(define (non-modeling-trigger o)
+  (if (not (is-a? ((compose .event car ast:trigger*) o) <modeling-event>))
+      o
+      ""))
+(define (modeling-trigger o)
+  (if (is-a? ((compose .event car ast:trigger*) o) <modeling-event>)
+      o
+      ""))
 (define (separate-trigger-type o)
   (let ((model (parent <model> o)))
    (match (mcrl2:on-event-trigger o)
