@@ -612,8 +612,10 @@
   (let* ((variablebycalls ((om:collect (lambda (o) (and (is-a? o <variable>) (is-a? (.expression o) <call>)))) o))
          (assignbycalls ((om:collect (lambda (o) (and (is-a? o <assign>) (is-a? (.expression o) <call>)))) o))
          (callsinassigns (map .expression assignbycalls))
-         (calls ((om:collect (lambda (o) (and (is-a? o <call>) (not (or (is-a? (.parent o) <assign>) (is-a? (.parent o) <variable>))) (not (.last? o))))) o)))
-    (delete-duplicates (append variablebycalls assignbycalls calls) (lambda (a b) (eq? (.id (process-continuation a)) (.id (process-continuation b)))))))
+         (calls ((om:collect (lambda (o) (and (is-a? o <call>) (not (or (is-a? (.parent o) <assign>) (is-a? (.parent o) <variable>))) (not (.last? o))))) o))
+         (refs (delete-duplicates (append variablebycalls assignbycalls calls) (lambda (a b) (eq? (.id (process-continuation a)) (.id (process-continuation b)))))))
+    (or (pair? refs)
+        o)))
 
 (define-template x:valued-return
   (lambda (o)
