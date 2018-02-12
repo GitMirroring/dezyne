@@ -1,0 +1,165 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface IConsole
+{
+    in void arm();
+    in void disarm();
+
+    out void detected();
+    out void deactivated();
+
+  behaviour
+  {
+    enum State { Disarmed, Armed, Triggered, Disarming };
+    State state = State.Disarmed;
+
+    [state.Disarmed]
+    {
+      on arm:           state = State.Armed;
+      on disarm:        illegal;
+    }
+    [state.Armed]
+    {
+      on disarm:        state = State.Disarming;
+      on optional:    { detected; state = State.Triggered; }
+      on arm:           illegal;
+    }
+    [state.Triggered]
+    {
+      on disarm:        state = State.Disarming;
+      on arm:           illegal;
+    }
+    [state.Disarming]
+    {
+      on inevitable:  { deactivated; state = State.Disarmed; }
+      on arm,
+         disarm:        illegal;
+    }
+  }
+}
+
+interface ISensor
+{
+  in void enable();
+  in void disable();
+
+  out void triggered();
+  out void disabled();
+
+  behaviour
+  {
+    enum State { Disabled, Enabled, Disabling, Triggered };
+    State state = State.Disabled;
+
+    [state.Disabled]
+    {
+      on enable:        state = State.Enabled;
+      on disable:       illegal;
+    }
+    [state.Enabled]
+    {
+      on enable:        illegal;
+      on disable:       state = State.Disabling;
+      on optional:    { triggered; state = State.Triggered; }
+    }
+    [state.Disabling]
+    {
+      on enable,
+         disable:       illegal;
+      on inevitable:  { disabled; state = State.Disabled; }
+    }
+    [state.Triggered]
+    {
+      on enable:        illegal;
+      on disable:       state = State.Disabling;
+    }
+  }
+}
+
+interface ISiren
+{
+  in void turnon();
+  in void turnoff();
+
+  behaviour
+  {
+    enum State { Off, On };
+    State state = State.Off;
+
+    [state.Off]
+    {
+      on turnon:        state = State.On;
+      on turnoff:       illegal;
+    }
+    [state.On]
+    {
+      on turnoff:       state = State.Off;
+      on turnon:        illegal;
+    }
+  }
+}
+
+component AlarmDeterministicFail
+{
+    provides IConsole console;
+    requires ISensor sensor;
+    requires ISiren siren;
+
+  behaviour
+  {
+    enum State { Disarmed, Armed, Disarming };
+    State state = State.Disarmed;
+    bool sounding = false;
+
+    [state.Disarmed]
+    {
+      on console.arm():         { console.deactivated(); sensor.enable(); state = State.Armed; }
+    }
+    [state.Armed]
+    {
+      on console.disarm():      { sensor.disable(); state = State.Disarming; }
+      on sensor.triggered():    { console.detected();
+                                  siren.turnon();
+                                  sounding = true;
+                                }
+    }
+    [state.Disarming]
+    {
+      on sensor.disabled():
+          { [sounding]          { console.deactivated();
+                                  sounding = false;
+                                  state = State.Disarmed;
+                                }
+            [sounding]          { console.deactivated();
+                                  siren.turnoff();
+                                  sounding = false;
+                                  state = State.Disarmed;
+                                }
+            [otherwise]         { console.deactivated();
+                                  state = State.Disarmed;
+                                }
+          }
+    }
+  }
+}
