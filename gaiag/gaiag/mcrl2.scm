@@ -1133,9 +1133,6 @@
     (if (is-a? e <action>)
         o
         "")))
-(define-template x:variable-expression .expression)
-(define-template x:assign-expression .expression)
-
 
 (define-template x:assign-function-name (compose .function.name .call))
 (define-template x:assign-action-name (compose .name .event .expression))

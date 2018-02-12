@@ -268,7 +268,10 @@
   (make <enum-literal> #:type ((compose .type .variable) o) #:field (.field o)))
 
 (define-method (dzn:expression-expand (o <variable>))
-  (.name o))
+  (.expression o))
+
+(define-method (dzn:expression-expand (o <assign>))
+  (.expression o))
 
 (define-method (dzn:expression-expand (o <formal>))
   (.name o))
