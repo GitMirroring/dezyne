@@ -93,7 +93,8 @@
       ('deterministic (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'determinism-init@ast) " | mcrl22lps -b  2> mcrl22lps-deterministic.stderr > " lps)))
       ('component (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'component-init@ast) " | mcrl22lps -b 2> mcrl22lps-component.stderr > " lps)))
       ('interface (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'interface-init@ast) " | mcrl22lps -b 2> mcrl22lps-interface.stderr > " lps)))
-      ('provided (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'compliance-init@ast) " | mcrl22lps -b 2> mcrl22lps-provided.stderr > " lps))))
+      ('interface-lts (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'interface-lts-init@ast) " | mcrl22lps -b 2> mcrl22lps-interface.stderr > " lps)))
+     ('provided (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'compliance-init@ast) " | mcrl22lps -b 2> mcrl22lps-provided.stderr > " lps))))
     (reduce-lps lps)))
 
 (define (create-if-lps mcrl2 lpstype ast)
@@ -110,6 +111,7 @@
   (if trace
       (begin
         (assert-system (string-append "ltsconvert -etrace " lts " " lts))
+        ;;(assert-system (string-append "ltsconvert -etau-star " lts " " lts))
         lts)
       (begin
         (assert-system (string-append "ltsconvert -edpbranching-bisim " lts " " lts))
@@ -119,7 +121,7 @@
 (define (component-lts model-name ast)
   (let* ((component (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <component>) (.elements ast))))
          (interface (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <interface>) (.elements ast))))
-         (lps (create-lps "verify.mcrl2" (if component 'component 'interface) (if component ast interface)))
+         (lps (create-lps "verify.mcrl2" (if component 'component 'interface-lts) (if component ast interface)))
          (lts (create-lts lps))
          (lts (reduce-lts lts #t)))
     lts))
