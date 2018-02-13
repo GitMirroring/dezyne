@@ -273,9 +273,6 @@
 (define-method (dzn:expression-expand (o <assign>))
   (.expression o))
 
-(define-method (dzn:expression-expand (o <formal>))
-  (.name o))
-
 (define-method (dzn:expression-expand (o <reply>))
   o)
 

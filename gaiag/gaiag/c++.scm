@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
@@ -143,7 +143,6 @@
 (define-template x:pump-include (lambda (o) (if (null? (ast:req-events o)) "" o)))
 (define-template x:reqs ast:req-events)
 (define-template x:clrs ast:clr-events)
-(define-template x:variable-expression (compose code:expression .expression) #f <expression>)
 
 (define-template x:open-namespace (lambda (o) (map (lambda (x) (string-join (list " namespace " (symbol->string x) " {") "")) (om:scope o))))
 (define-template x:close-namespace (lambda (o) (map (lambda (x) "}\n") (om:scope o))))
