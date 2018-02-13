@@ -102,6 +102,7 @@
   (let ((lps (string-append (basename mcrl2 ".mcrl2") "_" (->string lpstype) ".lps")))
     (match lpstype
       ('deterministic (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'determinism-init@ast) " | mcrl22lps -b  2> mcrl22lps-deterministic.stderr > " lps)))
+      ('deadlock (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'component-deadlock-init@ast) " | mcrl22lps -b 2> mcrl22lps-component-deadlock.stderr > " lps)))
       ('component (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'component-init@ast) " | mcrl22lps -b 2> mcrl22lps-component.stderr > " lps)))
       ('interface (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'interface-init@ast) " | mcrl22lps -b 2> mcrl22lps-interface.stderr > " lps)))
       ('interface-lts (assert-system (string-append "cat - " mcrl2 " <<< " (mcrl2:init ast 'interface-lts-init@ast) " | mcrl22lps -b 2> mcrl22lps-interface.stderr > " lps)))
@@ -141,7 +142,7 @@
 (define cppflag "")
 
 (define (create-lts lps)
-  (system (string-append "lps2lts -v " cppflag " --cached" lps " " (basename lps ".lps") ".aut 2>&1"))
+  (system (string-append "lps2lts -v " cppflag " --cached " lps " " (basename lps ".lps") ".aut 2>&1"))
   (string-append (basename lps ".lps") ".aut"))
 
 (define (verifydeterministic lps)
@@ -174,6 +175,7 @@
   (let* ((provlts (string-append (basename provlps ".lps") ".aut"))
 	 (complts (string-append (basename complps ".lps") ".aut")))
     (assert-system (string-append "lps2lts " cppflag " --cached " provlps " " provlts))
+    (assert-system (string-append "sed -i -e 's/\"illegal\"/\"dillegal\"/g' " provlts))
     (assert-system (string-append "lps2lts " cppflag " --cached " complps " " complts))
     (reduce-lts provlts)
     (reduce-lts complts)
@@ -181,7 +183,7 @@
                              (string-append "--tau=\"" taus "\"")
                              complts
                              provlts))
-           (commands (list "bash" "-c" (string-append (pke 'ltscompare-cmd (string-join ltscompare " ")) " 2>&1"))))
+           (commands (list "bash" "-c" (string-append (string-join ltscompare " ") " 2>&1"))))
       (pipeline->string commands))))
 
 (define (verifyall lps taus)
@@ -208,10 +210,11 @@
          (compliance-taus (find-taus component model-name (compliance-hidden-actions)))
          (deterministic-lps (create-lps "verify.mcrl2" 'deterministic ast))
          (provided-lps (create-lps "verify.mcrl2" 'provided ast))
+         (deadlock-lps (create-lps "verify.mcrl2" 'deadlock ast))
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
          (output (verifydeterministic deterministic-lps))
 	 (output (string-append output (verifyillegal lpsfile)))
-         (output (string-append output (verifydeadlock lpsfile)))
+         (output (string-append output (verifydeadlock deadlock-lps)))
          (output (string-append output (verifylivelock lpsfile livelock-taus)))
          (output (string-append output (verifyrefinement lpsfile provided-lps compliance-taus))))
     (if all?
@@ -273,7 +276,7 @@
 
 (define ((mcrl2:verify-component-deadlock model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
-         (lpsfile (measure-perf "verify-component-deadlock - create-lps component" (create-lps "verify.mcrl2" 'component ast)))
+         (lpsfile (measure-perf "verify-component-deadlock - create-lps component" (create-lps "verify.mcrl2" 'deadlock ast)))
          (result (measure-perf "verify-component-deadlock - verifydeadlock" (verifydeadlock lpsfile))))
     (if (number? result) (exit result)
         (measure-perf "verify-component-deadlock - check-deadlock" (check-deadlock result file-name model-name verbose?)))))

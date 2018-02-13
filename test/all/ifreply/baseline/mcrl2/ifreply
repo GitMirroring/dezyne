@@ -1,0 +1,3 @@
+verify: ifreply: check: deadlock: fail
+ifreply.e
+verify: ifreply: check: livelock: ok

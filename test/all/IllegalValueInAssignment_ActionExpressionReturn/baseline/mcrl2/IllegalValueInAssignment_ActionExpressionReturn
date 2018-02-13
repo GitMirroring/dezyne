@@ -3,10 +3,7 @@ verify: I: check: livelock: ok
 verify: IDozen: check: deadlock: ok
 verify: IDozen: check: livelock: ok
 verify: IllegalValueInAssignment_ActionExpressionReturn: check: deterministic: ok
-verify: IllegalValueInAssignment_ActionExpressionReturn: check: illegal: fail
-pp.ia
-rp.ia
-rp.12
+verify: IllegalValueInAssignment_ActionExpressionReturn: check: illegal: ok
 verify: IllegalValueInAssignment_ActionExpressionReturn: check: deadlock: fail
 pp.ia
 rp.ia
