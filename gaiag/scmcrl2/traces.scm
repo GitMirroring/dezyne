@@ -45,7 +45,7 @@
 (define (rename-lts-actions trace)
   (let* ((trace (regexp-substitute/global #f ",\\s*reply_[^(]*\\(([^)]*)\\)" trace 'pre "," 1 'post))
          (trace (regexp-substitute/global #f "('(return|reply_out|reply_in)\\([^,]+),\\s*void\\)" trace 'pre 1 ")" 'post))
-         (trace (regexp-substitute/global #f "'(return|reply_out|reply_in)\\([^,]+,\\s*(\\w+[^)]+)\\)" trace 'pre "." 2 'post))
+         (trace (regexp-substitute/global #f "'(return|reply_out|reply_in)\\([^,]+,\\s*([^)]+)\\)" trace 'pre "." 2 'post))
          (trace (regexp-substitute/global #f "\\w+'in'" trace 'pre "" 'post))
          (trace (regexp-substitute/global #f "\\w+'out'" trace 'pre "" 'post))
          (trace (regexp-substitute/global #f "\\bi\\d+_" trace 'pre "" 'post))
