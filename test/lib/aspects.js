@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
+// Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 // Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016, 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
@@ -628,6 +628,7 @@ var aspects = {
     var dir = 'out/' + path.basename(parameters.dir) + '/mcrl2'
     var out = dir + '/'+parameters.model;
     var err = out + '.stderr';
+    var queue = parameters.meta.queue ? '-q ' + parameters.meta.queue : '';
     var imports = imports_string (parameters.meta.imports);
     var model = parameters.meta.mcrl2_model || parameters.meta.model || parameters.model;
     return lstat (baseline)
@@ -636,6 +637,7 @@ var aspects = {
           + '{ set -o pipefail;'
           + dzn(parameters.session)
           + ' --verbose verify --all -M --model='+model
+          + ' '+queue
           + ' '+imports
           + ' '+parameters.filename
           + ' 2>'+err
@@ -657,6 +659,7 @@ var aspects = {
         console.log ('mcrl2 verify: no baseline=' + baseline);
         return 'out="$(' + dzn(parameters.session) + ' verify --all -M -m '+model
           + ' '+imports
+          + ' '+queue
           + ' '+parameters.filename
           + ' 2>&1)" && [ "$out" = "" ] || { echo "verification output: \'$out\'"; false; }';
       })

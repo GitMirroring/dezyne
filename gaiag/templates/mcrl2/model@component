@@ -8,7 +8,7 @@ map  #x:interfaces-allow-dillegals
      #x:mcrl2-model-name'allow_dillegals : Bool;
      QueueLength: Nat;
 
-eqn  QueueLength = 3;
+eqn  QueueLength = #x:queue-size;
 
 act  #x:interface-action-alphabet
      #x:mcrl2-model-name'store_global_in;

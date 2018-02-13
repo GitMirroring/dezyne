@@ -550,6 +550,7 @@
 (define-template x:event-dir (compose .direction .event))
 (define-template x:integers get-ints 'newline-indent-suffix)
 (define-template x:enum-struct get-enums 'newline-indent-suffix)
+(define-template x:queue-size (lambda (_) (command-line:get 'queue_size 3)))
 
 (define-template x:mcrl2-reply-type mcrl2:reply-type)
 (define-template x:mcrl2-reply-expression mcrl2:reply-expression #f <expression>)
