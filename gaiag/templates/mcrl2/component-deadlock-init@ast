@@ -1,0 +1,7 @@
+"
+
+eqn  #x:mcrl2-provided-port-type'allow_dillegals = true;
+     #x:mcrl2-component-name'allow_dillegals = false;
+     #x:eqn-allow-dillegals
+
+init #x:mcrl2-component-name'Implementation();"
