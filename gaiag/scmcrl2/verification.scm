@@ -4,7 +4,6 @@
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -138,31 +137,34 @@
          (lts (reduce-lts lts #t)))
     lts))
 
+;;(define cppflag "-rjittyc")
+(define cppflag "")
+
 (define (create-lts lps)
-  (system (string-append "lps2lts -v " lps " " (basename lps ".lps") ".aut 2>&1"))
+  (system (string-append "lps2lts -v " cppflag " --cached" lps " " (basename lps ".lps") ".aut 2>&1"))
   (string-append (basename lps ".lps") ".aut"))
 
 (define (verifydeterministic lps)
   (let* ((ltsname (string-append (basename lps ".lps") ".aut"))
-         (lps2lts (list "lps2lts" "--nondeterminism" "--trace" lps ltsname))
+         (lps2lts (list "lps2lts" "--nondeterminism" cppflag "--cached" "--trace" lps ltsname))
          (commands (list "bash" "-c" (string-append (string-join lps2lts " ") " 2>&1"))))
     (pipeline->string commands)))
 
 (define (verifydeadlock lps)
   (let* ((lps2lts (list "lps2lts"
-                        "--deadlock" "-t1" "-v" lps (string-append (basename lps ".lps") ".aut")))
+                        "--deadlock" "-t1" cppflag "--cached" "-v" lps (string-append (basename lps ".lps") ".aut")))
          (commands (list "bash" "-c" (string-append (string-join lps2lts " ") " 2>&1"))))
     (pipeline->string commands)))
 
 (define (verifyillegal lps)
   (let* ((lps2lts (list "lps2lts"
-                        "-aillegal" "-t1" "-v" lps (string-append (basename lps ".lps") ".aut")))
+                        "-aillegal" "-t1" "-v" cppflag "--cached" lps (string-append (basename lps ".lps") ".aut")))
          (commands (list "bash" "-c" (string-append (string-join lps2lts " ") " 2>&1"))))
     (pipeline->string commands)))
 
 (define (verifylivelock lps taus)
   (let* ((lps2lts (list "lps2lts"
-                        "--divergence" "-t1" "-v" (string-append "--tau=\"" taus "\"") lps (string-append (basename lps ".lps") ".aut")))
+                        "--divergence" "-t1" "-v" cppflag "--cached" (string-append "--tau=\"" taus "\"") lps (string-append (basename lps ".lps") ".aut")))
          (commands (list "bash" "-c" (string-append (string-join lps2lts " ") " 2>&1"))))
     (pipeline->string commands)))
 
@@ -171,19 +173,19 @@
 (define (verifyrefinement complps provlps taus)
   (let* ((provlts (string-append (basename provlps ".lps") ".aut"))
 	 (complts (string-append (basename complps ".lps") ".aut")))
-    (assert-system (string-append "lps2lts " provlps " " provlts))
-    (assert-system (string-append "lps2lts " complps " " complts))
+    (assert-system (string-append "lps2lts " cppflag " --cached " provlps " " provlts))
+    (assert-system (string-append "lps2lts " cppflag " --cached " complps " " complts))
     (reduce-lts provlts)
     (reduce-lts complts)
     (let* ((ltscompare (list "ltscompare" "-v" "-c" "-pweak-failures"
                              (string-append "--tau=\"" taus "\"")
                              complts
                              provlts))
-           (commands (list "bash" "-c" (string-append (string-join ltscompare " ") " 2>&1"))))
+           (commands (list "bash" "-c" (string-append (pke 'ltscompare-cmd (string-join ltscompare " ")) " 2>&1"))))
       (pipeline->string commands))))
 
 (define (verifyall lps taus)
-  (blockingcall (string-append "lps2lts -aillegal --deadlock --divergence -t1 -v --tau=\"" taus "\" " lps " " (basename lps ".lps") ".aut 2>&1")))
+  (blockingcall (string-append "lps2lts -aillegal --deadlock --divergence -t1 -v " cppflag " --cached --tau=\"" taus "\" " lps " " (basename lps ".lps") ".aut 2>&1")))
 
 (define (blockingcall command)
   (stderr "blockingcall: check exit status, use pipeline ~a\n" command)
