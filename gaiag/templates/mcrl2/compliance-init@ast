@@ -1,6 +1,6 @@
 "
 
-eqn  #x:mcrl2-provided-port-type'allow_dillegals = false;
+eqn  #x:mcrl2-provided-port-type'allow_dillegals = true;
      #x:mcrl2-component-name'allow_dillegals = true;
 
 init hide({#x:mcrl2-provided-port-type'inevitable, #x:mcrl2-provided-port-type'optional},
