@@ -921,16 +921,20 @@
         o
         "")))
 (define-template x:the-end-trigger separate-trigger-type)
-(define-template x:non-modeling-trigger non-modeling-trigger)
-(define-template x:modeling-trigger modeling-trigger)
-(define (non-modeling-trigger o)
-  (if (not (is-a? ((compose .event car ast:trigger*) o) <modeling-event>))
+(define-template x:trigger-expected-reply trigger-expected-reply)
+(define-template x:trigger-no-expected-reply trigger-no-expected-reply)
+(define (trigger-expected-reply? o)
+  (let ((event ((compose .event car ast:trigger*) o))
+        (port ((compose .port car ast:trigger*) o)))
+    (not (or (is-a? event <modeling-event>) (and port (ast:requires? port))))))
+(define (trigger-expected-reply o)
+  (if (trigger-expected-reply? o)
       o
       ""))
-(define (modeling-trigger o)
-  (if (is-a? ((compose .event car ast:trigger*) o) <modeling-event>)
-      o
-      ""))
+(define (trigger-no-expected-reply o)
+  (if (trigger-expected-reply? o)
+      ""
+      o))
 (define (separate-trigger-type o)
   (let ((model (parent <model> o)))
    (match (mcrl2:on-event-trigger o)
