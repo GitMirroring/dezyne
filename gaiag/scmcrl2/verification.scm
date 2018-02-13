@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -52,6 +54,16 @@
   #:export (mcrl2:verify
             verify:scope-name
             component-lts))
+
+
+(define-syntax measure-perf
+  (syntax-rules ()
+    ((_ label exp)
+     (let ((t1t (get-internal-real-time))
+           (result ((lambda () exp)))
+           (t2t (get-internal-real-time)))
+       (stderr "TIME --- realtime ~a ms: ~a\n" (round (/ (* 1000 (- t2t t1t)) internal-time-units-per-second)) label)
+       result))))
 
 (define (verify:scope-name o)
   ((om:scope-name '.) o))
@@ -230,56 +242,56 @@
 
 (define ((mcrl2:verify-interface-deadlock model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
-         (lpsfile (create-if-lps "verify.mcrl2" 'interface model))
-         (result (verifydeadlock lpsfile)))
+         (lpsfile (measure-perf "verify-interface-deadlock - create-if-lps 'interface" (create-if-lps "verify.mcrl2" 'interface model)))
+         (result (measure-perf "verify-interface-deadlock - verifydeadlock" (verifydeadlock lpsfile))))
     (if (number? result) (exit result)
-        (check-deadlock result file-name model-name verbose?))))
+        (measure-perf "verify-interface-deadlock - check-deadlock" (check-deadlock result file-name model-name verbose?)))))
 
 (define ((mcrl2:verify-interface-livelock model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
          (livelock-taus "")
-         (lpsfile (create-if-lps "verify.mcrl2" 'interface model))
-         (result (verifylivelock lpsfile livelock-taus)))
+         (lpsfile (measure-perf "verify-interface-livelock - create-if-lps 'interface" (create-if-lps "verify.mcrl2" 'interface model)))
+         (result (measure-perf "verify-interface-livelock - verifylivelock" (verifylivelock lpsfile livelock-taus))))
     (if (number? result) (exit result)
-        (check-livelock result file-name model-name verbose?))))
+        (measure-perf "verify-interface-livelock - check-livelock" (check-livelock result file-name model-name verbose?)))))
 
 (define ((mcrl2:verify-component-deterministic model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
-         (deterministic-lps (create-lps "verify.mcrl2" 'deterministic ast))
-         (result (verifydeterministic deterministic-lps)))
+         (deterministic-lps (measure-perf "verify-component-deterministic - create-lps deterministic" (create-lps "verify.mcrl2" 'deterministic ast)))
+         (result (measure-perf "verify-component-deterministic - verifydeterministic" (verifydeterministic deterministic-lps))))
     (if (number? result) (exit result)
-        (check-deterministic result file-name model-name verbose?))))
+        (measure-perf "verify-component-deterministic - check-deterministic" (check-deterministic result file-name model-name verbose?)))))
 
 (define ((mcrl2:verify-component-illegal model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
-         (lpsfile (create-lps "verify.mcrl2" 'component ast))
-         (result (verifyillegal lpsfile)))
+         (lpsfile (measure-perf "verify-component-illegal - create-lps component" (create-lps "verify.mcrl2" 'component ast)))
+         (result (measure-perf "verify-component-illegal - verify-illegal" (verifyillegal lpsfile))))
     (if (number? result) (exit result)
-        (check-illegal result file-name model-name verbose?))))
+        (measure-perf "verify-component-illegal - check-illegal" (check-illegal result file-name model-name verbose?)))))
 
 (define ((mcrl2:verify-component-deadlock model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
-         (lpsfile (create-lps "verify.mcrl2" 'component ast))
-         (result (verifydeadlock lpsfile)))
+         (lpsfile (measure-perf "verify-component-deadlock - create-lps component" (create-lps "verify.mcrl2" 'component ast)))
+         (result (measure-perf "verify-component-deadlock - verifydeadlock" (verifydeadlock lpsfile))))
     (if (number? result) (exit result)
-        (check-deadlock result file-name model-name verbose?))))
+        (measure-perf "verify-component-deadlock - check-deadlock" (check-deadlock result file-name model-name verbose?)))))
 
 (define ((mcrl2:verify-component-livelock model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
          (livelock-taus (find-taus model model-name (livelock-hidden-actions)))
-         (lpsfile (create-lps "verify.mcrl2" 'component ast))
-         (result (verifylivelock lpsfile livelock-taus)))
+         (lpsfile (measure-perf "verify-component-livelock create-lps component" (create-lps "verify.mcrl2" 'component ast)))
+         (result (measure-perf "verify-component-livelock - verifylivelock" (verifylivelock lpsfile livelock-taus))))
     (if (number? result) (exit result)
-        (check-livelock result file-name model-name verbose?))))
+        (measure-perf "verify-component-livelock - check-livelock" (check-livelock result file-name model-name verbose?)))))
 
 (define ((mcrl2:verify-component-refinement model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
          (compliance-taus (find-taus model model-name (compliance-hidden-actions)))
-         (provided-lps (create-lps "verify.mcrl2" 'provided ast))
-         (lpsfile (create-lps "verify.mcrl2" 'component ast))
-         (result (verifyrefinement lpsfile provided-lps compliance-taus)))
+         (provided-lps (measure-perf "verify-component-refinement - create-lps provided"  (create-lps "verify.mcrl2" 'provided ast)))
+         (lpsfile (measure-perf "verify-component-refinement - create-lps component" (create-lps "verify.mcrl2" 'component ast)))
+         (result (measure-perf "verify-component-refinement - verifyrefinement" (verifyrefinement lpsfile provided-lps compliance-taus))))
     (if (number? result) (exit result)
-        (check-compliance result file-name model-name verbose?))))
+        (measure-perf "verify-component-refinement - check-compliance" (check-compliance result file-name model-name verbose?)))))
 
 (define (mcrl2:verify file-name model-name ast verbose? all?)
   (if model-name
