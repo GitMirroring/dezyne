@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 // Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
@@ -566,7 +566,7 @@ var aspects = {
   traces: function(parameters) {
     var out = 'out/' + path.basename(parameters.dir);
     var flush = parameters.meta.flush ? ' --flush' : '';
-    var illegal = parameters.meta.trace_illegals ? '-i ' : '';
+    var illegal = parameters.meta.trace_illegals ? '-i ' : '-i';
     var model = parameters.meta.model || parameters.model;
     var queue = parameters.meta.queue ? '-q ' + parameters.meta.queue : '';
     var imports = imports_string (parameters.meta.imports);
