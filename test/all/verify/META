@@ -1,1 +1,1 @@
-{"skip":["c","c++","c++03","cs","java","run"],"comment":"script data; run: too many [350] traces"}
+{"skip":["code","run"],"comment":"script data; run: too many [350] traces"}
