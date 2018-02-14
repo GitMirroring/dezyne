@@ -1,1 +1,1 @@
-{"known":["c:build"],"skip":["execute","run"],"comment":{"c":"blocking: not supported","execute":"deadlock: cannot execute"}}
+{"known":["c:build","mcrl2","traces"],"skip":["execute","run"],"comment":{"c":"blocking: not supported","execute":"deadlock: cannot execute"}}

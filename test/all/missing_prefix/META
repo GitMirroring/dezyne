@@ -1,1 +1,1 @@
-{"known":["c:build","run","table"],"comment":{"c":"blocking: not supported"}}
+{"known":["c:build","mcrl2","traces","run","table"],"comment":{"c":"blocking: not supported"}}
