@@ -249,8 +249,6 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
             (if (equal? (car files) "-") (dump-model-stream)
                 (values files '()))
           (let ((file-name (car files) ;;(canonicalize-path (car files)) ; breaks parser errors of symlinked files
-                 ))
-            (let* ((stdout (with-output-to-string (cut verify-mcrl2 options file-name)))
-                   (foo (if gdzn-debug? (stderr "stdout:~s\n" stdout))))
-              (display stdout)
-              (exit error?)))))))
+                           ))
+            (verify-mcrl2 options file-name)
+            (exit error?))))))
