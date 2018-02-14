@@ -1,0 +1,2 @@
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok

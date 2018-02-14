@@ -1,4 +1,3 @@
-verify: Sensor: check: completeness: ok
 verify: Sensor: check: deadlock: ok
 verify: Sensor: check: livelock: ok
 verify: coverageMissing: check: deterministic: ok

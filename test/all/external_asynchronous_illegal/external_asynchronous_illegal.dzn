@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -32,7 +32,7 @@ interface I {
     State s = State.idle;
     [s.idle] {
       on e: s = State.busy;
-      on a: s = State.aborting;
+      on a: illegal;
     }
     [s.busy] {
       on e: illegal;
@@ -47,7 +47,7 @@ interface I {
   }
 }
 
-component asyncasync {
+component external_asynchronous_illegal {
   provides I p;
   requires external I r;
 
@@ -56,7 +56,7 @@ component asyncasync {
     State s = State.idle;
     [s.idle] {
       on p.e(): { r.e(); s = State.busy; }
-      on p.a(): { r.a(); s = State.aborting;}
+      on p.a(): illegal;
       on r.ec: illegal;
       on r.ac: illegal;
     }
@@ -69,7 +69,7 @@ component asyncasync {
     [s.aborting] {
       on p.e: illegal;
       on p.a: illegal;
-      on r.ec(): {}
+      on r.ec(): illegal;
       on r.ac(): { p.ac(); s = State.idle;}
     }
   }

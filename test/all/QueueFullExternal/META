@@ -1,1 +1,1 @@
-{"skip":["execute","run"],"queue":1,"comment":"error model: cannot execute,run"}
+{"skip":["execute","run"],"known":["mcrl2","traces"],"queue":1,"comment":"error model: cannot execute,run"}

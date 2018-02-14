@@ -1,0 +1,8 @@
+verify: I: check: deadlock: fail
+verify: I: check: livelock: ok
+verify: emptyBehaviour: check: deterministic: ok
+verify: emptyBehaviour: check: illegal: ok
+verify: emptyBehaviour: check: deadlock: fail
+verify: emptyBehaviour: check: compliance: fail
+i.e
+verify: emptyBehaviour: check: livelock: ok
