@@ -3,7 +3,7 @@
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -265,6 +265,7 @@
   (.variable o))
 
 (define-method (dzn:expression-expand (o <field-test>))
+  (pke '.variable= (.variable (pke 'o o)))
   (make <enum-literal> #:type ((compose .type .variable) o) #:field (.field o)))
 
 (define-method (dzn:expression-expand (o <variable>))
