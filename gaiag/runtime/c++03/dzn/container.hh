@@ -2,7 +2,7 @@
 //
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -61,6 +61,7 @@ namespace dzn
     , system(locator.set(runtime).set(pump))
     , pump()
     {
+      locator.get<illegal_handler>().illegal = []{std::clog << "illegal" << std::endl; std::exit(0);};
       runtime.performs_flush(this) = flush;
       system.dzn_meta.name = "sut";
     }
