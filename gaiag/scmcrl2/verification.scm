@@ -112,8 +112,7 @@
 (define* (reduce-lts lts #:optional trace)
   (if trace
       (begin
-        (assert-system (string-append "ltsconvert -etrace " lts " " lts))
-        (assert-system (string-append "ltsconvert -etau-star " lts " " lts))
+        (assert-system (string-append "ltsconvert -eweak-trace " lts " " lts))
         lts)
       (begin
         (assert-system (string-append "ltsconvert -edpbranching-bisim " lts " " lts))
