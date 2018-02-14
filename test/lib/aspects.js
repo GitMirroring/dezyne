@@ -450,14 +450,14 @@ var aspects = {
       try {
         fs.lstatSync(expectation);
         return util.spawn_sync_shell(
-          'timeout 10 diff -uw ' + expectation
+          'timeout 2 diff -uw ' + expectation
             + ' <(set -o pipefail;'
             + cmd
             + ' |& ' + __dirname + '/../bin/code2fdr'
             + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');
       } catch(e) {
         return util.spawn_sync_shell(
-          'timeout 10 diff -uw ' + trace + ' <(set -o pipefail;'
+          'timeout 2 diff -uw ' + trace + ' <(set -o pipefail;'
             + cmd
             + ' |& ' + __dirname + '/../bin/code2fdr'
             + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');
