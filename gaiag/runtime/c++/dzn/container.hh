@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -118,7 +118,8 @@ namespace dzn
           pump(it->second);
           port.clear();
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        if (char const* sleep = getenv ("DZN_CONTAINER_SLEEP"))
+          std::this_thread::sleep_for(std::chrono::milliseconds(std::atoi (sleep)));
       }
     }
   };
