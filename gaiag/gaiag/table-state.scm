@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
@@ -97,7 +97,7 @@
                    ((is-a? statement <guard>))
                    (field (.expression statement))
                    ((is-a? field <field-test>))
-                   ((eq? (.name (.variable field)) '<state>))
+                   ((eq? (.variable.name field) '<state>))
                    ((eq? (.field field) '<Initial>)))
                   (make <compound>
                     #:elements (list
@@ -131,7 +131,7 @@
                (iota (- (.to range) (.from range) -1) (.from range))))
             (($ <bool>) '(false true))
             (_  '(<Initial>))))
-         (states (map (lambda (field) (make <field-test> #:variable variable #:field field)) fields))
+         (states (map (lambda (field) (make <field-test> #:variable (.name variable) #:field field)) fields))
          (guards (filter identity
                          (map (lambda (field)
                                 (prepend-guard model variable field o))
@@ -142,7 +142,7 @@
 ;;  (stderr "prepend-guard ~a --- ~a --- ~a\n" variable field o)
   (and-let* ((statement o)
              (statement (flatten-compound ((simplify model variable field #t) (flatten-compound o))))
-             (var (make <var> #:variable variable))
+             (var (make <var> #:variable (.name variable)))
              (expression
               (match (.type variable)
                 (($ <bool>)
@@ -150,13 +150,13 @@
                    ('true var)
                    ('false (make <not> #:expression var))))
                 (($ <int>) (make <equal> #:left var #:right (make <literal> #:value field)))
-                (_ (make <field-test> #:variable variable #:field field)))))
+                (_ (make <field-test> #:variable (.name variable) #:field field)))))
             (retain-source-properties
              (salvage-source-location model variable expression field o)
              (make <guard> #:expression expression #:statement statement))))
 
 (define (salvage-source-location model variable expression field o)
-  (let* ((expression2 (make <equal> #:left (make <var> #:variable variable) #:right (make <literal> #:value field)))
+  (let* ((expression2 (make <equal> #:left (make <var> #:variable (.name variable)) #:right (make <literal> #:value field)))
          (guards (filter (lambda (g)
                            (let ((e (.expression g)))
                              (and (source-location g)
@@ -167,14 +167,13 @@
 
 (define (state-var model state)
   (define (type? v) (om:equal? (.type v) (.type state)))
-  (find (lambda (v)
-          (type? v)) ((compose .elements .variables .behaviour) model)))
+  (find (lambda (v) (type? v)) ((compose .elements .variables .behaviour) model)))
 
 (define (state-identifier model state)
   (or (and=> (state-var model state) .name) '<state>))
 
 (define (make-state-field model state)
-  (make <field-test> #:variable (or (state-var model state) '<state>) #:field (.field state)))
+  (make <field-test> #:variable (or (state-identifier model state) '<state>) #:field (.field state)))
 
 (define* ((simplify model variable field #:optional (top? #f)) o)
   (let ((r ((simplify- model variable field top?) o)))

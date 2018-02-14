@@ -4,7 +4,7 @@
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;;;
@@ -67,13 +67,13 @@
          (rules . ,((json-table- model var expression) guard)))))
     ((and ($ <on>) (= .statement (and ($ <compound>) (= .elements (($ <guard>) ...)))) (= .statement compound))
      (let* ((var 'unknown)
-            (state (make <field-test> #:variable (make <variable> #:name var) #:field '<unknown>)))
+            (state (make <field-test> #:variable var #:field '<unknown>)))
        `((event . ,(json-triggers o))
          (rules . ,(apply append (map (json-table- model var state)
                                       (.elements (compound))))))))
     ((and ($ <on>) (= .statement statement))
      (let* ((var 'unknown)
-            (state (make <field-test> #:variable (make <variable> #:name var) #:field '<unknown>)))
+            (state (make <field-test> #:variable var #:field '<unknown>)))
        `((event . ,(json-triggers o))
          (rules . ,(list
                     `((guard . ,(json-guard (make <guard> #:expression (make <literal> #:value 'true))))
@@ -109,8 +109,8 @@
 
 (define ((value->state model var) o)
   (match o
-    ((? number?) (make <field-test> #:variable (resolve:variable model var) #:field o))
-    ((? symbol?) (make <field-test> #:variable (resolve:variable model var) #:field o))
+    ((? number?) (make <field-test> #:variable var #:field o))
+    ((? symbol?) (make <field-test> #:variable var #:field o))
     (_ o)))
 
 (define ((json-table-state model) o)
@@ -222,8 +222,7 @@
 
 (define (json-next- model var next o functions)
   (define (var? variable) (eq? (.name variable) var))
-  (define (variable var) (resolve:variable model var))
-  (let ((unknown (make <field-test> #:variable (variable var) #:field '<unknown>)))
+  (let ((unknown (make <field-test> #:variable var #:field '<unknown>)))
    (match o
      ((and ($ <compound>) (= .elements statements))
       (let loop ((statements statements) (next next))
@@ -231,15 +230,15 @@
             next
             (loop (cdr statements) (json-next- model var next (car statements) functions)))))
      ((and ($ <assign>) (= .variable (? var?)) (= .expression (and ($ <enum-literal>) (= .field field))))
-      (list (make <field-test> #:variable (variable var) #:field field)))
+      (list (make <field-test> #:variable var #:field field)))
      ((and ($ <assign>) (= .variable (? var?)) (= .expression (and ($ <not>) (= .expression (and ($ <var>) (= .expression (? var?)))))))
       (match next
         (((and ($ <not>) (= .expression (and ($ <var>) (= .variable (? var?)))) (= (compose .variable .expression) var))) (list var))
-        (_ (list (make <not> #:expression (make <var> #:variable (variable var)))))))
+        (_ (list (make <not> #:expression (make <var> #:variable (.name var)))))))
      ((and ($ <assign>) (= .variable (? var?)) (= .expression (and ($ <literal>) (= .value 'false))))
-      (list (make <not> #:expression (make <var> #:variable (variable var)))))
+      (list (make <not> #:expression (make <var> #:variable var))))
      ((and ($ <assign>) (= .variable (? var?)) (= .expression (and ($ <literal>) (= .value 'true))))
-      (list (make <var> #:variable (variable var))))
+      (list (make <var> #:variable (.name var))))
      ((and ($ <assign>) (= .variable (? var?)) (= .expression ($ <action>)))
       (list unknown))
      ((and ($ <assign>) (= .variable (? var?)) (= .expression ($ <call>)))
