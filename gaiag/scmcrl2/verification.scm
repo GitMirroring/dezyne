@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -343,6 +345,28 @@
                                          (result . fail)))))))))
   #t)
 
+(define (assert-fail-compliance file-name model-type model-name assert spec-trace-file impl-trace-file impl-trace verbose?)
+  (if (not (gdzn:command-line:get 'json))
+      (stdout "verify: ~a: check: ~a: fail\n~a" model-name assert impl-trace)
+      (let* ((cwd (getcwd))
+             (foo (chdir (dirname file-name)))
+             (commands (list
+                        ;;(display trace) ;; FIXME
+                        ;;(list "echo" trace)
+                        (list "seqdiag" "-m" model-name "-s" spec-trace-file "-t" impl-trace-file (basename file-name)))))
+        (receive (job port)
+            (apply pipeline #f commands)
+          (let ((json (read-string port)))
+            (chdir cwd)
+            (format #t "~a###"
+                    (scm->json-string `(((model . ,model-name)
+                                         (type . ,model-type)
+                                         (assert . ,assert)
+                                         (sequence . ,(json-string->scm json))
+                                         (trace . ,(string-split impl-trace #\newline))
+                                         (result . fail)))))))))
+  #t)
+
 (define (check-deterministic string file-name model-name verbose?)
   (let ((match? (regexp-exec (make-regexp "Nondeterministic state found and saved to '([^'\n]*)'.*") string))
         (assert 'deterministic)
@@ -380,9 +404,21 @@
         (assert 'compliance)
         (model-type 'component))
     (if match? (let* ((trace (make-trace-file (match:substring match? 1) assert file-name model-name))
-                      ;; FIXME: mcrl2 only lists matching trace, seqdiag
-                      ;; needs offending event?
-                      ;;(trace (string-append trace "error.event"))
-                      )
-                 (assert-fail file-name model-type model-name assert trace verbose?))
+                      (impl-accepts (match:substring
+                                     (string-match "A stable acceptance set of the left process is:\n([^\n]*)\n" string)
+                                     1))
+                      (impl-accepts (rename-lts-actions impl-accepts))
+                      (impl-trace (string-append trace impl-accepts "\n"))
+                      (impl-trace-file "impl_trace.txt")
+                      (spec-accepts (if (string-match "The process at the right has no acceptance sets" string) #f
+                                        (match:substring
+                                         (string-match "An acceptance set of the right process is:\n([^\n]*)\n" string)
+                                         1)))
+                      (spec-accepts (and spec-accepts (rename-lts-actions spec-accepts)))
+                      (spec-trace (if spec-accepts (string-append trace spec-accepts "\n")
+                                      trace))
+                      (spec-trace-file "spec_trace.txt"))
+                 (with-output-to-file spec-trace-file (cut display spec-trace))
+                 (with-output-to-file impl-trace-file (cut display impl-trace))
+                 (assert-fail-compliance file-name model-type model-name assert spec-trace-file impl-trace-file impl-trace verbose?))
         (assert-ok model-type model-name assert verbose?))))

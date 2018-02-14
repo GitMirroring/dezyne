@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -33,7 +35,8 @@
   #:use-module (gaiag command-line)
 
   #:export (make-trace
-            make-trace-file))
+            make-trace-file
+            rename-lts-actions))
 
 (define (find-aliases mcrl2file)
   (let* ((mcrl2-text (call-with-input-file "verify.mcrl2" read-string))

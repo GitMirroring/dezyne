@@ -48,3 +48,9 @@ component compliance_reply_bool
     on pp.ib(): {bool b = rp.ib(); reply(false);}
   }
 }
+
+// Expect compliance fail
+// Spec I allows
+// <ia, true, ia, true>
+// Impl compliance_reply_bool performs
+// <pp.ia, rp.ib, rp.true, pp.true, pp.ia, rp.ib, rp.false, pp.false>

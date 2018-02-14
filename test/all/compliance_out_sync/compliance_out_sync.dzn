@@ -43,3 +43,9 @@ component compliance_out_sync
     on rp.oa(): {}
   }
 }
+
+// Expect compliance fail
+// Spec I allows
+// <ia, oa>
+// Impl compliance_out_sync
+// <pp.ia, rp.ia, rp.oa, rp.return, pp.return>

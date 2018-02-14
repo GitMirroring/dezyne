@@ -1,0 +1,12 @@
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: compliance_out_sync: check: deterministic: ok
+verify: compliance_out_sync: check: illegal: ok
+verify: compliance_out_sync: check: deadlock: ok
+verify: compliance_out_sync: check: compliance: fail
+pp.ia
+rp.ia
+rp.oa
+rp.return
+pp.return
+verify: compliance_out_sync: check: livelock: ok

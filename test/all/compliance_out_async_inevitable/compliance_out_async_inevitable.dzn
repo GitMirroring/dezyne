@@ -26,6 +26,7 @@ interface II
   in void ia();
   in void ic();
   out void oa();
+  out void ob();
 
   behaviour
   {
@@ -35,6 +36,7 @@ interface II
     [b] on ia: illegal;
     on ic: {}
     [b] on inevitable: {b = false; oa;}
+    [b] on inevitable: {b = false; ob;}
   }
 }
 
@@ -69,3 +71,10 @@ component compliance_out_async_inevitable
     on rp.oa(): pp.oa();
   }
 }
+
+
+// Expect compliance fail:
+// Spec II allows
+// <ia, return, oa> and <ia, return, ob>
+// Impl compliance_out_async_inevitable performs:
+// <pp.ia, rp.ia, rp.return, pp.return, pp.ic>
