@@ -1,1 +1,1 @@
-{"known":["c:build","cs:build","execute","run","table","verify"],"comment":"handwritten main, no trace: cannot c, cs, execute, run, verify"}
+{"model":false,"skip":["c:build","cs:build","javascript","run","table"],"comment":"handwritten main, cannot c, cs, run"}

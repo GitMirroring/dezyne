@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -32,6 +32,8 @@ void serve_interrupts();
 
 int main()
 {
+  std::cin.ignore(std::numeric_limits<std::streamsize>::max());
+
   // create runtime infrastructure
   dzn::locator locator;
   dzn::runtime runtime;

@@ -1,9 +1,0 @@
-verify: Flash: check: deterministic: ok
-verify: Flash: check: illegal: ok
-verify: Flash: check: deadlock: ok
-verify: Flash: check: compliance: ok
-verify: Flash: check: livelock: ok
-verify: IFlash: check: deadlock: ok
-verify: IFlash: check: livelock: ok
-verify: IHardware: check: deadlock: ok
-verify: IHardware: check: livelock: ok

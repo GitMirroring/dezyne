@@ -1,2 +1,0 @@
-verify: ILens: check: deadlock: ok
-verify: ILens: check: livelock: ok

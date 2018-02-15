@@ -1,2 +1,60 @@
+verify: Acquire: check: deterministic: ok
+verify: Acquire: check: illegal: ok
+verify: Acquire: check: deadlock: ok
+verify: Acquire: check: compliance: ok
+verify: Acquire: check: livelock: ok
+verify: Driver: check: deterministic: ok
+verify: Driver: check: illegal: fail
+control.setup
+optics.prepare
+optics.return
+acquisition.contrast_gradient
+acquisition.return
+control.return
+control.release
+acquisition.cancel
+acquisition.return
+control.return
+control.setup
+optics.prepare
+verify: Driver: check: deadlock: ok
+verify: Driver: check: compliance: fail
+control.setup
+optics.prepare
+optics.return
+acquisition.contrast_gradient
+acquisition.return
+control.return
+control.release
+acquisition.cancel
+acquisition.return
+control.return
+optics.ready
+verify: Driver: check: livelock: ok
+verify: IAcquisition: check: deadlock: ok
+verify: IAcquisition: check: deadlock: ok
+verify: IAcquisition: check: livelock: ok
+verify: IAcquisition: check: livelock: ok
 verify: IControl: check: deadlock: ok
 verify: IControl: check: livelock: ok
+verify: IFlash: check: deadlock: ok
+verify: IFlash: check: livelock: ok
+verify: IHardware: check: deadlock: ok
+verify: IHardware: check: livelock: ok
+verify: ILens: check: deadlock: ok
+verify: ILens: check: livelock: ok
+verify: IMemory: check: deadlock: ok
+verify: IMemory: check: livelock: ok
+verify: IOptics: check: deadlock: ok
+verify: IOptics: check: deadlock: ok
+verify: IOptics: check: livelock: ok
+verify: IOptics: check: livelock: ok
+verify: ISensor: check: deadlock: ok
+verify: ISensor: check: livelock: ok
+verify: IShutter: check: deadlock: ok
+verify: IShutter: check: livelock: ok
+verify: OpticsControl: check: deterministic: ok
+verify: OpticsControl: check: illegal: ok
+verify: OpticsControl: check: deadlock: ok
+verify: OpticsControl: check: compliance: ok
+verify: OpticsControl: check: livelock: ok
