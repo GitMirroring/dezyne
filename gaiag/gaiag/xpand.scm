@@ -107,7 +107,7 @@
   (animate-file file-name module o))
 
 ;; code -l mcrl Alarm: x:pand (peg): 9.4s, xpand-animate: 6.6s
-(define x:pand x:pand-animate)
+;;(define x:pand x:pand-animate)
 
 (define (type->template module file-name type sep o)
   (let ((debug-level (length (gdzn:debugity))))
