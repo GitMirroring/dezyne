@@ -27,14 +27,12 @@ DONE
 * range_member no deadlock?
 * ifreply now shows a deadlock, correctly I think; there exists a path where you do not send a reply to a typed event. No baseline, so fails test
 * QueueFull2 - add -q support
-
-JOHRI
-* inner_space: dillegals/namespace?
-
+* SynchronousOut / complete / requires_twice / reply_reorder / q now fail verification? Compliance trace, but not sure what's going wrong: `sum f' shadowing...why?
 
 TODO
-* IReplyStatementDoesNotMatchReturnType, mcrl2 parse error (wrong reply type)
-* SynchronousOut / complete / requires_twice / reply_reorder / q now fail verification? Compliance trace, but not sure what's going wrong
+* inner_space: dillegals/namespace?
+* IReplyStatementDoesNotMatchReturnType, ReplyStatementDoesNotMatchReturnType: mcrl2 parse error (wrong reply type)
 * implicit_illegal_requires - implicit illegal in empty behaviour missing
 * incomplete_with_model_event no longer shows a compliance error
 * silent_fail - now deadlocks whereas before it didn't deadlock at all
+* emptyBehaviour - compliance failure not found
