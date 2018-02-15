@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -198,6 +198,8 @@
 
 (define any->string (make-parameter ->string))
 
+(define (unspecified? x) (eq? x *unspecified*))
+
 (define (animate-input- module)
   (read-hash-extend #\{ start-hash-read-string)
   (while (and=> (*eof*-is-#f (read-delimited (make-string 1 #\#)))
@@ -220,7 +222,11 @@
                        ((? number?) o)
                        ((? string?) o)
                        ((? symbol?) (symbol->string o))
+                       ((? procedure?) (let ((r (eval (list o (module-ref module 'ast)) module)))
+                                         (if (eq? r *unspecified*) ""
+                                             r)))
                        ((? procedure?) (eval (list o (module-ref module 'ast)) module))
+                       ((? unspecified?) "")
                        (_ ((any->string) o)))))
                   (eat-one-space))
                 (lambda (key . args)

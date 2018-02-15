@@ -130,7 +130,6 @@
                                                          (number? ast)
                                                          (string? ast)
                                                          (symbol? ast)) (display ast))
-                                                    ((eq? o *unspecified*))
                                                     (else
                                                      (let* ((name (symbol->string (ast-name (if (is-a? ast type) type (class-of ast)))))
                                                             (file-name (string-append file-name "@" name)))
@@ -142,7 +141,6 @@
          (let* ((name (symbol->string (ast-name (if (is-a? o type) type (class-of o)))))
                 (file-name (string-append file-name "@" name)))
 	   (x:pand file-name o (current-module))))
-        ((eq? o *unspecified*) "")
         (#t (x:pand file-name o (current-module)))))
 
 (define-syntax define-template
