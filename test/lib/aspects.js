@@ -631,12 +631,14 @@ var aspects = {
     var queue = parameters.meta.queue ? '-q ' + parameters.meta.queue : '';
     var imports = imports_string (parameters.meta.imports);
     var model = parameters.meta.mcrl2_model || parameters.meta.model || parameters.model;
+    var model_opt = parameters.meta.model === false ? '' : ' --model=' + model;
+
     return lstat (baseline)
       .then (function(stats) {
         return 'mkdir -p '+dir+';'
           + '{ set -o pipefail;'
           + dzn(parameters.session)
-          + ' --verbose verify --all -M --model='+model
+          + ' --verbose verify --all -M' + model_opt
           + ' '+queue
           + ' '+imports
           + ' '+parameters.filename
@@ -657,7 +659,7 @@ var aspects = {
       })
       .fail (function(err) {
         console.log ('mcrl2 verify: no baseline=' + baseline);
-        return 'out="$(' + dzn(parameters.session) + ' verify --all -M -m '+model
+        return 'out="$(' + dzn(parameters.session) + ' verify --all -M' + model_opt
           + ' '+imports
           + ' '+queue
           + ' '+parameters.filename
