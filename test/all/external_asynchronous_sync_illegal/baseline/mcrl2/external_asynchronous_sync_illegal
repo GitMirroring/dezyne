@@ -1,0 +1,14 @@
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: II: check: deadlock: ok
+verify: II: check: livelock: ok
+verify: external_asynchronous_sync_illegal: check: deterministic: ok
+verify: external_asynchronous_sync_illegal: check: illegal: ok
+verify: external_asynchronous_sync_illegal: check: deadlock: ok
+verify: external_asynchronous_sync_illegal: check: compliance: fail
+p.a
+r.a
+r.ac
+r.return
+p.ac
+verify: external_asynchronous_sync_illegal: check: livelock: ok
