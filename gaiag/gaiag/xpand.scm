@@ -126,13 +126,15 @@
                 (join (lambda (o) (apply string-join+ (cons o (list sexp))))))
            (display (join (map (lambda (ast)
                                  (with-output-to-string
-                                   (lambda () (if (or (char? ast)
-                                                      (number? ast)
-                                                      (string? ast)
-                                                      (symbol? ast)) (display ast)
-                                                      (let* ((name (symbol->string (ast-name (if (is-a? ast type) type (class-of ast)))))
-                                                             (file-name (string-append file-name "@" name)))
-                                                        (x:pand file-name ast (current-module)))))))
+                                   (lambda () (cond ((or (char? ast)
+                                                         (number? ast)
+                                                         (string? ast)
+                                                         (symbol? ast)) (display ast))
+                                                    ((eq? o *unspecified*))
+                                                    (else
+                                                     (let* ((name (symbol->string (ast-name (if (is-a? ast type) type (class-of ast)))))
+                                                            (file-name (string-append file-name "@" name)))
+                                                       (x:pand file-name ast (current-module))))))))
                                o)))))
         ((null? o) #f)
         ((is-a? o <ast>)
@@ -140,6 +142,7 @@
          (let* ((name (symbol->string (ast-name (if (is-a? o type) type (class-of o)))))
                 (file-name (string-append file-name "@" name)))
 	   (x:pand file-name o (current-module))))
+        ((eq? o *unspecified*) "")
         (#t (x:pand file-name o (current-module)))))
 
 (define-syntax define-template
