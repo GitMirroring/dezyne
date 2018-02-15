@@ -66,7 +66,7 @@
      escape       <   '#'
      pegprocedure <-- '#' [-!$%&'*+,./0-9:<=>?A-Z^_a-z{|}~]([-!#$%&'*+,./0-9:<=>?A-Z^_a-z{|}~])* pegsep")
   ;; (stderr "X:PAND: ~a\n" o)
-  (let* ((debug-level (pke "debug-level:" (length (gdzn:debugity))))
+  (let* ((debug-level (length (gdzn:debugity)))
          (result (match-pattern script (gulp-template filename)))
          (end (peg:end result))
          (tree (peg:tree result))
