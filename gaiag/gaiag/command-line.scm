@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -28,6 +28,9 @@
   #:use-module (gaiag gdzn)
   #:export (command-line:get
             gdzn:command-line:get
+            gdzn:debugity
+            gdzn:multi-opt
+            gdzn:verbosity
             language))
 
 (define multi-options
@@ -49,5 +52,18 @@
 (define* (gdzn:command-line:get option #:optional default)
   (let ((options (parse-opts (command-line))))
     (option-ref options option default)))
+
+(define (multi-opt options name)
+  (let ((opt? (lambda (o) (and (eq? (car o) name) (cdr o)))))
+    (filter-map opt? options)))
+
+(define (gdzn:multi-opt name)
+  (multi-opt (parse-opts (command-line)) name))
+
+(define (gdzn:debugity)
+  (gdzn:multi-opt 'debug))
+
+(define (gdzn:verbosity)
+  (gdzn:multi-opt 'debug))
 
 (define language (make-parameter 'c++))

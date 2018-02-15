@@ -66,15 +66,15 @@
      escape       <   '#'
      pegprocedure <-- '#' [-!$%&'*+,./0-9:<=>?A-Z^_a-z{|}~]([-!#$%&'*+,./0-9:<=>?A-Z^_a-z{|}~])* pegsep")
   ;; (stderr "X:PAND: ~a\n" o)
-  (let* ((debug? (gdzn:command-line:get 'debug #f))
+  (let* ((debug-level (pke "debug-level:" (length (gdzn:debugity))))
          (result (match-pattern script (gulp-template filename)))
          (end (peg:end result))
-         (tree (peg:tree result)))
-    (if debug?
-        (format #t "/*\ntemplates/~a/~a:0:expand */\n" (language) filename))
-    ;; (stderr "tree: ~s\n" tree)
-    ;; (stderr "   => ~a\n" filename)
-    (tree->string tree)))
+         (tree (peg:tree result))
+         (string (tree->string tree)))
+    (if (> debug-level 1)
+        (string-append (format #f "\ntemplates/~a/~a:0:expand */\n" (language) filename)
+                       string)
+        string)))
 
 (define (reduce-sexp l)
   (unfold null? (compose (cut apply list <>) (cut list-head <> 2)) cddr l))
@@ -110,11 +110,11 @@
 (define x:pand x:pand-animate)
 
 (define (type->template module file-name type sep o)
-  (let ((debug? (gdzn:command-line:get 'debug #f)))
-    (if (and debug?
+  (let ((debug-level (length (gdzn:debugity))))
+    (if (and (> debug-level 1)
              (not (pair? o))
              (not (is-a? o <ast>)))
-        (format #t "/*\ntemplates/~a/~a:0:expand */\n" (language) file-name)))
+        (format #t "/*\ngaiag/templates/~a/~a:0:expand */\n" (language) file-name)))
   (cond ((char? o) (display o))
         ((number? o) (display o))
         ((symbol? o) (display o))

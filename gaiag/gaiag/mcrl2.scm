@@ -703,12 +703,13 @@
   (lambda (o) (stderr "AST: ~a\n" o) (->string o)))
 
 (define-template x:pretty-print-dzn
-;;  (const "")
-  (lambda (o)
-    (string-join (string-split (string-trim-right
-        			(ast->dzn (or (and=> (as o <behaviour>) .statement) o)))
-                               #\newline) "\n     % " 'prefix))
-  )
+  (let ((debug? (gdzn:command-line:get 'debug)))
+    (if debug?
+     (lambda (o)
+       (string-join (string-split (string-trim-right
+                                   (ast->dzn (or (and=> (as o <behaviour>) .statement) o)))
+                                  #\newline) "\n     % " 'prefix))
+     (const ""))))
 
 (define-template x:mcrl2-interface-process
   (lambda (o)
