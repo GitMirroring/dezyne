@@ -147,8 +147,8 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
 
     (when (file-exists? out) (delete-file-recursively out))
     (mkdir-p out)
-    (assert-pipe (list "cp" "-rL" "test/all/dzn-glue/c++" out))
-    (assert-pipe (list "cp" "-rL" "test/all/dzn-glue/c++03" out))
+    (assert-pipe (list "cp" "-rL" (string-append dir "/c++") out))
+    (assert-pipe (list "cp" "-rL" (string-append dir "/c++03") out))
     (with-output-to-file (string-append out "/outcome.json")
       (lambda ()
         (display
