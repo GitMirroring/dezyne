@@ -698,7 +698,7 @@
   (var? o (.variable.name o)))
 
 (define-method (.variable (o <field-test>))
-  (var? (pke '.variable:o:  o) (pke '.variable:id= (.variable.name o))))
+  (var? o (.variable.name o)))
 
 (define-method (.variable (o <assign>))
   (var? o (.variable.name o)))

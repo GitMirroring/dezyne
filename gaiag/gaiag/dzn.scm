@@ -265,7 +265,6 @@
   (.variable o))
 
 (define-method (dzn:expression-expand (o <field-test>))
-  (pke '.variable= (.variable (pke 'o o)))
   (make <enum-literal> #:type ((compose .type .variable) o) #:field (.field o)))
 
 (define-method (dzn:expression-expand (o <variable>))
