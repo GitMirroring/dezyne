@@ -223,8 +223,9 @@
                        ((? string?) o)
                        ((? symbol?) (symbol->string o))
                        ((? procedure?) (let ((r (eval (list o (module-ref module 'ast)) module)))
-                                         (if (eq? r *unspecified*) ""
-                                             r)))
+                                         (cond ((eq? r *unspecified*) "")
+                                               ((symbol? r) (symbol->string r))
+                                               (else r))))
                        ((? procedure?) (eval (list o (module-ref module 'ast)) module))
                        ((? unspecified?) "")
                        (_ ((any->string) o)))))
