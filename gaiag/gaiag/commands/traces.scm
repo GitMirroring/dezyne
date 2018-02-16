@@ -197,7 +197,7 @@ errors."
          (root (csp:parse->om ast))
          (model-name (option-ref options 'model #f))
          (models (filter (is? <model>) (.elements root)))
-         (model (if model-name (find (csp:mangle-named (string->symbol model-name)) models)
+         (model (if model-name (find (lambda (o) (equal? ((compose symbol->string verify:scope-name) o) model-name)) models)
                     (find .behaviour (append (om:filter (is? <component>) root)
                                              (om:filter (is? <interface>) root))))))
     (if (not model) (if model-name (error "no such model:" model-name)
