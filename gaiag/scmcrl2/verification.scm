@@ -4,7 +4,6 @@
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -238,6 +237,7 @@
 
 (define ((mcrl2:verify-interface-deadlock model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
+ 	 (foo (assert-start 'interface model-name 'deadlock verbose?))	
          (lpsfile (create-if-lps "verify.mcrl2" 'interface model))
          (result (verifydeadlock lpsfile)))
     (if (number? result) (exit result)
@@ -245,6 +245,7 @@
 
 (define ((mcrl2:verify-interface-livelock model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
+ 	 (foo (assert-start 'interface model-name 'livelock verbose?))	
          (livelock-taus "")
          (lpsfile (create-if-lps "verify.mcrl2" 'interface model))
          (result (verifylivelock lpsfile livelock-taus)))
@@ -253,6 +254,7 @@
 
 (define ((mcrl2:verify-component-deterministic model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
+ 	 (foo (assert-start 'component model-name 'determinisic verbose?))	
          (deterministic-lps (create-lps "verify.mcrl2" 'deterministic ast))
          (result (verifydeterministic deterministic-lps)))
     (if (number? result) (exit result)
@@ -260,6 +262,7 @@
 
 (define ((mcrl2:verify-component-illegal model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
+ 	 (foo (assert-start 'component model-name 'illegal verbose?))	
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
          (result (verifyillegal lpsfile)))
     (if (number? result) (exit result)
@@ -267,6 +270,7 @@
 
 (define ((mcrl2:verify-component-deadlock model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
+ 	 (foo (assert-start 'component model-name 'deadlock verbose?))	
          (lpsfile (create-lps "verify.mcrl2" 'deadlock ast))
          (result (verifydeadlock lpsfile)))
     (if (number? result) (exit result)
@@ -274,6 +278,7 @@
 
 (define ((mcrl2:verify-component-livelock model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
+ 	 (foo (assert-start 'component model-name 'livelock verbose?))	
          (livelock-taus (find-taus model model-name (livelock-hidden-actions)))
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
          (result (verifylivelock lpsfile livelock-taus)))
@@ -282,6 +287,7 @@
 
 (define ((mcrl2:verify-component-refinement model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
+ 	 (foo (assert-start 'component model-name 'compliance verbose?))	
          (compliance-taus (find-taus model model-name (compliance-hidden-actions)))
          (provided-lps (create-lps "verify.mcrl2" 'provided ast))
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
@@ -312,6 +318,16 @@
         (deterministic (check-deterministic output file-name model-name verbose?)))
     (or compliance illegal deadlock livelock deterministic)))
 
+(define (assert-start model-type model-name assert verbose?)
+  (when verbose?
+    (if (gdzn:command-line:get 'json)
+        (format #t "~a###"
+                (scm->json-string `(((model . ,model-name)
+                                     (type . ,model-type)
+                                     (assert . ,assert)
+                                     (status . "assert")))))))
+  #f)
+
 (define (assert-ok model-type model-name assert verbose?)
   (when verbose?
     (if (not (gdzn:command-line:get 'json))
@@ -320,7 +336,8 @@
                 (scm->json-string `(((model . ,model-name)
                                      (type . ,model-type)
                                      (assert . ,assert)
-                                     (result . ok)))))))
+                                     (result . ok)
+                                     (status . "done")))))))
   #f)
 
 (define (assert-fail file-name model-type model-name assert trace verbose?)
@@ -342,7 +359,9 @@
                                          (assert . ,assert)
                                          (sequence . ,(json-string->scm json))
                                          (trace . ,(string-split trace #\newline))
-                                         (result . fail)))))))))
+                                         (result . fail)
+                                         (status . "done")
+                                         (first . true)))))))))
   #t)
 
 (define (assert-fail-compliance file-name model-type model-name assert spec-trace-file impl-trace-file impl-trace verbose?)
