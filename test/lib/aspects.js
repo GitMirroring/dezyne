@@ -638,7 +638,7 @@ var aspects = {
         return 'mkdir -p '+dir+';'
           + '{ set -o pipefail;'
           + dzn(parameters.session)
-          + ' --verbose verify --all -M' + model_opt
+          + ' --verbose verify --all' + model_opt
           + ' '+queue
           + ' '+imports
           + ' '+parameters.filename
@@ -659,7 +659,7 @@ var aspects = {
       })
       .fail (function(err) {
         console.log ('mcrl2 verify: no baseline=' + baseline);
-        return 'out="$(' + dzn(parameters.session) + ' verify --all -M' + model_opt
+        return 'out="$(' + dzn(parameters.session) + ' verify --all' + model_opt
           + ' '+imports
           + ' '+queue
           + ' '+parameters.filename

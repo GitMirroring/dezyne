@@ -23,4 +23,4 @@
 ;;; 
 ;;; Code:
 
-assert IF_ #.scope_model _(true,false) \ {| #.scope_model _'''|} :[livelock free]
+assert IF_#.scope_model _(true,false) \ {|#.scope_model _'''|} :[livelock free]

@@ -22,4 +22,4 @@
 ;;; 
 ;;; Code:
 
-LTS_ #(.name model)  = IF_ #(.name model) _ #((compose .name .behaviour) model)(false,false)
+LTS_#(.name model)  = IF_#(.name model) _#((compose .name .behaviour) model)(false,false)

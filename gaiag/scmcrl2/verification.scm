@@ -329,7 +329,7 @@
              (commands (list
                         ;;(display trace) ;; FIXME
                         (list "echo" trace)
-                        (list "seqdiag" "-m" model-name (basename file-name)))))
+                        (list "seqdiag" "-m" model-name file-name))))
         (receive (job port)
             (apply pipeline #f commands)
           (let ((json (read-string port)))

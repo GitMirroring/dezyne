@@ -87,7 +87,7 @@ Usage: gdzn parse [OPTION]... [FILE]...
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (language (string->symbol (option-ref options 'language "c++")))
-         (mangle? (option-ref options 'mangle #f))
+         (mangle? (option-ref options 'mangle mangle?))
          (model (option-ref options 'model #f))
          ;; Only forward --model to generate for CSP, not
          ;; for executable code: generator cuts models
@@ -95,10 +95,10 @@ Usage: gdzn parse [OPTION]... [FILE]...
          (model (and csp? model)))
     (parse-file file-name #:gaiag? gaiag? #:imports imports #:mangle? mangle? #:model model)))
 
-(define (assert-parse options file-name)
+(define* (assert-parse options file-name #:key mangle? csp?)
   (catch #t
     (lambda _
-      (parse-with-options options file-name))
+      (parse-with-options options file-name #:mangle? mangle? #:csp? csp?))
     (lambda _
       (exit 1))))
 

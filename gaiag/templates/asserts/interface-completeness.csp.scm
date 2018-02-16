@@ -23,9 +23,9 @@
 ;;; 
 ;;; Code:
 
-assert COMPLETE'({| #
+assert COMPLETE'({|#
 (comma-join (append (map (lambda (event) (list .scope_model "." (.name event))) (filter om:in? (.elements (.events model))))
-                    (map (lambda (trigger) (list .scope_model "_'''." (.event.name trigger))) (modeling-triggers model))))|}) [F= IF_ #.scope_model _(true,true) \ diff(Events,{| #
+                    (map (lambda (trigger) (list .scope_model "_'''." (.event.name trigger))) (modeling-triggers model))))|}) [F= IF_#.scope_model _(true,true) \ diff(Events,{|#
 (comma-join (append (map (lambda (event) (list .scope_model "." (.name event))) (filter om:in? (.elements (.events model))))
                     (map (lambda (trigger) (list .scope_model "_'''." (.event.name trigger))) (modeling-triggers model))
                     (list 'illegal)))|})

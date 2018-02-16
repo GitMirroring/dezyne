@@ -22,4 +22,4 @@
 ;;; 
 ;;; Code:
 
-assert IF_ #.scope_model _(false,false) :[deadlock free]
+assert IF_#.scope_model _(false,false) :[deadlock free]

@@ -22,4 +22,4 @@
 ;;; 
 ;;; Code:
 
-LTS_ #(.name model)_AS = AS_ #(.name model) _(false)
+LTS_#(.name model)_AS = AS_#(.name model) _(false)
