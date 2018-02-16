@@ -321,7 +321,7 @@
 (define (assert-start model-type model-name assert verbose?)
   (when verbose?
     (if (gdzn:command-line:get 'json)
-        (format #t "~a###"
+        (format #t "~a#\n#"
                 (scm->json-string `(((model . ,model-name)
                                      (type . ,model-type)
                                      (assert . ,assert)
@@ -332,7 +332,7 @@
   (when verbose?
     (if (not (gdzn:command-line:get 'json))
         (stdout "verify: ~a: check: ~a: ok\n" model-name assert)
-        (format #t "~a###"
+        (format #t "~a#\n#"
                 (scm->json-string `(((model . ,model-name)
                                      (type . ,model-type)
                                      (assert . ,assert)
@@ -353,7 +353,7 @@
             (apply pipeline #f commands)
           (let ((json (read-string port)))
             (chdir cwd)
-            (format #t "~a###"
+            (format #t "~a#\n#"
                     (scm->json-string `(((model . ,model-name)
                                          (type . ,model-type)
                                          (assert . ,assert)
@@ -377,7 +377,7 @@
             (apply pipeline #f commands)
           (let ((json (read-string port)))
             (chdir cwd)
-            (format #t "~a###"
+            (format #t "~a#\n#"
                     (scm->json-string `(((model . ,model-name)
                                          (type . ,model-type)
                                          (assert . ,assert)

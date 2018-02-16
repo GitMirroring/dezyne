@@ -1,10 +1,13 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -229,6 +232,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
          (gdzn-debug? (gdzn:command-line:get 'debug))
          (tmp (string-append (tmpnam) "-verify"))
          (cwd (getcwd)))
+    (setvbuf (current-output-port) 'line)
     (mkdir-p tmp)
     (when dump? (chdir tmp))
     (receive (files importeds)
