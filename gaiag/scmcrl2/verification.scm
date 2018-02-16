@@ -254,7 +254,7 @@
 
 (define ((mcrl2:verify-component-deterministic model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
- 	 (foo (assert-start 'component model-name 'determinisic verbose?))
+ 	 (foo (assert-start 'component model-name 'deterministic verbose?))
          (deterministic-lps (create-lps "verify.mcrl2" 'deterministic ast))
          (result (verifydeterministic deterministic-lps)))
     (if (number? result) (exit result)
@@ -425,7 +425,7 @@
     (if match? (let* ((trace (make-trace-file (match:substring match? 1) assert file-name model-name))
                       (impl-accepts (if (string-match "The acceptance of the left process is empty." string) #f
                                         (match:substring
-                                         (string-match "A stable acceptance set of the left process is:\n([^\n]*)\n" (pke string))
+                                         (string-match "A stable acceptance set of the left process is:\n([^\n]*)\n" string)
                                          1)))
                       (impl-accepts (and impl-accepts (rename-lts-actions impl-accepts)))
                       (impl-trace (if impl-accepts (string-append trace impl-accepts "\n")
