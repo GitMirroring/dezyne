@@ -237,7 +237,7 @@
 
 (define ((mcrl2:verify-interface-deadlock model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
- 	 (foo (assert-start 'interface model-name 'deadlock verbose?))	
+ 	 (foo (assert-start 'interface model-name 'deadlock verbose?))
          (lpsfile (create-if-lps "verify.mcrl2" 'interface model))
          (result (verifydeadlock lpsfile)))
     (if (number? result) (exit result)
@@ -245,7 +245,7 @@
 
 (define ((mcrl2:verify-interface-livelock model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
- 	 (foo (assert-start 'interface model-name 'livelock verbose?))	
+ 	 (foo (assert-start 'interface model-name 'livelock verbose?))
          (livelock-taus "")
          (lpsfile (create-if-lps "verify.mcrl2" 'interface model))
          (result (verifylivelock lpsfile livelock-taus)))
@@ -254,7 +254,7 @@
 
 (define ((mcrl2:verify-component-deterministic model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
- 	 (foo (assert-start 'component model-name 'determinisic verbose?))	
+ 	 (foo (assert-start 'component model-name 'determinisic verbose?))
          (deterministic-lps (create-lps "verify.mcrl2" 'deterministic ast))
          (result (verifydeterministic deterministic-lps)))
     (if (number? result) (exit result)
@@ -262,7 +262,7 @@
 
 (define ((mcrl2:verify-component-illegal model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
- 	 (foo (assert-start 'component model-name 'illegal verbose?))	
+ 	 (foo (assert-start 'component model-name 'illegal verbose?))
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
          (result (verifyillegal lpsfile)))
     (if (number? result) (exit result)
@@ -270,7 +270,7 @@
 
 (define ((mcrl2:verify-component-deadlock model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
- 	 (foo (assert-start 'component model-name 'deadlock verbose?))	
+ 	 (foo (assert-start 'component model-name 'deadlock verbose?))
          (lpsfile (create-lps "verify.mcrl2" 'deadlock ast))
          (result (verifydeadlock lpsfile)))
     (if (number? result) (exit result)
@@ -278,7 +278,7 @@
 
 (define ((mcrl2:verify-component-livelock model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
- 	 (foo (assert-start 'component model-name 'livelock verbose?))	
+ 	 (foo (assert-start 'component model-name 'livelock verbose?))
          (livelock-taus (find-taus model model-name (livelock-hidden-actions)))
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
          (result (verifylivelock lpsfile livelock-taus)))
@@ -287,7 +287,7 @@
 
 (define ((mcrl2:verify-component-refinement model) file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
- 	 (foo (assert-start 'component model-name 'compliance verbose?))	
+ 	 (foo (assert-start 'component model-name 'compliance verbose?))
          (compliance-taus (find-taus model model-name (compliance-hidden-actions)))
          (provided-lps (create-lps "verify.mcrl2" 'provided ast))
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
