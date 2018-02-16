@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;; Copyright © 2014, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
@@ -51,8 +51,10 @@
            ast:clr-events
            ast:direction
            ast:expression-type
+           ast:in?
            ast:in-triggers
            ast:other-direction
+           ast:out?
            ast:out-triggers
            ast:out-triggers-in-events
            ast:out-triggers-out-events
@@ -224,6 +226,9 @@
 
 (define-method (ast:in? (o <event>))
   (eq? 'in (.direction o)))
+
+(define-method (ast:out? (o <event>))
+  (eq? 'out (.direction o)))
 
 (define-method (ast:provided-out-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)

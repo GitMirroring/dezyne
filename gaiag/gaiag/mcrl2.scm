@@ -226,6 +226,19 @@
     (($ <illegal>) (make <illegal> #:event trigger))
     (_ o)))
 
+(define (fix-empty-interface-behaviour o)
+  (match o
+    (($ <component>) o)
+    ((and ($ <interface>) (= ast:event* (? (cut find ast:in? <>)))) o)
+    ((and ($ <behaviour>) (= .statement (? (lambda (compound) (null? (.elements compound))))))
+     (let* ((triggers (make <triggers> #:elements (list (make <trigger> #:event ast:inevitable))))
+            (on (make <on> #:triggers triggers #:statement (make <illegal>)))
+            (guard (make <guard> #:expression (make <literal> #:value 'false) #:statement on))
+            (statement (make <compound> #:elements (list guard))))
+       (clone o #:statement statement)))
+    ((? (is? <ast>)) (tree-map fix-empty-interface-behaviour o))
+    (_ o)))
+
 (define (ast-tail-calls o)
   (match o
     (($ <function>) (tail-call o))
@@ -422,6 +435,7 @@
     (expand-on)
     norm-state
     code-norm-event
+    fix-empty-interface-behaviour
     ;;(lambda (o) (pretty-print (om->list o) (current-error-port)) o)
     ) root))
 
