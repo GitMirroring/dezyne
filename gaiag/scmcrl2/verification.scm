@@ -423,11 +423,13 @@
         (assert 'compliance)
         (model-type 'component))
     (if match? (let* ((trace (make-trace-file (match:substring match? 1) assert file-name model-name))
-                      (impl-accepts (match:substring
-                                     (string-match "A stable acceptance set of the left process is:\n([^\n]*)\n" string)
-                                     1))
-                      (impl-accepts (rename-lts-actions impl-accepts))
-                      (impl-trace (string-append trace impl-accepts "\n"))
+                      (impl-accepts (if (string-match "The acceptance of the left process is empty." string) #f
+                                        (match:substring
+                                         (string-match "A stable acceptance set of the left process is:\n([^\n]*)\n" (pke string))
+                                         1)))
+                      (impl-accepts (and impl-accepts (rename-lts-actions impl-accepts)))
+                      (impl-trace (if impl-accepts (string-append trace impl-accepts "\n")
+                                      trace))
                       (impl-trace-file "impl_trace.txt")
                       (spec-accepts (if (string-match "The process at the right has no acceptance sets" string) #f
                                         (match:substring
