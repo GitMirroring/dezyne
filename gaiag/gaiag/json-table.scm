@@ -3,10 +3,13 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
+;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -70,7 +73,7 @@
             (state (make <field-test> #:variable var #:field '<unknown>)))
        `((event . ,(json-triggers o))
          (rules . ,(apply append (map (json-table- model var state)
-                                      (.elements (compound))))))))
+                                      (.elements compound)))))))
     ((and ($ <on>) (= .statement statement))
      (let* ((var 'unknown)
             (state (make <field-test> #:variable var #:field '<unknown>)))
@@ -90,11 +93,11 @@
 
 (define (state-var model o)
   (match o
-    ((and ($ <field-test>) (= .variable variable)) (.name variable))
-    ((and ($ <or>) (= .left (and ($ <field-test>) (= .variable  variable)))) (.name variable))
-    ((and ($ <var>) (= .variable variable)) (.name variable))
-    ((and ($ <not>) (= .expression (and ($ <var>) (= .variable variable)))) (.name variable))
-    ((and ($ <equal>) (= .left (and ($ <var>) (= .variable variable)))) (.name variable))
+    ((and ($ <field-test>) (= .variable.name variable)) variable)
+    ((and ($ <or>) (= .left (and ($ <field-test>) (= .variable.name variable)))) variable)
+    ((and ($ <var>) (= .variable.name variable)) variable)
+    ((and ($ <not>) (= .expression (and ($ <var>) (= .variable.name variable)))) variable)
+    ((and ($ <equal>) (= .left (and ($ <var>) (= .variable.name variable)))) variable)
     (_ '<state>)))
 
 (define ((state->value model) o)
@@ -192,8 +195,8 @@
                (next . ,(json-next model var state statement))))))))
     ((and ($ <on>) (= .triggers triggers) (= .statement (and ($ <compound>) (= .elements (($ <guard>) ..1))) (= .statement compound)))
      (map (json-inner-guard model var state triggers)
-          (map .expression (.elements (compound)))
-          (map .statement (.elements (compound)))))
+          (map .expression (.elements compound))
+          (map .statement (.elements compound))))
     ((and ($ <on>) (= .triggers triggers) (= .statement (and ($ <guard>) (= .expression guard) (= .statement statement))))
      (list ((json-inner-guard model var state triggers) guard statement)))
     (_
@@ -335,9 +338,9 @@
     (($ <otherwise>) 'otherwise)
     ((and ($ <var>) (= .variable.name identifier)) identifier)
     ((and ($ <literal>) (= .value value)) (->symbol value))
-    ((and ($ <field-test>) (= .variable variable) (= .field (and (? number?) (get! number)))) (->symbol (list (.name variable) '== (number))))
-    ((and ($ <field-test>) (= .variable variable) (= .field field)) (->symbol (list (->symbol (.name variable)) "." field)))
-    ((identifier (and ($ <field-test>) (= .variable variable) (= .field field))) (->symbol (list (->symbol identifier) " = " (->symbol (.name variable)) "." field)))
+    ((and ($ <field-test>) (= .variable.name variable) (= .field (and (? number?) (get! number)))) (->symbol (list variable '== (number))))
+    ((and ($ <field-test>) (= .variable.name variable) (= .field field)) (->symbol (list (->symbol variable) "." field)))
+    ((identifier (and ($ <field-test>) (= .variable.name variable) (= .field field))) (->symbol (list (->symbol identifier) " = " (->symbol variable) "." field)))
     ((identifier (and ($ <enum-literal>) (= .type type) (= .field field))) (->symbol (list (->symbol identifier) " = " (->symbol type) "." (->symbol field))))
     ((and ($ <enum-literal>) (= .type type) (= .field field)) (->symbol (list (->symbol type) "." (->symbol field))))
     ((and ($ <scope.name>) (= .scope scope) (= .name name)) ((->symbol-join '.) (append scope (list name))))
