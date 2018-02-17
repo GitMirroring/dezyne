@@ -341,23 +341,27 @@
   #f)
 
 (define (assert-fail file-name model-type model-name assert trace verbose?)
-  (if (not (gdzn:command-line:get 'json))
-      (stdout "verify: ~a: check: ~a: fail\n~a" model-name assert trace)
-      (let* ((cwd (getcwd))
-             (foo (chdir (dirname file-name)))
-             (commands (list
-                        ;;(display trace) ;; FIXME
-                        (list "echo" trace)
-                        (list "seqdiag" "-m" model-name file-name))))
-        (receive (job port)
-            (apply pipeline #f commands)
-          (let ((json (read-string port)))
-            (chdir cwd)
+  (let* ((cwd (getcwd))
+         (foo (chdir (dirname file-name)))
+         (commands (list
+                    ;;(display trace) ;; FIXME
+                    (list "echo" trace)
+                    (list "seqdiag" "-m" model-name file-name)))
+         (commands (if (gdzn:command-line:get 'json) commands
+                       (append commands (list (list "sequence2error.js" "--illegal"))))))
+    (receive (job port)
+        (apply pipeline #f commands)
+      (let ((output (read-string port)))
+        (chdir cwd)
+        (if (not (gdzn:command-line:get 'json))
+            (let ()
+              (stderr "~a" output)
+              (stdout "verify: ~a: check: ~a: fail\n~a\n" model-name assert (string-trim-right trace)))
             (format #t "~a#\n#"
                     (scm->json-string `(((model . ,model-name)
                                          (type . ,model-type)
                                          (assert . ,assert)
-                                         (sequence . ,(json-string->scm json))
+                                         (sequence . ,(json-string->scm output))
                                          (trace . ,(string-split trace #\newline))
                                          (result . fail)
                                          (status . "done")
@@ -365,23 +369,27 @@
   #t)
 
 (define (assert-fail-compliance file-name model-type model-name assert spec-trace-file impl-trace-file impl-trace verbose?)
-  (if (not (gdzn:command-line:get 'json))
-      (stdout "verify: ~a: check: ~a: fail\n~a" model-name assert impl-trace)
-      (let* ((cwd (getcwd))
-             (foo (chdir (dirname file-name)))
-             (commands (list
-                        ;;(display trace) ;; FIXME
-                        ;;(list "echo" trace)
-                        (list "seqdiag" "-m" model-name "-s" spec-trace-file "-t" impl-trace-file (basename file-name)))))
-        (receive (job port)
-            (apply pipeline #f commands)
-          (let ((json (read-string port)))
-            (chdir cwd)
+  (let* ((cwd (getcwd))
+         (foo (chdir (dirname file-name)))
+         (commands (list
+                    ;;(display trace) ;; FIXME
+                    ;;(list "echo" trace)
+                    (list "seqdiag" "-m" model-name "-s" spec-trace-file "-t" impl-trace-file (basename file-name))))
+         (commands (if (gdzn:command-line:get 'json) commands
+                       (append commands (list (list "sequence2error.js" "--illegal"))))))
+    (receive (job port)
+        (apply pipeline #f commands)
+      (let ((output(read-string port)))
+        (chdir cwd)
+        (if (not (gdzn:command-line:get 'json))
+            (let ()
+              (stderr "~a" output)
+              (stdout "verify: ~a: check: ~a: fail\n~a\n" model-name assert (string-trim-right impl-trace)))
             (format #t "~a#\n#"
                     (scm->json-string `(((model . ,model-name)
                                          (type . ,model-type)
                                          (assert . ,assert)
-                                         (sequence . ,(json-string->scm json))
+                                         (sequence . ,(json-string->scm output))
                                          (trace . ,(string-split impl-trace #\newline))
                                          (result . fail)))))))))
   #t)
