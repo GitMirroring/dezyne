@@ -435,18 +435,18 @@
         (assert 'compliance)
         (model-type 'component))
     (if match? (let* ((trace (make-trace-file (match:substring match? 1) assert dir file-name model-name))
-                      (impl-accepts (if (string-match "The acceptance of the left process is empty." string) #f
-                                        (match:substring
-                                         (string-match "A stable acceptance set of the left process is:\n([^\n]*)\n" string)
-                                         1)))
+                      (impl-accepts (cond ((string-match "The acceptance of the left process is empty." string) #f)
+                                          ((string-match "A stable acceptance set of the left process is:\n([^\n]*)\n" string) => (cut match:substring <> 1))
+                                          ((string-match "verify_component.aut is not included in the LTS in verify_provided.aut" string) "")
+                                          (else (stderr "other string:~s\n" string))))
                       (impl-accepts (and impl-accepts (rename-lts-actions impl-accepts)))
                       (impl-trace (if impl-accepts (string-append trace impl-accepts "\n")
                                       trace))
                       (impl-trace-file "impl_trace.txt")
-                      (spec-accepts (if (string-match "The process at the right has no acceptance sets" string) #f
-                                        (match:substring
-                                         (string-match "An acceptance set of the right process is:\n([^\n]*)\n" string)
-                                         1)))
+                      (spec-accepts (cond ((string-match "The process at the right has no acceptance sets" string) #f)
+                                          ((string-match "An acceptance set of the right process is:\n([^\n]*)\n" string) =>  (cut match:substring <> 1))
+                                          ((string-match "verify_component.aut is not included in the LTS in verify_provided.aut" string) "")
+                                          (else (stderr "other string:~s\n" string))))
                       (spec-accepts (and spec-accepts (rename-lts-actions spec-accepts)))
                       (spec-trace (if spec-accepts (string-append trace spec-accepts "\n")
                                       trace))
