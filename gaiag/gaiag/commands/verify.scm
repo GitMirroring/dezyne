@@ -131,7 +131,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                                         (filter (negate (cut member <> component-interfaces)) interface-names)))))))
     (append interface-names component-names)))
 
-(define (verify-model-csp options file-name root model-name)
+(define (verify-model-csp options dir file-name root model-name)
   (let* ((all? (option-ref options 'all #f))
          (gdzn-debug? (gdzn:command-line:get 'debug))
          ;; FIXME: see traces.scm: modeel->traces
@@ -176,7 +176,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
             trails)))))
 
 (define error? 0)
-(define (verify-csp options file-name ast)
+(define (verify-csp options dir file-name ast)
   (let* ((root (csp:parse->om ast))
          (model (option-ref options 'model #f))
          (models (if model (list model) (models-for-verification root)))
@@ -188,9 +188,9 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
         (let loop ((models models) (traces '()))
           (if (and (or (null? models) (not all?)) (pair? traces)) (set! error? 1))
           (if (pair? models)
-              (loop (cdr models) (append traces (verify-model-csp options file-name root (car models)))))))))
+              (loop (cdr models) (append traces (verify-model-csp options dir file-name root (car models)))))))))
 
-(define (verify-mcrl2 options file-name ast)
+(define (verify-mcrl2 options dir file-name ast)
   (let* ((model (option-ref options 'model #f))
          (root ((compose ast:resolve tick-names parse->om) ast))
          (models (if model (list model) (models-for-verification root)))
@@ -215,7 +215,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                            (root (mcrl2:om ast-model)))
                       (parameterize ((language 'mcrl2))
                         (with-output-to-file "verify.mcrl2" (cut root-> root)))
-                      (loop (cdr models) (or (mcrl2:verify file-name (car models) root gdzn-verbose? all?))))
+                      (loop (cdr models) (or (mcrl2:verify dir file-name (car models) root gdzn-verbose? all?))))
                     (loop (cdr models) errors))))))
     ""))
 
@@ -229,7 +229,8 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
          (json? (gdzn:command-line:get 'json))
          (gdzn-debug? (gdzn:command-line:get 'debug))
          (tmp (string-append (tmpnam) "-verify"))
-         (cwd (getcwd)))
+         (cwd (getcwd))
+         (dir (if dump? tmp cwd)))
     (setvbuf (current-output-port) 'line)
     (mkdir-p tmp)
     (when dump? (chdir tmp))
@@ -240,12 +241,10 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
              ;; parse on `original' (when not dump?) file-name, to preserve path in parse errors
              (ast (assert-parse options file-name #:mangle? csp? #:csp? csp?)))
         ;; canonicalize-path so that seqdiag can find original file after chdir'ing
-        (let* ((files (if dump? files (map canonicalize-path files)))
-               (file-name (car files)))
-          (when (not dump?) (chdir tmp))
-          (if csp?
-              (verify-csp options file-name ast)
-              (verify-mcrl2 options file-name ast)))))
+        (when (not dump?) (chdir tmp))
+        (if csp?
+            (verify-csp options dir file-name ast)
+            (verify-mcrl2 options dir file-name ast))))
     (chdir cwd)
     ;;(if (not gdzn-debug?) (delete-file-recursively tmp))
     (exit error?)))
