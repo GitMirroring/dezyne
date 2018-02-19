@@ -112,10 +112,10 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                (column (assoc-ref location 'column))
                (index (assoc-ref location 'index)))
           (format (current-error-port) "~a:~a:~a:i~a: ~a\n" file-name line column index message)
-          (format #t "verify: ~a: check: ~a: ~a~a\n" model check "fail" trace))
+          (format #t "xxxverify: ~a: check: ~a: ~a~a\n" model check "fail" trace))
         (let ((gdzn-verbose? (gdzn:command-line:get 'verbose)))
           (if gdzn-verbose?
-              (begin (format #t "verify: ~a: check: ~a: ~a~a\n" model check "ok" trace))
+              (begin (format #t "xxxverify: ~a: check: ~a: ~a~a\n" model check "ok" trace))
               "")))))
 
 (define (models-for-verification root)

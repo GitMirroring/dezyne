@@ -325,6 +325,7 @@
                 (scm->json-string `(((model . ,model-name)
                                      (type . ,model-type)
                                      (assert . ,assert)
+                                     (trace . ,`())
                                      (status . "assert")))))))
   #f)
 
@@ -337,6 +338,7 @@
                                      (type . ,model-type)
                                      (assert . ,assert)
                                      (result . ok)
+                                     (trace . ,`())
                                      (status . "done")))))))
   #f)
 
