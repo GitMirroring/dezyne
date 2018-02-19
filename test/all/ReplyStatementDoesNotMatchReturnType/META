@@ -1,2 +1,3 @@
-{"skip":["build"]
-,"comment":"reply of invalid type => compile error. TODO: make test pass when compile/execute fails"}
+{"skip":["table","view","code","traces"]
+,"comment":"dedicated test for parser well-formedness test"
+}
