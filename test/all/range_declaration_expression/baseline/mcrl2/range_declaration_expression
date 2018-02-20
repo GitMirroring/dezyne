@@ -1,0 +1,11 @@
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: II: check: deadlock: ok
+verify: II: check: livelock: ok
+verify: range_declaration_expression: check: deterministic: ok
+verify: range_declaration_expression: check: illegal: ok
+verify: range_declaration_expression: check: deadlock: fail
+p.e
+verify: range_declaration_expression: check: compliance: fail
+p.e
+verify: range_declaration_expression: check: livelock: ok

@@ -13,5 +13,4 @@ pp.return
 rp.ob
 pp.oa
 pp.ia
-dillegal
 verify: compliance_out_async_nondet: check: livelock: ok

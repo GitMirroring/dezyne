@@ -1,2 +1,2 @@
-test/all/EventNotHandled/EventNotHandled.dzn:28:1:i3: 
-test/all/EventNotHandled/EventNotHandled.dzn:24:8:i6: pp.ia (implicitly) illegal
+out/EventNotHandled/EventNotHandled.dzn:28:1:i3: deadlock in model EventNotHandled
+out/EventNotHandled/EventNotHandled.dzn:24:8:i6: pp.ia (implicitly) illegal

@@ -652,9 +652,9 @@ var aspects = {
           + '     && (test ! -s '+err
           + '         || (sed -i s,.\r,,g '+err+';'
         //strict stderr
-        //+ '            diff -u '+baseline+'.stderr '+err+')))';
+          + '            diff -u '+baseline+'.stderr '+err+')))';
         // relaxed stderr
-        + '            diff -u '+baseline+'.stderr '+err+'||true)))';
+        // + '            diff -u '+baseline+'.stderr '+err+'||true)))';
 
         //relaxed, filtered
           // + ' || { '
@@ -673,7 +673,7 @@ var aspects = {
           + ' '+imports
           + ' '+queue
           + ' '+parameters.filename
-          + ' 2>&1)" && [ "$out" = "" ] || { echo "verification output: \'$out\'"; false; }';
+          + ' 2>&1)" && [ "$out" = "" ] || { echo -e "verification output:\n $out"; false; }';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd);

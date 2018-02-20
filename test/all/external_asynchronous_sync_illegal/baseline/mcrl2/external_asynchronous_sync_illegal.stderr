@@ -1,1 +1,1 @@
-out/external_asynchronous_sync_illegal/external_asynchronous_sync_illegal.dzn:66:20:i30: p.ac not allowed by port p
+out/external_asynchronous_sync_illegal/external_asynchronous_sync_illegal.dzn:66:20:i29: p.ac not allowed by port p

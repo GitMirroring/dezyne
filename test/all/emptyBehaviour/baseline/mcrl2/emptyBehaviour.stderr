@@ -1,3 +1,2 @@
 out/emptyBehaviour/emptyBehaviour.dzn:3:1:i1: deadlock in model I
 out/emptyBehaviour/emptyBehaviour.dzn:9:1:i2: deadlock in model emptyBehaviour
-out/emptyBehaviour/emptyBehaviour.dzn:9:1:i2: i.e (implicitly) illegal
