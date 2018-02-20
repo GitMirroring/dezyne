@@ -345,7 +345,7 @@
 (define (sequence->error sequence)
   (let* ((ecneuqes (reverse sequence))
          (error (car ecneuqes))
-         (message (and=> (assoc-ref error 'message) symbol->string))
+         (message (or (and=> (assoc-ref error 'message) symbol->string) ""))
          (location (find (lambda (e) (and=> (assoc-ref (cdr e) 'selection)
                                             (compose (cut assoc-ref <> 'file) car)))
                          ecneuqes))

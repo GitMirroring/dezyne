@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -22,7 +21,7 @@
 //
 // Code:
 
-component EventNotHandled
+component EventNotHandled2
 {
   provides IA pp;
   requires IB rp;
@@ -31,12 +30,13 @@ component EventNotHandled
   {
     bool b = false;
     [b] on pp.ia(): rp.ia();
+    [b] on rp.oa(): illegal;
   }
 
   // Simulate EventNotHandled =>
-  //   pp.ia (implicitly) illegal
+  //   rp.oa (implicitly) illegal
   // if the following trace is performed:
-  //   pp.ia
+  //   rp.oa
 }
 
 interface IA
@@ -57,6 +57,6 @@ interface IB
   behaviour
   {
     on ia: illegal;
-    on ia: {}
+    on inevitable: oa;
   }
 }
