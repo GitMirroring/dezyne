@@ -196,26 +196,6 @@
 (define (mcrl2:verify-component dir file-name model-name ast verbose? all?)
   (let* ((component (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <component>) (.elements ast))))
          (interfaces (delete-duplicates (map .type (om:ports component))))
-         (livelock-taus (find-taus component model-name (livelock-hidden-actions)))
-         (compliance-taus (find-taus component model-name (compliance-hidden-actions)))
-         (deterministic-lps (create-lps "verify.mcrl2" 'deterministic ast))
-         (provided-lps (create-lps "verify.mcrl2" 'provided ast))
-         (deadlock-lps (create-lps "verify.mcrl2" 'deadlock ast))
-         (lpsfile (create-lps "verify.mcrl2" 'component ast))
-         (output (verifydeterministic deterministic-lps))
-	 (output (string-append output (verifyillegal lpsfile)))
-         (output (string-append output (verifydeadlock deadlock-lps)))
-         (output (string-append output (verifylivelock lpsfile livelock-taus)))
-         (output (string-append output (verifyrefinement lpsfile provided-lps compliance-taus))))
-    (if all?
-        (pair? (filter identity (append (map (cut mcrl2:verify-interface dir file-name <> verbose?) interfaces)
-                                        (list (interpret-results output dir file-name model-name verbose?)))))
-        (or (pair? (filter identity (map (cut mcrl2:verify-interface dir file-name <> verbose?) interfaces)))
-            (interpret-results output dir file-name model-name verbose?)))))
-
-(define (mcrl2:verify-component dir file-name model-name ast verbose? all?)
-  (let* ((component (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <component>) (.elements ast))))
-         (interfaces (delete-duplicates (map .type (om:ports component))))
          (asserts (append
                    (append-map
                     (lambda (i) (list
@@ -241,7 +221,7 @@
          (lpsfile (create-if-lps "verify.mcrl2" 'interface model))
          (result (verifydeadlock lpsfile)))
     (if (number? result) (exit result)
-        (check-deadlock result dir file-name model-name verbose?))))
+        (check-deadlock result dir file-name 'interface model-name verbose?))))
 
 (define ((mcrl2:verify-interface-livelock model) dir file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
@@ -250,7 +230,7 @@
          (lpsfile (create-if-lps "verify.mcrl2" 'interface model))
          (result (verifylivelock lpsfile livelock-taus)))
     (if (number? result) (exit result)
-        (check-livelock result dir file-name model-name verbose?))))
+        (check-livelock result dir file-name 'interface model-name verbose?))))
 
 (define ((mcrl2:verify-component-deterministic model) dir file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
@@ -258,7 +238,7 @@
          (deterministic-lps (create-lps "verify.mcrl2" 'deterministic ast))
          (result (verifydeterministic deterministic-lps)))
     (if (number? result) (exit result)
-        (check-deterministic result dir file-name model-name verbose?))))
+        (check-deterministic result dir file-name 'component model-name verbose?))))
 
 (define ((mcrl2:verify-component-illegal model) dir file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
@@ -266,7 +246,7 @@
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
          (result (verifyillegal lpsfile)))
     (if (number? result) (exit result)
-        (check-illegal result dir file-name model-name verbose?))))
+        (check-illegal result dir file-name 'component model-name verbose?))))
 
 (define ((mcrl2:verify-component-deadlock model) dir file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
@@ -274,7 +254,7 @@
          (lpsfile (create-lps "verify.mcrl2" 'deadlock ast))
          (result (verifydeadlock lpsfile)))
     (if (number? result) (exit result)
-        (check-deadlock result dir file-name model-name verbose?))))
+        (check-deadlock result dir file-name 'component model-name verbose?))))
 
 (define ((mcrl2:verify-component-livelock model) dir file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
@@ -283,7 +263,7 @@
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
          (result (verifylivelock lpsfile livelock-taus)))
     (if (number? result) (exit result)
-        (check-livelock result dir file-name model-name verbose?))))
+        (check-livelock result dir file-name 'component model-name verbose?))))
 
 (define ((mcrl2:verify-component-refinement model) dir file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
@@ -293,7 +273,7 @@
          (lpsfile (create-lps "verify.mcrl2" 'component ast))
          (result (verifyrefinement lpsfile provided-lps compliance-taus)))
     (if (number? result) (exit result)
-        (check-compliance result dir file-name model-name verbose?))))
+        (check-compliance result dir file-name 'component model-name verbose?))))
 
 (define (mcrl2:verify dir file-name model-name ast verbose? all?)
   (if model-name
@@ -306,26 +286,18 @@
       ))
 
 (define (interpret-if-results output dir file-name model-name verbose?)
-  (let ((deadlock (check-deadlock output dir file-name model-name verbose?))
-        (livelock (check-livelock output dir file-name model-name verbose?)))
+  (let ((deadlock (check-deadlock output dir file-name 'interface model-name verbose?))
+        (livelock (check-livelock output dir file-name 'interface model-name verbose?)))
     (or deadlock livelock)))
-
-(define (interpret-results output dir file-name model-name verbose?)
-  (let ((compliance (check-compliance output dir file-name model-name verbose?))
-        (illegal (check-illegal output dir file-name model-name verbose?))
-        (deadlock (check-deadlock output dir file-name model-name verbose?))
-        (livelock (check-livelock output dir file-name model-name verbose?))
-        (deterministic (check-deterministic output dir file-name model-name verbose?)))
-    (or compliance illegal deadlock livelock deterministic)))
 
 (define (assert-start model-type model-name assert verbose?)
   (when verbose?
     (if (gdzn:command-line:get 'json)
-        (format #t "~a#\n#"
+        (format #t "~a\n"
                 (scm->json-string `(((model . ,model-name)
                                      (type . ,model-type)
                                      (assert . ,assert)
-                                     (trace . ,`())
+                                     (first . "true")
                                      (status . "assert")))))))
   #f)
 
@@ -333,7 +305,7 @@
   (when verbose?
     (if (not (gdzn:command-line:get 'json))
         (stdout "verify: ~a: check: ~a: ok\n" model-name assert)
-        (format #t "~a#\n#"
+        (format #t "~a\n"
                 (scm->json-string `(((model . ,model-name)
                                      (type . ,model-type)
                                      (assert . ,assert)
@@ -379,7 +351,7 @@
           (let ((output (read-string port))
                 (trace (string-trim-right trace)))
             (chdir cwd)
-            (format #t "~a#\n#"
+            (format #t "~a\n"
                     (scm->json-string `(((model . ,model-name)
                                          (type . ,model-type)
                                          (assert . ,assert)
@@ -430,7 +402,7 @@
           (let ((output (read-string port))
                 (trace (string-trim-right trace)))
             (chdir cwd)
-            (format #t "~a#\n#"
+            (format #t "~a\n"
                     (scm->json-string `(((model . ,model-name)
                                          (type . ,model-type)
                                          (assert . ,assert)
@@ -439,42 +411,37 @@
                                          (result . fail)))))))))
   #t)
 
-(define (check-deterministic string dir file-name model-name verbose?)
+(define (check-deterministic string dir file-name model-type model-name verbose?)
   (let ((match? (regexp-exec (make-regexp "Nondeterministic state found and saved to '([^'\n]*)'.*") string))
-        (assert 'deterministic)
-        (model-type 'component))
+        (assert 'deterministic))
     (if match? (let ((trace (make-trace-file (match:substring match? 1) assert dir file-name model-name)))
                  (assert-fail dir file-name model-type model-name assert trace verbose?))
         (assert-ok model-type model-name assert verbose?))))
 
-(define (check-illegal string dir file-name model-name verbose?)
+(define (check-illegal string dir file-name model-type model-name verbose?)
   (let ((match? (regexp-exec (make-regexp "Detected action 'illegal' .* and saved to '([^'\n]*)'") string))
-        (assert 'illegal)
-        (model-type 'component))
+        (assert 'illegal))
     (if match? (let ((trace (make-trace-file (match:substring match? 1) assert dir file-name model-name)))
                  (assert-fail dir file-name model-type model-name assert trace verbose?))
         (assert-ok model-type model-name assert verbose?))))
 
-(define (check-deadlock string dir file-name model-name verbose?)
+(define (check-deadlock string dir file-name model-type model-name verbose?)
   (let ((match? (regexp-exec (make-regexp "deadlock-detect: deadlock found and saved to '([^'\n]*)'") string))
-        (assert 'deadlock)
-        (model-type 'component))
+        (assert 'deadlock))
     (if match? (let ((trace (make-trace-file (match:substring match? 1) assert dir file-name model-name)))
                  (assert-fail dir file-name model-type model-name assert trace verbose?))
         (assert-ok model-type model-name assert verbose?))))
 
-(define (check-livelock string dir file-name model-name verbose?)
+(define (check-livelock string dir file-name model-type model-name verbose?)
   (let ((match? (regexp-exec (make-regexp "Trace to the divergencing state is saved to '([^'\n]*)") string))
-        (assert 'livelock)
-        (model-type 'component))
+        (assert 'livelock))
     (if match? (let ((trace (make-trace-file (match:substring match? 1) assert dir file-name model-name)))
                  (assert-fail dir file-name model-type model-name assert trace verbose?))
         (assert-ok model-type model-name assert verbose?))))
 
-(define (check-compliance string dir file-name model-name verbose?)
+(define (check-compliance string dir file-name model-type model-name verbose?)
   (let ((match? (regexp-exec (make-regexp "Saved trace to file (.*)\nThe LTS in (.*) is not included in the LTS .*") string))
-        (assert 'compliance)
-        (model-type 'component))
+        (assert 'compliance))
     (if match? (let* ((trace (make-trace-file (match:substring match? 1) assert dir file-name model-name))
                       (trace (string-trim-right trace))
                       (trace (if (string-null? trace) trace (string-append trace "\n")))
