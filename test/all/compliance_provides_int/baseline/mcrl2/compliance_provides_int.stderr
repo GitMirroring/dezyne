@@ -1,0 +1,7 @@
+;;; note: source file /home/rutger/verum/vc/development.git/gaiag/scmcrl2/traces.scm
+;;;       newer than compiled /home/rutger/verum/vc/development.git/gaiag/scmcrl2/traces.go
+;;; note: source file /home/rutger/verum/vc/development.git/gaiag/scmcrl2/traces.scm
+;;;       newer than compiled /home/rutger/verum/vc/development.git/gaiag/scmcrl2/traces.go
+;;; note: source file /home/rutger/verum/vc/development.git/gaiag/scmcrl2/traces.scm
+;;;       newer than compiled /home/rutger/.cache/guile/ccache/2.2-LE-8-3.A/home/rutger/verum/vc/development.git/gaiag/scmcrl2/traces.scm.go
+out/compliance_provides_int/compliance_provides_int.dzn:17:8:i10: p.0 not allowed by port p

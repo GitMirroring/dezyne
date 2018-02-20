@@ -473,6 +473,8 @@
         (assert 'compliance)
         (model-type 'component))
     (if match? (let* ((trace (make-trace-file (match:substring match? 1) assert dir file-name model-name))
+                      (trace (string-trim-right trace))
+                      (trace (if (string-null? trace) trace (string-append trace "\n")))
                       (impl-accepts (cond ((string-match "The acceptance of the left process is empty." string) #f)
                                           ((string-match "A stable acceptance set of the left process is:\n([^\n]*)\n" string) => (cut match:substring <> 1))
                                           ((string-match "verify_component.aut is not included in the LTS in verify_provided.aut" string) "")

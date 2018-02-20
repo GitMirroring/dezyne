@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -26,8 +28,12 @@
 
 (define-module (scmcrl2 traces)
 
+  #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
+  #:use-module (ice-9 peg)
+  #:use-module (ice-9 peg codegen)
+  #:use-module (ice-9 pretty-print)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (gaiag misc)
@@ -44,31 +50,91 @@
 		   (list-matches "\\b([a-zA-Z0-9_']*)\\s*=\\s*struct\\b" mcrl2-text))))
     aliases))
 
+;; (define trace "startIF'event(StartControlIF'in'startAll)
+;; device1IF'event(Device1IF'in'turnon)
+;; device1IF'return(Device1IF'in'turnon, reply_Device1IF'Void(void))
+;; tau
+;; tau
+;; startIF'return(StartControlIF'in'startAll, reply_StartControlIF'Void(void))
+;; device1IF'inevitable
+;; device1IF'event(Device1IF'out'ok)
+;; device1IF'flush
+;; tau
+;; device2IF'event(Device2IF'in'turnon)
+;; device2IF'return(Device2IF'in'turnon, reply_Device2IF'Device2IF'Result(Device2IF'Result'NOK))
+;; startIF'event(StartControlIF'out'startFailed)
+;; tau
+;; tau
+;; startIF'flush
+;; startIF'event(StartControlIF'in'startAll)
+;; device1IF'event(Device1IF'in'turnon)
+;; illegal
+;; ")
+
+;;(define trace "p'event(ibool'in'hello)")
+(define trace "tau")
+
+(define (parse input)
+  (define-peg-string-patterns
+    "trace          <-- ((tau / illegal / range-error / reply-error / flush / modeling / event / return / error) newline?)*
+     newline        <   '\n'
+     lpar           <   '('
+     rpar           <   ')'
+     tick           <   [']
+     error          <-- (! newline .)*
+     direction      <   'in' / 'out'
+     tau            <   'tau'
+     illegal        <   'illegal' / 'dillegal'
+     range-error    <   'range_error'
+     reply-error    <   'double_reply_error' / 'no_reply_error'
+     flush          <   (identifier tick)+ 'flush'
+     modeling       <   port tick ('inevitable' / 'optional')
+     event          <-- port tick (event-literal / direction) lpar mcrl2-event rpar
+     return         <-- port tick return-literal lpar arguments rpar
+     arguments      <-  mcrl2-event- (comma reply compound-type compound-value)?
+     mcrl2-event    <-  model tick direction tick event-name
+     mcrl2-event-   <   mcrl2-event
+     comma          <   ',' ' '*
+     reply          <   'reply_' identifier tick
+     compound-type  <   (type tick)* type
+     compound-value <-  lpar (scope tick)? (type tick)? (identifier / number) rpar
+     scope          <   identifier
+     model          <   identifier
+     port           <-  identifier
+     type           <-  identifier
+     event-name     <-  identifier
+     identifier     <-- [a-zA-Z_][a-zA-Z0-9_]*
+     number         <-- '-'? [0-9]+
+     event-literal  <   'event'
+     return-literal <   'return' / 'reply_in' / 'reply_out'
+")
+  (let* ((match (match-pattern trace input))
+         (end (peg:end match))
+         (tree (peg:tree match)))
+    (if (eq? (string-length input) end)
+        (if (symbol? tree) '()
+            (cdr tree))
+        (if match
+            (begin
+              (format (current-error-port) "parse error: at offset: ~a\n~s\n" end tree)
+              #f)
+            (begin
+              (format (current-error-port) "parse error: no match\n")
+              #f)))))
+
+(define (parse-tree2text tree)
+  (match tree
+         (('event ('identifier port) ('identifier event)) (string-append port "." event))
+         (('return ('identifier port) ('identifier "void")) (string-append port ".return"))
+         (('return ('identifier port) ('identifier value)) (string-append port "." value))
+         (('return ('identifier port) ('number value)) (string-append port "." value))
+         (('return ('identifier port) (('identifier type) ('identifier value))) (string-append port "." type "_" value))))
+
+;;(format #t "~a" (string-join (map parse-tree2text (pk "FOO:" (parse trace))) "\n"))
+
 (define (rename-lts-actions trace)
-  (let* ((trace (regexp-substitute/global #f ",\\s*reply_[^(]*\\(([^)]*)\\)" trace 'pre "," 1 'post))
-         (trace (regexp-substitute/global #f "('(return|reply_out|reply_in)[^,]+),\\s*void\\)" trace 'pre "" 1 'post))
-         (trace (regexp-substitute/global #f "'(return|reply_out|reply_in)\\([^,]+,\\s*\\w+'([^)]+)\\)" trace 'pre "." 2 'post))
-         (trace (regexp-substitute/global #f "\\w+'in'" trace 'pre "" 'post))
-         (trace (regexp-substitute/global #f "\\w+'out'" trace 'pre "" 'post))
-         (trace (regexp-substitute/global #f "\\bi\\d+_" trace 'pre "" 'post))
-         (trace (regexp-substitute/global #f "'(event|in|out)\\(" trace 'pre "." 'post))
-         (trace (regexp-substitute/global #f "\\b\\w+'flush\\b" trace 'pre "" 'post)) ;; extra
-         (trace (regexp-substitute/global #f "\\b\\(" trace 'pre "." 'post))
-         (trace (regexp-substitute/global #f "\\)" trace 'pre "" 'post))
-         (trace (regexp-substitute/global #f "'(return|reply_out|reply_in)\\.(\\w|')+" trace 'pre ".return" 'post))
-         (trace (regexp-substitute/global #f "\\b\\w+'inevitable\\b" trace 'pre "" 'post))
-         (trace (regexp-substitute/global #f "\\b\\w+'optional\\b" trace 'pre "" 'post))
-         (trace (regexp-substitute/global #f "\\bdillegal\n" trace 'pre "" 'post))
-         (trace (regexp-substitute/global #f "\\billegal\\b" trace 'pre "" 'post))
-         (trace (regexp-substitute/global #f "\\brange_error\n" trace 'pre "" 'post))
-         (trace (regexp-substitute/global #f "\\bdouble_reply_error\\b" trace 'pre "" 'post))
-         (trace (regexp-substitute/global #f "\\bno_reply_error\\b" trace 'pre "" 'post))
-         (trace (regexp-substitute/global #f "\\btau\n" trace 'pre "" 'post))
-         (trace (regexp-substitute/global #f "([\n])[\n]+" trace 'pre 1 'post))
-         (trace (regexp-substitute/global #f "'" trace 'pre "_" 'post)))
-    (if (string=? trace "\n")
-        ""
-        (string-trim trace))))
+  (string-join (map parse-tree2text (parse trace)) "\n"))
+
 
 (define (make-json-trace modelname tracefile dir file-name outfile)
   (let* ((cwd (getcwd))
