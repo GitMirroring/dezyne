@@ -1,5 +1,6 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
@@ -44,7 +45,7 @@
 (define (json-location o)
   (match o
     ((? (is? <ast>))
-     (or (and-let* ((loc (source-location o))
+     (or (and-let* ((loc (source-location (.node o)))
                     (properties (source-location->user-source-properties loc)))
            `((file . ,(assoc-ref properties 'filename))
              (line . ,(assoc-ref properties 'line))
