@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -22,7 +21,7 @@
 //
 // Code:
 
-component ActionIsIllegal
+component ActionIsIllegal2
 {
   provides IA pp;
   requires IB rp;
@@ -36,8 +35,7 @@ component ActionIsIllegal
   // Simulate ActionIsIllegal =>
   //   Action is illegal
   // if following trace is performed:
-  //   pp.ia
-  //   rp.ia
+  //   rp.oa
 }
 
 interface IA
@@ -57,7 +55,8 @@ interface IB
 
   behaviour
   {
-    on ia: illegal;
-    on ia: {}
+    bool idle = true;
+    on ia: idle = false;
+    [!idle] on inevitable: {idle = true; oa;}
   }
 }

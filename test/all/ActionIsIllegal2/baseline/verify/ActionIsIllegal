@@ -1,0 +1,17 @@
+verify: ActionIsIllegal: check: deterministic: ok
+verify: ActionIsIllegal: check: illegal: fail
+pp.ia
+rp.ia
+verify: ActionIsIllegal: check: deadlock: fail
+pp.ia
+rp.ia
+verify: ActionIsIllegal: check: compliance: fail
+pp.ia
+rp.ia
+verify: ActionIsIllegal: check: livelock: ok
+verify: IA: check: completeness: ok
+verify: IA: check: deadlock: ok
+verify: IA: check: livelock: ok
+verify: IB: check: completeness: ok
+verify: IB: check: deadlock: ok
+verify: IB: check: livelock: ok
