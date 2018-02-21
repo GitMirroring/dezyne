@@ -1206,6 +1206,17 @@
       o
       ""))
 
+(define-template x:constrain-action-range constrain-action-range)
+(define-method (constrain-action-range (o <assign>))
+  (constrain-action-range (.expression o)))
+(define-method (constrain-action-range (o <variable>))
+  (constrain-action-range (.expression o)))
+(define-method (constrain-action-range (o <action>))
+  (let ((type ((compose .type .signature .event) o)))
+    (if (is-a? type <int>)
+        type
+        "")))
+
 (define-template x:check-integer-bounds check-integer-bounds)
 (define-template x:check-event-integer-bounds check-integer-bounds)
 (define-method (check-integer-bounds (o <assign>))
