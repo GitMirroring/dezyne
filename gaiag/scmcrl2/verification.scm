@@ -174,11 +174,16 @@
            (commands (list "bash" "-c" (string-append (string-join ltscompare " ") " 2>&1"))))
       (pipeline->string commands))))
 
-(define (mcrl2:verify-interface dir file-name interface verbose?)
+(define (mcrl2:verify-interface dir file-name interface verbose? all?)
   (let* ((iflps (create-if-lps "verify.mcrl2" 'interface interface))
-         (output (verifydeadlock iflps))
-         (output (string-append output (verifylivelock iflps ""))))
-    (interpret-if-results output dir file-name ((compose ->string verify:scope-name) interface) verbose?)))
+         (asserts (list (mcrl2:verify-interface-deadlock interface)
+                        (mcrl2:verify-interface-livelock interface))))
+    (let loop ((asserts asserts))
+      (if (null? asserts) #f
+          (let* ((assert (car asserts))
+                 (fail? (apply assert (list dir file-name interface verbose? all?))))
+            (if (or (not fail?) all?) (or (loop (cdr asserts)) fail?)
+                fail?))))))
 
 (define (mcrl2:verify-component dir file-name model-name ast verbose? all?)
   (let* ((component (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <component>) (.elements ast))))
@@ -267,15 +272,10 @@
       (let ((model (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <model>) (.elements ast)))))
         (if (is-a? model <component>)
             (mcrl2:verify-component dir file-name model-name ast verbose? all?)
-            (mcrl2:verify-interface dir file-name model verbose?)))
+            (mcrl2:verify-interface dir file-name model verbose? all?)))
       (let ((components (filter (is? <component>) (.elements ast))))
         (pair? (filter identity (map (lambda (c) (mcrl2:verify-component dir file-name (->string (verify:scope-name c)) ast verbose? all?)) components))))
       ))
-
-(define (interpret-if-results output dir file-name model-name verbose?)
-  (let ((deadlock (check-deadlock output dir file-name 'interface model-name verbose?))
-        (livelock (check-livelock output dir file-name 'interface model-name verbose?)))
-    (or deadlock livelock)))
 
 (define (assert-start model-type model-name assert verbose?)
   (when verbose?
