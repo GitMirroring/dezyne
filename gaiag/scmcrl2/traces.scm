@@ -37,9 +37,9 @@
   #:use-module (srfi srfi-26)
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
+  #:use-module (gash pipe)
 
-  #:export (make-trace
-            make-trace-file
+  #:export (mcrl2-trace-file->dzn-trace
             rename-lts-actions))
 
 (define (find-aliases mcrl2file)
@@ -134,27 +134,5 @@
 (define (rename-lts-actions trace)
   (string-join (map parse-tree2text (parse trace)) "\n"))
 
-
-(define (make-json-trace modelname tracefile dir file-name outfile)
-  (let* ((cwd (getcwd))
-         (outfile (canonicalize-path outfile))
-         (command (string-append "seqdiag -m " modelname " -t " tracefile " " file-name " > " outfile)))
-    (chdir dir)
-    (if (gdzn:command-line:get 'debug) (stderr "seqdiag command: ~s\n" command))
-    (system command)
-    (chdir cwd))
-  (if (gdzn:command-line:get 'json) (display (gulp-file outfile))))
-
-(define (make-trace tracefile option dir file-name modelname)
-  (let ((outfile (string-append modelname option ".trc")))
-    (system (string-append "tracepp " tracefile " > trace1.txt"))
-    (let ((trace (rename-lts-actions "trace1.txt")))
-      (with-output-to-file outfile (cut display trace))
-      (make-json-trace modelname outfile dir file-name (string-append outfile ".json"))
-      (if (gdzn:command-line:get 'json) "" trace))))
-
-(define (make-trace-file tracefile option dir file-name modelname)
-  (let ((outfile (format #f "~a~a.trc" modelname option))
-        (trace-file "trace1.txt"))
-    (system (string-append "tracepp " tracefile " > " trace-file))
-    (rename-lts-actions (call-with-input-file trace-file read-string))))
+(define (mcrl2-trace-file->dzn-trace mcrl2-trace-file)
+  (rename-lts-actions (pipeline->string `("tracepp" ,mcrl2-trace-file))))
