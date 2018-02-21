@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -49,12 +49,17 @@
 (define-method (om:equal? a b)
   (equal? (om->list a) (om->list b)))
 
-(define-method (children (o <ast>))
-  (let* ((node (.node o))
-         (getters (map slot-definition-getter (class-slots (class-of node)))))
-    (map (cut <> node) getters)))
-
 (define-method (om:equal? (a <ast>) (b <ast>))
+  (om:equal? (.node a) (.node b)))
+
+(define-method (children (o <ast>))
+  (children (.node o)))
+
+(define-method (children (o <ast-node>))
+  (let ((getters (map slot-definition-getter (class-slots (class-of o)))))
+    (map (cut <> o) getters)))
+
+(define-method (om:equal? (a <ast-node>) (b <ast-node>))
   (or (= (.id a) (.id b))
       (and (eq? (class-name (class-of a)) (class-name (class-of b)))
            (every om:equal? (children a) (children b)))))
@@ -118,9 +123,8 @@
 (define-method (om:equal? (a <trigger>) (b <trigger>))
   (define (name o)
     (if (is-a? o <named>) (.name o) o))
-  (and (om:equal? (.port.name a) (.port.name b))
-       (om:equal? (name (.event a))
-               (name (.event b)))
+  (and (equal? (.port.name a) (.port.name b))
+       (equal? (name (.event a)) (name (.event b)))
        (om:equal? (.formals a) (.formals b))))
 
 (define-method (om:guard-equal? (lhs <guard>) (rhs <guard>))

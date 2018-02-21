@@ -131,7 +131,6 @@
                (iota (- (.to range) (.from range) -1) (.from range))))
             (($ <bool>) '(false true))
             (_  '(<Initial>))))
-         (states (map (lambda (field) (make <field-test> #:variable (.name variable) #:field field)) fields))
          (guards (filter identity
                          (map (lambda (field)
                                 (prepend-guard model variable field o))
@@ -139,7 +138,7 @@
     (retain-source-properties o (make <compound> #:elements guards))))
 
 (define (prepend-guard model variable field o)
-;;  (stderr "prepend-guard ~a --- ~a --- ~a\n" variable field o)
+  ;;(stderr "prepend-guard ~a --- ~a --- ~a\n" variable field o)
   (and-let* ((statement o)
              (statement (flatten-compound ((simplify model variable field #t) (flatten-compound o))))
              (var (make <var> #:variable (.name variable)))
@@ -311,14 +310,26 @@
         (norm-event o)
         (table-norm-event o))))
 
+(define ((PR txt) o)
+  (stderr ">>> ~a:\n" txt)
+  (pretty-print (om->list o))
+  (stderr "<<< ~a:\n" txt)
+  o
+)
 
 (define (table-state model o)
   ((compose
+;;    (PR "flatten-compound")
     flatten-compound
+;;    (PR "agregate-on")
     (aggregate-on norm:on-statement-equal?)
+;;    (PR "prepend-guards")
     (prepend-guards model)
+;;    (PR "switch-norm-event")
     switch-norm-event
+;;    (PR "annotate-otherwise")
     (annotate-otherwise)
+;;    (PR "START")
     ) o))
 
 (define (ast->table-state ast)
