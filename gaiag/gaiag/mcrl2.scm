@@ -1076,7 +1076,10 @@
 	(illegal-or-dillegal o))))
 
 (define-template x:mcrl2-constrained-behaviour identity)
+(define-template x:constraining-with-optionals (lambda (o) (if (ast:optional? o) o "")))
+(define-template x:constraining-without-optionals (lambda (o) (if (ast:optional? o) "" o)))
 (define-template x:mcrl2-optional-unconstrained identity)
+(define-template x:mcrl2-inevitable-unconstrained identity)
 (define-template x:mcrl2-optional-constrained identity)
 (define-template x:mcrl2-run2completion identity)
 (define-template x:mcrl2-implementation identity)

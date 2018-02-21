@@ -2,7 +2,7 @@
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
-;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
+;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;; Copyright © 2014, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -53,6 +53,7 @@
            ast:expression-type
            ast:in?
            ast:in-triggers
+           ast:optional?
            ast:other-direction
            ast:out?
            ast:out-triggers
@@ -284,6 +285,17 @@
 
 (define-method (ast:modeling? (o <trigger>))
   ((compose ast:modeling? .event) o))
+
+(define-method (ast:optional* (o <ast>))
+   (match o
+     (($ <interface>) ((compose ast:optional* .behaviour) o))
+     (($ <component>) '())
+     (($ <behaviour>) (append-map ast:optional* (ast:statement* o)))
+     (($ <guard>) ((compose ast:optional* .statement) o))
+     (($ <on>) (filter (cut eq? 'optional <>) (map .event.name (ast:trigger* o))))
+     ((? (or (is? <declarative-compound>) (is? <compound>))) (append-map ast:optional* (ast:statement* o)))))
+(define-method (ast:optional? (o <interface>))
+ (pair? (ast:optional* o)))
 
 (define-method (ast:typed? (o <event>))
   (let ((type ((compose .type .signature) o)))
