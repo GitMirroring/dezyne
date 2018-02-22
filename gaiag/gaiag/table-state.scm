@@ -134,8 +134,9 @@
          (guards (filter identity
                          (map (lambda (field)
                                 (prepend-guard model variable field o))
-                              fields))))
-    (retain-source-properties o (make <compound> #:elements guards))))
+                              fields)))
+         (compound (retain-source-properties o (make <compound> #:elements guards))))
+    (clone compound #:parent (.parent o))))
 
 (define (prepend-guard model variable field o)
   ;;(stderr "prepend-guard ~a --- ~a --- ~a\n" variable field o)
@@ -149,10 +150,12 @@
                    ('true var)
                    ('false (make <not> #:expression var))))
                 (($ <int>) (make <equal> #:left var #:right (make <literal> #:value field)))
-                (_ (make <field-test> #:variable (.name variable) #:field field)))))
-            (retain-source-properties
-             (salvage-source-location model variable expression field o)
-             (make <guard> #:expression expression #:statement statement))))
+                (_ (make <field-test> #:variable (.name variable) #:field field))))
+             (guard (retain-source-properties
+                     (salvage-source-location model variable expression field o)
+                     (make <guard> #:expression expression #:statement statement))))
+    (clone guard #:parent (.parent o)))
+  )
 
 (define (salvage-source-location model variable expression field o)
   (let* ((expression2 (make <equal> #:left (make <var> #:variable (.name variable)) #:right (make <literal> #:value field)))
@@ -310,26 +313,13 @@
         (norm-event o)
         (table-norm-event o))))
 
-(define ((PR txt) o)
-  (stderr ">>> ~a:\n" txt)
-  (pretty-print (om->list o))
-  (stderr "<<< ~a:\n" txt)
-  o
-)
-
 (define (table-state model o)
   ((compose
-;;    (PR "flatten-compound")
     flatten-compound
-;;    (PR "agregate-on")
     (aggregate-on norm:on-statement-equal?)
-;;    (PR "prepend-guards")
     (prepend-guards model)
-;;    (PR "switch-norm-event")
     switch-norm-event
-;;    (PR "annotate-otherwise")
     (annotate-otherwise)
-;;    (PR "START")
     ) o))
 
 (define (ast->table-state ast)

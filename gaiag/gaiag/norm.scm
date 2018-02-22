@@ -104,6 +104,11 @@
 
 (define* ((aggregate-on #:optional (aggregate? norm:triggers-equal?) model) o)
   "Aggregate ONs with same statement AND (AGGREGATE? a b) into one ON-statement."
+  (let ((ag ((aggregate-on- aggregate? model) o)))
+    (clone ag #:parent (.parent o))))
+
+(define* ((aggregate-on- #:optional (aggregate? norm:triggers-equal?) model) o)
+  "Aggregate ONs with same statement AND (AGGREGATE? a b) into one ON-statement."
   (match o
     ((and ($ <compound>) (= .elements (($ <on>) ..1)))
      (if (=1 (length (.elements o)))
@@ -134,13 +139,13 @@
                      (cons aggregated-on (loop remainder)))))))))
     (($ <functions>) o)
     ((and (? (is? <component>) (= .behaviour behaviour)))
-     (clone o #:behaviour ((aggregate-on aggregate? o) behaviour)))
+     (clone o #:behaviour ((aggregate-on- aggregate? o) behaviour)))
     ((and (? (is? <interface>) (= .behaviour behaviour)))
-     (clone o #:behaviour ((aggregate-on aggregate? o) behaviour)))
+     (clone o #:behaviour ((aggregate-on- aggregate? o) behaviour)))
     ((? (is? <component-model>)) o)
     (($ <skip>) o)
     ((? om:imperative?) o)
-    ((? (is? <ast>)) (tree-map (aggregate-on aggregate? model) o))
+    ((? (is? <ast>)) (tree-map (aggregate-on- aggregate? model) o))
     (_ o)))
 
 (define (norm:on-equal? model a b)

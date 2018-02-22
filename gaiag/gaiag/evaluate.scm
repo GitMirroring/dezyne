@@ -135,7 +135,7 @@
     ('false #f)
     ('true #t)
     ((and ($ <var>) (= .variable.name identifier)) (var-field state identifier))
-    ((and ($ <field-test>) (= .variable.name (? var?)) (= .field field) (= .variable.name identifier))
+    ((and ($ <field-test>) (= .variable (? var?)) (= .field field) (= .variable.name identifier))
      (eq? (.field (var-field state (identifier))) field))
     (($ <enum-literal>) o)
     ((and ($ <not>) (= .expression expr)) (not (eval-expression model state expr)))
@@ -203,13 +203,13 @@
          (#f #f)
          (_ o))))
 
-    ((and ($ <var>) (= .variable.name (? bool-var?)))
+    ((and ($ <var>) (= .variable (? bool-var?)))
      (let ((field (var-field state (.variable o))))
        (match field
          (#f o)
          (_ (eq? field 'true)))))
 
-    ((and ($ <var>) (and (= .variable.name (? int-var?))))
+    ((and ($ <var>) (and (= .variable (? int-var?))))
      (let ((field (var-field state (.variable o))))
        (match field
          (#f o)
@@ -221,8 +221,8 @@
          (#f o)
          (_ (make <enum-literal> #:type (.type (.variable o)) #:field field)))))
 
-    (($ <field-test> (and (? var?) (get! variable)) field)
-     (let ((f (var-field state (variable))))
+    ((and ($ <field-test>) (= .variable (? var?)) (= .variable variable) (= .field field))
+     (let ((f (var-field state variable)))
        (match f
          (#f o)
          (_ (eq? f field)))))
