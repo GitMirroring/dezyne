@@ -7,6 +7,7 @@ r.e
 r.c
 r.c
 r.c
+r.c
 verify: component_queuefull_fail0: check: deadlock: ok
 verify: component_queuefull_fail0: check: compliance: fail
 p.e
@@ -14,4 +15,6 @@ r.e
 r.c
 r.c
 r.c
+r.c
+r.return
 verify: component_queuefull_fail0: check: livelock: ok
