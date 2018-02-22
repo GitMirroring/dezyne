@@ -75,39 +75,42 @@
 
 (define (parse input)
   (define-peg-string-patterns
-    "trace          <-- ((tau / illegal / flush / modeling / event / return / error / anything) newline?)*
-     newline        <   '\n'
-     lpar           <   '('
-     rpar           <   ')'
-     tick           <   [']
-     anything       <-- (! newline .)*
-     direction      <   'in' / 'out'
-     tau            <   'tau'
-     illegal        <   'illegal' / 'dillegal'
-     queue-full     <-  'queue_full'
-     range-error    <-  'range_error'
-     reply-error    <-  'double_reply_error' / 'no_reply_error'
-     flush          <   (identifier tick)+ 'flush'
-     modeling       <   port tick ('inevitable' / 'optional')
-     event          <-- port tick (event-literal / direction) lpar mcrl2-event rpar
-     error          <-- queue-full / range-error / reply-error
-     return         <-- port tick return-literal lpar arguments rpar
-     arguments      <-  mcrl2-event- (comma reply compound-type compound-value)?
-     mcrl2-event    <-  model tick direction tick event-name
-     mcrl2-event-   <   mcrl2-event
-     comma          <   ',' ' '*
-     reply          <   'reply_' identifier tick
-     compound-type  <   (type tick)* type
-     compound-value <-  lpar (scope tick)? (type tick)? (identifier / number) rpar
-     scope          <   identifier
-     model          <   identifier
-     port           <-  identifier
-     type           <-  identifier
-     event-name     <-  identifier
-     identifier     <-- [a-zA-Z_][a-zA-Z0-9_]*
-     number         <-- '-'? [0-9]+
-     event-literal  <   'event'
-     return-literal <   'return' / 'reply_in' / 'reply_out'
+    "trace          <-- ((tau / illegal / flush / modeling / event / return-out / return / error / anything) newline?)*
+     newline         <   '\n'
+     lpar            <   '('
+     rpar            <   ')'
+     tick            <   [']
+     anything        <-- (! newline .)*
+     direction       <   'in' / 'out'
+     tau             <   'tau'
+     illegal         <   'illegal' / 'dillegal'
+     queue-full      <-  'queue_full'
+     range-error     <-  'range_error'
+     reply-error     <-  'double_reply_error' / 'no_reply_error'
+     flush           <   (identifier tick)+ 'flush'
+     modeling        <   port tick ('inevitable' / 'optional')
+     event           <-- port tick (event-literal / direction) lpar mcrl2-event rpar
+     error           <-- queue-full / range-error / reply-error
+     return          <-- port tick return-literal lpar arguments rpar
+     return-out      <   port tick 'reply_out' lpar arguments-out rpar
+     arguments       <-  mcrl2-event- (comma reply compound-type compound-value)?
+     arguments-out   <-  mcrl2-event-out (comma reply compound-type compound-value)?
+     mcrl2-event     <-  model tick direction tick event-name
+     mcrl2-event-    <   mcrl2-event
+     mcrl2-event-out <-  model tick 'out' tick event-name
+     comma           <   ',' ' '*
+     reply           <   'reply_' identifier tick
+     compound-type   <   (type tick)* type
+     compound-value  <-  lpar (scope tick)? (type tick)? (identifier / number) rpar
+     scope           <   identifier
+     model           <   identifier
+     port            <-  identifier
+     type            <-  identifier
+     event-name      <-  identifier
+     identifier      <-- [a-zA-Z_][a-zA-Z0-9_]*
+     number          <-- '-'? [0-9]+
+     event-literal   <   'event'
+     return-literal  <   'return' / 'reply_in' / 'reply_out'
 ")
   (let* ((match (match-pattern trace input))
          (end (peg:end match))

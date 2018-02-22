@@ -347,7 +347,7 @@
            (commands (list
                       ;;(display trace) ;; FIXME
                       (list "echo" trace)
-                      `("seqdiag" "-m" ,model-name "-e" ,message
+                      `("seqdiag" ,(if (eq? assert 'deterministic) "-u" "") "-m" ,model-name "-e" ,message
                         ,@(if interface-trace `("-s" ,interface-trace-file) '())
                         ,file-name)))
            (commands (if (gdzn:command-line:get 'json) commands

@@ -8,7 +8,6 @@ sensor.triggered
 console.detected
 siren.turnon
 siren.return
-sensor.return
 console.disarm
 sensor.disable
 sensor.return
@@ -41,6 +40,7 @@ siren.turnon
 verify: AlarmDeterministicFail: check: deadlock: ok
 verify: AlarmDeterministicFail: check: compliance: fail
 console.arm
+console.deactivated
 verify: AlarmDeterministicFail: check: livelock: ok
 verify: IConsole: check: deadlock: ok
 verify: IConsole: check: livelock: ok
