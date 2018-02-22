@@ -79,6 +79,8 @@ proc
 
      #x:mcrl2-optional-constrained
 
+     #x:mcrl2-inevitable-unconstrained
+
      #x:mcrl2-run2completion
 
      #x:mcrl2-implementation
