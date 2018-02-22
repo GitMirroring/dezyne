@@ -849,6 +849,9 @@
       o))
 
 (define-template x:next-call-context cont-locals 'param-list-grammar <variable>)
+(define-template x:other-variables-in-scope (lambda (o)
+                                              (filter (negate (compose (cut eq? (.id o) <>) .id))
+                                                      (cont-locals o))) 'comma-prefix <variable>)
 (define-template x:init-locals-from-cont cont-locals 'comma-infix <variable>)
 
 (define-template x:call-continuation .continuation)
