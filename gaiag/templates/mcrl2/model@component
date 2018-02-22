@@ -40,6 +40,7 @@ act  #x:interface-action-alphabet
      empty_queue;
      empty_queue_c;
      queue_empty;
+     queue_full;
 
 glob #x:global-interface-reply
 

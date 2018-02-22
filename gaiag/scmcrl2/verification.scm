@@ -338,10 +338,10 @@
          (message (cond
                     ((equal? last "range_error") (format #f "integer range error in model ~a" model-name))
                     ((equal? last "type_error") (format #f "type error in model ~a" model-name))
-                    ((equal? last "queue_full") "queue full")
+                    ((find (cut equal? "queue_full" <>) trace-list) "queue full")
                     (else message)))
-         (trace (if (member last '("range_error" "queue_full" "type_error")) (string-join (drop-right trace-list 1) "\n")
-                    trace)))
+         (trace (if (member last '("range_error" "type_error")) (string-join (drop-right trace-list 1) "\n")
+                    (string-join (take-while (negate (cut equal? "queue_full" <>)) trace-list) "\n"))))
     (let* ((cwd (getcwd))
            (foo (chdir dir))
            (commands (list

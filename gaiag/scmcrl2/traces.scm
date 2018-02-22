@@ -4,7 +4,7 @@
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -75,20 +75,22 @@
 
 (define (parse input)
   (define-peg-string-patterns
-    "trace          <-- ((tau / illegal / range-error / reply-error / flush / modeling / event / return / error) newline?)*
+    "trace          <-- ((tau / illegal / flush / modeling / event / return / error / anything) newline?)*
      newline        <   '\n'
      lpar           <   '('
      rpar           <   ')'
      tick           <   [']
-     error          <-- (! newline .)*
+     anything       <-- (! newline .)*
      direction      <   'in' / 'out'
      tau            <   'tau'
      illegal        <   'illegal' / 'dillegal'
-     range-error    <   'range_error'
-     reply-error    <   'double_reply_error' / 'no_reply_error'
+     queue-full     <-  'queue_full'
+     range-error    <-  'range_error'
+     reply-error    <-  'double_reply_error' / 'no_reply_error'
      flush          <   (identifier tick)+ 'flush'
      modeling       <   port tick ('inevitable' / 'optional')
      event          <-- port tick (event-literal / direction) lpar mcrl2-event rpar
+     error          <-- queue-full / range-error / reply-error
      return         <-- port tick return-literal lpar arguments rpar
      arguments      <-  mcrl2-event- (comma reply compound-type compound-value)?
      mcrl2-event    <-  model tick direction tick event-name
@@ -123,11 +125,12 @@
 
 (define (parse-tree2text tree)
   (match tree
-         (('event ('identifier port) ('identifier event)) (string-append port "." event))
-         (('return ('identifier port) ('identifier "void")) (string-append port ".return"))
-         (('return ('identifier port) ('identifier value)) (string-append port "." value))
-         (('return ('identifier port) ('number value)) (string-append port "." value))
-         (('return ('identifier port) (('identifier type) ('identifier value))) (string-append port "." type "_" value))))
+    (('error error) error)
+    (('event ('identifier port) ('identifier event)) (string-append port "." event))
+    (('return ('identifier port) ('identifier "void")) (string-append port ".return"))
+    (('return ('identifier port) ('identifier value)) (string-append port "." value))
+    (('return ('identifier port) ('number value)) (string-append port "." value))
+    (('return ('identifier port) (('identifier type) ('identifier value))) (string-append port "." type "_" value))))
 
 ;;(format #t "~a" (string-join (map parse-tree2text (pk "FOO:" (parse trace))) "\n"))
 
