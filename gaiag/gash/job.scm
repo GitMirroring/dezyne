@@ -1,6 +1,6 @@
 ;;; Gash --- Guile As SHell
 ;;; Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@gmail.com>
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Gash.
 ;;;
@@ -26,7 +26,15 @@
   :use-module (gash io)
   :use-module (gash util)
 
-  :export (job-control-init jobs report-jobs fg bg new-job job-add-process add-to-process-group wait))
+  :export (job-control-init
+	   jobs report-jobs
+	   new-job
+	   job-add-process
+	   add-to-process-group
+	   wait
+	   fg
+	   bg
+	   setup-process))
 
 (define-record-type <process>
   (make-process pid command status)
@@ -65,7 +73,7 @@
   (string-join (map (compose string-join process-command) (reverse (job-processes job))) " | "))
 
 (define (display-job job)
-  (stdout "[" (job-id job) "] " (status->state (job-status job)) "\t\t"
+  (stdout "[" (job-id job) "] " (map status->state (job-status job)) "\t\t"
           (job-command job)))
 
 (define (jobs)
@@ -74,7 +82,7 @@
        (reverse job-table)))
 
 (define (job-status job)
-  (process-status (last (job-processes job))))
+  (map process-status (job-processes job)))
 
 (define (job-update job pid status)
   (unless (= 0 pid)
@@ -101,7 +109,7 @@
 (define (job-add-process fg? job pid command)
   (let ((pgid (add-to-process-group job pid)))
     (set-job-pgid! job pgid)
-    ;(if fg? (tcsetpgrp (current-error-port) pgid))
+    (when fg? (tcsetpgrp (current-error-port) pgid))
     (set-job-processes! job (cons (make-process pid command #f) (job-processes job)))))
 
 (define (job-control-init)
@@ -115,8 +123,7 @@
            (list SIGINT SIGQUIT SIGTSTP SIGTTIN SIGTTOU))
       (sigaction SIGCHLD SIG_DFL)
       (setpgid pid pid) ;; create new process group for ourself
-      ;(unless (port-closed? (current-error-port)) (tcsetpgrp (current-error-port) pid))
-      )))
+      (tcsetpgrp (current-error-port) pid))))
 
 (define (reap-jobs)
   (set! job-table (filter (disjoin job-running? job-stopped?) job-table)))
@@ -138,16 +145,22 @@
            (status (cdr pid-status)))
       (job-update job pid status)
       (if (job-running? job) (loop))))
-  ;(unless (port-closed? (current-error-port)) (tcsetpgrp (current-error-port) (getpid)))
-  (unless (job-completed? job) (newline) (display-job job))
+  (catch #t
+    (cut tcsetpgrp (current-error-port) (getpid))
+    (lambda args
+      ;;ERROR: In procedure tcsetpgrp: Inappropriate ioctl for device
+      #t))
+  (unless (job-completed? job)
+    (newline) (display-job job))
   (reap-jobs)
-  (job-status job))
+  (last (job-status job)))
 
 (define (fg index)
   (let ((job (job-index index)))
     (cond (job
-           ;(tcsetpgrp (current-error-port) (job-pgid job))
-           (kill (- (job-pgid job)) SIGCONT)
+           (let ((pgid (job-pgid job)))
+	     (tcsetpgrp (current-error-port) pgid)
+	     (kill (- (job-pgid job)) SIGCONT))
            (stdout (job-command job))
            (wait job))
           (#t
@@ -155,5 +168,15 @@
 
 (define (bg index)
   (let ((job (job-index index)))
-    (map (cut set-process-status! <>  #f) (job-processes job))
-    (kill (- (job-pgid job)) SIGCONT)))
+    (cond (job
+	   (map (cut set-process-status! <>  #f) (job-processes job))
+	   (kill (- (job-pgid job)) SIGCONT))
+	  (#t
+	   (stderr "fg: no such job " index)))))
+
+(define (setup-process fg? job)
+  (when (isatty? (current-error-port))
+    (when fg? (tcsetpgrp (current-error-port) (add-to-process-group job (getpid))))
+    (map (cut sigaction <> SIG_DFL)
+         (list SIGINT SIGQUIT SIGTSTP SIGTTIN SIGTTOU SIGCHLD)))
+  (fdes->inport 0) (map fdes->outport '(1 2))) ;; reset stdin/stdout/stderr
