@@ -5,6 +5,10 @@ rp.ib
 verify: compliance_provides_illegal: check: deadlock: ok
 verify: compliance_provides_illegal: check: compliance: fail
 pp.ie
+rp.id
+rp.od
+rp.return
+illegal
 verify: compliance_provides_illegal: check: livelock: ok
 verify: i: check: deadlock: ok
 verify: i: check: livelock: ok

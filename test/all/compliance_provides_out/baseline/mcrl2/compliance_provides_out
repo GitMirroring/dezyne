@@ -3,6 +3,7 @@ verify: compliance_provides_out: check: illegal: ok
 verify: compliance_provides_out: check: deadlock: ok
 verify: compliance_provides_out: check: compliance: fail
 p.hello
+p.planet
 verify: compliance_provides_out: check: livelock: ok
 verify: i: check: deadlock: ok
 verify: i: check: livelock: ok

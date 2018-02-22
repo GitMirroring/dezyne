@@ -293,7 +293,7 @@
      (($ <behaviour>) (append-map ast:optional* (ast:statement* o)))
      (($ <guard>) ((compose ast:optional* .statement) o))
      (($ <on>) (filter (cut eq? 'optional <>) (map .event.name (ast:trigger* o))))
-     ((? (or (is? <declarative-compound>) (is? <compound>))) (append-map ast:optional* (ast:statement* o)))))
+     ((? (disjoin (is? <declarative-compound>) (is? <compound>))) (append-map ast:optional* (ast:statement* o)))))
 (define-method (ast:optional? (o <interface>))
  (pair? (ast:optional* o)))
 

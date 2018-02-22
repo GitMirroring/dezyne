@@ -8,4 +8,6 @@ i.return
 verify: component_deadlock_fail1: check: compliance: fail
 i.e
 i.return
+i.e
+illegal
 verify: component_deadlock_fail1: check: livelock: ok

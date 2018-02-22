@@ -269,9 +269,7 @@
               (let loop ((statements (map (root-add-voidreply model) (ast:statement* o))))
                 (if (null? statements) '()
                     (cons (car statements) (loop (cdr statements)))))))
-         (if (=1 (length statements))
-             (car statements)
-             (clone o #:elements statements))))
+         (clone o #:elements statements)))
       (($ <on>)
        (let* ((valued-triggers? (const (ast:typed? ((compose car ast:trigger*) o))))
               (modeling? (const (is-a? ((compose .event car ast:trigger*) o) <modeling-event>)))
@@ -386,48 +384,24 @@
 (define (om:models o)
   (clone o #:elements (filter (conjoin (is? <model>) om:behaviour?) (.elements o))))
 
-;; Deprecated/not fully functional
-(define (postprocess o)
-  (match o
-    (('scope.name () name) `(name ,name))
-    (('scope.name (scope ...) name) `(name ,@scope ,name))
-    (('void ('scope.name () 'void)) '(type void))
-    (('value value) value)
-    (('signature ('enum name fields) formals) `(signature (type ,(postprocess name)) ,(postprocess formals)))
-    (('trigger port ('event name x ...) formals) `(trigger ,port ,name (arguments)))
-    (('variable name ('enum ename fields) expression) `(variable ,name (type ,(postprocess ename)) ,(postprocess expression)))
-    (('guard ('field ('variable name type expression) value) triggers) `(guard (expression (field ,(postprocess name) ,value)) ,(postprocess triggers)))
-    (('assign ('variable name x ...) expression) `(assign ,name ,(postprocess expression)))
-    (('reply expression port) `(reply ,(postprocess expression) ,port))
-    (('formal name ('enum ename fields) direction) `(formal ,name (type ,(postprocess ename)) ,direction))
-    (('var ('variable name x ...)) `(expression (var ,(postprocess name))))
-    (('action port ('event name x ...) arguments) `(action (trigger ,port ,name (arguments))))
-    (('literal ('enum name fields) field) `(expression (literal ,(postprocess name) ,field)))
-    (('behaviour name types ports variables functions statement) (list 'behaviour name types (postprocess variables) (postprocess functions) (postprocess statement)))
-    ((t ...) (map postprocess o))
-    (_ o)))
-
 (define (root-> root) (root->mcrl2 root))
 
 (define (root->sexp root)
   ((compose
     pretty-print
-    postprocess
     om->list
     ) root))
 
 
 (define (mcrl2:om root) ;; FIXME: already root/om
   ((compose
-;;    (annotate-path '())
-;;    (lambda (o) (pretty-print (om->list o) (current-error-port)) o)
+    ;;    (lambda (o) (pretty-print (om->list o) (current-error-port)) o)
     flatten-compound
     ast-complete-elses
     ast-annotate-illegals
     ast-transform-event-ends
     transform-compounds
     flatten-compound
-    ;;(lambda (o) (pretty-print (om->list o) (current-error-port)) o)
     root-purge-data
     (root-add-voidreply)
     ast-tail-calls
@@ -436,40 +410,7 @@
     norm-state
     code-norm-event
     fix-empty-interface-behaviour
-    ;;(lambda (o) (pretty-print (om->list o) (current-error-port)) o)
     ) root))
-
-;; (define (mcrl2:om ast)
-;;   ((compose-root
-;;     (annotate-path '())
-;;     (lambda (o) ((compose pretty-print om->list) o) o)
-;;     flatten-compound
-;;     ast-complete-elses
-;;     ast-annotate-illegals
-;;     ast-transform-event-ends
-;;     transform-compounds
-;;     flatten-compound
-;;     (root-purge-data)
-;;     (root-add-voidreply)
-;;     ast-tail-calls
-;;     ast-add-skips
-;;     aggregate-guard-g
-;;     (expand-on)
-;;     flatten-compound
-;;     (prepend-true-guard)
-;;     (aggregate-on norm:on-same-port-voidness-statement?)
-;;     (expand-on norm:port-and-voidness-equal?)
-;;     aggregate-guard-g
-;;     flatten-compound
-;;     combine-guards
-;;     passdown-on
-;;     flatten-compound
-;;     (passdown-blocking)
-;;     (remove-otherwise)
-;;     om:models
-;;     ast:resolve
-;;     parse->om
-;;     ) ast))
 
 ;;(use-modules (statprof))
 (define (root->mcrl2 root)

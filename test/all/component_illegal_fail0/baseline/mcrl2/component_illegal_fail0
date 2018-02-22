@@ -5,7 +5,11 @@ verify: component_illegal_fail0: check: illegal: fail
 i.e
 ii.e
 ii.return
+illegal
 verify: component_illegal_fail0: check: deadlock: ok
 verify: component_illegal_fail0: check: compliance: fail
 i.e
+ii.e
+ii.return
+illegal
 verify: component_illegal_fail0: check: livelock: ok

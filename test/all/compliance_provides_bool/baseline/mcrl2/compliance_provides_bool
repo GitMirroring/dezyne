@@ -3,6 +3,7 @@ verify: compliance_provides_bool: check: illegal: ok
 verify: compliance_provides_bool: check: deadlock: ok
 verify: compliance_provides_bool: check: compliance: fail
 p.hello
+p.false
 verify: compliance_provides_bool: check: livelock: ok
 verify: ibool: check: deadlock: ok
 verify: ibool: check: livelock: ok
