@@ -40,7 +40,7 @@ src.return
 src.done
 verify: QTriggerModeling: check: deadlock: ok
 verify: QTriggerModeling: check: compliance: fail
-ict.start
+itt.start
 src.req
 src.ntfA
 src.ntfB
@@ -51,8 +51,7 @@ src.ack
 src.return
 src.done
 src.return
-ict.return
-ict.start
+itt.start
 src.reqValued
 src.ntfA
 src.ntfB
@@ -63,8 +62,7 @@ src.ack
 src.return
 src.done
 src.return
-ict.return
-ict.start
+itt.start
 src.req
 src.ntfA
 src.ntfB

@@ -22,11 +22,6 @@ pp.ca
 rp.ca
 rp.return
 pp.return
-rp.oa
 pp.ca
 rp.ca
-rp.return
-pp.return
-rp.ob
-pp.ob
 verify: MultipleOutEventsOnSingleTau: check: livelock: ok

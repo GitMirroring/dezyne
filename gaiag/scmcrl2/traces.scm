@@ -4,10 +4,8 @@
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
-;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
