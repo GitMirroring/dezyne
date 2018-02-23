@@ -1,1 +1,1 @@
-{"model":"inner.space","known":["table"]}
+{"model":"inner.space","known":["mcrl2","traces","table"], "comment":"multiple provides not supported"}
