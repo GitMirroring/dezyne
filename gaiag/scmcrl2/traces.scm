@@ -1,10 +1,13 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -102,14 +105,15 @@
      reply           <   'reply_' identifier tick
      compound-type   <   (type tick)* type
      compound-value  <-  lpar (scope tick)? (type tick)? (identifier / number) rpar
-     scope           <   identifier
+     scope           <   global / identifier
      model           <   identifier
      port            <-  identifier
-     type            <-  identifier
+     type            <-  global / identifier
      event-name      <-  identifier
      identifier      <-- [a-zA-Z_][a-zA-Z0-9_]*
      number          <-- '-'? [0-9]+
      event-literal   <   'event'
+     global          <   'global' tick
      return-literal  <   'return' / 'reply_in' / 'reply_out'
 ")
   (let* ((match (match-pattern trace input))
