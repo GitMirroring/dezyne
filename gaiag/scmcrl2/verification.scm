@@ -405,8 +405,10 @@
 (define (check-livelock string dir file-name model-type model-name verbose?)
   (let ((match? (regexp-exec (make-regexp "Trace to the divergencing state is saved to '([^'\n]*)") string))
         (assert 'livelock))
-    (if match? (let ((trace (mcrl2-trace-file->dzn-trace (match:substring match? 1)))
-                     (message #f))
+    (if match? (let* ((file (match:substring match? 1))
+                      (trace (mcrl2-trace-file->dzn-trace file))
+                      (trace (string-append trace "\n" (mcrl2-trace-file->dzn-trace (string-replace file "loop0.trc" (string-contains file "0.trc")))))
+                      (message #f))
                  (assert-fail dir file-name model-type model-name assert trace message #f))
         (assert-ok model-type model-name assert verbose?))))
 
