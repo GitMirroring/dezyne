@@ -1,2 +1,2 @@
-out/component_queuefull_fail0/component_queuefull_fail0.dzn:14:3:i22: illegal
-out/component_queuefull_fail0/component_queuefull_fail0.dzn:6:13:i24: p.c not performed by component
+out/component_queuefull_fail0/component_queuefull_fail0.dzn:14:3:i25: queue full
+out/component_queuefull_fail0/component_queuefull_fail0.dzn:6:13:i33: p.c not performed by component

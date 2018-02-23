@@ -7,5 +7,5 @@ verify: implicit_illegal_requires2: check: illegal: fail
 r.e
 verify: implicit_illegal_requires2: check: deadlock: ok
 verify: implicit_illegal_requires2: check: compliance: fail
-p.f
+r.e
 verify: implicit_illegal_requires2: check: livelock: ok
