@@ -31,12 +31,12 @@ DONE
 * IReplyStatementDoesNotMatchReturnType, ReplyStatementDoesNotMatchReturnType: mcrl2 parse error (wrong reply type)
 * emptyBehaviour - compliance failure not found
 * queue_full: done
+* AlarmDeterministicFail: done
+* verify normalization empty compound when purging data: done
+* cat repitition for livelock: done
 
 TODO
-* AlarmDeterministicFail:
 * namespace_assert
-* verify normalization empty compound when purging data
-* cat repitition for livelock
 * ReplyTwo wrong stderr output from simulator
 * inner_space: dillegals/namespace?
 * implicit_illegal_requires - implicit illegal in empty behaviour missing

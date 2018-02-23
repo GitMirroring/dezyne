@@ -39,8 +39,23 @@ motorControl.start
 motorControl.return
 limitSw.doorOpening
 limitSw.return
-motorControl.driveFault
+switchPress.switchPressed
+timer.CreateTimerMSec
+timer.return
 motorControl.stop
+motorControl.return
+limitSw.doorStopped
+limitSw.return
+timer.Timeout
+motorControl.setOpen
+motorControl.return
+motorControl.start
+motorControl.return
+limitSw.doorClosing
+limitSw.return
+limitSw.doorClosed
+motorControl.stop
+motorControl.return
 verify: GarageDoorControlErr: check: compliance: fail
 doorControl.initialise
 limitSw.initialise
@@ -59,8 +74,7 @@ motorControl.start
 motorControl.return
 limitSw.doorOpening
 limitSw.return
-motorControl.driveFault
-motorControl.stop
+motorControl.powerWarning
 verify: GarageDoorControlErr: check: livelock: ok
 verify: ITimer: check: deadlock: ok
 verify: ITimer: check: livelock: ok
