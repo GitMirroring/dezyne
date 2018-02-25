@@ -103,7 +103,7 @@
 (define (add-to-process-group job pid)
   (let* ((pgid (job-pgid job))
          (pgid (or pgid pid)))
-    (setpgid pid pgid)
+    (catch #t (cut setpgid pid pgid) (lambda _ #t)) ;; FIXME: spawn node
     pgid))
 
 (define (job-add-process fg? job pid command)
@@ -122,7 +122,7 @@
       (map (cut sigaction <> SIG_IGN)
            (list SIGINT SIGQUIT SIGTSTP SIGTTIN SIGTTOU))
       (sigaction SIGCHLD SIG_DFL)
-      (setpgid pid pid) ;; create new process group for ourself
+      (catch #t (cut setpgid pid pid) (lambda _ #t)) ;; create new process group for ourself  ;; FIXME: spawn node
       (tcsetpgrp (current-error-port) pid))))
 
 (define (reap-jobs)
