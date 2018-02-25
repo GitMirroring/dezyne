@@ -145,11 +145,7 @@
            (status (cdr pid-status)))
       (job-update job pid status)
       (if (job-running? job) (loop))))
-  (catch #t
-    (cut tcsetpgrp (current-error-port) (getpid))
-    (lambda args
-      ;;ERROR: In procedure tcsetpgrp: Inappropriate ioctl for device
-      #t))
+  (when (isatty? (getpid)) (tcsetpgrp (current-error-port) (getpid)))
   (unless (job-completed? job)
     (newline) (display-job job))
   (reap-jobs)
