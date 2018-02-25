@@ -52,7 +52,8 @@
   #:use-module (gash pipe)
   #:use-module (json)
 
-  #:export (mcrl2:verify
+  #:export (mcrl2:init
+            mcrl2:verify
             verify:scope-name))
 
 (define (verify:scope-name o)
