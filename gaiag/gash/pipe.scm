@@ -1,5 +1,6 @@
 ;;; Gash --- Guile As SHell
 ;;; Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@gmail.com>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Gash.
@@ -42,64 +43,6 @@
   (catch #t (lambda () (apply execlp (cons (car command) command)))
     (lambda (key . args) (format (current-error-port) "~a\n" (caaddr args))
             (exit #f))))
-
-(define (spawn-source fg? job command)
-  (receive (r w) (pipe*)
-    (let ((pid (primitive-fork)))
-      (cond ((= 0 pid)
-	     (close r)
-	     (setup-process fg? job)
-	     (move->fdes w 1)
-             (if (procedure? command)
-		 (begin
-		   (close-port (current-output-port))
-		   (set-current-output-port w)
-		   (command)
-		   (exit 0))
-		 (exec* command)))
-            (#t
-             (job-add-process fg? job pid command)
-             (close w)
-             r)))))
-
-(define (spawn-filter fg? job src command)
-  (receive (r w) (pipe*)
-    (let ((pid (primitive-fork)))
-      (cond ((= 0 pid)
-             (setup-process fg? job)
-             (if src (move->fdes src 0))
-             (close r)
-             (move->fdes w 1)
-	     (if (procedure? command)
-		 (begin
-		   (close-port (current-input-port))
-		   (close-port (current-output-port))
-		   (set-current-input-port src)
-		   (set-current-output-port w)
-		   (command)
-		   (exit 0))
-		 (exec* command)))
-            (#t
-             (job-add-process fg? job pid command)
-             (close w)
-             r)))))
-
-(define (spawn-sink fg? job src command)
-  (let ((pid (primitive-fork)))
-    (cond ((= 0 pid)
-           (setup-process fg? job)
-           (if src (move->fdes src 0))
-	   (if (procedure? command)
-	       (begin
-		   (close-port (current-input-port))
-		   (set-current-input-port src)
-		   (command)
-		   (exit 0))
-	       (exec* command)))
-          (#t
-           (job-add-process fg? job pid command)
-           (and src (close src))))))
-
 
 (define* (spawn fg? job command #:optional (input '()) (output 0))
   ;;(format #t "spawn: ~a ~a\n" (length input) output)
@@ -153,6 +96,13 @@
 (define (pipeline fg? . commands)
   (apply pipeline+ (cons* fg? #f commands)))
 
+(define (pipeline->string . commands)
+  (receive (job ports)
+      (apply pipeline+ (cons* #f 1 commands))
+    (let ((output (read-string (car ports))))
+      (wait job)
+      output)))
+
 ;;(pipeline #f '("head" "-c128" "/dev/urandom") '("tr" "-dc" "A-Z0-9") (lambda () (display (read-string))))
 ;;(pipeline #f '("head" "-c128" "/dev/urandom") '("tr" "-dc" "A-Z0-9") '("cat"))
 ;;(pipeline #f (lambda () (display 'foo)) '("grep" "o") '("tr" "o" "e"))
@@ -172,21 +122,6 @@
 ;; 	      '("cat"))
 ;;   (display (read-string (car ports))))
 
-
-(define (pipeline->string . commands)
-  (let* ((fg? #f)
-         (job (new-job))
-         (output (read-string
-                  (if (> (length commands) 1)
-                      (let loop ((src (spawn-source fg? job (car commands)))
-                                 (commands (cdr commands)))
-                        (if (null? (cdr commands))
-                            (spawn-filter fg? job src (car commands))
-                            (loop (spawn-filter fg? job src (car commands))
-                                  (cdr commands))))
-                      (spawn-filter fg? job #f (car commands))))))
-    (wait job)
-    output))
 
 ;; _
 ;;  \
