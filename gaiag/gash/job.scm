@@ -102,14 +102,13 @@
     (every (cut member <> '(Done Terminated)) state)))
 
 (define (add-to-process-group job pid)
-  (let* ((pgid (job-pgid job))
-         (pgid (or pgid pid)))
+  (let ((pgid (or (job-pgid job) pid)))
+    (set-job-pgid! job pgid)
     (setpgid pid pgid)
     pgid))
 
 (define (job-add-process fg? job pid command)
   (let ((pgid (add-to-process-group job pid)))
-    (set-job-pgid! job pgid)
     (when fg? (tcsetpgrp (current-error-port) pgid))
     (set-job-processes! job (cons (make-process pid command #f) (job-processes job)))))
 
