@@ -8,3 +8,5 @@ verify: component_livelock_fail2: check: deadlock: ok
 verify: component_livelock_fail2: check: compliance: ok
 verify: component_livelock_fail2: check: livelock: fail
 iter.map
+list.next
+list.true
