@@ -27,15 +27,16 @@
   :use-module (gash io)
   :use-module (gash util)
 
-  :export (job-control-init
-	   jobs report-jobs
-	   new-job
-	   job-add-process
-	   add-to-process-group
-	   wait
+  :export (bg
 	   fg
-	   bg
-	   setup-process))
+	   job-add-process
+           job-control-init
+           job-debug-id
+           job-setup-process
+	   jobs
+	   new-job
+           report-jobs
+           wait))
 
 (define-record-type <process>
   (make-process pid command status)
@@ -45,14 +46,21 @@
   (status process-status set-process-status!))
 
 (define-record-type <job>
-  (make-job id pgid processes)
+  (make-job id pgid processes debug-id)
   job?
   (id job-id)
   (pgid job-pgid set-job-pgid!)
-  (processes job-processes set-job-processes!))
+  (processes job-processes set-job-processes!)
+  (debug-id job-debug-id))
+
+(define debug-id
+  (let ((id -1))
+    (lambda ()
+      (set! id (1+ id))
+      (number->string id))))
 
 (define (new-job)
-  (let ((job (make-job (+ 1 (length job-table)) #f '())))
+  (let ((job (make-job (+ 1 (length job-table)) #f '() (debug-id))))
     (set! job-table (cons job job-table))
     job))
 
@@ -112,6 +120,13 @@
     (when fg? (tcsetpgrp (current-error-port) pgid))
     (set-job-processes! job (cons (make-process pid command #f) (job-processes job)))))
 
+(define (job-setup-process fg? job)
+  (when (isatty? (current-error-port))
+    (when fg? (tcsetpgrp (current-error-port) (add-to-process-group job (getpid))))
+    (map (cut sigaction <> SIG_DFL)
+         (list SIGINT SIGQUIT SIGTSTP SIGTTIN SIGTTOU SIGCHLD)))
+  (fdes->inport 0) (map fdes->outport '(1 2))) ;; reset stdin/stdout/stderr
+
 (define (job-control-init)
   (let* ((interactive? (isatty? (current-error-port)))
          (pgid (getpgrp))
@@ -168,10 +183,3 @@
 	   (kill (- (job-pgid job)) SIGCONT))
 	  (#t
 	   (stderr "fg: no such job " index)))))
-
-(define (setup-process fg? job)
-  (when (isatty? (current-error-port))
-    (when fg? (tcsetpgrp (current-error-port) (add-to-process-group job (getpid))))
-    (map (cut sigaction <> SIG_DFL)
-         (list SIGINT SIGQUIT SIGTSTP SIGTTIN SIGTTOU SIGCHLD)))
-  (fdes->inport 0) (map fdes->outport '(1 2))) ;; reset stdin/stdout/stderr

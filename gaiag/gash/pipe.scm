@@ -58,7 +58,7 @@
 	 (w (map cdr pipes))
 	 (pid (primitive-fork)))
       (cond ((= 0 pid)
-	     (setup-process fg? job)
+	     (job-setup-process fg? job)
 	     (map close r)
 	     (map move->fdes w ofd)
 	     (map move->fdes input ifd)
@@ -71,7 +71,7 @@
 		     (close-port (current-output-port))
 		     (set-current-output-port (car w)))
 		   (command)
-		   (exit 0))
+		   (primitive-exit 0))
 		 (exec* command)))
             (#t
              (job-add-process fg? job pid command)
@@ -80,14 +80,22 @@
 
 (define (pipeline+ fg? open . commands)
   (let* ((job (new-job))
+         (id (job-debug-id job))
+         (commands (reverse
+                    (fold (lambda (command lst)
+                            (if (pair? lst)
+                                (cons* command `("tee" ,(string-append id "." (number->string (quotient (length lst) 2)))) lst)
+                                (cons command lst)))
+                          '()  commands)))
+         (foo (with-output-to-file id (cut format #t "COMMANDS: ~s\n" commands)))
 	 (ports (if (> (length commands) 1)
-		   (let loop ((input (spawn fg? job (car commands) '() 1)) ;; spawn-source
-			      (commands (cdr commands)))
-		     (if (null? (cdr commands))
-			 (spawn fg? job (car commands) input (or open 0)) ;; spawn-sink
-			 (loop (spawn fg? job (car commands) input 1) ;; spawn-filter
-			       (cdr commands))))
-		   (spawn fg? job (car commands) '() open))))
+                    (let loop ((input (spawn fg? job (car commands) '() 1)) ;; spawn-source
+                               (commands (cdr commands)))
+                      (if (null? (cdr commands))
+                          (spawn fg? job (car commands) input (or open 0)) ;; spawn-sink
+                          (loop (spawn fg? job (car commands) input 1) ;; spawn-filter
+                                (cdr commands))))
+                    (spawn fg? job (car commands) '() open))))
     (if fg? (wait job) (values job ports))))
 
 (define (pipeline fg? . commands)
