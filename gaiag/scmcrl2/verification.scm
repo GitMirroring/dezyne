@@ -281,20 +281,10 @@
                      ("mcrl22lps" "--quiet" "-b")
                      ("lpsconstelm" "--quiet" "-st")
                      ("lpsparelm")
-                     ;; if OUTFILE is not supplied, the LTS is not stored
-                     ;; ("lps2lts" "--cached" "--out=aut")
-                     ;; outfile /dev/stdout does not work
-                     ;; ("lps2lts" "--cached" "--out=aut" "/dev/stdin" "/dev/stdout")
-                     ("lps2lts" "--cached" "--out=aut" "/dev/stdin" "provided")
-                     ;;("sed" "-e" "s/\"illegal\"/\"dillegal\"/g")
-                     ;;("ltsconvert" "-edpbranching-bisim" "--in=aut" "--out=aut" "/dev/stdin" "/dev/stdout")
-                     ))
-         (result (apply pipeline->string commands))
-         (commands `(("cat" "provided")
+                     ("lps2lts" "--cached" "--out=lts")
+                     ("ltsconvert" "-edpbranching-bisim" "--in=lts" "--out=aut")
                      ("sed" "-e" "s/\"illegal\"/\"dillegal\"/g")
-                     ;; writing to stdout does not work
-                     ;; ("ltsconvert" "-edpbranching-bisim" "--in=aut" "--out=aut" "/dev/stdin" "/dev/stdout")
-                     ("ltsconvert" "-edpbranching-bisim" "--in=aut" "--out=aut" "/dev/stdin" "provided")))
+                     ("bash" "-c" "cat > provided"))) ;; FIXME
          (result (apply pipeline->string commands))
          (taus (find-taus model model-name (compliance-hidden-actions)))
          (commands `(("echo" "-e" ,(string-drop-right (string-drop (mcrl2:init ast 'component-init@ast) 1) 1))
@@ -302,17 +292,8 @@
                      ("mcrl22lps" "--quiet" "-b")
                      ("lpsconstelm" "--quiet" "-st")
                      ("lpsparelm")
-                     ;; writing to stdout does not work
-                     ;; ("lps2lts" "--cached" "--out=aut" "/dev/stdin" "/dev/stdout")
-                     ("lps2lts" "--cached" "--out=aut" "/dev/stdin" "component")
-                     ;;("ltsconvert" "-edpbranching-bisim" "--in=aut" "--out=aut" "/dev/stdin" "/dev/stdout")
-                     ;;("ltscompare" "-v" "-c" "-pweak-failures" ,(string-append "--tau=" taus) "--in1=aut" "--in2-aut "provided")
-                     ;;("cat" "counter_example_weak_failures_refinement.trc") ;; FIXME
-                     ))
-         (result (apply pipeline->string commands))
-         (commands `(("cat" "component")
-                     ("ltsconvert" "-edpbranching-bisim" "--in=aut" "--out=aut" "/dev/stdin" "/dev/stdout")
-                     ;; ltscompare cannot write trace to stdout
+                     ("lps2lts" "--cached" "--out=lts")
+                     ("ltsconvert" "-edpbranching-bisim" "--in=lts" "--out=aut")
                      ("ltscompare" "-v" "-c" "-pweak-failures" ,(string-append "--tau=" taus) "--in1=aut" "--in2=aut" "/dev/stdin" "provided"))))
     (receive (trace error)
         (receive (job ports)
