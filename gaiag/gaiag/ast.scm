@@ -53,6 +53,7 @@
            ast:expression-type
            ast:in?
            ast:in-triggers
+           ast:imported?
            ast:optional?
            ast:other-direction
            ast:out?
@@ -312,6 +313,9 @@
 
 (define-method (ast:path (o <ast>))
   (unfold (negate identity) identity .parent o))
+
+(define-method (ast:imported? (o <ast>))
+  (assoc-ref (source-properties o) 'imported?))
 
 (define (ast-> ast)
   ((compose

@@ -72,7 +72,7 @@
      (let ((name (and (and=> (gdzn:command-line:get 'model #f) string->symbol))))
        (or (and-let* ((models (.elements o))
                       ((pair? models))
-                      (models (null-is-#f (filter (negate om:imported?) models)))
+                      (models (null-is-#f (filter (negate ast:imported?) models)))
                       (models (null-is-#f (if name (and=> (find (om:named name) models) list) models))))
                      (clone o #:elements (map (table table-statement) models))))))
     (($ <interface>)

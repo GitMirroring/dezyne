@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -41,6 +42,7 @@ component hellobool
     on h.hello():
       {
         bool b = w.world();
+        if (b == true) b = true;
         reply (b);
       }
   }
