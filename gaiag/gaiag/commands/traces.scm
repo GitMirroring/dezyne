@@ -141,7 +141,7 @@ errors."
          (interface (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <interface>) (.elements root))))
          (root (if component root interface))
          (init (if component 'component-init@ast 'interface-lts-init@ast))
-         (commands `(("echo" "-e" ,(string-drop-right (string-drop (mcrl2:init root init) 1) 1))
+         (commands `(,(cut display (mcrl2:init root init))
                      ("cat" "-" "verify.mcrl2")
                      ("tee" "0")
                      ("mcrl22lps" "--quiet" "-b")
