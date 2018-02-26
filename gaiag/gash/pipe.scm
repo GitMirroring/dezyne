@@ -53,9 +53,6 @@
 	       ((= count 0) '())
 	       ((= count 1) '(0))
 	       ((#t (cons 0 (iota (1- count) start))))))
-	 (ifd (if (pair? input) (cons 0 ifd) ifd))
-	 ;;(foo (format #t "ifd: ~a\n" ifd))
-	 ;;(foo (format #t "ofd: ~a\n" ofd))
 	 (pipes (map (lambda (. _) (pipe)) ofd))
 	 (r (map car pipes))
 	 (w (map cdr pipes))
@@ -90,7 +87,7 @@
 			 (spawn fg? job (car commands) input (or open 0)) ;; spawn-sink
 			 (loop (spawn fg? job (car commands) input 1) ;; spawn-filter
 			       (cdr commands))))
-		   (spawn fg? job (car commands) `((current-input-port))))))
+		   (spawn fg? job (car commands) '() open))))
     (if fg? (wait job) (values job ports))))
 
 (define (pipeline fg? . commands)
