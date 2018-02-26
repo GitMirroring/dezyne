@@ -1,5 +1,6 @@
 ;;; Gash --- Guile As SHell
 ;;; Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@gmail.com>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Gash.
@@ -103,7 +104,7 @@
 (define (add-to-process-group job pid)
   (let* ((pgid (job-pgid job))
          (pgid (or pgid pid)))
-    (catch #t (cut setpgid pid pgid) (lambda _ #t)) ;; FIXME: spawn node
+    (setpgid pid pgid)
     pgid))
 
 (define (job-add-process fg? job pid command)
@@ -122,7 +123,7 @@
       (map (cut sigaction <> SIG_IGN)
            (list SIGINT SIGQUIT SIGTSTP SIGTTIN SIGTTOU))
       (sigaction SIGCHLD SIG_DFL)
-      (catch #t (cut setpgid pid pid) (lambda _ #t)) ;; create new process group for ourself  ;; FIXME: spawn node
+      (setpgid pid pid) ;; create new process group for ourself
       (tcsetpgrp (current-error-port) pid))))
 
 (define (reap-jobs)
@@ -145,7 +146,6 @@
            (status (cdr pid-status)))
       (job-update job pid status)
       (if (job-running? job) (loop))))
-  (when (isatty? (getpid)) (tcsetpgrp (current-error-port) (getpid)))
   (unless (job-completed? job)
     (newline) (display-job job))
   (reap-jobs)
