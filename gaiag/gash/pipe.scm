@@ -79,15 +79,17 @@
              r))))
 
 (define (pipeline+ fg? open . commands)
-  (let* ((job (new-job))
-         (id (job-debug-id job))
-         (commands (reverse
-                    (fold (lambda (command lst)
-                            (if (pair? lst)
-                                (cons* command `("tee" ,(string-append id "." (number->string (quotient (length lst) 2)))) lst)
-                                (cons command lst)))
-                          '()  commands)))
-         (foo (with-output-to-file id (cut format #t "COMMANDS: ~s\n" commands)))
+  (let* ((debug? #f)
+         (job (new-job))
+         (debug-id (job-debug-id job))
+         (commands
+          (if (not debug?) commands
+              (fold-right (lambda (command id lst)
+                            (let ((file (string-append debug-id "." id)))
+                              (if (null? lst) (list command)
+                                  (cons* command `("tee" ,file) lst))))
+                          '() commands (map number->string (iota (length commands))))))
+         (foo (when debug? (with-output-to-file debug-id (cut format #t "COMMANDS: ~s\n" commands))))
 	 (ports (if (> (length commands) 1)
                     (let loop ((input (spawn fg? job (car commands) '() 1)) ;; spawn-source
                                (commands (cdr commands)))
@@ -96,7 +98,8 @@
                           (loop (spawn fg? job (car commands) input 1) ;; spawn-filter
                                 (cdr commands))))
                     (spawn fg? job (car commands) '() open))))
-    (if fg? (wait job) (values job ports))))
+    (when fg? (wait job))
+    (values job ports)))
 
 (define (pipeline fg? . commands)
   (apply pipeline+ (cons* fg? #f commands)))
@@ -120,13 +123,12 @@
 ;; 	  (lambda () (display (read-string))))
 
 ;; (receive (job ports)
-;;     (pipeline+ #f #t
+;;     (pipeline+ #f 1
 ;; 	      (lambda () (display "\nbin\nboot\nroot\nusr\nvar"))
 ;; 	      '("tr" "u" "a")
 ;; 	      (lambda () (display (string-map (lambda (c) (if (eq? c #\o) #\e c)) (read-string))))
 ;; 	      '("cat"))
 ;;   (display (read-string (car ports))))
-
 
 ;; _
 ;;  \

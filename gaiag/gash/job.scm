@@ -110,9 +110,12 @@
     (every (cut member <> '(Done Terminated)) state)))
 
 (define (add-to-process-group job pid)
-  (let ((pgid (or (job-pgid job) pid)))
+  (let* ((interactive? (isatty? (current-error-port)))
+         (pgid (if interactive?
+                   (or (job-pgid job) pid)
+                   (getpgrp))))
     (set-job-pgid! job pgid)
-    (setpgid pid pgid)
+    (when interactive? (setpgid pid pgid))
     pgid))
 
 (define (job-add-process fg? job pid command)
@@ -128,15 +131,13 @@
   (fdes->inport 0) (map fdes->outport '(1 2))) ;; reset stdin/stdout/stderr
 
 (define (job-control-init)
-  (let* ((interactive? (isatty? (current-error-port)))
-         (pgid (getpgrp))
-         (pid (getpid)))
-    (when interactive?
+  (when (isatty? (current-error-port))
+    (let ((pgid (getpgrp)))
       (while (not (eqv? (tcgetpgrp (current-error-port)) pgid))
-        (kill (- pgid) SIGTTIN)) ;; oops we are not in the foreground
-      (map (cut sigaction <> SIG_IGN)
-           (list SIGINT SIGQUIT SIGTSTP SIGTTIN SIGTTOU))
-      (sigaction SIGCHLD SIG_DFL)
+        (kill (- pgid) SIGTTIN))) ;; oops we are not in the foreground
+    (map (cut sigaction <> SIG_IGN) (list SIGINT SIGQUIT SIGTSTP SIGTTIN SIGTTOU))
+    (sigaction SIGCHLD SIG_DFL)
+    (let ((pid (getpid)))
       (setpgid pid pid) ;; create new process group for ourself
       (tcsetpgrp (current-error-port) pid))))
 
@@ -154,12 +155,13 @@
         (reap-jobs)))))
 
 (define (wait job)
-  (let loop ()
-    (let* ((pid-status (waitpid (- (job-pgid job)) WUNTRACED))
-           (pid (car pid-status))
-           (status (cdr pid-status)))
-      (job-update job pid status)
-      (if (job-running? job) (loop))))
+  (when (job-running? job)
+    (let loop ()
+      (let* ((pid-status (waitpid (- (job-pgid job)) WUNTRACED))
+             (pid (car pid-status))
+             (status (cdr pid-status)))
+        (job-update job pid status)
+        (if (job-running? job) (loop)))))
   (unless (job-completed? job)
     (newline) (display-job job))
   (reap-jobs)
