@@ -103,7 +103,7 @@
     ((and ($ <field-test>) (= .field (or 'true 'false)) (= .field bool)) bool)
     ((and ($ <field-test>) (= .variable var) (= .field field))
      (let* ((enum ((om:type model) var)))
-       (make <enum-literal> #:type enum #:field field)))
+       (make <enum-literal> #:type.name (.name enum) #:field field)))
     ((and ($ <equal>) (= .left ($ <var>)) (= .right (and ($ <literal>) (= .value val)))) val)
     (_ o )))
 

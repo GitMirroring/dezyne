@@ -227,7 +227,7 @@
      (let ((field (var-field state (.variable.name o))))
        (match field
          (#f o)
-         (_ (make <enum-literal> #:type (.type (.variable o)) #:field field)))))
+         (_ (make <enum-literal> #:type.name (.type.name (.variable o)) #:field field)))))
 
     ((and ($ <field-test>) (= .variable (? var?)) (= .variable variable) (= .field field))
      (let ((f (var-field state variable)))

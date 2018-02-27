@@ -450,7 +450,7 @@
 
   (define (formal-binding->formal o)
     (match o
-      (($ <formal-binding>) (make <formal> #:name (.name o) #:type (.type o) #:direction (.direction o)))
+      (($ <formal-binding>) (make <formal> #:name (.name o) #:type.name (.type.name o) #:direction (.direction o)))
       (_ o)))
 
   (define ((passdown-formal-bindings formal-bindings) o)

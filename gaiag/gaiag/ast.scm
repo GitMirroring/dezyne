@@ -133,6 +133,9 @@
 (define-method (ast:trigger* (o <on>)) ((compose ast:trigger* .triggers) o))
 (define-method (ast:type* (o <interface>)) ((compose ast:type* .types) o))
 (define-method (ast:type* (o <behaviour>)) ((compose ast:type* .types) o))
+(define-method (ast:variable* (o <behaviour>)) ((compose ast:variable* .variables) o))
+(define-method (ast:variable* (o <model>)) ((compose ast:variable* .behaviour) o))
+(define-method (ast:type* (o <root>)) (filter (is? <type>) (ast:global* o)))
 
 (define-method (ast:expression-type (o <ast>))
   (match o

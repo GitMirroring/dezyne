@@ -52,6 +52,7 @@
 
            .function
            .variable
+           ;; .type FIXME: name <port>'s .type to .interface
 
            resolve:component
            resolve:event
@@ -61,12 +62,20 @@
            resolve:variable
            ))
 
+(define-method (add-constants (o <root>))
+  (let* ((tvoid (make <void>))
+         (tbool (make <bool>))
+         (o (clone o #:elements (cons tvoid (cons tbool (.elements o))))))
+    o)
+  )
+
 (define (ast:resolve o)
-  (match o
-    (($ <root>) (resolve-root o))
-    (($ <call>) (resolve o))
-    ((? (is? <model>)) (resolve o))
-    (_  o)))
+  (let ((o (add-constants o)))
+    (match o
+      (($ <root>) (resolve-root o))
+      (($ <call>) (resolve o))
+      ((? (is? <model>)) (resolve o))
+      (_  o))))
 
 (define (resolve-error o symbol message)
   (make <error> #:ast o #:message (format #f message symbol)))
@@ -125,6 +134,7 @@
         (else (exit 1))))
 
 (define (resolve o)
+  ;;(stderr "resolve ~a\n\n" o)
   (match o
     (($ <type>) (resolve- o))
     ((? (is? <type>)) o)
@@ -137,11 +147,6 @@
     (($ <enum>) (->symbol (.name o)))
     (($ <scope.name>) ((->symbol-join '.) (om:scope+name o)))
     (_ o)))
-
-(define* (resolve:types root #:optional (model #f))
-  (append
-   (om:types model) ;; FIXME: deprecated
-   (resolve:globals root)))
 
 (define (resolve:event o trigger)
   (match (cons o trigger)
@@ -204,28 +209,6 @@
     (($ <root>) (om:find (is? <interface>) o))
     ((h t ...) (find (is? <interface>) o))))
 
-(define ((resolve:type-of model) o)
-  (match o
-    (($ <variable>) ((resolve:type model) (.type o)))
-    (($ <formal>) ((resolve:type model) (.type o)))))
-
-(define ((resolve:type model) o)
-  (match o
-    ((? symbol?) (find (resolve:named (make <scope.name> #:scope (om:scope+name model) #:name o)) (resolve:types (parent <root> o) model)))
-
-    (($ <bool>) o)
-    (($ <enum>) o)
-    (($ <data>) o)
-    (($ <extern>) o)
-    (($ <void>) o)
-    (($ <int>) o)
-
-    (($ <scope.name>)
-     (or (find (resolve:named o) (resolve:types (parent <root> o) model))
-         (find (resolve:scoped (om:scope+name model) o) (resolve:types (parent <root> o)))))
-    ((and ($ <type>) (= .name name))
-     ((resolve:type model) name))))
-
 (define ((resolve:named name) ast)
   (match name
     ((? symbol?) (or (eq? name (.name ast)) ((resolve:named (make <scope.name> #:name name)) ast)))
@@ -235,18 +218,36 @@
   (if (null? (om:scope name)) (eq? (om:name ast) (om:name name))
       (equal? (append scope (om:scope+name ast)) (om:scope+name name))))
 
-(define-method (var? (o <ast>) id)
+(define-method (var? (o <ast>) name)
+  (define (name? o) (and (eq? (.name o) name) o))
   (match o
-    (($ <behaviour>) (find (cut var? <> id) (ast:variable* o)))
-    (($ <compound>) (or (find (cut var? <> id) (filter (is? <variable>) (ast:statement* o))) (var? (.parent o) id)))
-    (($ <function>) (or (find (cut var? <> id) ((compose ast:formal* .signature) o)) (var? (.parent o) id)))
-    (($ <formal>) (and (eq? (.name o) id) o))
-    (($ <formal-binding>) (or (and (eq? (.name o) id) o) (.parent o) id))
-    (($ <on>) (or (find (cut var? <> id) (append-map ast:formal* (ast:trigger* o))) (var? (.parent o) id)))
-    (($ <variable>) (and (eq? (.name o) id) o))
-    ((? (lambda (o) (is-a? (.parent o) <variable>))) (var? ((compose .parent .parent) o) id))
-    (_ (var? (.parent o) id)))
+    (($ <behaviour>) (find name? (ast:variable* o)))
+    (($ <compound>) (or (find name? (filter (is? <variable>) (ast:statement* o))) (var? (.parent o) name)))
+    (($ <function>) (or (find name? ((compose ast:formal* .signature) o)) (var? (.parent o) name)))
+    (($ <formal>) (and (eq? (.name o) name) o))
+    (($ <formal-binding>) (or (name? o) (.parent o) name))
+    (($ <on>) (or (find (cut var? <> name) (append-map ast:formal* (ast:trigger* o))) (var? (.parent o) name)))
+    (($ <variable>) (name? o))
+    ((? (lambda (o) (is-a? (.parent o) <variable>))) (var? ((compose .parent .parent) o) name))
+    (_ (var? (.parent o) name)))
   )
+
+(define-method (type? (o <ast>) name)
+  (define (name? e) (and (eq? (.scope+name (.name e)) (.scope+name name)) e))
+  (define (scope? e) (and (is-a? e <scope.name>)
+                          (eq? ((->symbol-join '.) (om:scope+name e))
+                               ((->symbol-join '.) (.scope name)))
+                          e))
+  (match o
+    (($ <root>)
+     (if (pair? (.scope name))
+         (let ((scope (find scope? (.elements o))))
+           (type? scope name))
+         (find name? (ast:type* o))))
+    (($ <interface>) (or (find name? (ast:type* o)) (type? (.parent o) name)))
+    (($ <behaviour>) (or (find name? (ast:type* o)) (type? (.parent o) name)))
+    ((? (is? <type>)) (name? o))
+    (_ (type? (.parent o) name))))
 
 (define (resolve:variable model o)
   (find (om:named o) (om:variables model)))
@@ -254,9 +255,8 @@
 (define (resolve- o)
   (let ((model (parent <model> o)))
 
-    (define (as-enum identifier) (and=> (as-type identifier) (is? <enum>)))
-    (define (extern? identifier) (and=> (as-type identifier) (is? <extern>)))
-    (define (int? identifier) (and=> (as-type identifier) (is? <int>)))
+
+    (define (extern? o) (and o (is-a? o <extern>)))
 
     (define (interface? o)
       (match o
@@ -289,14 +289,6 @@
 
     (define (unspecified? x) (eq? x *unspecified*))
 
-    (define (enum-field? identifier)
-      (lambda (field)
-        (and-let* ((enum (as-enum identifier)))
-          (member field (.elements (.fields enum))))))
-
-    (define (as-type o)
-      ((resolve:type model) o))
-
     (define (resolve-assign-expression o)
       (match o
         (($ <call>)
@@ -319,7 +311,7 @@
        (undefined-error o (.variable o)))
 
       ((and ($ <field-test>) (= .variable.name (? (negate (cut var? o <>)))))
-       (undefined-error o (.variable o)))
+       (undefined-error o (.variable.name o)))
 
       ((and ($ <action>) (= .port #f) (? (negate (compose (cut event-or-function? o <>) .event))))
        (resolve-error o (.event o) "undefined function or event: ~a"))
@@ -336,8 +328,8 @@
              (resolve-error o (.function o)
                             (format #f "function ~a expects ~a arguments, found: ~a" "~a" formal-count argument-count)))))
 
-      ((and ($ <variable>) (? (negate (compose as-type .type))))
-       (resolve-error (.type o) (->symbol (.type o)) "undefined type: ~a"))
+      ((and ($ <variable>) (? (negate .type)))
+       (resolve-error (.type.name o) (->symbol (.type.name o)) "undefined type: ~a"))
 
       ((and ($ <variable>) (? (negate (compose extern? .type))) (? (compose (is? <literal>) .expression)) (? (compose unspecified? .value .expression)))
        (resolve-error o (.name o) "undefined variable value: ~a"))
@@ -347,16 +339,10 @@
       ((or '! '+ '- '/ '*) o)
       ((or '== '!= '< '<= '> '>= 'group) o)
 
-      (($ <formal>)
-       (clone o #:type (resolve (.type o))))
+      (($ <formal>) o)
 
       ((and ($ <call>))
        (clone o #:arguments (resolve (.arguments o))))
-
-      (($ <type>)
-       (or (as-type o)
-           (as-type (append (om:scope+name model) (.name o)))
-           (undefined-error o (.name o))))
 
       ((and ($ <event>) (= .signature signature))
        (clone o #:signature (resolve signature)))
@@ -367,9 +353,7 @@
       (($ <field-test>) o)
       (($ <illegal>) o)
       (($ <int>) o)
-      ((and ($ <enum-literal>) (? (compose (is? <type>) .type))) o)
-      (($ <enum-literal>)
-       (clone o #:type ((resolve:type model) (.type o))))
+      (($ <enum-literal>) o)
       (($ <otherwise>) o)
 
       ((and ($ <port>))
@@ -380,7 +364,6 @@
 
       (($ <signature>)
        (clone o
-              #:type (resolve (.type o))
               #:formals (resolve (.formals o))))
       ((and ($ <trigger>) (= .port #f) (? (compose (cut event? o <>) .event)))
        (clone o #:arguments (resolve (.arguments o))))
@@ -424,12 +407,10 @@
        (clone o
               #:expression (resolve-assign-expression (.expression o))))
 
-      (($ <formal>)
-       (clone o #:type (resolve (.type o))))
+      (($ <formal>) o)
 
       (($ <variable>)
        (clone o
-              #:type (resolve (.type o))
               #:expression (resolve-assign-expression (.expression o))))
 
       ((and (? (is? <literal>)) (= .value value))
@@ -566,7 +547,7 @@
              (if (not event) (resolve-error o e "undefined event: ~a")
                  (let* ((resolve-formal (lambda (e f)
                                           (let ((f (clone f
-                                                          #:type (.type e)
+                                                          #:type.name (.type.name e)
                                                           #:direction (.direction e))))
                                             ((resolve-triggers model) f))))
                         (event-formals ((compose .elements .formals .signature) event))
@@ -705,6 +686,18 @@
 
 (define-method (.variable (o <formal-binding>))
   (var? o (.variable.name o)))
+
+(define-method (.type (o <variable>))
+  (type? o (.type.name o)))
+
+(define-method (.type (o <signature>))
+  (type? o (.type.name o)))
+
+(define-method (.type (o <enum-literal>))
+  (type? o (.type.name o)))
+
+(define-method (.type (o <formal>))
+  (type? o (.type.name o)))
 
 (define (ast-> ast)
   ((compose

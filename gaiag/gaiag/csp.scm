@@ -1240,7 +1240,6 @@
       ((h t ...) (map (rename-behaviour events) o))
       (_ o)))
 
-;;(stderr "add-internal-libs-behaviour ~a\n" o)
   (match o
     (($ <interface>)
      (if (dzn-async? (.name o))
@@ -1268,21 +1267,21 @@
          (eq? (demangle (car scope)) 'dzn))))
 
 (define (async-behaviour)
-  ((compose .behaviour car .elements ast:resolve parse->om)
+  ((compose .behaviour (cut find (is? <interface>) <>) .elements ast:resolve parse->om)
    '(root
         (interface
          (scope.name (dzn) async)
          (types)
          (events
-          (event req (signature (type void)) in)
-          (event clr (signature (type void)) in)
-          (event ack (signature (type void)) out))
+          (event req (signature (scope.name () void)) in)
+          (event clr (signature (scope.name () void)) in)
+          (event ack (signature (scope.name () void)) out))
          (behaviour
           #f
           (types)
           (ports)
           (variables
-           (variable dzn_idle (type bool) (expression true)))
+           (variable dzn_idle (scope.name () bool) (expression true)))
           (functions)
           (compound
            (guard (expression (var dzn_idle))

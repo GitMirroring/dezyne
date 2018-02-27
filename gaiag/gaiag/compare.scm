@@ -117,7 +117,7 @@
 ;; (define-method (om:equal? (a <scope.name>) (b <scope.name>))
 ;;   (and (equal? (.scope a) (.scope b)) (equal? (.name a) (.name b))))
 (define-method (om:equal? (a <port>) (b <port>))
-  (and (equal? (.name a) (.name b)) (om:equal? (.name (.type a)) (.name (.type b)))))
+  (and (equal? (.name a) (.name b)) (om:equal? (.type.name a) (.type.name b))))
 
 
 (define-method (om:equal? (a <trigger>) (b <trigger>))

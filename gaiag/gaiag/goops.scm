@@ -49,7 +49,7 @@
             .name.name
             .operator
             .port.name
-            .type.name
+            .type
 
             ast:inevitable
             ast:optional
@@ -100,7 +100,7 @@
            .to
            .trigger
            .triggers
-           .type
+           .type.name
            .types
            .value
            .variable.name
@@ -451,7 +451,7 @@
   (to #:init-value 0))
 
 (define-ast <signature> (<ast>)
-  (type #:init-form (make <void-node>))
+  (type.name #:init-form (make <void-node>))
   (formals #:init-form (make <formals-node>)))
 
 (define void-signature (make <signature-node>))
@@ -539,7 +539,7 @@
   (variable.name))
 
 (define-ast <variable> (<named> <imperative> <expression>)
-  (type)
+  (type.name)
   (expression #:init-form (make <expression-node>)))
 
 (define-ast <field-test> (<bool-expr>)
@@ -547,14 +547,14 @@
   (field))
 
 (define-ast <enum-literal> (<enum-expr>)
-  (type)
+  (type.name)
   (field))
 
 (define-ast <otherwise> (<expression>) ;; FIXME: make <guard-otherwise/guard-else-node> instead
   (value #:init-value *unspecified*))
 
 (define-ast <formal> (<named> <expression>)
-  (type)
+  (type.name)
   (direction))
 
 (define-ast <formal-binding> (<formal>)

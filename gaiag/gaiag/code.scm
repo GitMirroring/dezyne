@@ -319,14 +319,16 @@
 (define-method (code:variable->argument (o <variable>) (f <formal>))
   (if (or (code:class-member? o)
           (eq? (.direction f) 'in)) o
-          (make <argument> #:name (.name o) #:type (.type o))))
+          (clone (make <argument> #:name (.name o) #:type (.type o))
+                 #:parent (.parent o))))
 
 (define-method (code:variable->argument (o <var>) (f <formal>))
   (code:variable->argument (.variable o) f))
 
 (define-method (code:variable->argument (o <formal>) (f <formal>))
   (if (eq? (.direction f) 'in) o
-      (make <argument> #:name (.name o) #:type (.type o) #:direction (.direction o))))
+      (clone (make <argument> #:name (.name o) #:type (.type o) #:direction (.direction o))
+             #:parent (.parent o))))
 
 (define-method (code:variable->argument o f)
   o)
@@ -338,13 +340,13 @@
 
 (define-method (code:arguments (o <call>))
   (map code:variable->argument
-       (add-calling-context-argument ((compose .elements .arguments) o))
-       (add-calling-context-formal ((compose .elements .formals .signature .function) o))))
+       (add-calling-context-argument (ast:argument* o))
+       (ast:formal* (add-calling-context-formal ((compose .formals .signature .function) o)))))
 
 (define-method (code:arguments (o <action>))
   (map code:variable->argument
-       (add-calling-context-argument ((compose .elements .arguments) o))
-       (add-calling-context-formal ((compose .elements .formals .signature .event) o))))
+       (add-calling-context-argument (ast:argument* o))
+       (ast:formal* (add-calling-context-formal ((compose .formals .signature .event) o)))))
 
 (define-method (code:arguments (o <trigger>))
   (map .name (code:formals o)))
@@ -353,52 +355,57 @@
   (filter om:out-or-inout? (code:formals o)))
 
 (define-method (code:parameters (o <event>))
-  (let ((parameters (map .name ((compose .elements .formals .signature) o)))
+  (let ((parameters (map .name (ast:formal* o)))
         (calling-context (command-line:get 'calling-context #f)))
     (if calling-context
         (cons 'cc__ parameters)
         parameters)))
 
-(define (add-calling-context-formal formals)
+(define-method (add-calling-context-formal (o <formals>))
   (let ((calling-context (command-line:get 'calling-context #f)))
-    (if calling-context (cons (make <formal> #:name 'cc__ #:direction 'out #:type (make <extern> #:value calling-context))
-                              formals)
-        formals)))
+    (if calling-context (clone o #:elements (cons (clone (make <formal> #:name 'cc__ #:direction 'out #:type.name (make <scope.name> #:name '*calling-context*)) #:parent o)
+                                                  (ast:formal* o)))
+        o)))
 
 (define-method (code:formals (o <function>))
-  (add-calling-context-formal ((compose .elements .formals .signature) o)))
+  (ast:formal* (add-calling-context-formal ((compose .formals .signature) o))))
 
 (define-method (code:formals (o <action>))
-  (add-calling-context-formal ((compose .elements .formals .signature .event) o)))
+  (ast:formal* (add-calling-context-formal ((compose .formals .signature .event) o))))
 
 (define-method (code:formals (o <trigger>))
-  (add-calling-context-formal ((compose .elements .formals) o)))
+  (ast:formal* (add-calling-context-formal ((compose .formals) o))))
 
 (define-method (code:formals (o <signature>))
-  (add-calling-context-formal ((compose .elements .formals) o)))
+  (ast:formal* (add-calling-context-formal ((compose .formals) o))))
 
 (define-method (code:formals (o <event>))
-  (add-calling-context-formal ((compose .elements .formals .signature) o)))
+  (ast:formal* (add-calling-context-formal ((compose .formals .signature) o))))
 
 (define-method (code:formals (o <on>))
-  (add-calling-context-formal
-   (let* ((trigger ((compose car .elements .triggers) o))
-          (event (.event trigger)))
-     (map (lambda (name formal)
-            (clone formal #:name name))
-          (map .name ((compose .elements .formals) trigger))
-          ((compose .elements .formals .signature) event)))))
+  (ast:formal*
+   (add-calling-context-formal
+    (let* ((trigger ((compose car ast:trigger*) o))
+           (formals ((compose .formals .signature) trigger))
+           (event (.event trigger)))
+      (clone formals
+             #:elements (map (lambda (name formal)
+                               (clone formal #:name name))
+                             (map .name (ast:formal* formals))
+                             (ast:formal* event)))))))
 
 (define-method (code:expand-on (o <statement>))
   (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
-      (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
+      (clone (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
+             #:parent (.parent o))
       o))
 
 (define-method (code:expand-on (o <on>))
   ((compose dzn:statement ) o)
   (let ((o (.statement o)))
    (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
-       (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
+       (clone (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
+              #:parent (.parent o))
        o)))
 
 (define-method (code:assign-reply (o <reply>))
@@ -469,11 +476,11 @@
 (define-method (code:variable-name (o <variable>))
   (cond ((memq (language) '(c++ c++03 c++-msvc11)) o) ; MORTAL SIN HERE!!?
         ((code:class-member? o) o)
-        (else (make <local> #:name (.name o) #:type (.type o) #:expression (.expression o)))))
+        (else (make <local> #:name (.name o) #:type.name (.type o) #:expression (.expression o)))))
 
 (define-method (code:variable-name (o <formal>))
   (cond ((memq (language) '(c++ c++03 c++-msvc11)) o) ; MORTAL SIN HERE!!?
-        ((om:out-or-inout? o) (make <out-formal> #:name (.name o) #:type (.type o)))
+        ((om:out-or-inout? o) (make <out-formal> #:name (.name o) #:type.name (.type o)))
         (else o)))
 
 (define-method (code:variable-name (o <ast>))
@@ -583,15 +590,18 @@
   (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
 
 (define-method (code:enum-scope (o <field-test>))
-  ((compose code:enum-scope .type .variable) o))
+  ((compose (cut code:enum-model-scope <> (parent <model> o)) .type .variable) o))
 
 (define-method (code:enum-scope (o <enum-literal>))
-  ((compose code:enum-scope .type) o))
+  ((compose (cut code:enum-model-scope <> (parent <model> o)) .type) o))
 
 (define-method (code:enum-scope (o <enum>))
+  ((compose (cut code:enum-model-scope <> (parent <model> o)) .type) o))
+
+(define-method (code:enum-model-scope (o <enum>) model)
   (let ((scope ((compose .scope .name) o))
-        (model-scope (om:scope+name (parent <model> o))))
-    (if (or (null? scope) (equal? scope model-scope)) (make <model-scope>)
+        (model-scope (and=> model om:scope+name)))
+    (if (or (null? scope) (null? model-scope) (equal? scope model-scope)) (make <model-scope>)
         o)))
 
 ;; main
@@ -748,9 +758,17 @@
 (define (code:om ast)
   ((compose
     code-norm-event
+    code:add-calling-context
     ast:resolve
     parse->om
     ) ast))
+
+(define-method (code:add-calling-context (o <root>))
+  (let ((calling-context (command-line:get 'calling-context #f)))
+    (if calling-context
+        (let ((extern (make <extern> #:name (make <scope.name> #:name '*calling-context*) #:value calling-context)))
+          (clone o #:elements (cons extern (.elements o))))
+        o)))
 
 (define (code:foreign?)
   (member (language) '(c++ c++03 c++-msvc11)))

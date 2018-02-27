@@ -257,7 +257,8 @@
   (.variable o))
 
 (define-method (dzn:expression-expand (o <field-test>))
-  (make <enum-literal> #:type ((compose .type .variable) o) #:field (.field o)))
+  (clone (make <enum-literal> #:type.name ((compose .type.name .variable) o) #:field (.field o))
+         #:parent (.parent o)))
 
 (define-method (dzn:expression-expand (o <variable>))
   (.expression o))
@@ -338,7 +339,8 @@
 
 (define-method (dzn:statement (o <guard>))
   (if (not (is-a? (.expression o) <otherwise>)) o
-      (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))))
+      (clone (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
+             #:parent (.parent o))))
 
 (define-method (dzn:statement (o <behaviour>))
   ((compose dzn:expand-statement .statement) o))

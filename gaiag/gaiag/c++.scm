@@ -122,7 +122,9 @@
 (define-method (c++:return-type (o <glue-event>))
   (c++:return-type (.type (.signature o))))
 
-(define-method (c++:return-type (o <trigger>)) ((compose .type .signature .event) o))
+(define-method (c++:return-type (o <trigger>))
+  ((compose .type .signature .event) o))
+
 (define-method (c++:return-type (o <function>)) ((compose .type .signature) o))
 
 (define (c++:pump-include o) (if (pair? (om:ports (.behaviour o))) "#include <dzn/pump.hh>" ""))

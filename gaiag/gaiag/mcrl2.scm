@@ -307,7 +307,7 @@
                                  #:variable.name ((compose append-tick .variable.name) o)))
     (($ <function>)
      (let* ((signature (.signature o))
-            (type ((compose (tick-names- names) .type) signature)))
+            (type ((compose (tick-names- names) .type.name) signature)))
        (receive (names formals)
            (let loop ((formals (ast:formal* signature)) (bumped '()) (names names))
              (define (bump-tick name)
@@ -319,7 +319,7 @@
                         (formal ((tick-names- names) formal)))
                    (loop (cdr formals) (append bumped (list formal)) names))))
          (clone o #:name ((compose append-tick .name) o)
-                #:signature (clone signature #:type type #:formals (clone (.formals signature) #:elements formals))
+                #:signature (clone signature #:type.name type #:formals (clone (.formals signature) #:elements formals))
                 #:statement ((compose (tick-names- names) .statement) o)))))
     (($ <call>) (clone o
                        #:function.name ((compose append-tick .function.name) o)

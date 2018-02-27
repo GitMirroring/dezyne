@@ -36,6 +36,7 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
 
+  #:use-module (gaiag resolve)
   #:use-module (gaiag compare)
   #:use-module (gaiag display)
 
