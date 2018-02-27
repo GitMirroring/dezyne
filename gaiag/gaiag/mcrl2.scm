@@ -362,6 +362,9 @@
     ((? (is? <ast>)) (tree-map (tick-names- names) o))
     (_ o)))
 
+(define-method (is-data? (o <ast>))
+  (or (is-a? o <data>) (and (is-a? o <variable>) (is-a? (.type o) <extern>))))
+
 (define (root-purge-data o)
   (match o
     (($ <action>)
@@ -378,6 +381,7 @@
      (and (not (is-a? (.type (.variable o)) <extern>))
           (clone o #:expression (root-purge-data (.expression o)))))
     (($ <formal>) (and (not (is-a? (.type o) <extern>)) o))
+    (($ <call>) (clone o #:arguments (make <arguments> #:elements (filter (negate is-data?) (ast:argument* o)))))
     (($ <variable>) (and (not (is-a? (.type o) <extern>))
                          (clone o #:expression (root-purge-data (.expression o)))))
 
