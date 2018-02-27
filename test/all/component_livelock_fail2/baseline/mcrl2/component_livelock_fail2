@@ -10,3 +10,4 @@ verify: component_livelock_fail2: check: livelock: fail
 iter.map
 list.next
 list.true
+list.next
