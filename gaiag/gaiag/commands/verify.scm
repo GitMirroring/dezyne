@@ -203,14 +203,14 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
           (if (pair? models)
               (let* ((model (find (lambda (o) (equal? ((compose symbol->string verify:scope-name) o) (car models))) (ast:model* root)))
                      (component? (is-a? model <component>))
-                     (elements (append (match model
+                     (verif (append (match model
                                          (($ <system>) '())
                                          (_  (list model)))
-                                       (filter (negate (is? <model>)) (ast:global* root))
                                        (if component?
                                            (filter (is? <interface>) (ast:model* root))
-                                           '()))))
-                (if (pair? elements)
+                                           '())))
+                     (elements (append verif (filter (negate (is? <model>)) (ast:global* root)))))
+                (if (pair? verif)
                     (let* ((ast-model (make <root> #:elements elements))
                            (root (mcrl2:om ast-model)))
                       (parameterize ((language 'mcrl2))
