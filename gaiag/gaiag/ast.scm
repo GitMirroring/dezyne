@@ -83,6 +83,7 @@
            ast:field*
            ast:formal*
            ast:function*
+           ast:global*
            ast:instance*
            ast:model*
            ast:port*
@@ -109,6 +110,7 @@
 (define-method (ast:instance* (o <instances>)) (.elements o))
 (define-method (ast:port* (o <ports>)) (.elements o))
 (define-method (ast:port* (o <behaviour>)) ((compose .elements .ports) o))
+(define-method (ast:global* (o <root>)) (.elements o))
 (define-method (ast:model* (o <root>)) (filter (is? <model>) (.elements o)))
 (define-method (ast:trigger* (o <triggers>)) (.elements o))
 (define-method (ast:type* (o <types>)) (.elements o))

@@ -86,7 +86,7 @@
 (define (dzn:file2file root)
   (let* ((objects (filter (disjoin (is? <data>)
                                    (negate (disjoin dzn-async? om:imported? (is? <foreign>))))
-                          (ast:model* root)))
+                          (ast:global* root)))
          (root* (clone root #:elements objects)))
     (for-each dzn:dump (filter (is? <foreign>) (.elements root)))
     (dzn:dump root*)))
@@ -137,8 +137,7 @@
                 (language)))))
 
 (define (dzn:model2file root)
-  (let* ((models (map (is? <model>) (ast:model* root)))
-         (models (filter (negate om:imported?) models))
+  (let* ((models (filter (negate om:imported?) (ast:model* root)))
          ;; Generator-synthesized models look non-imported, filter harder
          (models (filter (negate dzn-async?) models)))
     (for-each dzn:dump models)))
@@ -468,7 +467,7 @@
 
 (define-method (dzn:dump (o <root>))
   (let ((name (basename (symbol->string (source-file o)) ".dzn")))
-    (when (pair? (filter (negate (disjoin (is? <data>) (is? <interface>))) (ast:model* o)))
+    (when (pair? (filter (negate (is? <interface>)) (ast:model* o)))
       (dzn:x:pand o 'source (string-append name (symbol->string (dzn:extension (make <component>))))))))
 
 (define-method (dzn:dump (o <interface>))

@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -141,7 +141,7 @@
 
 (define (om:types o)
   (match o
-    (($ <root>) (filter (is? <type>) (ast:model* o)))
+    (($ <root>) (filter (is? <type>) (ast:global* o)))
     (($ <behaviour>) (ast:type* o))
     (($ <interface>)
      (append ((compose .elements .types .behaviour) o)

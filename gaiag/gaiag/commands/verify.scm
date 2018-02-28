@@ -4,7 +4,7 @@
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -206,7 +206,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                      (elements (append (match model
                                          (($ <system>) '())
                                          (_  (list model)))
-                                       (filter (negate (is? <model>)) (ast:model* root))
+                                       (filter (negate (is? <model>)) (ast:global* root))
                                        (if component?
                                            (filter (is? <interface>) (ast:model* root))
                                            '()))))
