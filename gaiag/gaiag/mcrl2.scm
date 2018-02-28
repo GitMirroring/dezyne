@@ -363,7 +363,7 @@
     (_ o)))
 
 (define-method (is-data? (o <ast>))
-  (or (is-a? o <data>) (and (is-a? o <variable>) (is-a? (.type o) <extern>))))
+  (or (is-a? o <data>) (and (is-a? o <var>) (is-a? ((compose .type .variable) o) <extern>))))
 
 (define (root-purge-data o)
   (match o

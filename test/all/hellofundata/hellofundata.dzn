@@ -40,12 +40,13 @@ component hellofundata
 
   behaviour
   {
-    void func(int i, bool b) {
-      int j = i;
+    void func(int i, int j, bool b) {
+      int k = i;
     }
 
     on h.hello(i): {
-      func($0$, true);
+      int l = $0$;
+      func($0$, l, true);
       bool b = w.world(i);
     }
   }
