@@ -127,8 +127,7 @@
   (when (isatty? (current-error-port))
     (when fg? (tcsetpgrp (current-error-port) (add-to-process-group job (getpid))))
     (map (cut sigaction <> SIG_DFL)
-         (list SIGINT SIGQUIT SIGTSTP SIGTTIN SIGTTOU SIGCHLD)))
-  (fdes->inport 0) (map fdes->outport '(1 2))) ;; reset stdin/stdout/stderr
+         (list SIGINT SIGQUIT SIGTSTP SIGTTIN SIGTTOU SIGCHLD))))
 
 (define (job-control-init)
   (when (isatty? (current-error-port))
