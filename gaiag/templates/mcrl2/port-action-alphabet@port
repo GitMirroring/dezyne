@@ -11,6 +11,8 @@
      #.name 'reply_out_rc: #x:port-interface-name 'Actions ###x:port-interface-name 'ReplyUnion;
      #.name 'in: #x:port-interface-name 'Actions;
      #.name 'optional_begin_oc;
+     #.name 'optional_begin_oc_req;
+     #.name 'optional_begin_oc_nack;
      #.name 'in_allow: #x:port-interface-name 'Actions;
      #.name 'out_rc: #x:port-interface-name 'Actions;
      #.name 'optional_begin_rc;

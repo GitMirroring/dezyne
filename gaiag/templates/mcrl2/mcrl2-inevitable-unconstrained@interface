@@ -1,1 +1,3 @@
-#x:mcrl2-model-name 'inevitable_unconstrained = #x:mcrl2-model-name 'inevitable_begin_oc . #x:mcrl2-model-name 'inevitable_end_oc . #x:mcrl2-model-name 'inevitable_unconstrained;
+#x:mcrl2-model-name 'inevitable_unconstrained =
+         #x:mcrl2-model-name 'inevitable_begin_oc . #x:mcrl2-model-name 'inevitable_end_oc . #x:mcrl2-model-name 'inevitable_unconstrained +
+         sum e: #x:mcrl2-model-name 'Actions. #x:mcrl2-model-name 'in_rc(e) . #x:mcrl2-model-name 'inevitable_unconstrained;
