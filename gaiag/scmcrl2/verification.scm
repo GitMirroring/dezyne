@@ -360,7 +360,8 @@
     (format #f "~a:~a:~a:i~a: ~a\n" file-name line column index message)))
 
 (define ((sequence->trail model-name illegal?) sequence)
-  (let ((model-name (string->symbol model-name)))
+  (let* ((model-name (last (string-split model-name #\.))) ;; FIXME namespace from seqdiag
+         (model-name (string->symbol model-name)))
     (map
      (lambda (o) (or (assoc-ref o 'synchronization) 'illegal))
      (filter (lambda (o)

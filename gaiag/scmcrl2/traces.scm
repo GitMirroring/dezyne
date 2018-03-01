@@ -183,7 +183,7 @@ illegal")
     (('return ('identifier port) ('number value)) (string-append port "." value))
     (('return ('identifier port) (('identifier type) ('identifier value))) (string-append port "." type "_" value))))
 
-;;(format #t "~a" (string-join (map parse-tree2text (pk "FOO:" (parse trace2))) "\n"))
+;;(format #t "~a" (string-join (map parse-tree2text (parse trace2)) "\n"))
 
 (define (rename-lts-actions trace)
   (string-join (map parse-tree2text (parse trace)) "\n"))
