@@ -11,24 +11,6 @@ map  #x:interfaces-allow-dillegals
 eqn  QueueLength = #x:queue-size;
 
 act  #x:interface-action-alphabet
-     #x:mcrl2-model-name 'store_global_in;
-     #x:mcrl2-model-name 'store_reply_in: #x:provided-port-type 'ReplyUnion;
-     #x:mcrl2-model-name 'load_reply_out: #x:provided-port-type 'ReplyUnion;
-     #x:mcrl2-model-name 'store_reply: #x:provided-port-type 'ReplyUnion;
-     #x:mcrl2-model-name 'load_global_in;
-     #x:mcrl2-model-name 'store_global;
-     #x:mcrl2-model-name 'load_global;
-     #x:mcrl2-model-name 'store_reply_out: #x:provided-port-type 'ReplyUnion;
-     #x:mcrl2-model-name 'store_flags: Bool;
-     #x:mcrl2-model-name 'load_flags_out: Bool;
-     #x:mcrl2-model-name 'store_flags_in: Bool;
-     #x:mcrl2-model-name 'store_global_out;
-     #x:mcrl2-model-name 'store_flags_out: Bool;
-     #x:mcrl2-model-name 'load_reply_in: #x:provided-port-type 'ReplyUnion;
-     #x:mcrl2-model-name 'load_reply: #x:provided-port-type 'ReplyUnion;
-     #x:mcrl2-model-name 'load_global_out;
-     #x:mcrl2-model-name 'load_flags: Bool;
-     #x:mcrl2-model-name 'load_flags_in: Bool;
      #x:port-action-alphabet
      internal;
      illegal;
