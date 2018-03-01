@@ -50,29 +50,75 @@
 		   (list-matches "\\b([a-zA-Z0-9_']*)\\s*=\\s*struct\\b" mcrl2-text))))
     aliases))
 
-;; (define trace "startIF'event(StartControlIF'in'startAll)
-;; device1IF'event(Device1IF'in'turnon)
-;; device1IF'return(Device1IF'in'turnon, reply_Device1IF'Void(void))
-;; tau
-;; tau
-;; startIF'return(StartControlIF'in'startAll, reply_StartControlIF'Void(void))
-;; device1IF'inevitable
-;; device1IF'event(Device1IF'out'ok)
-;; device1IF'flush
-;; tau
-;; device2IF'event(Device2IF'in'turnon)
-;; device2IF'return(Device2IF'in'turnon, reply_Device2IF'Device2IF'Result(Device2IF'Result'NOK))
-;; startIF'event(StartControlIF'out'startFailed)
-;; tau
-;; tau
-;; startIF'flush
-;; startIF'event(StartControlIF'in'startAll)
-;; device1IF'event(Device1IF'in'turnon)
-;; illegal
-;; ")
+(define trace "startIF'event(StartControlIF'in'startAll)
+device1IF'event(Device1IF'in'turnon)
+device1IF'return(Device1IF'in'turnon, reply_Device1IF'Void(void))
+tau
+tau
+startIF'return(StartControlIF'in'startAll, reply_StartControlIF'Void(void))
+device1IF'inevitable
+device1IF'event(Device1IF'out'ok)
+device1IF'flush
+tau
+device2IF'event(Device2IF'in'turnon)
+device2IF'return(Device2IF'in'turnon, reply_Device2IF'Device2IF'Result(Device2IF'Result'NOK))
+startIF'event(StartControlIF'out'startFailed)
+tau
+tau
+startIF'flush
+startIF'event(StartControlIF'in'startAll)
+device1IF'event(Device1IF'in'turnon)
+illegal
+")
 
 ;;(define trace "p'event(ibool'in'hello)")
-(define trace "tau")
+
+(define trace2
+"console'event(i_'_i'i_1'i1_'IConsole'in'_i)
+sensor'event(i_'_i'i_1'i1_'ISensor'in'i_1)
+sensor'return(i_'_i'i_1'i1_'ISensor'in'i_1, reply_i_'_i'i_1'i1_'ISensor'Void(void))
+tau
+tau
+console'return(i_'_i'i_1'i1_'IConsole'in'_i, reply_i_'_i'i_1'i1_'IConsole'Void(void))
+sensor'optional
+sensor'event(i_'_i'i_1'i1_'ISensor'out'i_)
+sensor'flush
+tau
+console'event(i_'_i'i_1'i1_'IConsole'out'detected)
+siren'event(i_'_i'i_1'i1_'ISiren'in'_i_)
+siren'return(i_'_i'i_1'i1_'ISiren'in'_i_, reply_i_'_i'i_1'i1_'ISiren'Void(void))
+tau
+tau
+console'flush
+console'event(i_'_i'i_1'i1_'IConsole'in'_i1)
+sensor'event(i_'_i'i_1'i1_'ISensor'in'disable)
+sensor'return(i_'_i'i_1'i1_'ISensor'in'disable, reply_i_'_i'i_1'i1_'ISensor'Void(void))
+tau
+tau
+console'return(i_'_i'i_1'i1_'IConsole'in'_i1, reply_i_'_i'i_1'i1_'IConsole'Void(void))
+sensor'inevitable
+sensor'event(i_'_i'i_1'i1_'ISensor'out'disabled)
+sensor'flush
+tau
+console'event(i_'_i'i_1'i1_'IConsole'out'deactivated)
+tau
+tau
+console'flush
+console'event(i_'_i'i_1'i1_'IConsole'in'_i)
+sensor'event(i_'_i'i_1'i1_'ISensor'in'i_1)
+sensor'return(i_'_i'i_1'i1_'ISensor'in'i_1, reply_i_'_i'i_1'i1_'ISensor'Void(void))
+tau
+tau
+console'return(i_'_i'i_1'i1_'IConsole'in'_i, reply_i_'_i'i_1'i1_'IConsole'Void(void))
+sensor'optional
+sensor'event(i_'_i'i_1'i1_'ISensor'out'i_)
+sensor'flush
+tau
+console'event(i_'_i'i_1'i1_'IConsole'out'detected)
+siren'event(i_'_i'i_1'i1_'ISiren'in'_i_)
+illegal")
+
+;;(define trace "tau")
 
 (define (parse input)
   (define-peg-string-patterns
@@ -96,7 +142,7 @@
      return-out      <   port tick 'reply_out' lpar arguments-out rpar
      arguments       <-  mcrl2-event- (comma reply compound-type compound-value)?
      arguments-out   <-  mcrl2-event-out (comma reply compound-type compound-value)?
-     mcrl2-event     <-  model tick direction tick event-name
+     mcrl2-event     <-  (scope tick)+ event-name
      mcrl2-event-    <   mcrl2-event
      mcrl2-event-out <-  model tick 'out' tick event-name
      comma           <   ',' ' '*
@@ -137,7 +183,7 @@
     (('return ('identifier port) ('number value)) (string-append port "." value))
     (('return ('identifier port) (('identifier type) ('identifier value))) (string-append port "." type "_" value))))
 
-;;(format #t "~a" (string-join (map parse-tree2text (pk "FOO:" (parse trace))) "\n"))
+;;(format #t "~a" (string-join (map parse-tree2text (pk "FOO:" (parse trace2))) "\n"))
 
 (define (rename-lts-actions trace)
   (string-join (map parse-tree2text (parse trace)) "\n"))
