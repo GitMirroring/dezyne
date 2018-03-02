@@ -265,7 +265,7 @@ var aspects = {
                 var endTime = new Date();
                 var elapsed = util.elapsedTime(startTime, endTime, true);
                 var outcome = {elapsed:elapsed,status:{},output:{},order:ordered_dependencies()};
-                Object.keys(dependencies).each(function(aspect){
+                Object.keys(dependencies).each(function(aspect) {
                   if(haslanguage(aspect)) {
                     outcome.status[aspect] = {};
                     all_languages.each(function(language) {
@@ -309,33 +309,56 @@ var aspects = {
       return parameters;
     }
 
-    function testcase(aspect,dependencies,language,retry) {
-      retry = 0; //retry === undefined && 2 || retry;
-      if(parameters.meta.known)
-      {
-        if(parameters.meta.known[aspect]) retry = 0;
-        if(parameters.meta.known[aspect + ':' + language]) retry = 0;
-        if(parameters.meta.known[language + ':' + aspect]) retry = 0;
+    function setstatus(outcome, aspect, language, status) {
+      outcome.status = outcome.status || {};
+      if(haslanguage(aspect)) {
+        outcome.status[aspect] = outcome.status[aspect] || {};
+        status = outcome.status[aspect][language] || status;
+        outcome.status[aspect][language] = status;
       }
-      if (dependencies.status) {
-        var result = {status: dependencies.status,
-                parameters: updateparameters(dependencies.parameters, "Not executed because prerequisite did not succeed", aspect, language)};
-        result.parameters.outcome.status = result.parameters.outcome.status || {};
+      else {
+        status = outcome.status[aspect] || status;
+        outcome.status[aspect] = status;
+      }
+    }
+
+    function getstatus(outcome, aspect, language) {
+      var status = 'UNKNOWN';
+      if (outcome.status) {
         if(haslanguage(aspect)) {
-          result.parameters.outcome.status[aspect] = result.parameters.outcome.status[aspect] || {};
-          result.parameters.outcome.status[aspect][language] = 'SKIPPED';
+          if (outcome.status[aspect] && outcome.status[aspect][language])
+            status = outcome.status[aspect][language];
         }
-        else result.parameters.outcome.status[aspect] = 'SKIPPED';
+        else {
+          if (outcome.status[aspect])
+            status = outcome.status[aspect];
+        }
+      }
+      return status;
+    }
+
+    function testcase(aspect,prevresult,language,retry) {
+      retry = 0; //retry === undefined && 2 || retry;
+      if(prevresult.parameters.meta.known)
+      {
+        if(prevresult.parameters.meta.known[aspect]) retry = 0;
+        if(prevresult.parameters.meta.known[aspect + ':' + language]) retry = 0;
+        if(prevresult.parameters.meta.known[language + ':' + aspect]) retry = 0;
+      }
+      if (prevresult.status) {
+        var result = {status: prevresult.status,
+                      parameters: updateparameters(prevresult.parameters, "Not executed because prerequisite did not succeed", aspect, language)};
+        setstatus(result.parameters.outcome, aspect, language, 'SKIPPED');
         return result;
       }
-      return aspects[aspect](dependencies.parameters)
+      return aspects[aspect](prevresult.parameters)
         .then(function(result) {
           if(result.status && retry) {
-            var msg = '[RETRY] ' + dependencies.parameters.filename + ' : ' + (2 - retry);
+            var msg = '[RETRY] ' + prevresult.parameters.filename + ' : ' + (2 - retry);
             console.log (msg);
-            return testcase(aspect,dependencies,language,retry-1).then(function(o){o.output += msg + '\n'; return o;});
+            return testcase(aspect,prevresult,language,retry-1).then(function(o){o.output += msg + '\n'; return o;});
           }
-          return {status: result.status, parameters: updateparameters(dependencies.parameters, result.output, aspect, language)};
+          return {status: result.status, parameters: updateparameters(prevresult.parameters, result.output, aspect, language)};
         });
     }
 
@@ -361,7 +384,13 @@ var aspects = {
       .filter (skip_filter (parameters.meta))
       .reduce(function(promise, aspect) {
         return promise.then(function(result1) {
-          if (isdone(result1.parameters.done, aspect, language)) return result1;
+          if (isdone(result1.parameters.done, aspect, language)) {
+            var header = aspect + (haslanguage(aspect) ? '[' + language + ']' : '') + '[' + result1.parameters.model + ']';
+            console.log(header + 'DONE');
+            var status = getstatus(result1.parameters.outcome, aspect, language);
+            st = (status == 'ERROR') ? -1 : (status == 'KNOWN' || status  == 'FAILED') ? 1 : 0;
+            return {status: st, parameters: result1.parameters};
+          }
           var header = aspect + (haslanguage(aspect) ? '[' + language + ']' : '') + '[' + result1.parameters.model + ']';
           console.log(header + ' ...');
           var parameters1 = util.deep_copy(result1.parameters);
@@ -369,9 +398,11 @@ var aspects = {
           return aspects.test(parameters1)
             .then(function(result2){return testcase(aspect, result2, haslanguage(aspect) && language);})
             .then(function(result2){
-              var knwn = known(parameters.meta, aspect, language);
+              var knwn = known(result2.parameters.meta, aspect, language);
               var status = result2.status ? (result2.status == -1 ? 'ERROR' : (knwn ? 'KNOWN' : 'FAILED')) : (knwn ? 'SOLVED' : 'OK');
               result2.parameters.outcome = result2.parameters.outcome || {};
+              setstatus(result2.parameters.outcome, aspect, language, status);
+
               result2.parameters.outcome.status = result2.parameters.outcome.status || {};
               if(haslanguage(aspect)) {
                 result2.parameters.outcome.status[aspect] = result2.parameters.outcome.status[aspect] || {};
