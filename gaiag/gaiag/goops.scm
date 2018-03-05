@@ -89,6 +89,7 @@
 	   .type.name
            .value
            .variables
+           <argument>
            <action>
            <arguments>
            <assign>
@@ -108,12 +109,16 @@
            <data>
            <declarative>
            <declarative-compound>
+           <direction>
            <enum>
+           <enum-field>
+           <enum-literal>
            <event>
            <events>
            <extern>
            <field-test>
            <fields>
+           <file-name>
            <foreign>
            <function>
            <functions>
@@ -127,7 +132,8 @@
            <instances>
            <int>
            <interface>
-           <enum-literal>
+           <local>
+           <model-scope>
            <model>
            <modeling-event>
            <named>
@@ -139,6 +145,7 @@
            <formal>
            <formal-binding>
            <formals>
+           <out-formal>
            <port>
            <ports>
            <range>
@@ -149,8 +156,11 @@
            <scope.name>
            <shell-system>
            <signature>
+           <skip>
            <statement>
            <system>
+           <the-end>
+           <the-end-blocking>
            <trigger>
            <triggers>
            <type>
@@ -160,6 +170,8 @@
            <variable>
            <variables>
            <void>
+           <voidreply>
+           <unspecified>
 
            <expression>
            <bool-expr>
@@ -286,7 +298,9 @@
            .node
            .parent
 ;;           .node-elements
-))
+
+
+	   .trigger))
 
 (define (stderr format-string . o)
   (apply format (append (list (current-error-port) format-string) o)))
@@ -615,7 +629,29 @@
   (ast #:getter .ast #:init-value #f #:init-keyword #:ast)
   (message #:getter .message #:init-value "" #:init-keyword #:message))
 
+(define-class <skip-node> (<imperative-node>))
 
+(define-class <the-end-node> (<statement-node>)
+  (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger))
+(define-class <the-end-blocking-node> (<statement-node>))
+(define-class <voidreply-node> (<statement-node>))
+
+(define-class <argument-node> (<named-node> <expression-node>)
+  (type #:getter .type #:init-form #f #:init-keyword #:type)
+  (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
+
+(define-class <enum-field-node> (<ast-node>)
+  (type #:getter .type #:init-form #f #:init-keyword #:type)
+  (field #:getter .field #:init-value #f #:init-keyword #:field))
+
+(define-class <file-name-node> (<ast-node>)
+  (name #:getter .name #:init-form #f #:init-keyword #:name))
+
+(define-class <local-node> (<variable-node>))
+(define-class <model-scope-node> (<ast-node>))
+(define-class <out-formal-node> (<variable-node>))
+(define-class <direction-node> (<named-node>))
+(define-class <unspecified-node> (<ast-node>))
 
 (define-method (make-wrapper e o) e)
 
@@ -653,7 +689,9 @@
      (let* ((methods (map method-generic-function (class-direct-methods class-node)))
             (super-methods (map method-generic-function (append-map class-direct-methods (class-direct-supers class-node))))
             (super-names (map generic-function-name super-methods))
-            (methods (filter (lambda (m) (not (member (generic-function-name m) super-names))) methods)))
+            (methods (filter (lambda (m) (not (member (generic-function-name m) super-names))) methods))
+            ;;(foo (stderr "methods: ~s\n" methods))
+            )
        (define-class class supers)
        (for-each (lambda (m) (wrap-method m class)) methods)
        (define-method (node-class- (o class)) class-node)
@@ -756,6 +794,18 @@
 (wrap <binding-node> <binding> (<ast>))
 (wrap <instance-node> <instance> (<named> <declarative>))
 (wrap <error-node> <error> (<ast>))
+(wrap <skip-node> <skip> (<imperative>))
+(wrap <the-end-node> <the-end> (<statement>))
+(wrap <the-end-blocking-node> <the-end-blocking> (<statement>))
+(wrap <voidreply-node> <voidreply> (<statement>))
+(wrap <argument-node> <argument> (<named> <expression>))
+(wrap <enum-field-node> <enum-field> (<ast>))
+(wrap <file-name-node> <file-name> (<ast>))
+(wrap <local-node> <local> (<variable>))
+(wrap <model-scope-node> <model-scope> (<ast>))
+(wrap <out-formal-node> <out-formal> (<variable>))
+(wrap <direction-node> <direction> (<named>))
+(wrap <unspecified-node> <unspecified> (<ast>))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

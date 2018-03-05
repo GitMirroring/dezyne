@@ -1,1 +1,1 @@
-#x:scope '#.name.name '#x:initial-enum-field
+#x:mcrl2-scope '#.name.name '#x:initial-enum-field

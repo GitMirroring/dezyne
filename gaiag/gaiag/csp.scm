@@ -2,7 +2,7 @@
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
 ;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
-;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015, 2016, 2017 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -43,7 +43,6 @@
   #:use-module (gaiag ast)
   #:use-module (gaiag compare)
   #:use-module (gaiag util)
-  #:use-module (gaiag xpand)
 
   #:use-module (gaiag command-line)
   #:use-module (gaiag config)
@@ -81,22 +80,7 @@
            string-if
            dzn-async?
            csp:mangle-named
-
-	   .trigger
-
-           <the-end>
-           <the-end-blocking>
-           <voidreply>
            ))
-
-(define-class <the-end-node> (<statement-node>)
-  (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger))
-(define-class <the-end-blocking-node> (<statement-node>))
-(define-class <voidreply-node> (<statement-node>))
-
-(wrap <the-end-node> <the-end> (<statement>))
-(wrap <the-end-blocking-node> <the-end-blocking> (<statement>))
-(wrap <voidreply-node> <voidreply> (<statement>))
 
 (define* (om->csp om #:key file-name (separate-asserts? (command-line:get 'assert #f)))
   (or (and-let* ((models (om:filter (lambda (x) (or (as x <interface>) (as x <component>))) om))

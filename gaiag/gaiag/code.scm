@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2016, 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;; Copyright © 2016, 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
@@ -44,12 +44,11 @@
   #:use-module (gaiag norm-event)
   #:use-module (gaiag parse)
   #:use-module (gaiag resolve)
-  #:use-module (gaiag xpand)
+  #:use-module (gaiag templates)
 
   #:use-module (gaiag location)
 
-  #:export (<enum-field>
-            asd-interfaces
+  #:export (asd-interfaces
             map-file
             injected-bindings
             injected-instances
@@ -87,8 +86,57 @@
             code:dump-main
             code:module
             code:om
+            code:port-type
             symbol->enum-field
-            glue))
+            glue
+
+            code:arguments
+            code:assign-reply
+            code:bind-provided
+            code:bind-required
+            code:capture-arguments
+            code:component-include
+            code:component-port
+            code:dzn-locator
+            code:enum-literal
+            code:enum-scope
+            code:expand-on
+            code:file-name
+            code:formals
+            code:functions
+            code:injected-instances
+            code:injected-instances-system
+            code:instance-name
+            code:instance-port-name
+            code:interface-include
+            code:main-event-map-match-return
+            code:main-out-arg
+            code:main-out-arg-define
+            code:model2file?
+            code:model2file-interface-include
+            code:non-injected-bindings
+            code:ons
+            code:out-argument
+            code:parameters
+            code:port-name
+            code:port-type
+            code:reply-type
+            code:reply-types
+            code:return
+            code:scope+name
+            code:scope-type-name
+            code:scope-type-scope
+            code:trigger
+            code:type-name
+            code:variable-name
+            code:x-header-
+            code:root->
+            %x:header
+            %x:main
+            ))
+
+(define %x:header (make-parameter #f))
+(define %x:main (make-parameter #f))
 
 (define (ast-> ast)
   (let ((root (code:om ast)))
@@ -105,11 +153,6 @@
              (main-model (and main (find main? models))))
         (and=> main-model code:dump-main)))))
 
-
-
-(define (code:language)
-  (string->symbol (command-line:get 'language "c++")))
-
 (define (code:file2file root)
   (code:dump root)
   (when (code:foreign?)
@@ -123,28 +166,8 @@
          (models (filter (negate dzn-async?) models)))
     (for-each code:dump models)))
 
-;;; ast extension
-(define-class <argument-node> (<named-node> <expression-node>)
-  (type #:getter .type #:init-form #f #:init-keyword #:type)
-  (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
-
-(define-class <enum-field-node> (<ast-node>)
-  (type #:getter .type #:init-form #f #:init-keyword #:type)
-  (field #:getter .field #:init-value #f #:init-keyword #:field))
-
-(define-class <file-name-node> (<ast-node>)
-  (name #:getter .name #:init-form #f #:init-keyword #:name))
-
-(define-class <local-node> (<variable-node>))
-(define-class <model-scope-node> (<ast-node>))
-(define-class <out-formal-node> (<variable-node>))
-
-(wrap <argument-node> <argument> (<named> <expression>))
-(wrap <enum-field-node> <enum-field> (<ast>))
-(wrap <file-name-node> <file-name> (<ast>))
-(wrap <local-node> <local> (<variable>))
-(wrap <model-scope-node> <model-scope> (<ast>))
-(wrap <out-formal-node> <out-formal> (<variable>))
+(define (code:language)
+  (string->symbol (command-line:get 'language "c++")))
 
 ;;; ast accessors
 (define (injected-binding? binding)
@@ -171,6 +194,11 @@
   (let ((injected-instance-names (map injected-instance-name (injected-bindings model))))
     (filter (lambda (instance) (not (member (.name instance) injected-instance-names)))
             ((compose .elements .instances) model))))
+
+(define-method (code:dzn-locator (o <instance>)) ;; MORTAL SIN HERE!!?
+  (let* ((model (parent <model> o)))
+    (if (null? (injected-bindings model)) ""
+        "_local")))
 
 (define-method (code:class-member? (o <variable>)) ; MORTAL SIN HERE!!?
   ;; FIXME: is (.variable o) a member?
@@ -282,7 +310,6 @@
   (let ((behaviour (.behaviour o)))
     (if (not behaviour) '()
         ((compose .elements .statement) behaviour))))
-
 
 (define-method (code:trigger (o <on>))
   ((compose car .elements .triggers) o))
@@ -500,6 +527,17 @@
                          (else (make <out-formal> #:name i))))
      formals (iota (length formals)))))
 
+(define-method (code:main-out-arg-define (o <trigger>))
+  (let ((formals ((compose .elements .formals) o)))
+    (map (lambda (f i) (clone f #:name i))
+         formals (iota (length formals)))))
+
+(define-method (code:main-out-arg-define-formal (o <formal>)) ;; MORTAL SIN HERE!!?
+  (let ((type ((compose .value .type) o)))
+    (if (not (om:out-or-inout? o)) ""
+        (if (equal? type 'int) o
+            "/*FIXME*/"))))
+
 (define-method (code:main-event-map-match-return (o <trigger>))
   (if (om:in? (.event o)) o ""))
 
@@ -520,23 +558,12 @@
 ;;
 
 ;;; code: generic templates
-(define-template x:header- code:x-header-)
 
 (use-modules (ice-9 pretty-print))
-(define-template x:async-member-initializer (lambda (o) (ast:port* (.behaviour o))))
 
-(define-template x:scope (compose .scope .name) 'name-infix)
-(define-template x:scope-type-scope code:scope-type-scope 'type-infix)
-(define-template x:scope-type-name code:scope-type-name 'type-infix)
-(define-template x:scope-prefix (compose .scope .name) 'name-suffix)
-
-(define-template x:scope+name code:scope+name 'name-infix)
-(define-template x:scoped-model-name code:scope+name 'name-infix);; c++ compat, junk me
-
-(define-template x:type-name code:type-name 'type-infix)
-
-(define-template x:port-name code:port-name)
-(define-template x:port-type code:port-type 'type-infix)
+(define-method (scope (o <type>)) ((compose .scope .name) o))
+(define-method (scope (o <event>)) ((compose scope .type .signature) o))
+(define-method (scope (o <reply>)) (scope (.type (.expression o))))
 
 (define (code:interface-include o)
   (map (compose (cut make <file-name> #:name <>) code:file-name) (om:ports o)))
@@ -553,14 +580,6 @@
                                                                      (source-file (.type i)))))))
              (om:instances o))))
 
-(define-template x:interface-include code:interface-include)
-(define-template x:model2file-interface-include code:model2file-interface-include)
-(define-template x:component-include code:component-include)
-
-(define-template x:scope::name code:scope+name 'type-infix)
-
-(define-template x:non-void-reply identity #f)
-
 (define-method (code:enum-literal (o <enum-literal>))
   (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
 
@@ -576,172 +595,105 @@
     (if (or (null? scope) (equal? scope model-scope)) (make <model-scope>)
         o)))
 
-(define-template x:code-enum-literal code:enum-literal 'type-infix)
-(define-template x:enum-scope code:enum-scope 'type-infix)
-
-(define-template x:reply (lambda (o)
-                           (if (is-a? o <void>)
-                               ""
-                               (begin (display " ") (x:non-void-reply o))))) ;; MORTAL SIN HERE!!?
-
-
-(define-template x:capitalize-model-name (compose (cut string-upcase <> 0 1) symbol->string om:name (lambda (o) (parent <model> o))))
-
-(define-template x:decapitalize-model-name (compose (cut string-downcase <> 0 1) symbol->string om:name (lambda (o) (parent <model> o))))
-(define-template x:upcase-model-name (compose string-upcase (->join "_") om:scope+name (lambda (o) (parent <model> o))))
-
-(define-template x:method code:trigger)
-
-(define-template x:parameters code:parameters 'formal-infix)
-(define-template x:formals code:formals 'formal-infix)
-(define-template x:formals-type code:formals 'formal-infix)
-
-(define-template x:methods code:ons)
-(define-template x:functions code:functions)
-
-(define-template x:reply-type code:reply-type 'name-infix)
-
-(define-template x:variable-name code:variable-name)
-
-(define-template x:assign-reply code:assign-reply)
-
-(define-template x:meta-child om:instances 'meta-child-infix)
-
-(define-template x:block identity)
-(define-template x:port-release (lambda (o) (if (om:blocking-compound? (parent <model> o)) o "")))
-
-(define-template x:expand-on code:expand-on)
-
-(define-template x:all-ports-meta-list om:ports 'meta-infix)
-
-(define-template x:in-event-definer (lambda (o) (filter om:in? (om:events o))) 'event-definer-infix)
-(define-template x:out-event-definer (lambda (o) (filter om:out? (om:events o))) 'event-definer-infix)
-
-(define-template x:enum-definer (lambda (o) (append (om:enums o) (filter (is? <enum>) (om:globals o)))))
-
-
-(define-template x:enum-field-definer (lambda (o) (map (symbol->enum-field o) ((compose .elements .fields) o))) 'comma-infix)
-
-(define-template x:variable-member-initializer om:variables)
-
-(define-template x:reply-member-initializer code:reply-types)
-
-(define-template x:injected-member-initializer (lambda (o) (filter .injected (om:ports o))))
-
-(define-template x:provided-member-initializer (lambda (o) (filter ast:provides? (om:ports o))))
-
-(define-template x:required-member-initializer (lambda (o) (filter (conjoin (negate .injected) ast:requires?) (om:ports o))))
-
-(define-template x:instance-name code:instance-name)
-(define-template x:instance-port-name code:instance-port-name)
-
-(define-template x:injected-instance-initializer code:injected-instances)
-
-(define-template x:non-injected-instance-initializer non-injected-instances)
-(define-template x:injected-binding-initializer injected-bindings)
-(define-template x:instance-initializer om:instances)
-(define-template x:bind-connect code:non-injected-bindings)
-
-(define-template x:bind-provided code:bind-provided)
-(define-template x:bind-required code:bind-required)
-
-(define-template x:binding-name code:instance-name)
-
-(define-template x:component-port code:component-port)
-
-(define-template x:injected-instance-system-initializer code:injected-instances-system)
-
-(define-template x:system-port-connect (lambda (o) (filter (negate om:port-bind?) ((compose .elements .bindings) o))))
-
-(define-template x:code-arguments code:arguments 'argument-infix <expression>)
-
-(define-template x:out-arguments code:out-argument 'argument-prefix <expression>)
-
-(define-template x:return code:return #f <type>)
-
 ;; main
-(define-template x:main-port-connect-in ast:out-triggers-in-events)
-(define-template x:main-port-connect-in-void ast:out-triggers-void-in-events)
-(define-template x:main-port-connect-in-valued ast:out-triggers-valued-in-events)
-(define-template x:main-port-connect-out ast:out-triggers-out-events)
-(define-template x:main-provided-port-init ast:provided)
-(define-template x:main-required-port-init ast:required)
-(define-template x:main-provided-flush-init om:provided)
-(define-template x:main-required-flush-init om:required)
-
-(define-template x:main-out-arg code:main-out-arg 'argument-infix)
-(define-template x:main-event-map-void ast:void-in-triggers 'event-map-prefix)
-(define-template x:main-event-map-valued ast:valued-in-triggers 'event-map-prefix)
-(define-template x:main-event-map-flush ast:required 'event-map-prefix)
-
-(define-template x:main-event-map-match-return code:main-event-map-match-return)
-(define-template x:main-required-port-name ast:required 'main-port-name-infix)
-
 
 ;;; dump to file
-(define-method (code:x:pand (o <ast>) template file-name)
-  (let ((file-name (if (and file-name (symbol? file-name)) (symbol->string file-name) file-name))) ;; FIXME
-    (dump-output (string-append (if (eq? template 'main) "" (dzn:dir o)) ;; FIXME AAARRRGH
-                                file-name)
-                 (code:x:pand-display o template))))
 
-(define-method (code:x:pand-display (o <ast>) template)
-  (let ((module (make-module 31 `(,(resolve-module '(gaiag dzn))
-                                  ,(resolve-module '(gaiag code))
-                                  ,(resolve-module `(gaiag ,(language)))))))
-    (module-define! module 'root (parent <root> o))
-    (dzn:indent
-     (lambda _
-       (parameterize ((template-dir (string-append %template-dir "/" (symbol->string (language)))))
-        (if (not (is-a? o <model>)) (x:pand (symbol-append template '@ (ast-name o)) o module)
-            (x:pand (symbol-append template '@ (ast-name o)) o module)))))))
+(define-method (have-non-interface-models? (o <root>))
+  (let* ((objects (filter (disjoin (is? <data>)
+                                   (negate (disjoin dzn-async? ast:imported? (is? <foreign>))))
+                          (.elements o)))
+         (non-interface-models (filter (negate (is? <interface>)) objects)))
+    (pair? non-interface-models)))
 
 (define-method (code:dump (o <root>))
-  (let ((name (basename (symbol->string (source-file o)) ".dzn"))
-        (objects (filter (disjoin (is? <data>)
-                                   (negate (disjoin dzn-async? om:imported? (is? <foreign>))))
-                          (.elements o))))
-    (code:x:pand o 'header (string-append name (symbol->string (dzn:extension (make <interface>)))))
-    (when (pair? (filter (negate (is? <interface>)) objects))
-      (code:x:pand o 'source (string-append name (symbol->string (dzn:extension (make <component>))))))))
-
-(define-method (code:dump (o <interface>))
-  (let ((name ((om:scope-name) o)))
-    (if (code:header?) (code:x:pand o 'header (symbol-append name (dzn:extension (make <interface>))))
-        (code:x:pand o 'source (symbol-append name (dzn:extension (make <interface>)))))))
-
-(define-method (code:dump (o <component>))
-  (let ((name ((om:scope-name) o)))
+  (let* ((dir (command-line:get 'output "."))
+         (stdout? (equal? dir "-"))
+         (dir (string-append dir "/" (dzn:dir o)))
+         (base (basename (symbol->string (source-file o)) ".dzn")))
     (when (code:header?)
-      (code:x:pand o 'header (symbol-append name (dzn:extension (make <interface>)))))
-    (code:x:pand o 'source (symbol-append name (dzn:extension (make <component>))))))
-
-(define-method (code:dump (o <foreign>))
-  (let ((name (code:skel-file o)))
-    (when (code:header?)
-      (code:x:pand o 'foreign-header (symbol-append name (dzn:extension (make <interface>)))))
-    (code:x:pand o 'foreign-source (symbol-append name (dzn:extension (make <component>)))))
-  (when (map-file o)
-    (let ((name ((om:scope-name) o)))
-      (code:x:pand o 'glue-bottom-header (symbol-append name (dzn:extension (make <interface>))))
-      (code:x:pand o 'glue-bottom-source (symbol-append name (dzn:extension (make <component>)))))))
-
-(define-method (code:dump (o <system>))
-  (let* ((name ((om:scope-name) o))
-         (shell (command-line:get 'shell #f))
-         (template (if (and shell (eq? name (string->symbol shell))) 'shell- (symbol))))
-    (when (code:header?)
-      (code:x:pand o (symbol-append template 'header) (symbol-append name (dzn:extension (make <interface>)))))
-    (code:x:pand o (symbol-append template 'source) (symbol-append name (dzn:extension (make <component>)))))
-  (when (map-file o)
-    (code:dump-glue o)))
+      (let* ((ext (symbol->string (dzn:extension (make <interface>))))
+             (file-name (string-append dir base ext)))
+        (if stdout? ((%x:header) o)
+            (with-output-to-file file-name
+              (dzn:indent (cut (%x:header) o))))))
+    (if (or (not (code:header?)) (have-non-interface-models? o))
+        (let* ((ext (symbol->string (dzn:extension (make <component>))))
+               (file-name (string-append dir base ext)))
+          (if stdout? ((%x:source) o)
+              (with-output-to-file file-name
+                (dzn:indent (cut (%x:source) o))))))))
 
 (define (code:dump-main o)
-  (and-let* ((name ((om:scope-name) o))
-             (model (and (and=> (command-line:get 'model #f) string->symbol)))
-             ((is-a? o <component-model>))
-             ((eq? model name)))
-    (code:x:pand o 'main (symbol-append 'main (dzn:extension o)))))
+  (let* ((dir (command-line:get 'output "."))
+         (stdout? (equal? dir "-"))
+         (ext (symbol->string (dzn:extension o)))
+         (dir (string-append dir "/"))
+         (base "main")
+         (file-name (string-append dir base ext)))
+   (and-let* ((name ((om:scope-name) o))
+              (model (and (and=> (command-line:get 'model #f) string->symbol)))
+              ((is-a? o <component-model>))
+              ((eq? model name)))
+     (if stdout? ((%x:main) o)
+         (with-output-to-file file-name (cut (%x:main) o))))))
+
+;; (define-method (code:x:pand (o <ast>) x:template file-name)
+;;   (pke 'code:x:pand<ast>: (ast-name o) 'file-name file-name)
+;;   (let ((file-name (if (and file-name (symbol? file-name)) (symbol->string file-name) file-name))) ;; FIXME
+;;     (dump-output (string-append (if (eq? x:template 'main) "" (dzn:dir o)) ;; FIXME AAARRRGH
+;;                                 file-name)
+;;                  (code:x:pand-display o x:template))))
+
+;; (define-method (code:x:pand-display (o <ast>) x:template)
+;;   (pke 'code:x:pand-display (ast-name o))
+;;   (dzn:indent (cut x:template o)))
+
+;; (define-method (code:dump (o <root>))
+;;   ((%x:source) o))
+
+;; (define-method (code:dump (o <root>))
+;;   (pke 'code:dump<root>)
+;;   (let ((name (basename (symbol->string (source-file o)) ".dzn"))
+;;         (objects (filter (disjoin (is? <data>)
+;;                                    (negate (disjoin dzn-async? ast:imported? (is? <foreign>))))
+;;                           (.elements o))))
+;;     (code:x:pand o (%x:header) (string-append name (symbol->string (dzn:extension (make <interface>)))))
+;;     (when (pair? (filter (negate (is? <interface>)) objects))
+;;       (code:x:pand o (%x:source) (string-append name (symbol->string (dzn:extension (make <component>))))))
+;;     ))
+
+;; (define-method (code:dump (o <interface>))
+;;   (let ((name ((om:scope-name) o)))
+;;     (if (code:header?) (code:x:pand o (%x:header) (symbol-append name (dzn:extension (make <interface>))))
+;;         (code:x:pand o (%x:source) (symbol-append name (dzn:extension (make <interface>))))))
+;;   )
+
+;; (define-method (code:dump (o <component>))
+;;   (let ((name ((om:scope-name) o)))
+;;     (when (code:header?)
+;;       (code:x:pand o (%x:header) (symbol-append name (dzn:extension (make <interface>)))))
+;;     (code:x:pand o (%x:source) (symbol-append name (dzn:extension (make <component>))))))
+
+;; (define-method (code:dump (o <foreign>))
+;;   (let ((name (code:skel-file o)))
+;;     (when (code:header?)
+;;       (code:x:pand o 'foreign-header (symbol-append name (dzn:extension (make <interface>)))))
+;;     (code:x:pand o 'foreign-source (symbol-append name (dzn:extension (make <component>)))))
+;;   (when (map-file o)
+;;     (let ((name ((om:scope-name) o)))
+;;       (code:x:pand o 'glue-bottom-header (symbol-append name (dzn:extension (make <interface>))))
+;;       (code:x:pand o 'glue-bottom-source (symbol-append name (dzn:extension (make <component>)))))))
+
+;; (define-method (code:dump (o <system>))
+;;   (let* ((name ((om:scope-name) o))
+;;          (shell (command-line:get 'shell #f))
+;;          (template (if (and shell (eq? name (string->symbol shell))) 'shell- (symbol))))
+;;     (when (code:header?)
+;;       (code:x:pand o (symbol-append template (%x:header)) (symbol-append name (dzn:extension (make <interface>)))))
+;;     (code:x:pand o (symbol-append template (%x:source)) (symbol-append name (dzn:extension (make <component>)))))
+;;   (when (map-file o)
+;;     (code:dump-glue o)))
 
 (define-method (code:dump-glue (o <system>))
   (let ((name (om:name o)))
@@ -809,7 +761,6 @@
 
 (define (code:skel-file model)
   ((->symbol-join '_) (append (drop-right (code:scope+name model) 1) '(skel) (take-right (code:scope+name model) 1))))
-
 
 ;;  glue
 

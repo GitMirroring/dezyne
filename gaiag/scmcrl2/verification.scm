@@ -1,10 +1,13 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -46,15 +49,20 @@
   #:use-module (gaiag mcrl2)
   #:use-module (gaiag misc)
   #:use-module (gaiag resolve)
-  #:use-module (gaiag xpand)
   #:use-module (scmcrl2 traces)
   #:use-module (gash job)
   #:use-module (gash pipe)
   #:use-module (json)
 
-  #:export (mcrl2:init
-            mcrl2:verify
+  #:export (mcrl2:verify
             verify:scope-name))
+
+(define x:interface-init (@@ (gaiag mcrl2) x:interface-init))
+(define x:interface-lts-init (@@ (gaiag mcrl2) x:interface-init))
+(define x:component-init (@@ (gaiag mcrl2) x:component-init))
+(define x:compliance-init (@@ (gaiag mcrl2) x:compliance-init))
+(define x:determinism-init (@@ (gaiag mcrl2) x:determinism-init))
+(define x:component-deadlock-init (@@ (gaiag mcrl2) x:component-deadlock-init))
 
 (define (verify:scope-name o)
   ((om:scope-name '.) o))
@@ -75,13 +83,6 @@
 				      hidden-actions)))
 			     req-ports)
 		 "," 'infix)))
-
-(define-method (mcrl2:init ast template)
-  (let ((module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
-                                  ,(resolve-module '(gaiag mcrl2))))))
-    (module-define! module 'ast ast)
-    (parameterize ((template-dir (string-append %template-dir "/mcrl2")))
-      (with-output-to-string (lambda () (x:pand template ast module))))))
 
 ;; debugx0r
 ;; (define pipeline->string- pipeline->string)
@@ -148,7 +149,7 @@
 (define ((mcrl2:verify-interface-deadlock model) dir file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
  	 (foo (assert-start 'interface model-name 'deadlock verbose?))
-         (commands `(,(cut display (mcrl2:init model 'interface-init@ast))
+         (commands `(,(cut x:interface-init model)
                      ("cat" "verify.mcrl2" "-")
                      ("mcrl22lps" "--quiet" "-b")
                      ("lpsconstelm" "--quiet" "-st")
@@ -171,7 +172,7 @@
   (let* ((model-name ((compose ->string verify:scope-name) model))
  	 (foo (assert-start 'interface model-name 'livelock verbose?))
          (taus "")
-         (commands `(,(cut display (mcrl2:init model 'interface-init@ast))
+         (commands `(,(cut x:interface-init model)
                      ("cat" "verify.mcrl2" "-")
                      ("mcrl22lps" "--quiet" "-b")
                      ("lpsconstelm" "--quiet" "-st")
@@ -194,7 +195,7 @@
 (define ((mcrl2:verify-component-deterministic model) dir file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
  	 (foo (assert-start 'component model-name 'deadlock verbose?))
-         (commands `(,(cut display (mcrl2:init model 'determinism-init@ast))
+         (commands `(,(cut x:determinism-init model)
                      ("cat" "verify.mcrl2" "-")
                      ("tee" "0.mcrll2")
                      ("mcrl22lps" "--quiet" "-b")
@@ -216,7 +217,7 @@
 (define ((mcrl2:verify-component-illegal model) dir file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
  	 (foo (assert-start 'component model-name 'illegal verbose?))
-         (commands `(,(cut display (mcrl2:init ast 'component-init@ast))
+         (commands `(,(cut x:component-init ast)
                      ("cat" "verify.mcrl2" "-")
                      ("tee" "0.mcrll2")
                      ("mcrl22lps" "--quiet" "-b")
@@ -238,7 +239,7 @@
 (define ((mcrl2:verify-component-deadlock model) dir file-name ast verbose? all?)
   (let* ((model-name ((compose ->string verify:scope-name) model))
  	 (foo (assert-start 'component model-name 'deadlock verbose?))
-         (commands `(,(cut display (mcrl2:init ast 'component-deadlock-init@ast))
+         (commands `(,(cut x:component-deadlock-init ast)
                      ("cat" "-" "verify.mcrl2")
                      ("mcrl22lps" "--quiet" "-b")
                      ("lpsconstelm" "--quiet" "-st")
@@ -260,7 +261,7 @@
   (let* ((model-name ((compose ->string verify:scope-name) model))
  	 (foo (assert-start 'component model-name 'livelock verbose?))
          (taus (find-taus model model-name (livelock-hidden-actions)))
-         (commands `(,(cut display (mcrl2:init ast 'component-init@ast))
+         (commands `(,(cut x:component-init ast)
                      ("cat" "verify.mcrl2" "-")
                      ("mcrl22lps" "--quiet" "-b")
                      ("lpsconstelm" "--quiet" "-st")
@@ -284,7 +285,7 @@
   (let* ((model-name ((compose ->string verify:scope-name) model))
  	 (foo (assert-start 'component model-name 'compliance verbose?))
          ;;(provided-lps (create-lps "verify.mcrl2" 'provided ast))
-         (commands `(,(cut display (mcrl2:init ast 'compliance-init@ast))
+         (commands `(,(cut x:compliance-init ast)
                      ("cat" "verify.mcrl2" "-")
                      ("mcrl22lps" "--quiet" "-b")
                      ("lpsconstelm" "--quiet" "-st")
@@ -295,7 +296,7 @@
                      ("bash" "-c" "cat > provided"))) ;; FIXME
          (result (apply pipeline->string commands))
          (taus (find-taus model model-name (compliance-hidden-actions)))
-         (commands `(,(cut display (mcrl2:init ast 'component-init@ast))
+         (commands `(,(cut x:component-init ast)
                      ("cat" "verify.mcrl2" "-")
                      ("mcrl22lps" "--quiet" "-b")
                      ("lpsconstelm" "--quiet" "-st")
@@ -326,7 +327,7 @@
 ;;   (let* ((model-name ((compose ->string verify:scope-name) model))
 ;;  	 (foo (assert-start 'component model-name 'compliance verbose?))
 ;;          ;;(provided-lps (create-lps "verify.mcrl2" 'provided ast))
-;;          (commands `(,(cut display (mcrl2:init ast 'compliance-init@ast))
+;;          (commands `(,(cut display (mcrl2:init ast "compliance-init@ast"))
 ;;                      ("cat" "verify.mcrl2" "-")
 ;;                      ("mcrl22lps" "--quiet" "-b")
 ;;                      ("lpsconstelm" "--quiet" "-st")
@@ -337,7 +338,7 @@
 ;;                      ("bash" "-c" "cat > provided"))) ;; FIXME
 ;;          (result (apply pipeline->string commands))
 ;;          (taus (find-taus model model-name (compliance-hidden-actions)))
-;;          (commands `(,(cut display (mcrl2:init ast 'component-init@ast))
+;;          (commands `(,(cut display (mcrl2:init ast "component-init@ast"))
 ;;                      ("cat" "verify.mcrl2" "-")
 ;;                      ("mcrl22lps" "--quiet" "-b")
 ;;                      ("lpsconstelm" "--quiet" "-st")

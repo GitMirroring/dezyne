@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -30,9 +30,9 @@
 
   #:use-module (gaiag norm-event)
 
+  #:use-module (gaiag command-line)
   #:use-module (gaiag dzn)
   #:use-module (gaiag code)
-  #:use-module (gaiag command-line)
   #:use-module (gaiag indent)
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
@@ -44,15 +44,45 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag deprecated om)
   #:use-module (gaiag ast)
-  #:use-module (gaiag xpand)
 
   #:use-module (gaiag location)
+  #:use-module (gaiag templates)
 
   #:export (.asd-channel
             .asd-event
-            <glue-event>))
+            <glue-event>
 
-(define ast-> (@@ (gaiag code) ast->))
+            c++:argument_n
+            c++:asd-api-definition
+            c++:asd-api-instance-declaration
+            c++:asd-api-instance-init
+            c++:asd-cb-definition
+            c++:asd-cb-event-init
+            c++:asd-cb-instance-declaration
+            c++:asd-cb-instance-init
+            c++:asd-cb-method-definition
+            c++:asd-constructor
+            c++:asd-get-api
+            c++:asd-get-api-definition
+            c++:asd-method-declaration
+            c++:asd-method-definition
+            c++:asd-register-cb
+            c++:asd-register-cb-definition
+            c++:asd-register-st
+            c++:construction-include
+            c++:construction-parameters
+            c++:construction-parameters-locator-get
+            c++:construction-parameters-locator-set
+            c++:construction-signature
+            c++:enum->string
+            c++:enum-field->string
+            c++:name
+            c++:optional-return
+            c++:return-type
+            c++:string->enum
+            c++:type-ref
+            asd?
+            ))
 
 (define-class <glue-event-node> (<event-node>)
   (asd-channel #:getter .asd-channel #:init-value #f #:init-keyword #:asd-channel)
@@ -108,138 +138,15 @@
 (define-method (c++:enum->string (o <interface>))
   (append (filter (is? <enum>) (om:globals o)) (om:enums o)))
 
-(define-method (code:dzn-locator (o <instance>)) ;; MORTAL SIN HERE!!?
-  (let* ((model (parent <model> o)))
-    (if (null? (injected-bindings model)) ""
-        "_local")))
-
-(define-method (code:main-out-arg-define (o <trigger>))
-  (let ((formals ((compose .elements .formals) o)))
-    (map (lambda (f i) (clone f #:name i))
-         formals (iota (length formals)))))
-
-(define-method (code:main-out-arg-define-formal (o <formal>)) ;; MORTAL SIN HERE!!?
-  (let ((type ((compose .value .type) o)))
-    (if (not (om:out-or-inout? o)) ""
-        (if (equal? type 'int) o
-            "/*FIXME*/"))))
-
 (define-method (c++:argument_n (o <trigger>))
   (map
    (lambda (f i) (clone f #:name (string-append "_"  (number->string i))))
    (code:formals o)
    (iota (length (code:formals o)) 1 1)))
 
-
-;;; templates
-
-(define-template x:name c++:name)
-(define-template x:declare-method code:trigger)
-(define-template x:return-type c++:return-type #f <type>)
-(define-template x:calls ast:void-in-triggers)
-(define-template x:rcalls ast:valued-in-triggers)
-(define-template x:prefix-formals-type code:formals 'formal-prefix)
-(define-template x:pump (lambda (o) (if (null? (ast:req-events o)) "" o)))
-(define-template x:pump-include (lambda (o) (if (null? (ast:req-events o)) "" o)))
-(define-template x:reqs ast:req-events)
-(define-template x:clrs ast:clr-events)
-
-(define-template x:open-namespace (lambda (o) (map (lambda (x) (string-join (list " namespace " (symbol->string x) " {") "")) (om:scope o))))
-(define-template x:close-namespace (lambda (o) (map (lambda (x) "}\n") (om:scope o))))
-
-(define-template x:meta identity)
-(define-template x:ports-meta-list (lambda (o) (filter ast:requires? (om:ports o))) 'meta-infix)
-(define-template x:check-bindings-list (lambda (o) ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports o)))))
-
-(define-template x:global-enum-definer (lambda (o) (filter (is? <enum>) (om:globals o))))
-(define-template x:check-in-binding (lambda (o) (filter om:in? (om:events o))))
-(define-template x:check-out-binding (lambda (o) (filter om:out? (om:events o))))
-
-(define-template x:interface-enum-to-string c++:enum->string)
-(define-template x:interface-string-to-enum c++:enum->string)
-
-(define-template x:enum-field-to-string c++:enum-field->string)
-
-
-(define-template x:string-to-enum c++:string->enum)
-
-(define-template x:asd-voidreply (lambda (o) (if asd? "__ASD_VoidReply, " "")))
-
-(define-template x:scoped-port-name (lambda (port) (let ((scope-name ((compose .name .type) port))) (append (.scope scope-name) (list (.name scope-name))))) 'type-infix)
-
-(define-template x:reply-member-declare code:reply-types)
-
-(define-template x:variable-member-declare (lambda (o) (om:variables o)))
-
-(define-template x:out-binding-lambda (lambda (o) (filter ast:provides? (om:ports o))))
-(define-template x:provided-port-declare (lambda (o) (filter ast:provides? (om:ports o))))
-(define-template x:required-port-declare (lambda (o) (filter ast:requires? (om:ports o))))
-(define-template x:async-port-declare (lambda (o) (om:ports (.behaviour o))))
-
-(define-template x:stream-member om:variables 'stream-comma-infix)
-(define-template x:method-declare code:ons)
-(define-template x:function-declare code:functions)
-
-(define-template x:include-guard (lambda (o) (if (code:model2file?) o "")))
-(define-template x:endif (lambda (o) (if (code:model2file?) o "")))
-
-(define-template x:provided-port-reference-declare (lambda (o) (filter ast:provides? (om:ports o))))
-(define-template x:required-port-reference-declare (lambda (o) (filter ast:requires? (om:ports o))))
-
-(define-template x:injected-instance-declare code:injected-instances-system)
-(define-template x:injected-binding-declare injected-bindings)
-(define-template x:non-injected-instance-declare non-injected-instances)
-(define-template x:system-rank ast:provided)
-
 (define-method (c++:optional-return (o <trigger>))
   (let ((type ((compose .type .signature .event) o)))
     (if (is-a? type <void>) "" type)))
-
-(define-template x:optional-return c++:optional-return #f <type>)
-
-;; source-system
-(define-template x:provided-port-reference-initializer ast:provided)
-(define-template x:required-port-reference-initializer ast:required)
-
-(define-template x:constructor-meta-initializer non-injected-instances)
-(define-template x:shell-provided-meta-initializer ast:provided)
-(define-template x:shell-required-meta-initializer ast:required)
-(define-template x:injected-instance-meta-initializer injected-instances)
-(define-template x:non-injected-instance-meta-initializer non-injected-instances)
-
-(define-template x:dzn-locator code:dzn-locator)
-
-(define-template x:header-data (lambda (o) (filter (is? <data>) (.elements o))))
-(define-template x:header (lambda (o) (topological-sort (map dzn:annotate-shells (filter (negate (disjoin om:imported? (is? <type>) (is? <interface>))) (.elements o))))))
-
-;; shell-header-system
-(define-template x:provided-port-instance-declare (lambda (o) (filter ast:provides? (om:ports o))))
-(define-template x:required-port-instance-declare (lambda (o) (filter ast:requires? (om:ports o))))
-
-;; shell-source-system
-(define-template x:instance-meta-initializer identity)
-(define-template x:shell-provided-in ast:provided-in-triggers)
-(define-template x:shell-required-out ast:required-out-triggers)
-(define-template x:shell-provided-out ast:provided-out-triggers)
-(define-template x:shell-required-in ast:required-in-triggers)
-(define-template x:capture-list identity)
-(define-template x:capture code:capture-arguments 'capture-prefix)
-(define-template x:shell-non-injected-instance-meta non-injected-instances)
-
-;; foreign-header-component
-(define-template x:pure-virtual-method-declare ast:in-triggers)
-(define-template x:declare-method code:trigger)
-(define-template x:declare-pure-virtual-method identity)
-
-;; main
-(define-template x:main-out-arg-define code:main-out-arg-define)
-(define-template x:main-out-arg-define-formal identity)
-
-(define-template x:main-event-map-flush-asd (if (and #f asd?) ast:required (const '())) 'event-map-prefix)
-
-(define-template x:prefix-arguments-n c++:argument_n 'argument-prefix <expression>)
-
-(define-template x:c++:type-ref c++:type-ref)
 
 ;; glue-top-source-glue-system
 (define-public (parse-component-map component)
@@ -497,44 +404,19 @@
                            "}\n"))))
        (delete-duplicates (map second ((asd-interfaces om:out?) (provided-interface model))))))
 
-(define-template x:construction-include c++:construction-include)
+(define-templates-macro define-templates c++)
+(include "../templates/dzn.scm")
+(include "../templates/code.scm")
+(include "../templates/c++.scm")
 
-(define-template x:construction-signature c++:construction-signature)
+(define (c++:root-> root)
+  (parameterize ((language 'c++)
+                 (%x:header x:header)
+                 (%x:source x:source)
+                 (%x:main x:main))
+    (code:root-> root)))
 
-(define-template x:construction-parameters c++:construction-parameters)
-
-(define-template x:construction-parameters-locator-set c++:construction-parameters-locator-set)
-
-(define-template x:construction-parameters-locator-get c++:construction-parameters-locator-get)
-
-(define-template x:asd-constructor c++:asd-constructor)
-
-(define-template x:asd-api-instance-declaration c++:asd-api-instance-declaration)
-
-(define-template x:asd-api-instance-init c++:asd-api-instance-init)
-
-(define-template x:asd-api-definition c++:asd-api-definition)
-
-(define-template x:asd-cb-definition c++:asd-cb-definition)
-
-(define-template x:asd-cb-instance-declaration c++:asd-cb-instance-declaration)
-
-(define-template x:asd-cb-instance-init c++:asd-cb-instance-init)
-
-(define-template x:asd-cb-event-init c++:asd-cb-event-init)
-
-(define-template x:asd-get-api c++:asd-get-api)
-
-(define-template x:asd-register-cb c++:asd-register-cb)
-
-(define-template x:asd-register-st c++:asd-register-st)
-
-(define-template x:asd-method-declaration c++:asd-method-declaration)
-
-(define-template x:asd-method-definition c++:asd-method-definition)
-
-(define-template x:asd-cb-method-definition c++:asd-cb-method-definition)
-
-(define-template x:asd-get-api-definition c++:asd-get-api-definition)
-
-(define-template x:asd-register-cb-definition c++:asd-register-cb-definition)
+(define (ast-> ast)
+  (let ((root (code:om ast)))
+    (c++:root-> root))
+  "")

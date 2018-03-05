@@ -4,6 +4,6 @@
 #x:header-
 ##ifndef INTERFACE_ONLY
 ////////////////////////////////////////////////////////////////////////////////
-#x:header
+#x:header-model
 ##endif // INTERFACE_ONLY
 ##endif // #code:file-name _HH

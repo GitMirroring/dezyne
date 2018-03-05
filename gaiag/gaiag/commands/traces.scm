@@ -3,7 +3,7 @@
 ;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -47,7 +47,6 @@
   #:use-module (gaiag command-line)
   #:use-module (gaiag parse)
 
-  #:use-module (gaiag xpand)
   #:use-module (gaiag shell-util)
   #:use-module (gash job)
   #:use-module (gash pipe)
@@ -56,6 +55,9 @@
 
   #:export (parse-opts
             main))
+
+(define x:interface-lts-init (@@ (gaiag mcrl2) x:interface-lts-init))
+(define x:component-init (@@ (gaiag mcrl2) x:component-init))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -140,8 +142,8 @@ errors."
   (let* ((component (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <component>) (.elements root))))
          (interface (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <interface>) (.elements root))))
          (root (if component root interface))
-         (init (if component 'component-init@ast 'interface-lts-init@ast))
-         (commands `(,(cut display (mcrl2:init root init))
+         (init (if component x:component-init x:interface-lts-init))
+         (commands `(,(cut init root)
                      ("cat" "-" "verify.mcrl2")
                      ("tee" "0")
                      ("mcrl22lps" "--quiet" "-b")

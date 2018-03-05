@@ -1,7 +1,9 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -23,14 +25,35 @@
 ;;; Code:
 
 (define-module (gaiag c++03)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag util)
+  #:use-module (gaiag misc)
   #:use-module (gaiag ast)
+  #:use-module (gaiag deprecated om)
+  #:use-module (gaiag command-line)
+  #:use-module (gaiag dzn)
+  #:use-module (gaiag code)
   #:use-module (gaiag c++)
+  #:use-module (gaiag templates)
   #:export (ast->))
 
-(define ast-> (@@ (gaiag c++) ast->))
+(define-templates-macro define-templates c++03)
+(include "../templates/dzn.scm")
+(include "../templates/code.scm")
+(include "../templates/c++03.scm")
 
-;;(define c++:scope-name (@@ (gaiag c++) c++:scope-name))
-;;(define glue (@@ (gaiag code) glue))
-;;(define asd-interfaces (@@ (gaiag code) asd-interfaces))
-;;(define event2->interface1-event1-alist (@@ (gaiag code) event2->interface1-event1-alist))
+(define (c++03:root-> root)
+  (parameterize ((language 'c++03)
+                 (%x:header x:header)
+                 (%x:source x:source)
+                 (%x:main x:main))
+    (code:root-> root)))
+
+(define (ast-> ast)
+  (let ((root (code:om ast)))
+    (c++03:root-> root))
+  "")

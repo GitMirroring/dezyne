@@ -1,1 +1,1 @@
-#x:scope '#.name.name  = struct #x:enum-field-struct;
+#x:mcrl2-scope '#.name.name  = struct #x:enum-field-struct;

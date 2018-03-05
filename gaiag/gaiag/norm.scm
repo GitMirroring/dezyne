@@ -49,7 +49,6 @@
   #:use-module (gaiag resolve)
 
   #:export (
-            <skip>
            add-skip
            annotate-otherwise
            aggregate-guard-g
@@ -69,9 +68,6 @@
            norm:triggers-equal?
            norm:on-statement-equal?
            ))
-
-(define-class <skip-node> (<imperative-node>))
-(wrap <skip-node> <skip> (<imperative>))
 
 (define* ((prepend-true-guard #:optional guard-seen?) o)
   (match o

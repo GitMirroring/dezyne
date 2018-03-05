@@ -52,14 +52,13 @@
   #:use-module (gaiag compare)
   #:use-module (gaiag code)
   #:use-module (gaiag csp)
-  #:use-module (gaiag c++)
   #:use-module (gaiag dzn)
   #:use-module (gaiag misc)
   #:use-module (gaiag norm)
   #:use-module (gaiag norm-event)
   #:use-module (gaiag norm-state)
   #:use-module (gaiag resolve)
-  #:use-module (gaiag xpand)
+  #:use-module (gaiag templates)
 
   #:export (mcrl2:om
             tick-names
@@ -114,7 +113,6 @@
 (wrap <assign-action-node> <assign-action> (<ast>))
 (wrap <variable-call-node> <variable-call> (<ast>))
 (wrap <variable-action-node> <variable-action> (<ast>))
-
 
 (define-method (.event.name (o <assign-action>)) ((compose .event.name .action) o))
 (define-method (.event.name (o <variable-action>)) ((compose .event.name .action) o))
@@ -403,7 +401,6 @@
     om->list
     ) root))
 
-
 (define (mcrl2:om root) ;; FIXME: already root/om
   ((compose
     ;;    (lambda (o) (pretty-print (om->list o) (current-error-port)) o)
@@ -425,19 +422,14 @@
 
 ;;(use-modules (statprof))
 (define (root->mcrl2 root)
-  (let* ((module (make-module 31 `(,(resolve-module '(gaiag deprecated code))
-                                   ,(resolve-module '(gaiag mcrl2)))))
-         (model-name (and=> (command-line:get 'model #f) string->symbol))
+  (let* ((model-name (and=> (command-line:get 'model #f) string->symbol))
          (model (or (and model-name
                          (find (om:named model-name) (ast:model* root)))
                     (find (is? <component>) (ast:model* root))
                     (find (is? <interface>) (ast:model* root)))))
 ;;    (stderr "model: ~a\n" model)
-    (module-define! module 'root root)
-    (parameterize ( ;;(this-module module)
-                   (%model model)
-                   (template-dir (string-append %template-dir "/mcrl2")))
-      (x:pand 'source@root (module-ref module 'root) module)
+    (parameterize ((%model model))
+            (x:source root)
       ;;      (statprof (lambda () (x:pand 'source@root (module-ref module 'root) module)) #:count-calls? #t)
       )))
 
@@ -490,43 +482,13 @@
     (if (null? component)
         (car (filter (is? <interface>) (.elements o)))
         component)))
-(define-template x:model mcrl2:get-model)
-(define-template x:mcrl2-component-name (lambda (o) (mcrl2:model-name (car (filter (is? <component>) (.elements (parent <root> o)))))))
-(define-template x:mcrl2-provided-port-type mcrl2:provided-port-type)
-;;(define-template x:mcrl2-provided-port-name (lambda (o) (stderr "mcrl2-provided-port-name: ~a\n" o) (mcrl2:provided-port-name o)))
-(define-template x:mcrl2-provided-port-name mcrl2:provided-port-name)
-(define-template x:provided-port-type (lambda (o) (mcrl2:provided-port-type o)))
-(define-template x:provided-port-name (lambda (o) (mcrl2:provided-port-name (parent <model> o))))
-(define-template x:global-type om:globals 'newline-indent-infix)
-(define-template x:sort-interface mcrl2:interfaces 'newline-indent-infix)
-(define-template x:sort-component identity 'newline-indent-infix)
-(define-template x:action-struct (lambda (o) (map
-					      (lambda (x) (make <interface-event> #:interface o #:event x))
-					      ((compose .elements .events) o))) 'pipe-infix)
-(define-template x:interface-name mcrl2:interface-name)
-(define-template x:interfaces-allow-dillegals mcrl2:interfaces 'newline-indent-infix)
-(define-template x:map-interface-name mcrl2:interfaces 'newline-indent-infix)
-(define-template x:eqn-interface-name mcrl2:interfaces 'newline-indent-infix)
-(define-template x:eqn-allow-dillegals (lambda (o) (mcrl2:interfaces (car (filter (is? <component>) (.elements o))))) 'newline-indent-infix)
-(define-template x:global-interface-reply mcrl2:interfaces 'newline-indent-infix)
-(define-template x:interface-action-alphabet mcrl2:interfaces 'newline-indent-infix)
-(define-template x:port-action-alphabet mcrl2:ports 'newline-indent-infix)
-(define-template x:port-interface-name (compose mcrl2:model-name .type))
-(define-template x:event-name (compose .name .event))
-(define-template x:event-dir (compose .direction .event))
-(define-template x:integers get-ints 'newline-indent-suffix)
-(define-template x:enum-struct get-enums 'newline-indent-suffix)
-(define-template x:queue-size (lambda (_) (command-line:get 'queue_size 3)))
 
-(define-template x:mcrl2-reply-type mcrl2:reply-type)
-(define-template x:mcrl2-reply-expression mcrl2:reply-expression #f <expression>)
 (define-method (mcrl2:reply-expression (o <reply>))
   (let* ((e (.expression o))
          (t (ast:expression-type e)))
     (if (is-a? t <void>)
         o
         e)))
-(define-template x:mcrl2-model-name mcrl2:model-name)
 
 (define-method (mcrl2:model-name (o <model>))
   ((om:scope-name (string->symbol "'")) o))
@@ -570,8 +532,6 @@
 (define-method (mcrl2:reply-type (o <the-end>))
   ((compose mcrl2:expand-types .signature .event .trigger) o))
 
-(define-template x:mcrl2-references-sort models-with-calls 'newline-infix <model>)
-
 (define (models-with-calls o)
   (append-map
    (lambda (m)
@@ -580,11 +540,6 @@
 	 '()))
    (append (mcrl2:interfaces o) (list o))))
 
-(define-template x:references references 'pipe-infix)
-(define-template x:resolve-reference references 'else-infix)
-(define-template x:return-types typed-functions 'comma-suffix)
-(define-template x:other-function-returns other-function-returns 'comma-infix)
-(define-template x:init-return-value (compose .type .signature))
 (define (other-function-returns o)
   (let* ((function (parent <function> o))
          (model (parent <model> function))
@@ -605,29 +560,6 @@
         refs
         o)))
 
-(define-template x:valued-return
-  (lambda (o)
-    (or (.expression o) "")) #f <expression>)
-
-(define-template x:valued-comma
-  (lambda (o)
-    (or (and (.expression o)
-             (pair? (other-function-returns o))
-             ",") "")) #f <expression>)
-
-(define-template x:mcrl2-return-process
-  (lambda (o)
-    (let ((models (models-with-calls o)))
-      (if (pair? models)
-	  models
-	  '()))) 'newline-infix <model>)
-
-(define-template x:enum-field-struct
-  (lambda (o) (map
-	       (lambda (x) (clone (make <enum-name-field> #:name (.name.name o) #:field x) #:parent o))
-	       ((compose .elements .fields) o))) 'pipe-infix)
-(define-template x:reply-union-struct mcrl2:reply-types 'pipe-infix <type>)
-
 (define-method (scope o) (let ((name (.scope (.name o))))
                            (if (null? name)
                                (list "global'")
@@ -635,11 +567,6 @@
 (define-method (scope (o <enum-name-field>)) (scope (.parent o)))
 (define-method (scope (o <event>)) ((compose scope .type .signature) o))
 (define-method (scope (o <reply>)) (scope (.type (.expression o))))
-(define-template x:scope scope 'type-infix)
-(define-template x:provided-port-reply-types om:provided)
-(define-template x:mcrl2-reply-union-declaration identity)
-(define-template x:event-type (compose .type .signature))
-(define-template x:mcrl2-reply-types mcrl2:reply-types 'union-suffix <type>)
 (define-method (mcrl2:reply-types (o <port>)) (mcrl2:reply-types (.type o)))
 (define-method (mcrl2:reply-types (o <interface>))
   (let ((events (om:events o)))
@@ -664,26 +591,6 @@
 	  ((compose (cut filter (is? <int>) <>) .elements .types .behaviour) o)))
 (define-method (get-ints (o <component>))
   ((compose (cut filter (is? <int>) <>) .elements .types .behaviour) o))
-
-(define-template x:print-ast
-  (lambda (o) (stderr "AST: ~a\n" o) (->string o)))
-
-(define-template x:pretty-print-dzn
-  (let ((debug? (gdzn:command-line:get 'debug)))
-    (if debug?
-     (lambda (o)
-       (string-join (string-split (string-trim-right
-                                   (ast->dzn (or (and=> (as o <behaviour>) .statement) o)))
-                                  #\newline) "\n     % " 'prefix))
-     (const ""))))
-
-(define-template x:mcrl2-interface-process
-  (lambda (o)
-    (match o
-      (($ <component>) (mcrl2:interfaces o))
-      (($ <interface>) (.behaviour o)))))
-
-(define-template x:mcrl2-component-process .behaviour)
 
 (define-method (mcrl2:expand-types (o <enum-literal>)) (.type o))
 (define-method (mcrl2:expand-types (o <type>))
@@ -713,18 +620,9 @@
 (define-method (mcrl2:expand-types (o <variable-action>))
   (mcrl2:expand-types (.variable o)))
 
-(define-template x:assign-call-var-name (compose .variable.name .assign))
-(define-template x:variable-call-var-name (compose .name .variable))
-(define-template x:mcrl2-provided-port-type-name (compose mcrl2:expand-types car ast:event* .type car om:provided (cut parent <model> <>)))
-(define-template x:mcrl2-type-name mcrl2:expand-types)
-(define-template x:action-union-struct om:ports 'pipe-infix)
-
-(define-template x:mcrl2-process-name identity #f <ast>)
-(define-template x:function-name function-name)
 (define-method (function-name (o <ast>))
   (let ((parent (parent <function> o)))
     (.name parent)))
-(define-template x:function-scope function-scope)
 (define-method (function-scope (o <ast>))
   (let ((parent (parent <function> o)))
     (if parent
@@ -743,13 +641,6 @@
   ;;        (foo (stderr "\nresult: <~a>\n" result)))
   ;;   result)
   )
-
-(define-template x:mcrl2-statement
-  (lambda (o)
-    (match o
-      (($ <behaviour>) (.statement o))
-      (($ <guard>) o)
-      ((_) "otherwise"))))
 
 (define mcrl2:port-identifier
   (let ((id-alist '())
@@ -779,11 +670,6 @@
                               (set! next-alist (assoc-set! next-alist sid next))
                               next)))))))
 
-(define-template x:next-call-reference
-  (lambda (o)
-    (mcrl2:process-identifier (process-continuation o))))
-
-(define-template x:mcrl2-type .type)
 (define-method (mcrl2-type (o <type>))
   (match o
     (($ <bool>) "Bool")
@@ -826,14 +712,9 @@
 					    (list (clone (make <cont> #:type (clone (make <refs>) #:parent parent)) #:parent parent))))
 	      (else (locals- parent result))))))
 
-(define-template x:process-parameters identity #f <ast>)
 (define-method (variables-in-scope (o <model>)) (globals o))
-(define-method (variables-in-scope (o <ast>))
-  (append (globals o) (locals o)))
-(define-template x:variables-in-scope variables-in-scope 'comma-prefix)
-(define-template x:variable-names-in-scope locals 'comma-prefix)
+(define-method (variables-in-scope (o <ast>)) (append (globals o) (locals o)))
 
-(define-template x:call-parameters call-parameters 'comma-suffix)
 (define-method (call-parameters (o <call>))
   (append (map
            (lambda (f e) (make <call-parameter> #:name (.name f) #:expression e))
@@ -844,62 +725,20 @@
 (define-method (call-parameters (o <variable>))
   (call-parameters (.expression o)))
 
-(define-template x:cont-parameter
-  (lambda (o) (make <cont-parameter> #:continuation (call-continuation o))))
-
 (define (cont-locals o)
   (let* ((cont (process-continuation o))
 	 (cont-locals (locals- cont '())))
     cont-locals))
-
-(define-template x:process-continuation-parameters cont-locals 'param-list-grammar <variable>)
 
 (define-method (call-continuation (o <call>))
   (if (.last? o)
       "cont"
       o))
 
-(define-template x:next-call-context cont-locals 'param-list-grammar <variable>)
-(define-template x:other-variables-in-scope (lambda (o)
-                                              (filter (negate (compose (cut eq? (.id o) <>) .id))
-                                                      (cont-locals o))) 'comma-prefix <variable>)
-(define-template x:init-locals-from-cont cont-locals 'comma-infix <variable>)
-
-(define-template x:call-continuation .continuation)
-
 (define-method (model-from-scope (o <root>)) ((compose car (lambda (o) (filter (is? <component>) (.elements o)))) o))
 (define-method (model-from-scope (o <port>)) (.type o))
 (define-method (model-from-scope (o <model>)) o)
 
-(define-template x:globals-init model-from-scope #f <model>)
-(define-template x:global-vars-init globals-from-scope 'comma-prefix)
-
-(define-template x:mcrl2-statement-process mcrl2:statement-process)
-(define-template x:mcrl2-function-process (compose .elements .functions))
-(define-template x:mcrl2-process-identifier mcrl2:process-identifier)
-(define-template x:mcrl2-port-identifier mcrl2:port-identifier)
-(define-template x:mcrl2-child-identifier mcrl2:child-identifier)
-
-(define-template x:mcrl2-statement-then .then #f <statement>)
-(define-template x:mcrl2-statement-else .else #f <statement>)
-(define-template x:if-else-identifier
-  (lambda (o) (mcrl2:process-identifier
-	       (let ((elsestmt (.else o)))
-		 (match elsestmt
-		   (($ <compound>) ((compose car .elements) elsestmt))
-		   (_ elsestmt))))))
-
-(define-template x:component-reply-in-stmt
-  (lambda (o)
-    (if (and (is-a? (parent <model> o) <component>) (ast:requires? (.port o)))
-	o
-	"")))
-
-(define-template x:on-event-union .elements 'union-infix)
-(define-template x:on-event-process .elements)
-(define-template x:on-trigger separate-trigger-type)
-(define-template x:on-from-provided on-from-provided)
-(define-template x:on-from-required on-from-required)
 (define-method (on-from-provided (o <the-end>))
   (let* ((on (parent <on> o))
          (port ((compose .port car ast:trigger*) on)))
@@ -912,9 +751,6 @@
     (if (and port (ast:requires? port))
         o
         "")))
-(define-template x:the-end-trigger separate-trigger-type)
-(define-template x:trigger-expected-reply trigger-expected-reply)
-(define-template x:trigger-no-expected-reply trigger-no-expected-reply)
 (define (trigger-expected-reply? o)
   (let ((event ((compose .event car ast:trigger*) o))
         (port ((compose .port car ast:trigger*) o)))
@@ -933,21 +769,18 @@
      ('optional (clone (make <optional>) #:parent model))
      ('inevitable (clone (make <inevitable>) #:parent model))
      (_ o))))
-(define-template x:on-event-trigger mcrl2:on-event-trigger)
 (define (mcrl2:on-event-trigger o)
   (match o
     (($ <on>) ((compose .event.name car .elements .triggers) o))
     (($ <action>) (.event.name o))
     (($ <the-end>) ((compose .event.name .trigger) o))
     (($ <illegal>) (.event o))))
-(define-template x:on-event-trigger-dir mcrl2:on-event-trigger-dir)
 (define (mcrl2:on-event-trigger-dir o)
   (match o
     (($ <on>) ((compose .direction .event car .elements .triggers) o))
     (($ <action>) ((compose .direction .event) o))
     (($ <the-end>) ((compose .direction .event .trigger) o))
     (($ <illegal>) (.event o))))
-(define-template x:trigger-port trigger-port)
 (define-method (port p o)
   (if p
       (.name p)
@@ -960,7 +793,6 @@
     (($ <variable>) ((compose trigger-port .expression) o))
     (($ <assign>) ((compose trigger-port .expression) o))))
 
-(define-template x:trigger-port-type trigger-port-type)
 (define-method (port-type p o)
   (if p
       (mcrl2:model-name (.type p))
@@ -973,7 +805,6 @@
     (($ <variable>) ((compose trigger-port-type .expression) o))
     (($ <assign>) ((compose trigger-port-type .expression) o))))
 
-(define-template x:trigger-port-type-reply trigger-port-type-reply)
 (define-method (trigger-port-type-reply (o <the-end>))
   (let* ((trigger (.trigger o))
 	 (port (.port trigger)))
@@ -992,7 +823,6 @@
 (define-method (trigger-port-type-reply (o <variable-action>))
   ((compose trigger-port-type-reply .action) o))
 
-(define-template x:required-port-the-end required-port-the-end)
 (define-method (required-port-the-end (o <the-end>))
   (let* ((trigger (.trigger o))
          (port (.port trigger)))
@@ -1014,7 +844,6 @@
       (($ <if>) "Illegal")
       (_ (illegal-or-dillegal parent)))))
 
-(define-template x:block-illegals mcrl2:block-illegals)
 (define-method (mcrl2:block-illegals (o <on>))
   (let* ((port ((compose .port car .elements .triggers) o))
          (statement ((compose car .elements .statement) o))
@@ -1024,126 +853,40 @@
         o
         "")))
 
-(define-template x:illegal-type
-  (lambda (o)
-    (if ((is? <interface>) (parent <model> o))
-	"Illegal"
-	(illegal-or-dillegal o))))
-
-(define-template x:mcrl2-constrained-behaviour identity)
-(define-template x:constraining-with-optionals (lambda (o) (if (ast:optional? o) o "")))
-(define-template x:constraining-without-optionals (lambda (o) (if (ast:optional? o) "" o)))
-(define-template x:trigger-was-optional (lambda (o) (if (eq? 'optional ((compose .event.name car ast:trigger*) o)) ")" ""))) 
-(define-template x:mcrl2-optional-unconstrained identity)
-(define-template x:mcrl2-inevitable-unconstrained identity)
-(define-template x:mcrl2-optional-constrained identity)
-(define-template x:mcrl2-run2completion identity)
-(define-template x:mcrl2-implementation identity)
-
-
-(define-template x:mcrl2-component-queues identity)
-(define-template x:required-ports-completion om:required 'union-prefix)
-(define-template x:required-port-queue om:required 'union-suffix)
-(define-template x:inevitable-optional-queue
-  (lambda (o)
-    (if (pair? (om:required o))
-	o
-	"")) 'union-suffix)
-(define-template x:required-inevitable-allow om:required 'union-infix)
-(define-template x:required-optional-allow om:required 'union-infix)
-(define-template x:mcrl2-component-rc-required-port identity)
-(define-template x:mcrl2-component-rc-provided-port identity)
-(define-template x:mcrl2-required-with-out-event required-ports-with-out)
-(define-template x:required-ports-run2completion
-  (lambda (o)
-    (if (pair? (required-ports-with-out o))
-	o
-	"delta")))
-(define-template x:run2completion-port-with-out-event required-ports-with-out 'union-suffix)
-(define-template x:provided-run2completion-port-with-out-event required-ports-with-out 'union-suffix)
-(define-template x:rename-required-ports om:required 'comma-suffix)
-(define-template x:rename-provided-ports (compose car om:provided))
-(define-template x:hidden-actions identity)
-(define-template x:required-port-hidden-actions om:required 'comma-suffix)
-(define-template x:provided-port-hidden-actions (compose car om:provided))
-(define-template x:allowed-actions identity)
-(define-template x:required-port-allowed-actions om:required 'comma-suffix)
-(define-template x:provided-port-allowed-actions (compose car om:provided))
-(define-template x:communicated-actions identity)
-(define-template x:required-port-communicated-actions om:required 'comma-suffix)
-(define-template x:provided-port-communicated-actions (compose car om:provided))
-(define-template x:allowed-parallel-actions identity)
-(define-template x:required-port-allowed-parallel-actions om:required 'comma-suffix)
-(define-template x:provided-port-allowed-parallel-actions (compose car om:provided))
-(define-template x:communicated-allowed-parallel-actions identity)
-(define-template x:required-port-communicated-allowed-parallel-actions om:required 'comma-suffix)
-(define-template x:provided-port-communicated-allowed-parallel-actions (compose car om:provided))
-(define-template x:allowed-communicated-allowed-parallel-actions identity)
-(define-template x:required-port-allowed-communicated-allowed-parallel-actions om:required 'comma-suffix)
-(define-template x:provided-port-allowed-communicated-allowed-parallel-actions (compose car om:provided))
-(define-template x:required-port-parallel-communication
-  (lambda (o)
-    (if (pair? (om:required o))
-	o
-	"")))
-(define-template x:no-required-port-parallel-communication
-  (lambda (o)
-    (if (pair? (om:required o))
-	""
-	o)))
-(define-template x:communicate-required-port-actions identity)
-(define-template x:rename-in-reply-out-req-port om:required 'comma-infix)
-(define-template x:rename-required-port-actions om:required 'parallel-suffix)
-(define-template x:rename-out-reply-in-req-port om:required 'comma-infix)
-(define-template x:process-continuation process-continuation #f <ast>)
-
 (define-method (required-ports-with-out (o <component>))
   (let ((required-ports (om:required o)))
     (filter
      (lambda (p) (not (null? (filter om:out? ((compose .elements .events .type) p)))))
      required-ports)))
-(define-template x:range-error-normal-assign? normal-assign?)
 (define-method (normal-assign? o)
   (let ((e (.expression o)))
     (if (not (or (is-a? e <call>) (is-a? e <action>)))
         o
         "")))
-(define-template x:assign-by-call? assign-by-call?)
 (define-method (assign-by-call? (o <assign>))
   (let ((e (.expression o)))
     (if (is-a? e <call>)
         o
         "")))
-(define-template x:assign-by-action? assign-by-action?)
 (define-method (assign-by-action? (o <assign>))
   (let ((e (.expression o)))
     (if (is-a? e <action>)
         o
         "")))
 
-(define-template x:var-decl-by-call? var-decl-by-call?)
 (define-method (var-decl-by-call? (o <variable>))
   (let ((e (.expression o)))
     (if (is-a? e <call>)
         o
         "")))
-(define-template x:var-decl-by-action? var-decl-by-action?)
 (define-method (var-decl-by-action? (o <variable>))
   (let ((e (.expression o)))
     (if (is-a? e <action>)
         o
         "")))
 
-(define-template x:assign-function-name (compose .function.name .call))
-(define-template x:assign-action-name (compose .name .event .expression))
-(define-template x:var-action-name (compose .name .event .expression))
-(define-template x:call-function-name (compose .function.name .expression))
-(define-template x:action-type action-type)
 (define-method (action-type (o <ast>))
   ((compose mcrl2-type .type .signature .event .action) o))
-
-(define-template x:check-range-error mcrl2:range-error #f <type>)
-(define-template x:check-range-error-call mcrl2:range-error)
 
 (define-method (mcrl2:range-error (o <behaviour>))
   (filter (lambda (o) (is-a? (.type o) <int>)) (ast:variable* o)))
@@ -1165,7 +908,6 @@
       o
       ""))
 
-(define-template x:constrain-action-range constrain-action-range)
 (define-method (constrain-action-range (o <assign>))
   (constrain-action-range (.expression o)))
 (define-method (constrain-action-range (o <variable>))
@@ -1176,8 +918,6 @@
         type
         "")))
 
-(define-template x:check-integer-bounds check-integer-bounds)
-(define-template x:check-event-integer-bounds check-integer-bounds)
 (define-method (check-integer-bounds (o <assign>))
   (let ((type ((compose .type .variable) o)))
     (if (is-a? type <int>)
@@ -1192,7 +932,6 @@
     (if (is-a? type <int>)
         type
         "")))
-(define-template x:range-from mcrl2:range-from)
 (define-method (mcrl2:range-from (o <formal>))
   (mcrl2:range-from (.type o)))
 (define-method (mcrl2:range-from (o <event>))
@@ -1203,7 +942,6 @@
   (mcrl2:range-from (.variable o)))
 (define-method (mcrl2:range-from (o <int>))
   ((compose ->string .from .range) o))
-(define-template x:range-to mcrl2:range-to)
 (define-method (mcrl2:range-to (o <event>))
   (mcrl2:range-to (.type (.signature o))))
 (define-method (mcrl2:range-to (o <assign>))
@@ -1220,15 +958,9 @@
 (define-method (dzn:expression (o <call-parameter>))
   (.expression o))
 
-(define-template x:mcrl2-enum-literal mcrl2:enum-literal)
-
 (define-method (mcrl2:enum-literal (o <enum-literal>))
   (string-append ((compose ->string .scope .name .type) o) "'" ((compose ->string .name .name .type) o) "'" ((compose ->string .field) o)))
 
-(define-template x:next-process-parameters process-continuation #f <statement>)
-
-(define-template x:variable-in-scope? mcrl2:variable-in-scope?)
-(define-template x:assign-in-scope? mcrl2:variable-in-scope?)
 (define-method (mcrl2:variable-in-scope? (o <assign>))
   (let* ((cont (process-continuation o))
          (cont-scope (variables-in-scope cont)))
@@ -1269,10 +1001,6 @@
 	 (vars ((compose .elements .variables) behaviour)))
     vars))
 
-(define-template x:init-type-value .type)
-(define-template x:mcrl2-init-reply-value mcrl2:init-reply-value)
-(define-template x:initial-enum-field (compose car .elements .fields))
-
 (define-method (mcrl2:init-reply-value (o <ast>))
   (let ((reply-type (car (code:reply-types o #:pred (const #t)))))
     reply-type))
@@ -1300,3 +1028,8 @@
 (define-method (mcrl2:child-identifier (o <guard>)) (mcrl2:process-identifier (.statement o)))
 (define-method (mcrl2:child-identifier (o <on>)) (mcrl2:process-identifier (first-process (.statement o))))
 (define-method (mcrl2:child-identifier (o <if>)) (mcrl2:process-identifier (first-process (.then o))))
+
+(define-templates-macro define-templates mcrl2)
+(include "../templates/dzn.scm")
+(include "../templates/code.scm")
+(include "../templates/mcrl2.scm")

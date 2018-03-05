@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -46,12 +47,13 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (gaiag misc)
+  #:use-module (gaiag config)
+  #:use-module (gaiag command-line)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag deprecated om)
   #:use-module (gaiag resolve)
   #:use-module (gaiag util)
-  #:use-module (gaiag xpand)
 
   #:export (animate
            animate-file
@@ -61,11 +63,15 @@
            clone-module
            populate-module
            snippet
-           gulp-snippet
+           gulp-template
            string-if
            template?
+           template-dir
            templates))
 
+(define template-dir (make-parameter %template-dir))
+(define (template-file name) (append (list (template-dir)) (if (pair? name) name (list name))))
+(define (gulp-template name) (gulp-file (template-file name)))
 (define (gulp-snippet name) (gulp-template (list 'snippets name)))
 
 (define templates (make-parameter
