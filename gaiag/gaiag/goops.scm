@@ -1,7 +1,9 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
@@ -66,6 +68,7 @@
            .functions
            .id
            .injected
+           .incomplete
            .instance
            .instances
            .last?
@@ -591,7 +594,8 @@
   (else #:getter .else #:init-value #f #:init-keyword #:else))
 
 (define-class <illegal-node> (<imperative-node>)
-  (event #:getter .event #:init-value #f #:init-keyword #:event))
+  (event #:getter .event #:init-value #f #:init-keyword #:event)
+  (incomplete #:getter .incomplete #:init-value #f #:init-keyword #:incomplete))
 
 (define-class <blocking-node> (<declarative-node>)
   (statement #:getter .statement #:init-value #f #:init-keyword #:statement))

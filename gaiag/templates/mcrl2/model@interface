@@ -66,6 +66,7 @@ act  #x:mcrl2-model-name 'reply_out: #x:mcrl2-model-name 'Actions ###x:mcrl2-mod
      double_reply_error;
      no_reply_error;
      range_error;
+     incomplete;
      empty_queue;
      empty_queue_c;
      queue_empty;

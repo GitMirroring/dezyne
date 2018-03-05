@@ -221,7 +221,7 @@
     (($ <compound>)
      (clone o #:elements (map (lambda (s) (annotate-illegal s trigger)) (.elements o))))
     (($ <blocking> statement) (clone o #:statement (annotate-illegal statement trigger)))
-    (($ <illegal>) (make <illegal> #:event trigger))
+    (($ <illegal>) (make <illegal> #:event trigger #:incomplete (.incomplete o)))
     (_ o)))
 
 (define (fix-empty-interface-behaviour o)
@@ -849,7 +849,7 @@
          (statement ((compose car .elements .statement) o))
          (parent (parent <model> o)))
     (if (or (and port (ast:provides? port) (is-a? statement <illegal>))
-            (and (is-a? parent <interface>) (is-a? statement <illegal>)))
+            (and (is-a? parent <interface>) (is-a? statement <illegal>) (not (.incomplete statement))))
         o
         "")))
 

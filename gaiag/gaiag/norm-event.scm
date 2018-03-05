@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2016, 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -310,10 +310,10 @@
          (_ (make-guard o)))))
     (_ (make-guard o))))
 
-(define-method (trigger->illegal (o <trigger>))
+(define-method (trigger->incomplete (o <trigger>))
   (make <on>
     #:triggers (make <triggers> #:elements (list o))
-    #:statement (make <illegal>)))
+    #:statement (make <illegal> #:incomplete #t)))
 
 (define* (add-reply-port o #:optional (port #f) (block? #f)) ;; requires (= 1 (length (.triggers on)))
   ;(stderr "add-reply-report o = ~a; port = ~a: model = ~a\n" o port model)
@@ -358,7 +358,7 @@
                        triggers)))
        (receive (modeling ons)
            (partition (compose (is? <modeling-event>) .event car ast:trigger*) ons)
-         (let ((ons (append modeling (map (add-illegals model) ons) (map trigger->illegal triggers))))
+         (let ((ons (append modeling (map (add-illegals model) ons) (map trigger->incomplete triggers))))
            (if (null? ons) o
                (clone o #:statement (clone (.statement o) #:elements ons)))))))
     ;; NOTE: not needed: on-compound asserts each on has a compound
@@ -368,7 +368,7 @@
     ;;                     (make <guard> #:expression (make <otherwise>) #:statement (make <illegal>)))))
     ((and ($ <compound>) (? om:declarative?)) (=> failure)
      (if (and (pair? (.elements o)) (is-a? (car (.elements o)) <guard>) (null? (filter (is? <otherwise>) (.elements o))))
-         (clone o #:elements (append (.elements o) (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal>)))))
+         (clone o #:elements (append (.elements o) (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal> #:incomplete #t)))))
          (failure)))
     (($ <interface>)
      (clone o #:behaviour ((add-illegals o) (.behaviour o))))

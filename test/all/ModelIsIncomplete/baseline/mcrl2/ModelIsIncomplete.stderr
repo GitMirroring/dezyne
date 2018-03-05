@@ -1,1 +1,1 @@
-out/ModelIsIncomplete/ModelIsIncomplete.dzn:8:12:i7: deadlock in model ModelIsIncomplete
+out/ModelIsIncomplete/ModelIsIncomplete.dzn:5:3:i9: model ModelIsIncomplete is incomplete: event 'ModelIsIncomplete.ia' not handled

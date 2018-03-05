@@ -133,11 +133,12 @@ illegal")
      illegal         <   'illegal' / 'dillegal'
      queue-full      <-  'queue_full'
      range-error     <-  'range_error'
+     incomplete      <-  'incomplete'
      reply-error     <-  'double_reply_error' / 'no_reply_error'
      flush           <   (identifier tick)+ 'flush'
      modeling        <   port tick ('inevitable' / 'optional')
      event           <-- port tick (event-literal / direction) lpar mcrl2-event rpar
-     error           <-- queue-full / range-error / reply-error
+     error           <-- queue-full / range-error / reply-error / incomplete
      return          <-- port tick return-literal lpar arguments rpar
      return-out      <   port tick 'reply_out' lpar arguments-out rpar
      arguments       <-  mcrl2-event- (comma reply compound-type compound-value)?

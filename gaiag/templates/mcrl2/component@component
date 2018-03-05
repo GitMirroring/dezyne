@@ -33,6 +33,7 @@ act  #x:interface-action-alphabet
      internal;
      illegal;
      dillegal;
+     incomplete;
      block_illegal;
      double_reply_error;
      no_reply_error;

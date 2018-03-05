@@ -1,1 +1,1 @@
-out/missingstate/missingstate.dzn:7:21:i9: deadlock in model missingstate
+out/missingstate/missingstate.dzn:4:3:i11: model missingstate is incomplete: event 'missingstate.e' not handled
