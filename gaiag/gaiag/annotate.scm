@@ -3,6 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -95,8 +96,8 @@
               (and-let* (((or file line column)))
                         (list 'location file line column offset length)))))
 
-(define (mark-imported o imported?)
-  (set-source-property! o 'imported? imported?)
+(define (mark-imported orig o imported?)
+  (set-source-property! orig 'imported? imported?)
   o)
 
 (define (annotate-imported o)
@@ -104,19 +105,19 @@
        (match o
          (('root models ...) (cons 'root (map annotate-imported models)))
          (('interface body ... (and ('imported . imported)))
-          (mark-imported (cons 'interface body) imported))
+          (mark-imported o (cons 'interface body) imported))
          (('foreign body ... (and ('imported . imported)))
-          (mark-imported (cons 'foreign body) imported))
+          (mark-imported o (cons 'foreign body) imported))
          (('component body ... (and ('imported . imported)))
-          (mark-imported (cons 'component body) imported))
+          (mark-imported o (cons 'component body) imported))
          (('system body ... (and ('imported . imported)))
-          (mark-imported (cons 'system body) imported))
+          (mark-imported o (cons 'system body) imported))
          (('enum body ... (and ('imported . imported)))
-          (mark-imported (cons 'enum body) imported))
+          (mark-imported o (cons 'enum body) imported))
          (('extern body ... (and ('imported . imported)))
-          (mark-imported (cons 'enum body) imported))
+          (mark-imported o (cons 'enum body) imported))
          (('int body ... (and ('imported . imported)))
-          (mark-imported (cons 'enum body) imported))
+          (mark-imported o (cons 'enum body) imported))
          (_ o))))
 
 (define (ast-> ast)

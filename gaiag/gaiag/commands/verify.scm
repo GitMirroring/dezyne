@@ -120,7 +120,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
 
 (define (models-for-verification root)
   (let* ((models (ast:model* root))
-         (components (filter (conjoin (is? <component>) .behaviour) models))
+         (components (filter (conjoin (is? <component>) (negate ast:imported?) .behaviour) models))
          (component-names (map (compose symbol->string verify:scope-name) components))
          (interfaces (filter (is? <interface>) models))
          (interface-names (map (compose symbol->string verify:scope-name) interfaces))

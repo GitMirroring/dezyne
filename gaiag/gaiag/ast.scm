@@ -317,7 +317,7 @@
   (unfold (negate identity) identity .parent o))
 
 (define-method (ast:imported? (o <ast>))
-  (assoc-ref (source-properties o) 'imported?))
+  (assoc-ref (source-properties (.node o)) 'imported?))
 
 (define (ast-> ast)
   ((compose
