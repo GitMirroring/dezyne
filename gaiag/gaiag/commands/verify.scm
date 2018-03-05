@@ -166,8 +166,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                                    (newline))
                                  (if (or all? (not fail?)) (cons line (loop))
                                      (list line))))))))
-             (status (wait job))
-             (status (or (status:term-sig status) (status:exit-val status))))
+             (status (wait job)))
         (if (not (zero? status))
             (begin
               (stderr "gdzn verify failed:")
@@ -215,7 +214,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                            (root (mcrl2:om ast-model)))
                       (parameterize ((language 'mcrl2))
                         (with-output-to-file "verify.mcrl2" (cut root-> root)))
-                      (loop (cdr models) (or (mcrl2:verify dir file-name (car models) root gdzn-verbose? all?))))
+                      (loop (cdr models) (mcrl2:verify dir file-name (car models) root gdzn-verbose? all?)))
                     (loop (cdr models) errors))))))
     ""))
 

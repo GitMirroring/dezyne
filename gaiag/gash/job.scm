@@ -164,7 +164,7 @@
   (unless (job-completed? job)
     (newline) (display-job job))
   (reap-jobs)
-  (last (job-status job)))
+  (or (and (every zero? (job-status job)) 0) 1))
 
 (define (fg index)
   (let ((job (job-index index)))
