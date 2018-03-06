@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -169,7 +170,6 @@
 (define-templates mcrl2-constrained-behaviour)
 (define-templates constraining-with-optionals (lambda (o) (if (ast:optional? o) o "")))
 (define-templates constraining-without-optionals (lambda (o) (if (ast:optional? o) "" o)))
-(define-templates trigger-was-optional (lambda (o) (if (eq? 'optional ((compose .event.name car ast:trigger*) o)) ")" "")))
 (define-templates mcrl2-optional-unconstrained)
 (define-templates mcrl2-inevitable-unconstrained)
 (define-templates mcrl2-optional-constrained)

@@ -1,7 +1,9 @@
 ;;; Gash --- Guile As SHell
 ;;; Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@gmail.com>
+;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Gash.
 ;;;
@@ -103,6 +105,7 @@
     (map close outputs)))
 
 (define (pipeline+ fg? . commands)
+;;  (format #t "COMMAND: ~a\n" commands)
   (receive (r w) (pipe*)
     (move->fdes w 2)
     (let* ((error-port (set-current-error-port w))

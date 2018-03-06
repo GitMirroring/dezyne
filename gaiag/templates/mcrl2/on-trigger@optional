@@ -1,1 +1,1 @@
-#x:mcrl2-model-name 'optional_req . ( #x:mcrl2-model-name 'optional_nack . #x:mcrl2-model-name '0() +  #x:mcrl2-model-name 'optional_ack
+#x:mcrl2-model-name 'optional

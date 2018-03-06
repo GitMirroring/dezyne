@@ -1,5 +1,4 @@
-#x:mcrl2-model-name 'optional_unconstrained(optional_block: Bool) =
-         (!optional_block) -> #x:mcrl2-model-name 'optional_begin_oc_req . (#x:mcrl2-model-name 'optional_begin_oc_nack . #x:mcrl2-model-name 'optional_unconstrained(true) + #x:mcrl2-model-name 'optional_begin_oc_ack . #x:mcrl2-model-name 'optional_end_oc . #x:mcrl2-model-name 'optional_unconstrained(false)) +
-         #x:mcrl2-model-name 'inevitable_begin_oc . #x:mcrl2-model-name 'inevitable_end_oc . #x:mcrl2-model-name 'optional_unconstrained(false) +
-         sum e: #x:mcrl2-model-name 'Actions. #x:mcrl2-model-name 'in_rc(e) . #x:mcrl2-model-name 'optional_unconstrained(false);
+#x:mcrl2-model-name 'optional_unconstrained = 
+         #x:mcrl2-model-name 'optional_begin_oc . #x:mcrl2-model-name 'optional_end_oc . #x:mcrl2-model-name 'optional_unconstrained +
+         #x:mcrl2-model-name 'inevitable_begin_oc . #x:mcrl2-model-name 'inevitable_end_oc . #x:mcrl2-model-name 'optional_unconstrained;
 

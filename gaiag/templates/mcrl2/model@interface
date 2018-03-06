@@ -21,9 +21,6 @@ act  #x:mcrl2-model-name 'reply_out: #x:mcrl2-model-name 'Actions ## #x:mcrl2-mo
      #x:mcrl2-model-name 'reply_out_rc: #x:mcrl2-model-name 'Actions ## #x:mcrl2-model-name 'ReplyUnion;
      #x:mcrl2-model-name 'in: #x:mcrl2-model-name 'Actions;
      #x:mcrl2-model-name 'optional_begin_oc;
-     #x:mcrl2-model-name 'optional_begin_oc_ack;
-     #x:mcrl2-model-name 'optional_begin_oc_req;
-     #x:mcrl2-model-name 'optional_begin_oc_nack;
      #x:mcrl2-model-name 'in_allow: #x:mcrl2-model-name 'Actions;
      #x:mcrl2-model-name 'out_rc: #x:mcrl2-model-name 'Actions;
      #x:mcrl2-model-name 'optional_begin_rc;
@@ -44,9 +41,6 @@ act  #x:mcrl2-model-name 'reply_out: #x:mcrl2-model-name 'Actions ## #x:mcrl2-mo
      #x:mcrl2-model-name 'optional_end_oc;
      #x:mcrl2-model-name 'in': #x:mcrl2-model-name 'Actions;
      #x:mcrl2-model-name 'optional;
-     #x:mcrl2-model-name 'optional_req;
-     #x:mcrl2-model-name 'optional_ack;
-     #x:mcrl2-model-name 'optional_nack;
      #x:mcrl2-model-name 'inevitable;
      #x:mcrl2-model-name 'reply_in: #x:mcrl2-model-name 'Actions ## #x:mcrl2-model-name 'ReplyUnion;
      #x:mcrl2-model-name 'inevitable_allow';
@@ -83,6 +77,8 @@ proc
      #x:mcrl2-constrained-behaviour
 
      #x:mcrl2-optional-unconstrained
+
+     #x:mcrl2-optional-constrained
 
      #x:mcrl2-inevitable-unconstrained
 

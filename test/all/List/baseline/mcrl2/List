@@ -10,5 +10,3 @@ verify: List: check: livelock: fail
 pp.step
 list.next
 list.end_no
-list.next
-list.end_no
