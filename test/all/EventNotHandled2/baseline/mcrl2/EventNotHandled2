@@ -3,7 +3,7 @@ verify: EventNotHandled2: check: illegal: fail
 rp.oa
 verify: EventNotHandled2: check: deadlock: ok
 verify: EventNotHandled2: check: compliance: fail
-rp.oa
+pp.ia
 verify: EventNotHandled2: check: livelock: ok
 verify: IA: check: deadlock: ok
 verify: IA: check: livelock: ok

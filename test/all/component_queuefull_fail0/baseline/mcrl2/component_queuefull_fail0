@@ -16,5 +16,4 @@ r.c
 r.c
 r.c
 r.c
-r.return
 verify: component_queuefull_fail0: check: livelock: ok
