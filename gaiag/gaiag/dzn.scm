@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -183,7 +183,7 @@
 (define-method (dzn:source (o <root>))
   (topological-sort
    (map dzn:annotate-shells
-        (filter (negate (disjoin ast:imported? dzn-async? (is? <foreign>) (is? <type>)))
+        (filter (negate (disjoin (is? <foreign>) (is? <data>) (is? <type>) ast:imported? dzn-async?))
                 (.elements o)))))
 
 (define-method (dzn:source (o <ast>))
