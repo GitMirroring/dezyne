@@ -127,7 +127,7 @@
       ((_ name class language)
        (let* ((tname (datum->syntax x (symbol-append 't: (syntax->datum #'name))))
               (class-name (drop-<> (syntax->datum #'class)))
-              (template (symbol->string (symbol-append (string->symbol %template-dir) '/ (syntax->datum #'language) '/ (syntax->datum #'name) '@ class-name)))
+              (template (symbol->string (symbol-append 'templates/ (syntax->datum #'language) '/ (syntax->datum #'name) '@ class-name)))
               (tree (template->tree (syntax->datum template)))
               (body (datum->syntax x (tree->body tree)))
               (o (datum->syntax x 'o)))
