@@ -420,7 +420,6 @@
              sequence))))
 
 (define (assert-fail dir file-name model-type model-name assert trace message interface-trace)
-  (read-hash-extend #\{ #f)
   (when interface-trace (with-output-to-file "interface-trace.txt" (cut display interface-trace)))
   (let* ((interface-trace-file (and interface-trace (canonicalize-path "interface-trace.txt")))
          (verbose? (gdzn:command-line:get 'verbose))

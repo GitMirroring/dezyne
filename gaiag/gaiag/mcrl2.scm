@@ -44,7 +44,6 @@
   #:use-module (gaiag om)
   #:use-module (gaiag util)
 
-  #:use-module (gaiag deprecated animate)
   #:use-module (gaiag deprecated om)
   #:use-module (gaiag ast)
   #:use-module (gaiag config)
