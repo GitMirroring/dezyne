@@ -2,7 +2,7 @@
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
-;; Copyright © 2014, 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -69,6 +69,7 @@
             c++:asd-register-cb
             c++:asd-register-cb-definition
             c++:asd-register-st
+            c++:capture-arguments
             c++:construction-include
             c++:construction-parameters
             c++:construction-parameters-locator-get
@@ -108,7 +109,7 @@
 (define-method (c++:name (o <bind>))  ;; FIXME
   (injected-instance-name o))
 
-(define-method (code:capture-arguments (o <trigger>))
+(define-method (c++:capture-arguments (o <trigger>))
   (map .name (filter (negate om:out-or-inout?) (code:formals o))))
 
 (define-method (c++:formal-type (o <formal>)) o)

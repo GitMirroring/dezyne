@@ -94,7 +94,6 @@
             code:assign-reply
             code:bind-provided
             code:bind-required
-            code:capture-arguments
             code:component-include
             code:component-port
             code:dzn-locator

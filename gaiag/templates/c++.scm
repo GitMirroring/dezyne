@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -82,7 +83,7 @@
 (define-templates shell-provided-out ast:provided-out-triggers)
 (define-templates shell-required-in ast:required-in-triggers)
 (define-templates capture-list identity)
-(define-templates capture code:capture-arguments capture-prefix)
+(define-templates capture c++:capture-arguments capture-prefix)
 (define-templates shell-non-injected-instance-meta non-injected-instances)
 (define-templates pure-virtual-method-declare ast:in-triggers)
 (define-templates declare-method code:trigger)
