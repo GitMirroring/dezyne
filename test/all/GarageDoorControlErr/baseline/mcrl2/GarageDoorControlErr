@@ -74,7 +74,8 @@ motorControl.start
 motorControl.return
 limitSw.doorOpening
 limitSw.return
-motorControl.powerWarning
+motorControl.driveFault
+motorControl.stop
 verify: GarageDoorControlErr: check: livelock: ok
 verify: ITimer: check: deadlock: ok
 verify: ITimer: check: livelock: ok

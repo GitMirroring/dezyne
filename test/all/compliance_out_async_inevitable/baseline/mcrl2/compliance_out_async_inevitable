@@ -10,5 +10,4 @@ pp.ia
 rp.ia
 rp.return
 pp.return
-pp.ic
 verify: compliance_out_async_inevitable: check: livelock: ok
