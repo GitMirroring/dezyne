@@ -1,1 +1,1 @@
-{"imports":["all/importPath/subdir","all/importPath/foo"],"known":["table"]}
+{"imports":["all/importPath/subdir","all/importPath/foo"],"known":["mcrl2","table"],"comment":"multiple provides"}
