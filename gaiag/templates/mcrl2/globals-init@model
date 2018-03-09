@@ -1,1 +1,1 @@
-br = false, reply_#x:mcrl2-provided-port-type  = reply_#x:mcrl2-provided-port-type '#x:mcrl2-init-reply-value #x:global-vars-init
+reply_#x:mcrl2-provided-port-type  = #x:mcrl2-provided-port-type 'NULL#x:global-vars-init

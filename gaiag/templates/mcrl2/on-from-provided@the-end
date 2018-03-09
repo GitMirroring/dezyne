@@ -1,1 +1,1 @@
-(br) -> #x:the-end-trigger  . #x:process-continuation() <> no_reply_error . delta
+#x:the-end-trigger  . #x:process-continuation(reply_#x:provided-port-type  = #x:provided-port-type 'NULL)

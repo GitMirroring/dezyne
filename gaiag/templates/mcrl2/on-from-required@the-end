@@ -1,1 +1,1 @@
-#x:the-end-trigger  . #x:process-continuation()
+#x:required-the-end-trigger  . #x:process-continuation(reply_#x:provided-port-type  = #x:provided-port-type 'NULL)

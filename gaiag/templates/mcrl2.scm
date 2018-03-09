@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -150,6 +152,7 @@
 (define-templates on-trigger separate-trigger-type)
 (define-templates on-from-provided on-from-provided)
 (define-templates on-from-required on-from-required)
+(define-templates required-the-end-trigger)
 (define-templates the-end-trigger separate-trigger-type)
 (define-templates trigger-expected-reply trigger-expected-reply)
 (define-templates trigger-no-expected-reply trigger-no-expected-reply)
