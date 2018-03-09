@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -56,7 +57,8 @@
       (peg:tree result)))
 
   (define (display-primitive o)
-    (cond (((disjoin char? number? string? symbol?) o) (display o) "")
+    (cond (((disjoin char? number? string?) o) (display o) "")
+          ((symbol? o) (display (symbol->string o)) "")
           (else o)))
 
   (define (tree->body t)
