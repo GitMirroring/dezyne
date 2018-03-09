@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -136,7 +137,7 @@
   (lambda (x)
     (define (body language name xname tname func sep)
       (let* ((o (datum->syntax x 'o))
-             (dir (string-append %template-dir "/" (symbol->string (syntax->datum language)) "/"))
+             (dir (string-append "templates/" (symbol->string (syntax->datum language)) "/"))
              (name@ (string-append (symbol->string (syntax->datum name)) "@"))
              (types (map (compose string->symbol (cut string-append "<" <> ">") (cute string-drop <> (string-length name@))) (filter (cute string-prefix? name@ <>) (ls dir))))
              (grammar (if (not (syntax->datum sep)) #''("")
