@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -25,6 +25,8 @@
 
 (define-module (gaiag html)
   #:use-module (ice-9 rdelim)
+  #:use-module (srfi srfi-26)
+  #:use-module (gaiag misc)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag ast)
@@ -56,6 +58,4 @@
         (dzn:file2file root))))
 
 (define-method (ast->html (o <statement>))
-  (parameterize ((language 'html)
-                 (%x:source x:source))
-    (with-output-to-string (dzn:x:pand-display o 'statement))))
+  (with-output-to-string (cut x:source o)))

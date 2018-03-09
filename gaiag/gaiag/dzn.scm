@@ -186,7 +186,7 @@
         (filter (negate (disjoin ast:imported? dzn-async? (is? <foreign>) (is? <type>)))
                 (.elements o)))))
 
-(define-method (dzn:source (o <model>))
+(define-method (dzn:source (o <ast>))
   o)
 
 (define (dzn:global o)
@@ -396,43 +396,54 @@
   (if (memq (language) '(javascript)) "dzn/"
       ""))
 
-(define-method (dzn:x:pand (o <ast>) template file-name)
-  (let ((file-name (if (and file-name (symbol? file-name)) (symbol->string file-name) file-name))) ;; FIXME
-    (dump-output (string-append (if (or (equal? file-name "-")
-                                        (eq? template 'main)) "" (dzn:dir o)) ;; FIXME AAARRRGH
-                                file-name)
-                 (dzn:x:pand-display o template))))
+;; (define-method (dzn:x:pand (o <ast>) template file-name)
+;;   (let ((file-name (if (and file-name (symbol? file-name)) (symbol->string file-name) file-name))) ;; FIXME
+;;     (dump-output (string-append (if (or (equal? file-name "-")
+;;                                         (eq? template 'main)) "" (dzn:dir o)) ;; FIXME AAARRRGH
+;;                                 file-name)
+;;                  (dzn:x:pand-display o template))))
 
-(define-method (dzn:x:pand-display (o <ast>) template)
-  (let ((module (make-module 31 `(,(resolve-module '(gaiag dzn))
-                                  ,(resolve-module `(gaiag ,(language)))))))
-    (module-define! module 'root (parent <root> o))
-    (dzn:indent (lambda _ ((%x:source) o)))))
+;; (define-method (dzn:x:pand-display (o <ast>) template)
+;;   (let ((module (make-module 31 `(,(resolve-module '(gaiag dzn))
+;;                                   ,(resolve-module `(gaiag ,(language)))))))
+;;     (module-define! module 'root (parent <root> o))
+;;     (dzn:indent (lambda _ ((%x:source) o)))))
 
 (define-generic source-file)
 (define-method (source-file (o <ast>)) ((compose source-file .node) o))
 
-(define-method (dzn:dump (o <root>))
-  (let ((name (basename (symbol->string (source-file o)) ".dzn")))
-    ((%x:source) o)))
+(define-method (dzn:dump (o <ast>))
+  (let* ((dir (command-line:get 'output "."))
+         (stdout? (equal? dir "-"))
+         (dir (string-append dir "/" (dzn:dir o)))
+         (base (basename (symbol->string (source-file o)) ".dzn")))
+    (let* ((ext (symbol->string (dzn:extension (make <component>))))
+           (file-name (string-append dir base ext)))
+      (if stdout? ((dzn:indent (cut (%x:source) o)))
+          (with-output-to-file file-name
+            (dzn:indent (cut (%x:source) o)))))))
 
-(define-method (dzn:dump (o <interface>))
-  (let ((name ((om:scope-name) o)))
-    (dzn:x:pand o 'source (symbol-append name (dzn:extension (make <interface>))))))
+;; (define-method (dzn:dump (o <root>))
+;;   (let ((name (basename (symbol->string (source-file o)) ".dzn")))
+;;     ((%x:source) o)))
 
-(define-method (dzn:dump (o <component>))
-  (let ((name ((om:scope-name) o)))
-    (dzn:x:pand o 'source (symbol-append name (dzn:extension (make <component>))))))
+;; (define-method (dzn:dump (o <interface>))
+;;   (let ((name ((om:scope-name) o)))
+;;     (dzn:x:pand o 'source (symbol-append name (dzn:extension (make <interface>))))))
 
-(define-method (dzn:dump (o <foreign>))
-  (let ((name ((om:scope-name) o)))
-    (dzn:x:pand o 'source (symbol-append name (dzn:extension (make <component>))))))
+;; (define-method (dzn:dump (o <component>))
+;;   (let ((name ((om:scope-name) o)))
+;;     (dzn:x:pand o 'source (symbol-append name (dzn:extension (make <component>))))))
 
-(define-method (dzn:dump (o <system>))
-  (let* ((name ((om:scope-name) o))
-         (shell (command-line:get 'shell #f))
-         (template (if (and shell (eq? name (string->symbol shell))) 'shell- (symbol))))
-    (dzn:x:pand o (symbol-append template 'source) (symbol-append name (dzn:extension (make <component>))))))
+;; (define-method (dzn:dump (o <foreign>))
+;;   (let ((name ((om:scope-name) o)))
+;;     (dzn:x:pand o 'source (symbol-append name (dzn:extension (make <component>))))))
+
+;; (define-method (dzn:dump (o <system>))
+;;   (let* ((name ((om:scope-name) o))
+;;          (shell (command-line:get 'shell #f))
+;;          (template (if (and shell (eq? name (string->symbol shell))) 'shell- (symbol))))
+;;     (dzn:x:pand o (symbol-append template 'source) (symbol-append name (dzn:extension (make <component>))))))
 
 (define (dzn:model2file?)
   (and=> (or (command-line:get 'deprecated #f) (getenv "DZN_DEPRECATED"))

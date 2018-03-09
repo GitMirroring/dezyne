@@ -614,13 +614,13 @@
     (when (code:header?)
       (let* ((ext (symbol->string (dzn:extension (make <interface>))))
              (file-name (string-append dir base ext)))
-        (if stdout? ((%x:header) o)
+        (if stdout? ((dzn:indent (cut (%x:header) o)))
             (with-output-to-file file-name
               (dzn:indent (cut (%x:header) o))))))
     (if (or (not (code:header?)) (have-non-interface-models? o))
         (let* ((ext (symbol->string (dzn:extension (make <component>))))
                (file-name (string-append dir base ext)))
-          (if stdout? ((%x:source) o)
+          (if stdout? ((dzn:indent (cut (%x:source) o)))
               (with-output-to-file file-name
                 (dzn:indent (cut (%x:source) o))))))))
 
@@ -635,8 +635,8 @@
               (model (and (and=> (command-line:get 'model #f) string->symbol)))
               ((is-a? o <component-model>))
               ((eq? model name)))
-     (if stdout? ((%x:main) o)
-         (with-output-to-file file-name (cut (%x:main) o))))))
+     (if stdout? ((dzn:indent (cut (%x:main) o)))
+         (with-output-to-file file-name (dzn:indent (cut (%x:main) o)))))))
 
 ;; (define-method (code:x:pand (o <ast>) x:template file-name)
 ;;   (pke 'code:x:pand<ast>: (ast-name o) 'file-name file-name)
