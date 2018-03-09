@@ -64,7 +64,6 @@
             dzn:file2file
             dzn:model2file?
             dzn:model2file
-            dzn:x:pand-display
             dzn:statement
             dzn:expand-statement
             dzn:expression-expand
@@ -164,14 +163,15 @@
   (with-output-to-string
     (lambda _
       (parameterize ((language dzn:language))
-        ((dzn:x:pand-display o 'source))))))
+        (dzn:dump o)))))
+
 (define-generic ast->dzn)
 (define-method (ast->dzn (o <statement>))
   (parameterize ((language 'dzn))
-    (with-output-to-string (dzn:x:pand-display o 'statement))))
+    (with-output-to-string (dzn:dump o))))
 (define-method (ast->dzn (o <function>))
   (parameterize ((language 'dzn))
-    (with-output-to-string (dzn:x:pand-display o 'source))))
+    (with-output-to-string (dzn:dump o))))
 
 ;;; dzn: generic templates
 ;; Hmmm, `source' means filter-out types, must later add global types...
