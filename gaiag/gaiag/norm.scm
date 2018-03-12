@@ -283,7 +283,8 @@
      (flatten-compound- statement))
     ((and ($ <compound>) (= .elements statements))
      (clone o #:elements (apply append (map flatten-compound-compound statements))))
-    ((? (is? <statement>)) (tree-map flatten-compound- o))
+    (($ <skip>) o)
+    ((? (is? <ast>)) (tree-map flatten-compound- o))
     (_ o)))
 
 (define (flatten-compound-compound o)

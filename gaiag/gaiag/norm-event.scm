@@ -52,7 +52,6 @@
            code-norm-event
            norm-event
            table-norm-event
-           trigger->incomplete
            ))
 
 (define-syntax *match*
@@ -86,7 +85,7 @@
 (define g-time (get-internal-run-time))
 (define* ((perf label) o)
   (let* ((time (get-internal-run-time))
-;;         (foo (stderr "  TIME ~a: ~a ms\n" label (quotient (- time g-time) 1000000)))
+         ;;(foo (stderr "TIME ~a: ~a\n" label (- time g-time)))
          )
     (set! g-time time)
     o))

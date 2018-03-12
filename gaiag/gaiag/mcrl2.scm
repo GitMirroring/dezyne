@@ -196,44 +196,6 @@
 ;;     ((? (is? <ast>)) (tree-map (ast-add-illegals model) o))
 ;;     (_ o)))
 
-(define (add-illegals-state o)
-  (match o
-    (($ <component>)
-     (clone o #:behaviour (add-illegals-state (.behaviour o))))
-    (($ <interface>)
-     (clone o #:behaviour (add-illegals-state (.behaviour o))))
-    ((and ($ <behaviour>) (= ast:statement* (($ <guard>) ..1)))
-     (let* ((guards (ast:statement* o))
-            (model (parent <model> o))
-            (triggers (ast:in-triggers model))
-            (illegal (make <illegal> #:incomplete #t))
-            (on (make <on> #:triggers (make <triggers> #:elements triggers) #:statement illegal))
-            (otherwise (make <guard> #:expression (make <otherwise>) #:statement on))
-            (guards (append guards (list otherwise))))
-       (clone o #:statement (clone (.statement o) #:elements guards))
-       ))
-    (($ <behaviour>)
-     (let* ((ons (ast:statement* o))
-            (model (parent <model> o))
-            (triggers (ast:in-triggers model))
-            (on-triggers (append-map (compose .elements .triggers) ons))
-            (triggers (filter
-                       (lambda (trigger)
-                         (not (find (lambda (on-trigger)
-                                      (and (eq? (.port.name trigger) (.port.name on-trigger))
-                                           (eq? (.event.name trigger) (.event.name on-trigger))))
-                                    on-triggers)))
-                       triggers)))
-       (receive (modeling ons)
-           (partition (compose (is? <modeling-event>) .event car ast:trigger*) ons)
-         (let ((ons (append modeling ons (map trigger->incomplete triggers))))
-           (if (null? ons) o
-               (clone o #:statement (clone (.statement o) #:elements ons)))))))
-    (($ <system>) o)
-    (($ <foreign>) o)
-    ((? (is? <ast>)) (tree-map add-illegals-state o))
-    (_ o)))
-
 (define (ast-add-skips o)
   (match o
     ((and ($ <compound>) (= .elements '())) (make <skip>))
@@ -249,15 +211,6 @@
 (define (ast-complete-elses o)
   (match o
     ((and ($ <if>) (= .else #f)) (ast-complete-elses (clone o #:else (make <skip>))))
-    ((? (is? <expression>)) o)
-    ((? (is? <argument>)) o)
-    ((? (is? <type>)) o)
-    ((? (is? <event>)) o)
-    ((? (is? <trigger>)) o)
-    ((? (is? <variable>)) o)
-    ((? (is? <formal>)) o)
-    ((? (is? <action>)) o)
-    ((? (is? <call>)) o)
     ((? (is? <ast>)) (tree-map ast-complete-elses o))
     (_ o)))
 
@@ -450,39 +403,20 @@
 (define (mcrl2:om root) ;; FIXME: already root/om
   ((compose
     ;;    (lambda (o) (pretty-print (om->list o) (current-error-port)) o)
-    (perf "flatten-compound")
     flatten-compound
-    (perf "ast-complete-elses")
     ast-complete-elses
-    (perf "ast-annotate-illegals")
     ast-annotate-illegals
-    (perf "ast-transform-event-ends")
     ast-transform-event-ends
-    (perf "transform-compounds")
     transform-compounds
-    (perf "flatten-compound")
     flatten-compound
-    (perf "root-purge-data")
     root-purge-data
-    (perf "(root-add-voidreply)")
     (root-add-voidreply)
-    (perf "ast-tail-calls")
     ast-tail-calls
-    (lambda (o) (pretty-print (om->list o) (current-error-port)) o)
-    (perf "ast-add-skips")
     ast-add-skips
-    (perf "(expand-on)")
     (expand-on)
-    (perf "fix-empty-interface-behaviour")
+    norm-state
+    code-norm-event
     fix-empty-interface-behaviour
-    (perf "remove-otherwise")
-    (remove-otherwise)
-    (perf "add-illegals-state")
-    add-illegals-state
-    (perf "norm-state")
-    csp-norm-state
-    ;; (perf "code-norm-event")
-    ;; code-norm-event
     ) root))
 
 ;;(use-modules (statprof))
@@ -494,17 +428,9 @@
                     (find (is? <interface>) (ast:model* root)))))
 ;;    (stderr "model: ~a\n" model)
     (parameterize ((%model model))
-      ((perf 'x:source) (x:source root))
+            (x:source root)
       ;;      (statprof (lambda () (x:pand 'source@root (module-ref module 'root) module)) #:count-calls? #t)
       )))
-
-(define g-time (get-internal-run-time))
-(define* ((perf label) o)
-  (let* ((time (get-internal-run-time))
-;;         (foo (stderr "TIME ~a: ~a ms\n" label (quotient (- time g-time) 1000000)))
-         )
-    (set! g-time time)
-    o))
 
 (define (ast-> ast)
   (let* ((files (gdzn:command-line:get '() #f))
@@ -515,11 +441,8 @@
          (file-name (cond ((equal? dir "-") dir)
 			  (dir (string-append dir "/" file-name))
 			  (else file-name)))
-         (foo ((perf 'START) dir))
          (root ((compose ast:resolve tick-names parse->om) ast))
-         (foo ((perf 'resolved) root))
 	 (root (mcrl2:om root))
-         (foo ((perf 'mcrl2:om) root))
          (ast? (command-line:get 'ast #f))
          (->mcrl2 (if ast? root->sexp
                       root->mcrl2)))
