@@ -146,9 +146,7 @@
     (when (not (zero? status))
       (if (gdzn:command-line:get 'debug)
           (stderr "ERROR: exit: ~a: ~s" status error))
-      ;;FIXME: lts exits nonzero when it finds a trace?
-      ;;let's not exit on that for now
-      ;;(exit status)
+      (exit status)
       )
     status))
 
