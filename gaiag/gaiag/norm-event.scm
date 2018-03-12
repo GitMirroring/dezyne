@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016, 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -52,6 +52,7 @@
            code-norm-event
            norm-event
            table-norm-event
+           trigger->incomplete
            ))
 
 (define-syntax *match*
@@ -85,7 +86,7 @@
 (define g-time (get-internal-run-time))
 (define* ((perf label) o)
   (let* ((time (get-internal-run-time))
-         ;;(foo (stderr "TIME ~a: ~a\n" label (- time g-time)))
+;;         (foo (stderr "  TIME ~a: ~a ms\n" label (quotient (- time g-time) 1000000)))
          )
     (set! g-time time)
     o))
