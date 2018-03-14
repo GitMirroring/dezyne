@@ -199,7 +199,7 @@
 (define (ast-add-skips o)
   (match o
     ((and ($ <compound>) (= .elements '())) (make <skip>))
-    (($ <functions>) o) ;; FIXME: continuation of if (true) {} in function?
+    ((and ($ <function>) (= .statement statement)) (clone o #:statement (ast-add-skips statement)))
     ((and (? (is? <component>) (= .behaviour behaviour)))
      (clone o #:behaviour (ast-add-skips behaviour)))
     ((and (? (is? <interface>) (= .behaviour behaviour)))
