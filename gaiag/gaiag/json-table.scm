@@ -262,7 +262,7 @@
      ((and ($ <if>) (= .then then) (= .else #f))
       (let ((then (json-next- model var next then functions)))
         (add-state next then)))
-     (((and $ <if>) (= .then then) (= .else else))
+     ((and ($ <if>) (= .then then) (= .else else))
       (let ((then (json-next- model var next then functions))
             (else (json-next- model var next else functions)))
         (add-state then else)))
