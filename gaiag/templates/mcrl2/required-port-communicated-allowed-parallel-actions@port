@@ -1,1 +1,1 @@
-#.name 'out | #.name 'in_to_queue -> #.name 'in_queue, #.name 'in | #.name 'out_of_queue -> #.name 'out_queue, #.name 'inevitable | #.name 'inevitable_allow -> #.name 'inevitable_allow', #.name 'optional | #.name 'optional_allow -> #.name 'optional_allow'
+#.name 'out | #.name 'in_to_queue -> #.name 'in_queue, #.name 'in | #.name 'out_of_queue -> #.name 'out_queue, #.name 'int | #.name 'int -> #.name 'int'

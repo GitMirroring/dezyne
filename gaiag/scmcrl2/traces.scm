@@ -136,7 +136,7 @@ illegal")
      incomplete      <-  'incomplete'
      reply-error     <-  'double_reply_error' / 'no_reply_error'
      flush           <   (identifier tick)+ 'flush'
-     modeling        <   port tick ('inevitable' / 'optional')
+     modeling        <   port tick 'int' lpar (scope tick)+ identifier rpar
      event           <-- port tick (event-literal / direction) lpar mcrl2-event rpar
      error           <-- queue-full / range-error / reply-error / incomplete
      return          <-- port tick return-literal lpar arguments rpar

@@ -1,4 +1,0 @@
-#x:mcrl2-model-name 'optional_unconstrained = 
-         #x:mcrl2-model-name 'optional_begin_oc . #x:mcrl2-model-name 'optional_end_oc . #x:mcrl2-model-name 'optional_unconstrained +
-         #x:mcrl2-model-name 'inevitable_begin_oc . #x:mcrl2-model-name 'inevitable_end_oc . #x:mcrl2-model-name 'optional_unconstrained;
-

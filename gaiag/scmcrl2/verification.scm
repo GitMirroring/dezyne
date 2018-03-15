@@ -66,13 +66,13 @@
   ((om:scope-name '.) o))
 
 (define (compliance-hidden-actions)
-  (list "return" "optional" "inevitable" "event" "flush"))
+  (list "return" "event" "flush"))
 
 (define (component-livelock-hidden-actions)
   (list "return" "event" "flush"))
 
 (define (interface-livelock-hidden-actions model-name)
-  (map (cut string-append model-name <>) (list "'optional" "'inevitable")))
+  (map (cut string-append model-name "'int(" model-name <> ")") (list "'optional" "'inevitable")))
 
 
 (define (find-taus component model-name hidden-actions)

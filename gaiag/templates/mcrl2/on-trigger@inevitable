@@ -1,1 +1,1 @@
-#x:mcrl2-model-name 'inevitable
+#x:mcrl2-model-name 'int(#x:mcrl2-model-name 'inevitable)

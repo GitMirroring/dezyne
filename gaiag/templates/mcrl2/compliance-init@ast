@@ -3,7 +3,7 @@ eqn  #x:mcrl2-provided-port-type 'allow_dillegals = true;
      #x:mcrl2-component-name 'allow_dillegals = true;
 
 init 
-    rename({#x:mcrl2-provided-port-type 'event -> #x:mcrl2-provided-port-name 'event, #x:mcrl2-provided-port-type 'return -> #x:mcrl2-provided-port-name 'return, #x:mcrl2-provided-port-type 'flush -> #x:mcrl2-provided-port-name 'flush},
-      #x:mcrl2-provided-port-type 'Implementation_constrained
+    rename({#x:mcrl2-provided-port-type 'event -> #x:mcrl2-provided-port-name 'event, #x:mcrl2-provided-port-type 'return -> #x:mcrl2-provided-port-name 'return, #x:mcrl2-provided-port-type 'int -> #x:mcrl2-provided-port-name 'int, #x:mcrl2-provided-port-type 'flush -> #x:mcrl2-provided-port-name 'flush},
+      #x:mcrl2-provided-port-type 'Implementation
     );
 

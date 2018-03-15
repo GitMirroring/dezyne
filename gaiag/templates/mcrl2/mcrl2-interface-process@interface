@@ -1,13 +1,5 @@
 #x:mcrl2-interface-process
 
-     #x:mcrl2-constrained-behaviour
-
-     #x:mcrl2-optional-unconstrained
-
-     #x:mcrl2-optional-constrained
-
-     #x:mcrl2-inevitable-unconstrained
-
      #x:mcrl2-run2completion
 
      #x:mcrl2-implementation

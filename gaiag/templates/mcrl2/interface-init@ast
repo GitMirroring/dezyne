@@ -1,4 +1,4 @@
 
 eqn  #x:mcrl2-model-name 'allow_dillegals = false;
 
-init #x:mcrl2-model-name 'Implementation_constrained();
+init #x:mcrl2-model-name 'Implementation();

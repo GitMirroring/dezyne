@@ -1,14 +1,18 @@
-#x:mcrl2-model-name 'Implementation = rename({#x:rename-required-ports #x:rename-provided-ports },
+#x:mcrl2-model-name 'Implementation =
+       rename({#x:rename-required-ports #x:rename-provided-ports },
          hide({#x:hidden-actions },
            allow({#x:allowed-actions },
              comm({#x:communicated-actions },
-               (#x:mcrl2-model-name 'Run_to_Completion() || allow({#x:allowed-parallel-actions },
-                 comm({#x:communicated-allowed-parallel-actions },
-                   (allow({#x:allowed-communicated-allowed-parallel-actions },
-		   #x:required-port-parallel-communication #x:no-required-port-parallel-communication
-                   ) || #x:mcrl2-model-name 'Queue([]))
+               #x:mcrl2-model-name 'Run_to_Completion() ||
+               rename({#x:rename-parallel-actions },
+                 allow({#x:allowed-parallel-actions },
+                   comm({#x:communicated-allowed-parallel-actions },
+                     (allow({#x:allowed-communicated-allowed-parallel-actions },
+                     #x:required-port-parallel-communication #x:no-required-port-parallel-communication
+                     ) || #x:mcrl2-model-name 'Queue([]))
+                   )
                  )
-               ))
+               )
              )
            )
          )
