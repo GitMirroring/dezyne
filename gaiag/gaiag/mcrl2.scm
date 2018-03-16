@@ -517,14 +517,6 @@
 (define-method (mcrl2:reply-type (o <the-end>))
   ((compose mcrl2:expand-types .signature .event .trigger) o))
 
-(define (models-with-calls o)
-  (append-map
-   (lambda (m)
-     (if (pair? ((compose ast:function* .behaviour) m))
-	 (list m)
-	 '()))
-   (append (mcrl2:interfaces o) (list o))))
-
 (define (other-function-returns o)
   (let* ((function (parent <function> o))
          (model (parent <model> function))
@@ -535,12 +527,64 @@
 (define (typed-functions o)
   (filter (lambda (f) (not (is-a? ((compose .type .signature) f) <void>))) ((compose ast:function* .behaviour) o)))
 
+
+(define (equal-continuation a b)
+  (string=? (mcrl2:process-identifier (process-continuation a))
+            (mcrl2:process-identifier (process-continuation b))))
+
+(define (models-with-calls o)
+  (append-map
+   (lambda (m)
+     (if (pair? ((om:collect (is? <call>)) ((compose .statement .behaviour) m)))
+	 (list m)
+	 '()))
+   (append (mcrl2:interfaces o) (list o))))
+
+(define (all-referenced-calls o)
+  (let ((calls ((om:collect (is? <call>)) (.statement o)))
+        (mutual-calls ((om:collect (is? <call>)) (.functions o))))
+    (if (null? calls) '()
+        (append calls mutual-calls))))
+
+(define (all-referenced-functions o)
+  (delete-duplicates (map .function (all-referenced-calls o))))
+
+(define (references o)
+  (let ((calls (delete-duplicates (all-referenced-calls (.behaviour o)) equal-continuation)))
+    (if (null? calls) o
+        calls)))
+
+
+(define (step refs result)
+  (let loop ((refs refs) (result result))
+    (if (null? refs) result
+        (let* ((ref (car refs))
+               (function? (parent <function> ref)))
+          (if function? (if (member function? (map .function result)) (loop (cdr refs) (cons ref result))
+                            (loop refs result))
+              (loop (cdr refs) (cons ref result)))))))
+
+(define (ref-function ref)
+  (match ref
+    (($ <variable>) ((compose .function .expression) ref))
+    (($ <assign>) ((compose .function .expression) ref))
+    (($ <call>) (.function ref))))
+
+(define (reachable refs)
+  (receive (refs result) (partition (cut parent <function> <>) refs)
+    (let loop ((refs refs) (result result))
+      (receive (a b) (partition (lambda (ref) (member (.id (parent <function> ref)) (map (compose .id ref-function) result))) refs)
+        (let* ((result2 (append a result)))
+          (if (equal? result result2) result
+              (loop b result2)))))))
+
+
 (define (references o)
   (let* ((variablebycalls ((om:collect (lambda (o) (and (is-a? o <variable>) (is-a? (.expression o) <call>)))) o))
          (assignbycalls ((om:collect (lambda (o) (and (is-a? o <assign>) (is-a? (.expression o) <call>)))) o))
          (callsinassigns (map .expression assignbycalls))
          (calls ((om:collect (lambda (o) (and (is-a? o <call>) (not (or (is-a? (.parent o) <assign>) (is-a? (.parent o) <variable>))) (not (.last? o))))) o))
-         (refs (delete-duplicates (append variablebycalls assignbycalls callsinassigns calls) (lambda (a b) (string=? (mcrl2:process-identifier (process-continuation a)) (mcrl2:process-identifier (process-continuation b)))))))
+         (refs (reachable (delete-duplicates (append variablebycalls assignbycalls callsinassigns calls) equal-continuation))))
     (if (pair? refs)
         refs
         o)))

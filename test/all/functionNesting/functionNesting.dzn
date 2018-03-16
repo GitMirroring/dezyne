@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -32,21 +33,22 @@ component functionNesting {
   provides I p;
 
   behaviour {
-    bool fnTrue() {
-      return true;
+    bool fnTrue(bool param) {
+      if(param) { bool b = fnTrue(!param); return b; }
+      else return true;
     }
 
     void nestedfnnoarg() {
-      bool b = fnTrue();
+      bool b = fnTrue(false);
     }
 
     void nestedfnarg1(bool barg) {
-      bool b = fnTrue();
+      bool b = fnTrue(true);
     }
 
     void nestedfnarg2(bool barg) {
       bool b = false;
-      b = fnTrue();
+      b = fnTrue(barg);
     }
 
     on p.e(): {}

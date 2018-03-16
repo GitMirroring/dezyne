@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -129,7 +131,9 @@
 (define-templates globals-init model-from-scope)
 (define-templates global-vars-init globals-from-scope comma-prefix)
 (define-templates mcrl2-statement-process mcrl2:statement-process)
-(define-templates mcrl2-function-process (compose .elements .functions))
+
+
+(define-templates mcrl2-function-process all-referenced-functions)
 (define-templates mcrl2-process-identifier mcrl2:process-identifier)
 (define-templates mcrl2-port-identifier mcrl2:port-identifier)
 (define-templates mcrl2-child-identifier mcrl2:child-identifier)
