@@ -554,7 +554,7 @@
          (assignbycalls ((om:collect (lambda (o) (and (is-a? o <assign>) (is-a? (.expression o) <call>)))) o))
          (callsinassigns (map .expression assignbycalls))
          (calls ((om:collect (lambda (o) (and (is-a? o <call>) (not (or (is-a? (.parent o) <assign>) (is-a? (.parent o) <variable>))) (not (.last? o))))) o))
-         (refs (delete-duplicates (append variablebycalls assignbycalls calls) (lambda (a b) (eq? (.id (process-continuation a)) (.id (process-continuation b)))))))
+         (refs (delete-duplicates (append variablebycalls assignbycalls callsinassigns calls) (lambda (a b) (string=? (mcrl2:process-identifier (process-continuation a)) (mcrl2:process-identifier (process-continuation b)))))))
     (if (pair? refs)
         refs
         o)))
