@@ -144,10 +144,8 @@
 (define (handle-error job error)
   (let ((status (wait job)))
     (when (not (zero? status))
-      (if (gdzn:command-line:get 'debug)
-          (stderr "ERROR: exit: ~a: ~s" status error))
-      (exit status)
-      )
+      (stderr "ERROR: exit: ~a: ~s" status error)
+      (exit status))
     status))
 
 (define ((mcrl2:verify-interface-deadlock model) dir file-name ast verbose? all?)
