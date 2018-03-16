@@ -5,25 +5,22 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
-* Changes in development (since 2.6.1)
-** mcrl2 verification is available for the development version of dzn verify,
-   by using --version=development or selecting "development" service version in eclipse
-** 85 passing mcrl2 basic dzn semantics tests, 72 still to go
-  note that all-over 34 tests pass and 218 still fail,
-  this is mainly related to the mcrl2 impact on our testing approach
-  see https://hosting.verum.com/regression/development/regression.html
-
-** known mcrl2 verification issues:
-  - missing reply leads to mcrl2 parse error
-  - no verification support for: blocking, external, async, multiple provides
-  - no interface completeness
-  - dzn traces is preliminary which causes failures in execution of code and simulation
-  - no trace for deterministic check
-  - compliance trace lacks the mismatching events
-  - significant increase in verification duration
-  - all error reporting is as verbose as possible to allow development debugging
-** other known issues
-  - dzn view broken due to broken event table
+* Changes in 2.7.0 (since 2.6.1)
+** Verification
+  - The Dezyne verification engine has been replaced by mCRL2, see
+    http://mcrl2.org.
+  - Interface completeness verification is performed as part of the
+    deadlock check.
+  - Verification counter examples may differ from previous versions.
+** Known issues
+  - The language features multiple provides, blocking, external and
+    async are not yet available for verification, see
+    https://hosting.verum.com/regression/2.7.0/regression.html.
+  - The verification feature has been discontinued for all older
+    releases.
+  - Verification performance has not been fully optimized.
+** Code generation
+  - Performance of the code generator has been improved significantly.
 
 * Changes in 2.6.1 (since 2.6.0)
 ** Code generation
