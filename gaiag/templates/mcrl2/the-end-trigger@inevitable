@@ -1,1 +1,1 @@
-(reply_#x:provided-port-type  != #x:provided-port-type 'NULL) -> double_reply_error . delta <> #x:mcrl2-model-name 'end
+(reply != #x:mcrl2-model-name 'NULL) -> double_reply_error . delta <> #x:mcrl2-model-name 'end

@@ -1,5 +1,0 @@
-#x:mcrl2-model-name 'RC_provided_port_in(f: #x:provided-port-type 'Actions, b: Bool, r: #x:provided-port-type 'ReplyUnion) = 
-         #x:provided-run2completion-port-with-out-event #x:provided-port-reply-types
-
-         (b) -> empty_queue . #x:provided-port-name 'return(f, r) . #x:mcrl2-model-name 'Run_to_Completion() +
-         sum f1: #x:provided-port-type 'Actions. #x:provided-port-name 'out_rc(f1) . #x:mcrl2-model-name 'RC_provided_port_in();

@@ -9,10 +9,10 @@ map  #x:mcrl2-model-name 'allow_dillegals : Bool;
 
 eqn  QueueLength = 3;
 
-act  #x:mcrl2-model-name 'reply_out: #x:mcrl2-model-name 'Actions ## #x:mcrl2-model-name 'ReplyUnion;
-     #x:mcrl2-model-name 'reply_comm: #x:mcrl2-model-name 'Actions ## #x:mcrl2-model-name 'ReplyUnion;
+act  #x:mcrl2-model-name 'reply_out: #x:mcrl2-model-name 'ReplyUnion;
+     #x:mcrl2-model-name 'reply_comm: #x:mcrl2-model-name 'ReplyUnion;
      #x:mcrl2-model-name 'out_queue_rc: #x:mcrl2-model-name 'Actions;
-     #x:mcrl2-model-name 'reply_out_rc: #x:mcrl2-model-name 'Actions ## #x:mcrl2-model-name 'ReplyUnion;
+     #x:mcrl2-model-name 'reply_out_rc: #x:mcrl2-model-name 'ReplyUnion;
      #x:mcrl2-model-name 'in: #x:mcrl2-model-name 'Actions;
      #x:mcrl2-model-name 'int: #x:mcrl2-model-name 'Modeling;
      #x:mcrl2-model-name 'int': #x:mcrl2-model-name 'Modeling;
@@ -22,17 +22,17 @@ act  #x:mcrl2-model-name 'reply_out: #x:mcrl2-model-name 'Actions ## #x:mcrl2-mo
      #x:mcrl2-model-name 'in_allow: #x:mcrl2-model-name 'Actions;
      #x:mcrl2-model-name 'out_rc: #x:mcrl2-model-name 'Actions;
      #x:mcrl2-model-name 'out: #x:mcrl2-model-name 'Actions;
-     #x:mcrl2-model-name 'reply_in': #x:mcrl2-model-name 'Actions ## #x:mcrl2-model-name 'ReplyUnion;
+     #x:mcrl2-model-name 'reply_in': #x:mcrl2-model-name 'ReplyUnion;
      #x:mcrl2-model-name 'in_queue: #x:mcrl2-model-name 'Actions;
      #x:mcrl2-model-name 'rc: #x:mcrl2-model-name 'Actions;
-     #x:mcrl2-model-name 'reply: #x:mcrl2-model-name 'Actions ## #x:mcrl2-model-name 'ReplyUnion;
-     #x:mcrl2-model-name 'return: #x:mcrl2-model-name 'Actions ## #x:mcrl2-model-name 'ReplyUnion;
-     #x:mcrl2-model-name 'reply_out': #x:mcrl2-model-name 'Actions ## #x:mcrl2-model-name 'ReplyUnion;
+     #x:mcrl2-model-name 'reply: #x:mcrl2-model-name 'ReplyUnion;
+     #x:mcrl2-model-name 'return: #x:mcrl2-model-name 'ReplyUnion;
+     #x:mcrl2-model-name 'reply_out': #x:mcrl2-model-name 'ReplyUnion;
      #x:mcrl2-model-name 'out_queue: #x:mcrl2-model-name 'Actions;
      #x:mcrl2-model-name 'in_rc: #x:mcrl2-model-name 'Actions;
      #x:mcrl2-model-name 'comm: #x:mcrl2-model-name 'Actions;
      #x:mcrl2-model-name 'in': #x:mcrl2-model-name 'Actions;
-     #x:mcrl2-model-name 'reply_in: #x:mcrl2-model-name 'Actions ## #x:mcrl2-model-name 'ReplyUnion;
+     #x:mcrl2-model-name 'reply_in: #x:mcrl2-model-name 'ReplyUnion;
      #x:mcrl2-model-name 'event: #x:mcrl2-model-name 'Actions;
      #x:mcrl2-model-name 'out_rc': #x:mcrl2-model-name 'Actions;
      #x:mcrl2-model-name 'out': #x:mcrl2-model-name 'Actions;
@@ -49,8 +49,6 @@ act  #x:mcrl2-model-name 'reply_out: #x:mcrl2-model-name 'Actions ## #x:mcrl2-mo
      empty_queue;
      empty_queue_c;
      queue_empty;
-
-glob global_reply_variable_#x:mcrl2-model-name : #x:mcrl2-model-name 'ReplyUnion;
 
 proc
      Illegal = illegal . Illegal;

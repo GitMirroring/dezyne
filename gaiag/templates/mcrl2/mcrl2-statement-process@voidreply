@@ -1,2 +1,2 @@
 #x:pretty-print-dzn
-     #x:mcrl2-process-name '#x:mcrl2-process-identifier(#x:process-parameters) = (reply_#x:provided-port-type  != #x:provided-port-type 'NULL) -> double_reply_error . delta <> #x:process-continuation (reply_#x:provided-port-type  = reply_#x:provided-port-type 'Void(void));
+     #x:mcrl2-process-name '#x:mcrl2-process-identifier(#x:process-parameters) = (reply != #x:mcrl2-model-name 'NULL) -> double_reply_error . delta <> #x:process-continuation (reply = reply_#x:trigger-port 'Void(void));

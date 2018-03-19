@@ -1,1 +1,1 @@
-reply_#x:mcrl2-provided-port-type : #x:mcrl2-provided-port-type 'ReplyUnion #x:variables-in-scope
+reply : #x:mcrl2-model-name 'ReplyUnion #x:variables-in-scope

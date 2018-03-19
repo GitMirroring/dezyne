@@ -1,1 +1,1 @@
-#x:mcrl2-model-name 'RC_required_port_in(b: Bool) = #x:required-ports-run2completion;
+#x:mcrl2-model-name 'RC_required_port_in(flush: Bool) = #x:run2completion-port-with-out-event #x:required-ports-run2completion;

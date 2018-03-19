@@ -52,16 +52,16 @@
 
 (define trace "startIF'event(StartControlIF'in'startAll)
 device1IF'event(Device1IF'in'turnon)
-device1IF'return(Device1IF'in'turnon, reply_Device1IF'Void(void))
+device1IF'return(reply_Device1IF'Void(void))
 tau
 tau
-startIF'return(StartControlIF'in'startAll, reply_StartControlIF'Void(void))
+startIF'return(reply_StartControlIF'Void(void))
 device1IF'inevitable
 device1IF'event(Device1IF'out'ok)
 device1IF'flush
 tau
 device2IF'event(Device2IF'in'turnon)
-device2IF'return(Device2IF'in'turnon, reply_Device2IF'Device2IF'Result(Device2IF'Result'NOK))
+device2IF'return(reply_Device2IF'Device2IF'Result(Device2IF'Result'NOK))
 startIF'event(StartControlIF'out'startFailed)
 tau
 tau
@@ -76,26 +76,26 @@ illegal
 (define trace2
 "console'event(i_'_i'i_1'i1_'IConsole'in'_i)
 sensor'event(i_'_i'i_1'i1_'ISensor'in'i_1)
-sensor'return(i_'_i'i_1'i1_'ISensor'in'i_1, reply_i_'_i'i_1'i1_'ISensor'Void(void))
+sensor'return(reply_i_'_i'i_1'i1_'ISensor'Void(void))
 tau
 tau
-console'return(i_'_i'i_1'i1_'IConsole'in'_i, reply_i_'_i'i_1'i1_'IConsole'Void(void))
+console'return(reply_i_'_i'i_1'i1_'IConsole'Void(void))
 sensor'optional
 sensor'event(i_'_i'i_1'i1_'ISensor'out'i_)
 sensor'flush
 tau
 console'event(i_'_i'i_1'i1_'IConsole'out'detected)
 siren'event(i_'_i'i_1'i1_'ISiren'in'_i_)
-siren'return(i_'_i'i_1'i1_'ISiren'in'_i_, reply_i_'_i'i_1'i1_'ISiren'Void(void))
+siren'return(reply_i_'_i'i_1'i1_'ISiren'Void(void))
 tau
 tau
 console'flush
 console'event(i_'_i'i_1'i1_'IConsole'in'_i1)
 sensor'event(i_'_i'i_1'i1_'ISensor'in'disable)
-sensor'return(i_'_i'i_1'i1_'ISensor'in'disable, reply_i_'_i'i_1'i1_'ISensor'Void(void))
+sensor'return(reply_i_'_i'i_1'i1_'ISensor'Void(void))
 tau
 tau
-console'return(i_'_i'i_1'i1_'IConsole'in'_i1, reply_i_'_i'i_1'i1_'IConsole'Void(void))
+console'return(reply_i_'_i'i_1'i1_'IConsole'Void(void))
 sensor'inevitable
 sensor'event(i_'_i'i_1'i1_'ISensor'out'disabled)
 sensor'flush
@@ -106,10 +106,10 @@ tau
 console'flush
 console'event(i_'_i'i_1'i1_'IConsole'in'_i)
 sensor'event(i_'_i'i_1'i1_'ISensor'in'i_1)
-sensor'return(i_'_i'i_1'i1_'ISensor'in'i_1, reply_i_'_i'i_1'i1_'ISensor'Void(void))
+sensor'return(reply_i_'_i'i_1'i1_'ISensor'Void(void))
 tau
 tau
-console'return(i_'_i'i_1'i1_'IConsole'in'_i, reply_i_'_i'i_1'i1_'IConsole'Void(void))
+console'return(reply_i_'_i'i_1'i1_'IConsole'Void(void))
 sensor'optional
 sensor'event(i_'_i'i_1'i1_'ISensor'out'i_)
 sensor'flush
@@ -122,7 +122,7 @@ illegal")
 
 (define (parse input)
   (define-peg-string-patterns
-    "trace          <-- ((tau / illegal / flush / modeling / event / return-out / return / error / anything) newline?)*
+    "trace          <-- ((tau / illegal / flush / modeling / event / return / error / anything) newline?)*
      newline         <   '\n'
      lpar            <   '('
      rpar            <   ')'
@@ -140,9 +140,7 @@ illegal")
      event           <-- port tick (event-literal / direction) lpar mcrl2-event rpar
      error           <-- queue-full / range-error / reply-error / incomplete
      return          <-- port tick return-literal lpar arguments rpar
-     return-out      <   port tick 'reply_out' lpar arguments-out rpar
-     arguments       <-  mcrl2-event- (comma reply compound-type compound-value)?
-     arguments-out   <-  mcrl2-event-out (comma reply compound-type compound-value)?
+     arguments       <-  reply compound-type compound-value
      mcrl2-event     <-  (scope tick)+ event-name
      mcrl2-event-    <   mcrl2-event
      mcrl2-event-out <-  model tick 'out' tick event-name

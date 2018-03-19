@@ -1,0 +1,8 @@
+#x:mcrl2-model-name 'Specification =
+  rename({#x:specification-rename-provided},
+    allow({#x:specification-allow-provided},
+      comm({#x:specification-comm-provided},
+        #x:specification-parallel-provided
+      )
+    ) 
+  ); 

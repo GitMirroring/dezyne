@@ -1,1 +1,1 @@
-(reply_#x:provided-port-type  != #x:provided-port-type 'NULL) -> double_reply_error . delta <> #x:trigger-port 'reply_out(#x:trigger-port-type '#x:on-event-trigger-dir '#x:on-event-trigger , reply_#x:trigger-port-type #x:required-port-the-end)
+(reply != #x:mcrl2-model-name 'NULL) -> double_reply_error . delta <> #x:trigger-port 'reply_out(reply_#x:trigger-port-type #x:required-port-the-end)

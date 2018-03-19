@@ -1,1 +1,1 @@
-#x:required-the-end-trigger  . #x:process-continuation(reply_#x:provided-port-type  = #x:provided-port-type 'NULL)
+#x:required-the-end-trigger  . #x:process-continuation(reply = #x:mcrl2-model-name 'NULL)

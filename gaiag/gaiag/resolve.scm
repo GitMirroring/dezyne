@@ -2,7 +2,7 @@
 ;;
 ;; Copyright © 2014  Rutger van Beusekom
 ;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
-;; Copyright © 2015, 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;; Copyright © 2015, 2016, 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
@@ -70,7 +70,6 @@
     o))
 
 (define (ast:resolve o) (add-constants o))
-
 
 (define (resolve:instance model o)
   (match o
@@ -231,7 +230,6 @@
 
 (define-method (.event.direction (o <trigger>))
   ((compose .direction .event) o))
-
 
 (define-method (.function (model <model>) (o <call>))
   (and (.function.name o) (name-resolve model <function> (.function.name o))))

@@ -1,1 +1,1 @@
-!(#x:range-from  <= reply && reply <= #x:range-to) -> range_error . delta <> 
+!(#x:range-from  <= res && res <= #x:range-to) -> range_error . delta <> 

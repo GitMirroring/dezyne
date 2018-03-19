@@ -2,6 +2,7 @@ sort #x:global-type
      #x:sort-interface
      #x:sort-component
      ActionUnion = struct #x:action-union-struct;
+     #x:mcrl2-model-name 'ReplyUnion = struct #x:mcrl2-model-name 'NULL | #x:all-reply-union-struct;
      Void = struct void;
 
 map  #x:interfaces-allow-dillegals
@@ -25,8 +26,6 @@ act  #x:interface-action-alphabet
      queue_empty;
      queue_full;
 
-glob #x:global-interface-reply
-
 proc
      Illegal = illegal . Illegal;
 
@@ -40,12 +39,7 @@ proc
 
      #x:mcrl2-component-queues
 
-     #x:mcrl2-run2completion
-
-     #x:mcrl2-component-rc-required-port
-
-     #x:mcrl2-component-rc-provided-port
-
-     #x:mcrl2-required-with-out-event
+#x:component-r2c
 
      #x:mcrl2-implementation
+ 

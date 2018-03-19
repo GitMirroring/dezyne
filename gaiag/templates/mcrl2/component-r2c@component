@@ -1,0 +1,5 @@
+    #x:mcrl2-model-name 'Run_to_Completion = 
+#x:component-r2c-provided #x:component-r2c-required;
+
+    #x:mcrl2-model-name 'RC_handling(p: Bool, b: Bool, f: Bool, r: #x:mcrl2-model-name 'ReplyUnion) = 
+#x:component-r2c-handling-provided #x:component-r2c-handling-required;

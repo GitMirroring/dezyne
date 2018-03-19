@@ -1,1 +1,1 @@
-reply_#x:mcrl2-provided-port-type  = #x:mcrl2-provided-port-type 'NULL#x:global-vars-init
+reply = #x:mcrl2-model-name 'NULL#x:global-vars-init
