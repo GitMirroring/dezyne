@@ -1,5 +1,5 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
-;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
@@ -440,18 +440,15 @@
 (define ast:optional (make <optional-node>))
 
 (define-class <port-node> (<named-node>)
-  (type #:getter .type@ #:init-form (make <scope.name-node>) #:init-keyword #:type)
+  (type.name #:getter .type.name #:init-form (make <scope.name-node>) #:init-keyword #:type.name)
   (direction #:getter .direction #:init-value #f #:init-keyword #:direction)
   (external #:getter .external #:init-value #f #:init-keyword #:external)
   (injected #:getter .injected #:init-value #f #:init-keyword #:injected))
 
-(define-method (.type.name (o <port-node>)) (.type@ o))
-
 (define-class <trigger-node> (<ast-node>)
-  (port #:getter .port@ #:init-value #f #:init-keyword #:port)
+  (port.name #:getter .port.name #:init-value #f #:init-keyword #:port.name)
   (event #:getter .event #:init-value #f #:init-keyword #:event)
   (formals #:getter .formals #:init-form (make <formals-node>) #:init-keyword #:formals))
-(define-method (.port.name (o <trigger-node>)) (.port@ o))
 (define-method (.event.name (o <trigger-node>)) (and=> (.event o) .name))
 (define-method (.event.direction (o <trigger-node>)) (and=> (.event o) .direction))
 
@@ -505,19 +502,15 @@
   (value #:getter .value #:init-value #f #:init-keyword #:value))
 
 (define-class <var-node> (<expression-node>)
-  (variable #:getter .variable@ #:init-value #f #:init-keyword #:variable))
-
-(define-method (.variable.name (o <var-node>)) (.variable@ o))
+  (variable.name #:getter .variable.name #:init-value #f #:init-keyword #:variable.name))
 
 (define-class <variable-node> (<named-node> <imperative-node> <expression-node>)
   (type #:getter .type #:init-form #f #:init-keyword #:type)
   (expression #:getter .expression #:init-form (make <expression-node>) #:init-keyword #:expression))
 
 (define-class <field-test-node> (<bool-expr-node>)
-  (variable #:getter .variable@ #:init-value #f #:init-keyword #:variable)
+  (variable.name #:getter .variable.name #:init-value #f #:init-keyword #:variable.name)
   (field #:getter .field #:init-value #f #:init-keyword #:field))
-
-(define-method (.variable.name (o <field-test-node>)) (.variable@ o))
 
 (define-class <enum-literal-node> (<enum-expr-node>)
   (type #:getter .type #:init-value #f #:init-keyword #:type)
@@ -531,9 +524,7 @@
   (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
 
 (define-class <formal-binding-node> (<formal-node>)
-  (variable #:getter .variable@ #:init-form #f #:init-keyword #:variable))
-
-(define-method (.variable.name (o <formal-binding-node>)) (.variable@ o))
+  (variable.name #:getter .variable.name #:init-form #f #:init-keyword #:variable.name))
 
 (define-class <component-model-node> (<model-node>)
   (ports #:getter .ports #:init-form (make <ports-node>) #:init-keyword #:ports))
@@ -562,24 +553,20 @@
   (statement #:getter .statement #:init-value #f #:init-keyword #:statement))
 
 (define-class <action-node> (<imperative-node> <expression-node>)
-  (port #:getter .port@ #:init-value #f #:init-keyword #:port)
+  (port.name #:getter .port.name #:init-value #f #:init-keyword #:port.name)
   (event #:getter .event #:init-value #f #:init-keyword #:event)
   (arguments #:getter .arguments #:init-form (make <arguments-node>) #:init-keyword #:arguments))
-(define-method (.port.name (o <action-node>)) (.port@ o))
 (define-method (.event.name (o <action-node>)) (and=> (.event o) .name))
 (define-method (.event.direction (o <action-node>)) (and=> (.event o) .direction))
 
 (define-class <assign-node> (<imperative-node>)
-  (variable #:getter .variable@ #:init-value #f #:init-keyword #:variable)
+  (variable.name #:getter .variable.name #:init-value #f #:init-keyword #:variable.name)
   (expression #:getter .expression #:init-form (make <expression-node>) #:init-keyword #:expression))
 
-(define-method (.variable.name (o <assign-node>)) (.variable@ o))
-
 (define-class <call-node> (<imperative-node> <expression-node>)
-  (function #:getter .function@ #:init-value #f #:init-keyword #:function)
+  (function.name #:getter .function.name #:init-value #f #:init-keyword #:function.name)
   (arguments #:getter .arguments #:init-form (make <arguments-node>) #:init-keyword #:arguments)
   (last? #:getter .last? #:init-value #f #:init-keyword #:last?))
-(define-method (.function.name (o <call-node>)) (.function@ o))
 
 (define-class <guard-node> (<declarative-node>)
   (expression #:getter .expression #:init-form (make <expression-node>) #:init-keyword #:expression)
@@ -605,9 +592,7 @@
 
 (define-class <reply-node> (<imperative-node>)
   (expression #:getter .expression #:init-value #f #:init-keyword #:expression)
-  (port #:getter .port@ #:init-value #f #:init-keyword #:port))
-
-(define-method (.port.name (o <reply-node>)) (.port@ o))
+  (port.name #:getter .port.name #:init-value #f #:init-keyword #:port.name))
 
 (define-class <return-node> (<imperative-node>)
   (expression #:getter .expression #:init-value #f #:init-keyword #:expression))
@@ -618,15 +603,12 @@
 
 (define-class <binding-node> (<ast-node>)
   (instance #:getter .instance #:init-value #f #:init-keyword #:instance)
-  (port #:getter .port@ #:init-value #f #:init-keyword #:port))
+  (port.name #:getter .port.name #:init-value #f #:init-keyword #:port.name))
 
 (define-method (.instance.name (o <binding-node>)) (and=> (.instance o) .name))
-(define-method (.port.name (o <binding-node>)) (.port@ o))
 
 (define-class <instance-node> (<named-node> <declarative-node>)
-  (type #:getter .type@ #:init-form (make <scope.name-node>) #:init-keyword #:type))
-
-(define-method (.type.name (o <instance-node>)) (.type@ o))
+  (type.name #:getter .type.name #:init-form (make <scope.name-node>) #:init-keyword #:type.name))
 
 (define-class <error-node> (<ast-node>)
   (ast #:getter .ast #:init-value #f #:init-keyword #:ast)

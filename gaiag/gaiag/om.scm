@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
@@ -73,15 +73,15 @@
   (match o
     (('action event) (make <action-node> #:event event))
 
-    (('action port event) (make <action-node> #:port port #:event event))
+    (('action port event) (make <action-node> #:port.name port #:event event))
 
-    (('action port event arguments) (make <action-node> #:port port #:event event #:arguments (parse->om- arguments)))
+    (('action port event arguments) (make <action-node> #:port.name port #:event event #:arguments (parse->om- arguments)))
 
     (('arguments arguments ...) (make <arguments-node>
                                   #:elements (map parse->om- arguments)))
 
     (('assign variable expression) (make <assign-node>
-                                     #:variable variable
+                                     #:variable.name variable
                                      #:expression (parse->om- expression)))
 
     (('behaviour) (make <behaviour-node>))
@@ -98,23 +98,23 @@
     (('bind left right)
      (make <bind-node> #:left (parse->om- left) #:right (parse->om- right)))
 
-    (('binding instance port) (make <binding-node> #:instance instance #:port port))
+    (('binding instance port) (make <binding-node> #:instance instance #:port.name port))
 
     (('bindings bindings ...)
      (make <bindings-node> #:elements (map parse->om- bindings)))
 
     (('blocking statement) (make <blocking-node> #:statement (parse->om- statement)))
 
-    (('call function) (make <call-node> #:function function))
+    (('call function) (make <call-node> #:function.name function))
 
     (('call function arguments)
      (make <call-node>
-       #:function function
+       #:function.name function
        #:arguments (parse->om- (or (null-is-#f arguments) '(arguments)))))
 
     (('call function arguments last?)
      (make <call-node>
-       #:function function
+       #:function.name function
        #:arguments (parse->om- (or (null-is-#f arguments) '(arguments)))
        #:last? last?))
 
@@ -149,7 +149,7 @@
 
     (('events events ...) (make <events-node> #:elements (map parse->om- events)))
 
-    (('field-test identifier field) (make <field-test-node> #:variable identifier #:field field))
+    (('field-test identifier field) (make <field-test-node> #:variable.name identifier #:field field))
 
     (('fields fields ...) (make <fields-node> #:elements fields))
 
@@ -186,7 +186,7 @@
     (('int name range)
      (make <int-node> #:name (parse->om- name) #:range (parse->om- range)))
 
-    (('instance name type) (make <instance-node> #:name name #:type (parse->om- type)))
+    (('instance name type) (make <instance-node> #:name name #:type.name (parse->om- type)))
 
     (('instances instances ...)
      (make <instances-node> #:elements (map parse->om- instances)))
@@ -206,7 +206,7 @@
        #:events (parse->om- (or (null-is-#f (assoc 'events body)) '(events)))
        #:behaviour (and=> (null-is-#f (assoc 'behaviour body)) parse->om-)))
 
-    (('enum-literal name field) (make <enum-literal-node> #:type (parse->om- name) #:field field))
+    (('enum-literal name field) (make <enum-literal-node> #:type.name (parse->om- name) #:field field))
 
     (('scope.name scope name) (make <scope.name-node> #:scope scope #:name name))
 
@@ -221,13 +221,13 @@
      (make <formal-node> #:name name))
 
     (('formal-binding name #f #f variable)
-     (make <formal-binding-node> #:name name #:variable variable))
+     (make <formal-binding-node> #:name name #:variable.name variable))
 
     (('formal name type)
-     (make <formal-node> #:name name #:type (parse->om- type)))
+     (make <formal-node> #:name name #:type.name (parse->om- type)))
 
     (('formal name type direction)
-     (make <formal-node> #:name name #:type (parse->om- type) #:direction direction))
+     (make <formal-node> #:name name #:type.name (parse->om- type) #:direction direction))
 
     (('formals formals ...)
      (make <formals-node> #:elements (map parse->om- formals)))
@@ -235,7 +235,7 @@
     (('port name type direction external-injected ...)
      (make <port-node>
        #:name name
-       #:type (parse->om- type)
+       #:type.name (parse->om- type)
        #:direction direction
        #:external (find (lambda (x) (eq? x 'external)) external-injected)
        #:injected (find (lambda (x) (eq? x 'injected)) external-injected)))
@@ -246,7 +246,7 @@
 
     (('reply expression) (make <reply-node> #:expression (parse->om- expression)))
 
-    (('reply expression port) (make <reply-node> #:expression (parse->om- expression) #:port port))
+    (('reply expression port) (make <reply-node> #:expression (parse->om- expression) #:port.name port))
 
     (('return) (make <return-node>))
 
@@ -255,9 +255,9 @@
     (('root elements ...) (make <root-node> #:elements (map parse->om- elements)))
 
     (('signature type formals)
-     (make <signature-node> #:type (parse->om- type) #:formals (parse->om- formals)))
+     (make <signature-node> #:type.name (parse->om- type) #:formals (parse->om- formals)))
 
-    (('signature type) (make <signature-node> #:type (parse->om- type)))
+    (('signature type) (make <signature-node> #:type.name (parse->om- type)))
 
     (('system name ports instances bindings)
      (and=> (assoc 'imported (cddr o)) (mark-imported o))
@@ -267,11 +267,11 @@
         #:instances (parse->om- instances)
         #:bindings (parse->om- bindings)))
 
-    (('trigger port event) (make <trigger-node> #:port port #:event event))
+    (('trigger port event) (make <trigger-node> #:port.name port #:event event))
 
     (('trigger port event arguments)
      (make <trigger-node>
-       #:port port
+       #:port.name port
        #:event event
        #:formals (parse->om- arguments)))
 
@@ -286,13 +286,13 @@
 
     (('types types ...) (make <types-node> #:elements (map parse->om- types)))
 
-    (('var name) (make <var-node> #:variable name))
+    (('var name) (make <var-node> #:variable.name name))
 
     (('variable name type)
-     (make <variable-node> #:name name #:type (parse->om- type) #:expression (make <expression-node>)))
+     (make <variable-node> #:name name #:type.name (parse->om- type) #:expression (make <expression-node>)))
 
     (('variable name type expression)
-     (make <variable-node> #:name name #:type (parse->om- type) #:expression (parse->om- expression)))
+     (make <variable-node> #:name name #:type.name (parse->om- type) #:expression (parse->om- expression)))
 
     (('variables variables ...)
      (make <variables-node> #:elements (map parse->om- variables)))
