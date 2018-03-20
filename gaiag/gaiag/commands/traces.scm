@@ -33,13 +33,16 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 receive)
+
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag util)
+
   #:use-module (gaiag csp)
   #:use-module (gaiag asserts)
-  #:use-module (gaiag misc)  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module (gaiag misc)
   #:use-module (gaiag mcrl2)
   #:use-module (gaiag config)
   #:use-module (gaiag goops)
-  #:use-module (gaiag util)
   #:use-module (gaiag ast)
   #:use-module (gaiag om)
   #:use-module (gaiag deprecated om)

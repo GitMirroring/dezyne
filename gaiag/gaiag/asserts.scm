@@ -5,7 +5,7 @@
 ;;; Copyright © 2014, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
 ;;; under the terms of the GNU Affero General Public License as
@@ -31,13 +31,13 @@
   #:use-module (srfi srfi-1)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (gaiag deprecated om)
   #:use-module (gaiag goops)
+  #:use-module (gaiag util)
+  #:use-module (gaiag compare)
+
+  #:use-module (gaiag deprecated om)
   #:use-module (gaiag om)
   #:use-module (gaiag ast)
-  #:use-module (gaiag compare)
-  #:use-module (gaiag util)
-
   #:use-module (gaiag csp)
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)

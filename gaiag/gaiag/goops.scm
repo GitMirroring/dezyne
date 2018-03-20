@@ -26,6 +26,7 @@
 
 (define-module (gaiag goops)
   #:use-module (system foreign)
+  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
   #:use-module (srfi srfi-1)
@@ -35,28 +36,41 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
 
   #:export (
-           .ast
-           .message
-           <error>
+            define-ast
+            <ast>
+            <ast-node>
+            .node
+            .parent
 
-           .port.name
-           .event.name
-           .event.direction
-           .variable.name
-           .name.name
-           .type.name
-           .function.name
-           .instance.name
-           ast:inevitable
-           ast:optional
+            .event.direction
+            .event.name
+            .id
+            .instance.name
+            .name.name
+            .operator
+            .port.name
+            .type.name
 
+            ast:inevitable
+            ast:optional
+            void-signature
+
+            clone
+            tree-map
+            parent))
+
+;; FIXME: generate-me
+(export
            .arguments
+           .ast
            .behaviour
            .bindings
            .direction
            .elements
            .else
            .event
+           .event.direction
+           .event.name
            .events
            .expression
            .external
@@ -64,16 +78,16 @@
            .fields
            .formals
            .from
+           .function.name
            .functions
-           .id
-           .injected
            .incomplete
+           .injected
            .instance
            .instances
            .last?
            .left
+           .message
            .name
-           .operator
            .port
            .ports
            .range
@@ -84,715 +98,589 @@
            .statement
            .then
            .to
-           ;;.trigger
+           .trigger
            .triggers
            .type
            .types
-	   .type.name
            .value
+           .variable.name
            .variables
-           <argument>
-           <action>
-           <arguments>
-           <assign>
-           <ast>
-           <ast-list>
-           <behaviour>
-           <bind>
-           <binding>
-           <bindings>
-           <blocking>
-           <blocking-compound>
-           <bool>
-           <call>
-           <component>
-           <component-model>
-           <compound>
-           <data>
-           <declarative>
-           <declarative-compound>
-           <direction>
-           <enum>
-           <enum-field>
-           <enum-literal>
-           <event>
-           <events>
-           <extern>
-           <field-test>
-           <fields>
-           <file-name>
-           <foreign>
-           <function>
-           <functions>
-           <guard>
-           <if>
-           <illegal>
-           <imperative>
-           <import>
-           <inevitable>
-           <instance>
-           <instances>
-           <int>
-           <interface>
-           <local>
-           <model-scope>
-           <model>
-           <modeling-event>
-           <named>
-           <on>
-           <optional>
-           <otherwise>
-           <otherwise-guard>
-           <out-bindings>
-           <formal>
-           <formal-binding>
-           <formals>
-           <out-formal>
-           <port>
-           <ports>
-           <range>
-           <reply>
-           <return>
-           <root>
-           <scoped>
-           <scope.name>
-           <shell-system>
-           <signature>
-           <skip>
-           <statement>
-           <system>
-           <the-end>
-           <the-end-blocking>
-           <trigger>
-           <triggers>
-           <type>
-           <types>
-           <literal>
-           <var>
-           <variable>
-           <variables>
-           <void>
-           <voidreply>
-           <unspecified>
-
-           <expression>
-           <bool-expr>
-           <data-expr>
-           <enum-expr>
-           <int-expr>
-           <void-expr>
-           <literal>
-           <binary>
-           <unary>
-
-           <and>
-           <equal>
-           <greater-equal>
-           <greater>
-           <group>
-           <less-equal>
-           <less>
-           <minus>
-           <not-equal>
-           <not>
-           <or>
-           <plus>
-
-           clone
-           tree-map
-           parent
-
            <action-node>
+           <action>
+           <and-node>
+           <and>
+           <argument>
            <arguments-node>
+           <arguments>
            <assign-node>
-           <ast-node>
+           <assign>
+           <ast-list>
            <ast-node-list>
            <behaviour-node>
-           <bind-node>
-           <binding-node>
-           <bindings-node>
-           <blocking-node>
-           <blocking-compound-node>
-           <bool-node>
-           <call-node>
-           <component-node>
-           <component-model-node>
-           <compound-node>
-           <data-node>
-           <declarative-node>
-           <declarative-compound-node>
-           <enum-node>
-           <event-node>
-           <events-node>
-           <extern-node>
-           <field-test-node>
-           <fields-node>
-           <foreign-node>
-           <function-node>
-           <functions-node>
-           <guard-node>
-           <if-node>
-           <illegal-node>
-           <imperative-node>
-           <import-node>
-           <inevitable-node>
-           <instance-node>
-           <instances-node>
-           <int-node>
-           <interface-node>
-           <enum-literal-node>
-           <model-node>
-           <modeling-event-node>
-           <named-node>
-           <on-node>
-           <optional-node>
-           <otherwise-node>
-           <otherwise-guard-node>
-           <out-bindings-node>
-           <formal-node>
-           <formal-binding-node>
-           <formals-node>
-           <port-node>
-           <ports-node>
-           <range-node>
-           <reply-node>
-           <return-node>
-           <root-node>
-           <scoped-node>
-           <scope.name-node>
-           <shell-system-node>
-           <signature-node>
-           <statement-node>
-           <system-node>
-           <trigger-node>
-           <triggers-node>
-           <type-node>
-           <types-node>
-           <literal-node>
-           <var-node>
-           <variable-node>
-           <variables-node>
-           <void-node>
-
-           <expression-node>
-           <bool-expr-node>
-           <data-expr-node>
-           <enum-expr-node>
-           <int-expr-node>
-           <void-expr-node>
-           <literal-node>
+           <behaviour>
            <binary-node>
-           <unary-node>
-
-           <and-node>
+           <binary>
+           <bind-node>
+           <bind>
+           <binding-node>
+           <binding>
+           <bindings-node>
+           <bindings>
+           <blocking-compound-node>
+           <blocking-compound>
+           <blocking-node>
+           <blocking>
+           <bool-expr-node>
+           <bool-expr>
+           <bool-node>
+           <bool>
+           <call-node>
+           <call>
+           <component-model-node>
+           <component-model>
+           <component-node>
+           <component>
+           <compound-node>
+           <compound>
+           <data-expr-node>
+           <data-expr>
+           <data-node>
+           <data>
+           <declarative-compound-node>
+           <declarative-compound>
+           <declarative-node>
+           <declarative>
+           <direction>
+           <enum-expr-node>
+           <enum-expr>
+           <enum-field>
+           <enum-literal-node>
+           <enum-literal>
+           <enum-node>
+           <enum>
            <equal-node>
+           <equal>
+           <error>
+           <event-node>
+           <event>
+           <events-node>
+           <events>
+           <expression-node>
+           <expression>
+           <extern-node>
+           <extern>
+           <field-test-node>
+           <field-test>
+           <fields-node>
+           <fields>
+           <file-name>
+           <foreign-node>
+           <foreign>
+           <formal-binding-node>
+           <formal-binding>
+           <formal-node>
+           <formal>
+           <formals-node>
+           <formals>
+           <function-node>
+           <function>
+           <functions-node>
+           <functions>
            <greater-equal-node>
+           <greater-equal>
            <greater-node>
+           <greater>
            <group-node>
+           <group>
+           <guard-node>
+           <guard>
+           <if-node>
+           <if>
+           <illegal-node>
+           <illegal>
+           <imperative-node>
+           <imperative>
+           <import-node>
+           <import>
+           <inevitable-node>
+           <inevitable>
+           <instance-node>
+           <instance>
+           <instances-node>
+           <instances>
+           <int-expr-node>
+           <int-expr>
+           <int-node>
+           <int>
+           <interface-node>
+           <interface>
            <less-equal-node>
+           <less-equal>
            <less-node>
+           <less>
+           <literal-node>
+           <literal-node>
+           <literal>
+           <literal>
+           <local>
            <minus-node>
+           <minus>
+           <model-node>
+           <model-scope>
+           <model>
+           <modeling-event-node>
+           <modeling-event>
+           <named-node>
+           <named>
            <not-equal-node>
+           <not-equal>
            <not-node>
+           <not>
+           <on-node>
+           <on>
+           <optional-node>
+           <optional>
            <or-node>
+           <or>
+           <otherwise-guard-node>
+           <otherwise-guard>
+           <otherwise-node>
+           <otherwise>
+           <out-bindings-node>
+           <out-bindings>
+           <out-formal>
            <plus-node>
-
-           .node
-           .parent
-;;           .node-elements
-
-
-	   .trigger))
-
-(define (stderr format-string . o)
-  (apply format (append (list (current-error-port) format-string) o)))
-
-;; (define (.name o)
-;;   (match o
-;;     ((or 'bool 'void) o)
-;;     (_ (cadr o))))
-
-(define-method (.name (o <pair>))
-  (cadr o))
-
-;; (define-method (.name (o <boolean>))
-;;   "BARF: (.name <bool>")
-
-(define-class <ast-node> ())
-
-(define-class <ast-node-list> (<ast-node>)
-;;  (elements #:getter .node-elements #:init-form (list) #:init-keyword #:elements)
-  (elements #:getter .elements #:init-form (list) #:init-keyword #:elements)
-  )
-
-(define-class <statement-node> (<ast-node>))
-(define-class <declarative-node> (<statement-node>))
-(define-class <imperative-node> (<statement-node>))
-
-(define-class <arguments-node> (<ast-node-list>))
-(define-class <bindings-node> (<ast-node-list>))
-(define-class <out-bindings-node> (<ast-node-list> <imperative-node>)
-  (port #:getter .port #:init-value #f #:init-keyword #:port))
-(define-method (.port.name (o <out-bindings-node>)) (and=> (.port o) .name))
-
-(define-class <compound-node> (<ast-node-list> <statement-node>))
-(define-class <blocking-compound-node> (<compound-node>)
-  (port #:getter .port #:init-value #f #:init-keyword #:port))
-(define-method (.port.name (o <blocking-compound-node>)) (and=> (.port o) .name))
-
-(define-class <declarative-compound-node> (<ast-node-list> <declarative-node>))
-(define-class <events-node> (<ast-node-list>))
-(define-class <fields-node> (<ast-node-list>))
-(define-class <formals-node> (<ast-node-list>))
-(define-class <functions-node> (<ast-node-list>))
-(define-class <instances-node> (<ast-node-list>))
-(define-class <ports-node> (<ast-node-list>))
-
-(define-class <root-node> (<ast-node-list>))
-(define g-root-id 0)
-(define-method (initialize (o <root-node>) . initargs)
-  (let ((root (apply next-method (cons o initargs))))
-    (set! g-root-id (.id root))
-    ;(stderr "initialize root; id ~a\n" (.id root))
-    root))
-
-(define-class <triggers-node> (<ast-node-list>))
-(define-class <types-node> (<ast-node-list>))
-(define-class <variables-node> (<ast-node-list>))
-
-(define-class <named-node> (<ast-node>)
-  (name #:getter .name #:init-form #f #:init-keyword #:name))
-
-(define-class <scope.name-node> (<ast-node>)
-  (scope #:getter .scope #:init-form (list) #:init-keyword #:scope)
-  (name #:getter .name #:init-form #f #:init-keyword #:name))
-
-(define-class <scoped-node> (<ast-node>)
-  (name #:getter .name #:init-form (make <scope.name-node>) #:init-keyword #:name))
-
-(define-class <import-node> (<named-node>))
-
-(define-class <model-node> (<scope.name-node>))
-
-(define-class <interface-node> (<model-node>)
-  (types #:getter .types #:init-form (make <types-node>) #:init-keyword #:types)
-  (events #:getter .events #:init-form (make <events-node>) #:init-keyword #:events)
-  (behaviour #:getter .behaviour #:init-value #f #:init-keyword #:behaviour))
-
-(define-class <type-node> (<scoped-node>))
-
-(define-class <enum-node> (<type-node>)
-  (fields #:getter .fields #:init-form (list) #:init-keyword #:fields))
-
-(define-method (.name.name (o <enum-node>))
-  (symbol->string ((compose .name .name) o)))
-
-(define-class <extern-node> (<type-node>)
-  (value #:getter .value #:init-value #f #:init-keyword #:value))
-
-(define-method (.name.name (o <extern-node>))
-  (symbol->string ((compose .name .name) o)))
-
-(define-class <bool-node> (<type-node>))
-(define-method (initialize (o <bool-node>) . initargs)
-  (next-method o (list #:name (make <scope.name-node> #:name 'bool))))
-
-(define-class <void-node> (<type-node>))
-(define-method (initialize (o <void-node>) . initargs)
-  (next-method o (list #:name (make <scope.name-node> #:name 'void))))
-
-(define-class <int-node> (<type-node>)
-  (range #:getter .range #:init-form (make <range-node>) #:init-keyword #:range))
-
-(define-method (.name.name (o <int-node>))
-  ((compose symbol->string .name .name) o))
-
-(define-class <range-node> (<ast-node>)
-  (from #:getter .from #:init-value 0 #:init-keyword #:from)
-  (to #:getter .to #:init-value 0 #:init-keyword #:to))
-
-(define-class <signature-node> (<ast-node>)
-  (type #:getter .type #:init-form (make <void-node>) #:init-keyword #:type)
-  (formals #:getter .formals #:init-form (make <formals-node>) #:init-keyword #:formals))
-
-
-
-
-(define void-signature (make <signature-node>))
-
-(define-class <event-node> (<named-node>)
-  (signature #:getter .signature #:init-form (make <signature-node>) #:init-keyword #:signature)
-  (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
-
-(define-class <modeling-event-node> (<event-node>))
-(define-method (.signature (o <modeling-event-node>) void-signature))
-
-
-(define-method (.direction (o <modeling-event-node>)) 'in)
-
-(define-class <inevitable-node> (<modeling-event-node>))
-(define-method (.name (o <inevitable-node>)) 'inevitable)
-
-(define-class <optional-node> (<modeling-event-node>))
-(define-method (.name (o <optional-node>)) 'optional)
-
-(define ast:inevitable (make <inevitable-node>))
-(define ast:optional (make <optional-node>))
-
-(define-class <port-node> (<named-node>)
-  (type.name #:getter .type.name #:init-form (make <scope.name-node>) #:init-keyword #:type.name)
-  (direction #:getter .direction #:init-value #f #:init-keyword #:direction)
-  (external #:getter .external #:init-value #f #:init-keyword #:external)
-  (injected #:getter .injected #:init-value #f #:init-keyword #:injected))
-
-(define-class <trigger-node> (<ast-node>)
-  (port.name #:getter .port.name #:init-value #f #:init-keyword #:port.name)
-  (event #:getter .event #:init-value #f #:init-keyword #:event)
-  (formals #:getter .formals #:init-form (make <formals-node>) #:init-keyword #:formals))
-(define-method (.event.name (o <trigger-node>)) (and=> (.event o) .name))
-(define-method (.event.direction (o <trigger-node>)) (and=> (.event o) .direction))
-
-
-(define-class <expression-node> (<ast-node>))
-
-(define-class <literal-node> (<expression-node>)
-  (value #:getter .value #:init-value *unspecified* #:init-keyword #:value))
-
-(define-class <binary-node> (<expression-node>)
-  (left #:getter .left #:init-value *unspecified* #:init-keyword #:left)
-  (right #:getter .right #:init-value *unspecified* #:init-keyword #:right))
-
-(define-class <unary-node> (<expression-node>)
-  (expression #:getter .expression #:init-expression *unspecified* #:init-keyword #:expression))
-
-(define-class <group-node> (<unary-node>))
-
-(define-class <bool-expr-node> (<expression-node>))
-(define-class <enum-expr-node> (<expression-node>))
-(define-class <int-expr-node> (<expression-node>))
-(define-class <data-expr-node> (<expression-node>))
-(define-class <void-expr-node> (<expression-node>))
-
-(define-class <not-node> (<unary-node> <bool-expr-node>))
-(define-class <and-node> (<binary-node> <bool-expr-node>))
-(define-class <equal-node> (<binary-node> <bool-expr-node>))
-(define-class <greater-equal-node> (<binary-node> <bool-expr-node>))
-(define-class <greater-node> (<binary-node> <bool-expr-node>))
-(define-class <less-equal-node> (<binary-node> <bool-expr-node>))
-(define-class <less-node> (<binary-node> <bool-expr-node>))
-(define-class <minus-node> (<binary-node> <int-expr-node>))
-(define-class <not-equal-node> (<binary-node> <bool-expr-node>))
-(define-class <or-node> (<binary-node> <bool-expr-node>))
-(define-class <plus-node> (<binary-node> <int-expr-node>))
-
-(define-method (.operator (o <binary-node>))
-  (assoc-ref
-   '((<and-node> . "&&")
-     (<equal-node> . "==")
-     (<greater-equal-node> . ">=")
-     (<greater-node> . ">")
-     (<less-equal-node> . "<=")
-     (<less-node> . "<")
-     (<minus-node> . "-")
-     (<not-equal-node> . "!=")
-     (<or-node> . "||")
-     (<plus-node> . "+")) (class-name (class-of o))))
-
-(define-class <data-node> (<data-expr-node>)
-  (value #:getter .value #:init-value #f #:init-keyword #:value))
-
-(define-class <var-node> (<expression-node>)
-  (variable.name #:getter .variable.name #:init-value #f #:init-keyword #:variable.name))
-
-(define-class <variable-node> (<named-node> <imperative-node> <expression-node>)
-  (type #:getter .type #:init-form #f #:init-keyword #:type)
-  (expression #:getter .expression #:init-form (make <expression-node>) #:init-keyword #:expression))
-
-(define-class <field-test-node> (<bool-expr-node>)
-  (variable.name #:getter .variable.name #:init-value #f #:init-keyword #:variable.name)
-  (field #:getter .field #:init-value #f #:init-keyword #:field))
-
-(define-class <enum-literal-node> (<enum-expr-node>)
-  (type #:getter .type #:init-value #f #:init-keyword #:type)
-  (field #:getter .field #:init-value #f #:init-keyword #:field))
-
-(define-class <otherwise-node> (<expression-node>) ;; FIXME: make <guard-otherwise/guard-else-node> instead
-  (value #:getter .value #:init-value *unspecified* #:init-keyword #:value))
-
-(define-class <formal-node> (<named-node> <expression-node>)
-  (type #:getter .type #:init-form #f #:init-keyword #:type)
-  (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
-
-(define-class <formal-binding-node> (<formal-node>)
-  (variable.name #:getter .variable.name #:init-form #f #:init-keyword #:variable.name))
-
-(define-class <component-model-node> (<model-node>)
-  (ports #:getter .ports #:init-form (make <ports-node>) #:init-keyword #:ports))
-
-(define-class <foreign-node> (<component-model-node>))
-
-(define-class <component-node> (<component-model-node>)
-  (behaviour #:getter .behaviour #:init-value #f #:init-keyword #:behaviour))
-
-(define-class <system-node> (<component-model-node>)
-  (instances #:getter .instances #:init-form (make <instances-node>) #:init-keyword #:instances)
-  (bindings #:getter .bindings #:init-form (make <bindings-node>) #:init-keyword #:bindings))
-
-(define-class <shell-system-node> (<system-node>))
-
-(define-class <behaviour-node> (<named-node>)
-  (types #:getter .types #:init-form (make <types-node>) #:init-keyword #:types)
-  (ports #:getter .ports #:init-form (make <ports-node>) #:init-keyword #:ports)
-  (variables #:getter .variables #:init-form (make <variables-node>) #:init-keyword #:variables)
-  (functions #:getter .functions #:init-form (make <functions-node>) #:init-keyword #:functions)
-  (statement #:getter .statement #:init-form (make <compound-node>) #:init-keyword #:statement))
-
-(define-class <function-node> (<named-node>)
-  (signature #:getter .signature #:init-form (make <signature-node>) #:init-keyword #:signature)
-  (recursive #:getter .recursive #:init-value #f #:init-keyword #:recursive)
-  (statement #:getter .statement #:init-value #f #:init-keyword #:statement))
-
-(define-class <action-node> (<imperative-node> <expression-node>)
-  (port.name #:getter .port.name #:init-value #f #:init-keyword #:port.name)
-  (event #:getter .event #:init-value #f #:init-keyword #:event)
-  (arguments #:getter .arguments #:init-form (make <arguments-node>) #:init-keyword #:arguments))
-(define-method (.event.name (o <action-node>)) (and=> (.event o) .name))
-(define-method (.event.direction (o <action-node>)) (and=> (.event o) .direction))
-
-(define-class <assign-node> (<imperative-node>)
-  (variable.name #:getter .variable.name #:init-value #f #:init-keyword #:variable.name)
-  (expression #:getter .expression #:init-form (make <expression-node>) #:init-keyword #:expression))
-
-(define-class <call-node> (<imperative-node> <expression-node>)
-  (function.name #:getter .function.name #:init-value #f #:init-keyword #:function.name)
-  (arguments #:getter .arguments #:init-form (make <arguments-node>) #:init-keyword #:arguments)
-  (last? #:getter .last? #:init-value #f #:init-keyword #:last?))
-
-(define-class <guard-node> (<declarative-node>)
-  (expression #:getter .expression #:init-form (make <expression-node>) #:init-keyword #:expression)
-  (statement #:getter .statement #:init-value #f #:init-keyword #:statement))
-
-(define-class <otherwise-guard-node> (<guard-node>))
-
-(define-class <if-node> (<imperative-node>)
-  (expression #:getter .expression #:init-form (make <expression-node>) #:init-keyword #:expression)
-  (then #:getter .then #:init-value #f #:init-keyword #:then)
-  (else #:getter .else #:init-value #f #:init-keyword #:else))
-
-(define-class <illegal-node> (<imperative-node>)
-  (event #:getter .event #:init-value #f #:init-keyword #:event)
-  (incomplete #:getter .incomplete #:init-value #f #:init-keyword #:incomplete))
-
-(define-class <blocking-node> (<declarative-node>)
-  (statement #:getter .statement #:init-value #f #:init-keyword #:statement))
-
-(define-class <on-node> (<declarative-node>)
-  (triggers #:getter .triggers #:init-form (make <triggers-node>) #:init-keyword #:triggers)
-  (statement #:getter .statement #:init-value #f #:init-keyword #:statement))
-
-(define-class <reply-node> (<imperative-node>)
-  (expression #:getter .expression #:init-value #f #:init-keyword #:expression)
-  (port.name #:getter .port.name #:init-value #f #:init-keyword #:port.name))
-
-(define-class <return-node> (<imperative-node>)
-  (expression #:getter .expression #:init-value #f #:init-keyword #:expression))
-
-(define-class <bind-node> (<declarative-node>)
-  (left #:getter .left #:init-value #f #:init-keyword #:left)
-  (right #:getter .right #:init-value #f #:init-keyword #:right))
-
-(define-class <binding-node> (<ast-node>)
-  (instance #:getter .instance #:init-value #f #:init-keyword #:instance)
-  (port.name #:getter .port.name #:init-value #f #:init-keyword #:port.name))
-
-(define-method (.instance.name (o <binding-node>)) (and=> (.instance o) .name))
-
-(define-class <instance-node> (<named-node> <declarative-node>)
-  (type.name #:getter .type.name #:init-form (make <scope.name-node>) #:init-keyword #:type.name))
-
-(define-class <error-node> (<ast-node>)
-  (ast #:getter .ast #:init-value #f #:init-keyword #:ast)
-  (message #:getter .message #:init-value "" #:init-keyword #:message))
-
-(define-class <skip-node> (<imperative-node>))
-
-(define-class <the-end-node> (<statement-node>)
-  (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger))
-(define-class <the-end-blocking-node> (<statement-node>))
-(define-class <voidreply-node> (<statement-node>))
-
-(define-class <argument-node> (<named-node> <expression-node>)
-  (type #:getter .type #:init-form #f #:init-keyword #:type)
-  (direction #:getter .direction #:init-value #f #:init-keyword #:direction))
-
-(define-class <enum-field-node> (<ast-node>)
-  (type #:getter .type #:init-form #f #:init-keyword #:type)
-  (field #:getter .field #:init-value #f #:init-keyword #:field))
-
-(define-class <file-name-node> (<ast-node>)
-  (name #:getter .name #:init-form #f #:init-keyword #:name))
-
-(define-class <local-node> (<variable-node>))
-(define-class <model-scope-node> (<ast-node>))
-(define-class <out-formal-node> (<variable-node>))
-(define-class <direction-node> (<named-node>))
-(define-class <unspecified-node> (<ast-node>))
-
-(define-method (make-wrapper e o) e)
+           <plus>
+           <port-node>
+           <port>
+           <ports-node>
+           <ports>
+           <range-node>
+           <range>
+           <reply-node>
+           <reply>
+           <return-node>
+           <return>
+           <root-node>
+           <root>
+           <scope.name-node>
+           <scope.name>
+           <scoped-node>
+           <scoped>
+           <shell-system-node>
+           <shell-system>
+           <signature-node>
+           <signature>
+           <skip>
+           <statement-node>
+           <statement>
+           <system-node>
+           <system>
+           <the-end-blocking>
+           <the-end>
+           <trigger-node>
+           <trigger>
+           <triggers-node>
+           <triggers>
+           <type-node>
+           <type>
+           <types-node>
+           <types>
+           <unary-node>
+           <unary>
+           <unspecified>
+           <var-node>
+           <var>
+           <variable-node>
+           <variable>
+           <variables-node>
+           <variables>
+           <void-expr-node>
+           <void-expr>
+           <void-node>
+           <void>
+           <voidreply>
+           )
+
+;; (define-method (.name (o <pair>))
+;;   (cadr o))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define-syntax define-ast
+  (lambda (x)
+    (define (make-node name)
+      (string->symbol (string-append (string-drop-right (symbol->string name) 1) "-node>")))
+    (define (make-getter name)
+      (string->symbol (string-append "." (symbol->string name))))
+    (define (complete-slot slot)
+      (define (create-slot name init-keyword init-value)
+        (let ((getter (datum->syntax x (make-getter (syntax->datum name))))
+              (keyword (datum->syntax x (symbol->keyword (syntax->datum name)))))
+          #`(#,name #:getter #,getter #,init-keyword #,init-value #:init-keyword #,keyword)))
+      (syntax-case slot ()
+        ((name)
+         (create-slot #'name #:init-value #f))
+        ((name #:init-form form)
+         (create-slot #'name #:init-form #'form))
+        ((name #:init-value value)
+         (create-slot #'name #:init-value #'value))))
+    (define ((define-wrapper-getter class) slot)
+      (syntax-case slot ()
+        ((name foo ...)
+         (with-syntax ((getter (datum->syntax x (make-getter (syntax->datum #'name)))))
+           (with-syntax ((export? (not (defined? 'getter))))
+             #`(begin
+                 ;; #,(if #'export?
+                 ;;       (export getter))
+                 (define-method (getter (o #,class))
+                   (make-wrapper ((compose getter .node) o) o))))))))
+    (syntax-case x ()
+      ((_ name supers slot ...)
+       (with-syntax (((slot' ...) (map complete-slot #'(slot ...)))
+                     ((wrapper-method ...) (map (define-wrapper-getter #'name) #'(slot ...)))
+                     (node-supers (datum->syntax x (map make-node (syntax->datum #'supers))))
+                     (node (datum->syntax x (make-node (syntax->datum #'name)))))
+         #`(begin
+             (export name node)
+             (define-class node node-supers slot' ...)
+             (define-class name supers)
+             (define-method (node-class- (o name)) node)
+             (define-method (make-wrapper (n node) p) (make name #:parent p #:node n))
+             #,@#'(wrapper-method ...)))))))
 
 (define-class <ast> ()
   (node #:getter .node #:init-value #f #:init-keyword #:node)
   (parent #:getter .parent #:init-value #f #:init-keyword #:parent))
+
+(define-class <ast-node> ())
+(define-ast <ast-list> (<ast>)
+  (elements #:init-form (list)))
+
+(define-method (.elements (o <ast-list>))
+  (map (lambda (e) (make-wrapper e o)) ((compose .elements .node) o)))
+
+(define-method (make-wrapper (o <top>) p) o)
+(define-method (make-wrapper (o <ast-node>) p) o)
+(define-method (make-wrapper (o <ast-list-node>) p) (make <ast-list> #:parent p #:node o))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(define-ast <statement> (<ast>))
+(define-ast <declarative> (<statement>))
+(define-ast <imperative> (<statement>))
+
+(define-ast <arguments> (<ast-list>))
+(define-ast <bindings> (<ast-list>))
+(define-ast <out-bindings> (<ast-list> <imperative>)
+  (port))
+(define-method (.port.name (o <out-bindings>)) (and=> (.port o) .name))
+
+(define-ast <compound> (<ast-list> <statement>))
+(define-ast <blocking-compound> (<compound>)
+  (port))
+(define-method (.port.name (o <blocking-compound>)) (and=> (.port o) .name))
+
+(define-ast <declarative-compound> (<ast-list> <declarative>))
+(define-ast <events> (<ast-list>))
+(define-ast <fields> (<ast-list>))
+(define-ast <formals> (<ast-list>))
+(define-ast <functions> (<ast-list>))
+(define-ast <instances> (<ast-list>))
+(define-ast <ports> (<ast-list>))
+
+(define-ast <root> (<ast-list>))
+(define g-root-id 0)
+(define-method (initialize (o <root-node>) . initargs)
+  (let ((root (apply next-method (cons o initargs))))
+    (set! g-root-id (.id root))
+    root))
+
+(define-ast <triggers> (<ast-list>))
+(define-ast <types> (<ast-list>))
+(define-ast <variables> (<ast-list>))
+
+(define-ast <named> (<ast>)
+  (name))
+
+(define-ast <scope.name> (<ast>)
+  (scope #:init-form (list))
+  (name))
+
+(define-ast <scoped> (<ast>)
+  (name #:init-form (make <scope.name-node>)))
+
+(define-ast <import> (<named>))
+
+(define-ast <model> (<scope.name>))
+
+(define-ast <interface> (<model>)
+  (types #:init-form (make <types-node>))
+  (events #:init-form (make <events-node>))
+  (behaviour))
+
+(define-ast <type> (<scoped>))
+
+(define-ast <enum> (<type>)
+  (fields #:init-form (list)))
+
+(define-method (.name.name (o <enum>))
+  (symbol->string ((compose .name .name) o)))
+
+(define-ast <extern> (<type>)
+  (value))
+
+(define-method (.name.name (o <extern>))
+  (symbol->string ((compose .name .name) o)))
+
+(define-ast <bool> (<type>))
+(define-method (initialize (o <bool-node>) . initargs)
+  (next-method o (list #:name (make <scope.name-node> #:name 'bool))))
+
+(define-ast <void> (<type>))
+(define-method (initialize (o <void-node>) . initargs)
+  (next-method o (list #:name (make <scope.name-node> #:name 'void))))
+
+(define-ast <int> (<type>)
+  (range #:init-form (make <range-node>)))
+
+(define-method (.name.name (o <int>))
+  ((compose symbol->string .name .name) o))
+
+(define-ast <range> (<ast>)
+  (from #:init-value 0)
+  (to #:init-value 0))
+
+(define-ast <signature> (<ast>)
+  (type #:init-form (make <void-node>))
+  (formals #:init-form (make <formals-node>)))
+
+(define void-signature (make <signature-node>))
+
+(define-ast <event> (<named>)
+  (signature #:init-form (make <signature-node>))
+  (direction))
+
+(define-ast <modeling-event> (<event>))
+(define-method (.signature (o <modeling-event>) void-signature))
+
+(define-method (.direction (o <modeling-event>)) 'in)
+
+(define-ast <inevitable> (<modeling-event>))
+(define-method (.name (o <inevitable>)) 'inevitable)
+
+(define-ast <optional> (<modeling-event>))
+(define-method (.name (o <optional>)) 'optional)
+
+(define ast:inevitable (make <inevitable-node>))
+(define ast:optional (make <optional-node>))
+
+(define-ast <port> (<named>)
+  (type.name #:init-form (make <scope.name-node>))
+  (direction)
+  (external)
+  (injected))
+
+(define-ast <trigger> (<ast>)
+  (port.name)
+  (event)
+  (formals #:init-form (make <formals-node>)))
+(define-method (.event.name (o <trigger>)) (and=> (.event o) .name))
+(define-method (.event.direction (o <trigger>)) (and=> (.event o) .direction))
+
+(define-ast <expression> (<ast>))
+
+(define-ast <literal> (<expression>)
+  (value #:init-value *unspecified*))
+
+(define-ast <binary> (<expression>)
+  (left #:init-value *unspecified*)
+  (right #:init-value *unspecified*))
+
+(define-ast <unary> (<expression>)
+  (expression #:init-value *unspecified*))
+
+(define-ast <group> (<unary>))
+
+(define-ast <bool-expr> (<expression>))
+(define-ast <enum-expr> (<expression>))
+(define-ast <int-expr> (<expression>))
+(define-ast <data-expr> (<expression>))
+(define-ast <void-expr> (<expression>))
+
+(define-ast <not> (<unary> <bool-expr>))
+(define-ast <and> (<binary> <bool-expr>))
+(define-ast <equal> (<binary> <bool-expr>))
+(define-ast <greater-equal> (<binary> <bool-expr>))
+(define-ast <greater> (<binary> <bool-expr>))
+(define-ast <less-equal> (<binary> <bool-expr>))
+(define-ast <less> (<binary> <bool-expr>))
+(define-ast <minus> (<binary> <int-expr>))
+(define-ast <not-equal> (<binary> <bool-expr>))
+(define-ast <or> (<binary> <bool-expr>))
+(define-ast <plus> (<binary> <int-expr>))
+
+(define-method (.operator (o <binary>))
+  (assoc-ref
+   '((<and> . "&&")
+     (<equal> . "==")
+     (<greater-equal> . ">=")
+     (<greater> . ">")
+     (<less-equal> . "<=")
+     (<less> . "<")
+     (<minus> . "-")
+     (<not-equal> . "!=")
+     (<or> . "||")
+     (<plus> . "+")) (class-name (class-of o))))
+
+(define-ast <data> (<data-expr>)
+  (value))
+
+(define-ast <var> (<expression>)
+  (variable.name))
+
+(define-ast <variable> (<named> <imperative> <expression>)
+  (type)
+  (expression #:init-form (make <expression-node>)))
+
+(define-ast <field-test> (<bool-expr>)
+  (variable.name)
+  (field))
+
+(define-ast <enum-literal> (<enum-expr>)
+  (type)
+  (field))
+
+(define-ast <otherwise> (<expression>) ;; FIXME: make <guard-otherwise/guard-else-node> instead
+  (value #:init-value *unspecified*))
+
+(define-ast <formal> (<named> <expression>)
+  (type)
+  (direction))
+
+(define-ast <formal-binding> (<formal>)
+  (variable.name))
+
+(define-ast <component-model> (<model>)
+  (ports #:init-form (make <ports-node>)))
+
+(define-ast <foreign> (<component-model>))
+
+(define-ast <component> (<component-model>)
+  (behaviour))
+
+(define-ast <system> (<component-model>)
+  (instances #:init-form (make <instances-node>))
+  (bindings #:init-form (make <bindings-node>)))
+
+(define-ast <shell-system> (<system>))
+
+(define-ast <behaviour> (<named>)
+  (types #:init-form (make <types-node>))
+  (ports #:init-form (make <ports-node>))
+  (variables #:init-form (make <variables-node>))
+  (functions #:init-form (make <functions-node>))
+  (statement #:init-form (make <compound-node>)))
+
+(define-ast <function> (<named>)
+  (signature #:init-form (make <signature-node>))
+  (recursive)
+  (statement))
+
+(define-ast <action> (<imperative> <expression>)
+  (port.name)
+  (event)
+  (arguments #:init-form (make <arguments-node>)))
+(define-method (.event.name (o <action>)) (and=> (.event o) .name))
+(define-method (.event.direction (o <action>)) (and=> (.event o) .direction))
+
+(define-ast <assign> (<imperative>)
+  (variable.name)
+  (expression #:init-form (make <expression-node>)))
+
+(define-ast <call> (<imperative> <expression>)
+  (function.name)
+  (arguments #:init-form (make <arguments-node>))
+  (last?))
+
+(define-ast <guard> (<declarative>)
+  (expression #:init-form (make <expression-node>))
+  (statement))
+
+(define-ast <otherwise-guard> (<guard>))
+
+(define-ast <if> (<imperative>)
+  (expression #:init-form (make <expression-node>))
+  (then)
+  (else))
+
+(define-ast <illegal> (<imperative>)
+  (event)
+  (incomplete))
+
+(define-ast <blocking> (<declarative>)
+  (statement))
+
+(define-ast <on> (<declarative>)
+  (triggers #:init-form (make <triggers-node>))
+  (statement))
+
+(define-ast <reply> (<imperative>)
+  (expression)
+  (port.name))
+
+(define-ast <return> (<imperative>)
+  (expression))
+
+(define-ast <bind> (<declarative>)
+  (left)
+  (right))
+
+(define-ast <binding> (<ast>)
+  (instance)
+  (port.name))
+
+(define-method (.instance.name (o <binding>)) (and=> (.instance o) .name))
+
+(define-ast <instance> (<named> <declarative>)
+  (type.name #:init-form (make <scope.name-node>)))
+
+(define-ast <error> (<ast>)
+  (ast)
+  (message #:init-value ""))
+
+(define-ast <skip> (<imperative>))
+
+(define-ast <the-end> (<statement>)
+  (trigger))
+(define-ast <the-end-blocking> (<statement>))
+(define-ast <voidreply> (<statement>))
+
+(define-ast <argument> (<named> <expression>)
+  (type)
+  (direction))
+
+(define-ast <enum-field> (<ast>)
+  (type)
+  (field))
+
+(define-ast <file-name> (<ast>)
+  (name))
+
+(define-ast <local> (<variable>))
+(define-ast <model-scope> (<ast>))
+(define-ast <out-formal> (<variable>))
+(define-ast <direction> (<named>))
+(define-ast <unspecified> (<ast>))
 
 (define-method (.id (o <object>))
   (pointer-address (scm->pointer o)))
 
 (define-method (.id (o <ast>))  (.id (.node o)))
 
-(define-class <ast-list> (<ast>))
-
-(define-method (.elements (o <ast-list>))
-  (map (lambda (e) (make-wrapper e o)) ((compose .elements .node) o)))
-
-(define-method (make-wrapper (n <ast-node-list>) p) (make <ast-list> #:parent p #:node n))
-
-
-;;(define-class <root> (<ast-list>))
-;;(define-method (make-wrapper (n <root-node>) p) (make <root> #:parent p #:node n))
-
-
-(define-syntax wrap-method
-  (syntax-rules ()
-    ((_ method class)
-     (define-method (method (o class)) (make-wrapper ((compose method .node) o) o)))))
-
-(use-modules (oop goops describe))
-
-(define-syntax wrap
-  (syntax-rules ()
-    ((_ class-node class supers)
-     (let* ((methods (map method-generic-function (class-direct-methods class-node)))
-            (super-methods (map method-generic-function (append-map class-direct-methods (class-direct-supers class-node))))
-            (super-names (map generic-function-name super-methods))
-            (methods (filter (lambda (m) (not (member (generic-function-name m) super-names))) methods))
-            ;;(foo (stderr "methods: ~s\n" methods))
-            )
-       (define-class class supers)
-       (for-each (lambda (m) (wrap-method m class)) methods)
-       (define-method (node-class- (o class)) class-node)
-       (define-method (make-wrapper (n class-node) p) (make class #:parent p #:node n))))))
-
-(export wrap)
 (define-method (node-class (class <class>))
   (node-class- (make class #:node #f #:parent #f)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;(wrap <ast-node-list> <ast-list> (<ast>))
-(wrap <statement-node> <statement> (<ast>))
-(wrap <declarative-node> <declarative> (<statement>))
-(wrap <imperative-node> <imperative> (<statement>))
-(wrap <arguments-node> <arguments> (<ast-list>))
-(wrap <bindings-node> <bindings> (<ast-list>))
-(wrap <out-bindings-node> <out-bindings> (<ast-list> <imperative>))
-(wrap <compound-node> <compound> (<ast-list> <statement>))
-(wrap <blocking-compound-node> <blocking-compound> (<compound>))
-(wrap <declarative-compound-node> <declarative-compound> (<ast-list> <declarative>))
-(wrap <events-node> <events> (<ast-list>))
-(wrap <fields-node> <fields> (<ast-list>))
-(wrap <formals-node> <formals> (<ast-list>))
-(wrap <functions-node> <functions> (<ast-list>))
-(wrap <instances-node> <instances> (<ast-list>))
-(wrap <ports-node> <ports> (<ast-list>))
-(wrap <root-node> <root> (<ast-list>))
-(wrap <triggers-node> <triggers> (<ast-list>))
-(wrap <types-node> <types> (<ast-list>))
-(wrap <variables-node> <variables> (<ast-list>))
-(wrap <named-node> <named> (<ast>))
-(wrap <scope.name-node> <scope.name> (<ast>))
-(wrap <scoped-node> <scoped> (<ast>))
-(wrap <import-node> <import> (<named>))
-(wrap <model-node> <model> (<scope.name>))
-(wrap <interface-node> <interface> (<model>))
-(wrap <type-node> <type> (<scoped>))
-(wrap <enum-node> <enum> (<type>))
-(wrap <extern-node> <extern> (<type>))
-(wrap <bool-node> <bool> (<type>))
-(wrap <void-node> <void> (<type>))
-(wrap <int-node> <int> (<type>))
-(wrap <range-node> <range> (<ast>))
-(wrap <signature-node> <signature> (<ast>))
-(wrap <event-node> <event> (<named>))
-(wrap <modeling-event-node> <modeling-event> (<event>))
-(wrap <inevitable-node> <inevitable> (<modeling-event>))
-(wrap <optional-node> <optional> (<modeling-event>))
-(wrap <port-node> <port> (<named>))
-(wrap <trigger-node> <trigger> (<ast>))
-(wrap <expression-node> <expression> (<ast>))
-(wrap <literal-node> <literal> (<expression>))
-(wrap <binary-node> <binary> (<expression>))
-(wrap <unary-node> <unary> (<expression>))
-(wrap <group-node> <group> (<unary>))
-(wrap <bool-expr-node> <bool-expr> (<expression>))
-(wrap <enum-expr-node> <enum-expr> (<expression>))
-(wrap <int-expr-node> <int-expr> (<expression>))
-(wrap <data-expr-node> <data-expr> (<expression>))
-(wrap <void-expr-node> <void-expr> (<expression>))
-(wrap <not-node> <not> (<unary> <bool-expr>))
-(wrap <and-node> <and> (<binary> <bool-expr>))
-(wrap <equal-node> <equal> (<binary> <bool-expr>))
-(wrap <greater-equal-node> <greater-equal> (<binary> <bool-expr>))
-(wrap <greater-node> <greater> (<binary> <bool-expr>))
-(wrap <less-equal-node> <less-equal> (<binary> <bool-expr>))
-(wrap <less-node> <less> (<binary> <bool-expr>))
-(wrap <minus-node> <minus> (<binary> <int-expr>))
-(wrap <not-equal-node> <not-equal> (<binary> <bool-expr>))
-(wrap <or-node> <or> (<binary> <bool-expr>))
-(wrap <plus-node> <plus> (<binary> <int-expr>))
-(wrap <data-node> <data> (<data-expr>))
-(wrap <var-node> <var> (<expression>))
-(wrap <variable-node> <variable> (<named> <imperative> <expression>))
-(wrap <field-test-node> <field-test> (<bool-expr>))
-(wrap <enum-literal-node> <enum-literal> (<enum-expr>))
-(wrap <otherwise-node> <otherwise> (<expression>))
-(wrap <formal-node> <formal> (<named> <expression>))
-(wrap <formal-binding-node> <formal-binding> (<formal>))
-(wrap <component-model-node> <component-model> (<model>))
-(wrap <foreign-node> <foreign> (<component-model>))
-(wrap <component-node> <component> (<component-model>))
-(wrap <system-node> <system> (<component-model>))
-(wrap <shell-system-node> <shell-system> (<system>))
-(wrap <behaviour-node> <behaviour> (<named>))
-(wrap <function-node> <function> (<named>))
-(wrap <action-node> <action> (<imperative> <expression>))
-(wrap <assign-node> <assign> (<imperative>))
-(wrap <call-node> <call> (<imperative> <expression>))
-(wrap <guard-node> <guard> (<declarative>))
-(wrap <otherwise-guard-node> <otherwise-guard> (<guard>))
-(wrap <if-node> <if> (<imperative>))
-(wrap <illegal-node> <illegal> (<imperative>))
-(wrap <blocking-node> <blocking> (<declarative>))
-(wrap <on-node> <on> (<declarative>))
-(wrap <reply-node> <reply> (<imperative>))
-(wrap <return-node> <return> (<imperative>))
-(wrap <bind-node> <bind> (<declarative>))
-(wrap <binding-node> <binding> (<ast>))
-(wrap <instance-node> <instance> (<named> <declarative>))
-(wrap <error-node> <error> (<ast>))
-(wrap <skip-node> <skip> (<imperative>))
-(wrap <the-end-node> <the-end> (<statement>))
-(wrap <the-end-blocking-node> <the-end-blocking> (<statement>))
-(wrap <voidreply-node> <voidreply> (<statement>))
-(wrap <argument-node> <argument> (<named> <expression>))
-(wrap <enum-field-node> <enum-field> (<ast>))
-(wrap <file-name-node> <file-name> (<ast>))
-(wrap <local-node> <local> (<variable>))
-(wrap <model-scope-node> <model-scope> (<ast>))
-(wrap <out-formal-node> <out-formal> (<variable>))
-(wrap <direction-node> <direction> (<named>))
-(wrap <unspecified-node> <unspecified> (<ast>))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; TODO: make construct function line clone, explicitely looking for pairs
 (define-method (node o) o)

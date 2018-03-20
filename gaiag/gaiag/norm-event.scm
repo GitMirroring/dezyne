@@ -322,7 +322,7 @@
     (($ <blocking>)
      (if block?
          (make <blocking-compound>
-           #:port.name port
+           #:port port
            #:elements (let ((s (.statement o)))
                         (if (is-a? s <compound>) (map (cut add-reply-port <> port block?) (.elements s))
                             (list (add-reply-port s port block?)))))
@@ -466,7 +466,7 @@
      (let* ((trigger ((compose car .elements .triggers) o))
             (on-formals ((compose .elements .formals) trigger))
             (formal-bindings (filter (is? <formal-binding>) on-formals))
-            (formal-bindings (and (pair? formal-bindings) (make <out-bindings> #:elements formal-bindings #:port.name (.port trigger))))
+            (formal-bindings (and (pair? formal-bindings) (make <out-bindings> #:elements formal-bindings #:port (.port trigger))))
             (on-formals (map formal-binding->formal on-formals)))
        (if (not formal-bindings) o
            (clone o

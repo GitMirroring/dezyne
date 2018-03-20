@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
@@ -65,7 +65,7 @@
                          (is-a? value <system-node>)
                          (is-a? value <port-node>)
                          (is-a? value <instance-node>))
-                     (not (is-a? o <ast-node-list>)))
+                     (not (is-a? o <ast-list-node>)))
                 (display #\space port)
                 (display-ref (and=> value .name) port))
                (else (sdisplay value port))))))

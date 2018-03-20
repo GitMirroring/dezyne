@@ -329,8 +329,6 @@
 (define-method (dzn:signature (o <event>))
   (.signature o))
 
-(define-class <skip> (<statement>))
-
 (define-method (dzn:statement (o <statement>))
   o)
 

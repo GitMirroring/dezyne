@@ -48,11 +48,7 @@
   #:use-module (gaiag location)
   #:use-module (gaiag templates)
 
-  #:export (.asd-channel
-            .asd-event
-            <glue-event>
-
-            c++:argument_n
+  #:export (c++:argument_n
             c++:asd-api-definition
             c++:asd-api-instance-declaration
             c++:asd-api-instance-init
@@ -85,16 +81,18 @@
             asd?
             ))
 
-(define-class <glue-event-node> (<event-node>)
-  (asd-channel #:getter .asd-channel #:init-value #f #:init-keyword #:asd-channel)
-  (asd-event #:getter .asd-event #:init-value #f #:init-keyword #:asd-event))
+(export
+ .asd-channel
+ .asd-event
+ <glue-event>)
 
-(define-class <glue-system-node> (<system-node>)
-  (asd-in #:getter .asd-in #:init-form (list) #:init-keyword #:asd-in)
-  (asd-out #:getter .asd-out #:init-form (list) #:init-keyword #:asd-out))
+(define-ast <glue-event> (<event>)
+  (asd-channel)
+  (asd-event))
 
-(wrap <glue-event-node> <glue-event> (<event>))
-(wrap <glue-system-node> <glue-system> (<system>))
+(define-ast <glue-system> (<system>)
+  (asd-in #:init-form (list))
+  (asd-out #:init-form (list)))
 
 (define asd? #f) ;; FIXME: asd glue
 
