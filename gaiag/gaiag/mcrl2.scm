@@ -313,12 +313,12 @@
             (o (clone o
                #:statement ((compose (tick-names- names) .statement) o))))
        o))
-    (($ <var>) (clone o #:variable ((compose append-tick .variable.name) o)))
-    (($ <field-test>) (clone o #:variable ((compose append-tick .variable.name) o)))
+    (($ <var>) (clone o #:variable.name ((compose append-tick .variable.name) o)))
+    (($ <field-test>) (clone o #:variable.name ((compose append-tick .variable.name) o)))
     (($ <formal>) (clone o #:name ((compose append-tick .name) o)))
     (($ <formal-binding>) (clone o
                                  #:name ((compose append-tick .name) o)
-                                 #:variable ((compose append-tick .variable.name) o)))
+                                 #:variable.name ((compose append-tick .variable.name) o)))
     (($ <function>)
      (let* ((signature (.signature o))
             (type ((compose (tick-names- names) .type) signature)))
@@ -336,9 +336,9 @@
                 #:signature (clone signature #:type type #:formals (clone (.formals signature) #:elements formals))
                 #:statement ((compose (tick-names- names) .statement) o)))))
     (($ <call>) (clone o
-                       #:function ((compose append-tick .function.name) o)
+                       #:function.name ((compose append-tick .function.name) o)
                        #:arguments ((compose (tick-names- names) .arguments) o)))
-    (($ <assign>) (clone o #:variable ((compose append-tick .variable.name) o)
+    (($ <assign>) (clone o #:variable.name ((compose append-tick .variable.name) o)
                          #:expression ((compose (tick-names- names) .expression) o)))
     (($ <variable>) (clone o #:name ((compose append-tick .name) o)
                            #:expression ((compose (tick-names- names) .expression) o)))

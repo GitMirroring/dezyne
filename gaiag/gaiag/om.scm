@@ -206,7 +206,7 @@
        #:events (parse->om- (or (null-is-#f (assoc 'events body)) '(events)))
        #:behaviour (and=> (null-is-#f (assoc 'behaviour body)) parse->om-)))
 
-    (('enum-literal name field) (make <enum-literal-node> #:type.name (parse->om- name) #:field field))
+    (('enum-literal name field) (make <enum-literal-node> #:type (parse->om- name) #:field field))
 
     (('scope.name scope name) (make <scope.name-node> #:scope scope #:name name))
 
@@ -224,10 +224,10 @@
      (make <formal-binding-node> #:name name #:variable.name variable))
 
     (('formal name type)
-     (make <formal-node> #:name name #:type.name (parse->om- type)))
+     (make <formal-node> #:name name #:type (parse->om- type)))
 
     (('formal name type direction)
-     (make <formal-node> #:name name #:type.name (parse->om- type) #:direction direction))
+     (make <formal-node> #:name name #:type (parse->om- type) #:direction direction))
 
     (('formals formals ...)
      (make <formals-node> #:elements (map parse->om- formals)))
@@ -255,9 +255,9 @@
     (('root elements ...) (make <root-node> #:elements (map parse->om- elements)))
 
     (('signature type formals)
-     (make <signature-node> #:type.name (parse->om- type) #:formals (parse->om- formals)))
+     (make <signature-node> #:type (parse->om- type) #:formals (parse->om- formals)))
 
-    (('signature type) (make <signature-node> #:type.name (parse->om- type)))
+    (('signature type) (make <signature-node> #:type (parse->om- type)))
 
     (('system name ports instances bindings)
      (and=> (assoc 'imported (cddr o)) (mark-imported o))
@@ -289,10 +289,10 @@
     (('var name) (make <var-node> #:variable.name name))
 
     (('variable name type)
-     (make <variable-node> #:name name #:type.name (parse->om- type) #:expression (make <expression-node>)))
+     (make <variable-node> #:name name #:type (parse->om- type) #:expression (make <expression-node>)))
 
     (('variable name type expression)
-     (make <variable-node> #:name name #:type.name (parse->om- type) #:expression (parse->om- expression)))
+     (make <variable-node> #:name name #:type (parse->om- type) #:expression (parse->om- expression)))
 
     (('variables variables ...)
      (make <variables-node> #:elements (map parse->om- variables)))

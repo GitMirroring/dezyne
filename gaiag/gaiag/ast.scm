@@ -28,6 +28,7 @@
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
+  #:use-module (ice-9 pretty-print)
 
   #:use-module (gaiag location)
 
@@ -196,28 +197,28 @@
 (define-method (ast:provided-in-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event event #:formals ((compose .formals .signature) event)))
                           (filter om:in? (om:events port))))
                    (filter ast:provides? (om:ports o)))))
 
 (define-method (ast:req-events (o <component>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event event #:formals ((compose .formals .signature) event)))
                           (filter (conjoin om:in? (compose (cut eq? 'req <>) .name)) (om:events port))))
                    (om:ports (.behaviour o)))))
 
 (define-method (ast:clr-events (o <component>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event event #:formals ((compose .formals .signature) event)))
                           (filter (conjoin om:in? (compose (cut eq? 'clr <>) .name)) (om:events port))))
                    (om:ports (.behaviour o)))))
 
 (define-method (ast:required-out-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event event #:formals ((compose .formals .signature) event)))
                           (filter om:out? (om:events port))))
                    (filter ast:requires? (om:ports o) ))))
 
@@ -237,14 +238,14 @@
 (define-method (ast:provided-out-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event event #:formals ((compose .formals .signature) event)))
                           (filter om:out? (om:events port))))
                    (filter ast:provides? (om:ports o)))))
 
 (define-method (ast:required-in-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event event #:formals ((compose .formals .signature) event)))
                           (filter om:in? (om:events port))))
                    (filter ast:requires? (om:ports o) ))))
 
@@ -321,7 +322,5 @@
 
 (define (ast-> ast)
   ((compose
-    om->list
-    parse->om
-    ast->annotate
+    pretty-print
     ) ast))

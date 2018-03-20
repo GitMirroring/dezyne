@@ -579,7 +579,7 @@
                         ;; FIXME: resolve-error check length if not <illegal>
                         (formals (clone (.formals o) #:elements formals)))
                    (clone o
-                          ;;#:port port
+                          ;;#:port.name port
                           #:event event
                           #:formals formals)))))))
     (($ <formal>) o)

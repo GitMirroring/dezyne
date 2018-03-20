@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016, 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -318,11 +318,11 @@
 (define* (add-reply-port o #:optional (port #f) (block? #f)) ;; requires (= 1 (length (.triggers on)))
   ;(stderr "add-reply-report o = ~a; port = ~a: model = ~a\n" o port model)
   (match o
-    (($ <reply>) (let ((port? (.port o))) (if (and port? (not (symbol? port?))) o (clone o #:port (.name port)))))
+    (($ <reply>) (let ((port? (.port o))) (if (and port? (not (symbol? port?))) o (clone o #:port.name (.name port)))))
     (($ <blocking>)
      (if block?
          (make <blocking-compound>
-           #:port port
+           #:port.name port
            #:elements (let ((s (.statement o)))
                         (if (is-a? s <compound>) (map (cut add-reply-port <> port block?) (.elements s))
                             (list (add-reply-port s port block?)))))
@@ -466,7 +466,7 @@
      (let* ((trigger ((compose car .elements .triggers) o))
             (on-formals ((compose .elements .formals) trigger))
             (formal-bindings (filter (is? <formal-binding>) on-formals))
-            (formal-bindings (and (pair? formal-bindings) (make <out-bindings> #:elements formal-bindings #:port (.port trigger))))
+            (formal-bindings (and (pair? formal-bindings) (make <out-bindings> #:elements formal-bindings #:port.name (.port trigger))))
             (on-formals (map formal-binding->formal on-formals)))
        (if (not formal-bindings) o
            (clone o

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
@@ -75,7 +75,7 @@
 
 (define ((init-undefined model) o)
   (let ((type ((om:type model) o)))
-    (make <var> #:variable o)))
+    (make <var> #:variable.name o)))
 
 (define (var-field state variable) (assoc-ref state (om->list variable)))
 
