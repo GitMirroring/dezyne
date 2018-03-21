@@ -647,7 +647,9 @@ var aspects = {
           + ' '+imports
           + ' '+queue
           + ' '+parameters.filename
-          + ' 2>' + err + ')" && [ "$out" = "" ] '
+          + ' 2>' + err + ')";'
+          + 'err="$(cat ' + err + ')";'
+          + '[ "$out$err" = "" ] '
           + ' || { echo -e "verification output:\n $out"; '
           + '      echo ' + err + ':; cat ' + err + '; false; }';
       })
@@ -694,7 +696,9 @@ var aspects = {
           + ' '+imports
           + ' '+queue
           + ' '+parameters.filename
-          + ' 2>' + err + ')" && [ "$out" = "" ] '
+          + ' 2>' + err + ')";'
+          + 'err="$(cat ' + err + ')";'
+          + '[ "$out$err" = "" ] '
           + ' || { echo -e "verification output:\n $out"; '
           + '      echo ' + err + ':; cat ' + err + '; false; }';
       })
