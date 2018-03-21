@@ -386,7 +386,6 @@ var aspects = {
         return promise.then(function(result1) {
           if (isdone(result1.parameters.done, aspect, language)) {
             var header = aspect + (haslanguage(aspect) ? '[' + language + ']' : '') + '[' + result1.parameters.model + ']';
-            console.log(header + 'DONE');
             var status = getstatus(result1.parameters.outcome, aspect, language);
             st = (status == 'ERROR') ? -1 : (status == 'KNOWN' || status  == 'FAILED') ? 1 : 0;
             return {status: st, parameters: result1.parameters};
@@ -637,16 +636,20 @@ var aspects = {
           + ' || (diff -uw '+baseline+' '+out
           + '     && (test ! -s '+err
           + '         || (sed -i s,.\r,,g '+err+';'
-          + '            diff -u '+baseline+'.stderr '+err+')))';
+          + '            diff -u '+baseline+'.stderr '+err+')))'
+          + ' || { echo ' + err + ':; cat ' + err + '; false; }';
       })
-      .fail (function(err) {
+      .fail (function(e) {
         console.log ('verify: no baseline=' + baseline);
-        return 'out="$(' + dzn(parameters.session) + ' verify --all '
+        return 'mkdir -p '+dir+';'
+          + 'out="$(' + dzn(parameters.session) + ' verify --all '
           + model_opt
           + ' '+imports
           + ' '+queue
           + ' '+parameters.filename
-          + ' 2>&1)" && [ "$out" = "" ] || { echo "verification output: \"$out\""; false; }';
+          + ' 2>' + err + ')" && [ "$out" = "" ] '
+          + ' || { echo -e "verification output:\n $out"; '
+          + '      echo ' + err + ':; cat ' + err + '; false; }';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd);
@@ -678,33 +681,22 @@ var aspects = {
           + '| test ! -s '+baseline
           + '| test ! -s '+baseline+'.stderr'
           + ';}'
-        //strict
           + ' || (diff -uw '+baseline+' '+out
           + '     && (test ! -s '+err
           + '         || (sed -i s,.\r,,g '+err+';'
-        //strict stderr
-          + '            diff -u '+baseline+'.stderr '+err+')))';
-        // relaxed stderr
-        // + '            diff -u '+baseline+'.stderr '+err+'||true)))';
-
-        //relaxed, filtered
-          // + ' || { '
-          // +   ' grep "verify:" '+baseline+' > '+out+'-baseline.filtered;'
-          // + '   grep "verify:" '+out+' > '+out+'.filtered;'
-          // + '   (diff -uw '+baseline+' '+out+';' // just print -- ignore exit status
-          // + '    diff -uw '+out+'-baseline.filtered '+out+'.filtered'
-          // + '     && (test ! -s '+err
-          // + '         || (sed -i s,.\r,,g '+err+';'
-          // + '            diff -u '+baseline+'.stderr '+err+')));'
-          // + ' }';
+          + '            diff -u '+baseline+'.stderr '+err+')))'
+          + ' || { echo ' + err + ':; cat ' + err + '; false; }';
       })
-      .fail (function(err) {
+      .fail (function(e) {
         console.log ('mcrl2 verify: no baseline=' + baseline);
-        return 'out="$(' + dzn(parameters.session) + ' verify --all' + model_opt
+        return 'mkdir -p '+dir+';'
+          + 'out="$(' + dzn(parameters.session) + ' verify --all' + model_opt
           + ' '+imports
           + ' '+queue
           + ' '+parameters.filename
-          + ' 2>&1)" && [ "$out" = "" ] || { echo -e "verification output:\n $out"; false; }';
+          + ' 2>' + err + ')" && [ "$out" = "" ] '
+          + ' || { echo -e "verification output:\n $out"; '
+          + '      echo ' + err + ':; cat ' + err + '; false; }';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd);
