@@ -49,7 +49,6 @@
             .name.name
             .operator
             .port.name
-            .type
 
             ast:inevitable
             ast:optional
@@ -656,11 +655,11 @@
 (define-ast <voidreply> (<statement>))
 
 (define-ast <argument> (<named> <expression>)
-  (type)
+  (type.name)
   (direction))
 
 (define-ast <enum-field> (<ast>)
-  (type)
+  (type.name)
   (field))
 
 (define-ast <file-name> (<ast>)

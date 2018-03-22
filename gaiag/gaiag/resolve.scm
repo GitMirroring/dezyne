@@ -51,8 +51,8 @@
            report-errors
 
            .function
+           .type
            .variable
-           ;; .type FIXME: name <port>'s .type to .interface
 
            resolve:component
            resolve:event
@@ -675,22 +675,24 @@
 (define-method (.function (o <call>))
   (name-resolve (parent <model> o) <function> (.function.name o)))
 
-(define-method (.variable (o <var>))
+
+(define-method (.variable (o <assign>))
   (var? o (.variable.name o)))
 
 (define-method (.variable (o <field-test>))
   (var? o (.variable.name o)))
 
-(define-method (.variable (o <assign>))
-  (var? o (.variable.name o)))
-
 (define-method (.variable (o <formal-binding>))
   (var? o (.variable.name o)))
 
-(define-method (.type (o <variable>))
+(define-method (.variable (o <var>))
+  (var? o (.variable.name o)))
+
+
+(define-method (.type (o <argument>))
   (type? o (.type.name o)))
 
-(define-method (.type (o <signature>))
+(define-method (.type (o <enum-field>))
   (type? o (.type.name o)))
 
 (define-method (.type (o <enum-literal>))
@@ -698,6 +700,13 @@
 
 (define-method (.type (o <formal>))
   (type? o (.type.name o)))
+
+(define-method (.type (o <signature>))
+  (type? o (.type.name o)))
+
+(define-method (.type (o <variable>))
+  (type? o (.type.name o)))
+
 
 (define (ast-> ast)
   ((compose

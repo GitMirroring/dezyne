@@ -1,10 +1,13 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -113,7 +116,7 @@
 (define-templates next-call-reference
   (lambda (o)
     (mcrl2:process-identifier (process-continuation o))))
-(define-templates mcrl2-type .type)
+(define-templates mcrl2-type mcrl2-type)
 (define-templates process-parameters)
 (define-templates variables-in-scope variables-in-scope comma-prefix)
 (define-templates variable-names-in-scope locals comma-prefix)

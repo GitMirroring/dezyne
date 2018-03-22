@@ -1,1 +1,1 @@
-#.field : '#.type.name _#.field '
+#.field : '#x:enum-name _#.field '

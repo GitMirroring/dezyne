@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -28,6 +29,7 @@
 (define-templates scope (compose .scope .name) name-infix)
 (define-templates scope-type-scope code:scope-type-scope type-infix)
 (define-templates scope-type-name code:scope-type-name type-infix)
+(define-templates enum-name code:enum-name name-infix)
 (define-templates scope-prefix (compose .scope .name) name-suffix)
 (define-templates scope+name code:scope+name name-infix)
 (define-templates scoped-model-name code:scope+name name-infix);; c++ compat, junk me

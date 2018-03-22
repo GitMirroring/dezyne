@@ -74,12 +74,10 @@
 (define-ast <enum-name-field> (<ast>)
   (name)
   (field))
-(define-ast <interface-type> (<interface-index>)
-  (type))
 (define-ast <refs> (<type>))
 (define-ast <cont> (<type>)
   (name #:init-value "cont")
-  (type #:init-value (make <refs>)))
+  (refs #:init-value (make <refs>)))
 (define-ast <call-parameter> (<ast>)
   (name)
   (expression))
@@ -98,6 +96,9 @@
 (define-ast <variable-action> (<ast>)
   (variable)
   (action))
+
+(define-method (mcrl2-type (o <ast>)) (.type o))
+(define-method (mcrl2-type (o <cont>)) (.refs o))
 
 (define-method (.event.name (o <assign-action>)) ((compose .event.name .action) o))
 (define-method (.event.name (o <variable-action>)) ((compose .event.name .action) o))
@@ -604,7 +605,7 @@
   ;;TODO #:index ??
   ;; (let ((reply-types (code:reply-types o #:pred (const #t))))
   ;;   (map
-  ;;    (lambda (x i) (make <interface-type> #:interface o #:type x #:index i))
+  ;;    (lambda (x i) (make <interface-type> #:interface o #:type.name x #:index i))
   ;;    reply-types (iota (length reply-types))))
   )
 
@@ -738,7 +739,7 @@
                                                 (result (append result (filter (is? <variable>) pre))))
                                            (locals- parent result)))
 	      ((is-a? o <function>) (append result ((compose .elements .formals .signature) o)
-					    (list (clone (make <cont> #:type (clone (make <refs>) #:parent parent)) #:parent parent))))
+					    (list (clone (make <cont> #:refs (clone (make <refs>) #:parent parent)) #:parent parent))))
 	      (else (locals- parent result))))))
 
 (define-method (variables-in-scope (o <model>)) (globals o))

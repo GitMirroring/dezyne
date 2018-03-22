@@ -1,1 +1,1 @@
-case #x:type-name : return "#.type.name _#.field";
+case #x:type-name : return "#x:enum-name _#.field";

@@ -61,6 +61,7 @@
             code:skel-file
             event2->interface1-event1-alist
 
+            code:enum-name
             code:expression
             code:trigger
             code:injected-instances
@@ -319,7 +320,7 @@
 (define-method (code:variable->argument (o <variable>) (f <formal>))
   (if (or (code:class-member? o)
           (eq? (.direction f) 'in)) o
-          (clone (make <argument> #:name (.name o) #:type (.type o))
+          (clone (make <argument> #:name (.name o) #:type.name (.type.name o))
                  #:parent (.parent o))))
 
 (define-method (code:variable->argument (o <var>) (f <formal>))
@@ -327,7 +328,7 @@
 
 (define-method (code:variable->argument (o <formal>) (f <formal>))
   (if (eq? (.direction f) 'in) o
-      (clone (make <argument> #:name (.name o) #:type (.type o) #:direction (.direction o))
+      (clone (make <argument> #:name (.name o) #:type.name (.type.name o) #:direction (.direction o))
              #:parent (.parent o))))
 
 (define-method (code:variable->argument o f)
@@ -414,10 +415,10 @@
         o)))
 
 (define ((symbol->enum-field enum) o)
-  (make <enum-field> #:type enum #:field o))
+  (make <enum-field> #:type.name (.name enum) #:field o))
 
-(define-method (.type.name (o <enum-field>))
-  (symbol->string ((compose .name .name .type) o)))
+(define-method (code:enum-name (o <enum-field>))
+  ((compose code:scope-type-name .type) o))
 
 (define-method (code:instances (o <component>))
   '())
@@ -452,6 +453,9 @@
   ((compose code:reply-type .expression) o))
 
 (define-method (code:scope.name (o <enum-literal>))
+  (code:scope.name (.type o)))
+
+(define-method (code:scope.name (o <enum-field>))
   (code:scope.name (.type o)))
 
 (define-method (code:scope.name (o <ast>))
