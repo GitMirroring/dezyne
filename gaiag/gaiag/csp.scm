@@ -370,9 +370,6 @@
      ")")))
 
 (define (csp-expression->string model o locals)
-  (define (member? identifier) (resolve:variable model identifier))
-  (define (local? identifier) (assoc-ref locals identifier))
-  (define (var? identifier) (or (member? identifier) (local? identifier)))
 
   (define (paren expression)
     (let ((value (if (is-a? expression <literal>) (.value expression) expression)))
@@ -584,9 +581,6 @@
     (model-purge-data model o)))
 
 (define* (model-purge-data model o #:optional (locals '()))
-  (define (member? identifier) (resolve:variable model identifier))
-  (define (local? identifier) (assoc-ref locals identifier))
-  (define (var? identifier) (or (member? identifier) (local? identifier)))
   (define (extern-type? type) (as type <extern>))
   (define (extern? variable) (extern-type? (.type variable)))
   (define (purge-formal-list function arguments)
@@ -770,12 +764,6 @@
 
 
 (define* (on->csp model o #:optional (inevitable-optional? #f) (channel #f) (provided-on? #t) (locals '()) (indent 0) (tail '()) (function #f))
-
-  (define (member? identifier) (and (not (local? identifier))
-                                    (resolve:variable model identifier)))
-  (define (local? identifier) (assoc-ref locals identifier))
-  (define (var? identifier) (or (member? identifier) (local? identifier)))
-  (define (bool? identifier) (and (var? identifier) (is-a? (.type (var? identifier)) <bool>)))
 
   (define (communicate events)
     (if (or (not (pair? events)) (eq? (length events) 1))

@@ -98,7 +98,7 @@
     (('bind left right)
      (make <bind-node> #:left (parse->om- left) #:right (parse->om- right)))
 
-    (('binding instance port) (make <binding-node> #:instance instance #:port.name port))
+    (('binding instance port) (make <binding-node> #:instance.name instance #:port.name port))
 
     (('bindings bindings ...)
      (make <bindings-node> #:elements (map parse->om- bindings)))
@@ -220,14 +220,20 @@
     (('formal name #f #f)
      (make <formal-node> #:name name))
 
-    (('formal-binding name #f #f variable)
-     (make <formal-binding-node> #:name name #:variable.name variable))
-
     (('formal name type)
      (make <formal-node> #:name name #:type.name (parse->om- type)))
 
     (('formal name type direction)
      (make <formal-node> #:name name #:type.name (parse->om- type) #:direction direction))
+
+    (('formal-binding name #f #f variable)
+     (make <formal-binding-node> #:name name #:variable.name variable))
+
+    (('formal-binding name type #f variable)
+     (make <formal-binding-node> #:name name #:type.name (parse->om- type) #:variable.name variable))
+
+    (('formal-binding name type direction variable)
+     (make <formal-binding-node> #:name name #:type.name (parse->om- type) #:direction direction #:variable.name variable))
 
     (('formals formals ...)
      (make <formals-node> #:elements (map parse->om- formals)))
@@ -301,7 +307,7 @@
 
     ((or 'bool 'void) o)
 
-    (('expression) (make <literal-node>))
+    (('expression) (make <literal-node>)) ;; FIXME: (make <expression-node>) ??
     (('expression expression) (parse->om- expression))
     (('! expression) (make <not-node> #:expression (parse->om- expression)))
     (('group expression) (make <group-node> #:expression (parse->om- expression)))

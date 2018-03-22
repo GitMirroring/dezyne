@@ -379,12 +379,7 @@
 
 (define* ((rewrite-formals #:optional model (locals '())) o)
 
-  (define (member? identifier) (resolve:variable model identifier))
   (define (pair-eq? p) (eq? (car p) (cdr p)))
-  (define (local? identifier) (assoc-ref locals identifier))
-  (define (var? identifier) (or (member? identifier) (local? identifier)))
-  (define (extern? identifier) (and=> (var? identifier) (cut as <> <extern>)))
-  (define (extern-type? type) (as type <extern>))
 
   (define ((rename mapping) o)
     ;;(stderr "rename o=~a\n" o)

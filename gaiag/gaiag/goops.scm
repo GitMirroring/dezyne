@@ -78,7 +78,6 @@
            .functions
            .incomplete
            .injected
-           .instance
            .instances
            .last?
            .left
@@ -628,10 +627,8 @@
   (right))
 
 (define-ast <binding> (<ast>)
-  (instance)
+  (instance.name)
   (port.name))
-
-(define-method (.instance.name (o <binding>)) (and=> (.instance o) .name))
 
 (define-ast <instance> (<named> <declarative>)
   (type.name #:init-form (make <scope.name-node>)))

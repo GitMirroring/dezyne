@@ -190,15 +190,15 @@
        bind))
 
 (define (om:port-binding? bind)
-  (or (and (not (.instance (.left bind)))
+  (or (and (not (.instance.name (.left bind)))
            (.left bind))
-      (and (not (.instance (.right bind)))
+      (and (not (.instance.name (.right bind)))
            (.right bind))))
 
 (define (om:instance-binding? bind)
-  (or (and (not (.instance (.left bind)))
+  (or (and (not (.instance.name (.left bind)))
            (.right bind))
-      (and (not (.instance (.right bind)))
+      (and (not (.instance.name (.right bind)))
            (.left bind))))
 
 
@@ -216,11 +216,11 @@
        (find (lambda (bind) (or (om:equal? (.port.name (.left bind)) o)
                                 (om:equal? (.port.name (.right bind)) o)))
            binds))
-      ((and ($ <binding>) (= .instance instance) (= .port port-name))
+      ((and ($ <binding>) (= .instance.name instance-name) (= .port.name port-name))
        (find (lambda (bind)
-               (or (and (eq? (.instance (.left bind)) instance)
+               (or (and (eq? (.instance.name (.left bind)) instance-name)
                                      (eq? (.port.name (.left bind)) port-name))
-                                (and (eq? (.instance (.right bind)) instance)
+                                (and (eq? (.instance.name (.right bind)) instance-name)
                                      (eq? (.port.name (.right bind)) port-name))))
              binds)))))
 
@@ -234,10 +234,10 @@
      (deprecated (current-source-location))
      (let ((bind (om:bind system o)))
        (if (eq? (.port.name (.left bind)) o) (.left bind) (.right bind))))
-    ((and ($ <binding>) (= .instance instance) (= .port port-name))
+    ((and ($ <binding>) (= .instance.name instance-name) (= .port.name port-name))
      (let ((bind (om:bind system o)))
        (and bind
-            (if (and (eq? (.instance (.left bind)) instance)
+            (if (and (eq? (.instance.name (.left bind)) instance-name)
                      (eq? (.port.name (.left bind)) port-name)) (.left bind)
                      (.right bind)))))))
 
@@ -248,13 +248,13 @@
 
 (define (om:binding-other system binding)
   (let ((bind (om:bind system binding)))
-    (if (and (eq? (.instance (.left bind)) (.instance binding))
+    (if (and (eq? (.instance.name (.left bind)) (.instance.name binding))
              (eq? (.port.name (.left bind)) (.port.name binding)))
         (.right bind)
         (.left bind))))
 
 (define (om:instance-name bind)
-  (or (.instance (.left bind)) (.instance (.right bind))))
+  (or (.instance.name (.left bind)) (.instance.name (.right bind))))
 
 (define-method (om:behaviour-ports (o <component-model>))
   (if (and (is-a? o <component>) (.behaviour o))
@@ -266,7 +266,7 @@
     (($ <binding>)
      (let* ((port (.port o)))
        (or
-        (and-let* ((name (.name (.instance o)))
+        (and-let* ((name (.instance.name o))
                    (instance (resolve:instance model name))
                    (type (and=> instance .type))
                    (component type))
