@@ -285,7 +285,7 @@
        ")")))
 
   (define (list-of-triggers-port ports predicate)
-    (append-map (lambda (port) (map (lambda (event) (make <trigger> #:port.name (.name port) #:event event #:formals (make <formals>))) (filter predicate (om:events port)))) ports))
+    (append-map (lambda (port) (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (make <formals>))) (filter predicate (om:events port)))) ports))
 
   (define (list-of-triggers-provides model)
     (list-of-triggers-port (filter ast:provides? (om:ports model)) om:in?))
@@ -1055,7 +1055,7 @@
                   (event-name  (.name event))
                   (suffix (if (om:out? event) "_''" ""))
                   (channel (if (is-a? model <interface>) model-name port-name))
-                  (trigger (make <trigger> #:port.name port-name #:event event))
+                  (trigger (make <trigger> #:port.name port-name #:event.name (.name event)))
                   (channel-return (if ((requires-trigger? model) trigger) (list " -> " channel "_'.return")))
                   (channel (list channel suffix)))
              (list
@@ -1233,9 +1233,9 @@
               (rename (cdr events) event))))
     (match o
       ((and ($ <action>) (= .event event))
-       (clone o #:event (rename events event)))
+       (clone o #:event.name (.name (rename events event))))
       ((and ($ <trigger>) (= .event event))
-       (clone o #:event (rename events event)))
+       (clone o #:event.name (.name (rename events event))))
       ((? (is? <ast>)) (tree-map (rename-behaviour events) o))
       ((h t ...) (map (rename-behaviour events) o))
       (_ o)))

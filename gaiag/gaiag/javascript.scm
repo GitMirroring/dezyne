@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -26,13 +26,17 @@
 (define-module (gaiag javascript)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+
+  #:use-module (gaiag misc)
+  #:use-module (gaiag command-line)
+
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
+  #:use-module (gaiag resolve)
   #:use-module (gaiag util)
-  #:use-module (gaiag misc)
+
   #:use-module (gaiag ast)
   #:use-module (gaiag deprecated om)
-  #:use-module (gaiag command-line)
   #:use-module (gaiag dzn)
   #:use-module (gaiag code)
   #:use-module (gaiag templates))

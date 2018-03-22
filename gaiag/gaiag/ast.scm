@@ -200,28 +200,28 @@
 (define-method (ast:provided-in-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals ((compose .formals .signature) event)))
                           (filter om:in? (om:events port))))
                    (filter ast:provides? (om:ports o)))))
 
 (define-method (ast:req-events (o <component>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals ((compose .formals .signature) event)))
                           (filter (conjoin om:in? (compose (cut eq? 'req <>) .name)) (om:events port))))
                    (om:ports (.behaviour o)))))
 
 (define-method (ast:clr-events (o <component>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals ((compose .formals .signature) event)))
                           (filter (conjoin om:in? (compose (cut eq? 'clr <>) .name)) (om:events port))))
                    (om:ports (.behaviour o)))))
 
 (define-method (ast:required-out-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals ((compose .formals .signature) event)))
                           (filter om:out? (om:events port))))
                    (filter ast:requires? (om:ports o) ))))
 
@@ -229,7 +229,7 @@
   (append (ast:provided-in-triggers o) (ast:required-out-triggers o)))
 
 (define-method (ast:in-triggers (o <interface>))
-  (map (lambda (event) (make <trigger> #:event event #:formals ((compose .formals .signature) event)))
+  (map (lambda (event) (make <trigger> #:event.name (.name event) #:formals ((compose .formals .signature) event)))
        (filter ast:in? (ast:event* o))))
 
 (define-method (ast:in? (o <event>))
@@ -241,14 +241,14 @@
 (define-method (ast:provided-out-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals ((compose .formals .signature) event)))
                           (filter om:out? (om:events port))))
                    (filter ast:provides? (om:ports o)))))
 
 (define-method (ast:required-in-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event event #:formals ((compose .formals .signature) event)))
+                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals ((compose .formals .signature) event)))
                           (filter om:in? (om:events port))))
                    (filter ast:requires? (om:ports o) ))))
 

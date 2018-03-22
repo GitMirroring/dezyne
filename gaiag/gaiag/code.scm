@@ -29,21 +29,22 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
+  #:use-module (gaiag misc)
+  #:use-module (gaiag command-line)
+  #:use-module (gaiag config)
+
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (gaiag deprecated om)
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
-  #:use-module (gaiag ast)
+  #:use-module (gaiag resolve)
   #:use-module (gaiag util)
 
-  #:use-module (gaiag command-line)
+  #:use-module (gaiag ast)
+  #:use-module (gaiag deprecated om)
   #:use-module (gaiag compare)
-  #:use-module (gaiag config)
   #:use-module (gaiag dzn)
-  #:use-module (gaiag misc)
   #:use-module (gaiag norm-event)
   #:use-module (gaiag parse)
-  #:use-module (gaiag resolve)
   #:use-module (gaiag templates)
 
   #:use-module (gaiag location)
@@ -480,11 +481,11 @@
 (define-method (code:variable-name (o <variable>))
   (cond ((memq (language) '(c++ c++03 c++-msvc11)) o) ; MORTAL SIN HERE!!?
         ((code:class-member? o) o)
-        (else (make <local> #:name (.name o) #:type.name (.type o) #:expression (.expression o)))))
+        (else (make <local> #:name (.name o) #:type.name (.type.name o) #:expression (.expression o)))))
 
 (define-method (code:variable-name (o <formal>))
   (cond ((memq (language) '(c++ c++03 c++-msvc11)) o) ; MORTAL SIN HERE!!?
-        ((om:out-or-inout? o) (make <out-formal> #:name (.name o) #:type.name (.type o)))
+        ((om:out-or-inout? o) (make <out-formal> #:name (.name o) #:type.name (.type.name o)))
         (else o)))
 
 (define-method (code:variable-name (o <ast>))

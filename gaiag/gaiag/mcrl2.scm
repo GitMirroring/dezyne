@@ -201,13 +201,13 @@
     ((? (is? <ast>)) (tree-map ast-complete-elses o))
     (_ o)))
 
-(define* (annotate-illegal o #:optional (trigger #f))
+(define* (annotate-illegal o #:optional event-name)
   (match o
-    (($ <on>) (clone o #:statement (annotate-illegal (.statement o) ((compose .name .event car .elements .triggers) o))))
+    (($ <on>) (clone o #:statement (annotate-illegal (.statement o) ((compose .event.name car .elements .triggers) o))))
     (($ <compound>)
-     (clone o #:elements (map (lambda (s) (annotate-illegal s trigger)) (.elements o))))
-    (($ <blocking> statement) (clone o #:statement (annotate-illegal statement trigger)))
-    (($ <illegal>) (make <illegal> #:event trigger #:incomplete (.incomplete o)))
+     (clone o #:elements (map (lambda (s) (annotate-illegal s event-name)) (.elements o))))
+    (($ <blocking> statement) (clone o #:statement (annotate-illegal statement event-name)))
+    (($ <illegal>) (make <illegal> #:event.name event-name #:incomplete (.incomplete o)))
     (_ o)))
 
 (define (fix-empty-interface-behaviour o)
@@ -215,7 +215,7 @@
     (($ <component>) o)
     ((and ($ <interface>) (= ast:event* (? (cut find ast:in? <>)))) o)
     ((and ($ <behaviour>) (= .statement (? (lambda (compound) (null? (.elements compound))))))
-     (let* ((triggers (make <triggers> #:elements (list (make <trigger> #:event ast:inevitable))))
+     (let* ((triggers (make <triggers> #:elements (list (make <trigger> #:event.name (.name ast:inevitable)))))
             (on (make <on> #:triggers triggers #:statement (make <illegal>)))
             (guard (make <guard> #:expression (make <literal> #:value 'false) #:statement on))
             (statement (make <compound> #:elements (list guard))))
@@ -804,13 +804,13 @@
     (($ <on>) ((compose .event.name car .elements .triggers) o))
     (($ <action>) (.event.name o))
     (($ <the-end>) ((compose .event.name .trigger) o))
-    (($ <illegal>) (.event o))))
+    (($ <illegal>) (.event.name o))))
 (define (mcrl2:on-event-trigger-dir o)
   (match o
     (($ <on>) ((compose .direction .event car .elements .triggers) o))
     (($ <action>) ((compose .direction .event) o))
     (($ <the-end>) ((compose .direction .event .trigger) o))
-    (($ <illegal>) (.event o))))
+    (($ <illegal>) (throw 'fixme "WTF?"))))
 (define-method (port p o)
   (if p
       (.name p)

@@ -50,6 +50,8 @@
            ast:resolve
            report-errors
 
+           .event
+           .event.direction
            .function
            .type
            .variable
@@ -66,8 +68,7 @@
   (let* ((tvoid (make <void>))
          (tbool (make <bool>))
          (o (clone o #:elements (cons tvoid (cons tbool (.elements o))))))
-    o)
-  )
+    o))
 
 (define (ast:resolve o)
   (let ((o (add-constants o)))
@@ -148,20 +149,6 @@
     (($ <scope.name>) ((->symbol-join '.) (om:scope+name o)))
     (_ o)))
 
-(define (resolve:event o trigger)
-  (match (cons o trigger)
-    ((($ <port>) . (? symbol?))
-     (find (lambda (x) (eq? (.name x) trigger)) (om:events o)))
-    ((($ <interface>) . (? symbol?))
-     (find (lambda (x) (eq? (.name x) trigger)) (.elements (.events o))))
-    ((($ <interface>)  . (? (is? <trigger>)))
-     (if (not (as (.event trigger) <event>)) (resolve:event o (.event trigger))
-         (.event trigger)))
-    ((($ <component>)  . (? (is? <trigger>)))
-     (if (not (as (.event trigger) <event>)) (resolve:event (resolve:interface ((.port o) trigger)) (.event trigger))
-         (.event trigger)))
-    (_ #f)))
-
 (define (resolve:globals root)
   (filter (is? <type>) (.elements root)))
 
@@ -229,8 +216,7 @@
     (($ <on>) (or (find (cut var? <> name) (append-map ast:formal* (ast:trigger* o))) (var? (.parent o) name)))
     (($ <variable>) (name? o))
     ((? (lambda (o) (is-a? (.parent o) <variable>))) (var? ((compose .parent .parent) o) name))
-    (_ (var? (.parent o) name)))
-  )
+    (_ (var? (.parent o) name))))
 
 (define-method (type? (o <ast>) name)
   (define (name? e) (and (eq? (.scope+name (.name e)) (.scope+name name)) e))
@@ -376,9 +362,7 @@
          (if (not port) (resolve-error o p "undefined port: ~a")
              (let ((event (or (as e <event>) (resolve:event port e))))
                (if (not event) (resolve-error o e "undefined event: ~a")
-                   (clone o
-                          #:event event
-                          #:arguments (resolve (.arguments o))))))))
+                   (clone o #:arguments (resolve (.arguments o))))))))
 
       ((and ($ <var>) (= .variable.name v))
        (let ((variable (var? o v)))
@@ -388,20 +372,8 @@
       ((? symbol?)
        (undefined-error 'programming-error o))
 
-      ((and ($ <action>) (= .port #f) (? (compose (cut event? o <>) .event)) (= .event event) (= .arguments arguments))
-       (clone o #:event (event? o event) #:arguments (resolve arguments)))
-
-      ((and ($ <action>) (= .port #f))
-       (resolve-error o (.event o) "undefined event: ~a"))
-
-      ((and ($ <action>) (= .port p) (= .event e) (= .arguments arguments)) (=> failure)
-       (let ((port (port? p)))
-         (if (not port) (resolve-error o p "undefined port: ~a")
-             (let ((event (or (as e <event>) (resolve:event port e))))
-               (if (not event) (resolve-error o e "undefined event: ~a")
-                   (clone o
-                          #:event event
-                          #:arguments (resolve arguments)))))))
+      ((and ($ <action>) (= .arguments arguments))
+       (clone o #:arguments (resolve arguments)))
 
       (($ <assign>)
        (clone o
@@ -525,25 +497,19 @@
       (_ o))))
 
 (define ((resolve-triggers model) o)
-  (define (event? o)
-    (or (as o <event>)
-        (and (is-a? model <interface>) (resolve:event model o))))
   (define (member? m) (or (as m <variable>) (resolve:variable model m)))
   (define (port? o)
     (or (as o <port>)
         (and (is-a? model <component>) (om:port model o))))
   (match o
     (($ <triggers>) (tree-map (resolve-triggers model) o))
-    ((and ($ <trigger>) (= .port #f) (= .event 'inevitable)) (clone o #:event ast:inevitable))
-    ((and ($ <trigger>) (= .port #f) (= .event 'optional)) (clone o #:event ast:optional))
-    ((and ($ <trigger>) (= .port #f) (= .event e))
-     (let ((event (event? e)))
-       (if (not event) (resolve-error o e "undefined event: ~a")
-           (clone o #:event event))))
-    ((and ($ <trigger>) (= .port p) (= .event e) (= .formals formals))
+    ((and ($ <trigger>) (= .port #f) (= .event.name 'inevitable)) o)
+    ((and ($ <trigger>) (= .port #f) (= .event.name 'optional)) o)
+    ((and ($ <trigger>) (= .port #f) (= .event.name e)) o)
+    ((and ($ <trigger>) (= .port p) (= .event.name e) (= .formals formals))
      (let ((port (port? p)))
        (if (not port) (resolve-error o p "undefined port: ~a")
-           (let ((event (or (as e <event>) (resolve:event port e))))
+           (let ((event (event? o e)))
              (if (not event) (resolve-error o e "undefined event: ~a")
                  (let* ((resolve-formal (lambda (e f)
                                           (let ((f (clone f
@@ -559,10 +525,7 @@
                                               (list-tail event-formals formal-count))))
                         ;; FIXME: resolve-error check length if not <illegal>
                         (formals (clone (.formals o) #:elements formals)))
-                   (clone o
-                          ;;#:port.name port
-                          #:event event
-                          #:formals formals)))))))
+                   (clone o #:formals formals)))))))
     (($ <formal>) o)
     ((and ($ <formal-binding>) (= .variable.name v))
      (let ((variable (var? o v)))
@@ -668,6 +631,32 @@
   (if (.instance o)
       (name-resolve (.type (.instance o)) <port> (.port.name o))
       (name-resolve (parent <model> o) <port> (.port.name o))))
+
+
+(define-method (event? (o <ast>) name)
+  (define (name? o) (and (eq? (.name o) name) o))
+  (case name
+    ((inevitable) ast:inevitable)
+    ((optional) ast:optional)
+    (else (match o
+            (($ <interface>) (find name? (ast:event* o)))
+            ((and (or ($ <action>) ($ <trigger>)) (= .port #f)) (event? (parent <interface> o) name))
+            ((and (or ($ <action>) ($ <trigger>)) (= .port port)) (event? (.type port) name)))
+          )))
+
+(define-method (.event (o <action>))
+  (event? o (.event.name o)))
+
+(define-method (.event (o <trigger>))
+  (event? o (.event.name o)))
+
+(define-method (.event.direction (o <action>))
+  ((compose .direction .event) o))
+
+(define-method (.event.direction (o <trigger>))
+  ((compose .direction .event) o))
+
+
 
 (define-method (.function (model <model>) (o <call>))
   (and (.function.name o) (name-resolve model <function> (.function.name o))))

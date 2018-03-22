@@ -42,7 +42,6 @@
             .node
             .parent
 
-            .event.direction
             .event.name
             .id
             .instance.name
@@ -67,8 +66,6 @@
            .direction
            .elements
            .else
-           .event
-           .event.direction
            .event.name
            .events
            .expression
@@ -470,8 +467,8 @@
 (define-ast <optional> (<modeling-event>))
 (define-method (.name (o <optional>)) 'optional)
 
-(define ast:inevitable (make <inevitable-node>))
-(define ast:optional (make <optional-node>))
+(define ast:inevitable (make <inevitable>))
+(define ast:optional (make <optional>))
 
 (define-ast <port> (<named>)
   (type.name #:init-form (make <scope.name-node>))
@@ -481,10 +478,8 @@
 
 (define-ast <trigger> (<ast>)
   (port.name)
-  (event)
+  (event.name)
   (formals #:init-form (make <formals-node>)))
-(define-method (.event.name (o <trigger>)) (and=> (.event o) .name))
-(define-method (.event.direction (o <trigger>)) (and=> (.event o) .direction))
 
 (define-ast <expression> (<ast>))
 
@@ -587,10 +582,8 @@
 
 (define-ast <action> (<imperative> <expression>)
   (port.name)
-  (event)
+  (event.name)
   (arguments #:init-form (make <arguments-node>)))
-(define-method (.event.name (o <action>)) (and=> (.event o) .name))
-(define-method (.event.direction (o <action>)) (and=> (.event o) .direction))
 
 (define-ast <assign> (<imperative>)
   (variable.name)
@@ -613,7 +606,7 @@
   (else))
 
 (define-ast <illegal> (<imperative>)
-  (event)
+  (event.name)
   (incomplete))
 
 (define-ast <blocking> (<declarative>)

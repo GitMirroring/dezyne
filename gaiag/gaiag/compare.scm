@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -121,10 +121,8 @@
 
 
 (define-method (om:equal? (a <trigger>) (b <trigger>))
-  (define (name o)
-    (if (is-a? o <named>) (.name o) o))
   (and (equal? (.port.name a) (.port.name b))
-       (equal? (name (.event a)) (name (.event b)))
+       (equal? (.event.name a) (.event.name b))
        (om:equal? (.formals a) (.formals b))))
 
 (define-method (om:guard-equal? (lhs <guard>) (rhs <guard>))

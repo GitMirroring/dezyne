@@ -71,11 +71,11 @@
 
 (define (parse->om-- o)
   (match o
-    (('action event) (make <action-node> #:event event))
+    (('action event) (make <action-node> #:event.name event))
 
-    (('action port event) (make <action-node> #:port.name port #:event event))
+    (('action port event) (make <action-node> #:port.name port #:event.name event))
 
-    (('action port event arguments) (make <action-node> #:port.name port #:event event #:arguments (parse->om- arguments)))
+    (('action port event arguments) (make <action-node> #:port.name port #:event.name event #:arguments (parse->om- arguments)))
 
     (('arguments arguments ...) (make <arguments-node>
                                   #:elements (map parse->om- arguments)))
@@ -267,12 +267,12 @@
         #:instances (parse->om- instances)
         #:bindings (parse->om- bindings)))
 
-    (('trigger port event) (make <trigger-node> #:port.name port #:event event))
+    (('trigger port event) (make <trigger-node> #:port.name port #:event.name event))
 
     (('trigger port event arguments)
      (make <trigger-node>
        #:port.name port
-       #:event event
+       #:event.name event
        #:formals (parse->om- arguments)))
 
     (('triggers triggers ...)
