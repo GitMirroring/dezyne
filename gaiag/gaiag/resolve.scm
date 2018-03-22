@@ -90,7 +90,7 @@
           (($ <component>) system)
           (($ <root>) (om:find (disjoin (is? <component>) (is? <foreign>)) system))
           (($ <scope.name>) ;(cached-model system)
-           (find (lambda (x) (om:equal? system (.name x))) (filter (negate (is? <data>)) (.elements (parent <root> system)))))
+           (find (lambda (x) (om:equal? system (.name x))) (filter (negate (is? <data>)) (.elements (parent system <root>)))))
           (_ #f)))
     ((? symbol?) (resolve:component system (resolve:instance system o)))
     ((and ($ <binding>) (= .instance #f))
@@ -109,7 +109,7 @@
     (($ <port>) (resolve:interface (.type o)))
     (($ <interface>) o)
     ((? (is? <model>)) (resolve:interface (om:port o)))
-    (($ <scope.name>) (find (om:named o) ((compose .elements (parent <root> o)))))
+    (($ <scope.name>) (find (om:named o) ((compose .elements (parent o <root>)))))
     (($ <root>) (om:find (is? <interface>) o))
     ((h t ...) (find (is? <interface>) o))))
 
@@ -153,7 +153,6 @@
   (define (name? o) (and (eq? (.name o) name) o))
   (find name? (ast:instance* (parent o <system>))))
 
-
 (define-method (.scope+name (o <scope.name>))
   (symbol-join (append (.scope o) (list (.name o)))))
 
@@ -177,12 +176,12 @@
 (define name-resolve (pure-funcq name-resolve))
 
 (define-method (.type (o <port>))
-  (name-resolve (parent <root> o) <interface> (.scope+name (.type.name o))))
+  (name-resolve (parent o <root>) <interface> (.scope+name (.type.name o))))
 
 (define-method (.type (o <instance>))
-  (or (name-resolve (parent <root> o) <system> (.scope+name (.type.name o)))
-      (name-resolve (parent <root> o) <component> (.scope+name (.type.name o)))
-      (name-resolve (parent <root> o) <foreign> (.scope+name (.type.name o)))))
+  (or (name-resolve (parent o <root>) <system> (.scope+name (.type.name o)))
+      (name-resolve (parent o <root>) <component> (.scope+name (.type.name o)))
+      (name-resolve (parent o <root>) <foreign> (.scope+name (.type.name o)))))
 
 (define-method (contains? container (o <ast>))
   (and (is-a? container <ast>)
@@ -196,18 +195,18 @@
   (and (.port.name o) (name-resolve model <port> (.port.name o))))
 
 (define-method (.port (o <trigger>))
-  (and (.port.name o) (name-resolve (parent <model> o) <port> (.port.name o))))
+  (and (.port.name o) (name-resolve (parent o <model>) <port> (.port.name o))))
 
 (define-method (.port (o <action>))
-  (and (.port.name o) (name-resolve (parent <model> o) <port> (.port.name o))))
+  (and (.port.name o) (name-resolve (parent o <model>) <port> (.port.name o))))
 
 (define-method (.port (o <reply>))
-  (and (.port.name o) (name-resolve (parent <model> o) <port> (.port.name o))))
+  (and (.port.name o) (name-resolve (parent o <model>) <port> (.port.name o))))
 
 (define-method (.port (o <binding>))
   (if (.instance.name o)
       (name-resolve (.type (.instance o)) <port> (.port.name o))
-      (name-resolve (parent <model> o) <port> (.port.name o))))
+      (name-resolve (parent o <model>) <port> (.port.name o))))
 
 
 (define-method (event? (o <ast>) name)
@@ -217,7 +216,7 @@
     ((optional) ast:optional)
     (else (match o
             (($ <interface>) (find name? (ast:event* o)))
-            ((and (or ($ <action>) ($ <trigger>)) (= .port #f)) (event? (parent <interface> o) name))
+            ((and (or ($ <action>) ($ <trigger>)) (= .port #f)) (event? (parent o <interface>) name))
             ((and (or ($ <action>) ($ <trigger>)) (= .port port)) (event? (.type port) name)))
           )))
 
@@ -238,7 +237,7 @@
   (and (.function.name o) (name-resolve model <function> (.function.name o))))
 
 (define-method (.function (o <call>))
-  (name-resolve (parent <model> o) <function> (.function.name o)))
+  (name-resolve (parent o <model>) <function> (.function.name o)))
 
 
 (define-method (.variable (o <assign>))

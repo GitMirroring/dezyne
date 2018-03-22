@@ -447,19 +447,19 @@
     (($ <behaviour>) o)
     (_ #f)))
 
-(define-method (mcrl2:interface-name (o <ast>)) ((compose mcrl2:interface-name (cut parent <model> <>) .type) o))
+(define-method (mcrl2:interface-name (o <ast>)) ((compose mcrl2:interface-name (cut parent <> <model>) .type) o))
 (define-method (mcrl2:interface-name (o <mcrl2-interface>)) ((compose mcrl2:interface-name .interface) o))
 (define-method (mcrl2:interface-name (o <interface>)) (mcrl2:scope-name o))
 
 (define (mcrl2:ports o) (append (om:ports o) ((compose .elements .ports .behaviour) o)))
 (define (mcrl2:interfaces o) (delete-duplicates (map .type (mcrl2:ports o))))
 ;;(define-method (mcrl2:provided-port-type (o <ast>)) ((compose mcrl2:provided-port-type car (lambda (o) (filter (is? <component>) (.elements o)))) o))
-(define-method (mcrl2:provided-port-type (o <ast>)) ((compose mcrl2:provided-port-type (cut parent <model> <>)) o))
-(define-method (mcrl2:provided-port-type (o <root>)) ((compose mcrl2:provided-port-type (lambda (o) (find (is? <component>) (.elements o)))) (parent <root> o)))
+(define-method (mcrl2:provided-port-type (o <ast>)) ((compose mcrl2:provided-port-type (cut parent <> <model>)) o))
+(define-method (mcrl2:provided-port-type (o <root>)) ((compose mcrl2:provided-port-type (lambda (o) (find (is? <component>) (.elements o)))) (parent o <root>)))
 (define-method (mcrl2:provided-port-type (o <component>)) ((compose mcrl2:provided-port-type .type car om:provided) o)) ;;TODO: only works for single provides port
 (define-method (mcrl2:provided-port-type (o <interface>)) (mcrl2:scope-name o))
 (define-method (mcrl2:provided-port-name (o <event>)) ((compose mcrl2:provided-port-name .type .signature) o))
-(define-method (mcrl2:provided-port-name (o <type>)) ((compose mcrl2:provided-port-name (lambda (o) (find (is? <component>) (.elements o))) (cut parent <root> <>)) o))
+(define-method (mcrl2:provided-port-name (o <type>)) ((compose mcrl2:provided-port-name (lambda (o) (find (is? <component>) (.elements o))) (cut parent <> <root>)) o))
 (define-method (mcrl2:provided-port-name (o <root>)) ((compose mcrl2:provided-port-name (lambda (o) (find (is? <component>) (.elements o)))) o))
 (define-method (mcrl2:provided-port-name (o <component>)) ((compose .name car om:provided) o))
 (define-method (mcrl2:provided-port-name (o <interface>)) (mcrl2:scope-name o))
@@ -479,7 +479,7 @@
 (define-method (mcrl2:model-name (o <model>))
   ((om:scope-name (string->symbol "'")) o))
 (define-method (mcrl2:model-name (o <ast>))
-  (let ((model (or (parent <model> o)
+  (let ((model (or (parent o <model>)
                    (%model))))
     (mcrl2:scope-name model)))
 
@@ -490,20 +490,20 @@
 ;; (define mcrl2:model-name- (pure-funcq mcrl2:model-name-))
 
 ;; (define (mcrl2:model-name o)
-;;   (and=> (or (parent <model> o) (%model)) mcrl2:model-name-))
+;;   (and=> (or (parent o <model>) (%model)) mcrl2:model-name-))
 
-;; (define (mcrl2:parent- model o) (or (parent <model> o) model))
+;; (define (mcrl2:parent- model o) (or (parent o <model>) model))
 ;; (define mcrl2:parent- (pure-funcq mcrl2:parent-))
 
 ;; (define (mcrl2:model-name o)
 ;;   (and=> (or (mcrl2:parent- (%model) o)) mcrl2:model-name-))
 
 (define-method (mcrl2:scope-name (o <ast>))
-  (or (and=> (parent <model> o) mcrl2:model-name)
+  (or (and=> (parent o <model>) mcrl2:model-name)
       "global'"))
 
 ;; (define (mcrl2:scope-name o)
-;;   (or (and=> (parent <model> o) mcrl2:model-name)
+;;   (or (and=> (parent o <model>) mcrl2:model-name)
 ;;       "global'"))
 
 ;; (define mcrl2:scope-name (pure-funcq mcrl2:scope-name))
@@ -519,8 +519,8 @@
   ((compose mcrl2:expand-types .signature .event .trigger) o))
 
 (define (other-function-returns o)
-  (let* ((function (parent <function> o))
-         (model (parent <model> function))
+  (let* ((function (parent o <function>))
+         (model (parent function <model>))
          (functions (typed-functions model))
          (functions (filter (lambda (f) (not (om:equal? f function))) functions)))
     functions))
@@ -560,7 +560,7 @@
   (let loop ((refs refs) (result result))
     (if (null? refs) result
         (let* ((ref (car refs))
-               (function? (parent <function> ref)))
+               (function? (parent ref <function>)))
           (if function? (if (member function? (map .function result)) (loop (cdr refs) (cons ref result))
                             (loop refs result))
               (loop (cdr refs) (cons ref result)))))))
@@ -572,9 +572,9 @@
     (($ <call>) (.function ref))))
 
 (define (reachable refs)
-  (receive (refs result) (partition (cut parent <function> <>) refs)
+  (receive (refs result) (partition (cut parent <> <function>) refs)
     (let loop ((refs refs) (result result))
-      (receive (a b) (partition (lambda (ref) (member (.id (parent <function> ref)) (map (compose .id ref-function) result))) refs)
+      (receive (a b) (partition (lambda (ref) (member (.id (parent ref <function>)) (map (compose .id ref-function) result))) refs)
         (let* ((result2 (append a result)))
           (if (equal? result result2) result
               (loop b result2)))))))
@@ -651,10 +651,10 @@
   (mcrl2:expand-types (.variable o)))
 
 (define-method (function-name (o <ast>))
-  (let ((parent (parent <function> o)))
+  (let ((parent (parent o <function>)))
     (.name parent)))
 (define-method (function-scope (o <ast>))
-  (let ((parent (parent <function> o)))
+  (let ((parent (parent o <function>)))
     (if parent
         ((compose (cut string-append "'function'" <>) ->string .name) parent)
         ""))
@@ -688,7 +688,7 @@
 	(next-alist '()))
     (lambda (o)
       (let* ((id (.id o))
-	     (sid ((compose .id (cut parent <model> <>)) o))
+	     (sid ((compose .id (cut parent <> <model>)) o))
              (path (ast:path o))
              (id (map .id path))
 	     (key (cons id sid))
@@ -705,7 +705,7 @@
     (($ <bool>) "Bool")
     (($ <enum>) (string-join (map symbol->string (om:scope+name (.name o))) "'" 'infix))
     (($ <int>) "Int") ;;(string-join (map symbol->string (om:scope+name (.name o))) "'" 'infix)
-    (($ <refs>) (string-append ((compose ->string mcrl2:scope-name (cut parent <model> <>)) o) "'" "Refs"))))
+    (($ <refs>) (string-append ((compose ->string mcrl2:scope-name (cut parent <> <model>)) o) "'" "Refs"))))
 
 ;; (define-method (mcrl2-expression (o <expression>))
 ;;   (match o
@@ -721,7 +721,7 @@
 ;;     (($ <call>) "foo" )));;TODO
 
 (define-method (globals (o <ast>))
-  (let* ((parent (parent <model> o))
+  (let* ((parent (parent o <model>))
 	 (behaviour (.behaviour parent))
 	 (vars ((compose .elements .variables) behaviour)))
     vars))
@@ -770,13 +770,13 @@
 (define-method (model-from-scope (o <model>)) o)
 
 (define-method (on-from-provided (o <the-end>))
-  (let* ((on (parent <on> o))
+  (let* ((on (parent o <on>))
          (port ((compose .port car ast:trigger*) on)))
     (if (or (not port) (ast:provides? port))
         o
         "")))
 (define-method (on-from-required (o <the-end>))
-  (let* ((on (parent <on> o))
+  (let* ((on (parent o <on>))
          (port ((compose .port car ast:trigger*) on)))
     (if (and port (ast:requires? port))
         o
@@ -794,7 +794,7 @@
       ""
       o))
 (define (separate-trigger-type o)
-  (let ((model (parent <model> o)))
+  (let ((model (parent o <model>)))
    (match (mcrl2:on-event-trigger o)
      ('optional (clone (make <optional>) #:parent model))
      ('inevitable (clone (make <inevitable>) #:parent model))
@@ -814,7 +814,7 @@
 (define-method (port p o)
   (if p
       (.name p)
-      (mcrl2:model-name (parent <model> o))))
+      (mcrl2:model-name (parent o <model>))))
 (define-method (trigger-port (o <ast>))
   (match o
     (($ <action>) (port (.port o) o))
@@ -826,7 +826,7 @@
 (define-method (port-type p o)
   (if p
       (mcrl2:model-name (.type p))
-      (mcrl2:model-name (parent <model> o))))
+      (mcrl2:model-name (parent o <model>))))
 (define-method (trigger-port-type (o <ast>))
   (match o
     (($ <action>) (port-type (.port o) o))
@@ -842,7 +842,7 @@
 	(if (ast:provides? port)
 	    (om:name (.type port))
 	    port)
-	(om:name (parent <model> o)))))
+	(om:name (parent o <model>)))))
 (define-method (trigger-port-type-reply (o <action>))
   (let ((port (.port o)))
     (if (ast:provides? port)
@@ -877,7 +877,7 @@
 (define-method (mcrl2:block-illegals (o <on>))
   (let* ((port ((compose .port car .elements .triggers) o))
          (statement ((compose car .elements .statement) o))
-         (parent (parent <model> o)))
+         (parent (parent o <model>)))
     (if (or (and port (ast:provides? port) (is-a? statement <illegal>))
             (and (is-a? parent <interface>) (is-a? statement <illegal>) (not (.incomplete statement))))
         o

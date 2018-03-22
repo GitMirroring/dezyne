@@ -28,12 +28,12 @@
 
 (define-templates source identity newline-infix)
 (define-templates model mcrl2:get-model)
-(define-templates mcrl2-component-name (lambda (o) (mcrl2:model-name (car (filter (is? <component>) (.elements (parent <root> o)))))))
+(define-templates mcrl2-component-name (lambda (o) (mcrl2:model-name (car (filter (is? <component>) (.elements (parent o <root>)))))))
 (define-templates mcrl2-provided-port-type mcrl2:provided-port-type)
 ;;(define-templates mcrl2-provided-port-name (lambda (o) (stderr "mcrl2-provided-port-name: ~a\n" o) (mcrl2:provided-port-name o)))
 (define-templates mcrl2-provided-port-name mcrl2:provided-port-name)
 (define-templates provided-port-type (lambda (o) (mcrl2:provided-port-type o)))
-(define-templates provided-port-name (lambda (o) (mcrl2:provided-port-name (parent <model> o))))
+(define-templates provided-port-name (lambda (o) (mcrl2:provided-port-name (parent o <model>))))
 (define-templates global-type om:globals newline-indent-infix)
 (define-templates sort-interface mcrl2:interfaces newline-indent-infix)
 (define-templates sort-component identity newline-indent-infix)
@@ -99,7 +99,7 @@
 (define-templates mcrl2-component-process .behaviour)
 (define-templates assign-call-var-name (compose .variable.name .assign))
 (define-templates variable-call-var-name (compose .name .variable))
-(define-templates mcrl2-provided-port-type-name (compose mcrl2:expand-types car ast:event* .type car om:provided (cut parent <model> <>)))
+(define-templates mcrl2-provided-port-type-name (compose mcrl2:expand-types car ast:event* .type car om:provided (cut parent <> <model>)))
 (define-templates mcrl2-type-name mcrl2:expand-types)
 (define-templates action-union-struct om:ports pipe-infix)
 (define-templates mcrl2-process-name)
@@ -147,7 +147,7 @@
 		   (_ elsestmt))))))
 (define-templates component-reply-in-stmt
   (lambda (o)
-    (if (and (is-a? (parent <model> o) <component>) (ast:requires? (.port o)))
+    (if (and (is-a? (parent o <model>) <component>) (ast:requires? (.port o)))
 	o
 	"")))
 (define-templates on-event-union .elements union-infix)
@@ -168,7 +168,7 @@
 (define-templates block-illegals mcrl2:block-illegals)
 (define-templates illegal-type
   (lambda (o)
-    (if ((is? <interface>) (parent <model> o))
+    (if ((is? <interface>) (parent o <model>))
         (if (and (is-a? o <illegal>) (.incomplete o))
             "incomplete . delta"
             "Illegal")

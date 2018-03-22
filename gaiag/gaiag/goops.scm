@@ -749,6 +749,7 @@
       (apply clone-base-ast (cons o setters))
       (clone-base-ast o #:node (apply clone-base-node (cons (.node o) setters)))))
 
-(define-method (parent class o) #f)
-(define-method (parent class (o <ast>))
-  (if (is-a? o class) o (parent class (.parent o))))
+(define-method (parent o (class <class>)) #f)
+(define-method (parent (o <ast>) (class <class>))
+  (if (is-a? o class) o
+      (parent (.parent o) class)))

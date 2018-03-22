@@ -197,7 +197,7 @@
             ((compose .elements .instances) model))))
 
 (define-method (code:dzn-locator (o <instance>)) ;; MORTAL SIN HERE!!?
-  (let* ((model (parent <model> o)))
+  (let* ((model (parent o <model>)))
     (if (null? (injected-bindings model)) ""
         "_local")))
 
@@ -206,8 +206,8 @@
   ;; checking name (as done now) is not good enough
   ;; we schould check .variable pointer equality
   ;; that does not work, however; someone makes a copy is clone
-  ;;(memq o (om:variables (parent <model> o)))
-  (memq (.name o) (map .name (om:variables (parent <model> o)))))
+  ;;(memq o (om:variables (parent o <model>)))
+  (memq (.name o) (map .name (om:variables (parent o <model>)))))
 
 (define-method (code:port-type (o <trigger>))
   (code:scope+name ((compose .type .port) o)))
@@ -237,7 +237,7 @@
   (append ((compose code:scope+name .type) o) (list (.field o))))
 
 (define-method (code:scope+name (o <bind>))
-  ((compose code:scope+name .type (cut resolve:instance (parent <model> o) <>) injected-instance-name) o))
+  ((compose code:scope+name .type (cut resolve:instance (parent o <model>) <>) injected-instance-name) o))
 
 (define-method (code:non-injected-bindings (o <system>))
   (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) o))))
@@ -265,10 +265,10 @@
   ((compose .port.name car .elements .triggers) o))
 
 (define-method (code:port-name (o <instance>))
-  (.name (om:port (resolve:component (parent <model> o) o))))
+  (.name (om:port (resolve:component (parent o <model>) o))))
 
 (define-method (code:port-name (o <bind>))
-  (let* ((model (parent <model> o))
+  (let* ((model (parent o <model>))
          (left (.left o))
          (right (.right o))
          (port (and (om:port-bind? o)
@@ -276,7 +276,7 @@
     port))
 
 (define-method (code:instance-name (o <bind>))
-  (let* ((model (parent <model> o))
+  (let* ((model (parent o <model>))
          (left (.left o))
          (right (.right o))
          (bind (and (om:port-bind? o)
@@ -287,18 +287,18 @@
   o)
 
 (define-method (code:instance-name (o <port>))
-  (.name (resolve:instance (parent <model> o) o)))
+  (.name (resolve:instance (parent o <model>) o)))
 
 (define-method (code:instance-name (o <trigger>))
-  ((compose code:instance-name (cut .port (parent <model> o) <>)) o))
+  ((compose code:instance-name (cut .port (parent o <model>) <>)) o))
 
 (define-method (code:instance-port-name (o <port>))
-  (let* ((bind (om:port-bind (parent <model> o) o))
+  (let* ((bind (om:port-bind (parent o <model>) o))
          (instance-bind (om:instance-binding? bind)))
     (.port.name instance-bind)))
 
 (define-method (code:instance-port-name (o <trigger>))
-  ((compose code:instance-port-name (cut .port (parent <model> o) <>)) o))
+  ((compose code:instance-port-name (cut .port (parent o <model>) <>)) o))
 
 (define-method (code:functions (o <component>))
   (om:functions o))
@@ -423,7 +423,7 @@
   (om:instances o))
 
 (define-method (code:bind-provided-required (o <bind>))
-  (let* ((model (parent <model> o))
+  (let* ((model (parent o <model>))
          (left (.left o))
          (left-port (.port left))
          (right (.right o))
@@ -439,7 +439,7 @@
   ((compose cdr code:bind-provided-required) o))
 
 (define-method (code:component-port (o <port>)) ;; MORTAL SIN HERE!!?
-  (let* ((model (parent <model> o))
+  (let* ((model (parent o <model>))
          (bind (om:port-bind model o)))
     (om:instance-binding? bind)))
 
@@ -493,7 +493,7 @@
       o))
 
 (define-method (code:type-name (o <bind>))
-  ((compose code:type-name .type (cut resolve:instance (parent <model> o) <>) injected-instance-name) o))
+  ((compose code:type-name .type (cut resolve:instance (parent o <model>) <>) injected-instance-name) o))
 
 (define-method (code:type-name (o <enum-field>))
   (code:scope+name o))
@@ -591,13 +591,13 @@
   (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
 
 (define-method (code:enum-scope (o <field-test>))
-  ((compose (cut code:enum-model-scope <> (parent <model> o)) .type .variable) o))
+  ((compose (cut code:enum-model-scope <> (parent o <model>)) .type .variable) o))
 
 (define-method (code:enum-scope (o <enum-literal>))
-  ((compose (cut code:enum-model-scope <> (parent <model> o)) .type) o))
+  ((compose (cut code:enum-model-scope <> (parent o <model>)) .type) o))
 
 (define-method (code:enum-scope (o <enum>))
-  ((compose (cut code:enum-model-scope <> (parent <model> o)) .type) o))
+  ((compose (cut code:enum-model-scope <> (parent o <model>)) .type) o))
 
 (define-method (code:enum-model-scope (o <enum>) model)
   (let ((scope ((compose .scope .name) o))

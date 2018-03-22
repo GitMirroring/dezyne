@@ -213,7 +213,7 @@
       (om:scope+name o)
       (let* ((type (or (as o <type>) (.type o)))
              (scope (om:scope type))
-             (model-scope (parent <model> o))
+             (model-scope (parent o <model>))
              (model-scope (or (and model-scope (om:scope+name model-scope)) '()))
              (common (or (list-index (negate eq?) scope model-scope) (min (length scope) (length model-scope)))))
         (drop (om:scope+name type) common))))
@@ -274,8 +274,8 @@
   ;; checking name (as done now) is not good enough
   ;; we schould check .variable pointer equality
   ;; that does not work, however; someone makes a copy is clone
-  ;;(memq o (om:variables (parent <model> o)))
-  (memq (.name o) (map .name (om:variables (parent <model> o)))))
+  ;;(memq o (om:variables (parent o <model>)))
+  (memq (.name o) (map .name (om:variables (parent o <model>)))))
 
 (define-method (dzn:enum-literal (o <enum-literal>))
   (dzn:scope+name o))
@@ -403,7 +403,7 @@
 ;; (define-method (dzn:x:pand-display (o <ast>) template)
 ;;   (let ((module (make-module 31 `(,(resolve-module '(gaiag dzn))
 ;;                                   ,(resolve-module `(gaiag ,(language)))))))
-;;     (module-define! module 'root (parent <root> o))
+;;     (module-define! module 'root (parent o <root>))
 ;;     (dzn:indent (lambda _ ((%x:source) o)))))
 
 (define-generic source-file)
