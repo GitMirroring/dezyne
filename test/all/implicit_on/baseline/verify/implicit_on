@@ -1,4 +1,3 @@
-verify: iimplicit_on: check: completeness: ok
 verify: iimplicit_on: check: deadlock: ok
 verify: iimplicit_on: check: livelock: ok
 verify: implicit_on: check: deterministic: ok

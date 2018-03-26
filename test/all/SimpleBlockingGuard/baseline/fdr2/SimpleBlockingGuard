@@ -1,0 +1,14 @@
+verify: ISimpleBlockingGuard: check: completeness: ok
+verify: ISimpleBlockingGuard: check: deadlock: ok
+verify: ISimpleBlockingGuard: check: livelock: ok
+verify: SimpleBlockingGuard: check: deterministic: ok
+verify: SimpleBlockingGuard: check: illegal: ok
+verify: SimpleBlockingGuard: check: deadlock: fail
+pp.ia
+pp.return
+pp.ia
+verify: SimpleBlockingGuard: check: compliance: fail
+pp.ia
+pp.return
+pp.ia
+verify: SimpleBlockingGuard: check: livelock: ok

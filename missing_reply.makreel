@@ -1,0 +1,475 @@
+% hello makreel
+% mcrl22lps -b hello.makreel | lps2lts /dev/stdin my.aut
+
+sort
+Void = struct void;
+ihello'actions = struct
+ihello'in'hello
+;
+
+ihello'modeling = struct ihello'optional | ihello'inevitable;
+
+
+ihello'replies = struct ihello'Void(value: Void)
+  | ihello'Bool(value: Bool);
+
+ihello'events = struct
+    ihello'action (value: ihello'actions)
+    | ihello'reply (value: ihello'replies)
+    ;
+
+
+
+map
+
+QueueLength : Nat;
+
+eqn
+
+QueueLength = 3;
+
+act
+ihello'in: ihello'events;
+ihello'in': ihello'events;
+ihello'out: ihello'events;
+ihello'reply: ihello'replies;
+ihello'reply': ihello'replies;
+ihello'internal: ihello'modeling;
+ihello'internal': ihello'modeling;
+ihello'end;
+ihello'end';
+h'in: ihello'events;
+h'in': ihello'events;
+h'out: ihello'events;
+h'out': ihello'events;
+h'reply: ihello'replies;
+h'reply': ihello'replies;
+h'internal: ihello'modeling;
+h'internal': ihello'modeling;
+h'end;
+h'end';
+h'reply'reordered: ihello'replies;
+h'reply'reordered': ihello'replies;
+h'blocking;
+h'blocking';
+
+missing_reply'end;
+missing_reply'end';
+declarative_illegal;
+illegal;
+incomplete;
+missing_reply;
+queue_full;
+queue_empty;
+queue_empty';
+range_error;
+recurse;
+return;
+second_reply;
+
+proc
+Illegal' = illegal . Illegal';
+Declarative_Illegal' = declarative_illegal . Declarative_Illegal';
+
+%%%%%%%%%%%%%%%%% INTERFACE %%%%%%%%%%%%%%%%%
+
+ihello'semantics =
+  sum i : ihello'events. ihello'in(i) . sum r : ihello'replies. ihello'reply(r) . ihello'semantics
+  + sum m : ihello'modeling. ihello'internal(m) . ihello'end . ihello'semantics;
+
+ihello'parallel = ihello'semantics || (ihello');
+
+ihello'comm = comm({
+  ihello'in | ihello'in -> ihello'in'
+  , ihello'reply | ihello'reply -> ihello'reply'
+  , ihello'internal | ihello'internal -> ihello'internal'
+  , ihello'end | ihello'end -> ihello'end'
+  }, ihello'parallel);
+
+ihello'allow = allow({
+  ihello'in'
+  , ihello'reply'
+  , ihello'internal'
+  , ihello'end'
+  , ihello'out
+  , declarative_illegal
+  , incomplete
+  , range_error
+  , recurse
+  , return
+  }, ihello'comm);
+
+ihello'rename = rename({
+  ihello'in' -> ihello'in
+  , ihello'reply' -> ihello'reply
+  , ihello'internal' -> ihello'internal
+  , ihello'end' -> ihello'end
+  }, ihello'allow);
+
+%ihello'hide = hide({#x:makreel:model-name end}, ihello'rename);
+ihello'hide = ihello'rename;
+
+ihello'interface = ihello'hide;
+
+ihello'  = non_optional_ihello' ;
+
+non_optional_ihello'  = ihello'0 ;
+
+
+% {
+%   [true] on hello: reply(true);
+%   [(!(true) && true)] on hello: incomplete;
+% }
+ihello'0 = ihello'1
+  + ihello'4 ;
+
+
+% [true] on hello: reply(true);
+ihello'1 = (true) -> ihello'2 ;
+
+
+% on hello: reply(true);
+ihello'2 = ihello'in (ihello'action (ihello'in'hello)) . ihello'3 ;
+
+
+% reply(true);
+ihello'3 = ihello'reply (ihello'Bool(true)) . ihello' ;
+
+% [(!(true) && true)] on hello: incomplete;
+ihello'4 = ((!(true) && true)) -> ihello'5 ;
+
+
+% on hello: incomplete;
+ihello'5 = ihello'in (ihello'action (ihello'in'hello)) . ihello'6 ;
+
+
+% incomplete;
+ihello'6 = incomplete . delta;
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%% COMPONENT %%%%%%%%%%%%%%%%%%%
+
+missing_reply'  = missing_reply'0 ;
+
+
+% {
+%   [true] on h'.hello(): {
+%     <end of process>
+%   }
+%   [(!(true) && true)] on h'.hello(): declarative-illegal;
+% }
+missing_reply'0 = missing_reply'1
+  + missing_reply'5 ;
+
+
+% [true] on h'.hello(): {
+%   <end of process>
+% }
+missing_reply'1 = (true) -> missing_reply'2 ;
+
+
+% on h'.hello(): {
+%   <end of process>
+% }
+missing_reply'2 = h'in (ihello'action (ihello'in'hello)) . missing_reply'3 ;
+
+
+% {
+%   <end of process>
+% }
+missing_reply'3 = missing_reply'4 ;
+
+
+% <end of process>
+missing_reply'4 = missing_reply'end . missing_reply' ;
+
+
+% [(!(true) && true)] on h'.hello(): declarative-illegal;
+missing_reply'5 = ((!(true) && true)) -> missing_reply'6 ;
+
+
+% on h'.hello(): declarative-illegal;
+missing_reply'6 = h'in (ihello'action (ihello'in'hello)) . missing_reply'7 ;
+
+
+% declarative-illegal;
+missing_reply'7 = Declarative_Illegal' . delta;
+
+
+component_behaviour =  missing_reply';
+
+%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%% PORT PROCESSES %%%%%%%%%%%%%%%
+
+h'_port_rename = rename ({
+  ihello'in -> h'in
+  , ihello'out -> h'out
+  , ihello'reply -> h'reply
+  , ihello'internal -> h'internal
+  , ihello'end -> h'end
+  }, ihello'interface);
+
+h'_port = hide ({
+  recurse
+  , return
+  }, h'_port_rename);
+
+
+%%%%%%%%%%%%%%%%%%%% Q %%%%%%%%%%%%%%%%%%%%%%
+
+
+req_and_queue = queue_empty . req_and_queue;
+
+
+%%%%%%%%%%%%%%%%%%%%% COMPONENT REORDER %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+component_reorder
+ = sum a: ihello'actions. h'in (ihello'action (a)) . (sum r: ihello'replies. h'reply (r) . component_reorder_flush_h'(r)
+                                                     +missing_reply'end . missing_reply . delta)
+
+ + missing_reply'end . component_reorder
+ ;
+
+component_reorder_flush_h'(r: ihello'replies)
+ = missing_reply'end . (h'reply'reordered (r) . component_reorder + component_reorder_flush_h'(r))
+ ;
+
+
+component_reorder_block
+ = missing_reply'end . component_reorder_block
+ + sum r: ihello'replies. h'reply (r) . component_reorder_flush_h'(r)
+ ;
+
+component_reorder_parallel = component_behaviour || component_reorder;
+
+component_reorder_comm = comm({
+  missing_reply'end | missing_reply'end  -> missing_reply'end'
+
+  , h'reply | h'reply -> h'reply'
+, h'in | h'in -> h'in'
+, h'blocking | h'blocking -> h'blocking'
+  }, component_reorder_parallel);
+
+component_reorder_allow = allow({
+  declarative_illegal
+  , illegal
+  , missing_reply
+  , queue_empty
+  , range_error
+  , recurse
+  , return
+  , second_reply
+  , missing_reply'end'
+
+  , h'in'
+  , h'blocking'
+  , h'out
+  , h'reply'
+  , h'reply'reordered
+
+  }, component_reorder_comm);
+
+component_reorder_rename = rename({
+  missing_reply'end' -> missing_reply'end
+
+  , h'in' -> h'in
+  , h'blocking' -> h'blocking
+  , h'reply' -> h'reply
+
+
+  }, component_reorder_allow);
+
+%component_reorder_hide = hide({#x:reorder-hide-provides}, component_reorder_rename);
+component_reorder_hide = component_reorder_rename;
+
+%%%%%%%%%%%%%%%%%%%%%%%%% SEMANTICS %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+semantics
+ = sum e : ihello'actions. h'in (ihello'action(e)) . semantics_provides_unblocked
+
+
+ ;
+
+semantics_provides_unblocked
+ = h'blocking . missing_reply'end . semantics_provides_blocked
++ sum r : ihello'replies. h'reply (r) . semantics_provides_unblocked
+
+ + missing_reply'end . ((queue_empty . (sum r : ihello'replies. h'reply'reordered (r) . semantics)) )
+ ;
+
+semantics_provides_blocked
+ = delta
+ ;
+
+semantics_requires
+ = queue_empty . semantics
+ + delta
+ ;
+
+component_semantics = component_reorder_hide || semantics;
+
+component_semantics_comm = comm({
+  missing_reply'end | missing_reply'end -> missing_reply'end'
+
+  , h'in | h'in -> h'in'
+  , h'blocking | h'blocking -> h'blocking'
+  , h'reply | h'reply -> h'reply'
+  , h'reply'reordered | h'reply'reordered -> h'reply'reordered'
+
+
+  }, component_semantics);
+
+component_semantics_allow = allow({
+  missing_reply'end'
+  , declarative_illegal
+  , illegal
+  , missing_reply
+  , queue_empty
+  , range_error
+  , recurse
+  , return
+  , second_reply
+
+  , h'in'
+  , h'blocking'
+  , h'out
+  , h'reply'
+  , h'reply'reordered'
+
+  }, component_semantics_comm);
+
+component_semantics_rename = rename({
+  missing_reply'end' -> missing_reply'end
+
+  , h'in' -> h'in
+  , h'blocking' -> h'blocking
+  , h'reply' -> h'reply
+  , h'reply'reordered' -> h'reply'reordered
+
+  }, component_semantics_allow);
+
+%component_semantics_hide = hide({#x:makreel:model-name end}, component_semantics_rename);
+component_semantics_hide = component_semantics_rename;
+
+%%%%%%%%%%%%%%%%%%%%% COMPONENT ASSEMBLY %%%%%%%%%%%%%%%%%%%%%%
+
+component_parallel = component_semantics_hide || req_and_queue;
+
+component_comm = comm({
+  queue_empty | queue_empty -> queue_empty'
+
+  }, component_parallel);
+
+component_allow = allow({
+  declarative_illegal
+  , illegal
+  , missing_reply
+  , queue_empty'
+  , queue_full
+  , range_error
+  , recurse
+  , return
+  , second_reply
+  , missing_reply'end
+
+  , h'in
+  , h'blocking
+  , h'out
+  , h'reply
+  , h'reply'reordered
+
+  }, component_comm);
+
+component_rename = rename({
+  queue_empty' -> queue_empty
+
+  ,   h'reply -> h'reply'
+  , h'reply'reordered -> h'reply
+
+  }, component_allow);
+
+component = hide({
+  queue_empty
+  , recurse
+  , return
+  , missing_reply'end
+
+  , h'blocking
+, h'reply'
+
+  }, component_rename);
+
+%%component = component_rename;
+
+%%%%%%%%%%%%%%%%%%%%%%% PROVIDES %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+provides_r2c = sum x: ihello'actions . h'in (ihello'action (x)) . provides_out
+  + sum m: ihello'modeling. h'internal (m) . provides_out;
+
+provides_out = sum x: ihello'replies . h'reply (x) . provides_r2c
+  + h'end . provides_r2c
+  + sum x: ihello'actions . h'out (ihello'action (x)) . provides_out
+
+;
+
+provides_parallel = h'_port|| provides_r2c;
+
+provides_comm = comm ({
+  h'in | h'in -> h'in'
+  , h'out | h'out -> h'out'
+  , h'reply | h'reply -> h'reply'
+  , h'internal | h'internal -> h'internal'
+  , h'end | h'end -> h'end'
+  }, provides_parallel);
+
+provides_allow = allow ({
+  h'in'
+  , h'out'
+  , h'reply'
+  , h'internal'
+  , h'end'
+  , declarative_illegal
+  , illegal
+  , incomplete
+  , missing_reply
+  , range_error
+  , second_reply
+  }, provides_comm);
+
+provides_rename = rename ({
+  h'in' -> h'in
+  , h'out' -> h'out
+  , h'reply' -> h'reply
+  , h'internal' -> h'internal
+  , h'end' -> h'end
+  }, provides_allow);
+
+provides = hide ({
+  h'internal
+  , h'end
+  }, provides_rename);
+
+init component;
+%init provides;

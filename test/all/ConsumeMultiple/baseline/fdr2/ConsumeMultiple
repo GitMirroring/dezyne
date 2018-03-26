@@ -1,0 +1,35 @@
+verify: ConsumeMultiple: check: deterministic: ok
+verify: ConsumeMultiple: check: illegal: fail
+src.ntfA
+src.ack
+src.return
+src.ntfB
+src.done
+src.return
+src.ntfA
+src.done
+verify: ConsumeMultiple: check: deadlock: fail
+src.ntfA
+src.ack
+src.return
+src.ntfB
+src.done
+src.return
+src.ntfA
+src.done
+verify: ConsumeMultiple: check: compliance: fail
+src.ntfA
+src.ack
+src.return
+src.ntfB
+src.done
+src.return
+src.ntfA
+src.done
+verify: ConsumeMultiple: check: livelock: ok
+verify: IDummy: check: completeness: ok
+verify: IDummy: check: deadlock: ok
+verify: IDummy: check: livelock: ok
+verify: ITauEmitMulti: check: completeness: ok
+verify: ITauEmitMulti: check: deadlock: ok
+verify: ITauEmitMulti: check: livelock: ok

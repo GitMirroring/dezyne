@@ -1,0 +1,32 @@
+verify: hello_external: check: deterministic: ok
+verify: hello_external: check: illegal: fail
+h.hello
+w.hello
+w.return
+h.return
+h.cancel
+w.cancel
+w.return
+h.return
+h.hello
+w.hello
+w.return
+h.return
+w.world
+h.world
+h.hello
+w.hello
+verify: hello_external: check: deadlock: ok
+verify: hello_external: check: compliance: fail
+h.hello
+w.hello
+w.return
+h.return
+h.cancel
+w.cancel
+w.return
+h.return
+w.world
+verify: hello_external: check: livelock: ok
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok

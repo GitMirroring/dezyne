@@ -1,2 +1,2 @@
 out/range_member/range_member.dzn:1:1:i1: Global variable declaration failed. Range error for variable state
-out/range_member/range_member.dzn:1:1:i1: Global variable declaration failed. Range error for variable state
+out/range_member/range_member.dzn:15:1:i2: Global variable declaration failed. Range error for variable state

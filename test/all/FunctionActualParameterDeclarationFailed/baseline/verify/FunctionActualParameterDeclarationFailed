@@ -1,4 +1,3 @@
-verify: FunctionActualParameterDeclarationFailed: check: completeness: ok
 verify: FunctionActualParameterDeclarationFailed: check: deadlock: fail
-FunctionActualParameterDeclarationFailed.ia
+ia
 verify: FunctionActualParameterDeclarationFailed: check: livelock: ok

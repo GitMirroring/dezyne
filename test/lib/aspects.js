@@ -650,7 +650,7 @@ var aspects = {
           + ' 2>' + err + ')";'
           + 'err="$(cat ' + err + ')";'
           + '[ "$out$err" = "" ] '
-          + ' || { echo -e "verification output:\n $out"; '
+          + ' || { echo -e "verification output:\n$out"; '
           + '      echo ' + err + ':; cat ' + err + '; false; }';
       })
       .then (function(cmd) {
@@ -699,7 +699,7 @@ var aspects = {
           + ' 2>' + err + ')";'
           + 'err="$(cat ' + err + ')";'
           + '[ "$out$err" = "" ] '
-          + ' || { echo -e "verification output:\n $out"; '
+          + ' || { echo -e "verification output:\n$out"; '
           + '      echo ' + err + ':; cat ' + err + '; false; }';
       })
       .then (function(cmd) {

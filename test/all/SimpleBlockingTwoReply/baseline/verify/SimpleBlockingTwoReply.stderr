@@ -1,3 +1,2 @@
-out/SimpleBlockingTwoReply/SimpleBlockingTwoReply.dzn:33:43:i38: illegal
-out/SimpleBlockingTwoReply/SimpleBlockingTwoReply.dzn:27:6:i39: deadlock in model SimpleBlockingTwoReply
-out/SimpleBlockingTwoReply/SimpleBlockingTwoReply.dzn:33:43:i38: Component SimpleBlockingTwoReply is non-compliant with interface of provided port
+out/SimpleBlockingTwoReply/SimpleBlockingTwoReply.dzn:33:43:i38: error double reply in model SimpleBlockingTwoReply
+out/SimpleBlockingTwoReply/SimpleBlockingTwoReply.dzn:4:8:i39: p.return not performed by component

@@ -1,2 +1,0 @@
-verify: IDummy: check: deadlock: ok
-verify: IDummy: check: livelock: ok

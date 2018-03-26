@@ -1,0 +1,10 @@
+#x:type-check  #x:makreel:model-name #x:member-init;
+
+%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%
+#x:function
+
+#x:function-return-proc
+
+#x:return-type-sort
+
+#x:call-continuation-sort

@@ -125,13 +125,13 @@
     (($ <compound>) (or (find name? (filter (is? <variable>) (ast:statement* o))) (var? (.parent o) name)))
     (($ <function>) (or (find name? ((compose ast:formal* .signature) o)) (var? (.parent o) name)))
     (($ <formal>) (and (eq? (.name o) name) o))
-    (($ <formal-binding>) (or (name? o) (.parent o) name))
+    (($ <formal-binding>) (and (eq? (.name o) name) o));;(or (name? o) (.parent o) name)
     (($ <on>) (or (find (cut var? <> name) (append-map ast:formal* (ast:trigger* o))) (var? (.parent o) name)))
     (($ <variable>) (name? o))
     ((? (lambda (o) (is-a? (.parent o) <variable>))) (var? ((compose .parent .parent) o) name))
     (_ (var? (.parent o) name))))
 
-(define-method (type? (o <ast>) name)
+(define-method (type? (o <ast>) name) ;;FIXME stop recursion when AST not fresh
   (define (name? e) (and (eq? (.scope+name (.name e)) (.scope+name name)) e))
   (define (scope? e) (and (is-a? e <scope.name>)
                           (eq? ((->symbol-join '.) (om:scope+name e))

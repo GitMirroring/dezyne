@@ -1,0 +1,81 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello {
+  in void hello();
+  in void cancel();
+  out void world();
+  behaviour {
+    bool triggered = false;
+
+    [!triggered] on hello: triggered = true;
+    [triggered]  on hello: illegal;
+
+    [triggered] on cancel: triggered = false;
+    [!triggered] on cancel: illegal;
+
+    [triggered] on inevitable: {triggered = false; world;}
+  }
+}
+
+interface iworld {
+  in void hello();
+  in void cancel();
+  out void world();
+  out void canceled();
+  behaviour {
+    bool triggered = false;
+    [!triggered] on hello: triggered = true;
+    [triggered] on hello: illegal;
+
+    on cancel: {triggered = false; canceled;}
+
+    [triggered] on inevitable: {triggered = false; world;}
+  }
+}
+
+component hello_blocked_external {
+  provides ihello h;
+  requires external iworld w;
+
+  behaviour {
+    bool triggered = false;
+    [!triggered] on h.hello(): {
+      w.hello();
+      triggered = true;
+    }
+    [triggered] on h.cancel(): blocking {
+      triggered = false;
+      w.cancel();
+    }
+    on w.canceled(): {
+      h.reply();
+    }
+    [triggered] on w.world(): {
+      triggered = false;
+      h.world();
+    }
+    [!triggered] on w.world(): {
+    }
+  }
+}

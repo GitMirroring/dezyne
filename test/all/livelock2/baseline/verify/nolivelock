@@ -1,3 +1,2 @@
-verify: nolivelock: check: completeness: ok
 verify: nolivelock: check: deadlock: ok
 verify: nolivelock: check: livelock: ok

@@ -1,0 +1,23 @@
+verify: ExternalRequiresOptionalRepeat: check: deterministic: ok
+verify: ExternalRequiresOptionalRepeat: check: illegal: fail
+pp.toggle
+rp.enable
+rp.return
+pp.return
+verify: ExternalRequiresOptionalRepeat: check: deadlock: fail
+pp.toggle
+rp.enable
+rp.return
+pp.return
+verify: ExternalRequiresOptionalRepeat: check: compliance: fail
+pp.toggle
+rp.enable
+rp.return
+pp.return
+verify: ExternalRequiresOptionalRepeat: check: livelock: ok
+verify: IAsync: check: completeness: ok
+verify: IAsync: check: deadlock: ok
+verify: IAsync: check: livelock: ok
+verify: IToggle: check: completeness: ok
+verify: IToggle: check: deadlock: ok
+verify: IToggle: check: livelock: ok

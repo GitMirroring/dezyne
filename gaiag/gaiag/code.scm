@@ -408,7 +408,7 @@
 
 (define-method (code:assign-reply (o <reply>))
   (let ((expression (.expression o)))
-    (if (is-a? (ast:expression-type expression) <void>) ""
+    (if (is-a? (ast:type expression) <void>) ""
         o)))
 
 (define ((symbol->enum-field enum) o)
@@ -444,7 +444,7 @@
     (om:instance-binding? bind)))
 
 (define-method (code:reply-type (o <ast>))
-  ((compose code:scope+name ast:expression-type) o))
+  ((compose code:scope+name ast:type) o))
 
 (define-method (code:reply-type (o <reply>))
   ((compose code:reply-type .expression) o))

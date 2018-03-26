@@ -3,7 +3,7 @@
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -134,6 +134,8 @@
            <bool>
            <call-node>
            <call>
+           <stack-node>
+           <stack>
            <component-model-node>
            <component-model>
            <component-node>
@@ -148,6 +150,8 @@
            <declarative-compound>
            <declarative-node>
            <declarative>
+           <declarative-illegal-node>
+           <declarative-illegal>
            <direction>
            <enum-expr-node>
            <enum-expr>
@@ -200,6 +204,8 @@
            <imperative>
            <import-node>
            <import>
+           <incomplete-node>
+           <incomplete>
            <inevitable-node>
            <inevitable>
            <instance-node>
@@ -217,8 +223,6 @@
            <less-node>
            <less>
            <literal-node>
-           <literal-node>
-           <literal>
            <literal>
            <local>
            <minus-node>
@@ -486,7 +490,7 @@
 (define-ast <expression> (<ast>))
 
 (define-ast <literal> (<expression>)
-  (value #:init-value *unspecified*))
+  (value #:init-value 'void))
 
 (define-ast <binary> (<expression>)
   (left #:init-value *unspecified*)
@@ -607,6 +611,9 @@
   (then)
   (else))
 
+(define-ast <declarative-illegal> (<declarative>))
+(define-ast <incomplete> (<declarative>))
+
 (define-ast <illegal> (<imperative>)
   (event.name)
   (incomplete))
@@ -619,11 +626,14 @@
   (statement))
 
 (define-ast <reply> (<imperative>)
-  (expression)
+  (expression #:init-form (make <literal-node>))
   (port.name))
 
 (define-ast <return> (<imperative>)
   (expression))
+
+(define-ast <stack> (<ast>))
+(define-ast <return-value> (<ast>))
 
 (define-ast <bind> (<declarative>)
   (left)

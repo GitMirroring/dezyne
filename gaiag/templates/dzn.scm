@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -47,7 +48,8 @@
 (define-templates behaviour .behaviour)
 (define-templates async-port ast:port* newline-infix)
 (define-templates declare-variable ast:variable* newline-infix)
-(define-templates range (lambda (o) (list ((compose .from .range) o) ((compose .to .range) o))) range-infix)
+(define-templates from dzn:from)
+(define-templates to dzn:to)
 (define-templates define-function ast:function* newline-infix)
 (define-templates trigger ast:trigger* comma-infix)
 (define-templates formal-type dzn:formal-type)

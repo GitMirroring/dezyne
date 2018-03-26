@@ -1,0 +1,230 @@
+% mcrl22lps -b hello.makreel | lps2lts /dev/stdin my.aut
+
+sort
+Void = struct void;
+#x:action-sort
+#x:modeling-sort
+#x:enum-sort
+#x:reply-sort
+#x:event-sort
+#x:requires-sort
+
+map
+
+QueueLength : Nat;
+
+eqn
+
+QueueLength = #x:makreel:queue-length;
+
+act
+#x:event-act
+#x:makreel:model-name end;
+#x:makreel:model-name end';
+declarative_illegal;
+illegal;
+incomplete;
+missing_reply;
+queue_full;
+queue_empty;
+queue_empty';
+range_error;
+recurse;
+return;
+second_reply;
+
+proc
+Illegal' = illegal . Illegal';
+Declarative_Illegal' = declarative_illegal . Declarative_Illegal';
+
+%%%%%%%%%%%%%%%%% INTERFACE %%%%%%%%%%%%%%%%%
+
+#x:interface-proc
+
+%%%%%%%%%%%%%%%%%%% COMPONENT %%%%%%%%%%%%%%%%%%%
+
+#x:proc
+
+component_behaviour = #x:action-proc
+
+%%%%%%%%%%%%%% PORT PROCESSES %%%%%%%%%%%%%%%
+
+#x:interface-action-proc
+
+%%%%%%%%%%%%%%%%%%%% Q %%%%%%%%%%%%%%%%%%%%%%
+
+#x:queue-proc
+#x:no-queue-proc
+
+%%%%%%%%%%%%%%%%%%%%% COMPONENT REORDER %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+component_reorder
+ = #x:reorder-provides
+ + #x:makreel:model-name end . component_reorder
+ ;
+
+#x:reorder-flush
+
+component_reorder_block
+ = #x:makreel:model-name end . component_reorder_block
+ + #x:reorder-block
+ ;
+
+component_reorder_parallel = component_behaviour || component_reorder;
+
+component_reorder_comm = comm({
+  #x:makreel:model-name end | #x:makreel:model-name end  -> #x:makreel:model-name end'
+  #x:reorder-comm-provides
+  }, component_reorder_parallel);
+
+component_reorder_allow = allow({
+   #x:makreel:model-name end'
+ #x:reorder-allow-provides
+ #x:reorder-allow-requires
+ , declarative_illegal
+ , illegal
+ , missing_reply
+ , queue_empty
+ , range_error
+ , recurse
+ , return
+ , second_reply
+ }, component_reorder_comm);
+
+component_reorder_rename = rename({
+  #x:makreel:model-name end' -> #x:makreel:model-name end
+  #x:reorder-rename-provides
+  #x:reorder-rename-requires
+  }, component_reorder_allow);
+
+%component_reorder_hide = hide({##x:reorder-hide-provides}, component_reorder_rename);
+component_reorder_hide = component_reorder_rename;
+
+%%%%%%%%%%%%%%%%%%%%%%%%% SEMANTICS %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+semantics
+ = #x:semantics-provides
+ #x:semantics-requires
+ ;
+
+semantics_provides_unblocked
+ = #x:semantics-provides-unblocked
+ + #x:makreel:model-name end . ((queue_empty . (#x:semantics-provides-unblocked-replies)) #x:semantics-provides-flush)
+ ;
+
+semantics_provides_blocked
+ = delta #x:semantics-provides-blocked
+ + queue_empty . (delta #x:semantics-provides-blocked-qmt)
+ ;
+
+semantics_requires(flush: Bool)
+ = (!flush) -> queue_empty . semantics
+ #x:semantics-flush-requires
+ ;
+
+#x:semantics-requires-flush-provides
+
+component_semantics = component_reorder_hide || semantics;
+
+component_semantics_comm = comm({
+  #x:makreel:model-name end | #x:makreel:model-name end -> #x:makreel:model-name end'
+  #x:semantics-comm-provides
+  #x:semantics-comm-requires
+  }, component_semantics);
+
+component_semantics_allow = allow({
+   #x:makreel:model-name end'
+ #x:semantics-allow-provides
+ #x:semantics-allow-requires
+ , declarative_illegal
+ , illegal
+ , missing_reply
+ , queue_empty
+ , range_error
+ , recurse
+ , return
+ , second_reply
+ }, component_semantics_comm);
+
+component_semantics_rename = rename({
+  #x:makreel:model-name end' -> #x:makreel:model-name end
+  #x:semantics-rename-provides
+  #x:semantics-rename-requires
+  }, component_semantics_allow);
+
+%component_semantics_hide = hide({##x:makreel:model-name end}, component_semantics_rename);
+component_semantics_hide = component_semantics_rename;
+
+%%%%%%%%%%%%%%%%%%%%% COMPONENT ASSEMBLY %%%%%%%%%%%%%%%%%%%%%%
+
+component_parallel = component_semantics_hide || req_and_queue;
+
+component_comm = comm({
+   queue_empty | queue_empty -> queue_empty'
+ #x:component-comm-requires
+ }, component_parallel);
+
+component_allow = allow({
+   #x:makreel:model-name end
+ #x:component-allow-provides
+ #x:component-allow-requires
+ , declarative_illegal
+ , illegal
+ , missing_reply
+ , queue_empty'
+ , queue_full
+ , range_error
+ , recurse
+ , return
+ , second_reply
+ }, component_comm);
+
+component_rename = rename({
+  queue_empty' -> queue_empty
+  #x:component-rename-provides
+  #x:component-rename-requires
+  }, component_allow);
+
+component = hide({
+   #x:makreel:model-name end
+ #x:component-hide-provides
+ #x:component-hide-requires
+ , queue_empty
+ , recurse
+ , return
+ }, component_rename);
+
+%%component = component_rename;
+
+%%%%%%%%%%%%%%%%%%%%%%% PROVIDES %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+provides_r2c = #x:provides-r2c-proc;
+
+#x:provides-out-proc;
+
+provides_parallel = #x:provides-port-parallel-proc || provides_r2c;
+
+provides_comm = comm ({
+  #x:provides-comm
+  }, provides_parallel);
+
+provides_allow = allow ({
+  #x:provides-allow
+  , declarative_illegal
+  , illegal
+  , incomplete
+  , missing_reply
+  , range_error
+  , second_reply
+  }, provides_comm);
+
+provides_rename = rename ({
+  #x:provides-rename
+  }, provides_allow);
+
+provides = hide ({
+  #x:provides-hide
+  }, provides_rename);
+
+%init component;
+%init provides;

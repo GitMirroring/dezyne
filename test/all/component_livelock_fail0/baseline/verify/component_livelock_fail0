@@ -1,7 +1,5 @@
-verify: I: check: completeness: ok
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
-verify: II: check: completeness: ok
 verify: II: check: deadlock: ok
 verify: II: check: livelock: ok
 verify: component_livelock_fail0: check: deterministic: ok

@@ -1,0 +1,26 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: component_queuefull_fail0: check: deterministic: ok
+verify: component_queuefull_fail0: check: illegal: fail
+p.e
+r.e
+r.c
+r.c
+r.c
+r.c
+verify: component_queuefull_fail0: check: deadlock: fail
+p.e
+r.e
+r.c
+r.c
+r.c
+r.c
+verify: component_queuefull_fail0: check: compliance: fail
+p.e
+r.e
+r.c
+r.c
+r.c
+r.c
+verify: component_queuefull_fail0: check: livelock: ok

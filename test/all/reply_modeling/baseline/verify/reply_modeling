@@ -1,0 +1,3 @@
+verify: reply_modeling: check: deadlock: fail
+world
+verify: reply_modeling: check: livelock: ok

@@ -1,3 +1,2 @@
-verify: ISensor: check: completeness: ok
 verify: ISensor: check: deadlock: ok
 verify: ISensor: check: livelock: ok

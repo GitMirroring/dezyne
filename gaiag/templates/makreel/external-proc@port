@@ -1,0 +1,36 @@
+#.name _portexternal_queue (l : List (requires_events)) =
+  (##l < QueueLength) -> (sum e: #x:makreel:interface-name events. #.name qin (e) . #.name _portexternal_queue (l = l <| #.name events (e)))
+  + (l != [] && #.name is (head (l))) -> #.name internal(#x:makreel:interface-name inevitable) . #.name qout (#.name  (head (l))) . #.name end . #.name _portexternal_queue(l = tail(l))
+  + (##l == QueueLength) -> (sum e: #x:makreel:interface-name events. #.name qin (e) . #.name queue_full . Illegal')
+;
+
+#.name _portinternal_hide = hide({
+  #.name internal
+  , #.name end}, #.name _port );
+
+#.name _portexternal_parallel = #.name _portexternal_queue([]) || #.name _portinternal_hide;
+
+#.name _portexternal_comm = comm({
+  #.name out | #.name qin -> #.name qin'
+  }, #.name _portexternal_parallel);
+
+#.name _portexternal_allow = allow({
+  #.name in
+  , #.name qin'
+  , #.name qout
+  , #.name reply
+  , #.name internal
+  , #.name end
+  , #.name queue_full
+  , declarative_illegal
+  , illegal
+  , incomplete
+  }, #.name _portexternal_comm);
+
+#.name _portexternal_rename = rename({
+  #.name qin' -> #.name qin
+  , #.name qout -> #.name out
+  }, #.name _portexternal_allow);
+
+#.name _portexternal = hide({
+  #.name qin}, #.name _portexternal_rename);

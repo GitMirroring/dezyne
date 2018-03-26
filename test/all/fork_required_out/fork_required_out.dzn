@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -37,19 +38,6 @@ interface IA
     on optional: oa;
   }
 }
-
-component fork_provided_in
-{
-  provides IA ppa;
-  provides IA ppb;
-
-  behaviour
-  {
-    on ppa.ia(): ppb.oa();
-    on ppb.ia(): ppa.oa();
-  }
-}
-
 
 interface IB
 {

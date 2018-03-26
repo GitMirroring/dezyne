@@ -1,0 +1,4 @@
+verify: range_assign: check: completeness: ok
+verify: range_assign: check: deadlock: fail
+range.e
+verify: range_assign: check: livelock: ok

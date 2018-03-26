@@ -1,0 +1,5 @@
+#.name in | #.name in -> #.name in'
+ , #.name out | #.name out -> #.name out'
+ , #.name blocking | #.name blocking -> #.name blocking'
+ , #.name reply | #.name reply -> #.name reply'
+ , #.name reply'reordered | #.name reply'reordered -> #.name reply'reordered'

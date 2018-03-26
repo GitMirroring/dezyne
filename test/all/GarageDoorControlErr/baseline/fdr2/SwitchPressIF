@@ -1,0 +1,3 @@
+verify: SwitchPressIF: check: completeness: ok
+verify: SwitchPressIF: check: deadlock: ok
+verify: SwitchPressIF: check: livelock: ok

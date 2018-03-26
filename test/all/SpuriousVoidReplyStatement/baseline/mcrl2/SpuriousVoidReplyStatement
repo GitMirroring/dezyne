@@ -1,9 +1,0 @@
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
-verify: SpuriousVoidReplyStatement: check: deterministic: ok
-verify: SpuriousVoidReplyStatement: check: illegal: ok
-verify: SpuriousVoidReplyStatement: check: deadlock: fail
-pp.ia
-verify: SpuriousVoidReplyStatement: check: compliance: fail
-pp.ia
-verify: SpuriousVoidReplyStatement: check: livelock: ok

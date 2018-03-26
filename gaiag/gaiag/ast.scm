@@ -49,9 +49,12 @@
   #:use-module (gaiag parse)
 
   #:export (
+           ast:argument->formal
            ast:clr-events
            ast:direction
-           ast:expression-type
+           ast:eq?
+           ast:expression->type
+           ast:id-path
            ast:in?
            ast:in-triggers
            ast:imported?
@@ -77,6 +80,8 @@
            ast:path
            ast:provides?
            ast:requires?
+           ast:external?
+           ast:type
 
            ast:argument*
            ast:binding*
@@ -86,6 +91,7 @@
            ast:function*
            ast:global*
            ast:instance*
+           ast:member*
            ast:model*
            ast:port*
            ast:statement*
@@ -112,6 +118,8 @@
 (define-method (ast:port* (o <ports>)) (.elements o))
 (define-method (ast:port* (o <behaviour>)) ((compose .elements .ports) o))
 (define-method (ast:global* (o <root>)) (.elements o))
+(define-method (ast:member* (o <behaviour>)) (ast:variable* o))
+(define-method (ast:member* (o <model>)) ((compose ast:member* .behaviour) o))
 (define-method (ast:model* (o <root>)) (filter (is? <model>) (.elements o)))
 (define-method (ast:trigger* (o <triggers>)) (.elements o))
 (define-method (ast:type* (o <types>)) (.elements o))
@@ -137,45 +145,20 @@
 (define-method (ast:variable* (o <model>)) ((compose ast:variable* .behaviour) o))
 (define-method (ast:type* (o <root>)) (filter (is? <type>) (ast:global* o)))
 
-(define-method (ast:expression-type (o <ast>))
-  (match o
-    (($ <bool>) o)
-    (($ <enum>) o)
-    (($ <extern>) o)
-    (($ <int>) o)
-    (($ <void>) o)
-
-    (($ <enum-literal>) (.type o))
-    (($ <var>) ((compose .type .variable) o))
-
-    ((? (is? <bool-expr>)) (make <bool>))
-    ((? (is? <data-expr>)) (make <extern>))
-    ((? (is? <enum-expr>)) (make <enum>))
-    ((? (is? <int-expr>)) (make <int>))
-    ((? (is? <void-expr>)) (make <void>))
-
-    ((and ($ <literal>) (= .value o))
-     (match o
-       ((? number?) (make <int>))
-       ((or 'true 'false) (make <bool>))
-       ((? unspecified?) (make <void>))
-       (#f (make <void>))))
-
-    (($ <group>) (= (.expression o)) (ast:expression-type o))
-    ((? unspecified?) (make <void>))
-    (($ <expression>) (make <void>))
-
-    (($ <signature>) (.type o))
-    (($ <event>) ((compose ast:expression-type .signature) o))
-    (($ <trigger>) ((compose ast:expression-type .event) o))
-    ;; FIXME: async port only?
-    (($ <port>) ((compose ast:expression-type car om:events) o))))
-
 (define-method (ast:provides? (o <port>))
   (and (eq? (.direction o) 'provides) o))
 
+(define-method (ast:provides? (o <trigger>))
+  (and (.port.name o) ((compose ast:provides? .port) o)))
+
 (define-method (ast:requires? (o <port>))
   (and (eq? (.direction o) 'requires) o))
+
+(define-method (ast:requires? (o <trigger>))
+  (and (.port.name o) ((compose ast:requires? .port) o)))
+
+(define-method (ast:external? (o <port>))
+  (and (.external o) o))
 
 (define-method (ast:other-direction (o <event>))
   (assoc-ref `((in . out)
@@ -323,8 +306,80 @@
 (define-method (ast:path (o <ast>) stop?)
   (unfold stop? identity .parent o))
 
+(define-method (ast:id-path (o <ast>))
+  (map .id (ast:path o (negate identity))))
+
+(define-method (ast:eq? (a <ast>) (b <ast>))
+  (equal? (ast:id-path a) (ast:id-path b)))
+
 (define-method (ast:imported? (o <ast>))
   (assoc-ref (source-properties (.node o)) 'imported?))
+
+(define-method (ast:type (o <action>))
+  ((compose ast:type .event) o))
+(define-method (ast:type (o <bool>)) o)
+(define-method (ast:type (o <enum>)) o)
+(define-method (ast:type (o <enum-literal>))
+  (.type o))
+(define-method (ast:type (o <event>))
+  ((compose ast:type .signature) o))
+(define-method (ast:type (o <function>))
+  ((compose ast:type .signature) o))
+(define-method (ast:type (o <formal>))
+  (.type o))
+(define-method (ast:type (o <int>)) o)
+(define-method (ast:literal-value->type o)
+  (match o
+    ((or 'false 'true) (make <bool>))
+    ((? number?) (make <int>))
+    (_ (make <void>))))
+(define-method (ast:type (o <literal>))
+  (let ((value (.value o)))
+    (if (number? value) (ast:expression->type o)
+        (ast:literal-value->type value))))
+(define-method (ast:type (o <port>))
+  (.type o))
+(define-method (ast:type (o <signature>))
+  (.type o))
+(define-method (ast:type (o <trigger>))
+  ((compose ast:type .event) o))
+(define-method (ast:type (o <assign>))
+  (ast:type (.variable o)))
+(define-method (ast:type (o <variable>))
+  (.type o))
+(define-method (ast:type (o <var>))
+  ((compose .type .variable) o))
+(define-method (ast:type (o <void>)) o)
+
+(define-method (ast:type (o <bool-expr>))
+  (make <bool>))
+(define-method (ast:type (o <data-expr>))
+  (make <data>))
+(define-method (ast:type (o <int-expr>))
+  (ast:expression->type o))
+(define-method (ast:type (o <group>))
+  ((compose ast:type .expression) o))
+
+(define-method (ast:type (o <return>))
+  (ast:type (.expression o)))
+
+(define-method (ast:argument->formal (o <expression>))
+  (let* ((call (parent o <call>))
+         (arguments (ast:argument* call))
+         (index (list-index (cut ast:eq? o <>) arguments))
+         (formals ((compose ast:formal* .function) call)))
+    (list-ref formals index)))
+
+(define-method (ast:expression->type (o <expression>))
+  (cond ((parent o <call>) ((compose .type ast:argument->formal) o))
+        ((is-a? o <action>) ((compose .type .signature .event) o))
+        ((parent o <assign>) => (compose .type .variable))
+        ((parent o <variable>) => .type)
+        ((parent o <return>) ((compose .type .signature) (parent o <function>)))
+        ((is-a? o <literal>) (ast:literal-value->type (.value o)))
+        ((is-a? o <bool-expr>) (make <bool>))
+        ((is-a? o <int-expr>) (make <int>))
+        (else (make <void>))))
 
 (define (ast-> ast)
   ((compose

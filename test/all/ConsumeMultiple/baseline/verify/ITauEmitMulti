@@ -1,3 +1,2 @@
-verify: ITauEmitMulti: check: completeness: ok
 verify: ITauEmitMulti: check: deadlock: ok
 verify: ITauEmitMulti: check: livelock: ok

@@ -1,0 +1,9 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
+verify: missing_reply: check: deterministic: ok
+verify: missing_reply: check: illegal: ok
+verify: missing_reply: check: deadlock: fail
+h.hello
+verify: missing_reply: check: compliance: fail
+h.hello
+verify: missing_reply: check: livelock: ok

@@ -1,0 +1,4 @@
+component_reorder_flush_#.name (r: #x:makreel:interface-name replies)
+ = #x:makreel:model-name end . (#.name reply'reordered (r) . component_reorder + component_reorder_flush_#.name (r))
+ + sum r: #x:makreel:interface-name replies. #.name reply (r) . second_reply . delta
+ ;

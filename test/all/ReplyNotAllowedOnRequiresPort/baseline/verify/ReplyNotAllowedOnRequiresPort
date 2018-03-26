@@ -1,10 +1,9 @@
-verify: I: check: completeness: ok
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
 verify: ReplyNotAllowedOnRequiresPort: check: deterministic: ok
 verify: ReplyNotAllowedOnRequiresPort: check: illegal: ok
-verify: ReplyNotAllowedOnRequiresPort: check: deadlock: ok
+verify: ReplyNotAllowedOnRequiresPort: check: deadlock: fail
+rp.oa
 verify: ReplyNotAllowedOnRequiresPort: check: compliance: fail
 rp.oa
-pp.return
 verify: ReplyNotAllowedOnRequiresPort: check: livelock: ok

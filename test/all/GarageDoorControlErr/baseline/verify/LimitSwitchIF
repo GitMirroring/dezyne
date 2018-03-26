@@ -1,3 +1,2 @@
-verify: LimitSwitchIF: check: completeness: ok
 verify: LimitSwitchIF: check: deadlock: ok
 verify: LimitSwitchIF: check: livelock: ok

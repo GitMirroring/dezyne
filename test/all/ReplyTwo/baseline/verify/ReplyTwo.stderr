@@ -1,3 +1,2 @@
-out/ReplyTwo/ReplyTwo.dzn:25:7:i12: illegal
-out/ReplyTwo/ReplyTwo.dzn:25:7:i12: deadlock in model ReplyTwo
-out/ReplyTwo/ReplyTwo.dzn:25:7:i12: Component ReplyTwo is non-compliant with interface of provided port
+out/ReplyTwo/ReplyTwo.dzn:25:7:i12: error double reply in model ReplyTwo
+out/ReplyTwo/ReplyTwo.dzn:9:8:i13: p.T_No not performed by component

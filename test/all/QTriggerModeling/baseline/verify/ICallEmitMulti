@@ -1,3 +1,2 @@
-verify: ICallEmitMulti: check: completeness: ok
 verify: ICallEmitMulti: check: deadlock: ok
 verify: ICallEmitMulti: check: livelock: ok

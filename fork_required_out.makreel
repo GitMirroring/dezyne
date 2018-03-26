@@ -1,0 +1,1087 @@
+% hello makreel
+% mcrl22lps -b hello.makreel | lps2lts /dev/stdin my.aut
+
+sort
+Void = struct void;
+IA'actions = struct
+IA'in'ia
+|IA'out'oa
+;
+IB'actions = struct
+IB'in'ib
+|IB'out'ob
+;
+
+IA'modeling = struct IA'optional | IA'inevitable;
+IB'modeling = struct IB'optional | IB'inevitable;
+
+
+IA'replies = struct IA'Void(value: Void);
+IB'replies = struct IB'Void(value: Void);
+
+IA'events = struct
+    IA'action (value: IA'actions)
+    | IA'reply (value: IA'replies)
+    ;
+IB'events = struct
+    IB'action (value: IB'actions)
+    | IB'reply (value: IB'replies)
+    ;
+
+requires_events = struct rp'events(rp': IB'events)?rp'is;
+
+map
+
+QueueLength : Nat;
+
+eqn
+
+QueueLength = 3;
+
+act
+IA'in: IA'events;
+IA'in': IA'events;
+IA'out: IA'events;
+IA'out': IA'events;
+IA'reply: IA'replies;
+IA'reply': IA'replies;
+IA'internal: IA'modeling;
+IA'internal': IA'modeling;
+IA'end;
+IA'end';
+IA'flush;
+IB'in: IB'events;
+IB'in': IB'events;
+IB'out: IB'events;
+IB'out': IB'events;
+IB'reply: IB'replies;
+IB'reply': IB'replies;
+IB'internal: IB'modeling;
+IB'internal': IB'modeling;
+IB'end;
+IB'end';
+IB'flush;
+ppa'in: IA'events;
+ppa'in': IA'events;
+ppa'out: IA'events;
+ppa'out': IA'events;
+ppa'reply: IA'replies;
+ppa'reply': IA'replies;
+ppa'internal: IA'modeling;
+ppa'internal': IA'modeling;
+ppa'end;
+ppa'end';
+ppa'flush;
+ppa'reply'reordered: IA'replies;
+ppa'reply'reordered': IA'replies;
+ppa'blocking;
+ppa'blocking';
+ppb'in: IA'events;
+ppb'in': IA'events;
+ppb'out: IA'events;
+ppb'out': IA'events;
+ppb'reply: IA'replies;
+ppb'reply': IA'replies;
+ppb'internal: IA'modeling;
+ppb'internal': IA'modeling;
+ppb'end;
+ppb'end';
+ppb'flush;
+ppb'reply'reordered: IA'replies;
+ppb'reply'reordered': IA'replies;
+ppb'blocking;
+ppb'blocking';
+rp'in: IB'events;
+rp'in': IB'events;
+rp'out: IB'events;
+rp'out': IB'events;
+rp'reply: IB'replies;
+rp'reply': IB'replies;
+rp'internal: IB'modeling;
+rp'internal': IB'modeling;
+rp'end;
+rp'end';
+rp'flush;
+rp'qin: IB'events;
+rp'qin': IB'events;
+rp'qout: IB'events;
+rp'qout': IB'events;
+rp'queue_full;
+
+fork_required_out'end;
+fork_required_out'end';
+declarative_illegal;
+illegal;
+incomplete;
+missing_reply;
+queue_full;
+queue_empty;
+queue_empty';
+range_error;
+recurse;
+return;
+second_reply;
+
+proc
+Illegal' = illegal . Illegal';
+Declarative_Illegal' = declarative_illegal . Declarative_Illegal';
+
+%%%%%%%%%%%%%%%%% INTERFACE %%%%%%%%%%%%%%%%%
+
+IA'semantics
+ = sum i : IA'events. IA'in(i) . sum r : IA'replies. IA'reply(r) . IA'semantics
+ + sum m : IA'modeling. IA'internal(m) . (IA'end . IA'semantics + IA'semantics_flush)
+ ;
+
+IA'semantics_flush
+ = sum i : IA'events. IA'out(i) . (IA'end . IA'flush . IA'semantics + IA'semantics_flush)
+ ;
+
+IA'parallel = IA'semantics || (IA');
+
+IA'comm = comm({
+  IA'in | IA'in -> IA'in'
+  , IA'out | IA'out -> IA'out'
+  , IA'reply | IA'reply -> IA'reply'
+  , IA'internal | IA'internal -> IA'internal'
+  , IA'end | IA'end -> IA'end'
+  }, IA'parallel);
+
+IA'allow = allow({
+  IA'in'
+  , IA'reply'
+  , IA'internal'
+  , IA'end'
+  , IA'out'
+  , IA'flush
+  , declarative_illegal
+  , incomplete
+  , range_error
+  , recurse
+  , return
+  }, IA'comm);
+
+IA'rename = rename({
+  IA'in' -> IA'in
+  , IA'out' -> IA'out
+  , IA'reply' -> IA'reply
+  , IA'internal' -> IA'internal
+  , IA'end' -> IA'end
+  }, IA'allow);
+
+%IA'hide = hide({#x:makreel:model-name end}, IA'rename);
+IA'hide = IA'rename;
+
+IA'interface = IA'hide;
+
+IA'  = optional_IA'
++ tau . non_optional_IA'
++ non_optional_IA' ;
+
+non_optional_IA'  = IA'0 ;
+
+
+% {
+%   [true] on ia: {
+%     reply(void);
+%   }
+%   [(!(true) && true)] on ia: incomplete;
+% }
+IA'0 = IA'1
+ + IA'5 ;
+
+
+% [true] on ia: {
+%   reply(void);
+% }
+IA'1 = (true) -> IA'2 ;
+
+
+% on ia: {
+%   reply(void);
+% }
+IA'2 = IA'in (IA'action (IA'in'ia)) . IA'3 ;
+
+
+% {
+%   reply(void);
+% }
+IA'3 = IA'4 ;
+
+
+% reply(void);
+IA'4 = IA'reply (IA'Void(void)) . IA' ;
+
+% [(!(true) && true)] on ia: incomplete;
+IA'5 = ((!(true) && true)) -> IA'6 ;
+
+
+% on ia: incomplete;
+IA'6 = IA'in (IA'action (IA'in'ia)) . IA'7 ;
+
+
+% incomplete;
+IA'7 = incomplete . delta;
+
+
+
+optional_IA'  = IA'8 ;
+
+
+% {
+%   [true] on optional: {
+%     oa();
+%     <end of process>
+%   }
+% }
+IA'8 = IA'9 ;
+
+
+% [true] on optional: {
+%   oa();
+%   <end of process>
+% }
+IA'9 = (true) -> IA'10 ;
+
+
+% on optional: {
+%   oa();
+%   <end of process>
+% }
+IA'10 = IA'internal(IA'optional) . IA'11 ;
+
+
+% {
+%   oa();
+%   <end of process>
+% }
+IA'11 = IA'12 ;
+
+
+% oa();
+IA'12 = IA'out (IA'action (IA'out'oa)) . IA'13 ;
+
+% <end of process>
+IA'13 = IA'end . IA' ;
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+IB'semantics
+ = sum i : IB'events. IB'in(i) . sum r : IB'replies. IB'reply(r) . IB'semantics
+ + sum m : IB'modeling. IB'internal(m) . (IB'end . IB'semantics + IB'semantics_flush)
+ ;
+
+IB'semantics_flush
+ = sum i : IB'events. IB'out(i) . (IB'end . IB'flush . IB'semantics + IB'semantics_flush)
+ ;
+
+IB'parallel = IB'semantics || (IB'(false));
+
+IB'comm = comm({
+  IB'in | IB'in -> IB'in'
+  , IB'out | IB'out -> IB'out'
+  , IB'reply | IB'reply -> IB'reply'
+  , IB'internal | IB'internal -> IB'internal'
+  , IB'end | IB'end -> IB'end'
+  }, IB'parallel);
+
+IB'allow = allow({
+  IB'in'
+  , IB'reply'
+  , IB'internal'
+  , IB'end'
+  , IB'out'
+  , IB'flush
+  , declarative_illegal
+  , incomplete
+  , range_error
+  , recurse
+  , return
+  }, IB'comm);
+
+IB'rename = rename({
+  IB'in' -> IB'in
+  , IB'out' -> IB'out
+  , IB'reply' -> IB'reply
+  , IB'internal' -> IB'internal
+  , IB'end' -> IB'end
+  }, IB'allow);
+
+%IB'hide = hide({#x:makreel:model-name end}, IB'rename);
+IB'hide = IB'rename;
+
+IB'interface = IB'hide;
+
+IB' (is_active': Bool) = non_optional_IB' ();
+
+non_optional_IB' (is_active': Bool) = IB'0 ();
+
+
+% {
+%   [true] on ib: {
+%     is_active' = true;
+%     reply(void);
+%   }
+%   [(!(true) && true)] on ib: incomplete;
+%   [(is_active' && true)] on inevitable: {
+%     ob();
+%     is_active' = false;
+%     <end of process>
+%   }
+% }
+IB'0(is_active': Bool) = IB'1 ()
+ + IB'6 ()
+ + IB'9 ();
+
+
+% [true] on ib: {
+%   is_active' = true;
+%   reply(void);
+% }
+IB'1(is_active': Bool) = (true) -> IB'2 ();
+
+
+% on ib: {
+%   is_active' = true;
+%   reply(void);
+% }
+IB'2(is_active': Bool) = IB'in (IB'action (IB'in'ib)) . IB'3 ();
+
+
+% {
+%   is_active' = true;
+%   reply(void);
+% }
+IB'3(is_active': Bool) = IB'4 ();
+
+
+% is_active' = true;
+IB'4(is_active': Bool) =  IB'5(is_active' = true
+);
+
+
+% reply(void);
+IB'5(is_active': Bool) = IB'reply (IB'Void(void)) . IB' ();
+
+% [(!(true) && true)] on ib: incomplete;
+IB'6(is_active': Bool) = ((!(true) && true)) -> IB'7 ();
+
+
+% on ib: incomplete;
+IB'7(is_active': Bool) = IB'in (IB'action (IB'in'ib)) . IB'8 ();
+
+
+% incomplete;
+IB'8(is_active': Bool) = incomplete . delta;
+
+
+% [(is_active' && true)] on inevitable: {
+%   ob();
+%   is_active' = false;
+%   <end of process>
+% }
+IB'9(is_active': Bool) = ((is_active' && true)) -> IB'10 ();
+
+
+% on inevitable: {
+%   ob();
+%   is_active' = false;
+%   <end of process>
+% }
+IB'10(is_active': Bool) = IB'internal(IB'inevitable) . IB'11 ();
+
+
+% {
+%   ob();
+%   is_active' = false;
+%   <end of process>
+% }
+IB'11(is_active': Bool) = IB'12 ();
+
+
+% ob();
+IB'12(is_active': Bool) = IB'out (IB'action (IB'out'ob)) . IB'13 ();
+
+% is_active' = false;
+IB'13(is_active': Bool) =  IB'14(is_active' = false
+);
+
+
+% <end of process>
+IB'14(is_active': Bool) = IB'end . IB' ();
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%% COMPONENT %%%%%%%%%%%%%%%%%%%
+
+fork_required_out'  = fork_required_out'0 ;
+
+
+% {
+%   [true] on ppa'.ia(): {
+%     rp'.ib();
+%     reply(void);
+%     <end of process>
+%   }
+%   [(!(true) && true)] on ppa'.ia(): declarative-illegal;
+%   [true] on ppb'.ia(): {
+%     rp'.ib();
+%     reply(void);
+%     <end of process>
+%   }
+%   [(!(true) && true)] on ppb'.ia(): declarative-illegal;
+%   [true] on rp'.ob(): {
+%     ppa'.oa();
+%     ppb'.oa();
+%     <end of process>
+%   }
+%   [(!(true) && true)] on rp'.ob(): illegal;
+% }
+fork_required_out'0 = fork_required_out'1
+ + fork_required_out'7
+ + fork_required_out'10
+ + fork_required_out'16
+ + fork_required_out'19
+ + fork_required_out'25 ;
+
+
+% [true] on ppa'.ia(): {
+%   rp'.ib();
+%   reply(void);
+%   <end of process>
+% }
+fork_required_out'1 = (true) -> fork_required_out'2 ;
+
+
+% on ppa'.ia(): {
+%   rp'.ib();
+%   reply(void);
+%   <end of process>
+% }
+fork_required_out'2 = ppa'in (IA'action (IA'in'ia)) . fork_required_out'3 ;
+
+
+% {
+%   rp'.ib();
+%   reply(void);
+%   <end of process>
+% }
+fork_required_out'3 = fork_required_out'4 ;
+
+
+% rp'.ib();
+fork_required_out'4 = rp'in (IB'action (IB'in'ib)) . rp'reply(IB'Void(void)) . fork_required_out'5 ;
+
+% reply(void);
+fork_required_out'5 = ppa'reply (IA'Void(void)) . fork_required_out'6 ;
+
+% <end of process>
+fork_required_out'6 = fork_required_out'end . fork_required_out' ;
+
+
+% [(!(true) && true)] on ppa'.ia(): declarative-illegal;
+fork_required_out'7 = ((!(true) && true)) -> fork_required_out'8 ;
+
+
+% on ppa'.ia(): declarative-illegal;
+fork_required_out'8 = ppa'in (IA'action (IA'in'ia)) . fork_required_out'9 ;
+
+
+% declarative-illegal;
+fork_required_out'9 = Declarative_Illegal' . delta;
+
+
+% [true] on ppb'.ia(): {
+%   rp'.ib();
+%   reply(void);
+%   <end of process>
+% }
+fork_required_out'10 = (true) -> fork_required_out'11 ;
+
+
+% on ppb'.ia(): {
+%   rp'.ib();
+%   reply(void);
+%   <end of process>
+% }
+fork_required_out'11 = ppb'in (IA'action (IA'in'ia)) . fork_required_out'12 ;
+
+
+% {
+%   rp'.ib();
+%   reply(void);
+%   <end of process>
+% }
+fork_required_out'12 = fork_required_out'13 ;
+
+
+% rp'.ib();
+fork_required_out'13 = rp'in (IB'action (IB'in'ib)) . rp'reply(IB'Void(void)) . fork_required_out'14 ;
+
+% reply(void);
+fork_required_out'14 = ppb'reply (IA'Void(void)) . fork_required_out'15 ;
+
+% <end of process>
+fork_required_out'15 = fork_required_out'end . fork_required_out' ;
+
+
+% [(!(true) && true)] on ppb'.ia(): declarative-illegal;
+fork_required_out'16 = ((!(true) && true)) -> fork_required_out'17 ;
+
+
+% on ppb'.ia(): declarative-illegal;
+fork_required_out'17 = ppb'in (IA'action (IA'in'ia)) . fork_required_out'18 ;
+
+
+% declarative-illegal;
+fork_required_out'18 = Declarative_Illegal' . delta;
+
+
+% [true] on rp'.ob(): {
+%   ppa'.oa();
+%   ppb'.oa();
+%   <end of process>
+% }
+fork_required_out'19 = (true) -> fork_required_out'20 ;
+
+
+% on rp'.ob(): {
+%   ppa'.oa();
+%   ppb'.oa();
+%   <end of process>
+% }
+fork_required_out'20 = rp'out (IB'action (IB'out'ob)) . fork_required_out'21 ;
+
+
+% {
+%   ppa'.oa();
+%   ppb'.oa();
+%   <end of process>
+% }
+fork_required_out'21 = fork_required_out'22 ;
+
+
+% ppa'.oa();
+fork_required_out'22 = ppa'out (IA'action (IA'out'oa)) . fork_required_out'23 ;
+
+% ppb'.oa();
+fork_required_out'23 = ppb'out (IA'action (IA'out'oa)) . fork_required_out'24 ;
+
+% <end of process>
+fork_required_out'24 = fork_required_out'end . fork_required_out' ;
+
+
+% [(!(true) && true)] on rp'.ob(): illegal;
+fork_required_out'25 = ((!(true) && true)) -> fork_required_out'26 ;
+
+
+% on rp'.ob(): illegal;
+fork_required_out'26 = rp'out (IB'action (IB'out'ob)) . fork_required_out'27 ;
+
+
+% illegal;
+fork_required_out'27 = Illegal' . delta;
+
+
+component_behaviour =  fork_required_out';
+
+%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%% PORT PROCESSES %%%%%%%%%%%%%%%
+
+ppa'_port_rename = rename ({
+  IA'in -> ppa'in
+  , IA'out -> ppa'out
+  , IA'reply -> ppa'reply
+  , IA'internal -> ppa'internal
+  , IA'end -> ppa'end
+  , IA'flush -> ppa'flush
+  }, IA'interface);
+
+ppa'_port = hide ({
+  recurse
+  , return
+
+  }, ppa'_port_rename);
+
+ppb'_port_rename = rename ({
+  IA'in -> ppb'in
+  , IA'out -> ppb'out
+  , IA'reply -> ppb'reply
+  , IA'internal -> ppb'internal
+  , IA'end -> ppb'end
+  , IA'flush -> ppb'flush
+  }, IA'interface);
+
+ppb'_port = hide ({
+  recurse
+  , return
+
+  }, ppb'_port_rename);
+
+rp'_port_rename = rename ({
+  IB'in -> rp'in
+  , IB'out -> rp'out
+  , IB'reply -> rp'reply
+  , IB'internal -> rp'internal
+  , IB'end -> rp'end
+  , IB'flush -> rp'flush
+  }, IB'interface);
+
+rp'_port = hide ({
+  recurse
+  , return
+  , rp'flush
+  }, rp'_port_rename);
+
+
+%%%%%%%%%%%%%%%%%%%% Q %%%%%%%%%%%%%%%%%%%%%%
+
+component_queue (l: List (requires_events)) =
+  (#l < QueueLength) -> (sum e: IB'events. rp'qin (e) . component_queue (l = l <| rp'events (e)))
+  + (l != [] && rp'is (head (l))) -> rp'qout (rp' (head (l))) . component_queue (l = tail (l))
+  + (#l == QueueLength) -> (sum e: IB'events. rp'qin (e) . queue_full . Illegal')
+  + (#l == 0) -> queue_empty . component_queue ()
+  ;
+
+
+
+req_and_queue_parallel = component_queue([])
+  || rp'_port;
+
+req_and_queue_comm = comm({
+  rp'out | rp'qin -> rp'qin'
+  }, req_and_queue_parallel);
+
+req_and_queue_allow = allow({
+  rp'in
+  , rp'qin'
+  , rp'qout
+  , rp'reply
+  , rp'internal
+  , rp'end
+  , rp'queue_full
+  , declarative_illegal
+  , illegal
+  , incomplete
+  , queue_empty
+  , queue_full
+  }, req_and_queue_comm);
+
+req_and_queue_rename = rename({
+  rp'qin' -> rp'qin
+
+  , declarative_illegal -> illegal
+  }, req_and_queue_allow);
+
+%req_and_queue = hide({
+%  #x:queue-hide-requires
+%  }, req_and_queue_rename);
+
+req_and_queue = req_and_queue_rename;
+
+
+
+%%%%%%%%%%%%%%%%%%%%% COMPONENT REORDER %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+component_reorder
+ = sum a: IA'actions. ppa'in (IA'action (a)) . (sum r: IA'replies. ppa'reply (r) . component_reorder_flush_ppa'(r)
++ fork_required_out'end . missing_reply . delta
+)
+
+ + sum a: IA'actions. ppb'in (IA'action (a)) . (sum r: IA'replies. ppb'reply (r) . component_reorder_flush_ppb'(r)
++ fork_required_out'end . missing_reply . delta
+)
+
+ + fork_required_out'end . component_reorder
+ ;
+
+component_reorder_flush_ppa'(r: IA'replies)
+ = fork_required_out'end . (ppa'reply'reordered (r) . component_reorder + component_reorder_flush_ppa'(r))
+ + sum r: IA'replies. ppa'reply (r) . second_reply . delta
+ ;
+component_reorder_flush_ppb'(r: IA'replies)
+ = fork_required_out'end . (ppb'reply'reordered (r) . component_reorder + component_reorder_flush_ppb'(r))
+ + sum r: IA'replies. ppb'reply (r) . second_reply . delta
+ ;
+
+
+component_reorder_block
+ = fork_required_out'end . component_reorder_block
+ + sum r: IA'replies. ppa'reply (r) . component_reorder_flush_ppa'(r)
+ + sum r: IA'replies. ppb'reply (r) . component_reorder_flush_ppb'(r)
+ ;
+
+component_reorder_parallel = component_behaviour || component_reorder;
+
+component_reorder_comm = comm({
+  fork_required_out'end | fork_required_out'end  -> fork_required_out'end'
+
+  , ppa'reply | ppa'reply -> ppa'reply'
+, ppa'in | ppa'in -> ppa'in'
+, ppa'blocking | ppa'blocking -> ppa'blocking'
+  , ppb'reply | ppb'reply -> ppb'reply'
+, ppb'in | ppb'in -> ppb'in'
+, ppb'blocking | ppb'blocking -> ppb'blocking'
+  }, component_reorder_parallel);
+
+component_reorder_allow = allow({
+  declarative_illegal
+  , illegal
+  , missing_reply
+  , queue_empty
+  , range_error
+  , recurse
+  , return
+  , second_reply
+  , fork_required_out'end'
+
+  , ppa'in'
+  , ppa'blocking'
+  , ppa'out
+  , ppa'reply'
+  , ppa'reply'reordered
+  , ppb'in'
+  , ppb'blocking'
+  , ppb'out
+  , ppb'reply'
+  , ppb'reply'reordered
+
+  , rp'in
+  , rp'out
+  , rp'reply
+  }, component_reorder_comm);
+
+component_reorder_rename = rename({
+  fork_required_out'end' -> fork_required_out'end
+
+  , ppa'in' -> ppa'in
+  , ppa'blocking' -> ppa'blocking
+  , ppa'reply' -> ppa'reply
+
+  , ppb'in' -> ppb'in
+  , ppb'blocking' -> ppb'blocking
+  , ppb'reply' -> ppb'reply
+
+
+  , rp'out -> rp'qout
+  }, component_reorder_allow);
+
+%component_reorder_hide = hide({#x:reorder-hide-provides}, component_reorder_rename);
+component_reorder_hide = component_reorder_rename;
+
+%%%%%%%%%%%%%%%%%%%%%%%%% SEMANTICS %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+semantics
+ = sum e : IA'actions. ppa'in (IA'action(e)) . semantics_provides_unblocked
+ + sum e : IA'actions. ppb'in (IA'action(e)) . semantics_provides_unblocked
+
+ + sum e : IB'modeling. rp'internal (e) . rp'end . semantics_requires
+ ;
+
+semantics_provides_unblocked
+ = ppa'blocking . ( fork_required_out'end . semantics_provides_blocked
+                  + sum r : IA'replies. ppa'reply (r) . semantics_provides_unblocked)
++ sum r : IA'replies. ppa'reply (r) . semantics_provides_unblocked
++ sum a : IA'actions . ppa'out(IA'action (a)) . semantics_provides_unblocked
+
+ + ppb'blocking . ( fork_required_out'end . semantics_provides_blocked
+                  + sum r : IA'replies. ppb'reply (r) . semantics_provides_unblocked)
++ sum r : IA'replies. ppb'reply (r) . semantics_provides_unblocked
++ sum a : IA'actions . ppb'out(IA'action (a)) . semantics_provides_unblocked
+
+ + fork_required_out'end . ((queue_empty . (sum r : IA'replies. ppa'reply'reordered (r) . semantics
+ + sum r : IA'replies. ppb'reply'reordered (r) . semantics))
+ + sum a : IB'actions. rp'qout (IB'action (a)) . semantics_provides_unblocked)
+ ;
+
+semantics_provides_blocked
+ = delta
+ + sum a : IB'actions. rp'qout (IB'action (a)) . (fork_required_out'end . semantics_provides_blocked
+
+ + sum r : IA'replies. ppa'reply (r) . semantics_provides_unblocked
+ + sum r : IA'replies. ppb'reply (r) . semantics_provides_unblocked)
+ + queue_empty . (delta
+ + sum e : IB'modeling. rp'internal (e) . rp'end . semantics_provides_blocked)
+ ;
+
+semantics_requires
+ = queue_empty . semantics
+ + sum a : IB'actions . rp'qout (IB'action (a)) . (fork_required_out'end . semantics_requires
+                                                  +sum a : IA'actions . ppa'out(IA'action (a)) . semantics_requires_flush_ppa'
+                                                  +sum a : IA'actions . ppb'out(IA'action (a)) . semantics_requires_flush_ppb')
+ ;
+
+semantics_requires_flush_ppa'
+ = (sum a : IA'actions . ppa'out(IA'action (a))
+ + sum a : IA'actions . ppb'out(IA'action (a))) . semantics_requires_flush_ppa'
+ + fork_required_out'end . queue_empty . ppa'flush . semantics
+ ;
+
+semantics_requires_flush_ppb'
+ = (sum a : IA'actions . ppa'out(IA'action (a))
+ + sum a : IA'actions . ppb'out(IA'action (a))) . semantics_requires_flush_ppb'
+ + fork_required_out'end . queue_empty . ppb'flush . semantics
+ ;
+
+component_semantics = component_reorder_hide || semantics;
+
+component_semantics_comm = comm({
+  fork_required_out'end | fork_required_out'end -> fork_required_out'end'
+
+  , ppa'in | ppa'in -> ppa'in'
+ , ppa'out | ppa'out -> ppa'out'
+ , ppa'blocking | ppa'blocking -> ppa'blocking'
+ , ppa'reply | ppa'reply -> ppa'reply'
+ , ppa'reply'reordered | ppa'reply'reordered -> ppa'reply'reordered'
+
+  , ppb'in | ppb'in -> ppb'in'
+ , ppb'out | ppb'out -> ppb'out'
+ , ppb'blocking | ppb'blocking -> ppb'blocking'
+ , ppb'reply | ppb'reply -> ppb'reply'
+ , ppb'reply'reordered | ppb'reply'reordered -> ppb'reply'reordered'
+
+
+  , rp'qout | rp'qout -> rp'qout'
+  }, component_semantics);
+
+component_semantics_allow = allow({
+  fork_required_out'end'
+  , declarative_illegal
+  , illegal
+  , missing_reply
+  , queue_empty
+  , range_error
+  , recurse
+  , return
+  , second_reply
+
+  , ppa'in'
+ , ppa'blocking'
+ , ppa'out'
+ , ppa'reply'
+ , ppa'reply'reordered'
+ , ppa'flush
+  , ppb'in'
+ , ppb'blocking'
+ , ppb'out'
+ , ppb'reply'
+ , ppb'reply'reordered'
+ , ppb'flush
+
+  , rp'in
+  , rp'reply
+  , rp'internal
+  , rp'end
+  , rp'qout'
+
+  }, component_semantics_comm);
+
+component_semantics_rename = rename({
+  fork_required_out'end' -> fork_required_out'end
+
+  , ppa'in' -> ppa'in
+ , ppa'out' -> ppa'out
+ , ppa'blocking' -> ppa'blocking
+ , ppa'reply' -> ppa'reply
+ , ppa'reply'reordered' -> ppa'reply'reordered
+  , ppb'in' -> ppb'in
+ , ppb'out' -> ppb'out
+ , ppb'blocking' -> ppb'blocking
+ , ppb'reply' -> ppb'reply
+ , ppb'reply'reordered' -> ppb'reply'reordered
+
+  , rp'qout' -> rp'qout
+  }, component_semantics_allow);
+
+%component_semantics_hide = hide({#x:makreel:model-name end}, component_semantics_rename);
+component_semantics_hide = component_semantics_rename;
+
+%%%%%%%%%%%%%%%%%%%%% COMPONENT ASSEMBLY %%%%%%%%%%%%%%%%%%%%%%
+
+component_parallel = component_semantics_hide || req_and_queue;
+
+component_comm = comm({
+  queue_empty | queue_empty -> queue_empty'
+
+  , rp'in | rp'in -> rp'in'
+  , rp'reply | rp'reply -> rp'reply'
+  , rp'internal | rp'internal -> rp'internal'
+  , rp'end | rp'end -> rp'end'
+  , rp'qout | rp'qout -> rp'qout'
+  }, component_parallel);
+
+component_allow = allow({
+  declarative_illegal
+  , illegal
+  , missing_reply
+  , queue_empty'
+  , queue_full
+  , range_error
+  , recurse
+  , return
+  , second_reply
+  , fork_required_out'end
+
+  , ppa'in
+ , ppa'blocking
+ , ppa'out
+ , ppa'reply
+ , ppa'reply'reordered
+ , ppa'flush
+  , ppb'in
+ , ppb'blocking
+ , ppb'out
+ , ppb'reply
+ , ppb'reply'reordered
+ , ppb'flush
+
+  , rp'in'
+  , rp'reply'
+  , rp'internal'
+  , rp'end'
+  , rp'qin
+  , rp'qout'
+  , rp'queue_full
+  }, component_comm);
+
+component_rename = rename({
+  queue_empty' -> queue_empty
+
+  ,   ppa'reply -> ppa'reply'
+  , ppa'reply'reordered -> ppa'reply
+  ,   ppb'reply -> ppb'reply'
+  , ppb'reply'reordered -> ppb'reply
+
+  , rp'in' -> rp'in
+  , rp'qout' -> rp'qout
+  , rp'reply' -> rp'reply
+  , rp'internal' -> rp'internal
+  , rp'end' -> rp'end
+
+  }, component_allow);
+
+component = hide({
+  queue_empty
+  , recurse
+  , return
+  , fork_required_out'end
+
+  , ppa'blocking
+  , ppa'reply'
+  , ppb'blocking
+  , ppb'reply'
+
+  , rp'end
+  , rp'qout
+  }, component_rename);
+
+%%component = component_rename;
+
+%%%%%%%%%%%%%%%%%%%%%%% PROVIDES %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+provides_r2c = sum x: IA'actions . ppa'in (IA'action (x)) . provides_out
+  + sum m: IA'modeling. ppa'internal (m) . provides_out
+ + sum x: IA'actions . ppb'in (IA'action (x)) . provides_out
+  + sum m: IA'modeling. ppb'internal (m) . provides_out;
+
+provides_out = sum x: IA'replies . ppa'reply (x) . provides_r2c
+  + ppa'end . provides_r2c
+  + sum x: IA'actions . ppa'out (IA'action (x)) . provides_out
+
+ + sum x: IA'replies . ppb'reply (x) . provides_r2c
+  + ppb'end . provides_r2c
+  + sum x: IA'actions . ppb'out (IA'action (x)) . provides_out
+
+;
+
+provides_parallel = ppa'_port
+  || ppb'_port|| provides_r2c;
+
+provides_comm = comm ({
+  ppa'in | ppa'in -> ppa'in'
+  , ppa'out | ppa'out -> ppa'out'
+  , ppa'reply | ppa'reply -> ppa'reply'
+  , ppa'internal | ppa'internal -> ppa'internal'
+  , ppa'end | ppa'end -> ppa'end'
+  , ppb'in | ppb'in -> ppb'in'
+  , ppb'out | ppb'out -> ppb'out'
+  , ppb'reply | ppb'reply -> ppb'reply'
+  , ppb'internal | ppb'internal -> ppb'internal'
+  , ppb'end | ppb'end -> ppb'end'
+  }, provides_parallel);
+
+provides_allow = allow ({
+  ppa'in'
+ , ppa'out'
+ , ppa'reply'
+ , ppa'internal'
+ , ppa'end'
+ , ppa'flush
+  , ppb'in'
+ , ppb'out'
+ , ppb'reply'
+ , ppb'internal'
+ , ppb'end'
+ , ppb'flush
+  , declarative_illegal
+  , illegal
+  , incomplete
+  , missing_reply
+  , range_error
+  , second_reply
+  }, provides_comm);
+
+provides_rename = rename ({
+  ppa'in' -> ppa'in
+  , ppa'out' -> ppa'out
+  , ppa'reply' -> ppa'reply
+  , ppa'internal' -> ppa'internal
+  , ppa'end' -> ppa'end
+  , ppb'in' -> ppb'in
+  , ppb'out' -> ppb'out
+  , ppb'reply' -> ppb'reply
+  , ppb'internal' -> ppb'internal
+  , ppb'end' -> ppb'end
+  }, provides_allow);
+
+provides = hide ({
+  ppa'internal
+  , ppa'end
+  , ppb'internal
+  , ppb'end
+  }, provides_rename);
+
+init component;
+%init provides;

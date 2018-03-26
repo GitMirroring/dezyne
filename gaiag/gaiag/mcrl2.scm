@@ -63,7 +63,12 @@
   #:export (mcrl2:om
             tick-names
 	    root->
-            globals-from-scope))
+            globals-from-scope
+            mcrl2:process-identifier
+            process-continuation
+            mcrl2:child-identifier
+            root-purge-data
+            variables-in-scope))
 
 (define %model (make-parameter '***%model-not-set***))
 (define-ast <mcrl2-interface> (<ast>)
@@ -204,6 +209,7 @@
                          #:expression ((compose (tick-names- names) .expression) o)))
     (($ <variable>) (clone o #:name ((compose append-tick .name) o)
                            #:expression ((compose (tick-names- names) .expression) o)))
+    (($ <reply>) (clone o #:port.name ((compose append-tick .port.name) o)))
     (($ <compound>)
      (clone o
             #:elements
@@ -226,6 +232,7 @@
 
 (define (root-purge-data o)
   (match o
+    (($ <data>) #f)
     (($ <action>)
      (clone o #:arguments (make <arguments>)))
 
@@ -237,8 +244,8 @@
 
     (($ <extern>) #f)
     (($ <assign>)
-     (and (not (is-a? (.type (.variable o)) <extern>))
-          (clone o #:expression (root-purge-data (.expression o)))))
+     (if (is-a? (.type (.variable o)) <extern>) (clone (make <compound>) #:parent (.parent o))
+         (clone o #:expression (root-purge-data (.expression o)))))
     (($ <formal>) (and (not (is-a? (.type o) <extern>)) o))
     (($ <call>) (clone o #:arguments (make <arguments> #:elements (filter (negate is-data?) (ast:argument* o)))))
     (($ <variable>) (and (not (is-a? (.type o) <extern>))
@@ -296,7 +303,7 @@
                               (triples:fix-empty-interface (parent o <model>))
                               ;;triples:on-compound
                               (triples:add-illegals (parent o <model>))
-                              triples:add-voidreply
+                              triples:mark-the-end
 
                               ;;(lambda (o) (map (cut pretty-print <> (current-error-port)) o) o)
 
@@ -377,7 +384,7 @@
 
 (define-method (mcrl2:reply-expression (o <reply>))
   (let* ((e (.expression o))
-         (t (ast:expression-type e)))
+         (t (ast:type e)))
     (if (is-a? t <void>)
         o
         e)))
@@ -416,7 +423,7 @@
 
 (define-method (mcrl2:reply-type (o <reply>))
   (let ((expr (.expression o)))
-    (ast:expression-type expr)))
+    (ast:type expr)))
 
 (define-method (mcrl2:reply-type (o <action>))
   ((compose mcrl2:expand-types .signature .event) o))

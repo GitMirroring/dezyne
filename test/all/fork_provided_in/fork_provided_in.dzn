@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -47,33 +48,5 @@ component fork_provided_in
   {
     on ppa.ia(): ppb.oa();
     on ppb.ia(): ppa.oa();
-  }
-}
-
-
-interface IB
-{
-  in void ib();
-  out void ob();
-
-  behaviour
-  {
-    bool is_active = false;
-    on ib: is_active = true;
-    [is_active] on inevitable: {ob; is_active = false;}
-  }
-}
-
-component fork_required_out
-{
-  provides IA ppa;
-  provides IA ppb;
-  requires IB rp;
-
-  behaviour
-  {
-    on ppa.ia(): rp.ib();
-    on ppb.ia(): rp.ib();
-    on rp.ob(): {ppa.oa(); ppb.oa();}
   }
 }

@@ -1,11 +1,12 @@
 verify: QueueFullExternal: check: deterministic: ok
 verify: QueueFullExternal: check: illegal: fail
-verify: QueueFullExternal: check: deadlock: fail
+n.dummy
+n.return
+verify: QueueFullExternal: check: deadlock: ok
 verify: QueueFullExternal: check: compliance: fail
+n.dummy
 verify: QueueFullExternal: check: livelock: ok
-verify: ilivelock: check: completeness: ok
 verify: ilivelock: check: deadlock: ok
 verify: ilivelock: check: livelock: ok
-verify: nolivelock: check: completeness: ok
 verify: nolivelock: check: deadlock: ok
 verify: nolivelock: check: livelock: ok

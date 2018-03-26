@@ -1,3 +1,3 @@
-test/all/GarageDoorControlErr/GarageDoorControlErr.dzn:129:14:i128: illegal
-test/all/GarageDoorControlErr/GarageDoorControlErr.dzn:129:14:i128: illegal
-test/all/GarageDoorControlErr/GarageDoorControlErr.dzn:129:14:i128: illegal
+out/GarageDoorControlErr/GarageDoorControlErr.dzn:129:14:i128: illegal
+out/GarageDoorControlErr/GarageDoorControlErr.dzn:311:4:i228: deadlock in model GarageDoorControlErr
+out/GarageDoorControlErr/GarageDoorControlErr.dzn:129:14:i128: illegal

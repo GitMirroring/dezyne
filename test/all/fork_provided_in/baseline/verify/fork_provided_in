@@ -1,4 +1,3 @@
-verify: IA: check: completeness: ok
 verify: IA: check: deadlock: ok
 verify: IA: check: livelock: ok
 verify: fork_provided_in: check: deterministic: ok

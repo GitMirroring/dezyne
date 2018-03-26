@@ -1,0 +1,14 @@
+verify: IList: check: completeness: ok
+verify: IList: check: deadlock: ok
+verify: IList: check: livelock: ok
+verify: Iterator: check: completeness: ok
+verify: Iterator: check: deadlock: ok
+verify: Iterator: check: livelock: ok
+verify: List: check: deterministic: ok
+verify: List: check: illegal: ok
+verify: List: check: deadlock: ok
+verify: List: check: compliance: ok
+verify: List: check: livelock: fail
+pp.step
+list.next
+list.end_no

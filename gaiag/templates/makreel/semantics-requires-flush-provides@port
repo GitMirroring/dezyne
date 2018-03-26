@@ -1,0 +1,4 @@
+semantics_requires_flush_#.name
+ = #x:makreel:model-name end . (queue_empty . #.name flush . semantics + semantics_requires(flush=true))
+ + (#x:semantics-requires-flush-provides-provides) . semantics_requires_flush_#.name
+ ;

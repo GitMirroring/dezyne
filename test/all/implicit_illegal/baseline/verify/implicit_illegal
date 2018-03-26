@@ -1,4 +1,3 @@
-verify: iimplicit_illegal: check: completeness: ok
 verify: iimplicit_illegal: check: deadlock: ok
 verify: iimplicit_illegal: check: livelock: ok
 verify: implicit_illegal: check: deterministic: ok

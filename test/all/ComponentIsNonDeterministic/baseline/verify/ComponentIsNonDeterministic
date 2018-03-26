@@ -6,6 +6,5 @@ verify: ComponentIsNonDeterministic: check: compliance: fail
 pp.ia
 pp.ob
 verify: ComponentIsNonDeterministic: check: livelock: ok
-verify: I: check: completeness: ok
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok

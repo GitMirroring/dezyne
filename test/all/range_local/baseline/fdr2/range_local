@@ -1,0 +1,4 @@
+verify: range_local: check: completeness: ok
+verify: range_local: check: deadlock: fail
+range.e
+verify: range_local: check: livelock: ok

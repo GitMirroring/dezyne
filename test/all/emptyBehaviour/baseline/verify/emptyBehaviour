@@ -1,4 +1,3 @@
-verify: I: check: completeness: fail
 verify: I: check: deadlock: fail
 verify: I: check: livelock: ok
 verify: emptyBehaviour: check: deterministic: ok

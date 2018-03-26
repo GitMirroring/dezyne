@@ -1,0 +1,26 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: external_asynchronous_illegal: check: deterministic: ok
+verify: external_asynchronous_illegal: check: illegal: fail
+p.e
+r.e
+r.return
+p.return
+p.a
+r.a
+verify: external_asynchronous_illegal: check: deadlock: fail
+p.e
+r.e
+r.return
+p.return
+p.a
+r.a
+verify: external_asynchronous_illegal: check: compliance: fail
+p.e
+r.e
+r.return
+p.return
+p.a
+r.a
+verify: external_asynchronous_illegal: check: livelock: ok

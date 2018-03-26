@@ -89,6 +89,8 @@
             dzn:source
             dzn:statement
             dzn:->string
+            dzn:from
+            dzn:to
             dzn:type
             %x:source
             ))
@@ -216,6 +218,7 @@
              (scope (om:scope type))
              (model-scope (parent o <model>))
              (model-scope (or (and model-scope (om:scope+name model-scope)) '()))
+
              (common (or (list-index (negate eq?) scope model-scope) (min (length scope) (length model-scope)))))
         (drop (om:scope+name type) common))))
 
@@ -399,6 +402,12 @@
 (define (dzn:dir o)
   (if (memq (language) '(javascript)) "dzn/"
       ""))
+
+(define (dzn:from o)
+  ((compose .from .range ast:expression->type) o))
+
+(define (dzn:to o)
+  ((compose .to .range ast:expression->type) o))
 
 ;; (define-method (dzn:x:pand (o <ast>) template file-name)
 ;;   (let ((file-name (if (and file-name (symbol? file-name)) (symbol->string file-name) file-name))) ;; FIXME

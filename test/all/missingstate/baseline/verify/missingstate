@@ -1,9 +1,5 @@
-verify: missingstate: check: completeness: fail
-missingstate.e
-missingstate.a
-missingstate.return
 verify: missingstate: check: deadlock: fail
-missingstate.e
-missingstate.a
-missingstate.return
+e
+a
+return
 verify: missingstate: check: livelock: ok

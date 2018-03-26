@@ -1,0 +1,15 @@
+verify: IDriver: check: completeness: ok
+verify: IDriver: check: deadlock: ok
+verify: IDriver: check: livelock: ok
+verify: IIterator: check: completeness: ok
+verify: IIterator: check: deadlock: ok
+verify: IIterator: check: livelock: ok
+verify: SynchronousLivelock: check: deterministic: ok
+verify: SynchronousLivelock: check: illegal: ok
+verify: SynchronousLivelock: check: deadlock: ok
+verify: SynchronousLivelock: check: compliance: ok
+verify: SynchronousLivelock: check: livelock: fail
+pp.step
+listIt.getFirstElmt
+listIt.IsPastEnd_No
+listIt.getNextElmt

@@ -1,0 +1,74 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello();
+  out void cruel();
+  out void world();
+
+  behaviour
+  {
+    on hello: {cruel; world;}
+    on hello: {world; world;}
+  }
+}
+
+component hello_function_local_nest
+{
+  provides ihello h;
+
+  behaviour
+  {
+    bool b = false;
+
+    bool f ()
+      {
+        bool bf = true;
+        {
+          bool lb = b;
+          g (lb);
+        }
+        return bf;
+      }
+    void g (bool bp)
+      {
+        if(bp)
+          h.world();
+        else {
+          bool boe = bp;
+          boe = ha(boe, bp);
+          h.cruel();
+        }
+      }
+    bool ha(bool boe, bool bah)
+      {
+        return boe && bah;
+      }
+    on h.hello():
+      {
+        b = f();
+        b = f();
+      }
+  }
+}

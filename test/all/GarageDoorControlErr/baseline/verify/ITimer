@@ -1,3 +1,2 @@
-verify: ITimer: check: completeness: ok
 verify: ITimer: check: deadlock: ok
 verify: ITimer: check: livelock: ok

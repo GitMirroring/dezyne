@@ -5,7 +5,7 @@
 ;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015, 2016, 2017 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;; Copyright © 2014, 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -771,7 +771,7 @@
         (list "?x:{" (comma-join events) "}")))
 
   (define (expression-type o locals)
-    (let ((type (ast:expression-type o)))
+    (let ((type (ast:type o)))
       (om:type-name type)))
 
   (let* ((model (or (resolve:component model) (resolve:interface model)))

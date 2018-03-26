@@ -40,7 +40,8 @@
   #:use-module (gaiag command-line)
   #:use-module (gash pipe)
 
-  #:export (mcrl2-trace-file->dzn-trace
+  #:export (main
+            mcrl2-trace-file->dzn-trace
             rename-lts-actions))
 
 (define (find-aliases mcrl2file)
@@ -50,117 +51,89 @@
 		   (list-matches "\\b([a-zA-Z0-9_']*)\\s*=\\s*struct\\b" mcrl2-text))))
     aliases))
 
-(define trace "startIF'event(StartControlIF'in'startAll)
-device1IF'event(Device1IF'in'turnon)
-device1IF'return(reply_Device1IF'Void(void))
+(define trace "console'in(IConsole'action(IConsole'in'arm))
+sensor'in(ISensor'action(ISensor'in'enable))
+sensor'reply(ISensor'Void(void))
+tau
+console'reply(IConsole'Void(void))
 tau
 tau
-startIF'return(reply_StartControlIF'Void(void))
-device1IF'inevitable
-device1IF'event(Device1IF'out'ok)
-device1IF'flush
 tau
-device2IF'event(Device2IF'in'turnon)
-device2IF'return(reply_Device2IF'Device2IF'Result(Device2IF'Result'NOK))
-startIF'event(StartControlIF'out'startFailed)
+sensor'out(ISensor'action(ISensor'out'triggered))
+console'out(IConsole'action(IConsole'out'detected))
+siren'in(ISiren'action(ISiren'in'turnon))
+siren'reply(ISiren'Void(void))
 tau
 tau
-startIF'flush
-startIF'event(StartControlIF'in'startAll)
-device1IF'event(Device1IF'in'turnon)
-illegal
-")
-
-;;(define trace "p'event(ibool'in'hello)")
-
-(define trace2
-"console'event(i_'_i'i_1'i1_'IConsole'in'_i)
-sensor'event(i_'_i'i_1'i1_'ISensor'in'i_1)
-sensor'return(reply_i_'_i'i_1'i1_'ISensor'Void(void))
+console'in(IConsole'action(IConsole'in'disarm))
+sensor'in(ISensor'action(ISensor'in'disable))
+sensor'reply(ISensor'Void(void))
+tau
+console'reply(IConsole'Void(void))
 tau
 tau
-console'return(reply_i_'_i'i_1'i1_'IConsole'Void(void))
-sensor'optional
-sensor'event(i_'_i'i_1'i1_'ISensor'out'i_)
-sensor'flush
 tau
-console'event(i_'_i'i_1'i1_'IConsole'out'detected)
-siren'event(i_'_i'i_1'i1_'ISiren'in'_i_)
-siren'return(reply_i_'_i'i_1'i1_'ISiren'Void(void))
+sensor'out(ISensor'action(ISensor'out'disabled))
+console'out(IConsole'action(IConsole'out'deactivated))
 tau
 tau
-console'flush
-console'event(i_'_i'i_1'i1_'IConsole'in'_i1)
-sensor'event(i_'_i'i_1'i1_'ISensor'in'disable)
-sensor'return(reply_i_'_i'i_1'i1_'ISensor'Void(void))
+console'in(IConsole'action(IConsole'in'arm))
+sensor'in(ISensor'action(ISensor'in'enable))
+sensor'reply(ISensor'Void(void))
+tau
+console'reply(IConsole'Void(void))
 tau
 tau
-console'return(reply_i_'_i'i_1'i1_'IConsole'Void(void))
-sensor'inevitable
-sensor'event(i_'_i'i_1'i1_'ISensor'out'disabled)
-sensor'flush
 tau
-console'event(i_'_i'i_1'i1_'IConsole'out'deactivated)
-tau
-tau
-console'flush
-console'event(i_'_i'i_1'i1_'IConsole'in'_i)
-sensor'event(i_'_i'i_1'i1_'ISensor'in'i_1)
-sensor'return(reply_i_'_i'i_1'i1_'ISensor'Void(void))
-tau
-tau
-console'return(reply_i_'_i'i_1'i1_'IConsole'Void(void))
-sensor'optional
-sensor'event(i_'_i'i_1'i1_'ISensor'out'i_)
-sensor'flush
-tau
-console'event(i_'_i'i_1'i1_'IConsole'out'detected)
-siren'event(i_'_i'i_1'i1_'ISiren'in'_i_)
+sensor'out(ISensor'action(ISensor'out'triggered))
+console'out(IConsole'action(IConsole'out'detected))
+siren'in(ISiren'action(ISiren'in'turnon))
 illegal")
-
-;;(define trace "tau")
 
 (define (parse input)
   (define-peg-string-patterns
-    "trace          <-- ((tau / illegal / flush / modeling / event / return / return-null / error / anything) newline?)*
-     newline         <   '\n'
-     lpar            <   '('
-     rpar            <   ')'
-     tick            <   [']
-     anything        <-- (! newline .)*
-     direction       <   'in' / 'out'
-     tau             <   'tau'
-     illegal         <   'illegal' / 'dillegal'
-     queue-full      <-  'queue_full'
-     range-error     <-  'range_error'
-     incomplete      <-  'incomplete'
-     reply-error     <-  'double_reply_error' / 'no_reply_error'
-     flush           <   (identifier tick)+ 'flush'
-     modeling        <   port tick 'int' lpar (scope tick)+ identifier rpar
-     event           <-- port tick (event-literal / direction) lpar mcrl2-event rpar
-     error           <-- queue-full / range-error / reply-error / incomplete
-     return          <-- port tick return-literal lpar arguments rpar
-     return-null     <   port tick return-literal lpar type-null rpar
-     arguments       <-  reply compound-type compound-value
-     type-null       <   (scope tick)? (type tick)? 'NULL'
-     mcrl2-event     <-  (scope tick)+ event-name
-     mcrl2-event-    <   mcrl2-event
-     mcrl2-event-out <-  model tick 'out' tick event-name
-     comma           <   ',' ' '*
-     reply           <   'reply_' identifier tick
-     compound-type   <   (type tick)* type
-     compound-value  <-  lpar (scope tick)? (type tick)? (identifier / number) rpar
-     scope           <   global / identifier
-     model           <   identifier
-     port            <-  identifier
-     type            <-  global / identifier
-     event-name      <-  identifier
-     identifier      <-- [a-zA-Z_][a-zA-Z0-9_]*
-     number          <-- '-'? [0-9]+
-     event-literal   <   'event'
-     global          <   'global' tick
-     return-literal  <   'return' / 'reply_in' / 'reply_out'
-")
+    "trace              <-- ((event / modeling / reply / queue / tau-literal / illegal / error / end / flush / parse-error) newline?)*
+     parse-error        <-- [a-zA-Z_0-9'()]*
+     event              <-- port-name tick direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
+     modeling           <-- port-name tick internal-literal lpar scope* ('inevitable' / 'optional') rpar
+     queue              <-- port-name tick queue-direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
+     end                <   scope* 'end'
+     flush              <-- identifier tick 'flush'
+     reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
+     scope              <   identifier tick
+     interface-name     <   scope* identifier
+     port-name          <-  identifier
+     event-name         <-  identifier
+     reply-value        <-  bool-literal lpar bool rpar / lpar enum-literal rpar / int-literal lpar int rpar / void-literal lpar void rpar
+     bool-literal       <   'Bool'
+     bool               <-- ('true' / 'false' )
+     int-literal        <   'Int'
+     int                <-- '-'?[0-9]+
+     void-literal       <   'Void'
+     void               <-- 'void'
+     enum-name          <   identifier
+     enum-literal       <-- (enum tick)* enum-field
+     enum               <-  identifier
+     enum-field         <-  identifier
+     direction          <   'qin' / 'in' / 'out'
+     queue-direction    <-- 'qout'
+     action-literal     <   'action'
+     internal-literal   <   'internal'
+     reply-literal      <   'reply'
+     tau-literal        <   'tau'
+     illegal            <   'illegal' / 'declarative_illegal' / 'dillegal'
+     error              <-- incomplete / queue-full / range-error / reply-error / missing-reply / second-reply
+     queue-full         <-  'queue_full' / port-name tick 'queue_full'
+     range-error        <-  'range_error'
+     incomplete         <-  'incomplete'
+     reply-error        <-  'double_reply_error' / 'no_reply_error'
+     missing-reply      <-  'missing_reply'
+     second-reply       <-  'second_reply'
+     newline            <   '\n'
+     tick               <   [']
+     lpar               <   [(]
+     rpar               <   [)]
+     identifier         <-- &(direction [a-zA-Z0-9_]+) [a-zA-Z0-9_]+ / !direction [a-zA-Z_][a-zA-Z0-9_]*")
   (let* ((match (match-pattern trace input))
          (end (peg:end match))
          (tree (peg:tree match)))
@@ -169,25 +142,57 @@ illegal")
             (cdr tree))
         (if match
             (begin
-              (format (current-error-port) "parse error: at offset: ~a\n~s\n" end tree)
+              (format (current-error-port) "input: ~a\nparse error: at offset: ~a\n~s\n" input end tree)
               #f)
             (begin
               (format (current-error-port) "parse error: no match\n")
               #f)))))
 
-(define (parse-tree2text tree)
+(define* (parse-tree2text tree #:key internal?)
   (match tree
+    (('parse-error parse-error) (stderr "parse error:~s\n" tree) parse-error)
     (('error error) error)
+    (('flush ('identifier port) "flush") (string-append port ".<flush>"))
+    (('error ('identifier port) error) error)
     (('event ('identifier port) ('identifier event)) (string-append port "." event))
-    (('return ('identifier port) ('identifier "void")) (string-append port ".return"))
-    (('return ('identifier port) ('identifier value)) (string-append port "." value))
-    (('return ('identifier port) ('number value)) (string-append port "." value))
-    (('return ('identifier port) (('identifier type) ('identifier value))) (string-append port "." type "_" value))))
+    (('modeling ('identifier port) event) (and internal? (string-append port "." event)))
+    (('queue ('identifier port) ('queue-direction direction) ('identifier event)) (and internal? (string-append port "." direction "." event)))
+    (('reply ('identifier port) ('void "void")) (string-append port ".return"))
+    (('reply ('identifier port) ('bool value)) (string-append port "." value))
+    (('reply ('identifier port) ('int value)) (string-append port "." value))
+    (('reply ('identifier port) ('enum-literal scope ... ('identifier name) ('identifier field))) (string-append port "." name "_" field))
+    (('reply ('identifier port) ('enum-literal (scope ... ('identifier name)) ('identifier field))) (string-append port "." name "_" field))))
 
-;;(format #t "~a" (string-join (map parse-tree2text (parse trace2)) "\n"))
+;;(format #t "~a" (string-join (map parse-tree2text (parse trace)) "\n"))
 
 (define (rename-lts-actions trace)
-  (string-join (map parse-tree2text (parse trace)) "\n"))
+  (string-join (filter-map parse-tree2text (parse trace)) "\n"))
 
 (define (mcrl2-trace-file->dzn-trace mcrl2-trace-file)
   (rename-lts-actions (pipeline->string `("tracepp" ,mcrl2-trace-file))))
+
+(define (main arguments)
+  (define (cleanup-label n)
+    (let ((label ((compose (cut string-drop <> 1) (cut string-drop-right <> 1) cadr) n)))
+      (if (string-null? label) n
+          (let ((fris (parse label)))
+            (if (null? fris) n
+                (list (car n) ((compose (cut format #f "~s" <>) (cut parse-tree2text <> #:internal? #t) car) fris) (caddr n)))))))
+  (let* ((files (cdr arguments))
+         (file (if (or (null? files)
+                       (equal? (car files) "-")) "/dev/stdin"
+                       (car files)))
+         (text (string-trim-right (with-input-from-file file read-string)))
+         (lines (string-split text #\newline))
+         (lts? (string-prefix? "des " (car lines))))
+    (if lts?
+        (let* ((nodes (list-tail lines 1))
+               (nodes (map (cut string-split <> #\,) nodes))
+               (nodes (map cleanup-label nodes))
+               (fris (map (cut string-join <> ",") nodes))
+               (fris (string-join (cons (car lines) fris) "\n")))
+          (display fris)
+          (newline))
+        (display (string-join (filter-map (lambda (line) (let ((fris (parse line)))
+                                                    (if (null? fris) #f
+                                                        (parse-tree2text (car fris))))) lines) "\n" 'suffix)))))

@@ -1,4 +1,0 @@
-verify: ModelIsIncomplete: check: deadlock: fail
-ia
-return
-verify: ModelIsIncomplete: check: livelock: ok

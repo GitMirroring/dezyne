@@ -1,0 +1,12 @@
+#x:event-prefix in: #x:makreel:interface-name events;
+#x:event-prefix in': #x:makreel:interface-name events;
+#x:event-prefix out: #x:makreel:interface-name events;
+#x:event-prefix out': #x:makreel:interface-name events;
+#x:event-prefix reply: #x:makreel:interface-name replies;
+#x:event-prefix reply': #x:makreel:interface-name replies;
+#x:event-prefix internal: #x:makreel:interface-name modeling;
+#x:event-prefix internal': #x:makreel:interface-name modeling;
+#x:event-prefix end;
+#x:event-prefix end';
+#x:event-prefix flush;
+#x:event-act-provides #x:event-act-requires

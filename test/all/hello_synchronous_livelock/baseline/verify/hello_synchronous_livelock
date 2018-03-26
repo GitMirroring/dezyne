@@ -1,0 +1,13 @@
+verify: hello_synchronous_livelock: check: deterministic: ok
+verify: hello_synchronous_livelock: check: illegal: ok
+verify: hello_synchronous_livelock: check: deadlock: ok
+verify: hello_synchronous_livelock: check: compliance: ok
+verify: hello_synchronous_livelock: check: livelock: fail
+h.hello
+w.hello
+w.world
+w.return
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
+verify: iworld: check: deadlock: ok
+verify: iworld: check: livelock: ok

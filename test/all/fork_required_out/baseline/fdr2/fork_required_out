@@ -1,0 +1,18 @@
+verify: IA: check: completeness: ok
+verify: IA: check: deadlock: ok
+verify: IA: check: livelock: ok
+verify: IB: check: completeness: ok
+verify: IB: check: deadlock: ok
+verify: IB: check: livelock: ok
+verify: fork_required_out: check: deterministic: ok
+verify: fork_required_out: check: illegal: ok
+verify: fork_required_out: check: deadlock: ok
+verify: fork_required_out: check: compliance: fail
+ppb.ia
+rp.ib
+rp.return
+ppb.return
+rp.ob
+ppa.oa
+ppb.oa
+verify: fork_required_out: check: livelock: ok

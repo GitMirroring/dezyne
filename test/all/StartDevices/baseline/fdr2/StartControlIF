@@ -1,0 +1,3 @@
+verify: StartControlIF: check: completeness: ok
+verify: StartControlIF: check: deadlock: ok
+verify: StartControlIF: check: livelock: ok

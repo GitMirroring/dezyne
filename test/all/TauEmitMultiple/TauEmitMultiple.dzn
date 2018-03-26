@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,116 +21,37 @@
 //
 // Code:
 
-interface ITauEmitMulti
+interface ihello
 {
-  out void a();
-  out void b();
-  in void c();
-  out void d();
-  in void e();
-
+  in void hello();
   behaviour
   {
-    bool isWaiting = false;
-    [!isWaiting]
-      on inevitable:
-      {
-        a;
-        isWaiting = true;
-        b;
-      }
-    [isWaiting]
-      on c:
-      {
-        d;
-        isWaiting = false;
-      }
-    [!isWaiting]
-      on c:
-      illegal;
-    on e:
-      {
-        [isWaiting]
-          illegal;
-        [otherwise]
-        {
-        }
-      }
+    on hello: {}
   }
 }
 
-interface ITauEmitSingle
+interface iworld
 {
-  out void a();
-  in void c();
+  out void cruel();
+  out void world();
+  in void hello();
 
   behaviour
   {
-    bool isWaiting = false;
-    [!isWaiting]
-      on inevitable:
-      {
-        a;
-        isWaiting = true;
-      }
-    [isWaiting]
-      on c:
-      isWaiting = false;
-    [!isWaiting]
-      on c:
-      illegal;
+    on inevitable: cruel;
+    on hello: world;
   }
 }
 
-component TauEmitMultiple
+component hello_foo
 {
-  provides IDummy ctrl;
-  requires ITauEmitMulti rpa;
-  requires ITauEmitSingle rps;
+  provides ihello h;
+  requires iworld w;
 
   behaviour
   {
-    bool expect_b = false;
-    bool expect_d = false;
-    on ctrl.start():
-      {
-      }
-    on rpa.a():
-      {
-        expect_b = true;
-        rpa.c();
-        expect_d = true;
-      }
-    on rpa.b():
-      {
-        [expect_b]
-        {
-        }
-        [otherwise]
-          illegal;
-      }
-    on rpa.d():
-      {
-        [expect_d]
-        {
-          rpa.e();
-        }
-        [otherwise]
-          illegal;
-      }
-
-    on rps.a():
-      rps.c();
-  }
-}
-
-interface IDummy
-{
-  in void start();
-  behaviour
-  {
-    on start:
-      {
-      }
+    on h.hello(): {}
+    on w.cruel(): w.hello();
+    on w.world(): {}
   }
 }

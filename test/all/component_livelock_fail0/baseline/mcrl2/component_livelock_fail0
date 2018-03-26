@@ -1,9 +1,0 @@
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
-verify: II: check: deadlock: ok
-verify: II: check: livelock: ok
-verify: component_livelock_fail0: check: deterministic: ok
-verify: component_livelock_fail0: check: illegal: ok
-verify: component_livelock_fail0: check: deadlock: ok
-verify: component_livelock_fail0: check: compliance: ok
-verify: component_livelock_fail0: check: livelock: ok

@@ -1,0 +1,16 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: U: check: completeness: ok
+verify: U: check: deadlock: ok
+verify: U: check: livelock: ok
+verify: ilogger: check: completeness: ok
+verify: ilogger: check: deadlock: ok
+verify: ilogger: check: livelock: ok
+verify: trap: check: deterministic: ok
+verify: trap: check: illegal: ok
+verify: trap: check: deadlock: ok
+verify: trap: check: compliance: fail
+i.e
+i.Status_Yes
+verify: trap: check: livelock: ok

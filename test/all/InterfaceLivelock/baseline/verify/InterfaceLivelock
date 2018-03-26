@@ -1,10 +1,11 @@
-verify: BlindLoop: check: completeness: ok
 verify: BlindLoop: check: deadlock: ok
 verify: BlindLoop: check: livelock: fail
-BlindLoop.start
-BlindLoop.return
+start
+return
 verify: InterfaceLivelock: check: deterministic: ok
 verify: InterfaceLivelock: check: illegal: ok
 verify: InterfaceLivelock: check: deadlock: ok
 verify: InterfaceLivelock: check: compliance: fail
+LoopingInterface.start
+LoopingInterface.return
 verify: InterfaceLivelock: check: livelock: ok

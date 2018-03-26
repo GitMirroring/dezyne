@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -44,7 +46,7 @@
             triples:->compound-guard-on
             triples:->triples
             triples:add-illegals
-            triples:add-voidreply
+            triples:mark-the-end
             triples:compound->triples
             triples:fix-empty-interface
             triples:on-compound
@@ -81,20 +83,13 @@
                   triples)))
     (make <declarative-compound> #:elements st)))
 
-(define ((triples:component-prepend-illegal-guard model) triples)
-  (define (declarative-illegal? o)
+(define (declarative-illegal? o)
     (match o
       (($ <illegal>) o)
+      (($ <declarative-illegal>) o)
       ((and ($ <compound>) (= .elements (? null?))) #f)
       (($ <compound>) (declarative-illegal? ((compose car .elements) o)))
       (_ #f)))
-  (define (prepend t)
-    (if (not (declarative-illegal? (t-statement t))) t
-        (let* ((guard (t-guard t))
-               (ill (make <literal> #:value 'illegal_guard))
-               (guard (clone guard #:expression (make <and> #:left ill #:right (.expression guard)))))
-          (t-triple (t-on t) guard (t-blocking t) (t-statement t)))))
-  (if (is-a? model <interface>) triples (map prepend triples)))
 
 (define ((triples:fix-empty-interface model) triples)
   (if (and (is-a? model <interface>) (null? triples))
@@ -109,29 +104,69 @@
     (define (trigger-eq? t)
       (and (eq? (.port.name t) (.port.name trigger)) (eq? (.event.name t) (.event.name trigger))))
     (let* ((triples (filter (lambda (t) (trigger-eq? ((compose car ast:trigger* t-on) t))) triples))
-           (on (make <on> #:triggers (make <triggers> #:elements (list trigger))))
+           (on (clone (make <on> #:triggers (make <triggers> #:elements (list trigger))) #:parent (.parent trigger)))
            (guard (combine-not (map t-guard triples)))
-           (statement (make <illegal> #:incomplete #t)))
+           (provides? (and=> (.port trigger) ast:provides?))
+           (statement (make (cond (provides? <declarative-illegal>)
+                                  ((is-a? model <interface>) <incomplete>)
+                                  (else <illegal>)))))
       (append triples (list (t-triple on guard #f statement)))))
   (append (append-map (cut add-illegals- triples <>) (ast:in-triggers model))
           (filter (compose ast:modeling? car ast:trigger* t-on) triples)))
 
-(define (triples:add-voidreply triples)
-  (define (voidreply-triple t)
+(define (triples:mark-the-end triples)
+  (define (mark-the-end t)
     (let* ((on (t-on t))
+           (illegal? (declarative-illegal? (t-statement t)))
+           (blocking? (t-blocking t))
            (valued-triggers? (ast:typed? ((compose car ast:trigger*) on)))
            (modeling? (is-a? ((compose .event car ast:trigger*) on) <modeling-event>))
            (port ((compose .port car ast:trigger*) on))
-           (requires? (and port (ast:requires? port))))
-      (if (or modeling? requires? valued-triggers?) t
-          (let* ((statement (t-statement t))
-                 (voidreply (make <reply> #:port.name (and port (.name port)) #:expression (make <void-expr>)))
-                 (elements (if (is-a? statement <compound>)
-                               (append (.elements statement) (list voidreply))
-                               (list statement voidreply)))
-                 (statement (make <compound> #:elements elements)))
-            (t-triple on (t-guard t) (t-blocking t) statement)))))
-  (map voidreply-triple triples))
+           (provides? (and port (ast:provides? port))))
+      (if (parent on <interface>)
+          (if (or valued-triggers? illegal?) t
+              (let* ((statement (t-statement t))
+                     (end (make (if modeling? <the-end> <reply>)))
+                     (elements (if (is-a? statement <compound>)
+                                   (append (.elements statement) (list end))
+                                   (list statement end)))
+                     (statement (make <compound> #:elements elements)))
+                (t-triple on (t-guard t) (t-blocking t) statement)))
+          (let ((t (if (or valued-triggers? illegal? blocking?) t
+                       (let* ((statement (t-statement t))
+                              (reply (if provides? (list (make <reply>)) '()))
+                              (elements (if (is-a? statement <compound>)
+                                            (.elements statement)
+                                            (list statement)))
+                              (elements (append elements reply))
+                              (statement (make <compound> #:elements elements)))
+                         (t-triple on (t-guard t) (t-blocking t) statement)))))
+            (if illegal? t (add-the-end t))))))
+  (map mark-the-end triples))
+
+(define (add-the-end t)
+  (let* ((statement (t-statement t))
+         (elements (if (is-a? statement <compound>)
+                       (.elements statement)
+                       (list statement)))
+         (elements (append elements (list (make <the-end>))))
+         (statement (make <compound> #:elements elements)))
+    (t-triple (t-on t) (t-guard t) (t-blocking t) statement)))
+
+(define ((triples:declarative-illegals model) triples)
+  (define (illegal? o)
+    (match o
+      (($ <illegal>) o)
+      ((and ($ <compound>) (= .elements (statement))) (illegal? statement))
+      (_ #f)))
+  (define (foo t)
+    (let* ((on (t-on t))
+           (trigger ((compose car ast:trigger*) on))
+           (provides? (and=> (.port trigger) ast:provides?))
+           (statement (t-statement t)))
+      (if (and (or (is-a? model <interface>) provides?) (illegal? statement)) (t-triple on (t-guard t) (t-blocking t) (make <declarative-illegal>))
+          t)))
+  (map foo triples))
 
 (define (triples:split-multiple-on triples)
   (define (split-on t)
@@ -139,7 +174,10 @@
            (triggers (ast:trigger* on))
            (ons (if (= (length triggers) 1) (list on)
                     (map (lambda (t) (clone on #:triggers (make <triggers> #:elements (list t)))) triggers))))
-      (map (lambda (on) (t-triple on (t-guard t) (t-blocking t) (t-statement t))) ons)))
+      (map (lambda (on)
+             (let* ((trigger ((compose car ast:trigger*) on))
+                    (provides? (and=> (.port trigger) ast:provides?)))
+               (t-triple on (t-guard t) (and provides? (t-blocking t)) (t-statement t)))) ons)))
   (append-map split-on triples))
 
 (define (triples:->triples o)
@@ -167,9 +205,9 @@
                             ((compose
                               triples:->compound-guard-on
                               (triples:fix-empty-interface (parent o <model>))
-                              (triples:component-prepend-illegal-guard (parent o <model>))
                               (triples:add-illegals (parent o <model>))
-                              triples:add-voidreply
+                              triples:mark-the-end
+                              (triples:declarative-illegals (parent o <model>))
                               triples:split-multiple-on
                               triples:->triples
                               .statement

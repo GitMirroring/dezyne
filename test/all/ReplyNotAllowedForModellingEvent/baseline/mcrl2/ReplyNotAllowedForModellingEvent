@@ -1,3 +1,0 @@
-verify: ReplyNotAllowedForModellingEvent: check: deadlock: fail
-oa
-verify: ReplyNotAllowedForModellingEvent: check: livelock: ok

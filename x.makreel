@@ -1,0 +1,411 @@
+% hello makreel
+% mcrl22lps -b hello.makreel | lps2lts /dev/stdin my.aut
+
+map illegal_guard: Bool;
+
+eqn illegal_guard = false;
+
+
+sort
+ihello'actions = struct
+ihello'in'hello
+|ihello'out'world
+;
+
+ihello'modeling = struct ihello'optional;
+
+ihello'replies = struct ihello'void;
+
+ihello'events = struct
+    ihello'action (value: ihello'actions)
+    | ihello'reply (value: ihello'replies)
+    ;
+
+requires_events = struct w'events(w': ihello'events)?w'is;
+
+map  QueueLength : Nat;
+
+eqn  QueueLength = 1;
+
+act
+peek: Nat;
+ihello'in: ihello'events;
+ihello'out: ihello'events;
+ihello'reply: ihello'replies;
+ihello'internal: ihello'modeling;
+ihello'end;
+
+h'in: ihello'events;
+h'in': ihello'events;
+h'internal: ihello'modeling;
+h'end;
+
+h'out: ihello'events;
+h'out': ihello'events;
+h'reply: ihello'replies;
+h'reply': ihello'replies;
+h'reply'out: ihello'replies;
+
+w'in: ihello'events;
+w'in': ihello'events;
+w'internal: ihello'modeling;
+w'internal': ihello'modeling;
+w'end;
+w'end';
+
+w'out: ihello'events;
+w'out': ihello'events;
+w'reply: ihello'replies;
+w'reply': ihello'replies;
+w'reply'out: ihello'replies;
+w'qin: ihello'events;
+w'qin': ihello'events;
+w'qout: ihello'events;
+w'qout': ihello'events;
+
+hello_optional'end;
+hello_optional'end';
+
+illegal;
+queue_full;
+queue_empty;
+queue_empty';
+
+proc
+Illegal' = illegal . Illegal';
+
+%%%%%%%%%%%%%%%%% INTERFACE %%%%%%%%%%%%%%%%%
+
+ihello'  = optional_ihello'
+         + tau . non_optional_ihello'
+         + non_optional_ihello'
+         ;
+
+
+non_optional_ihello'  = ihello'0 ;
+
+
+ihello'0 = ihello'1 ;
+
+
+ihello'1 = (true) -> ihello'2 ;
+
+
+ihello'2 = ihello'in (ihello'action (ihello'in'hello)) . ihello'3 ;
+
+
+ihello'3 = ihello'4 ;
+
+
+ihello'4 = ihello'reply (ihello'void) . ihello' ;
+
+
+
+
+
+
+optional_ihello'  = ihello'5 ;
+
+
+ihello'5 = ihello'6 ;
+
+
+ihello'6 = (true) -> ihello'7 ;
+
+
+ihello'7 = ihello'internal (ihello'optional) . ihello'8 ;
+
+
+ihello'8 = ihello'out (ihello'action (ihello'out'world)) . ihello'end . ihello' ;
+
+
+%%%%%%%%%%%%%%%%%%%%%%% PROVIDES %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+provides_r2c = sum x: ihello'actions . h'in (ihello'action (x)) . provides_out;
+
+provides_out = provides_reply'h' + sum x: ihello'actions . h'out (ihello'action (x)). provides_out;
+
+
+provides_reply'h' = sum x: ihello'replies . h'reply (x) . provides_r2c;
+
+provides_parallel = H'|| provides_r2c;
+
+provides_comm = comm ({
+  h'in | h'in -> h'in'
+  , h'out | h'out -> h'out'
+  , h'reply | h'reply -> h'reply'
+  }, provides_parallel);
+
+provides_allow = allow ({peek,
+  h'in'
+  , h'out'
+  , h'reply'
+  , illegal
+  }, provides_comm);
+
+provides = rename ({
+  h'in' -> h'in
+  , h'out' -> h'out
+  , h'reply' -> h'reply
+  }, provides_allow);
+
+
+
+
+%%%%%%%%%%%%%%%%%%% COMPONENT %%%%%%%%%%%%%%%%%%%
+
+hello_optional'  = hello_optional'0 ;
+
+
+hello_optional'0 = hello_optional'1
+  + hello_optional'2 ;
+
+
+hello_optional'1 = (true) -> hello_optional'3 ;
+
+
+hello_optional'3 = h'in (ihello'action (ihello'in'hello)) . hello_optional'4 ;
+
+
+hello_optional'4 = hello_optional'5 ;
+
+
+hello_optional'5 = w'in (ihello'action (ihello'in'hello)) . w'reply(ihello'void) . hello_optional'6 ;
+
+hello_optional'6 = h'reply (ihello'void) . hello_optional' ;
+
+
+
+
+
+hello_optional'2 = (true) -> hello_optional'7 ;
+
+
+hello_optional'7 = w'out (ihello'action (ihello'out'world)) . hello_optional'8 ;
+
+
+hello_optional'8 = h'out (ihello'action (ihello'out'world)) . hello_optional'end . hello_optional' ;
+
+
+
+
+component_behaviour = hello_optional';
+
+%%%%%%%%%%%%%% PORT PROCESSES %%%%%%%%%%%%%%%
+
+H' = rename ({
+  ihello'in -> h'in
+  , ihello'reply -> h'reply
+  , ihello'out -> h'out
+  , ihello'internal -> h'internal
+  , ihello'end -> h'end
+  }, ihello');
+W' = rename ({
+  ihello'in -> w'in
+  , ihello'reply -> w'reply
+  , ihello'out -> w'out
+  , ihello'internal -> w'internal
+  , ihello'end -> w'end
+  }, ihello');
+
+%%%%%%%%%%%%%%%%%%%% Q %%%%%%%%%%%%%%%%%%%%%%
+
+
+component_queue (l: List (requires_events)) =
+  (#l < QueueLength) -> (sum e: ihello'events. w'qin (e) . component_queue (l = l <| w'events (e)))
+  + (l != [] && w'is (head (l))) -> w'qout (w' (head (l))) . ((#l == 1) -> queue_empty) . component_queue (l = tail (l))
+  + (#l == QueueLength) -> (sum e: ihello'events. w'qin (e) . queue_full . Illegal')
+  ;
+
+req_and_queue_parallel = component_queue([]) || W';
+
+req_and_queue_comm = comm({
+  w'qin | w'out -> w'qin'
+  }, req_and_queue_parallel);
+
+req_and_queue_allow = allow ({peek,
+  w'internal
+  , w'end
+  , w'in
+  , w'qin'
+  , w'qout
+  , w'reply
+  , queue_empty
+  , queue_full
+  , illegal
+  }, req_and_queue_comm);
+
+req_and_queue_rename = rename({
+  w'qin' -> w'qin
+  , w'qout -> w'out
+  }, req_and_queue_allow);
+
+%req_and_queue = hide({w'qin}, req_and_queue_rename);
+req_and_queue = req_and_queue_rename;
+
+
+
+%%%%%%%%%%%%%%%%%%%%% COMPONENT REORDER %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+component_reorder =
+  sum a: ihello'actions. h'in (ihello'action (a)) . sum r: ihello'replies. h'reply (r) . h'reply'out (r) . component_reorder
+  ;
+
+component_reorder_parallel = component_behaviour || component_reorder;
+
+component_reorder_comm = comm({
+  h'reply | h'reply -> h'reply'
+  , h'in | h'in -> h'in'
+  }, component_reorder_parallel);
+
+component_reorder_allow = allow ({peek,
+  illegal
+
+  , h'in'
+  , h'out
+  , h'reply'
+  , h'reply'out
+
+  , w'in
+  , w'out
+  , w'reply
+
+  , hello_optional'end
+
+  }, component_reorder_comm);
+
+component_reorder_rename = rename({
+  h'in' -> h'in
+  , h'reply'out -> h'reply
+  }, component_reorder_allow);
+
+component_reorder_hide = hide({
+  h'reply'
+  }, component_reorder_rename);
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%% SEMANTICS %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+semantics
+ = sum e : ihello'actions. h'in (ihello'action(e)) . semantics_provides_empty
+ + sum e : ihello'modeling. w'internal (e) . (semantics_requires_empty + w'end . semantics)
+ ;
+
+semantics_provides_empty
+ = sum r : ihello'replies. h'reply (r) . semantics
+ + sum e : ihello'events. w'qin(e) . semantics_provides_flush
+% + h'blocking . sum e: ihello'modeling. w'internal (e) . semantics_provides_blocking
+ ;
+
+semantics_provides_flush
+ = sum e : ihello'events. w'qin(e) . semantics_provides_flush
+ + sum a : ihello'actions. w'out (ihello'action(a)) . hello_optional'end . semantics_provides_flush
+ + queue_empty . semantics_provides_empty
+ ;
+
+semantics_provides_blocking
+ = sum e : ihello'events. w'qin(e) . semantics_provides_blocking
+ + sum a : ihello'actions. w'out (ihello'action(a)) . hello_optional'end . semantics_provides_blocking
+ + queue_empty . w'end . semantics_provides_empty
+ ;
+
+semantics_requires_empty
+ = sum e : ihello'events. w'qin(e) . semantics_requires_flush
+ + queue_empty . semantics
+ ;
+
+semantics_requires_flush
+ = sum a : ihello'actions. w'out (ihello'action(a)) . hello_optional'end . semantics_requires_flush
+ + queue_empty . w'end . semantics
+ ;
+
+component_semantics = component_reorder_hide || semantics;
+
+component_semantics_comm = comm({
+  h'in | h'in -> h'in'
+  , h'reply | h'reply -> h'reply'
+  , w'out | w'out -> w'out'
+  , hello_optional'end | hello_optional'end -> hello_optional'end'
+}, component_semantics);
+
+component_semantics_allow = allow ({peek,
+  queue_empty
+  , illegal
+  , hello_optional'end'
+  , h'in'
+  , h'out
+  , h'reply'
+
+  , w'in
+  , w'out'
+  , w'reply
+  , w'internal
+  , w'end
+
+  , w'qin
+}, component_semantics_comm);
+
+component_semantics_rename = rename({
+  h'in' -> h'in
+  , h'reply' -> h'reply
+  , hello_optional'end' -> hello_optional'end
+  , w'out' -> w'out
+}, component_semantics_allow);
+
+component_semantics_hide = hide({hello_optional'end}, component_semantics_rename);
+
+%%%%%%%%%%%%%%%%%%%%% COMPONENT ASSEMBLY %%%%%%%%%%%%%%%%%%%%%%
+
+component_parallel = component_semantics_hide || req_and_queue;
+
+component_comm = comm({
+  queue_empty | queue_empty -> queue_empty'
+  , w'in | w'in -> w'in'
+  , w'reply | w'reply -> w'reply'
+  , w'out | w'out -> w'out'
+  , w'internal | w'internal -> w'internal'
+  , w'end | w'end -> w'end'
+
+  , w'qin | w'qin -> w'qin'
+  }, component_parallel);
+
+component_allow = allow ({peek,
+  queue_empty'
+
+  , h'in
+  , h'out
+  , h'reply
+
+  , w'in'
+  , w'reply'
+  , w'out'
+  , w'internal'
+  , w'end'
+
+  , w'qin'
+  , queue_full
+  , illegal
+  }, component_comm);
+
+component_rename = rename({
+  queue_empty' -> queue_empty
+
+  , w'in' -> w'in
+  , w'reply' -> w'reply
+  , w'out' -> w'out
+  , w'internal' -> w'internal
+  , w'end' -> w'end
+
+  , w'qin' -> w'qin
+}, component_allow);
+
+component = hide({peek,queue_empty,w'qin,w'end,w'internal},component_rename);
+%component = hide({peek},component_rename);
+%component = hide({queue_empty, w'internal}, component_rename);
+%component = hide({queue_empty,w'internal,w'end}, component_rename);
+
+%init component_semantics_hide;
+init component;
+%init req_and_queue_rename;
+%init W';

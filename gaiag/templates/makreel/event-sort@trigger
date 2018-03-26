@@ -1,0 +1,4 @@
+#.port.name events = struct
+    #.port.name action (value: #.port.name actions)
+    | #.port.name reply (value: #.port.name replies)
+    ;

@@ -1,7 +1,5 @@
-verify: IP: check: completeness: ok
 verify: IP: check: deadlock: ok
 verify: IP: check: livelock: ok
-verify: IR: check: completeness: ok
 verify: IR: check: deadlock: ok
 verify: IR: check: livelock: ok
 verify: QueueFull: check: deterministic: ok
@@ -12,13 +10,7 @@ rp.oa
 rp.oa
 rp.oa
 rp.oa
-verify: QueueFull: check: deadlock: fail
-pp.ia
-rp.ia
-rp.oa
-rp.oa
-rp.oa
-rp.oa
+verify: QueueFull: check: deadlock: ok
 verify: QueueFull: check: compliance: fail
 pp.ia
 rp.ia

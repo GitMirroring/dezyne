@@ -1,0 +1,11 @@
+verify: compliance_provides_illegal2: check: deterministic: ok
+verify: compliance_provides_illegal2: check: illegal: fail
+h.hello
+w.hello
+verify: compliance_provides_illegal2: check: deadlock: ok
+verify: compliance_provides_illegal2: check: compliance: fail
+h.hello
+w.hello
+verify: compliance_provides_illegal2: check: livelock: ok
+verify: ihello: check: deadlock: fail
+verify: ihello: check: livelock: ok

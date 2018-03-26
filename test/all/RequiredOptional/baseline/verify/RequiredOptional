@@ -1,4 +1,3 @@
-verify: IRequiredOptional: check: completeness: ok
 verify: IRequiredOptional: check: deadlock: fail
 verify: IRequiredOptional: check: livelock: ok
 verify: RequiredOptional: check: deterministic: ok

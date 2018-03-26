@@ -1,9 +1,7 @@
-verify: I: check: completeness: ok
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
 verify: IllegalValueInAssignment_AssignmentStatement: check: deterministic: ok
-verify: IllegalValueInAssignment_AssignmentStatement: check: illegal: fail
-pp.ia
+verify: IllegalValueInAssignment_AssignmentStatement: check: illegal: ok
 verify: IllegalValueInAssignment_AssignmentStatement: check: deadlock: fail
 pp.ia
 verify: IllegalValueInAssignment_AssignmentStatement: check: compliance: fail

@@ -1,0 +1,4 @@
+#x:makreel:model-name events = struct
+    #x:makreel:model-name action (value: #x:makreel:model-name actions)
+    | #x:makreel:model-name reply (value: #x:makreel:model-name replies)
+    ;

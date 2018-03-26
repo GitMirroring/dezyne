@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
@@ -29,9 +30,9 @@ enum result_t {
 };
 
 
-// This interface specifies the protocol of a device which has to be initialised and 
+// This interface specifies the protocol of a device which has to be initialised and
 // calibrated before it can perform actions.
-// Each of these activities can succeed (OK) or fail (NOK). 
+// Each of these activities can succeed (OK) or fail (NOK).
 interface IDevice {
 
     in result_t initialise();
@@ -85,7 +86,7 @@ interface IDevice {
 
 // This interface specifies the protocol of a component which, after being initialised,
 // can perform actions and recover from error situations.
-// Each of these activities can succeed (OK) or fail (NOK). 
+// Each of these activities can succeed (OK) or fail (NOK).
 interface IComp {
     in result_t initialise();
     in result_t recover();
@@ -248,18 +249,18 @@ component Device
 
 // This system component combines the OK_NOK component
 // with two identical Device components.
-component TwoDevices 
+component TwoDevices
 {
   provides IComp client;
-  system 
+  system
   {
     OK_NOK rv;
     Device deviceA;
     Device deviceB;
-    
+
     client <=> rv.client;
     rv.device_A <=> deviceA.i;
     rv.device_B <=> deviceB.i;
   }
-  
+
 }

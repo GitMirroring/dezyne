@@ -1,4 +1,3 @@
-verify: IIncomplete: check: completeness: ok
 verify: IIncomplete: check: deadlock: ok
 verify: IIncomplete: check: livelock: ok
 verify: Incomplete: check: deterministic: ok
@@ -9,5 +8,5 @@ pp.return
 verify: Incomplete: check: compliance: fail
 pp.missing
 pp.return
-pp.missing
+pp.available
 verify: Incomplete: check: livelock: ok

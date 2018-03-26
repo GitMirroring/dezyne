@@ -1,7 +1,5 @@
-verify: IList: check: completeness: ok
 verify: IList: check: deadlock: ok
 verify: IList: check: livelock: ok
-verify: Iterator: check: completeness: ok
 verify: Iterator: check: deadlock: ok
 verify: Iterator: check: livelock: ok
 verify: List: check: deterministic: ok

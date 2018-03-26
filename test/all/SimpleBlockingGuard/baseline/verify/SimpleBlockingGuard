@@ -1,4 +1,3 @@
-verify: ISimpleBlockingGuard: check: completeness: ok
 verify: ISimpleBlockingGuard: check: deadlock: ok
 verify: ISimpleBlockingGuard: check: livelock: ok
 verify: SimpleBlockingGuard: check: deterministic: ok

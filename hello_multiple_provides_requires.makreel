@@ -1,0 +1,1220 @@
+% hello makreel
+% mcrl22lps -b hello.makreel | lps2lts /dev/stdin my.aut
+
+sort
+Void = struct void;
+ihello'actions = struct
+ihello'in'hello
+|ihello'out'world
+;
+
+ihello'modeling = struct ihello'optional | ihello'inevitable;
+
+
+ihello'replies = struct ihello'Void(value: Void);
+
+ihello'events = struct
+    ihello'action (value: ihello'actions)
+    | ihello'reply (value: ihello'replies)
+    ;
+
+requires_events = struct i3'events(i3': ihello'events)?i3'is;
+
+map
+
+QueueLength : Nat;
+
+eqn
+
+QueueLength = 3;
+
+act
+ihello'in: ihello'events;
+ihello'in': ihello'events;
+ihello'out: ihello'events;
+ihello'out': ihello'events;
+ihello'reply: ihello'replies;
+ihello'reply': ihello'replies;
+ihello'reply'reordered: ihello'replies;
+ihello'internal: ihello'modeling;
+ihello'internal': ihello'modeling;
+ihello'end;
+ihello'end';
+ihello'flush;
+i1'in: ihello'events;
+i1'in': ihello'events;
+i1'out: ihello'events;
+i1'out': ihello'events;
+i1'reply: ihello'replies;
+i1'reply': ihello'replies;
+i1'internal: ihello'modeling;
+i1'internal': ihello'modeling;
+i1'end;
+i1'end';
+i1'flush;
+i1'reply'reordered: ihello'replies;
+i1'reply'reordered': ihello'replies;
+i1'blocking;
+i1'blocking';
+i2'in: ihello'events;
+i2'in': ihello'events;
+i2'out: ihello'events;
+i2'out': ihello'events;
+i2'reply: ihello'replies;
+i2'reply': ihello'replies;
+i2'internal: ihello'modeling;
+i2'internal': ihello'modeling;
+i2'end;
+i2'end';
+i2'flush;
+i2'reply'reordered: ihello'replies;
+i2'reply'reordered': ihello'replies;
+i2'blocking;
+i2'blocking';
+i3'in: ihello'events;
+i3'in': ihello'events;
+i3'out: ihello'events;
+i3'out': ihello'events;
+i3'reply: ihello'replies;
+i3'reply': ihello'replies;
+i3'internal: ihello'modeling;
+i3'internal': ihello'modeling;
+i3'end;
+i3'end';
+i3'flush;
+i3'qin: ihello'events;
+i3'qin': ihello'events;
+i3'qout: ihello'events;
+i3'qout': ihello'events;
+i3'queue_full;
+
+hello_multiple_provides_requires'end;
+hello_multiple_provides_requires'end';
+declarative_illegal;
+illegal;
+incomplete;
+missing_reply;
+queue_full;
+queue_empty;
+queue_empty';
+range_error;
+recurse;
+return;
+second_reply;
+
+proc
+Illegal' = illegal . Illegal';
+Declarative_Illegal' = declarative_illegal . Declarative_Illegal';
+
+%%%%%%%%%%%%%%%%% INTERFACE %%%%%%%%%%%%%%%%%
+
+ihello'reorder
+ = sum i : ihello'events. ihello'in(i) . (sum r : ihello'replies. ihello'reply(r) . ihello'reorder_replied(r)
+                                                                       +sum i : ihello'events. ihello'in(i) . missing_reply . delta)
+ ;
+
+ihello'reorder_replied(r : ihello'replies)
+ = ihello'reply'reordered (r) . ihello'reorder
+ + sum r : ihello'replies. ihello'reply(r) . second_reply .delta
+ ;
+
+ihello'reordered_parallel = ihello'(true)|| ihello'reorder;
+
+ihello'reordered_comm = comm({
+  ihello'in | ihello'in -> ihello'in'
+  , ihello'reply | ihello'reply -> ihello'reply'}, ihello'reordered_parallel);
+
+ihello'reordered_allow = allow({
+    ihello'end
+  , ihello'flush
+  , ihello'in'
+  , ihello'internal
+  , ihello'out
+  , ihello'reply'
+  , ihello'reply'reordered
+  , declarative_illegal
+  , incomplete
+  , missing_reply
+  , range_error
+  , recurse
+  , return
+  , second_reply
+}, ihello'reordered_comm);
+
+ihello'reordered_rename = rename({
+    ihello'in' -> ihello'in
+  , ihello'reply'reordered -> ihello'reply}, ihello'reordered_allow);
+
+ihello'reordered = hide({
+    ihello'reply'
+}, ihello'reordered_rename);
+
+
+ihello'semantics
+ = sum i : ihello'events. ihello'in(i) . ihello'semantics_sync
+ + sum m : ihello'modeling. ihello'internal(m) . (ihello'end . ihello'semantics + ihello'semantics_flush)
+ ;
+
+ihello'semantics_sync
+ = sum r : ihello'replies. ihello'reply(r) . ihello'semantics
+ + sum i : ihello'events. ihello'out(i) . ihello'semantics_sync
+ ;
+
+ihello'semantics_flush
+ = sum i : ihello'events. ihello'out(i) . (ihello'end . ihello'flush . ihello'semantics + ihello'semantics_flush)
+ ;
+
+ihello'parallel = ihello'semantics || (ihello'reordered );
+
+ihello'comm = comm({
+  ihello'in | ihello'in -> ihello'in'
+  , ihello'out | ihello'out -> ihello'out'
+  , ihello'reply | ihello'reply -> ihello'reply'
+  , ihello'internal | ihello'internal -> ihello'internal'
+  , ihello'end | ihello'end -> ihello'end'
+  }, ihello'parallel);
+
+ihello'allow = allow({
+  ihello'in'
+  , ihello'reply'
+  , ihello'internal'
+  , ihello'end'
+  , ihello'out'
+  , ihello'flush
+  , declarative_illegal
+  , incomplete
+  , range_error
+  , recurse
+  , return
+  }, ihello'comm);
+
+ihello'rename = rename({
+  ihello'in' -> ihello'in
+  , ihello'out' -> ihello'out
+  , ihello'reply' -> ihello'reply
+  , ihello'internal' -> ihello'internal
+  , ihello'end' -> ihello'end
+  }, ihello'allow);
+
+%ihello'hide = hide({#x:makreel:model-name end}, ihello'rename);
+ihello'hide = ihello'rename;
+
+ihello'interface = ihello'hide;
+
+ihello' (idle': Bool) = non_optional_ihello' ();
+
+non_optional_ihello' (idle': Bool) = ihello'0 ();
+
+
+% {
+%   [(idle' && true)] on hello: {
+%     idle' = !(idle');
+%     reply(void);
+%   }
+%   [(!(idle') && true)] on hello: declarative-illegal;
+%   [(!((!(idle') && true)) && (!((idle' && true)) && true))] on hello: incomplete;
+%   [(!(idle') && true)] on inevitable: {
+%     idle' = !(idle');
+%     world();
+%     <end of process>
+%   }
+% }
+ihello'0(idle': Bool) = ihello'1 ()
+ + ihello'6 ()
+ + ihello'9 ()
+ + ihello'12 ();
+
+
+% [(idle' && true)] on hello: {
+%   idle' = !(idle');
+%   reply(void);
+% }
+ihello'1(idle': Bool) = ((idle' && true)) -> ihello'2 ();
+
+
+% on hello: {
+%   idle' = !(idle');
+%   reply(void);
+% }
+ihello'2(idle': Bool) = ihello'in (ihello'action (ihello'in'hello)) . ihello'3 ();
+
+
+% {
+%   idle' = !(idle');
+%   reply(void);
+% }
+ihello'3(idle': Bool) = ihello'4 ();
+
+
+% idle' = !(idle');
+ihello'4(idle': Bool) =  ihello'5(idle' = !(idle')
+);
+
+
+% reply(void);
+ihello'5(idle': Bool) = ihello'reply (ihello'Void(void)) . ihello' ();
+
+% [(!(idle') && true)] on hello: declarative-illegal;
+ihello'6(idle': Bool) = ((!(idle') && true)) -> ihello'7 ();
+
+
+% on hello: declarative-illegal;
+ihello'7(idle': Bool) = ihello'in (ihello'action (ihello'in'hello)) . ihello'8 ();
+
+
+% declarative-illegal;
+ihello'8(idle': Bool) = Declarative_Illegal' . delta;
+
+
+% [(!((!(idle') && true)) && (!((idle' && true)) && true))] on hello: incomplete;
+ihello'9(idle': Bool) = ((!((!(idle') && true)) && (!((idle' && true)) && true))) -> ihello'10 ();
+
+
+% on hello: incomplete;
+ihello'10(idle': Bool) = ihello'in (ihello'action (ihello'in'hello)) . ihello'11 ();
+
+
+% incomplete;
+ihello'11(idle': Bool) = incomplete . delta;
+
+
+% [(!(idle') && true)] on inevitable: {
+%   idle' = !(idle');
+%   world();
+%   <end of process>
+% }
+ihello'12(idle': Bool) = ((!(idle') && true)) -> ihello'13 ();
+
+
+% on inevitable: {
+%   idle' = !(idle');
+%   world();
+%   <end of process>
+% }
+ihello'13(idle': Bool) = ihello'internal(ihello'inevitable) . ihello'14 ();
+
+
+% {
+%   idle' = !(idle');
+%   world();
+%   <end of process>
+% }
+ihello'14(idle': Bool) = ihello'15 ();
+
+
+% idle' = !(idle');
+ihello'15(idle': Bool) =  ihello'16(idle' = !(idle')
+);
+
+
+% world();
+ihello'16(idle': Bool) = ihello'out (ihello'action (ihello'out'world)) . ihello'17 ();
+
+% <end of process>
+ihello'17(idle': Bool) = ihello'end . ihello' ();
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%% COMPONENT %%%%%%%%%%%%%%%%%%%
+
+hello_multiple_provides_requires' (i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'0 ();
+
+
+% {
+%   [((i1_idle' && i2_idle') && true)] on i1'.hello(): {
+%     i1_idle' = !(i1_idle');
+%     i3'.hello();
+%     reply(void);
+%     <end of process>
+%   }
+%   [((i1_idle' && !(i2_idle')) && true)] on i1'.hello(): {
+%     i1_idle' = !(i1_idle');
+%     reply(void);
+%     <end of process>
+%   }
+%   [(!(i1_idle') && true)] on i1'.hello(): declarative-illegal;
+%   [(!((!(i1_idle') && true)) && (!(((i1_idle' && !(i2_idle')) && true)) && (!(((i1_idle' && i2_idle') && true)) && true)))] on i1'.hello(): declarative-illegal;
+%   [((i1_idle' && i2_idle') && true)] on i2'.hello(): {
+%     i2_idle' = !(i2_idle');
+%     i3'.hello();
+%     reply(void);
+%     <end of process>
+%   }
+%   [((!(i1_idle') && i2_idle') && true)] on i2'.hello(): {
+%     i2_idle' = !(i2_idle');
+%     reply(void);
+%     <end of process>
+%   }
+%   [(!(i2_idle') && true)] on i2'.hello(): declarative-illegal;
+%   [(!((!(i2_idle') && true)) && (!(((!(i1_idle') && i2_idle') && true)) && (!(((i1_idle' && i2_idle') && true)) && true)))] on i2'.hello(): declarative-illegal;
+%   [((!(i1_idle') && i2_idle') && true)] on i3'.world(): {
+%     i1_idle' = !(i1_idle');
+%     i1'.world();
+%     <end of process>
+%   }
+%   [((i1_idle' && !(i2_idle')) && true)] on i3'.world(): {
+%     i2_idle' = !(i2_idle');
+%     i2'.world();
+%     <end of process>
+%   }
+%   [((!(i1_idle') && !(i2_idle')) && true)] on i3'.world(): {
+%     i1_idle' = !(i1_idle');
+%     i1'.world();
+%     i3'.hello();
+%     <end of process>
+%   }
+%   [((i1_idle' && i2_idle') && true)] on i3'.world(): illegal;
+%   [(!(((i1_idle' && i2_idle') && true)) && (!(((!(i1_idle') && !(i2_idle')) && true)) && (!(((i1_idle' && !(i2_idle')) && true)) && (!(((!(i1_idle') && i2_idle') && true)) && true))))] on i3'.world(): illegal;
+% }
+hello_multiple_provides_requires'0(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'1 ()
+ + hello_multiple_provides_requires'8 ()
+ + hello_multiple_provides_requires'14 ()
+ + hello_multiple_provides_requires'17 ()
+ + hello_multiple_provides_requires'20 ()
+ + hello_multiple_provides_requires'27 ()
+ + hello_multiple_provides_requires'33 ()
+ + hello_multiple_provides_requires'36 ()
+ + hello_multiple_provides_requires'39 ()
+ + hello_multiple_provides_requires'45 ()
+ + hello_multiple_provides_requires'51 ()
+ + hello_multiple_provides_requires'58 ()
+ + hello_multiple_provides_requires'61 ();
+
+
+% [((i1_idle' && i2_idle') && true)] on i1'.hello(): {
+%   i1_idle' = !(i1_idle');
+%   i3'.hello();
+%   reply(void);
+%   <end of process>
+% }
+hello_multiple_provides_requires'1(i1_idle': Bool, i2_idle': Bool) = (((i1_idle' && i2_idle') && true)) -> hello_multiple_provides_requires'2 ();
+
+
+% on i1'.hello(): {
+%   i1_idle' = !(i1_idle');
+%   i3'.hello();
+%   reply(void);
+%   <end of process>
+% }
+hello_multiple_provides_requires'2(i1_idle': Bool, i2_idle': Bool) = i1'in (ihello'action (ihello'in'hello)) . hello_multiple_provides_requires'3 ();
+
+
+% {
+%   i1_idle' = !(i1_idle');
+%   i3'.hello();
+%   reply(void);
+%   <end of process>
+% }
+hello_multiple_provides_requires'3(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'4 ();
+
+
+% i1_idle' = !(i1_idle');
+hello_multiple_provides_requires'4(i1_idle': Bool, i2_idle': Bool) =  hello_multiple_provides_requires'5(i1_idle' = !(i1_idle')
+);
+
+
+% i3'.hello();
+hello_multiple_provides_requires'5(i1_idle': Bool, i2_idle': Bool) = i3'in (ihello'action (ihello'in'hello)) . i3'reply(ihello'Void(void)) . hello_multiple_provides_requires'6 ();
+
+% reply(void);
+hello_multiple_provides_requires'6(i1_idle': Bool, i2_idle': Bool) = i1'reply (ihello'Void(void)) . hello_multiple_provides_requires'7 ();
+
+% <end of process>
+hello_multiple_provides_requires'7(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'end . hello_multiple_provides_requires' ();
+
+
+% [((i1_idle' && !(i2_idle')) && true)] on i1'.hello(): {
+%   i1_idle' = !(i1_idle');
+%   reply(void);
+%   <end of process>
+% }
+hello_multiple_provides_requires'8(i1_idle': Bool, i2_idle': Bool) = (((i1_idle' && !(i2_idle')) && true)) -> hello_multiple_provides_requires'9 ();
+
+
+% on i1'.hello(): {
+%   i1_idle' = !(i1_idle');
+%   reply(void);
+%   <end of process>
+% }
+hello_multiple_provides_requires'9(i1_idle': Bool, i2_idle': Bool) = i1'in (ihello'action (ihello'in'hello)) . hello_multiple_provides_requires'10 ();
+
+
+% {
+%   i1_idle' = !(i1_idle');
+%   reply(void);
+%   <end of process>
+% }
+hello_multiple_provides_requires'10(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'11 ();
+
+
+% i1_idle' = !(i1_idle');
+hello_multiple_provides_requires'11(i1_idle': Bool, i2_idle': Bool) =  hello_multiple_provides_requires'12(i1_idle' = !(i1_idle')
+);
+
+
+% reply(void);
+hello_multiple_provides_requires'12(i1_idle': Bool, i2_idle': Bool) = i1'reply (ihello'Void(void)) . hello_multiple_provides_requires'13 ();
+
+% <end of process>
+hello_multiple_provides_requires'13(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'end . hello_multiple_provides_requires' ();
+
+
+% [(!(i1_idle') && true)] on i1'.hello(): declarative-illegal;
+hello_multiple_provides_requires'14(i1_idle': Bool, i2_idle': Bool) = ((!(i1_idle') && true)) -> hello_multiple_provides_requires'15 ();
+
+
+% on i1'.hello(): declarative-illegal;
+hello_multiple_provides_requires'15(i1_idle': Bool, i2_idle': Bool) = i1'in (ihello'action (ihello'in'hello)) . hello_multiple_provides_requires'16 ();
+
+
+% declarative-illegal;
+hello_multiple_provides_requires'16(i1_idle': Bool, i2_idle': Bool) = Declarative_Illegal' . delta;
+
+
+% [(!((!(i1_idle') && true)) && (!(((i1_idle' && !(i2_idle')) && true)) && (!(((i1_idle' && i2_idle') && true)) && true)))] on i1'.hello(): declarative-illegal;
+hello_multiple_provides_requires'17(i1_idle': Bool, i2_idle': Bool) = ((!((!(i1_idle') && true)) && (!(((i1_idle' && !(i2_idle')) && true)) && (!(((i1_idle' && i2_idle') && true)) && true)))) -> hello_multiple_provides_requires'18 ();
+
+
+% on i1'.hello(): declarative-illegal;
+hello_multiple_provides_requires'18(i1_idle': Bool, i2_idle': Bool) = i1'in (ihello'action (ihello'in'hello)) . hello_multiple_provides_requires'19 ();
+
+
+% declarative-illegal;
+hello_multiple_provides_requires'19(i1_idle': Bool, i2_idle': Bool) = Declarative_Illegal' . delta;
+
+
+% [((i1_idle' && i2_idle') && true)] on i2'.hello(): {
+%   i2_idle' = !(i2_idle');
+%   i3'.hello();
+%   reply(void);
+%   <end of process>
+% }
+hello_multiple_provides_requires'20(i1_idle': Bool, i2_idle': Bool) = (((i1_idle' && i2_idle') && true)) -> hello_multiple_provides_requires'21 ();
+
+
+% on i2'.hello(): {
+%   i2_idle' = !(i2_idle');
+%   i3'.hello();
+%   reply(void);
+%   <end of process>
+% }
+hello_multiple_provides_requires'21(i1_idle': Bool, i2_idle': Bool) = i2'in (ihello'action (ihello'in'hello)) . hello_multiple_provides_requires'22 ();
+
+
+% {
+%   i2_idle' = !(i2_idle');
+%   i3'.hello();
+%   reply(void);
+%   <end of process>
+% }
+hello_multiple_provides_requires'22(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'23 ();
+
+
+% i2_idle' = !(i2_idle');
+hello_multiple_provides_requires'23(i1_idle': Bool, i2_idle': Bool) =  hello_multiple_provides_requires'24(i2_idle' = !(i2_idle')
+);
+
+
+% i3'.hello();
+hello_multiple_provides_requires'24(i1_idle': Bool, i2_idle': Bool) = i3'in (ihello'action (ihello'in'hello)) . i3'reply(ihello'Void(void)) . hello_multiple_provides_requires'25 ();
+
+% reply(void);
+hello_multiple_provides_requires'25(i1_idle': Bool, i2_idle': Bool) = i2'reply (ihello'Void(void)) . hello_multiple_provides_requires'26 ();
+
+% <end of process>
+hello_multiple_provides_requires'26(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'end . hello_multiple_provides_requires' ();
+
+
+% [((!(i1_idle') && i2_idle') && true)] on i2'.hello(): {
+%   i2_idle' = !(i2_idle');
+%   reply(void);
+%   <end of process>
+% }
+hello_multiple_provides_requires'27(i1_idle': Bool, i2_idle': Bool) = (((!(i1_idle') && i2_idle') && true)) -> hello_multiple_provides_requires'28 ();
+
+
+% on i2'.hello(): {
+%   i2_idle' = !(i2_idle');
+%   reply(void);
+%   <end of process>
+% }
+hello_multiple_provides_requires'28(i1_idle': Bool, i2_idle': Bool) = i2'in (ihello'action (ihello'in'hello)) . hello_multiple_provides_requires'29 ();
+
+
+% {
+%   i2_idle' = !(i2_idle');
+%   reply(void);
+%   <end of process>
+% }
+hello_multiple_provides_requires'29(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'30 ();
+
+
+% i2_idle' = !(i2_idle');
+hello_multiple_provides_requires'30(i1_idle': Bool, i2_idle': Bool) =  hello_multiple_provides_requires'31(i2_idle' = !(i2_idle')
+);
+
+
+% reply(void);
+hello_multiple_provides_requires'31(i1_idle': Bool, i2_idle': Bool) = i2'reply (ihello'Void(void)) . hello_multiple_provides_requires'32 ();
+
+% <end of process>
+hello_multiple_provides_requires'32(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'end . hello_multiple_provides_requires' ();
+
+
+% [(!(i2_idle') && true)] on i2'.hello(): declarative-illegal;
+hello_multiple_provides_requires'33(i1_idle': Bool, i2_idle': Bool) = ((!(i2_idle') && true)) -> hello_multiple_provides_requires'34 ();
+
+
+% on i2'.hello(): declarative-illegal;
+hello_multiple_provides_requires'34(i1_idle': Bool, i2_idle': Bool) = i2'in (ihello'action (ihello'in'hello)) . hello_multiple_provides_requires'35 ();
+
+
+% declarative-illegal;
+hello_multiple_provides_requires'35(i1_idle': Bool, i2_idle': Bool) = Declarative_Illegal' . delta;
+
+
+% [(!((!(i2_idle') && true)) && (!(((!(i1_idle') && i2_idle') && true)) && (!(((i1_idle' && i2_idle') && true)) && true)))] on i2'.hello(): declarative-illegal;
+hello_multiple_provides_requires'36(i1_idle': Bool, i2_idle': Bool) = ((!((!(i2_idle') && true)) && (!(((!(i1_idle') && i2_idle') && true)) && (!(((i1_idle' && i2_idle') && true)) && true)))) -> hello_multiple_provides_requires'37 ();
+
+
+% on i2'.hello(): declarative-illegal;
+hello_multiple_provides_requires'37(i1_idle': Bool, i2_idle': Bool) = i2'in (ihello'action (ihello'in'hello)) . hello_multiple_provides_requires'38 ();
+
+
+% declarative-illegal;
+hello_multiple_provides_requires'38(i1_idle': Bool, i2_idle': Bool) = Declarative_Illegal' . delta;
+
+
+% [((!(i1_idle') && i2_idle') && true)] on i3'.world(): {
+%   i1_idle' = !(i1_idle');
+%   i1'.world();
+%   <end of process>
+% }
+hello_multiple_provides_requires'39(i1_idle': Bool, i2_idle': Bool) = (((!(i1_idle') && i2_idle') && true)) -> hello_multiple_provides_requires'40 ();
+
+
+% on i3'.world(): {
+%   i1_idle' = !(i1_idle');
+%   i1'.world();
+%   <end of process>
+% }
+hello_multiple_provides_requires'40(i1_idle': Bool, i2_idle': Bool) = i3'out (ihello'action (ihello'out'world)) . hello_multiple_provides_requires'41 ();
+
+
+% {
+%   i1_idle' = !(i1_idle');
+%   i1'.world();
+%   <end of process>
+% }
+hello_multiple_provides_requires'41(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'42 ();
+
+
+% i1_idle' = !(i1_idle');
+hello_multiple_provides_requires'42(i1_idle': Bool, i2_idle': Bool) =  hello_multiple_provides_requires'43(i1_idle' = !(i1_idle')
+);
+
+
+% i1'.world();
+hello_multiple_provides_requires'43(i1_idle': Bool, i2_idle': Bool) = i1'out (ihello'action (ihello'out'world)) . hello_multiple_provides_requires'44 ();
+
+% <end of process>
+hello_multiple_provides_requires'44(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'end . hello_multiple_provides_requires' ();
+
+
+% [((i1_idle' && !(i2_idle')) && true)] on i3'.world(): {
+%   i2_idle' = !(i2_idle');
+%   i2'.world();
+%   <end of process>
+% }
+hello_multiple_provides_requires'45(i1_idle': Bool, i2_idle': Bool) = (((i1_idle' && !(i2_idle')) && true)) -> hello_multiple_provides_requires'46 ();
+
+
+% on i3'.world(): {
+%   i2_idle' = !(i2_idle');
+%   i2'.world();
+%   <end of process>
+% }
+hello_multiple_provides_requires'46(i1_idle': Bool, i2_idle': Bool) = i3'out (ihello'action (ihello'out'world)) . hello_multiple_provides_requires'47 ();
+
+
+% {
+%   i2_idle' = !(i2_idle');
+%   i2'.world();
+%   <end of process>
+% }
+hello_multiple_provides_requires'47(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'48 ();
+
+
+% i2_idle' = !(i2_idle');
+hello_multiple_provides_requires'48(i1_idle': Bool, i2_idle': Bool) =  hello_multiple_provides_requires'49(i2_idle' = !(i2_idle')
+);
+
+
+% i2'.world();
+hello_multiple_provides_requires'49(i1_idle': Bool, i2_idle': Bool) = i2'out (ihello'action (ihello'out'world)) . hello_multiple_provides_requires'50 ();
+
+% <end of process>
+hello_multiple_provides_requires'50(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'end . hello_multiple_provides_requires' ();
+
+
+% [((!(i1_idle') && !(i2_idle')) && true)] on i3'.world(): {
+%   i1_idle' = !(i1_idle');
+%   i1'.world();
+%   i3'.hello();
+%   <end of process>
+% }
+hello_multiple_provides_requires'51(i1_idle': Bool, i2_idle': Bool) = (((!(i1_idle') && !(i2_idle')) && true)) -> hello_multiple_provides_requires'52 ();
+
+
+% on i3'.world(): {
+%   i1_idle' = !(i1_idle');
+%   i1'.world();
+%   i3'.hello();
+%   <end of process>
+% }
+hello_multiple_provides_requires'52(i1_idle': Bool, i2_idle': Bool) = i3'out (ihello'action (ihello'out'world)) . hello_multiple_provides_requires'53 ();
+
+
+% {
+%   i1_idle' = !(i1_idle');
+%   i1'.world();
+%   i3'.hello();
+%   <end of process>
+% }
+hello_multiple_provides_requires'53(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'54 ();
+
+
+% i1_idle' = !(i1_idle');
+hello_multiple_provides_requires'54(i1_idle': Bool, i2_idle': Bool) =  hello_multiple_provides_requires'55(i1_idle' = !(i1_idle')
+);
+
+
+% i1'.world();
+hello_multiple_provides_requires'55(i1_idle': Bool, i2_idle': Bool) = i1'out (ihello'action (ihello'out'world)) . hello_multiple_provides_requires'56 ();
+
+% i3'.hello();
+hello_multiple_provides_requires'56(i1_idle': Bool, i2_idle': Bool) = i3'in (ihello'action (ihello'in'hello)) . i3'reply(ihello'Void(void)) . hello_multiple_provides_requires'57 ();
+
+% <end of process>
+hello_multiple_provides_requires'57(i1_idle': Bool, i2_idle': Bool) = hello_multiple_provides_requires'end . hello_multiple_provides_requires' ();
+
+
+% [((i1_idle' && i2_idle') && true)] on i3'.world(): illegal;
+hello_multiple_provides_requires'58(i1_idle': Bool, i2_idle': Bool) = (((i1_idle' && i2_idle') && true)) -> hello_multiple_provides_requires'59 ();
+
+
+% on i3'.world(): illegal;
+hello_multiple_provides_requires'59(i1_idle': Bool, i2_idle': Bool) = i3'out (ihello'action (ihello'out'world)) . hello_multiple_provides_requires'60 ();
+
+
+% illegal;
+hello_multiple_provides_requires'60(i1_idle': Bool, i2_idle': Bool) = Illegal' . delta;
+
+
+% [(!(((i1_idle' && i2_idle') && true)) && (!(((!(i1_idle') && !(i2_idle')) && true)) && (!(((i1_idle' && !(i2_idle')) && true)) && (!(((!(i1_idle') && i2_idle') && true)) && true))))] on i3'.world(): illegal;
+hello_multiple_provides_requires'61(i1_idle': Bool, i2_idle': Bool) = ((!(((i1_idle' && i2_idle') && true)) && (!(((!(i1_idle') && !(i2_idle')) && true)) && (!(((i1_idle' && !(i2_idle')) && true)) && (!(((!(i1_idle') && i2_idle') && true)) && true))))) -> hello_multiple_provides_requires'62 ();
+
+
+% on i3'.world(): illegal;
+hello_multiple_provides_requires'62(i1_idle': Bool, i2_idle': Bool) = i3'out (ihello'action (ihello'out'world)) . hello_multiple_provides_requires'63 ();
+
+
+% illegal;
+hello_multiple_provides_requires'63(i1_idle': Bool, i2_idle': Bool) = Illegal' . delta;
+
+
+component_behaviour =  hello_multiple_provides_requires'(true, true);
+
+%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%% PORT PROCESSES %%%%%%%%%%%%%%%
+
+i1'_port_rename = rename ({
+  ihello'in -> i1'in
+  , ihello'out -> i1'out
+  , ihello'reply -> i1'reply
+  , ihello'internal -> i1'internal
+  , ihello'end -> i1'end
+  , ihello'flush -> i1'flush
+  }, ihello'interface);
+
+i1'_port = hide ({
+  recurse
+  , return
+  
+  }, i1'_port_rename);
+
+i2'_port_rename = rename ({
+  ihello'in -> i2'in
+  , ihello'out -> i2'out
+  , ihello'reply -> i2'reply
+  , ihello'internal -> i2'internal
+  , ihello'end -> i2'end
+  , ihello'flush -> i2'flush
+  }, ihello'interface);
+
+i2'_port = hide ({
+  recurse
+  , return
+  
+  }, i2'_port_rename);
+
+i3'_port_rename = rename ({
+  ihello'in -> i3'in
+  , ihello'out -> i3'out
+  , ihello'reply -> i3'reply
+  , ihello'internal -> i3'internal
+  , ihello'end -> i3'end
+  , ihello'flush -> i3'flush
+  }, ihello'interface);
+
+i3'_port = hide ({
+  recurse
+  , return
+  , i3'flush
+  }, i3'_port_rename);
+
+
+%%%%%%%%%%%%%%%%%%%% Q %%%%%%%%%%%%%%%%%%%%%%
+
+component_queue (l: List (requires_events)) =
+  (#l < QueueLength) -> (sum e: ihello'events. i3'qin (e) . component_queue (l = l <| i3'events (e)))
+  + (l != [] && i3'is (head (l))) -> i3'qout (i3' (head (l))) . component_queue (l = tail (l))
+  + (#l == QueueLength) -> (sum e: ihello'events. i3'qin (e) . queue_full . Illegal')
+  + (#l == 0) -> queue_empty . component_queue ()
+  ;
+
+
+
+req_and_queue_parallel = component_queue([]) 
+  || i3'_port;
+
+req_and_queue_comm = comm({
+  i3'out | i3'qin -> i3'qin'
+  }, req_and_queue_parallel);
+
+req_and_queue_allow = allow({
+  i3'in
+  , i3'qin'
+  , i3'qout
+  , i3'reply
+  , i3'internal
+  , i3'end
+  , i3'queue_full
+  , declarative_illegal
+  , illegal
+  , incomplete
+  , queue_empty
+  , queue_full
+  }, req_and_queue_comm);
+
+req_and_queue_rename = rename({
+  i3'qin' -> i3'qin
+ 
+  , declarative_illegal -> illegal
+  }, req_and_queue_allow);
+
+%req_and_queue = hide({
+%  #x:queue-hide-requires
+%  }, req_and_queue_rename);
+
+req_and_queue = req_and_queue_rename;
+
+
+
+%%%%%%%%%%%%%%%%%%%%% COMPONENT REORDER %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+component_reorder
+ = sum a: ihello'actions. i1'in (ihello'action (a)) . (sum r: ihello'replies. i1'reply (r) . component_reorder_flush_i1'(r)
++ hello_multiple_provides_requires'end . missing_reply . delta
+)
+
+ + sum a: ihello'actions. i2'in (ihello'action (a)) . (sum r: ihello'replies. i2'reply (r) . component_reorder_flush_i2'(r)
++ hello_multiple_provides_requires'end . missing_reply . delta
+)
+
+ + hello_multiple_provides_requires'end . component_reorder
+ ;
+
+component_reorder_flush_i1'(r: ihello'replies)
+ = hello_multiple_provides_requires'end . (i1'reply'reordered (r) . component_reorder + component_reorder_flush_i1'(r))
+ + sum r: ihello'replies. i1'reply (r) . second_reply . delta
+ ;
+component_reorder_flush_i2'(r: ihello'replies)
+ = hello_multiple_provides_requires'end . (i2'reply'reordered (r) . component_reorder + component_reorder_flush_i2'(r))
+ + sum r: ihello'replies. i2'reply (r) . second_reply . delta
+ ;
+
+
+component_reorder_block
+ = hello_multiple_provides_requires'end . component_reorder_block
+ + sum r: ihello'replies. i1'reply (r) . component_reorder_flush_i1'(r)
+ + sum r: ihello'replies. i2'reply (r) . component_reorder_flush_i2'(r)
+ ;
+
+component_reorder_parallel = component_behaviour || component_reorder;
+
+component_reorder_comm = comm({
+  hello_multiple_provides_requires'end | hello_multiple_provides_requires'end  -> hello_multiple_provides_requires'end'
+  
+  , i1'reply | i1'reply -> i1'reply'
+, i1'in | i1'in -> i1'in'
+, i1'blocking | i1'blocking -> i1'blocking'
+  , i2'reply | i2'reply -> i2'reply'
+, i2'in | i2'in -> i2'in'
+, i2'blocking | i2'blocking -> i2'blocking'
+  }, component_reorder_parallel);
+
+component_reorder_allow = allow({
+  declarative_illegal
+  , illegal
+  , missing_reply
+  , queue_empty
+  , range_error
+  , recurse
+  , return
+  , second_reply
+  , hello_multiple_provides_requires'end'
+  
+  , i1'in'
+  , i1'blocking'
+  , i1'out
+  , i1'reply'
+  , i1'reply'reordered
+  , i2'in'
+  , i2'blocking'
+  , i2'out
+  , i2'reply'
+  , i2'reply'reordered
+  
+  , i3'in
+  , i3'out
+  , i3'reply
+  }, component_reorder_comm);
+
+component_reorder_rename = rename({
+  hello_multiple_provides_requires'end' -> hello_multiple_provides_requires'end
+  
+  , i1'in' -> i1'in
+  , i1'blocking' -> i1'blocking
+  , i1'reply' -> i1'reply
+
+  , i2'in' -> i2'in
+  , i2'blocking' -> i2'blocking
+  , i2'reply' -> i2'reply
+
+  
+  , i3'out -> i3'qout
+  }, component_reorder_allow);
+
+%component_reorder_hide = hide({#x:reorder-hide-provides}, component_reorder_rename);
+component_reorder_hide = component_reorder_rename;
+
+%%%%%%%%%%%%%%%%%%%%%%%%% SEMANTICS %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+semantics
+ = sum e : ihello'actions. i1'in (ihello'action(e)) . semantics_provides_unblocked
+ + sum e : ihello'actions. i2'in (ihello'action(e)) . semantics_provides_unblocked
+ 
+ + sum e : ihello'modeling. i3'internal (e) . i3'end . semantics_requires
+ ;
+
+semantics_provides_unblocked
+ = i1'blocking . ( hello_multiple_provides_requires'end . semantics_provides_blocked
+                  + sum r : ihello'replies. i1'reply (r) . semantics_provides_unblocked)
++ sum r : ihello'replies. i1'reply (r) . semantics_provides_unblocked
++ sum a : ihello'actions. i1'out (ihello'action (a)) . semantics_provides_unblocked
+
+ + i2'blocking . ( hello_multiple_provides_requires'end . semantics_provides_blocked
+                  + sum r : ihello'replies. i2'reply (r) . semantics_provides_unblocked)
++ sum r : ihello'replies. i2'reply (r) . semantics_provides_unblocked
++ sum a : ihello'actions. i2'out (ihello'action (a)) . semantics_provides_unblocked
+
+ + hello_multiple_provides_requires'end . ((queue_empty . (sum r : ihello'replies. i1'reply'reordered (r) . semantics
+ + sum r : ihello'replies. i2'reply'reordered (r) . semantics)) 
+ + sum a : ihello'actions. i3'qout (ihello'action (a)) . semantics_provides_unblocked)
+ ;
+
+semantics_provides_blocked
+ = delta 
+ + sum a : ihello'actions. i3'qout (ihello'action (a)) . (hello_multiple_provides_requires'end . semantics_provides_blocked
+                                                                                                 
+ + sum r : ihello'replies. i1'reply (r) . semantics_provides_unblocked
+ + sum r : ihello'replies. i2'reply (r) . semantics_provides_unblocked)
+ + queue_empty . (delta 
+ + sum e : ihello'modeling. i3'internal (e) . i3'end . semantics_provides_blocked)
+ ;
+
+semantics_requires
+ = queue_empty . semantics
+ + delta 
+ + sum a : ihello'actions. i3'qout (ihello'action (a)) . (hello_multiple_provides_requires'end . semantics_requires 
+ + sum a : ihello'actions . i1'out(ihello'action (a)) . semantics_requires_flush_i1'
+ + sum a : ihello'actions . i2'out(ihello'action (a)) . semantics_requires_flush_i2')
+ ;
+
+semantics_requires_flush_i1'
+ = hello_multiple_provides_requires'end . ((delta 
+ + sum a : ihello'actions. i3'qout(ihello'action (a))) . semantics_requires_flush_i1'
+                               +queue_empty . i1'flush . semantics)
+ + sum a : ihello'actions . i1'out(ihello'action (a)) . semantics_requires_flush_i1'
+ ;
+semantics_requires_flush_i2'
+ = hello_multiple_provides_requires'end . ((delta 
+ + sum a : ihello'actions. i3'qout(ihello'action (a))) . semantics_requires_flush_i2'
+                               +queue_empty . i2'flush . semantics)
+ + sum a : ihello'actions . i2'out(ihello'action (a)) . semantics_requires_flush_i2'
+ ;
+
+
+component_semantics = component_reorder_hide || semantics;
+
+component_semantics_comm = comm({
+  hello_multiple_provides_requires'end | hello_multiple_provides_requires'end -> hello_multiple_provides_requires'end'
+  
+  , i1'in | i1'in -> i1'in'
+ , i1'out | i1'out -> i1'out'
+ , i1'blocking | i1'blocking -> i1'blocking'
+ , i1'reply | i1'reply -> i1'reply'
+ , i1'reply'reordered | i1'reply'reordered -> i1'reply'reordered'
+
+  , i2'in | i2'in -> i2'in'
+ , i2'out | i2'out -> i2'out'
+ , i2'blocking | i2'blocking -> i2'blocking'
+ , i2'reply | i2'reply -> i2'reply'
+ , i2'reply'reordered | i2'reply'reordered -> i2'reply'reordered'
+
+  
+  , i3'qout | i3'qout -> i3'qout'
+  }, component_semantics);
+
+component_semantics_allow = allow({
+  hello_multiple_provides_requires'end'
+  , declarative_illegal
+  , illegal
+  , missing_reply
+  , queue_empty
+  , range_error
+  , recurse
+  , return
+  , second_reply
+  
+  , i1'in'
+ , i1'blocking'
+ , i1'out'
+ , i1'reply'
+ , i1'reply'reordered'
+ , i1'flush
+  , i2'in'
+ , i2'blocking'
+ , i2'out'
+ , i2'reply'
+ , i2'reply'reordered'
+ , i2'flush
+  
+  , i3'in
+  , i3'reply
+  , i3'internal
+  , i3'end
+  , i3'qout'
+
+  }, component_semantics_comm);
+
+component_semantics_rename = rename({
+  hello_multiple_provides_requires'end' -> hello_multiple_provides_requires'end
+  
+  , i1'in' -> i1'in
+ , i1'out' -> i1'out
+ , i1'blocking' -> i1'blocking
+ , i1'reply' -> i1'reply
+ , i1'reply'reordered' -> i1'reply'reordered
+  , i2'in' -> i2'in
+ , i2'out' -> i2'out
+ , i2'blocking' -> i2'blocking
+ , i2'reply' -> i2'reply
+ , i2'reply'reordered' -> i2'reply'reordered
+  
+  , i3'qout' -> i3'qout
+  }, component_semantics_allow);
+
+%component_semantics_hide = hide({#x:makreel:model-name end}, component_semantics_rename);
+component_semantics_hide = component_semantics_rename;
+
+%%%%%%%%%%%%%%%%%%%%% COMPONENT ASSEMBLY %%%%%%%%%%%%%%%%%%%%%%
+
+component_parallel = component_semantics_hide || req_and_queue;
+
+component_comm = comm({
+  queue_empty | queue_empty -> queue_empty'
+  
+  , i3'in | i3'in -> i3'in'
+  , i3'reply | i3'reply -> i3'reply'
+  , i3'internal | i3'internal -> i3'internal'
+  , i3'end | i3'end -> i3'end'
+  , i3'qout | i3'qout -> i3'qout'  
+  }, component_parallel);
+
+component_allow = allow({
+  declarative_illegal
+  , illegal
+  , missing_reply
+  , queue_empty'
+  , queue_full
+  , range_error
+  , recurse
+  , return
+  , second_reply
+  , hello_multiple_provides_requires'end
+  
+  , i1'in
+ , i1'blocking
+ , i1'out
+ , i1'reply
+ , i1'reply'reordered
+ , i1'flush
+  , i2'in
+ , i2'blocking
+ , i2'out
+ , i2'reply
+ , i2'reply'reordered
+ , i2'flush
+  
+  , i3'in'
+  , i3'reply'
+  , i3'internal'
+  , i3'end'
+  , i3'qin
+  , i3'qout'
+  , i3'queue_full
+  }, component_comm);
+
+component_rename = rename({
+  queue_empty' -> queue_empty
+  
+  ,   i1'reply -> i1'reply'
+  , i1'reply'reordered -> i1'reply
+  ,   i2'reply -> i2'reply'
+  , i2'reply'reordered -> i2'reply
+  
+  , i3'in' -> i3'in
+  , i3'qout' -> i3'qout
+  , i3'reply' -> i3'reply
+  , i3'internal' -> i3'internal
+  , i3'end' -> i3'end
+
+  }, component_allow);
+
+component = hide({
+  queue_empty
+  , recurse
+  , return
+  , hello_multiple_provides_requires'end
+  
+  , i1'blocking
+, i1'reply'
+  , i2'blocking
+, i2'reply'
+  
+  , i3'end
+, i3'qout
+  }, component_rename);
+
+%%component = component_rename;
+
+%%%%%%%%%%%%%%%%%%%%%%% PROVIDES %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+provides_r2c = sum x: ihello'actions . i1'in (ihello'action (x)) . provides_out
+  + sum m: ihello'modeling. i1'internal (m) . provides_out
+ + sum x: ihello'actions . i2'in (ihello'action (x)) . provides_out
+  + sum m: ihello'modeling. i2'internal (m) . provides_out;
+
+provides_out = sum x: ihello'replies . i1'reply (x) . provides_r2c
+  + i1'end . provides_r2c
+  + sum x: ihello'actions . i1'out (ihello'action (x)) . provides_out
+
+ + sum x: ihello'replies . i2'reply (x) . provides_r2c
+  + i2'end . provides_r2c
+  + sum x: ihello'actions . i2'out (ihello'action (x)) . provides_out
+
+;
+
+provides_parallel = i1'_port
+  || i2'_port|| provides_r2c;
+
+provides_comm = comm ({
+  i1'in | i1'in -> i1'in'
+  , i1'out | i1'out -> i1'out'
+  , i1'reply | i1'reply -> i1'reply'
+  , i1'internal | i1'internal -> i1'internal'
+  , i1'end | i1'end -> i1'end'
+  , i2'in | i2'in -> i2'in'
+  , i2'out | i2'out -> i2'out'
+  , i2'reply | i2'reply -> i2'reply'
+  , i2'internal | i2'internal -> i2'internal'
+  , i2'end | i2'end -> i2'end'
+  }, provides_parallel);
+
+provides_allow = allow ({
+  i1'in'
+ , i1'out'
+ , i1'reply'
+ , i1'internal'
+ , i1'end'
+ , i1'flush
+  , i2'in'
+ , i2'out'
+ , i2'reply'
+ , i2'internal'
+ , i2'end'
+ , i2'flush
+  , declarative_illegal
+  , illegal
+  , incomplete
+  , missing_reply
+  , range_error
+  , second_reply
+  }, provides_comm);
+
+provides_rename = rename ({
+  i1'in' -> i1'in
+  , i1'out' -> i1'out
+  , i1'reply' -> i1'reply
+  , i1'internal' -> i1'internal
+  , i1'end' -> i1'end
+  , i2'in' -> i2'in
+  , i2'out' -> i2'out
+  , i2'reply' -> i2'reply
+  , i2'internal' -> i2'internal
+  , i2'end' -> i2'end
+  }, provides_allow);
+
+provides = hide ({
+  i1'internal
+  , i1'end
+  , i2'internal
+  , i2'end
+  }, provides_rename);
+
+%init component;
+%init provides;
+

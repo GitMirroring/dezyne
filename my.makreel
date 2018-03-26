@@ -1,0 +1,500 @@
+% hello makreel
+% mcrl22lps -b hello.makreel | lps2lts /dev/stdin my.aut
+
+sort
+I'actions = struct
+I'in'a
+|I'in'b
+;
+
+I'replies = struct I'void;
+I'events = struct
+    I'event (bar: I'actions)
+    | I'reply (bar: I'replies)
+    ;
+
+
+act
+I'act: I'events;
+p1'act: I'events;
+p1'act': I'events;
+p2'act: I'events;
+p2'act': I'events;
+
+Illegal';
+
+proc
+I (open': Bool) = I'0 ();
+
+
+% {
+%   [true] on a: {
+%     open' = !(open');
+%     reply(void);
+%     <end of process>
+%   }
+%   [open'] on b: {
+%     {}
+%     reply(void);
+%     <end of process>
+%   }
+%   [!(open')] on b: {
+%     illegal;
+%     reply(void);
+%     <end of process>
+%   }
+%   [!((!(open') || open'))] on b: {
+%     illegal;
+%     reply(void);
+%     <end of process>
+%   }
+% }
+I'0(open': Bool) = I'1()
+  + I'2()
+  + I'3()
+  + I'4();
+
+
+% [true] on a: {
+%   open' = !(open');
+%   reply(void);
+%   <end of process>
+% }
+I'1(open': Bool) = (true) -> I'5();
+
+
+% on a: {
+%   open' = !(open');
+%   reply(void);
+%   <end of process>
+% }
+I'5(open': Bool) = I'act (I'event (I'in'a))
+  . I'6();
+
+
+% open' = !(open');
+I'6(open': Bool) = I'7(open' = !(open'));
+
+% reply(void);
+I'7(open': Bool) = I'act (I'reply (I'void)) . I'8();
+
+
+% <end of process>
+I'8(open': Bool) = I'0();
+
+
+
+
+% [open'] on b: {
+%   {}
+%   reply(void);
+%   <end of process>
+% }
+I'2(open': Bool) = (open') -> I'9();
+
+
+% on b: {
+%   {}
+%   reply(void);
+%   <end of process>
+% }
+I'9(open': Bool) = I'act (I'event (I'in'b))
+  . I'10();
+
+
+% {}
+I'10(open': Bool) = I'11();
+
+
+% reply(void);
+I'11(open': Bool) = I'act (I'reply (I'void)) . I'12();
+
+
+% <end of process>
+I'12(open': Bool) = I'0();
+
+
+
+
+% [!(open')] on b: {
+%   illegal;
+%   reply(void);
+%   <end of process>
+% }
+I'3(open': Bool) = (!(open')) -> I'13();
+
+
+% on b: {
+%   illegal;
+%   reply(void);
+%   <end of process>
+% }
+I'13(open': Bool) = I'act (I'event (I'in'b))
+  . I'14();
+
+
+% illegal;
+I'14(open': Bool) = Illegal' . delta;
+
+
+% reply(void);
+I'15(open': Bool) = I'act (I'reply (I'void)) . I'16();
+
+
+% <end of process>
+I'16(open': Bool) = I'0();
+
+
+
+
+% [!((!(open') || open'))] on b: {
+%   illegal;
+%   reply(void);
+%   <end of process>
+% }
+I'4(open': Bool) = (!((!(open') || open'))) -> I'17();
+
+
+% on b: {
+%   illegal;
+%   reply(void);
+%   <end of process>
+% }
+I'17(open': Bool) = I'act (I'event (I'in'b))
+  . I'18();
+
+
+% illegal;
+I'18(open': Bool) = Illegal' . delta;
+
+
+% reply(void);
+I'19(open': Bool) = I'act (I'reply (I'void)) . I'20();
+
+
+% <end of process>
+I'20(open': Bool) = I'0();
+
+
+
+
+
+
+C (p1_open': Bool,p2_open': Bool) = C'0 ();
+
+
+% {
+%   on p1.a(): {
+%     p1_open' = !(p1_open');
+%     reply(void);
+%     <end of process>
+%   }
+%   [p1_open'] on p1.b(): {
+%     {}
+%     reply(void);
+%     <end of process>
+%   }
+%   [!(p1_open')] on p1.b(): {
+%     illegal;
+%     reply(void);
+%     <end of process>
+%   }
+%   [!((!(p1_open') || p1_open'))] on p1.b(): {
+%     illegal;
+%     reply(void);
+%     <end of process>
+%   }
+%   on p2.a(): {
+%     p2_open' = !(p2_open');
+%     reply(void);
+%     <end of process>
+%   }
+%   [p2_open'] on p2.b(): {
+%     {}
+%     reply(void);
+%     <end of process>
+%   }
+%   [!(p2_open')] on p2.b(): {
+%     illegal;
+%     reply(void);
+%     <end of process>
+%   }
+%   [!((!(p2_open') || p2_open'))] on p2.b(): {
+%     illegal;
+%     reply(void);
+%     <end of process>
+%   }
+% }
+C'0(p1_open': Bool,p2_open': Bool) = C'1()
+  + C'2()
+  + C'3()
+  + C'4()
+  + C'5()
+  + C'6()
+  + C'7()
+  + C'8();
+
+
+% on p1.a(): {
+%   p1_open' = !(p1_open');
+%   reply(void);
+%   <end of process>
+% }
+C'1(p1_open': Bool,p2_open': Bool) = p1'act (I'event (I'in'a))
+  . C'9();
+
+
+% p1_open' = !(p1_open');
+C'9(p1_open': Bool,p2_open': Bool) = C'10(p1_open' = !(p1_open'));
+
+% reply(void);
+C'10(p1_open': Bool,p2_open': Bool) = p1'act (I'reply (I'void)) . C'11();
+
+
+% <end of process>
+C'11(p1_open': Bool,p2_open': Bool) = C'0();
+
+
+
+% [p1_open'] on p1.b(): {
+%   {}
+%   reply(void);
+%   <end of process>
+% }
+C'2(p1_open': Bool,p2_open': Bool) = (p1_open') -> C'12();
+
+
+% on p1.b(): {
+%   {}
+%   reply(void);
+%   <end of process>
+% }
+C'12(p1_open': Bool,p2_open': Bool) = p1'act (I'event (I'in'b))
+  . C'13();
+
+
+% {}
+C'13(p1_open': Bool,p2_open': Bool) = C'14();
+
+
+% reply(void);
+C'14(p1_open': Bool,p2_open': Bool) = p1'act (I'reply (I'void)) . C'15();
+
+
+% <end of process>
+C'15(p1_open': Bool,p2_open': Bool) = C'0();
+
+
+
+
+% [!(p1_open')] on p1.b(): {
+%   illegal;
+%   reply(void);
+%   <end of process>
+% }
+C'3(p1_open': Bool,p2_open': Bool) = (!(p1_open')) -> C'16();
+
+
+% on p1.b(): {
+%   illegal;
+%   reply(void);
+%   <end of process>
+% }
+C'16(p1_open': Bool,p2_open': Bool) = p1'act (I'event (I'in'b))
+  . C'17();
+
+
+% illegal;
+C'17(p1_open': Bool,p2_open': Bool) = Illegal' . delta;
+
+
+% reply(void);
+C'18(p1_open': Bool,p2_open': Bool) = p1'act (I'reply (I'void)) . C'19();
+
+
+% <end of process>
+C'19(p1_open': Bool,p2_open': Bool) = C'0();
+
+
+
+
+% [!((!(p1_open') || p1_open'))] on p1.b(): {
+%   illegal;
+%   reply(void);
+%   <end of process>
+% }
+C'4(p1_open': Bool,p2_open': Bool) = (!((!(p1_open') || p1_open'))) -> C'20();
+
+
+% on p1.b(): {
+%   illegal;
+%   reply(void);
+%   <end of process>
+% }
+C'20(p1_open': Bool,p2_open': Bool) = p1'act (I'event (I'in'b))
+  . C'21();
+
+
+% illegal;
+C'21(p1_open': Bool,p2_open': Bool) = Illegal' . delta;
+
+
+% reply(void);
+C'22(p1_open': Bool,p2_open': Bool) = p1'act (I'reply (I'void)) . C'23();
+
+
+% <end of process>
+C'23(p1_open': Bool,p2_open': Bool) = C'0();
+
+
+
+
+% on p2.a(): {
+%   p2_open' = !(p2_open');
+%   reply(void);
+%   <end of process>
+% }
+C'5(p1_open': Bool,p2_open': Bool) = p2'act (I'event (I'in'a))
+  . C'24();
+
+
+% p2_open' = !(p2_open');
+C'24(p1_open': Bool,p2_open': Bool) = C'25(p2_open' = !(p2_open'));
+
+% reply(void);
+C'25(p1_open': Bool,p2_open': Bool) = p2'act (I'reply (I'void)) . C'26();
+
+
+% <end of process>
+C'26(p1_open': Bool,p2_open': Bool) = C'0();
+
+
+
+% [p2_open'] on p2.b(): {
+%   {}
+%   reply(void);
+%   <end of process>
+% }
+C'6(p1_open': Bool,p2_open': Bool) = (p2_open') -> C'27();
+
+
+% on p2.b(): {
+%   {}
+%   reply(void);
+%   <end of process>
+% }
+C'27(p1_open': Bool,p2_open': Bool) = p2'act (I'event (I'in'b))
+  . C'28();
+
+
+% {}
+C'28(p1_open': Bool,p2_open': Bool) = C'29();
+
+
+% reply(void);
+C'29(p1_open': Bool,p2_open': Bool) = p2'act (I'reply (I'void)) . C'30();
+
+
+% <end of process>
+C'30(p1_open': Bool,p2_open': Bool) = C'0();
+
+
+
+
+% [!(p2_open')] on p2.b(): {
+%   illegal;
+%   reply(void);
+%   <end of process>
+% }
+C'7(p1_open': Bool,p2_open': Bool) = (!(p2_open')) -> C'31();
+
+
+% on p2.b(): {
+%   illegal;
+%   reply(void);
+%   <end of process>
+% }
+C'31(p1_open': Bool,p2_open': Bool) = p2'act (I'event (I'in'b))
+  . C'32();
+
+
+% illegal;
+C'32(p1_open': Bool,p2_open': Bool) = Illegal' . delta;
+
+
+% reply(void);
+C'33(p1_open': Bool,p2_open': Bool) = p2'act (I'reply (I'void)) . C'34();
+
+
+% <end of process>
+C'34(p1_open': Bool,p2_open': Bool) = C'0();
+
+
+
+
+% [!((!(p2_open') || p2_open'))] on p2.b(): {
+%   illegal;
+%   reply(void);
+%   <end of process>
+% }
+C'8(p1_open': Bool,p2_open': Bool) = (!((!(p2_open') || p2_open'))) -> C'35();
+
+
+% on p2.b(): {
+%   illegal;
+%   reply(void);
+%   <end of process>
+% }
+C'35(p1_open': Bool,p2_open': Bool) = p2'act (I'event (I'in'b))
+  . C'36();
+
+
+% illegal;
+C'36(p1_open': Bool,p2_open': Bool) = Illegal' . delta;
+
+
+% reply(void);
+C'37(p1_open': Bool,p2_open': Bool) = p2'act (I'reply (I'void)) . C'38();
+
+
+% <end of process>
+C'38(p1_open': Bool,p2_open': Bool) = C'0();
+
+
+
+
+
+P1 = rename ({I'act -> p1'act }, I(true));
+P2 = rename ({I'act -> p2'act }, I(true));
+
+V = C(true,true);
+
+R2C = sum x: I'actions . p1'act (I'event (x)) . REPLY'p1
+  + sum x: I'actions . p2'act (I'event (x)) . REPLY'p2;
+
+REPLY'p1 = sum x: I'replies . p1'act (I'reply (x)) . R2C;
+REPLY'p2 = sum x: I'replies . p2'act (I'reply (x)) . R2C;
+
+O = P1
+  || P2;
+
+R = O || R2C;
+
+S = comm ({
+  p1'act | p1'act -> p1'act'
+  , p2'act | p2'act -> p2'act'
+  }, R);
+
+T = allow ({
+  p1'act'
+  , p2'act'
+  , Illegal'
+  }, S);
+
+U = rename ({
+  p1'act' -> p1'act
+  , p2'act' -> p2'act
+  }, T);
+
+init
+V;

@@ -1,2 +1,0 @@
-verify: ITauTrigger: check: deadlock: ok
-verify: ITauTrigger: check: livelock: ok

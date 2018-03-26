@@ -1,4 +1,3 @@
-verify: IMultipleOutEventsOnSingleTau: check: completeness: ok
 verify: IMultipleOutEventsOnSingleTau: check: deadlock: ok
 verify: IMultipleOutEventsOnSingleTau: check: livelock: ok
 verify: MultipleOutEventsOnSingleTau: check: deterministic: ok
@@ -13,17 +12,7 @@ rp.return
 pp.return
 pp.ca
 rp.ca
-verify: MultipleOutEventsOnSingleTau: check: deadlock: fail
-rp.oa
-rp.ob
-pp.oa
-pp.ob
-pp.ca
-rp.ca
-rp.return
-pp.return
-pp.ca
-rp.ca
+verify: MultipleOutEventsOnSingleTau: check: deadlock: ok
 verify: MultipleOutEventsOnSingleTau: check: compliance: fail
 rp.oa
 rp.ob
@@ -33,11 +22,6 @@ pp.ca
 rp.ca
 rp.return
 pp.return
-rp.oa
 pp.ca
 rp.ca
-rp.return
-pp.return
-rp.ob
-pp.ob
 verify: MultipleOutEventsOnSingleTau: check: livelock: ok

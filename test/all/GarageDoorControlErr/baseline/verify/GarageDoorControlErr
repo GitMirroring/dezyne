@@ -1,4 +1,3 @@
-verify: DoorControlIF: check: completeness: ok
 verify: DoorControlIF: check: deadlock: ok
 verify: DoorControlIF: check: livelock: ok
 verify: GarageDoorControlErr: check: deterministic: ok
@@ -40,8 +39,23 @@ motorControl.start
 motorControl.return
 limitSw.doorOpening
 limitSw.return
-motorControl.driveFault
+switchPress.switchPressed
+timer.CreateTimerMSec
+timer.return
 motorControl.stop
+motorControl.return
+limitSw.doorStopped
+limitSw.return
+timer.Timeout
+motorControl.setOpen
+motorControl.return
+motorControl.start
+motorControl.return
+limitSw.doorClosing
+limitSw.return
+limitSw.doorClosed
+motorControl.stop
+motorControl.return
 verify: GarageDoorControlErr: check: compliance: fail
 doorControl.initialise
 limitSw.initialise
@@ -63,15 +77,11 @@ limitSw.return
 motorControl.driveFault
 motorControl.stop
 verify: GarageDoorControlErr: check: livelock: ok
-verify: ITimer: check: completeness: ok
 verify: ITimer: check: deadlock: ok
 verify: ITimer: check: livelock: ok
-verify: LimitSwitchIF: check: completeness: ok
 verify: LimitSwitchIF: check: deadlock: ok
 verify: LimitSwitchIF: check: livelock: ok
-verify: MotorControlIF: check: completeness: ok
 verify: MotorControlIF: check: deadlock: ok
 verify: MotorControlIF: check: livelock: ok
-verify: SwitchPressIF: check: completeness: ok
 verify: SwitchPressIF: check: deadlock: ok
 verify: SwitchPressIF: check: livelock: ok

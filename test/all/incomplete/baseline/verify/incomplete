@@ -1,10 +1,8 @@
-verify: iincomplete: check: completeness: ok
-verify: iincomplete: check: deadlock: ok
-verify: iincomplete: check: livelock: ok
+verify: ihello: check: deadlock: fail
+verify: ihello: check: livelock: ok
 verify: incomplete: check: deterministic: ok
 verify: incomplete: check: illegal: ok
-verify: incomplete: check: deadlock: ok
+verify: incomplete: check: deadlock: fail
 verify: incomplete: check: compliance: fail
-p.e
-p.return
+h.hello
 verify: incomplete: check: livelock: ok

@@ -1,2 +1,2 @@
 out/implicit_on/implicit_on.dzn:11:1:i2: deadlock in model implicit_on
-out/implicit_on/implicit_on.dzn:6:11:i6: p.e (implicitly) illegal
+out/implicit_on/implicit_on.dzn:6:8:i5: p.e (implicitly) illegal

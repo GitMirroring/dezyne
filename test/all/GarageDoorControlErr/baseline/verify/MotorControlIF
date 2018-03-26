@@ -1,6 +1,2 @@
-verify: MotorControlIF: check: completeness: fail
-MotorControlIF.initialise
-MotorControlIF.return
-MotorControlIF is incomplete: 'MotorControlIF.stop' not handled
 verify: MotorControlIF: check: deadlock: ok
 verify: MotorControlIF: check: livelock: ok

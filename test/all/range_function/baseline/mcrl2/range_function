@@ -1,3 +1,0 @@
-verify: range_function: check: deadlock: fail
-e
-verify: range_function: check: livelock: ok

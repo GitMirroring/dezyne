@@ -1,0 +1,30 @@
+% mcrl22lps -b hello.makreel | lps2lts /dev/stdin my.aut
+
+sort
+Void = struct void;
+#x:action-sort
+#x:modeling-sort
+#x:enum-sort
+#x:reply-sort
+#x:event-sort
+
+act
+#x:event-act
+declarative_illegal;
+illegal;
+incomplete;
+missing_reply;
+range_error;
+recurse;
+return;
+second_reply;
+
+proc
+Illegal' = illegal . Illegal';
+Declarative_Illegal' = declarative_illegal . Declarative_Illegal';
+
+#x:interface-proc
+
+provides = #x:makreel:model-name interface;
+
+%init provides;

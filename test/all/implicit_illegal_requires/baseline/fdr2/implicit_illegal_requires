@@ -1,0 +1,12 @@
+verify: i: check: completeness: ok
+verify: i: check: deadlock: fail
+verify: i: check: livelock: ok
+verify: ii: check: completeness: ok
+verify: ii: check: deadlock: ok
+verify: ii: check: livelock: ok
+verify: implicit_illegal_requires: check: deterministic: ok
+verify: implicit_illegal_requires: check: illegal: ok
+verify: implicit_illegal_requires: check: deadlock: fail
+verify: implicit_illegal_requires: check: compliance: fail
+p.f
+verify: implicit_illegal_requires: check: livelock: ok

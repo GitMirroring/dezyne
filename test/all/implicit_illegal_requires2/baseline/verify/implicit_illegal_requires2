@@ -1,14 +1,12 @@
-verify: i: check: completeness: ok
 verify: i: check: deadlock: ok
 verify: i: check: livelock: ok
-verify: ii: check: completeness: ok
 verify: ii: check: deadlock: ok
 verify: ii: check: livelock: ok
 verify: implicit_illegal_requires2: check: deterministic: ok
 verify: implicit_illegal_requires2: check: illegal: fail
 r.e
-verify: implicit_illegal_requires2: check: deadlock: fail
-r.e
+verify: implicit_illegal_requires2: check: deadlock: ok
 verify: implicit_illegal_requires2: check: compliance: fail
 p.f
+illegal
 verify: implicit_illegal_requires2: check: livelock: ok

@@ -1,0 +1,264 @@
+% hello makreel
+% mcrl22lps -b hello.makreel | lps2lts /dev/stdin my.aut
+
+sort
+ihello'actions = struct
+ihello'in'hello
+;
+iworld'actions = struct
+iworld'in'hello
+|iworld'out'world
+;
+
+ihello'replies = struct ihello'void;
+iworld'replies = struct iworld'void;
+
+ihello'events = struct
+    ihello'action (value: ihello'actions)
+    | ihello'reply (value: ihello'replies)
+    ;
+iworld'events = struct
+    iworld'action (value: iworld'actions)
+    | iworld'reply (value: iworld'replies)
+    ;
+
+requires_events = struct w'events(w': iworld'events)?w'is;
+
+map  QueueLength : Nat;
+
+eqn  QueueLength = 3;
+
+act
+ihello'in: ihello'events;
+ihello'out: ihello'events;
+ihello'reply: ihello'replies;
+iworld'in: iworld'events;
+iworld'out: iworld'events;
+iworld'reply: iworld'replies;
+h'in: ihello'events;
+h'in': ihello'events;
+h'out: ihello'events;
+h'out': ihello'events;
+h'reply: ihello'replies;
+h'reply': ihello'replies;
+h'reply'out: ihello'events;
+w'in: iworld'events;
+w'in': iworld'events;
+w'out: iworld'events;
+w'out': iworld'events;
+w'reply: iworld'replies;
+w'reply': iworld'replies;
+w'reply'out: iworld'replies;
+w'qin: iworld'events;
+w'qin': iworld'events;
+w'qout: iworld'events;
+w'qout': iworld'events;
+
+illegal;
+queue_full;
+queue_empty;
+queue_empty';
+
+proc
+Illegal' = illegal . Illegal';
+
+%%%%%%%%%%%%%%%%% INTERFACE %%%%%%%%%%%%%%%%%
+
+ihello  = ihello'0 ;
+
+
+ihello'0 = ihello'1;
+
+
+ihello'1 = (true) -> ihello'2;
+
+
+ihello'2 = ihello'in (ihello'action (ihello'in'hello)) . ihello'3;
+
+
+ihello'3 = ihello'4;
+
+
+ihello'4 = ihello'reply (ihello'void) . ihello'5;
+
+
+ihello'5 = ihello'0;
+
+
+iworld  = iworld'0 ;
+
+
+iworld'0 = iworld'1;
+
+
+iworld'1 = (true) -> iworld'2;
+
+
+iworld'2 = iworld'in (iworld'action (iworld'in'hello)) . iworld'3;
+
+
+iworld'3 = iworld'out(iworld'action(iworld'out'world)) . iworld'4;
+
+iworld'4 = iworld'reply (iworld'void) . iworld'5;
+
+
+iworld'5 = iworld'0;
+
+%%%%%%%%%%%%%%%%%%% COMPONENT %%%%%%%%%%%%%%%%%%%
+
+hello_out  = hello_out'0 ;
+
+
+hello_out'0 = hello_out'1
+  + hello_out'2;
+
+
+hello_out'1 = h'in (ihello'action (ihello'in'hello)) . hello_out'3;
+
+
+hello_out'3 = w'in(iworld'action(iworld'in'hello)) . w'reply(iworld'void) . hello_out'4;
+
+hello_out'4 = h'reply(ihello'void) . hello_out'5;
+
+
+hello_out'5 = hello_out'0;
+
+
+
+hello_out'2 = w'out (iworld'action (iworld'out'world)) . hello_out'6;
+
+
+hello_out'6 = hello_out'7;
+
+
+hello_out'7 = hello_out'0;
+
+
+component_behaviour = hello_out;
+
+%%%%%%%%%%%%%% PORT PROCESSES %%%%%%%%%%%%%%%
+
+H = rename ({ihello'in -> h'in, ihello'out -> h'out, ihello'reply -> h'reply}, ihello);
+W = rename ({iworld'in -> w'in, iworld'out -> w'out, iworld'reply -> w'reply}, iworld);
+
+%%%%%%%%%%%%%%%%%%%% Q %%%%%%%%%%%%%%%%%%%%%%
+
+component_queue(l: List(requires_events)) =
+
+  % Queue not full, accept event from port w into queue, encoded with w' wrapper
+  (#l < QueueLength) -> (sum e: iworld'events. w'qin(e) . component_queue(l = l <| w'events(e)))
+
+  % Head of queue is of type w', so communicate over w'out and remove head from queue
+  + (l != [] && w'is(head(l))) -> w'qout(w'(head(l))) . component_queue(l = tail(l))
+
+  % Queue is full, so new event on port w results in queue_full error
+  + (#l == QueueLength) -> (sum e: iworld'events. w'qin(e) . queue_full . Illegal')
+
+  % Queue is empty => allow environment to do something
+  + (l == []) -> sum a: ihello'actions. h'in(ihello'action(a)) . component_queue()
+
+  % Queue is empty => communicate queue_emtpy
+  + (l == []) -> queue_empty . component_queue();
+
+
+req_and_queue_parallel = component_queue([]) || W;
+
+req_and_queue_comm = comm({
+  w'out | w'qin -> w'qin'
+  }, req_and_queue_parallel);
+
+req_and_queue_allow = allow({
+  w'in, w'qin', w'qout, h'in, w'reply,
+  queue_full, queue_empty, illegal
+  }, req_and_queue_comm);
+req_and_queue_rename = rename({
+  w'qin' -> w'qin,
+  w'qout -> w'out
+  }, req_and_queue_allow);
+
+req_and_queue = hide({w'qin}, req_and_queue_rename);
+
+
+%%%%%%%%%%%%%%%%%%%%% COMPONENT REORDER %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+component_reorder =
+  sum a: ihello'actions. h'in(ihello'action(a)) . sum r: ihello'replies. h'reply(r) . queue_empty . h'reply'out(ihello'reply(r)) . component_reorder;
+
+component_reorder_parallel = component_behaviour || component_reorder;
+
+component_reorder_comm = comm({h'reply | h'reply -> h'reply', h'in | h'in -> h'in'}, component_reorder_parallel);
+
+component_reorder_allow = allow({h'reply', h'reply'out, h'out, h'in',
+  w'in, w'out, w'reply,
+  queue_empty, illegal}, component_reorder_comm);
+
+component_reorder_rename = rename({h'reply' -> h'reply, h'in' -> h'in}, component_reorder_allow);
+
+component_reorder_hide = hide({h'reply}, component_reorder_rename);
+
+
+%%%%%%%%%%%%%%%%%%%%% COMPONENT ASSEMBLY %%%%%%%%%%%%%%%%%%%%%%
+
+
+component_parallel = component_reorder_hide || req_and_queue;
+
+component_comm = comm({
+  w'in | w'in -> w'in',
+  w'out | w'out -> w'out',
+  w'reply | w'reply -> w'reply',
+  h'in | h'in -> h'in',
+  queue_empty | queue_empty -> queue_empty'
+  }, component_parallel);
+
+component_allow = allow({
+  h'in',
+  h'out,
+  h'reply'out,
+  w'in',
+  w'out',
+  w'reply',
+
+  illegal, queue_full, queue_empty'
+  }, component_comm);
+
+component_rename = rename({
+  w'in' -> w'in,
+  w'out' -> w'out,
+  w'reply' -> w'reply,
+  h'in' -> h'in,
+  h'reply'out -> h'in,
+  queue_empty' -> queue_empty
+  }, component_allow);
+
+component = hide({queue_empty}, component_rename);
+
+%%%%%%%%%%%%%%%%%%%%%%% PROVIDES %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+provides_r2c = sum x: ihello'actions . h'in (ihello'action (x)) . provides_reply'h;
+
+provides_reply'h = sum x: ihello'replies . h'reply (x) . provides_r2c;
+
+provides_parallel = H || provides_r2c;
+
+provides_comm = comm ({
+  h'in | h'in -> h'in'
+  , h'out | h'out -> h'out'
+  , h'reply | h'reply -> h'reply'
+  }, provides_parallel);
+
+provides_allow = allow ({
+  h'in'
+  , h'out'
+  , h'reply'
+  , illegal
+  }, provides_comm);
+
+provides = rename ({
+  h'in' -> h'in
+  , h'out' -> h'out
+  , h'reply' -> h'reply
+  }, provides_allow);
+
+init
+component;
+%provides;

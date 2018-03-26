@@ -1,0 +1,9 @@
+verify: iimplicit_on: check: completeness: ok
+verify: iimplicit_on: check: deadlock: ok
+verify: iimplicit_on: check: livelock: ok
+verify: implicit_on: check: deterministic: ok
+verify: implicit_on: check: illegal: ok
+verify: implicit_on: check: deadlock: fail
+verify: implicit_on: check: compliance: fail
+p.e
+verify: implicit_on: check: livelock: ok

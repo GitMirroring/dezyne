@@ -1,0 +1,5 @@
+#.name in' -> #.name in
+  , #.name out' -> #.name out
+  , #.name reply' -> #.name reply
+  , #.name internal' -> #.name internal
+  , #.name end' -> #.name end

@@ -3,7 +3,7 @@ verify: CompletenessReplyValueNotSet: check: illegal: ok
 verify: CompletenessReplyValueNotSet: check: deadlock: fail
 pp.ia
 rp.ia
-rp.fail
+rp.ok
 rp.return
 verify: CompletenessReplyValueNotSet: check: compliance: fail
 pp.ia
@@ -11,9 +11,7 @@ rp.ia
 rp.fail
 rp.return
 verify: CompletenessReplyValueNotSet: check: livelock: ok
-verify: I: check: completeness: ok
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
-verify: ISync: check: completeness: ok
 verify: ISync: check: deadlock: ok
 verify: ISync: check: livelock: ok

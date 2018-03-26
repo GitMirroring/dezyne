@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,24 +21,20 @@
 //
 // Code:
 
-interface iincomplete
+interface ihello
 {
-  in void e();
-  out void a();
+  in void hello();
+
   behaviour
   {
-    on e: a;
   }
 }
 
 component incomplete
 {
-  provides iincomplete p;
-  requires iincomplete r;
+  provides ihello h;
+  requires ihello w;
   behaviour
   {
-    on p.e():
-    {
-    }
   }
 }
