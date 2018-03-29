@@ -143,8 +143,8 @@
   ((compose
     (perf 'add-reply-port)
     add-reply-port
-    (perf 'add-illegals)
-    (add-illegals)
+    (perf 'add-illegals-and-otherwise)
+    (add-illegals-and-otherwise)
     (perf 'remove-skip)
     remove-skip
     (perf 'on-compound)
@@ -341,10 +341,10 @@
     ((? (is? <ast>)) (tree-map (cut add-reply-port <> port block?) o))
     (_ o)))
 
-(define* ((add-illegals #:optional model) o)
+(define* ((add-illegals-and-otherwise #:optional model) o)
   (match o
     (($ <component>)
-     (clone o #:behaviour ((add-illegals o) (.behaviour o))))
+     (clone o #:behaviour ((add-illegals-and-otherwise o) (.behaviour o))))
     (($ <behaviour>)
      (let* ((triggers (ast:in-triggers model))
             (ons (.elements (.statement o)))
@@ -358,7 +358,7 @@
                        triggers)))
        (receive (modeling ons)
            (partition (compose (is? <modeling-event>) .event car ast:trigger*) ons)
-         (let ((ons (append modeling (map (add-illegals model) ons) (map trigger->incomplete triggers))))
+         (let ((ons (append modeling (map (add-illegals-and-otherwise model) ons) (map trigger->incomplete triggers))))
            (if (null? ons) o
                (clone o #:statement (clone (.statement o) #:elements ons)))))))
     ;; NOTE: not needed: on-compound asserts each on has a compound
@@ -371,10 +371,10 @@
          (clone o #:elements (append (.elements o) (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal> #:incomplete #t)))))
          (failure)))
     (($ <interface>)
-     (clone o #:behaviour ((add-illegals o) (.behaviour o))))
+     (clone o #:behaviour ((add-illegals-and-otherwise o) (.behaviour o))))
     (($ <system>) o)
     (($ <foreign>) o)
-    ((? (is? <ast>)) (tree-map (add-illegals model) o))
+    ((? (is? <ast>)) (tree-map (add-illegals-and-otherwise model) o))
     (_ o)))
 
 (define* ((rewrite-formals #:optional model (locals '())) o)

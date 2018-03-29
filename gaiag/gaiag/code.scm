@@ -399,7 +399,6 @@
       o))
 
 (define-method (code:expand-on (o <on>))
-  ((compose dzn:statement ) o)
   (let ((o (.statement o)))
    (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
        (clone (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
