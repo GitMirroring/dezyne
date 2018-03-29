@@ -64,7 +64,7 @@
 (define-templates out-bindings .elements)
 (define-templates reply-port dzn:reply-port dot-suffix)
 (define-templates expand-blocking dzn:expand-blocking)
-(define-templates system identity)
+(define-templates system)
 (define-templates declare-instance ast:instance* newline-infix)
 (define-templates instance (lambda (o) (if (not (.instance.name o)) "" (list (.instance o)))) dot-suffix)
 (define-templates binding ast:binding* newline-infix)

@@ -298,15 +298,21 @@
 (define-method (dzn:formal-type (o <formal>)) o)
 (define-method (dzn:formal-type (o <port>)) ((compose ast:formal* .signature car om:events) o))
 
-(define-method (dzn:direction (o <ast>)) ; MORTAL SIN HERE!!?
-  (if (not (.direction o)) ""
+(define-method (dzn:direction (o <ast>))
+  (if (not (.direction o)) '()
       (make <direction> #:name (.direction o))))
 
 (define-method (dzn:direction (o <trigger>))
   ((compose dzn:direction .event) o))
 
+(define-method (dzn:direction (o <action>))
+  ((compose dzn:direction .event) o))
+
+(define-method (dzn:direction (o <on>))
+  ((compose dzn:direction car ast:trigger*) o))
+
 (define-method (dzn:port-prefix (o <action>))
-  (if (not (.port o)) ""
+  (if (not (.port o)) '()
       (list (.port o))))
 
 (define-method (dzn:port-prefix (o <binding>))

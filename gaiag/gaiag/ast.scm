@@ -172,10 +172,10 @@
     (($ <port>) ((compose ast:expression-type car om:events) o))))
 
 (define-method (ast:provides? (o <port>))
-  (eq? (.direction o) 'provides))
+  (and (eq? (.direction o) 'provides) o))
 
 (define-method (ast:requires? (o <port>))
-  (eq? (.direction o) 'requires))
+  (and (eq? (.direction o) 'requires) o))
 
 (define-method (ast:other-direction (o <event>))
   (assoc-ref `((in . out)
