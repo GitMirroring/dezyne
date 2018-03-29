@@ -212,8 +212,8 @@
 (define-method (event? (o <ast>) name)
   (define (name? o) (and (eq? (.name o) name) o))
   (case name
-    ((inevitable) ast:inevitable)
-    ((optional) ast:optional)
+    ((inevitable) (clone ast:inevitable #:parent (parent o <interface>)))
+    ((optional) (clone ast:optional #:parent (parent o <interface>)))
     (else (match o
             (($ <interface>) (find name? (ast:event* o)))
             ((and (or ($ <action>) ($ <trigger>)) (= .port #f)) (event? (parent o <interface>) name))

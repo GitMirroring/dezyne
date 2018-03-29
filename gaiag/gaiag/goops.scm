@@ -54,8 +54,11 @@
             void-signature
 
             clone
+            tree-collect
+            tree-collect-shallow
             tree-map
-            parent))
+            parent
+            parent-not))
 
 ;; FIXME: generate-me
 (export
@@ -714,6 +717,32 @@
 
 (define-method (tree-map f (o <ast-list>)) (clone o #:elements (map f (.elements o))))
 
+
+(define-method (tree-collect predicate o) (if (predicate o) (list o) (list)))
+
+(define-method (tree-collect predicate (o <ast>))
+  (let* ((class (class-of (.node o)))
+         (slots (class-slots class))
+         (getters (map slot-definition-getter slots))
+         (children (append-map (lambda (g) (tree-collect predicate (g o))) getters)))
+    (if (predicate o) (cons o children) children)))
+
+(define-method (tree-collect predicate (o <ast-list>))
+  (let ((children (append-map (cut tree-collect predicate <>) (.elements o))))
+    (if (predicate o) (cons o children) children)))
+
+(define-method (tree-collect-shallow predicate o) (if (predicate o) (list o) (list)))
+
+(define-method (tree-collect-shallow predicate (o <ast>))
+  (let* ((class (class-of (.node o)))
+         (slots (class-slots class))
+         (getters (map slot-definition-getter slots)))
+    (if (predicate o) (list o) (append-map (lambda (g) (tree-collect-shallow predicate (g o))) getters))))
+
+(define-method (tree-collect-shallow predicate (o <ast-list>))
+  (if (predicate o) (list o) (append-map (cut tree-collect-shallow predicate <>) (.elements o))))
+
+
 (define-method (clone-base o . setters)
   (let* ((class (class-of o))
          (setters (if (memq #:parent setters) setters
@@ -753,3 +782,9 @@
 (define-method (parent (o <ast>) (class <class>))
   (if (is-a? o class) o
       (parent (.parent o) class)))
+
+(define-method (parent-not o (class <class>)) #f)
+(define-method (parent-not (o <ast>) (class <class>))
+  (let ((parent (.parent o)))
+    (if (not (is-a? parent class)) parent
+        (parent-not parent class))))

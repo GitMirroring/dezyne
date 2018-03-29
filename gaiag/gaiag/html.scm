@@ -49,10 +49,10 @@
 (define (ast-> ast)
   (let ((root (dzn:om ast)))
     (parameterize ((%x:source x:source))
-     (dzn:root-> root)))
+     (html:root-> root)))
   "")
 
-(define (dzn:root-> root)
+(define (html:root-> root)
   (parameterize ((language 'html)
                  (%x:source x:source))
     (if (dzn:model2file?) (dzn:model2file root)
