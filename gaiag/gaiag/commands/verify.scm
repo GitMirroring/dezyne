@@ -191,7 +191,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
 
 (define (verify-mcrl2 options dir file-name ast)
   (let* ((model (option-ref options 'model #f))
-         (root ((compose ast:resolve tick-names parse->om) ast))
+         (root ((compose tick-names ast:resolve parse->om) ast))
          (models (if model (list model) (models-for-verification root)))
          (all? (option-ref options 'all #f))
          (module (resolve-module `(gaiag mcrl2)))
