@@ -318,7 +318,10 @@
   #f)
 
 (define-method (ast:path (o <ast>))
-  (unfold (negate identity) identity .parent o))
+  (ast:path o (negate identity)))
+
+(define-method (ast:path (o <ast>) stop?)
+  (unfold stop? identity .parent o))
 
 (define-method (ast:imported? (o <ast>))
   (assoc-ref (source-properties (.node o)) 'imported?))
