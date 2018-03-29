@@ -429,11 +429,11 @@
 
 (define-ast <bool> (<type>))
 (define-method (initialize (o <bool-node>) . initargs)
-  (next-method o (list #:name (make <scope.name-node> #:name 'bool))))
+  (next-method o (append (car initargs) (list #:name (make <scope.name-node> #:name 'bool)))))
 
 (define-ast <void> (<type>))
 (define-method (initialize (o <void-node>) . initargs)
-  (next-method o (list #:name (make <scope.name-node> #:name 'void))))
+  (next-method o (append (car initargs) (list #:name (make <scope.name-node> #:name 'void)))))
 
 (define-ast <int> (<type>)
   (range #:init-form (make <range-node>)))
