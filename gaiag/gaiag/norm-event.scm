@@ -48,7 +48,6 @@
   #:use-module (gaiag resolve)
 
   #:export (
-           ast->
            code-norm-event
            norm-event
            table-norm-event

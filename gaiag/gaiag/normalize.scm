@@ -139,7 +139,9 @@
                 (combine (filter (is? <guard>) path))
                 (find (is? <blocking>) path)
                 o)))
-  (filter t-on (map triple (tree-collect-shallow om:imperative? o))))
+  ;;(filter t-on (map triple (tree-collect-shallow om:imperative? o)))
+  (if (and (is-a? o <compound>) (null? (.elements o))) '()
+      (map triple (tree-collect-shallow om:imperative? o))))
 
 (define (triples:on-compound triples)
   (define (foo t)

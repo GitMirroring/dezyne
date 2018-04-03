@@ -56,6 +56,7 @@
   #:use-module (gaiag norm)
   #:use-module (gaiag norm-event)
   #:use-module (gaiag norm-state)
+  #:use-module (gaiag normalize)
   #:use-module (gaiag resolve)
   #:use-module (gaiag templates)
 
@@ -130,59 +131,6 @@
 (define-method (ast:parent (o <ast>))
   (assq-ref annotate-path-alist o))
 
-;; (define-method (trigger->illegal (o <trigger>))
-;;   (make <on>
-;;     #:triggers (make <triggers> #:elements (list o))
-;;     #:statement (make <illegal>)))
-
-;; (define* ((ast-add-illegals #:optional model) o)
-;;   (stderr "ast-add-illegals: ~a\n" o)
-;;   (match o
-;;     ((and ($ <component>) (= .behaviour behaviour))
-;;      (clone o #:behaviour ((ast-add-illegals o) behaviour)))
-
-;;     ((and ($ <behaviour>) (= .statement statement))
-;;      (clone o #:statement ((ast-add-illegals model) statement)))
-
-;;     (($ <guard>) (clone o #:statement ((ast-add-illegals model) (.statement o))))
-
-;;     (($ <on>)
-;;      (let* ((triggers (ast:in-triggers model))
-;;             (on-triggers ((compose .elements .triggers) o))
-;;             (triggers (filter
-;;                        (lambda (trigger)
-;;                          (not (find (lambda (on-trigger)
-;;                                       (and (eq? (.port.name trigger) (.port.name on-trigger))
-;;                                            (eq? (.event.name trigger) (.event.name on-trigger))))
-;;                                     on-triggers)))
-;;                        triggers)))
-;;        (make <compound> #:elements (append (list o) (map trigger->illegal triggers)))))
-
-;;     ((and ($ <compound>) (? om:declarative?)) (=> failure)
-;;      (if (and (pair? (.elements o)) (is-a? (car (.elements o)) <guard>))
-;;          (clone o #:elements (map (ast-add-illegals model) (.elements o)))
-;;          (if (is-a? (car (.elements o)) <on>)
-;;              (let* ((triggers (ast:in-triggers model))
-;;                     (ons (filter (is? <on>) (.elements o)))
-;;                     (compounds (filter (is? <compound>) (.elements o)))
-
-;;                     ;;(ons (append (ons )))
-;;                     (on-triggers (append-map (compose .elements .triggers) ons))
-;;                     (triggers (filter
-;;                                (lambda (trigger)
-;;                                  (not (find (lambda (on-trigger)
-;;                                               (and (eq? (.port.name trigger) (.port.name on-trigger))
-;;                                                    (eq? (.event.name trigger) (.event.name on-trigger))))
-;;                                             on-triggers)))
-;;                                triggers)))
-;;                (clone o #:elements (append (.elements o) (map trigger->illegal triggers))))
-;;              o)))
-;;     (($ <interface>) o)
-;;     (($ <system>) o)
-;;     (($ <foreign>) o)
-;;     ((? (is? <ast>)) (tree-map (ast-add-illegals model) o))
-;;     (_ o)))
-
 (define (ast-add-skips o)
   (match o
     ((and ($ <compound>) (= .elements '())) (make <skip>))
@@ -237,7 +185,11 @@
 
 (define (ast-transform-event-ends o)
   (match o
-    (($ <on>) (clone o #:statement (clone (.statement o) #:elements (append ((compose .elements .statement) o) (list (make <the-end> #:trigger ((compose car .elements .triggers) o)))))))
+    (($ <on>)
+     (let* ((statement (.statement o))
+            (the-end (list (make <the-end> #:trigger ((compose car .elements .triggers) o))))
+            (elements (if (is-a? statement <compound>) (.elements statement) (list statement))))
+       (clone o #:statement (make <compound> #:elements (append elements the-end)))))
     ((? (is? <ast>)) (tree-map ast-transform-event-ends o))
     (_ o)))
 
@@ -387,7 +339,7 @@
     om->list
     ) root))
 
-(define (mcrl2:om root) ;; FIXME: already root/om
+(define-method (mcrl2:normalize (o <root>))
   ((compose
     ;;    (lambda (o) (pretty-print (om->list o) (current-error-port)) o)
     flatten-compound
@@ -404,7 +356,57 @@
     norm-state
     code-norm-event
     fix-empty-interface-behaviour
-    ) root))
+    ) o))
+
+(define-method (mcrl2:normalize (o <root>))
+  ((compose
+
+    (lambda (o) (if (gdzn:command-line:get 'debug) (display (ast->dzn o) (current-error-port))) o)
+
+    ;;(cut pke 'traversed <>)
+    ;;(lambda (o) (pretty-print (om->list o) (current-error-port)) o)
+
+    ast-add-skips ;; FIXME: mcrl2 needs <skip> for {}
+    ast-complete-elses
+    ast-annotate-illegals
+    ast-transform-event-ends
+    root-purge-data
+    ast-tail-calls
+
+
+
+    traversal
+
+
+
+    ;;fix-empty-interface-behaviour
+    (remove-otherwise)
+    )
+   o))
+
+(define (traversal o)
+  (match o
+    (($ <behaviour>) (clone o #:statement
+                            ((compose
+                              triples:->compound-guard-on
+                              ;;triples:on-compound
+                              (triples:add-illegals (parent o <model>))
+                              triples:add-voidreply
+
+                              ;;(lambda (o) (map (cut pretty-print <> (current-error-port)) o) o)
+
+                              triples:split-multiple-on
+                              triples:->triples
+                              .statement
+                              ) o)))
+    ((? (is? <ast>)) (tree-map traversal o))
+    (_ o)))
+
+(define-method (mcrl2:om (o <root>))
+  (mcrl2:normalize o))
+
+(define-method (mcrl2:om ast)
+  ((compose mcrl2:om ast:resolve tick-names parse->om) ast))
 
 ;;(use-modules (statprof))
 (define (root->mcrl2 root)
@@ -428,8 +430,7 @@
          (file-name (cond ((equal? dir "-") dir)
 			  (dir (string-append dir "/" file-name))
 			  (else file-name)))
-         (root ((compose ast:resolve tick-names parse->om) ast))
-	 (root (mcrl2:om root))
+	 (root (mcrl2:om ast))
          (ast? (command-line:get 'ast #f))
          (->mcrl2 (if ast? root->sexp
                       root->mcrl2)))
