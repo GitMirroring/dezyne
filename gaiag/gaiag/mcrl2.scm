@@ -106,31 +106,6 @@
 (define-method (.variable.name (o <assign-action>)) ((compose .variable.name .assign) o))
 (define-method (.name (o <variable-action>)) ((compose .name .variable) o))
 
-(define annotate-path-alist '())
-
-(define ((annotate-path path) o)
-  (set! annotate-path-alist (acons o path annotate-path-alist))
-  (let ((path (cons o path)))
-    (match o
-      (($ <root>) (map (annotate-path path) (.elements o)) o)
-      (($ <declarative-compound>) (map (annotate-path path) (.elements o)))
-      (($ <compound>) (map (annotate-path path) (.elements o)))
-      (($ <functions>) (map (annotate-path path) (.elements o)))
-      (($ <function>) ((annotate-path path) (.statement o)))
-      (($ <assign>) ((annotate-path path) (.expression o)))
-      (($ <return>) ((annotate-path path) (.expression o)))
-      (($ <blocking>) ((annotate-path path) (.statement o)))
-      (($ <guard>) ((annotate-path path) (.statement o)))
-      (($ <on>) ((annotate-path path) (.statement o)))
-      (($ <if>) ((annotate-path path) (.then o)) ((annotate-path path) (.else o)))
-      (($ <interface>) ((annotate-path path) (.behaviour o)))
-      (($ <component>) ((annotate-path path) (.behaviour o)))
-      (($ <behaviour>) ((annotate-path path) (.functions o)) ((annotate-path path) (.statement o)))
-      (_ o))))
-
-(define-method (ast:parent (o <ast>))
-  (assq-ref annotate-path-alist o))
-
 (define (ast-add-skips o)
   (match o
     ((and ($ <compound>) (= .elements '())) (make <skip>))
@@ -158,29 +133,16 @@
     (($ <illegal>) (make <illegal> #:event.name event-name #:incomplete (.incomplete o)))
     (_ o)))
 
-(define (fix-empty-interface-behaviour o)
+(define (ast-annotate-illegals o)
   (match o
-    (($ <component>) o)
-    ((and ($ <interface>) (= ast:event* (? (cut find ast:in? <>)))) o)
-    ((and ($ <behaviour>) (= .statement (? (lambda (compound) (null? (.elements compound))))))
-     (let* ((triggers (make <triggers> #:elements (list (make <trigger> #:event.name (.name ast:inevitable)))))
-            (on (make <on> #:triggers triggers #:statement (make <illegal>)))
-            (guard (make <guard> #:expression (make <literal> #:value 'false) #:statement on))
-            (statement (make <compound> #:elements (list guard))))
-       (clone o #:statement statement)))
-    ((? (is? <ast>)) (tree-map fix-empty-interface-behaviour o))
+    (($ <on>) (annotate-illegal o))
+    ((? (is? <ast>)) (tree-map ast-annotate-illegals o))
     (_ o)))
 
 (define (ast-tail-calls o)
   (match o
     (($ <function>) (tail-call o))
     ((? (is? <ast>)) (tree-map ast-tail-calls o))
-    (_ o)))
-
-(define (ast-annotate-illegals o)
-  (match o
-    (($ <on>) (annotate-illegal o))
-    ((? (is? <ast>)) (tree-map ast-annotate-illegals o))
     (_ o)))
 
 (define (ast-transform-event-ends o)
@@ -338,25 +300,6 @@
     pretty-print
     om->list
     ) root))
-
-(define-method (mcrl2:normalize (o <root>))
-  ((compose
-    ;;    (lambda (o) (pretty-print (om->list o) (current-error-port)) o)
-    flatten-compound
-    ast-complete-elses
-    ast-annotate-illegals
-    ast-transform-event-ends
-    transform-compounds
-    flatten-compound
-    root-purge-data
-    (root-add-voidreply)
-    ast-tail-calls
-    ast-add-skips
-    (expand-on)
-    norm-state
-    code-norm-event
-    fix-empty-interface-behaviour
-    ) o))
 
 (define-method (mcrl2:normalize (o <root>))
   ((compose
