@@ -1,1 +1,1 @@
-{"model":"inner.space","known":["mcrl2","traces","table"], "comment":"multiple provides not supported"}
+{"model":"inner.space","known":["execute","run","table"], "comment": "traces does not support namespaces yet"}

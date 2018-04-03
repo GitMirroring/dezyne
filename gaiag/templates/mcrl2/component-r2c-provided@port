@@ -1,1 +1,1 @@
-        sum f: #x:port-interface-name 'Actions. #.name 'in_rc(f) . #x:mcrl2-model-name 'RC_handling(p = true, b = false, f = false, r = #x:mcrl2-model-name 'NULL)
+        sum f: #x:port-interface-name 'Actions. #.name 'in_rc(f) . #x:mcrl2-model-name 'RC_handling(p = true, b = false, f = #x:mcrl2-model-name 'NULL, r = #x:mcrl2-model-name 'NULL)

@@ -155,45 +155,6 @@
     ((? (is? <ast>)) (tree-map ast-transform-event-ends o))
     (_ o)))
 
-(define* ((root-add-voidreply #:optional (model #f)) o)
-  (let ((model (or model o)))
-    (match o
-      (($ <component>)
-       (clone o #:behaviour ((root-add-voidreply o) (.behaviour o))))
-      (($ <interface>)
-       (clone o #:behaviour ((root-add-voidreply o) (.behaviour o))))
-      (($ <behaviour>)
-       (let* ((statement ((root-add-voidreply model) (.statement o)))
-              (statement (if (is-a? statement <compound>) statement
-                             (make <compound> #:elements (list statement)))))
-         (clone o #:statement statement)))
-      (($ <compound>)
-       (let ((statements
-              (let loop ((statements (map (root-add-voidreply model) (ast:statement* o))))
-                (if (null? statements) '()
-                    (cons (car statements) (loop (cdr statements)))))))
-         (if (=1 (length statements))
-             (car statements)
-             (clone o #:elements statements))))
-      (($ <on>)
-       (let* ((valued-triggers? (const (ast:typed? ((compose car ast:trigger*) o))))
-              (modeling? (const (is-a? ((compose .event car ast:trigger*) o) <modeling-event>)))
-              (port ((compose .port car ast:trigger*) o)))
-         (let ((result ((root-add-voidreply model) (.statement o))))
-           (match result
-             (($ <blocking>)
-              (clone o #:statement result))
-             ((? modeling?) (clone o #:statement (make <compound> #:elements (list result))))
-             ((and ($ <compound>) (= .elements (? null?)))
-              (clone o #:statement (make <compound> #:elements (list (make <reply> #:port.name (and port (.name port)) #:expression (make <void-expr>))))))
-             ((? valued-triggers?)
-              (clone o #:statement (make <compound> #:elements (list result))))
-             ((? (const (and port (ast:requires? port))))
-              (clone o #:statement (make <compound> #:elements (list result))))
-             (_ (clone o #:statement (make <compound> #:elements (list result (make <reply> #:port.name (and port (.name port)) #:expression (make <void-expr>))))))))))
-      ((? (is? <ast>)) (tree-map (root-add-voidreply model) o))
-      (_ o))))
-
 (define %count (make-parameter 0))
 (define (tick-names o)
   (parameterize ((%count 0))
@@ -759,14 +720,16 @@
 (define-method (port p o)
   (if p
       (.name p)
-      (let ((parent (parent o <model>))
-            (on (parent o <on>)))
-        (if (is-a? parent <interface>)
-            (mcrl2:model-name parent)
-            (if on
+      (let* ((pt (parent o <model>))
+            (on (parent o <on>))
+            (port (and on ((compose .port car .elements .triggers) on)))
+            (provides? (and port ((compose (cut eq? <> 'provides) .direction) port))))
+        (if (is-a? pt <interface>)
+            (mcrl2:model-name pt)
+            (if provides?
                 (trigger-port on)
-                ((compose .name car om:provided) parent))))))
-             
+                ((compose .name car om:provided) pt))))))
+
 (define-method (trigger-port (o <ast>))
   (match o
     (($ <action>) (port (.port o) o))
@@ -779,13 +742,15 @@
 (define-method (port-type p o)
    (if p
       (mcrl2:model-name (.type p))
-      (let ((parent (parent o <model>))
-            (on (parent o <on>)))
-        (if (is-a? parent <interface>)
-            (mcrl2:model-name parent)
-            (if on
-                (trigger-port on)
-                ((compose mcrl2:model-name .type car om:provided) parent))))))
+      (let* ((pt (parent o <model>))
+            (on (parent o <on>))
+            (port (and on ((compose .port car .elements .triggers) on)))
+            (provides? (and port ((compose (cut eq? <> 'provides) .direction) port))))
+        (if (is-a? pt <interface>)
+            (mcrl2:model-name pt)
+            (if provides?
+                (trigger-port-type on)
+                ((compose mcrl2:model-name .type car om:provided) pt))))))
 
 (define-method (trigger-port-type (o <ast>))
   (match o
@@ -813,14 +778,6 @@
   ((compose trigger-port-type-reply .action) o))
 (define-method (trigger-port-type-reply (o <variable-action>))
   ((compose trigger-port-type-reply .action) o))
-
-(define-method (required-port-the-end (o <the-end>))
-  (let* ((trigger (.trigger o))
-         (port (.port trigger)))
-    (if port (if (ast:requires? port)
-                 (mcrl2:init-reply-value (.type port))
-                 "")
-        "")))
 
 (define-method (illegal-or-dillegal (o <ast>))
   (let* ((parent (.parent o)))
@@ -850,7 +807,7 @@
      (lambda (p) (not (null? (filter om:out? ((compose .elements .events .type) p)))))
      required-ports)))
 (define-method (required-ports-with-out (o <port>))
-  (let ((required-ports (om:required (parent <component> o))))
+  (let ((required-ports (om:required (parent o <component>))))
     (filter
      (lambda (p) (not (null? (filter om:out? ((compose .elements .events .type) p)))))
      required-ports)))
@@ -996,13 +953,6 @@
   (let* ((behaviour (.behaviour scope))
 	 (vars ((compose .elements .variables) behaviour)))
     vars))
-
-(define-method (mcrl2:init-reply-value (o <ast>))
-  (let ((reply-type (car (code:reply-types o #:pred (const #t)))))
-    reply-type))
-
-(define-method (mcrl2:init-reply-value (o <port>))
-  (mcrl2:init-reply-value (.type o)))
 
 (define-method (mcrl2:statement-process (o <behaviour>)) (.statement o))
 (define-method (mcrl2:statement-process (o <compound>)) (.elements o))

@@ -1,0 +1,5 @@
+            #.name 'in | #.name 'in -> #.name 'in', 
+            #.name 'out | #.name 'out -> #.name 'out', 
+            #.name 'return | #.name 'return -> #.name 'return',
+            #.name 'int | #.name 'int -> #.name 'int',
+            #.name 'end | #.name 'end -> internal

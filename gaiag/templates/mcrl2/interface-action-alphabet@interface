@@ -6,6 +6,7 @@
      #x:mcrl2-model-name 'int: #x:mcrl2-model-name 'Modeling;
      #x:mcrl2-model-name 'int': #x:mcrl2-model-name 'Modeling;
      #x:mcrl2-model-name 'end;
+     #x:mcrl2-model-name 'end';
      #x:mcrl2-model-name 'flush;
      #x:mcrl2-model-name 'flush';
      #x:mcrl2-model-name 'in_allow: #x:mcrl2-model-name 'Actions;

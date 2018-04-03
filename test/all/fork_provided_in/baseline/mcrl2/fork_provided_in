@@ -1,0 +1,9 @@
+verify: IA: check: deadlock: ok
+verify: IA: check: livelock: ok
+verify: fork_provided_in: check: deterministic: ok
+verify: fork_provided_in: check: illegal: ok
+verify: fork_provided_in: check: deadlock: ok
+verify: fork_provided_in: check: compliance: fail
+ppa.ia
+ppb.oa
+verify: fork_provided_in: check: livelock: ok

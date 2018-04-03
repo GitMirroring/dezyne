@@ -1,0 +1,8 @@
+            rename({#x:port-type 'in -> #.name 'in, 
+              #x:port-type 'out -> #.name 'out, 
+              #x:port-type 'reply_out -> #.name 'return, 
+              #x:port-type 'int -> #.name 'int, 
+              #x:port-type 'end -> #.name 'end, 
+              #x:port-type 'flush -> #.name 'flush},
+              #x:port-interface-name 'Implementation
+            )

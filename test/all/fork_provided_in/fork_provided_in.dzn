@@ -1,1 +1,79 @@
-../../../interpreter/test/fork.dzn
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// Dezyne verification does not allow interaction through multiple
+// provided ports on a single activation trigger. These models are
+// intended to test interpreter handling and detection of this class
+// of errors.
+
+interface IA
+{
+  in void ia();
+  out void oa();
+
+  behaviour
+  {
+    on ia: {}
+    on optional: oa;
+  }
+}
+
+component fork_provided_in
+{
+  provides IA ppa;
+  provides IA ppb;
+
+  behaviour
+  {
+    on ppa.ia(): ppb.oa();
+    on ppb.ia(): ppa.oa();
+  }
+}
+
+
+interface IB
+{
+  in void ib();
+  out void ob();
+
+  behaviour
+  {
+    bool is_active = false;
+    on ib: is_active = true;
+    [is_active] on inevitable: {ob; is_active = false;}
+  }
+}
+
+component fork_required_out
+{
+  provides IA ppa;
+  provides IA ppb;
+  requires IB rp;
+
+  behaviour
+  {
+    on ppa.ia(): rp.ib();
+    on ppb.ia(): rp.ib();
+    on rp.ob(): {ppa.oa(); ppb.oa();}
+  }
+}

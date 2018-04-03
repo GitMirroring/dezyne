@@ -122,7 +122,7 @@ illegal")
 
 (define (parse input)
   (define-peg-string-patterns
-    "trace          <-- ((tau / illegal / flush / modeling / event / return / error / anything) newline?)*
+    "trace          <-- ((tau / illegal / flush / modeling / event / return / return-null / error / anything) newline?)*
      newline         <   '\n'
      lpar            <   '('
      rpar            <   ')'
@@ -140,7 +140,9 @@ illegal")
      event           <-- port tick (event-literal / direction) lpar mcrl2-event rpar
      error           <-- queue-full / range-error / reply-error / incomplete
      return          <-- port tick return-literal lpar arguments rpar
+     return-null     <   port tick return-literal lpar type-null rpar
      arguments       <-  reply compound-type compound-value
+     type-null       <   (scope tick)? (type tick)? 'NULL'
      mcrl2-event     <-  (scope tick)+ event-name
      mcrl2-event-    <   mcrl2-event
      mcrl2-event-out <-  model tick 'out' tick event-name

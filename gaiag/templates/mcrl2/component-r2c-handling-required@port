@@ -1,2 +1,2 @@
         (!b) -> sum e: #x:port-type 'Actions. #.name 'out_queue_rc(e) . #x:mcrl2-model-name 'RC_handling(b=true)
-             <> #.name 'reply_out_rc(reply_#x:port-type '#x:mcrl2-init-reply-value) . #x:mcrl2-model-name 'RC_handling(b=false)
+             <> #.name 'reply_out_rc(#x:port-type 'NULL) . #x:mcrl2-model-name 'RC_handling(b=false)

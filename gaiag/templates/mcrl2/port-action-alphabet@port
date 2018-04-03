@@ -16,6 +16,7 @@
      #.name 'rc: #x:port-interface-name 'Actions;
      #.name 'reply: #x:port-interface-name 'ReplyUnion;
      #.name 'return: #x:port-interface-name 'ReplyUnion;
+     #.name 'return': #x:port-interface-name 'ReplyUnion;
      #.name 'reply_out': #x:port-interface-name 'ReplyUnion;
      #.name 'out_queue: #x:port-interface-name 'Actions;
      #.name 'in_rc: #x:port-interface-name 'Actions;

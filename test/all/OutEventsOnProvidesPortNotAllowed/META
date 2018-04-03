@@ -1,3 +1,3 @@
-{"known":["mcrl2","traces","execute"]
+{"known":["execute"]
 ,"comment":"spurious void reply => test hangup. ISSUE: test shall run to completion"
 }

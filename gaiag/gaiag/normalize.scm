@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -124,7 +125,7 @@
            (requires? (and port (ast:requires? port))))
       (if (or modeling? requires? valued-triggers?) t
           (let* ((statement (t-statement t))
-                 (voidreply (make <voidreply>))
+                 (voidreply (make <reply> #:port.name (and port (.name port)) #:expression (make <void-expr>)))
                  (elements (if (is-a? statement <compound>)
                                (append (.elements statement) (list voidreply))
                                (list statement voidreply)))

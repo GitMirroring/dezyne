@@ -1,8 +1,4 @@
 
-eqn  #x:mcrl2-provided-port-type 'allow_dillegals = true;
-     #x:mcrl2-component-name 'allow_dillegals = true;
+#x:eqn-allow-dillegals-provided
 
-init 
-    rename({#x:compliance-init-rename },
-      #x:mcrl2-provided-port-type 'Implementation
-    );
+init #x:mcrl2-component-name 'Specification;

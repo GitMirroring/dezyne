@@ -1,5 +1,6 @@
     #x:mcrl2-model-name 'Run_to_Completion = 
 #x:component-r2c-provided #x:component-r2c-required;
 
-    #x:mcrl2-model-name 'RC_handling(p: Bool, b: Bool, f: Bool, r: #x:mcrl2-model-name 'ReplyUnion) = 
+    #x:mcrl2-model-name 'RC_handling(p: Bool, b: Bool, f: #x:mcrl2-model-name 'ReplyUnion, r: #x:mcrl2-model-name 'ReplyUnion) = 
+        (!b && !p) -> (f == #x:mcrl2-model-name 'NULL) -> empty_queue . #x:mcrl2-model-name 'Run_to_Completion() +
 #x:component-r2c-handling-provided #x:component-r2c-handling-required;

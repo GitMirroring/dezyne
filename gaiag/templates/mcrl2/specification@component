@@ -1,8 +1,21 @@
-#x:mcrl2-model-name 'Specification =
-  rename({#x:specification-rename-provided},
-    allow({#x:specification-allow-provided},
-      comm({#x:specification-comm-provided},
-        #x:specification-parallel-provided
-      )
-    ) 
-  ); 
+    #x:mcrl2-model-name 'Specification_R2C =
+#x:specification-r2c-provided;
+
+    #x:mcrl2-model-name 'Specification_R2C_event =
+#x:specification-r2c-event-provided;
+
+    #x:mcrl2-model-name 'Specification_R2C_modeling(f: Bool) =
+#x:specification-r2c-modeling-provided;
+ 
+    #x:mcrl2-model-name 'Specification =
+      hide({internal},
+      rename({
+#x:specification-rename-provided },
+        allow({illegal, internal, incomplete, double_reply_error, no_reply_error,
+#x:specification-allow-provided },
+          comm({
+#x:specification-comm-provided },
+#x:specification-parallel-provided            #x:mcrl2-model-name 'Specification_R2C
+          )
+        ) 
+      )); 
