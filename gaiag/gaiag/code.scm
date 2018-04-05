@@ -43,9 +43,7 @@
   #:use-module (gaiag deprecated om)
   #:use-module (gaiag compare)
   #:use-module (gaiag dzn)
-  #:use-module (gaiag norm)
   #:use-module (gaiag norm-event)
-  #:use-module (gaiag normalize)
   #:use-module (gaiag parse)
   #:use-module (gaiag templates)
 
@@ -759,20 +757,7 @@
 
 (define (code:om ast)
   ((compose
-    (lambda (o) (if (gdzn:command-line:get 'debug) (display (ast->dzn o) (current-error-port))) o)
     code-norm-event
-    code:add-calling-context
-    ast:resolve
-    parse->om
-    ) ast))
-
-(define (code:om ast)
-  ((compose
-    (lambda (o) (if (gdzn:command-line:get 'debug) (display (ast->dzn o) (current-error-port))) o)
-    add-reply-port
-    triples:event-traversal
-    (remove-otherwise)
-    (rewrite-formals)
     code:add-calling-context
     ast:resolve
     parse->om

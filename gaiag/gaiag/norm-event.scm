@@ -48,8 +48,6 @@
   #:use-module (gaiag resolve)
 
   #:export (
-            add-reply-port
-            rewrite-formals
            code-norm-event
            norm-event
            table-norm-event

@@ -35,6 +35,7 @@
   #:use-module (gaiag resolve)
   #:use-module (gaiag util)
 
+  #:use-module (gaiag norm-event)
   #:use-module (gaiag command-line)
   #:use-module (gaiag dzn)
   #:use-module (gaiag code)

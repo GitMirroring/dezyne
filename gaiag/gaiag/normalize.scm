@@ -25,18 +25,13 @@
 (define-module (gaiag normalize)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 pretty-print)
-  #:use-module (ice-9 receive)
-
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
-
-  #:use-module (gaiag command-line)
-  #:use-module (gaiag misc)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag util)
+  #:use-module (gaiag misc)
 
   #:use-module (gaiag ast)
   #:use-module (gaiag om)
@@ -45,11 +40,10 @@
 
   #:export (root->
             triples:state-traversal
-            triples:event-traversal
             triples:->compound-guard-on
             triples:->triples
             triples:add-illegals
-             triples:add-voidreply
+            triples:add-voidreply
             triples:compound->triples
             triples:fix-empty-interface
             triples:on-compound
@@ -86,35 +80,6 @@
                   triples)))
     (make <declarative-compound> #:elements st)))
 
-(define (triples:->on-guard* triples)
-  (define ((trigger-equal? trigger) triple)
-    (let ((t ((compose car ast:trigger* t-on) triple)))
-      (and (eq? (.port.name t) (.port.name trigger)) (eq? (.event.name t) (.event.name trigger)))))
-  (let* ((sorted-triples (let loop ((triples triples))
-                           (if (null? triples) '()
-                               (let ((trigger ((compose car ast:trigger* t-on car) triples)))
-                                 (receive (shared rest)
-                                     (partition (trigger-equal? trigger) triples)
-                                   (cons shared (loop rest)))))))
-         (ons (map
-               (lambda (triples)
-                 (let* ((on ((compose t-on car) triples))
-                        (guards (map (lambda (t)
-                                       (let* ((statement (t-statement t))
-                                              (blocking (t-blocking t))
-                                              (statement (if blocking (clone blocking #:statement statement)
-                                                             statement)))
-                                         (clone (t-guard t) #:statement statement)))
-                                     triples))
-                        ;; FIXME: code need <otherwise>
-                        (otherwise (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal> #:incomplete #t))))
-                        (guards (append guards otherwise)))
-                   ;; FIXME: up code to use <declarative-compound>
-                   ;;(clone on #:statement (make <declarative-compound> #:elements guards))
-                   (clone on #:statement (make <compound> #:elements guards))))
-               sorted-triples)))
-    ons))
-
 (define ((triples:component-prepend-illegal-guard model) triples)
   (define (declarative-illegal? o)
     (match o
@@ -122,7 +87,6 @@
       ((and ($ <compound>) (= .elements (? null?))) #f)
       (($ <compound>) (declarative-illegal? ((compose car .elements) o)))
       (_ #f)))
-
   (define (prepend t)
     (if (not (declarative-illegal? (t-statement t))) t
         (let* ((guard (t-guard t))
@@ -184,6 +148,7 @@
                 (combine (filter (is? <guard>) path))
                 (find (is? <blocking>) path)
                 o)))
+  ;;(filter t-on (map triple (tree-collect-shallow om:imperative? o)))
   (if (and (is-a? o <compound>) (null? (.elements o))) '()
       (map triple (tree-collect-shallow om:imperative? o))))
 
@@ -209,24 +174,6 @@
                               .statement
                               ) o)))
     ((? (is? <ast>)) (tree-map triples:state-traversal o))
-    (_ o)))
-
-(define (triples:event-traversal o)
-  (match o
-    (($ <behaviour>) (clone o #:statement
-                            ((compose
-                              (cut make <compound> #:elements <>) ;; FIXME: up code to use <declarative-compound>
-                              ;;(cut make <declarative-compound> #:elements <>)
-                              triples:->on-guard*
-                              ;; add-reply-port
-                              ;; blocking-into-binding
-                              (triples:add-illegals (parent o <model>))
-                              triples:split-multiple-on
-                              ;; rewrite-formals
-                              triples:->triples
-                              .statement
-                              ) o)))
-    ((? (is? <ast>)) (tree-map triples:event-traversal o))
     (_ o)))
 
 (define-method (root-> (o <root>))
