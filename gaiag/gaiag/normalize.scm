@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -45,12 +46,12 @@
   #:export (root->
             triples:state-traversal
             triples:event-traversal
-
             triples:->compound-guard-on
             triples:->triples
             triples:add-illegals
              triples:add-voidreply
             triples:compound->triples
+            triples:fix-empty-interface
             triples:on-compound
             triples:split-multiple-on
             ))
@@ -130,6 +131,14 @@
           (t-triple (t-on t) guard (t-blocking t) (t-statement t)))))
   (if (is-a? model <interface>) triples (map prepend triples)))
 
+(define ((triples:fix-empty-interface model) triples)
+  (if (and (is-a? model <interface>) (null? triples))
+      (let* ((on (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name 'inevitable)))))
+             (guard (make <guard> #:expression (make <literal> #:value 'false)))
+             (statement (make <compound> #:elements (list (make <illegal>)))))
+        (list (t-triple on guard #f statement)))
+      triples))
+
 (define ((triples:add-illegals model) triples)
   (define (add-illegals- triples trigger)
     (define (trigger-eq? t)
@@ -191,6 +200,7 @@
     (($ <behaviour>) (clone o #:statement
                             ((compose
                               triples:->compound-guard-on
+                              (triples:fix-empty-interface (parent o <model>))
                               (triples:component-prepend-illegal-guard (parent o <model>))
                               (triples:add-illegals (parent o <model>))
                               triples:add-voidreply

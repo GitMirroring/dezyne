@@ -331,6 +331,7 @@
     (($ <behaviour>) (clone o #:statement
                             ((compose
                               triples:->compound-guard-on
+                              (triples:fix-empty-interface (parent o <model>))
                               ;;triples:on-compound
                               (triples:add-illegals (parent o <model>))
                               triples:add-voidreply
