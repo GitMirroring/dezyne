@@ -48,8 +48,10 @@
 (include "../templates/c++.scm")
 
 (define (c++-msvc11:root-> root)
-  (parameterize ((language 'c++-msvc11)
-                 (%x:source x:source))
+  (parameterize ((language 'c++)
+                 (%x:header x:header)
+                 (%x:source x:source)
+                 (%x:main x:main))
     (code:root-> root)))
 
 (define (ast-> ast)
