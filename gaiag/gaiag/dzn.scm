@@ -48,6 +48,7 @@
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
   #:use-module (gaiag resolve)
+  #:use-module (gaiag shell-util)
   #:use-module (gaiag templates)
 
   #:use-module (gaiag location)
@@ -423,8 +424,10 @@
     (let* ((ext (symbol->string (dzn:extension (make <component>))))
            (file-name (string-append dir base ext)))
       (if stdout? ((dzn:indent (cut (%x:source) o)))
-          (with-output-to-file file-name
-            (dzn:indent (cut (%x:source) o)))))))
+          (begin
+            (mkdir-p dir)
+            (with-output-to-file file-name
+             (dzn:indent (cut (%x:source) o))))))))
 
 ;; (define-method (dzn:dump (o <root>))
 ;;   (let ((name (basename (symbol->string (source-file o)) ".dzn")))

@@ -37,6 +37,7 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
   #:use-module (gaiag resolve)
+  #:use-module (gaiag shell-util)
   #:use-module (gaiag util)
 
   #:use-module (gaiag ast)
@@ -624,14 +625,18 @@
       (let* ((ext (symbol->string (dzn:extension (make <interface>))))
              (file-name (string-append dir base ext)))
         (if stdout? ((dzn:indent (cut (%x:header) o)))
-            (with-output-to-file file-name
-              (dzn:indent (cut (%x:header) o))))))
+            (begin
+              (mkdir-p dir)
+              (with-output-to-file file-name
+               (dzn:indent (cut (%x:header) o)))))))
     (if (or (not (code:header?)) (have-non-interface-models? o))
         (let* ((ext (symbol->string (dzn:extension (make <component>))))
                (file-name (string-append dir base ext)))
           (if stdout? ((dzn:indent (cut (%x:source) o)))
-              (with-output-to-file file-name
-                (dzn:indent (cut (%x:source) o))))))))
+              (begin
+                (mkdir-p dir)
+                (with-output-to-file file-name
+                 (dzn:indent (cut (%x:source) o)))))))))
 
 (define-method (code:dump (o <foreign>))
   (let* ((dir (command-line:get 'output "."))
