@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -50,7 +50,7 @@
 
     (or
      (and version?
-	  ((stdout "gdzn 0.0\n") (exit 0)))
+	  ((stdout "gdzn ~a\n" %service-version) (exit 0)))
      (and (or help? usage?)
           ((or (and usage? stderr) stdout)
            (string-append "\
@@ -73,14 +73,38 @@ Use \"gdzn COMMAND --help\" for command-specific information.
      options)))
 
 (define (run-command args)
+  (setenv "PATH" (string-append %service-bindir ":" (getenv "PATH")))
   (let* ((command (string->symbol (car args)))
          (module (resolve-module `(gaiag commands ,command)))
          (main (module-ref module 'main)))
     (main args)))
 
+(define (service-version command)
+  (define (version-option? o)
+    (or (string-prefix? "--version" o)
+        (string-prefix? "-V" o)))
+  (let ((v (drop-while (negate version-option?) command)))
+    (and (pair? v)
+         (let ((opt (car v)))
+           (cond ((member opt '("-V" "--version")) (cadr v))
+                 ((string-prefix? "--version=" opt) (string-split opt #\=))
+                 ((string-prefix? "-V" opt) (string-drop opt 2))
+                 (else (error "error parsing version option" opt)))))))
+-
+(define (exec-gdzn-version version args)
+  (let* ((service-bindir (string-append %service-versions-dir "/" version "/bin"))
+         (gdzn (string-append service-bindir "/gdzn")))
+    (if (not (access? gdzn (logior R_OK X_OK))) (error (format #f "gdzn: no such version: ~a" version))
+        (let ((self? (equal? (canonicalize-path (car (command-line)))
+                             (canonicalize-path gdzn))))
+          (if self? (run-command args) ; for development: avoid loop
+              (apply system* (cons gdzn args)))))))
+
 (define (main args)
   (let* ((options (parse-opts args))
          (command (option-ref options '() '()))
-         (debug? (option-ref options 'debug #f)))
-    (setenv "PATH" (string-append %service-bindir ":" (getenv "PATH")))
-    (run-command command)))
+         (debug? (option-ref options 'debug #f))
+         (service-version (service-version command)))
+    (if (and service-version (not (equal? service-version %service-version)))
+        (exec-gdzn-version service-version (cdr args))
+        (run-command command))))

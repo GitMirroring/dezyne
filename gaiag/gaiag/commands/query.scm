@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -27,6 +27,7 @@
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 ftw)
   #:use-module (gaiag config)
+  #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
   #:use-module (gaiag shell-util)
   #:export (main service-versions))
@@ -50,13 +51,10 @@ Usage: gdzn query [OPTION]...
     options))
 
 (define (service-versions)
-  (let* ((prefix (or (getenv "DEZYNE_PREFIX") %prefix))
-         (services-dir (string-append prefix "/services"))
-         (gdzn-debug? (find (cut equal? <> "--debug") (command-line))))
-    (when gdzn-debug?
-      (stderr "prefix: ~s\n" prefix)
-      (stderr "services-dir: ~s\n" services-dir))
-    (sort (scandir services-dir (negate (cut string-prefix? "." <>))) equal?)))
+  (when (gdzn:command-line:get 'debug)
+    (stderr "dezyne-prefix: ~s\n" %dezyne-prefix)
+    (stderr "service-versions-dir: ~s\n" %service-versions-dir))
+  (sort (scandir %service-versions-dir (negate (cut string-prefix? "." <>))) equal?))
 
 (define (show-versions options)
   (let* ((versions (service-versions))
