@@ -124,8 +124,8 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
     (chdir tmp)
     (model->mcrl2 root model)
     (let* ((init (if (is-a? model <component>) x:component-init x:interface-init))
-           (lts (pke 'lts-raw (mcrl2->lts (cut init model))))
-           (lts (pke 'cleaned (cleanup-lts lts #:internal? #f)))) ;; TODO: give traces.py all provided-in events
+           (lts (mcrl2->lts (cut init model)))
+           (lts (cleanup-lts lts #:internal? #f))) ;; TODO: give traces.py all provided-in events
       (chdir cwd)
       lts)))
 
@@ -133,7 +133,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
   (let* ((gdzn-debug? (gdzn:command-line:get 'debug))
          (lts (model->lts root model))
          (provided-ports (filter ast:provides? (om:ports model)))
-         (provided-in (if (is-a? model <component>)
+         (provides-in (if (is-a? model <component>)
                           (map (lambda (t) (symbol-append (symbol-drop-right (.port.name t) 1) '. (.event.name t)))
                                (ast:provided-in-triggers model))
                           (map .name (filter ast:in? (ast:event* model)))))
@@ -159,7 +159,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                                      ,@(if (not flush-opt) '() '("--flush"))
                                      ,@(if (not lts-opt) '() '("--lts"))
                                      "--model" ,model-name
-                                     ,@(append-map (lambda (p) (list "--provided-in" p)) provided-in)
+                                     ,@(append-map (lambda (p) (list "--provides-in" p)) provides-in)
                                      "-")))
 
          (traces (string-trim-right traces)))
