@@ -125,7 +125,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
     (model->mcrl2 root model)
     (let* ((init (if (is-a? model <component>) x:component-init x:interface-init))
            (lts (pke 'lts-raw (mcrl2->lts (cut init model))))
-           (xlts (pke 'cleaned (cleanup-lts lts #:internal? #f)))) ;; TODO: give traces.py all provided-in events
+           (lts (pke 'cleaned (cleanup-lts lts #:internal? #f)))) ;; TODO: give traces.py all provided-in events
       (chdir cwd)
       lts)))
 
