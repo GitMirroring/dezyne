@@ -1,1 +1,1 @@
-{"known":["c:build","mcrl2","traces","run"],"model":"Blocked","comment":{"true":"system: cannot run","c":"blocking: not supported"}}
+{"known":["c:build","run"],"model":"Blocked","comment":{"true":"system: cannot run","c":"blocking: not supported"}}

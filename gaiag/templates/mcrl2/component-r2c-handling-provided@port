@@ -1,4 +1,0 @@
-        (!b) -> sum arg: #x:port-interface-name 'ReplyUnion. #.name 'reply_out_rc(arg) . #x:mcrl2-component-name 'RC_handling(r = reply_union_#.name (arg)) +
-        (!b) -> is_reply_union_#.name(r) -> empty_queue . #.name 'return(reply_#.name(r)) . #x:mcrl2-model-name 'Run_to_Completion() +
-        (!b && !p) -> is_reply_union_#.name(f) -> empty_queue . #.name 'flush . #x:mcrl2-model-name 'Run_to_Completion() +
-        sum e: #x:port-interface-name 'Actions. #.name 'out_rc(e) . p -> #x:mcrl2-model-name 'RC_handling() <> #x:mcrl2-model-name 'RC_handling(f = reply_union_#.name(#x:port-type 'NULL))

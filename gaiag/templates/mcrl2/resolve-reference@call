@@ -1,1 +1,0 @@
-is'#x:mcrl2-process-name '#x:next-call-reference 'ref(cont) -> #x:mcrl2-process-name '#x:next-call-reference(#x:init-locals-from-cont)

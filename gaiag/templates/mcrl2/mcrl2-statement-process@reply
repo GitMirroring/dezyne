@@ -1,2 +1,0 @@
-#x:pretty-print-dzn
-     #x:mcrl2-process-name '#x:mcrl2-process-identifier(#x:process-parameters) = (reply != #x:mcrl2-model-name 'NULL) -> double_reply_error . delta <> #x:process-continuation (reply = #x:reply-union(reply_#x:trigger-port-type '#x:mcrl2-reply-type(#x:mcrl2-reply-expression)));

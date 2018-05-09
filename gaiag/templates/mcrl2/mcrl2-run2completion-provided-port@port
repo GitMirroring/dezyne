@@ -1,1 +1,0 @@
-        sum f: #x:port-interface-name 'Actions. #.name 'in_rc(f) . #x:mcrl2-model-name 'RC_provided_in(#x:port-interface-name 'NULL)

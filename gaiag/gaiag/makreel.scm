@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -43,7 +44,6 @@
   #:use-module (gaiag deprecated om)
 
   #:use-module (gaiag dzn)
-  #:use-module (gaiag mcrl2)
   #:use-module (gaiag norm)
   #:use-module (gaiag normalize)
   #:use-module (gaiag templates)
@@ -52,9 +52,63 @@
             makreel:om
             makreel:tick-names))
 
-(define-templates-macro define-templates makreel)
-(include "../templates/dzn.scm")
-(include "../templates/makreel.scm")
+(define-method (is-data? (o <ast>))
+  (or (is-a? o <data>) (and (is-a? o <var>) (is-a? ((compose .type .variable) o) <extern>))))
+
+(define (purge-data o)
+  (match o
+    (($ <data>) #f)
+    (($ <action>)
+     (clone o #:arguments (make <arguments>)))
+
+    (($ <trigger>)
+     (clone o #:formals (make <formals>)))
+
+    ((? (is? <ast-list>))
+     (clone o #:elements (filter-map purge-data (.elements o))))
+
+    (($ <extern>) #f)
+    (($ <assign>)
+     (if (is-a? (.type (.variable o)) <extern>) (clone (make <compound>) #:parent (.parent o))
+         (clone o #:expression (purge-data (.expression o)))))
+    (($ <formal>) (and (not (is-a? (.type o) <extern>)) o))
+    (($ <call>) (clone o #:arguments (make <arguments> #:elements (filter (negate is-data?) (ast:argument* o)))))
+    (($ <variable>) (and (not (is-a? (.type o) <extern>))
+                         (clone o #:expression (purge-data (.expression o)))))
+
+    (($ <var>) (and (not (is-a? ((compose .type .variable) o) <extern>))
+                    o))
+
+    ((and ($ <return>) (= .expression ($ <data-expr>))) (clone o #:expression #f))
+    ((? (is? <ast>)) (tree-map purge-data o))
+    (_ o)))
+
+(define mcrl2:process-identifier
+  (let ((id-alist '())
+	(next-alist '()))
+    (lambda (o)
+      (let* ((id (.id o))
+	     (sid ((compose .id (cut parent <> <model>)) o))
+             (path (ast:path o))
+             (id (map .id path))
+	     (key (cons id sid))
+	     (next (assq-ref next-alist sid))
+	     (next (or next -1)))
+	(number->string (or (assoc-ref id-alist key)
+			    (let ((next (1+ next)))
+                              (set! id-alist (acons key next id-alist))
+                              (set! next-alist (assoc-set! next-alist sid next))
+                              next)))))))
+
+(define-method (mcrl2:process-continuation (o <ast>))
+  (let* ((parent (.parent o)))
+    (match parent
+      (($ <behaviour>) parent)
+      (($ <compound>) (let ((cont (cdr (member o (.elements parent) (lambda (a b) (eq? (.node a) (.node b)))))))
+			(if (pair? cont)
+			    (car cont)
+			    (mcrl2:process-continuation parent))))
+      (_ (mcrl2:process-continuation parent)))))
 
 ;; FIXME: non-compatible copy from mcrl2 scope vs model ticking:
 ;;  <scope-name (IConsole) State'> vs <interface IConsole'>
@@ -152,7 +206,7 @@
     ;;(lambda (o) (if (gdzn:command-line:get 'debug) (display (ast->dzn o) (current-error-port))) o)
     (lambda (o) (if (gdzn:command-line:get 'debug) (pretty-print (om->list o) (current-error-port))) o)
     makreel:mark-tail-call
-    makreel:normalize (remove-otherwise) makreel:tick-names root-purge-data ast:resolve parse->om) ast))
+    makreel:normalize (remove-otherwise) makreel:tick-names purge-data ast:resolve parse->om) ast))
 
 (define (ast-> ast)
   (let ((root (makreel:om ast)))
@@ -575,8 +629,7 @@
           ""))
 
 (define-method (makreel:process-continuation (o <ast>))
-;;  barf
-  (process-continuation o))
+  (mcrl2:process-continuation o))
 
 (define-method (makreel:the-end (o <ast>))
   (if (and (parent o <component>) (ast:eq? o (.statement (parent o <behaviour>)))) o
@@ -796,3 +849,7 @@
   (let ((function (parent o <function>)))
     (cond ((and function (.last? o)) #f)
           (else o))))
+
+(define-templates-macro define-templates makreel)
+(include "../templates/dzn.scm")
+(include "../templates/makreel.scm")

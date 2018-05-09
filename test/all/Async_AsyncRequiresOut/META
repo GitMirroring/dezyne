@@ -1,1 +1,1 @@
-{"skip":["c++","c++03","c","cs","javascript","convert","traces","run","verify","mcrl2"],"comment":{"true":"async-refine: not supported; component relies on weak-illegal"}}
+{"skip":["c++","c++03","c","cs","javascript","convert","traces","run","verify"],"comment":{"true":"async-refine: not supported; component relies on weak-illegal"}}

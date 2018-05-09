@@ -1,4 +1,0 @@
-#x:pretty-print-dzn
-     #x:mcrl2-process-name '#x:mcrl2-process-identifier (#x:process-parameters) = #x:on-event-union;
-
-#x:mcrl2-statement-process

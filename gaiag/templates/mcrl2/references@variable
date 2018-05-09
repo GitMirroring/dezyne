@@ -1,1 +1,0 @@
-#x:mcrl2-process-name '#x:mcrl2-process-identifier 'variableref(#.name ': #x:mcrl2-type-name #x:other-variables-in-scope)?is'#x:mcrl2-process-name '#x:mcrl2-process-identifier 'variableref

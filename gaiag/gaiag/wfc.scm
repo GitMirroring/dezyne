@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2014, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -50,14 +50,9 @@
            ))
 
 (define (ast:wfc o)
-  (and-let* ((errors (null-is-#f
-                      ((om:collect <error>)
-                       (append
-                        (interface o)
-                        (component o)
-                        ((second-on) o)
-                        (mixing-declarative-imperative o))))))
-            (report-errors errors))
+  (let ((errors (tree-collect (is? <error>) o)))
+    (when (pair? errors)
+      (error "errors:" errors)))
   o)
 
 (define (wfc-error o message)

@@ -1,1 +1,0 @@
-#x:trigger-port 'reply_in(reply_#x:trigger-port-type '#x:mcrl2-reply-type(void)) . 

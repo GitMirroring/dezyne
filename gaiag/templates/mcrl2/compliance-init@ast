@@ -1,4 +1,0 @@
-
-#x:eqn-allow-dillegals-provided
-
-init #x:mcrl2-component-name 'Specification;

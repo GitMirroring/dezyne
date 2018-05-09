@@ -1,3 +1,0 @@
-(##l < QueueLength) -> (sum e: #x:port-interface-name 'Actions. #.name 'in_to_queue(e) . #x:mcrl2-model-name 'Queue(l = l <| action_union_#x:mcrl2-port-identifier(e))) +
-         (is_action_union_#x:mcrl2-port-identifier(head(l)) && l != []) -> #.name 'out_of_queue(x#x:mcrl2-port-identifier _0_ActionUnion(head(l))) . #x:mcrl2-model-name 'Queue(l = tail(l)) +
-         (##l == QueueLength) -> (sum e: #x:port-interface-name 'Actions. #.name 'in_to_queue(e) . queue_full . Illegal)

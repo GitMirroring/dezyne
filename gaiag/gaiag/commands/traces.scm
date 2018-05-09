@@ -49,6 +49,7 @@
   #:use-module (gaiag resolve)
   #:use-module (gaiag command-line)
   #:use-module (gaiag parse)
+  #:use-module (gaiag makreel)
 
   #:use-module (gaiag shell-util)
   #:use-module (gash job)
@@ -59,8 +60,8 @@
   #:export (parse-opts
             main))
 
-(define x:interface-lts-init (@@ (gaiag mcrl2) x:interface-lts-init))
-(define x:component-init (@@ (gaiag mcrl2) x:component-init))
+(define x:interface-init (@@ (scmcrl2 verification) x:interface-init))
+(define x:component-init (@@ (scmcrl2 verification) x:component-init))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -145,7 +146,7 @@ errors."
   (let* ((component (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <component>) (.elements root))))
          (interface (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <interface>) (.elements root))))
          (root (if component root interface))
-         (init (if component x:component-init x:interface-lts-init))
+         (init (if component x:component-init x:interface-init))
          (commands `(,(cut init root)
                      ("cat" "-" "verify.mcrl2")
                      ("tee" "0")
@@ -180,8 +181,8 @@ errors."
          (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
          (gdzn-verbose? (or (find (cut equal? <> "--verbose") (command-line))
                             (find (cut equal? <> "-v") (command-line))))
-         (root ((compose ast:resolve tick-names parse->om) ast))
-         (root (mcrl2:om root))
+         (root ((compose ast:resolve makreel:tick-names parse->om) ast))
+         (root (makreel:om root))
          (cwd (getcwd))
          (tmp (string-append (tmpnam) "-traces"))
          (foo (mkdir tmp)))

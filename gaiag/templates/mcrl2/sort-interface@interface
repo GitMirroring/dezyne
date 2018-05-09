@@ -1,3 +1,0 @@
-#x:mcrl2-model-name 'Actions = struct #x:action-struct;
-     #x:enum-struct #x:mcrl2-model-name 'ReplyUnion = struct #x:mcrl2-model-name 'NULL | #x:reply-union-struct;
-     #x:mcrl2-model-name 'Modeling = struct #x:mcrl2-model-name 'optional | #x:mcrl2-model-name 'inevitable;

@@ -1,1 +1,0 @@
-#x:trigger-port 'out(#x:trigger-port-type 'in'#x:assign-action-name) . sum res: #x:mcrl2-type-name . #x:constrain-action-range #x:trigger-port 'reply_in(reply_#x:trigger-port-type '#x:mcrl2-type-name(res)) . #x:check-integer-bounds

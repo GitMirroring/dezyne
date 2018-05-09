@@ -1,5 +1,0 @@
-rename({#.name 'in -> #.name 'in', #.name 'reply_out -> #.name 'reply_out'},
-                         rename({#x:port-type 'reply_out -> #.name 'reply_out, #x:port-type 'int -> #.name 'int, #x:port-type 'end -> #.name 'end, #x:port-type 'reply_comm -> #.name 'reply_comm, #x:port-type 'out_queue_rc -> #.name 'out_queue_rc, #x:port-type 'reply_out_rc -> #.name 'reply_out_rc, #x:port-type 'in -> #.name 'in, #x:port-type 'out -> #.name 'out, #x:port-type 'reply_in' -> #.name 'reply_in', #x:port-type 'in_queue -> #.name 'in_queue, #x:port-type 'return -> #.name 'return, #x:port-type 'reply_out' -> #.name 'reply_out', #x:port-type 'out_queue -> #.name 'out_queue, #x:port-type 'in' -> #.name 'in', #x:port-type 'reply_in -> #.name 'reply_in, #x:port-type 'out' -> #.name 'out', #x:port-type 'out_of_queue -> #.name 'out_of_queue, #x:port-type 'in_to_queue -> #.name 'in_to_queue},
-                           #x:port-type 'Behaviour(#x:globals-init)
-                         )
-                       )

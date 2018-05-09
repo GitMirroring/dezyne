@@ -1,5 +1,0 @@
-FOOBAR
-
-##x:mcrl2-model-name '##.function.name(##x:call-parameters cont = ##x:mcrl2-model-name '##x:next-call-reference'ref);
-
-     ##x:mcrl2-model-name '##x:mcrl2-process-identifier(##x:process-parameters , return'##.function.name : ##x:mcrl2-type-name) = 

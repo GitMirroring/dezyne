@@ -1,1 +1,1 @@
-{"known":["mcrl2","traces","run","table"],"skip":["c","cs","javascript"],"comment":{"true":"system: cannot run","c":"async-refine: not supported"}}
+{"known":["table"],"skip":["c","cs","javascript"],"comment":{"c":"async-refine: not supported"}}

@@ -1,3 +1,0 @@
-#x:mcrl2-model-name 'Queue(l: List(ActionUnion)) =
-         #x:required-port-queue #x:inevitable-optional-queue #x:provided-port-queue
-         (l == []) -> empty_queue_c . #x:mcrl2-model-name 'Queue();

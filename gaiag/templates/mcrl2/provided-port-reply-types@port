@@ -1,1 +1,0 @@
-sum arg: #x:port-interface-name 'ReplyUnion. #.name 'reply_out_rc(arg) . #x:mcrl2-component-name 'RC_#.name _provided_in(r = arg)

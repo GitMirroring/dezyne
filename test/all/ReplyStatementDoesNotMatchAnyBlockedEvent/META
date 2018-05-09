@@ -1,1 +1,1 @@
-{"skip":["c++","c++03","c","cs","javascript","convert","traces","run","verify","mcrl2"],"comment":{"true":"interpreter error message test model"}}
+{"skip":["c++","c++03","c","cs","javascript","convert","traces","run","verify"],"comment":{"true":"interpreter error message test model"}}

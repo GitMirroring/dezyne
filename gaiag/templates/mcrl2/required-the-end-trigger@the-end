@@ -1,1 +1,0 @@
-(reply != #x:mcrl2-model-name 'NULL) -> double_reply_error . delta <> #x:trigger-port 'reply_out(#x:trigger-port-type 'NULL)

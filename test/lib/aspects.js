@@ -81,7 +81,6 @@ var dependencies = {
   code:     ['convert'],
   convert:  [],
   execute:  ['traces', 'build'],
-  mcrl2:    ['convert'],
   parse:    ['convert'],
   run:      ['traces'],
   table:    ['convert'],
@@ -120,7 +119,7 @@ function ordered_dependencies() {
       result.push(aspect);
     }
   }
-  var order = ['parse', 'verify', 'mcrl2', 'triangle', 'table', 'view'] ;
+  var order = ['parse', 'verify', 'triangle', 'table', 'view'] ;
   order.forEach(function(aspect) {
     add_dependencies(aspect);
   });
@@ -658,55 +657,6 @@ var aspects = {
       })
       .fail (function(err) {console.log(err); return {status: -1, output: err}});
   }
-  ,
-  mcrl2: function(parameters) {
-    var baseline = parameters.dir + '/baseline/mcrl2/' + parameters.model;
-    var dir = 'out/' + path.basename(parameters.dir) + '/mcrl2'
-    var out = dir + '/'+parameters.model;
-    var err = out + '.stderr';
-    var queue = parameters.meta.queue ? '-q ' + parameters.meta.queue : '';
-    var imports = imports_string (parameters.meta.imports);
-    var model = parameters.meta.mcrl2_model || parameters.meta.model || parameters.model;
-    var model_opt = parameters.meta.model === false ? '' : ' --model=' + model;
-
-    return lstat (baseline)
-      .then (function(stats) {
-        return 'mkdir -p '+dir+';'
-          + '{ set -o pipefail;'
-          + dzn(parameters.session)
-          + ' --verbose verify --all' + model_opt
-          + ' '+queue
-          + ' '+imports
-          + ' '+parameters.filename
-          + ' 2>'+err
-          + '| ' + __dirname + '/../bin/reorder > '+out
-          + '| test ! -s '+baseline
-          + '| test ! -s '+baseline+'.stderr'
-          + ';}'
-          + ' || (diff -uw '+baseline+' '+out
-          + '     && (test ! -s '+err
-          + '         || (sed -i s,.\r,,g '+err+';'
-          + '            diff -u '+baseline+'.stderr '+err+')))'
-          + ' || { echo ' + err + ':; cat ' + err + '; false; }';
-      })
-      .fail (function(e) {
-        console.log ('mcrl2 verify: no baseline=' + baseline);
-        return 'mkdir -p '+dir+';'
-          + 'out="$(' + dzn(parameters.session) + ' verify --all' + model_opt
-          + ' '+imports
-          + ' '+queue
-          + ' '+parameters.filename
-          + ' 2>' + err + ')";'
-          + 'err="$(cat ' + err + ')";'
-          + '[ "$out$err" = "" ] '
-          + ' || { echo -e "verification output:\n$out"; '
-          + '      echo ' + err + ':; cat ' + err + '; false; }';
-      })
-      .then (function(cmd) {
-        return util.spawn_sync_shell(cmd);
-      })
-      .fail (function(err) {console.log(err); return {status: -1, output: err}});
-   }
   ,
   view: function(parameters) {
     var baseline = parameters.dir + '/baseline/verify/' + parameters.model;

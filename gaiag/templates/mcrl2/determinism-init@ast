@@ -1,4 +1,0 @@
-
-eqn  #x:mcrl2-component-name 'allow_dillegals = true;
-
-init #x:mcrl2-component-name 'Behaviour(#x:globals-init);

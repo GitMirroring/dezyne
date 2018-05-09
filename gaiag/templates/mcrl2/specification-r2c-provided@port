@@ -1,2 +1,0 @@
-      sum a: #x:port-type 'Actions. #.name 'in(a) . #x:mcrl2-model-name 'Specification_R2C_event +
-      sum m: #x:port-type 'Modeling. #.name 'int(m) . #x:mcrl2-model-name 'Specification_R2C_modeling(false)

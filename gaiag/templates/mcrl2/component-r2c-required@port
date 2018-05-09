@@ -1,1 +1,0 @@
-        sum m: #x:port-interface-name 'Modeling. #.name 'int(m) . #.name 'end . #x:mcrl2-model-name 'RC_handling(p = false, b = false, f = #x:mcrl2-model-name 'NULL, r = #x:mcrl2-model-name 'NULL)

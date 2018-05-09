@@ -1,2 +1,0 @@
-#x:pretty-print-dzn
-     #x:mcrl2-process-name '#x:mcrl2-process-identifier(#x:process-parameters) = #x:trigger-port 'out(#x:trigger-port-type '#.event.direction '#.event.name) . #x:component-reply-in-stmt #x:process-continuation();

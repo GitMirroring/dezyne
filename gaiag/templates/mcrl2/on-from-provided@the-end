@@ -1,1 +1,0 @@
-#x:the-end-trigger  . #x:process-continuation(reply = #x:mcrl2-model-name 'NULL)

@@ -1,3 +1,0 @@
-internal . #x:mcrl2-model-name 'function'#x:call-function-name(#x:call-parameters cont = #x:mcrl2-process-name '#x:mcrl2-process-identifier 'variableref(#x:init-type-value  #x:variable-names-in-scope));
-
-     #x:mcrl2-process-name '#x:mcrl2-process-identifier 'variable(#x:next-process-parameters , return'#x:call-function-name : #x:mcrl2-type-name) = #x:check-range-error-call
