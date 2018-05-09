@@ -55,6 +55,7 @@
   #:use-module (gash job)
   #:use-module (gash pipe)
   #:export (parse-opts
+            model->mcrl2
             main))
 
 (define (parse-opts args)
@@ -101,6 +102,19 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                                         (filter (negate (cut member <> component-interfaces)) interface-names)))))))
     (append interface-names component-names)))
 
+(define (model->mcrl2 root model)
+  (let* ((model-name (symbol->string (verify:scope-name model)))
+         (globals (ast:global* root))
+         (root (clone root
+                      #:elements (filter (lambda (o) (or (ast:eq? model o)
+                                                         (if (is-a? model <interface>)
+                                                             (not (is-a? o <model>))
+                                                             (not (is-a? o <component>)))))
+                                         globals))))
+    (parameterize ((language 'makreel))
+      (with-output-to-file "verify.mcrl2" (cut root-> root)))
+    (system (string-append "cp --backup=t -f verify.mcrl2 " model-name ".mcrl2"))))
+
 (define (verify-makreel options dir file-name ast)
   (let ((verbose? (gdzn:command-line:get 'verbose))
         (all? (command-line:get 'all)))
@@ -108,22 +122,12 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
     (define (verify-makreel-model root model-name)
       (define (named? o)
         (equal? (symbol->string (verify:scope-name o)) model-name))
-      (let* ((globals (ast:global* root))
-             (model (find named? globals))
-             (root (clone root #:elements (filter
-                                           (lambda (o) (or (named? o)
-                                                           (if (is-a? model <interface>)
-                                                               (not (is-a? o <model>))
-                                                               (not (is-a? o <component>)))))
-                                           globals))))
-        (parameterize ((language 'makreel))
-          (with-output-to-file "verify.mcrl2" (cut root-> root)))
-        (system (string-append "cp --backup=t -f verify.mcrl2 " model-name ".mcrl2"))
-        (mcrl2:verify dir file-name model-name root verbose? all?)))
+      (model->mcrl2 root (find named? (ast:model* root)))
+      (mcrl2:verify dir file-name model-name root verbose? all?))
 
     (let* ((root (makreel:om ast))
            (model (option-ref options 'model #f))
-           (models(if model (list model) (models-for-verification root))))
+           (models (if model (list model) (models-for-verification root))))
       (let loop ((models models) (error? #f))
         (if (or (and (not all?) error?) (null? models)) (if error? 1 0)
             (let* ((model (car models))

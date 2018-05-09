@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -77,7 +77,6 @@ Usage: gdzn parse [OPTION]... [FILE]...
 (define (asd-parse options file-name)
   (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
-         (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
          (globals? (option-ref options 'globals #f))
          (map? (option-ref options 'map #f))
          (output-dir (option-ref options 'output #f))

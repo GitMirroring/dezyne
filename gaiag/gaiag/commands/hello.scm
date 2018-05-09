@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -49,6 +49,5 @@ Usage: gdzn hello [OPTION]...
 
 (define (main args)
   (let* ((options (parse-opts args))
-         (files (option-ref options '() '()))
-         (debug? (find (cut equal? <> "--debug") (command-line))))
+         (files (option-ref options '() '())))
     (display "hello\n")))

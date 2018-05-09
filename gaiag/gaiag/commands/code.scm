@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -85,8 +85,6 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
          (language-opt (string->symbol (option-ref options 'language "c++")))
          (ast (parse-with-options options file-name))
          (module (resolve-module `(gaiag ,language-opt)))
-         (ast-> (module-ref module 'ast->))
-         (gdzn-debug? (find (cut equal? <> "--debug") (command-line))))
-    ;;(if gdzn-debug? (stderr "AST:\n ~s\n" ast))
+         (ast-> (module-ref module 'ast->)))
     (parameterize ((language language-opt)) (ast-> ast))
     *unspecified*))

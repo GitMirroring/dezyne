@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
@@ -28,6 +28,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
   #:use-module (gaiag misc)
+  #:use-module (gaiag command-line)
   #:export (parse-opts
             main))
 
@@ -61,7 +62,7 @@ Usage: gdzn run [OPTION]... [FILE]...
          (imports (cons* (dirname file-name) (dirname (canonicalize-path file-name)) imports))
          (model-opt (option-ref options 'model #f))
          (strict? (option-ref options 'strict #f))
-         (gdzn-debug? (find (cut equal? <> "--debug") (command-line)))
+         (gdzn-debug? (gdzn:command-line:get 'debug))
          (command (string-append
                    " seqdiag "
                    (string-append " -m " model-opt)

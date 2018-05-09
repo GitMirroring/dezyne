@@ -41,8 +41,9 @@
   #:use-module (gash pipe)
 
   #:export (main
-            mcrl2-trace-file->dzn-trace
-            rename-lts-actions))
+            rename-lts-actions
+            cleanup-lts
+            mcrl2-trace-file->dzn-trace))
 
 (define (find-aliases mcrl2file)
   (let* ((mcrl2-text (call-with-input-file "verify.mcrl2" read-string))
@@ -165,34 +166,46 @@ illegal")
 
 ;;(format #t "~a" (string-join (map parse-tree2text (parse trace)) "\n"))
 
+(define (mcrl2-trace-file->dzn-trace mcrl2-trace-file)
+  (cleanup-lts (pipeline->string `("tracepp" ,mcrl2-trace-file))))
+
 (define (rename-lts-actions trace)
   (string-join (filter-map parse-tree2text (parse trace)) "\n"))
 
-(define (mcrl2-trace-file->dzn-trace mcrl2-trace-file)
-  (rename-lts-actions (pipeline->string `("tracepp" ,mcrl2-trace-file))))
+(define (cleanup-text text)
+  (define (cleanup-line line)
+    (let ((fris (parse line)))
+      (if (null? fris) #f
+          (parse-tree2text (car fris)))))
+  (string-join
+   (filter-map cleanup-line (string-split text #\newline))
+   "\n" 'suffix))
+
+(define* (cleanup-lts text #:key internal?)
+  (define (cleanup-node-label node)
+    (stderr "cleanup-label node=~s\n" node)
+    (or (and (= (length node) 3)
+             (let ((label ((compose (cut string-drop <> 1) (cut string-drop-right <> 1) cadr) node)))
+               (and (not (string-null? label))
+                    (let ((fris (parse label)))
+                      (and (pair? fris)
+                           (list (car node)
+                                 ((compose (cut format #f "~s" <>) (cut parse-tree2text <> #:internal? internal?) car) fris)
+                                 (caddr node)))))))
+        node))
+  (let* ((lines (string-split text #\newline))
+         (nodes (list-tail lines 1))
+         (nodes (map (cut string-split <> #\,) nodes))
+         (nodes (map cleanup-node-label nodes))
+         (fris (map (cut string-join <> ",") nodes)))
+    (string-join (cons (car lines) fris) "\n" 'suffix)))
 
 (define (main arguments)
-  (define (cleanup-label n)
-    (let ((label ((compose (cut string-drop <> 1) (cut string-drop-right <> 1) cadr) n)))
-      (if (string-null? label) n
-          (let ((fris (parse label)))
-            (if (null? fris) n
-                (list (car n) ((compose (cut format #f "~s" <>) (cut parse-tree2text <> #:internal? #t) car) fris) (caddr n)))))))
   (let* ((files (cdr arguments))
          (file (if (or (null? files)
                        (equal? (car files) "-")) "/dev/stdin"
                        (car files)))
          (text (string-trim-right (with-input-from-file file read-string)))
-         (lines (string-split text #\newline))
-         (lts? (string-prefix? "des " (car lines))))
-    (if lts?
-        (let* ((nodes (list-tail lines 1))
-               (nodes (map (cut string-split <> #\,) nodes))
-               (nodes (map cleanup-label nodes))
-               (fris (map (cut string-join <> ",") nodes))
-               (fris (string-join (cons (car lines) fris) "\n")))
-          (display fris)
-          (newline))
-        (display (string-join (filter-map (lambda (line) (let ((fris (parse line)))
-                                                    (if (null? fris) #f
-                                                        (parse-tree2text (car fris))))) lines) "\n" 'suffix)))))
+         (lts? (string-prefix? "des " text)))
+    (if lts? (display (cleanup-lts text #:internal? #t))
+        (display (cleanup-text text)))))

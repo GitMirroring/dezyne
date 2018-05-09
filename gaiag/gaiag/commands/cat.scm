@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -55,10 +55,9 @@ Usage: gdzn cat [OPTION]... FILE
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (files (map (lambda (f) (if (not (string-prefix? "/" f)) f (string-drop f 1))) files))
-         (debug? (find (cut equal? <> "--debug") (command-line)))
          (root (string-append %root-dir "/fs"))
          (file-name (string-append root "/" (car files)))
-         (gdzn-debug? (find (cut equal? <> "--debug") (command-line))))
+         (gdzn-debug? (gdzn:command-line:get 'debug)))
     (when gdzn-debug?
       (stderr "root=~a\n" root))
     (chdir root)
