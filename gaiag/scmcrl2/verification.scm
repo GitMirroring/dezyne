@@ -54,6 +54,7 @@
   #:use-module (json)
 
   #:export (mcrl2:verify
+            handle-error
             verify:scope-name))
 
 
