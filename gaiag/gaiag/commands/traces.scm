@@ -125,7 +125,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
     (model->mcrl2 root model)
     (let* ((init (if (is-a? model <component>) x:component-init x:interface-init))
            (lts (mcrl2->lts (cut init model)))
-           (lts (cleanup-lts lts)))
+           (lts (cleanup-lts lts #:illegal? #t)))
       (chdir cwd)
       lts)))
 

@@ -122,7 +122,7 @@ illegal")
      internal-literal   <   'internal'
      reply-literal      <   'reply'
      tau-literal        <   'tau'
-     illegal            <   'illegal' / 'declarative_illegal' / 'dillegal'
+     illegal            <-- 'illegal' / 'declarative_illegal' / 'dillegal'
      error              <-- incomplete / queue-full / range-error / reply-error / missing-reply / second-reply
      queue-full         <-  'queue_full' / port-name tick 'queue_full'
      range-error        <-  'range_error'
@@ -149,13 +149,14 @@ illegal")
               (format (current-error-port) "parse error: no match\n")
               #f)))))
 
-(define* (parse-tree2text tree #:key internal?)
+(define* (parse-tree2text tree #:key internal? illegal?)
   (match tree
     (('parse-error parse-error) (stderr "parse error:~s\n" tree) parse-error)
     (('error error) error)
     (('flush ('identifier port) "flush") (string-append port ".<flush>"))
     (('error ('identifier port) error) error)
     (('event ('identifier port) ('identifier event)) (string-append port "." event))
+    (('illegal illegal) (and illegal? "illegal")) 
     (('modeling ('identifier port) event) (and internal? (string-append port "." event)))
     (('queue ('identifier port) ('queue-direction direction) ('identifier event)) (and internal? (string-append port "." direction "." event)))
     (('reply ('identifier port) ('void "void")) (string-append port ".return"))
@@ -181,14 +182,14 @@ illegal")
    (filter-map cleanup-line (string-split text #\newline))
    "\n" 'suffix))
 
-(define* (cleanup-lts text #:key internal?)
+(define* (cleanup-lts text #:key internal? illegal?)
   (define (cleanup-node-label node)
     (or (and (= (length node) 3)
              (let* ((label ((compose (cut string-drop <> 1) (cut string-drop-right <> 1) cadr) node)))
                (or (and (not (string-null? label))
                         (let ((fris (parse label)))
                           (or (and (pair? fris)
-                                   (let ((label (parse-tree2text (car fris) #:internal? internal?)))
+                                   (let ((label (parse-tree2text (car fris) #:internal? internal? #:illegal? illegal?)))
                                      (and label
                                           (list (car node)
                                                 (format #f "~s" label)
