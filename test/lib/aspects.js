@@ -604,7 +604,8 @@ var aspects = {
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
       .then(function(){return ls_traces(out);})
-      .then(function(traces){if (!traces.length) traces = util.spawn_sync_shell(cmd);return traces;})
+      .then(function(traces){if (!traces.length) traces = q(util.spawn_sync_shell(cmd)).then (function (){return ls_traces (out);}); return traces;})
+      .then(function(traces){if (!traces.length) throw ('no traces'); return traces;})
       .fail(function(err) {console.log(err); return {status: -1, output: err}});
   }
   ,
