@@ -18,13 +18,13 @@ req_and_queue_allow = allow({
  , queue_full
  }, req_and_queue_comm);
 
-req_and_queue_rename = rename({
+req_and_queue_rename = block({foo},rename({
    #x:queue-rename-requires
  , declarative_illegal -> illegal
- }, req_and_queue_allow);
+ }, req_and_queue_allow));
 
-%req_and_queue = hide({
+%req_and_queue = block({foo},hide({
 %  ##x:queue-hide-requires
-%  }, req_and_queue_rename);
+%  }, req_and_queue_rename));
 
-req_and_queue = req_and_queue_rename;
+req_and_queue = block({foo},req_and_queue_rename);

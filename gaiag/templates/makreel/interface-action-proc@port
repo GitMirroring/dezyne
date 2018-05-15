@@ -7,8 +7,8 @@
   , #x:basic-type flush -> #.name flush
   }, #x:basic-type interface);
 
-#.name _port = hide ({
+#.name _port = block({foo},hide ({
   recurse
   , return
   #x:hide-flush
-  }, #.name _port_rename);
+  }, #.name _port_rename));
