@@ -93,12 +93,13 @@ illegal")
 
 (define (parse input)
   (define-peg-string-patterns
-    "trace              <-- ((event / modeling / reply / queue / tau-literal / illegal / error / end / flush / parse-error) newline?)*
+    "trace              <-- ((event / modeling / reply / return / queue / tau-literal / illegal / error / end / flush / parse-error) newline?)*
      parse-error        <-- [a-zA-Z_0-9'()]*
      event              <-- port-name tick direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
      modeling           <-- port-name tick internal-literal lpar scope* ('inevitable' / 'optional') rpar
      queue              <-- port-name tick queue-direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
      end                <   scope* 'end'
+     return             <-- 'return'
      flush              <-- identifier tick 'flush'
      reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
      scope              <   identifier tick
@@ -156,14 +157,15 @@ illegal")
     (('flush ('identifier port) "flush") (string-append port ".<flush>"))
     (('error ('identifier port) error) error)
     (('event ('identifier port) ('identifier event)) (string-append port "." event))
-    (('illegal illegal) (and illegal? "illegal")) 
+    (('illegal illegal) (and illegal? "illegal"))
     (('modeling ('identifier port) event) (and internal? (string-append port "." event)))
     (('queue ('identifier port) ('queue-direction direction) ('identifier event)) (and internal? (string-append port "." direction "." event)))
     (('reply ('identifier port) ('void "void")) (string-append port ".return"))
     (('reply ('identifier port) ('bool value)) (string-append port "." value))
     (('reply ('identifier port) ('int value)) (string-append port "." value))
     (('reply ('identifier port) ('enum-literal scope ... ('identifier name) ('identifier field))) (string-append port "." name "_" field))
-    (('reply ('identifier port) ('enum-literal (scope ... ('identifier name)) ('identifier field))) (string-append port "." name "_" field))))
+    (('reply ('identifier port) ('enum-literal (scope ... ('identifier name)) ('identifier field))) (string-append port "." name "_" field))
+    (('return return) (and internal? "return"))))
 
 ;;(format #t "~a" (string-join (map parse-tree2text (parse trace)) "\n"))
 
