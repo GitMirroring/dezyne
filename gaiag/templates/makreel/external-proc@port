@@ -4,9 +4,9 @@
   + (##l == QueueLength) -> (sum e: #x:makreel:interface-name events. #.name qin (e) . #.name queue_full . Illegal')
 ;
 
-#.name _portinternal_hide = block({foo}, hide({
+#.name _portinternal_hide = hide({
   #.name internal
-  , #.name end}, #.name _port ));
+  , #.name end}, #.name _port );
 
 #.name _portexternal_parallel = #.name _portexternal_queue([]) || #.name _portinternal_hide;
 
@@ -32,5 +32,5 @@
   , #.name qout -> #.name out
   }, #.name _portexternal_allow);
 
-#.name _portexternal = block({foo}, hide({
-  #.name qin}, #.name _portexternal_rename));
+#.name _portexternal = hide({
+  #.name qin}, #.name _portexternal_rename);

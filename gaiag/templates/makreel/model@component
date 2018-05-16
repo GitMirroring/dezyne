@@ -22,7 +22,6 @@ act
 #x:makreel:model-name end;
 #x:makreel:model-name end';
 declarative_illegal;
-foo;
 illegal;
 incomplete;
 missing_reply;
@@ -99,7 +98,7 @@ component_reorder_rename = rename({
   }, component_reorder_allow);
 
 %component_reorder_hide = hide({##x:reorder-hide-provides}, component_reorder_rename);
-component_reorder_hide = block({foo},component_reorder_rename);
+component_reorder_hide = component_reorder_rename;
 
 %%%%%%%%%%%%%%%%%%%%%%%%% SEMANTICS %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -154,7 +153,7 @@ component_semantics_rename = rename({
   }, component_semantics_allow);
 
 %component_semantics_hide = hide({##x:makreel:model-name end}, component_semantics_rename);
-component_semantics_hide = block({foo},component_semantics_rename);
+component_semantics_hide = component_semantics_rename;
 
 %%%%%%%%%%%%%%%%%%%%% COMPONENT ASSEMBLY %%%%%%%%%%%%%%%%%%%%%%
 
@@ -186,14 +185,14 @@ component_rename = rename({
   #x:component-rename-requires
   }, component_allow);
 
-component = block({foo},hide({
+component = hide({
    #x:makreel:model-name end
  #x:component-hide-provides
  #x:component-hide-requires
  , queue_empty
  , recurse
  , return
- }, component_rename));
+ }, component_rename);
 
 %%component = component_rename;
 
@@ -223,9 +222,9 @@ provides_rename = rename ({
   #x:provides-rename
   }, provides_allow);
 
-provides = block({foo},hide ({
+provides = hide ({
   #x:provides-hide
-  }, provides_rename));
+  }, provides_rename);
 
 %init component;
 %init provides;

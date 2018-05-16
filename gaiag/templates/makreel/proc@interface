@@ -42,9 +42,9 @@
  , #x:makreel:model-name end' -> #x:makreel:model-name end
  }, #x:makreel:model-name reordered_allow);
 
-#x:makreel:model-name reordered = block({foo},hide({
+#x:makreel:model-name reordered = hide({
     #x:makreel:model-name reply'
-}, #x:makreel:model-name reordered_rename));
+}, #x:makreel:model-name reordered_rename);
 
 
 #x:makreel:model-name semantics
@@ -96,9 +96,9 @@
   , #x:makreel:model-name end'reordered -> #x:makreel:model-name end
   }, #x:makreel:model-name allow);
 
-#x:makreel:model-name hide = block({foo},hide({#x:makreel:model-name end'}, #x:makreel:model-name rename));
+#x:makreel:model-name hide = hide({#x:makreel:model-name end'}, #x:makreel:model-name rename);
 
-#x:makreel:model-name interface = block({foo},#x:makreel:model-name hide);
+#x:makreel:model-name interface = #x:makreel:model-name hide;
 
 #x:makreel:model-name  #x:process-parameters
  = #x:behaviour-proc

@@ -11,7 +11,6 @@ Void = struct void;
 act
 #x:event-act
 declarative_illegal;
-foo;
 illegal;
 incomplete;
 missing_reply;
