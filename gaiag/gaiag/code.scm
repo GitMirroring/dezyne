@@ -75,6 +75,7 @@
             code:port-name
             code:instance-port-name
             code:instances
+            code:reply
             code:reply-type
             code:reply-scope+name
             code:reply-types
@@ -135,10 +136,20 @@
             code:root->
             %x:header
             %x:main
+            %x:glue-top-header
+            %x:glue-top-source
+            %x:glue-bottom-header
+            %x:glue-bottom-source
             ))
 
 (define %x:header (make-parameter #f))
 (define %x:main (make-parameter #f))
+
+(define %x:glue-top-header (make-parameter #f))
+(define %x:glue-top-source (make-parameter #f))
+(define %x:glue-bottom-header (make-parameter #f))
+(define %x:glue-bottom-source (make-parameter #f))
+
 
 (define (ast-> ast)
   (let ((root (code:om ast)))
@@ -313,7 +324,7 @@
   ((compose car .elements .triggers) o))
 
 (define-method (code:return (o <on>))
-  ((compose .type .signature .event code:trigger) o))
+  ((compose ast:type code:trigger) o))
 
 (define-method (code:variable->argument (o <variable>) (f <formal>))
   (if (or (code:class-member? o)
@@ -408,7 +419,7 @@
 
 (define-method (code:assign-reply (o <reply>))
   (let ((expression (.expression o)))
-    (if (is-a? (ast:type expression) <void>) ""
+    (if (is-a? (ast:type expression) <void>) '()
         o)))
 
 (define ((symbol->enum-field enum) o)
@@ -459,7 +470,7 @@
   (.name o))
 
 (define-method (code:expression (o <top>))
-  (dzn:expression o))
+  (pke 'code:expression o '=> (dzn:expression o)))
 
 (define-method (code:expression (o <formal>))
   (code:variable-name o))
@@ -468,8 +479,11 @@
   (code:variable-name o))
 
 (define-method (code:expression (o <return>))
-  (if (or (not (.expression o)) (eq? (.expression o) *unspecified*)) ""  ; MORTAL SIN HERE!!?
-          (.expression o)))
+  (dzn:expression o))
+
+(define-method (code:expression (o <return>))
+  (or (pke 'as-type o '=> (as (pke 'type (ast:type (.expression o))) <void>))
+      (.expression o)))
 
 (define-method (code:variable-name (o <argument>))
   o)
@@ -562,7 +576,8 @@
 
 (define (code:x-header- o) (filter (conjoin (negate om:imported?) (is? <interface>)) (.elements o)))
 
-;;
+(define-method (code:reply (o <type>))
+  o)
 
 ;;; code: generic templates
 
@@ -650,13 +665,13 @@
                ((%x:source) o))
         (begin (when (code:header?)
                  (with-output-to-file (string-append dir name iext) (cut (%x:header) o)))
-               (with-output-to-file (string-append dir name cext) (cut (%x:source) o)))))
-  ;; (when (map-file o)
-  ;;   (let ((name ((om:scope-name) o)))
-  ;;     (if stdout? (begin ((%x:header) o) ((%x:source) o))
-  ;;         (begin (with-output-to-file (symbol->string (symbol-append name (dzn:extension (make <interface>)))) (cut (x:glue-bottom-header) o))
-  ;;                (with-output-to-file (symbol->string (symbol-append name (dzn:extension (make <component>)))) (cut (x:glue-bottom-source) o))))))
-  )
+               (with-output-to-file (string-append dir name cext) (cut (%x:source) o))))
+    (when (map-file o)
+      (let ((name ((om:scope-name) o)))
+        (if stdout? (begin ((%x:header) o) ((%x:source) o))
+            (begin (with-output-to-file (symbol->string (symbol-append name (dzn:extension (make <interface>)))) (cut (%x:glue-bottom-header) o))
+                   (with-output-to-file (symbol->string (symbol-append name (dzn:extension (make <component>)))) (cut (%x:glue-bottom-source) o))))))))
+
 (define (code:dump-main o)
   (let* ((dir (command-line:get 'output "."))
          (stdout? (equal? dir "-"))
@@ -719,9 +734,15 @@
 ;;     (code:dump-glue o)))
 
 (define-method (code:dump-glue (o <system>))
-  (let ((name (om:name o)))
-    (code:x:pand o 'glue-top-header (symbol-append name 'Component.h))
-    (code:x:pand o 'glue-top-source (symbol-append name 'Component.cpp))))
+  (let* ((dir (command-line:get 'output "."))
+         (stdout? (equal? dir "-"))
+         (dir (string-append dir "/" (dzn:dir o)))
+         (name (symbol->string (om:name o))))
+    (if stdout?
+        (begin ((%x:glue-top-header) o)
+               ((%x:glue-top-source) o))
+        (begin (with-output-to-file (string-append dir name "Component.h") (cut (%x:glue-top-header) o))
+               (with-output-to-file (string-append dir name "Component.cpp") (cut (%x:glue-top-source) o))))))
 
 (define (glue)
   (and=> (command-line:get 'glue #f) string->symbol))

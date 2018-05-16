@@ -630,7 +630,7 @@
   (port.name))
 
 (define-ast <return> (<imperative>)
-  (expression))
+  (expression #:init-form (make <literal-node>)))
 
 (define-ast <stack> (<ast>))
 (define-ast <return-value> (<ast>))

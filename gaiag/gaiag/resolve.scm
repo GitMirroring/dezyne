@@ -220,8 +220,10 @@
     (else (match o
             (($ <interface>) (find name? (ast:event* o)))
             ((and (or ($ <action>) ($ <trigger>)) (= .port #f)) (event? (parent o <interface>) name))
-            ((and (or ($ <action>) ($ <trigger>)) (= .port port)) (event? (.type port) name)))
-          )))
+            ((and (or ($ <action>) ($ <trigger>)) (= .port port)) (event? (.type port) name))))))
+
+(define-method (resolve:event (o <ast>) (name <symbol>))
+  (event? o name))
 
 (define-method (.event (o <action>))
   (event? o (.event.name o)))

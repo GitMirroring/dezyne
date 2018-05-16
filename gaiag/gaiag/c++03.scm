@@ -46,12 +46,16 @@
 (define-templates-macro define-templates c++03)
 (include "../templates/dzn.scm")
 (include "../templates/code.scm")
-(include "../templates/c++03.scm")
+(include "../templates/c++.scm")
 
 (define (c++03:root-> root)
   (parameterize ((language 'c++03)
                  (%x:header x:header)
                  (%x:source x:source)
+                 (%x:glue-top-header x:glue-top-header)
+                 (%x:glue-top-source x:glue-top-source)
+                 (%x:glue-bottom-header x:glue-bottom-header)
+                 (%x:glue-bottom-source x:glue-bottom-source)
                  (%x:main x:main))
     (code:root-> root)))
 

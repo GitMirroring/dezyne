@@ -195,7 +195,7 @@
   (match o
     (($ <call>) (let ((continuation ((compose car makreel:continuation) o)))
                   (if (and (is-a? continuation <return>)
-                           (not (.expression continuation))) (clone o #:last? #t)
+                           (is-a? (ast:type (.expression continuation)) <void>)) (clone o #:last? #t)
                       o)))
     ((? (is? <ast>)) (tree-map makreel:mark-tail-call o))
     (_ o)))

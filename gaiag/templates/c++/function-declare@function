@@ -1,1 +1,1 @@
-#x:return-type  #.name  (#x:formals);
+#x:function-type  #.name  (#x:formals);

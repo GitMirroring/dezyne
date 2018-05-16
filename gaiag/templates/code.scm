@@ -40,12 +40,9 @@
 (define-templates model2file-interface-include code:model2file-interface-include)
 (define-templates component-include code:component-include)
 (define-templates scope::name code:scope+name type-infix)
-(define-templates non-void-reply)
 (define-templates code-enum-literal code:enum-literal type-infix)
 (define-templates enum-scope code:enum-scope type-infix)
-(define-templates reply (lambda (o)
-                           (if (is-a? o <void>) ""
-                               (string-append " " (with-output-to-string (cut x:non-void-reply o)))))) ;; MORTAL SIN HERE!!?(define-templates capitalize-model-name (compose (cut string-upcase <> 0 1) symbol->string om:name (lambda (o) (parent o <model>))))
+(define-templates reply code:reply)
 (define-templates decapitalize-model-name (compose (cut string-downcase <> 0 1) symbol->string om:name (lambda (o) (parent o <model>))))
 (define-templates upcase-model-name (compose string-upcase (->join "_") om:scope+name (lambda (o) (parent o <model>))))
 (define-templates method code:trigger)

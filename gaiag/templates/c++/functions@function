@@ -1,1 +1,1 @@
-#x:return-type  #x:model-name ::#.name  (#x:formals) #x:statement
+#x:function-type  #x:model-name ::#.name  (#x:formals) #x:statement

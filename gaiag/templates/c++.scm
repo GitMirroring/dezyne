@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -24,7 +25,7 @@
 
 (define-templates name c++:name)
 (define-templates declare-method code:trigger)
-(define-templates return-type c++:return-type)
+(define-templates function-type c++:function-type)
 (define-templates calls ast:void-in-triggers)
 (define-templates rcalls ast:valued-in-triggers)
 (define-templates prefix-formals-type code:formals formal-prefix)
@@ -63,7 +64,7 @@
 (define-templates injected-binding-declare injected-bindings)
 (define-templates non-injected-instance-declare non-injected-instances)
 (define-templates system-rank ast:provided)
-(define-templates optional-return c++:optional-return)
+(define-templates optional-type c++:optional-type)
 (define-templates provided-port-reference-initializer ast:provided)
 (define-templates required-port-reference-initializer ast:required)
 (define-templates constructor-meta-initializer non-injected-instances)
@@ -98,6 +99,12 @@
 (define-templates construction-parameters c++:construction-parameters)
 (define-templates construction-parameters-locator-set c++:construction-parameters-locator-set)
 (define-templates construction-parameters-locator-get c++:construction-parameters-locator-get)
+
+;; glue
+(define-templates glue-top-header)
+(define-templates glue-top-source)
+(define-templates glue-bottom-header)
+(define-templates glue-bottom-source)
 (define-templates asd-constructor c++:asd-constructor)
 (define-templates asd-api-instance-declaration c++:asd-api-instance-declaration)
 (define-templates asd-api-instance-init c++:asd-api-instance-init)

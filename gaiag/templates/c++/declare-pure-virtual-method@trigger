@@ -1,1 +1,1 @@
-virtual #x:return-type  #.port.name _#.event.name  (#x:formals) = 0;
+virtual #x:function-type  #.port.name _#.event.name  (#x:formals) = 0;

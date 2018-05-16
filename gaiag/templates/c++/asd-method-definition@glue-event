@@ -1,4 +1,4 @@
-#x:return-type  #x:model-name ::#x:decapitalize-model-name Port_#.name (#x:formals)
+#x:function-type  #x:model-name ::#x:decapitalize-model-name Port_#.name (#x:formals)
 {
-  return static_cast< #x:return-type >(api_#.asd-channel ->#.asd-event (#x:parameters));
+  return static_cast< #x:function-type >(api_#.asd-channel ->#.asd-event (#x:parameters));
 }

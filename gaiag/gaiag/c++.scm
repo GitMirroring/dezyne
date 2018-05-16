@@ -75,8 +75,8 @@
             c++:enum->string
             c++:enum-field->string
             c++:name
-            c++:optional-return
-            c++:return-type
+            c++:optional-type
+            c++:function-type
             c++:string->enum
             c++:type-ref
             asd?
@@ -114,19 +114,20 @@
 (define-method (c++:formal-type (o <formal>)) o)
 (define-method (c++:formal-type (o <port>)) ((compose .elements .formals .signature car om:events) o))
 
-(define-method (c++:return-type (o <void>))
+(define-method (c++:function-type (o <type>))
   o)
 
-(define-method (c++:return-type (o <type>))
-  o)
+(define-method (c++:function-type (o <glue-event>))
+  ((compose c++:function-type .signature) o))
 
-(define-method (c++:return-type (o <glue-event>))
-  (c++:return-type (.type (.signature o))))
+(define-method (c++:function-type (o <trigger>))
+  ((compose c++:function-type .signature .event) o))
 
-(define-method (c++:return-type (o <trigger>))
-  ((compose .type .signature .event) o))
+(define-method (c++:function-type (o <signature>))
+  ((compose c++:function-type .type) o))
 
-(define-method (c++:return-type (o <function>)) ((compose .type .signature) o))
+(define-method (c++:function-type (o <function>))
+  ((compose c++:function-type .signature) o))
 
 (define (c++:pump-include o) (if (pair? (om:ports (.behaviour o))) "#include <dzn/pump.hh>" ""))
 
@@ -146,9 +147,9 @@
    (code:formals o)
    (iota (length (code:formals o)) 1 1)))
 
-(define-method (c++:optional-return (o <trigger>))
-  (let ((type ((compose .type .signature .event) o)))
-    (if (is-a? type <void>) "" type)))
+(define-method (c++:optional-type (o <trigger>))
+  (let ((type (ast:type o)))
+    (if (is-a? type <void>) '() type)))
 
 ;; glue-top-source-glue-system
 (define-public (parse-component-map component)
@@ -415,6 +416,10 @@
   (parameterize ((language 'c++)
                  (%x:header x:header)
                  (%x:source x:source)
+                 (%x:glue-top-header x:glue-top-header)
+                 (%x:glue-top-source x:glue-top-source)
+                 (%x:glue-bottom-header x:glue-bottom-header)
+                 (%x:glue-bottom-source x:glue-bottom-source)
                  (%x:main x:main))
     (code:root-> root)))
 
