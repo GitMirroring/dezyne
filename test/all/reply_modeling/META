@@ -1,3 +1,1 @@
-{"skip":["build"]
-,"comment":"interface cannot build due to no 'main'"
-}
+{"skip":["build"],"comment":"interface model: cannot build"}
