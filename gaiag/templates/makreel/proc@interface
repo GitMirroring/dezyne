@@ -9,17 +9,19 @@
  + sum r : #x:makreel:model-name replies. #x:makreel:model-name reply(r) . second_reply .delta
  ;
 
-#x:makreel:model-name reordered_parallel = (#x:type-check #x:makreel:model-name #x:member-init) || #x:makreel:model-name reorder;
+define(#x:makreel:model-name reordered_parallel, (#x:type-check #x:makreel:model-name #x:member-init) || #x:makreel:model-name reorder)
 
-#x:makreel:model-name reordered_comm = comm({
+define(#x:makreel:model-name reordered_comm, comm({
    #x:makreel:model-name in | #x:makreel:model-name in -> #x:makreel:model-name in'
  , #x:makreel:model-name reply | #x:makreel:model-name reply -> #x:makreel:model-name reply'
  , #x:makreel:model-name internal | #x:makreel:model-name internal -> #x:makreel:model-name internal'
  , #x:makreel:model-name end | #x:makreel:model-name end -> #x:makreel:model-name end'
- }, #x:makreel:model-name reordered_parallel);
+ }, #x:makreel:model-name reordered_parallel))
 
-#x:makreel:model-name reordered_allow = allow({
-   #x:makreel:model-name end'
+define(#x:makreel:model-name reordered_allow, allow({
+   touw
+ , #x:makreel:model-name touw
+ , #x:makreel:model-name end'
  , #x:makreel:model-name flush
  , #x:makreel:model-name in'
  , #x:makreel:model-name internal'
@@ -33,19 +35,15 @@
  , recurse
  , return
  , second_reply
-}, #x:makreel:model-name reordered_comm);
+}, #x:makreel:model-name reordered_comm))
 
-#x:makreel:model-name reordered_rename = rename({
+define(#x:makreel:model-name reordered, rename({
    #x:makreel:model-name in' -> #x:makreel:model-name in
+ , #x:makreel:model-name reply' -> #x:makreel:model-name touw
  , #x:makreel:model-name reply'reordered -> #x:makreel:model-name reply
  , #x:makreel:model-name internal' -> #x:makreel:model-name internal
  , #x:makreel:model-name end' -> #x:makreel:model-name end
- }, #x:makreel:model-name reordered_allow);
-
-#x:makreel:model-name reordered = hide({
-    #x:makreel:model-name reply'
-}, #x:makreel:model-name reordered_rename);
-
+ }, #x:makreel:model-name reordered_allow))
 
 #x:makreel:model-name semantics
  = sum i : #x:makreel:model-name events. #x:makreel:model-name in(i) . (#x:makreel:model-name semantics_sync + #x:makreel:model-name semantics)
@@ -61,18 +59,20 @@
  = sum i : #x:makreel:model-name events. #x:makreel:model-name out(i) . (#x:makreel:model-name end . #x:makreel:model-name flush . #x:makreel:model-name end'reordered . #x:makreel:model-name semantics + #x:makreel:model-name semantics_flush)
  ;
 
-#x:makreel:model-name parallel = #x:makreel:model-name semantics || #x:makreel:model-name reordered;
+define(#x:makreel:model-name parallel, #x:makreel:model-name semantics || #x:makreel:model-name reordered)
 
-#x:makreel:model-name comm = comm({
-  #x:makreel:model-name in | #x:makreel:model-name in -> #x:makreel:model-name in'
+define(#x:makreel:model-name comm, comm({
+    #x:makreel:model-name in | #x:makreel:model-name in -> #x:makreel:model-name in'
   , #x:makreel:model-name out | #x:makreel:model-name out -> #x:makreel:model-name out'
   , #x:makreel:model-name reply | #x:makreel:model-name reply -> #x:makreel:model-name reply'
   , #x:makreel:model-name internal | #x:makreel:model-name internal -> #x:makreel:model-name internal'
   , #x:makreel:model-name end | #x:makreel:model-name end -> #x:makreel:model-name end'
-  }, #x:makreel:model-name parallel);
+  }, #x:makreel:model-name parallel))
 
-#x:makreel:model-name allow = allow({
-  #x:makreel:model-name in'
+define(#x:makreel:model-name allow, allow({
+   touw
+  , #x:makreel:model-name touw
+  , #x:makreel:model-name in'
   , #x:makreel:model-name reply'
   , #x:makreel:model-name internal'
   , #x:makreel:model-name end'
@@ -86,19 +86,22 @@
   , recurse
   , return
   , second_reply
-  }, #x:makreel:model-name comm);
+  }, #x:makreel:model-name comm))
 
-#x:makreel:model-name rename = rename({
-  #x:makreel:model-name in' -> #x:makreel:model-name in
+define(#x:makreel:model-name interface_internal, rename({
+    recurse -> touw
+  , return -> touw
+  , #x:makreel:model-name in' -> #x:makreel:model-name in
   , #x:makreel:model-name out' -> #x:makreel:model-name out
   , #x:makreel:model-name reply' -> #x:makreel:model-name reply
   , #x:makreel:model-name internal' -> #x:makreel:model-name internal
   , #x:makreel:model-name end'reordered -> #x:makreel:model-name end
-  }, #x:makreel:model-name allow);
+  , #x:makreel:model-name end' -> touw
+  }, #x:makreel:model-name allow))
 
-#x:makreel:model-name hide = hide({#x:makreel:model-name end'}, #x:makreel:model-name rename);
-
-#x:makreel:model-name interface = #x:makreel:model-name hide;
+#x:makreel:model-name interface = hide({
+   touw
+ , #x:makreel:model-name touw}, #x:makreel:model-name interface_internal);
 
 #x:makreel:model-name  #x:process-parameters
  = #x:behaviour-proc

@@ -1,14 +1,8 @@
-#.name _port_rename = rename ({
+define(#.name _port, rename ({
   #x:basic-type in -> #.name in
   , #x:basic-type out -> #.name out
   , #x:basic-type reply -> #.name reply
   , #x:basic-type internal -> #.name internal
   , #x:basic-type end -> #.name end
-  , #x:basic-type flush -> #.name flush
-  }, #x:basic-type interface);
-
-#.name _port = hide ({
-  recurse
-  , return
-  #x:hide-flush
-  }, #.name _port_rename);
+  #x:rename-flush-provides #x:rename-flush-requires
+  }, #x:basic-type interface_internal))

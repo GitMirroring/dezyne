@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -125,7 +126,9 @@
 (define-templates type-check makreel:type-check)
 
 (define-templates interface-action-proc makreel:interface-action-proc newline-infix)
-(define-templates hide-flush makreel:hide-flush)
+(define-templates rename-flush-provides makreel:rename-flush-provides)
+(define-templates rename-flush-requires makreel:rename-flush-requires)
+(define-templates allow-touw makreel:allow-touw newline-comma-infix)
 (define-templates action-proc makreel:action-proc newline-infix)
 (define-templates member-init makreel:member-init parameters-grammar)
 

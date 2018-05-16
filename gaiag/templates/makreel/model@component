@@ -1,4 +1,8 @@
-% mcrl22lps -b hello.makreel | lps2lts /dev/stdin my.aut
+ifdef(`changeword', `', `errprint(`m4: skipping: no changeword support
+')m4exit(`77')')dnl
+changequote(`"', `"')
+changecom("%")
+changeword("[a-zA-Z0-9][_a-zA-Z0-9']*")
 
 sort
 Void = struct void;
@@ -32,6 +36,7 @@ range_error;
 recurse;
 return;
 second_reply;
+touw;
 
 proc
 Illegal' = illegal . Illegal';
@@ -70,15 +75,15 @@ component_reorder_block
  + #x:reorder-block
  ;
 
-component_reorder_parallel = component_behaviour || component_reorder;
+define(component_reorder_parallel, component_behaviour || component_reorder)
 
-component_reorder_comm = comm({
+define(component_reorder_comm, comm({
   #x:makreel:model-name end | #x:makreel:model-name end  -> #x:makreel:model-name end'
   #x:reorder-comm-provides
-  }, component_reorder_parallel);
+  }, component_reorder_parallel))
 
-component_reorder_allow = allow({
-   #x:makreel:model-name end'
+define(component_reorder_allow, allow({
+ #x:makreel:model-name end'
  #x:reorder-allow-provides
  #x:reorder-allow-requires
  , declarative_illegal
@@ -89,16 +94,13 @@ component_reorder_allow = allow({
  , recurse
  , return
  , second_reply
- }, component_reorder_comm);
+ }, component_reorder_comm))
 
-component_reorder_rename = rename({
+define(component_reordered, rename({
   #x:makreel:model-name end' -> #x:makreel:model-name end
   #x:reorder-rename-provides
   #x:reorder-rename-requires
-  }, component_reorder_allow);
-
-%component_reorder_hide = hide({##x:reorder-hide-provides}, component_reorder_rename);
-component_reorder_hide = component_reorder_rename;
+  }, component_reorder_allow))
 
 %%%%%%%%%%%%%%%%%%%%%%%%% SEMANTICS %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -124,16 +126,17 @@ semantics_requires(flush: Bool)
 
 #x:semantics-requires-flush-provides
 
-component_semantics = component_reorder_hide || semantics;
+define(component_semantics_parallel, component_reordered || semantics)
 
-component_semantics_comm = comm({
+define(component_semantics_comm, comm({
   #x:makreel:model-name end | #x:makreel:model-name end -> #x:makreel:model-name end'
   #x:semantics-comm-provides
   #x:semantics-comm-requires
-  }, component_semantics);
+  }, component_semantics_parallel))
 
-component_semantics_allow = allow({
+define(component_semantics_allow, allow({
    #x:makreel:model-name end'
+ , #x:allow-touw
  #x:semantics-allow-provides
  #x:semantics-allow-requires
  , declarative_illegal
@@ -144,28 +147,27 @@ component_semantics_allow = allow({
  , recurse
  , return
  , second_reply
- }, component_semantics_comm);
+ , touw
+ }, component_semantics_comm))
 
-component_semantics_rename = rename({
+define(component_semantics, rename({
   #x:makreel:model-name end' -> #x:makreel:model-name end
   #x:semantics-rename-provides
   #x:semantics-rename-requires
-  }, component_semantics_allow);
-
-%component_semantics_hide = hide({##x:makreel:model-name end}, component_semantics_rename);
-component_semantics_hide = component_semantics_rename;
+  }, component_semantics_allow))
 
 %%%%%%%%%%%%%%%%%%%%% COMPONENT ASSEMBLY %%%%%%%%%%%%%%%%%%%%%%
 
-component_parallel = component_semantics_hide || req_and_queue;
+define(component_parallel, component_semantics || req_and_queue)
 
-component_comm = comm({
+define(component_comm, comm({
    queue_empty | queue_empty -> queue_empty'
  #x:component-comm-requires
- }, component_parallel);
+ }, component_parallel))
 
-component_allow = allow({
+define(component_allow, allow({
    #x:makreel:model-name end
+ , #x:allow-touw
  #x:component-allow-provides
  #x:component-allow-requires
  , declarative_illegal
@@ -177,24 +179,25 @@ component_allow = allow({
  , recurse
  , return
  , second_reply
- }, component_comm);
+ , touw
+  }, component_comm))
 
-component_rename = rename({
+define(component_rename, rename({
   queue_empty' -> queue_empty
   #x:component-rename-provides
   #x:component-rename-requires
-  }, component_allow);
+  }, component_allow))
 
 component = hide({
    #x:makreel:model-name end
+ , #x:allow-touw
  #x:component-hide-provides
  #x:component-hide-requires
  , queue_empty
  , recurse
  , return
+ , touw
  }, component_rename);
-
-%%component = component_rename;
 
 %%%%%%%%%%%%%%%%%%%%%%% PROVIDES %%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -202,13 +205,13 @@ provides_r2c = #x:provides-r2c-proc;
 
 #x:provides-out-proc;
 
-provides_parallel = #x:provides-port-parallel-proc || provides_r2c;
+define(provides_parallel, #x:provides-port-parallel-proc || provides_r2c)
 
-provides_comm = comm ({
+define(provides_comm, comm ({
   #x:provides-comm
-  }, provides_parallel);
+  }, provides_parallel))
 
-provides_allow = allow ({
+define(provides_allow, allow ({
   #x:provides-allow
   , declarative_illegal
   , illegal
@@ -216,14 +219,16 @@ provides_allow = allow ({
   , missing_reply
   , range_error
   , second_reply
-  }, provides_comm);
+  , touw
+  }, provides_comm))
 
-provides_rename = rename ({
+define(provides_rename, rename ({
   #x:provides-rename
-  }, provides_allow);
+  }, provides_allow))
 
 provides = hide ({
-  #x:provides-hide
+  touw
+  , #x:allow-touw
   }, provides_rename);
 
 %init component;

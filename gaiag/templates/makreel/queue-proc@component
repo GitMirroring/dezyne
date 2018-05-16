@@ -3,28 +3,24 @@ component_queue (l: List (requires_events)) =
 
 #x:external-proc
 
-req_and_queue_parallel = component_queue([]) #x:requires-port-parallel-proc #x:external-port-parallel-proc;
+define(req_and_queue_parallel, component_queue([]) #x:requires-port-parallel-proc #x:external-port-parallel-proc)
 
-req_and_queue_comm = comm({
+define(req_and_queue_comm, comm({
  #x:queue-comm-requires
- }, req_and_queue_parallel);
+ }, req_and_queue_parallel))
 
-req_and_queue_allow = allow({
+define(req_and_queue_allow, allow({
    #x:queue-allow-requires
+ , #x:allow-touw
  , declarative_illegal
  , illegal
  , incomplete
  , queue_empty
  , queue_full
- }, req_and_queue_comm);
+ , touw
+ }, req_and_queue_comm))
 
-req_and_queue_rename = rename({
+define(req_and_queue, rename({
    #x:queue-rename-requires
  , declarative_illegal -> illegal
- }, req_and_queue_allow);
-
-%req_and_queue = hide({
-%  ##x:queue-hide-requires
-%  }, req_and_queue_rename);
-
-req_and_queue = req_and_queue_rename;
+ }, req_and_queue_allow))

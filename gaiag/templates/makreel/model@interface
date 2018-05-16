@@ -1,4 +1,8 @@
-% mcrl22lps -b hello.makreel | lps2lts /dev/stdin my.aut
+ifdef(`changeword', `', `errprint(`m4: skipping: no changeword support
+')m4exit(`77')')dnl
+changequote(`"', `"')
+changecom("%")
+changeword("[a-zA-Z0-9][_a-zA-Z0-9']*")
 
 sort
 Void = struct void;
@@ -18,6 +22,7 @@ range_error;
 recurse;
 return;
 second_reply;
+touw;
 
 proc
 Illegal' = illegal . Illegal';
@@ -25,6 +30,6 @@ Declarative_Illegal' = declarative_illegal . Declarative_Illegal';
 
 #x:interface-proc
 
-provides = #x:makreel:model-name interface;
+interface = #x:makreel:model-name interface;
 
-%init provides;
+%init interface;

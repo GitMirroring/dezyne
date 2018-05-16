@@ -720,9 +720,16 @@
 (define-method (makreel:provides-proc (o <component>))
   (ast:provides-ports o))
 
-(define-method (makreel:hide-flush (o <port>))
+(define-method (makreel:rename-flush-provides (o <port>))
+  (if (ast:provides? o) o
+      '()))
+
+(define-method (makreel:rename-flush-requires (o <port>))
   (if (ast:requires? o) o
       '()))
+
+(define-method (makreel:allow-touw (o <component>))
+  (delete-duplicates (append (map .type (ast:port* o))) ast:eq?))
 
 (define-method (makreel:interface-action-proc (o <component>))
   (ast:port* o))

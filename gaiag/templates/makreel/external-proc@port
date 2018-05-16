@@ -8,14 +8,15 @@
   #.name internal
   , #.name end}, #.name _port );
 
-#.name _portexternal_parallel = #.name _portexternal_queue([]) || #.name _portinternal_hide;
+define(#.name _portexternal_parallel, #.name _portexternal_queue([]) || #.name _portinternal_hide)
 
-#.name _portexternal_comm = comm({
+define(#.name _portexternal_comm, comm({
   #.name out | #.name qin -> #.name qin'
-  }, #.name _portexternal_parallel);
+  }, #.name _portexternal_parallel))
 
-#.name _portexternal_allow = allow({
-  #.name in
+define(#.name _portexternal_allow, allow({
+  #x:makreel:interface-name touw
+  , #.name in
   , #.name qin'
   , #.name qout
   , #.name reply
@@ -25,12 +26,13 @@
   , declarative_illegal
   , illegal
   , incomplete
-  }, #.name _portexternal_comm);
+  , touw
+  }, #.name _portexternal_comm))
 
-#.name _portexternal_rename = rename({
+define(#.name _portexternal_rename, rename({
   #.name qin' -> #.name qin
   , #.name qout -> #.name out
-  }, #.name _portexternal_allow);
+  }, #.name _portexternal_allow))
 
-#.name _portexternal = hide({
-  #.name qin}, #.name _portexternal_rename);
+define(#.name _portexternal, hide({
+  #.name qin}, #.name _portexternal_rename))
