@@ -122,7 +122,7 @@
   (let* ((variables ((compose .elements .variables .behaviour) model))
          (variable (find (lambda (v) (not (is-a? (.type v) <extern>))) variables))
          (type (and=> variable .type))
-         (variable (or variable (make <variable> #:name '<state>)))
+         (variable (or variable (clone (make <variable> #:name '<state> #:type.name (make <scope.name> #:name '<Initial>)) #:parent o)))
          (fields
           (match type
             (($ <enum>) (.elements (.fields type)))
@@ -142,7 +142,7 @@
   ;;(stderr "prepend-guard ~a --- ~a --- ~a\n" variable field o)
   (and-let* ((statement o)
              (statement (flatten-compound ((simplify model variable field #t) (flatten-compound o))))
-             (var (make <var> #:variable.name (.name variable)))
+             (var (clone (make <var> #:variable.name (.name variable)) #:parent o))
              (expression
               (match (.type variable)
                 (($ <bool>)
