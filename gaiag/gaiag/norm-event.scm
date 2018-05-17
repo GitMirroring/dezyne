@@ -48,6 +48,9 @@
   #:use-module (gaiag resolve)
 
   #:export (
+            add-reply-port
+            binding-into-blocking
+            rewrite-formals
            code-norm-event
            norm-event
            table-norm-event
