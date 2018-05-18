@@ -25,8 +25,8 @@ second_reply;
 touw;
 
 proc
-Illegal' = illegal . Illegal';
-Declarative_Illegal' = declarative_illegal . Declarative_Illegal';
+Illegal = illegal . Illegal;
+Declarative_Illegal = declarative_illegal . Declarative_Illegal;
 
 #x:interface-proc
 

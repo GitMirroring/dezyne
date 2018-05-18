@@ -1,7 +1,7 @@
 #.name _portexternal_queue (l : List (requires_events)) =
   (##l < QueueLength) -> (sum e: #x:makreel:interface-name events. #.name qin (e) . #.name _portexternal_queue (l = l <| #.name events (e)))
   + (l != [] && #.name is (head (l))) -> #.name internal(#x:makreel:interface-name inevitable) . #.name qout (#.name  (head (l))) . #.name end . #.name _portexternal_queue(l = tail(l))
-  + (##l == QueueLength) -> (sum e: #x:makreel:interface-name events. #.name qin (e) . #.name queue_full . Illegal')
+  + (##l == QueueLength) -> (sum e: #x:makreel:interface-name events. #.name qin (e) . #.name queue_full . Illegal)
 ;
 
 #.name _portinternal_hide = hide({
