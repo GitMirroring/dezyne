@@ -38,7 +38,8 @@ function haslanguage(aspect) {
 }
 
 function dzn(session) {
-  return (process.env['DZN'] || ( __dirname + '/../../dzn/bin/dzn') + ' --session=' + (session && session || 100));
+  return 'timeout 30 '
+    + (process.env['DZN'] || ( __dirname + '/../../dzn/bin/dzn') + ' --session=' + (session && session || 100));
 }
 
 var ext = {c:'.c','c++':'.cc','c++03':'.cc','c++-msvc11':'.cc',cs:'.cs',javascript:'.js'};

@@ -1,1 +1,1 @@
-{"skip":["traces"],"known":["build"],"comment":"error interface model: cannot build"}
+{"skip":["build","traces"],"comment":"error interface model: cannot build"}
