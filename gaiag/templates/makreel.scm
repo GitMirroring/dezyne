@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -53,6 +54,7 @@
 
 (define-templates requires-sort makreel:requires-sort)
 (define-templates requires-sort-construct makreel:requires-sort-construct newline-pipe-infix)
+(define-templates provides-port-construct ast:provides-ports newline-pipe-prefix)
 
 (define-templates makreel:queue-length makreel:queue-length)
 
@@ -173,6 +175,13 @@
 (define-templates semantics-requires-flush-provides ast:provides-ports)
 (define-templates semantics-requires-flush-provides-provides makreel:flush-provides-ports newline-union-infix)
 (define-templates semantics-requires-flush-requires ast:requires-ports newline-union-prefix)
+
+
+(define-templates semantics-requires-provides ast:provides-ports newline-union-infix)
+(define-templates semantics-requires-requires ast:requires-ports newline-union-prefix)
+(define-templates semantics-requires-flush ast:provides-ports newline-union-prefix)
+
+
 (define-templates semantics-flush-provides makreel:flush-provides-ports newline-union-prefix)
 (define-templates semantics-qmt-flush-provides ast:provides-ports newline-union-infix)
 (define-templates semantics-flush-requires ast:requires-ports newline-union-prefix)

@@ -1,1 +1,1 @@
-sum e : #x:makreel:interface-name modeling. #.name internal (e) . #.name end . semantics_requires(flush=false)
+sum e : #x:makreel:interface-name modeling. #.name internal (e) . #.name end . (queue_empty . semantics + semantics_requires(port=no_port))

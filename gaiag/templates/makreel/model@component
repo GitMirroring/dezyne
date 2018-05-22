@@ -13,6 +13,8 @@ Void = struct void;
 #x:event-sort
 #x:requires-sort
 
+provides_ports = struct no_port?no_port_is#x:provides-port-construct;
+
 map
 
 QueueLength : Nat;
@@ -119,13 +121,13 @@ semantics_provides_blocked
  + queue_empty . (delta #x:semantics-provides-blocked-qmt)
  ;
 
-semantics_requires(flush: Bool)
- = (!flush) -> queue_empty . semantics
- #x:semantics-flush-requires
- ;
-
-#x:semantics-requires-flush-provides
-
+semantics_requires(port: provides_ports)
+ = #x:semantics-requires-provides
+#x:semantics-requires-requires
+  + #x:makreel:model-name end . (semantics_requires()
+      + queue_empty . ( no_port_is(port) -> semantics #x:semantics-requires-flush ))
+  ;
+ 
 define(component_semantics_parallel, component_reordered || semantics)
 
 define(component_semantics_comm, comm({
