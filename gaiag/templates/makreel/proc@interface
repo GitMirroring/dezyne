@@ -9,7 +9,7 @@
  + sum r : #x:makreel:model-name replies. #x:makreel:model-name reply(r) . second_reply .delta
  ;
 
-define(#x:makreel:model-name reordered_parallel, (#x:type-check #x:makreel:model-name #x:member-init) || #x:makreel:model-name reorder)
+define(#x:makreel:model-name reordered_parallel, (#x:type-check #x:makreel:model-name behaviour #x:member-init) || #x:makreel:model-name reorder)
 
 define(#x:makreel:model-name reordered_comm, comm({
    #x:makreel:model-name in | #x:makreel:model-name in -> #x:makreel:model-name in'
@@ -103,7 +103,7 @@ define(#x:makreel:model-name interface_internal, rename({
    touw
  , #x:makreel:model-name touw}, #x:makreel:model-name interface_internal);
 
-#x:makreel:model-name  #x:process-parameters
+#x:makreel:model-name behaviour #x:process-parameters
  = #x:behaviour-proc
 
 %%%%%%%%%%%%%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%
