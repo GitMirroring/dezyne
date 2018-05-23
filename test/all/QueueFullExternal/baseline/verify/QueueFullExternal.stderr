@@ -1,2 +1,3 @@
-out/QueueFullExternal/QueueFullExternal.dzn:7:8:i12: queue full
-out/QueueFullExternal/QueueFullExternal.dzn:28:8:i9: queue full
+out/QueueFullExternal/QueueFullExternal.dzn:1:1:i1: deadlock in model i
+out/QueueFullExternal/QueueFullExternal.dzn:11:1:i3: queue full
+out/QueueFullExternal/QueueFullExternal.dzn:11:1:i3: queue full

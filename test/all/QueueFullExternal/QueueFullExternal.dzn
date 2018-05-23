@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2016, 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,34 +21,33 @@
 //
 // Code:
 
-interface nolivelock
+interface i
 {
-  in void dummy();
+  out void cb();
 
   behaviour
   {
-    on dummy: {}
+    on optional: cb;
   }
 }
 
 interface ilivelock
 {
-  out void dummy();
+  out void cb();
 
   behaviour
   {
-    on inevitable: dummy;
+    on inevitable: cb;
   }
 }
 
 component QueueFullExternal
 {
-  provides nolivelock n;
-  requires external ilivelock l;
+  provides i p;
+  requires external ilivelock r;
 
   behaviour
   {
-    on n.dummy(): {}
-    on l.dummy(): {}
+    on r.cb(): {}
   }
 }

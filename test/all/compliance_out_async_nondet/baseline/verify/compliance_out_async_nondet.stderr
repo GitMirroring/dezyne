@@ -1,1 +1,2 @@
-out/compliance_out_async_nondet/compliance_out_async_nondet.dzn:11:13:i54: pp.ia (implicitly) illegal
+out/compliance_out_async_nondet/compliance_out_async_nondet.dzn:12:36:i48: deadlock in model compliance_out_async_nondet
+out/compliance_out_async_nondet/compliance_out_async_nondet.dzn:10:13:i54: pp.ia (implicitly) illegal

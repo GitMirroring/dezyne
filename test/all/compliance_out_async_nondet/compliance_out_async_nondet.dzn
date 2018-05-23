@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
+// Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -24,7 +25,6 @@
 interface II
 {
   in void ia();
-  in void ic();
   out void oa();
 
   behaviour
@@ -33,7 +33,6 @@ interface II
 
     [!b] on ia: b = true;
     [b] on ia: illegal;
-    on ic: {}
     [b] on inevitable: {b = false; oa;}
   }
 }
@@ -41,7 +40,6 @@ interface II
 interface IO
 {
   in void ia();
-  in void ic();
   out void oa();
   out void ob();
 
@@ -51,7 +49,6 @@ interface IO
 
     [!b] on ia: b = true;
     [b] on ia: illegal;
-    on ic: {}
     [b] on inevitable: {b = false; oa;}
     [b] on inevitable: {b = false; ob;}
   }
@@ -67,8 +64,7 @@ component compliance_out_async_nondet
     bool b = false;
 
     [!b] on pp.ia(): {b = true; rp.ia();}
-    on pp.ic(): {}
-    on rp.oa(): pp.oa();
+    on rp.oa(): {b = false; pp.oa();}
     on rp.ob(): pp.oa();
   }
 }
