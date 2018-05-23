@@ -1,0 +1,4 @@
+verify: ns.ihello: check: deadlock: fail
+hello
+return
+verify: ns.ihello: check: livelock: ok

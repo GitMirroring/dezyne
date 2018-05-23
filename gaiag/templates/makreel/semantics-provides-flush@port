@@ -1,1 +1,1 @@
-sum a : #x:makreel:interface-name actions. #.name qout (#x:makreel:interface-name action (a)) . semantics_provides_unblocked
+sum a : #x:makreel:interface-name actions. #.name qout (#x:makreel:interface-name action (a)) . semantics_provides_unblocked ()

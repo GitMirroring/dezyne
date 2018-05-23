@@ -1,0 +1,64 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello();
+  out void world();
+
+  behaviour
+  {
+    bool pending = false;
+    [!pending] on hello: pending = true;
+    [pending] on hello: illegal;
+    [pending] on inevitable: {pending = false; world;}
+  }
+}
+
+component async_multiple_provides
+{
+  provides ihello l;
+  provides ihello r;
+
+  behaviour
+  {
+    requires dzn.async i;
+
+    bool pending_left = false;
+    bool pending_right = false;
+
+    [!pending_left && !pending_right] {
+      on l.hello(): {pending_left = !pending_left; i.req();}
+      on r.hello(): {pending_right = !pending_right; i.req();}
+    }
+    [!pending_left && pending_right] {
+      on l.hello(): pending_left = true;
+      on i.ack(): {pending_right = false; r.world();}
+    }
+    [pending_left && !pending_right] {
+      on r.hello(): pending_right = true;
+      on i.ack(): {pending_left = false; l.world();}
+    }
+    [pending_left && pending_right] on i.ack(): {pending_left = false; i.req(); l.world();}
+  }
+}

@@ -1,23 +1,26 @@
 component_queue (l: List (requires_events)) =
+(##l == 0) -> queue_empty . component_queue ()
 #x:queue-proc-requires;
 
 #x:external-proc
 
-define(req_and_queue_parallel, component_queue([]) #x:requires-port-parallel-proc #x:external-port-parallel-proc)
+define(req_and_queue_parallel, component_queue([]) || async([])#x:requires-port-parallel-proc #x:external-port-parallel-proc)
 
 define(req_and_queue_comm, comm({
- #x:queue-comm-requires
+#x:queue-comm-requires
  }, req_and_queue_parallel))
 
 define(req_and_queue_allow, allow({
-   #x:queue-allow-requires
- , #x:allow-touw
+   #x:allow-touw
+ , async_not_pending
+ , async_pending
  , declarative_illegal
  , illegal
  , incomplete
  , queue_empty
  , queue_full
  , touw
+#x:queue-allow-requires
  }, req_and_queue_comm))
 
 define(req_and_queue, rename({

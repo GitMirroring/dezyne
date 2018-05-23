@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -58,10 +59,9 @@ component async_context3 {
       on i.ack(): { s = State.S2; p.cb(); }
     }
     [s.S2] {
-      on p.c(): illegal; // this illegal should lead to an compliance error
+      on p.e(): illegal; // this illegal should lead to an compliance error
+      on p.c(): {}
       on ii.ack(): s = State.S0;
     }
   }
 }
-
-

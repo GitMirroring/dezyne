@@ -1,0 +1,1 @@
+sum a : #x:makreel:interface-name actions. #.name out (#x:makreel:interface-name action (a)) . semantics_async(port=#.name port)

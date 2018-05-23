@@ -93,7 +93,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
   (let* ((models (ast:model* root))
          (components (filter (conjoin (is? <component>) (negate ast:imported?) .behaviour) models))
          (component-names (map (compose symbol->string verify:scope-name) components))
-         (interfaces (filter (is? <interface>) models))
+         (interfaces (filter (conjoin (is? <interface>) (negate ast:dzn-scope?)) models))
          (interface-names (map (compose symbol->string verify:scope-name) interfaces))
          (interface-names (let loop ((components components) (interface-names interface-names))
                             (if (null? components) interface-names

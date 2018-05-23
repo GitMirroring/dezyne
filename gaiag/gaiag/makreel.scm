@@ -139,8 +139,8 @@
        (fold (lambda (field method o)
                (clone o field ((compose (tick-names- names) method) o)))
              o
-             (list #:types #:variables #:functions #:statement)
-             (list .types .variables .functions .statement))))
+             (list #:types #:ports #:variables #:functions #:statement)
+             (list .types .ports .variables .functions .statement))))
     (($ <var>) (clone o #:variable.name ((compose append-tick .variable.name) o)))
     (($ <field-test>) (clone o #:variable.name ((compose append-tick .variable.name) o)))
     (($ <formal>) (clone o #:name ((compose append-tick .name) o)
@@ -204,7 +204,6 @@
 (define makreel:normalize triples:state-traversal)
 (define (makreel:om ast)
   ((compose
-    ;;(lambda (o) (if (gdzn:command-line:get 'debug) (display (ast->dzn o) (current-error-port))) o)
     (lambda (o) (if (gdzn:command-line:get 'debug) (pretty-print (om->list o) (current-error-port))) o)
     makreel:mark-tail-call
     makreel:normalize (remove-otherwise) makreel:tick-names purge-data ast:resolve parse->om) ast))
@@ -259,9 +258,6 @@
 (define-method (ast:provides-interfaces (o <component>))
   (delete-duplicates (map .type (filter ast:provides? (ast:port* o)))))
 
-(define-method (makreel:provides-replies (o <port>))
-  (ast:provides-ports (parent o <component>)))
-
 (define-method (makreel:flush-provides-ports (o <port>))
   (ast:provides-ports (parent o <component>)))
 
@@ -270,6 +266,16 @@
 
 (define-method (ast:requires-ports (o <component>))
   (filter ast:requires? (ast:port* o)))
+
+(define-method (ast:requires+async-ports (o <component>))
+  (append (ast:requires-ports o) (ast:async-ports o)))
+
+(define-method (ast:async-ports (o <component>))
+  ((compose ast:port* .behaviour) o))
+
+(define-method (ast:async-ports? (o <component>))
+  (if (pair? (ast:async-ports o)) o
+      '()))
 
 (define-method (ast:non-external-ports (o <component>))
   (filter (negate ast:external?) (filter ast:requires? (ast:port* o))))
@@ -405,20 +411,20 @@
 (define-method (ast:have-no-requires? (o <component>))
   (or (and (not (find ast:requires? (ast:port* o))) o) '()))
 
-(define-method (makreel:requires-sort (o <component>))
-  (ast:have-requires? o))
+(define-method (ast:have-requires+async? (o <component>))
+  (if (pair? (ast:requires+async-ports o)) o '()))
 
-(define-method (makreel:requires-sort-construct (o <component>))
-  (ast:requires-ports o))
+(define-method (ast:have-no-requires+async? (o <component>))
+  (if (pair? (ast:requires+async-ports o)) '() o))
 
 (define-method (makreel:queue-length (o <component>))
   (command-line:get 'queue_size 3))
 
 (define-method (makreel:event-act (o <component>))
-  (let ((ports (ast:port* o)))
-    (append
-     (ast:interface* o)
-     ports)))
+  (append
+   (ast:interface* o)
+   (ast:port* o)
+   (ast:port* (.behaviour o))))
 
 (define-method (makreel:event-act-provides (o <port>))
   (or (ast:provides? o) '()))

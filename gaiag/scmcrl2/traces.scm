@@ -103,8 +103,9 @@ illegal")
      flush              <-- identifier tick 'flush'
      reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
      scope              <   identifier tick
+     port-scope         <   scope !(internal-literal / queue-direction / direction / reply-literal / 'queue_full')
      interface-name     <   scope* identifier
-     port-name          <-  identifier
+     port-name          <-  port-scope* identifier
      event-name         <-  identifier
      reply-value        <-  bool-literal lpar bool rpar / lpar enum-literal rpar / int-literal lpar int rpar / void-literal lpar void rpar
      bool-literal       <   'Bool'

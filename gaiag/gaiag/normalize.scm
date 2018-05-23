@@ -124,12 +124,12 @@
     (let* ((on (t-on t))
            (illegal? (declarative-illegal? (t-statement t)))
            (blocking? (t-blocking t))
-           (valued-triggers? (ast:typed? ((compose car ast:trigger*) on)))
+           (valued-trigger? (ast:typed? ((compose car ast:trigger*) on)))
            (modeling? (is-a? ((compose .event car ast:trigger*) on) <modeling-event>))
            (port ((compose .port car ast:trigger*) on))
            (provides? (and port (ast:provides? port))))
       (if (parent on <interface>)
-          (if (or valued-triggers? illegal?) t
+          (if (or valued-trigger? illegal?) t
               (let* ((statement (t-statement t))
                      (end (make (if modeling? <the-end> <reply>)))
                      (elements (if (is-a? statement <compound>)
@@ -137,7 +137,7 @@
                                    (list statement end)))
                      (statement (make <compound> #:elements elements)))
                 (t-triple on (t-guard t) (t-blocking t) statement)))
-          (let ((t (if (or valued-triggers? illegal? blocking?) t
+          (let ((t (if (or valued-trigger? illegal? blocking?) t
                        (let* ((statement (t-statement t))
                               (reply (if provides? (list (make <reply>)) '()))
                               (elements (if (is-a? statement <compound>)

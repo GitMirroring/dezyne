@@ -50,8 +50,10 @@
 
   #:export (
            ast:argument->formal
+           ast:async-out-triggers
            ast:clr-events
            ast:direction
+           ast:dzn-scope?
            ast:eq?
            ast:expression->type
            ast:id-path
@@ -69,6 +71,7 @@
            ast:provided-out-triggers
            ast:req-events
            ast:required
+           ast:required+async
            ast:required-in-triggers
            ast:required-out-triggers
            ast:valued-in-triggers
@@ -146,6 +149,10 @@
 (define-method (ast:variable* (o <model>)) ((compose ast:variable* .behaviour) o))
 (define-method (ast:type* (o <root>)) (filter (is? <type>) (ast:global* o)))
 
+(define-method (ast:dzn-scope? (o <model>))
+  (let ((scope ((compose .scope .name) o)))
+    (and (pair? scope) (member (car scope) '(dzn dzn')))))
+
 (define-method (ast:provides? (o <port>))
   (and (eq? (.direction o) 'provides) o))
 
@@ -173,7 +180,10 @@
   (filter ast:provides? (ast:port* o)))
 
 (define-method (ast:required (o <component-model>))
-  (filter ast:requires? (ast:port* o)))
+  (append (filter ast:requires? (ast:port* o))))
+
+(define-method (ast:required+async (o <component-model>))
+  (append (ast:required o) ((compose .elements .ports .behaviour) o)))
 
 (define-method (ast:direction (o <trigger>))
   (.direction (.event o)))
@@ -207,10 +217,17 @@
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals ((compose .formals .signature) event)))
                           (filter om:out? (om:events port))))
-                   (filter ast:requires? (om:ports o) ))))
+                   (filter ast:requires? (om:ports o)))))
+
+(define-method (ast:async-out-triggers (o <component-model>))
+  (map (cut trigger-in-component <> o)
+       (append-map (lambda (port)
+                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals ((compose .formals .signature) event)))
+                          (filter om:out? (om:events port))))
+                   (om:ports (.behaviour o)))))
 
 (define-method (ast:in-triggers (o <component-model>))
-  (append (ast:provided-in-triggers o) (ast:required-out-triggers o)))
+  (append (ast:provided-in-triggers o) (ast:required-out-triggers o) (ast:async-out-triggers o)))
 
 (define-method (ast:in-triggers (o <interface>))
   (map (lambda (event) (make <trigger> #:event.name (.name event) #:formals ((compose .formals .signature) event)))

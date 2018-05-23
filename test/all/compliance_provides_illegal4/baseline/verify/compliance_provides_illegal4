@@ -7,7 +7,7 @@ w.return
 illegal
 verify: compliance_provides_illegal4: check: deadlock: ok
 verify: compliance_provides_illegal4: check: compliance: fail
-h.hello
+h.cruel
 w.cruel
 w.world
 w.return

@@ -1,0 +1,1 @@
+out/async_nondet/async_nondet.dzn:29:6:i11: Component async_nondet is non-deterministic due to overlapping guards

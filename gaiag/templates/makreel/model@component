@@ -11,22 +11,44 @@ Void = struct void;
 #x:enum-sort
 #x:reply-sort
 #x:event-sort
-#x:requires-sort
 
 provides_ports = struct no_port?no_port_is#x:provides-port-construct;
+
+requires_events
+ = struct no_event
+#x:requires-sort-construct
+ ;
 
 map
 
 QueueLength : Nat;
 
+remove : requires_events # List (requires_events) -> List(requires_events);
+
+find : requires_events # List (requires_events) -> Bool;
+
+var e, h: requires_events;
+    t: List(requires_events);
+
 eqn
 
 QueueLength = #x:makreel:queue-length;
+
+remove(e, []) = [];
+remove(e, h |> t) = if((e == h), t, h |> remove(e,t));
+
+find(e, []) = false;
+find(e, h |> t) = if((e == h), true, find(e, t));
+
 
 act
 #x:event-act
 #x:makreel:model-name end;
 #x:makreel:model-name end';
+async_not_pending;
+async_not_pending';
+async_pending;
+async_pending';
 declarative_illegal;
 illegal;
 incomplete;
@@ -48,20 +70,58 @@ Declarative_Illegal = declarative_illegal . Declarative_Illegal;
 
 #x:interface-proc
 
+%%%%%%%%%%%%%% PORT PROCESSES %%%%%%%%%%%%%%%
+
+#x:interface-action-proc
+
+%%%%%%%%%%%%%%%%%%%%%%% PROVIDES %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+provides_r2c = #x:provides-r2c-proc;
+
+#x:provides-out-proc
+
+define(provides_parallel, #x:provides-port-parallel-proc || provides_r2c)
+
+define(provides_comm, comm ({
+#x:provides-comm
+ }, provides_parallel))
+
+define(provides_allow, allow ({
+   declarative_illegal
+ , illegal
+ , incomplete
+ , missing_reply
+ , range_error
+ , second_reply
+ , touw
+#x:provides-allow
+ }, provides_comm))
+
+define(provides_rename, rename ({
+#x:provides-rename
+ }, provides_allow))
+
+provides = hide ({
+   touw
+ , #x:allow-touw
+ }, provides_rename);
+
 %%%%%%%%%%%%%%%%%%% COMPONENT %%%%%%%%%%%%%%%%%%%
 
 #x:proc
 
 component_behaviour = #x:action-proc
 
-%%%%%%%%%%%%%% PORT PROCESSES %%%%%%%%%%%%%%%
-
-#x:interface-action-proc
-
 %%%%%%%%%%%%%%%%%%%% Q %%%%%%%%%%%%%%%%%%%%%%
 
 #x:queue-proc
 #x:no-queue-proc
+
+async (l: List (requires_events))
+ = (l != []) -> async_pending . async()
+ + (l == []) -> async_not_pending . async()
+#x:async-parallel-port
+ ;
 
 %%%%%%%%%%%%%%%%%%%%% COMPONENT REORDER %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -81,13 +141,13 @@ define(component_reorder_parallel, component_behaviour || component_reorder)
 
 define(component_reorder_comm, comm({
   #x:makreel:model-name end | #x:makreel:model-name end  -> #x:makreel:model-name end'
-  #x:reorder-comm-provides
-  }, component_reorder_parallel))
+#x:reorder-comm-provides
+ }, component_reorder_parallel))
 
 define(component_reorder_allow, allow({
- #x:makreel:model-name end'
- #x:reorder-allow-provides
- #x:reorder-allow-requires
+   #x:makreel:model-name end'
+#x:reorder-allow-provides
+#x:reorder-allow-requires
  , declarative_illegal
  , illegal
  , missing_reply
@@ -100,47 +160,56 @@ define(component_reorder_allow, allow({
 
 define(component_reordered, rename({
   #x:makreel:model-name end' -> #x:makreel:model-name end
-  #x:reorder-rename-provides
-  #x:reorder-rename-requires
-  }, component_reorder_allow))
+#x:reorder-rename-provides
+#x:reorder-rename-requires
+ }, component_reorder_allow))
 
 %%%%%%%%%%%%%%%%%%%%%%%%% SEMANTICS %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 semantics
+ = semantics_provides
+#x:semantics-requires
+ ;
+
+semantics_provides
  = #x:semantics-provides
- #x:semantics-requires
  ;
 
 semantics_provides_unblocked
  = #x:semantics-provides-unblocked
- + #x:makreel:model-name end . ((queue_empty . (#x:semantics-provides-unblocked-replies)) #x:semantics-provides-flush)
+ + #x:makreel:model-name end . (queue_empty . (#x:semantics-provides-unblocked-replies)
+                               #x:semantics-provides-flush)
  ;
 
-semantics_provides_blocked
- = delta #x:semantics-provides-blocked
- + queue_empty . (delta #x:semantics-provides-blocked-qmt)
+semantics_async(port: provides_ports, pending: Bool)
+ = #x:makreel:model-name end . (async_not_pending . (queue_empty . (no_port_is(port) -> semantics #x:semantics-requires-flush)
+                                                    +semantics_async (pending=false))
+                               +async_pending . (no_port_is(port) -> semantics_async(pending=true) #x:semantics-async-flush))
+#x:semantics-async
+#x:semantics-async-q
+#x:semantics-async-requires
  ;
 
-semantics_requires(port: provides_ports)
- = #x:semantics-requires-provides
-#x:semantics-requires-requires
-  + #x:makreel:model-name end . (semantics_requires()
-      + queue_empty . ( no_port_is(port) -> semantics #x:semantics-requires-flush ))
-  ;
- 
+semantics_provides_blocked (pending: Bool)
+ = #x:semantics-provides-replies #x:semantics-provides-blocked-provides #x:semantics-provides-blocked-requires #x:semantics-provides-blocked-async #x:semantics-provides-blocked-internal
+ ;
+
 define(component_semantics_parallel, component_reordered || semantics)
 
 define(component_semantics_comm, comm({
-  #x:makreel:model-name end | #x:makreel:model-name end -> #x:makreel:model-name end'
-  #x:semantics-comm-provides
-  #x:semantics-comm-requires
-  }, component_semantics_parallel))
+   #x:makreel:model-name end | #x:makreel:model-name end -> #x:makreel:model-name end'
+#x:semantics-comm-provides
+#x:semantics-comm-requires
+ }, component_semantics_parallel))
 
 define(component_semantics_allow, allow({
    #x:makreel:model-name end'
  , #x:allow-touw
- #x:semantics-allow-provides
- #x:semantics-allow-requires
+#x:semantics-allow-provides
+#x:semantics-allow-requires
+#x:semantics-allow-async
+ , async_not_pending
+ , async_pending
  , declarative_illegal
  , illegal
  , missing_reply
@@ -153,25 +222,31 @@ define(component_semantics_allow, allow({
  }, component_semantics_comm))
 
 define(component_semantics, rename({
-  #x:makreel:model-name end' -> #x:makreel:model-name end
-  #x:semantics-rename-provides
-  #x:semantics-rename-requires
-  }, component_semantics_allow))
+   #x:makreel:model-name end' -> #x:makreel:model-name end
+#x:semantics-rename-provides
+#x:semantics-rename-requires
+ }, component_semantics_allow))
 
 %%%%%%%%%%%%%%%%%%%%% COMPONENT ASSEMBLY %%%%%%%%%%%%%%%%%%%%%%
 
 define(component_parallel, component_semantics || req_and_queue)
 
 define(component_comm, comm({
-   queue_empty | queue_empty -> queue_empty'
- #x:component-comm-requires
+   async_not_pending | async_not_pending -> async_not_pending'
+ , async_pending | async_pending -> async_pending'
+ , queue_empty | queue_empty -> queue_empty'
+#x:component-comm-requires
+#x:component-comm-async
  }, component_parallel))
 
 define(component_allow, allow({
    #x:makreel:model-name end
  , #x:allow-touw
- #x:component-allow-provides
- #x:component-allow-requires
+#x:component-allow-provides
+#x:component-allow-requires
+#x:component-allow-async
+ , async_not_pending'
+ , async_pending'
  , declarative_illegal
  , illegal
  , missing_reply
@@ -182,56 +257,33 @@ define(component_allow, allow({
  , return
  , second_reply
  , touw
-  }, component_comm))
+ }, component_comm))
 
 define(component_rename, rename({
-  queue_empty' -> queue_empty
-  #x:component-rename-provides
-  #x:component-rename-requires
-  }, component_allow))
+   async_not_pending' -> async_not_pending
+ , async_pending' -> async_pending
+ , queue_empty' -> queue_empty
+#x:component-rename-provides
+#x:component-rename-requires
+#x:component-rename-async
+ }, component_allow))
 
 component = hide({
    #x:makreel:model-name end
  , #x:allow-touw
- #x:component-hide-provides
- #x:component-hide-requires
+#x:component-hide-provides
+#x:component-hide-requires
+#x:component-hide-async
+ , async_not_pending
+ , async_pending
  , queue_empty
  , recurse
  , return
  , touw
  }, component_rename);
 
-%%%%%%%%%%%%%%%%%%%%%%% PROVIDES %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-provides_r2c = #x:provides-r2c-proc;
-
-#x:provides-out-proc;
-
-define(provides_parallel, #x:provides-port-parallel-proc || provides_r2c)
-
-define(provides_comm, comm ({
-  #x:provides-comm
-  }, provides_parallel))
-
-define(provides_allow, allow ({
-  #x:provides-allow
-  , declarative_illegal
-  , illegal
-  , incomplete
-  , missing_reply
-  , range_error
-  , second_reply
-  , touw
-  }, provides_comm))
-
-define(provides_rename, rename ({
-  #x:provides-rename
-  }, provides_allow))
-
-provides = hide ({
-  touw
-  , #x:allow-touw
-  }, provides_rename);
+%%%%%%%%%%%%%%%%%%%%%%%%% INIT %%%%%%%%%%%%%%%%%%%%%%%%%
 
 %init component;
 %init provides;

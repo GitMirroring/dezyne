@@ -1,1 +1,1 @@
-sum e : #x:makreel:interface-name actions. #.name in (#x:makreel:interface-name action(e)) . semantics_provides_unblocked
+sum e : #x:makreel:interface-name actions. #.name in (#x:makreel:interface-name action(e)) . semantics_provides_unblocked ()

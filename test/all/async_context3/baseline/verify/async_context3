@@ -1,0 +1,12 @@
+verify: IAsync: check: deadlock: ok
+verify: IAsync: check: livelock: ok
+verify: async_context3: check: deterministic: ok
+verify: async_context3: check: illegal: ok
+verify: async_context3: check: deadlock: ok
+verify: async_context3: check: compliance: fail
+p.e
+p.return
+p.cb
+p.e
+illegal
+verify: async_context3: check: livelock: ok

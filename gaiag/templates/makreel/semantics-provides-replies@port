@@ -1,1 +1,1 @@
-sum r : #x:makreel:interface-name replies. #.name reply (r) . semantics_provides_unblocked
+sum r : #x:makreel:interface-name replies. #.name reply (r) . semantics_provides_unblocked ()

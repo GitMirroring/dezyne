@@ -1,1 +1,3 @@
-provides_out = #x:provides-out-proc-provides
+provides_out
+ = #x:provides-out-proc-provides
+ ;

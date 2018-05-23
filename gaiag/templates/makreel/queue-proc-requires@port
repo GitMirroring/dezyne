@@ -1,5 +1,3 @@
-  (##l < QueueLength) -> (sum e: #x:makreel:interface-name events. #.name qin (e) . component_queue (l = l <| #.name events (e)))
-  + (l != [] && #.name is (head (l))) -> #.name qout (#.name  (head (l))) . component_queue (l = tail (l))
-  + (##l == QueueLength) -> (sum e: #x:makreel:interface-name events. #.name qin (e) . queue_full . Illegal)
-  + (##l == 0) -> queue_empty . component_queue ()
-  
+(##l < QueueLength) -> (sum e: #x:makreel:interface-name events. #.name qin (e) . component_queue (l = l <| #.name events (e)))
+ + (l != [] && #.name is (head (l))) -> #.name qout (#.name  (head (l))) . component_queue (l = tail (l))
+ + (##l == QueueLength) -> (sum e: #x:makreel:interface-name events. #.name qin (e) . queue_full . Illegal)

@@ -1,1 +1,3 @@
-req_and_queue = queue_empty . req_and_queue;
+component_queue = queue_empty . component_queue;
+
+req_and_queue = component_queue || async([]);

@@ -1,0 +1,9 @@
+verify: async_nondet: check: deterministic: fail
+h.hello
+h.return
+verify: async_nondet: check: illegal: ok
+verify: async_nondet: check: deadlock: ok
+verify: async_nondet: check: compliance: ok
+verify: async_nondet: check: livelock: ok
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
