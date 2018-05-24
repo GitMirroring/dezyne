@@ -1,1 +1,1 @@
-{"known":["c:build","table"],"comment":{"c":"blocking: not supported"}}
+{"known":["c:build","table","run"],"comment":{"c":"blocking: not supported; run:missing port in reply not supported"}}
