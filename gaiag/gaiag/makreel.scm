@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -338,13 +339,13 @@
               (loop rest reached)))))))
 
 (define-method (call-continuations (o <behaviour>) name)
-  (delete-duplicates
-   (map (compose car makreel:continuation)
-        (let* ((calls (tree-collect (conjoin (is? <call>) (negate .last?)) o))
-               (calls (reachable calls)))
-          (if name (filter (compose (cut eq? <> name) .function.name) calls)
-              calls)))
-   ast:eq?))
+ (delete-duplicates
+  (map (compose car makreel:continuation)
+       (let* ((calls (tree-collect (is? <call>) o))
+              (calls (reachable calls)))
+         (if name (filter (compose (cut eq? <> name) .function.name) calls)
+             calls)))
+  ast:eq?))
 
 (define-method (call-continuations (o <behaviour>))
   (call-continuations o #f))
