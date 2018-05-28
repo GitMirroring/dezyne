@@ -47,6 +47,6 @@ component fork_provided_in
   behaviour
   {
     on ppa.ia(): ppb.oa();
-    on ppb.ia(): ppa.oa();
+    on ppb.ia(): {}
   }
 }

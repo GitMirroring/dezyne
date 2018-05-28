@@ -6,22 +6,10 @@ p.e
 r.e
 r.return
 p.return
-p.a
-r.a
-r.return
-p.return
 r.ec
 illegal
 verify: external_asynchronous_illegal2: check: deadlock: ok
 verify: external_asynchronous_illegal2: check: compliance: fail
-p.e
-r.e
-r.return
-p.return
 p.a
-r.a
-r.return
-p.return
-r.ec
 illegal
 verify: external_asynchronous_illegal2: check: livelock: ok

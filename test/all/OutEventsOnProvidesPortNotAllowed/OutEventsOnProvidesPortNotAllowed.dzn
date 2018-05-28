@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
+// Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +30,7 @@ component OutEventsOnProvidesPortNotAllowed
   behaviour
   {
     on ppa.ia(): ppb.oa();
-    on ppb.ia(): ppa.oa();
+    on ppb.ia(): {}
   }
   
   // Simulating OutEventsOnProvidesPortNotAllowed

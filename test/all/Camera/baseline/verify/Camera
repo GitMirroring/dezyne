@@ -29,7 +29,8 @@ control.release
 acquisition.cancel
 acquisition.return
 control.return
-optics.ready
+control.setup
+optics.prepare
 verify: Driver: check: livelock: ok
 verify: IAcquisition: check: deadlock: ok
 verify: IAcquisition: check: deadlock: ok

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
+// Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -45,6 +46,7 @@ interface I
   
   behaviour
   {
-    on ia: {}
+    on ia: oa;
+    on ia: ob;
   }
 }

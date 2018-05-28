@@ -61,7 +61,7 @@ component fork_required_out
   behaviour
   {
     on ppa.ia(): rp.ib();
-    on ppb.ia(): rp.ib();
+    on ppb.ia(): {}
     on rp.ob(): {ppa.oa(); ppb.oa();}
   }
 }

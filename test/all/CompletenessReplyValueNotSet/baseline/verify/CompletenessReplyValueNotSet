@@ -8,7 +8,7 @@ rp.return
 verify: CompletenessReplyValueNotSet: check: compliance: fail
 pp.ia
 rp.ia
-rp.fail
+rp.ok
 rp.return
 verify: CompletenessReplyValueNotSet: check: livelock: ok
 verify: I: check: deadlock: ok

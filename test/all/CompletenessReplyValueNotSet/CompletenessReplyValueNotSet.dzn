@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
+// Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -30,7 +31,6 @@ component CompletenessReplyValueNotSet
   {
     on pp.ia(): rp.ia(); // Completeness:: pp.ia reply value not set
     on rp.ok(): {}
-    on rp.fail(): {}
   }
   // Simulate CompletenessReplyValueNotSet =>
   //   pp.ia reply value not set
@@ -56,11 +56,9 @@ interface ISync
 {
   in void ia();
   out void ok();
-  out void fail();
   
   behaviour
   {
     on ia: ok;
-    on ia: fail;
   }
 }

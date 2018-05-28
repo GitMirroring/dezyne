@@ -2,8 +2,6 @@ verify: ICallEmitMulti: check: deadlock: ok
 verify: ICallEmitMulti: check: livelock: ok
 verify: ICallTrigger: check: deadlock: ok
 verify: ICallTrigger: check: livelock: ok
-verify: ITauTrigger: check: deadlock: ok
-verify: ITauTrigger: check: livelock: ok
 verify: QTriggerModeling: check: deterministic: ok
 verify: QTriggerModeling: check: illegal: fail
 ict.start
@@ -40,7 +38,7 @@ src.return
 src.done
 verify: QTriggerModeling: check: deadlock: ok
 verify: QTriggerModeling: check: compliance: fail
-itt.start
+ict.start
 src.req
 src.ntfA
 src.ntfB
@@ -51,7 +49,8 @@ src.ack
 src.return
 src.done
 src.return
-itt.start
+ict.return
+ict.start
 src.reqValued
 src.ntfA
 src.ntfB
@@ -62,6 +61,7 @@ src.ack
 src.return
 src.done
 src.return
+ict.return
 ict.start
 src.req
 src.ntfA

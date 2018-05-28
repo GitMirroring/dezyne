@@ -1,2 +1,1 @@
 out/ComponentIsNonDeterministic/ComponentIsNonDeterministic.dzn:7:6:i7: Component ComponentIsNonDeterministic is non-deterministic due to overlapping guards
-out/ComponentIsNonDeterministic/ComponentIsNonDeterministic.dzn:8:24:i11: pp.ob not allowed by port pp

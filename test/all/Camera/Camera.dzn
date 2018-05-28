@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2016, 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -228,6 +228,7 @@ component Driver
     [state.Idle]
     {
       on control.setup(): {optics.prepare(); acquisition.contrast_gradient(); state = State.Setup;}
+      on optics.ready(): {}
     }
     [state.Setup]
     {
