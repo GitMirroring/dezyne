@@ -1,2 +1,1 @@
-out/h/h.dzn:93:3:i11: model ITransfer is incomplete: event 'ITransfer.transfer' not handled
-out/h/h.dzn:481:5:i8: ctrl.stop (implicitly) illegal
+out/h/h.dzn:170:5:i8: ctrl.stop (implicitly) illegal
