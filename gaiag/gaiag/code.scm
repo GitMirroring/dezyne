@@ -472,7 +472,7 @@
   (.name o))
 
 (define-method (code:expression (o <top>))
-  (pke 'code:expression o '=> (dzn:expression o)))
+  (dzn:expression o))
 
 (define-method (code:expression (o <formal>))
   (code:variable-name o))
@@ -484,7 +484,7 @@
   (dzn:expression o))
 
 (define-method (code:expression (o <return>))
-  (or (pke 'as-type o '=> (as (pke 'type (ast:type (.expression o))) <void>))
+  (or (as (ast:type (.expression o)) <void>)
       (.expression o)))
 
 (define-method (code:variable-name (o <argument>))
@@ -854,15 +854,17 @@
 (define (map-file o)
   (let* ((files (command-line:get '() '()))
          (map-files (filter (cut string-suffix? ".map" <>) files))
-         (map-file-name (string-append (symbol->string (map-file-name o)) ".map"))
-         (map-files (if (pair? map-files) map-files (list map-file-name))))
-    (and=> (find (lambda (f) (equal? (basename f) map-file-name)) map-files)
-           try-find-file)))
+         (map-file-name (map-file-name o)))
+    (and map-file-name
+        (let* ((map-file-name (string-append (symbol->string map-file-name) ".map"))
+               (map-files (if (pair? map-files) map-files (list map-file-name))))
+          (and=> (find (lambda (f) (equal? (basename f) map-file-name)) map-files)
+                 try-find-file)))))
 
 (define (map-file-name o)
   (match o
-    ((or ($ <foreign>) ($ <component>) ($ <system>)) (map-file-name (om:port o)))
-    (_ ((om:scope-name) o)))) ;; dzn::IConsole ==> dzn_IConsole.map
+    ((or ($ <foreign>) ($ <component>) ($ <system>)) (and=> (om:port o) map-file-name))
+    ((or ($ <interface>) ($ <port>)) ((om:scope-name) o)))) ;; dzn::IConsole ==> dzn_IConsole.map
 
 (define (string->mapping string)
   (and-let* ((string string)
