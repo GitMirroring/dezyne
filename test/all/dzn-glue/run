@@ -6,42 +6,56 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
 !#
 
 (define-module (run)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (ice-9 receive)
   #:use-module (ice-9 curried-definitions)
   #:use-module (json)
   #:use-module (gaiag shell-util)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
-  ;;#:use-module (gash pipe)
+  #:use-module (gash job)
+  #:use-module (gash pipe)
   #:export (main))
 
 (define global-status 0)
-(define dry-run #f)
-(define x-trace #t)
 
-(define (stdout . args)
-  (map (cut display <> (current-error-port)) args) (newline) (force-output (current-error-port)))
+(define (logf port string . rest)
+  (apply format (cons* port string rest))
+  (force-output port)
+  #t)
 
-(define (throw-on-error status command)
-  (if (zero? status) status
-      (begin
-        (set! global-status (or global-status 1))
-        (throw 'pipe status command))))
+(define (stderr string . rest)
+  (apply logf (cons* (current-error-port) string rest)))
 
-(define (read-pipe* command)
-  (let* ((command (string-append (string-join command " ") " 2>&1"))
-         (port (open-pipe command OPEN_READ))
-         (output (read-string port))
-         (status (close-pipe port)))
-    (display output)
+(define (stdout string . rest)
+  (apply logf (cons* (current-output-port) string rest)))
+
+(define (pke . stuff)
+  (newline (current-error-port))
+  (display ";;; " (current-error-port))
+  (write stuff (current-error-port))
+  (newline (current-error-port))
+  (car (last-pair stuff)))
+
+(define (handle-error job error)
+  (let ((status (wait job)))
+    (when (not (zero? status))
+      (stderr "ERROR: exit: ~a: ~s" status error)
+      (set! global-status (1+ global-status))
+      (throw 'pipe status error ))
     status))
 
-(define* (assert-pipe command #:optional (dry-run dry-run))
-  (when x-trace (stdout "+ " command))
-  (format (current-error-port) "command=~s\n" command)
-  (if dry-run
-      0
-      (throw-on-error (read-pipe* command) command)))
+(define (assert-pipe . commands)
+  (stdout "~a\n" (string-join (car commands)))
+  (stderr "~a\n" (string-join (car commands)))
+  (receive (job ports)
+      (apply pipeline+ #f commands)
+    (set-port-encoding! (car ports) "ISO-8859-1")
+    (let ((text (read-string (car ports)))
+          (error (read-string (cadr ports))))
+      (handle-error job error)
+      text)))
 
 (define ((asd->dzn dzn out) dm-file)
   (assert-pipe `(,dzn "--session=100" "-v" "convert" "--globals" "--glue" "--system" "--map" "--output" ,out ,dm-file)))
@@ -109,6 +123,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
                                        (thunk)
                                        'OK)
                                      (lambda (key . args)
+                                       (stderr "~s\n" args)
                                        (format #t "error executing: ~a\n" args)
                                        'FAILED))))
                        (set! result status))))))
@@ -135,11 +150,11 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
 
 (define (main args)
   (let* ((dir (dirname (car args)))
-         (foo (format (current-error-port) "dir: ~a\n" dir))
+         (foo (stderr "dir: ~a\n" dir))
          (test ((compose dirname dirname) dir))
-         (foo (format (current-error-port) "test: ~a\n" test))
+         (foo (stderr "test: ~a\n" test))
          (development (if (equal? test ".") ".." (dirname test)))
-         (foo (format (current-error-port) "development: ~a\n" development))
+         (foo (stderr "development: ~a\n" development))
          (dzn (or (getenv "DZN") (string-append development "/dzn/bin/dzn")))
          (model "alarm")
          (out (string-append "out/" (substring dir (1+ (string-rindex dir #\/)))))
@@ -147,28 +162,29 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
 
     (when (file-exists? out) (delete-file-recursively out))
     (mkdir-p out)
-    (with-output-to-file (string-append out "/outcome.json")
-      (lambda ()
-        (display
-         (results->json
-          languages
-          (stage->alist "convert"
-                        (with-result-and-output (lambda () (convert dzn dir out))) '())
-          (stage->alist "code"
-                        (map (lambda (language)
-                               (with-result-and-output (lambda () (code test dzn model dir out language))))
-                             languages)
-                        languages)
-          (stage->alist "build"
-                        (map (lambda (language)
-                               (with-result-and-output (lambda () (build test model dir out language))))
-                             languages)
-                        languages)
-          (stage->alist "execute"
-                        (map (lambda (language)
-                               (with-result-and-output (lambda () (execute dir out language))))
-                             languages)
-                        languages)))))
+    (let ((json (results->json
+                 languages
+                 (stage->alist "convert"
+                               (with-result-and-output (lambda () (convert dzn dir out))) '())
+                 (stage->alist "code"
+                               (map (lambda (language)
+                                      (with-result-and-output (lambda () (code test dzn model dir out language))))
+                                    languages)
+                               languages)
+                 (stage->alist "build"
+                               (map (lambda (language)
+                                      (with-result-and-output (lambda () (build test model dir out language))))
+                                    languages)
+                               languages)
+                 (stage->alist "execute"
+                               (map (lambda (language)
+                                      (with-result-and-output (lambda () (execute dir out language))))
+                                    languages)
+                               languages))))
+      (with-output-to-file (string-append out "/outcome.json")
+        (cut display json)))
+
+    (stderr "~a" (if (zero? global-status) "[PASS]" "[FAIL]"))
     (exit global-status)))
 
 ;; REPL

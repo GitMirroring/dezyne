@@ -104,11 +104,11 @@
     (map close outputs)))
 
 (define (pipeline+ fg? . commands)
-;;  (format #t "COMMAND: ~a\n" commands)
+  ;; (format (current-error-port) "FOOBAR pipeline+: COMMANDS: ~s\n" commands)
   (receive (r w) (pipe*)
     (move->fdes w 2)
     (let* ((error-port (set-current-error-port w))
-           (debug? (pair? (gdzn:debugity)))
+           (debug? (pair? (gdzn:debugity))) ;; REMOVE gdzn dependency
            (job (new-job))
            (debug-id (job-debug-id job))
            (commands

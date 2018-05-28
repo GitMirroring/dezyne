@@ -111,7 +111,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
          (commands `(("cat" "lts")
                      ("ltsconvert" "-eweak-trace" "--in=aut" "--out=aut"))))
     (receive (job ports)
-        (apply pipeline+ #f 2 commands)
+        (apply pipeline+ #f commands)
       (set-port-encoding! (car ports) "ISO-8859-1")
       (let ((lts (string-trim-right (read-string (car ports))))
             (error (read-string (cadr ports)))

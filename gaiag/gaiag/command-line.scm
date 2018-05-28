@@ -61,7 +61,9 @@
   (multi-opt (parse-opts (command-line)) name))
 
 (define (gdzn:debugity)
-  (gdzn:multi-opt 'debug))
+  (and (pair? (command-line))
+       (equal? ((compose basename car command-line)) "gdzn")
+       (gdzn:multi-opt 'debug)))
 
 (define (gdzn:verbosity)
   (gdzn:multi-opt 'debug))
