@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -39,6 +39,7 @@
   #:use-module (gaiag util)
 
   #:use-module (gaiag misc)
+  #:use-module (gaiag command-line)
   #:use-module (gaiag json-table)
   #:use-module (gaiag norm)
   #:use-module (gaiag norm-event)
@@ -68,11 +69,15 @@
     parse->om)
    ast))
 
+(define (root->table o)
+  (let ((json? (gdzn:command-line:get 'json #f)))
+    (if json?
+        ((mangle-table json-table-event) o)
+        (ast->dzn o)))
+  )
+
 (define (ast-> ast)
   ((compose
-    dzn-table
-    (lambda (x) (if (is-a? x <ast>) (make <root> #:elements (om:filter identity x))
-                    (filter identity x)))
-    (mangle-table json-table-event)
+    root->table
     ast->table-event)
    ast))

@@ -28,6 +28,7 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 receive)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 pretty-print)
   #:use-module (srfi srfi-1)
@@ -57,7 +58,6 @@
             ast->table-state
             mangle-table
             prepend-guards
-            dzn-table
             remove-initial
             simplify
             table
@@ -66,15 +66,17 @@
 ;;(define debug stderr)
 (define (debug . args) #t)
 
+(define (table-filter o)
+  (let ((name (and (and=> (gdzn:command-line:get 'model #f) string->symbol))))
+    (and (is-a? o <model>)
+         (not (ast:imported? o))
+         (or (not name) ((om:named name) o)))))
+
 (define ((table table-statement) o)
   (match o
     (($ <root>)
-     (let ((name (and (and=> (gdzn:command-line:get 'model #f) string->symbol))))
-       (or (and-let* ((models (.elements o))
-                      ((pair? models))
-                      (models (null-is-#f (filter (negate ast:imported?) models)))
-                      (models (null-is-#f (if name (and=> (find (om:named name) models) list) models))))
-                     (clone o #:elements (map (table table-statement) models))))))
+     (receive (table-models rest) (partition table-filter (.elements o))
+              (clone o #:elements (append (map (table table-statement) table-models) rest))))
     (($ <interface>)
      (let* ((statement (table-statement o ((compose .statement .behaviour) o)))
             (statement (remove-initial statement)))
@@ -281,31 +283,18 @@
       (_ (make <literal> #:value simple)))))
 
 (define ((mangle-table json-table) o)
-  (let ((json? (gdzn:command-line:get 'json #f)))
-    (match o
-      ((and ($ <root>) (= .elements models))
-       (if json?
-           (map (mangle-table json-table) models)
-           (clone o #:elements (map (mangle-table json-table) (.elements o)))))
-      (($ <system>) (and (not json?) o))
-      (($ <foreign>) (and (not json?) o))
-      ((? (is? <model>))
-       (if json?
-           (and-let* ((behaviour (.behaviour o))
-                      (statement (.statement behaviour)))
-             (append
-              (json-init o)
-              ((json-table o) statement)))
-           o))
-      ;;(#f (if (not json?) o (list (make-hash-table))))
-      ;;((or #t #f) (and json? (list (make-hash-table))))
-      (#f '())
-      (_ (and (not json?) o)))))
-
-(define (dzn-table o)
   (match o
-    (($ <root>) (ast->dzn o))
-    (_ o)))
+      ((and ($ <root>) (= .elements models))
+       (filter-map (mangle-table json-table) (filter table-filter models)))
+      (($ <system>) #f)
+      (($ <foreign>) #f)
+      ((? (is? <model>))
+       (and-let* ((behaviour (.behaviour o))
+                  (statement (.statement behaviour)))
+                 (append
+                  (json-init o)
+                  ((json-table o) statement))))
+      (_ #f)))
 
 (define (switch-norm-event o)
   (let ((json? (gdzn:command-line:get 'json #f)))
@@ -329,11 +318,15 @@
     parse->om)
    ast))
 
+(define (root->table o)
+  (let ((json? (gdzn:command-line:get 'json #f)))
+    (if json?
+        ((mangle-table json-table-state) o)
+        (ast->dzn o)))
+  )
+
 (define (ast-> ast)
   ((compose
-    dzn-table
-    (lambda (x) (if (is-a? x <ast>) (make <root> #:elements (om:filter identity x))
-                    (filter identity x)))
-    (mangle-table json-table-state)
+    root->table
     ast->table-state)
    ast))
