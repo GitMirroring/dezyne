@@ -4,4 +4,4 @@
  , #.name internal'
  , #.name end'
  , #.name flush
- , #x:makreel:interface-name touw
+ , #x:makreel:interface-name tau_reply

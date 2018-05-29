@@ -2,6 +2,7 @@
  , #.name reply'
  , #.name internal'
  , #.name end'
+ , #.name flush
  , #.name qin
  , #.name qout'
  , #.name queue_full

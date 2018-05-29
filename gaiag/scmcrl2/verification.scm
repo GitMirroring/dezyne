@@ -84,7 +84,7 @@
 
 (define (compliance-taus model)
   (define (compose-taus names)
-    (string-join (append-map (lambda (o) (map (cut string-append o <>) '("in" "internal" "qin" "qout" "reply"))) names) ","))
+    (string-join (append-map (lambda (o) (map (cut string-append o <>) '("in" "internal" "qin" "qout" "reply" "flush"))) names) ","))
   (compose-taus (map (compose symbol->string .name) (ast:required+async model))))
 
 (define (deterministic-labels component)

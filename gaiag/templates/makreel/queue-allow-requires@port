@@ -4,4 +4,5 @@
  , #.name reply
  , #.name internal
  , #.name end
+ , #.name flush
  , #.name queue_full

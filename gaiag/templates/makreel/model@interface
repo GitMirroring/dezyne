@@ -22,7 +22,7 @@ range_error;
 recurse;
 return;
 second_reply;
-touw;
+tau_void;
 
 proc
 Illegal = illegal . Illegal;

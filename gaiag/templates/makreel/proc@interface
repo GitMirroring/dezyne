@@ -19,8 +19,8 @@ define(#x:makreel:model-name reordered_comm, comm({
  }, #x:makreel:model-name reordered_parallel))
 
 define(#x:makreel:model-name reordered_allow, allow({
-   touw
- , #x:makreel:model-name touw
+   tau_void
+ , #x:makreel:model-name tau_reply
  , #x:makreel:model-name end'
  , #x:makreel:model-name flush
  , #x:makreel:model-name in'
@@ -39,7 +39,7 @@ define(#x:makreel:model-name reordered_allow, allow({
 
 define(#x:makreel:model-name reordered, rename({
    #x:makreel:model-name in' -> #x:makreel:model-name in
- , #x:makreel:model-name reply' -> #x:makreel:model-name touw
+ , #x:makreel:model-name reply' -> #x:makreel:model-name tau_reply
  , #x:makreel:model-name reply'reordered -> #x:makreel:model-name reply
  , #x:makreel:model-name internal' -> #x:makreel:model-name internal
  , #x:makreel:model-name end' -> #x:makreel:model-name end
@@ -70,8 +70,8 @@ define(#x:makreel:model-name comm, comm({
   }, #x:makreel:model-name parallel))
 
 define(#x:makreel:model-name allow, allow({
-   touw
-  , #x:makreel:model-name touw
+   tau_void
+  , #x:makreel:model-name tau_reply
   , #x:makreel:model-name in'
   , #x:makreel:model-name reply'
   , #x:makreel:model-name internal'
@@ -89,19 +89,19 @@ define(#x:makreel:model-name allow, allow({
   }, #x:makreel:model-name comm))
 
 define(#x:makreel:model-name interface_internal, rename({
-    recurse -> touw
-  , return -> touw
+    recurse -> tau_void
+  , return -> tau_void
   , #x:makreel:model-name in' -> #x:makreel:model-name in
   , #x:makreel:model-name out' -> #x:makreel:model-name out
   , #x:makreel:model-name reply' -> #x:makreel:model-name reply
   , #x:makreel:model-name internal' -> #x:makreel:model-name internal
   , #x:makreel:model-name end'reordered -> #x:makreel:model-name end
-  , #x:makreel:model-name end' -> touw
+  , #x:makreel:model-name end' -> tau_void
   }, #x:makreel:model-name allow))
 
 #x:makreel:model-name interface = hide({
-   touw
- , #x:makreel:model-name touw}, #x:makreel:model-name interface_internal);
+   tau_void
+ , #x:makreel:model-name tau_reply}, #x:makreel:model-name interface_internal);
 
 #x:makreel:model-name behaviour #x:process-parameters
  = #x:behaviour-proc

@@ -11,7 +11,7 @@ define(req_and_queue_comm, comm({
  }, req_and_queue_parallel))
 
 define(req_and_queue_allow, allow({
-   #x:allow-touw
+   #x:allow-tau
  , async_not_pending
  , async_pending
  , declarative_illegal
@@ -19,7 +19,7 @@ define(req_and_queue_allow, allow({
  , incomplete
  , queue_empty
  , queue_full
- , touw
+ , tau_void
 #x:queue-allow-requires
  }, req_and_queue_comm))
 

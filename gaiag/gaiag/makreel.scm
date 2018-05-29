@@ -735,7 +735,7 @@
   (if (ast:requires? o) o
       '()))
 
-(define-method (makreel:allow-touw (o <component>))
+(define-method (makreel:allow-tau (o <component>))
   (delete-duplicates (append (map .type (ast:port* o))) ast:eq?))
 
 (define-method (makreel:interface-action-proc (o <component>))

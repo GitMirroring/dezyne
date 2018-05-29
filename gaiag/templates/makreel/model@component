@@ -60,7 +60,7 @@ range_error;
 recurse;
 return;
 second_reply;
-touw;
+tau_void;
 
 proc
 Illegal = illegal . Illegal;
@@ -93,7 +93,7 @@ define(provides_allow, allow ({
  , missing_reply
  , range_error
  , second_reply
- , touw
+ , tau_void
 #x:provides-allow
  }, provides_comm))
 
@@ -102,8 +102,8 @@ define(provides_rename, rename ({
  }, provides_allow))
 
 provides = hide ({
-   touw
- , #x:allow-touw
+   tau_void
+ , #x:allow-tau
  }, provides_rename);
 
 %%%%%%%%%%%%%%%%%%% COMPONENT %%%%%%%%%%%%%%%%%%%
@@ -204,7 +204,7 @@ define(component_semantics_comm, comm({
 
 define(component_semantics_allow, allow({
    #x:makreel:model-name end'
- , #x:allow-touw
+ , #x:allow-tau
 #x:semantics-allow-provides
 #x:semantics-allow-requires
 #x:semantics-allow-async
@@ -218,7 +218,7 @@ define(component_semantics_allow, allow({
  , recurse
  , return
  , second_reply
- , touw
+ , tau_void
  }, component_semantics_comm))
 
 define(component_semantics, rename({
@@ -241,7 +241,7 @@ define(component_comm, comm({
 
 define(component_allow, allow({
    #x:makreel:model-name end
- , #x:allow-touw
+ , #x:allow-tau
 #x:component-allow-provides
 #x:component-allow-requires
 #x:component-allow-async
@@ -256,7 +256,7 @@ define(component_allow, allow({
  , recurse
  , return
  , second_reply
- , touw
+ , tau_void
  }, component_comm))
 
 define(component_rename, rename({
@@ -270,7 +270,7 @@ define(component_rename, rename({
 
 component = hide({
    #x:makreel:model-name end
- , #x:allow-touw
+ , #x:allow-tau
 #x:component-hide-provides
 #x:component-hide-requires
 #x:component-hide-async
@@ -279,7 +279,7 @@ component = hide({
  , queue_empty
  , recurse
  , return
- , touw
+ , tau_void
  }, component_rename);
 
 
