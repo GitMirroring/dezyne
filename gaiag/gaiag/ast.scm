@@ -180,7 +180,7 @@
   (filter ast:provides? (ast:port* o)))
 
 (define-method (ast:required (o <component-model>))
-  (append (filter ast:requires? (ast:port* o))))
+  (filter ast:requires? (ast:port* o)))
 
 (define-method (ast:required+async (o <component-model>))
   (append (ast:required o) ((compose .elements .ports .behaviour) o)))
@@ -219,7 +219,13 @@
                           (filter om:out? (om:events port))))
                    (filter ast:requires? (om:ports o)))))
 
-(define-method (ast:async-out-triggers (o <component-model>))
+(define-method (ast:async-out-triggers (o <foreign>))
+  '())
+
+(define-method (ast:async-out-triggers (o <system>))
+  '())
+
+(define-method (ast:async-out-triggers (o <component>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals ((compose .formals .signature) event)))
