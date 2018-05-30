@@ -1,0 +1,1 @@
+this.#.name  = new dzn.async ({provides: {}, requires: {name: '#.name ', component: this}});
