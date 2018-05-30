@@ -18,6 +18,7 @@
   dzn_rt.performs_flush(this) = true;
   #x:pump
   #x:calls
+  #x:async
   #x:rcalls
   #x:reqs
   #x:clrs

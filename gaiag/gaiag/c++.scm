@@ -78,6 +78,7 @@
             c++:function-type
             c++:string->enum
             c++:type-ref
+            c++:void-in-triggers
             asd?
             ))
 
@@ -405,6 +406,11 @@
                            "cb_" interface " = cb;\n"
                            "}\n"))))
        (delete-duplicates (map second ((asd-interfaces om:out?) (provided-interface model))))))
+
+(define-method (c++:void-in-triggers (o <component-model>))
+  (filter
+   (lambda (t) (is-a? ((compose .type .signature .event) t) <void>))
+   (append (ast:provided-in-triggers o) (ast:required-out-triggers o))))
 
 (define-templates-macro define-templates c++)
 (include "../templates/dzn.scm")

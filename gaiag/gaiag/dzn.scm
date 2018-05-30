@@ -298,7 +298,9 @@
     ((? string?) o)))
 
 (define-method (dzn:formal-type (o <formal>)) o)
-(define-method (dzn:formal-type (o <port>)) ((compose ast:formal* .signature car om:events) o))
+(define-method (dzn:formal-type (o <event>)) ((compose ast:formal* .signature) o))
+(define-method (dzn:formal-type (o <trigger>)) ((compose dzn:formal-type .event) o))
+(define-method (dzn:formal-type (o <port>)) ((compose dzn:formal-type car om:events) o))
 
 (define-method (dzn:direction (o <ast>))
   (if (not (.direction o)) '()
