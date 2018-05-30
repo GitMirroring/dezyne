@@ -1,1 +1,1 @@
-dzn::async< #x:reply-type  (#x:formal-type)> #.name;
+dzn::async<void (#x:formal-type)> #.name;
