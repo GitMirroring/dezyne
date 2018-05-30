@@ -1,9 +1,3 @@
-ifdef(`changeword', `', `errprint(`m4: skipping: no changeword support
-')m4exit(`77')')dnl
-changequote(`"', `"')
-changecom("%")
-changeword("[a-zA-Z0-9][_a-zA-Z0-9']*")
-
 sort
 Void = struct void;
 #x:action-sort
@@ -14,22 +8,6 @@ Void = struct void;
 
 act
 #x:event-act
-declarative_illegal;
-illegal;
-incomplete;
-missing_reply;
-range_error;
-recurse;
-return;
-second_reply;
-tau_void;
 
 proc
-Illegal = illegal . Illegal;
-Declarative_Illegal = declarative_illegal . Declarative_Illegal;
-
 #x:interface-proc
-
-interface = #x:makreel:model-name interface;
-
-%init interface;

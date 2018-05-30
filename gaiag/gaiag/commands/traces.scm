@@ -99,9 +99,10 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
           (exit (or (and usage? 2) 0)))
      options)))
 
-(define (mcrl2->lts init)
-  (let* ((commands `(,init
-                     ("cat" "-" "verify.mcrl2")
+(define (mcrl2->lts model init)
+  (let* ((file-name (verify:file-name model))
+         (commands `(,(cut init model)
+                     ("cat" "-" ,file-name)
                      ("m4")
                      ("mcrl22lps" "--quiet" "-b")
                      ("lpsconstelm" "--quiet" "-st")
@@ -125,7 +126,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
     (chdir tmp)
     (model->mcrl2 root model)
     (let* ((init (if (is-a? model <component>) x:component-init x:interface-init))
-           (lts (mcrl2->lts (cut init model)))
+           (lts (mcrl2->lts model init))
            (lts (cleanup-lts lts #:illegal? #t)))
       (chdir cwd)
       lts)))

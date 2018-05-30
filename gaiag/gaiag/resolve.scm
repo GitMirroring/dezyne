@@ -108,7 +108,7 @@
     (($ <port>) (resolve:interface (.type o)))
     (($ <interface>) o)
     ((? (is? <model>)) (resolve:interface (om:port o)))
-    (($ <scope.name>) (find (om:named o) ((compose .elements (parent o <root>)))))
+    (($ <scope.name>) (find (om:named o) ((compose .elements (cut parent o <root>)))))
     (($ <root>) (om:find (is? <interface>) o))
     ((h t ...) (find (is? <interface>) o))))
 

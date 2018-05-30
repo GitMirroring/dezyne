@@ -28,8 +28,9 @@
 (define-templates makreel:enum-fields makreel:enum-fields newline-pipe-infix)
 
 
-(define-templates source identity newline-infix)
+(define-templates source)
 (define-templates model makreel:get-model)
+(define-templates init makreel:init)
 
 (define-templates scope+name om:scope+name)
 (define-templates type-constructor makreel:type-constructor)

@@ -1,11 +1,4 @@
-ifdef(`changeword', `', `errprint(`m4: skipping: no changeword support
-')m4exit(`77')')dnl
-changequote(`"', `"')
-changecom("%")
-changeword("[a-zA-Z0-9][_a-zA-Z0-9']*")
-
 sort
-Void = struct void;
 #x:action-sort
 #x:modeling-sort
 #x:enum-sort
@@ -49,25 +42,13 @@ async_not_pending;
 async_not_pending';
 async_pending;
 async_pending';
-declarative_illegal;
-illegal;
-incomplete;
-missing_reply;
 queue_full;
 queue_empty;
 queue_empty';
-range_error;
-recurse;
-return;
-second_reply;
-tau_void;
-
-proc
-Illegal = illegal . Illegal;
-Declarative_Illegal = declarative_illegal . Declarative_Illegal;
 
 %%%%%%%%%%%%%%%%% INTERFACE %%%%%%%%%%%%%%%%%
 
+proc
 #x:interface-proc
 
 %%%%%%%%%%%%%% PORT PROCESSES %%%%%%%%%%%%%%%
@@ -282,8 +263,3 @@ component = hide({
  , tau_void
  }, component_rename);
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%% INIT %%%%%%%%%%%%%%%%%%%%%%%%%
-
-%init component;
-%init provides;

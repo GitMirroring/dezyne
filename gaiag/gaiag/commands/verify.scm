@@ -102,18 +102,40 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                                         (filter (negate (cut member <> component-interfaces)) interface-names)))))))
     (append interface-names component-names)))
 
+(define-method (ast:interface* (o <interface>))
+  (let* ((types (delete-duplicates
+                 (map ast:type (tree-collect (disjoin (is? <event>) (is? <variable>)) o))
+                 ast:eq?))
+         (scopes (filter-map ast:scope-type types)))
+    (filter-map resolve:interface scopes)))
+
+(define-method (ast:scope-type (o <scope.name>))
+  (let ((scope (.scope o)))
+    (and (pair? scope)
+         (clone o #:scope (drop-right scope 1) #:name (last scope)))))
+
+(define-method (ast:scope-type (o <scoped>))
+  ((compose ast:scope-type .name) o))
+
 (define (model->mcrl2 root model)
   (let* ((model-name (symbol->string (verify:scope-name model)))
          (globals (ast:global* root))
-         (root (clone root
-                      #:elements (filter (lambda (o) (or (ast:eq? model o)
-                                                         (if (is-a? model <interface>)
-                                                             (not (is-a? o <model>))
-                                                             (not (is-a? o <component>)))))
-                                         globals))))
+         (used-interfaces (and (is-a? model <interface>)
+                               (ast:interface* model)))
+         (root' (clone root
+                       #:elements (filter (lambda (o)
+                                            (or (ast:eq? model o)
+                                                (if (is-a? model <interface>)
+                                                    (or (not (is-a? o <model>))
+                                                        (and (is-a? o <interface>)
+                                                             (member o used-interfaces ast:eq?)))
+                                                    (not (is-a? o <component>)))))
+                                          globals))))
+    (when (is-a? model <component>)
+      (for-each (cut model->mcrl2 root <>) (ast:interface* model)))
     (parameterize ((language 'makreel))
-      (with-output-to-file "verify.mcrl2" (cut root-> root)))
-    (system (string-append "cp --backup=t -f verify.mcrl2 " model-name ".mcrl2"))))
+      (let ((file-name (verify:file-name model)))
+        (with-output-to-file file-name (cut root-> root'))))))
 
 (define (verify-makreel options dir file-name ast)
   (let ((verbose? (gdzn:command-line:get 'verbose))

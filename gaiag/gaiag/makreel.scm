@@ -49,6 +49,7 @@
   #:use-module (gaiag normalize)
   #:use-module (gaiag templates)
   #:export (ast->
+            ast:interface*
             root->
             makreel:om
             makreel:tick-names))
@@ -220,6 +221,14 @@
   (let ((model-name (and=> (command-line:get 'model #f) string->symbol)))
     (or (and model-name
              (find (om:named model-name) (ast:model* o)))
+        (find (is? <component>) (ast:model* o))
+        (filter (is? <interface>) (ast:model* o)))))
+
+(define-method (makreel:init (o <root>))
+  (let* ((model-name (and=> (command-line:get 'model #f) string->symbol))
+         (model (and model-name
+                     (find (om:named model-name) (ast:model* o)))))
+    (or model
         (find (is? <component>) (ast:model* o))
         (find (is? <interface>) (ast:model* o)))))
 

@@ -1,0 +1,3 @@
+interface = #x:makreel:model-name interface;
+
+%init interface;
