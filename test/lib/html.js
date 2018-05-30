@@ -344,6 +344,7 @@ var privates = {
     if (result.items.length) {
       ln('    <tr>');
       ln('      <th class="white item">ITEM</th>');
+      ln('      <th class="white item">META</th>');
       ln('      <th class="white">time</th>');
 
       order.each(function(aspect) {
@@ -359,6 +360,7 @@ var privates = {
       });
       ln('    </tr>');
       ln('    <tr>');
+      ln('      <th class="white"> </th>');
       ln('      <th class="white"> </th>');
       ln('      <th class="white"> </th>');
 
@@ -381,11 +383,18 @@ var privates = {
       var outcome = item.outcome.status;
       ln('    <tr class="'+privates.status2class(item.status)+'">');
       var base = path.basename (item.name);
-      var file = item.name;
-      try {var f = file + '/' + base + '.dm'; file = fs.realpathSync (f);} catch (e) {}
-      try {var f = file + '/' + base + '.dzn'; file = fs.realpathSync (f);} catch (e) {}
+      var file;
+      try {var f = item.name + '/' + base + '.dm'; file = fs.realpathSync (f);} catch (e) {}
+      try {var f = item.name + '/' + base + '.dzn'; file = fs.realpathSync (f);} catch (e) {}
       var dir = path.basename (path.dirname (item.name));
       ln('      <td class="'+privates.status2class(item.status)+' item"><a href="' + file +'">'+dir+'/'+ base+'</a></td>');
+      var meta;
+      try {var f = item.name + '/' + 'META'; meta = fs.realpathSync (f);} catch (e) {}
+      if (meta) {
+        ln('      <td class="white"><a href="' + meta +'">'+'META'+'</a></td>');
+      } else {
+        ln('      <td class="white"></td>');
+      }
       ln('      <td class="white">'+item.outcome.elapsed+'</a></td>');
       order.each(function(aspect) {
         var aspoutcome = outcome[aspect] || 'SKIPPED';

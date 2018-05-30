@@ -1,1 +1,1 @@
-{"skip":["build"],"known":["run","table"],"comment":"interface model: cannot build, weak illegal can not run"}
+{"skip":["build"],"known":["table"],"comment":"interface model: cannot build"}
