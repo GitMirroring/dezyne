@@ -176,6 +176,9 @@
 (define-method (ast:other-direction (o <trigger>))
   ((compose ast:other-direction .event) o))
 
+(define-method (ast:provided (o <port>))
+  (ast:provided (parent o <component-model>)))
+
 (define-method (ast:provided (o <component-model>))
   (filter ast:provides? (ast:port* o)))
 

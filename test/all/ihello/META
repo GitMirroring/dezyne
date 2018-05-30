@@ -1,1 +1,1 @@
-{"model":"ns.ihello"}
+{"skip":["build"],"model":"ns.ihello","comment":"interface model, cannot build"}
