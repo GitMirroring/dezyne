@@ -1,1 +1,1 @@
-{"known":["javascript","c#"],"comment":"async not supported"}
+{"known":["javascript","c#","execute"],"comment":"requires more system context to execute all traces ;async not supported for javascript and c#"}
