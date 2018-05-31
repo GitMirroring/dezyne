@@ -1,1 +1,1 @@
-{"skip":["execute"], "comment":"illegal handler prevents full trace matching"}
+{"known":["run"],"skip":["execute"], "comment":"illegal handler prevents full trace matching; run:illegal not properly handled"}

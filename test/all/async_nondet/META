@@ -1,1 +1,1 @@
-{"known":["javascript","c#"],"comment":"async not supported"}
+{"skip":["execute"],"known":["javascript","c#"],"comment":"exec:nondeterministic model cannot run; javascript,c#:async not supported"}

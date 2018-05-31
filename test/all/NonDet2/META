@@ -1,1 +1,1 @@
-{"known":[],"comment":"interface model: cannot build, non-det illegal: run disagrees with traces"}
+{"skip":["build"],"known":["run"],"comment":"interface model: cannot build, non-det illegal: run disagrees with traces"}
