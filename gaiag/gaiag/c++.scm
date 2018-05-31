@@ -1,8 +1,10 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -378,7 +380,7 @@
                                           "}\n")
                                     (list "::" interface "::PseudoStimulus " asd "(" formals ")\n"
                                           "{\n"
-                                          (list "return static_cast< ::" interface "::PseudoStimulus>(1 + api.in." dzn "(" arguments "));\n")
+                                          (list "return static_cast< ::" interface "::PseudoStimulus>(api.in." dzn "(" arguments "));\n")
                                           "}\n"))))
                             dzn-events asd-events)
                            "};\n"))))
