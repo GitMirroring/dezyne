@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
@@ -167,7 +167,9 @@ namespace dzn
         {
           auto self = find_self(coroutines);
           debug << "[" << self->id << "] create context" << std::endl;
-          while((running || queue.size()) && !self->released)
+          while(!self->released && (running ||
+                                    queue.size() ||
+                                    coroutines.size() > 1))
           {
             worker();
             if(!self->released) collateral_release(self);
