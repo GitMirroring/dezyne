@@ -3,7 +3,7 @@
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -40,6 +40,8 @@ inline std::string to_string(int i){return std::to_string(i);}
 
 namespace dzn
 {
+  extern std::ostream debug;
+
   void trace_in(std::ostream&, port::meta const&, const char*);
   void trace_out(std::ostream&, port::meta const&, const char*);
 

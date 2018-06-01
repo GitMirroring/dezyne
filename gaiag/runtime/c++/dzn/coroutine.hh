@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -56,7 +56,9 @@ namespace dzn
     coroutine(Worker&& worker)
     : id(-2)
     , context([this, worker](dzn::yield& yield){
+#if !HAVE_BOOST_COROUTINE
         this->id = context::get_id();
+#endif
         this->yield = std::move(yield);
         worker();
       })

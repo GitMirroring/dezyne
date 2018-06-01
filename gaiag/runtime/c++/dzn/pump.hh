@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -39,6 +39,8 @@
 
 namespace dzn
 {
+  extern std::ostream debug;
+
   struct pump
   {
     std::function <void()> collateral_block_lambda;
@@ -91,6 +93,7 @@ namespace dzn
     void handle(size_t id, size_t ms, const std::function<void()>&, size_t rank = std::numeric_limits<size_t>::max());
     void remove(size_t id);
   private:
+    bool timers_expired() const;
     void remove_finished_coroutines();
   };
 

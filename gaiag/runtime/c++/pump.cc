@@ -123,7 +123,7 @@ namespace dzn
           lock.lock();
         }
 
-        while(timers.size() && timers.begin()->first.expired())
+        while(timers_expired())
         {
           auto f(timers.begin()->second);
           timers.erase(timers.begin());
@@ -160,6 +160,10 @@ namespace dzn
       std::terminate();
     }
   }
+  bool pump::timers_expired() const
+  {
+    return timers.size() && timers.begin()->first.expired();
+  }
   void pump::create_context()
   {
     coroutines.emplace_back([&]{
@@ -169,7 +173,7 @@ namespace dzn
           debug << "[" << self->id << "] create context" << std::endl;
           while(!self->released && (running ||
                                     queue.size() ||
-                                    coroutines.size() > 1))
+                                    timers_expired()))
           {
             worker();
             if(!self->released) collateral_release(self);
