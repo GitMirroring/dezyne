@@ -104,7 +104,7 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
 
 (define-method (ast:interface* (o <interface>))
   (let* ((types (delete-duplicates
-                 (map ast:type (tree-collect (disjoin (is? <event>) (is? <variable>)) o))
+                 (map ast:type (tree-collect (disjoin (is? <event>) (is? <variable>) (is? <formal>)) o))
                  ast:eq?))
          (scopes (filter-map ast:scope-type types)))
     (filter-map resolve:interface scopes)))
