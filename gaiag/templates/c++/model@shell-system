@@ -1,5 +1,3 @@
-##include "#x:scoped-model-name .hh"
-
 #x:open-namespace
 #x:model-name ::#x:model-name(const dzn::locator& locator)
 : #x:meta

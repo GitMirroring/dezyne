@@ -83,10 +83,10 @@
             dzn:formal-type
             dzn:global
             dzn:injected
+            dzn:model
             dzn:port-prefix
             dzn:reply-port
             dzn:signature
-            dzn:source
             dzn:statement
             dzn:->string
             dzn:from
@@ -98,12 +98,13 @@
 (define %x:source (make-parameter #f))
 
 (define (dzn:file2file root)
-  (for-each dzn:dump (filter (is? <foreign>) (.elements root)))
+  ;;(for-each dzn:dump (filter (is? <foreign>) (.elements root)))
   (dzn:dump root))
 
 (define-public (dzn-async? o)
-  (or (gaiag-dzn-async? o)
-      (generator-dzn-async? o)))
+  (and (is-a? o <scoped>)
+       (or (gaiag-dzn-async? o)
+       (generator-dzn-async? o))))
 
 (define (gaiag-dzn-async? o)
   (equal? ((compose .scope .name) o) '(dzn async)))
@@ -174,13 +175,13 @@
     (with-output-to-string (dzn:indent (cut x:source o)))))
 
 ;;; dzn: generic templates
-(define-method (dzn:source (o <root>))
+(define-method (dzn:model (o <root>))
   (topological-sort
    (map dzn:annotate-shells
-        (filter (negate (disjoin (is? <foreign>) (is? <data>) (is? <type>) ast:imported? dzn-async?))
+        (filter (negate (disjoin (is? <data>) (is? <type>) ast:imported? dzn-async?))
                 (.elements o)))))
 
-(define-method (dzn:source (o <ast>))
+(define-method (dzn:model (o <ast>))
   o)
 
 (define (dzn:global o)

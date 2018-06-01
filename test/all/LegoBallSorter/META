@@ -1,1 +1,1 @@
-{"known":["build","execute","run","triangle","table"],"comment":"need CFLAGS, handwritten main: cannot build,execute,run"}
+{"known":["javascript","run","triangle","table"],"comment":"need CFLAGS, system: cannot run"}

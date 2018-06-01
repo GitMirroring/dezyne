@@ -1,0 +1,33 @@
+/***********************************   GLUE   **********************************/
+##ifndef #x:upcase-model-name _HH
+##define #x:upcase-model-name _HH
+
+##include "asdInterfaces.h"
+##include "#x:model-name Interface.h"
+
+##include <dzn/runtime.hh>
+
+#x:open-namespace
+struct #x:model-name : public skel::#x:model-name
+{
+  #x:model-name (const dzn::locator&);
+  ~ #x:model-name ();
+  boost::shared_ptr< ::#x:model-name Interface> component;
+  #x:asd-api-instance-declaration
+  #x:asd-cb-definition
+  struct SingleThreaded: public asd::channels::ISingleThreaded
+  {
+    void* p;
+    dzn::runtime& rt;
+    SingleThreaded (void* p, dzn::runtime& rt)
+    : p(p)
+    , rt(rt)
+    {}
+    void processCBs() { rt.flush(p); }
+  };
+  #x:asd-cb-instance-declaration
+  #x:asd-method-declaration
+};
+#x:close-namespace
+##endif
+/***********************************   GLUE   **********************************/

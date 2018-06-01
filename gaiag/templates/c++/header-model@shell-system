@@ -1,15 +1,8 @@
-##ifndef #x:upcase-model-name _HH
-##define #x:upcase-model-name _HH
-
-##include <iostream>
-
-##include <dzn/locator.hh>
-##include <dzn/runtime.hh>
+/************************************   SHELL   *******************************/
 ##include <dzn/pump.hh>
+##include <dzn/runtime.hh>
 
-#x:component-include
-#x:model2file-interface-include
-
+#x:include-guard
 #x:open-namespace
 struct #x:model-name
 {
@@ -27,4 +20,5 @@ struct #x:model-name
   void dump_tree(std::ostream& os=std::clog) const;
 };
 #x:close-namespace
-##endif // #x:upcase-model-name _HH
+#x:endif
+/************************************   SHELL   *******************************/

@@ -1,14 +1,6 @@
-// ##ifndef #x:upcase-model-name _HH
-// ##define #x:upcase-model-name _HH
-
-##include <iostream>
-
+/********************************** COMPONENT *********************************/
+#x:include-guard
 #x:interface-include
-
-namespace dzn {
-struct locator;
-struct runtime;
-}
 
 #x:open-namespace
 struct #x:model-name
@@ -34,5 +26,5 @@ struct #x:model-name
   #x:method-declare
   #x:function-declare };
 #x:close-namespace
-// ##endif // #x:upcase-model-name _HH
-////////////////////////////////////////////////////////////////////////////////
+#x:endif
+/********************************** COMPONENT *********************************/

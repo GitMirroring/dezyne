@@ -23,7 +23,7 @@
 ;;; 
 ;;; Code:
 
-(define-templates source dzn:source newline-infix)
+(define-templates source dzn:model newline-infix)
 (define-templates global dzn:global newline-infix)
 (define-templates model-name (compose om:name (lambda (o) (parent o <model>))))
 (define-templates =expression dzn:=expression)

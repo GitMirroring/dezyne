@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,24 +21,34 @@
 //
 // Code:
 
-#ifndef TIMER_HH
-#define TIMER_HH
+#ifndef __MACHINE_CONSTANTS_HH__
+#define __MACHINE_CONSTANTS_HH__
 
-#include "skel_timer.hh"
-
-namespace dzn {
-  struct pump;
-}
-
-struct timer: public skel::timer
+#if __cplusplus >= 201103L
+#include <cstdint>
+#else
+namespace std
 {
-  dzn::pump& p;
-  size_t id;
-  static size_t s_id;
+  typedef unsigned char uint8_t;
+  typedef int int32_t;
+}
+#endif
 
-  timer(const dzn::locator&);
-  void port_create(int);
-  void port_cancel();
+#include <map>
+#include <string>
+
+using std::uint8_t;
+using std::int32_t;
+
+typedef bool Boolean;
+typedef std::uint8_t Byte;
+typedef std::int32_t Integer;
+
+struct config_scope
+{
+  static int get(const std::string& key);
 };
+
+extern config_scope config;
 
 #endif

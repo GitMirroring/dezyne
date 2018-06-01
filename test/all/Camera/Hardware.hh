@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
@@ -25,7 +25,7 @@
 #ifndef HARDWARE_HH
 #define HARDWARE_HH
 
-#include "skel_Hardware.hh"
+#include "simhal.hh"
 
 struct Hardware: public skel::Hardware
 {

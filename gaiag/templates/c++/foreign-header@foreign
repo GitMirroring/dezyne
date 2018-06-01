@@ -1,17 +1,8 @@
-##ifndef SKEL_#x:upcase-model-name _HH
-##define SKEL_#x:upcase-model-name _HH
-
-##include <iostream>
-
-##define INTERFACE_ONLY
+/***********************************  FOREIGN  **********************************/
+#x:include-guard
 #x:interface-include
-##undef INTERFACE_ONLY
 
-namespace dzn {
-struct locator;
-struct runtime;
-}
-
+#x:open-namespace
 namespace skel {
 struct #x:model-name
 {
@@ -31,4 +22,6 @@ struct #x:model-name
   private:
   #x:pure-virtual-method-declare };
 }
-##endif // SKEL_#x:upcase-model-name _HH
+#x:close-namespace
+#x:endif
+/***********************************  FOREIGN  **********************************/

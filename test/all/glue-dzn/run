@@ -41,7 +41,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
 (define (handle-error job error)
   (let ((status (wait job)))
     (when (not (zero? status))
-      (stderr "ERROR: exit: ~a: ~s" status error)
+      (stderr "ERROR: exit: ~a: ~a" status error)
       (set! global-status (1+ global-status))
       (throw 'pipe status error ))
     status))

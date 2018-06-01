@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -25,7 +25,7 @@
 #ifndef S_FOREIGN_HH
 #define S_FOREIGN_HH
 
-#include "S_skel_Foreign.hh"
+#include "foreign.hh"
 
 namespace S
 {
@@ -39,4 +39,3 @@ struct Foreign: public skel::Foreign
 };
 }
 #endif
-

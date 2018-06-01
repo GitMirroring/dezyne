@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;; Copyright © 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
@@ -54,8 +54,6 @@
                  (%x:source x:source)
                  (%x:glue-top-header x:glue-top-header)
                  (%x:glue-top-source x:glue-top-source)
-                 (%x:glue-bottom-header x:glue-bottom-header)
-                 (%x:glue-bottom-source x:glue-bottom-source)
                  (%x:main x:main))
     (code:root-> root)))
 

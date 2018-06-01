@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -29,15 +29,15 @@
 size_t timer::s_id = 0;
 
 timer::timer(const dzn::locator& l)
-: skel::timer(l)
-, p(l.get<dzn::pump>())
+: locator(l)
+, skel::timer(l)
 , id(s_id++)
 {}
 void timer::port_create(int ms)
 {
-  p.handle(id, ms, port.out.timeout);
+  locator.get<dzn::pump>().handle(id, ms, port.out.timeout);
 }
 void timer::port_cancel()
 {
-  p.remove(id);
+  locator.get<dzn::pump>().remove(id);
 }

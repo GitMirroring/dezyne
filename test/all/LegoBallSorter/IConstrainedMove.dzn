@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -19,6 +20,8 @@
 // Commentary:
 //
 // Code:
+
+$#include "MachineConstants.hh"$
 
 interface IConstrainedMove
 {

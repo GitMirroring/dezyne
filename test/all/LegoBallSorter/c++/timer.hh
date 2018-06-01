@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -20,34 +21,24 @@
 //
 // Code:
 
-#ifndef __MACHINE_CONSTANTS_HH__
-#define __MACHINE_CONSTANTS_HH__
+#ifndef TIMER_HH
+#define TIMER_HH
 
-#if __cplusplus >= 201103L
-#include <cstdint>
-#else
-namespace std
-{
-  typedef unsigned char uint8_t;
-  typedef int int32_t;
+#include "lego.hh"
+
+namespace dzn {
+  struct locator;
 }
-#endif
 
-#include <map>
-#include <string>
-
-using std::uint8_t;
-using std::int32_t;
-
-typedef bool Boolean;
-typedef std::uint8_t Byte;
-typedef std::int32_t Integer;
-
-struct config_scope
+struct timer: public skel::timer
 {
-  static int get(const std::string& key);
-};
+  const dzn::locator& locator;
+  size_t id;
+  static size_t s_id;
 
-extern config_scope config;
+  timer(const dzn::locator&);
+  void port_create(int);
+  void port_cancel();
+};
 
 #endif

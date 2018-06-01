@@ -95,7 +95,7 @@ namespace dzn
     void handle(size_t id, size_t ms, const boost::function<void()>&, size_t rank = std::numeric_limits<size_t>::max());
     void remove(size_t id);
   private:
-    bool pump::timers_expired() const;
+    bool timers_expired() const;
     void remove_finished_coroutines();
   };
 

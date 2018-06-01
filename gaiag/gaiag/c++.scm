@@ -424,8 +424,6 @@
                  (%x:source x:source)
                  (%x:glue-top-header x:glue-top-header)
                  (%x:glue-top-source x:glue-top-source)
-                 (%x:glue-bottom-header x:glue-bottom-header)
-                 (%x:glue-bottom-source x:glue-bottom-source)
                  (%x:main x:main))
     (code:root-> root)))
 

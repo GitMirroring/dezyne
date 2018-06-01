@@ -1,19 +1,9 @@
-// ##ifndef #x:upcase-model-name _HH
-// ##define #x:upcase-model-name _HH
+/***********************************  SYSTEM  ***********************************/
+#x:include-guard
 
-//interface includes
-#x:interface-include
-
-//component includes
-#x:component-include
-
-##include <iostream>
 ##include <dzn/locator.hh>
 
-namespace dzn {
-struct locator;
-struct runtime;
-}
+#x:component-include
 
 #x:open-namespace
 struct #x:model-name
@@ -31,5 +21,5 @@ struct #x:model-name
   void dump_tree(std::ostream& os=std::clog) const;
 };
 #x:close-namespace
-// ##endif // #x:upcase-model-name _HH
-////////////////////////////////////////////////////////////////////////////////
+#x:endif
+/***********************************  SYSTEM  ***********************************/

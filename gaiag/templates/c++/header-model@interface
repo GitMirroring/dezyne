@@ -1,10 +1,7 @@
+/********************************** INTERFACE *********************************/
 #x:include-guard
 
-##include <dzn/meta.hh>
-
-##include <map>
 #x:open-namespace
-
 #x:global-enum-definer
 struct #x:model-name
 {
@@ -25,19 +22,19 @@ struct #x:model-name
      #x:check-in-binding
      #x:check-out-binding
    }
-  };
+};
 
-  inline void connect (#x:model-name & provided, #x:model-name & required)
-  {
-    provided.out = required.out;
-    required.in = provided.in;
-    provided.meta.requires = required.meta.requires;
-    required.meta.provides = provided.meta.provides;
-  }
-
+inline void connect (#x:model-name & provided, #x:model-name & required)
+{
+  provided.out = required.out;
+  required.in = provided.in;
+  provided.meta.requires = required.meta.requires;
+  required.meta.provides = provided.meta.provides;
+}
 #x:close-namespace
 
 #x:interface-enum-to-string
 #x:interface-string-to-enum
 
 #x:endif
+/********************************** INTERFACE *********************************/

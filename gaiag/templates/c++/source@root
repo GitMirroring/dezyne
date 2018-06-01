@@ -1,1 +1,9 @@
-#x:source
+//ROOT
+##include "#x:scoped-model-name .hh"
+
+##include <dzn/locator.hh>
+##include <dzn/runtime.hh>
+#x:pump-include
+
+#x:model
+#x:model-glue

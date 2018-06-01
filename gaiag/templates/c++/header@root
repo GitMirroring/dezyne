@@ -1,9 +1,14 @@
+##include <dzn/meta.hh>
+
+namespace dzn {
+  struct locator;
+  struct runtime;
+}
+
 #x:header-data
-##ifndef #code:file-name _HH
-##define #code:file-name _HH
-#x:header-
-##ifndef INTERFACE_ONLY
-////////////////////////////////////////////////////////////////////////////////
+
+##include <iostream>
+##include <map>
+
 #x:header-model
-##endif // INTERFACE_ONLY
-##endif // #code:file-name _HH
+#x:header-model-glue

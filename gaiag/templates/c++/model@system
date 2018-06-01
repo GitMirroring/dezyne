@@ -1,7 +1,4 @@
-##include "#code:file-name .hh"
-
-##include <dzn/runtime.hh>
-
+//SYSTEM
 #x:open-namespace
 #x:model-name ::#x:model-name(const dzn::locator& dzn_locator)
 : #x:meta

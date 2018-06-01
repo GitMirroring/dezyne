@@ -140,8 +140,6 @@
             %x:main
             %x:glue-top-header
             %x:glue-top-source
-            %x:glue-bottom-header
-            %x:glue-bottom-source
             ))
 
 (define %x:header (make-parameter #f))
@@ -149,9 +147,6 @@
 
 (define %x:glue-top-header (make-parameter #f))
 (define %x:glue-top-source (make-parameter #f))
-(define %x:glue-bottom-header (make-parameter #f))
-(define %x:glue-bottom-source (make-parameter #f))
-
 
 (define (ast-> ast)
   (let ((root (code:om ast)))
@@ -159,8 +154,7 @@
   "")
 
 (define (code:root-> root)
-  (if (code:model2file?) (code:model2file root)
-      (code:file2file root))
+  (code:file2file root)
   (let ((main (command-line:get 'model #f)))
     (when main
       (let* ((models (filter (is? <model>) (.elements root)))
@@ -170,16 +164,15 @@
 
 (define (code:file2file root)
   (code:dump root)
-  (when (code:foreign?)
-    (for-each code:dump (filter (is? <foreign>) (.elements root))))
   (when (glue) (for-each code:dump-glue (filter (conjoin (is? <system>) (negate om:imported?)) (.elements root)))))
 
-(define (code:model2file root)
-  (let* ((models (map (is? <model>) (.elements root)))
-         (models (filter (negate om:imported?) models))
-         ;; Generator-synthesized models look non-imported, filter harder
-         (models (filter (negate dzn-async?) models)))
-    (for-each code:dump models)))
+
+(define (code:component-include o)
+ (filter (disjoin
+          (compose (is? <foreign>) .type)
+          (conjoin om:imported? (lambda (i) (not (equal? (source-file o)
+                                                         (source-file (.type i)))))))
+         (om:instances o)))
 
 (define (code:language)
   (string->symbol (command-line:get 'language "c++")))
@@ -231,6 +224,9 @@
 
 (define-method (code:scope+name o)
   (om:scope+name o))
+
+(define-method (code:scope+name (o <root>))
+  (code:file-name o))
 
 (define-method (code:scope+name (o <event>))
   ((compose code:scope+name .signature) o))
@@ -590,19 +586,14 @@
 (define-method (scope (o <reply>)) (scope (.type (.expression o))))
 
 (define (code:interface-include o)
-  (map (compose (cut make <file-name> #:name <>) code:file-name) (om:ports o)))
+  (map (compose (cut make <file-name> #:name <>) code:file-name)
+       (delete-duplicates
+        (filter (negate (compose (cut equal? (source-file o) <>) (compose source-file .type)))
+                (om:ports o)))))
 
 (define (code:model2file-interface-include o)
   (or (and (code:model2file?) (code:interface-include o))
       ""))
-
-(define (code:component-include o)
- (if (code:model2file?) (om:instances o)
-     (filter (disjoin
-              (compose (is? <foreign>) .type)
-                      (conjoin om:imported? (lambda (i) (not (equal? (source-file o)
-                                                                     (source-file (.type i)))))))
-             (om:instances o))))
 
 (define-method (code:enum-literal (o <enum-literal>))
   (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
@@ -627,8 +618,17 @@
 ;;; dump to file
 
 (define-method (have-non-interface-models? (o <root>))
-  (let* ((objects (filter (disjoin (is? <data>)
-                                   (negate (disjoin dzn-async? ast:imported? (is? <foreign>))))
+  (let* ((objects
+          (filter
+           (disjoin (is? <data>)
+                    (negate (disjoin dzn-async? ast:imported?)))
+           ;; (disjoin (is? <data>)
+           ;;          (conjoin (negate dzn-async?)
+           ;;                   (disjoin (negate ast:imported?)
+           ;;                            (conjoin (is? <foreign>)
+           ;;                                     (compose negate
+           ;;                                              (cut equal? (source-file o) <>)
+           ;;                                              source-file)))))
                           (.elements o)))
          (non-interface-models (filter (negate (is? <interface>)) objects)))
     (pair? non-interface-models)))
@@ -654,25 +654,6 @@
                 (mkdir-p dir)
                 (with-output-to-file file-name
                  (dzn:indent (cut (%x:source) o)))))))))
-
-(define-method (code:dump (o <foreign>))
-  (let* ((dir (command-line:get 'output "."))
-         (stdout? (equal? dir "-"))
-         (dir (string-append dir "/" (dzn:dir o)))
-         (name (symbol->string ((om:scope-name) o)))
-         (skel-name (symbol->string (code:skel-file o)))
-         (iext (symbol->string (dzn:extension (make <interface>))))
-         (cext (symbol->string (dzn:extension (make <component>)))))
-    (if stdout? (begin ((%x:header) o) ((%x:source) o))
-        (begin (with-output-to-file (string-append dir skel-name iext) (cut (%x:header) o))
-               (with-output-to-file (string-append dir skel-name cext) (cut (%x:source) o))))
-    (when (map-file o)
-      (if stdout?
-        (begin (when (code:header?) ((%x:glue-bottom-header) o))
-               ((%x:glue-bottom-source) o))
-        (begin (when (code:header?)
-                 (with-output-to-file (string-append dir name iext) (cut (%x:glue-bottom-header) o)))
-               (with-output-to-file (string-append dir name cext) (cut (%x:glue-bottom-source) o)))))))
 
 (define (code:dump-main o)
   (let* ((dir (command-line:get 'output "."))
@@ -716,9 +697,7 @@
 (define-method (source-file (o <ast>)) ((compose source-file .node) o))
 
 (define-method (code:file-name (o <interface>))
-  (if (code:model2file?)
-      ((compose symbol->string (om:scope-name) .name) o)
-      (basename (symbol->string (source-file o)) ".dzn")))
+  (basename (symbol->string (source-file o)) ".dzn"))
 
 (define-method (code:file-name (o <foreign>))
   ((compose symbol->string (om:scope-name) .name) o))
