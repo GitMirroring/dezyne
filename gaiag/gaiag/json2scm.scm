@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2014 Rob Wieringa <Rob.Wieringa@verum.com>
+;; Copyright © 2014, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -43,14 +43,11 @@
 	  (exit 0))
       (and (or help? usage?)
 	   ((or (and usage? stderr) stdout) "\
-Usage: scm2json [OPTION]... FILE
+Usage: json2scm [OPTION]... FILE
 Convert JSON in FILE or standard input, to scheme-AST on standard output
   -d, --debug          run with debugging
   -h, --help           display this help
   -v, --version        display version
-
-Examples:
-  ./gaiag -a \"$(cat examples/assert.json | ./json2scm)\" -l csp examples/Alarm.dzn
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))

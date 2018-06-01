@@ -37,7 +37,6 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
   #:use-module (gaiag util)
 
-  #:use-module (gaiag asserts)
   #:use-module (gaiag misc)
   #:use-module (gaiag mcrl2)
   #:use-module (gaiag config)

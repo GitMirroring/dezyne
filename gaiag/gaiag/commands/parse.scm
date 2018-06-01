@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -82,23 +83,17 @@ Usage: gdzn parse [OPTION]... [FILE]...
           (exit 0)))
     options))
 
-(define* (parse-with-options options file-name #:key mangle? csp?)
+(define (parse-with-options options file-name)
   (let* ((gaiag? (option-ref options 'gaiag #f))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
-         (language (string->symbol (option-ref options 'language "c++")))
-         (mangle? (option-ref options 'mangle mangle?))
-         (model (option-ref options 'model #f))
-         ;; Only forward --model to generate for CSP, not
-         ;; for executable code: generator cuts models
-         (csp? (or csp? (equal? language "csp")))
-         (model (and csp? model)))
-    (parse-file file-name #:gaiag? gaiag? #:imports imports #:mangle? mangle? #:model model)))
+         (language (string->symbol (option-ref options 'language "c++"))))
+    (parse-file file-name #:gaiag? gaiag? #:imports imports)))
 
-(define* (assert-parse options file-name #:key mangle? csp?)
+(define (assert-parse options file-name)
   (catch #t
     (lambda _
-      (parse-with-options options file-name #:mangle? mangle? #:csp? csp?))
+      (parse-with-options options file-name))
     (lambda _
       (exit 1))))
 

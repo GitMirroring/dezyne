@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -53,7 +53,6 @@
 	    norm:on-same-port-voidness-statement?
 	    norm:port-and-voidness-equal?
 	    passdown-on
-           csp-norm-state
            ))
 
 (define (norm-state o)
@@ -72,7 +71,7 @@
     )
    o))
 
-(define (csp-norm-state o)
+(define (guard-leading-norm-state o)
   ((compose
     remove-skip
     flatten-compound
@@ -150,7 +149,7 @@ reply en die kun je niet mixen"
   ((compose
     pretty-print
     om->list
-    csp-norm-state
+    guard-leading-norm-state
     ast:resolve
     parse->om
     ) ast))

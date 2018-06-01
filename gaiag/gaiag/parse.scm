@@ -1,8 +1,10 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -35,19 +37,16 @@
 
 (define ast-> pretty-print)
 
-(define* (parse-file file-name #:key gaiag? (imports '()) mangle? model)
-  (if (not gaiag?) (generator-parse-file file-name #:imports imports #:mangle? mangle? #:model model)
+(define* (parse-file file-name #:key gaiag? (imports '()))
+  (if (not gaiag?) (generator-parse-file file-name #:imports imports)
       (gaiag-parse-file file-name)))
 
 (define %include-path '("."))
 
-(define* (generator-parse-file file-name #:key (imports '()) mangle? model)
+(define* (generator-parse-file file-name #:key (imports '()))
   (let* ((command (string-append
                    " generate -l scm -L -o -"
-                   (if (not mangle?) "" " -M")
                    (string-join imports " -I " 'prefix)
-                   (if (not model) ""
-                       (string-append " -m " model))
                    " " file-name)))
     (with-input-from-string (gulp-pipe command) read)))
 
