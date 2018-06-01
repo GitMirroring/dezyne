@@ -131,11 +131,8 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                                                              (member o used-interfaces ast:eq?)))
                                                     (not (is-a? o <component>)))))
                                           globals))))
-    (when (is-a? model <component>)
-      (for-each (cut model->mcrl2 root <>) (ast:interface* model)))
     (parameterize ((language 'makreel))
-      (let ((file-name (verify:file-name model)))
-        (with-output-to-file file-name (cut root-> root'))))))
+      (root-> root'))))
 
 (define (verify-makreel options dir file-name ast)
   (let ((verbose? (gdzn:command-line:get 'verbose))
@@ -144,7 +141,6 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
     (define (verify-makreel-model root model-name)
       (define (named? o)
         (equal? (symbol->string (verify:scope-name o)) model-name))
-      (model->mcrl2 root (find named? (ast:model* root)))
       (mcrl2:verify dir file-name model-name root verbose? all?))
 
     (let* ((root (makreel:om ast))

@@ -41,6 +41,7 @@
 
   #:use-module (gaiag ast)
   #:use-module (gaiag command-line)
+  #:use-module (gaiag commands verify)
   #:use-module (gaiag config)
   #:use-module (gaiag goops)
   #:use-module (gaiag deprecated om)
@@ -59,13 +60,9 @@
             verify:scope-name))
 
 
-(define x:interface-init (lambda (o) (format #t "init ~ainterface;\n" (apply string-append (map symbol->string (om:scope+name o))))))
-
-(define x:provides-init (lambda (o) (display "init provides;\n")))
-(define x:component-init (lambda (o) (display "init component;\n")))
-(define x:determinism-init (lambda (o) (display "init component_behaviour;\n")))
-(define x:compliance-init x:component-init)
-(define x:component-deadlock-init x:component-init)
+(define (x:interface-init o) (format #f "init ~ainterface;" (apply string-append (map symbol->string (om:scope+name o)))))
+(define (x:provides-init o) "init provides;\n")
+(define (x:component-init o) "init component;\n")
 
 (define (untick o)
   (string-drop-right o 1))
@@ -101,12 +98,12 @@
 ;;(define cppflag "-rjittyc")
 (define cppflag "")
 
-(define (mcrl2:verify-interface dir dzn-file-name interface verbose? all?)
+(define (mcrl2:verify-interface dir dzn-file-name interface ast verbose? all?)
   (let* ((asserts (list (mcrl2:verify-interface-deadlock-livelock interface))))
     (let loop ((asserts asserts))
       (if (null? asserts) #f
           (let* ((assert (car asserts))
-                 (fail? (apply assert (list dir dzn-file-name interface verbose? all?))))
+                 (fail? (apply assert (list dir dzn-file-name ast verbose? all?))))
             (if (or (not fail?) all?) (or (loop (cdr asserts)) fail?)
                 fail?))))))
 
@@ -168,8 +165,8 @@
          (foo (assert-start 'interface model-name 'deadlock verbose?))
          (taus (interface-taus model))
          (file-name (verify:file-name model))
-         (commands `(,(cut x:interface-init model)
-                     ("cat" ,file-name "-")
+         (commands `(,(cut model->mcrl2 ast model)
+                     ("bash" "-c" ,(format #f "cat - ; echo \"~a\"" (x:interface-init model)))
                      ("m4")
                      ("mcrl22lps" "-b")
                      ("lpsconstelm" "-st")
@@ -207,8 +204,7 @@
                       (handle-error job error)
                       error)))
            (file-name (verify:file-name model))
-           (commands `(,(cut x:provides-init ast)
-                       ("cat" ,file-name "-")
+           (commands `(("bash" "-c" ,(format #f "cat ~a; echo \"~a\"" file-name (x:provides-init model)))
                        ("m4")
                        ("mcrl22lps" "-b")
                        ("lpsconstelm" "-st")
@@ -240,8 +236,9 @@
                    `(,(string-append "--tau=" taus))))
          (deterministic (deterministic-labels model))
          (file-name (verify:file-name model))
-         (commands `(,(cut x:component-init ast)
-                     ("cat" ,file-name "-")
+         (commands `(,(cut model->mcrl2 ast model)
+                     ("tee" ,file-name)
+                     ("bash" "-c" ,(format #f "cat - ; echo \"~a\"" (x:component-init model)))
                      ("m4")
                      ("mcrl22lps" "-b")
                      ("lpsconstelm" "-st")
@@ -269,7 +266,7 @@
 
 (define (mcrl2:verify dir dzn-file-name model-name ast verbose? all?)
   (let ((model (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <model>) (.elements ast)))))
-    (cond ((is-a? model <interface>) (mcrl2:verify-interface dir dzn-file-name model verbose? all?))
+    (cond ((is-a? model <interface>) (mcrl2:verify-interface dir dzn-file-name model ast verbose? all?))
           ((is-a? model <component>) (mcrl2:verify-component dir dzn-file-name model-name ast verbose? all?))
           (else #f))))
 
