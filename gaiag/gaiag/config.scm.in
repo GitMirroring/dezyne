@@ -21,11 +21,13 @@
 ;;; Code:
 
 (define-module (gaiag config)
-  #:export (%bindir
+  #:export (%asd
+            %bindir
             %sbindir
             %datadir
             %dezyne-prefix
             %localstatedir
+            %lts
             %prefix
             %root-dir
             %service-bindir
@@ -89,3 +91,9 @@
 
 (define %sysconfdir
   "@sysconfdir@")
+
+(define %asd
+  "@ASD@")
+
+(define %lts
+  "@LTS@")

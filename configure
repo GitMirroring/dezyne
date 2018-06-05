@@ -1,25 +1,11 @@
 #! /bin/sh
 # -*- scheme -*-
 unset LANG LC_ALL
-echo -n "checking for guile..."
-guile=$(type -p ${GUILE-guile} 2>/dev/null|tail -n 1|sed 's,^.* ,,')
-if [ -x "$guile" ]; then
-    echo " $guile"
-else
-    pm=$({ guix --help || dpkg --help; }|head -n 1|sed 's,.*Usage: \([^ ]*\).*,\1,g')
-    case "$pm" in dpkg) message="sudo apt-get install guile-2.0";; *) message="guix package -i guile";; esac
-    cat <<EOF
-Missing dependencies, run
-
-    $pm
-EOF
-    exit 1
-fi
 . $(dirname $0)/VERSION
 export VERSION CLIENT_VERSION SERVICE_VERSION
 unset GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
 export GUILE_AUTO_COMPILE=0
-exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@"}
+exec ${GUILE-guile} --no-auto-compile -L . -e '(configure)' -s "$0" ${1+"$@"}
 !#
 
 (define-module (configure)
@@ -32,7 +18,8 @@ exec ${GUILE-guile} --no-auto-compile -e '(@@ (configure) main)' -s "$0" ${1+"$@
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
-  #:use-module (ice-9 regex))
+  #:use-module (ice-9 regex)
+  #:export (main))
 
 (define (logf port string . rest)
   (apply format (cons* port string rest))
@@ -151,15 +138,18 @@ Usage: ./configure [OPTION]...
                         (version-option '--version)
                         (compare tuple<=)
                         (command name))
-  (stderr "checking for ~a~a..." name
+  (stderr "checking for ~a~a..." (basename name)
           (if (null? expected) ""
               (format #f " [~a]" (version->string expected))))
-  (let* ((output (gulp-pipe (format #f "~a ~a 2>&1" command version-option)))
+  (let* ((output (gulp-pipe (format #f "~a ~a 2>/dev/null" command version-option)))
          (actual (string->version output))
-         (pass? (and actual (compare expected actual)))
-         (pass? (PATH-search-path command)))
-    (stderr "~a ~a\n" (if pass? (if (pair? actual) "" " yes")
-                          (if actual " no, found" "")) (version->string actual))
+         (pass? (if (null? expected) (zero? (system (string-append "command -v " command " >/dev/null")))
+                    (and actual (compare expected actual))))
+         (pass? (and pass? (PATH-search-path command))))
+    (stderr "~a ~a\n"
+            (if pass? (if (pair? actual) "" " yes")
+                (if actual " no, found" "no"))
+            (version->string actual))
     (or pass?
         (if (not (pair? name)) (begin (if optional? (set! optional (cons (or deb name) optional))
                                           (set! required (cons (or deb name) required)))
@@ -190,9 +180,18 @@ Usage: ./configure [OPTION]...
           (if *verbose?* (stderr "~a\n" result))
           (set! required (cons deb required))))))
 
-(define guix?
-  (and (file-exists? "/gnu")
-       (not (equal? (gulp-pipe "type -p bash") "/bin/bash"))))
+(define development-build?
+  (file-exists? "/bin/sh"))
+
+(define* (substitute file-name pairs
+                     #:key (target (if (string-suffix? ".in" file-name)
+                                       (string-drop-right file-name 3) target)))
+  (with-output-to-file target
+    (lambda _
+      (display
+       (fold (lambda (o result)
+               (regexp-substitute/global #f (car o) result 'pre (cdr o) 'post))
+             (with-input-from-file file-name read-string) pairs)))))
 
 (define (main args)
   (let* ((verum? (file-exists? "/verum"))
@@ -221,26 +220,22 @@ Usage: ./configure [OPTION]...
          (srcdir SRCDIR)
          (abs-top-srcdir (canonicalize-path srcdir))
          (builddir (getcwd))
-         (abs-top-builddir (canonicalize-path builddir)))
-    (define* (substitute file-name pairs
-                         #:key (target (if (string-suffix? ".in" file-name)
-                                           (string-drop-right file-name 3) target)))
-      (with-output-to-file target
-        (lambda _
-          (display
-           (fold (lambda (o result)
-                  (regexp-substitute/global #f (car o) result 'pre (cdr o) 'post))
-                (with-input-from-file file-name read-string) pairs)))))
+         (abs-top-builddir (canonicalize-path builddir))
+         (ASD "asd")
+         (BASH "bash")
+         (LTS "lts"))
     (set! *verbose?* verbose?)
-    (if (check-version GDZN '(0) #:optional? #t)
+    (if (check-version GDZN '() #:optional? #t)
         (set! GDZN (PATH-search-path GDZN #:warn? #t))
         (set! GDZN "./pre-inst-env gdzn"))
-    (when (pair? required)
-          (stderr "\nMissing dependencies, run\n\n")
-          (if guix?
-              (stderr "    guix environment -l guix.scm\n")
-              (stderr "    sudo apt-get install ~a\n" ((->string " ") required)))
-          (exit 1))
+    (set! ASD (or (check-version "asd" '(0)) "false"))
+    (set! BASH (or (check-version "bash" '(4 0)) "false"))
+    (set! LTS (or (check-version "lts" '(0 3)) "false"))
+    (when (and (pair? required)
+               development-build?)
+      (stderr "\nMissing dependencies, run\n\n")
+      (stderr "    guix environment -l guix.scm\n")
+      (exit 1))
 
     (let ((pairs `(("@abs_top_builddir@" . ,abs-top-builddir)
                    ("@abs_top_srcdir@" . ,abs-top-srcdir)
@@ -266,8 +261,10 @@ Usage: ./configure [OPTION]...
                    ("@CLIENT_VERSION@" . ,CLIENT_VERSION)
                    ("@SERVICE_VERSION@" . ,SERVICE_VERSION)
 
-                   ("@guix@" . ,(if guix? "guix" ""))
                    ("@GUILE_EFFECTIVE_VERSION@" . ,GUILE_EFFECTIVE_VERSION)
+                   ("@ASD@" . ,ASD)
+                   ("@BASH@" . ,BASH)
+                   ("@LTS@" . ,LTS)
                    ("@GUILE@" . ,GUILE)
                    ("@gdzn@" . ,GDZN)
                    ("@gojs@" . ,GOJS))))
@@ -277,7 +274,6 @@ Usage: ./configure [OPTION]...
       (substitute (string-append abs-top-srcdir "/build-aux/pre-inst-env.in")
                   pairs
                   #:target "pre-inst-env")
-      (substitute (string-append abs-top-srcdir "/gaiag/gaiag/config.scm.in") pairs)
       (chmod "pre-inst-env" #o755)
       (for-each (lambda (o)
                   (substitute (string-append abs-top-srcdir "/" o) pairs)
@@ -287,6 +283,7 @@ Usage: ./configure [OPTION]...
                   "gaiag/gaiag/config.scm.in"
                   "server/version.js.in"
                   "server/install.js.in"
+                  "services/scripts/convert.sh.in"
                   "services/lib/version.js.in"
                   "services/root/js/version.js.in"))
       (for-each (lambda (o)

@@ -29,6 +29,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (sxml simple)
+  #:use-module (gaiag config)
   #:use-module (gaiag misc)
   #:use-module (gash glob)
   #:use-module (gaiag shell-util)
@@ -88,7 +89,7 @@ Usage: gdzn parse [OPTION]... [FILE]...
          (interfaces (map (cut search-path imports <>) (asd-interfaces model)))
          (files (append interfaces (list file-name)))
          (commands (map (cut string-append
-                             " asd"
+                             %asd
                              (if glue? " -a glue" "")
                              (if system? "" " -a no-system")
                              " -l gen2"
