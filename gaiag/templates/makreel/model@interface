@@ -10,4 +10,4 @@ act
 #x:event-act
 
 proc
-#x:interface-proc
+#x:interface-proc-memo

@@ -25,9 +25,12 @@
 
 (define-module (gaiag makreel)
   #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 hash-table)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 receive)
+  #:use-module (ice-9 textual-ports)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -48,11 +51,29 @@
   #:use-module (gaiag norm)
   #:use-module (gaiag normalize)
   #:use-module (gaiag templates)
+  #:use-module (scmcrl2 verification)
   #:export (ast->
             ast:interface*
             root->
             makreel:om
             makreel:tick-names))
+
+(define interface-alist '())
+
+(define (makreel:interface-proc-memo o)
+  (let* ((key (verify:scope-name o))
+         (intf (assoc-ref interface-alist key)))
+    (if intf
+        (string-append "%% cache hit: \n" intf)
+        (let* ((intf (with-output-to-string (cut x:interface-proc o)))
+               (foo (set! interface-alist (acons key intf interface-alist))))
+          (string-append "%% no cache hit found: \n" intf)))))
+
+(define-method (x:interface-proc-memo (o <interface>))
+ (makreel:interface-proc-memo o))
+
+(define-method (x:interface-proc-memo (o <component>))
+ (string-join (map makreel:interface-proc-memo  (ast:interface* o)) "\n"))
 
 (define-method (is-data? (o <ast>))
   (or (is-a? o <data>) (and (is-a? o <var>) (is-a? ((compose .type .variable) o) <extern>))))

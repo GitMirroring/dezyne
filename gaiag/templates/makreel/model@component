@@ -49,7 +49,7 @@ queue_empty';
 %%%%%%%%%%%%%%%%% INTERFACE %%%%%%%%%%%%%%%%%
 
 proc
-#x:interface-proc
+#x:interface-proc-memo
 
 %%%%%%%%%%%%%% PORT PROCESSES %%%%%%%%%%%%%%%
 
