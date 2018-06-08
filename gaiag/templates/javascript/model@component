@@ -1,6 +1,3 @@
-dzn_require = typeof (require) !== 'undefined' ? require : function () {return {};};
-dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');
-dzn = dzn || {};
 #x:javascript-namespace-setup
 #x:interface-include
 

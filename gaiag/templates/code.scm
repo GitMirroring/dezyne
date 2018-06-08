@@ -23,6 +23,9 @@
 ;;; 
 ;;; Code:
 
+(define-templates header)
+(define-templates source)
+(define-templates model dzn:model)
 (define-templates header- code:x-header-)
 (define-templates async-member-initializer (lambda (o) (ast:port* (.behaviour o))))
 ;;for mcrl2
