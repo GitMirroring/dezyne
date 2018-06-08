@@ -1,8 +1,12 @@
-/************************************   SHELL   *******************************/
-##include <dzn/pump.hh>
-##include <dzn/runtime.hh>
-
+/***********************************  SHELL  ************************************/
 #x:include-guard
+
+##include <dzn/locator.hh>
+##include <dzn/runtime.hh>
+##include <dzn/pump.hh>
+
+#x:component-include
+
 #x:open-namespace
 struct #x:model-name
 {
@@ -21,4 +25,4 @@ struct #x:model-name
 };
 #x:close-namespace
 #x:endif
-/************************************   SHELL   *******************************/
+/***********************************  SHELL  ************************************/
