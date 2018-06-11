@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,33 +24,11 @@
 
 #include "hello_foreign.hh"
 
-#include <dzn/locator.hh>
-#include <dzn/runtime.hh>
-#include <dzn/pump.hh>
-
-foreign::foreign(const dzn::locator& dzn_locator)
-: dzn_meta{"","foreign",0,0,{},{},{[this]{w.check_bindings();}}}
-, dzn_rt(dzn_locator.get<dzn::runtime>())
-, dzn_locator(dzn_locator)
-, w({{"w",this,&dzn_meta},{"",0,0}})
-{
-  dzn_rt.performs_flush(this) = true;
-  dzn::pump* dzn_pump = dzn_locator.try_get<dzn::pump>();
-
-  w.in.world = [&](){return dzn::call_in(this,[=]{ return w_world();}, this->w.meta, "world");};
-}
+foreign::foreign(const dzn::locator& l)
+: skel::foreign(l)
+{}
 
 void foreign::w_world()
 {
   return;
-}
-
-
-void foreign::check_bindings() const
-{
-  dzn::check_bindings(&dzn_meta);
-}
-void foreign::dump_tree(std::ostream& os) const
-{
-  dzn::dump_tree(os, &dzn_meta);
 }

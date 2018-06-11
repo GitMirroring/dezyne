@@ -34,7 +34,7 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 receive)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (eq? x '<port>) 'goops:<port> x)))
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) 'goops:<port> x)))
   #:use-module (gaiag util)
 
   #:use-module (gaiag misc)
@@ -194,5 +194,5 @@ FIXME:  -V, --version=VERSION       use service version=VERSION
                       (and (pair? components-interfaces) (car components-interfaces)))))
       (cond ((and model-name (not model)) (error "no such model:" model-name))
             ((is-a? model <system>) #t) ;; silently no traces
-            ((and model-name (not (.behaviour model))) (error "no model with behaviour:" model-name))
+            ((and model-name (or (is-a? model <foreign>) (not (.behaviour model)))) (error "no model with behaviour:" model-name))
             (model (model->traces options root model))))))

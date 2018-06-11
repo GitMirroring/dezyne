@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -22,13 +21,13 @@
 //
 // Code:
 
-#ifndef FOREIGN_HH
-#define FOREIGN_HH
+#include "hello_foreign_file.hh"
 
-struct foreign: public skel::foreign
+foreign::foreign(const dzn::locator& l)
+: skel::foreign(l)
+{}
+
+void foreign::w_world()
 {
-  foreign(const dzn::locator&);
-  void w_world();
-};
-
-#endif // FOREIGN_HH
+  return;
+}

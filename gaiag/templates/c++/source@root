@@ -1,4 +1,3 @@
-//ROOT
 ##include "#x:scoped-model-name .hh"
 
 ##include <dzn/locator.hh>
