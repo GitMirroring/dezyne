@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -141,9 +141,11 @@
                   (lambda (a b)
                     (or (and (is-a? a <data>)
                              (or (is-a? b <interface>)
-                                 (is-a? b <component>)))
+                                 (is-a? b <component>)
+                                 (is-a? b <foreign>)))
                         (and (is-a? a <interface>)
-                             (is-a? b <component>)))))
+                             (or (is-a? b <component>)
+                                 (is-a? b <foreign>))))))
      (reverse (sort (map (lambda (o) (cons o
                                            (filter (is? <system>)
                                                    (map .type ((compose .elements .instances) o)))))
