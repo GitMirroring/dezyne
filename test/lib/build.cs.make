@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -26,7 +26,7 @@ MAIN:=$(OUT)/main.cs
 endif
 
 define MONO_SCRIPT
-#! /bin/sh
+#! $(SHELL)
 mono --debug $$(dirname $$0)/test.exe "$$@"
 endef
 export MONO_SCRIPT
