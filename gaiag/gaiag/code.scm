@@ -77,6 +77,7 @@
             code:port-name
             code:instance-port-name
             code:instances
+            code:pump?
             code:reply
             code:reply-type
             code:reply-scope+name
@@ -819,3 +820,10 @@
           (receive (same rest)
               (partition (lambda (m) (eq? (car m) channel)) lst)
             (append (list (cons (caar same) (map cdr same))) (loop rest)))))))
+
+(define-method (code:pump? (o <root>))
+  (filter (conjoin (is? <component>) (compose pair? ast:req-events)) (ast:model* o)))
+
+(define-method (code:pump? (o <component>))
+  (if ((compose pair? ast:req-events) o) o
+      '()))
