@@ -623,7 +623,8 @@
 
 (define-ast <on> (<declarative>)
   (triggers #:init-form (make <triggers-node>))
-  (statement))
+  (statement)
+  (silent?))
 
 (define-ast <reply> (<imperative>)
   (expression #:init-form (make <literal-node>))

@@ -213,6 +213,9 @@
     (('on triggers statement)
      (make <on-node> #:triggers (parse->om- triggers) #:statement (parse->om- statement)))
 
+    (('on triggers statement silent?)
+     (make <on-node> #:triggers (parse->om- triggers) #:statement (parse->om- statement)) #:silent? silent?)
+
     (('otherwise) (make <otherwise-node> #:value 'otherwise))
 
     (('otherwise value) (make <otherwise-node> #:value value))
