@@ -5,6 +5,32 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.8.0 (since 2.7.2)  WIP
+** Verification
+  - Full verification support.
+  - The 2.8.0-verification service is seamlessly available and
+    implicitly used for previous service releases.
+** Code generation
+  - Several fixes for usage of foreign components.
+  - INTERFACE_ONLY has been removed from the C++ code generators.
+
+* Changes in 2.7.2 (since 2.7.1)
+** Verification
+  - The verification performance has been improved by a factor 3-4, especially
+    for large models. For an interface, the deadlock and livelock checks are
+    performed in parallel. For a component, the determinisctic, illegal,
+    deadlock, and livelock checks are performed in parallel.
+  - The verification results view reports per check the number of states and
+    transitions that have been considered.
+** Known issues
+  - In some corner cases, nested function calls will cause a failing
+    verification.
+  - The language features blocking, external and
+    async are not yet available for verification, see
+    https://hosting.verum.com/regression/2.7.2/regression.html.
+  - For verification, when selecting version 2.7.0 or 2.7.1, version 2.7.2 is
+    used instead.
+
 * Changes in 2.7.1 (since 2.7.0)
 ** Verification
   - The dezyne verification now supports models with multiple provides ports.
