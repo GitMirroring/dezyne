@@ -95,7 +95,6 @@
             code:om
             code:port-type
             symbol->enum-field
-            glue
 
             code:arguments
             code:assign-reply
@@ -139,6 +138,8 @@
             code:root->
             %x:header
             %x:main
+            %x:glue-bottom-header
+            %x:glue-bottom-source
             %x:glue-top-header
             %x:glue-top-source
             ))
@@ -146,6 +147,8 @@
 (define %x:header (make-parameter #f))
 (define %x:main (make-parameter #f))
 
+(define %x:glue-bottom-header (make-parameter #f))
+(define %x:glue-bottom-source (make-parameter #f))
 (define %x:glue-top-header (make-parameter #f))
 (define %x:glue-top-source (make-parameter #f))
 
@@ -158,14 +161,16 @@
   (code:file2file root)
   (let ((main (command-line:get 'model #f)))
     (when main
-      (let* ((models (filter (is? <model>) (.elements root)))
+      (let* ((models (ast:model* root))
              (main? (compose (cut eq? (string->symbol main) <>) (om:scope-name)))
              (main-model (and main (find main? models))))
         (and=> main-model code:dump-main)))))
 
 (define (code:file2file root)
   (code:dump root)
-  (when (glue) (for-each code:dump-glue (filter (conjoin (is? <system>) (negate om:imported?)) (.elements root)))))
+  (when (dzn:glue)
+    ;;(for-each code:dump (filter (is? <foreign>) (ast:model* root)))
+    (for-each code:dump-glue (filter (conjoin (is? <system>) (negate om:imported?)) (ast:model* root)))))
 
 
 (define (code:component-include o)
@@ -642,7 +647,7 @@
          (foreign-conflict? (find (lambda (o) (and (is-a? o <foreign>)
                                                    (not (ast:imported? o))
                                                    (equal? base (code:file-name o)))) (ast:model* o))))
-    (when foreign-conflict?
+    (when (and (not (dzn:glue)) foreign-conflict?)
       (stderr "cowardly refusing to clobber file with basename: ~a\n" base)
       (exit 0))
     (when (code:header?)
@@ -652,7 +657,7 @@
             (begin
               (mkdir-p dir)
               (with-output-to-file file-name
-               (dzn:indent (cut (%x:header) o)))))))
+                (dzn:indent (cut (%x:header) o)))))))
     (if (or (not (code:header?)) (have-non-interface-models? o))
         (let* ((ext (symbol->string (dzn:extension (make <component>))))
                (file-name (string-append dir base ext)))
@@ -660,7 +665,24 @@
               (begin
                 (mkdir-p dir)
                 (with-output-to-file file-name
-                 (dzn:indent (cut (%x:source) o)))))))))
+                  (dzn:indent (cut (%x:source) o)))))))))
+
+(define-method (code:dump (o <foreign>))
+  (let* ((dir (command-line:get 'output "."))
+         (stdout? (equal? dir "-"))
+         (dir (string-append dir "/" (dzn:dir o)))
+         (name (symbol->string ((om:scope-name) o)))
+         (skel-name (symbol->string (code:skel-file o)))
+         (iext (symbol->string (dzn:extension (make <interface>))))
+         (cext (symbol->string (dzn:extension (make <component>)))))
+    (when (map-file o)
+      (if stdout?
+          (begin (when (code:header?) ((%x:glue-bottom-header) o))
+                 ((%x:glue-bottom-source) o))
+          (begin (when (code:header?)
+                   (with-output-to-file (string-append dir name iext) (cut (%x:glue-bottom-header) o)))
+                 (with-output-to-file (string-append dir name cext) (cut (%x:glue-bottom-source) o)))))))
+
 
 (define (code:dump-main o)
   (let* ((dir (command-line:get 'output "."))
@@ -687,9 +709,6 @@
         (begin (with-output-to-file (string-append dir name "Component.h") (cut (%x:glue-top-header) o))
                (with-output-to-file (string-append dir name "Component.cpp") (cut (%x:glue-top-source) o))))))
 
-(define (glue)
-  (and=> (command-line:get 'glue #f) string->symbol))
-
 (define (code:model2file?)
   (and=> (or (command-line:get 'deprecated #f) (getenv "DZN_DEPRECATED"))
          (cut string-contains <> "model2file")))
@@ -715,7 +734,7 @@
       (basename (symbol->string (source-file o)) ".dzn")))
 
 (define-method (code:file-name (o <system>))
-  (if (or (code:model2file?) (glue))
+  (if (or (code:model2file?) (dzn:glue))
       ((compose symbol->string (om:scope-name) .name) o)
       (basename (symbol->string (source-file o)) ".dzn")))
 
@@ -822,7 +841,7 @@
             (append (list (cons (caar same) (map cdr same))) (loop rest)))))))
 
 (define-method (code:pump? (o <root>))
-  (filter (conjoin (is? <component>) (compose pair? ast:req-events)) (ast:model* o)))
+  (filter (conjoin (negate om:imported?) (is? <component>) (compose pair? ast:req-events)) (ast:model* o)))
 
 (define-method (code:pump? (o <component>))
   (if ((compose pair? ast:req-events) o) o

@@ -76,19 +76,12 @@
 (define-templates non-injected-instance-meta-initializer non-injected-instances)
 (define-templates dzn-locator code:dzn-locator)
 (define-templates header-data (lambda (o) (filter (is? <data>) (.elements o))))
-(define-templates model-glue (lambda (o) (filter (lambda (o) (and (glue) (is-a? o <foreign>))) (dzn:model o))))
-(define-templates header-model dzn:model;; (lambda (o)
-                               ;;   (filter-map (lambda (o)
-                               ;;                 (if (or (not (glue))
-                               ;;                         (and (glue)
-                               ;;                              (not (is-a? o <foreign>)))) o
-                               ;;                              #f)) (dzn:model o)))
-  )
+(define-templates model-glue (lambda (o) (filter (lambda (o) (and (dzn:glue) (is-a? o <foreign>))) (dzn:model o))))
+(define-templates header-model dzn:model)
 
 (define-templates header-model-glue (lambda (o)
                                       (filter-map (lambda (o)
-                                                    (if (and (glue)
-                                                             (is-a? o <foreign>)) o
+                                                    (if (and (dzn:glue) (is-a? o <foreign>)) o
                                                              #f)) (dzn:model o))))
 
 (define-templates provided-port-instance-declare (lambda (o) (filter ast:provides? (om:ports o))))
@@ -101,9 +94,8 @@
 (define-templates capture-list identity)
 (define-templates capture c++:capture-arguments capture-prefix)
 (define-templates shell-non-injected-instance-meta non-injected-instances)
-(define-templates pure-virtual-method-declare ast:in-triggers)
 (define-templates declare-method code:trigger)
-(define-templates declare-pure-virtual-method identity)
+(define-templates declare-pure-virtual-method ast:in-triggers)
 (define-templates main-out-arg-define code:main-out-arg-define)
 (define-templates main-out-arg-define-formal identity)
 (define-templates main-event-map-flush-asd (if (and #f asd?) ast:required (const '())) event-map-prefix)
@@ -116,9 +108,10 @@
 (define-templates construction-parameters-locator-get c++:construction-parameters-locator-get)
 
 ;; glue
+(define-templates foreign-header)
 (define-templates glue-top-header)
 (define-templates glue-top-source)
-;;(define-templates glue-bottom-header)
+(define-templates glue-bottom-header)
 (define-templates glue-bottom-source)
 (define-templates asd-constructor c++:asd-constructor)
 (define-templates asd-api-instance-declaration c++:asd-api-instance-declaration)

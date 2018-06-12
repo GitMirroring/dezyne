@@ -64,6 +64,7 @@
             dzn:->string
             dzn:om
             dzn:file2file
+            dzn:glue
             dzn:model2file?
             dzn:model2file
             dzn:statement
@@ -98,8 +99,10 @@
 (define %x:source (make-parameter #f))
 
 (define (dzn:file2file root)
-  ;;(for-each dzn:dump (filter (is? <foreign>) (.elements root)))
   (dzn:dump root))
+
+(define (dzn:glue)
+  (and=> (command-line:get 'glue #f) string->symbol))
 
 (define-public (dzn-async? o)
   (and (is-a? o <scoped>)
@@ -176,10 +179,21 @@
 
 ;;; dzn: generic templates
 (define-method (dzn:model (o <root>))
-  (topological-sort
-   (map dzn:annotate-shells
-        (filter (negate (disjoin (is? <data>) (is? <type>) (conjoin ast:imported? (negate (is? <foreign>))) dzn-async?))
-                (.elements o)))))
+  (if (dzn:glue)
+      (let ((models (ast:model* o)))
+        (if (null? (filter (negate (disjoin om:imported? (is? <foreign>))) models))
+              (filter (is? <foreign>) models)
+              (topological-sort
+               (map dzn:annotate-shells
+                    (filter (negate (disjoin (is? <data>) (is? <type>) dzn-async?
+                                             (conjoin ast:imported? (negate (is? <foreign>)))
+                                             (is? <foreign>)))
+                            (.elements o))))))
+      (topological-sort
+       (map dzn:annotate-shells
+            (filter (negate (disjoin (is? <data>) (is? <type>) dzn-async?
+                                     (conjoin ast:imported? (negate (is? <foreign>)))))
+                    (.elements o))))))
 
 (define-method (dzn:model (o <ast>))
   o)

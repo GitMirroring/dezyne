@@ -1,5 +1,8 @@
 /***********************************  FOREIGN  **********************************/
 #x:include-guard
+##include <dzn/locator.hh>
+##include <dzn/runtime.hh>
+
 #x:interface-include
 
 #x:open-namespace
@@ -9,10 +12,20 @@ struct #x:model-name
   dzn::meta dzn_meta;
   dzn::runtime& dzn_rt;
   dzn::locator const& dzn_locator;
-  #x:provided-port-declare
-  #x:required-port-declare
-  #x:model-name (const dzn::locator&);
-  virtual ~ #x:model-name ();
+#x:provided-port-declare
+#x:required-port-declare
+  #x:model-name (const dzn::locator& dzn_locator)
+  : #x:meta
+  , dzn_rt(dzn_locator.get<dzn::runtime>())
+  , dzn_locator(dzn_locator)
+#x:injected-member-initializer
+#x:provided-member-initializer
+#x:required-member-initializer
+  {
+#x:calls
+#x:rcalls
+  }
+  virtual ~ #x:model-name () {}
   virtual std::ostream& stream_members(std::ostream& os) const { return os; }
   void check_bindings() const;
   void dump_tree(std::ostream& os) const;
@@ -20,7 +33,8 @@ struct #x:model-name
     return m.stream_members(os);
   }
   private:
-  #x:pure-virtual-method-declare };
+  #x:declare-pure-virtual-method
+};
 }
 #x:close-namespace
 #x:endif

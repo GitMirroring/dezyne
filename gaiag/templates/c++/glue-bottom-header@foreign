@@ -1,16 +1,14 @@
-##include "#x:scope-prefix skel_#x:model-name .hh"
+#x:foreign-header
 
+/***********************************   GLUE   **********************************/
 ##include "asdInterfaces.h"
-
-##include <dzn/runtime.hh>
-
 ##include "#x:model-name Interface.h"
 
 #x:open-namespace
 struct #x:model-name : public skel::#x:model-name
 {
   #x:model-name (const dzn::locator&);
-  ~ #x:model-name ();
+  ~#x:model-name ();
   boost::shared_ptr< ::#x:model-name Interface> component;
   #x:asd-api-instance-declaration
   #x:asd-cb-definition
@@ -28,3 +26,4 @@ struct #x:model-name : public skel::#x:model-name
   #x:asd-method-declaration
 };
 #x:close-namespace
+/***********************************   GLUE   **********************************/

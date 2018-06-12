@@ -2,6 +2,8 @@
 
 ##include "#x:model-name Component.h"
 
+##include <dzn/runtime.hh>
+
 ##include <boost/make_shared.hpp>
 
 #x:open-namespace

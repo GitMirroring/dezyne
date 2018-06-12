@@ -25,8 +25,6 @@
 #ifndef HARDWARE_HH
 #define HARDWARE_HH
 
-#include "simhal.hh"
-
 struct Hardware: public skel::Hardware
 {
   static std::map<Hardware*, std::pair<int,bool> > hardware;
