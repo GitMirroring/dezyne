@@ -7,10 +7,12 @@
 #x:makreel:model-name reply'reordered: #x:makreel:model-name replies;
 #x:makreel:model-name internal: #x:makreel:model-name modeling;
 #x:makreel:model-name internal': #x:makreel:model-name modeling;
+#x:makreel:model-name silent: #x:makreel:model-name silent;
 #x:makreel:model-name tau_event: #x:makreel:model-name events;
 #x:makreel:model-name tau_modeling: #x:makreel:model-name modeling;
 #x:makreel:model-name tau_reply: #x:makreel:model-name replies;
 #x:makreel:model-name end;
 #x:makreel:model-name end';
 #x:makreel:model-name end'reordered;
+#x:makreel:model-name silent_end;
 #x:makreel:model-name flush;

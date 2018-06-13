@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -25,22 +25,20 @@
 interface interface_livelock_fail0 {
   in void e();
 
-  behaviour {    
-    [true] {
-       on e: {}
-       on optional: {}     
-    }
+  behaviour {
+    on e: illegal;
+    on inevitable: {}
   }
 }
 
 // Dummy interface and component since there needs to be present a component
 interface DummyI {
   in void e();
-  behaviour { [true] on e: {} }      
+  behaviour { on e: {} }
 }
 
 component DummyC {
   provides DummyI i;
   requires interface_livelock_fail0 ii;
-  behaviour { [true] on i.e(): {} }      
+  behaviour { on i.e(): {} }
 }

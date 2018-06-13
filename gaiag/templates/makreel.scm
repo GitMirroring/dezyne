@@ -95,6 +95,7 @@
 
 
 ;; statement process
+(define-templates silent makreel:silent)
 (define-templates proc makreel:proc newline-infix)
 (define-templates proc-assign makreel:proc-assign)
 (define-templates proc-variable makreel:proc-variable)

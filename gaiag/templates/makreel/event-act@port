@@ -6,7 +6,9 @@
 #x:event-prefix reply': #x:makreel:interface-name replies;
 #x:event-prefix internal: #x:makreel:interface-name modeling;
 #x:event-prefix internal': #x:makreel:interface-name modeling;
+#x:event-prefix silent: #x:makreel:interface-name silent;
 #x:event-prefix end;
 #x:event-prefix end';
+#x:event-prefix silent_end;
 #x:event-prefix flush;
 #x:event-act-provides #x:event-act-requires

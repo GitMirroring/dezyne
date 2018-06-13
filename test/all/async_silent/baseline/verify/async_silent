@@ -1,0 +1,23 @@
+verify: IAsync: check: deadlock: ok
+verify: IAsync: check: livelock: ok
+verify: IAsync2: check: deadlock: ok
+verify: IAsync2: check: livelock: ok
+verify: async_silent: check: deterministic: ok
+verify: async_silent: check: illegal: fail
+p.e
+r.e
+r.return
+p.return
+r.f
+r.Res_NOK
+illegal
+verify: async_silent: check: deadlock: ok
+verify: async_silent: check: compliance: fail
+p.e
+r.e
+r.return
+p.return
+r.f
+r.Res_NOK
+illegal
+verify: async_silent: check: livelock: ok

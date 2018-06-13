@@ -2,4 +2,6 @@
  , #.name reply
  , #.name internal
  , #.name end
+ , #.name silent
+ , #.name silent_end
  , #.name qout'

@@ -98,7 +98,7 @@ illegal")
      event              <-- port-name tick direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
      modeling           <-- port-name tick internal-literal lpar scope* ('inevitable' / 'optional') rpar
      queue              <-- port-name tick queue-direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
-     end                <   scope* 'end'
+     end                <   scope* ('end' / 'silent_end')
      return             <-- 'return'
      flush              <-- identifier tick 'flush'
      reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
@@ -121,7 +121,7 @@ illegal")
      direction          <   'qin' / 'in' / 'out'
      queue-direction    <-- 'qout'
      action-literal     <   'action'
-     internal-literal   <   'internal'
+     internal-literal   <   'internal' / 'silent'
      reply-literal      <   'reply'
      tau-literal        <   'tau'
      illegal            <-- 'illegal' / 'declarative_illegal' / 'dillegal'

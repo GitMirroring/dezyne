@@ -488,14 +488,14 @@ var aspects = {
       try {
         fs.lstatSync(expectation);
         return util.spawn_sync_shell(
-          'timeout 2 diff -uw ' + expectation
+          'timeout 2 diff -uwB ' + expectation
             + ' <(set -o pipefail;'
             + cmd
             + ' |& ' + __dirname + '/../bin/code2fdr'
             + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');
       } catch(e) {
         return util.spawn_sync_shell(
-          'timeout 2 diff -uw ' + trace + ' <(set -o pipefail;'
+          'timeout 2 diff -uwB ' + trace + ' <(set -o pipefail;'
             + cmd
             + ' |& ' + __dirname + '/../bin/code2fdr'
             + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');
@@ -540,7 +540,7 @@ var aspects = {
     var imports = imports_string (parameters.meta.imports);
     return lstat(node_baseline)
       .then (function(stats) {
-        return 'diff -uw '+baseline+' <(' + dzn() + ' -v parse '+imports+' "'+parameters.filename+'" |& sed "s,.\r,,g")';
+        return 'diff -uwB '+baseline+' <(' + dzn() + ' -v parse '+imports+' "'+parameters.filename+'" |& sed "s,.\r,,g")';
       })
       .fail (function(err) {
         return '[ "$(' + dzn() + ' parse '+imports+' "'+parameters.filename+'" |& sed \'s,.\r,,g\')" = "" ]';
@@ -556,7 +556,7 @@ var aspects = {
       var model = parameters.meta.model || parameters.model;
       var imports = imports_string (parameters.meta.imports);
       return util.spawn_sync_shell(
-        'diff -uw'
+        'diff -uwB'
           + ' <(grep -v "<flush>" "'+ trace + '")'
           + ' <(grep -v "<flush>" "'+ trace + '"|'
           + ' ' + dzn(parameters.session) + ' run '+imports+' --strict --model=' + model + ' "' + parameters.filename + '" |&'
@@ -649,7 +649,7 @@ var aspects = {
           + '| test ! -s '+baseline
           + '| test ! -s '+baseline+'.stderr'
           + ';}'
-          + ' || (diff -uw '+baseline+' '+out
+          + ' || (diff -uwB '+baseline+' '+out
           + '     && (test ! -s '+err
           + '         || (sed -i s,.\r,,g '+err+';'
           + '            diff -u '+baseline+'.stderr '+err+')))'

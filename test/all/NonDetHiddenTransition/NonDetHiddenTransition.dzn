@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -32,7 +33,7 @@ interface NonDetHiddenTransition
     enum State {A, B};
     State s = State.A;
     bool b = false;
-    
+
     [s.A]
     {
       on c: illegal;
@@ -42,7 +43,7 @@ interface NonDetHiddenTransition
     [s.B]
     {
       on c: {[b] {ns;} [otherwise] illegal;}
-      on inevitable: {if (b) na;}
+      on inevitable: {[b] na; [!b] {}}
     }
   }
 }

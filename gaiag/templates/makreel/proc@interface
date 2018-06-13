@@ -25,6 +25,8 @@ define(#x:makreel:model-name reordered_allow, allow({
  , #x:makreel:model-name flush
  , #x:makreel:model-name in'
  , #x:makreel:model-name internal'
+ , #x:makreel:model-name silent
+ , #x:makreel:model-name silent_end
  , #x:makreel:model-name out
  , #x:makreel:model-name reply'
  , #x:makreel:model-name reply'reordered
@@ -77,6 +79,8 @@ define(#x:makreel:model-name allow, allow({
   , #x:makreel:model-name internal'
   , #x:makreel:model-name end'
   , #x:makreel:model-name end'reordered
+  , #x:makreel:model-name silent
+  , #x:makreel:model-name silent_end
   , #x:makreel:model-name out'
   , #x:makreel:model-name flush
   , declarative_illegal

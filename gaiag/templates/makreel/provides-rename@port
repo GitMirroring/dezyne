@@ -3,3 +3,4 @@
   , #.name reply' -> #.name reply
   , #.name internal' -> #.name internal
   , #.name end' -> tau_void
+  , #.name silent_end -> tau_void

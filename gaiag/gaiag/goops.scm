@@ -93,6 +93,7 @@
            .right
            .scope
            .signature
+           .silent?
            .statement
            .then
            .to
@@ -273,6 +274,8 @@
            <shell-system>
            <signature-node>
            <signature>
+           <silent-trigger-node>
+           <silent-trigger>
            <skip>
            <statement-node>
            <statement>
@@ -486,6 +489,8 @@
   (port.name)
   (event.name)
   (formals #:init-form (make <formals-node>)))
+
+(define-ast <silent-trigger> (<trigger>))
 
 (define-ast <expression> (<ast>))
 

@@ -4,7 +4,7 @@
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-;;; Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -214,7 +214,7 @@
      (make <on-node> #:triggers (parse->om- triggers) #:statement (parse->om- statement)))
 
     (('on triggers statement silent?)
-     (make <on-node> #:triggers (parse->om- triggers) #:statement (parse->om- statement)) #:silent? silent?)
+     (make <on-node> #:triggers (parse->om- triggers) #:statement (parse->om- statement) #:silent? silent?))
 
     (('otherwise) (make <otherwise-node> #:value 'otherwise))
 

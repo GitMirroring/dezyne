@@ -74,7 +74,7 @@
 
 (define (interface-taus model)
   (define (compose-taus names)
-    (string-join (append-map (lambda (o) (map (cut string-append o <>) '("internal" "end"))) names) ","))
+    (string-join (append-map (lambda (o) (map (cut string-append o <>) '("silent" "silent_end" "internal" "end"))) names) ","))
   (compose-taus (list (apply string-append (map symbol->string (om:scope+name model))))))
 
 (define (component-taus model)
@@ -84,7 +84,7 @@
 
 (define (compliance-taus model)
   (define (compose-taus names)
-    (string-join (append-map (lambda (o) (map (cut string-append o <>) '("in" "internal" "qin" "qout" "reply" "flush"))) names) ","))
+    (string-join (append-map (lambda (o) (map (cut string-append o <>) '("in" "internal" "silent" "qin" "qout" "reply" "flush"))) names) ","))
   (compose-taus (map (compose symbol->string .name) (ast:required+async model))))
 
 (define (deterministic-labels component)

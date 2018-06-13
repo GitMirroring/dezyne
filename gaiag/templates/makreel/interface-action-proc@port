@@ -4,5 +4,7 @@ define(#.name _port, rename ({
   , #x:basic-type reply -> #.name reply
   , #x:basic-type internal -> #.name internal
   , #x:basic-type end -> #.name end
+  , #x:basic-type silent -> #.name silent
+  , #x:basic-type silent_end -> #.name silent_end
   #x:rename-flush-provides #x:rename-flush-requires
   }, #x:basic-type interface_internal))
