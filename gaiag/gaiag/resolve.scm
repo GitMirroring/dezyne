@@ -133,10 +133,15 @@
 
 (define-method (type? (o <ast>) name) ;;FIXME stop recursion when AST not fresh
   (define (name? e) (and (eq? (.scope+name (.name e)) (.scope+name name)) e))
-  (define (scope? e) (and (is-a? e <scope.name>)
-                          (eq? ((->symbol-join '.) (om:scope+name e))
-                               ((->symbol-join '.) (.scope name)))
-                          e))
+  (define (scope? e)
+    (cond ((is-a? e <scoped>)
+           (and (equal? (om:scope+name (.name e)) (om:scope+name name))
+                e))
+          ((is-a? e <scope.name>)
+           (and (equal? (om:scope+name e) (om:scope+name name))
+                e))
+          (else #f))
+    )
   (define (prefix? name1 name2)
     (or (null? name1) (and (pair? name2) (eq? (car name1) (car name2)) (prefix? (cdr name1) (cdr name2)))))
   (match o
