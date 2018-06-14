@@ -55,7 +55,6 @@
   #:use-module (json)
 
   #:export (mcrl2:verify
-            handle-error
             verify:file-name
             verify:scope-name))
 
@@ -127,13 +126,6 @@
 (define* (display-binary string #:optional (port (current-output-port)))
   (set-port-encoding! port "ISO-8859-1")
   (display string port))
-
-(define (handle-error job error)
-  (let ((status (wait job)))
-    (when (not (zero? status))
-      (stderr "ERROR: exit: ~a: ~s" status error)
-      (exit status))
-    status))
 
 (define (reduce-or all? l)
   (if all? (fold (cut or <> <>) #f (map (cut <>) l))

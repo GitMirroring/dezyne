@@ -33,7 +33,14 @@
   :use-module (gash job)
   :use-module (gaiag command-line)
 
-  :export (pipeline pipeline+ pipeline->string substitute))
+  :export (handle-error pipeline pipeline+ pipeline->string substitute))
+
+(define (handle-error job error)
+  (let ((status (wait job)))
+    (when (not (zero? status))
+      (format (current-error-port) "ERROR: exit: ~a: ~s" status error)
+      (exit status))
+    status))
 
 (define (pipe*)
   (let ((p (pipe)))

@@ -27,8 +27,15 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 receive)
+
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
+
+  #:use-module (gash job)
+  #:use-module (gash pipe)
+
   #:export (parse-opts
             main))
 
@@ -63,20 +70,23 @@ Usage: gdzn run [OPTION]... [FILE]...
          (model-opt (option-ref options 'model #f))
          (strict? (option-ref options 'strict #f))
          (gdzn-debug? (gdzn:command-line:get 'debug))
-         (command (string-append
-                   " seqdiag "
-                   (string-append " -m " model-opt)
-                   (string-join imports " -I " 'prefix)
-                   ;; generate's pretty-print has problems with async, namespaces
-                   ;;" <(generate" " -p" (string-join imports " -I " 'prefix) " " file-name ")"
-                   " " file-name
-		   "| trace2net.js --illegal")))
-    (if gdzn-debug? (stderr "command: ~a\n" command))
-    (let ((trace (gulp-pipe command)))
-      (if strict?
-          ;; FIXME: use format `trace:e,f,g' for aspects.js:run
-          (format #t "trace:~a\n" (string-join (string-split trace #\newline) ","))
-          (display trace)))))
+         (commands `(("cat")
+                     ("seqdiag" "-m" ,model-opt
+                      ,@(append-map (cut list "-I" <>) imports)
+                      ,file-name)
+                     ("trace2net.js" "--illegal")))
+         (foo (stderr "commands:~s\n" commands))
+         (trace (receive (job ports)
+                    (apply pipeline+ #f commands)
+                  (set-port-encoding! (car ports) "ISO-8859-1")
+                  (let ((trace (pke 'trace (string-trim-right (read-string (car ports)))))
+                        (error (pke 'erreur (read-string (cadr ports)))))
+                    (handle-error job error)
+                    trace))))
+    (if strict?
+        ;; FIXME: use format `trace:e,f,g' for aspects.js:run
+        (format #t "trace:~a\n" (string-join (string-split trace #\newline) ","))
+        (display trace))))
 
 (define (main args)
   (let* ((options (parse-opts args))

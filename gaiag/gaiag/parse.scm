@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -22,8 +22,11 @@
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 receive)
 
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
 
   #:use-module (system base language)
 
@@ -31,6 +34,8 @@
   #:use-module (gaiag location)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
+  #:use-module (gash job)
+  #:use-module (gash pipe)
 
   #:export (%include-path parse-file try-find-file))
 
@@ -42,12 +47,24 @@
 
 (define %include-path '("."))
 
+(define (handle-error job error)
+  (let ((status (wait job)))
+    (when (not (zero? status))
+      (format (current-error-port) "~a" error)
+      (exit status))
+    status))
+
 (define* (generator-parse-file file-name #:key (imports '()))
-  (let* ((command (string-append
-                   " generate -l scm -L -o -"
-                   (string-join imports " -I " 'prefix)
-                   " " file-name)))
-    (with-input-from-string (gulp-pipe command) read)))
+  (let ((commands `(("generate" "-l" "scm" "-L" "-o" "-"
+                     ,@(append-map (cut list "-I" <>) imports)
+                     ,file-name))))
+    (receive (job ports)
+        (apply pipeline+ #f commands)
+      (set-port-encoding! (car ports) "ISO-8859-1")
+      (let ((ast (read (car ports)))
+            (error (read-string (cadr ports))))
+        (handle-error job error)
+        ast))))
 
 (define (gaiag-parse-file o)
   (let ((file-name (match o
