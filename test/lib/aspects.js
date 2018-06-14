@@ -229,8 +229,8 @@ var aspects = {
           return result;
         }
         return util.spawn_sync_shell('mkdir -p out'
-                                     + ' && rm -rf out/' + path.basename (dir)
-                                     + ' && cp -as --no-preserve=mode,ownership ' + path.resolve (dir) + ' $PWD/out')
+                                     + ' && rm -rf "out/' + path.basename (dir) + '"'
+                                     + ' && cp -as --no-preserve=mode,ownership "' + path.resolve (dir) + '" $PWD/out')
           .then(function() {
             dir = 'out/' + path.basename(dir);
             var meta = read_meta (dir, default_meta);
@@ -285,8 +285,9 @@ var aspects = {
                       outcome.output[aspect] = outcome.output[aspect] || comment(parameters.meta, aspect);
                   });
                 });
-                return util.spawn_sync_shell('mkdir -p out/' + path.basename(dir))
+                return util.spawn_sync_shell('mkdir -p "out/' + path.basename(dir) + '"')
                   .then(function() {
+                    //fs.writeFileSync('"out/' + path.basename(dir) + '/outcome.json"', JSON.stringify(outcome,null,2));
                     fs.writeFileSync('out/' + path.basename(dir) + '/outcome.json', JSON.stringify(outcome,null,2));
                     return result.status;
                   });
@@ -425,24 +426,24 @@ var aspects = {
   }
   ,
   code: function(parameters) {
+    var model = parameters.meta.model || parameters.model;
     var language = parameters.meta.languages[0];
     var imports = imports_string (parameters.meta.imports);
     var code_options = parameters.meta.code_options || "";
     var tss = parameters.meta.tss;
-    var out = 'out/'+path.basename(parameters.dir)+'/'+language;
+    var out = '"out/'+path.basename(parameters.dir)+'"/'+language;
     var main = has_main(parameters.dir, language);
     var cmd = 'make'
         + ' DZN="' + dzn() + '"'
         + ' IMPORTS=\"'+imports+'\"'
         + ' CODE_OPTIONS=\"'+code_options+'\"'
         + ' LANGUAGE='+language
-        + ' IN='+parameters.dir
+        + ' IN="'+parameters.dir+'"'
         + ' OUT='+out
         + (main ? ' MAIN='+main:'')
         + (tss ? ' TSS='+tss:'')
-        + ' MODEL='+parameters.model
+        + ' MODEL="'+parameters.model+'"'
         + ' -f '+ __dirname + '/code.make';
-    console.log ('CMD:' + cmd);
     return util.spawn_sync_shell(cmd)
     //.fail (function(err) {console.log(err); return {status: -1, output: err}});
       .fail (function(err) {console.log (err.stack); return {status: -1, output: err.stack}});
@@ -450,15 +451,22 @@ var aspects = {
   ,
   build: function(parameters) {
     var language = parameters.meta.languages[0];
-    var out = 'out/'+path.basename(parameters.dir)+'/'+language;
+    var base = '"out/'+path.basename(parameters.dir)+'"';
+    var out = '"out/'+path.basename(parameters.dir)+'"/'+language;
+    var out_space = base.replace (' ', '\\');
+    console.log ('out_space=%j', out_space);
     var main = has_main(parameters.dir, language);
-    var cmd = 'make DIR='+parameters.dir
+    console.log ('main=%j', main);
+    var cmd = 'mkdir -p ' + out
+        + ' && ln -sf ' + base + ' ' + out_space
+        + ' && make DIR="'+parameters.dir + '"'
         + ' LANGUAGE='+language
         + ' OUT='+out
         + ' IN='+out
         + (parameters.meta.tss ? ' TSS='+ parameters.model : '')
-        + (main ? ' MAIN='+main : '')
+        + (main ? ' MAIN="'+main +'"': '')
         + ' -f '+ __dirname + '/build.' + language + '.make';
+    console.log ('cmd=%j', cmd);
     return util.spawn_sync_shell(cmd)
       .fail (function(err) {console.log(err); return {status: -1, output: err}});
   }
@@ -471,10 +479,10 @@ var aspects = {
       python: 'python',
       cs: 'sh',
     }[language] || '';
-    var out = 'out/'+path.basename(parameters.dir)+'/'+language;
+    var out = '"out/'+path.basename(parameters.dir)+'"/'+language;
     var flush = parameters.meta.flush && ' --flush' || '';
     return run_traces(parameters, 'execute', function(trace) {
-      var expectation = parameters.dir + '/baseline/execute/' + language + '/expectation';
+      var expectation = '"' + parameters.dir + '"/baseline/execute/' + language + '/expectation';
       var cmd = 'cat '+ trace + ' | ' + interpreter + ' ' + out + '/test' + flush;
       console.log ('CMD:' + cmd);
       try {
@@ -497,20 +505,22 @@ var aspects = {
   }
   ,
   convert: function(parameters) {
-    var dm = parameters.dir + '/' + parameters.model + '.dm';
+    var model = parameters.meta.model || parameters.model;
+    var node_dm = parameters.dir + '/' + model + '.dm';
+    var dm = '"' + node_dm + '"';
     var imports = imports_string (parameters.meta.imports);
-    return lstat(dm)
+    return lstat(node_dm)
       .then (function(stats) {
-        var out = 'out/'+path.basename(parameters.dir);
-        var cmd = 'mkdir -p '+out+'; '+
-            'echo "'+dm+' -> '+out+'/'+parameters.model+'.dzn"; ' +
-            dzn()+' convert -g '+imports+' -o '+out+' '+dm+';'+
-            'sed -i -e "s,in void on(),in void on1()," '+out+'/*.dzn';
+        var out = '"out/'+path.basename(parameters.dir)+'"';
+        var cmd = 'mkdir -p '+out+'; '
+            + 'echo "'+dm+' -> '+out+'/'+model+'.dzn"; '
+            + dzn()+' convert -g '+imports+' -o '+out+' '+dm+';'
+            + 'sed -i -e "s,in void on(),in void on1()," '+out+'/*.dzn';
         return util.spawn_sync_shell(cmd)
           .then (function (result) {
             var parameters1 = util.deep_copy(parameters);
             parameters1.dir = out;
-            parameters1.filename = out + '/' +parameters.model+'.dzn';
+            parameters1.filename = out + '/' +model+'.dzn';
             return {status:0, parameters:parameters1};
           })
           .fail (function(err) {console.log(err); return {status: -1, output: err}});
@@ -523,15 +533,17 @@ var aspects = {
   }
   ,
   parse: function(parameters) {
+    var model = parameters.meta.model || parameters.model;
     var lstat = q.denodeify(fs.lstat);
-    var baseline = parameters.dir + '/baseline/parse/' + parameters.model + '.stderr';
+    var node_baseline = parameters.dir + '/baseline/parse/' + model + '.stderr';
+    var baseline = '"' + node_baseline + '"';
     var imports = imports_string (parameters.meta.imports);
-    return lstat(baseline)
+    return lstat(node_baseline)
       .then (function(stats) {
-        return 'diff -uw '+baseline+' <(' + dzn() + ' -v parse '+imports+' '+parameters.filename+' |& sed "s,.\r,,g")';
+        return 'diff -uw '+baseline+' <(' + dzn() + ' -v parse '+imports+' "'+parameters.filename+'" |& sed "s,.\r,,g")';
       })
       .fail (function(err) {
-        return '[ "$(' + dzn() + ' parse '+imports+' '+parameters.filename+' |& sed \'s,.\r,,g\')" = "" ]';
+        return '[ "$(' + dzn() + ' parse '+imports+' "'+parameters.filename+'" |& sed \'s,.\r,,g\')" = "" ]';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd)
@@ -545,9 +557,9 @@ var aspects = {
       var imports = imports_string (parameters.meta.imports);
       return util.spawn_sync_shell(
         'diff -uw'
-          + ' <(grep -v "<flush>" '+ trace + ')'
-          + ' <(grep -v "<flush>" '+ trace + '|'
-          + ' ' + dzn(parameters.session) + ' run '+imports+' --strict --model=' + model + ' ' + parameters.filename + ' |&'
+          + ' <(grep -v "<flush>" "'+ trace + '")'
+          + ' <(grep -v "<flush>" "'+ trace + '"|'
+          + ' ' + dzn(parameters.session) + ' run '+imports+' --strict --model=' + model + ' "' + parameters.filename + '" |&'
           + ' grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')')
         .fail (function(err) {console.log(err); return {status: -1, output: err}});
     });
@@ -556,7 +568,7 @@ var aspects = {
   table: function(parameters) {
 
     function test_table(promise, args) {
-      var out = 'out/'+path.basename(parameters.dir)+'/table';
+      var out = '"out/'+path.basename(parameters.dir)+'/table"';
       var suffix = args[0];
       var form = args[1];
       var base = path.basename(parameters.dir);
@@ -565,8 +577,8 @@ var aspects = {
           .then(function(result1) {
             var imports = imports_string (parameters.meta.imports);
             var cmd = (form == 'dzn')
-                ? dzn()+' code -l dzn '+imports+' -o - '+parameters.filename +'>'+out+'/'+base+'-'+form+suffix+'-barf'
-                : dzn()+' table '+imports+' --form='+form+' -o - '+parameters.filename + (suffix == '.html' ? '| w3m -dump -T text/html' : '') +'>'+out+'/'+base+'-'+form+suffix+'-barf';
+                ? dzn()+' code -l dzn '+imports+' -o - "'+parameters.filename +'">"'+out+'/'+base+'-'+form+suffix+'-barf"'
+                : dzn()+' table '+imports+' --form='+form+' -o - "'+parameters.filename + (suffix == '.html' ? '| w3m -dump -T text/html' : '') +'">"'+out+'/'+base+'-'+form+suffix+'-barf"';
             console.log ('CMD:' + cmd);
             return util.spawn_sync_shell(cmd);
           })
@@ -594,32 +606,35 @@ var aspects = {
   }
   ,
   traces: function(parameters) {
-    var out = 'out/' + path.basename(parameters.dir);
+    var node_out = 'out/' + path.basename(parameters.dir);
+    var out = '"' + node_out + '"';
     var flush = parameters.meta.flush ? ' --flush' : '';
     var illegal = parameters.meta.trace_illegals ? '-i ' : '';
     var model = parameters.meta.model || parameters.model;
     var queue = parameters.meta.queue ? '-q ' + parameters.meta.queue : '';
     var imports = imports_string (parameters.meta.imports);
     var cmd = dzn()
-        + ' traces ' + imports + ' ' + queue + ' ' + illegal+flush+' -m '+model+' -o '+out+' '+parameters.filename;
+        + ' traces ' + imports + ' ' + queue + ' ' + illegal+flush+' -m '+model+' -o '+out+' "'+parameters.filename+'"';
+    console.log ('cmd=%j', cmd)
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
-      .then(function(){return ls_traces(out);})
-      .then(function(traces){if (!traces.length) traces = q(util.spawn_sync_shell(cmd)).then (function (){return ls_traces (out);}); return traces;})
+      .then(function(){return ls_traces(node_out);})
+      .then(function(traces){if (!traces.length) traces = q(util.spawn_sync_shell(cmd)).then (function (){return ls_traces (node_out);}); return traces;})
       .then(function(traces){if (!traces.length) throw ('no traces'); return traces;})
       .fail(function(err) {console.log(err); return {status: -1, output: err}});
   }
   ,
   verify: function(parameters) {
-    var baseline = parameters.dir + '/baseline/verify/' + parameters.model;
-    var dir = 'out/' + path.basename(parameters.dir) + '/verify'
-    var out = dir + '/'+parameters.model;
+    var model = parameters.meta.model || parameters.model;
+    var node_baseline = parameters.dir + '/baseline/verify/' + parameters.model;
+    var baseline = '"' + node_baseline + '"';
+    var dir = '"out/' + path.basename(parameters.dir) + '"/verify'
+    var out = dir + '/"'+parameters.model + '"';
     var err = out + '.stderr';
     var queue = parameters.meta.queue ? '-q ' + parameters.meta.queue : '';
     var imports = imports_string (parameters.meta.imports);
-    var model = parameters.meta.model || parameters.model;
     var model_opt = parameters.meta.model === false ? '' : ' --model=' + model;
-    return lstat (baseline)
+    return lstat (node_baseline)
       .then (function(stats) {
         return 'mkdir -p '+dir+';'
           + '{ set -o pipefail;'
@@ -628,7 +643,7 @@ var aspects = {
           + model_opt
           + ' '+imports
           + ' '+queue
-          + ' '+parameters.filename
+          + ' "'+parameters.filename+'"'
           + ' 2>'+err
           + '| ' + __dirname + '/../bin/reorder > '+out
           + '| test ! -s '+baseline
@@ -647,7 +662,7 @@ var aspects = {
           + model_opt
           + ' '+imports
           + ' '+queue
-          + ' '+parameters.filename
+          + ' "'+parameters.filename+'"'
           + ' 2>' + err + ')";'
           + 'err="$(cat ' + err + ')";'
           + '[ "$out$err" = "" ] '
@@ -661,12 +676,11 @@ var aspects = {
   }
   ,
   view: function(parameters) {
-    var baseline = parameters.dir + '/baseline/verify/' + parameters.model;
-    var dir = 'out/' + path.basename(parameters.dir)
+    var dir = '"out/' + path.basename(parameters.dir) + '"';
     var out = dir + '/'+parameters.model;
     var err = out + '.stderr';
     var imports = imports_string (parameters.meta.imports);
-    var cmd = dzn() + ' view '+imports+' '+parameters.filename;
+    var cmd = dzn() + ' view '+imports+' '+ '"' + parameters.filename + '"';
     return util.spawn_sync_shell(cmd)
       .fail (function(err) {console.log(err); return {status: -1, output: err}});
   }

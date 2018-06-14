@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 # Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-# Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 #
 # This file is part of Dezyne.
@@ -22,7 +22,7 @@
 # 
 # Code:
 
-.PHONY:all default
+.PHONY:all code default
 default: all
 
 DEVELOPMENT:=$(shell readlink -f $(dir $(filter %/code.make,$(MAKEFILE_LIST)))../../)
@@ -35,28 +35,29 @@ endef
 $(foreach i,DZN LANGUAGE MODEL IN OUT,$(eval $(call CHECKPARAM,$(i))))
 
 ifeq ($(MAIN),)
-MODEL_OPT:=-m $(MODEL)
+MODEL_OPT:=-m '$(MODEL)'
 endif
 
 ifneq ($(TSS),)
-TSS_OPT:=-s $(MODEL)
+TSS_OPT:=-s '$(MODEL)'
 endif
 
 runtime-common:
-	mkdir -p $(OUT)/dzn
+	mkdir -p "$(OUT)"/dzn
 	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls /share/runtime/$(LANGUAGE)))); do\
-	    ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/$$file $(OUT)/$$file;\
+	    ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/"$$file" "$(OUT)"/$$file;\
 	done
 	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls /share/runtime/$(LANGUAGE)/dzn))); do\
-	    ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/dzn/$$file $(OUT)/dzn/$$file;\
+	    ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/dzn/$$file "$(OUT)"/dzn/$$file;\
 	done
 
 runtime: runtime-common
 
-code: $(wildcard $(IN)/*.dzn $(IN)/*/*.dzn)
-	for file in $^; do $(DZN) code $(IMPORTS) $(CODE_OPTIONS) -l $(LANGUAGE) --depends $(MODEL_OPT) $(TSS_OPT) -o $(OUT) $$file; done
+IN_DZN=$(shell ls -1 "$(IN)"/*.dzn | sed -e 's,^,",' -e 's,$$,",')
+IN__DZN=$(shell ls -1 "$(IN)"/*/*.dzn | sed -e 's,^,",' -e 's,$$,",')
+code:
+	set -x; for file in $(IN_DZN) $(IN__DZN); do\
+	    $(DZN) code $(IMPORTS) $(CODE_OPTIONS) -l $(LANGUAGE) $(MODEL_OPT) $(TSS_OPT) -o "$(OUT)" "$$file";\
+	done
 
 all: runtime code
-
--include $(patsubst $(IN)/%.dzn, $(OUT)/%.d, $(wildcard $(IN)/*.dzn))
--include $(patsubst $(IN)/%.dzn, $(OUT)/%.d, $(wildcard $(IN)/*/*.dzn))
