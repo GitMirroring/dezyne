@@ -105,7 +105,8 @@
   (and=> (command-line:get 'glue #f) string->symbol))
 
 (define-public (dzn-async? o)
-  (and (is-a? o <scoped>)
+  (pke 'dzn-async? o)
+  (and (is-a? o <type>)
        (or (gaiag-dzn-async? o)
        (generator-dzn-async? o))))
 
@@ -180,7 +181,7 @@
 ;;; dzn: generic templates
 (define-method (dzn:model (o <root>))
   (if (dzn:glue)
-      (let ((models (ast:model* o)))
+      (let ((models (pke 'models (ast:model* o))))
         (if (null? (filter (negate (disjoin om:imported? (is? <foreign>))) models))
               (filter (is? <foreign>) models)
               (topological-sort
@@ -418,11 +419,17 @@
   (if (memq (language) '(javascript)) "dzn/"
       ""))
 
-(define (dzn:from o)
-  ((compose .from .range ast:expression->type) o))
+(define-method (dzn:from (o <expression>))
+  ((compose dzn:from ast:expression->type) o))
 
-(define (dzn:to o)
-  ((compose .to .range ast:expression->type) o))
+(define-method (dzn:from (o <type>))
+  ((compose .from .range) o))
+
+(define-method (dzn:to (o <expression>))
+  ((compose dzn:to ast:expression->type) o))
+
+(define-method (dzn:to (o <type>))
+  ((compose .to .range) o))
 
 (define-generic source-file)
 (define-method (source-file (o <ast>)) ((compose source-file .node) o))

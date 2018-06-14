@@ -187,7 +187,7 @@
 
 (define (triples:->triples o)
   (define (triple o)
-    (let ((path (ast:path o (lambda (p) (is-a? (.parent p) <behaviour>)))))
+    (let ((path (ast:path (pke 'triple o) (lambda (p) (is-a? (.parent p) <behaviour>)))))
       (t-triple (find (is? <on>) path)
                 (combine (filter (is? <guard>) path))
                 (find (is? <blocking>) path)
@@ -213,6 +213,7 @@
                               triples:mark-the-end
                               (triples:declarative-illegals (parent o <model>))
                               triples:split-multiple-on
+;;            (lambda (o) (pke '->triples o))
                               triples:->triples
                               .statement
                               ) o)))
@@ -249,6 +250,7 @@
     ons))
 
 (define (triples:event-traversal o)
+(pke 'xxx o)
   (match o
     (($ <behaviour>) (clone o #:statement
                             ((compose
@@ -260,6 +262,7 @@
                               (triples:add-illegals (parent o <model>))
                               triples:split-multiple-on
                               ;; rewrite-formals
+;;            (lambda (o) (pke 'triples o))
                               triples:->triples
                               .statement
                               ) o)))

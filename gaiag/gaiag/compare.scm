@@ -141,8 +141,5 @@
   (om:equal? ((compose .elements .triggers) a)
           ((compose .elements .triggers) b)))
 
-(define-method (om:scope.name-equal? (a <scoped>) (b <scoped>))
-  (om:equal? (.name a) (.name b)))
-
-(define-method (om:scope.name-equal? (a <model>) (b <model>))
+(define-method (om:scope.name-equal? (a <named>) (b <named>))
   (om:equal? (.name a) (.name b)))

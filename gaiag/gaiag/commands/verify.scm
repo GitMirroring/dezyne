@@ -114,7 +114,7 @@ Usage: gdzn verify [OPTION]... DZN-FILE [MAP-FILE]...
     (and (pair? scope)
          (clone o #:scope (drop-right scope 1) #:name (last scope)))))
 
-(define-method (ast:scope-type (o <scoped>))
+(define-method (ast:scope-type (o <named>))
   ((compose ast:scope-type .name) o))
 
 (define (model->mcrl2 root model)

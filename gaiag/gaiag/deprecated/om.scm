@@ -312,8 +312,7 @@
     (($ <scope.name>) (append (.scope o) (list (.name o))))
     (($ <signature>) ((compose om:scope+name .type.name) o))
     (($ <trigger>) ((compose om:scope+name .event) o))
-    ((? (is? <scoped>)) ((compose om:scope+name .name) o))
-    ((? (is? <model>)) ((compose om:scope+name .name) o)) ;; FIXME
+    ((? (is? <named>)) ((compose om:scope+name .name) o))
     ))
 
 (define* ((om:scope-name #:optional (infix '_)) o)

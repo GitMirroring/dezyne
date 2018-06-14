@@ -268,8 +268,6 @@
            <root>
            <scope.name-node>
            <scope.name>
-           <scoped-node>
-           <scoped>
            <shell-system-node>
            <shell-system>
            <signature-node>
@@ -411,19 +409,16 @@
   (scope #:init-form (list))
   (name))
 
-(define-ast <scoped> (<ast>)
-  (name #:init-form (make <scope.name-node>)))
-
 (define-ast <import> (<named>))
 
-(define-ast <model> (<scope.name>))
+(define-ast <model> (<named>))
 
 (define-ast <interface> (<model>)
   (types #:init-form (make <types-node>))
   (events #:init-form (make <events-node>))
   (behaviour))
 
-(define-ast <type> (<scoped>))
+(define-ast <type> (<named>))
 
 (define-ast <enum> (<type>)
   (fields #:init-form (list)))

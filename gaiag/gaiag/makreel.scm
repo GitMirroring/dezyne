@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -150,7 +152,7 @@
     (($ <bool>) o)
     (($ <void>) o)
     ((and ($ <scope.name>) (or (= .name 'void) (= .name 'bool))) o)
-    ((? (is? <scoped>)) (clone o #:name ((compose (tick-names- names) .name) o)))
+    ((? (is? <type>)) (clone o #:name ((compose (tick-names- names) .name) o)))
     (($ <scope.name>) (clone o #:scope (map append-tick (.scope o))
                              #:name ((compose append-tick .name) o)))
     (($ <port>) (clone o #:name ((compose append-tick .name) o) #:type.name ((compose (tick-names- names) .type.name) o)))
