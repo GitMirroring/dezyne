@@ -100,6 +100,8 @@
 (define-templates proc-assign makreel:proc-assign)
 (define-templates proc-variable makreel:proc-variable)
 (define-templates variable-parameter makreel:variable-parameter)
+(define-templates variable-parameters makreel:continuation-haakjes)
+(define-templates continuation-haakjes makreel:continuation-haakjes)
 (define-templates reply-synchronization makreel:reply-synchronization)
 (define-templates trigger-name makreel:trigger-name)
 (define-templates process-id)

@@ -105,7 +105,6 @@
   (and=> (command-line:get 'glue #f) string->symbol))
 
 (define-public (dzn-async? o)
-  (pke 'dzn-async? o)
   (and (is-a? o <type>)
        (or (gaiag-dzn-async? o)
        (generator-dzn-async? o))))
@@ -181,7 +180,7 @@
 ;;; dzn: generic templates
 (define-method (dzn:model (o <root>))
   (if (dzn:glue)
-      (let ((models (pke 'models (ast:model* o))))
+      (let ((models (ast:model* o)))
         (if (null? (filter (negate (disjoin om:imported? (is? <foreign>))) models))
               (filter (is? <foreign>) models)
               (topological-sort

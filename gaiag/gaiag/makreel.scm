@@ -4,7 +4,6 @@
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -640,17 +639,11 @@
   ((compose makreel:locals car makreel:continuation) o))
 
 (define-method (makreel:variable-parameter (o <ast>))
-  (define (member? o)
-    (let ((v (match o
+  (let ((v (match o
                (($ <variable>) o)
                (($ <assign>) (.variable o)))))
-     (find (cut ast:eq? v <>) (ast:variable* (parent o <behaviour>)))))
-  (if (member? o) o
-      (let* ((parent (.parent o)))
-        (match parent
-          (($ <compound>) (if (ast:eq? o ((compose last ast:statement*) parent)) '()  ;; FIXME
-                              o))
-          (_  '())))))
+    (if (find (cut ast:eq? v <>) ((compose variables-in-scope car makreel:continuation) o)) o
+        '())))
 
 (define-method (makreel:function-name (o <ast>))
   (or (and=> (parent o <function>) .name) '()))
@@ -678,6 +671,11 @@
   (if (or (pair? (variables-in-scope o))
           (parent o <function>)) "()"
           ""))
+
+(define-method (makreel:continuation-haakjes (o <ast>))
+  (if (or (pair? ((compose variables-in-scope car makreel:continuation) o))
+          (parent o <function>)) o
+          '()))
 
 (define-method (makreel:process-continuation (o <ast>))
   (mcrl2:process-continuation o))
