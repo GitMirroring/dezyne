@@ -70,7 +70,7 @@ FIXME:      --depends[=TYPE]        generate dependency for DZN-FILE and write t
   -m, --model=MODEL           generate main for MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
   -s, --shell=MODEL           generate thread safe system shell for MODEL
-FIXME:  -V, --version=VERSION       use service version=VERSION
+  -V, --version=VERSION       use service version=VERSION
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))

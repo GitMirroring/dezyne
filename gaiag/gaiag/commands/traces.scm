@@ -93,7 +93,7 @@ Usage: gdzn traces [OPTION]... DZN-FILE
   -m, --model=MODEL           generate main for MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
   -q, --queue_size=SIZE       use queue size=SIZE for generation
-FIXME:  -V, --version=VERSION       use service version=VERSION
+  -V, --version=VERSION       use service version=VERSION
 ")
           (exit (or (and usage? 2) 0)))
      options)))
