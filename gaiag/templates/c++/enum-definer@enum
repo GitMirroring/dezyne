@@ -1,5 +1,7 @@
 ##ifndef ENUM_#x:scope+name
 ##define ENUM_#x:scope+name  1
+
+#x:open-namespace
 struct #om:name
 {
   enum type
@@ -7,4 +9,6 @@ struct #om:name
     #x:asd-voidreply #x:enum-field-definer
   };
 };
+#x:close-namespace
+
 ##endif // ENUM_#x:scope+name

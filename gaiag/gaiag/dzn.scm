@@ -222,7 +222,7 @@
   (.value o))
 
 (define-method (dzn:type o)
-  (if (or (as o <model>))
+  (if (as o <model>)
       (om:scope+name o)
       (let* ((type (or (as o <type>) (.type o)))
              (scope (om:scope type))

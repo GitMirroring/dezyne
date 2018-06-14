@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -23,9 +24,19 @@
 
 enum NS.Result { OK, NOK };
 
-interface hello_namespace_enum {
+interface ihello_namespace_enum {
   in NS.Result e();
   behaviour {
     on e: reply(NS.Result.NOK);
+  }
+}
+
+component hello_namespace_enum
+{
+  provides ihello_namespace_enum p;
+  requires ihello_namespace_enum q;
+
+  behaviour {
+    on p.e(): {NS.Result r = q.e(); reply(r);}
   }
 }
