@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -25,7 +27,8 @@
 
 (define-templates source dzn:model newline-infix)
 (define-templates global dzn:global newline-infix)
-(define-templates model-name (compose om:name (lambda (o) (parent o <model>))))
+(define-templates model-name (compose om:name (cut parent <> <model>)))
+(define-templates interface-name (compose om:name .type car om:ports (cut parent <> <model>)))
 (define-templates =expression dzn:=expression)
 (define-templates type dzn:type type-infix)
 (define-templates external dzn:external)
