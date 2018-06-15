@@ -28,8 +28,20 @@ interface modelingSilent {
   behaviour {
 
     void f() {
-      f(); // TODO: determine silentness of recursive functions;
+      f();
     }
+
+    void g() {
+      bool b = false;
+      if (b) h();
+    }
+
+    void h() {
+      bool b = false;
+      if (b) g();
+      else a1;
+    }
+
     bool b = false;
     on e: {}
     on inevitable: b = true;
@@ -41,6 +53,9 @@ interface modelingSilent {
     }
     on optional: {
       f();
+    }
+    on optional: {
+      g();
     }
   }
 }
