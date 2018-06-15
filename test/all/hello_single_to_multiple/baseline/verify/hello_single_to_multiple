@@ -1,0 +1,10 @@
+verify: hello_single_to_multiple: check: deterministic: ok
+verify: hello_single_to_multiple: check: illegal: ok
+verify: hello_single_to_multiple: check: deadlock: ok
+verify: hello_single_to_multiple: check: compliance: fail
+w.world
+h.world
+h.world
+verify: hello_single_to_multiple: check: livelock: ok
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok

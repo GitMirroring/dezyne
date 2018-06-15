@@ -59,6 +59,13 @@
             makreel:om
             makreel:tick-names))
 
+(define-method (makreel:interface-reorder (o <behaviour>))
+  (if (parent o <interface>) o
+      '()))
+
+(define-method (makreel:interface-reorder (o <ast>))
+  '())
+
 (define interface-alist '())
 
 (define (makreel:interface-proc-memo o)

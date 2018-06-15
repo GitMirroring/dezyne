@@ -27,6 +27,8 @@
 (define-templates makreel:enum-literal makreel:enum-literal type-infix)
 (define-templates makreel:enum-fields makreel:enum-fields newline-pipe-infix)
 
+(define-templates interface-reorder makreel:interface-reorder)
+(define-templates reorder-end (compose makreel:interface-reorder car makreel:continuation))
 
 (define-templates source)
 (define-templates model makreel:get-model)
@@ -105,6 +107,7 @@
 (define-templates reply-synchronization makreel:reply-synchronization)
 (define-templates trigger-name makreel:trigger-name)
 (define-templates process-id)
+(define-templates continuation-identifier-call makreel:continuation)
 (define-templates process-identifier)
 (define-templates process-parameters makreel:process-parameters parameters-grammar)
 (define-templates process-parameters-return makreel:process-parameters-return parameters-grammar)

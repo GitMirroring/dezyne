@@ -1,2 +1,2 @@
 out/InterfaceLivelock/InterfaceLivelock.dzn:15:10:i9: livelock in model BlindLoop
-out/InterfaceLivelock/InterfaceLivelock.dzn:38:12:i11: LoopingInterface.return not allowed by port LoopingInterface
+out/InterfaceLivelock/InterfaceLivelock.dzn:13:16:i13: Component InterfaceLivelock is non-compliant with interface of provided port

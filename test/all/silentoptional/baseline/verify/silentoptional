@@ -1,6 +1,5 @@
 verify: I: check: deadlock: ok
 verify: I: check: livelock: fail
-e
 verify: silentoptional: check: deterministic: ok
 verify: silentoptional: check: illegal: ok
 verify: silentoptional: check: deadlock: ok

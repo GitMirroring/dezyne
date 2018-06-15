@@ -61,13 +61,16 @@
           ((symbol? o) (display (symbol->string o)) "")
           (else o)))
 
-  (define (tree->body t)
-    (match t
-      (('script t ...) (tree->body t))
-      (('pegprocedure s) (list (list 'display-primitive (list (string->symbol (string-drop s 1)) 'o))))
-      ((? string?) (list (list 'display t)))
-      ((t ...) (append-map tree->body t))
-      ('script '())))
+  (define (tree->body t . id)
+    (let ((id (if (or #t (null? id)) '() ;;DEBUG MEUK HERE
+                  (list (list 'display-primitive (car id))))))
+     (append id
+      (match t
+        (('script t ...) (tree->body t))
+        (('pegprocedure s) (list (list 'display-primitive (list (string->symbol (string-drop s 1)) 'o))))
+        ((? string?) (list (list 'display t)))
+        ((t ...) (append-map tree->body t))
+        ('script '())))))
 
   (define* (display-join proc o #:optional (grammar-alist '((#f . ("")))))
     "Like STRING-JOIN, allowing \"PRE\" 'pre and \"POST\" 'post in GRAMMAR"
@@ -134,7 +137,7 @@
               (class-name (drop-<> (syntax->datum #'class)))
               (template (symbol->string (symbol-append 'templates/ (syntax->datum #'language) '/ (syntax->datum #'name) '@ class-name)))
               (tree (template->tree (syntax->datum template)))
-              (body (datum->syntax x (tree->body tree)))
+              (body (datum->syntax x (tree->body tree (syntax->datum template))))
               (o (datum->syntax x 'o)))
          #`(define-method (#,tname (#,o class)) #,@body))))))
 

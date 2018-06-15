@@ -1,1 +1,1 @@
-function-return@statement
+is'#x:process-identifier 'return (return(s)) -> #x:makreel:model-name reorder_end . #x:process-identifier  (#x:stack-destructor)

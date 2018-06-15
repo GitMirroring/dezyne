@@ -1,1 +1,1 @@
-. sum #.variable.name : #x:basic-type . #x:type-bound  #x:event-prefix reply(#x:reply-constructor (#.variable.name)) . #x:type-check  #x:continuation-identifier #x:continuation-haakjes;
+. sum #.variable.name : #x:basic-type . #x:type-bound  #x:event-prefix reply(#x:reply-constructor (#.variable.name)) . #x:type-check  #x:continuation;

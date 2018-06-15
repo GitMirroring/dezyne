@@ -1,1 +1,1 @@
-#x:process-id  = #x:type-check  #x:continuation-identifier #x:variable-parameters;
+#x:process-id  = #x:type-check  #x:reorder-end #x:continuation-identifier #x:variable-parameters;

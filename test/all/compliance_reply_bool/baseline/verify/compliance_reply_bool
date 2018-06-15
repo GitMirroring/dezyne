@@ -6,7 +6,7 @@ verify: compliance_reply_bool: check: deadlock: ok
 verify: compliance_reply_bool: check: compliance: fail
 pp.ia
 rp.ib
-rp.true
+rp.false
 pp.true
 pp.ia
 rp.ib
