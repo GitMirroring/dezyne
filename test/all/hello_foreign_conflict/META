@@ -1,1 +1,1 @@
-{"skip":["traces"],"known":["code"],"comment":"error model: should flag limitation w.r.t. foreign component names and file2file"}
+{"skip":["traces"],"known":["build"],"comment":"error model: should flag limitation w.r.t. foreign component names and file2file"}
