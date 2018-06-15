@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -47,7 +48,7 @@ struct CB: public ::console_cb
 int main()
 {
 
-  boost::shared_ptr<::alarmInterface> alarm_system = alarmComponent::GetInstance(123);
+  boost::shared_ptr<::consoleInterface> alarm_system = alarmComponent::GetInstance(123);
   boost::shared_ptr<::console_api> api;
   alarm_system->GetAPI(&api);
   alarm_system->RegisterCB(boost::make_shared<CB>(api));

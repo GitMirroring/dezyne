@@ -1,14 +1,14 @@
 ##ifndef #x:upcase-model-name COMPONENT_H
 ##define #x:upcase-model-name COMPONENT_H
 
-##include "#x:interface-name Interface.h"
+##include "#x:asd-interface-name Interface.h"
 
 #x:construction-include
 
 struct #x:model-name Component
-: public ::#x:interface-name Interface
+: public ::#x:asd-interface-name Interface
 {
-  static boost::shared_ptr< ::#x:interface-name Interface> GetInstance(#x:construction-signature);
+  static boost::shared_ptr< ::#x:asd-interface-name Interface> GetInstance(#x:construction-signature);
   static void ReleaseInstance();
 };
 ##endif
