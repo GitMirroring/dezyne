@@ -40,7 +40,7 @@
 (define-templates meta identity)
 (define-templates ports-meta-list (lambda (o) (filter ast:requires? (om:ports o))) meta-infix)
 (define-templates check-bindings-list (lambda (o) ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (om:ports o)))))
-(define-templates global-enum-definer (lambda (o) (filter (is? <enum>) (om:globals o))))
+(define-templates global-enum-definer c++:global-enum-definer)
 (define-templates check-in-binding (lambda (o) (filter om:in? (om:events o))))
 (define-templates check-out-binding (lambda (o) (filter om:out? (om:events o))))
 (define-templates interface-enum-to-string c++:enum->string)

@@ -65,6 +65,7 @@
             code:skel-file
             event2->interface1-event1-alist
 
+            code:enum-definer
             code:enum-name
             code:expression
             code:trigger
@@ -431,6 +432,12 @@
 
 (define-method (code:enum-name (o <enum-field>))
   ((compose code:scope-type-name .type) o))
+
+(define-method (code:enum-definer (o <interface>))
+  (filter (is? <enum>) (append (ast:type* o) (ast:type* (.behaviour o)))))
+
+(define-method (code:enum-definer (o <component>))
+  (filter (is? <enum>) (ast:type* (.behaviour o))))
 
 (define-method (code:instances (o <component>))
   '())
