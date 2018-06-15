@@ -12,3 +12,4 @@ namespace dzn {
 
 #x:header-model
 #x:header-model-glue
+//version: #x:version

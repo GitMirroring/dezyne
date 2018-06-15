@@ -43,3 +43,4 @@ boost::shared_ptr< #x:asd-interface-name Interface> #x:model-name Component::Get
   return boost::make_shared< #x:model-name Glue> (#x:construction-parameters);
 }
 void #x:model-name Component::ReleaseInstance () {}
+//version: #x:version

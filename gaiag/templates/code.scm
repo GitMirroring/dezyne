@@ -105,3 +105,4 @@
 (define-templates flush-provides ast:provided)
 (define-templates main-event-map-match-return code:main-event-map-match-return)
 (define-templates main-required-port-name ast:required main-port-name-infix)
+(define-templates version-assert)

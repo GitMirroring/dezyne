@@ -190,7 +190,7 @@ Usage: ./configure [OPTION]...
     (lambda _
       (display
        (fold (lambda (o result)
-               (regexp-substitute/global #f (car o) result 'pre (cdr o) 'post))
+               (regexp-substitute/global #f (car o) result 'pre ((->string) (cdr o)) 'post))
              (with-input-from-file file-name read-string) pairs)))))
 
 (define (main args)
@@ -209,6 +209,10 @@ Usage: ./configure [OPTION]...
          (datadir (option-ref options 'datadir
                               (if prefix (string-append prefix "/services/" SERVICE_VERSION)
                                   (getcwd))))
+         (version-list (map string->number (string-split SERVICE_VERSION #\.)))
+         (version-major (if (number? (car version-list)) (car version-list) 0))
+         (version-minor (if (> (length version-list) 1) (cadr version-list) 0))
+         (version-patch (if (> (length version-list) 2) (caddr version-list) 0))
 
          (guilemoduledir (option-ref options 'guilemoduledir (string-append datadir "/gaiag")))
          (guileobjectdir guilemoduledir)
@@ -261,6 +265,10 @@ Usage: ./configure [OPTION]...
                    ("@CLIENT_VERSION@" . ,CLIENT_VERSION)
                    ("@SERVICE_VERSION@" . ,SERVICE_VERSION)
 
+                   ("@VERSION_MAJOR@" . ,version-major)
+                   ("@VERSION_MINOR@" . ,version-minor)
+                   ("@VERSION_PATCH@" . ,version-patch)
+
                    ("@GUILE_EFFECTIVE_VERSION@" . ,GUILE_EFFECTIVE_VERSION)
                    ("@ASD@" . ,ASD)
                    ("@BASH@" . ,BASH)
@@ -276,11 +284,13 @@ Usage: ./configure [OPTION]...
                   #:target "pre-inst-env")
       (chmod "pre-inst-env" #o755)
       (for-each (lambda (o)
-                  (substitute (string-append abs-top-srcdir "/" o) pairs)
-                  (chmod (string-drop-right o 3) #o755))
+                  (substitute (string-append abs-top-srcdir "/" o) pairs))
                 '("dzn/lib/version.js.in"
                   "dzn-daemon/lib/version.js.in"
                   "gaiag/gaiag/config.scm.in"
+                  "gaiag/runtime/c++/dzn/meta.hh.in"
+                  "gaiag/runtime/c++03/dzn/meta.hh.in"
+                  "gaiag/runtime/c++-msvc11/dzn/meta.hh.in"
                   "server/version.js.in"
                   "server/install.js.in"
                   "services/scripts/convert.sh.in"

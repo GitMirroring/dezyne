@@ -1,7 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -22,8 +21,8 @@
 //
 // Code:
 
-#ifndef META_HH
-#define META_HH
+#ifndef DZN_META_HH
+#define DZN_META_HH
 
 #include <algorithm>
 #include <functional>
@@ -31,8 +30,18 @@
 #include <stdexcept>
 #include <vector>
 
+inline std::string to_string()
+{
+  return "return";
+}
+
 namespace dzn
 {
+#define DZN_VERSION_STRING "@SERVICE_VERSION@"
+int const version_major = @VERSION_MAJOR@;
+int const version_minor = @VERSION_MINOR@;
+int const version_patch = @VERSION_PATCH@;
+
   struct meta;
 
   namespace port
@@ -64,16 +73,6 @@ namespace dzn
     std::vector<const port::meta*> requires;
     std::vector<const meta*> children;
     std::vector<std::function<void()>> ports_connected;
-    meta(std::string&& name, std::string&& type, const meta* parent, size_t rank, std::vector<const port::meta*>&& requires, std::vector<const meta*>&& children, std::vector<std::function<void()>>&& ports_connected)
-    : name(name)
-    , type(type)
-    , parent(parent)
-    , rank(rank)
-    , requires(requires)
-    , children(children)
-    , ports_connected(ports_connected)
-    {}
-    meta() {}
   };
 
   inline void rank(const dzn::meta* m, size_t r)
@@ -95,7 +94,8 @@ namespace dzn
   struct binding_error: public std::runtime_error
   {
     binding_error(const port::meta& m, const std::string& msg)
-    : std::runtime_error("not connected: " + path(m.provides.address ? m.provides.meta : m.requires.meta, m.provides.address ? m.provides.port : m.requires.port) + "." + msg)
+    : std::runtime_error("not connected: " + path(m.provides.address ? m.provides.meta : m.requires.meta,
+                                                  m.provides.address ? m.provides.port : m.requires.port) + "." + msg)
     {}
   };
 
@@ -122,4 +122,4 @@ namespace dzn
     }
   };
 }
-#endif
+#endif //DZN_META_HH

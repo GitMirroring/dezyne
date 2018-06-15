@@ -27,3 +27,4 @@ struct #x:model-name : public skel::#x:model-name
 };
 #x:close-namespace
 /***********************************   GLUE   **********************************/
+//version: #x:version

@@ -7,8 +7,18 @@
       (let ((top (locate-dominating-file default-directory ".dir-locals.el")))
         (push (concat top "/dzn/elisp") load-path))
 
-      (when (require 'dzn-mode nil t)
+      (when (and (require 'dzn-mode nil t)
+                 (not (assoc "\\.dzn\\'" auto-mode-alist)))
         (push '("\\.dzn\\'" . dzn-mode) auto-mode-alist))
+
+      (when (and (require 'c++-mode nil t)
+                 (not (assoc "\\.hh.in\\'" auto-mode-alist)))
+        (push '("\\.hh.in\\'" . dzn-mode) auto-mode-alist)
+        (push '("\\.cc.in\\'" . dzn-mode) auto-mode-alist))
+
+      (when (and (require 'javascript-mode nil t)
+                 (not (assoc "\\.js.in\\'" auto-mode-alist)))
+        (push '("\\.js.in\\'" . dzn-mode) auto-mode-alist))
 
       (defun guile--manual-look-up (id mod)
         (message "guile--manual-look-up id=%s => %s mod=%s" id (symbol-name id) mod)

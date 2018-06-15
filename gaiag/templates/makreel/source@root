@@ -1,5 +1,3 @@
-% source@root
-
 %% m4 preamble
 ifdef(`changeword', `', `errprint(`m4: skipping: no changeword support
 ')m4exit(`77')')dnl
@@ -30,3 +28,4 @@ Declarative_Illegal = declarative_illegal . Declarative_Illegal;
 %%%%%%%%%%%%%%%%%%%%%%%%% INIT %%%%%%%%%%%%%%%%%%%%%%%%%
 
 #x:init
+%% code generator version: #x:version

@@ -1,0 +1,7 @@
+##if DZN_VERSION_ASSERT
+##include <boost/static_assert.hpp>
+BOOST_STATIC_ASSERT_MSG (#x:version-major  == dzn::version_major
+                         && #x:version-minor  == dzn::version_minor
+                         && #x:version-patch  == dzn::version_patch
+                         , "runtime version mismatch, expected #x:version , found" DZN_VERSION_STRING);
+##endif

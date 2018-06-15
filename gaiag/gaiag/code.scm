@@ -39,6 +39,7 @@
   #:use-module (gaiag resolve)
   #:use-module (gaiag shell-util)
   #:use-module (gaiag util)
+  #:use-module (gaiag config)
 
   #:use-module (gaiag ast)
   #:use-module (gaiag deprecated om)

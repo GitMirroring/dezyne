@@ -12,3 +12,4 @@ struct #x:model-name Component
   static void ReleaseInstance();
 };
 ##endif
+//version: #x:version

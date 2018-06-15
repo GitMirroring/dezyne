@@ -36,3 +36,4 @@ main(int argc, char* argv[])
   connect_ports (c);
   c(event_map (c), { #x:main-required-port-name });
 }
+//version: #x:version

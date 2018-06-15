@@ -24,6 +24,10 @@
 ;;; 
 ;;; Code:
 
+(define-templates version (const %service-version))
+(define-templates version-major (const %version-major))
+(define-templates version-minor (const %version-minor))
+(define-templates version-patch (const %version-patch))
 (define-templates source dzn:model newline-infix)
 (define-templates global dzn:global newline-infix)
 (define-templates model-name (compose om:name (cut parent <> <model>)))
