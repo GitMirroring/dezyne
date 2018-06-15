@@ -72,7 +72,6 @@
             c++:construction-parameters-locator-get
             c++:construction-parameters-locator-set
             c++:construction-signature
-            c++:global-enum-definer
             c++:enum->string
             c++:enum-field->string
             c++:name
@@ -142,9 +141,6 @@
 
 (define-method (c++:enum->string (o <interface>))
   (append (filter (is? <enum>) (om:globals o)) (om:enums o)))
-
-(define-method (c++:global-enum-definer (o <interface>))
-  (filter (is? <enum>) (ast:global* (parent o <root>))))
 
 (define-method (c++:argument_n (o <trigger>))
   (map

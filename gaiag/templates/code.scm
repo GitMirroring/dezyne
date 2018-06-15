@@ -66,6 +66,7 @@
 (define-templates in-event-definer (lambda (o) (filter om:in? (om:events o))) event-definer-infix)
 (define-templates out-event-definer (lambda (o) (filter om:out? (om:events o))) event-definer-infix)
 (define-templates enum-definer code:enum-definer)
+(define-templates global-enum-definer code:global-enum-definer)
 (define-templates enum-field-definer (lambda (o) (map (symbol->enum-field o) ((compose .elements .fields) o))) comma-infix)
 (define-templates variable-member-initializer om:variables)
 (define-templates reply-member-initializer code:reply-types)

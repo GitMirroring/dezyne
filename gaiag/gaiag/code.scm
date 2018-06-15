@@ -66,6 +66,7 @@
             event2->interface1-event1-alist
 
             code:enum-definer
+            code:global-enum-definer
             code:enum-name
             code:expression
             code:trigger
@@ -438,6 +439,9 @@
 
 (define-method (code:enum-definer (o <component>))
   (filter (is? <enum>) (ast:type* (.behaviour o))))
+
+(define-method (code:global-enum-definer (o <model>))
+  (filter (is? <enum>) (ast:global* (parent o <root>))))
 
 (define-method (code:instances (o <component>))
   '())
