@@ -291,7 +291,7 @@
                                (arguments (map .name formals))
                                (formals (map (lambda (formal)
                                                (list (if (eq? (.direction formal) 'in) "const ")
-                                                     "asd::value<" ((compose om:type-name (om:type component)) formal) ">::type& " (.name formal)))
+                                                     "asd::value<" ((compose .value (om:type component)) formal) ">::type& " (.name formal)))
                                              formals)))
                           (list "void " asd "(" formals "){\nport.out." dzn "(" arguments ");\n}\n")))
                       asd-events dzn-events)
