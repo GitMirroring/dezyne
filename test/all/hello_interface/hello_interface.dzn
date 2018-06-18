@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +22,7 @@
 //
 // Code:
 
-interface ihello
+interface hello_interface
 {
   in void hello();
 
@@ -30,13 +31,3 @@ interface ihello
     on hello: {}
   }
 }
-
-// interface iworld
-// {
-//   in void world();
-
-//   behaviour
-//   {
-//     on world: {}
-//   }
-// }
