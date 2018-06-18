@@ -5,14 +5,49 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
-* Changes in 2.8.0 (since 2.7.2)  WIP
+* No changes in development since 2.8.0
+
+* Announcement: full verification support in 2.8.0 and deprecation of 2.7
+  - With the full verification support in 2.8.0, the 2.7.x are hereby
+    declared deprecated.  2.7 was intended as a verification preview
+    release series while working on the transition to mCRL2 based
+    verification.
+  - 2.7.x will be discontinued after August 2018.
+
+* Changes in 2.8.0 (since 2.7.2)
 ** Verification
-  - Full verification support.
-  - The 2.8.0-verification service is seamlessly available and
-    implicitly used for previous service releases.
+  - Full verification support based on mCRL2 (http://mcrl2.org), see
+    https://hosting.verum.com/regression/2.8.0.
+  - The async feature has been officially released, see
+    https://hosting.verum.com/doc/?searchWord=async.
+  - The semantics of silent modeling events is now more strict and
+    enforced by a new well-formedness check.
+  - The 2.8.0-verification service is implicitly used for previous
+    service releases.
+** Service selection
+  - The dzn COMMAND --version option now also accepts --version=MAJOR
+    and --version=MAJOR.MINOR.
+  - dzn query command now also shows MAJOR and MAJOR.MINOR service
+    versions.
 ** Code generation
+  - C++ code and runtime now embed the service version.
   - Several fixes for usage of foreign components.
   - INTERFACE_ONLY has been removed from the C++ code generators.
+  - Skeleton code for foreign components are now generated inline;
+    no longer in a separate skel_ file.
+** ASD Converter
+   - The ASD converter now fixes an issue with shadowing of member
+     variables.
+** Noteworthy bug fixes
+  - Several namespace bugs have been fixed, supported usage includes
+    tests in https://hosting.verum.com/regression/2.8.0
+     + hello_interface_namespace.dzn
+     + hello_namespace_enum.dzn
+     + foreign.dzn
+     + inner_space.dzn
+     + namespace_assert.dzn
+     + name_space.dzn
+  - Several bugs have been fixed in the --glue=dzn code generator.
 
 * Changes in 2.7.2 (since 2.7.1)
 ** Verification
