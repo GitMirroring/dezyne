@@ -1,6 +1,0 @@
-##if DZN_VERSION_ASSERT
-static_assert (#x:version-major  == dzn::version_major
-               && #x:version-minor  == dzn::version_minor
-               && #x:version-patch  == dzn::version_patch
-               , "runtime version mismatch, expected #x:version , found" DZN_VERSION_STRING);
-##endif
