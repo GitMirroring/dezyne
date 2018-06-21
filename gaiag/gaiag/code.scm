@@ -603,11 +603,15 @@
 (define-method (scope (o <event>)) ((compose scope .type .signature) o))
 (define-method (scope (o <reply>)) (scope (.type (.expression o))))
 
-(define (code:interface-include o)
+(define-method (code:interface-include o)
   (map (compose (cut make <file-name> #:name <>) code:file-name)
        (delete-duplicates
-        (filter (negate (compose (cut equal? (source-file o) <>) (compose source-file .type)))
-                (om:ports o)))))
+        (filter (compose (cut (negate equal?) (source-file o) <>) source-file .type)
+                (ast:port* o)))))
+
+(define-method (code:interface-include (o <foreign>))
+  (map (compose (cut make <file-name> #:name <>) code:file-name)
+       (filter (compose (cut (negate equal?) (source-file (parent o <root>)) <>) source-file) (map .type (ast:port* o)))))
 
 (define (code:model2file-interface-include o)
   (or (and (code:model2file?) (code:interface-include o))
