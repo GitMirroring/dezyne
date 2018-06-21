@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
-//
-// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,34 +21,23 @@
 //
 // Code:
 
-#ifndef __MACHINE_CONSTANTS_HH__
-#define __MACHINE_CONSTANTS_HH__
+#include "timer.hh"
 
-#if __cplusplus >= 201103L
-#include <cstdint>
-#else
-namespace std
+#include <dzn/locator.hh>
+#include <dzn/pump.hh>
+
+size_t timer::s_id = 0;
+
+timer::timer(const dzn::locator& l)
+: locator(l)
+, skel::timer(l)
+, id(s_id++)
+{}
+void timer::port_create(int ms)
 {
-  typedef unsigned char uint8_t;
-  typedef int int32_t;
+  locator.get<dzn::pump>().handle(id, ms, port.out.timeout);
 }
-#endif
-
-#include <map>
-#include <string>
-
-using std::uint8_t;
-using std::int32_t;
-
-typedef bool Boolean;
-typedef std::uint8_t Byte;
-typedef std::int32_t Integer;
-
-struct config_scope
+void timer::port_cancel()
 {
-  static int get(const std::string& key);
-};
-
-extern config_scope config;
-
-#endif
+  locator.get<dzn::pump>().remove(id);
+}

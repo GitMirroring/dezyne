@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-//
+// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -21,14 +21,34 @@
 //
 // Code:
 
-#ifndef ITIMER_IMPL_HH
-#define ITIMER_IMPL_HH
+#ifndef __MACHINE_CONSTANTS_HH__
+#define __MACHINE_CONSTANTS_HH__
 
-struct itimer_impl
+#if __cplusplus >= 201103L
+#include <cstdint>
+#else
+namespace std
 {
-  void virtual create(int ms) = 0;
-  void virtual cancel() = 0;
+  typedef unsigned char uint8_t;
+  typedef int int32_t;
+}
+#endif
+
+#include <map>
+#include <string>
+
+using std::uint8_t;
+using std::int32_t;
+
+typedef bool Boolean;
+typedef std::uint8_t Byte;
+typedef std::int32_t Integer;
+
+struct config_scope
+{
+  static int get(const std::string& key);
 };
 
+extern config_scope config;
 
 #endif
