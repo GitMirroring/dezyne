@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -118,7 +119,7 @@ Usage: gdzn lts [OPTION]... DZN-FILE ...
                    (x:component-init model)))
          (commands `(,(cut display makreel)
                      ("bash" "-c" ,(format #f "cat - ; echo \"~a\"" init))
-                     ("m4")
+                     ("m4-cw")
                      ("mcrl22lps" "-b")
                      ("lpsconstelm" "-st")
                      ("lpsparelm")

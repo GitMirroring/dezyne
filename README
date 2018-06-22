@@ -1,10 +1,124 @@
--*- org -*-
+#                                                              -*-org-*-
+#+TITLE: The Dezyne server, services, client.
 #+OPTIONS: toc:2          only include two levels in TOC
-+OPTIONS: xtoc:nil        no default TOC at all
 
-#+TITLE The Dezyne server, services, client.
+Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]] v0.15.  See `Setup Guix' below.
 
-Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]].
+* Get it
+
+  #+BEGIN_SRC bash
+  mkdir -p src
+  cd src && git clone git.oban.verum.com:~buildmaster/development.git
+  #+END_SRC
+
+* Build it
+
+  #+BEGIN_SRC bash
+  GUIX_PACKAGE_PATH=guix guix environment -l guix.scm
+  ./configure
+  make
+  #+END_SRC
+
+** Run uninstalled programs
+
+  #+BEGIN_SRC bash
+  ./pre-inst-env gdzn ...
+  ./pre-inst-env dzn ...
+  #+END_SRC
+
+** Run regression test
+
+  #+BEGIN_SRC bash
+  ./pre-inst-env guix environment dezyne-services dezyne-regression-test
+  ./pre-inst-env test test/hello/helloworld
+
+  ./pre-inst-env test test/regression
+  #+END_SRC
+
+*** Run regression through node dzn client, daemon and server
+
+  #+BEGIN_SRC bash
+  ./pre-inst-env guix environment dezyne-services dezyne-regression-test
+  DZN=dzn ./pre-inst-env test test/hello/helloworld
+  #+END_SRC
+
+* Create a persistent build environment
+
+** in your default profile
+
+  #+BEGIN_SRC bash
+  GUIX_PACKAGE_PATH=guix guix package -m release/manifest.scm
+  #+END_SRC
+
+** or in a special named profile
+
+  #+BEGIN_SRC bash
+  GUIX_PACKAGE_PATH=guix guix package -p ~/.config/guix/verum -m release/manifest.scm
+  #+END_SRC
+
+* Build Guix packages
+
+** Build from local git
+*** Setup git daemon
+
+  #+BEGIN_SRC bash
+  mkdir -p $HOME/git-daemon/buildmaster
+  ln -s $HOME/src/development $HOME/git-daemon/buildmaster/development.git
+  #+END_SRC
+
+*** Start git daemon
+
+  #+BEGIN_SRC bash
+  git daemon --base-path=$HOME/git-daemon --export-all &
+  #+END_SRC
+
+*** Build packages
+
+**** From local git
+
+  #+BEGIN_SRC bash
+  ./pre-inst-env guix build -f guix.scm
+
+  ./pre-inst-env guix build \
+    --with-input=dezyne-services=dezyne-services@git \
+    --with-input=dezyne-test-content=dezyne-test-content@git\
+    dezyne-regression-test
+  #+END_SRC
+
+**** For release
+
+***** Update commit and hash of dezyne-services-source in [[./guix/dezyne/services.scm::dezyne-source-development][guix/dezyne/services.scm]]
+
+  #+BEGIN_SRC bash
+  GUIX_PACKAGE_PATH=guix git_oban=git://localhost build dezyne-services
+  ./pre-inst-env guix build dezyne-services
+  ./pre-inst-env guix build dezyne-regression-test
+  ./pre-inst-env guix build dezyne-pack
+  #+END_SRC
+
+*** Build vm
+
+  #+BEGIN_SRC bash
+  ./pre-inst-env guix system vm guix/dezyne/system/os.scm
+  #+END_SRC
+
+* Editing Scheme files
+
+You should not code dialect of Lisp without Paredit.  Add to you
+~/.emacs init file
+
+  #+BEGIN_SRC elisp
+  (when (require 'paredit nil t)
+    (add-hook 'scheme-mode-hook #'enable-paredit-mode)
+    (add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode))
+  #+END_SRC
+
+Geiser gives you jump to definition (M-.) and jump-to-documentation
+(C-d-d).
+
+  #+BEGIN_SRC elisp
+  (when (require 'geiser nil t) (add-hook 'scheme-mode-hook #'geiser-mode))
+  #+END_SRC
 
 * Setup Guix
 
@@ -25,74 +139,3 @@ Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]].
    #+END_SRC
 
 ** Or install [[https://gnu.org/s/guix][GuixSD]]
-
-* Get it
-
-  #+BEGIN_SRC bash
-  mkdir -p src
-  cd src && git clone git.oban.verum.com:~buildmaster/development.git
-  #+END_SRC
-
-* Build it
-
-  #+BEGIN_SRC bash
-  guix environment -l guix.scm
-  ./configure
-  make
-  #+END_SRC
-
-** Run uninstalled programs
-
-  #+BEGIN_SRC bash
-  ./pre-inst-env gdzn ...
-  ./pre-inst-env dzn ...
-  #+END_SRC
-
-** Run regression test
-
-  #+BEGIN_SRC bash
-  guix environment dezyne-regression-test
-  ./pre-inst-env test test/hello/helloworld
-
-  ./pre-inst-env test test/regression
-  #+END_SRC
-
-*** Run regression through node dzn client, daemon and server
-
-  #+BEGIN_SRC bash
-  guix environment dezyne-regression-test
-  DZN=dzn ./pre-inst-env test test/hello/helloworld
-  #+END_SRC
-
-* Create a persistent build environment
-
-** in your default profile
-
-  #+BEGIN_SRC bash
-  guix package -m release/manifest.scm
-  #+END_SRC
-
-** or in a special named profile
-
-  #+BEGIN_SRC bash
-  guix package -p ~/.config/guix/verum -m release/manifest.scm
-  #+END_SRC
-
-
-* Editing Scheme files
-
-You should not code dialect of Lisp without Paredit.  Add to you
-~/.emacs init file
-
-  #+BEGIN_SRC elisp
-  (when (require 'paredit nil t)
-    (add-hook 'scheme-mode-hook #'enable-paredit-mode)
-    (add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode))
-  #+END_SRC
-
-Geiser gives you jump to definition (M-.) and jump-to-documentation
-(C-d-d).
-
-  #+BEGIN_SRC elisp
-  (when (require 'geiser nil t) (add-hook 'scheme-mode-hook #'geiser-mode))
-  #+END_SRC

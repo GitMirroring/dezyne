@@ -1,5 +1,5 @@
 # Gaiag --- Guile in Asd In Asd in Guile.
-# Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 # Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
@@ -39,6 +39,9 @@ GOBJS := $(SRCS:%.scm=%.go)
 $(CDIR)-clean: CDIR:=$(CDIR)
 $(CDIR)-clean: GOBJS:=$(GOBJS)
 $(CDIR)-clean: clean-go
+
+all-go: all-go-$(CDIR)
+clean-go: clean-go-$(CDIR)
 
 include make/guile.mk
 

@@ -94,4 +94,4 @@
        (lambda (dir) (add-to-list 'geiser-guile-load-path dir))
        (mapcar
         #'prefix-dir-locals-dir
-        '("gaiag"))))))))
+        '("gaiag" "guix"))))))))
