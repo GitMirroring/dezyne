@@ -1,0 +1,91 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface n1.n2.n3.I {
+  enum Enum { N3 };
+  in void e3();
+  behaviour { on e3: {} }
+}
+
+enum n1.n2.n3.Enum { E3 };
+
+interface n1.n2.I {
+  enum Enum { N2 };
+  in void e2();
+  behaviour { on e2: {} }
+}
+
+enum n1.n2.Enum { E2 };
+
+interface n1.I {
+  enum Enum { N1 };
+  in void e1();
+  behaviour { on e1: {} }
+}
+
+enum n1.Enum { E1 };
+
+interface I {
+  enum Enum { N0 };
+  in void e0();
+  behaviour { on e0: {} }
+}
+
+enum Enum { E0 };
+
+component n1.n2.n3.C {
+  provides I p;
+  behaviour {
+    I.Enum n = I.Enum.N3;
+    Enum e = Enum.E3;
+    on p.e3(): {}
+  }
+}
+
+component n1.n2.C {
+  provides I p;
+  behaviour {
+    I.Enum n = I.Enum.N2;
+    Enum e = Enum.E2;
+    on p.e2(): {}
+  }
+}
+
+component n1.C {
+  provides I p;
+  behaviour {
+    I.Enum n = I.Enum.N1;
+    Enum e = Enum.E1;
+    on p.e1(): {}
+  }
+}
+
+component hello_namespace_shadow2 {
+  provides I p;
+  requires n1.I r1;
+  requires n1.n2.I r2;
+  requires n1.n2.n3.I r3;
+  behaviour {
+    on p.e0(): {}
+  }
+}

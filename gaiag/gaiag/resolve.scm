@@ -143,6 +143,11 @@
     )
   (define (prefix? name1 name2)
     (or (null? name1) (and (pair? name2) (eq? (car name1) (car name2)) (prefix? (cdr name1) (cdr name2)))))
+  (define (full-name name here)
+    (cond ((null? here) name)
+          ((eq? (car (->list name)) (last here))
+           (clone name #:scope (append here (.scope name)) #:name (.name name)))
+          (else (full-name name (drop here 1)))))
   (match o
          (($ <root>)
           (let ((scope (find scope? (.elements o))))
@@ -151,14 +156,18 @@
                 (find name? (ast:type* o)))))
          (($ <interface>)
           (if (and (is-a? name <scope.name>) (prefix? (om:scope+name (.name o)) (om:scope+name name))) (find name? (ast:type* o))
-              (type? (.parent o) name)))
+              (type? (.parent o) (full-name name (->list (.name o))))))
          (($ <behaviour>) (or (find name? (ast:type* o)) (type? (.parent o) name)))
          ((? (is? <type>)) (name? o))
          (_ (type? (.parent o) name))))
 
+
 (define-method (bind-instance? (o <ast>) name)
   (define (name? o) (and (eq? (.name o) name) o))
   (find name? (ast:instance* (parent o <system>))))
+
+(define-method (->list (o <scope.name>))
+  (append (.scope o) (list (.name o))))
 
 (define-method (.scope+name (o <scope.name>))
   (symbol-join (append (.scope o) (list (.name o)))))
