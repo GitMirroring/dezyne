@@ -331,16 +331,16 @@
   ((compose dzn:direction car ast:trigger*) o))
 
 (define-method (dzn:port-prefix (o <action>))
-  (if (not (.port o)) '()
-      (list (.port o))))
+  (if (not (.port.name o)) '()
+      (list (.port.name o))))
 
 (define-method (dzn:port-prefix (o <binding>))
-  (if (not (.port o)) ""
-      (list (.port o))))
+  (if (not (.port.name o)) '()
+      (list (.port.name o))))
 
 (define-method (dzn:port-prefix (o <trigger>))
-  (if (not (.port o)) ""
-      (list (.port o))))
+  (if (not (.port.name o)) '()
+      (list (.port.name o))))
 
 (define-method (dzn:signature (o <event>))
   (.signature o))
@@ -348,7 +348,7 @@
   (list ((compose om:name .type) o) 't))
 
 (define-method (dzn:action-arguments (o <action>)) ; MORTAL SIN HERE!!?
-  (if (not (.port o)) ""
+  (if (not (.port.name o)) '()
       (if (null? (ast:argument* o)) (list "")
           (ast:argument* o))))
 
