@@ -97,7 +97,7 @@
       (native-inputs `(("dezyne-services" ,dezyne-services)
                        ("ccache" ,ccache)
                        ("git" ,git)
-                       ("mcrl2" ,mcrl2-svn)
+                       ("mcrl2" ,mcrl2-git)
                        ("postgresql" ,postgresql)
                        ,@(package-native-inputs dezyne-services))))))
 
