@@ -56,7 +56,9 @@
 
   #:export (mcrl2:verify
             verify:file-name
-            verify:scope-name))
+            verify:scope-name
+            x:interface-init
+            x:component-init))
 
 
 (define (x:interface-init o) (format #f "init ~ainterface;" (apply string-append (map symbol->string (om:scope+name o)))))
