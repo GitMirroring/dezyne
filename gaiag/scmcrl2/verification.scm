@@ -342,7 +342,7 @@
                    (else message)))
          (trace-list (filter (negate (cut string-contains <> "<flush>")) trace-list))
          (trace (if (member last '("range_error" "type_error" "missing_reply" "second_reply" "incomplete"))
-                    (string-join (drop-right trace-list (if (member last (if (eq? model-type 'component) '("incomplete") '("missing_reply" "incomplete"))) 2 1)) "\n")
+                    (string-join (drop-right trace-list (if (member last '("incomplete")) 2 1)) "\n")
                     (string-join (take-while (negate (cut equal? "queue_full" <>)) trace-list) "\n"))))
     (let* ((cwd (getcwd))
            (foo (chdir dir))
