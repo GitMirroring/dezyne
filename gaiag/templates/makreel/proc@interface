@@ -1,8 +1,8 @@
 #x:makreel:model-name reorder
  = sum i : #x:makreel:model-name events. #x:makreel:model-name in(i) . (sum r : #x:makreel:model-name replies. #x:makreel:model-name reply(r) . #x:makreel:model-name reorder_replied(r)
                                                                        +#x:makreel:model-name reorder_end . missing_reply . delta)
- + sum m : #x:makreel:model-name modeling. #x:makreel:model-name internal (m) . #x:makreel:model-name end . #x:makreel:model-name reorder_end . #x:makreel:model-name reorder
- + sum m : #x:makreel:model-name silent. #x:makreel:model-name silent (m) . #x:makreel:model-name silent_end . #x:makreel:model-name reorder_end . #x:makreel:model-name reorder
+ + sum m : #x:makreel:model-name modeling. #x:makreel:model-name internal (m) . #x:makreel:model-name end .  #x:makreel:model-name reorder
+ + sum m : #x:makreel:model-name silent. #x:makreel:model-name silent (m) . #x:makreel:model-name silent_end . #x:makreel:model-name reorder
  ;
 
 #x:makreel:model-name reorder_replied(r : #x:makreel:model-name replies)
