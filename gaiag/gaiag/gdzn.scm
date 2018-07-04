@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -23,6 +24,7 @@
 
 (define-module (gaiag gdzn)
   #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 poe)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (gaiag config)
@@ -45,15 +47,15 @@
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
 	 (usage? (and (not help?) (null? files)))
-	 (version? (option-ref options 'version #f))
-         (commands (map (cut basename <> ".go") (find-files %command-dir ".*.go"))))
+	 (version? (option-ref options 'version #f)))
 
     (or
      (and version?
 	  ((stdout "gdzn ~a\n" %service-version) (exit 0)))
      (and (or help? usage?)
           ((or (and usage? stderr) stdout)
-           (string-append "\
+           (let ((commands (map (cut basename <> ".go") (find-files %command-dir ".*.go"))))
+             (string-append "\
 Usage: gdzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -d, --debug            enable debug ouput
   -h, --help             display this help
@@ -64,13 +66,15 @@ Usage: gdzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -V, --version          display version
 
 Commands:"
-                          (string-join commands "\n  " 'prefix)
-"
+                                  (string-join commands "\n  " 'prefix)
+                                  "
 
 Use \"gdzn COMMAND --help\" for command-specific information.
-"))
+")))
 	   (exit (or (and usage? 2) 0)))
      options)))
+
+(define parse-opts (pure-funcq parse-opts))
 
 (define (run-command args)
   (setenv "PATH" (string-append %service-bindir ":" (getenv "PATH")))
