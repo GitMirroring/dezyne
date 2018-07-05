@@ -47,7 +47,12 @@ exec ${GUILE-guile} --no-auto-compile -L . -e '(configure)' -s "$0" ${1+"$@"}
            default)))
 
 (define GDZN (or (getenv "GDZN") "gdzn"))
-(define GOJS (or (getenv "GOJS") "/gnu/store/qapf0651kbb98zp1z6ikak05qnf3yphw-gojs-1.6.15.73fc41e1b41c289246994a7e5a6a32b7"))
+;; FIXME: how to find proper GO-JS?
+(define GOJS (or (getenv "GOJS")
+                 (find file-exists?
+                  '("/gnu/store/gwr5xk65rwv92zksyd911a91v32dpr4d-gojs-1.6.15.73fc41e1b41c289246994a7e5a6a32b7"
+                    "/gnu/store/qapf0651kbb98zp1z6ikak05qnf3yphw-gojs-1.6.15.73fc41e1b41c289246994a7e5a6a32b7"))))
+
 (define GUILE_EFFECTIVE_VERSION (effective-version))
 (define GUILE (PATH-search-path (or (getenv "guile") "guile")))
 (define SYSCONFDIR "/etc")
