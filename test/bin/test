@@ -67,10 +67,33 @@ var output = {
       item.outcome = output.read_outcome(path.dirname (output.filePath)+'/'+path.basename(item.name));
     });
     set_status(output.result);
+
+    output.result.testsets = [];
+    var rootdir = output.result.target + '/..';
+    var testset_entries = fs.readdirSync(rootdir)
+        .filter(function(entry) {
+          try {
+            return entry != 'all' && fs.lstatSync (rootdir + '/' + entry + '/').isDirectory ();
+          } catch (e) {}
+          return false;
+        });
+    testset_entries.each(function(entry) {
+      var items = output.result.items.filter(function(item) {
+        try {
+          return fs.lstatSync(rootdir + '/' + entry  + '/' + path.basename(item.name) + '/').isDirectory();
+        } catch(e) {};
+        return false;
+      });
+      if (items.length) {
+        output.result.testsets.push({name: entry, items: items});
+      }
+    });
+
     if (output.write) {
       output.write(output.result, output.filePath);
       console.log ('See file://' + path.resolve (output.filePath));
     }
+
     return output.result;
   }
   ,
@@ -321,7 +344,7 @@ function main() {
       }
     })
     .then(function(results) {
-      var outcome = output.close();
+      var outcome = output.close(args);
       console.log('STATUS: ' + JSON.stringify(outcome.status));
       var x = outcome.status.failed;
       process.exit(x);

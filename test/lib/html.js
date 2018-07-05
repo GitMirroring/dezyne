@@ -340,82 +340,87 @@ var privates = {
     ln('    </table>');
     ln('    <p></p>');
 
-    ln('    <table id="details">');
-    if (result.items.length) {
-      ln('    <tr>');
-      ln('      <th class="white item">ITEM</th>');
-      ln('      <th class="white item">META</th>');
-      ln('      <th class="white">time</th>');
 
-      order.each(function(aspect) {
-        var len = 1;
-        if (summary[aspect].languages) {
-          len = Object.keys(summary[aspect].languages).length;
-          var cl = summary[aspect].status;
-          ln('      <th class="'+cl+' '+aspect+'" colspan="'+len+'">'+aspect+'</th>');
-        } else {
-          var cl = summary[aspect];
-          ln('      <th class="'+cl+' '+aspect+'">'+aspect+'</th>');
-        }
-      });
-      ln('    </tr>');
-      ln('    <tr>');
-      ln('      <th class="white"> </th>');
-      ln('      <th class="white"> </th>');
-      ln('      <th class="white"> </th>');
+    result.testsets.each(function(testset) {
+      ln('    <h2>Test set: ' + testset.name + '</h2>');
+      ln('    <table id="details">');
+      if (testset.items.length) {
+        ln('    <tr>');
+        ln('      <th class="white item">ITEM</th>');
+        ln('      <th class="white item">META</th>');
+        ln('      <th class="white">time</th>');
 
-      order.each(function(aspect) {
-        if (summary[aspect].languages) {
-          languages.each(function(language) {
-            var cl = summary[aspect].languages[language];
+        order.each(function(aspect) {
+          var len = 1;
+          if (summary[aspect].languages) {
+            len = Object.keys(summary[aspect].languages).length;
+            var cl = summary[aspect].status;
+            ln('      <th class="'+cl+' '+aspect+'" colspan="'+len+'">'+aspect+'</th>');
+          } else {
+            var cl = summary[aspect];
+            ln('      <th class="'+cl+' '+aspect+'">'+aspect+'</th>');
+          }
+        });
+        ln('    </tr>');
+        ln('    <tr>');
+        ln('      <th class="white"> </th>');
+        ln('      <th class="white"> </th>');
+        ln('      <th class="white"> </th>');
+
+        order.each(function(aspect) {
+          if (summary[aspect].languages) {
+            languages.each(function(language) {
+              var cl = summary[aspect].languages[language];
               ln('      <th class="'+cl+' '+aspect+' '+p(language)+'">'+language+'</th>');
-          });
-        } else {
-          var cl = summary[aspect];
-          ln('      <th class="'+cl+' '+aspect+'"> </th>');
-        }
-      });
-      ln('    </tr>');
-    }
-
-    result.items.each(function(item) {
-      var hname = m(item.name);
-      var outcome = item.outcome.status;
-      ln('    <tr class="'+privates.status2class(item.status)+'">');
-      var base = path.basename (item.name);
-      var file;
-      try {var f = item.name + '/' + base + '.dm'; file = fs.realpathSync (f);} catch (e) {}
-      try {var f = item.name + '/' + base + '.dzn'; file = fs.realpathSync (f);} catch (e) {}
-      var dir = path.basename (path.dirname (item.name));
-      ln('      <td class="'+privates.status2class(item.status)+' item"><a href="' + file +'">'+dir+'/'+ base+'</a></td>');
-      var meta;
-      try {var f = item.name + '/' + 'META'; meta = fs.realpathSync (f);} catch (e) {}
-      if (meta) {
-        ln('      <td class="white"><a href="' + meta +'">'+'META'+'</a></td>');
-      } else {
-        ln('      <td class="white"></td>');
+            });
+          } else {
+            var cl = summary[aspect];
+            ln('      <th class="'+cl+' '+aspect+'"> </th>');
+          }
+        });
+        ln('    </tr>');
       }
-      ln('      <td class="white">'+item.outcome.elapsed+'</a></td>');
-      order.each(function(aspect) {
-        var aspoutcome = outcome[aspect] || 'SKIPPED';
-        if (summary[aspect].languages) {
-          languages.each(function(language) {
-            var status = aspoutcome[language] || 'SKIPPED';
-            var cl = privates.status2class(status);
-            ln('      <td class="'+cl+' '+aspect+' '+p(language)+'">'
-               +'<a href="#'+hname+'-'+aspect+'-'+p(language)+'" class="'+cl+' '+aspect+' '+p(language)+'">'
-               +status+'</a></td>');
-          });
+
+      testset.items.each(function(item) {
+        var hname = m(item.name);
+        var outcome = item.outcome.status;
+        ln('    <tr class="'+privates.status2class(item.status)+'">');
+        var base = path.basename (item.name);
+        var file;
+        try {var f = item.name + '/' + base + '.dm'; file = fs.realpathSync (f);} catch (e) {}
+        try {var f = item.name + '/' + base + '.dzn'; file = fs.realpathSync (f);} catch (e) {}
+        var dir = path.basename (path.dirname (item.name));
+        ln('      <td class="'+privates.status2class(item.status)+' item"><a href="' + file +'">'+dir+'/'+ base+'</a></td>');
+        var meta;
+        try {var f = item.name + '/' + 'META'; meta = fs.realpathSync (f);} catch (e) {}
+        if (meta) {
+          ln('      <td class="white"><a href="' + meta +'">'+'META'+'</a></td>');
         } else {
-          var status = aspoutcome;
-          var cl = privates.status2class(status);
-          ln('      <td class="'+cl+' '+aspect+'">'
-             +'<a href="#'+hname+'-'+aspect+'" class="'+cl+' '+aspect+'">'+status+'</a></td>');
+          ln('      <td class="white"></td>');
         }
+        ln('      <td class="white">'+item.outcome.elapsed+'</a></td>');
+        order.each(function(aspect) {
+          var aspoutcome = outcome[aspect] || 'SKIPPED';
+          if (summary[aspect].languages) {
+            languages.each(function(language) {
+              var status = aspoutcome[language] || 'SKIPPED';
+              var cl = privates.status2class(status);
+              ln('      <td class="'+cl+' '+aspect+' '+p(language)+'">'
+                 +'<a href="#'+hname+'-'+aspect+'-'+p(language)+'" class="'+cl+' '+aspect+' '+p(language)+'">'
+                 +status+'</a></td>');
+            });
+          } else {
+            var status = aspoutcome;
+            var cl = privates.status2class(status);
+            ln('      <td class="'+cl+' '+aspect+'">'
+               +'<a href="#'+hname+'-'+aspect+'" class="'+cl+' '+aspect+'">'+status+'</a></td>');
+          }
+        });
+        ln('    </tr>');
       });
-      ln('    </tr>');
+      ln('    </table>');
+
     });
-    ln('    </table>');
 
     result.items.each(function(item) {
       var hname = m(item.name);
@@ -423,7 +428,7 @@ var privates = {
       if (typeof outcome.output !== 'string') {
         Object.keys(outcome.output).each(function(aspect_language) {
           var out = outcome.output[aspect_language];
-            ln('        <div id="'+hname+'-'+p(aspect_language)+'">');
+          ln('        <div id="'+hname+'-'+p(aspect_language)+'">');
           ln('          <hr>');
           ln('          <h3>'+item.name+'/'+aspect_language+'</h3>');
           ln('          <pre>'+out+'</pre>');
@@ -431,6 +436,7 @@ var privates = {
         });
       }
     });
+
     ln('  </body>');
     ln('<html>');
     return html;
