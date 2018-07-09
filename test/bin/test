@@ -70,13 +70,15 @@ var output = {
 
     output.result.testsets = [];
     var rootdir = output.result.target + '/..';
+    var target = path.basename(output.result.target);
     var testset_entries = fs.readdirSync(rootdir)
         .filter(function(entry) {
           try {
-            return entry != 'all' && fs.lstatSync (rootdir + '/' + entry + '/').isDirectory ();
+            return entry != 'all' && entry != target && fs.lstatSync (rootdir + '/' + entry + '/').isDirectory ();
           } catch (e) {}
           return false;
         });
+    testset_entries.unshift(target);
     testset_entries.each(function(entry) {
       var items = output.result.items.filter(function(item) {
         try {

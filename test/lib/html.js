@@ -88,21 +88,20 @@ var privates = {
     return 'pass';
   }
   ,
-  summary_per_aspect: function(result) {
+  status_or: function(status1, status2) {
+    if (status1 == 'fail' || status2 == 'fail') return 'fail';
+    if (status1 == 'known' || status2 == 'known') return 'known';
+    if (status1 == 'solved' || status2 == 'solved') return 'solved';
+    if (status1 == 'pass' || status2 == 'pass') return 'pass';
+    return null;
+  }
+  ,
+  summary_per_aspect: function(testset) {
     var summary = {};
 
-    var order = (result.items.length) ? result.items[0].outcome.order : [];
-    var languages = privates.all_languages(result);
-
-    function status_or(status1, status2) {
-      if (status1 == 'fail' || status2 == 'fail') return 'fail';
-      if (status1 == 'known' || status2 == 'known') return 'known';
-      if (status1 == 'solved' || status2 == 'solved') return 'solved';
-      if (status1 == 'pass' || status2 == 'pass') return 'pass';
-      return null;
-    }
-
-    var outcome = (result.items.length) ? result.items[0].outcome.status : [];
+    var order = (testset.items.length) ? testset.items[0].outcome.order : [];
+    var languages = privates.all_languages(testset);
+    var outcome = (testset.items.length) ? testset.items[0].outcome.status : [];
 
     // pre: first item is complete is all its aspects
     order.each(function(aspect) {
@@ -118,18 +117,18 @@ var privates = {
       }
     });
 
-    result.items.each(function(item) {
+    testset.items.each(function(item) {
       var outcome = item.outcome.status;
       order.each(function(aspect) {
         var aspoutcome = outcome[aspect] || 'SKIPPED';
         if (typeof summary[aspect] !== 'string') {
           languages.each(function(language) {
             var status = privates.status2class(aspoutcome[language] || 'SKIPPED');
-            summary[aspect].languages[language] = status_or(status,summary[aspect].languages[language]);
+            summary[aspect].languages[language] = privates.status_or(status,summary[aspect].languages[language]);
           });
         } else {
           var status = privates.status2class(aspoutcome);
-          summary[aspect] = status_or(status,summary[aspect]);
+          summary[aspect] = privates.status_or(status,summary[aspect]);
         }
       });
     });
@@ -138,7 +137,7 @@ var privates = {
       if (summary[aspect].languages) {
         var status = 'pass';
         languages.each(function(language) {
-          status = status_or(status,summary[aspect].languages[language]);
+          status = privates.status_or(status,summary[aspect].languages[language]);
         });
         summary[aspect].status = status;
       }
@@ -147,25 +146,25 @@ var privates = {
   }
   ,
   transform: function(result) {
-    var cfail   = 'rgba(255,200,200,.75)';
-    var cknown  = 'rgba(255,255,200,.75)';
-    var csolved = 'rgba(200,200,255,.75)';
-    var cpass   = 'rgba(200,255,200,.75)';
-    var cwhite  = 'rgba(255,255,255,.75)';
+    var colors = { fail: 'rgba(255,200,200,.75)',
+                   known: 'rgba(255,255,200,.75)',
+                   solved: 'rgba(200,200,255,.75)',
+                   pass: 'rgba(200,255,200,.75)',
+                   white: 'rgba(255,255,255,.75)'
+                 };
 
-    var summary = privates.summary_per_aspect(result);
     var order = (result.items.length) ? result.items[0].outcome.order : [];
     var languages = privates.all_languages(result);
 
     var html = '';
 
-      function p(language) {
-          return language.replace(/\+/g,'p');
-      }
+    function p(language) {
+      return language.replace(/\+/g,'p');
+    }
 
-      function m(name) {
-          return name.replace(/\//g,'-');
-      }
+    function m(name) {
+      return name.replace(/\//g,'-');
+    }
 
     function ln(line) {
       html += line + '\n';
@@ -175,102 +174,44 @@ var privates = {
     ln('<html>');
     ln('  <title>Result of '+result.target+'</title>');
     ln('  <head>');
-    ln('    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>');
-    ln('    <script type="text/javascript">');
-    ln('      var $target;');
-    ln('      jQuery(document).ready(function() {');
-    ln('        jQuery("a.pass").click(function(event){');
-    ln('          if ($target) $target.css("background", "white");');
-    ln('          $target = jQuery(this.hash);');
-    ln('          $target.css("background", "'+cpass+'");');
-    ln('        });');
-    ln('        jQuery("a.fail").click(function(event){');
-    ln('          if ($target) $target.css("background", "white");');
-    ln('          $target = jQuery(this.hash);');
-    ln('          $target.css("background", "'+cfail+'");');
-    ln('        });');
-    ln('        jQuery("a.known").click(function(event){');
-    ln('          if ($target) $target.css("background", "white");');
-    ln('          $target = jQuery(this.hash);');
-    ln('          $target.css("background", "'+cknown+'");');
-    ln('        });');
-    ln('        jQuery("a.solved").click(function(event){');
-    ln('          if ($target) $target.css("background", "white");');
-    ln('          $target = jQuery(this.hash);');
-    ln('          $target.css("background", "'+csolved+'");');
-    ln('        });');
-    ln('      });');
-    ln('      var show = {"pass": true, "solved": true, "known": true, "fail": true };');
-    ln('       function hide(result) {');
-    ln('        show[result] = ! show[result];');
-    ln('        var showme = show[result];');
-    ln('        var bt = document.querySelector("button."+result);');
-    ln('        bt.style.opacity=showme ? 1 : .33;');
-    ln('        hideRows(showme,result);');
-    ln('        hideColumns(showme,result);');
-    ln('      }');
-    ln('      function hideRows(showme,result) {');
-    ln('        var text = showme ? "" : "display:none;";');
-    ln('        var items = document.querySelectorAll("tr."+result);');
-    ln('        for (var i = 0; i < items.length; ++i) {');
-    ln('          items[i].style.cssText = text;');
-    ln('        }');
-    ln('      }');
-    ln('      function hideColumns(showme,result) {');
-    ln('        var table = document.getElementById("details");');
-    ln('        var row = table.rows[1];');
-    ln('        for (var j = 0, col; col = row.cells[j]; j++) {');
-    ln('          var cl = col.getAttribute("class").split(" ");');
-    ln('          if (cl[0] === result) {');
-    ln('            hideColumn(showme,cl[1],cl.length>2 ? cl[2] : null);');
-    ln('          }');
-    ln('        }');
-    ln('      }');
-    ln('      function hideColumn(showme,aspect,language) {');
-    ln('        var text = showme ? "" : "font-size:0%;";');
-    ln('        var query = "."+aspect+(language ? ("."+language) : "");');
-    ln('        var items = document.querySelectorAll("th"+query);');
-    ln('        for (var i = 0; i < items.length; ++i) {');
-    ln('          items[i].style.cssText = text;');
-    ln('        }');
-    ln('        items = document.querySelectorAll("td"+query);');
-    ln('        for (var i = 0; i < items.length; ++i) {');
-    ln('          items[i].style.cssText = text;');
-    ln('        }');
-    ln('      }');
-    ln('      function initTables() {');
-    ln('        hide(\'pass\');');
-    ln('        hide(\'solved\');');
-    ln('        hide(\'known\');');
-    ln('      }');
-    ln('    </script>');
-    ln('    <title>' + result.title + '</title>');
+
+//    ln('    <!-- development version, includes helpful console warnings -->');
+//    ln('    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>');
+    ln('    <!-- production version, optimized for size and speed -->');
+    ln('    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.min.js"></script>');
+
     ln('    <style>');
     ln('      body {');
     ln('        font-family: Sans-serif;');
     ln('      }');
     ln('      table {');
-    ln('          border-collapse: collapse;');
+    ln('        border-collapse: collapse;');
     ln('      }');
     ln('      table, th, td {');
-    ln('          border: 1px solid gray;');
+    ln('        border: 1px solid gray;');
     ln('      }');
     ln('      tr:nth-child(odd){');
-    ln('          background-color: #CCCCCC');
+    ln('        background-color: #CCCCCC');
     ln('      }');
     ln('      td, th {');
-    ln('          text-align: center;');
-    ln('          font-size: 80%;');
-    ln('          padding: 5px;');
+    ln('        text-align: center;');
+    ln('        font-size: 80%;');
+    ln('        padding: 5px;');
     ln('      }');
     ln('      td.item, th.item {');
-    ln('          text-align: left;');
+    ln('        text-align: left;');
     ln('      }');
     ln('      pre {');
     ln('        display: inline;');
     ln('      }');
     ln('      h2, h3, h4 {');
-    ln('        line-height: 0.3;');
+    ln('        padding: 4px;');
+    ln('        margin: 4px 0px 4px 0px;');
+    ln('        font-size: 110%;');
+    ln('      }');
+    ln('      h2:hover {');
+    ln('        text-decoration: underline;');
+    ln('        cursor: pointer;');
     ln('        color: blue;');
     ln('      }');
     ln('      a {');
@@ -282,20 +223,19 @@ var privates = {
     ln('        color: blue;');
     ln('      }');
     ln('      .fail {');
-    ln('        background: '+cfail+';');
+    ln('        background: '+colors["fail"]+';');
     ln('      }');
     ln('      .known {');
-    ln('        background: '+cknown+';');
+    ln('        background: '+colors["known"]+';');
     ln('      }');
     ln('      .solved {');
-    ln('        background: '+csolved+';');
+    ln('        background: '+colors["solved"]+';');
     ln('      }');
     ln('      .pass {');
-    ln('        color: black;');
-    ln('        background: '+cpass+';');
+    ln('        background: '+colors["pass"]+';');
     ln('      }');
     ln('      .white {');
-    ln('        background: '+cwhite+';');
+    ln('        background: '+colors["white"]+';');
     ln('      }');
     ln('      button {');
     ln('        background-color: rgba(255,255,255,0);');
@@ -303,140 +243,267 @@ var privates = {
     ln('        text-align: center;');
     ln('        font-size: 100%;');
     ln('      }');
+    ln('      [v-cloak] {');
+    ln('        display: none;');
+    ln('      }');
     ln('    </style>');
     ln('  </head>');
-    ln('  <body onload="initTables();">');
+    ln('  <body>');
+    ln('    <div id="app">');
+
     var lcStatus = privates.overall_status(result);
     var ucStatus = privates.display_status(lcStatus);
-    ln('    <h1 id="target" class="' + lcStatus + '">Target: ' + result.target + ' ' + ucStatus + '</h1>');
-    ln('    <table id="summary">');
-    ln('      <tr>');
-    ln('        <th class="white">Date</th>');
-    ln('        <th class="white">Start time</th>');
-    ln('        <th class="white">End time</th>');
-    ln('        <th class="white">Elapsed time</th>');
-    ln('        <th class="white">Total tests</th>');
-    ln('        <th class="white">Passed</th>');
-    ln('        <th class="white">Solved</th>');
-    ln('        <th class="white">Known</th>');
-    ln('        <th class="white">Failed</th>');
-    ln('      </tr>');
-    ln('      <tr>');
-    ln('        <td class="white">' + result.startTime.toLocaleDateString() + '</td>');
-    ln('        <td class="white">' + result.startTime.toLocaleTimeString() + '</td>');
-    ln('        <td class="white">' + result.endTime.toLocaleTimeString() + '</td>');
-    ln('        <td class="white">' + result.elapsedTime + '</td>');
-    ln('        <td class="white">' + (result.status.passed + result.status.solved
-       + result.status.known + result.status.failed) + '</td>');
-    ln('        <td class="pass"><button id="button" class="pass" onclick="hide(\'pass\')">'
-       + result.status.passed + '</button></td>');
-    ln('        <td class="solved"><button id="button" class="solved" onclick="hide(\'solved\')">'
-       + result.status.solved + '</button></td>');
-    ln('        <td class="known"><button id="button" class="known" onclick="hide(\'known\')">'
-       + result.status.known + '</button></td>');
-    ln('        <td class="fail"><button id="button" class="fail" onclick="hide(\'fail\')">'
-       + result.status.failed + '</button></td>');
-    ln('      </tr>');
-    ln('    </table>');
-    ln('    <p></p>');
 
+    ln('      <h1 id="target" class="' + lcStatus + '">Target: ' + result.target + ' ' + ucStatus + '</h1>');
+    ln('      <table id="summary">');
+    ln('        <tr>');
+    ln('          <th class="white">Date</th>');
+    ln('          <th class="white">Start time</th>');
+    ln('          <th class="white">End time</th>');
+    ln('          <th class="white">Elapsed time</th>');
+    ln('          <th class="white">Total tests</th>');
+    ln('          <th class="white">Passed</th>');
+    ln('          <th class="white">Solved</th>');
+    ln('          <th class="white">Known</th>');
+    ln('          <th class="white">Failed</th>');
+    ln('        </tr>');
+    ln('        <tr>');
+    ln('          <td class="white">' + result.startTime.toLocaleDateString() + '</td>');
+    ln('          <td class="white">' + result.startTime.toLocaleTimeString() + '</td>');
+    ln('          <td class="white">' + result.endTime.toLocaleTimeString() + '</td>');
+    ln('          <td class="white">' + result.elapsedTime + '</td>');
+    var total = result.status.passed + result.status.solved + result.status.known + result.status.failed;
+    ln('          <td class="white">' + total + '</td>');
+    ln('          <td class="pass">');
+    ln('            <button id="button" class="pass" :style="{opacity:passOpa}" v-on:click="toggle(\'pass\')">');
+    ln('              ' + result.status.passed);
+    ln('            </button>');
+    ln('          </td>');
+    ln('          <td class="solved">');
+    ln('            <button id="button" class="solved" :style="{opacity:solvedOpa}" v-on:click="toggle(\'solved\')">');
+    ln('              ' + result.status.solved);
+    ln('            </button>');
+    ln('          </td>');
+    ln('          <td class="known">');
+    ln('            <button id="button" class="known" :style="{opacity:knownOpa}" v-on:click="toggle(\'known\')">');
+    ln('              ' + result.status.known);
+    ln('            </button></td>');
+    ln('          <td class="fail">');
+    ln('            <button id="button" class="fail" :style="{opacity:failOpa}" v-on:click="toggle(\'fail\')">');
+    ln('              ' + result.status.failed);
+    ln('            </button>');
+    ln('          </td>');
+    ln('        </tr>');
+    ln('      </table>');
+    ln('      <p></p>');
 
-    result.testsets.each(function(testset) {
-      ln('    <h2>Test set: ' + testset.name + '</h2>');
-      ln('    <table id="details">');
-      if (testset.items.length) {
-        ln('    <tr>');
-        ln('      <th class="white item">ITEM</th>');
-        ln('      <th class="white item">META</th>');
-        ln('      <th class="white">time</th>');
+    ln('      <div v-cloak v-for="(testset,index) in testsets">');
+    ln('        <h2 v-on:click="toggletable(index)" :class="testset.class">{{testset.name}}</h2>');
+    ln('        <table id="details" v-show="showtable(index)">');
+    ln('          <thead>');
+    ln('            <tr>');
+    ln('              <th v-for="thead in testset.table.header1" :class="thead.class" :colspan="thead.colspan">');
+    ln('                <span v-show="show(thead.status)">{{thead.name}}</span>');
+    ln('              </th>');
+    ln('            </tr>');
+    ln('            <tr>');
+    ln('              <th v-for="thead in testset.table.header2" :class="thead.class">');
+    ln('                <span v-show="show(thead.status)">{{thead.name}}</span>');
+    ln('              </th>');
+    ln('            </tr>');
+    ln('          </thead>');
+    ln('          <tbody>');
+    ln('            <tr v-for="trow in testset.table.items" v-show="show(trow.status)" :class="trow.class">');
+    ln('              <td v-for="aspect in trow.aspects" :class="aspect.class">');
+    ln('                <template v-if="aspect.href">');
+    ln('                  <a :href="aspect.href" v-show="show(aspect.status)" v-on:click="highlight(aspect.hclass,aspect.status)">{{aspect.content}}</a>');
+    ln('                </template>');
+    ln('                <template v-else>');
+    ln('                  <span v-show="show(aspect.status)">{{aspect.content}}</span>');
+    ln('                </template>');
+    ln('              </td>');
+    ln('            </tr>');
+    ln('          </tbody>');
+    ln('        </table>');
+    ln('      </div>');
 
-        order.each(function(aspect) {
+    ln('      <div v-cloak v-for="item in output" :id="item.id" :ref="item.id">');
+    ln('        <hr>');
+    ln('        <h3>{{item.header}}</h3>');
+    ln('        <pre>{{item.out}}</pre>');
+    ln('      </div>');
+
+    ln('    </div>'); // id="app"
+
+    var data = {};
+    data.testsets = result.testsets.map(function(testset) {
+
+      var summary = privates.summary_per_aspect(testset);
+
+      var header1 = [];
+
+      header1.push({class: 'white', colspan: 1, name: 'ITEM'});
+      header1.push({class: 'white', colspan: 1, name: 'META'});
+      header1.push({class: 'white', colspan: 1, name: 'time'});
+
+      order.each(function(aspect) {
           var len = 1;
-          if (summary[aspect].languages) {
+          var cl = summary[aspect];
+          if (cl.languages) {
             len = Object.keys(summary[aspect].languages).length;
-            var cl = summary[aspect].status;
-            ln('      <th class="'+cl+' '+aspect+'" colspan="'+len+'">'+aspect+'</th>');
-          } else {
-            var cl = summary[aspect];
-            ln('      <th class="'+cl+' '+aspect+'">'+aspect+'</th>');
+            cl = summary[aspect].status;
           }
-        });
-        ln('    </tr>');
-        ln('    <tr>');
-        ln('      <th class="white"> </th>');
-        ln('      <th class="white"> </th>');
-        ln('      <th class="white"> </th>');
+        header1.push({status: cl, class: cl+' '+aspect, colspan: len, name: aspect});
+      });
 
-        order.each(function(aspect) {
-          if (summary[aspect].languages) {
-            languages.each(function(language) {
-              var cl = summary[aspect].languages[language];
-              ln('      <th class="'+cl+' '+aspect+' '+p(language)+'">'+language+'</th>');
-            });
-          } else {
-            var cl = summary[aspect];
-            ln('      <th class="'+cl+' '+aspect+'"> </th>');
-          }
-        });
-        ln('    </tr>');
-      }
+      var header2=  [];
+      header2.push({class: 'white', name: ''});
+      header2.push({class: 'white', name: ''});
+      header2.push({class: 'white', name: ''});
+
+      order.each(function(aspect) {
+        var cl = summary[aspect];
+        if (cl.languages) {
+          languages.each(function(language) {
+            var cl = summary[aspect].languages[language];
+            header2.push({status: cl, class: cl+' '+aspect+' '+p(language), name: language});
+          })
+        } else {
+          header2.push({status: cl, class: cl+' '+aspect, name: ''});
+        }
+      });
+
+
+      var items = [];
 
       testset.items.each(function(item) {
         var hname = m(item.name);
         var outcome = item.outcome.status;
-        ln('    <tr class="'+privates.status2class(item.status)+'">');
+        var aspects = [];
+
         var base = path.basename (item.name);
         var file;
         try {var f = item.name + '/' + base + '.dm'; file = fs.realpathSync (f);} catch (e) {}
         try {var f = item.name + '/' + base + '.dzn'; file = fs.realpathSync (f);} catch (e) {}
         var dir = path.basename (path.dirname (item.name));
-        ln('      <td class="'+privates.status2class(item.status)+' item"><a href="' + file +'">'+dir+'/'+ base+'</a></td>');
+        aspects.push({status: privates.status2class(item.status), class: privates.status2class(item.status), href: file, content: dir+'/'+ base});
         var meta;
         try {var f = item.name + '/' + 'META'; meta = fs.realpathSync (f);} catch (e) {}
         if (meta) {
-          ln('      <td class="white"><a href="' + meta +'">'+'META'+'</a></td>');
+          aspects.push({status: privates.status2class(item.status), class: 'white', href: meta, content: 'META'});
         } else {
-          ln('      <td class="white"></td>');
+          aspects.push({status: privates.status2class(item.status), class: 'white', href: '', name: ''});
         }
-        ln('      <td class="white">'+item.outcome.elapsed+'</a></td>');
+        aspects.push({status: privates.status2class(item.status), class: 'white', href: '', content: item.outcome.elapsed});
         order.each(function(aspect) {
           var aspoutcome = outcome[aspect] || 'SKIPPED';
           if (summary[aspect].languages) {
             languages.each(function(language) {
               var status = aspoutcome[language] || 'SKIPPED';
               var cl = privates.status2class(status);
-              ln('      <td class="'+cl+' '+aspect+' '+p(language)+'">'
-                 +'<a href="#'+hname+'-'+aspect+'-'+p(language)+'" class="'+cl+' '+aspect+' '+p(language)+'">'
-                 +status+'</a></td>');
+              aspects.push({status: cl,
+                            class: cl+' '+aspect+' '+p(language),
+                            href: '#'+hname+'-'+aspect+'-'+p(language),
+                            //hclass: cl+' '+aspect+' '+p(language),
+                            hclass: m(item.name) + '-' + p(aspect) + '-' + p(language),
+                            content: status});
             });
           } else {
             var status = aspoutcome;
             var cl = privates.status2class(status);
-            ln('      <td class="'+cl+' '+aspect+'">'
-               +'<a href="#'+hname+'-'+aspect+'" class="'+cl+' '+aspect+'">'+status+'</a></td>');
+            aspects.push({status: cl,
+                          class: cl+' '+aspect,
+                          href: '#'+hname+'-'+aspect,
+                          // hclass: cl+' '+aspect,
+                          hclass: m(item.name) + '-' + p(aspect),
+                          content: status});
           }
         });
-        ln('    </tr>');
+        items.push({status: privates.status2class(item.status), class: privates.status2class(item.status), aspects: aspects});
+
       });
-      ln('    </table>');
 
+      var status = 'pass';
+      items.each(function(item) {
+        status = privates.status_or(status, item.status);
+      });
+
+      return {name: testset.name,
+              visible: false,
+              class: status,
+              table: {
+                header1: header1,
+                header2: header2,
+                items: items
+              }};
     });
-
+    data.output = [];
     result.items.each(function(item) {
       var hname = m(item.name);
       var outcome = item.outcome;
       if (typeof outcome.output !== 'string') {
         Object.keys(outcome.output).each(function(aspect_language) {
           var out = outcome.output[aspect_language];
-          ln('        <div id="'+hname+'-'+p(aspect_language)+'">');
-          ln('          <hr>');
-          ln('          <h3>'+item.name+'/'+aspect_language+'</h3>');
-          ln('          <pre>'+out+'</pre>');
-          ln('        </div>');
+          var output = {id: hname+'-'+p(aspect_language), header: item.name+'/'+aspect_language, out: out};
+          data.output.push(output);
         });
       }
     });
 
+
+    data.toggles = {pass: false, solved: false, known: false, fail: true};
+    data.colors = { pass: 'rgba(200,255,200,.75)',
+                    solved: 'rgba(200,200,255,.75)',
+                    known: 'rgba(255,255,200,.75)',
+                    fail: 'rgba(255,200,200,.75)',
+                    white: 'rgba(255,255,255,.75)'
+                  };
+    data.currentTarget = null;
+
+
+    ln('  <script type="text/javascript">');
+    ln('    var app = new Vue({');
+    ln('      el: "#app",');
+    ln('      data: ' + JSON.stringify(data, null, 2) + ',');
+    ln('');
+    ln('      computed: {');
+    ln('          passOpa: function () {');
+    ln('            return this.toggles[\'pass\'] ? 1 : 0.33');
+    ln('          },');
+    ln('          solvedOpa: function () {');
+    ln('            return this.toggles[\'solved\'] ? 1 : 0.33');
+    ln('          },');
+    ln('          knownOpa: function () {');
+    ln('            return this.toggles[\'known\'] ? 1 : 0.33');
+    ln('          },');
+    ln('          failOpa: function () {');
+    ln('            return this.toggles[\'fail\'] ? 1 : 0.33');
+    ln('          }');
+    ln('      },');
+    ln('      methods: {');
+    ln('        show(st) {');
+    ln('          return (!st) || this.toggles[st]');
+    ln('        },');
+    ln('        toggle(st) {');
+    ln('          this.toggles[st] = !this.toggles[st];');
+    ln('        },');
+    ln('        showtable(index) {');
+    ln('          return this.testsets[index].visible;');
+    ln('        },');
+    ln('        toggletable(index) {');
+    ln('          this.testsets[index].visible = ! this.testsets[index].visible;');
+    ln('        },');
+    ln('        highlight(hclass,status) {');
+    ln('          var r = this.$refs[hclass];');
+    ln('          if (r) {');
+    ln('            if (this.currentTarget) this.currentTarget.style.background = this.colors["white"];');
+    ln('            r[0].style.background = this.colors[status]');
+    ln('            this.currentTarget=r[0];');
+    ln('          }');
+    ln('        }');
+    ln('      }');
+    ln('    });');
+    ln(' </script>');
     ln('  </body>');
     ln('<html>');
     return html;
