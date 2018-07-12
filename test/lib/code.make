@@ -42,12 +42,16 @@ ifneq ($(TSS),)
 TSS_OPT:=-s '$(MODEL)'
 endif
 
+ifneq ($(VERSION),)
+VERSION_OPT:=--version=$(VERSION)
+endif
+
 runtime-common:
 	mkdir -p "$(OUT)"/dzn
-	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls /share/runtime/$(LANGUAGE)))); do\
+	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls $(VERSION_OPT) /share/runtime/$(LANGUAGE)))); do\
 	    ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/"$$file" "$(OUT)"/$$file;\
 	done
-	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls /share/runtime/$(LANGUAGE)/dzn))); do\
+	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls $(VERSION_OPT) /share/runtime/$(LANGUAGE)/dzn))); do\
 	    ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/dzn/$$file "$(OUT)"/dzn/$$file;\
 	done
 
@@ -57,7 +61,7 @@ IN_DZN=$(shell ls -1 "$(IN)"/*.dzn | sed -e 's,^,",' -e 's,$$,",')
 IN__DZN=$(shell ls -1 "$(IN)"/*/*.dzn | sed -e 's,^,",' -e 's,$$,",')
 code:
 	set -x; for file in $(IN_DZN) $(IN__DZN); do\
-	    $(DZN) code $(IMPORTS) $(CODE_OPTIONS) -l $(LANGUAGE) $(MODEL_OPT) $(TSS_OPT) -o "$(OUT)" "$$file";\
+	    $(DZN) code $(VERSION_OPT) $(IMPORTS) $(CODE_OPTIONS) -l $(LANGUAGE) $(MODEL_OPT) $(TSS_OPT) -o "$(OUT)" "$$file";\
 	done
 
 all: runtime code

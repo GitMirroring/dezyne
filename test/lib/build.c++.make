@@ -2,7 +2,7 @@
 #
 # Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 # Copyright © 2016, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-# Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -40,6 +40,7 @@ SHELL:=bash
 CCACHE:=$(shell type -p ccache)
 CXX:=$(CCACHE) g++
 CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
+# FIXME: handwritten code, versioned?  $(IN)/../.. or ?
 CPPFLAGS=-I$(OUT) -I$(OUT)/.. -I$(IN) -I$(IN)/.. -I$(DEVELOPMENT)/externals/asd_cpp_runtime -D DZN_VERSION_ASSERT=1
 GLOBALS_H=$(wildcard $(DIR)/globals.h)
 ifneq ($(GLOBALS_H),)

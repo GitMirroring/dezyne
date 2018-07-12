@@ -34,7 +34,7 @@ var util = require(__dirname+'/util');
 var lstat = q.denodeify(fs.lstat);
 
 function haslanguage(aspect) {
-  return (['triangle', 'execute', 'build', 'code'].indexOf(aspect) > -1);
+  return (['triangle', 'execute', 'build', 'code'].indexOf(aspect.split ('_')[0]) > -1);
 }
 
 function dzn(session) {
@@ -50,6 +50,7 @@ var default_meta = {
   , ignore: []
   , flush: false
   , languages: all_languages.filter (function (x) {return x != 'c++-msvc11';})
+  , versions: []
   , max: {code:undefined,run:50}
 };
 
@@ -77,19 +78,39 @@ function has_main(dir, language) {
   return main;
 }
 
+function query_versions() {
+    var versions = require ('child_process')
+        .spawnSync ('bash', ['-c', dzn () + ' query'], {stdio:'pipe'})
+        .stdout.toString ()
+        .trim ()
+        .split ('\n')
+        .map (function (s){return s.trim();});
+  var default_version = versions.find (function (s){return s[0] == '*'}).slice (2);
+  console.log ('default_version=%j', default_version);
+
+  var extra_versions = versions.filter (function (s){return s[0] != '*'})
+      .reverse ();
+  console.log ('extra_versions=%j', extra_versions);
+
+  return [default_version].concat(extra_versions);
+}
+
 var dependencies = {
-  build:    ['code'],
-  code:     ['convert'],
   convert:  [],
-  execute:  ['traces', 'build'],
   parse:    ['convert'],
   run:      ['traces'],
   table:    ['convert'],
   traces:   ['convert'],
-  triangle: ['execute', 'run'],
   verify:   ['convert'],
   view:     ['convert'],
+
+  build:    ['code'],
+  code:     ['convert'],
+  execute:  ['traces', 'build'],
+  triangle: ['execute', 'run'],
 };
+
+function code_version (v) {return v.replace (/[.]/g, '_');}
 
 var default_aspects = Object.keys(dependencies).filter (function (e) {return ['table','view'].indexOf (e) == -1;});
 
@@ -98,7 +119,7 @@ function depend(e) {
   return deps.concat(deps.append_map(depend));
 }
 
-function comment(meta, aspect, language) {
+function comment(meta, aspect, version, language) {
   return meta.comment && (language && meta.comment[language]
                           || meta.comment[aspect]
                           || meta.comment[true]
@@ -120,7 +141,7 @@ function ordered_dependencies() {
       result.push(aspect);
     }
   }
-  var order = ['parse', 'verify', 'triangle', 'table', 'view'] ;
+  var order = ['parse', 'verify', 'triangle', 'table', 'view'];
   order.forEach(function(aspect) {
     add_dependencies(aspect);
   });
@@ -145,7 +166,7 @@ function skip_filter (meta) {
   }
 }
 
-function known (meta, aspect, language) {
+function known (meta, aspect, version, language) {
   if (language) {
     if (meta.known.indexOf(language) != -1) return true;
     if (meta.known.indexOf(language+":"+aspect) != -1) return true;
@@ -184,12 +205,17 @@ function run_traces(parameters, asp, app) {
             return {status: result1.status || result2.status, output: result1.output + result2.output};
           });
         });
-      }, q({status:0,output:''}))
+      }, q({status:0, output:''}))
     });
 }
 
+var supported_languages = {
+  'default': ['c++', 'c++03', 'c++-msvc11', 'javascript'],
+  '2.4.1' : ['c++', 'c++03', 'c++-msvc11', 'cs', 'javascript'],
+};
+
 var aspects = {
-  list: function(){
+  list: function() {
     return Object.keys(dependencies);
   }
   ,
@@ -228,6 +254,8 @@ var aspects = {
           console.error('dzn hello failed (is your server running?)');
           return result;
         }
+        default_meta.versions = query_versions();
+
         return util.spawn_sync_shell('mkdir -p out'
                                      + ' && rm -rf "out/' + path.basename (dir) + '"'
                                      + ' && cp -as --no-preserve=mode,ownership "' + path.resolve (dir) + '" $PWD/out')
@@ -248,47 +276,66 @@ var aspects = {
             var modelname = path.basename(dir);
             var filename = dir + '/' + modelname + '.dzn';
             var parameters = {work: work, done: {}, dir: dir, model: modelname, filename: filename, meta: meta, session: session};
-            return meta.languages
-              .filter (skip_filter (meta))
-              .reduce(function(promise, language) {
-
-                return promise.then(function(result1) {
-                  var parameters = util.deep_copy(result1.parameters);
-                  parameters.meta.languages = [ language ];
-                  parameters.work = work;
-                  return aspects.test(parameters).then (function(result2) {
-                    return {status: result1.status || result2.status, parameters: result2.parameters}
-                  });
+            return meta.versions
+              .filter (skip_filter(meta))
+              .reduce(function(promise, version) {
+                return promise.then(function(result0) {
+                  var parameters0 = util.deep_copy(result0.parameters);
+                  parameters0.meta.versions = [ version ];
+                  return meta.languages
+                    .filter (function(language) {
+                      return (supported_languages[version] || supported_languages['default']).indexOf(language) != -1;
+                    })
+                    .filter (skip_filter (meta))
+                    .reduce(function(promise, language) {
+                      return promise.then(function(result1) {
+                        var parameters1 = util.deep_copy(result1.parameters);
+                        parameters1.meta.languages = [ language ];
+                        parameters1.work = work;
+                        return aspects.test(parameters1).then (function(result2) {
+                          return {status: result1.status || result2.status, parameters: result2.parameters}
+                        });
+                      });
+                    }, q({status:0, parameters:parameters0}));
                 });
+
               }, q({status:0, parameters:parameters}))
+
               .then (function(result) {
                 var endTime = new Date();
                 var elapsed = util.elapsedTime(startTime, endTime, true);
-                var outcome = {elapsed:elapsed,status:{},output:{},order:ordered_dependencies()};
+                var outcome = {elapsed:elapsed, status:{}, output:{}, order:ordered_dependencies()};
                 Object.keys(dependencies).each(function(aspect) {
                   if(haslanguage(aspect)) {
                     outcome.status[aspect] = {};
-                    all_languages.each(function(language) {
-                      outcome.status[aspect][language] = result.parameters.outcome && result.parameters.outcome.status[aspect] && result.parameters.outcome.status[aspect][language] || 'SKIPPED';
+                    default_meta.versions.each(function(version) {
+                      outcome.status[aspect][version] = {};
+                      all_languages.each(function(language) {
+                        outcome.status[aspect][version][language] = (result.parameters.outcome && result.parameters.outcome.status[aspect] && result.parameters.outcome.status[aspect][version] && result.parameters.outcome.status[aspect][version][language]) || 'SKIPPED';
+                      });
+
                     });
+
                   } else {
-                    outcome.status[aspect] = result.parameters.outcome && result.parameters.outcome.status[aspect] || 'SKIPPED';
+                    outcome.status[aspect] = (result.parameters.outcome && result.parameters.outcome.status[aspect]) || 'SKIPPED';
                   }
                 });
 
                 outcome.output = result.parameters.outcome && result.parameters.outcome.output || '';
-                all_languages.each(function(language) {
-                  Object.keys(dependencies).each(function(aspect) {
-                    if(haslanguage(aspect))
-                      outcome.output[aspect + '-' + language] = outcome.output[aspect + '-' + language] || comment(parameters.meta, aspect, language);
-                    else
-                      outcome.output[aspect] = outcome.output[aspect] || comment(parameters.meta, aspect);
+                default_meta.versions.each(function(version) {
+                  all_languages.each(function(language) {
+                    Object.keys(dependencies).each(function(aspect) {
+                      if(haslanguage(aspect))
+                        outcome.output[aspect + '-' + version + '-' + language] = outcome.output[aspect + '-' + version + '-' + language] || comment(parameters.meta, aspect, version, language);
+                      else
+                        outcome.output[aspect] = outcome.output[aspect] || comment(parameters.meta, aspect);
+                    });
                   });
                 });
                 return util.spawn_sync_shell('mkdir -p "out/' + path.basename(dir) + '"')
                   .then(function() {
-                    //fs.writeFileSync('"out/' + path.basename(dir) + '/outcome.json"', JSON.stringify(outcome,null,2));
-                    fs.writeFileSync('out/' + path.basename(dir) + '/outcome.json', JSON.stringify(outcome,null,2));
+                    //fs.writeFileSync('"out/' + path.basename(dir) + '/outcome.json"', JSON.stringify(outcome, null, 2));
+                    fs.writeFileSync('out/' + path.basename(dir) + '/outcome.json', JSON.stringify(outcome, null, 2));
                     return result.status;
                   });
               });
@@ -297,25 +344,28 @@ var aspects = {
   }
   ,
   test: function(parameters) { // pre: parameters.meta.languages == [ l ]
+    var version = parameters.meta.versions[0];
     var language = parameters.meta.languages[0];
 
-    function updateparameters(parameters, output, aspect, language) {
+
+    function updateparameters(parameters, output, aspect, version, language) {
       parameters.outcome = parameters.outcome || {};
       parameters.outcome.output = parameters.outcome.output || {};
       if(language) {
-        parameters.outcome.output[aspect + '-' + language] = output;
+        parameters.outcome.output[aspect + '-' + version + '-' + language] = output;
       } else {
         parameters.outcome.output[aspect] = output;
       }
       return parameters;
     }
 
-    function setstatus(outcome, aspect, language, status) {
+    function setstatus(outcome, aspect, version, language, status) {
       outcome.status = outcome.status || {};
       if(haslanguage(aspect)) {
         outcome.status[aspect] = outcome.status[aspect] || {};
-        status = outcome.status[aspect][language] || status;
-        outcome.status[aspect][language] = status;
+        outcome.status[aspect][version] = outcome.status[aspect][version] || {};
+        status = outcome.status[aspect][version][language] || status;
+        outcome.status[aspect][version][language] = status;
       }
       else {
         status = outcome.status[aspect] || status;
@@ -323,12 +373,12 @@ var aspects = {
       }
     }
 
-    function getstatus(outcome, aspect, language) {
+    function getstatus(outcome, aspect, version, language) {
       var status = 'UNKNOWN';
       if (outcome.status) {
         if(haslanguage(aspect)) {
-          if (outcome.status[aspect] && outcome.status[aspect][language])
-            status = outcome.status[aspect][language];
+          if (outcome.status[aspect] && outcome.status[aspect][version] && outcome.status[aspect][version][language])
+            status = outcome.status[aspect][version][language];
         }
         else {
           if (outcome.status[aspect])
@@ -338,18 +388,21 @@ var aspects = {
       return status;
     }
 
-    function testcase(aspect,prevresult,language,retry) {
+    function testcase(aspect, prevresult, version, language, retry) {
       retry = 0; //retry === undefined && 2 || retry;
       if(prevresult.parameters.meta.known)
       {
         if(prevresult.parameters.meta.known[aspect]) retry = 0;
+        if(prevresult.parameters.meta.known[version]) retry = 0;
         if(prevresult.parameters.meta.known[aspect + ':' + language]) retry = 0;
+        if(prevresult.parameters.meta.known[aspect + ':' + version + ':' + language]) retry = 0;
         if(prevresult.parameters.meta.known[language + ':' + aspect]) retry = 0;
+        if(prevresult.parameters.meta.known[version + ':' + language + ':' + aspect]) retry = 0;
       }
       if (prevresult.status) {
         var result = {status: prevresult.status,
-                      parameters: updateparameters(prevresult.parameters, "Not executed because prerequisite did not succeed", aspect, language)};
-        setstatus(result.parameters.outcome, aspect, language, 'SKIPPED');
+                      parameters: updateparameters(prevresult.parameters, "Not executed because prerequisite did not succeed", aspect, version, language)};
+        setstatus(result.parameters.outcome, aspect, version, language, 'SKIPPED');
         return result;
       }
       return aspects[aspect](prevresult.parameters)
@@ -357,20 +410,21 @@ var aspects = {
           if(result.status && retry) {
             var msg = '[RETRY] ' + prevresult.parameters.filename + ' : ' + (2 - retry);
             console.log (msg);
-            return testcase(aspect,prevresult,language,retry-1).then(function(o){o.output += msg + '\n'; return o;});
+            return testcase(aspect, prevresult, version, language, retry-1).then(function(o){o.output += msg + '\n'; return o;});
           }
-          return {status: result.status, parameters: updateparameters(prevresult.parameters, result.output, aspect, language)};
+          return {status: result.status, parameters: updateparameters(prevresult.parameters, result.output, aspect, version, language)};
         });
     }
 
-    function isdone(done, aspect, language) {
-      return haslanguage(aspect) ? (done[aspect] && done[aspect][language]) : done[aspect];
+    function isdone(done, aspect, version, language) {
+      return haslanguage(aspect) ? (done[aspect] && done[aspect][version] && done[aspect][version][language]) : done[aspect];
     }
 
-    function setdone(done, aspect, language) {
+    function setdone(done, aspect, version, language) {
       if (haslanguage(aspect)) {
         done[aspect] = done[aspect] || {};
-        done[aspect][language] = true;
+        done[aspect][version] = done[aspect][version] || {};
+        done[aspect][version][language] = true;
       }
       else done[aspect] = true;
       return done;
@@ -378,36 +432,37 @@ var aspects = {
 
     function collect(aspect, result1, result2) {
       var parameters2 = util.deep_copy(result2.parameters);
-      parameters2.done = setdone(parameters2.done, aspect, language);
+      parameters2.done = setdone(parameters2.done, aspect, version, language);
       return {status: result1.status || result2.status, parameters: parameters2};
     }
     return parameters.work
       .filter (skip_filter (parameters.meta))
       .reduce(function(promise, aspect) {
         return promise.then(function(result1) {
-          if (isdone(result1.parameters.done, aspect, language)) {
-            var header = aspect + (haslanguage(aspect) ? '[' + language + ']' : '') + '[' + result1.parameters.model + ']';
-            var status = getstatus(result1.parameters.outcome, aspect, language);
+          if (isdone(result1.parameters.done, aspect, version, language)) {
+            var header = aspect + (haslanguage(aspect) ? '[' + version + '][' + language + ']' : '') + '[' + result1.parameters.model + ']';
+            var status = getstatus(result1.parameters.outcome, aspect, version, language);
             st = (status == 'ERROR') ? -1 : (status == 'KNOWN' || status  == 'FAILED') ? 1 : 0;
             return {status: st, parameters: result1.parameters};
           }
-          var header = aspect + (haslanguage(aspect) ? '[' + language + ']' : '') + '[' + result1.parameters.model + ']';
+          var header = aspect + (haslanguage(aspect) ? '[' + version + '][' + language + ']' : '') + '[' + result1.parameters.model + ']';
           console.log(header + ' ...');
           var parameters1 = util.deep_copy(result1.parameters);
           parameters1.work = dependencies[aspect];
           return aspects.test(parameters1)
-            .then(function(result2){return testcase(aspect, result2, haslanguage(aspect) && language);})
+            .then(function(result2){return testcase(aspect, result2, haslanguage(aspect) && version, haslanguage(aspect) && language);})
             .then(function(result2){
-              var knwn = known(result2.parameters.meta, aspect, language);
+              var knwn = known(result2.parameters.meta, aspect, version, language);
               var status = result2.status ? (result2.status == -1 ? 'ERROR' : (knwn ? 'KNOWN' : 'FAILED')) : (knwn ? 'SOLVED' : 'OK');
               result2.parameters.outcome = result2.parameters.outcome || {};
-              setstatus(result2.parameters.outcome, aspect, language, status);
+              setstatus(result2.parameters.outcome, aspect, version, language, status);
 
               result2.parameters.outcome.status = result2.parameters.outcome.status || {};
               if(haslanguage(aspect)) {
                 result2.parameters.outcome.status[aspect] = result2.parameters.outcome.status[aspect] || {};
-                status = result2.parameters.outcome.status[aspect][language] || status;
-                result2.parameters.outcome.status[aspect][language] = status;
+                result2.parameters.outcome.status[aspect][version] = result2.parameters.outcome.status[aspect][version] || {};
+                status = result2.parameters.outcome.status[aspect][version][language] || status;
+                result2.parameters.outcome.status[aspect][version][language] = status;
               }
               else {
                 status = result2.parameters.outcome.status[aspect] || status;
@@ -426,15 +481,19 @@ var aspects = {
   }
   ,
   code: function(parameters) {
-    var model = parameters.meta.model || parameters.model;
+    var version = parameters.meta.versions[0];
     var language = parameters.meta.languages[0];
+    var model = parameters.meta.model || parameters.model;
     var imports = imports_string (parameters.meta.imports);
     var code_options = parameters.meta.code_options || "";
     var tss = parameters.meta.tss;
-    var out = '"out/'+path.basename(parameters.dir)+'"/'+language;
     var main = has_main(parameters.dir, language);
+    var out = '"out/'+path.basename(parameters.dir)+'"/'
+        + version + '/'
+        + language;
     var cmd = 'make'
         + ' DZN="' + dzn() + '"'
+        + ' VERSION="'+version+'"'
         + ' IMPORTS=\"'+imports+'\"'
         + ' CODE_OPTIONS=\"'+code_options+'\"'
         + ' LANGUAGE='+language
@@ -450,9 +509,12 @@ var aspects = {
   }
   ,
   build: function(parameters) {
+    var version = parameters.meta.versions[0];
     var language = parameters.meta.languages[0];
     var base = '"out/'+path.basename(parameters.dir)+'"';
-    var out = '"out/'+path.basename(parameters.dir)+'"/'+language;
+    var out = '"out/'+path.basename(parameters.dir)+'"/'
+        + (version ? version + '/' : '')
+        + language;
     var out_space = base.replace (' ', '\\');
     console.log ('out_space=%j', out_space);
     var main = has_main(parameters.dir, language);
@@ -460,6 +522,7 @@ var aspects = {
     var cmd = 'mkdir -p ' + out
         + ' && ln -sf ' + base + ' ' + out_space
         + ' && make DIR="'+parameters.dir + '"'
+        + ' VERSION="'+version+'"'
         + ' LANGUAGE='+language
         + ' OUT='+out
         + ' IN='+out
@@ -472,6 +535,7 @@ var aspects = {
   }
   ,
   execute: function(parameters) {
+    var version = parameters.meta.versions[0];
     var language = parameters.meta.languages[0];
     var interpreter = {
       goops:'guile',
@@ -479,7 +543,9 @@ var aspects = {
       python: 'python',
       cs: 'sh',
     }[language] || '';
-    var out = '"out/'+path.basename(parameters.dir)+'"/'+language;
+    var out = '"out/'+path.basename(parameters.dir)+'"/'
+        + (version ? version + '/' : '')
+        + language;
     var flush = parameters.meta.flush && ' --flush' || '';
     return run_traces(parameters, 'execute', function(trace) {
       var expectation = '"' + parameters.dir + '"/baseline/execute/' + language + '/expectation';
@@ -598,11 +664,11 @@ var aspects = {
       })
     };
 
-    return [['.dzn','dzn'],
-            ['.dzn','state'],
-            ['.dzn','event'],
-            ['.html','state'],
-            ['.html','event']].reduce(test_table, q({status:0, output:''}));
+    return [['.dzn', 'dzn'],
+            ['.dzn', 'state'],
+            ['.dzn', 'event'],
+            ['.html', 'state'],
+            ['.html', 'event']].reduce(test_table, q({status:0, output:''}));
   }
   ,
   traces: function(parameters) {
