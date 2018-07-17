@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -31,6 +32,7 @@
 #include <iostream>
 #include <limits>
 
+#if !DZN_PUMP_HAVE_BLOCKING
 namespace dzn {
   template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
   void blocking(dzn::pump& pump, L&& l)
@@ -47,6 +49,7 @@ namespace dzn {
     return p.get_future().get();
   }
 }
+#endif // !DZN_PUMP_HAVE_BLOCKING
 
 int main()
 {
