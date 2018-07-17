@@ -86,11 +86,11 @@ function query_versions() {
         .split ('\n')
         .map (function (s){return s.trim();});
   var default_version = versions.find (function (s){return s[0] == '*'}).slice (2);
-  console.log ('default_version=%j', default_version);
+  //console.log ('default_version=%j', default_version);
 
   var extra_versions = versions.filter (function (s){return s[0] != '*'})
       .reverse ();
-  console.log ('extra_versions=%j', extra_versions);
+  //console.log ('extra_versions=%j', extra_versions);
 
   return [default_version].concat(extra_versions);
 }
@@ -440,13 +440,10 @@ var aspects = {
       .reduce(function(promise, aspect) {
         return promise.then(function(result1) {
           if (isdone(result1.parameters.done, aspect, version, language)) {
-            var header = aspect + (haslanguage(aspect) ? '[' + version + '][' + language + ']' : '') + '[' + result1.parameters.model + ']';
             var status = getstatus(result1.parameters.outcome, aspect, version, language);
             st = (status == 'ERROR') ? -1 : (status == 'KNOWN' || status  == 'FAILED') ? 1 : 0;
             return {status: st, parameters: result1.parameters};
           }
-          var header = aspect + (haslanguage(aspect) ? '[' + version + '][' + language + ']' : '') + '[' + result1.parameters.model + ']';
-          console.log(header + ' ...');
           var parameters1 = util.deep_copy(result1.parameters);
           parameters1.work = dependencies[aspect];
           return aspects.test(parameters1)
@@ -468,7 +465,19 @@ var aspects = {
                 status = result2.parameters.outcome.status[aspect] || status;
                 result2.parameters.outcome.status[aspect] = status;
               }
-              console.log(header + '[' + status + ']');
+
+              var lang_length = 0;
+              var longest_aspect = 9; //longest name for aspect is triangle
+              var longest_status = 7; //longest status indication is SKIPPED
+              for(i = 0; i < all_languages.length; i++)
+                lang_length = all_languages[i].length > lang_length ? all_languages[i].length : lang_length;
+
+              var update = 'update:' + '\t[' + status + ']' + ' '.repeat(longest_status - status.length) ;
+              update += ' '+aspect + ' '.repeat(longest_aspect - aspect.length);
+              if(haslanguage(aspect)) update += '[' + String(version).substring(0,7) + '][' + language + ']' + '.'.repeat(lang_length - language.length);
+              else update += '.'.repeat(lang_length + 11);
+              update += ' '+result1.parameters.model;
+              console.log(update);
               return result2;
             })
             .then(function(result2){return collect(aspect, result1, result2);});
@@ -516,12 +525,10 @@ var aspects = {
         + (version ? version + '/' : '')
         + language;
     var out_space = base.replace (' ', '\\');
-    console.log ('out_space=%j', out_space);
     var main = has_main(parameters.dir, language);
-    console.log ('main=%j', main);
     var cmd = 'mkdir -p ' + out
         + ' && ln -sf ' + base + ' ' + out_space
-        + ' && make DIR="'+parameters.dir + '"'
+        + ' &&\nmake DIR="'+parameters.dir + '"'
         + ' VERSION="'+version+'"'
         + ' LANGUAGE='+language
         + ' OUT='+out
@@ -529,7 +536,6 @@ var aspects = {
         + (parameters.meta.tss ? ' TSS='+ parameters.model : '')
         + (main ? ' MAIN="'+main +'"': '')
         + ' -f '+ __dirname + '/build.' + language + '.make';
-    console.log ('cmd=%j', cmd);
     return util.spawn_sync_shell(cmd)
       .fail (function(err) {console.log(err); return {status: -1, output: err}});
   }
@@ -551,18 +557,17 @@ var aspects = {
     return run_traces(parameters, 'execute', function(trace) {
       var expectation = '"' + parameters.dir + '"/baseline/execute/' + language + '/expectation';
       var cmd = 'cat '+ trace + ' | ' + interpreter + ' ' + out + '/test' + flush;
-      console.log ('CMD:' + cmd);
       try {
         fs.lstatSync(expectation);
         return util.spawn_sync_shell(
           'timeout ' + timeout + ' diff -uwB ' + expectation
-            + ' <(set -o pipefail;'
+            + ' <(set -o pipefail;\n'
             + cmd
             + ' |& ' + __dirname + '/../bin/code2fdr'
             + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');
       } catch(e) {
         return util.spawn_sync_shell(
-          'timeout ' + timeout + ' diff -uwB ' + trace + ' <(set -o pipefail;'
+          'timeout ' + timeout + ' diff -uwB ' + trace + ' <(set -o pipefail;\n'
             + cmd
             + ' |& ' + __dirname + '/../bin/code2fdr'
             + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');
@@ -646,14 +651,12 @@ var aspects = {
             var cmd = (form == 'dzn')
                 ? dzn()+' code -l dzn '+imports+' -o - "'+parameters.filename +'">"'+out+'/'+base+'-'+form+suffix+'-barf"'
                 : dzn()+' table '+imports+' --form='+form+' -o - "'+parameters.filename + (suffix == '.html' ? '| w3m -dump -T text/html' : '') +'">"'+out+'/'+base+'-'+form+suffix+'-barf"';
-            console.log ('CMD:' + cmd);
             return util.spawn_sync_shell(cmd);
           })
           .then (function(result) {
             var cmd = (suffix == '.dzn')
                 ? dzn()+' parse '+out+'/'+base+'-'+form+suffix + '-barf'
                 : 'true';
-            console.log ('CMD:' + cmd);
             return util.spawn_sync_shell(cmd);
           })
           .then (function(result2) { return {status: result1.status || result2.status, output: result1.output + result2.output}; })
@@ -682,7 +685,6 @@ var aspects = {
     var imports = imports_string (parameters.meta.imports);
     var cmd = dzn()
         + ' traces ' + imports + ' ' + queue + ' ' + illegal+flush+' -m '+model+' -o '+out+' "'+parameters.filename+'"';
-    console.log ('cmd=%j', cmd)
     return lstat(out)
       .fail(function(){return util.spawn_sync_shell('mkdir -p ' + out);})
       .then(function(){return ls_traces(node_out);})
@@ -723,7 +725,6 @@ var aspects = {
           + ' || { echo ' + err + ':; cat ' + err + '; false; }';
       })
       .fail (function(e) {
-        console.log ('verify: no baseline=' + baseline);
         return 'mkdir -p '+dir+';'
           + 'out="$(' + dzn(parameters.session) + ' verify --all '
           + model_opt

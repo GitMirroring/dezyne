@@ -114,6 +114,7 @@ function parse_opts(argv) {
     ['o', 'output=OUTPUT', 'write output to OUTPUT [out/TARGET.html]'],
     ['c', 'collect', 'do not execute, but collect results from previous runs'],
     ['f', 'failedonly', 'execute failed items from previous run'],
+    ['s', 'summary', 'provide incremental summary on stdout'],
     ['v', 'verbose', 'provide verbose test output on stdout'],
   ]);
   option_parser.bindHelp(
@@ -173,10 +174,10 @@ function execute(dir, args) {
     .map(function(item) {
       return function(session) {
         console.log('[....] ' + item);
-        return util.run(session, item, args.argv.slice(1), args.options.verbose)
+        return util.run(session, item, args.argv.slice(1), args.options.verbose, args.options.summary)
           .then(function(result) {
             output.log(item, result); //FIXME write the result to output
-            console.log((result.exitcode === 0 ? '[PASS] ' : '[FAIL] ') + item);
+            console.log((result.exitcode === 0 ? '[PASS]' : result.status) + ' ' + item);
             return {item:item, result:result, session:session};
           });
       }});
@@ -210,7 +211,7 @@ function executefailedonly(dir, args) {
         console.log("filtered item: %j",item);
         return function(session) {
           console.log('[....] ' + item);
-          return util.run(session, item, args.argv.slice(1), args.options.verbose)
+          return util.run(session, item, args.argv.slice(1), args.options.verbose, args.options.summary)
             .then(function(result) {
               output.log(item, result); //FIXME write the result to output
               console.log((result.exitcode === 0 ? '[PASS] ' : '[FAIL] ') + item);
@@ -244,7 +245,7 @@ function process_dir (dir, args, passed, failed) {
   try {fs.lstatSync(dm);} catch(e) {dm=undefined;}
   try {fs.lstatSync(run);} catch(e) {run=undefined;}
   if (dzn || dm || run)
-    return util.run(100 + (session++ % args.options.jobs), dir, aspects_languages, args.options.verbose)
+    return util.run(100 + (session++ % args.options.jobs), dir, aspects_languages, args.options.verbose, args.options.verbose)
     .then(function(result) {
       result.exitcode === 0 ? ++passed.value : ++failed.value;
       output.log(dir, result);

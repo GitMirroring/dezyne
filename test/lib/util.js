@@ -1,7 +1,9 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -43,12 +45,13 @@ if (!Array.prototype.partition) {
   };
 };
 
-var ST = { error: '[ERROR]', failed: '[FAILED]', ignored: '[IGNORED]', ok: '[OK]', skipped: '[SKIPPED]' };
+var ST = { error: '[ERROR]', failed: '[FAILED]', ok: '[OK]', skipped: '[SKIPPED]', known: '[KNOWN]', solved: '[SOLVED]'};
 
 function V(st1, st2) {
   if (st1 == ST.error || st2 == ST.error) return ST.error;
   if (st1 == ST.failed || st2 == ST.failed) return ST.failed;
-  if (st1 == ST.ignored || st2 == ST.ignored) return ST.ignored;
+  if (st1 == ST.known || st2 == ST.known) return ST.known;
+  if (st1 == ST.solved || st2 == ST.solved) return ST.solved;
   if (st1 == ST.ok || st2 == ST.ok) return ST.ok;
   return ST.skipped;
 }
@@ -162,10 +165,6 @@ var util = {
     var shell = windows_p ? 'cmd.exe' : 'bash';
     var c = windows_p ? '/c' : '-c';
 
-    var printable_cmd = cmd.replace (/\r/g, '\\r');
-
-    console.log (printable_cmd);
-
     var future = q.defer ();
 
     var env = process.env;
@@ -173,9 +172,12 @@ var util = {
 
     var ulimit = 'ulimit -s 65536 -v 2097152;';
 
-    var p = child.spawn (shell, [c, ulimit + cmd], {env: env, detached: true, stdio:'pipe'});
+    var p = child.spawn (shell, [c, ulimit + cmd], {env: env});
 
     var output = printable_cmd + '\n';
+
+    var printable_cmd = cmd.replace (/\r/g, '\\r');
+    console.log (printable_cmd);
 
     p.stdout.on('data', function(data){process.stdout.write(data); output += data;});
     p.stderr.on('data', function(data){process.stderr.write(data); output += data;});
@@ -202,7 +204,7 @@ var util = {
   ,
   // run script arguments: bin/run testdir (aspect | language)*
   //                       testdir/run (aspect | language)*
-  run: function(session, testdir, aspects_languages, verbose) {
+  run: function(session, testdir, aspects_languages, verbose, summary) {
     var future = q.defer();
     var singleTestStartTime = new Date();
 
@@ -219,14 +221,16 @@ var util = {
         var script = child.spawn (call.run, call.args);
 
         script.stdout.on('data', function (data) {
-          if(verbose) process.stdout.write(data);
+          if((summary || verbose) && String(data).startsWith('update:')) {
+            process.stdout.write(String(data).replace('update:',''));
+          }
+          else if(verbose) process.stdout.write(data);
 //          stdout += data;
 //          output += data;
 
           status = Object.keys(ST).reduce(function(status, key) {
             return util.contains(data, ST[key]) ? V(status, ST[key]) : status;
           }, status);
-
         });
         script.stderr.on('data', function (data) {
           if(verbose) process.stderr.write(data);
