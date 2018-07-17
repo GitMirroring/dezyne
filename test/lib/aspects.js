@@ -546,6 +546,7 @@ var aspects = {
     var out = '"out/'+path.basename(parameters.dir)+'"/'
         + (version ? version + '/' : '')
         + language;
+    var timeout = interpreter ? 10 : 5;
     var flush = parameters.meta.flush && ' --flush' || '';
     return run_traces(parameters, 'execute', function(trace) {
       var expectation = '"' + parameters.dir + '"/baseline/execute/' + language + '/expectation';
@@ -554,14 +555,14 @@ var aspects = {
       try {
         fs.lstatSync(expectation);
         return util.spawn_sync_shell(
-          'timeout 2 diff -uwB ' + expectation
+          'timeout ' + timeout + ' diff -uwB ' + expectation
             + ' <(set -o pipefail;'
             + cmd
             + ' |& ' + __dirname + '/../bin/code2fdr'
             + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');
       } catch(e) {
         return util.spawn_sync_shell(
-          'timeout 2 diff -uwB ' + trace + ' <(set -o pipefail;'
+          'timeout ' + timeout + ' diff -uwB ' + trace + ' <(set -o pipefail;'
             + cmd
             + ' |& ' + __dirname + '/../bin/code2fdr'
             + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');
