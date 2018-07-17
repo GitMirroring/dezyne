@@ -1,9 +1,12 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016, 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 // Copyright © 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Maarten van de Waarsenburg <maarten.van.de.waarsenburg@verum.com>
+// Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -28,6 +31,7 @@
 
 var fs = require('fs');
 var path = require('path');
+var detailsFilePath;
 
 function read() {
   var fileContent = '';
@@ -60,17 +64,6 @@ function display_status(status) {
 function write(result) {
   var fileContent = transform(result);
   console.log(fileContent);
-}
-
-function all_versions1(result) {
-  if (result.items.length == 0) return [];
-  var first = result.items[0].outcome;
-  // pre: first is complete in its first language dependent aspect
-  var f = first.order.find(function(aspect) {
-    var a = first.status.outcome[aspect];
-    return a && typeof a != string;
-  });
-  return Object.keys(first.status.outcome[f]);
 }
 
 function all_versions(item) {
@@ -151,8 +144,17 @@ function summary_per_aspect(testset) {
   return summary;
 }
 
-function transform(result) {
-  var colors = { failed: 'rgb(255,200,200)',
+function m(name) {
+  return name.replace(/\//g,'-');
+}
+
+function href(item) {
+  var base = path.basename (item.name);
+  var dir = path.basename (path.dirname (item.name));
+  return m(base + '/' + dir);
+}
+
+var colors = { failed: 'rgb(255,200,200)',
                  known: 'rgb(255,255,200)',
                  solved: 'rgb(200,200,255)',
                  passed: 'rgb(200,255,200)',
@@ -160,6 +162,7 @@ function transform(result) {
                  white: 'rgb(255,255,255)'
                };
 
+function transform(result) {
   var order = (result.items.length) ? result.items[0].outcome.order : [];
   var languages = all_languages(result);
 
@@ -167,10 +170,6 @@ function transform(result) {
 
   function p(language) {
     return language.replace(/\+/g,'p');
-  }
-
-  function m(name) {
-    return name.replace(/\//g,'-');
   }
 
   function ln(line) {
@@ -187,10 +186,10 @@ function transform(result) {
   ln('  <title>Result of '+result.target+'</title>');
   ln('  <head>');
 
-  ln('    <!-- development version, includes helpful console warnings -->');
-  ln('    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>');
-  //    ln('    <!-- production version, optimized for size and speed -->');
-  //    ln('    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.min.js"></script>');
+  //ln('    <!-- development version, includes helpful console warnings -->');
+  //ln('    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>');
+  ln('    <!-- production version, optimized for size and speed -->');
+  ln('    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.min.js"></script>');
 
   ln('    <style>');
   ln('      body {');
@@ -344,13 +343,6 @@ function transform(result) {
   ln('          </tbody>');
   ln('        </table>');
   ln('      </div>');
-
-  ln('      <div v-cloak v-for="item in output" :id="item.id" :ref="item.id">');
-  ln('        <hr>');
-  ln('        <h3>{{item.header}}</h3>');
-  ln('        <pre>{{item.out}}</pre>');
-  ln('      </div>');
-
   ln('    </div>'); // id="app"
 
   var data = {};
@@ -430,9 +422,8 @@ function transform(result) {
               aspects.push({status: cl,
                             class: cl+' '+aspect+' '+p(language),
                             rowspan: -1,
-                            href: '#'+hname+'-'+aspect+'-'+version+'-'+p(language),
-                            //hclass: cl+' '+aspect+' '+p(language),
-                            hclass: m(item.name) + '-' + p(aspect) + '-' + version + '-' + p(language),
+                            href: path.basename(detailsFilePath)+'#'+href(item)+'-'+aspect+'-'+version+'-'+p(language),
+                            hclass: href(item)+'-'+p(aspect)+'-'+version+'-'+p(language),
                             content: status});
             });
           } else {
@@ -441,9 +432,8 @@ function transform(result) {
             aspects.push({status: cl,
                           class: cl+' '+aspect,
                           rowspan: rowspan(item,version),
-                          href: '#'+hname+'-'+aspect,
-                          // hclass: cl+' '+aspect,
-                          hclass: m(item.name) + '-' + p(aspect),
+                          href: path.basename(detailsFilePath)+'#'+href(item)+'-'+aspect,
+                          hclass: href(item)+'-'+p(aspect),
                           content: status});
           }
         });
@@ -451,8 +441,6 @@ function transform(result) {
       });
 
       items.push({status: status2class(item.status.overall), class: status2class(item.status.overall), versions: versions});
-
-
 
     });
 
@@ -470,19 +458,8 @@ function transform(result) {
               items: items
             }};
   });
-  data.output = [];
-  result.items.each(function(item) {
-    var hname = m(item.name);
-    var outcome = item.outcome;
-    if (typeof outcome.output !== 'string') {
-      Object.keys(outcome.output).each(function(aspect_language) {
-        var out = outcome.output[aspect_language];
-        var output = {id: hname+'-'+p(aspect_language), header: item.name+'/'+aspect_language, out: out};
-        data.output.push(output);
-      });
-    }
-  });
 
+  //writefile
 
   data.toggles = {passed: false, skipped: false, solved: false, known: false, failed: true};
   data.colors = { passed: 'rgb(200,255,200)',
@@ -498,7 +475,7 @@ function transform(result) {
   ln('  <script type="text/javascript">');
   ln('    var app = new Vue({');
   ln('      el: "#app",');
-  ln('      data: ' + JSON.stringify(data, null, 2) + ',');
+  ln('      data: ' + JSON.stringify(data,null,1) + ',');
   ln('');
   ln('      computed: {');
   ln('          passedOpa: function () {');
@@ -567,10 +544,126 @@ function transform(result) {
   return html;
 }
 
+function transformDetails(result) {
+  var order = (result.items.length) ? result.items[0].outcome.order : [];
+  var languages = all_languages(result);
+
+  var html = '';
+
+  function p(language) {
+    return language.replace(/\+/g,'p');
+  }
+
+  function ln(line) {
+    html += line + '\n';
+  }
+  ln('<!DOCTYPE html>');
+  ln('<html>');
+  ln('  <title>Result of '+result.target+'</title>');
+  ln('  <head>');
+
+  //ln('    <!-- development version, includes helpful console warnings -->');
+  //ln('    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>');
+  ln('    <!-- production version, optimized for size and speed -->');
+  ln('    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.min.js"></script>');
+
+  ln('    <style>');
+  ln('      body {');
+  ln('        font-family: Sans-serif;');
+  ln('      }');
+  ln('      pre {');
+  ln('        display: inline;');
+  ln('      }');
+  ln('      h2, h3, h4 {');
+  ln('        padding: 4px;');
+  ln('        margin: 4px 0px 4px 0px;');
+  ln('        font-size: 110%;');
+  ln('      }');
+  ln('      :target[status="failed"] {');
+  ln('        background: '+colors["failed"]+';');
+  ln('      }');
+  ln('      :target[status="known"] {');
+  ln('        background: '+colors["known"]+';');
+  ln('      }');
+  ln('      :target[status="solved"] {');
+  ln('        background: '+colors["solved"]+';');
+  ln('      }');
+  ln('      :target[status="passed"] {');
+  ln('        background: '+colors["passed"]+';');
+  ln('      }');
+  ln('      :target[status="skipped"] {');
+  ln('        background: '+colors["skipped"]+';');
+  ln('      }');
+  ln('      [v-cloak] {');
+  ln('        display: none;');
+  ln('      }');
+  ln('    </style>');
+  ln('  </head>');
+  ln('  <body>');
+  ln('    <div id="app">');
+  ln('      <div v-cloak v-for="item in output" :id="item.id" :ref="item.id" :status="item.status">');
+  ln('        <hr>');
+  ln('        <h3>{{item.header}}</h3>');
+  ln('        <pre>{{item.out}}</pre>');
+  ln('      </div>');
+  ln('    </div>'); //app
+
+  var details = {};
+  details.output = [];
+  var summary = summary_per_aspect(result.testsets[0]);
+  result.items.each(function(item) {
+    var outcome = item.outcome;
+    if (typeof outcome.output !== 'string') {
+      var hname = m(item.name);
+      var nrversions = all_versions(item).length;
+      var versions = [];
+
+      all_versions(item).each(function(version) {
+        var aspects = [];
+        var base = path.basename (item.name);
+        var file;
+        order.each(function(aspect) {
+          var aspoutcome = outcome.status[aspect] || 'SKIPPED';
+          if (summary[aspect].languages) {
+            languages.each(function(language) {
+              var status = aspoutcome[version] && aspoutcome[version][language] || 'SKIPPED';
+              var cl = status2class(status);
+              var aspect_language = aspect+'-'+version+'-'+language;
+              var out = outcome.output[aspect_language];
+              var output = {status: cl, id: href(item)+'-'+p(aspect_language), header: base+'/'+aspect_language, out: out};
+              details.output.push(output);
+            });
+          } else {
+            var status = aspoutcome;
+            var cl = status2class(status);
+            var out = outcome.output[aspect];
+            var output = {status: cl, id: href(item)+'-'+p(aspect), header: base+'/'+aspect, out: out};
+            details.output.push(output);
+          }
+        });
+      });
+    };
+  });
+
+  ln('  <script type="text/javascript">');
+  ln('    var app = new Vue({');
+  ln('      el: "#app",');
+  ln('      data: ' + JSON.stringify(details,null,1) + ',');
+  ln('');
+  ln('    });');
+  ln(' </script>');
+  ln('  </body>');
+  ln('<html>');
+  return html;
+}
+
 var publics = {
   write: function(result, filePath) {
+    detailsFilePath = filePath.slice(0,-4) + 'details.html';
     var fileContent = transform(result);
     fs.writeFileSync(filePath, fileContent);
+    var detailsFileContent = transformDetails(result);
+    fs.writeFileSync(detailsFilePath, detailsFileContent);
   }
   ,
 }

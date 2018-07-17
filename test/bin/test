@@ -114,8 +114,7 @@ function parse_opts(argv) {
     ['o', 'output=OUTPUT', 'write output to OUTPUT [out/TARGET.html]'],
     ['c', 'collect', 'do not execute, but collect results from previous runs'],
     ['f', 'failedonly', 'execute failed items from previous run'],
-    ['q', 'quiet', 'suppress test summary lines on stdout'],
-    ['s', 'summary', 'show only summary lines on stdout'],
+    ['v', 'verbose', 'provide verbose test output on stdout'],
   ]);
   option_parser.bindHelp(
 'Usage: bin/test [OPTION]... TARGET (ASPECT | LANGUAGE)*\n\
@@ -174,7 +173,7 @@ function execute(dir, args) {
     .map(function(item) {
       return function(session) {
         console.log('[....] ' + item);
-        return util.run(session, item, args.argv.slice(1), !(args.options.quiet || args.options.summary))
+        return util.run(session, item, args.argv.slice(1), args.options.verbose)
           .then(function(result) {
             output.log(item, result); //FIXME write the result to output
             console.log((result.exitcode === 0 ? '[PASS] ' : '[FAIL] ') + item);
@@ -211,7 +210,7 @@ function executefailedonly(dir, args) {
         console.log("filtered item: %j",item);
         return function(session) {
           console.log('[....] ' + item);
-          return util.run(session, item, args.argv.slice(1), !(args.options.quiet || args.options.summary))
+          return util.run(session, item, args.argv.slice(1), args.options.verbose)
             .then(function(result) {
               output.log(item, result); //FIXME write the result to output
               console.log((result.exitcode === 0 ? '[PASS] ' : '[FAIL] ') + item);
@@ -245,16 +244,14 @@ function process_dir (dir, args, passed, failed) {
   try {fs.lstatSync(dm);} catch(e) {dm=undefined;}
   try {fs.lstatSync(run);} catch(e) {run=undefined;}
   if (dzn || dm || run)
-    return util.run(100 + (session++ % args.options.jobs), dir, aspects_languages, !(args.options.quiet || args.options.summary))
+    return util.run(100 + (session++ % args.options.jobs), dir, aspects_languages, args.options.verbose)
     .then(function(result) {
       result.exitcode === 0 ? ++passed.value : ++failed.value;
       output.log(dir, result);
       return [result.exitcode];
     })
     .tap(function(exitcodes) {
-      if (!args.options.quiet) {
-        console.log((exitcodes[0] === 0 ? '[PASS] ' : '[FAIL] ') + dir);
-      }
+      console.log((exitcodes[0] === 0 ? '[PASS] ' : '[FAIL] ') + dir);
     });
 
   return q.denodeify(fs.readdir) (dir)
