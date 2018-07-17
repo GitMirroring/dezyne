@@ -46,13 +46,22 @@ ifneq ($(VERSION),)
 VERSION_OPT:=--version=$(VERSION)
 endif
 
-runtime-common:
+link-runtime-common:
 	mkdir -p "$(OUT)"/dzn
 	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls $(VERSION_OPT) /share/runtime/$(LANGUAGE)))); do\
 	    ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/"$$file" "$(OUT)"/$$file;\
 	done
 	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls $(VERSION_OPT) /share/runtime/$(LANGUAGE)/dzn))); do\
 	    ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/dzn/$$file "$(OUT)"/dzn/$$file;\
+	done
+
+runtime-common:
+	mkdir -p "$(OUT)"/dzn
+	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls $(VERSION_OPT) /share/runtime/$(LANGUAGE)))); do\
+	    $(DZN) cat $(VERSION_OPT) /share/runtime/$(LANGUAGE)/$$file > "$(OUT)"/$$file;\
+	done
+	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls $(VERSION_OPT) /share/runtime/$(LANGUAGE)/dzn))); do\
+	    $(DZN) cat $(VERSION_OPT) /share/runtime/$(LANGUAGE)/dzn/$$file > "$(OUT)"/dzn/$$file;\
 	done
 
 runtime: runtime-common
