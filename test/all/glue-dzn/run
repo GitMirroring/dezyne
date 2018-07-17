@@ -57,10 +57,10 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
       (handle-error job error)
       text)))
 
-(define ((asd->dzn dzn out) dm-file)
+(define ((asd->dzn dzn out version) dm-file)
   (assert-pipe `(,dzn "--session=100" "-v" "convert" "--globals" "--glue" "--system" "--map" "--output" ,out ,dm-file)))
 
-(define ((dzn->code dzn dir out language model map-files) dzn-file)
+(define ((dzn->code dzn dir out version language model map-files) dzn-file)
   (assert-pipe `(,dzn
                  "code" "-l" ,language
                  "-I" ,out ;; FIXME:  dzn bug
@@ -70,7 +70,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
                  ,dzn-file
                  ,@map-files)))
 
-(define (convert dzn dir out)
+(define (convert dzn dir out version)
   (let* ((dir (string-append dir "/"))
          (im-files (find-files dir ".*[.]im$"))
          (dm-files (find-files dir ".*[.]dm$")))
@@ -78,17 +78,17 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
     (format #t "im-files:~s\n" im-files)
     (format #t "dm-files:~s\n" dm-files)
 
-    (for-each (asd->dzn dzn out) im-files)
-    (for-each (asd->dzn dzn out) dm-files)
+    (for-each (asd->dzn dzn out version) im-files)
+    (for-each (asd->dzn dzn out version) dm-files)
 
     ;; FIXME: fail silently, skip trying to get past opaque build3.oban failure
     ;;(delete-file (string-append out "/console.dzn"))
     (assert-pipe `("rm" "-f" ,(string-append out "/glue_console.dzn")))))
 
-(define (code test dzn model dir out language)
+(define (code test dzn model dir out version language)
   (let* ((dzn-files (find-files out ".*[.]dzn$"))
          (map-files (find-files out ".*[.]map$")))
-    (for-each (dzn->code dzn dir out language model map-files) dzn-files)
+    (for-each (dzn->code dzn dir out version language model map-files) dzn-files)
     (assert-pipe
     `("make"
       ,(string-append "DZN=" dzn)
@@ -101,7 +101,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
       ,(string-append test "/lib/code.make")
       "runtime"))))
 
-(define (build test model dir out language)
+(define (build test model dir out version language)
   (assert-pipe
    `("make"
      ,(string-append "DIR=" dir)
@@ -111,7 +111,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
      ,(string-append "IN=" dir "/" language)
      "-f" ,(string-append test "/lib/build." language ".make"))))
 
-(define (execute dir out language)
+(define (execute dir out version language)
   (assert-pipe (list (string-append out "/" language "/test"))))
 
 (define (with-result-and-output thunk)
@@ -129,7 +129,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
                        (set! result status))))))
     (cons result output)))
 
-(define (results->json languages . results)
+(define (results->json . results)
   (scm->json-string
    (let loop ((results results))
      (if (null? (cdr results)) (car results)
@@ -140,13 +140,19 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
   (let ((keys (map car a)))
     (map (lambda (key a b) (cons key (append a b))) keys (map cdr a) (map cdr b))))
 
-(define (stage->alist stage results languages)
+(define (stage->alist stage versions languages results)
   `((status . ((,stage . ,(if (null? languages) (car results)
-                              (map (lambda (language result) (cons language result))
-                                   languages (map car results))))))
+                              (map (lambda (version)
+                                     (cons version
+                                           (map (lambda (language result) (cons language result))
+                                                languages (map car (assoc-ref results version)))))
+                                   versions)))))
     (output . ,(if (null? languages) (list (cons stage (cdr results)))
-                   (map (lambda (language output) (cons (string-append stage "-" language) output))
-                        languages (map cdr results))))))
+                   (append-map (lambda (version)
+                                 (map (lambda (language output)
+                                        (cons (string-append stage "-" version "-" language) output))
+                                      languages (map cdr (assoc-ref results version))))
+                               versions)))))
 
 (define (main args)
   (let* ((dir (dirname (car args)))
@@ -158,29 +164,35 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -C $test/../gaiag -L $te
          (dzn (or (getenv "DZN") (string-append development "/dzn/bin/dzn")))
          (model "alarm")
          (out (string-append "out/" (substring dir (1+ (string-rindex dir #\/)))))
-         (languages '("c++" "c++03")))
+         (languages '("c++" "c++03"))
+         (versions '("development")))
 
     (when (file-exists? out) (delete-file-recursively out))
     (mkdir-p out)
     (let ((json (results->json
-                 languages
-                 (stage->alist "convert"
-                               (with-result-and-output (lambda () (convert dzn dir out))) '())
-                 (stage->alist "code"
-                               (map (lambda (language)
-                                      (with-result-and-output (lambda () (code test dzn model dir out language))))
-                                    languages)
-                               languages)
-                 (stage->alist "build"
-                               (map (lambda (language)
-                                      (with-result-and-output (lambda () (build test model dir out language))))
-                                    languages)
-                               languages)
-                 (stage->alist "execute"
-                               (map (lambda (language)
-                                      (with-result-and-output (lambda () (execute dir out language))))
-                                    languages)
-                               languages))))
+                 (stage->alist "convert" '() '()
+                               (with-result-and-output (lambda () (convert dzn dir out (car versions)))))
+                 (stage->alist "code" versions languages
+                               (map (lambda (version)
+                                      (cons version
+                                            (map (lambda (language)
+                                              (with-result-and-output (lambda () (code test dzn model dir out version language))))
+                                            languages)))
+                                    versions))
+                 (stage->alist "build" versions languages
+                               (map (lambda (version)
+                                      (cons version
+                                            (map (lambda (language)
+                                              (with-result-and-output (lambda () (build test model dir out version language))))
+                                            languages)))
+                                    versions))
+                 (stage->alist "execute" versions languages
+                               (map (lambda (version)
+                                      (cons version
+                                            (map (lambda (language)
+                                              (with-result-and-output (lambda () (execute dir out version language))))
+                                            languages)))
+                                    versions)))))
       (with-output-to-file (string-append out "/outcome.json")
         (cut display json)))
 
