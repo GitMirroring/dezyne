@@ -91,6 +91,12 @@ var output = {
       }
     });
 
+    if (output.result.testsets.length == 0) {
+      // single test...
+      var name = output.result.items.length>0 && path.basename(output.result.items[0].name) || 'TEST';
+      output.result.testsets.push({name: name , items: output.result.items});
+    }
+
     if (output.write) {
       output.write(output.result, output.filePath);
       console.log ('See file://' + path.resolve (output.filePath));
