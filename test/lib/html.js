@@ -276,25 +276,25 @@ function transform(result) {
   ln('            <th class="white">Version</th>');
   ln('            <th class="white">Total tests</th>');
   ln('            <th class="passed">');
-  ln('              <button id="button" class="passed" :style="{opacity:passedOpa}" v-on:click="toggle(\'passed\')">');
+  ln('              <button id="button" class="passed" :style="{opacity:opa(\'passed\')}" v-on:click="toggle(\'passed\')">');
   ln('                Passed');
   ln('              </button>');
   ln('            </th>');
 
   ln('            <th class="solved">');
-  ln('              <button id="button" class="solved" :style="{opacity:solvedOpa}" v-on:click="toggle(\'solved\')">');
+  ln('              <button id="button" class="solved" :style="{opacity:opa(\'solved\')}" v-on:click="toggle(\'solved\')">');
   ln('                Solved');
   ln('              </button>');
   ln('            </th>');
 
   ln('            <th class="known">');
-  ln('              <button id="button" class="known" :style="{opacity:knownOpa}" v-on:click="toggle(\'known\')">');
+  ln('              <button id="button" class="known" :style="{opacity:opa(\'known\')}" v-on:click="toggle(\'known\')">');
   ln('                Known');
   ln('              </button>');
   ln('            </th>');
 
   ln('            <th class="failed">');
-  ln('              <button id="button" class="failed" :style="{opacity:failedOpa}" v-on:click="toggle(\'failed\')">');
+  ln('              <button id="button" class="failed" :style="{opacity:opa(\'failed\')}" v-on:click="toggle(\'failed\')">');
   ln('                Failed');
   ln('              </button>');
   ln('            </th>');
@@ -309,7 +309,11 @@ function transform(result) {
   ln('              <td class="white":rowspan="status.versions.length">' + result.endTime.toLocaleTimeString() + '</td>');
   ln('              <td class="white":rowspan="status.versions.length">' + result.elapsedTime + '</td>');
   ln('            </template>');
-  ln('            <td :class="version.class">{{version.name}}</td>');
+  ln('            <td :class="version.class">');
+  ln('              <button id="button" :class="version.class" :style="{opacity:opa(version.name), width:\'100%\'}" v-on:click="toggle(version.name)">');
+  ln('                {{version.name}}');
+  ln('              </button>');
+  ln('            </td>');
   ln('            <td class="white">{{version.total}}</td>');
   ln('            <td class="white">');
   ln('                {{version.passed}}');
@@ -345,7 +349,7 @@ function transform(result) {
   ln('          </thead>');
   ln('          <tbody>');
   ln('            <template v-for="item in testset.table.items">');
-  ln('              <tr v-for="(version,vindex) in item.versions" v-show="show(version.status)" :class="version.class">');
+  ln('              <tr v-for="(version,vindex) in item.versions" v-show="showv(version)" :class="version.class">');
   ln('                <template v-for="aspect in version.aspects">');
   ln('                  <template v-if="rowspan(item,vindex,aspect) > 0">');
   ln('                    <td :class="aspect.class" :rowspan="rowspan(item,vindex,aspect)" v-bind:style="{\'border-top\':style(item,vindex)}">');
@@ -377,6 +381,11 @@ function transform(result) {
             solved: st.solved,
             known: st.known,
             failed: st.failed};
+  });
+
+  data.toggles = {passed: false, skipped: false, solved: false, known: false, failed: true};
+  Object.keys(result.status.versions).each(function(version) {
+    data.toggles[version] = true;
   });
 
   data.testsets = result.testsets.map(function(testset) {
@@ -494,7 +503,6 @@ function transform(result) {
 
   //writefile
 
-  data.toggles = {passed: false, skipped: false, solved: false, known: false, failed: true};
   data.colors = { passed: 'rgb(200,255,200)',
                   skipped: 'rgb(235,255,235)',
                   solved: 'rgb(200,200,255)',
@@ -510,23 +518,15 @@ function transform(result) {
   ln('      el: "#app",');
   ln('      data: ' + JSON.stringify(data,null,1) + ',');
   ln('');
-  ln('      computed: {');
-  ln('          passedOpa: function () {');
-  ln('            return this.toggles[\'passed\'] ? 1 : 0.33');
-  ln('          },');
-  ln('          solvedOpa: function () {');
-  ln('            return this.toggles[\'solved\'] ? 1 : 0.33');
-  ln('          },');
-  ln('          knownOpa: function () {');
-  ln('            return this.toggles[\'known\'] ? 1 : 0.33');
-  ln('          },');
-  ln('          failedOpa: function () {');
-  ln('            return this.toggles[\'failed\'] ? 1 : 0.33');
-  ln('          }');
-  ln('      },');
   ln('      methods: {');
+  ln('        opa(st) {');
+  ln('          return this.toggles[st] ? 1 : 0.33');
+  ln('        },');
   ln('        show(st) {');
   ln('          return (!st) || this.toggles[st]');
+  ln('        },');
+  ln('        showv(v) {');
+  ln('          return this.show(v.status) && this.show(v.name);');
   ln('        },');
   ln('        toggle(st) {');
   ln('          this.toggles[st] = !this.toggles[st];');
@@ -542,21 +542,21 @@ function transform(result) {
   ln('          if(aspect.rowspan == -1) return 1;');
   ln('          var hide = false;');
   ln('          for (i=0; i<vindex; i++) {');
-  ln('            if (this.show(item.versions[i].status)) hide = true;');
+  ln('            if (this.showv(item.versions[i])) hide = true;');
   ln('          }');
   ln('          if (hide) return 0;');
-  ln('          if (! this.show(item.versions[vindex].status)) return 0;');
+  ln('          if (! this.showv(item.versions[vindex])) return 0;');
   ln('          var vis = 0;');
   ln('          for (i=vindex; i<item.versions.length; i++) {');
-  ln('            if (this.show(item.versions[i].status)) vis++;');
+  ln('            if (this.showv(item.versions[i])) vis++;');
   ln('          }');
   ln('          return vis;');
   ln('        },');
   ln('        first_visible(item,vindex) {');
   ln('          for (i=0; i<vindex; i++) {');
-  ln('            if (this.show(item.versions[i].status)) return false;');
+  ln('            if (this.showv(item.versions[i])) return false;');
   ln('          }');
-  ln('          return this.show(item.versions[vindex].status);');
+  ln('          return this.showv(item.versions[vindex]);');
   ln('        },');
   ln('        style(item,vindex) {');
   ln('          return this.first_visible(item,vindex) ? "0.15em solid gray" : "0.1em solid lightGray";');

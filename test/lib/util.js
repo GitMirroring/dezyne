@@ -203,7 +203,7 @@ var util = {
   ,
   // run script arguments: bin/run testdir (aspect | language)*
   //                       testdir/run (aspect | language)*
-  run: function(session, testdir, aspects_languages, verbose, summary) {
+  run: function(session, testdir, aspects_languages, verbose, quiet) {
     var future = q.defer();
     var singleTestStartTime = new Date();
 
@@ -220,7 +220,7 @@ var util = {
         var script = child.spawn (call.run, call.args);
 
         script.stdout.on('data', function (data) {
-          if((summary || verbose) && String(data).startsWith('update:')) {
+          if((!quiet || verbose) && String(data).startsWith('update:')) {
             process.stdout.write(String(data).replace('update:',''));
           }
           else if(verbose) process.stdout.write(data);

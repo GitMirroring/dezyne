@@ -114,7 +114,7 @@ function parse_opts(argv) {
     ['o', 'output=OUTPUT', 'write output to OUTPUT [out/TARGET.html]'],
     ['c', 'collect', 'do not execute, but collect results from previous runs'],
     ['f', 'failedonly', 'execute failed items from previous run'],
-    ['s', 'summary', 'provide incremental summary on stdout'],
+    ['q', 'quiet', 'suppress incremental summary on stdout'],
     ['v', 'verbose', 'provide verbose test output on stdout'],
   ]);
   option_parser.bindHelp(
@@ -174,7 +174,7 @@ function execute(dir, args) {
     .map(function(item) {
       return function(session) {
         console.log('[....] ' + item);
-        return util.run(session, item, args.argv.slice(1), args.options.verbose, args.options.summary)
+        return util.run(session, item, args.argv.slice(1), args.options.verbose, args.options.quiet)
           .then(function(result) {
             output.log(item, result); //FIXME write the result to output
             console.log((result.exitcode === 0 ? '[PASS]' : result.status) + ' ' + item);
@@ -211,7 +211,7 @@ function executefailedonly(dir, args) {
         console.log("filtered item: %j",item);
         return function(session) {
           console.log('[....] ' + item);
-          return util.run(session, item, args.argv.slice(1), args.options.verbose, args.options.summary)
+          return util.run(session, item, args.argv.slice(1), args.options.verbose, args.options.quiet)
             .then(function(result) {
               output.log(item, result); //FIXME write the result to output
               console.log((result.exitcode === 0 ? '[PASS] ' : '[FAIL] ') + item);
@@ -323,22 +323,26 @@ function set_status(result) {
         result.status.versions[version].failed++;
         result.status.versions[version].overall = V(result.status.versions[version].overall,'FAILED');
         item.status.overall = V(item.status.overall,'FAILED');
+        result.status.overall = V(result.status.overall,'FAILED');
       } else if (known) {
         item.status.versions[version] = 'KNOWN';
         result.exitcode = 0;
         result.status.versions[version].known++;
         result.status.versions[version].overall = V(result.status.versions[version].overall,'KNOWN');
         item.status.overall = V(item.status.overall,'KNOWN');
+        result.status.overall = V(result.status.overall,'KNOWN');
       } else if (solved) {
         item.status.versions[version] = 'SOLVED';
         result.status.versions[version].solved++;
         result.status.versions[version].overall = V(result.status.versions[version].overall,'SOLVED');
         item.status.overall = V(item.status.overall,'SOLVED');
+        result.status.overall = V(result.status.overall,'SOLVED');
       } else {
         item.status.versions[version] = 'PASSED';
         result.status.versions[version].passed++;
         result.status.versions[version].overall = V(result.status.versions[version].overall,'PASSED');
         item.status.overall = V(item.status.overall,'PASSED');
+        result.status.overall = V(result.status.overall,'PASSED');
       }
     });
   });
