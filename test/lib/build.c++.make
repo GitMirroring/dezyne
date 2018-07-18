@@ -41,7 +41,7 @@ CCACHE:=$(shell type -p ccache)
 CXX:=$(CCACHE) g++
 CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
 # FIXME: handwritten code, versioned?  $(IN)/../.. or ?
-CPPFLAGS=-I$(OUT) -I$(OUT)/.. -I$(OUT)/../.. -I$(IN) -I$(IN)/.. -I$(DEVELOPMENT)/externals/asd_cpp_runtime -D DZN_VERSION_ASSERT=1
+CPPFLAGS=-I$(OUT) -I$(OUT)/..  -I$(OUT)/../.. -I$(OUT)/../../c++ -I$(IN) -I$(IN)/.. -I$(DEVELOPMENT)/externals/asd_cpp_runtime -D DZN_VERSION_ASSERT=1
 GLOBALS_H=$(wildcard $(DIR)/globals.h)
 ifneq ($(GLOBALS_H),)
 CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
@@ -58,7 +58,7 @@ $(MAIN_O): $(MAIN)
 	$(COMPILE.cc) -o $@ $<
 endif
 
-$(OUT)/test: $(patsubst $(IN)/%.cc, $(OUT)/%.o, $(wildcard $(IN)/*.cc))
+$(OUT)/test: $(patsubst $(IN)/%.cc, $(OUT)/%.o, $(wildcard $(IN)/*.cc) $(wildcard $(OUT)/../../c++/*.cc))
 $(OUT)/test: $(patsubst %.cc, %.o,$(wildcard $(OUT)/*.cc))
 $(OUT)/test: $(patsubst %.cpp, %.o,$(wildcard $(OUT)/*.cpp))
 $(OUT)/test: $(MAIN_O)

@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
@@ -41,7 +41,7 @@ CFLAGS=--std=c99 -g -O0
 #CFLAGS=--std=c99 -g -DDZN_TINY=1
 #CFLAGS=--std=c99 -Os -DDZN_TINY=1
 
-CPPFLAGS=-I$(IN)
+CPPFLAGS=-I$(OUT) -I$(OUT)/.. -I$(OUT)/../.. -I$(OUT)/../../c -I$(IN)
 GLOBALS_H=$(wildcard $(DIR)/globals.h)
 ifneq ($(GLOBALS_H),)
 CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
@@ -59,7 +59,8 @@ $(MAIN_O): $(MAIN)
 	$(COMPILE.c) -o $@ $<
 endif
 
-$(OUT)/test: $(patsubst $(IN)/%.c, $(OUT)/%.o, $(wildcard $(IN)/*.c)) $(MAIN_O)
+$(OUT)/test: $(patsubst $(IN)/%.c, $(OUT)/%.o, $(wildcard $(IN)/*.c) $(wildcard $(OUT)/../../c/*.c))
+$(OUT)/test: $(MAIN_O)
 	mkdir -p $(dir $@)
 	$(LINK.c) -o $@ $^ $(LDFLAGS)
 
