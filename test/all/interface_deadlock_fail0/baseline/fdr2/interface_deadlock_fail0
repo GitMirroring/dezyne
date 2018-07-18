@@ -1,3 +1,0 @@
-verify: interface_deadlock_fail0: check: completeness: ok
-verify: interface_deadlock_fail0: check: deadlock: fail
-verify: interface_deadlock_fail0: check: livelock: ok

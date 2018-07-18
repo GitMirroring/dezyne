@@ -1,0 +1,9 @@
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: II: check: deadlock: ok
+verify: II: check: livelock: ok
+verify: livelock_component0: check: deterministic: ok
+verify: livelock_component0: check: illegal: ok
+verify: livelock_component0: check: deadlock: ok
+verify: livelock_component0: check: compliance: ok
+verify: livelock_component0: check: livelock: ok

@@ -133,10 +133,23 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -L $gaiag  -C $test/../g
 
 (define (results->json . results)
   (scm->json-string
-   (let loop ((results results))
-     (if (null? (cdr results)) (car results)
-         (alist-append (car results)
-                       (loop (cdr results)))))))
+   (append (let loop ((results results))
+             (if (null? (cdr results)) (car results)
+                 (alist-append (car results)
+                               (loop (cdr results)))))
+           (list (cons "order" (list
+                                "convert"
+                                "parse"
+                                "verify"
+                                "traces"
+                                "code"
+                                "build"
+                                "execute"
+                                "run"
+                                "triangle"
+                                "table"
+                                "view"
+                                ))))))
 
 (define (alist-append a b)
   (let ((keys (map car a)))

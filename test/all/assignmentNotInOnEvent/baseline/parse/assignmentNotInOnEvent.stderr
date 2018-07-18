@@ -1,3 +1,0 @@
-out/assignmentNotInOnEvent/assignmentNotInOnEvent.dzn:8:9: Well-formedness error: Assignment statement only allowed within OnEventStatement
-out/assignmentNotInOnEvent/assignmentNotInOnEvent.dzn:9:7: Well-formedness error: Only imperative Statement allowed here
-out/assignmentNotInOnEvent/assignmentNotInOnEvent.dzn:10:7: Well-formedness error: Only imperative Statement allowed here

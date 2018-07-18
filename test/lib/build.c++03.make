@@ -65,7 +65,8 @@ $(MAIN_O): $(MAIN)
 	$(COMPILE.cc) -o $@ $<
 endif
 
-$(OUT)/test: $(patsubst $(IN)/%.cc, $(OUT)/%.o, $(wildcard $(IN)/*.cc) $(wildcard $(OUT)/../../c++03/*.cc))
+$(OUT)/test: $(patsubst $(IN)/%.cc, $(OUT)/%.o, $(wildcard $(IN)/*.cc))
+$(OUT)/test: $(patsubst $(OUT)/%.cc, $(OUT)/%.o, $(wildcard $(OUT)/*.cc))
 $(OUT)/test: $(patsubst %.cc, %.o,$(wildcard $(OUT)/*.cc))
 $(OUT)/test: $(patsubst %.cpp, %.o,$(wildcard $(OUT)/*.cpp))
 $(OUT)/test: $(MAIN_O)

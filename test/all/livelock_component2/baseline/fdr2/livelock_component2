@@ -1,0 +1,12 @@
+verify: Iterate: check: completeness: ok
+verify: Iterate: check: deadlock: ok
+verify: Iterate: check: livelock: ok
+verify: List: check: completeness: ok
+verify: List: check: deadlock: ok
+verify: List: check: livelock: ok
+verify: livelock_component2: check: deterministic: ok
+verify: livelock_component2: check: illegal: ok
+verify: livelock_component2: check: deadlock: ok
+verify: livelock_component2: check: compliance: ok
+verify: livelock_component2: check: livelock: fail
+iter.map

@@ -1,0 +1,9 @@
+verify: compliance_livelock: check: deterministic: ok
+verify: compliance_livelock: check: illegal: ok
+verify: compliance_livelock: check: deadlock: ok
+verify: compliance_livelock: check: compliance: fail
+verify: compliance_livelock: check: livelock: ok
+verify: i: check: deadlock: ok
+verify: i: check: livelock: ok
+verify: ilivelock: check: deadlock: ok
+verify: ilivelock: check: livelock: ok

@@ -1,2 +1,0 @@
-out/SimpleBlockingTwoReply/SimpleBlockingTwoReply.dzn:33:43:i38: error double reply in model SimpleBlockingTwoReply
-out/SimpleBlockingTwoReply/SimpleBlockingTwoReply.dzn:4:8:i39: p.return not performed by component

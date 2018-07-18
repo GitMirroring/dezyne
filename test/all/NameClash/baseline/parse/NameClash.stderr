@@ -1,4 +1,0 @@
-out/NameClash/NameClash.dzn:2:8: Well-formedness error: Enum type name must not be equal to model name: 'I1'
-out/NameClash/NameClash.dzn:10:15: Well-formedness error: Port name must not be equal to model name: 'NameClash'
-out/NameClash/NameClash.dzn:19:10: Well-formedness error: Enum type name must not be equal to model name: 'NameClash2'
-out/NameClash/NameClash.dzn:27:10: Well-formedness error: Variable name must not be equal to model name: 'NameClash3'

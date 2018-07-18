@@ -1,3 +1,0 @@
-out/eventNotAction/eventNotAction.dzn:6:20: Well-formedness error: Event is not an action: 'deactivate'
-out/eventNotAction/eventNotAction.dzn:15:30: Well-formedness error: Event is not an action: 'sensor1.deactivate'
-out/eventNotAction/eventNotAction.dzn:16:30: Well-formedness error: Event is not an action: 'sensor2.deactivated'

@@ -8,6 +8,5 @@ verify: trap: check: deterministic: ok
 verify: trap: check: illegal: ok
 verify: trap: check: deadlock: ok
 verify: trap: check: compliance: fail
-i.e
-i.Status_Yes
+i.b
 verify: trap: check: livelock: ok

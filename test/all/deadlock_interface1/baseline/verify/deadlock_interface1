@@ -1,0 +1,4 @@
+verify: deadlock_interface1: check: deadlock: fail
+e
+return
+verify: deadlock_interface1: check: livelock: ok

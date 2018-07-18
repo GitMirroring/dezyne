@@ -1,2 +1,0 @@
-out/component_deadlock_fail1/component_deadlock_fail1.dzn:20:6:i16: deadlock in model component_deadlock_fail1
-out/component_deadlock_fail1/component_deadlock_fail1.dzn:20:22:i24: illegal

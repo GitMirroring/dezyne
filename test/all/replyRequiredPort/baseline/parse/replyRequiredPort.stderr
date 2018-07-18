@@ -1,3 +1,0 @@
-out/replyRequiredPort/replyRequiredPort.dzn:25:8: Well-formedness error: Reply without port is not allowed outside the scope of an 'on' clause when multiple 'provides' ports are present
-out/replyRequiredPort/replyRequiredPort.dzn:28:5: Well-formedness error: BlockingStatement not allowed with multiple provides ports
-out/replyRequiredPort/replyRequiredPort.dzn:30:30: Well-formedness error: Reply without port is not allowed for an 'out' event when multiple 'provides' ports are present

@@ -1,0 +1,19 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: II: check: completeness: ok
+verify: II: check: deadlock: ok
+verify: II: check: livelock: ok
+verify: deadlock_blocking_inevitable: check: deterministic: ok
+verify: deadlock_blocking_inevitable: check: illegal: ok
+verify: deadlock_blocking_inevitable: check: deadlock: fail
+p.e
+r.e
+r.return
+r.cb
+verify: deadlock_blocking_inevitable: check: compliance: fail
+p.e
+r.e
+r.return
+r.cb
+verify: deadlock_blocking_inevitable: check: livelock: ok

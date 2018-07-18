@@ -1,0 +1,13 @@
+verify: I: check: completeness: ok
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: deadlock_component1: check: deterministic: ok
+verify: deadlock_component1: check: illegal: ok
+verify: deadlock_component1: check: deadlock: fail
+i.e
+i.return
+verify: deadlock_component1: check: compliance: fail
+i.e
+i.return
+i.e
+verify: deadlock_component1: check: livelock: ok

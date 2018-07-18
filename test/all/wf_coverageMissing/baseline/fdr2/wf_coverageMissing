@@ -1,0 +1,8 @@
+verify: Sensor: check: deadlock: ok
+verify: Sensor: check: livelock: ok
+verify: wf_coverageMissing: check: deterministic: ok
+verify: wf_coverageMissing: check: illegal: ok
+verify: wf_coverageMissing: check: deadlock: ok
+verify: wf_coverageMissing: check: compliance: fail
+sensor.deactivate
+verify: wf_coverageMissing: check: livelock: ok

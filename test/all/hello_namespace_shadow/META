@@ -1,1 +1,1 @@
-{"known":["run","c++:build","c++03:build","javascript"],"comment":"namespace not properly handled"}
+{"known":["run","code<2.8.1","c++:build","c++03:build","javascript"],"comment":"namespace not properly handled"}

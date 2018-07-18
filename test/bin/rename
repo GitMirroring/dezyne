@@ -1,0 +1,71 @@
+#! /bin/sh
+
+set -e
+
+from=$1
+to=$2
+
+if [ ! -d "$from" -o -z "$to" -o ! -d all/ -o -e "$to" ]; then
+    cat <<EOF
+Usage: rename FROM TO
+
+Example:
+    bin/rename all/hello all/bye
+EOF
+    exit 2
+fi
+
+rm -rf out
+
+git mv $from $to
+from_dir=$(dirname $from)
+from_base=$(basename $from)
+to_base=$(basename $to)
+
+git mv $to/$from_base.dzn $to/$to_base.dzn
+sed -i -e "s,$from_base,$to_base,g" $to/$to_base.dzn
+git add $to/$to_base.dzn
+
+for i in $(ls -1 $to/baseline 2>/dev/null); do
+    if [ -L $to/baseline/$i ]; then
+        continue
+    fi
+    if [ -f $to/baseline/$i/$from_base ]; then
+        git mv $to/baseline/$i/$from_base $to/baseline/$i/$to_base
+        if [ "$i" = verify -o "$i" = fdr2 ]; then
+            mv $to/baseline/$i/$to_base $to/baseline/$i/$to_base-
+            cat $to/baseline/$i/$to_base- \
+                | sed -e s,$from_base,$to_base,g \
+                | bin/reorder\
+                > $to/baseline/$i/$to_base
+            rm -f $to/baseline/$i/$to_base-
+        else
+            sed -i -e s,$from_base,$to_base,g $to/baseline/$i/$to_base
+        fi
+        git add $to/baseline/$i/$to_base
+    fi
+
+    if [ -f $to/baseline/$i/$from_base.stderr ]; then
+        git mv $to/baseline/$i/$from_base.stderr $to/baseline/$i/$to_base.stderr
+        sed -i -e s,$from_base,$to_base,g $to/baseline/$i/$to_base.stderr
+        git add $to/baseline/$i/$to_base.stderr
+    fi
+done
+
+for i in $(find . -type l -a -name $from_base); do
+    git rm -f $i
+    dir=$(dirname $i)
+    cd $dir
+    ln -s ../$from_dir/$to_base
+    git add $to_base
+    cd ..
+done
+
+if [ -d $to/baseline ]; then
+    cat <<EOF
+check baseline, run
+
+    ../pre-inst-env bin/test $to
+    cp out/$to_base/baseline/verify/* $to/baseline/verify/
+EOF
+fi

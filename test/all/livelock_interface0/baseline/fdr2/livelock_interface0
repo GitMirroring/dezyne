@@ -1,0 +1,3 @@
+verify: livelock_interface0: check: completeness: ok
+verify: livelock_interface0: check: deadlock: ok
+verify: livelock_interface0: check: livelock: fail

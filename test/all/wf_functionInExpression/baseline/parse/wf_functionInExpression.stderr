@@ -1,0 +1,3 @@
+out/wf_functionInExpression/wf_functionInExpression.dzn:11:14: Well-formedness error: Function calls are not allowed here
+out/wf_functionInExpression/wf_functionInExpression.dzn:16:16: Well-formedness error: Function calls are not allowed here
+out/wf_functionInExpression/wf_functionInExpression.dzn:17:11: Well-formedness error: Function calls are not allowed here

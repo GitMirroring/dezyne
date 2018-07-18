@@ -1,1 +1,0 @@
-out/outEventNonVoidReturn/outEventNonVoidReturn.dzn:4:7: Well-formedness error: Out Event with non void return type is not allowed: 'triggered'

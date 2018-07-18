@@ -1,0 +1,1 @@
+out/wf_bindingRequiredWildcard/wf_bindingRequiredWildcard.dzn:21:17: Well-formedness error: Wildcard can be bound to a provided port only

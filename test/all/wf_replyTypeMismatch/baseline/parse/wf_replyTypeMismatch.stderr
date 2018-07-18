@@ -1,0 +1,1 @@
+out/wf_replyTypeMismatch/wf_replyTypeMismatch.dzn:18:27: Well-formedness error: Reply type does not match any event type: 'bool'

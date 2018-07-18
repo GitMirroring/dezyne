@@ -1,13 +1,13 @@
 verify: compliance_provides_illegal4: check: deterministic: ok
 verify: compliance_provides_illegal4: check: illegal: fail
-h.hello
+h.cruel
 w.cruel
 w.world
 w.return
 illegal
 verify: compliance_provides_illegal4: check: deadlock: ok
 verify: compliance_provides_illegal4: check: compliance: fail
-h.cruel
+h.hello
 w.cruel
 w.world
 w.return

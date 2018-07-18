@@ -59,7 +59,8 @@ $(MAIN_O): $(MAIN)
 	$(COMPILE.c) -o $@ $<
 endif
 
-$(OUT)/test: $(patsubst $(IN)/%.c, $(OUT)/%.o, $(wildcard $(IN)/*.c) $(wildcard $(OUT)/../../c/*.c))
+$(OUT)/test: $(patsubst $(IN)/%.c, $(OUT)/%.o, $(wildcard $(IN)/*.c))
+$(OUT)/test: $(patsubst $(OUT)/%.c, $(OUT)/%.o,  $(wildcard $(OUT)/*.c))
 $(OUT)/test: $(MAIN_O)
 	mkdir -p $(dir $@)
 	$(LINK.c) -o $@ $^ $(LDFLAGS)

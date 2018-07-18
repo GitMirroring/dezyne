@@ -1,0 +1,2 @@
+out/wf_modelingSilent/wf_modelingSilent.dzn:25:20: Well-formedness error: Cannot determine silentness of modeling event
+out/wf_modelingSilent/wf_modelingSilent.dzn:34:18: Well-formedness error: Cannot determine silentness of modeling event

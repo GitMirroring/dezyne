@@ -241,7 +241,7 @@ function run_traces(parameters, asp, app) {
 
 var supported_languages = {
   'default': ['c++', 'c++03', 'c++-msvc11', 'javascript'],
-  '2.4.1' : ['c++', 'c++03', 'c++-msvc11', 'cs', 'javascript'],
+  '2.4.1' : ['c', 'c++', 'c++03', 'c++-msvc11', 'cs', 'javascript'],
 };
 
 var aspects = {
@@ -561,19 +561,20 @@ var aspects = {
   build: function(parameters) {
     var version = parameters.meta.versions[0];
     var language = parameters.meta.languages[0];
-    var base = '"out/'+path.basename(parameters.dir)+'"';
-    var out = '"out/'+path.basename(parameters.dir)+'"/'
-        + (version ? version + '/' : '')
-        + language;
-    var out_space = base.replace (' ', '\\');
+    var out_base = '"out/'+path.basename(parameters.dir)+'"';
+    var out_language = out_base + '/' + language;
+    var out = out_base
+        + '/' + version
+        + '/' + language;
+    var out_space = out_base.replace (' ', '\\');
     var main = has_main(parameters.dir, language);
     var cmd = 'mkdir -p ' + out
-        + ' && ln -sf ' + base + ' ' + out_space
+        + ' && ln -sf ' + out_base + ' ' + out_space
         + ' &&\nmake DIR="'+parameters.dir + '"'
         + ' VERSION="'+version+'"'
         + ' LANGUAGE='+language
         + ' OUT='+out
-        + ' IN='+out
+        + ' IN='+out_language
         + (parameters.meta.tss ? ' TSS='+ parameters.model : '')
         + (main ? ' MAIN="'+main +'"': '')
         + ' -f '+ __dirname + '/build.' + language + '.make';

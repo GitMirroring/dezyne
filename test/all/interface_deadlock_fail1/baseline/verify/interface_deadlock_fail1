@@ -1,4 +1,0 @@
-verify: interface_deadlock_fail1: check: deadlock: fail
-e
-return
-verify: interface_deadlock_fail1: check: livelock: ok

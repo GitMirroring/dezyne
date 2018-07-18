@@ -1,9 +1,0 @@
-verify: QueueFullExternal: check: deterministic: ok
-verify: QueueFullExternal: check: illegal: fail
-verify: QueueFullExternal: check: deadlock: ok
-verify: QueueFullExternal: check: compliance: fail
-verify: QueueFullExternal: check: livelock: ok
-verify: i: check: deadlock: fail
-verify: i: check: livelock: ok
-verify: ilivelock: check: deadlock: ok
-verify: ilivelock: check: livelock: ok

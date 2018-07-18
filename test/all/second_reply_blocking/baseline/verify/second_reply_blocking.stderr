@@ -1,0 +1,2 @@
+out/second_reply_blocking/second_reply_blocking.dzn:33:43:i38: error double reply in model second_reply_blocking
+out/second_reply_blocking/second_reply_blocking.dzn:4:8:i39: p.return not performed by component
