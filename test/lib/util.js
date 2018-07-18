@@ -3,7 +3,6 @@
 // Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 //
 // This file is part of Dezyne.
 //

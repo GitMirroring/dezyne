@@ -286,11 +286,14 @@ function V(st1, st2) {
 }
 
 function set_status(result) {
-  result.status = {passed: 0, solved: 0, known: 0, failed: 0};
+  result.status = {overall: 'PASSED', versions: {}};
+
   result.items.each(function(item) {
     item.status = {overall: 'PASSED', versions: {}};
     var outcome = item.outcome.status;
     Object.keys(outcome['code']).each(function(version) {
+      result.status.versions[version] = result.status.versions[version] || {passed: 0, solved: 0, known: 0, failed: 0};
+
       var passed = 0;
       var solved = 0;
       var known = 0;
@@ -317,20 +320,24 @@ function set_status(result) {
 
       if (failed) {
         item.status.versions[version] = 'FAILED';
-        result.status.failed++;
+        result.status.versions[version].failed++;
+        result.status.versions[version].overall = V(result.status.versions[version].overall,'FAILED');
         item.status.overall = V(item.status.overall,'FAILED');
       } else if (known) {
         item.status.versions[version] = 'KNOWN';
         result.exitcode = 0;
-        result.status.known++;
+        result.status.versions[version].known++;
+        result.status.versions[version].overall = V(result.status.versions[version].overall,'KNOWN');
         item.status.overall = V(item.status.overall,'KNOWN');
       } else if (solved) {
         item.status.versions[version] = 'SOLVED';
-        result.status.solved++;
+        result.status.versions[version].solved++;
+        result.status.versions[version].overall = V(result.status.versions[version].overall,'SOLVED');
         item.status.overall = V(item.status.overall,'SOLVED');
       } else {
         item.status.versions[version] = 'PASSED';
-        result.status.passed++;
+        result.status.versions[version].passed++;
+        result.status.versions[version].overall = V(result.status.versions[version].overall,'PASSED');
         item.status.overall = V(item.status.overall,'PASSED');
       }
     });

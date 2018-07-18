@@ -69,6 +69,7 @@ function all_versions(item) {
 }
 
 function all_languages(result) {
+  if (result.items.length == 0) return [];
   var versions = all_versions(result.items[0]);
   return Object.keys(result.items[0].outcome.status.code[versions[0]]);
 }
@@ -80,7 +81,7 @@ function status2class(status) {
   if (status=='SKIPPED') return 'skipped';
   if (status=='OK' || status=='PASSED') return 'passed';
   console.log('???????????????????? status=%j',status);
-  return 'passed';
+  return 'failed';
 }
 
 function status_or(status1, status2) {
@@ -92,8 +93,9 @@ function status_or(status1, status2) {
 }
 
 function summary_per_aspect(testset) {
-  var summary = {};
+  if (! (testset && testset.items.length)) return {};
 
+  var summary = {};
   var order = (testset.items.length) ? testset.items[0].outcome.order : [];
   var languages = all_languages(testset);
   var outcome = (testset.items.length) ? testset.items[0].outcome.status : [];
@@ -260,49 +262,69 @@ function transform(result) {
   ln('  <body>');
   ln('    <div id="app">');
 
-  var lcStatus = overall_status(result);
-  var ucStatus = display_status(lcStatus);
+  var lcStatus = status2class(result.status.overall);
+  var ucStatus = '['+result.status.overall+']';
 
   ln('      <h1 id="target" class="' + lcStatus + '">Target: ' + result.target + ' ' + ucStatus + '</h1>');
   ln('      <table id="summary">');
-  ln('        <tr>');
-  ln('          <th class="white">Date</th>');
-  ln('          <th class="white">Start time</th>');
-  ln('          <th class="white">End time</th>');
-  ln('          <th class="white">Elapsed time</th>');
-  ln('          <th class="white">Total tests</th>');
-  ln('          <th class="white">Passed</th>');
-  ln('          <th class="white">Solved</th>');
-  ln('          <th class="white">Known</th>');
-  ln('          <th class="white">Failed</th>');
-  ln('        </tr>');
-  ln('        <tr>');
-  ln('          <td class="white">' + result.startTime.toLocaleDateString() + '</td>');
-  ln('          <td class="white">' + result.startTime.toLocaleTimeString() + '</td>');
-  ln('          <td class="white">' + result.endTime.toLocaleTimeString() + '</td>');
-  ln('          <td class="white">' + result.elapsedTime + '</td>');
-  var total = result.status.passed + result.status.solved + result.status.known + result.status.failed;
-  ln('          <td class="white">' + total + '</td>');
-  ln('          <td class="passed">');
-  ln('            <button id="button" class="passed" :style="{opacity:passedOpa}" v-on:click="toggle(\'passed\')">');
-  ln('              ' + result.status.passed);
-  ln('            </button>');
-  ln('          </td>');
-  ln('          <td class="solved">');
-  ln('            <button id="button" class="solved" :style="{opacity:solvedOpa}" v-on:click="toggle(\'solved\')">');
-  ln('              ' + result.status.solved);
-  ln('            </button>');
-  ln('          </td>');
-  ln('          <td class="known">');
-  ln('            <button id="button" class="known" :style="{opacity:knownOpa}" v-on:click="toggle(\'known\')">');
-  ln('              ' + result.status.known);
-  ln('            </button></td>');
-  ln('          <td class="failed">');
-  ln('            <button id="button" class="failed" :style="{opacity:failedOpa}" v-on:click="toggle(\'failed\')">');
-  ln('              ' + result.status.failed);
-  ln('            </button>');
-  ln('          </td>');
-  ln('        </tr>');
+  ln('        <thead>');
+  ln('          <tr>');
+  ln('            <th class="white">Date</th>');
+  ln('            <th class="white">Start time</th>');
+  ln('            <th class="white">End time</th>');
+  ln('            <th class="white">Elapsed time</th>');
+  ln('            <th class="white">Version</th>');
+  ln('            <th class="white">Total tests</th>');
+  ln('            <th class="passed">');
+  ln('              <button id="button" class="passed" :style="{opacity:passedOpa}" v-on:click="toggle(\'passed\')">');
+  ln('                Passed');
+  ln('              </button>');
+  ln('            </th>');
+
+  ln('            <th class="solved">');
+  ln('              <button id="button" class="solved" :style="{opacity:solvedOpa}" v-on:click="toggle(\'solved\')">');
+  ln('                Solved');
+  ln('              </button>');
+  ln('            </th>');
+
+  ln('            <th class="known">');
+  ln('              <button id="button" class="known" :style="{opacity:knownOpa}" v-on:click="toggle(\'known\')">');
+  ln('                Known');
+  ln('              </button>');
+  ln('            </th>');
+
+  ln('            <th class="failed">');
+  ln('              <button id="button" class="failed" :style="{opacity:failedOpa}" v-on:click="toggle(\'failed\')">');
+  ln('                Failed');
+  ln('              </button>');
+  ln('            </th>');
+
+  ln('          </tr>');
+  ln('        </thead>');
+  ln('        <tbody v-cloak>');
+  ln('          <tr v-for="(version,vindex) in status.versions">');
+  ln('            <template v-if="vindex==0">');
+  ln('              <td class="white":rowspan="status.versions.length">' + result.startTime.toLocaleDateString() + '</td>');
+  ln('              <td class="white":rowspan="status.versions.length">' + result.startTime.toLocaleTimeString() + '</td>');
+  ln('              <td class="white":rowspan="status.versions.length">' + result.endTime.toLocaleTimeString() + '</td>');
+  ln('              <td class="white":rowspan="status.versions.length">' + result.elapsedTime + '</td>');
+  ln('            </template>');
+  ln('            <td :class="version.class">{{version.name}}</td>');
+  ln('            <td class="white">{{version.total}}</td>');
+  ln('            <td class="white">');
+  ln('                {{version.passed}}');
+  ln('            </td>');
+  ln('            <td class="white">');
+  ln('                {{version.solved}}');
+  ln('            </td>');
+  ln('            <td class="white">');
+  ln('                {{version.known}}');
+  ln('            </td>');
+  ln('            <td class="white">');
+  ln('                {{version.failed}}');
+  ln('            </td>');
+  ln('          </tr>');
+  ln('        <tbody>');
   ln('      </table>');
   ln('      <p></p>');
 
@@ -344,6 +366,19 @@ function transform(result) {
   ln('    </div>'); // id="app"
 
   var data = {};
+
+  data.status = {};
+  data.status.versions = Object.keys(result.status.versions).map(function(version) {
+    var st = result.status.versions[version];
+    return {name: version,
+            class: status2class(st.overall),
+            total: st.passed + st.solved + st.known + st.failed,
+            passed: st.passed,
+            solved: st.solved,
+            known: st.known,
+            failed: st.failed};
+  });
+
   data.testsets = result.testsets.map(function(testset) {
 
     var summary = summary_per_aspect(testset);

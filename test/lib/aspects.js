@@ -474,7 +474,7 @@ var aspects = {
 
               var update = 'update:' + '\t[' + status + ']' + ' '.repeat(longest_status - status.length) ;
               update += ' '+aspect + ' '.repeat(longest_aspect - aspect.length);
-              if(haslanguage(aspect)) update += '[' + String(version).substring(0,7) + '][' + language + ']' + '.'.repeat(lang_length - language.length);
+              if(haslanguage(aspect)) update += '[' + String(version).substring(0,7) + ']' + (version.length <= 7 ? '.'.repeat(7-version.length) : '') + '[' + language + ']' + '.'.repeat(lang_length - language.length);
               else update += '.'.repeat(lang_length + 11);
               update += ' '+result1.parameters.model;
               console.log(update);
