@@ -98,7 +98,7 @@ Use \"gdzn COMMAND --help\" for command-specific information.
         (let ((self? (equal? (canonicalize-path (car (command-line)))
                              (canonicalize-path gdzn))))
           (if self? (run-command args) ; for development: avoid loop
-              (apply system* (cons gdzn args)))))))
+              (apply execl gdzn gdzn args))))))
 
 (define (main args)
   (let* ((options (parse-opts args))
