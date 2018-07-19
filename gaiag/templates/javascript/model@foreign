@@ -2,4 +2,4 @@ dzn_require = typeof (require) !== 'undefined' ? require : function () {return {
 dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');
 dzn = dzn || {};
 
-dzn.extend (dzn, require (__dirname + '/#x:scope+name '));
+dzn.extend (dzn, require ('#x:scope+name '));
