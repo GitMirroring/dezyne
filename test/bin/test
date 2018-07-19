@@ -380,9 +380,10 @@ function main() {
     })
     .then(function(results) {
       var outcome = output.close(args);
-      console.log('STATUS: ' + JSON.stringify(outcome.status));
-      var x = outcome.status.failed;
-      process.exit(x);
+      console.log('STATUS: ' + JSON.stringify(outcome.status, null, 2));
+      var status = Object.keys (outcome.status.versions)
+          .reduce (function (r, e) {return outcome.status.versions[e].failed + r;}, 0);
+      process.exit(status);
     })
     .fail(function(err) {
       console.error(err.stack);
