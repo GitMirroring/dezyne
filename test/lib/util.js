@@ -314,6 +314,29 @@ var util = {
     return timeString;
   }
   ,
+  version_split: function (v) {
+    var split = v.split ('.');
+    if (split.length == 1)
+      return [v]
+    return split.map (function (s){return parseInt (s);});
+  }
+  ,
+  version_compare: function (a,b) {
+    var va = util.version_split (a);
+    var vb = util.version_split (b);
+    if (isNaN (va[0])) {
+      if (isNaN (vb[0])) return a.localeCompare (b);
+      return 1;
+    }
+    if (isNaN (vb[0])) return -1;
+
+    for (i = 0; i < Math.min (va.length, vb.length); i++) {
+      if (va[i] < vb[i]) return -1;
+      if (va[i] > vb[i]) return 1;
+    }
+
+    return 0;
+  }
 };
 
 

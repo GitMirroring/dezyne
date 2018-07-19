@@ -1,1 +1,1 @@
-{"skip":["run"],"comment":"system model cannot run"}
+{"skip":["code<2.8.0","run"],"comment":{"true":"system model cannot run","code<2.8.0":"foreign component incompatibility"}}

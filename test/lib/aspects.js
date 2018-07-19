@@ -95,6 +95,11 @@ function query_versions() {
   return [default_version].concat(extra_versions);
 }
 
+// function query_versions() {
+//   return ['2.4.1'];
+// }
+
+
 var dependencies = {
   convert:  [],
   parse:    ['convert'],
@@ -148,31 +153,56 @@ function ordered_dependencies() {
   return result;
 }
 
-function skip_filter (meta) {
-  function filter_aspect(e) {
-    return meta.skip.indexOf(e) == -1;
+function no_skip_p (meta, version) {
+  function dependencies_skipped_p(aspect, language) {
+    var deps = depend(aspect) || [];
+    var skipped_deps = deps.filter(function(a) { return aspect_in_dict (meta.skip, a, version, language); });
+    return skipped_deps.length == 0;
   }
-  function filter_dependency(e) {
-    var deps = depend(e) || [];
-    return deps.filter(function(a) { return meta.skip.indexOf(a) != -1; }).length == 0;
-  }
-  return function (e) {
+
+  return function (aspect) {
     var language = meta.languages.length === 1 && meta.languages[0];
-    if(!language || meta.skip.indexOf(language) == -1) {
-      if(Object.keys(dependencies).indexOf(e) == -1) return true;
-      if(filter_aspect(e) && filter_dependency(e)) return true;
-    }
-    return false;
+    return !aspect_in_dict (meta.skip, aspect, version, language)
+        && (Object.keys(dependencies).indexOf(aspect) == -1
+            || dependencies_skipped_p (aspect, language));
   }
 }
 
 function known (meta, aspect, version, language) {
-  if (language) {
-    if (meta.known.indexOf(language) != -1) return true;
-    if (meta.known.indexOf(language+":"+aspect) != -1) return true;
+  return aspect_in_dict (meta.known, aspect, version, language);
+}
+
+function aspect_in_dict (dict, aspect, version, language) {
+  // dict has?
+  // c++, c++:code, code
+  // c++<2.8.0, c++:code<2.8.0, code<2.8.0
+  // c++>=2.8.0, c++:code>=2.8.0, code>=2.8.0
+  // c++=2.8.0, c++:code=2.8.0, code=2.8.0
+
+  function hulp (key) {
+    return dict.find (function (term) {
+      if (term == key) return true;
+      var operator = ['<', '>=', '==', '='].find (function (o) {return term.indexOf (o) != -1;});
+      if (version && operator) {
+        var a = term.split (operator);
+        var t = a[0];
+        var v = a.length == 2 && a[1];
+
+        var c = v && util.version_compare (version, v);
+        function compare () {
+          if (operator == '<') return c < 0;
+          if (operator == '=') return c == 0;
+          if (operator == '==') return c == 0;
+          if (operator == '>=') return c >= 0;
+        }
+        return (v && t == key && compare ());
+      }
+      return false;
+    });
   }
-  if (meta.known.indexOf(aspect) != -1) return true;
-  return false;
+  return ((language && (hulp (language)
+                        || hulp (language+':'+aspect)))
+          || hulp (aspect));
 }
 
 function ls_traces(dir) {
@@ -267,17 +297,17 @@ var aspects = {
             work = (work.length == 0
                     ? default_aspects
                     : work)
-              .filter (skip_filter (meta));
+              .filter (no_skip_p (meta));
 
             var derived = work.append_map(depend).unique()
-                .filter (skip_filter (meta));
+                .filter (no_skip_p (meta));
             work = work.filter(function(e) { return derived.indexOf(e) == -1;});
 
             var modelname = path.basename(dir);
             var filename = dir + '/' + modelname + '.dzn';
             var parameters = {work: work, done: {}, dir: dir, model: modelname, filename: filename, meta: meta, session: session};
             return meta.versions
-              .filter (skip_filter(meta))
+              //.filter (function (v) {return no_skip_p (meta, v);})
               .reduce(function(promise, version) {
                 return promise.then(function(result0) {
                   var parameters0 = util.deep_copy(result0.parameters);
@@ -286,7 +316,7 @@ var aspects = {
                     .filter (function(language) {
                       return (supported_languages[version] || supported_languages['default']).indexOf(language) != -1;
                     })
-                    .filter (skip_filter (meta))
+                    .filter (no_skip_p (meta, version))
                     .reduce(function(promise, language) {
                       return promise.then(function(result1) {
                         var parameters1 = util.deep_copy(result1.parameters);
@@ -436,8 +466,8 @@ var aspects = {
       return {status: result1.status || result2.status, parameters: parameters2};
     }
     return parameters.work
-      .filter (skip_filter (parameters.meta))
       .reduce(function(promise, aspect) {
+
         return promise.then(function(result1) {
           if (isdone(result1.parameters.done, aspect, version, language)) {
             var status = getstatus(result1.parameters.outcome, aspect, version, language);
@@ -447,7 +477,22 @@ var aspects = {
           var parameters1 = util.deep_copy(result1.parameters);
           parameters1.work = dependencies[aspect];
           return aspects.test(parameters1)
-            .then(function(result2){return testcase(aspect, result2, haslanguage(aspect) && version, haslanguage(aspect) && language);})
+            .then(function(result2){
+              if (no_skip_p (result2.parameters.meta, version) (aspect))
+                return testcase(aspect, result2, haslanguage(aspect) && version, haslanguage(aspect) && language);
+
+              if(haslanguage(aspect)) {
+                result2.parameters.outcome.status[aspect] = result2.parameters.outcome.status[aspect] || {};
+                result2.parameters.outcome.status[aspect][version] = result2.parameters.outcome.status[aspect][version] || {};
+                result2.parameters.outcome.status[aspect][version][language] = 'SKIPPED';
+              }
+              else
+                result2.parameters.outcome.status[aspect] = 'SKIPPED';
+
+              return {status: 0, parameters: result2.parameters};
+
+
+            })
             .then(function(result2){
               var knwn = known(result2.parameters.meta, aspect, version, language);
               var status = result2.status ? (result2.status == -1 ? 'ERROR' : (knwn ? 'KNOWN' : 'FAILED')) : (knwn ? 'SOLVED' : 'OK');
