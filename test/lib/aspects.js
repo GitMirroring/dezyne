@@ -543,15 +543,17 @@ var aspects = {
   execute: function(parameters) {
     var version = parameters.meta.versions[0];
     var language = parameters.meta.languages[0];
+    var node_out = 'out/' + path.basename(parameters.dir);
+    var out = '"' + node_out + '"/' + version + '/' + language;
     var interpreter = {
       goops:'guile',
       javascript:'node',
       python: 'python',
       cs: 'sh',
     }[language] || '';
-    var out = '"out/'+path.basename(parameters.dir)+'"/'
-        + (version ? version + '/' : '')
-        + language;
+    var env = process.env;
+    if (language == 'javascript')
+      env.NODE_PATH = node_out + '/javascript/dzn:' + env.NODE_PATH;
     var timeout = interpreter ? 10 : 5;
     var flush = parameters.meta.flush && ' --flush' || '';
     return run_traces(parameters, 'execute', function(trace) {
@@ -564,7 +566,8 @@ var aspects = {
             + ' <(set -o pipefail;\n'
             + cmd
             + ' |& ' + __dirname + '/../bin/code2fdr'
-            + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');
+            + ' || (' + cmd + ' ; echo "E""R""R""O""R"))',
+          {env: env});
       } catch(e) {
         return util.spawn_sync_shell(
           'timeout ' + timeout + ' diff -uwB ' + trace + ' <(set -o pipefail;\n'

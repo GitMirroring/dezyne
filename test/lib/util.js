@@ -2,7 +2,7 @@
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
-// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -159,14 +159,15 @@ var util = {
       return result;
   }
   ,
-  spawn_sync_shell: function (cmd, timeout_ms) {
+  spawn_sync_shell: function (cmd, options) {
     var windows_p = /^win32/.test (process.platform);
     var shell = windows_p ? 'cmd.exe' : 'bash';
     var c = windows_p ? '/c' : '-c';
 
     var future = q.defer ();
 
-    var env = process.env;
+    options = options || { env:process.env, timeout_ms:0};
+    var env = options.env;
     env.NODE_PATH = process.cwd() + '/node_modules:' + env.NODE_PATH;
 
     var ulimit = 'ulimit -s 65536 -v 2097152;';
@@ -185,7 +186,7 @@ var util = {
       future.resolve({status: signal ? -1 : code ? 1 : 0, output: output});
     })
 
-    return timeout_ms
+    return options.timeout_ms
       ? future.promise
       .timeout(timeout_ms)
       .fail(function(msg){
