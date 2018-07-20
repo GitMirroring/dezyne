@@ -103,16 +103,16 @@ function query_versions() {
 var dependencies = {
   convert:  [],
   parse:    ['convert'],
-  run:      ['traces'],
-  table:    ['convert'],
-  traces:   ['convert'],
   verify:   ['convert'],
+  traces:   ['convert'],
+  code:     ['convert'],
+  build:    ['code'],
+  execute:  ['traces', 'build'],
+  run:      ['traces'],
+  triangle: ['execute', 'run'],
+  table:    ['convert'],
   view:     ['convert'],
 
-  build:    ['code'],
-  code:     ['convert'],
-  execute:  ['traces', 'build'],
-  triangle: ['execute', 'run'],
 };
 
 function code_version (v) {return v.replace (/[.]/g, '_');}
@@ -296,18 +296,15 @@ var aspects = {
 
             work = (work.length == 0
                     ? default_aspects
-                    : work)
-              .filter (no_skip_p (meta));
+                    : work);
 
-            var derived = work.append_map(depend).unique()
-                .filter (no_skip_p (meta));
+            var derived = work.append_map(depend).unique();
             work = work.filter(function(e) { return derived.indexOf(e) == -1;});
 
             var modelname = path.basename(dir);
             var filename = dir + '/' + modelname + '.dzn';
             var parameters = {work: work, done: {}, dir: dir, model: modelname, filename: filename, meta: meta, session: session};
             return meta.versions
-              //.filter (function (v) {return no_skip_p (meta, v);})
               .reduce(function(promise, version) {
                 return promise.then(function(result0) {
                   var parameters0 = util.deep_copy(result0.parameters);
@@ -316,7 +313,6 @@ var aspects = {
                     .filter (function(language) {
                       return (supported_languages[version] || supported_languages['default']).indexOf(language) != -1;
                     })
-                    .filter (no_skip_p (meta, version))
                     .reduce(function(promise, language) {
                       return promise.then(function(result1) {
                         var parameters1 = util.deep_copy(result1.parameters);
@@ -376,7 +372,6 @@ var aspects = {
   test: function(parameters) { // pre: parameters.meta.languages == [ l ]
     var version = parameters.meta.versions[0];
     var language = parameters.meta.languages[0];
-
 
     function updateparameters(parameters, output, aspect, version, language) {
       parameters.outcome = parameters.outcome || {};
@@ -465,6 +460,7 @@ var aspects = {
       parameters2.done = setdone(parameters2.done, aspect, version, language);
       return {status: result1.status || result2.status, parameters: parameters2};
     }
+
     return parameters.work
       .reduce(function(promise, aspect) {
 
@@ -475,7 +471,7 @@ var aspects = {
             return {status: st, parameters: result1.parameters};
           }
           var parameters1 = util.deep_copy(result1.parameters);
-          parameters1.work = dependencies[aspect];
+          parameters1.work = dependencies[aspect] || [];
           return aspects.test(parameters1)
             .then(function(result2){
               if (no_skip_p (result2.parameters.meta, version) (aspect))
@@ -525,7 +521,7 @@ var aspects = {
               console.log(update);
               return result2;
             })
-            .then(function(result2){return collect(aspect, result1, result2);});
+            .then(function(result2) { return collect(aspect, result1, result2); });
         });
       }, q({status:0, parameters: parameters}));
   }

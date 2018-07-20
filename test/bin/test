@@ -311,14 +311,17 @@ function set_status(result) {
           else if (status=='KNOWN') known++;
           else if (status=='SOLVED') solved++;
           else if (status=='PASSED'||status=='SKIPPED'||status=='OK') passed++;
-          else console.log('???????????????????? status=%j',status);
+          else { failed++; console.log('???????????????????? status=%j',status); }
         }
         var aspoutcome = outcome[aspect];
-//        console.log('aspoutcome version=%j, aspect=%j: \n    %j', version, aspect, aspoutcome);
         if (typeof aspoutcome !== 'string') {
-          Object.keys(aspoutcome[version]).each(function(language) {
-            checkstatus(aspoutcome[version][language]);
-          });
+          if (typeof aspoutcome[version] !== 'string') {
+            Object.keys(aspoutcome[version]).each(function(language) {
+              checkstatus(aspoutcome[version][language]);
+            });
+          } else {
+            checkstatus(aspoutcome[version]);
+          }
         } else {
           checkstatus(aspoutcome);
         }

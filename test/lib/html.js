@@ -80,7 +80,6 @@ function status2class(status) {
   if (status=='SOLVED') return 'solved';
   if (status=='SKIPPED') return 'skipped';
   if (status=='OK' || status=='PASSED') return 'passed';
-  console.log('???????????????????? status=%j',status);
   return 'failed';
 }
 
