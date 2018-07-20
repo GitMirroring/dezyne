@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -192,7 +193,7 @@
         (revision "0")
         (commit ((compose git-reference-commit origin-uri) dezyne-source-development)))
     (package
-      (version (string-append version "." revision "." (string-take commit 7)))
+      (version (string-append version "." revision "." (string-take commit (min (string-length commit) 7))))
       (name "dezyne-pack")
       (source #f)
       (propagated-inputs
