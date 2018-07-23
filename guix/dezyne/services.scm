@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -61,8 +62,9 @@
           (url (string-append git.oban/blessed "/development.git"))
           ;; janneke/release
           (commit "HEAD")
-          ;; (commit "b3970e74f7c47e55e2fd1b09ec9826aebc9ac69a")))
-        (sha256 (base32 "1p75s32ibkcxjiqjxwc3f0c80nhjx0nvn12d74dwpd7s6q67qdl7"))))
+          ;; (commit "b3970e74f7c47e55e2fd1b09ec9826aebc9ac69a")
+          ))
+    (sha256 (base32 "1p75s32ibkcxjiqjxwc3f0c80nhjx0nvn12d74dwpd7s6q67qdl7"))))
 
 (define-public dezyne-services
   (package
