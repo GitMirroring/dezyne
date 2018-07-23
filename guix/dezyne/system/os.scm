@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -40,65 +41,65 @@
 
   #:export (dezyne-os))
 
-(define dezyne-os-base
-  (operating-system
-    (host-name "development.verum.com")
-    (timezone "Europe/Amsterdam")
-    (locale "en_US.UTF-8")
-
-    (bootloader
-     (grub-configuration
-      (device "/dev/sda")))
-
-    (file-systems
-     (cons* (file-system
-              ;; (device (file-system-label "guix")) ; guix 0.15
-              (device "guix")           ; guix 0.13 support
-              (title 'label)
-
-              (mount-point "/")
-              (type "ext4"))
-            %base-file-systems))
-
-    (swap-devices '("/dev/sda2"))
-
-    (groups
-     (cons* (user-group (name "guix"))
-            %base-groups))
-
-    (users
-     (cons* (user-account (name "guix")
-                          (group "guix")
-                          (password (crypt "" "xx"))
-                          (supplementary-groups '("wheel"))
-                          (home-directory "/home/guix"))
-            %base-user-accounts))
-
-    (packages
-     (cons* dezyne-pack
-            openssh
-            %base-packages))
-
-    (services
-     (cons* (dhcp-client-service)
-            (service openssh-service-type
-                     (openssh-configuration
-                      (port-number 22)
-                      (permit-root-login #t)
-                      (allow-empty-passwords? #t)
-                      (password-authentication? #t)))
-
-            (postgresql-service)
-            (dezyne-service #:dezyne-server dezyne-server #:config 'localhost)
-            %base-services))))
-
 (define dezyne-os
-  (if (or (string-null? %guix-version) (string-prefix? "0.13" %guix-version))
-      dezyne-os-base
-      (operating-system
-        (inherit dezyne-os-base)
-        (initrd-modules (append (list "vmw_pvscsi" "shpchp")
-                                %base-initrd-modules)))))
+  (operating-system
+   (host-name "development.verum.com")
+   (timezone "Europe/Amsterdam")
+   (locale "en_US.UTF-8")
+
+   (bootloader
+    (grub-configuration
+     (device "/dev/sda")))
+
+   (initrd (if (or (string-null? %guix-version) (string-prefix? "0.13" %guix-version))
+               (lambda (file-systems . rest)
+                 (apply base-initrd file-systems
+                        #:extra-modules '("vmw_pvscsi" "shpchp") ;; NMI watchdog: BUG: soft lockup - CPU#0 stuck for 23s!
+                        rest))
+               (initrd-modules (append (list "vmw_pvscsi" "shpchp")
+                                       %base-initrd-modules))))
+   (file-systems
+    (cons* (file-system
+            ;; (device (file-system-label "guix")) ; guix 0.15
+            (device "guix")             ; guix 0.13 support
+            (title 'label)
+
+            (mount-point "/")
+            (type "ext4"))
+           %base-file-systems))
+
+   (swap-devices '("/dev/sda2"))
+
+   (groups
+    (cons* (user-group (name "guix"))
+           %base-groups))
+
+   (users
+    (cons* (user-account (name "guix")
+                         (group "guix")
+                         (password (crypt "" "xx"))
+                         (supplementary-groups '("wheel"))
+                         (home-directory "/home/guix"))
+           %base-user-accounts))
+
+   (packages
+    (cons* dezyne-pack
+           openssh
+           %base-packages))
+
+   (services
+    (cons* (dhcp-client-service)
+           (service openssh-service-type
+                    (openssh-configuration
+                     (port-number 22)
+                     (permit-root-login #t)
+                     (allow-empty-passwords? #t)
+                     (password-authentication? #t)))
+
+           (postgresql-service)
+           (dezyne-service #:dezyne-server dezyne-server #:config 'localhost)
+           %base-services))))
+
 
 ;; Return it here so 'guix system' can consume it directly.
 dezyne-os
