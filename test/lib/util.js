@@ -218,25 +218,30 @@ var util = {
         var stderr = '';
         var output = '';
         var status = '';
+        var remaining = '';
 
-        var script = child.spawn (call.run, call.args);
+        var script = child.spawn (call.run, call.args, {stdio: 'pipe'});
 
         script.stdout.on('data', function (data) {
-          if((!quiet || verbose) && String(data).startsWith('update:')) {
-            process.stdout.write(String(data).replace('update:',''));
+          remaining += data;
+          var index = remaining.indexOf('\n');
+          var last = 0;
+          while (index > -1) {
+            var line = remaining.substring(last, index);
+            last = index + 1;
+            if((!quiet || verbose) && remaining.startsWith('update:')) {
+              console.log(line.replace('update:',''));
+            }
+            else if(verbose) console.log(line);
+            status = Object.keys(ST).reduce(function(status, key) {
+              return util.contains(line, ST[key]) ? V(status, ST[key]) : status;
+            }, status);
+            index = remaining.indexOf('\n', last);
           }
-          else if(verbose) process.stdout.write(data);
-//          stdout += data;
-//          output += data;
-
-          status = Object.keys(ST).reduce(function(status, key) {
-            return util.contains(data, ST[key]) ? V(status, ST[key]) : status;
-          }, status);
+          remaining = remaining.substring(last);
         });
         script.stderr.on('data', function (data) {
           if(verbose) process.stderr.write(data);
-//          stderr += data;
-//          output += data;
         });
         script.on('error', function (err) {
           console.error(err.stack);
