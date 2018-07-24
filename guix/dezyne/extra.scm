@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -50,6 +51,12 @@
   #:use-module (gnu packages qt)
   #:use-module (gnu packages tls)
   #:use-module (gnu packages version-control)
+
+  ;; for asd-converter
+  #:use-module (gnu packages bison)
+  #:use-module (gnu packages flex)
+  #:use-module (gnu packages tcl)
+  #:use-module (gnu packages xml)
 
   #:use-module (gnu packages)
 
@@ -467,6 +474,52 @@ host    all             all             ::1/128                 trust "))
                                    (string-append (assoc-ref %outputs "out") "/etc/pg_ident.conf")))))
     (synopsis "package for postgres service config")
     (description "package for postgres service config")
+    (home-page "http://verum.com")
+    (license ((@@ (guix licenses) license)
+              "proprietary"
+              "http://verum.com"
+              "internal"))))
+
+(define-public asd-converter-0.1.6
+  (package
+    (name "asd-converter")
+    (version "0.1.6")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference (url (string-append git.oban/git "/gen1gen2.git"))
+                                  (commit "f0767fdb3e7c12a65dcc0e6c52b9b76088979608")))
+              (sha256 (base32 "0vac7svmsm3lxw4l5d2vhlmfg6crzlinr67bf8xm326q8gg8ymdf"))))
+    (inputs `(("boost" ,boost)
+              ("expat" ,expat)))
+    (native-inputs `(("bison" ,bison)
+                     ("flex" ,flex)
+                     ("gcc" ,gcc)
+                     ("gcc-lib" ,gcc "lib")
+                     ("tcl" ,tcl)
+                     ("tcllib" ,tcllib)
+                     ("tclxml" ,tclxml)))
+    (build-system gnu-build-system)
+    (arguments
+     `(#:parallel-tests? #f
+       #:parallel-build? #f
+       #:tests? #f
+       #:make-flags '("-C" "product/code")
+       #:modules ((srfi srfi-1)
+                  ,@%gnu-build-system-modules)
+       #:phases (modify-phases %standard-phases
+                  (delete 'configure)
+                  (replace 'install
+                    (lambda* (#:key outputs #:allow-other-keys)
+                      (let* ((out (assoc-ref outputs "out"))
+                             (version (last (string-split out #\-)))
+                             (bin (string-append out "/bin"))
+                             (asd (string-append "asd" "-" version)))
+                        (mkdir-p (string-append out "/bin"))
+                        (copy-file "product/code/build/linux64/asd"
+                                   (string-append bin "/" asd))
+                        (symlink (string-append asd) (string-append bin "/asd"))))))))
+    (synopsis "package for asd->dzn converter")
+    (description "package for asd->dzn converter")
     (home-page "http://verum.com")
     (license ((@@ (guix licenses) license)
               "proprietary"
