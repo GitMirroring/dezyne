@@ -43,62 +43,63 @@
 
 (define dezyne-os
   (operating-system
-   (host-name "development.verum.com")
-   (timezone "Europe/Amsterdam")
-   (locale "en_US.UTF-8")
+    (host-name "development.verum.com")
+    (timezone "Europe/Amsterdam")
+    (locale "en_US.UTF-8")
 
-   (bootloader
-    (grub-configuration
-     (device "/dev/sda")))
+    (bootloader
+     (grub-configuration
+      (device "/dev/sda")))
 
-   (initrd (if (or (string-null? %guix-version) (string-prefix? "0.13" %guix-version))
-               (lambda (file-systems . rest)
-                 (apply base-initrd file-systems
-                        #:extra-modules '("vmw_pvscsi" "shpchp") ;; NMI watchdog: BUG: soft lockup - CPU#0 stuck for 23s!
-                        rest))
-               (initrd-modules (append (list "vmw_pvscsi" "shpchp")
-                                       %base-initrd-modules))))
-   (file-systems
-    (cons* (file-system
-            ;; (device (file-system-label "guix")) ; guix 0.15
-            (device "guix")             ; guix 0.13 support
-            (title 'label)
+    (initrd-modules (append (list "vmw_pvscsi" "shpchp")
+                            %base-initrd-modules))
+    ;; (if (initrd (if (or (string-null? %guix-version) (string-prefix? "0.13" %guix-version))
+    ;;                 (lambda (file-systems . rest)
+    ;;                   (apply base-initrd file-systems
+    ;;                          #:extra-modules '("vmw_pvscsi" "shpchp") ;; NMI watchdog: BUG: soft lockup - CPU#0 stuck for 23s!
+    ;;                          rest)))))
 
-            (mount-point "/")
-            (type "ext4"))
-           %base-file-systems))
+    (file-systems
+     (cons* (file-system
+              ;; (device (file-system-label "guix")) ; guix 0.15
+              (device "guix")           ; guix 0.13 support
+              (title 'label)
 
-   (swap-devices '("/dev/sda2"))
+              (mount-point "/")
+              (type "ext4"))
+            %base-file-systems))
 
-   (groups
-    (cons* (user-group (name "guix"))
-           %base-groups))
+    (swap-devices '("/dev/sda2"))
 
-   (users
-    (cons* (user-account (name "guix")
-                         (group "guix")
-                         (password (crypt "" "xx"))
-                         (supplementary-groups '("wheel"))
-                         (home-directory "/home/guix"))
-           %base-user-accounts))
+    (groups
+     (cons* (user-group (name "guix"))
+            %base-groups))
 
-   (packages
-    (cons* dezyne-pack
-           openssh
-           %base-packages))
+    (users
+     (cons* (user-account (name "guix")
+                          (group "guix")
+                          (password (crypt "" "xx"))
+                          (supplementary-groups '("wheel"))
+                          (home-directory "/home/guix"))
+            %base-user-accounts))
 
-   (services
-    (cons* (dhcp-client-service)
-           (service openssh-service-type
-                    (openssh-configuration
-                     (port-number 22)
-                     (permit-root-login #t)
-                     (allow-empty-passwords? #t)
-                     (password-authentication? #t)))
+    (packages
+     (cons* dezyne-pack
+            openssh
+            %base-packages))
 
-           (postgresql-service)
-           (dezyne-service #:dezyne-server dezyne-server #:config 'localhost)
-           %base-services))))
+    (services
+     (cons* (dhcp-client-service)
+            (service openssh-service-type
+                     (openssh-configuration
+                      (port-number 22)
+                      (permit-root-login #t)
+                      (allow-empty-passwords? #t)
+                      (password-authentication? #t)))
+
+            (postgresql-service)
+            (dezyne-service #:dezyne-server dezyne-server #:config 'localhost)
+            %base-services))))
 
 
 ;; Return it here so 'guix system' can consume it directly.
