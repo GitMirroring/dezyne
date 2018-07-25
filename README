@@ -90,7 +90,7 @@ Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]] v0.15.  See 
 ***** Update commit and hash of dezyne-services-source in [[./guix/dezyne/services.scm::dezyne-source-development][guix/dezyne/services.scm]]
 
   #+BEGIN_SRC bash
-  GUIX_PACKAGE_PATH=guix git_oban=git://localhost build dezyne-services
+  GUIX_PACKAGE_PATH=guix git_oban=git://localhost guix build dezyne-services
   ./pre-inst-env guix build dezyne-services
   ./pre-inst-env guix build dezyne-regression-test
   ./pre-inst-env guix build dezyne-pack
