@@ -1,3 +1,4 @@
+module.paths.unshift (__dirname);
 dzn_require = typeof (require) !== 'undefined' ? require : function () {return {};};
 dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');
 dzn = dzn || {};
