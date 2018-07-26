@@ -200,7 +200,7 @@
        `(("dezyne-server" ,dezyne-server)
 
          ("dezyne-services" ,dezyne-services)
-         ;; ("dezyne-regression-test" ,dezyne-regression-test)
+         ("dezyne-regression-test" ,dezyne-regression-test)
          ("dezyne-test-content" ,dezyne-test-content)
          ("dzn-client-tarball" ,dzn-client-tarball)
 
