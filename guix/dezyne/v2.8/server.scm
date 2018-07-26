@@ -44,7 +44,7 @@
       (source dezyne-source-2.8)
       (build-system gnu-build-system)
       (propagated-inputs `(("node" ,node6)
-                           ("postgresql" ,postgresql)
+                           ("postgresql" ,postgresql-9.6)
                            ("node-snapshot" ,node-snapshot)))
       (native-inputs `(("dezyne-services" ,dezyne-services-2.8)
                        ("guile" ,guile-2.2)

@@ -80,12 +80,12 @@
                          (supplementary-groups '("wheel"))
                          (home-directory "/home/guix"))
            %base-user-accounts))
-    (packages (cons* postgresql
+    (packages (cons* postgresql-9.6
                      dezyne-pack
                      wget               ; workaround for npm install
                      %base-packages))
     (services (cons* (dhcp-client-service)
-                     (postgresql-service)
+                     (postgresql-service #:postgresql postgresql-9.6)
                      (dezyne-service #:dezyne-server dezyne-server #:config 'localhost)
                      %base-services))))
 
