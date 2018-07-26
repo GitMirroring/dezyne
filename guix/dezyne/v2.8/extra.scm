@@ -105,7 +105,7 @@
 
 (define-public asd-converter-0.1.5
   (package
-    (name "asd-converter")
+    (name "asd-converter-0.1.5")
     (version "0.1.5")
     (source (origin
               (method git-fetch)

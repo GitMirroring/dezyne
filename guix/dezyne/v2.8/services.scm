@@ -64,7 +64,7 @@
     (name "dezyne-services-2.8")
     (version "2.8.0")
     (source dezyne-source-2.8)
-    (propagated-inputs `(("asd-converter" ,asd-converter-0.1.5)
+    (propagated-inputs `(("asd-converter-0.1.5" ,asd-converter-0.1.5)
                          ("bash" ,bash)
                          ("fakechroot" ,fakechroot)
                          ("gcc" ,gcc)
