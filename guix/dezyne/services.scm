@@ -60,11 +60,8 @@
     (method git-fetch)
     (uri (git-reference
           (url (string-append git.oban/blessed "/development.git"))
-          ;; janneke/release
-          (commit "HEAD")
-          ;; (commit "b3970e74f7c47e55e2fd1b09ec9826aebc9ac69a")
-          ))
-    (sha256 (base32 "1p75s32ibkcxjiqjxwc3f0c80nhjx0nvn12d74dwpd7s6q67qdl7"))))
+          (commit "17f47cde7cc180cab6b85fecc9e9a0bbf7d4b581")))
+    (sha256 (base32 "12dhkzqzdvs9y42pyalcdbxjymsh799cgbas943y93yakg9gaqla"))))
 
 (define-public dezyne-services
   (package
