@@ -101,7 +101,7 @@ Usage: gdzn traces [OPTION]... DZN-FILE
 (define (mcrl2->lts ast model init)
   (let* ((commands `(,(cut model->mcrl2 ast model)
                      ("bash" "-c" ,(format #f "cat - ; echo \"~a\"" init))
-                     ("m4")
+                     ("m4-cw")
                      ("mcrl22lps" "--quiet" "-b")
                      ("lpsconstelm" "--quiet" "-st")
                      ("lpsparelm")
