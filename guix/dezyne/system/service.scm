@@ -95,7 +95,7 @@
                                "/run/current-system/profile"
                                #$dezyne-server))
                    (zero?
-                    (system* #$dezyne-binary "--config=localhost"))))))
+                    (system* #$dezyne-binary "--config=localhost" "-d"))))))
 
        ;; TODO: Add 'reload' action.
        (list (shepherd-service
