@@ -57,7 +57,7 @@
     (uri (git-reference
           (url (string-append git.oban/blessed "/development.git"))
           (commit "2.8.0")))
-    (sha256 (base32 "1fspdywc58ndnyg5hwhd0z9p8xpzcf2ig6rlajxid5g8x8yzsdkv"))))
+    (sha256 (base32 "15dzzw3q25n1vk7649r893ky9ja26s31fy969s13mb3b68aa483m"))))
 
 (define-public dezyne-services-2.8
   (package

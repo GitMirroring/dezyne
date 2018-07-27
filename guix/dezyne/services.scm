@@ -60,8 +60,8 @@
     (method git-fetch)
     (uri (git-reference
           (url (string-append git.oban/blessed "/development.git"))
-          (commit "17f47cde7cc180cab6b85fecc9e9a0bbf7d4b581")))
-    (sha256 (base32 "12dhkzqzdvs9y42pyalcdbxjymsh799cgbas943y93yakg9gaqla"))))
+          (commit "2f9880f9041a0854d5434e2cec04ec9b721a5517")))
+    (sha256 (base32 "0nd2rfs5229w71x2y8rna7jca2v8s3rhxq4lh4kvhl0288cjvnjm"))))
 
 (define-public dezyne-services
   (package
