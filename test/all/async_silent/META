@@ -1,1 +1,1 @@
-{"skip":["c","cs","javascript","execute"],"known":["table"],"comment":{"c":"async-refine: not supported"}}
+{"skip":["c","javascript","execute"],"known":["table"],"comment":{"c":"async-refine: not supported"}}

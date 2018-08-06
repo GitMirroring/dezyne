@@ -1,0 +1,33 @@
+#x:open-namespace
+public class #x:model-name  {
+  public static string to_string(bool b) {return b ? "true" : "false";}
+  #x:enum-definer
+  public class In {
+    #x:in-event-signature
+    #x:in-event-definer
+  }
+  public class Out {
+    #x:out-event-signature
+    #x:out-event-definer
+  }
+  public dzn.port.Meta dzn_meta;
+  public In inport;
+  public Out outport;
+  public #x:model-name () {
+    dzn_meta = new dzn.port.Meta ();
+    inport = new In();
+    outport = new Out();
+  }
+
+  public static void connect(#x:model-name  provided, #x:model-name  required) {
+    provided.outport = required.outport;
+    required.inport = provided.inport;
+    provided.dzn_meta.requires = required.dzn_meta.requires;
+    required.dzn_meta.provides = provided.dzn_meta.provides;
+  }
+  public void check_bindings() {
+    #x:check-in-binding
+    #x:check-out-binding
+  }
+}
+#x:close-namespace

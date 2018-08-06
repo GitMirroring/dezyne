@@ -1,0 +1,1 @@
+this.#.port.name .#.event.direction port.#.event.name  = (#x:formal-parameter) => {#x:out-ref-local  dzn_runtime.call_#.event.direction (this, () => {#.port.name _#.event.name(#x:code-arguments);}, this.#.port.name .dzn_meta, "#.event.name"); #x:assign-out-ref };

@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -37,6 +38,10 @@ $(OUT)/test: $(OUT)/test.exe
 	echo "$$MONO_SCRIPT" > $@
 	chmod +x $@
 
-$(OUT)/test.exe: $(MAIN) $(wildcard $(OUT)/*cs $(OUT)/dzn/*.cs)
-	cp --force --backup $(MAIN) $(OUT)/main.cs
-	mcs -debug -out:$@ $^
+$(OUT)/test.exe: $(MAIN) $(wildcard $(OUT)/*cs $(OUT)/dzn/*.cs) $(wildcard $(IN)/*.cs)
+	for file in $(dir $(MAIN))/*.cs; do \
+            if [ ! -e $(OUT)/$$(basename $$file) ]; then \
+                cp --force --backup $$file $(OUT)/; \
+            fi \
+        done
+	mcs -debug -out:$@ $(OUT)/*.cs $(OUT)/dzn/*.cs $(wildcard $(OUT)/../../cs/*.cs)

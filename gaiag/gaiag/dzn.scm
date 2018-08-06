@@ -59,25 +59,19 @@
             dzn:extension
             dzn:expression
             dzn:indent
-            dzn:->string
             dzn:om
             dzn:file2file
             dzn:glue
             dzn:model2file?
             dzn:model2file
-            dzn:statement
             dzn:expand-statement
             dzn:expression-expand
-            dzn:=expression
             dzn:action-arguments
             dzn:annotate-shells
             dzn:direction
             dzn:enum-literal
             dzn:expand-blocking
-            dzn:expand-statement
-            dzn:expression
             dzn:=expression
-            dzn:expression-expand
             dzn:external
             dzn:formal-type
             dzn:global
@@ -257,6 +251,8 @@
   (.expression o))
 (define-method (dzn:expression (o <reply>))
   (.expression o))
+(define-method (dzn:expression (o <not>))
+ (.expression o))
 
 (define-method (dzn:expression (o <return>))
   (let ((type (ast:type o)))
@@ -265,9 +261,6 @@
 
 (define-method (dzn:expression (o <var>))
   (.variable o))
-
-(define-method (dzn:expression-expand (o <not>))
-  (.expression o))
 
 (define-method (dzn:expression-expand (o <var>))
   (.variable o))
@@ -364,9 +357,15 @@
       o))
 
 (define-method (dzn:statement (o <guard>))
-  (if (not (is-a? (.expression o) <otherwise>)) o
-      (clone (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
-             #:parent (.parent o))))
+  (cond ((is-a? (.expression o) <otherwise>) (clone (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
+                                                    #:parent (.parent o)))
+        ((ast:literal-true? (.expression o))(.statement o))
+        ((ast:literal-false? (.expression o)) '())
+        (else o)))
+
+
+
+
 
 (define-method (dzn:statement (o <behaviour>))
   ((compose dzn:expand-statement .statement) o))

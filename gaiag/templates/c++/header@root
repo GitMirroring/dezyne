@@ -10,6 +10,7 @@ namespace dzn {
 ##include <iostream>
 ##include <map>
 
+#x:global-enum-definer
 #x:header-model
 #x:header-model-glue
 //version: #x:version

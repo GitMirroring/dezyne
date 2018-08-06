@@ -1,0 +1,9 @@
+c.system.#.port.name .outport.#.event.name  = (#x:formal-parameter) => {
+  dzn.Runtime.traceIn(c.system.#.port.name .dzn_meta, "#.event.name");
+  c.match("#.port.name .#.event.name");
+  c.dzn_runtime.queue(c.system.#.port.name).Enqueue(() => {
+    if(c.dzn_runtime.queue(c.system.#.port.name).Count == 0) {
+      Console.Error.WriteLine("#.port.name .<flush>");
+    }
+  });
+};

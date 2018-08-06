@@ -1,0 +1,29 @@
+#x:open-namespace
+public partial class #x:model-name : dzn.Component 
+{
+  #x:port-declaration
+  public #x:model-name (dzn.Locator locator, String name="", dzn.Meta parent=null)
+  : base(locator, name, parent) {
+    this.dzn_runtime.infos[this].flushes = true;
+    #x:provided-port-init
+    #x:required-port-init
+
+    this.dzn_meta.requires = new List<dzn.port.Meta> {
+      #x:required-port-meta
+    };
+    this.dzn_meta.children = new List<dzn.Meta> { };
+
+    this.dzn_meta.ports_connected = new List<Action>
+    {
+      #x:port-check-bindings
+    };
+
+    #x:calls
+    #x:rcalls
+  }
+  public void check_bindings()
+  {
+    dzn.RuntimeHelper.check_bindings(this.dzn_meta);
+  }
+}
+#x:close-namespace

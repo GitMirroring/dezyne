@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -49,12 +50,13 @@ class main {
 
 
     Dictionary<String, Action> lookup = new Dictionary<String, Action>();
-    lookup.Add("p.e",()=>{dzn.V<int> _0 = new dzn.V<int>(0); c.system.p.inport.e(_0);
-                          Debug.Assert(_0.v == 456);
+    lookup.Add("p.e",()=>{int _0 = 0;
+                          c.system.p.inport.e(ref _0);
+                          Debug.Assert(_0 == 456);
                           c.match("p.return");});
     lookup.Add("r.cb",()=>{c.system.r.outport.cb();
     });
-    lookup.Add("r.<flush>",()=>{System.Console.Error.WriteLine("r.<flush>"); dzn.Runtime.flush(c.system);});
+    lookup.Add("r.<flush>",()=>{System.Console.Error.WriteLine("r.<flush>"); c.system.dzn_runtime.flush(c.system);});
     return lookup;
   }
 

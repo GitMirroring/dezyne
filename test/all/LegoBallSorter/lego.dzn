@@ -21,7 +21,8 @@
 //
 // Code:
 
-$#include "MachineConstants.hh"$
+import config.dzn;
+import foreign_timer.dzn;
 
 interface imotor
 {
@@ -77,34 +78,4 @@ interface ilight
     on detect: reply(status.accept);
     on detect: reply(status.reject);
   }
-}
-
-interface itimer
-{
-  extern milliseconds_t $Integer$;
-  in void create(milliseconds_t ms);
-  in void cancel();
-  out void timeout();
-
-  behaviour
-  {
-    enum State {Idle, Pending};
-    State state = State.Idle;
-    [state.Idle] {
-      on create: { state = State.Pending; }
-      on cancel: {}
-    }
-    [state.Pending] {
-      on create: illegal;
-      on cancel: { state = State.Idle; }
-      on inevitable: { timeout; state = State.Idle; }
-    }
-  }
-}
-
-component timer
-{
-  provides itimer port;
-  // use dzn code -m timer lego.dzn to generate stub
-  // behaviour {on port.create(ms): {} on port.cancel(): {}}
 }

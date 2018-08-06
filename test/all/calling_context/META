@@ -1,1 +1,1 @@
-{"code_options":"-c int","skip":["c","cs","javascript"],"comment":{"c":"calling-context: not supported"}}
+{"code_options":"-c int","skip":["c","javascript"],"comment":{"c":"calling-context: not supported"}}

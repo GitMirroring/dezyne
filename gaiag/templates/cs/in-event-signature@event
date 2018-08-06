@@ -1,0 +1,1 @@
+public delegate #x:return-type  signature_#.name  (#x:formal-parameter);

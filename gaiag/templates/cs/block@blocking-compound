@@ -1,0 +1,3 @@
+dzn_runtime.infos[this].handling = false;
+dzn_runtime.flush(this);
+dzn.pump.port_block(this.dzn_locator, this.#.port.name);

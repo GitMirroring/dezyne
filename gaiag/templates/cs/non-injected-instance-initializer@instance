@@ -1,0 +1,1 @@
+#.name  = new #x:global-type-name(locator, "#.name", this.dzn_meta);

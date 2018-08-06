@@ -61,11 +61,14 @@
             non-injected-instances
             injected-instance-name
 
-            code:formals
             code:language
             code:instance-name
             code:skel-file
             event2->interface1-event1-alist
+
+            code:add-calling-context
+            code:add-calling-context-formal
+            code:add-calling-context-argument
 
             code:enum-definer
             code:global-enum-definer
@@ -86,7 +89,6 @@
             code:reply-type
             code:reply-scope+name
             code:reply-types
-            code:scope+name
             code:x:pand
 
             code-file
@@ -97,7 +99,6 @@
             code:dump-main
             code:module
             code:om
-            code:port-type
             symbol->enum-field
 
             code:arguments
@@ -113,6 +114,7 @@
             code:file-name
             code:formals
             code:functions
+	    code:function-type
             code:injected-instances
             code:injected-instances-system
             code:instance-name
@@ -138,6 +140,7 @@
             code:trigger
             code:type-name
             code:variable-name
+            code:variable->argument
             code:x-header-
             code:root->
             <glue-event>
@@ -229,13 +232,10 @@
     (if (null? (injected-bindings model)) ""
         "_local")))
 
-(define-method (code:class-member? (o <variable>)) ; MORTAL SIN HERE!!?
-  ;; FIXME: is (.variable o) a member?
-  ;; checking name (as done now) is not good enough
-  ;; we schould check .variable pointer equality
-  ;; that does not work, however; someone makes a copy is clone
-  ;;(memq o (om:variables (parent o <model>)))
-  (memq (.name o) (map .name (om:variables (parent o <model>)))))
+(define-method (code:class-member? (o <variable>))
+  (let ((p (.parent o)))
+    (and (is-a? p <variables>)
+         (is-a? (.parent p) <behaviour>))))
 
 (define-method (code:port-type (o <trigger>))
   (code:scope+name ((compose .type .port) o)))
@@ -248,6 +248,9 @@
 
 (define-method (code:scope+name (o <root>))
   (code:file-name o))
+
+(define-method (code:scope+name (o <reply>))
+  ((compose code:scope+name ast:type .expression) o))
 
 (define-method (code:scope+name (o <event>))
   ((compose code:scope+name .signature) o))
@@ -331,6 +334,22 @@
 (define-method (code:instance-port-name (o <trigger>))
   ((compose code:instance-port-name (cut .port (parent o <model>) <>)) o))
 
+(define-method (code:function-type (o <type>))
+  o)
+
+(define-method (code:function-type (o <glue-event>))
+  ((compose code:function-type .signature) o))
+
+(define-method (code:function-type (o <trigger>))
+  ((compose code:function-type .signature .event) o))
+
+(define-method (code:function-type (o <signature>))
+  ((compose code:function-type .type) o))
+
+(define-method (code:function-type (o <function>))
+  ((compose code:function-type .signature) o))
+
+
 (define-method (code:functions (o <component>))
   (om:functions o))
 
@@ -348,11 +367,11 @@
 (define-method (code:variable->argument (o <variable>) (f <formal>))
   (if (or (code:class-member? o)
           (eq? (.direction f) 'in)) o
-          (clone (make <argument> #:name (.name o) #:type.name (.type.name o))
+          (clone (make <argument> #:name (.name o) #:type.name (.type.name f) #:direction (.direction f))
                  #:parent (.parent o))))
 
 (define-method (code:variable->argument (o <var>) (f <formal>))
-  (code:variable->argument (.variable o) f))
+  (clone (code:variable->argument (.variable o) f) #:parent o))
 
 (define-method (code:variable->argument (o <formal>) (f <formal>))
   (if (eq? (.direction f) 'in) o
@@ -362,20 +381,20 @@
 (define-method (code:variable->argument o f)
   o)
 
-(define (add-calling-context-argument arguments)
+(define (code:add-calling-context-argument arguments)
   (let ((calling-context (command-line:get 'calling-context #f)))
-    (if calling-context (cons 'cc__ arguments)
+    (if calling-context (cons 'dzn_cc arguments)
         arguments)))
 
 (define-method (code:arguments (o <call>))
   (map code:variable->argument
-       (add-calling-context-argument (ast:argument* o))
-       (ast:formal* (add-calling-context-formal ((compose .formals .signature .function) o)))))
+       (code:add-calling-context-argument (ast:argument* o))
+       (ast:formal* (code:add-calling-context-formal ((compose .formals .signature .function) o)))))
 
 (define-method (code:arguments (o <action>))
   (map code:variable->argument
-       (add-calling-context-argument (ast:argument* o))
-       (ast:formal* (add-calling-context-formal ((compose .formals .signature .event) o)))))
+       (code:add-calling-context-argument (ast:argument* o))
+       (ast:formal* (code:add-calling-context-formal ((compose .formals .signature .event) o)))))
 
 (define-method (code:arguments (o <trigger>))
   (map .name (code:formals o)))
@@ -387,33 +406,33 @@
   (let ((parameters (map .name (ast:formal* o)))
         (calling-context (command-line:get 'calling-context #f)))
     (if calling-context
-        (cons 'cc__ parameters)
+        (cons 'dzn_cc parameters)
         parameters)))
 
-(define-method (add-calling-context-formal (o <formals>))
+(define-method (code:add-calling-context-formal (o <formals>))
   (let ((calling-context (command-line:get 'calling-context #f)))
-    (if calling-context (clone o #:elements (cons (clone (make <formal> #:name 'cc__ #:direction 'out #:type.name (make <scope.name> #:name '*calling-context*)) #:parent o)
+    (if calling-context (clone o #:elements (cons (clone (make <formal> #:name 'dzn_cc #:direction 'inout #:type.name (make <scope.name> #:name '*calling-context*)) #:parent o)
                                                   (ast:formal* o)))
         o)))
 
 (define-method (code:formals (o <function>))
-  (ast:formal* (add-calling-context-formal ((compose .formals .signature) o))))
+  (ast:formal* (code:add-calling-context-formal ((compose .formals .signature) o))))
 
 (define-method (code:formals (o <action>))
-  (ast:formal* (add-calling-context-formal ((compose .formals .signature .event) o))))
+  (ast:formal* (code:add-calling-context-formal ((compose .formals .signature .event) o))))
 
 (define-method (code:formals (o <trigger>))
-  (ast:formal* (add-calling-context-formal ((compose .formals) o))))
+  (ast:formal* (code:add-calling-context-formal ((compose .formals) o))))
 
 (define-method (code:formals (o <signature>))
-  (ast:formal* (add-calling-context-formal ((compose .formals) o))))
+  (ast:formal* (code:add-calling-context-formal ((compose .formals) o))))
 
 (define-method (code:formals (o <event>))
-  (ast:formal* (add-calling-context-formal ((compose .formals .signature) o))))
+  (ast:formal* (code:add-calling-context-formal ((compose .formals .signature) o))))
 
 (define-method (code:formals (o <on>))
   (ast:formal*
-   (add-calling-context-formal
+   (code:add-calling-context-formal
     (let* ((trigger ((compose car ast:trigger*) o))
            (formals ((compose .formals .signature) trigger))
            (event (.event trigger)))
@@ -430,11 +449,7 @@
       o))
 
 (define-method (code:expand-on (o <on>))
-  (let ((o (.statement o)))
-   (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
-       (clone (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
-              #:parent (.parent o))
-       o)))
+  (.statement o))
 
 (define-method (code:assign-reply (o <reply>))
   (let ((expression (.expression o)))
@@ -453,8 +468,8 @@
 (define-method (code:enum-definer (o <component>))
   (filter (is? <enum>) (ast:type* (.behaviour o))))
 
-(define-method (code:global-enum-definer (o <model>))
-  (filter (is? <enum>) (ast:global* (parent o <root>))))
+(define-method (code:global-enum-definer (o <root>))
+  (filter (is? <enum>) (ast:global* o)))
 
 (define-method (code:instances (o <component>))
   '())
@@ -545,14 +560,13 @@
       o))
 
 (define-method (code:type-name o)
-  (let* ((type (or (as o <model>) (as o <type>) (.type o)))
-         (scope+name (code:scope+name type)))
+  (let* ((type (or (as o <model>) (as o <type>) (ast:type o))))
     (map dzn:->string
          (match type
-           (($ <enum>) (code:cons-empty-symbol (code:append-type-symbol scope+name)))
+           (($ <enum>) (code:cons-empty-symbol (code:append-type-symbol (code:scope+name type))))
            (($ <extern>) (list (.value type)))
-           ((or ($ <bool>) ($ <int>) ($ <void>)) scope+name)
-           (_ (code:cons-empty-symbol scope+name))))))
+           ((or ($ <bool>) ($ <int>) ($ <void>)) (code:scope+name type))
+           (_ (code:cons-empty-symbol (code:scope+name type)))))))
 
 (define-method (code:type-name (o <event>))
   ((compose code:type-name .type .signature) o))
@@ -569,10 +583,10 @@
                               (list (.field o))))))
 
 (define-method (code:main-out-arg (o <trigger>)) ; MORTAL SIN HERE!!?
-  (let ((formals ((compose .elements .formals) o)))
+  (let ((formals (ast:formal* o)))
     (map
-     (lambda (f i) (cond ((not (om:out-or-inout? f)) (clone f #:name i))
-                         ((memq (language) '(c++ c++03 c++-msvc11)) (string-append "_" (number->string i)))
+     (lambda (f i) (cond ((ast:in? f) (clone f #:name i))
+                         ((memq (language) '(c++ c++03 c++-msvc11 cs)) (string-append "_" (number->string i)))
                          (else (make <out-formal> #:name i))))
      formals (iota (length formals)))))
 

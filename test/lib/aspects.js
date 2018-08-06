@@ -133,7 +133,7 @@ function comment(meta, aspect, version, language) {
 }
 
 function imports_string (imports) {
-  return (imports || []).map (function (o){return '-I ' + o.replace (/^all\//, fs.realpathSync (__dirname + '/../all') + '/');}).join (' ');
+  return (imports || []).map (function (o){return '-I \'' + o.replace (/^all\//, fs.realpathSync (__dirname + '/../all') + '/') + '\'';}).join (' ');
 }
 
 function ordered_dependencies() {
@@ -240,7 +240,7 @@ function run_traces(parameters, asp, app) {
 }
 
 var supported_languages = {
-  'default': ['c++', 'c++03', 'c++-msvc11', 'javascript'],
+  'default': ['c++', 'c++03', 'c++-msvc11', 'cs', 'javascript'],
   '2.4.1' : ['c', 'c++', 'c++03', 'c++-msvc11', 'cs', 'javascript'],
 };
 
@@ -533,8 +533,9 @@ var aspects = {
   code: function(parameters) {
     var version = parameters.meta.versions[0];
     var language = parameters.meta.languages[0];
+    var language_dir = parameters.dir + '/' + parameters.meta.languages[0];
     var model = parameters.meta.model || parameters.model;
-    var imports = imports_string (parameters.meta.imports);
+    var imports = imports_string ([parameters.dir, language_dir].concat(parameters.meta.imports || []));
     var code_options = parameters.meta.code_options || "";
     var tss = parameters.meta.tss;
     var main = has_main(parameters.dir, language);
@@ -651,10 +652,11 @@ var aspects = {
   ,
   parse: function(parameters) {
     var model = parameters.meta.model || parameters.model;
+    var language_dir = parameters.dir + '/' + parameters.meta.languages[0];
     var lstat = q.denodeify(fs.lstat);
     var node_baseline = parameters.dir + '/baseline/parse/' + model + '.stderr';
     var baseline = '"' + node_baseline + '"';
-    var imports = imports_string (parameters.meta.imports);
+    var imports = imports_string ([language_dir].concat(parameters.meta.imports || []));
     return lstat(node_baseline)
       .then (function(stats) {
         return 'diff -uwB '+baseline+' <(' + dzn() + ' -v parse '+imports+' "'+parameters.filename+'" |& sed "s,.\r,,g")';
@@ -740,13 +742,14 @@ var aspects = {
   ,
   verify: function(parameters) {
     var model = parameters.meta.model || parameters.model;
+    var language_dir = parameters.dir + '/' + parameters.meta.languages[0];
     var node_baseline = parameters.dir + '/baseline/verify/' + parameters.model;
     var baseline = '"' + node_baseline + '"';
     var dir = '"out/' + path.basename(parameters.dir) + '"/verify'
     var out = dir + '/"'+parameters.model + '"';
     var err = out + '.stderr';
     var queue = parameters.meta.queue ? '-q ' + parameters.meta.queue : '';
-    var imports = imports_string (parameters.meta.imports);
+    var imports = imports_string ([language_dir].concat(parameters.meta.imports || []));
     var model_opt = parameters.meta.model === false ? '' : ' --model=' + model;
     return lstat (node_baseline)
       .then (function(stats) {

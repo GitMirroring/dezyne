@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -32,25 +32,6 @@
 #include <cassert>
 #include <future>
 #include <iostream>
-
-#if !DZN_PUMP_HAVE_BLOCKING
-namespace dzn {
-  template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
-  void blocking(dzn::pump& pump, L&& l)
-  {
-    std::promise<void> p;
-    pump([&]{l(); p.set_value();});
-    return p.get_future().get();
-  }
-  template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
-  auto blocking(dzn::pump& pump, L&& l) -> decltype(l())
-  {
-    std::promise<decltype(l())> p;
-    pump([&]{p.set_value(l());});
-    return p.get_future().get();
-  }
-}
-#endif // !DZN_PUMP_HAVE_BLOCKING
 
 std::string
 read ()
@@ -96,20 +77,20 @@ int main()
   if (0);
   else if (trace == "p.e\nr.e\nr.return\np.return\np.c\nr.c\nr.return\np.return")
     {
-      dzn::blocking (c.pump, [&] {c.sut.p.in.e ();});
-      dzn::blocking (c.pump, [&] {c.sut.p.in.c ();});
+      dzn::shell (c.pump, [&] {c.sut.p.in.e ();});
+      dzn::shell (c.pump, [&] {c.sut.p.in.c ();});
     }
   else if (trace == "p.e\nr.e\nr.return\np.return\nr.cb1\nr.cb2\np.c\nr.c\nr.return\np.return")
     {
-      dzn::blocking (c.pump, [&] {c.sut.p.in.e ();c.sut.r.out.cb1 ();c.sut.r.out.cb2 ();c.sut.p.in.c ();});
+      dzn::shell (c.pump, [&] {c.sut.p.in.e ();c.sut.r.out.cb1 ();c.sut.r.out.cb2 ();c.sut.p.in.c ();});
     }
   else if (trace == "p.e\nr.e\nr.return\np.return\nr.cb1\nr.cb2\np.cb")
     {
-      dzn::blocking (c.pump, [&] {c.sut.p.in.e ();c.sut.r.out.cb1 ();c.sut.r.out.cb2 ();});
+      dzn::shell (c.pump, [&] {c.sut.p.in.e ();c.sut.r.out.cb1 ();c.sut.r.out.cb2 ();});
     }
   else if (trace == "p.c\nr.c\nr.return\np.return")
     {
-      dzn::blocking (c.pump, [&] {c.sut.p.in.c ();});
+      dzn::shell (c.pump, [&] {c.sut.p.in.c ();});
     }
   else
     {

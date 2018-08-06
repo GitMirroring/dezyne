@@ -1,0 +1,1 @@
+if (#.direction port.#.name  == null) throw new dzn.binding_error(dzn_meta, "#.direction port.#.name");

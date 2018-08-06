@@ -2,7 +2,7 @@
 //
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -33,25 +33,6 @@
 #include <iostream>
 #include <limits>
 
-#if !DZN_PUMP_HAVE_BLOCKING
-namespace dzn {
-  template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
-  void blocking(dzn::pump& pump, L&& l)
-  {
-    std::promise<void> p;
-    pump([&]{l(); p.set_value();});
-    return p.get_future().get();
-  }
-  template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
-  auto blocking(dzn::pump& pump, L&& l) -> decltype(l())
-  {
-    std::promise<decltype(l())> p;
-    pump([&]{p.set_value(l());});
-    return p.get_future().get();
-  }
-}
-#endif // !DZN_PUMP_HAVE_BLOCKING
-
 int main()
 {
   std::cin.ignore(std::numeric_limits<std::streamsize>::max());
@@ -77,6 +58,6 @@ int main()
 
   c.sut.p.out.done = [] {std::clog << "sut.p.done -> <external>.p.done" << std::endl;};
 
-  dzn::blocking(c.pump, c.sut.p.in.doAB);
-  dzn::blocking(c.pump, c.sut.p.in.doBA);
+  dzn::shell(c.pump, c.sut.p.in.doAB);
+  dzn::shell(c.pump, c.sut.p.in.doBA);
 }

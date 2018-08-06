@@ -1,0 +1,3 @@
+    c.system.#.name .dzn_meta.provides.component = c;
+    c.system.#.name .dzn_meta.provides.meta = c.dzn_meta;
+    c.system.#.name .dzn_meta.provides.name = "#.name";

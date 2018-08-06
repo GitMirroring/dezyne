@@ -78,14 +78,10 @@
             c++:implemented-port-name
             c++:name
             c++:optional-type
-            c++:function-type
             c++:string->enum
             c++:type-ref
-            c++:void-in-triggers
             asd?
             ))
-
-
 
 (define asd? #f) ;; FIXME: asd glue
 
@@ -105,21 +101,6 @@
 
 (define-method (c++:formal-type (o <formal>)) o)
 (define-method (c++:formal-type (o <port>)) ((compose .elements .formals .signature car om:events) o))
-
-(define-method (c++:function-type (o <type>))
-  o)
-
-(define-method (c++:function-type (o <glue-event>))
-  ((compose c++:function-type .signature) o))
-
-(define-method (c++:function-type (o <trigger>))
-  ((compose c++:function-type .signature .event) o))
-
-(define-method (c++:function-type (o <signature>))
-  ((compose c++:function-type .type) o))
-
-(define-method (c++:function-type (o <function>))
-  ((compose c++:function-type .signature) o))
 
 (define (c++:pump-include o) (if (pair? (om:ports (.behaviour o))) "#include <dzn/pump.hh>" ""))
 
@@ -403,12 +384,7 @@
                            "}\n"))))
        (delete-duplicates (map second ((asd-interfaces om:out?) (provided-interface model))))))
 
-(define-method (c++:void-in-triggers (o <component-model>))
-  (filter
-   (lambda (t) (is-a? ((compose .type .signature .event) t) <void>))
-   (append (ast:provided-in-triggers o) (ast:required-out-triggers o))))
-
-(define-method (c++:implemented-port-name model)
+(define (c++:implemented-port-name model)
   (.name (om:port model)))
 
 (define-templates-macro define-templates c++)

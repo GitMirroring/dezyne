@@ -1,0 +1,46 @@
+//COMPONENT
+#x:open-namespace
+public class #x:model-name  : dzn.Component {
+  #x:enum-definer
+  #x:port-declaration
+  #x:async-port-declare
+  #x:variable-member-declare
+  #x:reply-member-declare
+  #x:formal-binding-lambda
+
+  public #x:model-name (dzn.Locator locator, String name="", dzn.Meta parent=null)
+    : base(locator, name, parent) {
+    this.dzn_runtime.infos[this].flushes = true;
+    #x:provided-port-init
+    #x:required-port-init
+    #x:async-port-init
+    #x:variable-member-initializer
+
+    this.dzn_meta.requires = new List<dzn.port.Meta> {
+      #x:required-port-meta
+    };
+
+    this.dzn_meta.children = new List<dzn.Meta> { };
+
+    this.dzn_meta.ports_connected = new List<Action>
+    {
+      #x:port-check-bindings
+    };
+
+    #x:calls
+    #x:async
+    #x:rcalls
+    #x:reqs
+    #x:clrs
+  }
+
+  #x:method
+  #x:function
+
+  public void check_bindings()
+  {
+    dzn.RuntimeHelper.check_bindings(this.dzn_meta);
+  }
+}
+#x:close-namespace
+//////////////////////////////////////////////////////////////////////

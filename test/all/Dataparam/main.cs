@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -74,31 +74,31 @@ class main {
     sut.port.inport.e(123);
     assert(IDataparam.Status.No == sut.port.inport.eer(123,345));
 
-    dzn.V<int> i = new dzn.V<int>(0);
-    sut.port.inport.eo(i);
-    assert(i.v == 234);
+    int i = 0;
+    sut.port.inport.eo(out i);
+    assert(i == 234);
 
-    dzn.V<int> j = new dzn.V<int>(0);
-    sut.port.inport.eoo(i,j);
-    assert(i.v == 123 && j.v == 456);
+    int j = 0;
+    sut.port.inport.eoo(out i,out j);
+    assert(i == 123 && j == 456);
 
-    sut.port.inport.eio(i.v,j);
-    assert(i.v == 123 && j.v == i.v);
+    sut.port.inport.eio(i,out j);
+    assert(i == 123 && j == i);
 
-    sut.port.inport.eio2(i);
-    assert(i.v == 246);
+    sut.port.inport.eio2(ref i);
+    assert(i == 246);
 
 
-    assert(IDataparam.Status.Yes == sut.port.inport.eor(i));
-    assert(i.v == 234);
+    assert(IDataparam.Status.Yes == sut.port.inport.eor(out i));
+    assert(i == 234);
 
-    assert(IDataparam.Status.Yes == sut.port.inport.eoor(i,j));
-    assert(i.v == 123 && j.v == 456);
+    assert(IDataparam.Status.Yes == sut.port.inport.eoor(out i,out j));
+    assert(i == 123 && j == 456);
 
-    assert(IDataparam.Status.Yes == sut.port.inport.eior(i.v,j));
-    assert(i.v == 123 && j.v == i.v);
+    assert(IDataparam.Status.Yes == sut.port.inport.eior(i,out j));
+    assert(i == 123 && j == i);
 
-    assert(IDataparam.Status.Yes == sut.port.inport.eio2r(i));
-    assert(i.v == 246);
+    assert(IDataparam.Status.Yes == sut.port.inport.eio2r(ref i));
+    assert(i == 246);
   }
 }

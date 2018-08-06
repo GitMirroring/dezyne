@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -22,27 +23,15 @@
 
 using System;
 
-public class timer : Component {
+public partial class timer : dzn.Component {
+    static int s_id = 0;
+    int id = 0;
 
-
-  public itimer port;
-
-  public timer(dzn.Locator locator, String name="", dzn.Meta parent=null) : base(locator, name, parent) {
-    this.port = new itimer();
-    this.port.dzn_meta.provides.name = "port";
-    this.port.dzn_meta.provides.meta = this.dzn_meta;
-    this.port.dzn_meta.provides.component = this;
-    this.port.inport.create = (Integer ms) => {dzn.Runtime.callIn(this, () => {port_create(ms);}, this.dzn_meta, "create");};
-
-    port.inport.cancel = () => {dzn.Runtime.callIn(this, () => {port_cancel();}, this.dzn_meta, "cancel");};
-
-  }
-  public void port_create(Integer ms) {
-    { }
-  }
-
-  public void port_cancel() {
-    { }
-  }
-
+    public void port_create(Integer ms) {
+        if(id == 0) id = ++s_id;
+        dzn_locator.get<dzn.pump>().handle(id, ms, ()=>port.outport.timeout());
+    }
+    public void port_cancel() {
+        dzn_locator.get<dzn.pump>().remove(id);
+    }
 }

@@ -1,1 +1,1 @@
-{"trace_illegals":"true"}
+{"trace_illegals":"true","known":["cs:execute"],"comment":"stacktrace: CLR finalization is a mystery"}

@@ -49,6 +49,7 @@
            ast:argument->formal
            ast:async-out-triggers
            ast:async?
+           ast:async-port*
            ast:clr-events
            ast:direction
            ast:dzn-scope?
@@ -56,9 +57,13 @@
            ast:expression->type
            ast:id-path
            ast:in?
+           ast:inout?
            ast:in-triggers
            ast:imported?
+           ast:literal-false?
+           ast:literal-true?
            ast:location
+           ast:name
            ast:optional?
            ast:other-direction
            ast:out?
@@ -101,6 +106,7 @@
            ast:trigger*
            ast:type*
            ast:variable*
+	   ast:void?
            ))
 
 (define (deprecated . where)
@@ -119,6 +125,7 @@
 (define-method (ast:function* (o <functions>)) (.elements o))
 (define-method (ast:instance* (o <instances>)) (.elements o))
 (define-method (ast:async? (o <trigger>)) (parent (.port o) <behaviour>))
+(define-method (ast:async-port* (o <component-model>)) ((compose .elements .ports .behaviour) o))
 (define-method (ast:port* (o <ports>)) (.elements o))
 (define-method (ast:port* (o <behaviour>)) ((compose .elements .ports) o))
 (define-method (ast:global* (o <root>)) (.elements o))
@@ -187,7 +194,7 @@
   (filter ast:requires? (ast:port* o)))
 
 (define-method (ast:required+async (o <component-model>))
-  (append (ast:required o) ((compose .elements .ports .behaviour) o)))
+  (append (ast:required o) (ast:async-port* o)))
 
 (define-method (ast:direction (o <trigger>))
   (.direction (.event o)))
@@ -234,7 +241,8 @@
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals ((compose .formals .signature) event)))
                           (filter om:out? (om:events port))))
-                   (om:ports (.behaviour o)))))
+                   (let ((behaviour (.behaviour o)))
+                     (if behaviour (om:ports behaviour) '())))))
 
 (define-method (ast:in-triggers (o <component-model>))
   (append (ast:provided-in-triggers o) (ast:required-out-triggers o) (ast:async-out-triggers o)))
@@ -246,8 +254,38 @@
 (define-method (ast:in? (o <event>))
   (eq? 'in (.direction o)))
 
+(define-method (ast:in? (o <formal>))
+  (eq? 'in (.direction o)))
+
+(define-method (ast:in? (o <argument>))
+  (eq? 'in (.direction o)))
+
+(define-method (ast:in? (o <variable>))
+  #t)
+
 (define-method (ast:out? (o <event>))
   (eq? 'out (.direction o)))
+
+(define-method (ast:out? (o <formal>))
+  (eq? 'out (.direction o)))
+
+(define-method (ast:out? (o <argument>))
+  (eq? 'out (.direction o)))
+
+(define-method (ast:out? (o <variable>))
+  #f)
+
+(define-method (ast:inout? (o <event>))
+  (eq? 'inout (.direction o)))
+
+(define-method (ast:inout? (o <formal>))
+  (eq? 'inout (.direction o)))
+
+(define-method (ast:inout? (o <argument>))
+  (eq? 'inout (.direction o)))
+
+(define-method (ast:inout? (o <variable>))
+  #f)
 
 (define-method (ast:provided-out-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
@@ -328,6 +366,11 @@
 (define-method (ast:typed? (o <modeling-event>))
   #f)
 
+(define-method (ast:typed? (o <expression>))
+  (match o
+    (($ <literal>) (not (eq? 'void (.value o))))
+    (_ #t)))
+
 (define-method (ast:path (o <ast>))
   (ast:path o (negate identity)))
 
@@ -364,10 +407,14 @@
         (ast:literal-value->type value))))
 (define-method (ast:type (o <port>))
   (.type o))
+(define-method (ast:type (o <instance>))
+  (.type o))
 (define-method (ast:type (o <signature>))
   (.type o))
 (define-method (ast:type (o <trigger>))
   ((compose ast:type .event) o))
+(define-method (ast:type (o <on>))
+  (map ast:type ((compose .elements .triggers) o)))
 (define-method (ast:type (o <assign>))
   (ast:type (.variable o)))
 (define-method (ast:type (o <variable>))
@@ -387,6 +434,9 @@
 
 (define-method (ast:type (o <return>))
   (ast:type (.expression o)))
+
+(define-method (ast:type (o <extern>))
+  o)
 
 (define-method (ast:argument->formal (o <expression>))
   (let* ((call (parent o <call>))
@@ -424,6 +474,17 @@
 
 (define-method (ast:imported? (o <ast>))
   (not (equal? (ast:source-file o) (ast:source-file (parent o <root>)))))
+
+(define-method (ast:name (o <named>))
+  ((compose .name .name) o))
+
+(define-method (ast:literal-true? (e <ast>))
+  (and (is-a? e <literal>)
+       (eq? (.value e) 'true)))
+
+(define-method (ast:literal-false? (e <ast>))
+  (and (is-a? e <literal>)
+       (eq? (.value e) 'false)))
 
 (define (ast-> ast)
   ((compose

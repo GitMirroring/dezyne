@@ -1,0 +1,8 @@
+c.system.#.port.name .inport.#.event.name  = (#x:formal-parameter) => {
+  dzn.Runtime.traceIn(c.system.#.port.name .dzn_meta, "#.event.name");
+  c.match("#.port.name .#.event.name");
+  String tmp = c.match_return();
+  dzn.Runtime.traceOut(c.system.#.port.name .dzn_meta, tmp.Split('.')[1]);
+  #x:main-formal-assign
+  return #x:main-port-connect-return;
+};

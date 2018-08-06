@@ -601,8 +601,10 @@
 (define-ast <data> (<data-expr>)
   (value))
 
-(define-ast <var> (<expression>)
+(define-ast <var> (<named> <expression>)
   (variable.name))
+(define-method (.name (o <var>)) ;;TODO: FIXME
+  (.variable.name o))
 
 (define-ast <variable> (<named> <imperative> <expression>)
   (type.name)

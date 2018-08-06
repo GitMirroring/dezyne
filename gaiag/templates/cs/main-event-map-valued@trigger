@@ -1,0 +1,1 @@
+lookup.Add("#.port.name .#.event.name ",()=>{#x:main-arg-define  c.match("#.port.name ." + c.to_string<#x:return-type >(c.system.#.port.name .#.event.direction port.#.event.name (#x:main-arg))); });

@@ -1,0 +1,33 @@
+//SYSTEM
+#x:open-namespace
+public class #x:model-name  : dzn.SystemComponent {
+  #x:non-injected-instance-declare
+  #x:injected-instance-declare
+  #x:port-declaration
+
+  public #x:model-name (dzn.Locator locator, String name="", dzn.Meta parent=null)
+    : base(locator, name, parent) {
+    #x:non-injected-instance-initializer
+    #x:injected-instance-initializer
+    #x:port-initializer
+
+    this.dzn_meta.requires = new List<dzn.port.Meta> {
+      #x:required-port-meta
+    };
+    this.dzn_meta.children = new List<dzn.Meta> {
+      #x:meta-child
+    };
+    this.dzn_meta.ports_connected = new List<Action> {
+      #x:check-bindings-list
+    };
+
+    #x:system-port-connect
+    #x:system-rank
+  }
+  public void check_bindings()
+  {
+    dzn.RuntimeHelper.check_bindings(this.dzn_meta);
+  }
+}
+#x:close-namespace
+//////////////////////////////////////////////////////////////////////

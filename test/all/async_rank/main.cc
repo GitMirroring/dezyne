@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -31,25 +31,6 @@
 #include <future>
 #include <iostream>
 #include <limits>
-
-#if !DZN_PUMP_HAVE_BLOCKING
-namespace dzn {
-  template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
-  void blocking(dzn::pump& pump, L&& l)
-  {
-    std::promise<void> p;
-    pump([&]{l(); p.set_value();});
-    return p.get_future().get();
-  }
-  template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
-  auto blocking(dzn::pump& pump, L&& l) -> decltype(l())
-  {
-    std::promise<decltype(l())> p;
-    pump([&]{p.set_value(l());});
-    return p.get_future().get();
-  }
-}
-#endif // !DZN_PUMP_HAVE_BLOCKING
 
 int main()
 {
@@ -83,7 +64,7 @@ int main()
     std::clog << "<external>.r.return -> sut.r.return" << std::endl;
   };
 
-  dzn::blocking(c.pump, c.sut.p.in.e);
-  dzn::blocking(c.pump, c.sut.r.out.f);
-  dzn::blocking(c.pump, c.sut.r.out.g);
+  dzn::shell(c.pump, c.sut.p.in.e);
+  dzn::shell(c.pump, c.sut.r.out.f);
+  dzn::shell(c.pump, c.sut.r.out.g);
 }

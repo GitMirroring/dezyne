@@ -52,7 +52,6 @@
 (define (parse->om ast)
   (define (helper o)
     (match o
-
       (((and (? symbol?) type) (and location ('location file-name line column end-line end-column offset length)) body ...)
        (let ((ast (helper (cons type body)))
              (location (helper location)))

@@ -335,11 +335,11 @@
 
   (define ((passdown-formal-bindings formal-bindings) o)
     (match o
-    ((and ($ <compound>) (? om:declarative?))
-     (clone o #:elements (map (passdown-formal-bindings formal-bindings) (.elements o))))
-    ((? om:declarative?) (clone o #:statement ((passdown-formal-bindings formal-bindings) (.statement o))))
-    (($ <compound>) (clone o #:elements (cons formal-bindings (.elements o))))
-    (_ (make <compound> #:elements (cons formal-bindings (list o))))))
+      ((and ($ <compound>) (? om:declarative?))
+       (clone o #:elements (map (passdown-formal-bindings formal-bindings) (.elements o))))
+      ((? om:declarative?) (clone o #:statement ((passdown-formal-bindings formal-bindings) (.statement o))))
+      (($ <compound>) (clone o #:elements (cons formal-bindings (.elements o))))
+      (_ (make <compound> #:elements (cons formal-bindings (list o))))))
 
   (match o
     (($ <on>)

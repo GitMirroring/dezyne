@@ -1,1 +1,1 @@
-{"known":["javascript","c:build","cs:build","table"],"skip":["execute","run"],"comment":"livelock model; javascript: async not supported"}
+{"known":["javascript","c:build","table"],"skip":["execute","run"],"comment":"livelock model; javascript: async not supported"}

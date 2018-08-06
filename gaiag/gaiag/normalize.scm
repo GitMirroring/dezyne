@@ -60,21 +60,12 @@
 
 (define om:imperative? (@ (gaiag deprecated om) om:imperative?)) ;; REMOVEME
 
-(define (combine guards)
-  (make <guard> #:expression (fold (cut make <and> #:left <> #:right <>)
-                                   (make <literal> #:value 'true)
-                                   (map .expression guards))))
-
-(define (combine-not guards)
-  (make <guard> #:expression (fold (lambda (elem prev) (make <and> #:left (make <not> #:expression elem) #:right prev))
-                                   (make <literal> #:value 'true)
-                                   (map .expression guards))))
-
 (define (t-triple on guard blocking statement) (list on guard blocking statement))
 (define (t-on triple) (first triple))
 (define (t-guard triple) (second triple))
 (define (t-blocking triple) (third triple))
 (define (t-statement triple) (fourth triple))
+
 
 (define (triples:->compound-guard-on triples)
   (let* ((st (map (lambda (t)
@@ -104,19 +95,32 @@
         (list (t-triple on guard #f statement)))
       triples))
 
+(define (trigger-eq? a b)
+  (and (eq? (.port.name a) (.port.name b))
+       (eq? (.event.name a) (.event.name b))))
+
+(define (combine-not guards)
+  (cond ((null? guards) (make <guard> #:expression (make <literal> #:value 'true)))
+	((= 1 (length guards)) (make <guard>
+				 #:expression (make <not>
+						#:expression (.expression (car guards)))))
+	(else (make <guard> #:expression (reduce (lambda (elem prev)
+						   (make <and> #:left elem #:right prev))
+					    (make <literal> #:value 'true)
+					    (map (compose (cut make <not> #:expression <>) .expression) guards))))))
+
+(define (add-illegals model triples trigger)
+  (let* ((triples (filter (lambda (t) (trigger-eq? ((compose car ast:trigger* t-on) t) trigger)) triples))
+         (on (clone (make <on> #:triggers (make <triggers> #:elements (list trigger))) #:parent (.parent trigger)))
+         (guard (combine-not (map t-guard triples)))
+         (provides? (and=> (.port trigger) ast:provides?))
+         (statement (make (cond (provides? <declarative-illegal>)
+                                ((is-a? model <interface>) <incomplete>)
+                                (else <illegal>)))))
+    (append triples (list (t-triple on guard #f statement)))))
+
 (define ((triples:add-illegals model) triples)
-  (define (add-illegals- triples trigger)
-    (define (trigger-eq? t)
-      (and (eq? (.port.name t) (.port.name trigger)) (eq? (.event.name t) (.event.name trigger))))
-    (let* ((triples (filter (lambda (t) (trigger-eq? ((compose car ast:trigger* t-on) t))) triples))
-           (on (clone (make <on> #:triggers (make <triggers> #:elements (list trigger))) #:parent (.parent trigger)))
-           (guard (combine-not (map t-guard triples)))
-           (provides? (and=> (.port trigger) ast:provides?))
-           (statement (make (cond (provides? <declarative-illegal>)
-                                  ((is-a? model <interface>) <incomplete>)
-                                  (else <illegal>)))))
-      (append triples (list (t-triple on guard #f statement)))))
-  (append (append-map (cut add-illegals- triples <>) (ast:in-triggers model))
+  (append (append-map (cut add-illegals model triples <>) (ast:in-triggers model))
           (filter (compose ast:modeling? car ast:trigger* t-on) triples)))
 
 (define (triples:mark-the-end triples)
@@ -185,6 +189,11 @@
                (t-triple on (t-guard t) (and provides? (t-blocking t)) (t-statement t)))) ons)))
   (append-map split-on triples))
 
+(define (combine guards)
+  (make <guard> #:expression (reduce (cut make <and> #:left <> #:right <>)
+                                     (make <literal> #:value 'true)
+                                     (map .expression guards))))
+
 (define (triples:->triples o)
   (define (triple o)
     (let ((path (ast:path o (lambda (p) (is-a? (.parent p) <behaviour>)))))
@@ -241,7 +250,9 @@
                                      triples))
                         ;; code need <otherwise>
                         (otherwise (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal> #:incomplete #t))))
-                        (guards (append guards otherwise)))
+                        (otherwise? (not (find (compose ast:literal-true? .expression) guards)))
+                        (guards (if otherwise? (append guards otherwise)
+                                    guards)))
                    ;; FIXME: up code to use <declarative-compound>
                    ;;(clone on #:statement (make <declarative-compound> #:elements guards))
                    (clone on #:statement (make <compound> #:elements guards))))
@@ -254,8 +265,8 @@
                             ((compose
                               (cut make <compound> #:elements <>)
                               triples:->on-guard*
+                              triples:simplify-guard
                               (rewrite-formals (parent o <model>))
-                              ;;(lambda (o) ((compose pretty-print om->list) o) o)
                               (triples:add-illegals (parent o <model>))
                               triples:split-multiple-on
                               triples:->triples
@@ -327,15 +338,51 @@
   (map foo triples))
 
 
+(define (triples:simplify-guard triples)
+  (map (lambda (t)
+         (t-triple
+          (t-on t)
+          (clone (t-guard t) #:expression ((compose simplify .expression t-guard) t))
+          (t-blocking t)
+          (t-statement t)))
+       triples))
+
+;; simplify exp
+(define-method (simplify (o <bool-expr>))
+  (match o
+    (($ <not>)(let ((e (simplify (.expression o))))
+                (cond ((ast:literal-true? e) (clone e #:value 'false))
+                          ((ast:literal-false? e) (clone e #:value 'true))
+                          (else (clone o #:expression e)))))
+    (($ <and>)(let ((left (simplify (.left o)))
+                    (right (simplify (.right o))))
+                (cond ((ast:literal-true? left) right)
+                      ((ast:literal-false? left) left)
+                      ((ast:literal-true? right) left)
+                      ((ast:literal-false? right) right)
+                      (else (clone o #:left left #:right right)))))
+    (($ <or>)(let ((left (simplify (.left o)))
+                   (right (simplify (.right o))))
+               (cond ((ast:literal-true? left) left)
+                     ((ast:literal-false? left) right)
+                     ((ast:literal-true? right) right)
+                     ((ast:literal-false? right) left)
+                     (else (clone o #:left left #:right right)))))
+    (_ o)))
+
+(define-method (simplify (o <ast>))
+  o)
+
 (define-method (root-> (o <root>))
   ((compose
-    (compose pretty-print om->list)
-    triples:event-traversal
+    triples:state-traversal
     ast:resolve
     ) o))
 
 (define (ast-> ast)
   ((compose
+    pretty-print
+    om->list
     root->
     parse->om)
    ast))

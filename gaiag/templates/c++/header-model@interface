@@ -1,7 +1,6 @@
 /********************************** INTERFACE *********************************/
 #x:include-guard
 
-#x:global-enum-definer
 #x:open-namespace
 struct #x:model-name
 {

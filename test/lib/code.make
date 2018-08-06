@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 # Copyright © 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 #
@@ -67,7 +67,7 @@ runtime-common:
 runtime: runtime-common
 
 IN_DZN=$(shell ls -1 "$(IN)"/*.dzn | sed -e 's,^,",' -e 's,$$,",')
-IN__DZN=$(shell ls -1 "$(IN)"/*/*.dzn | sed -e 's,^,",' -e 's,$$,",')
+IN__DZN=$(shell ls -1 "$(IN)"/$(LANGUAGE)/*.dzn | sed -e 's,^,",' -e 's,$$,",')
 code:
 	set -x; for file in $(IN_DZN) $(IN__DZN); do\
 	    $(DZN) code $(VERSION_OPT) $(IMPORTS) $(CODE_OPTIONS) -l $(LANGUAGE) $(MODEL_OPT) $(TSS_OPT) -o "$(OUT)" "$$file";\

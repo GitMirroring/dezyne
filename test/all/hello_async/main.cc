@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -32,25 +33,6 @@
 #include <future>
 #include <iostream>
 
-#if !DZN_PUMP_HAVE_BLOCKING
-namespace dzn {
-  template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
-  void blocking(dzn::pump& pump, L&& l)
-  {
-    std::promise<void> p;
-    pump([&]{l(); p.set_value();});
-    return p.get_future().get();
-  }
-  template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
-  auto blocking(dzn::pump& pump, L&& l) -> decltype(l())
-  {
-    std::promise<decltype(l())> p;
-    pump([&]{p.set_value(l());});
-    return p.get_future().get();
-  }
-}
-#endif // !DZN_PUMP_HAVE_BLOCKING
-
 int main()
 {
   std::string str;
@@ -75,6 +57,6 @@ int main()
 
   c.sut.p.out.a = [] (int t) {std::clog << "p.a -> <external>.p.a [" <<  t << "]" << std::endl;};
 
-  dzn::blocking (c.pump, [&] {c.sut.p.in.e (0);});
+  dzn::shell (c.pump, [&] {c.sut.p.in.e (0);});
   return 0;
 }

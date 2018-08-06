@@ -1,0 +1,40 @@
+// -*-java-*-
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+
+class main {
+
+  static void connect_ports (dzn.container<#x:type-name > c)
+  {
+    #x:main-port-connect-in #x:main-port-connect-out
+  }
+
+  static Dictionary<String, Action> event_map (dzn.container<#x:type-name > c)
+  {
+    #x:main-provided-port-init
+    #x:main-required-port-init
+
+    Dictionary<String, Action> lookup = new Dictionary<String, Action>();
+    lookup.Add("illegal",()=>{Console.Error.WriteLine("illegal"); Environment.Exit(0);});
+    #x:main-event-map-void
+    #x:main-event-map-valued
+    #x:main-event-map-flush
+
+    return lookup;
+  }
+
+  public static void Main(String[] args)
+  {
+    if(Array.Exists(args, s => s == "--debug")) {
+      Debug.Listeners.Add(new TextWriterTraceListener(Console.Error));
+      Debug.AutoFlush = true;
+    }
+
+    using(dzn.container<#x:type-name > c = new dzn.container<#x:type-name >((loc,name)=>{return new #x:type-name(loc,name);}, Array.Exists(args, s => s == "--flush"))) {
+      connect_ports (c);
+      c.run(event_map (c), new List<String> {#x:main-required-port-name });
+    }
+  }
+}
+//version: #x:version

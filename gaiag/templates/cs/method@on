@@ -1,0 +1,7 @@
+public #x:return-type  #x:on-trigger
+{
+  #x:formal-binding-temporary
+  #x:statement
+  #x:formal-binding-assign-temporary
+  #x:return
+}
