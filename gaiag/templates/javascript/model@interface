@@ -5,13 +5,12 @@ dzn = dzn || {};
 
 dzn.#x:type-name  = function #x:model-name (meta) {
  this._dzn = {};
- #x:global-enum-definer
  #x:enum-definer
   this.in = {
  #x:in-event-definer
   };
   this.out = {
- #x:out-event-definer            
+ #x:out-event-definer
   };
   this._dzn.meta = meta;
 };

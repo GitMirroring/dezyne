@@ -6,7 +6,6 @@ dzn.#x:type-name  = function (locator, meta) {
   this._dzn.meta.ports = [#x:all-ports-meta-list ];
   this._dzn.flushes = true;
 
-  #x:global-enum-definer
   #x:enum-definer
   #x:variable-member-initializer
   #x:reply-member-initializer
