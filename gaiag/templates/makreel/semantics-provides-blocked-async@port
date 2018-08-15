@@ -1,3 +1,1 @@
-#.name internal(#x:makreel:interface-name inevitable) . sum a : #x:makreel:interface-name actions. #.name qin (#x:makreel:interface-name action (a)) . semantics_provides_blocked (pending=true)
- + (pending) -> #x:makreel:model-name end . sum a : #x:makreel:interface-name actions. #.name qout (#x:makreel:interface-name action (a)) . (async_pending . semantics_provides_blocked (pending=true)
-                                                                                                                                            +async_not_pending . semantics_provides_blocked (pending=false))
+sum a : #x:makreel:interface-name actions. #.name qout (#x:makreel:interface-name action (a)) . semantics_provides_blocked

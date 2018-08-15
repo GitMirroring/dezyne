@@ -171,7 +171,7 @@ semantics_async(port: provides_ports, pending: Bool)
 #x:semantics-async-requires
  ;
 
-semantics_provides_blocked (pending: Bool)
+semantics_provides_blocked
  = #x:semantics-provides-replies #x:semantics-provides-blocked-provides #x:semantics-provides-blocked-requires #x:semantics-provides-blocked-async #x:semantics-provides-blocked-internal
  ;
 
@@ -262,4 +262,3 @@ component = hide({
  , return
  , tau_void
  }, component_rename);
-

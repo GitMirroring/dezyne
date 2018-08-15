@@ -1,0 +1,78 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello();
+  //in void cruel();
+  out void world();
+
+  behaviour
+  {
+    // bool idle = true;
+    // [idle] on hello: idle = false;
+    // [!idle] {
+    //   on hello: illegal;
+    //   on inevitable: {idle = false; world;}
+    // }
+    on hello: {}
+    //on cruel: {}
+  }
+}
+
+interface iflip
+{
+  //in bool coin();
+  in void coin();
+
+  behaviour
+  {
+    //on coin: reply(true);
+    on coin: {}
+  }
+}
+
+component async_blocking2
+{
+  provides ihello h;
+  requires iflip f;
+
+  behaviour
+  {
+    requires dzn.async i;
+
+    blocking on h.hello(): i.req();
+    on i.ack(): h.reply();
+    // bool idle = true;
+
+    // [idle] on h.hello(): {idle = false; i.req();}
+    // on i.ack(): {idle = true; h.world();}
+
+    // blocking on h.cruel(): {
+    //   //f.coin();
+    //   //bool b = f.coin();
+    //   //if(b) h.reply();
+    //   h.reply();
+    // }
+  }
+}

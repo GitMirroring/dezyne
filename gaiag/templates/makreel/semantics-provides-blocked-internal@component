@@ -1,2 +1,2 @@
 + #x:makreel:model-name end . (delta#x:semantics-provides-blocked-requires
-                              +queue_empty . (delta#x:semantics-provides-blocked-qmt))
+                              +queue_empty . (delta#x:semantics-provides-blocked-qmt #x:semantics-provides-blocked-qmt-async))

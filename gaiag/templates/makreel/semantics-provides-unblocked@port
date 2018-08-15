@@ -1,4 +1,4 @@
-#.name blocking . ( semantics_provides_blocked (pending=false)
+#.name blocking . ( semantics_provides_blocked
                   + sum r : #x:makreel:interface-name replies. #.name reply (r) . semantics_provides_unblocked)
  + sum r : #x:makreel:interface-name replies. #.name reply (r) . semantics_provides_unblocked
  + sum a : #x:makreel:interface-name actions. #.name out (#x:makreel:interface-name action (a)) . semantics_provides_unblocked
