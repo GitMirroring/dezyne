@@ -252,30 +252,90 @@
   (match o
     (($ <behaviour>) (clone o #:statement
                             ((compose
-                              (cut make <compound> #:elements <>) ;; FIXME: up code to use <declarative-compound>
-                              ;;(cut make <declarative-compound> #:elements <>)
+                              (cut make <compound> #:elements <>)
                               triples:->on-guard*
-                              ;; add-reply-port
-                              ;; blocking-into-binding
+                              (rewrite-formals (parent o <model>))
+                              ;;(lambda (o) ((compose pretty-print om->list) o) o)
                               (triples:add-illegals (parent o <model>))
                               triples:split-multiple-on
-                              ;; rewrite-formals
                               triples:->triples
                               .statement
                               ) o)))
     ((? (is? <ast>)) (tree-map triples:event-traversal o))
     (_ o)))
 
+(define ((rewrite-formals model) triples)
+
+  (define (pair-eq? p) (eq? (car p) (cdr p)))
+
+  (define ((rename mapping) o)
+    ;;(stderr "rename o=~a\n" o)
+    (match o
+      ((and ($ <trigger>) (? (compose null? ast:formal*))) o)
+      (($ <trigger>)
+       (clone o #:formals (clone (.formals o) #:elements (map (rename mapping) ((compose .elements .formals) o)))))
+      ((? symbol?) (or (assoc-ref mapping o) o))
+      ((? (is? <ast>)) (tree-map (rename mapping) o))
+      (_ o)))
+
+  (define (name->on-formal name)
+    (make <formal> #:name name))
+
+  ;;(stderr "rewrite o=~a\n" o)
+  (define (foo t)
+    (let ((o (t-on t)))
+      (match o
+        ((and ($ <on>) (? (compose (cut equal? 1 <>) length ast:trigger*)) (? (compose null? ast:formal* car ast:trigger*)))
+         (let* ((trigger ((compose car .elements .triggers) o))
+                (formals ((compose .elements .formals .signature) (.event trigger))))
+           (if (null? formals) t
+               (t-triple (clone o #:triggers (clone (.triggers o) #:elements (list (clone trigger #:formals (clone (.formals trigger) #:elements formals)))))
+                         (t-guard t)
+                         (t-blocking t)
+                         (t-statement t)))))
+
+        ((and ($ <on>) (? (compose (cut equal? 1 <>) length ast:trigger*)))
+         (let* ((trigger ((compose car .elements .triggers) o))
+                (members (map .name (ast:variable* model)))
+                (formals (map .name ((compose .elements .formals .signature) (.event trigger))))
+                (locals (map .name (tree-collect (is? <variable>) (t-statement t))))
+                (occupied members)
+                (fresh (letrec ((fresh (lambda (occupied name)
+                                         (if (member name occupied)
+                                             (fresh occupied (symbol-append name 'x))
+                                             name))))
+                         fresh)) ;; occupied name -> namex
+                (refresh (lambda (occupied names)
+                           (fold-right (lambda (name o)
+                                         (cons (fresh o name) o))
+                                       occupied names))) ;; occupied names -> (append namesx occupied)
+
+                (fresh-formals (list-head (refresh occupied formals) (length formals)))
+                (mapping (filter (negate pair-eq?) (map cons (map .name ((compose .elements .formals) trigger)) fresh-formals)))
+
+                (occupied (append (map cdr mapping) members))
+
+                (mapping (append (map cons locals (list-head (refresh occupied locals) (length locals))) mapping)))
+
+           (if (null? mapping) t
+               (t-triple
+                (clone o #:triggers (clone (.triggers o) #:elements (list ((rename mapping) trigger))))
+                (t-guard t)
+                (t-blocking t)
+                ((rename mapping) (t-statement t)))))))))
+
+  (map foo triples))
+
+
 (define-method (root-> (o <root>))
   ((compose
-    (lambda (o) (display (ast->dzn o) (current-error-port)) o)
-    triples:state-traversal
+    (compose pretty-print om->list)
+    triples:event-traversal
     ast:resolve
     ) o))
 
 (define (ast-> ast)
   ((compose
-    (cut display ast->dzn <>)
     root->
     parse->om)
    ast))

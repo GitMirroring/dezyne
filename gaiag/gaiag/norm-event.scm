@@ -49,10 +49,9 @@
   #:export (
             add-reply-port
             binding-into-blocking
-            rewrite-formals
-           code-norm-event
-           norm-event
-           table-norm-event
+            code-norm-event
+            norm-event
+            table-norm-event
            ))
 
 (define-syntax *match*
@@ -139,57 +138,6 @@
     add-skip
     )
    o))
-
-(define-method (code-norm-event (o <root>))
-  ((compose
-    (perf 'add-reply-port)
-    add-reply-port
-    (perf 'add-illegals-and-otherwise)
-    (add-illegals-and-otherwise)
-    (perf 'remove-skip)
-    remove-skip
-    (perf 'on-compound)
-    on-compound
-    (perf 'flatten-compound)
-    flatten-compound
-    (perf 'combine-guards)
-    combine-guards
-    (perf 'aggregate-on-norm:triggers-equal?)
-    (aggregate-on norm:triggers-equal?)
-    (perf 'binding-into-blocking)
-    (binding-into-blocking)
-    (perf 'rewrite-formals)
-    (rewrite-formals)
-    (perf 'flatten-compound)
-    flatten-compound
-    (perf 'passdown-blocking)
-    (passdown-blocking)
-    (perf 'flatten-compound)
-    flatten-compound
-    (perf 'passdown-guard)
-    passdown-guard
-    (perf 'flatten-compound)
-    flatten-compound
-    (perf 'expand-on-norm:on-equal?)
-    (expand-on norm:on-equal?)
-    (perf 'aggregate-guard-s)
-    aggregate-guard-s
-    (perf 'flatten-compound)
-    flatten-compound
-    (perf 'combine-ons)
-    combine-ons
-    (perf 'passdown-blocking)
-    (passdown-blocking)
-    (perf 'passdown-guard)
-    passdown-guard
-    (perf 'remove-otherwise)
-    (remove-otherwise)
-    (perf 'add-skip)
-    (interface-prepend-true-guard)
-    add-skip
-    (perf 'START))
-   o)
-  )
 
 (define* ((interface-prepend-true-guard #:optional guard-seen?) o)
   (match o
@@ -376,70 +324,6 @@
     (($ <system>) o)
     (($ <foreign>) o)
     ((? (is? <ast>)) (tree-map (add-illegals-and-otherwise model) o))
-    (_ o)))
-
-(define* ((rewrite-formals #:optional model (locals '())) o)
-
-  (define (pair-eq? p) (eq? (car p) (cdr p)))
-
-  (define ((rename mapping) o)
-    ;;(stderr "rename o=~a\n" o)
-    (match o
-      ((and ($ <trigger>) (? (compose null? ast:formal*))) o)
-      (($ <trigger>)
-       (clone o #:formals (clone (.formals o) #:elements (map (rename mapping) ((compose .elements .formals) o)))))
-      ((? symbol?) (or (assoc-ref mapping o) o))
-      ((? (is? <ast>)) (tree-map (rename mapping) o))
-      (_ o)))
-
-  (define (name->on-formal name)
-    (make <formal> #:name name))
-
-  ;;(stderr "rewrite o=~a\n" o)
-  (match o
-    ((and ($ <on>) (? (compose (cut equal? 1 <>) length ast:trigger*)) (? (compose null? ast:formal* car ast:trigger*)))
-     (let* ((trigger ((compose car .elements .triggers) o))
-            (formals ((compose .elements .formals .signature) (.event trigger))))
-       (if (null? formals) o
-           (clone o #:triggers (clone (.triggers o) #:elements (list (clone trigger #:formals (clone (.formals trigger) #:elements formals))))))))
-    ((and ($ <on>) (? (compose (cut equal? 1 <>) length ast:trigger*)))
-     (let* ((trigger ((compose car .elements .triggers) o))
-            (members (map .name (om:variables model)))
-            (formals (map .name ((compose .elements .formals .signature) (.event trigger))))
-            (locals (map .name ((om:collect <variable>) o)))
-            (occupied members)
-            (fresh (letrec ((fresh (lambda (occupied name)
-                                     (if (member name occupied)
-                                         (fresh occupied (symbol-append name 'x))
-                                         name))))
-                     fresh)) ;; occupied name -> namex
-            (refresh (lambda (occupied names)
-                       (fold-right (lambda (name o)
-                                     (cons (fresh o name) o))
-                                   occupied names))) ;; occupied names -> (append namesx occupied)
-
-            (fresh-formals (list-head (refresh occupied formals) (length formals)))
-            (mapping (filter (negate pair-eq?) (map cons (map .name ((compose .elements .formals) trigger)) fresh-formals)))
-
-            (occupied (append (map cdr mapping) members))
-
-            (mapping (append (map cons locals (list-head (refresh occupied locals) (length locals))) mapping)))
-
-       (if (null? mapping) o
-           (clone o
-                  #:triggers (clone (.triggers o) #:elements (list ((rename mapping) trigger)))
-                  #:statement ((rename mapping) (.statement o))))))
-
-    (($ <component>)
-     (clone o #:behaviour ((rewrite-formals o) (.behaviour o))))
-
-    (($ <behaviour>)
-     (clone o #:statement ((rewrite-formals model '()) (.statement o))))
-
-    (($ <interface>) o)
-    (($ <system>) o)
-    (($ <foreign>) o)
-    ((? (is? <ast>)) (tree-map (rewrite-formals model locals) o))
     (_ o)))
 
 (define* ((binding-into-blocking #:optional (locals '())) o)
