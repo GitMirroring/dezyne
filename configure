@@ -304,6 +304,7 @@ Usage: ./configure [OPTION]...
                   "services/scripts/convert.sh.in"
                   "services/lib/version.js.in"
                   "services/root/js/version.js.in"))
+      (chmod "services/scripts/convert.sh" #o755)
       (for-each (lambda (o)
                   (substitute (string-append abs-top-srcdir "/" o) pairs)
                   (chmod (string-drop-right o 3) #o755))
