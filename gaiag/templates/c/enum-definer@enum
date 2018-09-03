@@ -1,0 +1,9 @@
+##ifndef E_#x:enum-complete-name-upcase
+##define E_#x:enum-complete-name-upcase
+
+         typedef enum
+         {
+                #x:enum-field-definer
+         } #x:name;
+
+##endif /* E_#x:enum-complete-name-upcase */

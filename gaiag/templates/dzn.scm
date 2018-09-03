@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -47,10 +49,10 @@
 (define-templates arguments ast:argument* argument-infix)
 (define-templates define-type ast:type* newline-infix)
 (define-templates field ast:field* field-infix)
-(define-templates in-event (lambda (o) (filter om:in? (om:events o))) newline-infix)
-(define-templates out-event (lambda (o) (filter om:out? (om:events o))) newline-infix)
-(define-templates provided-port (lambda (o) (filter ast:provides? (om:ports o))) newline-infix)
-(define-templates required-port (lambda (o) (filter ast:requires? (om:ports o))) newline-infix)
+(define-templates in-event (lambda (o) (filter ast:in? (ast:event* o))) newline-infix)
+(define-templates out-event (lambda (o) (filter ast:out? (ast:event* o))) newline-infix)
+(define-templates provided-port (lambda (o) (filter ast:provides? (ast:port* o))) newline-infix)
+(define-templates required-port (lambda (o) (filter ast:requires? (ast:port* o))) newline-infix)
 (define-templates behaviour .behaviour)
 (define-templates async-port ast:port* newline-infix)
 (define-templates declare-variable ast:variable* newline-infix)

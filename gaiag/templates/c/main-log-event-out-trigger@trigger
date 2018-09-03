@@ -1,0 +1,4 @@
+#x:type-name  log_event_#.port.name _#.event.direction _#.event.name (#x:port-type * m){
+   (void)m;
+   #x:main-log-event-void-return #x:main-log-event-non-void-return
+}

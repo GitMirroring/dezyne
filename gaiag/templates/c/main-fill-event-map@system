@@ -1,0 +1,16 @@
+void fill_event_map(#x:name * m, map* e){
+     closure *c;
+     args_flush* args;
+
+     component *comp = calloc (1, sizeof (component));
+     comp->dzn_info.performs_flush = global_flush_p;
+##if DZN_TRACING
+     comp->meta.parent = 0;
+     comp->meta.name = "<external>";
+##endif /* DZN_TRACING */
+
+     #x:out-trigger-initialization
+     #x:port-initialization-provided
+     #x:port-initialization-required
+     #x:in-trigger-initialization
+}

@@ -1,0 +1,2 @@
+uint8_t string_to__#x:name (char* s);
+char const* _#x:name _to_string(uint8_t  v);

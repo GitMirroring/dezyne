@@ -1,0 +1,104 @@
+typedef struct closure_t closure;
+struct closure_t{
+	void (*f)(void* void_args, ...);
+	void *self;
+};
+
+typedef struct args_flush_t args_flush;
+struct args_flush_t{
+	runtime_info* info;
+	char* name;
+};
+
+map* global_event_map;
+bool global_flush_p;
+
+static bool relaxed = false;
+
+char* read_line(void){
+	char *line = 0;
+	size_t size;
+  int getline_result = getline(&line, &size, stdin);
+  if (getline_result != -1) {
+    size_t line_length = strlen(line);
+		if ((line_length > 1) && (line[line_length-1] == '\n')) {
+      line[line_length-1] = '\0';
+		}
+		return line;
+	}
+	return 0;
+}
+
+char* drop_prefix(char* string, char* prefix){
+	size_t len = strlen(prefix);
+  size_t string_length = strlen(string);
+  int comparison_result = strncmp(string, prefix, len);
+	if ((string_length >= len) && (comparison_result == 0)) {
+     return string + len;
+	}
+	return string;
+}
+
+char* consume_synchronous_out_events(char* prefix, char* event, map* event_map){
+	char* s;
+  char match[1024];
+  closure *c;
+  strcat(strcpy(match, prefix), event);
+  s = read_line();
+	while (s != 0)  {
+    int comp_result = strcmp(match, s);
+    if(comp_result == 0)    {
+      break;
+    }
+    s = read_line();
+  }
+  s = read_line();
+	while (s != 0){
+		void *p = 0;
+		if(map_get(event_map, s, &p)){
+      break;
+    }
+    c = p;
+    c->f(c->self);
+		free(s);
+    s = read_line();
+  }
+	return s ? s : "";
+}
+
+void log_in(char* prefix, char* event, map* event_map){
+  fprintf(stderr, "%s%s\n", prefix, event);
+  if (!relaxed){
+    consume_synchronous_out_events(prefix, event, event_map);
+    fprintf(stderr, "%s%s\n", prefix, "return");
+  }
+}
+
+void log_out(char* prefix, char* event, map* event_map){
+	(void)event_map;
+  fprintf(stderr, "%s%s\n", prefix, event);
+}
+
+void log_flush(void* args){
+	args_flush* a = args;
+	fprintf(stderr, "%s.<flush>\n", a->name);
+	runtime_flush(a->info);
+}
+
+int log_valued(char* prefix, char* event, map* event_map, int (*string_to_value)(char* string_val), char* (*value_to_string)(int int_val)){
+  char* s;
+  int r;
+  fprintf(stderr, "%s%s\n", prefix, event);
+	if (relaxed) {
+     return 0;
+  }
+  s = consume_synchronous_out_events(prefix, event, event_map);
+	r = string_to_value(drop_prefix(s, prefix));
+	if ((int)r != INT_MIN){
+		fprintf(stderr, "%s%s\n", prefix, value_to_string(r));
+		return r;
+	}
+	fprintf(stderr,"\"%s\": is not a reply value\n", s);
+	assert(!"not a reply value");
+	return 0;
+}

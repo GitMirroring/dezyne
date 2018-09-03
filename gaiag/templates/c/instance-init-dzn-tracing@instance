@@ -1,0 +1,3 @@
+dzn_m_#.name .name  = "#.name ";
+dzn_m_#.name .parent = &self->meta;
+#x:type-name _init(&self->#.name , dezyne_locator, &dzn_m_#.name );

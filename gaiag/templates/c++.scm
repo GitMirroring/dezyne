@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -67,13 +69,9 @@
 (define-templates non-injected-instance-meta-initializer non-injected-instances)
 (define-templates dzn-locator code:dzn-locator)
 (define-templates header-data (lambda (o) (filter (is? <data>) (ast:top* o))))
-(define-templates model-glue (lambda (o) (filter (lambda (o) (and (dzn:glue) (is-a? o <foreign>))) (dzn:model o))))
-(define-templates header-model dzn:model)
-
-(define-templates header-model-glue (lambda (o)
-                                      (filter-map (lambda (o)
-                                                    (if (and (dzn:glue) (is-a? o <foreign>)) o
-                                                             #f)) (dzn:model o))))
+(define-templates model-glue c++:model-glue)
+(define-templates header-model c++:model)
+(define-templates header-model-glue c++:header-model-glue)
 
 (define-templates provided-port-instance-declare (lambda (o) (filter ast:provides? (om:ports o))))
 (define-templates required-port-instance-declare (lambda (o) (filter ast:requires? (om:ports o))))

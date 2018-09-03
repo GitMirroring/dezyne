@@ -1,0 +1,39 @@
+/* start of main */
+int main(int argc, char** argv) {
+	locator dezyne_locator;
+##if DZN_TRACING
+  dzn_meta mt;
+##endif /* DZN_TRACING */
+	map event_map;
+	char* line;
+  global_flush_p = (argc > 1) && (strcmp(argv[1], "--flush")==0);
+	locator_init(&dezyne_locator);
+	dezyne_locator.illegal = &illegal_print;
+
+	#x:name  sut;
+##if DZN_TRACING
+	mt.name = "sut";
+  mt.parent = 0;
+##endif /* DZN_TRACING */
+	#x:name _init(&sut, &dezyne_locator
+##if DZN_TRACING
+, &mt
+##endif /* DZN_TRACING */
+);
+
+	map_init(&event_map);
+  global_event_map = &event_map;
+	fill_event_map(&sut, &event_map);
+
+
+	while ( (line = read_line()) != 0) {
+	void *p = 0;
+		if (!map_get(&event_map, line, &p)) {
+        		closure *c = p;
+        		c->f(c->self);
+		}
+		free(line);
+  }
+	return 0;
+}
+/* end of main */

@@ -1,0 +1,3 @@
+                self->#.name  = &self->#.name _;
+                self->#.name ->meta.provides.address = self;
+                self->#.name ->meta.requires.address = 0;

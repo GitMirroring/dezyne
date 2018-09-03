@@ -1,0 +1,1 @@
+return log_valued("#.port.name .", "#.event.name ", global_event_map,  #x:main-log-event-return

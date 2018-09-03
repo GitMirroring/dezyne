@@ -1,0 +1,4 @@
+  self->#x:connect-instance-name-left #x:base-or-not-left .#x:connect-port-name-left ->meta.provides.port = "#x:connect-port-name-right ";
+  self->#x:connect-instance-name-left #x:base-or-not-left .#x:connect-port-name-left ->meta.provides.meta = &self->#x:connect-instance-name-right #x:base-or-not-right .meta;
+  self->#x:connect-instance-name-right #x:base-or-not-right .#x:connect-port-name-right ->meta.requires.port = "#x:connect-port-name-left ";
+  self->#x:connect-instance-name-right #x:base-or-not-right .#x:connect-port-name-right ->meta.requires.meta = &self->#x:connect-instance-name-left #x:base-or-not-left .meta;

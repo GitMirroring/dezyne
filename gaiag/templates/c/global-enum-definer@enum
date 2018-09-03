@@ -1,0 +1,5 @@
+
+         typedef enum
+         {
+                #x:enum-field-definer
+         } #x:name;

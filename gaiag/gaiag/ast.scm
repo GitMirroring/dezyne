@@ -1,8 +1,10 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
+;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;; Copyright © 2014, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -46,6 +48,7 @@
   #:use-module (gaiag parse)
 
   #:export (
+           ast:formal->index
            ast:argument->formal
            ast:async-out-triggers
            ast:async?
@@ -499,6 +502,12 @@
       (throw 'add-ast:equal?-overload-for-type (class-of a))
       #f))
 
+(define-method (ast:equal? (a <signature>) (b <signature>))
+  (and
+   (ast:equal? (.type.name a) (.type.name b))
+   (= (length (ast:formal* a)) (length (ast:formal* b)))
+   (every ast:equal? (map .type.name (ast:formal* a)) (map .type.name (ast:formal* b)))))
+
 (define-method (ast:type (o <action>))
   ((compose ast:type .event) o))
 (define-method (ast:type (o <call>))
@@ -508,6 +517,8 @@
 (define-method (ast:type (o <enum-literal>))
   (or (parent o <enum>)
       (.type o)))
+(define-method (ast:type (o <enum-field>))
+  (.type o))
 (define-method (ast:type (o <event>))
   ((compose ast:type .signature) o))
 (define-method (ast:type (o <function>))
@@ -567,6 +578,11 @@
          (index (list-index (cut ast:eq? o <>) arguments))
          (formals ((compose ast:formal* .function) call)))
     (list-ref formals index)))
+
+(define-method (ast:formal->index (o <formal>))
+  (let* ((formals (.elements (parent o <formals>)))
+         (index (list-index (cut ast:eq? o <>) formals)))
+    index))
 
 (define-method (ast:expression->type (o <expression>))
   (cond ((parent o <call>) ((compose .type ast:argument->formal) o))

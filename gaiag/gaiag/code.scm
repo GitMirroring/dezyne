@@ -1,8 +1,10 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;; Copyright © 2016, 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
+;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -95,6 +97,7 @@
 	    code:declarative-or-imperative
             code:extension
             code:dump-main
+            code:model
             code:module
             code:om
             code:port-type
@@ -890,3 +893,6 @@
 (define-method (code:set-state-argument (o <instance>))
   (if (is-a? (.type o) <system>) (.type o)
       o))
+
+(define-method (code:model (o <root>))
+  (dzn:model o))

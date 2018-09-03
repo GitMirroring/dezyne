@@ -1,10 +1,13 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -55,6 +58,7 @@
             dzn:annotate-shells
             dzn:dir
             dzn:data
+            dzn:class-member?
             dzn:dump
             dzn:extension
             dzn:expression
@@ -114,7 +118,8 @@
 (define (dzn:extension o)
   (match o
     (($ <interface>)
-     (assoc-ref '((c . .h)
+     (assoc-ref '((cd . .yah)
+                  (c . .h)
                   (c++ . .hh)
                   (c++03 . .hh)
                   (c++-msvc11 . .hh)
@@ -128,7 +133,8 @@
                   (python . .py))
                 (language)))
     ((or ($ <foreign>) ($ <component>) ($ <system>))
-     (assoc-ref '((c . .c)
+     (assoc-ref '((cd . .yll)
+                  (c . .c)
                   (c++ . .cc)
                   (c++03 . .cc)
                   (c++-msvc11 . .cc)
@@ -162,21 +168,11 @@
 
 ;;; dzn: generic templates
 (define-method (dzn:model (o <root>))
-  (if (dzn:glue)
-      (let ((models (ast:model* o)))
-        (if (null? (filter (negate (disjoin ast:imported? (is? <foreign>))) models))
-              (filter (is? <foreign>) models)
-              (topological-sort
-               (map dzn:annotate-shells
-                    (filter (negate (disjoin (is? <data>) (is? <type>) dzn-async?
-                                             (conjoin ast:imported? (negate (is? <foreign>)))
-                                             (is? <foreign>)))
-                            (ast:model* o))))))
-      (topological-sort
-       (map dzn:annotate-shells
-            (filter (negate (disjoin (is? <data>) (is? <type>) (is? <namespace>) dzn-async?
-                                     (conjoin ast:imported? (negate (is? <foreign>)))))
-                    (ast:model* o))))))
+  (topological-sort
+   (map dzn:annotate-shells
+        (filter (negate (disjoin (is? <data>) (is? <type>) (is? <namespace>) dzn-async?
+                                 (conjoin ast:imported? (negate (is? <foreign>)))))
+                (ast:model* o)))))
 
 (define-method (dzn:model (o <namespace>))
   (ast:top* o))
@@ -367,10 +363,6 @@
         ((ast:literal-true? (.expression o))(.statement o))
         ((ast:literal-false? (.expression o)) '())
         (else o)))
-
-
-
-
 
 (define-method (dzn:statement (o <behaviour>))
   ((compose dzn:expand-statement .statement) o))

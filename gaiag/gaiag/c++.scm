@@ -1,8 +1,10 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -78,6 +80,7 @@
             c++:enum-field-type
             c++:enum-field->string
             c++:implemented-port-name
+            c++:model
             c++:name
             c++:optional-type
             c++:string->enum
@@ -431,6 +434,31 @@
 
 (define-method (c++:enum-literal (o <enum-literal>))
   (append (c++:type-name (.type o)) (list (.field o))))
+
+(define-method (c++:model (o <root>))
+  (if (dzn:glue)
+      (let ((models (ast:model* o)))
+        (if (null? (filter (negate (disjoin ast:imported? (is? <foreign>))) models))
+              (filter (is? <foreign>) models)
+              (topological-sort
+               (map dzn:annotate-shells
+                    (filter (negate (disjoin (is? <data>) (is? <type>) dzn-async?
+                                             (conjoin ast:imported? (negate (is? <foreign>)))
+                                             (is? <foreign>)))
+                            (ast:model* o))))))
+      (topological-sort
+       (map dzn:annotate-shells
+            (filter (negate (disjoin (is? <data>) (is? <type>) (is? <namespace>) dzn-async?
+                                     (conjoin ast:imported? (negate (is? <foreign>)))))
+                    (ast:model* o))))))
+
+(define-method (c++:header-model-glue (o <root>))
+  (filter-map (lambda (o)
+                (if (and (dzn:glue) (is-a? o <foreign>)) o
+                    #f)) (c++:model o)))
+
+(define-method (c++:model-glue (o <root>))
+  (filter (lambda (o) (and (dzn:glue) (is-a? o <foreign>))) (c++:model o)))
 
 (define-templates-macro define-templates c++)
 (include "../templates/dzn.scm")

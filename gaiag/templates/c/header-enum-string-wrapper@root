@@ -1,0 +1,11 @@
+##if DZN_TRACING
+##include <string.h>
+
+##ifndef #x:file-name-identifier-upcase _ES_H
+##define #x:file-name-identifier-upcase _ES_H
+
+#x:header-enum-string-function-prototype
+
+
+##endif /* #x:file-name-identifier-upcase _ES_H */
+##endif /* DZN_TRACING */

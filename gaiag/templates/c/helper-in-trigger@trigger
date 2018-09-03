@@ -1,0 +1,4 @@
+static void h_#x:model-parent-name _#x:enum-name #x:closure-struct-args(void* args) {
+       #x:model-parent-name _#x:enum-name #x:closure-struct-args  *a = args;
+       a->f(a->self#x:helper-function-extra-arguments);
+}

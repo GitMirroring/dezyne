@@ -1,0 +1,11 @@
+static #x:type-name  out_#.port.name _#.event.name _#x:model-parent-name (#x:port-type * port#x:formals){
+       #x:model-parent-name _#x:enum-name #x:closure-struct-args  closure_struct_obj;
+##if DZN_TRACING
+runtime_trace_out (&port->meta, "#.event.name ");
+##endif /* DZN_TRACING */
+       closure_struct_obj.size = sizeof(#x:model-parent-name _#x:enum-name #x:closure-struct-args);
+       closure_struct_obj.f = &#.port.name _#.event.name _#x:model-parent-name;
+       closure_struct_obj.self = port->meta.requires.address;
+       #x:formal-handler
+       runtime_defer(port->meta.provides.address, port->meta.requires.address, (void (*)(void* void_args))&h_#x:model-parent-name _#x:enum-name #x:closure-struct-args , &closure_struct_obj);
+}

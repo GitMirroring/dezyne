@@ -1,0 +1,9 @@
+/**********************************  FOREIGN  *********************************/
+#x:closure-struct
+#x:helper-in-trigger
+
+#x:call-in-trigger-foreign
+#x:call-out-trigger
+
+#x:initialize
+/**********************************  FOREIGN  *********************************/

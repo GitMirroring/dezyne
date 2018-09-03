@@ -1,0 +1,3 @@
+  else if (!strcmp (s, "#c:enum-printed-name _#.field ")) {
+		return #x:name _#.field;
+	}

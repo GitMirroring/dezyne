@@ -1,0 +1,18 @@
+/********************************** INTERFACE *********************************/
+#x:include-guard
+
+#x:enum-definer
+
+typedef struct #x:name _t #x:name ;
+
+struct #x:name _t{
+
+       dzn_port_meta meta;
+
+       #x:in-event-struct-declare
+
+       #x:out-event-struct-declare
+};
+
+##endif /* #x:namespace-upcase _H */
+/********************************** INTERFACE *********************************/

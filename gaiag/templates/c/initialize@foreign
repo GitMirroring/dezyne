@@ -1,0 +1,17 @@
+void #x:name _skel_init(#x:name _skel* self, locator* dezyne_locator
+##if DZN_TRACING
+, dzn_meta *meta
+##endif /* DZN_TRACING */
+){
+        runtime_info_init(&self->dzn_info, dezyne_locator);
+	self->dzn_info.performs_flush = true;
+        #x:provided-port-initialization
+        #x:required-port-initialization
+        #x:trigger-initialization
+
+##if DZN_TRACING
+        memcpy(&self->meta, meta, sizeof(dzn_meta));
+        #x:provided-event-tracing-initialization
+        #x:required-event-tracing-initialization
+##endif /*DZN_TRACING*/
+}

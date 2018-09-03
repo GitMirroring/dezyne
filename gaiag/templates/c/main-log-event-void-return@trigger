@@ -1,0 +1,1 @@
+log_#.event.direction("#.port.name .", "#.event.name ", global_event_map);

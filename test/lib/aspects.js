@@ -1,9 +1,12 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2018 Filip Toman <filip.toman@verum.com>
 // Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 // Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
+// Copyright © 2018 Filip Toman <filip.toman@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016, 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2018 Filip Toman <filip.toman@verum.com>
 // Copyright © 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -237,8 +240,8 @@ function run_traces(parameters, asp, app) {
 }
 
 var supported_languages = {
-  'default': ['c++', 'c++03', 'c++-msvc11', 'cs', 'javascript'],
-  '2.4.1' : ['c', 'c++', 'c++03', 'c++-msvc11', 'cs', 'javascript'],
+  'default': ['c++', 'c++03', 'c++-msvc11', 'c', 'cs', 'javascript'],
+  '2.4.1' : ['c++', 'c++03', 'c++-msvc11', 'c', 'cs', 'javascript'],
 };
 
 var aspects = {
@@ -659,7 +662,7 @@ var aspects = {
   ,
   parse: function(parameters) {
     var model = parameters.meta.model || parameters.model;
-    var language_dir = parameters.dir + '/' + parameters.meta.languages[0];
+    var language_dir = parameters.dir + '/dzn';
     var lstat = q.denodeify(fs.lstat);
     var node_baseline = parameters.dir + '/baseline/parse/' + model + '.stderr';
     var baseline = '"' + node_baseline + '"';
@@ -716,7 +719,7 @@ var aspects = {
   ,
   verify: function(parameters) {
     var model = parameters.meta.model || parameters.model;
-    var language_dir = parameters.dir + '/' + parameters.meta.languages[0];
+    var language_dir = parameters.dir + '/dzn';
     var node_baseline = parameters.dir + '/baseline/verify/' + parameters.model;
     var baseline = '"' + node_baseline + '"';
     var dir = '"out/' + path.basename(parameters.dir) + '"/verify'

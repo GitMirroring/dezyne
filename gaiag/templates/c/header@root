@@ -1,0 +1,10 @@
+##include <dzn/config.h>
+##include <dzn/runtime.h>
+##include <dzn/locator.h>
+
+#x:header-data
+#x:global-enum-wrapper
+#x:header-enum-string-wrapper
+
+#x:header-model
+/*version: #x:version */

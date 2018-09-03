@@ -1,0 +1,6 @@
+##ifndef E_#x:file-name-identifier-upcase _H
+##define E_#x:file-name-identifier-upcase _H
+
+#x:global-enum-definer
+
+##endif /* E_#x:file-name-identifier-upcase _H */

@@ -1,0 +1,13 @@
+##include "#x:scoped-model-name .h"
+##include <dzn/config.h>
+##include <dzn/locator.h>
+##include <dzn/runtime.h>
+##if DZN_TRACING
+##include <string.h>
+##endif /* DZN_TRACING */
+
+#x:source-enum-string-wrapper
+#x:closure-struct
+#x:helper-in-trigger-prototype
+#x:helper-in-trigger
+#x:source-model

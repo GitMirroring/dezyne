@@ -1,0 +1,5 @@
+  c = malloc(sizeof (closure));
+  /* (void (*) (void* void_args)) ... c90 valid cast, the following only valid for c99 */
+  c->f = (void (*))m->#.port.name ->#.event.direction .#.event.name;
+  c->self = m->#.port.name;
+  map_put(e, "#.port.name .#.event.name ", c);

@@ -1,0 +1,1 @@
+static #x:type-name  #.event.direction _#.port.name _#.event.name _#x:model-parent-name (#x:port-type * port#x:formals);

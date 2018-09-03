@@ -1,0 +1,10 @@
+/* illegal print start */
+void illegal_print(void) {
+##if DZN_TRACING
+	fputs("illegal\n", stderr);
+	exit(0);
+##else /* !DZN_TRACING */
+    *(int*)0 = 0; /* SEGFAULT here */
+##endif /* !DZN_TRACING */
+}
+/* illegal print stop */

@@ -1,0 +1,27 @@
+/********************************** COMPONENT *********************************/
+#x:include-guard
+
+#x:interface-include
+#x:enum-definer
+
+
+typedef struct #x:name _t #x:name ;
+
+struct #x:name _t{
+##if DZN_TRACING
+     dzn_meta meta;
+##endif /*!DZN_TRACING*/
+        runtime_info dzn_info;
+        #x:variable-member-declare
+        #x:reply-member-declare
+        #x:port-declare
+};
+
+void #x:name _init(#x:name * self, locator* dezyne_locator
+##if DZN_TRACING
+, dzn_meta* meta
+##endif /* !DZN_TRACING */
+);
+
+##endif /* #x:namespace-upcase _H*/
+/********************************** COMPONENT *********************************/

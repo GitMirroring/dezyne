@@ -1,0 +1,16 @@
+  c = malloc(sizeof (closure));
+  c->f = &log_flush;
+  args = malloc(sizeof(args_flush));
+  args->info = &comp->dzn_info;
+  args->name = "#.name ";
+  c->self = args;
+
+  m->#.name ->meta.provides.address = comp;
+  ##if DZN_TRACING
+  m->#.name ->meta.provides.port = "#.name ";
+  m->#.name ->meta.provides.meta = &comp->meta;
+  if (global_flush_p) {
+     comp->meta.name = "<internal>";
+  }
+  ##endif /* DZN_TRACING */
+  map_put(e, "#.name .<flush>", c);

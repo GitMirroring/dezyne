@@ -1,0 +1,4 @@
+	self->#.name ->meta.provides.port = "";
+	self->#.name ->meta.provides.meta = 0;
+	self->#.name ->meta.requires.port = "#.name ";
+	self->#.name ->meta.requires.meta = &self->meta;

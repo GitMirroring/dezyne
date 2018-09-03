@@ -1,0 +1,1 @@
+m->#.port.name ->#.event.direction .#.event.name  = log_event_#.port.name _#.event.direction _#.event.name;

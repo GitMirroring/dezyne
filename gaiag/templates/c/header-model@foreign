@@ -1,0 +1,36 @@
+/**********************************  FOREIGN  *********************************/
+#x:include-guard
+
+#x:interface-include
+
+struct #x:name _skel_t{
+##if DZN_TRACING
+     dzn_meta meta;
+##endif /*!DZN_TRACING*/
+     runtime_info dzn_info;
+     #x:port-declare
+};
+
+##include <#x:model-parent-name .h>
+
+/* Implement following functions for in triggers
+** in your foreign file: foreign.c */
+#x:method-prototypes
+
+/* In foreign.c implement initialization of foreign component with
+** following function prototype:                                       */
+void #x:name _init(#x:name * self, locator* dezyne_locator
+##if DZN_TRACING
+, dzn_meta* dzn_meta
+##endif /* !DZN_TRACING */
+);
+
+
+void #x:name _skel_init(#x:name _skel* self, locator* dezyne_locator
+##if DZN_TRACING
+, dzn_meta* dzn_meta
+##endif /* !DZN_TRACING */
+);
+
+##endif /* #x:namespace-upcase _H*/
+/**********************************  FOREIGN  *********************************/

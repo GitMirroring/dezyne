@@ -1,0 +1,7 @@
+typedef struct #x:model-parent-name _#x:enum-name #x:closure-struct-args _t #x:model-parent-name _#x:enum-name #x:closure-struct-args;
+struct #x:model-parent-name _#x:enum-name #x:closure-struct-args _t{
+        size_t size;
+        #x:type-name (*f)(#x:model-parent-name * self #x:method-params);
+        #x:model-parent-name * self;
+        #x:closure-variable-definition
+};

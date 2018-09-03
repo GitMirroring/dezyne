@@ -1,0 +1,1 @@
+static #x:type-name  #.port.name _#.event.name _#x:model-parent-name (#x:model-parent-name * self#x:method-params)
