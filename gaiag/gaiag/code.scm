@@ -52,7 +52,9 @@
   #:use-module (gaiag templates)
 
 
-  #:export (asd-interfaces
+  #:export (.asd-channel
+            .asd-event
+            asd-interfaces
             map-file
             injected-bindings
             injected-instances
@@ -138,6 +140,7 @@
             code:variable-name
             code:x-header-
             code:root->
+            <glue-event>
             %x:header
             %x:main
             %x:glue-bottom-header
@@ -145,6 +148,16 @@
             %x:glue-top-header
             %x:glue-top-source
             ))
+
+(define-ast <glue-event> (<event>)
+  (asd-channel)
+  (asd-event))
+
+(define-ast <glue-system> (<system>)
+  (asd-in #:init-form (list))
+  (asd-out #:init-form (list)))
+
+
 
 (define %x:header (make-parameter #f))
 (define %x:main (make-parameter #f))

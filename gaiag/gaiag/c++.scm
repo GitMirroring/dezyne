@@ -85,18 +85,7 @@
             asd?
             ))
 
-(export
- .asd-channel
- .asd-event
- <glue-event>)
 
-(define-ast <glue-event> (<event>)
-  (asd-channel)
-  (asd-event))
-
-(define-ast <glue-system> (<system>)
-  (asd-in #:init-form (list))
-  (asd-out #:init-form (list)))
 
 (define asd? #f) ;; FIXME: asd glue
 
