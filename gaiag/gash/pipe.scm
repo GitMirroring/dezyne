@@ -1,7 +1,9 @@
 ;;; Gash --- Guile As SHell
 ;;; Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@gmail.com>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Gash.
@@ -24,6 +26,7 @@
   :use-module (ice-9 curried-definitions)
   :use-module (ice-9 popen)
   :use-module (ice-9 rdelim)
+  :use-module (ice-9 regex)
 
   :use-module (srfi srfi-1)
   :use-module (srfi srfi-8)
@@ -38,8 +41,15 @@
 (define (handle-error job error)
   (let ((status (wait job)))
     (when (not (zero? status))
-      (format (current-error-port) "ERROR: exit: ~a: ~s" status error)
-      (exit status))
+      (let* ((msg (if (or (string-contains error "std::bad_alloc")
+                          (string-contains error "out-of-memory"))
+                      "ERROR: Out of Memory.\nProbably your model has too many states."
+                      "ERROR: Internal error."))
+             (error (regexp-substitute/global #f "[ ]+" error 'pre " " 'post))
+             (error (regexp-substitute/global #f "Generated .* linearisation method.\n" error 'pre "" 'post))
+             (details (format #f "exit: ~a: ~a" status error)))
+        (format (current-error-port) "~a\nPlease contact Verum support.\n\nInternal details: ~s\n" msg details)
+        (exit status)))
     status))
 
 (define (pipe*)
