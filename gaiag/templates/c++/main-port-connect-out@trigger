@@ -1,9 +1,11 @@
-c.system.#.port.name .#.event.direction .#.event.name  = [&] (#x:formals) {
+c.system.#.port.name .#.event.direction .#.event.name  = [&] (#x:formals-anonymous) {
   dzn::trace_#.event.direction(std::clog, c.system.#.port.name .meta, "#.event.name");
   std::clog << std::endl;
   c.match("#.port.name .#.event.name");
   c.runtime.queue(&c.system.#.port.name).push([&]{
-    if(c.runtime.queue(&c.system.#.port.name).empty())
+    if(c.runtime.queue(&c.system.#.port.name).empty()) {
       std::clog << "#.port.name .<flush>" << std::endl;
+      c.match("#.port.name .<flush>");
+    }
   });
 };

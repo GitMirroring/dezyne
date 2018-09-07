@@ -1,2 +1,2 @@
 {"#.port.name .#.event.name",[&]{ #x:main-out-arg-define c.system.#.port.name .#.event.direction .#.event.name(#x:main-out-arg);
-#x:main-event-map-match-return }}
+#x:main-event-map-match-return std::queue<std::function<void()>> empty; std::swap(c.runtime.queue(&c.system.#.port.name), empty);}}

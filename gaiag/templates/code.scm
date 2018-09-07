@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -52,6 +54,7 @@
 (define-templates method code:trigger)
 (define-templates parameters code:parameters formal-infix)
 (define-templates formals code:formals formal-infix)
+(define-templates formals-anonymous code:formals formal-infix)
 (define-templates formals-type code:formals formal-infix)
 (define-templates methods code:ons)
 (define-templates functions code:functions)

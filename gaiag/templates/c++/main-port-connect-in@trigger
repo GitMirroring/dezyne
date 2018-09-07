@@ -1,4 +1,4 @@
-c.system.#.port.name .#.event.direction .#.event.name  = [&] (#x:formals) {
+c.system.#.port.name .#.event.direction .#.event.name  = [&] (#x:formals-anonymous) {
 dzn::trace_#.event.direction(std::clog, c.system.#.port.name .meta, "#.event.name"); std::clog << std::endl;
 c.match("#.port.name .#.event.name"); std::string tmp = c.match_return();
 dzn::trace_out(std::clog, c.system.#.port.name .meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
