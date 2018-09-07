@@ -1,7 +1,9 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -166,8 +168,8 @@ var util = {
 
     var future = q.defer ();
 
-    options = options || { env:process.env, timeout_ms:0};
-    var env = options.env;
+    var env = JSON.parse(JSON.stringify(process.env));
+    options = options || { env:env, timeout_ms:0};
     env.NODE_PATH = process.cwd() + '/node_modules:' + env.NODE_PATH;
 
     var ulimit = 'ulimit -s 65536 -v 2097152;';
