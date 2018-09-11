@@ -13,6 +13,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -e '(configure)' -s "$0" ${1+"$@"}
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 ftw)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
   #:use-module (ice-9 optargs)
@@ -49,9 +50,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -e '(configure)' -s "$0" ${1+"$@"}
 (define GDZN (or (getenv "GDZN") "gdzn"))
 ;; FIXME: how to find proper GO-JS?
 (define GOJS (or (getenv "GOJS")
-                 (find file-exists?
-                  '("/gnu/store/gwr5xk65rwv92zksyd911a91v32dpr4d-gojs-1.6.15.73fc41e1b41c289246994a7e5a6a32b7"
-                    "/gnu/store/qapf0651kbb98zp1z6ikak05qnf3yphw-gojs-1.6.15.73fc41e1b41c289246994a7e5a6a32b7"))
+                 (find (lambda (x) #t) (map (cut string-append "/gnu/store/" <>) (scandir "/gnu/store" (cut string-suffix? "gojs-1.6.15.73fc41e1b41c289246994a7e5a6a32b7" <>))))
                  (system "GUIX_PACKAGE_PATH=guix guix build gojs")))
 
 (define GUILE_EFFECTIVE_VERSION (effective-version))
