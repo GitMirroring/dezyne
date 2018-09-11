@@ -32,6 +32,14 @@ struct #x:model-name Glue
 #x:asd-get-api-definition
 #x:asd-register-cb-definition
 
+void defer_processCBs() {
+  dzn_runtime.defer(component.#x:implemented-port-name .meta.provides.address, &component, boost::bind(&#x:model-name Glue::on_flush_processCBs,this));
+}
+
+void on_flush_processCBs() {
+  st->processCBs();
+}
+
 void RegisterCB (boost::shared_ptr<asd::channels::ISingleThreaded> st)
 {
   this->st = st;

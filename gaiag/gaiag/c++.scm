@@ -74,6 +74,7 @@
             c++:construction-signature
             c++:enum->string
             c++:enum-field->string
+            c++:implemented-port-name
             c++:name
             c++:optional-type
             c++:function-type
@@ -345,7 +346,7 @@
            (->string (list "void " (first entry) "(" formals ")\n"
                            "{\n"
                            "cb_" interface "->" (third entry) "(" arguments ");\n"
-                           "st->processCBs();\n"
+                           "defer_processCBs();\n"
                            "}\n"))))
        ((asd-interfaces om:out?) (provided-interface model))))
 
@@ -412,6 +413,9 @@
   (filter
    (lambda (t) (is-a? ((compose .type .signature .event) t) <void>))
    (append (ast:provided-in-triggers o) (ast:required-out-triggers o))))
+
+(define-method (c++:implemented-port-name model)
+  (.name (om:port model)))
 
 (define-templates-macro define-templates c++)
 (include "../templates/dzn.scm")

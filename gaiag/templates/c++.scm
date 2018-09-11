@@ -1,8 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -128,3 +130,4 @@
 (define-templates asd-cb-method-definition c++:asd-cb-method-definition)
 (define-templates asd-get-api-definition c++:asd-get-api-definition)
 (define-templates asd-register-cb-definition c++:asd-register-cb-definition)
+(define-templates implemented-port-name c++:implemented-port-name)
