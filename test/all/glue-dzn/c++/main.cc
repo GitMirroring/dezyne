@@ -23,36 +23,52 @@
 // Code:
 
 #include "alarmComponent.h"
-#include "sirenComponent.h"
+#include "sensorComponent.h"
 
 #include <boost/make_shared.hpp>
 
 #include <iostream>
 
 struct CB: public ::console_cb
+         , public asd::channels::ISingleThreaded
 {
   boost::shared_ptr<::console_api> api;
+  bool do_disarm = false;
+
   CB(  boost::shared_ptr<::console_api> api)
   : api(api)
   {}
   void detected()
   {
     std::cout << "console_cb.detected" << std::endl;
+    do_disarm = true;
   }
   void deactivated()
   {
     std::cout << "console_cb.deactivated" << std::endl;
   }
+  void processCBs()
+  {
+    std::cout << "console_st.processCBs" << std::endl;
+    if (do_disarm) {
+      do_disarm = false;
+      api->disarm();
+   }
+  }
 };
 
 int main()
 {
-
   boost::shared_ptr<::consoleInterface> alarm_system = alarmComponent::GetInstance(123);
   boost::shared_ptr<::console_api> api;
+  boost::shared_ptr<::CB> cb;
+
   alarm_system->GetAPI(&api);
-  alarm_system->RegisterCB(boost::make_shared<CB>(api));
+  cb = boost::make_shared<CB>(api);
+  alarm_system->RegisterCB((boost::shared_ptr<console_cb>)cb);
+  alarm_system->RegisterCB((boost::shared_ptr<asd::channels::ISingleThreaded>)cb);
 
   api->arm();
-  api->disarm();
+  sensorComponent::triggered();
+  sensorComponent::disabled();
 }

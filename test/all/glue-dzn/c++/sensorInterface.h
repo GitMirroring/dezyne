@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -79,6 +80,8 @@
       VoidReply
     };
     virtual ~sensor_cb() {}
+    virtual void triggered() = 0;
+    virtual void disabled() = 0;
   protected:
     sensor_cb() {}
   private:

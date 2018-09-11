@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -24,6 +25,7 @@
 #include "sensorComponent.h"
 
 #include <boost/make_shared.hpp>
+#include <iostream>
 
 boost::shared_ptr<sensorInterface>
 sensorComponent::GetInstance ()
@@ -35,3 +37,24 @@ void
 sensorComponent::ReleaseInstance ()
 {
 }
+
+void
+sensorComponent::triggered()
+{
+  std::cout << "sensorComponent::cb->triggered()" << std::endl;
+  sensorComponent::cb->triggered();
+  std::cout << "sensorComponent::st->processCBs()" << std::endl;
+  sensorComponent::st->processCBs();
+}
+
+void
+sensorComponent::disabled()
+{
+  std::cout << "sensorComponent::cb->disabled()" << std::endl;
+  sensorComponent::cb->disabled();
+  std::cout << "sensorComponent::st->processCBs()" << std::endl;
+  sensorComponent::st->processCBs();
+}
+
+boost::shared_ptr<sensor_cb> sensorComponent::cb;
+boost::shared_ptr<asd::channels::ISingleThreaded> sensorComponent::st;

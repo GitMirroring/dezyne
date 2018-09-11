@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -39,8 +40,10 @@ class sensorComponent: public sensorInterface
                      , public boost::enable_shared_from_this<sensorComponent>
 {
 public:
-  void RegisterCB(boost::shared_ptr<sensor_cb> cb) {}
-  void RegisterCB(boost::shared_ptr<asd::channels::ISingleThreaded> cb) {}
+  static boost::shared_ptr<sensor_cb> cb;
+  static boost::shared_ptr<asd::channels::ISingleThreaded> st;
+  void RegisterCB(boost::shared_ptr<sensor_cb> cb) { this->cb = cb;}
+  void RegisterCB(boost::shared_ptr<asd::channels::ISingleThreaded> st) { this->st = st;}
   void GetAPI(boost::shared_ptr<sensor_api>* api) { *api = boost::static_pointer_cast<sensor_api> (shared_from_this()); }
   void reset(){}
   void enable(){}
@@ -48,6 +51,9 @@ public:
 
   static boost::shared_ptr<sensorInterface> GetInstance();
   static void ReleaseInstance();
+
+  static void triggered();
+  static void disabled();
 };
 
 #endif
