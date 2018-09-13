@@ -104,7 +104,11 @@
     (when gdzn-debug?
       (stderr "parse-tree:\n")
       (pretty-print (om->list parse-tree)))
-    (parse-tree->ast parse-tree #:string string #:file-name file-name)))
+    (let ((ast (parse-tree->ast parse-tree #:string string #:file-name file-name)))
+      (when gdzn-debug?
+        (stderr "ast:\n")
+        (pretty-print (om->list ast)))
+      ast)))
 
 (define (find-model-file o)
   (let ((grep (lambda (dir) (gulp-pipe (format #f "grep -El '^(component|interface|enum|extern|int) ~a' ~a/~a.dzn ~a/*.dzn 2>/dev/null ||:" o dir o dir)))))

@@ -38,7 +38,10 @@
 
   #:use-module (system base compile)
 
-  #:export (peg:parse))
+  #:export (peg:parse %peg-locations? %skip-parser?))
+
+(define %peg-locations? #f)
+(define %skip-parser? #f)
 
 (define-syntax my-define-sexp-parser
   (lambda (x)
@@ -64,14 +67,15 @@
 
 (define (wrap-parser-for-users for-syntax parser accumsym s-syn)
   #`(lambda (str strlen pos)
-      (when (gdzn:command-line:get 'debug)
+      (when (and #t (gdzn:debugity) (> (length (gdzn:debugity)) 1)) ;; PEG debug only with -d -d
         (format (current-error-port) "~a ~a : ~s\n"
                 (make-string (- pos (or (string-rindex str #\newline 0 pos) 0)) #\space)
                 '#,s-syn
                 (substring str pos (min (+ pos 40) strlen))))
 
-      (let* ((comment-res (comment str strlen pos))
-             (pos (or (and comment-res (car comment-res)) pos))
+      (let* ((comment-res (if %skip-parser? (list pos '())
+                              (comment str strlen pos)))
+             (pos (and comment-res (car comment-res) pos))
              (res (#,parser str strlen pos)))
         ;; Try to match the nonterminal.
         (if res
@@ -80,8 +84,9 @@
             (let* ((at (car res))
                    (body (cadr res))
                    (loc `(location ,pos ,at))
-                   (annotate (if (null? (cadr comment-res)) `(,loc)
-                                 `((comment ,(cadr comment-res)) ,loc))))
+                   (annotate (if (not %peg-locations?) '()
+                                 (if (null? (cadr comment-res)) `(,loc)
+                                     `((comment ,(cadr comment-res)) ,loc)))))
               #,(cond
                  ((eq? accumsym 'name)
                   #``(,at ,'#,s-syn ,@annotate))
@@ -100,18 +105,6 @@
             #f))))
 
 (module-define! (resolve-module '(peg codegen)) 'wrap-parser-for-users wrap-parser-for-users)
-
-(define (line-column input pos)
-    (let* ((length (string-length input))
-           (pos (let loop ((pos pos))
-                  (if (and (< pos length) (char-whitespace? (string-ref input pos))) (loop (1+ pos)) pos))))
-      (let loop ((lines (string-split input #\newline)) (ln 1) (p 0))
-      (if (null? lines) (values #f #f input)
-          (let* ((line (car lines))
-                 (length (string-length line))
-                 (end (+ p length 1)))
-            (if (<= pos end) (values ln (- pos p) line)
-                (loop (cdr lines) (1+ ln) end)))))))
 
 (define (peg:parse string)
 
@@ -162,7 +155,6 @@ extern <-- EXTERN compound-name# data# SEMICOLON#
 interface <-- INTERFACE reset-event-names compound-name# BRACE-OPEN# types-or-events# behaviour# BRACE-CLOSE#
 
 types-or-events <-- (type / extern / event)+
-
 
 formal-parameter <-- (INOUT / IN / OUT)? type-name name
 
@@ -236,6 +228,7 @@ return-statement <-- RETURN expression? SEMICOLON#
 
 
 
+integer <- UNARY-MINUS? unsigned
 
 integer <- UNARY-MINUS? unsigned
 
@@ -394,6 +387,10 @@ KEYWORD <
 
 ")
 
+  (set! %peg-locations? #t)
+  (set! %skip-parser? #t)
   (let* ((result (match-pattern root string))
          (tree (peg:tree result)))
+    (set! %peg-locations? #f)
+    (set! %skip-parser? #f)
     tree))

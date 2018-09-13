@@ -388,6 +388,9 @@
 (define-class <ast-node> ()
   (comment #:getter .comment #:init-value #f #:init-keyword #:comment))
 
+(define-method (.comment (o <ast>))
+  (.comment (.node o)))
+
 (define-ast <ast-list> (<ast>)
   (elements #:init-form (list)))
 
