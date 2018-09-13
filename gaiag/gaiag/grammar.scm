@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -67,7 +68,31 @@
             ;; If we didn't match, just return false.
             #f))))
 
+(define (cg-expect-int clauses accum str strlen at)
+  (syntax-case clauses ()
+    ((pat)
+     #`(or (#,(compile-peg-pattern #'pat accum) #,str #,strlen #,at)
+           (throw 'parse-error (list #,at (syntax->datum #'pat)))))))
+
+(define (cg-expect clauses accum)
+  #`(lambda (str len pos)
+      #,(cg-expect-int clauses ((@@ (ice-9 peg codegen) baf) accum) #'str #'len #'pos)))
+
+(add-peg-compiler! 'expect cg-expect)
+
 (module-define! (resolve-module '(ice-9 peg codegen)) 'wrap-parser-for-users wrap-parser-for-users)
+
+(define (line-column input pos)
+    (let* ((length (string-length input))
+           (pos (let loop ((pos pos))
+                  (if (and (< pos length) (char-whitespace? (string-ref input pos))) (loop (1+ pos)) pos))))
+      (let loop ((lines (string-split input #\newline)) (ln 1) (p 0))
+      (if (null? lines) (values #f #f input)
+          (let* ((line (car lines))
+                 (length (string-length line))
+                 (end (+ p length 1)))
+            (if (<= pos end) (values ln (- pos p) line)
+                (loop (cdr lines) (1+ ln) end)))))))
 
 (define (peg:parse input)
   (define-syntax xNN
@@ -114,7 +139,7 @@
   (xNN  xSQUARE-BRACKET-CLOSE SQUARE-BRACKET-CLOSE)
   (xNN  xPARENTHESIS-OPEN PARENTHESIS-OPEN)
   (xNN  xPARENTHESIS-CLOSE PARENTHESIS-CLOSE)
-  (xNN  xSEMICOLON SEMICOLON)
+  (xNN  xSEMICOLON (expect SEMICOLON))
   (xNN  xCOLON COLON)
   (xNN  xDOT-DOT DOT-DOT)
   (xNN  xDOT DOT)
@@ -136,7 +161,7 @@
   (xNN  xNOT NOT)
 
   (define-peg-string-patterns
-"root <--
+    "xroot <--
     (w top)* w
 
 top <-
@@ -146,6 +171,7 @@ top <-
   / extern
   / interface
   / component
+  / !.
 
 import <--
     IMPORT w (!SEMICOLON .)* xSEMICOLON
@@ -507,10 +533,16 @@ KEYWORD <
   / TRUE
 
 ")
+  (define-peg-pattern root all (and (* (and w (expect top))) w))
 
   (set! %peg-locations? #t)
-  (let* ((result (match-pattern root input))
-         (end (peg:end result))
-         (tree (peg:tree result)))
-    (set! %peg-locations? #f)
-    tree))
+  (catch 'parse-error (lambda ()
+                        (let* ((result (match-pattern root input))
+                               (end (peg:end result))
+                               (tree (peg:tree result)))
+                          (set! %peg-locations? #f)
+                          tree))
+    (lambda (key . args)
+      (receive (ln col line) (line-column input (caar args))
+        (format #t ":~a:~a\n~a\n~a^\n~aexpected ~a\n" ln col line (make-string col #\space) (make-string col #\space) (cadar args)))
+      '())))
