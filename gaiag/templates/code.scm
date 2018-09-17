@@ -109,3 +109,5 @@
 (define-templates main-event-map-match-return code:main-event-map-match-return)
 (define-templates main-required-port-name ast:required main-port-name-infix)
 (define-templates version-assert)
+(define-templates calls (lambda (o) (filter (negate ast:async?) (ast:void-in-triggers o))))
+(define-templates rcalls ast:valued-in-triggers)

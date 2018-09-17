@@ -48,6 +48,7 @@
   #:export (
            ast:argument->formal
            ast:async-out-triggers
+           ast:async?
            ast:clr-events
            ast:direction
            ast:dzn-scope?
@@ -117,6 +118,7 @@
 (define-method (ast:formal* (o <formals>)) (.elements o))
 (define-method (ast:function* (o <functions>)) (.elements o))
 (define-method (ast:instance* (o <instances>)) (.elements o))
+(define-method (ast:async? (o <trigger>)) (parent (.port o) <behaviour>))
 (define-method (ast:port* (o <ports>)) (.elements o))
 (define-method (ast:port* (o <behaviour>)) ((compose .elements .ports) o))
 (define-method (ast:global* (o <root>)) (.elements o))
