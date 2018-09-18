@@ -41,13 +41,16 @@
 
 (define (wrap-parser-for-users for-syntax parser accumsym s-syn)
   #`(lambda (str strlen pos)
-      (when (gdzn:command-line:get 'debug)
+      (when (or #f (gdzn:command-line:get 'debug))
         (format (current-error-port) "~a ~a : ~s\n"
                 (make-string (- pos (or (string-rindex str #\newline 0 pos) 0)) #\space)
                 '#,s-syn
                 (substring str pos (min (+ pos 40) strlen))))
 
       (let* ((res (#,parser str strlen pos)))
+        (and #f res (format (current-error-port) "~a: ~s\n"
+                         '#,s-syn
+                         (substring str pos (min (+ pos 40) strlen))))
         ;; Try to match the nonterminal.
         (if res
             ;; If we matched, do some post-processing to figure out
@@ -158,45 +161,51 @@ port <-- port-direction w compound-name# w name# w SEMICOLON#
 
 port-direction <-- PROVIDES (w EXTERNAL)? / REQUIRES ( w INJECTED / w EXTERNAL)?
 
-behaviour <-- BEHAVIOUR (w name)? w BRACE-OPEN# (w (type / function-declaration
-   / variable-declaration
-   / declarative-statement))* w BRACE-CLOSE#
+behaviour <-- BEHAVIOUR (w name)? w BRACE-OPEN#
+  (w (function-declaration / variable-declaration / declarative-statement / type))*
+  w BRACE-CLOSE#
 
 behaviour-statement <- declarative-statement / imperative-statement
 
 declarative-statement <- on / blocking-statement / guarded-statement / compound
 
-imperative-statement <- action-or-call / assign / if-statement / illegal-statement
-    / compound / reply-statement / return-statement / variable-declaration / skip
+imperative-statement <- (reply / action-or-call / interface-action-or-call) w SEMICOLON /
+                        assign / if-statement / illegal-statement / compound /
+                        return-statement / variable-declaration / skip
 
 compound <-- BRACE-OPEN (w behaviour-statement)* w BRACE-CLOSE#
 
-on <-- on-literal w triggers w COLON# w behaviour-statement
+on <-- ON w triggers# w COLON# w behaviour-statement#
 
-action-or-call <- (action / call) w SEMICOLON
+interface-action-or-call <- (interface-action / interface-call)
 
-action <-- (is-event / name DOT name) (w PAREN-OPEN (w argument (w COMMA w argument)*)? w PAREN-CLOSE#)?
+argument-list <- w PAREN-OPEN (w argument (w COMMA w argument)*)? w PAREN-CLOSE#
 
-call <-- !is-event name (w PAREN-OPEN (w argument (w COMMA w argument)*)? w PAREN-CLOSE#)?
+interface-action <-- is-event / name DOT name
+
+action-or-call <- (action / call)
+
+action <-- (is-event / name DOT name) argument-list
+
+interface-call <-- !is-event name
+
+call <-- !is-event name argument-list
 
 
 guarded-statement <-- BRACKET-OPEN w guard# w BRACKET-CLOSE# w behaviour-statement#
 
-guard <-- expression / OTHERWISE
+guard <-- OTHERWISE / expression
 
 skip <-- skip-haakjes
 
 skip-haakjes < w SEMICOLON
 
-on-literal < ON
+triggers <-- trigger (w COMMA w trigger)*
 
-triggers <-- OPTIONAL / INEVITABLE / trigger# (w COMMA w trigger#)*
-
-trigger <-- (is-event / name DOT name)
-   (w PAREN-OPEN (w argument (w COMMA w argument)*)? w PAREN-CLOSE#)?
+trigger <-- (is-event / OPTIONAL / INEVITABLE / name DOT name) argument-list?
 
 
-argument <-- expression
+argument <-- !PAREN-CLOSE expression
 
 blocking-statement <-- BLOCKING w behaviour-statement
 
@@ -206,7 +215,7 @@ assign <-- var w EQUAL w expression w SEMICOLON#
 
 if-statement <-- IF w PAREN-OPEN# w expression w PAREN-CLOSE# w imperative-statement (w ELSE w imperative-statement)?
 
-reply-statement <-- (compound-name DOT)? REPLY w PAREN-OPEN# (w expression)? w PAREN-CLOSE# w SEMICOLON#
+reply <-- (name DOT)? REPLY w PAREN-OPEN# (w expression)? w PAREN-CLOSE#
 
 return-statement <-- RETURN w expression? w SEMICOLON#
 
@@ -215,10 +224,10 @@ return-statement <-- RETURN w expression? w SEMICOLON#
 
 integer <-- (UNARY-MINUS w)? unsigned
 
-unsigned <- NUM+
+unsigned <- [0-9]+
 
 
-identifier <- !KEYWORD (ALPHA ALPHANUM*)
+identifier <- !KEYWORD ([a-zA-Z_] [a-zA-Z_0-9]*)
 
 line-comment <-- COMMENT (!end-of-line .)* end-of-line
 
@@ -233,7 +242,7 @@ compound-name <-- DOT? name (DOT name)*
 
 name <-- identifier
 
-var <- identifier
+var <-- identifier
 
 direction <-- IN / OUT
 
@@ -245,20 +254,20 @@ function-declaration <-- type-name w name w
     PAREN-OPEN (w formal-parameter (w COMMA w formal-parameter)*)? w PAREN-CLOSE# w
     BRACE-OPEN# (w imperative-statement)* w BRACE-CLOSE#
 
-variable-declaration <-- type-name w name (w EQUAL w expression)? w SEMICOLON#
+variable-declaration <-- type-name w name (w EQUAL w expression#)? w SEMICOLON#
 
-expression <-- or-expression (w LEFT-ARROW w or-expression)?
-or-expression <-- and-expression (w OR w or-expression)?
-and-expression <-- compare-expression (w AND w and-expression)?
-compare-expression <-- plus-min-expression (w compare-operator w plus-min-expression)?
+expression <-- or-expression (w LEFT-ARROW w or-expression#)?
+or-expression <-- and-expression (w OR w or-expression#)?
+and-expression <-- compare-expression (w AND w and-expression#)?
+compare-expression <-- plus-min-expression (w compare-operator w plus-min-expression#)?
 compare-operator <-- IS-EQUAL / IS-NOT-EQUAL / IS-LESS-EQUAL / IS-LESS / IS-GREATER-EQUAL / IS-GREATER
-plus-min-expression <-- not-expression (w (PLUS / MINUS) w not-expression)*
-not-expression <-- NOT w not-expression / base-expression
+plus-min-expression <-- not-expression (w (PLUS / MINUS) w not-expression#)*
+not-expression <-- NOT w not-expression# / base-expression
 
-base-expression <-- named-expression / int-constant-expression
-    / bool-constant-expression / paren-expression / dollar-expression
+base-expression <-- named-expression / int-constant-expression /
+                    bool-constant-expression / paren-expression / dollar-expression
 
-named-expression <-- action-or-call / var / literal
+named-expression <-- action-or-call / literal / var
 
 literal <-- name (DOT name)+
 
@@ -322,70 +331,66 @@ MINUS               <  '-'
 NOT                 <  '!'
 
 
-BEHAVIOUR           <  'behaviour' !ALPHANUM
-BLOCKING            <- 'blocking' !ALPHANUM
-BOOL                <- 'bool' !ALPHANUM
-COMPONENT           <  'component' !ALPHANUM
-ELSE                <  'else' !ALPHANUM
-ENUM                <  'enum' !ALPHANUM
-EXTERN              <  'extern' !ALPHANUM
-EXTERNAL            <- 'external' !ALPHANUM
-FALSE               <  'false' !ALPHANUM
-IF                  <  'if' !ALPHANUM
-ILLEGAL             <- 'illegal' !ALPHANUM
-IMPORT              <  'import' !ALPHANUM
-IN                  <- 'in' !ALPHANUM
-INEVITABLE          <- 'inevitable' !ALPHANUM
-INJECTED            <  'injected' !ALPHANUM
-INOUT               <- 'inout' !ALPHANUM
-INTERFACE           <  'interface' !ALPHANUM
-NAMESPACE           <  'namespace' !ALPHANUM
-ON                  <  'on' !ALPHANUM
-OPTIONAL            <- 'optional' !ALPHANUM
-OTHERWISE           <- 'otherwise' !ALPHANUM
-OUT                 <- 'out' !ALPHANUM
-PROVIDES            <- 'provides' !ALPHANUM
-REPLY               <  'reply' !ALPHANUM
-REQUIRES            <- 'requires' !ALPHANUM
-RETURN              <  'return' !ALPHANUM
-SUBINT              <  'subint' !ALPHANUM
-SYSTEM              <  'system' !ALPHANUM
-TRUE                <- 'true' !ALPHANUM
-
-ALPHA               <- [a-zA-Z_]
-NUM                 <- [0-9]
-ALPHANUM            <- ALPHA / NUM
+BEHAVIOUR           <  'behaviour' ![a-zA-Z_0-9]
+BLOCKING            <- 'blocking' ![a-zA-Z_0-9]
+BOOL                <- 'bool' ![a-zA-Z_0-9]
+COMPONENT           <  'component' ![a-zA-Z_0-9]
+ELSE                <  'else' ![a-zA-Z_0-9]
+ENUM                <  'enum' ![a-zA-Z_0-9]
+EXTERN              <  'extern' ![a-zA-Z_0-9]
+EXTERNAL            <- 'external' ![a-zA-Z_0-9]
+FALSE               <  'false' ![a-zA-Z_0-9]
+IF                  <  'if' ![a-zA-Z_0-9]
+ILLEGAL             <- 'illegal' ![a-zA-Z_0-9]
+IMPORT              <  'import' ![a-zA-Z_0-9]
+IN                  <- 'in' ![a-zA-Z_0-9]
+INEVITABLE          <- 'inevitable' ![a-zA-Z_0-9]
+INJECTED            <  'injected' ![a-zA-Z_0-9]
+INOUT               <- 'inout' ![a-zA-Z_0-9]
+INTERFACE           <  'interface' ![a-zA-Z_0-9]
+NAMESPACE           <  'namespace' ![a-zA-Z_0-9]
+ON                  <  'on' ![a-zA-Z_0-9]
+OPTIONAL            <- 'optional' ![a-zA-Z_0-9]
+OTHERWISE           <- 'otherwise' ![a-zA-Z_0-9]
+OUT                 <- 'out' ![a-zA-Z_0-9]
+PROVIDES            <- 'provides' ![a-zA-Z_0-9]
+REPLY               <  'reply' ![a-zA-Z_0-9]
+REQUIRES            <- 'requires' ![a-zA-Z_0-9]
+RETURN              <  'return' ![a-zA-Z_0-9]
+SUBINT              <  'subint' ![a-zA-Z_0-9]
+SYSTEM              <  'system' ![a-zA-Z_0-9]
+TRUE                <- 'true' ![a-zA-Z_0-9]
 
 KEYWORD <
-    BEHAVIOUR
-  / BLOCKING
-  / BOOL
-  / COMPONENT
-  / ELSE
-  / ENUM
-  / EXTERN
-  / EXTERNAL
-  / FALSE
-  / IF
-  / ILLEGAL
-  / IMPORT
-  / IN
-  / INEVITABLE
-  / INJECTED
-  / INOUT
-  / INTERFACE
-  / NAMESPACE
-  / ON
-  / OPTIONAL
-  / OTHERWISE
-  / OUT
-  / PROVIDES
-  / REPLY
-  / REQUIRES
-  / RETURN
-  / SUBINT
-  / SYSTEM
-  / TRUE
+  ( 'behaviour'
+  / 'blocking'
+  / 'bool'
+  / 'component'
+  / 'else'
+  / 'enum'
+  / 'extern'
+  / 'external'
+  / 'false'
+  / 'if'
+  / 'illegal'
+  / 'import'
+  / 'in'
+  / 'inevitable'
+  / 'injected'
+  / 'inout'
+  / 'interface'
+  / 'namespace'
+  / 'on'
+  / 'optional'
+  / 'otherwise'
+  / 'out'
+  / 'provides'
+  / 'reply'
+  / 'requires'
+  / 'return'
+  / 'subint'
+  / 'system'
+  / 'true' ) ![a-zA-Z_0-9]
 
 ")
 
