@@ -150,19 +150,18 @@ interface <-- INTERFACE reset-event-names w compound-name# w BRACE-OPEN# types-a
 
 types-and-events <-- (w type / w extern / w event)*
 
-event <-- direction w type-name# w event-name# w
-   PAREN-OPEN#(w formal-parameter (w COMMA w formal-parameter)*)? w PAREN-CLOSE# w SEMICOLON#
+event <-- direction w type-name# w event-name# w formal-list w SEMICOLON#
 
 component <-- COMPONENT reset-event-names w compound-name# w BRACE-OPEN# ports (w behaviour / w system-declaration)? w BRACE-CLOSE#
 
 ports <-- (w port)*
 
-port <-- port-direction w compound-name# w name# w SEMICOLON#
+port <-- port-direction w compound-name# w formal-list? w name# w SEMICOLON#
 
 port-direction <-- PROVIDES (w EXTERNAL)? / REQUIRES ( w INJECTED / w EXTERNAL)?
 
 behaviour <-- BEHAVIOUR (w name)? w BRACE-OPEN#
-  (w (function-declaration / variable-declaration / declarative-statement / type))*
+  (w (port / function-declaration / variable-declaration / declarative-statement / type))*
   w BRACE-CLOSE#
 
 behaviour-statement <- declarative-statement / imperative-statement
@@ -250,13 +249,14 @@ type-name <-- compound-name / BOOL
 
 formal-parameter <-- ((INOUT / IN / OUT) w)? type-name w name
 
-function-declaration <-- type-name w name w
-    PAREN-OPEN (w formal-parameter (w COMMA w formal-parameter)*)? w PAREN-CLOSE# w
+formal-list <- PAREN-OPEN (w formal-parameter (w COMMA w formal-parameter)*)? w PAREN-CLOSE#
+
+function-declaration <-- type-name w name w formal-list w
     BRACE-OPEN# (w imperative-statement)* w BRACE-CLOSE#
 
 variable-declaration <-- type-name w name (w EQUAL w expression#)? w SEMICOLON#
 
-expression <-- or-expression (w LEFT-ARROW w or-expression#)?
+expression <-- or-expression
 or-expression <-- and-expression (w OR w or-expression#)?
 and-expression <-- compare-expression (w AND w and-expression#)?
 compare-expression <-- plus-min-expression (w compare-operator w plus-min-expression#)?
@@ -267,9 +267,11 @@ not-expression <-- NOT w not-expression# / base-expression
 base-expression <-- named-expression / int-constant-expression /
                     bool-constant-expression / paren-expression / dollar-expression
 
-named-expression <-- action-or-call / literal / var
+named-expression <-- action-or-call / literal / blocking-binding / var
 
 literal <-- name (DOT name)+
+
+blocking-binding <-- var w LEFT-ARROW w var
 
 int-constant-expression <-- integer
 
