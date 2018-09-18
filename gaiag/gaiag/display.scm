@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -52,7 +52,7 @@
          (cond ((eq? name 'elements)
                 (if (pair? value)
                     (for-each (lambda (x) (sdisplay x port)) value)
-                    (format (current-error-port) "<<barf: elements not a pair>> ")))
+                    (format (current-error-port) "<<barf: elements not a pair>> ~a\n" value)))
                (else (sdisplay value port))))))
    (class-slots (class-of o))))
 

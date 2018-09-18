@@ -21,9 +21,9 @@
 ;;; 
 ;;; Code:
 
-(use-modules (peg))
-(use-modules (peg cache))
-(use-modules (peg codegen))
+(use-modules (gaiag peg))
+(use-modules (gaiag peg cache))
+(use-modules (gaiag peg codegen))
 (use-modules (ice-9 pretty-print))
 (use-modules (ice-9 receive))
 
@@ -44,14 +44,15 @@
   ;; (define-peg-pattern rest all (* peg-any))
 
   (define-peg-string-patterns
-    "grammar    <--  (if-then / statement) !.#
-    if-then     <--  'if' ws then ws* else?
+    "grammar    <--  (if-then / statement) eof#
+    eof         <    !.
+    if-then     <--  'if' ws then# ws* else?
     ws          <--  [ \n\t]+
-    then        <--  'then' ws* (statement / block)
+    then        <--  'then' ws* (block / statement)
     block       <--  '{' (ws / statement)* '}'#
-    else        <--  'else' ws* (statement / block)#
-    statement   <--  if-then / assignment ws* ';'#
-    assignment  <--  identifier ws* '=' ws* identifier
+    else        <--  'else' ws* (block / statement)#
+    statement   <--  if-then / assignment ws* ';'# / ';'
+    assignment  <--  identifier ws* '=' ws* identifier#
     identifier  <--  [a-zA-Z][a-zA-Z0-9_]*"
     )
 
@@ -79,3 +80,5 @@
 
 ;;(parse "ab")
 (parse "if then if then {} else")
+(parse "if then { a = ")
+(parse "if then { a = b; } else ")

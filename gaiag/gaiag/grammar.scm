@@ -25,10 +25,13 @@
 (define-module (gaiag grammar)
   #:use-module (srfi srfi-1)
 
+  #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 receive)
-  #:use-module (ice-9 peg)
-  #:use-module (ice-9 peg cache)
-  #:use-module (ice-9 peg codegen)
+
+  #:use-module (peg)
+  #:use-module (peg cache)
+  #:use-module (peg codegen)
+  #:use-module (peg string-peg)
 
   #:use-module (gaiag command-line)
 
@@ -80,7 +83,7 @@
 
 (add-peg-compiler! 'expect cg-expect)
 
-(module-define! (resolve-module '(ice-9 peg codegen)) 'wrap-parser-for-users wrap-parser-for-users)
+(module-define! (resolve-module '(peg codegen)) 'wrap-parser-for-users wrap-parser-for-users)
 
 (define (line-column input pos)
     (let* ((length (string-length input))
@@ -95,215 +98,91 @@
                 (loop (cdr lines) (1+ ln) end)))))))
 
 (define (peg:parse input)
-  (define-syntax xNN
-    (syntax-rules ()
-      ((_ xname name)
-       (define-peg-pattern xname none (or name (and (not-followed-by name) error))))))
 
-  (define-peg-pattern COMMENT-OPEN none "/*")
-  (define-peg-pattern COMMENT-CLOSE none "*/")
-  (define-peg-pattern START-LINE-COMMENT none "//")
-  (define-peg-pattern CURLY-BRACKET-OPEN none "{")
-  (define-peg-pattern CURLY-BRACKET-CLOSE none "}")
-  (define-peg-pattern SQUARE-BRACKET-OPEN none "[")
-  (define-peg-pattern SQUARE-BRACKET-CLOSE none "]")
-  (define-peg-pattern PARENTHESIS-OPEN none "(")
-  (define-peg-pattern PARENTHESIS-CLOSE none ")")
-  (define-peg-pattern SEMICOLON none ";")
-  (define-peg-pattern COLON none ":")
-  (define-peg-pattern DOT-DOT none "..")
-  (define-peg-pattern DOT none ".")
-  (define-peg-pattern COMMA none ",")
-  (define-peg-pattern BIND none "<=>")
-  (define-peg-pattern EQUAL none "=")
-  (define-peg-pattern STAR none "*")
-  (define-peg-pattern LEFT-ARROW none "<-")
-  (define-peg-pattern OR none "||")
-  (define-peg-pattern AND none "&&")
-  (define-peg-pattern IS-EQUAL none "==")
-  (define-peg-pattern IS-NOT-EQUAL none "!=")
-  (define-peg-pattern IS-LESS none "<")
-  (define-peg-pattern IS-LESS-EQUAL none "<=")
-  (define-peg-pattern IS-GREATER none ">")
-  (define-peg-pattern IS-GREATER-EQUAL none ">=")
-  (define-peg-pattern PLUS none "+")
-  (define-peg-pattern MINUS none "-")
-  (define-peg-pattern UNARY-MINUS body "-")
-  (define-peg-pattern NOT none "!")
-  (xNN  xCOMMENT-OPEN COMMENT-OPEN)
-  (xNN  xCOMMENT-CLOSE COMMENT-CLOSE)
-  (xNN  xSTART-LINE-COMMENT START-LINE-COMMENT)
-  (xNN  xCURLY-BRACKET-OPEN CURLY-BRACKET-OPEN)
-  (xNN  xCURLY-BRACKET-CLOSE CURLY-BRACKET-CLOSE)
-  (xNN  xSQUARE-BRACKET-OPEN SQUARE-BRACKET-OPEN)
-  (xNN  xSQUARE-BRACKET-CLOSE SQUARE-BRACKET-CLOSE)
-  (xNN  xPARENTHESIS-OPEN PARENTHESIS-OPEN)
-  (xNN  xPARENTHESIS-CLOSE PARENTHESIS-CLOSE)
-  (xNN  xSEMICOLON (expect SEMICOLON))
-  (xNN  xCOLON COLON)
-  (xNN  xDOT-DOT DOT-DOT)
-  (xNN  xDOT DOT)
-  (xNN  xCOMMA COMMA)
-  (xNN  xBIND BIND)
-  (xNN  xEQUAL EQUAL)
-  (xNN  xSTAR STAR)
-  (xNN  xLEFT-ARROW LEFT-ARROW)
-  (xNN  xOR OR)
-  (xNN  xAND AND)
-  (xNN  xIS-EQUAL IS-EQUAL)
-  (xNN  xIS-NOT-EQUAL IS-NOT-EQUAL)
-  (xNN  xIS-LESS IS-LESS)
-  (xNN  xIS-LESS-EQUAL IS-LESS-EQUAL)
-  (xNN  xIS-GREATER IS-GREATER)
-  (xNN  xIS-GREATER-EQUAL IS-GREATER-EQUAL)
-  (xNN  xPLUS PLUS)
-  (xNN  xMINUS MINUS)
-  (xNN  xNOT NOT)
+  (define interface-events '())
+
+  (define-peg-pattern always none (followed-by peg-any))
+
+  (define (-reset-event-names- str len pos)
+    (set! interface-events '())
+    (always str len pos))
+  (define-peg-pattern reset-event-names none -reset-event-names-)
+
+  (define (-event-name- str len pos)
+    (let ((res (identifier str len pos)))
+      (when res
+        (set! interface-events (cons (substring str pos (car res)) interface-events)))
+      res))
+  (define-peg-pattern event-name body -event-name-)
+
+  (define (-is-event- str len pos)
+    (let ((res (identifier str len pos)))
+      (and res (member (substring str pos (car res)) interface-events) res)))
+  (define-peg-pattern is-event body -is-event-)
 
   (define-peg-string-patterns
-    "xroot <--
-    (w top)* w
+    "root <-- (w elements)* w eof#
 
-top <-
-    import
-  / namespace
-  / type
-  / extern
-  / interface
-  / component
-  / !.
+eof < !.
 
-import <--
-    IMPORT w (!SEMICOLON .)* xSEMICOLON
+elements <- import / namespace / type / extern / interface / component / data
 
-namespace <--
-    NAMESPACE w compound-name w
-    xCURLY-BRACKET-OPEN
-      (w top)* w
-    xCURLY-BRACKET-CLOSE
+import <-- IMPORT w (!SEMICOLON .)* SEMICOLON#
 
-type <-
-    enum
-  / int
+namespace <-- NAMESPACE w compound-name# w BRACE-OPEN#(w elements)* w BRACE-CLOSE#
 
-enum <--
-    ENUM w compound-name w
-    xCURLY-BRACKET-OPEN w
-      fields w
-    xCURLY-BRACKET-CLOSE w xSEMICOLON
+type <- enum / int
 
-fields <--
-    name (w COMMA w name)*
+enum <-- ENUM w compound-name# w BRACE-OPEN# w fields# w BRACE-CLOSE# w SEMICOLON#
 
-int <--
-    SUBINT w compound-name w
-    xCURLY-BRACKET-OPEN w
-      range
-    xCURLY-BRACKET-CLOSE w xSEMICOLON
+fields <-- name (w COMMA w name)*
 
-range <--
-    integer w xDOT-DOT w integer w
+int <-- SUBINT w compound-name# w BRACE-OPEN# w range# BRACE-CLOSE# w SEMICOLON#
 
-extern <--
-    EXTERN w compound-name w dollar-string w xSEMICOLON
+range <-- integer w '..'# w integer# w
 
-interface <--
-    INTERFACE w compound-name w
-    xCURLY-BRACKET-OPEN
-      types-and-events
-      (w behaviour)? w
-    xCURLY-BRACKET-CLOSE
+extern <-- EXTERN w compound-name# w data# w SEMICOLON#
 
-types-and-events <--
-    (w type / w extern / w event)*
+interface <-- INTERFACE reset-event-names w compound-name# w BRACE-OPEN# types-and-events (w behaviour)? w BRACE-CLOSE#
 
-event <--
-    direction w type-name w name w
-    xPARENTHESIS-OPEN
-      (w formal-parameter (w COMMA w formal-parameter)*)? w
-    xPARENTHESIS-CLOSE w xSEMICOLON
+types-and-events <-- (w type / w extern / w event)*
 
-component <--
-   COMPONENT w compound-name w
-   xCURLY-BRACKET-OPEN
-     ports
-     (w behaviour / w system-declaration)? w
-   xCURLY-BRACKET-CLOSE
+event <-- direction w type-name# w event-name# w
+   PAREN-OPEN#(w formal-parameter (w COMMA w formal-parameter)*)? w PAREN-CLOSE# w SEMICOLON#
+
+component <-- COMPONENT reset-event-names w compound-name# w BRACE-OPEN# ports (w behaviour / w system-declaration)? w BRACE-CLOSE#
 
 ports <-- (w port)*
 
-port <-- port-direction w compound-name w name w xSEMICOLON
+port <-- port-direction w compound-name# w name# w SEMICOLON#
 
-port-direction <--
-    PROVIDES (w EXTERNAL)?
-  / REQUIRES ( w INJECTED / w EXTERNAL)?
+port-direction <-- PROVIDES (w EXTERNAL)? / REQUIRES ( w INJECTED / w EXTERNAL)?
 
-behaviour <--
-    BEHAVIOUR (w name)? w
-    xCURLY-BRACKET-OPEN (w type)*
-      (w function-declaration / w variable-declaration / w behaviour-statement)* w
-    xCURLY-BRACKET-CLOSE
-
-
-
-
+behaviour <-- BEHAVIOUR (w name)? w BRACE-OPEN# (w (type / function-declaration
+   / variable-declaration
+   / declarative-statement))* w BRACE-CLOSE#
 
 behaviour-statement <- declarative-statement / imperative-statement
 
-declarative-statement <-
-    blocking-statement
-  / compound
-  / guarded-statement
-  / on
+declarative-statement <- on / blocking-statement / guarded-statement / compound
 
-imperative-statement <-
-    action-or-call
-  / assignment-statement
-  / if-statement
-  / illegal-statement
-  / imperative-compound
-  / reply-statement
-  / return-statement
-  / skip
+imperative-statement <- action-or-call / assign / if-statement / illegal-statement
+    / compound / reply-statement / return-statement / variable-declaration / skip
 
-declarative-compound
-  <-- CURLY-BRACKET-OPEN declarative-statement-list xCURLY-BRACKET-CLOSE
+compound <-- BRACE-OPEN (w behaviour-statement)* w BRACE-CLOSE#
 
-compound
-  <-- CURLY-BRACKET-OPEN behaviour-statement-list xCURLY-BRACKET-CLOSE
+on <-- on-literal w triggers w COLON# w behaviour-statement
 
-on
-  <-- on-literal w triggers w xCOLON w behaviour-statement
+action-or-call <- (action / call) w SEMICOLON
 
-imperative-compound
-  <-- CURLY-BRACKET-OPEN imperative-statement-list xCURLY-BRACKET-CLOSE
+action <-- (is-event / name DOT name) (w PAREN-OPEN (w argument (w COMMA w argument)*)? w PAREN-CLOSE#)?
 
-imperative-statement-list
-  <-- (variable-declaration w / imperative-statement w)*
-
-action-or-call
-  <-- compound-with-arguments w SEMICOLON
+call <-- !is-event name (w PAREN-OPEN (w argument (w COMMA w argument)*)? w PAREN-CLOSE#)?
 
 
+guarded-statement <-- BRACKET-OPEN w guard# w BRACKET-CLOSE# w behaviour-statement#
 
-
-
-
-
-
-
-guarded-statement <--
-    SQUARE-BRACKET-OPEN w guard w xSQUARE-BRACKET-CLOSE w behaviour-statement
-
-guard
-  <-- expression
-    / OTHERWISE
-
-behaviour-statement-list
-  <-- (variable-declaration w / behaviour-statement w)*
-
-declarative-statement-list
-  <-- (declarative-statement w)*
+guard <-- expression / OTHERWISE
 
 skip <-- skip-haakjes
 
@@ -311,43 +190,25 @@ skip-haakjes < w SEMICOLON
 
 on-literal < ON
 
-triggers
-  <-- (trigger) (w COMMA w trigger)*
-    / OPTIONAL
-    / INEVITABLE
+triggers <-- OPTIONAL / INEVITABLE / trigger# (w COMMA w trigger#)*
 
-trigger
-  <-- compound-with-arguments
-
-compound-with-arguments
-  <-- compound-name (w PARENTHESIS-OPEN (w argument (w COMMA w argument)*)? w xPARENTHESIS-CLOSE)?
-
-argument
-  <-- expression
-
-blocking-statement
-  <-- BLOCKING w behaviour-statement
-
-illegal-statement
-  <-- ILLEGAL w xSEMICOLON
-
-assignment-statement
-  <-- name w EQUAL w expression w xSEMICOLON
-
-if-statement
-  <-- IF w xPARENTHESIS-OPEN w expression w xPARENTHESIS-CLOSE w
-      behaviour-statement
-      (w ELSE w behaviour-statement)?
-
-reply-statement
-  <-- (compound-name DOT)? REPLY w
-      xPARENTHESIS-OPEN (w expression)? w xPARENTHESIS-CLOSE w xSEMICOLON
-
-return-statement
-  <-- RETURN w expression? w xSEMICOLON
+trigger <-- (is-event / name DOT name)
+   (w PAREN-OPEN (w argument (w COMMA w argument)*)? w PAREN-CLOSE#)?
 
 
+argument <-- expression
 
+blocking-statement <-- BLOCKING w behaviour-statement
+
+illegal-statement <-- ILLEGAL w SEMICOLON#
+
+assign <-- var w EQUAL w expression w SEMICOLON#
+
+if-statement <-- IF w PAREN-OPEN# w expression w PAREN-CLOSE# w imperative-statement (w ELSE w imperative-statement)?
+
+reply-statement <-- (compound-name DOT)? REPLY w PAREN-OPEN# (w expression)? w PAREN-CLOSE# w SEMICOLON#
+
+return-statement <-- RETURN w expression? w SEMICOLON#
 
 
 
@@ -357,114 +218,108 @@ integer <-- (UNARY-MINUS w)? unsigned
 unsigned <- NUM+
 
 
-identifier
-  <-- !KEYWORD (ALPHA ALPHANUM*)
+identifier <- !KEYWORD (ALPHA ALPHANUM*)
 
-line-comment
-  <-- START-LINE-COMMENT (!end-of-line .)* end-of-line
+line-comment <-- COMMENT (!end-of-line .)* end-of-line
 
-block-comment
-  <-- COMMENT-OPEN (block-comment / !COMMENT-OPEN !COMMENT-CLOSE .)* xCOMMENT-CLOSE
+block-comment <-- COMMENT-OPEN (block-comment / !COMMENT-OPEN !COMMENT-CLOSE .)* COMMENT-CLOSE#
 
 
-dollar-string <- DOLLAR data DOLLAR
+dollar-string <- (!DOLLAR .)*
 
-data <-- (!DOLLAR .)*
+data <-- DOLLAR dollar-string DOLLAR
 
-compound-name
-  <-- DOT? name (DOT name)*
+compound-name <-- DOT? name (DOT name)*
 
-name
-  <-- identifier
+name <-- identifier
+
+var <- identifier
 
 direction <-- IN / OUT
 
-type-name
-  <-- compound-name
-    / BOOL
+type-name <-- compound-name / BOOL
 
-formal-parameter
-  <-- ((INOUT / IN / OUT) w)? type-name w name
+formal-parameter <-- ((INOUT / IN / OUT) w)? type-name w name
 
-function-declaration
-  <-- type-name w name w
-      PARENTHESIS-OPEN (w formal-parameter (w COMMA w formal-parameter)*)? w
-      xPARENTHESIS-CLOSE w
-      xCURLY-BRACKET-OPEN (w variable-declaration / w function-declaration / w behaviour-statement)* w
-      xCURLY-BRACKET-CLOSE
+function-declaration <-- type-name w name w
+    PAREN-OPEN (w formal-parameter (w COMMA w formal-parameter)*)? w PAREN-CLOSE# w
+    BRACE-OPEN# (w imperative-statement)* w BRACE-CLOSE#
 
-variable-declaration
-  <-- type-name w name (w EQUAL w expression)? w xSEMICOLON
+variable-declaration <-- type-name w name (w EQUAL w expression)? w SEMICOLON#
 
-expression
-  <-- or-expression (w LEFT-ARROW w or-expression)?
-or-expression
-  <-- and-expression (w OR w or-expression)?
-and-expression
-  <-- compare-expression (w AND w and-expression)?
-compare-expression
-  <-- plus-min-expression (w compare-operator w plus-min-expression)?
-compare-operator
-  <-- IS-EQUAL / IS-NOT-EQUAL / IS-LESS-EQUAL / IS-LESS / IS-GREATER-EQUAL / IS-GREATER
-plus-min-expression
-  <-- not-expression (w (PLUS / MINUS) w not-expression)*
-not-expression
-  <-- NOT w not-expression
-    / base-expression
+expression <-- or-expression (w LEFT-ARROW w or-expression)?
+or-expression <-- and-expression (w OR w or-expression)?
+and-expression <-- compare-expression (w AND w and-expression)?
+compare-expression <-- plus-min-expression (w compare-operator w plus-min-expression)?
+compare-operator <-- IS-EQUAL / IS-NOT-EQUAL / IS-LESS-EQUAL / IS-LESS / IS-GREATER-EQUAL / IS-GREATER
+plus-min-expression <-- not-expression (w (PLUS / MINUS) w not-expression)*
+not-expression <-- NOT w not-expression / base-expression
 
-base-expression
-  <-- named-expression
-    / int-constant-expression
-    / bool-constant-expression
-    / paren-expression
-    / dollar-expression
+base-expression <-- named-expression / int-constant-expression
+    / bool-constant-expression / paren-expression / dollar-expression
 
-named-expression
-  <-- compound-with-arguments
+named-expression <-- action-or-call / var / literal
 
-int-constant-expression
-  <-- integer
+literal <-- name (DOT name)+
 
-bool-constant-expression
-  <-- FALSE / TRUE
+int-constant-expression <-- integer
 
-paren-expression
-  <-- PARENTHESIS-OPEN w expression w xPARENTHESIS-CLOSE
+bool-constant-expression <-- FALSE / TRUE
 
-dollar-expression
-  <-- dollar-string
+paren-expression <-- PAREN-OPEN w expression w PAREN-CLOSE#
 
-system-declaration
-  <-- SYSTEM w xCURLY-BRACKET-OPEN (w instantiation-statement / w binding-statement)* w
-      xCURLY-BRACKET-CLOSE
+dollar-expression <-- data
 
-instantiation-statement
-  <-- compound-name w name w xSEMICOLON
+system-declaration <-- SYSTEM w BRACE-OPEN# (w instantiation-statement / w binding-statement)* w BRACE-CLOSE#
 
-binding-statement
-  <-- name-with-wildcard w BIND w name-with-wildcard w xSEMICOLON
+instantiation-statement <-- compound-name w name w SEMICOLON#
+
+binding-statement <-- name-with-wildcard w BIND w name-with-wildcard w SEMICOLON#
 
 name-with-wildcard <-- compound-name (DOT STAR)? / STAR
 
 
 
-white-space
-  <- white-space-char
-   / line-comment
-   / block-comment
+white-space <- white-space-char / line-comment / block-comment
 
-white-space-char
-  < [ \f\n\t\r]
+white-space-char < [ \t] / end-of-line
 
-end-of-line
-  < [\f\n\r]
+end-of-line < [\f\n\r]
 
 w <- (white-space)*
 
 
+UNARY-MINUS         <- '-'
 
-DOLLAR < '$'
-
+DOLLAR              <  '$'
+COMMENT-OPEN        <  '/*'
+COMMENT-CLOSE       <  '*/'
+COMMENT             <  '//'
+BRACE-OPEN          <  '{'
+BRACE-CLOSE         <  '}'
+BRACKET-OPEN        <  '['
+BRACKET-CLOSE       <  ']'
+PAREN-OPEN          <  '('
+PAREN-CLOSE         <  ')'
+SEMICOLON           <  ';'
+COLON               <  ':'
+DOT                 <  '.'
+COMMA               <  ','
+BIND                <  '<=>'
+EQUAL               <  '='
+STAR                <  '*'
+LEFT-ARROW          <  '<-'
+OR                  <  '||'
+AND                 <  '&&'
+IS-EQUAL            <  '=='
+IS-NOT-EQUAL        <  '!='
+IS-LESS             <  '<'
+IS-LESS-EQUAL       <  '<='
+IS-GREATER          <  '>'
+IS-GREATER-EQUAL    <  '>='
+PLUS                <  '+'
+MINUS               <  '-'
+NOT                 <  '!'
 
 
 BEHAVIOUR           <  'behaviour' !ALPHANUM
@@ -533,7 +388,6 @@ KEYWORD <
   / TRUE
 
 ")
-  (define-peg-pattern root all (and (* (and w (expect top))) w))
 
   (set! %peg-locations? #t)
   (catch 'parse-error (lambda ()
@@ -541,8 +395,28 @@ KEYWORD <
                                (end (peg:end result))
                                (tree (peg:tree result)))
                           (set! %peg-locations? #f)
+                          (display "tree:\n")
+                          (pretty-print tree)
+                          (newline)
                           tree))
     (lambda (key . args)
       (receive (ln col line) (line-column input (caar args))
-        (format #t ":~a:~a\n~a\n~a^\n~aexpected ~a\n" ln col line (make-string col #\space) (make-string col #\space) (cadar args)))
-      '())))
+        (let ((indent (make-string col #\space)))
+          (format #t ":~a:~a\n~a\n~a^\n~aexpected ~a\n"
+                  ln col line
+                  indent
+                  indent
+                  (cadar args))
+          (exit 1))))))
+
+(define (line-column input pos)
+  (let* ((length (string-length input))
+         (pos (let loop ((pos pos))
+                (if (and (< pos length) (char-whitespace? (string-ref input pos))) (loop (1+ pos)) pos))))
+    (let loop ((lines (string-split input #\newline)) (ln 1) (p 0))
+      (if (null? lines) (values #f #f input)
+          (let* ((line (car lines))
+                 (length (string-length line))
+                 (end (+ p length 1)))
+            (if (<= pos end) (values ln (- pos p) line)
+                (loop (cdr lines) (1+ ln) end)))))))

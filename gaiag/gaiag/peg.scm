@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -71,14 +72,14 @@
              (clone ast #:location location)
              ast)))
 
-      ((((or 'line-comment 'block-comment) comment ...) sexp)
+      ((((or 'line-comment 'block-comment) comment ...) ..1 sexp)
        (let ((ast (helper sexp))
              (comment (helper (car o))))
          (if (is-a? ast <named-node>) (clone ast #:comment comment)
              ast)))
 
       (('root elements ...)
-       (make <root> #:elements (map helper elements)))
+       (make <root> #:elements (helper elements)))
 
       (('import name)
        (make <import-node> #:name (helper name)))
@@ -89,13 +90,13 @@
       (('namespace name elements)
        (make <namespace-node>
          #:name (helper name)
-         #:elements (map helper elements)))
+         #:elements (helper elements)))
 
       (('enum name fields)
        (make <enum-node> #:name (helper name) #:fields (helper fields)))
 
       (('fields fields ...)
-       (make <fields-node> #:elements (map helper fields)))
+       (make <fields-node> #:elements (helper fields)))
 
       (('int name range)
        (make <int-node> #:name (helper name) #:range (helper range)))
@@ -118,7 +119,7 @@
        (make <sexp-node> #:sexp types-and-events))
 
       (('events events ...)
-       (make <events-node> #:elements (map helper events)))
+       (make <events-node> #:elements (helper events)))
 
       (('event direction type name)
        (helper (append o '((formals)))))
@@ -135,7 +136,7 @@
          #:ports (helper (or (null-is-#f (assoc 'ports body)) '(ports)))
          #:behaviour (and=> (null-is-#f (assoc 'behaviour body)) helper)))
 
-      (('ports ports ...) (make <ports-node> #:elements (map helper ports)))
+      (('ports ports ...) (make <ports-node> #:elements (helper ports)))
 
       (('port direction type name external-injected ...)
        (make <port-node>
@@ -148,22 +149,14 @@
       (('declarative-compound 'behaviour-statement-list)
        (make <error-node> #:message "empty declarative-compound"))
 
-      (('declarative-compound body ...)
-       (make <declarative-compound-node> #:elements (map helper body)))
-
-      (('imperative-compound 'behaviour-statement-list)
-       (make <skip-node>))
-
-      (('imperative-compound body ...)
-       (make <compound-node> #:elements (map helper body)))
-
-      (('compound 'behaviour-statement-list)
-       (make <skip-node>))
+      (('compound)
+       (make <component-node>))
 
       (('compound body ...)
-       (let ((statements (map helper body)))
-         (make (if (and (pair? statements) (is-a? (car statements) <declarative>)) <declarative-compound-node>
-                   <compound-node>) #:elements statements)))
+       (let ((body (helper body)))
+         (make (if (is-a? (car body) <declarative>) <declarative-compound-node>
+                   <compound-node>)
+           #:elements body)))
 
       (('on triggers statement)
        (make <on-node> #:triggers (helper triggers) #:statement (helper statement)))
@@ -173,20 +166,17 @@
          (make <action-node> #:port.name (.scope action-or-call) #:event.name (.name action-or-call))))
 
 
-
-
-
-
-
-
-
       (('triggers triggers ...)
-       (make <triggers-node> #:elements (map helper triggers)))
+       (make <triggers-node> #:elements (helper triggers)))
 
-      (('trigger name)
-       (let* ((name (helper name))
-              (port-name (as (.scope name) <pair>)))
-         (make <trigger-node> #:port.name port-name #:event.name (.name name))))
+      (('trigger event)
+       (let* ((event (helper event)))
+         (make <trigger-node> #:event.name event)))
+
+      (('trigger port event)
+       (let* ((port (helper port))
+              (event (helper event)))
+         (make <trigger-node> #:port.name port #:event.name event)))
 
 
       (('block-comment comment)
@@ -228,11 +218,11 @@
       (('action port event arguments) (make <action-node> #:port.name port #:event.name event #:arguments (helper arguments)))
 
       (('arguments arguments ...) (make <arguments-node>
-                                    #:elements (map helper arguments)))
+                                    #:elements (helper arguments)))
 
-      (('assign variable expression) (make <assign-node>
-                                       #:variable.name variable
-                                       #:expression (helper expression)))
+      (('assign var expression) (make <assign-node>
+                                  #:variable.name var
+                                  #:expression (helper expression)))
 
       (('behaviour ('name name ...) body ...)
        (clone (helper (cons 'behaviour body))
@@ -253,7 +243,7 @@
       (('binding instance port) (make <binding-node> #:instance.name instance #:port.name port))
 
       (('bindings bindings ...)
-       (make <bindings-node> #:elements (map helper bindings)))
+       (make <bindings-node> #:elements (helper bindings)))
 
       (('blocking statement) (make <blocking-node> #:statement (helper statement)))
 
@@ -276,7 +266,7 @@
          #:ports (helper (or (null-is-#f (assoc 'ports body)) '(ports)))))
 
       (('compound statements ...)
-       (make <compound-node> #:elements (map helper statements)))
+       (make <compound-node> #:elements (helper statements)))
 
       (('data value) (make <data-node> #:value value))
 
@@ -292,7 +282,7 @@
          #:statement (helper statement)))
 
       (('functions functions ...)
-       (make <functions-node> #:elements (map helper functions)))
+       (make <functions-node> #:elements (helper functions)))
 
       (('guard expression statement)
        (make <guard-node>
@@ -316,7 +306,7 @@
       (('instance name type) (make <instance-node> #:name name #:type.name (helper type)))
 
       (('instances instances ...)
-       (make <instances-node> #:elements (map helper instances)))
+       (make <instances-node> #:elements (helper instances)))
 
 
       (('enum-literal name field) (make <enum-literal-node> #:type.name (helper name) #:field field))
@@ -344,7 +334,7 @@
        (make <formal-binding-node> #:name name #:type.name (helper type) #:direction direction #:variable.name variable))
 
       (('formals formals ...)
-       (make <formals-node> #:elements (map helper formals)))
+       (make <formals-node> #:elements (helper formals)))
 
 
 
@@ -356,7 +346,7 @@
 
       (('return expression) (make <return-node> #:expression (helper expression)))
 
-      (('root elements ...) (make <root-node> #:elements (map helper elements)))
+      (('root elements ...) (make <root-node> #:elements (helper elements)))
 
       (('signature type formals)
        (make <signature-node> #:type.name (helper type) #:formals (helper formals)))
@@ -376,7 +366,7 @@
 
       (('type name) (make <type-node> #:name (helper name)))
 
-      (('types types ...) (make <types-node> #:elements (map helper types)))
+      (('types types ...) (make <types-node> #:elements (helper types)))
 
       (('var name) (make <var-node> #:variable.name name))
 
@@ -387,7 +377,7 @@
        (make <variable-node> #:name name #:type.name (helper type) #:expression (helper expression)))
 
       (('variables variables ...)
-       (make <variables-node> #:elements (map helper variables)))
+       (make <variables-node> #:elements (helper variables)))
 
       (('<- x y) (list '<- (helper x) (helper y)))
 
@@ -414,12 +404,13 @@
 
       (('location pos end)
        (receive
-        (line column) (line-column pos #t)
-        (receive
-         (end-line end-column) (line-column end #f)
-         (make <location-node> #:file-name file-name #:line line #:column column #:end-line end-line #:end-column end-column #:offset pos #:length (- end pos)))))
+           (line column) (line-column pos #t)
+         (receive
+             (end-line end-column) (line-column end #f)
+           (make <location-node> #:file-name file-name #:line line #:column column #:end-line end-line #:end-column end-column #:offset pos #:length (- end pos)))))
 
       ((? (is? <ast>)) o)
+      ((h ...) (map helper o))
       (_ (format #f "LITERAL: ~s\n" o))))
   (define (line-column pos skip?)
     (let* ((length (string-length string))
@@ -427,11 +418,11 @@
                     (let loop ((pos pos))
                       (if (and (< pos length) (char-whitespace? (string-ref string pos))) (loop (1+ pos)) pos)))))
       (let loop ((lines (string-split string #\newline)) (ln 1) (p 0))
-      (if (null? lines) (values #f #f)
-          (let* ((line (car lines))
-                 (length (string-length line))
-                 (end (+ p length 1)))
-            (if (<= pos end) (values ln (- pos p))
-                (loop (cdr lines) (1+ ln) end)))))))
+        (if (null? lines) (values #f #f)
+            (let* ((line (car lines))
+                   (length (string-length line))
+                   (end (+ p length 1)))
+              (if (<= pos end) (values ln (- pos p))
+                  (loop (cdr lines) (1+ ln) end)))))))
   (or (as o <ast>)
       (helper o)))
