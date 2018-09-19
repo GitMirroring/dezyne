@@ -3,7 +3,7 @@
 ;; Copyright © 2014, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;; Copyright © 2014, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -70,9 +70,34 @@
         (handle-error job error)
         ast))))
 
+(define (line-column input pos)
+  (let* ((length (string-length input))
+         (pos (let loop ((pos pos))
+                (if (and (< pos length) (char-whitespace? (string-ref input pos))) (loop (1+ pos)) pos))))
+    (let loop ((lines (string-split input #\newline)) (ln 1) (p 0))
+      (if (null? lines) (values #f #f input)
+          (let* ((line (car lines))
+                 (next-line (or (and (pair? (cdr lines)) (cadr lines)) ""))
+                 (length (string-length line))
+                 (end (+ p length 1)))
+            (if (<= pos end) (values ln (+ 1 (- pos p)) (string-append line "\\n" next-line))
+                (loop (cdr lines) (1+ ln) end)))))))
+
 (define (peg:parse-file file-name)
   (let* ((string (with-input-from-file file-name read-string))
-         (parse-tree (peg:parse string))
+         (parse-tree (catch 'syntax-error
+            (lambda ()
+              (peg:parse string))
+            (lambda (key . args)
+              (receive (ln col line) (line-column string (caar args))
+                (let ((indent (make-string col #\space)))
+                  (format #t "~a:~a:~a: syntax-error\n~a\n~a^\n~aexpected '~a'\n"
+                          file-name
+                          ln col line
+                          indent
+                          indent
+                          (cadar args))
+                  (exit 1))))))
          (gdzn-debug? (gdzn:command-line:get 'debug)))
     (when gdzn-debug?
       (stderr "parse-tree:\n")

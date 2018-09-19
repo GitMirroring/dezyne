@@ -300,7 +300,7 @@ return EXP."
   (syntax-case clauses ()
     ((pat)
      #`(or (#,(compile-peg-pattern #'pat accum) #,str #,strlen #,at)
-           (throw 'parse-error (list #,at (syntax->datum #'pat))))))) ;;TODO throw partial match
+           (throw 'syntax-error (list #,at (syntax->datum #'pat))))))) ;;TODO throw partial match
 
 (define (cg-expect clauses accum)
   #`(lambda (str len pos)

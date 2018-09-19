@@ -62,7 +62,6 @@
 (define* (parse-tree->peg-ast o #:key string (file-name "<stdin>"))
   (define (helper o)
     (match o
-
       (((and (? symbol?) type) body ... ('location pos end))
        (let ((ast (helper (cons type body)))
              (location (helper (last o))))
@@ -84,10 +83,7 @@
       (('import name)
        (make <import-node> #:name (helper name)))
 
-      (('namespace name)
-       (helper (append o '(()))))
-
-      (('namespace name elements)
+      (('namespace name elements ...)
        (make <namespace-node>
          #:name (helper name)
          #:elements (helper elements)))
@@ -106,8 +102,9 @@
       (('extern name value)
        (make <extern-node> #:name (helper name) #:value value))
 
+
       (('interface name body ...)
-       (let* ((sexp (helper (assoc 'types-and-events body))))
+       (let* ((sexp (helper (assoc 'types-or-events body))))
          (receive (events types) (partition (sexp-is? 'event) (.sexp sexp))
            (make <interface-node>
              #:name (helper name)
@@ -115,8 +112,8 @@
              #:events (helper (cons 'events events))
              #:behaviour (and=> (assoc 'behaviour body) helper)))))
 
-      (('types-and-events types-and-events ...)
-       (make <sexp-node> #:sexp types-and-events))
+      (('types-or-events types-or-events ...)
+       (make <sexp-node> #:sexp types-or-events))
 
       (('events events ...)
        (make <events-node> #:elements (helper events)))
@@ -130,12 +127,45 @@
          #:signature (make <signature> #:type.name (helper type) #:formals (helper formals))
          #:direction (helper direction)))
 
-      (('component name body ...)
+      (('component name ports)
+       (make <foreign-node>
+         #:name (helper name)
+         #:ports (helper ports)))
+
+      (('component name ports (and ('behaviour elements ...) behaviour))
        (make <component-node>
          #:name (helper name)
-         #:ports (helper (or (null-is-#f (assoc 'ports body)) '(ports)))
-         #:behaviour (and=> (null-is-#f (assoc 'behaviour body)) helper)))
+         #:ports (helper ports)
+         #:behaviour (helper behaviour)))
 
+      (('component name ports ('system ('instances 'bindings) rest ...))
+       (make <system-node>
+         #:name (helper name)
+         #:ports (helper ports)))
+
+      (('component name ports ('system instances bindings rest ...))
+       (make <system-node>
+         #:name (helper name)
+         #:ports (helper ports)
+         #:instances (helper instances)
+         #:bindings (helper bindings)))
+
+      ('instances
+       (make <instances-node>))
+
+      (('instances elements ...)
+       (make <instances-node> #:elements (helper elements)))
+
+      ('bindings
+       (make <bindings-node>))
+
+      (('bindings elements ...)
+       (make <bindings-node> #:elements (helper elements)))
+
+      (('binding instance port)
+       (make <binding-node> #:instance.name instance #:port.name port))
+
+      ('ports (make <ports-node>))
       (('ports ports ...) (make <ports-node> #:elements (helper ports)))
 
       (('port direction type name external-injected ...)
@@ -193,16 +223,10 @@
        (string->symbol direction))
 
 
-      ;; TODO: change grammar to be GOOPS'ier, buig hier om,
-      ;; make AST more OM'ier?
-      ;;(('compound-name scope name) )
-
-      (('compound-with-arguments compound-with-arguments)
-       (helper compound-with-arguments))
-
-
-      (('compound-name name) (make <scope.name-node> #:name (helper name)))
-      (('compound-name scope name) (make <scope.name-node> #:scope (helper scope) #:name (helper name)))
+      (('compound-name name)
+       (make <scope.name-node> #:name (helper name)))
+      (('compound-name scope name)
+       (make <scope.name-node> #:scope (helper scope) #:name (helper name)))
 
       (('type-name name) (helper name))
       (('name name) (helper name))
@@ -224,9 +248,20 @@
                                   #:variable.name var
                                   #:expression (helper expression)))
 
-      (('behaviour ('name name ...) body ...)
-       (clone (helper (cons 'behaviour body))
-              #:name (helper (cons 'name name))))
+      ('behaviour-compound '())
+
+      (('behaviour-compound elements ...)
+       elements)
+
+      (('behaviour compound)
+       (let ((compound (helper compound)))
+         (make <behaviour-node>
+           #:types (helper (or (null-is-#f (assoc 'types compound)) '(types)))
+           #:ports (helper (or (null-is-#f (assoc 'ports compound)) '(ports)))
+           #:variables (helper (or (null-is-#f (assoc 'variables compound)) '(variables)))
+           #:functions (helper (or (null-is-#f (assoc 'functions compound)) '(functions)))
+           ;;#:statement (helper (and=> (find (sexp-is? 'statement) compound) helper))
+           #:statement (and=> (find (sexp-is? 'on) compound) helper))))
 
       (('behaviour body ...)
        (make <behaviour-node>
@@ -240,10 +275,6 @@
       (('bind left right)
        (make <bind-node> #:left (helper left) #:right (helper right)))
 
-      (('binding instance port) (make <binding-node> #:instance.name instance #:port.name port))
-
-      (('bindings bindings ...)
-       (make <bindings-node> #:elements (helper bindings)))
 
       (('blocking statement) (make <blocking-node> #:statement (helper statement)))
 
@@ -412,6 +443,7 @@
       ((? (is? <ast>)) o)
       ((h ...) (map helper o))
       (_ (format #f "LITERAL: ~s\n" o))))
+
   (define (line-column pos skip?)
     (let* ((length (string-length string))
            (pos (if skip? pos
@@ -424,5 +456,6 @@
                    (end (+ p length 1)))
               (if (<= pos end) (values ln (- pos p))
                   (loop (cdr lines) (1+ ln) end)))))))
+
   (or (as o <ast>)
       (helper o)))

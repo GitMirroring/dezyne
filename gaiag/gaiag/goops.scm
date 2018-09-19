@@ -419,17 +419,15 @@
   (name)                                ; <scope.name>
   (comment))
 
-;;(define-ast <root> (<locationed> <ast-list>))
-(define-ast <root> (<ast-list> <locationed>))
+(define-ast <namespace> (<named> <ast-list>))
+(define-method (.name.name (o <namespace>))
+  ((compose .name .name) o))
+
+(define-ast <root> (<namespace>))
 
 (define-ast <scope.name> (<ast>)
   (scope #:init-form (list))
   (name))
-
-(define-ast <namespace> (<named> <ast-list>))
-
-(define-method (.name.name (o <namespace>))
-  ((compose .name .name) o))
 
 
 (define-ast <block-comment> (<comment>))

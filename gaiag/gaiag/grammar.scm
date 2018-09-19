@@ -25,6 +25,7 @@
 (define-module (gaiag grammar)
   #:use-module (srfi srfi-1)
 
+  #:use-module (ice-9 rdelim)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 receive)
 
@@ -74,18 +75,6 @@
             ;; If we didn't match, just return false.
             #f))))
 
-(define (cg-expect-int clauses accum str strlen at)
-  (syntax-case clauses ()
-    ((pat)
-     #`(or (#,(compile-peg-pattern #'pat accum) #,str #,strlen #,at)
-           (throw 'parse-error (list #,at (syntax->datum #'pat)))))))
-
-(define (cg-expect clauses accum)
-  #`(lambda (str len pos)
-      #,(cg-expect-int clauses ((@@ (ice-9 peg codegen) baf) accum) #'str #'len #'pos)))
-
-(add-peg-compiler! 'expect cg-expect)
-
 (module-define! (resolve-module '(peg codegen)) 'wrap-parser-for-users wrap-parser-for-users)
 
 (define (line-column input pos)
@@ -100,7 +89,7 @@
             (if (<= pos end) (values ln (- pos p) line)
                 (loop (cdr lines) (1+ ln) end)))))))
 
-(define (peg:parse input)
+(define (peg:parse string)
 
   (define interface-events '())
 
@@ -132,37 +121,42 @@ elements <- import / namespace / type / extern / interface / component / data
 
 import <-- IMPORT w (!SEMICOLON .)* SEMICOLON#
 
-namespace <-- NAMESPACE w compound-name# w BRACE-OPEN#(w elements)* w BRACE-CLOSE#
+namespace <-- NAMESPACE w compound-name# w BRACE-OPEN# (w elements)* w BRACE-CLOSE#
 
 type <- enum / int
 
 enum <-- ENUM w compound-name# w BRACE-OPEN# w fields# w BRACE-CLOSE# w SEMICOLON#
 
-fields <-- name (w COMMA w name)*
+fields <-- name# (w COMMA w name#)*
 
 int <-- SUBINT w compound-name# w BRACE-OPEN# w range# BRACE-CLOSE# w SEMICOLON#
 
-range <-- integer w '..'# w integer# w
+range <-- integer# w '..'# w integer# w
 
 extern <-- EXTERN w compound-name# w data# w SEMICOLON#
 
-interface <-- INTERFACE reset-event-names w compound-name# w BRACE-OPEN# types-and-events (w behaviour)? w BRACE-CLOSE#
+interface <-- INTERFACE reset-event-names w compound-name# w BRACE-OPEN# w types-or-events# w behaviour# w BRACE-CLOSE#
 
-types-and-events <-- (w type / w extern / w event)*
+types-or-events <-- (w (type / extern / event))+
+
+
+formal-parameter <-- ((INOUT / IN / OUT) w)? type-name w name
+
+formal-list <- PAREN-OPEN (w formal-parameter (w COMMA w formal-parameter#)*)? w PAREN-CLOSE#
 
 event <-- direction w type-name# w event-name# w formal-list w SEMICOLON#
 
-component <-- COMPONENT reset-event-names w compound-name# w BRACE-OPEN# ports (w behaviour / w system-declaration)? w BRACE-CLOSE#
+component <-- COMPONENT reset-event-names w compound-name# w BRACE-OPEN# ports (w behaviour / w system)? w BRACE-CLOSE#
 
 ports <-- (w port)*
 
 port <-- port-direction w compound-name# w formal-list? w name# w SEMICOLON#
 
-port-direction <-- PROVIDES (w EXTERNAL)? / REQUIRES ( w INJECTED / w EXTERNAL)?
+port-direction <-- PROVIDES (w EXTERNAL)? / REQUIRES (w INJECTED / w EXTERNAL)?
 
-behaviour <-- BEHAVIOUR (w name)? w BRACE-OPEN#
-  (w (port / function-declaration / variable-declaration / declarative-statement / type))*
-  w BRACE-CLOSE#
+behaviour <-- BEHAVIOUR (w name)? w behaviour-compound
+
+behaviour-compound <-- BRACE-OPEN# (w (port / function-declaration / variable-declaration / declarative-statement / type))* w BRACE-CLOSE#
 
 behaviour-statement <- declarative-statement / imperative-statement
 
@@ -247,10 +241,6 @@ direction <-- IN / OUT
 
 type-name <-- compound-name / BOOL
 
-formal-parameter <-- ((INOUT / IN / OUT) w)? type-name w name
-
-formal-list <- PAREN-OPEN (w formal-parameter (w COMMA w formal-parameter)*)? w PAREN-CLOSE#
-
 function-declaration <-- type-name w name w formal-list w
     BRACE-OPEN# (w imperative-statement)* w BRACE-CLOSE#
 
@@ -269,7 +259,7 @@ base-expression <-- named-expression / int-constant-expression /
 
 named-expression <-- action-or-call / literal / blocking-binding / var
 
-literal <-- name (DOT name)+
+literal <-- DOT? name (DOT name)+
 
 blocking-binding <-- var w LEFT-ARROW w var
 
@@ -281,11 +271,15 @@ paren-expression <-- PAREN-OPEN w expression w PAREN-CLOSE#
 
 dollar-expression <-- data
 
-system-declaration <-- SYSTEM w BRACE-OPEN# (w instantiation-statement / w binding-statement)* w BRACE-CLOSE#
+system <-- SYSTEM w BRACE-OPEN# instances w bindings w BRACE-CLOSE#
 
-instantiation-statement <-- compound-name w name w SEMICOLON#
+instances <-- (w instance)*
 
-binding-statement <-- name-with-wildcard w BIND w name-with-wildcard w SEMICOLON#
+instance <-- compound-name w name w SEMICOLON#
+
+bindings <-- (w binding)*
+
+binding <-- name-with-wildcard w BIND w name-with-wildcard w SEMICOLON#
 
 name-with-wildcard <-- compound-name (DOT STAR)? / STAR
 
@@ -397,33 +391,10 @@ KEYWORD <
 ")
 
   (set! %peg-locations? #t)
-  (catch 'parse-error (lambda ()
-                        (let* ((result (match-pattern root input))
-                               (end (peg:end result))
-                               (tree (peg:tree result)))
-                          (set! %peg-locations? #f)
-                          (display "tree:\n")
-                          (pretty-print tree)
-                          (newline)
-                          tree))
-    (lambda (key . args)
-      (receive (ln col line) (line-column input (caar args))
-        (let ((indent (make-string col #\space)))
-          (format #t ":~a:~a\n~a\n~a^\n~aexpected ~a\n"
-                  ln col line
-                  indent
-                  indent
-                  (cadar args))
-          (exit 1))))))
-
-(define (line-column input pos)
-  (let* ((length (string-length input))
-         (pos (let loop ((pos pos))
-                (if (and (< pos length) (char-whitespace? (string-ref input pos))) (loop (1+ pos)) pos))))
-    (let loop ((lines (string-split input #\newline)) (ln 1) (p 0))
-      (if (null? lines) (values #f #f input)
-          (let* ((line (car lines))
-                 (length (string-length line))
-                 (end (+ p length 1)))
-            (if (<= pos end) (values ln (- pos p) line)
-                (loop (cdr lines) (1+ ln) end)))))))
+  (let* ((result (match-pattern root string))
+         (tree (peg:tree result)))
+    (set! %peg-locations? #f)
+    ;; (display "tree:\n")
+    ;; (pretty-print tree)
+    ;; (newline)
+    tree))
