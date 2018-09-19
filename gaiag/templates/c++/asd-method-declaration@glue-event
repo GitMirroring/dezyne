@@ -1,1 +1,1 @@
-#x:function-type  #x:decapitalize-model-name Port_#.name (#x:formals);
+#x:function-type  #x:decapitalize-asd-interface-name Port_#.name (#x:formals);

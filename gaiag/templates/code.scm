@@ -49,6 +49,7 @@
 (define-templates enum-scope code:enum-scope type-infix)
 (define-templates reply code:reply)
 (define-templates decapitalize-model-name (compose (cut string-downcase <> 0 1) symbol->string om:name (lambda (o) (parent o <model>))))
+(define-templates decapitalize-asd-interface-name (compose (cut string-downcase <> 0 1) (lambda (o) (if (eq? #\I (string-ref o 0)) (substring o 1) o)) symbol->string om:name .type car om:ports (lambda (o) (parent o <model>))))
 (define-templates upcase-model-name (compose string-upcase (->join "_") om:scope+name (lambda (o) (parent o <model>))))
 (define-templates method code:trigger)
 (define-templates parameters code:parameters formal-infix)
