@@ -36,11 +36,32 @@
 
   #:use-module (gaiag command-line)
 
+  #:use-module (system base compile)
+
   #:export (peg:parse))
 
 (define %peg-locations? #f)
 
+(define-syntax my-define-sexp-parser
+  (lambda (x)
+    (syntax-case x ()
+      ((_ sym accum pat)
+       (let* ((matchf (compile-peg-pattern #'pat (syntax->datum #'accum))))
+         #`(define sym #,matchf))))))
+
+(my-define-sexp-parser eol all (or "\f" "\n" "\r"))
+(add-peg-compiler! 'eol eol)
+
+(my-define-sexp-parser line all (and "//" (* (and (not-followed-by eol) peg-any))))
+(add-peg-compiler! 'line line)
+
+(my-define-sexp-parser block all (and "/*" (* (or block (and (not-followed-by "*/") peg-any))) (expect (followed-by "*/"))))
+
+(my-define-sexp-parser skip all (* (or " " "\t" eol line block)))
+(add-peg-compiler! 'skip skip)
+
 (define (wrap-parser-for-users for-syntax parser accumsym s-syn)
+
   #`(lambda (str strlen pos)
       (when (or #f (gdzn:command-line:get 'debug))
         (format (current-error-port) "~a ~a : ~s\n"
@@ -48,7 +69,10 @@
                 '#,s-syn
                 (substring str pos (min (+ pos 40) strlen))))
 
-      (let* ((res (#,parser str strlen pos)))
+      (let* ((res #f)
+             (res (skip str strlen pos))
+             (res (#,parser str strlen (or (and res (car res)) pos)))
+             )
         (and #f res (format (current-error-port) "~a: ~s\n"
                          '#,s-syn
                          (substring str pos (min (+ pos 40) strlen))))
@@ -113,66 +137,66 @@
   (define-peg-pattern is-event body -is-event-)
 
   (define-peg-string-patterns
-    "root <-- (w elements)* w eof#
+    "root <-- (elements)* eof#
 
 eof < !.
 
 elements <- import / namespace / type / extern / interface / component / data
 
-import <-- IMPORT w (!SEMICOLON .)* SEMICOLON#
+import <-- IMPORT (!SEMICOLON .)* SEMICOLON#
 
-namespace <-- NAMESPACE w compound-name# w BRACE-OPEN# (w elements)* w BRACE-CLOSE#
+namespace <-- NAMESPACE compound-name# BRACE-OPEN# (elements)* BRACE-CLOSE#
 
 type <- enum / int
 
-enum <-- ENUM w compound-name# w BRACE-OPEN# w fields# w BRACE-CLOSE# w SEMICOLON#
+enum <-- ENUM compound-name# BRACE-OPEN# fields# BRACE-CLOSE# SEMICOLON#
 
-fields <-- name# (w COMMA w name#)*
+fields <-- name# (COMMA name#)*
 
-int <-- SUBINT w compound-name# w BRACE-OPEN# w range# BRACE-CLOSE# w SEMICOLON#
+int <-- SUBINT compound-name# BRACE-OPEN# range# BRACE-CLOSE# SEMICOLON#
 
-range <-- integer# w '..'# w integer# w
+range <-- integer# '..'# integer#
 
-extern <-- EXTERN w compound-name# w data# w SEMICOLON#
+extern <-- EXTERN compound-name# data# SEMICOLON#
 
-interface <-- INTERFACE reset-event-names w compound-name# w BRACE-OPEN# w types-or-events# w behaviour# w BRACE-CLOSE#
+interface <-- INTERFACE reset-event-names compound-name# BRACE-OPEN# types-or-events# behaviour# BRACE-CLOSE#
 
-types-or-events <-- (w (type / extern / event))+
+types-or-events <-- (type / extern / event)+
 
 
-formal-parameter <-- ((INOUT / IN / OUT) w)? type-name w name
+formal-parameter <-- (INOUT / IN / OUT)? type-name name
 
-formal-list <- PAREN-OPEN (w formal-parameter (w COMMA w formal-parameter#)*)? w PAREN-CLOSE#
+formal-list <- PAREN-OPEN (formal-parameter (COMMA formal-parameter#)*)? PAREN-CLOSE#
 
-event <-- direction w type-name# w event-name# w formal-list w SEMICOLON#
+event <-- direction type-name# event-name# formal-list SEMICOLON#
 
-component <-- COMPONENT reset-event-names w compound-name# w BRACE-OPEN# ports (w behaviour / w system)? w BRACE-CLOSE#
+component <-- COMPONENT reset-event-names compound-name# BRACE-OPEN# ports (behaviour / system)? BRACE-CLOSE#
 
-ports <-- (w port)*
+ports <-- (port)*
 
-port <-- port-direction w compound-name# w formal-list? w name# w SEMICOLON#
+port <-- port-direction compound-name# formal-list? name# SEMICOLON#
 
-port-direction <-- PROVIDES (w EXTERNAL)? / REQUIRES (w INJECTED / w EXTERNAL)?
+port-direction <-- PROVIDES (EXTERNAL)? / REQUIRES (INJECTED / EXTERNAL)?
 
-behaviour <-- BEHAVIOUR (w name)? w behaviour-compound
+behaviour <-- BEHAVIOUR (name)? behaviour-compound
 
-behaviour-compound <-- BRACE-OPEN# (w (port / function-declaration / variable-declaration / declarative-statement / type))* w BRACE-CLOSE#
+behaviour-compound <-- BRACE-OPEN# (port / function-declaration / variable-declaration / declarative-statement / type)* BRACE-CLOSE#
 
 behaviour-statement <- declarative-statement / imperative-statement
 
 declarative-statement <- on / blocking-statement / guarded-statement / compound
 
-imperative-statement <- (reply / action-or-call / interface-action-or-call) w SEMICOLON /
+imperative-statement <- (reply / action-or-call / interface-action-or-call) SEMICOLON /
                         assign / if-statement / illegal-statement / compound /
                         return-statement / variable-declaration / skip
 
-compound <-- BRACE-OPEN (w behaviour-statement)* w BRACE-CLOSE#
+compound <-- BRACE-OPEN (behaviour-statement)* BRACE-CLOSE#
 
-on <-- ON w triggers# w COLON# w behaviour-statement#
+on <-- ON triggers# COLON# behaviour-statement#
 
 interface-action-or-call <- (interface-action / interface-call)
 
-argument-list <- w PAREN-OPEN (w argument (w COMMA w argument)*)? w PAREN-CLOSE#
+argument-list <- PAREN-OPEN (argument (COMMA argument)*)? PAREN-CLOSE#
 
 interface-action <-- is-event / name DOT name
 
@@ -185,47 +209,42 @@ interface-call <-- !is-event name
 call <-- !is-event name argument-list
 
 
-guarded-statement <-- BRACKET-OPEN w guard# w BRACKET-CLOSE# w behaviour-statement#
+guarded-statement <-- BRACKET-OPEN guard# BRACKET-CLOSE# behaviour-statement#
 
 guard <-- OTHERWISE / expression
 
 skip <-- skip-haakjes
 
-skip-haakjes < w SEMICOLON
+skip-haakjes < SEMICOLON
 
-triggers <-- trigger (w COMMA w trigger)*
+triggers <-- trigger (COMMA trigger)*
 
 trigger <-- (is-event / OPTIONAL / INEVITABLE / name DOT name) argument-list?
 
 
 argument <-- !PAREN-CLOSE expression
 
-blocking-statement <-- BLOCKING w behaviour-statement
+blocking-statement <-- BLOCKING behaviour-statement
 
-illegal-statement <-- ILLEGAL w SEMICOLON#
+illegal-statement <-- ILLEGAL SEMICOLON#
 
-assign <-- var w EQUAL w expression w SEMICOLON#
+assign <-- var EQUAL expression SEMICOLON#
 
-if-statement <-- IF w PAREN-OPEN# w expression w PAREN-CLOSE# w imperative-statement (w ELSE w imperative-statement)?
+if-statement <-- IF PAREN-OPEN# expression PAREN-CLOSE# imperative-statement (ELSE imperative-statement)?
 
-reply <-- (name DOT)? REPLY w PAREN-OPEN# (w expression)? w PAREN-CLOSE#
+reply <-- (name DOT)? REPLY PAREN-OPEN# (expression)? PAREN-CLOSE#
 
-return-statement <-- RETURN w expression? w SEMICOLON#
-
-
+return-statement <-- RETURN expression? SEMICOLON#
 
 
-integer <-- (UNARY-MINUS w)? unsigned
+
+
+integer <-- UNARY-MINUS? unsigned
 
 unsigned <- [0-9]+
 
 
 identifier <- !KEYWORD ([a-zA-Z_] [a-zA-Z_0-9]*)
-
-line-comment <-- COMMENT (!end-of-line .)* end-of-line
-
-block-comment <-- COMMENT-OPEN (block-comment / !COMMENT-OPEN !COMMENT-CLOSE .)* COMMENT-CLOSE#
-
 
 dollar-string <- (!DOLLAR .)*
 
@@ -241,18 +260,18 @@ direction <-- IN / OUT
 
 type-name <-- compound-name / BOOL
 
-function-declaration <-- type-name w name w formal-list w
-    BRACE-OPEN# (w imperative-statement)* w BRACE-CLOSE#
+function-declaration <-- type-name name formal-list
+    BRACE-OPEN# (imperative-statement)* BRACE-CLOSE#
 
-variable-declaration <-- type-name w name (w EQUAL w expression#)? w SEMICOLON#
+variable-declaration <-- type-name name (EQUAL expression#)? SEMICOLON#
 
 expression <-- or-expression
-or-expression <-- and-expression (w OR w or-expression#)?
-and-expression <-- compare-expression (w AND w and-expression#)?
-compare-expression <-- plus-min-expression (w compare-operator w plus-min-expression#)?
+or-expression <-- and-expression (OR or-expression#)?
+and-expression <-- compare-expression (AND and-expression#)?
+compare-expression <-- plus-min-expression (compare-operator plus-min-expression#)?
 compare-operator <-- IS-EQUAL / IS-NOT-EQUAL / IS-LESS-EQUAL / IS-LESS / IS-GREATER-EQUAL / IS-GREATER
-plus-min-expression <-- not-expression (w (PLUS / MINUS) w not-expression#)*
-not-expression <-- NOT w not-expression# / base-expression
+plus-min-expression <-- not-expression ((PLUS / MINUS) not-expression#)*
+not-expression <-- NOT not-expression# / base-expression
 
 base-expression <-- named-expression / int-constant-expression /
                     bool-constant-expression / paren-expression / dollar-expression
@@ -261,38 +280,27 @@ named-expression <-- action-or-call / literal / blocking-binding / var
 
 literal <-- DOT? name (DOT name)+
 
-blocking-binding <-- var w LEFT-ARROW w var
+blocking-binding <-- var LEFT-ARROW var
 
 int-constant-expression <-- integer
 
 bool-constant-expression <-- FALSE / TRUE
 
-paren-expression <-- PAREN-OPEN w expression w PAREN-CLOSE#
+paren-expression <-- PAREN-OPEN expression PAREN-CLOSE#
 
 dollar-expression <-- data
 
-system <-- SYSTEM w BRACE-OPEN# instances w bindings w BRACE-CLOSE#
+system <-- SYSTEM BRACE-OPEN# instances bindings BRACE-CLOSE#
 
-instances <-- (w instance)*
+instances <-- (instance)*
 
-instance <-- compound-name w name w SEMICOLON#
+instance <-- compound-name name SEMICOLON#
 
-bindings <-- (w binding)*
+bindings <-- (binding)*
 
-binding <-- name-with-wildcard w BIND w name-with-wildcard w SEMICOLON#
+binding <-- name-with-wildcard BIND name-with-wildcard SEMICOLON#
 
 name-with-wildcard <-- compound-name (DOT STAR)? / STAR
-
-
-
-white-space <- white-space-char / line-comment / block-comment
-
-white-space-char < [ \t] / end-of-line
-
-end-of-line < [\f\n\r]
-
-w <- (white-space)*
-
 
 UNARY-MINUS         <- '-'
 
@@ -394,7 +402,7 @@ KEYWORD <
   (let* ((result (match-pattern root string))
          (tree (peg:tree result)))
     (set! %peg-locations? #f)
-    ;; (display "tree:\n")
-    ;; (pretty-print tree)
-    ;; (newline)
+    (display "tree:\n")
+    (pretty-print tree)
+    (newline)
     tree))
