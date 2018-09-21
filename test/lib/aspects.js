@@ -252,8 +252,11 @@ var aspects = {
   empty_outcome: function() {
     function nolanguages() {
       var result = {};
-      all_languages.each ( function(lan) {
-        result[lan] = 'NOLOG';
+      query_versions().each ( function(version) {
+        result[version] = {};
+        all_languages.each ( function(lan) {
+          result[version][lan] = 'NOLOG';
+        });
       });
       return result;
     }
