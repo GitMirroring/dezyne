@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 rdelim)
-
+  #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
 
@@ -35,7 +35,7 @@
 (define no-indent "#")
 (define* (indent #:optional (indent 2) (port (current-input-port)))
   (let loop ((level 0))
-    (define* (space #:optional (c level)) (let ((char (if (=1 indent) #\tab #\space))) (display (make-string c char))))
+    (define* (space #:optional (c level)) (let ((char (if (=1 indent) #\tab #\space))) (when (not (gdzn:command-line:get 'debug)) (display (make-string c char)))))
     (if (not (and-let* ((s (*eof*-is-#f (read-delimited "\n{}" port 'peek))))
                        (display s)))
         #f

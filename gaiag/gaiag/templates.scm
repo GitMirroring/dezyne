@@ -64,17 +64,26 @@
   (define (tree->body t . id)
     (let ((id (if (or #t (null? id)) '() ;;DEBUG MEUK HERE
                   (list (list 'display-primitive (car id))))))
-     (append id
-      (match t
-        (('script t ...) (tree->body t))
-        (('pegprocedure s) (list (list 'display-primitive (list (string->symbol (string-drop s 1)) 'o))))
-        ((? string?) (list (list 'display t)))
-        ((t ...) (append-map tree->body t))
-        ('script '())))))
+      (append id
+              (match t
+                (('script t ...) (tree->body t))
+                (('pegprocedure s) (list (list 'display-primitive (list (string->symbol (string-drop s 1)) 'o))))
+                ((? string?) (list (list 'display t)))
+                ((t ...) (append-map tree->body t))
+                ('script '())))))
 
-  (define* (display-join proc o #:optional (grammar-alist '((#f . ("")))))
+  (define* (display-join proc name dir o #:optional (grammar-alist '((#f . ("")))))
     "Like STRING-JOIN, allowing \"PRE\" 'pre and \"POST\" 'post in GRAMMAR"
     (define (bla o)
+      (when (and (is-a? o <ast>) (gdzn:command-line:get 'debug))
+        (display "/*\ngaiag/")
+        (display dir)
+        (display name)
+        (display "@")
+        (display (string-trim-both (symbol->string (class-name (class-of o))) (lambda (c)
+                                                                                (or (eqv? c #\<)
+										    (eqv? c #\>)))))
+        (display ":0: */\n"))
       (cond (((disjoin char? number? string? symbol?) o) (display o))
             ((null? o))
             (else (proc o))))
@@ -152,12 +161,12 @@
                (files (ls dir))
                (types (map (compose string->symbol (cut string-append "<" <> ">") (cute string-drop <> (string-length name@))) (filter (cute string-prefix? name@ <>) files)))
                (grammars (or (and (syntax->datum sep)
-                               (let ((sep-files (filter (cute string-prefix? (string-append ((compose symbol->string syntax->datum) sep) ;;"@"
-                                                                                            ) <>) files)))
-                                 (map (lambda (sep)
-                                        (let* ((aapje (string-index sep #\@))
-                                               (type (and aapje ((compose string->symbol (cut string-drop <> (1+ aapje))) sep))))
-                                          (cons type (read-sep sep)))) sep-files)))
+                                  (let ((sep-files (filter (cute string-prefix? (string-append ((compose symbol->string syntax->datum) sep) ;;"@"
+                                                                                               ) <>) files)))
+                                    (map (lambda (sep)
+                                           (let* ((aapje (string-index sep #\@))
+                                                  (type (and aapje ((compose string->symbol (cut string-drop <> (1+ aapje))) sep))))
+                                             (cons type (read-sep sep)))) sep-files)))
                              '()))
                (grammars (append grammars '((#f . ("")))))
                (grammars (datum->syntax x grammars)))
@@ -167,7 +176,9 @@
                   (define-method (#,tname (o <top>)) (throw 'missing-template-overload: (string-append "template: " (symbol->string '#,name) " for type: " (symbol->string (class-name (class-of o)))))))
               (define (#,xname #,o)
                 (let ((f (#,func #,o)))
-                  (display-join #,tname f '#,grammars)))))))
+		  (when (gdzn:command-line:get 'debug)
+		    (display "// ") (display '#,func) (newline))
+                  (display-join #,tname '#,name #,dir f '#,grammars)))))))
 
     (syntax-case x ()
       ((_  language name xname tname)
