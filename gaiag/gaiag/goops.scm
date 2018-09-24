@@ -385,7 +385,9 @@
   (node #:getter .node #:init-value #f #:init-keyword #:node)
   (parent #:getter .parent #:init-value #f #:init-keyword #:parent))
 
-(define-class <ast-node> ())
+(define-class <ast-node> ()
+  (comment #:getter .comment #:init-value #f #:init-keyword #:comment))
+
 (define-ast <ast-list> (<ast>)
   (elements #:init-form (list)))
 
@@ -416,8 +418,8 @@
   (string))
 
 (define-ast <named> (<locationed>)
-  (name)                                ; <scope.name>
-  (comment))
+  (name))                               ; <scope.name>
+
 
 (define-ast <namespace> (<named> <ast-list>))
 (define-method (.name.name (o <namespace>))

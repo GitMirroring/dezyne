@@ -40,8 +40,6 @@
 
   #:export (peg:parse))
 
-(define %peg-locations? #f)
-
 (define-syntax my-define-sexp-parser
   (lambda (x)
     (syntax-case x ()
@@ -49,53 +47,55 @@
        (let* ((matchf (compile-peg-pattern #'pat (syntax->datum #'accum))))
          #`(define sym #,matchf))))))
 
-(my-define-sexp-parser eol all (or "\f" "\n" "\r"))
+(my-define-sexp-parser eol none (or "\f" "\n" "\r"))
 (add-peg-compiler! 'eol eol)
+
+(my-define-sexp-parser ws none (or " " "\t"))
+(add-peg-compiler! 'ws ws)
 
 (my-define-sexp-parser line all (and "//" (* (and (not-followed-by eol) peg-any))))
 (add-peg-compiler! 'line line)
 
-(my-define-sexp-parser block all (and "/*" (* (or block (and (not-followed-by "*/") peg-any))) (expect (followed-by "*/"))))
+(my-define-sexp-parser block all (and "/*" (* (or block (and (not-followed-by "*/") peg-any))) (expect "*/")))
 
-(my-define-sexp-parser skip all (* (or " " "\t" eol line block)))
-(add-peg-compiler! 'skip skip)
+(my-define-sexp-parser comment all (* (or ws eol line block)))
+(add-peg-compiler! 'comment comment)
+
 
 (define (wrap-parser-for-users for-syntax parser accumsym s-syn)
-
   #`(lambda (str strlen pos)
-      (when (or #f (gdzn:command-line:get 'debug))
+      (when (gdzn:command-line:get 'debug)
         (format (current-error-port) "~a ~a : ~s\n"
                 (make-string (- pos (or (string-rindex str #\newline 0 pos) 0)) #\space)
                 '#,s-syn
                 (substring str pos (min (+ pos 40) strlen))))
 
-      (let* ((res #f)
-             (res (skip str strlen pos))
-             (res (#,parser str strlen (or (and res (car res)) pos)))
-             )
-        (and #f res (format (current-error-port) "~a: ~s\n"
-                         '#,s-syn
-                         (substring str pos (min (+ pos 40) strlen))))
+      (let* ((comment-res (comment str strlen pos))
+             (pos (or (and comment-res (car comment-res)) pos))
+             (res (#,parser str strlen pos)))
         ;; Try to match the nonterminal.
         (if res
             ;; If we matched, do some post-processing to figure out
             ;; what data to propagate upward.
-            (let ((at (car res))
-                  (body (cadr res)))
+            (let* ((at (car res))
+                   (body (cadr res))
+                   (loc `(location ,pos ,at))
+                   (annotate (if (null? (cadr comment-res)) `(,loc)
+                                 `((comment ,(cadr comment-res)) ,loc))))
               #,(cond
                  ((eq? accumsym 'name)
-                  #`(list at '#,s-syn))
+                  #``(,at ,'#,s-syn ,@annotate))
                  ((eq? accumsym 'all)
-                  #`(list (car res)
+                  #`(list at
                           (cond
                            ((not (list? body))
-                            (list '#,s-syn body))
-                           ((null? body) '#,s-syn)
+                            `(,'#,s-syn ,body ,@annotate))
+                           ((null? body) `(,'#,s-syn ,@annotate))
                            ((symbol? (car body))
-                            (if %peg-locations? (list '#,s-syn body (list 'location pos at)) (list '#,s-syn body)))
-                           (else (if %peg-locations? (cons '#,s-syn (append body (list (list 'location pos at)))) (cons '#,s-syn body))))))
-                 ((eq? accumsym 'none) #`(list (car res) '()))
-                 (else #`(begin res))))
+                            `(,'#,s-syn ,body ,@annotate))
+                           (else (cons '#,s-syn (append body annotate))))))
+                 ((eq? accumsym 'none) #``(,at () ,@annotate))
+                 (else #``(,at ,body ,@annotate))))
             ;; If we didn't match, just return false.
             #f))))
 
@@ -129,7 +129,7 @@
       (when res
         (set! interface-events (cons (substring str pos (car res)) interface-events)))
       res))
-  (define-peg-pattern event-name body -event-name-)
+  (define-peg-pattern event-name all -event-name-)
 
   (define (-is-event- str len pos)
     (let ((res (identifier str len pos)))
@@ -137,15 +137,15 @@
   (define-peg-pattern is-event body -is-event-)
 
   (define-peg-string-patterns
-    "root <-- (elements)* eof#
+    "root <-- top* eof#
 
 eof < !.
 
-elements <- import / namespace / type / extern / interface / component / data
+top <- import / namespace / type / extern / interface / component / data
 
 import <-- IMPORT (!SEMICOLON .)* SEMICOLON#
 
-namespace <-- NAMESPACE compound-name# BRACE-OPEN# (elements)* BRACE-CLOSE#
+namespace <-- NAMESPACE compound-name# BRACE-OPEN# top* BRACE-CLOSE#
 
 type <- enum / int
 
@@ -166,13 +166,13 @@ types-or-events <-- (type / extern / event)+
 
 formal-parameter <-- (INOUT / IN / OUT)? type-name name
 
-formal-list <- PAREN-OPEN (formal-parameter (COMMA formal-parameter#)*)? PAREN-CLOSE#
+formal-list <-- PAREN-OPEN (formal-parameter (COMMA formal-parameter#)*)? PAREN-CLOSE#
 
 event <-- direction type-name# event-name# formal-list SEMICOLON#
 
 component <-- COMPONENT reset-event-names compound-name# BRACE-OPEN# ports (behaviour / system)? BRACE-CLOSE#
 
-ports <-- (port)*
+ports <-- port*
 
 port <-- port-direction compound-name# formal-list? name# SEMICOLON#
 
@@ -180,19 +180,21 @@ port-direction <-- PROVIDES (EXTERNAL)? / REQUIRES (INJECTED / EXTERNAL)?
 
 behaviour <-- BEHAVIOUR (name)? behaviour-compound
 
-behaviour-compound <-- BRACE-OPEN# (port / function-declaration / variable-declaration / declarative-statement / type)* BRACE-CLOSE#
+behaviour-compound <-- BRACE-OPEN# behaviour-statement* BRACE-CLOSE#
 
-behaviour-statement <- declarative-statement / imperative-statement
+behaviour-statement <- port / function-declaration / variable / declarative-statement / type
 
-declarative-statement <- on / blocking-statement / guarded-statement / compound
+statement <- declarative-statement / imperative-statement
+
+declarative-statement <- on / blocking-statement / guard / compound
 
 imperative-statement <- (reply / action-or-call / interface-action-or-call) SEMICOLON /
-                        assign / if-statement / illegal-statement / compound /
-                        return-statement / variable-declaration / skip
+                        assign / if-statement / illegal / compound /
+                        return-statement / variable / skip-statement
 
-compound <-- BRACE-OPEN (behaviour-statement)* BRACE-CLOSE#
+compound <-- BRACE-OPEN statement* BRACE-CLOSE#
 
-on <-- ON triggers# COLON# behaviour-statement#
+on <-- ON triggers# COLON# statement#
 
 interface-action-or-call <- (interface-action / interface-call)
 
@@ -209,26 +211,22 @@ interface-call <-- !is-event name
 call <-- !is-event name argument-list
 
 
-guarded-statement <-- BRACKET-OPEN guard# BRACKET-CLOSE# behaviour-statement#
+guard <-- BRACKET-OPEN (OTHERWISE / expression)# BRACKET-CLOSE# statement#
 
-guard <-- OTHERWISE / expression
-
-skip <-- skip-haakjes
-
-skip-haakjes < SEMICOLON
+skip-statement <-- SEMICOLON
 
 triggers <-- trigger (COMMA trigger)*
 
-trigger <-- (is-event / OPTIONAL / INEVITABLE / name DOT name) argument-list?
+trigger <-- (is-event / compound-name) argument-list? / OPTIONAL / INEVITABLE
 
 
 argument <-- !PAREN-CLOSE expression
 
-blocking-statement <-- BLOCKING behaviour-statement
+blocking-statement <-- BLOCKING statement
 
-illegal-statement <-- ILLEGAL SEMICOLON#
+illegal <- ILLEGAL SEMICOLON#
 
-assign <-- var EQUAL expression SEMICOLON#
+assign <-- var ASSIGN expression SEMICOLON#
 
 if-statement <-- IF PAREN-OPEN# expression PAREN-CLOSE# imperative-statement (ELSE imperative-statement)?
 
@@ -239,7 +237,7 @@ return-statement <-- RETURN expression? SEMICOLON#
 
 
 
-integer <-- UNARY-MINUS? unsigned
+integer <- UNARY-MINUS? unsigned
 
 unsigned <- [0-9]+
 
@@ -263,28 +261,24 @@ type-name <-- compound-name / BOOL
 function-declaration <-- type-name name formal-list
     BRACE-OPEN# (imperative-statement)* BRACE-CLOSE#
 
-variable-declaration <-- type-name name (EQUAL expression#)? SEMICOLON#
+variable <-- type-name name (ASSIGN expression#)? SEMICOLON#
 
-expression <-- or-expression
-or-expression <-- and-expression (OR or-expression#)?
-and-expression <-- compare-expression (AND and-expression#)?
-compare-expression <-- plus-min-expression (compare-operator plus-min-expression#)?
-compare-operator <-- IS-EQUAL / IS-NOT-EQUAL / IS-LESS-EQUAL / IS-LESS / IS-GREATER-EQUAL / IS-GREATER
-plus-min-expression <-- not-expression ((PLUS / MINUS) not-expression#)*
-not-expression <-- NOT not-expression# / base-expression
+expression <- or-expression
+or-expression <- and-expression OR or-expression# / and-expression
+and-expression <- compare-expression AND and-expression# / compare-expression
+compare-expression <- plus-min-expression COMPARE plus-min-expression# / plus-min-expression
+plus-min-expression <- not-expression (PLUS / MINUS) not-expression# / not-expression
+not-expression <- NOT not-expression# / base-expression
 
-base-expression <-- named-expression / int-constant-expression /
-                    bool-constant-expression / paren-expression / dollar-expression
+base-expression <- paren-expression / dollar-expression / named-expression
 
-named-expression <-- action-or-call / literal / blocking-binding / var
+named-expression <- action-or-call / enum-literal / literal / blocking-binding / var
 
-literal <-- DOT? name (DOT name)+
+enum-literal <-- DOT? name (DOT name)+
+
+literal <-- integer / FALSE / TRUE
 
 blocking-binding <-- var LEFT-ARROW var
-
-int-constant-expression <-- integer
-
-bool-constant-expression <-- FALSE / TRUE
 
 paren-expression <-- PAREN-OPEN expression PAREN-CLOSE#
 
@@ -319,20 +313,22 @@ COLON               <  ':'
 DOT                 <  '.'
 COMMA               <  ','
 BIND                <  '<=>'
-EQUAL               <  '='
+ASSIGN              <  '='
 STAR                <  '*'
 LEFT-ARROW          <  '<-'
-OR                  <  '||'
-AND                 <  '&&'
-IS-EQUAL            <  '=='
-IS-NOT-EQUAL        <  '!='
-IS-LESS             <  '<'
-IS-LESS-EQUAL       <  '<='
-IS-GREATER          <  '>'
-IS-GREATER-EQUAL    <  '>='
-PLUS                <  '+'
-MINUS               <  '-'
-NOT                 <  '!'
+OR                  <- '||'
+AND                 <- '&&'
+EQUAL               <- '=='
+NOT-EQUAL           <- '!='
+LESS                <- '<'
+LESS-EQUAL          <- '<='
+GREATER             <- '>'
+GREATER-EQUAL       <- '>='
+PLUS                <- '+'
+MINUS               <- '-'
+NOT                 <- '!'
+
+COMPARE             <- EQUAL / NOT-EQUAL / LESS-EQUAL / LESS / GREATER-EQUAL / GREATER
 
 
 BEHAVIOUR           <  'behaviour' ![a-zA-Z_0-9]
@@ -343,9 +339,9 @@ ELSE                <  'else' ![a-zA-Z_0-9]
 ENUM                <  'enum' ![a-zA-Z_0-9]
 EXTERN              <  'extern' ![a-zA-Z_0-9]
 EXTERNAL            <- 'external' ![a-zA-Z_0-9]
-FALSE               <  'false' ![a-zA-Z_0-9]
+FALSE               <- 'false' ![a-zA-Z_0-9]
 IF                  <  'if' ![a-zA-Z_0-9]
-ILLEGAL             <- 'illegal' ![a-zA-Z_0-9]
+ILLEGAL             <  'illegal' ![a-zA-Z_0-9]
 IMPORT              <  'import' ![a-zA-Z_0-9]
 IN                  <- 'in' ![a-zA-Z_0-9]
 INEVITABLE          <- 'inevitable' ![a-zA-Z_0-9]
@@ -398,11 +394,6 @@ KEYWORD <
 
 ")
 
-  (set! %peg-locations? #t)
   (let* ((result (match-pattern root string))
          (tree (peg:tree result)))
-    (set! %peg-locations? #f)
-    (display "tree:\n")
-    (pretty-print tree)
-    (newline)
     tree))

@@ -46,7 +46,7 @@
 (define ast-> pretty-print)
 
 (define* (parse-file file-name #:key peg? (imports '()))
-  (if peg? (peg:parse-file file-name)
+  (if peg? (begin (peg:parse-file file-name) (exit 0))
       (generator-parse-file file-name #:imports imports)))
 
 (define %include-path '("."))
@@ -77,10 +77,12 @@
     (let loop ((lines (string-split input #\newline)) (ln 1) (p 0))
       (if (null? lines) (values #f #f input)
           (let* ((line (car lines))
-                 (next-line (or (and (pair? (cdr lines)) (cadr lines)) ""))
                  (length (string-length line))
-                 (end (+ p length 1)))
-            (if (<= pos end) (values ln (+ 1 (- pos p)) (string-append line "\\n" next-line))
+                 (end (+ p length 1))
+                 (last? (null? (cdr lines))))
+            (if (<= pos end) (values ln (+ (if last? 0 1) (- pos p))
+                                     (if last? line
+                                         (string-append line "\\n" (cadr lines))))
                 (loop (cdr lines) (1+ ln) end)))))))
 
 (define (peg:parse-file file-name)
