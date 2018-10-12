@@ -109,7 +109,7 @@
 
 (module-define! (resolve-module '(peg codegen)) 'wrap-parser-for-users wrap-parser-for-users)
 
-(define (peg:parse string)
+(define (peg:parse string file-name)
 
   (define interface-events '())
 
@@ -167,8 +167,9 @@
 
   (define (-do-import- str len pos)
     (let* ((res (import str len pos))
-           (file-name (and res (string-trim-both (apply string-append (drop-right (cdadr res) 1)))))
-           (root (and res ((@@ (gaiag parse) peg:parse-file) file-name))))
+           (input-file-name file-name)
+           (file-name (and res (string-trim-both (apply string-append (cdadr res)))))
+           (root (and res ((@@ (gaiag parse) peg:parse-file) (string-append (dirname input-file-name) "/" file-name)))))
       (and res (list (car res) (list 'import file-name root)))))
   (define-peg-pattern do-import body -do-import-)
 
@@ -177,7 +178,7 @@
 
 top <- do-import / namespace / type / interface / component / data
 
-import <-- IMPORT (!SEMICOLON .)+ SEMICOLON#
+import <- IMPORT (!SEMICOLON .)+ SEMICOLON#
 
 namespace <-- NAMESPACE compound-name# BRACE-OPEN# top* BRACE-CLOSE#
 

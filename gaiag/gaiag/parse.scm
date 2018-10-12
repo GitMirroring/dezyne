@@ -90,7 +90,7 @@
   (let* ((string (with-input-from-file file-name read-string))
          (parse-tree (catch 'syntax-error
             (lambda ()
-              (peg:parse string))
+              (peg:parse string file-name))
             (lambda (key . args)
               (receive (ln col line) (line-column string (caar args))
                 (let ((indent (make-string col #\space)))
