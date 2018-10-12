@@ -52,6 +52,8 @@
       ("bool" (make <scope.name-node> #:name 'bool))
       ("void" (make <scope.name-node> #:name 'void))
 
+      ((and (? string?) (? (cut string-every char-set:digit <>))) (string->number o))
+
       ((? string?) (string->symbol o))
 
       (((and (? symbol?) type) body ... ('location pos end))
@@ -95,10 +97,10 @@
 
       (('range from to) (make <range-node> #:from (helper from) #:to (helper to)))
 
-      (('from number-string) (string->number number-string))
-      (('to number-string) (string->number number-string))
+      (('from string) (helper string))
+      (('to string) (helper string))
 
-      (('extern name value)
+      (('extern name ('data value rest ...))
        (make <extern-node> #:name (helper name) #:value (helper value)))
 
 
@@ -385,7 +387,7 @@
       (('var name) (make <var-node> #:variable.name (helper name)))
 
       (('variable type name)
-       (make <variable-node> #:name (helper name) #:type.name (helper type) #:expression (make <expression-node>)))
+       (make <variable-node> #:name (helper name) #:type.name (helper type) #:expression (make <literal-node>)))
 
       (('variable type name expression)
        (make <variable-node> #:name (helper name) #:type.name (helper type) #:expression (helper expression)))
@@ -412,7 +414,7 @@
 
       (('literal "true") (make <literal-node> #:value 'true))
       (('literal "false") (make <literal-node> #:value 'false))
-      (('literal number-string) (make <literal-node> #:value (string->number number-string)))
+      (('literal string) (make <literal-node> #:value (helper string)))
 
       (('location pos end)
        (receive
