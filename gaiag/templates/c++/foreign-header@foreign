@@ -29,6 +29,8 @@ struct #x:model-name
   virtual std::ostream& stream_members(std::ostream& os) const { return os; }
   void check_bindings() const;
   void dump_tree(std::ostream& os) const;
+  void set_state(std::map<std::string,std::map<std::string,std::string> >){}
+  void set_state(std::map<std::string,std::string>_alist){}
   friend std::ostream& operator << (std::ostream& os, const #x:model-name & m)  {
     return m.stream_members(os);
   }
