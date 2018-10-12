@@ -232,10 +232,24 @@
     ((? (is? <ast>)) (tree-map makreel:mark-tail-call o))
     (_ o)))
 
+(define (makreel:add-function-return root)
+  (define (f o)
+    (if (not (is-a? o <ast>)) o
+        (if (and o
+              (.parent o)
+              (is-a? (.parent o) <function>)
+              (is-a? o <compound>)
+              (is-a? (.type (.signature (.parent o))) <void>))
+            (if (pair? (tree-collect (is? <return>) o)) o
+                (clone o #:elements (append (.elements o) (list (make <return>)))))
+            (tree-map f o))))
+   (f root))
+
 (define makreel:normalize triples:state-traversal)
 (define (makreel:om ast)
   ((compose
     (lambda (o) (if (gdzn:command-line:get 'debug) (pretty-print (om->list o) (current-error-port))) o)
+    makreel:add-function-return
     makreel:mark-tail-call
     makreel:normalize (remove-otherwise) makreel:tick-names purge-data ast:resolve) ast))
 

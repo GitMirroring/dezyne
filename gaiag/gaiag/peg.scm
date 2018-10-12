@@ -322,8 +322,7 @@
        (make <function-node>
          #:name (helper name)
          #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals))
-                                                                                            ;;TODO: REMOVEME and fix normalize to add return to function
-         #:statement (make <compound-node> #:elements (append (make-list? (helper statement)) (list (make <return-node>))))))
+         #:statement (make <compound-node> #:elements (make-list? (helper statement)))))
 
       (('functions functions ...)
        (make <functions-node> #:elements (helper functions)))
