@@ -2,7 +2,7 @@
 /Kammer <taylanbayirli@gmail.com>
 ;;; Copyright © 2016, 2017 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -110,6 +110,9 @@
              (result '()))
     (match opts
       (() (reverse result))
+      ;; See https://debbugs.gnu.org/cgi/bugreport.cgi?bug=33216
+      ((#:eliminate-dead-code? _ rest ...)
+       (loop rest `(#t #:eliminate-dead-code? ,@result)))
       ((#:partial-eval? _ rest ...)
        (loop rest `(#t #:partial-eval? ,@result)))
       ((kw _ rest ...)
