@@ -204,7 +204,7 @@
 
 (define (dzn:annotate-shells o)
   (if (and (is-a? o <system>)
-           (equal? (command-line:get 'shell #f) (symbol->string (.name (.name o)))))
+           (equal? (command-line:get 'shell #f) (string-join (map symbol->string (om:scope+name o)) ".")))
       (make <shell-system> #:ports (.ports o) #:name (.name o) #:instances (.instances o) #:bindings (.bindings o))
       o))
 
