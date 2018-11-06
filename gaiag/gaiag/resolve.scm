@@ -119,7 +119,7 @@
   (define (name? o) (and (eq? (.name o) name) o))
   (match o
     (($ <behaviour>) (find name? (ast:variable* o)))
-    (($ <compound>) (or (find name? (filter (is? <variable>) (ast:statement* o))) (var? (.parent o) name)))
+    ((? (is? <compound>)) (or (find name? (filter (is? <variable>) (ast:statement* o))) (var? (.parent o) name)))
     (($ <function>) (or (find name? ((compose ast:formal* .signature) o)) (var? (.parent o) name)))
     (($ <formal>) (and (eq? (.name o) name) o))
     (($ <formal-binding>) (and (eq? (.name o) name) o));;(or (name? o) (.parent o) name)
