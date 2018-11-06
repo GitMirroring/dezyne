@@ -11,8 +11,8 @@ struct #x:model-name
   dzn::meta dzn_meta;
   dzn::runtime& dzn_rt;
   dzn::locator const& dzn_locator;
-  #x:injected-binding-declare
   #x:injected-instance-declare
+  #x:local_locator
   #x:non-injected-instance-declare
   #x:provided-port-reference-declare
   #x:required-port-reference-declare

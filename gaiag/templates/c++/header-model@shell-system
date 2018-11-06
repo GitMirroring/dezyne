@@ -12,10 +12,9 @@ struct #x:model-name
 {
   dzn::meta dzn_meta;
   dzn::runtime dzn_rt;
-  #x:injected-binding-declare
+  #x:injected-instance-declare
   dzn::locator dzn_locator;
   #x:non-injected-instance-declare
-  #x:injected-instance-declare
   #x:provided-port-instance-declare
   #x:required-port-instance-declare
   dzn::pump dzn_pump;
