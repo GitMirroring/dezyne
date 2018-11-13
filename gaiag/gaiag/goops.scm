@@ -521,7 +521,7 @@
   (direction))
 
 (define-ast <modeling-event> (<event>))
-(define-method (.signature (o <modeling-event>) void-signature))
+(define-method (.signature (o <modeling-event>)) void-signature)
 
 (define-method (.direction (o <modeling-event>)) 'in)
 
@@ -531,8 +531,8 @@
 (define-ast <optional> (<modeling-event>))
 (define-method (.name (o <optional>)) 'optional)
 
-(define ast:inevitable (make <inevitable>))
-(define ast:optional (make <optional>))
+(define (ast:inevitable) (make <inevitable>))
+(define (ast:optional) (make <optional>))
 
 (define-ast <port> (<named>)
   (type.name #:init-form (make <scope.name-node>))
