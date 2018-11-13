@@ -17,6 +17,7 @@
 }
 #x:model-name ::~ #x:model-name ()
 {
+  #x:asd-reset-api
   component.reset();
   #x:model-name Component::ReleaseInstance();
 }

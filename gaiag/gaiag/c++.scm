@@ -66,6 +66,7 @@
             c++:asd-register-cb
             c++:asd-register-cb-definition
             c++:asd-register-st
+            c++:asd-reset-api
             c++:capture-arguments
             c++:construction-include
             c++:construction-parameters
@@ -316,6 +317,10 @@
   (if (pair? (filter om:out? (om:events (om:port component))))
       (->string (list "component->RegisterCB(boost::make_shared<SingleThreaded>(this, boost::ref(dzn_rt)));\n"))
       ""))
+
+(define (c++:asd-reset-api component)
+  (map (lambda (api) (->string (list "api_" api ".reset();\n")))
+       (delete-duplicates (map second ((asd-interfaces om:in?) (provided-interface component))))))
 
 (define (c++:asd-method-declaration model)
   (map

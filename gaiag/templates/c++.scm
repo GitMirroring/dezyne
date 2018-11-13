@@ -124,6 +124,7 @@
 (define-templates asd-get-api c++:asd-get-api)
 (define-templates asd-register-cb c++:asd-register-cb)
 (define-templates asd-register-st c++:asd-register-st)
+(define-templates asd-reset-api c++:asd-reset-api)
 (define-templates asd-method-declaration c++:asd-method-declaration)
 (define-templates asd-method-definition c++:asd-method-definition)
 (define-templates asd-cb-method-definition c++:asd-cb-method-definition)
