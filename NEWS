@@ -5,14 +5,31 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
-* No changes in development since 2.8.0
-
-* Announcement: full verification support in 2.8.0 and deprecation of 2.7
-  - With the full verification support in 2.8.0, the 2.7.x are hereby
+* Announcement: dicontinuation of 2.7.x
+  - 2.7.x has been discontinued as of November 2018
+  - With the full verification support in 2.8.0, the 2.7.x was
     declared deprecated.  2.7 was intended as a verification preview
     release series while working on the transition to mCRL2 based
     verification.
-  - 2.7.x will be discontinued after August 2018.
+
+* Changes in development since 2.8.1
+** development is based on 2.8.1 NOT on 2.8.2
+   It contains work in progress and is not intended for evaluation or
+   production use.
+
+* Changes in 2.8.2 (since 2.8.1)
+** Code generation
+  - C++: fixed 7505 Namespaces and system components
+  - C++: fixed 7509 local variables within blocking cause a failure in
+    the code generator
+  - C++: fixed 7518 System with component with multiple injected
+    interfaces generates double component instantiations
+  - fixed shadowing a member variable with an interface declared event
+    parameter
+
+* Changes in 2.8.1 (since 2.8.0)
+** Verification
+  - Fixed the combined use of async and blocking
 
 * Changes in 2.8.0 (since 2.7.2)
 ** Verification
