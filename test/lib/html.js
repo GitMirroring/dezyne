@@ -401,7 +401,7 @@ function transform(result) {
     order.each(function(aspect) {
       var len = 1;
       var cl = summary[aspect];
-      if (cl.languages) {
+      if (cl && cl.languages) {
         len = Object.keys(summary[aspect].languages).length;
         cl = summary[aspect].status;
       }
@@ -416,7 +416,7 @@ function transform(result) {
 
     order.each(function(aspect) {
       var cl = summary[aspect];
-      if (cl.languages) {
+      if (cl && cl.languages) {
         languages.each(function(language) {
           var cl = summary[aspect].languages[language];
           header2.push({status: cl, class: cl+' '+aspect+' '+' '+p(language), name: language});
@@ -456,7 +456,7 @@ function transform(result) {
 
         order.each(function(aspect) {
           var aspoutcome = outcome[aspect] || 'SKIPPED';
-          if (summary[aspect].languages) {
+          if (summary && summary[aspect] && summary[aspect].languages) {
             languages.each(function(language) {
               var status = aspoutcome[version] && aspoutcome[version][language] || 'SKIPPED';
               var cl = status2class(status);
