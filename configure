@@ -293,13 +293,12 @@ Usage: ./configure [OPTION]...
       (for-each (lambda (o)
                   (substitute (string-append abs-top-srcdir "/" o) pairs))
                 '("dzn/lib/version.js.in"
-                  "dzn-daemon/lib/version.js.in"
+                  "dzn/dzn-daemon/lib/version.js.in"
                   "gaiag/gaiag/config.scm.in"
                   "gaiag/runtime/c++/dzn/meta.hh.in"
                   "gaiag/runtime/c++03/dzn/meta.hh.in"
                   "gaiag/runtime/c++-msvc11/dzn/meta.hh.in"
                   "server/version.js.in"
-                  "server/install.js.in"
                   "services/scripts/convert.sh.in"
                   "services/lib/version.js.in"
                   "services/root/js/version.js.in"))
