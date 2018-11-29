@@ -284,7 +284,7 @@
 (define-method (dzn:expression-expand (o <assign>))
   (.expression o))
 
-(define-method (dzn:expression-expand (o <reply>))
+(define-method (dzn:expression-expand (o <expression>))
   o)
 
 (define-method (dzn:class-member? (o <variable>)) ; MORTAL SIN HERE!!?
