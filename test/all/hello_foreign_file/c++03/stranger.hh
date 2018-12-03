@@ -24,9 +24,9 @@
 #ifndef FOREIGN_HH
 #define FOREIGN_HH
 
-struct foreign: public skel::foreign
+struct stranger: public skel::stranger
 {
-  foreign(const dzn::locator&);
+  stranger(const dzn::locator&);
   void w_world();
 };
 

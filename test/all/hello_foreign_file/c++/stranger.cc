@@ -23,11 +23,11 @@
 
 #include "hello_foreign_file.hh"
 
-foreign::foreign(const dzn::locator& l)
-: skel::foreign(l)
+stranger::stranger(const dzn::locator& l)
+: skel::stranger(l)
 {}
 
-void foreign::w_world()
+void stranger::w_world()
 {
   return;
 }

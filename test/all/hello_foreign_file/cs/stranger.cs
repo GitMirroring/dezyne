@@ -21,35 +21,7 @@
 //
 // Code:
 
-dzn_require = typeof (require) !== 'undefined' ? require : function () {return {};};
-dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');
-dzn = dzn || {};
-dzn = dzn || {};
-
-
-
-dzn.foreign = function (locator, meta) {
-  dzn.runtime.init (this, locator, meta);
-  this._dzn.meta.ports = ['w'];
-  this._dzn.flushes = true;
-
-
-
-
-
-  this.w = new dzn.iworld({provides: {name: 'w', component: this}, requires: {}});
-
-
-
-
-  this.w.in.world = function(){
-  };
-
-
-
-  this._dzn.rt.bind (this);
-};
-
-if (typeof (module) !== 'undefined') {
-  module.exports = dzn;
+public partial class stranger
+{
+    void w_world(){}
 }

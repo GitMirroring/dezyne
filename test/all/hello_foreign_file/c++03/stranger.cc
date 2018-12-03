@@ -1,6 +1,5 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -22,39 +21,13 @@
 //
 // Code:
 
-import iworld.dzn;
-import foreign.dzn;
+#include "hello_foreign_file.hh"
 
-interface ihello
+stranger::stranger(const dzn::locator& l)
+: skel::stranger(l)
+{}
+
+void stranger::w_world()
 {
-  in void hello();
-
-  behaviour
-  {
-    on hello: {}
-  }
-}
-
-component hello
-{
-  provides ihello h;
-  requires iworld w;
-
-  behaviour
-  {
-    on h.hello(): w.world();
-  }
-}
-
-component hello_foreign_file
-{
-  provides ihello h;
-
-  system
-    {
-      hello c;
-      stranger f;
-      h <=> c.h;
-      c.w <=> f.w;
-    }
+  return;
 }
