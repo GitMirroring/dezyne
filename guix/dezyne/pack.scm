@@ -75,8 +75,8 @@
     (native-inputs
      `(("dezyne-services" ,dezyne-services)
        ("dezyne-test-content" ,dezyne-test-content)
-       ("dezyne-services-2.8" ,dezyne-services-2.8)
-       ("dezyne-services-2.4" ,dezyne-services-2.4)
+       ;; ("dezyne-services-2.8" ,dezyne-services-2.8)
+       ;; ("dezyne-services-2.4" ,dezyne-services-2.4)
 
        ("bash" ,bash)
        ("boost" ,boost)
