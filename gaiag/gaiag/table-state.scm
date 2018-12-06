@@ -316,8 +316,7 @@
 (define (ast->table-state ast)
   ((compose
     (table table-state)
-    ast:resolve
-    parse->om)
+    ast:resolve)
    ast))
 
 (define (root->table o)

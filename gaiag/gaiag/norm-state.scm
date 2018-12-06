@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -148,6 +148,5 @@ reply en die kun je niet mixen"
     pretty-print
     om->list
     guard-leading-norm-state
-    ast:resolve
-    parse->om
-    ) ast))
+    ast:resolve)
+   ast))

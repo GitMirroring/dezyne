@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -43,23 +44,20 @@
     om->list
     ) o))
 
-(define ((sexp-is? type) o)
-  (and (pair? o)
-       (eq? (car o) type)
-       o))
-
 (define* (parse-tree->ast o #:key string (file-name "<stdin>"))
+  (define (make-list? o) (if (pair? o) o
+                             (list o)))
   (define (helper o)
     (match o
+      ("bool" (make <scope.name-node> #:name 'bool))
+      ("void" (make <scope.name-node> #:name 'void))
 
       ((? string?) (string->symbol o))
 
       (((and (? symbol?) type) body ... ('location pos end))
        (let ((ast (helper (cons type body)))
              (location (helper (last o))))
-         (if (and location (or (is-a? ast <root-node>)
-                               (is-a? ast <comment-node>)
-                               (is-a? ast <named-node>)))
+         (if (and location (or (is-a? ast <locationed-node>)))
              (clone ast #:location location)
              ast)))
 
@@ -70,53 +68,51 @@
              ast))) ;; TODO ensure (is-a? ast <ast>) is invariant to prevent comment loss
 
       (('root elements)
-       (make <root-node> #:elements (helper elements)))
+       (make <root-node> #:elements (make-list? (helper elements))))
 
       (('elements elements ...) (helper elements))
 
-      (('import name)
-       (make <import-node> #:name (helper name)))
+      (('import name root)
+       (make <import-node> #:name (helper name) #:root (helper root)))
 
-      (('namespace name elements ...)
+      (('namespace name)
+       (make <namespace-node>
+         #:name (helper name)))
+
+      (('namespace name elements)
        (make <namespace-node>
          #:name (helper name)
-         #:elements (helper elements)))
+         #:elements (make-list? (helper elements))))
 
       (('enum name fields)
        (make <enum-node> #:name (helper name) #:fields (helper fields)))
 
-      (('fields fields ...)
-       (make <fields-node> #:elements (map helper fields)))
-
-      (('fields field (fields ...))
-       (make <fields-node> #:elements (helper (cons field fields))))
+      (('fields names ...)
+       (make <fields-node> #:elements (helper names)))
 
       (('int name range)
        (make <int-node> #:name (helper name) #:range (helper range)))
 
-      (('range from to) (make <range-node> #:from from #:to to))
+      (('range from to) (make <range-node> #:from (helper from) #:to (helper to)))
+
+      (('from number-string) (string->number number-string))
+      (('to number-string) (string->number number-string))
 
       (('extern name value)
-       (make <extern-node> #:name (helper name) #:value value))
+       (make <extern-node> #:name (helper name) #:value (helper value)))
 
 
-      (('interface name body ...)
-       (let* ((sexp (helper (assoc 'types-or-events body))))
-         (receive (events types) (partition (sexp-is? 'event) (.sexp sexp))
-           (make <interface-node>
-             #:name (helper name)
-             #:types (helper (cons 'types types))
-             #:events (helper (cons 'events events))
-             #:behaviour (and=> (assoc 'behaviour body) helper)))))
+      (('interface name types-or-events behaviour)
+       (let* ((types-or-events (helper types-or-events))
+              (types (filter (is? <type-node>) types-or-events))
+              (events (filter (is? <event-node>) types-or-events)))
+         (make <interface-node>
+           #:name (helper name)
+           #:types (make <types-node> #:elements types)
+           #:events (make <events-node> #:elements events)
+           #:behaviour (helper behaviour))))
 
-      (('types-or-events types-or-events ...)
-       (make <sexp-node> #:sexp types-or-events))
-
-      (('events events ...)
-       (make <events-node> #:elements (helper events)))
-
-      (('event direction type name)
-       (helper (append o '((formals)))))
+      (('types-or-events types-or-events ...) (helper types-or-events))
 
       (('event direction type name formals)
        (make <event-node>
@@ -124,7 +120,22 @@
          #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals))
          #:direction (helper direction)))
 
-      (('formal-list foo ...) #f) ;; TODO
+      (('formals formal) (make <formals-node> #:elements (list (helper formal))))
+      (('formals formals ...) (make <formals-node> #:elements (helper formals)))
+      (('formal name)
+       (make <formal-node> #:name name))
+
+      (('formal type name)
+       (make <formal-node> #:name (helper name) #:type.name (helper type)))
+
+      (('formal direction type name)
+       (make <formal-node> #:name (helper name) #:type.name (helper type) #:direction (helper direction)))
+
+
+      (('trigger-formals formal) (make <formals-node> #:elements (list (helper formal))))
+      (('trigger-formals formals ...) (make <formals-node> #:elements (helper formals)))
+      (('trigger-formal name) (make <formal-node> #:name (helper name)))
+      (('out-formal var-a var-b) (make <out-formal> #:name (helper var-a) #:expression (helper var-b)))
 
       (('component name ports)
        (make <foreign-node>
@@ -161,19 +172,26 @@
       (('bindings elements ...)
        (make <bindings-node> #:elements (helper elements)))
 
-      (('binding instance port)
-       (make <binding-node> #:instance.name instance #:port.name port))
+      (('binding left right)
+       (make <binding-node> #:left (helper left) #:right (helper right)))
 
       ('ports (make <ports-node>))
       (('ports ports ...) (make <ports-node> #:elements (helper ports)))
 
-      (('port direction type name external-injected ...)
-       (make <port-node>
-         #:name (helper name)
-         #:type.name (helper type)
-         #:direction (helper direction)
-         #:external (find (lambda (x) (eq? x 'external)) external-injected)
-         #:injected (find (lambda (x) (eq? x 'injected)) external-injected)))
+      (('port direction type name)
+       (let* ((direction (helper direction))
+              (direction-list? (pair? direction)))
+        (make <port-node>
+          #:name (helper name)
+          #:type.name (helper type)
+          #:direction (if direction-list? (car direction) direction)
+          #:external (and direction-list? (find (lambda (x) (eq? x 'external)) direction))
+          #:injected (and direction-list? (find (lambda (x) (eq? x 'injected)) direction)))))
+
+      (('provides) 'provides)
+      (('requires) 'requires)
+      (('external) 'external)
+      (('injected) 'injected)
 
       (('declarative-compound 'behaviour-statement-list)
        (make <error-node> #:message "empty declarative-compound"))
@@ -197,21 +215,22 @@
        (let ((action-or-call (helper action-or-call)))
          (make <action-node> #:port.name (.scope action-or-call) #:event.name (.name action-or-call))))
 
-
       (('triggers triggers ...)
        (make <triggers-node> #:elements (helper triggers)))
 
-      (('trigger event)
-       (make <trigger-node> #:event.name (helper event)))
+      (('trigger event-name)
+       (make <trigger-node> #:event.name (helper event-name)))
 
-      (('trigger port event)
-       (make <trigger-node> #:port.name (helper port) #:event.name (helper event)))
-
+      (('trigger port-name event-name formals)
+       (make <trigger-node> #:event.name (helper event-name) #:port.name (helper port-name) #:formals (helper formals)))
 
       (('direction direction) (helper direction))
 
-      (('port-direction direction) (helper direction))
-
+      (('binding name)
+        (let* ((name (helper name))
+               (scope (.scope name))
+               (instance (and (pair? scope) (car scope))))
+         (make <binding-node> #:instance.name instance #:port.name (.name name))))
 
       (('compound-name name)
        (make <scope.name-node> #:name (helper name)))
@@ -219,9 +238,14 @@
       (('compound-name scope name)
        (make <scope.name-node> #:scope (helper scope) #:name (helper name)))
 
-      (('name name) (helper name))
+      (('scope ('global rest ...) names) (cons '* (make-list? (helper names))))
+      (('scope name) (make-list? (helper name)))
+      (('scope names ...) (helper names))
 
-      (('type-name name) (make <type-node> #:name (helper name)))
+      (('name name) (helper name))
+      (('add-var name) (helper name))
+
+      (('type-name name) (helper name))
       (('event-name name) (helper name))
       (('identifier identifier) (helper identifier))
 
@@ -229,12 +253,13 @@
 
       (('illegal) (make <illegal-node>))
 
+      (('action (port event)) (make <action-node> #:port.name (helper port) #:event.name (helper event)))
+
+      (('action (port event) arguments) (make <action-node> #:port.name (helper port) #:event.name (helper event) #:arguments (helper arguments)))
+
       (('action port event) (make <action-node> #:port.name (helper port) #:event.name (helper event)))
 
       (('action port event arguments) (make <action-node> #:port.name (helper port) #:event.name (helper event) #:arguments (helper arguments)))
-
-      (('arguments arguments ...) (make <arguments-node>
-                                    #:elements (helper arguments)))
 
       (('assign var expression) (make <assign-node>
                                   #:variable.name (helper var)
@@ -250,26 +275,34 @@
            #:ports (make <ports-node> #:elements (filter (is? <port-node>) (.elements compound)))
            #:variables (make <variables-node> #:elements (filter (is? <variable-node>) (.elements compound)))
            #:functions (make <functions-node> #:elements (filter (is? <function-node>) (.elements compound)))
-           #:statement (clone compound #:elements (filter (is? <statement-node>) (.elements compound))))))
+           #:statement (clone compound #:elements (filter (conjoin (is? <statement-node>) (negate (is? <variable-node>))) (.elements compound))))))
+
+      (('behaviour name compound)
+       (let ((compound (helper compound)))
+         (make <behaviour-node>
+           #:types (make <types-node> #:elements (filter (is? <type-node>) (.elements compound)))
+           #:ports (make <ports-node> #:elements (filter (is? <port-node>) (.elements compound)))
+           #:variables (make <variables-node> #:elements (filter (is? <variable-node>) (.elements compound)))
+           #:functions (make <functions-node> #:elements (filter (is? <function-node>) (.elements compound)))
+           #:statement (clone compound #:elements (filter (conjoin (is? <statement-node>) (negate (is? <variable-node>))) (.elements compound))))))
 
       (('bind left right)
-       (make <bind-node> #:left (helper left) #:right (helper right)))
+       (make <bind> #:left (helper left) #:right (helper right)))
 
 
       (('blocking statement) (make <blocking-node> #:statement (helper statement)))
 
-      (('call function) (make <call-node> #:function.name function))
+      (('call function) (make <call-node> #:function.name (helper function)))
 
       (('call function arguments)
        (make <call-node>
-         #:function.name function
-         #:arguments (helper (or (null-is-#f arguments) '(arguments)))))
+         #:function.name (helper function)
+         #:arguments (helper arguments)))
 
-      (('call function arguments last?)
-       (make <call-node>
-         #:function.name function
-         #:arguments (helper (or (null-is-#f arguments) '(arguments)))
-         #:last? last?))
+
+      (('arguments argument) (make <arguments-node> #:elements (list(helper argument))))
+      (('arguments argument ...) (make <arguments-node> #:elements (helper argument)))
+      (('argument expression) (helper expression))
 
       (('foreign name body ...)
        (make <foreign-node>
@@ -279,18 +312,18 @@
       (('compound statements ...)
        (make <compound-node> #:elements (helper statements)))
 
-      (('data value) (make <data-node> #:value value))
+      (('data value) (make <data-node> #:value (helper value)))
 
 
-      (('field-test identifier field) (make <field-test-node> #:variable.name identifier #:field field))
+      (('field-test ('var identifier location) field) (make <field-test-node> #:variable.name (string->symbol identifier) #:field (helper field)))
 
 
-      (('function name signature recursive? statement)
+      (('function type name formals statement)
        (make <function-node>
-         #:name name
-         #:signature (helper signature)
-         #:recursive recursive?
-         #:statement (helper statement)))
+         #:name (helper name)
+         #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals))
+                                                                                            ;;TODO: REMOVEME and fix normalize to add return to function
+         #:statement (make <compound-node> #:elements (append (make-list? (helper statement)) (list (make <return-node>))))))
 
       (('functions functions ...)
        (make <functions-node> #:elements (helper functions)))
@@ -311,44 +344,22 @@
          #:then (helper then)
          #:else (helper else)))
 
-      (('instance name type) (make <instance-node> #:name name #:type.name (helper type)))
+      (('instance type name) (make <instance-node> #:name (helper name) #:type.name (helper type)))
 
       (('instances instances ...)
        (make <instances-node> #:elements (helper instances)))
 
-
-      (('enum-literal name field) (make <enum-literal-node> #:type.name (helper name) #:field field))
+      (('enum-literal type field)
+       (let ((type (helper type)))
+         (make <enum-literal-node> #:type.name (make <scope.name-node> #:scope (drop-right type 1) #:name (last type)) #:field (helper field))))
 
       (('otherwise) (make <otherwise-node> #:value 'otherwise))
 
       (('otherwise value) (make <otherwise-node> #:value value))
 
-      (('formal name #f #f)
-       (make <formal-node> #:name name))
-
-      (('formal name type)
-       (make <formal-node> #:name name #:type.name (helper type)))
-
-      (('formal name type direction)
-       (make <formal-node> #:name name #:type.name (helper type) #:direction direction))
-
-      (('formal-binding name #f #f variable)
-       (make <formal-binding-node> #:name name #:variable.name variable))
-
-      (('formal-binding name type #f variable)
-       (make <formal-binding-node> #:name name #:type.name (helper type) #:variable.name variable))
-
-      (('formal-binding name type direction variable)
-       (make <formal-binding-node> #:name name #:type.name (helper type) #:direction direction #:variable.name variable))
-
-      (('formals formals ...)
-       (make <formals-node> #:elements (helper formals)))
-
-
-
-      (('reply expression) (make <reply-node> #:expression (helper expression)))
-
-      (('reply expression port) (make <reply-node> #:expression (helper expression) #:port.name port))
+      (('reply port "reply") (make <reply-node> #:port.name (helper port)))
+      (('reply port "reply" expression) (make <reply-node> #:port.name (helper port) #:expression (helper expression)))
+      (('reply "reply" expression) (make <reply-node> #:expression (helper expression)))
 
       (('return) (make <return-node>))
 
@@ -368,10 +379,6 @@
          #:instances (helper instances)
          #:bindings (helper bindings)))
 
-      (('type 'bool) (make <bool-node>))
-
-      (('type 'void) (make <void-node>))
-
       (('type name) (make <type-node> #:name (helper name)))
 
       (('types types ...) (make <types-node> #:elements (helper types)))
@@ -387,14 +394,14 @@
       (('variables variables ...)
        (make <variables-node> #:elements (helper variables)))
 
-      ((left '<- right) (make <formal-binding> #:formal (helper left) #:name (helper right)))
-
-      ((or 'bool 'void) o)
-
-      ((left "or" right) (make <or-node> #:left (helper left) #:right (helper right)))
-      ((left "and" right) (make <and-node> #:left (helper left) #:right (helper right)))
+      (('expression expression) (helper expression))
+      (('expression expression ...) (helper expression))
+      (('group expression) (make <group> #:expression (helper expression)))
+      ((left "||" right) (make <or-node> #:left (helper left) #:right (helper right)))
+      ((left "&&" right) (make <and-node> #:left (helper left) #:right (helper right)))
 
       ((left "+" right) (make <plus-node> #:left (helper left) #:right (helper right)))
+      ((left "-" right) (make <minus-node> #:left (helper left) #:right (helper right)))
       ((left "-" right) (make <minus-node> #:left (helper left) #:right (helper right)))
       ((left "<" right) (make <less-node> #:left (helper left) #:right (helper right)))
       ((left "<=" right) (make <less-equal-node> #:left (helper left) #:right (helper right)))
@@ -402,7 +409,7 @@
       ((left "!=" right) (make <not-equal-node> #:left (helper left) #:right (helper right)))
       ((left ">"  right) (make <greater-node> #:left (helper left) #:right (helper right)))
       ((left ">=" right) (make <greater-equal-node> #:left (helper left) #:right (helper right)))
-      (("!" expression) (make <not-node> #:expression (helper expression)))
+      (('not expression) (make <not-node> #:expression (helper expression)))
 
       (('literal "true") (make <literal-node> #:value 'true))
       (('literal "false") (make <literal-node> #:value 'false))
@@ -433,16 +440,10 @@
               (if (<= pos end) (values ln (- pos p))
                   (loop (cdr lines) (1+ ln) end)))))))
 
-  (let* ((ast-node-tree (helper o))
-         (l (tree-collect (negate (disjoin (is? <ast>) (is? <string>) (is? <number>) boolean? symbol?)) (make <root> #:node ast-node-tree))))
-    (when (pair? l)
-      ;; (display "pt:\n")
-      ;; (pretty-print (om->list o))
-      ;; (newline)
+  ;;(pretty-print (om->list o))
+  (make <root> #:node (helper o)))
 
-      ;; (display "ast-node:\n")
-      ;; (pretty-print (om->list ast))
-      ;; (newline)
-      (pretty-print (om->list l))
-      (throw 'ast-is-not-fully-goopsy #t))
-    ast-node-tree))
+
+;; differences in ast:
+;;  import
+;;  async

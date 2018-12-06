@@ -421,10 +421,12 @@
   (string))
 
 (define-ast <named> (<locationed>)
-  (name))                               ; <scope.name>
+  (name))                               ; symbol or <scope.name>
 
+(define-ast <declaration> (<named>))
+(define-ast <scope> (<ast>))
 
-(define-ast <namespace> (<named> <ast-list>))
+(define-ast <namespace> (<scope> <declaration> <ast-list>))
 (define-method (.name.name (o <namespace>))
   ((compose .name .name) o))
 
@@ -448,7 +450,7 @@
   (port))
 (define-method (.port.name (o <out-bindings>)) (and=> (.port o) .name))
 
-(define-ast <compound> (<ast-list> <statement>))
+(define-ast <compound> (<scope> <ast-list> <statement>))
 (define-ast <blocking-compound> (<compound>)
   (port))
 (define-method (.port.name (o <blocking-compound>)) (and=> (.port o) .name))
@@ -472,18 +474,19 @@
 (define-ast <types> (<ast-list>))
 (define-ast <variables> (<ast-list>))
 
-(define-ast <import> (<named>))
+(define-ast <import> (<named>)
+  (root))
 
-(define-ast <model> (<named>))
+(define-ast <model> (<scope> <declaration>))
 
 (define-ast <interface> (<model>)
   (types #:init-form (make <types-node>))
   (events #:init-form (make <events-node>))
   (behaviour))
 
-(define-ast <type> (<named>))
+(define-ast <type> (<declaration>))
 
-(define-ast <enum> (<type>)
+(define-ast <enum> (<scope> <type>)
   (fields #:init-form (list)))
 
 (define-method (.name.name (o <enum>))
@@ -514,12 +517,12 @@
   (to #:init-value 0))
 
 (define-ast <signature> (<ast>)
-  (type.name #:init-form (make <scope.name> #:name 'void))
+  (type.name #:init-form (make <scope.name-node> #:name 'void))
   (formals #:init-form (make <formals-node>)))
 
 (define void-signature (make <signature-node>))
 
-(define-ast <event> (<named>)
+(define-ast <event> (<declaration>)
   (signature #:init-form (make <signature-node>))
   (direction))
 
@@ -537,19 +540,13 @@
 (define (ast:inevitable) (make <inevitable>))
 (define (ast:optional) (make <optional>))
 
-(define-ast <port> (<named>)
+(define-ast <port> (<declaration>)
   (type.name #:init-form (make <scope.name-node>))
   (direction)                           ; symbol 'provides / 'requires
   (external)
   (injected))
 
-;; (define-method (.scope.name (o <named>))
-;;   (slot-ref o 'name))
-
-;; (define-method (.name (o <port>))
-;;   ((compose .name .scope.name) o))
-
-(define-ast <trigger> (<ast>)
+(define-ast <trigger> (<scope> <locationed>)
   (port.name)
   (event.name)
   (formals #:init-form (make <formals-node>)))
@@ -609,7 +606,7 @@
 (define-method (.name (o <var>)) ;;TODO: FIXME
   (.variable.name o))
 
-(define-ast <variable> (<named> <imperative> <expression>)
+(define-ast <variable> (<declaration> <imperative> <expression>)
   (type.name)
   (expression #:init-form (make <expression-node>)))
 
@@ -624,9 +621,9 @@
 (define-ast <otherwise> (<expression>) ;; FIXME: make <guard-otherwise/guard-else-node> instead
   (value #:init-value *unspecified*))
 
-(define-ast <formal> (<named> <expression>)
+(define-ast <formal> (<declaration> <expression>)
   (type.name)
-  (direction))
+  (direction #:init-value 'in))
 
 (define-ast <formal-binding> (<formal>)
   (variable.name))
@@ -645,14 +642,14 @@
 
 (define-ast <shell-system> (<system>))
 
-(define-ast <behaviour> (<named>)
+(define-ast <behaviour> (<scope> <declaration>)
   (types #:init-form (make <types-node>))
   (ports #:init-form (make <ports-node>))
   (variables #:init-form (make <variables-node>))
   (functions #:init-form (make <functions-node>))
   (statement #:init-form (make <compound-node>)))
 
-(define-ast <function> (<named>)
+(define-ast <function> (<scope> <declaration>)
   (signature #:init-form (make <signature-node>))
   (recursive)
   (statement))
@@ -718,8 +715,9 @@
   (instance.name)
   (port.name))
 
-(define-ast <instance> (<named> <declarative>)
-  (type.name #:init-form (make <scope.name-node>)))
+(define-ast <instance> (<declaration> <declarative>)
+  (type.name #:init-form (make <scope.name-node>))
+  (container))
 
 (define-ast <error> (<ast>)
   (ast)

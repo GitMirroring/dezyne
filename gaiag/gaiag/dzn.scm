@@ -150,9 +150,8 @@
 
 (define (dzn:om ast)
   ((compose
-    ast:resolve
-    parse->om
-    ) ast))
+    ast:resolve)
+   ast))
 
 (define (dzn:language)
   (let ((language (string->symbol (command-line:get 'language "dzn"))))

@@ -112,9 +112,6 @@
 (define (resolve:variable model o)
   (find (om:named o) (om:variables model)))
 
-
-
-
 (define-method (var? (o <ast>) name)
   (define (name? o) (and (eq? (.name o) name) o))
   (match o
@@ -128,7 +125,121 @@
     ((? (lambda (o) (is-a? (.parent o) <variable>))) (var? ((compose .parent .parent) o) name))
     (_ (var? (.parent o) name))))
 
-(define-method (type? (o <ast>) name) ;;FIXME stop recursion when AST not fresh
+
+
+
+
+
+
+
+
+
+
+;; (define-method (ast:name-equal? (a <scope.name>) (b <named>))
+;;   (warn 'ast:name-equal 'a a 'b b '=> (equal? (om:scope+name a) (om:scope+name b))))
+
+(define-method (ast:name-equal? (a <symbol>) (b <symbol>))
+  (eq? a b))
+
+(define-method (ast:name-equal? (a <symbol>) (b <named>))
+  ;;(stderr "ast:name-equal? ~s =? ~s\n" a b)
+  (let ((name (.name b)))
+    (receive (scope name)
+        (match name
+          ((and ($ <scope.name>) (= .scope scope) (= .name name)) (values scope name))
+          (_ (values '() name)))
+      (and (null? scope) (eq? a name)))))
+
+(define-method (ast:name-equal? (a <symbol>) (b <compound>))
+  ;;(stderr "ast:name-equal? ~s =? ~s\n" a b)
+  #f)
+
+(define-method (ast:lookup (o <scope>) (name <scope.name>))
+  ;;(stderr "ast:lookup[~s]: ~s\n" o name)
+  (let ((scope (.scope name)))
+    (if (null? scope) (if (ast:name-equal? (.name name) o) o
+                          (ast:lookup o (.name name)))
+        (let* ((first (car scope))
+               (first-scope (ast:lookup o first)))
+          (if (not first-scope) (error "boo")
+              (let ((name (clone name #:scope (cdr scope))))
+                ;;(stderr "found first scope:~s\n" first-scope)
+                (ast:lookdown first-scope name)))))))
+
+(define-method (ast:lookdown (o <scope>) (name <scope.name>))
+  ;;(stderr "ast:lookdown[~s]: ~s\n" o name)
+  (let ((name (.name name))
+        (scope (.scope name)))
+    (if (null? scope) (find (cut ast:name-equal? name <>) (ast:declaration* o))
+        (let* ((first (car scope))
+               (first-scope (ast:lookdown o first)))
+          (if (not first-scope) (error "boo")
+              (let ((name (clone name #:scope (cdr scope))))
+                ;;(stderr "found first scope:~s\n" first-scope)
+                (ast:lookdown first-scope name)))))))
+
+(define-method (ast:lookdown (o <ast>) (name <scope.name>))
+  ;;(stderr "ast:lookdown <ast>[~s]: ~s\n" o name)
+  #f)
+
+(define-method (ast:lookup (o <ast>) name)
+  ;;(stderr "ast:lookup <ast> 2 [~s]: ~s\n" o name)
+  (ast:lookup (parent o <scope>) name))
+
+(define-method (ast:lookup (o <scope>) (name <symbol>))
+  ;;(stderr "ast:lookup 3 [~s]: ~s\n" o name)
+  (or (find (cut ast:name-equal? name <>) (ast:declaration* o))
+      (let ((p (.parent o)))
+        (and p
+             (ast:lookup (parent p <scope>) name)))))
+
+(define-method (ast:declaration* (o <namespace>))
+  (ast:global* o))
+
+(define-method (ast:declaration* (o <interface>))
+  (append (ast:type* o) (ast:event* o)))
+
+(define-method (ast:declaration* (o <component-model>))
+  (ast:port* o))
+
+(define-method (ast:declaration* (o <system>))
+  (append (ast:port* o) (ast:instance* o)))
+
+(define-method (ast:declaration* (o <behaviour>))
+  (append (ast:type* o) (ast:function* o) (ast:variable* o)))
+
+(define-method (ast:declaration* (o <compound>))
+  (ast:variable* o))
+
+(define-method (ast:declaration* (o <function>))
+  (ast:formal* o))
+
+(define-method (ast:declaration* (o <trigger>))
+  (ast:formal* o))
+
+(define-method (ast:declaration* (o <enum>))
+  (ast:field* o))
+
+
+
+(define-method (type? (o <ast>) name)
+  (ast:lookup o name))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(define-method (type?- (o <ast>) name) ;;FIXME stop recursion when AST not fresh
   (define (name? e) (and (eq? (.scope+name (.name e)) (.scope+name name)) e))
   (define (scope? e)
     (cond ((is-a? e <scope.name>)
@@ -149,14 +260,14 @@
          (($ <root>)
           (let ((scope (find scope? (.elements o))))
             (if (and scope (pair? (.scope name)))
-                (type? scope name)
+                (type?- scope name)
                 (find name? (ast:type* o)))))
          (($ <interface>)
           (if (and (is-a? name <scope.name>) (prefix? (om:scope+name (.name o)) (om:scope+name name))) (find name? (ast:type* o))
-              (type? (.parent o) (full-name name (->list (.name o))))))
-         (($ <behaviour>) (or (find name? (ast:type* o)) (type? (.parent o) name)))
+              (type?- (.parent o) (full-name name (->list (.name o))))))
+         (($ <behaviour>) (or (find name? (ast:type* o)) (type?- (.parent o) name)))
          ((? (is? <type>)) (name? o))
-         (_ (type? (.parent o) name))))
+         (_ (type?- (.parent o) name))))
 
 
 (define-method (bind-instance? (o <ast>) name)
@@ -292,6 +403,5 @@
   ((compose
     pretty-print
     om->list
-    ast:resolve
-    parse->om
-    ) ast))
+    ast:resolve)
+   ast))

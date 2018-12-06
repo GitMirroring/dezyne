@@ -237,7 +237,7 @@
   ((compose
     (lambda (o) (if (gdzn:command-line:get 'debug) (pretty-print (om->list o) (current-error-port))) o)
     makreel:mark-tail-call
-    makreel:normalize (remove-otherwise) makreel:tick-names purge-data ast:resolve parse->om) ast))
+    makreel:normalize (remove-otherwise) makreel:tick-names purge-data ast:resolve) ast))
 
 (define (ast-> ast)
   (let ((root (makreel:om ast)))

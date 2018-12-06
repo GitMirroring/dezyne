@@ -122,6 +122,5 @@
   ((compose
     om->list
     ast:wfc
-    ast:resolve
-    parse->om
-    ) ast))
+    ast:resolve)
+   ast))

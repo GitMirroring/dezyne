@@ -790,9 +790,8 @@
     (remove-otherwise)
     (binding-into-blocking)
     code:add-calling-context
-    ast:resolve
-    parse->om
-    ) ast))
+    ast:resolve)
+   ast))
 
 (define-method (code:add-calling-context (o <root>))
   (let ((calling-context (command-line:get 'calling-context #f)))

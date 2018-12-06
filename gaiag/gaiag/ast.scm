@@ -155,6 +155,7 @@
 (define-method (ast:type* (o <behaviour>)) ((compose ast:type* .types) o))
 (define-method (ast:variable* (o <behaviour>)) ((compose ast:variable* .variables) o))
 (define-method (ast:variable* (o <model>)) ((compose ast:variable* .behaviour) o))
+(define-method (ast:variable* (o <compound>)) (filter (is? <variable>) (.elements o)))
 (define-method (ast:type* (o <root>)) (filter (is? <type>) (ast:global* o)))
 
 (define-method (ast:dzn-scope? (o <model>))

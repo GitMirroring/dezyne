@@ -111,7 +111,7 @@ Usage: gdzn parse [OPTION]... [FILE]...
          (debug? (gdzn:command-line:get 'debug #f))
          (peg? (gdzn:command-line:get 'peg #f)) ;; assert-parse eats error message
          (ast ((if (or debug? peg?) parse assert-parse) options (car files))))
-    (if (or debug? peg?)
+    (if (or debug?)
         (let ((file-name (option-ref options 'output "-"))
               (sexp (om->list ast)))
           (if (equal? file-name "-") (pretty-print sexp)

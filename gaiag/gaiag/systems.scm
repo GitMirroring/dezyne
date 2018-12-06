@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -48,6 +48,6 @@
       (exit (or (not name) (pair? systems))))))
 
 (define (ast-> ast)
-  (let ((om ((compose ast:resolve parse->om) ast)))
+  (let ((om ((compose ast:resolve) ast)))
     (om->systems om))
   "")

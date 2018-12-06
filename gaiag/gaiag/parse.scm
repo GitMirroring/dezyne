@@ -39,6 +39,7 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag peg)
+  #:use-module (gaiag om)
 
 
   #:export (%include-path parse-file try-find-file))
@@ -68,7 +69,7 @@
       (let ((ast (read (car ports)))
             (error (read-string (cadr ports))))
         (handle-error job error)
-        ast))))
+        (parse->om ast)))))
 
 (define (line-column input pos)
   (let* ((length (string-length input))
@@ -101,13 +102,13 @@
                           (cadar args))
                   (exit 1))))))
          (gdzn-debug? (gdzn:command-line:get 'debug)))
-    (when gdzn-debug?
-      (stderr "parse-tree:\n")
-      (pretty-print (om->list parse-tree)))
+    ;; (when gdzn-debug?
+    ;;   (stderr "parse-tree:\n")
+    ;;   (pretty-print (om->list parse-tree)))
     (let ((ast (parse-tree->ast parse-tree #:string string #:file-name file-name)))
-      (when gdzn-debug?
-        (stderr "ast:\n")
-        (pretty-print (om->list ast)))
+      ;; (when gdzn-debug?
+      ;;   (stderr "ast:\n")
+      ;;   (pretty-print (om->list ast)))
       ast)))
 
 (define (find-model-file o)

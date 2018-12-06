@@ -381,8 +381,6 @@
 
 (define (ast-> ast)
   ((compose
-    pretty-print
-    om->list
-    root->
-    parse->om)
+    (cut display ast->dzn <>)
+    root->)
    ast))

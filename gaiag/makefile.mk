@@ -3,10 +3,8 @@
 # Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 # Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 # Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
-# Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 # Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 # Copyright © 2014 Henk Katerberg <henk.katerberg@yahoo.com>
-# Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Gaiag.
 #

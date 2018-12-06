@@ -393,6 +393,5 @@
     pretty-print
     om->list
     code-norm-event
-    ast:resolve
-    parse->om
-    ) ast))
+    ast:resolve)
+   ast))

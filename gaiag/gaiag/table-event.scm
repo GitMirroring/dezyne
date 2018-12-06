@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
@@ -63,8 +63,7 @@
 (define (ast->table-event ast)
   ((compose
     (table table-event)
-    ast:resolve
-    parse->om)
+    ast:resolve)
    ast))
 
 (define (root->table o)
