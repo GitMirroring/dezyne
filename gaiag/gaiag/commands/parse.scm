@@ -30,6 +30,8 @@
   #:use-module (ice-9 regex)
 
   #:use-module (gaiag display)
+  #:use-module (json)
+
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
@@ -120,9 +122,12 @@ Usage: gdzn parse [OPTION]... [FILE]...
          (peg? (gdzn:command-line:get 'peg #f)) ;; assert-parse eats error message
          (ast ((if (or debug? peg?) parse assert-parse) options (car files))))
     (if (option-ref options 'output #f)
-        (let ((file-name (option-ref options 'output "-"))
-              (sexp (om->list ast)))
-          (if (equal? file-name "-") (pretty-print sexp)
-              (with-output-to-file file-name (cut pretty-print sexp))))
+        (let* ((file-name (option-ref options 'output "-"))
+               (sexp (om->list ast))
+               (json? (gdzn:command-line:get 'json))
+               (output (if json? (scm->json-string sexp)
+                           (with-output-to-string (cut pretty-print sexp)))))
+          (if (equal? file-name "-") (display output)
+              (with-output-to-file file-name (cut display output))))
         (when (gdzn:command-line:get 'verbose)
           (display "parse: no errors found")))))

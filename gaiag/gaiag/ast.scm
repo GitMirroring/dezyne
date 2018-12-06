@@ -105,6 +105,7 @@
            ast:external?
            ast:injected?
            ast:type
+           ast:value
 
            ast:acceptance*
            ast:argument*
@@ -772,6 +773,11 @@
     (($ <formal>)
      (clone o #:type.name (rescope-name (.type o) parent)))
     (_ o)))
+
+(define-method (ast:value (o <literal>))
+  (.value o))
+(define-method (ast:value (o <enum-literal>))
+  (symbol-join (append (ast:full-name (.type.name o)) (list (.field o)))))
 
 (define-method (ast:rescope (o <boolean>) x)
   o)

@@ -95,6 +95,7 @@
            .functions
            .incomplete
            .injected
+           .input
            .instances
            .last?
            .left
@@ -111,6 +112,7 @@
            .recursive
            .right
            .root
+           .runtime-instance
            .scope
            .sexp
            .signature
@@ -731,10 +733,14 @@
 (define-ast <flush> (<imperative>)
   (instance))
 
-(define-ast <trigger-return> (<imperative>)
+(define-ast <trigger-return-> (<imperative>)
   (expression)
   (port.name)
   (event.name #:init-value 'return))
+
+(define-ast <trigger-return> (<trigger-return->))
+
+(define-ast <trigger-out-return> (<trigger-return->))
 
 (define-ast <q-in> (<ast>)
   (trigger))
@@ -770,6 +776,10 @@
 
 (define-ast <no-match> (<status>)
   (input))
+
+(define-ast <eot> (<status>) ;; end of trail
+  (runtime-instance)
+  (trigger))
 
 (define-ast <skip> (<imperative>))
 

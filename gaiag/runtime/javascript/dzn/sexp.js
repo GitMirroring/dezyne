@@ -28,7 +28,7 @@ if (!Array.prototype.each) {
 var sexp = {
   EOF:-1
   ,
-  nil: {car:0,cdr:0}
+  nil: {car:undefined,cdr:undefined}
   ,
   dot: {car:'.',cdr:0}
   ,
@@ -110,8 +110,10 @@ var sexp = {
       }
       if (!cont) print (')');
     }
-    else
+    else if(x.car)
       print (x.car);
+    else
+      print (x);
 
     return sexp.nil;
   }
@@ -145,6 +147,20 @@ var sexp = {
     }
     return alist;
   }
+  ,
+  to_sexp: function (o) { //TODO: character literals, strings, vectors
+    if (Array.isArray(o)) //list
+      return '(' + o.map(function (o) {return sexp.to_sexp(o);}).join(' ') + ')';
+    else if (typeof(o) === 'object') {
+      var keys = Object.keys(o);
+//      if(keys.length > 1) //list of pair, aka alist
+//        return '('+keys.map(function (key){return '('+key+' . '+sexp.to_sexp(o[key])+')';}).join(' ')+')';
+//      else //pair
+        return keys.map(function (key){return '('+key+' . '+sexp.to_sexp(o[key])+')';}).join(' ');
+    }
+    else //other atoms, integer, symbol
+      return '' + o;
+  },
 };
 if (typeof module !== 'undefined') {
   module.exports = sexp;

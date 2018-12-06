@@ -90,6 +90,7 @@
            eq??
            equal??
            symbol-prefix?
+           symbol-suffix?
            symbol-capitalize
            symbol-upcase
            symbol-upcase-first

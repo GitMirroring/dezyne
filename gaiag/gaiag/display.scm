@@ -26,7 +26,7 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag command-line)
   #:use-module (gaiag goops)
-  #:export (display-slots om->list))
+  #:export (display-slots display-slot om->list))
 
 (define-method (sdisplay (o <ast-node>) port)
   (display #\space port)
@@ -36,35 +36,45 @@
   (display #\space port)
   (display o port))
 
+(define-method (display-slot (o <object>) name port)
+  (let* ((value (slot-ref o name)))
+    (when (and value
+               (or (not (eq? name 'location))
+                   (command-line:get 'locations)))
+      (cond ((eq? name 'elements)
+             (when (pair? value)
+               (for-each (lambda (x) (sdisplay x port)) value)))
+            ((is-a? value <scope.name-node>)
+             (sdisplay #\( port)
+             (display name port)
+             (sdisplay "." port)
+             (display value port)
+             (display #\) port))
+            (else
+             (sdisplay #\( port)
+             (display name port)
+             (when (not (null? value))
+               (sdisplay "." port)
+               (sdisplay value port))
+             (display #\) port))))))
+
 (define-method (display-slots (o <object>) port)
   (for-each
-   (lambda (slot)
-     (let* ((name (slot-definition-name slot))
-            (value (slot-ref o name)))
-       (when (and value
-                  (or (not (eq? name 'location))
-                      (command-line:get 'locations)))
-         (cond ((eq? name 'elements)
-                (when (pair? value)
-                    (for-each (lambda (x) (sdisplay x port)) value)))
-               (else
-                (sdisplay #\( port)
-                (display name port)
-                (when (not (null? value))
-                  (sdisplay "." port)
-                  (sdisplay value port))
-                (display #\) port))))))
-   (class-slots (class-of o))))
+   (cut display-slot o <> port)
+   (map slot-definition-name (class-slots (class-of o)))))
 
 (define (symbol-drop-right o n)
   ((compose string->symbol (cut string-drop-right <> n) symbol->string) o))
 
-(define-method (sdisplay (o <location-node>) port)
+(define-method (display (o <location-node>) port)
   (display #\( port)
   (display #\( port)
   (display-slots o port)
   (display #\) port)
   (display #\) port))
+
+(define-method (display (o <scope.name-node>) port)
+  (sdisplay (string-join (map symbol->string (append (.scope o) (list (.name o)))) ".") port))
 
 (define-method (write (o <ast-list-node>) port)
   (display #\( port)

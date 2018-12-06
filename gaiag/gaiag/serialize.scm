@@ -1,0 +1,106 @@
+;;; Dezyne --- Dezyne command line tools
+;;;
+;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; This file is part of Dezyne.
+;;;
+;;; Dezyne is free software: you can redistribute it and/or modify it
+;;; under the terms of the GNU Affero General Public License as
+;;; published by the Free Software Foundation, either version 3 of the
+;;; License, or (at your option) any later version.
+;;;
+;;; Dezyne is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;;; Affero General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU Affero General Public
+;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+;;; 
+;;; Commentary:
+;;; 
+;;; Code:
+
+(define-module (gaiag serialize)
+  #:use-module (srfi srfi-26)
+
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (gaiag misc)
+  #:use-module (gaiag goops)
+  #:export (serialize serialize-slots serialize-slot om->list))
+
+(define-method (serialize-slot (o <object>) name port)
+  (let* ((value (slot-ref o name)))
+    (when value
+      (cond ((eq? name 'elements)
+             (when (pair? value)
+               (for-each (lambda (x) (serialize " " port) (serialize x port) ) value)))
+            ((is-a? value <scope.name-node>)
+             (serialize " (" port)
+             (serialize name port)
+             (serialize " ." port)
+             (serialize value port)
+             (serialize ")" port))
+            (else
+             (serialize " (" port)
+             (serialize name port)
+             (when (not (null? value))
+               (serialize " . " port)
+               (serialize value port))
+             (serialize ")" port))))))
+
+(define-method (serialize-slots (o <object>) port)
+  (for-each
+   (cut serialize-slot o <> port)
+   (map slot-definition-name (class-slots (class-of o)))))
+
+(define-method (serialize (o <scope.name-node>) port)
+  (serialize " " port)
+  (serialize (string-join (map symbol->string (append (.scope o) (list (.name o)))) ".") port))
+
+(define-method (serialize (o <top>) port)
+  (display o port))
+
+(define-method (serialize (o <ast>) port)
+  (serialize (.node o) port))
+
+(define (serialize-name o)
+  (if (symbol-suffix? '-node o) (symbol-drop-right o 5)
+      o))
+
+(define-method (serialize (o <object>) port)
+  (serialize "(" port)
+  (serialize "(" port)
+  (serialize (serialize-name (ast-name o)) port)
+  (serialize-slots o port)
+  (serialize ")" port)
+  (serialize ")" port))
+
+(define-method (serialize (o <top>))
+  (serialize o (current-output-port)))
+
+(define-method (serialize (o <list>) port)
+  (serialize "(" port)
+  (for-each (cut serialize <> port) o)
+  (serialize ")" port))
+
+(define-method (serialize (o <pair>) port)
+  (serialize "(" port)
+  (serialize (car o) port)
+  (when (not (null? (cdr o)))
+    (serialize " . " port)
+    (serialize (cdr o) port))
+  (serialize ")" port))
+
+;; FIXME: <root>'s location breaks with scm2json
+(define-method (serialize (o <root>) port)
+  (serialize (clone (.node o) #:location #f) port))
+
+(define (om->list om)
+  (catch #t
+    (lambda ()
+      (with-input-from-string
+          (with-output-to-string (lambda () ((@ (gaiag serialize) serialize) om)))
+        read))
+    (lambda (key . args)
+      (apply throw (cons key args)))))
