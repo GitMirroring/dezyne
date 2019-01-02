@@ -4,6 +4,7 @@ c.system.#.port.name .outport.#.event.name  = (#x:formal-parameter) => {
   c.dzn_runtime.queue(c.system.#.port.name).Enqueue(() => {
     if(c.dzn_runtime.queue(c.system.#.port.name).Count == 0) {
       Console.Error.WriteLine("#.port.name .<flush>");
+      c.match("#.port.name .<flush>");
     }
   });
 };

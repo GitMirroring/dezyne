@@ -7,8 +7,8 @@ public class #x:model-name  : dzn.SystemComponent {
 
   public #x:model-name (dzn.Locator locator, String name="", dzn.Meta parent=null)
     : base(locator, name, parent) {
-    #x:non-injected-instance-initializer
     #x:injected-instance-initializer
+    #x:non-injected-instance-initializer
     #x:port-initializer
 
     this.dzn_meta.requires = new List<dzn.port.Meta> {

@@ -11,10 +11,11 @@ public class #x:model-name  : dzn.Component {
   public #x:model-name (dzn.Locator locator, String name="", dzn.Meta parent=null)
     : base(locator, name, parent) {
     this.dzn_runtime.infos[this].flushes = true;
+    #x:variable-member-initializer
+    #x:injected-member-initializer
     #x:provided-port-init
     #x:required-port-init
     #x:async-port-init
-    #x:variable-member-initializer
 
     this.dzn_meta.requires = new List<dzn.port.Meta> {
       #x:required-port-meta

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -27,7 +27,7 @@
 (define-templates async-port-declare ast:async-port*)
 (define-templates async-port-init ast:async-port*)
 (define-templates provided-port-init ast:provided)
-(define-templates required-port-init ast:required)
+(define-templates required-port-init (compose (cut filter (negate .injected) <>) ast:required))
 (define-templates required-port-meta ast:required newline-comma-infix)
 (define-templates port-check-bindings ast:port* newline-comma-infix)
 (define-templates method code:ons)
@@ -132,3 +132,8 @@
 (define-templates =expression =expression)
 
 (define-templates illegal-out-assign cs:illegal-out-assign newline-infix)
+(define-templates scoped-port-name (lambda (port) (let ((scope-name ((compose .name .type) port))) (append (.scope scope-name) (list (.name scope-name))))) type-infix)
+
+
+(define-templates shell-provided-meta-initializer ast:provided)
+(define-templates shell-required-meta-initializer ast:required)

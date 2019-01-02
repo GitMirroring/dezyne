@@ -1,0 +1,1 @@
+#x:instance-name .#x:instance-port-name .dzn_meta.provides.name = "#.name";

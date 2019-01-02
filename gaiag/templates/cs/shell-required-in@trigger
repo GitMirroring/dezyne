@@ -1,1 +1,6 @@
-#x:instance-name .#x:instance-port-name .#.event.direction port.#.event.name  = #.port.name .#.event.direction port.#.event.name;
+#x:instance-name .#x:instance-port-name .#.event.direction port.#.event.name  = (#x:formal-parameter)=> {
+  #x:out-ref-local
+  #x:return-temporary-assign  #.port.name .#.event.direction port.#.event.name(#x:code-arguments);
+  #x:assign-out-ref
+  #x:return-temporary
+};

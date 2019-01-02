@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of Dezyne.
@@ -161,8 +161,6 @@ namespace dzn
   void port_block(const locator&, void*);
   void port_release(const locator&, void*, boost::function<void()>&);
 
-  using boost::ref;
-
   template <typename C, typename P>
   void call_in(C* c, boost::function<void()> f, boost::tuple<P*, const char*, const char*> m)
   {
@@ -176,7 +174,7 @@ namespace dzn
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
     trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    c->dzn_rt.handle(c, boost::bind(f, ref(a0)));
+    c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0)));
     trace_out(os, boost::get<0>(m)->meta, boost::get<2>(m) ? boost::get<2>(m) : "return");
   }
   template <typename C, typename P, typename A0, typename A1>
@@ -184,7 +182,7 @@ namespace dzn
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
     trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    c->dzn_rt.handle(c, boost::bind(f, ref(a0), ref(a1)));
+    c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1)));
     trace_out(os, boost::get<0>(m)->meta, boost::get<2>(m) ? boost::get<2>(m) : "return");
   }
   template <typename C, typename P, typename A0, typename A1, typename A2>
@@ -192,7 +190,7 @@ namespace dzn
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
     trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    c->dzn_rt.handle(c, boost::bind(f, ref(a0), ref(a1), ref(a2)));
+    c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2)));
     trace_out(os, boost::get<0>(m)->meta, boost::get<2>(m) ? boost::get<2>(m) : "return");
   }
   template <typename C, typename P, typename A0, typename A1, typename A2, typename A3>
@@ -200,7 +198,7 @@ namespace dzn
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
     trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    c->dzn_rt.handle(c, boost::bind(f, ref(a0), ref(a1), ref(a2), ref(a3)));
+    c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3)));
     trace_out(os, boost::get<0>(m)->meta, boost::get<2>(m) ? boost::get<2>(m) : "return");
   }
   template <typename C, typename P, typename A0, typename A1, typename A2, typename A3, typename A4>
@@ -208,7 +206,7 @@ namespace dzn
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
     trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    c->dzn_rt.handle(c, boost::bind(f, ref(a0), ref(a1), ref(a2), ref(a3), ref(a4)));
+    c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3), boost::ref(a4)));
     trace_out(os, boost::get<0>(m)->meta, boost::get<2>(m) ? boost::get<2>(m) : "return");
   }
   template <typename C, typename P, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
@@ -216,7 +214,7 @@ namespace dzn
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
     trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    c->dzn_rt.handle(c, boost::bind(f, ref(a0), ref(a1), ref(a2), ref(a3), ref(a4), ref(a5)));
+    c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3), boost::ref(a4), boost::ref(a5)));
     trace_out(os, boost::get<0>(m)->meta, boost::get<2>(m) ? boost::get<2>(m) : "return");
   }
 
@@ -235,7 +233,7 @@ namespace dzn
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
     trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, ref(a0))));
+    R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0))));
     trace_out(os, boost::get<0>(m)->meta, ::to_string (r));
     return r;
   }
@@ -244,7 +242,7 @@ namespace dzn
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
     trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, ref(a0), ref(a1))));
+    R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1))));
     trace_out(os, boost::get<0>(m)->meta, ::to_string (r));
     return r;
   }
@@ -253,7 +251,7 @@ namespace dzn
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
     trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, ref(a0), ref(a1), ref(a2))));
+    R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2))));
     trace_out(os, boost::get<0>(m)->meta, ::to_string (r));
     return r;
   }
@@ -262,7 +260,7 @@ namespace dzn
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
     trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, ref(a0), ref(a1), ref(a2), ref(a3))));
+    R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3))));
     trace_out(os, boost::get<0>(m)->meta, ::to_string (r));
     return r;
   }
@@ -271,7 +269,7 @@ namespace dzn
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
     trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, ref(a0), ref(a1), ref(a2), ref(a3), ref(a4))));
+    R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3), boost::ref(a4))));
     trace_out(os, boost::get<0>(m)->meta, ::to_string (r));
     return r;
   }
@@ -280,7 +278,7 @@ namespace dzn
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
     trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, ref(a0), ref(a1), ref(a2), ref(a3), ref(a4), ref(a5))));
+    R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3), boost::ref(a4), boost::ref(a5))));
     trace_out(os, boost::get<0>(m)->meta, ::to_string (r));
     return r;
   }

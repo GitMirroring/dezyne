@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015, 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015, 2016, 2017, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -82,6 +82,7 @@ namespace dzn
         tmp = expect.front(); expect.pop();
         it = lookup.find(tmp);
       }
+      if(expect.empty()) condition.notify_one();
       return tmp;
     }
     void match(const std::string& actual)
@@ -118,9 +119,9 @@ namespace dzn
           pump(it->second);
           port.clear();
         }
-        if (char const* sleep = getenv ("DZN_CONTAINER_SLEEP"))
-          std::this_thread::sleep_for(std::chrono::milliseconds(std::atoi (sleep)));
       }
+      std::unique_lock<std::mutex> lock(mutex);
+      condition.wait(lock, [this]{return expect.empty();});
     }
   };
 }

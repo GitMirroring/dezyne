@@ -1,0 +1,140 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import externaltypes.dzn;
+
+interface ILogger
+{
+  in void log(in string m);
+
+  behaviour
+  {
+    on log: {}
+  }
+}
+
+component Logger
+{
+  provides ILogger log;
+}
+
+interface IRelaxed
+{
+  in void e();
+  out void f();
+
+  behaviour
+  {
+    on e: {}
+    on optional: f;
+  }
+}
+
+
+interface IStrict
+{
+  in void e();
+  out void f();
+
+  behaviour
+  {
+    bool idle = true;
+
+    [idle] on e: { idle = false; }
+    [!idle] on inevitable: { f; idle = false; }
+  }
+}
+
+component TopArmor
+{
+  provides IRelaxed r;
+  requires IStrict s;
+
+  requires injected ILogger l;
+
+  behaviour
+  {
+    bool idle = true;
+    [idle] {
+      on r.e(): { idle = false; s.e(); }
+      on s.f(): { l.log($"foo"$); }
+    }
+    [!idle] {
+      on r.e(): { l.log($"foo"$); }
+      on s.f(): { idle = true; r.f(); }
+    }
+  }
+}
+
+component BottomArmor
+{
+  provides IStrict s;
+  requires IRelaxed r;
+
+  requires injected ILogger l;
+
+  behaviour
+  {
+    bool idle = true;
+    [idle] {
+      on s.e(): { idle = false; r.e(); }
+      on r.f(): { l.log($"foo"$); }
+    }
+    [!idle] {
+      on s.e(): { l.log($"foo"$); }
+      on r.f(): { idle = true; s.f(); }
+    }
+  }
+}
+
+component C
+{
+  provides IStrict p;
+  requires IStrict r;
+
+  behaviour
+  {
+    on p.e(): r.e();
+    on r.f(): p.f();
+  }
+}
+
+component shell_injected
+{
+  provides IRelaxed p;
+  requires IRelaxed r;
+
+  system
+  {
+    Logger logger;
+    TopArmor top;
+    C c;
+    BottomArmor bottom;
+
+    p <=> top.r;
+    top.s <=> c.p;
+    c.r <=> bottom.s;
+    bottom.r <=> r;
+    logger.log <=> *;
+  }
+}

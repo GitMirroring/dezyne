@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -59,9 +59,8 @@ namespace dzn
       if (gc)
       {
         pump p = system.dzn_locator.get<pump>();
-        if(p != this.pump) pump.execute(() => {p.stop();});
+        if(p != null && p != this.pump) this.pump.execute(() => {p.Dispose();});
         this.pump.Dispose();
-        p.Dispose();
       }
     }
     public void Dispose()
@@ -83,6 +82,7 @@ namespace dzn
             tmp = this.expect.Dequeue();
             e = this.lookup.ContainsKey(tmp) ? this.lookup[tmp] : null;
           }
+          if(this.expect.Count == 0) Monitor.Pulse(this);
           return tmp;
         });
     }
@@ -119,8 +119,8 @@ namespace dzn
           pump.execute(e);
           port = "";
         }
-        Thread.Sleep(100);
       }
+      context.lck(this, () => {while (expect.Count != 0) Monitor.Wait(this);});
     }
     public static R string_to_value<R>(String s) where R: struct, IComparable, IConvertible {
       String v = s.Substring(s.IndexOf(".")+1);

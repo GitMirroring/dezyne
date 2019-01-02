@@ -9,11 +9,15 @@ public class #x:model-name  : dzn.SystemComponent {
   public #x:model-name (dzn.Locator locator, String name="", dzn.Meta parent=null)
     : base(locator, name, parent) {
     this.pump = new dzn.pump();
-    #x:non-injected-instance-initializer
+    locator.set(this.pump);
     #x:injected-instance-initializer
+    #x:non-injected-instance-initializer
 
     #x:provided-port-init
     #x:required-port-init
+
+    #x:shell-provided-meta-initializer
+    #x:shell-required-meta-initializer
 
     #x:shell-provided-in
     #x:shell-required-out
