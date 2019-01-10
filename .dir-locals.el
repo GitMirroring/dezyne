@@ -51,15 +51,15 @@
 
       (defun dzn-setup-devel ()
         (interactive)
-        (shell-command "killall node nodejs")
+        (shell-command "killall -9 node nodejs")
         (let ((top (locate-dominating-file default-directory ".dir-locals.el")))
           (save-excursion
             (shell (get-buffer-create "*daemon*"))
-            (insert (format "cd %sdzn-daemon && make debug" top))
+            (insert (format "cd %s && ./pre-inst-env dzn start -ddd | bunyan" top))
             (comint-send-input))
           (save-excursion
             (shell (get-buffer-create "*server*"))
-            (insert (format "cd %sserver && make debug" top))
+            (insert (format "cd %s && ./pre-inst-env dzn-server | bunyan" top))
             (comint-send-input))
           (shell)
           (insert (format "cd %s && make VERBOSE= hello" top))

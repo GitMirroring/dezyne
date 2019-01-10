@@ -108,7 +108,7 @@
 (define (dezyne-shepherd-service dezyne-server dezyne-pack)
   (match-lambda
     (($ <dezyne-configuration> dezyne-server dezyne-pack log-directory run-directory port database debug?)
-     (let* ((dezyne-binary #~(string-append #$dezyne-server "/server/main.js"))
+     (let* ((dezyne-binary #~(string-append #$dezyne-server "/server/dzn-server"))
             (options '())
             (options (if port (cons (string-append "--port=" (number->string port)) options)
                          options))
