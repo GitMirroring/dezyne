@@ -1,4 +1,5 @@
-((nil
+((makefile-mode . ((indent-tabs-mode . t)))
+ (nil
   .
   ((indent-tabs-mode . nil)
    (eval
