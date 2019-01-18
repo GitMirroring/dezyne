@@ -20,6 +20,7 @@ dzn.#x:type-name  = function (locator, meta) {
   this._dzn.rt.bind (this);
 };
 
-if (typeof (module) !== 'undefined') {
+if (node_p ()) {
+  // nodejs
   module.exports = dzn;
 }

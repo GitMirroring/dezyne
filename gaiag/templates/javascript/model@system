@@ -1,6 +1,20 @@
-dzn_require = typeof (require) !== 'undefined' ? require : function () {return {};};
-dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');
-dzn = dzn || {};
+function node_p () {return typeof module !== 'undefined';}
+function have_dzn_p () {return typeof (dzn) !== 'undefined' && dzn;}
+
+if (node_p ()) {
+  // nodejs
+  module.paths.unshift (__dirname);
+  dzn_require = require;
+  dzn = have_dzn_p () ? dzn : require (__dirname + '/dzn/runtime');
+} else {
+  // browser
+  dzn_require = function () {return {};};
+  dzn = have_dzn_p () ? dzn : {};
+  /* Add to your html something like
+     <script src="js/dzn/#x:scope+name .js"></script>
+  */
+}
+
 #x:javascript-namespace-setup
 
 #x:model2file-interface-include
@@ -17,6 +31,6 @@ dzn.#x:type-name  = function (locator, meta) {
   #x:system-port-connect
 };
 
-if (typeof (module) !== 'undefined') {
+if (node_p ()) {
   module.exports = dzn;
 }

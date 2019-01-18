@@ -1,6 +1,3 @@
-dzn_require = typeof (require) !== 'undefined' ? require : function () {return {};};
-dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');
-dzn = dzn || {};
 #x:javascript-namespace-setup
 
 dzn.#x:type-name  = function #x:model-name (meta) {
@@ -15,6 +12,7 @@ dzn.#x:type-name  = function #x:model-name (meta) {
   this._dzn.meta = meta;
 };
 
-if (typeof (module) !== 'undefined') {
+if (node_p ()) {
+  //nodejs
   module.exports = dzn;
 }

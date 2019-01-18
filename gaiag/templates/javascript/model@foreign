@@ -1,5 +1,9 @@
-dzn_require = typeof (require) !== 'undefined' ? require : function () {return {};};
-dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');
-dzn = dzn || {};
-
-dzn.extend (dzn, require ('#x:scope+name '));
+if (node_p ()) {
+  // nodejs
+  dzn.extend (dzn, require ('#x:scope+name '));
+} else {
+  // browser
+  /* Add to your html something like
+     <script src="js/dzn/#x:scope+name .js"></script>
+  */
+}

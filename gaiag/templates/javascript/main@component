@@ -1,9 +1,22 @@
 ##! /usr/bin/env node
 
-assert = require ('assert');
-var dzn = typeof (dzn) !== undefined && dzn ? dzn : require (__dirname + '/dzn/runtime');
+function node_p () {return typeof (module) !== 'undefined';}
+function have_dzn_p () {return typeof (dzn) !== 'undefined' && dzn;}
 
-dzn.extend (dzn, require (__dirname + '/dzn/#x:scope+name '));
+if (node_p ()) {
+  // nodejs
+  assert = require ('assert');
+
+  dzn = have_dzn_p () ? dzn : require (__dirname + '/dzn/runtime');
+  dzn.extend (dzn, require (__dirname + '/dzn/#x:scope+name '));
+}
+else {
+  // browser
+  dzn = have_dzn_p () ? dzn : {};
+  /* Add to your html something like
+     <script src="js/dzn/#x:scope+name .js"></script>
+  */
+}
 
 var relaxed = false;
 var lines = [];

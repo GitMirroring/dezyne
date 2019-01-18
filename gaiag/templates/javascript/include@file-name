@@ -1,1 +1,1 @@
-dzn.extend (dzn, dzn_require (__dirname + '/#.name '));
+if (node_p ()) {dzn.extend (dzn, dzn_require (__dirname + '/#.name '));}
