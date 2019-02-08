@@ -40,7 +40,7 @@
   (and (> (length (command-line)) 1)
        (let* ((files (option-ref (parse-opts (command-line)) '() '(#f)))
               (file (car files))
-              (commands '("code" "run" "step" "table" "trace" "traces" "verify" "lts"))
+              (commands '("code" "lts" "parse" "run" "serve" "state" "step" "table" "trace" "traces" "verify"))
               (command (and=> (member file commands) (compose string->symbol car)))
               (parse-opts (let ((module (resolve-module `(gaiag commands ,command))))
                             (module-ref module 'parse-opts)))

@@ -21,14 +21,12 @@
 
 (define-module (gaiag display)
   #:use-module (ice-9 pretty-print)
+  #:use-module (srfi srfi-26)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (gaiag command-line)
   #:use-module (gaiag goops)
   #:export (display-slots om->list))
-
-;; AST printing
-(define (ast port) (display #\* port))
-(define (ref port) (display #\@ port))
 
 (define-method (sdisplay (o <ast-node>) port)
   (display #\space port)
@@ -36,39 +34,65 @@
 
 (define-method (sdisplay (o <top>) port)
   (display #\space port)
-  (write o port))
-
-(define-method (sdisplay (o <location-node>) port) #t)
+  (display o port))
 
 (define-method (display-slots (o <object>) port)
-;;  (format (current-error-port) "SLOTS:~a\n" (class-slots (class-of o)))
   (for-each
    (lambda (slot)
      (let* ((name (slot-definition-name slot))
             (value (slot-ref o name)))
        (when (and value
-                  (not (null? value))
-                  (not (eq? value *unspecified*)))
+                  (or (not (eq? name 'location))
+                      (command-line:get 'locations)))
          (cond ((eq? name 'elements)
-                (if (pair? value)
-                    (for-each (lambda (x) (sdisplay x port)) value)
-                    (format (current-error-port) "<<barf: elements not a pair>> ~a\n" value)))
-               (else (sdisplay value port))))))
+                (when (pair? value)
+                    (for-each (lambda (x) (sdisplay x port)) value)))
+               (else
+                (sdisplay #\( port)
+                (display name port)
+                (when (not (null? value))
+                  (sdisplay "." port)
+                  (sdisplay value port))
+                (display #\) port))))))
    (class-slots (class-of o))))
 
-(define-method (write (o <ast-node>) port)
-  (display "(" port)
-  (display (ast-name o) port)
-  (ast port)
+(define (symbol-drop-right o n)
+  ((compose string->symbol (cut string-drop-right <> n) symbol->string) o))
+
+(define-method (sdisplay (o <location-node>) port)
+  (display #\( port)
+  (display #\( port)
+  (display-slots o port)
+  (display #\) port)
+  (display #\) port))
+
+(define-method (write (o <ast-list-node>) port)
+  (display #\( port)
   (display-slots o port)
   (display #\) port))
 
 (define-method (write (o <ast>) port)
-  (display "(" port)
+  (display #\( port)
+  (display #\( port)
+  (display (symbol-drop-right (ast-name (.node o)) 5) port)
+  (display-slots (.node o) port)
+  (display #\) port)
+  (display #\) port))
+
+(define-method (write (o <ast-node>) port)
+  (display #\( port)
+  (display #\( port)
+  (display (symbol-drop-right (ast-name o) 5) port)
+  (display-slots o port)
+  (display #\) port)
+  (display #\) port))
+
+(define-method (write (o <ast-list>) port)
+  (display #\( port)
+  (display #\( port)
   (display (ast-name o) port)
-  (ast port)
-  (ast port)
-  (if (.node o) (display-slots (.node o) port))
+  (when (.node o) (display-slots (.node o) port))
+  (display #\) port)
   (display #\) port))
 
 (define (om->list om)

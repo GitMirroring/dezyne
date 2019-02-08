@@ -74,6 +74,7 @@
           '((help (single-char #\h))
             (import (single-char #\I) (value #t))
             (behaviour (single-char #\b) (value #f))
+            (locations (single-char #\L))
             (output (single-char #\o) (value #t))
 	    (version (single-char #\V) (value #t))))
 	 (options (getopt-long args option-spec
@@ -86,6 +87,7 @@
 Usage: gdzn parse [OPTION]... [FILE]...
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
+  -L, --locations        show locations in AST
   -b, --behaviour        include behaviour of imported models,
   -o, --output=FILE      write ast to FILE
   -V, --version=VERSION  use service version=VERSION
@@ -117,7 +119,7 @@ Usage: gdzn parse [OPTION]... [FILE]...
          (debug? (gdzn:command-line:get 'debug #f))
          (peg? (gdzn:command-line:get 'peg #f)) ;; assert-parse eats error message
          (ast ((if (or debug? peg?) parse assert-parse) options (car files))))
-    (if (or debug?)
+    (if (option-ref options 'output #f)
         (let ((file-name (option-ref options 'output "-"))
               (sexp (om->list ast)))
           (if (equal? file-name "-") (pretty-print sexp)
