@@ -5,6 +5,12 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Dezyne Enterprise preview
+** Initial release of dzn-explore.
+
+* Changes in 2.9.0 (since 2.8.1)
+** FIXME: ***resurrect 2.9 release notes***
+
 * Announcement: dicontinuation of 2.7.x
   - 2.7.x has been discontinued as of November 2018
   - With the full verification support in 2.8.0, the 2.7.x was
