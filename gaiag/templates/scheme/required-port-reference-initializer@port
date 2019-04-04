@@ -1,0 +1,1 @@
+(set! (.in (.#.name  o)) (make <#x:type-name .in>))

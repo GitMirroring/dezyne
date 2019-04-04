@@ -1,1 +1,1 @@
-{"skip":["execute","run","traces"],"languages":["c++","c++03","cs"],"comment":"system"}
+{"skip":["execute","run","traces"],"languages":["c++","c++03","cs","scheme"],"comment":"system"}

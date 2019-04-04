@@ -43,7 +43,7 @@ function dzn(session) {
     + (process.env['DZN'] || ( __dirname + '/../../dzn/bin/dzn') + ' --session=' + (session && session || 100));
 }
 
-var ext = {c:'.c','c++':'.cc','c++03':'.cc','c++-msvc11':'.cc',cs:'.cs',javascript:'.js'};
+var ext = {c:'.c','c++':'.cc','c++03':'.cc','c++-msvc11':'.cc',cs:'.cs',javascript:'.js',scheme:'.scm'};
 
 var default_meta = {
   skip: []
@@ -238,7 +238,7 @@ function run_traces(parameters, asp, app) {
 }
 
 var supported_languages = {
-  'default': ['c++', 'c++03', 'c++-msvc11', 'c', 'cs', 'javascript'],
+  'default': ['c++', 'c++03', 'c++-msvc11', 'c', 'cs', 'javascript', 'scheme'],
   '2.4.1' : ['c++', 'c++03', 'c++-msvc11', 'c', 'cs', 'javascript'],
 };
 

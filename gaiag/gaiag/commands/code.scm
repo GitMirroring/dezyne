@@ -82,6 +82,8 @@ FIXME:      --depends[=TYPE]        generate dependency for DZN-FILE and write t
          (file-name (car files))
          (map-files (cdr args))
          (language-opt (string->symbol (option-ref options 'language "c++")))
+         (options (if (eq? language-opt 'scheme) (acons 'behaviour #t options)
+                      options))
          (ast (parse-with-options options file-name))
          (module (resolve-module `(gaiag ,language-opt)))
          (ast-> (module-ref module 'ast->)))

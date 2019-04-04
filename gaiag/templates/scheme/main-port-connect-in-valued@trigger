@@ -1,0 +1,2 @@
+(set! (.#.event.name  (.#.event.direction  (.#.port.name  o)))
+  (lambda _ (type-helper (log-valued '#.port.name . '#.event.name  e) '#x:reply-type)))

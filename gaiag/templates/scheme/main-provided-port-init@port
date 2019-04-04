@@ -1,0 +1,2 @@
+(slot-set! (slot-ref (slot-ref o '#.name) 'in) 'name '#.name)
+(slot-set! (slot-ref (slot-ref o '#.name) 'out) 'name '#.name)

@@ -1,0 +1,2 @@
+(define-method (#.name  (o <#x:model-name >) #x:formals)
+  #x:statement)

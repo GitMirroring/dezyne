@@ -83,7 +83,7 @@
             dzn:to
             dzn:type
             %x:source
-            ))
+            %dzn:indenter))
 
 (define %x:source (make-parameter #f))
 
@@ -179,7 +179,7 @@
 (define (dzn:annotate-shells o)
   (if (and (is-a? o <system>)
            (equal? (command-line:get 'shell #f) (string-join (map symbol->string (ast:full-name o)) ".")))
-      (make <shell-system> #:ports (.ports o) #:name (.name o) #:instances (.instances o) #:bindings (.bindings o))
+      (clone (make <shell-system> #:ports (.ports o) #:name (.name o) #:instances (.instances o) #:bindings (.bindings o)) #:parent (.parent o))
       o))
 
 (define-method (dzn:data (o <data>))
@@ -347,7 +347,7 @@
   (if (null? (ast:statement* o)) (make <skip>)
       o))
 
-(define-method (dzn:statement (o <guard>))
+(define-method (dzn:statement (o <guard>)) ;; FIXME: for code, do in normalization!
   (cond ((is-a? (.expression o) <otherwise>) (clone (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
                                                     #:parent (.parent o)))
         ((ast:literal-true? (.expression o))(.statement o))
@@ -391,14 +391,14 @@
   (.statement o))
 
 ;;; dump to file
-(define dzn:indenter (make-parameter indent))
+(define %dzn:indenter (make-parameter indent))
 
 (define (pipe producer consumer)
   (with-input-from-string (with-output-to-string producer) consumer))
 
 (define (dzn:indent thunk)
-  (if (dzn:indenter)
-      (lambda () (pipe thunk (lambda () ((dzn:indenter)))))
+  (if (%dzn:indenter)
+      (lambda () (pipe thunk (lambda () ((%dzn:indenter)))))
       thunk))
 
 (define (dzn:dir o)

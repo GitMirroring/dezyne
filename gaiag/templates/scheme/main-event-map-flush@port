@@ -1,0 +1,1 @@
+(#.name .<flush> . ,(lambda _ (stderr "#.name .<flush>\n") (dzn:flush (.self (.in (.#.name  o))))))

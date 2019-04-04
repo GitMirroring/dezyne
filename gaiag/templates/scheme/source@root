@@ -1,0 +1,17 @@
+(define-module (#x:file-name)
+  ##:use-module ((oop goops) ##:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  ##:use-module (dzn runtime)
+  #x:use-module
+  ##:duplicates (merge-generics)
+  ##:export (#x:scheme:export)
+  #x:scheme:re-export)
+
+(define true ##t)
+(define false ##f)
+
+#x:header-data
+
+#x:global-enum-definer
+
+#x:model
+;; code generator version: #x:version

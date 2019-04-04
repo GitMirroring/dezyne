@@ -1,0 +1,11 @@
+#x:enum-definer
+(define-class <#x:type-name .in> (<dzn:port>)
+  #x:in-event-definer
+  )
+
+(define-class <#x:type-name .out> (<dzn:port>)
+  #x:out-event-definer
+  )
+
+(define-class <#x:type-name > (<dzn:interface>)
+  )

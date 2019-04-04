@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
@@ -27,16 +27,15 @@
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
 
-  #:export (indent indent-string))
+  #:export (indent))
 
 (define* (eat-space #:optional (port (current-input-port)))
   (while (and-let* ((c (peek-char port)) ((or (eq? c #\space) (eq? c #\tab)))) (read-char port))))
 
-(define no-indent "#")
-(define* (indent #:optional (indent 2) (port (current-input-port)))
+(define* (indent #:key (indent 2) (open #\{) (close #\}) (no-indent "#") (port (current-input-port)))
   (let loop ((level 0))
     (define* (space #:optional (c level)) (let ((char (if (=1 indent) #\tab #\space))) (when (not (gdzn:command-line:get 'debug)) (display (make-string c char)))))
-    (if (not (and-let* ((s (*eof*-is-#f (read-delimited "\n{}" port 'peek))))
+    (if (not (and-let* ((s (*eof*-is-#f (read-delimited (list->string `(#\newline ,open ,close)) port 'peek))))
                        (display s)))
         #f
         (let ((c (read-char port)))
@@ -48,17 +47,13 @@
             (let ((c (read-char port)))
               (cond
                ((eq? c *eof*) #f)
-               ((eq? c #\{) (space) (display c) (loop (+ level indent)))
-               ((eq? c #\}) (let ((i (- level indent)))
+               ((eq? c open) (space) (display c) (loop (+ level indent)))
+               ((eq? c close) (let ((i (- level indent)))
                               (space i) (display c) (loop i)))
                ((eq? c #\newline) (unread-char c port))
                ((string-index no-indent c) (display c))
                (else (space) (display c)))))
-           ((eq? c #\{) (display c) (set! level (+ level indent)))
-           ((eq? c #\}) (display c) (set! level (- level indent)))
+           ((eq? c open) (display c) (set! level (+ level indent)))
+           ((eq? c close) (display c) (set! level (- level indent)))
            (else (unread-char c port)))
           (loop level)))))
-
-(define* (indent-string string #:optional (step 2))
-  (with-output-to-string
-    (lambda () (with-input-from-string string (lambda () (indent step))))))

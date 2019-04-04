@@ -80,6 +80,7 @@
            ast:provides-port*
            ast:provided-in-triggers
            ast:provided-out-triggers
+           ast:rescope
            ast:req-events
            ast:requires-port*
            ast:required+async
@@ -88,6 +89,7 @@
            ast:rescope
            ast:scope
            ast:source-file
+           ast:return-type
            ast:return-types
            ast:return-values
            ast:valued-in-triggers

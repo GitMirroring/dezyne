@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -21,6 +21,16 @@
 ;;; 
 ;;; Code:
 
+(define-module (main)
+  #:use-module (oop goops)
+  #:use-module (dzn runtime)
+  #:use-module (Dataparam)
+  #:duplicates (merge-generics)
+  #:export (main))
+
+(define (assert x)
+  (unless x
+    (throw 'assert-fail x)))
 
 (define (a0)
   (stderr "a0()\n"))
@@ -41,50 +51,53 @@
   (assert (= i4 4))
   (assert (= i5 5)))
 
+;; FIXME: export
+(define IDataparam-Status-alist (@@ (Dataparam) IDataparam-Status-alist))
+
 (define (main . args)
-  (let* ((loc (make <dzn:locator>))
-         (rt (make <dzn:runtime>))
-         (d (make <dzn:Dataparam>
-              :locator (set loc rt)
-              :name 'd
-              :port.out (make <dzn:IDataparam.out>
-                          :name 'port
-                          ;;:self d ;; hmm
-                          :a0 a0
-                          :a a
-                          :aa aa
-                          :a6 a6)))
-         (i (make <v> :v 0))
-         (j (make <v> :v 0)))
-    ;;(set! (.self (.out d .port)) d) ;;hmm
+  (let* ((locator (make <dzn:locator>))
+         (runtime (make <dzn:runtime>))
+         (locator (dzn:set! locator runtime))
+         (sut (make <Dataparam> #:locator locator #:name 'sut))
+         (i '(v . 0))
+         (j '(v . 0)))
 
-    (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action d .port .in .e0r)))
-    (action d .port .in .e0)
-    (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action d .port .in .er 123)))
-    (action d .port .in .e 123)
-    (assert (eq? (assoc-ref IDataparam-Status-alist 'No) (action d .port .in .eer 123 345)))
+    (set! (.out (.port sut))
+          (make <IDataparam.out>
+            #:name 'port
+            #:a0 a0
+            #:a a
+            #:aa aa
+            #:a6 a6))
 
-    (action d .port .in .eo i)
-    (assert (= (.v i) 234))
+    (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action sut .port .in .e0r)))
+    (action sut .port .in .e0)
+    (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action sut .port .in .er 123)))
 
-     (action d .port .in .eoo i j)
-     (assert (and (= (.v i) 123) (= (.v j) 456)))
+    (action sut .port .in .e 123)
+    (assert (eq? (assoc-ref IDataparam-Status-alist 'No) (action sut .port .in .eer 123 345)))
 
-     (action d .port .in .eio (.v i) j)
-     (assert (and (= (.v i) 123) (= (.v j) (.v i))))
+    (action sut .port .in .eo i)
+    (assert (= (cdr i) 234))
 
-     (action d .port .in .eio2 i)
-     (assert (= (.v i) 246))
+    (action sut .port .in .eoo i j)
+    (assert (and (= (cdr i) 123) (= (cdr j) 456)))
+
+    (action sut .port .in .eio (cdr i) j)
+    (assert (and (= (cdr i) 123) (= (cdr j) (cdr i))))
+
+    (action sut .port .in .eio2 i)
+    (assert (= (cdr i) 246))
 
 
-     (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action d .port .in .eor i)))
-     (assert (= (.v i) 234))
+    (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action sut .port .in .eor i)))
+    (assert (= (cdr i) 234))
 
-     (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action d .port .in .eoor i j)))
-     (assert (and (= (.v i) 123) (= (.v j) 456)))
+    (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action sut .port .in .eoor i j)))
+    (assert (and (= (cdr i) 123) (= (cdr j) 456)))
 
-     (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action d .port .in .eior (.v i) j)))
-     (assert (and (= (.v i) 123) (= (.v j) (.v i))))
+    (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action sut .port .in .eior (cdr i) j)))
+    (assert (and (= (cdr i) 123) (= (cdr j) (cdr i))))
 
-     (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action d .port .in .eio2r i)))
-     (assert (= (.v i) 246)) ))
+    (assert (eq? (assoc-ref IDataparam-Status-alist 'Yes) (action sut .port .in .eio2r i)))
+    (assert (= (cdr i) 246))))

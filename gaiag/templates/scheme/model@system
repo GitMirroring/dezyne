@@ -1,0 +1,17 @@
+(define-class <#x:type-name > (<dzn:system>)
+  #x:injected-instance-declare
+  #x:non-injected-instance-declare
+  #x:provided-port-reference-declare
+  #x:required-port-reference-declare)
+
+(define-method (initialize (o <#x:type-name >) args)
+  (next-method)
+  #x:injected-instance-initializer
+  #x:injected-instance-system-initializer
+  #x:injected-binding-initializer
+  #x:non-injected-instance-initializer
+  #x:bind-connect
+  #x:provided-port-reference-initializer
+  #x:required-port-reference-initializer
+  #x:system-port-connect
+  #x:system-rank)

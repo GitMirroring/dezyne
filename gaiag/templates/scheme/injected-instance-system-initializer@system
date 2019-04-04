@@ -1,0 +1,1 @@
+(set! (.locator o) (dzn:clone (.locator o)))

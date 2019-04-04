@@ -1,0 +1,3 @@
+(begin
+ #x:expand-statement
+ #x:block)

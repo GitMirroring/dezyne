@@ -1,0 +1,1 @@
+##:#.event.name  (lambda _ (dzn:remove dzn-pump (.#.port.name  o)))

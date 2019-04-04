@@ -1,0 +1,2 @@
+(slot-set! (slot-ref (slot-ref o '#.name) 'out) 'self c)
+(slot-set! (slot-ref (slot-ref o '#.name) 'out) 'name '<external>.#.name)

@@ -59,6 +59,7 @@
             code:add-calling-context-formal
             code:add-calling-context-argument
 
+            code:class-member?
             code:enum-definer
             code:global-enum-definer
             code:enum-name
@@ -67,6 +68,7 @@
             code:trigger
             code:injected-instances
             code:instance*
+            code:name
             code:non-injected-bindings
             code:injected-instances-system
             code:ons
@@ -83,10 +85,9 @@
             code:scope+name
             code:trace-q-out
 
-            code-file
             code:file-name
             code:dump
-	    code:declarative-or-imperative
+            code:declarative-or-imperative
             code:extension
             code:dump-main
             code:model
@@ -241,6 +242,9 @@
     (if (null? (injected-bindings model)) ""
         "_local")))
 
+(define-method (code:name (o <binding>))
+  (injected-instance-name o))
+
 (define-method (code:class-member? (o <variable>))
   (dzn:class-member? o))
 
@@ -389,8 +393,20 @@
     (if (not behaviour) '()
         (ast:statement* behaviour))))
 
+(define-method (code:ons (o <port>))
+  (let* ((component (parent o <component>))
+         (behaviour (.behaviour component))
+         (ons (if (not behaviour) '()
+                  (ast:statement* behaviour))))
+    (define (this-port? p)
+      (eq? (.name o) (.port.name (car (ast:trigger* p)))))
+    (filter this-port? ons)))
+
 (define-method (code:trigger (o <on>))
   ((compose car ast:trigger*) o))
+
+(define-method (code:trigger (o <port>))
+  (map code:trigger (code:ons o)))
 
 (define-method (code:return (o <on>))
   ((compose ast:type code:trigger) o))
@@ -428,7 +444,7 @@
        (ast:formal* (code:add-calling-context-formal ((compose .formals .signature .event) o)))))
 
 (define-method (code:arguments (o <trigger>))
-  (map .name (code:formals o)))
+  (code:formals o))
 
 (define-method (code:out-argument (o <trigger>))
   (filter (disjoin ast:out? ast:inout?) (code:formals o)))

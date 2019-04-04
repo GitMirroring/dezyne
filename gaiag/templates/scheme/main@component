@@ -1,0 +1,113 @@
+(use-modules ((oop goops) ##:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x))))
+(include-from-path "#code:file-name .scm")
+
+(define-module (main)
+  ##:use-module (srfi srfi-1)
+  ##:use-module (srfi srfi-26)
+  ##:use-module (ice-9 rdelim)
+  ##:use-module (oop goops)
+  ##:use-module (dzn runtime)
+  ##:use-module (dzn pump)
+  ##:use-module (#code:file-name)
+  ##:duplicates (merge-generics)
+  ##:export (main))
+
+(define relaxed? ##f)
+
+(define (drop-prefix string prefix)
+  (if (string-prefix? prefix string)
+      (substring string (string-length prefix))
+      string))
+
+(define (consume-synchronous-out-events prefix event event-alist)
+  (let ((match (symbol-append prefix event)))
+    (let loop ((s (read-line)))
+      (and s
+           (not (eof-object? s))
+           (not (eq? (string->symbol s) match))
+           (loop (read-line)))))
+  (let loop ((s (read-line)))
+    (let ((event (and s
+                      (not (eof-object? s))
+                      (assoc-ref event-alist (string->symbol s)))))
+      (if (not event) (and s (not (eof-object? s)) (last (string-split s #\.)))
+          (begin (event)
+                 (loop (read-line)))))))
+
+(define (log-in prefix event event-alist)
+  (stderr "<external>.~a~a -> sut.~a~a\n" prefix event prefix event)
+  (when (not relaxed?)
+    (consume-synchronous-out-events prefix event event-alist)
+    (stderr "<external>.~a~a -> sut.~a~a\n" prefix 'return prefix 'return))
+  ##f)
+
+(define (log-out prefix event event-alist)
+  (stderr "<external>.~a~a <- sut.~a~a\n" prefix event prefix event)
+  ##f)
+
+(define (type-helper value type)
+  (cond ((eq? type 'int) (string->number value))
+        ((eq? type 'bool) (string=? value "true"))
+        (else (string->symbol value))))
+
+(define (log-valued prefix event event-alist)
+  (stderr "<external>.~a~a -> sut.~a~a\n" prefix event prefix event)
+  (if (not relaxed?)
+      (let ((s (consume-synchronous-out-events prefix event event-alist)))
+        (if s
+          (begin (stderr "<external>.~a~a <- sut.~a~a\n" prefix s prefix s)
+                  s)
+            0))
+      0))
+
+(define (fill-event-alist o)
+  (let* ((dzn-i 0)
+         (flush? (find (cut string=? <> "--flush") (command-line)))
+         (c (make <dzn:component> ##:locator (.locator o) ##:flushes? flush?))
+         (e `(#x:main-event-map-void
+              #x:main-event-map-valued
+              #x:main-event-map-flush)))
+
+    #x:main-provided-port-init
+    #x:main-required-port-init
+
+    (when flush?
+      #x:main-provided-flush-init
+      #x:main-required-flush-init)
+
+    #x:main-port-connect-in-void
+    #x:main-port-connect-in-valued
+    #x:main-port-connect-out
+  e))
+
+(define (main . args)
+  (let* ((print-illegal (lambda () (stderr "illegal\n") (exit 0)))
+         (locator (make <dzn:locator>))
+         (runtime (make <dzn:runtime> ##:illegal print-illegal))
+         (pump (make <dzn:pump>))
+         (locator (dzn:set! locator runtime))
+         (locator (dzn:set! locator pump))
+         (sut (make <#x:class-name > ##:locator locator ##:name 'sut))
+         (event-alist (fill-event-alist sut)))
+
+    (define (next-event)
+      (let ((s (read-line)))
+        (when (getenv "PUMP_DEBUG") (format (current-error-port) "next-event s=~a\n" s))
+        (if (eof-object? s) s
+            (assoc-ref event-alist (string->symbol s)))))
+
+    (when (eq? (peek-char) ##\()
+      (let ((state (with-input-from-string (read-line) read)))
+        (dzn:set-state! sut state)))
+
+    (let loop ()
+      (when (getenv "PUMP_DEBUG") (format (current-error-port) "main loop\n"))
+      (let ((event (next-event)))
+        (unless (eof-object? event)
+          (when event
+            (dzn:pump pump event next-event))
+          (loop))))
+
+    (dzn:finalize pump)))
+
+;; code generator version: #x:version

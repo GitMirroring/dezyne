@@ -83,5 +83,5 @@
 (define-templates declare-method code:trigger)
 (define-templates declare-pure-virtual-method ast:in-triggers)
 (define-templates main-event-map-flush-asd (if (and #f asd?) ast:requires-port* (const '())) event-map-prefix)
-(define-templates prefix-arguments-n c++:argument_n argument-prefix)
+(define-templates prefix-arguments-n c++:argument_n prefix-arguments-grammar)
 (define-templates c++:type-ref c++:type-ref)

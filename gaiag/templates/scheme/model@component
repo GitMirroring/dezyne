@@ -1,0 +1,20 @@
+#x:enum-definer
+
+(define-class <#x:type-name > (<dzn:component>)
+  #x:variable-member-initializer
+  #x:reply-member-initializer
+  #x:out-binding-initializer
+  #x:injected-port-instance-declare
+  #x:provided-member-initializer
+  #x:required-member-initializer
+  #x:async-member-initializer)
+
+(define-method (initialize (o <#x:type-name >) args)
+  (next-method o (cons* ##:flushes? ##t args))
+  #x:provided-port-instance-declare
+  #x:required-port-instance-declare
+  #x:async-port-instance-declare
+  #x:injected-member-initializer)
+
+#x:methods
+#x:functions
