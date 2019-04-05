@@ -6,7 +6,15 @@
 #+OPTIONS: ^:nil
 
 * Dezyne Enterprise preview
-** Initial release of dzn-explore.
+** Initial release of dzn-explore at https://test1.verum.com
+To install:
+#+BEGIN_src bash
+  npm install -g https://test1.verum.com/download/npm/dzn-enterprise.tar.gz
+#+END_src
+To explore, run:
+#+BEGIN_src bash
+  .npm/bin/dzn-explore
+#+END_src
 
 * Changes in 2.9.0 (since 2.8.1)
 ** FIXME: ***resurrect 2.9 release notes***
