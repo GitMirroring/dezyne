@@ -9,5 +9,4 @@ Void = struct void;
 act
 #x:event-act
 
-proc
 #x:interface-proc-memo

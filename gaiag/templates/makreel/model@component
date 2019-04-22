@@ -50,7 +50,6 @@ queue_not_empty';
 
 %%%%%%%%%%%%%%%%% INTERFACE %%%%%%%%%%%%%%%%%
 
-proc
 #x:interface-proc-memo
 
 %%%%%%%%%%%%%% PORT PROCESSES %%%%%%%%%%%%%%%
@@ -59,6 +58,7 @@ proc
 
 %%%%%%%%%%%%%%%%%%%%%%% PROVIDES %%%%%%%%%%%%%%%%%%%%%%%%%%
 
+proc
 provides_r2c = #x:provides-r2c-proc;
 
 #x:provides-out-proc
@@ -97,6 +97,7 @@ component_behaviour = #x:action-proc
 
 %%%%%%%%%%%%%%%%%%%% Q %%%%%%%%%%%%%%%%%%%%%%
 
+proc
 #x:queue-proc
 #x:no-queue-proc
 
