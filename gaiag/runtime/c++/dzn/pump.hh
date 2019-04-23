@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -97,14 +97,14 @@ namespace dzn
     void remove_finished_coroutines();
   };
 
-  template <typename L, typename ... Args, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
+  template <typename L, typename ... Args, typename = typename std::enable_if<std::is_void<typename std::result_of<L(Args ...)>::type>::value>::type>
   void shell(dzn::pump& pump, L&& l, Args&& ...args)
   {
     std::promise<void> p;
     pump([&]{l(std::forward<Args>(args)...); p.set_value();});
     return p.get_future().get();
   }
-  template <typename L, typename ... Args, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
+  template <typename L, typename ... Args, typename = typename std::enable_if<!std::is_void<typename std::result_of<L(Args ...)>::type>::value>::type>
   auto shell(dzn::pump& pump, L&& l, Args&& ...args) -> decltype(l(std::forward<Args>(args)...))
   {
     std::promise<decltype(l(std::forward<Args>(args)...))> p;
