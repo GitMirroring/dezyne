@@ -24,15 +24,13 @@
 
 interface ihello
 {
-  in void hello();
-  out void world();
+  in bool hello();
 
   behaviour
   {
     bool b = false;
-    on hello: {}
+    on hello: reply(b);
     [!b] on optional: b=!b;
-    [b] on optional: world;
   }
 }
 
@@ -43,8 +41,7 @@ component hello
 
   behaviour
   {
-    on hi.hello(): wi.hello();
-    on wi.world(): hi.world();
+    on hi.hello(): {bool b = wi.hello(); reply(b);}
   }
 }
 

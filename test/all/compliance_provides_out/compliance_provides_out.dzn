@@ -31,8 +31,6 @@ interface i
   behaviour
   {
     on hello: world;
-    on hello: {}
-    on optional: world;
   }
 }
 

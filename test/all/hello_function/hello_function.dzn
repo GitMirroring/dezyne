@@ -26,7 +26,11 @@ interface ihello
 
   behaviour
   {
-    void f () {}
+    void f () {
+      bool bf = true;
+      bf = g();
+    }
+    bool g() { return true; }
     on hello: f();
   }
 }
@@ -38,7 +42,12 @@ component hello_function
 
   behaviour
   {
-    void f() {w.world();}
+    void f () {
+      bool bf = true;
+      bf = g();
+      w.world();
+    }
+    bool g() { return true; }
     on h.hello(): f();
   }
 }

@@ -30,6 +30,7 @@ for i in $(ls -1 $to/baseline 2>/dev/null); do
     if [ -L $to/baseline/$i ]; then
         continue
     fi
+    sed -i -e s,$from_base,$to_base,g $to/baseline/$i/*trace* ||:
     if [ -f $to/baseline/$i/$from_base ]; then
         git mv $to/baseline/$i/$from_base $to/baseline/$i/$to_base
         if [ "$i" = verify -o "$i" = fdr2 ]; then
@@ -66,6 +67,7 @@ if [ -d $to/baseline ]; then
 check baseline, run
 
     ../pre-inst-env bin/test $to
+    cp out/$to_base/baseline/step/* $to/baseline/step/
     cp out/$to_base/baseline/verify/* $to/baseline/verify/
 EOF
 fi

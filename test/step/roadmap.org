@@ -1,0 +1,80 @@
+* system simulator roadmap
+** TODO: assert functionality of all individual operators
+** single interface
+** single component
+*** provides port
+*** provides-in -> return
+ - hello.dzn
+ - system_hello.dzn
+*** provides-in -> requires-in -> return -> return
+ - helloworld.dzn
+ - system_helloworld.dzn
+ - compliance_requires_illegal.dzn
+ - system_compliance_requires_illegal.dzn
+*** provides-in + reply
+ - hello_provides.dzn
+ - compliance_provides_bool.dzn
+ - system_compliance_provides_bool.dzn
+*** provides-in -> requires-in -> reply -> reply
+ - system_reply_bool.dzn
+ - system_reply_enum.dzn
+*** provides-in -> internal-requires-out: synchronous callback
+ - system_out_internal.dzn
+*** provides-in -> requires-out: synchronous callback
+ - system_out.dzn
+*** provides-in -> requires-out*2 synchronous callback
+ - system_out_two.dzn
+*** optional (silent)
+ - silent_optional.dzn
+*** optional (silent) -> provides-in -> reply.a/reply.b
+
+*** inevitable (silent)
+*** optional -> requires-out
+ - hello_optional.dzn
+ - system_optional.dzn
+
+*** inevitable -> requires-out
+ - hello_inevitable.dzn
+ - system_inevitable.dzn
+ - illegal_requires_out.dzn
+ - system_illegal_requires_out.dzn
+
+**** optional
+**** inevitable
+**** flush calling context: multiple out events
+*** requires-in + reply
+*** non-determism
+**** callbacks
+ - system_nondet_out.dzn
+**** reply values
+ - system_nondet_reply.dzn
+
+**** overlapping guards
+*** expressions
+**** assignment
+**** if-else
+ - guard_expressions.dzn
+   + enum, bool, int members, test all operators in guard expression, otherwise
+ - enum_expressions.dzn
+ - integer_expressions.dzn
+   + int members, assignment, if, if-else, syntax all operators TODO: semantics != >=
+*** guards
+ - helloguard.dzn
+*** functions
+**** livelock
+*** members
+**** bool
+**** int
+**** enum
+**** data
+*** locals
+**** bool
+**** int
+**** enum
+**** data
+*** livelock
+**** callback
+**** reply
+*** foreign components
+*** illegal
+**** optional (silent) -> illegal

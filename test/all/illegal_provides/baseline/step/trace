@@ -1,0 +1,6 @@
+((h ihello provides) ((sut) illegal_provides component) (w ihello requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+((h ihello provides) ((sut) illegal_provides component) (w ihello requires))
+(eligible h.hello)
+illegal
