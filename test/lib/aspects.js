@@ -110,7 +110,8 @@ var dependencies = {
   build:    ['code'],
   execute:  ['traces', 'build'],
   run:      ['traces'],
-  triangle: ['execute', 'run'],
+  triangle: ['execute', 'run', 'step'],
+  step:     ['traces'],
 };
 
 function code_version (v) {return v.replace (/[.]/g, '_');}
@@ -144,7 +145,7 @@ function ordered_dependencies() {
       result.push(aspect);
     }
   }
-  var order = ['parse', 'verify', 'triangle'];
+  var order = ['parse', 'verify', 'step', 'triangle'];
   order.forEach(function(aspect) {
     add_dependencies(aspect);
   });
@@ -694,6 +695,55 @@ var aspects = {
           + ' grep -E \'^trace:\' | sed -e \'s,trace:,,\' -e \'s/,/\\n/g\')')
         .fail (function(err) {console.log(err); return {status: -1, output: err}});
     });
+  }
+  ,
+  step: function(parameters) {
+    return run_traces(parameters, 'step', function(trace) {
+      //strict
+      var model = parameters.meta.model || parameters.model;
+      var imports = imports_string (parameters.meta.imports);
+      var node_baseline = parameters.dir + '/baseline/step/' + path.basename (trace);
+      var baseline = '"' + node_baseline + '"';
+      var dir = '"out/' + path.basename(parameters.dir) + '"/step'
+      var out = dir + '/"'+path.basename (trace) + '"';
+      var err = out + '.stderr';
+      var cmd = dzn (parameters.session)
+          + ' step '
+          + imports
+          + ' --model=' + model
+          + " '" + parameters.filename + "'";
+      console.log ('CMD:' + cmd);
+      try {
+        fs.lstatSync (node_baseline);
+        return util.spawn_sync_shell(
+          'mkdir -p '+dir+';'
+            + ' { set -o pipefail;'
+            + 'timeout 5 '
+            + ' grep -v "<flush>" '+ trace
+            + '| ' + cmd
+            + ' >' + out
+            + ' 2>' + err
+            + ' ; }'
+            + ' && (diff -ywB ' + baseline + ' ' + out
+            + '     && diff -ywB ' + baseline + '.stderr ' + err + ')');
+        } catch(e) {
+        return util.spawn_sync_shell(
+          'mkdir -p '+dir+';'
+            + 'timeout 5'
+            + ' diff -wy'
+            + ' ' + '<(grep -v "^[(]" ' + trace + ')'
+            + ' <(set -o pipefail;'
+            + ' grep -v "<flush>" '+ trace
+            + '| ' + cmd
+            + ' 2>' + err
+            + ' | ' + dzn (parameters.session) + ' trace --format=event)'
+            + ' && cat ' + err
+            + ' && test ! -s '+err);
+      }
+    })
+      .then (function (result) {
+        return result; // ONLY strict for now
+      })
   }
   ,
   traces: function(parameters) {
