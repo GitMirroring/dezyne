@@ -107,10 +107,9 @@ namespace dzn
     {
       std::string tmp = match_return();
 
-      // if(actual != tmp)
-      //   throw std::runtime_error("unmatched expectation: \"" + actual + "\" got: \"" + tmp + "\"");
+      if(actual != tmp)
+        throw std::runtime_error("unmatched expectation: \"" + actual + "\" got: \"" + tmp + "\"");
     }
-
     void operator()(std::map<std::string, Function>&& lookup, std::set<std::string>&& required_ports)
     {
       this->lookup = std::move(lookup);

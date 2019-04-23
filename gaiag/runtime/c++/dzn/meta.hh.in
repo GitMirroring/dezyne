@@ -33,7 +33,7 @@
 
 inline std::string to_string()
 {
-  return "return-meta";
+  return "return";
 }
 
 namespace dzn
