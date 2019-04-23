@@ -47,7 +47,6 @@ namespace dzn
     std::function<void()> worker;
     std::list<coroutine> coroutines;
     std::list<coroutine> collateral_blocked;
-    std::set<void*> skip_block;
     std::queue<std::function<void()>> queue;
 
     struct deadline

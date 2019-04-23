@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015, 2016, 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
@@ -26,6 +26,7 @@
 
 #include <dzn/locator.hh>
 #include <dzn/pump.hh>
+#include <dzn/runtime.hh>
 
 #include <algorithm>
 #include <cassert>
@@ -34,12 +35,14 @@ namespace dzn
 {
   void port_block(const locator& l, void* p)
   {
+    if(l.get<dzn::runtime>().skip_block(p)) return;
     l.get<dzn::pump>().block(p);
   }
   void port_release(const locator& l, void* p, std::function<void()>& out_binding)
   {
     if(out_binding) out_binding();
     out_binding = nullptr;
+    l.get<dzn::runtime>().skip_block(p) = true;
     l.get<dzn::pump>().release(p);
   }
   void collateral_block(const locator& l)
@@ -216,13 +219,6 @@ namespace dzn
   }
   void pump::block(void* p)
   {
-    auto it = skip_block.find(p);
-    if(it != skip_block.end())
-    {
-      skip_block.erase(it);
-      return;
-    }
-
     auto self = find_self(coroutines);
 
     self->port = p;
@@ -246,12 +242,10 @@ namespace dzn
   void pump::release(void* p)
   {
     auto self = find_self(coroutines);
-
     auto blocked = find_blocked(coroutines, p);
     if(blocked == coroutines.end())
     {
-    debug << "[" << self->id << "] skip block" << std::endl;
-      skip_block.insert(p);
+      debug << "[" << self->id << "] skip block" << std::endl;
       return;
     }
 

@@ -3,7 +3,7 @@
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -71,6 +71,9 @@ namespace dzn
   struct runtime
   {
     std::map<void*, std::tuple<bool, void*, std::queue<std::function<void()> >, bool> > queues;
+    std::map<void*, bool> skip_port;
+    bool& skip_block(void*);
+
 
     bool external(void*);
     bool& handling(void*);
@@ -174,7 +177,7 @@ namespace dzn
   {
     auto& os = c->dzn_locator.template get<typename std::ostream>();
     trace_out(os, meta, event); os << " " << *c << std::endl;
-    c->dzn_rt.defer(meta.provides.address, c, l);
+    c->dzn_rt.defer(meta.provides.address, c, [&,l]{l();});
   }
 }
 #endif //DZN_RUNTIME_HH
