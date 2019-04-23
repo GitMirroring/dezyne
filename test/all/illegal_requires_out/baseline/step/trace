@@ -1,0 +1,8 @@
+((pp i provides) ((sut) illegal_requires_out component) (rp i requires))
+... <- <external>.rp.oa
+sut.<q> <- ...
+... <- sut.<q>
+sut.rp.oa <- ...
+((pp i provides) ((sut) illegal_requires_out component) (rp i requires))
+(eligible pp.ia rp.oa)
+illegal

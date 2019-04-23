@@ -1,0 +1,2 @@
+out/illegal_provides/illegal_provides.dzn:1:1:i1: deadlock in model ihello
+out/illegal_provides/illegal_provides.dzn:1:1:i3: deadlock in model illegal_provides

@@ -1,0 +1,8 @@
+((h ihello) ((sut) illegal_requires2) (w ihello))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+((h ihello) ((sut) illegal_requires2) (w ihello))
+(eligible h.hello)
+illegal

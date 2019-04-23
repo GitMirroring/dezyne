@@ -1,0 +1,76 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello();
+  out void world();
+
+  behaviour
+  {
+    bool b = true;
+    [b]  on hello: b=!b;
+    [!b] on inevitable: {b=!b; world;}
+  }
+}
+
+component helloworld1
+{
+  provides ihello pc1;
+  requires ihello rc1;
+
+  behaviour
+  {
+    bool b = false;
+    [b]  on pc1.hello(): {b=!b; rc1.hello();}
+    [!b] on rc1.world(): {b=!b; pc1.world();}
+  }
+}
+
+component helloworld2
+{
+  provides ihello pc2;
+  requires ihello rc2;
+
+  behaviour
+  {
+    bool b = true;
+    [b]  on pc2.hello(): {b=!b; rc2.hello();}
+    [!b] on rc2.world(): {b=!b; pc2.world();}
+  }
+}
+
+component state_deadlock
+{
+  provides ihello p;
+  requires ihello r;
+
+  system
+    {
+      helloworld1 c1;
+      helloworld2 c2;
+      p <=> c1.pc1;
+      c1.rc1 <=> c2.pc2;
+      c2.rc2 <=> r;
+    }
+}

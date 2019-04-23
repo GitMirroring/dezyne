@@ -1,0 +1,6 @@
+((p ibool provides) ((sut) compliance_provides_bool component))
+<external>.p.hello -> ...
+... -> sut.p.hello
+... <- sut.p.false
+((p ibool provides) ((sut) compliance_provides_bool component))
+(eligible p.hello)
