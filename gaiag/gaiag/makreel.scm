@@ -52,12 +52,13 @@
   #:use-module (gaiag norm)
   #:use-module (gaiag normalize)
   #:use-module (gaiag templates)
-  #:use-module (scmcrl2 verification)
   #:export (ast->
             ast:interface*
             root->
             makreel:om
-            makreel:tick-names))
+            makreel:tick-names
+            verify:scope-name
+            %model-name))
 
 (define-method (makreel:interface-reorder (o <behaviour>))
   (if (parent o <interface>) o
@@ -243,19 +244,23 @@
   (string->symbol (string-join (map (compose untick symbol->string) (ast:full-name o)) ".")))
 
 (define-method (makreel:get-model (o <root>))
-  (let ((model-name (and=> (command-line:get 'model #f) string->symbol)))
-    (or (and model-name
-             (find (om:named model-name) (ast:model* o)))
+  (define (named? o)
+    (equal? (symbol->string (verify:scope-name o)) (%model-name)))
+  (let ((model (and (%model-name)
+                    (find named? (ast:model* o)))))
+    (or (and model (is-a? model <component>) model)
         (find (is? <component>) (ast:model* o))
         (filter (is? <interface>) (ast:model* o)))))
 
 (define-method (makreel:init (o <root>))
-  (let* ((model-name (and=> (command-line:get 'model #f) string->symbol))
-         (model (and model-name
-                     (find (om:named model-name) (ast:model* o)))))
-    (or model
-        (find (is? <component>) (ast:model* o))
-        (find (is? <interface>) (ast:model* o)))))
+  (let* ((model-name (%model-name)))
+    (define (named? o)
+      (equal? (symbol->string (verify:scope-name o)) model-name))
+    (let ((model (and model-name
+                      (find named? (ast:model* o)))))
+      (or model
+          (find (is? <component>) (ast:model* o))
+          (find (is? <interface>) (ast:model* o))))))
 
 (define-method (makreel:interface-name (o <interface>))
   (makreel:model-name o))

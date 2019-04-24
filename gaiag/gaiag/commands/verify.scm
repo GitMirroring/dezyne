@@ -105,17 +105,8 @@ Usage: gdzn verify [OPTION]... DZN-FILE [MAP-FILE]...
 (define-method (ast:interface* (o <interface>))
   (let* ((types (delete-duplicates
                  (map ast:type (tree-collect (disjoin (is? <event>) (is? <variable>) (is? <formal>)) o))
-                 ast:eq?))
-         (scopes (filter-map ast:scope-type types)))
-    (filter-map resolve:interface scopes)))
-
-(define-method (ast:scope-type (o <scope.name>))
-  (let ((scope (.scope o)))
-    (and (pair? scope)
-         (clone o #:scope (drop-right scope 1) #:name (last scope)))))
-
-(define-method (ast:scope-type (o <named>))
-  ((compose ast:scope-type .name) o))
+                 ast:equal?)))
+    (delete-duplicates (filter-map (cut parent <> <interface>) types) ast:equal?)))
 
 (define (model->mcrl2 root model)
   (let* ((model-name (symbol->string (verify:scope-name model)))
@@ -124,14 +115,10 @@ Usage: gdzn verify [OPTION]... DZN-FILE [MAP-FILE]...
                                (ast:interface* model)))
          (elements (filter (lambda (o)
                              (or (ast:eq? model o)
-                                 (if (is-a? model <interface>)
-                                     (or (not (is-a? o <model>))
-                                         (and (is-a? o <interface>)
-                                              (member o used-interfaces ast:eq?)))
-                                     (not (is-a? o <component>)))))
+                                 (not (is-a? o <component>))))
                            globals))
          (root' (clone root #:elements elements)))
-    (parameterize ((language 'makreel))
+    (parameterize ((language 'makreel) (%model-name model-name))
       (root-> root'))))
 
 (define (verify-makreel options dir file-name ast)
@@ -139,8 +126,6 @@ Usage: gdzn verify [OPTION]... DZN-FILE [MAP-FILE]...
         (all? (command-line:get 'all)))
 
     (define (verify-makreel-model root model-name)
-      (define (named? o)
-        (equal? (symbol->string (verify:scope-name o)) model-name))
       (mcrl2:verify dir file-name model-name root verbose? all?))
 
     (let* ((root (makreel:om ast))

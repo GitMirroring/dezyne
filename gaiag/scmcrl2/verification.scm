@@ -46,7 +46,7 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag deprecated om)
   #:use-module (gaiag util)
-  #:use-module (gaiag mcrl2)
+  #:use-module (gaiag makreel)
   #:use-module (gaiag misc)
   #:use-module (gaiag resolve)
   #:use-module (scmcrl2 traces)
@@ -56,7 +56,6 @@
 
   #:export (mcrl2:verify
             verify:file-name
-            verify:scope-name
             x:interface-init
             x:component-init))
 
@@ -64,12 +63,6 @@
 (define (x:interface-init o) (format #f "init ~ainterface;" (apply string-append (map symbol->string (om:scope+name o)))))
 (define (x:provides-init o) "init provides;\n")
 (define (x:component-init o) "init component;\n")
-
-(define (untick o)
-  (string-drop-right o 1))
-
-(define (verify:scope-name o)
-  (string->symbol (string-join (map (compose untick symbol->string) (om:scope+name o)) ".")))
 
 (define (verify:file-name o)
   (string-append (symbol->string (verify:scope-name o)) ".makreel"))
@@ -160,6 +153,7 @@
          (taus (interface-taus model))
          (file-name (verify:file-name model))
          (intf (with-output-to-string (cut model->mcrl2 ast model)))
+         (foo (with-output-to-file (verify:file-name model) (cut display intf)))
          (commands `(,(cut display intf)
                      ("bash" "-c" ,(format #f "cat - ; echo \"~a\"" (x:interface-init model)))
                      ("m4-cw")
