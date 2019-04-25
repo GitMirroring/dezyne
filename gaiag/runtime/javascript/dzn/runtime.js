@@ -342,7 +342,7 @@ function locator(services) {
     return this;
   };
 
-  this.set(function(s){process.stderr.write(s);}, 'trace');
+  this.set(function(s){console.error(s && s.trim ());}, 'trace');
 
   this.get = function(o, key) {
     var key = this.key(o, key);
