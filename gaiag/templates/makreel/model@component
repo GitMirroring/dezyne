@@ -45,6 +45,8 @@ async_pending';
 queue_full;
 queue_empty;
 queue_empty';
+queue_not_empty;
+queue_not_empty';
 
 %%%%%%%%%%%%%%%%% INTERFACE %%%%%%%%%%%%%%%%%
 
@@ -133,6 +135,7 @@ define(component_reorder_allow, allow({
  , illegal
  , missing_reply
  , queue_empty
+ , queue_not_empty
  , range_error
  , recurse
  , return
@@ -165,7 +168,8 @@ semantics_provides_unblocked
 semantics_async(port: provides_ports, pending: Bool)
  = #x:makreel:model-name end . (async_not_pending . (queue_empty . (no_port_is(port) -> semantics #x:semantics-requires-flush)
                                                     +semantics_async (pending=false))
-                               +async_pending . (no_port_is(port) -> semantics_async(pending=true) #x:semantics-async-flush))
+                               +async_pending . (queue_empty . (no_port_is(port) -> semantics_async(pending=true) #x:semantics-async-flush)
+                                                +queue_not_empty . semantics_async(pending=true)))
 #x:semantics-async
 #x:semantics-async-q
 #x:semantics-async-requires
@@ -195,6 +199,7 @@ define(component_semantics_allow, allow({
  , illegal
  , missing_reply
  , queue_empty
+ , queue_not_empty
  , range_error
  , recurse
  , return
@@ -216,6 +221,7 @@ define(component_comm, comm({
    async_not_pending | async_not_pending -> async_not_pending'
  , async_pending | async_pending -> async_pending'
  , queue_empty | queue_empty -> queue_empty'
+ , queue_not_empty | queue_not_empty -> queue_not_empty'
 #x:component-comm-requires
 #x:component-comm-async
  }, component_parallel))
@@ -232,6 +238,7 @@ define(component_allow, allow({
  , illegal
  , missing_reply
  , queue_empty'
+ , queue_not_empty'
  , queue_full
  , range_error
  , recurse
@@ -244,6 +251,7 @@ define(component_rename, rename({
    async_not_pending' -> async_not_pending
  , async_pending' -> async_pending
  , queue_empty' -> queue_empty
+ , queue_not_empty' -> queue_not_empty
 #x:component-rename-provides
 #x:component-rename-requires
 #x:component-rename-async
@@ -258,6 +266,7 @@ component = hide({
  , async_not_pending
  , async_pending
  , queue_empty
+ , queue_not_empty
  , recurse
  , return
  , tau_void

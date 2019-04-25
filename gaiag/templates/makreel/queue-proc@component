@@ -1,5 +1,6 @@
 component_queue (l: List (requires_events)) =
 (##l == 0) -> queue_empty . component_queue ()
++ (l != []) -> queue_not_empty . component_queue ()
 #x:queue-proc-requires;
 
 #x:external-proc
@@ -18,6 +19,7 @@ define(req_and_queue_allow, allow({
  , illegal
  , incomplete
  , queue_empty
+ , queue_not_empty
  , queue_full
  , tau_void
 #x:queue-allow-requires
