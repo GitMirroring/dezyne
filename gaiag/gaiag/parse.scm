@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -47,7 +47,7 @@
 (define ast-> pretty-print)
 
 (define* (parse-file file-name #:key peg? (imports '()))
-  (if peg? (begin (peg:parse-file file-name) (exit 0))
+  (if peg? (peg:parse-file file-name)
       (generator-parse-file file-name #:imports imports)))
 
 (define %include-path '("."))
