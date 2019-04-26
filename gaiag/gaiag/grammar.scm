@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -66,48 +66,6 @@
 
 (my-define-sexp-parser comment all (* (or ws eol line block)))
 (add-peg-compiler! 'comment comment)
-
-
-(define (wrap-parser-for-users for-syntax parser accumsym s-syn)
-  #`(lambda (str strlen pos)
-      (when (and #t (gdzn:debugity) (> (length (gdzn:debugity)) 1)) ;; PEG debug only with -d -d
-        (format (current-error-port) "~a ~a : ~s\n"
-                (make-string (- pos (or (string-rindex str #\newline 0 pos) 0)) #\space)
-                '#,s-syn
-                (substring str pos (min (+ pos 40) strlen))))
-
-      (let* ((comment-res (if (not %skip-parser?) (list pos '())
-                              (comment str strlen pos)))
-             (pos (or (and comment-res (car comment-res)) pos))
-             (res (#,parser str strlen pos)))
-        ;; Try to match the nonterminal.
-        (if res
-            ;; If we matched, do some post-processing to figure out
-            ;; what data to propagate upward.
-            (let* ((at (car res))
-                   (body (cadr res))
-                   (loc `(location ,pos ,at))
-                   (annotate (if (not %peg-locations?) '()
-                                 (if (null? (cadr comment-res)) `(,loc)
-                                     `((comment ,(cadr comment-res)) ,loc)))))
-              #,(cond
-                 ((eq? accumsym 'name)
-                  #``(,at ,'#,s-syn ,@annotate))
-                 ((eq? accumsym 'all)
-                  #`(list at
-                          (cond
-                           ((not (list? body))
-                            `(,'#,s-syn ,body ,@annotate))
-                           ((null? body) `(,'#,s-syn ,@annotate))
-                           ((symbol? (car body))
-                            `(,'#,s-syn ,body ,@annotate))
-                           (else (cons '#,s-syn (append body annotate))))))
-                 ((eq? accumsym 'none) #``(,at () ,@annotate))
-                 (else #``(,at ,body ,@annotate))))
-            ;; If we didn't match, just return false.
-            #f))))
-
-(module-define! (resolve-module '(peg codegen)) 'wrap-parser-for-users wrap-parser-for-users)
 
 (define (peg:parse string file-name)
 

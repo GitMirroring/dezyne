@@ -1,6 +1,7 @@
 ;;; codegen.scm --- code generation for composable parsers
 ;;;
 ;;; Copyright © 2011 Free Software Foundation, Inc.
+;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This library is free software; you can redistribute it and/or
@@ -343,10 +344,29 @@ return EXP."
                                 "Not one of" (map car peg-compiler-alist)))))))
 
 ;; Packages the results of a parser
+
+(define indent 0)
+
+(define (trace? symbol)
+  (and #f (not (memq symbol '()))))
+
 (define (wrap-parser-for-users for-syntax parser accumsym s-syn)
-   #`(lambda (str strlen at)
+  #`(lambda (str strlen at)
+      (when (trace? '#,s-syn)
+        (format (current-error-port) "~a~a\n"
+                (make-string indent #\space)
+                '#,s-syn))
+      (set! indent (+ indent 4))
       (let ((res (#,parser str strlen at)))
+        (set! indent (- indent 4))
         ;; Try to match the nonterminal.
+        (let ((pos (or (and res (car res)) 0)))
+          (when (and (trace? '#,s-syn) (< at pos))
+           (format (current-error-port) "~a~a := ~s\tnext: ~s\n"
+                   (make-string indent #\space)
+                   '#,s-syn
+                   (substring str at pos)
+                   (substring str pos (min strlen (+ pos 10))))))
         (if res
             ;; If we matched, do some post-processing to figure out
             ;; what data to propagate upward.
