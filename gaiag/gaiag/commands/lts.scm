@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -30,6 +30,7 @@
   #:use-module (ice-9 receive)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (gaiag ast)
   #:use-module (gaiag goops)
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
@@ -112,7 +113,7 @@ Usage: gdzn lts [OPTION]... DZN-FILE ...
          (rewrite? (option-ref options 'compiling-rewriter #f))
          (root (makreel:om ast))
          (model (option-ref options 'model #f))
-         (model (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model)) (filter (is? <model>) (.elements root))))
+         (model (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model)) (filter (is? <model>) (ast:top* root))))
          (makreel (with-output-to-string (cut model->mcrl2 root model)))
          (is-interface? (is-a? model <interface>))
          (init (if is-interface? (x:interface-init model)

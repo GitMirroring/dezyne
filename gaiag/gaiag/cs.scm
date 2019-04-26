@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -62,7 +62,7 @@
 (define-method (cs:global-enum-definer (o <root>))
   (filter (conjoin (is? <enum>)
                    (compose (cut equal? (ast:source-file o) <>) (cut ast:source-file <>)))
-          (ast:global* o)))
+          (ast:top* o)))
 
 (define-method (cs:delegate-formal-type (o <event>))
   (let ((formals (ast:formal* o)))

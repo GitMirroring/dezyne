@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
@@ -145,19 +145,29 @@ function runtime(illegal) {
     return r;
   };
 
-  this.trace_in = function(m, e, trace) {
-    trace(this.path(m[0]._dzn.meta.requires) + '.' + e + ' -> ' +
-          this.path(m[0]._dzn.meta.provides) + '.' + e + '\n');
+  this.trace = function(m, e, trace) {
+    trace(this.path(m[0]._dzn.meta.requires) + '.' + e + ' -> '
+          + this.path(m[0]._dzn.meta.provides) + '.' + e + '\n');
   };
 
   this.trace_out = function(m, e, trace) {
-    trace(this.path(m[0]._dzn.meta.provides) + '.' + e + ' -> ' +
-          this.path(m[0]._dzn.meta.requires) + '.' + e + '\n');
+    trace(this.path(m[0]._dzn.meta.requires) + '.' + e + ' <- '
+          + this.path(m[0]._dzn.meta.provides) + '.' + e + '\n');
+  };
+
+  this.trace_qin = function(m, e, trace) {
+    trace(this.path(m[0]._dzn.meta.requires, '<q>') + ' <- '
+          + this.path(m[0]._dzn.meta.provides) + '.' + e + '\n');
+  };
+
+  this.trace_qout = function(m, e, trace) {
+    trace(this.path(m[0]._dzn.meta.requires) + '.' + e + ' <- '
+          + this.path(m[0]._dzn.meta.provides, '<q>') + '\n');
   };
 
   this.call_in = function(c, f, m) {
     var trace = c._dzn.locator.get(Function.prototype, 'trace');
-    this.trace_in(m, m[1], trace);
+    this.trace(m, m[1], trace);
     var r = this.handle(c, f);
     this.trace_out(m, (r === undefined ? 'return' : r), trace);
     return r;
@@ -165,7 +175,7 @@ function runtime(illegal) {
 
   this.call_out = function(c, f, m) {
     var trace = c._dzn.locator.get(Function.prototype, 'trace');
-    this.trace_out(m, m[1], trace);
+    this.trace_qin(m, m[1], trace);
     this.defer(m[0]._dzn.meta.provides.component, c, f);
   };
 

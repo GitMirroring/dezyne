@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2016, 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -42,7 +42,10 @@ namespace dzn
 {
   extern std::ostream debug;
 
-  void trace_in(std::ostream&, port::meta const&, const char*);
+  void trace_qin(std::ostream&, port::meta const&, const char*);
+  void trace_qout(std::ostream&, port::meta const&, const char*);
+
+  void trace(std::ostream&, port::meta const&, const char*);
   void trace_out(std::ostream&, port::meta const&, const char*);
 
   inline void apply(const dzn::meta* m, const std::function<void(const dzn::meta*)>& f)
@@ -141,7 +144,7 @@ namespace dzn
     , event(event)
     , reply("return")
     {
-      trace_in(os, meta, event); os << " " << *c << std::endl;
+      trace(os, meta, event); //os << " " << *c << std::endl;
       if(c->dzn_rt.handling(c))
       {
         collateral_block(c->dzn_locator);
@@ -161,7 +164,7 @@ namespace dzn
     }
     ~call_helper()
     {
-      trace_out(os, meta, reply.c_str()); os << " " << *c << std::endl;
+      trace_out(os, meta, reply.c_str());// os << " " << *c << std::endl;
     }
   };
 
@@ -176,7 +179,7 @@ namespace dzn
   void call_out(C* c, L&& l, const dzn::port::meta& meta, const char* event)
   {
     auto& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, meta, event); os << " " << *c << std::endl;
+    trace_qin(os, meta, event); //os << " " << *c << std::endl;
     c->dzn_rt.defer(meta.provides.address, c, [&,l]{l();});
   }
 }

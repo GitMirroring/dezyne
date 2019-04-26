@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016, 2017, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
@@ -75,8 +75,11 @@ namespace dzn
     }
   };
 
-  void trace_in(std::ostream&, port::meta const&, const std::string&);
-  void trace_out(std::ostream&, port::meta const&, const std::string&);
+  void trace_qin(std::ostream&, port::meta const&, const char*);
+  void trace_qout(std::ostream&, port::meta const&, const char*);
+
+  void trace(std::ostream&, port::meta const&, const char*);
+  void trace_out(std::ostream&, port::meta const&, const char*);
 
   inline void apply(const meta* m, const boost::function<void(const meta*)>& f)
   {
@@ -165,7 +168,7 @@ namespace dzn
   void call_in(C* c, boost::function<void()> f, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, *meta, event);
+    trace(os, *meta, event);
     c->dzn_rt.handle(c, f);
     trace_out(os, *meta, "return");
   }
@@ -173,7 +176,7 @@ namespace dzn
   void call_in(C* c, boost::function<void(A0)> f, A0 a0, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, *meta, event);
+    trace(os, *meta, event);
     c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0)));
     trace_out(os, *meta, "return");
   }
@@ -181,7 +184,7 @@ namespace dzn
   void call_in(C* c, boost::function<void(A0,A1)> f, A0 a0, A1 a1, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, *meta, event);
+    trace(os, *meta, event);
     c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1)));
     trace_out(os, *meta, "return");
   }
@@ -189,7 +192,7 @@ namespace dzn
   void call_in(C* c, boost::function<void(A0,A1,A2)> f, A0 a0, A1 a1, A2 a2, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, *meta, event);
+    trace(os, *meta, event);
     c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2)));
     trace_out(os, *meta, "return");
   }
@@ -197,7 +200,7 @@ namespace dzn
   void call_in(C* c, boost::function<void(A0,A1,A2,A3)> f, A0 a0, A1 a1, A2 a2, A3 a3, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, *meta, event);
+    trace(os, *meta, event);
     c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3)));
     trace_out(os, *meta, "return");
   }
@@ -205,7 +208,7 @@ namespace dzn
   void call_in(C* c, boost::function<void(A0,A1,A2,A3,A4)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, *meta, event);
+    trace(os, *meta, event);
     c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3), boost::ref(a4)));
     trace_out(os, *meta, "return");
   }
@@ -213,7 +216,7 @@ namespace dzn
   void call_in(C* c, boost::function<void(A0,A1,A2,A3,A4,A5)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, *meta, event);
+    trace(os, *meta, event);
     c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3), boost::ref(a4), boost::ref(a5)));
     trace_out(os, *meta, "return");
   }
@@ -223,7 +226,7 @@ namespace dzn
   R rcall_in(C* c, boost::function<R()> f, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, *meta, event);
+    trace(os, *meta, event);
     R r = c->dzn_rt.valued_helper(c, f);
     trace_out(os, *meta, ::to_string (r));
     return r;
@@ -232,7 +235,7 @@ namespace dzn
   R rcall_in(C* c, boost::function<R(A0)> f, A0 a0, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, *meta, event);
+    trace(os, *meta, event);
     R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0))));
     trace_out(os, *meta, ::to_string (r));
     return r;
@@ -241,7 +244,7 @@ namespace dzn
   R rcall_in(C* c, boost::function<R(A0,A1)> f, A0 a0, A1 a1, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, *meta, event);
+    trace(os, *meta, event);
     R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1))));
     trace_out(os, *meta, ::to_string (r));
     return r;
@@ -250,7 +253,7 @@ namespace dzn
   R rcall_in(C* c, boost::function<R(A0,A1,A2)> f, A0 a0, A1 a1, A2 a2, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, *meta, event);
+    trace(os, *meta, event);
     R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2))));
     trace_out(os, *meta, ::to_string (r));
     return r;
@@ -259,7 +262,7 @@ namespace dzn
   R rcall_in(C* c, boost::function<R(A0,A1,A2,A3)> f, A0 a0, A1 a1, A2 a2, A3 a3, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, *meta, event);
+    trace(os, *meta, event);
     R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3))));
     trace_out(os, *meta, ::to_string (r));
     return r;
@@ -268,7 +271,7 @@ namespace dzn
   R rcall_in(C* c, boost::function<R(A0,A1,A2,A3,A4)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, *meta, event);
+    trace(os, *meta, event);
     R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3), boost::ref(a4))));
     trace_out(os, *meta, ::to_string (r));
     return r;
@@ -277,7 +280,7 @@ namespace dzn
   R rcall_in(C* c, boost::function<R(A0,A1,A2,A3,A4,A5)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, *meta, event);
+    trace(os, *meta, event);
     R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3), boost::ref(a4), boost::ref(a5))));
     trace_out(os, *meta, ::to_string (r));
     return r;
@@ -288,49 +291,49 @@ namespace dzn
   void call_out(C* c, boost::function<void()> f, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, *meta, event);
+    trace_qin(os, *meta, event);
     c->dzn_rt.defer(meta->provides.address, c, f);
   }
   template <typename C, typename A0>
   void call_out(C* c, boost::function<void(A0)> f, A0 a0, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, *meta, event);
+    trace_qin(os, *meta, event);
     c->dzn_rt.defer(meta->provides.address, c, boost::bind(f, a0));
   }
   template <typename C, typename A0, typename A1>
   void call_out(C* c, boost::function<void(A0,A1)> f, A0 a0, A1 a1, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, *meta, event);
+    trace_qin(os, *meta, event);
     c->dzn_rt.defer(meta->provides.address, c, boost::bind(f, a0, a1));
   }
   template <typename C, typename A0, typename A1, typename A2>
   void call_out(C* c, boost::function<void(A0,A1,A2)> f, A0 a0, A1 a1, A2 a2, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, *meta, event);
+    trace_qin(os, *meta, event);
     c->dzn_rt.defer(meta->provides.address, c, boost::bind(f, a0, a1, a2));
   }
   template <typename C, typename A0, typename A1, typename A2, typename A3>
   void call_out(C* c, boost::function<void(A0,A1,A2,A3)> f, A0 a0, A1 a1, A2 a2, A3 a3, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, *meta, event);
+    trace_qin(os, *meta, event);
     c->dzn_rt.defer(meta->provides.address, c, boost::bind(f, a0, a1, a2, a3));
   }
   template <typename C, typename A0, typename A1, typename A2, typename A3, typename A4>
   void call_out(C* c, boost::function<void(A0,A1,A2,A3,A4)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, *meta, event);
+    trace_qin(os, *meta, event);
     c->dzn_rt.defer(meta->provides.address, c, boost::bind(f, a0, a1, a2, a3, a4));
   }
   template <typename C, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
   void call_out(C* c, boost::function<void(A0,A1,A2,A3,A4,A5)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, *meta, event);
+    trace_qin(os, *meta, event);
     c->dzn_rt.defer(meta->provides.address, c, boost::bind(f, a0, a1, a2, a3, a4, a5));
   }
 

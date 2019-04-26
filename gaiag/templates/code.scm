@@ -3,7 +3,7 @@
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -35,9 +35,10 @@
 ;;for mcrl2
 ;;(define-templates scope scope type-infix)
 (define-templates scope (compose .scope .name) name-infix)
-(define-templates scope-type-scope code:scope-type-scope type-infix)
+(define-templates code:type-scope ast:scope type-infix)
 (define-templates scope-type-name code:scope-type-name type-infix)
 (define-templates enum-name code:enum-name name-infix)
+(define-templates enum-short-name code:enum-short-name name-infix)
 (define-templates scope-prefix (compose .scope .name) name-suffix)
 (define-templates scope+name code:scope+name name-infix)
 (define-templates scoped-model-name code:scope+name name-infix);; c++ compat, junk me
@@ -75,7 +76,7 @@
 (define-templates out-event-definer (lambda (o) (filter om:out? (om:events o))) event-definer-infix)
 (define-templates enum-definer code:enum-definer)
 (define-templates global-enum-definer code:global-enum-definer)
-(define-templates enum-field-definer (lambda (o) (map (symbol->enum-field o) ((compose .elements .fields) o))) comma-infix)
+(define-templates enum-field-definer code:enum-field-definer enum-definer-grammar)
 (define-templates variable-member-declare ast:variable*)
 (define-templates variable-member-initializer ast:variable*)
 (define-templates reply-member-initializer code:reply-types)
@@ -96,7 +97,7 @@
 (define-templates binding-name code:instance-name)
 (define-templates component-port code:component-port)
 (define-templates injected-instance-system-initializer code:injected-instances-system)
-(define-templates system-port-connect (lambda (o) (filter (negate om:port-bind?) ((compose .elements .bindings) o))))
+(define-templates system-port-connect (lambda (o) (filter (negate om:port-bind?) (ast:binding* o))))
 (define-templates system-rank ast:provided)
 (define-templates code-arguments code:arguments argument-infix)
 (define-templates out-arguments code:out-argument argument-prefix)
@@ -121,3 +122,10 @@
 (define-templates version-assert)
 (define-templates calls (lambda (o) (filter (negate ast:async?) (ast:void-in-triggers o))))
 (define-templates rcalls ast:valued-in-triggers)
+
+;; set state
+(define-templates non-injected-instance-set-state non-injected-instances)
+(define-templates instance-set-state-argument code:set-state-argument)
+(define-templates variable-member-setter om:variables)
+
+(define-templates trace-q-out code:trace-q-out)

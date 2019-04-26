@@ -22,6 +22,7 @@ struct #x:model-name
   #x:model-name (const dzn::locator&);
   void check_bindings() const;
   void dump_tree(std::ostream& os=std::clog) const;
+  void set_state(std::map<std::string,std::map<std::string,std::string> > state_alist);
 };
 #x:close-namespace
 #x:endif

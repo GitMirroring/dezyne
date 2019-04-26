@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -75,6 +76,9 @@
 (define-templates main-port-connect-return (lambda (o) (if (ast:typed? o) o '())))
 
 (define-templates global-enum-definer cs:global-enum-definer)
+(define-templates enum-name code:enum-name identifier-infix)
+(define-templates reply-type code:reply-type identifier-infix)
+
 (define-templates global-type-name)
 (define-templates non-primitive (lambda (o) (if (or (is-a? (ast:type o) <enum>)
                                                     (is-a? (ast:type o) <interface>)) o '())))

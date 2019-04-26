@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -38,7 +39,7 @@ namespace dzn
     public pump pump;
 
     public container(Func<Locator,String,TSystem> new_system, bool flush, Locator locator)
-    : base(locator, "<internal>", null)
+    : base(locator, "<external>", null)
     {
       this.flush = flush;
       this.pump = new pump();

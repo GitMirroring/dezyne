@@ -1,1 +1,1 @@
-m["#x:enum-name _#.field"] = #x:type-name;
+m["#x:enum-short-name _#.field"] = #x:enum-field-type;

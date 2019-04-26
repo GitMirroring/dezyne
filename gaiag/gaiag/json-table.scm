@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
@@ -58,18 +58,18 @@
 
 (define ((json-table-event model) o)
   (match o
-    ((and ($ <compound>) (= .elements s))
+    ((and ($ <compound>) (= ast:statement* s))
      `((table . ,(map (json-table-event model) s))))
     ((and ($ <on>) (= .statement ($ <guard>)) (= .statement guard) (= (compose .expression .statement) expression))
      (let ((var (state-var model expression)))
        `((event . ,(json-triggers o))
          (rules . ,((json-table- model var expression) guard)))))
-    ((and ($ <on>) (= .statement (and ($ <compound>) (= .elements (($ <guard>) ...)))) (= .statement compound))
+    ((and ($ <on>) (= .statement (and ($ <compound>) (= ast:statement* (($ <guard>) ...)))) (= .statement compound))
      (let* ((var 'unknown)
             (state (make <field-test> #:variable.name var #:field '<unknown>)))
        `((event . ,(json-triggers o))
          (rules . ,(apply append (map (json-table- model var state)
-                                      (.elements compound)))))))
+                                      (ast:statement* compound)))))))
     ((and ($ <on>) (= .statement statement))
      (let* ((var 'unknown)
             (state (make <field-test> #:variable.name var #:field '<unknown>)))
@@ -113,17 +113,17 @@
 
 (define ((json-table-state model) o)
   (match o
-    ((and ($ <compound>) (= .elements statements))
+    ((and ($ <compound>) (= ast:statement* statements))
      `((table . ,(map (json-table-state model) statements))))
     ((and ($ <guard>) (= .expression expression) (= .statement ($ <on>)) (= .statement on))
      (let ((var (state-var model expression)))
        `((state . ,(json-state (->symbol expression) o))
          (rules . ,((json-table- model var expression) on)))))
-    ((and ($ <guard>) (= .expression expression) (= .statement (and ($ <compound>) (= .elements (($ <on>) ...)))) (= .statement compound))
+    ((and ($ <guard>) (= .expression expression) (= .statement (and ($ <compound>) (= ast:statement* (($ <on>) ...)))) (= .statement compound))
      (let ((var (state-var model expression)))
        `((state . ,(json-state (->symbol expression) o))
          (rules . ,(apply append (map (json-table- model var expression)
-                                      (.elements compound)))))))
+                                      (ast:statement* compound)))))))
     (_ `((state . ,(json-state (->symbol o) o))
          (rules . ,(list
                     `((triggers . ,(json-triggers (make <triggers>)))
@@ -153,7 +153,7 @@
              (actions . ,(json-action model statement))
              (callbacks . ,(json-callback model statement))
              (next . ,(json-next model var state statement)))))
-         ((and ($ <compound>) (= .elements ()))
+         ((and ($ <compound>) (= ast:statement* ()))
           (list
            `((guard . ,(json-guard o))
              ;;(inner . ,(json-data-location '() '()))
@@ -161,7 +161,7 @@
              (callbacks . ,(json-callback model inner))
              (next . ,(json-next model var state inner))
              )))
-         ((and ($ <compound>) (= .elements (($ <guard>) ...)))
+         ((and ($ <compound>) (= ast:statement* (($ <guard>) ...)))
           (map (lambda (inner)
                  (let ((expression (.expression inner))
                        (statement (.statement inner)))
@@ -170,8 +170,8 @@
                      (actions . ,(json-action model statement))
                      (callbacks . ,(json-callback model statement))
                      (next . ,(json-next model var state statement)))))
-               (.elements inner)))
-         ((and ($ <guard>) (= .statement (and ($ <compound>) (= .elements (($ <guard>))))) (= .statement compound))
+               (ast:statement* inner)))
+         ((and ($ <guard>) (= .statement (and ($ <compound>) (= ast:statement* (($ <guard>))))) (= .statement compound))
           (map (lambda (inner)
                  (let ((expression (.expression inner))
                        (statement (.statement inner)))
@@ -180,17 +180,17 @@
                      (actions . ,(json-action model statement))
                      (callbacks . ,(json-callback model statement))
                      (next . ,(json-next model var state statement)))))
-               (.elements compound)))
+               (ast:statement* compound)))
 
          (_ (list
              `((guard . ,(json-guard o))
                (actions . ,(json-action model statement))
                (callbacks . ,(json-callback model statement))
                (next . ,(json-next model var state statement))))))))
-    ((and ($ <on>) (= .triggers triggers) (= .statement (and ($ <compound>) (= .elements (($ <guard>) ..1))) (= .statement compound)))
+    ((and ($ <on>) (= .triggers triggers) (= .statement (and ($ <compound>) (= ast:statement* (($ <guard>) ..1))) (= .statement compound)))
      (map (json-inner-guard model var state triggers)
-          (map .expression (.elements compound))
-          (map .statement (.elements compound))))
+          (map .expression (ast:statement* compound))
+          (map .statement (ast:statement* compound))))
     ((and ($ <on>) (= .triggers triggers) (= .statement (and ($ <guard>) (= .expression guard) (= .statement statement))))
      (list ((json-inner-guard model var state triggers) guard statement)))
     (_
@@ -217,11 +217,20 @@
         (->symbol (car next))
         (map ->symbol next))))
 
+(define (eval-expression model state o)
+  (let ((r (eval-expression model state o)))
+    ;;(stderr "eval-expression ~a => ~a\n" o r)
+    (match r
+      (#t (make <literal> #:value 'true))
+      (#f (make <literal> #:value 'false))
+      ((? number?) (make <literal> #:value o))
+      (_ r))))
+
 (define (json-next- model var next o functions)
   (define (var? variable) (eq? variable var))
   (let ((unknown (make <field-test> #:variable.name var #:field '<unknown>)))
    (match o
-     ((and ($ <compound>) (= .elements statements))
+     ((and ($ <compound>) (= ast:statement* statements))
       (let loop ((statements statements) (next next))
         (if (null? statements)
             next
@@ -314,10 +323,10 @@
 
 (define* (json-triggers o #:optional (location o))
   (match o
-    ((and ($ <triggers>) (= .elements triggers))
+    ((and ($ <triggers>) (= ast:trigger* triggers))
      (json-data-location (map ->symbol triggers) location))
     (($ <on>)
-     (json-data-location (map ->symbol ((compose .elements .triggers) o)) location))))
+     (json-data-location (map ->symbol (ast:trigger* o)) location))))
 
 (define (json-guard o)
   (json-data-location (->symbol (.expression o)) o))
@@ -338,7 +347,7 @@
     ((identifier (and ($ <enum-literal>) (= .type type) (= .field field))) (->symbol (list (->symbol identifier) " = " (->symbol type) "." (->symbol field))))
     ((and ($ <enum-literal>) (= .type type) (= .field field)) (->symbol (list (->symbol type) "." (->symbol field))))
     ((and ($ <scope.name>) (= .scope scope) (= .name name)) ((->symbol-join '.) (append scope (list name))))
-    ((and ($ <triggers>) (= .elements triggers)) (->symbol ((->join ",") (map ->symbol triggers))))
+    ((and ($ <triggers>) (= ast:trigger* triggers)) (->symbol ((->join ",") (map ->symbol triggers))))
     ((and ($ <trigger>) (= .event.name event)) (->symbol event))
     ((and ($ <trigger>) (= .port.name port) (= .event.name event)) (->symbol (list port "." event)))
     ((and ($ <and>) (= .left left) (= .right right)) (->symbol (list '&& left right)))

@@ -2,7 +2,7 @@
 ;;; Copyright © 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-;;; Copyright © 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -42,12 +42,49 @@
   #:use-module (gaiag code)
   #:use-module (gaiag c++)
   #:use-module (gaiag templates)
-  #:export (ast->))
+  #:export (
+            ast->
+            c++03:enum-field-type
+            c++03:enum-literal
+            ))
+
+(define-method (c++03:type-name o)
+  (c++:type-name o))
+
+(define-method (c++03:type-name (o <binding>))
+  ((compose c++03:type-name .type (cut resolve:instance (parent o <model>) <>) injected-instance-name) o))
+
+(define-method (c++03:type-name (o <enum>))
+  (append (ast:full-name o) (list "type")))
+
+(define-method (c++03:type-name (o <enum-literal>)) ; MORTAL SIN HERE!!?
+  ;;(map dzn:->string (c++03:scope+name o))
+  (c++03:type-name (.type o)))
+
+(define-method (c++03:type-name (o <enum-field>))
+  (append (c++03:type-name (.type o)) (list (.field o))))
+
+(define-method (c++03:type-name (o <event>))
+  ((compose c++03:type-name .type .signature) o))
+
+(define-method (c++03:type-name (o <var>))
+  (warn c++03:type-name o '=> (c++03:type-name o)))
+
+(define-method (c++03:type-name (o <variable>))
+  (c++03:type-name (.type o)))
+
+
+(define-method (c++03:enum-field-type (o <enum-field>))
+  (cons "" (append (ast:full-name (.type o)) (list (.field o)))))
+
+(define-method (c++03:enum-literal (o <enum-literal>))
+  (cons "" (append (ast:full-name (.type o)) (list (.field o)))))
 
 (define-templates-macro define-templates c++03)
 (include "../templates/dzn.scm")
 (include "../templates/code.scm")
 (include "../templates/c++.scm")
+(include "../templates/c++03.scm")
 
 (define (c++03:root-> root)
   (parameterize ((language 'c++03)

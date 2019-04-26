@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
@@ -31,13 +31,13 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
-  #:use-module (ice-9 peg)
-  #:use-module (ice-9 peg codegen)
   #:use-module (ice-9 pretty-print)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
+  #:use-module (peg)
+  #:use-module (peg codegen)
   #:use-module (gash pipe)
 
   #:export (main

@@ -3,7 +3,7 @@
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -43,7 +43,7 @@
 (define-templates enum-literal dzn:enum-literal type-infix)
 (define-templates then .then)
 (define-templates else (lambda (o) (or (.else o) '())))
-(define-templates data (compose dzn:->string .value))
+(define-templates data dzn:data)
 (define-templates arguments ast:argument* argument-infix)
 (define-templates define-type ast:type* newline-infix)
 (define-templates field ast:field* field-infix)
@@ -69,7 +69,7 @@
 (define-templates action-arguments dzn:action-arguments argument-grammar)
 (define-templates statement dzn:statement)
 (define-templates expand-statement dzn:expand-statement)
-(define-templates out-bindings .elements)
+(define-templates out-bindings ast:formal*)
 (define-templates reply-port dzn:reply-port dot-suffix)
 (define-templates expand-blocking dzn:expand-blocking)
 (define-templates system)

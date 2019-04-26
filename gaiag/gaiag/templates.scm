@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -207,24 +207,3 @@
                 (with-syntax ((tname (datum->syntax x (symbol-append 't: (syntax->datum #'name))))
                               (xname (datum->syntax x (symbol-append 'x: (syntax->datum #'name)))))
                   #`(define-templates-base language name xname tname func sep))))))))))
-
-(define-templates-macro define-test-templates test)
-;; (module-map (lambda (. rest) (map display rest) (newline)) (current-module))
-
-(define-test-templates ijname)
-(define-test-templates ijname .name)
-(define-test-templates ij identity #f)
-(define-test-templates model .elements)
-;; (x:ij (make <root> #:elements (list (make <interface> #:name (make <scope.name> #:name 'IF))
-;;                                     (make <component> #:name (make <scope.name> #:name 'CO)))))
-;;(module-map (lambda (. rest) (map display rest) (newline)) (current-module))
-
-(define (templates:expand ast)
-  (let ((root (make <root> #:elements (list (make <interface> #:name (make <scope.name> #:name 'IF))
-                                            (make <component> #:name (make <scope.name> #:name 'CO))))))
-    (do ((i 1 (1- i)))
-        ((zero? i))
-      (x:ij root))))
-
-(define (ast-> ast)
-  (templates:expand ast))

@@ -38,14 +38,14 @@ function consume_synchronous_out_events(prefix, event, event_map) {
 }
 
 function log_in(prefix, event, event_map) {
-  console.error(prefix + event);
+  console.error('<external>.' +  prefix + event + ' -> ' + 'sut.' + prefix + event);
   if (relaxed) return;
   consume_synchronous_out_events(prefix, event, event_map);
-  console.error(prefix + 'return');
+  console.error('<external>.' +  prefix + 'return' + ' <- ' + 'sut.' + prefix + 'return');
 }
 
 function log_out(prefix, event) {
-  console.error(prefix + event);
+  console.error('<external>.' +  prefix + event + ' <- ' + 'sut.' + prefix + event);
 }
 
 function type_helper(value, type) {
@@ -55,11 +55,11 @@ function type_helper(value, type) {
 }
 
 function log_valued(prefix, event, event_map) {
-  console.error(prefix + event);
+  console.error('<external>.' +  prefix + event + ' -> ' + 'sut.' + prefix + event);
   if (relaxed) return 0;
   var s = consume_synchronous_out_events(prefix, event, event_map);
   if (s !== undefined) {
-     console.error(prefix + s);
+     console.error('<external>.' + prefix + s + ' <- ' + 'sut.' + prefix + s);
      return s;
   }
   throw 'runtime error: "' + s + '" is not a reply value'

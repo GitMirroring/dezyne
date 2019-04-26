@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -97,16 +97,16 @@
 
 (define (norm:on-same-port-statement? model lhs rhs)
   (and (is-a? lhs <on>) (is-a? rhs <on>)
-       (equal? ((compose .name .port car .elements .triggers) lhs)
-               ((compose .name .port car .elements .triggers) rhs))
-       (om:equal? (.statement lhs) (.statement rhs))))
+       (equal? ((compose .name .port car ast:trigger*) lhs)
+               ((compose .name .port car ast:trigger*) rhs))
+       (ast:equal? (.statement lhs) (.statement rhs))))
 
 (define (norm:on-same-port-voidness-statement? model lhs rhs)
   (and (is-a? lhs <on>) (is-a? rhs <on>)
-       (let ((ltrigger ((compose car .elements .triggers) lhs))
-             (rtrigger ((compose car .elements .triggers) rhs)))
+       (let ((ltrigger ((compose car ast:trigger*) lhs))
+             (rtrigger ((compose car ast:trigger*) rhs)))
          (norm:port-and-voidness-equal? model ltrigger rtrigger))
-       (om:equal? (.statement lhs) (.statement rhs))))
+       (ast:equal? (.statement lhs) (.statement rhs))))
 
 (define (norm:port-equal? model lhs rhs)
   (and (is-a? lhs <trigger>) (is-a? rhs <trigger>)
@@ -134,7 +134,7 @@ reply en die kun je niet mixen"
 (define ((passdown-triggers triggers) o)
   (match o
     (($ <compound>)
-     (let ((statements (.elements o)))
+     (let ((statements (ast:statement* o)))
        (match statements
          ((($ <guard>) ..1)
           (clone o #:elements (map (passdown-triggers triggers) statements)))

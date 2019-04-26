@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -34,16 +34,27 @@ namespace dzn {
 
   runtime::runtime(){}
 
-  void trace_in(std::ostream& os, port::meta const& m, const std::string& e)
+  void trace_qin(std::ostream& os, port::meta const& m, const char* e)
+  {
+    os << path(m.requires.meta, "<q>") << " <- "
+       << path(m.provides.meta, m.provides.port) << "." << e << std::endl;
+  }
+  void trace_qout(std::ostream& os, port::meta const& m, const char* e)
+  {
+    os << path(m.requires.meta, m.requires.port) << "." << e << " <- "
+       << path(m.requires.meta, "<q>") << std::endl;
+  }
+
+  void trace(std::ostream& os, port::meta const& m, const char* e)
   {
     os << path(m.requires.meta, m.requires.port) << "." << e << " -> "
        << path(m.provides.meta, m.provides.port) << "." << e << std::endl;
   }
 
-  void trace_out(std::ostream& os, port::meta const& m, const std::string& e)
+  void trace_out(std::ostream& os, port::meta const& m, const char* e)
   {
-    os << path(m.provides.meta, m.provides.port) << "." << e << " -> "
-       << path(m.requires.meta, m.requires.port) << "." << e << std::endl;
+    os << path(m.requires.meta, m.requires.port) << "." << e << " <- "
+       << path(m.provides.meta, m.provides.port) << "." << e << std::endl;
   }
 
   bool runtime::external(void* scope) {

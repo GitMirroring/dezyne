@@ -1,8 +1,13 @@
 #! /bin/sh
 
-grep -Eo '<(external|internal)>[.][^ ]+|^(\w|[<>])+[.](\w|[-<>])+$|^illegal$'\
-  | sed -r\
-    -e s', -> ,,'\
-    -e s',^<(external|internal)>[.],,'\
-  | sed -r\
-    -e s',^((\w|[<>])+)[.]((\w|[-<>])+)$,\1.\3,'
+grep -v '<- sut.<q>'\
+    | sed -r\
+    -e 's,.* (->|<-) (<(external|internal)>), \1 \2,'\
+    -e 's,^(<(external|internal)>[^ ]*) (<-|->) .*,\1 \3 ,'\
+    | grep -Eo '^illegal$|illegal -> |sut.error -> |( (<-|->) (<(external|internal)>)[.]\w+[.]\w+([.]\w+)?)|((<external>|sut)[.]\w+[.]\w+([.]\w+)? (-> |<- ))'\
+    | sed -r\
+          -e 's, -> ,,'\
+          -e 's, <- ,,'\
+          -e 's,^sut[.],,'\
+          -e 's,^<(external|internal)>[.],,'\
+    | { grep -E '^[^.]+[.][^.]+$' || true; }

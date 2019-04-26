@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -34,7 +34,7 @@
 (define-templates model makreel:get-model)
 (define-templates init makreel:init)
 
-(define-templates scope+name om:scope+name)
+(define-templates enum-name makreel:enum-name type-infix)
 (define-templates type-constructor makreel:type-constructor)
 (define-templates basic-type ast:type)
 (define-templates port-type-name ast:port-type-name)

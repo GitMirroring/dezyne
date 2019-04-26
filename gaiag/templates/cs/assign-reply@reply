@@ -1,1 +1,1 @@
-this.reply__#x:scope_name  = #x:expression;
+this.reply__#x:reply-type  = #x:expression;

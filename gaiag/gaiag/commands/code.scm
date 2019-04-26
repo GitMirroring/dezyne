@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -46,6 +46,7 @@
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (language (single-char #\l) (value #t))
+            (locations (single-char #\L))
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))
             (queue_size (single-char #\q) (value #t))
@@ -67,6 +68,7 @@ FIXME:      --depends[=TYPE]        generate dependency for DZN-FILE and write t
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path
   -l, --language=LANG         generate code for language=LANG [c++]
+  -L, --locations             prepend locations to output trace
   -m, --model=MODEL           generate main for MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
   -s, --shell=MODEL           generate thread safe system shell for MODEL

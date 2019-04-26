@@ -1,0 +1,1 @@
+this->#.name  = dzn::sexp::foo<#x:type-name >::value(state_alist["#.name "]);

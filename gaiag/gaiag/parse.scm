@@ -46,9 +46,9 @@
 
 (define ast-> pretty-print)
 
-(define* (parse-file file-name #:key peg? (imports '()))
+(define* (parse-file file-name #:key peg? (imports '()) behaviour?)
   (if peg? (peg:parse-file file-name)
-      (generator-parse-file file-name #:imports imports)))
+      (generator-parse-file file-name #:imports imports #:behaviour? behaviour?)))
 
 (define %include-path '("."))
 
@@ -56,11 +56,12 @@
   (let ((status (wait job)))
     (when (not (zero? status))
       (format (current-error-port) "~a" error)
-      (exit status))
+      (throw 'error error))
     status))
 
-(define* (generator-parse-file file-name #:key (imports '()))
+(define* (generator-parse-file file-name #:key (imports '()) behaviour?)
   (let ((commands `(("generate" "-l" "scm" "-L" "-o" "-"
+                     ,(if behaviour? "-b" "")
                      ,@(append-map (cut list "-I" <>) imports)
                      ,file-name))))
     (receive (job ports)

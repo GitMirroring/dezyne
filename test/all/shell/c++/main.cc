@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -36,27 +37,27 @@ void
 connect_ports (dzn::container< ::shell, std::function<void()>>& c)
 {
   c.system.r_outer.in.return_void = [&] () {
-    dzn::trace_in(std::clog, c.system.r_outer.meta, "return_void"); std::clog << std::endl;
+    dzn::trace(std::clog, c.system.r_outer.meta, "return_void");
     c.match("r_outer.return_void"); std::string tmp = c.match_return();
-    dzn::trace_out(std::clog, c.system.r_outer.meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
+    dzn::trace_out(std::clog, c.system.r_outer.meta, tmp.substr(tmp.rfind('.')+1).c_str());
     return to_void(tmp.substr(tmp.rfind('.')+1));
   };
   c.system.r_outer.in.return_int = [&] () {
-    dzn::trace_in(std::clog, c.system.r_outer.meta, "return_int"); std::clog << std::endl;
+    dzn::trace(std::clog, c.system.r_outer.meta, "return_int");
     c.match("r_outer.return_int"); std::string tmp = c.match_return();
-    dzn::trace_out(std::clog, c.system.r_outer.meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
+    dzn::trace_out(std::clog, c.system.r_outer.meta, tmp.substr(tmp.rfind('.')+1).c_str());
     return to_int(tmp.substr(tmp.rfind('.')+1));
   };
   c.system.r_outer.in.return_bool = [&] () {
-    dzn::trace_in(std::clog, c.system.r_outer.meta, "return_bool"); std::clog << std::endl;
+    dzn::trace(std::clog, c.system.r_outer.meta, "return_bool");
     c.match("r_outer.return_bool"); std::string tmp = c.match_return();
-    dzn::trace_out(std::clog, c.system.r_outer.meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
+    dzn::trace_out(std::clog, c.system.r_outer.meta, tmp.substr(tmp.rfind('.')+1).c_str());
     return to_bool(tmp.substr(tmp.rfind('.')+1));
   };
   c.system.r_outer.in.return_enum = [&] (int i,int& j) {
-    dzn::trace_in(std::clog, c.system.r_outer.meta, "return_enum"); std::clog << std::endl;
+    dzn::trace(std::clog, c.system.r_outer.meta, "return_enum");
     c.match("r_outer.return_enum"); std::string tmp = c.match_return();
-    dzn::trace_out(std::clog, c.system.r_outer.meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
+    dzn::trace_out(std::clog, c.system.r_outer.meta, tmp.substr(tmp.rfind('.')+1).c_str());
     return to_Enum(tmp.substr(tmp.rfind('.')+1));
   };
   c.system.p_outer.out.foo = [&] (int i) {

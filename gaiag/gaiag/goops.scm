@@ -1,5 +1,5 @@
 ;;; Gaiag --- Guile in Asd In Asd in Guile.
-;;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
@@ -54,6 +54,7 @@
 
             clone
             has-slot?
+            clone-base
             tree-collect
             tree-collect-shallow
             tree-map
@@ -67,6 +68,7 @@
            .behaviour
            .bindings
            .column
+           .component-acceptance
            .direction
            .elements
            .else
@@ -94,11 +96,13 @@
            .message
            .name
            .offset
+           .port-acceptance
            .port
            .ports
            .range
            .recursive
            .right
+           .root
            .scope
            .sexp
            .signature
@@ -116,10 +120,12 @@
            .variables
 
            <action-node>
-           <action-or-call-node>
            <action-or-call>
+           <action-or-call-node>
            <action>
            <and-node>
+           <action-out>
+           <action-out-node>
            <and>
            <argument>
            <arguments-node>
@@ -132,8 +138,6 @@
            <behaviour>
            <binary-node>
            <binary>
-           <bind-node>
-           <bind>
            <binding-node>
            <binding>
            <bindings-node>
@@ -169,6 +173,8 @@
            <declarative-node>
            <declarative>
            <direction>
+           <end-point-node>
+           <end-point>
            <enum-expr-node>
            <enum-expr>
            <enum-field>
@@ -192,6 +198,8 @@
            <fields-node>
            <fields>
            <file-name>
+           <flush>
+           <flush-node>
            <foreign-node>
            <foreign>
            <formal-binding-node>
@@ -282,6 +290,10 @@
            <port>
            <ports-node>
            <ports>
+           <q-in>
+           <q-in-node>
+           <q-out>
+           <q-out-node>
            <range-node>
            <range>
            <reply-node>
@@ -311,6 +323,8 @@
            <system>
            <the-end-blocking>
            <the-end>
+           <trigger-return>
+           <trigger-return-node>
            <trigger-node>
            <trigger>
            <triggers-node>
@@ -328,8 +342,6 @@
            <variable>
            <variables-node>
            <variables>
-           <void-expr-node>
-           <void-expr>
            <void-node>
            <void>
            <voidreply>
@@ -462,7 +474,7 @@
 (define-ast <functions> (<ast-list>))
 (define-ast <instances> (<ast-list>))
 (define-ast <ports> (<ast-list>))
-
+(define-ast <acceptances> (<ast-list>))
 
 (define g-root-id 0)
 (define-method (initialize (o <root-node>) . initargs)
@@ -540,8 +552,10 @@
 (define (ast:inevitable) (make <inevitable>))
 (define (ast:optional) (make <optional>))
 
-(define-ast <port> (<declaration>)
-  (type.name #:init-form (make <scope.name-node>))
+(define-ast <instance> (<declaration> <declarative>)
+  (type.name #:init-form (make <scope.name-node>)))
+
+(define-ast <port> (<instance>)
   (direction)                           ; symbol 'provides / 'requires
   (external)
   (injected))
@@ -571,7 +585,6 @@
 (define-ast <enum-expr> (<expression>))
 (define-ast <int-expr> (<expression>))
 (define-ast <data-expr> (<expression>))
-(define-ast <void-expr> (<expression>))
 
 (define-ast <not> (<unary> <bool-expr>))
 (define-ast <and> (<binary> <bool-expr>))
@@ -704,24 +717,50 @@
 (define-ast <return> (<imperative>)
   (expression #:init-form (make <literal-node>)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; system simulator ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define-ast <action-out> (<action>))
+(define-ast <flush> (<imperative>)
+  (instance))
+
+(define-ast <trigger-return> (<imperative>)
+  (expression)
+  (port.name)
+  (event.name #:init-value 'return))
+
+(define-ast <q-in> (<ast>)
+  (trigger))
+
+(define-ast <q-out> (<ast>)
+  (trigger))
+
+(define-ast <q-trigger> (<ast>)
+  (trigger))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define-ast <stack> (<ast>))
 (define-ast <return-value> (<ast>))
 
-(define-ast <bind> (<declarative>)
+(define-ast <binding> (<declarative>)
   (left)
   (right))
 
-(define-ast <binding> (<ast>)
+(define-ast <end-point> (<ast>)
   (instance.name)
   (port.name))
 
-(define-ast <instance> (<declaration> <declarative>)
-  (type.name #:init-form (make <scope.name-node>))
-  (container))
+(define-ast <status> (<ast>)
+  (ast))
 
-(define-ast <error> (<ast>)
-  (ast)
+(define-ast <error> (<status>)
   (message #:init-value ""))
+
+(define-ast <compliance-error> (<error>)
+  (component-acceptance)
+  (port-acceptance))
+
+(define-ast <no-match> (<status>)
+  (input))
 
 (define-ast <skip> (<imperative>))
 
@@ -736,13 +775,15 @@
 
 (define-ast <enum-field> (<ast>)
   (type.name)
-  (field))
+  (field)
+  (value))
 
 (define-ast <file-name> (<ast>)
   (name))
 
 (define-ast <local> (<variable>))
-(define-ast <model-scope> (<ast>))
+(define-ast <model-scope> (<ast>)
+  (scope))
 (define-ast <out-formal> (<variable>))
 (define-ast <direction> (<named>))
 (define-ast <unspecified> (<ast>))
@@ -760,7 +801,7 @@
 ;; TODO: make construct function line clone, explicitely looking for pairs
 (define-method (node o) o)
 (define-method (node (o <ast-node>)) o)
-(define-method (node (o <pair>)) (map node o))
+(define-method (node (o <pair>)) (if (not (list? o)) (pke "URG node:" o) (map node o)))
 (define-method (node (o <ast>)) (.node o))
 
 (define-method (get-parent o) #f)
@@ -834,11 +875,8 @@
 (define-method (tree-collect-shallow predicate (o <ast-list>))
   (if (predicate o) (list o) (append-map (cut tree-collect-shallow predicate <>) (.elements o))))
 
-
 (define-method (clone-base o . setters)
   (let* ((class (class-of o))
-         (setters (if (memq #:parent setters) setters
-                      (map node setters)))
          (slots (class-slots class))
          (names (map slot-definition-name slots))
          (make-pair (lambda (name) (list (symbol->keyword name) (slot-ref o name))))
@@ -854,13 +892,25 @@
     (if (null? changed) o
         (apply make (cons class (apply append (append unchanged changed)))))))
 
+(define-method (clone-base-unwrap o . setters)
+  (let ((setters (if (memq #:parent setters) setters
+                     (map node setters))))
+    (apply clone-base (cons o setters))))
 
+;; makreel;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (define-method (clone-base-node (o <ast-node>) . setters)
+;;   (apply clone-base (cons o setters)))
+
+;; (define-method (clone-base-ast (o <ast>) . setters)
+;;   (apply clone-base (cons o setters)))
+
+;; step
 (define-method (clone-base-node (o <ast-node>) . setters)
-  (apply clone-base (cons o setters)))
+  (apply clone-base-unwrap (cons o setters)))
 
 (define-method (clone-base-ast (o <ast>) . setters)
-  (apply clone-base (cons o setters)))
-
+  (apply clone-base-unwrap (cons o setters)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-method (clone (o <ast-node>) . setters)
   (apply clone-base-node (cons o setters)))

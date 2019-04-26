@@ -28,4 +28,12 @@ void #x:model-name ::dump_tree(std::ostream& os) const
 {
   dzn::dump_tree(os, &dzn_meta);
 }
+void #x:model-name ::set_state(std::map<std::string,std::map<std::string,std::string> > state_alist)
+{
+  set_state(state_alist["#x:model-name .#.name"]);
+}
+void #x:model-name ::set_state(std::map<std::string,std::string> state_alist)
+{
+  #x:variable-member-setter
+}
 #x:close-namespace

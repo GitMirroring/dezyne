@@ -4,7 +4,7 @@
 // Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2016, 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
-// Copyright © 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -603,20 +603,25 @@ var aspects = {
     var timeout = interpreter ? 10 : 5;
     var flush = parameters.meta.flush && ' --flush' || '';
     return run_traces(parameters, 'execute', function(trace) {
-      var expectation = '"' + parameters.dir + '"/baseline/execute/' + language + '/expectation';
+      var expectation = '"' + parameters.dir + '"/baseline/execute/' + language + path.basename (trace);
       var cmd = 'cat '+ trace + ' | ' + interpreter + ' ' + out + '/test' + flush;
       try {
         fs.lstatSync(expectation);
         return util.spawn_sync_shell(
-          'timeout ' + timeout + ' diff -uwB ' + expectation
-            + ' <(set -o pipefail;\n'
+          'timeout ' + timeout
+            + ' diff -ywB'
+            + ' ' + expectation
+            + ' <(set -o pipefail;'
             + cmd
             + ' |& ' + __dirname + '/../bin/code2fdr'
             + ' || (' + cmd + ' ; echo "E""R""R""O""R"))',
           {env: env});
       } catch(e) {
         return util.spawn_sync_shell(
-          'timeout ' + timeout + ' diff -uwB ' + trace + ' <(set -o pipefail;\n'
+          'timeout ' + timeout
+            + ' diff -ywB'
+            + ' ' + '<(grep -E "^[^<.]+[.][^.>]+$" ' + trace + ')'
+            + ' <(set -o pipefail;'
             + cmd
             + ' |& ' + __dirname + '/../bin/code2fdr'
             + ' || (' + cmd + ' ; echo "E""R""R""O""R"))');

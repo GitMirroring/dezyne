@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
@@ -104,12 +104,12 @@
 (define* ((aggregate-on- #:optional (aggregate? norm:triggers-equal?) model) o)
   "Aggregate ONs with same statement AND (AGGREGATE? a b) into one ON-statement."
   (match o
-    ((and ($ <compound>) (= .elements (($ <on>) ..1)))
-     (if (=1 (length (.elements o)))
+    ((and ($ <compound>) (= ast:statement* (($ <on>) ..1)))
+     (if (=1 (length (ast:statement* o)))
          o
          (make <compound>
            #:elements
-           (let loop ((ons (.elements o)))
+           (let loop ((ons (ast:statement* o)))
              (if (null? ons)
                  '()
                  (receive (shared-ons remainder)
@@ -120,9 +120,8 @@
                                       (make <triggers>
                                         #:elements
                                         (delete-duplicates
-                                         (apply append
-                                                (map (compose .elements .triggers) shared-ons))
-                                         om:equal?)))
+                                         (append-map ast:trigger* shared-ons)
+                                         ast:equal?)))
                                      (statement (on-statement (map .statement shared-ons))))
                                 (make <on>
                                   #:triggers triggers
@@ -141,24 +140,24 @@
     (_ o)))
 
 (define (norm:on-equal? model a b)
-  (om:equal? a b))
+  (ast:equal? a b))
 
 (define (norm:triggers-equal? model l r)
   (om:triggers-equal? l r))
 
 (define (norm:on-statement-equal? model a b)
   (and (is-a? a <on>) (is-a? b <on>)
-       (om:equal? (.statement a) (.statement b))))
+       (ast:equal? (.statement a) (.statement b))))
 
 (define (on-statement statements)
-  (if (every identity (map (lambda (x) (om:equal? x (car statements))) statements))
+  (if (every identity (map (lambda (x) (ast:equal? x (car statements))) statements))
       (car statements)
       (make <compound> #:elements statements)))
 
 (define* ((expand-on #:optional (compare norm:on-equal?) model) o)
   (match o
-    ((and ($ <compound>) (= .elements (($ <on>) ..1)))
-     (clone o #:elements (append-map (port-split-triggers compare model) (.elements o))))
+    ((and ($ <compound>) (= ast:statement* (($ <on>) ..1)))
+     (clone o #:elements (append-map (port-split-triggers compare model) (ast:statement* o))))
     (($ <on>)
      (let ((ons ((port-split-triggers compare model) o)))
        (if (=1 (length ons))
@@ -179,7 +178,7 @@
 (define ((port-split-triggers compare model) o)
   (match o
     (($ <on>)
-     (let loop ((triggers (.elements (.triggers o))))
+     (let loop ((triggers (ast:trigger* o)))
        (if (null? triggers)
            '()
            (receive (shared-triggers remainder)
@@ -196,12 +195,12 @@
 ;; find all ons with matching guards
 ;; push all ons into first guard, discard the rest
   (match o
-    ((and ($ <compound>) (= .elements (($ <guard>) ..1)))
-     (if (=1 (length (.elements o)))
+    ((and ($ <compound>) (= ast:statement* (($ <guard>) ..1)))
+     (if (=1 (length (ast:statement* o)))
          o
          (clone o
            #:elements
-           (let loop ((guards (.elements o)))
+           (let loop ((guards (ast:statement* o)))
              (if ( null? guards)
                  '()
                  (receive (shared-guards remainder)
@@ -246,11 +245,11 @@
   (match o
     (($ <guard>)
      ((passdown-expression
-       (if (om:equal? expression (.expression o)) expression
+       (if (ast:equal? expression (.expression o)) expression
                  (make <and> #:left expression #:right (.expression o))))
       (.statement o)))
     ((and ($ <compound>) (? om:declarative?))
-     (let ((statements (.elements o)))
+     (let ((statements (ast:statement* o)))
        (clone o #:elements (map (passdown-expression expression) statements))))
     (_ (make <guard> #:expression expression #:statement o))))
 
@@ -275,9 +274,9 @@
 (define (flatten-compound- o)
   (match o
     ((? om:imperative?) o)
-    ((and ($ <compound>) (= .elements (statement)))
+    ((and ($ <compound>) (= ast:statement* (statement)))
      (flatten-compound- statement))
-    ((and ($ <compound>) (= .elements statements))
+    ((and ($ <compound>) (= ast:statement* statements))
      (clone o #:elements (apply append (map flatten-compound-compound statements))))
     (($ <skip>) o)
     ((? (is? <ast>)) (tree-map flatten-compound- o))
@@ -286,7 +285,7 @@
 (define (flatten-compound-compound o)
   (let ((result (flatten-compound- o)))
     (match result
-      ((and ($ <compound>) (= .elements statements)) statements)
+      ((and ($ <compound>) (= ast:statement* statements)) statements)
       (_ (list result)))))
 
 (define* ((annotate-otherwise #:optional (statements '())) o) ;; FIXME *unspecified*
@@ -301,7 +300,7 @@
                     (value (guards-not-or guards)))
                    (clone o #:value value))
          o))
-    ((and ($ <compound>) (= .elements (statements ...)))
+    ((and ($ <compound>) (= ast:statement* (statements ...)))
      (clone o #:elements (map (annotate-otherwise statements) statements)))
     (($ <skip>) o)
     ((? (is? <ast>)) (tree-map (annotate-otherwise statements) o))
@@ -318,7 +317,7 @@
          (failure)
          (clone o #:expression (guards-not-or statements)
                 #:statement ((remove-otherwise keep-annotated?) statement))))
-    ((and ($ <compound>) (= .elements (statements ...)))
+    ((and ($ <compound>) (= ast:statement* (statements ...)))
      (clone o #:elements (map (remove-otherwise keep-annotated? statements) statements)))
     (($ <skip>) o)
     (($ <functions>) o)
@@ -334,7 +333,7 @@
   (let* ((expressions (map .expression o))
          (others (remove (is? <otherwise>) expressions))
          (expression (reduce (lambda (g0 g1)
-                               (if (om:equal? g0 g1) g0 (make <or> #:left g0 #:right g1)))
+                               (if (ast:equal? g0 g1) g0 (make <or> #:left g0 #:right g1)))
                              '() others)))
     (match expression
       ((and ($ <not>) (= .expression expression)) expression)
@@ -344,7 +343,7 @@
   (define block? (lambda (x) blocking?))
   ;;(if blocking? (stderr "passdown-blocking[~a]: o=~a\n" blocking? o))
   (match o
-    ((and ($ <blocking>) (= .statement (and (? om:declarative?) (and ($ <compound>) (= .elements statements)))))
+    ((and ($ <blocking>) (= .statement (and (? om:declarative?) (and ($ <compound>) (= ast:statement* statements)))))
      (clone (.statement o) #:elements (map (passdown-blocking #t) statements)))
     ((and ($ <blocking>) (= .statement (and ($ <guard>) (= .statement statement))))
      (clone (.statement o) #:statement ((passdown-blocking #t) statement)))
@@ -354,7 +353,7 @@
      (clone o #:statement ((passdown-blocking blocking?) statement)))
     ((and ($ <on>) (= .statement statement))
      (clone o #:statement ((passdown-blocking blocking?) statement)))
-    ((and ($ <compound>) (? om:declarative?) (= .elements statements))
+    ((and ($ <compound>) (? om:declarative?) (= ast:statement* statements))
      (clone o #:elements (map (passdown-blocking blocking?) statements)))
     ((? om:imperative?)
      (if (not blocking?) o
@@ -375,7 +374,7 @@
 (define (add-skip o)
   (match o
     ((? om:imperative?) o)
-    ((and ($ <compound>) (= .elements ())) (make <skip> #:location (ast:location o)))
+    ((and ($ <compound>) (= ast:statement* ())) (make <skip> #:location (ast:location o)))
     (($ <functions>) o)
     ((and (? (is? <component>) (= .behaviour behaviour)))
      (clone o #:behaviour (add-skip behaviour)))
@@ -388,6 +387,6 @@
 (define (transform-compounds o)
   (match o
     ((? om:imperative?) o)
-    (($ <compound>) (make <declarative-compound> #:elements (.elements (tree-map transform-compounds o)) #:location (ast:location o)))
+    (($ <compound>) (make <declarative-compound> #:elements (ast:statement* (tree-map transform-compounds o)) #:location (ast:location o)))
     ((? (is? <ast>)) (tree-map transform-compounds o))
     (_ o)))

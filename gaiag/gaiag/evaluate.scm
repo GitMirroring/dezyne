@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
@@ -50,6 +50,7 @@
            undefined-state-vector
            undefined-variable-state
            state-vector
+           true?
            var
            var!
            ))
@@ -91,15 +92,6 @@
 
 (define (unspecified? x) (eq? x *unspecified*))
 
-(define (eval-expression model state o)
-  (let ((r (eval-expression- model state o)))
-    ;;(stderr "eval-expression ~a => ~a\n" o r)
-    (match r
-      (#t (make <literal> #:value 'true))
-      (#f (make <literal> #:value 'false))
-      ((? number?) (make <literal> #:value o))
-      (_ r))))
-
 (define (om:id o) ((compose pointer-address scm->pointer) o))
 
 (define (om:parent o t)
@@ -126,64 +118,41 @@
                      (loop (cdr elements))))))))
     (_ #f)))
 
-(define (eval-expression- model state o)
+(define-method (expr:equal? (left <enum-literal>) (right <enum-literal>))
+  (and (eq? (.node (.type left)) (.node (.type right)))
+       (eq? (.field left) (.field right))))
+
+(define-method (expr:equal? (left <literal>) (right <literal>))
+  (eq? (.value left) (.value right)))
+
+(define-method (true? (o <literal>))
+  (eq? (.value o) 'true))
+
+(define-method (literal value)
+      (match value
+      (#t (make <literal> #:value 'true))
+      (#f (make <literal> #:value 'false))
+      ((? number?) (make <literal> #:value value))))
+
+(define-method (eval-expression (state <list>) (o <expression>))
   (match o
-    ((and ($ <literal>) (= .value value)) (eval-expression- model state value))
-    ((and ($ <otherwise>) (= .value 'otherwise))
-     (let* ((guard (om:parent model o))
-            (compound (om:parent model guard))
-            (guards (filter (is? <guard>) compound)))
-       (eval-expression- model state (guards-not-or guards))))
-    ((and ($ <otherwise>) (= .value value)) (eval-expression- model state value))
-    (#t #t)
-    ('false #f)
-    ('true #t)
-    ((and ($ <var>) (= .variable.name identifier)) (var-field state identifier))
-    ((and ($ <field-test>) (= .variable (? var?)) (= .field field) (= .variable.name identifier))
-     (eq? (.field (var-field state (identifier))) field))
-    (($ <enum-literal>) o)
-    ((and ($ <not>) (= .expression expr)) (not (eval-expression- model state expr)))
-    ((and ($ <and>) (= .left a) (= .right b)) (and (eval-expression- model state a)
-                          (eval-expression- model state b)))
-    ((and ($ <or>) (= .left a) (= .right b)) (or (eval-expression- model state a)
-                        (eval-expression- model state b)))
-    ((and ($ <equal>) (= .left a) (= .right b))
-     (let* ((lhs (eval-expression- model state a))
-            (rhs (eval-expression- model state b))
-            (r (equal? lhs rhs)))
-       r))
-    ((and ($ <not-equal>) (= .left a) (= .right b))
-     (let* ((lhs (eval-expression- model state a))
-            (rhs (eval-expression- model state b))
-            (r (not (equal? lhs rhs))))
-     r))
-    ((and ($ <group>) (= .expression expression))
-     (eval-expression- model state expression))
-    ((and ($ <plus>) (= .left a) (= .right b))
-     ;;(stderr "+: state = ~a;   a = ~a; b = ~a\n" state a b)
-     (+ (eval-expression- model state a)
-        (eval-expression- model state b)))
-    ((and ($ <minus>) (= .left a) (= .right b))
-     (- (eval-expression- model state a)
-        (eval-expression- model state b)))
-    ((and ($ <less>) (= .left a) (= .right b))
-     (< (eval-expression- model state a)
-        (eval-expression- model state b)))
-    ((and ($ <less-equal>) (= .left a) (= .right b))
-     (<= (eval-expression- model state a)
-         (eval-expression- model state b)))
-    ((and ($ <greater>) (= .left a) (= .right b))
-     (> (eval-expression- model state a)
-        (eval-expression- model state b)))
-    ((and ($ <greater-equal>) (= .left a) (= .right b))
-     (>= (eval-expression- model state a)
-         (eval-expression- model state b)))
-    ((? symbol?) (eval-expression- model state (var-field state o)))
-    ((? boolean?) o)
-    ((? number?) o)
-    (($ <data>) o)
-    ((? unspecified?) o))
-  )
+    (($ <literal>) o)
+    ((and ($ <var>) (= .variable.name name)) (eval-expression state (assoc-ref state name)))
+    ((and ($ <not>) (= .expression expression)) (literal (not (true? (eval-expression state expression)))))
+    ((and ($ <equal>) (= .left left) (= .right right)) (literal (expr:equal? (eval-expression state left) (eval-expression state right))))
+    ((and ($ <not-equal>) (= .left left) (= .right right)) (literal (not (expr:equal? (eval-expression state left) (eval-expression state right)))))
+    ((and ($ <and>) (= .left left) (= .right right)) (literal (and (true? (eval-expression state left)) (true? (eval-expression state right)))))
+    ((and ($ <or>) (= .left left) (= .right right)) (literal (or (true? (eval-expression state left)) (true? (eval-expression state right)))))
+    ((and ($ <field-test>) (= .variable left) (= .field right)) (literal (eq? (.field (eval-expression state (make <var> #:variable.name (.name left)))) right)))
+    ((and ($ <plus>) (= .left left) (= .right right)) (literal (+ (.value (eval-expression state left)) (.value (eval-expression state right)))))
+    ((and ($ <minus>) (= .left left) (= .right right)) (literal (- (.value (eval-expression state left)) (.value (eval-expression state right)))))
+    ((and ($ <less>) (= .left left) (= .right right)) (literal (< (.value (eval-expression state left)) (.value (eval-expression state right)))))
+    ((and ($ <less-equal>) (= .left left) (= .right right)) (literal (<= (.value (eval-expression state left)) (.value (eval-expression state right)))))
+    ((and ($ <greater>) (= .left left) (= .right right)) (literal (> (.value (eval-expression state left)) (.value (eval-expression state right)))))
+    ((and ($ <greater-equal>) (= .left left) (= .right right)) (literal (>= (.value (eval-expression state left)) (.value (eval-expression state right)))))
+    ((and ($ <otherwise>) (= .value value)) (eval-expression state value))
+    ((and ($ <group>) (= .expression expression)) (eval-expression state expression))
+    (_ o)))
 
 (define (simplify-expression model state o)
   (let ((r (simplify-expression- model state o)))
@@ -241,7 +210,7 @@
      (let* ((a1 (simplify-expression model state a))
            (b1 (simplify-expression model state b))
            (a a1) (b b1))
-       (or (om:equal? a b)
+       (or (ast:equal? a b)
            (match (cons a b)
              ((($ <enum-literal>) . ($ <enum-literal>)) #f)
              (((? number?) . (? number?)) (eq? a b))
@@ -250,12 +219,12 @@
     ((and ($ <not-equal>) (= .left a) (= .right b))
      (let ((a (simplify-expression model state a))
            (b (simplify-expression model state b)))
-       (or (not (om:equal? a b))
+       (or (not (ast:equal? a b))
            (clone o #:left a #:right b))))
 
     ((and ($ <and>) (= .left a) (= .right b))
-     (let ((a (simplify-expression model state a))
-           (b (simplify-expression model state b)))
+     (let ((a (warn 'and-a (simplify-expression model state a)))
+           (b (warn 'and-b (simplify-expression model state b))))
        (and a b (cond
                      ((and (eq? a #t) (eq? b #t)) #t)
                      ((eq? a #t) b)
@@ -267,13 +236,13 @@
            (b (simplify-expression model state b)))
        (and (or a b) (cond
                           ((or (eq? a #t) (eq? b #t)) #t)
-                          ((om:equal? (make <not> #:expression a) b) #t)
-                          ((om:equal? (make <not> #:expression b) a) #t)
-                          ((om:equal? (simplify-expression model state (make <not> #:expression a)) b) #t)
-                          ((om:equal? (simplify-expression model state (make <not> #:expression b)) a) #t)
+                          ((ast:equal? (make <not> #:expression a) b) #t)
+                          ((ast:equal? (make <not> #:expression b) a) #t)
+                          ((ast:equal? (simplify-expression model state (make <not> #:expression a)) b) #t)
+                          ((ast:equal? (simplify-expression model state (make <not> #:expression b)) a) #t)
                           ((eq? a #f) b)
                           ((eq? b #f) a)
-                          ((om:equal? a b) a)
+                          ((ast:equal? a b) a)
                           (else (clone o #:left a #:right b))))))
 
     ((and ($ <not>) (= .expression expression))

@@ -3,7 +3,7 @@
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -83,37 +83,6 @@
 (define-method (x:interface-proc-memo (o <component>))
  (string-join (map makreel:interface-proc-memo  (ast:interface* o)) "\n"))
 
-(define-method (is-data? (o <ast>))
-  (or (is-a? o <data>) (and (is-a? o <var>) (is-a? ((compose .type .variable) o) <extern>))))
-
-(define (purge-data o)
-  (match o
-    (($ <data>) #f)
-    (($ <action>)
-     (clone o #:arguments (make <arguments>)))
-
-    (($ <trigger>)
-     (clone o #:formals (make <formals>)))
-
-    ((? (is? <ast-list>))
-     (clone o #:elements (filter-map purge-data (.elements o))))
-
-    (($ <extern>) #f)
-    (($ <assign>)
-     (if (is-a? (.type (.variable o)) <extern>) (clone (make <compound>) #:parent (.parent o))
-         (clone o #:expression (purge-data (.expression o)))))
-    (($ <formal>) (and (not (is-a? (.type o) <extern>)) o))
-    (($ <call>) (clone o #:arguments (make <arguments> #:elements (filter (negate is-data?) (ast:argument* o)))))
-    (($ <variable>) (and (not (is-a? (.type o) <extern>))
-                         (clone o #:expression (purge-data (.expression o)))))
-
-    (($ <var>) (and (not (is-a? ((compose .type .variable) o) <extern>))
-                    o))
-
-    ((and ($ <return>) (= .expression ($ <data-expr>))) (clone o #:expression #f))
-    ((? (is? <ast>)) (tree-map purge-data o))
-    (_ o)))
-
 (define mcrl2:process-identifier
   (let ((id-alist '())
 	(next-alist '()))
@@ -135,7 +104,7 @@
   (let* ((parent (.parent o)))
     (match parent
       (($ <behaviour>) parent)
-      (($ <compound>) (let ((cont (cdr (member o (.elements parent) (lambda (a b) (eq? (.node a) (.node b)))))))
+      (($ <compound>) (let ((cont (cdr (member o (ast:statement* parent) (lambda (a b) (eq? (.node a) (.node b)))))))
 			(if (pair? cont)
 			    (car cont)
 			    (mcrl2:process-continuation parent))))
@@ -241,17 +210,21 @@
               (is-a? o <compound>)
               (is-a? (.type (.signature (.parent o))) <void>))
             (if (pair? (tree-collect (is? <return>) o)) o
-                (clone o #:elements (append (.elements o) (list (make <return>)))))
+                (clone o #:elements (append (ast:statement* o) (list (make <return>)))))
             (tree-map f o))))
    (f root))
 
 (define makreel:normalize triples:state-traversal)
 (define (makreel:om ast)
   ((compose
-    (lambda (o) (if (gdzn:command-line:get 'debug) (pretty-print (om->list o) (current-error-port))) o)
     makreel:add-function-return
     makreel:mark-tail-call
-    makreel:normalize (remove-otherwise) makreel:tick-names purge-data ast:resolve) ast))
+    makreel:normalize
+    (remove-otherwise)
+    makreel:tick-names
+    purge-data
+    ast:resolve
+    ) ast))
 
 (define (ast-> ast)
   (let ((root (makreel:om ast)))
@@ -260,6 +233,14 @@
 
 (define (root-> o)
   (x:source o))
+
+(define %model-name (make-parameter #f))
+
+(define (untick o)
+  (string-drop-right o 1))
+
+(define (verify:scope-name o)
+  (string->symbol (string-join (map (compose untick symbol->string) (ast:full-name o)) ".")))
 
 (define-method (makreel:get-model (o <root>))
   (let ((model-name (and=> (command-line:get 'model #f) string->symbol)))
@@ -560,24 +541,24 @@
   (eq? 'optional (.event.name o)))
 
 (define-method (makreel:behaviour-with-optional-proc (o <behaviour>))
-  (let ((optionals (filter is-optional? ((compose .elements .statement) o))))
+  (let ((optionals (filter is-optional? (ast:statement* o))))
     (if (pair? optionals) o
         '())))
 
 (define-method (makreel:behaviour-without-optional-proc (o <behaviour>))
-  (let ((optionals (filter is-optional? ((compose .elements .statement) o))))
+  (let ((optionals (filter is-optional? (ast:statement* o))))
     (if (null? optionals) o
         '())))
 
 (define-method (makreel:non-optional-proc (o <behaviour>))
-  (let ((non-optionals (filter (negate is-optional?) ((compose .elements .statement) o)))
-        (optionals (filter is-optional? ((compose .elements .statement) o))))
+  (let ((non-optionals (filter (negate is-optional?) (ast:statement* o)))
+        (optionals (filter is-optional? (ast:statement* o))))
     (cond ((null? optionals) o)
           ((null? non-optionals) (make <skip>))
           (else (clone o #:statement (make <declarative-compound> #:elements non-optionals)))))) ;; FIXME: breaks function
 
 (define-method (makreel:optional-proc (o <behaviour>))
-  (let ((optionals (filter is-optional? ((compose .elements .statement) o))))
+  (let ((optionals (filter is-optional? (ast:statement* o))))
     (clone o #:statement (make <declarative-compound> #:elements optionals))))
 
 (define-method (makreel:silent (o <the-end>))
@@ -619,10 +600,10 @@
   (.statement o))
 
 (define-method (makreel:on-proc (o <declarative-compound>))
-  (.elements o))
+  (ast:statement* o))
 
 (define-method (makreel:on-proc (o <compound>))
-  (.elements o))
+  (ast:statement* o))
 
 (define-method (makreel:process-index (o <statement>))
   (mcrl2:process-identifier o))
@@ -646,8 +627,7 @@
   (if ((is? <behaviour>) o) '()
       (let* ((parent (.parent o)))
         (cond ((is-a? parent <compound>) (let ((pre ;;(pke 'o= o 'pre= (take-while (compose negate (cut ast:eq? o <>) (cut pke 'o o '<> <>)) (.elements parent)))
-                                                (cdr (member o (reverse (.elements parent)) ast:eq?))
-                                                ))
+                                                (cdr (member o (reverse (ast:statement* parent)) ast:eq?))))
                                            (append (filter (is? <variable>) pre) (makreel:locals parent))))
               ((is-a? o <function>) ((compose ast:formal* .signature) o))
               (else (makreel:locals parent))))))
@@ -709,7 +689,7 @@
 (define-method (makreel:continuation (o <ast>))
   (define (statement-continuation o)
     (let* ((p (.parent o))
-           (cont (cdr (member o (.elements p) (lambda (a b) (eq? (.node a) (.node b)))))))
+           (cont (cdr (member o (ast:statement* p) (lambda (a b) (eq? (.node a) (.node b)))))))
       (if (pair? cont)
           (list (car cont))
           (let ((grandp (.parent p)))
@@ -720,15 +700,15 @@
 
   (let* ((cont
           (match o
-            ((and ($ <declarative-compound>) (= .elements ())) (throw 'barf "unexpected empty declarative-compound"))
-            ((and ($ <declarative-compound>) (= .elements elements)) elements)
+            ((and ($ <declarative-compound>) (= ast:statement* ())) (throw 'barf "unexpected empty declarative-compound"))
+            ((and ($ <declarative-compound>) (= ast:statement* elements)) elements)
             ;;ASSUME normalized model <guard> <on> <compound>
             (($ <behaviour>) (list (.statement o)))
             (($ <function>) (list (.statement o)))
             (($ <guard>) (list (.statement o)))
             (($ <blocking>) (list (.statement o)))
             (($ <on>) (list (.statement o)))
-            ((and ($ <compound>) (= .elements (? pair?)) (= .elements elements)) (take elements 1))
+            ((and ($ <compound>) (= ast:statement* (? pair?)) (= ast:statement* elements)) (take elements 1))
             ((and ($ <call>) (= .parent ($ <assign>))) (list (.parent o))) ; 2
             ((and ($ <call>) (= .parent ($ <variable>))) (list (.parent o))) ; 2
             ((? (is? <statement>))      ; 3
@@ -871,10 +851,10 @@
       (($ <variable>) (.name parent)))))
 
 (define-method (makreel:enum-literal (o <enum-literal>))
-  (om:scope+name o))
+  (append (ast:full-name (.type o)) (list (.field o))))
 
 (define-method (makreel:enum-fields (o <enum>))
-  (map (compose (cut clone <> #:parent o)
+  (map (compose (cut clone <> #:parent (.parent o))
                 (cut make <enum-literal> #:type.name (.name o) #:field <>))
        (ast:field* o)))
 
@@ -927,6 +907,9 @@
   (let ((function (parent o <function>)))
     (cond ((and function (.last? o)) #f)
           (else o))))
+
+(define-method (makreel:enum-name (o <enum>))
+  (ast:full-name o))
 
 (define-templates-macro define-templates makreel)
 (include "../templates/dzn.scm")

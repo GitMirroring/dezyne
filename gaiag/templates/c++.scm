@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -40,6 +40,9 @@
 (define-templates interface-enum-to-string c++:enum->string)
 (define-templates interface-string-to-enum c++:enum->string)
 (define-templates enum-field-to-string c++:enum-field->string)
+(define-templates enum-field-type c++:enum-field-type type-infix)
+(define-templates type-name c++:type-name type-infix)
+(define-templates enum-literal c++:enum-literal type-infix)
 (define-templates string-to-enum c++:string->enum)
 (define-templates asd-voidreply (lambda (o) (if asd? "__ASD_VoidReply, " "")))
 (define-templates scoped-port-name (lambda (port) (let ((scope-name ((compose .name .type) port))) (append (.scope scope-name) (list (.name scope-name))))) type-infix)
@@ -65,7 +68,7 @@
 (define-templates injected-instance-meta-initializer injected-instances)
 (define-templates non-injected-instance-meta-initializer non-injected-instances)
 (define-templates dzn-locator code:dzn-locator)
-(define-templates header-data (lambda (o) (filter (is? <data>) (.elements o))))
+(define-templates header-data (lambda (o) (filter (is? <data>) (ast:top* o))))
 (define-templates model-glue (lambda (o) (filter (lambda (o) (and (dzn:glue) (is-a? o <foreign>))) (dzn:model o))))
 (define-templates header-model dzn:model)
 

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
@@ -119,7 +119,7 @@ Usage: gdzn verify [OPTION]... DZN-FILE [MAP-FILE]...
 
 (define (model->mcrl2 root model)
   (let* ((model-name (symbol->string (verify:scope-name model)))
-         (globals (ast:global* root))
+         (globals (ast:top* root))
          (used-interfaces (and (is-a? model <interface>)
                                (ast:interface* model)))
          (elements (filter (lambda (o)

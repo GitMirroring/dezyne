@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
@@ -73,7 +73,7 @@
 (define ((table table-statement) o)
   (match o
     (($ <root>)
-     (receive (table-models rest) (partition table-filter (.elements o))
+     (receive (table-models rest) (partition table-filter (ast:top* o))
               (clone o #:elements (append (map (table table-statement) table-models) rest))))
     (($ <interface>)
      (let* ((statement (table-statement o ((compose .statement .behaviour) o)))
@@ -91,7 +91,7 @@
   (let ((json? (gdzn:command-line:get 'json #f)))
     (or (and-let* (((not json?))
                    ((is-a? o <compound>))
-                   (statements (.elements o))
+                   (statements (ast:statement* o))
                    ((=1 (length statements)))
                    (statement (car statements))
                    ((is-a? statement <guard>))
@@ -119,13 +119,13 @@
     (and (is-a? v <variable>) (is-a? (.type v) <int>))))
 
 (define ((prepend-guards model) o)
-  (let* ((variables ((compose .elements .variables .behaviour) model))
+  (let* ((variables ((compose ast:variable* .behaviour) model))
          (variable (find (lambda (v) (not (is-a? (.type v) <extern>))) variables))
          (type (and=> variable .type))
          (variable (or variable (clone (make <variable> #:name '<state> #:type.name (make <scope.name> #:name '<Initial>)) #:parent o)))
          (fields
           (match type
-            (($ <enum>) (.elements (.fields type)))
+            (($ <enum>) (ast:field* type))
             (($ <int>)
              (let ((range (.range type)))
                (iota (- (.to range) (.from range) -1) (.from range))))
@@ -161,14 +161,14 @@
          (guards (filter (lambda (g)
                            (let ((e (.expression g)))
                              (and (ast:location g)
-                                  (or (om:equal? e expression)
-                                      (om:equal? e expression2)))))
+                                  (or (ast:equal? e expression)
+                                      (ast:equal? e expression2)))))
                          ((om:collect <guard>) o))))
     (and (pair? guards) (ast:location (car guards)))))
 
 (define (state-var model state)
-  (define (type? v) (om:equal? (.type v) (.type state)))
-  (find (lambda (v) (type? v)) ((compose .elements .variables .behaviour) model)))
+  (define (type? v) (ast:equal? (.type v) (.type state)))
+  (find (lambda (v) (type? v)) ((compose ast:variable* .behaviour) model)))
 
 (define (state-identifier model state)
   (or (and=> (state-var model state) .name) '<state>))
@@ -182,7 +182,7 @@
 
 (define* ((simplify- model variable field #:optional (top? #f)) o)
   (match o
-    ((and ($ <compound>) (= .elements statements))
+    ((and ($ <compound>) (= ast:statement* statements))
      (let* ((statements
              (let loop ((statements statements))
                (if (null? statements)
@@ -194,7 +194,7 @@
        (cond
         ((and (not top?) (=1 (length statements))) (car statements))
         ((and (null? statements)
-              (not (null? (.elements o)))
+              (not (null? (ast:statement* o)))
               (om:declarative? o))
          #f)
         (else
@@ -213,10 +213,10 @@
           (statement ((compose .statement .statement) o))
           (statement ((simplify model variable field) statement))
           (value (simplify-literal model variable field (make <and> #:left expression1 #:right expression2)))
-          (expression (cond ((and (om:equal? expression1 value)
+          (expression (cond ((and (ast:equal? expression1 value)
                                   (is-a? expression1 <otherwise>))
                              expression1)
-                            ((and (om:equal? expression2 value)
+                            ((and (ast:equal? expression2 value)
                                   (is-a? expression2 <otherwise>))
                              expression2)
                             (else value)))
@@ -233,7 +233,7 @@
               (clone statement #:location (ast:location o))
               (clone o #:expression value #:statement statement)))
          (($ <enum-literal>)
-          (and (om:equal? value field)
+          (and (ast:equal? value field)
                (if (om:declarative? statement)
                    (clone statement #:location (ast:location o))
                    (clone o #:expression value #:statement statement))))
@@ -249,7 +249,7 @@
            (match value
              ((and ($ <literal>) (= .value 'true)) then)
              ((and ($ <literal>) (= .value 'false)) #f)
-             (($ <enum-literal>) (and (om:equal? value field) then))
+             (($ <enum-literal>) (and (ast:equal? value field) then))
              (_ (clone o #:expression value #:then then))))
          (make <compound>)))
 
@@ -260,7 +260,7 @@
              (match value
                ((and ($ <literal>) (= .value 'true)) then)
                ((and ($ <literal>) (= .value 'false)) else)
-               (($ <enum-literal>) (and (om:equal? value field) then)) ;; TODO
+               (($ <enum-literal>) (and (ast:equal? value field) then)) ;; TODO
                (_ (clone o #:expression value #:then then #:else else)))))
          (and-let* ((then ((simplify model variable field) (.else o)))
                     (expression (make <not> #:expression (.expression o))))
@@ -281,8 +281,8 @@
 
 (define ((mangle-table json-table) o)
   (match o
-      ((and ($ <root>) (= .elements models))
-       (filter-map (mangle-table json-table) (filter table-filter models)))
+      ((and ($ <root>) (= ast:top* elements))
+       (filter-map (mangle-table json-table) (filter table-filter elements)))
       (($ <system>) #f)
       (($ <foreign>) #f)
       ((? (is? <model>))

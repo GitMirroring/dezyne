@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 // Copyright © 2015, 2016, 2017, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -27,7 +27,9 @@
 #include <dzn/locator.hh>
 #include <dzn/runtime.hh>
 #include <dzn/pump.hh>
+#include <dzn/sexp.hh>
 
+#include <algorithm>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -36,6 +38,16 @@
 
 namespace dzn
 {
+    namespace sexp
+    {
+      sexp nil = {(sexp*)"()", 0};
+      sexp dot = {(sexp*)".", 0};
+      int (*read_char)() = getchar;
+      int (*unread_char)(int) = ungetchar;
+      char const* global_string;
+      int global_pos;
+    }
+
   template <typename System, typename Function>
   struct container
   {
@@ -59,7 +71,7 @@ namespace dzn
 
     container(bool flush, dzn::locator&& l = dzn::locator{})
     : flush(flush)
-    , meta{"<internal>","container",0,0,{},{&system.dzn_meta},{[this]{system.check_bindings();}}}
+    , meta{"<external>","container",0,0,{},{&system.dzn_meta},{[this]{system.check_bindings();}}}
     , dzn_locator(std::forward<dzn::locator>(l))
     , dzn_rt()
     , system(dzn_locator.set(dzn_rt).set(pump))
@@ -95,18 +107,35 @@ namespace dzn
     {
       std::string tmp = match_return();
 
-      if(actual != tmp)
-        throw std::runtime_error("unmatched expectation: \"" + actual + "\" got: \"" + tmp + "\"");
+      // if(actual != tmp)
+      //   throw std::runtime_error("unmatched expectation: \"" + actual + "\" got: \"" + tmp + "\"");
     }
+
     void operator()(std::map<std::string, Function>&& lookup, std::set<std::string>&& required_ports)
     {
       this->lookup = std::move(lookup);
 
       std::string port;
       std::string str;
+      bool initial = true;
 
-      while(std::cin >> str)
+      auto set_state = [&] (std::string str){
+        sexp::sexp* sexp = sexp::read_from_string (str.c_str ());
+        std::list<sexp::sexp*> list = sexp::sexp_to_list (sexp);
+        std::map<std::string,std::map<std::string,std::string>> state_alist;
+        std::for_each (list.begin (), list.end (),
+                       [&] (sexp::sexp* s)
+        {
+          state_alist[sexp::sexp_to_string (s->car)] = sexp::sexp_to_alist (s->cdr);
+        });
+        system.set_state (state_alist);
+      };
+
+      while(std::getline (std::cin, str))
       {
+        if (initial && str[0] == '(') set_state (str);
+        initial = false;
+
         auto it = this->lookup.find(str);
         if(it == this->lookup.end() || port.size())
         {
@@ -116,6 +145,9 @@ namespace dzn
             if(port.empty() || port != p) port = p;
             else port.clear();
           }
+
+          if(std::count(str.begin(), str.end(), '.') > 1) continue;
+
           std::unique_lock<std::mutex> lock(mutex);
           condition.notify_one();
           expect.push(str);

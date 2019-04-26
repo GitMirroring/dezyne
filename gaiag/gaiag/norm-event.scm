@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016, 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -151,9 +151,9 @@
 (define* ((group-ons #:optional (group? norm:triggers-equal?)) o)
   "stable place ons with same group? next to eachother"
   (match o
-    ((and ($ <compound>) (= .elements (($ <on>) ..1)))
+    ((and ($ <compound>) (= ast:statement* (($ <on>) ..1)))
      (clone o #:elements
-           (let loop ((ons (.elements o)))
+           (let loop ((ons (ast:statement* o)))
              (if (null? ons)
                  '()
                  (receive (grouped-ons remainder)
@@ -172,11 +172,11 @@
     (reduce (lambda (x y)
               (make <or> #:left x #:right y))
             '()
-            (delete-duplicates (map (compose .expression) shared-guards) om:equal?)))
+            (delete-duplicates (map (compose .expression) shared-guards) ast:equal?)))
   (match o
-    ((and ($ <compound>) (= .elements (($ <guard> ..1))))
+    ((and ($ <compound>) (= ast:statement* (($ <guard> ..1))))
      (clone o #:elements
-            (let loop ((guards (.elements o)))
+            (let loop ((guards (ast:statement* o)))
               (if (null? guards)
                   '()
                   (receive (shared-guards remainder)
@@ -202,7 +202,7 @@
 
 (define (norm:guard-same-statement? model lhs rhs)
   (and (is-a? lhs <guard>) (is-a? rhs <guard>)
-       (om:equal? (.statement lhs) (.statement rhs))))
+       (ast:equal? (.statement lhs) (.statement rhs))))
 
 (define (combine-ons o)
   (match o
@@ -220,7 +220,7 @@
 (define ((passdown-on- on) o)
   (match o
     ((and ($ <compound>) (? om:declarative?))
-     (clone o #:elements (map (passdown-on- on) (.elements o))))
+     (clone o #:elements (map (passdown-on- on) (ast:statement* o))))
     (_
      (clone on #:statement o))))
 
@@ -244,10 +244,10 @@
   (match o
     (($ <on>)
      (clone o #:statement ((passdown-guard- guard #t) (.statement o))))
-    ((and ($ <compound>) (= .elements (($ <guard>) ..1)) (? (const seen-on?)))
+    ((and ($ <compound>) (= ast:statement* (($ <guard>) ..1)) (? (const seen-on?)))
      (make-guard o))
     ((and ($ <compound>) (? om:declarative?))
-     (clone o #:elements (map (passdown-guard- guard seen-on?) (.elements o))))
+     (clone o #:elements (map (passdown-guard- guard seen-on?) (ast:statement* o))))
     (($ <compound>) (make-guard o))
     (($ <guard>)
      (let ((o ((passdown-guard- o seen-on?) (.statement o))))
@@ -255,7 +255,7 @@
          (($ <on>)
           (clone o #:statement (make-guard (.statement o))))
          ((and ($ <compound>) (? om:declarative?))
-          (clone o #:elements (map (passdown-guard- guard seen-on?) (.elements o))))
+          (clone o #:elements (map (passdown-guard- guard seen-on?) (ast:statement* o))))
          (_ (make-guard o)))))
     (_ (make-guard o))))
 
@@ -273,15 +273,15 @@
          (make <blocking-compound>
            #:port port
            #:elements (let ((s (.statement o)))
-                        (if (is-a? s <compound>) (map (cut add-reply-port <> port block?) (.elements s))
+                        (if (is-a? s <compound>) (map (cut add-reply-port <> port block?) (ast:statement* s))
                             (list (add-reply-port s port block?)))))
          (add-reply-port (.statement o) port block?)))
     (($ <on>)
      (clone o #:statement (add-reply-port (.statement o)
-                                          (if port port ((compose .port car .elements .triggers) o))
-                                          (eq? 'provides ((compose .direction .port car .elements .triggers) o)))))
+                                          (if port port ((compose .port car ast:trigger*) o))
+                                          (eq? 'provides ((compose .direction .port car ast:trigger*) o)))))
     (($ <guard>) (clone o #:statement (add-reply-port (.statement o) port block?)))
-    (($ <compound>) (clone o #:elements (map (cut add-reply-port <> port block?) (.elements o))))
+    (($ <compound>) (clone o #:elements (map (cut add-reply-port <> port block?) (ast:statement* o))))
     (($ <behaviour>) (clone o #:statement (add-reply-port (.statement o) port block?)))
     (($ <component>) (clone o #:behaviour (add-reply-port (.behaviour o) (if (= 1 (length (filter ast:provides? (om:ports o)))) (om:port o) #f) block?)))
     (($ <system>) o)
@@ -296,8 +296,8 @@
      (clone o #:behaviour ((add-illegals-and-otherwise o) (.behaviour o))))
     (($ <behaviour>)
      (let* ((triggers (ast:in-triggers model))
-            (ons (.elements (.statement o)))
-            (on-triggers (append-map (compose .elements .triggers) ons))
+            (ons (ast:statement* o))
+            (on-triggers (append-map ast:trigger* ons))
             (triggers (filter
                        (lambda (trigger)
                          (not (find (lambda (on-trigger)
@@ -316,8 +316,8 @@
     ;;    #:elements (list o
     ;;                     (make <guard> #:expression (make <otherwise>) #:statement (make <illegal>)))))
     ((and ($ <compound>) (? om:declarative?)) (=> failure)
-     (if (and (pair? (.elements o)) (is-a? (car (.elements o)) <guard>) (null? (filter (is? <otherwise>) (.elements o))))
-         (clone o #:elements (append (.elements o) (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal> #:incomplete #t)))))
+     (if (and (pair? (ast:statement* o)) (is-a? (car (ast:statement* o)) <guard>) (null? (filter (is? <otherwise>) (ast:statement* o))))
+         (clone o #:elements (append (ast:statement* o) (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal> #:incomplete #t)))))
          (failure)))
     (($ <interface>)
      (clone o #:behaviour ((add-illegals-and-otherwise o) (.behaviour o))))
@@ -336,15 +336,15 @@
   (define ((passdown-formal-bindings formal-bindings) o)
     (match o
       ((and ($ <compound>) (? om:declarative?))
-       (clone o #:elements (map (passdown-formal-bindings formal-bindings) (.elements o))))
+       (clone o #:elements (map (passdown-formal-bindings formal-bindings) (ast:statement* o))))
       ((? om:declarative?) (clone o #:statement ((passdown-formal-bindings formal-bindings) (.statement o))))
-      (($ <compound>) (clone o #:elements (cons formal-bindings (.elements o))))
+      (($ <compound>) (clone o #:elements (cons formal-bindings (ast:statement* o))))
       (_ (make <compound> #:elements (cons formal-bindings (list o))))))
 
   (match o
     (($ <on>)
-     (let* ((trigger ((compose car .elements .triggers) o))
-            (on-formals ((compose .elements .formals) trigger))
+     (let* ((trigger ((compose car ast:trigger*) o))
+            (on-formals (ast:formal* trigger))
             (formal-bindings (filter (is? <formal-binding>) on-formals))
             (formal-bindings (and (pair? formal-bindings) (make <out-bindings> #:elements formal-bindings #:port (.port trigger))))
             (on-formals (map formal-binding->formal on-formals)))

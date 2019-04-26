@@ -1,0 +1,1 @@
+dzn::trace_qout(std::clog, this->#.port.name .meta, "#.event.name");

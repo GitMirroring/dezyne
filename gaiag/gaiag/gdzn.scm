@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -25,6 +25,7 @@
 (define-module (gaiag gdzn)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 poe)
+  #:use-module (system repl error-handling)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (gaiag config)
@@ -114,4 +115,5 @@ Use \"gdzn COMMAND --help\" for command-specific information.
          (service-version (service-version command-args)))
     (if (and service-version (not (equal? service-version %service-version)))
         (exec-gdzn-version service-version (cdr args))
-        (run-command command-args))))
+        (if (getenv "GDZN_REPL") (call-with-error-handling (cut run-command command-args))
+            (run-command command-args)))))

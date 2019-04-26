@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -34,7 +34,7 @@ void
 connect_ports (dzn::container<blocking_binding, std::function<void()> >& c)
 {
   c.system.r.in.e = [&] () {
-    dzn::trace_in(std::clog, c.system.r.meta, "e"); std::clog << std::endl;
+    dzn::trace(std::clog, c.system.r.meta, "e");
     c.match("r.e"); std::string tmp = c.match_return();
     dzn::trace_out(std::clog, c.system.r.meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
     return to_void(tmp.substr(tmp.rfind('.')+1));

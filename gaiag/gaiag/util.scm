@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
@@ -148,5 +148,5 @@
                                  (is-a? b <foreign>))))))
      (reverse (sort (map (lambda (o) (cons o
                                            (filter (is? <system>)
-                                                   (map .type ((compose .elements .instances) o)))))
+                                                   (map .type (ast:instance* o)))))
                          systems))))))

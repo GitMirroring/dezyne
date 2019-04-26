@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
@@ -87,9 +87,9 @@
          #:statement (helper (or (null-is-#f (assoc 'compound body)) '(compound)))))
 
       (('bind left right)
-       (make <bind-node> #:left (helper left) #:right (helper right)))
+       (make <binding-node> #:left (helper left) #:right (helper right)))
 
-      (('binding instance port) (make <binding-node> #:instance.name instance #:port.name port))
+      (('binding instance port) (make <end-point-node> #:instance.name instance #:port.name port))
 
       (('bindings bindings ...)
        (make <bindings-node> #:elements (map helper bindings)))
@@ -125,10 +125,15 @@
 
       (('data value) (make <data-node> #:value value))
 
+      (('data) (make <data-node>))
+
       (('enum name fields) (make <enum-node> #:name (helper name) #:fields (helper fields)))
 
       (('extern name value)
        (make <extern-node> #:name (helper name) #:value value))
+
+      (('extern name)
+       (make <extern-node> #:name (helper name)))
 
       (('event name signature direction)
        (make <event-node>

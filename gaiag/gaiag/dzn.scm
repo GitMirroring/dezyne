@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -55,6 +55,7 @@
             dzn-async?
             dzn:annotate-shells
             dzn:dir
+            dzn:data
             dzn:dump
             dzn:extension
             dzn:expression
@@ -179,27 +180,31 @@
                     (filter (negate (disjoin (is? <data>) (is? <type>) dzn-async?
                                              (conjoin ast:imported? (negate (is? <foreign>)))
                                              (is? <foreign>)))
-                            (.elements o))))))
+                            (ast:top* o))))))
       (topological-sort
        (map dzn:annotate-shells
             (filter (negate (disjoin (is? <data>) (is? <type>) (is? <namespace>) dzn-async?
                                      (conjoin ast:imported? (negate (is? <foreign>)))))
-                    (.elements o))))))
+                    (ast:top* o))))))
 
 (define-method (dzn:model (o <namespace>))
-  (.elements o))
+  (ast:top* o))
 
 (define-method (dzn:model (o <ast>))
   o)
 
-(define (dzn:global o)
-  (filter (is? <type>) (.elements o)))
+(define (dzn:global o) ;; TODO: REPLACEME with ???
+  (filter (is? <type>) (ast:top* o)))
 
 (define (dzn:annotate-shells o)
   (if (and (is-a? o <system>)
            (equal? (command-line:get 'shell #f) (string-join (map symbol->string (om:scope+name o)) ".")))
       (make <shell-system> #:ports (.ports o) #:name (.name o) #:instances (.instances o) #:bindings (.bindings o))
       o))
+
+(define-method (dzn:data (o <data>))
+  (if (.value o) ((compose dzn:->string .value) o)
+      '()))
 
 (define-method (dzn:=expression (o <ast>))
   o)
@@ -213,7 +218,8 @@
   ((compose dzn:=expression .expression) o))
 
 (define-method (dzn:=expression (o <extern>))
-  (.value o))
+  (if (.value o) (.value o)
+      '()))
 
 (define-method (dzn:type o)
   (if (as o <model>)
@@ -303,7 +309,8 @@
   (match o
     ((? number?) (number->string o))
     ((? symbol?) (symbol->string o))
-    ((? string?) o)))
+    ((? string?) o)
+    (#f "")))
 
 (define-method (dzn:formal-type (o <formal>)) o)
 (define-method (dzn:formal-type (o <event>)) ((compose ast:formal* .signature) o))
@@ -327,7 +334,7 @@
   (if (not (.port.name o)) '()
       (list (.port.name o))))
 
-(define-method (dzn:port-prefix (o <binding>))
+(define-method (dzn:port-prefix (o <end-point>))
   (if (not (.port.name o)) '()
       (list (.port.name o))))
 
@@ -433,7 +440,7 @@
   (let* ((dir (command-line:get 'output "."))
          (stdout? (equal? dir "-"))
          (dir (string-append dir "/" (dzn:dir o)))
-         (base (basename (symbol->string (ast:source-file o)) ".dzn")))
+         (base (basename (ast:source-file o) ".dzn")))
     (let* ((ext (symbol->string (dzn:extension (make <component>))))
            (file-name (string-append dir base ext)))
       (if stdout? ((dzn:indent (cut (%x:source) o)))

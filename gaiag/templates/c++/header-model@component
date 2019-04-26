@@ -18,6 +18,8 @@ struct #x:model-name
   #x:model-name (const dzn::locator&);
   void check_bindings() const;
   void dump_tree(std::ostream& os) const;
+  void set_state(std::map<std::string,std::map<std::string,std::string> > state_alist);
+  void set_state(std::map<std::string,std::string> state_alist);
   friend std::ostream& operator << (std::ostream& os, const #x:model-name & m)  {
     (void)m;
     return os << "[" << #x:stream-member "]" ;

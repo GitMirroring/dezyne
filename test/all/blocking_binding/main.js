@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,10 +23,23 @@
 
 #! /usr/bin/env node
 
-assert = require ('assert');
-var dzn = typeof (dzn) !== undefined && dzn ? dzn : require (__dirname + '/dzn/runtime');
+function node_p () {return typeof (module) !== 'undefined';}
+function have_dzn_p () {return typeof (dzn) !== 'undefined' && dzn;}
 
-dzn.extend (dzn, require (__dirname + '/dzn/blocking_binding'));
+if (node_p ()) {
+  // nodejs
+  assert = require ('assert');
+
+  dzn = have_dzn_p () ? dzn : require (__dirname + '/dzn/runtime');
+  dzn.extend (dzn, require (__dirname + '/dzn/blocking_binding'));
+}
+else {
+  // browser
+  dzn = have_dzn_p () ? dzn : {};
+  /* Add to your html something like
+  <script src="js/dzn/blocking_binding.js"></script>
+  */
+}
 
 var relaxed = false;
 var lines = [];
@@ -61,14 +74,14 @@ function consume_synchronous_out_events(prefix, event, event_map) {
 }
 
 function log_in(prefix, event, event_map) {
-  console.error(prefix + event);
+  console.error('<external>.' +  prefix + event + ' -> ' + 'sut.' + prefix + event);
   if (relaxed) return;
   consume_synchronous_out_events(prefix, event, event_map);
-  console.error(prefix + 'return');
+  console.error('<external>.' +  prefix + 'return' + ' <- ' + 'sut.' + prefix + 'return');
 }
 
 function log_out(prefix, event) {
-  console.error(prefix + event);
+  console.error('<external>.' +  prefix + event + ' <- ' + 'sut.' + prefix + event);
 }
 
 function type_helper(value, type) {
@@ -78,11 +91,11 @@ function type_helper(value, type) {
 }
 
 function log_valued(prefix, event, event_map) {
-  console.error(prefix + event);
+  console.error('<external>.' +  prefix + event + ' -> ' + 'sut.' + prefix + event);
   if (relaxed) return 0;
   var s = consume_synchronous_out_events(prefix, event, event_map);
   if (s !== undefined) {
-    console.error(prefix + s);
+    console.error('<external>.' + prefix + s + ' <- ' + 'sut.' + prefix + s);
     return s;
   }
   throw 'runtime error: "' + s + '" is not a reply value'
@@ -99,12 +112,12 @@ function blocking_binding_fill_event_map(m)
   };
   if (dzn.flush) {
     m.p._dzn.meta.requires.component = c;
-    m.p._dzn.meta.requires.name = '<internal>.p';
+    m.p._dzn.meta.requires.name = '<external>.p';
   }
 
   if (dzn.flush) {
     m.r._dzn.meta.provides.component = c;
-    m.r._dzn.meta.provides.name = '<internal>.r';
+    m.r._dzn.meta.provides.name = '<external>.r';
   }
   e['r.<flush>'] = function() {console.error('r.<flush>'); m._dzn.rt.flush(m.r._dzn.meta.provides.component);};
 

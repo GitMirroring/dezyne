@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
@@ -92,52 +92,52 @@
 (define* (om:events- o #:optional (predicate? identity))
   (filter predicate?
           (match o
-            (($ <interface>) ((compose .elements .events) o))
+            (($ <interface>) (ast:event* o))
             (($ <port>) ((compose om:events .type) o)))))
 
 (define om:events (pure-funcq om:events-))
 
 (define (om:functions model)
-  ((compose .elements .functions .behaviour) model))
+  ((compose ast:function* .behaviour) model))
 
 (define (om:instances o)
   (match o
     (($ <interface>) '())
     (($ <foreign>) o)
     (($ <component>) o)
-    ((? (is? <system>)) ((compose .elements .instances) o))))
+    ((? (is? <system>)) (ast:instance* o))))
 
 (define (om:ports- o)
   (match o
     (($ <interface>) '())
     ((? (is? <component-model>)) (ast:port* o))
-    (($ <behaviour>) ((compose .elements .ports) o))))
+    (($ <behaviour>) (ast:port* o))))
 
 (define om:ports (pure-funcq om:ports-))
 
 (define (om:types o)
   (match o
-    (($ <root>) (filter (is? <type>) (ast:global* o)))
+    (($ <root>) (filter (is? <type>) (ast:top* o)))
     (($ <behaviour>) (ast:type* o))
     (($ <interface>)
-     (append ((compose .elements .types .behaviour) o)
-             ((compose .elements .types) o)))
+     (append ((compose ast:type* .behaviour) o)
+             (ast:type* o)))
     ((and ($ <component>) (not (= .behaviour #f)))
-     (append ((compose .elements .types .behaviour) o) (om:interface-types o)))
+     (append ((compose ast:type* .behaviour) o) (om:interface-types o)))
     ((? (is? <component-model>)) (om:interface-types o))
     (($ <import>) '())
     (#f '())
     ((? unspecified?) '())))
 
 (define (om:globals o)
-  (filter (is? <type>) (.elements (parent o <root>))))
+  (filter (is? <type>) (ast:top* (parent o <root>))))
 
 (define-method (om:variables (o <model>))
   (match o
     (($ <system>) '())
     (($ <foreign>) '())
     ((= .behaviour #f) '())
-    (_ ((compose .elements .variables .behaviour) o))))
+    (_ ((compose ast:variable* .behaviour) o))))
 
 
 (define (om:enums o)
@@ -172,18 +172,18 @@
 (define (om:port-bind system port)
   (find (lambda (bind) (and=> (om:port-bind? bind)
                               (lambda (b)
-				(om:equal? (.port (om:port-binding? b)) port))))
-        ((compose .elements .bindings) system)))
+				(ast:equal? (.port (om:port-binding? b)) port))))
+        (ast:binding* system)))
 
 (define (om:bind system o)
-  (let* ((binds ((compose .elements .bindings) system)))
+  (let* ((binds (ast:binding* system)))
     (match o
       ((? symbol?) ;; FIXME: port need not be unique
        (deprecated (current-source-location))
-       (find (lambda (bind) (or (om:equal? (.port.name (.left bind)) o)
-                                (om:equal? (.port.name (.right bind)) o)))
+       (find (lambda (bind) (or (ast:equal? (.port.name (.left bind)) o)
+                                (ast:equal? (.port.name (.right bind)) o)))
            binds))
-      ((and ($ <binding>) (= .instance.name instance-name) (= .port.name port-name))
+      ((and ($ <end-point>) (= .instance.name instance-name) (= .port.name port-name))
        (find (lambda (bind)
                (or (and (eq? (.instance.name (.left bind)) instance-name)
                                      (eq? (.port.name (.left bind)) port-name))
@@ -196,12 +196,12 @@
 
 (define-method (om:behaviour-ports (o <component-model>))
   (if (and (is-a? o <component>) (.behaviour o))
-      ((compose .elements .ports .behaviour) o)
+      ((compose ast:port* .behaviour) o)
       '()))
 
 (define* (om:port model #:optional (o #f))
   (match o
-    (($ <binding>)
+    (($ <end-point>)
      (let* ((port (.port o)))
        (or
         (and-let* ((name (.instance.name o))
@@ -228,7 +228,7 @@
 ;;; NAME/NAMESPACE/SCOPE
 
 (define ((om:named name) o)
-  (om:equal? (.name o) name))
+  (ast:equal? (.name o) name))
 
 (define-method (om:scope+name o)
   (match o
@@ -314,9 +314,8 @@
     ((? (is? <model>)) (append-map om:interface-types (om:ports o)))))
 
 (define (om:public-types o)
-  ;;(stderr "PUBLIC[~a]: ~a\n" (.name o) ((compose .elements .types) o))
   (match o
-    ((? (is? <interface>)) ((compose .elements .types) o))
+    ((? (is? <interface>)) (ast:type* o))
     (_ '())))
 
 (define* (om:typed? o #:optional (trigger #f))
@@ -341,8 +340,8 @@
 (define (om:declarative? o)
   (or (is-a? o <declarative>)
       (and (is-a? o <compound>)
-                    (>0 (length (.elements o)))
-                    (om:declarative? (car (.elements o))))
+                    (>0 (length (ast:statement* o)))
+                    (om:declarative? (car (ast:statement* o))))
       (and (pair? o)
            (om:declarative? (car o)))))
 

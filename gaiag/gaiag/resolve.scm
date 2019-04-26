@@ -4,7 +4,7 @@
 ;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015, 2016, 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2015, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Affero General Public License as
@@ -63,7 +63,7 @@
 (define-method (add-constants (o <root>))
   (let* ((tvoid (make <void>))
          (tbool (make <bool>))
-         (o (clone o #:elements (cons tvoid (cons tbool (.elements o))))))
+         (o (clone o #:elements (cons tvoid (cons tbool (ast:top* o))))))
     o))
 
 (define (ast:resolve o) (add-constants o))
@@ -72,10 +72,10 @@
   (match o
     ((? symbol?)
      (find (lambda (x)
-                   (eq? (.name x) o)) ((compose .elements .instances) model)))
-    (($ <binding>) (or (.instance o)
+                   (eq? (.name x) o)) (ast:instance* model)))
+    (($ <end-point>) (or (.instance o)
                        (.type ((.port model) o))))
-    (($ <bind>) (resolve:instance model (om:instance-binding? o)))
+    (($ <binding>) (resolve:instance model (om:instance-binding? o)))
     (($ <port>) (resolve:instance model (om:instance-binding? (om:port-bind model o))))
     ((? boolean?) #f)))
 
@@ -86,17 +86,17 @@
           (($ <component>) system)
           (($ <root>) (om:find (disjoin (is? <component>) (is? <foreign>)) system))
           (($ <scope.name>) ;(cached-model system)
-           (find (lambda (x) (om:equal? system (.name x))) (filter (negate (is? <data>)) (.elements (parent system <root>)))))
+           (find (lambda (x) (ast:equal? system (.name x))) (filter (negate (is? <data>)) (ast:top* (parent system <root>)))))
           (_ #f)))
     ((? symbol?) (resolve:component system (resolve:instance system o)))
-    ((and ($ <binding>) (= .instance #f))
+    ((and ($ <end-point>) (= .instance #f))
      ;;#f
      ;;(resolve:component system (om:binding-other-port system port))
      (let* ((bind (om:bind system (.port.name o)))
             (instance (om:instance-name bind)))
        (resolve:component system instance)))
-    (($ <binding>) (resolve:component system (.instance o)))
-    (($ <bind>) (resolve:component system (om:instance-name o)))
+    (($ <end-point>) (resolve:component system (.instance o)))
+    (($ <binding>) (resolve:component system (om:instance-name o)))
     (($ <instance>) (.type o))
     (($ <port>) (resolve:interface (.type o)))))
 
@@ -105,7 +105,7 @@
     (($ <port>) (resolve:interface (.type o)))
     (($ <interface>) o)
     ((? (is? <model>)) (resolve:interface (om:port o)))
-    (($ <scope.name>) (find (om:named o) ((compose .elements (cut parent o <root>)))))
+    (($ <scope.name>) (find (om:named o) ((compose ast:top* (cut parent o <root>)))))
     (($ <root>) (om:find (is? <interface>) o))
     ((h t ...) (find (is? <interface>) o))))
 
@@ -150,12 +150,12 @@
           (_ (values '() name)))
       (and (null? scope) (eq? a name)))))
 
-(define-method (ast:name-equal? (a <symbol>) (b <compound>))
+(define-method (ast:name-equal? (a <symbol>) (b <ast>))
   ;;(stderr "ast:name-equal? ~s =? ~s\n" a b)
   #f)
 
 (define-method (ast:lookup (o <scope>) (name <scope.name>))
-  ;;(stderr "ast:lookup[~s]: ~s\n" o name)
+;;  (stderr "ast:lookup[~s]: ~s\n" o name)
   (let ((scope (.scope name)))
     (if (null? scope) (if (ast:name-equal? (.name name) o) o
                           (ast:lookup o (.name name)))
@@ -167,7 +167,7 @@
                 (ast:lookdown first-scope name)))))))
 
 (define-method (ast:lookdown (o <scope>) (name <scope.name>))
-  ;;(stderr "ast:lookdown[~s]: ~s\n" o name)
+;;  (stderr "ast:lookdown[~s]: ~s\n" o name)
   (let ((name (.name name))
         (scope (.scope name)))
     (if (null? scope) (find (cut ast:name-equal? name <>) (ast:declaration* o))
@@ -179,22 +179,22 @@
                 (ast:lookdown first-scope name)))))))
 
 (define-method (ast:lookdown (o <ast>) (name <scope.name>))
-  ;;(stderr "ast:lookdown <ast>[~s]: ~s\n" o name)
+;;  (stderr "ast:lookdown <ast>[~s]: ~s\n" o name)
   #f)
 
 (define-method (ast:lookup (o <ast>) name)
-  ;;(stderr "ast:lookup <ast> 2 [~s]: ~s\n" o name)
+;;  (stderr "ast:lookup <ast> 2 [~s]: ~s\n" o name)
   (ast:lookup (parent o <scope>) name))
 
 (define-method (ast:lookup (o <scope>) (name <symbol>))
-  ;;(stderr "ast:lookup 3 [~s]: ~s\n" o name)
+;;  (stderr "ast:lookup 3 [~s]: ~s\n" o name)
   (or (find (cut ast:name-equal? name <>) (ast:declaration* o))
       (let ((p (.parent o)))
         (and p
              (ast:lookup (parent p <scope>) name)))))
 
 (define-method (ast:declaration* (o <namespace>))
-  (ast:global* o))
+  (ast:top* o))
 
 (define-method (ast:declaration* (o <interface>))
   (append (ast:type* o) (ast:event* o)))
@@ -221,23 +221,8 @@
   (ast:field* o))
 
 
-
 (define-method (type? (o <ast>) name)
   (ast:lookup o name))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 (define-method (type?- (o <ast>) name) ;;FIXME stop recursion when AST not fresh
   (define (name? e) (and (eq? (.scope+name (.name e)) (.scope+name name)) e))
@@ -258,7 +243,7 @@
           (else (full-name name (drop here 1)))))
   (match o
          (($ <root>)
-          (let ((scope (find scope? (.elements o))))
+          (let ((scope (find scope? (ast:top* o))))
             (if (and scope (pair? (.scope name)))
                 (type?- scope name)
                 (find name? (ast:type* o)))))
@@ -280,22 +265,22 @@
 (define-method (.scope+name (o <scope.name>))
   (symbol-join (append (.scope o) (list (.name o)))))
 
-(define (name-resolve root class o)
+(define (name-resolve scope class o)
   (cond
    ((or (eq? <interface> class) (eq? <system> class) (eq? <component> class) (eq? <foreign> class))
     (find (lambda (m)
             (and (is-a? m class)
                  (equal? o (.scope+name (.name m)))))
-          (.elements root)))
+          (ast:top* scope)))
    ((eq? <port> class)
     (find (lambda (m)
             (equal? o (.name m)))
-          (append (ast:port* root)
-                  (om:behaviour-ports root))))
+          (append (ast:port* scope)
+                  (om:behaviour-ports scope))))
    ((eq? <function> class)
     (find (lambda (m)
             (equal? o (.name m)))
-          ((compose .elements .functions .behaviour) root)))))
+          ((compose ast:function* .behaviour) scope)))))
 
 (define name-resolve (pure-funcq name-resolve))
 
@@ -305,7 +290,8 @@
 (define-method (.type (o <instance>))
   (or (name-resolve (parent o <root>) <system> (.scope+name (.type.name o)))
       (name-resolve (parent o <root>) <component> (.scope+name (.type.name o)))
-      (name-resolve (parent o <root>) <foreign> (.scope+name (.type.name o)))))
+      (name-resolve (parent o <root>) <foreign> (.scope+name (.type.name o)))
+      (name-resolve (parent o <root>) <interface> (.scope+name (.type.name o)))))
 
 (define-method (contains? container (o <ast>))
   (and (is-a? container <ast>)
@@ -327,11 +313,13 @@
 (define-method (.port (o <reply>))
   (and (.port.name o) (name-resolve (parent o <model>) <port> (.port.name o))))
 
-(define-method (.port (o <binding>))
+(define-method (.port (o <trigger-return>))
+  (and (.port.name o) (name-resolve (parent o <model>) <port> (.port.name o))))
+
+(define-method (.port (o <end-point>))
   (if (.instance.name o)
       (name-resolve (.type (.instance o)) <port> (.port.name o))
       (name-resolve (parent o <model>) <port> (.port.name o))))
-
 
 (define-method (event? (o <ast>) name)
   (define (name? o) (and (eq? (.name o) name) o))
@@ -340,8 +328,8 @@
     ((eq? name 'optional) (clone (ast:optional) #:parent (parent o <interface>)))
     (else (match o
             (($ <interface>) (find name? (ast:event* o)))
-            ((and (or ($ <action>) ($ <trigger>)) (= .port #f)) (event? (parent o <interface>) name))
-            ((and (or ($ <action>) ($ <trigger>)) (= .port port)) (event? (.type port) name))))))
+            ((and (or (? (is? <action>)) ($ <trigger>)) (= .port #f)) (event? (parent o <interface>) name))
+            ((and (or (? (is? <action>)) ($ <trigger>)) (= .port port)) (event? (.type port) name))))))
 
 (define-method (resolve:event (o <ast>) (name <symbol>))
   (event? o name))
@@ -396,7 +384,7 @@
 (define-method (.type (o <variable>))
   (type? o (.type.name o)))
 
-(define-method (.instance (o <binding>))
+(define-method (.instance (o <end-point>))
   (and (.instance.name o) (bind-instance? o (.instance.name o))))
 
 (define (ast-> ast)

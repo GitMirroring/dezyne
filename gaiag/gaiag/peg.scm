@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -177,6 +177,12 @@
       (('binding left right)
        (make <binding-node> #:left (helper left) #:right (helper right)))
 
+      (('end-point name)
+        (let* ((name (helper name))
+               (scope (.scope name))
+               (instance (and (pair? scope) (car scope))))
+         (make <end-point-node> #:instance.name instance #:port.name (.name name))))
+
       ('ports (make <ports-node>))
       (('ports ports ...) (make <ports-node> #:elements (helper ports)))
 
@@ -237,12 +243,6 @@
 
       (('direction direction) (helper direction))
 
-      (('binding name)
-        (let* ((name (helper name))
-               (scope (.scope name))
-               (instance (and (pair? scope) (car scope))))
-         (make <binding-node> #:instance.name instance #:port.name (.name name))))
-
       (('compound-name name)
        (make <scope.name-node> #:name (helper name)))
 
@@ -296,10 +296,6 @@
            #:variables (make <variables-node> #:elements (filter (is? <variable-node>) (.elements compound)))
            #:functions (make <functions-node> #:elements (filter (is? <function-node>) (.elements compound)))
            #:statement (clone compound #:elements (filter (conjoin (is? <statement-node>) (negate (is? <variable-node>))) (.elements compound))))))
-
-      (('bind left right)
-       (make <bind> #:left (helper left) #:right (helper right)))
-
 
       (('blocking statement) (make <blocking-node> #:statement (helper statement)))
 

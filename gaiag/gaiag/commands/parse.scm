@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -71,6 +71,7 @@
   (let* ((option-spec
           '((help (single-char #\h))
             (import (single-char #\I) (value #t))
+            (behaviour (single-char #\b) (value #f))
             (output (single-char #\o) (value #t))
 	    (version (single-char #\V) (value #t))))
 	 (options (getopt-long args option-spec
@@ -83,6 +84,7 @@
 Usage: gdzn parse [OPTION]... [FILE]...
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
+  -b, --behaviour        include behaviour of imported models,
   -o, --output=FILE      write ast to FILE
   -V, --version=VERSION  use service version=VERSION
 ")
@@ -93,8 +95,9 @@ Usage: gdzn parse [OPTION]... [FILE]...
   (let* ((peg? (gdzn:command-line:get 'peg #f))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
+         (behaviour? (option-ref options 'behaviour #f))
          (language (string->symbol (option-ref options 'language "c++"))))
-    (parse-file file-name #:peg? peg? #:imports imports)))
+    (parse-file file-name #:peg? peg? #:imports imports #:behaviour? behaviour?)))
 
 (define parse-with-options parse)
 

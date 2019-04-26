@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2016, 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -73,6 +73,7 @@
             code:enum-definer
             code:global-enum-definer
             code:enum-name
+            code:enum-short-name
             code:expression
             code:trigger
             code:injected-instances
@@ -89,7 +90,8 @@
             code:reply-type
             code:reply-scope+name
             code:reply-types
-            code:x:pand
+            code:scope+name
+            code:trace-q-out
 
             code-file
             code:file-name
@@ -99,6 +101,8 @@
             code:dump-main
             code:module
             code:om
+            code:port-type
+            code:enum-field-definer
             symbol->enum-field
 
             code:arguments
@@ -136,7 +140,7 @@
             code:return
             code:scope+name
             code:scope-type-name
-            code:scope-type-scope
+            code:set-state-argument
             code:trigger
             code:type-name
             code:variable-name
@@ -176,6 +180,7 @@
   "")
 
 (define (code:root-> root)
+;;  (pretty-print (om->list root))
   (code:file2file root)
   (let ((main (command-line:get 'model #f)))
     (when main
@@ -212,7 +217,7 @@
         (else #f)))
 
 (define (injected-bindings model)
-  (filter injected-binding? ((compose .elements .bindings) model)))
+  (filter injected-binding? (ast:binding* model)))
 
 (define (injected-instance-name binding)
   (or (.instance.name (.left binding)) (.instance.name (.right binding))))
@@ -220,12 +225,12 @@
 (define (injected-instances model)
   (let ((injected-instance-names (map injected-instance-name (injected-bindings model))))
     (filter (lambda (instance) (member (.name instance) injected-instance-names))
-            ((compose .elements .instances) model))))
+            (ast:instance* model))))
 
 (define (non-injected-instances model)
   (let ((injected-instance-names (map injected-instance-name (injected-bindings model))))
     (filter (lambda (instance) (not (member (.name instance) injected-instance-names)))
-            ((compose .elements .instances) model))))
+            (ast:instance* model))))
 
 (define-method (code:dzn-locator (o <instance>)) ;; MORTAL SIN HERE!!?
   (let* ((model (parent o <model>)))
@@ -243,7 +248,26 @@
 (define-method (code:port-type (o <port>))
   (code:scope+name (.type o)))
 
-(define-method (code:scope+name o)
+(define-method (code:fullscope (o <ast>))
+
+  (define (name o)
+    (let ((n (.name o)))
+      (if (is-a? n <scope.name>) (.name n) n)))
+
+  (define (fullscope o)
+    (let ((p (.parent o)))
+     (match p
+       (($ <root>) '())
+       (($ <namespace>) (append (fullscope p) (list (name p))))
+       ((? (is? <model>)) (append (fullscope p) (list (name p))))
+       (_ (fullscope p)))))
+
+  (let ((scope (fullscope o)))
+    (unless (every symbol? scope)
+      (throw 'scope 'not-symbol scope))
+    scope))
+
+(define-method (code:scope+name o) ;; REMOVEME
   (om:scope+name o))
 
 (define-method (code:scope+name (o <root>))
@@ -270,11 +294,11 @@
 (define-method (code:scope+name (o <enum-field>))
   (append ((compose code:scope+name .type) o) (list (.field o))))
 
-(define-method (code:scope+name (o <bind>))
+(define-method (code:scope+name (o <binding>))
   ((compose code:scope+name .type (cut resolve:instance (parent o <model>) <>) injected-instance-name) o))
 
 (define-method (code:non-injected-bindings (o <system>))
-  (filter om:port-bind? (filter (negate injected-binding?) ((compose .elements .bindings) o))))
+  (filter om:port-bind? (filter (negate injected-binding?) (ast:binding* o))))
 
 (define-method (code:injected-instances-system (o <system>))
   (if (null? (injected-bindings o)) ""
@@ -293,15 +317,15 @@
                                                   (is-a? b <int>))
                                              (and (is-a? a <void>)
                                                   (is-a? b <void>))
-                                             (om:equal? a b))))))
+                                             (ast:equal? a b))))))
 
 (define-method (code:port-name (o <on>))
-  ((compose .port.name car .elements .triggers) o))
+  ((compose .port.name car ast:trigger*) o))
 
 (define-method (code:port-name (o <instance>))
   (.name (om:port (resolve:component (parent o <model>) o))))
 
-(define-method (code:port-name (o <bind>))
+(define-method (code:port-name (o <binding>))
   (let* ((model (parent o <model>))
          (left (.left o))
          (right (.right o))
@@ -309,7 +333,7 @@
                     (if (not (.instance.name left)) (.port left) (.port right)))))
     port))
 
-(define-method (code:instance-name (o <bind>))
+(define-method (code:instance-name (o <binding>))
   (let* ((model (parent o <model>))
          (left (.left o))
          (right (.right o))
@@ -317,7 +341,7 @@
                     (if (.instance.name left) left right))))
     bind))
 
-(define-method (code:instance-name (o <binding>))
+(define-method (code:instance-name (o <end-point>))
   o)
 
 (define-method (code:instance-name (o <port>))
@@ -356,10 +380,10 @@
 (define-method (code:ons (o <component>))
   (let ((behaviour (.behaviour o)))
     (if (not behaviour) '()
-        ((compose .elements .statement) behaviour))))
+        (ast:statement* behaviour))))
 
 (define-method (code:trigger (o <on>))
-  ((compose car .elements .triggers) o))
+  ((compose car ast:trigger*) o))
 
 (define-method (code:return (o <on>))
   ((compose ast:type code:trigger) o))
@@ -371,7 +395,7 @@
                  #:parent (.parent o))))
 
 (define-method (code:variable->argument (o <var>) (f <formal>))
-  (clone (code:variable->argument (.variable o) f) #:parent o))
+  (code:variable->argument (.variable o) f))
 
 (define-method (code:variable->argument (o <formal>) (f <formal>))
   (if (eq? (.direction f) 'in) o
@@ -456,11 +480,35 @@
     (if (is-a? (ast:type expression) <void>) '()
         o)))
 
-(define ((symbol->enum-field enum) o)
-  (make <enum-field> #:type.name (.name enum) #:field o))
+(define-method (code:enum-field-definer (o <enum>))
+  (map (symbol->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
+
+(define ((symbol->enum-field enum) o i)
+  (make <enum-field> #:type.name (.name enum) #:field o #:value i))
 
 (define-method (code:enum-name (o <enum-field>))
-  ((compose code:scope-type-name .type) o))
+  ((compose code:enum-name .type) o))
+
+(define-method (code:enum-name (o <enum>))
+  (ast:full-name o))
+
+(define-method (code:enum-name (o <enum-literal>))
+  ((compose code:enum-name .type) o))
+
+(define-method (code:enum-name (o <reply>))
+  ((compose code:enum-name .expression) o))
+
+(define-method (code:enum-name (o <variable>))
+  ((compose code:enum-name .type) o))
+
+(define-method (code:enum-name o)
+  ((compose code:enum-name .variable) o))
+
+(define-method (code:enum-short-name (o <enum-field>))
+  ((compose code:enum-short-name .type) o))
+
+(define-method (code:enum-short-name (o <enum>))
+  ((compose .name .name) o))
 
 (define-method (code:enum-definer (o <interface>))
   (filter (is? <enum>) (append (ast:type* o) (ast:type* (.behaviour o)))))
@@ -469,14 +517,20 @@
   (filter (is? <enum>) (ast:type* (.behaviour o))))
 
 (define-method (code:global-enum-definer (o <root>))
-  (filter (is? <enum>) (ast:global* o)))
+  (filter (is? <enum>) (ast:top* o)))
+
+(define-method (code:global-enum-definer (o <model>))
+  (filter (is? <enum>) (ast:top* (parent o <root>))))
+
+(define-method (code:global-enum-definer (o <root>))
+  (filter (is? <enum>) (ast:type* o)))
 
 (define-method (code:instances (o <component>))
   '())
 (define-method (code:instances (o <system>))
   (om:instances o))
 
-(define-method (code:bind-provided-required (o <bind>))
+(define-method (code:bind-provided-required (o <binding>))
   (let* ((model (parent o <model>))
          (left (.left o))
          (left-port (.port left))
@@ -486,10 +540,10 @@
                                 (cons left right)
                                 (cons right left))))
 
-(define-method (code:bind-provided (o <bind>))
+(define-method (code:bind-provided (o <binding>))
   ((compose car code:bind-provided-required) o))
 
-(define-method (code:bind-required (o <bind>))
+(define-method (code:bind-required (o <binding>))
   ((compose cdr code:bind-provided-required) o))
 
 (define-method (code:component-port (o <port>)) ;; MORTAL SIN HERE!!?
@@ -498,7 +552,7 @@
     (om:instance-binding? bind)))
 
 (define-method (code:reply-type (o <ast>))
-  ((compose code:scope+name ast:type) o))
+  ((compose ast:full-name ast:type) o))
 
 (define-method (code:reply-type (o <reply>))
   ((compose code:reply-type .expression) o))
@@ -544,43 +598,36 @@
 (define-method (code:variable-name (o <ast>))
   ((compose code:variable-name .variable) o))
 
-;; type
-(define (code:cons-empty-symbol o)
-  (if (memq (language) '(c++ c++03 c++-msvc11)) (cons (symbol) o) ; MORTAL SIN HERE!!?
-      o))
+(define-method (code:type-name (o <variable>))
+  (code:type-name (.type o)))
 
-(define-method (code:type-name (o <bind>))
+(define-method (code:type-name (o <enum>))
+  ;;(append (code:fullscope o) (.scope (.name o)) (list (.name (.name o))))
+  (ast:full-name o))
+
+(define-method (code:type-name (o <binding>))
   ((compose code:type-name .type (cut resolve:instance (parent o <model>) <>) injected-instance-name) o))
 
 (define-method (code:type-name (o <enum-field>))
-  (code:scope+name o))
+  (append (code:type-name (.type o)) (list (.field o))))
 
-(define (code:append-type-symbol o)
-  (if (memq (language) '(c++ c++03 c++-msvc11)) (append o (list 'type)) ; MORTAL SIN HERE!!?
-      o))
+(define-method (code:type-name (o <enum-literal>))
+  (append (code:type-name (.type o)) (list (.field o))))
 
-(define-method (code:type-name o)
+(define-method (code:type-name o) ; MORTAL SIN HERE!!?
   (let* ((type (or (as o <model>) (as o <type>) (ast:type o))))
     (map dzn:->string
          (match type
-           (($ <enum>) (code:cons-empty-symbol (code:append-type-symbol (code:scope+name type))))
+           (($ <enum>) (code:type-name type))
            (($ <extern>) (list (.value type)))
            ((or ($ <bool>) ($ <int>) ($ <void>)) (code:scope+name type))
-           (_ (code:cons-empty-symbol (code:scope+name type)))))))
+           (_ (code:scope+name type))))))
 
 (define-method (code:type-name (o <event>))
   ((compose code:type-name .type .signature) o))
 
-(define-method (code:type-name (o <enum-field>))
-  (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
-
 (define-method (code:type-name (o <enum-literal>))
-  (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
-
-(define-method (code:field-expression (o <field-test>))
-  (map dzn:->string (code:cons-empty-symbol
-                      (append (code:scope+name ((compose .type .variable) o))
-                              (list (.field o))))))
+  (code:type-name (.type o)))
 
 (define-method (code:main-out-arg (o <trigger>)) ; MORTAL SIN HERE!!?
   (let ((formals (ast:formal* o)))
@@ -591,7 +638,7 @@
      formals (iota (length formals)))))
 
 (define-method (code:main-out-arg-define (o <trigger>))
-  (let ((formals ((compose .elements .formals) o)))
+  (let ((formals (ast:formal* o)))
     (map (lambda (f i) (clone f #:name i))
          formals (iota (length formals)))))
 
@@ -604,19 +651,13 @@
 (define-method (code:main-event-map-match-return (o <trigger>))
   (if (om:in? (.event o)) o ""))
 
-(define-method (code:scope-type-scope o)
-  ((compose .scope code:scope.name) o))
-
-(define-method (code:scope-type-scope (o <field-test>))
-  ((compose code:scope-type-scope .type .variable) o))
-
 (define-method (code:scope-type-name o)
   ((compose .name code:scope.name) o))
 
 (define-method (code:scope-type-name (o <field-test>))
   ((compose code:scope-type-name .type .variable) o))
 
-(define (code:x-header- o) (filter (conjoin (negate ast:imported?) (is? <interface>)) (.elements o)))
+(define (code:x-header- o) (filter (conjoin (negate ast:imported?) (is? <interface>)) (ast:top* o)))
 
 (define-method (code:reply (o <type>))
   o)
@@ -645,7 +686,7 @@
       ""))
 
 (define-method (code:enum-literal (o <enum-literal>))
-  (map dzn:->string (code:cons-empty-symbol (code:scope+name o))))
+  (append (code:type-name (.type o)) (list (.field o))))
 
 (define-method (code:enum-scope (o <field-test>))
   ((compose (cut code:enum-model-scope <> (parent o <model>)) .type .variable) o))
@@ -657,10 +698,15 @@
   ((compose (cut code:enum-model-scope <> (parent o <model>)) .type) o))
 
 (define-method (code:enum-model-scope (o <enum>) model)
-  (let ((scope ((compose .scope .name) o))
-        (model-scope (and=> model om:scope+name)))
-    (if (or (null? scope) (null? model-scope) (equal? scope model-scope)) (make <model-scope>)
-        o)))
+  (let ((scope (ast:scope o))
+        (model-scope (and=> model ast:full-name)))
+    (cond ((or (null? scope) (null? model-scope)) (parent o <root>))
+          ((equal? scope model-scope) (make <model-scope> #:scope model-scope))
+          (else o))))
+
+(define-method (code:trace-q-out o) ;; MORTAL SIN HERE
+  (if ((compose om:out? .event) o) o
+      ""))
 
 ;; main
 
@@ -678,7 +724,7 @@
            ;;                                     (compose negate
            ;;                                              (cut equal? (ast:source-file o) <>)
            ;;                                              ast:source-file)))))
-                          (.elements o)))
+                          (ast:top* o)))
          (non-interface-models (filter (negate (is? <interface>)) objects)))
     (pair? non-interface-models)))
 
@@ -797,7 +843,7 @@
   (let ((calling-context (command-line:get 'calling-context #f)))
     (if calling-context
         (let ((extern (make <extern> #:name (make <scope.name> #:name '*calling-context*) #:value calling-context)))
-          (clone o #:elements (cons extern (.elements o))))
+          (clone o #:elements (cons extern (ast:top* o))))
         o)))
 
 (define (code:foreign?)
@@ -834,7 +880,7 @@
 
 (define* ((asd-interfaces #:optional (dir? identity)) model)
   (let* ((interfaces
-          (filter dir? ((compose .elements .events) model)))
+          (filter dir? (ast:event* model)))
          (alist (event2->interface1-event1-alist model))
          (interfaces (filter-map (lambda (x) (assoc (.name x) alist)) interfaces)))
     (if (pair? interfaces) interfaces '())))
@@ -876,3 +922,7 @@
 (define-method (code:pump? (o <component>))
   (if ((compose pair? ast:req-events) o) o
       '()))
+
+(define-method (code:set-state-argument (o <instance>))
+  (if (is-a? (.type o) <system>) (.type o)
+      o))

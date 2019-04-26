@@ -245,9 +245,9 @@ system <-- SYSTEM BRACE-OPEN# instances bindings BRACE-CLOSE#
 instances <-- instance*
 instance <-- compound-name name SEMICOLON#
 
-bindings <-- bind*
-bind <-- binding BIND binding SEMICOLON#
-binding <-- compound-name (DOT ASTERISK)? / ASTERISK
+bindings <-- binding*
+binding <-- end-point BIND end-point SEMICOLON#
+end-point <-- compound-name (DOT ASTERISK)? / ASTERISK
 
 otherwise <-- OTHERWISE
 provides <-- PROVIDES

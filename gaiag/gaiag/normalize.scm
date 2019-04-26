@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
@@ -56,6 +56,7 @@
             triples:fix-empty-interface
             triples:on-compound
             triples:split-multiple-on
+            purge-data
             ))
 
 (define om:imperative? (@ (gaiag deprecated om) om:imperative?)) ;; REMOVEME
@@ -83,8 +84,8 @@
     (match o
       (($ <illegal>) o)
       (($ <declarative-illegal>) o)
-      ((and ($ <compound>) (= .elements (? null?))) #f)
-      (($ <compound>) (declarative-illegal? ((compose car .elements) o)))
+      ((and ($ <compound>) (= ast:statement* (? null?))) #f)
+      (($ <compound>) (declarative-illegal? ((compose car ast:statement*) o)))
       (_ #f)))
 
 (define ((triples:fix-empty-interface model) triples)
@@ -137,7 +138,7 @@
               (let* ((statement (t-statement t))
                      (end (make (if modeling? <the-end> <reply>)))
                      (elements (if (is-a? statement <compound>)
-                                   (append (.elements statement) (list end))
+                                   (append (ast:statement* statement) (list end))
                                    (list statement end)))
                      (statement (make <compound> #:elements elements)))
                 (t-triple on (t-guard t) (t-blocking t) statement)))
@@ -145,7 +146,7 @@
                        (let* ((statement (t-statement t))
                               (reply (if provides? (list (make <reply>)) '()))
                               (elements (if (is-a? statement <compound>)
-                                            (.elements statement)
+                                            (ast:statement* statement)
                                             (list statement)))
                               (elements (append elements reply))
                               (statement (make <compound> #:elements elements)))
@@ -156,7 +157,7 @@
 (define (add-the-end t)
   (let* ((statement (t-statement t))
          (elements (if (is-a? statement <compound>)
-                       (.elements statement)
+                       (ast:statement* statement)
                        (list statement)))
          (elements (append elements (list (make <the-end>))))
          (statement (make <compound> #:elements elements)))
@@ -166,7 +167,7 @@
   (define (illegal? o)
     (match o
       (($ <illegal>) o)
-      ((and ($ <compound>) (= .elements (statement))) (illegal? statement))
+      ((and ($ <compound>) (= ast:statement* (statement))) (illegal? statement))
       (_ #f)))
   (define (foo t)
     (let* ((on (t-on t))
@@ -201,7 +202,7 @@
                 (combine (filter (is? <guard>) path))
                 (find (is? <blocking>) path)
                 o)))
-  (if (and (is-a? o <compound>) (null? (.elements o))) '()
+  (if (and (is-a? o <compound>) (null? (ast:statement* o))) '()
       (map triple (tree-collect-shallow om:imperative? o))))
 
 (define (triples:on-compound triples)
@@ -337,6 +338,44 @@
 
   (map foo triples))
 
+(define-method (is-data? (o <ast>))
+  (or (is-a? o <data>) (and (is-a? o <var>) (is-a? ((compose .type .variable) o) <extern>))))
+
+(define (purge-data o)
+  (match o
+    (($ <data>) #f)
+    (($ <action>)
+     (clone o #:arguments (make <arguments>)))
+
+    (($ <trigger>)
+     (clone o #:formals (make <formals>)))
+
+    ((? (is? <ast-list>))
+     (clone o #:elements (filter-map purge-data (.elements o))))
+
+    (($ <extern>) #f)
+    (($ <assign>)
+     (let* ((variable (.variable o))
+            (type (and variable (.type variable))))
+       (if (and type (not (is-a? type <extern>))) (clone o #:expression (purge-data (.expression o)))
+         (clone (make <compound>) #:parent (.parent o)))))
+    (($ <formal>)
+     (let ((type (.type o)))
+       (and type (not (is-a? type <extern>)) o)))
+    (($ <call>) (clone o #:arguments (make <arguments> #:elements (filter (negate is-data?) (ast:argument* o)))))
+    (($ <variable>)
+     (let ((type (.type o)))
+       (and type (not (is-a? type <extern>))
+            (clone o #:expression (purge-data (.expression o))))))
+
+    (($ <var>)
+     (let* ((variable (.variable o))
+            (type (and variable (.type variable))))
+       (and type (not (is-a? type <extern>)) o)))
+
+    ((and ($ <return>) (= .expression ($ <data-expr>))) (clone o #:expression #f))
+    ((? (is? <ast>)) (tree-map purge-data o))
+    (_ o)))
 
 (define (triples:simplify-guard triples)
   (map (lambda (t)

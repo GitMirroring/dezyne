@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -74,6 +74,9 @@
             c++:construction-parameters-locator-set
             c++:construction-signature
             c++:enum->string
+            c++:enum-literal
+            c++:type-name
+            c++:enum-field-type
             c++:enum-field->string
             c++:implemented-port-name
             c++:name
@@ -93,23 +96,23 @@
 (define-method (c++:type-ref (o <formal>))
   (if (not (eq? 'in (.direction o))) "&" ""))
 
-(define-method (c++:name (o <bind>))  ;; FIXME
+(define-method (c++:name (o <binding>))  ;; FIXME
   (injected-instance-name o))
 
 (define-method (c++:capture-arguments (o <trigger>))
   (map .name (filter (negate om:out-or-inout?) (code:formals o))))
 
 (define-method (c++:formal-type (o <formal>)) o)
-(define-method (c++:formal-type (o <port>)) ((compose .elements .formals .signature car om:events) o))
+(define-method (c++:formal-type (o <port>)) ((compose ast:formal* car om:events) o))
 
 (define (c++:pump-include o) (if (pair? (om:ports (.behaviour o))) "#include <dzn/pump.hh>" ""))
 
 (define-method (c++:enum-field->string (o <enum>))
-  (map (symbol->enum-field o) ((compose .elements .fields) o)))
+  (map (symbol->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
 (define-method (c++:string->enum (o <model>))
   (om:enums o))
 (define-method (c++:string->enum (o <enum>))
-  (map (symbol->enum-field o) ((compose .elements .fields) o)))
+  (map (symbol->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
 
 (define-method (c++:enum->string (o <interface>))
   (append (filter (is? <enum>) (om:globals o)) (om:enums o)))
@@ -239,7 +242,7 @@
          (let* ((event (first entry))
                 (interface (second entry))
                 (event (resolve:event (provided-interface component) event))
-                (formals (.elements (.formals (.signature event))))
+                (formals (ast:formal* event))
                 (port (om:port component))
                 (port-name (.name port)))
            (->string (list "component." port-name ".out." (first entry)
@@ -259,7 +262,7 @@
                  "{}\n"
                  (map (lambda (asd dzn)
                         (let* ((event (resolve:event (provided-interface component) dzn))
-                               (formals (.elements (.formals (.signature event))))
+                               (formals (ast:formal* event))
                                (arguments (comma-join (map .name formals)))
                                (formals (comma-join (map (lambda (formal)
                                                (list (if (eq? (.direction formal) 'in) "const ")
@@ -311,7 +314,7 @@
          (let* ((event-name (first entry))
                 (interface (second entry))
                 (event (resolve:event (provided-interface model) event-name))
-                (formals (.elements (.formals (.signature event))))
+                (formals (ast:formal* event))
                 (arguments (comma-join (map .name formals)))
                 (formals (comma-join (map (lambda (formal)
                                             (list ((compose .value (om:type model)) formal) (if (eq? (.direction formal) 'in) " " "& ") (.name formal)))
@@ -342,7 +345,7 @@
                             (lambda (dzn asd)
                               (let* ((event (resolve:event (provided-interface model) dzn))
                                      (void? (is-a? (.type (.signature event)) <void>))
-                                     (formals (.elements (.formals (.signature event))))
+                                     (formals (ast:formal* event))
                                      (arguments (comma-join (map .name formals)))
                                      (formals (comma-join (map (lambda (formal)
                                                                  (list (if (eq? (.direction formal) 'in) "const ") "asd::value< " ((compose .value (om:type model)) formal) " >::type& " (.name formal)))
@@ -386,6 +389,49 @@
 
 (define (c++:implemented-port-name model)
   (.name (om:port model)))
+
+(define-method (c++:type-name o)        ; MORTAL SIN HERE!!?
+  (let* ((type (or (as o <model>) (as o <type>) (ast:type o))))
+    (map dzn:->string
+         (match type
+           (($ <enum>) (c++:type-name type))
+           (($ <extern>) (list (.value type)))
+           ((or ($ <bool>) ($ <int>) ($ <void>)) (code:scope+name type))
+           (_ (c++:type-name type))
+           (_ (code:scope+name type))))))
+
+(define-method (c++:type-name o)
+  (code:type-name o))
+
+(define-method (c++:type-name (o <binding>))
+  ((compose c++:type-name .type (cut resolve:instance (parent o <model>) <>) injected-instance-name) o))
+
+(define-method (c++:type-name (o <enum>))
+  (append (ast:full-name o) (list "type")))
+
+(define-method (c++:type-name (o <enum-field>))
+  (append (c++:type-name (.type o)) (list (.field o))))
+
+(define-method (c++:type-name (o <enum-literal>))
+  (c++:type-name (.type o)))
+
+(define-method (c++:type-name (o <event>))
+  ((compose c++:type-name .type .signature) o))
+
+(define-method (c++:type-name (o <formal>))
+  ((compose c++:type-name .type) o))
+
+(define-method (c++:type-name (o <var>))
+  (c++:type-name o))
+
+(define-method (c++:type-name (o <variable>))
+  (c++:type-name (.type o)))
+
+(define-method (c++:enum-field-type (o <enum-field>))
+  (append (c++:type-name (.type o)) (list (.field o))))
+
+(define-method (c++:enum-literal (o <enum-literal>))
+  (append (c++:type-name (.type o)) (list (.field o))))
 
 (define-templates-macro define-templates c++)
 (include "../templates/dzn.scm")

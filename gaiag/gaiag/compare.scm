@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -27,6 +27,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (gaiag ast)
   #:use-module (gaiag goops)
 
   #:use-module (gaiag misc)
@@ -36,7 +37,7 @@
 
   #:export (
            om:<
-           om:equal?
+           ;;ast:equal?
            om:guard-equal?
            om:triggers-equal?
            om:remove-formals
@@ -46,11 +47,11 @@
 
 (define om:< <)
 
-(define-method (om:equal? a b)
-  (equal? (om->list a) (om->list b)))
+;; (define-method (ast:equal? a b)
+;;   (equal? (om->list a) (om->list b)))
 
-(define-method (om:equal? (a <ast>) (b <ast>))
-  (om:equal? (.node a) (.node b)))
+;; (define-method (ast:equal? (a <ast>) (b <ast>))
+;;   (ast:equal? (.node a) (.node b)))
 
 (define-method (children (o <ast>))
   (children (.node o)))
@@ -59,10 +60,10 @@
   (let ((getters (map slot-definition-getter (class-slots (class-of o)))))
     (map (cut <> o) getters)))
 
-(define-method (om:equal? (a <ast-node>) (b <ast-node>))
-  (or (= (.id a) (.id b))
-      (and (eq? (class-name (class-of a)) (class-name (class-of b)))
-           (every om:equal? (children a) (children b)))))
+;; (define-method (ast:equal? (a <ast-node>) (b <ast-node>))
+;;   (or (= (.id a) (.id b))
+;;       (and (eq? (class-name (class-of a)) (class-name (class-of b)))
+;;            (every ast:equal? (children a) (children b)))))
 
 (define-method (< (a <on>) (b <on>))
   (< (.triggers a) (.triggers b)))
@@ -86,8 +87,8 @@
   #f)
 
 (define-method (< (a <triggers>) (b <triggers>))
-  (< (stable-sort (.elements a) <)
-     (stable-sort (.elements b) <)))
+  (< (stable-sort (ast:trigger* a) <)
+     (stable-sort (ast:trigger* b) <)))
 
 (define-method (< (a <trigger>) (b <trigger>))
   (< (list (.port.name a) (.event.name a))
@@ -114,19 +115,19 @@
 (define-method (< (a <symbol>) (b <boolean>))
   #f)
 
-;; (define-method (om:equal? (a <scope.name>) (b <scope.name>))
+;; (define-method (ast:equal? (a <scope.name>) (b <scope.name>))
 ;;   (and (equal? (.scope a) (.scope b)) (equal? (.name a) (.name b))))
-(define-method (om:equal? (a <port>) (b <port>))
-  (and (equal? (.name a) (.name b)) (om:equal? (.type.name a) (.type.name b))))
+;; (define-method (ast:equal? (a <port>) (b <port>))
+;;   (and (equal? (.name a) (.name b)) (ast:equal? (.type.name a) (.type.name b))))
 
 
-(define-method (om:equal? (a <trigger>) (b <trigger>))
-  (and (equal? (.port.name a) (.port.name b))
-       (equal? (.event.name a) (.event.name b))
-       (om:equal? (.formals a) (.formals b))))
+;; (define-method (ast:equal? (a <trigger>) (b <trigger>))
+;;   (and (equal? (.port.name a) (.port.name b))
+;;        (equal? (.event.name a) (.event.name b))
+;;        (ast:equal? (.formals a) (.formals b))))
 
 (define-method (om:guard-equal? (lhs <guard>) (rhs <guard>))
-  (om:equal? (.expression lhs) (.expression rhs)))
+  (ast:equal? (.expression lhs) (.expression rhs)))
 
 (define-method (om:port-event-equal? a b)
   #f)
@@ -138,8 +139,8 @@
   #f)
 
 (define-method (om:triggers-equal? (a <on>) (b <on>))
-  (om:equal? ((compose .elements .triggers) a)
-          ((compose .elements .triggers) b)))
+  (ast:equal? (ast:trigger* a)
+             (ast:trigger* b)))
 
 (define-method (om:scope.name-equal? (a <named>) (b <named>))
-  (om:equal? (.name a) (.name b)))
+  (ast:equal? (.name a) (.name b)))

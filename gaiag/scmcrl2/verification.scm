@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -109,7 +109,7 @@
                 fail?))))))
 
 (define (mcrl2:verify-component dir dzn-file-name model-name ast verbose? all?)
-  (let* ((component (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <component>) (.elements ast))))
+  (let* ((component (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <component>) (ast:top* ast))))
          (interfaces (delete-duplicates (map .type (om:ports component))))
          (asserts (append
                    (append-map
@@ -260,7 +260,7 @@
                      (cut verify-component-refinement lts info model-name ast)))))
 
 (define (mcrl2:verify dir dzn-file-name model-name ast verbose? all?)
-  (let ((model (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <model>) (.elements ast)))))
+  (let ((model (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <model>) (ast:top* ast)))))
     (cond ((is-a? model <interface>) (mcrl2:verify-interface dir dzn-file-name model ast verbose? all?))
           ((is-a? model <component>) (mcrl2:verify-component dir dzn-file-name model-name ast verbose? all?))
           (else #f))))

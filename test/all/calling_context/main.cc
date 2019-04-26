@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
   sut.w.meta.provides.port = "w";
 
   sut.w.in.world = [&](int& cc, int i){
-    dzn::trace_in (std::clog, sut.w.meta,"world"); std::clog << std::endl;
+    dzn::trace (std::clog, sut.w.meta,"world");
     if(cc == 0){cc = 123;} else {assert(cc == 123); cc = 456;}
     dzn::trace_out (std::clog, sut.w.meta,"return"); std::clog << std::endl;
   };

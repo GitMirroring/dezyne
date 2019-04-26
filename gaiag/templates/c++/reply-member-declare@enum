@@ -1,1 +1,1 @@
-#x:type-name  reply_#x:scope+name;
+#x:type-name  reply_#x:enum-name;
