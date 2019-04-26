@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2011 Free Software Foundation, Inc.
 ;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Lesser General Public
@@ -345,10 +345,36 @@ return EXP."
 
 ;; Packages the results of a parser
 
-(define indent 0)
+(define-public %peg:debug? (make-parameter #f))
+(define-public %peg:skip? (make-parameter #f))
+(define-public %peg:locations? (make-parameter #f))
+
+(define-syntax define-unwrapped-sexp-parser
+  (lambda (x)
+    (syntax-case x ()
+      ((_ sym accum pat)
+       (let* ((matchf (compile-peg-pattern #'pat (syntax->datum #'accum))))
+         #`(define sym #,matchf))))))
+
+(define-unwrapped-sexp-parser peg-eol none (or "\f" "\n" "\r" "\v"))
+(add-peg-compiler! 'peg-eol peg-eol)
+
+(define-unwrapped-sexp-parser peg-ws none (or " " "\t"))
+(add-peg-compiler! 'peg-ws peg-ws)
+
+(define-unwrapped-sexp-parser peg-line all (and "//" (* (and (not-followed-by peg-eol) peg-any))))
+(add-peg-compiler! 'peg-line peg-line)
+
+(define-unwrapped-sexp-parser peg-block all (and "/*" (* (or peg-block (and (not-followed-by "*/") peg-any))) (expect "*/")))
+(add-peg-compiler! 'peg-block peg-block)
+
+(define-unwrapped-sexp-parser peg-comment all (* (or peg-ws peg-eol peg-line peg-block)))
+(add-peg-compiler! 'peg-comment peg-comment)
 
 (define (trace? symbol)
-  (and #f (not (memq symbol '()))))
+  (and (%peg:debug?) (not (memq symbol '()))))
+
+(define indent 0)
 
 (define (wrap-parser-for-users for-syntax parser accumsym s-syn)
   #`(lambda (str strlen at)
@@ -357,34 +383,43 @@ return EXP."
                 (make-string indent #\space)
                 '#,s-syn))
       (set! indent (+ indent 4))
-      (let ((res (#,parser str strlen at)))
+      (let* ((comment-res (if (%peg:skip?) (peg-comment str strlen at)
+                              (list at '())))
+             (at (or (and comment-res (car comment-res)) at))
+             (res (#,parser str strlen at)))
         (set! indent (- indent 4))
-        ;; Try to match the nonterminal.
         (let ((pos (or (and res (car res)) 0)))
           (when (and (trace? '#,s-syn) (< at pos))
-           (format (current-error-port) "~a~a := ~s\tnext: ~s\n"
-                   (make-string indent #\space)
-                   '#,s-syn
-                   (substring str at pos)
-                   (substring str pos (min strlen (+ pos 10))))))
+            (format (current-error-port) "~a~a := ~s\tnext: ~s\n"
+                    (make-string indent #\space)
+                    '#,s-syn
+                    (substring str at pos)
+                    (substring str pos (min strlen (+ pos 10))))))
+        ;; Try to match the nonterminal.
         (if res
             ;; If we matched, do some post-processing to figure out
             ;; what data to propagate upward.
-            (let ((at (car res))
-                  (body (cadr res)))
+            (let* ((body (cadr res))
+                   (loc `(location ,at ,(car res)))
+                   (annotate (if (not (%peg:locations?)) '()
+                                 (if (null? (cadr comment-res)) `(,loc)
+                                     `(,(cdr comment-res) ,loc))))
+                   (at (car res)))
               #,(cond
                  ((eq? accumsym 'name)
-                  #`(list at '#,s-syn))
+                  #`(list at '#,s-syn ,@annotate))
                  ((eq? accumsym 'all)
                   #`(list (car res)
                           (cond
                            ((not (list? body))
-                            (list '#,s-syn body))
-                           ((null? body) '#,s-syn)
+                            `(,'#,s-syn ,body ,@annotate))
+                           ((null? body)
+                            `(,'#,s-syn ,@annotate))
                            ((symbol? (car body))
-                            (list '#,s-syn body))
-                           (else (cons '#,s-syn body)))))
-                 ((eq? accumsym 'none) #`(list (car res) '()))
-                 (else #`(begin res))))
+                            `(,'#,s-syn ,body ,@annotate))
+                           (else
+                            (cons '#,s-syn (append body annotate))))))
+                 ((eq? accumsym 'none) #``(,at () ,@annotate))
+                 (else #``(,at ,body ,@annotate))))
             ;; If we didn't match, just return false.
             #f))))

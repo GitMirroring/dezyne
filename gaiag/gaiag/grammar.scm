@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -42,30 +42,6 @@
   #:use-module (system base compile)
 
   #:export (peg:parse %peg-locations? %skip-parser?))
-
-(define %peg-locations? #f)
-(define %skip-parser? #f)
-
-(define-syntax my-define-sexp-parser
-  (lambda (x)
-    (syntax-case x ()
-      ((_ sym accum pat)
-       (let* ((matchf (compile-peg-pattern #'pat (syntax->datum #'accum))))
-         #`(define sym #,matchf))))))
-
-(my-define-sexp-parser eol none (or "\f" "\n" "\r" "\v"))
-(add-peg-compiler! 'eol eol)
-
-(my-define-sexp-parser ws none (or " " "\t"))
-(add-peg-compiler! 'ws ws)
-
-(my-define-sexp-parser line all (and "//" (* (and (not-followed-by eol) peg-any))))
-(add-peg-compiler! 'line line)
-
-(my-define-sexp-parser block all (and "/*" (* (or block (and (not-followed-by "*/") peg-any))) (expect "*/")))
-
-(my-define-sexp-parser comment all (* (or ws eol line block)))
-(add-peg-compiler! 'comment comment)
 
 (define (peg:parse string file-name)
 
@@ -314,7 +290,6 @@ NOT                 <   '!'
 EOF                 <   !.
 COMPARE             <-  EQUAL / NOT-EQUAL / LESS-EQUAL / LESS / GREATER-EQUAL / GREATER
 
-
 BEHAVIOUR           <  'behaviour' ![a-zA-Z_0-9]
 BLOCKING            <  'blocking' ![a-zA-Z_0-9]
 BOOL                <- 'bool' ![a-zA-Z_0-9]
@@ -379,11 +354,9 @@ KEYWORD <
   / 'void') ![a-zA-Z_0-9]
 
 ")
-
-  (set! %peg-locations? #t)
-  (set! %skip-parser? #t)
-  (let* ((result (match-pattern root string))
-         (tree (peg:tree result)))
-    ;;(set! %peg-locations? #f)
-    ;;(set! %skip-parser? #f)
-    tree))
+  (parameterize ((%peg:locations? #t)
+                 (%peg:skip? #t)
+                 (%peg:debug? #f))
+    (let* ((result (match-pattern root string))
+          (tree (peg:tree result)))
+     tree)))

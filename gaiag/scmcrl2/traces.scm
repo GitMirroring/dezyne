@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
@@ -168,7 +168,7 @@ illegal")
     (('reply ('identifier port) ('enum-literal (scope ... ('identifier name)) ('identifier field))) (string-append port "." name "_" field))
     (('return return) (and internal? "return"))))
 
-;;(format #t "~a" (string-join (map parse-tree2text (parse trace)) "\n"))
+;;(format #t "~a" (string-join (map (cut parse-tree2text <> #:internal? #t #:illegal? #t) (warn 'parse:  (parse trace))) "\n"))
 
 (define (mcrl2-trace-file->dzn-trace mcrl2-trace-file)
   (cleanup-lts (pipeline->string `("tracepp" ,mcrl2-trace-file))))
