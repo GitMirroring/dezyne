@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -75,7 +75,7 @@
   (define* (display-join proc name dir o #:optional (grammar-alist '((#f . ("")))))
     "Like STRING-JOIN, allowing \"PRE\" 'pre and \"POST\" 'post in GRAMMAR"
     (define (bla o)
-      (when (and (is-a? o <ast>) (gdzn:command-line:get 'debug))
+      (when (and #f (is-a? o <ast>) (gdzn:command-line:get 'debug)) ;;FIX FOR verify -d etc.
         (display "/*\ngaiag/")
         (display dir)
         (display name)
@@ -176,7 +176,7 @@
                   (define-method (#,tname (o <top>)) (throw 'missing-template-overload: (string-append "template: " (symbol->string '#,name) " for type: " (symbol->string (class-name (class-of o)))))))
               (define (#,xname #,o)
                 (let ((f (#,func #,o)))
-		  (when (gdzn:command-line:get 'debug)
+		  (when (and #f (gdzn:command-line:get 'debug)) ;;FIX FOR verify -d etc.
 		    (display "// ") (display '#,func) (newline))
                   (display-join #,tname '#,name #,dir f '#,grammars)))))))
 
