@@ -1,3 +1,3 @@
 verify: reply_modeling: check: deadlock: fail
-world
+reply_modeling.world
 verify: reply_modeling: check: livelock: ok

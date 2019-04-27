@@ -1,4 +1,4 @@
 verify: deadlock_interface1: check: deadlock: fail
-e
-return
+deadlock_interface1.e
+deadlock_interface1.return
 verify: deadlock_interface1: check: livelock: ok

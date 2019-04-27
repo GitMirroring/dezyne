@@ -1,5 +1,5 @@
 verify: missingstate: check: deadlock: fail
-e
-a
-return
+missingstate.e
+missingstate.a
+missingstate.return
 verify: missingstate: check: livelock: ok

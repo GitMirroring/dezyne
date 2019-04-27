@@ -1,7 +1,7 @@
 verify: BlindLoop: check: deadlock: ok
 verify: BlindLoop: check: livelock: fail
-start
-return
+BlindLoop.start
+BlindLoop.return
 verify: InterfaceLivelock: check: deterministic: ok
 verify: InterfaceLivelock: check: illegal: ok
 verify: InterfaceLivelock: check: deadlock: ok

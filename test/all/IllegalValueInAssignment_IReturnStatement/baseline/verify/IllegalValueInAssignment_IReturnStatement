@@ -1,3 +1,3 @@
 verify: IllegalValueInAssignment_IReturnStatement: check: deadlock: fail
-ia
+IllegalValueInAssignment_IReturnStatement.ia
 verify: IllegalValueInAssignment_IReturnStatement: check: livelock: ok
