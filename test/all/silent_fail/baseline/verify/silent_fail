@@ -32,4 +32,5 @@ rp.BridgeOpen
 rp.return
 pp.return
 rp.BarDown
+pp.test
 verify: silent_fail: check: livelock: ok

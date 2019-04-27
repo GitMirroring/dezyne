@@ -4,6 +4,7 @@ verify: ComponentIsNonCompliantWithInterface: check: deadlock: ok
 verify: ComponentIsNonCompliantWithInterface: check: compliance: fail
 pp.ia
 pp.return
+pp.ia
 verify: ComponentIsNonCompliantWithInterface: check: livelock: ok
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
