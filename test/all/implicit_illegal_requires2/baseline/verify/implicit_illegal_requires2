@@ -8,5 +8,4 @@ r.e
 verify: implicit_illegal_requires2: check: deadlock: ok
 verify: implicit_illegal_requires2: check: compliance: fail
 p.f
-illegal
 verify: implicit_illegal_requires2: check: livelock: ok

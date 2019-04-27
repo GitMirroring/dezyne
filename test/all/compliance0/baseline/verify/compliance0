@@ -5,5 +5,4 @@ verify: compliance0: check: illegal: ok
 verify: compliance0: check: deadlock: ok
 verify: compliance0: check: compliance: fail
 i.f
-illegal
 verify: compliance0: check: livelock: ok

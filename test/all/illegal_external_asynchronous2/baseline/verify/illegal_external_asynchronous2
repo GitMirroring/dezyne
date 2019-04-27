@@ -7,9 +7,7 @@ r.e
 r.return
 p.return
 r.ec
-illegal
 verify: illegal_external_asynchronous2: check: deadlock: ok
 verify: illegal_external_asynchronous2: check: compliance: fail
 p.a
-illegal
 verify: illegal_external_asynchronous2: check: livelock: ok

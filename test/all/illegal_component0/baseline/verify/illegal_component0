@@ -5,11 +5,9 @@ verify: illegal_component0: check: illegal: fail
 i.e
 ii.e
 ii.return
-illegal
 verify: illegal_component0: check: deadlock: ok
 verify: illegal_component0: check: compliance: fail
 i.e
 ii.e
 ii.return
-illegal
 verify: illegal_component0: check: livelock: ok
