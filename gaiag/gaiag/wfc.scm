@@ -2,7 +2,7 @@
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2014, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -48,78 +48,110 @@
            ))
 
 (define (ast:wfc o)
-  (let ((errors (tree-collect (is? <error>) o)))
+  (let* ((errors (append
+                  (interface o)
+                  (component o)
+                  ((second-on) o)
+                  (mixing-declarative-imperative o)
+                  (action-context o))))
     (when (pair? errors)
-      (error "errors:" errors)))
+      (for-each report-error errors)
+      (exit 1)))
   o)
 
+(define (report-error o)
+  (let* ((ast (.ast o))
+         (loc (.location ast)))
+    (stderr "~a:~a:~a: error: ~a\n" (.file-name loc) (.line loc) (.column loc) (.message o))))
+
 (define (wfc-error o message)
-  (make <error> #:ast o #:message (string-append "not well-formed: " message)))
+  (make <error> #:ast o #:message message))
+
+(define (action-context o)
+  (let ((actions (tree-collect (is? <action>) o)))
+    (filter-map (lambda (action)
+                  (let ((parent (.parent action)))
+                    (cond ((or (is-a? parent <expression>)
+                               (is-a? parent <if>))
+                           (wfc-error action "action in expression"))
+                          ((and (not (parent action <on>))
+                                (not (parent action <function>)))
+                           (wfc-error action "action outside on"))
+                          ((and (not (ast:type action))
+                                (is-a? parent <variable>))
+                           (wfc-error action "void value not ignored as it ought to be"))
+                          ((and (ast:type action)
+                                (not (is-a? parent <assign>))
+                                (not (is-a? parent <variable>)))
+                           (wfc-error action "valued action must be used in variable assignment"))
+                          (else #f))))
+                actions)))
 
 (define (interface o)
   (match o
-    (($ <root> (elements ...)) '(()) (append-map interface elements))
-    (($ <interface> name ($ <types>) ($ <events>) #f)
+    ((and ($ <root> (= .elements elements))) (append-map interface elements))
+    ((and ($ <interface>) (= .behaviour #f))
      (list (wfc-error o "interface must have a behaviour")))
     (_ '())))
 
 (define (component o)
   (match o
-    (($ <root> (elements ...)) '(()) (append-map component elements))
-    (($ <component> name ($ <ports> (ports ...)) ($ <behaviour>))
-     ((om:filter:p <error>)
-      (if (>0 (length (filter ast:provides? ports))) '()
-          (list (wfc-error o "component with behaviour must have one provides port")))))
+    ((and ($ <root>) (= .elements elements)) (append-map component elements))
+    ((and ($ <component>) (= .behaviour behaviour) (= ast:provided ports))
+     (if (and behaviour
+              (>0 (length (filter ast:provides? ports)))) '()
+              (list (wfc-error o "component with behaviour must have a provides port"))))
     (_ '())))
 
 (define* ((second-on #:optional (count 0)) o)
   (match o
-    (($ <root> (elements ...)) (append-map (second-on) elements))
+    ((and ($ <root>) (= .elements elements)) (append-map (second-on) elements))
     (($ <system>) '())
     (($ <foreign>) '())
     (($ <interface>) (or (and=> (.behaviour o) (second-on)) '()))
     (($ <component>) (or (and=> (.behaviour o) (second-on)) '()))
     (($ <behaviour>) (or (and=> (.statement o) (second-on)) '()))
-    (($ <compound> (statements ...)) (map (second-on count) statements))
-    (($ <on> triggers statement)
-     (if (>0 count) (wfc-error o "second on")
-         ((second-on (1+ count)) statement)))
-    (($ <guard> expression statement) ((second-on count) statement))
+    (($ <compound>) (append-map (second-on count) (ast:statement* o)))
+    (($ <on>)
+     (if (>0 count) (list (wfc-error o "nested on"))
+         ((second-on (1+ count)) (.statement o))))
+    (($ <guard>) ((second-on count) (.statement o)))
     (_ '())))
 
 (define (mixing-declarative-imperative o)
   (match o
-    (($ <root> (elements ...)) (append-map mixing-declarative-imperative elements))
+    ((and ($ <root>) (= .elements elements)) (append-map mixing-declarative-imperative elements))
     (($ <system>) '())
     (($ <foreign>) '())
     (($ <interface>) (or (and=> (.behaviour o) mixing-declarative-imperative) '()))
     (($ <component>) (or (and=> (.behaviour o) mixing-declarative-imperative) '()))
     (($ <behaviour>) (or (and=> (.statement o) mixing-declarative-imperative) '()))
-    ((and ($ <compound> (statements ...)) (? om:declarative?))
+    ((and ($ <compound>) (? om:declarative?))
      (append
       (or (and-let* ((imperative
-                      (null-is-#f (filter om:imperative? statements)))
+                      (null-is-#f (filter om:imperative? (ast:statement* o))))
                      (ast (car imperative)))
-                    (list (wfc-error ast "mixing imperative")))
+            (list (wfc-error ast "declarative statement expected")))
           '())
-      (append-map mixing-declarative-imperative statements)))
-    (($ <compound> (statements ...))
+      (append-map mixing-declarative-imperative (ast:statement* o))))
+    (($ <compound>)
      (append
       (or (and-let* ((declarative
-                      (null-is-#f (filter om:declarative? statements)))
+                      (null-is-#f (filter om:declarative? (ast:statement* o))))
                      (ast (car declarative)))
-                          (list (wfc-error ast "mixing declarative")))
+            (list (wfc-error ast "imperative statement expected")))
           '())
-      (append-map mixing-declarative-imperative statements)))
-    (($ <on> triggers statement) (mixing-declarative-imperative statement))
-    (($ <guard> epression statement) (mixing-declarative-imperative statement))
-    (($ <if> expression then #f) (mixing-declarative-imperative then))
-    (($ <if> expression then else) (append (mixing-declarative-imperative then)
-                                           (mixing-declarative-imperative else)))
+      (append-map mixing-declarative-imperative (ast:statement* o))))
+    (($ <on>) (mixing-declarative-imperative (.statement o)))
+    (($ <guard>) (mixing-declarative-imperative (.statement o)))
+    ((and ($ <if>) (= .then then) (= .else #f)) (mixing-declarative-imperative then))
+    ((and ($ <if>) (= .then then) (= .else else)) (append (mixing-declarative-imperative then)
+                                                          (mixing-declarative-imperative else)))
     (_ '())))
 
 (define (ast-> ast)
   ((compose
+    pretty-print
     om->list
     ast:wfc
     ast:resolve)

@@ -667,10 +667,14 @@ var aspects = {
     var imports = imports_string ([language_dir].concat(parameters.meta.imports || []));
     return lstat(node_baseline)
       .then (function(stats) {
-        return 'diff -uwB '+baseline+' <(' + dzn() + ' -v parse '+imports+' "'+parameters.filename+'" |& sed "s,.\r,,g")';
+        var expect = fs.readFileSync (node_baseline).toString () ? 1 : 0;
+        return dzn() + ' -p parse '+imports+' "'+parameters.filename+'";'
+          + ' r=$?;'
+          + ' [ $r = ' + expect + ' ] || { echo exit: $r; exit 1; }';
+        //return 'diff -uwB '+baseline+' <(' + dzn() + ' -p -v parse '+imports+' "'+parameters.filename+'" |& sed "s,.\r,,g")';
       })
       .fail (function(err) {
-        return '[ "$(' + dzn() + ' parse '+imports+' "'+parameters.filename+'" |& sed \'s,.\r,,g\')" = "" ]';
+        return ' ' + dzn() + ' -p parse '+imports+' "'+parameters.filename+'"';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd)

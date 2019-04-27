@@ -40,6 +40,8 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag peg)
   #:use-module (gaiag om)
+  #:use-module (gaiag resolve)
+  #:use-module (gaiag wfc)
 
 
   #:export (%include-path parse-file try-find-file))
@@ -106,7 +108,9 @@
     ;; (when gdzn-debug?
     ;;   (stderr "parse-tree:\n")
     ;;   (pretty-print (om->list parse-tree)))
-    (let ((ast (parse-tree->ast parse-tree #:string string #:file-name file-name)))
+    (let* ((ast (parse-tree->ast parse-tree #:string string #:file-name file-name))
+           (ast (ast:resolve ast))
+           (ast (ast:wfc ast)))
       ;; (when gdzn-debug?
       ;;   (stderr "ast:\n")
       ;;   (pretty-print (om->list ast)))
