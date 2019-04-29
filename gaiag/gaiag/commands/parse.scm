@@ -92,12 +92,13 @@ Usage: gdzn parse [OPTION]... [FILE]...
     options))
 
 (define (parse options file-name)
-  (let* ((peg? (gdzn:command-line:get 'peg #f))
+  (let* ((generator? (gdzn:command-line:get 'generator #f))
+         (peg? (gdzn:command-line:get 'peg #f))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (behaviour? (option-ref options 'behaviour #f))
          (language (string->symbol (option-ref options 'language "c++"))))
-    (parse-file file-name #:peg? peg? #:imports imports #:behaviour? behaviour?)))
+    (parse-file file-name #:generator? generator? #:peg? peg? #:imports imports #:behaviour? behaviour?)))
 
 (define parse-with-options parse)
 

@@ -8,13 +8,13 @@ if (node_p ()) {
   assert = require ('assert');
 
   dzn = have_dzn_p () ? dzn : require (__dirname + '/dzn/runtime');
-  dzn.extend (dzn, require (__dirname + '/dzn/#x:scope+name '));
+  dzn.extend (dzn, require (__dirname + '/dzn/#code:file-name '));
 }
 else {
   // browser
   dzn = have_dzn_p () ? dzn : {};
   /* Add to your html something like
-     <script src="js/dzn/#x:scope+name .js"></script>
+     <script src="js/dzn/#code:file-name .js"></script>
   */
 }
 

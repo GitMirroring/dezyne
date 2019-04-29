@@ -44,7 +44,6 @@
 
   #:use-module (gaiag norm)
   #:use-module (gaiag parse)
-  #:use-module (gaiag resolve)
 
   #:export (
             add-reply-port

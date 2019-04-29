@@ -39,7 +39,6 @@
   #:use-module (gaiag commands parse)
   #:use-module (gaiag commands verify)
   #:use-module (gaiag makreel)
-  #:use-module (gaiag resolve)
   #:use-module (gaiag shell-util)
   #:use-module (scmcrl2 verification)
   #:use-module (gash pipe)

@@ -47,7 +47,6 @@
   #:use-module (gaiag indent)
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
-  #:use-module (gaiag resolve)
   #:use-module (gaiag shell-util)
   #:use-module (gaiag templates)
 
@@ -78,6 +77,8 @@
             dzn:global
             dzn:injected
             dzn:model
+            dzn:model-name
+            dzn:open-namespace
             dzn:port-prefix
             dzn:reply-port
             dzn:signature
@@ -98,12 +99,12 @@
   (and=> (command-line:get 'glue #f) string->symbol))
 
 (define-public (dzn-async? o)
-  (and (is-a? o <type>)
+  (and (is-a? o <interface>)
        (or (gaiag-dzn-async? o)
-       (generator-dzn-async? o))))
+           (generator-dzn-async? o))))
 
 (define (gaiag-dzn-async? o)
-  (equal? ((compose .scope .name) o) '(dzn async)))
+  (equal? (ast:full-name o) '(dzn async)))
 
 (define (generator-dzn-async? o)
   (let* ((name (.name o))
@@ -150,9 +151,7 @@
     (for-each dzn:dump models)))
 
 (define (dzn:om ast)
-  ((compose
-    ast:resolve)
-   ast))
+  ast)
 
 (define (dzn:language)
   (let ((language (string->symbol (command-line:get 'language "dzn"))))
@@ -180,18 +179,21 @@
                     (filter (negate (disjoin (is? <data>) (is? <type>) dzn-async?
                                              (conjoin ast:imported? (negate (is? <foreign>)))
                                              (is? <foreign>)))
-                            (ast:top* o))))))
+                            (ast:model* o))))))
       (topological-sort
        (map dzn:annotate-shells
             (filter (negate (disjoin (is? <data>) (is? <type>) (is? <namespace>) dzn-async?
                                      (conjoin ast:imported? (negate (is? <foreign>)))))
-                    (ast:top* o))))))
+                    (ast:model* o))))))
 
 (define-method (dzn:model (o <namespace>))
   (ast:top* o))
 
 (define-method (dzn:model (o <ast>))
   o)
+
+(define-method (dzn:model-name (o <ast>))
+  (ast:name (parent o <model>)))
 
 (define (dzn:global o) ;; TODO: REPLACEME with ???
   (filter (is? <type>) (ast:top* o)))
@@ -305,11 +307,16 @@
 (define-method (dzn:type (o <function>))
   ((compose dzn:type .type .signature) o))
 
+(define (unspecified? o)
+  (eq? o *unspecified*))
+
 (define (dzn:->string o)
   (match o
     ((? number?) (number->string o))
     ((? symbol?) (symbol->string o))
     ((? string?) o)
+    ((? (is? <data>)) (dzn:->string (.value o)))
+    ((? unspecified?) "")
     (#f "")))
 
 (define-method (dzn:formal-type (o <formal>)) o)
@@ -435,6 +442,9 @@
 
 (define-method (dzn:to (o <type>))
   ((compose .to .range) o))
+
+(define-method (dzn:open-namespace (o <ast>))
+  (cdr (reverse (ast:path (parent o <namespace>)))))
 
 (define-method (dzn:dump (o <ast>))
   (let* ((dir (command-line:get 'output "."))

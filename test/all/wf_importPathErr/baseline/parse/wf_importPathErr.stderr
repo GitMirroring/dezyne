@@ -1,1 +1,1 @@
-out/wf_importPathErr/wf_importPathErr.dzn:6:12: undefined Model reference: 'I2'
+out/wf_importPathErr/wf_importPathErr.dzn:6:2: error: interface I2 undefined

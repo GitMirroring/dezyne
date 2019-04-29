@@ -1,14 +1,12 @@
 ##ifndef ENUM_#x:enum-name
 ##define ENUM_#x:enum-name  1
 
-#x:open-namespace
-struct #om:name
+struct #ast:name
 {
   enum type
   {
     #x:asd-voidreply #x:enum-field-definer
   };
 };
-#x:close-namespace
 
 ##endif // ENUM_#x:enum-name

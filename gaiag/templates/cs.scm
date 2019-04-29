@@ -57,9 +57,6 @@
 (define-templates event-type ast:type)
 (define-templates variable-member-initializer (lambda (o) (filter (compose ast:typed? .expression) (ast:variable* o))))
 (define-templates scope_name code:scope+name name_infix)
-(define-templates open-namespace (lambda (o) (if (is-a? (.parent o) <root>) (map (lambda (x) (string-join (list " namespace " (symbol->string x) " {") "")) (om:scope o)) "")))
-(define-templates close-namespace (lambda (o) (if (is-a? (.parent o) <root>) (map (lambda (x) "}\n") (om:scope o)) "")))
-
 (define-templates delegate-signature (lambda (o) (if (or (ast:typed? o) (pair? (cs:formals o))) o '())))
 (define-templates signature cs:formals)
 

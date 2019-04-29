@@ -328,7 +328,7 @@
                            (not (ast:model? ast))
                            (not (eq? (car ast) 'root))
                            (ast:model? (car ast)))
-                      (make <root-node> #:elements ast)
+                      (make <root-node> #:elements (append (make-constants) ast))
                       ast))
              (ast (helper ast)))
         (make <root> #:node ast))))

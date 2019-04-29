@@ -1,4 +1,0 @@
-verify: ns.hello_interface_namespace: check: deadlock: fail
-hello_interface_namespace.hello
-hello_interface_namespace.return
-verify: ns.hello_interface_namespace: check: livelock: ok

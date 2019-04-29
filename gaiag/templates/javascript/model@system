@@ -16,6 +16,7 @@ if (node_p ()) {
 }
 
 #x:javascript-namespace-setup
+#x:interface-include
 
 #x:model2file-interface-include
 

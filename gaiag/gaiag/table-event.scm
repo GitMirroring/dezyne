@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
@@ -43,7 +43,6 @@
   #:use-module (gaiag norm-event)
   #:use-module (gaiag norm-state)
   #:use-module (gaiag parse)
-  #:use-module (gaiag resolve)
   #:use-module (gaiag dzn)
   #:use-module (gaiag table-state)
 

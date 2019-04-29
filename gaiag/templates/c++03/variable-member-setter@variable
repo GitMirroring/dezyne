@@ -1,1 +1,1 @@
-../c++/variable-member-setter@variable
+this->#.name  = dzn::sexp::foo< #x:type-name >::value(state_alist["#.name "]);

@@ -42,7 +42,6 @@
 
   #:use-module (gaiag ast)
   #:use-module (gaiag om)
-  #:use-module (gaiag resolve)
   #:use-module (gaiag dzn)
 
   #:export (root->
@@ -290,14 +289,11 @@
       ((? (is? <ast>)) (tree-map (rename mapping) o))
       (_ o)))
 
-  (define (name->on-formal name)
-    (make <formal> #:name name))
-
   ;;(stderr "rewrite o=~a\n" o)
   (define (foo t)
     (let ((o (t-on t)))
       (match o
-        ((and ($ <on>) (? (compose (cut equal? 1 <>) length ast:trigger*)) (? (compose null? ast:formal* car ast:trigger*)))
+        ((and ($ <on>) (? (compose null? ast:formal* .event car ast:trigger*)))
          (let* ((trigger ((compose car .elements .triggers) o))
                 (formals ((compose .elements .formals .signature) (.event trigger))))
            (if (null? formals) t
@@ -306,10 +302,12 @@
                          (t-blocking t)
                          (t-statement t)))))
 
-        ((and ($ <on>) (? (compose (cut equal? 1 <>) length ast:trigger*)))
+        (($ <on>)
          (let* ((trigger ((compose car .elements .triggers) o))
-                (members (map .name (ast:variable* model)))
+                (trigger (if (pair? (ast:formal* trigger)) trigger
+                             (clone trigger #:formals (clone (.formals trigger) #:elements (ast:formal* (.event trigger))))))
                 (formals (map .name ((compose .elements .formals .signature) (.event trigger))))
+                (members (map .name (ast:variable* model)))
                 (locals (map .name (tree-collect (is? <variable>) (t-statement t))))
                 (occupied members)
                 (fresh (letrec ((fresh (lambda (occupied name)
@@ -335,7 +333,6 @@
                 (t-guard t)
                 (t-blocking t)
                 ((rename mapping) (t-statement t)))))))))
-
   (map foo triples))
 
 (define-method (is-data? (o <ast>))
@@ -414,12 +411,12 @@
 
 (define-method (root-> (o <root>))
   ((compose
-    triples:state-traversal
-    ast:resolve
+    triples:event-traversal
     ) o))
 
 (define (ast-> ast)
   ((compose
-    (cut display ast->dzn <>)
+    pretty-print
+    om->list
     root->)
    ast))

@@ -46,7 +46,6 @@
   #:use-module (gaiag json)
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
-  #:use-module (gaiag resolve)
 
   #:export (json-init
            json-table-event

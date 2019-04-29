@@ -1,1 +1,1 @@
-{"known":{"code<2.8.0"},"comment":"local type in interface"}
+{"known":["code<2.8.0","run"],"comment":"local type in interface"}

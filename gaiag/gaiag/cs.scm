@@ -42,7 +42,6 @@
   #:use-module (gaiag norm-event)
   #:use-module (gaiag normalize)
   #:use-module (gaiag om)
-  #:use-module (gaiag resolve)
   #:use-module (gaiag templates)
   #:use-module (gaiag util)
 
@@ -62,7 +61,7 @@
 (define-method (cs:global-enum-definer (o <root>))
   (filter (conjoin (is? <enum>)
                    (compose (cut equal? (ast:source-file o) <>) (cut ast:source-file <>)))
-          (ast:top* o)))
+          (ast:type* o)))
 
 (define-method (cs:delegate-formal-type (o <event>))
   (let ((formals (ast:formal* o)))
@@ -181,14 +180,18 @@
               (filter (is? <foreign>) models)
               (topological-sort
                (map dzn:annotate-shells
-                    (filter (negate (disjoin (is? <data>) (is? <type>) dzn-async?
+                    (filter (negate (disjoin (is? <data>) (is? <type>) ;;dzn-async?
                                              ast:imported?))
-                            (.elements o))))))
+                            (ast:top* o))))))
       (topological-sort
        (map dzn:annotate-shells
-            (filter (negate (disjoin (is? <data>) (is? <type>) (is? <namespace>) dzn-async?
+            (filter (negate (disjoin (is? <data>) (is? <type>) (is? <namespace>) ;; dzn-async?
                                      ast:imported?))
-                    (.elements o))))))
+                    (ast:model* o))))))
+
+;; cs needs async!
+;; (define-method (cs:model (o <root>))
+;;   (filter (negate dzn-async?) (dzn:model o)))
 
 (define (cs:om ast) ;;TODO, replace me with code:om when (binding-into-blocking) is removed
   ((compose
@@ -196,9 +199,7 @@
     add-reply-port
     triples:event-traversal
     (remove-otherwise)
-    code:add-calling-context
-    ast:resolve
-    parse->om)
+    code:add-calling-context)
    ast))
 
 (define (ast-> ast)

@@ -50,7 +50,6 @@
   #:use-module (gaiag norm-event)
   #:use-module (gaiag norm-state)
   #:use-module (gaiag parse)
-  #:use-module (gaiag resolve)
 
   #:export (ast->
             ast->table-state

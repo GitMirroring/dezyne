@@ -538,6 +538,8 @@ var aspects = {
     var language = parameters.meta.languages[0];
     var language_dir = parameters.dir + '/' + parameters.meta.languages[0];
     var model = parameters.meta.model || parameters.model;
+    // METAs `model' is used for component/system tricksery
+    model = parameters.model;
     var imports = imports_string ([parameters.dir, language_dir].concat(parameters.meta.imports || []));
     var code_options = parameters.meta.code_options || "";
     var tss = parameters.meta.tss;
@@ -555,7 +557,7 @@ var aspects = {
         + ' OUT='+out
         + (main ? ' MAIN='+main:'')
         + (tss ? ' TSS='+tss:'')
-        + ' MODEL="'+parameters.model+'"'
+        + ' MODEL="'+model+'"'
         + ' -f '+ __dirname + '/code.make';
     return util.spawn_sync_shell(cmd)
     //.fail (function(err) {console.log(err); return {status: -1, output: err}});
@@ -668,13 +670,13 @@ var aspects = {
     return lstat(node_baseline)
       .then (function(stats) {
         var expect = fs.readFileSync (node_baseline).toString () ? 1 : 0;
-        return dzn() + ' -p parse '+imports+' "'+parameters.filename+'";'
+        return dzn() + ' parse '+imports+' "'+parameters.filename+'";'
           + ' r=$?;'
           + ' [ $r = ' + expect + ' ] || { echo exit: $r; exit 1; }';
         //return 'diff -uwB '+baseline+' <(' + dzn() + ' -p -v parse '+imports+' "'+parameters.filename+'" |& sed "s,.\r,,g")';
       })
       .fail (function(err) {
-        return ' ' + dzn() + ' -p parse '+imports+' "'+parameters.filename+'"';
+        return ' ' + dzn() +  parse '+imports+' "'+parameters.filename+'"';
       })
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd)

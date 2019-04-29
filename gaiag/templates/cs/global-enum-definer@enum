@@ -1,1 +1,6 @@
-enum-definer@enum
+#x:open-namespace
+public enum #om:name
+{
+  #x:enum-field-definer
+};
+#x:close-namespace

@@ -37,6 +37,7 @@
 (define (parse-opts args)
   (let* ((option-spec
 	  '((debug (single-char #\d))
+	    (generator (single-char #\g))
             (help (single-char #\h))
             (html (single-char #\H))
             (json (single-char #\j))
@@ -63,7 +64,8 @@ Usage: gdzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -h, --help             display this help
   -H, --html             output html
   -j, --json             output json
-  -p, --peg              use PEG parser (experimental)
+  -g, --generator        use generator
+  -p, --peg              use plain PEG, skip well-formedness
   -S, --session=SESSION  use session=SESSION [1]
   -v, --verbose          be more verbose, show progress
   -V, --version          display version

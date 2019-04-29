@@ -1,6 +1,6 @@
 ##include <dzn/container.hh>
 
-##include "#x:scoped-model-name .hh"
+##include "#code:file-name .hh"
 
 ##include <algorithm>
 ##include <cstring>

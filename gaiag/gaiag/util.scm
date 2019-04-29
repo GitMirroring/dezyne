@@ -36,7 +36,6 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
 
-  #:use-module (gaiag resolve)
   #:use-module (gaiag compare)
   #:use-module (gaiag display)
 
@@ -67,8 +66,8 @@
 (define-method (ast-name (o <class>))
   (drop-<> (class-name o)))
 
-(define (symbol-join ls)
-  (reduce (lambda (a b) (symbol-append a '. b)) (string->symbol "") ls))
+(define* (symbol-join lst #:optional (sep '.))
+  (string->symbol (string-join  (map symbol->string lst) (symbol->string sep))))
 
 (define (symbol->class x) (symbol-append '< x '>))
 

@@ -48,7 +48,6 @@
   #:use-module (gaiag util)
   #:use-module (gaiag makreel)
   #:use-module (gaiag misc)
-  #:use-module (gaiag resolve)
   #:use-module (scmcrl2 traces)
   #:use-module (gash job)
   #:use-module (gash pipe)
@@ -60,7 +59,7 @@
             x:component-init))
 
 
-(define (x:interface-init o) (format #f "init ~ainterface;" (apply string-append (map symbol->string (om:scope+name o)))))
+(define (x:interface-init o) (format #f "init ~ainterface;" (apply string-append (map symbol->string (ast:full-name o)))))
 (define (x:provides-init o) "init provides;\n")
 (define (x:component-init o) "init component;\n")
 
@@ -70,7 +69,7 @@
 (define (interface-taus model)
   (define (compose-taus names)
     (string-join (append-map (lambda (o) (map (cut string-append o <>) '("silent" "silent_end" "internal" "end"))) names) ","))
-  (compose-taus (list (apply string-append (map symbol->string (om:scope+name model))))))
+  (compose-taus (list (apply string-append (map symbol->string (ast:full-name model))))))
 
 (define (component-taus model)
   (define (compose-taus names)
@@ -102,8 +101,8 @@
                 fail?))))))
 
 (define (mcrl2:verify-component dir dzn-file-name model-name ast verbose? all?)
-  (let* ((component (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <component>) (ast:top* ast))))
-         (interfaces (delete-duplicates (map .type (om:ports component))))
+  (let* ((component (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <component>) (ast:model* ast))))
+         (interfaces (delete-duplicates (map .type (ast:port* component)) ast:eq?))
          (asserts (append
                    (append-map
                     (lambda (i) (list
@@ -254,7 +253,7 @@
                      (cut verify-component-refinement lts info model-name ast)))))
 
 (define (mcrl2:verify dir dzn-file-name model-name ast verbose? all?)
-  (let ((model (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <model>) (ast:top* ast)))))
+  (let ((model (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <model>) (ast:model* ast)))))
     (cond ((is-a? model <interface>) (mcrl2:verify-interface dir dzn-file-name model ast verbose? all?))
           ((is-a? model <component>) (mcrl2:verify-component dir dzn-file-name model-name ast verbose? all?))
           (else #f))))

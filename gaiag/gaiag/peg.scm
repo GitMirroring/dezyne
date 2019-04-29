@@ -34,8 +34,10 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag util)
+  #:use-module (gaiag ast)
+  #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
+  #:use-module (gaiag util)
   #:export (parse-tree->ast))
 
 (define (ast-> o)
@@ -45,6 +47,15 @@
     ) o))
 
 (define* (parse-tree->ast o #:key string (file-name "<stdin>"))
+  (define async-interfaces
+    (let ((interfaces '()))
+      (lambda (command . rest)
+        (case command
+          ((add) (unless (find
+                          (lambda (x) (equal? (.scope (.name x)) (.scope (.name (car rest)))))
+                          interfaces)
+                   (set! interfaces (append interfaces rest) )))
+          ((get) interfaces)))))
   (define (make-list? o) (if (pair? o) o
                              (list o)))
   (define (helper o)
@@ -69,8 +80,9 @@
              (clone ast #:comment comment)
              ast))) ;; TODO ensure (is-a? ast <ast>) is invariant to prevent comment loss
 
-      (('root elements)
-       (make <root-node> #:elements (make-list? (helper elements))))
+      (((and (or 'root 'interface 'behaviour 'component 'types 'events 'event) type) body ... (? string?))
+       ;; FIXME: junking non-comment-parsed string
+       (helper (cons type body)))
 
       (('elements elements ...) (helper elements))
 
@@ -100,9 +112,11 @@
       (('from string) (helper string))
       (('to string) (helper string))
 
-      (('extern name ('data value rest ...))
-       (make <extern-node> #:name (helper name) #:value (helper value)))
+      (('extern name data)
+       (make <extern-node> #:name (helper name) #:value (helper data)))
 
+      (('extern name)
+       (make <extern-node> #:name (helper name)))
 
       (('interface name types-or-events behaviour)
        (let* ((types-or-events (helper types-or-events))
@@ -125,7 +139,7 @@
       (('formals formal) (make <formals-node> #:elements (list (helper formal))))
       (('formals formals ...) (make <formals-node> #:elements (helper formals)))
       (('formal name)
-       (make <formal-node> #:name name))
+       (make <formal-node> #:name (helper name)))
 
       (('formal type name)
        (make <formal-node> #:name (helper name) #:type.name (helper type)))
@@ -177,10 +191,13 @@
       (('binding left right)
        (make <binding-node> #:left (helper left) #:right (helper right)))
 
+      (('end-point)
+       (make <end-point-node> #:port.name '*))
+
       (('end-point name)
-        (let* ((name (helper name))
-               (scope (.scope name))
-               (instance (and (pair? scope) (car scope))))
+       (let* ((name (helper name))
+              (scope (.scope name))
+              (instance (and (pair? scope) (car scope))))
          (make <end-point-node> #:instance.name instance #:port.name (.name name))))
 
       ('ports (make <ports-node>))
@@ -188,13 +205,34 @@
 
       (('port direction type name)
        (let* ((direction (helper direction))
-              (direction-list? (pair? direction)))
-        (make <port-node>
-          #:name (helper name)
-          #:type.name (helper type)
-          #:direction (if direction-list? (car direction) direction)
-          #:external (and direction-list? (find (lambda (x) (eq? x 'external)) direction))
-          #:injected (and direction-list? (find (lambda (x) (eq? x 'injected)) direction)))))
+              (direction-list? (pair? direction))
+              (type (helper type))
+              (async? (and (equal? (.scope type)) '(dzn)
+                           (eq? (.name type) 'async)))
+              (async-interface (and async? (make-async-refine-interface type (make <formals>))))
+              (type (if async-interface (.name async-interface) type)))
+         (when async?
+           (async-interfaces 'add async-interface))
+         (make <port-node>
+           #:name (helper name)
+           #:type.name type
+           #:direction (if direction-list? (car direction) direction)
+           #:external (and direction-list? (find (lambda (x) (eq? x 'external)) direction))
+           #:injected (and direction-list? (find (lambda (x) (eq? x 'injected)) direction)))))
+
+      (('port direction type formals name)
+       (let* ((direction (helper direction))
+              (direction-list? (pair? direction))
+              (type (helper type))
+              (formals (helper formals))
+              (async-interface (make-async-refine-interface type formals)))
+         (async-interfaces 'add async-interface)
+         (make <port-node>
+           #:name (helper name)
+           #:type.name (.name async-interface)
+           #:direction (if direction-list? (car direction) direction)
+           #:external (and direction-list? (find (lambda (x) (eq? x 'external)) direction))
+           #:injected (and direction-list? (find (lambda (x) (eq? x 'injected)) direction)))))
 
       (('provides) 'provides)
       (('requires) 'requires)
@@ -286,7 +324,7 @@
            #:ports (make <ports-node> #:elements (filter (is? <port-node>) (.elements compound)))
            #:variables (make <variables-node> #:elements (filter (is? <variable-node>) (.elements compound)))
            #:functions (make <functions-node> #:elements (filter (is? <function-node>) (.elements compound)))
-           #:statement (clone compound #:elements (filter (conjoin (is? <statement-node>) (negate (is? <variable-node>))) (.elements compound))))))
+           #:statement (clone compound #:elements (filter (conjoin (is? <statement-node>) (negate (is? <port-node>)) (negate (is? <variable-node>))) (.elements compound))))))
 
       (('behaviour name compound)
        (let ((compound (helper compound)))
@@ -295,7 +333,7 @@
            #:ports (make <ports-node> #:elements (filter (is? <port-node>) (.elements compound)))
            #:variables (make <variables-node> #:elements (filter (is? <variable-node>) (.elements compound)))
            #:functions (make <functions-node> #:elements (filter (is? <function-node>) (.elements compound)))
-           #:statement (clone compound #:elements (filter (conjoin (is? <statement-node>) (negate (is? <variable-node>))) (.elements compound))))))
+           #:statement (clone compound #:elements (filter (conjoin (is? <statement-node>) (negate (is? <port-node>)) (negate (is? <variable-node>))) (.elements compound))))))
 
       (('blocking statement) (make <blocking-node> #:statement (helper statement)))
 
@@ -321,9 +359,15 @@
 
       (('data value) (make <data-node> #:value (helper value)))
 
+      (('data) (make <data-node> #:value *unspecified*))
 
       (('field-test ('var identifier _ ...) field) (make <field-test-node> #:variable.name (string->symbol identifier) #:field (helper field)))
 
+      (('function type name formals)
+       (make <function-node>
+         #:name (helper name)
+         #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals))
+         #:statement (make <compound-node>)))
 
       (('function type name formals statement)
        (make <function-node>
@@ -372,7 +416,11 @@
 
       (('return expression) (make <return-node> #:expression (helper expression)))
 
-      (('root elements ...) (make <root-node> #:elements (helper elements)))
+      (('root elements)
+       (make <root-node> #:elements (make-list? (helper elements))))
+
+      (('root elements ...)
+       (make <root-node> #:elements (helper elements)))
 
       (('signature type formals)
        (make <signature-node> #:type.name (helper type) #:formals (helper formals)))
@@ -448,9 +496,13 @@
                   (loop (cdr lines) (1+ ln) end)))))))
 
 
-  ;;(pretty-print (om->list o))
-  (tree-map make-namespaces
-   (make <root> #:node (helper o))))
+  (when (> (gdzn:debugity) 1)
+    (pretty-print (om->list o)))
+
+  (let* ((root-node (helper o))
+         (elements (append (make-constants) (async-interfaces 'get) (.elements root-node)))
+         (root (make <root> #:node (clone root-node #:elements elements))))
+    (tree-map make-namespaces root)))
 
 (define-method (make-namespaces (o <ast>))
   o)
@@ -459,7 +511,60 @@
   (let ((scope (.scope (.name o))))
     (let loop ((scope scope))
       (if (null? scope) o
-          (make <namespace> #:name (car scope) #:elements (list (loop (cdr scope))))))))
+          (make <namespace> #:name (make <scope.name> #:name (car scope)) #:elements (list (loop (cdr scope))))))))
+
+(define-method (make-namespaces (o <type>))
+  (if (parent o <model>) o
+      (let ((scope (.scope (.name o))))
+        (let loop ((scope scope))
+          (if (null? scope) o
+              (make <namespace> #:name (make <scope.name> #:name (car scope)) #:elements (list (loop (cdr scope)))))))))
+
+(define (make-async-refine-interface name formals)
+  (let* ((void (make <scope.name> #:name 'void))
+         (signature (make <signature> #:type.name void #:formals formals))
+         (true (make <literal> #:value 'true))
+         (false (make <literal> #:value 'false))
+         (name (make <scope.name> #:scope (.scope name) #:name (symbol-join (cons (.name name) (map (compose .name .type.name) (.elements formals))) '_))))
+    (make <interface>
+      #:name name
+      #:events (make <events> #:elements
+                     (list (make <event> #:name 'req #:direction 'in #:signature signature)
+                           (make <event> #:name 'clr #:direction 'in #:signature (make <signature> #:type.name void))
+                           (make <event> #:name 'ack #:direction 'out #:signature signature)))
+      #:behaviour
+      (make <behaviour>
+        #:variables (make <variables>
+                      #:elements (list (make <variable> #:type.name 'bool #:name 'idle #:expression true)))
+        #:statement
+        (make <compound>
+          #:elements
+          (list
+           (make <guard>
+             #:expression (make <var> #:variable.name 'idle)
+             #:statement
+             (make <compound>
+               #:elements
+               (list
+                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name 'req)))
+                      #:statement (make <assign> #:variable.name 'idle #:expression false))
+                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name 'clr)))
+                      #:statement (make <compound>)))))
+           (make <guard>
+             #:expression (make <not> #:expression (make <var> #:variable.name 'idle))
+             #:statement
+             (make <compound>
+               #:elements
+               (list
+                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name 'clr)))
+                      #:statement (make <assign> #:variable.name 'idle #:expression true))
+                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name 'inevitable)))
+                      #:statement
+                      (make <compound>
+                        #:elements
+                        (list
+                         (make <action> #:event.name 'ack)
+                         (make <assign> #:variable.name 'idle #:expression true)))))))))))))
 
 ;; differences in ast:
 ;;  import

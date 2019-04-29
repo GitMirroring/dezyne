@@ -45,7 +45,6 @@
 
   #:use-module (gaiag ast)
   #:use-module (gaiag om)
-  #:use-module (gaiag resolve)
   #:use-module (gaiag deprecated om)
 
   #:use-module (gaiag dzn)
@@ -120,8 +119,9 @@
     ((tick-names- '()) o)))
 (define* ((tick-names- #:optional (names '())) o)
   (define* ((append-tick #:optional (names '())) o)
-    (and o (let ((count (or (assoc-ref names o) 0)))
-             (symbol-append o (string->symbol (string-append "'" (if (zero? count) "" (number->string count))))))))
+    (if (or (not o) (ast:wildcard? o)) o
+        (let ((count (or (assoc-ref names o) 0)))
+          (symbol-append o (string->symbol (string-append "'" (if (zero? count) "" (number->string count))))))))
   (match o
     (($ <root>) (tree-map (tick-names-) o))
     ((? (is? <model>)) (clone (tree-map (tick-names-) o) #:name ((compose (tick-names-) .name) o)))
@@ -224,7 +224,6 @@
     (remove-otherwise)
     makreel:tick-names
     purge-data
-    ast:resolve
     ) ast))
 
 (define (ast-> ast)
@@ -286,10 +285,10 @@
              ((compose .type car ast:provides-ports) o))))))
 
 (define-method (makreel:model-name (o <model>))
-  ((om:scope-name (string->symbol "")) o))
+  (symbol-join (ast:full-name o) (string->symbol "")))
 
 (define-method (makreel:model-name (o <ast>))
-  (makreel:scope-name (parent o <model>)))
+  (makreel:model-name (parent o <model>)))
 
 (define-method (makreel:scope-name (o <ast>))
   (and=> (parent o <model>) makreel:model-name))
@@ -336,21 +335,26 @@
           (ast:trigger* (parent o <component>))))
 
 (define-method (makreel:enum-sort (o <interface>))
-  (append
-   (filter (is? <enum>) (ast:type* (parent o <root>)))
-   (tree-collect (is? <enum>) o)))
+  (delete-duplicates
+   (append
+    (filter (is? <enum>) (ast:type* (parent o <root>)))
+    (tree-collect (is? <enum>) o))
+   ast:eq?))
 
 (define-method (makreel:enum-sort (o <component>))
   (delete-duplicates
    (append
     (append-map makreel:enum-sort (ast:interface* o))
-    (tree-collect (is? <enum>) o)) ast:eq?))
+    (tree-collect (is? <enum>) o))
+   ast:eq?))
 
 (define-method (makreel:reply-type-sort (o <interface>))
   (define (event-type-eq? a b)
-    (equal? (om:scope+name a) (om:scope+name b)))
-  (filter (compose (negate (is? <void>)) (compose .type .signature))
-          (delete-duplicates (ast:event* o) event-type-eq?)))
+    (ast:equal? (.type.name (.signature a)) (.type.name (.signature b))))
+  (delete-duplicates
+   (filter (compose (negate (is? <void>)) (compose .type .signature))
+           (ast:event* o))
+   event-type-eq?))
 
 (define-method (makreel:type-constructor (o <ast>))
   (let ((type (ast:type o)))
@@ -859,7 +863,7 @@
   (append (ast:full-name (.type o)) (list (.field o))))
 
 (define-method (makreel:enum-fields (o <enum>))
-  (map (compose (cut clone <> #:parent (.parent o))
+  (map (compose (cut clone <> #:parent o)
                 (cut make <enum-literal> #:type.name (.name o) #:field <>))
        (ast:field* o)))
 

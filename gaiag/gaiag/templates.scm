@@ -137,6 +137,9 @@
          (sort (filter (negate (cut string-every #\. <>))
                        (scandir (if (string-null? dir) (getcwd) dir))) string<?))))
 
+(define (drop-<> o)
+  (string->symbol (string-drop (string-drop-right (symbol->string o) 1) 1)))
+
 (define-syntax compile-template
   (lambda (x)
 

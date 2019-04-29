@@ -36,7 +36,6 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag om)
-  #:use-module (gaiag resolve)
   #:use-module (gaiag shell-util)
   #:use-module (gaiag util)
   #:use-module (gaiag config)
@@ -184,9 +183,9 @@
   (code:file2file root)
   (let ((main (command-line:get 'model #f)))
     (when main
-      (let* ((models (ast:model* root))
-             (main? (compose (cut eq? (string->symbol main) <>) (om:scope-name)))
-             (main-model (and main (find main? models))))
+      (let* ((main-name (map string->symbol (string-split main #\.)))
+             (main-model (ast:lookup root (make <scope.name> #:scope (drop-right main-name 1) #:name (last main-name)))))
+        ;; FIXME: error if not found?
         (and=> main-model code:dump-main)))))
 
 (define (code:file2file root)
@@ -200,8 +199,8 @@
  (filter (disjoin
           (compose (is? <foreign>) .type)
           (conjoin (compose ast:imported? .type) (lambda (i) (not (equal? (ast:source-file o)
-                                                            (ast:source-file (.type i)))))))
-         (om:instances o)))
+                                                                          (ast:source-file (.type i)))))))
+         (ast:instance* o)))
 
 (define (code:language)
   (string->symbol (command-line:get 'language "c++")))
@@ -243,10 +242,10 @@
          (is-a? (.parent p) <behaviour>))))
 
 (define-method (code:port-type (o <trigger>))
-  (code:scope+name ((compose .type .port) o)))
+  ((compose code:port-type .port) o))
 
 (define-method (code:port-type (o <port>))
-  (code:scope+name (.type o)))
+  (ast:full-name (.type o)))
 
 (define-method (code:fullscope (o <ast>))
 
@@ -295,7 +294,7 @@
   (append ((compose code:scope+name .type) o) (list (.field o))))
 
 (define-method (code:scope+name (o <binding>))
-  ((compose code:scope+name .type (cut resolve:instance (parent o <model>) <>) injected-instance-name) o))
+  ((compose code:scope+name .type (cut ast:lookup (parent o <model>) <>) injected-instance-name) o))
 
 (define-method (code:non-injected-bindings (o <system>))
   (filter om:port-bind? (filter (negate injected-binding?) (ast:binding* o))))
@@ -309,21 +308,15 @@
       (injected-instances o)))
 
 ;;; code:ast querying
-(define* (code:reply-types o #:key (pred om:typed?))
-  (let ((lst (om:reply-types o #:pred pred)))
-    (delete-duplicates lst (lambda (a b) (or (and (is-a? a <bool>)
-                                                  (is-a? b <bool>))
-                                             (and (is-a? a <int>)
-                                                  (is-a? b <int>))
-                                             (and (is-a? a <void>)
-                                                  (is-a? b <void>))
-                                             (ast:equal? a b))))))
+(define (code:reply-types o)
+  (filter (negate (is? <void>)) (ast:return-types o)))
 
 (define-method (code:port-name (o <on>))
   ((compose .port.name car ast:trigger*) o))
 
 (define-method (code:port-name (o <instance>))
-  (.name (om:port (resolve:component (parent o <model>) o))))
+  (let ((component (.type o)))
+    (.name (car (ast:provided component)))))
 
 (define-method (code:port-name (o <binding>))
   (let* ((model (parent o <model>))
@@ -345,15 +338,13 @@
   o)
 
 (define-method (code:instance-name (o <port>))
-  (.name (resolve:instance (parent o <model>) o)))
+  (.instance.name (ast:other-end-point o)))
 
 (define-method (code:instance-name (o <trigger>))
   ((compose code:instance-name (cut .port (parent o <model>) <>)) o))
 
 (define-method (code:instance-port-name (o <port>))
-  (let* ((bind (om:port-bind (parent o <model>) o))
-         (instance-bind (om:instance-binding? bind)))
-    (.port.name instance-bind)))
+  (.port.name (ast:other-end-point o)))
 
 (define-method (code:instance-port-name (o <trigger>))
   ((compose code:instance-port-name (cut .port (parent o <model>) <>)) o))
@@ -517,18 +508,19 @@
   (filter (is? <enum>) (ast:type* (.behaviour o))))
 
 (define-method (code:global-enum-definer (o <root>))
-  (filter (is? <enum>) (ast:top* o)))
+  (filter (is? <enum>) (ast:type* o)))
 
 (define-method (code:global-enum-definer (o <model>))
-  (filter (is? <enum>) (ast:top* (parent o <root>))))
+  (filter (is? <enum>) (ast:type* (parent o <root>))))
 
 (define-method (code:global-enum-definer (o <root>))
   (filter (is? <enum>) (ast:type* o)))
 
 (define-method (code:instances (o <component>))
   '())
+
 (define-method (code:instances (o <system>))
-  (om:instances o))
+  (ast:instance* o))
 
 (define-method (code:bind-provided-required (o <binding>))
   (let* ((model (parent o <model>))
@@ -537,8 +529,8 @@
          (right (.right o))
          (right-port (.port right)))
     (if (ast:provides? left-port)
-                                (cons left right)
-                                (cons right left))))
+        (cons left right)
+        (cons right left))))
 
 (define-method (code:bind-provided (o <binding>))
   ((compose car code:bind-provided-required) o))
@@ -546,10 +538,8 @@
 (define-method (code:bind-required (o <binding>))
   ((compose cdr code:bind-provided-required) o))
 
-(define-method (code:component-port (o <port>)) ;; MORTAL SIN HERE!!?
-  (let* ((model (parent o <model>))
-         (bind (om:port-bind model o)))
-    (om:instance-binding? bind)))
+(define-method (code:component-port (o <port>))
+  (ast:other-end-point o))
 
 (define-method (code:reply-type (o <ast>))
   ((compose ast:full-name ast:type) o))
@@ -606,7 +596,7 @@
   (ast:full-name o))
 
 (define-method (code:type-name (o <binding>))
-  ((compose code:type-name .type (cut resolve:instance (parent o <model>) <>) injected-instance-name) o))
+  ((compose code:type-name .type (cut ast:lookup (parent o <model>) <>) injected-instance-name) o))
 
 (define-method (code:type-name (o <enum-field>))
   (append (code:type-name (.type o)) (list (.field o))))
@@ -614,14 +604,17 @@
 (define-method (code:type-name (o <enum-literal>))
   (append (code:type-name (.type o)) (list (.field o))))
 
+(define-method (code:type-name (o <model>))
+  (ast:full-name o))
+
 (define-method (code:type-name o) ; MORTAL SIN HERE!!?
   (let* ((type (or (as o <model>) (as o <type>) (ast:type o))))
     (map dzn:->string
          (match type
            (($ <enum>) (code:type-name type))
            (($ <extern>) (list (.value type)))
-           ((or ($ <bool>) ($ <int>) ($ <void>)) (code:scope+name type))
-           (_ (code:scope+name type))))))
+           ((or ($ <bool>) ($ <int>) ($ <void>)) (ast:full-name type))
+           (_ (ast:full-name type))))))
 
 (define-method (code:type-name (o <event>))
   ((compose code:type-name .type .signature) o))
@@ -657,7 +650,7 @@
 (define-method (code:scope-type-name (o <field-test>))
   ((compose code:scope-type-name .type .variable) o))
 
-(define (code:x-header- o) (filter (conjoin (negate ast:imported?) (is? <interface>)) (ast:top* o)))
+(define (code:x-header- o) (filter (conjoin (negate ast:imported?) (is? <interface>)) (ast:model* o)))
 
 (define-method (code:reply (o <type>))
   o)
@@ -724,7 +717,7 @@
            ;;                                     (compose negate
            ;;                                              (cut equal? (ast:source-file o) <>)
            ;;                                              ast:source-file)))))
-                          (ast:top* o)))
+                          (ast:model* o)))
          (non-interface-models (filter (negate (is? <interface>)) objects)))
     (pair? non-interface-models)))
 
@@ -772,20 +765,18 @@
                    (with-output-to-file (string-append dir name iext) (cut (%x:glue-bottom-header) o)))
                  (with-output-to-file (string-append dir name cext) (cut (%x:glue-bottom-source) o)))))))
 
+(define-method (code:dump-main (o <interface>))
+  #f)
 
-(define (code:dump-main o)
+(define-method (code:dump-main (o <component-model>))
   (let* ((dir (command-line:get 'output "."))
          (stdout? (equal? dir "-"))
          (ext (symbol->string (dzn:extension o)))
          (dir (string-append dir "/"))
          (base "main")
          (file-name (string-append dir base ext)))
-   (and-let* ((name ((om:scope-name) o))
-              (model (and (and=> (command-line:get 'model #f) string->symbol)))
-              ((is-a? o <component-model>))
-              ((eq? model name)))
-     (if stdout? ((dzn:indent (cut (%x:main) o)))
-         (with-output-to-file file-name (dzn:indent (cut (%x:main) o)))))))
+   (if stdout? ((dzn:indent (cut (%x:main) o)))
+       (with-output-to-file file-name (dzn:indent (cut (%x:main) o))))))
 
 (define-method (code:dump-glue (o <system>))
   (let* ((dir (command-line:get 'output "."))
@@ -835,8 +826,7 @@
     triples:event-traversal
     (remove-otherwise)
     (binding-into-blocking)
-    code:add-calling-context
-    ast:resolve)
+    code:add-calling-context)
    ast))
 
 (define-method (code:add-calling-context (o <root>))

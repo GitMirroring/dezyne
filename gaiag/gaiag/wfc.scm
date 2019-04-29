@@ -40,7 +40,6 @@
 
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
-  #:use-module (gaiag resolve)
   #:use-module (gaiag util)
 
   #:export (
@@ -62,7 +61,9 @@
 (define (report-error o)
   (let* ((ast (.ast o))
          (loc (.location ast)))
-    (stderr "~a:~a:~a: error: ~a\n" (.file-name loc) (.line loc) (.column loc) (.message o))))
+    (if loc
+        (stderr "~a:~a:~a: error: ~a\n" (.file-name loc) (.line loc) (.column loc) (.message o))
+        (stderr "error: ~a\n" (.message o)))))
 
 (define (wfc-error o message)
   (make <error> #:ast o #:message message))
@@ -70,19 +71,22 @@
 (define (action-context o)
   (let ((actions (tree-collect (is? <action>) o)))
     (filter-map (lambda (action)
-                  (let ((parent (.parent action)))
-                    (cond ((or (is-a? parent <expression>)
-                               (is-a? parent <if>))
+                  (let ((p (.parent action)))
+                    (cond ((and (not (is-a? p <variable>))
+                                (or (is-a? p <expression>)
+                                    (and (is-a? p <if>)
+                                         (not (ast:eq? action (.then p)))
+                                         (not (ast:eq? action (.else p))))))
                            (wfc-error action "action in expression"))
                           ((and (not (parent action <on>))
                                 (not (parent action <function>)))
                            (wfc-error action "action outside on"))
-                          ((and (not (ast:type action))
-                                (is-a? parent <variable>))
+                          ((and (is-a? (ast:type action) <void>)
+                                (is-a? p <variable>))
                            (wfc-error action "void value not ignored as it ought to be"))
-                          ((and (ast:type action)
-                                (not (is-a? parent <assign>))
-                                (not (is-a? parent <variable>)))
+                          ((and (not (is-a? (ast:type action) <void>))
+                                (not (is-a? p <assign>))
+                                (not (is-a? p <variable>)))
                            (wfc-error action "valued action must be used in variable assignment"))
                           (else #f))))
                 actions)))
@@ -153,6 +157,5 @@
   ((compose
     pretty-print
     om->list
-    ast:wfc
-    ast:resolve)
+    ast:wfc)
    ast))

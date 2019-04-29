@@ -33,7 +33,6 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag resolve)
   #:use-module (gaiag util)
   #:use-module (gaiag config)
 
@@ -110,12 +109,13 @@
 (define-method (c++:enum-field->string (o <enum>))
   (map (symbol->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
 (define-method (c++:string->enum (o <model>))
-  (om:enums o))
+  (filter (is? <enum>) (ast:type* o)))
 (define-method (c++:string->enum (o <enum>))
   (map (symbol->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
 
 (define-method (c++:enum->string (o <interface>))
-  (append (filter (is? <enum>) (om:globals o)) (om:enums o)))
+  (filter (is? <enum>) (append (ast:type* (parent o <root>))
+                                (ast:type* o))))
 
 (define-method (c++:argument_n (o <trigger>))
   (map
@@ -241,7 +241,7 @@
   (map (lambda (entry)
          (let* ((event (first entry))
                 (interface (second entry))
-                (event (resolve:event (provided-interface component) event))
+                (event (ast:lookup (provided-interface component) event))
                 (formals (ast:formal* event))
                 (port (om:port component))
                 (port-name (.name port)))
@@ -261,7 +261,7 @@
                  ": port(port)\n"
                  "{}\n"
                  (map (lambda (asd dzn)
-                        (let* ((event (resolve:event (provided-interface component) dzn))
+                        (let* ((event (ast:lookup (provided-interface component) dzn))
                                (formals (ast:formal* event))
                                (arguments (comma-join (map .name formals)))
                                (formals (comma-join (map (lambda (formal)
@@ -313,7 +313,7 @@
   (map (lambda (entry)
          (let* ((event-name (first entry))
                 (interface (second entry))
-                (event (resolve:event (provided-interface model) event-name))
+                (event (ast:lookup (provided-interface model) event-name))
                 (formals (ast:formal* event))
                 (arguments (comma-join (map .name formals)))
                 (formals (comma-join (map (lambda (formal)
@@ -343,7 +343,7 @@
                            "{}\n"
                            (map
                             (lambda (dzn asd)
-                              (let* ((event (resolve:event (provided-interface model) dzn))
+                              (let* ((event (ast:lookup (provided-interface model) dzn))
                                      (void? (is-a? (.type (.signature event)) <void>))
                                      (formals (ast:formal* event))
                                      (arguments (comma-join (map .name formals)))
@@ -397,17 +397,16 @@
            (($ <enum>) (c++:type-name type))
            (($ <extern>) (list (.value type)))
            ((or ($ <bool>) ($ <int>) ($ <void>)) (code:scope+name type))
-           (_ (c++:type-name type))
-           (_ (code:scope+name type))))))
+           (_ (c++:type-name type))))))
 
 (define-method (c++:type-name o)
   (code:type-name o))
 
 (define-method (c++:type-name (o <binding>))
-  ((compose c++:type-name .type (cut resolve:instance (parent o <model>) <>) injected-instance-name) o))
+  ((compose c++:type-name .type (cut ast:lookup (parent o <model>) <>) injected-instance-name) o))
 
 (define-method (c++:type-name (o <enum>))
-  (append (ast:full-name o) (list "type")))
+  (append (list "") (ast:full-name o) (list "type")))
 
 (define-method (c++:type-name (o <enum-field>))
   (append (c++:type-name (.type o)) (list (.field o))))

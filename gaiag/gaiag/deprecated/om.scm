@@ -38,7 +38,6 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag ast)
   #:use-module (gaiag compare)
-  #:use-module (gaiag resolve)
   #:use-module (gaiag util)
 
   #:use-module (gaiag command-line)
@@ -52,16 +51,13 @@
            om:instance-name
            om:collect
            om:declarative?
-           om:enums
            om:events
            om:filter:p
            om:functions
-           om:globals
            om:imperative?
            om:in?
            om:instances
            om:instance-name
-           om:instance-binding?
            ;; om:interface-types
            om:name
            om:named
@@ -74,14 +70,11 @@
            ;; om:port-binding?
            ;; om:public-types
            om:provided
-           om:reply-types
            om:required
            om:scope
            om:scope+name
            om:scope-name
            om:type
-           om:typed?
-           ;; om:types
            om:variables
            om:void?
            ))
@@ -115,23 +108,6 @@
 
 (define om:ports (pure-funcq om:ports-))
 
-(define (om:types o)
-  (match o
-    (($ <root>) (filter (is? <type>) (ast:top* o)))
-    (($ <behaviour>) (ast:type* o))
-    (($ <interface>)
-     (append ((compose ast:type* .behaviour) o)
-             (ast:type* o)))
-    ((and ($ <component>) (not (= .behaviour #f)))
-     (append ((compose ast:type* .behaviour) o) (om:interface-types o)))
-    ((? (is? <component-model>)) (om:interface-types o))
-    (($ <import>) '())
-    (#f '())
-    ((? unspecified?) '())))
-
-(define (om:globals o)
-  (filter (is? <type>) (ast:top* (parent o <root>))))
-
 (define-method (om:variables (o <model>))
   (match o
     (($ <system>) '())
@@ -139,9 +115,6 @@
     ((= .behaviour #f) '())
     (_ ((compose ast:variable* .behaviour) o))))
 
-
-(define (om:enums o)
-  (filter (is? <enum>) (om:types o)))
 
 
 (define (om:provided o)
@@ -161,13 +134,6 @@
            (.left bind))
       (and (not (.instance.name (.right bind)))
            (.right bind))))
-
-(define (om:instance-binding? bind)
-  (or (and (not (.instance.name (.left bind)))
-           (.right bind))
-      (and (not (.instance.name (.right bind)))
-           (.left bind))))
-
 
 (define (om:port-bind system port)
   (find (lambda (bind) (and=> (om:port-bind? bind)
@@ -316,25 +282,6 @@
 (define (om:public-types o)
   (match o
     ((? (is? <interface>)) (ast:type* o))
-    (_ '())))
-
-(define* (om:typed? o #:optional (trigger #f))
-  (if trigger (om:typed? (.event trigger))
-      (match o
-        (($ <event>)
-         (let ((type ((compose .type .signature) o)))
-           (not (is-a? type <void>))))
-        ((? (is? <modeling-event>)) #f)
-        ((? boolean?) #f))))
-
-(define* (om:reply-types o #:key (pred om:typed?))
-  (match o
-    (($ <interface>)
-     (let* ((events (filter pred (om:events o)))
-            (types (delete-duplicates (map (compose .type .signature) events))))
-       (filter-map (om:type o) types)))
-    ((or ($ <component>) ($ <foreign>))
-     (delete-duplicates (append-map (compose (cut om:reply-types <> #:pred pred) .type) (ast:port* o))))
     (_ '())))
 
 (define (om:declarative? o)

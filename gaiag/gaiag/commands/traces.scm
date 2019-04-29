@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
@@ -44,7 +44,6 @@
   #:use-module (gaiag ast)
   #:use-module (gaiag om)
   #:use-module (gaiag deprecated om)
-  #:use-module (gaiag resolve)
   #:use-module (gaiag commands parse)
   #:use-module (gaiag commands verify)
   #:use-module (gaiag command-line)

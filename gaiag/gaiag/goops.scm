@@ -50,13 +50,14 @@
 
             ast:inevitable
             ast:optional
-            void-signature
 
             clone
             has-slot?
             clone-base
+            make-constants
             tree-collect
             tree-collect-shallow
+            tree-filter
             tree-map
             parent
             parent-not))
@@ -532,14 +533,15 @@
   (type.name #:init-form (make <scope.name-node> #:name 'void))
   (formals #:init-form (make <formals-node>)))
 
-(define void-signature (make <signature-node>))
+(define void-signature-node (make <signature-node>))
 
 (define-ast <event> (<declaration>)
   (signature #:init-form (make <signature-node>))
   (direction))
 
 (define-ast <modeling-event> (<event>))
-(define-method (.signature (o <modeling-event>)) void-signature)
+(define-method (.signature (o <modeling-event>))
+  (make <signature> #:node void-signature-node #:parent o))
 
 (define-method (.direction (o <modeling-event>)) 'in)
 
@@ -822,6 +824,15 @@
              (initialize instance initargs)
              instance)))
 
+(define-method (slot-names (o <class>))
+  (map slot-definition-name (class-slots o)))
+(define-method (slot-names (o <object>))
+  ((compose slot-names class-of) o))
+(define-method (slot-names (o <ast>))
+  ((compose slot-names .node) o))
+(define-method (has-slot? (o <object>) name)
+  (memq name (slot-names o)))
+
 (define-method (tree-map f o) o)
 
 (define-method (tree-map f (o <ast>))
@@ -839,18 +850,12 @@
         (apply clone (cons o (apply append changed)))
         )))
 
-(define-method (slot-names (o <class>))
-  (map slot-definition-name (class-slots o)))
-(define-method (slot-names (o <object>))
-  ((compose slot-names class-of) o))
-(define-method (slot-names (o <ast>))
-  ((compose slot-names .node) o))
-(define-method (has-slot? (o <object>) name)
-  (memq name (slot-names o)))
-
 (define-method (tree-map f (o <ast-list>)) (clone o #:elements (map f (.elements o))))
 (define-method (tree-map f (o <namespace>)) (clone o #:elements (map f (.elements o)) #:name (f (.name o))))
 (define-method (tree-map f (o <root>)) (clone o #:elements (map f (.elements o))))
+
+(define-method (tree-filter f (o <ast>)) (and (f o) o))
+(define-method (tree-filter f (o <ast-list>)) (clone o #:elements (map (cut tree-filter f <>) (filter f (.elements o)))))
 
 (define-method (tree-collect predicate o) (if (predicate o) (list o) (list)))
 
@@ -931,3 +936,6 @@
   (let ((parent (.parent o)))
     (if (not (is-a? parent class)) parent
         (parent-not parent class))))
+
+(define-method (make-constants)
+  (list (make <bool>) (make <void>)))

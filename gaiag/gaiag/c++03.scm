@@ -32,7 +32,6 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag resolve)
   #:use-module (gaiag util)
   #:use-module (gaiag config)
 
@@ -52,13 +51,12 @@
   (c++:type-name o))
 
 (define-method (c++03:type-name (o <binding>))
-  ((compose c++03:type-name .type (cut resolve:instance (parent o <model>) <>) injected-instance-name) o))
+  ((compose c++03:type-name .type (cut ast:lookup (parent o <model>) <>) injected-instance-name) o))
 
 (define-method (c++03:type-name (o <enum>))
-  (append (ast:full-name o) (list "type")))
+  (append (list "") (ast:full-name o) (list "type")))
 
-(define-method (c++03:type-name (o <enum-literal>)) ; MORTAL SIN HERE!!?
-  ;;(map dzn:->string (c++03:scope+name o))
+(define-method (c++03:type-name (o <enum-literal>))
   (c++03:type-name (.type o)))
 
 (define-method (c++03:type-name (o <enum-field>))

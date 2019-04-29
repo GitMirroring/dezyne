@@ -1,0 +1,93 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+namespace dzn
+{
+  interface IAxis
+  {
+    enum State { Ready, Error };
+
+    in bool EnableSignalInjection();
+    in bool DisableSignalInjection();
+    out void stateReady();
+    out void stateError();
+
+    behaviour
+    {
+    	State state = State.Ready;
+    	on EnableSignalInjection: reply(true);
+    	on EnableSignalInjection: reply(false);
+    	on DisableSignalInjection: reply(true);
+    	on DisableSignalInjection: reply(false);
+    	on optional: stateReady;
+    	on optional: stateError;
+    }
+  }
+
+  interface IAxisProvided
+  {
+    enum State { Ready, Error };
+
+    in bool EnableSignalInjection();
+    in bool DisableSignalInjection();
+    in bool IsSignalInjectionAllowed();
+    out void stateReady();
+    out void stateError();
+
+    behaviour
+    {
+    	on EnableSignalInjection: reply(true);
+    	on EnableSignalInjection: reply(false);
+    	on DisableSignalInjection: reply(true);
+    	on DisableSignalInjection: reply(false);
+    	on IsSignalInjectionAllowed: reply(true);
+    	on IsSignalInjectionAllowed: reply(false);
+    	on optional: stateReady;
+    	on optional: stateError;
+    }
+  }
+
+  component Axis
+  {
+    provides IAxis axis;
+    requires IAxisProvided axisProvided;
+
+    behaviour
+    {
+      on axis.EnableSignalInjection():
+        {
+          bool allowed = axisProvided.IsSignalInjectionAllowed();
+          bool result = true;
+          if (allowed)
+          {
+            result = axisProvided.EnableSignalInjection();
+          }
+          reply(allowed && result);
+        }
+
+      on axis.DisableSignalInjection(): { bool result = axisProvided.DisableSignalInjection(); reply(result); }
+
+      on axisProvided.stateError(): axis.stateError();
+      on axisProvided.stateReady(): axis.stateReady();
+    }
+  }
+}

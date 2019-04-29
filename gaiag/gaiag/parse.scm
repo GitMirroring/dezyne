@@ -40,7 +40,6 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag peg)
   #:use-module (gaiag om)
-  #:use-module (gaiag resolve)
   #:use-module (gaiag wfc)
 
 
@@ -48,8 +47,10 @@
 
 (define ast-> pretty-print)
 
-(define* (parse-file file-name #:key peg? (imports '()) behaviour?)
-  (if peg? (peg:parse-file file-name)
+(define* (parse-file file-name #:key peg? generator? (imports '()) behaviour?)
+  (if (or peg? (not generator?)) (let ((ast (peg:parse-file file-name #:imports imports)))
+                                   (if peg? ast
+                                       (ast:wfc ast)))
       (generator-parse-file file-name #:imports imports #:behaviour? behaviour?)))
 
 (define %include-path '("."))
@@ -89,11 +90,11 @@
                                          (string-append line "\\n" (cadr lines))))
                 (loop (cdr lines) (1+ ln) end)))))))
 
-(define (peg:parse-file file-name)
+(define* (peg:parse-file file-name #:key (imports '()))
   (let* ((string (with-input-from-file file-name read-string))
          (parse-tree (catch 'syntax-error
             (lambda ()
-              (peg:parse string file-name))
+              (peg:parse string file-name #:imports (cons (dirname (canonicalize-path file-name)) imports)))
             (lambda (key . args)
               (receive (ln col line) (line-column string (caar args))
                 (let ((indent (make-string col #\space)))
@@ -105,16 +106,7 @@
                           (cadar args))
                   (exit 1))))))
          (gdzn-debug? (gdzn:command-line:get 'debug)))
-    ;; (when gdzn-debug?
-    ;;   (stderr "parse-tree:\n")
-    ;;   (pretty-print (om->list parse-tree)))
-    (let* ((ast (parse-tree->ast parse-tree #:string string #:file-name file-name))
-           (ast (ast:resolve ast))
-           (ast (ast:wfc ast)))
-      ;; (when gdzn-debug?
-      ;;   (stderr "ast:\n")
-      ;;   (pretty-print (om->list ast)))
-      ast)))
+    (parse-tree->ast parse-tree #:string string #:file-name file-name)))
 
 (define (find-model-file o)
   (let ((grep (lambda (dir) (gulp-pipe (format #f "grep -El '^(component|interface|enum|extern|int) ~a' ~a/~a.dzn ~a/*.dzn 2>/dev/null ||:" o dir o dir)))))

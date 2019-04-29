@@ -43,7 +43,7 @@
 
   #:export (peg:parse %peg-locations? %skip-parser?))
 
-(define (peg:parse string file-name)
+(define* (peg:parse string file-name #:key (imports '()))
 
   (define interface-events '())
 
@@ -100,11 +100,12 @@
   (define-peg-pattern var all -var-)
 
   (define (-do-import- str len pos)
-    (let* ((res (import str len pos))
-           (input-file-name file-name)
-           (file-name (and res (string-trim-both (apply string-append (cdadr res)))))
-           (root (and res ((@@ (gaiag parse) peg:parse-file) (string-append (dirname input-file-name) "/" file-name)))))
-      (and res (list (car res) (list 'import file-name root)))))
+    (let ((res (import str len pos)))
+      (and res
+           (let* ((file-name (and res (string-trim-both (apply string-append (cdadr res)))))
+                 (file-name (search-path imports file-name))
+                 (root (and res ((@@ (gaiag parse) peg:parse-file) file-name #:imports imports))))
+             (list (car res) (list 'import file-name root))))))
   (define-peg-pattern do-import body -do-import-)
 
   (define-peg-string-patterns
@@ -195,7 +196,7 @@ illegal-trigger <-- is-event / name DOT name trigger-formals?
 
 blocking <-- BLOCKING statement
 
-illegal <-- ILLEGAL SEMICOLON#
+illegal <-- ILLEGAL SEMICOLON# / BRACE-OPEN ILLEGAL SEMICOLON BRACE-CLOSE#
 
 assign <-- name ASSIGN expression SEMICOLON#
 
