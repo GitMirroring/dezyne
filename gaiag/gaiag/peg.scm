@@ -447,9 +447,19 @@
               (if (<= pos end) (values ln (- pos p))
                   (loop (cdr lines) (1+ ln) end)))))))
 
-  ;;(pretty-print (om->list o))
-  (make <root> #:node (helper o)))
 
+  ;;(pretty-print (om->list o))
+  (tree-map make-namespaces
+   (make <root> #:node (helper o))))
+
+(define-method (make-namespaces (o <ast>))
+  o)
+
+(define-method (make-namespaces (o <model>))
+  (let ((scope (.scope (.name o))))
+    (let loop ((scope scope))
+      (if (null? scope) o
+          (make <namespace> #:name (car scope) #:elements (list (loop (cdr scope))))))))
 
 ;; differences in ast:
 ;;  import

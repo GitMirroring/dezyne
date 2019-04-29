@@ -3,7 +3,7 @@
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
 ;;;
@@ -438,7 +438,7 @@
 (define-ast <declaration> (<named>))
 (define-ast <scope> (<ast>))
 
-(define-ast <namespace> (<scope> <declaration> <ast-list>))
+(define-ast <namespace> (<scope> <ast-list> <declaration>))
 (define-method (.name.name (o <namespace>))
   ((compose .name .name) o))
 
@@ -850,6 +850,7 @@
 
 (define-method (tree-map f (o <ast-list>)) (clone o #:elements (map f (.elements o))))
 (define-method (tree-map f (o <namespace>)) (clone o #:elements (map f (.elements o)) #:name (f (.name o))))
+(define-method (tree-map f (o <root>)) (clone o #:elements (map f (.elements o))))
 
 (define-method (tree-collect predicate o) (if (predicate o) (list o) (list)))
 
