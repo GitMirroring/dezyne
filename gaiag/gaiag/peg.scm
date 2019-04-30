@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -220,10 +220,19 @@
       (('triggers triggers ...)
        (make <triggers-node> #:elements (helper triggers)))
 
+      (('illegal-triggers triggers ...)
+       (make <triggers-node> #:elements (helper triggers)))
+
       (('trigger event-name)
+       (make <trigger-node> #:event.name (helper event-name)))
+      (('illegal-trigger event-name)
        (make <trigger-node> #:event.name (helper event-name)))
 
       (('trigger port-name event-name formals)
+       (make <trigger-node> #:event.name (helper event-name) #:port.name (helper port-name) #:formals (helper formals)))
+      (('illegal-trigger port-name event-name)
+       (make <trigger-node> #:event.name (helper event-name) #:port.name (helper port-name)))
+      (('illegal-trigger port-name event-name formals)
        (make <trigger-node> #:event.name (helper event-name) #:port.name (helper port-name) #:formals (helper formals)))
 
       (('direction direction) (helper direction))

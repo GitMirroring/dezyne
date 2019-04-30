@@ -133,12 +133,6 @@ interface <-- INTERFACE reset-event-names compound-name# BRACE-OPEN# types-or-ev
 
 types-or-events <-- (type / event)+
 
-formals <-- PAREN-OPEN (formal (!PAREN-CLOSE COMMA# / !COMMA &PAREN-CLOSE))* PAREN-CLOSE#
-formal <-- (INOUT / IN / OUT)? type-name add-var
-
-trigger-formals <-- PAREN-OPEN (trigger-formal (!PAREN-CLOSE COMMA# / !COMMA &PAREN-CLOSE))* PAREN-CLOSE#
-trigger-formal <-- out-formal / add-var
-
 event <-- direction type-name# event-name# formals SEMICOLON#
 
 component <-- COMPONENT reset-event-names compound-name# BRACE-OPEN# ports (behaviour / system)? BRACE-CLOSE#
@@ -165,7 +159,7 @@ imperative-statement <- variable / assign / if / illegal /
 
 compound <-- BRACE-OPEN enter-frame statement* BRACE-CLOSE# exit-frame
 
-on <-- ON enter-frame triggers# COLON# statement# exit-frame
+on <-- ON (illegal-triggers COLON illegal / enter-frame triggers# COLON# statement# exit-frame)
 
 interface-action-or-call <- (interface-action / interface-call)
 
@@ -188,8 +182,16 @@ guard <-- BRACKET-OPEN (otherwise / expression)# BRACKET-CLOSE# statement#
 skip-statement <-- SEMICOLON
 
 triggers <-- (trigger (!COLON COMMA# / &COLON))*
-
 trigger <-- is-event / OPTIONAL / INEVITABLE / name DOT name trigger-formals
+
+formals <-- PAREN-OPEN (formal (!PAREN-CLOSE COMMA# / !COMMA &PAREN-CLOSE))* PAREN-CLOSE#
+formal <-- (INOUT / IN / OUT)? type-name add-var
+
+trigger-formals <-- PAREN-OPEN (trigger-formal (!PAREN-CLOSE COMMA# / !COMMA &PAREN-CLOSE))* PAREN-CLOSE#
+trigger-formal <-- out-formal / add-var
+
+illegal-triggers <-- (illegal-trigger (!COLON COMMA / &COLON))*
+illegal-trigger <-- is-event / name DOT name trigger-formals?
 
 blocking <-- BLOCKING statement
 
