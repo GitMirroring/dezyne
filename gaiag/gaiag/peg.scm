@@ -370,6 +370,7 @@
       (('reply port "reply") (make <reply-node> #:port.name (helper port)))
       (('reply port "reply" expression) (make <reply-node> #:port.name (helper port) #:expression (helper expression)))
       (('reply "reply" expression) (make <reply-node> #:expression (helper expression)))
+      (('reply "reply") (make <reply-node> #:expression (make <literal-node>)))
 
       (('return) (make <return-node>))
 
