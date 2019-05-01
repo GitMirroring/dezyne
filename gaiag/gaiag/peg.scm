@@ -137,7 +137,7 @@
       (('trigger-formals formal) (make <formals-node> #:elements (list (helper formal))))
       (('trigger-formals formals ...) (make <formals-node> #:elements (helper formals)))
       (('trigger-formal name) (make <formal-node> #:name (helper name)))
-      (('out-formal var-a var-b) (make <out-formal> #:name (helper var-a) #:expression (helper var-b)))
+      (('trigger-formal var-a ('var var-b _ ...)) (make <formal-binding-node> #:name (helper var-a) #:variable.name (helper var-b)))
 
       (('component name ports)
        (make <foreign-node>
@@ -326,7 +326,7 @@
       (('data value) (make <data-node> #:value (helper value)))
 
 
-      (('field-test ('var identifier location) field) (make <field-test-node> #:variable.name (string->symbol identifier) #:field (helper field)))
+      (('field-test ('var identifier _ ...) field) (make <field-test-node> #:variable.name (string->symbol identifier) #:field (helper field)))
 
 
       (('function type name formals statement)

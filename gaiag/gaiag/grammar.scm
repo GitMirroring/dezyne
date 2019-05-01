@@ -188,7 +188,7 @@ formals <-- PAREN-OPEN (formal (!PAREN-CLOSE COMMA# / !COMMA &PAREN-CLOSE))* PAR
 formal <-- (INOUT / IN / OUT)? type-name add-var
 
 trigger-formals <-- PAREN-OPEN (trigger-formal (!PAREN-CLOSE COMMA# / !COMMA &PAREN-CLOSE))* PAREN-CLOSE#
-trigger-formal <-- out-formal / add-var
+trigger-formal <-- add-var (LEFT-ARROW var)?
 
 illegal-triggers <-- (illegal-trigger (!COLON COMMA / &COLON))*
 illegal-trigger <-- is-event / name DOT name trigger-formals?
@@ -237,8 +237,6 @@ enum-literal <-- scope name
 field-test <-- var DOT name
 
 literal <-- NUMBER / FALSE / TRUE
-
-out-formal <-- &(var LEFT-ARROW) add-var LEFT-ARROW var
 
 group <-- PAREN-OPEN expression PAREN-CLOSE#
 
