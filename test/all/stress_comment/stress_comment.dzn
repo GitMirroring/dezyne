@@ -1,0 +1,54 @@
+// Dezyne --- Dezyne command line tools
+// Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// begin
+/* 02 */interface/*_*/ihello                                     /* 02 */
+/* 03 */{                                                        /* 03 */
+/* 04 */  in/*_*/void/*_*/hello/*_*/(/**/)/*_*/;                 /* 04 */
+/* 05 */                                                         /* 05 */
+/* 06 */  behaviour                                              /* 06 */
+/* 07 */  {                                                      /* 07 */
+/* 08 */    on/*_*/hello/*_*/: {/*_*/}                           /* 08 */
+/* 09 */  }                                                      /* 09 */
+/* 10 */}                                                        /* 10 */
+/* 11 */                                                         /* 11 */
+/* 12 */component/*_*/stress_comment                             /* 12 */
+/* 13 */{                                                        /* 13 */
+/* 14 */  provides/*_*/ihello/*_*/h ;                            /* 14 */
+/* 15 */  requires/*_*/iworld/*_*/w ;                            /* 15 */
+/* 16 */                                                         /* 16 */
+/* 17 */  behaviour                                              /* 17 */
+/* 18 */  {                                                      /* 18 */
+/* 19 */    on/*_*/h.hello/*_*/( )/*_*/: w.world/*_*/( )/*_*/;   /* 19 */
+/* 20 */  }                                                      /* 20 */
+/* 21 */}                                                        /* 21 */
+/* 22 */                                                         /* 22 */
+/* 23 */interface/*_*/iworld                                     /* 23 */
+/* 24 */{                                                        /* 24 */
+/* 25 */  in/*_*/void/*_*/world/*_*/(/**/)/*_*/;                 /* 25 */
+/* 26 */                                                         /* 26 */
+/* 27 */  behaviour                                              /* 27 */
+/* 28 */  {                                                      /* 28 */
+/* 29 */    on/*_*/world/*_*/: {/*_*/}                           /* 29 */
+/* 30 */  }                                                      /* 30 */
+/* 31 */}                                                        /* 31 */
+// end
