@@ -1,1 +1,1 @@
-out/wf_coverageUnexpected/wf_coverageUnexpected.dzn:13:7: Well-formedness error: OnEventStatement not allowed within other OnEventStatement
+out/wf_coverageUnexpected/wf_coverageUnexpected.dzn:13:6: error: nested on

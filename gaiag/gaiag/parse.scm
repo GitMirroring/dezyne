@@ -93,18 +93,18 @@
 (define* (peg:parse-file file-name #:key (imports '()))
   (let* ((string (with-input-from-file file-name read-string))
          (parse-tree (catch 'syntax-error
-            (lambda ()
-              (peg:parse string file-name #:imports (cons (dirname (canonicalize-path file-name)) imports)))
-            (lambda (key . args)
-              (receive (ln col line) (line-column string (caar args))
-                (let ((indent (make-string col #\space)))
-                  (format #t "~a:~a:~a: syntax-error\n~a\n~a^\n~aexpected '~a'\n"
-                          file-name
-                          ln col line
-                          indent
-                          indent
-                          (cadar args))
-                  (exit 1))))))
+                       (lambda ()
+                         (peg:parse string file-name #:imports (cons (dirname (canonicalize-path file-name)) imports)))
+                       (lambda (key . args)
+                         (receive (ln col line) (line-column string (caar args))
+                           (let ((indent (make-string col #\space)))
+                             (stderr "~a:~a:~a: syntax-error\n~a\n~a^\n~aexpected '~a'\n"
+                                     file-name
+                                     ln col line
+                                     indent
+                                     indent
+                                     (cadar args))
+                             (exit 1))))))
          (gdzn-debug? (gdzn:command-line:get 'debug)))
     (parse-tree->ast parse-tree #:string string #:file-name file-name)))
 

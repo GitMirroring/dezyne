@@ -1,2 +1,1 @@
-out/wf_componentNeedsTrigger/wf_componentNeedsTrigger.dzn:10:11: Well-formedness error: Component with behaviour needs at least one trigger event: 'Alarm1'
-out/wf_componentNeedsTrigger/wf_componentNeedsTrigger.dzn:10:11: Well-formedness error: Component with behaviour must have at least one provides port: 'Alarm1'
+out/wf_componentNeedsTrigger/wf_componentNeedsTrigger.dzn:9:2: error: component with behaviour must have a provides port

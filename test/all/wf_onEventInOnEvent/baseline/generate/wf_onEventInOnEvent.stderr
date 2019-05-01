@@ -1,0 +1,2 @@
+out/wf_onEventInOnEvent/wf_onEventInOnEvent.dzn:10:9: Well-formedness error: OnEventStatement not allowed within other OnEventStatement
+out/wf_onEventInOnEvent/wf_onEventInOnEvent.dzn:10:9: Well-formedness error: Only imperative Statement allowed here
