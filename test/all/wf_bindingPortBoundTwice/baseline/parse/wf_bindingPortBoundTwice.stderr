@@ -1,1 +1,2 @@
-out/wf_bindingPortBoundTwice/wf_bindingPortBoundTwice.dzn:22:5: Well-formedness error: Port is bound twice: 'i1'
+out/wf_bindingPortBoundTwice/wf_bindingPortBoundTwice.dzn:21:4: error: port i1 is bound more than once
+out/wf_bindingPortBoundTwice/wf_bindingPortBoundTwice.dzn:22:4: error: port i1 is bound more than once

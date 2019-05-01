@@ -1,1 +1,2 @@
-out/wf_illegalOnlyStatement/wf_illegalOnlyStatement.dzn:8:9: Well-formedness error: Illegal must be the only Statement in a compound
+out/wf_illegalOnlyStatement/wf_illegalOnlyStatement.dzn:8:8: error: cannot use illegal with imperative statements
+out/wf_illegalOnlyStatement/wf_illegalOnlyStatement.dzn:9:6: error: imperative statement here

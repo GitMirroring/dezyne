@@ -1,4 +1,12 @@
-out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:24:17: Well-formedness error: Binding directions do not match
-out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:25:17: Well-formedness error: Binding directions do not match
-out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:26:12: Well-formedness error: Binding directions do not match
-out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:27:12: Well-formedness error: Binding directions do not match
+out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:24:4: error: cannot bind provides port p to provides port p
+out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:9:2: error: port p declared here
+out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:9:2: error: port p declared here
+out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:25:4: error: cannot bind requires port r to requires port r
+out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:10:2: error: port r declared here
+out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:10:2: error: port r declared here
+out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:26:4: error: cannot bind provides port p1 to requires port r
+out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:17:2: error: port p1 declared here
+out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:10:2: error: port r declared here
+out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:27:4: error: cannot bind requires port r1 to provides port p
+out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:18:2: error: port r1 declared here
+out/wf_bindingPortDirection/wf_bindingPortDirection.dzn:9:2: error: port p declared here

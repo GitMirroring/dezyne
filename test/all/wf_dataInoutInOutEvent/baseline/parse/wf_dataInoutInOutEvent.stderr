@@ -1,1 +1,1 @@
-out/wf_dataInoutInOutEvent/wf_dataInoutInOutEvent.dzn:5:27: Well-formedness error: Inout Parameter is not allowed for out Event: 'val'
+out/wf_dataInoutInOutEvent/wf_dataInoutInOutEvent.dzn:5:20: error: inout-parameter not allowed on out-event callback

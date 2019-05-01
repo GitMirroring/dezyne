@@ -1,1 +1,8 @@
-parse: no errors found
+verify: I: check: deadlock: fail
+verify: I: check: livelock: ok
+verify: wf_emptyBehaviour: check: deterministic: ok
+verify: wf_emptyBehaviour: check: illegal: ok
+verify: wf_emptyBehaviour: check: deadlock: fail
+verify: wf_emptyBehaviour: check: compliance: fail
+i.e
+verify: wf_emptyBehaviour: check: livelock: ok

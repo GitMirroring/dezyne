@@ -1,1 +1,2 @@
-out/wf_replyTypeMismatch/wf_replyTypeMismatch.dzn:18:27: Well-formedness error: Reply type does not match any event type: 'bool'
+out/wf_replyTypeMismatch/wf_replyTypeMismatch.dzn:18:26: error: type mismatch: expected void, found bool
+out/wf_replyTypeMismatch/wf_replyTypeMismatch.dzn:3:2: error: event defined here

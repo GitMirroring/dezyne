@@ -1,3 +1,3 @@
-out/wf_subintMinMax/wf_subintMinMax.dzn:1:8: Well-formedness error: Minimum version must not be smaller than maximum value
-out/wf_subintMinMax/wf_subintMinMax.dzn:4:10: Well-formedness error: Minimum version must not be smaller than maximum value
-out/wf_subintMinMax/wf_subintMinMax.dzn:14:12: Well-formedness error: Minimum version must not be smaller than maximum value
+out/wf_subintMinMax/wf_subintMinMax.dzn:1:0: error: subint iglob has empty range
+out/wf_subintMinMax/wf_subintMinMax.dzn:4:2: error: subint iintf has empty range
+out/wf_subintMinMax/wf_subintMinMax.dzn:14:4: error: subint icomp has empty range

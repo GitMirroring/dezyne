@@ -51,6 +51,7 @@
            ast:async?
            ast:async-port*
            ast:clr-events
+           ast:declarative?
            ast:direction
            ast:dzn-scope?
            ast:eq?
@@ -62,6 +63,7 @@
            ast:in?
            ast:inout?
            ast:in-triggers
+           ast:imperative?
            ast:imported?
            ast:literal-false?
            ast:literal-true?
@@ -175,6 +177,7 @@
 (define-method (ast:argument* (o <call>)) ((compose ast:argument* .arguments) o))
 (define-method (ast:binding* (o <system>)) ((compose ast:binding* .bindings) o))
 (define-method (ast:event* (o <interface>)) ((compose ast:event* .events) o))
+(define-method (ast:event* (o <port>)) ((compose ast:event* .type) o))
 (define-method (ast:function* (o <behaviour>)) ((compose ast:function* .functions) o))
 (define-method (ast:field* (o <enum>)) ((compose ast:field* .fields) o))
 (define-method (ast:formal* (o <event>)) ((compose ast:formal* .signature) o))
@@ -446,13 +449,22 @@
 (define-method (ast:eq? (a <ast>) (b <ast>))
   (equal? (ast:id-path a) (ast:id-path b)))
 
+(define-method (ast:eq? (a <ast>) b)
+  #f)
+
+(define-method (ast:eq? a (b <ast>))
+  #f)
+
+(define-method (ast:equal? a b)
+  #f)
+
 (define-method (ast:equal? (a <ast>) (b <ast>))
   (eq? (.node a) (.node b)))
 
 (define-method (ast:equal? (a <declaration>) (b <declaration>))
   (equal? (ast:full-name a) (ast:full-name b)))
 
-(define-method (ast:equal? (a <named>) (b <named>)) ;; FIXME: decl vs ref
+(define-method (ast:equal? (a <named>) (b <named>))
   (ast:equal? (.name a) (.name b)))
 
 (define-method (ast:equal? (a <scope.name>) (b <scope.name>))
@@ -462,6 +474,10 @@
 (define-method (ast:equal? (a <enum-literal>) (b <enum-literal>))
   (and (ast:equal? (.type.name a) (.type.name b))
        (eq? (.field a) (.field b))))
+
+(define-method (ast:equal? (a <end-point>) (b <end-point>))
+  (and (eq? (.instance.name a) (.instance.name b))
+       (eq? (.port.name a) (.port.name b))))
 
 (define-method (ast:equal? (a <field-test>) (b <field-test>))
   (eq? (.field a) (.field b)))
@@ -485,6 +501,8 @@
 
 (define-method (ast:type (o <action>))
   ((compose ast:type .event) o))
+(define-method (ast:type (o <call>))
+  ((compose ast:type .function) o))
 (define-method (ast:type (o <bool>)) o)
 (define-method (ast:type (o <enum>)) o)
 (define-method (ast:type (o <enum-literal>))
@@ -533,8 +551,12 @@
 (define-method (ast:type (o <group>))
   ((compose ast:type .expression) o))
 
+(define-method (ast:type (o <reply>))
+  (ast:type (.expression o)))
+
 (define-method (ast:type (o <return>))
   (ast:type (.expression o)))
+
 
 (define-method (ast:type (o <extern>))
   o)
@@ -653,8 +675,14 @@
 (define-method (ast:full-name (o <bool>))
   '(bool))
 
+(define-method (ast:full-name (o <data>))
+  '(data))
+
 (define-method (ast:full-name (o <int>))
   '(int))
+
+(define-method (ast:full-name (o <void>))
+  '(void))
 
 (define-method (ast:full-name (o <named>))
   (ast:full-name (.name o)))
@@ -713,6 +741,27 @@
 (define-method (ast:rescope (o <boolean>) x)
   o)
 
+(define-method (ast:declarative? (o <declarative>))
+  #t)
+
+(define-method (ast:declarative? (o <statement>))
+  #f)
+
+(define-method (ast:declarative? (o <compound>))
+  (let ((statements (ast:statement* o)))
+    (and (pair? statements)
+         ((compose ast:declarative? car) statements))))
+
+(define-method (ast:imperative? (o <imperative>))
+  #t)
+
+(define-method (ast:imperative? (o <statement>))
+  #f)
+
+(define-method (ast:imperative? (o <compound>))
+  (let ((statements (ast:statement* o)))
+    (or (null? statements)
+        ((compose ast:imperative? car) statements))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; LOOKUP

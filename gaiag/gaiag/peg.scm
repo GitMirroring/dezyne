@@ -109,8 +109,8 @@
 
       (('range from to) (make <range-node> #:from (helper from) #:to (helper to)))
 
-      (('from string) (helper string))
-      (('to string) (helper string))
+      (('from string) (string->number string))
+      (('to string) (string->number string))
 
       (('extern name data)
        (make <extern-node> #:name (helper name) #:value (helper data)))
@@ -191,8 +191,17 @@
       (('binding left right)
        (make <binding-node> #:left (helper left) #:right (helper right)))
 
-      (('end-point)
+      ;; (('end-point)
+      ;;  (make <end-point-node> #:port.name '*))
+
+      (('end-point "*")
        (make <end-point-node> #:port.name '*))
+
+      (('end-point name "*")
+       (let* ((name (helper name))
+              (scope (.scope name))
+              (instance (and (pair? scope) (car scope))))
+         (make <end-point-node> #:instance instance #:port.name '*)))
 
       (('end-point name)
        (let* ((name (helper name))

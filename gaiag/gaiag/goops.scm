@@ -747,7 +747,7 @@
   (left)
   (right))
 
-(define-ast <end-point> (<ast>)
+(define-ast <end-point> (<locationed>)
   (instance.name)
   (port.name))
 

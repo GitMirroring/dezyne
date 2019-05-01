@@ -1,1 +1,2 @@
-out/wf_injectionOutEvent/wf_injectionOutEvent.dzn:16:29: Well-formedness error: Injected Port has out event: 'ii'
+out/wf_injectionOutEvent/wf_injectionOutEvent.dzn:16:2: error: injected port ii has out events: notif
+out/wf_injectionOutEvent/wf_injectionOutEvent.dzn:8:2: error: defined here

@@ -258,6 +258,7 @@ injected <-- INJECTED
 
 
 NUMBER              <-  MINUS? [0-9]+
+ASTERISK            <-  '*'
 DOLLAR              <   '$'
 COMMENT-OPEN        <   '/*'
 COMMENT-CLOSE       <   '*/'
@@ -275,7 +276,6 @@ DOTDOT              <   '..'
 COMMA               <   ','
 BIND                <   '<=>'
 ASSIGN              <   '='
-ASTERISK            <   '*'
 LEFT-ARROW          <   '<-'
 OR                  <-  '||'
 AND                 <-  '&&'

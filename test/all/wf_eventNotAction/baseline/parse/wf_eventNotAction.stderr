@@ -1,3 +1,8 @@
-out/wf_eventNotAction/wf_eventNotAction.dzn:6:20: Well-formedness error: Event is not an action: 'deactivate'
-out/wf_eventNotAction/wf_eventNotAction.dzn:15:30: Well-formedness error: Event is not an action: 'sensor1.deactivate'
-out/wf_eventNotAction/wf_eventNotAction.dzn:16:30: Well-formedness error: Event is not an action: 'sensor2.deactivated'
+out/wf_eventNotAction/wf_eventNotAction.dzn:6:19: error: cannot use in-event deactivate as action
+out/wf_eventNotAction/wf_eventNotAction.dzn:3:2: error: event deactivate declared here
+out/wf_eventNotAction/wf_eventNotAction.dzn:15:29: error: cannot use provides in-event deactivate as action
+out/wf_eventNotAction/wf_eventNotAction.dzn:12:2: error: port sensor1 declared here
+out/wf_eventNotAction/wf_eventNotAction.dzn:3:2: error: event deactivate declared here
+out/wf_eventNotAction/wf_eventNotAction.dzn:16:29: error: cannot use requires out-event deactivated as action
+out/wf_eventNotAction/wf_eventNotAction.dzn:13:2: error: port sensor2 declared here
+out/wf_eventNotAction/wf_eventNotAction.dzn:4:2: error: event deactivated declared here
