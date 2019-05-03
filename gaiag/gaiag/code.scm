@@ -76,7 +76,6 @@
             code:injected-instances
             code:non-injected-bindings
             code:injected-instances-system
-            code:model2file?
             code:ons
             code:functions
             code:port-name
@@ -124,8 +123,6 @@
             code:main-event-map-match-return
             code:main-out-arg
             code:main-out-arg-define
-            code:model2file?
-            code:model2file-interface-include
             code:non-injected-bindings
             code:ons
             code:out-argument
@@ -672,10 +669,6 @@
        (filter (compose (cut (negate equal?) (ast:source-file (parent o <root>)) <>) ast:source-file)
                (map .type (ast:port* o)))))
 
-(define (code:model2file-interface-include o)
-  (or (and (code:model2file?) (code:interface-include o))
-      ""))
-
 (define-method (code:enum-literal (o <enum-literal>))
   (append (code:type-name (.type o)) (list (.field o))))
 
@@ -787,33 +780,16 @@
         (begin (with-output-to-file (string-append dir name "Component.h") (cut (%x:glue-top-header) o))
                (with-output-to-file (string-append dir name "Component.cpp") (cut (%x:glue-top-source) o))))))
 
-(define (code:model2file?)
-  (and=> (or (command-line:get 'deprecated #f) (getenv "DZN_DEPRECATED"))
-         (cut string-contains <> "model2file")))
-
 (define-method (code:file-name (o <port>))
   (code:file-name (.type o)))
 
 (define-method (code:file-name (o <instance>))
   (code:file-name (.type o)))
 
-(define-method (code:file-name (o <interface>))
-  (basename (ast:source-file o) ".dzn"))
-
 (define-method (code:file-name (o <foreign>))
-  ((compose symbol->string (om:scope-name) .name) o))
+  ((compose symbol->string (cut symbol-join <> '_) ast:full-name) o))
 
-(define-method (code:file-name (o <component>))
-  (if (code:model2file?)
-      ((compose symbol->string (om:scope-name) .name) o)
-      (basename (ast:source-file o) ".dzn")))
-
-(define-method (code:file-name (o <system>))
-  (if (or (code:model2file?) (dzn:glue))
-      ((compose symbol->string (om:scope-name) .name) o)
-      (basename (ast:source-file o) ".dzn")))
-
-(define-method (code:file-name (o <root>))
+(define-method (code:file-name (o <ast>))
   (basename (ast:source-file o) ".dzn"))
 
 (define (code:om ast)

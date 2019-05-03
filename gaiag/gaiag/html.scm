@@ -54,8 +54,7 @@
 (define (html:root-> root)
   (parameterize ((language 'html)
                  (%x:source x:source))
-    (if (dzn:model2file?) (dzn:model2file root)
-        (dzn:file2file root))))
+    (dzn:file2file root)))
 
 (define-method (ast->html (o <statement>))
   (with-output-to-string (cut x:source o)))

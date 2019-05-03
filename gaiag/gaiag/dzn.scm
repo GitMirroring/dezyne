@@ -62,8 +62,6 @@
             dzn:om
             dzn:file2file
             dzn:glue
-            dzn:model2file?
-            dzn:model2file
             dzn:expand-statement
             dzn:expression-expand
             dzn:action-arguments
@@ -143,12 +141,6 @@
                   (cs . .cs)
                   (python . .py))
                 (language)))))
-
-(define (dzn:model2file root)
-  (let* ((models (filter (negate ast:imported?) (ast:model* root)))
-         ;; Generator-synthesized models look non-imported, filter harder
-         (models (filter (negate dzn-async?) models)))
-    (for-each dzn:dump models)))
 
 (define (dzn:om ast)
   ast)
@@ -459,10 +451,6 @@
             (with-output-to-file file-name
              (dzn:indent (cut (%x:source) o))))))))
 
-(define (dzn:model2file?)
-  (and=> (or (command-line:get 'deprecated #f) (getenv "DZN_DEPRECATED"))
-         (cut string-contains <> "model2file")))
-
 (define-templates-macro define-templates dzn)
 (include "../templates/dzn.scm")
 
@@ -474,5 +462,4 @@
 (define (dzn:root-> root)
   (parameterize ((language (dzn:language))
                  (%x:source x:source))
-    (if (dzn:model2file?) (dzn:model2file root)
-        (dzn:file2file root))))
+    (dzn:file2file root)))

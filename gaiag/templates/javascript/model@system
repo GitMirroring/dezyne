@@ -18,8 +18,6 @@ if (node_p ()) {
 #x:javascript-namespace-setup
 #x:interface-include
 
-#x:model2file-interface-include
-
 dzn.#x:type-name  = function (locator, meta) {
   dzn.runtime.init (this, locator, meta);
   this._dzn.meta.ports = [#x:all-ports-meta-list ];

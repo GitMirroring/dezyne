@@ -46,7 +46,6 @@
 (define-templates port-name code:port-name)
 (define-templates port-type code:port-type type-infix)
 (define-templates interface-include code:interface-include)
-(define-templates model2file-interface-include code:model2file-interface-include)
 (define-templates component-include code:component-include)
 (define-templates scope::name code:scope+name type-infix)
 (define-templates code-enum-literal code:enum-literal type-infix)
