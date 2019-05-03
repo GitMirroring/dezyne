@@ -501,7 +501,12 @@
 
   (let* ((root-node (helper o))
          (elements (append (make-constants) (async-interfaces 'get) (.elements root-node)))
-         (root (make <root> #:node (clone root-node #:elements elements))))
+         (root (make <root> #:node (clone root-node #:elements elements)))
+         (imports (tree-collect (is? <import>) root))
+         (root (clone root
+                      #:elements (filter (negate (is? <import>))
+                                         (append (.elements root)
+                                                 (append-map (compose .elements .root) imports))))))
     (tree-map make-namespaces root)))
 
 (define-method (make-namespaces (o <ast>))
