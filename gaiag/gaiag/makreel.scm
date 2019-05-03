@@ -48,7 +48,6 @@
   #:use-module (gaiag deprecated om)
 
   #:use-module (gaiag dzn)
-  #:use-module (gaiag norm)
   #:use-module (gaiag normalize)
   #:use-module (gaiag templates)
   #:export (ast->

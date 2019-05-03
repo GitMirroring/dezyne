@@ -44,8 +44,6 @@
   #:use-module (gaiag deprecated om)
   #:use-module (gaiag compare)
   #:use-module (gaiag dzn)
-  #:use-module (gaiag norm)
-  #:use-module (gaiag norm-event)
   #:use-module (gaiag normalize)
   #:use-module (gaiag parse)
   #:use-module (gaiag templates)

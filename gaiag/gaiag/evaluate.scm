@@ -39,7 +39,6 @@
   #:use-module (gaiag util)
 
   #:use-module (gaiag misc)
-  #:use-module (gaiag norm)
   #:use-module (gaiag parse)
 
   #:export (

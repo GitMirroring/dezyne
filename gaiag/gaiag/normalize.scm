@@ -55,10 +55,12 @@
             triples:fix-empty-interface
             triples:on-compound
             triples:split-multiple-on
-            purge-data
-            ))
 
-(define om:imperative? (@ (gaiag deprecated om) om:imperative?)) ;; REMOVEME
+            add-reply-port
+            binding-into-blocking
+            purge-data
+            remove-otherwise
+            ))
 
 (define (t-triple on guard blocking statement) (list on guard blocking statement))
 (define (t-on triple) (first triple))
@@ -202,7 +204,7 @@
                 (find (is? <blocking>) path)
                 o)))
   (if (and (is-a? o <compound>) (null? (ast:statement* o))) '()
-      (map triple (tree-collect-shallow om:imperative? o))))
+      (map triple (tree-collect-shallow ast:imperative? o))))
 
 (define (triples:on-compound triples)
   (define (foo t)
@@ -405,6 +407,105 @@
                      ((ast:literal-false? right) left)
                      (else (clone o #:left left #:right right)))))
     (_ o)))
+
+(define* (add-reply-port o #:optional (port #f) (block? #f)) ;; requires (= 1 (length (.triggers on)))
+  ;(stderr "add-reply-report o = ~a; port = ~a: model = ~a\n" o port model)
+  (match o
+    (($ <reply>) (let ((port? (.port o))) (if (and port? (not (symbol? port?))) o (clone o #:port.name (.name port)))))
+    (($ <blocking>)
+     (if block?
+         (make <blocking-compound>
+           #:port port
+           #:elements (let ((s (.statement o)))
+                        (if (is-a? s <compound>) (map (cut add-reply-port <> port block?) (ast:statement* s))
+                            (list (add-reply-port s port block?)))))
+         (add-reply-port (.statement o) port block?)))
+    (($ <on>)
+     (clone o #:statement (add-reply-port (.statement o)
+                                          (if port port ((compose .port car ast:trigger*) o))
+                                          (eq? 'provides ((compose .direction .port car ast:trigger*) o)))))
+    (($ <guard>) (clone o #:statement (add-reply-port (.statement o) port block?)))
+    (($ <compound>) (clone o #:elements (map (cut add-reply-port <> port block?) (ast:statement* o))))
+    (($ <behaviour>) (clone o #:statement (add-reply-port (.statement o) port block?)))
+    (($ <component>) (clone o #:behaviour (add-reply-port (.behaviour o) (if (= 1 (length (ast:provided o))) (car (ast:provided o)) #f) block?)))
+    (($ <system>) o)
+    (($ <foreign>) o)
+    (($ <interface>) o)
+    ((? (is? <ast>)) (tree-map (cut add-reply-port <> port block?) o))
+    (_ o)))
+
+(define* ((binding-into-blocking #:optional (locals '())) o)
+
+  (define (formal-binding->formal o)
+    (match o
+      (($ <formal-binding>) (make <formal> #:name (.name o) #:type.name (.type.name o) #:direction (.direction o)))
+      (_ o)))
+
+  (define ((passdown-formal-bindings formal-bindings) o)
+    (match o
+      ((and ($ <compound>) (? ast:declarative?))
+       (clone o #:elements (map (passdown-formal-bindings formal-bindings) (ast:statement* o))))
+      ((? ast:declarative?) (clone o #:statement ((passdown-formal-bindings formal-bindings) (.statement o))))
+      (($ <compound>) (clone o #:elements (cons formal-bindings (ast:statement* o))))
+      (_ (make <compound> #:elements (cons formal-bindings (list o))))))
+
+  (match o
+    (($ <on>)
+     (let* ((trigger ((compose car ast:trigger*) o))
+            (on-formals (ast:formal* trigger))
+            (formal-bindings (filter (is? <formal-binding>) on-formals))
+            (formal-bindings (and (pair? formal-bindings) (make <out-bindings> #:elements formal-bindings #:port (.port trigger))))
+            (on-formals (map formal-binding->formal on-formals)))
+       (if (not formal-bindings) o
+           (clone o
+                  #:triggers (clone (.triggers o)
+                                    #:elements (list (clone trigger #:formals (make <formals> #:elements on-formals))))
+                  #:statement ((passdown-formal-bindings formal-bindings) (.statement o))))))
+
+    (($ <component>)
+     (clone o #:behaviour ((binding-into-blocking) (.behaviour o))))
+
+    (($ <behaviour>)
+     (clone o #:statement ((binding-into-blocking '()) (.statement o))))
+
+    (($ <interface>) o)
+    (($ <system>) o)
+    (($ <foreign>) o)
+    ((? (is? <ast>)) (tree-map (binding-into-blocking locals) o))
+    (_ o)))
+
+(define* ((remove-otherwise #:optional (keep-annotated? #t) (statements '())) o)
+  (define (virgin-otherwise? x) (or (eq? x 'otherwise) (eq? x *unspecified*))) ;; FIXME *unspecified*
+  (match o
+    ((? ast:imperative?) o)
+    ((and ($ <guard>) (= .expression (and ($ <otherwise>) (= .value value))) (= .statement statement)) (=> failure)
+     (if (or (and keep-annotated?
+                  (not (virgin-otherwise? value)))
+             (null? statements))
+         (failure)
+         (clone o #:expression (guards-not-or statements)
+                #:statement ((remove-otherwise keep-annotated?) statement))))
+    ((and ($ <compound>) (= ast:statement* (statements ...)))
+     (clone o #:elements (map (remove-otherwise keep-annotated? statements) statements)))
+    (($ <skip>) o)
+    (($ <functions>) o)
+    ((and (? (is? <component>) (= .behaviour behaviour)))
+     (clone o #:behaviour ((remove-otherwise keep-annotated? statements) behaviour)))
+    ((and (? (is? <interface>) (= .behaviour behaviour)))
+     (clone o #:behaviour ((remove-otherwise keep-annotated? statements) behaviour)))
+    ((? (is? <component-model>)) o)
+    ((? (is? <ast>)) (tree-map (remove-otherwise keep-annotated? statements) o))
+    (_ o)))
+
+(define (guards-not-or o)
+  (let* ((expressions (map .expression o))
+         (others (remove (is? <otherwise>) expressions))
+         (expression (reduce (lambda (g0 g1)
+                               (if (ast:equal? g0 g1) g0 (make <or> #:left g0 #:right g1)))
+                             '() others)))
+    (match expression
+      ((and ($ <not>) (= .expression expression)) expression)
+      (_ (make <not> #:expression expression)))))
 
 (define-method (simplify (o <ast>))
   o)

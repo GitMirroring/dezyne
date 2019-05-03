@@ -744,7 +744,7 @@
 (define-method (ast:declarative? (o <declarative>))
   #t)
 
-(define-method (ast:declarative? (o <statement>))
+(define-method (ast:declarative? o)
   #f)
 
 (define-method (ast:declarative? (o <compound>))
@@ -755,7 +755,7 @@
 (define-method (ast:imperative? (o <imperative>))
   #t)
 
-(define-method (ast:imperative? (o <statement>))
+(define-method (ast:imperative? o)
   #f)
 
 (define-method (ast:imperative? (o <compound>))

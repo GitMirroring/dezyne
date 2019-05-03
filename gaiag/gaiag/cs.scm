@@ -38,8 +38,6 @@
   #:use-module (gaiag dzn)
   #:use-module (gaiag goops)
   #:use-module (gaiag misc)
-  #:use-module (gaiag norm)
-  #:use-module (gaiag norm-event)
   #:use-module (gaiag normalize)
   #:use-module (gaiag om)
   #:use-module (gaiag templates)
