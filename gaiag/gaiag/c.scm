@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -88,23 +88,23 @@
         (else ((compose .name .type.name) o))))
 
 ;; bidning stuff
-(define-method (c:binding-instance (o <binding>))
+(define-method (c:binding-instance (o <end-point>))
   (if (.instance.name o) o
       '()))
 
-(define-method (c:base-or-not (o <binding>))
+(define-method (c:base-or-not (o <end-point>))
   (if (and (.instance o)
            (is-a? ((compose .type .instance) o) <foreign>)) o
       '()))
 
 
-(define-method (c:base-or-not-left (o <bind>))
+(define-method (c:base-or-not-left (o <binding>))
   (if (and ((compose .instance .left) o)
            (is-a? ((compose .type .instance .left) o) <foreign>)) (.left o)
       '()))
 
 
-(define-method (c:base-or-not-right (o <bind>))
+(define-method (c:base-or-not-right (o <binding>))
   (if (and ((compose .instance .right) o)
            (is-a? ((compose .type .instance .right) o) <foreign>)) (.right o)
       '()))
@@ -205,7 +205,7 @@
 
 
 ;; system internal connection
-(define-method (c:evaluate-internal-bind (o <bind>))
+(define-method (c:evaluate-internal-bind (o <binding>))
   (if (and
        ((compose .instance.name .left) o)
        ((compose .port.name .left) o)
@@ -240,7 +240,6 @@
         ((c:in-range lower higher 0 4294967295) "uint32_t")
         (else "uint64_t")))
 
-
 (define (c:int-resolve lower higher)
   (cond ((c:in-range lower higher -128 127) "int8_t")
         ((c:in-range lower higher -32768 32767) "int16_t")
@@ -254,8 +253,6 @@
        (>= high min)
        (<= high max)))
 
-
-
 (define-method (c:enum-name (o <ast>)) ;; enum for helper functions
   (if (is-a? (ast:type o) <enum>) "enum"
       (c:type-name o)))
@@ -264,13 +261,9 @@
   (parameterize ((language 'c)
                  (%x:header x:header)
                  (%x:source x:source)
-                 (%x:main x:main)
-                 )
+                 (%x:main x:main))
     (code:root-> root))) ;generates output files
 
 (define (ast-> ast)
   (let ((ast (code:om ast)))
-    (pretty-print (om->list ast))
-    (c:root-> ast)
-    )
-  )
+    (c:root-> ast)))

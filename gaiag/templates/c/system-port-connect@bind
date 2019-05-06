@@ -1,2 +1,0 @@
-self->#x:bind-provided  = self->#x:bind-required ;
-#x:connect-internal-ports

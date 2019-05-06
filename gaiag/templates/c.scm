@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
+;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -110,8 +111,8 @@
 (define-templates instance-declare-dzn-tracing (lambda (o) ( (compose .elements .instances) o)) newline-infix)
 (define-templates system-port-connect (lambda (o) ((compose .elements .bindings) o)))
 (define-templates connect-internal-ports c:evaluate-internal-bind)
-(define-templates bind-provided (lambda (o) (.left o)))
-(define-templates bind-required (lambda (o) (.right o)))
+(define-templates binding-provided .left)
+(define-templates binding-required .right)
 (define-templates connect-port-name-right (lambda (o) ((compose .port.name .right) o)))
 (define-templates connect-port-name-left (lambda (o) ((compose .port.name .left) o)))
 (define-templates connect-instance-name-right (lambda (o) ((compose .instance.name .right) o)))
