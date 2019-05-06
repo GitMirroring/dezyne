@@ -110,9 +110,6 @@ var dependencies = {
   execute:  ['traces', 'build'],
   run:      ['traces'],
   triangle: ['execute', 'run'],
-  table:    ['convert'],
-  view:     ['convert'],
-
 };
 
 function code_version (v) {return v.replace (/[.]/g, '_');}
@@ -146,7 +143,7 @@ function ordered_dependencies() {
       result.push(aspect);
     }
   }
-  var order = ['parse', 'verify', 'triangle', 'table', 'view'];
+  var order = ['parse', 'verify', 'triangle'];
   order.forEach(function(aspect) {
     add_dependencies(aspect);
   });
@@ -699,44 +696,6 @@ var aspects = {
     });
   }
   ,
-  table: function(parameters) {
-
-    function test_table(promise, args) {
-      var out = '"out/'+path.basename(parameters.dir)+'/table"';
-      var suffix = args[0];
-      var form = args[1];
-      var base = path.basename(parameters.dir);
-      return promise.then(function(result1) {
-        return util.spawn_sync_shell('mkdir -p ' + out)
-          .then(function(result1) {
-            var imports = imports_string (parameters.meta.imports);
-            var cmd = (form == 'dzn')
-                ? dzn()+' code -l dzn '+imports+' -o - "'+parameters.filename +'">"'+out+'/'+base+'-'+form+suffix+'-barf"'
-                : dzn()+' table '+imports+' --form='+form+' -o - "'+parameters.filename + (suffix == '.html' ? '| w3m -dump -T text/html' : '') +'">"'+out+'/'+base+'-'+form+suffix+'-barf"';
-            return util.spawn_sync_shell(cmd);
-          })
-          .then (function(result) {
-            var cmd = (suffix == '.dzn')
-                ? dzn()+' parse '+out+'/'+base+'-'+form+suffix + '-barf'
-                : 'true';
-            return util.spawn_sync_shell(cmd);
-          })
-          .then (function(result2) { return {status: result1.status || result2.status, output: result1.output + result2.output}; })
-          .fail (function(e) {
-            const comment = 'table: [SKIPPED] error='+e.message;
-            console.log(comment);
-            return {status: result1.status, output: result1.output + comment};
-          });
-      })
-    };
-
-    return [['.dzn', 'dzn'],
-            ['.dzn', 'state'],
-            ['.dzn', 'event'],
-            ['.html', 'state'],
-            ['.html', 'event']].reduce(test_table, q({status:0, output:''}));
-  }
-  ,
   traces: function(parameters) {
     var node_out = 'out/' + path.basename(parameters.dir);
     var out = '"' + node_out + '"';
@@ -803,16 +762,6 @@ var aspects = {
       .then (function(cmd) {
         return util.spawn_sync_shell(cmd);
       })
-      .fail (function(err) {console.log(err); return {status: -1, output: err}});
-  }
-  ,
-  view: function(parameters) {
-    var dir = '"out/' + path.basename(parameters.dir) + '"';
-    var out = dir + '/'+parameters.model;
-    var err = out + '.stderr';
-    var imports = imports_string (parameters.meta.imports);
-    var cmd = dzn() + ' view '+imports+' '+ '"' + parameters.filename + '"';
-    return util.spawn_sync_shell(cmd)
       .fail (function(err) {console.log(err); return {status: -1, output: err}});
   }
   ,
