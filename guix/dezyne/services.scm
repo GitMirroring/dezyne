@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
@@ -89,6 +89,7 @@
     (native-inputs `(("bison" ,bison)
                      ("fakechroot" ,fakechroot)
                      ("emacs" ,emacs)
+                     ("emacs-htmlize" ,emacs-htmlize)
                      ("flex" ,flex)
                      ("gcc" ,gcc)
                      ("gcc-lib" ,gcc "lib")
@@ -117,6 +118,13 @@
        (modify-phases %standard-phases
          (add-before 'configure 'setenv
            (lambda _
+             (let ((htmlize (and=> (find-files (string-append
+                                                (assoc-ref %build-inputs "emacs-htmlize")
+                                                "/share/emacs/site-lisp/guix.d")
+                                               "htmlize.elc")
+                                   (compose dirname car))))
+               (when htmlize
+                 (setenv "EMACSLOADPATH" (string-append htmlize ":"))))
              (setenv "GOJS" (assoc-ref %build-inputs "gojs"))
              (setenv "TCLLIBPATH"
                      (string-append (assoc-ref %build-inputs "tcllib")
