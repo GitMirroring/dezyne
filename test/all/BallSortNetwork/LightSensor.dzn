@@ -1,0 +1,90 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import lego.dzn;
+
+interface ILightSense
+{
+  in void measure();
+  in void cancel();
+  out void accept();
+  out void reject();
+  behaviour {
+    bool settling = false;
+    on cancel: settling = false;
+    [!settling] on measure: settling = !settling;
+    [settling] {
+      on measure: illegal;
+      on inevitable: { accept; settling = !settling; }
+      on inevitable: { reject; settling = !settling; }
+    }
+  }
+}
+
+component LightSensor
+{
+  provides ILightSense ctrl;
+
+  // Foreign component with asynchronous interface to illustrate system
+  // abstraction and encapsulation during Expert Workshop  
+}
+
+component LightSensor_org
+{
+  provides ILightSense ctrl;
+
+  system
+  {
+    timer pollTimer;
+    LightSense bhv;
+    light hw;
+
+    ctrl <=> bhv.ctrl;
+    bhv.timer <=> pollTimer.port;
+    bhv.sensor <=> hw.ctrl;
+  }
+}
+
+component LightSense
+{
+  provides ILightSense ctrl;
+  requires ilight sensor;
+  requires itimer timer;
+  behaviour {
+    bool settling = false;
+    [!settling] on ctrl.measure(): {
+      timer.create($100$);
+      sensor.turnon();
+      settling = !settling;
+    }
+    on ctrl.cancel(): { timer.cancel(); sensor.turnoff(); settling = false; }
+    [settling] on timer.timeout(): {
+      ilight.status st = sensor.detect();
+      sensor.turnoff();
+      if (st.accept) ctrl.accept();
+      else ctrl.reject();
+      settling = !settling;
+    }
+  } 
+}
+

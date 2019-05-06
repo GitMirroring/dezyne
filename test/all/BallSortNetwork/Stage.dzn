@@ -1,0 +1,137 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import IConstrainedMove.dzn;
+import ConstrainedAxis.dzn;
+import lego.dzn;
+
+interface IMove2D
+{
+  extern MovePosition $Integer$;
+
+  in void calibrate();
+  out void calibrated();
+  in void stop();
+
+  in void move(MovePosition x, MovePosition y);
+  out void arrived();
+
+  behaviour
+  {
+    enum State {Lost, Calibrating, Ready, Moving};
+    State s = State.Lost;
+
+    on stop: s = State.Lost;
+
+    on calibrate: [s.Lost] s = State.Calibrating;
+    on calibrate: [s.Lost] {calibrated; s = State.Ready;}
+    on calibrate: [!s.Lost] illegal;
+    on calibrate: [!s.Lost] {}
+
+    on move: [s.Ready] s = State.Moving;
+    on move: [!s.Ready] illegal;
+    on move: [!s.Ready] {}
+
+    on inevitable: [s.Calibrating] {s = State.Ready; calibrated;} 
+    on inevitable: [s.Moving] {s = State.Ready; arrived;} 
+  }
+}
+
+component Stage
+{
+  provides IMove2D ctrl;
+
+  system
+  {
+    Move2D bhv;
+    ConstrainedAxis xAxis;
+    ConstrainedAxis yAxis;
+
+    ctrl <=> bhv.ctrl;
+    bhv.xAxis <=> xAxis.ctrl;
+    bhv.yAxis <=> yAxis.ctrl;
+  }
+}
+
+component Move2D
+{
+  provides IMove2D ctrl;
+  requires IConstrainedMove xAxis;
+  requires IConstrainedMove yAxis;
+
+  behaviour
+  {
+    subint AxisCount {0..2};
+    bool isCalibrating = false;
+    AxisCount nCalibrated = 0;
+    AxisCount nMoving = 0;
+
+    void tryCalibrated() {
+      nCalibrated = nCalibrated + 1;
+      if (nCalibrated == 2) {
+        ctrl.calibrated();
+        isCalibrating = false;
+      }
+    }
+
+    void tryArrived() {
+      nMoving = nMoving - 1;
+      if (nMoving == 0) ctrl.arrived();
+    }
+
+    on ctrl.stop():
+      {
+        xAxis.stop();
+        yAxis.stop();
+        nCalibrated = 0;
+        nMoving = 0;
+        isCalibrating = false;
+      }
+
+    on ctrl.calibrate(): [nCalibrated == 0 && !isCalibrating]
+    {
+      xAxis.calibrate();
+      yAxis.calibrate();
+      nCalibrated = 0;
+      isCalibrating = true;
+    }
+    on ctrl.calibrate(): [nCalibrated != 0 || isCalibrating] {}
+    on xAxis.homed(), yAxis.homed(): if(nCalibrated < 2) tryCalibrated(); else illegal;
+    //on xAxis.homed(), yAxis.homed(): [nCalibrated == 2] illegal; // Change Request!
+    // Model verification => illegal value in assignment in case the two lines
+    // above are replaced by the following line:
+    //on xAxis.homed(), yAxis.homed(): tryCalibrated();
+    // The Axis interfaces should be taken into account in range check verification.
+
+    on ctrl.move(x, y): [nMoving == 0 && nCalibrated == 2]
+    {
+      nMoving = 2;
+      xAxis.move(x);
+      yAxis.move(y);
+    }
+    on ctrl.move(x, y): [nMoving != 0 || nCalibrated != 2] {}
+    on xAxis.arrived(), yAxis.arrived(): [nMoving > 0] tryArrived();
+    on xAxis.arrived(), yAxis.arrived(): [nMoving == 0] illegal;
+  }
+}
+
