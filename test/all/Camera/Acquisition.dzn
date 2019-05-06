@@ -1,0 +1,153 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ISensor
+{
+  in void prepare();
+  in void acquire();
+  in void cancel();
+  out void image();
+
+  behaviour
+  {
+    enum State {Idle, Ready, Acquire};
+    State state = State.Idle;
+
+    on cancel: state = State.Idle;
+
+    [state.Idle]
+    {
+      on prepare: state = State.Ready;
+      on acquire: illegal;
+    }
+    [state.Ready]
+    {
+      on prepare: illegal;
+      on acquire: state = State.Acquire;
+    }
+    [state.Acquire]
+    {
+      on prepare, acquire : illegal;
+      on inevitable: {state = State.Idle; image;}
+    }
+  }
+}
+component CMOS
+{
+  provides ISensor port;
+}
+
+interface IMemory
+{
+  in void store();
+  behaviour
+  {
+    on store:{}
+  }
+}
+component Memory
+{
+  provides IMemory port;
+}
+
+interface IAcquisition
+{
+  in void prepare();
+  in void cancel();
+  in void acquire();
+
+  out void image();
+  out void focus();
+
+  behaviour
+  {
+    enum State {Idle, Ready, Acquiring};
+    State state = State.Idle;
+
+    on prepare:
+    {
+      [state.Idle] state = State.Ready;
+      [otherwise]  illegal;
+    }
+    on acquire:
+    {
+      [state.Ready] state = State.Acquiring;
+      [otherwise] illegal;
+    }
+    on cancel:
+    {
+      state = State.Idle;
+    }
+    on inevitable:
+    {
+      [state.Acquiring] {state = State.Idle; image;}
+    }
+  }
+}
+component Acquire
+{
+  provides IAcquisition port;
+  requires IMemory memory;
+  requires ISensor sensor;
+
+  behaviour
+  {
+    enum State {Idle, Ready, Acquiring};
+    State state = State.Idle;
+
+    on port.cancel(): {state = State.Idle; sensor.cancel();}
+
+    [state.Idle]
+    {
+      on port.prepare():
+      {
+        sensor.prepare();
+        state = State.Ready;
+      }
+    }
+    [state.Ready]
+    {
+      on port.acquire(): {sensor.acquire(); state = State.Acquiring;}
+    }
+    [state.Acquiring]
+    {
+      on sensor.image():{memory.store(); port.image(); state = State.Idle;}
+    }
+  }
+}
+component Acquisition
+{
+  provides IAcquisition port;
+
+  system
+  {
+    Acquire acquire;
+    Memory memory;
+    CMOS sensor;
+
+    port <=> acquire.port;
+
+    acquire.memory <=> memory.port;
+    acquire.sensor <=> sensor.port;
+  }
+}

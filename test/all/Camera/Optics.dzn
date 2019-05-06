@@ -1,0 +1,207 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ILens
+{
+  in void forward();
+  in void backward();
+  in void stop();
+
+  out void stopped();
+
+  behaviour
+  {
+    bool moving = false;
+
+    [!moving] {
+      on forward: {moving = true;}
+      on backward: {moving = true;}
+    }
+    [moving] {
+      on forward: illegal;
+      on backward: illegal;
+      on inevitable: {moving = false; stopped;}
+    }
+    on stop: moving = false;
+  }
+}
+component Lens
+{
+  provides ILens port;
+}
+interface IFocus
+{
+  in void measure();
+  in void cancel();
+  out void maximum();
+
+  behaviour
+  {
+    bool idle = true;
+    [idle] on measure: idle = false;
+    [!idle] on measure: illegal;
+    on cancel: idle = true;
+    [!idle] on optional: {idle = true; maximum;}
+  }
+}
+interface IContrast
+{
+  enum EContrast {Sharper, Blurrier};
+  in EContrast measure();
+
+  behaviour
+  {
+    on measure: reply(EContrast.Sharper);
+    on measure: reply(EContrast.Blurrier);
+  }
+}
+component Contrast
+{
+  provides IContrast port;
+}
+
+component Focus
+{
+  provides IFocus port;
+  system {
+    FocusControl focus;
+    Contrast sensor;
+    Lens lens;
+
+    port <=> focus.port;
+    focus.lens <=> lens.port;
+    focus.sensor <=> sensor.port;
+  }
+}
+
+component FocusControl
+{
+  provides IFocus port;
+
+  requires ILens lens;
+  requires IContrast sensor;
+
+  behaviour
+  {
+    bool idle = true;
+    IContrast.EContrast contrast_was = IContrast.EContrast.Blurrier;
+    [idle] on port.measure(): {idle = false; contrast_was = sensor.measure(); lens.forward();}
+    on port.cancel(): {idle = true; lens.stop();}
+    [!idle] on lens.stopped(): {
+      IContrast.EContrast contrast_is = sensor.measure();
+      if(contrast_was.Sharper && contrast_is.Blurrier) {idle = true; port.maximum();}
+      else if(contrast_was.Sharper && contrast_is.Sharper) lens.forward();
+      else lens.backward();
+      contrast_was = contrast_is;
+    }
+  }
+}
+
+interface IShutter
+{
+  in void expose();
+  behaviour
+  {
+    on expose: {}
+  }
+}
+component Shutter
+{
+  provides IShutter port;
+}
+
+interface IOptics
+{
+  in void prepare();
+  in void capture();
+  in void cancel();
+  out void ready();
+
+  behaviour
+  {
+    enum State {Idle, Prepare, Ready};
+    State state = State.Idle;
+    on prepare:
+    {
+      [state.Idle] state = State.Prepare;
+      [otherwise]  illegal;
+    }
+    on cancel:
+    {
+      state = State.Idle;
+    }
+    on optional: [state.Prepare] {ready; state = State.Ready;}
+    on capture:
+    {
+      [state.Idle] illegal;
+      [otherwise]  state = State.Idle;
+    }
+  }
+}
+component OpticsControl
+{
+  provides IOptics port;
+
+  requires IFocus focus;
+  requires IShutter shutter;
+
+  behaviour
+  {
+    enum State {Idle, Prepare, Ready};
+    State state = State.Idle;
+    bool ready = false;
+    on port.prepare():
+    {
+      [state.Idle] {state = State.Prepare; focus.measure();}
+    }
+    on port.cancel():
+    {
+      focus.cancel();
+      state = State.Idle;
+    }
+    [state.Prepare] on focus.maximum(): {state = State.Ready; port.ready();}
+    on port.capture():
+    {
+      [state.Prepare] {state = State.Idle; focus.cancel(); shutter.expose();}
+      [state.Ready]   {state = State.Idle; shutter.expose();}
+    }
+  }
+}
+component Optics
+{
+  provides IOptics port;
+
+  system
+  {
+    OpticsControl optics;
+
+    Shutter shutter;
+    Focus focus;
+
+    port <=> optics.port;
+
+    optics.shutter <=> shutter.port;
+
+    optics.focus <=> focus.port;
+  }
+}

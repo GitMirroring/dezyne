@@ -5,4 +5,4 @@ These are the guidelines to build, compile and execute the Camera example projec
 3. Compile and Build the code files with your compiler
 4. Run the executable
 
-Tip: Store all your code files in the same folder.  
+Tip: Store all your code files in the same folder.

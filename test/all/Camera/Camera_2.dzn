@@ -1,0 +1,299 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+// camera hardware:
+//   lens: focus => ILens
+//   shutter => IShutter
+//   flash => IFlash
+//   sensor acquire image => ISensor
+//   memory: store/retrieve image => IMemory
+
+// camera software abstractions:
+//   optics: controls the optical path: lens, focus, shutter
+//   acquisition: controls the imaging path: sensor, memory
+//   driver: relays user control to optics and acquisition
+
+
+// Hardware components (Memory, CMOS, Lens, Contrast and Shutter)
+interface ILens
+{
+  in void forward();
+  in void backward();
+  in void stop();
+
+  out void stopped();
+
+  behaviour
+  {
+    bool moving = false;
+
+    [!moving] {
+      on forward: {moving = true;}
+      on backward: {moving = true;}
+    }
+    [moving] {
+      on forward: illegal;
+      on backward: illegal;
+      on inevitable: {moving = false; stopped;}
+    }
+    on stop: moving = false;
+  }
+}
+component Lens
+{
+  provides ILens port;
+}
+interface IContrast
+{
+  enum EContrast {Sharper, Blurrier};
+  in EContrast measure();
+
+  behaviour
+  {
+    on measure: reply(EContrast.Sharper);
+    on measure: reply(EContrast.Blurrier);
+  }
+}
+component Contrast // focus sensor
+{
+  provides IContrast port;
+}
+interface IShutter
+{
+  in void expose();
+  behaviour
+  {
+    on expose: {}
+  }
+}
+component Shutter
+{
+  provides IShutter port;
+}
+
+interface ISensor
+{
+  in void prepare();
+  in void acquire();
+  in void cancel();
+  out void image();
+
+  behaviour
+  {
+    enum State {Idle, Ready, Acquire};
+    State state = State.Idle;
+
+    on cancel: state = State.Idle;
+
+    [state.Idle]
+    {
+      on prepare: state = State.Ready;
+      on acquire: illegal;
+    }
+    [state.Ready]
+    {
+      on prepare: illegal;
+      on acquire: state = State.Acquire;
+    }
+    [state.Acquire]
+    {
+      on prepare, acquire : illegal;
+      on inevitable: {state = State.Idle; image;}
+    }
+  }
+}
+component CMOS
+{
+  provides ISensor port;
+}
+
+interface IMemory
+{
+  in void store();
+  behaviour
+  {
+    on store:{}
+  }
+}
+component Memory
+{
+  provides IMemory port;
+}
+
+interface IControl
+{
+  in void setup(); // focus
+  in void shoot(); // expose
+  in void release();
+
+  out void focus_lock();
+  out void image();
+
+  behaviour
+  {
+    enum State {Idle, Setup, Ready, Acquire};
+    State state = State.Idle;
+
+    [state.Idle] {
+      on setup:{ state = State.Setup; }
+      on shoot,
+      release: illegal;
+    }
+    [state.Setup] {
+      on setup: illegal;
+      on shoot: { state = State.Acquire; }
+      on release: { state = State.Idle; }
+      on optional: { state = State.Ready; focus_lock; }
+    }
+    [state.Ready] {
+      on setup: illegal;
+      on release: { state = State.Idle; }
+      on shoot: { state = State.Acquire; }
+    }
+    [state.Acquire] {
+      on setup,
+      release,
+      shoot: illegal;
+      on inevitable: { image; state = State.Idle; }
+    }
+  }
+}
+
+// Incremental green-field development of Camera Driver:
+// 0. The hardware components (Memory, CMOS, Lens, Contrast and
+//    Shutter) are given.
+// 1. Initial UX design => IControl interface
+// 2. Start with an initial component design and empty interfaces for
+//    the non-hardware components. (No behaviours yet.)
+// TODO
+// 3. Discover interfaces by wishfull thinking. How would components
+//    collaborate to fullfill functional requirements?
+//    a. acquire a focussed image;
+//    b. acquire a blurry image (serving an impatient user);
+//    c. abstain from taking an image.
+// 4. Review non-functional aspects of current design.
+// 5. Refactor current design while proving compliance with functional
+//    requirements.
+
+component Driver
+{
+  provides IControl control;
+  requires IProjection projection;
+  requires IAcquisition acquisition;
+
+  behaviour
+  {
+    on control.setup(): {}
+    on control.shoot(): {}
+    on control.release(): {}
+  }
+}
+
+interface IProjection
+{
+  in void event();
+  behaviour {on event: {}}
+}
+
+component Projection
+{
+  provides IProjection control;
+
+  system
+  {
+    Project project;
+
+    Lens lens;
+    Contrast focusSensor;
+
+    control <=> project.control;
+    project.lens <=> lens.port;
+    project.focusSensor <=> focusSensor.port;
+  }
+}
+
+component Project
+{
+  provides IProjection control;
+  requires ILens lens;
+  requires IContrast focusSensor;
+
+  behaviour
+  {
+    on control.event(): {}
+  }
+}
+
+interface IAcquisition
+{
+  in void event();
+  behaviour {on event: {}}
+}
+
+component Acquisition
+{
+  provides IAcquisition control;
+
+  system
+  {
+    Acquire acquire;
+
+    CMOS imageSensor;
+    Memory sdCard;
+    Shutter shutter;
+
+    control <=> acquire.control;
+    acquire.imageSensor <=> imageSensor.port;
+    acquire.sdCard <=> sdCard.port;
+    acquire.shutter <=> shutter.port;
+  }
+}
+
+component Acquire
+{
+  provides IAcquisition control;
+  requires ISensor imageSensor;
+  requires IMemory sdCard;
+  requires IShutter shutter;
+
+  behaviour
+  {
+    on control.event(): {}
+  }
+}
+
+component Camera
+{
+  provides IControl control;
+
+  system
+  {
+    Driver driver; // high-level coordination
+    Projection projection; // projects (focussed) image onto sensor
+    Acquisition acquisition; // extract and store image data from sensor
+
+    control <=> driver.control;
+    driver.projection <=> projection.control;
+    driver.acquisition <=> acquisition.control;
+  }
+}

@@ -1,6 +1,1 @@
-setup
-return
-Driver.control_focus
-shoot
-return
-Driver.control_image
+control.setup
