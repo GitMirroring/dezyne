@@ -1,5 +1,4 @@
-{"imports":["all/importPath/subdir","all/importPath/foo"]
+{"imports":["all/importPath/subdir","all/importPath/foo","state","step"]
 ,"skip":["code","traces"]
 ,"comment":"dedicated for import test"
 }
-
