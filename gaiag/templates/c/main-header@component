@@ -67,16 +67,16 @@ char* consume_synchronous_out_events(char* prefix, char* event, map* event_map){
 }
 
 void log_in(char* prefix, char* event, map* event_map){
-  fprintf(stderr, "%s%s\n", prefix, event);
+  fprintf(stderr, "<external>.%s%s -> sut.%s%s\n", prefix, event, prefix, event);
   if (!relaxed){
     consume_synchronous_out_events(prefix, event, event_map);
-    fprintf(stderr, "%s%s\n", prefix, "return");
+    fprintf(stderr, "<external>.%s%s <- sut.%s%s\n", prefix, "return", prefix, "return");
   }
 }
 
 void log_out(char* prefix, char* event, map* event_map){
-	(void)event_map;
-  fprintf(stderr, "%s%s\n", prefix, event);
+  (void)event_map;
+  fprintf(stderr, "<external>.%s%s <- sut.%s%s\n", prefix, event, prefix, event);
 }
 
 void log_flush(void* args){
@@ -88,14 +88,14 @@ void log_flush(void* args){
 int log_valued(char* prefix, char* event, map* event_map, int (*string_to_value)(char* string_val), char* (*value_to_string)(int int_val)){
   char* s;
   int r;
-  fprintf(stderr, "%s%s\n", prefix, event);
+  fprintf(stderr, "<external>.%s%s -> sut.\n", prefix, event, prefix, event);
 	if (relaxed) {
      return 0;
   }
   s = consume_synchronous_out_events(prefix, event, event_map);
 	r = string_to_value(drop_prefix(s, prefix));
 	if ((int)r != INT_MIN){
-		fprintf(stderr, "%s%s\n", prefix, value_to_string(r));
+		fprintf(stderr, "<external>.%s%s <- sut.\n", prefix, value_to_string(r), prefix, value_to_string(r));
 		return r;
 	}
 	fprintf(stderr,"\"%s\": is not a reply value\n", s);

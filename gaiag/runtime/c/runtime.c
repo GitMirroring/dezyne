@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2015, 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -196,7 +196,7 @@ runtime_path (dzn_meta const* m, char* p)
 }
 
 void
-runtime_trace_in (dzn_port_meta const* mt, char const* e)
+runtime_trace (dzn_port_meta const* mt, char const* e)
 {
   char pbuf[1024] = "";
   char rbuf[1024] = "";
@@ -214,9 +214,33 @@ runtime_trace_out (dzn_port_meta const* mt, char const* e)
   char rbuf[1024] = "";
   strcpy(pbuf, mt->provides.port);
   strcpy(rbuf, mt->requires.port);
-  fprintf (stderr, "%s.%s -> %s.%s\n",
-           runtime_path (mt->provides.meta, pbuf), e,
-           runtime_path (mt->requires.meta, rbuf), e);
+  fprintf (stderr, "%s.%s <- %s.%s\n",
+           runtime_path (mt->requires.meta, rbuf), e,
+           runtime_path (mt->provides.meta, pbuf), e);
+}
+
+void
+runtime_trace_qin (dzn_port_meta const* mt, char const* e)
+{
+  char pbuf[1024] = "";
+  char rbuf[1024] = "";
+  strcpy(pbuf, mt->provides.port);
+  strcpy(rbuf, mt->requires.port);
+  fprintf (stderr, "%s.%s <- %s.%s\n",
+           runtime_path (mt->requires.meta, rbuf), "<q>",
+           runtime_path (mt->provides.meta, pbuf), e);
+}
+
+void
+runtime_trace_qout (dzn_port_meta const* mt, char const* e)
+{
+  char pbuf[1024] = "";
+  char rbuf[1024] = "";
+  strcpy(pbuf, mt->provides.port);
+  strcpy(rbuf, mt->requires.port);
+  fprintf (stderr, "%s.%s <- %s.%s\n",
+           runtime_path (mt->requires.meta, rbuf), e,
+           runtime_path (mt->provides.meta, pbuf), "<q>");
 }
 
 char*

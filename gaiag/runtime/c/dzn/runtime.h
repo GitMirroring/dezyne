@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
@@ -71,8 +71,10 @@ bool string_to__bool (char *s);
 char* _int_to_string (int i);
 int string_to__int (char *s);
 char* runtime_path (dzn_meta const* m, char* p);
-void runtime_trace_in (dzn_port_meta const* mt, char const* e);
+void runtime_trace (dzn_port_meta const* mt, char const* e);
 void runtime_trace_out (dzn_port_meta const* mt, char const* e);
+void runtime_trace_qin (dzn_port_meta const* mt, char const* e);
+void runtime_trace_qout (dzn_port_meta const* mt, char const* e);
 #endif /* !DZN_TRACING */
 
 #endif /* DZN_RUNTIME_H */

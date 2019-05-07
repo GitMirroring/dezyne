@@ -10,7 +10,7 @@
   m->#.name ->meta.provides.port = "#.name ";
   m->#.name ->meta.provides.meta = &comp->meta;
   if (global_flush_p) {
-     comp->meta.name = "<internal>";
+     comp->meta.name = "<external>";
   }
   ##endif /* DZN_TRACING */
   map_put(e, "#.name .<flush>", c);
