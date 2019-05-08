@@ -80,6 +80,8 @@
             c++:enum-field->string
             c++:implemented-port-name
             c++:model
+            c++:model-glue
+            c++:header-model-glue
             c++:name
             c++:optional-type
             c++:string->enum
