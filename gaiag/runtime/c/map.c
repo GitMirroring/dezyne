@@ -3,7 +3,6 @@
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2015, 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2018 Filip Toman <filip.toman@verum.com>
 //
 // This file is part of Dezyne.
 //

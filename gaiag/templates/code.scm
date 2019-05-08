@@ -4,7 +4,6 @@
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.

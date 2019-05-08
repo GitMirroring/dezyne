@@ -4,7 +4,6 @@
 ;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;; Copyright © 2016, 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
-;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
 ;; Gaiag is free software: you can redistribute it and/or modify
