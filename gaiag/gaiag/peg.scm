@@ -34,10 +34,10 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
+  #:use-module (gaiag display)
   #:use-module (gaiag ast)
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
-  #:use-module (gaiag util)
   #:export (parse-tree->ast))
 
 (define (ast-> o)

@@ -32,10 +32,10 @@
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
 
+  #:use-module (gaiag misc)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag util)
-  #:use-module (gaiag misc)
+  #:use-module (gaiag display)
 
   #:export (parse->om))
 

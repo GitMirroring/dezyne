@@ -27,17 +27,16 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (gaiag misc)
-  #:use-module (gaiag deprecated om)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag util)
   #:use-module (gaiag config)
 
   #:use-module (gaiag ast)
   #:use-module (gaiag command-line)
   #:use-module (gaiag dzn)
   #:use-module (gaiag code)
+  #:use-module (gaiag glue)
   #:use-module (gaiag c++)
   #:use-module (gaiag templates)
   #:export (ast->))
@@ -45,6 +44,7 @@
 (define-templates-macro define-templates c++)
 (include "../templates/dzn.scm")
 (include "../templates/code.scm")
+(include "../templates/glue.scm")
 (include "../templates/c++.scm")
 
 (define (c++-msvc11:root-> root)

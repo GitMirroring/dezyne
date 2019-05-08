@@ -33,7 +33,6 @@
   #:use-module (gaiag config)
   #:use-module (gaiag command-line)
   #:use-module (gaiag dzn)
-  #:use-module (gaiag deprecated om)
   #:use-module (gaiag templates)
 
   #:export (

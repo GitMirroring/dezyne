@@ -44,8 +44,6 @@
   #:use-module (gaiag commands verify)
   #:use-module (gaiag config)
   #:use-module (gaiag goops)
-  #:use-module (gaiag deprecated om)
-  #:use-module (gaiag util)
   #:use-module (gaiag makreel)
   #:use-module (gaiag misc)
   #:use-module (scmcrl2 traces)
@@ -58,6 +56,10 @@
             x:interface-init
             x:component-init))
 
+(define* ((om:scope-name #:optional (infix '_)) o)
+  (let ((infix (if (symbol? infix) infix
+                   (string->symbol infix))))
+    ((->symbol-join infix) (ast:full-name o))))
 
 (define (x:interface-init o) (format #f "init ~ainterface;" (apply string-append (map symbol->string (ast:full-name o)))))
 (define (x:provides-init o) "init provides;\n")
@@ -83,8 +85,8 @@
 
 (define (deterministic-labels component)
   (define (compose-triggers channel dir triggers)
-    (map (lambda (t) (string-append (symbol->string (.port.name t)) channel "(" (symbol->string ((compose (om:scope-name (string->symbol "")) .type.name .port) t)) "action" "("
-                                    (symbol->string ((compose (om:scope-name (string->symbol "")) .type.name .port) t)) dir (symbol->string (.event.name t)) ")" ")")) triggers))
+    (map (lambda (t) (string-append (symbol->string (.port.name t)) channel "(" (symbol->string ((compose (om:scope-name (string->symbol "")) .type .port) t)) "action" "("
+                                    (symbol->string ((compose (om:scope-name (string->symbol "")) .type .port) t)) dir (symbol->string (.event.name t)) ")" ")")) triggers))
   (string-join (append (compose-triggers "in" "in'" (ast:provided-in-triggers component))
                        (compose-triggers "qout" "out'" (append (ast:async-out-triggers component) (ast:required-out-triggers component)))) ","))
 

@@ -37,7 +37,6 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
-  #:use-module (gaiag util)
 
   #:export (define-templates-base
              define-templates-macro

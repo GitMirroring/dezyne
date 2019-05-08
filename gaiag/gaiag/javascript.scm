@@ -32,18 +32,16 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag util)
   #:use-module (gaiag config)
 
   #:use-module (gaiag ast)
-  #:use-module (gaiag deprecated om)
   #:use-module (gaiag dzn)
   #:use-module (gaiag code)
   #:use-module (gaiag templates))
 
 (define (javascript:namespace-setup o)
   (->string
-   (let loop ((todo (cons 'dzn (om:scope o))) (namespace '()))
+   (let loop ((todo (cons 'dzn (ast:scope o))) (namespace '()))
      (if (null? todo) '()
          (let* ((namespace (append namespace (list (car todo))))
                 (x ((->join ".") namespace)))

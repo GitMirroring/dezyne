@@ -34,8 +34,6 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
-  #:use-module (gaiag om)
-  #:use-module (gaiag util)
   #:use-module (gaiag commands parse)
   #:use-module (gaiag commands verify)
   #:use-module (gaiag makreel)

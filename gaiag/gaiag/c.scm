@@ -39,12 +39,7 @@
   #:use-module (gaiag dzn)
   #:use-module (gaiag goops)
   #:use-module (gaiag misc)
-  #:use-module (gaiag templates)
-  #:use-module (gaiag util)
-  #:use-module (gaiag deprecated om)
-
-)
-
+  #:use-module (gaiag templates))
 
 (define-templates-macro define-templates c)
 (include "../templates/dzn.scm")

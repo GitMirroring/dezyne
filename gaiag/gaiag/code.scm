@@ -23,7 +23,6 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 receive)
 
@@ -36,33 +35,25 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag om)
   #:use-module (gaiag shell-util)
-  #:use-module (gaiag util)
   #:use-module (gaiag config)
 
   #:use-module (gaiag ast)
-  #:use-module (gaiag deprecated om)
-  #:use-module (gaiag compare)
   #:use-module (gaiag dzn)
   #:use-module (gaiag normalize)
   #:use-module (gaiag parse)
   #:use-module (gaiag templates)
 
 
-  #:export (.asd-channel
-            .asd-event
-            asd-interfaces
-            map-file
-            injected-bindings
+  #:export (injected-bindings
             injected-instances
             non-injected-instances
             injected-instance-name
 
+            code:header?
             code:language
             code:instance-name
             code:skel-file
-            event2->interface1-event1-alist
 
             code:add-calling-context
             code:add-calling-context-formal
@@ -75,9 +66,11 @@
             code:expression
             code:trigger
             code:injected-instances
+            code:instance*
             code:non-injected-bindings
             code:injected-instances-system
             code:ons
+            code:port-release
             code:functions
             code:port-name
             code:instance-port-name
@@ -139,36 +132,19 @@
             code:set-state-argument
             code:trigger
             code:type-name
+            code:upcase-model-name
             code:variable-name
             code:variable->argument
             code:x-header-
             code:root->
-            <glue-event>
+
+            om:port-bind?
             %x:header
             %x:main
-            %x:glue-bottom-header
-            %x:glue-bottom-source
-            %x:glue-top-header
-            %x:glue-top-source
             ))
-
-(define-ast <glue-event> (<event>)
-  (asd-channel)
-  (asd-event))
-
-(define-ast <glue-system> (<system>)
-  (asd-in #:init-form (list))
-  (asd-out #:init-form (list)))
-
-
 
 (define %x:header (make-parameter #f))
 (define %x:main (make-parameter #f))
-
-(define %x:glue-bottom-header (make-parameter #f))
-(define %x:glue-bottom-source (make-parameter #f))
-(define %x:glue-top-header (make-parameter #f))
-(define %x:glue-top-source (make-parameter #f))
 
 (define (ast-> ast)
   (let ((root (code:om ast)))
@@ -176,21 +152,16 @@
   "")
 
 (define (code:root-> root)
-;;  (pretty-print (om->list root))
-  (code:file2file root)
+  (code:dump root)
+  (code:dump-main root))
+
+(define-method (code:dump-main (root <root>))
   (let ((main (command-line:get 'model #f)))
     (when main
       (let* ((main-name (map string->symbol (string-split main #\.)))
              (main-model (ast:lookup root (make <scope.name> #:scope (drop-right main-name 1) #:name (last main-name)))))
         ;; FIXME: error if not found?
         (and=> main-model code:dump-main)))))
-
-(define (code:file2file root)
-  (code:dump root)
-  (when (dzn:glue)
-    ;;(for-each code:dump (filter (is? <foreign>) (ast:model* root)))
-    (for-each code:dump-glue (filter (conjoin (is? <system>) (negate ast:imported?)) (ast:model* root)))))
-
 
 (define (code:component-include o)
  (filter (disjoin
@@ -203,6 +174,43 @@
   (string->symbol (command-line:get 'language "c++")))
 
 ;;; ast accessors
+(define-method (code:instance* (o <system>))
+  (ast:instance* o))
+(define-method (code:instance* o)
+  '())
+
+(define (om:port-bind? bind)
+  (and (om:port-binding? bind)
+       bind))
+
+(define (om:port-binding? bind)
+  (or (and (not (.instance.name (.left bind)))
+           (.left bind))
+      (and (not (.instance.name (.right bind)))
+           (.right bind))))
+
+(define (om:port-bind system port)
+  (find (lambda (bind) (and=> (om:port-bind? bind)
+                              (lambda (b)
+				(ast:equal? (.port (om:port-binding? b)) port))))
+        (ast:binding* system)))
+
+(define (om:bind system o)
+  (let* ((binds (ast:binding* system)))
+    (match o
+      ((? symbol?) ;; FIXME: port need not be unique
+       (error "obsolete code")
+       (find (lambda (bind) (or (ast:equal? (.port.name (.left bind)) o)
+                                (ast:equal? (.port.name (.right bind)) o)))
+           binds))
+      ((and ($ <end-point>) (= .instance.name instance-name) (= .port.name port-name))
+       (find (lambda (bind)
+               (or (and (eq? (.instance.name (.left bind)) instance-name)
+                                     (eq? (.port.name (.left bind)) port-name))
+                                (and (eq? (.instance.name (.right bind)) instance-name)
+                                     (eq? (.port.name (.right bind)) port-name))))
+             binds)))))
+
 (define (injected-binding? binding)
   (or (eq? '* (.port.name (.left binding)))
       (eq? '* (.port.name (.right binding)))))
@@ -234,9 +242,7 @@
         "_local")))
 
 (define-method (code:class-member? (o <variable>))
-  (let ((p (.parent o)))
-    (and (is-a? p <variables>)
-         (is-a? (.parent p) <behaviour>))))
+  (dzn:class-member? o))
 
 (define-method (code:port-type (o <trigger>))
   ((compose code:port-type .port) o))
@@ -264,7 +270,19 @@
     scope))
 
 (define-method (code:scope+name o) ;; REMOVEME
-  (om:scope+name o))
+  (match o
+    (($ <bool>) '(bool))
+    (($ <void>) '(void))
+    (($ <event>) ((compose code:scope+name .signature) o))
+    (($ <formal>) ((compose code:scope+name .type.name) o))
+    (($ <instance>) (code:scope+name (.type.name o)))
+    (($ <enum-literal>) (append (code:scope+name (.type o)) (list (.field o))))
+    (($ <port>) (code:scope+name (.type.name o)))
+    (($ <scope.name>) (append (.scope o) (list (.name o))))
+    (($ <signature>) ((compose code:scope+name .type.name) o))
+    (($ <trigger>) ((compose code:scope+name .event) o))
+    ((? (is? <named>)) ((compose code:scope+name .name) o))
+    ))
 
 (define-method (code:scope+name (o <root>))
   (code:file-name o))
@@ -313,7 +331,7 @@
 
 (define-method (code:port-name (o <instance>))
   (let ((component (.type o)))
-    (.name (car (ast:provided component)))))
+    (.name (car (ast:provides-port* component)))))
 
 (define-method (code:port-name (o <binding>))
   (let* ((model (parent o <model>))
@@ -349,9 +367,6 @@
 (define-method (code:function-type (o <type>))
   o)
 
-(define-method (code:function-type (o <glue-event>))
-  ((compose code:function-type .signature) o))
-
 (define-method (code:function-type (o <trigger>))
   ((compose code:function-type .signature .event) o))
 
@@ -363,7 +378,7 @@
 
 
 (define-method (code:functions (o <component>))
-  (om:functions o))
+  (ast:function* o))
 
 (define-method (code:ons (o <component>))
   (let ((behaviour (.behaviour o)))
@@ -412,7 +427,7 @@
   (map .name (code:formals o)))
 
 (define-method (code:out-argument (o <trigger>))
-  (filter om:out-or-inout? (code:formals o)))
+  (filter (disjoin ast:out? ast:inout?) (code:formals o)))
 
 (define-method (code:parameters (o <event>))
   (let ((parameters (map .name (ast:formal* o)))
@@ -579,7 +594,7 @@
 
 (define-method (code:variable-name (o <formal>))
   (cond ((memq (language) '(c++ c++03 c++-msvc11)) o) ; MORTAL SIN HERE!!?
-        ((om:out-or-inout? o) (make <out-formal> #:name (.name o) #:type.name (.type.name o)))
+        (((disjoin ast:out? ast:inout?) o) (make <out-formal> #:name (.name o) #:type.name (.type.name o)))
         (else o)))
 
 (define-method (code:variable-name (o <ast>))
@@ -589,7 +604,6 @@
   (code:type-name (.type o)))
 
 (define-method (code:type-name (o <enum>))
-  ;;(append (code:fullscope o) (.scope (.name o)) (list (.name (.name o))))
   (ast:full-name o))
 
 (define-method (code:type-name (o <binding>))
@@ -634,12 +648,12 @@
 
 (define-method (code:main-out-arg-define-formal (o <formal>)) ;; MORTAL SIN HERE!!?
   (let ((type ((compose .value .type) o)))
-    (if (not (om:out-or-inout? o)) ""
+    (if (not ((disjoin ast:out? ast:inout?) o)) ""
         (if (equal? type 'int) o
             "/*FIXME*/"))))
 
 (define-method (code:main-event-map-match-return (o <trigger>))
-  (if (om:in? (.event o)) o ""))
+  (if (ast:in? (.event o)) o ""))
 
 (define-method (code:scope-type-name o)
   ((compose .name code:scope.name) o))
@@ -691,7 +705,7 @@
           (else o))))
 
 (define-method (code:trace-q-out o) ;; MORTAL SIN HERE
-  (if ((compose om:out? .event) o) o
+  (if ((compose ast:out? .event) o) o
       ""))
 
 ;; main
@@ -714,6 +728,9 @@
          (non-interface-models (filter (negate (is? <interface>)) objects)))
     (pair? non-interface-models)))
 
+(define (code:glue)
+  (and=> (command-line:get 'glue #f) string->symbol))
+
 (define-method (code:dump (o <root>))
   (let* ((dir (command-line:get 'output "."))
          (stdout? (equal? dir "-"))
@@ -722,7 +739,7 @@
          (foreign-conflict? (find (lambda (o) (and (is-a? o <foreign>)
                                                    (not (ast:imported? o))
                                                    (equal? base (code:file-name o)))) (ast:model* o))))
-    (when (and (not (dzn:glue)) foreign-conflict?)
+    (when (and (not (code:glue)) foreign-conflict?)
       (stderr "cowardly refusing to clobber file with basename: ~a\n" base)
       (exit 0))
     (when (code:header?)
@@ -743,20 +760,7 @@
                   (dzn:indent (cut (%x:source) o)))))))))
 
 (define-method (code:dump (o <foreign>))
-  (let* ((dir (command-line:get 'output "."))
-         (stdout? (equal? dir "-"))
-         (dir (string-append dir "/" (dzn:dir o)))
-         (name (symbol->string ((om:scope-name) o)))
-         (skel-name (symbol->string (code:skel-file o)))
-         (iext (symbol->string (dzn:extension (make <interface>))))
-         (cext (symbol->string (dzn:extension (make <component>)))))
-    (when (map-file o)
-      (if stdout?
-          (begin (when (code:header?) ((%x:glue-bottom-header) o))
-                 ((%x:glue-bottom-source) o))
-          (begin (when (code:header?)
-                   (with-output-to-file (string-append dir name iext) (cut (%x:glue-bottom-header) o)))
-                 (with-output-to-file (string-append dir name cext) (cut (%x:glue-bottom-source) o)))))))
+  #f)
 
 (define-method (code:dump-main (o <interface>))
   #f)
@@ -770,17 +774,6 @@
          (file-name (string-append dir base ext)))
    (if stdout? ((dzn:indent (cut (%x:main) o)))
        (with-output-to-file file-name (dzn:indent (cut (%x:main) o))))))
-
-(define-method (code:dump-glue (o <system>))
-  (let* ((dir (command-line:get 'output "."))
-         (stdout? (equal? dir "-"))
-         (dir (string-append dir "/" (dzn:dir o)))
-         (name (symbol->string (om:name o))))
-    (if stdout?
-        (begin ((%x:glue-top-header) o)
-               ((%x:glue-top-source) o))
-        (begin (with-output-to-file (string-append dir name "Component.h") (cut (%x:glue-top-header) o))
-               (with-output-to-file (string-append dir name "Component.cpp") (cut (%x:glue-top-source) o))))))
 
 (define-method (code:file-name (o <port>))
   (code:file-name (.type o)))
@@ -830,58 +823,6 @@
 (define (code:skel-file model)
   ((->symbol-join '_) (append (drop-right (code:scope+name model) 1) '(skel) (take-right (code:scope+name model) 1))))
 
-;;  glue
-
-(define (event2->interface1-event1-alist- string)
-  (and-let* ((string string)
-             (lst (string-split string #\newline))
-             (lst (filter (lambda (x) (not (string-prefix? "//" x))) lst))
-             (lst (map (lambda (o) (map string->symbol (string-tokenize o char-set:graphic))) lst))
-             (lst (filter pair? lst)))
-            (fold (lambda (e r) (acons (third e) (take e 2) r)) '() lst)))
-
-(define (event2->interface1-event1-alist port-or-model)
-  (event2->interface1-event1-alist-
-   ((compose gulp-file map-file) port-or-model)))
-
-(define* ((asd-interfaces #:optional (dir? identity)) model)
-  (let* ((interfaces
-          (filter dir? (ast:event* model)))
-         (alist (event2->interface1-event1-alist model))
-         (interfaces (filter-map (lambda (x) (assoc (.name x) alist)) interfaces)))
-    (if (pair? interfaces) interfaces '())))
-
-(define (map-file o)
-  (let* ((files (command-line:get '() '()))
-         (map-files (filter (cut string-suffix? ".map" <>) files))
-         (map-file-name (map-file-name o)))
-    (and map-file-name
-        (let* ((map-file-name (string-append (symbol->string map-file-name) ".map"))
-               (map-files (if (pair? map-files) map-files (list map-file-name))))
-          (and=> (find (lambda (f) (equal? (basename f) map-file-name)) map-files)
-                 try-find-file)))))
-
-(define (map-file-name o)
-  (match o
-    ((or ($ <foreign>) ($ <component>) ($ <system>)) (and=> (om:port o) map-file-name))
-    ((or ($ <interface>) ($ <port>)) ((om:scope-name) o)))) ;; dzn::IConsole ==> dzn_IConsole.map
-
-(define (string->mapping string)
-  (and-let* ((string string)
-             (lst (string-split string #\newline))
-             (lst (filter (lambda (x) (not (string-prefix? "//" x))) lst))
-             (lst (map (lambda (o) (map string->symbol (string-tokenize o char-set:graphic))) lst))
-             (lst (filter pair? lst)))
-    lst))
-
-(define (mapping->channel mapping)
-  (let loop ((lst mapping))
-    (if (null? lst) '()
-        (let ((channel (caar lst)))
-          (receive (same rest)
-              (partition (lambda (m) (eq? (car m) channel)) lst)
-            (append (list (cons (caar same) (map cdr same))) (loop rest)))))))
-
 (define-method (code:pump? (o <root>))
   (filter (conjoin (negate ast:imported?) (is? <component>) (compose pair? ast:req-events)) (ast:model* o)))
 
@@ -895,3 +836,11 @@
 
 (define-method (code:model (o <root>))
   (dzn:model o))
+
+(define-method (code:upcase-model-name o)
+  (map symbol-upcase (ast:full-name (parent o <model>))))
+
+(define-method (code:port-release o)
+  (if (null? (tree-collect (disjoin (is? <blocking>) (is? <blocking-compound>))
+                           (parent o <model>))) '()
+      o))

@@ -32,13 +32,12 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag util)
   #:use-module (gaiag config)
 
   #:use-module (gaiag ast)
-  #:use-module (gaiag deprecated om)
   #:use-module (gaiag dzn)
   #:use-module (gaiag code)
+  #:use-module (gaiag glue)
   #:use-module (gaiag c++)
   #:use-module (gaiag templates)
   #:export (
@@ -82,6 +81,7 @@
 (include "../templates/dzn.scm")
 (include "../templates/code.scm")
 (include "../templates/c++.scm")
+(include "../templates/glue.scm")
 (include "../templates/c++03.scm")
 
 (define (c++03:root-> root)
@@ -91,7 +91,10 @@
                  (%x:glue-top-header x:glue-top-header)
                  (%x:glue-top-source x:glue-top-source)
                  (%x:main x:main))
-    (code:root-> root)))
+    (c++:dump root)
+    (code:dump-main root)
+    (when (code:glue)
+      (for-each c++:dump-glue (filter (conjoin (is? <system>) (negate ast:imported?)) (ast:model* root))))))
 
 (define (ast-> ast)
   (let ((root (code:om ast)))

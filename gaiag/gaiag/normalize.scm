@@ -38,11 +38,9 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag util)
+  #:use-module (gaiag display)
 
   #:use-module (gaiag ast)
-  #:use-module (gaiag om)
-  #:use-module (gaiag dzn)
 
   #:export (root->
             triples:state-traversal
@@ -427,7 +425,7 @@
     (($ <guard>) (clone o #:statement (add-reply-port (.statement o) port block?)))
     (($ <compound>) (clone o #:elements (map (cut add-reply-port <> port block?) (ast:statement* o))))
     (($ <behaviour>) (clone o #:statement (add-reply-port (.statement o) port block?)))
-    (($ <component>) (clone o #:behaviour (add-reply-port (.behaviour o) (if (= 1 (length (ast:provided o))) (car (ast:provided o)) #f) block?)))
+    (($ <component>) (clone o #:behaviour (add-reply-port (.behaviour o) (if (= 1 (length (ast:provides-port* o))) (car (ast:provides-port* o)) #f) block?)))
     (($ <system>) o)
     (($ <foreign>) o)
     (($ <interface>) o)

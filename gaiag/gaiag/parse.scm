@@ -31,7 +31,6 @@
   #:use-module (system base language)
   #:use-module (gash job)
   #:use-module (gash pipe)
-  #:use-module (gaiag util)
 
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
@@ -41,7 +40,6 @@
   #:use-module (gaiag peg)
   #:use-module (gaiag om)
   #:use-module (gaiag wfc)
-
 
   #:export (%include-path parse-file try-find-file))
 

@@ -24,8 +24,7 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag util)
-  #:export (display-slots))
+  #:export (display-slots om->list))
 
 ;; AST printing
 (define (ast port) (display #\* port))
@@ -71,3 +70,12 @@
   (ast port)
   (if (.node o) (display-slots (.node o) port))
   (display #\) port))
+
+(define (om->list om)
+  (catch #t
+    (lambda ()
+      (with-input-from-string
+          (with-output-to-string (lambda () (write om)))
+        read))
+    (lambda (key . args)
+      (apply throw (cons key args)))))

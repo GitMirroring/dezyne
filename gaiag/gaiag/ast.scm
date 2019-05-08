@@ -35,15 +35,10 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (gaiag goops)
-  #:use-module (gaiag om)
-  #:use-module (gaiag deprecated om)
-  #:use-module (gaiag compare)
-  #:use-module (gaiag util)
-
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (gaiag goops)
   #:use-module (gaiag parse)
 
   #:export (
@@ -62,9 +57,11 @@
            ast:full-name
            ast:get-model
            ast:id-path
-           ast:in?
-           ast:inout?
+           ast:in-event*
            ast:in-triggers
+           ast:in?
+           ast:injected-port*
+           ast:inout?
            ast:imperative?
            ast:imported?
            ast:literal-false?
@@ -75,14 +72,16 @@
            ast:other-direction
            ast:other-end-point
            ast:out?
+           ast:out-event*
            ast:out-triggers
            ast:out-triggers-in-events
            ast:out-triggers-out-events
-           ast:provided
+           ast:provides-port
+           ast:provides-port*
            ast:provided-in-triggers
            ast:provided-out-triggers
            ast:req-events
-           ast:required
+           ast:requires-port*
            ast:required+async
            ast:required-in-triggers
            ast:required-out-triggers
@@ -126,6 +125,7 @@
            ast:type*
            ast:variable*
 	   ast:void?
+           topological-sort
 
            .event
            .event.direction
@@ -180,7 +180,7 @@
 (define-method (ast:binding* (o <system>)) ((compose ast:binding* .bindings) o))
 (define-method (ast:event* (o <interface>)) ((compose ast:event* .events) o))
 (define-method (ast:event* (o <port>)) ((compose ast:event* .type) o))
-(define-method (ast:function* (o <behaviour>)) ((compose ast:function* .functions) o))
+(define-method (ast:function* (o <component>)) ((compose ast:function* .behaviour) o))
 (define-method (ast:field* (o <enum>)) ((compose ast:field* .fields) o))
 (define-method (ast:formal* (o <event>)) ((compose ast:formal* .signature) o))
 (define-method (ast:formal* (o <function>)) ((compose ast:formal* .signature) o))
@@ -203,6 +203,9 @@
 
 (define-method (ast:async? (o <trigger>)) (parent (.port o) <behaviour>))
 (define-method (ast:async-port* (o <component-model>)) ((compose ast:port* .behaviour) o))
+(define-method (ast:provides-port o)
+  (let ((ports (ast:provides-port* o)))
+    (and (pair? ports) (car ports))))
 
 (define-method (ast:dzn-scope? (o <model>))
   (let ((scope ((compose .scope .name) o)))
@@ -240,17 +243,20 @@
 (define-method (ast:other-direction (o <trigger>))
   ((compose ast:other-direction .event) o))
 
-(define-method (ast:provided (o <port>))
-  (ast:provided (parent o <component-model>)))
+(define-method (ast:injected-port* (o <component-model>))
+  (filter ast:injected? (ast:port* o)))
 
-(define-method (ast:provided (o <component-model>))
+(define-method (ast:provides-port* (o <port>))
+  (ast:provides-port* (parent o <component-model>)))
+
+(define-method (ast:provides-port* (o <component-model>))
   (filter ast:provides? (ast:port* o)))
 
-(define-method (ast:required (o <component-model>))
+(define-method (ast:requires-port* (o <component-model>))
   (filter ast:requires? (ast:port* o)))
 
 (define-method (ast:required+async (o <component-model>))
-  (append (ast:required o) (ast:async-port* o)))
+  (append (ast:requires-port* o) (ast:async-port* o)))
 
 (define-method (ast:direction (o <trigger>))
   (.direction (.event o)))
@@ -262,18 +268,24 @@
 (define-method (trigger-in-component (t <trigger>) (c <component-model>))
   (clone t #:parent c))
 
+(define-method (ast:in-event* o)
+  (filter ast:in? (ast:event* o)))
+
+(define-method (ast:out-event* o)
+  (filter ast:out? (ast:event* o)))
+
 (define-method (ast:provided-in-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
-                          (filter om:in? (ast:event* (.type port)))))
+                          (filter ast:in? (ast:event* (.type port)))))
                    (filter ast:provides? (ast:port* o)))))
 
 (define-method (ast:req-events (o <component>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
-                          (filter (conjoin om:in? (compose (cut eq? 'req <>) .name)) (ast:event* (.type port)))))
+                          (filter (conjoin ast:in? (compose (cut eq? 'req <>) .name)) (ast:event* (.type port)))))
                    (if (.behaviour o) (ast:port* (.behaviour o))
                        '()))))
 
@@ -281,7 +293,7 @@
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
-                          (filter (conjoin om:in? (compose (cut eq? 'clr <>) .name)) (ast:event* (.type port)))))
+                          (filter (conjoin ast:in? (compose (cut eq? 'clr <>) .name)) (ast:event* (.type port)))))
                    (if (.behaviour o) (ast:port* (.behaviour o))
                        '()))))
 
@@ -289,7 +301,7 @@
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
-                          (filter om:out? (ast:event* (.type port)))))
+                          (filter ast:out? (ast:event* (.type port)))))
                    (filter ast:requires? (ast:port* o)))))
 
 (define-method (ast:async-out-triggers (o <foreign>))
@@ -302,7 +314,7 @@
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
-                          (filter om:out? (ast:event* (.type port)))))
+                          (filter ast:out? (ast:event* (.type port)))))
                    (if (.behaviour o) (ast:port* (.behaviour o))
                        '()))))
 
@@ -359,14 +371,14 @@
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
-                          (filter om:out? (ast:event* (.type port)))))
+                          (filter ast:out? (ast:event* (.type port)))))
                    (filter ast:provides? (ast:port* o)))))
 
 (define-method (ast:required-in-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
-                          (filter om:in? (ast:event* (.type port)))))
+                          (filter ast:in? (ast:event* (.type port)))))
                    (filter ast:requires? (ast:port* o) ))))
 
 (define-method (ast:out-triggers (o <component-model>))
@@ -383,13 +395,13 @@
    (ast:in-triggers o)))
 
 (define-method (trigger-in-event? (o <trigger>))
-  ((compose om:in? .event) o))
+  ((compose ast:in? .event) o))
 
 (define-method (ast:out-triggers-in-events (o <component-model>))
-  (filter (compose om:in? .event) (ast:out-triggers o)))
+  (filter (compose ast:in? .event) (ast:out-triggers o)))
 
 (define-method (ast:out-triggers-out-events (o <component-model>))
-  (filter (compose om:out? .event) (ast:out-triggers o)))
+  (filter (compose ast:out? .event) (ast:out-triggers o)))
 
 (define-method (ast:out-triggers-void-in-events (o <component-model>))
   (filter
@@ -863,11 +875,6 @@
 (define-method (ast:declaration* (o <enum>))
   (ast:field* o))
 
-(define-method (contains? container (o <ast>))
-  (and (is-a? container <ast>)
-       (or (eq? container o)
-           (any (lambda (e) (contains? e o)) (om:children container)))))
-
 (define-method (.port (model <component-model>) (o <trigger>))
   (and (.port.name o) (ast:lookup o (.port.name o))))
 
@@ -1003,6 +1010,58 @@
 
 (define-method (.type (o <variable>))
   (ast:lookup o (.type.name o)))
+
+(define (topological-sort lst)
+
+  (define (key x) ((compose .name .name) x))
+  (define (sort dag)
+    (if (null? dag)
+        '()
+        (let* ((adj-table (make-hash-table))
+               (foo (for-each (lambda (def) (hashq-set! adj-table (key (car def)) (cdr def))) dag))
+               (sorted '()))
+
+          (define (visit node children)
+            (if (eq? 'visited (hashq-ref adj-table (key node))) (error "double visit")
+                (begin
+                  (hashq-set! adj-table (key node) 'visited)
+                  ;; Visit unvisited nodes which node connects to
+                  (for-each (lambda (child)
+                              (let ((val (hashq-ref adj-table (key child))))
+                                ;;(stderr "val1: ~a ~a\n" (.name child) val)
+                                (if (not (eq? val 'visited))
+                                    (visit child (or val '())))))
+                            children)
+                  ;; Since all nodes downstream node are visited
+                  ;; by now, we can safely put node on the output list
+                  (set! sorted (cons node sorted)))))
+
+
+          ;; Visit nodes
+          (visit (caar dag) (cdar dag))
+          (for-each (lambda (def)
+                      (let ((val (hashq-ref adj-table (key (car def)))))
+                        ;;(stderr "val2: ~a ~a\n" (.name (car def)) val)
+                        (if (not (eq? val 'visited))
+                            (visit (car def) (cdr def)))))
+                    (cdr dag))
+          sorted)))
+
+  (receive (systems other) (partition (is? <system>) lst)
+    (append
+     (stable-sort other
+                  (lambda (a b)
+                    (or (and (is-a? a <data>)
+                             (or (is-a? b <interface>)
+                                 (is-a? b <component>)
+                                 (is-a? b <foreign>)))
+                        (and (is-a? a <interface>)
+                             (or (is-a? b <component>)
+                                 (is-a? b <foreign>))))))
+     (reverse (sort (map (lambda (o) (cons o
+                                           (filter (is? <system>)
+                                                   (map .type (ast:instance* o)))))
+                         systems))))))
 
 (define (ast-> ast)
   ((compose

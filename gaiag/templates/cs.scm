@@ -27,9 +27,9 @@
 (define-templates port-declaration ast:port*)
 (define-templates async-port-declare ast:async-port*)
 (define-templates async-port-init ast:async-port*)
-(define-templates provided-port-init ast:provided)
-(define-templates required-port-init (compose (cut filter (negate .injected) <>) ast:required))
-(define-templates required-port-meta ast:required newline-comma-infix)
+(define-templates provided-port-init ast:provides-port*)
+(define-templates required-port-init (compose (cut filter (negate .injected) <>) ast:requires-port*))
+(define-templates required-port-meta ast:requires-port* newline-comma-infix)
 (define-templates port-check-bindings ast:port* newline-comma-infix)
 (define-templates method code:ons)
 (define-templates function code:functions)
@@ -49,8 +49,8 @@
 
 (define-templates on-trigger (compose car .elements .triggers))
 (define-templates statement cs:statement)
-(define-templates check-in-binding (lambda (o) (filter om:in? (om:events o))))
-(define-templates check-out-binding (lambda (o) (filter om:out? (om:events o))))
+(define-templates check-in-binding ast:in-event*)
+(define-templates check-out-binding ast:out-event*)
 (define-templates instance-declaration ast:instance*)
 (define-templates port-initializer ast:port*)
 (define-templates check-bindings-list ast:port* newline-comma-infix)
@@ -124,7 +124,7 @@
 (define-templates formal-binding cs:formal-binding newline-infix)
 (define-templates formal-binding-temporary cs:formal-binding newline-infix)
 (define-templates formal-binding-assign-temporary cs:formal-binding newline-infix)
-(define-templates formal-binding-lambda (lambda (o) (filter ast:provides? (om:ports o))))
+(define-templates formal-binding-lambda ast:provides-port*)
 
 (define-method (=expression (o <variable>))
   (let ((e (.expression o)))
@@ -136,5 +136,5 @@
 (define-templates scoped-port-name (lambda (port) (let ((scope-name ((compose .name .type) port))) (append (.scope scope-name) (list (.name scope-name))))) type-infix)
 
 
-(define-templates shell-provided-meta-initializer ast:provided)
-(define-templates shell-required-meta-initializer ast:required)
+(define-templates shell-provided-meta-initializer ast:provides-port*)
+(define-templates shell-required-meta-initializer ast:requires-port*)

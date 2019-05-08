@@ -39,11 +39,7 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag misc)
   #:use-module (gaiag normalize)
-  #:use-module (gaiag om)
-  #:use-module (gaiag templates)
-  #:use-module (gaiag util)
-
-  #:use-module (gaiag deprecated om))
+  #:use-module (gaiag templates))
 
 (define-templates-macro define-templates cs)
 (include "../templates/dzn.scm")
@@ -172,24 +168,12 @@
     (if (is-a? rt <void>) '() rt)))
 
 (define-method (cs:model (o <root>))
-  (if (dzn:glue)
-      (let ((models (ast:model* o)))
-        (if (null? (filter (negate (disjoin ast:imported? (is? <foreign>))) models))
-              (filter (is? <foreign>) models)
-              (topological-sort
-               (map dzn:annotate-shells
-                    (filter (negate (disjoin (is? <data>) (is? <type>) ;;dzn-async?
-                                             ast:imported?))
-                            (ast:top* o))))))
-      (topological-sort
-       (map dzn:annotate-shells
-            (filter (negate (disjoin (is? <data>) (is? <type>) (is? <namespace>) ;; dzn-async?
-                                     ast:imported?))
-                    (ast:model* o))))))
-
-;; cs needs async!
-;; (define-method (cs:model (o <root>))
-;;   (filter (negate dzn-async?) (dzn:model o)))
+  (topological-sort
+   (map dzn:annotate-shells
+        ;; cs needs async!
+        (filter (negate (disjoin (is? <data>) (is? <type>) (is? <namespace>) ;; dzn-async?
+                                 ast:imported?))
+                (ast:model* o)))))
 
 (define (cs:om ast) ;;TODO, replace me with code:om when (binding-into-blocking) is removed
   ((compose

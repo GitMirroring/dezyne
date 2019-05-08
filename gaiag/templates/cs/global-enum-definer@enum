@@ -1,5 +1,5 @@
 #x:open-namespace
-public enum #om:name
+public enum #ast:name
 {
   #x:enum-field-definer
 };

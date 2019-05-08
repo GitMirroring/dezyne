@@ -35,18 +35,14 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
+  #:use-module (gaiag command-line)
+  #:use-module (gaiag config)
+  #:use-module (gaiag misc)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag om)
   #:use-module (gaiag ast)
-  #:use-module (gaiag deprecated om)
-  #:use-module (gaiag util)
 
-  #:use-module (gaiag config)
-  #:use-module (gaiag command-line)
-  #:use-module (gaiag compare)
   #:use-module (gaiag indent)
-  #:use-module (gaiag misc)
   #:use-module (gaiag parse)
   #:use-module (gaiag shell-util)
   #:use-module (gaiag templates)
@@ -63,7 +59,6 @@
             dzn:indent
             dzn:om
             dzn:file2file
-            dzn:glue
             dzn:expand-statement
             dzn:expression-expand
             dzn:action-arguments
@@ -94,9 +89,6 @@
 
 (define (dzn:file2file root)
   (dzn:dump root))
-
-(define (dzn:glue)
-  (and=> (command-line:get 'glue #f) string->symbol))
 
 (define-public (dzn-async? o)
   (and (is-a? o <interface>)
@@ -186,7 +178,7 @@
 
 (define (dzn:annotate-shells o)
   (if (and (is-a? o <system>)
-           (equal? (command-line:get 'shell #f) (string-join (map symbol->string (om:scope+name o)) ".")))
+           (equal? (command-line:get 'shell #f) (string-join (map symbol->string (ast:full-name o)) ".")))
       (make <shell-system> #:ports (.ports o) #:name (.name o) #:instances (.instances o) #:bindings (.bindings o))
       o))
 
@@ -211,14 +203,14 @@
 
 (define-method (dzn:type o)
   (if (as o <model>)
-      (om:scope+name o)
+      (ast:full-name o)
       (let* ((type (or (as o <type>) (.type o)))
-             (scope (om:scope type))
+             (scope (ast:scope type))
              (model-scope (parent o <model>))
-             (model-scope (or (and model-scope (om:scope+name model-scope)) '()))
+             (model-scope (or (and model-scope (ast:full-name model-scope)) '()))
 
              (common (or (list-index (negate eq?) scope model-scope) (min (length scope) (length model-scope)))))
-        (drop (om:scope+name type) common))))
+        (drop (ast:full-name type) common))))
 
 (define-method (dzn:type (o <bool>))
   o)
@@ -273,13 +265,10 @@
 (define-method (dzn:expression-expand (o <expression>))
   o)
 
-(define-method (dzn:class-member? (o <variable>)) ; MORTAL SIN HERE!!?
-  ;; FIXME: is (.variable o) a member?
-  ;; checking name (as done now) is not good enough
-  ;; we schould check .variable pointer equality
-  ;; that does not work, however; someone makes a copy is clone
-  ;;(memq o (om:variables (parent o <model>)))
-  (memq (.name o) (map .name (om:variables (parent o <model>)))))
+(define-method (dzn:class-member? (o <variable>))
+  (let ((p (.parent o)))
+    (and (is-a? p <variables>)
+         (is-a? (.parent p) <behaviour>))))
 
 (define-method (dzn:enum-literal (o <enum-literal>))
   (dzn:scope+name o))
@@ -308,7 +297,7 @@
 (define-method (dzn:formal-type (o <formal>)) o)
 (define-method (dzn:formal-type (o <event>)) ((compose ast:formal* .signature) o))
 (define-method (dzn:formal-type (o <trigger>)) ((compose dzn:formal-type .event) o))
-(define-method (dzn:formal-type (o <port>)) ((compose dzn:formal-type car om:events) o))
+(define-method (dzn:formal-type (o <port>)) ((compose dzn:formal-type car ast:event*) o))
 
 (define-method (dzn:direction (o <ast>))
   (if (not (.direction o)) '()
@@ -338,7 +327,7 @@
 (define-method (dzn:signature (o <event>))
   (.signature o))
 (define-method (dzn:signature (o <port>))
-  (list ((compose om:name .type) o) 't))
+  (list ((compose ast:name .type) o) 't))
 
 (define-method (dzn:action-arguments (o <action>)) ; MORTAL SIN HERE!!?
   (if (not (.port.name o)) '()

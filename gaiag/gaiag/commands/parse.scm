@@ -29,11 +29,13 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
 
+  #:use-module (gaiag display)
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
-  #:use-module (gaiag util)
   #:use-module (gaiag shell-util)
+  #:use-module (gaiag goops)
+
   #:export (assert-parse
             dump-model-stream
             parse-with-options

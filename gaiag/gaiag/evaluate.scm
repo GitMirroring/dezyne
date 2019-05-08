@@ -24,97 +24,18 @@
 ;;; Code:
 
 (define-module (gaiag evaluate)
-  #:use-module (ice-9 and-let-star)
-  #:use-module (ice-9 curried-definitions)
-  #:use-module (ice-9 optargs)
   #:use-module (ice-9 match)
-  #:use-module (system foreign)
   #:use-module (srfi srfi-1)
 
+  #:use-module (gaiag misc)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag deprecated om)
   #:use-module (gaiag ast)
-  #:use-module (gaiag compare)
-  #:use-module (gaiag util)
-
-  #:use-module (gaiag misc)
-  #:use-module (gaiag parse)
 
   #:export (
            eval-expression
-           simplify-expression
-           variable-state
-           undefined-state-vector
-           undefined-variable-state
-           state-vector
            true?
-           var
-           var!
            ))
-
-
-(define* ((variable-state model #:optional (init .expression)) variable)
-  (cons
-   variable
-   (eval-expression model '() (init variable))))
-
-(define (state-vector model)
-  (map (variable-state model) (om:variables model)))
-
-(define* ((undefined-variable-state model #:optional (init .expression)) variable)
-  (cons
-   variable
-   ;;(eval-expression model '() (init variable))
-   (init variable)
-   ))
-
-(define (undefined-state-vector model)
-  (map (undefined-variable-state model (init-undefined model)) (om:variables model)))
-
-(define ((init-undefined model) o)
-  (let ((type ((om:type model) o)))
-    (make <var> #:variable.name o)))
-
-(define (var-field state variable) (assoc-ref state (om->list variable)))
-
-(define (var! state variable value)
-  ;;; FIXME (map (lambda (x) (if (eq? identifier (car x)) (cons (car x) (cdr x)) x)) state)
-  (assoc-set! (copy-tree state) (om->list variable) value))
-
-(define (var? variable) (is-a? variable <variable>))
-
-(define (bool-var? v) (and (is-a? v <variable>) (is-a? (.type v) <bool>)))
-
-(define (int-var? v) (and (is-a? v <variable>) (is-a? (.type v) <int>)))
-
-(define (unspecified? x) (eq? x *unspecified*))
-
-(define (om:id o) ((compose pointer-address scm->pointer) o))
-
-(define (om:parent o t)
-  (match o
-    (($ <system>) #f)
-    (($ <foreign>) #f)
-    ((? (is? <model>))
-     (om:parent ((compose .statement .behaviour) o) t))
-    (($ <blocking>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
-                        (om:parent (.statement o) t)))
-    (($ <guard>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
-                     (and (eq? (om:id (.expression o)) (om:id t)) o)
-                     (om:parent (.statement o) t)))
-    (($ <on>) (or (and (eq? (om:id (.statement o)) (om:id t)) o)
-                  (om:parent (.statement o) t)))
-    ((? (is? <ast-list>))
-     (if (member (om:id t) (map om:id (.elements o)))
-         o
-         (let loop ((elements (.elements o)))
-           (if (null? elements)
-               #f
-               (let ((parent (om:parent (car elements) t)))
-                 (if parent parent
-                     (loop (cdr elements))))))))
-    (_ #f)))
 
 (define-method (expr:equal? (left <enum-literal>) (right <enum-literal>))
   (and (eq? (.node (.type left)) (.node (.type right)))
@@ -150,111 +71,4 @@
     ((and ($ <greater-equal>) (= .left left) (= .right right)) (literal (>= (.value (eval-expression state left)) (.value (eval-expression state right)))))
     ((and ($ <otherwise>) (= .value value)) (eval-expression state value))
     ((and ($ <group>) (= .expression expression)) (eval-expression state expression))
-    (_ o)))
-
-(define (simplify-expression model state o)
-  (let ((r (simplify-expression- model state o)))
-    ;;(stderr "simplify-expression ~a => ~a\n" o r)
-    (match r
-      (#t (make <literal> #:value 'true))
-      (#f (make <literal> #:value 'false))
-      ((? number?) (make <literal> #:value o))
-      (_ r))))
-
-(define (simplify-expression- model state o)
-  (define (unspec v f) (if (is-a? v <var>) o (f v)))
-  (match o
-    (#f #f)
-    (#t #t)
-    ('false #f)
-    ('true #t)
-
-    ((and ($ <literal>) (= .value value)) (simplify-expression model state value))
-
-    ((and ($ <otherwise>) (= .value expression))
-     (let ((value (simplify-expression model state expression)))
-       (match value
-         (#t #t)
-         (#f #f)
-         (_ o))))
-
-    ((and ($ <var>) (= .variable (? bool-var?)))
-     (let ((field (var-field state (.variable o))))
-       (match field
-         (#f o)
-         (_ (eq? field 'true)))))
-
-    ((and ($ <var>) (and (= .variable (? int-var?))))
-     (let ((field (var-field state (.variable o))))
-       (match field
-         (#f o)
-         (_ field))))
-
-    ((and ($ <var>) (= .variable.name variable))
-     (let ((field (var-field state (.variable.name o))))
-       (match field
-         (#f o)
-         (_ (make <enum-literal> #:type.name (.type.name (.variable o)) #:field field)))))
-
-    ((and ($ <field-test>) (= .variable (? var?)) (= .variable variable) (= .field field))
-     (let ((f (var-field state variable)))
-       (match f
-         (#f o)
-         (_ (eq? f field)))))
-
-    (($ <enum-literal>) o)
-
-    ((and ($ <equal>) (= .left a) (= .right b))
-     (let* ((a1 (simplify-expression model state a))
-           (b1 (simplify-expression model state b))
-           (a a1) (b b1))
-       (or (ast:equal? a b)
-           (match (cons a b)
-             ((($ <enum-literal>) . ($ <enum-literal>)) #f)
-             (((? number?) . (? number?)) (eq? a b))
-             (_ (clone o #:left a #:right b))))))
-
-    ((and ($ <not-equal>) (= .left a) (= .right b))
-     (let ((a (simplify-expression model state a))
-           (b (simplify-expression model state b)))
-       (or (not (ast:equal? a b))
-           (clone o #:left a #:right b))))
-
-    ((and ($ <and>) (= .left a) (= .right b))
-     (let ((a (warn 'and-a (simplify-expression model state a)))
-           (b (warn 'and-b (simplify-expression model state b))))
-       (and a b (cond
-                     ((and (eq? a #t) (eq? b #t)) #t)
-                     ((eq? a #t) b)
-                     ((eq? b #t) a)
-                     (else (clone o #:left a #:right b))))))
-
-    ((and ($ <or>) (= .left a) (= .right b))
-     (let ((a (simplify-expression model state a))
-           (b (simplify-expression model state b)))
-       (and (or a b) (cond
-                          ((or (eq? a #t) (eq? b #t)) #t)
-                          ((ast:equal? (make <not> #:expression a) b) #t)
-                          ((ast:equal? (make <not> #:expression b) a) #t)
-                          ((ast:equal? (simplify-expression model state (make <not> #:expression a)) b) #t)
-                          ((ast:equal? (simplify-expression model state (make <not> #:expression b)) a) #t)
-                          ((eq? a #f) b)
-                          ((eq? b #f) a)
-                          ((ast:equal? a b) a)
-                          (else (clone o #:left a #:right b))))))
-
-    ((and ($ <not>) (= .expression expression))
-     (let ((expression (simplify-expression model state expression)))
-       (cond
-        ((eq? expression #t) #f)
-        ((eq? expression #f) #t)
-        (else (clone o #:expression expression)))))
-
-    ((and ($ <group>) (= .expression expression))
-     (let ((expression (simplify-expression model state expression)))
-       (cond
-        ((eq? expression #t) #t)
-        ((eq? expression #f) #f)
-        (else (clone o #:expression expression)))))
-
     (_ o)))

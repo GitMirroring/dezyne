@@ -29,7 +29,6 @@
   #:use-module (ice-9 getopt-long)
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
-  #:use-module (gaiag om)
   #:use-module (gaiag commands parse)
   #:export (parse-opts
             main))

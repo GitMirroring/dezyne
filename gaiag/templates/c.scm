@@ -31,8 +31,8 @@
 (define-templates model-parent-name c:model-parent-name type-infix)
 (define-templates name c:name type-infix)
 
-(define-templates provided-event-tracing-initialization ast:provided)
-(define-templates required-event-tracing-initialization ast:required)
+(define-templates provided-event-tracing-initialization ast:provides-port*)
+(define-templates required-event-tracing-initialization ast:requires-port*)
 (define-templates variable-member-initialization c:extract-variables-with-respect-to-enums)
 (define-templates initialize)
 
@@ -56,8 +56,8 @@
 (define-templates helper-in-trigger-prototype c:get-incoming-triggers-from-model)
 (define-templates helper-in-trigger c:get-incoming-triggers-from-model)
 
-(define-templates provided-port-initialization ast:provided)
-(define-templates required-port-initialization ast:required)
+(define-templates provided-port-initialization ast:provides-port*)
+(define-templates required-port-initialization ast:requires-port*)
 (define-templates trigger-initialization ast:in-triggers)
 
 (define-templates call-in-trigger-prototype ast:provided-in-triggers newline-infix)
@@ -87,8 +87,8 @@
 (define-templates main-illegal-print)
 (define-templates main-content)
 
-(define-templates port-initialization-provided ast:provided)
-(define-templates port-initialization-required ast:required)
+(define-templates port-initialization-provided ast:provides-port*)
+(define-templates port-initialization-required ast:requires-port*)
 (define-templates main-log-event-out-trigger ast:out-triggers)
 (define-templates in-trigger-initialization ast:in-triggers)
 (define-templates out-trigger-initialization ast:out-triggers)

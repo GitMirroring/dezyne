@@ -32,7 +32,7 @@
 (define-templates source dzn:model newline-infix)
 (define-templates global dzn:global newline-infix)
 (define-templates model-name dzn:model-name)
-(define-templates asd-interface-name (compose string->symbol (lambda (o) (if (eq? #\I (string-ref o 0)) (substring o 1) o)) symbol->string om:name .type car om:ports (cut parent <> <model>)))
+(define-templates asd-interface-name (compose string->symbol (lambda (o) (if (eq? #\I (string-ref o 0)) (substring o 1) o)) symbol->string ast:name .type car ast:port* (cut parent <> <model>)))
 (define-templates =expression dzn:=expression)
 (define-templates type dzn:type type-infix)
 (define-templates external dzn:external)

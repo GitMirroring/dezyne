@@ -39,6 +39,7 @@
            *eof*
            *eof*-is-#f
            ->join
+           symbol-join
            ->symbol-join
            ->string
            !=
@@ -151,6 +152,9 @@
   (let loop ((prefix prefix) (lst lst))
     (if (or (null? prefix) (null? lst) (not (eq? (car prefix) (car lst)))) lst
         (loop (cdr prefix) (cdr lst)))))
+
+(define* (symbol-join lst #:optional (sep '.))
+  (string->symbol (string-join  (map symbol->string lst) (symbol->string sep))))
 
 (define ((->symbol-join infix) lst)
   (let loop ((lst lst) (result '()))

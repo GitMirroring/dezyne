@@ -51,16 +51,22 @@
             ast:inevitable
             ast:optional
 
+            as
+            ast-name
             clone
-            has-slot?
             clone-base
+            drop-<>
+            has-slot?
+            is?
             make-constants
+            parent
+            parent-not
+            symbol->class
             tree-collect
             tree-collect-shallow
             tree-filter
             tree-map
-            parent
-            parent-not))
+            ))
 
 ;; FIXME: generate-me
 (export
@@ -939,3 +945,20 @@
 
 (define-method (make-constants)
   (list (make <bool>) (make <void>)))
+
+(define (drop-<> o)
+  (string->symbol (string-drop (string-drop-right (symbol->string o) 1) 1)))
+
+(define-method (ast-name (o <top>))
+  (drop-<> (class-name (class-of o))))
+
+(define-method (ast-name (o <class>))
+  (drop-<> (class-name o)))
+
+(define (symbol->class x) (symbol-append '< x '>))
+
+(define (as o c)
+  (and (is-a? o c) o))
+
+(define ((is? class) o)
+  (and (is-a? o class) o))

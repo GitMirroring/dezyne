@@ -34,14 +34,12 @@
   #:use-module (srfi srfi-26)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (gaiag display)
   #:use-module (gaiag goops)
-  #:use-module (gaiag om)
-  #:use-module (gaiag deprecated om)
   #:use-module (gaiag ast)
 
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
-  #:use-module (gaiag util)
 
   #:export (
            ast:wfc
@@ -82,7 +80,7 @@
 
 (define-method (wfc (o <component>))
   (append
-   (if (>0 (length (ast:provided o))) '()
+   (if (>0 (length (ast:provides-port* o))) '()
        `(,(wfc-error o "component with behaviour must have a provides port")))
    (append-map wfc (ast:port* o))
    (or (and=> (.behaviour o) wfc) '())))
@@ -161,7 +159,7 @@
           ((parent (.parent o) <blocking>)
            `(,(wfc-error o "nested blocking used")
              ,(wfc-error (parent (.parent o) <blocking>) "within blocking here")))
-          ((> (length (ast:provided model)) 1)
+          ((> (length (ast:provides-port* model)) 1)
            `(,(wfc-error o "blocking with multiple provide ports not supported")))
           (else '()))))
 
@@ -252,7 +250,7 @@
      (append-map reply replies)
      (let ((model (parent o <model>)))
        (if (or (not (is-a? model <component>))
-               (<= (length (ast:provided model)) 1)) '()
+               (<= (length (ast:provides-port* model)) 1)) '()
                (append-map reply-without-port (filter (negate .port) replies)))))))
 
 (define-method (reply (o <reply>))
