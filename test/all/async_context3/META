@@ -1,1 +1,1 @@
-{"known":["javascript","c:build","table"],"skip":["execute","run"],"comment":"compliance error; javascript: async not supported"}
+{"known":["c","javascript"],"skip":["execute","run"],"comment":"compliance error; c, javascript: async not supported"}
