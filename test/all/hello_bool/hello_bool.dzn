@@ -28,8 +28,7 @@ interface ihello
 
   behaviour
   {
-    bool b = false;
-    on hello: {b = !b; reply (b);}
+    on hello: reply (true);
   }
 }
 
@@ -55,7 +54,6 @@ interface iworld
 
   behaviour
   {
-    bool b = false;
-    on world: {b = !b; reply (b);}
+    on world: reply (true);
   }
 }

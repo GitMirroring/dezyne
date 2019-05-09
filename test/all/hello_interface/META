@@ -1,1 +1,1 @@
-{"skip":["build","lts"],"comment":"interface model: cannot build, lts"}
+{"skip":["build"],"comment":"interface model: cannot build"}

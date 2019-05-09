@@ -1,7 +1,0 @@
-((pp i) ((sut) illegal_requires_out) (rp i))
-... <- <external>.rp.oa
-sut.<q> <- ...
-... <- sut.<q>
-sut.rp.oa <- ...
-(eligible pp.ia rp.oa)
-illegal

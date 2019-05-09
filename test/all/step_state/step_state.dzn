@@ -79,10 +79,10 @@ component step_state
   requires iworld pw;
   system
     {
-      hello_bool hi;
+      hello_bool h;
       world_int wi;
-      ph <=> hi.h;
-      hi.w <=> wi.h;
+      ph <=> h.h;
+      h.w <=> wi.h;
       pw <=> wi.w;
     }
 }

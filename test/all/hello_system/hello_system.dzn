@@ -24,71 +24,43 @@
 interface ihello
 {
   in void hello();
-  out void world();
 
   behaviour
   {
-    bool b = true;
-    on hello: b=!b;
-    [!b] on optional: {b=!b; world;}
+    on hello: {}
   }
 }
 
-component hello_enum
+component helloworld
 {
-  provides ihello p1;
-  requires ihello r1;
+  provides ihello h;
+  requires iworld w;
 
   behaviour
   {
-    enum E {W,T,F};
-    E e = E.W;
-    [e.W] on p1.hello(): {e=E.T; r1.hello();}
-    [e.W] on r1.world(): e = E.F;
-    [e.T] on r1.world(): {e=E.F; p1.world();}
-    [e.T] on p1.hello(): {e=E.W; r1.hello();}
-    [e.F] on p1.hello(): {e=E.T; r1.hello();}
+    on h.hello(): w.world();
   }
 }
 
-component hello_bool
+interface iworld
 {
-  provides ihello p2;
-  requires ihello_nondet r2;
+  in void world();
 
   behaviour
   {
-    bool b = true;
-    on p2.hello(): {b = r2.hello();}
-    [!b] on r2.world(): {b=!b; p2.world();}
-  }
-}
-
-interface ihello_nondet
-{
-  in bool hello();
-  out void world();
-
-  behaviour
-  {
-    bool b = true;
-    on hello: {b = true; reply(true);}
-    on hello: {b = false; reply(false);}
-    [!b] on inevitable: {b=!b; world;}
+    on world: {}
   }
 }
 
 component hello_system
 {
-  provides ihello p;
-  requires ihello_nondet r;
+  provides ihello h;
+  requires iworld w;
 
   system
     {
-      hello_enum e;
-      hello_bool b;
-      p <=> e.p1;
-      e.r1 <=> b.p2;
-      b.r2 <=> r;
+      helloworld c;
+      h <=> c.h;
+      w <=> c.w;
     }
 }

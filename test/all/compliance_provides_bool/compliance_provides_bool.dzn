@@ -24,13 +24,9 @@
 interface ibool
 {
   in bool hello();
-  out void a();
-  out void b();
 
   behaviour
   {
-    on hello: {a; reply (true);}
-    on hello: {b; reply (true);}
     on hello: reply (true);
   }
 }

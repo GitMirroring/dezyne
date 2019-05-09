@@ -47,6 +47,11 @@ component hello_local
         }
         reply (b);
       }
+    [b] on h.hello():
+      {
+        bool b = w.world();
+        reply (b);
+      }
   }
 }
 
@@ -56,6 +61,6 @@ interface iworld
 
   behaviour
   {
-    on world: reply (true);
+    on world: reply (false);
   }
 }

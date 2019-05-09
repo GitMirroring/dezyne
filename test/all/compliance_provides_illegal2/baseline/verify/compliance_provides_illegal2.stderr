@@ -1,0 +1,3 @@
+out/compliance_provides_illegal2/compliance_provides_illegal2.dzn:1:1:i1: deadlock in model ihello
+out/compliance_provides_illegal2/compliance_provides_illegal2.dzn:7:15:i14: illegal
+out/compliance_provides_illegal2/compliance_provides_illegal2.dzn:7:15:i14: illegal

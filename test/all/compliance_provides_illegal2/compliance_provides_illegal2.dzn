@@ -24,41 +24,21 @@
 
 interface ihello
 {
-  in void hello();
-  out void world();
+  in void hello ();
 
   behaviour
   {
-    bool b = false;
-    on hello: {}
-    [!b] on optional: b=!b;
-    [b] on optional: world;
+    on hello: illegal;
   }
 }
 
-component hello
-{
-  provides ihello hi;
-  requires ihello wi;
-
-  behaviour
-  {
-    on hi.hello(): wi.hello();
-    on wi.world(): hi.world();
-  }
-}
-
-component silent_optional
+component compliance_provides_illegal2
 {
   provides ihello h;
   requires ihello w;
 
-  system
-    {
-      hello c1;
-      hello c2;
-      h <=> c1.hi;
-      c1.wi <=> c2.hi;
-      w <=> c2.wi;
-    }
+  behaviour
+  {
+    on h.hello (): w.hello ();
+  }
 }

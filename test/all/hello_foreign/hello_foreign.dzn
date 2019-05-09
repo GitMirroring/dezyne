@@ -24,7 +24,6 @@
 interface ihello
 {
   in void hello();
-  out void goodbye();
 
   behaviour
   {
@@ -45,22 +44,17 @@ component hello
 
   behaviour
   {
-    bool b = true;
-    on h.hello(): {b = false; w.world();}
-    [!b] on w.howdy(): {b = true; h.goodbye();}
+    on h.hello(): w.world();
   }
 }
 
 interface iworld
 {
   in void world();
-  out void howdy();
 
   behaviour
   {
-    bool b = true;
-    on world: b = false;
-    [!b] on optional: {b = true; howdy;}
+    on world: {}
   }
 }
 
