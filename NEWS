@@ -5,17 +5,6 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
-* Dezyne Enterprise preview
-** Initial release of dzn-explore at https://test1.verum.com
-To install:
-#+BEGIN_src bash
-  npm install -g https://test1.verum.com/download/npm/dzn-enterprise.tar.gz
-#+END_src
-To explore, run:
-#+BEGIN_src bash
-  .npm/bin/dzn-explore
-#+END_src
-
 * Changes in development since 2.9.1
    It contains work in progress and is not intended for evaluation or
    production use.
