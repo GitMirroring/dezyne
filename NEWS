@@ -16,20 +16,34 @@ To explore, run:
   .npm/bin/dzn-explore
 #+END_src
 
-* Changes in 2.9.0 (since 2.8.1)
-** FIXME: ***resurrect 2.9 release notes***
+* Changes in development since 2.9.1
+   It contains work in progress and is not intended for evaluation or
+   production use.
 
-* Announcement: dicontinuation of 2.7.x
+* Changes in 2.9.1 (since 2.9.0)
+** Verification: reduce memory usage by one order of magnitude:
+   Allows models with a larger state space to be verified.
+** Verification: improved error reporting:
+   Internal errors and out of memory error are now reported as such.
+** Verification: fix for issue 7547:
+   Compliance now succeeds when using async in the middle of two
+   provides out events on a single modeling event in the interface.
+** Code: fix for issue 7529:
+   C++: a reply with a port prefix can be used anywhere, not just in a
+   blocking context.
+** Code: fix for issue 7527:
+   C++: parameterized events can be used with dzn::shell
+
+* Changes in 2.9.0 (since 2.8.1)
+** Reintroduction of C#.
+** For C++ fix the use of injected in combination with thread safe shell.
+
+* Announcement: discontinuation of 2.7.x
   - 2.7.x has been discontinued as of November 2018
   - With the full verification support in 2.8.0, the 2.7.x was
     declared deprecated.  2.7 was intended as a verification preview
     release series while working on the transition to mCRL2 based
     verification.
-
-* Changes in development since 2.8.1
-** development is based on 2.8.1 NOT on 2.8.2
-   It contains work in progress and is not intended for evaluation or
-   production use.
 
 * Changes in 2.8.2 (since 2.8.1)
 ** Code generation
