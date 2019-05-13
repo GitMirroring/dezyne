@@ -379,10 +379,16 @@
          #:statement (make <compound-node>)))
 
       (('function type name formals statement)
-       (make <function-node>
-         #:name (helper name)
-         #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals))
-         #:statement (make <compound-node> #:elements (make-list? (helper statement)))))
+       (let ((name (helper name))
+             (statement (make <compound-node> #:elements (make-list? (helper statement)))))
+         (make <function-node>
+           #:name name
+           #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals))
+           #:statement statement
+           #:recursive (and (pair? (tree-collect (conjoin (is? <call>)
+                                                          (compose (cut eq? <> name) .function.name))
+                                                 statement))
+                            'recursive))))
 
       (('functions functions ...)
        (make <functions-node> #:elements (helper functions)))

@@ -498,8 +498,10 @@
     (if (or (not function)
             (not (eq? (.name function) (.function.name o)))) '()
             (let* ((continuation ((compose car (@@ (gaiag makreel) makreel:continuation)) o))
+                   (continuation (if (is-a? continuation <variable>) ((compose car (@@ (gaiag makreel) makreel:continuation)) continuation) continuation))
                    (continuation (and continuation
                                       (not (ast:eq? continuation (.statement (parent o <function>))))
+                                      (not (is-a? continuation <return>))
                                       continuation)))
               (if continuation `(,(wfc-error o "recursive function not in tail call")
                                  ,(wfc-error continuation "next statement"))
