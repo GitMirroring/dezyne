@@ -419,6 +419,25 @@
                                    (.direction (.port right)) (.port.name right)))
              ,(wfc-error (.port left) (format #f "port ~a declared here" (.port.name left)))
              ,(wfc-error (.port right) (format #f "port ~a declared here" (.port.name right)))))
+          ((or (and
+                (.instance.name left)
+                (.instance.name right)
+                (.port left)
+                (.port right)
+                (not (eq? (.external (.port left))
+                          (.external (.port right)))))
+               (and
+                (or (and (.instance.name left) (not (.instance.name right)))
+                    (and (.instance.name right) (not (.instance.name left))))
+                (.port left)
+                (.port right)
+                (not (eq? (.external (.port left))
+                          (.external (.port right))))))
+           `(,(wfc-error o (format #f "cannot bind ~a port ~a to ~a port ~a"
+                                   (or (.external (.port left)) 'non-external) (.port.name left)
+                                   (or (.external (.port right)) 'non-external) (.port.name right)))
+             ,(wfc-error (.port left) (format #f "port ~a declared here" (.port.name left)))
+             ,(wfc-error (.port right) (format #f "port ~a declared here" (.port.name right)))))
           (else '()))))
 
 (define-method (double-bindings (o <system>))
