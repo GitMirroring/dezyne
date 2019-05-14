@@ -1,1 +1,1 @@
-(#.name is(port)) -> #.name flush . (semantics_async (port=no_port,pending=true) + semantics_provides)
+(#.name is(port)) -> #.name flush . (semantics_async_allow_ack(port=no_port,pending=true) + semantics_provides)

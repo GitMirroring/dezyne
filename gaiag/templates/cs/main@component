@@ -30,8 +30,8 @@ class main {
       Debug.Listeners.Add(new TextWriterTraceListener(Console.Error));
       Debug.AutoFlush = true;
     }
-
-    using(dzn.container<#x:type-name > c = new dzn.container<#x:type-name >((loc,name)=>{return new #x:type-name(loc,name);}, Array.Exists(args, s => s == "--flush"))) {
+    bool flush = Array.Exists(args, s => s == "--flush");
+    using(dzn.container<#x:type-name > c = new dzn.container<#x:type-name >((loc,name)=>{return new #x:type-name(loc,name);}, flush)) {
       connect_ports (c);
       c.run(event_map (c), new List<String> {#x:main-required-port-name });
     }

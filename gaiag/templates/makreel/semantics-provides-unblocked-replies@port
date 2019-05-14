@@ -1,2 +1,2 @@
 sum r : #x:makreel:interface-name replies. #.name reply'reordered (r) . (async_not_pending . semantics
-                                                                        +async_pending . (semantics_async(port=no_port, pending=true) + semantics_provides))
+                                                                        +async_pending . (semantics_async_allow_ack(port=no_port, pending=true) + semantics_provides))

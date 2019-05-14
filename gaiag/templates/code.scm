@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -116,7 +116,6 @@
 (define-templates main-event-map-void ast:void-in-triggers event-map-prefix)
 (define-templates main-event-map-valued ast:valued-in-triggers event-map-prefix)
 (define-templates main-event-map-flush ast:required event-map-prefix)
-(define-templates flush-provides ast:provided)
 (define-templates main-event-map-match-return code:main-event-map-match-return)
 (define-templates main-required-port-name ast:required comma-infix)
 (define-templates version-assert)

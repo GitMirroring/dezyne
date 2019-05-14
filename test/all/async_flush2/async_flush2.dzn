@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,27 +21,36 @@
 //
 // Code:
 
-#include "hello_foreign.hh"
+interface ihello {
+  in void hello();
+  out void cruel();
+  out void world();
 
-#include <dzn/locator.hh>
-#include <dzn/runtime.hh>
-#include <dzn/pump.hh>
-
-
-
-foreign::foreign(const dzn::locator& dzn_locator)
-: dzn_meta("","foreign",0,dzn::vector())
-, dzn_rt(dzn_locator.get<dzn::runtime>())
-, dzn_locator(dzn_locator)
-, w(dzn::port::meta(dzn::port::meta::detail("w",this,&dzn_meta),dzn::port::meta::detail("",0,0)))
-{
-  dzn_rt.performs_flush(this) = true;
-  dzn::pump* dzn_pump = dzn_locator.try_get<dzn::pump>();
-
-  w.in.world = boost::bind(&dzn::call_in< foreign,::iworld>,this,boost::function< void() > (boost::bind(& foreign:: w_world,this )),boost::make_tuple(& w, "world", "return"));
+  behaviour {
+    on hello: illegal;
+    on inevitable: { cruel; world; }
+    on inevitable: world;
+  }
 }
 
-void foreign::w_world()
-{
-  return;
+component async_flush2 {
+  provides ihello p;
+  requires ihello r;
+
+  behaviour {
+    requires dzn.async async;
+
+    on r.cruel(): {
+      p.cruel();
+      async.req();
+    }
+
+    on r.world(): {
+      p.world();
+    }
+
+    on async.ack(): {
+      p.world();
+    }
+  }
 }

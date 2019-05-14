@@ -1,4 +1,3 @@
 {"#.name .<flush>",[&]{std::clog << "#.name .<flush>" << std::endl;
-                       c.runtime.flush(&c);
-#x:flush-provides
+                       c.dzn_rt.flush(&c);
                       }}

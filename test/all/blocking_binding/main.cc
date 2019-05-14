@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -57,7 +58,7 @@ event_map (dzn::container<blocking_binding, std::function<void()> >& c)
         c.match("p.return");}}
     ,{"r.cb",[&]{c.system.r.out.cb();
       }}
-    ,{"r.<flush>",[&]{std::clog << "r.<flush>" << std::endl; c.runtime.flush(&c);}}
+    ,{"r.<flush>",[&]{std::clog << "r.<flush>" << std::endl; c.dzn_rt.flush(&c);}}
   };
 }
 

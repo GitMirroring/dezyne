@@ -166,13 +166,19 @@ semantics_provides_unblocked
  ;
 
 semantics_async(port: provides_ports, pending: Bool)
- = #x:makreel:model-name end . (async_not_pending . (queue_empty . (no_port_is(port) -> semantics #x:semantics-requires-flush)
-                                                    +semantics_async (pending=false))
-                               +async_pending . (queue_empty . (no_port_is(port) -> semantics_async(pending=true) #x:semantics-async-flush)
-                                                +queue_not_empty . semantics_async(pending=true)))
+ = #x:makreel:model-name end . (queue_empty . (async_not_pending . (no_port_is(port) -> semantics #x:semantics-requires-flush)
+                                              +async_pending . (no_port_is(port) -> semantics_async_allow_ack(pending=true) #x:semantics-async-flush))
+                               +queue_not_empty . (async_not_pending . semantics_async (pending=false)
+                                                  +async_pending . semantics_async(pending=true)))
+
+
+
 #x:semantics-async
-#x:semantics-async-q
+#x:semantics-async-qout
 #x:semantics-async-requires
+ ;
+
+semantics_async_allow_ack(port: provides_ports, pending: Bool) = #x:semantics-async-allow-ack #x:semantics-no-async
  ;
 
 semantics_provides_blocked

@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -27,8 +27,10 @@
 
 struct foreign: public skel::foreign
 {
-  foreign(const dzn::locator&);
-  void w_world();
+  foreign(const dzn::locator& l)
+  : skel::foreign(l)
+  {}
+  void w_world(){}
 };
 
 #endif // FOREIGN_HH

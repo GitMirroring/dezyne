@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
@@ -178,9 +178,10 @@
 (define-templates semantics-async ast:provides-ports newline-union-prefix)
 (define-templates semantics-async-requires ast:requires-ports newline-union-prefix)
 (define-templates semantics-async-flush ast:provides-ports newline-union-prefix)
-(define-templates semantics-async-q ast:async-ports?)
 (define-templates semantics-async-qin ast:async-ports newline-union-infix)
 (define-templates semantics-async-qout ast:async-ports newline-union-prefix)
+(define-templates semantics-async-allow-ack (lambda (o) (let ((a (ast:async-ports o))) (if (pair? a) o '()))))
+(define-templates semantics-no-async (lambda (o) (let ((a (ast:async-ports o))) (if (pair? a) '() o))))
 (define-templates semantics-provides-blocked-provides ast:provides-ports newline-union-prefix)
 (define-templates semantics-provides-blocked-requires ast:requires-ports newline-union-prefix)
 (define-templates semantics-provides-blocked-async ast:async-ports newline-union-prefix)

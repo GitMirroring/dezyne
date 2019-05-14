@@ -41,9 +41,10 @@ namespace dzn
   template <typename System, typename Function>
   struct container
   {
+    const bool flush;
     dzn::meta meta;
-    dzn::locator locator;
-    dzn::runtime runtime;
+    dzn::locator dzn_locator;
+    dzn::runtime dzn_rt;
     System system;
 
     std::map<std::string, Function> lookup;
@@ -55,14 +56,15 @@ namespace dzn
     dzn::pump pump;
 
     container(bool flush, const dzn::locator& l = dzn::locator())
-    : meta("<internal>","container",0)
-    , locator(l.clone())
-    , runtime()
-    , system(locator.set(runtime).set(pump))
+    : flush(flush)
+    , meta("<internal>","container",0)
+    , dzn_locator(l.clone())
+    , dzn_rt()
+    , system(dzn_locator.set(dzn_rt).set(pump))
     , pump()
     {
-      locator.get<illegal_handler>().illegal = []{std::clog << "illegal" << std::endl; std::exit(0);};
-      runtime.performs_flush(this) = flush;
+      dzn_locator.get<illegal_handler>().illegal = []{std::clog << "illegal" << std::endl; std::exit(0);};
+      dzn_rt.performs_flush(this) = flush;
       system.dzn_meta.name = "sut";
     }
     ~container()

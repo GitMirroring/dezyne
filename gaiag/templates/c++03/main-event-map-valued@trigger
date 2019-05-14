@@ -1,1 +1,1 @@
-{"#.port.name .#.event.name ",[&]{ #x:main-out-arg-define c.match("#.port.name ." + to_string(c.system.#.port.name .#.event.direction .#.event.name(#x:main-out-arg))); std::queue<boost::function<void()>> empty; std::swap(c.runtime.queue(&c.system.#.port.name), empty);}}
+{"#.port.name .#.event.name ",[&]{ #x:main-out-arg-define c.match("#.port.name ." + to_string(c.system.#.port.name .#.event.direction .#.event.name(#x:main-out-arg))); std::queue<boost::function<void()>> empty; std::swap(c.dzn_rt.queue(&c.system.#.port.name), empty);}}

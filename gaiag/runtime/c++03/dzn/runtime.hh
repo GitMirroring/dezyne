@@ -161,177 +161,177 @@ namespace dzn
   void port_block(const locator&, void*);
   void port_release(const locator&, void*, boost::function<void()>&);
 
-  template <typename C, typename P>
-  void call_in(C* c, boost::function<void()> f, boost::tuple<P*, const char*, const char*> m)
+  template <typename C>
+  void call_in(C* c, boost::function<void()> f, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
+    trace_in(os, *meta, event);
     c->dzn_rt.handle(c, f);
-    trace_out(os, boost::get<0>(m)->meta, boost::get<2>(m) ? boost::get<2>(m) : "return");
+    trace_out(os, *meta, "return");
   }
-  template <typename C, typename P, typename A0>
-  void call_in(C* c, boost::function<void(A0)> f, A0 a0, boost::tuple<P*, const char*, const char*> m)
+  template <typename C, typename A0>
+  void call_in(C* c, boost::function<void(A0)> f, A0 a0, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
+    trace_in(os, *meta, event);
     c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0)));
-    trace_out(os, boost::get<0>(m)->meta, boost::get<2>(m) ? boost::get<2>(m) : "return");
+    trace_out(os, *meta, "return");
   }
-  template <typename C, typename P, typename A0, typename A1>
-  void call_in(C* c, boost::function<void(A0,A1)> f, A0 a0, A1 a1, boost::tuple<P*, const char*, const char*> m)
+  template <typename C, typename A0, typename A1>
+  void call_in(C* c, boost::function<void(A0,A1)> f, A0 a0, A1 a1, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
+    trace_in(os, *meta, event);
     c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1)));
-    trace_out(os, boost::get<0>(m)->meta, boost::get<2>(m) ? boost::get<2>(m) : "return");
+    trace_out(os, *meta, "return");
   }
-  template <typename C, typename P, typename A0, typename A1, typename A2>
-  void call_in(C* c, boost::function<void(A0,A1,A2)> f, A0 a0, A1 a1, A2 a2, boost::tuple<P*, const char*, const char*> m)
+  template <typename C, typename A0, typename A1, typename A2>
+  void call_in(C* c, boost::function<void(A0,A1,A2)> f, A0 a0, A1 a1, A2 a2, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
+    trace_in(os, *meta, event);
     c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2)));
-    trace_out(os, boost::get<0>(m)->meta, boost::get<2>(m) ? boost::get<2>(m) : "return");
+    trace_out(os, *meta, "return");
   }
-  template <typename C, typename P, typename A0, typename A1, typename A2, typename A3>
-  void call_in(C* c, boost::function<void(A0,A1,A2,A3)> f, A0 a0, A1 a1, A2 a2, A3 a3, boost::tuple<P*, const char*, const char*> m)
+  template <typename C, typename A0, typename A1, typename A2, typename A3>
+  void call_in(C* c, boost::function<void(A0,A1,A2,A3)> f, A0 a0, A1 a1, A2 a2, A3 a3, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
+    trace_in(os, *meta, event);
     c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3)));
-    trace_out(os, boost::get<0>(m)->meta, boost::get<2>(m) ? boost::get<2>(m) : "return");
+    trace_out(os, *meta, "return");
   }
-  template <typename C, typename P, typename A0, typename A1, typename A2, typename A3, typename A4>
-  void call_in(C* c, boost::function<void(A0,A1,A2,A3,A4)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, boost::tuple<P*, const char*, const char*> m)
+  template <typename C, typename A0, typename A1, typename A2, typename A3, typename A4>
+  void call_in(C* c, boost::function<void(A0,A1,A2,A3,A4)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
+    trace_in(os, *meta, event);
     c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3), boost::ref(a4)));
-    trace_out(os, boost::get<0>(m)->meta, boost::get<2>(m) ? boost::get<2>(m) : "return");
+    trace_out(os, *meta, "return");
   }
-  template <typename C, typename P, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-  void call_in(C* c, boost::function<void(A0,A1,A2,A3,A4,A5)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, boost::tuple<P*, const char*, const char*> m)
+  template <typename C, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
+  void call_in(C* c, boost::function<void(A0,A1,A2,A3,A4,A5)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
+    trace_in(os, *meta, event);
     c->dzn_rt.handle(c, boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3), boost::ref(a4), boost::ref(a5)));
-    trace_out(os, boost::get<0>(m)->meta, boost::get<2>(m) ? boost::get<2>(m) : "return");
+    trace_out(os, *meta, "return");
   }
 
 
-  template <typename R, typename C, typename P>
-  R rcall_in(C* c, boost::function<R()> f, boost::tuple<P*, const char*, const char*> m)
+  template <typename R, typename C>
+  R rcall_in(C* c, boost::function<R()> f, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
+    trace_in(os, *meta, event);
     R r = c->dzn_rt.valued_helper(c, f);
-    trace_out(os, boost::get<0>(m)->meta, ::to_string (r));
+    trace_out(os, *meta, ::to_string (r));
     return r;
   }
-  template <typename R, typename C, typename P, typename A0>
-  R rcall_in(C* c, boost::function<R(A0)> f, A0 a0, boost::tuple<P*, const char*, const char*> m)
+  template <typename R, typename C, typename A0>
+  R rcall_in(C* c, boost::function<R(A0)> f, A0 a0, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
+    trace_in(os, *meta, event);
     R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0))));
-    trace_out(os, boost::get<0>(m)->meta, ::to_string (r));
+    trace_out(os, *meta, ::to_string (r));
     return r;
   }
-  template <typename R, typename C, typename P, typename A0, typename A1>
-  R rcall_in(C* c, boost::function<R(A0,A1)> f, A0 a0, A1 a1, boost::tuple<P*, const char*, const char*> m)
+  template <typename R, typename C, typename A0, typename A1>
+  R rcall_in(C* c, boost::function<R(A0,A1)> f, A0 a0, A1 a1, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
+    trace_in(os, *meta, event);
     R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1))));
-    trace_out(os, boost::get<0>(m)->meta, ::to_string (r));
+    trace_out(os, *meta, ::to_string (r));
     return r;
   }
-  template <typename R, typename C, typename P, typename A0, typename A1, typename A2>
-  R rcall_in(C* c, boost::function<R(A0,A1,A2)> f, A0 a0, A1 a1, A2 a2, boost::tuple<P*, const char*, const char*> m)
+  template <typename R, typename C, typename A0, typename A1, typename A2>
+  R rcall_in(C* c, boost::function<R(A0,A1,A2)> f, A0 a0, A1 a1, A2 a2, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
+    trace_in(os, *meta, event);
     R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2))));
-    trace_out(os, boost::get<0>(m)->meta, ::to_string (r));
+    trace_out(os, *meta, ::to_string (r));
     return r;
   }
-  template <typename R, typename C, typename P, typename A0, typename A1, typename A2, typename A3>
-  R rcall_in(C* c, boost::function<R(A0,A1,A2,A3)> f, A0 a0, A1 a1, A2 a2, A3 a3, boost::tuple<P*, const char*, const char*> m)
+  template <typename R, typename C, typename A0, typename A1, typename A2, typename A3>
+  R rcall_in(C* c, boost::function<R(A0,A1,A2,A3)> f, A0 a0, A1 a1, A2 a2, A3 a3, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
+    trace_in(os, *meta, event);
     R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3))));
-    trace_out(os, boost::get<0>(m)->meta, ::to_string (r));
+    trace_out(os, *meta, ::to_string (r));
     return r;
   }
-  template <typename R, typename C, typename P, typename A0, typename A1, typename A2, typename A3, typename A4>
-  R rcall_in(C* c, boost::function<R(A0,A1,A2,A3,A4)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, boost::tuple<P*, const char*, const char*> m)
+  template <typename R, typename C, typename A0, typename A1, typename A2, typename A3, typename A4>
+  R rcall_in(C* c, boost::function<R(A0,A1,A2,A3,A4)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
+    trace_in(os, *meta, event);
     R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3), boost::ref(a4))));
-    trace_out(os, boost::get<0>(m)->meta, ::to_string (r));
+    trace_out(os, *meta, ::to_string (r));
     return r;
   }
-  template <typename R, typename C, typename P, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-  R rcall_in(C* c, boost::function<R(A0,A1,A2,A3,A4,A5)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, boost::tuple<P*, const char*, const char*> m)
+  template <typename R, typename C, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
+  R rcall_in(C* c, boost::function<R(A0,A1,A2,A3,A4,A5)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_in(os, boost::get<0>(m)->meta, boost::get<1>(m));
+    trace_in(os, *meta, event);
     R r = c->dzn_rt.valued_helper(c, boost::function<R()>(boost::bind(f, boost::ref(a0), boost::ref(a1), boost::ref(a2), boost::ref(a3), boost::ref(a4), boost::ref(a5))));
-    trace_out(os, boost::get<0>(m)->meta, ::to_string (r));
+    trace_out(os, *meta, ::to_string (r));
     return r;
   }
 
 
-  template <typename C, typename P>
-  void call_out(C* c, boost::function<void()> f, boost::tuple<P*, const char*, const char*> m)
+  template <typename C>
+  void call_out(C* c, boost::function<void()> f, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    c->dzn_rt.defer(boost::get<0>(m)->meta.provides.address, c, f);
+    trace_out(os, *meta, event);
+    c->dzn_rt.defer(meta->provides.address, c, f);
   }
-  template <typename C, typename P, typename A0>
-  void call_out(C* c, boost::function<void(A0)> f, A0 a0, boost::tuple<P*, const char*, const char*> m)
+  template <typename C, typename A0>
+  void call_out(C* c, boost::function<void(A0)> f, A0 a0, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    c->dzn_rt.defer(boost::get<0>(m)->meta.provides.address, c, boost::bind(f, a0));
+    trace_out(os, *meta, event);
+    c->dzn_rt.defer(meta->provides.address, c, boost::bind(f, a0));
   }
-  template <typename C, typename P, typename A0, typename A1>
-  void call_out(C* c, boost::function<void(A0,A1)> f, A0 a0, A1 a1, boost::tuple<P*, const char*, const char*> m)
+  template <typename C, typename A0, typename A1>
+  void call_out(C* c, boost::function<void(A0,A1)> f, A0 a0, A1 a1, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    c->dzn_rt.defer(boost::get<0>(m)->meta.provides.address, c, boost::bind(f, a0, a1));
+    trace_out(os, *meta, event);
+    c->dzn_rt.defer(meta->provides.address, c, boost::bind(f, a0, a1));
   }
-  template <typename C, typename P, typename A0, typename A1, typename A2>
-  void call_out(C* c, boost::function<void(A0,A1,A2)> f, A0 a0, A1 a1, A2 a2, boost::tuple<P*, const char*, const char*> m)
+  template <typename C, typename A0, typename A1, typename A2>
+  void call_out(C* c, boost::function<void(A0,A1,A2)> f, A0 a0, A1 a1, A2 a2, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    c->dzn_rt.defer(boost::get<0>(m)->meta.provides.address, c, boost::bind(f, a0, a1, a2));
+    trace_out(os, *meta, event);
+    c->dzn_rt.defer(meta->provides.address, c, boost::bind(f, a0, a1, a2));
   }
-  template <typename C, typename P, typename A0, typename A1, typename A2, typename A3>
-  void call_out(C* c, boost::function<void(A0,A1,A2,A3)> f, A0 a0, A1 a1, A2 a2, A3 a3, boost::tuple<P*, const char*, const char*> m)
+  template <typename C, typename A0, typename A1, typename A2, typename A3>
+  void call_out(C* c, boost::function<void(A0,A1,A2,A3)> f, A0 a0, A1 a1, A2 a2, A3 a3, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    c->dzn_rt.defer(boost::get<0>(m)->meta.provides.address, c, boost::bind(f, a0, a1, a2, a3));
+    trace_out(os, *meta, event);
+    c->dzn_rt.defer(meta->provides.address, c, boost::bind(f, a0, a1, a2, a3));
   }
-  template <typename C, typename P, typename A0, typename A1, typename A2, typename A3, typename A4>
-  void call_out(C* c, boost::function<void(A0,A1,A2,A3,A4)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, boost::tuple<P*, const char*, const char*> m)
+  template <typename C, typename A0, typename A1, typename A2, typename A3, typename A4>
+  void call_out(C* c, boost::function<void(A0,A1,A2,A3,A4)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    c->dzn_rt.defer(boost::get<0>(m)->meta.provides.address, c, boost::bind(f, a0, a1, a2, a3, a4));
+    trace_out(os, *meta, event);
+    c->dzn_rt.defer(meta->provides.address, c, boost::bind(f, a0, a1, a2, a3, a4));
   }
-  template <typename C, typename P, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-  void call_out(C* c, boost::function<void(A0,A1,A2,A3,A4,A5)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, boost::tuple<P*, const char*, const char*> m)
+  template <typename C, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
+  void call_out(C* c, boost::function<void(A0,A1,A2,A3,A4,A5)> f, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, const dzn::port::meta* meta, const char* event)
   {
     std::ostream& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_out(os, boost::get<0>(m)->meta, boost::get<1>(m));
-    c->dzn_rt.defer(boost::get<0>(m)->meta.provides.address, c, boost::bind(f, a0, a1, a2, a3, a4, a5));
+    trace_out(os, *meta, event);
+    c->dzn_rt.defer(meta->provides.address, c, boost::bind(f, a0, a1, a2, a3, a4, a5));
   }
 
   void call_async_helper(const locator&, const meta&, size_t, const boost::function<void()>& f, const boost::function<void()>& g);

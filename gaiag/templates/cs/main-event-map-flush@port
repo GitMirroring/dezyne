@@ -1,4 +1,3 @@
 lookup.Add("#.name .<flush>",()=>{System.Console.Error.WriteLine("#.name .<flush>");
-  c.system.dzn_runtime.flush(c.system);
-  #x:flush-provides
+  c.dzn_runtime.flush(c);
 });

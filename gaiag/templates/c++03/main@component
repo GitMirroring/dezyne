@@ -30,8 +30,9 @@ event_map (dzn::container< #x:type-name , boost::function<void()> >& c)
 int
 main(int argc, char* argv[])
 {
+  bool flush = argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;});
   if(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--debug") == 0;})) dzn::debug.rdbuf(std::clog.rdbuf());
-  dzn::container< #x:type-name , boost::function<void()> > c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
+  dzn::container< #x:type-name , boost::function<void()> > c(flush);
 
   connect_ports (c);
   c(event_map (c), { #x:main-required-port-name });

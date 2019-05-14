@@ -1,2 +1,3 @@
+
 {"#.port.name .#.event.name",[&]{ #x:main-out-arg-define c.system.#.port.name .#.event.direction .#.event.name(#x:main-out-arg);
-#x:main-event-map-match-return std::queue<boost::function<void()>> empty; std::swap(c.runtime.queue(&c.system.#.port.name), empty);}}
+#x:main-event-map-match-return std::queue<boost::function<void()>> empty; std::swap(c.dzn_rt.queue(&c.system.#.port.name), empty);}}

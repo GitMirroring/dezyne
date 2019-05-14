@@ -31,8 +31,8 @@ namespace dzn
 {
   public class container<TSystem> : Component, IDisposable where TSystem : Component
   {
+    public bool flush;
     public TSystem system;
-
     public Dictionary<String, Action> lookup;
     public Queue<String> expect;
     public pump pump;
@@ -40,6 +40,7 @@ namespace dzn
     public container(Func<Locator,String,TSystem> new_system, bool flush, Locator locator)
     : base(locator, "<internal>", null)
     {
+      this.flush = flush;
       this.pump = new pump();
       this.expect = new Queue<String>();
       this.system = new_system(locator.set(this.pump),"sut");
@@ -90,7 +91,7 @@ namespace dzn
     {
       String tmp = match_return();
       if(actual != tmp)
-        throw new runtime_error("unmatched expectation: \"" + actual + "\" got: \"" + tmp + "\"");
+        throw new runtime_error("unmatched expectation: behaviour expects: \"" + actual + "\" trace expects: \"" + tmp + "\"");
     }
     public void run(Dictionary<String, Action> lookup, List<String> required_ports)
     {

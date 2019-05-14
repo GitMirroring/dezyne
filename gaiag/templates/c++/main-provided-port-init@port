@@ -1,1 +1,3 @@
+c.system.#.name .meta.requires.address = &c;
+c.system.#.name .meta.requires.meta = &c.meta;
 c.system.#.name .meta.requires.port = "#.name";

@@ -91,7 +91,7 @@ namespace dzn
       }
       if (deferred(scope)) {
         void* tgt = deferred(scope);
-        deferred(scope) = NULL;
+        deferred(scope) = nullptr;
         if (!handling(tgt)) {
           runtime::flush(tgt);
         }

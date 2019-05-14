@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -81,7 +81,7 @@ event_map (dzn::container< ::shell, std::function<void()>>& c)
     , {"p_outer.return_int",[&]{std::thread([&]{c.match("p_outer." + to_string(c.system.p_outer.in.return_int()));}).detach();}}
     , {"p_outer.return_bool",[&]{std::thread([&]{c.match("p_outer." + to_string(c.system.p_outer.in.return_bool()));}).detach();}}
     , {"p_outer.return_enum",[&]{std::thread([&]{int _0 = 0; int _1 = 1; c.match("p_outer." + to_string(c.system.p_outer.in.return_enum(0,_1)));}).detach();}}
-    , {"r_outer.<flush>",[&]{std::clog << "r_outer.<flush>" << std::endl; c.runtime.flush(&c);}}
+    , {"r_outer.<flush>",[&]{std::clog << "r_outer.<flush>" << std::endl; c.dzn_rt.flush(&c);}}
   };
 }
 

@@ -39,9 +39,10 @@ namespace dzn
   template <typename System, typename Function>
   struct container
   {
+    const bool flush;
     dzn::meta meta;
-    dzn::locator locator;
-    dzn::runtime runtime;
+    dzn::locator dzn_locator;
+    dzn::runtime dzn_rt;
     System system;
 
     std::map<std::string, Function> lookup;
@@ -52,15 +53,20 @@ namespace dzn
 
     dzn::pump pump;
 
+    friend std::ostream& operator << (std::ostream& os, container<System,Function>&) {
+      return os;
+    }
+
     container(bool flush, dzn::locator&& l = dzn::locator{})
-    : meta{"<internal>","container",0,0,{},{&system.dzn_meta},{[this]{system.check_bindings();}}}
-    , locator(std::forward<dzn::locator>(l))
-    , runtime()
-    , system(locator.set(runtime).set(pump))
+    : flush(flush)
+    , meta{"<internal>","container",0,0,{},{&system.dzn_meta},{[this]{system.check_bindings();}}}
+    , dzn_locator(std::forward<dzn::locator>(l))
+    , dzn_rt()
+    , system(dzn_locator.set(dzn_rt).set(pump))
     , pump()
     {
-      locator.get<illegal_handler>().illegal = []{std::clog << "illegal" << std::endl; std::exit(0);};
-      runtime.performs_flush(this) = flush;
+      dzn_locator.get<illegal_handler>().illegal = []{std::clog << "illegal" << std::endl; std::exit(0);};
+      dzn_rt.performs_flush(this) = flush;
       system.dzn_meta.name = "sut";
     }
     ~container()

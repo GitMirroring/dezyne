@@ -1,1 +1,3 @@
+c.system.#.name .dzn_meta.requires.component = c;
+c.system.#.name .dzn_meta.requires.meta = c.dzn_meta;
 c.system.#.name .dzn_meta.requires.name = "#.name";
