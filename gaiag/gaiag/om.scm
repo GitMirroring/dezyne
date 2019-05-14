@@ -207,7 +207,7 @@
        (make <on-node> #:triggers (helper triggers) #:statement (helper statement)))
 
       (('on triggers statement silent?)
-       (make <on-node> #:triggers (helper triggers) #:statement (helper statement) #:silent? silent?))
+       (make <on-node> #:triggers (helper triggers) #:statement (helper statement) #:silent? (and silent? 'silent)))
 
       (('otherwise) (make <otherwise-node> #:value 'otherwise))
 

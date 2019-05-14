@@ -24,7 +24,6 @@
 ;;; Code:
 
 (define-module (gaiag peg)
-  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 receive)
@@ -34,6 +33,7 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
+  #:use-module (gaiag peg-silence)
   #:use-module (gaiag display)
   #:use-module (gaiag ast)
   #:use-module (gaiag command-line)
@@ -121,12 +121,13 @@
       (('interface name types-or-events behaviour)
        (let* ((types-or-events (helper types-or-events))
               (types (filter (is? <type-node>) types-or-events))
-              (events (filter (is? <event-node>) types-or-events)))
+              (events (filter (is? <event-node>) types-or-events))
+              (behaviour (helper behaviour)))
          (make <interface-node>
            #:name (helper name)
            #:types (make <types-node> #:elements types)
            #:events (make <events-node> #:elements events)
-           #:behaviour (helper behaviour))))
+           #:behaviour (and behaviour (.node ((mark-silent) (make <behaviour> #:node behaviour)))))))
 
       (('types-or-events types-or-events ...) (helper types-or-events))
 
@@ -585,7 +586,3 @@
                         (list
                          (make <action> #:event.name 'ack)
                          (make <assign> #:variable.name 'idle #:expression true)))))))))))))
-
-;; differences in ast:
-;;  import
-;;  async
