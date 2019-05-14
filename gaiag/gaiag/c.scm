@@ -83,8 +83,7 @@
 (define-method (c:formal-data-type (o <formal>))
   (cond ((is-a? (.type o) <enum>) "uint8_t")
         ((is-a? (.type o) <int>) (c:range-type (.type o)))
-        ((is-a? (.type o) <extern>)
-         (list ((compose .value .value .type) o)))
+        ((is-a? (.type o) <extern>) (list ((compose .value .value .type) o)))
         (else ((compose .name .type.name) o))))
 
 ;; bidning stuff
