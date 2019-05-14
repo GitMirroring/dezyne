@@ -306,10 +306,21 @@
   (append-map on (tree-collect (is? <on>) o)))
 
 (define-method (on (o <on>))
-  (let ((parent (parent (.parent o) <on>)))
-    (if parent `(,(wfc-error o "nested on used")
-                 ,(wfc-error parent "within on here"))
-        '())))
+  (append
+   (let ((parent (parent (.parent o) <on>)))
+     (if parent `(,(wfc-error o "nested on used")
+                  ,(wfc-error parent "within on here"))
+         '()))
+   (if (is-a? (parent o <model>) <interface>) (modeling-silent o)
+       '())))
+
+(define-method (modeling-silent (o <on>))
+  (if (and (or (eq? (.silent? o) *unspecified*)
+               (is-a? (.silent? o) <ast>)) ((@@ (gaiag peg) any-modeling?) o))
+      `(,(wfc-error o (format #f "cannot determine silentness"))
+        ,@(if (is-a? (.silent? o) <ast>) `(,(wfc-error (.silent? o) (format #f "may communicate or be silent")))
+              '()))
+      '()))
 
 (define-method (action (o <behaviour>))
   (append-map action (tree-collect (is? <action>) o)))

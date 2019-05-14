@@ -76,6 +76,9 @@
   (or (assoc-ref function-silence (.function.name o))
       'recursive))
 
+(define-method (silence (o <guard>) function-silence)
+  (silence (.statement o) function-silence))
+
 (define-method (silence (o <variable>) function-silence)
   (if (or (is-a? (.expression o) <action>)
           (is-a? (.expression o) <call>)) (silence (.expression o) function-silence)
