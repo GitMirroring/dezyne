@@ -1,1 +1,1 @@
-out/wf_functionReturnValue/wf_functionReturnValue.dzn:4:10: Well-formedness error: Function does not return a value in all cases: 'f'
+out/wf_functionReturnValue/wf_functionReturnValue.dzn:9:19: error: error: missing return

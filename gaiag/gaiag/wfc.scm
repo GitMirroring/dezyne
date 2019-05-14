@@ -105,6 +105,7 @@
    (assign o)
    (call-context o)
    (tail-recursion o)
+   (missing-return o)
    (blocking o)
    (reply o)
    (return o)
@@ -527,7 +528,7 @@
   (let ((function (parent o <function>)))
     (if (or (not function)
             (not (eq? (.name function) (.function.name o)))) '()
-            (let* ((continuation ((compose car (@@ (gaiag makreel) makreel:continuation)) o))
+            (let* ((continuation ((compose car wfc:continuation) o))
                    (continuation (if (is-a? continuation <variable>) ((compose car (@@ (gaiag makreel) makreel:continuation)) continuation) continuation))
                    (continuation (and continuation
                                       (not (ast:eq? continuation (.statement (parent o <function>))))
@@ -536,6 +537,32 @@
               (if continuation `(,(wfc-error o "recursive function not in tail call")
                                  ,(wfc-error continuation "next statement"))
                   '())))))
+
+(define-method (missing-return (o <behaviour>))
+  (append-map missing-return (ast:function* o)))
+
+(define-method (wfc:continuation (o <ast>))
+  ((@@ (gaiag makreel) makreel:continuation) o))
+
+(define-method (wfc:continuation (o <if>))
+  (cons ((@@ (gaiag makreel) makreel:then-continuation) o)
+        ((@@ (gaiag makreel) makreel:else-continuation) o)))
+
+(define-method (missing-return (o <function>))
+  (if (is-a? (ast:type o) <void>) '()
+      (let loop ((heads (list (.statement o))) (missing-returns '()))
+        (if (null? heads) missing-returns
+            (let loop2 ((heads heads) (continuations '()) (missing-returns '()))
+              (if (null? heads) (loop continuations missing-returns)
+                  (let* ((head (car heads))
+                         (continuation (wfc:continuation head))
+                         (continuation (filter (negate (is? <return>)) continuation))
+                         (missing-return (filter (cut ast:eq? <> (.statement o)) continuation))
+                         (continuation (filter (negate (cut ast:eq? <> (.statement o))) continuation)))
+                    (loop2 (cdr heads) (append continuations continuation)
+                           `(,@missing-returns
+                             ,@(if (null? missing-return)  '()
+                                   `(,(wfc-error head "error: missing return"))))))))))))
 
 (define (ast-> ast)
   ((compose
