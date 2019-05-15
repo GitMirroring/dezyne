@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -57,15 +57,12 @@ int main()
 {
   while (getchar() != EOF);
 
-  runtime rt;
-  runtime_init(&rt);
-
   locator l;
-  locator_init(&l, &rt);
+  locator_init(&l);
 
   Dataparam d;
 #if defined(DZN_TRACING)
-  dzn_meta_t m = {"d", 0};
+  dzn_meta m = {"d", 0};
 #endif
   Dataparam_init(&d,&l
 #if defined(DZN_TRACING)

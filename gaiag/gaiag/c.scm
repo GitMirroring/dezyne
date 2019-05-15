@@ -216,9 +216,9 @@
         ((is-a? (ast:type o) <int>) (c:range-type (ast:type o)))
         ((is-a? (ast:type o) <extern>)
          (if (string= "int" ((compose .name.name .type) o))
-                                        "int16_t"
-                                        ((compose .value .type) o)))
-        (else(code:type-name o))))
+             "int16_t"
+             ((compose .value .type) o)))
+        (else (code:type-name o))))
 
 (define-method (c:range-type (o <int>))
   (let*((range (.range o))
