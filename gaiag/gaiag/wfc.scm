@@ -289,7 +289,9 @@
         (append-map (cut reply o <>) (ast:trigger* on)))))
 
 (define-method (reply (o <reply>) (trigger <trigger>))
-  (let* ((event (.event trigger))
+  (let* ((component (parent o <component>))
+         (event (if (and component (pair? (tree-collect (is? <blocking>) component)) (ast:requires? trigger)) (car (ast:event* (ast:provides-port component)))
+                    (.event trigger)))
          (event-type (ast:type event))
          (reply-type (ast:type o)))
     (or (and (or (not (.port.name o))
