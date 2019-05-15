@@ -280,16 +280,16 @@
   (define (pair-eq? p) (eq? (car p) (cdr p)))
 
   (define ((rename mapping) o)
-    ;;(stderr "rename o=~a\n" o)
     (match o
       ((and ($ <trigger>) (? (compose null? ast:formal*))) o)
       (($ <trigger>)
        (clone o #:formals (clone (.formals o) #:elements (map (rename mapping) ((compose .elements .formals) o)))))
+      (($ <action>) (clone o #:arguments ((rename mapping) (.arguments o))))
+      (($ <arguments>) (clone o #:elements (map (rename mapping) (.elements o))))
       ((? symbol?) (or (assoc-ref mapping o) o))
       ((? (is? <ast>)) (tree-map (rename mapping) o))
       (_ o)))
 
-  ;;(stderr "rewrite o=~a\n" o)
   (define (foo t)
     (let ((o (t-on t)))
       (match o
