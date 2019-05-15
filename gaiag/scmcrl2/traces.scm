@@ -118,7 +118,7 @@ illegal")
      enum-literal       <-- (enum tick)* enum-field
      enum               <-  identifier
      enum-field         <-  identifier
-     direction          <   'qin' / 'in' / 'out'
+     direction          <   ('qin' / 'in' / 'out') !identifier
      queue-direction    <-- 'qout'
      action-literal     <   'action'
      internal-literal   <   'internal' / 'silent'
@@ -216,5 +216,6 @@ illegal")
                        (car files)))
          (text (string-trim-right (with-input-from-file file read-string)))
          (lts? (string-prefix? "des " text)))
-    (if lts? (display (cleanup-lts text #:internal? #t))
-        (display (cleanup-text text)))))
+    (parameterize ((%peg:debug? #f))
+      (if lts? (display (cleanup-lts text #:internal? #t))
+          (display (cleanup-text text))))))

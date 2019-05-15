@@ -1,4 +1,4 @@
 verify: hello.interface_namespace: check: deadlock: fail
-hello.interface_namespace.hello
-hello.interface_namespace.return
+interface_namespace.hello
+interface_namespace.return
 verify: hello.interface_namespace: check: livelock: ok
