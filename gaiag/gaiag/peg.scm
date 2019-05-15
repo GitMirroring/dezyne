@@ -63,7 +63,7 @@
       ("bool" (make <scope.name-node> #:name 'bool))
       ("void" (make <scope.name-node> #:name 'void))
 
-      ((and (? string?) (? (cut string-every char-set:digit <>))) (string->number o))
+      ((and (? string?) (? string->number)) (string->number o))
 
       ((? string?) (string->symbol o))
 

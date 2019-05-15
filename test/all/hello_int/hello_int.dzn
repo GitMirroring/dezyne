@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,7 +24,7 @@
 
 interface ihello
 {
-  subint Int {0..1};
+  subint Int {-1..1};
   in Int hello();
 
   behaviour
@@ -39,7 +40,7 @@ component hello_int
 
   behaviour
   {
-    ihello.Int i = 0;
+    ihello.Int i = -1;
     on h.hello():
     {
       i = w.world();
