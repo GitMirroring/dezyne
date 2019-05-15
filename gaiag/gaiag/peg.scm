@@ -467,7 +467,7 @@
 
       (('expression expression) (helper expression))
       (('expression expression ...) (helper expression))
-      (('group expression) (make <group> #:expression (helper expression)))
+      (('group expression) (make <group-node> #:expression (helper expression)))
       ((left "||" right) (make <or-node> #:left (helper left) #:right (helper right)))
       ((left "&&" right) (make <and-node> #:left (helper left) #:right (helper right)))
 

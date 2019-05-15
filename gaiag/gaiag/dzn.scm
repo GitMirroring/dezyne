@@ -265,6 +265,9 @@
 (define-method (dzn:expression-expand (o <expression>))
   o)
 
+(define-method (dzn:expression-expand (o <group>))
+  (.expression o))
+
 (define-method (dzn:class-member? (o <variable>))
   (let ((p (.parent o)))
     (and (is-a? p <variables>)
