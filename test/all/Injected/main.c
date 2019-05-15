@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -38,14 +38,11 @@ int main()
 {
   while (getchar() != EOF);
 
-  runtime rt;
-  runtime_init(&rt);
-
   locator l;
-  locator_init(&l, &rt);
+  locator_init(&l);
 
   Injected sut;
-  dzn_meta_t mt = {"sut", 0};
+  dzn_meta mt = {"sut", 0};
   Injected_init(&sut, &l, &mt);
   sut.t->meta.requires.port = "t";
   sut.t->meta.requires.address = 0;
