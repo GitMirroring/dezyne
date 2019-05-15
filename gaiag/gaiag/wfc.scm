@@ -97,6 +97,7 @@
 
 (define-method (wfc (o <behaviour>))
   (append
+   (append-map variable-re-declaration (tree-collect (is? <variable>) o))
    (append-map wfc (ast:type* o))
    (on o)
    (mixing-declarative-imperative o)
@@ -114,6 +115,32 @@
 
 (define-method (wfc (o <type>))
   '())
+
+(define-method (wfc (o <enum>))
+  (re-declaration o))
+
+(define-method (re-declaration (o <declaration>) scope)
+  (let* ((name (.name o))
+         (name (if (is-a? name <scope.name>) (.name name) name))
+         (previous (ast:lookup scope name)))
+    (if (and previous
+             (ast:eq? (parent previous <model>) (parent o <model>))
+             (not (ast:eq? previous o))
+             (not (is-a? previous <namespace>)))
+        `(,(wfc-error o (format #f "identifier `~a' declared before" (ast:name o)))
+          ,(wfc-error previous (format #f "previous `~a' declared here" (ast:name previous))))
+        '())))
+
+(define-method (re-declaration (o <declaration>))
+  (let ((scope (or (and=> (parent o <model>) .parent)
+                    (and=> (.parent o) (cut parent <> <scope>)))))
+    (re-declaration o scope)))
+
+(define-method (variable-re-declaration (o <variable>))
+  (append (re-declaration o)
+          (let ((scope (parent o <compound>)))
+            (if scope (re-declaration o scope)
+                '()))))
 
 (define-method (wfc (o <int>))
   (let ((range (.range o)))
@@ -182,18 +209,20 @@
           (else '()))))
 
 (define-method (wfc (o <port>))
-  (let ((interface (.type o)))
-    (cond ((not interface)
-           `(,(wfc-error o (format #f "interface ~a undefined" (type-name (.type.name o))))))
-          ((not (is-a? interface <interface>))
-           `(,(wfc-error o (format #f "interface expected, found ~a ~a" (ast-name interface) (type-name interface)))))
-          ((and (.injected o)
-                (let ((out-events (filter ast:out? (ast:event* o))))
-                  (and (pair? out-events)
-                       `(,(wfc-error o (format #f "injected port ~a has out events: ~a" (.name o)
-                                               (string-join (map (compose symbol->string .name) out-events) ", ")))
-                         ,@(map (cut wfc-error <> (format #f "defined here")) out-events))))))
-          (else '()))))
+  (append
+   (re-declaration o)
+   (let ((interface (.type o)))
+     (cond ((not interface)
+            `(,(wfc-error o (format #f "interface ~a undefined" (type-name (.type.name o))))))
+           ((not (is-a? interface <interface>))
+            `(,(wfc-error o (format #f "interface expected, found ~a ~a" (ast-name interface) (type-name interface)))))
+           ((and (.injected o)
+                 (let ((out-events (filter ast:out? (ast:event* o))))
+                   (and (pair? out-events)
+                        `(,(wfc-error o (format #f "injected port ~a has out events: ~a" (.name o)
+                                                (string-join (map (compose symbol->string .name) out-events) ", ")))
+                          ,@(map (cut wfc-error <> (format #f "defined here")) out-events))))))
+           (else '())))))
 
 (define-method (illegal (o <behaviour>))
   (append-map illegal (tree-collect (is? <illegal>) o)))

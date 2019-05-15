@@ -469,6 +469,9 @@
 (define-method (ast:eq? a (b <ast>))
   #f)
 
+(define-method (ast:eq? a b)
+  (eq? a b))
+
 (define-method (ast:equal? a b)
   #f)
 

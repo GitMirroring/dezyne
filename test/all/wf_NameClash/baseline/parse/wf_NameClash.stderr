@@ -1,4 +1,10 @@
-out/wf_NameClash/wf_NameClash.dzn:2:8: Well-formedness error: Enum type name must not be equal to model name: 'I1'
-out/wf_NameClash/wf_NameClash.dzn:10:15: Well-formedness error: Port name must not be equal to model name: 'wf_NameClash'
-out/wf_NameClash/wf_NameClash.dzn:19:10: Well-formedness error: Enum type name must not be equal to model name: 'wf_NameClash2'
-out/wf_NameClash/wf_NameClash.dzn:27:10: Well-formedness error: Variable name must not be equal to model name: 'wf_NameClash3'
+out/wf_NameClash/wf_NameClash.dzn:2:2: error: identifier `I1' declared before
+out/wf_NameClash/wf_NameClash.dzn:1:0: error: previous `I1' declared here
+out/wf_NameClash/wf_NameClash.dzn:10:2: error: identifier `wf_NameClash' declared before
+out/wf_NameClash/wf_NameClash.dzn:8:1: error: previous `wf_NameClash' declared here
+out/wf_NameClash/wf_NameClash.dzn:19:4: error: identifier `wf_NameClash2' declared before
+out/wf_NameClash/wf_NameClash.dzn:15:1: error: previous `wf_NameClash2' declared here
+out/wf_NameClash/wf_NameClash.dzn:27:4: error: identifier `wf_NameClash3' declared before
+out/wf_NameClash/wf_NameClash.dzn:23:1: error: previous `wf_NameClash3' declared here
+out/wf_NameClash/wf_NameClash.dzn:31:6: error: identifier `b' declared before
+out/wf_NameClash/wf_NameClash.dzn:30:6: error: previous `b' declared here
