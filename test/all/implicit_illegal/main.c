@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -37,16 +37,13 @@ int main()
 {
   while (getchar() != EOF);
 
-  runtime rt;
-  runtime_init(&rt);
-
   locator loc;
-  locator_init(&loc, &rt);
+  locator_init(&loc);
   loc.illegal = illegal_print;
 
   implicit_illegal sut;
 
-  dzn_meta_t m = {"sut", 0};
+  dzn_meta m = {"sut", 0};
   implicit_illegal_init(&sut, &loc, &m);
   sut.p->meta.requires.port = "p";
   sut.p->in.e(sut.p);
