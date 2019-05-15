@@ -835,7 +835,11 @@
       o))
 
 (define-method (code:model (o <root>))
-  (dzn:model o))
+  (topological-sort
+   (map dzn:annotate-shells
+        (filter (negate (disjoin (is? <data>) (is? <type>) (is? <namespace>)
+                                 (conjoin ast:imported? (negate (is? <foreign>)))))
+                (ast:model* o)))))
 
 (define-method (code:upcase-model-name o)
   (map symbol-upcase (ast:full-name (parent o <model>))))
