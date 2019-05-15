@@ -323,8 +323,12 @@
       (injected-instances o)))
 
 ;;; code:ast querying
+(define-method (code:return-type-eq? (a <int>) (b <int>))
+  #t)
+(define-method (code:return-type-eq? a b)
+  (ast:eq? a b))
 (define (code:reply-types o)
-  (filter (negate (is? <void>)) (ast:return-types o)))
+  (delete-duplicates (filter (negate (is? <void>)) (ast:return-types o)) code:return-type-eq?))
 
 (define-method (code:port-name (o <on>))
   ((compose .port.name car ast:trigger*) o))

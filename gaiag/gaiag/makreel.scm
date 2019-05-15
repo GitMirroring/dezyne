@@ -345,9 +345,15 @@
     (tree-collect (is? <enum>) o))
    ast:eq?))
 
+(define-method (makreel:reply-type-eq? (a <int>) (b <int>))
+  #t)
+(define-method (makreel:reply-type-eq? a b)
+  (ast:eq? a b))
+
 (define-method (makreel:reply-type-sort (o <interface>))
   (define (event-type-eq? a b)
-    (ast:equal? (.type.name (.signature a)) (.type.name (.signature b))))
+    (or (makreel:reply-type-eq? (.type (.signature a)) (.type (.signature b)))
+        (ast:equal? (.type.name (.signature a)) (.type.name (.signature b)))))
   (delete-duplicates
    (filter (compose (negate (is? <void>)) (compose .type .signature))
            (ast:event* o))

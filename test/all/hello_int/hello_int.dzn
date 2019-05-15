@@ -25,11 +25,14 @@
 interface ihello
 {
   subint Int {-1..1};
+  subint INT {-1..1};
   in Int hello();
+  in INT bye();
 
   behaviour
   {
     on hello: reply (1);
+    on bye: reply (-1);
   }
 }
 
@@ -45,7 +48,9 @@ component hello_int
     {
       i = w.world();
       reply (i);
+      i = -1;
     }
+    on h.bye(): reply (i);
   }
 }
 
