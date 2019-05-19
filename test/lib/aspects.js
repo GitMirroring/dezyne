@@ -238,8 +238,7 @@ function run_traces(parameters, asp, app) {
 }
 
 var supported_languages = {
-  //'default': ['c++', 'c++03', 'c++-msvc11', 'c', 'cs', 'javascript', 'scheme'],
-  'default': ['c++', 'scheme'],
+  'default': ['c++', 'c++03', 'c++-msvc11', 'c', 'cs', 'javascript', 'scheme'],
   '2.4.1' : ['c++', 'c++03', 'c++-msvc11', 'c', 'cs', 'javascript'],
 };
 
