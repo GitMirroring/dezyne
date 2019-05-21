@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +21,7 @@
 //
 // Code:
 
-#file "hello_import.dzn"
+#file "C:\aap\hello_import.dzn"
 //import interfaces.dzn;
 //import components.dzn;
 
@@ -66,7 +66,7 @@ component comp {
   behaviour
   {
     on h.hello(): {
-      f(); // this error will not be detected!
+      //f(); // this error will not be detected!
     }
   }
 }
