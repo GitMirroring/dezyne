@@ -167,7 +167,7 @@ function no_skip_p (meta, version) {
 }
 
 function known (meta, aspect, version, language) {
-  return aspect_in_dict (meta.known, aspect, version, language);
+  return aspect_in_dict (meta.known, aspect, version, haslanguage(aspect) && language);
 }
 
 function aspect_in_dict (dict, aspect, version, language) {
