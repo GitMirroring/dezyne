@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -402,39 +402,41 @@
   (if (.port.name o) (symbol-append (.port.name o) '. (.event.name o))
       (.event.name o)))
 
-(define (->symbol o)
+(define (trigger->string o)
+  ((compose symbol->string trigger->symbol) o))
+
+(define (->string o)
   (match o
-    (($ <action>) (trigger->symbol o))
-    (($ <action-out>) (trigger->symbol o))
-    (($ <trigger>) (trigger->symbol o))
-    (($ <illegal>) 'illegal)
-    (($ <q-in>) '<q>)
-    (($ <q-out>) '<q>)
-    (($ <q-trigger>) (->symbol (.trigger o)))
-
+    (($ <action>) (trigger->string o))
+    (($ <action-out>) (trigger->string o))
+    (($ <trigger>) (trigger->string o))
+    (($ <illegal>) "illegal")
+    (($ <q-in>) "<q>")
+    (($ <q-out>) "<q>")
+    (($ <q-trigger>) (->string (.trigger o)))
      ((and ($ <trigger-return>) (= .expression #f) (= .port.name #f))
-     'return)
+      "return")
     ((and ($ <trigger-return>) (= .expression #f) (= .port.name port))
-     (symbol-append port '.return))
+     (string-append (->string port) ".return"))
     ((and ($ <trigger-return>) (= .expression expression) (= .port.name #f))
-     (symbol-append (->symbol expression)))
-
+     (->string expression))
     ((and ($ <trigger-return>) (= .expression expression) (= .port.name port))
-     (symbol-append port '. (->symbol expression)))
-    ((and ($ <trigger-return>) (= .expression #f)) 'return)
-    ((? symbol?) o)
-    ((? number?) (string->symbol (number->string o)))
+     (string-append (->string port) "." (->string expression)))
+    ((and ($ <trigger-return>) (= .expression #f)) "return")
+    ((? number?) (number->string o))
+    ((? string?) o)
+    ((? symbol?) (symbol->string o))
     (($ <enum-literal>)
-;;     (symbol-append ((compose .name .name .type) o) '_ (.field o))
-     (symbol-append (.name (.type.name o)) '_ (.field o))
-     )
+     (string-append (->string (.name (.type.name o))) "_" (->string (.field o))))
+    (($ <literal>) (->string (.value o)))
+    ((and ($ <reply>) (= .expression (? (is? <literal>))) (= (compose .value .expression) 'void)) "return")
+    (($ <reply>) ((compose ->string .expression) o))
+    (#f "false")
+    (#t "true")
+    ((? (is? <ast>)) (->string (ast-name o)))))
 
-    (($ <literal>) (->symbol (.value o)))
-    ((and ($ <reply>) (= .expression (? (is? <literal>))) (= (compose .value .expression) 'void)) 'return)
-    (($ <reply>) ((compose ->symbol .expression) o))
-    (#f 'false)
-    (#t 'true)
-    ((? (is? <ast>)) (ast-name o))))
+(define (->symbol o)
+  ((compose string->symbol ->string) o))
 
 (define* (symbol->trigger o #:optional instance)
   "If O is of form [PORT.]TRIGGER, produce (trigger [PORT] EVENT)"
@@ -1389,7 +1391,7 @@
         (statement (cdr o)))
     (format #f "~a.~a"
             (runtime:instance->string instance)
-            (->symbol statement))))
+            (->string statement))))
 
 (define* (print-trace node #:optional count debug?)
   (let ((steps (.steps node))
