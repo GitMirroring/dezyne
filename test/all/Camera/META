@@ -1,1 +1,1 @@
-{"model":false,"skip":["c:build","cs:build","javascript","run","table"],"comment":"handwritten main, cannot c, cs, run"}
+{"model":false,"skip":["c:build","cs:build","javascript","run"],"comment":"handwritten main, cannot c, cs, run"}

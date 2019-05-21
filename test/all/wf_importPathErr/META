@@ -1,5 +1,5 @@
 {"imports":["all/importPath/subdir","all/importPath/foo"]
-,"skip":["table","view","code","traces"]
+,"skip":["code","traces"]
 ,"comment":"dedicated for import test"
 }
 
