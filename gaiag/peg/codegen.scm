@@ -403,7 +403,7 @@ return EXP."
                    (loc `(location ,at ,(car res)))
                    (annotate (if (not (%peg:locations?)) '()
                                  (if (null? (cadr comment-res)) `(,loc)
-                                     `(,(cdr comment-res) ,loc))))
+                                     `(,loc ,(list 'comment (cdr comment-res))))))
                    (at (car res)))
               #,(cond
                  ((eq? accumsym 'name)

@@ -260,9 +260,6 @@ injected <-- INJECTED
 NUMBER              <-  MINUS? [0-9]+
 ASTERISK            <-  '*'
 DOLLAR              <   '$'
-COMMENT-OPEN        <   '/*'
-COMMENT-CLOSE       <   '*/'
-COMMENT             <   '//'
 BRACE-OPEN          <   '{'
 BRACE-CLOSE         <   '}'
 BRACKET-OPEN        <   '['
