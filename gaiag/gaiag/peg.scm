@@ -67,6 +67,12 @@
 
       ((? string?) (string->symbol o))
 
+      (((and (? symbol?) type) body ... ('comment comment))
+       (let ((ast (helper (cons type body))))
+         (if (is-a? ast <ast-node>)
+             (clone ast #:comment (helper `(comment ,comment)))
+             ast))) ;; TODO ensure (is-a? ast <ast>) is invariant to prevent comment loss
+
       (((and (? symbol?) type) body ... ('location pos end))
        (let ((ast (helper (cons type body)))
              (location (helper (last o))))
@@ -74,15 +80,12 @@
              (clone ast #:location location)
              ast)))
 
-      (((and (? symbol?) type) body ... ('comment comment))
-       (let ((ast (helper (cons type body))))
-         (if (is-a? ast <ast-node>)
-             (clone ast #:comment comment)
-             ast))) ;; TODO ensure (is-a? ast <ast>) is invariant to prevent comment loss
-
       (((and (or 'root 'interface 'behaviour 'component 'types 'events 'event) type) body ... (? string?))
        ;; FIXME: junking non-comment-parsed string
        (helper (cons type body)))
+
+      (('comment comment)
+       (make <comment-node> #:comment comment))
 
       (('elements elements ...) (helper elements))
 
