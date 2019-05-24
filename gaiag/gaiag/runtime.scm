@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -173,7 +173,7 @@
           (let ((container (runtime:find-instance (car instance-path) container #f)))
             (loop container (cdr instance-path)))))))
 
-(define-method (runtime:get-system-instances (o <runtime:instance>))
+(define-method (ast:sorted-instance* (o <system>))
   (define (end-point-direction? end-point direction instance)
     (and (eq? (.name instance) (.instance.name end-point))
          (find (lambda (p) (and (eq? (.direction p) direction)
@@ -182,26 +182,27 @@
   (define (binding-direction? b direction instance)
     (or (end-point-direction? (.left b) direction instance)
         (end-point-direction? (.right b) direction instance)))
-  (define (order instance* system)
-    (let ((binding* (ast:binding* system))
-          (winstance* (map (cut cons <> 0) instance*)))
-      (let loop ((all winstance*) (todo winstance*) (stable #t))
-        (if (null? todo)
-            (if stable (map (cut car <>) (sort all (lambda (a b) (< (cdr a) (cdr b)))))
-                (loop all all #t))
-            (let* ((winst (car todo))
-                   (binding-provides* (filter (lambda (b) (binding-direction? b 'provides (car winst)))
-                                              binding*))
-                   (above* (filter (lambda (wother)
-                                     (find (lambda (b) (binding-direction? b 'requires (car wother)))
-                                           binding-provides*))
-                                   all))
-                   (maxw (if (null? above*) -1 (apply max (map cdr above*))))
-                   (w (max (+ 1 maxw) (cdr winst)))
-                   (all (if (= w (cdr winst)) all
-                            (cons (cons (car winst) w) (alist-delete (car winst) all ast:eq?))))
-                   (stable (if (= w (cdr winst)) stable #f)))
-              (loop all (cdr todo) stable))))))
+  (let ((binding* (ast:binding* o))
+        (instances (map (cut cons <> 0) (ast:instance* o))))
+    (let loop ((all instances) (todo instances) (stable #t))
+      (if (null? todo)
+          (if stable (map (cut car <>) (sort all (lambda (a b) (< (cdr a) (cdr b)))))
+              (loop all all #t))
+          (let* ((winst (car todo))
+                 (binding-provides* (filter (lambda (b) (binding-direction? b 'provides (car winst)))
+                                            binding*))
+                 (above* (filter (lambda (wother)
+                                   (find (lambda (b) (binding-direction? b 'requires (car wother)))
+                                         binding-provides*))
+                                 all))
+                 (maxw (if (null? above*) -1 (apply max (map cdr above*))))
+                 (w (max (+ 1 maxw) (cdr winst)))
+                 (all (if (= w (cdr winst)) all
+                          (cons (cons (car winst) w) (alist-delete (car winst) all ast:eq?))))
+                 (stable (if (= w (cdr winst)) stable #f)))
+            (loop all (cdr todo) stable))))))
+
+(define-method (runtime:get-system-instances (o <runtime:instance>) ast:instance*)
 
   (define (port->instance p c b)
     (make <runtime:port> #:instance p #:container c #:boundary? b))
@@ -225,10 +226,13 @@
                         (requires-instances (map (cut port->instance <> o #t) inverted-provides)))
                    (cons o (append port-instances provides-instances requires-instances))))
                 (($ <system>)
-                 (let ((instances (order (ast:instance* t) t)))
+                 (let ((instances (ast:instance* t)))
                    (cons o (append (map (cut port->instance <> o #f) (runtime:port* o))
                                    (append-map (lambda (i) (loop (ast->runtime:instance i o))) instances))))))))
           (map (cut port->instance <> #f #t) (filter ast:requires? (runtime:port* o)))))
+
+(define-method (runtime:get-system-instances (o <runtime:instance>))
+  (runtime:get-system-instances o ast:sorted-instance*))
 
 ;;OEP (ep, pep)
 ;;  if (ep on system)
