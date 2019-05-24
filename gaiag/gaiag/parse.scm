@@ -89,10 +89,13 @@
                 (loop (cdr lines) (1+ ln) end)))))))
 
 (define* (peg:parse-file file-name #:key (imports '()))
-  (let* ((string (with-input-from-file file-name read-string))
+  (let* ((string (if (equal? file-name "-") (read-string)
+                     (with-input-from-file file-name read-string)))
+         (imports (if (equal? file-name "-") '()
+                      (cons (dirname (canonicalize-path file-name)) imports)))
          (parse-tree (catch 'syntax-error
                        (lambda ()
-                         (peg:parse string file-name #:imports (cons (dirname (canonicalize-path file-name)) imports)))
+                         (peg:parse string file-name #:imports imports))
                        (lambda (key . args)
                          (receive (ln col line) (line-column string (caar args))
                            (let ((indent (make-string col #\space)))
