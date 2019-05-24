@@ -111,9 +111,16 @@
   (define-peg-string-patterns
     "root <-- top* EOF#
 
-top <- do-import / namespace / type / interface / component / data
+top <- do-import / stream-command / namespace / type / interface / component / data
 
 import <- IMPORT (!SEMICOLON .)+ SEMICOLON#
+
+stream-command < file-command / imported-command
+file-command < FILE dq-string
+FILE < '#file'
+imported-command < IMPORTED dq-string
+IMPORTED < '#imported'
+dq-string <- '\"' ('\\\"' / !'\"' .)* '\"'
 
 namespace <-- NAMESPACE compound-name# BRACE-OPEN# top* BRACE-CLOSE#
 
