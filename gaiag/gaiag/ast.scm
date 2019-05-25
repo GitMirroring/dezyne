@@ -970,6 +970,9 @@
 (define-method (.port (o <trigger-return>))
   (and (.port.name o) (ast:lookup o (.port.name o))))
 
+(define-method (.port (o <trigger-out-return>))
+  (and (.port.name o) (ast:lookup o (.port.name o))))
+
 (define-method (.port (o <end-point>))
   (if (.instance.name o)
       (let* ((instance (.instance o))

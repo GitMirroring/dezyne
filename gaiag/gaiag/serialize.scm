@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -52,7 +52,9 @@
 (define-method (serialize-slots (o <object>) port)
   (for-each
    (cut serialize-slot o <> port)
-   (map slot-definition-name (class-slots (class-of o)))))
+   (let ((names (map slot-definition-name (class-slots (class-of o)))))
+     (if #f names
+         (filter (negate (cut eq? <> 'location)) names)))))
 
 (define-method (serialize (o <scope.name-node>) port)
   (serialize " " port)

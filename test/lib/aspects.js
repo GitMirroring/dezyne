@@ -701,6 +701,8 @@ var aspects = {
     return run_traces(parameters, 'step', function(trace) {
       //strict
       var model = parameters.meta.model || parameters.model;
+      // METAs `model' is used for component/system tricksery
+      model = parameters.model;
       var imports = imports_string (parameters.meta.imports);
       var node_baseline = parameters.dir + '/baseline/step/' + path.basename (trace);
       var baseline = '"' + node_baseline + '"';

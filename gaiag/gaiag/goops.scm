@@ -152,6 +152,7 @@
            <binding>
            <bindings-node>
            <bindings>
+           <block>
            <block-comment-node>
            <block-comment>
            <blocking-compound-node>
@@ -712,6 +713,8 @@
 (define-ast <illegal> (<imperative>)
   (event.name)
   (incomplete))
+
+(define-ast <block> (<imperative>))
 
 (define-ast <blocking> (<declarative>)
   (statement))

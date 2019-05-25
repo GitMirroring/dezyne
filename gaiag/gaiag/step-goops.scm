@@ -28,10 +28,12 @@
             <step>
 
             .async
+            .block
             .canceled
             .deferred
             .handling?
             .q
+            .release
             .reply
             .return
             .stack
@@ -62,4 +64,6 @@
   (trail #:getter .trail #:init-form (list) #:init-keyword #:trail)
   (async #:getter .async #:init-form (list) #:init-keyword #:async)
   (canceled #:getter .canceled #:init-form (list) #:init-keyword #:canceled)
-  (status #:getter .status #:init-value #f #:init-keyword #:status))
+  (status #:getter .status #:init-value #f #:init-keyword #:status)
+  (block #:getter .block #:init-form #f #:init-keyword #:block)
+  (release #:getter .release #:init-form #f #:init-keyword #:release))

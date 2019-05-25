@@ -159,6 +159,10 @@
 (define-method (push-frame (node <node>) (instance <runtime:instance>) (pc <ast>) (trigger <trigger>))
   (clone node #:stack (cons (make <frame> #:pc pc #:instance instance #:trigger trigger) (.stack node))))
 
+;; FIXME: block?
+(define-method (push-frame (node <node>) (instance <runtime:instance>) (pc <ast>) (symbol <symbol>))
+  (clone node #:stack (cons (make <frame> #:pc pc #:instance instance #:trigger symbol) (.stack node))))
+
 (define-method (pop-frame (node <node>))
   (clone node #:stack (cdr (.stack node))))
 
@@ -249,10 +253,32 @@
 
 (define (step:transform root)
   ((compose
+    add-reply-port
     transform-return
     (transform-action)
     (annotate-otherwise)
     ) root))
+
+(define* (add-reply-port o #:optional (port #f) (block? #f))
+  (match o
+    (($ <reply>) (if (not block?) o
+                     (let ((port? (.port o))) (if (and port? (not (symbol? port?))) o (clone o #:port.name (.name port))))))
+    (($ <blocking>) (add-reply-port (.statement o) port #t))
+    (($ <on>)
+     (let* ((requires? (ast:requires? ((compose .port car ast:trigger*) o)))
+            (port (if port port
+                      (if requires? (ast:provides-port (parent o <model>))
+                          ((compose .port car ast:trigger*) o)))))
+       (clone o #:statement (add-reply-port (.statement o) port #t))))
+    (($ <guard>) (clone o #:statement (add-reply-port (.statement o) port block?)))
+    (($ <compound>) (clone o #:elements (map (cut add-reply-port <> port block?) (ast:statement* o))))
+    (($ <behaviour>) (clone o #:statement (add-reply-port (.statement o) port block?)))
+    (($ <component>) (clone o #:behaviour (add-reply-port (.behaviour o) (if (= 1 (length (ast:provides-port* o))) (car (ast:provides-port* o)) #f) block?)))
+    (($ <system>) o)
+    (($ <foreign>) o)
+    (($ <interface>) o)
+    ((? (is? <ast>)) (tree-map (cut add-reply-port <> port block?) o))
+    (_ o)))
 
 (define* ((annotate-otherwise #:optional (statements '())) o) ;; FIXME *unspecified*
   (define (virgin-otherwise? x) (or (eq? x 'otherwise) (eq? x *unspecified*)))
@@ -294,32 +320,24 @@
   (define (add-flush o f)
     (match o
       ((and ($ <compound>) (? ast:imperative?))
-       (clone o #:elements (append (ast:statement* o) (list f))))
+       (clone o #:elements (append (ast:statement* o) f)))
       ((? ast:imperative?)
-       (make <compound> #:elements (list o f) #:location (.location o)))
+       (make <compound> #:elements (cons o f) #:location (.location o)))
       (($ <compound>)
        (clone o #:elements (map (cut add-flush <> f) (ast:statement* o))))
-      (($ <guard>) (clone o #:statement (add-flush (.statement o) f)))))
+      (($ <guard>) (clone o #:statement (add-flush (.statement o) f)))
+      (($ <blocking>) (clone o #:statement (add-flush (.statement o) f)))
+      ;;(($ <blocking>) (clone o #:statement (add-flush (.statement o) (append f (list (clone (make <block> #:location (.location (car f))) #:parent (.parent (car f))))))))
+      ))
 
   (match o
     ((and ($ <on>) (= ast:trigger* triggers) (= .statement statement))
      (let* ((statement ((transform-action model) statement))
-            (action-out? (tree-collect (is? <action-out>) statement))
-            (action? (tree-collect (lambda (o) (or (and (is-a? o <action>)
-                                                        (not (is-a? o <action-out>)))
-                                                   (match o ((and ($ <variable>) (= .expression ($ <action>))) #t) (_ #f)))) statement))
-            (trigger (car triggers))
-            (action-trigger (tree-collect (is? <action>) statement))
-            ;; (event (om:event model trigger))
-            ;; (typed? (om:typed? event))
-            (typed? #t)
-            (port-name (and (pair? action?) (let ((o (car action?)))
-                                              (match o
-                                                (($ <action>) (.port.name o))
-                                                (($ <variable>) ((compose .port.name .expression) o))))))
-            (statement (if (or (and (null? action?)
-                                    (null? action-out?))) statement
-                                    (add-flush statement (clone (make <flush> #:location (.location o)) #:parent statement)))))
+            (actions (tree-collect (is? <action>) statement))
+            (blocking? (or (parent o <blocking>)
+                           (pair? (tree-collect (is? <blocking>) o))))
+            (statement (if (and (null? actions) (not blocking?)) statement
+                           (add-flush statement (list (clone (make <flush> #:location (.location o)) #:parent statement))))))
        (clone o #:statement statement)))
 
     ((and ($ <action>) (? component?) (? system-port-event?))
@@ -341,18 +359,24 @@
   (define (add-return o r)
     (match o
       ((and ($ <compound>) (? ast:imperative?))
-       (clone o #:elements (append (ast:statement* o) (list r))))
+       (clone o #:elements (append (ast:statement* o) r)))
       ((? ast:imperative?)
-       (make <compound> #:elements (list o r) #:location (.location o)))
+       (make <compound> #:elements (cons o r) #:location (.location o)))
       (($ <compound>)
        (clone o #:elements (map (cut add-return <> r) (ast:statement* o))))
-      (($ <guard>) (clone o #:statement (add-return (.statement o) r)))))
+      (($ <guard>) (clone o #:statement (add-return (.statement o) r)))
+      ;; (($ <blocking>) (clone o #:statement (add-return (.statement o) r)))
+      ;; @ flush/action
+      (($ <blocking>) (clone o #:statement (add-return (.statement o) (cons (clone (make <block> #:location (.location (car r))) #:parent (.parent (car r))) r))))))
 
   (match o
     (($ <on>)
      (let* ((trigger ((compose car ast:trigger*) o))
-            (statement (add-return (.statement o) (clone (make (if (or (ast:out? (.event trigger))
-                                                                       (is-a? (.event trigger) <modeling-event>)) <trigger-out-return> <trigger-return>) #:port.name (.port.name trigger) #:location (.location o)) #:parent (.statement o)))))
+            (return (list (clone (make (if (or (ast:out? (.event trigger))
+                                               (is-a? (.event trigger) <modeling-event>)) <trigger-out-return> <trigger-return>) #:port.name (.port.name trigger) #:location (.location o)) #:parent (.statement o))))
+            (blocking? (parent o <blocking>))
+            (return (if blocking? (cons (clone (make <block> #:location (.location o)) #:parent (.statement o))  return) return))
+            (statement (add-return (.statement o) return)))
        (clone o #:statement statement)))
 
     (($ <behaviour>)
@@ -492,13 +516,14 @@
   (match statement
     ((and ($ <compound>) (? ast:declarative?) (= ast:statement* statements))
      (let ((nodes (append-map (cut walk node instance trigger <> trigger? silent) statements)))
-       (if (or (is-a? instance <runtime:port>) (not (is-a? (.parent statement) <behaviour>)) (pair? nodes)) nodes
+       (if (or #t (is-a? instance <runtime:port>) (not (is-a? (.parent statement) <behaviour>)) (pair? nodes)) nodes
            (let* ((model ((compose .type .instance) instance))
                   (implicit-illegal (clone (make <illegal> #:incomplete #t #:location ((compose .location .behaviour) model)) #:parent model))
                   (node (record-step node instance trigger)))
              (step node instance implicit-illegal silent)))))
     (($ <guard>) (if (not (true? (eval-expression (get-vars node instance) (.expression statement)))) '()
                      (walk node instance trigger (.statement statement) trigger? silent)))
+    (($ <blocking>) (walk node instance trigger (.statement statement) trigger? silent))
     (($ <on>) (let* ((component? (is-a? (instance-ast instance) <component>))
                      (trigger? (find (cut (if component? edge:equal? event-equal?) trigger <>)
                                      (ast:trigger* statement)))
@@ -522,9 +547,9 @@
 (define step-count 0)
 
 (define-method (step (node <node>) (instance <runtime:instance>) (statement <statement>) silent)
-    ;; (if (.location statement) (stderr "~a:~s:~s: STEP: ~a\n" (.file-name (.location statement)) (.line (.location statement)) (.column (.location statement)) (ast-name statement))
-    ;;     (stderr "STEP: ~a\n" (ast-name statement)))
-;;  (set! step-count (warn 'step: (1+ step-count)))
+  ;; (if (.location statement) (stderr "~a:~s:~s: STEP: ~a\n" (.file-name (.location statement)) (.line (.location statement)) (.column (.location statement)) (ast-name statement))
+  ;;     (stderr "STEP: ~a\n" (ast-name statement)))
+  ;;  (set! step-count (warn 'step: (1+ step-count)))
 
   (debug "\nstep ~a\n" statement)
   (if (.status node)
@@ -532,7 +557,7 @@
         (debug "step: skipped\n")
         (list node))
       (let* ((statement (if (not (is-a? statement <trigger-return->)) statement
-                            (clone statement #:expression (get-reply node instance) #:location (.location ((compose .trigger get-frame) node)))))
+                            (clone statement #:expression (get-reply node instance) #:location (if (eq? ((compose .trigger get-frame) node) 'block) #f (.location ((compose .trigger get-frame) node))))))
              (node (record-step node instance statement)))
         (match statement
           (($ <illegal>) (list (set-status node (make <error> #:message "illegal" #:ast statement))))
@@ -545,6 +570,7 @@
           (($ <action-out>)
            (if silent (list (set-status node (make <no-match> #:ast statement #:input 'silent)))
                (append-map (cut call <> instance statement) (run-silent-filtered node instance))))
+          (($ <block>) (block node instance))
           (($ <flush>) (flush node instance))
           ((and ($ <if>) (= .else #f))
            (if (true? (eval-expression (get-vars node instance) (.expression statement))) (step node instance (.then statement) silent)
@@ -577,8 +603,13 @@
           ((and ($ <variable>) (= .name name) (= .expression expression))
            (let ((val (eval-expression (get-vars node instance) expression)))
              (list (assign node instance name val))))
-          (($ <reply>) (let ((value (eval-expression (get-vars node instance) (.expression statement))))
-                         (list (set-reply node instance (clone statement #:expression value)))))
+          ((and ($ <reply>) (= .port.name #f))
+           (let ((value (eval-expression (get-vars node instance) (.expression statement))))
+             (list (set-reply node instance (clone statement #:expression value)))))
+          ((and ($ <reply>) (= .port.name port-name))
+           (let* ((value (eval-expression (get-vars node instance) (.expression statement)))
+                  (node (set-reply node instance (clone statement #:expression value))))
+             (release node instance (find (compose (cut eq? <> port-name) .name) ((compose ast:port* .type .instance) instance)))))
           ((and ($ <call>) (= .function func) (= ast:argument* args) (= .last? last))
            (let* ((formals (ast:formal* func))
                   (node (fold (cut push-variable <> <> <> instance) node formals args))
@@ -619,6 +650,24 @@
                            (map (cut set-handling? <> instance #f)
                                 (run (set-handling? (push-frame node instance (get-pc node) trigger) instance #t) instance trigger))))))))
 
+(define-method (block (node <node>) (instance <runtime:component>))
+  (let* ((trigger ((compose .trigger get-frame) node))
+         (port ((compose .port .trigger get-frame) node))
+         (foo (debug "dzn:block: port: ~a\n" (.name port)))
+         (nodes (flush (set-handling? node instance #f) instance)))
+    (define (run-coroutine node)
+      (if (.release node) (list (clone node #:release #f))
+          (simulate (push-frame (clone node #:block port) instance (get-pc node) 'block))))
+    (append-map run-coroutine nodes)))
+
+(define-method (release (node <node>) (instance <runtime:component>) (port <port>))
+  (debug "dzn:release: port: ~a\n" (.name port))
+  (let* ((node (if (.block node) (pop-frame (drop-next-trail (clone node #:block #f))) node))
+         (node (clone node #:release #t))
+         (nodes (flush node instance))
+         (nodes (append-map run-async nodes)))
+    nodes))
+
 (define-method (call (node <node>) (instance <runtime:component>) (action <action>))
   (debug "CALL <component> <action> [~a]: ~a\n" instance action)
   (receive (other-instance other-port)
@@ -650,19 +699,20 @@
 
 (define-method (call (node <node>) (instance <runtime:port>) (action <action-out>))
   (debug "CALL <port> <action-out>[~a]: ~a\n" instance action)
-  (receive (other-instance other-port)
-      (runtime:other-instance+port instance)
-    (let* ((trigger (action->trigger other-port action))
-           (input (get-next-trail node))
-           (match? (and (not (eq? input null-symbol)) (match? instance trigger input))))
-      (debug "input=~a; match?=~a\n" input match?)
-      (list (if (or match? (and %lts (eq? input null-symbol)))
-                (let ((node (if (or (%lts) (eq? input null-symbol)) node (drop-next-trail node))))
-                  (if (runtime:provides-instance? instance) node
-                      (enqueue (set-deferred node instance other-instance) other-instance trigger)))
-                (if (eq? input null-symbol)
-                    (set-status node (make <eot> #:runtime-instance instance #:trigger trigger))
-                    (set-status node (make <no-match> #:ast trigger #:input input))))))))
+  (if (not (.event (.trigger (get-frame node)))) (list (drop-next-trail node)) ;; FIXME: blocking
+      (receive (other-instance other-port)
+          (runtime:other-instance+port instance)
+        (let* ((trigger (action->trigger other-port action))
+               (input (get-next-trail node))
+               (match? (and (not (eq? input null-symbol)) (match? instance trigger input))))
+          (debug "input=~a; match?=~a\n" input match?)
+          (list (if (or match? (and %lts (eq? input null-symbol)))
+                    (let ((node (if (or (%lts) (eq? input null-symbol)) node (drop-next-trail node))))
+                      (if (runtime:provides-instance? instance) node
+                          (enqueue (set-deferred node instance other-instance) other-instance trigger)))
+                    (if (eq? input null-symbol)
+                        (set-status node (make <eot> #:runtime-instance instance #:trigger trigger))
+                        (set-status node (make <no-match> #:ast trigger #:input input)))))))))
 
 (define-method (call (node <node>) (instance <runtime:component>) (action <action-out>))
   (debug "CALL <component> <action-out>[~a]: ~a\n" node action)
@@ -732,7 +782,8 @@
 (define-method (return (node <node>) (instance <runtime:port>) (return <trigger-return->))
   (debug "RETURN <runtime:port> [~a]: ~a\n" instance return)
   (let* ((frame (get-frame node)))
-    (list (if (or (ast:modeling? (.trigger frame))
+    (list (if (or (eq? (.trigger frame) 'block) ;; FIXME: blocking
+                  (ast:modeling? (.trigger frame))
                   (ast:out? (.trigger frame))) (pop-frame node) ;;TODO: PLZ remove if not required
                   (if (and (%lts)) (pop-frame node)
                       (let ((input (get-next-trail node)))
@@ -744,7 +795,8 @@
 (define-method (return (node <node>) (instance <runtime:component>) (return <trigger-return->))
   (debug "RETURN  <runtime:component> [~a]: ~a\n" instance return)
   (let ((frame (get-frame node)))
-    (list (if (or (ast:modeling? (.trigger frame)) ;;TODO: PLZ remove if not required
+    (list (if (or (eq? (.trigger frame) 'block) ;; FIXME: blocking
+                  (ast:modeling? (.trigger frame)) ;;TODO: PLZ remove if not required
                   (ast:out? (.trigger frame))) (pop-frame node)
                   (let* ((port (.port return))
                          (runtime-port (runtime:port instance port))
@@ -1268,7 +1320,7 @@
   (setup-debug-printing!)
   (let ((sut (runtime:get-sut root)))
 ;;    (debug "root:\n")
-    ;;(debug-pretty (om->list root))
+    (debug-pretty (om->list root))
     (parameterize ((%sut sut))
       (parameterize ((%instances (runtime:get-system-instances sut)))
 ;;        (debug "instances:\n")
