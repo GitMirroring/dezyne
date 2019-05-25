@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,45 +22,55 @@
 ;;; Code:
 
 (define-module (gaiag step-serialize)
-  #:use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (ice-9 match)
   #:use-module (peg)
   #:use-module (peg cache)
   #:use-module (peg codegen)
   #:use-module (peg string-peg)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (gaiag serialize))
+  #:use-module (gaiag command-line)
+  #:use-module (gaiag misc)
 
-(export <step:alist>
-        <step:instance+state-alist>
-        <step:state-alist>
-        <step:node-alist>
-        <step:list>
-        <step:transition-list>
-        <step:event-list>
-        <step:instance+state>
-        <step:transition>
-        <step:event>
-        <step:lts-link>
-        <step:lts>
-        step:.alist
-        step:.from
-        step:.from-location
-        step:.instance+state
-        step:.kind
-        step:.link
-        step:.list
-        step:.name
-        step:.node
-        step:.state
-        step:.to
-        step:.to-location
-        step:.event
-        step:.type
-        step:goopify
-        step:deserialize
-        step:serialize)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (gaiag goops)
+  #:use-module (gaiag ast)
+  #:use-module (gaiag serialize)
+  #:use-module (gaiag runtime)
+  #:use-module (gaiag step)
+  #:use-module (gaiag step-goops)
+  #:export (
+            <step:alist>
+            <step:instance+state-alist>
+            <step:state-alist>
+            <step:node-alist>
+            <step:list>
+            <step:transition-list>
+            <step:event-list>
+            <step:instance+state>
+            <step:transition>
+            <step:event>
+            <step:lts-link>
+            <step:lts>
+            step:.alist
+            step:.from
+            step:.from-location
+            step:.instance+state
+            step:.kind
+            step:.link
+            step:.list
+            step:.name
+            step:.node
+            step:.state
+            step:.to
+            step:.to-location
+            step:.event
+            step:.type
+            step:goopify
+            step:deserialize
+            step:serialize
+            ))
 
 (define (for-each-sep func sep lst)
   (let loop ((lst lst))
@@ -308,3 +318,139 @@
     (display parsed) (newline)
     (display 'GOOPIFIED) (newline)
     (display (step:goopify parsed)) (newline)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; JSON
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-method (json:create-initial-node (o <step:transition-list>))
+  (define (external-event s n)
+    (let ((lst (string-split (symbol->string s) #\.)))
+      (and (pair? lst)
+           (equal? "<external>" (car lst))
+           (string->symbol (string-join (append (cdr lst) (list (symbol->string n))) ".")))))
+
+  (let* ((transitions (step:.list o))
+         (transition? (and (pair? transitions) (last transitions)))
+         (initial-state (if transition? (json:get-initial-state (step:.instance+state transition?))
+                            (get-initial-state '())))
+         (node (make-initial-node (%instances) initial-state))
+         (node (record-state node (%sut)))
+         (trail (if (not transition?) '()
+                    (filter-map (lambda (event)
+                                  (or (external-event (step:.from event) (step:.name event))
+                                      (external-event (step:.to event) (step:.name event))))
+                                (step:.list (step:.event transition?))))))
+    (clone node #:trail trail)))
+
+(define-method (symbol->value v) ;; FIXME: see sexp->value in step
+  (match v
+    ('true (make <literal> #:value 'true))
+    ('false (make <literal> #:value 'false))
+    ((? number?) (make <literal> #:value v))
+    (_ (let* ((enum (reverse (symbol-split v #\.)))
+              (scope (reverse (cddr enum)))
+              (type.name (second enum))
+              (field (first enum)))
+         (make <enum-literal> #:type.name (make <scope.name> #:scope scope #:name type.name) #:field field))) ;; FIXME: what about resolving
+    ))
+
+(define-method (json:get-initial-state (o <step:instance+state-alist>))
+  (let ((initial-state (fold create-initial-state '() (%instances))))
+    (map (lambda (inst)
+           (let* ((state (assoc-ref (step:.alist o) (symbol-join (runtime:instance->path inst) '.)))
+                  (initial-inst-state (assoc-ref initial-state inst))
+                  (state (if state (map (lambda (s)
+                                          (cons (car s)
+                                                (clone (symbol->value (cdr s))
+                                                       #:parent (.parent (assoc-ref initial-inst-state (car s))))))
+                                        (step:.alist (step:.state state)))
+                             initial-inst-state)))
+             (cons inst state)))
+         (%instances))))
+
+(define (group pred elements)
+  "Returns a list of lists from ELEMENTS split by PRED"
+  (if (null? elements) '()
+      (let ((groups (let loop ((elements (cdr elements)) (groups '()) (group (list (car elements))))
+                      (if (null? elements) (cons group groups)
+                          (let ((element (car elements)))
+                            (if (pred element)
+                                (loop (cdr elements) (cons group groups) (list element))
+                                (loop (cdr elements) groups (cons element group))))))))
+        (map reverse (reverse groups)))))
+
+(define (runtime:type-name o)
+  ((compose (cut symbol-join <> ".") ast:full-name .type .instance) o))
+
+(define (state->pair state)
+  (cons (car state) (format #f "~a" (ast:value (cdr state)))))
+
+(define (all-relevant-steps-for-now)
+  (conjoin (negate eligible-step?)
+           (disjoin state-step? (trigger-step? #f))))
+
+(define* (json:print-trace nodes)
+  (if (= 1 (length nodes))
+      (let* ((instances (filter (disjoin (negate (is? <runtime:port>)) runtime:boundary-port?) (%instances)))
+             (node (car nodes))
+             (steps (.steps node))
+             (steps (filter (all-relevant-steps-for-now) steps))
+             (blocks (group state-step? steps))
+             (step->state (lambda (step)
+                            (let ((instance+state (filter (compose (disjoin (negate (is? <runtime:port>)) runtime:boundary-port?) car) (cdr step))))
+                              (make <step:instance+state-alist> #:alist
+                                    (map (lambda (i) (cons (symbol-join (runtime:instance->path i) ".")
+                                                           (make <step:instance+state>
+                                                             #:type (runtime:type-name i)
+                                                             #:kind (runtime:kind i)
+                                                             #:state (make <step:state-alist> #:alist (map state->pair (.vars (assoc-ref instance+state i)))))))
+                                         instances))))))
+
+        ((@@ (gaiag step-serialize) step:serialize)
+         (make <step:list>
+           #:list (map (lambda (block)
+                         (make <step:transition>
+                           #:instance+state (step->state (car block))
+                           #:event (make <step:event-list> #:list (steps->events (cdr block)))))
+                       blocks))
+         (current-output-port)))
+      (throw 'too-many-traces)))
+
+(define (steps->events steps)
+  (let* ((events
+          (fold
+           (lambda (step result)
+             (if (or (null? result) (is-a? (car result) <step:event>))
+                 (cons step result)
+                 (let* ((from-strings (string-split (side->string (car result)) #\.))
+                        (from (string-join (drop-right from-strings (if (equal? "<q>" (last from-strings)) 0 1)) "."))
+                        (from-location (and (command-line:get 'locations #f) (step->location (cdr (car result)))))
+                        (to-strings (string-split (side->string step) #\.))
+                        (to (string-join (drop-right to-strings (if (equal? "<q>" (last to-strings)) 0 1)) "."))
+                        (to-location (and (command-line:get 'locations #f) (step->location (cdr step))))
+                        (name (if (equal? (last from-strings) "<q>") (last to-strings) (last from-strings)))
+                        (result (cdr result)))
+                   (cons (make <step:event>
+                           #:from-location from-location
+                           #:from from
+                           #:to-location to-location
+                           #:to to
+                           #:name name) result)))) '() steps))
+         (events (if (or (null? events) (is-a? (car events) <step:event>)) events (cdr events))))
+    (reverse events)))
+
+(define (json->trail o)
+  (let ((str (string-trim-both o)))
+    (if (string-null? str) (make <step:list>) (step:goopify (step:deserialize str)))))
+
+(export
+ all-relevant-steps-for-now
+ steps->events
+ json:create-initial-node
+ json:get-initial-state
+ json:print-trace
+ json->trail)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -25,7 +25,7 @@
   #:use-module (ice-9 getopt-long)
 
   #:use-module (gaiag commands parse)
-  #:use-module (gaiag step)
+  #:use-module (gaiag state)
 
   #:export (main))
 
@@ -48,7 +48,7 @@
 	 (files (option-ref options '() '())))
     (or (and (or (null? files) help?)
              (format #t "\
-Usage: gdzn step [OPTION]... [FILE]...
+Usage: gdzn state [OPTION]... [FILE]...
   -f, --format=FORMAT                      display LTS in format FORMAT {go, dot, goops}
   -h, --help                               display this help and exit
   -H, --horizon=HORIZON                    set upper limit of LTS frontier to HORIZON
@@ -72,5 +72,5 @@ Usage: gdzn step [OPTION]... [FILE]...
          (format (option-ref options 'format "go")))
     (cond ((equal? format "dot") (lts-> dot ast))
           ((equal? format "go") (lts-> go ast))
-          ((equal? format "goops") (lts-> (@@ (gaiag step) goopify) ast)))
+          ((equal? format "goops") (lts-> (@@ (gaiag state) goopify) ast)))
     ""))

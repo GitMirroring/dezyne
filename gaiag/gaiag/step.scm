@@ -21,36 +21,7 @@
 ;;; 
 ;;; Code:
 
-;; nondet: done
-;; trace reconstruction: done
-;; refactor: use records
-;; [refactor: fold blaat into microstep]: done
-;; multiple components: done
-;; queue (missing flush): done, except valued return, multiple queues,
-;; async calls: done.
-;; replace ast with gaiag ast: done
-;; replace <node> with goops: done
-;; system abstraction (aka plumbing): done
-;; runtime semantics: done
-;; gdzn interface: done
-;; testing: done
-;; all trails: matching of external triggers and returns + discard: done
-;; .parent: done
-;; required ports (interfaces): done
-;; member variables & expressions: done
-;; full trail matching (eg internal events): --strict done
-;; sparse trail: kwartjes only (default: --strict off): done
-;; local variables: done
-;; provided port (interface): compliance check, including illegals: done
-;; instance encoding/plumbing: finish interface, remove plumbing work on AST?: done
-;; functions: done
-;; eval-expression: return <literal> i.s.o. raw values
-;; lts
-;; foreign component
-;; single interface simulation
-
-;; remove shortcuts, refactor mercilessly
-
+;; TODO
 ;; error handling: meaningful messages
 ;; nonstrict and error path: handle output trail pruning
 ;; replace seqdiag
@@ -61,7 +32,6 @@
 ;; blocking
 ;; async
 ;; sub machines
-
 
 (define-module (gaiag step)
   #:use-module (system foreign)
@@ -76,8 +46,6 @@
 
   #:use-module (ice-9 match)
 
-  #:use-module (json)
-
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag evaluate)
@@ -87,13 +55,34 @@
   #:use-module (gaiag command-line)
   #:use-module (gaiag runtime)
   #:use-module (gaiag normalize)
+  #:use-module (gaiag step-goops)
+  #:use-module (gaiag state)
+  #:use-module (gaiag serialize)
+  #:use-module (gaiag step-serialize)
 
   #:use-module (gaiag commands parse)
 
-  #:use-module (gaiag step-serialize)
-  #:use-module (gaiag serialize)
-
-  #:export (step:ast-> dot go lts->))
+  #:export (->symbol
+            action->trigger
+            create-initial-state
+            eligible-step?
+            trigger-step?
+            get-initial-state
+            make-initial-node
+            record-state
+            record-step
+            run
+            run-trigger
+            set-reply
+            set-state
+            set-status
+            setup-debug-printing!
+            side->string
+            state-step?
+            step->location
+            step:ast->
+            step:om
+            ))
 
 (define debug-pretty pretty-print)
 (define debug stderr)
@@ -114,37 +103,17 @@
     purge-data)
    ast))
 
-
-(define-class <step> ())
-(define-method (clone (o <step>) . setters)
-  (apply clone-base (cons o setters)))
-
 (define-class <step:end-point> (<step>)
   (instance #:getter .instance #:init-form #f #:init-keyword #:instance)
   (port #:getter .port #:init-form #f #:init-keyword #:port))
-
-(define-class <state> (<step>)
-  (deferred #:getter .deferred #:init-form #f #:init-keyword #:deferred)
-  (handling? #:getter .handling? #:init-form #f #:init-keyword #:handling?)
-  (reply #:getter .reply #:init-form #f #:init-keyword #:reply)
-  (return #:getter .return #:init-form #f #:init-keyword #:return)
-  (q #:getter .q #:init-form (list) #:init-keyword #:q)
-  (vars #:getter .vars #:init-form (list) #:init-keyword #:vars)) ; alist of scoped var name and value
-
-(define-class <node> (<step>)
-  (stack #:getter .stack #:init-form (list) #:init-keyword #:stack) ; <frame>
-  (state-alist #:getter .state-alist #:init-form (list) #:init-keyword #:state-alist) ; '((sut b) . <state>) (sut c) . <state>))
-  (steps #:getter .steps #:init-form (list) #:init-keyword #:steps)
-  (trail #:getter .trail #:init-form (list) #:init-keyword #:trail)
-  (status #:getter .status #:init-value #f #:init-keyword #:status))
-
-(define-method (set-status (node <node>) (status <status>))
-  (clone node #:status status))
 
 (define-class <frame> (<step>)
   (pc #:getter .pc #:init-form (list) #:init-keyword #:pc) ; <behaviour>, <statement>
   (instance #:getter .instance #:init-value #f #:init-keyword #:instance) ; '(sut b)
   (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger)) ; <trigger>
+
+(define-method (set-status (node <node>) (status <status>))
+  (clone node #:status status))
 
 (define-method (get-q (node <node>) (instance <runtime:instance>))
   (.q (get-state node instance)))
@@ -511,29 +480,6 @@
   (debug "run: start walking\n")
   (walk node instance trigger (.statement (initial-statement instance)) #f silent))
 
-(define skip-count 0)
-
-(define-method (skip (node <node>) (instance <runtime:instance>) (action <action-out>))
-  ;;  (set! skip-count (warn 'skip: (1+ skip-count)))
-  (let* ((port (.port action))
-         (runtime-port (runtime:port instance port))
-         (other-instance (runtime:other-port runtime-port))
-         (node (record-step node other-instance (make <action-out> #:event.name (.event.name action)))))
-    (list node)))
-
-(define-method (skip (node <node>) (instance <runtime:instance>) (action <action>))
-;;  (set! skip-count (warn 'skip: (1+ skip-count)))
-  (let* ((port (.port action))
-         (runtime-port (runtime:port instance port))
-         (other-instance (runtime:other-port runtime-port))
-
-         (return-values (ast:return-values (.event action)))
-         (return-values (if (null? return-values) (list (make <literal>)) return-values))
-         (replies (map (compose (cut clone <> #:parent (.type (.instance other-instance)))
-                                (cut make <reply> #:expression <>)) return-values))
-         (node (record-step node other-instance (make <trigger> #:event.name (.event.name action)))))
-    (map (lambda (reply) (record-step (set-reply node other-instance reply) other-instance reply)) replies)))
-
 (define walk-count 0)
 
 (define-method (walk (node <node>) (instance <runtime:instance>) (trigger <trigger>) (statement <statement>) trigger? silent)
@@ -668,54 +614,51 @@
   (debug "CALL <component> <action> [~a]: ~a\n" instance action)
   (receive (other-instance other-port)
       (runtime:other-instance+port instance (runtime:port instance (.port action)))
-    (if (and #f (%lts) (runtime:boundary-port? other-instance)) (skip node instance action)
-        (let ((trigger (action->trigger other-port action)))
-          (match other-instance
-            (($ <runtime:port>)
-             (let ((input (get-next-trail node)))
-               (cond ((eq? input null-symbol) (run-action node instance other-instance action trigger))
-                     ((match? other-instance trigger input) (run-action (drop-next-trail node) instance other-instance action trigger))
-                     (else (list (set-status node (make <no-match> #:ast trigger #:input input)))))))
-            (($ <runtime:component>) (run-action node instance other-instance action trigger)))))))
+    (let ((trigger (action->trigger other-port action)))
+      (match other-instance
+        (($ <runtime:port>)
+         (let ((input (get-next-trail node)))
+           (cond ((eq? input null-symbol) (run-action node instance other-instance action trigger))
+                 ((match? other-instance trigger input) (run-action (drop-next-trail node) instance other-instance action trigger))
+                 (else (list (set-status node (make <no-match> #:ast trigger #:input input)))))))
+        (($ <runtime:component>) (run-action node instance other-instance action trigger))))))
 
 (define-method (call (node <node>) (instance <runtime:port>) (action <action-out>))
   (debug "CALL <port> <action-out>[~a]: ~a\n" instance action)
   (receive (other-instance other-port)
       (runtime:other-instance+port instance)
-    (if (and #f (%lts) (runtime:boundary-port? other-instance)) (skip node instance action)
-        (let* ((trigger (action->trigger other-port action))
-               (input (get-next-trail node))
-               (match? (and (not (eq? input null-symbol)) (match? instance trigger input))))
-          (debug "input=~a; match?=~a\n" input match?)
-          (list (if (or match? (and %lts (eq? input null-symbol)))
-                    (let ((node (if (or (%lts) (eq? input null-symbol)) node (drop-next-trail node))))
-                      (if (runtime:provides-instance? instance) node
-                          (enqueue (set-deferred node instance other-instance) other-instance trigger)))
-                    (if (eq? input null-symbol)
-                        (set-status node (make <eot> #:runtime-instance instance #:trigger trigger))
-                        (set-status node (make <no-match> #:ast trigger #:input input)))))))))
+    (let* ((trigger (action->trigger other-port action))
+           (input (get-next-trail node))
+           (match? (and (not (eq? input null-symbol)) (match? instance trigger input))))
+      (debug "input=~a; match?=~a\n" input match?)
+      (list (if (or match? (and %lts (eq? input null-symbol)))
+                (let ((node (if (or (%lts) (eq? input null-symbol)) node (drop-next-trail node))))
+                  (if (runtime:provides-instance? instance) node
+                      (enqueue (set-deferred node instance other-instance) other-instance trigger)))
+                (if (eq? input null-symbol)
+                    (set-status node (make <eot> #:runtime-instance instance #:trigger trigger))
+                    (set-status node (make <no-match> #:ast trigger #:input input))))))))
 
 (define-method (call (node <node>) (instance <runtime:component>) (action <action-out>))
   (debug "CALL <component> <action-out>[~a]: ~a\n" node action)
   (receive (other-instance other-port)
       (runtime:other-instance+port instance (runtime:port instance (.port action)))
-    (if (and #f (%lts) (runtime:boundary-port? other-instance)) (skip node instance action)
-        (let* ((trigger (action->trigger other-port action))
-               (input (get-next-trail node)))
-          (if (runtime:provides-instance? other-instance)
-              (cond ((or (%lts) (match? other-port trigger input))
-                     (let* ((node (if (%lts) (add-to-trail node (->symbol trigger)) node))
-                            (nodes (append (run node other-instance (make <trigger> #:event.name 'optional) #f)
-                                           (run node other-instance (make <trigger> #:event.name 'inevitable) #f))))
-                       (receive (nodes solutions errors no-match inputs) (sort-nodes nodes)
-                         (let ((nodes (append nodes solutions inputs))
-                               (errors (append errors no-match))
-                               (other-trigger (clone trigger #:port.name #f)))
-                           (if (pair? nodes) (map (lambda (node) (record-step node other-instance other-trigger)) nodes)
-                             (if (pair? errors) errors
-                                 (list (record-step (drop-next-trail node) other-instance other-trigger)))))))) ;;run-trigger compliance check??!!
-                    (else (list (set-status node (make <no-match> #:ast trigger #:input input)))))
-              (list (enqueue (set-deferred node instance other-instance) other-instance trigger)))))))
+    (let* ((trigger (action->trigger other-port action))
+           (input (get-next-trail node)))
+      (if (runtime:provides-instance? other-instance)
+          (cond ((or (%lts) (match? other-port trigger input))
+                 (let* ((node (if (%lts) (add-to-trail node (->symbol trigger)) node))
+                        (nodes (append (run node other-instance (make <trigger> #:event.name 'optional) #f)
+                                       (run node other-instance (make <trigger> #:event.name 'inevitable) #f))))
+                   (receive (nodes solutions errors no-match inputs) (sort-nodes nodes)
+                     (let ((nodes (append nodes solutions inputs))
+                           (errors (append errors no-match))
+                           (other-trigger (clone trigger #:port.name #f)))
+                       (if (pair? nodes) (map (lambda (node) (record-step node other-instance other-trigger)) nodes)
+                           (if (pair? errors) errors
+                               (list (record-step (drop-next-trail node) other-instance other-trigger)))))))) ;;run-trigger compliance check??!!
+                (else (list (set-status node (make <no-match> #:ast trigger #:input input)))))
+          (list (enqueue (set-deferred node instance other-instance) other-instance trigger))))))
 
 (define-method (run-action (node <node>) (instance <runtime:instance>) (other-instance <runtime:instance>) (action <action>) (trigger <trigger>))
   (debug "run-action: start running\n")
@@ -1018,297 +961,6 @@
 (define (record-ls-eligible node)
   (record-step node (%sut) (cons 'eligible (map trigger->symbol (ast:in-triggers (.type (.instance (%sut))))))))
 
-(define-class <vertex> (<step>)
-  (state #:getter .state #:init-form (list) #:init-keyword #:state))
-
-(define-class <edge> (<step>)
-  (from #:getter .from #:init-value #f #:init-keyword #:from)
-  (to #:getter .to #:init-value #f #:init-keyword #:to)
-  (label #:getter .label #:init-value #f  #:init-keyword #:label))
-
-(define-method (vertex->node (o <vertex>))
-  (let ((node (json:create-initial-node (make <step:transition-list>))))
-    (fold (lambda (i n)
-            (set-state n i (make <state> #:vars (assoc-ref (.state o) i))))
-          node
-          (filter (disjoin runtime:boundary-port? runtime:component-instance?) (%instances)))))
-
-(define-method (vertex-equal? (a <vertex>) (b <vertex>))
-  (equal? (vertex->string a) (vertex->string b)))
-
-(define-method (node->vertex (o <node>) instances)
-  (make <vertex> #:state
-        (map (lambda (i)
-               (cons i (.vars (assoc-ref (.state-alist o) i))))
-             instances)))
-
-(define (go edges)
-  (define (->string instances-state)
-    (scm->json-string
-     (map (lambda (instance-state)
-            (cons (string->symbol
-                   (string-join (map (compose symbol->string .name .instance)
-                                     (reverse (runtime:container-path (car instance-state)))) "."))
-                  (map (lambda (s)
-		         (cons (car s) (->symbol (cdr s))))
-                       (cdr instance-state))))
-          instances-state)))
-
-  (let* ((edges ((compose (if (command-line:get 'remove-duplicate-transitions) remove-duplicates identity)
-                          (if (command-line:get 'remove-self-transitions) remove-self identity)
-                          (remove-vars (map string->symbol (string-split (command-line:get 'remove-vars "") #\space))))
-                 edges))
-	 (vertices (delete-duplicates (append (map .from edges) (map .to edges)) vertex-equal?))
-	 (vertex-strings (map (compose ->string .state) vertices)))
-    (define (id vertex)
-      (number->string (list-index (cute equal? (->string (.state vertex)) <>) vertex-strings)))
-    (define (vertex->string vertex)
-      (string-append "{\"id\": \""
-                     (id vertex)
-                     "\", \"text\": \"\", \"state\": "
-                     (->string (.state vertex))
-                     "}\n"))
-    (define (edge->string edge)
-      (string-append "{\"from\": \""
-                     (id (.from edge))
-                     "\", \"to\": \""
-                     (id (.to edge))
-                     "\", \"text\": \""
-                     (string-join (map step->label (.label edge)) "\\n")
-                     "\"}\n"))
-    (display "{ \"nodeKeyProperty\": \"id\",\n")
-    (display "\"nodeDataArray\": [\n")
-    (display "{\"id\": \"*\", \"text\": \"\", \"state\": {}},\n")
-    (display (string-join (map vertex->string vertices) ",\n" 'infix))
-    (display "],\n\"linkDataArray\": [\n")
-    (display (string-append "{\"from\": \"*\", \"to\": \"" (id (.from (car edges))) "\", \"text\": \"\"},\n"))
-    (display (string-join (map edge->string edges) ",\n"))
-    (display "]\n}\n")))
-
-(define (state->pair state)
-  (cons (car state) (format #f "~a" (ast:value (cdr state)))))
-(define (type o)
-  ((compose (cut symbol-join <> ".") ast:full-name .type .instance) o))
-(define (goopify edges)
-  (define (->string instances-state)
-    (scm->json-string
-     (map (lambda (instance-state)
-            (cons (string->symbol
-                   (string-join (map (compose symbol->string .name .instance)
-                                     (reverse (runtime:container-path (car instance-state)))) "."))
-                  (map (lambda (s)
-		         (cons (car s) (->symbol (cdr s))))
-                       (cdr instance-state))))
-          instances-state)))
-
-  (let* ((edges ((compose (if (command-line:get 'remove-duplicate-transitions) remove-duplicates identity)
-                          (if (command-line:get 'remove-self-transitions) remove-self identity)
-                          (remove-vars (map string->symbol (string-split (command-line:get 'remove-vars "") #\space))))
-                 edges))
-	 (vertex-pairs (map (lambda (vertex) (cons ((compose ->string .state) vertex) vertex))
-                            (append (map .from edges) (map .to edges))))
-         (vertex-pairs (delete-duplicates vertex-pairs (lambda (a b) (string=? (car a) (car b))))))
-
-    (define (id vertex-string)
-      (list-index (lambda (vp) (equal? vertex-string (car vp))) vertex-pairs))
-    (define (vertex->instance vertex)
-      (make <step:instance+state-alist> #:alist
-            (map (lambda (p)
-                   (cons (symbol-join (runtime:instance->path (car p)) ".")
-                         (make <step:instance+state>
-                           #:type (type (car p))
-                           #:kind (kind (car p))
-                           #:state (make <step:state-alist>
-                                     #:alist
-                                     (map state->pair (cdr p))))))
-                 (.state vertex))))
-    (define (vertex->lts:node vertex-pair)
-      (cons (id (car vertex-pair)) (vertex->instance (cdr vertex-pair))))
-    (define (edge->lts:link edge)
-      (let* ((steps (.label edge))
-             (events (steps->events steps)))
-
-        (make <step:lts-link> #:from (id ((compose ->string .state .from) edge)) #:to (id ((compose ->string .state .to) edge)) #:event (make <step:event-list> #:list events))))
-
-    ((@@ (gaiag step-serialize) step:serialize)
-     (make <step:lts>
-       #:node (make <step:node-alist> #:alist (map vertex->lts:node vertex-pairs))
-       #:link (make <step:list> #:list (map edge->lts:link edges)))
-     (current-output-port))
-    (newline)
-
-    ;; (serialize (make <step:lts>
-    ;;              #:node (make <step:node-alist> #:alist (map vertex->lts:node vertices))
-    ;;              #:link (make <step:list> #:list (map edge->lts:link edges))))
-    ;; (newline)
-
-    ;; (serialize `((node . ,(map vertex->lts:node vertices))
-    ;;              (link . ,(map edge->lts:link edges))))
-    ))
-
-(define (dot edges)
-  (define (->string instances-state)
-    (string-join
-     (map
-      (lambda (instance-state)
-        (string-append (string-join (map (compose symbol->string .name .instance) (reverse (runtime:container-path (car instance-state)))) ".") " : ["
-         (string-join (map
-                       (lambda (s)
-		         (string-append
-                          (symbol->string (car s)) "="
-			  (symbol->string (->symbol (cdr s))))) (cdr instance-state)) ", ")
-         "]\\l"))
-      instances-state) ""))
-  (let ((edges ((compose (if (command-line:get 'remove-duplicate-transitions) remove-duplicates identity)
-                         (if (command-line:get 'remove-self-transitions) remove-self identity)
-                         (remove-vars (map string->symbol (string-split (command-line:get 'remove-vars "") #\space)))) edges)))
-    (display "digraph G {\n")
-    (display "begin[shape=\"circle\" width=0.3 fillcolor=\"black\" style=\"filled\" label=\"\"]\n")
-    (display "node[shape=\"rectangle\" style=\"rounded\"]\n")
-    (when (pair? edges)
-      (display "begin -> \"") (display (->string (.state (.from (car edges))))) (display "\"\n"))
-    (for-each (lambda (edge)
-                (display "\"")
-	        (display (->string (.state (.from edge))))
-                (display "\" -> \"")
-                (display (->string (.state (.to edge))))
-                (display "\" [label=\"") (display (string-join (map step->label (.label edge)) "\n")) (display "\"]\n"))
-              edges)
-    (display "}\n")))
-
-(define-method (vertex->string (o <vertex>))
-  (map (lambda (instance-state)
-         (let ((instance (car instance-state))
-               (state (cdr instance-state)))
-           (string-append (string-join (map symbol->string (runtime:instance->path instance)))
-                          (string-join (append-map (lambda (s) (list (symbol->string (car s)) (symbol->string (->symbol (cdr s))))) state)))))
-       (.state o)))
-
-(define ((remove-vars vars) edges)
-  (let ((erase (lambda (vertex vars)
-                 (let ((state (map (lambda (instance-state)
-                                     (cons (car instance-state)
-                                           (filter (lambda (var)
-                                                     (not (find (cut equal? (car var) <>) vars)))
-                                                   (cdr instance-state))))
-                                   (.state vertex))))
-                   (make <vertex> #:state state)))))
-    (map (lambda (edge)
-           (make <edge>
-             #:from (erase (.from edge) vars)
-             #:to (erase (.to edge) vars)
-             #:label (.label edge)))
-         edges)))
-
-(define (remove-self edges)
-  (filter (lambda (edge)
-            (not (equal? (vertex->string (.from edge))
-                         (vertex->string (.to edge))))) edges))
-
-(define (remove-duplicates edges)
-  (delete-duplicates edges (lambda (a b)
-                             (and (equal? (.label a) (.label b))
-                                  (equal? (vertex->string (.from a)) (vertex->string (.from b)))
-                                  (equal? (vertex->string (.to a)) (vertex->string (.to b)))))))
-
-(define-method (labels (o <runtime:component>))
-  (ast:in-triggers (.type (.instance o))))
-
-
-(define-method (labels (o <runtime:system>))
-  (let* ((system (.type (.instance o)))
-         (bindings (ast:binding* system))
-         ;;(ports (map runtime:other-port (filter .boundary? (%instances))))
-         (ports (filter (conjoin .boundary? (compose ast:provides? .instance)) (%instances))))
-    (append-map (lambda (port)
-                  (map (lambda (e)
-                         (make <runtime:trigger> #:instance port #:event.name (.name e)))
-                       (if (ast:provides? (.instance port)) (filter ast:in? (ast:event* (.type (.instance port))))
-                           (filter ast:out? (ast:event* (.type (.instance port))))))) ;;FIXME simplify
-                ports)))
-
-(define-method (run-label (node <node>) (label <trigger>)) ;;FIXME: finish refactor <trigger> -> <runtime:trigger> or ???
-  (run node (%sut) label))
-
-(define-method (run-label (node <node>) (label <runtime:trigger>))
-  (let ((trigger (make <trigger> #:port.name ((compose .name .instance .instance) label) #:event.name (.event.name label)))
-        (instance (.container (.instance label))))
-    (if (is-a? (%sut) <runtime:system>)
-        (let* ((port (runtime:other-port (.instance label)))
-               (record-trigger (make <trigger> #:event.name (.event.name label)))
-               (component-port (runtime:find-instance (.port.name trigger) instance #f)))
-          (if component-port (let* ((system-port (runtime:other-port component-port)))
-                               (run (record-step node port record-trigger) instance trigger))
-              (list (set-status node (make <no-match>)))))
-        (run node instance trigger))))
-
-(define-method (run-label (node <node>) (label <runtime:trigger>))
-  (let ((trigger (make <trigger> #:port.name ((compose .name .instance .instance) label) #:event.name (.event.name label))))
-    (run-trigger node trigger)))
-
-(define (step->label s)
-  (let ((instance (car s))
-        (statement (cdr s)))
-    (string-join
-     (map symbol->string
-          (append (if
-                   (or (is-a? statement <reply>) (is-a? statement <trigger-return>)
-                       (is-a? (.container instance) <runtime:foreign>))
-                   (runtime:instance->path instance)
-                   (runtime:instance->path instance))
-                  (list (->symbol statement))))  ".")))
-
-(define-method (lts (node <node>))
-  (define (make-edges instances from to)
-    (let* (;;(steps (drop (.steps to) (length (.steps from))))
-           (steps (.steps to))
-           (steps (map (lambda (step)
-                         (let ((instance (car step))
-                               (statement (cdr step)))
-                           (if (and (is-a? instance <runtime:foreign>) ;; CHECKME
-                                (is-a? statement <action>)
-                                    (not (is-a? statement <action-out>))
-                                    (let* ((instance-port (runtime:find-instance (.port.name statement) instance #f))
-                                           (other-port (runtime:other-port instance-port)))
-                                      (runtime:boundary-port? other-port)))
-                               (let* ((instance-port (runtime:find-instance (.port.name statement) instance #f))
-                                      (other-port (runtime:other-port instance-port)))
-                                 (cons (%sut) (action->trigger other-port statement)))
-                               step)))
-                       steps))
-           (steps (filter (conjoin (negate state-step?) all-relevant-steps-for-now) steps)))
-      (make <edge>
-        #:from from
-        #:to (node->vertex to instances)
-        #:label steps))) ;;FIX go & dot by mapping step->label over steps
-  (let* ((labels (labels (%sut)))
-         (hes (lambda (vertex-string size) (hash vertex-string size)))
-         (hes-tebel (make-hash-table 1024))
-         (instances (filter (disjoin (negate (is? <runtime:port>)) runtime:boundary-port?) (%instances)))
-         (requires-instances (filter runtime:requires-instance? (%instances)))
-         (initial (node->vertex node instances))
-         (foo (hashx-set! hes assoc hes-tebel (vertex->string initial) #t)))
-    (let loop ((frontier (list initial)) (edges '()) (horizon (and=> (command-line:get 'horizon #f) string->number)))
-      (let* ((new-edges (append-map
-                         (lambda (vertex)
-                           (let ((node (vertex->node vertex)))
-                             (map (cut make-edges instances vertex <>)
-                                   (filter (negate .status)
-                                           (append
-                                            (append-map (cut run node <> (make <trigger> #:event.name 'optional)) requires-instances)
-                                            (append-map (cut run node <> (make <trigger> #:event.name 'inevitable)) requires-instances)
-                                            (append-map (cut run-label node <>) labels))))))
-                         frontier))
-             (frontier (filter (lambda (vertex)
-                                 (let* ((vertex-hash (vertex->string vertex))
-                                        (r (not (hashx-ref hes assoc hes-tebel vertex-hash))))
-                                   (when r (hashx-set! hes assoc hes-tebel vertex-hash #t))
-                                   r))
-                               (map .to new-edges)))
-             (edges (append edges new-edges)))
-        (if (or (and horizon (= 0 horizon)) (null? frontier)) edges
-            (loop frontier edges (and horizon (1- horizon))))))))
-
 (define-method (simulate (o <node>))    ; -> list of <node>
   (let loop ((work (list o)) (solutions '()))
     (let* ((foo (debug "simulate:loop start run-requires-out (work length=~a)\n" (length work)))
@@ -1348,9 +1000,6 @@
   (find (compose (cut eq? o <>) .name .instance)
         (filter runtime:boundary-port? (%instances))))
 
-(define (symbol-join symbol-list separator)
-  (string->symbol (string-join (map symbol->string symbol-list) (->string separator))))
-
 (define-method (.port.name <illegal>) #f)
 
 (define (state-step? step)
@@ -1382,9 +1031,6 @@
            (($ <q-out>) #t)
            (($ <q-trigger>) #t)
            (_ #f)))))
-
-(define all-relevant-steps-for-now (conjoin (negate eligible-step?)
-                                   (disjoin state-step? (trigger-step? #f))))
 
 (define (side->string o)
   (let ((instance (car o))
@@ -1476,70 +1122,8 @@
         (#f #f)
         (_ (stderr "ERROR:~a\n" status))))))
 
-(define (group pred elements)
-  "Returns a list of lists from ELEMENTS split by PRED"
-  (if (null? elements) '()
-      (let ((groups (let loop ((elements (cdr elements)) (groups '()) (group (list (car elements))))
-                      (if (null? elements) (cons group groups)
-                          (let ((element (car elements)))
-                            (if (pred element)
-                                (loop (cdr elements) (cons group groups) (list element))
-                                (loop (cdr elements) groups (cons element group))))))))
-        (map reverse (reverse groups)))))
-
-(define (steps->events steps)
-  (let* ((events
-          (fold
-           (lambda (step result)
-             (if (or (null? result) (is-a? (car result) <step:event>))
-                 (cons step result)
-                 (let* ((from-strings (string-split (side->string (car result)) #\.))
-                        (from (string-join (drop-right from-strings (if (equal? "<q>" (last from-strings)) 0 1)) "."))
-                        (from-location (and (command-line:get 'locations #f) (step->location (cdr (car result)))))
-                        (to-strings (string-split (side->string step) #\.))
-                        (to (string-join (drop-right to-strings (if (equal? "<q>" (last to-strings)) 0 1)) "."))
-                        (to-location (and (command-line:get 'locations #f) (step->location (cdr step))))
-                        (name (if (equal? (last from-strings) "<q>") (last to-strings) (last from-strings)))
-                        (result (cdr result)))
-                   (cons (make <step:event>
-                           #:from-location from-location
-                           #:from from
-                           #:to-location to-location
-                           #:to to
-                           #:name name) result)))) '() steps))
-         (events (if (or (null? events) (is-a? (car events) <step:event>)) events (cdr events))))
-    (reverse events)))
-
-(define* (json:print-trace nodes)
-  (if (= 1 (length nodes))
-      (let* ((instances (filter (disjoin (negate (is? <runtime:port>)) runtime:boundary-port?) (%instances)))
-             (node (car nodes))
-             (steps (.steps node))
-             (steps (filter all-relevant-steps-for-now steps))
-             (blocks (group state-step? steps))
-             (step->state (lambda (step)
-                            (let ((instance+state (filter (compose (disjoin (negate (is? <runtime:port>)) runtime:boundary-port?) car) (cdr step))))
-                              (make <step:instance+state-alist> #:alist
-                                    (map (lambda (i) (cons (symbol-join (runtime:instance->path i) ".")
-                                                           (make <step:instance+state>
-                                                             #:type (type i)
-                                                             #:kind (kind i)
-                                                             #:state (make <step:state-alist> #:alist (map state->pair (.vars (assoc-ref instance+state i)))))))
-                                         instances))))))
-
-        ((@@ (gaiag step-serialize) step:serialize)
-         (make <step:list>
-           #:list (map (lambda (block)
-                         (make <step:transition>
-                           #:instance+state (step->state (car block))
-                           #:event (make <step:event-list> #:list (steps->events (cdr block)))))
-                       blocks))
-         (current-output-port)))
-      (map print-trace nodes (iota (length nodes)))))
-
 (define (empty-symbol? o)
   (string-null? (symbol->string o)))
-
 
 (define (steps->trail steps out)
   (filter (trigger-step? out) steps))
@@ -1563,26 +1147,6 @@
          (make <enum-literal> #:type.name (make <scope.name> #:name type.name) #:field field))) ;; FIXME: what about resolving
     ))
 
-(define-method (symbol->value v)
-  (match v
-    ('true (make <literal> #:value 'true))
-    ('false (make <literal> #:value 'false))
-    ((? number?) (make <literal> #:value v))
-    (_ (let* ((enum (reverse (symbol-split v #\.)))
-              (scope (reverse (cddr enum)))
-              (type.name (second enum))
-              (field (first enum)))
-         (make <enum-literal> #:type.name (make <scope.name> #:scope scope #:name type.name) #:field field))) ;; FIXME: what about resolving
-    ))
-
-(define-method (kind (o <runtime:instance>))
-  (match o
-    (($ <runtime:port>) (if (runtime:provides-instance? o) 'provides 'requires))
-    (($ <runtime:component>) 'component)
-    (($ <runtime:foreign>) 'foreign)
-    (($ <runtime:system>) 'system)
-    ))
-
 (define (variable->sexp pair)
     (cons (car pair) (value->sexp (cdr pair))))
 
@@ -1597,7 +1161,7 @@
                             ((and (runtime:boundary-port? o) (null? path)) '(sut))
                             ((runtime:boundary-port? o) (car path))
                             (else path)))
-                (kind (kind o)))
+                (kind (runtime:kind o)))
            (cons path (cons (.name (.name model)) (cons kind state)))))
        (filter (lambda (i)
                  (or (runtime:boundary-port? i)
@@ -1632,20 +1196,6 @@
              (cons instance (or (assoc-ref state-from-trail instance-path) state))))
          initial-state)))
 
-(define-method (json:get-initial-state (o <step:instance+state-alist>))
-  (let ((initial-state (fold create-initial-state '() (%instances))))
-    (map (lambda (inst)
-           (let* ((state (assoc-ref (step:.alist o) (symbol-join (runtime:instance->path inst) '.)))
-                  (initial-inst-state (assoc-ref initial-state inst))
-                  (state (if state (map (lambda (s)
-                                          (cons (car s)
-                                                (clone (symbol->value (cdr s))
-                                                       #:parent (.parent (assoc-ref initial-inst-state (car s))))))
-                                        (step:.alist (step:.state state)))
-                             initial-inst-state)))
-             (cons inst state)))
-         (%instances))))
-
 (define (read-input-file)
   (define (helper x)
     (if (eof-object? x) '()
@@ -1654,10 +1204,6 @@
 
 (define (string->trail o)
   (with-input-from-string (string-join (string-split o #\,) " ") read-input-file))
-
-(define (json->trail o)
-  (let ((str (string-trim-both o)))
-    (if (string-null? str) (make <step:list>) (step:goopify (step:deserialize str)))))
 
 (define* (get-input-trail)
   (let* ((trail (or (command-line:get 'trail)
@@ -1678,29 +1224,6 @@
          (input-trail (filter (negate pair?) input-trail)))
     (clone node #:trail input-trail)))
 
-(define-method (json:create-initial-node (o <step:transition-list>))
-  (define (external-event s n)
-    (let ((lst (string-split (symbol->string s) #\.)))
-      (and (pair? lst)
-           (equal? "<external>" (car lst))
-           (string->symbol (string-join (append (cdr lst) (list (symbol->string n))) ".")))))
-
-  (let* ((transitions (step:.list o))
-         (transition? (and (pair? transitions) (last transitions)))
-         (initial-state (if transition? (json:get-initial-state (step:.instance+state transition?))
-                            (get-initial-state '())))
-         (node (make-initial-node (%instances) initial-state))
-         (node (record-state node (%sut)))
-         (trail (if (not transition?) '()
-                    (filter-map (lambda (event)
-                                  (or (external-event (step:.from event) (step:.name event))
-                                      (external-event (step:.to event) (step:.name event))))
-                                (step:.list (step:.event transition?))))))
-    (clone node #:trail trail)))
-
-
-(define %lts (make-parameter #f))
-
 (define (step:root-> root)
   (debug-disable 'backtrace)
   (setup-debug-printing!)
@@ -1708,8 +1231,7 @@
 ;;    (debug "root:\n")
     ;;(debug-pretty (om->list root))
     (parameterize ((%sut sut))
-      (parameterize ((%instances (runtime:get-system-instances sut))
-                     (%lts (command-line:get 'lts #f)))
+      (parameterize ((%instances (runtime:get-system-instances sut)))
 ;;        (debug "instances:\n")
 ;;        (debug-pretty (om->list (%instances)))
         (let* ((input-trail (get-input-trail))
@@ -1738,29 +1260,6 @@
 
 (define (measure-perf-result label sum)
   (stderr "~a: ~a\n" (/ sum 1000000.0) label))
-
-(define (lts-> -> ast)
-  (setup-debug-printing!)
-  (let* ((root (step:om ast))
-         (sut (runtime:get-sut root)))
-    (parameterize ((%sut sut))
-      (parameterize ((%instances (runtime:get-system-instances sut))
-                     (%lts #t))
-        (if (member -> (list dot go goopify)) (-> (lts (json:create-initial-node (or (and=> (command-line:get 'initial #f) json->trail) (make <step:transition-list>)))))
-            (let* ((instance (.instance sut))
-                   (model (.type instance))
-                   (name (.name (.name model))) ;; FIXME: namespace
-                   (type (ast-name model))
-                   (state (with-output-to-string (cut -> (lts (json:create-initial-node (make <step:transition-list>))))))
-                   (model-names (map (compose .name .name) (ast:model* root)))
-                   (other-names (filter (negate (cut eq? name <>)) model-names))
-                   (others-alist (map (compose list (cut cons 'name <>)) other-names))
-                   (json (scm->json-string `((models . (((name . ,name) (type . ,type) (state . ,state))
-                                                        ,@others-alist))))))
-              (format (current-error-port) "json:~s\n" json)
-              (display json)
-              (newline))))))
-  "")
 
 #!
 ;; Start Geiser: C-c C-a

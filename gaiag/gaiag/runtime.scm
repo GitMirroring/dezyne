@@ -42,6 +42,7 @@
             runtime:instance->path
             runtime:instance->string
             runtime:instance->string
+            runtime:kind
             runtime:other-instance+port
             runtime:other-port
             runtime:path->instance
@@ -337,3 +338,10 @@
   (let* ((sut (make <instance> #:name 'sut #:type.name (.name model)))
          (root (clone root #:elements (cons sut (ast:top* root)))))
     (ast->runtime:instance (clone sut #:parent root) #f)))
+
+(define-method (runtime:kind (o <runtime:instance>))
+  (match o
+    (($ <runtime:port>) (if (runtime:provides-instance? o) 'provides 'requires))
+    (($ <runtime:component>) 'component)
+    (($ <runtime:foreign>) 'foreign)
+    (($ <runtime:system>) 'system)))
