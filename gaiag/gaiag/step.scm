@@ -453,16 +453,18 @@
          #:parent (.type (.instance o))))
 
 (define (boundary-step? step)
-;;  (debug "\nboundary-step? step=~s\n" step)
+  ;;  (debug "\nboundary-step? step=~s\n" step)
   (let ((instance (car step))
         (statement (cdr step)))
     (and (is-a? statement <ast>)
          (or (is-a? statement <illegal>)
              (not (.port.name statement))
              (runtime:boundary-port? instance)
-             (let ((runtime-port (runtime:port (pke 'instance instance) (pke 'port (.port statement)))))
-               (let ((other-runtime-port (runtime:other-port runtime-port)))
-                 (runtime:boundary-port? other-runtime-port)))))))
+             (and (.port statement)
+                  (let ((runtime-port (runtime:port (pke 'instance instance) (pke 'port (.port statement)))))
+                    (and runtime-port
+                         (let ((other-runtime-port (runtime:other-port runtime-port)))
+                           (runtime:boundary-port? other-runtime-port)))))))))
 
 (define (steps->boundary-steps steps)
   (filter boundary-step? (steps->trail steps #t)))
@@ -536,6 +538,8 @@
           (($ <illegal>) (list (set-status node (make <error> #:message "illegal" #:ast statement))))
           (($ <trigger-return>) (return node instance statement))
           (($ <trigger-out-return>) (return node instance statement))
+          ((and ($ <action>) (? ast:async?))
+           (call-async node instance statement))
           (($ <action>)
            (append-map (cut call <> instance statement) (run-silent-filtered node instance)))
           (($ <action-out>)
@@ -618,7 +622,7 @@
 (define-method (call (node <node>) (instance <runtime:component>) (action <action>))
   (debug "CALL <component> <action> [~a]: ~a\n" instance action)
   (receive (other-instance other-port)
-      (runtime:other-instance+port instance (runtime:port instance (.port action)))
+      (runtime:other-instance+port instance (runtime:port instance  (.port action)))
     (let ((trigger (action->trigger other-port action)))
       (match other-instance
         (($ <runtime:port>)
@@ -627,6 +631,22 @@
                  ((match? other-instance trigger input) (run-action (drop-next-trail node) instance other-instance action trigger))
                  (else (list (set-status node (make <no-match> #:ast trigger #:input input)))))))
         (($ <runtime:component>) (run-action node instance other-instance action trigger))))))
+
+(define-method (ast:async? (o <action>))
+  (symbol-prefix? 'dzn.async (symbol-join (ast:full-name (.type (.port o))) '.)))
+
+(define-method (call-async (node <node>) (instance <runtime:component>) (action <action>))
+  (list
+   (case (.event.name action)
+     ((req)
+      (let* ((trigger (clone (make <trigger> #:port.name (.port.name action) #:event.name 'ack)
+                             #:parent ((compose .type .instance) instance)))
+             (ack (lambda (node) (run node instance trigger)))
+             (rank (.rank instance)))
+        (clone node #:async (acons rank (cons (.port action) ack) (.async node)))))
+     ((clr)
+      (clone node #:canceled (cons (.port action) (.canceled node))))
+     (else (throw 'step "no such async trigger" action)))))
 
 (define-method (call (node <node>) (instance <runtime:port>) (action <action-out>))
   (debug "CALL <port> <action-out>[~a]: ~a\n" instance action)
@@ -879,7 +899,7 @@
             (if (null? non-compliances)
                 (begin
                   (debug "UNKNOWN COMPLIANCE ERROR!:\n")
-                  (list (set-status node (make <compliance-error> #:message "compliance"))))
+                  (list (set-status node (make <compliance-error> #:message "compliance" #:component-acceptance (cddr (first-non-match node node)) #:port-acceptance (make <acceptances> #:elements '())))))
                 (begin
                   (debug "COMPLIANCE ERROR!: port:~a\n" (map cdar non-compliances))
                   (debug "              component:~a\n" (cddar non-compliances))
@@ -887,6 +907,7 @@
 
     (let* ((foo (debug "run-provides-in: start running component-instance\n"))
            (nodes (run node component-instance trigger))
+           (nodes (append-map run-async nodes))
            (foo (debug "-----------------------number of comp nodes: ~a\n" (length nodes)))
            (nodes (append-map
                    (lambda (node)
@@ -895,8 +916,21 @@
                               (map (lambda (matching-port-node) (set-state node port-instance (get-state matching-port-node port-instance))) matching-port-nodes))
                              ((is-a? (.status node) <error>) (list node))
                              (else (compliance-error node port-nodes)))))
-                   nodes)))
-      (map (cut record-state <> component-instance) nodes))))
+                   nodes))
+           (nodes (map (cut record-state <> component-instance) nodes)))
+      nodes)))
+
+(define-method (run-async (node <node>))
+  (let ((timers (.async node)))
+    (if (or (.status node) (null? timers)) (list node)
+        (let* ((deadline (apply min (map car timers)))
+               (x-e (assoc-ref (reverse timers) deadline))
+               (e (cdr x-e))
+               (timers (filter (negate (compose (cut equal? <> x-e) cdr)) timers))
+               (node (clone node #:async timers)))
+          (if (find (cut eq? <> (car x-e)) (.canceled node))
+              (list (clone node #:canceled (filter (negate (cut eq? <> (car x-e))) (.canceled node))))
+              (append-map run-async (e node)))))))
 
 (define-method (status-equal? a b)
   (and (not a) (not b)))

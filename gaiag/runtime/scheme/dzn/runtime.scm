@@ -53,7 +53,7 @@
             dzn:clone
 
             dzn:connect
-            dzn:rank
+            dzn:rank!
             dzn:set-state!
             dzn:trace
             dzn:trace-out
@@ -132,18 +132,18 @@
 (define-method (dzn:requires* (o <dzn:component>))
   (filter (compose (cut and=> <> (cute eq? <> o)) .self .out) (dzn:interface* o)))
 
-(define-method (dzn:rank (o <dzn:interface>) r)
-  (dzn:rank ((compose .self .in) o) r))
+(define-method (dzn:rank! (o <dzn:interface>) r)
+  (dzn:rank! ((compose .self .in) o) r))
 
-(define-method (dzn:rank (o <dzn:component-model>) r)
+(define-method (dzn:rank! (o <dzn:component-model>) r)
   (when (> r (.rank o))
     (set! (.rank o) r))
   (format (current-error-port) "rank: ~a ~a ~a\n" (.name o) (class-name (class-of o)) (.rank o))
   ;; (format (current-error-port) "prov: ~a\n" (dzn:provides* o))
   ;; (format (current-error-port) "req:  ~a\n" (dzn:requires* o))
-  (for-each (lambda (i) (dzn:rank ((compose .self .in) i) (1+ (.rank o)))) (dzn:requires* o)))
+  (for-each (lambda (i) (dzn:rank! ((compose .self .in) i) (1+ (.rank o)))) (dzn:requires* o)))
 
-(define-method (dzn:rank (o <boolean>) r)
+(define-method (dzn:rank! (o <boolean>) r)
   ;;(format (current-error-port) "rank: #f\n")
   #t)
 

@@ -1,1 +1,1 @@
-(dzn:rank (.#.name  o) 0)
+(dzn:rank! (.#.name  o) 0)

@@ -27,6 +27,8 @@
             <state>
             <step>
 
+            .async
+            .canceled
             .deferred
             .handling?
             .q
@@ -58,4 +60,6 @@
   (state-alist #:getter .state-alist #:init-form (list) #:init-keyword #:state-alist) ; '((sut b) . <state>) (sut c) . <state>))
   (steps #:getter .steps #:init-form (list) #:init-keyword #:steps)
   (trail #:getter .trail #:init-form (list) #:init-keyword #:trail)
+  (async #:getter .async #:init-form (list) #:init-keyword #:async)
+  (canceled #:getter .canceled #:init-form (list) #:init-keyword #:canceled)
   (status #:getter .status #:init-value #f #:init-keyword #:status))
