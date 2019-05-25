@@ -61,7 +61,9 @@
 (define-method (display-slots (o <object>) port)
   (for-each
    (cut display-slot o <> port)
-   (map slot-definition-name (class-slots (class-of o)))))
+   (let ((names (map slot-definition-name (class-slots (class-of o)))))
+    (if #f names
+        (filter (negate (cut eq? <> 'location)) names)))))
 
 (define (symbol-drop-right o n)
   ((compose string->symbol (cut string-drop-right <> n) symbol->string) o))
