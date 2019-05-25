@@ -489,7 +489,12 @@
   (debug "walk: statement:~a\n" statement)
   (match statement
     ((and ($ <compound>) (? ast:declarative?) (= ast:statement* statements))
-     (append-map (cut walk node instance trigger <> trigger? silent) statements))
+     (let ((nodes (append-map (cut walk node instance trigger <> trigger? silent) statements)))
+       (if (or (is-a? instance <runtime:port>) (not (is-a? (.parent statement) <behaviour>)) (pair? nodes)) nodes
+           (let* ((model ((compose .type .instance) instance))
+                  (implicit-illegal (clone (make <illegal> #:incomplete #t #:location ((compose .location .behaviour) model)) #:parent model))
+                  (node (record-step node instance trigger)))
+             (step node instance implicit-illegal silent)))))
     (($ <guard>) (if (not (true? (eval-expression (get-vars node instance) (.expression statement)))) '()
                      (walk node instance trigger (.statement statement) trigger? silent)))
     (($ <on>) (let* ((component? (is-a? (instance-ast instance) <component>))
