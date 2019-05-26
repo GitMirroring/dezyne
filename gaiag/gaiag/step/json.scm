@@ -1,6 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;;
-;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -21,7 +20,7 @@
 ;;; 
 ;;; Code:
 
-(define-module (gaiag step-serialize)
+(define-module (gaiag step json)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 match)
@@ -39,7 +38,7 @@
   #:use-module (gaiag serialize)
   #:use-module (gaiag runtime)
   #:use-module (gaiag step)
-  #:use-module (gaiag step-goops)
+  #:use-module (gaiag step goops)
   #:export (
             <step:alist>
             <step:instance+state-alist>

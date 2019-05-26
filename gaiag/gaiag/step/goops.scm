@@ -20,10 +20,12 @@
 ;;; 
 ;;; Code:
 
-(define-module (gaiag step-goops)
+(define-module (gaiag step goops)
   #:use-module (oop goops)
   #:use-module (gaiag goops)
+  #:use-module (gaiag ast)
   #:export (<node>
+            <frame>
             <state>
             <step>
 
@@ -43,7 +45,11 @@
             .trail
             .vars
             )
-  #:re-export (clone))
+  #:re-export (
+               clone
+               .instance
+               .trigger
+               ))
 
 (define-class <step> ())
 (define-method (clone (o <step>) . setters)
@@ -67,3 +73,8 @@
   (status #:getter .status #:init-value #f #:init-keyword #:status)
   (block #:getter .block #:init-form #f #:init-keyword #:block)
   (release #:getter .release #:init-form #f #:init-keyword #:release))
+
+(define-class <frame> (<step>)
+  (pc #:getter .pc #:init-form (list) #:init-keyword #:pc) ; <behaviour>, <statement>
+  (instance #:getter .instance #:init-value #f #:init-keyword #:instance) ; '(sut b)
+  (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger)) ; <trigger>

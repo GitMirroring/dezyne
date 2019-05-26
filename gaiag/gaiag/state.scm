@@ -33,17 +33,18 @@
 
   #:use-module (json)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <frame> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag ast)
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
   #:use-module (gaiag runtime)
-
-  #:use-module (gaiag step-goops)
-  #:use-module (gaiag step)
   #:use-module (gaiag serialize)
-  #:use-module (gaiag step-serialize)
+
+  #:use-module (gaiag step goops)
+  #:use-module (gaiag step normalize)
+  #:use-module (gaiag step json)
+  #:use-module (gaiag step)
 
   #:export (%lts
             dot
@@ -369,9 +370,9 @@
         (if (or (and horizon (= 0 horizon)) (null? frontier)) edges
             (loop frontier edges (and horizon (1- horizon))))))))
 
-(define (lts-> -> ast)
+(define (lts-> -> root)
   (setup-debug-printing!)
-  (let* ((root (step:om ast))
+  (let* ((root (step:normalize root))
          (sut (runtime:get-sut root)))
     (parameterize ((%sut sut))
       (parameterize ((%instances (runtime:get-system-instances sut))
