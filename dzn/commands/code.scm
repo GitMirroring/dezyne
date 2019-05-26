@@ -1,0 +1,91 @@
+;;; Dezyne --- Dezyne command line tools
+;;;
+;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;;
+;;; This file is part of Dezyne.
+;;;
+;;; Dezyne is free software: you can redistribute it and/or modify it
+;;; under the terms of the GNU Affero General Public License as
+;;; published by the Free Software Foundation, either version 3 of the
+;;; License, or (at your option) any later version.
+;;;
+;;; Dezyne is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;;; Affero General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU Affero General Public
+;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+;;;
+;;; Commentary:
+;;;
+;;; Code:
+
+(define-module (dzn commands code)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (dzn misc)
+  #:use-module (dzn command-line)
+  #:use-module (dzn commands parse)
+  #:export (parse-opts
+            main))
+
+(define (parse-opts args)
+  (let* ((option-spec
+          '((ast (single-char #\A))
+            (calling-context (single-char #\c) (value #t))
+            (debug (single-char #\d))
+            (depends) ;; FIXME
+            (deprecated (value #t))
+            (dzn (single-char #\G))
+            (glue (single-char #\g) (value #t))
+            (help (single-char #\h))
+            (import (single-char #\I) (value #t))
+            (language (single-char #\l) (value #t))
+            (locations (single-char #\L))
+            (model (single-char #\m) (value #t))
+            (output (single-char #\o) (value #t))
+            (queue_size (single-char #\q) (value #t))
+            (shell (single-char #\s) (value #t))
+	    (version (single-char #\V) (value #t))))
+	 (options (getopt-long args option-spec
+		   #:stop-at-first-non-option #t))
+	 (help? (option-ref options 'help #f))
+	 (files (option-ref options '() '()))
+	 (usage? (and (not help?) (null? files))))
+    (or
+     (and (or help? usage?)
+          ((or (and usage? stderr) stdout) "\
+Usage: gdzn code [OPTION]... DZN-FILE [MAP-FILE]...
+  -A, --ast                   generate AST
+  -c, --calling-context=TYPE  generate extra parameter of TYPE for every event
+FIXME:      --depends[=TYPE]        generate dependency for DZN-FILE and write to DZN-FILE.TYPE, default is stdout
+  -g, --glue=TYPE             generate glue for TYPE [dzn]
+  -h, --help                  display this help and exit
+  -I, --import=DIR+           add DIR to import path
+  -l, --language=LANG         generate code for language=LANG [c++]
+  -L, --locations             prepend locations to output trace
+  -m, --model=MODEL           generate main for MODEL
+  -o, --output=DIR            write output to DIR (use - for stdout)
+  -s, --shell=MODEL           generate thread safe system shell for MODEL
+  -V, --version=VERSION       use service version=VERSION
+")
+	   (exit (or (and usage? 2) 0)))
+     options)))
+
+(define (main args)
+  (let* ((options (parse-opts args))
+         (files (option-ref options '() '()))
+         (file-name (car files))
+         (map-files (cdr args))
+         (language-opt (string->symbol (option-ref options 'language "c++")))
+         (options (if (eq? language-opt 'scheme) (acons 'behaviour #t options)
+                      options))
+         (ast (parse options file-name))
+         (module (resolve-module `(dzn ,language-opt)))
+         (ast-> (module-ref module 'ast->)))
+    (parameterize ((language language-opt)) (ast-> ast))
+    *unspecified*))

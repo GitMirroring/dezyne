@@ -17,9 +17,9 @@
 #
 # You should have received a copy of the GNU Affero General Public
 # License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 # Commentary:
-# 
+#
 # Code:
 
 .PHONY:all code default
@@ -49,10 +49,10 @@ endif
 link-runtime-common:
 	mkdir -p "$(OUT)"/dzn
 	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls $(VERSION_OPT) /share/runtime/$(LANGUAGE)))); do\
-	    ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/"$$file" "$(OUT)"/$$file;\
+	    ln -sf $(DEVELOPMENT)/dzn/runtime/$(LANGUAGE)/"$$file" "$(OUT)"/$$file;\
 	done
 	for file in $(filter-out %/, $(patsubst /$(LANGUAGE)/%, %,  $(shell $(DZN) ls $(VERSION_OPT) /share/runtime/$(LANGUAGE)/dzn))); do\
-	    ln -sf $(DEVELOPMENT)/gaiag/runtime/$(LANGUAGE)/dzn/$$file "$(OUT)"/dzn/$$file;\
+	    ln -sf $(DEVELOPMENT)/dzn/runtime/$(LANGUAGE)/dzn/$$file "$(OUT)"/dzn/$$file;\
 	done
 
 runtime-common:

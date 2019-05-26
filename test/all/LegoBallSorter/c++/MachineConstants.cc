@@ -74,7 +74,7 @@ config_scope::get(const std::string& key)
     map["Position::Feeder::DropThird"] = -1950;
     map["Position::Feeder::DropLast"] = -2700;
 
-    map["Power::15"] = 15;    
+    map["Power::15"] = 15;
     map["Power::50"] = 50;
 
     map["Power::CalibrationSpeed"] = 20;

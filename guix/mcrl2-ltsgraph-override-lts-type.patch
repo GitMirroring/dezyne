@@ -26,7 +26,7 @@ index 85cb51072..03899d705 100644
 +		 const QVector3D& max, mcrl2::lts::lts_type m_type)
 +{
    lockForWrite(m_lock, GRAPH_LOCK_TRACE);
- 
+
    clear();
 -  m_type = mcrl2::lts::detail::guess_format(filename.toUtf8().constData());
    try
@@ -38,15 +38,15 @@ index 67742a838..6fbe66655 100644
 +++ b/tools/release/ltsgraph/graph.h
 @@ -20,6 +20,7 @@
  #define GRAPH_H
- 
+
  #include "mcrl2/lts/lts.h"
 +#include "mcrl2/lts/lts_type.h"
  #include "mcrl2/lts/state_label_empty.h"
- 
+
  #include <cmath>
 @@ -437,6 +438,15 @@ class Graph
      void load(const QString& filename, const QVector3D& min, const QVector3D& max);
- 
+
      /**
 +     * @brief Loads a graph with random positioning for the nodes.
 +     * @param filename The file which contains the graph.
@@ -67,7 +67,7 @@ index ec94d55a6..fe332ff09 100644
 @@ -7,6 +7,8 @@
  // http://www.boost.org/LICENSE_1_0.txt)
  //
- 
+
 +#include "mcrl2/lts/lts_type.h"
 +#include "mcrl2/lts/lts_io.h"
  #include "mcrl2/utilities/input_tool.h"
@@ -111,7 +111,7 @@ index ec94d55a6..fe332ff09 100644
 @@ -31,10 +60,16 @@ class ltsgraph_tool : public ltsgraph_base
      {
        MainWindow* window = new MainWindow();
- 
+
 -      if (!m_input_filename.empty())
 +      //--in option not or wrongly specified, so m_type is lts_none -> execute as normal
 +      if (m_type == mcrl2::lts::lts_none && !m_input_filename.empty())
@@ -123,7 +123,7 @@ index ec94d55a6..fe332ff09 100644
 +      {
 +	window->delayedOpenFile(QString::fromStdString(m_input_filename), m_type);
 +      }
- 
+
        return show_main_window(window);
      }
 diff --git a/tools/release/ltsgraph/mainwindow.cpp b/tools/release/ltsgraph/mainwindow.cpp
@@ -131,19 +131,19 @@ index 6cf97113a..5e112bbe9 100644
 --- a/tools/release/ltsgraph/mainwindow.cpp
 +++ b/tools/release/ltsgraph/mainwindow.cpp
 @@ -24,7 +24,8 @@
- 
+
  MainWindow::MainWindow(QWidget* parent) :
    QMainWindow(parent),
 -  m_fileDialog("", this)
 +  m_fileDialog("", this),
 +  m_type(mcrl2::lts::lts_none)
  {
- 
+
    m_ui.setupUi(this);
 @@ -177,6 +178,12 @@ void MainWindow::delayedOpenFile(QString fileName)
    m_delayedOpen = std::move(fileName);
  }
- 
+
 +void MainWindow::delayedOpenFile(QString fileName, mcrl2::lts::lts_type type)
 +{
 +  m_delayedOpen = std::move(fileName);
@@ -161,7 +161,7 @@ index 6cf97113a..5e112bbe9 100644
 +      m_type == mcrl2::lts::lts_none ?
 +	m_graph.load(fileName, -limit, limit)
 +	: m_graph.load(fileName, -limit, limit, m_type);
- 
+
        if (m_graph.nodeCount() > MAX_NODE_COUNT && !hadSelection)
        {
 diff --git a/tools/release/ltsgraph/mainwindow.h b/tools/release/ltsgraph/mainwindow.h
@@ -171,31 +171,31 @@ index cb7198dd3..c5c01a2e2 100644
 @@ -22,6 +22,7 @@
  #include <QMainWindow>
  #include "ui_mainwindow.h"
- 
+
 +#include "mcrl2/lts/lts_type.h"
  #include "mcrl2/gui/persistentfiledialog.h"
- 
+
  #include "glwidget.h"
 @@ -54,6 +55,11 @@ class MainWindow : public QMainWindow
       */
      void delayedOpenFile(QString fileName);
- 
+
 +    /**
 +     * @brief Opens the given file and sets lts_type to type.
 +     */
 +    void delayedOpenFile(QString fileName, mcrl2::lts::lts_type type);
 +
    private slots:
- 
+
      /**
 @@ -122,6 +128,7 @@ class MainWindow : public QMainWindow
      Graph::SpringLayout* m_layout;      ///< The SpringLayout algorithm which is applied to the graph.
      Graph::Information* m_information;  ///< The Information display which calculates the statistics of the graph.
      QString m_delayedOpen;              ///< The file that should be opened when the program is ready
 +    mcrl2::lts::lts_type m_type;        ///< The type of LTS that is being provided, if any
- 
+
      mcrl2::gui::qt::PersistentFileDialog m_fileDialog;
- 
--- 
+
+--
 2.13.0
 

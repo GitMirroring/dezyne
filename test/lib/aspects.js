@@ -39,8 +39,8 @@ function haslanguage(aspect) {
 }
 
 function dzn(session) {
-  return 'timeout 30 '
-    + (process.env['DZN'] || ( __dirname + '/../../dzn/bin/dzn') + ' --session=' + (session && session || 100));
+  return 'timeout 30 \n'
+    + (process.env['DZN'] || ( __dirname + '/../../bin/dzn') + ' --session=' + (session && session || 100));
 }
 
 var ext = {c:'.c','c++':'.cc','c++03':'.cc','c++-msvc11':'.cc',cs:'.cs',javascript:'.js',scheme:'.scm'};
@@ -80,26 +80,8 @@ function has_main(dir, language) {
 }
 
 function query_versions() {
-    var versions = require ('child_process')
-        .spawnSync ('bash', ['-c', dzn () + ' query'], {stdio:'pipe'})
-        .stdout.toString ()
-        .trim ()
-        .split ('\n')
-        .map (function (s){return s.trim();});
-  var default_version = versions.find (function (s){return s[0] == '*'}).slice (2);
-  //console.log ('default_version=%j', default_version);
-
-  var extra_versions = versions.filter (function (s){return s[0] != '*'})
-      .reverse ();
-  //console.log ('extra_versions=%j', extra_versions);
-
-  return [default_version].concat(extra_versions);
+  return ['development'];
 }
-
-// function query_versions() {
-//   return ['2.4.1'];
-// }
-
 
 var dependencies = {
   convert:  [],
@@ -109,9 +91,10 @@ var dependencies = {
   code:     ['convert'],
   build:    ['code'],
   execute:  ['traces', 'build'],
-  run:      ['traces'],
-  triangle: ['execute', 'run', 'step'],
-  step:     ['traces'],
+  // run:      ['traces'],
+  // triangle: ['execute', 'run', 'step'],
+  // step:     ['traces'],
+  // debug:    ['traces'],
 };
 
 function code_version (v) {return v.replace (/[.]/g, '_');}
@@ -145,7 +128,8 @@ function ordered_dependencies() {
       result.push(aspect);
     }
   }
-  var order = ['parse', 'verify', 'step', 'triangle'];
+  //var order = ['parse', 'verify', 'step', 'debug', 'triangle'];
+  var order = ['parse', 'verify'];
   order.forEach(function(aspect) {
     add_dependencies(aspect);
   });
@@ -739,6 +723,56 @@ var aspects = {
             + '| ' + cmd
             + ' 2>' + err
             + ' | ' + dzn (parameters.session) + ' trace --format=event)'
+            + ' && cat ' + err
+            + ' && test ! -s '+err);
+      }
+    })
+      .then (function (result) {
+        return result; // ONLY strict for now
+      })
+  }
+  ,
+  debug: function(parameters) {
+    return run_traces(parameters, 'step', function(trace) {
+      //strict
+      var model = parameters.meta.model || parameters.model;
+      // METAs `model' is used for component/system tricksery
+      model = parameters.model;
+      var imports = imports_string (parameters.meta.imports);
+      var node_baseline = parameters.dir + '/baseline/debug/' + path.basename (trace);
+      var baseline = '"' + node_baseline + '"';
+      var dir = '"out/' + path.basename(parameters.dir) + '"/debug'
+      var out = dir + '/"'+path.basename (trace) + '"';
+      var err = out + '.stderr';
+      var cmd = dzn (parameters.session)
+          + ' debug '
+          + imports
+          + ' --model=' + model
+          + " '" + parameters.filename + "'";
+      console.log ('CMD:' + cmd);
+      try {
+        fs.lstatSync (node_baseline);
+        return util.spawn_sync_shell(
+          'mkdir -p '+dir+';'
+            + ' { set -o pipefail;'
+            + cmd
+            + ' -t "$(cat '+ trace + ')"\n'
+            + '>' + out
+            + ' 2>' + err
+            + ' ; }'
+            + ' && (diff -ywB ' + baseline + ' ' + out
+            + '     && diff -ywB ' + baseline + '.stderr ' + err + ')');
+      } catch(e) {
+        return util.spawn_sync_shell(
+          'mkdir -p '+dir+';'
+            + 'timeout 5'
+            + ' diff -wy'
+            + ' ' + '<(grep -v "^[(]" ' + trace + ')'
+            + ' <(set -o pipefail;'
+            + cmd
+            + ' -t "$(cat '+ trace + ')"\n'
+            + ' | grep -v "^[(]" '
+            + ' 2>' + err+')'
             + ' && cat ' + err
             + ' && test ! -s '+err);
       }

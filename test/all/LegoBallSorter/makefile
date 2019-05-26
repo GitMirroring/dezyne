@@ -34,7 +34,7 @@ all: runtime code
 	make lego
 
 runtime:
-	cp -r ../../../gaiag/runtime/c++/* .
+	cp -r ../../../dzn/runtime/c++/* .
 	touch runtime
 
 code: $(wildcard *.dzn)

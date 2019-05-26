@@ -14,7 +14,7 @@ index 17168f6e2..ee70475df 100644
 @@ -33,36 +33,36 @@ mark_as_advanced(MCRL2_PACKAGE_RELEASE)
  # Find Git information: git short-hash and modified/not modified
  set(MCRL2_MINOR_VERSION "Unknown")
- 
+
 -find_package(Git REQUIRED)
 +#find_package(Git REQUIRED)
  # Prints the commit hash of the last commit and its short version.
@@ -36,7 +36,7 @@ index 17168f6e2..ee70475df 100644
  # The second line is the short-hash, specified by %h
 -LIST(GET GIT_REV_LIST 1 GIT_COMMIT_HASH)
 +#LIST(GET GIT_REV_LIST 1 GIT_COMMIT_HASH)
- 
+
  # List the changed files compared to the last pushed commit.
 -execute_process(
 -  COMMAND ${GIT_EXECUTABLE} status --porcelain
@@ -50,7 +50,7 @@ index 17168f6e2..ee70475df 100644
 +#   OUTPUT_VARIABLE GIT_FILES_CHANGED
 +#   OUTPUT_STRIP_TRAILING_WHITESPACE
 +# )
- 
+
  # When the files changed are empty it was not modified.
 -if(GIT_FILES_CHANGED STREQUAL "")
 -  set(MCRL2_MINOR_VERSION "${GIT_COMMIT_HASH}")
@@ -68,9 +68,9 @@ index 17168f6e2..ee70475df 100644
 +#     message(FATAL_ERROR "You are trying to package a release from a Git repository that has local modifications.")
 +#   endif()
 +# endif()
- 
+
  # Try to read build/SourceVersion, and set that version
  if(MCRL2_MINOR_VERSION STREQUAL "Unknown" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/build/SourceVersion")
--- 
+--
 2.13.0
 

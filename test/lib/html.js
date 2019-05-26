@@ -1,3 +1,5 @@
+#! /usr/bin/env node
+
 // Dezyne --- Dezyne command line tools
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
@@ -24,8 +26,6 @@
 // Commentary:
 //
 // Code:
-
-#! /usr/bin/env node
 
 var fs = require('fs');
 var path = require('path');

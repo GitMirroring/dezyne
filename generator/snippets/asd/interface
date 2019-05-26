@@ -1,6 +1,0 @@
-interface %{name}
-{
-  %{types}
-  %{ports}
-  %{behaviour}
-}

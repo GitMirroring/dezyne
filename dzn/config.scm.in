@@ -1,0 +1,98 @@
+(define-module (dzn config)
+  #:export (%asd
+            %bindir
+            %sbindir
+            %datadir
+            %datarootdir
+            %dezyne-prefix
+            %localstatedir
+            %lts
+            %prefix
+            %root-dir
+            %service-bindir
+            %service-dir
+            %service-version
+            %service-versions-dir
+            %sysconfdir
+            %command-dir
+            %template-dir
+            %version-major
+            %version-minor
+            %version-patch))
+
+;;; Commentary:
+;;;
+;;; Compile-time configuration of gdzn.  When adding a substitution variable
+;;; here, make sure to have configure substitute it.
+;;;
+;;; Code:
+
+(define %prefix
+  (or (and (getenv "DZN_UNINSTALLED") (getenv "PREFIX"))
+      "@prefix@"))
+
+(define %dezyne-prefix
+  (or (getenv "DEZYNE_PREFIX") %prefix))
+
+(define %datadir
+  (or (and (getenv "DZN_UNINSTALLED") %prefix)
+      "@datadir@"))
+
+(define %datarootdir
+  (or (and (getenv "DZN_UNINSTALLED") %prefix)
+      "@datarootdir@"))
+
+(define %pkgdatadir
+  (or (and (getenv "DZN_UNINSTALLED") %prefix)
+      (string-append %datadir "/dzn")))
+
+(define %bindir
+  (or (and (getenv "DZN_UNINSTALLED") (string-append %prefix "/bin"))
+      "@bindir@"))
+
+(define %root-dir
+  (or (and (getenv "DZN_UNINSTALLED") %prefix)
+      %pkgdatadir))
+
+(define %service-bindir
+  (string-append %datadir "/bin"))
+
+(define %sbindir
+  (or (and (getenv "DZN_UNINSTALLED") (string-append %prefix "/sbin"))
+      "@sbindir@"))
+
+(define %template-dir
+  (string-append %datadir "/templates"))
+
+(define %command-dir
+  (string-append %datadir "/dzn/commands"))
+
+(define %service-dir
+  (string-append %datadir "/services"))
+
+(define %service-version
+  "@PACKAGE_VERSION@")
+
+(define %version-major
+  @VERSION_MAJOR@)
+
+(define %version-minor
+  @VERSION_MINOR@)
+
+(define %version-patch
+  @VERSION_PATCH@)
+
+(define %service-versions-dir
+  (string-append %dezyne-prefix "/services"))
+
+(define %localstatedir
+  "@localstatedir@")
+
+(define %sysconfdir
+  "@sysconfdir@")
+
+(define %asd
+  "@ASD@")
+
+(define %lts
+  "@LTS@")

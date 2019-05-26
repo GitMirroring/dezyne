@@ -28,6 +28,6 @@ test:
 install-test: test
 	mkdir -p $(DESTDIR)$(PREFIX)
 	tar -cf- test | tar -xf- -C $(DESTDIR)$(PREFIX)
-	tar -cf- gaiag/runtime | tar -xf- -C $(DESTDIR)$(PREFIX)
+	tar -cf- dzn/runtime | tar -xf- -C $(DESTDIR)$(PREFIX)
 	tar -cf- dzn/commands/traces.js | tar -xf- -C $(DESTDIR)$(PREFIX)
 	tar -cf- externals/asd_cpp_runtime | tar -xf- -C $(DESTDIR)$(PREFIX)

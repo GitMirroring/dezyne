@@ -3,8 +3,8 @@
 set -x
 test=$(dirname $0)/../..
 gdzn=$(readlink -f $(command -v gdzn))
-gaiag=$(dirname $gdzn)/../gaiag
-exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -L $gaiag  -C $test/../gaiag -C $gaiag -L $test/all/dzn-glue -e '(run)' -s "$0" ${1+"$@"}
+dzn=$(dirname $gdzn)/../dzn
+exec ${GUILE-guile} --no-auto-compile -L $test/../dzn -L $dzn  -C $test/../dzn -C $dzn -L $test/all/dzn-glue -e '(run)' -s "$0" ${1+"$@"}
 !#
 
 (define-module (run)
@@ -13,7 +13,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -L $gaiag  -C $test/../g
   #:use-module (ice-9 receive)
   #:use-module (ice-9 curried-definitions)
   #:use-module (json)
-  #:use-module (gaiag shell-util)
+  #:use-module (dzn shell-util)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
   #:use-module (gash job)
@@ -217,7 +217,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -L $gaiag  -C $test/../g
 ;; REPL
 ;; (define dir "all/dzn-glue")
 ;; (define dzn "../dzn/bin/dzn")
-;; (define gdzn "../gaiag/bin/gdzn")
+;; (define gdzn "../dzn/bin/gdzn")
 ;; (define model "alarm")
 ;; (define out (string-append "out/" (substring dir (1+ (string-index dir #\/)))))
 ;; (define languages '("c++" "c++03"))
