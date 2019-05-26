@@ -173,7 +173,8 @@ var util = {
 
     var ulimit = 'ulimit -s 65536 -v 2097152;';
 
-    var p = child.spawn (shell, [c, ulimit + cmd], {env: env});
+    var spawnable_cmd = cmd.replace (/\n/g, '') ;
+    var p = child.spawn (shell, [c, ulimit + spawnable_cmd], {env: env});
 
     var output = printable_cmd + '\n';
 

@@ -16,10 +16,10 @@
 ;;; You should have received a copy of the GNU Lesser General Public
 ;;; License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (peg using-parsers)
-  #:use-module (peg simplify-tree)
-  #:use-module (peg codegen)
-  #:use-module (peg cache)
+(define-module (gaiag peg using-parsers)
+  #:use-module (gaiag peg simplify-tree)
+  #:use-module (gaiag peg codegen)
+  #:use-module (gaiag peg cache)
   #:export (match-pattern define-peg-pattern search-for-pattern
             prec make-prec peg:start peg:end peg:string
             peg:tree peg:substring peg-record?))
@@ -60,7 +60,9 @@ execute the STMTs and try again."
              (accumsym (syntax->datum #'accum)))
          ;; CODE is the code to parse the string if the result isn't cached.
          (let ((syn (wrap-parser-for-users x matchf accumsym #'sym)))
-           #`(define sym #,(cg-cached-parser syn))))))))
+           #`(define sym #,(cg-cached-parser syn))
+           ;;#`(define sym #,syn)
+           ))))))
 
 (define (peg-like->peg pat)
   (syntax-case pat ()

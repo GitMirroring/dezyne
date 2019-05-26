@@ -1,3 +1,5 @@
+#! /bin/bash -e
+
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
@@ -16,12 +18,10 @@
 #
 # You should have received a copy of the GNU Affero General Public
 # License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 # Commentary:
-# 
+#
 # Code:
-
-#! /bin/bash -e
 
 CONFIG=${1-localhost}
 DZN=${DZN-../dzn/bin/dzn}

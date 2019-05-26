@@ -1,8 +1,0 @@
-#!@GUILE@ --no-auto-compile
--*- scheme -*-
-!#
-
-(set! %load-path (append '("@guilemoduledir@") %load-path))
-(set! %load-compiled-path (append '("@guileobjectdir@") %load-compiled-path))
-
-((@ (gaiag json2scm) main) (command-line))

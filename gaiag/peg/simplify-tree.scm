@@ -17,7 +17,7 @@
 ;;; License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 
-(define-module (peg simplify-tree)
+(define-module (gaiag peg simplify-tree)
   #:export (keyword-flatten context-flatten string-collapse)
   #:use-module (system base pmatch))
 

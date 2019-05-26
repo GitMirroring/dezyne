@@ -22,15 +22,13 @@
 ;;; 
 ;;; Code:
 
-;;; guix.scm -- Guix package definition
-
 ;;; Commentary:
 ;;
-;; GNU Guix development package.  To build and install, run:
+;; GNU Guix development package.  To build and play, run:
 ;;
-;;   guix package -f guix.scm
+;;   guix environment --ad-hoc -l guix.scm guile
 ;;
-;; or
+;; To build and install, run:
 ;;
 ;;   guix package -f guix.scm
 ;;
@@ -42,88 +40,40 @@
 ;;
 ;;   guix environment -l guix.scm
 ;;
-;; To build individual dependencies run, e.g.,
-;;
-;;   GUIX_PACKAGE_PATH=guix guix build lts
-;;   GUIX_PACKAGE_PATH=guix guix build mcrl2
-;;
 ;;; Code:
 
-(use-modules (ice-9 popen)
-             (ice-9 rdelim)
-             (guix git-download)
+(use-modules (guix build-system gnu)
              (guix gexp)
+             (guix git-download)
+             ((guix licenses) #:prefix license:)
              (guix packages)
-             (gnu packages))
+             (gnu packages)
+             (gnu packages boost)
+             (gnu packages emacs)
+             (gnu packages emacs-xyz)
+             (gnu packages guile)
+             (gnu packages wxwidgets))
 
 (define %source-dir (dirname (current-filename)))
-(define %guix-dir (string-append %source-dir "/guix"))
 
-(format (current-error-port) "guix-dir:~s\n" %guix-dir)
-(add-to-load-path %guix-dir)
-(%patch-path (cons %guix-dir (%patch-path)))
-
-(use-modules (dezyne pack))
-
-(define (git-commit)
-  (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ)))
-
-(define-public dezyne-source.git
-  (local-file %source-dir
-              #:recursive? #t
-              #:select? (git-predicate %source-dir)))
-
-(define-public dezyne-services.git
+(define-public dzn
   (package
-   (inherit dezyne-services)
-   (version (string-append "git." (string-take (git-commit) 7)))
-   (source dezyne-source.git)))
+    (name "dzn")
+    (version "0.0")
+    (source (local-file %source-dir
+                        #:recursive? #t
+                        #:select? (git-predicate %source-dir)))
+    (native-inputs `(("guile" ,guile-2.2)))
+    (build-system gnu-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (add-before 'configure 'setenv
+           (lambda _
+             (setenv "GUILE_AUTO_COMPILE" "0"))))))
+    (synopsis "Dezyne command line tools")
+    (description "Dezyne command line tools")
+    (home-page "https://verum.com")
+    (license license:gpl3+)))
 
-(define-public dezyne-server.git
-  (package
-   (inherit dezyne-server)
-   (version (string-append "git." (string-take (git-commit) 7)))
-   (source dezyne-source.git)
-   (native-inputs
-    `(("dezyne-services" ,dezyne-services.git)
-      ,@(filter
-         (negate (car-member '("dezyne-services")))
-         (package-native-inputs dezyne-server))))))
-
-(define-public dezyne-test-content.git
-  (package
-   (inherit dezyne-test-content)
-   (version (string-append "git." (string-take (git-commit) 7)))
-   (source dezyne-source.git)))
-
-(define-public dezyne-regression-test.git
-  (package
-   (inherit dezyne-regression-test)
-   (version (string-append "git." (string-take (git-commit) 7)))
-   (native-inputs
-    `(("dezyne-services" ,dezyne-services.git)
-      ("dezyne-test-content" ,dezyne-test-content.git)
-      ,@(filter
-         (negate (car-member '("dezyne-services" "dezyne-test-content")))
-         (package-native-inputs dezyne-regression-test))))))
-
-(define-public dezyne-pack.git
-  (package
-   (inherit dezyne-pack)
-   (version (string-append "git." (string-take (git-commit) 7)))
-   (propagated-inputs
-    `(("dezyne-server" ,dezyne-server.git)
-      ("dezyne-services" ,dezyne-services.git)
-      ("dezyne-regression-test" ,dezyne-regression-test.git)
-      ;;("dezyne-test-content" ,dezyne-test-content.git)
-      ;;("dzn-client-tarball" ,dzn-client-tarball.git)
-      ,@(filter
-         (negate (car-member '("dezyne-regression-test"
-                               "dezyne-server"
-                               "dezyne-services"
-                               "dezyne-test-content"
-                               "dzn-client-tarball")))
-         (package-propagated-inputs dezyne-pack))))))
-
-;; Return it here so `guix build/environment/package' can consume it directly.
-dezyne-pack.git
+dezyne-ide

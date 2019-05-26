@@ -58,7 +58,7 @@ typedef struct
 {
   dzn_meta_t meta;
   GtkSpinButton* button;
-  
+
   int home;
   int end;
   double velocity;
@@ -66,7 +66,7 @@ typedef struct
   unsigned long last_update;
 
 } GtkMotor;
-  
+
 GtkMotor*
 gtk_motor_new (char const* name, int home, int end)
 {
@@ -214,7 +214,7 @@ struct GtkLego
   GtkMotor*      motor_gripper;  //robot r axis, opens and closes gripper
   GtkSensor*     sensor_gripper_end;
 };
-  
+
 GtkLego*
 gtk_lego_new ()
 {
@@ -425,14 +425,14 @@ typedef struct
     void* self;
     void (*create)(itimer_impl* self,uint32_t ms);
     void (*cancel)(itimer_impl* self);
-    
+
   } in;
-  
+
   struct {
     char const* name;
     void* self;
     void (*timeout) (itimer_impl* self);
-    
+
   } out;
 
   guint connection;

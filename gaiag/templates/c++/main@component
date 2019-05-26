@@ -20,7 +20,8 @@ event_map (dzn::container< #x:type-name , std::function<void()>>& c)
   #x:main-provided-port-init
   #x:main-required-port-init
 
-  return {{"illegal", []{std::clog << "illegal" << std::endl; std::exit(0);}}
+  return {{"illegal", []{std::clog << "illegal" << std::endl;}}
+         ,{"error", []{std::clog << "sut.error -> sut.error" << std::endl; std::exit(0);}}
           #x:main-event-map-void
           #x:main-event-map-valued
           #x:main-event-map-flush

@@ -29,9 +29,9 @@ interface ibool
 
   behaviour
   {
+    on hello: reply (true);
     on hello: {a; reply (true);}
     on hello: {b; reply (true);}
-    on hello: reply (true);
   }
 }
 

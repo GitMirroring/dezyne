@@ -17,8 +17,8 @@
 ;;; You should have received a copy of the GNU Lesser General Public
 ;;; License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (peg codegen)
-  #:export (compile-peg-pattern wrap-parser-for-users add-peg-compiler!)
+(define-module (gaiag peg codegen)
+  #:export (compile-peg-pattern wrap-parser-for-users add-peg-compiler! %peg:fall-back?)
   #:use-module (ice-9 pretty-print)
   #:use-module (system base pmatch))
 
@@ -52,6 +52,9 @@ return EXP."
     ((_ lst obj)
      (set! lst (cons obj lst)))))
 
+
+(define %peg:fall-back? (make-parameter #f)) ;; public interface, enable fall-back parsing
+(define %enable-expect (make-parameter #t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;; CODE GENERATORS
@@ -162,11 +165,39 @@ return EXP."
    ((eq? accum 'none) 'none)))
 (define baf builtin-accum-filter)
 
+(define (final-continuation str strlen at) #f)
+
+(define %continuation (make-parameter final-continuation))
+(define %previous (make-parameter #f))
+
+;;Fallback parsing is triggered by a syntax-error exception
+;;the 'at' parameter is then pointing to "incomplete or erroneous" input
+;;and moves ahead in the input until one of the continuations
+;;of the production rules in the current callstack matches the input at that point.
+;;At this point parsing continues regularly, but with an incomplete or erroneous parse tree.
+;;If none of the continuations match then parsing fails without a result.
+;;The operators involved for determining a continuation are: '(+ * and)
+;;operator / is naturally not combined with the use of #
+;;operators '(! &) may be considered later, since they may prove useful as asserts
+
 ;; Top-level function builder for AND.  Reduces to a call to CG-AND-INT.
 (define (cg-and clauses accum)
   #`(lambda (str len pos)
       (let ((body '()))
         #,(cg-and-int clauses (baf accum) #'str #'len #'pos #'body))))
+
+
+;; TODO integrate this to drop the requirement to have a # for each cg-and-int operand
+;; determine the continuation, if any, for cg-and-int
+(define (cg-or-rest clauses accum str strlen at)
+  (syntax-case clauses ()
+    (()
+     '())
+    ((first rest ...)
+     #`(or (and (#,(compile-peg-pattern #'first accum) #,str #,strlen #,at)
+                (list first rest ...))
+           (and #,(cg-or-rest #'(rest ...) accum str strlen at)
+                (list rest ...))))))
 
 ;; Internal function builder for AND (calls itself).
 (define (cg-and-int clauses accum str strlen at body)
@@ -174,7 +205,30 @@ return EXP."
     (()
      (cggr accum 'cg-and #`(reverse #,body) at))
     ((first rest ...)
-     #`(let ((res (#,(compile-peg-pattern #'first accum) #,str #,strlen #,at)))
+     #`(let ((res (if (not (%peg:fall-back?)) (#,(compile-peg-pattern #'first accum) #,str #,strlen #,at)
+                      (parameterize
+                          ((%continuation (let ((previous (%continuation)))
+                                            (lambda (str strlen at)
+                                              (or #,(cg-or-int #'(rest ...) 'none #'str #'strlen #'at) ;;finish this production rule normally
+                                                  ;;(assuming all non matching non-terminals are marked with a #)
+                                                  (and (previous str strlen at)
+                                                       (list at '())) ;;return from this production rule succesfully and continue with
+                                                  ;;the next non-terminal in the parent production rule
+                                                  )))))
+                        (catch 'syntax-error
+                          (lambda _
+                            (#,(compile-peg-pattern #'first accum) #,str #,strlen #,at))
+                          (lambda (key . args)
+                            (parameterize ((%enable-expect #f))
+                              ;;eat away at the input until one of the non-terminals in the and expression matches,
+                              ;;or a non-terminal of the parent production rule
+                              (let loop ((at #,at))
+                                (or (let ((res ((%continuation) #,str #,strlen at)))
+                                      (and res
+                                           (list (car res) '())))
+                                    (if (< at #,strlen)
+                                        (loop (1+ at))
+                                        (list at '())))))))))))
          (and res
               ;; update AT and BODY then recurse
               (let ((newat (car res))
@@ -197,45 +251,58 @@ return EXP."
      #`(or (#,(compile-peg-pattern #'first accum) #,str #,strlen #,at)
            #,(cg-or-int #'(rest ...) accum str strlen at)))))
 
+
 (define (cg-* args accum)
   (syntax-case args ()
     ((pat)
-     #`(lambda (str strlen at)
-         (let ((body '()))
-           (let lp ((end at) (count 0))
-             (let* ((match (#,(compile-peg-pattern #'pat (baf accum))
-                            str strlen end))
-                    (new-end (if match (car match) end))
-                    (count (if (> new-end end) (1+ count) count)))
-               (if (> new-end end)
-                   (push-not-null! body (single-filter (cadr match))))
-               (if (and (> new-end end)
-                        #,#t)
-                   (lp new-end count)
-                   (let ((success #,#t))
-                     #,#`(and success
-                                 #,(cggr (baf accum) 'cg-body
-                                         #'(reverse body) #'new-end)))))))))))
+     #`(let* ((kernel #,(compile-peg-pattern #'pat 'none))
+              (kleene (lambda (str strlen at)
+                        (let ((body '()))
+                          (let lp ((end at) (count 0))
+                            (let* ((match (#,(compile-peg-pattern #'pat (baf accum)) str strlen end))
+                                   (new-end (if match (car match) end))
+                                   (count (if (> new-end end) (1+ count) count)))
+                              (if (> new-end end)
+                                  (push-not-null! body (single-filter (cadr match))))
+                              (if (and (> new-end end)
+                                       #,#t)
+                                  (lp new-end count)
+                                  (let ((success #,#t))
+                                    #,#`(and success
+                                             #,(cggr (baf accum) 'cg-body
+                                                     #'(reverse body) #'new-end))))))))))
+         (lambda (str strlen at)
+           (parameterize ((%continuation (let ((previous (%continuation)))
+                                           (lambda (str strlen at)
+                                             (or (kernel str strlen at)
+                                                 (previous str strlen at))))))
+                         (kleene str strlen at)))))))
 
 (define (cg-+ args accum)
   (syntax-case args ()
     ((pat)
-     #`(lambda (str strlen at)
-         (let ((body '()))
-           (let lp ((end at) (count 0))
-             (let* ((match (#,(compile-peg-pattern #'pat (baf accum))
-                            str strlen end))
-                    (new-end (if match (car match) end))
-                    (count (if (> new-end end) (1+ count) count)))
-               (if (> new-end end)
-                   (push-not-null! body (single-filter (cadr match))))
-               (if (and (> new-end end)
-                        #,#t)
-                   (lp new-end count)
-                   (let ((success #,#'(>= count 1)))
-                     #,#`(and success
-                                 #,(cggr (baf accum) 'cg-body
-                                         #'(reverse body) #'new-end)))))))))))
+     #`(let* ((kernel #,(compile-peg-pattern #'pat 'none))
+              (multiple (lambda (str strlen at)
+                          (let ((body '()))
+                            (let lp ((end at) (count 0))
+                              (let* ((match (#,(compile-peg-pattern #'pat (baf accum)) str strlen end))
+                                     (new-end (if match (car match) end))
+                                     (count (if (> new-end end) (1+ count) count)))
+                                (if (> new-end end)
+                                    (push-not-null! body (single-filter (cadr match))))
+                                (if (and (> new-end end)
+                                         #,#t)
+                                    (lp new-end count)
+                                    (let ((success #,#'(>= count 1)))
+                                      #,#`(and success
+                                               #,(cggr (baf accum) 'cg-body
+                                                       #'(reverse body) #'new-end))))))))))
+         (lambda (str strlen at)
+           (parameterize ((%continuation (let ((previous (%continuation)))
+                                           (lambda (str strlen at)
+                                             (or (kernel str strlen at)
+                                                 (previous str strlen at))))))
+                         (multiple str strlen at)))))))
 
 (define (cg-? args accum)
   (syntax-case args ()
@@ -301,11 +368,11 @@ return EXP."
   (syntax-case clauses ()
     ((pat)
      #`(or (#,(compile-peg-pattern #'pat accum) #,str #,strlen #,at)
-           (throw 'syntax-error (list #,at (syntax->datum #'pat))))))) ;;TODO throw partial match
+           (and (%enable-expect) (throw 'syntax-error (list #,at (syntax->datum #'pat)))))))) ;;TODO throw partial match
 
 (define (cg-expect clauses accum)
   #`(lambda (str len pos)
-      #,(cg-expect-int clauses ((@@ (ice-9 peg codegen) baf) accum) #'str #'len #'pos)))
+      #,(cg-expect-int clauses (baf accum) #'str #'len #'pos)))
 
 ;; Association list of functions to handle different expressions as PEGs
 (define peg-compiler-alist '())
@@ -349,28 +416,6 @@ return EXP."
 (define-public %peg:skip? (make-parameter #f))
 (define-public %peg:locations? (make-parameter #f))
 
-(define-syntax define-unwrapped-sexp-parser
-  (lambda (x)
-    (syntax-case x ()
-      ((_ sym accum pat)
-       (let* ((matchf (compile-peg-pattern #'pat (syntax->datum #'accum))))
-         #`(define sym #,matchf))))))
-
-(define-unwrapped-sexp-parser peg-eol none (or "\f" "\n" "\r" "\v"))
-(add-peg-compiler! 'peg-eol peg-eol)
-
-(define-unwrapped-sexp-parser peg-ws none (or " " "\t"))
-(add-peg-compiler! 'peg-ws peg-ws)
-
-(define-unwrapped-sexp-parser peg-line all (and "//" (* (and (not-followed-by peg-eol) peg-any))))
-(add-peg-compiler! 'peg-line peg-line)
-
-(define-unwrapped-sexp-parser peg-block all (and "/*" (* (or peg-block (and (not-followed-by "*/") peg-any))) (expect "*/")))
-(add-peg-compiler! 'peg-block peg-block)
-
-(define-unwrapped-sexp-parser peg-comment all (* (or peg-ws peg-eol peg-line peg-block)))
-(add-peg-compiler! 'peg-comment peg-comment)
-
 (define (trace? symbol)
   (and (%peg:debug?) (not (memq symbol '()))))
 
@@ -383,7 +428,7 @@ return EXP."
                 (make-string indent #\space)
                 '#,s-syn))
       (set! indent (+ indent 4))
-      (let* ((comment-res (if (%peg:skip?) (peg-comment str strlen at)
+      (let* ((comment-res (if (%peg:skip?) ((@ (gaiag peg string-peg) peg-comment) str strlen at)
                               (list at '())))
              (at (or (and comment-res (car comment-res)) at))
              (res (#,parser str strlen at)))

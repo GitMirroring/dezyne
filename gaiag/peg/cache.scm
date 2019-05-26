@@ -16,7 +16,7 @@
 ;;; You should have received a copy of the GNU Lesser General Public
 ;;; License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (peg cache)
+(define-module (gaiag peg cache)
   #:export (cg-cached-parser))
 
 ;; The results of parsing using a nonterminal are cached.  Think of it like a

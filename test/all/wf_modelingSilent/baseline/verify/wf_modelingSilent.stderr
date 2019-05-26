@@ -1,4 +1,0 @@
-out/wf_modelingSilent/wf_modelingSilent.dzn:25:4: error: cannot determine silentness
-out/wf_modelingSilent/wf_modelingSilent.dzn:26:6: error: may communicate or be silent
-out/wf_modelingSilent/wf_modelingSilent.dzn:34:4: error: cannot determine silentness
-out/wf_modelingSilent/wf_modelingSilent.dzn:18:6: error: may communicate or be silent

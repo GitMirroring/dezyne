@@ -18,14 +18,14 @@
 ;;;
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
-;;; 
+;;;
 ;;; Commentary:
-;;; 
+;;;
 ;;; Code:
 
 ;; dzn overrides
 (define-templates makreel:enum-literal makreel:enum-literal type-infix)
-(define-templates makreel:enum-fields makreel:enum-fields newline-pipe-infix)
+(define-templates makreel-enum-fields makreel:enum-fields newline-pipe-infix)
 
 (define-templates interface-reorder makreel:interface-reorder)
 (define-templates reorder-end (compose makreel:interface-reorder car makreel:continuation))
@@ -113,7 +113,7 @@
 (define-templates process-parameters-return makreel:process-parameters-return parameters-grammar)
 
 (define-templates argument->formal ast:argument->formal)
-(define-templates makreel:arguments ast:argument* comma-suffix)
+(define-templates makreel-arguments ast:argument* comma-suffix)
 (define-templates process-haakjes makreel:process-haakjes)
 
 (define-templates process-index makreel:process-index)

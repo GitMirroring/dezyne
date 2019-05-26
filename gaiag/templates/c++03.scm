@@ -18,9 +18,9 @@
 ;;;
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
-;;; 
+;;;
 ;;; Commentary:
-;;; 
+;;;
 ;;; Code:
 
 (define-templates enum-field-type c++03:enum-field-type type-infix)

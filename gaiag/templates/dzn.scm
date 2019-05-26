@@ -20,9 +20,9 @@
 ;;;
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
-;;; 
+;;;
 ;;; Commentary:
-;;; 
+;;;
 ;;; Code:
 
 (define-templates version (const %service-version))
@@ -38,6 +38,7 @@
 (define-templates external dzn:external)
 (define-templates injected dzn:injected)
 (define-templates expression dzn:expression)
+(define-templates subexpression .expression)
 (define-templates left .left)
 (define-templates right .right)
 (define-templates expression-expand dzn:expression-expand)
