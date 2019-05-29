@@ -91,9 +91,10 @@
   (when (.boundary? o) (display " boundary: #t" port))
   (display ">" port))
 
-(define-class <runtime:component> (<runtime:instance>))
-(define-class <runtime:foreign> (<runtime:instance>))
-(define-class <runtime:system> (<runtime:instance>))
+(define-class <runtime:component-model> (<runtime:instance>))
+(define-class <runtime:component> (<runtime:component-model>))
+(define-class <runtime:foreign> (<runtime:component-model>))
+(define-class <runtime:system> (<runtime:component-model>))
 (define-class <runtime:port> (<runtime:instance>))
 (define-class <runtime:trigger> (<runtime>)
   (instance #:getter .instance #:init-value #f #:init-keyword #:instance) ;;<runtime:port>
@@ -245,7 +246,7 @@
 (define-method (runtime:rank! (o <runtime:port>) r)
   (runtime:rank! (.container (runtime:other-port o)) r))
 
-(define-method (runtime:rank! (o <runtime:component>) r)
+(define-method (runtime:rank! (o <runtime:component-model>) r)
   (when (> r (.rank o))
     (set! (.rank o) r))
   ;; (format (current-error-port) "rank: ~a <~a> ~a\n" (symbol-join (runtime:instance->path o) '.) (symbol-join ((compose ast:full-name .type .instance) o) '.) (.rank o))
@@ -256,7 +257,7 @@
 (define-method (runtime:rank! (o <boolean>) r)
   *unspecified*)
 
-(define-method (runtime:runtime-requires-port* (o <runtime:component>))
+(define-method (runtime:runtime-requires-port* (o <runtime:component-model>))
   (map (cut runtime:find-instance <> o #f) (map .name ((compose ast:requires-port* .type .instance) o))))
 
 ;;OEP (ep, pep)
