@@ -5,6 +5,32 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+
+* Dezyne Enterprise preview
+** Changes in dzn-explore dd. June 4, 2019
+  - A help page has bee added, accessable through the 'h' key.
+  - You no longer have to specify the server on the command line.
+  - A magnifying glass has been added to the state diagram.
+  - The trace view header is now always visible at startup.
+  - When navigating, the state diagram is not centered when the target state
+    is already in view.
+  - A trace can be truncated now.
+  - The enterprise daemon has been rewritten in Dezyne, so incidental
+    crashes are avoided.
+
+
+* Dezyne Enterprise preview
+** Initial release of dzn-explore at https://development.verum.com
+
+To install:
+#+BEGIN_src bash
+  npm install -g https://development.verum.com/download/npm/dzn-enterprise.tar.gz
+#+END_src
+To explore, run:
+#+BEGIN_src bash
+  .npm/bin/dzn-explore
+#+END_src
+
 * Changes in development since 2.9.1
    It contains work in progress and is not intended for evaluation or
    production use.
