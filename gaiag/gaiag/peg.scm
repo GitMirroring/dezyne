@@ -69,9 +69,7 @@
 
       (((and (? symbol?) type) body ... ('comment comment))
        (let ((ast (helper (cons type body))))
-         (if (is-a? ast <ast-node>)
-             (clone ast #:comment (helper `(comment ,comment)))
-             ast))) ;; TODO ensure (is-a? ast <ast>) is invariant to prevent comment loss
+         ast)) ;; TODO ensure (is-a? ast <ast>) is invariant to prevent comment loss
 
       (((and (? symbol?) type) body ... ('location pos end))
        (let ((ast (helper (cons type body)))
@@ -350,6 +348,7 @@
 
       (('blocking statement) (make <blocking-node> #:statement (helper statement)))
 
+      (('interface-call function) (make <call-node> #:function.name (helper function)))
       (('call function) (make <call-node> #:function.name (helper function)))
 
       (('call function arguments)
@@ -516,7 +515,7 @@
 
 
   (when (> (gdzn:debugity) 1)
-    (pretty-print (om->list o)))
+    (pretty-print o))
 
   (let* ((root-node (helper o))
          (elements (append (make-constants) (async-interfaces 'get) (.elements root-node)))
