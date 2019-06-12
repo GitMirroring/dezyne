@@ -3,7 +3,7 @@
 ;;; This file is part of Gaiag.
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2014, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; Gaiag is free software: you can redistribute it and/or modify it
@@ -37,6 +37,7 @@
   #:use-module (gaiag display)
   #:use-module (gaiag goops)
   #:use-module (gaiag ast)
+  #:use-module (gaiag display)
 
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
@@ -154,7 +155,9 @@
   (let* ((assign-type (ast:type o))
          (expression (.expression o))
          (expression-type (ast:type expression)))
-    (cond ((and (is-a? o <variable>) (is-a? expression-type <void>))
+    (cond ((not assign-type) (format #t "assign-type: ast:type not defined for ~a\n" o))
+          ((not expression-type) (format #t "expression-type: ast:type not defined for ~a\n" expression))
+          ((and (is-a? o <variable>) (is-a? expression-type <void>))
            (if (is-a? assign-type <extern>) '()
                `(,(wfc-error o (format #f "uninitialized variable ~a " (.name o))))))
           ((and (not (ast:equal? expression-type assign-type))
