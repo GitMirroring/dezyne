@@ -7,6 +7,10 @@
 
 
 * Dezyne Enterprise preview
+** Changes in dzn-explore dd. June 13, 2019
+  - State diagram: event descriptions related to foreign components
+    now include their full path
+
 ** Changes in dzn-explore dd. June 4, 2019
   - A help page has bee added, accessable through the 'h' key.
   - You no longer have to specify the server on the command line.
@@ -18,8 +22,6 @@
   - The enterprise daemon has been rewritten in Dezyne, so incidental
     crashes are avoided.
 
-
-* Dezyne Enterprise preview
 ** Initial release of dzn-explore at https://development.verum.com
 
 To install:
