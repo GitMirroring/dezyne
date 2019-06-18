@@ -2,7 +2,7 @@
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Gaiag.
@@ -53,6 +53,7 @@
 
             as
             ast-name
+            ast:unwrap
             clone
             clone-base
             drop-<>
@@ -807,19 +808,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; TODO: make construct function line clone, explicitely looking for pairs
-(define-method (node o) o)
-(define-method (node (o <ast-node>)) o)
-(define-method (node (o <pair>)) (if (not (list? o)) (pke "URG node:" o) (map node o)))
-(define-method (node (o <ast>)) (.node o))
+(define-method (ast:unwrap o) o)
+(define-method (ast:unwrap (o <ast-node>)) o)
+(define-method (ast:unwrap (o <pair>)) (if (not (list? o)) (pke "URG node:" o) (map ast:unwrap o)))
+(define-method (ast:unwrap (o <ast>)) (.node o))
 
 (define-method (get-parent o) #f)
 (define-method (get-parent (o <ast>)) (.parent o))
 
 (define (construct class . setters)
   (let* ((class-node (node-class class))
-         (node (apply make (cons class-node (map node setters))))
+         (node (apply make (cons class-node (map ast:unwrap setters))))
          (parent (find get-parent setters)))
     (if (equal? class class-node) node (make class #:node node #:parent parent))))
+
+;;(define construct (pure-funcq construct))
 
 (define-method (make-instance (class <class>) . initargs)
   (if (and (member <ast> (class-precedence-list class))
@@ -906,7 +909,7 @@
 
 (define-method (clone-base-unwrap o . setters)
   (let ((setters (if (memq #:parent setters) setters
-                     (map node setters))))
+                     (map ast:unwrap setters))))
     (apply clone-base (cons o setters))))
 
 ;; makreel;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

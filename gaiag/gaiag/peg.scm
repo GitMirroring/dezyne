@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -300,7 +300,7 @@
       (('compound-name scope name)
        (make <scope.name-node> #:scope (helper scope) #:name (helper name)))
 
-      (('scope ('global rest ...) names) (cons '* (make-list? (helper names))))
+      (('scope ('global rest ...) names) (cons '/ (make-list? (helper names))))
       (('scope name) (make-list? (helper name)))
       (('scope names ...) (helper names))
 

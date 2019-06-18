@@ -2,7 +2,7 @@
 ;;
 ;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
-;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;; Copyright © 2014, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
@@ -224,6 +224,9 @@
 
 (define-method (ast:requires? (o <trigger>))
   (and (.port.name o) ((compose ast:requires? .port) o)))
+
+(define-method (ast:empty-namespace? (o <symbol>))
+  (eq? o '/))
 
 (define-method (ast:wildcard? (o <symbol>))
   (eq? o '*))
@@ -804,54 +807,117 @@
 (define-method (ast:name-equal? (a <scope.name>) (b <symbol>))
   (and=> (.name a) (cut ast:name-equal? <> b)))
 
+(define-method (ast:name-equal? (b <symbol>) (a <scope.name>))
+  (ast:name-equal? a b))
+
 (define-method (ast:name-equal? (a <scope.name>) (b <scope.name>))
   (and (.name a) (.name b) (ast:name-equal? (.name a) (.name b))))
 
 (define-method (ast:name-equal? (a <named>) (b <symbol>))
-  (and=> (.name a) (cut ast:name-equal? <> b)))
+    (ast:name-equal? (.name a) b))
 
-(define-method (ast:name-equal? a (b <symbol>))
+(define-method (ast:name-equal? (b <symbol>) (a <named>))
+    (ast:name-equal? a b))
+
+(define-method (ast:name-equal? a b)
   #f)
 
-(define-method (ast:find-containers (container <scope>) (scope <list>))
-  (if (null? scope) (filter (is? <scope>) (ast:path container))
-      (let ((first (car scope)))
-        (let loop ((container container))
-          (if (not container) '()
-              (cond ((is-a? container <root>) (list container))
-                    ((is-a? container <named>)
-                     (let ((containers (filter (cut ast:name-equal? <> first)
-                                               (ast:declaration* (.parent container)))))
-                       (if (pair? containers) (list (.parent container))
-                           (loop (parent (.parent container) <scope>)))))
-                    (else (loop (parent (.parent container) <scope>)))))))))
+(define-method (ast:has-equal-name a (b <named>))
+  (ast:name-equal? a (.name b)))
 
-(define-method (ast:find-name (container <scope>) (name <list>))
-  (let ((name (if (ast:wildcard? (car name)) (cdr name) name)))
-    (if (null? name) '()
-         (let ((found (filter (cut ast:name-equal? <> (car name)) (ast:declaration* container))))
-           (if (null? (cdr name)) found
-               (append-map (cute ast:find-name <> (cdr name)) found))))))
+(define-method (ast:has-equal-name a b) #f)
 
-(define-method (ast:lookup (o <ast>) (name <scope.name>))
-  (let* ((scope (.scope name))
-         (containers (if (and (pair? scope) (ast:wildcard? (car scope))) (list (parent o <root>))
-                         (ast:find-containers (parent o <scope>) scope)))
-         (names (append-map (cut ast:find-name <> (append scope (list (.name name)))) containers)))
-    (and (pair? names) (car names))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define-method (ast:lookup (o <ast>) (name <symbol>))
-  (ast:lookup o (make <scope.name> #:name name)))
+(define funcq-hash (@@ (ice-9 poe) funcq-hash))
+(define funcq-assoc (@@ (ice-9 poe) funcq-assoc))
+(define funcq-memo (@@ (ice-9 poe) funcq-memo))
+(define funcq-buffer (@@ (ice-9 poe) funcq-buffer))
+(define not-found (list 'not-found))
 
-(define-method (ast:lookup (o <boolean>) name)
-  #f)
+(define (ast:pure-funcq base-func)
+  (lambda args
+    (let* ((key (cons base-func (map ast:unwrap args)))
+           (cached (hashx-ref funcq-hash funcq-assoc funcq-memo key not-found)))
+      (if (not (eq? cached not-found))
+	  (begin
+	    (funcq-buffer key)
+	    cached)
+
+	  (let ((val (apply base-func args)))
+	    (funcq-buffer key)
+	    (hashx-set! funcq-hash funcq-assoc funcq-memo key val)
+	    val)))))
+
+
+
+(define-method (ast:lookup-n (o <scope>) (name <scope.name>))
+;;  (stderr "ast:lookup-n[~s]: ~s\n" o name)
+  (let ((scope (.scope name)))
+    (if (null? scope) (if (ast:has-equal-name (.name name) o) (list o)
+                          (ast:lookup-n o (.name name)))
+        (let* ((first (car scope))
+               (first-scopes (ast:lookup-n o first)))
+          (if (null? first-scopes) '()
+              (let ((name (clone name #:scope (cdr scope))))
+                ;;(stderr "found first scopes:~s\n" first-scopes)
+                (ast:lookdown first-scopes name)))))))
+
+(define-method (ast:lookdown (o <list>) (name <scope.name>))
+  (append-map (cut ast:lookdown <> name) o))
+
+(define-method (ast:lookdown (o <scope>) (name <symbol>))
+;;  (stderr "ast:lookdown 1[~s]: ~s\n" o name)
+  (filter (lambda (decl) (ast:name-equal? (.name decl)  name)) (ast:declaration* o)))
+
+(define-method (ast:lookdown (o <scope>) (name <scope.name>))
+;;  (stderr "ast:lookdown 2[~s]: ~s\n" o name)
+  (let ((scope (.scope name)))
+    (if (null? scope) (ast:lookdown o (.name name))
+        (let* ((first (car scope))
+               (first-scopes (ast:lookdown o first)))
+          (if (null? first-scopes) '()
+              (let ((name (clone name #:scope (cdr scope))))
+                ;;(stderr "found first scope:~s\n" first-scope)
+                (ast:lookdown first-scopes name)))))))
+
+(define-method (ast:lookdown (o <ast>) (name <scope.name>))
+;;  (stderr "ast:lookdown <ast>[~s]: ~s\n" o name)
+  '())
+
+(define-method (ast:lookup-n (o <ast>) name)
+;;  (stderr "ast:lookup-n <ast> 2 [~s]: ~s\n" o name)
+  (ast:lookup-n (parent o <scope>) name))
+
+(define-method (ast:lookup-n (o <scope>) (name <symbol>))
+;;  (stderr "ast:lookup-n 3 [~s]: ~s\n" o name)
+  (if (ast:empty-namespace? name) (list (parent o <root>))
+      (let ((found (filter (lambda (decl) (ast:name-equal? (.name decl) name)) (ast:declaration* o)))
+            (p (.parent o)))
+        (cond
+         ((pair? found) found)
+         ((not p) '())
+         (else (ast:lookup-n (parent p <scope>) name))))))
+
+(define-method (ast:lookup-n (o <boolean>) name)
+  '())
+
+(define (ast:lookup- root o name)
+  (let ((lookup (ast:lookup-n o name)))
+    (if (null? lookup) #f (car lookup))))
+
+(define (ast:lookup o name) ((ast:pure-funcq  ast:lookup-) (parent o <root>) o name))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (define-method (ast:declaration* (o <root>))
-  (ast:top* o))
+  (filter (cut is-a? <> <declaration>) (ast:top* o)))
 
 (define-method (ast:declaration* (o <namespace>))
-  (append-map ast:top* (filter (compose (cut equal? <> (ast:full-name o)) ast:full-name)
-                               (ast:namespace-recursive* (parent o <root>)))))
+  (filter (cut is-a? <> <declaration>)
+          (append-map ast:top* (filter (compose (cut equal? <> (ast:full-name o)) ast:full-name)
+                                       (ast:namespace-recursive* (parent o <root>))))))
 
 (define-method (ast:declaration* (o <interface>))
   (append (ast:type* o) (ast:event* o)))
@@ -938,7 +1004,6 @@
 (define-method (.function (o <call>))
   (and (.function.name o) (ast:lookup o (.function.name o))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define-method (ast:lookup-var (o <ast>) name)
   (define (name? o) (and (eq? (.name o) name) o))
   (match o
@@ -966,7 +1031,6 @@
 
 (define-method (.variable (o <var>))
   (and=> (.variable.name o) (cut ast:lookup-var o <>)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-method (.type (o <argument>))
   (ast:lookup o (.type.name o)))
