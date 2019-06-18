@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -84,7 +85,7 @@
                      dezyne-pack
                      wget               ; workaround for npm install
                      %base-packages))
-    (services (cons* (dhcp-client-service)
+    (services (cons* (service dhcp-client-service-type)
                      (postgresql-service #:postgresql postgresql-9.6)
                      (dezyne-service #:dezyne-server dezyne-server #:config 'localhost)
                      %base-services))))
@@ -102,11 +103,7 @@ HTTP-PORT."
                                    #:imported-modules '((gnu services herd)
                                                         (guix combinators))))
                          (command (apply system-qemu-image/shared-store-script
-                                         (if (or (string-null? %guix-version) (string-prefix? "0.13" %guix-version))
-                                             (list
-                                              os #:graphic? #f)
-                                             (list
-                                              os #:graphic? #f #:memory-size 4096)))))
+                                         (list os #:graphic? #f #:memory-size 4096))))
 
       (define test
         (with-imported-modules '((guix build utils)

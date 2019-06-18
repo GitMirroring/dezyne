@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -112,7 +113,7 @@
               (uri (git-reference (url (string-append git.oban/git "/gen1gen2.git"))
                                   (commit "eb94c2078db092116b7e7eb3bb4c35f7ce606034")))
               (sha256 (base32 "11c7psc0rswjw3b5xgac7qy7vs11g9i4h8ngmkbmrv37xlvq62vy"))))
-    (inputs `(("boost" ,boost)
+    (inputs `(("boost" ,boost-1.66)
               ("expat" ,expat)))
     (native-inputs `(("bison" ,bison)
                      ("flex" ,flex)

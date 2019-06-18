@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -33,6 +34,7 @@
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages graphviz)
   #:use-module (gnu packages guile)
+  #:use-module (gnu packages markup)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages python)
   #:use-module (gnu packages tcl)
@@ -45,11 +47,6 @@
   #:use-module (dezyne config)
   #:use-module (dezyne extra)
   #:use-module (dezyne v2.8 extra))
-
-(when (resolve-module '(gnu packages markdown) #:ensure #f)
-  (use-modules (gnu packages markdown))) ; guix 0.13
-(when (resolve-module '(gnu packages markup) #:ensure #f)
-  (use-modules (gnu packages markup)))  ; guix 0.14
 
 (define-public dezyne-source-2.8
   (origin
@@ -116,7 +113,7 @@
              (setenv "GOJS" (assoc-ref %build-inputs "gojs"))
              (setenv "TCLLIBPATH"
                      (string-append (assoc-ref %build-inputs "tcllib")
-                                    "/lib/tcllib1.18 "
+                                    (string-append "/lib/tcllib1.19 ")
                                     (assoc-ref %build-inputs "tclxml")
                                     "/lib/Tclxml3.2 "
                                     (getenv "TCLLIBPATH")))))

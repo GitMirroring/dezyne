@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -103,8 +104,7 @@
               (documentation "Run the dezyne daemon.")
               (requirement '(user-processes loopback))
               (start (dezyne-action))
-              (stop (dezyne-action "--stop" "stop"))
-              (stop (dezyne-action "--reload" "reload"))))))))
+              (stop (dezyne-action "--stop" "stop"))))))))
 
 (define dezyne-service-type
   (service-type (name 'dezyne)

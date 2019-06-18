@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
+;;; Copyright © 2018, 2019 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -31,6 +31,7 @@
   #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
   #:use-module (gnu packages emacs)
+  #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages flex)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages graphviz)
@@ -49,12 +50,6 @@
   #:use-module (dezyne v2.8 extra)
   #:use-module (dezyne v2.8 server))
 
-
-(when (resolve-module '(gnu packages markdown) #:ensure #f)
-  (use-modules (gnu packages markdown))) ; guix 0.13
-(when (resolve-module '(gnu packages markup) #:ensure #f)
-  (use-modules (gnu packages markup)))  ; guix 0.14
-
 (define-public dezyne-source-development
   (origin
     (method git-fetch)
@@ -68,7 +63,7 @@
     (name "dezyne-services")
     (version "development")
     (source dezyne-source-development)
-    (propagated-inputs `(("asd-converter" ,asd-converter-0.1.6)
+    (propagated-inputs `(("asd-converter" ,asd-converter-0.1.8)
                          ("bash" ,bash)
                          ("fakechroot" ,fakechroot)
                          ("gcc" ,gcc)
@@ -128,7 +123,7 @@
              (setenv "GOJS" (assoc-ref %build-inputs "gojs"))
              (setenv "TCLLIBPATH"
                      (string-append (assoc-ref %build-inputs "tcllib")
-                                    "/lib/tcllib1.18 "
+                                    "/lib/tcllib1.19 "
                                     (assoc-ref %build-inputs "tclxml")
                                     "/lib/Tclxml3.2 "
                                     (getenv "TCLLIBPATH")))))

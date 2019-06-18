@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
+;;; Copyright © 2018, 2019 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -39,6 +39,7 @@
   #:use-module (gnu packages guile)
   #:use-module (gnu packages java)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages markup)
   #:use-module (gnu packages node)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
@@ -61,11 +62,6 @@
 
   #:use-module (dezyne v2.4 services)
   #:use-module (dezyne v2.8 services))
-
-(when (resolve-module '(gnu packages markdown) #:ensure #f)
-  (use-modules (gnu packages markdown))) ; guix 0.13
-(when (resolve-module '(gnu packages markup) #:ensure #f)
-  (use-modules (gnu packages markup)))  ; guix 0.14
 
 (define-public dezyne-regression-test
   (package

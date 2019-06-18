@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -30,6 +31,7 @@
 
   #:use-module ((guix licenses) #:prefix license:)
 
+  #:use-module (gnu packages autotools)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages boost)
@@ -40,6 +42,7 @@
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages gl)
   #:use-module (gnu packages guile)
+  #:use-module (gnu packages icu4c) ;; <- boost-1.66
   #:use-module (gnu packages libevent)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages m4)
@@ -49,6 +52,7 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
   #:use-module (gnu packages qt)
+  #:use-module (gnu packages shells) ;; <- boost-1.66
   #:use-module (gnu packages tls)
   #:use-module (gnu packages version-control)
 
@@ -72,14 +76,10 @@
 
   #:use-module (dezyne config))
 
-;; hack for guix 0.13 support
-(when (not (defined? 'guile-readline))
-  (let ((guile-readline
-         (package
-           (inherit hello)
-           (name "guile-readline"))))
-    (module-define! (current-module) 'guile-readline guile-readline)
-    (export guile-readline)))
+(define-public (git-describe->commit string)
+  (match (string-split string #\-)
+    ((tag count g+hash) (string-drop g+hash 1))
+    (_ string)))
 
 (define-public ((car-member lst) o)
   (member (car o) lst))
@@ -269,6 +269,7 @@ analysed.")
                          "test/parallel/test-cluster-master-error.js"
                          "test/parallel/test-cluster-master-kill.js"
                          "test/parallel/test-npm-install.js"
+                         "test/parallel/test-tls-server-verify.js"
                          "test/sequential/test-child-process-emfile.js"))
              #t))
          (replace 'configure
@@ -480,16 +481,87 @@ host    all             all             ::1/128                 trust "))
               "http://verum.com"
               "internal"))))
 
-(define-public asd-converter-0.1.6
+;; FIXME: remove private package definition boost@1.66.0 after fixing asd-converter build error with boost@1.69.0
+(define-public boost-1.66
   (package
-    (name "asd-converter")
-    (version "0.1.6")
+    (name "boost")
+    (version "1.66.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "mirror://sourceforge/boost/boost/" version "/boost_"
+                    (string-map (lambda (x) (if (eq? x #\.) #\_ x)) version)
+                    ".tar.bz2"))
+              (sha256
+               (base32
+                "1aaw48cmimsskzgiclwn0iifp62a5iw9cbqrhfari876af1828ap"))
+              (patches (search-patches "boost-fix-icu-build.patch"))))
+    (build-system gnu-build-system)
+    (inputs `(("icu4c" ,icu4c)
+              ("zlib" ,zlib)))
+    (native-inputs
+     `(("perl" ,perl)
+       ("python" ,python-2)
+       ("tcsh" ,tcsh)))
+    (arguments
+     `(#:tests? #f
+       #:make-flags
+       (list "threading=multi" "link=shared"
+
+             ;; Set the RUNPATH to $libdir so that the libs find each other.
+             (string-append "linkflags=-Wl,-rpath="
+                            (assoc-ref %outputs "out") "/lib"))
+       #:phases
+       (modify-phases %standard-phases
+         (delete 'bootstrap)
+         (replace 'configure
+           (lambda* (#:key inputs outputs #:allow-other-keys)
+             (let ((icu (assoc-ref inputs "icu4c"))
+                   (out (assoc-ref outputs "out")))
+               (substitute* '("libs/config/configure"
+                              "libs/spirit/classic/phoenix/test/runtest.sh"
+                              "tools/build/doc/bjam.qbk"
+                              "tools/build/src/engine/execunix.c"
+                              "tools/build/src/engine/Jambase"
+                              "tools/build/src/engine/jambase.c")
+                 (("/bin/sh") (which "sh")))
+
+               (setenv "SHELL" (which "sh"))
+               (setenv "CONFIG_SHELL" (which "sh"))
+
+               (invoke "./bootstrap.sh"
+                       (string-append "--prefix=" out)
+                       ;; Auto-detection looks for ICU only in traditional
+                       ;; install locations.
+                       (string-append "--with-icu=" icu)
+                       "--with-toolset=gcc"))))
+         (replace 'build
+           (lambda* (#:key make-flags #:allow-other-keys)
+             (apply invoke "./b2"
+                    (format #f "-j~a" (parallel-job-count))
+                    make-flags)))
+         (replace 'install
+           (lambda* (#:key make-flags #:allow-other-keys)
+             (apply invoke "./b2" "install" make-flags))))))
+
+    (home-page "https://www.boost.org")
+    (synopsis "Peer-reviewed portable C++ source libraries")
+    (description
+     "A collection of libraries intended to be widely useful, and usable
+across a broad spectrum of applications.")
+    (license (license:x11-style "https://www.boost.org/LICENSE_1_0.txt"
+                                "Some components have other similar licences."))))
+
+(define-public asd-converter-0.1.8
+  (package
+    (name "asd-converter-0.1.8")
+    (version "0.1.8")
     (source (origin
               (method git-fetch)
               (uri (git-reference (url (string-append git.oban/git "/gen1gen2.git"))
-                                  (commit "a21e1853b81f2396da12f7eeee9ac30b0b11386f")))
-              (sha256 (base32 "1i3sk1jj8qsr9gzyrz118hxlgipxr277hqlg1c3y1n3z11lnhrv1"))))
-    (inputs `(("boost" ,boost)
+                                  (commit "9bb108f8658ac2db0f74c1776be1bb51458278f0")))
+              (sha256 (base32 "1643c0n027ydpvhh03za8fgx351ajcd3izygdkjwrwxp8b5aam07"))))
+    (inputs `(("boost" ,boost-1.66) ;; FIXME: Use package 'boost' iso 'boost-1.66.0' after fixing asd-converter compile error "no type named 'type'"
               ("expat" ,expat)))
     (native-inputs `(("bison" ,bison)
                      ("flex" ,flex)

@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
+;;; Copyright © 2018, 2019 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -49,22 +49,13 @@
 
     (bootloader
      (grub-configuration
-      (device "/dev/sda")))
+      (target "/dev/sda")))
 
     (initrd-modules (append (list "vmw_pvscsi" "shpchp")
                             %base-initrd-modules))
-    ;; (if (initrd (if (or (string-null? %guix-version) (string-prefix? "0.13" %guix-version))
-    ;;                 (lambda (file-systems . rest)
-    ;;                   (apply base-initrd file-systems
-    ;;                          #:extra-modules '("vmw_pvscsi" "shpchp") ;; NMI watchdog: BUG: soft lockup - CPU#0 stuck for 23s!
-    ;;                          rest)))))
-
     (file-systems
      (cons* (file-system
-              ;; (device (file-system-label "guix")) ; guix 0.15
-              (device "guix")           ; guix 0.13 support
-              (title 'label)
-
+              (device (file-system-label "guix"))
               (mount-point "/")
               (type "ext4"))
             %base-file-systems))
@@ -89,7 +80,7 @@
             %base-packages))
 
     (services
-     (cons* (dhcp-client-service)
+     (cons* (service dhcp-client-service-type)
             (service openssh-service-type
                      (openssh-configuration
                       (port-number 22)
