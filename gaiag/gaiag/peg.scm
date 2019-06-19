@@ -501,17 +501,9 @@
       (_ (format #f "LITERAL: \"~s\"" o))))
 
   (define (line-column pos skip?)
-    (let* ((length (string-length string))
-           (pos (if skip? pos
-                    (let loop ((pos pos))
-                      (if (and (< pos length) (char-whitespace? (string-ref string pos))) (loop (1+ pos)) pos)))))
-      (let loop ((lines (string-split string #\newline)) (ln 1) (p 0))
-        (if (null? lines) (values #f #f)
-            (let* ((line (car lines))
-                   (length (string-length line))
-                   (end (+ p length 1)))
-              (if (<= pos end) (values ln (- pos p))
-                  (loop (cdr lines) (1+ ln) end)))))))
+    (let ((line-number (1+ (string-count string #\newline 0 pos)))
+          (column-number (1- (- pos (or (string-rindex string #\newline 0 pos) 1)))))
+      (values line-number column-number)))
 
 
   (when (> (gdzn:debugity) 1)
