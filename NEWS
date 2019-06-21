@@ -7,9 +7,12 @@
 
 
 * Dezyne Enterprise preview
+** Changes in dzn-explore dd. June 21, 2019
+  - The performance of dzn-explore has been improved.
+
 ** Changes in dzn-explore dd. June 13, 2019
   - State diagram: event descriptions related to foreign components
-    now include their full path
+    now include their full path.
 
 ** Changes in dzn-explore dd. June 4, 2019
   - A help page has bee added, accessable through the 'h' key.
