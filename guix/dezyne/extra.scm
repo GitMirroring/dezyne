@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
@@ -160,6 +160,30 @@ possibility to install another packages without need for root privileges.")
               "http://gojs.com"
               "internal"))))
 
+(define-public lts-0.3-0
+  (let* ((commit "8a6bab5c729d0173105e900e239aed4aedd7f82e")
+         (src-url (string-append git.oban/git "/lts.git"))
+         (src-hash "1qjnhv7yf2x6slzy49pizpcbrqcrxlfbqzqfr4yssy3iv4j48lpr")
+         (revision "0"))
+    (package
+      (name "lts")
+      (version (string-append "0.3-" revision "." (string-take commit 7)))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference (url src-url) (commit commit)))
+                (sha256 (base32 src-hash))))
+      (propagated-inputs
+       `(("guile" ,guile-2.2)
+         ("guile-readline" ,guile-readline)))
+      (build-system gnu-build-system)
+      (synopsis "lts")
+      (description "Navigate and query lts from FILE in (Aldebaran) aut format.")
+      (home-page "http://www.verum.com")
+      (license ((@@ (guix licenses) license)
+                "proprietary"
+                "http://verum.com"
+                "internal")))))
+
 (define-public m4-changeword
   (package
     (inherit m4)
@@ -199,6 +223,35 @@ specifications.  Also, state spaces can be manipulated, visualised and
 analysed.")
     (home-page "http://www.mcrl2.org")
     (license license:boost1.0)))
+
+(define-public mcrl2-git-1
+  (let ((commit "2c7d1d5d3196622c63ac39f69d41a4bf0e9fa447")
+        (version "201808")
+        (revision "1"))
+    (package
+      (inherit mcrl2)
+      (name "mcrl2")
+      (version (string-append version "." revision "." (string-take commit 7)))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/mCRL2org/mCRL2")
+                      (commit commit)))
+                (patches (search-patches "mcrl2-Remove-git-magic-from-MCRL2Version.cmake.patch"
+                                         "mcrl2-pipeline-support.patch"
+                                         "mcrl2-ltsgraph-override-lts-type.patch"))
+                (sha256
+                 (base32
+                  "1ky11f1g2hlq9cp3gj2z4rly87pl7p9sr0b6ls3ls2nrzi4fis7r"))))
+      (arguments
+       `(#:configure-flags '("-DCMAKE_BUILD_TYPE=Release")
+         #:phases
+         (modify-phases %standard-phases
+           (add-after 'unpack 'set-version
+             (lambda* _
+               (substitute* '("build/cmake/MCRL2Version.cmake")
+                 (("(set\\(MCRL2_MINOR_VERSION \")Unknown(\"\\))" all left right)
+                  (string-append left ,(string-take commit 7) right)))))))))))
 
 (define-public mono-4.2
   (package

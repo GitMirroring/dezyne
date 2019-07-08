@@ -46,17 +46,15 @@
   #:use-module (guix packages)
 
   #:use-module (dezyne config)
-  #:use-module (dezyne extra)
-  #:use-module (dezyne v2.8 extra)
-  #:use-module (dezyne v2.8 server))
+  #:use-module (dezyne extra))
 
 (define-public dezyne-source-development
   (origin
     (method git-fetch)
     (uri (git-reference
           (url (string-append git.oban/blessed "/development.git"))
-          (commit "2f9880f9041a0854d5434e2cec04ec9b721a5517")))
-    (sha256 (base32 "0nd2rfs5229w71x2y8rna7jca2v8s3rhxq4lh4kvhl0288cjvnjm"))))
+          (commit (git-describe->commit "2.9.0-18-gc000dcb4a"))))
+    (sha256 (base32 "1sr5r10hxgq5awiij4m7i55718niwpxiq365dx72ylbfar3m54b1"))))
 
 (define-public dezyne-services
   (package
@@ -132,7 +130,7 @@
              (let ((out (assoc-ref outputs "out")))
                (zero? (system* "make" "install-services" "DESTDIR="
                                (string-append "PREFIX=" out)))))))))
-    (synopsis "javacript dezyne-server serevice adapters and services' command line tools")
+    (synopsis "javacript dezyne-server service adapters and services' command line tools")
     (description "Dezyne is a component-based model-driven software
 development environment.")
     (home-page "http://verum.com")
@@ -175,7 +173,9 @@ development environment.")
     (version "development")
     (source dezyne-source-development)
     (native-inputs
-     `(("guile" ,guile-2.2)             ; for configure (run by make)
+     `(("dezyne-services" ,dezyne-services)
+       ("gojs" ,gojs)
+       ("guile" ,guile-2.2)             ; for configure (run by make)
        ("node" ,node6)                  ; for NODE_PATH
        ("node-snapshot" ,node-snapshot) ; for jison
        ("perl" ,perl)                   ; for shasum
@@ -219,7 +219,6 @@ development environment.")
     (source #f)
     (native-inputs `(("dzn-client-tarball" ,dzn-client-tarball)))
     (propagated-inputs `(("bash" ,bash)
-                         ("node-dzn-daemon" ,node-dzn-daemon-11)
                          ("node" ,node6)
                          ("node-snapshot" ,node-snapshot)))
     (build-system gnu-build-system)

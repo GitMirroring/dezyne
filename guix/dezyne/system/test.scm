@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -142,47 +142,12 @@ HTTP-PORT."
               (define services-alist
                 `(("development" . ,#$dezyne-test-content)
 
-                  ;; ("2.8.0" . ,#$dezyne-test-content-2.8.0)
+                  ;; ("2.9.1" . ,#$dezyne-test-content-2.9.1)
 
-                  ;; ("2.7.2" . ,#$dezyne-test-content-2.7.2)
-                  ;; ("2.7.0" . ,#$dezyne-test-content-2.7.1)
-                  ;; ("2.7.1" . ,#$dezyne-test-content-2.7.0)
-
-                  ;; ("2.6.1" . ,#$dezyne-test-content-2.6.1)
-                  ;; ("2.6.0" . ,#$dezyne-test-content-2.6.0)
-
-                  ;; ("2.5.3" . ,#$dezyne-test-content-2.5.3)
-                  ;; ("2.5.2" . ,#$dezyne-test-content-2.5.2)
-                  ;; ("2.5.1" . ,#$dezyne-test-content-2.5.1)
-                  ;; ("2.5.0" . ,#$dezyne-test-content-2.5.0)
-
-                  ;; ("2.4.1" . ,#$dezyne-test-content-2.4.1)
-                  ;; ("2.4.0" . ,#$dezyne-test-content-2.4.0)
-
-                  ;; ("2.3.4" . ,#$dezyne-test-content-2.3.4)
-                  ;; ("2.3.3" . ,#$dezyne-test-content-2.3.3)
-                  ;; ("2.3.2" . ,#$dezyne-test-content-2.3.2)
-                  ;; ("2.3.1" . ,#$dezyne-test-content-2.3.1)
-                  ;; ("2.3.0" . ,#$dezyne-test-content-2.3.0)
-
-                  ;; ("2.2.1" . ,#$dezyne-test-content-2.2.1)
-                  ;; ("2.2.0" . ,#$dezyne-test-content-2.2.0)
-
-                  ;; ("2.1.3" . ,#$dezyne-test-content-2.1.3)
-                  ;; ("2.1.2" . ,#$dezyne-test-content-2.1.2)
-                  ;; ("2.1.1" . ,#$dezyne-test-content-2.1.1)
-                  ;; ("2.1" . ,#$dezyne-test-content-2.1.0)
-
-                  ;; running regression test from elsewhere not working
-                  ;; ;; ("2.0.0" . ,#$dezyne-test-content-2.0.0)
-
-                  ;;no regression test here
-                  ;; ;; ("1.2.1" . ,#$dezyne-test-content-1.2.1)
                   ))
 
               (define query-output
-                (string-append "  1.2.1"
-                               "\n  2.0.0"
+                (string-append
                                (string-join (filter (negate (cut equal? <> "development"))
                                                     (map car (reverse services-alist)))
                                             "\n  " 'prefix)
@@ -226,13 +191,6 @@ HTTP-PORT."
                                           ;;"cp -a --no-preserve=mode " #$node-snapshot " " npm-prefix "\n"
                                           "\n"))))
               (chmod npm #o755)
-
-              (define install.js-contents
-                (regexp-substitute/global
-                 #f
-                 "localhost:3000"
-                 (with-input-from-file (string-append #$dezyne-server "/server/install.js") read-string)
-                 'pre "localhost:3001" 'post))
 
               (set-path-environment-variable "PATH" '("bin" "sbin")
                                              (cons* #$output
@@ -315,63 +273,13 @@ HTTP-PORT."
               (test-assert "express"
                 (zero? (system* "wget" "http://localhost:3001")))
 
-              ;; fallback: install without npm
-              ;; (test-assert "wget dzn"
-              ;;   (begin
-              ;;     (mkdir-p node-modules-dir)
-              ;;     (and (zero? (system* "wget" (string-append "http://localhost:3001"
-              ;;                                                "/download/npm/dzn-development.tar.gz")))
-              ;;          (zero? (system* "tar" "-C" node-modules-dir "-xf" "dzn-development.tar.gz"))
-
-              ;;          (copy-file (string-append #$test-content "/dzn/commands/traces.js")
-              ;;                     (string-append node-modules-dir "/dzn/commands/traces.js"))
-
-              ;;          (zero? (system* "wget" (string-append "http://localhost:3001"
-              ;;                                                "/download/npm/dzn-daemon-0.0.9.tar.gz")))
-              ;;          (zero? (system* "tar" "-C" node-modules-dir "-xf" "dzn-daemon-0.0.9.tar.gz")))))
-
-              (test-equal "http-get"
-                `(200 ,install.js-contents)
-                (let-values (((response text)
-                              (http-get "http://localhost:3001/download/npm/details/install.js"
-                                        #:decode-body? #t)))
-                  (list (response-code response) text)))
-
               (test-assert "wget dzn dev"
                 (zero? (system* "wget" (string-append "http://localhost:3001"
                                                       "/download/npm/dzn-development.tar.gz"))))
 
-              (test-assert "wget dzn 2.8.0"
-                (zero? (system* "wget" (string-append "http://localhost:3001"
-                                                      "/download/npm/dzn-2.8.0.tar.gz"))))
-
-              (test-assert "wget dzn 2.7.0"
-                (zero? (system* "wget" (string-append "http://localhost:3001"
-                                                      "/download/npm/dzn-2.7.0.tar.gz"))))
-
-              (test-assert "wget dzn 2.6.0"
-                (zero? (system* "wget" (string-append "http://localhost:3001"
-                                                      "/download/npm/dzn-2.6.0.tar.gz"))))
-
-              (test-assert "wget dzn 2.5.0"
-                (zero? (system* "wget" (string-append "http://localhost:3001"
-                                                      "/download/npm/dzn-2.5.0.tar.gz"))))
-
-              (test-assert "wget dzn 2.4.0"
-                (zero? (system* "wget" (string-append "http://localhost:3001"
-                                                      "/download/npm/dzn-2.4.0.tar.gz"))))
-
-              (test-assert "wget dzn 2.3.0"
-                (zero? (system* "wget" (string-append "http://localhost:3001"
-                                                      "/download/npm/dzn-2.3.0.tar.gz"))))
-
-              (test-assert "wget dzn-daemon-11"
-                (zero? (system* "wget" (string-append "http://localhost:3001"
-                                                      "/download/npm/dzn-daemon-0.0.11.tar.gz"))))
-
-              (test-assert "wget dzn-daemon-10"
-                (zero? (system* "wget" (string-append "http://localhost:3001"
-                                                      "/download/npm/dzn-daemon-0.0.10.tar.gz"))))
+              ;; (test-assert "wget dzn 2.9.1"
+              ;;   (zero? (system* "wget" (string-append "http://localhost:3001"
+              ;;                                         "/download/npm/dzn-2.9.1.tar.gz"))))
 
               (test-assert "install dzn"
                 (let ((cmd (string-append "set -x; " npm " install --global"
@@ -381,23 +289,7 @@ HTTP-PORT."
                   (system* "cp" "-a" "--no-preserve=mode" #$node-snapshot npm-prefix)
                   (zero? (system cmd))))
 
-              (test-assert "hello authenticate -- install daemon"
-                (let ((cmd (format #f "set -x; echo root | ~a --debug -u root -s http://localhost:3001 -p hello" dzn)))
-                  (zero? (system cmd))))
-
-              (test-assert "kill daemon"
-                (let ((cmd (format #f "set -x; ~a --debug kill" dzn)))
-                  (zero? (system cmd))))
-
-              (test-assert "upgrade daemon"
-                (let ((cmd (string-append "set -x; " npm " install --global"
-                                          " http://localhost:3001"
-                                          "/download/npm/dzn-daemon-0.0.10.tar.gz")))
-                  ;; create writable cache for npm from snapshot
-                  (system* "cp" "-a" "--no-preserve=mode" #$node-snapshot npm-prefix)
-                  (zero? (system cmd))))
-
-              (test-assert "hello authenticate -- upgrade daemon"
+              (test-assert "hello authenticate"
                 (let ((cmd (format #f "set -x; echo root | ~a --debug -u root -s http://localhost:3001 -p hello" dzn)))
                   (zero? (system cmd))))
 

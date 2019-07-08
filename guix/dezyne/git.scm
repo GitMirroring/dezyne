@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -27,8 +27,6 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (ice-9 popen)
-  #:use-module (ice-9 popen)
-  #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
 
   #:use-module (guix gexp)              ; local-file
@@ -39,66 +37,72 @@
 
   #:use-module (dezyne extra)
   #:use-module (dezyne services)
+  #:use-module (dezyne server)
   #:use-module (dezyne pack))
 
-#!
+(define (current-filename)
+  (search-path %load-path (module-filename (current-module))))
 
-  ./pre-inst-env guix build -f guix.scm
+(define %source-dir (dirname (dirname (dirname (current-filename)))))
 
-  ./pre-inst-env guix build \
-    --with-input=dezyne-services=dezyne-services@git \
-    --with-input=dezyne-test-content=dezyne-test-content@git\
-    dezyne-regression-test
+(format (current-error-port) "source-dir:~s\n" %source-dir)
 
-!#
-
-(define-public %source-dir (getcwd))
-
-(define-public git-file?
-  (let* ((pipe (with-directory-excursion %source-dir
-                 (open-pipe* OPEN_READ "git" "ls-files")))
-         (files (let loop ((lines '()))
-                  (match (read-line pipe)
-                    ((? eof-object?)
-                     (reverse lines))
-                    (line
-                     (loop (cons line lines))))))
-         (status (close-pipe pipe)))
-    (lambda (file stat)
-      (match (stat:type stat)
-        ('directory #t)
-        ((or 'regular 'symlink)
-         (any (cut string-suffix? <> file) files))
-        (_ #f)))))
+(define (git-commit)
+  (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ)))
 
 (define dezyne-source.git
-  (local-file %source-dir #:recursive? #t #:select? git-file?))
+  (local-file %source-dir
+              #:recursive? #t
+              #:select? (git-predicate %source-dir)))
 
 (define-public dezyne-services.git
-  (let ((version "git")
-        (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
-    (package
-     (inherit dezyne-services)
-     (version (string-append version "." (string-take commit 7)))
-     (source dezyne-source.git))))
+  (package
+   (inherit dezyne-services)
+   (version (string-append "git." (string-take (git-commit) 7)))
+   (source dezyne-source.git)))
+
+(define-public dezyne-server.git
+  (package
+   (inherit dezyne-server)
+   (version (string-append "git." (string-take (git-commit) 7)))
+   (source dezyne-source.git)
+   (native-inputs
+    `(("dezyne-services" ,dezyne-services.git)
+      ,@(filter
+         (negate (car-member '("dezyne-services")))
+         (package-native-inputs dezyne-server))))))
 
 (define-public dezyne-test-content.git
-  (let ((version "git")
-        (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
-    (package
-     (inherit dezyne-test-content)
-     (version (string-append version "." (string-take commit 7)))
-     (source dezyne-source.git))))
+  (package
+   (inherit dezyne-test-content)
+   (version (string-append "git." (string-take (git-commit) 7)))
+   (source dezyne-source.git)))
 
 (define-public dezyne-regression-test.git
-  (let ((version "git")
-        (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
-    (package
-     (inherit dezyne-regression-test)
-     (version (string-append version "." (string-take commit 7)))
-     (native-inputs
-      `(("dezyne-services" ,dezyne-services.git)
-        ("dezyne-test-content" ,dezyne-test-content.git)
-        ,@(filter
-           (negate (car-member '("dezyne-services" "dezyne-test-content")))
-           (package-native-inputs dezyne-regression-test)))))))
+  (package
+   (inherit dezyne-regression-test)
+   (version (string-append "git." (string-take (git-commit) 7)))
+   (native-inputs
+    `(("dezyne-services" ,dezyne-services.git)
+      ("dezyne-test-content" ,dezyne-test-content.git)
+      ,@(filter
+         (negate (car-member '("dezyne-services" "dezyne-test-content")))
+         (package-native-inputs dezyne-regression-test))))))
+
+(define-public dezyne-pack.git
+  (package
+   (inherit dezyne-pack)
+   (version (string-append "git." (string-take (git-commit) 7)))
+   (propagated-inputs
+    `(("dezyne-server" ,dezyne-server.git)
+      ("dezyne-services" ,dezyne-services.git)
+      ("dezyne-regression-test" ,dezyne-regression-test.git)
+      ;;("dezyne-test-content" ,dezyne-test-content.git)
+      ;;("dzn-client-tarball" ,dzn-client-tarball.git)
+      ,@(filter
+         (negate (car-member '("dezyne-regression-test"
+                               "dezyne-server"
+                               "dezyne-services"
+                               "dezyne-test-content"
+                               "dzn-client-tarball")))
+         (package-propagated-inputs dezyne-pack))))))

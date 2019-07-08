@@ -2,7 +2,7 @@
 #+TITLE: The Dezyne server, services, client.
 #+OPTIONS: toc:2          only include two levels in TOC
 
-Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]] v0.15.  See `Setup Guix' below.
+Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]] v1.0.1  See `Setup Guix' below.
 
 * Get it
 
@@ -12,9 +12,19 @@ Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]] v0.15.  See 
   #+END_SRC
 
 * Build it
+** Create a build environment
 
   #+BEGIN_SRC bash
-  GUIX_PACKAGE_PATH=guix guix environment -l guix.scm
+  guix environment -l guix.scm
+  #+END_SRC
+
+or, for a richer environment
+  #+BEGIN_SRC bash
+  guix environment -m release/manifest.scm
+  #+END_SRC
+
+** Configure and make
+  #+BEGIN_SRC bash
   ./configure
   make
   #+END_SRC
@@ -38,22 +48,27 @@ Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]] v0.15.  See 
 *** Run regression through node dzn client, daemon and server
 
   #+BEGIN_SRC bash
-  ./pre-inst-env guix environment dezyne-services dezyne-regression-test
+  guix environment -l guix.scm
   DZN=dzn ./pre-inst-env test test/hello/helloworld
   #+END_SRC
 
-* Create a persistent build environment
-
+* Create or update a persistent build environment
 ** in your default profile
 
   #+BEGIN_SRC bash
-  GUIX_PACKAGE_PATH=guix guix package -m release/manifest.scm
+  guix package -m release/manifest.scm
   #+END_SRC
 
 ** or in a special named profile
 
   #+BEGIN_SRC bash
-  GUIX_PACKAGE_PATH=guix guix package -p ~/.config/guix/verum -m release/manifest.scm
+  guix package -p ~/.config/guix/verum -m release/manifest.scm
+  #+END_SRC
+
+use it
+
+  #+BEGIN_SRC bash
+  GUIX_PROFILE=~/.config/guix/verum/etc/profile . ~/.config/guix/verum/etc/profile
   #+END_SRC
 
 * Build Guix packages

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -58,10 +58,7 @@
   #:use-module (dezyne extra)
 
   #:use-module (dezyne server)
-  #:use-module (dezyne services)
-
-  #:use-module (dezyne v2.4 services)
-  #:use-module (dezyne v2.8 services))
+  #:use-module (dezyne services))
 
 (define-public dezyne-regression-test
   (package
@@ -71,12 +68,8 @@
     (native-inputs
      `(("dezyne-services" ,dezyne-services)
        ("dezyne-test-content" ,dezyne-test-content)
-       ;; ("dezyne-services-2.8" ,dezyne-services-2.8)
-       ;; ("dezyne-services-2.4" ,dezyne-services-2.4)
-
        ("bash" ,bash)
        ("boost" ,boost)
-       ("coreutils" ,coreutils)
        ("coreutils" ,coreutils)
        ("diffutils" ,diffutils)
        ("emacs" ,emacs)
@@ -185,38 +178,29 @@
               "internal"))))
 
 (define-public dezyne-pack
-  (let ((version "11.2.8.0")
-        (revision "0")
-        (commit ((compose git-reference-commit origin-uri) dezyne-source-development)))
-    (package
-      (version (string-append version "." revision "." (string-take commit (min (string-length commit) 7))))
-      (name "dezyne-pack")
-      (source #f)
-      (propagated-inputs
-       `(("dezyne-server" ,dezyne-server)
+  (package
+   (version "development")
+   (name "dezyne-pack")
+   (source #f)
+   (propagated-inputs
+    `(("dezyne-server" ,dezyne-server)
 
-         ("dezyne-services" ,dezyne-services)
-         ("dezyne-regression-test" ,dezyne-regression-test)
-         ("dezyne-test-content" ,dezyne-test-content)
-         ("dzn-client-tarball" ,dzn-client-tarball)
+      ("dezyne-services" ,dezyne-services)
+      ("dezyne-regression-test" ,dezyne-regression-test)
+      ("dezyne-test-content" ,dezyne-test-content)
+      ("dzn-client-tarball" ,dzn-client-tarball)
 
-         ("dezyne-services-2.8" ,dezyne-services-2.8)
-         ("dzn-client-tarball-2.8" ,dzn-client-tarball-2.8)
-
-         ("dezyne-services-2.4" ,dezyne-services-2.4)
-         ;;("dzn-client-tarball-2.4" ,dzn-client-tarball-2.4)
-
-         ("shepherd" ,shepherd)
-         ("postgres-config" ,postgres-config)))
-      (build-system trivial-build-system)
-      (arguments
-       `(#:modules ((guix build utils))
-         #:builder (begin (use-modules (guix build utils))
-                          (mkdir-p (assoc-ref %outputs "out")))))
-      (synopsis "meta package for a dezyne release")
-      (description "meta package for a dezyne release")
-      (home-page "http://verum.com")
-      (license ((@@ (guix licenses) license)
-                "proprietary"
-                "http://verum.com"
-                "internal")))))
+      ("shepherd" ,shepherd)
+      ("postgres-config" ,postgres-config)))
+   (build-system trivial-build-system)
+   (arguments
+    `(#:modules ((guix build utils))
+      #:builder (begin (use-modules (guix build utils))
+                       (mkdir-p (assoc-ref %outputs "out")))))
+   (synopsis "meta package for a dezyne release")
+   (description "meta package for a dezyne release")
+   (home-page "http://verum.com")
+   (license ((@@ (guix licenses) license)
+             "proprietary"
+             "http://verum.com"
+             "internal"))))

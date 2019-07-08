@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2016, 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
@@ -24,32 +24,51 @@
 
 ;;; guix.scm -- Guix package definition
 
-;;; Borrowing code from:
-;;; guile-sdl2 --- FFI bindings for SDL2
-;;; Copyright © 2015 David Thompson <davet@gnu.org>
-
 ;;; Commentary:
 ;;
 ;; GNU Guix development package.  To build and install, run:
 ;;
-;;   GUIX_PACKAGE_PATH=guix guix package -f guix.scm
+;;   guix package -f guix.scm
 ;;
 ;; or
 ;;
-;;   ./pre-inst-env guix package -f guix.scm
+;;   guix package -f guix.scm
 ;;
 ;; To build it, but not install it, run:
 ;;
-;;   ./pre-inst-env guix build -f guix.scm
+;;   guix build -f guix.scm
 ;;
 ;; To use as the basis for a development environment, run:
 ;;
-;;   ./pre-inst-env guix environment -l guix.scm
+;;   guix environment -l guix.scm
+;;
+;; To build individual dependencies run, e.g.,
+;;
+;;   GUIX_PACKAGE_PATH=guix guix build dezyne-services@git
+;;   GUIX_PACKAGE_PATH=guix guix build dezyne-regression-test@git
+;;   GUIX_PACKAGE_PATH=guix guix build lts
+;;   GUIX_PACKAGE_PATH=guix guix build mcrl2
 ;;
 ;;; Code:
 
+(use-modules (ice-9 popen)
+             (ice-9 rdelim)
+             (guix git-download)
+             (guix gexp)
+             (guix packages)
+             (gnu packages))
+
+(define %source-dir (dirname (current-filename)))
+(define %guix-dir (string-append %source-dir "/guix"))
+
+(format (current-error-port) "guix-dir:~s\n" %guix-dir)
+(add-to-load-path %guix-dir)
+(%patch-path (cons %guix-dir (%patch-path)))
+
 (use-modules (dezyne git))
 
+(define (git-commit)
+  (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ)))
 
 ;; Return it here so `guix build/environment/package' can consume it directly.
-dezyne-services.git
+dezyne-pack.git
