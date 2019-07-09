@@ -62,7 +62,7 @@
 
 (define-public dezyne-regression-test
   (package
-    (version "development")
+    (version (package-version dezyne-services))
     (name "dezyne-regression-test")
     (source #f)
     (native-inputs
@@ -179,7 +179,7 @@
 
 (define-public dezyne-pack
   (package
-   (version "development")
+   (version (package-version dezyne-services))
    (name "dezyne-pack")
    (source #f)
    (propagated-inputs

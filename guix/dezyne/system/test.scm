@@ -38,68 +38,46 @@
   #:use-module (gnu system file-systems)
   #:use-module (gnu system shadow)
   #:use-module (gnu system vm)
-  #:use-module (gnu packages base)
-  #:use-module (gnu packages bash)
-  #:use-module (gnu packages boost)
-  #:use-module (gnu packages databases)
-  #:use-module (gnu packages linux)
-  #:use-module (gnu packages mono)
-  #:use-module (gnu packages python)
-  #:use-module (gnu packages wget)
-  #:use-module (gnu services)
-  #:use-module (gnu services base)
-  #:use-module (gnu services databases)
 
+  #:use-module (gnu packages bash)
+  #:use-module (gnu packages wget)
 
   #:use-module (gnu services herd)
   #:use-module (gnu services networking)
   #:use-module (gnu services ssh)
 
   #:use-module (dezyne extra)
-  #:use-module (dezyne pack)
   #:use-module (dezyne system service)
+  #:use-module (dezyne system os)
+
+  #:use-module (dezyne pack)
   #:use-module (dezyne server)
   #:use-module (dezyne services)
   #:use-module (guix config)
 
   #:export (%test-dezyne))
 
-(define %simple-os (@@ (gnu tests) %simple-os))
-(define %dezyne-os
-  ;; Operating system under test.
+(define %test-os
   (operating-system
-    (inherit %simple-os)
-    (host-name "test.verum.com")
-   (groups
-    (cons* (user-group (name "guix"))
-           %base-groups))
-
-   (users
-    (cons* (user-account (name "guix")
-                         (group "guix")
-                         (password (crypt "" "xx"))
-                         (supplementary-groups '("wheel"))
-                         (home-directory "/home/guix"))
-           %base-user-accounts))
-    (packages (cons* postgresql-9.6
-                     dezyne-pack
-                     wget               ; workaround for npm install
-                     %base-packages))
-    (services (cons* (service dhcp-client-service-type)
-                     (postgresql-service #:postgresql postgresql-9.6)
-                     (dezyne-service #:dezyne-server dezyne-server #:config 'localhost)
-                     %base-services))))
+   (inherit %dezyne-os)
+   (host-name "test.verum.com")
+   (hosts-file
+    (plain-file "hosts"
+                (string-append (local-host-aliases host-name)
+                               "
+127.0.0.1	database
+")))))
 
 (define* (run-dezyne-test #:key (http-port 3000) check?)
-  "Run tests in %DEZYNE-OS, which has dezyne running and listening on
+  "Run tests in %TEST-OS, which has dezyne running and listening on
 HTTP-PORT."
   (let* ((test-content dezyne-test-content)
-         (version "development")
+         (version (package-version dezyne-services))
          (dezyne-test-packages (map cadr (package-direct-inputs dezyne-regression-test)))
          (node-packages (map cadr (filter (lambda (p) (string-prefix? "node-" (car p))) (package-direct-inputs dezyne-server)))))
 
     (mlet* %store-monad ((os ->   (marionette-operating-system
-                                   %dezyne-os
+                                   %test-os
                                    #:imported-modules '((gnu services herd)
                                                         (guix combinators))))
                          (command (apply system-qemu-image/shared-store-script
@@ -140,9 +118,9 @@ HTTP-PORT."
                   (zero? (system cmd))))
 
               (define services-alist
-                `(("development" . ,#$dezyne-test-content)
+                `(;;("development" . ,#$dezyne-test-content)
 
-                  ;; ("2.9.1" . ,#$dezyne-test-content-2.9.1)
+                  ("2.9.1" . ,#$dezyne-test-content)
 
                   ))
 
@@ -151,7 +129,9 @@ HTTP-PORT."
                                (string-join (filter (negate (cut equal? <> "development"))
                                                     (map car (reverse services-alist)))
                                             "\n  " 'prefix)
-                               "\n* development\n"))
+                               ;;"\n* development\n"
+                               "\n* 2.9\n"
+                               ))
 
               (mkdir-p out)
               (chdir out)

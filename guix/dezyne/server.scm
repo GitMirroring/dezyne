@@ -38,8 +38,8 @@
 (define-public dezyne-server
   (package
    (name "dezyne-server")
-   (version "development")
-   (source dezyne-source-development)
+   (version (package-version dezyne-services))
+   (source (package-source dezyne-services))
    (build-system gnu-build-system)
    (propagated-inputs `(("node" ,node6)
                         ("postgresql" ,postgresql-9.6)

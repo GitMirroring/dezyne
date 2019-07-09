@@ -48,102 +48,101 @@
   #:use-module (dezyne config)
   #:use-module (dezyne extra))
 
-(define-public dezyne-source-development
-  (origin
-    (method git-fetch)
-    (uri (git-reference
-          (url (string-append git.oban/blessed "/development.git"))
-          (commit (git-describe->commit "2.9.0-18-gc000dcb4a"))))
-    (sha256 (base32 "1sr5r10hxgq5awiij4m7i55718niwpxiq365dx72ylbfar3m54b1"))))
-
 (define-public dezyne-services
   (package
-    (name "dezyne-services")
-    (version "development")
-    (source dezyne-source-development)
-    (propagated-inputs `(("asd-converter" ,asd-converter-0.1.8)
-                         ("bash" ,bash)
-                         ("fakechroot" ,fakechroot)
-                         ("gcc" ,gcc)
-                         ("glibc-utf8-locales" ,glibc-utf8-locales)
-                         ("graphviz" ,graphviz)
-                         ("googletest" ,googletest)
-                         ("guile" ,guile-2.2)
-                         ("guile-readline" ,guile-readline)
-                         ("guile-json" ,guile-json)
-                         ("lts" ,lts-0.3-0)
-                         ("m4-cw" ,m4-changeword)
-                         ("mcrl2" ,mcrl2-git-1)
-                         ("node" ,node6)
-                         ("python" ,python-2) ; dzn traces
-                         ("node-snapshot" ,node-snapshot)))
-    (inputs `(("boost" ,boost)
-              ("expat" ,expat)))
-    (native-inputs `(("bison" ,bison)
-                     ("fakechroot" ,fakechroot)
-                     ("emacs" ,emacs)
-                     ("emacs-htmlize" ,emacs-htmlize)
-                     ("flex" ,flex)
-                     ("gcc" ,gcc)
-                     ("gcc-lib" ,gcc "lib")
-                     ("gojs" ,gojs)
-                     ("guile" ,guile-2.2)
-                     ("guile-readline" ,guile-readline)
-                     ("perl" ,perl)
-                     ("python" ,python-2)
-                     ("tcl" ,tcl)
-                     ("tcllib" ,tcllib)
-                     ("tclxml" ,tclxml)))
-    (native-search-paths
-     (list (search-path-specification
-            (variable "DEZYNE_PREFIX")
-            (separator #f)              ;single entry
-            (files '(".")))))
-    (build-system gnu-build-system)
-    (arguments
-     `(#:modules ((srfi srfi-1)
-                  (ice-9 rdelim)
-                  (ice-9 regex)
-                  ,@%gnu-build-system-modules)
-       #:make-flags '("services" "COMMIT=git" "VERBOSE=")
-       #:test-target "services-check"
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'configure 'setenv
-           (lambda _
-             (let ((htmlize (and=> (find-files (string-append
-                                                (assoc-ref %build-inputs "emacs-htmlize")
-                                                "/share/emacs/site-lisp/guix.d")
-                                               "htmlize.elc")
-                                   (compose dirname car))))
-               (when htmlize
-                 (setenv "EMACSLOADPATH" (string-append htmlize ":"))))
-             (setenv "GOJS" (assoc-ref %build-inputs "gojs"))
-             (setenv "TCLLIBPATH"
-                     (string-append (assoc-ref %build-inputs "tcllib")
-                                    "/lib/tcllib1.19 "
-                                    (assoc-ref %build-inputs "tclxml")
-                                    "/lib/Tclxml3.2 "
-                                    (getenv "TCLLIBPATH")))))
-         (replace 'install
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               (zero? (system* "make" "install-services" "DESTDIR="
-                               (string-append "PREFIX=" out)))))))))
-    (synopsis "javacript dezyne-server service adapters and services' command line tools")
-    (description "Dezyne is a component-based model-driven software
+   (name "dezyne-services")
+   (version "development")
+   (source (origin
+            (method git-fetch)
+            (uri (git-reference
+                  (url (string-append git.oban/blessed "/development.git"))
+                  (commit (git-describe->commit "2.9.0-27-g62448ba38"))))
+            (sha256 (base32 "05xkrv4npbh9ydir51piw2df1iprwjvnxlhpynkwnjw1zv2jmlw0"))))
+   (propagated-inputs `(("asd-converter" ,asd-converter-0.1.8)
+                        ("bash" ,bash)
+                        ("fakechroot" ,fakechroot)
+                        ("gcc" ,gcc)
+                        ("glibc-utf8-locales" ,glibc-utf8-locales)
+                        ("graphviz" ,graphviz)
+                        ("googletest" ,googletest)
+                        ("guile" ,guile-2.2)
+                        ("guile-readline" ,guile-readline)
+                        ("guile-json" ,guile-json)
+                        ("lts" ,lts-0.3-0)
+                        ("m4-cw" ,m4-changeword)
+                        ("mcrl2" ,mcrl2-git-1)
+                        ("node" ,node6)
+                        ("python" ,python-2) ; dzn traces
+                        ("node-snapshot" ,node-snapshot)))
+   (inputs `(("boost" ,boost)
+             ("expat" ,expat)))
+   (native-inputs `(("bison" ,bison)
+                    ("fakechroot" ,fakechroot)
+                    ("emacs" ,emacs)
+                    ("emacs-htmlize" ,emacs-htmlize)
+                    ("flex" ,flex)
+                    ("gcc" ,gcc)
+                    ("gcc-lib" ,gcc "lib")
+                    ("gojs" ,gojs)
+                    ("guile" ,guile-2.2)
+                    ("guile-readline" ,guile-readline)
+                    ("perl" ,perl)
+                    ("python" ,python-2)
+                    ("tcl" ,tcl)
+                    ("tcllib" ,tcllib)
+                    ("tclxml" ,tclxml)))
+   (native-search-paths
+    (list (search-path-specification
+           (variable "DEZYNE_PREFIX")
+           (separator #f)               ;single entry
+           (files '(".")))))
+   (build-system gnu-build-system)
+   (arguments
+    `(#:modules ((srfi srfi-1)
+                 ,@%gnu-build-system-modules)
+      #:make-flags '("services" "COMMIT=git" "VERBOSE=")
+      #:test-target "services-check"
+      #:phases
+      (modify-phases %standard-phases
+                     (add-after 'unpack 'remove-release
+                                (lambda _
+                                  (delete-file "gaiag/gaiag/commands/release.scm")
+                                  #t))
+                     (add-before 'configure 'setenv
+                                 (lambda _
+                                   (let ((htmlize (and=> (find-files (string-append
+                                                                      (assoc-ref %build-inputs "emacs-htmlize")
+                                                                      "/share/emacs/site-lisp/guix.d")
+                                                                     "htmlize.elc")
+                                                         (compose dirname car))))
+                                     (when htmlize
+                                       (setenv "EMACSLOADPATH" (string-append htmlize ":"))))
+                                   (setenv "GOJS" (assoc-ref %build-inputs "gojs"))
+                                   (setenv "TCLLIBPATH"
+                                           (string-append (assoc-ref %build-inputs "tcllib")
+                                                          "/lib/tcllib1.19 "
+                                                          (assoc-ref %build-inputs "tclxml")
+                                                          "/lib/Tclxml3.2 "
+                                                          (getenv "TCLLIBPATH")))))
+                     (replace 'install
+                              (lambda* (#:key outputs #:allow-other-keys)
+                                (let ((out (assoc-ref outputs "out")))
+                                  (zero? (system* "make" "install-services" "DESTDIR="
+                                                  (string-append "PREFIX=" out)))))))))
+   (synopsis "javacript dezyne-server service adapters and services' command line tools")
+   (description "Dezyne is a component-based model-driven software
 development environment.")
-    (home-page "http://verum.com")
-    (license ((@@ (guix licenses) license)
-              "proprietary"
-              "http://verum.com"
-              "internal"))))
+   (home-page "http://verum.com")
+   (license ((@@ (guix licenses) license)
+             "proprietary"
+             "http://verum.com"
+             "internal"))))
 
 (define-public dezyne-test-content
   (package
     (name "dezyne-test-content")
-    (version "development")
-    (source dezyne-source-development)
+    (version (package-version dezyne-services))
+    (source (package-source dezyne-services))
     (native-inputs `(("guile" ,guile-2.2)
                      ("guile-readline" ,guile-readline)
                      ("python" ,python-2)
@@ -170,8 +169,8 @@ development environment.")
 (define-public dzn-client-tarball
   (package
     (name "dzn-client-tarball")
-    (version "development")
-    (source dezyne-source-development)
+    (version (package-version dezyne-services))
+    (source (package-source dezyne-services))
     (native-inputs
      `(("dezyne-services" ,dezyne-services)
        ("gojs" ,gojs)
@@ -215,7 +214,7 @@ development environment.")
 (define-public node-dzn
   (package
     (name "node-dzn")
-    (version "development")
+    (version (package-version dezyne-services))
     (source #f)
     (native-inputs `(("dzn-client-tarball" ,dzn-client-tarball)))
     (propagated-inputs `(("bash" ,bash)

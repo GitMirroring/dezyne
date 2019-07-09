@@ -1,6 +1,6 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
-;; Copyright © 2014, 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright © 2014, 2015, 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright © 2015 Jan Nieuwenhuizen <jan@avatar.nl>
 ;; Copyright © 2014, 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
@@ -66,6 +66,7 @@
            f-is-null
            gulp-file
            gulp-pipe
+           gulp-pipe*
            gulp-port
            hash-read-string
            hash-table->alist
@@ -255,6 +256,13 @@
 
 (define (gulp-pipe command)
   (let* ((port (open-pipe command OPEN_READ))
+         (output (read-string port))
+         (status (close-pipe port)))
+    (if (zero? status) (string-trim-right output #\newline)
+        (error (format #f "pipe failed: ~s" command)))))
+
+(define (gulp-pipe* . command)
+  (let* ((port (apply open-pipe* OPEN_READ command))
          (output (read-string port))
          (status (close-pipe port)))
     (if (zero? status) (string-trim-right output #\newline)

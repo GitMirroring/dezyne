@@ -95,4 +95,9 @@
        (lambda (dir) (add-to-list 'geiser-guile-load-path dir))
        (mapcar
         #'prefix-dir-locals-dir
-        '("gaiag" "guix"))))))))
+        '("gaiag" "guix")))))
+   ;; Guix
+   (eval . (put 'modify-services 'scheme-indent-function 1))
+   (eval . (put 'with-imported-modules 'scheme-indent-function 1))
+   (eval . (put 'mlet* 'scheme-indent-function 2))
+   (eval . (put 'mlet 'scheme-indent-function 2)))))

@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2012, 2013, 2014, 2015, 2016, 2017 Ludovic Courtès <ludo@gnu.org>
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Mark H Weaver <mhw@netris.org>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -30,11 +30,23 @@
             find-files
             set-file-time
             substitute
-            substitute*))
+            substitute*
+            with-directory-excursion))
 
 ;;;
 ;;; Directories.
 ;;;
+
+(define-syntax-rule (with-directory-excursion dir body ...)
+  "Run BODY with DIR as the process's current directory."
+  (let ((init (getcwd)))
+   (dynamic-wind
+     (lambda ()
+       (chdir dir))
+     (lambda ()
+       body ...)
+     (lambda ()
+       (chdir init)))))
 
 (define (mkdir-p dir)
   "Create directory DIR and all its ancestors."

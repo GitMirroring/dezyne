@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2016 Ludovic Courtès <ludo@gnu.org>
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -31,7 +31,7 @@
   #:export (run-system-tests))
 
 (define (all-system-tests)
-  (list %test-dezyne))
+  (list %test-dezyne %test-dezyne-2.8))
 
 (define (built-derivations* drv)
   (lambda (store)

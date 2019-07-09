@@ -89,15 +89,10 @@ use it
 
 *** Build packages
 
-**** From local git
+**** From local work tree, uncommited
 
   #+BEGIN_SRC bash
-  ./pre-inst-env guix build -f guix.scm
-
-  ./pre-inst-env guix build \
-    --with-input=dezyne-services=dezyne-services@git \
-    --with-input=dezyne-test-content=dezyne-test-content@git\
-    dezyne-regression-test
+  guix build -f guix.scm
   #+END_SRC
 
 **** For release

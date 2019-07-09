@@ -44,8 +44,6 @@
 ;;
 ;; To build individual dependencies run, e.g.,
 ;;
-;;   GUIX_PACKAGE_PATH=guix guix build dezyne-services@git
-;;   GUIX_PACKAGE_PATH=guix guix build dezyne-regression-test@git
 ;;   GUIX_PACKAGE_PATH=guix guix build lts
 ;;   GUIX_PACKAGE_PATH=guix guix build mcrl2
 ;;
@@ -65,10 +63,65 @@
 (add-to-load-path %guix-dir)
 (%patch-path (cons %guix-dir (%patch-path)))
 
-(use-modules (dezyne git))
-
 (define (git-commit)
   (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ)))
+
+(define-public dezyne-source.git
+  (local-file %source-dir
+              #:recursive? #t
+              #:select? (git-predicate %source-dir)))
+
+(define-public dezyne-services.git
+  (package
+   (inherit dezyne-services)
+   (version (string-append "git." (string-take (git-commit) 7)))
+   (source dezyne-source.git)))
+
+(define-public dezyne-server.git
+  (package
+   (inherit dezyne-server)
+   (version (string-append "git." (string-take (git-commit) 7)))
+   (source dezyne-source.git)
+   (native-inputs
+    `(("dezyne-services" ,dezyne-services.git)
+      ,@(filter
+         (negate (car-member '("dezyne-services")))
+         (package-native-inputs dezyne-server))))))
+
+(define-public dezyne-test-content.git
+  (package
+   (inherit dezyne-test-content)
+   (version (string-append "git." (string-take (git-commit) 7)))
+   (source dezyne-source.git)))
+
+(define-public dezyne-regression-test.git
+  (package
+   (inherit dezyne-regression-test)
+   (version (string-append "git." (string-take (git-commit) 7)))
+   (native-inputs
+    `(("dezyne-services" ,dezyne-services.git)
+      ("dezyne-test-content" ,dezyne-test-content.git)
+      ,@(filter
+         (negate (car-member '("dezyne-services" "dezyne-test-content")))
+         (package-native-inputs dezyne-regression-test))))))
+
+(define-public dezyne-pack.git
+  (package
+   (inherit dezyne-pack)
+   (version (string-append "git." (string-take (git-commit) 7)))
+   (propagated-inputs
+    `(("dezyne-server" ,dezyne-server.git)
+      ("dezyne-services" ,dezyne-services.git)
+      ("dezyne-regression-test" ,dezyne-regression-test.git)
+      ;;("dezyne-test-content" ,dezyne-test-content.git)
+      ;;("dzn-client-tarball" ,dzn-client-tarball.git)
+      ,@(filter
+         (negate (car-member '("dezyne-regression-test"
+                               "dezyne-server"
+                               "dezyne-services"
+                               "dezyne-test-content"
+                               "dzn-client-tarball")))
+         (package-propagated-inputs dezyne-pack))))))
 
 ;; Return it here so `guix build/environment/package' can consume it directly.
 dezyne-pack.git
