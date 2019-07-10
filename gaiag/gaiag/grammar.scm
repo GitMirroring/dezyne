@@ -38,6 +38,7 @@
 
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
+  #:use-module (gaiag peg)
 
   #:use-module (system base compile)
 
@@ -101,18 +102,46 @@
             res)))
    (define-peg-pattern var all -var-)
 
-   (define (-do-import- str len pos)
+   (define (line-column input pos)
+     (let* ((length (string-length input))
+            (pos (let loop ((pos pos))
+                   (if (and (< pos length) (char-whitespace? (string-ref input pos))) (loop (1+ pos)) pos))))
+       (let loop ((lines (string-split input #\newline)) (ln 1) (p 0))
+         (if (null? lines) (values #f #f input)
+             (let* ((line (car lines))
+                    (length (string-length line))
+                    (end (+ p length 1))
+                    (last? (null? (cdr lines))))
+               (if (<= pos end) (values ln (+ (if last? 0 1) (- pos p))
+                                        (if last? line
+                                            (string-append line "\\n" (cadr lines))))
+                   (loop (cdr lines) (1+ ln) end)))))))
+
+(define (-do-import- str len pos)
      (let ((res (import str len pos)))
        (and res
             (let* ((file-name (string-trim-both (apply string-append (cdadr res))))
                    (file-name (search-path imports file-name))
                    (file-name (canonicalize-path file-name))
-                   (parsed (if (member file-name imported-files) #f
+                   (root (if (member file-name imported-files) #f
                                (let* ((foo (set! imported-files (cons file-name imported-files)))
                                       (string (with-input-from-file file-name read-string))
-                                      (imports (cons (dirname file-name) imports)))
-                                 (peg:parse-recursive string file-name #:imports imports)))))
-              (list (car res) (list 'import file-name parsed))))))
+                                      (imports (cons (dirname file-name) imports))
+                                      (parse-tree (catch 'syntax-error
+                                                    (lambda ()
+                                                      (peg:parse-recursive string file-name #:imports imports))
+                                                    (lambda (key . args)
+                                                      (receive (ln col line) (line-column string (caar args))
+                                                        (let ((indent (make-string col #\space)))
+                                                          (stderr "~a:~a:~a: syntax-error\n~a\n~a^\n~aexpected '~a'\n"
+                                                                  file-name
+                                                                  ln col line
+                                                                  indent
+                                                                  indent
+                                                                  (cadar args))
+                                                          (exit 1)))))))
+                                 (parse-tree->ast parse-tree #:string string #:file-name file-name)))))
+              (list (car res) (list 'import file-name root))))))
 
    (define-peg-pattern do-import body -do-import-)
 
