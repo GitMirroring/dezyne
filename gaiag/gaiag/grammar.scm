@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -45,71 +45,79 @@
 
 (define* (peg:parse string file-name #:key (imports '()))
 
-  (define interface-events '())
+ (define* (peg:parse-recursive string file-name #:key (imports '()))
 
-  (define (-reset-event-names- str len pos)
-    (set! interface-events '())
-    (list pos '()))
-  (define-peg-pattern reset-event-names none -reset-event-names-)
+   (define interface-events '())
 
-  (define (-event-name- str len pos)
-    (let ((res (identifier str len pos)))
-      (when res
-        (set! interface-events (cons (substring str pos (car res)) interface-events)))
-      res))
-  (define-peg-pattern event-name all -event-name-)
+   (define (-reset-event-names- str len pos)
+     (set! interface-events '())
+     (list pos '()))
+   (define-peg-pattern reset-event-names none -reset-event-names-)
 
-  (define (-is-event- str len pos)
-    (let ((res (identifier str len pos)))
-      (and res (member (substring str pos (car res)) interface-events) res)))
-  (define-peg-pattern is-event body -is-event-)
+   (define (-event-name- str len pos)
+     (let ((res (identifier str len pos)))
+       (when res
+         (set! interface-events (cons (substring str pos (car res)) interface-events)))
+       res))
+   (define-peg-pattern event-name all -event-name-)
+
+   (define (-is-event- str len pos)
+     (let ((res (identifier str len pos)))
+       (and res (member (substring str pos (car res)) interface-events) res)))
+   (define-peg-pattern is-event body -is-event-)
 
 
 
 
-  (define variable-stack '(()))
+   (define variable-stack '(()))
 
-  (define (-enter-frame- str len pos)
-    ;;(warn 'enter-frame: variable-stack)
-    (set! variable-stack (cons (car variable-stack) variable-stack))
-    (list pos '()))
-  (define-peg-pattern enter-frame none -enter-frame-)
+   (define (-enter-frame- str len pos)
+     ;;(warn 'enter-frame: variable-stack)
+     (set! variable-stack (cons (car variable-stack) variable-stack))
+     (list pos '()))
+   (define-peg-pattern enter-frame none -enter-frame-)
 
-  (define (-exit-frame- str len pos)
-    ;;(warn 'exit-frame: variable-stack)
-    (set! variable-stack (cdr variable-stack))
-    (list pos '()))
-  (define-peg-pattern exit-frame none -exit-frame-)
+   (define (-exit-frame- str len pos)
+     ;;(warn 'exit-frame: variable-stack)
+     (set! variable-stack (cdr variable-stack))
+     (list pos '()))
+   (define-peg-pattern exit-frame none -exit-frame-)
 
-  (define (-add-var- str len pos)
-    (let ((res (name str len pos))
-          (top (car variable-stack))
-          (bottom (cdr variable-stack)))
-      (when res
-        (set! variable-stack (cons (cons (substring str pos (car res)) top) bottom)))
-      res))
-  (define-peg-pattern add-var all -add-var-)
+   (define (-add-var- str len pos)
+     (let ((res (name str len pos))
+           (top (car variable-stack))
+           (bottom (cdr variable-stack)))
+       (when res
+         (set! variable-stack (cons (cons (substring str pos (car res)) top) bottom)))
+       res))
+   (define-peg-pattern add-var all -add-var-)
 
-  (define (-var- str len pos)
-    (let* ((top (car variable-stack))
-           (res (identifier str len pos))
-           (var-name (and res (substring str pos (car res)))))
-      (and var-name
-           (find (cut equal? var-name <>) top)
-           res)))
-  (define-peg-pattern var all -var-)
+   (define (-var- str len pos)
+     (let* ((top (car variable-stack))
+            (res (identifier str len pos))
+            (var-name (and res (substring str pos (car res)))))
+       (and var-name
+            (find (cut equal? var-name <>) top)
+            res)))
+   (define-peg-pattern var all -var-)
 
-  (define (-do-import- str len pos)
-    (let ((res (import str len pos)))
-      (and res
-           (let* ((file-name (and res (string-trim-both (apply string-append (cdadr res)))))
-                 (file-name (search-path imports file-name))
-                 (root (and res ((@@ (gaiag parse) peg:parse-file) file-name #:imports imports))))
-             (list (car res) (list 'import file-name root))))))
-  (define-peg-pattern do-import body -do-import-)
+   (define (-do-import- str len pos)
+     (let ((res (import str len pos)))
+       (and res
+            (let* ((file-name (string-trim-both (apply string-append (cdadr res))))
+                   (file-name (search-path imports file-name))
+                   (file-name (canonicalize-path file-name))
+                   (parsed (if (member file-name imported-files) #f
+                               (let* ((foo (set! imported-files (cons file-name imported-files)))
+                                      (string (with-input-from-file file-name read-string))
+                                      (imports (cons (dirname file-name) imports)))
+                                 (peg:parse-recursive string file-name #:imports imports)))))
+              (list (car res) (list 'import file-name parsed))))))
 
-  (define-peg-string-patterns
-    "root <-- top* EOF#
+   (define-peg-pattern do-import body -do-import-)
+
+   (define-peg-string-patterns
+     "root <-- top* EOF#
 
 top <- do-import / stream-command / namespace / type / interface / component / data
 
@@ -161,7 +169,7 @@ statement <- declarative-statement / imperative-statement
 
 declarative-statement <- on / blocking / guard / compound
 
-imperative-statement <- variable / assign / if / illegal /
+imperative-statement <- variable / assign / if-statement / illegal /
                         return / skip-statement / compound /
                         (reply / action-or-call / interface-action-or-call) SEMICOLON#
 
@@ -207,7 +215,7 @@ illegal <-- ILLEGAL SEMICOLON# / BRACE-OPEN ILLEGAL SEMICOLON BRACE-CLOSE#
 
 assign <-- name ASSIGN expression SEMICOLON#
 
-if <-- IF PAREN-OPEN# expression PAREN-CLOSE# imperative-statement# (ELSE imperative-statement#)?
+if-statement <-- IF PAREN-OPEN# expression PAREN-CLOSE# imperative-statement# (ELSE imperative-statement#)?
 
 reply <-- (name DOT)? REPLY PAREN-OPEN# expression? PAREN-CLOSE#
 
@@ -359,9 +367,12 @@ KEYWORD <
   / 'void') ![a-zA-Z_0-9]
 
 ")
-  (parameterize ((%peg:locations? #t)
-                 (%peg:skip? #t)
-                 (%peg:debug? #f))
-    (let* ((result (match-pattern root string))
-          (tree (peg:tree result)))
-     tree)))
+   (parameterize ((%peg:locations? #t)
+                  (%peg:skip? #t)
+                  (%peg:debug? #f))
+     (let* ((result (match-pattern root string))
+            (tree (peg:tree result)))
+       tree)))
+
+ (define imported-files '())
+ (peg:parse-recursive string file-name #:imports imports))

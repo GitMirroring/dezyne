@@ -87,6 +87,9 @@
 
       (('elements elements ...) (helper elements))
 
+      (('import name #f)
+       (make <import-node> #:name (helper name) #:root (make <root-node>)))
+
       (('import name root)
        (make <import-node> #:name (helper name) #:root (helper root)))
 
@@ -401,12 +404,12 @@
          #:expression (helper expression)
          #:statement (helper statement)))
 
-      (('if expression then)
+      (('if-statement expression then)
        (make <if-node>
          #:expression (helper expression)
          #:then (helper then)))
 
-      (('if expression then else)
+      (('if-statement expression then else)
        (make <if-node>
          #:expression (helper expression)
          #:then (helper then)
