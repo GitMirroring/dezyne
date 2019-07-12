@@ -7,6 +7,19 @@
 
 
 * Dezyne Enterprise preview
+** Changes in dzn-explore dd. July 15, 2019
+  - State diagram: selecting the appropriate event sequence has been improved.
+    See the help page for more information.
+  - State diagram: The magnifying glass only shows when hovering above a node.
+  - The color scheme used in the three views has been slightly changed.
+    The colors can be customized by editing the following file in the installation:
+    .npm/lib/node_modules/dzn-enterprise/js/color_scheme.js
+  - dzn-explore will report any parse error and exit.
+  - Stand-alone components can be explored now.
+  - The system view now shows the correct top level system.
+  - When the dzn-explore command is terminated, no further exploration is possible.
+    To alert the user all three views show a red border.
+
 ** Changes in dzn-explore dd. June 21, 2019
   - The performance of dzn-explore has been improved.
 
