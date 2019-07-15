@@ -1,8 +1,8 @@
-((pp i provides) ((sut) illegal_system_requires system) ((sut c) compliance_requires_illegal component) (rp i requires))
-<external>.pp.ia -> ...
-... -> sut.c.pp.ia
-sut.c.rp.ib -> ...
-... -> <external>.rp.ib
-((pp i provides) ((sut) illegal_system_requires system) ((sut c) compliance_requires_illegal component) (rp i requires))
-(eligible pp.ia pp.ib)
+((h ihello provides) ((sut) illegal_system_requires system) ((sut c) compliance_requires_illegal component) (w ihello requires))
+<external>.h.hello -> ...
+... -> sut.c.hh.hello
+sut.c.ww.cruel -> ...
+... -> <external>.w.cruel
+((h ihello provides) ((sut) illegal_system_requires system) ((sut c) compliance_requires_illegal component) (w ihello requires))
+(eligible h.hello h.cruel)
 illegal

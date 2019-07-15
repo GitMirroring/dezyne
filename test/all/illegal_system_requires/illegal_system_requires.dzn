@@ -21,38 +21,38 @@
 //
 // Code:
 
-interface i
+interface ihello
 {
-  in void ia();
-  in void ib();
+  in void hello();
+  in void cruel();
 
   behaviour
   {
-    on ia: {}
-    on ib: illegal;
+    on hello: {}
+    on cruel: illegal;
   }
 }
 
 component compliance_requires_illegal
 {
-  provides i pp;
-  requires i rp;
+  provides ihello hh;
+  requires ihello ww;
 
   behaviour
   {
-    on pp.ia(): rp.ib();
+    on hh.hello(): ww.cruel();
   }
 }
 
 component illegal_system_requires
 {
-  provides i pp;
-  requires i rp;
+  provides ihello h;
+  requires ihello w;
 
   system
   {
     compliance_requires_illegal c;
-    pp <=> c.pp;
-    c.rp <=> rp;
+    h <=> c.hh;
+    c.ww <=> w;
   }
 }
