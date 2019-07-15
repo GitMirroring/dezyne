@@ -1,8 +1,0 @@
-((pp i) ((sut) compliance_requires_illegal) (rp i))
-<external>.pp.ia -> ...
-... -> sut.pp.ia
-sut.rp.ib -> ...
-... -> <external>.rp.ib
-((pp i) ((sut) compliance_requires_illegal) (rp i))
-(eligible pp.ia pp.ib)
-illegal
