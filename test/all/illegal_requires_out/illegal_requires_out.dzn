@@ -21,26 +21,26 @@
 //
 // Code:
 
-interface i
+interface ihello
 {
-  in void ia();
-  out void oa();
+  in void hello();
+  out void world();
 
   behaviour
   {
-    on ia:{}
-    on optional: oa;
+    on hello:{}
+    on optional: world;
   }
 }
 
 component illegal_requires_out
 {
-  provides i pp;
-  requires i rp;
+  provides ihello h;
+  requires ihello w;
 
   behaviour
   {
-    on pp.ia(): rp.ia();
-    on rp.oa(): illegal;
+    on h.hello(): w.hello();
+    on w.world(): illegal;
   }
 }
