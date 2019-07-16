@@ -40,8 +40,6 @@
   #:use-module (guix config)
 
   #:use-module (dezyne pack)
-  #:use-module (dezyne server)
-  #:use-module (dezyne services)
   #:use-module (dezyne system service)
 
   #:export (%dezyne-os

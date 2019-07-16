@@ -25,17 +25,21 @@
 (define-module (dezyne pack)
   #:use-module (srfi srfi-1)
 
-  #:use-module (gnu packages)
-  #:use-module (gnu packages admin)       ; shepherd
-  #:use-module (gnu packages base)        ; coreutils
-  #:use-module (gnu packages databases)   ; postgres
-
-  #:use-module (gnu packages bash)      ; regression-test
+  #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (gnu packages admin)
+  #:use-module (gnu packages base)
+  #:use-module (gnu packages bash)
+  #:use-module (gnu packages bison)
   #:use-module (gnu packages boost)
+  #:use-module (gnu packages check)
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages compression)
+  #:use-module (gnu packages databases)
   #:use-module (gnu packages emacs)
+  #:use-module (gnu packages emacs-xyz)
+  #:use-module (gnu packages flex)
   #:use-module (gnu packages gcc)
+  #:use-module (gnu packages graphviz)
   #:use-module (gnu packages guile)
   #:use-module (gnu packages java)
   #:use-module (gnu packages linux)
@@ -46,19 +50,272 @@
   #:use-module (gnu packages python)
   #:use-module (gnu packages tcl)
   #:use-module (gnu packages texinfo)
-  #:use-module (gnu packages w3m)       ; end regression-test
-
+  #:use-module (gnu packages w3m)
+  #:use-module (gnu packages xml)
+  #:use-module (gnu packages)
+  #:use-module (guix build utils)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system trivial)
-  #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (guix build utils)
-  #:use-module (guix git-download)      ; git-reference-commit
+  #:use-module (guix git-download)
   #:use-module (guix packages)
 
-  #:use-module (dezyne extra)
+  #:use-module (dezyne config)
+  #:use-module (dezyne extra))
 
-  #:use-module (dezyne server)
-  #:use-module (dezyne services))
+(define-public dezyne-services
+  (package
+   (name "dezyne-services")
+   (version "development")
+   (source (origin
+            (method git-fetch)
+            (uri (git-reference
+                  (url (string-append git.oban/blessed "/development.git"))
+                  (commit (git-describe->commit "2.9.0-27-g62448ba38"))))
+            (sha256 (base32 "05xkrv4npbh9ydir51piw2df1iprwjvnxlhpynkwnjw1zv2jmlw0"))))
+   (propagated-inputs `(("asd-converter" ,asd-converter-0.1.8)
+                        ("bash" ,bash)
+                        ("fakechroot" ,fakechroot)
+                        ("gcc" ,gcc)
+                        ("glibc-utf8-locales" ,glibc-utf8-locales)
+                        ("graphviz" ,graphviz)
+                        ("googletest" ,googletest)
+                        ("guile" ,guile-2.2)
+                        ("guile-readline" ,guile-readline)
+                        ("guile-json" ,guile-json)
+                        ("lts" ,lts-0.3-0)
+                        ("m4-cw" ,m4-changeword)
+                        ("mcrl2" ,mcrl2-git-1)
+                        ("node" ,node6)
+                        ("python" ,python-2) ; dzn traces
+                        ("node-snapshot" ,node-snapshot)))
+   (inputs `(("boost" ,boost)
+             ("expat" ,expat)))
+   (native-inputs `(("bison" ,bison)
+                    ("fakechroot" ,fakechroot)
+                    ("emacs" ,emacs)
+                    ("emacs-htmlize" ,emacs-htmlize)
+                    ("flex" ,flex)
+                    ("gcc" ,gcc)
+                    ("gcc-lib" ,gcc "lib")
+                    ("gojs" ,gojs)
+                    ("guile" ,guile-2.2)
+                    ("guile-readline" ,guile-readline)
+                    ("perl" ,perl)
+                    ("python" ,python-2)
+                    ("tcl" ,tcl)
+                    ("tcllib" ,tcllib)
+                    ("tclxml" ,tclxml)))
+   (native-search-paths
+    (list (search-path-specification
+           (variable "DEZYNE_PREFIX")
+           (separator #f)               ;single entry
+           (files '(".")))))
+   (build-system gnu-build-system)
+   (arguments
+    `(#:modules ((srfi srfi-1)
+                 ,@%gnu-build-system-modules)
+      #:make-flags '("services" "COMMIT=git" "VERBOSE=")
+      #:test-target "services-check"
+      #:phases
+      (modify-phases %standard-phases
+                     (add-after 'unpack 'remove-release
+                                (lambda _
+                                  (delete-file "gaiag/gaiag/commands/release.scm")
+                                  #t))
+                     (add-before 'configure 'setenv
+                                 (lambda _
+                                   (let ((htmlize (and=> (find-files (string-append
+                                                                      (assoc-ref %build-inputs "emacs-htmlize")
+                                                                      "/share/emacs/site-lisp/guix.d")
+                                                                     "htmlize.elc")
+                                                         (compose dirname car))))
+                                     (when htmlize
+                                       (setenv "EMACSLOADPATH" (string-append htmlize ":"))))
+                                   (setenv "GOJS" (assoc-ref %build-inputs "gojs"))
+                                   (setenv "TCLLIBPATH"
+                                           (string-append (assoc-ref %build-inputs "tcllib")
+                                                          "/lib/tcllib1.19 "
+                                                          (assoc-ref %build-inputs "tclxml")
+                                                          "/lib/Tclxml3.2 "
+                                                          (getenv "TCLLIBPATH")))))
+                     (replace 'install
+                              (lambda* (#:key outputs #:allow-other-keys)
+                                (let ((out (assoc-ref outputs "out")))
+                                  (zero? (system* "make" "install-services" "DESTDIR="
+                                                  (string-append "PREFIX=" out)))))))))
+   (synopsis "javacript dezyne-server service adapters and services' command line tools")
+   (description "Dezyne is a component-based model-driven software
+development environment.")
+   (home-page "http://verum.com")
+   (license ((@@ (guix licenses) license)
+             "proprietary"
+             "http://verum.com"
+             "internal"))))
+
+(define-public dezyne-test-content
+  (package
+    (name "dezyne-test-content")
+    (version (package-version dezyne-services))
+    (source (package-source dezyne-services))
+    (native-inputs `(("guile" ,guile-2.2)
+                     ("guile-readline" ,guile-readline)
+                     ("python" ,python-2)
+                     ("node" ,node6)))  ; patch-source-shebangs
+    (build-system gnu-build-system)
+    (arguments
+     `(#:make-flags '("test")
+       #:tests? #f
+       #:phases
+       (modify-phases %standard-phases
+         (replace 'install
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let ((out (assoc-ref outputs "out")))
+               (zero? (system* "make" "install-test" "DESTDIR="
+                               (string-append "PREFIX=" out)))))))))
+    (synopsis "test content")
+    (description "test content")
+    (home-page "http://verum.com")
+    (license ((@@ (guix licenses) license)
+              "proprietary"
+              "http://verum.com"
+              "internal"))))
+
+(define-public dzn-client-tarball
+  (package
+    (name "dzn-client-tarball")
+    (version (package-version dezyne-services))
+    (source (package-source dezyne-services))
+    (native-inputs
+     `(("dezyne-services" ,dezyne-services)
+       ("gojs" ,gojs)
+       ("guile" ,guile-2.2)             ; for configure (run by make)
+       ("node" ,node6)                  ; for NODE_PATH
+       ("node-snapshot" ,node-snapshot) ; for jison
+       ("perl" ,perl)                   ; for shasum
+       ("sed" ,sed)))
+    (build-system gnu-build-system)
+    (arguments
+     `(#:make-flags `("EXCLUDE_INFO=t" "dzn-client"
+                      "COMMIT=git")
+       #:modules ((srfi srfi-1)
+                  ,@%gnu-build-system-modules)
+       #:tests? #f
+       #:phases
+       (modify-phases %standard-phases
+         (replace 'patch-generated-file-shebangs
+           (lambda* (. args)
+             (apply (assoc-ref %standard-phases 'patch-generated-file-shebangs) args)
+             (substitute* (append (find-files "dzn/bin" "dzn")
+                                  (find-files "client/bin" "dzn"))
+               (("#!/gnu/store/.*") "#!/usr/bin/env node\n"))))
+         (replace 'install
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (version (last (string-split out #\-)))
+                    (tarball (string-append "dzn-" version ".tar.gz"))
+                    (download-dir (string-append out "/root/download/npm")))
+               (mkdir-p download-dir)
+               (copy-file (string-append "build/" tarball)
+                          (string-append download-dir "/" tarball))))))))
+    (synopsis "dzn client tarball for npm install")
+    (description "dzn client tarball for npm install")
+    (home-page "https://hosting.verum.com/download/npm")
+    (license ((@@ (guix licenses) license)
+              "proprietary"
+              "http://verum.com"
+              "internal"))))
+
+(define-public dzn-client
+  (package
+    (name "dzn-client")
+    (version (package-version dezyne-services))
+    (source #f)
+    (native-inputs `(("dzn-client-tarball" ,dzn-client-tarball)))
+    (propagated-inputs `(("bash" ,bash)
+                         ("node" ,node6)
+                         ("node-snapshot" ,node-snapshot)))
+    (build-system gnu-build-system)
+    (arguments
+     `(#:tests? #f
+       #:modules ((srfi srfi-1)
+                  ,@%gnu-build-system-modules)
+       #:phases
+       (modify-phases %standard-phases
+         (replace 'unpack
+           (lambda* (#:key outputs source #:allow-other-keys)
+             (let* ((unpack (assoc-ref %standard-phases 'unpack))
+                    (out (assoc-ref outputs "out"))
+                    (version (last (string-split out #\-))))
+               (unpack #:source (string-append (assoc-ref %build-inputs "dzn-client-tarball")
+                                               "/root/download/npm/dzn" "-"
+                                               version
+                                               ".tar.gz")))))
+         (delete 'configure)
+         (delete 'build)
+         (delete 'validate-runpath)
+         (replace 'install
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (node-modules (string-append out "/lib/node_modules/dzn"))
+                    (bin (string-append out "/bin")))
+               (mkdir-p node-modules)
+               (copy-recursively "." node-modules)
+               (mkdir-p bin)
+               (symlink (string-append node-modules "/bin/dzn") (string-append bin "/dzn"))
+               (symlink (string-append node-modules "/bin/browse") (string-append bin "/browse"))))))))
+    (synopsis "dzn client")
+    (description "dzn client")
+    (home-page "https://hosting.verum.com/download/npm")
+    (license ((@@ (guix licenses) license)
+              "proprietary"
+              "http://verum.com"
+              "internal"))))
+
+(define-public dezyne-server
+  (package
+   (name "dezyne-server")
+   (version (package-version dezyne-services))
+   (source (package-source dezyne-services))
+   (build-system gnu-build-system)
+   (propagated-inputs `(("node" ,node6)
+                        ("postgresql" ,postgresql-9.6)
+                        ("node-snapshot" ,node-snapshot)))
+   (native-inputs `(("dezyne-services" ,dezyne-services)
+                    ("guile" ,guile-2.2)
+                    ("guile-readline" ,guile-readline)
+                    ("gojs" ,gojs)))
+   (native-search-paths
+    (list (search-path-specification
+           (variable "DEZYNE_PREFIX")
+           (separator #f)            ; single entry
+           (files '(".")))))
+   (arguments
+    `(#:modules ((srfi srfi-1)
+                 (ice-9 rdelim)
+                 (ice-9 regex)
+                 ,@%gnu-build-system-modules)
+      #:make-flags `("server")
+      #:test-target "server-check"
+      #:phases
+      (modify-phases %standard-phases
+                     (add-before 'configure 'setenv
+                                 (lambda _
+                                   (setenv "GOJS" (assoc-ref %build-inputs "gojs"))
+                                   (setenv "DEZYNE_PREFIX" (assoc-ref %build-inputs "dezyne-services"))
+                                   (format (current-error-port) "DEZYNE_PREFIX=~a\n" (getenv "DEZYNE_PREFIX"))))
+                     (replace 'install
+                              (lambda* (#:key outputs #:allow-other-keys)
+                                (let ((out (assoc-ref outputs "out")))
+                                  (zero? (system* "make" "install-server" "DESTDIR="
+                                                  (string-append "PREFIX=" out)))))))))
+   (synopsis "Dezyne server")
+   (description "Dezyne is a component-based model-driven software
+development environment.")
+   (home-page "http://www.verum.com")
+   (license ((@@ (guix licenses) license)
+             "proprietary"
+             "http://verum.com"
+             "internal"))))
 
 (define-public dezyne-regression-test
   (package
@@ -186,9 +443,10 @@
     `(("dezyne-server" ,dezyne-server)
 
       ("dezyne-services" ,dezyne-services)
-      ("dezyne-regression-test" ,dezyne-regression-test)
       ("dezyne-test-content" ,dezyne-test-content)
       ("dzn-client-tarball" ,dzn-client-tarball)
+      ("dzn-client" ,dzn-client)
+      ("dezyne-regression-test" ,dezyne-regression-test)
 
       ("shepherd" ,shepherd)
       ("postgres-config" ,postgres-config)))

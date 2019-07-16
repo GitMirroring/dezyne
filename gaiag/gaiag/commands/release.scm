@@ -128,9 +128,11 @@ Usage: gdzn release [OPTION]... FILE
                                   branches))
          (pack-alist (map (lambda (p) (cons (package-version p) p))
                           %dezyne-os-packages))
+         (foo (when (gdzn:debugity) (stderr "pack-alist: ~s\n" pack-alist)))
          (services-packages
           (filter (lambda (e) (string-prefix? "dezyne-services" (car e)))
                   (append-map package-direct-inputs (map cdr pack-alist))))
+         (foo (when (gdzn:debugity) (stderr "services-packages: ~s\n" services-packages)))
          (services-origins (map (lambda (p) (cons (car p) (package-source (cadr p)))) services-packages))
          (verbose? (gdzn:command-line:get 'verbose)))
     (define (check-origin spec)
@@ -141,6 +143,7 @@ Usage: gdzn release [OPTION]... FILE
              (key (if (equal? branch "development") "dezyne-services" ; FIXME
                       (string-append "dezyne-services-" branch)))
              (key "dezyne-services")
+             (foo (when (gdzn:debugity) (stderr "key: ~s\n" key)))
              (origin (assoc-ref services-origins key))
              (package (and=> (assoc-ref services-packages key) car))
              (location (and package (package-location package)))
@@ -176,10 +179,10 @@ Usage: gdzn release [OPTION]... FILE
        (match-lambda
          ((branch . pack)
           (let ((location (package-location pack)))
-           (format (current-error-port) "~a:~a:info:checking pack with branches: ~a\n"
-                   (and location (location-file location))
-                   (and location (location-line location))
-                   branch))))
+            (format (current-error-port) "~a:~a:info:checking pack with branches: ~a\n"
+                    (and location (location-file location))
+                    (and location (location-line location))
+                    branch))))
        pack-alist))
     (stderr "releasing:\n")
     (pretty-print branch-commit-alist)

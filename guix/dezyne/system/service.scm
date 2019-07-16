@@ -39,7 +39,6 @@
 
   #:use-module (ice-9 match)
 
-  #:use-module (dezyne server)
   #:use-module (dezyne pack)
 
   #:export (dezyne-service))

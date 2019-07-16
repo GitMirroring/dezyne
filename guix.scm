@@ -63,6 +63,8 @@
 (add-to-load-path %guix-dir)
 (%patch-path (cons %guix-dir (%patch-path)))
 
+(use-modules (dezyne pack))
+
 (define (git-commit)
   (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ)))
 
