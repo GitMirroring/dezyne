@@ -142,6 +142,7 @@ Usage: gdzn release [OPTION]... FILE
              (hash (cddr spec))
              (key (if (equal? branch "development") "dezyne-services" ; FIXME
                       (string-append "dezyne-services-" branch)))
+             (key (string-append "dezyne-services-" branch))
              (key "dezyne-services")
              (foo (when (gdzn:debugity) (stderr "key: ~s\n" key)))
              (origin (assoc-ref services-origins key))
