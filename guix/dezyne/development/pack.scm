@@ -69,8 +69,8 @@
             (method git-fetch)
             (uri (git-reference
                   (url (string-append git.oban/blessed "/development.git"))
-                  (commit (git-describe->commit "v2.9.1-18-g1f4835f7e"))))
-            (sha256 (base32 "0hwvfavn7x1aqsmprjdbmizkc4q357xjbzb1bkf3mdq4y5axk1yi"))))
+                  (commit (git-describe->commit "v2.9.1-22-gbb0da784b"))))
+            (sha256 (base32 "1qmzkf8nkw9ls0p9ciciiwlxp3h38m5fd7i8g3dqa2rgbpaxws4y"))))
    (propagated-inputs `(("asd-converter" ,asd-converter-0.1.8)
                         ("bash" ,bash)
                         ("fakechroot" ,fakechroot)
