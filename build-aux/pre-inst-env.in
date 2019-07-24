@@ -57,8 +57,4 @@ export DEZYNE_PREFIX
 DZN_UNINSTALLED=1
 export DZN_UNINSTALLED
 
-# For Guix package build: Assume local build from GIT
-git_oban=git://localhost
-export git_oban
-
 exec "$@"

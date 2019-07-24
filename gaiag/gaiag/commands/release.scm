@@ -239,8 +239,9 @@ Usage: gdzn release [OPTION]... FILE
         (if (and (not (git-clean? (car configurations)))
                  (not (zero? (system* "git" "commit" "-m" message)))) (exit 1)
             (format (current-error-port) "Now do something like:
+git push blessed ~a
 cd ../release
 ./configure
 make
 ./pre-inst-env deploy-test1
-"))))))
+" (car configurations)))))))

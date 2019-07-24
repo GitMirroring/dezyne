@@ -2,7 +2,13 @@
 #+TITLE: The Dezyne server, services, client.
 #+OPTIONS: toc:2          only include two levels in TOC
 
-Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]] v1.0.1  See `Setup Guix' below.
+Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]] 53f21642729e4786141c072dd835b04cb85dfe28.  See `Setup Guix' below.
+
+* Update Guix
+
+  #+BEGIN_SRC bash
+  guix pull --commit 53f21642729e4786141c072dd835b04cb85dfe28
+  #+END_SRC
 
 * Get it
 
@@ -73,12 +79,24 @@ use it
 
 * Build Guix packages
 
+** From local work tree, uncommited
+
+  #+BEGIN_SRC bash
+  guix build -f guix.scm
+  #+END_SRC
+
+** Build from public git
+
+  #+BEGIN_SRC bash
+  git_oban=http://git.oban.verum.com/voornaamachternaa ./pre-inst-env guix build dezyne-pack
+  #+END_SRC
+
 ** Build from local git
 *** Setup git daemon
 
   #+BEGIN_SRC bash
-  mkdir -p $HOME/git-daemon/buildmaster
-  ln -s $HOME/src/development $HOME/git-daemon/buildmaster/development.git
+  mkdir -p $HOME/git-daemon
+  ln -s $HOME/src/development $HOME/git-daemon/development.git
   #+END_SRC
 
 *** Start git daemon
@@ -87,30 +105,19 @@ use it
   git daemon --base-path=$HOME/git-daemon --export-all &
   #+END_SRC
 
-*** Build packages
-
-**** From local work tree, uncommited
-
-  #+BEGIN_SRC bash
-  guix build -f guix.scm
-  #+END_SRC
-
-**** For release
-
-***** Update commit and hash of dezyne-services-source in [[./guix/dezyne/services.scm::dezyne-source-development][guix/dezyne/services.scm]]
-
-  #+BEGIN_SRC bash
-  GUIX_PACKAGE_PATH=guix git_oban=git://localhost guix build dezyne-services
-  ./pre-inst-env guix build dezyne-services
-  ./pre-inst-env guix build dezyne-regression-test
-  ./pre-inst-env guix build dezyne-pack
-  #+END_SRC
-
-*** Build vm
+* Build vm
 
   #+BEGIN_SRC bash
   ./pre-inst-env guix system vm guix/dezyne/system/os.scm
   #+END_SRC
+
+** Run vm
+  #+BEGIN_SRC bash
+  /gnu/store/...-run-vm.sh  -m 2G -net nic -net user,hostfwd=tcp::10022-:22,hostfwd=tcp::13000-:3000
+  #+END_SRC
+
+** Build and run vm
+  $(./pre-inst-env guix system vm guix/dezyne/system/os.scm) -m 2G -net nic -net user,hostfwd=tcp::10022-:22,hostfwd=tcp::13000-:3000
 
 * Editing Scheme files
 
@@ -148,4 +155,4 @@ Geiser gives you jump to definition (M-.) and jump-to-documentation
    ./setup-guix-user.sh
    #+END_SRC
 
-** Or install [[https://gnu.org/s/guix][GuixSD]]
+** Or install [[https://guix.gnu.org][Guix System]]

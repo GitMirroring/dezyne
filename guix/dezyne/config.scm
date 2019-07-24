@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -25,19 +25,18 @@
 
 #!
 
+Build from public git
+
+    git_oban=http://git.oban.verum.com/jannieuwenhuizen GUIX_PACKAGE_PATH=guix guix build dezyne-services
+
 Build from local git
 
-mkdir -p $HOME/git-daemon/buildmaster
-ln -s $HOME/src/development $HOME/git-daemon/buildmaster/development.git
-git daemon --base-path=$HOME/git-daemon --export-all &
-git_oban=git://localhost GUIX_PACKAGE_PATH=guix guix build dezyne-services
+    mkdir -p $HOME/git-daemon
+    ln -s $HOME/src/development $HOME/git-daemon/development.git
+    git daemon --base-path=$HOME/git-daemon --export-all &
+    git_oban=git://localhost GUIX_PACKAGE_PATH=guix guix build dezyne-services
 
 !#
 
-(define-public git.oban (or (getenv "git_oban") "http://git.oban.verum.com"))
-(define-public git.oban/blessed (string-append (string-append git.oban "/buildmaster")))
-
-(define-public git.oban/git git.oban/blessed)
-
-(define-public git.oban/blessed/http (string-append (string-append git.oban "/~buildmaster")))
-(define-public git.oban/http git.oban/blessed/http)
+(define-public git.oban (or (getenv "git_oban") "http://git.oban.verum.com/buildmaster"))
+(define-public git.oban/http (or (getenv "git_oban_http") "http://git.oban.verum.com/~buildmaster"))

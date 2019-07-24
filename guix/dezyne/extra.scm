@@ -162,7 +162,7 @@ possibility to install another packages without need for root privileges.")
 
 (define-public lts-0.3-0
   (let* ((commit "8a6bab5c729d0173105e900e239aed4aedd7f82e")
-         (src-url (string-append git.oban/git "/lts.git"))
+         (src-url (string-append git.oban "/lts.git"))
          (src-hash "1qjnhv7yf2x6slzy49pizpcbrqcrxlfbqzqfr4yssy3iv4j48lpr")
          (revision "0"))
     (package
@@ -611,7 +611,7 @@ across a broad spectrum of applications.")
     (version "0.1.8")
     (source (origin
               (method git-fetch)
-              (uri (git-reference (url (string-append git.oban/git "/gen1gen2.git"))
+              (uri (git-reference (url (string-append git.oban "/gen1gen2.git"))
                                   (commit "9bb108f8658ac2db0f74c1776be1bb51458278f0")))
               (sha256 (base32 "1643c0n027ydpvhh03za8fgx351ajcd3izygdkjwrwxp8b5aam07"))))
     (inputs `(("boost" ,boost-1.66) ;; FIXME: Use package 'boost' iso 'boost-1.66.0' after fixing asd-converter compile error "no type named 'type'"
