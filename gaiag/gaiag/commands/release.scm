@@ -49,7 +49,7 @@
   #:use-module (dezyne system os)
 
   #:use-module (dezyne extra)
-  #:use-module (dezyne development pack)
+  #:use-module (dezyne pack)
   #:export (parse-opts
             main))
 

@@ -41,7 +41,7 @@
   #:use-module (guix packages)
   #:use-module (guix records)
 
-  #:use-module (dezyne development pack)
+  #:use-module (dezyne pack)
   #:use-module (dezyne extra)
 
   #:export (dezyne-service

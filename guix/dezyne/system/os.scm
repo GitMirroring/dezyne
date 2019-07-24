@@ -45,7 +45,7 @@
   #:use-module (dezyne extra)
   #:use-module (dezyne pack)
 
-  #:use-module (dezyne development pack)
+  #:use-module (dezyne pack)
   #:use-module (dezyne system service)
 
   #:export (%dezyne-os
