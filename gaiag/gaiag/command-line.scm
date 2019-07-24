@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -61,9 +61,10 @@
   (multi-opt (parse-opts (command-line)) name))
 
 (define (gdzn:debugity)
-  (and (pair? (command-line))
-       (equal? ((compose basename car command-line)) "gdzn")
-       (gdzn:multi-opt 'debug)))
+   (or (and (pair? (command-line))
+         (equal? ((compose basename car command-line)) "gdzn")
+         (length (gdzn:multi-opt 'debug)))
+       0))
 
 (define (gdzn:verbosity)
   (gdzn:multi-opt 'debug))
