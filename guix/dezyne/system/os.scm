@@ -30,6 +30,7 @@
   #:use-module (gnu services networking)
   #:use-module (gnu services ssh)
   #:use-module (gnu services web)
+
   #:use-module (gnu packages admin)
   #:use-module (gnu packages certs)
   #:use-module (gnu packages databases)
@@ -37,9 +38,14 @@
   #:use-module (gnu packages networking)
   #:use-module (gnu packages ssh)
   #:use-module (gnu packages wget)
-  #:use-module (guix config)
 
+  #:use-module (guix config)
+  #:use-module (guix packages)
+
+  #:use-module (dezyne extra)
   #:use-module (dezyne pack)
+
+  #:use-module (dezyne development pack)
   #:use-module (dezyne system service)
 
   #:export (%dezyne-os
@@ -48,17 +54,17 @@
 
 (define %dezyne-os-packages
   (list
-   (specification->package "postgresql@9.6")
+   postgresql-9.6
    dezyne-pack))
 
 (define %dezyne-os-services
   (list
    (postgresql-service #:postgresql postgresql-9.6)
-   (dezyne-service #:dezyne-server dezyne-server #:dezyne-pack dezyne-pack #:log-directory "/var/log/dezyne" #:port 3000)
-
+   (dezyne-service #:dezyne-server dezyne-server #:dezyne-pack dezyne-pack #:log-directory "/var/log/dezyne" #:binary "server/dzn-server" #:port 3000)
    (service
     nginx-service-type
     (nginx-configuration
+     (server-names-hash-bucket-size 64)
      (server-blocks
       (list (nginx-server-configuration
              (server-name '("localhost"))
@@ -109,7 +115,7 @@ proxy_pass http://development;"))))))))
     (grub-configuration
      (target "/dev/sda")))
 
-   (initrd-modules (append (list "vmw_pvscsi" "shpchp")
+   (initrd-modules (append (list "vmw_pvscsi")
                            %base-initrd-modules))
 
    (file-systems

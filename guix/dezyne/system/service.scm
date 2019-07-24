@@ -23,6 +23,10 @@
 ;;; Code:
 
 (define-module (dezyne system service)
+  #:use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
+
+  #:use-module (gnu packages)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages guile)
 
@@ -37,11 +41,13 @@
   #:use-module (guix packages)
   #:use-module (guix records)
 
-  #:use-module (ice-9 match)
+  #:use-module (dezyne development pack)
+  #:use-module (dezyne extra)
 
-  #:use-module (dezyne pack)
-
-  #:export (dezyne-service))
+  #:export (dezyne-service
+            dezyne-configuration?
+            dezyne-configuration-dezyne-server
+            dezyne-configuration-dezyne-pack))
 
 ;;; Commentary:
 ;;;
@@ -52,14 +58,15 @@
 (define-record-type* <dezyne-configuration>
   dezyne-configuration make-dezyne-configuration
   dezyne-configuration?
-  (dezyne-server dezyne-configuration-dezyne-server) ;<package>
-  (dezyne-pack dezyne-configuration-dezyne-pack)     ;<package>
-  (log-directory dezyne-configuration-log-directory) ;string
-  (run-directory dezyne-configuration-run-directory) ;string
-  (port dezyne-configuration-port)                   ;number
-  (database dezyne-configuration-database)           ;string
-  (debug? dezyne-configuration-debug?)               ;boolean
-  )
+  (dezyne-server dezyne-configuration-dezyne-server)   ;<package>
+  (dezyne-pack dezyne-configuration-dezyne-pack)       ;<package>
+  (profile-inputs dezyne-configuration-profile-inputs) ;(<package>)
+  (binary dezyne-configuration-binary)                 ;string
+  (log-directory dezyne-configuration-log-directory)   ;string
+  (run-directory dezyne-configuration-run-directory)   ;string
+  (port dezyne-configuration-port)                     ;number
+  (database dezyne-configuration-database)             ;string
+  (debug? dezyne-configuration-debug?))                ;boolean
 
 (define %user "dezyne")
 (define %group "dezyne")
@@ -76,7 +83,7 @@
 
 (define dezyne-activation
   (match-lambda
-    (($ <dezyne-configuration> dezyne-server dezyne-pack log-directory run-directory port database debug?)
+    (($ <dezyne-configuration> dezyne-server dezyne-pack profile-inputs log-directory run-directory port database debug?)
      #~(begin
          (use-modules (guix build utils))
          (let ((user (passwd:uid (getpwnam #$%user)))
@@ -100,30 +107,33 @@
 
           (match '#$packages
             (((names . directories) ...)
-             (union-build #$output (apply append directories)))))))
+             (union-build #$output (apply append directories)))
+            (((directories) ...)
+             (union-build #$output (apply append directories)))
+            ((directories ...)
+             (union-build #$output directories))))))
 
   (computed-file name build))
 
-(define (dezyne-shepherd-service dezyne-server dezyne-pack)
+(define (dezyne-shepherd-service)
   (match-lambda
-    (($ <dezyne-configuration> dezyne-server dezyne-pack log-directory run-directory port database debug?)
-     (let* ((dezyne-binary #~(string-append #$dezyne-server "/server/dzn-server"))
+    (($ <dezyne-configuration> dezyne-server dezyne-pack profile-inputs binary log-directory run-directory port database debug?)
+     (let* ((dezyne-binary #~(string-append #$dezyne-server "/" #$binary))
             (options '())
             (options (if port (cons (string-append "--port=" (number->string port)) options)
                          options))
-            (options (if database (cons (string-append "--database=" database) options)
-                         options))
+            (options (cons "--database=database" options))
             (options (if debug? (cons "--debug" options)
                          options))
             (dependencies (package-direct-inputs dezyne-server))
             (node-modules (map cadr (filter (lambda (p) (string-prefix? "node-" (car p))) dependencies)))
-            (pack-dependencies (package-direct-inputs dezyne-pack))
             (log-file (string-append log-directory "/dezyne.log"))
             (version (package-version dezyne-server))
-            (prefix (build-dezyne-prefix (string-append "dezyne-" version) pack-dependencies)))
+            (union-content (append (map cadr dependencies) profile-inputs))
+            (prefix (build-dezyne-prefix (string-append "dezyne-" version) union-content)))
 
        (list (shepherd-service
-              (provision (list (string->symbol (package-name dezyne-server))))
+              (provision (list (string->symbol (string-append "dezyne-" version))))
               (documentation "Run the dezyne server.")
               (requirement '(user-processes loopback networking postgres))
               (modules '((srfi srfi-1)))
@@ -161,18 +171,20 @@
                         #:log-file (string-append #$log-file)))
               (stop #~(make-kill-destructor))))))))
 
-(define (dezyne-service-type dezyne-server dezyne-pack)
-  (service-type (name (string->symbol (package-name dezyne-server)))
+(define (dezyne-service-type dezyne-server)
+  (service-type (name (string->symbol (string-append (package-name dezyne-server) "-" (package-version dezyne-server))))
                 (extensions
                  (list (service-extension shepherd-root-service-type
-                                          (dezyne-shepherd-service dezyne-server dezyne-pack))
+                                          (dezyne-shepherd-service))
                        (service-extension activation-service-type
                                           dezyne-activation)
                        (service-extension account-service-type
                                           (const %dezyne-accounts))))))
 
-(define* (dezyne-service #:key (dezyne-server dezyne-server)
-                         (dezyne-pack dezyne-pack)
+(define* (dezyne-service #:key dezyne-server
+                         dezyne-pack
+                         (profile-inputs '())
+                         (binary "bin/dzn-server")
                          (log-directory "/var/log/dezyne")
                          (run-directory "/var/run/dezyne")
                          port
@@ -180,12 +192,14 @@
                          debug?)
   "Return a service that runs DEZYNE, the dezyne server.
 
-nnThe dezyne daemon loads its runtime configuration from CONFIG-FILE, stores log
-files in LOG-DIRECTORY, and stores temporary runtime files in RUN-DIRECTORY."
-  (service (dezyne-service-type dezyne-server dezyne-pack)
+The dezyne server BINARY runs in RUN-DIRECTORY, writes logs to
+LOG-DIRECTORY, listens to PORT and connects to DATABASE."
+  (service (dezyne-service-type dezyne-server)
            (dezyne-configuration
             (dezyne-server dezyne-server)
             (dezyne-pack dezyne-pack)
+            (profile-inputs profile-inputs)
+            (binary binary)
             (log-directory log-directory)
             (run-directory run-directory)
             (port port)

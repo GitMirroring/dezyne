@@ -39,14 +39,17 @@
   #:use-module (gash job)
   #:use-module (gash pipe)
 
+  #:use-module (gnu services)
   #:use-module (guix base32)
   #:use-module (guix git-download)
   #:use-module (guix packages)
   #:use-module (guix utils)
 
-  #:use-module (dezyne extra)
+  #:use-module (dezyne system service)
   #:use-module (dezyne system os)
 
+  #:use-module (dezyne extra)
+  #:use-module (dezyne development pack)
   #:export (parse-opts
             main))
 
@@ -76,8 +79,13 @@ Usage: gdzn release [OPTION]... FILE
           (exit 0)))
     options))
 
-(define branches
-  '("master"))
+(define configurations
+  '("development"))
+
+(define (branch config)
+  (let* ((version (string-split config #\.))
+         (version (if (= 3 (length version)) (drop-right version 1) version)))
+    (string-join version ".")))
 
 (define-immutable-record-type <work-tree>
   (make-work-tree dir hash branch)
@@ -101,64 +109,99 @@ Usage: gdzn release [OPTION]... FILE
     (string-prefix? release-dir (work-tree-dir o))))
 
 (define %hash-dir "/tmp/gdzn-hash")
+(define (git-clean? b)
+  (with-output-to-file "/dev/null"
+    (lambda _
+      (and (zero? (system* "git" "diff" "--exit-code" b))
+           (zero? (system* "git" "diff" "--cached" "--exit-code" b))))))
+(define (git-message b)
+  (let ((msg (gulp-pipe* "git" "show" "--no-patch" "--format=%s" b)))
+    (and (string? msg)
+         (car (string-split msg #\newline)))))
+(define (git-message->spec b)
+  (let ((msg (git-message b)))
+    (and msg
+         (let ((lst (string-split msg #\space)))
+           (and (= (length lst) 3)
+                (string=? (car lst) "release:")
+                (= (string-length (caddr lst)) 52)
+                (cdr lst))))))
+(define (git-commit-describe b)
+  (and (git-clean? b)
+       (and=> (git-message->spec b) car)))
+(define (git-commit-hash b)
+  (and (git-clean? b)
+       (and=> (git-message->spec b) cadr)))
 (define (git-describe b)
-  (gulp-pipe* "git" "describe" b))
+  (or (git-commit-describe b)
+      (gulp-pipe* "git" "describe" b)))
 (define (git-branch)
   (string-split (gulp-pipe* "git"  "branch" "--format=%(refname:short)") #\newline))
 
 (define (guix-hash b)
-  (with-output-to-file "/dev/null"
-    (lambda _
-      (system* "git" "worktree" "remove" "--force" %hash-dir)
-      (system* "git" "worktree" "add" "--detach" %hash-dir b)))
-  (with-directory-excursion %hash-dir
-    (gulp-pipe* "guix" "hash" "-rx" ".")))
+  (or (git-commit-hash b)
+      (begin
+        (with-output-to-file "/dev/null"
+          (lambda _
+            (system* "git" "worktree" "remove" "--force" %hash-dir)
+            (system* "git" "worktree" "add" "--detach" %hash-dir b)))
+        (with-directory-excursion %hash-dir
+                                  (gulp-pipe* "guix" "hash" "-rx" ".")))))
 
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
-         ;;(work-trees (git-work-trees))
-         ;;(release-trees (filter release-tree? work-trees))
+         (branches (map branch configurations))
          (missing-branches (filter (lambda (b) (not (member b (git-branch)))) branches))
          (branches (filter (lambda (b) (member b (git-branch))) branches))
          (branch-commit-alist (map (lambda (b) (cons b (git-describe b))) branches))
+         (foo (when (> (gdzn:debugity) 1) (stderr "branch-commit-alist: ~s\n" branch-commit-alist)))
          (branch-hash-alist (map (lambda (b) (cons b (guix-hash b))) branches))
-         (branch-origin-spec (map (lambda (b) (cons b (cons (assoc-ref branch-commit-alist b)
-                                                            (assoc-ref branch-hash-alist b))))
-                                  branches))
+         (foo (when (> (gdzn:debugity) 1) (stderr "branch-hash-alist: ~s\n" branch-hash-alist)))
+         (branch-origin-spec (map (lambda (c)
+                                    (let ((b (branch c)))
+                                      (cons c (cons (assoc-ref branch-commit-alist b)
+                                                    (assoc-ref branch-hash-alist b)))))
+                                  configurations))
          (pack-alist (map (lambda (p) (cons (package-version p) p))
                           %dezyne-os-packages))
-         (foo (when (gdzn:debugity) (stderr "pack-alist: ~s\n" pack-alist)))
+
+         (services (filter (compose (cut symbol-prefix? 'dezyne <>) service-type-name service-kind) %dezyne-os-services))
+         (foo (when (> (gdzn:debugity) 1) (stderr "services: ~s\n" services)))
+         (packs (map (compose dezyne-configuration-dezyne-pack service-value) services))
+
+         (pack-alist (map (lambda (p) (cons (package-version p) p)) packs))
+         (foo (when (> (gdzn:debugity) 1) (stderr "pack-alist: ~s\n" pack-alist)))
          (services-packages
-          (filter (lambda (e) (string-prefix? "dezyne-services" (car e)))
-                  (append-map package-direct-inputs (map cdr pack-alist))))
-         (foo (when (gdzn:debugity) (stderr "services-packages: ~s\n" services-packages)))
-         (services-origins (map (lambda (p) (cons (car p) (package-source (cadr p)))) services-packages))
+          (map cadr (filter (compose (cut string-prefix? "dezyne-services" <>) car)
+                            (append-map package-direct-inputs (map cdr pack-alist)))))
+         (foo (when (> (gdzn:debugity) 1) (stderr "services-packages: ~s\n" services-packages)))
+         (services-origins (map package-source services-packages))
          (verbose? (gdzn:command-line:get 'verbose)))
     (define (check-origin spec)
-      (let* ((branch (car spec))
+      (let* ((config (car spec))
+             (foo (when (gdzn:debugity) (stderr "config: ~s\n" config)))
              (describe (cadr spec))
              (commit (git-describe->commit describe))
              (hash (cddr spec))
-             (key (if (equal? branch "development") "dezyne-services" ; FIXME
-                      (string-append "dezyne-services-" branch)))
-             (key (string-append "dezyne-services-" branch))
-             (key "dezyne-services")
-             (foo (when (gdzn:debugity) (stderr "key: ~s\n" key)))
-             (origin (assoc-ref services-origins key))
-             (package (and=> (assoc-ref services-packages key) car))
+             (version config)
+             (name (if (equal? version "2.8") "dezyne-services-2.8.2"
+                       "dezyne-services"))
+             (package (find (conjoin (compose (cut equal? name <>) package-name)
+                                     (compose (cut equal? version <>) package-version)) services-packages))
+             (origin (and package (package-source package)))
              (location (and package (package-location package)))
-             (actual-commit (and origin (git-reference-commit (origin-uri origin))))
-             (actual-hash (and origin (bytevector->nix-base32-string (origin-sha256 origin))))
-             (happy? (and (equal? commit actual-commit)
-                          (equal? hash actual-hash)))
-             (dezyne-pack (assoc-ref pack-alist key))
+             (package-commit (and origin (git-reference-commit (origin-uri origin))))
+             (package-hash (and origin (bytevector->nix-base32-string (origin-sha256 origin))))
+             (happy? (and (equal? commit package-commit)
+                          (equal? hash package-hash)))
+             (dezyne-pack (assoc-ref pack-alist version))
              (pack-location (and dezyne-pack (package-location dezyne-pack))))
         (when (and happy? verbose?)
           (format (current-output-port) "~a:~a:info:~a: up to date: ~s ~s\n"
                   (and location (location-file location))
                   (and location (location-line location))
-                  branch
+                  config
                   describe
                   hash))
         (when (not happy?)
@@ -166,13 +209,13 @@ Usage: gdzn release [OPTION]... FILE
                  (format (current-error-port) "~a:~a:error:package not up to date, expected:~a:~s ~s\n"
                          (and location (location-file location))
                          (and location (location-line location))
-                         branch
+                         config
                          describe
                          hash))
                 (else (format (current-error-port) "~a:~a:error:no such package:~a:update pack\n"
                               (and pack-location (location-file pack-location))
                               (and pack-location (location-line pack-location))
-                              branch))))
+                              config))))
         happy?))
     (when (not (null? missing-branches)) (format (current-error-port) "error: missing branches: ~a\n" missing-branches))
     (when verbose?
@@ -189,22 +232,15 @@ Usage: gdzn release [OPTION]... FILE
     (pretty-print branch-commit-alist)
     (let ((happy? (and-map identity (map check-origin branch-origin-spec))))
       (when (not happy?) (exit 1))
-      (let ((message (format #f "release: ~a\n\nguix version:~a\n"
+      (let ((message (format #f "release: ~a ~a\n\nguix version:~a\n"
                              (assoc-ref branch-commit-alist (car branches))
+                             (assoc-ref branch-hash-alist (car branches))
                              (@ (guix config) %guix-version))))
-        (if (not (zero? (system* "git" "commit" "-m" message))) (exit 1)
-            (format (current-error-port) "Now
-make check-system
-#git push origin release
-git push public release
-ssh guix@test1.oban
-GUIX_PROFILE=$HOME/.config/guix/verum/etc/profile . $HOME/.config/guix/verum/etc/profile
-cd src/development
-git fetch
-#git rebase origin/release
-git branch -f development origin/development
+        (if (and (not (git-clean? (car configurations)))
+                 (not (zero? (system* "git" "commit" "-m" message)))) (exit 1)
+            (format (current-error-port) "Now do something like:
+cd ../release
 ./configure
-make all-go-guix
-#git daemon --base-path=$HOME/git-daemon --export-all &
-sudo -E ./pre-inst-env guix system reconfigure guix/dezyne/system/test1.scm
+make
+./pre-inst-env deploy-test1
 "))))))
