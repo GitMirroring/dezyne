@@ -2,7 +2,8 @@
 #+TITLE: The Dezyne server, services, client.
 #+OPTIONS: toc:2          only include two levels in TOC
 
-Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]] 53f21642729e4786141c072dd835b04cb85dfe28.  See `Setup Guix' below.
+Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]] 53f21642729e4786141c072dd835b04cb85dfe28.
+See `Update Guix' and `Setup Guix' below.
 
 * Update Guix
 
@@ -57,6 +58,20 @@ or, for a richer environment
   guix environment -l guix.scm
   DZN=dzn ./pre-inst-env test test/hello/helloworld
   #+END_SRC
+
+* Release it
+
+Guix package descriptions now live in the feature branches (2.8, 2.9,
+development and enterprise), e.g. [[file:guix/dezyne/development/pack.scm][guix/dezyne/development/pack.scm]].
+The source object can be updated with help from gdzn release:
+
+  #+BEGIN_SRC bash
+   ./pre-inst-env gdzn release
+  #+END_SRC
+
+and then edit the git commit and guix content hash.  Then push to
+git.oban/buildmaster (blessed).  Deploying a released feature branch
+is done from the `release' branch.
 
 * Create or update a persistent build environment
 ** in your default profile
