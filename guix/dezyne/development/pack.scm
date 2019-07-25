@@ -440,15 +440,11 @@ development environment.")
    (source #f)
    (propagated-inputs
     `(("dezyne-server" ,dezyne-server)
-
       ("dezyne-services" ,dezyne-services)
       ("dezyne-test-content" ,dezyne-test-content)
       ("dzn-client-tarball" ,dzn-client-tarball)
       ("dzn-client" ,dzn-client)
-      ("dezyne-regression-test" ,dezyne-regression-test)
-
-      ("shepherd" ,shepherd)
-      ("postgres-config" ,postgres-config)))
+      ("dezyne-regression-test" ,dezyne-regression-test)))
    (build-system trivial-build-system)
    (arguments
     `(#:modules ((guix build utils))
