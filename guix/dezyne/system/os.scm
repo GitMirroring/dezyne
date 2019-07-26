@@ -55,11 +55,12 @@
 (define %dezyne-os-packages
   (list
    postgresql-9.6
+   postgres-config
    dezyne-pack))
 
 (define %dezyne-os-services
   (list
-   (postgresql-service #:postgresql postgresql-9.6)
+   (postgresql-service #:postgresql postgresql-9.6 #:config-file #~(string-append #$postgres-config "/etc/postgresql.conf"))
    (dezyne-service #:dezyne-server dezyne-server #:dezyne-pack dezyne-pack #:log-directory "/var/log/dezyne" #:binary "server/dzn-server" #:port 3000)
    (service
     nginx-service-type
