@@ -128,12 +128,14 @@ top <- do-import / stream-command / namespace / type / interface / component / d
 
 import <- IMPORT (!SEMICOLON .)+ SEMICOLON#
 
-stream-command < file-command / imported-command
-file-command < FILE dq-string
+stream-command <- file-command / imported-command
+file-command <-- FILE dq-string#
+imported-command <-- IMPORTED dq-string#
 FILE < '#file'
-imported-command < IMPORTED dq-string
 IMPORTED < '#imported'
-dq-string <- '\"' ('\\\"' / !'\"' .)* '\"'
+dq-string <- double-quote unq-string double-quote
+double-quote < '\"'
+unq-string <- ('\\\"' / !'\"' .)*
 
 namespace <-- NAMESPACE compound-name# BRACE-OPEN# top* BRACE-CLOSE#
 
