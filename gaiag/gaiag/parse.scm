@@ -1,7 +1,7 @@
 ;; This file is part of Gaiag, Guile in Asd In Asd in Guile.
 ;;
 ;; Copyright © 2014, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;; Copyright © 2014, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;
@@ -73,21 +73,6 @@
         (handle-error job error)
         (parse->om ast)))))
 
-(define (line-column input pos)
-  (let* ((length (string-length input))
-         (pos (let loop ((pos pos))
-                (if (and (< pos length) (char-whitespace? (string-ref input pos))) (loop (1+ pos)) pos))))
-    (let loop ((lines (string-split input #\newline)) (ln 1) (p 0))
-      (if (null? lines) (values #f #f input)
-          (let* ((line (car lines))
-                 (length (string-length line))
-                 (end (+ p length 1))
-                 (last? (null? (cdr lines))))
-            (if (<= pos end) (values ln (+ (if last? 0 1) (- pos p))
-                                     (if last? line
-                                         (string-append line "\\n" (cadr lines))))
-                (loop (cdr lines) (1+ ln) end)))))))
-
 (define* (peg:parse-file file-name #:key (imports '()))
   (let* ((string (if (equal? file-name "-") (read-string)
                      (with-input-from-file file-name read-string)))
@@ -96,16 +81,7 @@
          (parse-tree (catch 'syntax-error
                        (lambda ()
                          (peg:parse string file-name #:imports imports))
-                       (lambda (key . args)
-                         (receive (ln col line) (line-column string (caar args))
-                           (let ((indent (make-string col #\space)))
-                             (stderr "~a:~a:~a: syntax-error\n~a\n~a^\n~aexpected '~a'\n"
-                                     file-name
-                                     ln col line
-                                     indent
-                                     indent
-                                     (cadar args))
-                             (exit 1))))))
+                       (peg:handle-syntax-error file-name string)))
          (gdzn-debug? (gdzn:command-line:get 'debug)))
     (parse-tree->ast parse-tree #:string string #:file-name file-name)))
 

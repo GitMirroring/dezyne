@@ -38,6 +38,7 @@
   #:use-module (gaiag ast)
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
+  #:use-module (gaiag grammar)
   #:export (parse-tree->ast))
 
 (define (ast-> o)
@@ -493,21 +494,15 @@
 
       (('location pos end)
        (receive
-           (line column) (line-column pos #t)
+           (line column) (peg:line-column string pos)
          (receive
-             (end-line end-column) (line-column end #f)
+             (end-line end-column) (peg:line-column string end)
            (make <location-node> #:file-name file-name #:line line #:column column #:end-line end-line #:end-column end-column #:offset pos #:length (- end pos)))))
 
       ((? (is? <ast>)) o)
 
       ((h ...) (filter-map helper o))
       (_ (format #f "LITERAL: \"~s\"" o))))
-
-  (define (line-column pos skip?)
-    (let ((line-number (1+ (string-count string #\newline 0 pos)))
-          (column-number (1- (- pos (or (string-rindex string #\newline 0 pos) 1)))))
-      (values line-number column-number)))
-
 
   (when (> (gdzn:debugity) 1)
     (pretty-print o))
