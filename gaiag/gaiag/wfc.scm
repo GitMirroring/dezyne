@@ -169,14 +169,15 @@
 
 (define-method (wfc (o <literal>)) '())
 
-(define-method (wfc (o <group>)) (wfc (.expression o)))
+(define-method (wfc (o <group>))
+  (wfc (.expression o)))
 
 (define-method (typed-expression (o <expression>) (type <class>))
   (let* ((expr-wfc (wfc o))
          (expr-type (ast:type o)))
     (cond ((pair? expr-wfc) expr-wfc)
           ((not (is-a? expr-type type))
-           `(,(wfc-error o (format #f "~a expression expected" type))))
+           `(,(wfc-error o (format #f "~a expression expected" (class-name type)))))
           (else '()))))
 
 (define-method (wfc (o <not>))
@@ -197,20 +198,28 @@
          (expr2-wfc (wfc expr2))
          (expr2-type (ast:type expr2)))
     (cond ((or (pair? expr1-wfc) (pair? expr2-wfc)) (append expr1-wfc expr2-wfc))
-          ((not (ast:eq? expr1-type expr2-type))
-           `(,(wfc-error o (format #f "xxxx type mismatch"))))
+          ((and (not (ast:equal? expr1-type expr2-type))
+                (not (and (is-a? expr1-type <extern>)
+                          (is-a? expr2-type <data>)))
+                (not (and (is-a? expr1-type <int>)
+                          (is-a? expr2-type <int>)))
+                `(,(wfc-error o (format #f "type mismatch in binary operator: `~a' versus `~a'"
+                                        (type-name expr1-type)
+                                        (type-name expr2-type))))))
           (else '()))))
 
 (define-method (wfc (o <and>)) (typed-binary o <bool>))
-(define-method (wfc (o <equal>)) (binary-equal-type o))
-(define-method (wfc (o <greater-equal>)) (typed-binary o <int>))
-(define-method (wfc (o <greater>)) (typed-binary o <bool>))
-(define-method (wfc (o <less-equal>)) (typed-binary o <bool>))
-(define-method (wfc (o <less>)) (typed-binary o <bool>))
-(define-method (wfc (o <minus>)) (typed-binary o <bool>))
-(define-method (wfc (o <not-equal>)) (binary-equal-type o))
 (define-method (wfc (o <or>)) (typed-binary o <bool>))
-(define-method (wfc (o <plus>)) (typed-binary o <bool>))
+
+(define-method (wfc (o <equal>)) (binary-equal-type o))
+(define-method (wfc (o <not-equal>)) (binary-equal-type o))
+
+(define-method (wfc (o <greater-equal>)) (typed-binary o <int>))
+(define-method (wfc (o <greater>)) (typed-binary o <int>))
+(define-method (wfc (o <less-equal>)) (typed-binary o <int>))
+(define-method (wfc (o <less>)) (typed-binary o <int>))
+(define-method (wfc (o <plus>)) (typed-binary o <int>))
+(define-method (wfc (o <minus>)) (typed-binary o <int>))
 
 (define-method (wfc (o <field-test>))
   (let* ((variable (.variable o))
@@ -223,7 +232,7 @@
            '()) ;; already covered (?)
           ((not (is-a? type <enum>))
            `(,(wfc-error o (format #f "type mismatch: expected enum, found '~a'"
-                                        (type-name type)))))
+                                   (type-name type)))))
           ((not (member field fields))
            `(,(wfc-error o (format #f "no field `~a' in enum `~a'; expected ~a"
                                    field
