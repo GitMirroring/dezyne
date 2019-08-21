@@ -42,7 +42,13 @@
 
   #:use-module (system base compile)
 
-  #:export (peg:parse %peg-locations? %skip-parser? peg:handle-syntax-error peg:line-column))
+  #:export (peg:parse
+            %peg-locations?
+            %skip-parser?
+            peg:handle-syntax-error
+            peg:line-number
+            peg:column-number
+            peg:line))
 
 (define* (peg:parse string file-name #:key (imports '()))
 
@@ -384,19 +390,28 @@ KEYWORD <
  (define imported-files '())
  (peg:parse-recursive string file-name #:imports imports))
 
-(define (peg:line-column input pos)
-  (let ((line-number (1+ (string-count input #\newline 0 pos)))
-        (column-number (1- (- pos (or (string-rindex input #\newline 0 pos) 1)))))
-    (values line-number column-number)))
+(define (peg:line-number string pos)
+  (1+ (string-count string #\newline 0 pos)))
+
+(define (peg:column-number string pos)
+  (- pos (or (string-rindex string #\newline 0 pos) -1)))
+
+(define (peg:line string pos)
+  (let ((start (1+ (or (string-rindex string #\newline 0 pos) -1)))
+        (end (or (string-index string #\newline pos) (string-length string))))
+    (substring string start end)))
 
 (define (peg:handle-syntax-error file-name string)
   (lambda (key . args)
-    (receive (ln col line) (peg:line-column string (caar args))
-      (let ((indent (make-string col #\space)))
-        (stderr "~a:~a:~a: syntax-error\n~a\n~a^\n~aexpected '~a'\n"
-                file-name
-                ln col line
-                indent
-                indent
-                (cadar args))
-        (exit 1)))))
+    (let* ((pos (caar args))
+           (ln (peg:line-number string pos))
+           (col (peg:column-number string pos))
+           (line (peg:line string pos))
+           (indent (make-string (1- col) #\space)))
+      (stderr "~a:~a:~a: syntax-error\n~a\n~a^\n~aexpected '~a'\n"
+              file-name
+              ln col line
+              indent
+              indent
+              (cadar args))
+      (exit 1))))

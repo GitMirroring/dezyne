@@ -450,7 +450,7 @@
                                       (rest (cdr elements)))
                                  (match elt
                                    (((or 'file-command 'imported-command) file-name location)
-                                    (let ((start-pos (third location)))
+                                    (let ((start-pos (1+ (third location))))
                                       (loop rest file-name start-pos)))
                                    (_ (cons (file-helper elt file-name start-pos)
                                             (loop rest file-name start-pos)))))))))
@@ -504,24 +504,18 @@
         (('literal string) (make <literal-node> #:value (helper string)))
 
         (('location pos end)
-         (let* ((start-line (line-number start-pos))
-                (line (line-number pos))
-                (column (column-number pos))
-                (end-line (line-number end))
-                (end-column (column-number end)))
-           (make <location-node> #:file-name file-name #:line (- line start-line) #:column column #:end-line (- end-line start-line) #:end-column end-column #:offset (- pos start-pos) #:length (- end pos))))
+         (let* ((start-line (peg:line-number string start-pos))
+                (line (peg:line-number string  pos))
+                (column (peg:column-number string pos))
+                (end-line (peg:line-number string end))
+                (end-column (peg:column-number string end)))
+           (make <location-node> #:file-name file-name #:line (1+ (- line start-line)) #:column column #:end-line (1+ (- end-line start-line)) #:end-column end-column #:offset (- pos start-pos) #:length (- end pos))))
 
         ((? (is? <ast>)) o)
 
         ((h ...) (filter-map helper o))
         (_ (format #f "LITERAL: \"~s\"" o))))
     (helper o))
-
-  (define (line-number pos)
-    (1+ (string-count string #\newline 0 pos)))
-
-  (define (column-number pos)
-    (1- (- pos (or (string-rindex string #\newline 0 pos) 1))))
 
   (when (> (gdzn:debugity) 1)
     (pretty-print o))
