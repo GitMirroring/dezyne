@@ -52,83 +52,86 @@
 
 (define* (peg:parse string file-name #:key (imports '()))
 
- (define* (peg:parse-recursive string file-name #:key (imports '()))
+  (define* (peg:parse-recursive string file-name #:key (imports '()))
 
-   (define interface-events '())
+    (define interface-events '())
 
-   (define (-reset-event-names- str len pos)
-     (set! interface-events '())
-     (list pos '()))
-   (define-peg-pattern reset-event-names none -reset-event-names-)
+    (define (-reset-event-names- str len pos)
+      (set! interface-events '())
+      (list pos '()))
+    (define-peg-pattern reset-event-names none -reset-event-names-)
 
-   (define (-event-name- str len pos)
-     (let ((res (identifier str len pos)))
-       (when res
-         (set! interface-events (cons (substring str pos (car res)) interface-events)))
-       res))
-   (define-peg-pattern event-name all -event-name-)
+    (define (-event-name- str len pos)
+      (let ((res (identifier str len pos)))
+        (when res
+          (set! interface-events (cons (substring str pos (car res)) interface-events)))
+        res))
+    (define-peg-pattern event-name all -event-name-)
 
-   (define (-is-event- str len pos)
-     (let ((res (identifier str len pos)))
-       (and res (member (substring str pos (car res)) interface-events) res)))
-   (define-peg-pattern is-event body -is-event-)
-
-
+    (define (-is-event- str len pos)
+      (let ((res (identifier str len pos)))
+        (and res (member (substring str pos (car res)) interface-events) res)))
+    (define-peg-pattern is-event body -is-event-)
 
 
-   (define variable-stack '(()))
 
-   (define (-enter-frame- str len pos)
-     ;;(warn 'enter-frame: variable-stack)
-     (set! variable-stack (cons (car variable-stack) variable-stack))
-     (list pos '()))
-   (define-peg-pattern enter-frame none -enter-frame-)
 
-   (define (-exit-frame- str len pos)
-     ;;(warn 'exit-frame: variable-stack)
-     (set! variable-stack (cdr variable-stack))
-     (list pos '()))
-   (define-peg-pattern exit-frame none -exit-frame-)
+    (define variable-stack '(()))
 
-   (define (-add-var- str len pos)
-     (let ((res (name str len pos))
-           (top (car variable-stack))
-           (bottom (cdr variable-stack)))
-       (when res
-         (set! variable-stack (cons (cons (substring str pos (car res)) top) bottom)))
-       res))
-   (define-peg-pattern add-var all -add-var-)
+    (define (-enter-frame- str len pos)
+      ;;(warn 'enter-frame: variable-stack)
+      (set! variable-stack (cons (car variable-stack) variable-stack))
+      (list pos '()))
+    (define-peg-pattern enter-frame none -enter-frame-)
 
-   (define (-var- str len pos)
-     (let* ((top (car variable-stack))
-            (res (identifier str len pos))
-            (var-name (and res (substring str pos (car res)))))
-       (and var-name
-            (find (cut equal? var-name <>) top)
-            res)))
-   (define-peg-pattern var all -var-)
+    (define (-exit-frame- str len pos)
+      ;;(warn 'exit-frame: variable-stack)
+      (set! variable-stack (cdr variable-stack))
+      (list pos '()))
+    (define-peg-pattern exit-frame none -exit-frame-)
 
-(define (-do-import- str len pos)
-     (let ((res (import str len pos)))
-       (and res
-            (let* ((file-name (string-trim-both (apply string-append (cdadr res))))
-                   (file-name (search-path imports file-name))
-                   (file-name (canonicalize-path file-name))
-                   (root (if (member file-name imported-files) #f
-                               (let* ((foo (set! imported-files (cons file-name imported-files)))
-                                      (string (with-input-from-file file-name read-string))
-                                      (imports (cons (dirname file-name) imports))
-                                      (parse-tree (catch 'syntax-error
-                                                    (lambda ()
-                                                      (peg:parse-recursive string file-name #:imports imports))
-                                                    (peg:handle-syntax-error file-name string))))
-                                 (parse-tree->ast parse-tree #:string string #:file-name file-name)))))
-              (list (car res) (list 'import file-name root))))))
+    (define (-add-var- str len pos)
+      (let ((res (name str len pos))
+            (top (car variable-stack))
+            (bottom (cdr variable-stack)))
+        (when res
+          (set! variable-stack (cons (cons (substring str pos (car res)) top) bottom)))
+        res))
+    (define-peg-pattern add-var all -add-var-)
 
-   (define-peg-pattern do-import body -do-import-)
+    (define (-var- str len pos)
+      (let* ((top (car variable-stack))
+             (res (identifier str len pos))
+             (var-name (and res (substring str pos (car res)))))
+        (and var-name
+             (find (cut equal? var-name <>) top)
+             res)))
+    (define-peg-pattern var all -var-)
 
-   (define-peg-string-patterns
-     "root <-- top* EOF#
+    (define (-do-import- str len pos)
+      (let ((res (import str len pos)))
+        (and res
+             (let* ((import-file-name (string-trim-both (apply string-append (cdadr res))))
+                    (import-file-name (or (search-path imports import-file-name)
+                                          (let ((pos (car res))
+                                                (message (format #f "No such file or directory: `~a' [~a]\n" import-file-name imports)))
+                                            (peg:error file-name string pos message))))
+                    (import-file-name (canonicalize-path import-file-name))
+                    (root (if (member import-file-name imported-files) #f
+                              (let* ((foo (set! imported-files (cons import-file-name imported-files)))
+                                     (string (with-input-from-file import-file-name read-string))
+                                     (imports (cons (dirname import-file-name) imports))
+                                     (parse-tree (catch 'syntax-error
+                                                   (lambda ()
+                                                     (peg:parse-recursive string import-file-name #:imports imports))
+                                                   (peg:handle-syntax-error import-file-name string))))
+                                (parse-tree->ast parse-tree #:string string #:file-name import-file-name)))))
+               (list (car res) (list 'import import-file-name root))))))
+
+    (define-peg-pattern do-import body -do-import-)
+
+    (define-peg-string-patterns
+      "root <-- top* EOF#
 
 top <- do-import / stream-command / namespace / type / interface / component / data
 
@@ -380,15 +383,15 @@ KEYWORD <
   / 'void') ![a-zA-Z_0-9]
 
 ")
-   (parameterize ((%peg:locations? #t)
-                  (%peg:skip? #t)
-                  (%peg:debug? #f))
-     (let* ((result (match-pattern root string))
-            (tree (peg:tree result)))
-       tree)))
+    (parameterize ((%peg:locations? #t)
+                   (%peg:skip? #t)
+                   (%peg:debug? #f))
+      (let* ((result (match-pattern root string))
+             (tree (peg:tree result)))
+        tree)))
 
- (define imported-files '())
- (peg:parse-recursive string file-name #:imports imports))
+  (define imported-files '())
+  (peg:parse-recursive string file-name #:imports imports))
 
 (define (peg:line-number string pos)
   (1+ (string-count string #\newline 0 pos)))
@@ -401,17 +404,21 @@ KEYWORD <
         (end (or (string-index string #\newline pos) (string-length string))))
     (substring string start end)))
 
+(define (peg:error file-name string pos message)
+  (let* ((ln (peg:line-number string pos))
+         (col (peg:column-number string pos))
+         (line (peg:line string pos))
+         (indent (make-string (1- col) #\space)))
+    (stderr "~a:~a:~a: syntax-error\n~a\n~a^\n~a~a\n"
+            file-name
+            ln col line
+            indent
+            indent
+            message)
+      (exit 1)))
+
 (define (peg:handle-syntax-error file-name string)
   (lambda (key . args)
     (let* ((pos (caar args))
-           (ln (peg:line-number string pos))
-           (col (peg:column-number string pos))
-           (line (peg:line string pos))
-           (indent (make-string (1- col) #\space)))
-      (stderr "~a:~a:~a: syntax-error\n~a\n~a^\n~aexpected '~a'\n"
-              file-name
-              ln col line
-              indent
-              indent
-              (cadar args))
-      (exit 1))))
+           (message (format #f "expected `~a'" (cadar args))))
+      (peg:error file-name string pos message))))

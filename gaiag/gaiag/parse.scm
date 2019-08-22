@@ -75,7 +75,11 @@
 
 (define* (peg:parse-file file-name #:key (imports '()))
   (let* ((string (if (equal? file-name "-") (read-string)
-                     (with-input-from-file file-name read-string)))
+                     (catch #t
+                       (lambda () (with-input-from-file file-name read-string))
+                       (lambda (key . args)
+                         (stderr "No such file or directory: ~a\n" file-name)
+                         (exit 1)))))
          (imports (if (equal? file-name "-") '()
                       (cons (dirname (canonicalize-path file-name)) imports)))
          (parse-tree (catch 'syntax-error
@@ -115,7 +119,7 @@
          (resolved (and (string? resolved) (string-drop-prefix "./" resolved)))
          (file-name (components->file-name file-name))
          (dir (or (and=> resolved dirname)
-                  (let ((message (format #f "gaiag: No such file or directory: `~a' [~a]\n" file-name %include-path)))
+                  (let ((message (format #f "No such file or directory: `~a' [~a]\n" file-name %include-path)))
                     (stderr message)
                     (throw 'file-not-found message)))))
     (when (not (member dir %include-path))
