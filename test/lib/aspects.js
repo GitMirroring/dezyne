@@ -4,7 +4,7 @@
 // Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 // Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-// Copyright © 2016, 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2016, 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -374,6 +374,7 @@ var aspects = {
     var version = parameters.meta.versions[0];
     var language = parameters.meta.languages[0];
 
+
     function updateparameters(parameters, output, aspect, version, language) {
       parameters.outcome = parameters.outcome || {};
       parameters.outcome.output = parameters.outcome.output || {};
@@ -477,18 +478,16 @@ var aspects = {
             .then(function(result2){
               if (no_skip_p (result2.parameters.meta, version) (aspect))
                 return testcase(aspect, result2, haslanguage(aspect) && version, haslanguage(aspect) && language);
-
+              result2.parameters.outcome = result2.parameters.outcome || {status:{}};
               if(haslanguage(aspect)) {
                 result2.parameters.outcome.status[aspect] = result2.parameters.outcome.status[aspect] || {};
                 result2.parameters.outcome.status[aspect][version] = result2.parameters.outcome.status[aspect][version] || {};
                 result2.parameters.outcome.status[aspect][version][language] = 'SKIPPED';
               }
-              else
+              else {
                 result2.parameters.outcome.status[aspect] = 'SKIPPED';
-
+              }
               return {status: 0, parameters: result2.parameters};
-
-
             })
             .then(function(result2){
               var knwn = known(result2.parameters.meta, aspect, version, language);
