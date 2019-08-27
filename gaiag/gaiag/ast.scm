@@ -62,6 +62,7 @@
            ast:in?
            ast:injected-port*
            ast:inout?
+           ast:instance?
            ast:imperative?
            ast:imported?
            ast:literal-false?
@@ -694,12 +695,29 @@
                     left)
                    (else (loop (cdr bindings)))))))))
 
+(define-method (ast:used-model* (root <root>) (o <model>)) (list o))
+
+(define-method (ast:used-model* (root <root>) (o <system>))
+  (cons o (append-map (compose (cut ast:used-model* root <>) .type) (ast:instance* o))))
+
+(define-method (ast:filter-model (root <root>) (model <model>))
+  (let ((used (ast:used-model* root model)))
+    (tree-filter (lambda (o) (or (not (is-a? o <component-model>))
+                                 (find (cut ast:eq? o <>) used)))
+                 root)))
+
+(define-method (ast:instance? (o <component-model>))
+  (let* ((root (parent o <root>))
+         (models (ast:model* root))
+         (systems (filter (is? <system>) models)))
+    (find (lambda (s) (find (lambda (i) (ast:eq? (.type i) o)) (ast:instance* s))) systems))
+  )
+
 (define* (ast:get-model root #:optional (model-name (and=> (command-line:get 'model #f) string->symbol)))
   (let ((models (ast:model* root)))
     (or (and model-name (find (lambda (o) (eq? ((compose .name .name) o) model-name)) models))
         (let ((systems (filter (is? <system>) models)))
-          (and (pair? systems)
-               (car systems))) ;; FIXME: default to outer system
+          (find (negate ast:instance?) systems))
         (find (is? <component>) models)
         (find (is? <interface>) models))))
 
