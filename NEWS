@@ -288,3 +288,15 @@ To explore, run:
     keywords (https://zoho.verum.com/7308)
   - Type declarations can now appear anywhere at the toplevel of a
     behaviour (https://zoho.verum.com/6747)
+
+* legalese
+
+Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2017,2018,2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+Copyright © 2018,2019 Rob Wieringa <Rob.Wieringa@verum.com>
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
+
+Please send Dezyne bug reports to bug-dezyne@nongnu.org.

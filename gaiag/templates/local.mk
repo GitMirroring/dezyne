@@ -1,5 +1,3 @@
-#! /bin/sh
-
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
@@ -23,35 +21,15 @@
 #
 # Code:
 
-tree=${tree-../step}
-
-# already done and patched
-# tar -C $tree -cf- test/bin | tar -xf-
-# tar -C $tree -cf- test/lib | tar -xf-
-
-dirs="
-smoke
-hello
-regression
-
-async
-blocking
-error
-import
-namespace
-parser
-glue
-step
-compliance
-interpreter-error-msg
-verification-error-msg
-"
-
-for i in $dirs; do
-    lst=$(ls -1 $tree/test/$i | sed -e s,^,test/all/, | grep -v roadmap.org)
-    tar -C $tree -cf- $lst "test/$i" | tar -xf-
-done
-
-cp -r "$tree/test/all/hello space" test/all
-cp -r "$tree/test/regression/hello space" test/regression
-rm -rf test/smoke/trip test/all/trip
+EXTRA_DIST +=					\
+ %D%/c++03.scm					\
+ %D%/code.scm					\
+ %D%/c++.scm					\
+ %D%/c.scm					\
+ %D%/cs.scm					\
+ %D%/dzn.scm					\
+ %D%/glue.scm					\
+ %D%/html.scm					\
+ %D%/javascript.scm				\
+ %D%/makreel.scm				\
+ %D%/scheme.scm
