@@ -1,5 +1,3 @@
-#! /bin/sh
-
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
@@ -23,35 +21,14 @@
 #
 # Code:
 
-tree=${tree-../step}
+dist_%C%_scm_DATA =				\
+ %D%/traces.scm      				\
+ %D%/pipeline.scm
 
-# already done and patched
-# tar -C $tree -cf- test/bin | tar -xf-
-# tar -C $tree -cf- test/lib | tar -xf-
+dist_nocompile_%C%_scm_DATA =
 
-dirs="
-smoke
-hello
-regression
-
-async
-blocking
-error
-import
-namespace
-parser
-glue
-step
-compliance
-interpreter-error-msg
-verification-error-msg
-"
-
-for i in $dirs; do
-    lst=$(ls -1 $tree/test/$i | sed -e s,^,test/all/, | grep -v roadmap.org)
-    tar -C $tree -cf- $lst "test/$i" | tar -xf-
-done
-
-cp -r "$tree/test/all/hello space" test/all
-cp -r "$tree/test/regression/hello space" test/regression
-rm -rf test/smoke/trip test/all/trip
+%C%_scmdir = $(guilemoduledir)/%D%
+nocompile_%C%_scmdir = $(%C%_scmdir)
+%C%_godir = $(guileobjectdir)/%D%
+%C%_go_DATA = $(dist_%C%_scm_DATA:%.scm=%.go)
+ALL_GO += $(%C%_go_DATA)

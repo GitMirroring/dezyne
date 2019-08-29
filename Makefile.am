@@ -1,0 +1,168 @@
+# Dezyne --- Dezyne command line tools
+#
+# Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+#
+# This file is part of Dezyne.
+#
+# Dezyne is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# Dezyne is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public
+# License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Commentary:
+#
+# Code:
+
+ACLOCAL_AMFLAGS = -I build-aux
+
+EXTRA_DIST =					\
+ .dir-locals.el					\
+ HACKING					\
+ autogen.sh					\
+ build-aux/git-version-gen			\
+ build-aux/gitlog-to-changelog			\
+ guix.scm
+
+exampledir = $(docdir)
+
+# Modules and scripts
+#####################
+
+do_subst = sed						\
+  -e 's,[@]GUILE[@],$(GUILE),g'				\
+  -e 's,[@]prefix[@],$(prefix),g'			\
+  -e 's,[@]exec_prefix[@],$(exec_prefix),g'		\
+  -e 's,[@]bindir[@],$(bindir),g'			\
+  -e 's,[@]datadir[@],$(datadir),g'			\
+  -e 's,[@]datarootdir[@],$(datarootdir),g'		\
+  -e 's,[@]localstatedir[@],$(localstatedir),g'		\
+  -e 's,[@]guilemoduledir[@],$(guilemoduledir),g'	\
+  -e 's,[@]guileobjectdir[@],$(guileobjectdir),g'	\
+  -e 's,[@]sysconfdir[@],$(sysconfdir),g'		\
+  -e 's,[@]ASD[@],$(ASD),g'				\
+  -e 's,[@]LTS[@],$(LTS),g'				\
+  -e 's,[@]VERSION_MAJOR[@],$(VERSION_MAJOR),g'		\
+  -e 's,[@]VERSION_MINOR[@],$(VERSION_MINOR),g'		\
+  -e 's,[@]VERSION_PATCH[@],$(VERSION_PATCH),g'
+
+AM_V_SED = $(AM_V_SED_@AM_V@)
+AM_V_SED_ = $(AM_V_SED_@AM_DEFAULT_V@)
+AM_V_SED_0 = @echo "  SED" $@;
+
+bin/%: bin/%.in Makefile
+	$(AM_V_SED)$(do_subst) < $< > $@
+	@chmod a+x $@
+
+dzn/%: dzn/%.in Makefile
+	$(AM_V_SED)$(do_subst) < $< > $@
+
+BUILT_SOURCES = dzn/config.scm
+
+bin_SCRIPTS =					\
+  bin/dzn					\
+  bin/gdzn
+
+EXTRA_DIST +=					\
+ bin/dzn.in					\
+ bin/gdzn.in
+
+dist_dzn_scm_DATA =				\
+ dzn/parse.scm
+
+dist_nocompile_dzn_scm_DATA =
+
+dzn_scmdir = $(guilemoduledir)/dzn
+nocompile_dzn_scmdir = $(dzn_scmdir)
+dzn_godir = $(guileobjectdir)/dzn
+dzn_go_DATA = $(dist_dzn_scm_DATA:%.scm=%.go)
+
+dist_dzn_peg_scm_DATA =			\
+ dzn/peg/string-peg.scm			\
+ dzn/peg/simplify-tree.scm			\
+ dzn/peg/codegen.scm				\
+ dzn/peg/cache.scm				\
+ dzn/peg/using-parsers.scm
+
+dist_nocompile_dzn_peg_scm_DATA =
+
+dzn_peg_scmdir = $(guilemoduledir)/dzn/peg
+nocompile_dzn_peg_scmdir = $(dzn_peg_scmdir)
+dzn_peg_godir = $(guileobjectdir)/dzn/peg
+dzn_peg_go_DATA = $(dist_dzn_peg_scm_DATA:%.scm=%.go)
+
+dist_scmrl_scm_DATA =
+
+scmrl_scmdir = $(guilemoduledir)/scmrl
+nocompile_scmrl_scmdir = $(scmrl_scmdir)
+scmrl_godir = $(guileobjectdir)/scmrl
+scmrl_go_DATA = $(dist_scmrl_scm_DATA:%.scm=%.go)
+
+GUILEC_FLAGS = -Warity-mismatch -Wformat --load-path=$(abs_srcdir)
+
+AM_V_GUILEC = $(AM_V_GUILEC_@AM_V@)
+AM_V_GUILEC_ = $(AM_V_GUILEC_@AM_DEFAULT_V@)
+AM_V_GUILEC_0 = @echo "  GUILEC" $@;
+
+.scm.go:
+	$(AM_V_GUILEC)GUILE_AUTO_COMPILE=0				\
+	LTDL_LIBRARY_PATH=$(abs_builddir)/.libs				\
+	$(GUILE_TOOLS) compile --target="$(host)" $(GUILEC_FLAGS)	\
+	-o "$@" "$<"
+
+CLEANFILES =					\
+ $(BUILT_SOURCES)				\
+ $(dzn_go_DATA)				\
+ $(dzn_peg_go_DATA)
+
+# Distribution
+##############
+
+# Reproducible tarball
+GZIP_ENV = --no-name
+am__tar = $${TAR-tar} --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -cf - "$$tardir"
+
+tag:
+	git tag -s v$(PACKAGE_VERSION) -m "$(PACKAGE_NAME) $(PACKAGE_VERSION)."
+
+dist-hook: gen-ChangeLog
+	echo $(VERSION) > $(distdir)/.tarball-version
+	git ls-tree -r --name-only HEAD > $(distdir)/.tarball-manifest
+
+.PHONY: gen-ChangeLog
+gen-ChangeLog $(distdir)/ChangeLog: config.status
+	$(AM_V_GEN)if test -e .git; then		\
+	  $(top_srcdir)/build-aux/gitlog-to-changelog	\
+	    > $(distdir)/cl-t;				\
+	  rm -f $(distdir)/ChangeLog;			\
+	  mv $(distdir)/cl-t $(distdir)/ChangeLog;	\
+	fi
+
+sign-dist: dist
+	gpg -a --output $(distdir).tar.gz.sig --detach-sig $(distdir).tar.gz
+
+distcheck-hook:
+	set -e;                                 \
+	manifest=$(distdir)/.tarball-manifest;  \
+	test -f "$$manifest";                   \
+	for x in `cat "$$manifest"`;            \
+	do                                      \
+	    if ! test -f $(distdir)/"$$x"       \
+                && ! test "$$x" = .gitignore;   \
+	    then                                \
+	        echo "Missing: $$x";            \
+	        exit 1;                         \
+	    fi;                                 \
+	done
+
+install-data-local:
+	test -z $(DESTDIR)$(pkgdatadir) || $(MKDIR_P) $(DESTDIR)$(pkgdatadir)
+	tar -cf - runtime | tar -C $(DESTDIR)$(pkgdatadir) -xf-
+	tar -cf - dzn/templates | tar -C $(DESTDIR)$(pkgdatadir) -xf-
