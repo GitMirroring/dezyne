@@ -6,6 +6,8 @@
             %datarootdir
             %dezyne-prefix
             %localstatedir
+            %guilemoduledir
+            %guileobjectdir
             %lts
             %prefix
             %root-dir
@@ -30,6 +32,10 @@
 (define %prefix
   (or (and (getenv "DZN_UNINSTALLED") (getenv "PREFIX"))
       "@prefix@"))
+
+(define %exec-prefix
+  (or (and (getenv "DZN_UNINSTALLED") (getenv "PREFIX"))
+      "@exec_prefix@"))
 
 (define %dezyne-prefix
   (or (getenv "DEZYNE_PREFIX") %prefix))
@@ -58,14 +64,20 @@
   (string-append %datadir "/bin"))
 
 (define %sbindir
-  (or (and (getenv "DZN_UNINSTALLED") (string-append %prefix "/sbin"))
-      "@sbindir@"))
+  "@sbindir")
 
 (define %template-dir
   (string-append %datadir "/templates"))
 
+(define %guilemoduledir
+  "@guilemoduledir@")
+
+(define %guileobjectdir
+  "@guileobjectdir@")
+
 (define %command-dir
-  (string-append %datadir "/gaiag/commands"))
+  (or (and (getenv "DZN_UNINSTALLED") (string-append %prefix "/gaiag/commands"))
+      (string-append %guileobjectdir "/gaiag/commands")))
 
 (define %service-dir
   (string-append %datadir "/services"))

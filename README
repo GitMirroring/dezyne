@@ -1,173 +1,53 @@
-#                                                              -*-org-*-
-#+TITLE: The Dezyne server, services, client.
-#+OPTIONS: toc:2          only include two levels in TOC
+#+COMMENT:                                                            -*- org -*-
+#+TITLE: About Dezyne command line tools
 
-Dezyne is built and deployed using [[https://gnu.org/s/guix][Guix]] 53f21642729e4786141c072dd835b04cb85dfe28.
-See `Update Guix' and `Setup Guix' below.
+#+SUBTITLE:
 
-* Update Guix
+Dezyne is a programming language and set of tools that aim to eliminate
+the need for testing by applying formal verification methods.
 
-  #+BEGIN_SRC bash
-  guix pull --commit 53f21642729e4786141c072dd835b04cb85dfe28
-  #+END_SRC
+The Dezyne language uses a component model that implements event based
+coroutines.
 
-* Get it
+Dezyne is free software, it is distributed under the terms of the GNU
+Affero General Public Licence version 3 or later.  See the file [[file:COPYING][COPYING]].
 
-  #+BEGIN_SRC bash
-  mkdir -p src
-  cd src && git clone git.oban.verum.com:~buildmaster/development.git
-  #+END_SRC
+* Requirements
 
-* Build it
-** Create a build environment
+Dezyne currently depends on the following packages:
 
-  #+BEGIN_SRC bash
-  guix environment -l guix.scm
-  #+END_SRC
+  - [[https://gnu.org/software/guile/][GNU Guile 2.2.x]]
+  - [[https://www.gnu.org/software/make/][GNU Make]]
+  - [[https://mcrl2.org][mCRL2]]
+  - [[https://gnu.org/software/m4/][GNU m4]], compiled with --enable-changeword
 
-or, for a richer environment
-  #+BEGIN_SRC bash
-  guix environment -m release/manifest.scm
-  #+END_SRC
+to run the regression test, these additional packages are needed:
 
-** Configure and make
-  #+BEGIN_SRC bash
-  ./configure
-  make
-  #+END_SRC
+  - [[https://gcc.gnu.org][GCC's g++]]
+  - [[https://nodejs.org][node and npm]]
+    + [[https://www.npmjs.com/package/node-getopt][node-getopt]]
+    + [[https://www.npmjs.com/package/node-q][node-q]]
 
-** Run uninstalled programs
+#+BEGIN_EXAMPLE
+    guix environment -l guix.scm
+    ./autogen.sh
+    ./configure
+    make
+    ./pre-inst-env dzn
+#+END_EXAMPLE
 
-  #+BEGIN_SRC bash
-  ./pre-inst-env gdzn ...
-  ./pre-inst-env dzn ...
-  #+END_SRC
+See [[file:guix.scm][guix.scm]] for other options and [[file:INSTALL][INSTALL]] for full instructions.
 
-** Run regression test
+* Contact
 
-  #+BEGIN_SRC bash
-  ./pre-inst-env guix environment dezyne-services dezyne-regression-test
-  ./pre-inst-env test test/hello/helloworld
+Please email [[mailto:dezyne-devel@nongnu.org][dezyne-devel@nongnu.org]] for help or questions; email bug
+reports to [[bug-dezyne@nongnu.org][bug-dezyne@nongnu.org]]
 
-  ./pre-inst-env test test/regression
-  #+END_SRC
+Join #dezyne on irc.freenode.net.
 
-*** Run regression through node dzn client, daemon and server
+* Legalese
+Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 
-  #+BEGIN_SRC bash
-  guix environment -l guix.scm
-  DZN=dzn ./pre-inst-env test test/hello/helloworld
-  #+END_SRC
-
-* Release it
-
-Guix package descriptions now live in the feature branches (2.8, 2.9,
-development and enterprise), e.g. [[file:guix/dezyne/development/pack.scm][guix/dezyne/development/pack.scm]].
-The source object can be updated with help from gdzn release:
-
-  #+BEGIN_SRC bash
-   ./pre-inst-env gdzn release
-  #+END_SRC
-
-and then edit the git commit and guix content hash.  Then push to
-git.oban/buildmaster (blessed).  Deploying a released feature branch
-is done from the `release' branch.
-
-* Create or update a persistent build environment
-** in your default profile
-
-  #+BEGIN_SRC bash
-  guix package -m release/manifest.scm
-  #+END_SRC
-
-** or in a special named profile
-
-  #+BEGIN_SRC bash
-  guix package -p ~/.config/guix/verum -m release/manifest.scm
-  #+END_SRC
-
-use it
-
-  #+BEGIN_SRC bash
-  GUIX_PROFILE=~/.config/guix/verum/etc/profile . ~/.config/guix/verum/etc/profile
-  #+END_SRC
-
-* Build Guix packages
-
-** From local work tree, uncommited
-
-  #+BEGIN_SRC bash
-  guix build -f guix.scm
-  #+END_SRC
-
-** Build from public git
-
-  #+BEGIN_SRC bash
-  git_oban=http://git.oban.verum.com/voornaamachternaa ./pre-inst-env guix build dezyne-pack
-  #+END_SRC
-
-** Build from local git
-*** Setup git daemon
-
-  #+BEGIN_SRC bash
-  mkdir -p $HOME/git-daemon
-  ln -s $HOME/src/development $HOME/git-daemon/development.git
-  #+END_SRC
-
-*** Start git daemon
-
-  #+BEGIN_SRC bash
-  git daemon --base-path=$HOME/git-daemon --export-all &
-  #+END_SRC
-
-* Build vm
-
-  #+BEGIN_SRC bash
-  ./pre-inst-env guix system vm guix/dezyne/system/os.scm
-  #+END_SRC
-
-** Run vm
-  #+BEGIN_SRC bash
-  /gnu/store/...-run-vm.sh  -m 2G -net nic -net user,hostfwd=tcp::10022-:22,hostfwd=tcp::13000-:3000
-  #+END_SRC
-
-** Build and run vm
-  $(./pre-inst-env guix system vm guix/dezyne/system/os.scm) -m 2G -net nic -net user,hostfwd=tcp::10022-:22,hostfwd=tcp::13000-:3000
-
-* Editing Scheme files
-
-You should not code dialect of Lisp without Paredit.  Add to you
-~/.emacs init file
-
-  #+BEGIN_SRC elisp
-  (when (require 'paredit nil t)
-    (add-hook 'scheme-mode-hook #'enable-paredit-mode)
-    (add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode))
-  #+END_SRC
-
-Geiser gives you jump to definition (M-.) and jump-to-documentation
-(C-d-d).
-
-  #+BEGIN_SRC elisp
-  (when (require 'geiser nil t) (add-hook 'scheme-mode-hook #'geiser-mode))
-  #+END_SRC
-
-* Setup Guix
-
-** On Ubuntu
-
-   As root (sudo -i) do
-   #+BEGIN_SRC bash
-   wget -O setup-guix.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-guix.sh;hb=refs/heads/master'
-   chmod +x setup-guix.sh
-   ./setup-guix.sh
-   #+END_SRC
-
-   As user do
-   #+BEGIN_SRC bash
-   wget -O setup-guix-user.sh 'http://git.oban.verum.com/?p=buildmaster/development.git;a=blob_plain;f=release/setup-guix-user.sh;hb=refs/heads/master'
-   chmod +x setup-guix-user.sh
-   ./setup-guix-user.sh
-   #+END_SRC
-
-** Or install [[https://guix.gnu.org][Guix System]]
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
