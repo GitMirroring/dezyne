@@ -1,0 +1,21 @@
+#+COMMENT:                                                            -*- org -*-
+#+TITLE: Hacking Dezyne command line tools
+
+* MinGW cross build
+
+Try something like
+
+    guix environment -l mingw.scm --pure --ad-hoc guix
+
+    guile="$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 guile-mingw | grep -v debug)"
+    export PKG_CONFIG_PATH="$guile/lib/pkgconfig"
+    export GUILE_TOOLS=$GUIX_ENVIRONMENT/bin/guild
+    ./configure --host=x86_64-w64-mingw32
+    make GUILE_TOOLS=$GUILE_TOOLS
+
+* Legalese
+Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.

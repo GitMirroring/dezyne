@@ -23,7 +23,10 @@
 /configure
 /gaiag/config.scm
 /pre-inst-env
-/bin/dezyne
+/runtime/c++03/dzn/meta.hh
+/runtime/c++-msvc11/dzn/meta.hh
+/runtime/c++/dzn/meta.hh
+/libtool
 Makefile
 Makefile.in
 /bin/lts2traces
