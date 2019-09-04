@@ -33,6 +33,10 @@
 #include <string>
 #include <typeinfo>
 
+#ifndef DZN_ILLEGAL_HANDLER
+#define DZN_ILLEGAL_HANDLER dzn_locator.get<dzn::illegal_handler>().illegal()
+#endif
+
 namespace dzn {
   struct illegal_handler {std::function<void()> illegal = [] {assert(!"illegal");};};
 
