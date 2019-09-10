@@ -24,7 +24,6 @@
 // Code:
 
 #include <dzn/runtime.hh>
-#include <dzn/pump.hh>
 
 #include <algorithm>
 #include <iostream>
