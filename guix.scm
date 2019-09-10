@@ -17,9 +17,9 @@
 ;;;
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
-;;; 
+;;;
 ;;; Commentary:
-;;; 
+;;;
 ;;; Code:
 
 ;;; Commentary:
@@ -42,38 +42,21 @@
 ;;
 ;;; Code:
 
-(use-modules (guix build-system gnu)
-             (guix gexp)
+(use-modules (guix gexp)
              (guix git-download)
-             ((guix licenses) #:prefix license:)
              (guix packages)
-             (gnu packages)
-             (gnu packages boost)
-             (gnu packages emacs)
-             (gnu packages emacs-xyz)
-             (gnu packages guile)
-             (gnu packages wxwidgets))
+             (gnu packages))
 
 (define %source-dir (dirname (current-filename)))
+(add-to-load-path (string-append %source-dir "/guix"))
+(%patch-path (cons (string-append %source-dir "/guix") (%patch-path)))
+(use-modules (gnu packages dzn))
 
-(define-public dzn
+(define-public dzn.git
   (package
-    (name "dzn")
-    (version "0.0")
+    (inherit dzn)
     (source (local-file %source-dir
                         #:recursive? #t
-                        #:select? (git-predicate %source-dir)))
-    (native-inputs `(("guile" ,guile-2.2)))
-    (build-system gnu-build-system)
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-before 'configure 'setenv
-           (lambda _
-             (setenv "GUILE_AUTO_COMPILE" "0"))))))
-    (synopsis "Dezyne command line tools")
-    (description "Dezyne command line tools")
-    (home-page "https://verum.com")
-    (license license:gpl3+)))
+                        #:select? (git-predicate %source-dir)))))
 
-dezyne-ide
+dzn.git
