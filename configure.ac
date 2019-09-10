@@ -46,6 +46,18 @@ if test "x$have_guile_json" != "xyes"; then
 fi
 
 AC_PATH_PROG([PERL5], [perl5 perl])
+AC_PATH_PROG([M4_CW], [m4-cw])
+AC_PATH_PROG([LTS], [lts])
+AC_PATH_PROG([MCRL22LPS], [mcrl22lps])
+
+VERSION_MAJOR=[$(expr $PACKAGE_VERSION : '\([0-9]\+\)[.][0-9]\+[.][0-9][^ ]*')]
+VERSION_MINOR=[$(expr $PACKAGE_VERSION : '[0-9]\+[.]\([0-9]\+\)[.][0-9][^ ]*')]
+VERSION_PATCH=[$(expr $PACKAGE_VERSION : '[0-9]\+[.][0-9]\+[.]\([0-9]\+\)[^ ]*')]
+VERSION_COMMIT=[$(expr $PACKAGE_VERSION : '[0-9]\+[.][0-9]\+[.][0-9]\+\([^ ]*\)')]
+AC_SUBST([VERSION_MAJOR])
+AC_SUBST([VERSION_MINOR])
+AC_SUBST([VERSION_PATCH])
+AC_SUBST([VERSION_COMMIT])
 
 AM_CONDITIONAL([CROSS_COMPILING], [test x$cross_compiling = xyes])
 
