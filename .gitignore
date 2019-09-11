@@ -7,6 +7,7 @@
 *.lo
 *.o
 *~
+*.1
 /aclocal.m4
 /autom4te.cache/*
 /build-aux/*

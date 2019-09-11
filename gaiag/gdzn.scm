@@ -95,7 +95,7 @@ Use \"gdzn COMMAND --help\" for command-specific information.
   (let ((v (drop-while (negate version-option?) args)))
     (and (pair? v)
          (let ((opt (car v)))
-           (cond ((member opt '("-V" "--version")) (cadr v))
+           (cond ((null? (cdr v)) %service-version)
                  ((string-prefix? "--version=" opt) (cadr (string-split opt #\=)))
                  ((string-prefix? "-V" opt) (string-drop opt 2))
                  (else (error "error parsing version option" opt)))))))

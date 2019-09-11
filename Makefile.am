@@ -122,6 +122,27 @@ CLEANFILES =					\
  $(gaiag_go_DATA)				\
  $(gaiag_peg_go_DATA)
 
+# Documentation
+###############
+
+dist_man_MANS =					\
+ doc/dzn.1					\
+ doc/gdzn.1					\
+ doc/dzn-hello.1				\
+ doc/dzn-parse.1
+
+doc/dzn.1: bin/dzn Makefile
+	./pre-inst-env help2man --output=$@ $<
+
+doc/gdzn.1: bin/dzn Makefile
+	./pre-inst-env help2man --output=$@ $<
+
+doc/dzn-hello.1: bin/dzn Makefile
+	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< hello"
+
+doc/dzn-parse.1: bin/dzn Makefile
+	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< parse"
+
 # Distribution
 ##############
 
