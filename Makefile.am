@@ -127,6 +127,13 @@ EXTRA_DIST += $(TESTS)
 # Documentation
 ###############
 
+info_TEXINFOS = doc/dezyne.texi
+
+dezyne_TEXINFOS = doc/fdl-1.3.texi
+
+EXTRA_DIST +=					\
+  $(dezyne_TEXINFOS)
+
 dist_man_MANS =					\
  doc/dzn.1					\
  doc/dzn-code.1					\
