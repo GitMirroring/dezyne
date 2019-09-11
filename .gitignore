@@ -16,12 +16,16 @@
 !/build-aux/gitlog-to-changelog
 !/build-aux/guile.am
 !/build-aux/pre-inst-env.in
+stamp-h[0-9]
+stamp-vti
 /m4
 /bin/dzn
 /bin/gdzn
 /config.log
 /config.status
 /configure
+/doc/dezyne.info
+/doc/version.texi
 /gaiag/config.scm
 /pre-inst-env
 /runtime/c++03/dzn/meta.hh

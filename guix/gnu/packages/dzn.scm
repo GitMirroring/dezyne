@@ -66,6 +66,7 @@
                      ("libtool" ,libtool)
                      ("perl" ,perl)
                      ("pkg-config" ,pkg-config)
+                     ("texinfo" ,texinfo)
                      ("zip" ,zip)))   ; for guix environment -l guix.scm
     (propagated-inputs `(("guile-json" ,guile-json)))
     (build-system gnu-build-system)
