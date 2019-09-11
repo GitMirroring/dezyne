@@ -133,6 +133,22 @@ dezyne_TEXINFOS = doc/fdl-1.3.texi
 EXTRA_DIST +=					\
   $(dezyne_TEXINFOS)
 
+dist_info_images_DATA =					\
+ doc/images/direct_in.png				\
+ doc/images/direct_multiple_out1.png			\
+ doc/images/direct_multiple_out2.png			\
+ doc/images/direct_out.png				\
+ doc/images/external_multiple_out.png			\
+ doc/images/indirect_blocking_multiple_external_out.png	\
+ doc/images/indirect_blocking_out.png			\
+ doc/images/indirect_multiple_out1.png			\
+ doc/images/indirect_multiple_out2.png			\
+ doc/images/indirect_multiple_out3.png			\
+ doc/images/indirect_out.png
+
+info_imagesdir = $(infodir)/images
+EXTRA_DIST += $(info_image_DATA)
+
 dist_man_MANS =					\
  doc/dzn.1					\
  doc/dzn-cat.1					\
