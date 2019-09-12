@@ -74,36 +74,11 @@ EXTRA_DIST +=					\
  bin/dzn.in					\
  bin/gdzn.in
 
-dist_gaiag_scm_DATA =				\
- gaiag/parse.scm
-
-dist_nocompile_gaiag_scm_DATA =
-
-gaiag_scmdir = $(guilemoduledir)/gaiag
-nocompile_gaiag_scmdir = $(gaiag_scmdir)
-gaiag_godir = $(guileobjectdir)/gaiag
-gaiag_go_DATA = $(dist_gaiag_scm_DATA:%.scm=%.go)
-
-dist_gaiag_peg_scm_DATA =			\
- gaiag/peg/string-peg.scm			\
- gaiag/peg/simplify-tree.scm			\
- gaiag/peg/codegen.scm				\
- gaiag/peg/cache.scm				\
- gaiag/peg/using-parsers.scm
-
-dist_nocompile_gaiag_peg_scm_DATA =
-
-gaiag_peg_scmdir = $(guilemoduledir)/gaiag/peg
-nocompile_gaiag_peg_scmdir = $(gaiag_peg_scmdir)
-gaiag_peg_godir = $(guileobjectdir)/gaiag/peg
-gaiag_peg_go_DATA = $(dist_gaiag_peg_scm_DATA:%.scm=%.go)
-
-dist_scmrl_scm_DATA =
-
-scmrl_scmdir = $(guilemoduledir)/scmrl
-nocompile_scmrl_scmdir = $(scmrl_scmdir)
-scmrl_godir = $(guileobjectdir)/scmrl
-scmrl_go_DATA = $(dist_scmrl_scm_DATA:%.scm=%.go)
+ALL_GO =
+include gaiag/local.mk
+include gaiag/parse/local.mk
+include gaiag/peg/local.mk
+include gaiag/commands/local.mk
 
 GUILEC_FLAGS = -Warity-mismatch -Wformat --load-path=$(abs_srcdir)
 
@@ -119,8 +94,11 @@ AM_V_GUILEC_0 = @echo "  GUILEC" $@;
 
 CLEANFILES =					\
  $(BUILT_SOURCES)				\
- $(gaiag_go_DATA)				\
- $(gaiag_peg_go_DATA)
+ $(ALL_GO)
+
+all-go: $(ALL_GO)
+clean-go:
+	rm -f $(ALL_GO)
 
 # Documentation
 ###############
@@ -131,16 +109,19 @@ dist_man_MANS =					\
  doc/dzn-hello.1				\
  doc/dzn-parse.1
 
-doc/dzn.1: bin/dzn Makefile
+doc/dzn.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ $<
 
-doc/gdzn.1: bin/dzn Makefile
+doc/gdzn.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ $<
 
-doc/dzn-hello.1: bin/dzn Makefile
+doc/dzn-code.1: bin/dzn Makefile $(ALL_GO)
+	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< code"
+
+doc/dzn-hello.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< hello"
 
-doc/dzn-parse.1: bin/dzn Makefile
+doc/dzn-parse.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< parse"
 
 # Distribution
