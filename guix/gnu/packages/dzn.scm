@@ -78,7 +78,34 @@
          (add-before 'configure 'setenv
            (lambda _
              (setenv "GUILE_AUTO_COMPILE" "0")
-             (setenv "V" "2"))))))
+             (setenv "V" "2")))
+         (add-after 'install 'wrap-binaries
+           (lambda* (#:key inputs outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (guile (assoc-ref %build-inputs "guile"))
+                    (json (assoc-ref %build-inputs "guile-json"))
+                    (effective (read
+                                (open-pipe* OPEN_READ
+                                            "guile" "-c"
+                                            "(write (effective-version))")))
+                    (data-dir (string-append out "/share/dzn"))
+                    (path (list (string-append guile "/bin")))
+                    (scm-dir (string-append out "/share/guile/site/" effective))
+                    (scm-path (list (string-append out "/share/guile/site/" effective)
+                                    (string-append json "/share/guile/site/" effective)))
+                    (go-path (list (string-append out "/lib/guile/" effective
+                                                  "/site-ccache/")
+                                   (string-append json "/lib/guile/" effective
+                                                  "/site-ccache/"))))
+               (wrap-program (string-append out "/bin/dzn")
+                  `("DATADIR" ":" = (,data-dir))
+                  `("PATH" ":" prefix ,path)
+                  `("GUILE_AUTO_COMPILE" ":" = ("0"))
+                  `("GUILE_LOAD_PATH" ":" prefix ,scm-path)
+                  `("GUILE_LOAD_COMPILED_PATH" ":" prefix ,go-path)
+                  `("LANG" ":" = ())
+                  `("LC_ALL" ":" = ()))
+               #t))))))
     (synopsis "Dezyne command line tools")
     (description "Dezyne command line tools")
     (home-page "https://verum.com")
