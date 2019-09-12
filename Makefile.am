@@ -74,36 +74,11 @@ EXTRA_DIST +=					\
  bin/dzn.in					\
  bin/gdzn.in
 
-dist_dzn_scm_DATA =				\
- dzn/parse.scm
-
-dist_nocompile_dzn_scm_DATA =
-
-dzn_scmdir = $(guilemoduledir)/dzn
-nocompile_dzn_scmdir = $(dzn_scmdir)
-dzn_godir = $(guileobjectdir)/dzn
-dzn_go_DATA = $(dist_dzn_scm_DATA:%.scm=%.go)
-
-dist_dzn_peg_scm_DATA =			\
- dzn/peg/string-peg.scm			\
- dzn/peg/simplify-tree.scm			\
- dzn/peg/codegen.scm				\
- dzn/peg/cache.scm				\
- dzn/peg/using-parsers.scm
-
-dist_nocompile_dzn_peg_scm_DATA =
-
-dzn_peg_scmdir = $(guilemoduledir)/dzn/peg
-nocompile_dzn_peg_scmdir = $(dzn_peg_scmdir)
-dzn_peg_godir = $(guileobjectdir)/dzn/peg
-dzn_peg_go_DATA = $(dist_dzn_peg_scm_DATA:%.scm=%.go)
-
-dist_scmrl_scm_DATA =
-
-scmrl_scmdir = $(guilemoduledir)/scmrl
-nocompile_scmrl_scmdir = $(scmrl_scmdir)
-scmrl_godir = $(guileobjectdir)/scmrl
-scmrl_go_DATA = $(dist_scmrl_scm_DATA:%.scm=%.go)
+ALL_GO =
+include dzn/local.mk
+include dzn/parse/local.mk
+include dzn/peg/local.mk
+include dzn/commands/local.mk
 
 GUILEC_FLAGS = -Warity-mismatch -Wformat --load-path=$(abs_srcdir)
 
@@ -119,8 +94,11 @@ AM_V_GUILEC_0 = @echo "  GUILEC" $@;
 
 CLEANFILES =					\
  $(BUILT_SOURCES)				\
- $(dzn_go_DATA)				\
- $(dzn_peg_go_DATA)
+ $(ALL_GO)
+
+all-go: $(ALL_GO)
+clean-go:
+	rm -f $(ALL_GO)
 
 # Documentation
 ###############
@@ -131,16 +109,19 @@ dist_man_MANS =					\
  doc/dzn-hello.1				\
  doc/dzn-parse.1
 
-doc/dzn.1: bin/dzn Makefile
+doc/dzn.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ $<
 
-doc/gdzn.1: bin/dzn Makefile
+doc/gdzn.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ $<
 
-doc/dzn-hello.1: bin/dzn Makefile
+doc/dzn-code.1: bin/dzn Makefile $(ALL_GO)
+	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< code"
+
+doc/dzn-hello.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< hello"
 
-doc/dzn-parse.1: bin/dzn Makefile
+doc/dzn-parse.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< parse"
 
 # Distribution
