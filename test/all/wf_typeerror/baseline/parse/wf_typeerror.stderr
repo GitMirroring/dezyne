@@ -1,1 +1,3 @@
-out/wf_typeerror/wf_typeerror.dzn:17:4: error: interface expected, found enum E
+out/wf_typeerror/wf_typeerror.dzn:40:5: error: interface expected, found `enum E'
+out/wf_typeerror/wf_typeerror.dzn:42:12: error: invalid type for port `p', interface expected, found `enum E'
+out/wf_typeerror/wf_typeerror.dzn:40:5: error: port `p' declared here

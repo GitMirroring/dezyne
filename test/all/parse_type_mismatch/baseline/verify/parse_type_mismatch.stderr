@@ -1,0 +1,5 @@
+test/all/parse_type_mismatch/parse_type_mismatch.dzn:32:5: error: type mismatch: expected `bool', found `parse_type_mismatch.e'
+test/all/parse_type_mismatch/parse_type_mismatch.dzn:33:5: error: type mismatch: expected `parse_type_mismatch.f', found `parse_type_mismatch.e'
+test/all/parse_type_mismatch/parse_type_mismatch.dzn:34:5: error: uninitialized variable `z'
+test/all/parse_type_mismatch/parse_type_mismatch.dzn:36:20: error: no field `t' in enum `parse_type_mismatch`; expected f, w
+test/all/parse_type_mismatch/parse_type_mismatch.dzn:31:5: error: enum declared here
