@@ -1,1 +1,2 @@
+out/wf_actionNotInOnEvent/wf_actionNotInOnEvent.dzn:30:9: error: imperative compound outside on
 out/wf_actionNotInOnEvent/wf_actionNotInOnEvent.dzn:31:7: error: action outside on
