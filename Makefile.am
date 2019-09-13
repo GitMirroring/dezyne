@@ -29,7 +29,8 @@ EXTRA_DIST =					\
  autogen.sh					\
  build-aux/git-version-gen			\
  build-aux/gitlog-to-changelog			\
- guix.scm
+ guix.scm					\
+ guix/gnu/packages/dzn.scm
 
 exampledir = $(docdir)
 
@@ -49,6 +50,8 @@ do_subst = sed						\
   -e 's,[@]sysconfdir[@],$(sysconfdir),g'		\
   -e 's,[@]ASD[@],$(ASD),g'				\
   -e 's,[@]LTS[@],$(LTS),g'				\
+  -e 's,[@]PYTHON2[@],$(PYTHON2),g'			\
+  -e 's,[@]PACKAGE_VERSION[@],$(PACKAGE_VERSION),g'	\
   -e 's,[@]VERSION_MAJOR[@],$(VERSION_MAJOR),g'		\
   -e 's,[@]VERSION_MINOR[@],$(VERSION_MINOR),g'		\
   -e 's,[@]VERSION_PATCH[@],$(VERSION_PATCH),g'
@@ -68,17 +71,21 @@ BUILT_SOURCES = gaiag/config.scm
 
 bin_SCRIPTS =					\
   bin/dzn					\
-  bin/gdzn
+  bin/gdzn					\
+  bin/lts2traces
 
 EXTRA_DIST +=					\
  bin/dzn.in					\
- bin/gdzn.in
+ bin/gdzn.in					\
+ bin/lts2traces.in
 
 ALL_GO =
 include gaiag/local.mk
+include gash/local.mk
 include gaiag/parse/local.mk
 include gaiag/peg/local.mk
 include gaiag/commands/local.mk
+include scmcrl2/local.mk
 
 GUILEC_FLAGS = -Warity-mismatch -Wformat --load-path=$(abs_srcdir)
 
@@ -106,8 +113,10 @@ clean-go:
 dist_man_MANS =					\
  doc/dzn.1					\
  doc/gdzn.1					\
+ doc/dzn-code.1					\
  doc/dzn-hello.1				\
- doc/dzn-parse.1
+ doc/dzn-parse.1				\
+ doc/lts2traces.1
 
 doc/dzn.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ $<
@@ -123,6 +132,9 @@ doc/dzn-hello.1: bin/dzn Makefile $(ALL_GO)
 
 doc/dzn-parse.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< parse"
+
+doc/lts2traces.1: bin/lts2traces Makefile $(ALL_GO)
+	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) $<
 
 # Distribution
 ##############
