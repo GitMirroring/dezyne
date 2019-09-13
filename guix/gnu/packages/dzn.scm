@@ -33,9 +33,13 @@
   #:use-module (guix utils)
   #:use-module (gnu packages)
   #:use-module (gnu packages autotools)
+  #:use-module (gnu packages base)
+  #:use-module (gnu packages bash)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages gettext)
   #:use-module (gnu packages guile)
+  #:use-module (gnu packages guile-mingw)
+  #:use-module (gnu packages lts)
   #:use-module (gnu packages man)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages perl)
@@ -83,12 +87,22 @@
              (let* ((out (assoc-ref outputs "out"))
                     (guile (assoc-ref %build-inputs "guile"))
                     (json (assoc-ref %build-inputs "guile-json"))
+                    (lts (assoc-ref %build-inputs "lts"))
+                    (m4 (assoc-ref %build-inputs "m4-cw"))
+                    (mcrl2 (assoc-ref %build-inputs "mcrl2"))
+                    (sed (assoc-ref %build-inputs "sed"))
                     (effective (read
                                 (open-pipe* OPEN_READ
                                             "guile" "-c"
                                             "(write (effective-version))")))
                     (data-dir (string-append out "/share/dzn"))
-                    (path (list (string-append guile "/bin")))
+                    (path (list (string-append bash "/bin")
+                                (string-append coreutils "/bin")
+                                (string-append guile "/bin")
+                                (string-append lts "/bin")
+                                (string-append m4 "/bin")
+                                (string-append mcrl2 "/bin")
+                                (string-append sed "/bin")))
                     (scm-dir (string-append out "/share/guile/site/" effective))
                     (scm-path (list (string-append out "/share/guile/site/" effective)
                                     (string-append json "/share/guile/site/" effective)))
@@ -109,3 +123,17 @@
     (description "Dezyne command line tools")
     (home-page "https://verum.com")
     (license license:gpl3+)))
+
+(define-public dzn-mingw
+  (package
+    (inherit dzn)
+    (name "dzn-mingw")
+    (native-inputs `(("guile-json-for-build" ,guile-json)
+                     ,@(package-native-inputs dzn)))
+    (inputs `(("guile" ,guile-mingw)))
+    (propagated-inputs `(("guile-json" ,guile-json-mingw)))
+    (arguments
+     (substitute-keyword-arguments (package-arguments dzn)
+       ((#:phases phases '%standard-phases)
+        `(modify-phases ,phases
+           (delete 'wrap-binaries)))))))
