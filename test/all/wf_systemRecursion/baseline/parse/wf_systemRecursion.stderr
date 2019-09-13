@@ -1,3 +1,3 @@
-out/wf_systemRecursion/wf_systemRecursion.dzn:1:11: Well-formedness error: System composition is recursive: 'C1'
-out/wf_systemRecursion/wf_systemRecursion.dzn:14:11: Well-formedness error: System composition is recursive: 'C3'
-out/wf_systemRecursion/wf_systemRecursion.dzn:21:11: Well-formedness error: System composition is recursive: 'C4'
+out/wf_systemRecursion/wf_systemRecursion.dzn:24:1: error: system composition of `C1' is recursive
+out/wf_systemRecursion/wf_systemRecursion.dzn:37:1: error: system composition of `C3' is recursive
+out/wf_systemRecursion/wf_systemRecursion.dzn:44:1: error: system composition of `C4' is recursive
