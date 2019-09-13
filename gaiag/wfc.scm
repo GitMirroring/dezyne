@@ -64,91 +64,366 @@
 
 (define-method (wfc (o <root>))
   (append
-   (append-map wfc (ast:type* o))
-   (append-map wfc (ast:model* o))))
+   (append-map wfc (ast:model* o))
+   (append-map wfc (ast:type* o))))
 
-(define-method (wfc o)
+(define-method (wfc (o <model>))
   '())
 
-(define-method (wfc (o <interface>))
+(define-method (wfc (o <interface>)) ;; is-a <model>
   (append
    (append-map wfc (ast:type* o))
    (append-map wfc (ast:event* o))
-   (if (.behaviour o) '()
-       `(,(wfc-error o "interface must have a behaviour")))
-   (or (and=> (.behaviour o) wfc) '())))
+   (if (.behaviour o) (wfc (.behaviour o))
+       `(,(wfc-error o "interface must have a behaviour")))))
 
-(define-method (wfc (o <component>))
+(define-method (wfc (o <component-model>)) ;; is-a <model>
+  (append-map wfc (ast:port* o)))
+
+(define-method (wfc (o <component>)) ;; is-a <component-model>
   (append
    (if (>0 (length (ast:provides-port* o))) '()
        `(,(wfc-error o "component with behaviour must have a provides port")))
    (append-map wfc (ast:port* o))
    (or (and=> (.behaviour o) wfc) '())))
 
-(define-method (wfc (o <component-model>))
-  (append-map wfc (ast:port* o)))
-
-(define-method (wfc (o <system>))
+(define-method (wfc (o <system>)) ;; is-a <component-model>
   (append
    (append-map wfc (ast:port* o))
-   (binding-direction o)
-   (double-bindings o)
-   (missing-bindings o)))
+   (append-map wfc (ast:instance* o))
+   (recursive o)
+   (let ((errors (binding-declaration o)))
+     (if (pair? errors) errors
+         (let ((errors (append
+                         (binding-direction o)
+                         (double-bindings o)
+                         (missing-bindings o))))
+           (if (pair? errors) errors
+               (cyclic-bindings o)))))))
+
+(define-method (wfc (o <type>))
+  (re-declaration o))
+
+(define-method (wfc (o <enum>)) ;; is-a <type>
+  (append
+   (re-declaration o)
+   (let loop ((fields (ast:field* o)) (result '()))
+     (if (null? fields) result
+         (let* ((field (car fields))
+                (wf (if (find (cut eq? <> field) (cdr fields))
+                        `(,(wfc-error o (format #f "duplicate enum field `~a' in enum `~a'" field (type-name (.name o)))))
+                        '())))
+           (loop (cdr fields) (append wf result)))))
+   (if (and (parent o <model>) (ast:name-equal? (.name (parent o <model>)) (.name o)))
+       `(,(wfc-error o (format #f "enum `~a' must not have the same name as the model it is declared in" (type-name (.name o)))))
+       '())
+   '()))
+
+(define-method (wfc (o <int>)) ;; is-a <type>
+  (append (re-declaration o)
+   (let ((range (.range o)))
+     (if (<= (.from range) (.to range)) '()
+         `(,(wfc-error o (format #f "subint ~a has empty range" (type-name (.name o)))))))))
+
+(define-method (wfc (o <port>))
+  (append
+   (re-declaration o)
+   (if (ast:name-equal? (.name (parent o <model>)) (.name o))
+       `(,(wfc-error o (format #f "port `~a' must not have the same name as the model it is declared in" (.name o))))
+       '())
+   (let ((interface (.type o)))
+     (cond ((not interface)
+            `(,(wfc-error o (format #f "undefined interface `~a'" (type-name (.type.name o))))))
+           ((not (is-a? interface <interface>))
+            `(,(wfc-error o (format #f "interface expected, found `~a ~a'" (ast-name interface) (type-name interface)))))
+           ((and (.injected o)
+                 (let ((out-events (filter ast:out? (ast:event* o))))
+                   (and (pair? out-events)
+                        `(,(wfc-error o (format #f "injected port `~a' has out events: ~a" (.name o)
+                                                (string-join (map (compose symbol->string .name) out-events) ", ")))
+                          ,@(map (cut wfc-error <> (format #f "defined here")) out-events))))))
+           (else '())))
+   ;; TODO; do include async port in behaviour
+   ))
+
+
+(define-method (wfc (o <event>))
+  (append
+   (cond ((and (ast:out? o) (ast:type o) (not (is-a? (ast:type o) <void>)))
+          `(,(wfc-error o (format #f "out-event `~a' must be void, found `~a'" (.name o) (type-name (ast:type o))))))
+         (else '()))
+   (wfc (.signature o))))
+
+(define-method (wfc (o <signature>))
+  (append
+   (let ((type (ast:type o)))
+     (cond ((not type)
+            `(,(wfc-error o (format #f "unknown type name `~a'" (type-name (.type.name o))))))
+           ((is-a? type <extern>)
+            `(,(wfc-error o (format #f "extern type `~a' is not allowed as return type" (type-name (.type.name o))))))
+           (else '())))
+   (append-map wfc (ast:formal* o))))
+
+(define-method (wfc (o <formal>))
+  (append
+   (re-declaration o)
+   (let ((type (ast:type o))
+         (event (parent o <event>)))
+     (append
+      (cond ((not type)
+             `(,(wfc-error o (format #f "unknown type name `~a'" (type-name (.type.name o))))))
+            ((and event (not (is-a? type <extern>)))
+             `(,(wfc-error o (format #f "type mismatch: parameter `~a'; expected extern, found `~a'" (.name o) (type-name type)))))
+            (else '()))
+      (cond
+       ((and event (ast:out? event) (or (ast:out? o) (ast:inout? o)))
+        `(,(wfc-error o (format #f "~a-parameter not allowed on out-event `~a'" (.direction o) (.name event)))))
+       (else '()))))))
 
 (define-method (wfc (o <behaviour>))
   (append
-   (append-map variable-re-declaration (tree-collect (is? <variable>) o))
    (append-map wfc (ast:type* o))
-   (on o)
-   (guard o)
-   (mixing-declarative-imperative o)
-   (trigger o)
-   (action o)
-   (assign o)
-   (call-context o)
-   (tail-recursion o)
-   (missing-return o)
-   (blocking o)
-   (reply o)
-   (return o)
-   (illegal o)
-   (otherwise o)))
+   (append-map wfc (ast:port* o))
+   (append-map wfc (ast:variable* o))
+   (append-map
+    (lambda (variable)
+      (if (ast:name-equal? (.name (parent o <model>)) (.name variable))
+          `(,(wfc-error variable (format #f "variable `~a' must not have the same name as the model it is declared in" (.name variable))))
+          '()))
+    (ast:variable* o))
+   (append-map wfc (ast:function* o))
+   (wfc (.statement o))))
 
-(define-method (wfc (o <type>))
+(define-method (wfc (o <variable>))
+  (append
+   (re-declaration o)
+   (assign o)))
+
+(define-method (wfc (o <function>))
+  (append
+   (re-declaration o)
+   (wfc (.signature o))
+   (wfc (.statement o))
+   (missing-return o)))
+
+;;;;;;;;;;;;;;;;;;;;;;; statements
+
+(define-method (wfc (o <statement>))
   '())
 
-(define-method (wfc (o <enum>))
-  (re-declaration o))
+(define-method (wfc (o <compound>)) ;; is-a <statement>
+  (append
+   (call-context o)
+   (mixing-declarative-imperative o)
+   (append-map wfc (ast:statement* o))))
 
-(define-method (re-declaration (o <declaration>) scope)
-  (let* ((name (.name o))
-         (name (if (is-a? name <scope.name>) (.name name) name))
-         (previous (ast:lookup scope name)))
-    (if (and previous
-             (ast:eq? (parent previous <model>) (parent o <model>))
-             (not (ast:eq? previous o))
-             (not (is-a? previous <namespace>)))
-        `(,(wfc-error o (format #f "identifier `~a' declared before" (ast:name o)))
-          ,(wfc-error previous (format #f "previous `~a' declared here" (ast:name previous))))
-        '())))
+(define-method (wfc (o <declarative>)) ;; is-a <statement>
+  '())
 
-(define-method (re-declaration (o <declaration>))
-  (let ((scope (or (and=> (parent o <model>) .parent)
-                    (and=> (.parent o) (cut parent <> <scope>)))))
-    (re-declaration o scope)))
+(define-method (wfc (o <declarative-compound>)) ;; is-a <declarative>
+  (append
+   (mixing-declarative-imperative o)
+   (append-map wfc (ast:statement* o))))
 
-(define-method (variable-re-declaration (o <variable>))
-  (append (re-declaration o)
-          (let ((scope (parent o <compound>)))
-            (if scope (re-declaration o scope)
-                '()))))
+(define-method (wfc (o <guard>)) ;; is-a <declarative>
+  (define (otherwise-guard? o)
+  (and (is-a? o <guard>)
+       (is-a? (.expression o) <otherwise>)))
+  (define (otherwise o)
+    (let ((compound (parent o <compound>)))
+      (if (not compound) '()
+          (let ((non-guards (filter (negate (is? <guard>)) (ast:statement* compound)))
+                (otherwises (filter (conjoin otherwise-guard? (negate (cut ast:eq? <> o)))
+                                    (member o (ast:statement* compound) ast:eq?))))
+            (append
+             (if (pair? non-guards)
+                 `(,(wfc-error o "cannot use otherwise with non-guard statements")
+                   ,(wfc-error (car non-guards) "non-guard statement here"))
+                 '())
+             (if (pair? otherwises)
+                  `(,(wfc-error o "cannot use otherwise guard more than once")
+                    ,(wfc-error (car otherwises) "second otherwise here"))
+                  '()))))))
+  (append
+   (wfc (.expression o))
+   (if (is-a? (.expression o) <otherwise>) (otherwise o) '())
+   (wfc (.statement o))))
 
-(define-method (wfc (o <int>))
-  (let ((range (.range o)))
-    (if (<= (.from range) (.to range)) '()
-        `(,(wfc-error o (format #f "subint ~a has empty range" (type-name (.name o))))))))
+(define-method (wfc (o <declarative-illegal>)) ;; is-a <declarative>
+  ;; TODO; in source??
+  '())
 
-;;;;;;;;;;;;;;; expressions
+(define-method (wfc (o <incomplete>)) ;; is-a <declarative>
+  ;; TODO; in source??
+  '())
+
+(define-method (wfc (o <blocking>)) ;; is-a <declarative>
+  (define (blocking o)
+    (let ((model (parent o <model>)))
+      (cond ((is-a? model <interface>)
+             `(,(wfc-error o "cannot use blocking in an interface")))
+            ((parent (.parent o) <blocking>)
+             `(,(wfc-error o "nested blocking used")
+               ,(wfc-error (parent (.parent o) <blocking>) "within blocking here")))
+            ((> (length (ast:provides-port* model)) 1)
+             `(,(wfc-error o "blocking with multiple provide ports not supported")))
+            (else '()))))
+  (append (blocking o) (wfc (.statement o))))
+
+(define-method (wfc (o <on>)) ;; is-a <declarative>
+  (define (on o)
+    (append
+     (let ((parent (parent (.parent o) <on>)))
+       (if parent `(,(wfc-error o "nested on used")
+                    ,(wfc-error parent "within on here"))
+           '()))
+     (if (is-a? (parent o <model>) <interface>) (modeling-silent o)
+         '())))
+  (append
+   (on o)
+   (append-map wfc (ast:trigger* o))
+   (wfc (.statement o))))
+
+(define-method (wfc (o <imperative>)) ;; is-a <statement>
+  '())
+
+(define-method (wfc (o <out-bindings>)) ;; is-a <imperative>
+  ;; TODO: ??
+  '())
+
+(define-method (wfc (o <variable>)) ;; is-a <imperative>
+  ;; (assign o):
+  ;;   (.type o) defined?
+  ;;   (.expression o) wfc?
+  ;;   .expression matches .type
+  (append
+   (call-context o)
+   (re-declaration o)
+   (assign o)))
+
+(define-method (wfc (o <action>)) ;; is-a <imperative>
+  (append
+   (action o)
+   (call-context o)))
+
+(define-method (wfc (o <action-or-call>)) ;; is-a <imperative>
+  (append
+   (call-context o)
+   '()))
+
+(define-method (wfc (o <assign>)) ;; is-a <imperative>
+  ;; (.variable o) defined?
+
+  ;; (assign o):
+  ;;   (.type o) defined?
+  ;;   (.expression o) wfc?
+  ;;   .expression matches .type
+  (append
+   (assign o)
+   (call-context o)))
+
+(define-method (wfc (o <call>)) ;; is-a <imperative>
+  (append
+   (call-context o)
+   (tail-recursion o)))
+
+(define-method (wfc (o <if>)) ;; is-a <imperative>
+  (let* ((expression (.expression o))
+         (wfce (wfc expression)))
+    (append wfce
+            (if (pair? wfce) '()
+                (typed-expression expression <bool>))
+            (call-context o)
+            (wfc (.then o))
+            (if (.else o) (wfc (.else o)) '()))))
+
+(define-method (wfc (o <illegal>)) ;; is-a <imperative>
+  (define (illegal o)
+    (let ((model (parent o <model>)))
+      (cond ((and (is-a? model <interface>) (parent (.parent o) <function>))
+             `(,(wfc-error o "cannot use illegal in function")))
+            ((and (is-a? model <interface>) (parent (.parent o) <if>))
+             `(,(wfc-error o "cannot use illegal in if-statement")))
+            ((let loop ((compound (.parent o)))
+               (and compound
+                    (is-a? compound <compound>)
+                    (ast:imperative? compound)
+                    (or (and (let ((statements (ast:statement* compound)))
+                               (and (> (length statements) 1)
+                                    `(,(wfc-error o "cannot use illegal with imperative statements")
+                                      ,(wfc-error (car (filter (negate (cut member <> (ast:path o) ast:eq?)) statements))
+                                                  "imperative statement here")))))
+                        (loop (parent (.parent compound) <compound>))))))
+            (else '()))))
+  (append
+   (call-context o)
+   (illegal o)))
+
+(define-method (wfc (o <reply>)) ;; is-a <imperative>
+  (append
+   (call-context o)
+   (wfc (.expression o))
+   (reply o)
+   (reply-without-port o)
+   ))
+
+(define-method (wfc (o <return>)) ;; is-a <imperative>
+  (let* ((wfce (if (.expression o) (wfc (.expression o)) '()))
+        (function (parent o <function>))
+        (function-type (and function (ast:type function)))
+        (return-type (and (null? wfce) (ast:type o))))
+    (append wfce
+            (cond ((not function)
+                   `(,(wfc-error o "cannot use return outside of function")))
+                  ((pair? wfce) '())
+                  ((and (not (ast:equal? function-type return-type))
+                        (not (and (is-a? function-type <int>)
+                                  (is-a? return-type <int>)))
+                        (not (and (is-a? function-type <extern>)
+                                  (is-a? return-type <data>))))
+                   `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
+                                           (type-name function-type)
+                                           (type-name return-type)))))
+                  (else '())))))
+
+(define-method (wfc (o <the-end>))  ;; is-a <statement> ;; not in source
+  '())
+(define-method (wfc (o <the-end-blocking>))  ;; is-a <statement> ;; not in source
+  '())
+(define-method (wfc (o <voidreply>))  ;; is-a <statement> ;; not in source
+  '())
+
+(define-method (wfc (o <trigger>))
+  (let ((port (.port o))
+        (event (.event o))
+        (model (parent o <model>)))
+    (cond ((and (is-a? model <component>) (not port))
+           `(,(wfc-error o (format #f "undefined port `~a'" (.port.name o)))))
+          ((and (is-a? model <component>) (not (.type port)))
+           `(,(wfc-error o (format #f "invalid type for port `~a', interface expected, type `~a' not found"
+                                   (.port.name o) (type-name (.type.name port))))
+             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
+          ((and (is-a? model <component>) (not (is-a? (.type port) <interface>)))
+           `(,(wfc-error o (format #f "invalid type for port `~a', interface expected, found `~a ~a'"
+                                   (.port.name o) (ast-name (.type port)) (type-name (.type port))))
+             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
+          ((not event)
+           `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
+                                   (.event.name o) (.port.name o)))
+             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
+          ((and (is-a? model <interface>) (ast:out? event))
+           `(,(wfc-error o (format #f "cannot use ~a-event `~a' as trigger" (.direction event) (.event.name o)))
+             ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+          ((and (is-a? model <component>)
+                (or (and (ast:out? event) (ast:provides? (.port o)))
+                    (and (ast:in? event) (ast:requires? (.port o)))))
+           `(,(wfc-error o (format #f "cannot use ~a ~a-event `~a' as trigger"
+                                   (.direction (.port o)) (.direction event) (.event.name o)))
+             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))
+             ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+          (else '()))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; expressions
 
 (define-method (wfc (o <enum-literal>))
   (let ((type (.type o)))
@@ -230,7 +505,7 @@
           ((not type)
            '()) ;; already covered (?)
           ((not (is-a? type <enum>))
-           `(,(wfc-error o (format #f "type mismatch: expected enum, found '~a'"
+           `(,(wfc-error o (format #f "type mismatch: expected enum, found `~a'"
                                    (type-name type)))))
           ((not (member field fields))
            `(,(wfc-error o (format #f "no field `~a' in enum `~a'; expected ~a"
@@ -245,21 +520,88 @@
 (define-method (wfc (o <var>))
   (let ((variable (.variable o)))
     (cond ((not variable)
-           `(,(wfc-error o (format #f "undefined variable  '~a'" (.variable.name)))))
+           `(,(wfc-error o (format #f "undefined variable  `~a'" (.variable.name)))))
           (else '()))))
 
-(define-method (wfc (o <action>)) (action o))
-
-(define-method (wfc (o <call>)) (call-context o))
 
 (define-method (wfc (o <data>)) '())
 
-(define-method (wfc (o <expression>))
-;;  (warn 'wfc:--------------UNCOVERED-------------- o)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define-method (wfc (o <ast>))
+  ;;  (warn 'wfc:--------------UNCOVERED-------------- o)
   '())
 
-(define-method (assign (o <behaviour>))
-  (append-map assign (tree-collect (disjoin (is? <assign>) (is? <variable>)) o)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; helper functions
+
+(define-method (tail-recursion (o <call>))
+  (let ((function (parent o <function>)))
+    (if (or (not function)
+            (not (.recursive function))) '()
+            (let* ((continuation ((compose car wfc:continuation) o))
+                   (continuation (if (or (parent o <assign>) (parent o <variable>)) ((compose car (@@ (gaiag makreel) makreel:continuation)) continuation) continuation))
+                   (continuation (and continuation
+                                      (not (ast:eq? continuation (.statement (parent o <function>))))
+                                      (not (is-a? continuation <return>))
+                                      continuation)))
+              (if continuation `(,(wfc-error o "recursive function not in tail call")
+                                 ,(wfc-error continuation "next statement"))
+                  '())))))
+
+
+(define-method (mixing-declarative-imperative (o <compound>))
+  (if (ast:declarative? o)
+      (or (and-let* ((imperative
+                      (null-is-#f (filter ast:imperative? (ast:statement* o))))
+                     (ast (car imperative)))
+            (list (wfc-error ast "declarative statement expected")))
+          '())
+      (or (and-let* ((declarative
+                      (null-is-#f (filter ast:declarative? (ast:statement* o))))
+                     (ast (car declarative)))
+            (list (wfc-error ast "imperative statement expected")))
+          '())))
+
+(define-method (modeling-silent (o <on>))
+  (if (and (or (eq? (.silent? o) *unspecified*)
+               (is-a? (.silent? o) <ast>)) ((@@ (gaiag parse silence) any-modeling?) o))
+      `(,(wfc-error o (format #f "cannot determine silence"))
+        ,@(if (is-a? (.silent? o) <ast>) `(,(wfc-error (.silent? o) (format #f "may communicate or be silent")))
+              '()))
+      '()))
+
+(define-method (re-declaration (o <declaration>))
+  (let* ((name (.name o))
+         (name (if (is-a? name <scope.name>) (.name name) name))
+         (scope (decl-scope o))
+         (previous (and scope (ast:lookup scope name)))
+         (previous-scope (and previous (decl-scope previous))))
+    (if (and scope
+             previous
+             (ast:eq? scope previous-scope)
+             (not (ast:eq? previous o))
+             (not (is-a? previous <namespace>)))
+        `(,(wfc-error o (format #f "identifier `~a' declared before" (ast:name o)))
+          ,(wfc-error previous (format #f "previous `~a' declared here" (ast:name previous))))
+        '())))
+
+
+(define-method (decl-scope (o <declaration>))
+  (and=> (.parent o) (cut parent <> <scope>)))
+
+(define-method (decl-scope (o <event>))
+  (parent o <interface>))
+
+(define-method (decl-scope (o <instance>))
+  (parent o <system>))
+
+(define-method (decl-scope (o <formal>))
+  (.parent o))
+
+(define-method (decl-scope (o <function>))
+  (parent o <behaviour>))
+
+(define-method (decl-scope (o <variable>))
+  (or (parent o <compound>) (parent o <behaviour>)))
 
 (define-method (assign (o <ast>))
   (let* ((assign-type (ast:type o))
@@ -271,7 +613,7 @@
            `(,(wfc-error o (format #f "unknown type name `~a'" (type-name (.type.name o))))))
           ((and (is-a? o <variable>) (is-a? expression-type <void>))
            (if (is-a? assign-type <extern>) '()
-               `(,(wfc-error o (format #f "uninitialized variable `~a' " (.name o))))))
+               `(,(wfc-error o (format #f "uninitialized variable `~a'" (.name o))))))
           ((and (not (ast:equal? expression-type assign-type))
                 (not (and (is-a? assign-type <extern>)
                           (is-a? expression <data>)))
@@ -282,113 +624,11 @@
                                         (type-name expression-type))))))
           (else '()))))
 
-(define-method (blocking (o <behaviour>))
-  (append-map blocking (tree-collect (is? <blocking>) o)))
-
-(define-method (blocking (o <blocking>))
-  (let ((model (parent o <model>)))
-    (cond ((is-a? model <interface>)
-           `(,(wfc-error o "cannot use blocking in an interface")))
-          ((parent (.parent o) <blocking>)
-           `(,(wfc-error o "nested blocking used")
-             ,(wfc-error (parent (.parent o) <blocking>) "within blocking here")))
-          ((> (length (ast:provides-port* model)) 1)
-           `(,(wfc-error o "blocking with multiple provide ports not supported")))
-          (else '()))))
-
-(define-method (wfc (o <event>))
-  (append
-   (cond ((and (ast:out? o) (not (is-a? (ast:type o) <void>)))
-          `(,(wfc-error o (format #f "out-event `~a' must be void, found `~a'" (.name o) (type-name (ast:type o))))))
-         (else '()))
-   (append-map event-formal (ast:formal* o))))
-
-(define-method (event-formal (o <formal>))
-  (let ((type (ast:type o)))
-    (cond ((not type)
-           `(,(wfc-error o (format #f "unknown type name `~a'" (type-name (.type.name o))))))
-          ((not (is-a? type <extern>))
-           `(,(wfc-error o (format #f "type mismatch: parameter `~a'; expected extern, found `~a'" (.name o) (type-name type)))))
-          ((let ((event (parent o <event>)))
-             (and (ast:out? event)
-                  (or (ast:out? o) (ast:inout? o))
-                  `(,(wfc-error o (format #f "~a-parameter not allowed on out-event `~a'" (.direction o) (.name event)))))))
-          (else '()))))
-
-(define-method (wfc (o <port>))
-  (append
-   (re-declaration o)
-   (let ((interface (.type o)))
-     (cond ((not interface)
-            `(,(wfc-error o (format #f "undefined interface `~a'" (type-name (.type.name o))))))
-           ((not (is-a? interface <interface>))
-            `(,(wfc-error o (format #f "interface expected, found `~a ~a'" (ast-name interface) (type-name interface)))))
-           ((and (.injected o)
-                 (let ((out-events (filter ast:out? (ast:event* o))))
-                   (and (pair? out-events)
-                        `(,(wfc-error o (format #f "injected port `~a' has out events: ~a" (.name o)
-                                                (string-join (map (compose symbol->string .name) out-events) ", ")))
-                          ,@(map (cut wfc-error <> (format #f "defined here")) out-events))))))
-           (else '())))))
-
-(define-method (illegal (o <behaviour>))
-  (append-map illegal (tree-collect (is? <illegal>) o)))
-
-(define-method (illegal (o <illegal>))
-  (let ((model (parent o <model>)))
-   (cond ((and (is-a? model <interface>) (parent (.parent o) <function>))
-          `(,(wfc-error o "cannot use illegal in function")))
-         ((and (is-a? model <interface>) (parent (.parent o) <if>))
-          `(,(wfc-error o "cannot use illegal in if-statement")))
-         ((let loop ((compound (.parent o)))
-            (and compound
-                 (is-a? compound <compound>)
-                 (ast:imperative? compound)
-                 (or (and (let ((statements (ast:statement* compound)))
-                            (and (> (length statements) 1)
-                                 `(,(wfc-error o "cannot use illegal with imperative statements")
-                                   ,(wfc-error (car (filter (negate (cut member <> (ast:path o) ast:eq?)) statements))
-                                               "imperative statement here")))))
-                     (loop (parent (.parent compound) <compound>))))))
-         (else '()))))
-
-(define (otherwise-guard? o)
-  (and (is-a? o <guard>)
-       (is-a? (.expression o) <otherwise>)))
-
-(define-method (otherwise (o <behaviour>))
-  (append-map otherwise (tree-collect otherwise-guard? o)))
-
-(define-method (otherwise (o <guard>))
-  (cond ((let ((compound (parent o <compound>)))
-           (and compound
-                (or (and (let ((statements (filter (negate (is? <guard>)) (ast:statement* compound))))
-                           (and (pair? statements)
-                                `(,(wfc-error o "cannot use otherwise with non-guard statements")
-                                  ,(wfc-error (car statements)
-                                              "non-guard statement here")))))
-                    (and (let ((statements (filter (conjoin otherwise-guard? (negate (cut ast:eq? <> o)))
-                                                   (member o (ast:statement* compound) ast:eq?))))
-                           (and (pair? statements)
-                                `(,(wfc-error o "cannot use otherwise guard more than once")
-                                  ,(wfc-error (car statements)
-                                              "second otherwise here")))))))))
-        (else '())))
-
 (define-method (type-name (o <ast>))
   (symbol-join (ast:full-name o) '.))
 
 (define-method (type-name (o <scope.name>))
   (symbol-join (append (.scope o) (list (.name o))) '.))
-
-(define-method (reply (o <behaviour>))
-  (let ((replies (tree-collect (is? <reply>) o)))
-    (append
-     (append-map reply replies)
-     (let ((model (parent o <model>)))
-       (if (or (not (is-a? model <component>))
-               (<= (length (ast:provides-port* model)) 1)) '()
-               (append-map reply-without-port (filter (negate .port) replies)))))))
 
 (define-method (reply (o <reply>))
   (let ((on (parent o <on>)))
@@ -397,161 +637,79 @@
 
 (define-method (reply (o <reply>) (trigger <trigger>))
   (let* ((component (parent o <component>))
+         (port (and (.port.name o) (.port o)))
          (event (if (and component (pair? (tree-collect (is? <blocking>) component)) (ast:requires? trigger)) (car (ast:event* (ast:provides-port component)))
                     (.event trigger)))
-         (event-type (ast:type event))
+         (event-type (and event (ast:type event)))
          (reply-type (ast:type o)))
-    (or (and (or (not (.port.name o))
-                 (eq? (.port.name o) (.port.name trigger)))
-             (not (ast:equal? event-type reply-type))
-             (not (and (is-a? event-type <int>)
-                       (is-a? reply-type <int>)))
-             `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
-                                     (type-name event-type)
-                                     (type-name reply-type)))
-               ,(wfc-error event "event defined here")))
-        '())))
-
-(define-method (reply-without-port (o <reply>))
-  (define (trigger->string o)
-    (format #f "~a.~a" (.port.name o) (.event.name o)))
-  (let ((on (parent o <on>)))
-    (cond ((not on)
-           `(,(wfc-error o "must specify a provides-port with reply")))
-          ((let ((out-triggers (filter (compose ast:requires? .port) (ast:trigger* on))))
-             (and (pair? out-triggers)
-                  `(,(wfc-error o (format #f "must specify a provides-port with out-event: ~a"
-                                          (string-join (map trigger->string out-triggers) ", ")))))))
+    (cond ((and port (not (is-a? (.type port) <interface>)))
+           `(,(wfc-error o (format #f "invalid type for port `~a', interface expected, found `~a ~a'"
+                                   (.port.name o) (ast-name (.type port)) (type-name (.type port))))
+             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
+          ((not event) '())         ; already covered in trigger check
+          ((and (or (not (.port.name o))
+                    (eq? (.port.name o) (.port.name trigger)))
+                (not (ast:equal? event-type reply-type))
+                (not (and (is-a? event-type <int>)
+                          (is-a? reply-type <int>)))
+                `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
+                                        (and event-type (type-name event-type))
+                                        (type-name reply-type)))
+                  ,@(if event `(,(wfc-error event "event defined here"))
+                        '()))))
           (else '()))))
-
-(define-method (return (o <behaviour>))
-  (append-map return (tree-collect (is? <return>) o)))
-
-(define-method (return (o <return>))
-  (let ((function (parent o <function>)))
-    (cond ((not function)
-           `(,(wfc-error o "cannot use return outside of function")))
-          ((let ((function-type (ast:type function))
-                 (return-type (ast:type o)))
-             (and (not (ast:equal? function-type return-type))
-                  (not (and (is-a? function-type <int>)
-                            (is-a? return-type <int>)))
-                  `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
-                                          (type-name function-type)
-                                          (type-name return-type)))))))
-          (else '()))))
-
-(define-method (on (o <behaviour>))
-  (append-map on (tree-collect (is? <on>) o)))
-
-(define-method (on (o <on>))
-  (append
-   (let ((parent (parent (.parent o) <on>)))
-     (if parent `(,(wfc-error o "nested on used")
-                  ,(wfc-error parent "within on here"))
-         '()))
-   (if (is-a? (parent o <model>) <interface>) (modeling-silent o)
-       '())))
-
-(define-method (guard (o <behaviour>))
-  (append-map guard (tree-collect (is? <guard>) o)))
-
-(define-method (guard (o <guard>))
-  (wfc (.expression o)))
-
-(define-method (modeling-silent (o <on>))
-  (if (and (or (eq? (.silent? o) *unspecified*)
-               (is-a? (.silent? o) <ast>)) ((@@ (gaiag peg) any-modeling?) o))
-      `(,(wfc-error o (format #f "cannot determine silentness"))
-        ,@(if (is-a? (.silent? o) <ast>) `(,(wfc-error (.silent? o) (format #f "may communicate or be silent")))
-              '()))
-      '()))
-
-(define-method (action-statement? o)
-  (and (is-a? o <action>) (not (parent o <variable>)) (not (parent o <assign>))))
-
-(define-method (call-statement? o)
-  (and (is-a? o <call>) (not (parent o <variable>)) (not (parent o <assign>))))
-
-(define-method (action (o <behaviour>))
-  (append-map action (tree-collect action-statement? o)))
 
 (define-method (action (o <action>))
-  (let ((event (.event o))
-        (model (parent o <model>)))
-    (cond ((and (is-a? model <interface>) (not event))
-           `(,(wfc-error o (format #f "undefined event `~a'" (.event.name o)))))
-          ((and (is-a? model <interface>) (ast:in? event))
-              `(,(wfc-error o (format #f "cannot use ~a-event `~a' as action" (.direction event) (.event.name o)))
-                ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
-          ((and (is-a? model <component>) (not event))
-           (let ((port (.port o)))
-             (if (not port)
-                 `(,(wfc-error o (format #f "undefined port `~a'" (.port.name o))))
-                 `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
-                                         (.event.name o) (.port.name o)))
-                   ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))))
-          ((and (is-a? model <component>)
-                (or (and (ast:in? event) (ast:provides? (.port o)))
-                    (and (ast:out? event) (ast:requires? (.port o)))))
-           `(,(wfc-error o (format #f "cannot use ~a ~a-event `~a' as action"
-                                   (.direction (.port o)) (.direction event) (.event.name o)))
-             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))
-             ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
-          (else '()))))
+    (let ((event (.event o))
+          (model (parent o <model>)))
+      (cond ((and (is-a? model <interface>) (not event))
+             `(,(wfc-error o (format #f "undefined event `~a'" (.event.name o)))))
+            ((and (is-a? model <interface>) (ast:in? event))
+             `(,(wfc-error o (format #f "cannot use ~a-event `~a' as action" (.direction event) (.event.name o)))
+               ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+            ((and (is-a? model <component>) (not event))
+             (let ((port (.port o)))
+               (if (not port)
+                   `(,(wfc-error o (format #f "undefined port `~a'" (.port.name o))))
+                   `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
+                                           (.event.name o) (.port.name o)))
+                     ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))))
+            ((and (is-a? model <component>)
+                  (or (and (ast:in? event) (ast:provides? (.port o)))
+                      (and (ast:out? event) (ast:requires? (.port o)))))
+             `(,(wfc-error o (format #f "cannot use ~a ~a-event `~a' as action"
+                                     (.direction (.port o)) (.direction event) (.event.name o)))
+               ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))
+               ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+            (else '()))))
 
-(define-method (trigger (o <behaviour>))
-  (append-map trigger (tree-collect (is? <trigger>) o)))
+(define-method (binding-declaration (o <system>))
+  (append-map binding-declaration (ast:binding* o)))
 
-(define-method (trigger (o <trigger>))
-  (let ((port (.port o))
-        (event (.event o))
-        (model (parent o <model>)))
-    (cond ((and (is-a? model <component>) (not port))
-           `(,(wfc-error o (format #f "undefined port `~a'" (.port.name o)))))
-          ((not event)
-           `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
-                                   (.event.name o) (.port.name o)))
-             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
-          ((and (is-a? model <interface>) (ast:out? event))
-           `(,(wfc-error o (format #f "cannot use ~a-event `~a' as trigger" (.direction event) (.event.name o)))
-             ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
-          ((and (is-a? model <component>)
-                (or (and (ast:out? event) (ast:provides? (.port o)))
-                    (and (ast:in? event) (ast:requires? (.port o)))))
-           `(,(wfc-error o (format #f "cannot use ~a ~a-event `~a' as trigger"
-                                   (.direction (.port o)) (.direction event) (.event.name o)))
-             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))
-             ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
-          (else '()))))
+(define-method (binding-declaration (o <end-point>))
+  (let* ((instance-error (if (not (.instance.name o)) '()
+                             (let ((instance (.instance o)))
+                               (cond ((not instance)
+                                      `(,(wfc-error o (format #f "undefined identifier `~a'" (.instance.name o)))))
+                                     ((not (is-a? instance <instance>))
+                                      `(,(wfc-error o (format #f "instance expected, found ~a" (type-name (.name instance))))))
+                                     ((not (is-a? (.type instance) <component-model>))
+                                      `(,(wfc-error o (format #f "instance expected, found `~a'" (.instance.name o)))
+                                        ,(wfc-error instance (format #f "defined here"))))
+                                     (else '())))))
+         (port-error (if (or (pair? instance-error) (ast:wildcard? (.port.name o))) '()
+                         (let ((port (.port o)))
+                           (if port '()
+                               (let* ((component (if (.instance.name o) (.type (.instance o))
+                                                     (parent o <system>)))
+                                      (cname (type-name (.name component))))
+                                      `(,(wfc-error o (format #f "undefined port `~a' for `~a'" (.port.name o) cname))
+                                        ,(wfc-error component (format #f "`~a' defined here" cname)))))))))
+    (append instance-error port-error))
+)
 
-(define-method (call-context (o <behaviour>))
-  (append-map call-context (tree-collect (disjoin action-statement? call-statement?) o)))
-
-(define-method (call-context (o <ast>))
-  (let ((p (.parent o))
-        (class (ast-name (class-of o)))
-        (name (if (is-a? o <action>) (.event.name o) (.function.name o)))
-        (definition (if (is-a? o <action>) (.event o) (.function o))))
-    (cond ((not definition)
-           `(,(wfc-error o (format #f "undefined identifier `~a'" name))))
-          ((and (not (is-a? p <variable>))
-                (or (is-a? p <expression>)
-                    (and (is-a? p <if>)
-                         (not (ast:eq? o (.then p)))
-                         (not (ast:eq? o (.else p))))))
-           `(,(wfc-error o (format #f "~a in expression" class))))
-          ((and (not (parent o <on>))
-                (not (parent o <function>)))
-           `(,(wfc-error o (format #f "~a outside on" class))))
-          ((and (is-a? (ast:type o) <void>)
-                (is-a? p <variable>))
-           `((wfc-error o "void value not ignored as it ought to be")))
-          ((and (not (is-a? (ast:type o) <void>))
-                (not (is-a? p <assign>))
-                (not (is-a? p <variable>)))
-           `(,(wfc-error o (format #f "valued ~a must be used in variable assignment" class))))
-          (else '()))))
+(define-method (binding-declaration (o <binding>))
+  (append (binding-declaration (.left o)) (binding-declaration (.right o))))
 
 (define-method (binding-direction (o <system>))
   (append-map binding-direction (ast:binding* o)))
@@ -659,64 +817,6 @@
    (cute missing-bindings <> (parent o <system>) o)
    (filter (negate .injected) (ast:port* (.type o)))))
 
-(define (mixing-declarative-imperative o)
-  (match o
-    (($ <behaviour>) (or (and=> (.statement o) mixing-declarative-imperative) '()))
-    ((and ($ <compound>) (? ast:declarative?))
-     (append
-      (or (and-let* ((imperative
-                      (null-is-#f (filter ast:imperative? (ast:statement* o))))
-                     (ast (car imperative)))
-            (list (wfc-error ast "declarative statement expected")))
-          '())
-      (append-map mixing-declarative-imperative (ast:statement* o))))
-    (($ <compound>)
-     (append
-      (or (and-let* ((declarative
-                      (null-is-#f (filter ast:declarative? (ast:statement* o))))
-                     (ast (car declarative)))
-            (list (wfc-error ast "imperative statement expected")))
-          '())
-      (append-map mixing-declarative-imperative (ast:statement* o))))
-    (($ <on>) (mixing-declarative-imperative (.statement o)))
-    (($ <guard>) (mixing-declarative-imperative (.statement o)))
-    ((and ($ <if>) (= .then then) (= .else #f)) (mixing-declarative-imperative then))
-    ((and ($ <if>) (= .then then) (= .else else)) (append (mixing-declarative-imperative then)
-                                                          (mixing-declarative-imperative else)))
-    (_ '())))
-
-(define-method (tail-recursion (o <behaviour>))
-  (append-map tail-recursion (ast:function* o)))
-
-(define-method (tail-recursion (o <function>))
-  (let ((calls (tree-collect (is? <call>) o)))
-    (append-map tail-recursion calls)))
-
-(define-method (tail-recursion (o <call>) ;;recursing
-                               )
-  (let ((function (parent o <function>)))
-    (if (or (not function)
-            (not (eq? (.name function) (.function.name o)))) '()
-            (let* ((continuation ((compose car wfc:continuation) o))
-                   (continuation (if (is-a? continuation <variable>) ((compose car (@@ (gaiag makreel) makreel:continuation)) continuation) continuation))
-                   (continuation (and continuation
-                                      (not (ast:eq? continuation (.statement (parent o <function>))))
-                                      (not (is-a? continuation <return>))
-                                      continuation)))
-              (if continuation `(,(wfc-error o "recursive function not in tail call")
-                                 ,(wfc-error continuation "next statement"))
-                  '())))))
-
-(define-method (missing-return (o <behaviour>))
-  (append-map missing-return (ast:function* o)))
-
-(define-method (wfc:continuation (o <ast>))
-  ((@@ (gaiag makreel) makreel:continuation) o))
-
-(define-method (wfc:continuation (o <if>))
-  (cons ((@@ (gaiag makreel) makreel:then-continuation) o)
-        ((@@ (gaiag makreel) makreel:else-continuation) o)))
-
 (define-method (missing-return (o <function>))
   (if (is-a? (ast:type o) <void>) '()
       (let loop ((heads (list (.statement o))) (missing-returns '()))
@@ -732,6 +832,124 @@
                            `(,@missing-returns
                              ,@(if (null? missing-return)  '()
                                    `(,(wfc-error head "error: missing return"))))))))))))
+
+(define-method (call-context (o <ast>))
+  (let ((p (.parent o))
+        (class (ast-name (class-of o)))
+        (is-aorc (or (is-a? o <action>) (is-a? o <call>)))
+        (global-var? (lambda (o) (and (is-a? o <variable>) (is-a? (.parent (.parent o)) <behaviour>)))))
+    (cond
+     ((global-var? o) '())
+     ((is-a? p <behaviour>)  '())
+     ((and is-aorc (not (if (is-a? o <action>) (.event o) (.function o))))
+      (let ((name (if (is-a? o <action>) (.event.name o) (.function.name o))))
+        `(,(wfc-error o (format #f "undefined identifier `~a'" name)))))
+     ((and (not (is-a? p <variable>))
+           (or (is-a? p <expression>)
+               (and (is-a? p <if>)
+                    (not (ast:eq? o (.then p)))
+                    (not (ast:eq? o (.else p))))))
+      `(,(wfc-error o (format #f "~a in expression" class))))
+     ((and is-aorc (parent o <variable>) (global-var? (parent o <variable>)))
+        `(,(wfc-error o (format #f "~a in variable declaration" class))))
+     ((and (not (parent o <on>))
+           (not (parent o <function>))
+           (not (and (eq? class 'compound) (ast:declarative? o))))
+      `(,(wfc-error o (format #f "~a outside on" (if (eq? class 'compound) "imperative compound" class)))))
+     ((and is-aorc
+           (is-a? (ast:type o) <void>)
+           (is-a? p <variable>))
+      `((wfc-error o "void value not ignored as it ought to be")))
+     ((and is-aorc
+           (not (is-a? (ast:type o) <void>))
+           (not (is-a? p <assign>))
+           (not (is-a? p <variable>)))
+      `(,(wfc-error o (format #f "valued ~a must be used in variable assignment" class))))
+     (else '()))))
+
+(define-method (wfc:continuation (o <ast>))
+  ((@@ (gaiag makreel) makreel:continuation) o))
+
+(define-method (wfc:continuation (o <if>))
+  (cons ((@@ (gaiag makreel) makreel:then-continuation) o)
+        ((@@ (gaiag makreel) makreel:else-continuation) o)))
+
+(define-method (reply-without-port (o <reply>))
+  (define (trigger->string o)
+    (format #f "~a.~a" (.port.name o) (.event.name o)))
+  (let ((model (parent o <model>))
+        (on (parent o <on>)))
+    (cond ((.port o) '())
+          ((or (not (is-a? model <component>))
+               (<= (length (ast:provides-port* model)) 1)) '())
+          ((not on)
+           `(,(wfc-error o "must specify a provides-port with reply")))
+          ((let ((out-triggers (filter (compose ast:requires? .port) (ast:trigger* on))))
+             (and (pair? out-triggers)
+                  `(,(wfc-error o (format #f "must specify a provides-port with out-event: ~a"
+                                          (string-join (map trigger->string out-triggers) ", ")))))))
+          (else '()))))
+
+(define-method (subsystems (o <system>))
+  (let loop ((todo (list o)) (found '()))
+    (if (null? todo) found
+        (let ((first (car todo))
+              (rest (cdr todo)))
+          (if (find (cut ast:eq? first <>) found) (loop rest found)
+              (let* ((instances (ast:instance* first))
+                     (components (filter-map .type instances))
+                     (systems (filter (is? <system>) components)))
+                (loop (append systems rest) (cons first found))))))))
+
+(define-method (subsystems (o <system>))
+  (define (systems o)
+    (let* ((instances (ast:instance* o))
+           (components (filter-map .type instances)))
+      (filter (is? <system>) components)))
+  (define (subs o found) ;; includes o
+    (if (find (cut ast:eq? o <>) found) found
+        (let ((found (cons o found)))
+          (append-map (cut subs <> found) (systems o)))))
+  (append-map (cut subs <> '()) (systems o)))
+
+(define-method (recursive (o <system>))
+  (let* ((sub (subsystems o)))
+    (if (find (cut ast:eq? o <>) sub)
+        `(,(wfc-error o (format #f "system composition of `~a' is recursive" (type-name (.name o)))))
+        '())))
+
+
+(define-method (required-instances (o <instance>) (s <system>))
+  (let* ((instances (ast:instance* s))
+         (bindings (ast:binding* s))
+         (component (.type o))
+         (required-ports (and component (ast:requires-port* component)))
+         (left-bindings (filter (lambda (b) (eq? (.name o) (.instance.name (.left b))))
+                                bindings))
+         (right-bindings (filter (lambda (b) (eq? (.name o) (.instance.name (.right b))))
+                                 bindings))
+         (left-required-bindings (filter (lambda (b) (find (lambda (p) (eq? (.name p) (.port.name (.left b)))) required-ports))
+                                         left-bindings))
+         (right-required-bindings (filter (lambda (b) (find (lambda (p) (eq? (.name p) (.port.name (.right b)))) required-ports))
+                                          right-bindings))
+         (left-instances (filter (lambda (i) (find (lambda (b) (eq? (.name i) (.instance.name (.right b)))) left-required-bindings))
+                                 instances))
+         (right-instances (filter (lambda (i) (find (lambda (b) (eq? (.name i) (.instance.name (.left b)))) right-required-bindings))
+                                  instances)))
+    (append left-instances right-instances)))
+
+(define-method (all-required (o <instance>) (s <system>))
+  (define (all-req o found)
+    (if (find (cut ast:eq? o <>) found) found
+        (let ((found (cons o found)))
+          (append-map (cut all-req <> found) (required-instances o s)))))
+  (append-map (cut all-req <> '()) (required-instances o s)))
+
+(define-method (cyclic-bindings (o <system>))
+  (append-map (lambda (i) (if (find (cut ast:eq? i <>) (all-required i o))
+                              `(,(wfc-error i (format #f "instance `~a' is in a cyclic binding" (.name i))))
+                              '()))
+              (ast:instance* o)))
 
 (define (ast-> ast)
   ((compose
