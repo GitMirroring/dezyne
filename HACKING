@@ -1,6 +1,25 @@
 #+COMMENT:                                                            -*- org -*-
 #+TITLE: Hacking Dezyne command line tools
 
+* GNU/Linux binary pack (generic, relocatable)
+
+    guix environment -l guix.scm
+
+    git clean -fdx
+
+    git describe                           # input for version and sha256 field of
+    guix hash -rx .
+
+    edit guix/gnu/packages/dzn.scm         # dzn package to update
+    git commit -am 'release: v2.9.0-287'
+    git push buildmaster                   # push your commit/branch for dzn to find
+
+    ./autogen.sh                           # updates version
+    ./configure
+
+    make
+    GUIX_PACKAGE_PATH=guix guix build dzn  # offloaded dzn package build
+
 * MinGW cross build
 
 Try something like
