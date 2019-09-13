@@ -559,9 +559,7 @@
     ((? number?) (make <int>))
     (_ (make <void>))))
 (define-method (ast:type (o <literal>))
-  (let ((value (.value o)))
-    (if (number? value) (ast:expression->type o)
-        (ast:literal-value->type value))))
+(ast:literal-value->type (.value o)))
 (define-method (ast:type (o <port>))
   (.type o))
 (define-method (ast:type (o <instance>))
@@ -595,6 +593,7 @@
 (define-method (ast:type (o <return>))
   (ast:type (.expression o)))
 
+(define-method (ast:type o) #f)
 
 (define-method (ast:type (o <extern>))
   o)
@@ -940,14 +939,20 @@
 ;;  (stderr "ast:lookup-n <ast> 2 [~s]: ~s\n" o name)
   (ast:lookup-n (parent o <scope>) name))
 
+(define-method (ast:lookup-n (o <formals>) name)
+  ;;  (stderr "ast:lookup-n <formals> 2 [~s]: ~s\n" o name)
+  (filter (cut ast:name-equal? <> name) (ast:formal* o)))
+
 (define-method (ast:lookup-n (o <scope>) (name <symbol>))
-;;  (stderr "ast:lookup-n 3 [~s]: ~s\n" o name)
+  ;;  (stderr "ast:lookup-n 3 [~s]: ~s\n" o name)
   (if (ast:empty-namespace? name) (list (parent o <root>))
-      (let ((found (filter (lambda (decl) (ast:name-equal? (.name decl) name)) (ast:declaration* o)))
+      (let ((found (filter (conjoin (is? <declaration>)
+                                    (lambda (decl) (ast:name-equal? (.name decl) name)))
+                           (ast:declaration* o)))
             (p (.parent o)))
         (cond
          ((pair? found) found)
-         ((not p) '())
+         ((or (not name) (not p)) '())
          (else (ast:lookup-n (parent p <scope>) name))))))
 
 (define-method (ast:lookup-n (o <boolean>) name)
@@ -957,7 +962,7 @@
   (let ((lookup (ast:lookup-n o name)))
     (if (null? lookup) #f (car lookup))))
 
-(define (ast:lookup o name) ((ast:pure-funcq  ast:lookup-) (parent o <root>) o name))
+(define (ast:lookup o name) ((ast:pure-funcq ast:lookup-) (parent o <root>) o name))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
