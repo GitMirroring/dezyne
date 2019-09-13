@@ -1,4 +1,4 @@
-out/wf_assignmentExpressionNotInEventInstance/wf_assignmentExpressionNotInEventInstance.dzn:17:43: syntax-error
-      Sensor.Status s2 = sensor2.activate(u <- l);\n      if (s2 == Sensor.Status.OK) { }
-                                           ^
-                                           expected 'PAREN-CLOSE'
+out/wf_assignmentExpressionNotInEventInstance/wf_assignmentExpressionNotInEventInstance.dzn:40:43: syntax-error
+      Sensor.Status s2 = sensor2.activate(u <- l);
+                                          ^
+                                          `PAREN-CLOSE' expected

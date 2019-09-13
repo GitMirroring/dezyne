@@ -27,6 +27,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 receive)
+  #:use-module (ice-9 curried-definitions)
 
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
@@ -49,18 +50,16 @@
     om->list
     ) o))
 
-(define async-interfaces
-  (let ((interfaces '()))
-    (lambda (command . rest)
-      (case command
-        ((add) (unless (find
-                        (lambda (x) (equal? (.scope (.name x)) (.scope (.name (car rest)))))
-                        interfaces)
-                 (set! interfaces (append interfaces rest) )))
-        ((get) interfaces)))))
-
 (define* (parse-tree->ast o #:key string (file-name "<stdin>"))
-
+  (define async-interfaces
+    (let ((interfaces '()))
+      (lambda (command . rest)
+        (case command
+          ((add) (unless (find
+                          (lambda (x) (equal? (.scope (.name x)) (.scope (.name (car rest)))))
+                          interfaces)
+                   (set! interfaces (append interfaces rest) )))
+          ((get) interfaces)))))
   (define (make-list? o) (if (pair? o) o
                              (list o)))
   (define (file-helper o file-name start-pos)
@@ -137,7 +136,7 @@
          (let* ((types-or-events (helper types-or-events))
                 (types (filter (is? <type-node>) types-or-events))
                 (events (filter (is? <event-node>) types-or-events))
-                (behaviour (helper behaviour)))
+                (behaviour (set-recursive (helper behaviour))))
            (make <interface-node>
              #:name (helper name)
              #:types (make <types-node> #:elements types)
@@ -178,7 +177,7 @@
          (make <component-node>
            #:name (helper name)
            #:ports (helper ports)
-           #:behaviour (helper behaviour)))
+           #:behaviour (set-recursive (helper behaviour))))
 
         (('component name ports ('system ('instances 'bindings) rest ...))
          (make <system-node>
@@ -404,11 +403,7 @@
            (make <function-node>
              #:name name
              #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals))
-             #:statement statement
-             #:recursive (and (pair? (tree-collect (conjoin (is? <call>)
-                                                            (compose (cut eq? <> name) .function.name))
-                                                   statement))
-                              'recursive))))
+             #:statement statement)))
 
         (('functions functions ...)
          (make <functions-node> #:elements (helper functions)))
@@ -537,7 +532,8 @@
     (pretty-print o))
 
   (let* ((root-node (file-helper o file-name 0))
-         (root (make <root> #:node root-node))
+         (elements (append (async-interfaces 'get) (.elements root-node)))
+         (root (make <root> #:node (clone root-node #:elements elements)))
          (imports (tree-collect (is? <import>) root))
          (root (clone root
                       #:elements (filter (negate (is? <import>))
@@ -547,8 +543,39 @@
 
 (define* (parse-root->ast o #:key string (file-name "<stdin>"))
   (let* ((root (parse-tree->ast o #:string string #:file-name file-name))
-         (elements (append (make-constants) (async-interfaces 'get) (.elements root))))
+         (elements (append (make-constants) (.elements root))))
     (clone root #:elements elements)))
+
+(define* (recurses? behaviour function #:optional (seen '()))
+  (define (return-call ast)
+    (match ast
+      (($ <call>) ast)
+      ((and ($ <assign>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
+      ((and ($ <variable>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
+      (_ #f)))
+  (define (.function-name call)
+    (or (and=> (as (.function call) <function>) .name) (.function call)))
+  (or (member (.name function) seen)
+      (let* ((compound (.statement function))
+             (calls (tree-collect return-call compound))
+             (names (delete-duplicates (sort (map (compose .function-name return-call) calls)
+                                             symbol<))))
+        (any identity
+             (map (lambda (n)
+                    (let ((fn (ast:lookup behaviour n)))
+                      (and fn (recurses? behaviour fn (cons (.name function) seen)))))
+                  names)))))
+
+(define-method (set-recursive (o <behaviour>))
+  (let* ((functions (.functions o))
+         (function-list (.elements functions))
+         (function-list (map (lambda (f) (if (recurses? o f) (clone f #:recursive #t) f))
+                              function-list))
+         (functions (clone functions #:elements function-list)))
+    (clone o #:functions functions)))
+
+(define-method (set-recursive (o <behaviour-node>))
+  (.node (set-recursive (make <behaviour> #:node o))))
 
 
 (define-method (make-namespaces (o <ast>))

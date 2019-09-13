@@ -1,4 +1,4 @@
-out/wf_variableInitExpression/wf_variableInitExpression.dzn:14:14: syntax-error
-    bool b = c;\n    bool c = true;
-              ^
-              expected 'expression'
+out/wf_variableInitExpression/wf_variableInitExpression.dzn:37:13: syntax-error
+    bool b = c;
+            ^
+            `expression' expected
