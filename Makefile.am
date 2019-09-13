@@ -29,7 +29,8 @@ EXTRA_DIST =					\
  autogen.sh					\
  build-aux/git-version-gen			\
  build-aux/gitlog-to-changelog			\
- guix.scm
+ guix.scm					\
+ guix/gnu/packages/dzn.scm
 
 exampledir = $(docdir)
 
@@ -49,6 +50,8 @@ do_subst = sed						\
   -e 's,[@]sysconfdir[@],$(sysconfdir),g'		\
   -e 's,[@]ASD[@],$(ASD),g'				\
   -e 's,[@]LTS[@],$(LTS),g'				\
+  -e 's,[@]PYTHON2[@],$(PYTHON2),g'			\
+  -e 's,[@]PACKAGE_VERSION[@],$(PACKAGE_VERSION),g'	\
   -e 's,[@]VERSION_MAJOR[@],$(VERSION_MAJOR),g'		\
   -e 's,[@]VERSION_MINOR[@],$(VERSION_MINOR),g'		\
   -e 's,[@]VERSION_PATCH[@],$(VERSION_PATCH),g'
@@ -68,17 +71,21 @@ BUILT_SOURCES = gaiag/config.scm
 
 bin_SCRIPTS =					\
   bin/dzn					\
-  bin/gdzn
+  bin/gdzn					\
+  bin/lts2traces
 
 EXTRA_DIST +=					\
  bin/dzn.in					\
- bin/gdzn.in
+ bin/gdzn.in					\
+ bin/lts2traces.in
 
 ALL_GO =
 include gaiag/local.mk
+include gash/local.mk
 include gaiag/parse/local.mk
 include gaiag/peg/local.mk
 include gaiag/commands/local.mk
+include scmcrl2/local.mk
 
 GUILEC_FLAGS = -Warity-mismatch -Wformat --load-path=$(abs_srcdir)
 
@@ -113,8 +120,10 @@ EXTRA_DIST +=					\
 dist_man_MANS =					\
  doc/dzn.1					\
  doc/gdzn.1					\
+ doc/dzn-code.1					\
  doc/dzn-hello.1				\
- doc/dzn-parse.1
+ doc/dzn-parse.1				\
+ doc/lts2traces.1
 
 doc/dzn.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ $<
@@ -130,6 +139,9 @@ doc/dzn-hello.1: bin/dzn Makefile $(ALL_GO)
 
 doc/dzn-parse.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< parse"
+
+doc/lts2traces.1: bin/lts2traces Makefile $(ALL_GO)
+	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) $<
 
 # Distribution
 ##############
@@ -175,3 +187,64 @@ install-data-local:
 	test -z $(DESTDIR)$(pkgdatadir) || $(MKDIR_P) $(DESTDIR)$(pkgdatadir)
 	tar -cf - runtime | tar -C $(DESTDIR)$(pkgdatadir) -xf-
 	tar -cf - gaiag/templates | tar -C $(DESTDIR)$(pkgdatadir) -xf-
+
+# Binary pack
+#############
+
+EXTRA_DIST +=					\
+ bin/dzn.cmd					\
+ bin/guile.cmd					\
+ bin/wrapper.sh
+
+TAR = tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner
+STRIP_FILES =
+dzn_linux = dzn bash-minimal coreutils guile lts m4-changeword mcrl2-minimal sed
+pack:
+	GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-build-hook $(dzn_linux)
+
+linux:
+	rm -f $(distdir)-x86_64-linux.tar.gz
+	GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-build-hook $(dzn_linux)
+	if test -d $(distdir); then chmod -R +w $(distdir); fi
+	rm -rf $(distdir)
+	mkdir $(distdir)
+	tar -C $(distdir) --no-overwrite-dir -xf $$(GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-build-hook $(dzn_linux))
+	chmod -R +w $(distdir)
+	cd $(distdir) && rm -rf $(STRIP_FILES)
+	sed s,@COMMAND@,dzn, bin/wrapper.sh > $(distdir)/dzn
+	chmod +x  $(distdir)/dzn
+	sed s,@COMMAND@,guile, bin/wrapper.sh > $(distdir)/guile
+	chmod +x  $(distdir)/guile
+	cp test/all/hello/hello.dzn $(distdir)
+	cp test/all/Camera/Camera.dzn $(distdir)
+	$(TAR) -cf $(distdir)-x86_64-linux.tar $(distdir)
+	gzip --no-name $(distdir)-x86_64-linux.tar
+	rm -rf $(distdir)
+
+dzn_mingw = dzn-mingw guile-mingw lts-mingw mcrl2-minimal-mingw
+mingw:
+	GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 hello
+	GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 guile-mingw
+#	GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 zlib-mingw
+	GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 boost-mingw
+	GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 mcrl2-minimal-mingw
+	GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 dzn-mingw
+	rm -f $(distdir)-x86_64-windows.zip
+	rm -rf $(distdir)-x86_64-windows
+	mkdir -p $(distdir)-x86_64-windows/lib
+	cp --no-preserve=mode $$(find $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 guile-json-mingw) \
+              $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 $(dzn_mingw)) | grep mingw | grep -E 'dzn|guile|mcrl2') -path '*/bin/*') $(distdir)-x86_64-windows
+	cp --no-preserve=mode -r $$(find $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 guile-json-mingw) \
+              $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 $(dzn_mingw)) | grep mingw | grep -E 'dzn|guile|mcrl2') -path '*/share') $(distdir)-x86_64-windows
+	cp --no-preserve=mode -r $$(find $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 guile-json-mingw) \
+              $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 dzn-mingw guile-mingw) | grep mingw ) -path '*/lib/guile') $(distdir)-x86_64-windows/lib
+	-cp $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 $(dzn_mingw))) -name '*.dll') $(distdir)-x86_64-windows/lib
+	cp $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 $(dzn_mingw)) | grep -E 'dzn|guile|mcrl2') -name '*.exe') $(distdir)-x86_64-windows
+#	cp --no-preserve=mode -r $$(find $$(GUIX_PACKAGE_PATH=guix guix build dzn) -path '*/dzn/info') $(distdir)-x86_64-windows/share/dzn
+	cp bin/dzn $(distdir)-x86_64-windows
+	cp bin/dzn.cmd $(distdir)-x86_64-windows
+	cp bin/guile.cmd $(distdir)-x86_64-windows
+	cp test/all/hello/hello.dzn $(distdir)
+	cp test/all/Camera/Camera.dzn $(distdir)
+	zip -r $(distdir)-x86_64-windows.zip $(distdir)-x86_64-windows
+	rm -rf $(distdir)-x86_64-windows
