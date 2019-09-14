@@ -64,10 +64,11 @@
        (multi-opt (parse-opts (command-line)) name)))
 
 (define (gdzn:debugity)
-   (or (and (pair? (command-line))
-         (equal? ((compose basename car command-line)) "gdzn")
-         (length (gdzn:multi-opt 'debug)))
-       0))
+  (or (and (pair? (command-line))
+           (member ((compose basename car command-line))
+                   '("dzn" "gdzn" ".dzn-real" ".gdzn-real"))
+           (length (gdzn:multi-opt 'debug)))
+      0))
 
 (define (gdzn:verbosity)
   (gdzn:multi-opt 'debug))
