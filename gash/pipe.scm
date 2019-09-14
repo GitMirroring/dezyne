@@ -58,8 +58,9 @@
 
 (define (exec* command) ;; list of strings
   (catch #t (lambda () (apply execlp (cons (car command) command)))
-    (lambda (key . args) (format (current-error-port) "~a\n" (caaddr args))
-            (exit #f))))
+    (lambda (key . args)
+      (format (current-error-port) "exec* failed: ~s ~s\n" key args)
+      (exit #f))))
 
 (define* (spawn fg? job command #:optional (input '()))
   ;;(format #t "spawn: ~a\n" (length input))
