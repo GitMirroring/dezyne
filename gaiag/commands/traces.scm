@@ -43,6 +43,7 @@
   #:use-module (gaiag commands parse)
   #:use-module (gaiag commands verify)
   #:use-module (gaiag command-line)
+  #:use-module (gaiag lts2traces)
   #:use-module (gaiag makreel)
 
   #:use-module (gaiag shell-util)
@@ -69,6 +70,7 @@
             (lts (single-char #\l))
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))
+            (python (single-char #\p))
             (queue_size (single-char #\q) (value #t))
 	    (version (single-char #\V) (value #t))))
 	 (options (getopt-long args option-spec
@@ -87,6 +89,7 @@ Usage: gdzn traces [OPTION]... DZN-FILE
   -l, --lts                   generate lts
   -m, --model=MODEL           generate main for MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
+  -p, --python                use legacy python script implementation
   -q, --queue_size=SIZE       use queue size=SIZE for generation
   -V, --version=VERSION       use service version=VERSION
 ")
@@ -145,25 +148,39 @@ Usage: gdzn traces [OPTION]... DZN-FILE
          (dir (option-ref options 'output "."))
          (foo (mkdir-p dir))
          (json? (gdzn:command-line:get 'json #f))
+         (python? (command-line:get 'python #f))
          (commands `(,(cut display lts)
                      ,@(if gdzn-debug? '(("tee" "lts.aut")) '())
                      ("lts2traces"
                       ,@(if json? '() `("--out" ,dir))
                       ,@(if (not illegal-opt) '() '("--illegal"))
-                      ,@(if (is-a? model <interface>) '("--interface") '())
                       ,@(if (not flush-opt) '() '("--flush"))
+                      ,@(if (is-a? model <interface>) '("--interface") '())
                       ,@(if (not lts-opt) '() '("--lts"))
                       "--model" ,model-name
                       ,@(append-map (lambda (p) (list "--provides-in" p)) provides-in)
                       "-")))
          (foo (if gdzn-debug? (stderr "commands: ~s\n" commands)))
-         (traces (receive (job ports)
-                    (apply pipeline+ #f commands)
-                   (set-port-encoding! (car ports) "ISO-8859-1")
-                  (let ((traces (read-string (car ports)))
-                        (error (read-string (cadr ports))))
-                    (handle-error job error)
-                    (string-trim-right traces))))
+         (traces (if python? (receive (job ports)
+                                 (apply pipeline+ #f commands)
+                               (set-port-encoding! (car ports) "ISO-8859-1")
+                               (let ((traces (read-string (car ports)))
+                                     (error (read-string (cadr ports))))
+                                 (handle-error job error)
+                                 (string-trim-right traces)))
+                     (with-output-to-string
+                       (lambda _
+                         (let* ((text (string-trim-right lts))
+                                (lines (string-split text #\newline)))
+                           (lts->traces lines
+                                        illegal-opt
+                                        flush-opt
+                                        (is-a? model <interface>)
+                                        dir
+                                        lts-opt
+                                        model-name
+                                        '()
+                                        provides-in))))))
          (traces (string-trim-right traces)))
     (when json? (display traces))
     (when gdzn-debug?
