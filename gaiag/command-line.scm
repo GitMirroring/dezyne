@@ -31,6 +31,7 @@
             gdzn:debugity
             gdzn:multi-opt
             gdzn:verbosity
+            multi-opt
             language))
 
 (define multi-options
@@ -40,8 +41,7 @@
   (and (> (length (command-line)) 1)
        (let* ((files (option-ref (parse-opts (command-line)) '() '(#f)))
               (file (car files))
-              (commands '("code" "parse" "run" "step" "table" "trace" "traces" "verify" "lts"))
-              (command (and=> (member file commands) (compose string->symbol car)))
+              (command (string->symbol file))
               (parse-opts (let ((module (resolve-module `(gaiag commands ,command))))
                             (module-ref module 'parse-opts)))
               (options (if command (parse-opts files)
