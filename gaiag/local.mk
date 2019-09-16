@@ -38,6 +38,8 @@ dist_%C%_scm_DATA =				\
  %D%/goops.scm					\
  %D%/indent.scm					\
  %D%/javascript.scm				\
+ %D%/json2scm.scm				\
+ %D%/lts2traces.scm				\
  %D%/makreel.scm				\
  %D%/misc.scm					\
  %D%/normalize.scm				\
