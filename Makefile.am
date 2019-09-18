@@ -50,7 +50,6 @@ do_subst = sed						\
   -e 's,[@]sysconfdir[@],$(sysconfdir),g'		\
   -e 's,[@]ASD[@],$(ASD),g'				\
   -e 's,[@]LTS[@],$(LTS),g'				\
-  -e 's,[@]PYTHON2[@],$(PYTHON2),g'			\
   -e 's,[@]PACKAGE_VERSION[@],$(PACKAGE_VERSION),g'	\
   -e 's,[@]VERSION_MAJOR[@],$(VERSION_MAJOR),g'		\
   -e 's,[@]VERSION_MINOR[@],$(VERSION_MINOR),g'		\
@@ -71,13 +70,11 @@ BUILT_SOURCES = gaiag/config.scm
 
 bin_SCRIPTS =					\
   bin/dzn					\
-  bin/gdzn					\
-  bin/lts2traces
+  bin/gdzn
 
 EXTRA_DIST +=					\
  bin/dzn.in					\
- bin/gdzn.in					\
- bin/lts2traces.in
+ bin/gdzn.in
 
 ALL_GO =
 include gaiag/local.mk
@@ -122,8 +119,7 @@ dist_man_MANS =					\
  doc/gdzn.1					\
  doc/dzn-code.1					\
  doc/dzn-hello.1				\
- doc/dzn-parse.1				\
- doc/lts2traces.1
+ doc/dzn-parse.1
 
 doc/dzn.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ $<
@@ -139,9 +135,6 @@ doc/dzn-hello.1: bin/dzn Makefile $(ALL_GO)
 
 doc/dzn-parse.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< parse"
-
-doc/lts2traces.1: bin/lts2traces Makefile $(ALL_GO)
-	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) $<
 
 # Distribution
 ##############
