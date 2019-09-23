@@ -32,7 +32,7 @@ GUILE_LOAD_PATH="$abs_top_builddir:$abs_top_srcdir${GUILE_LOAD_PATH:+:}$GUILE_LO
 LD_LIBRARY_PATH="$abs_top_builddir${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"
 export GUILE_LOAD_COMPILED_PATH GUILE_LOAD_PATH LD_LIBRARY_PATH
 
-PATH="$abs_top_builddir/bin${PATH:+:}$PATH"
+PATH="$abs_top_builddir/bin:$abs_top_srcdir/test/bin${PATH:+:}$PATH"
 export PATH
 
 PREFIX="$abs_top_srcdir"
@@ -43,5 +43,8 @@ export DEZYNE_PREFIX
 
 DZN_UNINSTALLED=1
 export DZN_UNINSTALLED
+
+NODE_PATH="$HOME/.npm/lib/node_modules${NODE_PATH:+:}$NODE_PATH"
+export NODE_PATH
 
 exec "$@"
