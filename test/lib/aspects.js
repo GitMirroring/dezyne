@@ -45,12 +45,14 @@ function dzn(session) {
 
 var ext = {c:'.c','c++':'.cc','c++03':'.cc','c++-msvc11':'.cc',cs:'.cs',javascript:'.js',scheme:'.scm'};
 
+var skipped_languages = ['c', 'c++03', 'c++-msvc11', 'cs', 'javascript'];
+
 var default_meta = {
   skip: []
   , known: []
   , ignore: []
   , flush: false
-  , languages: all_languages.filter (function (x) {return x != 'c++-msvc11';})
+  , languages: all_languages.filter (function (x) {return skipped_languages.indexOf (x) == -1;})
   , versions: []
   , max: {code:undefined,run:50}
 };
@@ -129,7 +131,7 @@ function ordered_dependencies() {
     }
   }
   //var order = ['parse', 'verify', 'step', 'debug', 'triangle'];
-  var order = ['parse', 'verify'];
+  var order = ['parse', 'verify','traces','code','build','execute'];
   order.forEach(function(aspect) {
     add_dependencies(aspect);
   });
