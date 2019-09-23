@@ -104,6 +104,18 @@ all-go: $(ALL_GO)
 clean-go:
 	rm -f $(ALL_GO)
 
+check-local: check-smoke check-hello
+
+check-smoke:
+	./pre-inst-env test $${V:+--verbose} test/smoke
+
+check-hello:
+	./pre-inst-env test $${V:+--verbose} test/hello
+
+check-regression:
+	./pre-inst-env test $${V:+--verbose} test/regression
+
+
 # Documentation
 ###############
 

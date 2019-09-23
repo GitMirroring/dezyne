@@ -50,6 +50,9 @@ AC_PATH_PROG([M4_CW], [m4-cw])
 AC_PATH_PROG([LTS], [lts])
 AC_PATH_PROG([MCRL22LPS], [mcrl22lps])
 
+if test "$PACKAGE_VERSION" = UNKNOWN; then
+    PACKAGE_VERSION=0.0.0
+fi
 VERSION_MAJOR=[$(expr $PACKAGE_VERSION : '\([0-9]\+\)[.][0-9]\+[.][0-9][^ ]*')]
 VERSION_MINOR=[$(expr $PACKAGE_VERSION : '[0-9]\+[.]\([0-9]\+\)[.][0-9][^ ]*')]
 VERSION_PATCH=[$(expr $PACKAGE_VERSION : '[0-9]\+[.][0-9]\+[.]\([0-9]\+\)[^ ]*')]
