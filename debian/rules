@@ -1,0 +1,27 @@
+#!/usr/bin/make -f
+# You must remove unused comment lines for the released package.
+#export DH_VERBOSE = 1
+#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+#export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	dh_auto_configure -- --disable-silent-rules --verbose
+
+override_dh_auto_build:
+	dh_auto_build -- V=2
+	npm install node-getopt
+
+override_dh_auto_test:
+	npm install node-getopt
+	-dh_auto_test -- V=2
+	-dh_auto_test -- V=2 regression
+
+override_dh_strip:
+	dh_strip --exclude=.go
+
+override_dh_dwz:
+	dh_dwz --exclude=.go --exclude=dzn
