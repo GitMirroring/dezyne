@@ -1,0 +1,4 @@
+# These are guile byte-compiled objects
+dzn binary: unstripped-binary-or-object *.go
+dzn binary: binary-from-other-architecture *.go
+dzn binary: shared-lib-without-dependency-information *.go
