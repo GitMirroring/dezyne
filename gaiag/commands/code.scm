@@ -84,7 +84,9 @@ FIXME:      --depends[=TYPE]        generate dependency for DZN-FILE and write t
          (language-opt (string->symbol (option-ref options 'language "c++")))
          (options (if (eq? language-opt 'scheme) (acons 'behaviour #t options)
                       options))
-         (ast (parse options file-name))
+         ;; Parse --model=MODEL cuts MODEL from AST; avoid that
+         (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
+         (ast (parse parse-options file-name))
          (module (resolve-module `(gaiag ,language-opt)))
          (ast-> (module-ref module 'ast->)))
     (parameterize ((language language-opt)) (ast-> ast))
