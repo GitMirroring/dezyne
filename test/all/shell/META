@@ -1,5 +1,5 @@
 {"skip":["traces"]
 ,"known":["run","c"]
-,"languages":["cs","c++","c++-msvc11","c++03"]
+,"languages":["c++"]
 ,"comment":"handwritten trace on a system component, thread safe shell, table no alpha reduction in pretty print"
 ,"tss":"true"}
