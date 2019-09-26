@@ -81,6 +81,7 @@
                      ("zip" ,zip)))   ; for guix environment -l guix.scm
     (propagated-inputs `(("guile-json" ,guile-json)))
     (build-system gnu-build-system)
+    (outputs '("out" "regression"))
     (arguments
      `(#:modules ((ice-9 popen)
                   ,@%gnu-build-system-modules)
@@ -88,14 +89,23 @@
        (modify-phases %standard-phases
          (add-before 'configure 'setenv
            (lambda _
-             (setenv "GUILE_AUTO_COMPILE" "0")
-             (setenv "V" "2")))
+             (setenv "GUILE_AUTO_COMPILE" "0")))
          (replace 'check
            (lambda _
              (system* "make" "check-smoke")
              (system* "make" "check-hello")
              (system* "make" "check-regression")
              #t))
+         (add-after 'install 'split-regression
+           (lambda* (#:key inputs outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (regression (assoc-ref outputs "regression"))
+                    (share "/share/dzn")
+                    (dir (string-append share "/test")))
+               (mkdir-p (string-append regression share))
+               (rename-file (string-append out dir)
+                            (string-append regression dir))
+               #t)))
          (add-after 'install 'wrap-binaries
            (lambda* (#:key inputs outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
@@ -125,13 +135,13 @@
                                    (string-append json "/lib/guile/" effective
                                                   "/site-ccache/"))))
                (wrap-program (string-append out "/bin/dzn")
-                  `("DATADIR" ":" = (,data-dir))
-                  `("PATH" ":" prefix ,path)
-                  `("GUILE_AUTO_COMPILE" ":" = ("0"))
-                  `("GUILE_LOAD_PATH" ":" prefix ,scm-path)
-                  `("GUILE_LOAD_COMPILED_PATH" ":" prefix ,go-path)
-                  `("LANG" ":" = ())
-                  `("LC_ALL" ":" = ()))
+                 `("DATADIR" ":" = (,data-dir))
+                 `("PATH" ":" prefix ,path)
+                 `("GUILE_AUTO_COMPILE" ":" = ("0"))
+                 `("GUILE_LOAD_PATH" ":" prefix ,scm-path)
+                 `("GUILE_LOAD_COMPILED_PATH" ":" prefix ,go-path)
+                 `("LANG" ":" = ())
+                 `("LC_ALL" ":" = ()))
                #t))))))
     (synopsis "Dezyne command line tools")
     (description "Dezyne command line tools")
