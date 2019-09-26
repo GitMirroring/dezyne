@@ -49,8 +49,12 @@ namespace dzn
 
   void trace_qin(std::ostream& os, port::meta const& m, const char* e)
   {
-    os << path(m.requires.meta, "<q>") << " <- "
-       << path(m.provides.meta, m.provides.port) << "." << e << std::endl;
+    if (path(m.provides.meta) == "<external>")
+      os << path(m.requires.meta, "<q>") << " <- "
+         << path(m.provides.meta, m.provides.port) << "." << e << std::endl;
+    else
+      os <<  path(m.provides.meta, m.provides.port) << ".<q> <- "
+         <<  path(m.requires.meta, m.requires.port) << "." << e << std::endl;
   }
 
   void trace_qout(std::ostream& os, port::meta const& m, const char* e)
