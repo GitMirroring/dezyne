@@ -106,14 +106,15 @@ clean-go:
 
 check-local: check-smoke check-hello
 
+CPUS = $(shell nproc)
 check-smoke:
 	./pre-inst-env test $${V:+--verbose} test/smoke
 
 check-hello:
-	./pre-inst-env test $${V:+--verbose} test/hello
+	./pre-inst-env test $${V:+--verbose} -j $(CPUS) test/hello
 
 check-regression:
-	./pre-inst-env test $${V:+--verbose} test/regression
+	./pre-inst-env test $${V:+--verbose} -j $(CPUS) test/regression
 
 
 # Documentation
