@@ -194,3 +194,5 @@ install-data-local:
 	test -z $(DESTDIR)$(pkgdatadir) || $(MKDIR_P) $(DESTDIR)$(pkgdatadir)
 	tar -cf - runtime | tar -C $(DESTDIR)$(pkgdatadir) -xf-
 	tar -cf - dzn/templates | tar -C $(DESTDIR)$(pkgdatadir) -xf-
+	test -z $(DESTDIR)$(pkgdatadir) || $(MKDIR_P) $(DESTDIR)$(pkgdatadir)/test
+	cd out && tar -cf - *.html | tar -C $(DESTDIR)$(pkgdatadir)/test -xf-
