@@ -103,7 +103,7 @@ Usage: gdzn parse [OPTION]... [FILE]...
          (peg? (gdzn:command-line:get 'peg #f))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
-         (model-name (and=> (command-line:get 'model #f) string->symbol))
+         (model-name (and=> (option-ref options 'model #f) string->symbol))
          (behaviour? (option-ref options 'behaviour #f))
          (locations? (option-ref options 'locations #f))
          (language (string->symbol (option-ref options 'language "c++"))))
