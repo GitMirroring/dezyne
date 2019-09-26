@@ -1,1 +1,1 @@
-{"known":["run"],"model":"helloworld","comment":"system: cannot run"}
+{"skip":["run","verify"],"model":"helloworld","comment":"system: cannot run, verify"}
