@@ -43,7 +43,7 @@
          (locator (dzn:set! locator runtime))
          (locator (dzn:set! locator pump))
          (sut (make <async_simple> #:locator locator #:name 'sut))
-         (trace (read-string))
+         (trace (string-trim-right (read-string)))
          (trace-alist `(("p.c\np.return" . (,(lambda _ (action sut .p .in .c))))
                         ("p.e\np.return\np.c\np.return" . (,(lambda _
                                                               (action sut .p .in .e)
