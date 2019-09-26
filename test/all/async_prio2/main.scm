@@ -63,7 +63,7 @@
          (locator (dzn:set! locator runtime))
          (locator (dzn:set! locator pump))
          (sut (make <async_prio2> #:locator locator #:name 'sut))
-         (trace (read-string))
+         (trace (string-trim-right (read-string)))
          (event-alist `((p.e . ,(lambda _ (apply (.e (.in (.p sut))) (list))))
                         (p.c . ,(lambda _ (apply (.c (.in (.p sut))) (list))))
                         (r.cb . ,(lambda _ (apply (.cb (.out (.r sut))) (list))))
