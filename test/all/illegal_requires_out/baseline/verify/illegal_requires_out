@@ -1,0 +1,9 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
+verify: illegal_requires_out: check: deterministic: ok
+verify: illegal_requires_out: check: illegal: fail
+w.world
+verify: illegal_requires_out: check: deadlock: ok
+verify: illegal_requires_out: check: compliance: fail
+w.world
+verify: illegal_requires_out: check: livelock: ok
