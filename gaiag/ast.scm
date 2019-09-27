@@ -55,6 +55,7 @@
            ast:dzn-scope?
            ast:eq?
            ast:equal?
+           ast:empty-namespace?
            ast:expression->type
            ast:filter-model
            ast:full-name
