@@ -115,7 +115,7 @@
     ((tick-names- '()) o)))
 (define* ((tick-names- #:optional (names '())) o)
   (define* ((append-tick #:optional (names '())) o)
-    (if (or (not o) (ast:wildcard? o)) o
+    (if (or (not o) (ast:wildcard? o) (ast:empty-namespace? o)) o
         (let ((count (or (assoc-ref names o) 0)))
           (symbol-append o (string->symbol (string-append "'" (if (zero? count) "" (number->string count))))))))
   (match o
