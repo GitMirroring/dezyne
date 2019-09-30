@@ -34,46 +34,12 @@
   #:use-module (gnu packages maths)
   #:use-module (gnu packages mingw))
 
-(define-public mcrl2-1
-  (let ((commit "2c7d1d5d3196622c63ac39f69d41a4bf0e9fa447")
-        (version "201808")
-        (revision "1"))
-    (package
-      (inherit mcrl2)
-      (name "mcrl2")
-      (version (string-append version "." revision "." (string-take commit 7)))
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url "https://github.com/mCRL2org/mCRL2")
-                      (commit commit)))
-                (patches (search-patches "mcrl2-Remove-git-magic-from-MCRL2Version.cmake.patch"
-                                         "mcrl2-pipeline-support.patch"
-                                         "mcrl2-ltsgraph-override-lts-type.patch"))
-                (sha256
-                 (base32
-                  "1ky11f1g2hlq9cp3gj2z4rly87pl7p9sr0b6ls3ls2nrzi4fis7r"))))
-      (arguments
-       `(#:configure-flags '("-DCMAKE_BUILD_TYPE=Release")
-         #:phases
-         (modify-phases %standard-phases
-           (add-after 'unpack 'set-version
-             (lambda* _
-               (substitute* '("build/cmake/MCRL2Version.cmake")
-                 (("(set\\(MCRL2_MINOR_VERSION \")Unknown(\"\\))" all left right)
-                  (string-append left ,(string-take commit 7) right)))))))))))
-
-(define-public mcrl2-1-minimal
+(define-public mcrl2-minimal-with-dparser
   (package
-    (inherit mcrl2-1)
-    (name "mcrl2-minimal")
-    (native-inputs '())
-    (inputs `(("boost" ,boost)))
+    (inherit mcrl2-minimal)
+    (name "mcrl2-minimal-with-dparser")
     (arguments
-     (substitute-keyword-arguments (package-arguments mcrl2-1)
-       ((#:configure-flags flags)
-        `(cons "-DMCRL2_ENABLE_GUI_TOOLS=OFF"
-               ,flags))
+     (substitute-keyword-arguments (package-arguments mcrl2-minimal)
        ((#:phases phases '%standard-phases)
         `(modify-phases ,phases
            (add-after 'install 'install-dparser
@@ -82,14 +48,13 @@
                  (copy-file "stage/bin/make_dparser" (string-append out "/bin/make_dparser"))
                  #t)))))))))
 
-(define-public mcrl2-1-minimal-mingw
+(define-public mcrl2-minimal-mingw
   (package
-    (inherit mcrl2-1-minimal)
+    (inherit mcrl2-minimal-with-dparser)
     (name "mcrl2-minimal-mingw")
-    (native-inputs `(("mcrl2" ,mcrl2-1-minimal)))
-    (inputs `(("boost" ,boost-mingw)))
+    (native-inputs `(("mcrl2" ,mcrl2-minimal)))
     (arguments
-     (substitute-keyword-arguments (package-arguments mcrl2-1-minimal)
+     (substitute-keyword-arguments (package-arguments mcrl2-minimal-with-dparser)
        ((#:configure-flags flags)
         `(cons*
           "-DBoost_INCLUDE_DIR:PATH=/gnu/store/f32r7v8ij4s7637q7hfd5970j6pm5rw5-boost-mingw-1.69.0/include"
