@@ -47,7 +47,6 @@ fi
 
 AC_PATH_PROG([PERL5], [perl5 perl])
 AC_PATH_PROG([M4_CW], [m4-cw])
-AC_PATH_PROG([LTS], [lts])
 AC_PATH_PROG([MCRL22LPS], [mcrl22lps])
 
 if test "$PACKAGE_VERSION" = UNKNOWN; then

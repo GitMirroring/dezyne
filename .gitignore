@@ -31,3 +31,6 @@
 Makefile
 Makefile.in
 /bin/lts2traces
+/test-suite.log
+/test/dzn/*.log
+/test/dzn/*.trs
