@@ -25,129 +25,156 @@
 (define-module (gaiag commands lts)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-9)
+  #:use-module (srfi srfi-9 gnu)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 receive)
-
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (gaiag ast)
-  #:use-module (gaiag goops)
+  #:use-module (gaiag lts)
+  #:use-module (gaiag config)
   #:use-module (gaiag misc)
-  #:use-module (gaiag command-line)
-  #:use-module (gaiag commands parse)
-  #:use-module (gaiag commands verify)
-  #:use-module (gaiag makreel)
-  #:use-module (gaiag shell-util)
-  #:use-module (scmcrl2 verification)
-  #:use-module (gash pipe)
-  #:export (parse-opts
-            main))
+  #:export (main))
 
 (define (parse-opts args)
-  (let* ((option-spec
-          '((compiling-rewriter (single-char #\c))
-            (debug (single-char #\d))
-            (help (single-char #\h))
-            (import (single-char #\I) (value #t))
-            (model (single-char #\m) (value #t))
-            (queue_size (single-char #\q) (value #t))
-            (reduction (single-char #\r) (value #t))
-            (version (single-char #\V) (value #t))))
-	 (options (getopt-long args option-spec
-		   #:stop-at-first-non-option #t))
-	 (help? (option-ref options 'help #f))
+  (let* ((option-spec '((accepts (single-char #\a))
+                        (deadlock (single-char #\d))
+                        (deterministic)
+                        (events (single-char #\e))
+                        (exclude-illegal)
+                        (failures (single-char #\f))
+                        (help (single-char #\h))
+                        (illegal (single-char #\i) (value #t))
+                        (livelock (single-char #\l))
+                        (metrics (single-char #\m))
+                        (nondet (single-char #\n) (value #t))
+                        (prefix (single-char #\p) (value #t))
+                        (single-line (single-char #\s))
+                        (tau (single-char #\t) (value #t))
+                        (validate (single-char #\v))
+                        (version (single-char #\V))))
+         (options (getopt-long args option-spec))
+         (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
-	 (usage? (and (not help?) (null? files))))
-    (or
-     (and (or help? usage?)
-          ((or (and usage? stderr) stdout) "\
-Usage: gdzn lts [OPTION]... DZN-FILE ...
-  -c, --compiling-rewriter    use compiling rewriter for faster LTS generation
-                              (only use on larger models)
-  -h, --help                  display this help and exit
-  -I, --import=DIR+           add DIR to import path
-  -m, --model=MODEL           generate LTS for model with name=NAME
-  -q, --queue_size=SIZE       use queue size=SIZE for LTS generation [3]
-  -r, --reduction=NAME        apply NAME reduction to the LTS, preserving equivalence
-                              possible NAMEs:
-                              'none' identity equivalence (default)
-                              'bisim' strong bisimilarity using the O(m log n)
-                                algorithm [Groote/Jansen/Keiren/Wijs 2017]
-                              'bisim-gv' strong bisimilarity using the O(mn)
-                                algorithm [Groote/Vaandrager 1990]
-                              'bisim-sig' strong bisimilarity using the signature
-                                refinement algorithm [Blom/Orzan 2003]
-                              'branching-bisim' branching bisimilarity using the
-                                O(m log n) algorithm [Groote/Jansen/Keiren/Wijs 2017]
-                              'branching-bisim-gv' branching bisimilarity using
-                                the O(mn) algorithm [Groote/Vaandrager 1990]
-                              'branching-bisim-sig' branching bisimilarity using
-                                the signature refinement algorithm [Blom/Orzan 2003]
-                              'dpbranching-bisim' divergence-preserving branching
-                                bisimilarity using the O(m log n) algorithm
-                                [Groote/Jansen/Keiren/Wijs 2017]
-                              'dpbranching-bisim-gv' divergence-preserving
-                                branching bisimilarity using the O(mn) algorithm
-                                [Groote/Vaandrager 1990]
-                              'dpbranching-bisim-sig' divergence-preserving
-                                branching bisimilarity using the signature
-                                refinement algorithm [Blom/Orzan 2003]
-                              'weak-bisim' weak bisimilarity
-                              'dpweak-bisim' divergence-preserving weak
-                                bisimilarity
-                              'sim' strong simulation equivalence
-                              'ready-sim' strong ready simulation equivalence
-                              'trace' strong trace equivalence
-                              'weak-trace' weak trace equivalence
-                              'tau-star' tau star reduction
-  -V, --version=VERSION       use service version=VERSION
-")
-	   (exit (or (and usage? 2) 0)))
-     options)))
+	 (usage? (and (not help?) #f))
+         (version? (option-ref options 'version #f)))
+    (cond (version? (format #t "lts (Dezyne) ~a\n" %version) (exit 0))
+          ((or help? usage?) (format (if usage? (current-error-port) #t) "\
+Usage: lts [OPTION]... [FILE]...
+  Navigate and query lts from FILE in (Aldebaran) aut format.
 
-(define (lts-makreel options dir file-name ast)
-  (let* ((reduce? (option-ref options 'reduction "none"))
-         (rewrite? (option-ref options 'compiling-rewriter #f))
-         (root (makreel:om ast))
-         (model (option-ref options 'model #f))
-         (model (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model)) (filter (is? <model>) (ast:top* root))))
-         (makreel (with-output-to-string (cut model->mcrl2 root model)))
-         (is-interface? (is-a? model <interface>))
-         (init (if is-interface? (x:interface-init model)
-                   (x:component-init model)))
-         (commands `(,(cut display makreel)
-                     ("bash" "-c" ,(format #f "cat - ; echo \"~a\"" init))
-                     ("m4-cw")
-                     ("mcrl22lps" "-b")
-                     ("lpsconstelm" "-st")
-                     ("lpsparelm")
-                     ("lps2lts" "--cached" "--out=lts" ,@(if rewrite? `("-rjittyc") `()))
-                     ("ltsconvert" ,(string-append "-e" reduce?) "--in=lts" "--out=aut")
-                     ("sed" "-e" "s,\"declarative_illegal\",\"dillegal\",g")
-                     ("traces.scm")
-                     ("ltsgraph" "--in=aut" "/dev/stdin")))
-         (result (receive (job ports)
-                    (apply pipeline+ #f commands)
-                  (set-port-encoding! (car ports) "ISO-8859-1")
-                   (let ((result (read-string (car ports)))
-                         (error (read-string (cadr ports))))
-                     (handle-error job error)
-                     result))))
-    #t))
+  Options:
+  -a, --accepts                   List acceptance sets for state reachable by TRACE.
+  -d, --deadlock                  Detect deadlock in lts (after failures introduction).
+      --deterministic             Detect non-determinism in lts wrt all labels.
+  -e, --events                    List event alphabet (edge labels) for each FILE.
+      --exclude-illegal           Remove edges leading to illegal (in combination with
+                                  option -f)
+  -f, --failures                  Introduce a failure for each 'optional' event.
+  -h, --help                      Display this help.
+  -i, --illegal LABEL[,LABEL...]  Detect whether lts contains the labels from LABELs.
+  -l, --livelock                  Detect tau-loops in lts.
+  -m, --metrics                   Number of states and number of transitions.
+  -n, --nondet LABEL[,LABEL...]   Assert non-determinism by detecting multiple edges
+                                  of LABEL from a single state.
+  -p, --prefix EVENT[,EVENT...]   Find states reachable by EVENTs(default:
+                                  empty trace => initial state).
+  -t, --tau EVENT[,EVENT...]      Hide all EVENTs.
+  -s, --single-line               Report an error including trace on a single line.
+  -v, --validate                  Validate aut files.
+  -V, --version                   Show version and exit
+")
+	  (exit (or (and usage? 2) 0))))
+     options))
 
 (define (main args)
-  (let* ((options (parse-opts args))
+  (let* ((sep #\,)
+         (output-separator #\;)
+         (options (parse-opts args))
+         (accepts (option-ref options 'accepts #f))
          (files (option-ref options '() '()))
-         (file-name (car files))
-         (gdzn-debug? (gdzn:command-line:get 'debug))
-         (tmp (string-append (tmpnam) "-lts"))
-         (dir (getcwd)))
-    (setvbuf (current-output-port) 'line)
-    (mkdir-p tmp)
-    (receive (files importeds)
-        (values files '())
-      (let* ((file-name (car files))
-             (ast (parse options file-name))
-             (foo (chdir tmp)))
-        (lts-makreel options dir file-name ast)
-        (chdir dir)))))
+         (events (option-ref options 'events #f))
+         (deadlock (option-ref options 'deadlock #f))
+         (deterministic (option-ref options 'deterministic #f))
+         (exclude-illegal (option-ref options 'exclude-illegal #f))
+         (failures (option-ref options 'failures #f))
+         (illegal (option-ref options 'illegal #f))
+         (illegal (if illegal (string-split illegal sep) #f))
+         (livelock (option-ref options 'livelock #f))
+         (metrics (option-ref options 'metrics #f))
+         (nondet (option-ref options 'nondet #f))
+         (nondet (if nondet (string-split nondet sep) #f))
+         (prefix (option-ref options 'prefix #f))
+         (prefix (if prefix (string-split prefix sep) '()))
+         (single-line (option-ref options 'single-line #f))
+         (tau (option-ref options 'tau #f))
+         (tau (if tau (string-split tau sep) '()))
+         (tau (cons "tau" tau))
+         (validate (option-ref options 'validate #f))
+         (version? (option-ref options 'version #f))
+         (lts- #f)
+         (lts-nodes- #f)
+         (lts-hide- #f)
+         (lts-hide-nodes- #f)
+         (lts-failures- #f))
+
+    (define (get-lts)
+      (if (not lts-) (set! lts- (aut-file->lts (if (or (null? files) (equal? "-" (car files)))
+                                                   (read-string (current-input-port))
+                                                   (with-input-from-file (car files) read-string)))))
+      lts-)
+    (define (get-lts-nodes)
+      (if (not lts-nodes-) (set! lts-nodes- (lts->nodes (get-lts))))
+      lts-nodes-)
+    (define (get-lts-hide)
+      (if (not lts-hide-) (set! lts-hide- (lts-hide (get-lts) tau)))
+      lts-hide-)
+    (define (get-lts-hide-nodes)
+      (if (not lts-hide-nodes-) (set! lts-hide-nodes- (lts->nodes (get-lts-hide))))
+      lts-hide-nodes-)
+    (define (get-lts-failures)
+      (if (not lts-failures-) (set! lts-failures- (add-failures (get-lts-hide-nodes))))
+      lts-failures-)
+    (define (report-result check fail-msg ok-msg trace)
+      (let* ((lts (get-lts))
+             (states (lts-states lts))
+             (transitions (length (lts-edges lts))))
+        (if single-line (display (string-append check ":" (if trace "fail" "ok") ":" (number->string states) "," (number->string transitions) ":" (if trace (string-join (map aut-edge-label trace) (make-string 1 output-separator)) "") "\n"))
+            (if trace (begin
+                        (format (current-error-port) "~a\n" fail-msg)
+                        (if (not (null? trace))
+                            (format #t "~a\n" (string-join (map aut-edge-label trace) "\n"))))
+                (format (current-error-port) "~a\n" ok-msg)))))
+
+    (define (validation-error error)
+      (or (not error)
+          (begin (format (current-error-port) "Error in aut file: ~a - ~a\n" path error)
+                 #f)))
+
+    (when events
+      (let ((alphabets (map (compose lts->alphabet (cut lts-hide <> tau) aut-file->lts) files)))
+        (map (lambda (f a) (format #t "Events in lts ~a:\n~a\n" f a)) files alphabets)))
+    (when accepts
+      (let* ((lts (rm-tau-loops (get-lts-hide-nodes)))
+             (lts (step-tau lts))
+             (lts (run lts prefix))
+             (acceptance-sets (lts-stable-accepts lts)))
+        (format #t "stable acceptance sets: ~a\n" acceptance-sets)))
+    (when deterministic
+      (report-result "deterministic" "LTS is non-deterministic" "LTS is deterministic" (assert-deterministic (get-lts-hide))))
+    (when illegal
+      (report-result "illegal" "LTS contains illegal events" "LTS contains no illegal events" (assert-illegal (get-lts-hide-nodes) illegal)))
+    (when metrics
+      (map print-metrics files))
+    (when livelock
+      (report-result "livelock" "tau loop found:" "No tau loop found." (assert-livelock (get-lts-hide-nodes))))
+    (when nondet
+      (report-result "deterministic" "LTS is non-deterministic" "LTS is deterministic" (assert-partially-deterministic (get-lts-hide) nondet)))
+    (when validate
+      (if (member #f (map (compose validation-error validate-aut-file) files))
+          (begin
+            (format (current-error-port) "Invalid aut file(s) found.")
+            #f)))
+    (when deadlock
+      (report-result "deadlock" "deadlock found:" "No deadlock found." (assert-deadlock (get-lts-failures))))
+    (when failures
+      (write-lts "failures" single-line (car (lts-state (get-lts))) ((if exclude-illegal remove-illegal identity) (get-lts-failures))))))

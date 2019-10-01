@@ -31,3 +31,6 @@
 Makefile
 Makefile.in
 /bin/lts2traces
+/test-suite.log
+/test/gaiag/*.log
+/test/gaiag/*.trs

@@ -1,7 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-# Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -117,6 +116,20 @@ check-hello:
 check-regression:
 	./pre-inst-env test $${V:+--verbose} -j $(CPUS) test/regression
 
+# Tests
+#######
+
+include test/gaiag/local.mk
+
+TEST_EXTENSIONS = .scm
+SCM_LOG_COMPILER = $(top_builddir)/pre-inst-env $(GUILE)
+AM_SCM_LOG_FLAGS = --no-auto-compile
+
+UNIT_TESTS =					\
+  test/gaiag/lts.scm
+
+TESTS = $(UNIT_TESTS) $(FULL_TESTS)
+EXTRA_DIST += $(TESTS)
 
 # Documentation
 ###############
