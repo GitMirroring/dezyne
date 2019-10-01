@@ -22,34 +22,8 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
- %D%/ast.scm					\
- %D%/c++.scm					\
- %D%/c++03.scm					\
- %D%/c.scm					\
- %D%/code.scm					\
- %D%/command-line.scm				\
- %D%/config.scm					\
- %D%/cs.scm					\
- %D%/display.scm				\
- %D%/dzn.scm					\
- %D%/fifo.scm					\
- %D%/gdzn.scm					\
- %D%/glue.scm					\
- %D%/goops.scm					\
- %D%/indent.scm					\
- %D%/javascript.scm				\
- %D%/json2scm.scm				\
- %D%/lts.scm					\
- %D%/lts2traces.scm				\
- %D%/makreel.scm				\
- %D%/misc.scm					\
- %D%/normalize.scm				\
- %D%/parse.scm					\
- %D%/scheme.scm					\
- %D%/serialize.scm				\
- %D%/shell-util.scm				\
- %D%/templates.scm				\
- %D%/wfc.scm
+ %D%/automake.scm				\
+ %D%/lts.scm
 
 dist_nocompile_%C%_scm_DATA =
 
