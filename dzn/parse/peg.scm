@@ -25,6 +25,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
+  #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
 
   #:use-module (dzn peg codegen)
@@ -381,7 +382,9 @@ KEYWORD <
 				(lambda ()
                                   (peg:tree (match-pattern root string)))
 				(lambda (key . args)
-				  (format (current-error-port) "parse error: ~a" args)
+                                  (match args
+                                    (((pos message)) (peg:error file-name string pos (format #f "`~a' expected" message)))
+                                    (_ (format (current-error-port) "parse error: ~a" args)))
                                   (exit 1)))))
 		  result)))
 
