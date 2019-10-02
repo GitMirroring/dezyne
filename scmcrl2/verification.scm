@@ -260,14 +260,14 @@
           (else #f))))
 
 (define (assert-start model-type model-name assert verbose?)
-  (when verbose?
-    (if (gdzn:command-line:get 'json)
-        (format #t "~a\n"
-                (scm->json-string `(((model . ,model-name)
-                                     (type . ,model-type)
-                                     (assert . ,assert)
-                                     (first . "true")
-                                     (status . "assert")))))))
+  (when (and verbose?
+             (gdzn:command-line:get 'json))
+    (format #t "~a\n"
+            (scm->json-string `(((model . ,model-name)
+                                 (type . ,model-type)
+                                 (assert . ,assert)
+                                 (first . "true")
+                                 (status . "assert"))))))
   #f)
 
 (define (assert-ok model-type model-name assert info verbose?)
@@ -311,9 +311,18 @@
          (trace (if (member last '("range_error" "type_error" "missing_reply" "second_reply" "incomplete"))
                     (string-join (drop-right trace-list (if (member last '("incomplete")) 2 1)) "\n")
                     (string-join (take-while (negate (cut equal? "queue_full" <>)) trace-list) "\n"))))
-    (stdout "verify: ~a: check: ~a: fail\n" model-name assert trace)
-    (unless (string-null? trace)
-      (stdout "~a\n" trace))
+
+    (if (gdzn:command-line:get 'json)
+        (format #t "~a\n"
+                (scm->json-string `((model . ,model-name)
+                                    (type . ,model-type)
+                                    (assert . ,assert)
+                                    (trace . ,trace))))
+
+        (begin
+          (stdout "verify: ~a: check: ~a: fail\n" model-name assert trace)
+          (unless (string-null? trace)
+            (stdout "~a\n" trace))))
     #t))
 
 (define (check-deterministic trace info dir dzn-file-name model-type model-name verbose?)
