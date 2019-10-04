@@ -53,97 +53,108 @@
 (define %source-dir (getcwd))
 
 (define-public dzn
-  (package
-    (name "dzn")
-    (version "0.0")
-    ;; TODO: URL to released tarball
-    (source (local-file %source-dir
-                        #:recursive? #t
-                        #:select? (git-predicate %source-dir)))
-    (inputs `(("bash" ,bash-minimal)
-              ("coreutils" ,coreutils)
-              ("guile" ,guile-2.2)
-              ("m4-cw" ,m4-changeword)
-              ("mcrl2" ,mcrl2-minimal)
-              ("sed" ,sed)))
-    (native-inputs `(("autoconf" ,autoconf)
-                     ("automake" ,automake)
-                     ("gettext" ,gnu-gettext)
-                     ("guile-for-build" ,guile-2.2)
-                     ("help2man" ,help2man)
-                     ("node" ,node)
-                     ("node-getopt" ,node-getopt)
-                     ("node-q" ,node-q)
-                     ("perl" ,perl)
-                     ("pkg-config" ,pkg-config)
-                     ("texinfo" ,texinfo)
-                     ("zip" ,zip)))   ; for guix environment -l guix.scm
-    (propagated-inputs `(("guile-json" ,guile-json-1)))
-    (build-system gnu-build-system)
-    (outputs '("out" "regression"))
-    (arguments
-     `(#:modules ((ice-9 popen)
-                  ,@%gnu-build-system-modules)
-       #:phases
-       (modify-phases %standard-phases
-         (add-before 'configure 'setenv
-           (lambda _
-             (setenv "GUILE_AUTO_COMPILE" "0")))
-         (replace 'check
-           (lambda _
-             (system* "make" "check-smoke")
-             (system* "make" "check-hello")
-             (system* "make" "check-regression")
-             #t))
-         (add-after 'install 'split-regression
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (regression (assoc-ref outputs "regression"))
-                    (share "/share/dzn")
-                    (dir (string-append share "/test")))
-               (mkdir-p (string-append regression share))
-               (rename-file (string-append out dir)
-                            (string-append regression dir))
-               #t)))
-         (add-after 'install 'wrap-binaries
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let* ((out (assoc-ref outputs "out"))
-                    (guile (assoc-ref %build-inputs "guile"))
-                    (json (assoc-ref %build-inputs "guile-json"))
-                    (m4 (assoc-ref %build-inputs "m4-cw"))
-                    (mcrl2 (assoc-ref %build-inputs "mcrl2"))
-                    (sed (assoc-ref %build-inputs "sed"))
-                    (effective (read
-                                (open-pipe* OPEN_READ
-                                            "guile" "-c"
-                                            "(write (effective-version))")))
-                    (data-dir (string-append out "/share/dzn"))
-                    (path (list (string-append bash "/bin")
-                                (string-append coreutils "/bin")
-                                (string-append guile "/bin")
-                                (string-append m4 "/bin")
-                                (string-append mcrl2 "/bin")
-                                (string-append sed "/bin")))
-                    (scm-dir (string-append out "/share/guile/site/" effective))
-                    (scm-path (list (string-append out "/share/guile/site/" effective)
-                                    (string-append json "/share/guile/site/" effective)))
-                    (go-path (list (string-append out "/lib/guile/" effective
-                                                  "/site-ccache/")
-                                   (string-append json "/lib/guile/" effective
-                                                  "/site-ccache/"))))
-               (wrap-program (string-append out "/bin/dzn")
-                 `("DATADIR" ":" = (,data-dir))
-                 `("PATH" ":" prefix ,path)
-                 `("GUILE_AUTO_COMPILE" ":" = ("0"))
-                 `("GUILE_LOAD_PATH" ":" prefix ,scm-path)
-                 `("GUILE_LOAD_COMPILED_PATH" ":" prefix ,go-path)
-                 `("LANG" ":" = ())
-                 `("LC_ALL" ":" = ()))
-               #t))))))
-    (synopsis "Dezyne command line tools")
-    (description "Dezyne command line tools")
-    (home-page "https://verum.com")
-    (license license:gpl3+)))
+  (let ((commit "5394155ba5476da977ff03cbef58454716f4c0b1")
+        (revision "83"))
+    (package
+      (name "dzn")
+      (version (string-append "0.0-" revision "." (string-take commit 7)))
+      ;; TODO: public URL to released tarball
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url (string-append
+                            "http://git.oban.verum.com/buildmaster"
+                            "/dzn.git"))
+                      (commit commit)))
+                (sha256
+                 (base32
+                  "12xjww3y87m2vb9l0f7x8bsjqsa8vfc0hsg6sl6rzyyvfx2jascb"))))
+      (inputs `(("bash" ,bash-minimal)
+                ("coreutils" ,coreutils)
+                ("guile" ,guile-2.2)
+                ("m4-cw" ,m4-changeword)
+                ("mcrl2" ,mcrl2-minimal)
+                ("sed" ,sed)))
+      (native-inputs `(("autoconf" ,autoconf)
+                       ("automake" ,automake)
+                       ("gettext" ,gnu-gettext)
+                       ("guile-for-build" ,guile-2.2)
+                       ("help2man" ,help2man)
+                       ("node" ,node)
+                       ("node-getopt" ,node-getopt)
+                       ("node-q" ,node-q)
+                       ("perl" ,perl)
+                       ("pkg-config" ,pkg-config)
+                       ("texinfo" ,texinfo)
+                       ("zip" ,zip))) ; for guix environment -l guix.scm
+      (propagated-inputs `(("guile-json" ,guile-json-1)))
+      (build-system gnu-build-system)
+      (outputs '("out" "regression"))
+      (arguments
+       `(#:modules ((ice-9 popen)
+                    ,@%gnu-build-system-modules)
+         #:phases
+         (modify-phases %standard-phases
+           (add-before 'configure 'setenv
+             (lambda _
+               (setenv "GUILE_AUTO_COMPILE" "0")))
+           (replace 'check
+             (lambda _
+               (system* "make" "check-smoke")
+               (system* "make" "check-hello")
+               (system* "make" "check-regression")
+               #t))
+           (add-after 'install 'split-regression
+             (lambda* (#:key inputs outputs #:allow-other-keys)
+               (let* ((out (assoc-ref outputs "out"))
+                      (regression (assoc-ref outputs "regression"))
+                      (share "/share/dzn")
+                      (dir (string-append share "/test")))
+                 (mkdir-p (string-append regression share))
+                 (rename-file (string-append out dir)
+                              (string-append regression dir))
+                 #t)))
+           (add-after 'install 'wrap-binaries
+             (lambda* (#:key inputs outputs #:allow-other-keys)
+               (let* ((out (assoc-ref outputs "out"))
+                      (bash (assoc-ref %build-inputs "bash"))
+                      (coreutils (assoc-ref %build-inputs "coreutils"))
+                      (guile (assoc-ref %build-inputs "guile"))
+                      (json (assoc-ref %build-inputs "guile-json"))
+                      (m4 (assoc-ref %build-inputs "m4-cw"))
+                      (mcrl2 (assoc-ref %build-inputs "mcrl2"))
+                      (sed (assoc-ref %build-inputs "sed"))
+                      (effective (read
+                                  (open-pipe* OPEN_READ
+                                              "guile" "-c"
+                                              "(write (effective-version))")))
+                      (data-dir (string-append out "/share/dzn"))
+                      (path (list (string-append bash "/bin")
+                                  (string-append coreutils "/bin")
+                                  (string-append guile "/bin")
+                                  (string-append m4 "/bin")
+                                  (string-append mcrl2 "/bin")
+                                  (string-append sed "/bin")))
+                      (scm-dir (string-append out "/share/guile/site/" effective))
+                      (scm-path (list (string-append out "/share/guile/site/" effective)
+                                      (string-append json "/share/guile/site/" effective)))
+                      (go-path (list (string-append out "/lib/guile/" effective
+                                                    "/site-ccache/")
+                                     (string-append json "/lib/guile/" effective
+                                                    "/site-ccache/"))))
+                 (wrap-program (string-append out "/bin/dzn")
+                   `("DATADIR" ":" = (,data-dir))
+                   `("PATH" ":" prefix ,path)
+                   `("GUILE_AUTO_COMPILE" ":" = ("0"))
+                   `("GUILE_LOAD_PATH" ":" prefix ,scm-path)
+                   `("GUILE_LOAD_COMPILED_PATH" ":" prefix ,go-path)
+                   `("LANG" ":" = ())
+                   `("LC_ALL" ":" = ()))
+                 #t))))))
+      (synopsis "Dezyne command line tools")
+      (description "Dezyne command line tools")
+      (home-page "https://verum.com")
+      (license license:gpl3+))))
 
 (define-public dzn-mingw
   (package
