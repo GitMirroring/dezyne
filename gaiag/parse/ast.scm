@@ -76,8 +76,11 @@
            ast)) ;; TODO ensure (is-a? ast <ast>) is invariant to prevent comment loss
 
         (((and (? symbol?) type) body ... ('location pos end))
-         (let ((ast (helper (cons type body)))
-               (location (helper (last o))))
+         (let* ((ast (helper (cons type body)))
+                (location (helper (last o)))
+                (location (if (and (is-a? ast <root-node>)
+                                   (.location ast)) (clone location #:file-name (.file-name (.location ast)))
+                              location)))
            (if (and location (or (is-a? ast <locationed-node>)))
                (clone ast #:location location)
                ast)))
@@ -444,21 +447,25 @@
 
         (('return expression) (make <return-node> #:expression (helper expression)))
 
-        (('root elements)
-         (make <root-node> #:elements (make-list? (helper elements))))
+        (('root element)
+         (make <root-node> #:elements (make-list? (helper element))))
 
         (('root elements ...)
-         (make <root-node>
-             #:elements (let loop ((elements elements) (file-name file-name) (start-pos 0))
-                           (if (eq? elements '()) '()
-                               (let* ((elt (car elements))
-                                      (rest (cdr elements)))
-                                 (match elt
-                                   (((or 'file-command 'imported-command) file-name location)
-                                    (let ((start-pos (1+ (third location))))
-                                      (loop rest file-name start-pos)))
-                                   (_ (cons (file-helper elt file-name start-pos)
-                                            (loop rest file-name start-pos)))))))))
+         (let* ((lst (let loop ((elements elements) (file-name file-name) (start-pos 0))
+                       (if (eq? elements '()) '()
+                           (let* ((elt (car elements))
+                                  (rest (cdr elements)))
+                             (match elt
+                               (((or 'file-command 'imported-command) file-name location)
+                                (let ((start-pos (1+ (third location))))
+                                  (loop rest file-name start-pos)))
+                               (_ (cons (file-helper elt file-name start-pos)
+                                        (loop rest file-name start-pos))))))))
+                (location (match elements
+                            ((('file-command file-name location) rest ...)
+                             (make <location-node> #:file-name file-name))
+                            (_ #f))))
+           (make <root-node> #:elements lst #:location location)))
 
         (('signature type formals)
          (make <signature-node> #:type.name (helper type) #:formals (helper formals)))
