@@ -122,8 +122,17 @@
                                                    (peg:handle-syntax-error import-file-name string))))
                                 (parse-tree->ast parse-tree #:string string #:file-name import-file-name)))))
                (list (car res) (list 'import import-file-name root))))))
-
     (define-peg-pattern do-import body -do-import-)
+
+    (define (-do-file-command- str len pos)
+      (let ((res (file-command str len pos)))
+        (when res
+          (let* ((body (cadr res))
+                 (text (drop-right (drop body 1) 1))
+                 (file-file-name (string-trim-both (apply string-append text))))
+            (set! file-name file-file-name)))
+        res))
+    (define-peg-pattern do-file-command body -do-file-command-)
 
     (define-peg-string-patterns
       "root <-- top* EOF#
@@ -132,7 +141,7 @@ top <- do-import / stream-command / namespace / type / interface / component / d
 
 import <- IMPORT (!SEMICOLON .)+ SEMICOLON#
 
-stream-command <- file-command / imported-command
+stream-command <- do-file-command / imported-command
 file-command <-- FILE dq-string#
 imported-command <-- IMPORTED dq-string#
 FILE < '#file'
