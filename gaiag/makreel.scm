@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2019 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
@@ -735,14 +736,22 @@
              (or (is-a? c <assign>)
                  (is-a? c <variable>))
              (is-a? (.expression c) <call>)) (list (.expression c))
-             cont)))
+             cont)
+    ))
+
+(define (fix-function o)
+  (if (and (or (is-a? o <assign>)
+               (is-a? o <variable>))
+           (is-a? (.expression o) <call>))
+      (.expression o)
+      o))
 
 (define-method (makreel:then-continuation (o <if>))
-  (.then o))
+  (fix-function (.then o)))
 
 (define-method (makreel:else-continuation (o <if>))
   (let ((else (.else o)))
-    (if else (list else)
+    (if else (list (fix-function else))
         (makreel:continuation o))))
 
 (define-method (makreel:proc-list (o <ast>))
