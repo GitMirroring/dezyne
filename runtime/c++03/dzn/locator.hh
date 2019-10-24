@@ -36,6 +36,10 @@
 #include <string>
 #include <typeinfo>
 
+#ifndef DZN_ILLEGAL_HANDLER
+#define DZN_ILLEGAL_HANDLER dzn_locator.get<dzn::illegal_handler>().illegal()
+#endif
+
 namespace dzn {
   struct illegal_handler
   {
@@ -44,7 +48,7 @@ namespace dzn {
     {}
     void throw_handler()
     {
-      throw std::runtime_error("illegal");
+      assert(!"illegal");
     }
     boost::function<void()> illegal;
   };
