@@ -835,8 +835,8 @@
 
 (define-method (ast:declarative? (o <compound>))
   (let ((statements (ast:statement* o)))
-    (and (pair? statements)
-         ((compose ast:declarative? car) statements))))
+    (or (and (null? statements) (is-a? (.parent o) <behaviour>))
+        (and (pair? statements) ((compose ast:declarative? car) statements)))))
 
 (define-method (ast:imperative? (o <imperative>))
   #t)
@@ -846,8 +846,8 @@
 
 (define-method (ast:imperative? (o <compound>))
   (let ((statements (ast:statement* o)))
-    (or (null? statements)
-        ((compose ast:imperative? car) statements))))
+    (or (and (null? statements) (not (is-a? (.parent o) <behaviour>)))
+        (and (pair? statements) ((compose ast:imperative? car) statements)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; LOOKUP
