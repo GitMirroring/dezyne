@@ -54,7 +54,7 @@
                          (peg:parse string file-name #:imports imports))
                        (peg:handle-syntax-error file-name string)))
          (gdzn-debug? (gdzn:command-line:get 'debug)))
-    (parse-tree->ast parse-tree #:string string #:file-name file-name)))
+    (parse-root->ast parse-tree #:string string #:file-name file-name)))
 
 (define* (parse-file file-name #:key peg? generator? (imports '()) behaviour? model-name locations?)
   (let* ((ast (peg:parse-file file-name #:imports imports))
