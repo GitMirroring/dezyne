@@ -39,7 +39,8 @@
   ;;#:use-module (dzn parse)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse silence)
-  #:export (parse-tree->ast))
+  #:export (parse-tree->ast
+            parse-root->ast))
 
 (define (ast-> o)
   ((compose
@@ -47,16 +48,18 @@
     om->list
     ) o))
 
+(define async-interfaces
+  (let ((interfaces '()))
+    (lambda (command . rest)
+      (case command
+        ((add) (unless (find
+                        (lambda (x) (equal? (.scope (.name x)) (.scope (.name (car rest)))))
+                        interfaces)
+                 (set! interfaces (append interfaces rest) )))
+        ((get) interfaces)))))
+
 (define* (parse-tree->ast o #:key string (file-name "<stdin>"))
-  (define async-interfaces
-    (let ((interfaces '()))
-      (lambda (command . rest)
-        (case command
-          ((add) (unless (find
-                          (lambda (x) (equal? (.scope (.name x)) (.scope (.name (car rest)))))
-                          interfaces)
-                   (set! interfaces (append interfaces rest) )))
-          ((get) interfaces)))))
+
   (define (make-list? o) (if (pair? o) o
                              (list o)))
   (define (file-helper o file-name start-pos)
@@ -533,14 +536,19 @@
     (pretty-print o))
 
   (let* ((root-node (file-helper o file-name 0))
-         (elements (append (make-constants) (async-interfaces 'get) (.elements root-node)))
-         (root (make <root> #:node (clone root-node #:elements elements)))
+         (root (make <root> #:node root-node))
          (imports (tree-collect (is? <import>) root))
          (root (clone root
                       #:elements (filter (negate (is? <import>))
                                          (append (.elements root)
                                                  (append-map (compose .elements .root) imports))))))
     (tree-map make-namespaces root)))
+
+(define* (parse-root->ast o #:key string (file-name "<stdin>"))
+  (let* ((root (parse-tree->ast o #:string string #:file-name file-name))
+         (elements (append (make-constants) (async-interfaces 'get) (.elements root))))
+    (clone root #:elements elements)))
+
 
 (define-method (make-namespaces (o <ast>))
   o)
