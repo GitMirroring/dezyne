@@ -537,7 +537,7 @@
   (from #:init-value 0)
   (to #:init-value 0))
 
-(define-ast <signature> (<ast>)
+(define-ast <signature> (<locationed>)
   (type.name #:init-form (make <scope.name-node> #:name 'void))
   (formals #:init-form (make <formals-node>)))
 
