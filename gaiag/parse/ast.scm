@@ -1,7 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2019 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -63,6 +62,16 @@
   (define (make-list? o) (if (pair? o) o
                              (list o)))
   (define (file-helper o file-name start-pos)
+    (define (get-location o)
+      (match o
+        (((and (? symbol?) type) body ... ('location pos end))
+         (let* ((ast (helper (cons type body)))
+                (location (helper (last o)))
+                (location (if (and (is-a? ast <root-node>)
+                                   (.location ast)) (clone location #:file-name (.file-name (.location ast)))
+                              location)))
+           location))
+        (_ #f)))
     (define (helper o)
       (match o
         ;; ("bool" (make <scope.name-node> #:name 'bool))
@@ -148,7 +157,7 @@
         (('event direction type name formals)
          (make <event-node>
            #:name (helper name)
-           #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals))
+           #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals) #:location (get-location type))
            #:direction (helper direction)))
 
         (('formals formal) (make <formals-node> #:elements (list (helper formal))))
@@ -394,7 +403,7 @@
         (('function type name formals)
          (make <function-node>
            #:name (helper name)
-           #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals))
+           #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals) #:location (get-location type))
            #:statement (make <compound-node>)))
 
         (('function type name formals statement)
@@ -402,7 +411,7 @@
                (statement (make <compound-node> #:elements (make-list? (helper statement)))))
            (make <function-node>
              #:name name
-             #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals))
+             #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals) #:location (get-location type))
              #:statement statement)))
 
         (('functions functions ...)
@@ -465,11 +474,6 @@
                              (make <location-node> #:file-name file-name))
                             (_ #f))))
            (make <root-node> #:elements lst #:location location)))
-
-        (('signature type formals)
-         (make <signature-node> #:type.name (helper type) #:formals (helper formals)))
-
-        (('signature type) (make <signature-node> #:type.name (helper type)))
 
         (('system name ports instances bindings)
          (make <system-node>
