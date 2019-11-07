@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -56,7 +57,7 @@
 
 (define-method (serialize (o <scope.name-node>) port)
   (display " " port)
-  (display (string-join (map symbol->string (append (.scope o) (list (.name o)))) ".") port))
+  (display (string-join (map symbol->string (.ids o)) ".") port))
 
 (define-method (serialize (o <top>) port)
   (display o port))

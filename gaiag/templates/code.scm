@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
@@ -37,10 +37,10 @@
 (define-templates clrs ast:clr-events)
 
 ;; FIXME
-(define-templates scope (compose .scope .name) name-infix)
-(define-templates code:type-scope ast:scope type-infix)
+(define-templates scope (compose scope .name) name-infix)
+(define-templates code:type-scope ast:full-scope type-infix)
 (define-templates scope-type-name code:scope-type-name type-infix)
-(define-templates scope-prefix (compose .scope .name) name-suffix)
+(define-templates scope-prefix (compose scope .name) name-suffix)
 (define-templates scope+name code:scope+name name-infix)
 (define-templates scoped-model-name code:scope+name name-infix);; c++ compat, junk me
 (define-templates scope::name code:scope+name type-infix)

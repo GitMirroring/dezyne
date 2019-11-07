@@ -59,6 +59,7 @@
            ast:expression->type
            ast:filter-model
            ast:full-name
+           ast:full-scope
            ast:get-model
            ast:id-path
            ast:in-event*
@@ -218,8 +219,7 @@
     (and (pair? ports) (car ports))))
 
 (define-method (ast:dzn-scope? (o <model>))
-  (let ((scope ((compose .scope .name) o)))
-    (and (pair? scope) (member (car scope) '(dzn dzn')))))
+  (member (car (.ids (.name o))) '(dzn dzn')))
 
 (define-method (ast:provides? (o <port>))
   (and (eq? (.direction o) 'provides) o))
@@ -498,8 +498,7 @@
   (ast:equal? (.name a) (.name b)))
 
 (define-method (ast:equal? (a <scope.name>) (b <scope.name>))
-  (and (equal? (.scope a) (.scope b))
-       (eq? (.name a) (.name b))))
+  (equal? (.ids a) (.ids b)))
 
 (define-method (ast:equal? (a <enum-literal>) (b <enum-literal>))
   (and (ast:equal? (.type.name a) (.type.name b))
@@ -656,10 +655,18 @@
 (define-method (ast:imported? (o <ast>))
   (not (equal? (ast:source-file o) (ast:source-file (parent o <root>)))))
 
+(define-method (ast:name (o <scope.name>))
+  (last (.ids o)))
+
 (define-method (ast:name (o <named>))
   (let ((name (.name o)))
-    (if (is-a? name <scope.name>) (.name name)
-        name)))
+    (if (is-a? name <scope.name>) (ast:name name) name)))
+
+(define-method (ast:scope (o <scope.name>))
+  (drop (.ids o) 1))
+
+(define-method (ast:scope (o <named>))
+  (ast:scope (.name o)))
 
 (define-method (ast:literal-true? (e <ast>))
   (and (is-a? e <literal>)
@@ -749,8 +756,9 @@
   (symbol-join (ast:full-name o) '.))
 
 (define-method (ast:full-name (o <scope.name>))
-  (append (if (null? (.scope o)) (ast:full-name (parent (.parent o) <scope>)) (.scope o))
-          (list (.name o))))
+  (let ((ids (.ids o)))
+    (if (pair? (cdr ids)) ids
+        (append (ast:full-name (parent (.parent o) <scope>)) name))))
 
 (define-method (ast:full-name (o <bool>))
   '(bool))
@@ -768,8 +776,8 @@
   (ast:full-name (.name o)))
 
 (define-method (ast:full-name (o <declaration>))
-  (if (and (is-a? o <named>) (is-a? (.name o) <scope.name>))
-      (append (ast:full-name (parent (.parent o) <scope>)) (list (.name (.name o))))
+  (if (is-a? o <named>)
+      (append (ast:full-name (parent (.parent o) <scope>)) (list (ast:name o)))
       (ast:full-name (parent (.parent o) <scope>))))
 
 (define-method (ast:full-name (o <root>))
@@ -777,7 +785,7 @@
 
 (define-method (ast:full-name (o <scope>))
   (if (and (is-a? o <named>) (is-a? (.name o) <scope.name>))
-      (append (ast:full-name (parent (.parent o) <scope>)) (list (.name (.name o))))
+      (append (ast:full-name (parent (.parent o) <scope>)) (list (ast:name o)))
       (ast:full-name (parent (.parent o) <scope>))))
 
 (define-method (ast:full-name (o <namespace>))
@@ -786,14 +794,14 @@
 (define-method (ast:full-name (o <ast>))
   (ast:full-name (parent (.parent o) <scope>)))
 
-(define-method (ast:scope (o <ast>))
+(define-method (ast:full-scope (o <ast>))
   (drop-right (ast:full-name o) 1))
 
-(define-method (ast:scope (o <root>))
+(define-method (ast:full-scope (o <root>))
   '())
 
-(define-method (ast:scope (o <field-test>))
-  ((compose ast:scope .type .variable) o))
+(define-method (ast:full-scope (o <field-test>))
+  ((compose ast:full-scope .type .variable) o))
 
 (define-method (rescope-name (o <ast>) (parent <model>))
   (let* ((name (ast:full-name o))
@@ -802,7 +810,7 @@
                    (if (and (pair? list1) (pair? list2) (eq? (car list1) (car list2)))
                        (loop (cdr list1) (cdr list2))
                        list1))))
-    (make <scope.name> #:scope (drop-right scoped 1) #:name (last scoped))))
+    (make <scope.name> #:ids scoped)))
 
 (define-method (ast:rescope (o <ast>) (parent <model>))
   (match o
@@ -821,7 +829,7 @@
 (define-method (ast:value (o <literal>))
   (.value o))
 (define-method (ast:value (o <enum-literal>))
-  (symbol-join (append (.scope (.type.name o)) (list (.name (.type.name o))) (list (.field o)))))
+  (symbol-join (append (.ids (.type.name o)) (list (.field o)))))
 
 (define-method (ast:rescope (o <boolean>) x)
   o)
@@ -855,13 +863,13 @@
   (eq? a b))
 
 (define-method (ast:name-equal? (a <scope.name>) (b <symbol>))
-  (and=> (.name a) (cut ast:name-equal? <> b)))
+  (and=> (ast:name a) (cut ast:name-equal? <> b)))
 
 (define-method (ast:name-equal? (b <symbol>) (a <scope.name>))
   (ast:name-equal? a b))
 
 (define-method (ast:name-equal? (a <scope.name>) (b <scope.name>))
-  (and (.name a) (.name b) (ast:name-equal? (.name a) (.name b))))
+  (and (pair? (.ids a)) (pair? (.ids b)) (ast:name-equal? (ast:name a) (ast:name b))))
 
 (define-method (ast:name-equal? (a <named>) (b <symbol>))
     (ast:name-equal? (.name a) b))
@@ -903,13 +911,13 @@
 
 (define-method (ast:lookup-n (o <scope>) (name <scope.name>))
 ;;  (stderr "ast:lookup-n[~s]: ~s\n" o name)
-  (let ((scope (.scope name)))
-    (if (null? scope) (if (ast:has-equal-name (.name name) o) (list o)
-                          (ast:lookup-n o (.name name)))
-        (let* ((first (car scope))
+  (let ((ids (.ids name)))
+    (if (null? (cdr ids)) (if (ast:has-equal-name (car ids) o) (list o)
+                              (ast:lookup-n o (car ids)))
+        (let* ((first (car ids))
                (first-scopes (ast:lookup-n o first)))
           (if (null? first-scopes) '()
-              (let ((name (clone name #:scope (cdr scope))))
+              (let ((name (clone name #:ids (cdr ids))))
                 ;;(stderr "found first scopes:~s\n" first-scopes)
                 (ast:lookdown first-scopes name)))))))
 
@@ -922,12 +930,12 @@
 
 (define-method (ast:lookdown (o <scope>) (name <scope.name>))
 ;;  (stderr "ast:lookdown 2[~s]: ~s\n" o name)
-  (let ((scope (.scope name)))
-    (if (null? scope) (ast:lookdown o (.name name))
-        (let* ((first (car scope))
+  (let ((ids (.ids name)))
+    (if (null? (cdr ids)) (ast:lookdown o (car ids))
+        (let* ((first (car ids))
                (first-scopes (ast:lookdown o first)))
           (if (null? first-scopes) '()
-              (let ((name (clone name #:scope (cdr scope))))
+              (let ((name (clone name #:ids (cdr ids))))
                 ;;(stderr "found first scope:~s\n" first-scope)
                 (ast:lookdown first-scopes name)))))))
 
@@ -1138,7 +1146,7 @@
 
 (define (topological-sort lst)
 
-  (define (key x) ((compose .name .name) x))
+  (define (key x) (ast:name x))
   (define (sort dag)
     (if (null? dag)
         '()
