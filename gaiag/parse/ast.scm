@@ -55,7 +55,7 @@
       (lambda (command . rest)
         (case command
           ((add) (unless (find
-                          (lambda (x) (equal? (.scope (.name x)) (.scope (.name (car rest)))))
+                          (lambda (x) (equal? (ast:scope x) (ast:scope (car rest))))
                           interfaces)
                    (set! interfaces (append interfaces rest) )))
           ((get) interfaces)))))
@@ -74,8 +74,8 @@
         (_ #f)))
     (define (helper o)
       (match o
-        ;; ("bool" (make <scope.name-node> #:name 'bool))
-        ;; ("void" (make <scope.name-node> #:name 'void))
+        ;; ("bool" (make <scope.name-node> #:ids '(bool)))
+        ;; ("void" (make <scope.name-node> #:ids '(void)))
         ("bool" 'bool)
         ("void" 'void)
 
@@ -223,15 +223,16 @@
 
         (('end-point name "*")
          (let* ((name (helper name))
-                (scope (.scope name))
-                (instance (and (pair? scope) (car scope))))
+                (ids (.ids name))
+                (instance (and (pair? (cdr ids)) (car ids))))
            (make <end-point-node> #:instance instance #:port.name '*)))
 
         (('end-point name)
          (let* ((name (helper name))
-                (scope (.scope name))
-                (instance (and (pair? scope) (car scope))))
-           (make <end-point-node> #:instance.name instance #:port.name (.name name))))
+                (ids (.ids name))
+                (instance (and (pair? (cdr ids)) (car ids)))
+                (port (if (pair? (cdr ids)) (cadr ids) (car ids))))
+           (make <end-point-node> #:instance.name instance #:port.name port)))
 
         ('ports (make <ports-node>))
         (('ports ports ...) (make <ports-node> #:elements (helper ports)))
@@ -240,8 +241,7 @@
          (let* ((direction (helper direction))
                 (direction-list? (pair? direction))
                 (type (helper type))
-                (async? (and (equal? (.scope type)) '(dzn)
-                             (eq? (.name type) 'async)))
+                (async? (equal? (.ids type) '(dzn async)))
                 (async-interface (and async? (make-async-refine-interface type (make <formals>))))
                 (type (if async-interface (.name async-interface) type)))
            (when async?
@@ -292,7 +292,7 @@
 
         (('action-or-call action-or-call)
          (let ((action-or-call (helper action-or-call)))
-           (make <action-node> #:port.name (.scope action-or-call) #:event.name (.name action-or-call))))
+           (make <action-node> #:port.name (car (.ids action-or-call)) #:event.name (cadr (.ids action-or-call)))))
 
         (('triggers triggers ...)
          (make <triggers-node> #:elements (helper triggers)))
@@ -318,10 +318,10 @@
         (('direction direction) (helper direction))
 
         (('compound-name name)
-         (make <scope.name-node> #:name (helper name)))
+         (make <scope.name-node> #:ids (list (helper name))))
 
         (('compound-name scope name)
-         (make <scope.name-node> #:scope (helper scope) #:name (helper name)))
+         (make <scope.name-node> #:ids (append (helper scope) (list (helper name)))))
 
         (('scope ('global rest ...) names) (cons '/ (make-list? (helper names))))
         (('scope name) (make-list? (helper name)))
@@ -440,7 +440,7 @@
 
         (('enum-literal type field)
          (let ((type (helper type)))
-           (make <enum-literal-node> #:type.name (make <scope.name-node> #:scope (drop-right type 1) #:name (last type)) #:field (helper field))))
+           (make <enum-literal-node> #:type.name (make <scope.name-node> #:ids type) #:field (helper field))))
 
         (('otherwise) (make <otherwise-node> #:value 'otherwise))
 
@@ -586,24 +586,27 @@
   o)
 
 (define-method (make-namespaces (o <model>))
-  (let ((scope (.scope (.name o))))
+  (let ((scope (ast:scope o)))
     (let loop ((scope scope))
       (if (null? scope) o
-          (make <namespace> #:name (make <scope.name> #:name (car scope)) #:elements (list (loop (cdr scope))))))))
+          (make <namespace> #:name (make <scope.name> #:ids (list (car scope))) #:elements (list (loop (cdr scope))))))))
 
 (define-method (make-namespaces (o <type>))
   (if (parent o <model>) o
-      (let ((scope (.scope (.name o))))
+      (let ((scope (ast:scope o)))
         (let loop ((scope scope))
           (if (null? scope) o
-              (make <namespace> #:name (make <scope.name> #:name (car scope)) #:elements (list (loop (cdr scope)))))))))
+              (make <namespace> #:name (make <scope.name> #:ids (list (car scope))) #:elements (list (loop (cdr scope)))))))))
 
 (define (make-async-refine-interface name formals)
-  (let* ((void (make <scope.name> #:name 'void))
+  (let* ((void (make <scope.name> #:ids '(void)))
          (signature (make <signature> #:type.name void #:formals formals))
          (true (make <literal> #:value 'true))
          (false (make <literal> #:value 'false))
-         (name (make <scope.name> #:scope (.scope name) #:name (symbol-join (cons (.name name) (map (compose .name .type.name) (.elements formals))) '_))))
+         (scope (ast:scope name))
+         (single (ast:name name))
+         (single (symbol-join (cons single (map (compose last .ids .type.name) (.elements formals))) '_))
+         (name (make <scope.name> #:ids (append scope (list single)))))
     (make <interface>
       #:name name
       #:events (make <events> #:elements

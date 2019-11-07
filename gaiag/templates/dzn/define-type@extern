@@ -1,1 +1,1 @@
-extern #.name.name #x:=expression;
+extern #code:name.name #x:=expression;
