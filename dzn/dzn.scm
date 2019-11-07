@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018,2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -100,10 +100,10 @@
 
 (define (generator-dzn-async? o)
   (let* ((name (.name o))
-         (scope (.scope name)))
+         (scope (ast:scope name)))
     (and (pair? scope)
          (eq? (car scope) 'dzn)
-         (symbol-prefix? 'async (.name name)))))
+         (symbol-prefix? 'async (ast:name name)))))
 
 (define (dzn:extension o)
   (match o
@@ -205,7 +205,7 @@
   (if (as o <model>)
       (ast:full-name o)
       (let* ((type (or (as o <type>) (.type o)))
-             (scope (ast:scope type))
+             (scope (ast:full-scope type))
              (model-scope (parent o <model>))
              (model-scope (or (and model-scope (ast:full-name model-scope)) '()))
 

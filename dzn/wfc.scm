@@ -570,8 +570,7 @@
       '()))
 
 (define-method (re-declaration (o <declaration>))
-  (let* ((name (.name o))
-         (name (if (is-a? name <scope.name>) (.name name) name))
+  (let* ((name (ast:name o))
          (scope (decl-scope o))
          (previous (and scope (ast:lookup scope name)))
          (previous-scope (and previous (decl-scope previous))))
@@ -628,7 +627,7 @@
   (symbol-join (ast:full-name o) '.))
 
 (define-method (type-name (o <scope.name>))
-  (symbol-join (append (.scope o) (list (.name o))) '.))
+  (symbol-join (.ids o) '.))
 
 (define-method (reply (o <reply>))
   (let ((on (parent o <on>)))

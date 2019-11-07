@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2016, 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2016, 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -72,6 +72,7 @@
             code:name
             code:non-injected-bindings
             code:injected-instances-system
+            code:name.name
             code:ons
             code:port-release
             code:functions
@@ -161,7 +162,7 @@
   (let ((main (command-line:get 'model #f)))
     (when main
       (let* ((main-name (map string->symbol (string-split main #\.)))
-             (main-model (ast:lookup root (make <scope.name> #:scope (drop-right main-name 1) #:name (last main-name)))))
+             (main-model (ast:lookup root (make <scope.name> #:ids main-name))))
         ;; FIXME: error if not found?
         (and=> main-model code:dump-main)))))
 
@@ -259,7 +260,7 @@
 
   (define (name o)
     (let ((n (.name o)))
-      (if (is-a? n <scope.name>) (.name n) n)))
+      (if (is-a? n <scope.name>) (ast:name n) n)))
 
   (define (fullscope o)
     (let ((p (.parent o)))
@@ -283,7 +284,7 @@
     (($ <instance>) (code:scope+name (.type.name o)))
     (($ <enum-literal>) (append (code:scope+name (.type o)) (list (.field o))))
     (($ <port>) (code:scope+name (.type.name o)))
-    (($ <scope.name>) (append (.scope o) (list (.name o))))
+    (($ <scope.name>) (.ids o))
     (($ <signature>) ((compose code:scope+name .type.name) o))
     (($ <trigger>) ((compose code:scope+name .event) o))
     ((? (is? <named>)) ((compose code:scope+name .name) o))
@@ -459,7 +460,7 @@
 
 (define-method (code:add-calling-context-formal (o <formals>))
   (let ((calling-context (command-line:get 'calling-context #f)))
-    (if calling-context (clone o #:elements (cons (clone (make <formal> #:name 'dzn_cc #:direction 'inout #:type.name (make <scope.name> #:name '*calling-context*)) #:parent o)
+    (if calling-context (clone o #:elements (cons (clone (make <formal> #:name 'dzn_cc #:direction 'inout #:type.name (make <scope.name> #:ids '(*calling-context*))) #:parent o)
                                                   (ast:formal* o)))
         o)))
 
@@ -532,7 +533,7 @@
   ((compose code:enum-short-name .type) o))
 
 (define-method (code:enum-short-name (o <enum>))
-  ((compose .name .name) o))
+  (ast:name o))
 
 (define-method (code:enum-definer (o <interface>))
   (filter (is? <enum>) (append (ast:type* o) (ast:type* (.behaviour o)))))
@@ -691,7 +692,7 @@
 
 (use-modules (ice-9 pretty-print))
 
-(define-method (scope (o <type>)) ((compose .scope .name) o))
+(define-method (scope (o <type>)) ((compose ast:scope .name) o))
 (define-method (scope (o <event>)) ((compose scope .type .signature) o))
 (define-method (scope (o <reply>)) (scope (.type (.expression o))))
 
@@ -719,7 +720,7 @@
   ((compose (cut code:enum-model-scope <> (parent o <model>)) .type) o))
 
 (define-method (code:enum-model-scope (o <enum>) model)
-  (let ((scope (ast:scope o))
+  (let ((scope (ast:full-scope o))
         (model-scope (and=> model ast:full-name)))
     (cond ((or (null? scope) (null? model-scope)) (parent o <root>))
           ((equal? scope model-scope) (make <model-scope> #:scope model-scope))
@@ -822,7 +823,7 @@
 (define-method (code:add-calling-context (o <root>))
   (let ((calling-context (command-line:get 'calling-context #f)))
     (if calling-context
-        (let ((extern (make <extern> #:name (make <scope.name> #:name '*calling-context*) #:value calling-context)))
+        (let ((extern (make <extern> #:name (make <scope.name> #:ids '(*calling-context*)) #:value calling-context)))
           (clone o #:elements (cons extern (ast:top* o))))
         o)))
 
@@ -869,3 +870,15 @@
   (if (null? (tree-collect (disjoin (is? <blocking>) (is? <blocking-compound>))
                            (parent o <model>))) '()
       o))
+
+(define-method (code:name.name (o <enum>))
+  (symbol->string (ast:name o)))
+
+(define-method (code:name.name (o <extern>))
+  (symbol->string (ast:name o)))
+
+(define-method (code:name.name (o <int>))
+  (symbol->string (ast:name o)))
+
+(define-method (code:name.name (o <namespace>))
+  (symbol->string (ast:name o)))

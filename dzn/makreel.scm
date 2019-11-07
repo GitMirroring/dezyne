@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2019 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
@@ -124,10 +124,9 @@
     ((? (is? <model>)) (clone (tree-map (tick-names-) o) #:name ((compose (tick-names-) .name) o)))
     (($ <bool>) o)
     (($ <void>) o)
-    ((and ($ <scope.name>) (or (= .name 'void) (= .name 'bool))) o)
+    ((and ($ <scope.name>) (or (= .ids '(void)) (= .ids '(bool)))) o)
     ((? (is? <type>)) (clone o #:name ((compose (tick-names-) .name) o)))
-    (($ <scope.name>) (clone o #:scope (map (append-tick) (.scope o))
-                             #:name ((compose (append-tick) .name) o)))
+    (($ <scope.name>) (clone o #:ids (map (append-tick) (.ids o))))
     (($ <port>) (clone o #:name ((compose (append-tick) .name) o) #:type.name ((compose (tick-names-) .type.name) o)))
     (($ <trigger>) (clone o #:port.name ((compose (append-tick) .port.name) o)))
     (($ <action>) (clone o #:port.name ((compose (append-tick) .port.name) o)))
