@@ -45,7 +45,6 @@
             .event.name
             .id
             .instance.name
-            .name.name
             .operator
             .port.name
 
@@ -94,6 +93,7 @@
            .from
            .function.name
            .functions
+           .ids
            .incomplete
            .injected
            .instances
@@ -448,14 +448,11 @@
 (define-ast <scope> (<ast>))
 
 (define-ast <namespace> (<scope> <ast-list> <declaration>))
-(define-method (.name.name (o <namespace>))
-  ((compose .name .name) o))
 
 (define-ast <root> (<namespace>))
 
 (define-ast <scope.name> (<ast>)
-  (scope #:init-form (list))
-  (name))
+  (ids #:init-form (list)))
 
 
 (define-ast <block-comment> (<comment>))
@@ -510,35 +507,26 @@
 (define-ast <enum> (<scope> <type>)
   (fields #:init-form (list)))
 
-(define-method (.name.name (o <enum>))
-  (symbol->string ((compose .name .name) o)))
-
 (define-ast <extern> (<type>)
   (value))
 
-(define-method (.name.name (o <extern>))
-  (symbol->string ((compose .name .name) o)))
-
 (define-ast <bool> (<type>))
 (define-method (initialize (o <bool-node>) . initargs)
-  (next-method o (append (car initargs) (list #:name (make <scope.name-node> #:name 'bool)))))
+  (next-method o (append (car initargs) (list #:name (make <scope.name-node> #:ids '(bool))))))
 
 (define-ast <void> (<type>))
 (define-method (initialize (o <void-node>) . initargs)
-  (next-method o (append (car initargs) (list #:name (make <scope.name-node> #:name 'void)))))
+  (next-method o (append (car initargs) (list #:name (make <scope.name-node> #:ids '(void))))))
 
 (define-ast <int> (<type>)
   (range #:init-form (make <range-node>)))
-
-(define-method (.name.name (o <int>))
-  ((compose symbol->string .name .name) o))
 
 (define-ast <range> (<ast>)
   (from #:init-value 0)
   (to #:init-value 0))
 
 (define-ast <signature> (<locationed>)
-  (type.name #:init-form (make <scope.name-node> #:name 'void))
+  (type.name #:init-form (make <scope.name-node> #:ids '(void)))
   (formals #:init-form (make <formals-node>)))
 
 (define void-signature-node (make <signature-node>))
