@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -44,7 +44,7 @@
 (define-templates enum-literal c++:enum-literal type-infix)
 (define-templates string-to-enum c++:string->enum)
 (define-templates asd-voidreply (lambda (o) (if asd? "__ASD_VoidReply, " "")))
-(define-templates scoped-port-name (lambda (port) (let ((scope-name ((compose .name .type) port))) (append (.scope scope-name) (list (.name scope-name))))) type-infix)
+(define-templates scoped-port-name (lambda (port) ((compose .ids .name .type) port)) type-infix)
 (define-templates out-binding-lambda ast:provides-port*)
 (define-templates provided-port-declare ast:provides-port*)
 (define-templates required-port-declare ast:requires-port*)

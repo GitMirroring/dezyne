@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -133,7 +134,7 @@
 (define-templates =expression =expression)
 
 (define-templates illegal-out-assign cs:illegal-out-assign newline-infix)
-(define-templates scoped-port-name (lambda (port) (let ((scope-name ((compose .name .type) port))) (append (.scope scope-name) (list (.name scope-name))))) type-infix)
+(define-templates scoped-port-name (lambda (port) ((compose .ids .name .type) port)) type-infix)
 
 
 (define-templates shell-provided-meta-initializer ast:provides-port*)
