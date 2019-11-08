@@ -140,7 +140,10 @@
     (native-inputs `(("guile-json-for-build" ,guile-json-1)
                      ,@(package-native-inputs dzn)))
     (inputs `(("guile" ,guile-mingw)))
-    (propagated-inputs `(("guile-json" ,guile-json-mingw)))
+    (propagated-inputs `(("guile-json" ,guile-json-mingw)
+                         ("m4-cw" ,m4-changeword)
+                         ("mcrl2" ,mcrl2-minimal-mingw)
+                         ("sed" ,sed-mingw)))
     (arguments
      (substitute-keyword-arguments (package-arguments dzn)
        ((#:phases phases '%standard-phases)
@@ -155,3 +158,19 @@
      (substitute-keyword-arguments
          `(#:configure-flags '("--enable-changeword" "--program-suffix=-cw")
            ,@(package-arguments m4))))))
+
+(define-public sed-mingw
+  (package
+    (inherit sed)
+    (name "sed-mingw")
+    (arguments
+     `(#:tests? #f
+       #:make-flags '("sed/sed.exe")
+       ,@(substitute-keyword-arguments (package-arguments sed)
+           ((#:phases phases '%standard-phases)
+            `(modify-phases ,phases
+               (replace 'install
+                 (lambda _
+                   (let* ((out (assoc-ref %outputs "out"))
+                          (bin (string-append out "/bin")))
+                     (install-file "sed/sed.exe" bin)))))))))))
