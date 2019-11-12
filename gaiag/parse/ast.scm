@@ -74,14 +74,18 @@
         (_ #f)))
     (define (helper o)
       (match o
-        ;; ("bool" (make <scope.name-node> #:ids '(bool)))
-        ;; ("void" (make <scope.name-node> #:ids '(void)))
-        ("bool" 'bool)
-        ("void" 'void)
+        ;; ("bool" (make <scope.name-node> #:ids '("bool")))
+        ;; ("void" (make <scope.name-node> #:ids '("void")))
+        ("bool" "bool")
+        ("void" "void")
+
+        ("in" 'in)
+        ("out" 'out)
+        ("inout" 'inout)
 
         ((and (? string?) (? string->number)) (string->number o))
 
-        ((? string?) (string->symbol o))
+        ((? string?) o)
 
         (((and (? symbol?) type) body ... ('comment comment))
          (let ((ast (helper (cons type body))))
@@ -92,7 +96,7 @@
                 (location (helper (last o)))
                 (location (if (and (is-a? ast <root-node>)
                                    (.location ast)) (clone location #:file-name (.file-name (.location ast)))
-                              location)))
+                                   location)))
            (if (and location (or (is-a? ast <locationed-node>)))
                (clone ast #:location location)
                ast)))
@@ -216,16 +220,16 @@
          (make <binding-node> #:left (helper left) #:right (helper right)))
 
         ;; (('end-point)
-        ;;  (make <end-point-node> #:port.name '*))
+        ;;  (make <end-point-node> #:port.name "*"))
 
         (('end-point "*")
-         (make <end-point-node> #:port.name '*))
+         (make <end-point-node> #:port.name "*"))
 
         (('end-point name "*")
          (let* ((name (helper name))
                 (ids (.ids name))
                 (instance (and (pair? (cdr ids)) (car ids))))
-           (make <end-point-node> #:instance instance #:port.name '*)))
+           (make <end-point-node> #:instance instance #:port.name "*")))
 
         (('end-point name)
          (let* ((name (helper name))
@@ -241,7 +245,7 @@
          (let* ((direction (helper direction))
                 (direction-list? (pair? direction))
                 (type (helper type))
-                (async? (equal? (.ids type) '(dzn async)))
+                (async? (equal? (.ids type) '("dzn" "async")))
                 (async-interface (and async? (make-async-refine-interface type (make <formals>))))
                 (type (if async-interface (.name async-interface) type)))
            (when async?
@@ -323,7 +327,7 @@
         (('compound-name scope name)
          (make <scope.name-node> #:ids (append (helper scope) (list (helper name)))))
 
-        (('scope ('global rest ...) names) (cons '/ (make-list? (helper names))))
+        (('scope ('global rest ...) names) (cons "/" (make-list? (helper names))))
         (('scope name) (make-list? (helper name)))
         (('scope names ...) (helper names))
 
@@ -398,7 +402,7 @@
 
         (('data) (make <data-node> #:value *unspecified*))
 
-        (('field-test ('var identifier _ ...) field) (make <field-test-node> #:variable.name (string->symbol identifier) #:field (helper field)))
+        (('field-test ('var identifier _ ...) field) (make <field-test-node> #:variable.name identifier #:field (helper field)))
 
         (('function type name formals)
          (make <function-node>
@@ -442,7 +446,7 @@
          (let ((type (helper type)))
            (make <enum-literal-node> #:type.name (make <scope.name-node> #:ids type) #:field (helper field))))
 
-        (('otherwise) (make <otherwise-node> #:value 'otherwise))
+        (('otherwise) (make <otherwise-node> #:value "otherwise"))
 
         (('otherwise value) (make <otherwise-node> #:value value))
 
@@ -460,7 +464,7 @@
 
         (('root elements ...)
          (let* ((lst (let loop ((elements elements) (file-name file-name) (start-pos 0))
-                       (if (eq? elements '()) '()
+                       (if (null? elements) '()
                            (let* ((elt (car elements))
                                   (rest (cdr elements)))
                              (match elt
@@ -514,8 +518,8 @@
         ((left ">=" right) (make <greater-equal-node> #:left (helper left) #:right (helper right)))
         (('not expression) (make <not-node> #:expression (helper expression)))
 
-        (('literal "true") (make <literal-node> #:value 'true))
-        (('literal "false") (make <literal-node> #:value 'false))
+        (('literal "true") (make <literal-node> #:value "true"))
+        (('literal "false") (make <literal-node> #:value "false"))
         (('literal string) (make <literal-node> #:value (helper string)))
 
         (('location pos end)
@@ -563,7 +567,7 @@
       (let* ((compound (.statement function))
              (calls (tree-collect return-call compound))
              (names (delete-duplicates (sort (map (compose .function-name return-call) calls)
-                                             symbol<))))
+                                             string<))))
         (any identity
              (map (lambda (n)
                     (let ((fn (ast:lookup behaviour n)))
@@ -599,50 +603,50 @@
               (make <namespace> #:name (make <scope.name> #:ids (list (car scope))) #:elements (list (loop (cdr scope)))))))))
 
 (define (make-async-refine-interface name formals)
-  (let* ((void (make <scope.name> #:ids '(void)))
+  (let* ((void (make <scope.name> #:ids '("void")))
          (signature (make <signature> #:type.name void #:formals formals))
-         (true (make <literal> #:value 'true))
-         (false (make <literal> #:value 'false))
+         (true (make <literal> #:value "true"))
+         (false (make <literal> #:value "false"))
          (scope (ast:scope name))
          (single (ast:name name))
-         (single (symbol-join (cons single (map (compose last .ids .type.name) (.elements formals))) '_))
+         (single (string-join (cons single (map (compose last .ids .type.name) (.elements formals))) "_"))
          (name (make <scope.name> #:ids (append scope (list single)))))
     (make <interface>
       #:name name
       #:events (make <events> #:elements
-                     (list (make <event> #:name 'req #:direction 'in #:signature signature)
-                           (make <event> #:name 'clr #:direction 'in #:signature (make <signature> #:type.name void))
-                           (make <event> #:name 'ack #:direction 'out #:signature signature)))
+                     (list (make <event> #:name "req" #:direction 'in #:signature signature)
+                           (make <event> #:name "clr" #:direction 'in #:signature (make <signature> #:type.name void))
+                           (make <event> #:name "ack" #:direction 'out #:signature signature)))
       #:behaviour
       (make <behaviour>
         #:variables (make <variables>
-                      #:elements (list (make <variable> #:type.name 'bool #:name 'idle #:expression true)))
+                      #:elements (list (make <variable> #:type.name "bool" #:name "idle" #:expression true)))
         #:statement
         (make <compound>
           #:elements
           (list
            (make <guard>
-             #:expression (make <var> #:variable.name 'idle)
+             #:expression (make <var> #:variable.name "idle")
              #:statement
              (make <compound>
                #:elements
                (list
-                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name 'req)))
-                      #:statement (make <assign> #:variable.name 'idle #:expression false))
-                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name 'clr)))
+                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name "req")))
+                      #:statement (make <assign> #:variable.name "idle" #:expression false))
+                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name "clr")))
                       #:statement (make <compound>)))))
            (make <guard>
-             #:expression (make <not> #:expression (make <var> #:variable.name 'idle))
+             #:expression (make <not> #:expression (make <var> #:variable.name "idle"))
              #:statement
              (make <compound>
                #:elements
                (list
-                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name 'clr)))
-                      #:statement (make <assign> #:variable.name 'idle #:expression true))
-                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name 'inevitable)))
+                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name "clr")))
+                      #:statement (make <assign> #:variable.name "idle" #:expression true))
+                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name "inevitable")))
                       #:statement
                       (make <compound>
                         #:elements
                         (list
-                         (make <action> #:event.name 'ack)
-                         (make <assign> #:variable.name 'idle #:expression true)))))))))))))
+                         (make <action> #:event.name "ack")
+                         (make <assign> #:variable.name "idle" #:expression true)))))))))))))

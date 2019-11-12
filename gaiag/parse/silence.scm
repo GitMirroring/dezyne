@@ -61,7 +61,7 @@
     (map (lambda (x) (if (eq? (cdr x) 'recursive) (cons (car x) 'silent) x)) fixpoint)))
 
 (define-method (any-modeling? (o <on>))
-  (find (compose (cut member <> '(inevitable optional)) .event.name) (ast:trigger* o)))
+  (find (compose (cut member <> '("inevitable" "optional")) .event.name) (ast:trigger* o)))
 
 (define-method (silence (o <compound>) function-silence)
   (let loop ((statements (ast:statement* o)) (result 'silent))

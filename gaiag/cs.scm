@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -88,8 +89,8 @@
 
 (define (direction o)
   (match (.direction o)
-    ('out 'out)
-    ('inout 'ref)
+    ("out" "out")
+    ("inout" "ref")
     (_ "")))
 
 (define-method (cs:direction (o <formal>))
@@ -112,9 +113,9 @@
         (calling-context (command-line:get 'calling-context #f)))
     (if calling-context
         (cons (clone (make <formal>
-                       #:name 'dzn_cc
-                       #:type.name (make <scope.name> #:name '*calling-context*)
-                       #:direction 'inout)
+                       #:name "dzn_cc"
+                       #:type.name (make <scope.name> #:name "*calling-context*")
+                       #:direction "inout")
                      #:parent o)
               formals)
         formals)))
@@ -128,9 +129,9 @@
   (let ((args (ast:argument* o)))
     (if (not (command-line:get 'calling-context #f)) args
         (cons (make <formal>
-                #:name 'dzn_cc
-                #:type.name (make <scope.name> #:name '*calling-context*)
-                #:direction 'inout)
+                #:name "dzn_cc"
+                #:type.name (make <scope.name> #:name "*calling-context*")
+                #:direction "inout")
               args))))
 
 (define (expression+formal->argument a f)
@@ -185,7 +186,7 @@
    ast))
 
 (define (ast-> ast)
-  (parameterize ((language 'cs)
+  (parameterize ((language "cs")
                  (%x:header x:header)
                  (%x:source x:source)
                  (%x:main x:main))

@@ -129,7 +129,7 @@
 
 (define-method (=expression (o <variable>))
   (let ((e (.expression o)))
-    (if (and (is-a? e <literal>) (eq? 'void (.value e))) o
+    (if (and (is-a? e <literal>) (equal? "void" (.value e))) o
         e)))
 (define-templates =expression =expression)
 

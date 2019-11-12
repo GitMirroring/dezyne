@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -103,10 +103,10 @@ Usage: dzn parse [OPTION]... [FILE]...
          (peg? (gdzn:command-line:get 'peg #f))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
-         (model-name (and=> (option-ref options 'model #f) string->symbol))
+         (model-name (option-ref options 'model #f))
          (behaviour? (option-ref options 'behaviour #f))
          (locations? (option-ref options 'locations #f))
-         (language (string->symbol (option-ref options 'language "c++"))))
+         (language (option-ref options 'language "c++")))
     (parse-file file-name #:generator? generator? #:peg? peg? #:imports imports #:model-name model-name #:behaviour? behaviour? #:locations? locations?)))
 
 (define (assert-parse options file-name)

@@ -96,64 +96,64 @@
            (generator-dzn-async? o))))
 
 (define (gaiag-dzn-async? o)
-  (equal? (ast:full-name o) '(dzn async)))
+  (equal? (ast:full-name o) '("dzn" "async")))
 
 (define (generator-dzn-async? o)
   (let* ((name (.name o))
          (scope (ast:scope name)))
     (and (pair? scope)
-         (eq? (car scope) 'dzn)
-         (symbol-prefix? 'async (ast:name name)))))
+         (equal? (car scope) "dzn")
+         (string-prefix? "async" (ast:name name)))))
 
 (define (dzn:extension o)
   (match o
     (($ <interface>)
-     (assoc-ref '((cd . .yah)
-                  (c . .h)
-                  (c++ . .hh)
-                  (c++03 . .hh)
-                  (c++-msvc11 . .hh)
-                  (dzn . .dzn)
-                  (html . .html)
-                  (scheme . .scm)
-                  (java . .java)
-                  (java7 . .java)
-                  (javascript . .js)
-                  (cs . .cs)
-                  (python . .py))
+     (assoc-ref '(("cd" . ".yah")
+                  ("c" . ".h")
+                  ("c++" . ".hh")
+                  ("c++03" . ".hh")
+                  ("c++-msvc11" . ".hh")
+                  ("dzn" . ".dzn")
+                  ("html" . ".html")
+                  ("scheme" . ".scm")
+                  ("java" . ".java")
+                  ("java7" . ".java")
+                  ("javascript" . ".js")
+                  ("cs" . ".cs")
+                  ("python" . ".py"))
                 (language)))
     ((or ($ <foreign>) ($ <component>) ($ <system>))
-     (assoc-ref '((cd . .yll)
-                  (c . .c)
-                  (c++ . .cc)
-                  (c++03 . .cc)
-                  (c++-msvc11 . .cc)
-                  (dzn . .dzn)
-                  (html . .html)
-                  (scheme . .scm)
-                  (java . .java)
-                  (java7 . .java)
-                  (javascript . .js)
-                  (cs . .cs)
-                  (python . .py))
+     (assoc-ref '(("cd" . ".yll")
+                  ("c" . ".c")
+                  ("c++" . ".cc")
+                  ("c++03" . ".cc")
+                  ("c++-msvc11" . ".cc")
+                  ("dzn" . ".dzn")
+                  ("html" . ".html")
+                  ("scheme" . ".scm")
+                  ("java" . ".java")
+                  ("java7" . ".java")
+                  ("javascript" . ".js")
+                  ("cs" . ".cs")
+                  ("python" . ".py"))
                 (language)))))
 
 (define (dzn:om ast)
   ast)
 
 (define (dzn:language)
-  (let ((language (string->symbol (command-line:get 'language "dzn"))))
-    (if (member language '(dzn html)) language
-        'dzn)))
+  (let ((language (command-line:get 'language "dzn")))
+    (if (member language '("dzn" "html")) language
+        "dzn")))
 
 (define-method (ast->dzn (o <root>))
-  (parameterize ((language 'dzn))
+  (parameterize ((language "dzn"))
     (with-output-to-string (dzn:indent (cut x:source o)))))
 (define-method (ast->dzn (o <statement>))
-  (parameterize ((language 'dzn))
+  (parameterize ((language "dzn"))
     (with-output-to-string (dzn:indent (cut x:statement o)))))
 (define-method (ast->dzn (o <function>))
-  (parameterize ((language 'dzn))
+  (parameterize ((language "dzn"))
     (with-output-to-string (dzn:indent (cut x:source o)))))
 
 ;;; dzn: generic templates
@@ -178,7 +178,7 @@
 
 (define (dzn:annotate-shells o)
   (if (and (is-a? o <system>)
-           (equal? (command-line:get 'shell #f) (string-join (map symbol->string (ast:full-name o)) ".")))
+           (equal? (command-line:get 'shell #f) (string-join (ast:full-name o) ".")))
       (clone (make <shell-system> #:ports (.ports o) #:name (.name o) #:instances (.instances o) #:bindings (.bindings o)) #:parent (.parent o))
       o))
 
@@ -191,7 +191,7 @@
 
 (define-method (dzn:=expression (o <literal>))
   (let ((value (.value o)))
-    (if (eq? value 'void) (make <void>)
+    (if (equal? value "void") (make <void>)
         o)))
 
 (define-method (dzn:=expression (o <variable>))
@@ -209,7 +209,7 @@
              (model-scope (parent o <model>))
              (model-scope (or (and model-scope (ast:full-name model-scope)) '()))
 
-             (common (or (list-index (negate eq?) scope model-scope) (min (length scope) (length model-scope)))))
+             (common (or (list-index (negate equal?) scope model-scope) (min (length scope) (length model-scope)))))
         (drop (ast:full-name type) common))))
 
 (define-method (dzn:type (o <bool>))
@@ -289,7 +289,7 @@
 (define (dzn:->string o)
   (match o
     ((? number?) (number->string o))
-    ((? symbol?) (symbol->string o))
+;;    ((? symbol?) (symbol->string o))
     ((? string?) o)
     ((? (is? <data>)) (dzn:->string (.value o)))
     ((? unspecified?) "")
@@ -328,7 +328,7 @@
 (define-method (dzn:signature (o <event>))
   (.signature o))
 (define-method (dzn:signature (o <port>))
-  (list ((compose ast:name .type) o) 't))
+  (list ((compose ast:name .type) o) "t"))
 
 (define-method (dzn:action-arguments (o <action>)) ; MORTAL SIN HERE!!?
   (if (not (.port.name o)) '()
@@ -400,7 +400,7 @@
       thunk))
 
 (define (dzn:dir o)
-  (if (memq (language) '(javascript)) "dzn/"
+  (if (member (language) '("javascript")) "dzn/"
       ""))
 
 (define-method (dzn:from (o <expression>))
@@ -423,7 +423,7 @@
          (stdout? (equal? dir "-"))
          (dir (string-append dir "/" (dzn:dir o)))
          (base (basename (ast:source-file o) ".dzn")))
-    (let* ((ext (symbol->string (dzn:extension (make <component>))))
+    (let* ((ext (dzn:extension (make <component>)))
            (file-name (string-append dir base ext)))
       (if stdout? ((dzn:indent (cut (%x:source) o)))
           (begin
