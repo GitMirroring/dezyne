@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2016, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
@@ -56,37 +56,37 @@
             x:interface-init
             x:component-init))
 
-(define* ((om:scope-name #:optional (infix '_)) o)
-  (let ((infix (if (symbol? infix) infix
-                   (string->symbol infix))))
-    ((->symbol-join infix) (ast:full-name o))))
+(define* ((om:scope-name #:optional (infix "_")) o)
+  (let ((infix (if (symbol? infix) (symbol->string infix)
+                   infix)))
+    ((->string-join infix) (ast:full-name o))))
 
-(define (x:interface-init o) (format #f "init ~ainterface;" (apply string-append (map symbol->string (ast:full-name o)))))
+(define (x:interface-init o) (format #f "init ~ainterface;" (apply string-append (ast:full-name o))))
 (define (x:provides-init o) "init provides;\n")
 (define (x:component-init o) "init component;\n")
 
 (define (verify:file-name o)
-  (string-append (symbol->string (verify:scope-name o)) ".makreel"))
+  (string-append (verify:scope-name o) ".makreel"))
 
 (define (interface-taus model)
   (define (compose-taus names)
     (string-join (append-map (lambda (o) (map (cut string-append o <>) '("silent" "silent_end" "internal" "end"))) names) ","))
-  (compose-taus (list (apply string-append (map symbol->string (ast:full-name model))))))
+  (compose-taus (list (apply string-append (ast:full-name model)))))
 
 (define (component-taus model)
   (define (compose-taus names)
     (string-join (append-map (lambda (o) (map (cut string-append o <>) '("in" "qin" "qout" "reply"))) names) ","))
-  (compose-taus (map (compose symbol->string .name) (ast:required+async model))))
+  (compose-taus (map .name (ast:required+async model))))
 
 (define (compliance-taus model)
   (define (compose-taus names)
     (string-join (append-map (lambda (o) (map (cut string-append o <>) '("in" "internal" "silent" "qin" "qout" "reply" "flush"))) names) ","))
-  (compose-taus (map (compose symbol->string .name) (ast:required+async model))))
+  (compose-taus (map .name (ast:required+async model))))
 
 (define (deterministic-labels component)
   (define (compose-triggers channel dir triggers)
-    (map (lambda (t) (string-append (symbol->string (.port.name t)) channel "(" (symbol->string ((compose (om:scope-name (string->symbol "")) .type .port) t)) "action" "("
-                                    (symbol->string ((compose (om:scope-name (string->symbol "")) .type .port) t)) dir (symbol->string (.event.name t)) ")" ")")) triggers))
+    (map (lambda (t) (string-append (.port.name t) channel "(" ((compose (om:scope-name (string->symbol "")) .type .port) t) "action" "("
+                                    ((compose (om:scope-name (string->symbol "")) .type .port) t) dir (.event.name t) ")" ")")) triggers))
   (string-join (append (compose-triggers "in" "in'" (ast:provided-in-triggers component))
                        (compose-triggers "qout" "out'" (append (ast:async-out-triggers component) (ast:required-out-triggers component)))) ","))
 
@@ -103,7 +103,7 @@
                 fail?))))))
 
 (define (mcrl2:verify-component dir dzn-file-name model-name ast verbose? all?)
-  (let* ((component (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <component>) (ast:model* ast))))
+  (let* ((component (find (lambda (x) (equal? (verify:scope-name x) model-name)) (filter (is? <component>) (ast:model* ast))))
          (interfaces (delete-duplicates (map .type (ast:port* component)) ast:eq?))
          (asserts (append
                    (append-map
@@ -254,7 +254,7 @@
                      (cut verify-component-refinement lts info model-name ast)))))
 
 (define (mcrl2:verify dir dzn-file-name model-name ast verbose? all?)
-  (let ((model (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model-name)) (filter (is? <model>) (ast:model* ast)))))
+  (let ((model (find (lambda (x) (equal? (verify:scope-name x) model-name)) (filter (is? <model>) (ast:model* ast)))))
     (cond ((is-a? model <interface>) (mcrl2:verify-interface dir dzn-file-name model ast verbose? all?))
           ((is-a? model <component>) (mcrl2:verify-component dir dzn-file-name model-name ast verbose? all?))
           (else #f))))
