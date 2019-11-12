@@ -3,7 +3,7 @@
 ;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -89,28 +89,28 @@
 
 (define ((triples:fix-empty-interface model) triples)
   (if (and (is-a? model <interface>) (null? triples))
-      (let* ((on (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name 'inevitable)))))
-             (guard (make <guard> #:expression (make <literal> #:value 'false)))
+      (let* ((on (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name "inevitable")))))
+             (guard (make <guard> #:expression (make <literal> #:value "false")))
              (statement (make <compound> #:elements (list (make <illegal>)))))
         (list (t-triple on guard #f statement)))
       triples))
 
-(define (trigger-eq? a b)
-  (and (eq? (.port.name a) (.port.name b))
-       (eq? (.event.name a) (.event.name b))))
+(define (trigger-equal? a b)
+  (and (equal? (.port.name a) (.port.name b))
+       (equal? (.event.name a) (.event.name b))))
 
 (define (combine-not guards)
-  (cond ((null? guards) (make <guard> #:expression (make <literal> #:value 'true)))
+  (cond ((null? guards) (make <guard> #:expression (make <literal> #:value "true")))
 	((= 1 (length guards)) (make <guard>
 				 #:expression (make <not>
 						#:expression (.expression (car guards)))))
 	(else (make <guard> #:expression (reduce (lambda (elem prev)
 						   (make <and> #:left elem #:right prev))
-					    (make <literal> #:value 'true)
+					    (make <literal> #:value "true")
 					    (map (compose (cut make <not> #:expression <>) .expression) guards))))))
 
 (define (add-illegals model triples trigger)
-  (let* ((triples (filter (lambda (t) (trigger-eq? ((compose car ast:trigger* t-on) t) trigger)) triples))
+  (let* ((triples (filter (lambda (t) (trigger-equal? ((compose car ast:trigger* t-on) t) trigger)) triples))
          (on (clone (make <on> #:triggers (make <triggers> #:elements (list trigger))) #:parent (.parent trigger)))
          (guard (combine-not (map t-guard triples)))
          (provides? (and=> (.port trigger) ast:provides?))
@@ -191,7 +191,7 @@
 
 (define (combine guards)
   (make <guard> #:expression (reduce (cut make <and> #:left <> #:right <>)
-                                     (make <literal> #:value 'true)
+                                     (make <literal> #:value "true")
                                      (map .expression guards))))
 
 (define (triples:->triples o)
@@ -231,7 +231,7 @@
 (define (triples:->on-guard* triples)
   (define ((trigger-equal? trigger) triple)
     (let ((t ((compose car ast:trigger* t-on) triple)))
-      (and (eq? (.port.name t) (.port.name trigger)) (eq? (.event.name t) (.event.name trigger)))))
+      (and (equal? (.port.name t) (.port.name trigger)) (equal? (.event.name t) (.event.name trigger)))))
   (let* ((sorted-triples (let loop ((triples triples))
                            (if (null? triples) '()
                                (let ((trigger ((compose car ast:trigger* t-on car) triples)))
@@ -277,7 +277,7 @@
 
 (define ((rewrite-formals model) triples)
 
-  (define (pair-eq? p) (eq? (car p) (cdr p)))
+  (define (pair-equal? p) (equal? (car p) (cdr p)))
 
   (define ((rename mapping) o)
     (match o
@@ -286,7 +286,7 @@
        (clone o #:formals (clone (.formals o) #:elements (map (rename mapping) ((compose .elements .formals) o)))))
       (($ <action>) (clone o #:arguments ((rename mapping) (.arguments o))))
       (($ <arguments>) (clone o #:elements (map (rename mapping) (.elements o))))
-      ((? symbol?) (or (assoc-ref mapping o) o))
+      ((? string?) (or (assoc-ref mapping o) o))
       ((? (is? <ast>)) (tree-map (rename mapping) o))
       (_ o)))
 
@@ -312,7 +312,7 @@
                 (occupied members)
                 (fresh (letrec ((fresh (lambda (occupied name)
                                          (if (member name occupied)
-                                             (fresh occupied (symbol-append name 'x))
+                                             (fresh occupied (string-append name "x"))
                                              name))))
                          fresh)) ;; occupied name -> namex
                 (refresh (lambda (occupied names)
@@ -321,7 +321,7 @@
                                        occupied names))) ;; occupied names -> (append namesx occupied)
 
                 (fresh-formals (list-head (refresh occupied formals) (length formals)))
-                (mapping (filter (negate pair-eq?) (map cons (map .name ((compose .elements .formals) trigger)) fresh-formals)))
+                (mapping (filter (negate pair-equal?) (map cons (map .name ((compose .elements .formals) trigger)) fresh-formals)))
 
                 (occupied (append (map cdr mapping) members))
 
@@ -387,8 +387,8 @@
 (define-method (simplify (o <bool-expr>))
   (match o
     (($ <not>)(let ((e (simplify (.expression o))))
-                (cond ((ast:literal-true? e) (clone e #:value 'false))
-                          ((ast:literal-false? e) (clone e #:value 'true))
+                (cond ((ast:literal-true? e) (clone e #:value "false"))
+                          ((ast:literal-false? e) (clone e #:value "true"))
                           (else (clone o #:expression e)))))
     (($ <and>)(let ((left (simplify (.left o)))
                     (right (simplify (.right o))))
@@ -409,7 +409,7 @@
 (define* (add-reply-port o #:optional (port #f) (block? #f)) ;; requires (= 1 (length (.triggers on)))
   ;(stderr "add-reply-report o = ~a; port = ~a: model = ~a\n" o port model)
   (match o
-    (($ <reply>) (let ((port? (.port o))) (if (and port? (not (symbol? port?))) o (clone o #:port.name (.name port)))))
+    (($ <reply>) (let ((port? (.port o))) (if (and port? (not (string? port?))) o (clone o #:port.name (.name port)))))
     (($ <blocking>)
      (if block?
          (make <blocking-compound>
@@ -473,7 +473,7 @@
     (_ o)))
 
 (define* ((remove-otherwise #:optional (keep-annotated? #t) (statements '())) o)
-  (define (virgin-otherwise? x) (or (eq? x 'otherwise) (eq? x *unspecified*))) ;; FIXME *unspecified*
+  (define (virgin-otherwise? x) (or (equal? x "otherwise") (eq? x *unspecified*))) ;; FIXME *unspecified*
   (match o
     ((? ast:imperative?) o)
     ((and ($ <guard>) (= .expression (and ($ <otherwise>) (= .value value))) (= .statement statement)) (=> failure)

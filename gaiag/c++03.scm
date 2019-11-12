@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 ;;; Copyright © 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
@@ -85,7 +85,7 @@
 (include "templates/c++03.scm")
 
 (define (c++03:root-> root)
-  (parameterize ((language 'c++03)
+  (parameterize ((language "c++03")
                  (%x:header x:header)
                  (%x:source x:source)
                  (%x:glue-top-header x:glue-top-header)
