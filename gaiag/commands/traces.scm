@@ -3,7 +3,7 @@
 ;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -132,15 +132,14 @@ Usage: dzn traces [OPTION]... DZN-FILE
          (provided-ports (if (is-a? model <interface>) '()
                              (ast:provides-port* model)))
          (provides-in (if (is-a? model <component>)
-                          (map (lambda (t) (symbol-append (symbol-drop-right (.port.name t) 1) '. (.event.name t)))
+                          (map (lambda (t) (string-append (string-drop-right (.port.name t) 1) "." (.event.name t)))
                                (ast:provided-in-triggers model))
                           (map .name (filter ast:in? (ast:event* model)))))
-         (provides-in (map symbol->string provides-in))
          (foo (if gdzn-debug? (stderr "provides: ~a\n" provided-ports)))
-         (provided (map (compose symbol->string .name) provided-ports))
+         (provided (map .name provided-ports))
          (tmp (tmpnam))
          (foo (mkdir tmp))
-         (model-name (symbol->string (verify:scope-name model)))
+         (model-name (verify:scope-name model))
          (bin ((compose dirname car) (command-line)))
          (flush-opt (option-ref options 'flush #f))
          (illegal-opt (option-ref options 'illegal #f))
@@ -197,7 +196,7 @@ Usage: dzn traces [OPTION]... DZN-FILE
          (root (makreel:om ast))
          (model-name (option-ref options 'model #f)))
     (define (named? o)
-      (equal? (symbol->string (verify:scope-name o)) model-name))
+      (equal? (verify:scope-name o) model-name))
     (let* ((models (ast:model* root))
            (components-interfaces (append (filter (conjoin (is? <component>) .behaviour) models)
                                           (filter (is? <interface>) models)))
