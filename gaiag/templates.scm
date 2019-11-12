@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
@@ -57,7 +57,7 @@
 
   (define (display-primitive o)
     (cond (((disjoin char? number? string?) o) (display o) "")
-          ((symbol? o) (display (symbol->string o)) "")
+          ((symbol? o) (display (symbol->string o)) "") ;; FIXME: still needed???
           (else o)))
 
   (define (tree->body t . id)
@@ -87,7 +87,7 @@
             ((null? o))
             (else (proc o))))
     (let* ((grammar (or (and (pair? o)
-                             (assoc-ref grammar-alist ((compose ast-name car) o)))
+                             (assoc-ref grammar-alist ((compose string->symbol ast-name car) o)))
                         (assoc-ref grammar-alist #f)))
            (grammar? (> (length grammar) 1))
            (g-alist (if (not grammar?) (car grammar)

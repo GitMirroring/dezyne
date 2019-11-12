@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -41,7 +42,7 @@
            *eof*-is-#f
            ->join
            symbol-join
-           ->symbol-join
+           ->string-join
            ->string
            !=
            <1
@@ -83,21 +84,13 @@
            string-null-is-#f
            string-postfix?
            string-sub ;; FIXME: look at guile-lib string-substitute sugar
-           symbol<
-           list-symbol<
            null-symbol
            symbol-null?
            pair??
            eq??
            equal??
-           symbol-prefix?
-           symbol-suffix?
-           symbol-capitalize
-           symbol-upcase
            symbol-upcase-first
-           symbol-drop
            symbol-drop-right
-           symbol-split
 
            ;; FIXME
 
@@ -118,9 +111,6 @@
 (define (conjoin . predicates)
   (lambda (. arguments)
     (every (cut apply <> arguments) predicates)))
-
-;; (define* ((goops-prefix #:optional (symbols '(<port>)) (prefix 'goops:)) o)
-;;   (if (member o symbols) (symbol-append prefix o) o))
 
 (define *eof* (call-with-input-string "" read-char))
 (define (null-is-#f o) (if (null? o) #f o))
@@ -158,29 +148,16 @@
 (define* (symbol-join lst #:optional (sep '.))
   (string->symbol (string-join  (map symbol->string lst) (symbol->string sep))))
 
-(define ((->symbol-join infix) lst)
+(define ((->string-join infix) lst)
   (let loop ((lst lst) (result '()))
-    (if (null? lst) (apply symbol-append result)
+    (if (null? lst) (apply string-append result)
         (if (null? result)
             (loop (cdr lst) (take lst 1))
             (loop (cdr lst) (append result (list infix) (take lst 1)))))))
 
-(define (symbol-split symbol char)
-  (map string->symbol (string-split (symbol->string symbol) char)))
-
-(define (symbol-capitalize symbol)
-  ((compose string->symbol string-capitalize symbol->string) symbol))
-
-(define (symbol-upcase symbol)
-  ((compose string->symbol string-upcase symbol->string) symbol))
-
 (define (symbol-upcase-first sym)
    (let ((str (symbol->string sym)))
      (string-append (string-upcase (string-take str 1)) (string-drop str 1))))
-
-(define (symbol-drop symbol count)
-  (define ((drop count) string) (string-drop string count))
-  ((compose string->symbol (drop count) symbol->string) symbol))
 
 (define (symbol-drop-right symbol count)
   (define ((drop count) string) (string-drop-right string count))
@@ -189,17 +166,6 @@
 (define (symbol-take symbol count)
   (define ((take count) string) (string-take string count))
   ((compose string->symbol (take count) symbol->string) symbol))
-
-(define (symbol-prefix? prefix string)
-  (string-prefix? (symbol->string prefix) (symbol->string string)))
-
-(define (symbol-suffix? suffix string)
-  (string-suffix? (symbol->string suffix) (symbol->string string)))
-
-(define (symbol< a b) (string< (symbol->string a) (symbol->string b)))
-
-(define (list-symbol< a b)
-  (symbol< (apply symbol-append a) (apply symbol-append b)))
 
 (define (join-components components)
   (apply

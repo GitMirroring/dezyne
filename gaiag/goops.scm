@@ -512,11 +512,11 @@
 
 (define-ast <bool> (<type>))
 (define-method (initialize (o <bool-node>) . initargs)
-  (next-method o (append (car initargs) (list #:name (make <scope.name-node> #:ids '(bool))))))
+  (next-method o (append (car initargs) (list #:name (make <scope.name-node> #:ids '("bool"))))))
 
 (define-ast <void> (<type>))
 (define-method (initialize (o <void-node>) . initargs)
-  (next-method o (append (car initargs) (list #:name (make <scope.name-node> #:ids '(void))))))
+  (next-method o (append (car initargs) (list #:name (make <scope.name-node> #:ids '("void"))))))
 
 (define-ast <int> (<type>)
   (range #:init-form (make <range-node>)))
@@ -526,7 +526,7 @@
   (to #:init-value 0))
 
 (define-ast <signature> (<locationed>)
-  (type.name #:init-form (make <scope.name-node> #:ids '(void)))
+  (type.name #:init-form (make <scope.name-node> #:ids '("void")))
   (formals #:init-form (make <formals-node>)))
 
 (define void-signature-node (make <signature-node>))
@@ -542,10 +542,10 @@
 (define-method (.direction (o <modeling-event>)) 'in)
 
 (define-ast <inevitable> (<modeling-event>))
-(define-method (.name (o <inevitable>)) 'inevitable)
+(define-method (.name (o <inevitable>)) "inevitable")
 
 (define-ast <optional> (<modeling-event>))
-(define-method (.name (o <optional>)) 'optional)
+(define-method (.name (o <optional>)) "optional")
 
 (define (ast:inevitable) (make <inevitable>))
 (define (ast:optional) (make <optional>))
@@ -568,7 +568,7 @@
 (define-ast <expression> (<locationed>))
 
 (define-ast <literal> (<expression>)
-  (value #:init-value 'void))
+  (value #:init-value "void"))
 
 (define-ast <binary> (<expression>)
   (left #:init-value *unspecified*)
@@ -723,7 +723,7 @@
 (define-ast <trigger-return> (<imperative>)
   (expression)
   (port.name)
-  (event.name #:init-value 'return))
+  (event.name #:init-value "return"))
 
 (define-ast <q-in> (<ast>)
   (trigger))
@@ -939,7 +939,7 @@
   (list (make <bool>) (make <void>)))
 
 (define (drop-<> o)
-  (string->symbol (string-drop (string-drop-right (symbol->string o) 1) 1)))
+  (string-drop (string-drop-right (symbol->string o) 1) 1))
 
 (define-method (ast-name (o <top>))
   (drop-<> (class-name (class-of o))))

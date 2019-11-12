@@ -4,7 +4,7 @@
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -87,12 +87,12 @@ Usage: dzn verify [OPTION]... DZN-FILE [MAP-FILE]...
 (define (models-for-verification root)
   (let* ((models (ast:model* root))
          (components (filter (conjoin (is? <component>) (negate ast:imported?) .behaviour) models))
-         (component-names (map (compose symbol->string verify:scope-name) components))
+         (component-names (map verify:scope-name components))
          (interfaces (filter (conjoin (is? <interface>) (negate ast:dzn-scope?)) models))
-         (interface-names (map (compose symbol->string verify:scope-name) interfaces))
+         (interface-names (map verify:scope-name interfaces))
          (interface-names (let loop ((components components) (interface-names interface-names))
                             (if (null? components) interface-names
-                                (let ((component-interfaces (map (compose symbol->string verify:scope-name .type) (ast:port* (car components)))))
+                                (let ((component-interfaces (map (compose verify:scope-name .type) (ast:port* (car components)))))
                                   (loop (cdr components)
                                         (filter (negate (cut member <> component-interfaces)) interface-names)))))))
     (append interface-names component-names)))
@@ -104,7 +104,7 @@ Usage: dzn verify [OPTION]... DZN-FILE [MAP-FILE]...
     (delete-duplicates (filter-map (cut parent <> <interface>) types) ast:eq?)))
 
 (define (model->mcrl2 root model)
-  (let* ((model-name (symbol->string (verify:scope-name model)))
+  (let* ((model-name (verify:scope-name model))
          (root' (tree-filter (disjoin (negate (is? <component>)) (cut ast:eq? <> model)) root)))
     (parameterize ((language 'makreel) (%model-name model-name))
       (root-> root'))))
@@ -119,7 +119,7 @@ Usage: dzn verify [OPTION]... DZN-FILE [MAP-FILE]...
     (let* ((root (makreel:om ast))
            (model (option-ref options 'model #f))
            (models (if model (list model) (models-for-verification root))))
-      (when (and model (not (find (lambda (x) (equal? (symbol->string (verify:scope-name x)) model))
+      (when (and model (not (find (lambda (x) (equal? (verify:scope-name x) model))
                                   (ast:model* root))))
         (display (string-append "no such model: " model "\n") (current-error-port))
         (exit 1))

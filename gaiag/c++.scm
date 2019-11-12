@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
@@ -181,7 +181,7 @@
 (include "templates/glue.scm")
 
 (define (c++:root-> root)
-  (parameterize ((language 'c++)
+  (parameterize ((language "c++")
                  (%x:header x:header)
                  (%x:source x:source)
                  (%x:glue-bottom-header x:glue-bottom-header)

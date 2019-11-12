@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2015, 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2017 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -72,7 +72,7 @@
 (define-method (c:extract-variables-with-respect-to-enums (o <ast>))
   (let* ((non-literals (filter (lambda (u) (not (is-a? (.expression u) <literal>))) (ast:variable* o)))
          (literals (filter (lambda (u) (is-a? (.expression u) <literal>)) (ast:variable* o)))
-         (filtered-literals (filter (lambda (u) (not (eq? ((compose .value .expression) u) 'void))) literals)))
+         (filtered-literals (filter (lambda (u) (not (equal? ((compose .value .expression) u) "void"))) literals)))
      (append non-literals filtered-literals)))
 
 

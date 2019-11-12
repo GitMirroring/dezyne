@@ -118,13 +118,13 @@
   (define* ((append-tick #:optional (names '())) o)
     (if (or (not o) (ast:wildcard? o) (ast:empty-namespace? o)) o
         (let ((count (or (assoc-ref names o) 0)))
-          (symbol-append o (string->symbol (string-append "'" (if (zero? count) "" (number->string count))))))))
+          (string-append o (string-append "'" (if (zero? count) "" (number->string count)))))))
   (match o
     (($ <root>) (tree-map (tick-names-) o))
     ((? (is? <model>)) (clone (tree-map (tick-names-) o) #:name ((compose (tick-names-) .name) o)))
     (($ <bool>) o)
     (($ <void>) o)
-    ((and ($ <scope.name>) (or (= .ids '(void)) (= .ids '(bool)))) o)
+    ((and ($ <scope.name>) (or (= .ids '("void")) (= .ids '("bool")))) o)
     ((? (is? <type>)) (clone o #:name ((compose (tick-names-) .name) o)))
     (($ <scope.name>) (clone o #:ids (map (append-tick) (.ids o))))
     (($ <port>) (clone o #:name ((compose (append-tick) .name) o) #:type.name ((compose (tick-names-) .type.name) o)))
@@ -236,11 +236,11 @@
   (string-drop-right o 1))
 
 (define (verify:scope-name o)
-  (string->symbol (string-join (map (compose untick symbol->string) (ast:full-name o)) ".")))
+  (string-join (map untick (ast:full-name o)) "."))
 
 (define-method (makreel:get-model (o <root>))
   (define (named? o)
-    (equal? (symbol->string (verify:scope-name o)) (%model-name)))
+    (equal? (verify:scope-name o) (%model-name)))
   (let ((model (and (%model-name)
                     (find named? (ast:model* o)))))
     (or (and model (is-a? model <component>) model)
@@ -250,7 +250,7 @@
 (define-method (makreel:init (o <root>))
   (let* ((model-name (%model-name)))
     (define (named? o)
-      (equal? (symbol->string (verify:scope-name o)) model-name))
+      (equal? (verify:scope-name o) model-name))
     (let ((model (and model-name
                       (find named? (ast:model* o)))))
       (or model
@@ -281,7 +281,7 @@
              ((compose .type car ast:provides-ports) o))))))
 
 (define-method (makreel:model-name (o <model>))
-  (symbol-join (ast:full-name o) (string->symbol "")))
+  (string-join (ast:full-name o) ""))
 
 (define-method (makreel:model-name (o <ast>))
   (makreel:model-name (parent o <model>)))
@@ -327,7 +327,7 @@
   (ast:event* o))
 
 (define-method (makreel:action-sort-event (o <port>))
-  (filter (compose (cut eq? (.name o) <>) .port.name)
+  (filter (compose (cut equal? (.name o) <>) .port.name)
           (ast:trigger* (parent o <component>))))
 
 (define-method (makreel:enum-sort (o <interface>))
@@ -394,7 +394,7 @@
   (map (compose car makreel:continuation)
        (let* ((calls (tree-collect (is? <call>) o))
               (calls (reachable calls)))
-         (if name (filter (compose (cut eq? <> name) .function.name) calls)
+         (if name (filter (compose (cut equal? <> name) .function.name) calls)
              calls)))
   ast:eq?))
 
@@ -549,7 +549,7 @@
   (is-optional? (car (ast:trigger* o))))
 
 (define-method (is-optional? (o <trigger>))
-  (eq? 'optional (.event.name o)))
+  (equal? "optional" (.event.name o)))
 
 (define-method (makreel:behaviour-with-optional-proc (o <behaviour>))
   (let ((optionals (filter is-optional? (ast:statement* o))))
@@ -809,8 +809,8 @@
 
 (define-method (ast:trigger* (o <model>)) ;; FIXME: maybe use ast:in-triggers
   (delete-duplicates (tree-collect (is? <trigger>) o)
-                     (lambda (a b) (and (eq? (.port.name a) (.port.name b))
-                                        (eq? (.event.name a) (.event.name b))))))
+                     (lambda (a b) (and (equal? (.port.name a) (.port.name b))
+                                        (equal? (.event.name a) (.event.name b))))))
 
 (define-method (ast:blocking? (o <port>))
   (if (pair? (tree-collect (is? <blocking>) (parent o <model>))) o ;; FIXME: specify per port

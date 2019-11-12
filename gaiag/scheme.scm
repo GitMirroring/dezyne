@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2014, 2015, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -46,60 +47,60 @@
 (define-method (scheme:constructor-parameters (o <component>))
   (cons "flushes? " (map .name (ast:port* o))))
 
-(define (symbol->class-name o)
-  (symbol-append '< o '>))
+(define (string->class-name o)
+  (string-append "<" o ">"))
 
-(define (symbol->accessor o)
-  (symbol-append '. o))
+(define (string->accessor o)
+  (string-append "." o))
 
 (define (trigger->method o)
-  (symbol-append (.port.name o) '- (.event.name o)))
+  (string-append (.port.name o) "-" (.event.name o)))
 
 (define-method (scheme:class-name (o <model>))
-  (symbol-join (ast:full-name o) '-))
+  (string-join (ast:full-name o) "-"))
 
 (define-method (scheme:class-name (o <ast>))
   (scheme:class-name (parent o <model>)))
 
 (define-method (scheme:symbols (o <interface>))
   (let* ((name (scheme:class-name o))
-         (classes (map symbol->class-name
+         (classes (map string->class-name
                        (list name
-                             (symbol-append name '.in)
-                             (symbol-append name '.out))))
-         (accessors (map (compose symbol->accessor .name) (ast:event* o))))
+                             (string-append name ".in")
+                             (string-append name ".out"))))
+         (accessors (map (compose string->accessor .name) (ast:event* o))))
     (append classes accessors)))
 
 (define-method (scheme:symbols (o <component-model>))
   (let* ((name (scheme:class-name o))
-         (classes (list (symbol->class-name name)))
-         (accessors (append (map (compose symbol->accessor .name)
+         (classes (list (string->class-name name)))
+         (accessors (append (map (compose string->accessor .name)
                                  (ast:port* o))
-                            (map symbol->accessor
-                                 (map (compose (cut symbol-join <> '-) scheme:reply-name)
+                            (map string->accessor
+                                 (map (compose (cut string-join <> "-") scheme:reply-name)
                                       (filter (negate (is? <void>)) (ast:return-types o))))
                             (if (or (is-a? o <foreign>)
                                     (not (.behaviour o))) '()
-                                (map (compose symbol->accessor .name) (ast:variable* o)))))
+                                (map (compose string->accessor .name) (ast:variable* o)))))
          (methods (map trigger->method (ast:in-triggers o))))
     (append classes accessors methods)))
 
 (define-method (scheme:symbols (o <system>))
   (let* ((name (scheme:class-name o))
-         (classes (list (symbol->class-name name)))
-         (accessors (map (compose symbol->accessor .name)
+         (classes (list (string->class-name name)))
+         (accessors (map (compose string->accessor .name)
                          (append (ast:port* o) (ast:instance* o)))))
     (append classes accessors)))
 
 (define-method (scheme:re-export (o <root>))
   (let ((imported-models (filter ast:imported? (ast:model* o))))
-    (delete-duplicates (append-map scheme:symbols imported-models))))
+    (delete-duplicates (append-map scheme:symbols imported-models) string=?)))
 
 (define-method (scheme:export (o <root>))
   (let* ((imports (scheme:re-export o))
          (models (filter (negate ast:imported?) (ast:model* o)))
-         (exports (delete-duplicates (append-map scheme:symbols models))))
-    (partition (negate (cut memq <> imports)) exports)))
+         (exports (delete-duplicates (append-map scheme:symbols models) string=?)))
+    (partition (negate (cut member <> imports)) exports)))
 
 (define-method (scheme:statement (o <guard>))
   (if (is-a? (.expression o) <otherwise>) (clone (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o)))
@@ -117,16 +118,16 @@
   (scheme:enum-name (.type o)))
 
 (define-method (scheme:enum-name (o <enum>))
-  (append (ast:full-name o) '(alist)))
+  (append (ast:full-name o) '("alist")))
 
 (define-method (scheme:reply-name (o <enum>))
-  (cons 'reply (append (ast:full-name o))))
+  (cons "reply" (append (ast:full-name o))))
 
 (define-method (scheme:reply-name (o <int>))
-  '(reply-int))
+  '("reply-int"))
 
 (define-method (scheme:reply-name (o <bool>))
-  '(reply-bool))
+  '("reply-bool"))
 
 (define-method (scheme:reply-name (o <reply>))
   (scheme:reply-name (ast:type (.expression o))))
@@ -155,11 +156,11 @@
   (scheme:variable/local (.variable o)))
 
 (define-method (scheme:async-req (o <port>))
-  (let ((event (find (cut ast:name-equal? <> 'req) (ast:event* (.type o)))))
+  (let ((event (find (cut ast:name-equal? <> "req") (ast:event* (.type o)))))
     (make <trigger> #:port.name (.name o) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) (parent o <model>)))))
 
 (define-method (scheme:async-clr (o <port>))
-  (let ((event (find (cut ast:name-equal? <> 'clr) (ast:event* (.type o)))))
+  (let ((event (find (cut ast:name-equal? <> "clr") (ast:event* (.type o)))))
     (make <trigger> #:port.name (.name o) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event)  (parent o <model>)))))
 
 (define-templates-macro define-templates scheme)
@@ -168,7 +169,7 @@
 (include "templates/scheme.scm")
 
 (define (scheme:root-> root)
-  (parameterize ((language 'scheme)
+  (parameterize ((language "scheme")
                  (%x:main x:main)
                  (%x:header identity)
                  (%x:source x:source)
