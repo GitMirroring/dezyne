@@ -161,7 +161,7 @@
 (define-method (code:dump-main (root <root>))
   (let ((main (command-line:get 'model #f)))
     (when main
-      (let* ((main-name (map string->symbol (string-split main #\.)))
+      (let* ((main-name (string-split main #\.))
              (main-model (ast:lookup root (make <scope.name> #:ids main-name))))
         ;; FIXME: error if not found?
         (and=> main-model code:dump-main)))))
@@ -174,7 +174,7 @@
          (ast:instance* o)))
 
 (define (code:language)
-  (string->symbol (command-line:get 'language "c++")))
+  (command-line:get 'language "c++"))
 
 ;;; ast accessors
 (define-method (code:instance* (o <system>))
@@ -201,26 +201,26 @@
 (define (om:bind system o)
   (let* ((binds (ast:binding* system)))
     (match o
-      ((? symbol?) ;; FIXME: port need not be unique
+      ((? string?) ;; FIXME: port need not be unique
        (error "obsolete code")
        (find (lambda (bind) (or (ast:equal? (.port.name (.left bind)) o)
                                 (ast:equal? (.port.name (.right bind)) o)))
            binds))
       ((and ($ <end-point>) (= .instance.name instance-name) (= .port.name port-name))
        (find (lambda (bind)
-               (or (and (eq? (.instance.name (.left bind)) instance-name)
-                                     (eq? (.port.name (.left bind)) port-name))
-                                (and (eq? (.instance.name (.right bind)) instance-name)
-                                     (eq? (.port.name (.right bind)) port-name))))
+               (or (and (equal? (.instance.name (.left bind)) instance-name)
+                                     (equal? (.port.name (.left bind)) port-name))
+                                (and (equal? (.instance.name (.right bind)) instance-name)
+                                     (equal? (.port.name (.right bind)) port-name))))
              binds)))))
 
 (define (injected-binding? binding)
-  (or (eq? '* (.port.name (.left binding)))
-      (eq? '* (.port.name (.right binding)))))
+  (or (equal? "*" (.port.name (.left binding)))
+      (equal? "*" (.port.name (.right binding)))))
 
 (define (injected-binding binding)
-  (cond ((eq? '* (.port.name (.left binding))) (.right binding))
-        ((eq? '* (.port.name (.right binding))) (.left binding))
+  (cond ((equal? "*" (.port.name (.left binding))) (.right binding))
+        ((equal? "*" (.port.name (.right binding))) (.left binding))
         (else #f)))
 
 (define (injected-bindings model)
@@ -271,14 +271,14 @@
        (_ (fullscope p)))))
 
   (let ((scope (fullscope o)))
-    (unless (every symbol? scope)
-      (throw 'scope 'not-symbol scope))
+    (unless (every string? scope)
+      (throw 'scope 'not-string scope))
     scope))
 
 (define-method (code:scope+name o) ;; REMOVEME
   (match o
-    (($ <bool>) '(bool))
-    (($ <void>) '(void))
+    (($ <bool>) '("bool"))
+    (($ <void>) '("void"))
     (($ <event>) ((compose code:scope+name .signature) o))
     (($ <formal>) ((compose code:scope+name .type.name) o))
     (($ <instance>) (code:scope+name (.type.name o)))
@@ -303,7 +303,7 @@
   (list (.value o)))
 
 (define-method (code:scope+name (o <int>))
-  '(int))
+  '("int"))
 
 (define-method (code:scope+name (o <signature>))
   ((compose code:scope+name .type) o))
@@ -401,7 +401,7 @@
          (ons (if (not behaviour) '()
                   (ast:statement* behaviour))))
     (define (this-port? p)
-      (eq? (.name o) (.port.name (car (ast:trigger* p)))))
+      (equal? (.name o) (.port.name (car (ast:trigger* p)))))
     (filter this-port? ons)))
 
 (define-method (code:trigger (o <on>))
@@ -432,7 +432,7 @@
 
 (define (code:add-calling-context-argument arguments)
   (let ((calling-context (command-line:get 'calling-context #f)))
-    (if calling-context (cons 'dzn_cc arguments)
+    (if calling-context (cons "dzn_cc" arguments)
         arguments)))
 
 (define-method (code:arguments (o <call>))
@@ -455,12 +455,12 @@
   (let ((parameters (map .name (ast:formal* o)))
         (calling-context (command-line:get 'calling-context #f)))
     (if calling-context
-        (cons 'dzn_cc parameters)
+        (cons "dzn_cc" parameters)
         parameters)))
 
 (define-method (code:add-calling-context-formal (o <formals>))
   (let ((calling-context (command-line:get 'calling-context #f)))
-    (if calling-context (clone o #:elements (cons (clone (make <formal> #:name 'dzn_cc #:direction 'inout #:type.name (make <scope.name> #:ids '(*calling-context*))) #:parent o)
+    (if calling-context (clone o #:elements (cons (clone (make <formal> #:name "dzn_cc" #:direction 'inout #:type.name (make <scope.name> #:ids '("*calling-context*"))) #:parent o)
                                                   (ast:formal* o)))
         o)))
 
@@ -610,12 +610,12 @@
   o)
 
 (define-method (code:variable-name (o <variable>))
-  (cond ((memq (language) '(c++ c++03 c++-msvc11)) o) ; MORTAL SIN HERE!!?
+  (cond ((member (language) '("c++" "c++03" "c++-msvc11")) o) ; MORTAL SIN HERE!!?
         ((code:class-member? o) o)
         (else (make <local> #:name (.name o) #:type.name (.type.name o) #:expression (.expression o)))))
 
 (define-method (code:variable-name (o <formal>))
-  (cond ((memq (language) '(c++ c++03 c++-msvc11)) o) ; MORTAL SIN HERE!!?
+  (cond ((member (language) '("c++" "c++03" "c++-msvc11")) o) ; MORTAL SIN HERE!!?
         (((disjoin ast:out? ast:inout?) o) (make <out-formal> #:name (.name o) #:type.name (.type.name o)))
         (else o)))
 
@@ -659,7 +659,7 @@
   (let ((formals (ast:formal* o)))
     (map
      (lambda (f i) (cond ((ast:in? f) (clone f #:name i))
-                         ((memq (language) '(c++ c++03 c++-msvc11 cs)) (string-append "_" (number->string i)))
+                         ((member (language) '("c++" "c++03" "c++-msvc11" "cs")) (string-append "_" (number->string i)))
                          (else (make <out-formal> #:name i))))
      formals (iota (length formals)))))
 
@@ -671,7 +671,7 @@
 (define-method (code:main-out-arg-define-formal (o <formal>)) ;; MORTAL SIN HERE!!?
   (let ((type ((compose .value .type) o)))
     (if (not ((disjoin ast:out? ast:inout?) o)) ""
-        (if (equal? type 'int) o
+        (if (equal? type "int") o
             "/*FIXME*/"))))
 
 (define-method (code:main-event-map-match-return (o <trigger>))
@@ -751,7 +751,7 @@
     (pair? non-interface-models)))
 
 (define (code:glue)
-  (and=> (command-line:get 'glue #f) string->symbol))
+  (command-line:get 'glue #f))
 
 (define-method (code:dump (o <root>))
   (let* ((dir (command-line:get 'output "."))
@@ -765,7 +765,7 @@
       (stderr "cowardly refusing to clobber file with basename: ~a\n" base)
       (exit 0))
     (when (code:header?)
-      (let* ((ext (symbol->string (dzn:extension (make <interface>))))
+      (let* ((ext (dzn:extension (make <interface>)))
              (file-name (string-append dir base ext)))
         (if stdout? ((dzn:indent (cut (%x:header) o)))
             (begin
@@ -773,7 +773,7 @@
               (with-output-to-file file-name
                 (dzn:indent (cut (%x:header) o)))))))
     (if (or (not (code:header?)) (have-non-interface-models? o))
-        (let* ((ext (symbol->string (dzn:extension (make <component>))))
+        (let* ((ext (dzn:extension (make <component>)))
                (file-name (string-append dir base ext)))
           (if stdout? ((dzn:indent (cut (%x:source) o)))
               (begin
@@ -790,7 +790,7 @@
 (define-method (code:dump-main (o <component-model>))
   (let* ((dir (command-line:get 'output "."))
          (stdout? (equal? dir "-"))
-         (ext (symbol->string (dzn:extension o)))
+         (ext (dzn:extension o))
          (dir (string-append dir "/"))
          (base "main")
          (file-name (string-append dir base ext)))
@@ -804,7 +804,7 @@
   (code:file-name (.type o)))
 
 (define-method (code:file-name (o <foreign>))
-  ((compose symbol->string (cut symbol-join <> '_) ast:full-name) o))
+  ((compose (cut string-join <> "_") ast:full-name) o))
 
 (define-method (code:file-name (o <ast>))
   (basename (ast:source-file o) ".dzn"))
@@ -823,18 +823,18 @@
 (define-method (code:add-calling-context (o <root>))
   (let ((calling-context (command-line:get 'calling-context #f)))
     (if calling-context
-        (let ((extern (make <extern> #:name (make <scope.name> #:ids '(*calling-context*)) #:value calling-context)))
+        (let ((extern (make <extern> #:name (make <scope.name> #:ids '("*calling-context*")) #:value calling-context)))
           (clone o #:elements (cons extern (ast:top* o))))
         o)))
 
 (define (code:foreign?)
-  (member (language) '(c++ c++03 c++-msvc11)))
+  (member (language) '("c++" "c++03" "c++-msvc11")))
 
 (define (code:header?)
-  (member (language) '(c c++ c++03 c++-msvc11)))
+  (member (language) '("c" "c++" "c++03" "c++-msvc11")))
 
 (define (code:dir o)
-  (if (member (language) '(javascript)) "dzn/" ""))
+  (if (member (language) '("javascript")) "dzn/" ""))
 
 (define (code:module root)
   (let ((module (make-module 31 `(,(resolve-module '(dzn code))
@@ -843,7 +843,7 @@
     module))
 
 (define (code:skel-file model)
-  ((->symbol-join '_) (append (drop-right (code:scope+name model) 1) '(skel) (take-right (code:scope+name model) 1))))
+  ((->string-join "_") (append (drop-right (code:scope+name model) 1) '("skel") (take-right (code:scope+name model) 1))))
 
 (define-method (code:pump? (o <root>))
   (filter (conjoin (negate ast:imported?) (is? <component>) (compose pair? ast:req-events)) (ast:model* o)))
@@ -864,21 +864,21 @@
                 (ast:model* o)))))
 
 (define-method (code:upcase-model-name o)
-  (map symbol-upcase (ast:full-name (parent o <model>))))
+  (map string-upcase (ast:full-name (parent o <model>))))
 
 (define-method (code:port-release o)
   (if (null? (tree-collect (disjoin (is? <blocking>) (is? <blocking-compound>))
                            (parent o <model>))) '()
       o))
 
-(define-method (code:name.name (o <enum>))
-  (symbol->string (ast:name o)))
+(define-method (code:name.name (o <enum>)) ;; FIXME: remove code:name.name
+  (ast:name o))
 
 (define-method (code:name.name (o <extern>))
-  (symbol->string (ast:name o)))
+  (ast:name o))
 
 (define-method (code:name.name (o <int>))
-  (symbol->string (ast:name o)))
+  (ast:name o))
 
 (define-method (code:name.name (o <namespace>))
-  (symbol->string (ast:name o)))
+  (ast:name o))

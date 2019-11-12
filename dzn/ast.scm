@@ -219,7 +219,7 @@
     (and (pair? ports) (car ports))))
 
 (define-method (ast:dzn-scope? (o <model>))
-  (member (car (.ids (.name o))) '(dzn dzn')))
+  (member (car (.ids (.name o))) '("dzn" "dzn'")))
 
 (define-method (ast:provides? (o <port>))
   (and (eq? (.direction o) 'provides) o))
@@ -233,11 +233,11 @@
 (define-method (ast:requires? (o <trigger>))
   (and (.port.name o) ((compose ast:requires? .port) o)))
 
-(define-method (ast:empty-namespace? (o <symbol>))
-  (eq? o '/))
+(define-method (ast:empty-namespace? (o <string>))
+  (equal? o "/"))
 
-(define-method (ast:wildcard? (o <symbol>))
-  (eq? o '*))
+(define-method (ast:wildcard? (o <string>))
+  (equal? o "*"))
 
 (define-method (ast:wildcard? (o <boolean>))
   #f)
@@ -298,7 +298,7 @@
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
-                          (filter (conjoin ast:in? (compose (cut eq? 'req <>) .name)) (ast:event* (.type port)))))
+                          (filter (conjoin ast:in? (compose (cut equal? "req" <>) .name)) (ast:event* (.type port)))))
                    (if (.behaviour o) (ast:port* (.behaviour o))
                        '()))))
 
@@ -306,7 +306,7 @@
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
-                          (filter (conjoin ast:in? (compose (cut eq? 'clr <>) .name)) (ast:event* (.type port)))))
+                          (filter (conjoin ast:in? (compose (cut equal? "clr" <>) .name)) (ast:event* (.type port)))))
                    (if (.behaviour o) (ast:port* (.behaviour o))
                        '()))))
 
@@ -441,7 +441,7 @@
      (($ <component>) '())
      (($ <behaviour>) (append-map ast:optional* (ast:statement* o)))
      (($ <guard>) ((compose ast:optional* .statement) o))
-     (($ <on>) (filter (cut eq? 'optional <>) (map .event.name (ast:trigger* o))))
+     (($ <on>) (filter (cut equal? "optional" <>) (map .event.name (ast:trigger* o))))
      ((? (disjoin (is? <declarative-compound>) (is? <compound>))) (append-map ast:optional* (ast:statement* o)))))
 (define-method (ast:optional? (o <interface>))
  (pair? (ast:optional* o)))
@@ -461,7 +461,7 @@
 
 (define-method (ast:typed? (o <expression>))
   (match o
-    (($ <literal>) (not (eq? 'void (.value o))))
+    (($ <literal>) (not (equal? "void" (.value o))))
     (_ #t)))
 
 (define-method (ast:path (o <ast>))
@@ -502,17 +502,17 @@
 
 (define-method (ast:equal? (a <enum-literal>) (b <enum-literal>))
   (and (ast:equal? (.type.name a) (.type.name b))
-       (eq? (.field a) (.field b))))
+       (equal? (.field a) (.field b))))
 
 (define-method (ast:equal? (a <end-point>) (b <end-point>))
-  (and (eq? (.instance.name a) (.instance.name b))
-       (eq? (.port.name a) (.port.name b))))
+  (and (equal? (.instance.name a) (.instance.name b))
+       (equal? (.port.name a) (.port.name b))))
 
 (define-method (ast:equal? (a <field-test>) (b <field-test>))
-  (eq? (.field a) (.field b)))
+  (equal? (.field a) (.field b)))
 
 (define-method (ast:equal? (a <literal>) (b <literal>))
-  (eq? (.value a) (.value b)))
+  (equal? (.value a) (.value b)))
 
 (define-method (ast:equal? (a <not>) (b <not>))
   (ast:equal? (.expression a) (.expression b)))
@@ -554,7 +554,7 @@
 (define-method (ast:type (o <int>)) o)
 (define-method (ast:literal-value->type o)
   (match o
-    ((or 'false 'true) (make <bool>))
+    ((or "false" "true") (make <bool>))
     ((? number?) (make <int>))
     (_ (make <void>))))
 (define-method (ast:type (o <literal>))
@@ -633,7 +633,7 @@
   (let ((type ((compose .type .signature) o)))
     (cond ((as type <void>) '())
           ((as type <enum>) (map (cut make <enum-literal> #:type.name (.name type) #:field <>) (ast:field* type)))
-          ((as type <bool>) (map (cut make <literal> #:value <>) '(true false)))
+          ((as type <bool>) (map (cut make <literal> #:value <>) '("true" "false")))
           ((as type <int>) (map (cut make <literal> #:value <>) (iota (1+ (- (.to (.range type)) (.from (.range type)))) (.from (.range type))))))))
 
 (define-method (ast:location (o <locationed>))
@@ -655,26 +655,32 @@
 (define-method (ast:imported? (o <ast>))
   (not (equal? (ast:source-file o) (ast:source-file (parent o <root>)))))
 
-(define-method (ast:name (o <scope.name>))
+(define-method (ast:name (o <scope.name-node>))
   (last (.ids o)))
+
+(define-method (ast:name (o <scope.name>))
+  (ast:name (.node o)))
 
 (define-method (ast:name (o <named>))
   (let ((name (.name o)))
     (if (is-a? name <scope.name>) (ast:name name) name)))
 
+(define-method (ast:scope (o <scope.name-node>))
+  (drop-right (.ids o) 1))
+
 (define-method (ast:scope (o <scope.name>))
-  (drop (.ids o) 1))
+  (ast:scope (.node o)))
 
 (define-method (ast:scope (o <named>))
   (ast:scope (.name o)))
 
 (define-method (ast:literal-true? (e <ast>))
   (and (is-a? e <literal>)
-       (eq? (.value e) 'true)))
+       (equal? (.value e) "true")))
 
 (define-method (ast:literal-false? (e <ast>))
   (and (is-a? e <literal>)
-       (eq? (.value e) 'false)))
+       (equal? (.value e) "false")))
 
 (define-method (ast:other-end-point (o <port>))
   (let loop ((bindings (ast:binding* (parent o <system>))))
@@ -684,10 +690,10 @@
                 (right (.right binding))
                 (port (.name o)))
            (cond ((and (not (.instance.name left))
-                       (eq? (.port.name left) port))
+                       (equal? (.port.name left) port))
                   right)
                  ((and (not (.instance.name right))
-                       (eq? (.port.name right) port))
+                       (equal? (.port.name right) port))
                   left)
                  (else (loop (cdr bindings))))))))
 
@@ -699,11 +705,11 @@
                   (left (.left binding))
                   (right (.right binding))
                   (port (.name o)))
-             (cond ((and (eq? (.instance.name left) (.name i))
-                         (eq? (.port.name left) port))
+             (cond ((and (equal? (.instance.name left) (.name i))
+                         (equal? (.port.name left) port))
                     right)
-                   ((and (eq? (.instance.name right) (.name i))
-                         (eq? (.port.name right) port))
+                   ((and (equal? (.instance.name right) (.name i))
+                         (equal? (.port.name right) port))
                     left)
                    (else (loop (cdr bindings)))))))))
 
@@ -716,11 +722,11 @@
                 (right (.right binding))
                 (port (.name o)))
            (cond ((and (not (.instance.name left))
-                       (eq? (.port.name left) '*)
+                       (equal? (.port.name left) "*")
                        (ast:eq? (.type (.port right)) (.type o)))
                   right)
                  ((and (not (.instance.name right))
-                       (eq? (.port.name right) '*)
+                       (equal? (.port.name right) "*")
                        (ast:eq? (.type (.port left)) (.type o)))
                   left)
                  ;; todo: try j.*
@@ -746,14 +752,14 @@
 
 (define* (ast:get-model root #:optional model-name)
   (let ((models (ast:model* root)))
-    (or (and model-name (find (lambda (o) (eq? (ast:dotted-name o) model-name)) models))
+    (or (and model-name (find (lambda (o) (equal? (ast:dotted-name o) model-name)) models))
         (let ((systems (filter (is? <system>) models)))
           (find (negate ast:instance?) systems))
         (find (is? <component>) models)
         (find (is? <interface>) models))))
 
 (define-method (ast:dotted-name (o <ast>))
-  (symbol-join (ast:full-name o) '.))
+  (string-join (ast:full-name o) "."))
 
 (define-method (ast:full-name (o <scope.name>))
   (let ((ids (.ids o)))
@@ -761,16 +767,16 @@
         (append (ast:full-name (parent (.parent o) <scope>)) name))))
 
 (define-method (ast:full-name (o <bool>))
-  '(bool))
+  '("bool"))
 
 (define-method (ast:full-name (o <data>))
-  '(data))
+  '("data"))
 
 (define-method (ast:full-name (o <int>))
-  '(int))
+  '("int"))
 
 (define-method (ast:full-name (o <void>))
-  '(void))
+  '("void"))
 
 (define-method (ast:full-name (o <named>))
   (ast:full-name (.name o)))
@@ -807,7 +813,7 @@
   (let* ((name (ast:full-name o))
          (parent-name (ast:full-name parent))
          (scoped (let loop ((list1 name) (list2 parent-name))
-                   (if (and (pair? list1) (pair? list2) (eq? (car list1) (car list2)))
+                   (if (and (pair? list1) (pair? list2) (equal? (car list1) (car list2)))
                        (loop (cdr list1) (cdr list2))
                        list1))))
     (make <scope.name> #:ids scoped)))
@@ -829,7 +835,7 @@
 (define-method (ast:value (o <literal>))
   (.value o))
 (define-method (ast:value (o <enum-literal>))
-  (symbol-join (append (.ids (.type.name o)) (list (.field o)))))
+  (string-join (append (.ids (.type.name o)) (list (.field o)))))
 
 (define-method (ast:rescope (o <boolean>) x)
   o)
@@ -859,22 +865,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; LOOKUP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-method (ast:name-equal? (a <symbol>) (b <symbol>))
-  (eq? a b))
+(define-method (ast:name-equal? (a <string>) (b <string>))
+  (equal? a b))
 
-(define-method (ast:name-equal? (a <scope.name>) (b <symbol>))
+(define-method (ast:name-equal? (a <scope.name>) (b <string>))
   (and=> (ast:name a) (cut ast:name-equal? <> b)))
 
-(define-method (ast:name-equal? (b <symbol>) (a <scope.name>))
+(define-method (ast:name-equal? (b <string>) (a <scope.name>))
   (ast:name-equal? a b))
 
 (define-method (ast:name-equal? (a <scope.name>) (b <scope.name>))
   (and (pair? (.ids a)) (pair? (.ids b)) (ast:name-equal? (ast:name a) (ast:name b))))
 
-(define-method (ast:name-equal? (a <named>) (b <symbol>))
+(define-method (ast:name-equal? (a <named>) (b <string>))
     (ast:name-equal? (.name a) b))
 
-(define-method (ast:name-equal? (b <symbol>) (a <named>))
+(define-method (ast:name-equal? (b <string>) (a <named>))
     (ast:name-equal? a b))
 
 (define-method (ast:name-equal? a b)
@@ -894,8 +900,13 @@
 (define not-found (list 'not-found))
 
 (define (ast:pure-funcq base-func)
+  (define (name->symbol o)
+    (match o
+      ((? string?) (string->symbol o))
+      (($ <scope.name-node>) (name->symbol (string-join (.ids o) ".")))
+      (_ o)))
   (lambda args
-    (let* ((key (cons base-func (map ast:unwrap args)))
+    (let* ((key (cons base-func (map (compose name->symbol ast:unwrap) args)))
            (cached (hashx-ref funcq-hash funcq-assoc funcq-memo key not-found)))
       (if (not (eq? cached not-found))
 	  (begin
@@ -907,10 +918,8 @@
 	    (hashx-set! funcq-hash funcq-assoc funcq-memo key val)
 	    val)))))
 
-
-
 (define-method (ast:lookup-n (o <scope>) (name <scope.name>))
-;;  (stderr "ast:lookup-n[~s]: ~s\n" o name)
+  ;; (stderr "ast:lookup-n[~s]: ~s\n" o name)
   (let ((ids (.ids name)))
     (if (null? (cdr ids)) (if (ast:has-equal-name (car ids) o) (list o)
                               (ast:lookup-n o (car ids)))
@@ -924,7 +933,7 @@
 (define-method (ast:lookdown (o <list>) (name <scope.name>))
   (append-map (cut ast:lookdown <> name) o))
 
-(define-method (ast:lookdown (o <scope>) (name <symbol>))
+(define-method (ast:lookdown (o <scope>) (name <string>))
 ;;  (stderr "ast:lookdown 1[~s]: ~s\n" o name)
   (filter (lambda (decl) (ast:name-equal? (.name decl)  name)) (ast:declaration* o)))
 
@@ -944,15 +953,15 @@
   '())
 
 (define-method (ast:lookup-n (o <ast>) name)
-;;  (stderr "ast:lookup-n <ast> 2 [~s]: ~s\n" o name)
+  ;; (stderr "ast:lookup-n <ast> 2 [~s]: ~s\n" o name)
   (ast:lookup-n (parent o <scope>) name))
 
 (define-method (ast:lookup-n (o <formals>) name)
-  ;;  (stderr "ast:lookup-n <formals> 2 [~s]: ~s\n" o name)
+  ;; (stderr "ast:lookup-n <formals> 2 [~s]: ~s\n" o name)
   (filter (cut ast:name-equal? <> name) (ast:formal* o)))
 
-(define-method (ast:lookup-n (o <scope>) (name <symbol>))
-  ;;  (stderr "ast:lookup-n 3 [~s]: ~s\n" o name)
+(define-method (ast:lookup-n (o <scope>) (name <string>))
+  ;; (stderr "ast:lookup-n 3 [~s]: ~s\n" o name)
   (if (ast:empty-namespace? name) (list (parent o <root>))
       (let ((found (filter (conjoin (is? <declaration>)
                                     (lambda (decl) (ast:name-equal? (.name decl) name)))
@@ -1049,10 +1058,10 @@
          (port (.port o))
          (interface (if port (.type port) (parent o <interface>))))
     (cond ((and (not port-name)
-                (eq? (.event.name o) 'inevitable))
+                (equal? (.event.name o) "inevitable"))
            (clone (ast:inevitable) #:parent interface))
           ((and (not port-name)
-                (eq? (.event.name o) 'optional))
+                (equal? (.event.name o) "optional"))
            (clone (ast:optional) #:parent interface))
           (else (ast:lookup interface (.event.name o))))))
 
@@ -1069,13 +1078,13 @@
   (and (.function.name o) (ast:lookup o (.function.name o))))
 
 (define-method (ast:lookup-var (o <ast>) name)
-  (define (name? o) (and (eq? (.name o) name) o))
+  (define (name? o) (and (equal? (.name o) name) o))
   (match o
     (($ <behaviour>) (find name? (ast:variable* o)))
     ((? (is? <compound>)) (or (find name? (filter (is? <variable>) (ast:statement* o))) (ast:lookup-var (.parent o) name)))
     (($ <function>) (or (find name? ((compose ast:formal* .signature) o)) (ast:lookup-var (.parent o) name)))
-    (($ <formal>) (and (eq? (.name o) name) o))
-    (($ <formal-binding>) (and (eq? (.name o) name) o))
+    (($ <formal>) (and (equal? (.name o) name) o))
+    (($ <formal-binding>) (and (equal? (.name o) name) o))
     (($ <on>) (or (find (cut ast:lookup-var <> name) (append-map ast:formal* (ast:trigger* o))) (ast:lookup-var (.parent o) name)))
     (($ <variable>) (name? o))
     ((? (lambda (o) (is-a? (.parent o) <variable>))) (ast:lookup-var ((compose .parent .parent) o) name))
@@ -1110,14 +1119,14 @@
 (define-method (ast:event-formal (o <formal>))
   (let* ((trigger (parent o <trigger>))
          (event (.event trigger))
-         (index (list-index (cut ast:eq? o <>) (reverse (.elements (.parent o))))))
+         (index (list-index (cut ast:equal? o <>) (reverse (.elements (.parent o))))))
     (and event (list-ref (reverse (ast:formal* event)) index))))
 
 (define-method (ast:event-formal (o <formal-binding>))
   (let* ((on (parent o <on>))
          (trigger (car (ast:trigger* on)))
          (event (.event trigger))
-         (index (list-index (cut ast:eq? o <>) (reverse (.elements (.parent o))))))
+         (index (list-index (cut ast:equal? o <>) (reverse (.elements (.parent o))))))
     (and event (list-ref (reverse (ast:formal* event)) index))))
 
 (define-method (.type (o <formal>))

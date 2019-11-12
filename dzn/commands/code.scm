@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017, 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -81,13 +81,13 @@ FIXME:      --depends[=TYPE]        generate dependency for DZN-FILE and write t
          (files (option-ref options '() '()))
          (file-name (car files))
          (map-files (cdr args))
-         (language-opt (string->symbol (option-ref options 'language "c++")))
-         (options (if (eq? language-opt 'scheme) (acons 'behaviour #t options)
+         (language-opt (option-ref options 'language "c++"))
+         (options (if (equal? language-opt "scheme") (acons 'behaviour #t options)
                       options))
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
          (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
          (ast (parse parse-options file-name))
-         (module (resolve-module `(dzn ,language-opt)))
+         (module (resolve-module `(dzn ,(string->symbol language-opt))))
          (ast-> (module-ref module 'ast->)))
     (parameterize ((language language-opt)) (ast-> ast))
     *unspecified*))

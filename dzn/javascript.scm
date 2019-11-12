@@ -41,7 +41,7 @@
 
 (define (javascript:namespace-setup o)
   (->string
-   (let loop ((todo (cons 'dzn (ast:full-scope o))) (namespace '()))
+   (let loop ((todo (cons "dzn" (ast:full-scope o))) (namespace '()))
      (if (null? todo) '()
          (let* ((namespace (append namespace (list (car todo))))
                 (x ((->join ".") namespace)))
@@ -54,7 +54,7 @@
 (include "templates/javascript.scm")
 
 (define (javascript:root-> root)
-  (parameterize ((language 'javascript)
+  (parameterize ((language "javascript")
                  (%x:main x:main)
                  (%x:header identity)
                  (%x:source x:source))

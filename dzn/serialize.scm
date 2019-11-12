@@ -57,7 +57,7 @@
 
 (define-method (serialize (o <scope.name-node>) port)
   (display " " port)
-  (display (string-join (map symbol->string (.ids o)) ".") port))
+  (display (string-join (.ids o) ".") port))
 
 (define-method (serialize (o <top>) port)
   (display o port))
@@ -69,7 +69,7 @@
   (serialize (.node o) port))
 
 (define (serialize-name o)
-  (if (symbol-suffix? '-node o) (symbol-drop-right o 5)
+  (if (string-suffix? "-node" o) (string-drop-right o 5)
       o))
 
 (define-method (serialize (o <object>) port)

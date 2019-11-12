@@ -1,5 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -106,13 +107,13 @@
 (define asd? #f) ;; FIXME: asd glue
 
 (define (code:glue)
-  (and=> (command-line:get 'glue #f) string->symbol))
+  (command-line:get 'glue #f))
 
 (define (glue:model-name o)
-  (symbol-join (ast:full-name o) '_))
+  (string-join (ast:full-name o) "_"))
 
 (define (glue:type-name o)
-  (symbol-join (ast:full-name (.type o)) '::))
+  (string-join (ast:full-name (.type o)) "::"))
 
 (define ((om:type model) o)
   (or (as o <type>)
@@ -133,7 +134,7 @@
   (let* ((dir (command-line:get 'output "."))
          (stdout? (equal? dir "-"))
          (dir (string-append dir "/" (dzn:dir o)))
-         (name (symbol->string (ast:name o))))
+         (name (ast:name o)))
     (if stdout?
         (begin ((%x:glue-top-header) o)
                ((%x:glue-top-source) o))
@@ -144,10 +145,10 @@
   (let* ((dir (command-line:get 'output "."))
          (stdout? (equal? dir "-"))
          (dir (string-append dir "/" (dzn:dir o)))
-         (name (symbol->string (symbol-join (ast:full-name o) '_))) ;;MORTAL SIN HERE
-         (skel-name (symbol->string (code:skel-file o)))
-         (iext (symbol->string (dzn:extension (make <interface>))))
-         (cext (symbol->string (dzn:extension (make <component>)))))
+         (name (string-join (ast:full-name o) "_")) ;;MORTAL SIN HERE
+         (skel-name (code:skel-file o))
+         (iext (dzn:extension (make <interface>)))
+         (cext (dzn:extension (make <component>))))
     (when (map-file o)
       (if stdout?
           (begin (when (code:header?) ((%x:glue-bottom-header) o))
@@ -162,14 +163,14 @@
 (define-method (c++:decapitalize-asd-interface-name o)
   ((compose (cut string-downcase <> 0 1)
             (lambda (o) (if (eq? #\I (string-ref o 0)) (substring o 1) o))
-            symbol->string ast:name .type ast:provides-port)
+            ast:name .type ast:provides-port)
    (parent o <model>)))
 
 (define (event2->interface1-event1-alist- string)
   (and-let* ((string string)
              (lst (string-split string #\newline))
              (lst (filter (lambda (x) (not (string-prefix? "//" x))) lst))
-             (lst (map (lambda (o) (map string->symbol (string-tokenize o char-set:graphic))) lst))
+             (lst (map (lambda (o) (string-tokenize o char-set:graphic)) lst))
              (lst (filter pair? lst)))
             (fold (lambda (e r) (acons (third e) (take e 2) r)) '() lst)))
 
@@ -189,7 +190,7 @@
          (map-files (filter (cut string-suffix? ".map" <>) files))
          (map-file-name (map-file-name o)))
     (and map-file-name
-        (let* ((map-file-name (string-append (symbol->string map-file-name) ".map"))
+        (let* ((map-file-name (string-append map-file-name ".map"))
                (map-files (if (pair? map-files) map-files (list map-file-name))))
           (and=> (find (lambda (f) (equal? (basename f) map-file-name)) map-files)
                  try-find-file)))))
@@ -203,7 +204,7 @@
   (and-let* ((string string)
              (lst (string-split string #\newline))
              (lst (filter (lambda (x) (not (string-prefix? "//" x))) lst))
-             (lst (map (lambda (o) (map string->symbol (string-tokenize o char-set:graphic))) lst))
+             (lst (map (lambda (o) (string-tokenize o char-set:graphic)) lst))
              (lst (filter pair? lst)))
     lst))
 
@@ -212,14 +213,14 @@
     (if (null? lst) '()
         (let ((channel (caar lst)))
           (receive (same rest)
-              (partition (lambda (m) (eq? (car m) channel)) lst)
+              (partition (lambda (m) (equal? (car m) channel)) lst)
             (append (list (cons (caar same) (map cdr same))) (loop rest)))))))
 
 ;; glue-top-source-glue-system
 (define-public (parse-component-map component)
   (or (and-let* ((files (command-line:get '() '()))
                  (map-files (filter (cut string-suffix? ".map" <>) files))
-                 (file-name (string-append (symbol->string (glue:model-name component)) ".map"))
+                 (file-name (string-append (glue:model-name component) ".map"))
                  (file-name (find (lambda (f) (equal? (basename f) file-name)) map-files))
                  (lines (filter (negate (disjoin (cut string-every char-set:blank <>)
                                                  (cut string-prefix? "//" <>))) (string-split (gulp-file file-name) #\newline)))
@@ -268,7 +269,7 @@
         ""))
 
 (define (c++:asd-constructor component)
-  (let* ((name (symbol->string (glue:model-name component)))
+  (let* ((name (glue:model-name component))
          (files (command-line:get '() '()))
          (map-files (filter (cut string-suffix? ".map" <>) files))
          (lines (append-map (lambda (map-file)
@@ -282,13 +283,13 @@
                                   (equal? name (string-append "glue_" (second o)))))
                            words-list)))
     (if (null? usr-list)
-        (string-append (symbol->string (.name (.name component))) "Component::GetInstance()")
+        (string-append (ast:name (.name component)) "Component::GetInstance()")
         (let* ((matches-list (map (lambda (third) (string-match "[(]([^)]*)[)]" third))
                                   (map third usr-list)))
                (matches-list (filter identity matches-list))
                (parameters-list (map (cut match:substring <> 1) matches-list)))
           (string-append
-           (symbol->string (.name (.name component))) "Component::GetInstance("
+           (ast:name (.name component)) "Component::GetInstance("
            (string-join
             (map (lambda (parameters)
                    (string-join (map (lambda (parameter)
@@ -360,7 +361,7 @@
                       asd-events dzn-events)
                  "};\n"))))
       (map (lambda (name)
-             (let* ((lst (filter (lambda (entry) (eq? name (second entry))) ((asd-interfaces ast:out?) (provided-interface component))))
+             (let* ((lst (filter (lambda (entry) (equal? name (second entry))) ((asd-interfaces ast:out?) (provided-interface component))))
                     (dzn-events (map first lst))
                     (asd-events (map third lst)))
               (list name dzn-events asd-events)))
@@ -418,7 +419,7 @@
 
 (define (c++:asd-api-definition model)
   (map (lambda (entry)
-         (let ((name (.name (.name model)))
+         (let ((name (ast:name (.name model)))
                (port-type (glue:type-name (ast:provides-port model)))
                (interface (car entry))
                (dzn-events (cadr entry))
@@ -451,7 +452,7 @@
                             dzn-events asd-events)
                            "};\n"))))
        (map (lambda (api)
-              (let* ((lst (filter (lambda (entry) (eq? api (second entry))) ((asd-interfaces ast:in?) (provided-interface model))))
+              (let* ((lst (filter (lambda (entry) (equal? api (second entry))) ((asd-interfaces ast:in?) (provided-interface model))))
                      (dzn-events (map first lst))
                      (asd-events (map third lst)))
                 (list api dzn-events asd-events)))
