@@ -110,7 +110,7 @@
    (let loop ((fields (ast:field* o)) (result '()))
      (if (null? fields) result
          (let* ((field (car fields))
-                (wf (if (find (cut eq? <> field) (cdr fields))
+                (wf (if (find (cut equal? <> field) (cdr fields))
                         `(,(wfc-error o (format #f "duplicate enum field `~a' in enum `~a'" field (type-name (.name o)))))
                         '())))
            (loop (cdr fields) (append wf result)))))
@@ -140,7 +140,7 @@
                  (let ((out-events (filter ast:out? (ast:event* o))))
                    (and (pair? out-events)
                         `(,(wfc-error o (format #f "injected port `~a' has out events: ~a" (.name o)
-                                                (string-join (map (compose symbol->string .name) out-events) ", ")))
+                                                (string-join (map .name out-events) ", ")))
                           ,@(map (cut wfc-error <> (format #f "defined here")) out-events))))))
            (else '())))
    ;; TODO; do include async port in behaviour
@@ -437,7 +437,7 @@
                       `(,(wfc-error o (format #f "no field `~a' in enum `~a`; expected ~a"
                                               field
                                               (type-name o)
-                                              (string-join (map symbol->string fields) ", ")))
+                                              (string-join fields ", ")))
                         ,(wfc-error type "enum declared here"))
                       '()))))))
 
@@ -511,7 +511,7 @@
            `(,(wfc-error o (format #f "no field `~a' in enum `~a'; expected ~a"
                                    field
                                    (type-name type)
-                                   (string-join (map symbol->string fields) ", ")))
+                                   (string-join fields ", ")))
              ,(wfc-error type "enum declared here")))
           (else '()))))
 
@@ -624,10 +624,10 @@
           (else '()))))
 
 (define-method (type-name (o <ast>))
-  (symbol-join (ast:full-name o) '.))
+  (string-join (ast:full-name o) "."))
 
 (define-method (type-name (o <scope.name>))
-  (symbol-join (.ids o) '.))
+  (string-join (.ids o) "."))
 
 (define-method (reply (o <reply>))
   (let ((on (parent o <on>)))
@@ -647,7 +647,7 @@
              ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
           ((not event) '())         ; already covered in trigger check
           ((and (or (not (.port.name o))
-                    (eq? (.port.name o) (.port.name trigger)))
+                    (equal? (.port.name o) (.port.name trigger)))
                 (not (ast:equal? event-type reply-type))
                 (not (and (is-a? event-type <int>)
                           (is-a? reply-type <int>)))
@@ -751,15 +751,15 @@
                 (.instance.name right)
                 (.port left)
                 (.port right)
-                (not (eq? (.external (.port left))
-                          (.external (.port right)))))
+                (not (equal? (.external (.port left))
+                             (.external (.port right)))))
                (and
                 (or (and (.instance.name left) (not (.instance.name right)))
                     (and (.instance.name right) (not (.instance.name left))))
                 (.port left)
                 (.port right)
-                (not (eq? (.external (.port left))
-                          (.external (.port right))))))
+                (not (equal? (.external (.port left))
+                             (.external (.port right))))))
            `(,(wfc-error o (format #f "cannot bind ~a port `~a' to ~a port `~a'"
                                    (or (.external (.port left)) 'non-external) (.port.name left)
                                    (or (.external (.port right)) 'non-external) (.port.name right)))
@@ -853,8 +853,8 @@
         `(,(wfc-error o (format #f "~a in variable declaration" class))))
      ((and (not (parent o <on>))
            (not (parent o <function>))
-           (not (and (eq? class 'compound) (ast:declarative? o))))
-      `(,(wfc-error o (format #f "~a outside on" (if (eq? class 'compound) "imperative compound" class)))))
+           (not (and (equal? class "compound") (ast:declarative? o))))
+      `(,(wfc-error o (format #f "~a outside on" (if (equal? class "compound") "imperative compound" class)))))
      ((and is-aorc
            (is-a? (ast:type o) <void>)
            (is-a? p <variable>))
@@ -923,17 +923,17 @@
          (bindings (ast:binding* s))
          (component (.type o))
          (required-ports (and component (ast:requires-port* component)))
-         (left-bindings (filter (lambda (b) (eq? (.name o) (.instance.name (.left b))))
+         (left-bindings (filter (lambda (b) (equal? (.name o) (.instance.name (.left b))))
                                 bindings))
-         (right-bindings (filter (lambda (b) (eq? (.name o) (.instance.name (.right b))))
+         (right-bindings (filter (lambda (b) (equal? (.name o) (.instance.name (.right b))))
                                  bindings))
-         (left-required-bindings (filter (lambda (b) (find (lambda (p) (eq? (.name p) (.port.name (.left b)))) required-ports))
+         (left-required-bindings (filter (lambda (b) (find (lambda (p) (equal? (.name p) (.port.name (.left b)))) required-ports))
                                          left-bindings))
-         (right-required-bindings (filter (lambda (b) (find (lambda (p) (eq? (.name p) (.port.name (.right b)))) required-ports))
+         (right-required-bindings (filter (lambda (b) (find (lambda (p) (equal? (.name p) (.port.name (.right b)))) required-ports))
                                           right-bindings))
-         (left-instances (filter (lambda (i) (find (lambda (b) (eq? (.name i) (.instance.name (.right b)))) left-required-bindings))
+         (left-instances (filter (lambda (i) (find (lambda (b) (equal? (.name i) (.instance.name (.right b)))) left-required-bindings))
                                  instances))
-         (right-instances (filter (lambda (i) (find (lambda (b) (eq? (.name i) (.instance.name (.left b)))) right-required-bindings))
+         (right-instances (filter (lambda (i) (find (lambda (b) (equal? (.name i) (.instance.name (.left b)))) right-required-bindings))
                                   instances)))
     (append left-instances right-instances)))
 
