@@ -1,5 +1,5 @@
-(define-module (#x:file-name)
-  ##:use-module ((oop goops) ##:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+(define-module (#x:module-name)
+  ##:use-module (oop goops)
   ##:use-module (dzn runtime)
   #x:use-module
   ##:duplicates (merge-generics)

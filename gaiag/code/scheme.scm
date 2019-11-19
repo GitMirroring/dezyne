@@ -53,16 +53,36 @@
 (define (string->accessor o)
   (string-append "." o))
 
-(define (trigger->method o)
-  (string-append (.port.name o) "-" (.event.name o)))
-
 (define-method (scheme:class-name (o <model>))
-  (string-join (ast:full-name o) "-"))
+  (string-join (ast:full-name o) ":"))
 
 (define-method (scheme:class-name (o <ast>))
   (scheme:class-name (parent o <model>)))
 
-(define-method (scheme:symbols (o <interface>))
+(define-method (scheme:module-name (o <root>))
+  (let ((dzn-file (ast:source-file o))
+        (namespaces (filter (conjoin (negate ast:imported?)
+                                     (negate (compose (cut equal? <> '("dzn")) ast:full-name)))
+                            (ast:namespace* o))))
+    (if (null? namespaces) (basename dzn-file ".dzn")
+        (scheme:module-name (car namespaces)))))
+
+(define-method (scheme:module-name (o <foreign>))
+  (string-join (ast:full-name o) " "))
+
+(define-method (scheme:module-name (o <namespace>))
+  (let* ((dzn-file (ast:source-file o))
+         (base-name (basename dzn-file ".dzn"))
+         (namespace (ast:full-name o)))
+    (string-join (append namespace (list base-name)) " ")))
+
+(define-method (scheme:module-name (o <model>))
+  (let* ((dzn-file (ast:source-file o))
+         (base-name (basename dzn-file ".dzn"))
+         (namespace (drop-right (ast:full-name o) 1)))
+    (string-join (append namespace (list base-name)) " ")))
+
+(define-method (scheme:names (o <interface>))
   (let* ((name (scheme:class-name o))
          (classes (map string->class-name
                        (list name
@@ -71,36 +91,43 @@
          (accessors (map (compose string->accessor .name) (ast:event* o))))
     (append classes accessors)))
 
-(define-method (scheme:symbols (o <component-model>))
+(define-method (scheme:names (o <component-model>))
   (let* ((name (scheme:class-name o))
          (classes (list (string->class-name name)))
          (accessors (append (map (compose string->accessor .name)
                                  (ast:port* o))
-                            (map string->accessor
-                                 (map (compose (cut string-join <> "-") scheme:reply-name)
-                                      (filter (negate (is? <void>)) (ast:return-types o))))
                             (if (or (is-a? o <foreign>)
                                     (not (.behaviour o))) '()
-                                (map (compose string->accessor .name) (ast:variable* o)))))
-         (methods (map trigger->method (ast:in-triggers o))))
-    (append classes accessors methods)))
+                                (map (compose string->accessor .name) (ast:variable* o))))))
+    (append classes accessors)))
 
-(define-method (scheme:symbols (o <system>))
+(define-method (scheme:names (o <system>))
   (let* ((name (scheme:class-name o))
          (classes (list (string->class-name name)))
          (accessors (map (compose string->accessor .name)
                          (append (ast:port* o) (ast:instance* o)))))
     (append classes accessors)))
 
-(define-method (scheme:re-export (o <root>))
-  (let ((imported-models (filter ast:imported? (ast:model* o))))
-    (delete-duplicates (append-map scheme:symbols imported-models) string=?)))
+(define-method (scheme:imported-names (o <root>))
+  (let ((imported-models (append (filter ast:imported? (ast:model* o))
+                                 (used-foreigns o))))
+    (delete-duplicates (append-map scheme:names imported-models) string=?)))
+
+(define-method (scheme:exported-names (o <root>))
+  (let ((models (append (filter (conjoin (negate ast:imported?)
+                                         (negate (is? <foreign>)))
+                                (ast:model* o))
+                        (used-foreigns o))))
+    (delete-duplicates (append-map scheme:names models) string=?)))
 
 (define-method (scheme:export (o <root>))
-  (let* ((imports (scheme:re-export o))
-         (models (filter (negate ast:imported?) (ast:model* o)))
-         (exports (delete-duplicates (append-map scheme:symbols models) string=?)))
+  (let ((imports (scheme:imported-names o))
+        (exports (scheme:exported-names o)))
     (partition (negate (cut member <> imports)) exports)))
+
+(define-method (scheme:re-export (o <root>))
+  (receive (export re-export) (scheme:export o)
+    re-export))
 
 (define-method (scheme:statement (o <guard>))
   (if (is-a? (.expression o) <otherwise>) (clone (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o)))
@@ -135,14 +162,22 @@
 (define-method (scheme:let-variable (o <compound>))
   (filter (is? <variable>) (ast:statement* o)))
 
+(define-method (used-foreigns (o <root>))
+  (let* ((systems (filter (conjoin (is? <system>) (negate ast:imported?)) (ast:model* o)))
+         (models (map .type (append-map ast:instance* systems))))
+    (filter (is? <foreign>) models)))
+
 (define-method (scheme:use-module (o <root>))
   (let* ((models (filter ast:imported? (ast:model* o)))
-         (files (map ast:source-file models))
-         (base-names (delete-duplicates (map (cut basename <> ".dzn") files) equal?))
+         (modules (map scheme:module-name models))
+         (foreigns (map scheme:module-name (used-foreigns o)))
          (components (filter (is? <component>) (ast:model* o)))
          (pump (if (or (pair? (append-map ast:async-port* components))
                        (pair? (append-map (cut tree-collect (disjoin (is? <blocking>) (is? <blocking-compound>)) <>) components))) '("dzn pump") '())))
-    (map (cut make <file-name> #:name <>) (append pump base-names))))
+    (map (cut make <file-name> #:name <>) (delete-duplicates (append pump modules foreigns)))))
+
+(define-method (scheme:use-module (o <model>))
+  (scheme:use-module (parent o <root>)))
 
 (define-method (scheme:variable/local (o <formal>))
   (if (ast:in? o) o
