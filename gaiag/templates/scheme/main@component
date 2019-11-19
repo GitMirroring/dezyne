@@ -1,6 +1,3 @@
-(use-modules ((oop goops) ##:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x))))
-(include-from-path "#code:file-name .scm")
-
 (define-module (main)
   ##:use-module (srfi srfi-1)
   ##:use-module (srfi srfi-26)
@@ -8,6 +5,7 @@
   ##:use-module (oop goops)
   ##:use-module (dzn runtime)
   ##:use-module (dzn pump)
+  #x:use-module
   ##:use-module (#code:file-name)
   ##:duplicates (merge-generics)
   ##:export (main))

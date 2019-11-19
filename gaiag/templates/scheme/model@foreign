@@ -1,1 +1,1 @@
-(include-from-path "#x:class-name .scm")
+;; (use-modules (#x:class-name))
