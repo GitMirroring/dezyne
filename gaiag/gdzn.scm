@@ -82,7 +82,6 @@ Use \"gdzn COMMAND --help\" for command-specific information.
 (define parse-opts (pure-funcq parse-opts))
 
 (define (run-command args)
-  (setenv "PATH" (string-append %service-bindir ":" (getenv "PATH")))
   (let* ((command (string->symbol (car args)))
          (module (resolve-module `(gaiag commands ,command)))
          (main (module-ref module 'main)))
