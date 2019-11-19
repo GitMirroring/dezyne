@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019,2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -30,6 +31,7 @@
 (define-templates reply-name scheme:reply-name name-infix)
 (define-templates let-variable scheme:let-variable newline-infix)
 (define-templates use-module scheme:use-module newline-infix)
+(define-templates module-name scheme:module-name)
 (define-templates set! scheme:set!)
 (define-templates declare-method code:trigger)
 (define-templates declare-async-req-method scheme:async-req)
