@@ -676,7 +676,7 @@
   (if (ast:in? (.event o)) o ""))
 
 (define-method (code:scope-type-name o)
-  ((compose .name code:scope.name) o))
+  ((compose ast:name code:scope.name) o))
 
 (define-method (code:scope-type-name (o <field-test>))
   ((compose code:scope-type-name .type .variable) o))
