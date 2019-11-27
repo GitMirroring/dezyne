@@ -1,8 +1,0 @@
-verify: ILens: check: completeness: ok
-verify: ILens: check: deadlock: ok
-verify: ILens: check: livelock: ok
-verify: Lens: check: deterministic: ok
-verify: Lens: check: illegal: ok
-verify: Lens: check: deadlock: ok
-verify: Lens: check: compliance: ok
-verify: Lens: check: livelock: ok
