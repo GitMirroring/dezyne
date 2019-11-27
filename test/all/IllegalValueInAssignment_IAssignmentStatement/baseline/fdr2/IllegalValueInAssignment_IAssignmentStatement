@@ -1,4 +1,0 @@
-verify: IllegalValueInAssignment_IAssignmentStatement: check: completeness: ok
-verify: IllegalValueInAssignment_IAssignmentStatement: check: deadlock: fail
-IllegalValueInAssignment_IAssignmentStatement.ia
-verify: IllegalValueInAssignment_IAssignmentStatement: check: livelock: ok
