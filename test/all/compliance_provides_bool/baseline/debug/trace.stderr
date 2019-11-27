@@ -1,0 +1,5 @@
+out/compliance_provides_bool/compliance_provides_bool.dzn:19:-34: error:non-compliance
+out/compliance_provides_bool/compliance_provides_bool.dzn:19:-34: component accept: p.false
+out/compliance_provides_bool/compliance_provides_bool.dzn:8:-208:      port accept: true
+out/compliance_provides_bool/compliance_provides_bool.dzn:9:-169:      port accept: a
+out/compliance_provides_bool/compliance_provides_bool.dzn:10:-136:      port accept: b
