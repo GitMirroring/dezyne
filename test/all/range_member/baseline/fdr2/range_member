@@ -1,3 +1,0 @@
-verify: range_member: check: completeness: fail
-verify: range_member: check: deadlock: fail
-verify: range_member: check: livelock: ok

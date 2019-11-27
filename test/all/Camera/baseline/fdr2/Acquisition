@@ -1,3 +1,0 @@
-verify: IAcquisition: check: completeness: ok
-verify: IAcquisition: check: deadlock: ok
-verify: IAcquisition: check: livelock: ok

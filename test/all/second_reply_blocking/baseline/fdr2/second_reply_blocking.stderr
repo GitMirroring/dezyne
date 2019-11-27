@@ -1,3 +1,0 @@
-out/second_reply_blocking/second_reply_blocking.dzn:33:43:i38: illegal
-out/second_reply_blocking/second_reply_blocking.dzn:27:6:i39: deadlock in model second_reply_blocking
-out/second_reply_blocking/second_reply_blocking.dzn:33:43:i38: Component second_reply_blocking is non-compliant with interface of provided port

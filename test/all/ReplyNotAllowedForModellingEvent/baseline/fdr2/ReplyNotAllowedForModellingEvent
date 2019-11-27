@@ -1,5 +1,0 @@
-verify: ReplyNotAllowedForModellingEvent: check: completeness: fail
-ReplyNotAllowedForModellingEvent.oa
-verify: ReplyNotAllowedForModellingEvent: check: deadlock: fail
-ReplyNotAllowedForModellingEvent.oa
-verify: ReplyNotAllowedForModellingEvent: check: livelock: ok
