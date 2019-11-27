@@ -1,0 +1,7 @@
+(((h)) ((sut)) ((w)))
+h.hello
+w.cruel
+w.return
+h.return
+illegal
+(((h)) ((sut)) ((w)))

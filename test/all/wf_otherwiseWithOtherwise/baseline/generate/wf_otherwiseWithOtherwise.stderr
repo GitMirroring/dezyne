@@ -1,2 +1,0 @@
-out/wf_otherwiseWithOtherwise/wf_otherwiseWithOtherwise.dzn:8:7: Well-formedness error: Otherwise guard combined with second otherwise is not allowed
-out/wf_otherwiseWithOtherwise/wf_otherwiseWithOtherwise.dzn:9:7: Well-formedness error: Second otherwise defined here
