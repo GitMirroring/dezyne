@@ -1,3 +1,0 @@
-out/wf_subintMinMax/wf_subintMinMax.dzn:1:8: Well-formedness error: Minimum version must not be smaller than maximum value
-out/wf_subintMinMax/wf_subintMinMax.dzn:4:10: Well-formedness error: Minimum version must not be smaller than maximum value
-out/wf_subintMinMax/wf_subintMinMax.dzn:14:12: Well-formedness error: Minimum version must not be smaller than maximum value

@@ -1,0 +1,2 @@
+out/compliance_provides_bool/compliance_provides_bool.dzn:20:4: error:non-compliance
+out/compliance_provides_bool/compliance_provides_bool.dzn:20:4: component accept: p.false
