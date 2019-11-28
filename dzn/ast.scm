@@ -90,6 +90,7 @@
            ast:provides-port*
            ast:provided-in-triggers
            ast:provided-out-triggers
+           ast:pure-funcq
            ast:rescope
            ast:req-events
            ast:requires-port*

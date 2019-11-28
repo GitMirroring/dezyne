@@ -2,9 +2,9 @@
 ;;;
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2019 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018, 2019 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -635,14 +635,19 @@
 	 (behaviour (.behaviour parent)))
     (ast:variable* behaviour)))
 
-(define-method (makreel:locals (o <ast>))
+(define-method (makreel:locals- (o <ast>))
   (if ((is? <behaviour>) o) '()
       (let* ((parent (.parent o)))
-        (cond ((is-a? parent <compound>) (let ((pre ;;(pke 'o= o 'pre= (take-while (compose negate (cut ast:eq? o <>) (cut pke 'o o '<> <>)) (.elements parent)))
-                                                (cdr (member o (reverse (ast:statement* parent)) ast:eq?))))
-                                           (append (filter (is? <variable>) pre) (makreel:locals parent))))
+        (cond ((is-a? parent <compound>)
+               (let ((pre (cdr (member o (reverse (ast:statement* parent)) ast:eq?))))
+                 (append (filter (is? <variable>) pre) (makreel:locals parent))))
               ((is-a? o <function>) ((compose ast:formal* .signature) o))
               (else (makreel:locals parent))))))
+
+(define (makreel:locals o)
+  (define (locals root o)
+    (makreel:locals- o))
+  ((ast:pure-funcq locals) (parent o <root>) o))
 
 (define-method (variables-in-scope (o <model>)) (members o))
 (define-method (variables-in-scope (o <ast>))
