@@ -1,9 +1,9 @@
 if (node_p ()) {
   // nodejs
-  dzn.extend (dzn, require ('#x:scope+name '));
+  dzn.extend (dzn, require ('#x:module-name '));
 } else {
   // browser
   /* Add to your html something like
-     <script src="js/dzn/#x:scope+name .js"></script>
+     <script src="js/#x:scope+name .js"></script>
   */
 }

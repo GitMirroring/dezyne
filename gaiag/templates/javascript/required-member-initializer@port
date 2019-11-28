@@ -1,1 +1,1 @@
-this.#.name  = new dzn.#x:port-type ({provides: {}, requires: {name: '#.name ', component: this}});
+this.#.name  = new dzn.#x:class-name ({provides: {}, requires: {name: '#.name ', component: this}});
