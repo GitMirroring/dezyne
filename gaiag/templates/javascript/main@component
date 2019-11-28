@@ -120,9 +120,18 @@ function main () {
   lines = fs.readFileSync('/dev/stdin', 'ascii').toString().trim().split ('\n').reverse ();
   var s;
   pump.queue = {pop:function(){var s=read_line(); return s?event_map[s]:undefined;},peek:peek_line};
-  while (s = pump.queue.peek ()) {
-    if (event_map[s]) {
-      pump.pump (event_map[s]);
+  if (process.version.slice (0, 3) == 'v6.') {
+    while (s = pump.queue.peek ()) {
+      if (event_map[s]) {
+        pump.pump (event_map[s]);
+      }
+    }
+  } else {
+    while (s = pump.queue.peek ()) {
+      var f = pump.queue.pop ();
+      if (f) {
+        f ();
+      }
     }
   }
 }
