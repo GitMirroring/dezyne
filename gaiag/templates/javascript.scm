@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,3 +23,6 @@
 ;;; Code:
 
 (define-templates javascript-namespace-setup javascript:namespace-setup)
+(define-templates class-name javascript:class-name type-infix)
+(define-templates module-name javascript:module-name)
+(define-templates require-module javascript:require-module)

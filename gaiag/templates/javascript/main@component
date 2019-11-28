@@ -1,5 +1,9 @@
 ##! /usr/bin/env node
 
+process.env.NODE_PATH += ':' + __dirname;
+process.env.NODE_PATH += ':' + __dirname + '/../../javascript';
+require("module").Module._initPaths();
+
 function node_p () {return typeof (module) !== 'undefined';}
 function have_dzn_p () {return typeof (dzn) !== 'undefined' && dzn;}
 
@@ -7,14 +11,14 @@ if (node_p ()) {
   // nodejs
   assert = require ('assert');
 
-  dzn = have_dzn_p () ? dzn : require (__dirname + '/dzn/runtime');
-  dzn.extend (dzn, require (__dirname + '/dzn/#code:file-name '));
+  dzn = have_dzn_p () ? dzn : require ('dzn/runtime');
+  dzn.extend (dzn, require ('#x:module-name '));
 }
 else {
   // browser
   dzn = have_dzn_p () ? dzn : {};
   /* Add to your html something like
-     <script src="js/dzn/#code:file-name .js"></script>
+     <script src="js/#code:file-name .js"></script>
   */
 }
 
@@ -112,7 +116,7 @@ function main () {
   var pump = new dzn.pump();
   loc.set(pump);
   var rt = new dzn.runtime(function() {console.error('illegal');process.exit(0);});
-  var sut = new dzn.#x:type-name (loc.set(rt), {name:'sut'});
+  var sut = new dzn.#x:class-name (loc.set(rt), {name:'sut'});
 
   var event_map = #x:model-name _fill_event_map(sut);
 

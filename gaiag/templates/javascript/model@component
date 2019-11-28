@@ -1,7 +1,7 @@
 #x:javascript-namespace-setup
-#x:interface-include
+#x:require-module
 
-dzn.#x:type-name  = function (locator, meta) {
+dzn.#x:class-name  = function (locator, meta) {
   dzn.runtime.init (this, locator, meta);
   this._dzn.meta.ports = [#x:all-ports-meta-list ];
   this._dzn.flushes = true;
