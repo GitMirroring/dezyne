@@ -1,6 +1,6 @@
 #x:javascript-namespace-setup
 
-dzn.#x:type-name  = function #x:model-name (meta) {
+dzn.#x:class-name  = function #x:model-name (meta) {
  this._dzn = {};
  #x:enum-definer
   this.in = {

@@ -120,14 +120,14 @@
 
 (define-method (scheme:imported-names (o <root>))
   (let ((imported-models (append (filter ast:imported? (ast:model* o))
-                                 (used-foreigns o))))
+                                 (code:used-foreigns o))))
     (delete-duplicates (append-map scheme:names imported-models) string=?)))
 
 (define-method (scheme:exported-names (o <root>))
   (let ((models (append (filter (conjoin (negate ast:imported?)
                                          (negate (is? <foreign>)))
                                 (ast:model* o))
-                        (used-foreigns o))))
+                        (code:used-foreigns o))))
     (delete-duplicates (append-map scheme:names models) string=?)))
 
 (define-method (scheme:export (o <root>))
@@ -172,15 +172,10 @@
 (define-method (scheme:let-variable (o <compound>))
   (filter (is? <variable>) (ast:statement* o)))
 
-(define-method (used-foreigns (o <root>))
-  (let* ((systems (filter (conjoin (is? <system>) (negate ast:imported?)) (ast:model* o)))
-         (models (map .type (append-map ast:instance* systems))))
-    (filter (is? <foreign>) models)))
-
 (define-method (scheme:use-module (o <root>))
   (let* ((models (filter ast:imported? (ast:model* o)))
          (modules (map scheme:module-name models))
-         (foreigns (map scheme:module-name (used-foreigns o)))
+         (foreigns (map scheme:module-name (code:used-foreigns o)))
          (components (filter (is? <component>) (ast:model* o)))
          (pump (if (or (pair? (append-map ast:async-port* components))
                        (pair? (append-map (cut tree-collect (disjoin (is? <blocking>) (is? <blocking-compound>)) <>) components))) '("dzn pump") '())))

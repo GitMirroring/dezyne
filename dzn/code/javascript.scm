@@ -39,6 +39,51 @@
   #:use-module (dzn code)
   #:use-module (dzn templates))
 
+(define-method (javascript:class-name (o <model>))
+  (string-join (ast:full-name o) "."))
+
+(define-method (javascript:class-name (o <instance>))
+  (javascript:class-name (.type o)))
+
+(define-method (javascript:class-name (o <port>))
+  (javascript:class-name (.type o)))
+
+(define-method (javascript:module-name (o <root>))
+  (let ((dzn-file (ast:source-file o))
+        (namespaces (filter (conjoin (negate ast:imported?)
+                                     (negate (compose (cut equal? <> '("dzn")) ast:full-name)))
+                            (ast:namespace* o))))
+    (if (null? namespaces) (basename dzn-file ".dzn")
+        (javascript:module-name (car namespaces)))))
+
+(define-method (javascript:module-name (o <foreign>))
+  (string-join (ast:full-name o) "/"))
+
+(define-method (javascript:module-name (o <namespace>))
+  (let* ((dzn-file (ast:source-file o))
+         (base-name (basename dzn-file ".dzn"))
+         (namespace (ast:full-name o)))
+    (string-join (append namespace (list base-name)) "/")))
+
+(define-method (javascript:module-name (o <model>))
+  (let* ((dzn-file (ast:source-file o))
+         (base-name (basename dzn-file ".dzn"))
+         (namespace (drop-right (ast:full-name o) 1)))
+    (string-join (append namespace (list base-name)) "/")))
+
+(define-method (javascript:module-name (o <port>))
+  (javascript:module-name (.type o)))
+
+(define-method (javascript:require-module (o <root>))
+  (let* ((models (filter ast:imported? (ast:model* o)))
+         (modules (map javascript:module-name models))
+         (foreigns (map javascript:module-name (code:used-foreigns o)))
+         (components (filter (is? <component>) (ast:model* o))))
+    (map (cut make <file-name> #:name <>) (delete-duplicates (append modules foreigns)))))
+
+(define-method (javascript:require-module (o <model>))
+  (javascript:require-module (parent o <root>)))
+
 (define (javascript:namespace-setup o)
   (->string
    (let loop ((todo (cons "dzn" (ast:full-scope o))) (namespace '()))

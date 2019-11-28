@@ -7,13 +7,14 @@ if (node_p ()) {
   dzn_require = require;
   dzn = have_dzn_p () ? dzn : require (__dirname + '/runtime');
   dzn = dzn || {};
+  dzn.dzn = dzn.dzn || {};
 } else {
   // browser
   dzn_require = function () {return {};};
   dzn = have_dzn_p () ? dzn : {};
   /* Add to your html something like
      <script src="js/dzn/runtime.js"></script>
-     <script src="js/dzn/#x:scope+name .js"></script>
+     <script src="js/#x:scope+name .js"></script>
   */
 }
 

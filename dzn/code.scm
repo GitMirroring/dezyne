@@ -133,6 +133,7 @@
             code:scope-type-name
             code:trigger
             code:type-name
+            code:used-foreigns
             code:upcase-model-name
             code:variable-name
             code:variable->argument
@@ -747,7 +748,6 @@
 (define-method (code:dump (o <root>))
   (let* ((dir (command-line:get 'output "."))
          (stdout? (equal? dir "-"))
-         (dir (string-append dir "/" (dzn:dir o)))
          (base (basename (ast:source-file o) ".dzn"))
          (foreign-conflict? (find (lambda (o) (and (is-a? o <foreign>)
                                                    (not (ast:imported? o))
@@ -757,7 +757,7 @@
       (exit EXIT_SUCCESS))
     (when (code:header?)
       (let* ((ext (dzn:extension (make <interface>)))
-             (file-name (string-append dir base ext)))
+             (file-name (string-append dir "/" base ext)))
         (if stdout? ((dzn:indent (cut (%x:header) o)))
             (begin
               (mkdir-p dir)
@@ -765,7 +765,7 @@
                 (dzn:indent (cut (%x:header) o)))))))
     (if (or (not (code:header?)) (have-non-interface-models? o))
         (let* ((ext (dzn:extension (make <component>)))
-               (file-name (string-append dir base ext)))
+               (file-name (string-append dir "/" base ext)))
           (if stdout? ((dzn:indent (cut (%x:source) o)))
               (begin
                 (mkdir-p dir)
@@ -823,9 +823,6 @@
 (define (code:header?)
   (member (%language) '("c" "c++" "c++03" "c++-msvc11")))
 
-(define (code:dir o)
-  (if (member (%language) '("javascript")) "dzn/" ""))
-
 (define (code:module root)
   (let ((module (make-module 31 `(,(resolve-module '(dzn code))
                                   ,(resolve-module `(dzn code ,(%language)))))))
@@ -871,3 +868,8 @@
 
 (define-method (code:name.name (o <namespace>))
   (ast:name o))
+
+(define-method (code:used-foreigns (o <root>))
+  (let* ((systems (filter (conjoin (is? <system>) (negate ast:imported?)) (ast:model* o)))
+         (models (map .type (append-map ast:instance* systems))))
+    (filter (is? <foreign>) models)))

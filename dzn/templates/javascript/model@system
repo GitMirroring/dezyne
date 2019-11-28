@@ -11,14 +11,14 @@ if (node_p ()) {
   dzn_require = function () {return {};};
   dzn = have_dzn_p () ? dzn : {};
   /* Add to your html something like
-     <script src="js/dzn/#x:scope+name .js"></script>
+     <script src="js/#x:scope+name .js"></script>
   */
 }
 
 #x:javascript-namespace-setup
-#x:interface-include
+#x:require-module
 
-dzn.#x:type-name  = function (locator, meta) {
+dzn.#x:class-name  = function (locator, meta) {
   dzn.runtime.init (this, locator, meta);
   this._dzn.meta.ports = [#x:all-ports-meta-list ];
   this._dzn.meta.children = [#x:meta-child ];

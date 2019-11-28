@@ -49,7 +49,6 @@
   #:export (ast->dzn
             dzn-async?
             dzn:annotate-shells
-            dzn:dir
             dzn:data
             dzn:class-member?
             dzn:dump
@@ -389,9 +388,11 @@
       (lambda () (pipe thunk (lambda () ((%dzn:indenter)))))
       thunk))
 
-(define (dzn:dir o)
-  (if (member (%language) '("javascript")) "dzn/"
-      ""))
+(define-method (dzn:namespace (o <root>))
+  (let ((dzn-file (ast:source-file o))
+        (namespaces (filter (negate ast:imported?) (ast:namespace* o))))
+    (if (null? namespaces) '()
+        (ast:full-name (car namespaces)))))
 
 (define-method (dzn:from (o <expression>))
   ((compose dzn:from ast:expression->type) o))
