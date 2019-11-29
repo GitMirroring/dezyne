@@ -390,11 +390,20 @@
           (if (equal? direct reached) direct
               (loop rest reached)))))))
 
+(define (reachable-calls- o)
+  (let* ((calls (tree-collect (is? <call>) o))
+         (calls (reachable calls)))
+    calls))
+
+(define (reachable-calls o)
+  (define (calls root o)
+    (reachable-calls- o))
+ ((ast:pure-funcq calls) (parent o <root>) o))
+
 (define-method (call-continuations (o <behaviour>) name)
  (delete-duplicates
   (map (compose car makreel:continuation)
-       (let* ((calls (tree-collect (is? <call>) o))
-              (calls (reachable calls)))
+       (let ((calls (reachable-calls o)))
          (if name (filter (compose (cut equal? <> name) .function.name) calls)
              calls)))
   ast:eq?))
