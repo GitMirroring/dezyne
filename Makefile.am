@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019 Timothy Sample <samplet@ngyro.com>
 #
 # This file is part of Dezyne.
 #
@@ -202,6 +203,22 @@ publish-local: html pdf
 	rsync -P -rvz --delete doc/images $(LOCAL_SITE)/manuals/
 	rsync -P -rvz --delete doc/images $(LOCAL_SITE)/manuals/html_node/
 	rsync -P -rvz --delete doc/dezyne.pdf $(LOCAL_SITE)/manuals/
+
+# Generate 'version.texi' reproducibly using metadata from Git rather
+# than using metadata from the filesystem.
+override $(srcdir)/doc/version.texi:
+	$(AM_V_GEN)set -e						\
+	LC_ALL=C; export LC_ALL;					\
+	TZ=UTC0; export TZ;						\
+	timestamp=$$(git log --pretty=format:%ct -- doc/dezyne.texi	\
+	                 | sort -n -r | head -n 1);			\
+	dmy=$$(date --date="@$$timestamp" "+%-d %B %Y");		\
+	my=$$(date --date="@$$timestamp" "+%B %Y");			\
+	{ echo "@set UPDATED $$dmy";					\
+	  echo "@set UPDATED-MONTH $$my";				\
+	  echo "@set EDITION $(VERSION)";				\
+	  echo "@set VERSION $(VERSION)"; } > $@-t;			\
+	mv $@-t $@
 
 # Distribution
 ##############
