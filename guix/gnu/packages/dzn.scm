@@ -52,24 +52,26 @@
 
 (define %source-dir (getcwd))
 
+;; mkdir -p $HOME/git-daemon/dezyne
+;; ln -s $HOME/src/dzn $HOME/git-daemon/dezyne/dzn.git
+;; git daemon --base-path=$HOME/git-daemon --export-all &
+(define %gitlab "git://localhost")
+
 (define-public dzn
-  (let ((commit "5394155ba5476da977ff03cbef58454716f4c0b1")
-        (revision "83"))
+  (let ((commit "e3ce8465b28b89d4b336b7d05e7970b878da2391gi")
+        (revision "245"))
     (package
       (name "dzn")
-      (version (string-append "0.0-" revision "." (string-take commit 7)))
+      (version (string-append "2.9.0-" revision "." (string-take commit 7)))
       ;; TODO: public URL to released tarball
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url (string-append
-                     "http://git.oban.verum.com/buildmaster"
-                     "/dzn.git"))
-               (commit commit)))
-         (sha256
-          (base32
-           #!dzn!# "12xjww3y87m2vb9l0f7x8bsjqsa8vfc0hsg6sl6rzyyvfx2jascb"))))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url (string-append %gitlab "/dezyne/dzn.git"))
+                      (commit commit)))
+                (sha256
+                 (base32
+                  "04vpjl47k5858yr0gqsa0634wij3728by5rh2xg3mvhm3f4g97ry"))))
       (inputs `(("bash" ,bash-minimal)
                 ("coreutils" ,coreutils)
                 ("guile" ,guile-2.2)
