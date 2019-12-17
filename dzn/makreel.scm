@@ -400,13 +400,16 @@
     (reachable-calls- o))
  ((ast:pure-funcq calls) (parent o <root>) o))
 
+(define-method (no-tail-call (o <call>))
+  (not (.last? o)))
+
 (define-method (call-continuations (o <behaviour>) name)
- (delete-duplicates
-  (map (compose car makreel:continuation)
-       (let ((calls (reachable-calls o)))
-         (if name (filter (compose (cut equal? <> name) .function.name) calls)
-             calls)))
-  ast:eq?))
+  (delete-duplicates
+   (map (compose car makreel:continuation)
+        (let ((calls (filter no-tail-call (reachable-calls o))))
+          (if name (filter (compose (cut equal? <> name) .function.name) calls)
+              calls)))
+   ast:eq?))
 
 (define-method (call-continuations (o <behaviour>))
   (call-continuations o #f))
@@ -429,9 +432,12 @@
 (define-method (makreel:function-return (o <function>))
   (call-continuations (parent o <behaviour>) (.name o)))
 
+(define-method (is-called? (o <function>))
+  (let ((calls (reachable-calls (parent o <behaviour>))))
+    (find (compose (cut equal? <> (.name o)) .function.name) calls)))
+
 (define-method (makreel:called-function* (o <behaviour>))
-  (define (called? o) (and (pair? (makreel:function-return o)) o))
-  (filter called? (ast:function* o)))
+  (filter is-called? (ast:function* o)))
 
 (define-method (makreel:called-function* (o <model>))
   ((compose makreel:called-function* .behaviour) o))
