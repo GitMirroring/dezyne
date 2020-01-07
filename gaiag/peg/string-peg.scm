@@ -160,7 +160,7 @@ RB < ']'
 (define (peg-alternative->defn lst for-syntax)
   #`(and #,@(map (lambda (x) (peg-body->defn x for-syntax))
                  (context-flatten (lambda (x) (or (string? (car x))
-                                                  (eq? (car x) 'peg-suffix)))
+                                             (eq? (car x) 'peg-suffix)))
                                   (cdr lst)))))
 
 ;; lst has the format either
