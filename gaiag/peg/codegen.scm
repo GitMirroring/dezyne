@@ -18,7 +18,10 @@
 ;;; License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gaiag peg codegen)
-  #:export (compile-peg-pattern wrap-parser-for-users add-peg-compiler! %peg:fall-back?)
+  #:export (compile-peg-pattern wrap-parser-for-users add-peg-compiler! %peg:debug?
+                                %peg:fall-back?
+                                %peg:locations?
+                                %peg:skip?)
   #:use-module (ice-9 pretty-print)
   #:use-module (system base pmatch))
 
@@ -251,7 +254,6 @@ return EXP."
      #`(or (#,(compile-peg-pattern #'first accum) #,str #,strlen #,at)
            #,(cg-or-int #'(rest ...) accum str strlen at)))))
 
-
 (define (cg-* args accum)
   (syntax-case args ()
     ((pat)
@@ -363,12 +365,11 @@ return EXP."
                                 #f
                                 #,(cggr (baf accum) 'cg-body #''() #'at)))))))))))
 
-
 (define (cg-expect-int clauses accum str strlen at)
   (syntax-case clauses ()
     ((pat)
      #`(or (#,(compile-peg-pattern #'pat accum) #,str #,strlen #,at)
-           (and (%enable-expect) (throw 'syntax-error (list #,at (syntax->datum #'pat)))))))) ;;TODO throw partial match
+           (throw 'syntax-error (list #,at (syntax->datum #'pat)))))))
 
 (define (cg-expect clauses accum)
   #`(lambda (str len pos)
@@ -412,9 +413,9 @@ return EXP."
 
 ;; Packages the results of a parser
 
-(define-public %peg:debug? (make-parameter #f))
-(define-public %peg:skip? (make-parameter #f))
-(define-public %peg:locations? (make-parameter #f))
+(define %peg:debug? (make-parameter #f))
+(define %peg:locations? (make-parameter #f))
+(define %peg:skip? (make-parameter #f))
 
 (define (trace? symbol)
   (and (%peg:debug?) (not (memq symbol '()))))
