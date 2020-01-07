@@ -20,9 +20,29 @@
   #:use-module (gaiag peg simplify-tree)
   #:use-module (gaiag peg codegen)
   #:use-module (gaiag peg cache)
+  #:use-module (srfi srfi-9)
   #:export (match-pattern define-peg-pattern search-for-pattern
             prec make-prec peg:start peg:end peg:string
             peg:tree peg:substring peg-record?))
+
+(define-record-type prec
+  (make-prec start end string tree)
+  peg-record?
+  (start prec-start)
+  (end prec-end)
+  (string prec-string)
+  (tree prec-tree))
+
+(define (peg:start pm)
+  (and pm (prec-start pm)))
+(define (peg:end pm)
+  (and pm (prec-end pm)))
+(define (peg:string pm)
+  (and pm (prec-string pm)))
+(define (peg:tree pm)
+  (and pm (prec-tree pm)))
+(define (peg:substring pm)
+  (and pm (substring (prec-string pm) (prec-start pm) (prec-end pm))))
 
 ;;;
 ;;; Helper Macros
@@ -60,9 +80,7 @@ execute the STMTs and try again."
              (accumsym (syntax->datum #'accum)))
          ;; CODE is the code to parse the string if the result isn't cached.
          (let ((syn (wrap-parser-for-users x matchf accumsym #'sym)))
-           #`(define sym #,(cg-cached-parser syn))
-           ;;#`(define sym #,syn)
-           ))))))
+           #`(define sym #,(cg-cached-parser syn))))))))
 
 (define (peg-like->peg pat)
   (syntax-case pat ()
@@ -94,24 +112,3 @@ execute the STMTs and try again."
                        (make-prec
                         at end string
                         (string-collapse match))))))))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;; PMATCH STRUCTURE MUNGING
-;; Pretty self-explanatory.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define prec
-  (make-record-type "peg" '(start end string tree)))
-(define make-prec
-  (record-constructor prec '(start end string tree)))
-(define (peg:start pm)
-  (if pm ((record-accessor prec 'start) pm) #f))
-(define (peg:end pm)
-  (if pm ((record-accessor prec 'end) pm) #f))
-(define (peg:string pm)
-  (if pm ((record-accessor prec 'string) pm) #f))
-(define (peg:tree pm)
-  (if pm ((record-accessor prec 'tree) pm) #f))
-(define (peg:substring pm)
-  (if pm (substring (peg:string pm) (peg:start pm) (peg:end pm)) #f))
-(define peg-record? (record-predicate prec))
