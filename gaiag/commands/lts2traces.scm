@@ -50,7 +50,7 @@
     (or
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
-Usage: gdzn lts2traces [OPTION]... LTS-FILE
+Usage: dzn lts2traces [OPTION]... LTS-FILE
       --flush                 include <flush> event in trace
       --illegal               include traces that lead to an illegal
       --lts                   generate lts
