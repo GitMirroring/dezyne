@@ -69,12 +69,10 @@ dzn/%: dzn/%.in Makefile
 BUILT_SOURCES = dzn/config.scm
 
 bin_SCRIPTS =					\
-  bin/dzn					\
-  bin/gdzn
+  bin/dzn
 
 EXTRA_DIST +=					\
- bin/dzn.in					\
- bin/gdzn.in
+ bin/dzn.in
 
 ALL_GO =
 include dzn/local.mk
@@ -136,15 +134,11 @@ EXTRA_DIST += $(TESTS)
 
 dist_man_MANS =					\
  doc/dzn.1					\
- doc/gdzn.1					\
  doc/dzn-code.1					\
  doc/dzn-hello.1				\
  doc/dzn-parse.1
 
 doc/dzn.1: bin/dzn Makefile $(ALL_GO)
-	./pre-inst-env help2man --output=$@ $<
-
-doc/gdzn.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ $<
 
 doc/dzn-code.1: bin/dzn Makefile $(ALL_GO)

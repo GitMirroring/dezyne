@@ -44,7 +44,7 @@
     (or
      (and help?
           (stdout "\
-Usage: gdzn ls [OPTION]... [FILE]...
+Usage: dzn ls [OPTION]... [FILE]...
   -h, --help             display this help and exit
   -R, --recursive        list subdirectories recursively
   -V, --version=VERSION  use service version=VERSION

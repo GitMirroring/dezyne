@@ -72,7 +72,7 @@
     (or
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
-Usage: gdzn verify [OPTION]... DZN-FILE [MAP-FILE]...
+Usage: dzn verify [OPTION]... DZN-FILE [MAP-FILE]...
   -a, --all                   run all checks
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path

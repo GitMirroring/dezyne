@@ -24,7 +24,8 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
   #:use-module (srfi srfi-1)
-  #:export (mkdir-p
+  #:export (directory-exists?
+            mkdir-p
             delete-file-recursively
             copy-recursively
             find-files
@@ -36,6 +37,12 @@
 ;;;
 ;;; Directories.
 ;;;
+
+(define (directory-exists? dir)
+  "Return #t if DIR exists and is a directory."
+  (let ((s (stat dir #f)))
+    (and s
+         (eq? 'directory (stat:type s)))))
 
 (define-syntax-rule (with-directory-excursion dir body ...)
   "Run BODY with DIR as the process's current directory."
