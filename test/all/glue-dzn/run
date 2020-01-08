@@ -2,8 +2,8 @@
 # -*- scheme -*-
 set -x
 test=$(dirname $0)/../..
-gdzn=$(readlink -f $(command -v gdzn))
-gaiag=$(dirname $gdzn)/../gaiag
+dzn=$(readlink -f $(command -v dzn))
+gaiag=$(dirname $dzn)/../gaiag
 exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -L $gaiag  -C $test/../gaiag -C $gaiag -L $test/all/dzn-glue -e '(run)' -s "$0" ${1+"$@"}
 !#
 
@@ -217,7 +217,6 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../gaiag -L $gaiag  -C $test/../g
 ;; REPL
 ;; (define dir "all/dzn-glue")
 ;; (define dzn "../dzn/bin/dzn")
-;; (define gdzn "../gaiag/bin/gdzn")
 ;; (define model "alarm")
 ;; (define out (string-append "out/" (substring dir (1+ (string-index dir #\/)))))
 ;; (define languages '("c++" "c++03"))

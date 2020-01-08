@@ -18,7 +18,6 @@
 !/build-aux/pre-inst-env.in
 /m4
 /bin/dzn
-/bin/gdzn
 /config.log
 /config.status
 /configure

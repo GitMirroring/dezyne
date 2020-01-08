@@ -86,7 +86,7 @@
     (or
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
-Usage: gdzn parse [OPTION]... [FILE]...
+Usage: dzn parse [OPTION]... [FILE]...
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
   -L, --locations        show locations in AST

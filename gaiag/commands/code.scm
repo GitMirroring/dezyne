@@ -59,7 +59,7 @@
     (or
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
-Usage: gdzn code [OPTION]... DZN-FILE [MAP-FILE]...
+Usage: dzn code [OPTION]... DZN-FILE [MAP-FILE]...
   -A, --ast                   generate AST
   -c, --calling-context=TYPE  generate extra parameter of TYPE for every event
 FIXME:      --depends[=TYPE]        generate dependency for DZN-FILE and write to DZN-FILE.TYPE, default is stdout

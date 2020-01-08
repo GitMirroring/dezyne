@@ -81,7 +81,7 @@
     (or
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
-Usage: gdzn traces [OPTION]... DZN-FILE
+Usage: dzn traces [OPTION]... DZN-FILE
   -f, --flush                 include <flush> event in trace
   -h, --help                  display this help and exit
   -i, --illegal               include traces that lead to an illegal

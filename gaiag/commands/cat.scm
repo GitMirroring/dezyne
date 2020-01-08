@@ -44,7 +44,7 @@
     (or
      (and help?
           (stdout "\
-Usage: gdzn cat [OPTION]... FILE
+Usage: dzn cat [OPTION]... FILE
   -h, --help             display this help and exit
   -V, --version=VERSION  use service version=VERSION
 ")
