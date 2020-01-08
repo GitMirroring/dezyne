@@ -1,0 +1,13 @@
+interface equal_binary
+{
+  in void e();
+  behaviour
+  {
+    on e:
+    {
+      [false && false] {}
+      [false && false] {}
+      [otherwise] {}
+    }
+  }
+}
