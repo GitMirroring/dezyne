@@ -520,8 +520,8 @@
 (define-method (ast:equal? (a <binary>) (b <binary>))
   (and
    (eq? (class-of a) (class-of b))
-   (ast:equal? (.expression (.left a)) (.expression (.left b)))
-   (ast:equal? (.expression (.right a)) (.expression (.right b)))))
+   (ast:equal? (.left a) (.left b))
+   (ast:equal? (.right a) (.right b))))
 
 (define-method (ast:equal? (a <expression>) (b <expression>))
   (if (eq? (class-of a) (class-of b))
