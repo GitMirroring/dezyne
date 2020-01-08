@@ -40,7 +40,7 @@
     (or
      (and help?
           (stdout "\
-Usage: gdzn hello [OPTION]...
+Usage: dzn hello [OPTION]...
   -h, --help             display this help and exit
   -V, --version=VERSION  use service version=VERSION
 ")
