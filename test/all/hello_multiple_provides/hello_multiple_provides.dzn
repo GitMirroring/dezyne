@@ -23,7 +23,7 @@
 // Code:
 
 /*
-make && { set -o pipefail; rm -f my.aut; { echo "eqn  I'allow_dillegals = true; C'allow_dillegals = true; I'allow_dillegals = true; init C'Implementation();"; ./pre-inst-env gdzn code -l mcrl2 -o - my.dzn; } | tee /dev/stderr | mcrl22lps -b | lps2lts /dev/stdin my.aut; cat my.aut | ltsconvert --tau=tau -edpweak-bisim my.aut my.aut; cat my.aut 1>&2; } && ltsgraph my.aut
+make && { set -o pipefail; rm -f my.aut; { echo "eqn  I'allow_dillegals = true; C'allow_dillegals = true; I'allow_dillegals = true; init C'Implementation();"; ./pre-inst-env dzn code -l mcrl2 -o - my.dzn; } | tee /dev/stderr | mcrl22lps -b | lps2lts /dev/stdin my.aut; cat my.aut | ltsconvert --tau=tau -edpweak-bisim my.aut my.aut; cat my.aut 1>&2; } && ltsgraph my.aut
 */
 
 interface ihello {
