@@ -54,12 +54,18 @@
 
     (or
      (and version?
-	  ((stdout "gdzn ~a\n" %service-version) (exit 0)))
+	  ((stdout "dzn ~a\n" %service-version) (exit 0)))
      (and (or help? usage?)
           ((or (and usage? stderr) stdout)
-           (let ((commands (map (cut basename <> ".go") (find-files %command-dir ".*.go"))))
+           (let ((commands (delete-duplicates
+                            (map (cut basename <> ".go")
+                                 (filter (cut string-contains <> "/gaiag/commands/")
+                                         (append-map (cut find-files <> "\\.go$")
+                                                     (filter directory-exists?
+                                                             %load-compiled-path))))
+                            string=?)))
              (string-append "\
-Usage: gdzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
+Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -d, --debug            enable debug ouput
   -h, --help             display this help
   -H, --html             output html
@@ -74,7 +80,7 @@ Commands:"
                                   (string-join commands "\n  " 'prefix)
                                   "
 
-Use \"gdzn COMMAND --help\" for command-specific information.
+Use \"dzn COMMAND --help\" for command-specific information.
 ")))
 	   (exit (or (and usage? 2) 0)))
      options)))
@@ -99,14 +105,14 @@ Use \"gdzn COMMAND --help\" for command-specific information.
                  ((string-prefix? "-V" opt) (string-drop opt 2))
                  (else (error "error parsing version option" opt)))))))
 -
-(define (exec-gdzn-version version args)
+(define (exec-dzn-version version args)
   (let* ((service-bindir (string-append %service-versions-dir "/" version "/bin"))
-         (gdzn (string-append service-bindir "/gdzn")))
-    (if (not (access? gdzn (logior R_OK X_OK))) (error (format #f "gdzn: no such version: ~a" version))
+         (dzn (string-append service-bindir "/dzn")))
+    (if (not (access? dzn (logior R_OK X_OK))) (error (format #f "dzn: no such version: ~a" version))
         (let ((self? (equal? (canonicalize-path (car (command-line)))
-                             (canonicalize-path gdzn))))
+                             (canonicalize-path dzn))))
           (if self? (run-command args) ; for development: avoid loop
-              (apply execl gdzn gdzn args))))))
+              (apply execl dzn dzn args))))))
 
 (define (main args)
   (let* ((options (parse-opts args))
@@ -115,6 +121,6 @@ Use \"gdzn COMMAND --help\" for command-specific information.
          (debug? (option-ref options 'debug #f))
          (service-version (service-version command-args)))
     (if (and #f service-version (not (equal? service-version %service-version)))
-        (exec-gdzn-version service-version (cdr args))
-        (if (getenv "GDZN_REPL") (call-with-error-handling (cut run-command command-args))
+        (exec-dzn-version service-version (cdr args))
+        (if (getenv "DZN_REPL") (call-with-error-handling (cut run-command command-args))
             (run-command command-args)))))
