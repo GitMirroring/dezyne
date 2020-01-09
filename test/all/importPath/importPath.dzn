@@ -27,9 +27,9 @@ import I.dzn;
 component importPath {
   provides I i;
   provides I2 i2;
-  
+
   behaviour {
-    on i.esub(): { reply(E.E1); } 
+    on i.esub(): { reply(E.E1); }
     on i2.e(): {}
   }
 }

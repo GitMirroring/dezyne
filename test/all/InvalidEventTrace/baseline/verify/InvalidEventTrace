@@ -1,7 +1,0 @@
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
-verify: InvalidEventTrace: check: deterministic: ok
-verify: InvalidEventTrace: check: illegal: ok
-verify: InvalidEventTrace: check: deadlock: ok
-verify: InvalidEventTrace: check: compliance: ok
-verify: InvalidEventTrace: check: livelock: ok

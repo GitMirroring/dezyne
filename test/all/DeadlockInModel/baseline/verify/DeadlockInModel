@@ -1,2 +1,0 @@
-verify: DeadlockInModel: check: deadlock: fail
-verify: DeadlockInModel: check: livelock: ok

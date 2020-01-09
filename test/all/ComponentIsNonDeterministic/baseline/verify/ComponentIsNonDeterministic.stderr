@@ -1,1 +1,0 @@
-out/ComponentIsNonDeterministic/ComponentIsNonDeterministic.dzn:7:6:i7: Component ComponentIsNonDeterministic is non-deterministic due to overlapping guards

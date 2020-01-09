@@ -1,2 +1,0 @@
-verify: IMultipleOutEventsOnSingleTau: check: deadlock: ok
-verify: IMultipleOutEventsOnSingleTau: check: livelock: ok
