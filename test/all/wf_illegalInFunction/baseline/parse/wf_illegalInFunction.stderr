@@ -1,1 +1,1 @@
-out/wf_illegalInFunction/wf_illegalInFunction.dzn:7:14: error: cannot use illegal in function
+out/wf_illegalInFunction/wf_illegalInFunction.dzn:30:15: error: cannot use illegal in function
