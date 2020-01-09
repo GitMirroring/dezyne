@@ -1,8 +1,0 @@
-((h ihello provides) ((sut) illegal_requires_out component) (w ihello requires))
-... <- <external>.w.world
-sut.<q> <- ...
-... <- sut.<q>
-sut.w.world <- ...
-((h ihello provides) ((sut) illegal_requires_out component) (w ihello requires))
-(eligible h.hello w.world)
-illegal
