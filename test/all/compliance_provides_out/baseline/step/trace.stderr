@@ -1,3 +1,0 @@
-out/compliance_provides_out/compliance_provides_out.dzn:18:18: error:non-compliance
-out/compliance_provides_out/compliance_provides_out.dzn:18:18: component accept: p.planet
-out/compliance_provides_out/compliance_provides_out.dzn:9:14:      port accept: world

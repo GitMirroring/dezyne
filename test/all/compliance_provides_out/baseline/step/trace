@@ -1,6 +1,0 @@
-((p i provides) ((sut) compliance_provides_out component))
-<external>.p.hello -> ...
-... -> sut.p.hello
-... <- sut.p.planet
-((p i provides) ((sut) compliance_provides_out component))
-(eligible p.hello)
