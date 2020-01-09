@@ -1,2 +1,0 @@
-verify: StartControlIF: check: deadlock: ok
-verify: StartControlIF: check: livelock: ok

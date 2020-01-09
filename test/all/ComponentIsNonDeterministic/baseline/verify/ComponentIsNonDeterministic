@@ -1,8 +1,0 @@
-verify: ComponentIsNonDeterministic: check: deterministic: fail
-pp.ia
-verify: ComponentIsNonDeterministic: check: illegal: ok
-verify: ComponentIsNonDeterministic: check: deadlock: ok
-verify: ComponentIsNonDeterministic: check: compliance: ok
-verify: ComponentIsNonDeterministic: check: livelock: ok
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok

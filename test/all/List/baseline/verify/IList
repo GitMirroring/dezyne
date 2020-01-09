@@ -1,2 +1,0 @@
-verify: IList: check: deadlock: ok
-verify: IList: check: livelock: ok

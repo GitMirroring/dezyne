@@ -1,4 +1,0 @@
-verify: BlindLoop: check: deadlock: ok
-verify: BlindLoop: check: livelock: fail
-BlindLoop.start
-BlindLoop.return
