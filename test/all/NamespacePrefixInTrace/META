@@ -1,4 +1,0 @@
-{"model":"Namespace.NamespacePrefixInTrace"
-,"skip":["build","run"]
-,"comment":"interface cannot execute - skip build, test framework incapable of ignoring namespace prefix in trace - skip run"
-}

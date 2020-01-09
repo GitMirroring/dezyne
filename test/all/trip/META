@@ -1,4 +1,0 @@
-{ "known": ["run","javascript:execute"]
-, "comment": "FIXME: running manually crafted system traces is broken?"
-, "model":"trap"
-}
