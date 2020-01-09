@@ -1,2 +1,0 @@
-verify: DoorControlIF: check: deadlock: ok
-verify: DoorControlIF: check: livelock: ok
