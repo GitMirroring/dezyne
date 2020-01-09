@@ -24,7 +24,7 @@
 interface I {
   in void e();
 
-  behaviour {    
+  behaviour {
     [true] {
        on e: {}
     }
@@ -34,7 +34,7 @@ interface I {
 // This component has an deadlock problem immediately
 component deadlock_component0 {
   provides I i;
-  behaviour { 
+  behaviour {
     [true] on i.e(): illegal;
-  }      
+  }
 }

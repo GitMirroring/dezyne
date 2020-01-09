@@ -28,13 +28,13 @@ interface I {
     behaviour {
         on e: reply(E.A);
     }
-} 
+}
 interface II {
     in EE ee();
     behaviour {
         on ee: reply(EE.AA);
     }
-} 
+}
 
 component wf_typeerror {
     provides E p;

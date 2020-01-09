@@ -21,7 +21,7 @@
 //
 // Code:
 
-// checker whether a clr resets temporary blocking of cb's 
+// checker whether a clr resets temporary blocking of cb's
 interface IAsync {
   in void e();
   in void c();
@@ -55,7 +55,7 @@ component async_prio2 {
     [!idle] {
       on p.e: illegal;
       on p.c(): { i.clr(); r.c(); idle = true; }
-      on i.ack(): {i.req(); i.clr(); r.e();} 
+      on i.ack(): {i.req(); i.clr(); r.e();}
       on r.cb(): { p.cb(); idle = true; }
     }
   }

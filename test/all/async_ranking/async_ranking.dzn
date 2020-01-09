@@ -29,7 +29,7 @@ interface IA {
 
   behaviour {
     bool idle = true;
- 
+
     [idle] {
       on doAB: idle = false;
       on doBA: idle = false;
@@ -48,8 +48,8 @@ interface IB {
 
   behaviour {
     bool idle = true;
- 
-    [idle] 
+
+    [idle]
       on req: idle = false;
     [!idle] {
       on req: illegal;
@@ -61,14 +61,14 @@ interface IB {
 component A {
   provides IA p;
   requires IB r;
-  
+
   behaviour {
     enum State { S0, S1, S2, S3};
 
     requires dzn.async i;
 
     State s = State.S0;
-    
+
     [s.S0] {
       on p.doAB(): {
         i.req(); r.req(); s = State.S1;
@@ -88,14 +88,14 @@ component A {
 
 component B {
   provides IB p;
-  
+
   behaviour {
     enum State { S0, S1 };
 
     requires dzn.async i;
 
     State s = State.S0;
-    
+
     [s.S0] {
       on p.req(): {
         i.req(); s = State.S1;

@@ -25,7 +25,7 @@ interface I {
   in void e();
   in void f();
 
-  behaviour {    
+  behaviour {
     [true] {
        on e: {}
        on f: {}
@@ -36,10 +36,10 @@ interface I {
 // This component has an compliance problem
 component compliance0 {
   provides I i;
-  behaviour { 
+  behaviour {
     [true] {
       on i.e(): {}
       on i.f(): illegal;
     }
-  }      
+  }
 }

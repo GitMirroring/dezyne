@@ -25,7 +25,7 @@ interface Sensor {
   enum Value{ New, Old };
   in void enable();
   out Value triggered();
-  behaviour { 
+  behaviour {
     on enable: {}
   }
 }

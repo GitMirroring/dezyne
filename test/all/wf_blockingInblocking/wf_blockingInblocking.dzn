@@ -24,18 +24,18 @@
 interface Sensor {
   in void activate();
   in void deactivate();
-  behaviour { 
+  behaviour {
     on activate: {}
     on deactivate: {}
   }
 }
- 
+
 component SensorComp {
   provides Sensor sensor;
   behaviour {
     blocking {
       on sensor.activate(): blocking {
-        sensor.reply(); 
+        sensor.reply();
       }
     }
     on sensor.deactivate(): {}

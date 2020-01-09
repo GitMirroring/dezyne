@@ -24,7 +24,7 @@
 interface I {
   in void e();
 
-  behaviour {    
+  behaviour {
     [true] {
        on e: {}
     }
@@ -34,12 +34,12 @@ interface I {
 // This component has an deadlock problem after one step
 component deadlock_component1 {
   provides I i;
-  behaviour { 
+  behaviour {
     enum States { S0, S1};
     States s = States.S0;
-    [s.S0] on i.e(): { 
+    [s.S0] on i.e(): {
       s=States.S1;
     }
     [s.S1] on i.e(): illegal;
-  }      
+  }
 }

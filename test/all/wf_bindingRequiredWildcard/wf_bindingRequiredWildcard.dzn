@@ -37,7 +37,7 @@ component MyComp {
 }
 
 component System {
-  
+
   system {
     Comp comp1;
     MyComp comp2;

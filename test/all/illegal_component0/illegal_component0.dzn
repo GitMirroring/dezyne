@@ -24,7 +24,7 @@
 interface I {
   in void e();
 
-  behaviour {    
+  behaviour {
     [true] {
        on e: {}
     }
@@ -35,7 +35,7 @@ interface I {
 component illegal_component0 {
   provides I i;
   requires I ii;
-  behaviour { 
+  behaviour {
     [true] on i.e(): {ii.e(); if (true) illegal;}
-  }      
+  }
 }

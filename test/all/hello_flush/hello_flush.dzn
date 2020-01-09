@@ -23,7 +23,7 @@
 
 interface ihello {
   out void world();
-  
+
   behaviour {
     on inevitable: world;
   }
@@ -34,7 +34,7 @@ interface iworld {
   out void sunrise();
   out void cruel();
   out void world();
-  
+
   behaviour {
     on hello: { cruel; world;}
     on inevitable: sunrise;
@@ -44,7 +44,7 @@ interface iworld {
 component hello_flush {
   provides ihello h;
   requires iworld w;
-  
+
   behaviour {
     on w.sunrise(): w.hello();
     on w.cruel(): h.world();
