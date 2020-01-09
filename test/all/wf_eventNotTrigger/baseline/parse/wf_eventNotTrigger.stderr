@@ -1,8 +1,8 @@
-out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:8:7: error: cannot use out-event deactivated as trigger
-out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:4:2: error: event deactivated declared here
-out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:17:7: error: cannot use provides out-event deactivated as trigger
-out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:13:2: error: port sensor1 declared here
-out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:4:2: error: event deactivated declared here
-out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:18:7: error: cannot use requires in-event activate as trigger
-out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:14:2: error: port sensor2 declared here
-out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:2:2: error: event activate declared here
+out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:31:8: error: cannot use out-event `deactivated' as trigger
+out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:27:3: error: event `deactivated' declared here
+out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:40:8: error: cannot use provides out-event `deactivated' as trigger
+out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:36:3: error: port `sensor1' declared here
+out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:27:3: error: event `deactivated' declared here
+out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:41:8: error: cannot use requires in-event `activate' as trigger
+out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:37:3: error: port `sensor2' declared here
+out/wf_eventNotTrigger/wf_eventNotTrigger.dzn:25:3: error: event `activate' declared here
