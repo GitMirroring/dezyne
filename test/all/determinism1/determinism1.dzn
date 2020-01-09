@@ -24,7 +24,7 @@
 interface I {
   in void e();
 
-  behaviour {    
+  behaviour {
     [true] {
        on e: {}
     }
@@ -35,15 +35,15 @@ interface I {
 component determinism1 {
   provides I i;
   requires I ii;
-  behaviour { 
+  behaviour {
     enum States { S0, S1};
     States s = States.S0;
-    [s.S0] on i.e(): { 
+    [s.S0] on i.e(): {
       s=States.S1;
     }
     [s.S1] on i.e(): {
       [true] { ii.e(); }
-      [true] {}      
-    } 
-  }      
+      [true] {}
+    }
+  }
 }

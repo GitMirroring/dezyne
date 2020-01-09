@@ -25,16 +25,16 @@ interface Sensor {
   in void activate();
   in void deactivate();
   out void deactivated();
-  behaviour { 
+  behaviour {
     on activate: { deactivate; }
     on deactivate: {}
   }
 }
- 
+
 component SensorComp {
   provides Sensor sensor1;
   requires Sensor sensor2;
-  behaviour { 
+  behaviour {
     on sensor1.activate(): { sensor1.deactivate(); }
     on sensor1.activate(): { sensor2.deactivated(); }
   }

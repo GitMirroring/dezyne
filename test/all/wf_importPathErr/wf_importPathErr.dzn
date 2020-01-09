@@ -27,9 +27,9 @@ import H.dzn;
 component wf_importPathErr {
   provides I i;
   provides I2 i2;
-  
+
   behaviour {
-    on i.esub(): {} 
+    on i.esub(): {}
     on i2.e(): {}
   }
 }

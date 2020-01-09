@@ -94,11 +94,11 @@ component async_silent {
     [!idle] {
       on p.e: illegal;
       on p.c(): { i.clr(); r.c(); idle = true; }
-      on i.ack(): { 
+      on i.ack(): {
 	IAsync2.Res res = r.f();
-        if (res == IAsync2.Res.NOK) 
+        if (res == IAsync2.Res.NOK)
           illegal; // the model checker should report this illegal;
-      } 
+      }
       on r.cb(): { p.cb(); idle = true; }
     }
   }

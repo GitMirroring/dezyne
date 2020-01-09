@@ -24,7 +24,7 @@
 interface Sensor {
   enum Status { OK, NOK };
   in void activate();
-  behaviour { 
+  behaviour {
     on activate: { }
   }
 }
@@ -32,9 +32,9 @@ component SensorComp {
   provides Sensor sensor;
   behaviour {
     bool b = f();
-    
+
     bool f() { return true; }
-    
+
     on sensor.activate(): {
       b = b || f();
       if (f()) {}

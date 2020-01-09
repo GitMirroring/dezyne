@@ -26,7 +26,7 @@ extern xint $int$;
 interface IOutParam {
   in void e_out(out xint number);
   behaviour {
-    on e_out: {} 
+    on e_out: {}
   }
 }
 
@@ -39,7 +39,7 @@ component OutParam {
       nr = i;
     }
     xint nr;
-    
+
     on outParam.e_out(number):
     {
       fn(number <- nr);

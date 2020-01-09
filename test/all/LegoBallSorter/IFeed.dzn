@@ -40,9 +40,9 @@ interface IFeed
 
     [s.Lost]
     {
-      on calibrate: {s = State.Calibrating;}      
-      on calibrate: {calibrated; s = State.Idle;}      
-      on produceBall: illegal;  
+      on calibrate: {s = State.Calibrating;}
+      on calibrate: {calibrated; s = State.Idle;}
+      on produceBall: illegal;
     }
     [s.Calibrating]
     {

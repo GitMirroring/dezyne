@@ -37,8 +37,8 @@ component Comp {
 
 component System {
   provides Intf i;
-  
+
   system {
-    Comp comp;     
+    Comp comp;
   }
 }

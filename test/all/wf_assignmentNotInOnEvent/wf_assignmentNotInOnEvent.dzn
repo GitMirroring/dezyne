@@ -25,7 +25,7 @@ interface Sensor {
   in void activate();
   in void deactivate();
   out void deactivated();
-  behaviour { 
+  behaviour {
     bool b= true;
     [b] {
       b = false;
@@ -34,4 +34,4 @@ interface Sensor {
     }
   }
 }
- 
+

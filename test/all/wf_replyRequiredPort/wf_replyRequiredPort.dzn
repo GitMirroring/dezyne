@@ -26,7 +26,7 @@ interface Sensor {
   in void deactivate();
   out void activated();
   out void deactivated();
-  behaviour { 
+  behaviour {
     on activate: {}
     on deactivate: {}
   }
@@ -48,8 +48,8 @@ component Test {
        reply();
      }
 
-    blocking on start1.start(): { sensor.activate(); } 
-    on start2.start(): { fun(); } 
+    blocking on start1.start(): { sensor.activate(); }
+    on start2.start(): { fun(); }
     on sensor.activated(): { reply(); }
   }
 }
