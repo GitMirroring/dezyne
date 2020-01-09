@@ -1,2 +1,0 @@
-purpose: Show modelling of a communication protocol
-
