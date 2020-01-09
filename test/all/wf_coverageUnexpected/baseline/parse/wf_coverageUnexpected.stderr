@@ -1,2 +1,2 @@
-out/wf_coverageUnexpected/wf_coverageUnexpected.dzn:13:6: error: nested on used
-out/wf_coverageUnexpected/wf_coverageUnexpected.dzn:12:4: error: within on here
+out/wf_coverageUnexpected/wf_coverageUnexpected.dzn:36:7: error: nested on used
+out/wf_coverageUnexpected/wf_coverageUnexpected.dzn:35:5: error: within on here
