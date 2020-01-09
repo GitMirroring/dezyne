@@ -1,3 +1,2 @@
-out/wf_actionInExpression/wf_actionInExpression.dzn:12:22: error: action outside on
-out/wf_actionInExpression/wf_actionInExpression.dzn:15:10: error: action in expression
-out/wf_actionInExpression/wf_actionInExpression.dzn:16:12: error: valued action must be used in variable assignment
+out/wf_actionInExpression/wf_actionInExpression.dzn:38:11: error: action in expression
+out/wf_actionInExpression/wf_actionInExpression.dzn:39:13: error: valued action must be used in variable assignment
