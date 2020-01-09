@@ -1,4 +1,1 @@
-out/wf_interfaceMustDefineEvent/wf_interfaceMustDefineEvent.dzn:2:3: syntax-error
-  behaviour { }\n}
-   ^
-   expected 'types-or-events'
+parse error: ((835 types-or-events))

@@ -1,1 +1,1 @@
-out/wf_componentNeedsTrigger/wf_componentNeedsTrigger.dzn:9:2: error: component with behaviour must have a provides port
+out/wf_componentNeedsTrigger/wf_componentNeedsTrigger.dzn:33:1: error: component with behaviour must have a provides port

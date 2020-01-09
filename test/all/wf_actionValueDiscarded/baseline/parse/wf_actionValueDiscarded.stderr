@@ -1,1 +1,1 @@
-out/wf_actionValueDiscarded/wf_actionValueDiscarded.dzn:24:22: error: valued action must be used in variable assignment
+out/wf_actionValueDiscarded/wf_actionValueDiscarded.dzn:47:23: error: valued action must be used in variable assignment

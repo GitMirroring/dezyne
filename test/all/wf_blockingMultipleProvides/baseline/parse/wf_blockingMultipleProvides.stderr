@@ -1,1 +1,1 @@
-out/wf_blockingMultipleProvides/wf_blockingMultipleProvides.dzn:22:4: error: blocking with multiple provide ports not supported
+out/wf_blockingMultipleProvides/wf_blockingMultipleProvides.dzn:45:5: error: blocking with multiple provide ports not supported

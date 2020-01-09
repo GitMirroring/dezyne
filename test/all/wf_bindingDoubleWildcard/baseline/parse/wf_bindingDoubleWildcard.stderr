@@ -1,1 +1,1 @@
-out/wf_bindingDoubleWildcard/wf_bindingDoubleWildcard.dzn:26:4: error: cannot bind two wildcards
+out/wf_bindingDoubleWildcard/wf_bindingDoubleWildcard.dzn:49:5: error: cannot bind two wildcards

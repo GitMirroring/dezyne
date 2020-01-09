@@ -1,2 +1,2 @@
-out/wf_otherwiseWithNonGuard/wf_otherwiseWithNonGuard.dzn:7:4: error: cannot use otherwise with non-guard statements
-out/wf_otherwiseWithNonGuard/wf_otherwiseWithNonGuard.dzn:8:4: error: non-guard statement here
+out/wf_otherwiseWithNonGuard/wf_otherwiseWithNonGuard.dzn:30:5: error: cannot use otherwise with non-guard statements
+out/wf_otherwiseWithNonGuard/wf_otherwiseWithNonGuard.dzn:31:5: error: non-guard statement here

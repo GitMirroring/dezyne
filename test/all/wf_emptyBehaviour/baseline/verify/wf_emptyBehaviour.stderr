@@ -1,3 +1,0 @@
-out/wf_emptyBehaviour/wf_emptyBehaviour.dzn:5:3:i2: model I is incomplete: event 'I.e' not handled
-out/wf_emptyBehaviour/wf_emptyBehaviour.dzn:9:1:i2: deadlock in model wf_emptyBehaviour
-out/wf_emptyBehaviour/wf_emptyBehaviour.dzn:9:1:i2: i.e (implicitly) illegal
