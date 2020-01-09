@@ -1,5 +1,0 @@
-verify: Namespace.NamespacePrefixInTrace: check: completeness: fail
-Namespace.NamespacePrefixInTrace.ia
-Namespace.NamespacePrefixInTrace.return
-verify: Namespace.NamespacePrefixInTrace: check: deadlock: ok
-verify: Namespace.NamespacePrefixInTrace: check: livelock: ok
