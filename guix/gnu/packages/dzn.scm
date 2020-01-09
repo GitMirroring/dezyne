@@ -77,7 +77,7 @@
                      ("perl" ,perl)
                      ("pkg-config" ,pkg-config)
                      ("zip" ,zip)))   ; for guix environment -l guix.scm
-    (propagated-inputs `(("guile-json" ,guile-json)))
+    (propagated-inputs `(("guile-json" ,guile-json-1)))
     (build-system gnu-build-system)
     (outputs '("out" "regression"))
     (arguments
