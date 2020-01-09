@@ -1,9 +1,0 @@
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
-verify: ReplyNotAllowedPortNotBlocked: check: deterministic: ok
-verify: ReplyNotAllowedPortNotBlocked: check: illegal: ok
-verify: ReplyNotAllowedPortNotBlocked: check: deadlock: fail
-rp.oa
-verify: ReplyNotAllowedPortNotBlocked: check: compliance: fail
-rp.oa
-verify: ReplyNotAllowedPortNotBlocked: check: livelock: ok

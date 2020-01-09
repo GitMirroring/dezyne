@@ -1,3 +1,0 @@
-out/silent_fail/silent_fail.dzn:122:24:i180: illegal
-out/silent_fail/silent_fail.dzn:32:6:i58: deadlock in model silent_fail
-out/silent_fail/silent_fail.dzn:14:54:i64: pp.pass not performed by component

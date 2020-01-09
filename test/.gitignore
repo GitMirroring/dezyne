@@ -1,7 +1,0 @@
-*-
-*~
-/.local.make
-/out/
-/regression/autocryocycle.project
-/out-*/
-triangle/

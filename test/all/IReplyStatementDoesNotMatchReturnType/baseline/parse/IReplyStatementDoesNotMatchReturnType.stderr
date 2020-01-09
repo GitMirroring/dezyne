@@ -1,2 +1,0 @@
-out/IReplyStatementDoesNotMatchReturnType/IReplyStatementDoesNotMatchReturnType.dzn:7:11: error: type mismatch: expected bool, found int
-out/IReplyStatementDoesNotMatchReturnType/IReplyStatementDoesNotMatchReturnType.dzn:3:2: error: event defined here

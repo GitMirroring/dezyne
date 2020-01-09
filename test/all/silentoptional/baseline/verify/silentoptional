@@ -1,7 +1,0 @@
-verify: I: check: deadlock: ok
-verify: I: check: livelock: fail
-verify: silentoptional: check: deterministic: ok
-verify: silentoptional: check: illegal: ok
-verify: silentoptional: check: deadlock: ok
-verify: silentoptional: check: compliance: ok
-verify: silentoptional: check: livelock: ok

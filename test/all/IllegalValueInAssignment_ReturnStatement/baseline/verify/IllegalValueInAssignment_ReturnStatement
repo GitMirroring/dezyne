@@ -1,9 +1,0 @@
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
-verify: IllegalValueInAssignment_ReturnStatement: check: deterministic: ok
-verify: IllegalValueInAssignment_ReturnStatement: check: illegal: ok
-verify: IllegalValueInAssignment_ReturnStatement: check: deadlock: fail
-pp.ia
-verify: IllegalValueInAssignment_ReturnStatement: check: compliance: fail
-pp.ia
-verify: IllegalValueInAssignment_ReturnStatement: check: livelock: ok
