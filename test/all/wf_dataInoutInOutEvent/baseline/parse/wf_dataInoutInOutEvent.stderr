@@ -1,1 +1,1 @@
-out/wf_dataInoutInOutEvent/wf_dataInoutInOutEvent.dzn:5:20: error: inout-parameter not allowed on out-event callback
+out/wf_dataInoutInOutEvent/wf_dataInoutInOutEvent.dzn:28:21: error: inout-parameter not allowed on out-event `callback'
