@@ -1,2 +1,0 @@
-verify: ITimer: check: deadlock: ok
-verify: ITimer: check: livelock: ok

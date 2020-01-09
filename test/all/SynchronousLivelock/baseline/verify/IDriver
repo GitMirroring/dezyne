@@ -1,2 +1,0 @@
-verify: IDriver: check: deadlock: ok
-verify: IDriver: check: livelock: ok
