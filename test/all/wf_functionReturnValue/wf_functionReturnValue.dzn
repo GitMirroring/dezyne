@@ -33,7 +33,7 @@ interface Intf {
         // return true;
       }
     }
-    
+
     on evt: {}
   }
 }

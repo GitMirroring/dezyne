@@ -25,17 +25,17 @@ interface Sensor {
   in void activate();
   in void deactivate();
   out void deactivated();
-  behaviour { 
+  behaviour {
 
-    bool negate(bool b) 
+    bool negate(bool b)
     {
       return !b;
     }
-    void test(bool b) 
+    void test(bool b)
     {
-      negate(b); 
+      negate(b);
     }
-  
+
     on activate: {}
     on deactivate: {}
   }

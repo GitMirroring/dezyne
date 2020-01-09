@@ -37,8 +37,8 @@ component C2 {
    provides I p1;
    provides I p2;
    requires I r1;
-   requires I r2; 
-} 
+   requires I r2;
+}
 
 component S1 {
   system {
@@ -50,23 +50,23 @@ component S1 {
 component S2 {
   provides I p1;
   provides I p2;
-  
+
   requires I r1;
   requires I r2;
-  
+
   system {
     C2 c21;
     C2 c22;
     C1 c11;
     C1 c12;
-    
+
     p1 <=> c21.p1;
     p2 <=> c22.p1;
     c21.r1 <=> c11.p;
     c21.r2 <=> c12.p;
     c22.r1 <=> c21.p2;
     c22.r2 <=> r2;
-    
+
     c11.r <=> r1;
     c12.r <=> c22.p2;
   }

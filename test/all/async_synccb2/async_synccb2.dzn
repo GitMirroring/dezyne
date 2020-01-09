@@ -70,7 +70,7 @@ component async_synccb2 {
     requires dzn.async i;
 
     on p.c(): { r.c(); i.clr(); s = State.S0; }
-    
+
     [s.S0] {
       on p.e(): { r.e(); s = State.S1; }
     }

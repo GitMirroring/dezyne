@@ -23,7 +23,7 @@
 
 interface Sensor {
   in void evt();
-  behaviour { 
+  behaviour {
     on evt: blocking { reply(); }
   }
 }

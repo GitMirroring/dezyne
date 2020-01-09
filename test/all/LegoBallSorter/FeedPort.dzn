@@ -65,7 +65,7 @@ component FeedConvey
 
     [s.Lost]
     {
-      on ctrl.calibrate(): {feeder.calibrate(); s = State.Calibrating;}      
+      on ctrl.calibrate(): {feeder.calibrate(); s = State.Calibrating;}
     }
     [s.Calibrating]
     {
@@ -84,11 +84,11 @@ component FeedConvey
       }
       [p.ConveyingNext]
       {
-        on conveyor.conveyed(): {ctrl.consumeNextBall(); s = State.Prepared; p = FeedPhase.Idle;} 
+        on conveyor.conveyed(): {ctrl.consumeNextBall(); s = State.Prepared; p = FeedPhase.Idle;}
       }
       [p.ConveyingLast]
       {
-        on conveyor.conveyed(): {ctrl.consumeLastBall(); s = State.Prepared; p = FeedPhase.Idle;} 
+        on conveyor.conveyed(): {ctrl.consumeLastBall(); s = State.Prepared; p = FeedPhase.Idle;}
       }
     }
     [s.Prepared]

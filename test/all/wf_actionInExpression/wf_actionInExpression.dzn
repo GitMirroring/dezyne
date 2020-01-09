@@ -24,7 +24,7 @@
 interface Sensor {
   enum Status { OK, NOK };
   in Status activate();
-  behaviour { 
+  behaviour {
     on activate: { reply(Status.OK); }
   }
 }

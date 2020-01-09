@@ -80,7 +80,7 @@ component Feed
 
     [s.Lost]
     {
-      on ctrl.calibrate(): {axis.calibrate(); s = State.Calibrating;}      
+      on ctrl.calibrate(): {axis.calibrate(); s = State.Calibrating;}
     }
     [s.Calibrating]
     {

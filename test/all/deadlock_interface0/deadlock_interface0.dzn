@@ -25,7 +25,7 @@
 interface deadlock_interface0 {
   in void e();
 
-  behaviour {    
+  behaviour {
     [true] {
        on e: illegal;
     }
@@ -35,11 +35,11 @@ interface deadlock_interface0 {
 // Dummy interface and component since there needs to be present a component
 interface DummyI {
   in void e();
-  behaviour { [true] on e: {} }      
+  behaviour { [true] on e: {} }
 }
 
 component DummyC {
   provides DummyI i;
   requires deadlock_interface0 ii;
-  behaviour { [true] on i.e(): {} }      
+  behaviour { [true] on i.e(): {} }
 }

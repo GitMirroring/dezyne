@@ -24,7 +24,7 @@
 interface Siren {
   in void start();
   in void stop();
-  behaviour { 
+  behaviour {
     bool b = true;
     [b] on start: b = false;
     [otherwise] on start: b = false;

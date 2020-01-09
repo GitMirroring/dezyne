@@ -21,7 +21,7 @@
 //
 // Code:
 
-// check whether an ack resets temporary blocking of cb's 
+// check whether an ack resets temporary blocking of cb's
 interface IAsync {
   in void e();
   in void c();
@@ -53,7 +53,7 @@ component async_prio3 {
       on p.e(): { i.req(); r.e(); s = State.S1; }
     }
     [s.S1] {
-      on i.ack(): { s = State.S2; } 
+      on i.ack(): { s = State.S2; }
     }
     [s.S2] {
       on r.cb(): { p.cb(); s = State.S0; }

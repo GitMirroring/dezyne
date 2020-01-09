@@ -25,15 +25,15 @@ interface Sensor {
   in void activate();
   in void deactivate();
   out void deactivated();
-  behaviour { 
+  behaviour {
     on activate: {}
     on deactivate: {}
   }
 }
- 
+
 component Alarm1 {
   requires Sensor sensor;
-  behaviour { 
+  behaviour {
     on sensor.deactivated(): {}
   }
 }
@@ -41,7 +41,7 @@ component Alarm1 {
 component SensorComp {
   provides Sensor sensor1;
   provides Sensor sensor2;
-  behaviour { 
+  behaviour {
     on sensor1.activate(): {}
     on sensor2.activate(): {}
     on sensor1.deactivate(): {}

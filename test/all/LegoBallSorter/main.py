@@ -15,9 +15,9 @@
 #
 # You should have received a copy of the GNU Affero General Public
 # License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 # Commentary:
-# 
+#
 # Code:
 
 #! /usr/bin/python
@@ -31,7 +31,7 @@ def config_get (x):
     return 0
 
 config = {'get': config_get}
-              
+
 try:
      builtins = sys.modules['__builtin__'].__dict__
 except KeyError:

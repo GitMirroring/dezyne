@@ -25,7 +25,7 @@ interface ihello
 {
   in void hello();
   out void world();
-  
+
   behaviour
   {
     on hello: {}
@@ -36,7 +36,7 @@ component hellocheckcompbindings
 {
   provides ihello p;
   requires ihello r;
-  
+
   behaviour
   {
     on p.hello(): {

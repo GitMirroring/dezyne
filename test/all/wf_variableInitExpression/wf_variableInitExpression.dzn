@@ -33,19 +33,19 @@ component wf_variableInitExpression {
   behaviour {
     enum E { E1, E2 };
     E s = E.E1;
-  
+
     bool b = c;
     bool c = true;
     bool d = true && c;
     bool e = true && false;
     bool g = s.E1;
-    
+
     bool fn() {
       bool b = true;
       bool c = b;
       return c;
     }
-  
+
     on p.e(): {}
-  }  
+  }
 }

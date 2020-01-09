@@ -25,7 +25,7 @@ extern long $long$;
 interface Sensor {
   enum Status { OK, NOK };
   in Status activate(long l);
-  behaviour { 
+  behaviour {
     on activate: { reply(Status.OK); }
   }
 }

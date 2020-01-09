@@ -24,7 +24,7 @@
 interface I {
   in void e();
 
-  behaviour {    
+  behaviour {
     [true] {
        on e: {}
     }
@@ -34,7 +34,7 @@ interface I {
 interface II {
   out void e();
 
-  behaviour {    
+  behaviour {
     [true] {
        on inevitable: e;
     }
@@ -45,10 +45,10 @@ interface II {
 component livelock_component0 {
   provides I i;
   requires II ii;
-  behaviour { 
+  behaviour {
     [true] {
       on i.e(): {}
       on ii.e(): {}
     }
-  }      
+  }
 }

@@ -24,19 +24,19 @@
 interface Sensor {
   in void activate();
   out void activated();
-  behaviour { 
+  behaviour {
     on activate: {}
     on inevitable: activated;
   }
 }
- 
+
 interface Test {
   in void test();
-  behaviour { 
+  behaviour {
     on test: {}
   }
 }
- 
+
 component SensorComp {
   provides Sensor sensor1;
   provides Test test;

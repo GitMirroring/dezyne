@@ -24,7 +24,7 @@
 interface I {
   in void e();
 
-  behaviour {    
+  behaviour {
     [true] {
        on e: {}
     }
@@ -37,9 +37,9 @@ interface II {
 
   behaviour {
     enum States {S0, S1};
-    States s = States.S0;    
+    States s = States.S0;
     [s.S0] {
-      on a: s = States.S1; 
+      on a: s = States.S1;
     }
     [s.S1] {
       on a: {}
@@ -52,10 +52,10 @@ interface II {
 component livelock_component1 {
   provides I i;
   requires II ii;
-  behaviour { 
+  behaviour {
     [true] {
       on i.e(): ii.a();
       on ii.e(): {}
     }
-  }      
+  }
 }
