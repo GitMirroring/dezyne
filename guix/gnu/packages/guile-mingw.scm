@@ -99,7 +99,7 @@
 
 (define-public guile-json-mingw
   (package
-    (inherit guile-json)
+    (inherit guile-json-1)
     (name "guile-json-mingw")
     (inputs `(("guile" ,guile-mingw)))
     (native-inputs `(("pkg-config" ,pkg-config)

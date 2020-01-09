@@ -78,7 +78,7 @@
                      ("perl" ,perl)
                      ("pkg-config" ,pkg-config)
                      ("zip" ,zip)))   ; for guix environment -l guix.scm
-    (propagated-inputs `(("guile-json" ,guile-json)))
+    (propagated-inputs `(("guile-json" ,guile-json-1)))
     (build-system gnu-build-system)
     (outputs '("out" "regression"))
     (arguments
@@ -151,7 +151,7 @@
   (package
     (inherit dzn)
     (name "dzn-mingw")
-    (native-inputs `(("guile-json-for-build" ,guile-json)
+    (native-inputs `(("guile-json-for-build" ,guile-json-1)
                      ,@(package-native-inputs dzn)))
     (inputs `(("guile" ,guile-mingw)))
     (propagated-inputs `(("guile-json" ,guile-json-mingw)))
