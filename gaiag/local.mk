@@ -45,6 +45,7 @@ dist_%C%_scm_DATA =				\
  %D%/misc.scm					\
  %D%/normalize.scm				\
  %D%/parse.scm					\
+ %D%/peg.scm					\
  %D%/scheme.scm					\
  %D%/serialize.scm				\
  %D%/shell-util.scm				\
