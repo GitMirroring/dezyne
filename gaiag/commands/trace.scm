@@ -40,6 +40,7 @@
   #:use-module (gaiag peg codegen)
   #:use-module (gaiag peg string-peg)
   #:use-module (gaiag peg using-parsers)
+  #:use-module (gaiag parse peg)
 
   #:use-module (json)
 
@@ -89,8 +90,9 @@ Usage: dzn trace [OPTION]... FILE
   (define-peg-string-patterns
     "trace <- line*
 line             <-  sexp ws* eol# / location? ws* (communication ws* eol# / message ws* eol#)
-communication    <-- content ws* arrow ws* content#
+communication    <-- content ws* arrow ws* content# ws* state-vector?
 content          <-- instance-event
+state-vector     <   '[' (!']' .)+ ']'
 scopename        <-  name (DOT name)*
 instance-event   <-  dotted-event / instance event
 dotted-event     <-- '...'
@@ -116,16 +118,7 @@ ws               <   [ \t]
   (catch 'syntax-error
     (lambda ()
       (trace-parse trace))
-    (lambda (key . args)
-      (receive (ln col line) ((@@ (gaiag parse) line-column) trace (caar args))
-        (let ((indent (make-string col #\space)))
-          (format #t "~a:~a:~a: syntax-error\n~a\n~a^\n~aexpected '~a'\n"
-                  file-name
-                  ln col line
-                  indent
-                  indent
-                  (cadar args))
-          (exit 1))))))
+    (peg:handle-syntax-error file-name trace)))
 
 (define-immutable-record-type <communication>
   (make-communication line location left right event direction arrow)
