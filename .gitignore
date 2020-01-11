@@ -14,6 +14,7 @@
 !/build-aux/config.rpath
 !/build-aux/git-version-gen
 !/build-aux/gitlog-to-changelog
+!/build-aux/std-gnu11.m4
 !/build-aux/guile.am
 !/build-aux/pre-inst-env.in
 stamp-h[0-9]
