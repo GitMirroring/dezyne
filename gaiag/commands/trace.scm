@@ -165,7 +165,7 @@ ws               <   [ \t]
      (let ((left (step->communication left))
            (right (step->communication right)))
        (cond ((and left right)
-              (make-communication o #f (car left) (car right) (cdr left) direction arrow))
+              (make-communication o #f (car left) (car right) (or (cdr left) (cdr right)) direction arrow))
              (left
               (make-communication o #f (car left) #f (cdr left) direction arrow))
              (right
@@ -248,10 +248,15 @@ ws               <   [ \t]
          "<boe>")
         (string-append
          location
-         (if (not (communication-left o)) ""
-             (string-append
-              (apply string-join `(,(communication-left o) ".")) "." event
-              " "))
+         (cond ((not (communication-left o)) "")
+               ((q-instance? (communication-left o))
+                (string-append
+                 (apply string-join `(,(communication-left o) "."))
+                 " "))
+               (else
+                (string-append
+                 (apply string-join `(,(communication-left o) ".")) "." event
+                 " ")))
          (communication-arrow o)
          (if (not (communication-right o)) ""
              (string-append
