@@ -116,8 +116,11 @@ ws               <   [ \t]
 (define* (trace->steps trace #:key (file-name "<stdin>"))
   ;;(stderr "trace:") (pretty-print trace (current-error-port))
   (catch 'syntax-error
-    (lambda ()
-      (trace-parse trace))
+    (lambda _
+      (let ((result (trace-parse trace)))
+        (match result
+          (('communication communication ...) (list result))
+          (_ result))))
     (peg:handle-syntax-error file-name trace)))
 
 (define-immutable-record-type <communication>
