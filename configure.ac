@@ -66,6 +66,14 @@ AC_SUBST([VERSION_COMMIT])
 
 AM_CONDITIONAL([CROSS_COMPILING], [test x$cross_compiling = xyes])
 
+# Test framework
+AC_PROG_CXX
+_AC_PROG_CXX_CXX11([have_cxx11=true])
+AM_CONDITIONAL([have_cxx11], [test x$have_cxx11 = xyes])
+if test "x$have_cxx11" != "xtrue"; then
+   CXX=
+fi
+
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([pre-inst-env:build-aux/pre-inst-env.in],
                 [chmod +x pre-inst-env])
