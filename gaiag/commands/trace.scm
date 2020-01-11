@@ -106,7 +106,7 @@ arrow            <-  in / out
 in               <-- '->'
 out              <-- '<-'
 name             <-- [a-zA-Z_][a-zA-Z_0-9]* / '<external>' / '<q>'
-number           <-- [0-9]+
+number           <-- '-'? [0-9]+
 location-number  <-  [0-9]+
 eol              <   [\n]
 ws               <   [ \t]
