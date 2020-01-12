@@ -28,6 +28,12 @@ endif
 
 default: $(OUT)/test
 
+DEVELOPMENT:=$(shell readlink -f $(dir $(filter %/build.javascript.make,$(MAKEFILE_LIST)))../../)
+
 $(OUT)/test: $(MAIN)
 	cp $(MAIN) $(OUT)/test
+	mkdir -p $(OUT)/dzn
+	ln -fs $(DEVELOPMENT)/runtime/javascript/dzn/* $(OUT)/dzn/
+	if test -f $(IN)/main.js; then cp -f $(IN)/main.js $(OUT); fi
+	if test -f $(IN)/javascript/main.js; then cp -f $(IN)/main.js $(OUT); fi
 	chmod +x $(OUT)/test

@@ -1,5 +1,1 @@
-{"skip":["traces"]
-,"known":["run","c"]
-,"languages":["c++"]
-,"comment":"handwritten trace on a system component, thread safe shell, table no alpha reduction in pretty print"
-,"tss":"true"}
+{"skip":["traces","scheme:code"],"languages":["c++"],"tss":"true"}
