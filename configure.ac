@@ -188,6 +188,10 @@ AC_SUBST(languages)
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([pre-inst-env:build-aux/pre-inst-env.in],
                 [chmod +x pre-inst-env])
+AC_CONFIG_FILES([test/bin/reorder:test/bin/reorder.in],
+                [chmod +x test/bin/reorder])
+AC_CONFIG_FILES([test/bin/run:test/bin/run.in],
+                [chmod +x test/bin/run])
 AC_CONFIG_FILES([runtime/c++/dzn/meta.hh])
 AC_CONFIG_FILES([runtime/c++-msvc11/dzn/meta.hh])
 AC_CONFIG_FILES([runtime/c++03/dzn/meta.hh])

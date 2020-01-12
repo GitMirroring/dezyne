@@ -40,10 +40,10 @@ int main(int argc, char* argv[])
   sut.w.meta.provides.port = "w";
 
   sut.w.in.world = [&](int& cc, int i){
-                     std::clog << "cc=" << cc << ", i=" << i << std::endl;
+    //std::clog << "cc=" << cc << ", i=" << i << std::endl;
     dzn::trace (std::clog, sut.w.meta,"world");
     if(cc == 0){cc = 123;} else {assert(cc == 123); cc = 456;}
-    dzn::trace_out (std::clog, sut.w.meta,"return"); std::clog << std::endl;
+    dzn::trace_out (std::clog, sut.w.meta,"return"); // std::clog << std::endl;
   };
 
   int cc = 0;
