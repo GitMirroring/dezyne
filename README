@@ -18,15 +18,19 @@ Dezyne currently depends on the following packages:
 
   - [[https://gnu.org/software/guile/][GNU Guile 2.2.x]]
   - [[https://www.gnu.org/software/make/][GNU Make]]
-  - [[https://mcrl2.org][mCRL2]]
+  - [[https://mcrl2.org][mCRL2]], version 201908.0 or later
   - [[https://gnu.org/software/m4/][GNU m4]], compiled with --enable-changeword
 
-to run the regression test, these additional packages are needed:
+To run the regression test, these additional packages are needed:
 
-  - [[https://gcc.gnu.org][GCC's g++]]
-  - [[https://nodejs.org][node and npm]]
-    + [[https://www.npmjs.com/package/node-getopt][node-getopt]]
-    + [[https://www.npmjs.com/package/node-q][node-q]]
+  - for C++11: [[https://gcc.gnu.org][GCC's g++]], version 5.4 or later
+  - for C++03: [[https://gcc.gnu.org][GCC's g++]], version 4.7 or later
+    and [[https://boost.org][boost]], version 1.67 or later.
+
+For unsupported code generators:
+  - for C: A C99 compiler, e.g. [[https://gcc.gnu.org][GCC's gcc]], version 4.7 or later
+  - for JavaScript: [[https://nodejs.org][nodejs]], version 6.8 or later
+  - for C#: [[https://www.mono-project.com][Mono]], version 4.2.1.102.
 
 #+BEGIN_EXAMPLE
     guix environment -l guix.scm

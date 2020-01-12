@@ -39,3 +39,10 @@ Makefile.in
 /test-suite.log
 /test/gaiag/*.log
 /test/gaiag/*.trs
+/test/all/*.log
+/test/all/*.trs
+/test/all/*.err
+/test/all/*.out
+/test/bin/run
+/test/all/*/out/
+/test/bin/reorder
