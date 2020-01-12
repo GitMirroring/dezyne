@@ -1,4 +1,0 @@
-out/wf_interfaceMustDefineEvent/wf_interfaceMustDefineEvent.dzn:24:19: syntax-error
-interface Sensor {
-                  ^
-                  `types-or-events' expected

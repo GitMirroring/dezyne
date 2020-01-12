@@ -1,2 +1,0 @@
-out/wf_injectionOutEvent/wf_injectionOutEvent.dzn:39:3: error: injected port `ii' has out events: notif
-out/wf_injectionOutEvent/wf_injectionOutEvent.dzn:31:3: error: defined here

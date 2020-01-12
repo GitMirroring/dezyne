@@ -1,0 +1,6 @@
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:30:9: error: recursive function not in tail call
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:31:9: error: next statement
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:62:7: error: recursive function not in tail call
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:63:7: error: next statement
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:77:7: error: recursive function not in tail call
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:78:7: error: next statement

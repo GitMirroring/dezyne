@@ -1,0 +1,3 @@
+test/all/wf_subintMinMax/wf_subintMinMax.dzn:27:3: error: subint iintf has empty range
+test/all/wf_subintMinMax/wf_subintMinMax.dzn:37:5: error: subint icomp has empty range
+test/all/wf_subintMinMax/wf_subintMinMax.dzn:24:1: error: subint iglob has empty range

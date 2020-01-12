@@ -1,2 +1,0 @@
-out/deadlock_blocking_inevitable/deadlock_blocking_inevitable.dzn:27:6:i38: deadlock in model deadlock_blocking_inevitable
-out/deadlock_blocking_inevitable/deadlock_blocking_inevitable.dzn:4:8:i38: p.return not performed by component

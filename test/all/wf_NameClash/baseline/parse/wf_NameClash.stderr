@@ -1,7 +1,0 @@
-out/wf_NameClash/wf_NameClash.dzn:25:3: error: enum `I1' must not have the same name as the model it is declared in
-out/wf_NameClash/wf_NameClash.dzn:26:3: error: duplicate enum field `E3' in enum `I2'
-out/wf_NameClash/wf_NameClash.dzn:34:3: error: port `wf_NameClash' must not have the same name as the model it is declared in
-out/wf_NameClash/wf_NameClash.dzn:43:5: error: enum `wf_NameClash2' must not have the same name as the model it is declared in
-out/wf_NameClash/wf_NameClash.dzn:51:5: error: variable `wf_NameClash3' must not have the same name as the model it is declared in
-out/wf_NameClash/wf_NameClash.dzn:55:7: error: identifier `b' declared before
-out/wf_NameClash/wf_NameClash.dzn:54:7: error: previous `b' declared here

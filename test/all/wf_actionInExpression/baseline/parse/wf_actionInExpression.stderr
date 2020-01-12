@@ -1,3 +1,0 @@
-out/wf_actionInExpression/wf_actionInExpression.dzn:35:23: error: action in variable declaration
-out/wf_actionInExpression/wf_actionInExpression.dzn:38:11: error: action in expression
-out/wf_actionInExpression/wf_actionInExpression.dzn:39:13: error: valued action must be used in variable assignment

@@ -1,0 +1,3 @@
+test/all/wf_functionInExpression/wf_functionInExpression.dzn:34:14: error: call in variable declaration
+test/all/wf_functionInExpression/wf_functionInExpression.dzn:39:16: error: call in expression
+test/all/wf_functionInExpression/wf_functionInExpression.dzn:40:11: error: call in expression
