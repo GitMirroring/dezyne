@@ -25,7 +25,6 @@
 
 (define-module (gnu packages dzn)
   #:use-module (guix build-system gnu)
-  #:use-module (guix build-system node)
   #:use-module (guix gexp)
   #:use-module (guix download)
   #:use-module (guix git-download)
@@ -44,7 +43,6 @@
   #:use-module (gnu packages maths)
   #:use-module (gnu packages m4)
   #:use-module (gnu packages mcrl2)
-  #:use-module (gnu packages node)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages xml)
@@ -71,9 +69,6 @@
                      ("gettext" ,gnu-gettext)
                      ("guile-for-build" ,guile-2.2)
                      ("help2man" ,help2man)
-                     ("node" ,node)
-                     ("node-getopt" ,node-getopt)
-                     ("node-q" ,node-q)
                      ("perl" ,perl)
                      ("pkg-config" ,pkg-config)
                      ("zip" ,zip)))   ; for guix environment -l guix.scm
@@ -149,60 +144,3 @@
      (substitute-keyword-arguments
          `(#:configure-flags '("--enable-changeword" "--program-suffix=-cw")
            ,@(package-arguments m4))))))
-
-(define-public node-q
-  (package
-    (name "node-q")
-    (version "1.5.0")
-    (source
-     (origin
-       (method url-fetch)
-       (uri "https://registry.npmjs.org/q/-/q-1.5.0.tgz")
-       (sha256
-        (base32
-         "02swcgz18abmnlxk2f23sxngm0jp8mfzr824s30vjjgvn9p0nfq1"))))
-    (build-system node-build-system)
-    (propagated-inputs `())
-    (native-inputs `())
-    (arguments
-     `(#:tests? #f                      ; Needs jasmine-node
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'remove-bin
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               (delete-file (string-append out "/bin"))
-               #t))))))
-    (synopsis
-     "A library for promises (CommonJS/Promises/A,B,D)")
-    (description
-     "A library for promises (CommonJS/Promises/A,B,D)")
-    (home-page "https://github.com/kriskowal/q")
-    (license expat)))
-
-(define-public node-getopt
-  (package
-    (name "node-getopt")
-    (version "0.2.3")
-    (source
-     (origin
-       (method url-fetch)
-       (uri "https://registry.npmjs.org/node-getopt/-/node-getopt-0.2.3.tgz")
-       (sha256
-        (base32
-         "1i8q6bdlnm9nwdjmwadk3rxn7zbjxs6l1rgk31xq67mpiawxf6a6"))))
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'remove-bin
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               (delete-file (string-append out "/bin"))
-               #t))))))
-    (build-system node-build-system)
-    (propagated-inputs `())
-    (native-inputs `())
-    (synopsis "featured command line args parser")
-    (description "featured command line args parser")
-    (home-page "http://npmjs.com")
-    (license expat)))
