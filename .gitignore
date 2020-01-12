@@ -11,6 +11,7 @@
 /aclocal.m4
 /autom4te.cache/*
 /build-aux/*
+!/build-aux/ax_boost_base.m4
 !/build-aux/config.rpath
 !/build-aux/git-version-gen
 !/build-aux/gitlog-to-changelog
