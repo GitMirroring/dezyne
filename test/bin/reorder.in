@@ -1,9 +1,9 @@
-#!@GUILE@ --no-auto-compile
--*- scheme -*-
+#! @GUILE@ \
+--no-auto-compile -L "$srcdir" -L . -C . -L .. -C .. -e main -s
 !#
+
 ;;; Dezyne --- Dezyne command line tools
-;;;
-;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -24,7 +24,25 @@
 ;;;
 ;;; Code:
 
-(set! %load-path (append '("@srcdir@" "@guilemoduledir@") %load-path))
-(set! %load-compiled-path (append '("@srcdir@" "@guileobjectdir@") %load-compiled-path))
+(use-modules (srfi srfi-26)
+             (ice-9 rdelim)
+             (ice-9 match)
+             (test dzn dzn))
 
-((@ (dzn gdzn) main) (command-line))
+
+;;; Main
+
+(define (main args)
+  (match args
+    ((_ file-name)
+     (let* ((string (with-input-from-file file-name read-string))
+            (reordered (verification-reorder string)))
+       (with-output-to-file file-name (cut display reordered))))
+    ((_) (let* ((string (read-string))
+                (reordered (verification-reorder string)))
+           (display reordered)))
+    (_ (error "invalid arguments"))))
+
+;;; Local Variables:
+;;; mode: scheme
+;;; End:

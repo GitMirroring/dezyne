@@ -4,7 +4,7 @@ set -x
 test=$(dirname $0)/../..
 dzn=$(readlink -f $(command -v dzn))
 dzn=$(dirname $dzn)/../dzn
-exec ${GUILE-guile} --no-auto-compile -L $test/../dzn -L $dzn  -C $test/../dzn -C $dzn -L $test/all/dzn-glue -e '(run)' -s "$0" ${1+"$@"}
+exec ${GUILE-guile} --no-auto-compile -L $test/.. -L $dzn  -C $test/.. -C $dzn -L $test/all/dzn-glue -e '(run)' -s "$0" ${1+"$@"}
 !#
 
 (define-module (run)
@@ -174,9 +174,7 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../dzn -L $dzn  -C $test/../dzn -
          (foo (stderr "dir: ~a\n" dir))
          (test ((compose dirname dirname) dir))
          (foo (stderr "test: ~a\n" test))
-         (development (if (equal? test ".") ".." (dirname test)))
-         (foo (stderr "development: ~a\n" development))
-         (dzn (or (getenv "DZN") (string-append development "/dzn/bin/dzn")))
+         (dzn (or (getenv "DZN") "dzn"))
          (model "alarm")
          (out (string-append "out/" (substring dir (1+ (string-rindex dir #\/)))))
          (languages '("c++" "c++03"))
@@ -213,10 +211,3 @@ exec ${GUILE-guile} --no-auto-compile -L $test/../dzn -L $dzn  -C $test/../dzn -
 
     (stderr "~a" (if (zero? global-status) "[PASS]" "[FAIL]"))
     (exit global-status)))
-
-;; REPL
-;; (define dir "all/dzn-glue")
-;; (define dzn "../dzn/bin/dzn")
-;; (define model "alarm")
-;; (define out (string-append "out/" (substring dir (1+ (string-index dir #\/)))))
-;; (define languages '("c++" "c++03"))

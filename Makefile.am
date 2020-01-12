@@ -103,24 +103,14 @@ all-go: $(ALL_GO)
 clean-go:
 	rm -f $(ALL_GO)
 
-check-local: check-smoke check-hello
-
-CPUS = $(shell nproc)
-check-smoke:
-	./pre-inst-env test $${V:+--verbose} test/smoke
-
-check-hello:
-	./pre-inst-env test $${V:+--verbose} -j $(CPUS) test/hello
-
-check-regression:
-	./pre-inst-env test $${V:+--verbose} -j $(CPUS) test/regression
-
 # Tests
 #######
 
+include test/all/local.mk   # FULL_TESTS and XFAIL_TESTS
 include test/dzn/local.mk
 
 TEST_EXTENSIONS = .scm
+LOG_COMPILER = $(top_builddir)/pre-inst-env run
 SCM_LOG_COMPILER = $(top_builddir)/pre-inst-env $(GUILE)
 AM_SCM_LOG_FLAGS = --no-auto-compile
 

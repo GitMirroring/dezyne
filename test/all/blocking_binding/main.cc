@@ -36,7 +36,7 @@ connect_ports (dzn::container<blocking_binding, std::function<void()> >& c)
   c.system.r.in.e = [&] () {
     dzn::trace(std::clog, c.system.r.meta, "e");
     c.match("r.e"); std::string tmp = c.match_return();
-    dzn::trace_out(std::clog, c.system.r.meta, tmp.substr(tmp.rfind('.')+1).c_str()); std::clog << std::endl;
+    dzn::trace_out(std::clog, c.system.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
     return to_void(tmp.substr(tmp.rfind('.')+1));
   };
 }
