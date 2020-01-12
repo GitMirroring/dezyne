@@ -13,12 +13,9 @@ override_dh_auto_configure:
 
 override_dh_auto_build:
 	dh_auto_build -- V=2
-	npm install node-getopt
 
 override_dh_auto_test:
-	npm install node-getopt
 	-dh_auto_test -- V=2
-	-dh_auto_test -- V=2 regression
 
 override_dh_strip:
 	dh_strip --exclude=.go
