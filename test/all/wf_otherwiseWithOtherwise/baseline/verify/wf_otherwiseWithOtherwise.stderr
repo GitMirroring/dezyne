@@ -1,0 +1,2 @@
+test/all/wf_otherwiseWithOtherwise/wf_otherwiseWithOtherwise.dzn:31:7: error: cannot use otherwise guard more than once
+test/all/wf_otherwiseWithOtherwise/wf_otherwiseWithOtherwise.dzn:32:7: error: second otherwise here

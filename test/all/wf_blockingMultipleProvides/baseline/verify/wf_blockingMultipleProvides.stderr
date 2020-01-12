@@ -1,0 +1,1 @@
+test/all/wf_blockingMultipleProvides/wf_blockingMultipleProvides.dzn:45:5: error: blocking with multiple provide ports not supported

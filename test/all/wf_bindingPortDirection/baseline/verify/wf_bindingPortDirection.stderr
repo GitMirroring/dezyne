@@ -1,0 +1,12 @@
+test/all/wf_bindingPortDirection/wf_bindingPortDirection.dzn:47:5: error: cannot bind provides port `p' to provides port `p'
+test/all/wf_bindingPortDirection/wf_bindingPortDirection.dzn:32:3: error: port `p' declared here
+test/all/wf_bindingPortDirection/wf_bindingPortDirection.dzn:32:3: error: port `p' declared here
+test/all/wf_bindingPortDirection/wf_bindingPortDirection.dzn:48:5: error: cannot bind requires port `r' to requires port `r'
+test/all/wf_bindingPortDirection/wf_bindingPortDirection.dzn:33:3: error: port `r' declared here
+test/all/wf_bindingPortDirection/wf_bindingPortDirection.dzn:33:3: error: port `r' declared here
+test/all/wf_bindingPortDirection/wf_bindingPortDirection.dzn:49:5: error: cannot bind provides port `p1' to requires port `r'
+test/all/wf_bindingPortDirection/wf_bindingPortDirection.dzn:40:3: error: port `p1' declared here
+test/all/wf_bindingPortDirection/wf_bindingPortDirection.dzn:33:3: error: port `r' declared here
+test/all/wf_bindingPortDirection/wf_bindingPortDirection.dzn:50:5: error: cannot bind requires port `r1' to provides port `p'
+test/all/wf_bindingPortDirection/wf_bindingPortDirection.dzn:41:3: error: port `r1' declared here
+test/all/wf_bindingPortDirection/wf_bindingPortDirection.dzn:32:3: error: port `p' declared here

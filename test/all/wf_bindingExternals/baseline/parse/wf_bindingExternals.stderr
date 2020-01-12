@@ -1,9 +1,0 @@
-out/wf_bindingExternals/wf_bindingExternals.dzn:54:5: error: cannot bind external port `r1' to non-external port `r'
-out/wf_bindingExternals/wf_bindingExternals.dzn:33:3: error: port `r1' declared here
-out/wf_bindingExternals/wf_bindingExternals.dzn:49:3: error: port `r' declared here
-out/wf_bindingExternals/wf_bindingExternals.dzn:55:5: error: cannot bind external port `r2' to non-external port `p'
-out/wf_bindingExternals/wf_bindingExternals.dzn:34:3: error: port `r2' declared here
-out/wf_bindingExternals/wf_bindingExternals.dzn:41:3: error: port `p' declared here
-out/wf_bindingExternals/wf_bindingExternals.dzn:68:5: error: cannot bind external port `r1' to non-external port `r'
-out/wf_bindingExternals/wf_bindingExternals.dzn:62:3: error: port `r1' declared here
-out/wf_bindingExternals/wf_bindingExternals.dzn:49:3: error: port `r' declared here

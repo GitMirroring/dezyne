@@ -1,0 +1,1 @@
+test/all/wf_componentNeedsProvides/wf_componentNeedsProvides.dzn:34:1: error: component with behaviour must have a provides port
