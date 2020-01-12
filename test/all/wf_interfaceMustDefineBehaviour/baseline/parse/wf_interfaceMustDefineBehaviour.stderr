@@ -1,4 +1,0 @@
-out/wf_interfaceMustDefineBehaviour/wf_interfaceMustDefineBehaviour.dzn:28:23: syntax-error
-  out void disabled();
-                      ^
-                      `behaviour' expected

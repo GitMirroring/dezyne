@@ -1,0 +1,1 @@
+test/all/wf_dataInoutInOutEvent/wf_dataInoutInOutEvent.dzn:28:21: error: inout-parameter not allowed on out-event `callback'

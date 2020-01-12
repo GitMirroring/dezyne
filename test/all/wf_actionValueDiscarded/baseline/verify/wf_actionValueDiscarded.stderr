@@ -1,0 +1,1 @@
+test/all/wf_actionValueDiscarded/wf_actionValueDiscarded.dzn:47:23: error: valued action must be used in variable assignment
