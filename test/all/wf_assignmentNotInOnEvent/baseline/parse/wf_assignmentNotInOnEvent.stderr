@@ -1,3 +1,0 @@
-out/wf_assignmentNotInOnEvent/wf_assignmentNotInOnEvent.dzn:30:9: error: imperative compound outside on
-out/wf_assignmentNotInOnEvent/wf_assignmentNotInOnEvent.dzn:32:7: error: imperative statement expected
-out/wf_assignmentNotInOnEvent/wf_assignmentNotInOnEvent.dzn:31:7: error: assign outside on

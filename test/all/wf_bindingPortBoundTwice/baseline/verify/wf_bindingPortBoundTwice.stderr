@@ -1,0 +1,2 @@
+test/all/wf_bindingPortBoundTwice/wf_bindingPortBoundTwice.dzn:44:5: error: port `i1' is bound more than once
+test/all/wf_bindingPortBoundTwice/wf_bindingPortBoundTwice.dzn:45:5: error: port `i1' is bound more than once

@@ -1,0 +1,3 @@
+test/all/wf_onEventInOnEvent/wf_onEventInOnEvent.dzn:33:9: error: imperative statement expected
+test/all/wf_onEventInOnEvent/wf_onEventInOnEvent.dzn:33:9: error: nested on used
+test/all/wf_onEventInOnEvent/wf_onEventInOnEvent.dzn:30:5: error: within on here

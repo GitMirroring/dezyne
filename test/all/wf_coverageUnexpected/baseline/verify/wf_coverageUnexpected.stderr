@@ -1,0 +1,2 @@
+test/all/wf_coverageUnexpected/wf_coverageUnexpected.dzn:36:7: error: nested on used
+test/all/wf_coverageUnexpected/wf_coverageUnexpected.dzn:35:5: error: within on here

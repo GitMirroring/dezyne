@@ -1,2 +1,0 @@
-out/wf_illegalOnlyStatement/wf_illegalOnlyStatement.dzn:31:9: error: cannot use illegal with imperative statements
-out/wf_illegalOnlyStatement/wf_illegalOnlyStatement.dzn:32:7: error: imperative statement here

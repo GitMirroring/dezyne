@@ -1,4 +1,0 @@
-out/wf_parameterBinding/wf_parameterBinding.dzn:45:18: syntax-error
-      fn(number <- nr);
-                 ^
-                 `plus-min-expression' expected

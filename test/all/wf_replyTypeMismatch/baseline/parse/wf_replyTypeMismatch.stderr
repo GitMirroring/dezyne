@@ -1,2 +1,0 @@
-out/wf_replyTypeMismatch/wf_replyTypeMismatch.dzn:41:27: error: type mismatch: expected `void', found `bool'
-out/wf_replyTypeMismatch/wf_replyTypeMismatch.dzn:26:3: error: event defined here

@@ -1,3 +1,0 @@
-out/incomplete/incomplete.dzn:5:3:i2: model ihello is incomplete: event 'ihello.hello' not handled
-out/incomplete/incomplete.dzn:1:1:i3: deadlock in model incomplete
-out/incomplete/incomplete.dzn:1:1:i3: h.hello (implicitly) illegal

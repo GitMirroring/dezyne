@@ -1,4 +1,0 @@
-out/wf_bindingCycle/wf_bindingCycle.dzn:45:5: error: instance `c' is in a cyclic binding
-out/wf_bindingCycle/wf_bindingCycle.dzn:58:5: error: instance `c21' is in a cyclic binding
-out/wf_bindingCycle/wf_bindingCycle.dzn:59:5: error: instance `c22' is in a cyclic binding
-out/wf_bindingCycle/wf_bindingCycle.dzn:61:5: error: instance `c12' is in a cyclic binding

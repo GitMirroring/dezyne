@@ -1,0 +1,8 @@
+test/all/wf_eventNotAction/wf_eventNotAction.dzn:29:20: error: cannot use in-event `deactivate' as action
+test/all/wf_eventNotAction/wf_eventNotAction.dzn:26:3: error: event `deactivate' declared here
+test/all/wf_eventNotAction/wf_eventNotAction.dzn:38:30: error: cannot use provides in-event `deactivate' as action
+test/all/wf_eventNotAction/wf_eventNotAction.dzn:35:3: error: port `sensor1' declared here
+test/all/wf_eventNotAction/wf_eventNotAction.dzn:26:3: error: event `deactivate' declared here
+test/all/wf_eventNotAction/wf_eventNotAction.dzn:39:30: error: cannot use requires out-event `deactivated' as action
+test/all/wf_eventNotAction/wf_eventNotAction.dzn:36:3: error: port `sensor2' declared here
+test/all/wf_eventNotAction/wf_eventNotAction.dzn:27:3: error: event `deactivated' declared here

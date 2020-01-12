@@ -1,2 +1,0 @@
-out/deadlock_blocking_guard/deadlock_blocking_guard.dzn:20:10:i24: deadlock in model deadlock_blocking_guard
-out/deadlock_blocking_guard/deadlock_blocking_guard.dzn:7:8:i24: pp.return not performed by component
