@@ -103,24 +103,14 @@ all-go: $(ALL_GO)
 clean-go:
 	rm -f $(ALL_GO)
 
-check-local: check-smoke check-hello
-
-CPUS = $(shell nproc)
-check-smoke:
-	./pre-inst-env test $${V:+--verbose} test/smoke
-
-check-hello:
-	./pre-inst-env test $${V:+--verbose} -j $(CPUS) test/hello
-
-check-regression:
-	./pre-inst-env test $${V:+--verbose} -j $(CPUS) test/regression
-
 # Tests
 #######
 
+include test/all/local.mk   # FULL_TESTS and XFAIL_TESTS
 include test/gaiag/local.mk
 
 TEST_EXTENSIONS = .scm
+LOG_COMPILER = $(top_builddir)/pre-inst-env run
 SCM_LOG_COMPILER = $(top_builddir)/pre-inst-env $(GUILE)
 AM_SCM_LOG_FLAGS = --no-auto-compile
 
@@ -237,8 +227,6 @@ install-data-local:
 	test -z $(DESTDIR)$(pkgdatadir) || $(MKDIR_P) $(DESTDIR)$(pkgdatadir)
 	tar -cf - runtime | tar -C $(DESTDIR)$(pkgdatadir) -xf-
 	tar -cf - gaiag/templates | tar -C $(DESTDIR)$(pkgdatadir) -xf-
-	test -z $(DESTDIR)$(pkgdatadir) || $(MKDIR_P) $(DESTDIR)$(pkgdatadir)/test
-	cd out && tar -cf - *.html | tar -C $(DESTDIR)$(pkgdatadir)/test -xf-
 
 # Binary pack
 #############
