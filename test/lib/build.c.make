@@ -41,7 +41,7 @@ CFLAGS=--std=c99 -g -O0
 #CFLAGS=--std=c99 -g -DDZN_TINY=1
 #CFLAGS=--std=c99 -Os -DDZN_TINY=1
 
-CPPFLAGS=-I$(OUT) -I$(OUT)/.. -I$(OUT)/../.. -I$(OUT)/../../c -I$(IN)
+CPPFLAGS=-I$(OUT) -I$(OUT)/.. -I$(OUT)/../.. -I$(OUT)/../../c -I$(IN) -I$(DEVELOPMENT)/runtime/c
 GLOBALS_H=$(wildcard $(DIR)/globals.h)
 ifneq ($(GLOBALS_H),)
 CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
@@ -52,12 +52,12 @@ $(OUT)/%.o: $(IN)/%.c
 	$(COMPILE.c) -S -o $@.S $<
 	$(COMPILE.c) -o $@ $<
 
-ifneq ($(MAIN),)
-MAIN_O:=$(OUT)/$(patsubst %.c,%.o,$(notdir $(MAIN)))
-$(MAIN_O): $(MAIN)
+$(OUT)/%.o: $(IN)/c/%.c
 	mkdir -p $(dir $@)
+	$(COMPILE.c) -S -o $@.S $<
 	$(COMPILE.c) -o $@ $<
-endif
+
+$(foreach f, $(wildcard $(IN)/c/*.c), $(eval $(OUT)/test: $(patsubst $(IN)/c/%.c, $(OUT)/%.o, $(f))))
 
 $(OUT)/test: $(patsubst $(IN)/%.c, $(OUT)/%.o, $(wildcard $(IN)/*.c))
 $(OUT)/test: $(patsubst $(OUT)/%.c, $(OUT)/%.o,  $(wildcard $(OUT)/*.c))
