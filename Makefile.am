@@ -26,6 +26,7 @@ ACLOCAL_AMFLAGS = -I build-aux
 EXTRA_DIST =					\
  .dir-locals.el					\
  HACKING					\
+ ROADMAP					\
  autogen.sh					\
  build-aux/git-version-gen			\
  build-aux/gitlog-to-changelog			\
