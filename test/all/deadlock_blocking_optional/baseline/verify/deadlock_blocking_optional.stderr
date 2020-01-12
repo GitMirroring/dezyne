@@ -1,2 +1,0 @@
-out/deadlock_blocking_optional/deadlock_blocking_optional.dzn:33:6:i22: deadlock in model deadlock_blocking_optional
-out/deadlock_blocking_optional/deadlock_blocking_optional.dzn:4:8:i22: p.return not performed by component

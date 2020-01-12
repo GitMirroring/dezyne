@@ -1,0 +1,3 @@
+test/all/wf_systemRecursion/wf_systemRecursion.dzn:24:1: error: system composition of `C1' is recursive
+test/all/wf_systemRecursion/wf_systemRecursion.dzn:37:1: error: system composition of `C3' is recursive
+test/all/wf_systemRecursion/wf_systemRecursion.dzn:44:1: error: system composition of `C4' is recursive

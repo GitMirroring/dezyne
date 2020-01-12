@@ -1,0 +1,4 @@
+test/all/wf_modelingSilent/wf_modelingSilent.dzn:48:5: error: cannot determine silence
+test/all/wf_modelingSilent/wf_modelingSilent.dzn:49:7: error: may communicate or be silent
+test/all/wf_modelingSilent/wf_modelingSilent.dzn:57:5: error: cannot determine silence
+test/all/wf_modelingSilent/wf_modelingSilent.dzn:41:7: error: may communicate or be silent
