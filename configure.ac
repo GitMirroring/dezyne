@@ -28,6 +28,9 @@ AC_CONFIG_MACRO_DIRS([build-aux])
 AM_INIT_AUTOMAKE([silent-rules subdir-objects])
 AM_SILENT_RULES([yes])
 
+AC_PATH_PROG([GUIX], [guix])
+AM_CONDITIONAL([have_guix], [test "x$GUIX" != ""])
+
 GUILE_PKG([3.0 2.2 2.0])
 GUILE_PROGS
 GUILE_SITE_DIR
