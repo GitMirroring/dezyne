@@ -1,4 +1,0 @@
-out/wf_assignmentExpressionNotInEventInstance/wf_assignmentExpressionNotInEventInstance.dzn:40:43: syntax-error
-      Sensor.Status s2 = sensor2.activate(u <- l);
-                                          ^
-                                          `PAREN-CLOSE' expected

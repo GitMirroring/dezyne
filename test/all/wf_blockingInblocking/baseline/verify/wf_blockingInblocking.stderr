@@ -1,0 +1,2 @@
+test/all/wf_blockingInblocking/wf_blockingInblocking.dzn:37:29: error: nested blocking used
+test/all/wf_blockingInblocking/wf_blockingInblocking.dzn:36:5: error: within blocking here

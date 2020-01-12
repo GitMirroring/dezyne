@@ -1,0 +1,2 @@
+test/all/wf_functionReturnValue/wf_functionReturnValue.dzn:30:5: error: extern type `xint' is not allowed as return type
+test/all/wf_functionReturnValue/wf_functionReturnValue.dzn:39:20: error: error: missing return
