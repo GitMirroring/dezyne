@@ -1,0 +1,118 @@
+-*- mode: org; coding: utf-8; -*-
+
+#+TITLE: Tentative Dezyne Road Map
+
+Copyright © 2019, 2020 Johri van Eerd <johri.van.eerd@verum.com>
+Copyright © 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
+
+The goals of the Dezyne project are two-fold:
+
+  - to create a programming language that allows true code re-use; truly
+    deliver the promises made by Object Orientated Programming.
+
+  - to relieve the programmer from inhumane tasks that should be
+    automated, by using formal verification to replace testing.
+
+Since its inception, the project has gone a long way towards that goal.
+Version "2.9" was the last closed, cloud-based release.  We are aiming
+for a "2.10" release that is serverless, client-only, open source and
+functionally compatible with "2.9".
+
+Dezyne "3.0" should mark the long transition to open source.
+
+Below is a list of items we want for version "3.0" of Dezyne.
+
+You're welcome to discuss this road map on dezyne-devel@nongnu.org or
+#dezyne on Freenode!
+
+* TODO
+** Release 2.10, unsorted
+  - Review and finish DRAFT commits
+    + DRAFT gdzn: lts2traces.
+    + DRAFT guix: Binary distribution.
+    + DRAFT doc: Import texinfo from infocenter.
+    + DRAFT build: Add autotools.
+    + All READMEs.
+  - Document Definition of Done --> what does finished mean
+  - Assert that all dzn commands are accompanied by --help text
+    towards truly stand-alone command line use
+  - Document release process
+  - Finish and review wip-string branch
+  - Release on savannah.nongnu.org; create dezyne-devel@nongnu.org,
+    bug-dezyne@nongnu.org
+  - Get some content on dezyne.org
+    + Move nginx/haunt-based website setup from banaan to kluit.
+  - Remove NodeJS dependency
+    + Replace test framework with automake driver in Guile
+      - Review and integrate wip-test branch
+  - Pass regression test
+    + Review old-regression removal, resurrect or rewrite missing tests
+      - Dataparam?
+  - Upstream PEG patches to Guile
+    + Fix problematic draft patches
+      - DRAFT peg: Add fall-back parsing.
+      - DRAFT peg: Add whitespace and comment skip parsers.
+  - Upstream start_process patches to Guile
+  - Parser bugs/hardening
+    + See wip-convert
+  - Resurrect C++03 support
+  - Verification performance
+    + Sort-out wip-convert branch
+  - Resurrect C# support
+  - Fully support IDE release
+    + Finish and merge wip-namespace
+    + Integrate wip-pipe
+      - Support for running with unpatched Guile??
+  - Debian package
+    + Source build on Buster
+    + Add manual pages
+  - Resurrect simple dzn-mode for GNU Emacs
+  - Formally end-of-life cloud-based 2.9
+** Release 3.0, unsorted
+  - Eradicate cloud-based solutions
+    + Remove dzn ls, dzn cat and dependencies
+  - dzn graph/ltsgraph (lts --graph?): The original dzn lts by Johri
+  - dzn lts + states: simple but correct dot-based state charts
+  - Nsis-based installer for Windows
+  - Documentation
+    + Review doc/dezyne.texi.
+    + Post to documentation section on dezyne.org.
+  - Revisit code trace format h.hello <- <external>.
+** After Release 3.0
+  - Finish C99 support (what about MISRA-C?)
+  - Finish JavaScript support
+  - System simulator
+  - Sub machines
+* DONE
+  - Pluggable dzn commands, to support IDE.
+  - Binary, generic, relocatable GNU/Linux pack
+    + Tested on CentOS 6.8
+  - Use "dzn", remove mentions of "gdzn"
+  - Binary Windows pack (wip-pipe)
+  - Make GNU Guix dependency optional
+    + Generic autotools-based build
+    + Integrate external lts tool
+    + Work with vanilla mcrl2 upstream (201908.0)
+  - Remove Python dependency
+    + Rewrite traces.py in Scheme
+  - Remove C++ dependency
+    + Remove seqdiag dependency from verification testing
+    + Finish PEG parser
+      - Add Well-formedness checks
+    + Eradicate use of C++; generate, seqdiag
+  - Update Copyright and License headers
+    + Revert: 653983f82 Gaiag: remove headers.
+  - Remove proprietary code
+  - Merge and migrate cloud-based development into master
+    + 2.9: C# work
+    + development: assorted patches
+    = Filip's MISRA-C/C99
+    + peg: New parser in Scheme
+    * ide: Merge fall-back PEG parser with regular, code peg parser
+    + enterprise: AST changes and serialization, javascript code
+      generator changes
+    + step: AST/code fixes, runtime AST for Well-formedness tests
