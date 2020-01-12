@@ -1,0 +1,2 @@
+test/all/wf_bindingRequiredWildcard/wf_bindingRequiredWildcard.dzn:44:5: error: cannot bind wildcard to requires port `i'
+test/all/wf_bindingRequiredWildcard/wf_bindingRequiredWildcard.dzn:32:3: error: port `i' declared here

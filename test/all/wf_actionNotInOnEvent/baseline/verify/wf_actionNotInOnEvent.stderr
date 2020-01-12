@@ -1,0 +1,2 @@
+test/all/wf_actionNotInOnEvent/wf_actionNotInOnEvent.dzn:30:9: error: imperative compound outside on
+test/all/wf_actionNotInOnEvent/wf_actionNotInOnEvent.dzn:31:7: error: action outside on

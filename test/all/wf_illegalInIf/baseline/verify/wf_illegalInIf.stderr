@@ -1,0 +1,1 @@
+test/all/wf_illegalInIf/wf_illegalInIf.dzn:30:25: error: cannot use illegal in if-statement
