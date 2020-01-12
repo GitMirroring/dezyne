@@ -1,0 +1,53 @@
+#! @GUILE@ \
+--no-auto-compile -L "$srcdir" -L . -C . -e main -s
+!#
+
+;;; Dezyne --- Dezyne command line tools
+;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; This file is part of Dezyne.
+;;;
+;;; Dezyne is free software: you can redistribute it and/or modify it
+;;; under the terms of the GNU Affero General Public License as
+;;; published by the Free Software Foundation, either version 3 of the
+;;; License, or (at your option) any later version.
+;;;
+;;; Dezyne is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;;; Affero General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU Affero General Public
+;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+;;;
+;;; Commentary:
+;;;
+;;; Code:
+
+(use-modules (ice-9 match)
+             (gaiag shell-util)
+             (test gaiag dzn))
+
+
+;;; Main
+
+(define (main args)
+  (match args
+    ((_ file-name)
+     (let ((run (string-append file-name "/run"))
+           (file-name (if (string-prefix? "./test" file-name)
+                          (string-drop file-name 2)
+                          file-name))
+           (languages (string-split "@languages@" #\space)))
+       (if (and (file-exists? run)
+                (not (getenv "run-seen")))
+           (begin (setenv "run-seen" "1")
+                  (unless (getenv "languages")
+                    (setenv "languages" (string-join languages)))
+                  (exit (zero? (system* run file-name))))
+           (exit (run-test file-name languages)))))
+    (_ (error "invalid arguments"))))
+
+;;; Local Variables:
+;;; mode: scheme
+;;; End:

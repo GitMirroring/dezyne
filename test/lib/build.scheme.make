@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -31,10 +31,11 @@ default: $(OUT)/test
 
 define TEST_SCRIPT
 #! $(SHELL)\n\
-$(GUILE) --no-auto-compile -L $(OUT)/../../scheme -L $(OUT) -e '(main)' $(OUT)/main.scm "'$$@'"\n
+$(GUILE) --no-auto-compile -L $(OUT)/../../scheme -L $(OUT) -L runtime/scheme -e '(main)' $(OUT)/main.scm "'$$@'"\n
 endef
 
 $(OUT)/test: $(MAIN)
-	cp -f $(MAIN) $(OUT) ||:
+	if test -f $(IN)/main.scm; then cp -f $(IN)/main.scm $(OUT); fi
+	if test -f $(IN)/scheme/main.scm; then cp -f $(IN)/main.scm $(OUT); fi
 	echo -e "$(TEST_SCRIPT)" > $@
 	chmod +x $@
