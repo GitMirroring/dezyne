@@ -26,6 +26,9 @@ git mv $to/$from_base.dzn $to/$to_base.dzn
 sed -i -e "s,$from_base,$to_base,g" $to/$to_base.dzn
 git add $to/$to_base.dzn
 
+sed -i -re "s,/$from_base([ \t]),/$to_base\1,g" all/local.mk
+git add all/local.mk
+
 for i in $(ls -1 $to/baseline 2>/dev/null); do
     if [ -L $to/baseline/$i ]; then
         continue
@@ -66,8 +69,6 @@ if [ -d $to/baseline ]; then
     cat <<EOF
 check baseline, run
 
-    ../pre-inst-env bin/test $to
-    cp out/$to_base/baseline/step/* $to/baseline/step/
-    cp out/$to_base/baseline/verify/* $to/baseline/verify/
+    bin/run $to
 EOF
 fi

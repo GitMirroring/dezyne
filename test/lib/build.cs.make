@@ -23,7 +23,7 @@
 # Code:
 
 ifeq ($(MAIN),)
-MAIN:=$(OUT)/main.cs
+MAIN:=$(OUT)/main.js
 endif
 
 define MONO_SCRIPT
@@ -38,10 +38,7 @@ $(OUT)/test: $(OUT)/test.exe
 	echo "$$MONO_SCRIPT" > $@
 	chmod +x $@
 
-$(OUT)/test.exe: $(MAIN) $(wildcard $(OUT)/*cs $(OUT)/dzn/*.cs) $(wildcard $(IN)/*.cs)
-	for file in $(dir $(MAIN))/*.cs; do \
-            if [ ! -e $(OUT)/$$(basename $$file) ]; then \
-                cp --force --backup $$file $(OUT)/; \
-            fi \
-        done
-	mcs -debug -out:$@ $(OUT)/*.cs $(OUT)/dzn/*.cs $(wildcard $(OUT)/../../cs/*.cs)
+DEVELOPMENT:=$(shell readlink -f $(dir $(filter %/build.cs.make,$(MAKEFILE_LIST)))../../)
+
+$(OUT)/test.exe: $(wildcard $(OUT)/*cs) $(wildcard $(IN)/*.cs) $(wildcard $(IN)/cs/*.cs) $(wildcard $(DEVELOPMENT)/runtime/cs/dzn/*.cs)
+	mcs -debug -out:$@ $^

@@ -23,6 +23,7 @@
 
 dist_%C%_scm_DATA =				\
  %D%/automake.scm				\
+ %D%/dzn.scm					\
  %D%/lts.scm
 
 dist_nocompile_%C%_scm_DATA =
