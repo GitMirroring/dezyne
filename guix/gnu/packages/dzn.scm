@@ -59,16 +59,17 @@
       (name "dzn")
       (version (string-append "0.0-" revision "." (string-take commit 7)))
       ;; TODO: public URL to released tarball
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url (string-append
-                            "http://git.oban.verum.com/buildmaster"
-                            "/dzn.git"))
-                      (commit commit)))
-                (sha256
-                 (base32
-                  "12xjww3y87m2vb9l0f7x8bsjqsa8vfc0hsg6sl6rzyyvfx2jascb"))))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url (string-append
+                     "http://git.oban.verum.com/buildmaster"
+                     "/dzn.git"))
+               (commit commit)))
+         (sha256
+          (base32
+           #!dzn!# "12xjww3y87m2vb9l0f7x8bsjqsa8vfc0hsg6sl6rzyyvfx2jascb"))))
       (inputs `(("bash" ,bash-minimal)
                 ("coreutils" ,coreutils)
                 ("guile" ,guile-2.2)

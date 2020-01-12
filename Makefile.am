@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -161,6 +161,25 @@ doc/dzn-parse.1: bin/dzn Makefile $(ALL_GO)
 # Distribution
 ##############
 
+# Release process
+#  0. Prepare for release
+#     - fix all tests, or add failing tests to XFAIL_TESTS
+#     - doc: Release update (NEWS, etc.)
+#     - git clean -fdx
+#     - ./autogen.sh; ./configure; make
+#  1. make tag PACKAGE_VERSION=X.Y
+#  2. make sign-dist
+#  3. make release
+#  4. test guix package build, binary packs (see HACKING)
+#     GUIX_PACKAGE_PATH=guix build dzn
+#     make linux
+#     make mingw
+#  5. Send mail to
+#     guile-devel@gnu.org
+#     mcrl2-users@listserver.tue.nl
+#     guix formal verification interest group (guix-devel@gnu.org?)
+#     ...
+
 # Reproducible tarball
 GZIP_ENV = --no-name
 am__tar = $${TAR-tar} --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -cf - "$$tardir"
@@ -171,6 +190,21 @@ tag:
 dist-hook: gen-ChangeLog
 	echo $(VERSION) > $(distdir)/.tarball-version
 	git ls-tree -r --name-only HEAD > $(distdir)/.tarball-manifest
+
+# FIXME: this will only work after we switch to source tarball
+# distribution and url-feth
+release: update-hash
+	git commit -m 'guix: Update hash.'				\
+		-m '* guix/gnu/packages/dzn.scm (dzn): Update hash.'	\
+		guix/gnu/packages/dzn.scm
+
+if have_guix
+update-hash: $(DIST_ARCHIVES)
+	$(GUIX) download file://$(PWD)/$<
+	sed -i -e 's,#!dzn!# "[^"]*"),#!dzn!# "$(shell $(GUIX) hash $<)"),' guix/gnu/packages/dzn.scm
+else
+$(warning update-hash: no Guix)
+endif
 
 .PHONY: gen-ChangeLog
 gen-ChangeLog $(distdir)/ChangeLog: config.status
