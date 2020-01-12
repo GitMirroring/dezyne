@@ -8,9 +8,6 @@ Build-Depends: debhelper-compat (=12),
  guile-json,
  help2man,
  install-info,
- nodejs,
- node-q,
- npm,
  texinfo,
 Standards-Version: 4.4.0
 Homepage: https://verum.com
@@ -22,4 +19,3 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
  guile-2.2,
 Description: Dezyne command line tools
  Dezyne command line tools.
-
