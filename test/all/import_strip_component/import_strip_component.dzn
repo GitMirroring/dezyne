@@ -25,7 +25,7 @@
 import interfaces.dzn;
 import components.dzn;
 
-component hello_import
+component import_strip_component
 {
   provides ihello h;
   requires iworld w;

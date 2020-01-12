@@ -49,7 +49,6 @@ HELLO_TESTS =					\
  %D%/hello_global_int				\
  %D%/hello_guard				\
  %D%/hello_if					\
- %D%/hello_import				\
  %D%/hello_interface				\
  %D%/hello_local				\
  %D%/hello_multiple_provides			\
@@ -183,6 +182,7 @@ REGRESSION_TESTS =				\
  %D%/illegal_requires2				\
  %D%/illegal_requires_out			\
  %D%/illegal_system_requires			\
+ %D%/import_strip_component			\
  %D%/incomplete					\
  %D%/inner.space				\
  %D%/integer_expressions			\
@@ -287,7 +287,8 @@ PARSER_TESTS =					\
 XFAIL_TESTS =					\
  %D%/compliance_livelock			\
  %D%/blocking_system4				\
- %D%/glue-dzn
+ %D%/glue-dzn					\
+ %D%/import_strip_component
 
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
