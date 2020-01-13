@@ -137,7 +137,7 @@
              o
              (list #:types #:ports #:variables #:functions #:statement)
              (list .types .ports .variables .functions .statement))))
-    (($ <var>) (clone o #:variable.name ((compose (append-tick names) .variable.name) o)))
+    (($ <var>) (clone o #:name ((compose (append-tick names) .name) o)))
     (($ <field-test>) (clone o #:variable.name ((compose (append-tick names) .variable.name) o)))
     (($ <formal>) (clone o #:name ((compose (append-tick names) .name) o)
                          #:type.name ((compose (tick-names-) .type.name) o)))
