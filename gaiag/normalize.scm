@@ -281,58 +281,61 @@
 
   (define ((rename mapping) o)
     (match o
-      ((and ($ <trigger>) (? (compose null? ast:formal*))) o)
-      (($ <trigger>)
-       (clone o #:formals (clone (.formals o) #:elements (map (rename mapping) ((compose .elements .formals) o)))))
-      (($ <action>) (clone o #:arguments ((rename mapping) (.arguments o))))
-      (($ <arguments>) (clone o #:elements (map (rename mapping) (.elements o))))
-      ((? string?) (or (assoc-ref mapping o) o))
-      ((? (is? <ast>)) (tree-map (rename mapping) o))
-      (_ o)))
+           ((and ($ <trigger>) (? (compose null? ast:formal*))) o)
+           (($ <trigger>)
+            (clone o #:formals (clone (.formals o) #:elements (map (rename mapping) ((compose .elements .formals) o)))))
+           (($ <action>) (clone o #:arguments ((rename mapping) (.arguments o))))
+           (($ <arguments>) (clone o #:elements (map (rename mapping) (.elements o))))
+           (($ <var>) (if (is-a? (.variable o) <formal>) (clone o #:name ((rename mapping) (.name o))) o))
+           (($ <assign>)
+            (let ((expression ((rename mapping) (.expression o)))
+                  (name (if (is-a? (.variable o) <formal>) ((rename mapping) (.variable.name o)) (.variable.name o))))
+              (clone o #:variable.name name #:expression expression)))
+           (($ <variable>) (clone o #:expression ((rename mapping) (.expression o))))
+           ((? string?) (or (assoc-ref mapping o) o))
+           ((? (is? <ast>)) (tree-map (rename mapping) o))
+           (_ o)))
 
   (define (foo t)
-    (let ((o (t-on t)))
-      (match o
-        ((and ($ <on>) (? (compose null? ast:formal* .event car ast:trigger*)))
-         (let* ((trigger ((compose car .elements .triggers) o))
-                (formals ((compose .elements .formals .signature) (.event trigger))))
-           (if (null? formals) t
-               (t-triple (clone o #:triggers (clone (.triggers o) #:elements (list (clone trigger #:formals (clone (.formals trigger) #:elements formals)))))
-                         (t-guard t)
-                         (t-blocking t)
-                         (t-statement t)))))
+    (let* ((o (t-on t))
+           (t (if ((compose pair? ast:formal* car ast:trigger*) o) t
+                  (let* ((trigger ((compose car .elements .triggers) o))
+                         (formals ((compose .elements .formals .signature) (.event trigger))))
+                    (if (null? formals) t
+                        (t-triple (clone o #:triggers (clone (.triggers o) #:elements (list (clone trigger #:formals (clone (.formals trigger) #:elements formals)))))
+                                  (t-guard t)
+                                  (t-blocking t)
+                                  (t-statement t))))))
+           (trigger ((compose car .elements .triggers) (t-on t)))
+           (trigger (if (pair? (ast:formal* trigger)) trigger
+                        (clone trigger #:formals (clone (.formals trigger) #:elements (ast:formal* (.event trigger))))))
+           (formals (map .name ((compose .elements .formals .signature) (.event trigger))))
+           (members (map .name (ast:variable* model)))
+           (locals (map .name (tree-collect (is? <variable>) (t-statement t))))
+           (occupied members)
+           (fresh (letrec ((fresh (lambda (occupied name)
+                                    (if (member name occupied)
+                                        (fresh occupied (string-append name "x"))
+                                        name))))
+                    fresh)) ;; occupied name -> namex
+           (refresh (lambda (occupied names)
+                      (fold-right (lambda (name o)
+                                    (cons (fresh o name) o))
+                                  occupied names))) ;; occupied names -> (append namesx occupied)
 
-        (($ <on>)
-         (let* ((trigger ((compose car .elements .triggers) o))
-                (trigger (if (pair? (ast:formal* trigger)) trigger
-                             (clone trigger #:formals (clone (.formals trigger) #:elements (ast:formal* (.event trigger))))))
-                (formals (map .name ((compose .elements .formals .signature) (.event trigger))))
-                (members (map .name (ast:variable* model)))
-                (locals (map .name (tree-collect (is? <variable>) (t-statement t))))
-                (occupied members)
-                (fresh (letrec ((fresh (lambda (occupied name)
-                                         (if (member name occupied)
-                                             (fresh occupied (string-append name "x"))
-                                             name))))
-                         fresh)) ;; occupied name -> namex
-                (refresh (lambda (occupied names)
-                           (fold-right (lambda (name o)
-                                         (cons (fresh o name) o))
-                                       occupied names))) ;; occupied names -> (append namesx occupied)
+           (fresh-formals (list-head (refresh occupied formals) (length formals)))
+           (mapping (filter (negate pair-equal?) (map cons (map .name ((compose .elements .formals) trigger)) fresh-formals)))
 
-                (fresh-formals (list-head (refresh occupied formals) (length formals)))
-                (mapping (filter (negate pair-equal?) (map cons (map .name ((compose .elements .formals) trigger)) fresh-formals)))
+           (occupied (append (map cdr mapping) members))
 
-                (occupied (append (map cdr mapping) members))
+           (mapping (append (map cons locals (list-head (refresh occupied locals) (length locals))) mapping)))
 
-                (mapping (append (map cons locals (list-head (refresh occupied locals) (length locals))) mapping)))
-
-           (if (null? mapping) t
-               (t-triple
-                (clone o #:triggers (clone (.triggers o) #:elements (list ((rename mapping) trigger))))
-                (t-guard t)
-                (t-blocking t)
-                ((rename mapping) (t-statement t)))))))))
+      (if (null? mapping) t
+          (t-triple
+           (clone o #:triggers (clone (.triggers o) #:elements (list ((rename mapping) trigger))))
+           (t-guard t)
+           (t-blocking t)
+           ((rename mapping) (t-statement t))))))
   (map foo triples))
 
 (define-method (is-data? (o <ast>))
