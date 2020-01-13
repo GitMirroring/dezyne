@@ -192,10 +192,11 @@
 (define (makreel:mark-tail-call o)
   (match o
     (($ <call>) (let ((continuation ((compose car makreel:continuation) o)))
-                  (if (or (ast:eq? continuation (.statement (.function o)))
-                          (and (is-a? continuation <return>)
-                               (is-a? (ast:type (.expression continuation)) <void>))) (clone o #:last? #t)
+                  (if (and (is-a? continuation <return>)
+                           (is-a? (ast:type (.expression continuation)) <void>)) (clone o #:last? #t)
                       o)))
+    (($ <expression>) o)
+    (($ <location>) o)
     ((? (is? <ast>)) (tree-map makreel:mark-tail-call o))
     (_ o)))
 
@@ -214,8 +215,8 @@
 
 (define (makreel:om ast)
   ((compose
-    makreel:add-function-return
     makreel:mark-tail-call
+    makreel:add-function-return
     triples:state-traversal
     (remove-otherwise)
     makreel:tick-names

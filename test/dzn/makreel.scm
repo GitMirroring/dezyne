@@ -40,10 +40,28 @@
 (test-assert "parse"
   (string->ast "interface i {in void e();behaviour {on e: {}}}"))
 
-(test-assert "tail-call"
+(test-assert "tail-call self"
   (let* ((ast (string->ast "interface i {in void e();behaviour {void f () {f ();} on e: {}}}"))
          (ast (makreel:om ast))
          (call (car (tree-collect (is? <call>) ast))))
     (.last? call)))
+
+(test-assert "tail-call other"
+  (let* ((ast (string->ast "interface i {in void e();behaviour {void g () {} void f () {g ();} on e: {}}}"))
+         (ast (makreel:om ast))
+         (call (car (tree-collect (is? <call>) ast))))
+    (.last? call)))
+
+(test-assert "non tail-call"
+  (let* ((ast (string->ast "interface i {in void e();behaviour {void f () {g (); bool b = true;} void g () {} on e: {}}}"))
+         (ast (makreel:om ast))
+         (call (car (tree-collect (is? <call>) ast))))
+    (not (.last? call))))
+
+(test-assert "non tail-call valued"
+  (let* ((ast (string->ast "interface i {in void e();behaviour {void f () {bool b = g ();} bool g () {return true;} on e: {}}}"))
+         (ast (makreel:om ast))
+         (call (car (tree-collect (is? <call>) ast))))
+    (not (.last? call))))
 
 (test-end)
