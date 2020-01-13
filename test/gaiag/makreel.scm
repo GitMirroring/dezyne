@@ -51,4 +51,10 @@
          (call (car (tree-collect (is? <call>) ast))))
     (.last? call)))
 
+(test-assert "makreel tail-call other"
+  (let* ((ast (string->ast "interface i {in void e();behaviour { void g () {} void f () {g ();} on e: {}}}"))
+         (ast (makreel:om ast))
+         (call (car (tree-collect (is? <call>) ast))))
+    (.last? call)))
+
 (test-end)
