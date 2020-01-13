@@ -490,7 +490,7 @@
 
         (('types types ...) (make <types-node> #:elements (helper types)))
 
-        (('var name) (make <var-node> #:variable.name (helper name)))
+        (('var name) (make <var-node> #:name (helper name)))
 
         (('variable type name)
          (make <variable-node> #:name (helper name) #:type.name (helper type) #:expression (make <literal-node>)))
@@ -626,7 +626,7 @@
           #:elements
           (list
            (make <guard>
-             #:expression (make <var> #:variable.name "idle")
+             #:expression (make <var> #:name "idle")
              #:statement
              (make <compound>
                #:elements
@@ -636,7 +636,7 @@
                 (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name "clr")))
                       #:statement (make <compound>)))))
            (make <guard>
-             #:expression (make <not> #:expression (make <var> #:variable.name "idle"))
+             #:expression (make <not> #:expression (make <var> #:name "idle"))
              #:statement
              (make <compound>
                #:elements

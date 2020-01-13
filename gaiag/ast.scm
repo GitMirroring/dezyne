@@ -1100,7 +1100,7 @@
   (and=> (.variable.name o) (cut ast:lookup-var o <>)))
 
 (define-method (.variable (o <var>))
-  (and=> (.variable.name o) (cut ast:lookup-var o <>)))
+  (and=> (.name o) (cut ast:lookup-var o <>)))
 
 (define-method (.type (o <argument>))
   (ast:lookup o (.type.name o)))
