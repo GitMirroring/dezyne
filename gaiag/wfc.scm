@@ -520,7 +520,7 @@
 (define-method (wfc (o <var>))
   (let ((variable (.variable o)))
     (cond ((not variable)
-           `(,(wfc-error o (format #f "undefined variable  `~a'" (.variable.name)))))
+           `(,(wfc-error o (format #f "undefined variable  `~a'" (.name)))))
           (else '()))))
 
 
