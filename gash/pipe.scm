@@ -70,7 +70,7 @@
            (map close w)
            r))))
 
-(define (pipeline commands)
+(define (forked:pipeline commands)
   (let* ((job (new-job))
          (ports (if (> (length commands) 1)
                     (let loop ((input (spawn #f job (car commands) '())) ; spawn-source
@@ -82,9 +82,52 @@
                     (spawn #f job (car commands) '())))) ; spawn-sink
     (values job ports)))
 
-(define (pipeline->string commands)
+(define (forked:pipeline->string commands)
   (receive (job ports)
-      (pipeline commands)
+      (forked:pipeline commands)
     (let ((output (read-string (car ports))))
       (wait job)
       (values output (wait job)))))
+
+(define (pipe->fdes)
+  (let ((p (pipe)))
+    (cons (port->fdes (car p))
+	  (port->fdes (cdr p)))))
+
+(define (piped-process:pipeline procs)  ; -> (to from . pids)
+  (let* ((to (pipe->fdes))
+         (pipes (map (lambda _ (pipe->fdes)) procs))
+	 (pipeline (fold (lambda (pipe proc previous)
+			   (let* ((pfrom (car previous))
+				  (pids (cdr previous))
+				  (to pfrom)
+				  (from pipe))
+			     (cons from (cons ((@@ (ice-9 popen) piped-process) (car proc) (cdr proc) from to) pids))))
+			 `(,to)
+                         pipes
+			 procs))
+	 (from (car pipeline))
+	 (pids (cdr pipeline)))
+    (cons* (fdes->outport (cdr to)) (fdes->inport (car from)) pids)))
+
+(define (piped-process:pipeline->string procs)
+  (let* ((proc? (procedure? (first procs)))
+	 (input (if proc? (with-output-to-string (first procs)) ""))
+	 (procs (if proc? (cdr procs) procs))
+	 (pipeline (piped-process:pipeline procs))
+	 (pids (cddr pipeline))
+	 (to (car pipeline))
+	 (from (cadr pipeline)))
+    (display input to)
+    (catch #t (lambda _ (close to)) (const #f))
+    (let ((output (read-string from)))
+      (catch #t (lambda _ (close from)) (const #f))
+      (values output (apply + (map (compose status:exit-val cdr waitpid) pids))))))
+
+(define pipeline
+  (if (module-defined? (resolve-module '(ice-9 popen)) 'piped-process) piped-process:pipeline
+      forked:pipeline))
+
+(define pipeline->string
+  (if (module-defined? (resolve-module '(ice-9 popen)) 'piped-process) piped-process:pipeline->string
+      forked:pipeline->string))
