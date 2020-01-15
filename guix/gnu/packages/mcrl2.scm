@@ -34,12 +34,21 @@
   #:use-module (gnu packages maths)
   #:use-module (gnu packages mingw))
 
-(define-public mcrl2-minimal-with-dparser
+(define-public mcrl2-minimal-patched
   (package
     (inherit mcrl2-minimal)
+    (name "mcrl2-minimal-patched")
+    (source
+      (origin
+        (inherit (package-source mcrl2-minimal))
+        (patches (search-patches "mcrl2.patch"))))))
+
+(define-public mcrl2-minimal-with-dparser
+  (package
+    (inherit mcrl2-minimal-patched)
     (name "mcrl2-minimal-with-dparser")
     (arguments
-     (substitute-keyword-arguments (package-arguments mcrl2-minimal)
+     (substitute-keyword-arguments (package-arguments mcrl2-minimal-patched)
        ((#:phases phases '%standard-phases)
         `(modify-phases ,phases
            (add-after 'install 'install-dparser
@@ -50,14 +59,17 @@
 
 (define-public mcrl2-minimal-mingw
   (package
-    (inherit mcrl2-minimal-with-dparser)
+    (inherit mcrl2-minimal-patched)
     (name "mcrl2-minimal-mingw")
-    (native-inputs `(("mcrl2" ,mcrl2-minimal)))
+    (inputs `(("boost" ,boost-mingw)))
+    (native-inputs `(("mcrl2" ,mcrl2-minimal-with-dparser)))
     (arguments
-     (substitute-keyword-arguments (package-arguments mcrl2-minimal-with-dparser)
+     (substitute-keyword-arguments (package-arguments mcrl2-minimal-patched)
        ((#:configure-flags flags)
         `(cons*
-          "-DBoost_INCLUDE_DIR:PATH=/gnu/store/f32r7v8ij4s7637q7hfd5970j6pm5rw5-boost-mingw-1.69.0/include"
+          (string-append "-DBoost_INCLUDE_DIR:PATH=" (assoc-ref %build-inputs "boost") "/include")
+          "-DCMAKE_BUILD_TYPE:STRING=MinSizeRel"
+          "-DBUILD_SHARED_LIBS:STRING=ON"
           "-DHAS_CXX11_AUTO:INTERNAL=TRUE"
           "-DHAS_CXX11_AUTO_RET_TYPE:INTERNAL=TRUE"
           "-DHAS_CXX11_BIND:INTERNAL=TRUE"
