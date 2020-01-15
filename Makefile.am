@@ -38,18 +38,21 @@ exampledir = $(docdir)
 # Modules and scripts
 #####################
 
-do_subst = sed						\
-  -e 's,[@]GUILE[@],$(GUILE),g'				\
-  -e 's,[@]prefix[@],$(prefix),g'			\
-  -e 's,[@]bindir[@],$(bindir),g'			\
-  -e 's,[@]datadir[@],$(datadir),g'			\
-  -e 's,[@]datarootdir[@],$(datarootdir),g'		\
-  -e 's,[@]pkgdatadir[@],$(pkgdatadir),g'		\
-  -e 's,[@]guilemoduledir[@],$(guilemoduledir),g'	\
-  -e 's,[@]guileobjectdir[@],$(guileobjectdir),g'	\
-  -e 's,[@]PACKAGE_VERSION[@],$(PACKAGE_VERSION),g'	\
-  -e 's,[@]VERSION_MAJOR[@],$(VERSION_MAJOR),g'		\
-  -e 's,[@]VERSION_MINOR[@],$(VERSION_MINOR),g'		\
+do_subst = sed								\
+  -e 's,[@]GUILE[@],$(GUILE),g'						\
+  -e 's,[@]prefix[@],$(prefix),g'					\
+  -e 's,[@]bindir[@],$(bindir),g'					\
+  -e 's,[@]datadir[@],$(datadir),g'					\
+  -e 's,[@]datarootdir[@],$(datarootdir),g'				\
+  -e 's,[@]guilemoduledir[@],$(guilemoduledir),g'			\
+  -e 's,[@]guileobjectdir[@],$(guileobjectdir),g'			\
+  -e 's,[@]pkgdatadir[@],$(pkgdatadir),g'				\
+  -e 's,[@]have_guile_piped_process[@],$(have_guile_piped_process),g'	\
+  -e 's,[@]have_lps2lts_stdout[@],$(have_lps2lts_stdout),g'		\
+  -e 's,[@]have_ltscompare_stdin[@],$(have_ltscompare_stdin),g'		\
+  -e 's,[@]PACKAGE_VERSION[@],$(PACKAGE_VERSION),g'			\
+  -e 's,[@]VERSION_MAJOR[@],$(VERSION_MAJOR),g'				\
+  -e 's,[@]VERSION_MINOR[@],$(VERSION_MINOR),g'				\
   -e 's,[@]VERSION_PATCH[@],$(VERSION_PATCH),g'
 
 AM_V_SED = $(AM_V_SED_@AM_V@)

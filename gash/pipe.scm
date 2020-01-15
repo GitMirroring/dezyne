@@ -32,25 +32,7 @@
   :use-module (gash job)
   :use-module (gaiag command-line)
 
-  :export (handle-error pipeline pipeline+ pipeline->string substitute))
-
-(define (handle-error job error)
-  (let ((status (wait job)))
-    (when (not (zero? status))
-      (let* ((msg (if (or (string-contains error "std::bad_alloc")
-                          (string-contains error "out-of-memory"))
-                      "ERROR: Out of Memory.\nProbably your model has too many states."
-                      "ERROR: Internal error."))
-             (error (regexp-substitute/global #f "[ ]+" error 'pre " " 'post))
-             (error (regexp-substitute/global #f "Generated .* linearisation method.\n" error 'pre "" 'post))
-             (details (format #f "exit: ~a: ~a" status error)))
-        (format (current-error-port) "~a\nPlease contact Verum support.\n\nInternal details: ~s\n" msg details)
-        (exit status)))
-    status))
-
-(define (pipe*)
-  (let ((p (pipe)))
-    (values (car p) (cdr p))))
+  :export (pipeline pipeline+ pipeline->string pipeline->error-string substitute))
 
 ;;              lhs        rhs
 ;; [source] w[1] -> r[0] [filter] w[1] -> r[0] [sink]
@@ -119,39 +101,34 @@
 
 (define (pipeline+ fg? . commands)
   ;; (format (current-error-port) "FOOBAR pipeline+: COMMANDS: ~s\n" commands)
-  (receive (r w) (pipe*)
-    (move->fdes w 2)
-    (let* ((error-port (set-current-error-port w))
-           (debug? (> (gdzn:debugity) 0)) ;; REMOVE gdzn dependency
-           (job (new-job))
-           (debug-id (job-debug-id job))
-           (commands
-            (if (not debug?) commands
-                (fold-right (lambda (command id lst)
-                              (let ((file (string-append debug-id "." id)))
-                                (cons* command `("tee" ,file) lst))) ;;(tee-n (map (cut string-append  file <>) '("-o" "-e"))) ;; `("tee" ,file)
-                            '() commands (map number->string (iota (length commands))))))
-           (foo (when debug? (with-output-to-file debug-id (cut format #t "COMMANDS: ~s\n" commands))))
-           (ports (if (> (length commands) 1)
-                      (let loop ((input (spawn fg? job (car commands) '())) ;; spawn-source
-                                 (commands (cdr commands)))
-                        (if (null? (cdr commands))
-                            (spawn fg? job (car commands) input) ;; spawn-sink
-                            (loop (spawn fg? job (car commands) input) ;; spawn-filter
-                                  (cdr commands))))
-                      (spawn fg? job (car commands) '())))) ;; spawn-sink
-      (when fg? (wait job))
-      (move->fdes error-port 2)
-      (set-current-error-port error-port)
-      (close w)
-      (values job (append ports (list r))))))
+  (let* (;;(error-port (set-current-error-port w))
+         (debug? (> (gdzn:debugity) 0)) ;; REMOVE gdzn dependency
+         (job (new-job))
+         (debug-id (job-debug-id job))
+         (commands
+          (if (not debug?) commands
+              (fold-right (lambda (command id lst)
+                            (let ((file (string-append debug-id "." id)))
+                              (cons* command `("tee" ,file) lst))) ;;(tee-n (map (cut string-append  file <>) '("-o" "-e"))) ;; `("tee" ,file)
+                          '() commands (map number->string (iota (length commands))))))
+         (foo (when debug? (with-output-to-file debug-id (cut format #t "COMMANDS: ~s\n" commands))))
+         (ports (if (> (length commands) 1)
+                    (let loop ((input (spawn fg? job (car commands) '())) ;; spawn-source
+                               (commands (cdr commands)))
+                      (if (null? (cdr commands))
+                          (spawn fg? job (car commands) input) ;; spawn-sink
+                          (loop (spawn fg? job (car commands) input) ;; spawn-filter
+                                (cdr commands))))
+                    (spawn fg? job (car commands) '())))) ;; spawn-sink
+    (when fg? (wait job))
+    (values job ports)))
 
-(define (pipeline fg? . commands)
-  (apply pipeline+ (cons* fg? commands)))
+(define (forked:pipeline . commands)
+  (apply pipeline+ (cons* #f commands)))
 
-(define (pipeline->string . commands)
+(define (forked:pipeline->string . commands)
   (receive (job ports)
-      (apply pipeline+ (cons* #f commands))
+      (forked:pipeline commands)
     (let ((output (read-string (car ports))))
       (wait job)
       output)))
@@ -196,3 +173,47 @@
 
 ;; (display (pipeline->string '("ls") '("cat"))) (newline)
 ;; (display (substitute '("ls") '("cat"))) (newline)
+
+
+(define (pipe->fdes)
+  (let ((p (pipe)))
+    (cons (port->fdes (car p))
+	  (port->fdes (cdr p)))))
+
+(define (piped-process:pipeline . procs) ;;-> (to from . pids)
+  (let* ((to (pipe->fdes))
+         (pipes (map (lambda _ (pipe->fdes)) procs))
+	 (pipeline (fold (lambda (pipe proc previous)
+			   (let* ((pfrom (car previous))
+				  (pids (cdr previous))
+				  (to pfrom)
+				  (from pipe))
+			     (cons from (cons ((@@ (ice-9 popen) piped-process) (car proc) (cdr proc) from to) pids))))
+			 `(,to)
+                         pipes
+			 procs))
+	 (from (car pipeline))
+	 (pids (cdr pipeline)))
+    (cons* (fdes->outport (cdr to)) (fdes->inport (car from)) pids)))
+
+(define (piped-process:pipeline->string . procs)
+  (let* ((proc? (procedure? (first procs)))
+	 (input (if proc? (with-output-to-string (first procs)) ""))
+	 (procs (if proc? (cdr procs) procs))
+	 (pipeline (apply pipeline procs))
+	 (pids (cddr pipeline))
+	 (to (car pipeline))
+	 (from (cadr pipeline)))
+    (display input to)
+    (catch #t (lambda _ (close to)) (const #f))
+    (let ((output (read-string from)))
+      (catch #t (lambda _ (close from)) (const #f))
+      (values output (apply + (map (compose status:exit-val cdr waitpid) pids))))))
+
+(define pipeline
+  (if (module-defined? (resolve-module '(ice-9 popen)) 'piped-process) piped-process:pipeline
+      forked:pipeline))
+
+(define pipeline->string
+  (if (module-defined? (resolve-module '(ice-9 popen)) 'piped-process) piped-process:pipeline->string
+      forked:pipeline->string))
