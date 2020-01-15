@@ -1,0 +1,162 @@
+From 76774806cf9ec9a7672ed6842b60414b3a4a012c Mon Sep 17 00:00:00 2001
+From: Rutger van Beusekom <rutger.van.beusekom@verum.com>
+Date: Mon, 18 Nov 2019 08:38:51 +0100
+Subject: [PATCH] DRAFT Add piped_process.
+
+* libguile/posix.c (scm_piped_process)[HAVE_START_CHILD]: New function.
+* module/ice-9/popen.scm: Export it as piped-process.
+---
+ libguile/posix.c       | 116 +++++++++++++++++++++++++++++++++++++++++
+ module/ice-9/popen.scm |   2 +-
+ 2 files changed, 117 insertions(+), 1 deletion(-)
+
+diff --git a/libguile/posix.c b/libguile/posix.c
+index a40ddb978..4f9f6079a 100644
+--- a/libguile/posix.c
++++ b/libguile/posix.c
+@@ -1361,6 +1361,121 @@ start_child (const char *exec_file, char **exec_argv,
+ #endif
+ 
+ #ifdef HAVE_START_CHILD
++static SCM
++scm_piped_process (SCM prog, SCM args, SCM to, SCM from)
++//to is either #f or a writeable file descriptor
++//from is either #f or a readable file descriptor
++#define FUNC_NAME "piped-process"
++{
++  //p2c[0] == (car to)
++  //p2c[1] == (cdr to)
++  //c2p[0] == (car from)
++  //c2p[1] == (cdr from)
++
++  //long mode_bits;
++  int reading, writing;
++  int c2p[2]; /* Child to parent.  */
++  int p2c[2]; /* Parent to child.  */
++  int in = -1, out = -1, err = -1;
++  int pid;
++  char *exec_file;
++  char **exec_argv;
++  SCM read_port = SCM_BOOL_F, write_port = SCM_BOOL_F;
++
++  exec_file = scm_to_locale_string (prog);
++  exec_argv = scm_i_allocate_string_pointers (scm_cons (prog, args));
++
++  //mode_bits = scm_i_mode_bits (mode);
++  reading = SCM_BOOL_T;//scm_to_bool(from); //mode_bits & SCM_RDNG;
++  writing = SCM_BOOL_T;//scm_to_bool(to); //mode_bits & SCM_WRTNG;
++
++  if (reading)
++    {
++      c2p[0] = scm_to_int(scm_car(from));
++      c2p[1] = scm_to_int(scm_cdr(from));
++      /* if (pipe (c2p)) */
++      /*   { */
++      /*     int errno_save = errno; */
++      /*     free (exec_file); */
++      /*     errno = errno_save; */
++      /*     SCM_SYSERROR; */
++      /*   } */
++      out = c2p[1];
++    }
++
++  if (writing)
++    {
++      p2c[0] = scm_to_int(scm_car(to));
++      p2c[1] = scm_to_int(scm_cdr(to));
++      /* if (pipe (p2c)) */
++      /*   { */
++      /*     int errno_save = errno; */
++      /*     free (exec_file); */
++      /*     if (reading) */
++      /*       { */
++      /*         close (c2p[0]); */
++      /*         close (c2p[1]); */
++      /*       } */
++      /*     errno = errno_save; */
++      /*     SCM_SYSERROR; */
++      /*   } */
++      in = p2c[0];
++    }
++
++  {
++    SCM port;
++
++    if (SCM_OPOUTFPORTP ((port = scm_current_error_port ())))
++      err = SCM_FPORT_FDES (port);
++    if (out == -1 && SCM_OPOUTFPORTP ((port = scm_current_output_port ())))
++      out = SCM_FPORT_FDES (port);
++    if (in == -1 && SCM_OPINFPORTP ((port = scm_current_input_port ())))
++      in = SCM_FPORT_FDES (port);
++  }
++
++  pid = start_child (exec_file, exec_argv, reading, c2p, writing, p2c,
++                     in, out, err);
++
++  if (pid == -1)
++    {
++      int errno_save = errno;
++      free (exec_file);
++      if (reading)
++        {
++          close (c2p[0]);
++          close (c2p[1]);
++        }
++      if (writing)
++        {
++          close (p2c[0]);
++          close (p2c[1]);
++        }
++      errno = errno_save;
++      SCM_SYSERROR;
++    }
++
++  /* There is no sense in catching errors on close().  */
++  if (reading)
++    {
++      close (c2p[1]);
++      /* read_port = scm_i_fdes_to_port (c2p[0], scm_mode_bits ("r0"), */
++      /*                                 sym_read_pipe, */
++      /*                                 SCM_FPORT_OPTION_NOT_SEEKABLE); */
++    }
++  if (writing)
++    {
++      close (p2c[0]);
++      /* write_port = scm_i_fdes_to_port (p2c[1], scm_mode_bits ("w0"), */
++      /*                                  sym_write_pipe, */
++      /*                                  SCM_FPORT_OPTION_NOT_SEEKABLE); */
++    }
++
++  return scm_from_int(pid);
++  /* return scm_values (scm_list_3 (read_port, */
++  /*                                write_port, */
++  /*                                scm_from_int (pid)));   */
++}
++
+ static SCM
+ scm_open_process (SCM mode, SCM prog, SCM args)
+ #define FUNC_NAME "open-process"
+@@ -2367,6 +2482,7 @@ SCM_DEFINE (scm_gethostname, "gethostname", 0, 0, 0,
+ static void
+ scm_init_popen (void)
+ {
++  scm_c_define_gsubr ("piped-process", 4, 0, 0, scm_piped_process);
+   scm_c_define_gsubr ("open-process", 2, 0, 1, scm_open_process);
+ }
+ #endif /* HAVE_START_CHILD */
+diff --git a/module/ice-9/popen.scm b/module/ice-9/popen.scm
+index f9781c698..c9d7c5130 100644
+--- a/module/ice-9/popen.scm
++++ b/module/ice-9/popen.scm
+@@ -24,7 +24,7 @@
+   #:use-module (ice-9 threads)
+   #:use-module (srfi srfi-9)
+   #:export (port/pid-table open-pipe* open-pipe close-pipe open-input-pipe
+-            open-output-pipe open-input-output-pipe))
++            open-output-pipe open-input-output-pipe piped-process))
+ 
+ (eval-when (expand load eval)
+   (load-extension (string-append "libguile-" (effective-version))
+-- 
+2.24.0
+
