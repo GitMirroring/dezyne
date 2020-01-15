@@ -1,0 +1,243 @@
+From 1e7a16e182495a7b509b72638721cdd174fafaee Mon Sep 17 00:00:00 2001
+From: Rutger van Beusekom <rutger.van.beusekom@verum.com>
+Date: Thu, 16 Jan 2020 13:39:09 +0100
+Subject: [PATCH 1/2] lps2lts: Support writing aldebaran lts to stdout; grok
+ `-' as stdin, stdout.
+
+---
+ .../include/mcrl2/lts/detail/exploration.h    |  2 +
+ libraries/lts/source/exploration.cpp          | 51 +++++++++++--------
+ tools/release/lps2lts/lps2lts.cpp             |  4 ++
+ 3 files changed, 37 insertions(+), 20 deletions(-)
+
+diff --git a/libraries/lts/include/mcrl2/lts/detail/exploration.h b/libraries/lts/include/mcrl2/lts/detail/exploration.h
+index 996a71789..de6c56f8a 100644
+--- a/libraries/lts/include/mcrl2/lts/detail/exploration.h
++++ b/libraries/lts/include/mcrl2/lts/detail/exploration.h
+@@ -105,7 +105,9 @@ class lps2lts_algorithm
+ 
+     probabilistic_lts_lts_t m_output_lts;
+     detail::multi_action_indexed_set m_action_label_numbers;
++    std::ostream* m_aut;
+     std::ofstream m_aut_file;
++    std::stringstream m_aut_stdout;
+ 
+     bool m_maintain_traces;
+     bool m_value_prioritize;
+diff --git a/libraries/lts/source/exploration.cpp b/libraries/lts/source/exploration.cpp
+index a5c135a57..a04d151ad 100644
+--- a/libraries/lts/source/exploration.cpp
++++ b/libraries/lts/source/exploration.cpp
+@@ -120,12 +120,19 @@ void lps2lts_algorithm::initialise_lts_generation(const lts_generation_options&
+   if (m_options.outformat == lts_aut)
+   {
+     mCRL2log(verbose) << "writing state space in AUT format to '" << m_options.lts << "'." << std::endl;
+-    m_aut_file.open(m_options.lts.c_str());
+-    if (!m_aut_file.is_open())
++
++    if (m_options.lts.size())
+     {
+-      mCRL2log(error) << "cannot open '" << m_options.lts << "' for writing" << std::endl;
+-      std::exit(EXIT_FAILURE);
++      m_aut_file.open(m_options.lts.c_str());
++      if (!m_aut_file.is_open())
++      {
++        mCRL2log(error) << "cannot open '" << m_options.lts << "' for writing" << std::endl;
++        std::exit(EXIT_FAILURE);
++      }
++      m_aut = &m_aut_file;
+     }
++    else
++      m_aut = &m_aut_stdout;
+   }
+   else if (m_options.outformat == lts_none)
+   {
+@@ -344,10 +351,10 @@ bool lps2lts_algorithm::generate_lts(const lts_generation_options& options)
+ 
+   if (m_options.outformat == lts_aut)
+   {
+-    m_aut_file << "des(";
++    *m_aut << "des(";
+     print_target_distribution_in_aut_format(m_initial_states,lps::state(),[](const lps::state&){});
+     // HACK: this line will be overwritten once generation is finished.
+-    m_aut_file << ",0,0)                                          " << std::endl;
++    *m_aut << ",0,0)                                          " << std::endl;
+   }
+   else if (m_options.outformat != lts_none)
+   {
+@@ -418,12 +425,15 @@ void lps2lts_algorithm::finalise_lts_generation()
+ {
+   if (m_options.outformat == lts_aut)
+   {
+-    m_aut_file.flush();
+-    m_aut_file.seekp(0);
+-    m_aut_file << "des (";
++    m_aut->flush();
++    m_aut->seekp(0);
++    *m_aut << "des (";
+     print_target_distribution_in_aut_format(m_initial_states,lps::state(),[](const lps::state&){});
+-    m_aut_file << "," << m_num_transitions << "," << m_num_states << ")";
+-    m_aut_file.close();
++    *m_aut << "," << m_num_transitions << "," << m_num_states << ")";
++    if (m_options.lts.size())
++      m_aut_file.close();
++    else
++      std::cout << m_aut_stdout.rdbuf();
+   }
+   else if (m_options.outformat != lts_none)
+   {
+@@ -562,7 +572,7 @@ void lps2lts_algorithm::value_prioritize(std::vector<next_state_generator::trans
+           {
+             if (m_options.outformat == lts_aut)
+             {
+-              m_aut_file.flush();
++              m_aut->flush();
+             }
+             throw mcrl2::runtime_error("Fail to rewrite term " + data::pp(result) + " to true or false.");
+           }
+@@ -602,7 +612,7 @@ void lps2lts_algorithm::value_prioritize(std::vector<next_state_generator::trans
+       {
+         if (m_options.outformat == lts_aut)
+         {
+-          m_aut_file.flush();
++          m_aut->flush();
+         }
+         throw mcrl2::runtime_error("Fail to rewrite term " + data::pp(result) + " to true or false.");
+       }
+@@ -926,7 +936,7 @@ void lps2lts_algorithm::print_target_distribution_in_aut_format(
+       {
+         if (m_options.outformat == lts_aut)
+         {
+-          m_aut_file.flush();
++          m_aut->flush();
+         }
+         throw mcrl2::runtime_error("The probability " + data::pp(i->probability()) + " is not a proper rational number.");
+       }
+@@ -935,11 +945,12 @@ void lps2lts_algorithm::print_target_distribution_in_aut_format(
+       {
+         throw mcrl2::runtime_error("Probability is not a closed expression with a proper enumerator and denominator: " + pp(i->probability()) + ".");
+       }
+-      m_aut_file << probability_destination_state_number.first << " " << (prob[0]) << "/"
+-                                                                      << (prob[1]) << " ";
++      *m_aut << probability_destination_state_number.first << " " << (prob[0]) << "/"
++             << (prob[1]) << " ";
+     }
+   }
+-  m_aut_file << last_state_number;
++  if(m_aut)
++    *m_aut << last_state_number;
+ }
+ 
+ void lps2lts_algorithm::print_target_distribution_in_aut_format(
+@@ -985,7 +996,7 @@ bool lps2lts_algorithm::add_transition(const lps::state& source_state,
+ 
+     if (m_options.outformat == lts_aut)
+     {
+-      m_aut_file << "(" << source_state_number << ",\"" << lps::pp(transition.action()) << "\",";
++      *m_aut << "(" << source_state_number << ",\"" << lps::pp(transition.action()) << "\",";
+     }
+ 
+     print_target_distribution_in_aut_format(transition.other_target_states(),destination_state_number.first, source_state, add_state_to_todo_queue_function);
+@@ -993,7 +1004,7 @@ bool lps2lts_algorithm::add_transition(const lps::state& source_state,
+     // Close transition.
+     if (m_options.outformat == lts_aut)
+     {
+-      m_aut_file << ")\n"; // Intentionally do not use std::endl to avoid flushing.
++      *m_aut << ")\n"; // Intentionally do not use std::endl to avoid flushing.
+     }
+   }
+   else
+@@ -1101,7 +1112,7 @@ void lps2lts_algorithm::get_transitions(const lps::state& state,
+     save_error(state);
+     if (m_options.outformat == lts_aut)
+     {
+-      m_aut_file.flush();
++      m_aut->flush();
+     }
+     exit(EXIT_FAILURE);
+   }
+diff --git a/tools/release/lps2lts/lps2lts.cpp b/tools/release/lps2lts/lps2lts.cpp
+index 9137bd4c2..60048a091 100644
+--- a/tools/release/lps2lts/lps2lts.cpp
++++ b/tools/release/lps2lts/lps2lts.cpp
+@@ -343,10 +343,14 @@ class lps2lts_tool : public lps2lts_base
+       if (0 < parser.arguments.size())
+       {
+         m_filename = parser.arguments[0];
++        if (m_filename == "-")
++          m_filename = "";
+       }
+       if (1 < parser.arguments.size())
+       {
+         m_options.lts = parser.arguments[1];
++        if (m_options.lts == "-")
++          m_options.lts = "";
+       }
+ 
+       if (!m_options.lts.empty() && m_options.outformat == lts_none)
+-- 
+2.24.0
+
+From 31d7e8a351f92fcd9b4d7dd74181590808c9d191 Mon Sep 17 00:00:00 2001
+From: Jan Nieuwenhuizen <janneke@gnu.org>
+Date: Thu, 16 Jan 2020 22:58:16 +0100
+Subject: [PATCH 2/2] ltscompare: allow reading multiple aldebaran lts's from
+ stdin.
+
+---
+ libraries/lts/source/liblts_aut.cpp | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/libraries/lts/source/liblts_aut.cpp b/libraries/lts/source/liblts_aut.cpp
+index cd3bc2940..8d00cf60e 100644
+--- a/libraries/lts/source/liblts_aut.cpp
++++ b/libraries/lts/source/liblts_aut.cpp
+@@ -243,7 +243,8 @@ static bool read_initial_part_of_an_aut_transition(
+   }
+   if (ch != '(')
+   {
+-    throw mcrl2::runtime_error("Expect opening bracket at line " + std::to_string(line_no) + ".");
++    is.unget();
++    return false;
+   }
+ 
+   is >> skipws >> from;
+@@ -531,7 +532,7 @@ namespace lts
+ 
+ void probabilistic_lts_aut_t::load(const string& filename)
+ {
+-  if (filename=="")
++  if (filename=="" || filename=="-")
+   {
+     read_from_aut(*this,cin);
+   }
+@@ -556,7 +557,7 @@ void probabilistic_lts_aut_t::load(istream& is)
+ 
+ void probabilistic_lts_aut_t::save(string const& filename) const
+ {
+-  if (filename=="")
++  if (filename=="" || filename=="-")
+   {
+     write_to_aut(*this,cout);
+   }
+@@ -576,7 +577,7 @@ void probabilistic_lts_aut_t::save(string const& filename) const
+ 
+ void lts_aut_t::load(const string& filename)
+ {
+-  if (filename=="")
++  if (filename=="" || filename=="-")
+   {
+     read_from_aut(*this,cin);
+   }
+@@ -601,7 +602,7 @@ void lts_aut_t::load(istream& is)
+ 
+ void lts_aut_t::save(string const& filename) const
+ {
+-  if (filename=="")
++  if (filename=="" || filename=="-")
+   {
+     write_to_aut(*this,cout);
+   }
+-- 
+2.24.0
+
