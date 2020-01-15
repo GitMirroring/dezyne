@@ -9,6 +9,9 @@
             %localstatedir
             %guilemoduledir
             %guileobjectdir
+            %guile-piped-process?
+            %lps2lts-stdout?
+            %ltscompare-stdin?
             %prefix
             %root-dir
             %service-bindir
@@ -112,3 +115,12 @@
 
 (define %dzn
   (string-append %bindir "/dzn"))
+
+(define %lps2lts-stdout?
+  (equal? "@have_lps2lts_stdout@" "yes"))
+
+(define %ltscompare-stdin?
+  (equal? "@have_ltscompare_stdin@" "yes"))
+
+(define %guile-piped-process?
+  (equal? "@have_guile_piped_process@" "yes"))
