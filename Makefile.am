@@ -263,7 +263,7 @@ STRIP_FILES =					\
 
 TAR = tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner
 
-dzn_linux = dzn bash-minimal coreutils guile-piped-process m4-changeword mcrl2-minimal sed
+dzn_linux = dzn bash-minimal coreutils guile-piped-process m4-changeword mcrl2-minimal-patched sed
 pack:
 	GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-offload $(dzn_linux)
 
