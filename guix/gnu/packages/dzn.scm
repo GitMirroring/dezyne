@@ -68,7 +68,7 @@
               ("coreutils" ,coreutils)
               ("guile" ,guile-patched)
               ("m4-cw" ,m4-changeword)
-              ("mcrl2" ,mcrl2-minimal)
+              ("mcrl2" ,mcrl2-minimal-patched)
               ("sed" ,sed)))
     (native-inputs `(("autoconf" ,autoconf)
                      ("automake" ,automake)
