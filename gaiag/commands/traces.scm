@@ -103,17 +103,13 @@ Usage: dzn traces [OPTION]... DZN-FILE
                      ("mcrl22lps" "--quiet" "-b")
                      ("lpsconstelm" "--quiet" "-st")
                      ("lpsparelm")
-                     ("lps2lts" "--quiet" "--cached" "--out=aut" "/dev/stdin" "lts.aut")))
+                     ,(if %lps2lts-stdout? '("lps2lts" "--quiet" "--cached" "--out=aut" "-")
+                          '("lps2lts" "--quiet" "--cached" "--out=aut" "/dev/stdin" "ltst.aut"))))
          (result (apply pipeline->string commands))
-         (commands `(("cat" "lts.aut")
-                     ("ltsconvert" "-eweak-trace" "--in=aut" "--out=aut"))))
-    (receive (job ports)
-        (apply pipeline+ #f commands)
-      (set-port-encoding! (car ports) "ISO-8859-1")
-      (let ((lts (string-trim-right (read-string (car ports))))
-            (error (read-string (cadr ports)))
-            (status (wait job)))
-        lts))))
+         (commands `(,(if %lps2lts-stdout? (cut display result) '("cat" "ltst.aut"))
+                     ("ltsconvert" "-eweak-trace" "--in=aut" "--out=aut")))
+         (result (apply pipeline->string commands)))
+    (string-trim-right result)))
 
 (define (model->lts root model)
   (let* ((cwd (getcwd))
@@ -147,39 +143,19 @@ Usage: dzn traces [OPTION]... DZN-FILE
          (dir (option-ref options 'output "."))
          (foo (mkdir-p dir))
          (json? (gdzn:command-line:get 'json #f))
-         (python? (command-line:get 'python #f))
-         (commands `(,(cut display lts)
-                     ,@(if gdzn-debug? '(("tee" "lts.aut")) '())
-                     ("lts2traces"
-                      ,@(if json? '() `("--out" ,dir))
-                      ,@(if (not illegal-opt) '() '("--illegal"))
-                      ,@(if (not flush-opt) '() '("--flush"))
-                      ,@(if (is-a? model <interface>) '("--interface") '())
-                      ,@(if (not lts-opt) '() '("--lts"))
-                      "--model" ,model-name
-                      ,@(append-map (lambda (p) (list "--provides-in" p)) provides-in)
-                      "-")))
-         (foo (if gdzn-debug? (stderr "commands: ~s\n" commands)))
-         (traces (if python? (receive (job ports)
-                                 (apply pipeline+ #f commands)
-                               (set-port-encoding! (car ports) "ISO-8859-1")
-                               (let ((traces (read-string (car ports)))
-                                     (error (read-string (cadr ports))))
-                                 (handle-error job error)
-                                 (string-trim-right traces)))
-                     (with-output-to-string
-                       (lambda _
-                         (let* ((text (string-trim-right lts))
-                                (lines (string-split text #\newline)))
-                           (lts->traces lines
-                                        illegal-opt
-                                        flush-opt
-                                        (is-a? model <interface>)
-                                        dir
-                                        lts-opt
-                                        model-name
-                                        '()
-                                        provides-in))))))
+         (traces (with-output-to-string
+                   (lambda _
+                     (let* ((text (string-trim-right lts))
+                            (lines (string-split text #\newline)))
+                       (lts->traces lines
+                                    illegal-opt
+                                    flush-opt
+                                    (is-a? model <interface>)
+                                    dir
+                                    lts-opt
+                                    model-name
+                                    '()
+                                    provides-in)))))
          (traces (string-trim-right traces)))
     (when json? (display traces))
     (when gdzn-debug?
