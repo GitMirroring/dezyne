@@ -1,6 +1,6 @@
 ;;; Gash --- Guile As SHell
 ;;; Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@gmail.com>
-;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Gash.
 ;;;
@@ -18,53 +18,28 @@
 ;;; along with Gash.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gash pipe)
+  #:use-module (ice-9 popen)
+  #:use-module (ice-9 rdelim)
 
-  :use-module (ice-9 curried-definitions)
-  :use-module (ice-9 popen)
-  :use-module (ice-9 rdelim)
-  :use-module (ice-9 regex)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-8)
 
-  :use-module (srfi srfi-1)
-  :use-module (srfi srfi-8)
-  :use-module (srfi srfi-9)
-  :use-module (srfi srfi-26)
+  #:use-module (gash job)
 
-  :use-module (gash job)
-  :use-module (dzn command-line)
-
-  :export (handle-error pipeline pipeline+ pipeline->string substitute))
-
-(define (handle-error job error)
-  (let ((status (wait job)))
-    (when (not (zero? status))
-      (let* ((msg (if (or (string-contains error "std::bad_alloc")
-                          (string-contains error "out-of-memory"))
-                      "ERROR: Out of Memory.\nProbably your model has too many states."
-                      "ERROR: Internal error."))
-             (error (regexp-substitute/global #f "[ ]+" error 'pre " " 'post))
-             (error (regexp-substitute/global #f "Generated .* linearisation method.\n" error 'pre "" 'post))
-             (details (format #f "exit: ~a: ~a" status error)))
-        (format (current-error-port) "~a\nPlease contact Verum support.\n\nInternal details: ~s\n" msg details)
-        (exit status)))
-    status))
-
-(define (pipe*)
-  (let ((p (pipe)))
-    (values (car p) (cdr p))))
+  #:export (pipeline pipeline->string))
 
 ;;              lhs        rhs
 ;; [source] w[1] -> r[0] [filter] w[1] -> r[0] [sink]
 ;;          w[2]            ->            r[3] [sink]
 
-(define (exec* command) ;; list of strings
+(define (exec* command)                 ; list of strings
   (catch #t (lambda () (apply execlp (cons (car command) command)))
     (lambda (key . args)
       (format (current-error-port) "exec* failed: ~s ~s\n" key args)
       (exit #f))))
 
 (define* (spawn fg? job command #:optional (input '()))
-  ;;(format #t "spawn: ~a\n" (length input))
-  (let* ((ofd '(1)) ;; output file descriptors 1, ...
+  (let* ((ofd '(1))                     ; output file descriptors 1, ...
 	 (ifd (cond
 	       ((= (length input) 0) '())
 	       ((= (length input) 1) '(0))))
@@ -72,8 +47,6 @@
 	 (r (map car pipes))
 	 (w (map cdr pipes))
 	 (pid (primitive-fork)))
-    ;;(format (current-error-port) "INPUT: ~a\n" (length input))
-    ;;(format (current-error-port) "OUTPUT: ~a\n" (length w))
     (cond ((= 0 pid)
            (job-setup-process fg? job)
            (map close r)
@@ -85,8 +58,6 @@
                  (when (pair? w)
                    (close-port (current-output-port))
                    (set-current-output-port (car w)))
-                 ;;(format (current-error-port) "INPUT: ~a\n" (length input))
-                 ;;(format (current-error-port) "OUTPUT: ~a\n" (length w))
                  (if (thunk? command) (command)
                      (command input w))
                  (exit 0))
@@ -99,100 +70,21 @@
            (map close w)
            r))))
 
-(define ((tee-n file-names) inputs outputs)
-  (let* ((files  (map open-output-file file-names))
-         (tees (zip files inputs outputs)))
-    (let loop ((tees tees))
-      (loop (filter-map (lambda (tee)
-                     (let ((file (first tee))
-                           (input (second tee))
-                           (output (third tee)))
-                       (when (char-ready? input)
-                         (let ((char (read-char input)))
-                           (if (not (eof-object? char))
-                               (begin (display char file)
-                                      (display char output)
-                                      (list file input output))
-                               #f)))))
-                        tees)))
-    (map close outputs)))
+(define (pipeline commands)
+  (let* ((job (new-job))
+         (ports (if (> (length commands) 1)
+                    (let loop ((input (spawn #f job (car commands) '())) ; spawn-source
+                               (commands (cdr commands)))
+                      (if (null? (cdr commands))
+                          (spawn #f job (car commands) input) ; spawn-sink
+                          (loop (spawn #f job (car commands) input) ; spawn-filter
+                                (cdr commands))))
+                    (spawn #f job (car commands) '())))) ; spawn-sink
+    (values job ports)))
 
-(define (pipeline+ fg? . commands)
-  ;; (format (current-error-port) "FOOBAR pipeline+: COMMANDS: ~s\n" commands)
-  (receive (r w) (pipe*)
-    (move->fdes w 2)
-    (let* ((error-port (set-current-error-port w))
-           (debug? (> (gdzn:debugity) 0)) ;; REMOVE gdzn dependency
-           (job (new-job))
-           (debug-id (job-debug-id job))
-           (commands
-            (if (not debug?) commands
-                (fold-right (lambda (command id lst)
-                              (let ((file (string-append debug-id "." id)))
-                                (cons* command `("tee" ,file) lst))) ;;(tee-n (map (cut string-append  file <>) '("-o" "-e"))) ;; `("tee" ,file)
-                            '() commands (map number->string (iota (length commands))))))
-           (foo (when debug? (with-output-to-file debug-id (cut format #t "COMMANDS: ~s\n" commands))))
-           (ports (if (> (length commands) 1)
-                      (let loop ((input (spawn fg? job (car commands) '())) ;; spawn-source
-                                 (commands (cdr commands)))
-                        (if (null? (cdr commands))
-                            (spawn fg? job (car commands) input) ;; spawn-sink
-                            (loop (spawn fg? job (car commands) input) ;; spawn-filter
-                                  (cdr commands))))
-                      (spawn fg? job (car commands) '())))) ;; spawn-sink
-      (when fg? (wait job))
-      (move->fdes error-port 2)
-      (set-current-error-port error-port)
-      (close w)
-      (values job (append ports (list r))))))
-
-(define (pipeline fg? . commands)
-  (apply pipeline+ (cons* fg? commands)))
-
-(define (pipeline->string . commands)
+(define (pipeline->string commands)
   (receive (job ports)
-      (apply pipeline+ (cons* #f commands))
+      (pipeline commands)
     (let ((output (read-string (car ports))))
       (wait job)
-      output)))
-
-;;(pipeline #f '("head" "-c128" "/dev/urandom") '("tr" "-dc" "A-Z0-9") (lambda () (display (read-string))))
-;;(pipeline #f '("head" "-c128" "/dev/urandom") '("tr" "-dc" "A-Z0-9") '("cat"))
-;;(pipeline #f (lambda () (display 'foo)) '("grep" "o") '("tr" "o" "e"))
-
-;; (pipeline #f
-;; 	  (lambda () (display "\nbin\nboot\nroot\nusr\nvar"))
-;; 	  '("tr" "u" "a")
-;; 	  (lambda () (display (string-map (lambda (c) (if (eq? c #\o) #\e c)) (read-string))))
-;; 	  '("cat")
-;; 	  (lambda () (display (read-string))))
-
-;; (receive (job ports)
-;;     (pipeline+ #f
-;;                (lambda ()
-;;                  (display "foo")
-;;                  (display "bar" (current-error-port)))
-;;                '("tr" "o" "e"))
-;;   (map (compose display read-string) ports))
-
-;; _
-;;  \
-;;   -
-;; _/
-
-;; (display (pipeline->string
-;;   (lambda () (display "\nbin\nboot\nroot\nusr\nvar"))
-;;   '("tr" "u" "a")
-;;   (lambda () (display (string-map (lambda (c) (if (eq? c #\o) #\e c)) (read-string))))
-;;   '("cat")
-;;   (lambda () (display (read-string)) (newline))))
-
-(define (substitute . commands)
-  (string-trim-right
-   (string-map (lambda (c)
-                 (if (eq? #\newline c) #\space c))
-               (apply pipeline->string commands))
-   #\space))
-
-;; (display (pipeline->string '("ls") '("cat"))) (newline)
-;; (display (substitute '("ls") '("cat"))) (newline)
+      (values output (wait job)))))
