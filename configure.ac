@@ -48,9 +48,33 @@ if test "x$have_guile_json" != "xyes"; then
   AC_MSG_ERROR([Guile-JSON is missing; please install it.])
 fi
 
-AC_PATH_PROGS([PERL5], [perl5 perl])
+dnl Check for Guile piped-process
+dnl For cross-compiling (with patched Guile), use ./configure ac_cv_guile_piped_process=yes
+AC_CACHE_CHECK([for Guile piped-process], [ac_cv_guile_piped_process],
+  [AS_IF([$GUILE -c '(@ (ice-9 popen) piped-process)' 2>&5], [ac_cv_guile_piped_process=yes], [ac_cv_guile_piped_process=no])])
+AC_SUBST([have_guile_piped_process], [$ac_cv_guile_piped_process])
+
+AC_PATH_PROG([PERL5], [perl5 perl])
 AC_PATH_PROG([M4_CW], [m4-cw])
 AC_PATH_PROG([MCRL22LPS], [mcrl22lps])
+AC_PATH_PROG([LPS2LTS], [lps2lts])
+AC_PATH_PROG([LTSCOMPARE], [ltscompare])
+AS_IF([test "x$LPS2LTS" = "x"], AC_MSG_ERROR([lps2lts from mCRL2 is missing; please install it.]))
+AS_IF([test "x$MCRL22LPS" = "x"], AC_MSG_ERROR([mcrl22lps from mCRL2 is missing; please install it.]))
+AS_IF([test "x$LTSCOMPARE" = "x"], AC_MSG_ERROR([ltscompare from mCRL2 is missing; please install it.]))
+
+dnl Check whether lps2lts can produce a valid lts on stdout
+dnl This patch also has lps2lts read from stdin
+dnl For cross-compiling (with patched mCRL2), use ./configure ac_cv_lps2lts_stdout=yes
+AC_CACHE_CHECK([whether lps2lts writes valid lts to from stdout], [ac_cv_lps2lts_stdout],
+  [AS_IF([echo 'init delta;' | $MCRL22LPS | $LPS2LTS - 2>&5], [ac_cv_lps2lts_stdout=yes], [ac_cv_lps2lts_stdout=no])])
+AC_SUBST([have_lps2lts_stdout], [$ac_cv_lps2lts_stdout])
+
+dnl Check whether ltscompare can read two LTSes from stdin
+dnl For cross-compiling (with patched mCRL2), use ./configure ac_cv_lpscompare_stdin=yes
+AC_CACHE_CHECK([whether ltscompare can read two LTSes from stdin], [ac_cv_ltscompare_stdin],
+  [AS_IF([echo -e 'des (0,1,1)\n(0,stays,0)\ndes (0,1,1)\n(0,stays,0)\n' | $LTSCOMPARE -pweak-failures  --in1=aut --in2=aut - - 1>&5 2>&5], [ac_cv_ltscompare_stdin=yes], [ac_cv_ltscompare_stdin=no])])
+AC_SUBST([have_ltscompare_stdin], [$ac_cv_ltscompare_stdin])
 
 if test "$PACKAGE_VERSION" = UNKNOWN; then
     PACKAGE_VERSION=0.0.0
