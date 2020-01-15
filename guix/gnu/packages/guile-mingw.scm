@@ -66,7 +66,7 @@
 
 (define-public guile-mingw
   (let ((commit "6d6bc013e1f9db98334e1212295b8be0e39fbf0a")
-        (revision "0"))
+        (revision "2"))
     (package
       (inherit guile-2.2)
       (name "guile-mingw")
@@ -77,6 +77,7 @@
                 (uri (git-reference
                       (url "https://git.savannah.gnu.org/git/guile.git")
                       (commit commit)))
+                (patches (search-patches "guile-mingw.patch"))
                 (file-name (string-append name "-" version "-checkout"))
                 (sha256
                  (base32
@@ -98,7 +99,7 @@
                (substitute-keyword-arguments (package-arguments guile-2.2)
                  ((#:phases phases '%standard-phases)
                   `(modify-phases ,phases
-                     (replace 'bootstrap
+                     (add-after 'unpack 'bootstrap
                        (lambda _
                          (invoke "sh" "autogen.sh")
                          #t))
@@ -114,7 +115,7 @@
                          (substitute* "build-aux/git-version-gen"
                            (("#!/bin/sh") (string-append "#! " (which "sh"))))
                          #t))
-                     (replace 'sacrifice-elisp-support
+                     (add-after 'unpack 'sacrifice-elisp-support
                        (lambda _
                          ;; Cross-compiling language/elisp/boot.el fails, so
                          ;; sacrifice it.  See
