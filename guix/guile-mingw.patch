@@ -1,0 +1,250 @@
+From ec6bf84d214927e9d61b3e652d5f8033e17a0988 Mon Sep 17 00:00:00 2001
+From: Rutger van Beusekom <rutger.van.beusekom@verum.com>
+Date: Mon, 2 Mar 2020 10:38:57 +0100
+Subject: [PATCH 1/2] Allow client code to create pipe pairs when opening a
+ process.
+
+* libguile/posix.c (scm_piped_process): Replace open_process by piped_process.
+* module/ice-9/popen.scm (pipe->fdes): Convert pipe pair to fdes pair.
+(open-process): Implement open-process with piped-process.
+(pipeline): Implement a pipeline with piped-process.
+---
+ libguile/posix.c       | 86 ++++++++++++++++++------------------------
+ module/ice-9/popen.scm | 32 +++++++++++++++-
+ 2 files changed, 68 insertions(+), 50 deletions(-)
+
+diff --git a/libguile/posix.c b/libguile/posix.c
+index b0fcad5fd..e22964ed5 100644
+--- a/libguile/posix.c
++++ b/libguile/posix.c
+@@ -1335,55 +1335,56 @@ start_child (const char *exec_file, char **exec_argv,
+ 
+ #ifdef HAVE_START_CHILD
+ static SCM
+-scm_open_process (SCM mode, SCM prog, SCM args)
+-#define FUNC_NAME "open-process"
++scm_piped_process (SCM prog, SCM args, SCM from, SCM to)
++#define FUNC_NAME "piped-process"
++/* SCM_DEFINE (scm_piped_process, "piped-process", 2, 2, 0, */
++/*            (SCM prog, SCM args, SCM from, SCM to), */
++/* "Execute the command indicated by @var{prog} with arguments @var(args),\n" */
++/* "optionally connected by an input and an output pipe.\n" */
++/* "@var(from) and @var(to) are either #f or a valid file descriptor\n" */
++/* "of an input and an output pipe, respectively.\n" */
++/* "\n" */
++/* "This function returns the PID of the process executing @var(prog)." */
++/* "\n" */
++/* "Example:\n" */
++/* "(let ((p (pipe)))\n" */
++/* "  (piped-process \"echo\" '(\"foo\" \"bar\")\n" */
++/* "                 (cons (port->fdes (car p))\n" */
++/* "                       (port->fdes (cdr p))))\n" */
++/* "  (display (read-string (car p))))\n" */
++/* "(let ((p (pipe)))\n" */
++/* "  (read-string (piped-process \"echo\" '(\"foo\" \"bar\")\n" */
++/* "                              (port->fdes (car p)))))\n") */
++/* #define FUNC_NAME scm_piped_process */
+ {
+-  long mode_bits;
+   int reading, writing;
+-  int c2p[2]; /* Child to parent.  */
+-  int p2c[2]; /* Parent to child.  */
++  int c2p[2] = {}; /* Child to parent.  */
++  int p2c[2] = {}; /* Parent to child.  */
+   int in = -1, out = -1, err = -1;
+   int pid;
+   char *exec_file;
+   char **exec_argv;
+-  SCM read_port = SCM_BOOL_F, write_port = SCM_BOOL_F;
+ 
+   exec_file = scm_to_locale_string (prog);
+   exec_argv = scm_i_allocate_string_pointers (scm_cons (prog, args));
+ 
+-  mode_bits = scm_i_mode_bits (mode);
+-  reading = mode_bits & SCM_RDNG;
+-  writing = mode_bits & SCM_WRTNG;
++  reading = scm_is_pair (from);
++  writing = scm_is_pair (to);
+ 
+   if (reading)
+     {
+-      if (pipe (c2p))
+-        {
+-          int errno_save = errno;
+-          free (exec_file);
+-          errno = errno_save;
+-          SCM_SYSERROR;
+-        }
++      c2p[0] = scm_to_int (scm_car (from));
++      c2p[1] = scm_to_int (scm_cdr (from));
+       out = c2p[1];
+     }
+-  
++
+   if (writing)
+     {
+-      if (pipe (p2c))
+-        {
+-          int errno_save = errno;
+-          free (exec_file);
+-          if (reading)
+-            {
+-              close (c2p[0]);
+-              close (c2p[1]);
+-            }
+-          errno = errno_save;
+-          SCM_SYSERROR;
+-        }
++      p2c[0] = scm_to_int (scm_car (to));
++      p2c[1] = scm_to_int (scm_cdr (to));
+       in = p2c[0];
+     }
+-  
++
+   {
+     SCM port;
+ 
+@@ -1416,25 +1417,12 @@ scm_open_process (SCM mode, SCM prog, SCM args)
+       SCM_SYSERROR;
+     }
+ 
+-  /* There is no sense in catching errors on close().  */
+   if (reading)
+-    {
+-      close (c2p[1]);
+-      read_port = scm_i_fdes_to_port (c2p[0], scm_mode_bits ("r0"),
+-                                      sym_read_pipe,
+-                                      SCM_FPORT_OPTION_NOT_SEEKABLE);
+-    }
++    close (c2p[1]);
+   if (writing)
+-    {
+-      close (p2c[0]);
+-      write_port = scm_i_fdes_to_port (p2c[1], scm_mode_bits ("w0"),
+-                                       sym_write_pipe,
+-                                       SCM_FPORT_OPTION_NOT_SEEKABLE);
+-    }
++    close (p2c[0]);
+ 
+-  return scm_values (scm_list_3 (read_port,
+-                                 write_port,
+-                                 scm_from_int (pid)));
++  return scm_from_int (pid);
+ }
+ #undef FUNC_NAME
+ 
+@@ -1498,8 +1486,8 @@ SCM_DEFINE (scm_system_star, "system*", 0, 0, 1,
+                          SCM_UNDEFINED);
+ #endif
+ 
+-  res = scm_open_process (scm_nullstr, prog, args);
+-  pid = scm_to_int (scm_c_value_ref (res, 2));
++  res = scm_piped_process (prog, args, SCM_BOOL_F, SCM_BOOL_F);
++  pid = scm_to_int (scm_c_value_ref (res, 0));
+   SCM_SYSCALL (wait_result = waitpid (pid, &status, 0));
+   if (wait_result == -1)
+     SCM_SYSERROR;
+@@ -2337,7 +2325,7 @@ SCM_DEFINE (scm_gethostname, "gethostname", 0, 0, 0,
+ static void
+ scm_init_popen (void)
+ {
+-  scm_c_define_gsubr ("open-process", 2, 0, 1, scm_open_process);
++  scm_c_define_gsubr ("piped-process", 2, 2, 0, scm_piped_process);
+ }
+ #endif /* HAVE_START_CHILD */
+ 
+diff --git a/module/ice-9/popen.scm b/module/ice-9/popen.scm
+index b166e9d0f..bff13e5c8 100644
+--- a/module/ice-9/popen.scm
++++ b/module/ice-9/popen.scm
+@@ -20,9 +20,10 @@
+ 
+ (define-module (ice-9 popen)
+   :use-module (ice-9 threads)
++  :use-module (srfi srfi-1)
+   :use-module (srfi srfi-9)
+   :export (port/pid-table open-pipe* open-pipe close-pipe open-input-pipe
+-	   open-output-pipe open-input-output-pipe))
++	   open-output-pipe open-input-output-pipe pipe->fdes piped-process pipeline))
+ 
+ (eval-when (expand load eval)
+   (load-extension (string-append "libguile-" (effective-version))
+@@ -53,6 +54,17 @@
+ (define port/pid-table (make-weak-key-hash-table 31))
+ (define port/pid-table-mutex (make-mutex))
+ 
++(define (pipe->fdes)
++  (let ((p (pipe)))
++   (cons (port->fdes (car p))
++         (port->fdes (cdr p)))))
++
++(define (open-process mode command . args)
++  (let* ((from (and (or (equal? mode OPEN_READ) (equal? mode OPEN_BOTH)) (pipe->fdes)))
++         (to (and (or (equal? mode OPEN_WRITE) (equal? mode OPEN_BOTH)) (pipe->fdes)))
++         (pid (piped-process command args from to)))
++    (values (and from (fdes->inport (car from))) (and to (fdes->outport (cdr to))) pid)))
++
+ (define (open-pipe* mode command . args)
+   "Executes the program @var{command} with optional arguments
+ @var{args} (all strings) in a subprocess.
+@@ -145,3 +157,21 @@ information on how to interpret this value."
+   "Equivalent to @code{open-pipe} with mode @code{OPEN_BOTH}"
+   (open-pipe command OPEN_BOTH))
+ 
++
++(define (pipeline procs)
++  "Execute a pipeline of @code(procs) -- where a proc is a list of a
++command and its arguments as strings -- returning an input port to the
++end of the pipeline, an output port to the beginning of the pipeline and
++a list of PIDs of the @code(procs)"
++  (let* ((to (pipe->fdes))
++         (pipes (map (lambda _ (pipe->fdes)) procs))
++	 (pipeline (fold (lambda (from proc prev)
++                           (let* ((to (car prev))
++                                  (pids (cdr prev)))
++                             (cons from (cons (piped-process (car proc) (cdr proc) from to) pids))))
++                         `(,to)
++                         pipes
++                         procs))
++	 (from (car pipeline))
++	 (pids (cdr pipeline)))
++    (values (fdes->inport (car from)) (fdes->outport (cdr to)) pids)))
+-- 
+2.24.0
+
+From caa20c0fafb6fdf504e8f51a313528e02595850c Mon Sep 17 00:00:00 2001
+From: Rutger van Beusekom <rutger.van.beusekom@verum.com>
+Date: Wed, 6 Nov 2019 14:56:57 +0100
+Subject: [PATCH 2/2] fcntl: non blocking socket kludge for mingw
+
+---
+ libguile/filesys.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/libguile/filesys.c b/libguile/filesys.c
+index db8b2423a..a8e585cf3 100644
+--- a/libguile/filesys.c
++++ b/libguile/filesys.c
+@@ -974,6 +974,19 @@ SCM_DEFINE (scm_fcntl, "fcntl", 2, 1, 0,
+   return scm_from_int (rv);
+ }
+ #undef FUNC_NAME
++#else
++SCM_DEFINE (scm_fcntl, "fcntl", 2, 1, 0,
++            (SCM object, SCM cmd, SCM value),
++            "wip: assuming: cmd = F_SETFL\n, value = (logior O_NONBLOCK (fcntl object F_GETFL))")
++#define FUNC_NAME s_scm_fcntl
++{
++  unsigned long non_blocking = 1;
++  object = SCM_COERCE_OUTPORT (object);
++  SOCKET fd = _get_osfhandle(SCM_FPORT_FDES(object));
++  if(SOCKET_ERROR == ioctlsocket(fd, FIONBIO, &non_blocking))
++    SCM_SYSERROR;
++  return scm_from_int(0);
++}
+ #endif /* HAVE_FCNTL */
+ 
+ SCM_DEFINE (scm_fsync, "fsync", 1, 0, 0, 
+-- 
+2.24.0
+
