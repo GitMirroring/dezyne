@@ -20,13 +20,19 @@
 //
 // Code:
 
-#ifndef FOREIGN_HH
-#define FOREIGN_HH
+#include <hello_foreign.h>
+/* call "name-of-Foreign"_skel_init as follows:
+   Foreign_skel_init(&(self->base), dezyne_locator, dzn_meta); */
 
-struct foreign: public skel::foreign
+void Foreign_init(Foreign* self, locator* dezyne_locator, dzn_meta* meta)
 {
-  foreign(const dzn::locator&);
-  void w_world();
-};
+  Foreign_skel_init(&(self->base), dezyne_locator, meta);
+  return;
+}
 
-#endif // FOREIGN_HH
+
+
+void w_world_Foreign(Foreign* self)
+{
+  return;
+}
