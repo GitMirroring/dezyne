@@ -20,19 +20,13 @@
 //
 // Code:
 
-#include <hello_foreign.h>
-/* call "name-of-foreign"_skel_init as follows:
-   foreign_skel_init(&(self->base), dezyne_locator, dzn_meta); */
+#include "hello_foreign_path.hh"
 
-void foreign_init(foreign* self, locator* dezyne_locator, dzn_meta* meta)
-{
-  foreign_skel_init(&(self->base), dezyne_locator, meta);
-  return;
-}
+Foreign::Foreign(const dzn::locator& l)
+: skel::Foreign(l)
+{}
 
-
-
-void w_world_foreign(foreign* self)
+void Foreign::w_world()
 {
   return;
 }

@@ -20,35 +20,13 @@
 //
 // Code:
 
-dzn_require = typeof (require) !== 'undefined' ? require : function () {return {};};
-dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');
-dzn = dzn || {};
-dzn = dzn || {};
+#include "hello_foreign.hh"
 
+Foreign::Foreign(const dzn::locator& l)
+: skel::Foreign(l)
+{}
 
-
-dzn.foreign = function (locator, meta) {
-  dzn.runtime.init (this, locator, meta);
-  this._dzn.meta.ports = ['w'];
-  this._dzn.flushes = true;
-
-
-
-
-
-  this.w = new dzn.iworld({provides: {name: 'w', component: this}, requires: {}});
-
-
-
-
-  this.w.in.world = function(){
-  };
-
-
-
-  this._dzn.rt.bind (this);
-};
-
-if (typeof (module) !== 'undefined') {
-  module.exports = dzn;
+void Foreign::w_world()
+{
+  return;
 }

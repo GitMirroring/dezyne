@@ -31,7 +31,7 @@ interface ihello
   }
 }
 
-component foreign
+component Foreign
 {
   provides iworld w;
   // behaviour {}
@@ -66,8 +66,8 @@ component hello_foreign_path
   system
     {
       hello c;
-      foreign left;
-      foreign right;
+      Foreign left;
+      Foreign right;
       h <=> c.h;
       c.left <=> left.w;
       c.right <=> right.w;

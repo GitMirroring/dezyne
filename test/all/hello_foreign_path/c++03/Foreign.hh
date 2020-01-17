@@ -20,13 +20,13 @@
 //
 // Code:
 
-#include "hello_foreign.hh"
+#ifndef FOREIGN_HH
+#define FOREIGN_HH
 
-foreign::foreign(const dzn::locator& l)
-: skel::foreign(l)
-{}
-
-void foreign::w_world()
+struct Foreign: public skel::Foreign
 {
-  return;
-}
+  Foreign(const dzn::locator&);
+  void w_world();
+};
+
+#endif // FOREIGN_HH

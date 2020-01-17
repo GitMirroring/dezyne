@@ -20,17 +20,17 @@
 ;;;
 ;;; Code:
 
-(define-module (foreign)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+(define-module (Foreign)
+  #:use-module (oop goops)
   #:use-module (dzn runtime)
   #:use-module (hello_foreign_path)
-  #:export (<foreign>
+  #:export (<Foreign>
             .w))
 
-(define-class <foreign> (<dzn:component>)
+(define-class <Foreign> (<dzn:component>)
   (w #:accessor .w #:init-keyword #:w))
 
-(define-method (initialize (o <foreign>) args)
+(define-method (initialize (o <Foreign>) args)
   (next-method)
   (set! (.w o)
         (make <iworld>
@@ -41,5 +41,5 @@
                  )
           #:out (make <iworld.out>))))
 
-(define-method (w-world (o <foreign>))
+(define-method (w-world (o <Foreign>))
   *unspecified*)

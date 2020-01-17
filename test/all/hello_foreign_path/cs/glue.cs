@@ -20,7 +20,7 @@
 //
 // Code:
 
-public partial class foreign
+public partial class Foreign
 {
   public void w_world(){}
 }
