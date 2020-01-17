@@ -6,7 +6,7 @@
   ##:use-module (dzn runtime)
   ##:use-module (dzn pump)
   #x:use-module
-  ##:use-module (#code:file-name)
+  ##:use-module (#scheme:module-name)
   ##:duplicates (merge-generics)
   ##:export (main))
 
