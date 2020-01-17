@@ -20,16 +20,16 @@
 //
 // Code:
 
-#ifndef FOREIGN_H_H
-#define FOREIGN_H_H
-typedef struct foreign_t foreign;
-typedef struct foreign_skel_t foreign_skel;
+#ifndef FOREIGN_H
+#define FOREIGN_H
+typedef struct Foreign_t Foreign;
+typedef struct Foreign_skel_t Foreign_skel;
 
-struct foreign_t{
-  foreign_skel base;
+struct Foreign_t{
+  Foreign_skel base;
   /* space for variables */
 
   /* end of space */
 };
 
-#endif /* FOREIGN_H_H */
+#endif /* FOREIGN_H */
