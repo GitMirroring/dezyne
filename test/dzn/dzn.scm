@@ -213,7 +213,7 @@ output, and standard error as three values."
   (directory-exists? (string-append file-name "/baseline/verify")))
 
 (define (run-verify file-name)
-  (format #t "stage: verify\n")
+  (format #t "** stage: verify\n")
   (let* ((base-name (basename file-name))
          (dzn-name (string-append file-name "/" base-name ".dzn"))
          (baseline (string-append file-name "/baseline/verify"))
@@ -244,7 +244,7 @@ output, and standard error as three values."
                                        (string-append baseline-out ".stderr") err-file))))))))))
 
 (define (run-code file-name language)
-  (format #t "stage: code: ~a\n" language)
+  (format #t "** stage: code: ~a\n" language)
   (and (let* ((base-name (basename file-name))
               (dzn-name (string-append file-name "/" base-name ".dzn"))
               (input "")
@@ -287,7 +287,7 @@ output, and standard error as three values."
          (and-map (cut run-execute file-name language <>) traces))))
 
 (define (run-traces file-name)
-  (format #t "stage: traces\n")
+  (format #t "** stage: traces\n")
   (let* ((base-name (basename file-name))
          (dzn-name (string-append file-name "/" base-name ".dzn"))
          (input "")
@@ -315,7 +315,7 @@ output, and standard error as three values."
           (zero? status)))))
 
 (define (run-build file-name language)
-  (format #t "stage: build: ~a\n" language)
+  (format #t "** stage: build: ~a\n" language)
   (let* ((base-name (basename file-name))
          (dzn-name (string-append file-name "/" base-name ".dzn"))
          (input "")
@@ -335,7 +335,7 @@ output, and standard error as three values."
           (zero? status)))))
 
 (define (run-execute file-name language trace)
-  (format #t "stage: execute: ~a ~a\n" language trace)
+  (format #t "** stage: execute: ~a ~a\n" language trace)
   (let* ((base-name (basename file-name))
          (dzn-name (string-append file-name "/" base-name ".dzn"))
          (input (with-input-from-file trace read-string))
@@ -370,10 +370,16 @@ output, and standard error as three values."
                    (zero? status))))))))
 
 (define (run-test file-name languages)
-  (format #t "run: ~a ~a\n" file-name languages)
-  (and (run-verify file-name)
-       (run-traces file-name)
-       (and-map (cut run-code file-name <>) languages)))
+  (setvbuf (current-output-port) 'line)
+  (format #t "* run: ~a ~a\n" file-name languages)
+  (let ((result (and (run-verify file-name)
+                     (run-traces file-name)
+                     (and-map (cut run-code file-name <>) languages))))
+    (format #t "# Local Variables:
+# mode: org
+# End:
+")
+    result))
 
 ;;; Local Variables:
 ;;; mode: scheme
