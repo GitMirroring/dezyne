@@ -59,28 +59,38 @@
 (define-method (scheme:class-name (o <ast>))
   (scheme:class-name (parent o <model>)))
 
+;; Work around a bug that base name of a Guile module cannot include
+;; dots.  See http://debbugs.gnu.org/cgi/bugreport.cgi?bug=39162
+(define-method (scheme:sanitize-module-name (o <string>))
+  (string-map (lambda (c) (if (eq? c #\.) #\- c)) o))
+
 (define-method (scheme:module-name (o <root>))
   (let ((dzn-file (ast:source-file o))
         (namespaces (filter (conjoin (negate ast:imported?)
                                      (negate (compose (cut equal? <> '("dzn")) ast:full-name)))
                             (ast:namespace* o))))
-    (if (null? namespaces) (basename dzn-file ".dzn")
-        (scheme:module-name (car namespaces)))))
+    (scheme:sanitize-module-name
+     (if (null? namespaces) (basename dzn-file ".dzn")
+         (scheme:module-name (car namespaces))))))
 
 (define-method (scheme:module-name (o <foreign>))
-  (string-join (ast:full-name o) " "))
+  (scheme:sanitize-module-name
+   (string-join (ast:full-name o) " ")))
 
 (define-method (scheme:module-name (o <namespace>))
   (let* ((dzn-file (ast:source-file o))
          (base-name (basename dzn-file ".dzn"))
          (namespace (ast:full-name o)))
-    (string-join (append namespace (list base-name)) " ")))
+    (scheme:sanitize-module-name
+     (string-join (append namespace (list base-name)) " "))))
 
 (define-method (scheme:module-name (o <model>))
   (let* ((dzn-file (ast:source-file o))
          (base-name (basename dzn-file ".dzn"))
-         (namespace (drop-right (ast:full-name o) 1)))
-    (string-join (append namespace (list base-name)) " ")))
+         (namespace (append-map (cut string-split <> #\.)
+                                (drop-right (ast:full-name o) 1))))
+    (scheme:sanitize-module-name
+     (string-join (append namespace (list base-name)) " "))))
 
 (define-method (scheme:names (o <interface>))
   (let* ((name (scheme:class-name o))
