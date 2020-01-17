@@ -1,1 +1,1 @@
-{"known":["code<2.8.0","c:build","cs:build","javascript:execute","run"],"comment":{"true":"system: cannot run"}}
+{"skip":["c:build","cs:build","scheme:build"],"comment":"partial namespace"}
