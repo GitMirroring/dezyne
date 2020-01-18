@@ -24,15 +24,7 @@
 
 import externaltypes.dzn;
 
-interface ILogger
-{
-  in void log(in string m);
-
-  behaviour
-  {
-    on log: {}
-  }
-}
+import ilogger.dzn;
 
 component Logger
 {
