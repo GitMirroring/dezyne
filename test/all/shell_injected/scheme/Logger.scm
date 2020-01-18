@@ -22,12 +22,13 @@
 ;;; Code:
 
 (define-module (Logger)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (oop goops)
   #:use-module (dzn runtime)
-  #:use-module (shell_injected)
+  #:use-module (ilogger)
+  #:duplicates (merge-generics)
   #:export (<Logger>
-            .out_log
-            .log))
+            .out-log)
+  #:re-export (.log))
 
 (define-class <Logger> (<dzn:component>)
   (out_log #:accessor .out_log #:init-value #f #:init-keyword #:out_log)
