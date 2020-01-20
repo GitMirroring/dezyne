@@ -33,6 +33,10 @@
   #:use-module (gnu packages compression)
   #:use-module (gnu packages guile))
 
+(define guile-2.2.6
+  (if (equal? (package-version guile-2.2) "2.2.6") guile-2.2
+      (@ (gnu packages guile) guile-2.2.6)))
+
 (define-public guile-patched
   (package
     (inherit guile-2.2.6)
