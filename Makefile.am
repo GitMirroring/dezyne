@@ -236,8 +236,13 @@ EXTRA_DIST +=					\
  bin/guile.cmd					\
  bin/wrapper.sh
 
+STRIP_FILES =					\
+ gnu/store/*-boost*				\
+ gnu/store/*/include				\
+ gnu/store/*/share/man
+
 TAR = tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner
-STRIP_FILES =
+
 dzn_linux = dzn bash-minimal coreutils guile m4-changeword mcrl2-minimal sed
 pack:
 	GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-build-hook $(dzn_linux)
