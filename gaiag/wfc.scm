@@ -661,7 +661,10 @@
 (define-method (reply (o <reply>) (trigger <trigger>))
   (let* ((component (parent o <component>))
          (port (and (.port.name o) (.port o)))
-         (event (if (and component (pair? (tree-collect (is? <blocking>) component)) (ast:requires? trigger)) (car (ast:event* (ast:provides-port component)))
+         (event (if (and component
+                         (ast:requires? trigger)
+                         (pair? (tree-collect-filter (disjoin (is? <declarative>) (is? <compound>)) (is? <blocking>) component)))
+                    (car (ast:event* (ast:provides-port component)))
                     (.event trigger)))
          (event-type (and event (ast:type event)))
          (reply-type (ast:type o)))
