@@ -202,7 +202,9 @@
                 (find (is? <blocking>) path)
                 o)))
   (if (and (is-a? o <compound>) (null? (ast:statement* o))) '()
-      (map triple (tree-collect-shallow ast:imperative? o))))
+      (map triple (tree-collect-filter
+                   (conjoin (is? <ast>) (disjoin ast:declarative? (compose ast:declarative? .parent)))
+                   ast:imperative? o))))
 
 (define (triples:on-compound triples)
   (define (foo t)
