@@ -64,7 +64,7 @@
             parent-not
             symbol->class
             tree-collect
-            tree-collect-shallow
+            tree-collect-filter
             tree-filter
             tree-map
             ))
@@ -852,29 +852,24 @@
 (define-method (tree-filter f (o <ast>)) (and (f o) o))
 (define-method (tree-filter f (o <ast-list>)) (clone o #:elements (map (cut tree-filter f <>) (filter f (.elements o)))))
 
-(define-method (tree-collect predicate o) (if (predicate o) (list o) (list)))
+(define-method (tree-collect-filter filter-predicate predicate o)
+  (if (and (filter-predicate o) (predicate o)) (list o) '()))
 
-(define-method (tree-collect predicate (o <ast>))
-  (let* ((class (class-of (.node o)))
-         (slots (class-slots class))
-         (getters (map slot-definition-getter slots))
-         (children (append-map (lambda (g) (tree-collect predicate (g o))) getters)))
-    (if (predicate o) (cons o children) children)))
+(define-method (tree-collect-filter filter-predicate predicate (o <ast>))
+  (if (not (filter-predicate o)) '()
+      (let* ((class (class-of (.node o)))
+             (slots (class-slots class))
+             (getters (map slot-definition-getter slots))
+             (children (append-map (lambda (g) (tree-collect-filter filter-predicate predicate (g o))) getters)))
+        (if (predicate o) (cons o children) children))))
 
-(define-method (tree-collect predicate (o <ast-list>))
-  (let ((children (append-map (cut tree-collect predicate <>) (.elements o))))
-    (if (predicate o) (cons o children) children)))
+(define-method (tree-collect-filter filter-predicate predicate (o <ast-list>))
+  (if (not (filter-predicate o)) '()
+      (let ((children (append-map (cut tree-collect-filter filter-predicate predicate <>) (.elements o))))
+        (if (predicate o) (cons o children) children))))
 
-(define-method (tree-collect-shallow predicate o) (if (predicate o) (list o) (list)))
-
-(define-method (tree-collect-shallow predicate (o <ast>))
-  (let* ((class (class-of (.node o)))
-         (slots (class-slots class))
-         (getters (map slot-definition-getter slots)))
-    (if (predicate o) (list o) (append-map (lambda (g) (tree-collect-shallow predicate (g o))) getters))))
-
-(define-method (tree-collect-shallow predicate (o <ast-list>))
-  (if (predicate o) (list o) (append-map (cut tree-collect-shallow predicate <>) (.elements o))))
+(define-method (tree-collect predicate o)
+  (tree-collect-filter identity predicate o))
 
 (define-method (clone-base o . setters)
   (let* ((class (class-of o))
