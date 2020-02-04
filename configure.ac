@@ -76,6 +76,12 @@ AC_CACHE_CHECK([whether ltscompare can read two LTSes from stdin], [ac_cv_ltscom
   [AS_IF([echo -e 'des (0,1,1)\n(0,stays,0)\ndes (0,1,1)\n(0,stays,0)\n' | $LTSCOMPARE -pweak-failures  --in1=aut --in2=aut - - 1>&5 2>&5], [ac_cv_ltscompare_stdin=yes], [ac_cv_ltscompare_stdin=no])])
 AC_SUBST([have_ltscompare_stdin], [$ac_cv_ltscompare_stdin])
 
+dnl Check whether ltscompare can produce structured output
+dnl For cross-compiling (with patched mCRL2), use ./configure ac_cv_lpscompare_structured_output=yes
+AC_CACHE_CHECK([whether ltscompare produce structured output], [ac_cv_ltscompare_structured_output],
+  [AS_IF([echo -e 'des (0,1,1)\n(0,stays,0)\ndes (0,1,1)\n(0,stays,0)\n' | $LTSCOMPARE -pweak-failures --structured-output --in1=aut --in2=aut - - 1>&5 2>&5], [ac_cv_ltscompare_structured_output=yes], [ac_cv_ltscompare_structured_output=no])])
+AC_SUBST([have_ltscompare_structured_output], [$ac_cv_ltscompare_structured_output])
+
 if test "$PACKAGE_VERSION" = UNKNOWN; then
     PACKAGE_VERSION=0.0.0
 fi

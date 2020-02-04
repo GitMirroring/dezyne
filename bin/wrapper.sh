@@ -45,4 +45,5 @@ else
     wrapper=$(readlink -f "$0")
 fi
 dir=$(dirname "$wrapper")
+PATH=$dir:$PATH
 exec "$dir/gnu/bin/@COMMAND@" "$@"
