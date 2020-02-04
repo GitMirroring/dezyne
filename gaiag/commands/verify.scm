@@ -131,11 +131,6 @@ Usage: dzn verify [OPTION]... DZN-FILE
          (debug? (gdzn:command-line:get 'debug)))
     (setvbuf (current-output-port) 'line)
     (let* ((file-name (car files))
-           (ast (parse options file-name))
-           (tmp (string-append (tmpnam) "-verify")))
-      (mkdir-p tmp)
-      (let ((error? (with-directory-excursion tmp
-                      (verify-makreel options "." file-name ast))))
-        (unless debug?
-          (delete-file-recursively tmp))
+           (ast (parse options file-name)))
+      (let ((error? (verify-makreel options "." file-name ast)))
         (exit error?)))))
