@@ -23,8 +23,10 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
+  #:use-module (gaiag syscall)
   #:use-module (srfi srfi-1)
-  #:export (directory-exists?
+  #:export (call-with-temporary-directory
+            directory-exists?
             mkdir-p
             delete-file-recursively
             copy-recursively
@@ -54,6 +56,19 @@
        body ...)
      (lambda ()
        (chdir init)))))
+
+(define (call-with-temporary-directory proc)
+  "Call PROC with a name of a temporary directory; close the directory and
+delete it when leaving the dynamic extent of this call."
+  (let* ((directory (or (getenv "TMPDIR") "/tmp"))
+         (template  (string-append directory "/dzn.XXXXXX"))
+         (tmp-dir   (mkdtemp! template)))
+    (dynamic-wind
+      (const #t)
+      (lambda ()
+        (proc tmp-dir))
+      (lambda ()
+        (false-if-exception (delete-file-recursively tmp-dir))))))
 
 (define (mkdir-p dir)
   "Create directory DIR and all its ancestors."
