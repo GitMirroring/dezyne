@@ -1,0 +1,23 @@
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:6:21: error: identifier `x' declared before
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:6:13: error: previous `x' declared here
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:7:3: error: identifier `e' declared before
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:6:3: error: previous `e' declared here
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:14:1: error: identifier `I' declared before
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:5:1: error: previous `I' declared here
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:16:3: error: identifier `E' declared before
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:15:3: error: previous `E' declared here
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:17:3: error: duplicate enum field `F1' in enum `F'
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:22:5: error: identifier `G' declared before
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:21:5: error: previous `G' declared here
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:23:19: error: identifier `f' declared before
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:23:14: error: previous `f' declared here
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:25:5: error: identifier `fn2' declared before
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:24:5: error: previous `fn2' declared here
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:32:3: error: identifier `p' declared before
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:31:3: error: previous `p' declared here
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:34:3: error: identifier `r' declared before
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:33:3: error: previous `r' declared here
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:36:3: error: identifier `s' declared before
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:35:3: error: previous `s' declared here
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:2:1: error: identifier `foo' declared before
+test/all/wf_declaredBefore/wf_declaredBefore.dzn:1:1: error: previous `foo' declared here
