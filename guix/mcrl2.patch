@@ -1,7 +1,7 @@
 From 1e7a16e182495a7b509b72638721cdd174fafaee Mon Sep 17 00:00:00 2001
 From: Rutger van Beusekom <rutger.van.beusekom@verum.com>
 Date: Thu, 16 Jan 2020 13:39:09 +0100
-Subject: [PATCH 1/2] lps2lts: Support writing aldebaran lts to stdout; grok
+Subject: [PATCH 1/3] lps2lts: Support writing aldebaran lts to stdout; grok
  `-' as stdin, stdout.
 
 ---
@@ -181,7 +181,7 @@ index 9137bd4c2..60048a091 100644
 From 31d7e8a351f92fcd9b4d7dd74181590808c9d191 Mon Sep 17 00:00:00 2001
 From: Jan Nieuwenhuizen <janneke@gnu.org>
 Date: Thu, 16 Jan 2020 22:58:16 +0100
-Subject: [PATCH 2/2] ltscompare: allow reading multiple aldebaran lts's from
+Subject: [PATCH 2/3] ltscompare: allow reading multiple aldebaran lts's from
  stdin.
 
 ---
@@ -238,6 +238,655 @@ index cd3bc2940..8d00cf60e 100644
    {
      write_to_aut(*this,cout);
    }
+-- 
+2.24.0
+
+From 4d6ab9af5b0a16870a2799d067c82ce3d7974c1b Mon Sep 17 00:00:00 2001
+From: Jan Nieuwenhuizen <janneke@gnu.org>
+Date: Tue, 4 Feb 2020 09:32:15 +0100
+Subject: [PATCH 3/3] DRAFT ltscompare: add -x,--structured-output option.
+
+Instead of human readable chatter, write line-based, structured, ascii
+result to stdout.  Also, do not clutter file system with counter
+examples.
+
+Use exit code to report equality, like we expect from tools like diff.
+---
+ .../mcrl2/lts/detail/counter_example.h        | 29 ++++++--
+ .../include/mcrl2/lts/detail/liblts_bisim.h   |  8 ++-
+ .../mcrl2/lts/detail/liblts_bisim_dnj.h       |  3 +-
+ .../mcrl2/lts/detail/liblts_bisim_gjkw.h      |  3 +-
+ .../lts/detail/liblts_failures_refinement.h   | 72 ++++++++++++++-----
+ .../lts/include/mcrl2/lts/lts_algorithm.h     | 60 ++++++++--------
+ libraries/lts/source/exploration.cpp          |  3 +-
+ libraries/trace/include/mcrl2/trace/trace.h   | 24 ++++++-
+ tools/release/ltscompare/ltscompare.cpp       | 40 +++++++----
+ 9 files changed, 171 insertions(+), 71 deletions(-)
+
+diff --git a/libraries/lts/include/mcrl2/lts/detail/counter_example.h b/libraries/lts/include/mcrl2/lts/detail/counter_example.h
+index 5338c7206..ee573db24 100644
+--- a/libraries/lts/include/mcrl2/lts/detail/counter_example.h
++++ b/libraries/lts/include/mcrl2/lts/detail/counter_example.h
+@@ -69,11 +69,13 @@ class counter_example_constructor
+ 
+     static const index_type m_root_index=-1;
+     std::deque< action_index_pair > m_backward_tree;
+-    const std::string m_filename;
++    const std::string m_name;
++    const bool m_structured_output;
+   
+   public:
+-    counter_example_constructor(const std::string& filename)
+-     : m_filename(filename)
++    counter_example_constructor(const std::string& name, bool structured_output)
++     : m_name(name)
++     , m_structured_output(structured_output)
+     {}
+ 
+     /// \brief Return the index of the root.
+@@ -126,8 +128,17 @@ class counter_example_constructor
+                                        mcrl2::data::sort_expression_list()),
+                                 mcrl2::data::data_expression_list())));
+       }
+-      mCRL2log(log::verbose) << "Saved trace to file " + m_filename + "\n";
+-      result.save(m_filename);
++      if (m_structured_output)
++        {
++          std::cout << m_name << ":";
++          result.save(std::cout, mcrl2::trace::tfLine);
++        }
++      else
++      {
++        std::string filename = m_name + ".trc";
++        mCRL2log(log::verbose) << "Saved trace to file " + filename + "\n";
++        result.save(filename);
++      }
+     }
+ 
+     /// \brief This function indicates that this is not a dummy counterexample class and that a serious counterexample is required.
+@@ -135,6 +146,10 @@ class counter_example_constructor
+     {
+       return false;
+     }
++    bool is_structured() const
++    {
++      return m_structured_output;
++    }
+ };
+ 
+ 
+@@ -167,6 +182,10 @@ class dummy_counter_example_constructor
+     {
+       return true;
+     }
++    bool is_structured() const
++    {
++      return false;
++    }
+ };
+ 
+ } // namespace detail
+diff --git a/libraries/lts/include/mcrl2/lts/detail/liblts_bisim.h b/libraries/lts/include/mcrl2/lts/detail/liblts_bisim.h
+index b98bbb6c5..37ac2d593 100644
+--- a/libraries/lts/include/mcrl2/lts/detail/liblts_bisim.h
++++ b/libraries/lts/include/mcrl2/lts/detail/liblts_bisim.h
+@@ -1218,12 +1218,13 @@ bool bisimulation_compare(
+   const LTS_TYPE& l2,
+   const bool branching /* =false*/,
+   const bool preserve_divergences /*=false*/,
+-  const bool generate_counter_examples /*= false*/)
++  const bool generate_counter_examples /*= false*/,
++  const bool structured_output /* = false */)
+ {
+   LTS_TYPE l1_copy(l1);
+   LTS_TYPE l2_copy(l2);
+   return destructive_bisimulation_compare(l1_copy,l2_copy,branching,preserve_divergences,
+-                                          generate_counter_examples);
++                                          generate_counter_examples, structured_output);
+ }
+ 
+ template < class LTS_TYPE>
+@@ -1232,7 +1233,8 @@ bool destructive_bisimulation_compare(
+   LTS_TYPE& l2,
+   const bool branching /* =false*/,
+   const bool preserve_divergences /*=false*/,
+-  const bool generate_counter_examples /* = false */)
++  const bool generate_counter_examples /* = false */,
++  const bool structured_output /* = false */)
+ {
+   std::size_t init_l2 = l2.initial_state() + l1.num_states();
+   mcrl2::lts::detail::merge(l1,l2);
+diff --git a/libraries/lts/include/mcrl2/lts/detail/liblts_bisim_dnj.h b/libraries/lts/include/mcrl2/lts/detail/liblts_bisim_dnj.h
+index 337876902..1c3922f88 100644
+--- a/libraries/lts/include/mcrl2/lts/detail/liblts_bisim_dnj.h
++++ b/libraries/lts/include/mcrl2/lts/detail/liblts_bisim_dnj.h
+@@ -5272,7 +5272,8 @@ void bisimulation_reduce_dnj(LTS_TYPE& l, bool branching = false,
+ template <class LTS_TYPE>
+ bool destructive_bisimulation_compare_dnj(LTS_TYPE& l1, LTS_TYPE& l2,
+                 bool branching = false, bool preserve_divergence = false,
+-                                        bool generate_counter_examples = false)
++                                          bool generate_counter_examples = false,
++                                          bool structured_output = false)
+ {
+     if (generate_counter_examples)
+     {
+diff --git a/libraries/lts/include/mcrl2/lts/detail/liblts_bisim_gjkw.h b/libraries/lts/include/mcrl2/lts/detail/liblts_bisim_gjkw.h
+index 28d4adc30..397cbdfa4 100644
+--- a/libraries/lts/include/mcrl2/lts/detail/liblts_bisim_gjkw.h
++++ b/libraries/lts/include/mcrl2/lts/detail/liblts_bisim_gjkw.h
+@@ -2061,7 +2061,8 @@ inline bool bisimulation_compare_gjkw(const LTS_TYPE& l1, const LTS_TYPE& l2,
+ template <class LTS_TYPE>
+ bool destructive_bisimulation_compare_gjkw(LTS_TYPE& l1, LTS_TYPE& l2,
+           bool branching /* = false */, bool preserve_divergence /* = false */,
+-                                  bool generate_counter_examples /* = false */)
++                                           bool generate_counter_examples /* = false */,
++                                           bool structured_output /* = false */)
+ {
+   if (generate_counter_examples)
+   {
+diff --git a/libraries/lts/include/mcrl2/lts/detail/liblts_failures_refinement.h b/libraries/lts/include/mcrl2/lts/detail/liblts_failures_refinement.h
+index 4fffc6af2..6aff368e3 100644
+--- a/libraries/lts/include/mcrl2/lts/detail/liblts_failures_refinement.h
++++ b/libraries/lts/include/mcrl2/lts/detail/liblts_failures_refinement.h
+@@ -184,7 +184,8 @@ namespace detail
+               const lts_cache<LTS_TYPE>& weak_property_cache,
+               label_type& culprit,
+               const LTS_TYPE& l,
+-              const bool provide_a_counter_example);
++              const bool provide_a_counter_example,
++              const bool structured_output);
+ 
+ } // namespace detail
+ 
+@@ -360,7 +361,8 @@ bool destructive_refinement_checker(
+                                            weak_property_cache,
+                                            offending_action,
+                                            l1,
+-                                           !generate_counter_example.is_dummy()))
++                                           !generate_counter_example.is_dummy(),
++                                           generate_counter_example.is_structured()))
+         {
+           generate_counter_example.save_counter_example(impl_spec.counter_example_index(), l1);
+           report_statistics(stats);
+@@ -609,7 +611,8 @@ namespace detail
+               const lts_cache<LTS_TYPE>& weak_property_cache,
+               label_type& culprit,
+               const LTS_TYPE& l,
+-              const bool provide_a_counter_example)
++              const bool provide_a_counter_example,
++              const bool structured_output)
+   {
+     if (!weak_property_cache.stable(impl)) return true; // Checking in case of instability is not necessary, but rather time consuming.
+ 
+@@ -655,39 +658,74 @@ namespace detail
+         // Print the acceptance set of the implementation
+         if (impl_action_labels.empty())
+         {
+-          mCRL2log(log::verbose) << "The acceptance of the left process is empty.\n";
++          if (structured_output)
++            std::cout << "left-acceptance:\n";
++          else
++            mCRL2log(log::verbose) << "The acceptance of the left process is empty.\n";
+         }
+         else
+         {
+-          mCRL2log(log::verbose) << "A stable acceptance set of the left process is:\n";
++          if (structured_output)
++            std::cout << "left-acceptance:";
++          else
++            mCRL2log(log::verbose) << "A stable acceptance set of the left process is:\n";
++          std::string sep = "";
+           for(const label_type a : impl_action_labels)
+-          {
+-            mCRL2log(log::verbose) << l.action_label(a) << "\n";
+-          }
++            {
++              if (structured_output)
++              {
++                std::cout << sep << l.action_label(a);
++                sep = " ";
++              }
++              else
++                mCRL2log(log::verbose) << l.action_label(a) << "\n";
++            }
++          if (structured_output)
++            std::cout << "\n";
+         }
+ 
+         // Print the acceptance sets of the specification.
+         if (spec.empty())
+         {
+-          mCRL2log(log::verbose) << "The process at the right has no acceptance sets.\n";
++          if (structured_output)
++            std::cout << "right-acceptance-sets:0\n";
++          else
++            mCRL2log(log::verbose) << "The process at the right has no acceptance sets.\n";
+         }
+         else
+         {
+-          mCRL2log(log::verbose) << "Below all corresponding stable acceptance sets of the right process are provided:\n";
+-          for(const state_type s : spec)
++          set_of_states stable;
++          // Only the stable specification states contributed to this counter example.
++          std::copy_if(spec.begin(), spec.end(), std::inserter(stable,stable.end()), [=](const state_type s){return weak_property_cache.stable(s);});
++
++          if (structured_output)
++            std::cout << "right-acceptance-sets:" << stable.size () << "\n";
++          else
++            mCRL2log(log::verbose) << "Below all corresponding stable acceptance sets of the right process are provided:\n";
++          for(const state_type s : stable)
+           {
+-            // Only the stable specification states contributed to this counter example.
+-            if (!weak_property_cache.stable(s)) { continue; }
+-
+             const action_label_set& spec_action_labels = weak_property_cache.action_labels(s);
+-            mCRL2log(log::verbose) << "An acceptance set of the right process is:\n";
++            if (structured_output)
++              std::cout << "right-acceptance:";
++            else
++              mCRL2log(log::verbose) << "An acceptance set of the right process is:\n";
++            std::string sep = "";
+             for(const label_type a : spec_action_labels)
+             {
+-              mCRL2log(log::verbose) << l.action_label(a) << "\n";
++              if (structured_output)
++              {
++                std::cout << sep << l.action_label(a);
++                sep = " ";
++              }
++              else
++                mCRL2log(log::verbose) << l.action_label(a) << "\n";
+             }
++            if (structured_output)
++              std::cout << "\n";
+           }
+         }
+-        mCRL2log(log::verbose) << "Finished printing acceptance sets.\n";
++        if (!structured_output)
++          mCRL2log(log::verbose) << "Finished printing acceptance sets.\n";
+         // Ready printing acceptance sets.
+       }
+       return false;
+diff --git a/libraries/lts/include/mcrl2/lts/lts_algorithm.h b/libraries/lts/include/mcrl2/lts/lts_algorithm.h
+index 38f38ba60..c732b6596 100644
+--- a/libraries/lts/include/mcrl2/lts/lts_algorithm.h
++++ b/libraries/lts/include/mcrl2/lts/lts_algorithm.h
+@@ -77,7 +77,8 @@ template <class LTS_TYPE>
+ bool destructive_compare(LTS_TYPE& l1,
+                          LTS_TYPE& l2,
+                          const lts_equivalence eq,
+-                         const bool generate_counter_examples = false)
++                         const bool generate_counter_examples = false,
++                         const bool structured_output = false)
+ {
+   // Merge this LTS and l and store the result in this LTS.
+   // In the resulting LTS, the initial state i of l will have the
+@@ -93,51 +94,51 @@ bool destructive_compare(LTS_TYPE& l1,
+       if (generate_counter_examples)
+       {
+         mCRL2log(mcrl2::log::warning) << "The default bisimulation comparison algorithm cannot generate counter examples. Therefore the slower gv algorithm is used instead.\n";
+-        return detail::destructive_bisimulation_compare(l1,l2, false,false,generate_counter_examples);
++        return detail::destructive_bisimulation_compare(l1,l2, false,false,generate_counter_examples,structured_output);
+       }
+-      return detail::destructive_bisimulation_compare_dnj(l1,l2, false,false,generate_counter_examples);
++      return detail::destructive_bisimulation_compare_dnj(l1,l2, false,false,generate_counter_examples,structured_output);
+     }
+     case lts_eq_bisim_gv:
+     {
+-      return detail::destructive_bisimulation_compare(l1,l2, false,false,generate_counter_examples);
++      return detail::destructive_bisimulation_compare(l1,l2, false,false,generate_counter_examples,structured_output);
+     }
+     case lts_eq_bisim_gjkw:
+     {
+-      return detail::destructive_bisimulation_compare_gjkw(l1,l2, false,false,generate_counter_examples);
++      return detail::destructive_bisimulation_compare_gjkw(l1,l2, false,false,generate_counter_examples,structured_output);
+     }
+     case lts_eq_branching_bisim:
+     {
+       if (generate_counter_examples)
+       {
+         mCRL2log(mcrl2::log::warning) << "The default branching bisimulation comparison algorithm cannot generate counter examples. Therefore the slower gv algorithm is used instead.\n";
+-        return detail::destructive_bisimulation_compare(l1,l2, true,false,generate_counter_examples);
++        return detail::destructive_bisimulation_compare(l1,l2, true,false,generate_counter_examples,structured_output);
+       }
+-      return detail::destructive_bisimulation_compare_dnj(l1,l2, true,false,generate_counter_examples);
++      return detail::destructive_bisimulation_compare_dnj(l1,l2, true,false,generate_counter_examples,structured_output);
+     }
+     case lts_eq_branching_bisim_gv:
+     {
+-      return detail::destructive_bisimulation_compare(l1,l2, true,false,generate_counter_examples);
++      return detail::destructive_bisimulation_compare(l1,l2, true,false,generate_counter_examples,structured_output);
+     }
+     case lts_eq_branching_bisim_gjkw:
+     {
+-      return detail::destructive_bisimulation_compare_gjkw(l1,l2, true,false,generate_counter_examples);
++      return detail::destructive_bisimulation_compare_gjkw(l1,l2, true,false,generate_counter_examples,structured_output);
+     }
+     case lts_eq_divergence_preserving_branching_bisim:
+     {
+       if (generate_counter_examples)
+       {
+         mCRL2log(mcrl2::log::warning) << "The default divergence-preserving branching bisimulation comparison algorithm cannot generate counter examples. Therefore the slower gv algorithm is used instead.\n";
+-        return detail::destructive_bisimulation_compare(l1,l2, true,true,generate_counter_examples);
++        return detail::destructive_bisimulation_compare(l1,l2, true,true,generate_counter_examples,structured_output);
+       }
+-      return detail::destructive_bisimulation_compare_dnj(l1,l2, true,true,generate_counter_examples);
++      return detail::destructive_bisimulation_compare_dnj(l1,l2, true,true,generate_counter_examples,structured_output);
+     }
+     case lts_eq_divergence_preserving_branching_bisim_gv:
+     {
+-      return detail::destructive_bisimulation_compare(l1,l2, true,true,generate_counter_examples);
++      return detail::destructive_bisimulation_compare(l1,l2, true,true,generate_counter_examples,structured_output);
+     }
+     case lts_eq_divergence_preserving_branching_bisim_gjkw:
+     {
+-      return detail::destructive_bisimulation_compare_gjkw(l1,l2, true,true,generate_counter_examples);
++      return detail::destructive_bisimulation_compare_gjkw(l1,l2, true,true,generate_counter_examples,structured_output);
+     }
+     case lts_eq_weak_bisim:
+     {
+@@ -196,7 +197,7 @@ bool destructive_compare(LTS_TYPE& l1,
+       determinise(l2);
+ 
+       // Trace equivalence now corresponds to bisimilarity
+-      return detail::destructive_bisimulation_compare(l1,l2,false,false,generate_counter_examples);
++      return detail::destructive_bisimulation_compare(l1,l2,false,false,generate_counter_examples,structured_output);
+     }
+     case lts_eq_weak_trace:
+     {
+@@ -213,7 +214,7 @@ bool destructive_compare(LTS_TYPE& l1,
+       determinise(l2);
+ 
+       // Weak trace equivalence now corresponds to bisimilarity
+-      return detail::destructive_bisimulation_compare(l1,l2,false,false,generate_counter_examples);
++      return detail::destructive_bisimulation_compare(l1,l2,false,false,generate_counter_examples,structured_output);
+     }
+     default:
+     throw mcrl2::runtime_error("Comparison for this equivalence is not available");
+@@ -237,7 +238,8 @@ template <class LTS_TYPE>
+ bool compare(const LTS_TYPE& l1,
+              const LTS_TYPE& l2,
+              const lts_equivalence eq,
+-             const bool generate_counter_examples = false);
++             const bool generate_counter_examples = false,
++             const bool structured_output = false);
+ 
+ /** \brief Checks whether this LTS is smaller than another LTS according
+  * to a preorder.
+@@ -265,6 +267,7 @@ bool destructive_compare(LTS_TYPE& l1,
+                          LTS_TYPE& l2,
+                          const lts_preorder pre,
+                          const bool generate_counter_example,
++                         const bool structured_output = false,
+                          const lps::exploration_strategy strategy = lps::es_breadth,
+                          const bool preprocess = true);
+ 
+@@ -287,6 +290,7 @@ bool compare(const LTS_TYPE&  l1,
+              const  LTS_TYPE& l2,
+              const lts_preorder pre,
+              const bool generate_counter_example,
++             const bool structured_output = false,
+              const lps::exploration_strategy strategy = lps::es_breadth,
+              const bool preprocess = true);
+ 
+@@ -748,7 +752,7 @@ void reduce(LTS_TYPE& l,lts_equivalence eq)
+ }
+ 
+ template <class LTS_TYPE>
+-bool compare(const LTS_TYPE& l1, const LTS_TYPE& l2, const lts_equivalence eq, const bool generate_counter_examples)
++bool compare(const LTS_TYPE& l1, const LTS_TYPE& l2, const lts_equivalence eq, const bool generate_counter_examples, const bool structured_output)
+ {
+   switch (eq)
+   {
+@@ -757,21 +761,21 @@ bool compare(const LTS_TYPE& l1, const LTS_TYPE& l2, const lts_equivalence eq, c
+     default:
+       LTS_TYPE l1_copy(l1);
+       LTS_TYPE l2_copy(l2);
+-      return destructive_compare(l1_copy,l2_copy,eq,generate_counter_examples);
++      return destructive_compare(l1_copy,l2_copy,eq,generate_counter_examples,structured_output);
+   }
+   return false;
+ }
+ 
+ template <class LTS_TYPE>
+-bool compare(const LTS_TYPE& l1, const LTS_TYPE& l2, const lts_preorder pre, const bool generate_counter_example, const lps::exploration_strategy strategy, const bool preprocess)
++bool compare(const LTS_TYPE& l1, const LTS_TYPE& l2, const lts_preorder pre, const bool generate_counter_example, const bool structured_output, const lps::exploration_strategy strategy, const bool preprocess)
+ {
+   LTS_TYPE l1_copy(l1);
+   LTS_TYPE l2_copy(l2);
+-  return destructive_compare(l1_copy, l2_copy, pre, generate_counter_example, strategy, preprocess);
++  return destructive_compare(l1_copy, l2_copy, pre, generate_counter_example, structured_output, strategy, preprocess);
+ }
+ 
+ template <class LTS_TYPE>
+-bool destructive_compare(LTS_TYPE& l1, LTS_TYPE& l2, const lts_preorder pre, const bool generate_counter_example, const lps::exploration_strategy strategy, const bool preprocess)
++bool destructive_compare(LTS_TYPE& l1, LTS_TYPE& l2, const lts_preorder pre, const bool generate_counter_example, const bool structured_output, const lps::exploration_strategy strategy, const bool preprocess)
+ {
+   switch (pre)
+   {
+@@ -830,7 +834,7 @@ bool destructive_compare(LTS_TYPE& l1, LTS_TYPE& l2, const lts_preorder pre, con
+       detail::bisimulation_reduce(l2,false);
+ 
+       // Trace preorder now corresponds to simulation preorder
+-      return destructive_compare(l1, l2, lts_pre_sim, generate_counter_example, strategy);
++      return destructive_compare(l1, l2, lts_pre_sim, generate_counter_example, structured_output, strategy);
+     }
+     case lts_pre_weak_trace:
+     {
+@@ -843,13 +847,13 @@ bool destructive_compare(LTS_TYPE& l1, LTS_TYPE& l2, const lts_preorder pre, con
+       detail::tau_star_reduce(l2);
+ 
+       // Weak trace preorder now corresponds to strong trace preorder
+-      return destructive_compare(l1, l2, lts_pre_trace, generate_counter_example, strategy);
++      return destructive_compare(l1, l2, lts_pre_trace, generate_counter_example, structured_output, strategy);
+     }
+     case lts_pre_trace_anti_chain:
+     {
+       if (generate_counter_example)
+       {
+-        detail::counter_example_constructor cec("counter_example_trace_preorder.trc");
++        detail::counter_example_constructor cec("counter_example_trace_preorder", structured_output);
+         return destructive_refinement_checker(l1, l2, trace, false, strategy, preprocess, cec);
+       }
+       return destructive_refinement_checker(l1, l2, trace, false, strategy, preprocess);
+@@ -858,7 +862,7 @@ bool destructive_compare(LTS_TYPE& l1, LTS_TYPE& l2, const lts_preorder pre, con
+     {
+       if (generate_counter_example)
+       {
+-        detail::counter_example_constructor cec("counter_example_weak_trace_preorder.trc");
++        detail::counter_example_constructor cec("counter_example_weak_trace_preorder", structured_output);
+         return destructive_refinement_checker(l1, l2, trace, true, strategy, preprocess, cec);
+       }
+       return destructive_refinement_checker(l1, l2, trace, true, strategy, preprocess);
+@@ -867,7 +871,7 @@ bool destructive_compare(LTS_TYPE& l1, LTS_TYPE& l2, const lts_preorder pre, con
+     {
+       if (generate_counter_example)
+       {
+-        detail::counter_example_constructor cec("counter_example_failures_refinement.trc");
++        detail::counter_example_constructor cec("counter_example_failures_refinement", structured_output);
+         return destructive_refinement_checker(l1, l2, failures, false, strategy, preprocess, cec);
+       }
+       return destructive_refinement_checker(l1, l2, failures, false, strategy, preprocess);
+@@ -876,7 +880,7 @@ bool destructive_compare(LTS_TYPE& l1, LTS_TYPE& l2, const lts_preorder pre, con
+     {
+       if (generate_counter_example)
+       {
+-        detail::counter_example_constructor cec("counter_example_weak_failures_refinement.trc");
++        detail::counter_example_constructor cec("counter_example_weak_failures_refinement", structured_output);
+         return destructive_refinement_checker(l1, l2, failures, true, strategy, preprocess, cec);
+       }
+       return destructive_refinement_checker(l1, l2, failures, true, strategy, preprocess);
+@@ -885,7 +889,7 @@ bool destructive_compare(LTS_TYPE& l1, LTS_TYPE& l2, const lts_preorder pre, con
+     {
+       if (generate_counter_example)
+       {
+-        detail::counter_example_constructor cec("counter_example_failures_divergence_refinement.trc");
++        detail::counter_example_constructor cec("counter_example_failures_divergence_refinement", structured_output);
+         return destructive_refinement_checker(l1, l2, failures_divergence, true, strategy, preprocess, cec);
+       }
+       return destructive_refinement_checker(l1, l2, failures_divergence, true, strategy, preprocess);
+diff --git a/libraries/lts/source/exploration.cpp b/libraries/lts/source/exploration.cpp
+index a04d151ad..818776be3 100644
+--- a/libraries/lts/source/exploration.cpp
++++ b/libraries/lts/source/exploration.cpp
+@@ -1076,6 +1076,7 @@ void lps2lts_algorithm::get_transitions(const lps::state& state,
+                                         next_state_generator::enumerator_queue_t& enumeration_queue
+                                        )
+ {
++  bool structured_output = true;
+   assert(transitions.empty());
+   if (m_options.detect_divergence)
+   {
+@@ -1086,7 +1087,7 @@ void lps2lts_algorithm::get_transitions(const lps::state& state,
+         std::string filename_divergence_loop = m_options.trace_prefix + "_divergence_loop" + std::to_string(m_traces_saved) + ".trc";
+         check_divergence<detail::counter_example_constructor>(
+                 detail::state_index_pair<detail::counter_example_constructor>(state,detail::counter_example_constructor::root_index()),
+-                detail::counter_example_constructor(filename_divergence_loop));
++                detail::counter_example_constructor(filename_divergence_loop, structured_output));
+       }
+       else
+       {
+diff --git a/libraries/trace/include/mcrl2/trace/trace.h b/libraries/trace/include/mcrl2/trace/trace.h
+index c676dc211..a26d3ac0a 100644
+--- a/libraries/trace/include/mcrl2/trace/trace.h
++++ b/libraries/trace/include/mcrl2/trace/trace.h
+@@ -57,6 +57,7 @@ enum TraceFormat
+ {
+   tfMcrl2,  /**< Format is stored as an aterm */
+   tfPlain,  /**< Format is stored in plain text. In this format there are only actions */
++  tfLine,   /**< Format is stored in a line of text. In this format there are only actions */
+   tfUnknown /**< This value indicates that the format is unknown */
+ };
+ 
+@@ -505,6 +506,9 @@ class Trace
+           case tfPlain:
+             savePlain(os);
+             break;
++          case tfLine:
++            saveLine(os);
++            break;
+           default:
+             break;
+         }
+@@ -742,18 +746,32 @@ class Trace
+       }
+     }
+ 
+-    void savePlain(std::ostream& os)
++    void save_text(std::ostream& os, std::string separator)
+     {
++      std::string sep;
+       for (std::size_t i=0; i<m_actions.size(); i++)
+       {
+-        os << pp(m_actions[i]);
+-        os << std::endl;
++        os << sep << pp(m_actions[i]);
++        sep = separator;
+         if (os.bad())
+         {
+           throw runtime_error("Could not write to stream.");
+         }
+       }
+     }
++
++    void saveLine(std::ostream& os)
++    {
++      save_text(os, " ");
++      os << std::endl;
++    }
++
++    void savePlain(std::ostream& os)
++    {
++      save_text(os, "\n");
++      os << std::endl;
++    }
++
+ };
+ 
+ }
+diff --git a/tools/release/ltscompare/ltscompare.cpp b/tools/release/ltscompare/ltscompare.cpp
+index 1a56a6e45..17090a00d 100644
+--- a/tools/release/ltscompare/ltscompare.cpp
++++ b/tools/release/ltscompare/ltscompare.cpp
+@@ -47,6 +47,7 @@ struct t_tool_options
+   mcrl2::lps::exploration_strategy strategy = mcrl2::lps::es_breadth;
+   std::vector<std::string> tau_actions;   // Actions with these labels must be considered equal to tau.
+   bool generate_counter_examples = false;
++  bool structured_output = false;
+   bool enable_preprocessing      = true;
+ };
+ 
+@@ -110,7 +111,7 @@ class ltscompare_tool : public ltscompare_base
+         mCRL2log(verbose) << "comparing LTSs using " <<
+                      tool_options.equivalence << "..." << std::endl;
+ 
+-        result = destructive_compare(l1, l2, tool_options.equivalence, tool_options.generate_counter_examples);
++        result = destructive_compare(l1, l2, tool_options.equivalence, tool_options.generate_counter_examples, tool_options.structured_output);
+ 
+         mCRL2log(info) << "LTSs are " << ((result) ? "" : "not ")
+                        << "equal ("
+@@ -123,19 +124,26 @@ class ltscompare_tool : public ltscompare_base
+                      description(tool_options.preorder) << "..."
+                      " using the " << print_exploration_strategy(tool_options.strategy) << " strategy.\n";
+ 
+-        result = destructive_compare(l1, l2, tool_options.preorder, tool_options.generate_counter_examples, tool_options.strategy, tool_options.enable_preprocessing);
++        result = destructive_compare(l1, l2, tool_options.preorder, tool_options.generate_counter_examples, tool_options.structured_output, tool_options.strategy, tool_options.enable_preprocessing);
+ 
+-        mCRL2log(info) << "The LTS in " << tool_options.name_for_first
+-                       << " is " << ((result) ? "" : "not ")
+-                       << "included in"
+-                       << " the LTS in " << tool_options.name_for_second
+-                       << " (using " << description(tool_options.preorder)
+-                       << ")." << std::endl;
++        if (!tool_options.structured_output)
++          mCRL2log(info) << "The LTS in " << tool_options.name_for_first
++                         << " is " << ((result) ? "" : "not ")
++                         << "included in"
++                         << " the LTS in " << tool_options.name_for_second
++                         << " (using " << description(tool_options.preorder)
++                         << ")." << std::endl;
+       }
+ 
+-      std::cout << (result ? "true" : "false") << std::endl;
+-
+-      return true; // The tool terminates in a correct way.
++      if (tool_options.structured_output)
++        // behave as expected for UNIX tools, such as diff
++        exit(!result);
++      else
++        {
++          // retain backward compatibility
++          std::cout << (result ? "true" : "false") << std::endl;
++          return true; // The tool terminates in a correct way.
++        }
+     }
+ 
+   public:
+@@ -258,8 +266,15 @@ class ltscompare_tool : public ltscompare_base
+                  "the input").
+       add_option("counter-example",
+                  "generate counter example traces if the input lts's are not equivalent",'c').
++      add_option("structured-output",
++                 // TODO: also write human readable stderr chatter like
++                 // "LTS in A is [not] included in B" in a structured way to stdout,
++                 // something like
++                 // 2_contains_1: no
++                 // 1_contains_2: yes
++                 "generate counter examples on stdout",'x').
+       add_hidden_option("no-preprocessing",
+-                 "disable preprocessing applied to the input LTSs for refinement checking",'\0');
++                        "disable preprocessing applied to the input LTSs for refinement checking",'\0');
+     }
+ 
+     void parse_options(const command_line_parser& parser) override
+@@ -300,6 +315,7 @@ class ltscompare_tool : public ltscompare_base
+       }
+ 
+       tool_options.generate_counter_examples = parser.has_option("counter-example");
++      tool_options.structured_output = parser.has_option("structured-output");
+ 
+       if (parser.arguments.size() == 1)
+       {
 -- 
 2.24.0
 
