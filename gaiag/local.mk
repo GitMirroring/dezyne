@@ -41,6 +41,7 @@ dist_%C%_scm_DATA =				\
  %D%/peg.scm					\
  %D%/serialize.scm				\
  %D%/shell-util.scm				\
+ %D%/syscall.scm				\
  %D%/templates.scm				\
  %D%/wfc.scm
 
