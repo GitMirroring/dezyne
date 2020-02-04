@@ -399,33 +399,29 @@
 
 (define-method (wfc (o <trigger>))
   (let ((port (.port o))
-        (event (.event o))
         (model (parent o <model>)))
     (cond ((and (is-a? model <component>) (not port))
            `(,(wfc-error o (format #f "undefined port `~a'" (.port.name o)))))
-          ((and (is-a? model <component>) (not (.type port)))
-           `(,(wfc-error o (format #f "invalid type for port `~a', interface expected, type `~a' not found"
-                                   (.port.name o) (type-name (.type.name port))))
-             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
-          ((and (is-a? model <component>) (not (is-a? (.type port) <interface>)))
-           `(,(wfc-error o (format #f "invalid type for port `~a', interface expected, found `~a ~a'"
-                                   (.port.name o) (ast-name (.type port)) (type-name (.type port))))
-             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
-          ((not event)
-           `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
-                                   (.event.name o) (.port.name o)))
-             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
-          ((and (is-a? model <interface>) (ast:out? event))
-           `(,(wfc-error o (format #f "cannot use ~a-event `~a' as trigger" (.direction event) (.event.name o)))
-             ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
-          ((and (is-a? model <component>)
-                (or (and (ast:out? event) (ast:provides? (.port o)))
-                    (and (ast:in? event) (ast:requires? (.port o)))))
-           `(,(wfc-error o (format #f "cannot use ~a ~a-event `~a' as trigger"
-                                   (.direction (.port o)) (.direction event) (.event.name o)))
-             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))
-             ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
-          (else '()))))
+          ((and (is-a? model <component>) (not (is-a? port <port>)))
+           `(,(wfc-error o (format #f "`~a' is not a port" (.port.name o)))
+             ,(wfc-error (.port o) (format #f "`~a' declared here" (.port.name o)))))
+          (else (let ((event (.event o)))
+                  (cond
+                   ((not event)
+                    `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
+                                            (.event.name o) (.port.name o)))
+                      ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
+                   ((and (is-a? model <interface>) (ast:out? event))
+                    `(,(wfc-error o (format #f "cannot use ~a-event `~a' as trigger" (.direction event) (.event.name o)))
+                      ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+                   ((and (is-a? model <component>)
+                         (or (and (ast:out? event) (ast:provides? (.port o)))
+                             (and (ast:in? event) (ast:requires? (.port o)))))
+                    `(,(wfc-error o (format #f "cannot use ~a ~a-event `~a' as trigger"
+                                            (.direction (.port o)) (.direction event) (.event.name o)))
+                      ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))
+                      ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+                   (else '())))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; expressions
 
@@ -678,7 +674,7 @@
     (cond ((and port (not (is-a? (.type port) <interface>)))
            `(,(wfc-error o (format #f "invalid type for port `~a', interface expected, found `~a ~a'"
                                    (.port.name o) (ast-name (.type port)) (type-name (.type port))))
-             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
+             ,(wfc-error (.port o) (format #f "`~a' declared here" (.port.name o)))))
           ((not event) '())         ; already covered in trigger check
           ((and (or (not (.port.name o))
                     (equal? (.port.name o) (.port.name trigger)))
