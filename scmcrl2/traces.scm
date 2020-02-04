@@ -87,7 +87,7 @@ illegal")
 
 (define (parse input)
   (define-peg-string-patterns
-    "trace              <-- ((event / modeling / reply / return / queue / tau-literal / illegal / error / end / flush / parse-error) newline?)*
+    "trace              <-- ((event / modeling / reply / return / queue / tau-literal / illegal / error / end / flush / parse-error) separator?)*
      parse-error        <-- [a-zA-Z_0-9'()]*
      event              <-- port-name tick direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
      modeling           <-- port-name tick internal-literal lpar scope* ('inevitable' / 'optional') rpar
@@ -126,7 +126,7 @@ illegal")
      reply-error        <-  'double_reply_error' / 'no_reply_error'
      missing-reply      <-  'missing_reply'
      second-reply       <-  'second_reply'
-     newline            <   '\n'
+     separator          <   '\n' / ' '
      tick               <   [']
      lpar               <   [(]
      rpar               <   [)]
