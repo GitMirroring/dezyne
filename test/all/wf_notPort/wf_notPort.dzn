@@ -1,0 +1,31 @@
+interface I {
+  in void e();
+
+  behaviour {
+    on e: {}
+  }
+}
+
+component wf_notPort_1 {
+  provides I p;
+  requires I r;
+
+  behaviour {
+    enum p {E1};
+
+    on p.e():r.e();
+  }
+}
+
+component wf_notPort {
+  provides I p;
+  requires I r;
+
+  behaviour {
+    //bool p = false;
+    enum E {E1};
+    E p = E.E1;
+
+    on p.e():r.e();
+  }
+}

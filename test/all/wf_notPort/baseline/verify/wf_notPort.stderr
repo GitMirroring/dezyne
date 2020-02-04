@@ -1,0 +1,4 @@
+test/all/wf_notPort/wf_notPort.dzn:16:8: error: `p' is not a port
+test/all/wf_notPort/wf_notPort.dzn:14:5: error: `p' declared here
+test/all/wf_notPort/wf_notPort.dzn:29:8: error: `p' is not a port
+test/all/wf_notPort/wf_notPort.dzn:27:5: error: `p' declared here

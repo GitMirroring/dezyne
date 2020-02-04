@@ -275,6 +275,7 @@ PARSER_TESTS =					\
  %D%/wf_interfaceMustDefineEvent		\
  %D%/wf_modelingSilent				\
  %D%/wf_NameClash				\
+ %D%/wf_notPort					\
  %D%/wf_onEventInOnEvent			\
  %D%/wf_otherwiseWithNonGuard			\
  %D%/wf_otherwiseWithOtherwise			\
