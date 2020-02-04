@@ -256,6 +256,7 @@ PARSER_TESTS =					\
  %D%/wf_dataInoutInOutEvent			\
  %D%/wf_dataOutInOutEvent			\
  %D%/wf_declarativeImperative			\
+ %D%/wf_declaredBefore				\
  %D%/wf_eventNotAction				\
  %D%/wf_eventNotTrigger				\
  %D%/wf_eventNotValuedAction			\

@@ -72,6 +72,7 @@
 
 (define-method (wfc (o <interface>)) ;; is-a <model>
   (append
+   (re-declaration o)
    (append-map wfc (ast:type* o))
    (append-map wfc (ast:event* o))
    (if (.behaviour o) (wfc (.behaviour o))
@@ -82,6 +83,7 @@
 
 (define-method (wfc (o <component>)) ;; is-a <component-model>
   (append
+   (re-declaration o)
    (if (>0 (length (ast:provides-port* o))) '()
        `(,(wfc-error o "component with behaviour must have a provides port")))
    (append-map wfc (ast:port* o))
@@ -89,6 +91,7 @@
 
 (define-method (wfc (o <system>)) ;; is-a <component-model>
   (append
+   (re-declaration o)
    (append-map wfc (ast:port* o))
    (append-map wfc (ast:instance* o))
    (recursive o)
@@ -149,6 +152,7 @@
 
 (define-method (wfc (o <event>))
   (append
+   (re-declaration o)
    (cond ((and (ast:out? o) (ast:type o) (not (is-a? (ast:type o) <void>)))
           `(,(wfc-error o (format #f "out-event `~a' must be void, found `~a'" (.name o) (type-name (ast:type o))))))
          (else '()))
@@ -616,6 +620,9 @@
 
 (define-method (decl-scope (o <instance>))
   (parent o <system>))
+
+(define-method (decl-scope (o <port>))
+  (parent o <component-model>))
 
 (define-method (decl-scope (o <formal>))
   (.parent o))
