@@ -35,6 +35,7 @@
             %guile-piped-process?
             %lps2lts-stdout?
             %ltscompare-stdin?
+            %ltscompare-structured-output?
             %prefix
             %root-dir
             %template-dir
@@ -96,6 +97,9 @@
 
 (define %ltscompare-stdin?
   (equal? "@have_ltscompare_stdin@" "yes"))
+
+(define %ltscompare-structured-output?
+  (equal? "@have_ltscompare_structured_output@" "yes"))
 
 (define %guile-piped-process?
   (equal? "@have_guile_piped_process@" "yes"))
