@@ -38,6 +38,7 @@ component wf_replyTypeMismatch
 
   behaviour
   {
-    on pp.ia(): {rp.ia(); reply(false);}
+    void fn() { reply(false); }
+    on pp.ia(): { rp.ia(); fn(); }
   }
 }
