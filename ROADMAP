@@ -45,6 +45,8 @@ You're welcome to discuss this road map on dezyne-devel@gnu.org or
     bug-dezyne@nongnu.org
   - Get some content on dezyne.org
     + Move nginx/haunt-based website setup from banaan to kluit.
+  - Fully support IDE release
+    + Finish and merge wip-namespace
   - Pass regression test
     + Review old-regression removal, resurrect or rewrite missing tests
       - Dataparam?
@@ -59,10 +61,7 @@ You're welcome to discuss this road map on dezyne-devel@gnu.org or
   - Verification performance
     + Sort-out wip-convert branch
   - Resurrect C# support
-  - Fully support IDE release
-    + Finish and merge wip-namespace
-    + Integrate wip-pipe
-      - Support for running with unpatched Guile??
+  - Upstream mcrl2 patches
   - Debian package
     + Source build on Buster
     + Add manual pages
@@ -84,6 +83,8 @@ You're welcome to discuss this road map on dezyne-devel@gnu.org or
   - System simulator
   - Sub machines
 * DONE
+  - Integrate wip-pipe
+    + Support running with unpatched Guile
   - Remove NodeJS dependency
     + Replace test framework with automake driver in Guile
       - Review and integrate wip-test branch
