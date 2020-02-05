@@ -41,14 +41,10 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Assert that all dzn commands are accompanied by --help text
     towards truly stand-alone command line use
   - Document release process
-  - Finish and review wip-string branch
   - Release on savannah.nongnu.org; create dezyne-devel@nongnu.org,
     bug-dezyne@nongnu.org
   - Get some content on dezyne.org
     + Move nginx/haunt-based website setup from banaan to kluit.
-  - Remove NodeJS dependency
-    + Replace test framework with automake driver in Guile
-      - Review and integrate wip-test branch
   - Pass regression test
     + Review old-regression removal, resurrect or rewrite missing tests
       - Dataparam?
@@ -88,6 +84,10 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - System simulator
   - Sub machines
 * DONE
+  - Remove NodeJS dependency
+    + Replace test framework with automake driver in Guile
+      - Review and integrate wip-test branch
+  - Finish and review wip-string branch
   - Pluggable dzn commands, to support IDE.
   - Binary, generic, relocatable GNU/Linux pack
     + Tested on CentOS 6.8
