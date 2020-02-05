@@ -366,16 +366,34 @@
 (define-method (wfc (o <reply>)) ;; is-a <imperative>
   (append
    (call-context o)
-   (wfc (.expression o))
    (reply o)
    (reply-without-port o)
-   ))
+   (let* ((expr (.expression o))
+          (wfc-expr (wfc expr)))
+     (append wfc-expr
+             (if (and expr (null? wfc-expr)) (wfc-reply-type expr)
+                 '())))))
+
+(define-method (wfc-reply-type (o <expression>))
+  (let* ((reply-type (ast:type o))
+         (interface (parent o <interface>))
+         (interfaces
+          (if interface (list interface)
+              (let* ((ports (ast:port* (parent o <component-model>))))
+                (filter identity (map ast:type ports)))))
+         (interfaces (filter (cut is-a? <> <interface>) interfaces))
+         (events (append-map ast:event* interfaces))
+         (types (map (compose ast:type .signature) events))
+         (matching-types (filter (cut ast:equal? <> reply-type) types)))
+    (if (pair? matching-types) '()
+        `(,(wfc-error o (format #f "type mismatch: no event with reply type `~a'"
+                                (type-name reply-type)))))))
 
 (define-method (wfc (o <return>)) ;; is-a <imperative>
   (let* ((wfce (if (.expression o) (wfc (.expression o)) '()))
-        (function (parent o <function>))
-        (function-type (and function (ast:type function)))
-        (return-type (and (null? wfce) (ast:type o))))
+         (function (parent o <function>))
+         (function-type (and function (ast:type function)))
+         (return-type (and (null? wfce) (ast:type o))))
     (append wfce
             (cond ((not function)
                    `(,(wfc-error o "cannot use return outside of function")))
