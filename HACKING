@@ -1,6 +1,26 @@
 #+COMMENT:                                                            -*- org -*-
 #+TITLE: Hacking Dezyne command line tools
 
+* Regression test
+
+    make check
+
+Run an individual test
+
+   ./pre-inst-env run test/all/hello
+
+Re-run all failures (e.g., after making fixes)
+
+    make recheck
+
+Run all parser tests
+
+    make check FULL_TESTS="$(cd test/parser; ls -1)"
+
+Run all verification failure tests
+
+    make check FULL_TESTS="$(cd test/error; ls -1)"
+
 * GNU/Linux binary pack (generic, relocatable)
 
     guix environment -l guix.scm
