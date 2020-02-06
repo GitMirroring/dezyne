@@ -40,17 +40,13 @@ component hello_recursive
   {
     bool b = false;
     void f () {
-      bool bf = true;
-      bf = rec();
+      rec();
       w.world();
     }
-    bool rec() {
+    void rec() {
       b = !b;
-      if (b) {
-        bool bg = rec();
-        return bg;
-      }
-      else return b;
+      if (b)
+        rec();
     }
     on h.hello(): f();
   }
