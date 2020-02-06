@@ -562,7 +562,7 @@
       ((and ($ <variable>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
       (_ #f)))
   (define (.function-name call)
-    (or (and=> (as (.function call) <function>) .name) (.function call)))
+    (or (and=> (as (.function call) <function>) .name) ""))
   (or (member (.name function) seen)
       (let* ((compound (.statement function))
              (calls (tree-collect return-call compound))
