@@ -244,7 +244,7 @@
     (equal? (verify:scope-name o) (%model-name)))
   (let ((model (and (%model-name)
                     (find named? (ast:model* o)))))
-    (or (and model (is-a? model <component>) model)
+    (or model
         (find (is? <component>) (ast:model* o))
         (filter (is? <interface>) (ast:model* o)))))
 
@@ -331,19 +331,23 @@
   (filter (compose (cut equal? (.name o) <>) .port.name)
           (ast:trigger* (parent o <component>))))
 
+(define-method (enum-sort-global-public (o <root>))
+  (filter (is? <enum>)
+    (append
+      (ast:type* o)
+      (append-map ast:type* (filter (is? <interface>) (ast:model* o))))))
+
 (define-method (makreel:enum-sort (o <interface>))
-  (delete-duplicates
-   (append
-    (filter (is? <enum>) (ast:type* (parent o <root>)))
-    (tree-collect (is? <enum>) o))
-   ast:eq?))
+  (append
+    (enum-sort-global-public (parent o <root>))
+    (filter (is? <enum>) (ast:type* (.behaviour o)))))
 
 (define-method (makreel:enum-sort (o <component>))
-  (delete-duplicates
-   (append
-    (append-map makreel:enum-sort (ast:interface* o))
-    (tree-collect (is? <enum>) o))
-   ast:eq?))
+  (append
+    (enum-sort-global-public (parent o <root>))
+    (append-map
+      (lambda (o) (filter (is? <enum>) (ast:type* (.behaviour o))))
+      (append (list o) (ast:interface* o)))))
 
 (define-method (makreel:reply-type-eq? (a <int>) (b <int>))
   #t)
