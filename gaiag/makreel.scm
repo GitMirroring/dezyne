@@ -208,7 +208,7 @@
               (is-a? (.parent o) <function>)
               (is-a? o <compound>)
               (is-a? (.type (.signature (.parent o))) <void>))
-            (if (pair? (tree-collect (is? <return>) o)) o
+            (if (pair? (tree-collect-filter (is? <statement>) (is? <return>) o)) o
                 (clone o #:elements (append (ast:statement* o) (list (make <return>)))))
             (tree-map f o))))
    (f root))
@@ -395,7 +395,9 @@
               (loop rest reached)))))))
 
 (define (reachable-calls- o)
-  (let* ((calls (tree-collect (is? <call>) o))
+  (let* ((calls (tree-collect-filter
+                  (disjoin (is? <behaviour>) (is? <declarative>) (is? <functions>) (is? <function>) (is? <statement>))
+                  (is? <call>) o))
          (calls (reachable calls)))
     calls))
 
@@ -839,21 +841,21 @@
   o)
 
 (define-method (ast:trigger* (o <model>)) ;; FIXME: maybe use ast:in-triggers
-  (delete-duplicates (tree-collect (is? <trigger>) o)
+  (delete-duplicates (tree-collect-filter (is? <declarative>) (is? <trigger>) o)
                      (lambda (a b) (and (equal? (.port.name a) (.port.name b))
                                         (equal? (.event.name a) (.event.name b))))))
 
 (define-method (ast:blocking? (o <port>))
-  (if (pair? (tree-collect (is? <blocking>) (parent o <model>))) o ;; FIXME: specify per port
+  (if (pair? (tree-collect-filter (negate (disjoin (is? <imperative>) (is? <expression>) (is? <location>))) (is? <blocking>) (parent o <model>))) o ;; FIXME: specify per port
       '()))
 
 (define-method (ast:blocking? (o <component>))
-  (if (pair? (tree-collect (is? <blocking>) o)) o
+  (if (pair? (tree-collect-filter (negate (disjoin (is? <imperative>) (is? <expression>) (is? <location>))) (is? <blocking>) (is? <blocking>) o)) o
       '()))
 
 (define-method (ast:provides-blocking? (o <component>))
   (if (and (pair? (ast:requires-ports o))
-           (pair? (tree-collect (is? <blocking>) o))) (ast:provides-ports o)
+           (pair? (tree-collect-filter (negate (disjoin (is? <imperative>) (is? <expression>) (is? <location>))) (is? <blocking>) o))) (ast:provides-ports o)
       '()))
 
 (define-method (ast:requires-blocking? (o <port>))
