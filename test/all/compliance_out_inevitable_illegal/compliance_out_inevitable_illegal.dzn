@@ -19,59 +19,59 @@
 // You should have received a copy of the GNU Affero General Public
 // License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 //
-// Commentary: TODO: use dzn lts to filter pp.ia (because leads to illegal).
+// Commentary: TODO: use dzn lts to filter h.hello (because leads to illegal).
 //
 // Code:
 
-interface II
+interface ihello
 {
-  in void ia();
-  out void oa();
+  in void hello();
+  out void world();
 
   behaviour
   {
     bool b = false;
 
-    [!b] on ia: b = true;
-    [b] on ia: illegal;
-    [b] on inevitable: {b = false; oa;}
+    [!b] on hello: b = true;
+    [b] on hello: illegal;
+    [b] on inevitable: {b = false; world;}
   }
 }
 
-interface IO
+interface iworld
 {
-  in void ia();
-  in void ic();
-  out void oa();
+  in void hello();
+  in void goodbye();
+  out void world();
 
   behaviour
   {
     bool b = false;
 
-    [!b] on ia: b = true;
-    [b] on ia: illegal;
-    on ic: {}
-    [b] on optional: {b = false; oa;}
+    [!b] on hello: b = true;
+    [b] on hello: illegal;
+    on goodbye: {}
+    [b] on optional: {b = false; world;}
   }
 }
 
 component compliance_out_inevitable_illegal
 {
-  provides II pp;
-  requires IO rp;
+  provides ihello h;
+  requires iworld w;
 
   behaviour
   {
     bool b = false;
 
-    [!b] on pp.ia(): {b = true; rp.ia();}
-    on rp.oa(): pp.oa();
+    [!b] on h.hello(): {b = true; w.hello();}
+    on w.world(): h.world();
   }
 }
 
 
 // Expect compliance fail:
-// Spec II allows
-// <ia, return, oa>
+// Spec ihello allows
+// <hello, return, world>
 // Impl compliance_out_inevitable performs:
-// <pp.ia, rp.ia, rp.return, pp.return, pp.ia>
+// <h.hello, w.hello, w.return, h.return, h.hello>
