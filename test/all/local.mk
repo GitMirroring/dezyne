@@ -101,7 +101,7 @@ REGRESSION_TESTS =				\
  %D%/calling_context				\
  %D%/compliance_external_asynchronous_sync	\
  %D%/compliance_livelock			\
- %D%/compliance_out_async_inevitable		\
+ %D%/compliance_out_inevitable			\
  %D%/compliance_out_async_nondet		\
  %D%/compliance_out_sync			\
  %D%/compliance_provides_bool			\
