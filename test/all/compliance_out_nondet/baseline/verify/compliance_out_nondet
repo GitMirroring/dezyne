@@ -1,0 +1,22 @@
+verify: II: check: deadlock: ok
+verify: II: check: livelock: ok
+verify: IO: check: deadlock: ok
+verify: IO: check: livelock: ok
+verify: compliance_out_nondet: check: deterministic: ok
+verify: compliance_out_nondet: check: illegal: ok
+verify: compliance_out_nondet: check: deadlock: fail
+pp.ia
+rp.ia
+rp.return
+pp.return
+rp.ob
+pp.oa
+verify: compliance_out_nondet: check: compliance: fail
+pp.ia
+rp.ia
+rp.return
+pp.return
+rp.ob
+pp.oa
+pp.ia
+verify: compliance_out_nondet: check: livelock: ok
