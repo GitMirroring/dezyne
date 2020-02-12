@@ -121,7 +121,6 @@ REGRESSION_TESTS =				\
  %D%/external_asynchronous_sync			\
  %D%/extern_in_interface			\
  %D%/foreign_namespace				\
- %D%/glue-dzn					\
  %D%/guard_expressions				\
  %D%/hello_blocked_external			\
  %D%/hello_blocking_sync			\
@@ -289,7 +288,6 @@ XFAIL_TESTS =					\
  %D%/blocking_system4				\
  %D%/compliance_livelock			\
  %D%/compliance_out_inevitable_illegal		\
- %D%/glue-dzn					\
  %D%/import_strip_component
 
 FULL_TESTS =					\
