@@ -1,0 +1,77 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
+// Copyright © 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2020 Rob Wieringa <rob.wieringa@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary: TODO: use dzn lts to filter pp.ia (because leads to illegal).
+//
+// Code:
+
+interface II
+{
+  in void ia();
+  out void oa();
+
+  behaviour
+  {
+    bool b = false;
+
+    [!b] on ia: b = true;
+    [b] on ia: illegal;
+    [b] on inevitable: {b = false; oa;}
+  }
+}
+
+interface IO
+{
+  in void ia();
+  in void ic();
+  out void oa();
+
+  behaviour
+  {
+    bool b = false;
+
+    [!b] on ia: b = true;
+    [b] on ia: illegal;
+    on ic: {}
+    [b] on optional: {b = false; oa;}
+  }
+}
+
+component compliance_out_inevitable_illegal
+{
+  provides II pp;
+  requires IO rp;
+
+  behaviour
+  {
+    bool b = false;
+
+    [!b] on pp.ia(): {b = true; rp.ia();}
+    on rp.oa(): pp.oa();
+  }
+}
+
+
+// Expect compliance fail:
+// Spec II allows
+// <ia, return, oa>
+// Impl compliance_out_inevitable performs:
+// <pp.ia, rp.ia, rp.return, pp.return, pp.ia>
