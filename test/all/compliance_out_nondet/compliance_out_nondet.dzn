@@ -1,7 +1,8 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
-// Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2018,2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2020 Rob Wieringa <rob.wieringa@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -54,7 +55,7 @@ interface IO
   }
 }
 
-component compliance_out_async_nondet
+component compliance_out_nondet
 {
   provides II pp;
   requires IO rp;
