@@ -1,17 +1,17 @@
-verify: II: check: deadlock: ok
-verify: II: check: livelock: ok
-verify: IO: check: deadlock: ok
-verify: IO: check: livelock: ok
 verify: compliance_out_inevitable_illegal: check: deterministic: ok
 verify: compliance_out_inevitable_illegal: check: illegal: ok
 verify: compliance_out_inevitable_illegal: check: deadlock: fail
-pp.ia
-rp.ia
-rp.return
-pp.return
+h.hello
+w.hello
+w.return
+h.return
 verify: compliance_out_inevitable_illegal: check: compliance: fail
-pp.ia
-rp.ia
-rp.return
-pp.return
+h.hello
+w.hello
+w.return
+h.return
 verify: compliance_out_inevitable_illegal: check: livelock: ok
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
+verify: iworld: check: deadlock: ok
+verify: iworld: check: livelock: ok
