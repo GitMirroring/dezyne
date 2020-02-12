@@ -24,6 +24,7 @@
 dist_nocompile_%C%_scm_DATA =			\
  %D%/code.scm					\
  %D%/dzn.scm					\
+ %D%/json.scm					\
  %D%/makreel.scm
 
 if have_cxx11
@@ -52,6 +53,7 @@ nocompile_%C%_scmdir = $(%C%_scmdir)
 
 EXTRA_DIST +=					\
  %D%/dzn					\
+ %D%/json					\
  %D%/makreel
 
 if have_cxx11
