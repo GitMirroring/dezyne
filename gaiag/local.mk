@@ -31,6 +31,7 @@ dist_%C%_scm_DATA =				\
  %D%/gdzn.scm					\
  %D%/goops.scm					\
  %D%/indent.scm					\
+ %D%/json.scm					\
  %D%/json2scm.scm				\
  %D%/lts.scm					\
  %D%/makreel.scm				\
