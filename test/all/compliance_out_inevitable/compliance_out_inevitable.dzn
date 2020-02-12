@@ -23,56 +23,56 @@
 //
 // Code:
 
-interface II
+interface ihello
 {
-  in void ia();
-  out void oa();
+  in void hello();
+  out void world();
 
   behaviour
   {
     bool b = false;
 
-    [!b] on ia: b = true;
-    [b] on ia: {}
-    [b] on inevitable: {b = false; oa;}
+    [!b] on hello: b = true;
+    [b] on hello: {}
+    [b] on inevitable: {b = false; world;}
   }
 }
 
-interface IO
+interface iworld
 {
-  in void ia();
-  in void ic();
-  out void oa();
+  in void hello();
+  in void goodbye();
+  out void world();
 
   behaviour
   {
     bool b = false;
 
-    [!b] on ia: b = true;
-    [b] on ia: illegal;
-    on ic: {}
-    [b] on optional: {b = false; oa;}
+    [!b] on hello: b = true;
+    [b] on hello: illegal;
+    on goodbye: {}
+    [b] on optional: {b = false; world;}
   }
 }
 
 component compliance_out_inevitable
 {
-  provides II pp;
-  requires IO rp;
+  provides ihello h;
+  requires iworld w;
 
   behaviour
   {
     bool b = false;
 
-    [!b] on pp.ia(): {b = true; rp.ia();}
-    [b] on pp.ia(): {}
-    on rp.oa(): pp.oa();
+    [!b] on h.hello(): {b = true; w.hello();}
+    [b] on h.hello(): {}
+    on w.world(): h.world();
   }
 }
 
 
-// Expect compliance fail:
-// Spec II allows
-// <ia, return, oa>
-// Impl compliance_out_inevitable performs:
-// <pp.ia, rp.ia, rp.return, pp.return, pp.ia>
+// Expect complhellonce fail:
+// Spec ihello allows
+// <hello, return, world>
+// Impl complhellonce_out_inevitable performs:
+// <h.hello, w.hello, w.return, h.return, h.hello>
