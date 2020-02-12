@@ -23,49 +23,49 @@
 //
 // Code:
 
-interface II
+interface ihello
 {
-  in void ia();
-  out void oa();
+  in void hello();
+  out void world();
 
   behaviour
   {
     bool b = false;
 
-    [!b] on ia: b = true;
-    [b] on ia: illegal;
-    [b] on inevitable: {b = false; oa;}
+    [!b] on hello: b = true;
+    [b] on hello: illegal;
+    [b] on inevitable: {b = false; world;}
   }
 }
 
-interface IO
+interface iworld
 {
-  in void ia();
-  out void oa();
-  out void ob();
+  in void hello();
+  out void world();
+  out void cruel();
 
   behaviour
   {
     bool b = false;
 
-    [!b] on ia: b = true;
-    [b] on ia: illegal;
-    [b] on inevitable: {b = false; oa;}
-    [b] on inevitable: {b = false; ob;}
+    [!b] on hello: b = true;
+    [b] on hello: illegal;
+    [b] on inevitable: {b = false; world;}
+    [b] on inevitable: {b = false; cruel;}
   }
 }
 
 component compliance_out_nondet
 {
-  provides II pp;
-  requires IO rp;
+  provides ihello h;
+  requires iworld w;
 
   behaviour
   {
     bool b = false;
 
-    [!b] on pp.ia(): {b = true; rp.ia();}
-    on rp.oa(): {b = false; pp.oa();}
-    on rp.ob(): pp.oa();
+    [!b] on h.hello(): {b = true; w.hello();}
+    on w.world(): {b = false; h.world();}
+    on w.cruel(): h.world();
   }
 }
