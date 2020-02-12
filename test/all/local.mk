@@ -102,6 +102,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_external_asynchronous_sync	\
  %D%/compliance_livelock			\
  %D%/compliance_out_inevitable			\
+ %D%/compliance_out_inevitable_illegal		\
  %D%/compliance_out_nondet			\
  %D%/compliance_out_sync			\
  %D%/compliance_provides_bool			\
@@ -285,8 +286,9 @@ PARSER_TESTS =					\
  %D%/wf_variableInitExpression
 
 XFAIL_TESTS =					\
- %D%/compliance_livelock			\
  %D%/blocking_system4				\
+ %D%/compliance_livelock			\
+ %D%/compliance_out_inevitable_illegal		\
  %D%/glue-dzn					\
  %D%/import_strip_component
 
