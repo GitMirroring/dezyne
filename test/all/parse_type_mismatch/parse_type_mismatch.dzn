@@ -18,6 +18,9 @@
 //
 // Commentary:
 //
+// dit is een @emph{commented} comment
+//
+//
 // Code:
 
 interface parse_type_mismatch
