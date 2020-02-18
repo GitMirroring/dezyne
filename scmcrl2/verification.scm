@@ -4,7 +4,7 @@
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2018, 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -93,29 +93,21 @@
 ;;(define cppflag "-rjittyc")
 (define cppflag "")
 
-(define (mcrl2:verify-interface dir dzn-file-name interface ast verbose? all?)
-  (let* ((asserts (list (mcrl2:verify-interface-deadlock-livelock interface))))
-    (let loop ((asserts asserts))
-      (if (null? asserts) #f
-          (let* ((assert (car asserts))
-                 (fail? (apply assert (list dir dzn-file-name ast verbose? all?))))
-            (if (or (not fail?) all?) (or (loop (cdr asserts)) fail?)
-                fail?))))))
-
-(define (mcrl2:verify-component dir dzn-file-name model-name ast verbose? all?)
+(define (mcrl2:verify-component model-name ast)
   (let* ((component (find (lambda (x) (equal? (verify:scope-name x) model-name)) (filter (is? <component>) (ast:model* ast))))
          (interfaces (delete-duplicates (map .type (ast:port* component)) ast:eq?))
+         (all? (command-line:get 'all))
          (asserts (append
                    (append-map
                     (lambda (i) (list
-                                 (mcrl2:verify-interface-deadlock-livelock i)))
+                                 (mcrl2:verify-interface i)))
                     interfaces)
                    (list
                     (mcrl2:verify-component-deterministic-illegal-deadlock-livelock-refinement component)))))
     (let loop ((asserts asserts))
       (if (null? asserts) #f
           (let* ((assert (car asserts))
-                 (fail? (apply assert (list dir dzn-file-name ast verbose? all?))))
+                 (fail? (apply assert (list ast))))
             (if (or (not fail?) all?) (or (loop (cdr asserts)) fail?)
                 fail?))))))
 
@@ -146,11 +138,11 @@
 (define (get-info check result)
   (string-split (caddr (get-line check result)) #\,))
 
-(define ((mcrl2:verify-interface-deadlock-livelock model) dir dzn-file-name ast verbose? all?)
+(define ((mcrl2:verify-interface model) ast)
   (let* ((model-name ((compose ->string verify:scope-name) model))
-         (foo (assert-start 'interface model-name 'deadlock verbose?))
-         (foo (assert-start 'interface model-name 'livelock verbose?))
-         (foo (assert-start 'interface model-name 'deadlock verbose?))
+         (foo (assert-start 'interface model-name 'deadlock))
+         (foo (assert-start 'interface model-name 'livelock))
+         (foo (assert-start 'interface model-name 'deadlock))
          (taus (interface-taus model))
          (file-name (verify:file-name model))
          (intf (with-output-to-string (cut model->mcrl2 ast model)))
@@ -168,12 +160,12 @@
          (result (pipeline->string commands))
          (result (result-split result))
          (info (get-info "deadlock" result)))
-    (reduce-or all?
-               (list (cut check-deadlock (get-trace "deadlock" result) info dir dzn-file-name 'interface model-name verbose?)
-                     (cut check-livelock (get-trace "livelock" result) info dir dzn-file-name 'interface model-name verbose?)))))
+    (reduce-or (command-line:get 'all)
+               (list (cut check-deadlock (get-trace "deadlock" result) info 'interface model-name)
+                     (cut check-livelock (get-trace "livelock" result) info 'interface model-name)))))
 
-(define (do-refinement lts model-name makreel model verbose?)
-  (let* ((foo (assert-start 'component model-name 'compliance verbose?))
+(define (do-refinement lts model-name makreel model)
+  (let* ((foo (assert-start 'component model-name 'compliance))
          (taus (compliance-taus model))
          (taus (if (string-null? taus) '()
                    (list (string-append "--tau=" taus))))
@@ -227,13 +219,13 @@
           (throw 'programming-error (format #f "status: ~s, trace: ~s\n" status trace)))
         (values trace interface-accepts component-accepts)))))
 
-(define ((mcrl2:verify-component-deterministic-illegal-deadlock-livelock-refinement model) dir dzn-file-name ast verbose? all?)
+(define ((mcrl2:verify-component-deterministic-illegal-deadlock-livelock-refinement model) ast)
   (let* ((model-name ((compose ->string verify:scope-name) model))
-         (foo (assert-start 'component model-name 'deterministic verbose?))
-         (foo (assert-start 'component model-name 'illegal verbose?))
-         (foo (assert-start 'component model-name 'deadlock verbose?))
-         (foo (assert-start 'component model-name 'livelock verbose?))
-         (foo (assert-start 'component model-name 'deterministic verbose?))
+         (foo (assert-start 'component model-name 'deterministic))
+         (foo (assert-start 'component model-name 'illegal))
+         (foo (assert-start 'component model-name 'deadlock))
+         (foo (assert-start 'component model-name 'livelock))
+         (foo (assert-start 'component model-name 'deterministic))
          (taus (component-taus model))
          (taus (if (string-null? taus) '()
                    `(,(string-append "--tau=" taus))))
@@ -253,38 +245,37 @@
          (lts (get-lts result))
          (info (get-info "deterministic" result)))
     (receive (refinement-trace interface-accepts component-accepts)
-        (do-refinement lts model-name makreel model verbose?)
-      (reduce-or all?
-                 (list (cut check-deterministic (get-trace "deterministic" result) info dir dzn-file-name 'component model-name verbose?)
-                       (cut check-illegal       (get-trace "illegal"       result) info dir dzn-file-name 'component model-name verbose?)
-                       (cut check-deadlock      (get-trace "deadlock"      result) info dir dzn-file-name 'component model-name verbose?)
-                       (cut check-livelock      (get-trace "livelock"      result) info dir dzn-file-name 'component model-name verbose?)
-                       (cut check-compliance refinement-trace interface-accepts component-accepts info dir dzn-file-name 'component model-name verbose?))))))
+        (do-refinement lts model-name makreel model)
+      (reduce-or (command-line:get 'all)
+                 (list (cut check-deterministic (get-trace "deterministic" result) info 'component model-name)
+                       (cut check-illegal       (get-trace "illegal"       result) info 'component model-name)
+                       (cut check-deadlock      (get-trace "deadlock"      result) info 'component model-name)
+                       (cut check-livelock      (get-trace "livelock"      result) info 'component model-name)
+                       (cut check-compliance refinement-trace interface-accepts component-accepts info 'component model-name))))))
 
-(define (mcrl2:verify dir dzn-file-name model-name ast verbose? all?)
+(define (mcrl2:verify model-name ast)
   (let ((model (find (lambda (x) (equal? (verify:scope-name x) model-name)) (filter (is? <model>) (ast:model* ast)))))
-    (cond ((is-a? model <interface>) (mcrl2:verify-interface dir dzn-file-name model ast verbose? all?))
-          ((is-a? model <component>) (mcrl2:verify-component dir dzn-file-name model-name ast verbose? all?))
+    (cond ((is-a? model <interface>) ((mcrl2:verify-interface model) ast))
+          ((is-a? model <component>) (mcrl2:verify-component model-name ast))
           (else #f))))
 
-(define (assert-start model-type model-name assert verbose?)
-  (when (and verbose?
-             (gdzn:command-line:get 'json))
+(define (assert-start model-type model-name assert)
+  (when (gdzn:command-line:get 'json)
     (format #t "~a\n"
             (scm->json-string `(((model . ,model-name)
                                  (type . ,model-type)
                                  (assert . ,assert)
                                  (first . "true")
-                                 (status . "assert"))))))
-  #f)
+                                 (status . "assert")))))))
 
-(define (assert-ok model-type model-name assert info verbose?)
-  (let* ((states (car info))
-         (transitions (cdr info)))
-    (when verbose?
-      (if (not (gdzn:command-line:get 'json))
-          (stdout "verify: ~a: check: ~a: ok\n" model-name assert)
-          (format #t "~a\n"
+(define (assert-ok model-type model-name assert info)
+  (let* ((verbose? (gdzn:command-line:get 'verbose))
+         (states (car info))
+         (transitions (car (cdr info))))
+    (if (not (gdzn:command-line:get 'json))
+      (when verbose?
+        (stdout "verify: ~a: check: ~a: ok\n" model-name assert))
+      (format #t "~a\n"
            (scm->json-string `(((model . ,model-name)
                                 (type . ,model-type)
                                 (assert . ,assert)
@@ -292,10 +283,10 @@
                                 (total_transitions . ,transitions)
                                 (result . ok)
                                 (trace . ,`())
-                                (status . "done")))))))
+                                (status . "done"))))))
     #f))
 
-(define (assert-fail dir dzn-file-name model-type model-name assert info trace message)
+(define (assert-fail model-type model-name assert info trace message)
   (let* ((verbose? (gdzn:command-line:get 'verbose))
          (message (or message (format #f "~a in model ~a" assert model-name)))
          (trace-list (filter (negate string-null?) (string-split trace #\newline)))
@@ -330,36 +321,34 @@
             (stdout "~a\n" trace))))
     #t))
 
-(define (check-deterministic trace info dir dzn-file-name model-type model-name verbose?)
+(define (check-deterministic trace info model-type model-name)
   (let ((assert 'deterministic))
-    (if (not trace) (assert-ok model-type model-name assert info verbose?)
+    (if (not trace) (assert-ok model-type model-name assert info)
         (let ((message (format #f "Component ~a is non-deterministic due to overlapping guards" model-name)))
-          (assert-fail dir dzn-file-name model-type model-name assert info trace message)))))
+          (assert-fail model-type model-name assert info trace message)))))
 
-(define (check-illegal trace info dir dzn-file-name model-type model-name verbose?)
+(define (check-illegal trace info model-type model-name)
   (let ((assert 'illegal))
-    (if (not trace) (assert-ok model-type model-name assert info verbose?)
+    (if (not trace) (assert-ok model-type model-name assert info)
         (let ((message "illegal"))
-          (assert-fail dir dzn-file-name model-type model-name assert info trace message)))))
+          (assert-fail model-type model-name assert info trace message)))))
 
-(define (check-deadlock trace info dir dzn-file-name model-type model-name verbose?)
+(define (check-deadlock trace info model-type model-name)
   (let ((assert 'deadlock))
-    (if (not trace) (assert-ok model-type model-name assert info verbose?)
+    (if (not trace) (assert-ok model-type model-name assert info)
         (let ((message #f))
-          (assert-fail dir dzn-file-name model-type model-name assert info trace message)))))
+          (assert-fail model-type model-name assert info trace message)))))
 
-(define (check-livelock trace info dir dzn-file-name model-type model-name verbose?)
+(define (check-livelock trace info model-type model-name)
   (let ((assert 'livelock))
-    (if (not trace) (assert-ok model-type model-name assert info verbose?)
+    (if (not trace) (assert-ok model-type model-name assert info)
         (let ((message #f))
-          (assert-fail dir dzn-file-name model-type model-name assert info trace message)))))
+          (assert-fail model-type model-name assert info trace message)))))
 
-(define (check-compliance trace interface-accepts component-accepts info dir dzn-file-name model-type model-name verbose?)
+(define (check-compliance trace interface-accepts component-accepts info model-type model-name)
   (let ((assert 'compliance))
-    (if (not trace) (assert-ok model-type model-name assert info verbose?)
+    (if (not trace) (assert-ok model-type model-name assert info)
         (let ((message (format #f "Component ~a is non-compliant with interface of provided port" model-name))
               (component-trace (if component-accepts (string-append trace (car component-accepts) "\n")
-                                   trace))
-              (interface-trace (if interface-accepts (string-append trace (car interface-accepts) "\n")
                                    trace)))
-          (assert-fail dir dzn-file-name model-type model-name assert info component-trace message)))))
+          (assert-fail model-type model-name assert info component-trace message)))))

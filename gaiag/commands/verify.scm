@@ -103,12 +103,11 @@ Usage: dzn verify [OPTION]... DZN-FILE
     (parameterize ((language 'makreel) (%model-name model-name))
       (root-> root'))))
 
-(define (verify-makreel options dir file-name ast)
-  (let ((verbose? (gdzn:command-line:get 'verbose))
-        (all? (command-line:get 'all)))
+(define (verify-makreel options ast)
+  (let ((all? (command-line:get 'all)))
 
     (define (verify-makreel-model root model-name)
-      (mcrl2:verify dir file-name model-name root verbose? all?))
+      (mcrl2:verify model-name root))
 
     (let* ((root (makreel:om ast))
            (model (option-ref options 'model #f))
@@ -132,5 +131,5 @@ Usage: dzn verify [OPTION]... DZN-FILE
     (setvbuf (current-output-port) 'line)
     (let* ((file-name (car files))
            (ast (parse options file-name)))
-      (let ((error? (verify-makreel options "." file-name ast)))
+      (let ((error? (verify-makreel options ast)))
         (exit error?)))))
