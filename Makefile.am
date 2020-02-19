@@ -274,28 +274,25 @@ linux:
 
 dzn_mingw = dzn-mingw guile-mingw mcrl2-minimal-mingw
 mingw:
-	GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 hello
-	GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 guile-mingw
-#	GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 zlib-mingw
-	GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 boost-mingw
-	GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 mcrl2-minimal-mingw
-	GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 dzn-mingw
-	rm -f $(distdir)-x86_64-windows.zip
-	rm -rf $(distdir)-x86_64-windows
-	mkdir -p $(distdir)-x86_64-windows/lib
-	cp --no-preserve=mode $$(find $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 guile-json-mingw) \
-              $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 $(dzn_mingw)) | grep mingw | grep -E 'dzn|guile|mcrl2') -path '*/bin/*') $(distdir)-x86_64-windows
-	cp --no-preserve=mode -r $$(find $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 guile-json-mingw) \
-              $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 $(dzn_mingw)) | grep mingw | grep -E 'dzn|guile|mcrl2') -path '*/share') $(distdir)-x86_64-windows
-	cp --no-preserve=mode -r $$(find $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 guile-json-mingw) \
-              $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 dzn-mingw guile-mingw) | grep mingw ) -path '*/lib/guile') $(distdir)-x86_64-windows/lib
-	-cp $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 $(dzn_mingw))) -name '*.dll') $(distdir)-x86_64-windows/lib
-	cp $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 $(dzn_mingw)) | grep -E 'dzn|guile|mcrl2') -name '*.exe') $(distdir)-x86_64-windows
-#	cp --no-preserve=mode -r $$(find $$(GUIX_PACKAGE_PATH=guix guix build dzn) -path '*/dzn/info') $(distdir)-x86_64-windows/share/dzn
-	cp bin/dzn $(distdir)-x86_64-windows
-	cp bin/dzn.cmd $(distdir)-x86_64-windows
-	cp bin/guile.cmd $(distdir)-x86_64-windows
+	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 hello
+	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 guile-mingw
+	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 mcrl2-minimal-mingw
+	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 dzn-mingw
+	rm -f $(distdir)-i686-windows.zip
+	rm -rf $(distdir)-i686-windows
+	mkdir -p $(distdir)-i686-windows/lib
+	cp --no-preserve=mode $$(find $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 guile-json-mingw) \
+              $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw)) | grep mingw | grep -E 'dzn|guile|mcrl2') -path '*/bin/*') $(distdir)-i686-windows
+	cp --no-preserve=mode -r $$(find $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 guile-json-mingw) \
+              $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw)) | grep mingw | grep -E 'dzn|guile|mcrl2') -path '*/share') $(distdir)-i686-windows
+	cp --no-preserve=mode -r $$(find $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 guile-json-mingw) \
+              $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 dzn-mingw guile-mingw) | grep mingw ) -path '*/lib/guile') $(distdir)-i686-windows/lib
+	-cp $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw))) -name '*.dll') $(distdir)-i686-windows/lib
+	cp $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw)) | grep -E 'dzn|guile|mcrl2') -name '*.exe') $(distdir)-i686-windows
+	cp bin/dzn $(distdir)-i686-windows
+	cp bin/dzn.cmd $(distdir)-i686-windows
+	cp bin/guile.cmd $(distdir)-i686-windows
 	cp test/all/hello/hello.dzn $(distdir)
 	cp test/all/Camera/Camera.dzn $(distdir)
-	zip -r $(distdir)-x86_64-windows.zip $(distdir)-x86_64-windows
-	rm -rf $(distdir)-x86_64-windows
+	zip -r $(distdir)-i686-windows.zip $(distdir)-i686-windows
+	rm -rf $(distdir)-i686-windows
