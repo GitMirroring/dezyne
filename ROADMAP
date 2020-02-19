@@ -53,7 +53,6 @@ You're welcome to discuss this road map on dezyne-devel@gnu.org or
     + Fix problematic draft patches
       - DRAFT peg: Add fall-back parsing.
       - DRAFT peg: Add whitespace and comment skip parsers.
-  - Upstream start_process patches to Guile
   - Parser bugs/hardening
     + See wip-convert
   - Resurrect C++03 support
@@ -82,6 +81,7 @@ You're welcome to discuss this road map on dezyne-devel@gnu.org or
   - System simulator
   - Sub machines
 * DONE
+  - Upstream start_process patch to Guile
   - Document release process
     + Release from source tarball.
   - Remove NodeJS dependency
