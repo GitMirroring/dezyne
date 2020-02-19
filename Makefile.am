@@ -168,8 +168,11 @@ doc/dzn-parse.1: bin/dzn Makefile $(ALL_GO)
 #     - git clean -fdx
 #     - ./autogen.sh; ./configure; make
 #  1. make tag PACKAGE_VERSION=X.Y
-#  2. make sign-dist
-#  3. make release
+#  FIXME: 2. make sign-dist
+#  FIXME: 3. make release
+#  FIXME: This does not work yet, needs tarball release
+#  FIXME: tarball is incomplete, TODO: update commits that add files
+#  FIXME: For now; build from git, update guix/gnu/packages/dzn.scm by hand!
 #  4. test guix package build, binary packs (see HACKING)
 #     GUIX_PACKAGE_PATH=guix build dzn
 #     make linux
