@@ -287,8 +287,10 @@ PARSER_TESTS =					\
 XFAIL_TESTS =					\
  %D%/blocking_system4				\
  %D%/compliance_livelock			\
+ %D%/compliance_provides_illegal4		\
  %D%/compliance_out_inevitable_illegal		\
- %D%/import_strip_component
+ %D%/import_strip_component			\
+ %D%/shell
 
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
