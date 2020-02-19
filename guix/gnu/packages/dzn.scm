@@ -49,14 +49,21 @@
 
 (define %source-dir (getcwd))
 
+;; scp kluit.dezyne.org:.../download/dzn-dzn-2.10.0.tar.gz .
+;; guix download ./dzn-dzn-2.10.0.tar.gz
+
 (define-public dzn
   (package
     (name "dzn")
-    (version "0.0")
-    ;; TODO: URL to released tarball
-    (source (local-file %source-dir
-                        #:recursive? #t
-                        #:select? (git-predicate %source-dir)))
+    (version "2.10.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://dezyne.org/download/dzn/"
+                           name "-" version ".tar.gz"))
+       (sha256
+        (base32
+         #!dzn!# "1whcffb142si746i2sfk7xcnfaynhhd745p4jyx716fl05grfliw"))))
     (inputs `(("bash" ,bash-minimal)
               ("coreutils" ,coreutils)
               ("guile" ,guile-2.2)
@@ -70,7 +77,8 @@
                      ("help2man" ,help2man)
                      ("perl" ,perl)
                      ("pkg-config" ,pkg-config)
-                     ("zip" ,zip)))   ; for guix environment -l guix.scm
+                     ("texinfo" ,texinfo)
+                     ("zip" ,zip))) ; for guix environment -l guix.scm
     (propagated-inputs `(("guile-json" ,guile-json-1)))
     (build-system gnu-build-system)
     (arguments
@@ -84,6 +92,8 @@
          (add-after 'install 'wrap-binaries
            (lambda* (#:key inputs outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
+                    (bash (assoc-ref %build-inputs "bash"))
+                    (coreutils (assoc-ref %build-inputs "coreutils"))
                     (guile (assoc-ref %build-inputs "guile"))
                     (json (assoc-ref %build-inputs "guile-json"))
                     (m4 (assoc-ref %build-inputs "m4-cw"))
