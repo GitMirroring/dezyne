@@ -277,6 +277,7 @@ linux:
 	sed s,@COMMAND@,guile, bin/wrapper.sh > $(distdir)/guile
 	chmod +x  $(distdir)/guile
 	cp test/all/hello/hello.dzn $(distdir)
+	cp test/all/compliance_provides_bool/compliance_provides_bool.dzn $(distdir)
 	cp test/all/Camera/Camera.dzn $(distdir)
 	$(TAR) -cf $(distdir)-x86_64-linux.tar $(distdir)
 	gzip --no-name $(distdir)-x86_64-linux.tar
@@ -303,6 +304,7 @@ mingw: bin/dzn
 	cp bin/dzn.cmd $(distdir)-i686-windows
 	cp bin/guile.cmd $(distdir)-i686-windows
 	cp test/all/hello/hello.dzn $(distdir)-i686-windows
+	cp test/all/compliance_provides_bool/compliance_provides_bool.dzn $(distdir)-i686-windows
 	cp test/all/Camera/Camera.dzn $(distdir)-i686-windows
 	zip -r $(distdir)-i686-windows.zip $(distdir)-i686-windows
 	rm -rf $(distdir)-i686-windows
