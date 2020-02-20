@@ -138,6 +138,7 @@
     (inherit dzn)
     (name "dzn-mingw")
     (native-inputs `(("guile-json-for-build" ,guile-json-1)
+                     ("mcrl2" ,mcrl2-minimal-patched)
                      ,@(package-native-inputs dzn)))
     (inputs `(("guile" ,guile-mingw)))
     (propagated-inputs `(("guile-json" ,guile-json-mingw)
