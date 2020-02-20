@@ -107,14 +107,24 @@
           "-DHAS_CXX11_UNORDERED_SET:INTERNAL=TRUE"
           "-DHAS_CXX11_VARIADIC_TEMPLATES:INTERNAL=TRUE"
           ,flags))
-      ((#:phases phases '%standard-phases)
-       `(modify-phases ,phases
-          (add-before 'configure 'fixups
-              (lambda _
-                (substitute* "build/packaging/CMakeLists.txt"
-                  (("if [(]WIN32[)]") "if (0)"))
-                #t))
-          (delete 'install-dparser)))))))
+       ((#:phases phases '%standard-phases)
+        `(modify-phases ,phases
+           (add-before 'configure 'fixups
+             (lambda _
+               (substitute* "build/packaging/CMakeLists.txt"
+                 (("if [(]WIN32[)]") "if (0)"))
+               #t))
+           (add-before 'configure 'setenv
+             (lambda _
+               (let ((gcc (assoc-ref %build-inputs "cross-gcc"))
+                     (libc (assoc-ref %build-inputs "cross-libc")))
+                 (setenv "CROSS_CPLUS_INCLUDE_PATH"
+                         (string-append gcc "/include/c++"
+                                        ":" gcc "/include"
+                                        ":" libc "/include"))
+                 (format #t "environment variable `CROSS_CPLUS_INCLUDE_PATH' set to `~a'\n" (getenv "CROSS_CPLUS_INCLUDE_PATH"))
+                 #t)))
+           (delete 'install-dparser)))))))
 
 (define-public boost-mingw
   (package
