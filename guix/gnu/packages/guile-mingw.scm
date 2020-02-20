@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019,2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,6 +22,7 @@
 ;;; Code:
 
 (define-module (gnu packages guile-mingw)
+  #:use-module (srfi srfi-1)
   #:use-module (guix build-system gnu)
   #:use-module (guix gexp)
   #:use-module (guix download)
@@ -32,11 +33,36 @@
   #:use-module (gnu packages)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages flex)
+  #:use-module (gnu packages gcc)
   #:use-module (gnu packages gettext)
   #:use-module (gnu packages guile)
   #:use-module (gnu packages mingw)
+  #:use-module (gnu packages multiprecision)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages texinfo))
+
+(define-public gmp-mingw
+  ;; Workaround for gcc-7 transition, -system and cross-build,
+  ;; should be fixed in core-updates (TODO: verify!).
+  ;; Note: See <http://bugs.gnu.org/22186> for why not 'CPATH'.
+  ;; Note: See <http://bugs.gnu.org/30756> for why not 'C_INCLUDE_PATH' & co.
+  (package
+    (inherit gmp)
+    (name "gmp-mingw")
+    (arguments
+     (substitute-keyword-arguments (package-arguments gmp)
+       ((#:phases phases '%standard-phases)
+        `(modify-phases ,phases
+           (add-before 'configure 'setenv
+             (lambda _
+               (let ((gcc (assoc-ref %build-inputs "cross-gcc"))
+                     (libc (assoc-ref %build-inputs "cross-libc")))
+                 (setenv "CROSS_CPLUS_INCLUDE_PATH"
+                         (string-append gcc "/include/c++"
+                                        ":" gcc "/include"
+                                        ":" libc "/include"))
+                 (format #t "environment variable `CROSS_CPLUS_INCLUDE_PATH' set to `~a'\n" (getenv "CROSS_CPLUS_INCLUDE_PATH"))
+                 #t)))))))))
 
 (define-public guile-mingw
   (let ((commit "6d6bc013e1f9db98334e1212295b8be0e39fbf0a")
@@ -63,6 +89,9 @@
          ("texinfo" ,texinfo)
          ("gettext" ,gettext-minimal)
          ,@(package-native-inputs guile-2.2)))
+      (propagated-inputs
+       `(("gmp" ,gmp-mingw)
+         ,@(alist-delete "gmp" (package-propagated-inputs guile-2.2))))
       (arguments
        `(#:tests? #f
          ,@(if (%current-target-system)
