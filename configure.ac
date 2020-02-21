@@ -193,8 +193,6 @@ AC_CONFIG_FILES([test/bin/reorder:test/bin/reorder.in],
 AC_CONFIG_FILES([test/bin/run:test/bin/run.in],
                 [chmod +x test/bin/run])
 AC_CONFIG_FILES([runtime/c++/dzn/meta.hh])
-AC_CONFIG_FILES([runtime/c++-msvc11/dzn/meta.hh])
-AC_CONFIG_FILES([runtime/c++03/dzn/meta.hh])
 
 AC_OUTPUT
 
