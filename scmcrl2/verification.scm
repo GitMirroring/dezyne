@@ -93,31 +93,20 @@
 ;;(define cppflag "-rjittyc")
 (define cppflag "")
 
+(define (reduce-or all? l)
+  (if all? (fold (cut or <> <>) #f (map (cut <>) l))
+      (fold (lambda (e res) (or res (e))) #f l)))
+
 (define (mcrl2:verify-component model-name ast)
   (let* ((component (find (lambda (x) (equal? (verify:scope-name x) model-name)) (filter (is? <component>) (ast:model* ast))))
          (interfaces (delete-duplicates (map .type (ast:port* component)) ast:eq?))
-         (all? (command-line:get 'all))
-         (asserts (append
-                   (append-map
-                    (lambda (i) (list
-                                 (mcrl2:verify-interface i)))
-                    interfaces)
-                   (list
-                    (mcrl2:verify-component-deterministic-illegal-deadlock-livelock-refinement component)))))
-    (let loop ((asserts asserts))
-      (if (null? asserts) #f
-          (let* ((assert (car asserts))
-                 (fail? (apply assert (list ast))))
-            (if (or (not fail?) all?) (or (loop (cdr asserts)) fail?)
-                fail?))))))
+         (verify-models (append (map (lambda (i) (cut mcrl2:verify-interface i ast)) interfaces)
+                                (list (cut mcrl2:verify-component-asserts component ast)))))
+    (reduce-or (command-line:get 'all) verify-models)))
 
 (define* (display-binary string #:optional (port (current-output-port)))
   (set-port-encoding! port "ISO-8859-1")
   (display string port))
-
-(define (reduce-or all? l)
-  (if all? (fold (cut or <> <>) #f (map (cut <>) l))
-      (fold (lambda (e res) (or res (e))) #f l)))
 
 (define (result-split result)
   (map (cut string-split <> #\:) (string-split result #\newline)))
@@ -138,7 +127,7 @@
 (define (get-info check result)
   (string-split (caddr (get-line check result)) #\,))
 
-(define ((mcrl2:verify-interface model) ast)
+(define (mcrl2:verify-interface model ast)
   (let* ((model-name ((compose ->string verify:scope-name) model))
          (foo (assert-start 'interface model-name 'deadlock))
          (foo (assert-start 'interface model-name 'livelock))
@@ -219,7 +208,7 @@
           (throw 'programming-error (format #f "status: ~s, trace: ~s\n" status trace)))
         (values trace interface-accepts component-accepts)))))
 
-(define ((mcrl2:verify-component-deterministic-illegal-deadlock-livelock-refinement model) ast)
+(define (mcrl2:verify-component-asserts model ast)
   (let* ((model-name ((compose ->string verify:scope-name) model))
          (foo (assert-start 'component model-name 'deterministic))
          (foo (assert-start 'component model-name 'illegal))
@@ -255,7 +244,7 @@
 
 (define (mcrl2:verify model-name ast)
   (let ((model (find (lambda (x) (equal? (verify:scope-name x) model-name)) (filter (is? <model>) (ast:model* ast)))))
-    (cond ((is-a? model <interface>) ((mcrl2:verify-interface model) ast))
+    (cond ((is-a? model <interface>) (mcrl2:verify-interface model ast))
           ((is-a? model <component>) (mcrl2:verify-component model-name ast))
           (else #f))))
 
