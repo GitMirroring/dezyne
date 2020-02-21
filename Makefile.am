@@ -249,15 +249,16 @@ TAR = tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner
 
 dzn_linux = dzn bash-minimal coreutils guile m4-changeword mcrl2-minimal sed
 pack:
-	GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-build-hook $(dzn_linux)
+	GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-offload $(dzn_linux)
 
 linux:
+	GUIX_PACKAGE_PATH=guix guix build dzn
 	rm -f $(distdir)-x86_64-linux.tar.gz
-	GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-build-hook $(dzn_linux)
+	GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-offload $(dzn_linux)
 	if test -d $(distdir); then chmod -R +w $(distdir); fi
 	rm -rf $(distdir)
 	mkdir $(distdir)
-	tar -C $(distdir) --no-overwrite-dir -xf $$(GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-build-hook $(dzn_linux))
+	tar -C $(distdir) --no-overwrite-dir -xf $$(GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-offload $(dzn_linux))
 	chmod -R +w $(distdir)
 	cd $(distdir) && rm -rf $(STRIP_FILES)
 	sed s,@COMMAND@,dzn, bin/wrapper.sh > $(distdir)/dzn
