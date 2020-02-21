@@ -109,7 +109,9 @@ clean-go:
 #######
 
 include test/all/local.mk   # FULL_TESTS and XFAIL_TESTS
+include test/bin/local.mk
 include test/gaiag/local.mk
+include test/lib/local.mk
 
 TEST_EXTENSIONS = .scm
 LOG_COMPILER = $(top_builddir)/pre-inst-env run
