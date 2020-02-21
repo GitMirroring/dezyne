@@ -21,15 +21,23 @@
 #
 # Code:
 
-EXTRA_DIST +=					\
- %D%/c++03.scm					\
+dist_nocompile_%C%_scm_DATA =			\
  %D%/code.scm					\
  %D%/c++.scm					\
- %D%/c.scm					\
- %D%/cs.scm					\
  %D%/dzn.scm					\
  %D%/glue.scm					\
- %D%/html.scm					\
  %D%/javascript.scm				\
  %D%/makreel.scm				\
  %D%/scheme.scm
+
+%C%_scmdir = $(guilemoduledir)/%D%
+nocompile_%C%_scmdir = $(%C%_scmdir)
+
+EXTRA_DIST +=					\
+ %D%/c++					\
+ %D%/dzn					\
+ %D%/javascript					\
+ %D%/makreel					\
+ %D%/scheme
+
+%C%dir = $(pkgdatadir)/%D%
