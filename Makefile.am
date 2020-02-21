@@ -81,7 +81,9 @@ include gash/local.mk
 include gaiag/parse/local.mk
 include gaiag/peg/local.mk
 include gaiag/commands/local.mk
+include runtime/local.mk
 include scmcrl2/local.mk
+include gaiag/templates/local.mk
 
 GUILEC_FLAGS = -Warity-mismatch -Wformat --load-path=$(abs_srcdir)
 
