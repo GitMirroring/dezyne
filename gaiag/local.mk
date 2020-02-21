@@ -24,12 +24,9 @@
 dist_%C%_scm_DATA =				\
  %D%/ast.scm					\
  %D%/c++.scm					\
- %D%/c++03.scm					\
- %D%/c.scm					\
  %D%/code.scm					\
  %D%/command-line.scm				\
  %D%/config.scm					\
- %D%/cs.scm					\
  %D%/display.scm				\
  %D%/dzn.scm					\
  %D%/fifo.scm					\
