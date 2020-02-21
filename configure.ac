@@ -55,9 +55,15 @@ AC_PATH_PROG([MCRL22LPS], [mcrl22lps])
 if test "$PACKAGE_VERSION" = UNKNOWN; then
     PACKAGE_VERSION=0.0.0
 fi
-VERSION_MAJOR=[$(expr $PACKAGE_VERSION : '\([0-9]\+\)[.][0-9]\+[.][0-9][^ ]*')]
-VERSION_MINOR=[$(expr $PACKAGE_VERSION : '[0-9]\+[.]\([0-9]\+\)[.][0-9][^ ]*')]
+VERSION_MAJOR=[$(expr $PACKAGE_VERSION : '\([0-9]\+\)[.]')]
+VERSION_MINOR=[$(expr $PACKAGE_VERSION : '[0-9]\+[.]\([0-9]\+\)')]
 VERSION_PATCH=[$(expr $PACKAGE_VERSION : '[0-9]\+[.][0-9]\+[.]\([0-9]\+\)[^ ]*')]
+if test "x$VERSION_PATCH" = "x"; then
+   VERSION_PATCH=[-$(expr $PACKAGE_VERSION : '[0-9]\+[.][0-9]\+[.]rc\([0-9]\+\)[^ ]*')]
+fi
+if test "x$VERSION_PATCH" = "x"; then
+   VERSION_PATCH=0
+fi
 VERSION_COMMIT=[$(expr $PACKAGE_VERSION : '[0-9]\+[.][0-9]\+[.][0-9]\+\([^ ]*\)')]
 AC_SUBST([VERSION_MAJOR])
 AC_SUBST([VERSION_MINOR])
