@@ -1,0 +1,4 @@
+#! /bin/sh
+set -x
+pwd
+DZN_INCLUDE_PATH=test/all/importPath/subdir:test/all/importPath/foo run $1
