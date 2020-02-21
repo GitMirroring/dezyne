@@ -182,6 +182,7 @@ REGRESSION_TESTS =				\
  %D%/illegal_requires2				\
  %D%/illegal_requires_out			\
  %D%/illegal_system_requires			\
+ %D%/importPath					\
  %D%/import_strip_component			\
  %D%/incomplete					\
  %D%/inner.space				\
