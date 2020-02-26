@@ -286,10 +286,13 @@ PARSER_TESTS =					\
  %D%/wf_variableInitExpression
 
 XFAIL_TESTS =					\
- %D%/blocking_system4				\
  %D%/compliance_livelock			\
  %D%/compliance_out_inevitable_illegal		\
  %D%/import_strip_component
+
+if have_scheme
+ XFAIL_TESTS += %D%/blocking_system4
+endif
 
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
