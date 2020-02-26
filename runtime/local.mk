@@ -21,6 +21,7 @@
 #
 # Code:
 
+if have_cxx11
 runtime_cxx_dzndir = $(pkgdatadir)/runtime/c++/dzn
 dist_runtime_cxx_dzn_DATA =			\
  %D%/c++/dzn/container.hh			\
@@ -36,13 +37,18 @@ runtime_cxxdir = $(pkgdatadir)/runtime/c++
 dist_runtime_cxx_DATA =				\
  %D%/c++/pump.cc				\
  %D%/c++/runtime.cc
+endif
 
+if have_javascript
 runtime_javascript_dzndir = $(pkgdatadir)/runtime/javascript/dzn
 dist_runtime_javascript_dzn_DATA =		\
  %D%/javascript/dzn/runtime.js			\
  %D%/javascript/dzn/sexp.js
+endif
 
+if have_scheme
 runtime_scheme_dzndir = $(pkgdatadir)/runtime/scheme/dzn
 dist_runtime_scheme_dzn_DATA =			\
  %D%/scheme/dzn/pump.scm			\
  %D%/scheme/dzn/runtime.scm
+endif

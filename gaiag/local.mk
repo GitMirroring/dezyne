@@ -23,7 +23,6 @@
 
 dist_%C%_scm_DATA =				\
  %D%/ast.scm					\
- %D%/c++.scm					\
  %D%/code.scm					\
  %D%/command-line.scm				\
  %D%/config.scm					\
@@ -31,10 +30,8 @@ dist_%C%_scm_DATA =				\
  %D%/dzn.scm					\
  %D%/fifo.scm					\
  %D%/gdzn.scm					\
- %D%/glue.scm					\
  %D%/goops.scm					\
  %D%/indent.scm					\
- %D%/javascript.scm				\
  %D%/json2scm.scm				\
  %D%/lts.scm					\
  %D%/lts2traces.scm				\
@@ -43,11 +40,36 @@ dist_%C%_scm_DATA =				\
  %D%/normalize.scm				\
  %D%/parse.scm					\
  %D%/peg.scm					\
- %D%/scheme.scm					\
  %D%/serialize.scm				\
  %D%/shell-util.scm				\
  %D%/templates.scm				\
  %D%/wfc.scm
+
+if have_cxx11
+dist_%C%_scm_DATA += %D%/c++.scm
+dist_%C%_scm_DATA += %D%/glue.scm
+
+if have_cxx03
+dist_%C%_scm_DATA += %D%/c++03.scm
+endif
+
+endif
+
+if have_cs
+dist_%C%_scm_DATA += %D%/cs.scm
+endif
+
+if have_c99
+dist_%C%_scm_DATA += %D%/c.scm
+endif
+
+if have_javascript
+dist_%C%_scm_DATA += %D%/javascript.scm
+endif
+
+if have_scheme
+dist_%C%_scm_DATA += %D%/scheme.scm
+endif
 
 dist_nocompile_%C%_scm_DATA =
 
