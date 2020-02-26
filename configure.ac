@@ -73,7 +73,10 @@ AC_SUBST([VERSION_COMMIT])
 AM_CONDITIONAL([CROSS_COMPILING], [test x$cross_compiling = xyes])
 
 # Test framework
-all_languages="scheme"
+all_languages=""
+if test "x$courageous" = "xyes"; then
+   all_languages="$all_languages,scheme"
+fi
 
 AC_ARG_WITH([courage], [AC_HELP_STRING([--with-courage], [Assert that
   even if this language is unsupported, you will be courageous and
@@ -83,7 +86,6 @@ AC_ARG_WITH([courage], [AC_HELP_STRING([--with-courage], [Assert that
 AC_PROG_CXX
 _AC_PROG_CXX_CXX11([have_cxx11=true])
 
-AM_CONDITIONAL([have_cxx11], [test "x$have_cxx11" = xtrue])
 if test "x$have_cxx11" = "xtrue"; then
    CXX11="$CXX"
    all_languages="$all_languages,c++"
@@ -91,7 +93,6 @@ fi
 AC_SUBST([CXX11])
 
 AX_BOOST_BASE([1.67], [have_boost=yes])
-AM_CONDITIONAL([have_cxx03], [test "x$have_boost" = xyes])
 if test "x$have_boost" = "xyes"; then
    if test "x$courageous" = "xyes"; then
       CXX03="$CXX"
@@ -102,7 +103,6 @@ AC_SUBST([CXX03])
 
 AC_PROG_CC
 AC_PROG_CC_C99
-AM_CONDITIONAL([have_c99], [test "x$ac_cv_prog_cc_c99" = xyes])
 if test "xx$ac_cv_prog_cc_c99" != "xyes"; then
    CC99=
 else
@@ -126,7 +126,7 @@ if test "x$NODEJS" != "x"; then
    fi
 fi
 
-AC_ARG_ENABLE([languages], [AS_HELP_STRING([[--enable-languages=all]],
+AC_ARG_ENABLE([languages], [AS_HELP_STRING([[--enable-languages=LANGUAGES [default=all] {all|LANG[,LANG...]}]],
    [choose languages to build for])],
    [enable_languages="$enableval"],
    [enable_languages="$all_languages"])
@@ -136,6 +136,7 @@ case ,${enable_languages}, in
 if test "x$CXX11" = x; then
     AC_MSG_ERROR([language c++ enabled, but no C11 compiler was not found])
 fi
+have_cxx11=true
 ;;
 esac
 
@@ -148,6 +149,7 @@ fi
 if test "x$CXX03" = x; then
     AC_MSG_ERROR([language c++03 enabled, but no C++ compiler with boost was not found])
 fi
+have_cxx03=true
 ;;
 esac
 
@@ -160,6 +162,7 @@ fi
 if test "x$CC99" = x; then
     AC_MSG_ERROR([language c enabled, but no C99 compiler was not found])
 fi
+have_c99=true
 ;;
 esac
 
@@ -172,6 +175,7 @@ fi
 if test "x$NODEJS" = x; then
     AC_MSG_ERROR([language javascript enabled, but nodejs was not found])
 fi
+have_javascript=true
 ;;
 esac
 
@@ -184,10 +188,28 @@ fi
 if test "x$NODEJS" = x; then
     AC_MSG_ERROR([language cs enabled, but nodejs was not found])
 fi
+have_cs=true
 ;;
 esac
 
-languages=`echo "$enable_languages" | tr , ' '`
+case ,${enable_languages}, in
+  *,scheme,*)
+if test "x$courageous" = xno; then
+    AC_MSG_ERROR([`scheme' is not a supported language.
+See "Porting" in the manual, or try `--with-courage'.])
+fi
+have_scheme=true
+;;
+esac
+
+AM_CONDITIONAL([have_c99], [test "x$have_c99" = xtrue])
+AM_CONDITIONAL([have_cs], [test "x$have_cs" = xtrue])
+AM_CONDITIONAL([have_cxx03], [test "x$have_boost" = xtrue])
+AM_CONDITIONAL([have_cxx11], [test "x$have_cxx11" = xtrue])
+AM_CONDITIONAL([have_javascript], [test "x$have_javascript" = xtrue])
+AM_CONDITIONAL([have_scheme], [test "x$have_scheme" = xtrue])
+
+languages=`echo "$enable_languages" | sed s/,,/,/g | tr , ' '`
 AC_SUBST(languages)
 
 # Output

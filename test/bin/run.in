@@ -38,7 +38,7 @@
            (file-name (if (string-prefix? "./test" file-name)
                           (string-drop file-name 2)
                           file-name))
-           (languages (string-split "@languages@" #\space)))
+           (languages (string-split (string-trim-both "@languages@") #\space)))
        (if (and (file-exists? run)
                 (not (getenv "run-seen")))
            (begin (setenv "run-seen" "1")
