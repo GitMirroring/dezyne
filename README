@@ -12,6 +12,11 @@ coroutines.
 Dezyne is free software, it is distributed under the terms of the GNU
 Affero General Public Licence version 3 or later.  See the file [[file:COPYING][COPYING]].
 
+Dezyne comes with dzn-runtime: a reference implementation for component
+coroutines.  dzn-runtime is free software, it is distributed under the
+terms of the GNU Lesser General Public Licence version 3 or later.  See
+the file [[file:COPYING.LESSER][COPYING.LESSER]].
+
 * Requirements
 
 Dezyne currently depends on the following packages:
