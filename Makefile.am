@@ -300,7 +300,7 @@ linux:
 	gzip --no-name $(distdir)-x86_64-linux.tar
 	rm -rf $(distdir)
 
-dzn_mingw = dzn-mingw guile-mingw mcrl2-minimal-mingw
+dzn_mingw = dzn-mingw guile-mingw m4-changeword mcrl2-minimal-mingw sed-mingw
 mingw: bin/dzn
 	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 hello
 	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 guile-mingw
@@ -316,7 +316,7 @@ mingw: bin/dzn
 	cp --no-preserve=mode -r $$(find $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 guile-json-mingw) \
               $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 dzn-mingw guile-mingw) | grep mingw ) -path '*/lib/guile') $(distdir)-i686-windows/lib
 	-cp $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw))) -name '*.dll') $(distdir)-i686-windows/lib
-	cp $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw)) | grep -E 'dzn|guile|mcrl2') -name '*.exe') $(distdir)-i686-windows
+	cp $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw)) | grep -E 'dzn|guile|mcrl2|m4-changeword|sed-mingw') -name '*.exe') $(distdir)-i686-windows
 	cp bin/dzn $(distdir)-i686-windows
 	cp bin/dzn.cmd $(distdir)-i686-windows
 	cp bin/guile.cmd $(distdir)-i686-windows
