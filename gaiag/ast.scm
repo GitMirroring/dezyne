@@ -962,15 +962,19 @@
 
 (define-method (ast:lookup-n (o <scope>) (name <string>))
   ;; (stderr "ast:lookup-n 3 [~s]: ~s\n" o name)
-  (if (ast:empty-namespace? name) (list (parent o <root>))
-      (let ((found (filter (conjoin (is? <declaration>)
-                                    (lambda (decl) (ast:name-equal? (.name decl) name)))
-                           (ast:declaration* o)))
-            (p (.parent o)))
-        (cond
-         ((pair? found) found)
-         ((or (not name) (not p)) '())
-         (else (ast:lookup-n (parent p <scope>) name))))))
+  (cond ((equal? name "void")
+         (list (find (conjoin (is? <declaration>)
+                              (lambda (decl) (ast:name-equal? (.name decl) name)))
+                     (ast:declaration* (parent o <root>)))))
+        ((ast:empty-namespace? name) (list (parent o <root>)))
+        (else (let ((found (filter (conjoin (is? <declaration>)
+                                            (lambda (decl) (ast:name-equal? (.name decl) name)))
+                                   (ast:declaration* o)))
+                    (p (.parent o)))
+                (cond
+                 ((pair? found) found)
+                 ((or (not name) (not p)) '())
+                 (else (ast:lookup-n (parent p <scope>) name)))))))
 
 (define-method (ast:lookup-n (o <boolean>) name)
   '())
