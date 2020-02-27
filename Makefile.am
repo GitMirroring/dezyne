@@ -128,8 +128,15 @@ doc/dzn-parse.1: bin/dzn Makefile $(ALL_GO)
 ##############
 
 # Reproducible tarball
+# Be friendly to Debian; avoid using EPOCH
 GZIP_ENV = --no-name
-am__tar = $${TAR-tar} --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -cf - "$$tardir"
+am__tar = $${TAR-tar} \
+ --sort=name \
+ --mode=go=rX,u+rw,a-s \
+ --mtime=@$$(cat "$$tardir"/.tarball-timestamp) \
+ --owner=0 --group=0 --numeric-owner \
+ -cf - \
+ "$$tardir"
 
 tag:
 	git tag -s v$(PACKAGE_VERSION) -m "$(PACKAGE_NAME) $(PACKAGE_VERSION)."
@@ -137,6 +144,7 @@ tag:
 dist-hook: gen-ChangeLog
 	echo $(VERSION) > $(distdir)/.tarball-version
 	git ls-tree -r --name-only HEAD > $(distdir)/.tarball-manifest
+	git show HEAD --format=%ct --no-patch > $(distdir)/.tarball-timestamp
 
 .PHONY: gen-ChangeLog
 gen-ChangeLog $(distdir)/ChangeLog: config.status
