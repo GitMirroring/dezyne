@@ -144,10 +144,11 @@
                          ("mcrl2" ,mcrl2-minimal-mingw)
                          ("sed" ,sed-mingw)))
     (arguments
-     (substitute-keyword-arguments (package-arguments dzn)
-       ((#:phases phases '%standard-phases)
-        `(modify-phases ,phases
-           (delete 'wrap-binaries)))))))
+     `(#:configure-flags '("--enable-languages=c++")
+       ,@(substitute-keyword-arguments (package-arguments dzn)
+           ((#:phases phases '%standard-phases)
+            `(modify-phases ,phases
+               (delete 'wrap-binaries))))))))
 
 (define-public m4-changeword
   (package
