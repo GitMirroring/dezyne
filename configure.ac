@@ -163,7 +163,7 @@ AC_ARG_ENABLE([languages], [AS_HELP_STRING([[--enable-languages=LANGUAGES [defau
 
 case ,${enable_languages}, in
   *,c++,*)
-if test "x$CXX11" = x; then
+if test x$CXX11 = x -a x$cross_compiling = xno; then
     AC_MSG_ERROR([language c++ enabled, but no C11 compiler was not found])
 fi
 have_cxx11=true
@@ -176,7 +176,7 @@ if test "x$courageous" = xno; then
     AC_MSG_ERROR([`c++03' is not a supported language.
 See "Porting" in the manual, or try `--with-courage'.])
 fi
-if test "x$CXX03" = x; then
+if test x$CXX03 = x -a x$cross_compiling = xno; then
     AC_MSG_ERROR([language c++03 enabled, but no C++ compiler with boost was not found])
 fi
 have_cxx03=true
@@ -189,7 +189,7 @@ if test "x$courageous" = xno; then
     AC_MSG_ERROR([`c' is not a supported language.
 See "Porting" in the manual, or try `--with-courage'.])
 fi
-if test "x$CC99" = x; then
+if test x$CC99 = x -a x$cross_compiling = xno; then
     AC_MSG_ERROR([language c enabled, but no C99 compiler was not found])
 fi
 have_c99=true
@@ -202,7 +202,7 @@ if test "x$courageous" = xno; then
     AC_MSG_ERROR([`javascript' is not a supported language.
 See "Porting" in the manual, or try `--with-courage'.])
 fi
-if test "x$NODEJS" = x; then
+if test x$NODEJS = x -a x$cross_compiling = xno; then
     AC_MSG_ERROR([language javascript enabled, but nodejs was not found])
 fi
 have_javascript=true
@@ -215,8 +215,8 @@ if test "x$courageous" = xno; then
     AC_MSG_ERROR([`cs' is not a supported language.
 See "Porting" in the manual, or try `--with-courage'.])
 fi
-if test "x$NODEJS" = x; then
-    AC_MSG_ERROR([language cs enabled, but nodejs was not found])
+if test x$MCS = x -a x$cross_compiling = xno; then
+    AC_MSG_ERROR([language cs enabled, but mcs was not found])
 fi
 have_cs=true
 ;;
@@ -239,7 +239,7 @@ AM_CONDITIONAL([have_cxx11], [test "x$have_cxx11" = xtrue])
 AM_CONDITIONAL([have_javascript], [test "x$have_javascript" = xtrue])
 AM_CONDITIONAL([have_scheme], [test "x$have_scheme" = xtrue])
 
-languages=`echo "$enable_languages" | sed s/,,/,/g | tr , ' '`
+languages=`echo "$enable_languages" | sed 's/, *,/,/g' | tr , ' '`
 AC_SUBST(languages)
 
 # Output
