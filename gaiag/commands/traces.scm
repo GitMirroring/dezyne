@@ -43,7 +43,7 @@
   #:use-module (gaiag commands parse)
   #:use-module (gaiag commands verify)
   #:use-module (gaiag command-line)
-  #:use-module (gaiag lts2traces)
+  #:use-module (gaiag lts)
   #:use-module (gaiag makreel)
 
   #:use-module (gaiag shell-util)

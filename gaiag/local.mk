@@ -40,7 +40,6 @@ dist_%C%_scm_DATA =				\
  %D%/javascript.scm				\
  %D%/json2scm.scm				\
  %D%/lts.scm					\
- %D%/lts2traces.scm				\
  %D%/makreel.scm				\
  %D%/misc.scm					\
  %D%/normalize.scm				\

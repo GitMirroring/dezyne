@@ -138,11 +138,11 @@ Usage: lts [OPTION]... [FILE]...
       (let* ((lts (get-lts))
              (states (lts-states lts))
              (transitions (length (lts-edges lts))))
-        (if single-line (display (string-append check ":" (if trace "fail" "ok") ":" (number->string states) "," (number->string transitions) ":" (if trace (string-join (map aut-edge-label trace) (make-string 1 output-separator)) "") "\n"))
+        (if single-line (display (string-append check ":" (if trace "fail" "ok") ":" (number->string states) "," (number->string transitions) ":" (if trace (string-join (map edge-label trace) (make-string 1 output-separator)) "") "\n"))
             (if trace (begin
                         (format (current-error-port) "~a\n" fail-msg)
                         (if (not (null? trace))
-                            (format #t "~a\n" (string-join (map aut-edge-label trace) "\n"))))
+                            (format #t "~a\n" (string-join (map edge-label trace) "\n"))))
                 (format (current-error-port) "~a\n" ok-msg)))))
 
     (define (validation-error error)
