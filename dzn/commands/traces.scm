@@ -43,7 +43,7 @@
   #:use-module (dzn commands parse)
   #:use-module (dzn commands verify)
   #:use-module (dzn command-line)
-  #:use-module (dzn lts2traces)
+  #:use-module (dzn lts)
   #:use-module (dzn makreel)
 
   #:use-module (dzn shell-util)
