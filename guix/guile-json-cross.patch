@@ -1,0 +1,49 @@
+From 5d88386506a575f84ba8f7aac01ee388a1463ba7 Mon Sep 17 00:00:00 2001
+From: Jan Nieuwenhuizen <janneke@gnu.org>
+Date: Wed, 4 Mar 2020 11:17:02 +0100
+Subject: [PATCH] build: Support cross building.
+
+* configure.ac: Add AC_CANONICAL_HOST to get host.
+* Makefile.am (.scm.go): Set it as target.
+* json/Makefile.am (.scm.go): Likewise.
+---
+ Makefile.am      | 2 +-
+ configure.ac     | 1 +
+ json/Makefile.am | 2 +-
+ 3 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 5d8e95d..627da9a 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -47,4 +47,4 @@ CLEANFILES = $(GOBJECTS)
+ GUILE_WARNINGS = -Wunbound-variable -Warity-mismatch -Wformat
+ SUFFIXES = .scm .go
+ .scm.go:
+-	$(top_builddir)/env $(GUILE_TOOLS) compile $(GUILE_WARNINGS) -o "$@" "$<"
++	$(top_builddir)/env $(GUILE_TOOLS) compile --target="$(host)" $(GUILE_WARNINGS) -o "$@" "$<"
+diff --git a/configure.ac b/configure.ac
+index d300631..0803b30 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -24,6 +24,7 @@ AC_CONFIG_SRCDIR(json.scm)
+ AC_CONFIG_AUX_DIR([build-aux])
+ AM_INIT_AUTOMAKE([color-tests -Wall -Wno-portability])
+ AM_SILENT_RULES([yes])
++AC_CANONICAL_HOST
+ 
+ dnl We require pkg.m4 (from pkg-config) and guile.m4 (from Guile.)
+ dnl Make sure they are available.
+diff --git a/json/Makefile.am b/json/Makefile.am
+index 1c0acd1..5111818 100644
+--- a/json/Makefile.am
++++ b/json/Makefile.am
+@@ -36,4 +36,4 @@ CLEANFILES = $(GOBJECTS)
+ GUILE_WARNINGS = -Wunbound-variable -Warity-mismatch -Wformat
+ SUFFIXES = .scm .go
+ .scm.go:
+-	$(top_builddir)/env $(GUILE_TOOLS) compile $(GUILE_WARNINGS) -o "$@" "$<"
++	$(top_builddir)/env $(GUILE_TOOLS) compile --target="$(host)" $(GUILE_WARNINGS) -o "$@" "$<"
+-- 
+2.24.0
+
