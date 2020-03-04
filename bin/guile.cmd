@@ -1,4 +1,5 @@
 @echo off
+setlocal
 if not exist tmp mkdir tmp
 set LANG=C
 set LC_ALL=C
