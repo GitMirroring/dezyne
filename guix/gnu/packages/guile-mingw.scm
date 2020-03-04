@@ -131,6 +131,16 @@
   (package
     (inherit guile-json)
     (name "guile-json-mingw")
+    (source (origin (inherit (package-source guile-json-1))
+                    (patches (search-patches "guile-json-cross.patch"))))
     (inputs `(("guile" ,guile-mingw)))
-    (native-inputs `(("pkg-config" ,pkg-config)
-                     ("guile-for-build" ,guile-2.2)))))
+    (native-inputs `(("autoconf" ,autoconf)
+                     ("automake" ,automake)
+                     ("pkg-config" ,pkg-config)
+                     ("guile-for-build" ,guile-2.2)))
+    (arguments
+     `(#:phases (modify-phases %standard-phases
+                  (add-after 'unpack 'remove-configure
+                    (lambda _
+                      (delete-file "configure")
+                      #t)))))))
