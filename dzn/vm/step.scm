@@ -1,0 +1,398 @@
+;;; Dezyne --- Dezyne command line tools
+;;;
+;;; Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;;
+;;; This file is part of Dezyne.
+;;;
+;;; Dezyne is free software: you can redistribute it and/or modify it
+;;; under the terms of the GNU Affero General Public License as
+;;; published by the Free Software Foundation, either version 3 of the
+;;; License, or (at your option) any later version.
+;;;
+;;; Dezyne is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;;; Affero General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU Affero General Public
+;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+
+(define-module (dzn vm step)
+  #:use-module (ice-9 match)
+
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
+
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (dzn goops)
+
+  #:use-module (dzn ast)
+  #:use-module (dzn misc)
+  #:use-module (dzn vm ast)
+  #:use-module (dzn vm evaluate)
+  #:use-module (dzn vm goops)
+  #:use-module (dzn vm normalize)
+  #:use-module (dzn vm runtime)
+  #:use-module (dzn vm util)
+  #:export (begin-step
+            step))
+
+;;; Commentary:
+;;;
+;;; ’step’ implements single stepping the Dezyne vm.
+;;;
+;;; Code:
+
+;;;
+;;; A ’step’ run starts by inserting an EVENT (’coin’) in BEGIN-STEP.
+;;; On the resulting PCs, 'step' is called until run to completion.
+;;;
+
+(define-method (begin-step (pc <program-counter>) (event <string>)) ; -> (list <program-counter>)
+  "Return a <program-counter> by seting-up PC for taking the first
+'step' for EVENT."
+  (begin-step pc (string->trigger event)))
+
+(define-method (begin-step (pc <program-counter>) (trigger <trigger>))
+  (begin-step pc (.instance pc) trigger))
+
+(define-method (begin-step (pc <program-counter>) (instance <boolean>) (trigger <trigger>))
+  (define (component-instance+trigger)
+    (let* ((r:port (runtime:port-name->instance (.port.name trigger)))
+           (r:component-port (runtime:other-port r:port))
+           (event (.event.name trigger))
+           (modeling? (member event '("optional" "inevitable")))
+           (trigger (if modeling? (trigger->port-trigger r:port trigger)
+                        (trigger->component-trigger r:component-port trigger)))
+           (instance (if modeling? r:port
+                         (.container r:component-port))))
+      (values instance trigger)))
+  (let ((instance trigger (if (is-a? (%sut) <runtime:port>)
+                              (values (%sut) trigger)
+                              (component-instance+trigger))))
+    (begin-step pc instance trigger)))
+
+(define-method (begin-step (pc <program-counter>) (o <runtime:system>) (trigger <trigger>))
+  (let* ((port-name (.port.name trigger))
+         (r:port (runtime:port-name->instance port-name))
+         (r:component-port (runtime:other-port r:port))
+         (component-trigger (trigger->component-trigger trigger)))
+    (begin-step pc (.container r:component-port) component-trigger)))
+
+(define-method (begin-step (pc <program-counter>) (instance <runtime:instance>) (trigger <trigger>))
+  (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
+  (push-pc pc trigger instance))
+
+(define-method (begin-step (pc <program-counter>) (instance <runtime:port>) (trigger <trigger>))
+  (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
+  (push-pc pc trigger instance))
+
+
+;;;
+;;; Step
+;;;
+
+;;; ’step’ executes the program counter's current statement and then
+;;; uses ’continuation’ (see below) to return a list of program counters
+;;; that pointing to the next statement.
+
+(define-method (step (pcs <list>))
+  (define (non-rtc-step pc)
+    (if (rtc? pc) (list pc)
+        (step pc (.statement pc))))
+  (if (null? (filter (compose (negate (is? <incomplete>)) .statement) pcs)) (car pcs)
+      (let* ((pcs (append-map non-rtc-step pcs)))
+        (if (null? pcs) '()
+            (let* ((pc (car pcs))
+                   (statement (.statement pc)))
+              (if (and (null? pcs) (ast:declarative? statement))
+                  (let ((pc (clone pc #:statement (clone (make <incomplete> "incomplete")
+                                                         #:parent (.parent statement)))))
+                    (if (is-a? (%sut) <runtime:port>)
+                        (list (clone pc #:status (make <match-error>
+                                                   #:message "match")))
+                        (list pc)))
+                  pcs))))))
+
+(define-method (step (pc <program-counter>) (statement <boolean>))
+  (step (pop-pc pc))) ;; .previous == #f => RTC
+
+(define-method (step (pc <program-counter>) (o <statement>))
+  (%debug "MISSING: ~a ~a\n" ((compose name .instance) pc) (name o))
+  '())
+
+(define-method (step (pc <program-counter>) (o <initial-compound>))
+  (append
+   (next-method pc o)
+   (if (is-a? (%sut) <runtime:port>) '()
+       (let ((illegal (make <implicit-illegal-error> #:ast o #:message "illegal")))
+         (list (clone pc #:previous #f #:status illegal))))))
+
+(define-method (step (pc <program-counter>) (o <declarative-compound>))
+  (%debug "  ~s ~s |~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (map (cut clone pc #:statement <>) (ast:statement* o)))
+
+(define-method (step (pc <program-counter>) (o <guard>))
+  (%debug "  ~s ~s |~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (if (not (true? (eval-expression pc (.expression o)))) '()
+      (list (continuation pc (list (.statement o))))))
+
+(define-method (step (pc <program-counter>) (o <on>))
+  (%debug "  ~s ~s |~a ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o) ((compose trigger->string car ast:trigger*) o))
+  (if (not (find (cute ast:trigger-equal? <> (.trigger pc)) (ast:trigger* o))) '()
+      (list (clone pc #:statement (.statement o)))))
+
+(define-method (step (pc <program-counter>) (o <illegal>))
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (list (clone pc #:previous #f #:status (make <illegal-error> #:message "illegal" #:ast o))))
+
+(define-method (step (pc <program-counter>) (o <compound>))
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (list (continuation pc o)))
+
+(define-method (step (pc <program-counter>) (o <if>))
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (if (true? (eval-expression pc (.expression o))) (list (continuation pc ((compose list .then) o)))
+      (if (.else o) (list (continuation pc ((compose list .else) o)))
+          (list (statement-continuation pc o)))))
+
+(define-method (step (pc <program-counter>) (o <call>))
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (let* ((function (.function o))
+         (args (map (cut eval-expression pc <>) (ast:argument* o)))
+         (pc (push-pc (continuation pc o) (.statement function)))
+         (pc (fold (cut push-local <> <> <>) pc (ast:formal* function) args))
+         (status (.status pc))
+         (pc (if (is-a? status <error>) (clone pc #:status (clone status #:ast o)) pc)))
+    (list pc)))
+
+(define-method (step (pc <program-counter>) (o <return>))
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (let ((pc (clone pc #:return (eval-expression pc (.expression o)))))
+    (list (continuation pc o))))
+
+(define-method (step (pc <program-counter>) (o <action>))
+  (%debug "  ~s ~s ~a => ~s\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o) (trigger->string o))
+  (cond ((ast:out? o)
+         (step-action-up pc o))
+        (else
+         (step-action-down pc o))))
+
+(define-method (step-action-down (pc <program-counter>) (o <action>))
+  (let* ((instance (.instance pc))
+         (port (.port o))
+         (r:port (runtime:port instance port))
+         (other-instance other-port (runtime:other-instance+port instance r:port))
+         (trigger (action->trigger other-port o))
+         (pc (continuation pc o)))
+    (cond
+     ((is-a? other-instance <runtime:component>)
+      (list (begin-step pc other-instance trigger)))
+     ((runtime:boundary-port? other-port)
+      (let* ((silent-pcs ((@ (dzn vm run) run-silent) pc other-instance))
+             (pcs (cons pc silent-pcs)))
+        (map (cute begin-step <> other-instance trigger) pcs)))
+     (ast:injected? port
+      (list pc)))))
+
+(define-method (step-action-up (pc <program-counter>) (o <action>))
+  (let* ((instance (.instance pc))
+         (port (.port o))
+         (r:port (runtime:port instance (.port o)))
+         (other-instance other-port (runtime:other-instance+port instance r:port))
+         (pc (continuation pc o)))
+
+    (define (q-trigger)
+      (let* ((port-name (.name (.ast other-port)))
+             (q-trigger (make <q-trigger>
+                         #:event.name (.event.name o)
+                         #:port.name port-name
+                         #:location (.location o))))
+        (clone q-trigger #:parent (.type (.ast other-instance)))))
+
+    (cond
+     ((is-a? (%sut) <runtime:port>)
+      (list pc))
+     ((and (is-a? instance <runtime:port>)
+           (ast:provides? (.ast instance)))
+      (list pc))
+     ((and (is-a? instance <runtime:port>)
+           (ast:requires? (.ast instance)))
+      (list (enqueue pc other-instance (q-trigger))))
+     ((is-a? other-instance <runtime:component>)
+      (list (enqueue pc other-instance (q-trigger))))
+     ((runtime:boundary-port? other-port)
+      (list pc)))))
+
+(define-method (step (pc <program-counter>) (o <assign>))
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (let* ((pc (assign pc (.variable o) (.expression o)))
+         (status (.status pc)))
+    (if (is-a? status <range-error>)
+        (list (clone pc #:status (clone status #:ast o)))
+        (list (continuation pc o)))))
+
+(define-method (step (pc <program-counter>) (o <variable>))
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (list (continuation (assign (push-local pc o) o (.expression o)) o)))
+
+(define-method (step (pc <program-counter>) (o <reply>))
+  (%debug "  ~s ~s ~a => ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o) (.expression o))
+  (let* ((value (.reply pc))
+         (pc (if value
+                 (let ((error (make <second-reply-error> #:ast o #:previous (.parent value) #:message "second-reply")))
+                   (%debug "second reply, previous=~a\n" ((@@ (dzn vm report) step->location) value))
+                   (clone pc #:status error))
+                 (let ((value (eval-expression pc (.expression o))))
+                   (continuation (clone pc #:reply value) o)))))
+    (list pc)))
+
+(define-method (step (pc <program-counter>) (o <flush>))
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (list (flush (continuation pc o))))
+
+(define-method (step (pc <program-counter>) (o <flush-return>))
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (let ((pc (pop-pc pc)))
+    (if (q-empty? pc) (list pc)
+        (list (flush pc)))))
+
+(define-method (step (pc <program-counter>) (o <q-out>))
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (let* ((q-trigger (.trigger o))
+         (instance (.instance pc))
+         (pc (pop-pc pc))
+         (other-instance
+          other-port
+          (if (is-a? instance <runtime:port> )
+              (runtime:other-instance+port instance)
+              (runtime:other-instance+port instance (runtime:port instance (.port q-trigger))))))
+    (cond
+     ((and (is-a? other-instance <runtime:port>)
+           (ast:requires? (.ast other-instance)))
+      (list (begin-step pc q-trigger)))
+     ((and (is-a? other-instance <runtime:port>)
+           (ast:provides? (.ast other-instance)))
+      (list pc))
+     ((is-a? other-instance <runtime:component>)
+      (list (begin-step pc q-trigger)))
+     ((is-a? instance <runtime:component>)
+      (let* ((pc (clone pc #:instance instance))
+             (pc (set-handling? pc #t))
+             (pc (begin-step pc instance q-trigger))
+             (pc (set-handling? pc #f)))
+        (list pc))))))
+
+(define-method (step (pc <program-counter>) (o <end-of-on>))
+  ;; XXX FIXME: programmatical flush (vs: others are normalize+ast based).
+  (define (flush-other pc)
+    (let* ((instance (.instance pc))
+           (other-instance
+            (and (is-a? instance <runtime:component>)
+                 (let* ((ports (runtime:port* instance))
+                        (other-ports (filter ast:provides? ports))
+                        (other-port-instances (map (cut runtime:port instance <>) other-ports))
+                        (other-instances (map (cut runtime:other-instance+port instance <>) other-port-instances)))
+                   (find (compose pair? .q (cut get-state pc <>)) other-instances)))))
+      (and other-instance
+           (list (flush pc other-instance)))))
+
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (or (flush-other pc)
+      (let ((return (make <trigger-return> #:location (.location o) #:port.name (.port.name (.trigger pc)))))
+        (list (clone pc #:statement (clone return #:parent (.parent o)))))))
+
+(define-method (step (pc <program-counter>) (o <trigger-return>))
+  (define (valued-reply? pc o)
+    ;;FIXME: simplify
+    (let ((instance (.instance pc))
+          (port (.port (.trigger pc))))
+      (and (not (and (is-a? instance <runtime:port>)
+                     (is-a? (.event (.trigger pc)) <modeling-event>)))
+           (not (and (is-a? instance <runtime:component>) (not port)))
+           (or (is-a? (.instance pc) <runtime:port>)
+               (let* ((r:port (runtime:port instance port))
+                      (other-port (runtime:other-port r:port)))
+                 (and (is-a? (.instance pc) <runtime:component>)
+                      (runtime:boundary-port? other-port)
+                      (ast:provides? (.ast other-port)))))
+           (let* ((trigger (.trigger pc))
+                  (type (ast:type trigger))
+                  (typed? (ast:typed? type))
+                  (value (.reply pc)))
+             (and typed? (not value))))))
+
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (cond
+   ((valued-reply? pc o)
+    (let* ((trigger (.trigger pc))
+           (type (ast:type trigger))
+           (typed? (ast:typed? type))
+           (error (make <missing-reply-error> #:ast o #:type type #:message "missing-reply")))
+      (list (clone pc #:status error))))
+   (else
+    (let* ((parent (.parent o))
+           (pc (if (.status pc) pc
+                   (pop-locals pc (filter (is? <variable>) (ast:statement* parent))))))
+      (list (pop-pc pc))))))
+
+
+;;;
+;;; Continuation
+;;;
+
+(define-method (continuation (pc <program-counter>) (o <compound>))
+  (let ((list (ast:statement* o)))
+    (if (null? list) (statement-continuation pc o)
+        (continuation pc (ast:statement* o)))))
+
+(define-method (continuation (pc <program-counter>) (o <list>))
+  (clone pc #:statement (if (null? o) '()
+                            (let ((statement (car o)))
+                              (match statement
+                                ((and (or ($ <assign>) ($ <variable>))
+                                      (and (or (= .expression ($ <action>))
+                                               (= .expression ($ <call>)))
+                                           (= .expression action))) action)
+                                (_ statement))))))
+
+(define-method (continuation (pc <program-counter>) (o <statement>))
+  (let ((parent (.parent o)))
+    (match parent
+      (($ <compound>) (statement-continuation pc o))
+      (($ <if>) (statement-continuation pc parent))
+      (_ '()))))
+
+(define-method (statement-continuation (pc <program-counter>) (o <statement>))
+  (let ((parent (.parent o)))
+    (match parent
+      (($ <compound>)
+       (let ((next (and=> (member o (ast:statement* parent) ast:eq?) cdr)))
+         (if (pair? next) (continuation pc next)
+             (let ((pc (pop-locals pc (filter (is? <variable>) (ast:statement* parent)))))
+               (statement-continuation pc parent)))))
+      (($ <if>)
+       (statement-continuation pc parent))
+      (($ <function>)
+       (pop-pc pc))
+      (_
+       '()))))
+
+(define-method (continuation (pc <program-counter>) (o <action>))
+  (match (.parent o)
+    ((and (or ($ <assign>) ($ <variable>)) assign) (clone pc #:statement assign))
+    (_ (next-method))))
+
+(define-method (continuation (pc <program-counter>) (o <call>))
+  (match (.parent o)
+    ((and (or ($ <assign>) ($ <variable>)) assign) (clone pc #:statement assign))
+    (_ (next-method))))
+
+(define-method (continuation (pc <program-counter>) (o <return>))
+  (let* ((function (parent o <function>))
+         (formals (ast:formal* function))
+         (locals (filter (is? <variable>) (ast:statement* (.statement function))))
+         (pc (pop-locals pc (append locals formals))))
+    (pop-pc pc)))

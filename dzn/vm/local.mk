@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019,2020 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -22,15 +22,15 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
- %D%/code.scm					\
- %D%/hello.scm					\
- %D%/language.scm				\
- %D%/lts.scm					\
- %D%/parse.scm					\
- %D%/simulate.scm				\
- %D%/trace.scm					\
- %D%/traces.scm					\
- %D%/verify.scm
+ %D%/ast.scm					\
+ %D%/evaluate.scm				\
+ %D%/goops.scm					\
+ %D%/normalize.scm				\
+ %D%/report.scm					\
+ %D%/runtime.scm				\
+ %D%/run.scm					\
+ %D%/step.scm					\
+ %D%/util.scm
 
 dist_nocompile_%C%_scm_DATA =
 

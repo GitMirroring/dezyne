@@ -640,6 +640,9 @@
       (($ <assign>) (.variable.name parent))
       (($ <variable>) (.name parent)))))
 
+(define-method (.variable.name (o <var>))
+  (.name o))
+
 (define-method (.id (o <object>))
   (pointer-address (scm->pointer o)))
 

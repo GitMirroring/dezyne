@@ -58,6 +58,7 @@
            ast:direction
            ast:dotted-name
            ast:dzn-scope?
+           ast:dotted-name
            ast:eq?
            ast:equal?
            ast:empty-namespace?
@@ -152,8 +153,8 @@
            .event.direction
            .function
            .type
-           .variable
            .instance
+           .variable
            )
   #:re-export (
                .direction
@@ -376,6 +377,9 @@
 (define-method (ast:in? (o <trigger>))
   (ast:in? (.event o)))
 
+(define-method (ast:in? (o <action>))
+  (ast:in? (.event o)))
+
 (define-method (ast:in? (o <variable>))
   #t)
 
@@ -389,6 +393,9 @@
   (eq? 'out (.direction o)))
 
 (define-method (ast:out? (o <trigger>))
+  (ast:out? (.event o)))
+
+(define-method (ast:out? (o <action>))
   (ast:out? (.event o)))
 
 (define-method (ast:out? (o <variable>))
@@ -482,6 +489,12 @@
 (define-method (ast:typed? (o <trigger>))
   ((compose ast:typed? .event) o))
 
+(define-method (ast:typed? (o <type>))
+  #t)
+
+(define-method (ast:typed? (o <void>))
+  #f)
+
 (define-method (ast:typed? (o <modeling-event>))
   #f)
 
@@ -512,7 +525,7 @@
   (eq? a b))
 
 (define-method (ast:equal? a b)
-  #f)
+  (equal? a b))
 
 (define-method (ast:equal? (a <ast>) (b <ast>))
   (eq? (.node a) (.node b)))

@@ -41,6 +41,7 @@
 
   #:export (
             ast:wfc
+            type-name
             wfc:report-error
            ))
 

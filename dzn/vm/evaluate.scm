@@ -1,0 +1,89 @@
+;;; Dezyne --- Dezyne command line tools
+;;;
+;;; Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; This file is part of Dezyne.
+;;;
+;;; Dezyne is free software: you can redistribute it and/or modify it
+;;; under the terms of the GNU Affero General Public License as
+;;; published by the Free Software Foundation, either version 3 of the
+;;; License, or (at your option) any later version.
+;;;
+;;; Dezyne is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;;; Affero General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU Affero General Public
+;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+;;;
+;;; Commentary:
+;;;
+;;; Code:
+
+(define-module (dzn vm evaluate)
+  #:use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
+
+  #:use-module (dzn misc)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (dzn goops)
+  #:use-module (dzn ast)
+
+  #:export (
+           eval-expression
+           true?
+           ))
+
+(define-method (expr:equal? (left <enum-literal>) (right <enum-literal>))
+  (and (eq? (.node (.type left)) (.node (.type right)))
+       (equal? (.field left) (.field right))))
+
+(define-method (expr:equal? (left <literal>) (right <literal>))
+  (equal? (.value left) (.value right)))
+
+(define-method (true? (o <literal>))
+  (equal? (.value o) "true"))
+
+(define-method (literal value)
+  (match value
+    (#t (make <literal> #:value "true"))
+    (#f (make <literal> #:value "false"))
+    ((? number?) (make <literal> #:value value))))
+
+(define-method (eval-expression (state <list>) (o <expression>))
+  (match o
+    (($ <literal>)
+     o)
+    ((and ($ <var>) (= .variable.name name))
+     (eval-expression state (assoc-ref state name)))
+    ((and ($ <not>) (= .expression expression))
+     (literal (not (true? (eval-expression state expression)))))
+    ((and ($ <equal>) (= .left left) (= .right right))
+     (literal (expr:equal? (eval-expression state left) (eval-expression state right))))
+    ((and ($ <not-equal>) (= .left left) (= .right right))
+     (literal (not (expr:equal? (eval-expression state left) (eval-expression state right)))))
+    ((and ($ <and>) (= .left left) (= .right right))
+     (literal (and (true? (eval-expression state left)) (true? (eval-expression state right)))))
+    ((and ($ <or>) (= .left left) (= .right right))
+     (literal (or (true? (eval-expression state left)) (true? (eval-expression state right)))))
+    ((and ($ <field-test>) (= .variable left) (= .field right))
+     (literal (equal? (.field (eval-expression state (make <var> #:name (.name left)))) right)))
+    ((and ($ <plus>) (= .left left) (= .right right))
+     (literal (+ (.value (eval-expression state left)) (.value (eval-expression state right)))))
+    ((and ($ <minus>) (= .left left) (= .right right))
+     (literal (- (.value (eval-expression state left)) (.value (eval-expression state right)))))
+    ((and ($ <less>) (= .left left) (= .right right))
+     (literal (< (.value (eval-expression state left)) (.value (eval-expression state right)))))
+    ((and ($ <less-equal>) (= .left left) (= .right right))
+     (literal (<= (.value (eval-expression state left)) (.value (eval-expression state right)))))
+    ((and ($ <greater>) (= .left left) (= .right right))
+     (literal (> (.value (eval-expression state left)) (.value (eval-expression state right)))))
+    ((and ($ <greater-equal>) (= .left left) (= .right right))
+     (literal (>= (.value (eval-expression state left)) (.value (eval-expression state right)))))
+    ((and ($ <otherwise>) (= .value value))
+     (eval-expression state value))
+    ((and ($ <group>)
+          (= .expression expression)) (eval-expression state expression))
+    (_
+     o)))

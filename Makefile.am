@@ -83,6 +83,7 @@ ALL_GO =
 include dzn/peg/local.mk
 include dzn/parse/local.mk
 include dzn/code/local.mk
+include dzn/vm/local.mk
 include dzn/local.mk
 include dzn/commands/local.mk
 include gash/local.mk
@@ -177,6 +178,7 @@ dist_man_MANS =					\
  doc/dzn-language.1				\
  doc/dzn-lts.1					\
  doc/dzn-parse.1				\
+ doc/dzn-simulate.1				\
  doc/dzn-traces.1				\
  doc/dzn-trace.1				\
  doc/dzn-verify.1

@@ -57,6 +57,7 @@
 
             add-reply-port
             binding-into-blocking
+            guards-not-or
             purge-data
             remove-otherwise
             remove-behaviour
