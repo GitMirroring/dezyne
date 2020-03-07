@@ -37,6 +37,7 @@
             %package
             %prefix
             %template-dir
+            %test-dir
             %version
             %version-major
             %version-minor
@@ -68,7 +69,10 @@
       "@bindir@"))
 
 (define %template-dir
-  (string-append %datadir "/templates"))
+  (string-append %pkgdatadir "/gaiag/templates"))
+
+(define %test-dir
+  (string-append %pkgdatadir "/test"))
 
 (define %guilemoduledir
   "@guilemoduledir@")

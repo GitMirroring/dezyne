@@ -40,6 +40,7 @@ Documentation License''.
 * dzn: (dezyne)Invoking dzn.            Running Dezyne commands.
 * dzn: (dezyne)Invoking dzn code.       Generating code from a Dezyne file.
 * dzn: (dezyne)Invoking dzn parse.      Checking the syntax of Dezyne file.
+* dzn: (dezyne)Invoking dzn simulate.   Simulating Dezyne models.
 * dzn: (dezyne)Invoking dzn verify.     Verifying Dezyne models.
 * dzn: (dezyne)Invoking dzn.            Running Dzn.
 @end direntry
@@ -178,6 +179,7 @@ The Dezyne command-line tools
 * Invoking dzn language::
 * Invoking dzn lts::
 * Invoking dzn parse::
+* Invoking dzn simulate::
 * Invoking dzn trace::
 * Invoking dzn traces::
 * Invoking dzn verify::
@@ -4529,6 +4531,7 @@ foreigns that use the same interfaces need to form a chain of
 * Invoking dzn language::
 * Invoking dzn lts::
 * Invoking dzn parse::
+* Invoking dzn simulate::
 * Invoking dzn trace::
 * Invoking dzn traces::
 * Invoking dzn verify::
@@ -4844,6 +4847,46 @@ Instead of writing a full @var{ast}, write the @var{peg} parse tree.
 @item --output=@var{file}
 @itemx -o @var{file}
 Write @var{ast} to @var{file}, use ``-'' for standard output.
+
+@end table
+
+
+@node Invoking dzn simulate
+@section Invoking @command{dzn simulate}
+
+The @command{dzn simulate} command starts a simulation run.
+
+Under the hood, @command{dzn simulate} uses the Dezyne VM.
+
+@example
+dzn @var{dzn-option}@dots{} simulate @var{option}@dots{} @file{FILE}
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn simulate}, and then exit.
+
+@item --import=@var{dir}
+@itemx -I @var{dir}
+Add directory @var{dir} to the import path.
+
+@item --model=@var{model}
+@itemx -m @var{model}
+Start simulating @var{model}.  The default is the most ``interesting''
+model.
+
+@item --strict
+@itemx -s
+Use strict matching of trail, i.e., the trail must contain all
+observable events.
+
+@item --trail=@var{trail}
+@itemx -t @var{trail}
+Use trail @var{trail}.  The default is to read from @code{stdin}.
 
 @end table
 

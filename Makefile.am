@@ -83,6 +83,7 @@ ALL_GO =
 include gaiag/peg/local.mk
 include gaiag/parse/local.mk
 include gaiag/code/local.mk
+include gaiag/vm/local.mk
 include gaiag/local.mk
 include gaiag/commands/local.mk
 include gash/local.mk
@@ -177,6 +178,7 @@ dist_man_MANS =					\
  doc/dzn-language.1				\
  doc/dzn-lts.1					\
  doc/dzn-parse.1				\
+ doc/dzn-simulate.1				\
  doc/dzn-traces.1				\
  doc/dzn-trace.1				\
  doc/dzn-verify.1

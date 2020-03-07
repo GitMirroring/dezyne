@@ -38,6 +38,7 @@ dist_%C%_scm_DATA =				\
  %D%/script.scm					\
  %D%/scm2json.scm				\
  %D%/shell-util.scm				\
+ %D%/simulate.scm				\
  %D%/templates.scm				\
  %D%/wfc.scm
 
