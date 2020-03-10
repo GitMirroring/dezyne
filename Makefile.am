@@ -165,6 +165,13 @@ doc/dzn.1: bin/dzn Makefile $(ALL_GO)
 doc/dzn-%.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< $*"
 
+html: doc/html/index.html
+
+doc/html/index.html: ${srcdest}doc/dezyne.texi doc/version.texi $(WEB_IMAGES)
+	mkdir -p $(@D)/html_node
+	$(MAKEINFO) --html -o $(@D)/html_node -I ${srcdest}doc -I doc $<
+	$(MAKEINFO) --no-split --html -o $(@D)/dezyne.html -I ${srcdest}doc -I doc $<
+
 # Distribution
 ##############
 
