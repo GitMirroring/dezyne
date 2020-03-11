@@ -34,9 +34,9 @@
   #:use-module (srfi srfi-26)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (gaiag ast)
   #:use-module (gaiag display)
   #:use-module (gaiag goops)
-  #:use-module (gaiag ast)
 
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
@@ -939,34 +939,35 @@
                                           (string-join (map trigger->string out-triggers) ", ")))))))
           (else '()))))
 
-(define-method (subsystems (o <system>))
-  (let loop ((todo (list o)) (found '()))
-    (if (null? todo) found
-        (let ((first (car todo))
-              (rest (cdr todo)))
-          (if (find (cut ast:eq? first <>) found) (loop rest found)
-              (let* ((instances (ast:instance* first))
-                     (components (filter-map .type instances))
-                     (systems (filter (is? <system>) components)))
-                (loop (append systems rest) (cons first found))))))))
+(define-method (ast:component-model* (o <system>))
+  (filter-map .type (ast:instance* o)))
 
-(define-method (subsystems (o <system>))
-  (define (systems o)
-    (let* ((instances (ast:instance* o))
-           (components (filter-map .type instances)))
-      (filter (is? <system>) components)))
-  (define (subs o found) ;; includes o
-    (if (find (cut ast:eq? o <>) found) found
-        (let ((found (cons o found)))
-          (append-map (cut subs <> found) (systems o)))))
-  (append-map (cut subs <> '()) (systems o)))
+(define-method (ast:system* (o <system>))
+  (filter (is? <system>) (ast:component-model* o)))
+
+(define-method (sub-systems- (o <system>) path)
+  (if (find (cut ast:eq? o <>) path) '()
+      (let ((path (cons o path))
+            (systems (ast:system* o)))
+        (append-map cons
+                    systems
+                    (map (cute sub-systems <> path) systems)))))
+
+(define sub-systems
+  (let ((cache-alist '()))
+    (lambda* (o #:optional (path '()))
+      (let ((key (.node o)))
+        (or (assoc-ref cache-alist key)
+            (let ((ss (sub-systems- o path)))
+              (when (and (null? path) (not (find (cut ast:eq? <> o) ss)))
+                (set! cache-alist (assoc-set! cache-alist key ss)))
+              ss))))))
 
 (define-method (recursive (o <system>))
-  (let* ((sub (subsystems o)))
+  (let* ((sub (sub-systems o)))
     (if (find (cut ast:eq? o <>) sub)
         `(,(wfc-error o (format #f "system composition of `~a' is recursive" (type-name (.name o)))))
         '())))
-
 
 (define-method (required-instances (o <instance>) (s <system>))
   (let* ((instances (ast:instance* s))
@@ -985,20 +986,23 @@
                                  instances))
          (right-instances (filter (lambda (i) (find (lambda (b) (equal? (.name i) (.instance.name (.left b)))) right-required-bindings))
                                   instances)))
-    (append left-instances right-instances)))
+    (cons (.node o) (append left-instances right-instances))))
 
-(define-method (all-required (o <instance>) (s <system>))
+(define-method (all-required (o <instance>) (s <system>) required-alist)
+  (define (req i) (or (assq-ref required-alist (.node i)) '()))
   (define (all-req o found)
     (if (find (cut ast:eq? o <>) found) found
         (let ((found (cons o found)))
-          (append-map (cut all-req <> found) (required-instances o s)))))
-  (append-map (cut all-req <> '()) (required-instances o s)))
+          (append-map (cut all-req <> found) (req o)))))
+  (append-map (lambda (r) (cons r (all-req r '()))) (req o)))
 
 (define-method (cyclic-bindings (o <system>))
-  (append-map (lambda (i) (if (find (cut ast:eq? i <>) (all-required i o))
-                              `(,(wfc-error i (format #f "instance `~a' is in a cyclic binding" (.name i))))
-                              '()))
-              (ast:instance* o)))
+  (let* ((instances (ast:instance* o))
+         (required-alist (map (cut required-instances <> o) instances)))
+    (append-map (lambda (i) (if (find (cut ast:eq? i <>) (all-required i o required-alist))
+                                `(,(wfc-error i (format #f "instance `~a' is in a cyclic binding" (.name i))))
+                                '()))
+                instances)))
 
 (define (ast-> ast)
   ((compose
