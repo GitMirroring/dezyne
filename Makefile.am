@@ -180,10 +180,28 @@ doc/dzn-%.1: bin/dzn Makefile $(ALL_GO)
 
 html: doc/html/index.html
 
+MAKEINFO_HTML_OPTIONS =									\
+ --css-ref=https://www.gnu.org/software/gnulib/manual.css				\
+ -c EXTRA_HEAD='<meta name="viewport" content="width=device-width, initial-scale=1" />'
+
 doc/html/index.html: ${srcdest}doc/dezyne.texi doc/version.texi $(WEB_IMAGES)
 	mkdir -p $(@D)/html_node
-	$(MAKEINFO) --html -o $(@D)/html_node -I ${srcdest}doc -I doc $<
-	$(MAKEINFO) --no-split --html -o $(@D)/dezyne.html -I ${srcdest}doc -I doc $<
+	$(MAKEINFO) --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/html_node -I ${srcdest}doc -I doc $<
+	$(MAKEINFO) --no-split --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/dezyne.html -I ${srcdest}doc -I doc $<
+
+SITE = /srv/dezyne/
+publish: html pdf
+	rsync -P -rvz --delete doc/html/ $(SITE)/manuals/
+	rsync -P -rvz --delete doc/images $(SITE)/manuals/
+	rsync -P -rvz --delete doc/images $(SITE)/manuals/html_node/
+	rsync -P -rvz --delete doc/dezyne.pdf $(SITE)/manuals/
+
+LOCAL_SITE = $(HOME)/src/web/dezyne.org/site/
+publish-local: html pdf
+	rsync -P -rvz --delete doc/html/ $(LOCAL_SITE)/manuals/
+	rsync -P -rvz --delete doc/images $(LOCAL_SITE)/manuals/
+	rsync -P -rvz --delete doc/images $(LOCAL_SITE)/manuals/html_node/
+	rsync -P -rvz --delete doc/dezyne.pdf $(LOCAL_SITE)/manuals/
 
 # Distribution
 ##############
