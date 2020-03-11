@@ -33,9 +33,20 @@
   #:use-module (gnu packages compression)
   #:use-module (gnu packages guile))
 
-(define guile-2.2.6
-  (if (equal? (package-version guile-2.2) "2.2.6") guile-2.2
-      (@ (gnu packages guile) guile-2.2.6)))
+(define-public guile-2.2.6
+  (package
+    (inherit guile-2.2)
+    (version "2.2.6")
+    (source (origin
+              (method url-fetch)
+
+              ;; Note: we are limited to one of the compression formats
+              ;; supported by the bootstrap binaries, so no lzip here.
+              (uri (string-append "mirror://gnu/guile/guile-" version
+                                  ".tar.xz"))
+              (sha256
+               (base32
+                "1269ymxm56j1z1lvq1y42rm961f2n7rinm3k6l00p9k52hrpcddk"))))))
 
 (define-public guile-patched
   (package

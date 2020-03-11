@@ -49,6 +49,8 @@
   #:use-module (gnu packages xml)
   #:use-module (gnu packages texinfo))
 
+(define guile-json-1 guile-json)
+
 (define %source-dir (getcwd))
 
 ;; scp kluit.dezyne.org:.../download/dzn-dzn-2.10.0.tar.gz .

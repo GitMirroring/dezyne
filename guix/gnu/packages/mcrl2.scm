@@ -31,8 +31,29 @@
   #:use-module (guix utils)
   #:use-module (gnu packages cross-base)
   #:use-module (gnu packages boost)
+  #:use-module (gnu packages guile)
   #:use-module (gnu packages maths)
   #:use-module (gnu packages mingw))
+
+(define guile-json-1 guile-json)
+
+(define-public mcrl2-minimal
+  (package
+    (inherit mcrl2)
+    (name "mcrl2-minimal")
+    (version "201908.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://www.mcrl2.org/download/release/mcrl2-"
+                    version ".tar.gz"))
+              (sha256
+               (base32
+                "1i4xgl2d5fgiz1mwi50cyfkrrcpm8nxfayfjgmhq7chs58wlhfsz"))))
+    (inputs
+     `(("boost" ,boost)))
+    (arguments
+     '(#:configure-flags '("-DMCRL2_ENABLE_GUI_TOOLS=OFF")))))
 
 (define-public mcrl2-minimal-patched
   (package
@@ -226,17 +247,17 @@ independent of the input data and can be reduced, if necessary, at some cost
 in compression.")
     (license license:zlib)))
 
-(define-public xgcc-sans-libc-x86_64-w64-mingw32
-  (let ((triplet "x86_64-w64-mingw32"))
-    (cross-gcc triplet
-               #:xbinutils (cross-binutils triplet))))
+;; (define-public xgcc-sans-libc-x86_64-w64-mingw32
+;;   (let ((triplet "x86_64-w64-mingw32"))
+;;     (cross-gcc triplet
+;;                #:xbinutils (cross-binutils triplet))))
 
-(define-public xbinutils-x86_64-w64-mingw32
-  (let ((triplet "x86_64-w64-mingw32"))
-    (cross-binutils triplet)))
+;; (define-public xbinutils-x86_64-w64-mingw32
+;;   (let ((triplet "x86_64-w64-mingw32"))
+;;     (cross-binutils triplet)))
 
-(define-public xgcc-x86_64-w64-mingw32
-  (let ((triplet "x86_64-w64-mingw32"))
-    (cross-gcc triplet
-                     #:xbinutils (cross-binutils triplet)
-                     #:libc mingw-w64-x86_64)))
+;; (define-public xgcc-x86_64-w64-mingw32
+;;   (let ((triplet "x86_64-w64-mingw32"))
+;;     (cross-gcc triplet
+;;                      #:xbinutils (cross-binutils triplet)
+;;                      #:libc mingw-w64-x86_64)))
