@@ -32,14 +32,18 @@
   #:use-module (guix utils)
   #:use-module (gnu packages)
   #:use-module (gnu packages autotools)
+  #:use-module (gnu packages bdw-gc)
   #:use-module (gnu packages flex)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages gettext)
   #:use-module (gnu packages guile)
+  #:use-module (gnu packages hurd)
   #:use-module (gnu packages mingw)
   #:use-module (gnu packages multiprecision)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages texinfo))
+
+(define guile-json-1 guile-json)
 
 (define-public gmp-mingw
   ;; Workaround for gcc-7 transition, -system and cross-build,
@@ -63,6 +67,69 @@
                                         ":" libc "/include"))
                  (format #t "environment variable `CROSS_CPLUS_INCLUDE_PATH' set to `~a'\n" (getenv "CROSS_CPLUS_INCLUDE_PATH"))
                  #t)))))))))
+
+(define-public libgc-mingw
+  (package
+   (name "libgc-mingw")
+   (version "7.6.12")
+   (source (origin
+            (method url-fetch)
+            (uri (string-append "https://github.com/ivmai/bdwgc/releases"
+                                "/download/v" version "/gc-" version ".tar.gz"))
+            (sha256
+             (base32
+              "10jhhi79d5brwlsyhwgpnrmc8nhlf7aan2lk9xhgihk5jc6srbvc"))))
+   (build-system gnu-build-system)
+   (arguments
+    `(#:configure-flags
+      (list
+       ;; Install gc_cpp.h et al.
+       "--enable-cplusplus"
+       ;; In GNU/Hurd systems during the 'Check' phase,
+       ;; there is a deadlock caused by the 'gctest' test.
+       ;; To disable the error set "--disable-gcj-support"
+       ;; to configure script. See bug report and discussion:
+       ;; <https://lists.opendylan.org/pipermail/bdwgc/2017-April/006275.html>
+       ;; <https://lists.gnu.org/archive/html/bug-hurd/2017-01/msg00008.html>
+       ,@(if (hurd-triplet? (or (%current-system)
+                                (%current-target-system)))
+             '("--disable-gcj-support")
+             '()))
+      #:phases (modify-phases %standard-phases
+                 (add-after 'unpack 'adjust-pc-file
+                   (lambda* (#:key inputs #:allow-other-keys)
+                     (let ((libatomic-ops (assoc-ref inputs "libatomic-ops")))
+                       ;; GC 7.6.10 and later includes -latomic_ops in the
+                       ;; pkg-config file.  To avoid propagation, insert an
+                       ;; absolute reference so dependent programs can find it.
+                       (substitute* "bdw-gc.pc.in"
+                         (("@ATOMIC_OPS_LIBS@" match)
+                          (string-append "-L" libatomic-ops "/lib "
+                                         match)))
+                       #t))))))
+   (native-inputs `(("pkg-config" ,pkg-config)))
+   (inputs `(("libatomic-ops" ,libatomic-ops)))
+   (outputs '("out" "debug"))
+   (synopsis "The Boehm-Demers-Weiser conservative garbage collector
+for C and C++")
+   (description
+    "The Boehm-Demers-Weiser conservative garbage collector can be used
+as a garbage collecting replacement for C malloc or C++ new.  It allows
+you to allocate memory basically as you normally would, without
+explicitly deallocating memory that is no longer useful.  The collector
+automatically recycles memory when it determines that it can no longer
+be otherwise accessed.
+
+The collector is also used by a number of programming language
+implementations that either use C as intermediate code, want to
+facilitate easier interoperation with C libraries, or just prefer the
+simple collector interface.
+
+Alternatively, the garbage collector may be used as a leak detector for
+C or C++ programs, though that is not its primary goal.")
+   (home-page "http://www.hboehm.info/gc/")
+
+   (license (license:x11-style (string-append home-page "license.txt")))))
 
 (define-public guile-mingw
   (let ((commit "6d6bc013e1f9db98334e1212295b8be0e39fbf0a")
@@ -91,8 +158,10 @@
          ("gettext" ,gettext-minimal)
          ,@(package-native-inputs guile-2.2)))
       (propagated-inputs
-       `(("gmp" ,gmp-mingw)
-         ,@(alist-delete "gmp" (package-propagated-inputs guile-2.2))))
+       `(("bdw-gc" ,libgc-mingw)
+         ("gmp" ,gmp-mingw)
+         ,@(fold alist-delete (package-propagated-inputs guile-2.2)
+                 '( "bdw-gc" "gmp"))))
       (arguments
        `(#:tests? #f
          ,@(if (%current-target-system)
