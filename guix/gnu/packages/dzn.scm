@@ -146,11 +146,17 @@
                          ("mcrl2" ,mcrl2-minimal-mingw)
                          ("sed" ,sed-mingw)))
     (arguments
-     `(#:configure-flags '("--enable-languages=c++")
-       ,@(substitute-keyword-arguments (package-arguments dzn)
-           ((#:phases phases '%standard-phases)
-            `(modify-phases ,phases
-               (delete 'wrap-binaries))))))))
+     (substitute-keyword-arguments (package-arguments dzn)
+       ((#:configure-flags flags)
+        (cons*
+         "--enable-languages=c++"
+         "ac_cv_guile_piped_process=yes"
+         "ac_cv_lps2lts_stdout=yes"
+         "ac_cv_lpscompare_stdin=yes"
+         flags))
+       ((#:phases phases '%standard-phases)
+        `(modify-phases ,phases
+           (delete 'wrap-binaries)))))))
 
 (define-public m4-changeword
   (package
