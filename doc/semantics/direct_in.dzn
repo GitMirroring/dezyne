@@ -1,0 +1,18 @@
+interface I
+{
+ in void a();
+ behaviour
+ {
+   on a: {}
+ }
+}
+
+component direct_in
+{
+  provides I p;
+  requires I r;
+  behaviour
+  {
+    on p.a(): r.a();
+  }
+}
