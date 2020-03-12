@@ -1,0 +1,12 @@
+component indirect_multiple_out2
+{
+  provides I p;
+  requires I r1;
+  requires I r2;
+  behaviour
+  {
+    on p.a(): {r1.a(); r2.a();}
+    on r1.b(): p.b();
+    on r2.b(): {}
+  }
+}
