@@ -1,0 +1,18 @@
+interface I
+{
+  out void a();
+  behaviour
+  {
+    on inevitable: a;
+  }
+}
+
+component direct_out
+{
+  provides I p;
+  requires I r;
+  behaviour
+  {
+    on r.a(): p.a();
+  }
+}
