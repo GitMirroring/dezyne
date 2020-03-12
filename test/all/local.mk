@@ -106,7 +106,6 @@ REGRESSION_TESTS =				\
  %D%/compliance_out_nondet			\
  %D%/compliance_out_sync			\
  %D%/compliance_provides_bool			\
- %D%/compliance_provides_illegal4		\
  %D%/compliance_provides_illegal5		\
  %D%/compliance_provides_int			\
  %D%/compliance_provides_out			\
@@ -288,11 +287,11 @@ PARSER_TESTS =					\
 # lps2lts across different mcrl2 builds, at least depending on how mcrl2
 # was compiled (e.g., using boost-1.69 or boost-1.70).
 NON_REPRODUCIBLE_TESTS =			\
+ %D%/compliance_provides_illegal4		\
  %D%/compliance_reply_bool
 
 XFAIL_TESTS =					\
  %D%/compliance_livelock			\
- %D%/compliance_provides_illegal4		\
  %D%/compliance_out_inevitable_illegal		\
  %D%/import_strip_component			\
  %D%/shell
