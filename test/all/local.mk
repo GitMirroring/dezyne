@@ -110,7 +110,6 @@ REGRESSION_TESTS =				\
  %D%/compliance_provides_illegal5		\
  %D%/compliance_provides_int			\
  %D%/compliance_provides_out			\
- %D%/compliance_reply_bool			\
  %D%/compliance_requires_illegal		\
  %D%/deadlock_blocking_guard			\
  %D%/deadlock_blocking_inevitable		\
@@ -284,6 +283,12 @@ PARSER_TESTS =					\
  %D%/wf_systemRecursion				\
  %D%/wf_typeerror				\
  %D%/wf_variableInitExpression
+
+# The LTS for these tests is not generated reproducibly by mcrl22lps |
+# lps2lts across different mcrl2 builds, at least depending on how mcrl2
+# was compiled (e.g., using boost-1.69 or boost-1.70).
+NON_REPRODUCIBLE_TESTS =			\
+ %D%/compliance_reply_bool
 
 XFAIL_TESTS =					\
  %D%/compliance_livelock			\
