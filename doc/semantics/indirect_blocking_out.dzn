@@ -1,0 +1,33 @@
+interface I
+{
+  in void a();
+  out void b();
+  behaviour
+  {
+    on a: b;
+  }
+}
+
+interface I2
+{
+   in void a();
+   out void b();
+   behaviour
+   {
+     bool idle = true;
+     [idle] on a: idle = false;
+     [!idle] on a: illegal;
+     [!idle] on inevitable: {idle = true; b;}
+   }
+}
+
+component indirect_blocking_out
+{
+  provides I p;
+  requires I2 r;
+  behaviour
+  {
+    blocking on p.a(): r.a();
+    on r.b(): {p.b(); p.reply();}
+  }
+}

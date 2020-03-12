@@ -1,0 +1,23 @@
+interface I
+{
+  in void a();
+  out void b();
+  behaviour
+  {
+    on a: b;
+  }
+}
+
+component indirect_blocking_multiple_external_out
+{
+  provides I p;
+  requires external I r1;
+  requires external I r2;
+  behaviour
+  {
+    bool ready = true;
+    on p.a(): blocking {ready = false; r1.a(); r2.a();}
+    [!ready] on r1.b(), r2.b(): {ready = true; p.b();}
+    [ready] on r1.b(), r2.b(): p.reply();
+  }
+}

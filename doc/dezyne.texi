@@ -3006,9 +3006,8 @@ A provides port in-event (p.a) call resulting in a requires port
 in-event (r.a) is implemented as a function calling another function.
 
 @example
-@code{interface I@{  in void a();  behaviour  @{    on a: @{@}  @}@}component direct_in@{  provides I p;  requires I r;  behaviour  @{    on p.a(): r.a();  @}@}}
+@verbatiminclude semantics/direct_in.dzn
 @end example
-
 
 @image{images/direct_in,,,,.png}
 
@@ -3019,9 +3018,8 @@ A requires port out-event (r.a) resulting in a provides port out-event
 queue followed by a call to flush the queue.
 
 @example
-@code{interface I@{  out void a();  behaviour  @{    on inevitable: a;  @}@}component direct_out@{  provides I p;  requires I r;  behaviour  @{    on r.a(): p.a();  @}@}}
+@verbatiminclude semantics/direct_out.dzn
 @end example
-
 
 @image{images/direct_out,,,,.png}
 
@@ -3034,16 +3032,14 @@ component processing of the events. The below 2 versions of the
 component are indistinguisable looking from the outside.
 
 @example
-@code{interface I@{  out void a();  out void b();  behaviour  @{    on inevitable: @{a; b;@}  @}@}component direct_multiple_out1@{  provides I p;  requires I r;  behaviour  @{    on r.a(): p.a();    on r.b(): p.b();  @}@}}
+@verbatiminclude semantics/direct_multiple_out1.dzn
 @end example
-
 
 @image{images/direct_multiple_out1,,,,.png}
 
 @example
-@code{component direct_multiple_out2@{  provides I p;  requires I r;  behaviour  @{    on r.a(): @{@}    on r.b(): @{p.a(); p.b();@}  @}@}}
+@verbatiminclude semantics/direct_multiple_out2.dzn
 @end example
-
 
 @image{images/direct_multiple_out2,,,,.png}
 
@@ -3054,9 +3050,8 @@ The third variant is left as an exercise to the reader.
 A requires port out-event (r.b) posted in the context of a provides port in-event (p.a) call is processed before the provides port in-event (p.a) returns.
 
 @example
-@code{interface I@{  in void a();  out void b();  behaviour  @{    on a: b;  @}@}component indirect_out@{  provides I p;  requires I r;  behaviour  @{    on p.a(): r.a();    on r.b(): p.b();  @}@}}
+@verbatiminclude semantics/indirect_out.dzn
 @end example
-
 
 @image{images/indirect_out,,,,.png}
 
@@ -3067,23 +3062,20 @@ Since the provided interface is the same in the 3 cases below the externally vis
 The 3 different behaviour implementations of the component show the subtle differences in the internal handling of messages.
 
 @example
-@code{interface I@{  in void a();  out void b();  behaviour  @{    on a: b;  @}@}component indirect_multiple_out1@{  provides I p;  requires I r1;  requires I r2;  behaviour  @{    on p.a(): @{r1.a(); r2.a();@}    on r1.b(): @{@}    on r2.b(): p.b();  @}@}}
+@verbatiminclude semantics/indirect_multiple_out1.dzn
 @end example
-
 
 @image{images/indirect_multiple_out1,,,,.png}
 
 @example
-@code{component indirect_multiple_out2@{  provides I p;  requires I r1;  requires I r2;  behaviour  @{    on p.a(): @{r1.a(); r2.a();@}    on r1.b(): p.b();    on r2.b(): @{@}  @}@}}
+@verbatiminclude semantics/indirect_multiple_out2.dzn
 @end example
-
 
 @image{images/indirect_multiple_out2,,,,.png}
 
 @example
-@code{component indirect_multiple_out3@{  provides I p;  requires I r1;  requires I r2;  behaviour  @{    on p.a(): r1.a();    on r1.b(): r2.a();    on r2.b(): p.b();  @}@}}
+@verbatiminclude semantics/indirect_multiple_out3.dzn
 @end example
-
 
 @image{images/indirect_multiple_out3,,,,.png}
 
@@ -3094,9 +3086,8 @@ See section on @xref{Blocking},
 The in-event on the provides port (p.a) blocks (does not return) until a reply is handled. This happens in the handling of the requires port out-event (r.b).
 
 @example
-@code{interface I@{  in void a();  out void b();  behaviour  @{    on a: b;  @}@}interface I2@{  in void a();  out void b();  behaviour  @{    bool idle = true;    [idle] on a: idle = false;    [!idle] on a: illegal;    [!idle] on inevitable: @{idle = true; b;@}  @}@}component indirect_blocking_out@{  provides I p;  requires I2 r;  behaviour  @{    blocking on p.a(): r.a();    on r.b(): @{ p.b(); p.reply(); @}  @}@}}
+@verbatiminclude semantics/indirect_blocking_out.dzn
 @end example
-
 
 @image{images/indirect_blocking_out,,,,.png}
 
@@ -3113,9 +3104,8 @@ Note: the addition of the in-event e is required to constrain the
 occurrence of the inevitable event in combination with external.
 
 @example
-@code{interface I@{  in void e();  out void a();  out void b();  behaviour  @{    bool idle =  true;    [idle] on e: idle = false;    [!idle] on e: illegal;    [!idle] on inevitable: @{idle = true; a; b;@}  @}@}component external_multiple_out@{  provides I p;  requires external I r;  behaviour  @{    bool idle =  true;    [idle] on p.e(): @{idle = false; r.e();@}    [!idle] on p.e: illegal;    on r.a(): @{@}    on r.b(): @{idle = true; p.a(); p.b();@}  @}@}}
+@verbatiminclude semantics/external_multiple_out.dzn
 @end example
-
 
 @image{images/external_multiple_out,,,,.png}
 
@@ -3124,9 +3114,8 @@ occurrence of the inevitable event in combination with external.
 The 2 required out-events (r1.b, r2.b) can come in any order. The message sequence chart shows only one scenario. The implementation of the component is such that the provided behaviour is the same in both cases.
 
 @example
-@code{interface I@{  in void a();  out void b();  behaviour  @{    on a: b;  @}@}component indirect_blocking_multiple_external_out@{  provides I p;  requires external I r1;  requires external I r2;  behaviour  @{    bool ready = true;    on p.a(): blocking @{ready = false; r1.a(); r2.a();@}    [!ready] on r1.b(), r2.b(): @{ready = true; p.b();@}    [ready] on r1.b(), r2.b(): p.reply();  @}@}}
+@verbatiminclude semantics/indirect_blocking_multiple_out.dzn
 @end example
-
 
 @image{images/indirect_blocking_multiple_external_out,,,,.png}
 
