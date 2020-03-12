@@ -32,10 +32,10 @@ You're welcome to discuss this road map on dezyne-devel@gnu.org or
 * TODO
 ** Release 2.10, unsorted
   - Review and finish DRAFT commits
-    + DRAFT gdzn: lts2traces.
-    + DRAFT guix: Binary distribution.
+    + DRAFT dzn: verify: support ltscompare --structured-output.
+    + DRAFT guix: mingw: guile-patched.
     + DRAFT doc: Import texinfo from infocenter.
-    + DRAFT build: Add autotools.
+    + DRAFT guix: Add mcrl-patched
     + All READMEs.
   - Document Definition of Done --> what does finished mean
   - Assert that all dzn commands are accompanied by --help text
