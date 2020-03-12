@@ -1,0 +1,14 @@
+import indirect_multiple_out.dzn;
+
+component indirect_multiple_out3
+{
+  provides I p;
+  requires I r1;
+  requires I r2;
+  behaviour
+  {
+    on p.a(): r1.a();
+    on r1.b(): r2.a();
+    on r2.b(): p.b();
+  }
+}

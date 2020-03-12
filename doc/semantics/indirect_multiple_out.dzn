@@ -1,0 +1,9 @@
+interface I
+{
+  in void a();
+  out void b();
+  behaviour
+  {
+    on a: b;
+  }
+}

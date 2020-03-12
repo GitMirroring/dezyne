@@ -1,0 +1,27 @@
+interface I
+{
+  in void e();
+  out void a();
+  out void b();
+  behaviour
+  {
+    bool idle = true;
+    [idle] on e: idle = false;
+    [!idle] on e: illegal;
+    [!idle] on inevitable: {idle = true; a; b;}
+  }
+}
+
+component external_multiple_out
+{
+  provides I p;
+  requires external I r;
+  behaviour
+  {
+    bool idle = true;
+    [idle] on p.e(): {idle = false; r.e();}
+    [!idle] on p.e: illegal;
+    on r.a(): {}
+    on r.b(): {idle = true; p.a(); p.b();}
+  }
+}
