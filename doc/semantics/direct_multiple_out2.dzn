@@ -1,0 +1,12 @@
+import direct_multiple_out.dzn;
+
+component direct_multiple_out2
+{
+  provides I p;
+  requires I r;
+  behaviour
+  {
+    on r.a(): {}
+    on r.b(): {p.a(); p.b();}
+  }
+}
