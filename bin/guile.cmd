@@ -13,10 +13,13 @@ set LC_PAPER=C
 set LC_TELEPHONE=C
 set LC_TIME=C
 set TMPDIR=tmp
-set prefix=.
+set dir=.
+set DZN_UNINSTALLED=1
+set absdir=%~p0
+set PREFIX=%absdir:\=/%
 set GUILE_AUTO_COMPILE=0
-set GUILE_LOAD_PATH=%GUILE_LOAD_PATH%;%prefix%/share/guile/site/2.2;%prefix%/share/guile/2.2
-set GUILE_LOAD_COMPILED_PATH=%GUILE_LOAD_COMPILED_PATH%;%prefix%/lib/guile/2.2/site-ccache;%prefix%/lib/guile/2.2/ccache
+set GUILE_LOAD_PATH=%GUILE_LOAD_PATH%;%dir%/share/guile/site/2.2;%dir%/share/guile/2.2
+set GUILE_LOAD_COMPILED_PATH=%GUILE_LOAD_COMPILED_PATH%;%dir%/lib/guile/2.2/site-ccache;%dir%/lib/guile/2.2/ccache
 set HOME=%USERPROFILE%
-set PATH=%~p0;%~p0/lib;%PATH%
+set PATH=%~p0;%~p0/bin;%~p0/lib;%PATH%
 guile.exe %*

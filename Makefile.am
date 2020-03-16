@@ -273,9 +273,6 @@ STRIP_FILES =					\
  gnu/store/*/include				\
  gnu/store/*/share/man
 
-TAR = tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner
-
-dzn_linux = dzn bash-minimal coreutils guile-piped-process m4-changeword mcrl2-minimal-patched sed
 pack:
 	GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-offload $(dzn_linux)
 
@@ -300,23 +297,40 @@ linux:
 	gzip --no-name $(distdir)-x86_64-linux.tar
 	rm -rf $(distdir)
 
-dzn_mingw = dzn-mingw guile-mingw m4-changeword mcrl2-minimal-mingw sed-mingw
+dzn_mingw =					\
+ dzn-mingw					\
+ guile-json-mingw				\
+ guile-mingw					\
+ m4-changeword					\
+ mcrl2-minimal-mingw				\
+ sed-mingw
+
+dzn_mingw_filter = $(shell echo $(dzn_mingw) | tr ' ' '|')
+
+MINGW_STRIP_FILES =				\
+ share/man
+
 mingw: bin/dzn
 	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 hello
 	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 guile-mingw
+	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 guile-json-mingw
 	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 mcrl2-minimal-mingw
 	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 dzn-mingw
 	rm -f $(distdir)-i686-windows.zip
 	rm -rf $(distdir)-i686-windows
-	mkdir -p $(distdir)-i686-windows/lib
-	cp --no-preserve=mode $$(find $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 guile-json-mingw) \
-              $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw)) | grep mingw | grep -E 'dzn|guile|mcrl2') -path '*/bin/*') $(distdir)-i686-windows
-	cp --no-preserve=mode -r $$(find $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 guile-json-mingw) \
-              $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw)) | grep mingw | grep -E 'dzn|guile|mcrl2') -path '*/share') $(distdir)-i686-windows
-	cp --no-preserve=mode -r $$(find $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 guile-json-mingw) \
-              $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 dzn-mingw guile-mingw) | grep mingw ) -path '*/lib/guile') $(distdir)-i686-windows/lib
-	-cp $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw))) -name '*.dll') $(distdir)-i686-windows/lib
-	cp $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw)) | grep -E 'dzn|guile|mcrl2|m4-changeword|sed-mingw') -name '*.exe') $(distdir)-i686-windows
+	mkdir $(distdir)-i686-windows
+	cp -r --no-preserve=mode \
+	    $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw)) \
+		    	| sort -u) \
+		 -path '*/bin' -o -path '*/share' -o -path '*/lib' \
+			| grep -E '$(dzn_mingw_filter)') \
+	    $(distdir)-i686-windows
+	cp --no-preserve=mode \
+	    $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw))) \
+		-name '*.dll' \
+		| sort -u) \
+	    $(distdir)-i686-windows/lib
+	cd $(distdir)-i686-windows && rm -rf $(MINGW_STRIP_FILES)
 	cp bin/dzn $(distdir)-i686-windows
 	cp bin/dzn.cmd $(distdir)-i686-windows
 	cp bin/guile.cmd $(distdir)-i686-windows
