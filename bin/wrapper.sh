@@ -2,7 +2,7 @@
 
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -45,4 +45,8 @@ else
     wrapper=$(readlink -f "$0")
 fi
 dir=$(dirname "$wrapper")
+PATH="$dir:$dir/gnu/bin:$PATH"
+GUILE_LOAD_PATH="$dir/gnu/share/guile/site/2.2:$dir/gnu/guile/2.2${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH"
+GUILE_LOAD_COMPILED_PATH="$dir/gnu/lib/guile/2.2/site-ccache:$dir/gnu/lib/guile/2.2/ccache${GUILE_LOAD_COMPILED_PATH:+:}$GUILE_LOAD_COMPILED_PATH"
+export GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH
 exec "$dir/gnu/bin/@COMMAND@" "$@"
