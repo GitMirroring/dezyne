@@ -56,7 +56,7 @@
 (define-public dzn
   (package
     (name "dzn")
-    (version "2.10.0.rc4")
+    (version "2.10.0.rc5")
     (source
      (origin
        (method url-fetch)
@@ -64,7 +64,7 @@
                            name "-" version ".tar.gz"))
        (sha256
         (base32
-         #!dzn!# "0jc3hnmlvv9l1l7xrms81yj6dvy0c8cg8607y5cr101hx4vnz7fb"))))
+         #!dzn!# "0qc96m7mjf02zrbpxyhjhb2jpaf73ipvxfbphashify7jla71p43"))))
     (inputs `(("bash" ,bash-minimal)
               ("coreutils" ,coreutils)
               ("guile" ,guile-patched)
