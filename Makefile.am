@@ -254,6 +254,17 @@ EXTRA_DIST +=					\
  bin/guile.cmd					\
  bin/wrapper.sh
 
+PACK_TAR = tar --sort=name --mtime=@1 --owner=0 --group=0 --numeric-owner
+
+dzn_linux =					\
+ bash-minimal					\
+ coreutils					\
+ dzn						\
+ guile-piped-process				\
+ m4-changeword					\
+ mcrl2-minimal-patched				\
+ sed
+
 STRIP_FILES =					\
  gnu/store/*-boost*				\
  gnu/store/*/include				\
@@ -282,6 +293,6 @@ linux:
 	cp test/all/hello/hello.dzn $(distdir)
 	cp test/all/compliance_provides_bool/compliance_provides_bool.dzn $(distdir)
 	cp test/all/Camera/Camera.dzn $(distdir)
-	$(TAR) -cf $(distdir)-x86_64-linux.tar $(distdir)
+	$(PACK_TAR) -cf $(distdir)-x86_64-linux.tar $(distdir)
 	gzip --no-name $(distdir)-x86_64-linux.tar
 	rm -rf $(distdir)
