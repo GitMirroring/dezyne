@@ -268,11 +268,11 @@ pack:
 linux:
 	GUIX_PACKAGE_PATH=guix guix build dzn
 	rm -f $(distdir)-x86_64-linux.tar.gz
-	GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-offload $(dzn_linux)
+	GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --symlink=/gnu/lib=lib --symlink=/gnu/share=share --no-offload $(dzn_linux)
 	if test -d $(distdir); then chmod -R +w $(distdir); fi
 	rm -rf $(distdir)
 	mkdir $(distdir)
-	tar -C $(distdir) --no-overwrite-dir -xf $$(GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-offload $(dzn_linux))
+	tar -C $(distdir) --no-overwrite-dir -xf $$(GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --symlink=/gnu/lib=lib --symlink=/gnu/share=share --no-offload $(dzn_linux))
 	chmod -R +w $(distdir)
 	cd $(distdir) && rm -rf $(STRIP_FILES)
 	sed s,@COMMAND@,dzn, bin/wrapper.sh > $(distdir)/dzn
