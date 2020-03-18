@@ -67,7 +67,7 @@ bin/%: bin/%.in Makefile
 dzn/%: dzn/%.in Makefile
 	$(AM_V_SED)$(do_subst) < $< > $@
 
-BUILT_SOURCES = dzn/config.scm
+BUILT_SOURCES =
 
 bin_SCRIPTS =					\
   bin/dzn
