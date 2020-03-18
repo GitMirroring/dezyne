@@ -25,7 +25,6 @@ dist_%C%_scm_DATA =				\
  %D%/ast.scm					\
  %D%/code.scm					\
  %D%/command-line.scm				\
- %D%/config.scm					\
  %D%/display.scm				\
  %D%/dzn.scm					\
  %D%/fifo.scm					\
@@ -70,10 +69,15 @@ if have_scheme
 dist_%C%_scm_DATA += %D%/scheme.scm
 endif
 
+EXTRA_DIST += %D%/config.scm.in
+BUILT_SOURCES += %D%/config.scm
+nodist_%C%_scm_DATA = %D%/config.scm
+
 dist_nocompile_%C%_scm_DATA =
 
 %C%_scmdir = $(guilemoduledir)/%D%
 nocompile_%C%_scmdir = $(%C%_scmdir)
 %C%_godir = $(guileobjectdir)/%D%
 %C%_go_DATA = $(dist_%C%_scm_DATA:%.scm=%.go)
+%C%_go_DATA += $(nodist_%C%_scm_DATA:%.scm=%.go)
 ALL_GO += $(%C%_go_DATA)
