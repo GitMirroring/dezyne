@@ -67,7 +67,7 @@ bin/%: bin/%.in Makefile
 gaiag/%: gaiag/%.in Makefile
 	$(AM_V_SED)$(do_subst) < $< > $@
 
-BUILT_SOURCES = gaiag/config.scm
+BUILT_SOURCES =
 
 bin_SCRIPTS =					\
   bin/dzn
