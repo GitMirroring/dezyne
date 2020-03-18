@@ -24,7 +24,7 @@
 ;;;
 ;;; Code:
 
-(set! %load-path (append '("@srcdir@" "@guilemoduledir@") %load-path))
-(set! %load-compiled-path (append '("@srcdir@" "@guileobjectdir@") %load-compiled-path))
+(set! %load-path (append '("@guilemoduledir@") %load-path))
+(set! %load-compiled-path (append '("@guileobjectdir@") %load-compiled-path))
 
 ((@ (gaiag gdzn) main) (command-line))
