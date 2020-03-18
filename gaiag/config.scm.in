@@ -1,45 +1,48 @@
+;;; Dezyne --- Dezyne command line tools
+;;;
+;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;;
+;;; This file is part of Dezyne.
+;;;
+;;; Dezyne is free software: you can redistribute it and/or modify it
+;;; under the terms of the GNU Affero General Public License as
+;;; published by the Free Software Foundation, either version 3 of the
+;;; License, or (at your option) any later version.
+;;;
+;;; Dezyne is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;;; Affero General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU Affero General Public
+;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+;;;
+;;; Commentary:
+;;;
+;;; Compile-time configuration of gaiag.  When adding a substitution
+;;; variable here, make sure to have configure substitute it.
+;;;
+;;; Code:
+
 (define-module (gaiag config)
-  #:export (%asd
-            %bindir
-            %sbindir
+  #:export (%bindir
             %datadir
             %datarootdir
             %dzn
-            %dezyne-prefix
-            %localstatedir
             %guilemoduledir
             %guileobjectdir
             %prefix
             %root-dir
-            %service-bindir
-            %service-dir
-            %service-version
-            %service-versions-dir
-            %sysconfdir
-            %command-dir
             %template-dir
             %version
             %version-major
             %version-minor
             %version-patch))
 
-;;; Commentary:
-;;;
-;;; Compile-time configuration of gdzn.  When adding a substitution variable
-;;; here, make sure to have configure substitute it.
-;;;
-;;; Code:
-
 (define %prefix
   (or (and (getenv "DZN_UNINSTALLED") (getenv "PREFIX"))
       "@prefix@"))
-
-(define %exec-prefix
-  (or (and (getenv "DZN_UNINSTALLED") (getenv "PREFIX"))
-      "@exec_prefix@"))
-
-(define %dezyne-prefix
-  (or (getenv "DEZYNE_PREFIX") %prefix))
 
 (define %datadir
   (or (and (getenv "DZN_UNINSTALLED") %prefix)
@@ -61,12 +64,6 @@
   (or (and (getenv "DZN_UNINSTALLED") %prefix)
       %pkgdatadir))
 
-(define %service-bindir
-  (string-append %datadir "/bin"))
-
-(define %sbindir
-  "@sbindir")
-
 (define %template-dir
   (string-append %datadir "/templates"))
 
@@ -75,16 +72,6 @@
 
 (define %guileobjectdir
   "@guileobjectdir@")
-
-(define %command-dir
-  (or (and (getenv "DZN_UNINSTALLED") (string-append %prefix "/gaiag/commands"))
-      (string-append %guileobjectdir "/gaiag/commands")))
-
-(define %service-dir
-  (string-append %datadir "/services"))
-
-(define %service-version
-  "@PACKAGE_VERSION@")
 
 (define %version
   "@PACKAGE_VERSION@")
@@ -97,18 +84,6 @@
 
 (define %version-patch
   @VERSION_PATCH@)
-
-(define %service-versions-dir
-  (string-append %dezyne-prefix "/services"))
-
-(define %localstatedir
-  "@localstatedir@")
-
-(define %sysconfdir
-  "@sysconfdir@")
-
-(define %asd
-  "@ASD@")
 
 (define %dzn
   (string-append %bindir "/dzn"))
