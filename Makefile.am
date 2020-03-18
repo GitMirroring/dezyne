@@ -202,7 +202,10 @@ release: update-hash
 if have_guix
 update-hash: $(DIST_ARCHIVES)
 	$(GUIX) download file://$(PWD)/$<
-	sed -i -e 's,#!dzn!# "[^"]*"),#!dzn!# "$(shell $(GUIX) hash $<)"),' guix/gnu/packages/dzn.scm
+	sed -i \
+		-e 's,base32 #!dzn!# "[^"]*"),base32 #!dzn!# "$(shell $(GUIX) hash $<)"),' \
+		-e 's,version #!dzn!# "[^"]*"),version #!dzn!# "$(PACKAGE_VERSION)"),' \
+	guix/gnu/packages/dzn.scm
 else
 $(warning update-hash: no Guix)
 endif
