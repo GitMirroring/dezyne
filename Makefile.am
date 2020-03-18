@@ -236,8 +236,15 @@ distcheck-hook:
 
 install-data-local:
 	test -z $(DESTDIR)$(pkgdatadir) || $(MKDIR_P) $(DESTDIR)$(pkgdatadir)
-	tar -cf - runtime | tar -C $(DESTDIR)$(pkgdatadir) -xf-
-	tar -cf - gaiag/templates | tar -C $(DESTDIR)$(pkgdatadir) -xf-
+if have_cxx11
+	tar -cf - runtime/c++ | tar -C $(DESTDIR)$(pkgdatadir) -xf-
+endif
+if have_javascript
+	tar -cf - runtime/javascript | tar -C $(DESTDIR)$(pkgdatadir) -xf-
+endif
+if have_scheme
+	tar -cf - runtime/scheme | tar -C $(DESTDIR)$(pkgdatadir) -xf-
+endif
 
 # Binary pack
 #############
