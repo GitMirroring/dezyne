@@ -32,7 +32,7 @@
 
 namespace dzn
 {
-#define DZN_VERSION_STRING "@SERVICE_VERSION@"
+#define DZN_VERSION_STRING "@PACKAGE_VERSION@"
 int const version_major = @VERSION_MAJOR@;
 int const version_minor = @VERSION_MINOR@;
 int const version_patch = @VERSION_PATCH@;

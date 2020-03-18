@@ -54,7 +54,7 @@
 
     (or
      (and version?
-	  ((stdout "dzn ~a\n" %service-version) (exit 0)))
+	  ((stdout "dzn ~a\n" %version) (exit 0)))
      (and (or help? usage?)
           ((or (and usage? stderr) stdout)
            (let ((commands (delete-duplicates
@@ -93,34 +93,10 @@ Use \"dzn COMMAND --help\" for command-specific information.
          (main (module-ref module 'main)))
     (main args)))
 
-(define (service-version args)
-  (define (version-option? o)
-    (or (string-prefix? "--version" o)
-        (string-prefix? "-V" o)))
-  (let ((v (drop-while (negate version-option?) args)))
-    (and (pair? v)
-         (let ((opt (car v)))
-           (cond ((null? (cdr v)) %service-version)
-                 ((string-prefix? "--version=" opt) (cadr (string-split opt #\=)))
-                 ((string-prefix? "-V" opt) (string-drop opt 2))
-                 (else (error "error parsing version option" opt)))))))
--
-(define (exec-dzn-version version args)
-  (let* ((service-bindir (string-append %service-versions-dir "/" version "/bin"))
-         (dzn (string-append service-bindir "/dzn")))
-    (if (not (access? dzn (logior R_OK X_OK))) (error (format #f "dzn: no such version: ~a" version))
-        (let ((self? (equal? (canonicalize-path (car (command-line)))
-                             (canonicalize-path dzn))))
-          (if self? (run-command args) ; for development: avoid loop
-              (apply execl dzn dzn args))))))
-
 (define (main args)
   (let* ((options (parse-opts args))
          (command-args (option-ref options '() '()))
          (command (and (pair? command-args) (car command-args)))
-         (debug? (option-ref options 'debug #f))
-         (service-version (service-version command-args)))
-    (if (and #f service-version (not (equal? service-version %service-version)))
-        (exec-dzn-version service-version (cdr args))
-        (if (getenv "DZN_REPL") (call-with-error-handling (cut run-command command-args))
-            (run-command command-args)))))
+         (debug? (option-ref options 'debug #f)))
+    (if (getenv "DZN_REPL") (call-with-error-handling (cut run-command command-args))
+        (run-command command-args))))
