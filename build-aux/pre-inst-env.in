@@ -38,9 +38,6 @@ export PATH
 PREFIX="$abs_top_srcdir"
 export PREFIX
 
-DEZYNE_PREFIX="$abs_top_builddir/build/prefix"
-export DEZYNE_PREFIX
-
 DZN_UNINSTALLED=1
 export DZN_UNINSTALLED
 

@@ -41,16 +41,12 @@ exampledir = $(docdir)
 do_subst = sed						\
   -e 's,[@]GUILE[@],$(GUILE),g'				\
   -e 's,[@]prefix[@],$(prefix),g'			\
-  -e 's,[@]exec_prefix[@],$(exec_prefix),g'		\
   -e 's,[@]bindir[@],$(bindir),g'			\
   -e 's,[@]datadir[@],$(datadir),g'			\
   -e 's,[@]datarootdir[@],$(datarootdir),g'		\
-  -e 's,[@]localstatedir[@],$(localstatedir),g'		\
+  -e 's,[@]pkgdatadir[@],$(pkgdatadir),g'		\
   -e 's,[@]guilemoduledir[@],$(guilemoduledir),g'	\
   -e 's,[@]guileobjectdir[@],$(guileobjectdir),g'	\
-  -e 's,[@]sysconfdir[@],$(sysconfdir),g'		\
-  -e 's,[@]ASD[@],$(ASD),g'				\
-  -e 's,[@]LTS[@],$(LTS),g'				\
   -e 's,[@]PACKAGE_VERSION[@],$(PACKAGE_VERSION),g'	\
   -e 's,[@]VERSION_MAJOR[@],$(VERSION_MAJOR),g'		\
   -e 's,[@]VERSION_MINOR[@],$(VERSION_MINOR),g'		\
