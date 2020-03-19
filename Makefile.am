@@ -273,17 +273,18 @@ STRIP_FILES =					\
  gnu/store/*/include				\
  gnu/store/*/share/man
 
+guix = GUIX_PACKAGE_PATH=guix guix time-machine --commit=53f21642729e4786141c072dd835b04cb85dfe28 --
 pack:
-	GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-build-hook $(dzn_linux)
+	$(guix) pack --relocatable --relocatable --symlink=/gnu/bin=bin --no-build-hook $(dzn_linux)
 
 linux:
-	GUIX_PACKAGE_PATH=guix guix build dzn
+	$(guix) build dzn
 	rm -f $(distdir)-x86_64-linux.tar.gz
-	GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --symlink=/gnu/lib=lib --symlink=/gnu/share=share --no-build-hook $(dzn_linux)
+	$(guix) pack --relocatable --relocatable --symlink=/gnu/bin=bin --symlink=/gnu/lib=lib --symlink=/gnu/share=share --no-build-hook $(dzn_linux)
 	if test -d $(distdir); then chmod -R +w $(distdir); fi
 	rm -rf $(distdir)
 	mkdir $(distdir)
-	tar -C $(distdir) --no-overwrite-dir -xf $$(GUIX_PACKAGE_PATH=guix guix pack --relocatable --relocatable --symlink=/gnu/bin=bin --symlink=/gnu/lib=lib --symlink=/gnu/share=share --no-build-hook $(dzn_linux))
+	tar -C $(distdir) --no-overwrite-dir -xf $$($(guix) pack --relocatable --relocatable --symlink=/gnu/bin=bin --symlink=/gnu/lib=lib --symlink=/gnu/share=share --no-build-hook $(dzn_linux))
 	chmod -R +w $(distdir)
 	cd $(distdir) && rm -rf $(STRIP_FILES)
 	sed s,@COMMAND@,dzn, bin/wrapper.sh > $(distdir)/dzn
@@ -311,22 +312,22 @@ MINGW_STRIP_FILES =				\
  share/man
 
 mingw: bin/dzn
-	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 hello
-	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 guile-mingw
-	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 guile-json-mingw
-	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 mcrl2-minimal-mingw
-	GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 dzn-mingw
+	$(guix) build --target=i686-w64-mingw32 hello
+	$(guix) build --target=i686-w64-mingw32 guile-mingw
+	$(guix) build --target=i686-w64-mingw32 guile-json-mingw
+	$(guix) build --target=i686-w64-mingw32 mcrl2-minimal-mingw
+	$(guix) build --target=i686-w64-mingw32 dzn-mingw
 	rm -f $(distdir)-i686-windows.zip
 	rm -rf $(distdir)-i686-windows
 	mkdir $(distdir)-i686-windows
 	cp -r --no-preserve=mode \
-	    $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw)) \
+	    $$(find $$(guix gc -R $$($(guix) build --target=i686-w64-mingw32 $(dzn_mingw)) \
 		    	| sort -u) \
 		 -path '*/bin' -o -path '*/share' -o -path '*/lib' \
 			| grep -E '$(dzn_mingw_filter)') \
 	    $(distdir)-i686-windows
 	cp --no-preserve=mode \
-	    $$(find $$(guix gc -R $$(GUIX_PACKAGE_PATH=guix guix build --target=i686-w64-mingw32 $(dzn_mingw))) \
+	    $$(find $$(guix gc -R $$($(guix) build --target=i686-w64-mingw32 $(dzn_mingw))) \
 		-name '*.dll' \
 		| sort -u) \
 	    $(distdir)-i686-windows/lib
