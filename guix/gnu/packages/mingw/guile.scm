@@ -21,7 +21,7 @@
 ;;;
 ;;; Code:
 
-(define-module (gnu packages guile-mingw)
+(define-module (gnu packages mingw guile)
   #:use-module (srfi srfi-1)
   #:use-module (guix build-system gnu)
   #:use-module (guix gexp)
@@ -42,8 +42,6 @@
   #:use-module (gnu packages multiprecision)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages texinfo))
-
-(define guile-json-1 guile-json)
 
 (define-public gmp-mingw
   ;; Workaround for gcc-7 transition, -system and cross-build,
@@ -202,7 +200,7 @@ C or C++ programs, though that is not its primary goal.")
   (package
     (inherit guile-json)
     (name "guile-json-mingw")
-    (source (origin (inherit (package-source guile-json-1))
+    (source (origin (inherit (package-source guile-json))
                     (patches (search-patches "guile-json-cross.patch"))))
     (inputs `(("guile" ,guile-mingw)))
     (native-inputs `(("autoconf" ,autoconf)
