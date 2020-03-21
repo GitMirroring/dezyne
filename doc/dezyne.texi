@@ -28,8 +28,8 @@ Documentation License''.
 
 @dircategory Software development
 @direntry
-* Dezyne: (dzn).       Dezyne command line tools.
-* dzn: (dzn)Invoking dzn.       Running Dzn, a shell written in Scheme.
+* Dezyne: (dzn).                Dezyne component based.
+* dzn: (dzn)Invoking dzn.       Running Dzn.
 @end direntry
 
 @titlepage
@@ -54,12 +54,12 @@ Edition @value{EDITION} @*
 This document describes Dezyne version @value{VERSION}.
 
 @menu
-* Using Dezyne::                How to use Dezyne.
-* Building models::
-* Execution semantics::
-* Verifying models::
-* Understanding and integrating the generated code::
-* The Dezyne command line tool::
+* Introduction::                What is Dezyne about?
+* The Dezyne Modeling Language::
+* Execution Semantics::         How does it work?
+* Verifying Models::            A guide to verification.
+* Code Integration::
+* The Dezyne command-line tools::
 * Dezyne syntax::
 * Well-formedness::
 * Glossary::
@@ -68,63 +68,58 @@ This document describes Dezyne version @value{VERSION}.
 @end menu
 
 @c *********************************************************************
-@c @node Introduction
-@c @chapter Introduction
-
-
-*********************************************************************
-@node Using Dezyne
-@chapter Using Dezyne
-
-@menu
-* Invoking Dzn::
-@end menu
-
-@node Invoking Dzn
-@section Invoking Dzn
-
-The @command{dzn} command is ...
-
-@example
-dzn @var{option}@dots{} @code{command} @file{FILE}
-@end example
-
-The @var{option}s can be among the following:
-
-@table @code
-
-@item -h@r{, }--help
-Display help on invoking Dzn, and then exit.
-
-@item -v@r{, }--version
-Display the current version of Dzn, and then exit.
-
-@end table
-
-@node Building models
-@chapter Building models
-
-@menu
-* Introduction::
-* Creating an interface::
-* Creating a component::
-* Using local variables::
-* Using data variables and parameters::
-* Specifying behaviour::
-* Decomposing a component::
-@end menu
 
 @node Introduction
-@section Introduction
+@chapter Introduction
 
-@subsection Key concepts: components, interfaces, events
+Dezyne is a component based language, as well as a method for the
+development of event-driven systems.  The language has formal semantics,
+which is coherently expressed in: a textual representation, a graphical
+representation, a mathematical representation, a source code
+representation, and the observable behaviour of a machine executing the
+resulting program.  The concepts available in the language denote the
+different properties[fn:properties] that can be observed and have
+meaning in one or more of the reprentations: textual, graphical,
+mathematical, program and execution.
+
+@menu
+* Purpose::
+@end menu
+
+@node Purpose
+@section Purpose
+
+The purpose of Dezyne is to eliminate the need for testing certain
+aspects or qualities of a software program that could (should?)  instead
+be proven to be correct by applying formal verification methods.
+
+
+@c *********************************************************************
+
+@node The Dezyne Modeling Language
+@chapter The Dezyne Modeling Language
 
 When a software system is built, it is good practice to split it up
 (decompose) in parts that have high cohesion and low coupling. High
 cohesion means that the system part performs a dedicated task or
 responsibility. Low coupling means that the system parts are able to
 perform their responsibility without much interaction with other parts,
-system parts thus have simple interfaces to interact with each other. As
+system parts thus have simple interfaces to interact with each other.
+
+@menu
+* System Decomposition::
+* Creating an Interface::
+* Creating a Component::
+* Using Local Variables::
+* Using Data Variables and Parameters::
+* Specifying Behaviour::
+* Decomposing a Component::
+@end menu
+
+@node System Decomposition
+@section System Decomposition
+
+ As
 an illustration, below a picture of a system with four parts where the
 loader loads raw input into a machine, the processor transforms the raw
 input into the final product and the output part moves the product out
@@ -174,6 +169,15 @@ either a void reply or a value returned as result of the enable.
         component providing the service. For the Server component in this example the
         enable event is an@b{in} event.
 
+@menu
+* Synchronous and asynchronous communication::
+* Interfaces as abstraction of a component's behaviour::
+* Modelling events not visible to the outside world but leading to external visible behaviour::
+* Dezyne modelling language versus programming languages::
+* How to use the language help topics::
+@end menu
+
+@node Synchronous and asynchronous communication
 @subsection Synchronous and asynchronous communication
 
         Between components there are two fundamental type of interactions: 1)
@@ -214,6 +218,7 @@ Application, however, receives this event as an in event that has a void
 return or some other return type (currently Dezyne only supports void
 out events).
 
+@node Interfaces as abstraction of a component's behaviour
 @subsection Interfaces as abstraction of a component's behaviour
 
 In the Dezyne Modelling language, an @b{interface} contains the
@@ -320,7 +325,8 @@ In the interface above, there is no definition yet the connectionReq and
 especially how the connectReqRes will be returned in case processing of
 the connection request is ready. How to specify this is outlined next.
 
-@subsection Modelling events not visible to the outside world        but leading to external visible behaviour
+@node Modelling events not visible to the outside world but leading to external visible behaviour
+@subsection Modelling events not visible to the outside world but leading to external visible behaviour
 
 @i{The following is crucial for understanding how to develop models in Dezyne.}
 
@@ -406,6 +412,7 @@ interface IProtocolStack
 
 @end example
 
+@node Dezyne modelling language versus programming languages
 @subsection Dezyne modelling language versus programming languages
 
 The Dezyne modelling language syntax closely resembles C, C++ and Java,
@@ -443,6 +450,7 @@ Dezyne is precisely here: Dezyne uncovers complex, subtle, hard-to-find
 bugs in your communications and behaviour logic – before you write or
 generate even one line of C, C++ or Java!
 
+@node How to use the language help topics
 @subsection How to use the language help topics
 
 The language help topics are setup in such a way that they provide
@@ -493,25 +501,35 @@ into systems.
 @cindex c++
 @cindex asynchronous
 @cindex action
-@node Creating an interface
-@section Creating an interface
 
-    Interfaces define how components interact: the events that can be communicated
-    and the interaction protocol.
+@node Creating an Interface
+@section Creating an Interface
 
+Interfaces define how components interact: the events that can be
+communicated and the interaction protocol.
 
-    Each event has a direction specified by the 'in' or 'out' keywords.
+Each event has a direction specified by the 'in' or 'out' keywords.
 
-    The interface protocol is specified in a 'behaviour' section. For each in event it specifies the actions performed.
+The interface protocol is specified in a 'behaviour' section. For each
+in event it specifies the actions performed.
 
-    An interface does not lead to any code being generated. It serves as a specification only.
+An interface does not lead to any code being generated. It serves as a
+specification only.
 
-@subsection Syntax
+@menu
+* Interface Syntax::
+* Interface Examples::
+* Specifying Events::
+@end menu
 
-    The 'interface' keyword is used to declare an interface, followed by the interface name.
+@node Interface Syntax
+@subsection Interface Syntax
 
-    Within the interface declaration, a list of in and out events is defined
-    followed by a behaviour declaration.
+The 'interface' keyword is used to declare an interface, followed by the
+interface name.
+
+Within the interface declaration, a list of in and out events is defined
+followed by a behaviour declaration.
 
 @example
 interface IntName
@@ -528,9 +546,10 @@ interface IntName
 
 @end example
 
-@subsection Examples
+@node  Interface Examples
+@subsection Interface Examples
 
-@subsubsection An interface with    three events and a simple behaviour
+@subsubsection An interface with three events and a simple behaviour
 
     The following interface has three events defined: two in events and one out event.
     The direction is as seen from the component implementing this interface.
@@ -588,29 +607,34 @@ interface IMotion
 
 @end example
 
-@subsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
-@item @xref{Specifying events},
-@item @xref{Specifying behaviour},
+@item @xref{Specifying Events},
+@item @xref{Specifying Behaviour},
 @end itemize
 
 @cindex interface
-@cindex Creating an interface
+@cindex Creating an Interface
 @cindex event
+
+@node Specifying Events
+@subsection Specifying Events
+
+Component interaction is performed via so-called @b{@i{events}} through
+instances of interfaces (that are called ports).
+
+In each interface therefore the events that can be received (in events)
+and sent (out events) are specified.
+
 @menu
-* Specifying events::
+* Event Syntax::
+* Event Examples::
 @end menu
 
-@node Specifying events
-@subsection Specifying events
-
-Component interaction is performed via so-called @b{@i{events}} through instances of interfaces (that are called ports).
-
-In each interface therefore the events that can be received (in events) and sent (out events) are specified.
-
-@subsubsection Syntax
+@node Event Syntax
+@subsubsection Event Syntax
 
 An event is declared by its direction (@b{in} or @b{out}), type and name.
 
@@ -624,17 +648,18 @@ Out events are only allowed to have @b{void} type.
    out void event-name();           // an out event declaration
 @end example
 
-Events can also have a parameter list to pass data variables, see @xref{Using data variables and parameters},.
+Events can also have a parameter list to pass data variables, see @xref{Using Data Variables and Parameters},.
 
 @example
 [in/out] return-type event-name(parameter-list)
 @end example
 
-The parameter list is a set of the following: [in/out/inout] indicating whether the datatype is input for or output from the event, the parameter type and parameter name. see also @xref{Using data variables and parameters},.
+The parameter list is a set of the following: [in/out/inout] indicating whether the datatype is input for or output from the event, the parameter type and parameter name. see also @xref{Using Data Variables and Parameters},.
 
-@subsubsection Examples
+@node Event Examples
+@subsubsection Event Examples
 
-@unnumberedsubsubsec An interface with three void events (and a simple behaviour)
+@subsubsection An interface with three void events (and a simple behaviour)
 
 The following interface has three events defined: two in events and one out event.
 
@@ -654,7 +679,7 @@ interface IMotion
 
 @end example
 
-@unnumberedsubsubsec An interface with an enum type event
+@subsubsection An interface with an enum type event
 
 This interface has three events defined: two incoming events and one outgoing event. One of the incoming events is of an enum type, that is defined in the first line of the interface declaration.
 
@@ -673,24 +698,24 @@ interface iSimpleProtocol
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
-@item @xref{Creating an interface},
-@item @xref{Using data variables and parameters},
+@item @xref{Creating an Interface},
+@item @xref{Using Data Variables and Parameters},
 @end itemize
 
 @cindex parameter
-@cindex Specifying events
+@cindex Specifying Events
 @cindex event
 @cindex data
 @cindex action
-@node Creating a component
-@section Creating a component
 
-    Three types of components can be defined in Dezyne:
+@node Creating a Component
+@section Creating a Component
 
+Three types of component can be defined in Dezyne:
 
 @itemize
 
@@ -700,13 +725,23 @@ interface iSimpleProtocol
 @item     The second type is a component that has an implementation marked by the ‘behaviour’ keyword.
 
 @item     The third type is a component decomposed into others that has an implementation marked by the 'system' keyword. The system specifies contained component instances, see further
-@xref{Decomposing a component},.
+@xref{Decomposing a Component},.
 @end itemize
 
-@subsection Syntax
+@menu
+* Component Syntax::
+* Importing Models::
+* Ports::
+* External::
+* Injected::
+* Behaviour::
+@end menu
 
-    A component declaration is named, and introduces a list of provides and requires
-    interfaces and optionally behaviour or a system.
+@node Component Syntax
+@subsection Component Syntax
+
+A component declaration is named, and introduces a list of provides and
+requires interfaces and optionally behaviour or a system.
 
 @example
 1) component CompName
@@ -739,7 +774,7 @@ interface iSimpleProtocol
    @}
 @end example
 
-@subsection Examples
+@subsubsection Examples
 
 @subsubsection A component that will be implemented in another programming language
 
@@ -755,10 +790,10 @@ component CompName
 
 @end example
 
-@subsubsection A    component implementing one interface and a simple behaviour
+@subsubsection A Component Implementing One Interface and a Simple Behaviour
 
-    The following component implements one interface and a straightforward behaviour
-    section.
+The following component implements one interface and a straightforward
+behaviour section.
 
 @example
 component Leaf
@@ -772,10 +807,10 @@ component Leaf
 
 @end example
 
-@subsubsection A component    decomposed into two components
+@subsubsection A Component Decomposed Into Two Components
 
     A component decomposed into two components where these components are connected via their ports.
-    See further @xref{Decomposing a component},
+    See further @xref{Decomposing a Component},
 
 @example
 component Composition
@@ -791,37 +826,31 @@ component Composition
 
 @end example
 
-@subsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
-@item @xref{Specifying behaviour},
-@item @xref{Decomposing a component},
+@item @xref{Specifying Behaviour},
+@item @xref{Decomposing a Component},
 @item @xref{Ports},
 @end itemize
 
 @cindex system
-@cindex Creating a component
+@cindex Creating a Component
 @cindex requires
 @cindex provides
 @cindex port
 @cindex decomposition
 @cindex component
-@menu
-* Importing models::
-* Ports::
-* External::
-* Injected::
-* Behaviour::
-@end menu
 
-@node Importing models
-@subsection Importing models
+@node Importing Models
+@subsection Importing Models
 
-    When a component refers to other components or interfaces and their details, the declaration of these has to be known.
+When a component refers to other components or interfaces and their
+details, the declaration of these has to be known.
 
-    An import clause is available to load the declaration from separate files
-    holding interface or component declarations.
+An import clause is available to load the declaration from separate
+files holding interface or component declarations.
 
 @subsubsection Syntax
 
@@ -842,7 +871,7 @@ import ModelName.dzn;
 
 @subsubsection Examples
 
-@unnumberedsubsubsec A component importing an interface
+@subsubsection A component importing an interface
 
     The component Leaf implements the ISensor interface for which the declaration is
     imported using the import statement.
@@ -860,15 +889,15 @@ component Leaf
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
-@item @xref{Creating a component},
+@item @xref{Creating a Component},
 @end itemize
 
 @cindex import
-@cindex Importing models
+@cindex importing models
 @cindex file
 @cindex component
 @node Ports
@@ -906,7 +935,7 @@ A component must provide an implementation for all in-events of provided and all
 
 @subsubsection Examples
 
-@unnumberedsubsubsec A component implementing one interface
+@subsubsection A component implementing one interface
 
 The component Leaf implements the ISensor interface that has one in-event called event.
 
@@ -922,7 +951,7 @@ component Leaf
 
 @end example
 
-@unnumberedsubsubsec A component implementing one interface and requiring another interface
+@subsubsection A component implementing one interface and requiring another interface
 
 The component MessageHandler below is providing an implementation of the iMessageHandler interface and requires the iProtocolStack interface.
 
@@ -969,11 +998,11 @@ component MessageHandler
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
-@item @xref{Creating a component},
+@item @xref{Creating a Component},
 @item @xref{External},
 @end itemize
 
@@ -1004,7 +1033,7 @@ Explanation:
 
 @subsubsection Examples
 
-@unnumberedsubsubsec Race condition due to external delay
+@subsubsection Race condition due to external delay
 
  Component RemoteTimerProxy illustrates how a delayed communication channel may cause a race condition leading to illegal behaviour.
 
@@ -1044,7 +1073,7 @@ component RemoteTimerProxy @{
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
@@ -1074,7 +1103,7 @@ A single provided port can be bound to multiple requires ports. The
 
 A behaviour section is used to define the actions an interface or component will perform based on the events received.
 
-@subsubsection Interface versus Component behaviour
+@subsubsection Interface Versus Component Behaviour
 
 Behaviour in an interface is a specification. It is an agreement between components providing and requiring this interface about the messages and protocol exchanged. Both components must adhere to this specification. Interface conformance is an imprtant check in the verifier. The code generator does not generate any code based on the behaviour specification of an interface.
 
@@ -1097,18 +1126,18 @@ The following elements can be used in the behaviour body:
 
 @itemize
 
-@item Local variables: see @xref{Using local variables},
+@item Local variables: see @xref{Using Local Variables},
 @item Functions: see @xref{Using functions},
 @item @xref{Actions},
-@item State declarations and initialisations: see @xref{Specifying stateful behaviour},
+@item State declarations and initialisations: see @xref{Specifying Stateful Behaviour},
 @item @xref{Reply},
-@item Conditions: see @xref{Using conditional statements},
-@item Guards: see @xref{Using guards},
+@item Conditions: see @xref{Using Conditional Statements},
+@item Guards: see @xref{Using Guards},
 @end itemize
 
 @subsubsection Examples
 
-@unnumberedsubsubsec A basic behaviour section
+@subsubsection A basic behaviour section
 
 
 This example shows an interface with a basic behaviour section.
@@ -1128,7 +1157,7 @@ interface IMotion
 
 @end example
 
-@unnumberedsubsubsec A behaviour section with a protocol definition
+@subsubsection A behaviour section with a protocol definition
 
 This example shows an interface with a more complex behaviour section, where the start event is only allowed in case the interface is in state Off and the stop event is only allowed in case the interface is in state Active.
 
@@ -1156,7 +1185,7 @@ interface IMotion
 
 @end example
 
-@unnumberedsubsubsec A behaviour section with a protocol definition, alternative form
+@subsubsection A behaviour section with a protocol definition, alternative form
 
 This example shows an interface with the same behaviour as the one above, but an alternative form is used to define the behaviour.
 
@@ -1186,32 +1215,39 @@ interface IMotion
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
-@item @xref{Using local variables},
+@item @xref{Using Local Variables},
 @item @xref{Using functions},
 @item @xref{Actions},
-@item @xref{Specifying stateful behaviour},
+@item @xref{Specifying Stateful Behaviour},
 @item @xref{Reply},
-@item @xref{Using conditional statements},
-@item @xref{Using guards},
+@item @xref{Using Conditional Statements},
+@item @xref{Using Guards},
 @end itemize
 
 @cindex statement
-@cindex Specifying behaviour
+@cindex Specifying Behaviour
 @cindex state
 @cindex protocol
 @cindex behaviour
-@node Using local variables
-@section Using local variables
+@node Using Local Variables
+@section Using Local Variables
 
 Variables can be defined and used.
 
-@subsection Syntax
+@menu
+* Variable Syntax::
+* Variable Examples::
+@end menu
+
+@node Variable Syntax
+@subsection Variable Syntax
 
 Variables are named, have a type, and an initial value, which is an expression:
+
 
 @example
 variableType variableName = initialValue;
@@ -1228,7 +1264,8 @@ Supported types are:
 
 To ensure that an integer variable falls within a finite set (in order to have a limited range of possible paths / states in the system), use a type definition, e.g. subint myInt @{0..10@}.
 
-@subsection Examples
+@node Variable Examples
+@subsection Variable Examples
 
 @subsubsection Simple state machine where the state is captured in a variable of enum type
 
@@ -1347,7 +1384,7 @@ component AlarmSystemComp
 
 @end example
 
-@subsection See also:
+@unnumberedsubsec See also:
 
 @itemize
 
@@ -1357,18 +1394,18 @@ component AlarmSystemComp
 @end itemize
 
 @cindex variable
-@cindex Using local variables and types
+@cindex Using Local Variables and types
 @cindex type
 @cindex subint
 @cindex bool
-@node Using data variables and parameters
-@section Using data variables and parameters
+@node Using Data Variables and Parameters
+@section Using Data Variables and Parameters
 
 Data variables are used as input for or output from external components.
 
 Apart from assignment, data operation / manipulation is done in handwritten code.
 
-@subsection Syntax
+@subsection Data Syntax
 
 Use the keyword extern to define a datatype in Dezyne and the external datatype it will be transformed to when code is generated:
 
@@ -1376,9 +1413,9 @@ Use the keyword extern to define a datatype in Dezyne and the external datatype 
 extern datatypeInternal $datatypeExternal$;
 @end example
 
-After the definition variables of this type can be used to further define event (or method) signatures, see also @xref{Specifying events},
+After the definition variables of this type can be used to further define event (or method) signatures, see also @xref{Specifying Events},
 
-@subsection Examples
+@subsection Data Examples
 
 @subsubsection Using an character type in an interface definition
 
@@ -1483,7 +1520,7 @@ component AlarmConsole
 
 @end example
 
-@subsection See also:
+@unnumberedsubsec See also:
 
 @itemize
 
@@ -1492,24 +1529,54 @@ component AlarmConsole
 @end itemize
 
 @cindex parameter
-@cindex Using data variables and parameters
+@cindex Using Data Variables and Parameters
 @cindex generate
 @cindex extern
 @cindex data
-@node Specifying behaviour
-@section Specifying behaviour
 
-A behaviour section is used to define the actions an interface or component will perform based on the events received.
+@node Specifying Behaviour
+@section Specifying Behaviour
 
-@subsection Interface versus Component behaviour
+A behaviour section is used to define the actions an interface or
+component will perform based on the events received.
 
-Behaviour in an interface is a specification. It is an agreement between components providing and requiring this interface about the messages and protocol exchanged. Both components must adhere to this specification. Interface conformance is an imprtant check in the verifier. The code generator does not generate any code based on the behaviour specification of an interface.
+@menu
+* Interface Versus Component Behaviour::
+* Behaviour Syntax::
+* Actions::
+* Specifying Stateful Behaviour::
+* Using Guards::
+* Using Conditional Statements::
+* Using functions::
+* Reply::
+* Using inevitable and optional::
+* Using illegal::
+* Restrictions Multiple Provides::
+* Blocking::
+@end menu
 
-Behaviour in a component is a definition. It defines the actual behaviour expressed by the object modeled. Whereas an interface might still allow some freedom, sometimes multiple messages are allowed, inside a component the behaviour must be fully deterministic. The code generator uses this component behaviour specification to generate target code.
+@node Interface Versus Component Behaviour
+@subsection Interface Versus Component Behaviour
 
-@subsection Syntax
+Behaviour in an interface is a specification.  It is an agreement
+between components providing and requiring this interface about the
+messages and protocol exchanged.  Both components must adhere to this
+specification.  Interface conformance is an imprtant check in the
+verifier.  The code generator does not generate any code based on the
+behaviour specification of an interface.
 
-The 'behaviour' keyword is used to declare a behaviour section. Optionally it may have a name.
+Behaviour in a component is a definition.  It defines the actual
+behaviour expressed by the object modeled. Whereas an interface might
+still allow some freedom, sometimes multiple messages are allowed,
+inside a component the behaviour must be fully deterministic.  The code
+generator uses this component behaviour specification to generate target
+code.
+
+@node Behaviour Syntax
+@subsection Behaviour Syntax
+
+The 'behaviour' keyword is used to declare a behaviour
+section. Optionally it may have a name.
 
 @example
 behaviour [OptionalName]
@@ -1524,16 +1591,16 @@ The following elements can be used in the behaviour body:
 
 @itemize
 
-@item Local variables: see @xref{Using local variables},
+@item Local variables: see @xref{Using Local Variables},
 @item Functions: see @xref{Using functions},
 @item @xref{Actions},
-@item State declarations and initialisations: see @xref{Specifying stateful behaviour},
+@item State declarations and initialisations: see @xref{Specifying Stateful Behaviour},
 @item @xref{Reply},
-@item Conditions: see @xref{Using conditional statements},
-@item Guards: see @xref{Using guards},
+@item Conditions: see @xref{Using Conditional Statements},
+@item Guards: see @xref{Using Guards},
 @end itemize
 
-@subsection Examples
+@subsubsection Examples
 
 @subsubsection A basic behaviour section
 
@@ -1613,41 +1680,29 @@ interface IMotion
 
 @end example
 
-@subsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
-@item @xref{Using local variables},
+@item @xref{Using Local Variables},
 @item @xref{Using functions},
 @item @xref{Actions},
-@item @xref{Specifying stateful behaviour},
+@item @xref{Specifying Stateful Behaviour},
 @item @xref{Reply},
-@item @xref{Using conditional statements},
-@item @xref{Using guards},
+@item @xref{Using Conditional Statements},
+@item @xref{Using Guards},
 @end itemize
 
 @cindex statement
-@cindex Specifying behaviour
+@cindex Specifying Behaviour
 @cindex state
 @cindex protocol
 @cindex behaviour
-@menu
-* Actions::
-* Specifying stateful behaviour::
-* Using guards::
-* Using conditional statements::
-* Using functions::
-* Reply::
-* Using inevitable and optional::
-* Using illegal::
-* Restrictions Multiple Provides::
-* Blocking::
-@end menu
 
 @node Actions
 @subsection Actions
 
-The actions an interface or component should perform when an event is received are specified within a @xref{Specifying behaviour},.
+The actions an interface or component should perform when an event is received are specified within a @xref{Specifying Behaviour},.
 
 Actions can be changing the value of a variable, invoking a function, generating another event or changing to another state and any combination.
 
@@ -1690,7 +1745,7 @@ or that optionally may be performed in case no other events occur, see @xref{Usi
 
 @subsubsection Examples
 
-@unnumberedsubsubsec Simple state machine with guarded action statements
+@subsubsection Simple state machine with guarded action statements
 
 This example shows a simple state machine for a siren.
 
@@ -1720,7 +1775,7 @@ interface Siren
 
 @end example
 
-@unnumberedsubsubsec Two alternative styles to define actions based on events
+@subsubsection Two alternative styles to define actions based on events
 
 This example shows an interface with two alternative styles to define the actions based on incoming events.
 
@@ -1785,14 +1840,14 @@ interface IPsm
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
-@item @xref{Specifying behaviour},
-@item @xref{Specifying stateful behaviour},
+@item @xref{Specifying Behaviour},
+@item @xref{Specifying Stateful Behaviour},
 @item @xref{Using functions},
-@item @xref{Using conditional statements},
+@item @xref{Using Conditional Statements},
 @item @xref{Using illegal},
 @item @xref{Reply},
 @item @xref{Using inevitable and optional},
@@ -1806,8 +1861,8 @@ interface IPsm
 @cindex function
 @cindex event
 @cindex action
-@node Specifying stateful behaviour
-@subsection Specifying stateful behaviour
+@node Specifying Stateful Behaviour
+@subsection Specifying Stateful Behaviour
 
 State variables and guard expressions enable specification of protocols in a behaviour section. They specify the selection of one of multiple different actions (see @xref{Actions},) for an input event.
 
@@ -1850,7 +1905,7 @@ See @xref{Actions}, for how to declare action statements.
 
 @subsubsection Examples
 
-@unnumberedsubsubsec Simple state machine
+@subsubsection Simple state machine
 
 This example shows a simple state machine for a siren.
 
@@ -1878,7 +1933,7 @@ interface Siren
 
 @end example
 
-@unnumberedsubsubsec Two alternative styles to define actions based on events
+@subsubsection Two alternative styles to define actions based on events
 
 This example shows an interface with two alternative styles to define the actions based on incoming events.
 
@@ -1954,22 +2009,22 @@ interface IPsm
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
-@item @xref{Specifying behaviour},
+@item @xref{Specifying Behaviour},
 @item @xref{Actions},
 @end itemize
 
 @cindex variable
-@cindex Specifying stateful behaviour
+@cindex Specifying Stateful Behaviour
 @cindex state
 @cindex machine
 @cindex expression
 @cindex enum
-@node Using guards
-@subsection Using guards
+@node Using Guards
+@subsection Using Guards
 
 Guards are boolean expressions based on variables. The statement behind the guard is selected if the expression evaluates to true. If more than one guard evaluates to true, a non-deterministic choice for one of guards must be made. Guards can be nested.
 
@@ -2003,7 +2058,7 @@ The keyword 'otherwise' defines a catch-all guard which is true only when none o
 
 @subsubsection Examples
 
-@unnumberedsubsubsec Simple state machine
+@subsubsection Simple state machine
 
 This example shows a simple state machine for a siren where guards are used to select the correct actions based on the state.
 
@@ -2031,22 +2086,22 @@ interface Siren
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
 @item @xref{Actions},
-@item @xref{Using conditional statements},
+@item @xref{Using Conditional Statements},
 @end itemize
 
 @cindex statement
-@cindex Using guards
+@cindex Using Guards
 @cindex otherwise
 @cindex guard
 @cindex expression
 @cindex compound
-@node Using conditional statements
-@subsection Using conditional statements
+@node Using Conditional Statements
+@subsection Using Conditional Statements
 
     Conditional statements (if-else) can be used to program decision making on which actions
     to perform
@@ -2074,7 +2129,7 @@ else statement-false;
 
 @subsubsection Examples
 
-@unnumberedsubsubsec A basic if-else example
+@subsubsection A basic if-else example
 
     This example shows an interface with a behaviour section where if else is used to select the actions to be performed based
     on the value of a state and a local variable.
@@ -2116,15 +2171,15 @@ interface IImperativeAction
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
-@item @xref{Using guards},
+@item @xref{Using Guards},
 @end itemize
 
 @cindex statement
-@cindex Using conditional statements
+@cindex using conditional statements
 @cindex if
 @cindex expression
 @cindex conditional
@@ -2170,7 +2225,7 @@ Parameters are optional; that is, a function may contain no parameters.
 
 @subsubsection Examples
 
-@unnumberedsubsubsec A basic function
+@subsubsection A basic function
 
 
 This example shows an interface with a behaviour section where a function is defined and used to determine the proper actions.
@@ -2210,7 +2265,7 @@ interface IFunctionCallAction
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
@@ -2267,7 +2322,7 @@ Explanation:
 
 @subsubsection Examples
 
-@unnumberedsubsubsec Setting an enum as reply value.
+@subsubsection Setting an enum as reply value.
 
 This example shows how to set a reply value using an enumerated type.
 
@@ -2308,7 +2363,7 @@ interface iNetwork
 
 @end example
 
-@unnumberedsubsubsec Thread signalling
+@subsubsection Thread signalling
 
  Component CA illustrates the use of 'reply' to signal blocked thread release. The action statement in 'on pp.request*' are marked as 'blocking' and do not contain a reply statement. A thread calling pp.request_reply or pp.request_notify will block after calling rp.request. That thread returns when the action statement for 'on rp.accept' or 'on rp.reject' have been performed.
 
@@ -2359,7 +2414,7 @@ component CA
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
@@ -2398,7 +2453,7 @@ generating another event) that define what actions to perform.
 
 @subsubsection Examples
 
-@unnumberedsubsubsec An inevitable time-out
+@subsubsection An inevitable time-out
 
 This example shows the interface specification for a timer.
 
@@ -2435,7 +2490,7 @@ interface iTimer
 
 @end example
 
-@unnumberedsubsubsec An interface for a sensor with an optional event when the sensor is triggered
+@subsubsection An interface for a sensor with an optional event when the sensor is triggered
 
 This example shows the interface specification for a sensor.
 
@@ -2476,7 +2531,7 @@ interface Sensor
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
@@ -2508,7 +2563,7 @@ Note: @b{do not use illegal in conditional statements (if / if else) or function
 
 @subsubsection Examples
 
-@unnumberedsubsubsec A timer where depending on the state certain events are allowed and others not
+@subsubsection A timer where depending on the state certain events are allowed and others not
 
  This example shows the interface specification for a timer. Initially a timer can be created and it is not allowed to cancel the timer before creation. When the timer has been created it is not possible to request again creation of the timer.
 
@@ -2543,7 +2598,7 @@ interface iTimer
 
 @end example
 
-@unnumberedsubsubsec Incorrect and correct interface definition with a conditional illegal
+@subsubsection Incorrect and correct interface definition with a conditional illegal
 
 An interface has to be defined that does not allows a second event (checkModel in this case) before the asynchronous reply (checkModelRes) has been sent to the first event.
 
@@ -2594,7 +2649,7 @@ An interface has to be defined that does not allows a second event (checkModel i
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
@@ -2654,7 +2709,7 @@ component ViolationType2
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
@@ -2673,7 +2728,7 @@ Guard expressions or 'on event' is commutative with respect to blocking. If 'blo
 
 @b{Note:} 'blocking' may only be used in components with a single 'provides' port. This limitation may be lifted in a future release.
 
-@b{Note:} Systems containing 'blocking' component instances must be contained in a @xref{Thread-safe shell},.
+@b{Note:} Systems containing 'blocking' component instances must be contained in a @xref{Thread-safe Shell},.
 
 @subsubsection Syntax
 
@@ -2703,7 +2758,7 @@ Explanation:
 
 @subsubsection Examples
 
-@unnumberedsubsubsec Thread signalling
+@subsubsection Thread signalling
 
  Component CA illustrates the use of 'blocking' to postpone thread return. An 'on event' on a different port performs the 'reply' statement for the blocked port.
 
@@ -2756,30 +2811,45 @@ component CA
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
 @item @xref{Reply},
 @item @xref{Actions},
-@item @xref{Thread-safe shell},
+@item @xref{Thread-safe Shell},
 @end itemize
 
-@node Decomposing a component
-@section Decomposing a component
+@node Decomposing a Component
+@section Decomposing a Component
 
-A component can be decomposed into a group of components. A grouping of components is called a @b{@i{system}}. A component that is decomposed into a system has no own behaviour definition, the behaviour of the system is defined by the component into which it is decomposed.
+A component can be decomposed into a group of components. A grouping of
+components is called a @b{@i{system}}. A component that is decomposed
+into a system has no own behaviour definition, the behaviour of the
+system is defined by the component into which it is decomposed.
 
-The components within a system can also be composite components, so it is possible to define systems of systems.
+@menu
+* Systems of Components::
+* Specifying Ports::
+* Binding Ports::
+@end menu
 
-Composite components can also expose ports of contained components by binding their own provided or required ports o ports of contained components. In that case the binding looks like
+@node Systems of Components
+@subsection Systems of Components
+
+The components within a system can also be composite components, so it
+is possible to define systems of systems.
+
+Composite components can also expose ports of contained components by
+binding their own provided or required ports o ports of contained
+components. In that case the binding looks like
 
 @example
 port <=> component1_instance_name.port
 @end example
 
 
-@subsection Syntax
+@subsubsection Syntax
 
 The keyword @b{@i{system}} is used to define a composition. Inside the system definition the instances of the components that are contained in the system are specified.
 
@@ -2834,7 +2904,7 @@ component Composition
 
 @end example
 
-@subsection Examples
+@subsubsection Examples
 
 @subsubsection Decomposition into components and binding their ports.
 
@@ -2901,36 +2971,32 @@ component Decomposition
 
 @end example
 
-@subsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
-@item @xref{Specifying ports},
-@item @xref{Binding ports},
+@item @xref{Specifying Ports},
+@item @xref{Binding Ports},
 @end itemize
 
 @cindex system
-@cindex Decomposing a component
+@cindex Decomposing a Component
 @cindex port
 @cindex decomposition
 @cindex composition
 @cindex component
 @cindex bind
-@menu
-* Specifying ports::
-* Binding ports::
-@end menu
 
-@node Specifying ports
-@subsection Specifying ports
+@node Specifying Ports
+@subsection Specifying Ports
 
 See @xref{Ports},
 
 @cindex requires
-@cindex Specifying ports
+@cindex specifying ports
 @cindex provides
-@node Binding ports
-@subsection Binding ports
+@node Binding Ports
+@subsection Binding Ports
 
 A component can be decomposed into a group of components. A grouping of components is called a
 @b{@i{system}}.
@@ -2948,7 +3014,7 @@ Only ports with an equal interface definition and opposite direction can be boun
 
 @subsubsection Examples
 
-@unnumberedsubsubsec Decomposition into components and binding their ports.
+@subsubsection Decomposition into components and binding their ports.
 
 Here a component is decomposed into two other components C1 and C2.
 
@@ -2977,19 +3043,19 @@ component Decomposition
 
 @end example
 
-@subsubsection See also:
+@unnumberedsubsubsec See also:
 
 @itemize
 
-@item @xref{Decomposing a component},
+@item @xref{Decomposing a Component},
 @end itemize
 
 @cindex port
-@cindex Binding ports
+@cindex binding ports
 @cindex interface
 @cindex bind
-@node Execution semantics
-@chapter Execution semantics
+@node Execution Semantics
+@chapter Execution Semantics
 
 The execution semantics of Dezyne are illustrated using different
 model examples and the corresponding sequence diagrams.
@@ -3119,8 +3185,8 @@ The 2 required out-events (r1.b, r2.b) can come in any order. The message sequen
 
 @image{images/indirect_blocking_multiple_external_out,,,,.png}
 
-@node Verifying models
-@chapter Verifying models
+@node Verifying Models
+@chapter Verifying Models
 
 @section Introduction
 Verification in Dezyne focuses on verifying properties that are hard for humans to verify.
@@ -3233,19 +3299,21 @@ The checks that are executed differ for interfaces and components:
 @end itemize
 
 
-For interfaces, the illegal check, range error check, and type error check are reported as part of the deadlock check.
-For components, the range error check, the type error check, and queue full check are reported as part of the illegal check.
+For interfaces, the illegal check, range error check, and type error
+check are reported as part of the deadlock check.  For components, the
+range error check, the type error check, and queue full check are
+reported as part of the illegal check.
 
-@node Understanding and integrating the generated code
-@chapter Understanding and integrating the generated code
+@node Code Integration
+@chapter Code Integration
 
 @menu
-* Understanding and integrating the generated C++ code::
-* Thread-safe shell::
+* Integrating C++ Code::
+* Thread-safe Shell::
 @end menu
 
-@node Understanding and integrating the generated C++ code
-@section Understanding and integrating the generated C++ code
+@node Integrating C++ Code
+@section Integrating C++ Code
 
 @subsection Purpose
 This text briefly describes the C++ code that is generated from Dezyne
@@ -3568,14 +3636,14 @@ component by component to Dezyne.
 @cindex generate
 @cindex component
 @cindex c++
-@node Thread-safe shell
-@section Thread-safe shell
+@node Thread-safe Shell
+@section Thread-safe Shell
 
 Note: this feature was introduced in Dezyne release 2.0.0.
 
 A Dezyne Thread-safe Shell guarantees safe use of a Dezyne system component in a multi-threaded environment. It also enables the use of the 'blocking' keyword.
 
-@subsection Syntax
+@subsection Shell Syntax
 
 Use the dzn command-line client to generate code and a thread-safe shell:
 
@@ -3595,7 +3663,7 @@ An external call of a provided port in event blocks until the thread-safe shell 
 
 An external call of a required port out event returns a soon as the event call is scheduled. The external call return is not synchronized with the actual execution of the event by a thread-safe shell private thread.
 
-@subsection Example
+@subsection Shell Example
 
 Generating c++ code with a thread-safe shell for component SYS results in files: SYS.hh, SYS.cc, BHV.hh and IA.hh.
 
@@ -3689,34 +3757,55 @@ void SYS::dump_tree(std::ostream& os) const
 
 @end example
 
-@subsection See also:
+@unnumberedsubsec See also:
 
 @itemize
 
 @item @xref{Blocking},
-@item @xref{The Dezyne command line tool},
+@item @xref{The Dezyne command-line tools},
 @end itemize
 
-@node The Dezyne command line tool
-@chapter The Dezyne command line tool
+@node The Dezyne command-line tools
+@chapter The Dezyne command-line tools
 
-All Dezyne functions (syntax checking, conversion, simulation, verification, code generation) can be used from the command line.
+@menu
+* Invoking Dzn::
+@end menu
 
-The Dezyne command line tool can be installed by following the guidelines specified here:@url{http://dezyne.verum.com/guidelines?install-and-use-the-dezyne-command-line-client,http://dezyne.verum.com/guidelines?install-and-use-the-dezyne-command-line-client}.
+@node Invoking Dzn
+@section Invoking Dzn
 
-Once installed, use dzn --help to get further help.
+The @command{dzn} command is ...
+
+@example
+dzn @var{option}@dots{} @code{command} @file{FILE}
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item -h@r{, }--help
+Display help on invoking Dzn, and then exit.
+
+@item -v@r{, }--version
+Display the current version of Dzn, and then exit.
+
+@end table
+
+
 
 @node Dezyne syntax
 @chapter Dezyne syntax
 
 @menu
 * Identifiers::
-* Dezyne files::
+* Dezyne Files::
 * Types and expressions::
-* Interface models::
-* Component models::
-* Interface and component behaviour::
-* System components::
+* Interface Models::
+* Component Models::
+* Interface and Component Behaviour::
+* System Components::
 * Namespaces::
 @end menu
 
@@ -3804,8 +3893,8 @@ component Alarm @{
 @cindex identifier
 @cindex comment
 @cindex blocking
-@node Dezyne files
-@section Dezyne files
+@node Dezyne Files
+@section Dezyne Files
 Dezyne components and interfaces are organized in files.
 A file, with extension '.dzn', contains a number of components and interfaces.
 
@@ -3959,8 +4048,8 @@ No Dezyne supported expressions are available for data types, apart from 'dollar
 @cindex enum
 @cindex data
 @cindex bool
-@node Interface models
-@section Interface models
+@node Interface Models
+@section Interface Models
 An interface has a name, can define some local types, defines a collection of events,
 and a behaviour describing the protocol on its events.
 A syntax example:
@@ -4017,7 +4106,7 @@ There is a restriction on event declarations: an @code{out} event must be @code{
 
 @subsection Behaviour
 The @code{behaviour} section of an interface contains the protocol description of the interface.
-See @xref{Interface and component behaviour}, for an elaborate description.
+See @xref{Interface and Component Behaviour}, for an elaborate description.
 
 
 @cindex type
@@ -4026,8 +4115,8 @@ See @xref{Interface and component behaviour}, for an elaborate description.
 @cindex interface
 @cindex event
 @cindex data
-@node Component models
-@section Component models
+@node Component Models
+@section Component Models
 A component has a name, a collection of ports by which it communicates with the outside world,
 and optionally a description of its internals.
 A syntax example:
@@ -4075,7 +4164,7 @@ to some component port @code{someComponent.somePort}, and that more than one inj
 For that reason @code{MyInterface} cannot define @code{out} events.
 
 
-The @xref{System components}, section describes the binding of injected ports in detail.
+The @xref{System Components}, section describes the binding of injected ports in detail.
 
 @subsection Internal Description
 The component's internal description comes in three flavors:
@@ -4083,10 +4172,10 @@ The component's internal description comes in three flavors:
 @itemize
 
 @item Behavioural: Like in the interface protocol the internals are given as a behavioural description,
-    in which for each event the required actions are given. See the @xref{Interface and component behaviour}, section.
+    in which for each event the required actions are given. See the @xref{Interface and Component Behaviour}, section.
 
 @item Compositional: The functionality is described as the composition of a number of sub components.
-    See the @xref{System components}, section.
+    See the @xref{System Components}, section.
 
 @item Hand-written: The internals are missing indicating the intention to have a hand-written implementation of
     the component. This implementation must be such that it satisfies the specified ports.
@@ -4102,8 +4191,8 @@ The component's internal description comes in three flavors:
 @cindex port
 @cindex injection
 @cindex component
-@node Interface and component behaviour
-@section Interface and component behaviour
+@node Interface and Component Behaviour
+@section Interface and Component Behaviour
 A behaviour description might look like this:
 
 
@@ -4532,8 +4621,8 @@ cannot be verified.
 @cindex behaviour
 @cindex assignment
 @cindex action
-@node System components
-@section System components
+@node System Components
+@section System Components
 A component which is composed from a number of sub components has a 'system' internal description.
 This description specifies the available sub component instances, and all connections between
 the component ports.
@@ -4665,7 +4754,7 @@ always the directions have to be the same, like in @code{top <=> cfoo.foo}and @c
 @end itemize
 
 @subsubsection Injection
-As described in the @xref{Component models}, section, binding of @code{injected} ports is
+As described in the @xref{Component Models}, section, binding of @code{injected} ports is
 done at a higher system level. A wild-card character (@code{*}) is used to achieve the binding of one
 @code{provides} port to all @code{injected requires} ports.
 
@@ -6525,7 +6614,7 @@ will result in the following error message:
 @item behaviour
 @tab Keyword
 @tab Start of the behaviour section within an interface or component definition; this keyword must be followed by @{@}.
-@tab @xref{Interface and component behaviour}
+@tab @xref{Interface and Component Behaviour}
 
 @item Bind
 @tab Concept
@@ -6555,7 +6644,7 @@ will result in the following error message:
 @item component
 @tab Keyword
 @tab Begins the definition of a component; this keyword must be followed by an identifier and @{@}.
-@tab @xref{Component models}
+@tab @xref{Component Models}
 
 @item condition
 @tab Concept
@@ -6624,7 +6713,7 @@ will result in the following error message:
 @item in
 @tab Keyword
 @tab Indicates for an event of an interface that the event is an incoming event '''or''' indicates for a data parameter of an event or function that the value of the parameter is incoming
-@tab @xref{Specifying events}
+@tab @xref{Specifying Events}
 
 @item inevitable
 @tab Keyword
@@ -6634,7 +6723,7 @@ will result in the following error message:
 @item injected
 @tab Keyword
 @tab Qualifier of a required port to indicate that the binding of the port occurs at a higher level in the system hierarchy.
-@tab @xref{Component models}
+@tab @xref{Component Models}
 
 @item inout
 @tab Keyword
@@ -6650,7 +6739,7 @@ will result in the following error message:
 @item interface
 @tab Keyword
 @tab Begins the definition of an interface; this keyword must be followed by an identifier and @{@}.
-@tab @xref{Interface models}
+@tab @xref{Interface Models}
 
 @item namespace
 @tab Keyword
@@ -6670,12 +6759,12 @@ will result in the following error message:
 @item otherwise
 @tab Keyword
 @tab Defines a catch-all guard which is true only if all the other guard expressions in a list of guarded statements evaluate to false.
-@tab @xref{Specifying stateful behaviour}
+@tab @xref{Specifying Stateful Behaviour}
 
 @item out
 @tab Keyword
 @tab Indicates for an event of an interface that the event is an outgoing event '''or''' indicates for a data parameter of an event of function that the value of the parameter is outgoing
-@tab @xref{Specifying events}
+@tab @xref{Specifying Events}
 
 @item Port
 @tab Concept
@@ -6726,7 +6815,7 @@ will result in the following error message:
 @tab Keyword
 @tab Starts the system section of a component. A system section consists of two parts: instantiations of subcomponents, followed by all the bindings
  among the sub-components and ports of the component.
-@tab @xref{Decomposing a component}
+@tab @xref{Decomposing a Component}
 
 @item Trace
 @tab Concept
