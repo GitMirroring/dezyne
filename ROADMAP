@@ -32,25 +32,27 @@ You're welcome to discuss this road map on dezyne-devel@gnu.org or
 
 * TODO
 ** Release 2.10, unsorted
-  - Review and finish DRAFT commits
-    + DRAFT 7562: c++: provide hook to capture and display information on illegal.
-    + DRAFT 7562: c++03: add dzn_illegal macro hook.
-    + All READMEs.
   - Release on savannah.nongnu.org; create dezyne-devel@nongnu.org,
     bug-dezyne@nongnu.org
+  - Documentation
+    + All READMEs.
+    + Review doc/guix.texi.
   - Website
     + Hello-world blog post dezyne.org
     + Move nginx/haunt-based website setup from banaan to kluit.
     + Serve source and binare content from dummy downlod page.
+  - Pass regression test
+    + Review old-regression removal, resurrect or rewrite missing tests
+      - Dataparam?
+    + Finish and merge `wip' branch.
+      - DRAFT 7562: c++: provide hook to capture and display information on illegal.
+      - DRAFT 7562: c++03: add dzn_illegal macro hook.
+      - DRAFT dzn: verify: support ltscompare --structured-output.
+      - DRAFT guix: Add mcrl-patched
   - Support binary release
     + Finish and merge wip-pack
     + Finish and merge wip-mingw
     + Solicit and incorporate feedback on 2.10.0.rc6
-  - Pass regression test
-    + Review old-regression removal, resurrect or rewrite missing tests
-      - Dataparam?
-  - Documentation
-    + Review doc/guix.texi.
   - Upstream PEG patches to Guile
     + Fix problematic draft patches
       - DRAFT peg: Add fall-back parsing.
