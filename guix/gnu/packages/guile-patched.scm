@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020,2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -19,19 +19,9 @@
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gnu packages guile-patched)
-  #:use-module (guix build-system gnu)
-  #:use-module (guix build-system trivial)
-  #:use-module (guix gexp)
-  #:use-module (guix download)
-  #:use-module (guix git-download)
-  #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (guix packages)
-  #:use-module (guix utils)
   #:use-module (gnu packages)
-  #:use-module (gnu packages autotools)
-  #:use-module (gnu packages bash)
-  #:use-module (gnu packages compression)
-  #:use-module (gnu packages guile))
+  #:use-module (gnu packages guile)
+  #:use-module (guix packages))
 
 (define-public guile-patched
   (package

@@ -40,15 +40,12 @@
   #:use-module (gnu packages guile)
   #:use-module (gnu packages guile-patched)
   #:use-module (gnu packages man)
-  #:use-module (gnu packages maths)
   #:use-module (gnu packages m4)
   #:use-module (gnu packages mcrl2)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages xml)
   #:use-module (gnu packages texinfo))
-
-(define guile-json-1 guile-json)
 
 (define %source-dir (getcwd))
 
@@ -81,7 +78,7 @@
                      ("pkg-config" ,pkg-config)
                      ("texinfo" ,texinfo)
                      ("zip" ,zip))) ; for guix environment -l guix.scm
-    (propagated-inputs `(("guile-json" ,guile-json-1)))
+    (propagated-inputs `(("guile-json" ,guile-json)))
     (build-system gnu-build-system)
     (arguments
      `(#:modules ((ice-9 popen)
@@ -133,31 +130,6 @@
     (home-page "https://verum.com")
     (license license:gpl3+)))
 
-(define-public dzn-mingw
-  (package
-    (inherit dzn)
-    (name "dzn-mingw")
-    (native-inputs `(("guile-json-for-build" ,guile-json-1)
-                     ("mcrl2" ,mcrl2-minimal-patched)
-                     ,@(package-native-inputs dzn)))
-    (inputs `(("guile" ,guile-mingw)))
-    (propagated-inputs `(("guile-json" ,guile-json-mingw)
-                         ("m4-cw" ,m4-changeword)
-                         ("mcrl2" ,mcrl2-minimal-mingw)
-                         ("sed" ,sed-mingw)))
-    (arguments
-     (substitute-keyword-arguments (package-arguments dzn)
-       ((#:configure-flags flags)
-        (cons*
-         "--enable-languages=c++"
-         "ac_cv_guile_piped_process=yes"
-         "ac_cv_lps2lts_stdout=yes"
-         "ac_cv_lpscompare_stdin=yes"
-         flags))
-       ((#:phases phases '%standard-phases)
-        `(modify-phases ,phases
-           (delete 'wrap-binaries)))))))
-
 (define-public m4-changeword
   (package
     (inherit m4)
@@ -166,19 +138,3 @@
      (substitute-keyword-arguments
          `(#:configure-flags '("--enable-changeword" "--program-suffix=-cw")
            ,@(package-arguments m4))))))
-
-(define-public sed-mingw
-  (package
-    (inherit sed)
-    (name "sed-mingw")
-    (arguments
-     `(#:tests? #f
-       #:make-flags '("sed/sed.exe")
-       ,@(substitute-keyword-arguments (package-arguments sed)
-           ((#:phases phases '%standard-phases)
-            `(modify-phases ,phases
-               (replace 'install
-                 (lambda _
-                   (let* ((out (assoc-ref %outputs "out"))
-                          (bin (string-append out "/bin")))
-                     (install-file "sed/sed.exe" bin)))))))))))
