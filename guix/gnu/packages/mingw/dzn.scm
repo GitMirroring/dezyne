@@ -24,6 +24,7 @@
 (define-module (gnu packages mingw dzn)
   #:use-module (gnu packages dzn)
   #:use-module (gnu packages guile)
+  #:use-module (gnu packages mcrl2)
   #:use-module (gnu packages mingw base)
   #:use-module (gnu packages mingw guile)
   #:use-module (gnu packages mingw mcrl2)
@@ -35,6 +36,7 @@
     (inherit dzn)
     (name "dzn-mingw")
     (native-inputs `(("guile-json-for-build" ,guile-json)
+                     ("mcrl2" ,mcrl2-minimal-patched)
                      ,@(package-native-inputs dzn)))
     (inputs `(("guile" ,guile-mingw)))
     (propagated-inputs `(("guile-json" ,guile-json-mingw)
@@ -43,6 +45,13 @@
                          ("sed" ,sed-mingw)))
     (arguments
      (substitute-keyword-arguments (package-arguments dzn)
+       ((#:configure-flags flags)
+        (cons*
+         "--enable-languages=c++"
+         "ac_cv_guile_piped_process=yes"
+         "ac_cv_lps2lts_stdout=yes"
+         "ac_cv_lpscompare_stdin=yes"
+         flags))
        ((#:phases phases '%standard-phases)
         `(modify-phases ,phases
            (delete 'wrap-binaries)))))))
