@@ -26,6 +26,7 @@
   #:use-module (guix packages)
   #:use-module (guix utils))
 
+;; Taken from https://debbugs.gnu.org/cgi/bugreport.cgi?bug=37027
 (define-public zlib-mingw
   (package
     (inherit zlib)
