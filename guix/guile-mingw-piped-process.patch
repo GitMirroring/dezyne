@@ -1,7 +1,7 @@
 From ec6bf84d214927e9d61b3e652d5f8033e17a0988 Mon Sep 17 00:00:00 2001
 From: Rutger van Beusekom <rutger.van.beusekom@verum.com>
 Date: Mon, 2 Mar 2020 10:38:57 +0100
-Subject: [PATCH 1/2] Allow client code to create pipe pairs when opening a
+Subject: [PATCH 1/3] Allow client code to create pipe pairs when opening a
  process.
 
 * libguile/posix.c (scm_piped_process): Replace open_process by piped_process.
@@ -209,42 +209,6 @@ index b166e9d0f..bff13e5c8 100644
 +	 (from (car pipeline))
 +	 (pids (cdr pipeline)))
 +    (values (fdes->inport (car from)) (fdes->outport (cdr to)) pids)))
--- 
-2.24.0
-
-From caa20c0fafb6fdf504e8f51a313528e02595850c Mon Sep 17 00:00:00 2001
-From: Rutger van Beusekom <rutger.van.beusekom@verum.com>
-Date: Wed, 6 Nov 2019 14:56:57 +0100
-Subject: [PATCH 2/2] fcntl: non blocking socket kludge for mingw
-
----
- libguile/filesys.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/libguile/filesys.c b/libguile/filesys.c
-index db8b2423a..a8e585cf3 100644
---- a/libguile/filesys.c
-+++ b/libguile/filesys.c
-@@ -974,6 +974,19 @@ SCM_DEFINE (scm_fcntl, "fcntl", 2, 1, 0,
-   return scm_from_int (rv);
- }
- #undef FUNC_NAME
-+#else
-+SCM_DEFINE (scm_fcntl, "fcntl", 2, 1, 0,
-+            (SCM object, SCM cmd, SCM value),
-+            "wip: assuming: cmd = F_SETFL\n, value = (logior O_NONBLOCK (fcntl object F_GETFL))")
-+#define FUNC_NAME s_scm_fcntl
-+{
-+  unsigned long non_blocking = 1;
-+  object = SCM_COERCE_OUTPORT (object);
-+  SOCKET fd = _get_osfhandle(SCM_FPORT_FDES(object));
-+  if(SOCKET_ERROR == ioctlsocket(fd, FIONBIO, &non_blocking))
-+    SCM_SYSERROR;
-+  return scm_from_int(0);
-+}
- #endif /* HAVE_FCNTL */
- 
- SCM_DEFINE (scm_fsync, "fsync", 1, 0, 0, 
 -- 
 2.24.0
 
