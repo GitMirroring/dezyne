@@ -144,7 +144,9 @@ C or C++ programs, though that is not its primary goal.")
                 (uri (git-reference
                       (url "https://git.savannah.gnu.org/git/guile.git")
                       (commit commit)))
-                (patches (search-patches "guile-mingw.patch"))
+                (patches (search-patches "guile-mingw-piped-process.patch"
+                                         "guile-mingw-fcntl.patch"
+                                         "guile-mingw-sigaction.patch"))
                 (file-name (string-append name "-" version "-checkout"))
                 (sha256
                  (base32
