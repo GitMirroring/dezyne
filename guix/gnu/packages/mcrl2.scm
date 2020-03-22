@@ -34,14 +34,20 @@
   #:use-module (gnu packages maths)
   #:use-module (gnu packages mingw))
 
+(define-public mcrl2-patched
+  (package
+    (inherit mcrl2)
+    (name "mcrl2-patched")
+    (source
+      (origin
+        (inherit (package-source mcrl2))
+        (patches (search-patches "mcrl2.patch"))))))
+
 (define-public mcrl2-minimal-patched
   (package
     (inherit mcrl2-minimal)
     (name "mcrl2-minimal-patched")
-    (source
-      (origin
-        (inherit (package-source mcrl2-minimal))
-        (patches (search-patches "mcrl2.patch"))))))
+    (source (package-source mcrl2-patched))))
 
 (define-public mcrl2-minimal-with-dparser
   (package
