@@ -517,20 +517,22 @@ either a void reply or a value returned as result of the enable.
 @node Synchronous and asynchronous communication
 @subsection Synchronous and asynchronous communication
 
-        Between components there are two fundamental type of interactions: 1)
-        synchronous and 2) asynchronous.
+Between components there are two fundamental type of interactions: 1)
+synchronous and 2) asynchronous.
 
-        The example above depicts a synchronous action, after sending the event enable to the
-        ProtocolStack, the Application execution will be blocked until
-        the "reply" (either a void reply or a value returned as result) is received.
+The example above depicts a synchronous action, after sending the event
+enable to the ProtocolStack, the Application execution will be blocked
+until the "reply" (either a void reply or a value returned as result) is
+received.
 
-        When the ProtocolStack is activated, it can be requested to setup a connection
-        by sending the event "connectReq" to it. After giving a "reply" on this event
-        the ProtocolStack component will start setting up a connection and the two
-        components continue to run concurrently, i.e. are able to perform other tasks
-        while the connection request is being processed by the ProtocolStack component.
-        Once the request is completed the ProtocolStack will send a notification
-        connectReqRes to the Application. This illustrates an asynchronous action.
+When the ProtocolStack is activated, it can be requested to setup a
+connection by sending the event "connectReq" to it.  After giving a
+"reply" on this event the ProtocolStack component will start setting up
+a connection and the two components continue to run concurrently,
+i.e., are able to perform other tasks while the connection request is
+being processed by the ProtocolStack component.  Once the request is
+completed the ProtocolStack will send a notification connectReqRes to
+the Application.  This illustrates an asynchronous action.
 
 @example
    [Application]     [ProtocolStack]
@@ -549,8 +551,8 @@ either a void reply or a value returned as result of the enable.
 
 @end example
 
-Remember that events have a direction. For the ProtocolStack component
-in this example the connectReqRes event is an@b{out} event. The
+Remember that events have a direction.  For the ProtocolStack component
+in this example the connectReqRes event is an@b{out} event.  The
 Application, however, receives this event as an in event that has a void
 return or some other return type (currently Dezyne only supports void
 out events).
@@ -565,7 +567,7 @@ the component that will provide an implementation of the interface.
 
 With behaviour we mean which events (or method calls) can be received
 and can be sent at which stages in the execution process, or in other
-words the protocol a user of the interface should obey. In the case of
+words the protocol a user of the interface should obey.  In the case of
 the Application and ProtocolStack the interface defines that the
 ProtocolStack should first be enabled before anything else can be done
 with it, that a connectReq must be followed by a connectReqRes and that
@@ -574,7 +576,7 @@ been received.
 
 As described above, components use or provide functionality via
 interfaces and not by interacting directly with other
-components. Therefore, interface specifications can not contain
+components.  Therefore, interface specifications can not contain
 component implementation details.
 
 An interface specification that defines part of the ProtocolStack
@@ -622,21 +624,21 @@ all possible events have to be specified, 2) events can be marked as
 
 1) In the interface specification above a state machine has been
 introduced to define what is allowed at each stage: the protocol
-specified by this state machine must be obeyed. In order to have an
+specified by this state machine must be obeyed.  In order to have an
 unambiguously defined interface in each state, the actions for all
-possible events have to be specified. That is why you see for each state
-the "on enable" and "on disable" statement. A Dezyne model is complete
-when it specifies for each possible state and each possible incoming
-event what happens in terms of actions when this event is received while
-the interface is in this particular state.  Dezyne will check that the
-specification is complete and thereby ensure that there will be no
-undefined actions for all possible events. In Dezyne this is referred to
-as a @b{completeness check}.
+possible events have to be specified.  That is why you see for each
+state the "on enable" and "on disable" statement.  A Dezyne model is
+complete when it specifies for each possible state and each possible
+incoming event what happens in terms of actions when this event is
+received while the interface is in this particular state.  Dezyne will
+check that the specification is complete and thereby ensure that there
+will be no undefined actions for all possible events.  In Dezyne this is
+referred to as a @b{completeness check}.
 
 
 2) For completely specifying the behaviour of an interface, one must
 specify also all actions that should not happen or are not allowed at
-certain stages, -i.e.  will not be serviced when the component
+certain stages, i.e., will not be serviced when the component
 implementing the interface is in a particular state.  This is done by
 marking actions that are not allowed as @b{illegal}.  The Dezyne
 verification will verify that all components using the interface will
@@ -907,8 +909,10 @@ interface IMotion
 
 @subsubsection An interface specifying an interaction protocol
 
-    This example shows an interface with a more complex interaction protocol, where the start event is only allowed in case
-    the interface is in state Off and the stop event is only allowed in case the interface is in state Active.
+This example shows an interface with a more complex interaction
+protocol, where the start event is only allowed in case the interface is
+in state Off and the stop event is only allowed in case the interface is
+in state Active.
 
 @example
 interface IMotion
@@ -975,7 +979,8 @@ and sent (out events) are specified.
 
 An event is declared by its direction (@b{in} or @b{out}), type and name.
 
-The direction indicates if the event is received by (in) or sent (out) from a component that will be implementing the interface
+The direction indicates if the event is received by (in) or sent (out)
+from a component that will be implementing the interface
 
 Out events are only allowed to have @b{void} type.
 
@@ -985,20 +990,25 @@ Out events are only allowed to have @b{void} type.
    out void event-name();           // an out event declaration
 @end example
 
-Events can also have a parameter list to pass data variables, see @xref{Using Data Variables and Parameters},.
+Events can also have a parameter list to pass data variables, see
+@xref{Using Data Variables and Parameters},.
 
 @example
 [in/out] return-type event-name(parameter-list)
 @end example
 
-The parameter list is a set of the following: [in/out/inout] indicating whether the datatype is input for or output from the event, the parameter type and parameter name. see also @xref{Using Data Variables and Parameters},.
+The parameter list is a set of the following: [in/out/inout] indicating
+whether the datatype is input for or output from the event, the
+parameter type and parameter name. see also @xref{Using Data Variables
+and Parameters},.
 
 @node Event Examples
 @subsubsection Event Examples
 
 @subsubsection An interface with three void events (and a simple behaviour)
 
-The following interface has three events defined: two in events and one out event.
+The following interface has three events defined: two in events and one
+out event.
 
 The direction is as seen from the component implementing this interface.
 
@@ -1018,7 +1028,9 @@ interface IMotion
 
 @subsubsection An interface with an enum type event
 
-This interface has three events defined: two incoming events and one outgoing event. One of the incoming events is of an enum type, that is defined in the first line of the interface declaration.
+This interface has three events defined: two incoming events and one
+outgoing event. One of the incoming events is of an enum type, that is
+defined in the first line of the interface declaration.
 
 @example
 interface iSimpleProtocol
@@ -1146,8 +1158,8 @@ component Leaf
 
 @subsubsection A Component Decomposed Into Two Components
 
-    A component decomposed into two components where these components are connected via their ports.
-    See further @xref{Decomposing a Component},
+A component decomposed into two components where these components are
+connected via their ports.  See further @xref{Decomposing a Component},
 
 @example
 component Composition
@@ -1199,19 +1211,19 @@ import ModelName.dzn;
 
 @end example
 
-    Each import clause will look on the file system for a file with the required
-    name, and include the content.
+Each import clause will look on the file system for a file with the required
+name, and include the content.
 
-    For the time being the file should be
-    located in the same directory as the current model. So 'import Console.dzn' expects
-    a file './Console.dzn'
+For the time being the file should be located in the same directory as
+the current model. So 'import Console.dzn' expects a file
+'./Console.dzn'
 
 @subsubsection Examples
 
 @subsubsection A component importing an interface
 
-    The component Leaf implements the ISensor interface for which the declaration is
-    imported using the import statement.
+The component Leaf implements the ISensor interface for which the
+declaration is imported using the import statement.
 
 @example
 import ISensor.dzn
@@ -1240,13 +1252,17 @@ component Leaf
 @node Ports
 @subsection Ports
 
- A port is an instance of an interface. A component has ports to communicate with other components.
+A port is an instance of an interface. A component has ports to
+communicate with other components.
 
-The keyword @b{provides} is used to specify that a component provides an implementation of an interface.
+The keyword @b{provides} is used to specify that a component provides an
+implementation of an interface.
 
-The keyword @b{requires} is used to specify that a component uses or requires an interface.
+The keyword @b{requires} is used to specify that a component uses or
+requires an interface.
 
-A component must provide an implementation for all in-events of provided and all out events of required interfaces.
+A component must provide an implementation for all in-events of provided
+and all out events of required interfaces.
 
 @subsubsection Syntax
 
@@ -1266,7 +1282,8 @@ A component must provide an implementation for all in-events of provided and all
   requires injected Interface port; (2)
 @end example
 
-1) port to a component with possibly delaying communication channel (See @xref{External},)
+1) port to a component with possibly delaying communication channel (See
+@xref{External},)
 
 2) port to a shared resource (See Injected)
 
@@ -1274,7 +1291,8 @@ A component must provide an implementation for all in-events of provided and all
 
 @subsubsection A component implementing one interface
 
-The component Leaf implements the ISensor interface that has one in-event called event.
+The component Leaf implements the ISensor interface that has one
+in-event called event.
 
 @example
 component Leaf
@@ -1290,7 +1308,8 @@ component Leaf
 
 @subsubsection A component implementing one interface and requiring another interface
 
-The component MessageHandler below is providing an implementation of the iMessageHandler interface and requires the iProtocolStack interface.
+The component MessageHandler below is providing an implementation of the
+iMessageHandler interface and requires the iProtocolStack interface.
 
 @example
 component MessageHandler
@@ -1349,10 +1368,15 @@ component MessageHandler
 @cindex interface
 @node External
 @subsection External
-(since 2.0.0)
-The 'external' keyword specifies that communication over a port may be delayed. (The delay may be caused by inter-process communication.) Model verification will consider this delay for out events on an external port. The delay may cause race conditions leading to illegal behaviour or interface compliance errors.
+(since 2.0.0) The 'external' keyword specifies that communication over a
+port may be delayed. (The delay may be caused by inter-process
+communication.) Model verification will consider this delay for out
+events on an external port. The delay may cause race conditions leading
+to illegal behaviour or interface compliance errors.
 
-@b{Note:} 'external' delay is taken into account for required port out events. Marking a provided port as external has no effect on verification.
+@b{Note:} 'external' delay is taken into account for required port out
+events. Marking a provided port as external has no effect on
+verification.
 
 @subsubsection Syntax
 
@@ -1372,9 +1396,12 @@ Explanation:
 
 @subsubsection Race condition due to external delay
 
- Component RemoteTimerProxy illustrates how a delayed communication channel may cause a race condition leading to illegal behaviour.
+Component RemoteTimerProxy illustrates how a delayed communication
+channel may cause a race condition leading to illegal behaviour.
 
-The implementation of component RemoteTimerProxy is correct for 'requires ITimer rp' but incorrect for 'requires external ITimer rp' due to race between pp.cancel and rp.timeout.
+The implementation of component RemoteTimerProxy is correct for
+'requires ITimer rp' but incorrect for 'requires external ITimer rp' due
+to race between pp.cancel and rp.timeout.
 
 @example
 extern double $double$;
@@ -1431,24 +1458,39 @@ A single provided port can be bound to multiple requires ports. The
 @item How to specify a system in which a single component is bound multiple times.
 @end itemize
 
-  Regular Dezyne port bindings are peer-to-peer. TODO: Explain meaning, implications and justification.@*
-  Multiple requires ports can be bound to a single provided port. TODO: Explain constraints
+Regular Dezyne port bindings are peer-to-peer.
+
+TODO: Explain meaning, implications and justification.@* Multiple
+requires ports can be bound to a single provided port. TODO: Explain
+constraints
 
 
 @node Behaviour
 @subsection Behaviour
 
-A behaviour section is used to define the actions an interface or component will perform based on the events received.
+A behaviour section is used to define the actions an interface or
+component will perform based on the events received.
 
 @subsubsection Interface Versus Component Behaviour
 
-Behaviour in an interface is a specification. It is an agreement between components providing and requiring this interface about the messages and protocol exchanged. Both components must adhere to this specification. Interface conformance is an imprtant check in the verifier. The code generator does not generate any code based on the behaviour specification of an interface.
+Behaviour in an interface is a specification.  It is an agreement
+between components providing and requiring this interface about the
+messages and protocol exchanged. Both components must adhere to this
+specification.  Interface conformance is an imprtant check in the
+verifier.  The code generator does not generate any code based on the
+behaviour specification of an interface.
 
-Behaviour in a component is a definition. It defines the actual behaviour expressed by the object modeled. Whereas an interface might still allow some freedom, sometimes multiple messages are allowed, inside a component the behaviour must be fully deterministic. The code generator uses this component behaviour specification to generate target code.
+Behaviour in a component is a definition.  It defines the actual
+behaviour expressed by the object modeled. Whereas an interface might
+still allow some freedom, sometimes multiple messages are allowed,
+inside a component the behaviour must be fully deterministic.  The code
+generator uses this component behaviour specification to generate target
+code.
 
 @subsubsection Syntax
 
-The 'behaviour' keyword is used to declare a behaviour section. Optionally it may have a name.
+The 'behaviour' keyword is used to declare a behaviour
+section.  Optionally it may have a name.
 
 @example
 behaviour [OptionalName]
@@ -1457,7 +1499,8 @@ behaviour [OptionalName]
 @}
 @end example
 
-The behaviour body contains a collection of statements that define the actions that will be performed based on events received.
+The behaviour body contains a collection of statements that define the
+actions that will be performed based on events received.
 
 The following elements can be used in the behaviour body:
 
@@ -1496,7 +1539,10 @@ interface IMotion
 
 @subsubsection A behaviour section with a protocol definition
 
-This example shows an interface with a more complex behaviour section, where the start event is only allowed in case the interface is in state Off and the stop event is only allowed in case the interface is in state Active.
+This example shows an interface with a more complex behaviour section,
+where the start event is only allowed in case the interface is in state
+Off and the stop event is only allowed in case the interface is in state
+Active.
 
 @example
 interface IMotion
@@ -1524,9 +1570,13 @@ interface IMotion
 
 @subsubsection A behaviour section with a protocol definition, alternative form
 
-This example shows an interface with the same behaviour as the one above, but an alternative form is used to define the behaviour.
+This example shows an interface with the same behaviour as the one
+above, but an alternative form is used to define the behaviour.
 
-In the previous example based on the state value (using guarded statements) the actions for the events per state were defined. In the alternative below based on the events the actions in each state are defined.
+In the previous example based on the state value (using guarded
+statements) the actions for the events per state were defined. In the
+alternative below based on the events the actions in each state are
+defined.
 
 @example
 interface IMotion
@@ -1599,14 +1649,17 @@ Supported types are:
 @item @b{subint}: integer type.
 @end itemize
 
-To ensure that an integer variable falls within a finite set (in order to have a limited range of possible paths / states in the system), use a type definition, e.g. subint myInt @{0..10@}.
+To ensure that an integer variable falls within a finite set (in order
+to have a limited range of possible paths / states in the system), use a
+type definition, e.g. subint myInt @{0..10@}.
 
 @node Variable Examples
 @subsection Variable Examples
 
 @subsubsection Simple state machine where the state is captured in a variable of enum type
 
-This example shows a simple state machine for a siren where the state is captured in an enumeration.
+This example shows a simple state machine for a siren where the state is
+captured in an enumeration.
 
 @example
 interface Siren
@@ -1634,7 +1687,8 @@ interface Siren
 
 @subsubsection Simple state machine where the state is captured in a boolean type
 
-This example shows a simple state machine for a siren where the state is captured in a variable of boolean type
+This example shows a simple state machine for a siren where the state is
+captured in a variable of boolean type
 
 @example
 interface Siren
@@ -1661,7 +1715,8 @@ interface Siren
 
 @subsubsection Limited retrying activation of a device using a variable of integer type
 
-This example shows how a counter based on an integer type can be used to limit retrying activation of a device.
+This example shows how a counter based on an integer type can be used to
+limit retrying activation of a device.
 
 @example
 component AlarmSystemComp
@@ -1744,21 +1799,26 @@ Apart from assignment, data operation / manipulation is done in handwritten code
 
 @subsection Data Syntax
 
-Use the keyword extern to define a datatype in Dezyne and the external datatype it will be transformed to when code is generated:
+Use the keyword extern to define a datatype in Dezyne and the external
+datatype it will be transformed to when code is generated:
 
 @example
 extern datatypeInternal $datatypeExternal$;
 @end example
 
-After the definition variables of this type can be used to further define event (or method) signatures, see also @xref{Specifying Events},
+After the definition variables of this type can be used to further
+define event (or method) signatures, see also @xref{Specifying Events},
 
 @subsection Data Examples
 
 @subsubsection Using an character type in an interface definition
 
-This example shows an interface definition for an handwritten component that will evaluate input based on a character type.
+This example shows an interface definition for an handwritten component
+that will evaluate input based on a character type.
 
-Note that in interface definitions there is no data handling at all and therefore no parentheses and parameters are needed in e.g. on event statements.
+Note that in interface definitions there is no data handling at all and
+therefore no parentheses and parameters are needed in e.g. on event
+statements.
 
 @example
 interface IAlarmConsole
@@ -1777,7 +1837,9 @@ interface IAlarmConsole
 
 @subsubsection Using character and integer type in an interface definition
 
-This example shows an interface definition for a handwritten component that will accept characters for a PIN code and will also return the complete code.
+This example shows an interface definition for a handwritten component
+that will accept characters for a PIN code and will also return the
+complete code.
 
 @example
 interface ICodeBuilder
@@ -1817,7 +1879,8 @@ interface ICodeBuilder
 
 @subsubsection Passing data parameters between components
 
-This example shows how to pass parameters between components, using the interfaces of the examples above.
+This example shows how to pass parameters between components, using the
+interfaces of the examples above.
 
 @example
 component AlarmConsole
@@ -1922,7 +1985,8 @@ behaviour [OptionalName]
 @}
 @end example
 
-The behaviour body contains a collection of statements that define the actions that will be performed based on events received.
+The behaviour body contains a collection of statements that define the
+actions that will be performed based on events received.
 
 The following elements can be used in the behaviour body:
 
@@ -1961,7 +2025,10 @@ interface IMotion
 
 @subsubsection A behaviour section with a protocol definition
 
-This example shows an interface with a more complex behaviour section, where the start event is only allowed in case the interface is in state Off and the stop event is only allowed in case the interface is in state Active.
+This example shows an interface with a more complex behaviour section,
+where the start event is only allowed in case the interface is in state
+Off and the stop event is only allowed in case the interface is in state
+Active.
 
 @example
 interface IMotion
@@ -1989,9 +2056,13 @@ interface IMotion
 
 @subsubsection A behaviour section with a protocol definition, alternative form
 
-This example shows an interface with the same behaviour as the one above, but an alternative form is used to define the behaviour.
+This example shows an interface with the same behaviour as the one
+above, but an alternative form is used to define the behaviour.
 
-In the previous example based on the state value (using guarded statements) the actions for the events per state were defined. In the alternative below based on the events the actions in each state are defined.
+In the previous example based on the state value (using guarded
+statements) the actions for the events per state were defined. In the
+alternative below based on the events the actions in each state are
+defined.
 
 @example
 interface IMotion
@@ -2039,13 +2110,24 @@ interface IMotion
 @node Actions
 @subsection Actions
 
-The actions an interface or component should perform when an event is received are specified within a @xref{Specifying Behaviour},.
+The actions an interface or component should perform when an event is
+received are specified within a @xref{Specifying Behaviour},.
 
-Actions can be changing the value of a variable, invoking a function, generating another event or changing to another state and any combination.
+Actions can be changing the value of a variable, invoking a function,
+generating another event or changing to another state and any
+combination.
 
-In response to one event trigger, there can be different actions to be taken as long as they have non-overlapping guards. Guards are boolean expressions. The statement behind the guard is selected when the expression evaluates to true. The keyword 'otherwise' defines a catch-all guard which is true only when none of the other guard expressions in a list of guarded statements evaluates to true.
+In response to one event trigger, there can be different actions to be
+taken as long as they have non-overlapping guards.  Guards are boolean
+expressions. The statement behind the guard is selected when the
+expression evaluates to true.  The keyword 'otherwise' defines a
+catch-all guard which is true only when none of the other guard
+expressions in a list of guarded statements evaluates to true.
 
-Note that the use of guards is reserved for action selection. The guards in combination with the trigger event determine which action is activated. Thus, the action is a (compound) statement inside an on event statement (optionally) behind an innermost guard.
+Note that the use of guards is reserved for action selection.  The
+guards in combination with the trigger event determine which action is
+activated. Thus, the action is a (compound) statement inside an on event
+statement (optionally) behind an innermost guard.
 
 @subsubsection Syntax
 
@@ -2059,11 +2141,16 @@ Declaring an action statement:
 
 @end example
 
-Here 'intf1.evt1' and 'intf2.evt2' are event instances, which refer to interface variables 'intf1' and 'intf2' and to events 'evt1' and 'evt2'.
+Here 'intf1.evt1' and 'intf2.evt2' are event instances, which refer to
+interface variables 'intf1' and 'intf2' and to events 'evt1' and 'evt2'.
 
-Intentionally the 'Statement' will be executed when one of the two triggers occurs.
+Intentionally the 'Statement' will be executed when one of the two
+triggers occurs.
 
-action-body: a collection of conditions / guards and statements (function invocations, changing variable values, changing to another state, setting a reply value, generating another event, marking the event as illegal) that define what actions to perform.
+action-body: a collection of conditions / guards and statements
+(function invocations, changing variable values, changing to another
+state, setting a reply value, generating another event, marking the
+event as illegal) that define what actions to perform.
 
 Declaring a guarded action statement:
 
@@ -2075,10 +2162,12 @@ on intf1.evt1(), intf2.evt2():
 @}
 @end example
 
-Here the action statement will only be selected when guard [state.State1] evaluates to true.
+Here the action statement will only be selected when guard
+[state.State1] evaluates to true.
 
-Special action statements can defined that will be performed in case no other events occur,
-or that optionally may be performed in case no other events occur, see @xref{Using inevitable and optional},.
+Special action statements can defined that will be performed in case no
+other events occur, or that optionally may be performed in case no other
+events occur, see @xref{Using inevitable and optional},.
 
 @subsubsection Examples
 
@@ -2086,7 +2175,8 @@ or that optionally may be performed in case no other events occur, see @xref{Usi
 
 This example shows a simple state machine for a siren.
 
-Here the value of a variable representing the state of the state machine is used as a guard to select which action statements to evaluate.
+Here the value of a variable representing the state of the state machine
+is used as a guard to select which action statements to evaluate.
 
 @example
 interface Siren
@@ -2114,7 +2204,8 @@ interface Siren
 
 @subsubsection Two alternative styles to define actions based on events
 
-This example shows an interface with two alternative styles to define the actions based on incoming events.
+This example shows an interface with two alternative styles to define
+the actions based on incoming events.
 
 @example
 interface IPsm
@@ -2201,15 +2292,26 @@ interface IPsm
 @node Specifying Stateful Behaviour
 @subsection Specifying Stateful Behaviour
 
-State variables and guard expressions enable specification of protocols in a behaviour section. They specify the selection of one of multiple different actions (see @xref{Actions},) for an input event.
+State variables and guard expressions enable specification of protocols
+in a behaviour section. They specify the selection of one of multiple
+different actions (see @xref{Actions},) for an input event.
 
-The state of an interface is composed of the values of all state variables.
+The state of an interface is composed of the values of all state
+variables.
 
-The state diagram of an interface takes only the first variable declared into account.
+The state diagram of an interface takes only the first variable declared
+into account.
 
-State variable declarations can refer to public types (e.g. defined for use as event return values) or to private type declarations local to the 'behaviour' section. Types can be boolean, integer with limited contiguous range or enumerated.
+State variable declarations can refer to public types (e.g. defined for
+use as event return values) or to private type declarations local to the
+'behaviour' section. Types can be boolean, integer with limited
+contiguous range or enumerated.
 
-Guards are boolean expressions based on state variables. The statement behind the guard is selected when the expression evaluates to true. The keyword 'otherwise' defines a catch-all guard which is true only when none of the other guard expressions in a list of guarded statements evaluates to true.
+Guards are boolean expressions based on state variables. The statement
+behind the guard is selected when the expression evaluates to true. The
+keyword 'otherwise' defines a catch-all guard which is true only when
+none of the other guard expressions in a list of guarded statements
+evaluates to true.
 
 @subsubsection Syntax
 
@@ -2272,7 +2374,8 @@ interface Siren
 
 @subsubsection Two alternative styles to define actions based on events
 
-This example shows an interface with two alternative styles to define the actions based on incoming events.
+This example shows an interface with two alternative styles to define
+the actions based on incoming events.
 
 @example
 interface IPsm
@@ -2363,7 +2466,10 @@ interface IPsm
 @node Using Guards
 @subsection Using Guards
 
-Guards are boolean expressions based on variables. The statement behind the guard is selected if the expression evaluates to true. If more than one guard evaluates to true, a non-deterministic choice for one of guards must be made. Guards can be nested.
+Guards are boolean expressions based on variables. The statement behind
+the guard is selected if the expression evaluates to true. If more than
+one guard evaluates to true, a non-deterministic choice for one of
+guards must be made. Guards can be nested.
 
 @subsubsection Syntax
 
@@ -2382,7 +2488,9 @@ Expression can be a compound expression using the logic operators || (OR) and &&
 [expression1 && expression2] statement;  // statement will be executed when exrpession1 and expression2 is true
 @end example
 
-The keyword 'otherwise' defines a catch-all guard which is true only when none of the other guard expressions in a list of guarded statements evaluates to true.
+The keyword 'otherwise' defines a catch-all guard which is true only
+when none of the other guard expressions in a list of guarded statements
+evaluates to true.
 
 @example
 [expression1] statement-true-1;
@@ -2468,8 +2576,9 @@ else statement-false;
 
 @subsubsection A basic if-else example
 
-    This example shows an interface with a behaviour section where if else is used to select the actions to be performed based
-    on the value of a state and a local variable.
+This example shows an interface with a behaviour section where if else
+is used to select the actions to be performed based on the value of
+a state and a local variable.
 
 @example
 interface IImperativeAction
@@ -2523,11 +2632,11 @@ interface IImperativeAction
 @node Using functions
 @subsection Using functions
 
-    Functions are defined in a behaviour section.
+Functions are defined in a behaviour section.
 
-    These functions can be called as part of an action.
+These functions can be called as part of an action.
 
-    Functions can access global variables.
+Functions can access global variables.
 
 @subsubsection Syntax
 
@@ -2552,9 +2661,11 @@ Here are all the parts of a function:
 @item function-name: This is the actual name of the function.
 
 @item parameter-list: A parameter is like a placeholder. When a function is invoked, you pass a value to the parameter.
-This value is referred to as actual parameter or argument.
-The parameter list refers to the type, order, and number of the parameters of a function.
-Parameters are optional; that is, a function may contain no parameters.
+
+This value is referred to as actual parameter or argument.  The
+parameter list refers to the type, order, and number of the parameters
+of a function.  Parameters are optional; that is, a function may contain
+no parameters.
 
 @item function-body: The function body contains a collection of statements that define what the function does.
 
@@ -2617,11 +2728,18 @@ interface IFunctionCallAction
 @node Reply
 @subsection Reply
 
-The 'reply' keyword assigns a value to be returned. The 'reply' keyword also specifies that a blocked thread is allowed to return when all statements in the enclosing action block have been performed.
+The 'reply' keyword assigns a value to be returned. The 'reply' keyword
+also specifies that a blocked thread is allowed to return when all
+statements in the enclosing action block have been performed.
 
-A 'reply' statement may appear anywhere in an 'action'. Execution of an action block continues after a 'reply' statement is performed. Thread returns occur when the current execution thread reaches the end of the current action block. Then all threads return for which a 'reply' has been executed in the current action block.
+A 'reply' statement may appear anywhere in an 'action'. Execution of an
+action block continues after a 'reply' statement is performed. Thread
+returns occur when the current execution thread reaches the end of the
+current action block. Then all threads return for which a 'reply' has
+been executed in the current action block.
 
-Void 'reply' must be omitted in interface models and in non-blocking component action statements. In these cases the void reply is implicit.
+Void 'reply' must be omitted in interface models and in non-blocking
+component action statements. In these cases the void reply is implicit.
 
 @subsubsection Syntax
 
@@ -2647,15 +2765,31 @@ Void 'reply' must be omitted in interface models and in non-blocking component a
 
 Explanation:
 
-1) Set the value to be replied to the value currently held by variable-name. (This form applies to interfaces. This form must also be used in component models when the only active thread is associated with the port for the current 'on event' and the current action block is not marked as 'blocking'.)
+1) Set the value to be replied to the value currently held by
+variable-name. (This form applies to interfaces. This form must also be
+used in component models when the only active thread is associated with
+the port for the current 'on event' and the current action block is not
+marked as 'blocking'.)
 
-2) Set the value to be replied to a defined constant (e.g. an enumerated type). (This form applies to interfaces. This form must also be used in component models when the only active thread is associated with the port for the current 'on event' and the current action block is not marked as 'blocking'.)
+2) Set the value to be replied to a defined constant (e.g. an enumerated
+type). (This form applies to interfaces. This form must also be used in
+component models when the only active thread is associated with the port
+for the current 'on event' and the current action block is not marked as
+'blocking'.)
 
-3) Allow void return on port with name 'port-name'. (This form applies to component models when the current 'action' was specified as 'blocking' or when port 'port-name' is still blocked.)
+3) Allow void return on port with name 'port-name'. (This form applies
+to component models when the current 'action' was specified as
+'blocking' or when port 'port-name' is still blocked.)
 
-4) Allow valued return on port with name 'port-name' and assign the value held by 'variable-name' to the reply value for 'port-name'. (This form applies to component models when the 'action' was specified as 'blocking' or when port 'port-name' is still blocked.)
+4) Allow valued return on port with name 'port-name' and assign the
+value held by 'variable-name' to the reply value for 'port-name'. (This
+form applies to component models when the 'action' was specified as
+'blocking' or when port 'port-name' is still blocked.)
 
-5) Allow valued return on port with name 'port-name' and assign the value held by 'CONSTANT' to the reply value for 'port-name'. (This form applies to component models when the 'action' was specified as 'blocking' or when port 'port-name' is still blocked.)
+5) Allow valued return on port with name 'port-name' and assign the
+value held by 'CONSTANT' to the reply value for 'port-name'. (This form
+applies to component models when the 'action' was specified as
+'blocking' or when port 'port-name' is still blocked.)
 
 @subsubsection Examples
 
@@ -2702,7 +2836,12 @@ interface iNetwork
 
 @subsubsection Thread signalling
 
- Component CA illustrates the use of 'reply' to signal blocked thread release. The action statement in 'on pp.request*' are marked as 'blocking' and do not contain a reply statement. A thread calling pp.request_reply or pp.request_notify will block after calling rp.request. That thread returns when the action statement for 'on rp.accept' or 'on rp.reject' have been performed.
+Component CA illustrates the use of 'reply' to signal blocked thread
+release. The action statement in 'on pp.request*' are marked as
+'blocking' and do not contain a reply statement. A thread calling
+pp.request_reply or pp.request_notify will block after calling
+rp.request. That thread returns when the action statement for 'on
+rp.accept' or 'on rp.reject' have been performed.
 
 @example
 interface IBlockingRequest
@@ -2766,14 +2905,28 @@ component CA
 @node Using inevitable and optional
 @subsection Using inevitable and optional
 
-To specify in an interface model that the implementation behind the interface will at a certain moment perform an action requiring a response to be sent over the interface the keyword inevitable or optional can be used.
+To specify in an interface model that the implementation behind the
+interface will at a certain moment perform an action requiring a
+response to be sent over the interface the keyword inevitable or
+optional can be used.
 
-Inevitable means that when no other events occur, this event will occur. Optional means that the event may or may not occur.
+Inevitable means that when no other events occur, this event will
+occur. Optional means that the event may or may not occur.
 
-Note that an Inevitable event is not guaranteed to occur always. If there are other (optional or inevitable) events that can occur, the inevitable event may or may not occur. So it is only inevitable in the absence of other events.
+Note that an Inevitable event is not guaranteed to occur always. If
+there are other (optional or inevitable) events that can occur, the
+inevitable event may or may not occur. So it is only inevitable in the
+absence of other events.
 
-The difference between the two is how the event is handled by the model verification. For inevitable events, the verification only checks the cases where the event does occur, i.e. it assumes that the event will eventually occur if no other events occur. For optional events, the model verification also checks the cases where the event never happens (which could be a cause of deadlock).
-Note: when both optional and inevitable events are used in the same state, it is only guaranteed that one of the two events will occur, but it is not guaranteed that the inevitable event will always occur.
+The difference between the two is how the event is handled by the model
+verification. For inevitable events, the verification only checks the
+cases where the event does occur, i.e. it assumes that the event will
+eventually occur if no other events occur. For optional events, the
+model verification also checks the cases where the event never happens
+(which could be a cause of deadlock).  Note: when both optional and
+inevitable events are used in the same state, it is only guaranteed that
+one of the two events will occur, but it is not guaranteed that the
+inevitable event will always occur.
 
 @subsubsection Syntax
 
@@ -2785,8 +2938,11 @@ on optional: action-body ;
 
 @end example
 
-The declaration of inevitable and optional actions follows the declaration of @xref{Actions}, where action-body: a collection of conditions / guards and statements (function invocations, changing variable values, changing to another state,
-generating another event) that define what actions to perform.
+The declaration of inevitable and optional actions follows the
+declaration of @xref{Actions}, where action-body: a collection of
+conditions / guards and statements (function invocations, changing
+variable values, changing to another state, generating another event)
+that define what actions to perform.
 
 @subsubsection Examples
 
@@ -2794,7 +2950,12 @@ generating another event) that define what actions to perform.
 
 This example shows the interface specification for a timer.
 
-As it is up to the implementation to define exactly how the timer will expire, the (internal or implementation specific) trigger leading to that the time-out event has to be send over the Timer interface can not be specified in the interface definition. However, we define here that that inevitably the timer will expire and the time-out event has to be send.
+As it is up to the implementation to define exactly how the timer will
+expire, the (internal or implementation specific) trigger leading to
+that the time-out event has to be send over the Timer interface can not
+be specified in the interface definition. However, we define here that
+that inevitably the timer will expire and the time-out event has to be
+send.
 
 @example
 interface iTimer
@@ -2831,7 +2992,12 @@ interface iTimer
 
 This example shows the interface specification for a sensor.
 
-As it is up to the implementation to define exactly what happens when the sensor is triggered, the (internal or implementation specific) trigger leading to that the triggered event has to be send over the Sensor interface can not be specified in the interface definition. However, we define here that that optionally the sensor might be triggered and the triggered event has to be send.
+As it is up to the implementation to define exactly what happens when
+the sensor is triggered, the (internal or implementation specific)
+trigger leading to that the triggered event has to be send over the
+Sensor interface can not be specified in the interface
+definition. However, we define here that that optionally the sensor
+might be triggered and the triggered event has to be send.
 
 @example
 // Interface to a Sensor
@@ -2894,9 +3060,16 @@ The keyword illegal is used to indicate that an event is not allowed:
 
 @end example
 
-Here 'intf1.evt1' and 'intf2.evt2' are event instances, which refer to interface variables 'intf1' and 'intf2' and to events 'evt1' and 'evt2'.
+Here 'intf1.evt1' and 'intf2.evt2' are event instances, which refer to
+interface variables 'intf1' and 'intf2' and to events 'evt1' and 'evt2'.
 
-Note: @b{do not use illegal in conditional statements (if / if else) or functions in interface definitions} ! This is because an event can only be declared illegal in a direct way due to the declarative character of interfaces. (Or in other words: in an interface one declares the expected behaviour and an illegal inside conditional statements or functions would require an evaluation of the conditional statement or function for the be expected behaviour.)
+Note: @b{do not use illegal in conditional statements (if / if else) or
+functions in interface definitions} ! This is because an event can only
+be declared illegal in a direct way due to the declarative character of
+interfaces. (Or in other words: in an interface one declares the
+expected behaviour and an illegal inside conditional statements or
+functions would require an evaluation of the conditional statement or
+function for the be expected behaviour.)
 
 @subsubsection Examples
 
@@ -2937,9 +3110,12 @@ interface iTimer
 
 @subsubsection Incorrect and correct interface definition with a conditional illegal
 
-An interface has to be defined that does not allows a second event (checkModel in this case) before the asynchronous reply (checkModelRes) has been sent to the first event.
+An interface has to be defined that does not allows a second event
+(checkModel in this case) before the asynchronous reply (checkModelRes)
+has been sent to the first event.
 
- The following code snippet shows an incorrect interface definition with an illegal inside an if-else construction.
+The following code snippet shows an incorrect interface definition with
+an illegal inside an if-else construction.
 
 @example
  [state.Authenticated]
@@ -3000,14 +3176,18 @@ An interface has to be defined that does not allows a second event (checkModel i
 @node Restrictions Multiple Provides
 @subsection Restrictions Multiple Provides
 
-For a component with a behaviour and with multiple provides ports, two restrictions hold.
-These restrictions relate to the fact that activity cannot be forked. These are the restrictions:
+For a component with a behaviour and with multiple provides ports, two
+restrictions hold.  These restrictions relate to the fact that activity
+cannot be forked. These are the restrictions:
 
-1) Within the handling of an in-event of a provides port, it is not allowed to post an out-event on another provides port.
+1) Within the handling of an in-event of a provides port, it is not
+allowed to post an out-event on another provides port.
 
-2) Within the handling of an out-event of a requires port, it is not allowed to post an out-event to more than one provides port.
+2) Within the handling of an out-event of a requires port, it is not
+allowed to post an out-event to more than one provides port.
 
-The violation of any of these restrictions will be reported as a compliance error.
+The violation of any of these restrictions will be reported as a
+compliance error.
 
 These are examples of the two types of violations:
 
@@ -3057,15 +3237,28 @@ component ViolationType2
 @node Blocking
 @subsection Blocking
 (since 2.0.0)
-The 'blocking' keyword allows omission of a reply statement from an action statement and supresses the implicit void reply performed after the last statement in an action statement. An action statement in another port in-event should perform the reply statement for the blocked port. Thus, time and value of a blocked port reply depend on another in-event. The keyword 'blocking' is allowed to appear once in the path of statements prefixing an action statement.
 
-Only 'provides' ports are affected by 'blocking'. A call of a provided port in-event will not return before a reply statement is performed for that port.
+The 'blocking' keyword allows omission of a reply statement from an
+action statement and supresses the implicit void reply performed after
+the last statement in an action statement. An action statement in
+another port in-event should perform the reply statement for the blocked
+port. Thus, time and value of a blocked port reply depend on another
+in-event. The keyword 'blocking' is allowed to appear once in the path
+of statements prefixing an action statement.
 
-Guard expressions or 'on event' is commutative with respect to blocking. If 'blocking' appears before a guard or 'on event' it applies to the action statement after the guard or 'on event'.
+Only 'provides' ports are affected by 'blocking'. A call of a provided
+port in-event will not return before a reply statement is performed for
+that port.
 
-@b{Note:} 'blocking' may only be used in components with a single 'provides' port. This limitation may be lifted in a future release.
+Guard expressions or 'on event' is commutative with respect to
+blocking. If 'blocking' appears before a guard or 'on event' it applies
+to the action statement after the guard or 'on event'.
 
-@b{Note:} Systems containing 'blocking' component instances must be contained in a @xref{Thread-safe Shell},.
+@b{Note:} 'blocking' may only be used in components with a single
+'provides' port. This limitation may be lifted in a future release.
+
+@b{Note:} Systems containing 'blocking' component instances must be
+contained in a @xref{Thread-safe Shell},.
 
 @subsubsection Syntax
 
@@ -3087,19 +3280,29 @@ Guard expressions or 'on event' is commutative with respect to blocking. If 'blo
 
 Explanation:
 
-2) The 'blocking' keyword applies to the action-statement following 'on event:'. This form is semantically equivalent to 1).
+2) The 'blocking' keyword applies to the action-statement following 'on
+event:'. This form is semantically equivalent to 1).
 
-3) The 'blocking' keyword applies to the action-statement following [guard]. This form is semantically equivalent to "on event: [guard] blocking action-statement;"
+3) The 'blocking' keyword applies to the action-statement following
+[guard]. This form is semantically equivalent to "on event: [guard]
+blocking action-statement;"
 
-4) The 'blocking' keyword applies to action-statement1. It does NOT apply to action-statement2.
+4) The 'blocking' keyword applies to action-statement1. It does NOT
+apply to action-statement2.
 
 @subsubsection Examples
 
 @subsubsection Thread signalling
 
- Component CA illustrates the use of 'blocking' to postpone thread return. An 'on event' on a different port performs the 'reply' statement for the blocked port.
+Component CA illustrates the use of 'blocking' to postpone thread
+return. An 'on event' on a different port performs the 'reply' statement
+for the blocked port.
 
-The action statement in 'on pp.request_value' is marked as 'blocking' and does not contain a reply statement. A thread calling pp.request_reply blocks after action statement 'rp.request()'. The blocked thread returns when the action statement for 'on rp.accept' or 'on rp.reject' have been performed.
+The action statement in 'on pp.request_value' is marked as 'blocking'
+and does not contain a reply statement. A thread calling
+pp.request_reply blocks after action statement 'rp.request()'. The
+blocked thread returns when the action statement for 'on rp.accept' or
+'on rp.reject' have been performed.
 
 @example
 interface IBlockingRequest
@@ -3188,7 +3391,9 @@ port <=> component1_instance_name.port
 
 @subsubsection Syntax
 
-The keyword @b{@i{system}} is used to define a composition. Inside the system definition the instances of the components that are contained in the system are specified.
+The keyword @b{@i{system}} is used to define a composition. Inside the
+system definition the instances of the components that are contained in
+the system are specified.
 
 To define a system inside the composite component use:
 
@@ -3213,10 +3418,12 @@ Within a system components have to be connected together. A binding statement ta
 component1_instance_name.port <=> component2_instance_name.port
 @end example
 
+Only ports with an equal interface definition and opposite direction can
+be bound together.
 
-Only ports with an equal interface definition and opposite direction can be bound together.
-
-Composite components can also expose ports of contained components by binding their own provided or required ports to ports of contained components. In that case the binding looks like
+Composite components can also expose ports of contained components by
+binding their own provided or required ports to ports of contained
+components. In that case the binding looks like
 
 @example
 port <=> component1_instance_name.port
@@ -3274,7 +3481,8 @@ component Decomposition
 
 @subsubsection Exposing ports
 
-Here a component is decomposed into two other components C1 and C2 and the interface provided by component C2 is exposed.
+Here a component is decomposed into two other components C1 and C2 and
+the interface provided by component C2 is exposed.
 
 @example
 interface I1
@@ -3335,10 +3543,12 @@ See @xref{Ports},
 @node Binding Ports
 @subsection Binding Ports
 
-A component can be decomposed into a group of components. A grouping of components is called a
-@b{@i{system}}.
+A component can be decomposed into a group of components. A grouping of
+components is called a @b{@i{system}}.
 
-Component instances in the composition are connected by binding their ports. Only ports with an equal interface definition and opposite direction can be    bound together.
+Component instances in the composition are connected by binding their
+ports. Only ports with an equal interface definition and opposite
+direction can be bound together.
 
 @subsubsection Syntax
 
@@ -3394,14 +3604,18 @@ component Decomposition
 @node Execution Semantics
 @chapter Execution Semantics
 
-The execution semantics of Dezyne are illustrated using different
-model examples and the corresponding sequence diagrams.
+The execution semantics of Dezyne are illustrated using different model
+examples and the corresponding sequence diagrams.
 
 When interpreting the models and corresponding sequence diagrams, keep
-in mind that the body of an event is executed atomically in the
-context of its behaviour.
+in mind that the body of an event is executed atomically in the context
+of its behaviour.
 
-For an in-event all action statements are executed depth-first. All out-events are stored in event queues at the receiving components. After the completion of all action statements, just before control is passed back to the caller, a component will flush its own queue of pending out events. Recursively all out-events are handled this way.
+For an in-event all action statements are executed depth-first. All
+out-events are stored in event queues at the receiving components. After
+the completion of all action statements, just before control is passed
+back to the caller, a component will flush its own queue of pending out
+events. Recursively all out-events are handled this way.
 
 @section Direct in event
 
@@ -3450,7 +3664,9 @@ The third variant is left as an exercise to the reader.
 
 @section Indirect out event
 
-A requires port out-event (r.b) posted in the context of a provides port in-event (p.a) call is processed before the provides port in-event (p.a) returns.
+A requires port out-event (r.b) posted in the context of a provides port
+in-event (p.a) call is processed before the provides port in-event (p.a)
+returns.
 
 @example
 @verbatiminclude semantics/indirect_out.dzn
@@ -3460,9 +3676,11 @@ A requires port out-event (r.b) posted in the context of a provides port in-even
 
 @section Indirect multiple out events
 
-Since the provided interface is the same in the 3 cases below the externally visible behaviour is identical.
+Since the provided interface is the same in the 3 cases below the
+externally visible behaviour is identical.
 
-The 3 different behaviour implementations of the component show the subtle differences in the internal handling of messages.
+The 3 different behaviour implementations of the component show the
+subtle differences in the internal handling of messages.
 
 @example
 @verbatiminclude semantics/indirect_multiple_out1.dzn
@@ -3486,7 +3704,9 @@ The 3 different behaviour implementations of the component show the subtle diffe
 
 See section on @xref{Blocking},
 
-The in-event on the provides port (p.a) blocks (does not return) until a reply is handled. This happens in the handling of the requires port out-event (r.b).
+The in-event on the provides port (p.a) blocks (does not return) until a
+reply is handled. This happens in the handling of the requires port
+out-event (r.b).
 
 @example
 @verbatiminclude semantics/indirect_blocking_out.dzn
@@ -3494,7 +3714,9 @@ The in-event on the provides port (p.a) blocks (does not return) until a reply i
 
 @image{images/indirect_blocking_out,,,,.png}
 
-If the keyword blocking in above example would be omitted it would lead to an erroneous situation since the provided in-event (p.a) would return before the provided out-event (p.b) would have been generated.
+If the keyword blocking in above example would be omitted it would lead
+to an erroneous situation since the provided in-event (p.a) would return
+before the provided out-event (p.b) would have been generated.
 
 @section External multiple out events
 
@@ -3514,7 +3736,10 @@ occurrence of the inevitable event in combination with external.
 
 @section Indirect blocking multiple external out events
 
-The 2 required out-events (r1.b, r2.b) can come in any order. The message sequence chart shows only one scenario. The implementation of the component is such that the provided behaviour is the same in both cases.
+The 2 required out-events (r1.b, r2.b) can come in any order. The
+message sequence chart shows only one scenario. The implementation of
+the component is such that the provided behaviour is the same in both
+cases.
 
 @example
 @verbatiminclude semantics/indirect_blocking_multiple_external_out.dzn
@@ -3526,10 +3751,12 @@ The 2 required out-events (r1.b, r2.b) can come in any order. The message sequen
 @chapter Verifying Models
 
 @section Introduction
-Verification in Dezyne focuses on verifying properties that are hard for humans to verify.
-These properties mainly concern ordering of events, asynchronous behaviour, deadlock and/or livelock.
-Verifying a component together with its provided and required interfaces ensures that the
-component behaves correctly in its environment according to the specified behaviour.
+Verification in Dezyne focuses on verifying properties that are hard for
+humans to verify.  These properties mainly concern ordering of events,
+asynchronous behaviour, deadlock and/or livelock.  Verifying a component
+together with its provided and required interfaces ensures that the
+component behaves correctly in its environment according to the
+specified behaviour.
 
 @section What is verified
 Components developed in Dezyne can be verified, after proven to be valid for verification
@@ -3990,23 +4217,43 @@ Use the dzn command-line client to generate code and a thread-safe shell:
 
 Explanation:
 
-1) Generates code for all components and interfaces referred to in the SYSTEM component. In addition a thread-safe shell is generated for SYSTEM.
+1) Generates code for all components and interfaces referred to in the
+SYSTEM component. In addition a thread-safe shell is generated for
+SYSTEM.
 
 @subsection Semantics
 
-A thread-safe shell wraps a Dezyne system component. In addition to an instance of the Dezyne component it contains a thread and an event queue. External code can call event functions on system ports. The thread-safe shell defers each external call by posting a function object in the event queue. A thread private to the thread-safe shell takes deferred functions from the queue and executes them one by one. Thus, external calls are serviced in the order of arrival.
+A thread-safe shell wraps a Dezyne system component. In addition to an
+instance of the Dezyne component it contains a thread and an event
+queue. External code can call event functions on system ports. The
+thread-safe shell defers each external call by posting a function object
+in the event queue. A thread private to the thread-safe shell takes
+deferred functions from the queue and executes them one by one. Thus,
+external calls are serviced in the order of arrival.
 
-An external call of a provided port in event blocks until the thread-safe shell private thread has completed the deferred function call. The external call blocks until a reply statement has been executed for the input event port. A subsequent call on a blocked port will block until the prior call returns.
+An external call of a provided port in event blocks until the
+thread-safe shell private thread has completed the deferred function
+call. The external call blocks until a reply statement has been executed
+for the input event port. A subsequent call on a blocked port will block
+until the prior call returns.
 
-An external call of a required port out event returns a soon as the event call is scheduled. The external call return is not synchronized with the actual execution of the event by a thread-safe shell private thread.
+An external call of a required port out event returns a soon as the
+event call is scheduled. The external call return is not synchronized
+with the actual execution of the event by a thread-safe shell private
+thread.
 
 @subsection Shell Example
 
-Generating c++ code with a thread-safe shell for component SYS results in files: SYS.hh, SYS.cc, BHV.hh and IA.hh.
+Generating c++ code with a thread-safe shell for component SYS results
+in files: SYS.hh, SYS.cc, BHV.hh and IA.hh.
 
-A call of SYS::pp.in.iv() captures input parameters by value to prevent data races. The call schedules a call to SYS::bhv.pp.in.iv() and blocks the calling thread until the scheduled call returns.
+A call of SYS::pp.in.iv() captures input parameters by value to prevent
+data races. The call schedules a call to SYS::bhv.pp.in.iv() and blocks
+the calling thread until the scheduled call returns.
 
-A call of SYS::rp.out.o() captures input parameters by value to prevent data races. The call schedules a call to SYS::bhv.rp.out.o() and returns immediately.
+A call of SYS::rp.out.o() captures input parameters by value to prevent
+data races. The call schedules a call to SYS::bhv.rp.out.o() and returns
+immediately.
 
 @example
 component SYS @{
@@ -4148,22 +4395,22 @@ Display the current version of Dzn, and then exit.
 
 @node Identifiers
 @section Identifiers
-In Dezyne identifiers are used to denote objects like interfaces, components, events, user defined types,
-variables, etc.
-A keyword cannot be used as an identifier and identifiers are case-sensitive.
+In Dezyne identifiers are used to denote objects like interfaces,
+components, events, user defined types, variables, etc.  A keyword
+cannot be used as an identifier and identifiers are case-sensitive.
 
-An identifier starts with a letter, which can be followed by further letters, digits, or underscores.
-Following are legal identifiers:
+An identifier starts with a letter, which can be followed by further
+letters, digits, or underscores.  Following are legal identifiers:
 
 
 Alarm, turn_on, VAL_123
 
 
 @subsection Scoping
-In order to properly refer to types and objects defined in a context different from the current one,
-that context has to be included in the name of such a type or object.
-This is done using a 'dot notation', like in @code{MyInterface.MyType}.
-Possible dot constructs are:
+In order to properly refer to types and objects defined in a context
+different from the current one, that context has to be included in the
+name of such a type or object.  This is done using a 'dot notation',
+like in @code{MyInterface.MyType}.  Possible dot constructs are:
 
 @itemize
 
@@ -4232,11 +4479,12 @@ component Alarm @{
 @cindex blocking
 @node Dezyne Files
 @section Dezyne Files
-Dezyne components and interfaces are organized in files.
-A file, with extension '.dzn', contains a number of components and interfaces.
+Dezyne components and interfaces are organized in files.  A file, with
+extension '.dzn', contains a number of components and interfaces.
 
-Components can refer to interfaces and other components. An 'import' clause is needed when
-the referred information is defined in another file (see below).
+Components can refer to interfaces and other components. An 'import'
+clause is needed when the referred information is defined in another
+file (see below).
 
 
 The order of specification in one file is as follows:
@@ -4248,10 +4496,10 @@ The order of specification in one file is as follows:
 @end itemize
 
 @subsection Import
-An @code{import} clause makes available all types, interfaces and components
-that are defined in another file.
-From an imported interface or component the 'public' parts are available, i.e. all information
-but the interface or component behaviour, or the component system details.
+An @code{import} clause makes available all types, interfaces and
+components that are defined in another file.  From an imported interface
+or component the 'public' parts are available, i.e. all information but
+the interface or component behaviour, or the component system details.
 Syntax:
 
 
@@ -4266,8 +4514,8 @@ where @code{ModelName.dzn} is a Dezyne file.
 
 
 An imported file may contain imports itself, which are 'expanded' also.
-When a file occurs twice in the resulting set of imports, it is expanded only once.
-This prevents the introduction of duplicate definitions.
+When a file occurs twice in the resulting set of imports, it is expanded
+only once.  This prevents the introduction of duplicate definitions.
 Also recursive imports are handled correctly.
 
 
@@ -4295,8 +4543,9 @@ Available boolean operators are:
 where @code{b1} and @code{b2} denote booleans.
 
 @subsection Enum
-An interface or component can specify a user defined enumerated type. Such a type has a name and a collection of values.
-An example:
+
+An interface or component can specify a user defined enumerated
+type. Such a type has a name and a collection of values.  An example:
 
 
 
@@ -4323,8 +4572,10 @@ Available enum operators are:
 where @code{e1} and @code{e2} denote enum expressions, and @code{v} an enum variable.
 
 @subsection Subint
-The integer type is available in Dezyne in a restricted way: only a finite subset of integers can be used.
-An explicit type definition is needed for such a subset, where a C++-like syntax is used. An example:
+
+The integer type is available in Dezyne in a restricted way: only a
+finite subset of integers can be used.  An explicit type definition is
+needed for such a subset, where a C++-like syntax is used. An example:
 
 
 
@@ -4357,11 +4608,12 @@ Available integer operators are:
 where @code{i1} and @code{i2} denote integers.
 
 @subsection Data Types
-Apart from the @code{bool}, @code{enum}, and @code{int} types introduced above,
-which play an important role in the description of interface and component behaviour,
-so-called 'data types' can be defined. These play a restricted role and are used as types of 'data parameters'
-in events (see below).
-A data type is defined as follows:
+
+Apart from the @code{bool}, @code{enum}, and @code{int} types introduced
+above, which play an important role in the description of interface and
+component behaviour, so-called 'data types' can be defined. These play a
+restricted role and are used as types of 'data parameters' in events
+(see below).  A data type is defined as follows:
 
 
 
@@ -4454,8 +4706,9 @@ See @xref{Interface and Component Behaviour}, for an elaborate description.
 @cindex data
 @node Component Models
 @section Component Models
-A component has a name, a collection of ports by which it communicates with the outside world,
-and optionally a description of its internals.
+
+A component has a name, a collection of ports by which it communicates
+with the outside world, and optionally a description of its internals.
 A syntax example:
 
 
@@ -4480,10 +4733,13 @@ In this example a number of keywords are introduced:
 The example defines a component named @code{MyComponent} with three ports.
 
 @subsection Ports
-A component provides some functionality, and requires functionality of other components.
-Communication between components is performed through their ports, which are instances of interfaces.
-Each port has a direction according to its intention (@code{provides} or @code{requires}),
-the interface it implements and a local name. A component refers to these ports in its behaviour.
+
+A component provides some functionality, and requires functionality of
+other components.  Communication between components is performed through
+their ports, which are instances of interfaces.  Each port has a
+direction according to its intention (@code{provides} or
+@code{requires}), the interface it implements and a local name. A
+component refers to these ports in its behaviour.
 
 @subsubsection Injection
 A @code{requires} port can be specified to be @code{injected}:
@@ -4567,13 +4823,14 @@ Note that in a sub scope a local variable @code{blocal} is defined.
 The different constructs are handled in more detail below.
 
 @subsection Variable Declarations
-As demonstrated in the example above, variables can be defined in a behaviour description,
-both at top level and in a local scope. Variables must be given an initial value.
 
+As demonstrated in the example above, variables can be defined in a
+behaviour description, both at top level and in a local scope. Variables
+must be given an initial value.
 
 The top-level variables are often referred to as 'state variables'.
-Their scope extends to the complete behaviour description, including the body of functions
-defined in the behaviour.
+Their scope extends to the complete behaviour description, including the
+body of functions defined in the behaviour.
 
 
 Variables defined at other places have a scope which is restricted to the compound statement
@@ -4582,10 +4839,11 @@ Variables defined at other places have a scope which is restricted to the compou
 @subsubsection State Variables
 
 @subsection Declarative versus Imperative Statements
-There are two 'kinds' of behavioural statements: 'declarative' and 'imperative'.
-The declarative part describes the trigger events and the conditions in which they have to be handled,
-while the imperative part describes the response that has to occur as
-result of a trigger.
+
+There are two 'kinds' of behavioural statements: 'declarative' and
+'imperative'.  The declarative part describes the trigger events and the
+conditions in which they have to be handled, while the imperative part
+describes the response that has to occur as result of a trigger.
 
 @subsection Compound Statement
 Statements of the same 'kind' can be grouped using curly braces:
@@ -4893,13 +5151,14 @@ and not as
 In other words: @code{else} binds to the closest if.
 
 @subsection Functions
-A function declaration introduces the signature of a function and its body.
-The signature is built up from the return type, the name of the function, and a list of
-typed parameters.
-The body is a compound statement in the imperative part of the language, so no
-on-event and guarded statements are allowed.
-It is allowed however to refer to action events and global state variables, and
-of course to the function parameters.
+
+A function declaration introduces the signature of a function and its
+body.  The signature is built up from the return type, the name of the
+function, and a list of typed parameters.  The body is a compound
+statement in the imperative part of the language, so no on-event and
+guarded statements are allowed.  It is allowed however to refer to
+action events and global state variables, and of course to the function
+parameters.
 
 
 An example:
@@ -4923,19 +5182,19 @@ MyReturnType myFunc(bool myPar1, MyEnum myPar2)
 @end example
 
 
-This declares a function called @code{myFunc} with two parameters
-(of type @code{bool} and @code{MyEnum} respectively) and
-returning a value of type @code{MyReturnType}.
-In the function body a local variable is declared, a conditional action event is called,
-a global state variable is set,
-another function is called, and the return value is set.
+This declares a function called @code{myFunc} with two parameters (of
+type @code{bool} and @code{MyEnum} respectively) and returning a value
+of type @code{MyReturnType}.  In the function body a local variable is
+declared, a conditional action event is called, a global state variable
+is set, another function is called, and the return value is set.
 
 
-Functions are allowed to be recursive, and also mutual recursive (function @code{f}calling function @code{g} and vice versa), under one condition:
-A recursive function must be "tail recursive"; this means that the recursive call must be
-the last statement in the function.
-The rationale for this restriction comes from the need for verification: the generic recursive case
-cannot be verified.
+Functions are allowed to be recursive, and also mutual recursive
+(function @code{f}calling function @code{g} and vice versa), under one
+condition: A recursive function must be "tail recursive"; this means
+that the recursive call must be the last statement in the function.  The
+rationale for this restriction comes from the need for verification: the
+generic recursive case cannot be verified.
 
 
 @cindex variable
@@ -4959,31 +5218,22 @@ cannot be verified.
 @cindex assignment
 @cindex action
 @node System Components
+
 @section System Components
-A component which is composed from a number of sub components has a 'system' internal description.
-This description specifies the available sub component instances, and all connections between
-the component ports.
-An example: suppose the following components to be defined:
+A component which is composed from a number of sub components has a
+'system' internal description.  This description specifies the available
+sub component instances, and all connections between the component
+ports.  An example: suppose the following components to be defined:
 
 
 @example
-component Foo
-@{
-  provides IFoo foo;
-  requires IBar bar;
-  requires INut nut;
-  // ... internals ...
-@}
-component Bar
-@{
-  provides IBar b;
-  // ... internals ...
-@}
-component Nut
-@{
-  provides INut nt;
-  requires IWell wl;
-  // ... internals ...
+component Foo @{
+  provides IFoo foo; requires IBar bar; requires INut nut; //
+  ... internals ...
+@} component Bar @{
+  provides IBar b; // ... internals ...
+@} component Nut @{
+  provides INut nt; requires IWell wl; // ... internals ...
 @}
 
 @end example
@@ -4994,46 +5244,34 @@ Then a system component @code{MySys} could be defined:
 
 
 @example
-component MySys
-@{
-  provides IFoo top;
-  requires IWell bot;
-  // ... internals ...
+component MySys @{
+  provides IFoo top; requires IWell bot; // ... internals ...
 @}
 
 @end example
 
 
-where its internals are composed of the @code{Foo},
-@code{Bar}, and @code{Nut} components:
+where its internals are composed of the @code{Foo}, @code{Bar}, and
+@code{Nut} components:
 
 
 
 @example
-component MySys
-@{
-  provides IFoo top;
-  requires IWell bot;
-  system
-  @{
-    Foo cfoo;
-    Bar cbar;
-    Nut cnut;
-    top      <=> cfoo.foo;
-    cfoo.bar <=> cbar.b;
-    cfoo.nut <=> cnut.nt;
-    cnut.wl  <=> bot;
-  @}
-@}
+component MySys @{
+  provides IFoo top; requires IWell bot; system @{
+    Foo cfoo; Bar cbar; Nut cnut; top <=> cfoo.foo; cfoo.bar <=> cbar.b;
+    cfoo.nut <=> cnut.nt; cnut.wl <=> bot;
+  @} @}
 
 @end example
 
 
-The system description shows the instantiation of the three sub components,
-and four connections between various ports.
+The system description shows the instantiation of the three sub
+components, and four connections between various ports.
 
 @subsection Component Instances
-In a system description a sub component is specified by its type and local name:
+In a system description a sub component is specified by its type and
+local name:
 
 
 
@@ -5043,7 +5281,8 @@ In a system description a sub component is specified by its type and local name:
 @end example
 
 
-The definition of MyComponent has to be available, potentially through an 'import'.
+The definition of MyComponent has to be available, potentially through
+an 'import'.
 
 
 It is allowed to have more than one instance of the same type:
@@ -5051,8 +5290,7 @@ It is allowed to have more than one instance of the same type:
 
 
 @example
-  MyComponent myInstance1;
-  MyComponent myInstance2;
+  MyComponent myInstance1; MyComponent myInstance2;
 
 @end example
 
@@ -5070,29 +5308,34 @@ Communication is specified as binding:
 @end example
 
 
-indicates components @code{MyComp1}  and @code{MyComp2}communicate through their respective ports @code{port1}and @code{port2}. This is often expressed as:
-@code{port1} is bound to @code{port2}.
+indicates components @code{MyComp1} and @code{MyComp2}communicate
+through their respective ports @code{port1}and @code{port2}. This is
+often expressed as: @code{port1} is bound to @code{port2}.
 
-
-Binding is symmetric: @code{MyComp1.port1 <=> MyComp2.port2}and @code{MyComp2.port2 <=> MyComp1.port1} have identical meaning.
+Binding is symmetric: @code{MyComp1.port1 <=> MyComp2.port2}and
+@code{MyComp2.port2 <=> MyComp1.port1} have identical meaning.
 
 
 Communication is restricted to ports of the same (interface) type.
-Moreover communication 'direction' has to be preserved. There are two cases:
+Moreover communication 'direction' has to be preserved. There are two
+cases:
 
 @itemize
 
 @item Two sub components communicating: always a @code{provides} port binds to
-a @code{requires} port, like in @code{cfoo.bar <=> cbar.b}in the example above.
+a @code{requires} port, like in @code{cfoo.bar <=> cbar.b}in the example
+above.
 
 @item Port forwarding (an external port is forwarded to a sub-component port):
-always the directions have to be the same, like in @code{top <=> cfoo.foo}and @code{cnut.wl  <=> bot} in the example above.
+always the directions have to be the same, like in @code{top <=>
+cfoo.foo}and @code{cnut.wl <=> bot} in the example above.
 
 @end itemize
 
 @subsubsection Injection
-As described in the @xref{Component Models}, section, binding of @code{injected} ports is
-done at a higher system level. A wild-card character (@code{*}) is used to achieve the binding of one
+As described in the @xref{Component Models}, section, binding of
+@code{injected} ports is done at a higher system level. A wild-card
+character (@code{*}) is used to achieve the binding of one
 @code{provides} port to all @code{injected requires} ports.
 
 
@@ -5102,11 +5345,8 @@ Let's take a typical example involving logging:
 
 @example
 interface ILog @{
-  ...
-@}
-component Log @{
-  provides ILog log;
-  ...
+  ...  @} component Log @{
+  provides ILog log; ...
 @}
 
 @end example
@@ -5117,18 +5357,11 @@ Suppose a lot of components require logging:
 
 
 @example
-...
-component MyComponent12 @{
-  provides MyInterface12 intf;
-  requires injected ILOg l;
-  ...
-@}
-component MyComponent13 @{
-  provides MyInterface13 intf;
-  requires injected ILOg l;
-  ...
-@}
-...
+...  component MyComponent12 @{
+  provides MyInterface12 intf; requires injected ILOg l; ...
+@} component MyComponent13 @{
+  provides MyInterface13 intf; requires injected ILOg l; ...
+@} ...
 
 @end example
 
@@ -5139,16 +5372,10 @@ then some system component can bind all logging in one go:
 
 @example
 component MySystem @{
-  ...
-  system @{
-    Log clog;
-    ...
-    MyComponent12 c12;
-    MyComponent13 c13;
-    ...
-    clog.log <=> *;
-  @}
-@}
+  ...  system @{
+    Log clog; ...  MyComponent12 c12; MyComponent13 c13; ...  clog.log
+    <=> *;
+  @} @}
 
 @end example
 
@@ -5159,14 +5386,9 @@ It is allowed to group some components in a sub system:
 
 @example
 component MySubSystem @{
-  ...
-  system @{
-    ...
-    MyComponent12 c12;
-    MyComponent13 c13;
-    ...
-  @}
-@}
+  ...  system @{
+    ...  MyComponent12 c12; MyComponent13 c13; ...
+  @} @}
 
 @end example
 
@@ -5177,14 +5399,9 @@ and do the wild-card binding for that sub system only:
 
 @example
 component MySystem @{
-  ...
-  system @{
-    Log clog;
-    MySubSystem subsys;
-    ...
-    clog.log <=> subsys.*;
-  @}
-@}
+  ...  system @{
+    Log clog; MySubSystem subsys; ...  clog.log <=> subsys.*;
+  @} @}
 
 @end example
 
@@ -5197,33 +5414,29 @@ component MySystem @{
 @cindex injection
 @cindex bind
 @node Namespaces
+
 @section Namespaces
-All component, interface, and type definitions can be defined in a @i{namespace},
-which provides name scoping. The scope can be used when referring to such a definition.
+
+All component, interface, and type definitions can be defined in a
+@i{namespace}, which provides name scoping. The scope can be used when
+referring to such a definition.
 
 @subsection Namespace Syntax
-A namespace has a name, and within its scope components, interfaces, types, and
-sub-namespaces can be defined.
+
+A namespace has a name, and within its scope components, interfaces,
+types, and sub-namespaces can be defined.
 
 A syntax example:
 
 
 
 @example
-namespace MyNamespace
-@{
-  extern MyString $std::string$;
-  interface MyInterface
-  @{
-    enum MyEnumType @{ Val1, Val2, Val3 @};
-    in MyEnumType myValuedEvent(MyString s);
-    out void myReply();
-    behaviour
-    @{
-      on myValuedEvent(s) : @{ reply MyEnumType.Val3; @}
-    @}
-  @}
-@}
+namespace MyNamespace @{
+  extern MyString $std::string$; interface MyInterface @{
+    enum MyEnumType @{ Val1, Val2, Val3 @}; in MyEnumType
+    myValuedEvent(MyString s); out void myReply(); behaviour @{
+      on myValuedEvent(s) : @{ reply MyEnumType.Val3; @} @}
+  @} @}
 
 @end example
 
@@ -5232,29 +5445,21 @@ In this example namespace @code{MyNamespace} is introduced. In its scope
 data type @code{MyString} and interface @code{MyInterface}are defined.
 
 
-An example with nested namespaces introduces namespace @code{Mynamespace1}, and within that
-(among others) namespace @code{MyNamespace2}, which itself contains interface
-@code{MyInterface}:
+An example with nested namespaces introduces namespace
+@code{Mynamespace1}, and within that (among others) namespace
+@code{MyNamespace2}, which itself contains interface @code{MyInterface}:
 
 
 
 @example
-namespace MyNamespace1
-@{
-  extern MyString $std::string$;
-  namespace MyNamespace2
-  @{
-    interface MyInterface
-    @{
-      enum MyEnumType @{ Val1, Val2, Val3 @};
-      in MyEnumType myValuedEvent(MyString s);
-      out void myReply();
-      behaviour
+namespace MyNamespace1 @{
+  extern MyString $std::string$; namespace MyNamespace2 @{
+    interface MyInterface @{
+      enum MyEnumType @{ Val1, Val2, Val3 @}; in MyEnumType
+      myValuedEvent(MyString s); out void myReply(); behaviour
      @{
-         on myValuedEvent(s) : @{ reply MyEnumType.Val3; @}
-      @}
-    @}
-  @}
+         on myValuedEvent(s) : @{ reply MyEnumType.Val3; @} @}
+    @} @}
 @}
 
 @end example
@@ -5264,7 +5469,8 @@ namespace MyNamespace1
 @subsubsection Namespace Re-definition
 It is allowed to spread the definition of types, interfaces, components,
 and sub-namespaces over multiple instances of a namespace scope. This is
-most useful since in a 'real' project definitions are spread over multiple files.
+most useful since in a 'real' project definitions are spread over
+multiple files.
 
 
 So
@@ -5272,10 +5478,8 @@ So
 
 
 @example
-namespace MyNamespace1
-@{
-  extern MyString $std::string$;
-  interface MyInterface @{ ... @}
+namespace MyNamespace1 @{
+  extern MyString $std::string$; interface MyInterface @{ ... @}
 @}
 
 @end example
@@ -5286,72 +5490,48 @@ is equivalent to
 
 
 @example
-namespace MyNamespace1
-@{
-  extern MyString $std::string$;
-@}
-namespace MyNamespace1
-@{
-  interface MyInterface @{ ... @}
-@}
+namespace MyNamespace1 @{
+  extern MyString $std::string$; @} namespace MyNamespace1 @{
+  interface MyInterface @{ ... @} @}
 
 @end example
 
 
 
 @subsection Referencing
-When within namespace @code{MyNamespace}@code{MyThing} is defined,
-then outside that namespace it is referred to by prefixing it with the
-name of that namespace and a dot, as in: @code{MyNamespace.MyThing}
+When within namespace @code{MyNamespace}@code{MyThing} is defined, then
+outside that namespace it is referred to by prefixing it with the name
+of that namespace and a dot, as in: @code{MyNamespace.MyThing}
 
 Within its own namespace the short name @code{MyThing} is to be used.
 
 
-In complex cases it may be necessary to refer to the @i{global} namespace
-which has an empty name; this results in name references starting with a dot,
-as can be seen in the following somewhat convoluted example.
+In complex cases it may be necessary to refer to the @i{global}
+namespace which has an empty name; this results in name references
+starting with a dot, as can be seen in the following somewhat convoluted
+example.
 
 
 
 @example
 namespace foo @{
   interface I @{
-    enum Bool @{F,T@};
-    in Bool e();
-    out void a();
-    behaviour @{
-      on e: @{a; reply (Bool.T); @}
-    @}
-  @}
-@}
-namespace inner @{
+    enum Bool @{F,T@}; in Bool e(); out void a(); behaviour @{
+      on e: @{a; reply (Bool.T); @} @}
+  @} @} namespace inner @{
   namespace foo @{
     interface I @{
-      enum Bool @{f,t@};
-      in Bool e();
-      out void a();
-      behaviour @{ .... @}
-    @}
-  @}
-  component space @{
-    provides foo.I inner;
-    provides .foo.I fooi;
-    behaviour @{
-      foo.I.Bool inner_state = foo.I.Bool.t;
-      .foo.I.Bool foo_state = .foo.I.Bool.T;
-      on inner.e(): @{...@}
-      on fooi.e(): @{...@}
-    @}
-  @}
-@}
-namespace bar @{
+      enum Bool @{f,t@}; in Bool e(); out void a(); behaviour @{ .... @}
+    @} @} component space @{
+    provides foo.I inner; provides .foo.I fooi; behaviour @{
+      foo.I.Bool inner_state = foo.I.Bool.t; .foo.I.Bool foo_state =
+      .foo.I.Bool.T; on inner.e(): @{...@} on fooi.e(): @{...@}
+    @} @}
+@} namespace bar @{
   component c @{
-    provides foo.I i;
-    behaviour @{
-      foo.I.Bool state = foo.I.Bool.T;
-      on i.e(): @{...@}
-    @}
-  @}
+    provides foo.I i; behaviour @{
+      foo.I.Bool state = foo.I.Bool.T; on i.e(): @{...@}
+    @} @}
 @}
 
 @end example
@@ -5367,24 +5547,21 @@ which defines:
 @item component @code{bar.c}
 @end itemize
 The two variables defined in component @code{inner.space} have types
-@code{foo.I.Bool} and @code{.foo.I.Bool} respectively.
-The first type expands to @code{inner.foo.I.Bool} since it is defined in namespace
-@code{inner}. The starting dot in the second definition prevents this expansion.
+@code{foo.I.Bool} and @code{.foo.I.Bool} respectively.  The first type
+expands to @code{inner.foo.I.Bool} since it is defined in namespace
+@code{inner}. The starting dot in the second definition prevents this
+expansion.
 
 @subsection Shorthand Namespace Syntax
-In trivial cases, e.g. where only one definition is provided within a namespace,
-a dot notation can be used. Using this notation,
+In trivial cases, e.g. where only one definition is provided within a
+namespace, a dot notation can be used. Using this notation,
 
 
 
 @example
-namespace MyNamespace1
-@{
-  namespace MyNamespace2
-  @{
-    extern MyString $std::string$;
-  @}
-  interface MyInterface @{ ... @}
+namespace MyNamespace1 @{
+  namespace MyNamespace2 @{
+    extern MyString $std::string$; @} interface MyInterface @{ ... @}
 @}
 
 @end example
@@ -5395,8 +5572,8 @@ can be written as:
 
 
 @example
-extern MyNamespace1.MyNamespace2.MyString $std::string$;
-interface MyNamespace1.MyInterface @{ ... @}
+extern MyNamespace1.MyNamespace2.MyString $std::string$; interface
+MyNamespace1.MyInterface @{ ... @}
 
 @end example
 
@@ -5407,78 +5584,62 @@ interface MyNamespace1.MyInterface @{ ... @}
 @cindex Namespace Syntax
 @node Well-formedness
 @chapter Well-formedness
-The syntax as defined in [[ASD Syntax and Semantics]] defines an asd language which is
-not restrictive enough for practical use.
-This page describes a collection of well-formedness checks that are defined on top of
-the syntax.
-Some of these checks are "common sense", other ones are needed to define appropriate
-semantics.
+The syntax as defined in [[ASD Syntax and Semantics]] defines an asd
+language which is not restrictive enough for practical use.  This page
+describes a collection of well-formedness checks that are defined on top
+of the syntax.  Some of these checks are "common sense", other ones are
+needed to define appropriate semantics.
 
 @section Summary
 The well-formedness checks in alphabetical order:
 
-@xref{Action value discarded  @i{enable}},@*
-@xref{Actions are not allowed here},@*
-@xref{ActionStatement only allowed within OnEventStatement},@*
-@xref{AssignmentStatement only allowed within OnEventStatement},@*
-@*
-@xref{Binding directions do not match},@*
-@xref{Binding two wildcards is not allowed},@*
-@xref{BlockingStatement not allowed in interface behaviour},@*
-@xref{BlockingStatement not allowed with multiple provides ports},@*
-@xref{BlockingStatement not allowed within other BlockingStatement},@*
-@*
-@xref{Component is part of a cyclic binding},@*
-@xref{Component with behaviour must have at least one provides port  @i{Alarm}},@*
-@xref{Component with behaviour needs at least one trigger event  @i{Alarm}},@*
-@*
-@xref{Event is not a valid trigger  @i{console.detected}},@*
-@xref{Event is not an action  @i{console.arm}},@*
-@xref{External port must be bound to external port  @i{r2}},@*
-@*
-@xref{Function calls are not allowed here},@*
-@xref{Function does not return a value in all cases},@*
-@xref{Function value discarded  @i{negate}},@*
-@*
-@xref{Illegal is not allowed in functions},@*
-@xref{Illegal is not allowed in if-then-else statements},@*
-@xref{Illegal must be the only Statement in a compound},@*
-@xref{Injected Port has out event  @i{i}},@*
-@xref{Inout Parameter is not allowed for out Event},@*
-@xref{Interface must define at least one event  @i{Sensor}},@*
-@xref{Interface must define behaviour  @i{Sensor}},@*
-@*
-@xref{OnEventStatement not allowed within other OnEventStatement},@*
-@xref{Only declarative Statement allowed here},@*
-@xref{Only imperative Statement allowed here},@*
-@xref{Otherwise guard combined with non GuardedStatement is not allowed},@*
-@xref{Otherwise guard combined with second otherwise is not allowed},@*
-@xref{Out Event with non void return type is not allowed  @i{evt}},@*
-@xref{Out Parameter is not allowed for out Event},@*
-@*
-@xref{Parameter Binding not allowed here},@*
-@xref{Parameter type must be a data type  Code},@*
-@xref{Port is bound twice  @i{alarm.console}},@*
-@xref{Port is not bound  @i{alarm.console}},@*
-@xref{Port is not bound  @i{console}},@*
-@*
-@xref{Reply not allowed on 'requires' Port  'sensor'},@*
-@xref{Return Statement not allowed here},@*
-@*
-@xref{Statement violates tail recursion in recursive Function},@*
-@xref{System composition is recursive},@*
-@*
-@xref{Wildcard can be bound to a provided port only},@*
+@xref{Action value discarded @i{enable}},@* @xref{Actions are not
+allowed here},@* @xref{ActionStatement only allowed within
+OnEventStatement},@* @xref{AssignmentStatement only allowed within
+OnEventStatement},@* @* @xref{Binding directions do not match},@*
+@xref{Binding two wildcards is not allowed},@* @xref{BlockingStatement
+not allowed in interface behaviour},@* @xref{BlockingStatement not
+allowed with multiple provides ports},@* @xref{BlockingStatement not
+allowed within other BlockingStatement},@* @* @xref{Component is part of
+a cyclic binding},@* @xref{Component with behaviour must have at least
+one provides port @i{Alarm}},@* @xref{Component with behaviour needs at
+least one trigger event @i{Alarm}},@* @* @xref{Event is not a valid
+trigger @i{console.detected}},@* @xref{Event is not an action
+@i{console.arm}},@* @xref{External port must be bound to external port
+@i{r2}},@* @* @xref{Function calls are not allowed here},@*
+@xref{Function does not return a value in all cases},@* @xref{Function
+value discarded @i{negate}},@* @* @xref{Illegal is not allowed in
+functions},@* @xref{Illegal is not allowed in if-then-else
+statements},@* @xref{Illegal must be the only Statement in a
+compound},@* @xref{Injected Port has out event @i{i}},@* @xref{Inout
+Parameter is not allowed for out Event},@* @xref{Interface must define
+at least one event @i{Sensor}},@* @xref{Interface must define behaviour
+@i{Sensor}},@* @* @xref{OnEventStatement not allowed within other
+OnEventStatement},@* @xref{Only declarative Statement allowed here},@*
+@xref{Only imperative Statement allowed here},@* @xref{Otherwise guard
+combined with non GuardedStatement is not allowed},@* @xref{Otherwise
+guard combined with second otherwise is not allowed},@* @xref{Out Event
+with non void return type is not allowed @i{evt}},@* @xref{Out Parameter
+is not allowed for out Event},@* @* @xref{Parameter Binding not allowed
+here},@* @xref{Parameter type must be a data type Code},@* @xref{Port is
+bound twice @i{alarm.console}},@* @xref{Port is not bound
+@i{alarm.console}},@* @xref{Port is not bound @i{console}},@* @*
+@xref{Reply not allowed on 'requires' Port 'sensor'},@* @xref{Return
+Statement not allowed here},@* @* @xref{Statement violates tail
+recursion in recursive Function},@* @xref{System composition is
+recursive},@* @* @xref{Wildcard can be bound to a provided port only},@*
 
 @section Checks
-Well-formedness checks on the Behaviour part of a model come in a number of categories:
+Well-formedness checks on the Behaviour part of a model come in a number
+of categories:
 
 @itemize
 
 @item Directional: @i{triggers} and @i{actions} are expected at different places.
 
 @item Nesting: the imperative part of the language (AssignmentStatements, ActionStatements,
-FunctionCallStatements) are only allowed in the 'leaves' of the language constructs.
+FunctionCallStatements) are only allowed in the 'leaves' of the language
+constructs.
 
 @item Mixing: The mix of Statements within a CompoundStatements is restricted.
 
@@ -5487,7 +5648,8 @@ FunctionCallStatements) are only allowed in the 'leaves' of the language constru
 @item Functions: a function body should be imperative, and have a well-defined return.
 
 @end itemize
-@i{Note: a trigger is an event prefixed by 'on' in the behaviour, an action is an event inside the body of a trigger.}
+@i{Note: a trigger is an event prefixed by 'on' in the behaviour, an
+action is an event inside the body of a trigger.}
 
 Well-formedness checks for a composite Component are:
 
@@ -5499,19 +5661,16 @@ Well-formedness checks for a composite Component are:
 
 @section Well-formedness Checks -- Top level
 
-@anchor{Interface must define behaviour  @i{Sensor}}
+@anchor{Interface must define behaviour @i{Sensor}}
 @subsection Interface must define behaviour: @i{Sensor}
-Interfaces without behaviour are not allowed. No adequate default behaviour is available:
+Interfaces without behaviour are not allowed. No adequate default
+behaviour is available:
 
 
 
 @example
- 1  interface Sensor @{
- 2    in void enable();
- 3    in void disable();
- 4    out void triggered();
- 5    out void disabled();
- 6  @}
+ 1 interface Sensor @{ 2 in void enable(); 3 in void disable(); 4 out
+ void triggered(); 5 out void disabled(); 6 @}
 
 @end example
 
@@ -5522,7 +5681,7 @@ This results in the following error message:
 1:11: Interface must define behaviour: @i{Sensor}
 @end example
 
-@anchor{Interface must define at least one event  @i{Sensor}}
+@anchor{Interface must define at least one event @i{Sensor}}
 @subsection Interface must define at least one event: @i{Sensor}
 Completely 'passive' interfaces are not allowed; at least one @b{in} or
 @b{out} event is required:
@@ -5530,11 +5689,7 @@ Completely 'passive' interfaces are not allowed; at least one @b{in} or
 
 
 @example
- 1  interface Sensor @{
- 2    behaviour @{
- 3      // ...
- 4    @}
- 5  @}
+ 1 interface Sensor @{ 2 behaviour @{ 3 // ...  4 @} 5 @}
 
 @end example
 
@@ -5545,21 +5700,16 @@ This results in the following error message:
 1:11: Interface must define at least one event: @i{Sensor}
 @end example
 
-@anchor{Out Event with non void return type is not allowed  @i{evt}}
+@anchor{Out Event with non void return type is not allowed @i{evt}}
 @subsection Out Event with non void return type is not allowed: @i{evt}
 Only @i{in} Event can have a return type.
 
 
 
 @example
- 1  interface Sensor @{
- 2    enum Value@{ New, Old @};
- 3    in void enable();
- 4    in void disable();
- 5    out Value triggered();
- 6    out void disabled();
- 7    ...
- 8  @}
+ 1 interface Sensor @{ 2 enum Value@{ New, Old @}; 3 in void enable(); 4
+ in void disable(); 5 out Value triggered(); 6 out void disabled(); 7
+ ...  8 @}
 
 @end example
 
@@ -5570,14 +5720,15 @@ This results in the following error message:
 5:13: Out Event with non void return type is not allowed: @i{triggered}
 @end example
 
-@anchor{Component with behaviour needs at least one trigger event  @i{Alarm}}
+@anchor{Component with behaviour needs at least one trigger event
+@i{Alarm}}
 @subsection Component with behaviour needs at least one trigger event: @i{Alarm}
-Any Component with a @b{behaviour} specification is supposed to be 'reactive'.
-This implies that it should have at least one @b{provides} Interface with
-an @b{in} Event, or at least one @b{requires} Interface with
-an @b{out} Event. Such an Event acts as a 'trigger' for the Component to
-react on.
-So-called 'active' Components are not allowed (yet) in the ASD language.
+Any Component with a @b{behaviour} specification is supposed to be
+'reactive'.  This implies that it should have at least one @b{provides}
+Interface with an @b{in} Event, or at least one @b{requires} Interface
+with an @b{out} Event. Such an Event acts as a 'trigger' for the
+Component to react on.  So-called 'active' Components are not allowed
+(yet) in the ASD language.
 
 
 An example:
@@ -5585,16 +5736,10 @@ An example:
 
 
 @example
-  1  interface Sensor @{
-  2    in void activate();
-  3    in void deactivate();
-  4    behaviour @{ ... @}
-  5  @}
-  6
-  7  component Alarm @{
-  8    requires Sensor sensor;
-  9    behaviour @{ ... @}
- 10  @}
+  1 interface Sensor @{ 2 in void activate(); 3 in void deactivate(); 4
+  behaviour @{ ... @} 5 @} 6 7 component Alarm @{ 8 requires Sensor
+  sensor; 9 behaviour @{ ... @}
+ 10 @}
 
 @end example
 
@@ -5604,16 +5749,10 @@ Another example:
 
 
 @example
-  1  interface Siren @{
-  2    out void start();
-  3    out void stop();
-  4    behaviour @{ ... @}
-  5  @}
-  6
-  7  component Alarm @{
-  8    provides Siren siren;
-  9    behaviour @{ ... @}
- 10  @}
+  1 interface Siren @{ 2 out void start(); 3 out void stop(); 4
+  behaviour @{ ... @} 5 @} 6 7 component Alarm @{ 8 provides Siren
+  siren; 9 behaviour @{ ... @}
+ 10 @}
 
 @end example
 
@@ -5621,13 +5760,15 @@ Another example:
 Both examples result in the following error message:
 
 @example
-7:11: Component with behaviour needs at least one trigger event: @i{Alarm}
+7:11: Component with behaviour needs at least one trigger event:
+@i{Alarm}
 @end example
 
-@anchor{Component with behaviour must have at least one provides port  @i{Alarm}}
+@anchor{Component with behaviour must have at least one provides port
+@i{Alarm}}
 @subsection Component with behaviour must have at least one provides port: @i{Alarm}
-Any Component with a @b{behaviour} specification must have a provides port
-through which the Component is activated.
+Any Component with a @b{behaviour} specification must have a provides
+port through which the Component is activated.
 
 
 An example:
@@ -5635,10 +5776,8 @@ An example:
 
 
 @example
- 1  component Alarm @{
- 2    requires Sensor sensor;
- 3    behaviour @{ ... @}
- 4  @}
+ 1 component Alarm @{ 2 requires Sensor sensor; 3 behaviour @{ ... @} 4
+ @}
 
 @end example
 
@@ -5646,60 +5785,62 @@ An example:
 The examples result in the following error message:
 
 @example
-1:11: Component with behaviour must have at least one provides port: @i{Alarm}
+1:11: Component with behaviour must have at least one provides port:
+@i{Alarm}
 @end example
 
 @section Well-formedness Checks -- Directional
 
-@anchor{Event is not an action  @i{console.arm}}
+@anchor{Event is not an action @i{console.arm}}
 @subsection Event is not an action: @i{console.arm}
 Event @i{console.arm} is used as @i{action}, but is introduced as a
 @i{trigger}.
 
 
-In an InterfaceModel this indicates the Event is defined as an @b{in} event.
+In an InterfaceModel this indicates the Event is defined as an @b{in}
+event.
 
 
 In a DesignModel this indicates that either it is an @b{in} Event of a
-@b{provides} interface of the design, or an @b{out} Event
-of a @b{requires} interface.
+@b{provides} interface of the design, or an @b{out} Event of a
+@b{requires} interface.
 
-@anchor{Event is not a valid trigger  @i{console.detected}}
+@anchor{Event is not a valid trigger @i{console.detected}}
 @subsection Event is not a valid trigger: @i{console.detected}
 Event @i{console.detected} is used as @i{trigger}, but is introduced as
 an @i{action}.
 
 
-In an InterfaceModel this indicates the Event is defined as an @b{out} event.
+In an InterfaceModel this indicates the Event is defined as an @b{out}
+event.
 
 
-In a DesignModel this indicates that either it is an @b{out} Event of
-a @b{provides} interface of the design, or an @b{in} Event
-of a @b{requires} interface.
+In a DesignModel this indicates that either it is an @b{out} Event of a
+@b{provides} interface of the design, or an @b{in} Event of a
+@b{requires} interface.
 
 @section Well-formedness Checks -- Nesting
-The nesting of language constructs is restricted. When we conceptually 'expand'
-CompoundStatements, two Statement levels can be identified:
+The nesting of language constructs is restricted. When we conceptually
+'expand' CompoundStatements, two Statement levels can be identified:
 
 @itemize
 
 @item The outer level we call @b{declarative}. It consists of exactly
-one OnEventStatement, optionally guarded at either side with GuardedStatements
-and at most one BlockingStatement.
-Valid examples are:
+one OnEventStatement, optionally guarded at either side with
+GuardedStatements and at most one BlockingStatement.  Valid examples
+are:
 
 @end itemize
 
 
 
 @example
- 1  on sensor.triggered(): @{ ... @}
- 2  [guard1] [guard2] on sensor.triggered(): @{ ... @}
- 3  [guard1] on sensor.triggered(): [guard2] @{ ... @}
- 4  on sensor.triggered(): [guard1] [guard2] @{ ... @}
- 5  [guard1] blocking [guard2] on sensor.triggered(): @{ ... @}
- 6  blocking [guard1] on sensor.triggered(): [guard2] @{ ... @}
- 7  on sensor.triggered(): [guard1] [guard2] blocking @{ ... @}
+ 1 on sensor.triggered(): @{ ... @} 2 [guard1] [guard2] on
+ sensor.triggered(): @{ ... @} 3 [guard1] on sensor.triggered():
+ [guard2] @{ ... @} 4 on sensor.triggered(): [guard1] [guard2] @{ ... @}
+ 5 [guard1] blocking [guard2] on sensor.triggered(): @{ ... @} 6
+ blocking [guard1] on sensor.triggered(): [guard2] @{ ... @} 7 on
+ sensor.triggered(): [guard1] [guard2] blocking @{ ... @}
 
 @end example
 
@@ -5708,23 +5849,16 @@ Valid examples are:
 @itemize
 
 @item The inner level we call @b{imperative}. It consists of ActionStatements
-and AssignmentStatements. Imperative statements are only allowed within a declarative
-context:
+and AssignmentStatements. Imperative statements are only allowed within
+a declarative context:
 
 @end itemize
 
 
 
 @example
- 1  [state.Armed]
- 2  @{
- 3    on sensor.triggered():
- 4    @{
- 5      // the imperative part:
- 6      console.detected();
- 7      state = States.Triggered;
- 8    @}
- 9  @}
+ 1 [state.Armed] 2 @{ 3 on sensor.triggered(): 4 @{ 5 // the imperative
+ part: 6 console.detected(); 7 state = States.Triggered; 8 @} 9 @}
 
 @end example
 
@@ -5732,15 +5866,13 @@ context:
 
 @anchor{AssignmentStatement only allowed within OnEventStatement}
 @subsection AssignmentStatement only allowed within OnEventStatement
-An AssignmentStatement occurred outside the scope of a declarative context:
+An AssignmentStatement occurred outside the scope of a declarative
+context:
 
 
 
 @example
- 1  [state.Armed]
- 2  @{
- 3    state = States.Triggered;
- 4  @}
+ 1 [state.Armed] 2 @{ 3 state = States.Triggered; 4 @}
 
 @end example
 
@@ -5748,7 +5880,8 @@ An AssignmentStatement occurred outside the scope of a declarative context:
 This results in the following error message:
 
 @example
-3:3: Well-formedness error: AssignmentStatement only allowed within OnEventStatement
+3:3: Well-formedness error: AssignmentStatement only allowed within
+OnEventStatement
 
 @end example
 
@@ -5759,10 +5892,7 @@ An ActionStatement occurred outside the scope of a declarative context:
 
 
 @example
- 1  [state.Disarming]
- 2  @{
- 3    console.detected();
- 4  @}
+ 1 [state.Disarming] 2 @{ 3 console.detected(); 4 @}
 
 @end example
 
@@ -5770,7 +5900,8 @@ An ActionStatement occurred outside the scope of a declarative context:
 This results in the following error message:
 
 @example
-3:3: Well-formedness error: ActionStatement only allowed within OnEventStatement
+3:3: Well-formedness error: ActionStatement only allowed within
+OnEventStatement
 
 @end example
 
@@ -5781,14 +5912,8 @@ A second OnEventStatement occurred in the declarative context:
 
 
 @example
- 1  on console.arm():
- 2  @{
- 3    [state.Disarming]
- 4    @{
- 5      on sensor.triggered():
- 6      @{ ... @}
- 7    @}
- 8  @}
+ 1 on console.arm(): 2 @{ 3 [state.Disarming] 4 @{ 5 on
+ sensor.triggered(): 6 @{ ... @} 7 @} 8 @}
 
 @end example
 
@@ -5796,7 +5921,8 @@ A second OnEventStatement occurred in the declarative context:
 This results in the following error message:
 
 @example
-5:5: Well-formedness error: OnEventStatement not allowed within other OnEventStatement
+5:5: Well-formedness error: OnEventStatement not allowed within other
+OnEventStatement
 
 @end example
 
@@ -5807,14 +5933,8 @@ A second BlockingStatement occurred in the declarative context:
 
 
 @example
- 1  blocking on console.arm():
- 2  @{
- 3    [state.Disarming]
- 4    @{
- 5      blocking
- 6      @{ ... @}
- 7    @}
- 8  @}
+ 1 blocking on console.arm(): 2 @{ 3 [state.Disarming] 4 @{ 5 blocking 6
+ @{ ... @} 7 @} 8 @}
 
 @end example
 
@@ -5822,26 +5942,22 @@ A second BlockingStatement occurred in the declarative context:
 This results in the following error message:
 
 @example
-5:5: Well-formedness error: BlockingStatement not allowed within other BlockingStatement
+5:5: Well-formedness error: BlockingStatement not allowed within other
+BlockingStatement
 
 @end example
 
 @anchor{BlockingStatement not allowed in interface behaviour}
 @subsection BlockingStatement not allowed in interface behaviour
-Events handling can be 'blocking' in component behaviour only. It is not allowed in interfaces.
-So:
+Events handling can be 'blocking' in component behaviour only. It is not
+allowed in interfaces.  So:
 
 
 
 @example
- 1  interface Sensor @{
- 2    in void enable();
- 3    in void disable();
- 4    behaviour @{
- 5      on enable: @{ .... @}
- 6      blocking on disable: @{ ... @}
- 7    @}
- 8  @}
+ 1 interface Sensor @{ 2 in void enable(); 3 in void disable(); 4
+ behaviour @{ 5 on enable: @{ .... @} 6 blocking on disable: @{ ... @} 7
+ @} 8 @}
 
 @end example
 
@@ -5849,45 +5965,28 @@ So:
 results in the following error message:
 
 @example
-6:5: Well-formedness error: BlockingStatement not allowed in interface behaviour
+6:5: Well-formedness error: BlockingStatement not allowed in interface
+behaviour
 
 @end example
 
 @anchor{BlockingStatement not allowed with multiple provides ports}
 @subsection BlockingStatement not allowed with multiple provides ports
-A component with more than one provides port is not allowed to block events,
-due to implementation restrictions.
-So:
+A component with more than one provides port is not allowed to block
+events, due to implementation restrictions.  So:
 
 
 
 @example
-  1  interface Sensor @{
-  2    in void activate();
-  3    out void activated();
-  4    behaviour @{
-  5      on activate: @{@}
-  6      on inevitable: activated;
-  7    @}
-  8  @}
+  1 interface Sensor @{ 2 in void activate(); 3 out void activated(); 4
+  behaviour @{ 5 on activate: @{@} 6 on inevitable: activated; 7 @} 8 @}
   9
- 10  interface Test @{
- 11    in void test();
- 12    behaviour @{
- 13      on test: @{@}
- 14    @}
- 15  @}
- 16
- 17  component SensorComp @{
- 18    provides Sensor sensor1;
- 19    provides Test test;
- 20    requires Sensor sensor2;
- 21    behaviour @{
- 22      blocking on sensor1.activate(): sensor2.activate();
- 23      on sensor2.activated(): @{ sensor1.activated(); sensor1.reply(); @}
- 24      on test.test(): @{@}
- 25    @}
- 26  @}
+ 10 interface Test @{ 11 in void test(); 12 behaviour @{ 13 on test:
+ @{@} 14 @} 15 @} 16 17 component SensorComp @{ 18 provides Sensor
+ sensor1; 19 provides Test test; 20 requires Sensor sensor2; 21
+ behaviour @{ 22 blocking on sensor1.activate(): sensor2.activate(); 23
+ on sensor2.activated(): @{ sensor1.activated(); sensor1.reply(); @} 24
+ on test.test(): @{@} 25 @} 26 @}
 
 @end example
 
@@ -5895,44 +5994,43 @@ So:
 results in the following error message:
 
 @example
-22:5: Well-formedness error: BlockingStatement not allowed with multiple provides ports
+22:5: Well-formedness error: BlockingStatement not allowed with multiple
+provides ports
 
 @end example
 
 @section Well-formedness Checks -- Mixing
-A behaviour description introduces a sequence of statements. A statement itself can
-be a CompoundStatement, which is a sequence of statements between curly braces.
+A behaviour description introduces a sequence of statements. A statement
+itself can be a CompoundStatement, which is a sequence of statements
+between curly braces.
 
 
-In order to be able to define clear semantics, there are some restrictions on the
-mix of statements in such a sequence.
+In order to be able to define clear semantics, there are some
+restrictions on the mix of statements in such a sequence.
 
 @anchor{Only declarative Statement allowed here}
 @subsection Only declarative Statement allowed here
-If a sequence starts with a declarative Statement (as in @i{[state.Armed]....}or @i{on console.disarm(): ...}), all other statements shall be declarative Statements.
+If a sequence starts with a declarative Statement (as in
+@i{[state.Armed]....}or @i{on console.disarm(): ...}), all other
+statements shall be declarative Statements.
 
 @anchor{Only imperative Statement allowed here}
 @subsection Only imperative Statement allowed here
-If a sequence starts with either an imperative Statement (as in
-@i{state = States.Armed;} or @i{siren.turnon();}), all other statements
-must also be imperative.
+If a sequence starts with either an imperative Statement (as in @i{state
+= States.Armed;} or @i{siren.turnon();}), all other statements must also
+be imperative.
 
 @anchor{Otherwise guard combined with second otherwise is not allowed}
 @subsection Otherwise guard combined with second otherwise is not allowed
 An @i{otherwise} guard catches the remaining cases for a list of guards.
-For that reason it is not allowed to have more than one @i{otherwise} statement in a list.
-So:
+For that reason it is not allowed to have more than one @i{otherwise}
+statement in a list.  So:
 
 
 
 @example
- 1  on console.arm():
- 2  @{
- 3    [sounding]  sounding = false;
- 4    [otherwise] sounding = true;
- 5    [otherwise] illegal;
- 6  @}
- 7
+ 1 on console.arm(): 2 @{ 3 [sounding] sounding = false; 4 [otherwise]
+ sounding = true; 5 [otherwise] illegal; 6 @} 7
 
 @end example
 
@@ -5940,23 +6038,24 @@ So:
 will result in the following error message:
 
 @example
-4:4: Well-formedness error: Otherwise guard combined with second otherwise is not allowed
-5:3: Well-formedness error: Second otherwise defined here
+4:4: Well-formedness error: Otherwise guard combined with second
+otherwise is not allowed 5:3: Well-formedness error: Second otherwise
+defined here
 
 @end example
 
-@anchor{Otherwise guard combined with non GuardedStatement is not allowed}
+@anchor{Otherwise guard combined with non GuardedStatement is not
+allowed}
 @subsection Otherwise guard combined with non GuardedStatement is not allowed
 An @i{otherwise} guard catches the remaining cases for a list of guards.
-For that reason it is not allowed combine an @i{otherwise} statement with a non-guarded statement.
-So:
+For that reason it is not allowed combine an @i{otherwise} statement
+with a non-guarded statement.  So:
 
 
 
 @example
- 1  on console.arm(): sounding = false;
- 2  [otherwise] @{ on console.disarm():  sounding = true; @}
- 3
+ 1 on console.arm(): sounding = false; 2 [otherwise] @{ on
+ console.disarm(): sounding = true; @} 3
 
 @end example
 
@@ -5964,27 +6063,23 @@ So:
 will result in the following error message:
 
 @example
-4:2: Well-formedness error: Otherwise guard combined with non GuardedStatement is not allowed
-1:2: Well-formedness error: non GuardedStatement defined here
+4:2: Well-formedness error: Otherwise guard combined with non
+GuardedStatement is not allowed 1:2: Well-formedness error: non
+GuardedStatement defined here
 
 @end example
 
 @anchor{Illegal must be the only Statement in a compound}
 @subsection Illegal must be the only Statement in a compound
-An @i{illegal} ActionStatement must occur on its own; no other ActionStatements
-or AssignmentStatements are allowed. That also applies if the @i{illegal} occurs
-in a nested CompoundStatement:
+An @i{illegal} ActionStatement must occur on its own; no other
+ActionStatements or AssignmentStatements are allowed. That also applies
+if the @i{illegal} occurs in a nested CompoundStatement:
 
 
 
 @example
- 1  on console.arm():
- 2  @{
- 3    @{
- 4      @{ illegal; @}
- 5    @}
- 6    sounding = true;
- 7  @}
+ 1 on console.arm(): 2 @{ 3 @{ 4 @{ illegal; @} 5 @} 6 sounding = true;
+ 7 @}
 
 @end example
 
@@ -5992,42 +6087,35 @@ in a nested CompoundStatement:
 This results in the following error message:
 
 @example
-4:7: Well-formedness error: Illegal must be the only Statement in a compound
+4:7: Well-formedness error: Illegal must be the only Statement in a
+compound
 
 @end example
 
 
-Using @i{illegal} within a conditional statement @i{is} allowed.
-Also the condition may be accompanied by other action statements, e.g:
+Using @i{illegal} within a conditional statement @i{is} allowed.  Also
+the condition may be accompanied by other action statements, e.g:
 
 
 
 @example
- 1  on console.arm():
- 2  @{
- 3    s = sensor.enable();
- 4    if (s.NOK) @{
- 5      illegal;
- 6    @}
- 7  @}
+ 1 on console.arm(): 2 @{ 3 s = sensor.enable(); 4 if (s.NOK) @{ 5
+ illegal; 6 @} 7 @}
 
 @end example
 
 @anchor{Illegal is not allowed in if-then-else statements}
 @subsection Illegal is not allowed in if-then-else statements
-In an Interface declaration an Event can only be declared @i{illegal} in a
-direct way. This is due to the declarative character of interfaces.
-To be more specific, it must not occur in an if-then-else construct. An example:
+In an Interface declaration an Event can only be declared @i{illegal} in
+a direct way. This is due to the declarative character of interfaces.
+To be more specific, it must not occur in an if-then-else construct. An
+example:
 
 
 
 @example
- 1  bool b = true;
- 2  on arm:
- 3  @{
- 4    if (b) @{ illegal; @}
- 5    else   @{ state = States.Armed; @}
- 6  @}
+ 1 bool b = true; 2 on arm: 3 @{ 4 if (b) @{ illegal; @} 5 else @{ state
+ = States.Armed; @} 6 @}
 
 @end example
 
@@ -6035,27 +6123,21 @@ To be more specific, it must not occur in an if-then-else construct. An example:
 This results in the following error message:
 
 @example
-4:12: Well-formedness error: Illegal is not allowed in if-then-else statements
+4:12: Well-formedness error: Illegal is not allowed in if-then-else
+statements
 
 @end example
 
 @anchor{Illegal is not allowed in functions}
 @subsection Illegal is not allowed in functions
-In an Interface declaration an Event can only be declared @i{illegal} in a
-direct way. This is due to the declarative character of interfaces.
+In an Interface declaration an Event can only be declared @i{illegal} in
+a direct way. This is due to the declarative character of interfaces.
 To be more specific, it must not occur in a function body. An example:
 
 
 
 @example
- 1  void ill()
- 2  @{
- 3    illegal;
- 4  @}
- 5  on arm:
- 6  @{
- 7    ill();
- 8  @}
+ 1 void ill() 2 @{ 3 illegal; 4 @} 5 on arm: 6 @{ 7 ill(); 8 @}
 
 @end example
 
@@ -6069,29 +6151,25 @@ This results in the following error message:
 
 @section Well-formedness Checks -- Reply
 A 'reply' is required in the handling of a valued (i.e. non-void) event.
-It is also required in case an event (that might be void) is used in 'blocking' mode;
-in that case the occurrence of the reply might be postponed.
-In general this is hard to check statically.
-What can be checked is described below.
+It is also required in case an event (that might be void) is used in
+'blocking' mode; in that case the occurrence of the reply might be
+postponed.  In general this is hard to check statically.  What can be
+checked is described below.
 
-@anchor{Reply not allowed on 'requires' Port  'sensor'}
+@anchor{Reply not allowed on 'requires' Port 'sensor'}
 @subsection Reply not allowed on 'requires' Port: 'sensor'
-A 'reply' which is issued to release a blocking event refers to the event's port.
-Since blocking is effective on 'provides' ports only, a well-formedness error is issued
-when a 'requires' port name is used. An example:
+A 'reply' which is issued to release a blocking event refers to the
+event's port.  Since blocking is effective on 'provides' ports only, a
+well-formedness error is issued when a 'requires' port name is used. An
+example:
 
 
 
 @example
-  1 component Test @{
-  2   provides Start start;
-  3   requires Sensor sensor;
-  4   behaviour @{
-  5    on start.start(): @{ sensor.activate(); @}
-  6    blocking on start.stop(): @{ sensor.activate(); @}
-  7    on sensor.deactivated(): @{ sensor.reply(); @}
-  8   @}
-  9 @}
+  1 component Test @{ 2 provides Start start; 3 requires Sensor sensor;
+  4 behaviour @{ 5 on start.start(): @{ sensor.activate(); @} 6 blocking
+  on start.stop(): @{ sensor.activate(); @} 7 on sensor.deactivated():
+  @{ sensor.reply(); @} 8 @} 9 @}
 
 @end example
 
@@ -6099,24 +6177,25 @@ when a 'requires' port name is used. An example:
 This results in the following error message:
 
 @example
-7:32: Well-formedness error: Reply not allowed on 'requires' Port: 'sensor'
+7:32: Well-formedness error: Reply not allowed on 'requires' Port:
+'sensor'
 
 @end example
 
 @section Well-formedness Checks -- Valued Actions and Functions
-Both Actions and Functions can be valued, and as such are considered to be expressions.
-The places where they can be called are severely restricted.
-The main reason is that Actions and Functions (at least the ones containing Actions)
-cause a side effect.
-The order of evaluation in complex expressions becomes an issue when side effects are
-considered.
-In order to exclude that, valued Actions and Function calls can only occur in
-isolation at the right hand side of an assignment.
+Both Actions and Functions can be valued, and as such are considered to
+be expressions.  The places where they can be called are severely
+restricted.  The main reason is that Actions and Functions (at least the
+ones containing Actions) cause a side effect.  The order of evaluation
+in complex expressions becomes an issue when side effects are
+considered.  In order to exclude that, valued Actions and Function calls
+can only occur in isolation at the right hand side of an assignment.
 
 
-An extra restriction to this rule is put on the initial value of a global variable
-in a behaviour. Such an expression can not contain Actions and Functions at all,
-since Actions are only allowed within an OnEventStatement.
+An extra restriction to this rule is put on the initial value of a
+global variable in a behaviour. Such an expression can not contain
+Actions and Functions at all, since Actions are only allowed within an
+OnEventStatement.
 
 @anchor{Actions are not allowed here}
 @subsection Actions are not allowed here
@@ -6125,26 +6204,12 @@ An Action is used in a complex expression.
 
 
 @example
-  1  interface Sensor @{
-  2    enum Status @{ OK, NOK @};
-  3    in Status enable();
-  4  @}
-  5  component Alarm @{
-  6    provides Console console;
-  7    requires Sensor sensor;
-  8    behaviour @{
-  9      ....
- 10      bool b = true;
- 11      on console.arm():
- 12      @{
- 13        if (sensor.enable() == Sensor.Status.OK) @{
- 14          state = States.Armed;
- 15        @}
- 16        bool b = sensor.enable();
- 17        bool b = b || sensor.enable();
- 18      @}
- 19    @}
- 20  @}
+  1 interface Sensor @{ 2 enum Status @{ OK, NOK @}; 3 in Status
+  enable(); 4 @} 5 component Alarm @{ 6 provides Console console; 7
+  requires Sensor sensor; 8 behaviour @{ 9 ....
+ 10 bool b = true; 11 on console.arm(): 12 @{ 13 if (sensor.enable() ==
+ Sensor.Status.OK) @{ 14 state = States.Armed; 15 @} 16 bool b =
+ sensor.enable(); 17 bool b = b || sensor.enable(); 18 @} 19 @} 20 @}
 
 @end example
 
@@ -6152,11 +6217,12 @@ An Action is used in a complex expression.
 This results in the following error messages:
 
 @example
-13:10: Well-formedness error: Actions are not allowed here
-17:20: Well-formedness error: Actions are not allowed here
+13:10: Well-formedness error: Actions are not allowed here 17:20:
+Well-formedness error: Actions are not allowed here
 
 @end example
-The call of the @i{sensor.enable()} action on line 16 is the only acceptable one.
+The call of the @i{sensor.enable()} action on line 16 is the only
+acceptable one.
 
 
 Action is used as initial value of a global variable.
@@ -6164,22 +6230,11 @@ Action is used as initial value of a global variable.
 
 
 @example
-  1  interface Sensor @{
-  2    enum Status @{ OK, NOK @};
-  3    in Status enable();
-  4  @}
-  5  component Alarm @{
-  6    provides Console console;
-  7    requires Sensor sensor;
-  8    behaviour @{
-  9      ...
- 10      Sensor.Status st = sensor.enable();
- 11      on console.arm():
- 12      @{
- 13        ...
- 14      @}
- 15    @}
- 16  @}
+  1 interface Sensor @{ 2 enum Status @{ OK, NOK @}; 3 in Status
+  enable(); 4 @} 5 component Alarm @{ 6 provides Console console; 7
+  requires Sensor sensor; 8 behaviour @{ 9 ...
+ 10 Sensor.Status st = sensor.enable(); 11 on console.arm(): 12 @{ 13
+ ...  14 @} 15 @} 16 @}
 
 @end example
 
@@ -6198,25 +6253,12 @@ A Function call is used in a complex expression.
 
 
 @example
-  1  interface Sensor @{
-  2    enum Status @{ OK, NOK @};
-  3    in Status enable();
-  4  @}
-  5  component Alarm @{
-  6    provides Console console;
-  7    requires Sensor sensor;
-  8    behaviour @{
-  9      ....
- 10      bool ok() @{
- 11        return (enab() == OK);
- 12      @}
- 13      Sensor.Status enab() @{
- 14        Sensor.Status r = sensor.enable();
- 15        return r;
- 16      @}
- 17      ...
- 18    @}
- 19  @}
+  1 interface Sensor @{ 2 enum Status @{ OK, NOK @}; 3 in Status
+  enable(); 4 @} 5 component Alarm @{ 6 provides Console console; 7
+  requires Sensor sensor; 8 behaviour @{ 9 ....
+ 10 bool ok() @{ 11 return (enab() == OK); 12 @} 13 Sensor.Status enab()
+ @{ 14 Sensor.Status r = sensor.enable(); 15 return r; 16 @} 17 ...  18
+ @} 19 @}
 
 @end example
 
@@ -6228,23 +6270,16 @@ This results in the following error message:
 
 @end example
 
-@anchor{Function value discarded  @i{negate}}
+@anchor{Function value discarded @i{negate}}
 @subsection Function value discarded: @i{negate}
 A valued Function is called without assigning its return value.
 
 
 
 @example
-  1      ...
-  2      bool negate(bool b)
-  3      @{
-  4        return !b;
-  5      @}
-  6      void test(bool b)
-  7      @{
-  8        negate(b);
-  9      @}
- 10      ...
+  1 ...  2 bool negate(bool b) 3 @{ 4 return !b; 5 @} 6 void test(bool
+  b) 7 @{ 8 negate(b); 9 @}
+ 10 ...
 
 @end example
 
@@ -6255,29 +6290,18 @@ This results in the following error message:
 8:7: Well-formedness error: Function value discarded: @i{negate}
 @end example
 
-@anchor{Action value discarded  @i{enable}}
+@anchor{Action value discarded @i{enable}}
 @subsection Action value discarded: @i{enable}
-A valued Function is called without assigning its return value.
-An example:
+A valued Function is called without assigning its return value.  An
+example:
 
 
 
 @example
-  1  interface Sensor @{
-  2    enum Status @{ OK, NOK @};
-  3    in Status enable();
-  4  @}
-  5  component Alarm @{
-  6    provides Console console;
-  7    requires Sensor sensor;
-  8    behaviour @{
-  9      ....
- 10      on console.arm():
- 11      @{
- 12        sensor.enable();
- 13      @}
- 14    @}
- 15  @}
+  1 interface Sensor @{ 2 enum Status @{ OK, NOK @}; 3 in Status
+  enable(); 4 @} 5 component Alarm @{ 6 provides Console console; 7
+  requires Sensor sensor; 8 behaviour @{ 9 ....
+ 10 on console.arm(): 11 @{ 12 sensor.enable(); 13 @} 14 @} 15 @}
 
 @end example
 
@@ -6290,23 +6314,16 @@ This results in the following error message:
 
 @section Well-formedness Checks -- Injection
 
-@anchor{Injected Port has out event  @i{i}}
+@anchor{Injected Port has out event @i{i}}
 @subsection Injected Port has out event: @i{i}
-When a Component has a required injected Port, the corresponding Interface
-shall not have out events. An example:
+When a Component has a required injected Port, the corresponding
+Interface shall not have out events. An example:
 
 
 
 @example
- 1  interface Intf @{
- 2    in void evt();
- 3    out void notif();
- 4  @}
- 5
- 6  component Comp @{
- 7    requires injected Intf i;
- 8    .....
- 9  @}
+ 1 interface Intf @{ 2 in void evt(); 3 out void notif(); 4 @} 5 6
+ component Comp @{ 7 requires injected Intf i; 8 .....  9 @}
 
 @end example
 
@@ -6318,73 +6335,60 @@ The following error message will be issued:
 @end example
 
 @section Well-formedness Checks -- Binding
-In a composite Component the Component's ports and all sub Component ports must
-be bound correctly.
+In a composite Component the Component's ports and all sub Component
+ports must be bound correctly.
 
 
-We'll use the following (somewhat artificial) example to elaborate on binding
-errors below:
+We'll use the following (somewhat artificial) example to elaborate on
+binding errors below:
 
 
 
 @example
-  1  import Console;
-  2  import Alarm_Impl;
-  3  import Sensor_Impl;
-  4  import Siren_Impl;
-  5
-  6  component AlarmSystem
-  7  @{
-  8    provides Console console;
-  9    provides Console consoleAlt;
- 10
- 11    system
- 12    @{
- 13      Alarm_Impl alarm;
- 14      Sensor_Impl sensor;
- 15      Siren_Impl siren;
- 16
- 17      // bindings .....
- 18    @}
- 19  @}
+  1 import Console; 2 import Alarm_Impl; 3 import Sensor_Impl; 4 import
+  Siren_Impl; 5 6 component AlarmSystem 7 @{ 8 provides Console console;
+  9 provides Console consoleAlt;
+ 10 11 system 12 @{ 13 Alarm_Impl alarm; 14 Sensor_Impl sensor; 15
+ Siren_Impl siren; 16 17 // bindings .....  18 @} 19 @}
 
 @end example
 
 
-Bindings in which 'wildcards' are involved will be described at the end of this section.
+Bindings in which 'wildcards' are involved will be described at the end
+of this section.
 
-@anchor{Port is not bound  @i{console}}
+@anchor{Port is not bound @i{console}}
 @subsection Port is not bound: @i{console}
-No binding is specified for a port of a composite Component.
-If no bindings are added in the AlarmSystem Component above,
-the following error message will be issued (among others):
+No binding is specified for a port of a composite Component.  If no
+bindings are added in the AlarmSystem Component above, the following
+error message will be issued (among others):
 
 @example
-8:19: Well-formedness error: Port is not bound: @i{console}9:19: Well-formedness error: Port is not bound: @i{consoleAlt}
+8:19: Well-formedness error: Port is not bound: @i{console}9:19:
+Well-formedness error: Port is not bound: @i{consoleAlt}
 @end example
 
-@anchor{Port is not bound  @i{alarm.console}}
+@anchor{Port is not bound @i{alarm.console}}
 @subsection Port is not bound: @i{alarm.console}
-No binding is specified for a port of a sub Component.
-If no bindings are added in the AlarmSystem Component above,
-the following error message will be issued (among others):
+No binding is specified for a port of a sub Component.  If no bindings
+are added in the AlarmSystem Component above, the following error
+message will be issued (among others):
 
 @example
 12:16: Well-formedness error: Port is not bound: @i{alarm.console}
 @end example
 
-@anchor{Port is bound twice  @i{alarm.console}}
+@anchor{Port is bound twice @i{alarm.console}}
 @subsection Port is bound twice: @i{alarm.console}
-More than one binding is specified for a port of a composite Component or one
-of its sub Components.
-If line 17 in the AlarmSystem Component above is followed by
+More than one binding is specified for a port of a composite Component
+or one of its sub Components.  If line 17 in the AlarmSystem Component
+above is followed by
 
 
 
 @example
- 18      console <=> alarm.console;
- 19      alarm.sensor <=> sensor.sensor;
- 20      consoleAlt <=> alarm.console;
+ 18 console <=> alarm.console; 19 alarm.sensor <=> sensor.sensor; 20
+ consoleAlt <=> alarm.console;
 
 @end example
 
@@ -6397,8 +6401,8 @@ the following error message will be issued (among others):
 
 @anchor{Binding directions do not match}
 @subsection Binding directions do not match
-The directions of the left and right port mentioned in the binding do not match.
-The following constructs are allowed:
+The directions of the left and right port mentioned in the binding do
+not match.  The following constructs are allowed:
 
 @itemize
 
@@ -6435,7 +6439,7 @@ If line 17 in the AlarmSystem Component above is followed by
 
 
 @example
- 18      console <=> consoleAlt;
+ 18 console <=> consoleAlt;
 
 @end example
 
@@ -6458,16 +6462,9 @@ An example:
 
 
 @example
-  1  component Sys @{
-  2    provides Console console;
-  3    system @{
-  4      Logger logger;
-  5      SubSystem sub;
-  6      ...
-  7      logger.* <=> sub.*;
-  8      ...
-  9    @}
- 10  @}
+  1 component Sys @{ 2 provides Console console; 3 system @{ 4 Logger
+  logger; 5 SubSystem sub; 6 ...  7 logger.* <=> sub.*; 8 ...  9 @}
+ 10 @}
 
 @end example
 
@@ -6489,28 +6486,22 @@ We can define communication 'direction' for bindings as follows:
 the @code{provides} port in the binding.
 
 @item For port forwarding (an external port is forwarded to a sub-component port) or vice versa:
-A @code{provides} external port directs to a @code{provides} sub-component port, and
-a @code{requires} sub-component port directs to a @code{requires} external port.
+A @code{provides} external port directs to a @code{provides}
+sub-component port, and a @code{requires} sub-component port directs to
+a @code{requires} external port.
 
 @end itemize
-To prevent component re-entrancy and guarantee run-to-completion semantics, cycles in 'directed' communication
-are not allowed within a system component.
+To prevent component re-entrancy and guarantee run-to-completion
+semantics, cycles in 'directed' communication are not allowed within a
+system component.
 
 
 In the most trivial example, which creates a one-component cycle:
 
 @example
-  1  component Comp @{
-  2    provides Intf prov;
-  3    requires Intf req;
-  4  @}
-  5
-  6  component Sys @{
-  7    system @{
-  8      Comp c;
-  9      c.prov <=> c.req;
- 10    @}
- 11  @}
+  1 component Comp @{ 2 provides Intf prov; 3 requires Intf req; 4 @} 5
+  6 component Sys @{ 7 system @{ 8 Comp c; 9 c.prov <=> c.req;
+ 10 @} 11 @}
 
 @end example
 
@@ -6525,42 +6516,15 @@ the following error message will be issued:
 A more elaborate example creates a cycle over three components:
 
 @example
-  1  component Comp1 @{
-  2    provides Intf p;
-  3    requires Intf r;
-  4  @}
-  5
-  6  component Comp2 @{
-  7     provides Intf p1;
-  8     provides Intf p2;
-  9     requires Intf r1;
- 10     requires Intf r2;
- 11  @}
- 12
- 13  component Sys @{
- 14    provides Intf p1;
- 15    provides Intf p2;
- 16
- 17    requires Intf r1;
- 18    requires Intf r2;
- 19
- 20    system @{
- 21      Comp2 c21;
- 22      Comp2 c22;
- 23      Comp1 c11;
- 24      Comp1 c12;
- 25
- 26      p1 <=> c21.p1;
- 27      p2 <=> c22.p1;
- 28      c21.r1 <=> c11.p;
- 29      c21.r2 <=> c12.p;
- 30      c22.r1 <=> c21.p2;
- 31      c22.r2 <=> r2;
- 32
- 33      c11.r <=> r1;
- 34      c12.r <=> c22.p2;
- 35    @}
- 36  @}
+  1 component Comp1 @{ 2 provides Intf p; 3 requires Intf r; 4 @} 5 6
+  component Comp2 @{ 7 provides Intf p1; 8 provides Intf p2; 9 requires
+  Intf r1;
+ 10 requires Intf r2; 11 @} 12 13 component Sys @{ 14 provides Intf p1;
+ 15 provides Intf p2; 16 17 requires Intf r1; 18 requires Intf r2; 19 20
+ system @{ 21 Comp2 c21; 22 Comp2 c22; 23 Comp1 c11; 24 Comp1 c12; 25 26
+ p1 <=> c21.p1; 27 p2 <=> c22.p1; 28 c21.r1 <=> c11.p; 29 c21.r2 <=>
+ c12.p; 30 c22.r1 <=> c21.p2; 31 c22.r2 <=> r2; 32 33 c11.r <=> r1; 34
+ c12.r <=> c22.p2; 35 @} 36 @}
 
 @end example
 
@@ -6568,36 +6532,26 @@ A more elaborate example creates a cycle over three components:
 As a result the following error messages will be issued:
 
 @example
-21:5: Well-formedness error: Component is part of a cyclic binding: @i{c21}22:5: Well-formedness error: Component is part of a cyclic binding: @i{c22}24:5: Well-formedness error: Component is part of a cyclic binding: @i{c12}
+21:5: Well-formedness error: Component is part of a cyclic binding:
+@i{c21}22:5: Well-formedness error: Component is part of a cyclic
+binding: @i{c22}24:5: Well-formedness error: Component is part of a
+cyclic binding: @i{c12}
 @end example
 
 @anchor{Wildcard can be bound to a provided port only}
 @subsection Wildcard can be bound to a provided port only
-Since @b{injected} Ports are always @b{requires}Ports, and a wildcard is used to bind such a Port, the other side of a
-wildcard binding must be a @b{provides} Port. In this example:
+Since @b{injected} Ports are always @b{requires}Ports, and a wildcard is
+used to bind such a Port, the other side of a wildcard binding must be a
+@b{provides} Port. In this example:
 
 
 
 @example
-  1  component Comp @{
-  2    requires injected Logger logger;
-  3    .....
-  4  @}
-  5
-  6   component MyLogger @{
-  7     requires Logger logger;
-  8     ...
-  9   @}
- 10
- 11 component Sys @{
- 12   provides Console console;
- 13   system @{
- 14     MyLogger myLogger;
- 15     SubSystem sub;
- 16     ...
- 17     myLogger.logger <=> *;
- 18   @}
- 19 @}
+  1 component Comp @{ 2 requires injected Logger logger; 3 .....  4 @} 5
+  6 component MyLogger @{ 7 requires Logger logger; 8 ...  9 @}
+ 10 11 component Sys @{ 12 provides Console console; 13 system @{ 14
+ MyLogger myLogger; 15 SubSystem sub; 16 ...  17 myLogger.logger <=> *;
+ 18 @} 19 @}
 
 @end example
 
@@ -6605,56 +6559,35 @@ wildcard binding must be a @b{provides} Port. In this example:
 the following error message will be issued:
 
 @example
-17:20: Well-formedness error: Wildcard can be bound to a provided port only
+17:20: Well-formedness error: Wildcard can be bound to a provided port
+only
 
 @end example
 
 @anchor{System composition is recursive}
 @subsection System composition is recursive
 A system component may instantiate an arbitrary set of other components,
-which can be system components themselves.
-It is not allowed to have a self-instance neither directly nor indirectly, since that
-would lead to an infinite tree of components.
+which can be system components themselves.  It is not allowed to have a
+self-instance neither directly nor indirectly, since that would lead to
+an infinite tree of components.
 
 
-In the example below five system components are defined that have mutual instances.
-Component C1 instantiates C3, which instantiates C4, which instantiates C1.
+In the example below five system components are defined that have mutual
+instances.  Component C1 instantiates C3, which instantiates C4, which
+instantiates C1.
 
 @example
-  1  component C1 @{
-  2    system @{
-  3      C2 c2;
-  4      C3 c3;
-  5    @}
-  6  @}
-  7
-  8  component C2 @{
-  9    system @{
- 10      C5 c5;
- 11    @}
- 12  @}
- 13
- 14  component C3 @{
- 15    system @{
- 16      C4 c4;
- 17      C2 c2;
- 18    @}
- 19  @}
- 20
- 21  component C4 @{
- 22    system @{
- 23      C1 c1;
- 24    @}
- 25  @}
- 26
- 27  component C5 @{
- 28    system @{ @} // an empty system
- 29  @}
+  1 component C1 @{ 2 system @{ 3 C2 c2; 4 C3 c3; 5 @} 6 @} 7 8
+  component C2 @{ 9 system @{
+ 10 C5 c5; 11 @} 12 @} 13 14 component C3 @{ 15 system @{ 16 C4 c4; 17
+ C2 c2; 18 @} 19 @} 20 21 component C4 @{ 22 system @{ 23 C1 c1; 24 @}
+ 25 @} 26 27 component C5 @{ 28 system @{ @} // an empty system 29 @}
 
 @end example
 
 
-All components involved in the cyclic instantiation will be report in the error messages:
+All components involved in the cyclic instantiation will be report in
+the error messages:
 
 @example
 1:11: Well-formedness error: System composition is recursive: 'C1'
@@ -6663,63 +6596,27 @@ All components involved in the cyclic instantiation will be report in the error 
 
 @end example
 
-@anchor{External port must be bound to external port  @i{r2}}
+@anchor{External port must be bound to external port @i{r2}}
 @subsection External port must be bound to external port: @i{r2}
-There is a restriction in the binding of external ports: when an external requires port of a system
-Component is bound, the other side of the binding must be an external requires port also (this
-is only possible when that is a port of a sub Component)
+There is a restriction in the binding of external ports: when an
+external requires port of a system Component is bound, the other side of
+the binding must be an external requires port also (this is only
+possible when that is a port of a sub Component)
 
 
 In the example below some errors are reported.
 
 @example
-  1  interface I @{
-  2    in void e();
-  3    behaviour @{
-  4      on e: @{@}
-  5    @}
-  6  @}
-  7
-  8  component C1 @{
-  9    provides I p;
- 10    requires external I r1;
- 11    requires external I r2;
- 12    behaviour @{
- 13      on p.e(): @{@}
- 14    @}
- 15  @}
- 16
- 17  component C2 @{
- 18    provides I p;
- 19    behaviour @{
- 20      on p.e(): @{@}
- 21    @}
- 22  @}
- 23
- 24  component S1 @{
- 25    provides I p;
- 26    requires I r;
- 27    system @{
- 28      C1 c1;
- 29      C2 c2;
- 30      p <=> c1.p;
- 31      c1.r1 <=> r;
- 32      c1.r2 <=> c2.p;
- 33    @}
- 34  @}
- 35
- 36  component S2 @{
- 37    provides I p1;
- 38    provides I p2;
- 39    requires external I r1;
- 40    requires external I r2;
- 41    system @{
- 42      S1 s1;
- 43      p1 <=> s1.p;
- 44      p2 <=> r2;
- 45      r1 <=> s1.r;
- 46    @}
- 47  @}
+  1 interface I @{ 2 in void e(); 3 behaviour @{ 4 on e: @{@} 5 @} 6 @}
+  7 8 component C1 @{ 9 provides I p;
+ 10 requires external I r1; 11 requires external I r2; 12 behaviour @{
+ 13 on p.e(): @{@} 14 @} 15 @} 16 17 component C2 @{ 18 provides I p; 19
+ behaviour @{ 20 on p.e(): @{@} 21 @} 22 @} 23 24 component S1 @{ 25
+ provides I p; 26 requires I r; 27 system @{ 28 C1 c1; 29 C2 c2; 30 p
+ <=> c1.p; 31 c1.r1 <=> r; 32 c1.r2 <=> c2.p; 33 @} 34 @} 35 36
+ component S2 @{ 37 provides I p1; 38 provides I p2; 39 requires
+ external I r1; 40 requires external I r2; 41 system @{ 42 S1 s1; 43 p1
+ <=> s1.p; 44 p2 <=> r2; 45 r1 <=> s1.r; 46 @} 47 @}
 
 @end example
 
@@ -6727,7 +6624,9 @@ In the example below some errors are reported.
 the following error message will be issued on @i{S2}:
 
 @example
-44:12: Well-formedness error: External port must be bound to external port: @i{r2}45:5: Well-formedness error: External port must be bound to external port: @i{r1}
+44:12: Well-formedness error: External port must be bound to external
+port: @i{r2}45:5: Well-formedness error: External port must be bound to
+external port: @i{r1}
 @end example
 
 @section Well-formedness Checks -- Functions
@@ -6753,13 +6652,8 @@ error is issued when a return is not guaranteed. An example:
 
 
 @example
- 1      bool func()
- 2      @{
- 3        if (a && b)
- 4        @{ return true; @}
- 5        else if (c)
- 6        @{ illegal; @}
- 7      @}
+ 1 bool func() 2 @{ 3 if (a && b) 4 @{ return true; @} 5 else if (c) 6
+ @{ illegal; @} 7 @}
 
 @end example
 
@@ -6767,7 +6661,8 @@ error is issued when a return is not guaranteed. An example:
 For this code fragment the following error message will be issued:
 
 @example
-1:10: Well-formedness error: Function does not return a value in all cases: func
+1:10: Well-formedness error: Function does not return a value in all
+cases: func
 
 @end example
 
@@ -6778,13 +6673,8 @@ A @b{return} Statement is restricted to Function bodies. So
 
 
 @example
- 1  on sensor.disabled():
- 2  @{
- 3    [sounding]
- 4    @{
- 5      return; // triggers an error
- 6    @}
- 7  @}
+ 1 on sensor.disabled(): 2 @{ 3 [sounding] 4 @{ 5 return; // triggers an
+ error 6 @} 7 @}
 
 @end example
 
@@ -6799,24 +6689,15 @@ This will cause the following error to be reported:
 @anchor{Statement violates tail recursion in recursive Function}
 @subsection Statement violates tail recursion in recursive Function
 A function that is recursive must be tail recursive, i.e. in its body
-any recursive function call shall not be followed by other Statements. So
+any recursive function call shall not be followed by other
+Statements. So
 
 
 
 @example
-  1  component Sensor @{
-  2   ...
-  3   behaviour @{
-  4     ...
-  5     void f() @{
-  6       bool b = false;
-  7       if (b) @{
-  8          f();
-  9          b = true;
- 10        @}
- 11      @}
- 12    @}
- 13  @}
+  1 component Sensor @{ 2 ...  3 behaviour @{ 4 ...  5 void f() @{ 6
+  bool b = false; 7 if (b) @{ 8 f(); 9 b = true;
+ 10 @} 11 @} 12 @} 13 @}
 
 @end example
 
@@ -6824,27 +6705,26 @@ any recursive function call shall not be followed by other Statements. So
 will result in the following error message:
 
 @example
-9:9: Well-formedness error: Statement violates tail recursion in recursive Function
+9:9: Well-formedness error: Statement violates tail recursion in
+recursive Function
 
 @end example
-Remark: two functions @i{f} and @i{g} that are defined in terms
-of each other are considered (mutual) recursive also.
+Remark: two functions @i{f} and @i{g} that are defined in terms of each
+other are considered (mutual) recursive also.
 
 @section Well-formedness Checks -- Data Parameters
 The restrictions on Data parameters are summarised here.
 
-@anchor{Parameter type must be a data type  Code}
+@anchor{Parameter type must be a data type Code}
 @subsection Parameter type must be a data type: Code
-All event parameters specified in an event declaration must be data parameters;
-in other words, they must have a data type. An example:
+All event parameters specified in an event declaration must be data
+parameters; in other words, they must have a data type. An example:
 
 
 
 @example
-  1 interface Sensor @{
-  2   enum Code @{ ok, nok @};
-  3   in Code activate(Code c);
-  4   behaviour @{ ... @}
+  1 interface Sensor @{ 2 enum Code @{ ok, nok @}; 3 in Code
+  activate(Code c); 4 behaviour @{ ... @}
 @}
 
 @end example
@@ -6864,13 +6744,9 @@ An out Event is not allowed to have an out Data Parameter. This example:
 
 
 @example
- 1  interface Sensor @{
- 2    extern INT $int$;
- 3    in void enable();
- 4    in void disable();
- 5    out void triggered(out INT value);
- 6    out void disabled();
- 7  @}
+ 1 interface Sensor @{ 2 extern INT $int$; 3 in void enable(); 4 in void
+ disable(); 5 out void triggered(out INT value); 6 out void disabled();
+ 7 @}
 
 @end example
 
@@ -6878,7 +6754,8 @@ An out Event is not allowed to have an out Data Parameter. This example:
 will result in the following error message:
 
 @example
-5:30: Well-formedness error: Out Parameter is not allowed for out Event: value
+5:30: Well-formedness error: Out Parameter is not allowed for out Event:
+value
 
 @end example
 
@@ -6889,13 +6766,9 @@ An out Event is not allowed to have an inout Data Parameter. An example:
 
 
 @example
- 1  interface Sensor @{
- 2    extern INT $int$;
- 3    in void enable();
- 4    in void disable();
- 5    out void triggered();
- 6    out void disabled(inout INT dis);
- 7  @}
+ 1 interface Sensor @{ 2 extern INT $int$; 3 in void enable(); 4 in void
+ disable(); 5 out void triggered(); 6 out void disabled(inout INT dis);
+ 7 @}
 
 @end example
 
@@ -6903,30 +6776,25 @@ An out Event is not allowed to have an inout Data Parameter. An example:
 will result in the following error message:
 
 @example
-6:31: Well-formedness error: Inout Parameter is not allowed for out Event: dis
+6:31: Well-formedness error: Inout Parameter is not allowed for out
+Event: dis
 
 @end example
 
 @anchor{Parameter Binding not allowed here}
 @subsection Parameter Binding not allowed here
-Parameter binding, which is the binding of a global data variable 'D' to an event
-parameter 'p' using the 'p <- D' construct, is allowed in an 'on event' context only.
-Any other location is reported as an error. So:
+Parameter binding, which is the binding of a global data variable 'D' to
+an event parameter 'p' using the 'p <- D' construct, is allowed in an
+'on event' context only.  Any other location is reported as an
+error. So:
 
 
 
 @example
-  1 extern xint $int$;
-  2 component Test @{
-  3  provides Intf intf;
-  4   behaviour @{
-  5     xint NR;
-  6     on intf.evt(number):
-  7       fn(number <- NR);
-  8
-  9     void fn(xint i) @{ ... @}
- 10   @}
- 11 @}
+  1 extern xint $int$; 2 component Test @{ 3 provides Intf intf; 4
+  behaviour @{ 5 xint NR; 6 on intf.evt(number): 7 fn(number <- NR); 8 9
+  void fn(xint i) @{ ... @}
+ 10 @} 11 @}
 
 @end example
 
@@ -7007,7 +6875,8 @@ will result in the following error message:
 @item extern
 @tab Keyword
 @tab Type definition which can be used for data variables and data parameters. Followed by an identifier and $$'s. The part between $$'s is used in the
- generated code as the type definition for these data variables and parameters.
+ generated code as the type definition for these data variables and
+ parameters.
 @tab @xref{Types and Expressions}
 
 @item external
