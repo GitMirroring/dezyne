@@ -47,6 +47,10 @@
 
   #:export (parse-opts
             format-trace
+            step:format-trace
+            seqdiag:format-sexp
+            seqdiag:format-trace
+            seqdiag:sexp->steps
             main))
 
 (define (parse-opts args)
@@ -328,7 +332,101 @@ ws               <   [ \t]
        )
       (_ (list x)))))
 
-(define* (format-trace trace #:key file-name format debug?)
+
+(define (seqdiag:get-model sexp)
+  (let* ((inits (filter (compose (cut equal? <> "Initialize") (cut assoc-ref <> "kind"))
+                        sexp))
+         (model-inits (if (= (length inits) 1) inits
+                         (filter (compose (cut equal? <> "component") (cut assoc-ref <> "role"))
+                                 inits))))
+    (assoc-ref (car model-inits) "instance")))
+
+(define (seqdiag:sequence->trail sequence model)
+  (let* ((steps (filter
+                 (conjoin (compose (cut equal? <> model) (cut assoc-ref <> "instance"))
+                          (disjoin (cut assoc-ref <> "synchronization")
+                                   (conjoin (compose (cut equal? <> "Error")
+                                                     (cut assoc-ref <> "kind"))
+                                            (compose (cut equal? <> "illegal")
+                                                     (cut assoc-ref <> "message")))))
+                        sequence)))
+    (map (disjoin (cut assoc-ref <> "synchronization")
+                  (cut assoc-ref <> "message"))
+         steps)))
+
+(define-immutable-record-type <seqdiag:step>
+  (make-seqdiag-step location instance event message)
+  seqdiag:step?
+  (location seqdiag:step-location)
+  (instance seqdiag:step-instance)
+  (event seqdiag:step-event)
+  (message seqdiag:step-message))
+
+(define (seqdiag:step->string step)
+  (string-join `(,(or (seqdiag:step-location step) "?")
+                 ": "
+                 ,@(let ((instance (seqdiag:step-instance step)))
+                     (if instance (list instance ".")
+                         '()))
+                 ,(or (seqdiag:step-event step)
+                      (seqdiag:step-message step)
+                      "?"))
+               ""))
+
+(define (seqdiag:sexp->location sexp)
+  (let ((selection (assoc-ref sexp "selection")))
+    (and selection
+         (let* ((locations (vector->list selection))
+                (location (car locations))
+                (file (assoc-ref location "file")))
+           (and file
+                (format #f "~a:~a:~a" file (assoc-ref location "line") (assoc-ref location "column")))))))
+
+(define (seqdiag:sequence->steps sequence model)
+  (define (seqdiag:state->string state)
+    (define (alist->string x)
+      (format #f "~a=~a" (assoc-ref x "variable") (assoc-ref x "value")))
+    (string-join (map alist->string (vector->list state))))
+  (define (seqdiag:sexp->step sexp)
+    (make-seqdiag-step (seqdiag:sexp->location sexp)
+                       (assoc-ref sexp "instance")
+                       (or (assoc-ref sexp "event")
+                           (and (assoc-ref sexp "return") "return")
+                           (and (equal? (assoc-ref sexp "kind") "ReplyStatement") "reply")
+                           (and=> (assoc-ref sexp "state") seqdiag:state->string))
+                       (assoc-ref sexp "message")))
+  (let* ((sequen (filter (negate (compose (cut member <> '("Error" "Initialize" "OnEventStatement" "ThreedEnter" "ThreadExit" "TraceType"))
+                                          (cut assoc-ref <> "kind")))
+                         sequence))
+         (steps (map seqdiag:sexp->step sequen))
+         (final (last sequence))
+         (error (and (equal? (assoc-ref final "kind") "Error") final))
+         (error-instance (and error (or (assoc-ref error "instance") model)))
+         (error-location (and error (find (compose (cut equal? <> error-instance)
+                                                   (cut assoc-ref <> "instance"))
+                                          (reverse sequen))))
+         (error-location (and error-location (assoc-ref error-location "selection")))
+         (error (and error (seqdiag:sexp->step (acons "selection" error-location error))))
+         (steps (if error (cons error steps) steps)))
+    steps))
+
+(define* (seqdiag:sexp->steps sexp #:key (file-name "<stdin>"))
+  (let* ((sequence (json-vector->list sexp))
+         (model (seqdiag:get-model sequence))
+         (steps (seqdiag:sequence->steps sequence model)))
+    steps))
+
+(define (seqdiag:trace? string)
+  (string-prefix? "[{" string))
+
+(define (seqdiag:format-sexp sexp)
+  (let ((steps (seqdiag:sexp->steps sexp)))
+    (string-join (map seqdiag:step->string steps) "\n" 'suffix)))
+
+(define (seqdiag:format-trace trace)
+  (seqdiag:format-sexp (json-string->scm trace)))
+
+(define* (step:format-trace trace #:key file-name format debug?)
   (let* ((steps (trace->steps trace #:file-name file-name))
          (foo (when debug? (stderr "steps:") (pretty-print steps (current-error-port))))
          (structured (map (lambda (s) (or (step->communication s) s)) steps))
@@ -341,6 +439,10 @@ ws               <   [ \t]
           (else
            (let ((communications (filter (disjoin state? (conjoin (negate q-out?) communication?)) merged)))
              (string-join (map step->code communications) "\n" 'suffix))))))
+
+(define* (format-trace trace #:key file-name format debug?)
+  (if (seqdiag:trace? trace) (seqdiag:format-trace trace)
+      (step:format-trace trace #:file-name file-name #:format format #:debug? debug?)))
 
 (define (main args)
   (let* ((options (parse-opts args))
