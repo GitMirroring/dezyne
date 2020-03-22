@@ -28,6 +28,7 @@ AC_CONFIG_MACRO_DIRS([build-aux])
 AM_INIT_AUTOMAKE([silent-rules subdir-objects])
 AM_SILENT_RULES([yes])
 
+AM_PATH_LISPDIR
 AC_PATH_PROG([GUIX], [guix])
 AM_CONDITIONAL([have_guix], [test "x$GUIX" != ""])
 
