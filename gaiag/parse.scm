@@ -56,7 +56,7 @@
          (gdzn-debug? (gdzn:command-line:get 'debug)))
     (parse-root->ast parse-tree #:string string #:file-name file-name)))
 
-(define* (parse-file file-name #:key peg? generator? (imports '()) behaviour? model-name locations?)
+(define* (parse-file file-name #:key peg? (imports '()) behaviour? model-name locations?)
   (let* ((ast (peg:parse-file file-name #:imports imports))
          (ast (if peg? ast
                   (ast:wfc ast))))

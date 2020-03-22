@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2017, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
@@ -70,9 +70,7 @@
             (lts (single-char #\l))
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))
-            (python (single-char #\p))
-            (queue_size (single-char #\q) (value #t))
-	    (version (single-char #\V) (value #t))))
+            (queue_size (single-char #\q) (value #t))))
 	 (options (getopt-long args option-spec
                                #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
@@ -89,9 +87,7 @@ Usage: dzn traces [OPTION]... DZN-FILE
   -l, --lts                   generate lts
   -m, --model=MODEL           generate main for MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
-  -p, --python                use legacy python script implementation
   -q, --queue_size=SIZE       use queue size=SIZE for generation
-  -V, --version=VERSION       use service version=VERSION
 ")
           (exit (or (and usage? 2) 0)))
      options)))
@@ -147,7 +143,6 @@ Usage: dzn traces [OPTION]... DZN-FILE
          (dir (option-ref options 'output "."))
          (foo (mkdir-p dir))
          (json? (gdzn:command-line:get 'json #f))
-         (python? (command-line:get 'python #f))
          (commands `(,(cut display lts)
                      ,@(if gdzn-debug? '(("tee" "lts.aut")) '())
                      ("lts2traces"
@@ -160,26 +155,19 @@ Usage: dzn traces [OPTION]... DZN-FILE
                       ,@(append-map (lambda (p) (list "--provides-in" p)) provides-in)
                       "-")))
          (foo (if gdzn-debug? (stderr "commands: ~s\n" commands)))
-         (traces (if python? (receive (job ports)
-                                 (apply pipeline+ #f commands)
-                               (set-port-encoding! (car ports) "ISO-8859-1")
-                               (let ((traces (read-string (car ports)))
-                                     (error (read-string (cadr ports))))
-                                 (handle-error job error)
-                                 (string-trim-right traces)))
-                     (with-output-to-string
-                       (lambda _
-                         (let* ((text (string-trim-right lts))
-                                (lines (string-split text #\newline)))
-                           (lts->traces lines
-                                        illegal-opt
-                                        flush-opt
-                                        (is-a? model <interface>)
-                                        dir
-                                        lts-opt
-                                        model-name
-                                        '()
-                                        provides-in))))))
+         (traces (with-output-to-string
+                   (lambda _
+                     (let* ((text (string-trim-right lts))
+                            (lines (string-split text #\newline)))
+                       (lts->traces lines
+                                    illegal-opt
+                                    flush-opt
+                                    (is-a? model <interface>)
+                                    dir
+                                    lts-opt
+                                    model-name
+                                    '()
+                                    provides-in)))))
          (traces (string-trim-right traces)))
     (when json? (display traces))
     (when gdzn-debug?
