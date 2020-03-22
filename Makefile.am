@@ -132,21 +132,21 @@ EXTRA_DIST +=					\
 
 dist_man_MANS =					\
  doc/dzn.1					\
+ doc/dzn-cat.1					\
  doc/dzn-code.1					\
  doc/dzn-hello.1				\
- doc/dzn-parse.1
+ doc/dzn-lts.1					\
+ doc/dzn-ls.1					\
+ doc/dzn-parse.1				\
+ doc/dzn-traces.1				\
+ doc/dzn-trace.1				\
+ doc/dzn-verify.1
 
 doc/dzn.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ $<
 
-doc/dzn-code.1: bin/dzn Makefile $(ALL_GO)
-	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< code"
-
-doc/dzn-hello.1: bin/dzn Makefile $(ALL_GO)
-	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< hello"
-
-doc/dzn-parse.1: bin/dzn Makefile $(ALL_GO)
-	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< parse"
+doc/dzn-%.1: bin/dzn Makefile $(ALL_GO)
+	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< $*"
 
 # Distribution
 ##############
