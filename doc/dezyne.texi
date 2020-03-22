@@ -78,21 +78,262 @@ which is coherently expressed in: a textual representation, a graphical
 representation, a mathematical representation, a source code
 representation, and the observable behaviour of a machine executing the
 resulting program.  The concepts available in the language denote the
-different properties[fn:properties] that can be observed and have
-meaning in one or more of the reprentations: textual, graphical,
-mathematical, program and execution.
+different properties@footnote{ Structural: events and their direction in
+an interface, ports on a component, components in a system, bindings
+between the ports; behavioural: guarded trigger => action | assignment |
+if-else | function} that can be observed and have meaning in one or more
+of the reprentations: textual, graphical, mathematical, program and
+execution.
 
 @menu
 * Purpose::
+* Principles::
+* Typical use of Dezyne::
+* The Dezyne Application Domain::
 @end menu
 
 @node Purpose
 @section Purpose
 
 The purpose of Dezyne is to eliminate the need for testing certain
-aspects or qualities of a software program that could (should?)  instead
-be proven to be correct by applying formal verification methods.
+aspects or qualities of a software program that could instead be proven
+to be correct by applying formal verification methods.
 
+@node Principles
+@section Principles
+
+Dezyne aims to support known software engineering principles:
+@itemize
+@item
+clarity and ease of discovery
+@itemize
+@item
+visual overview of architecture (layers of decomposition)
+@item
+visual overiew of behaviour (event trace scenarios)
+@end itemize
+@item
+rigor and formality
+@itemize
+@item
+Dezyne allows enforcing completeness and correctness
+@item
+implementations consistent with specifications
+@item
+specification consistency
+@end itemize
+@end itemize
+@itemize
+@item
+separation of concerns (divide and conquer, low coupling -- high
+cohesion)
+@itemize
+@item
+data is separated from control
+@item
+components allow for functional decomposition
+@item
+interfaces specify the conversations between each peer in a point to
+point relation
+@end itemize
+@end itemize
+@itemize
+@item
+composition is separated from behaviour
+@end itemize
+@itemize
+@item
+modularity (low coupling, high cohesion; dependency inversion)
+@itemize
+@item
+at the file level, Dezyne allows separating type, interface,
+component and system definitions
+@item
+a component only depends on its interfaces
+@item
+a system only depends on it components
+@item
+a system is a component
+@end itemize
+@item
+abstraction (Liskov substitution)
+@itemize
+@item
+data independence
+@item
+an event represents the transition from one (system) state to
+another
+@item
+its name and place in the system structure strongly indicates
+its meaning
+@item
+an interface is the complete abstraction of an implementation
+from the perspective of any client
+@item
+and interfaces completely isolate the implementation from its
+environment
+@end itemize
+@item
+anticipation of change (open closed)
+@itemize
+@item
+modularity and composition allows changing implementations
+whithout changing interfaces, dependencies and dependents
+@item
+a system in Dezyne is inherently protected from changes
+propagating@footnote{Interfaces are like a change firewall, they stop a
+change propagating across modules.}
+@end itemize
+@item
+generality
+@itemize
+@item
+Dezyne allows trivially substituting components offering a
+port of a compatible interface type
+@item
+Dezyne's data independence@footnote{Data types in Dezyne are similar to typedefs in
+C and allow a component to be repurposed without changes to the model
+itself.} allows components to be more general
+@end itemize
+@item
+incremental development
+@itemize
+@item
+increments in Dezyne can obviously follow component scope
+@item
+Dezyne supports use case driven development or cross-cutting
+features equally well
+@end itemize
+@item
+testability
+@itemize
+@item
+trace generation allows for 100% test coverage of code paths
+@end itemize
+@end itemize
+
+@node Typical use of Dezyne
+@section Typical use of Dezyne
+
+@itemize
+@item
+Build working software systems
+
+A software system built with Dezyne will consist of stateful
+Dezyne components and non-stateful, functional code also called
+algorithms or lambda functions.
+
+@item
+Formally specify communication protocols
+@item
+Formally specify hardware constraints/behaviour
+@end itemize
+
+If you are new to Dezyne and wonder how or where it could work for
+you, consider the following table.  It shows where and how Dezyne
+is more likely to be used
+
+@multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaa} {aaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem better fit
+@tab
+@tab less likely fit
+@item stateful systems
+@tab over
+@tab functional systems
+@item mixed state/functional software
+@tab over
+@tab database software
+@item machine control
+@tab over
+@tab compilers
+@item event-driven
+@tab over
+@tab signal/clock-driven
+@item large systems (> 50.000LOC)
+@tab over
+@tab small systems (< 10.000)
+@item device drivers
+@tab over
+@tab spread sheets
+@item failure => $$$
+@tab over
+@tab failure => refresh (F5)
+@item distributed systems
+@tab over
+@tab single-SOC systems
+@item concurrent systems
+@tab over
+@tab single threaded
+@item mature systems
+@tab over
+@tab throwaway prototypes
+@item ASP backend
+@tab over
+@tab REST server
+@item Graphical UI
+@tab over
+@tab command-line UI
+@item asynchronous programming
+@tab over
+@tab blocking calls
+@end multitable
+
+@node The Dezyne Application Domain
+@section The Dezyne Application Domain
+
+Metaphorically speaking, when software is like an orchestra, sound
+is produced by the instruments, but it requires the intricate
+coordination of each individual musician, the ensemble itself and
+possibly the conductor to make the music. Dezyne is aimed at
+producing such software.
+
+Both the conductor and the musician are examples of entities
+coordinating concurrent activities with external actors. The
+musician must coordinate with the conductor, their fellow
+musicians, and the instrument, which in actuality might require the
+use of both hands, the lungs, etc. The conductor monitors the music,
+monitors the score, sets the tempo, coordinates the entries of
+musicians and shapes the phrasing (see
+@uref{https://en.wikipedia.org/wiki/Conducting}).
+
+Dezyne is purposfully designed for software systems where by nature
+it is highly desirable to build up explicit contextual awareness to
+drive program execution, i.e. when the software system to be built
+rises above a certain complexity level where simpler approaches are
+no longer adequate and abstraction is paramount. The table
+below is intended as a guideline, not a rule. Dezyne can be applied
+at every level, the converse is not necessarily true.
+
+@multitable {aaaaaaaaaaaaaaaa} {aaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaa}
+@headitem type
+@tab level
+@tab description
+@tab example
+@item dezyne@footnote{Hierarchy (tree/network) of components}
+@tab sophisticated
+@tab distributed and coupled/supervisory
+@tab machine controller, autonomous robot
+@item bus or black board
+@tab intermediate
+@tab independent and separated
+@tab automobile ECUs, automated tunnel/bridge
+@item "god" controller
+@tab simple
+@tab monolithic
+@tab elevator PLC, motion controller
+@end multitable
+
+Encapsulation, i.e. hiding implementation (interaction) details,
+leads to protocol and state abstraction.
+
+In its current state, Dezyne is capable of describing a system with
+a static structure of components which exchanges events with
+different external actors in order to coordinate towards achieving
+an overarching goal.
+
+Dezyne allows carefully composing the controlling structure together
+with appropriate data transformation, whilst maintaining the ability
+to reason about each facet separately.
 
 @c *********************************************************************
 
