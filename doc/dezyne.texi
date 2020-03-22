@@ -60,11 +60,107 @@ This document describes Dezyne version @value{VERSION}.
 * Verifying Models::            A guide to verification.
 * Code Integration::
 * The Dezyne command-line tools::
-* Dezyne syntax::
+* Dezyne Syntax::
 * Well-formedness::
 * Glossary::
 * Index::
 * GNU Free Documentation License::  The license of this manual.
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+Introduction
+
+* Purpose::
+* Principles::
+* Typical use of Dezyne::
+* The Dezyne Application Domain::
+
+The Dezyne Modeling Language
+
+* System Decomposition::
+* Creating an Interface::
+* Creating a Component::
+* Using Local Variables::
+* Using Data Variables and Parameters::
+* Specifying Behaviour::
+* Decomposing a Component::
+
+System Decomposition
+
+* Synchronous and asynchronous communication::
+* Interfaces as abstraction of a component's behaviour::
+* Modelling events not visible to the outside world but leading to external visible behaviour::
+* Dezyne modelling language versus programming languages::
+* How to use the language help topics::
+
+Creating an Interface
+
+* Interface Syntax::
+* Interface Examples::
+* Specifying Events::
+
+Specifying Events
+
+* Event Syntax::
+* Event Examples::
+
+Creating a Component
+
+* Component Syntax::
+* Importing Models::
+* Ports::
+* External::
+* Injected::
+* Behaviour::
+
+Using Local Variables
+
+* Variable Syntax::
+* Variable Examples::
+
+Specifying Behaviour
+
+* Interface Versus Component Behaviour::
+* Behaviour Syntax::
+* Actions::
+* Specifying Stateful Behaviour::
+* Using Guards::
+* Using Conditional Statements::
+* Using functions::
+* Reply::
+* Using inevitable and optional::
+* Using illegal::
+* Restrictions Multiple Provides::
+* Blocking::
+
+Decomposing a Component
+
+* Systems of Components::
+* Specifying Ports::
+* Binding Ports::
+
+Code Integration
+
+* Integrating C++ Code::
+* Thread-safe Shell::
+
+The Dezyne command-line tools
+
+* Invoking Dzn::
+
+Dezyne Syntax
+
+* Identifiers::
+* Dezyne Files::
+* Types and Expressions::
+* Interface Models::
+* Component Models::
+* Interface and Component Behaviour::
+* System Components::
+* Namespaces::
+
+@end detailmenu
 @end menu
 
 @c *********************************************************************
@@ -1631,7 +1727,7 @@ component AlarmSystemComp
 
 @item @xref{Actions},
 @item @xref{Using functions},
-@item @xref{Types and expressions},
+@item @xref{Types and Expressions},
 @end itemize
 
 @cindex variable
@@ -4036,13 +4132,13 @@ Display the current version of Dzn, and then exit.
 
 
 
-@node Dezyne syntax
-@chapter Dezyne syntax
+@node Dezyne Syntax
+@chapter Dezyne Syntax
 
 @menu
 * Identifiers::
 * Dezyne Files::
-* Types and expressions::
+* Types and Expressions::
 * Interface Models::
 * Component Models::
 * Interface and Component Behaviour::
@@ -4178,8 +4274,8 @@ Also recursive imports are handled correctly.
 @cindex import
 @cindex Files Syntax
 @cindex file
-@node Types and expressions
-@section Types and expressions
+@node Types and Expressions
+@section Types and Expressions
 In Dezyne all variables and constants are typed.
 A number of type constructs are available.
 
@@ -6870,7 +6966,7 @@ will result in the following error message:
 @item bool
 @tab Keyword
 @tab Boolean type identifier.
-@tab @xref{Types and expressions}
+@tab @xref{Types and Expressions}
 
 @item Compliance
 @tab Concept
@@ -6900,7 +6996,7 @@ will result in the following error message:
 @item enum
 @tab Keyword
 @tab Enumeration type declaration.
-@tab @xref{Types and expressions}
+@tab @xref{Types and Expressions}
 
 @item Event
 @tab Concept
@@ -6912,7 +7008,7 @@ will result in the following error message:
 @tab Keyword
 @tab Type definition which can be used for data variables and data parameters. Followed by an identifier and $$'s. The part between $$'s is used in the
  generated code as the type definition for these data variables and parameters.
-@tab @xref{Types and expressions}
+@tab @xref{Types and Expressions}
 
 @item external
 @tab Keyword
@@ -7045,7 +7141,7 @@ will result in the following error message:
 @item subint
 @tab Keyword
 @tab A type representing a finite sequence of integers, expressed as @{m..n@} where m and n are integers and m &lt;= n, for example @{-2..1@}.
-@tab @xref{Types and expressions}
+@tab @xref{Types and Expressions}
 
 @item System
 @tab Concept
