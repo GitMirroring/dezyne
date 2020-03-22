@@ -186,7 +186,7 @@ ws               <   [ \t]
      #f)
 
     ((content ('instance ('event (or ('name event) ('number event)))))
-     `((sut) . ,event))
+     `(("sut") . ,event))
 
      (_ #f)))
 
