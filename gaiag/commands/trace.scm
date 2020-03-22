@@ -54,8 +54,7 @@
           '((format (single-char #\f) (value #t))
             (help (single-char #\h))
             (locations (single-char #\L))
-            (trail (single-char #\t) (value #t))
-	    (version (single-char #\V) (value #t))))
+            (trail (single-char #\t) (value #t))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
@@ -68,7 +67,6 @@ Usage: dzn trace [OPTION]... FILE
   -h, --help             display this help and exit
   -L, --locations        prepend locations to output trail
   -t, --trail=TRAIL      use trail=TRAIL [read from stdin]
-  -V, --version=VERSION  use service version=VERSION
 ")
           (exit 0)))
     options))

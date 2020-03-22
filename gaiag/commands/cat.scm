@@ -35,8 +35,7 @@
 (define (parse-opts args)
   (let* ((option-spec
           '((recursive (single-char #\R))
-            (help (single-char #\h))
-	    (version (single-char #\V) (value #t))))
+            (help (single-char #\h))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
@@ -46,7 +45,6 @@
           (stdout "\
 Usage: dzn cat [OPTION]... FILE
   -h, --help             display this help and exit
-  -V, --version=VERSION  use service version=VERSION
 ")
           (exit 0)))
     options))
