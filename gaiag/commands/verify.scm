@@ -39,7 +39,6 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag ast)
   #:use-module (gaiag config)
-  #:use-module (gaiag json2scm)
   #:use-module (gaiag misc)
   #:use-module (gaiag makreel)
   #:use-module (gaiag commands parse)
