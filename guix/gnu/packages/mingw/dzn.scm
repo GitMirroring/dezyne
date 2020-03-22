@@ -35,7 +35,7 @@
   (package
     (inherit dzn)
     (name "dzn-mingw")
-    (native-inputs `(("guile-json-for-build" ,guile-json)
+    (native-inputs `(("guile-json-for-build" ,guile-json-3)
                      ("mcrl2" ,mcrl2-minimal-patched)
                      ,@(package-native-inputs dzn)))
     (inputs `(("guile" ,guile-mingw)))

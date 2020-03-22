@@ -198,9 +198,9 @@ C or C++ programs, though that is not its primary goal.")
 
 (define-public guile-json-mingw
   (package
-    (inherit guile-json)
+    (inherit guile-json-3)
     (name "guile-json-mingw")
-    (source (origin (inherit (package-source guile-json))
+    (source (origin (inherit (package-source guile-json-3))
                     (patches (search-patches "guile-json-cross.patch"))))
     (inputs `(("guile" ,guile-mingw)))
     (native-inputs `(("autoconf" ,autoconf)
