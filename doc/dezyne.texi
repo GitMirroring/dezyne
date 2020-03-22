@@ -147,7 +147,9 @@ Code Integration
 
 The Dezyne command-line tools
 
-* Invoking Dzn::
+* Invoking dzn::
+* Invoking dzn code::
+* Invoking dzn verify::
 
 Dezyne Syntax
 
@@ -4353,31 +4355,143 @@ void SYS::dump_tree(std::ostream& os) const
 @chapter The Dezyne command-line tools
 
 @menu
-* Invoking Dzn::
+* Invoking dzn::
+* Invoking dzn code::
+* Invoking dzn verify::
 @end menu
 
-@node Invoking Dzn
-@section Invoking Dzn
+@node Invoking dzn
+@section Invoking @command{dzn}
 
-The @command{dzn} command is ...
+The @command{dzn} command is a front-end to Dezyne functions.
 
 @example
-dzn @var{option}@dots{} @code{command} @file{FILE}
+dzn @var{dzn-option}@dots{} @code{command} @var{command-option}@dots{} @file{FILE}...
+@end example
+
+Invoking @code{dzn} without @code{command} shows a list of available
+commands.
+
+The @var{dzn-option}s can be among the following:
+
+@table @code
+
+@item --debug
+@itemx -d
+Enable debug ouput.
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn}, and then exit.
+
+@c XXX move to structured output, recutils?
+@item --json
+@itemx -j
+Output json
+
+@item --peg
+@itemx -p
+Use plain @var{peg} parser, skip Well-formedness checking.
+
+@item --verbose
+@itemx -v
+Be more verbose, show progress.
+
+@item --version
+@itemx -V
+Display the current version of @code{dzn}, and then exit.
+
+@end table
+
+@c XXX do not describe cat and ls -- rethink these.
+@node Invoking dzn code
+@section Invoking @command{dzn code}
+
+The @command{dzn code} command generates C++ code for a Dezyne model
+file.  See @xref{Code Integration}.
+
+@example
+dzn @var{dzn-option}@dots{} code @var{option}@dots{} @file{FILE}
 @end example
 
 The @var{option}s can be among the following:
 
 @table @code
 
-@item -h@r{, }--help
-Display help on invoking Dzn, and then exit.
+@item --calling-context=@var{TYPE}
+@itemx -c @var{TYPE}
+Generate extra parameter of @var{type} for every event.
 
-@item -v@r{, }--version
-Display the current version of Dzn, and then exit.
+@item --glue=@var{TYPE}
+@itemx -g @var{TYPE}
+Generate glue for @var{TYPE} var.
+
+@item --import=@var{DIR}
+@itemx -I @var{DIR}
+Add directory @var{DIR} to import path.
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn code}, and then exit.
+
+@item --language=@var{LANG}
+@itemx -l @var{LANG}
+Generate code for language @var{LANG} var.
+
+@item --model=@var{MODEL}
+@itemx -m @var{MODEL}
+Generate main for @var{MODEL}.
+
+@item --output=@var{DIR}
+@itemx -o @var{DIR}
+Write output to directory @var{DIR} (use @code{-} for stdout).
+
+@item --shell=@var{MODEL}
+@itemx -s @var{MODEL}
+Generate thread-safe system shell for @var{MODEL}.  See @xref{Thread-safe Shell}.
 
 @end table
 
+@node Invoking dzn verify
+@section Invoking @command{dzn verify}
 
+The @command{dzn verify} command checks a Dezyne file for models with
+verification problems.  See @xref{Verifying Models}.
+
+@example
+dzn @var{dzn-option}@dots{} verify @var{option}@dots{} @file{FILE}
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --all
+@itemx -a
+Show all errors, i.e., keep going after finding an error.  By default,
+verification stops after finding a verification error.
+
+XXX: --all is more like make's --keep-going.
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn verify}, and then exit.
+
+@item --model=@var{MODEL}
+@itemx -m @var{MODEL}
+Limit verification to @var{MODEL}, and for behavioural component model,
+to its interfaces.
+
+XXX: Verification cannot be limited to system components models;
+verifying a system model is a no-op. XXX
+
+@item --queue_size=@var{SIZE}
+@itemx -q @var{SIZE}
+Use queue size @var{SIZE} for verification, the default is @code{3}.
+
+XXX: the underscore in --queue_size is weirdXXX
+
+@end table
 
 @node Dezyne Syntax
 @chapter Dezyne Syntax
@@ -4784,8 +4898,10 @@ The component's internal description comes in three flavors:
 @cindex port
 @cindex injection
 @cindex component
+
 @node Interface and Component Behaviour
 @section Interface and Component Behaviour
+
 A behaviour description might look like this:
 
 
@@ -5217,9 +5333,10 @@ generic recursive case cannot be verified.
 @cindex behaviour
 @cindex assignment
 @cindex action
-@node System Components
 
+@node System Components
 @section System Components
+
 A component which is composed from a number of sub components has a
 'system' internal description.  This description specifies the available
 sub component instances, and all connections between the component
@@ -5413,8 +5530,8 @@ component MySystem @{
 @cindex port
 @cindex injection
 @cindex bind
-@node Namespaces
 
+@node Namespaces
 @section Namespaces
 
 All component, interface, and type definitions can be defined in a
