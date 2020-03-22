@@ -33,6 +33,8 @@ EXTRA_DIST =					\
  guix.scm					\
  guix/gnu/packages/dzn.scm
 
+dist_lisp_DATA = emacs/dzn-mode.el
+
 exampledir = $(docdir)
 
 # Modules and scripts
