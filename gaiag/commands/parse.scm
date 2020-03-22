@@ -76,8 +76,7 @@
             (behaviour (single-char #\b) (value #f))
             (locations (single-char #\L))
             (model (single-char #\m) (value #t))
-            (output (single-char #\o) (value #t))
-	    (version (single-char #\V) (value #t))))
+            (output (single-char #\o) (value #t))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
@@ -93,21 +92,19 @@ Usage: dzn parse [OPTION]... [FILE]...
   -m, --model=MODEL      generate ast for MODEL
   -b, --behaviour        include behaviour of imported models,
   -o, --output=FILE      write ast to FILE
-  -V, --version=VERSION  use service version=VERSION
 ")
           (exit (or (and usage? 2) 0))))
     options))
 
 (define (parse options file-name)
-  (let* ((generator? (gdzn:command-line:get 'generator #f))
-         (peg? (gdzn:command-line:get 'peg #f))
+  (let* ((peg? (gdzn:command-line:get 'peg #f))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (model-name (option-ref options 'model #f))
          (behaviour? (option-ref options 'behaviour #f))
          (locations? (option-ref options 'locations #f))
          (language (option-ref options 'language "c++")))
-    (parse-file file-name #:generator? generator? #:peg? peg? #:imports imports #:model-name model-name #:behaviour? behaviour? #:locations? locations?)))
+    (parse-file file-name #:peg? peg? #:imports imports #:model-name model-name #:behaviour? behaviour? #:locations? locations?)))
 
 (define (assert-parse options file-name)
   (catch #t

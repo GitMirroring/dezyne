@@ -35,12 +35,8 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((ast (single-char #\A))
-            (calling-context (single-char #\c) (value #t))
+          '((calling-context (single-char #\c) (value #t))
             (debug (single-char #\d))
-            (depends) ;; FIXME
-            (deprecated (value #t))
-            (gaiag (single-char #\G))
             (glue (single-char #\g) (value #t))
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
@@ -49,8 +45,7 @@
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))
             (queue_size (single-char #\q) (value #t))
-            (shell (single-char #\s) (value #t))
-	    (version (single-char #\V) (value #t))))
+            (shell (single-char #\s) (value #t))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
@@ -60,9 +55,7 @@
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
 Usage: dzn code [OPTION]... DZN-FILE [MAP-FILE]...
-  -A, --ast                   generate AST
   -c, --calling-context=TYPE  generate extra parameter of TYPE for every event
-FIXME:      --depends[=TYPE]        generate dependency for DZN-FILE and write to DZN-FILE.TYPE, default is stdout
   -g, --glue=TYPE             generate glue for TYPE [dzn]
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path
@@ -70,8 +63,8 @@ FIXME:      --depends[=TYPE]        generate dependency for DZN-FILE and write t
   -L, --locations             prepend locations to output trace
   -m, --model=MODEL           generate main for MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
+  -q, --queue_size=SIZE       use queue size SIZE
   -s, --shell=MODEL           generate thread safe system shell for MODEL
-  -V, --version=VERSION       use service version=VERSION
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))
