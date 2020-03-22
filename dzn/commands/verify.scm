@@ -39,7 +39,6 @@
   #:use-module (dzn goops)
   #:use-module (dzn ast)
   #:use-module (dzn config)
-  #:use-module (dzn json2scm)
   #:use-module (dzn misc)
   #:use-module (dzn makreel)
   #:use-module (dzn commands parse)
