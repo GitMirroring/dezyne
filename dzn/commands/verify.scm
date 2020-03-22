@@ -57,13 +57,11 @@
   (let* ((option-spec
           '((all (single-char #\a))
             (debug (single-char #\d))
-            (dzn (single-char #\G))
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))
-            (queue_size (single-char #\q) (value #t))
-	    (version (single-char #\V) (value #t))))
+            (queue_size (single-char #\q) (value #t))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
@@ -79,7 +77,6 @@ Usage: dzn verify [OPTION]... DZN-FILE [MAP-FILE]...
   -m, --model=MODEL           generate main for MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
   -q, --queue_size=SIZE       use queue size=SIZE for verification [3]
-  -V, --version=VERSION       use service version=VERSION
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))

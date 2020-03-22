@@ -92,18 +92,7 @@
 
 (define-public (dzn-async? o)
   (and (is-a? o <interface>)
-       (or (dzn-dzn-async? o)
-           (generator-dzn-async? o))))
-
-(define (dzn-dzn-async? o)
-  (equal? (ast:full-name o) '("dzn" "async")))
-
-(define (generator-dzn-async? o)
-  (let* ((name (.name o))
-         (scope (ast:scope name)))
-    (and (pair? scope)
-         (equal? (car scope) "dzn")
-         (string-prefix? "async" (ast:name name)))))
+       (equal? (ast:full-name o) '("dzn" "async"))))
 
 (define (dzn:extension o)
   (match o

@@ -37,12 +37,9 @@
 (define (parse-opts args)
   (let* ((option-spec
 	  '((debug (single-char #\d))
-	    (generator (single-char #\g))
             (help (single-char #\h))
-            (html (single-char #\H))
             (json (single-char #\j))
 	    (peg (single-char #\p))
-	    (session (single-char #\S) (value #t))
 	    (verbose (single-char #\v))
 	    (version (single-char #\V))))
 	 (options (getopt-long args option-spec
@@ -68,11 +65,8 @@
 Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -d, --debug            enable debug ouput
   -h, --help             display this help
-  -H, --html             output html
   -j, --json             output json
-  -g, --generator        use generator
   -p, --peg              use plain PEG, skip well-formedness
-  -S, --session=SESSION  use session=SESSION [1]
   -v, --verbose          be more verbose, show progress
   -V, --version          display version
 
