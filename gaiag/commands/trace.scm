@@ -384,7 +384,10 @@ ws               <   [ \t]
                 (location (car locations))
                 (file (assoc-ref location "file")))
            (and file
-                (format #f "~a:~a:~a" file (assoc-ref location "line") (assoc-ref location "column")))))))
+                (format #f "~a:~a:~a:~a" file
+                        (assoc-ref location "line")
+                        (assoc-ref location "column")
+                        (if (equal? (assoc-ref sexp "kind") "Error") "error" "info")))))))
 
 (define (seqdiag:sequence->steps sequence model)
   (define (seqdiag:state->string state)
