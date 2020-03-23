@@ -412,46 +412,6 @@ Toggle on/off: M-x dzn-save RET."
 (defun dzn-command-string (name &optional options)
   (mapconcat 'identity (dzn-command-list name options) " "))
 
-(defun dzn-run (model)
-  (interactive (list (let ((prompt (format "model: ")))
-                       (completing-read prompt
-                                        (or dzn-models (dzn-get-models))
-                                        nil t nil
-                                        'dzn-model
-                                        dzn-guess-model))))
-  (setq dzn-indexes nil)
-  (setq dzn-eligible nil)
-  (let* ((model-option (if (and (stringp model)
-                                (not (string= model "")))
-                           (concat " --model=" model) "")))
-    (dzn-command "run" (list model-option) nil "")
-    (setq dzn-model model)
-    (setq compilation-finish-functions '())
-    (if (not (member 'dzn-handle-trace compilation-finish-functions))
-        (push 'dzn-handle-trace compilation-finish-functions))))
-
-(defun dzn-run-event (event)
-  (interactive (list (let* ((next (and (= (length dzn-eligible) 1)
-                                       (car dzn-eligible)))
-                            (prompt (format "event: ")))
-                       (completing-read prompt dzn-eligible nil t next
-                                        'dzn-trace-history
-                                        nil))))
-  (dzn-command "run" (list (concat "--model=" dzn-model) "--forward=") nil event)
-  (setq compilation-finish-functions '())
-  (if (not (member 'dzn-handle-trace compilation-finish-functions))
-      (push 'dzn-handle-trace compilation-finish-functions)))
-
-(defun dzn-run-back ()
-  (interactive)
-  (dzn-command "run" '("--back"))
-  (setq compilation-finish-functions '())
-  (if (not (member 'dzn-handle-trace compilation-finish-functions))
-      (push 'dzn-handle-trace compilation-finish-functions)))
-
-(defvar dzn-eligible ()
-  "Eligible events.")
-
 (defun dzn-handle-trace (buffer msg)
   (when (equal (buffer-name buffer) "*dzn-compilation*")
     (or dzn-ws (dzn-register))
@@ -658,9 +618,6 @@ Toggle on/off: M-x dzn-save RET."
 (if dzn-mode-map ()
   (setq dzn-mode-map (make-sparse-keymap))
   (define-key dzn-mode-map "\C-c\C-c" 'compile)
-  (define-key dzn-mode-map "\C-c\C-r" 'dzn-run)
-  (define-key dzn-mode-map "\C-c\C-e" 'dzn-run-event)
-  (define-key dzn-mode-map "\C-c\C-b" 'dzn-run-back)
   (define-key dzn-mode-map "\C-c\C-p" 'dzn-parse)
   (define-key dzn-mode-map "\C-c\C-u" 'dzn-update)
   (define-key dzn-mode-map "\C-c\C-v" 'dzn-verify))
@@ -673,9 +630,6 @@ Toggle on/off: M-x dzn-save RET."
           '([ "Goto index" dzn-goto-index t])
           '([ "Parse" dzn-parse t])
           '([ "Register Emacs" dzn-register t])
-          '([ "Run" dzn-run t])
-          '([ "Run event" dzn-run-event t])
-          '([ "Run back" dzn-run-back t])
           '([ "Select view" dzn-select-view t])
           '([ "Update views" dzn-update t])
           '([ "Verify" dzn-verify t])))
