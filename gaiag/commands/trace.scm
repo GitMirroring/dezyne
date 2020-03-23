@@ -373,10 +373,14 @@ ws               <   [ \t]
                       "?"))
                ""))
 
+(define (json-vector->list o)
+  ;; guile-json-3 translates arrays to vectors
+  (if (vector? o) (vector->list o) o))
+
 (define (seqdiag:sexp->location sexp)
   (let ((selection (assoc-ref sexp "selection")))
     (and selection
-         (let* ((locations (vector->list selection))
+         (let* ((locations (json-vector->list selection))
                 (location (car locations))
                 (file (assoc-ref location "file")))
            (and file
@@ -386,7 +390,7 @@ ws               <   [ \t]
   (define (seqdiag:state->string state)
     (define (alist->string x)
       (format #f "~a=~a" (assoc-ref x "variable") (assoc-ref x "value")))
-    (string-join (map alist->string (vector->list state))))
+    (string-join (map alist->string (json-vector->list state))))
   (define (seqdiag:sexp->step sexp)
     (make-seqdiag-step (seqdiag:sexp->location sexp)
                        (assoc-ref sexp "instance")
@@ -410,6 +414,13 @@ ws               <   [ \t]
          (steps (if error (cons error steps) steps)))
     steps))
 
+(define (json->alist-scm src)
+  (match src
+    ((? hash-table?) (json->alist-scm (hash-table->alist src)))
+    ((h ...) (map json->alist-scm src))
+    ((h . t) (cons (json->alist-scm h) (json->alist-scm t)))
+    (_ src)))
+
 (define* (seqdiag:sexp->steps sexp #:key (file-name "<stdin>"))
   (let* ((sequence (json-vector->list sexp))
          (model (seqdiag:get-model sequence))
@@ -420,7 +431,7 @@ ws               <   [ \t]
   (string-prefix? "[{" string))
 
 (define (seqdiag:format-sexp sexp)
-  (let ((steps (seqdiag:sexp->steps sexp)))
+  (let ((steps (seqdiag:sexp->steps (json->alist-scm sexp))))
     (string-join (map seqdiag:step->string steps) "\n" 'suffix)))
 
 (define (seqdiag:format-trace trace)
