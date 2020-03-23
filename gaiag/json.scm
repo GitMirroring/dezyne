@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -78,12 +79,15 @@
 (define-method (json:elements (o <ast-list>))
   (json:elements (.node o)))
 
+(define (unspecified? x) (eq? x *unspecified*))
+
 (define-method (json:value o)
   (match o
-         ((? string?) (string-append "\"" o "\""))
-         ((? symbol?) (string-append "\"" (symbol->string o) "\""))
-         ((? pair?) (map json:value o))
-         (_ o)))
+    ((? string?) (format #f "~s" o))
+    ((? symbol?) (json:value (symbol->string o)))
+    ((? pair?) (map json:value o))
+    ((? unspecified?) (json:value "undefined"))
+    (_ o)))
 
 (define-method (json:value (o <json:field>))
   (json:value (.value o)))
