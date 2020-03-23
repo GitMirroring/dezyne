@@ -1,4 +1,4 @@
-From 0ebc6b8f89680f5353693f591c24c82c8cea9ba1 Mon Sep 17 00:00:00 2001
+From 5d88386506a575f84ba8f7aac01ee388a1463ba7 Mon Sep 17 00:00:00 2001
 From: Jan Nieuwenhuizen <janneke@gnu.org>
 Date: Wed, 4 Mar 2020 11:17:02 +0100
 Subject: [PATCH] build: Support cross building.
@@ -13,39 +13,36 @@ Subject: [PATCH] build: Support cross building.
  3 files changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
-index 996f18b..e9434be 100644
+index 5d8e95d..627da9a 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -42,7 +42,7 @@ nobase_nodist_obj_DATA = $(GOBJECTS)
+@@ -47,4 +47,4 @@ CLEANFILES = $(GOBJECTS)
  GUILE_WARNINGS = -Wunbound-variable -Warity-mismatch -Wformat
  SUFFIXES = .scm .go
  .scm.go:
--	$(top_builddir)/env $(GUILD) compile $(GUILE_WARNINGS) -o "$@" "$<"
+-	$(top_builddir)/env $(GUILE_TOOLS) compile $(GUILE_WARNINGS) -o "$@" "$<"
 +	$(top_builddir)/env $(GUILE_TOOLS) compile --target="$(host)" $(GUILE_WARNINGS) -o "$@" "$<"
- 
- SOURCES = json.scm
- 
 diff --git a/configure.ac b/configure.ac
-index fbc1aff..937dcf7 100644
+index d300631..0803b30 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -25,6 +25,7 @@ AC_CONFIG_SRCDIR(json.scm)
+@@ -24,6 +24,7 @@ AC_CONFIG_SRCDIR(json.scm)
  AC_CONFIG_AUX_DIR([build-aux])
  AM_INIT_AUTOMAKE([color-tests -Wall -Wno-portability])
  AM_SILENT_RULES([yes])
 +AC_CANONICAL_HOST
  
- dnl We require pkg.m4 (from pkg-config) and guile.m4.
+ dnl We require pkg.m4 (from pkg-config) and guile.m4 (from Guile.)
  dnl Make sure they are available.
 diff --git a/json/Makefile.am b/json/Makefile.am
-index adf5972..0085a81 100644
+index 1c0acd1..5111818 100644
 --- a/json/Makefile.am
 +++ b/json/Makefile.am
 @@ -36,4 +36,4 @@ CLEANFILES = $(GOBJECTS)
  GUILE_WARNINGS = -Wunbound-variable -Warity-mismatch -Wformat
  SUFFIXES = .scm .go
  .scm.go:
--	$(top_builddir)/env $(GUILD) compile $(GUILE_WARNINGS) -o "$@" "$<"
+-	$(top_builddir)/env $(GUILE_TOOLS) compile $(GUILE_WARNINGS) -o "$@" "$<"
 +	$(top_builddir)/env $(GUILE_TOOLS) compile --target="$(host)" $(GUILE_WARNINGS) -o "$@" "$<"
 -- 
 2.24.0
