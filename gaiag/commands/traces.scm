@@ -85,7 +85,7 @@ Usage: dzn traces [OPTION]... DZN-FILE
   -i, --illegal               include traces that lead to an illegal
   -I, --import=DIR+           add DIR to import path
   -l, --lts                   generate lts
-  -m, --model=MODEL           generate main for MODEL
+  -m, --model=MODEL           generate traces for model MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
   -q, --queue_size=SIZE       use queue size=SIZE for generation
 ")
