@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -27,12 +27,13 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
-  #:use-module (gaiag misc)
+  #:use-module (gaiag config)
   #:use-module (gaiag command-line)
   #:use-module (gaiag commands parse)
   #:export (parse-opts
             main))
 
+(define %default-language "c++")
 (define (parse-opts args)
   (let* ((option-spec
           '((calling-context (single-char #\c) (value #t))
@@ -53,19 +54,21 @@
 	 (usage? (and (not help?) (null? files))))
     (or
      (and (or help? usage?)
-          ((or (and usage? stderr) stdout) "\
+          (format ((or (and usage? current-error-port) current-output-port)) "\
 Usage: dzn code [OPTION]... DZN-FILE [MAP-FILE]...
   -c, --calling-context=TYPE  generate extra parameter of TYPE for every event
   -g, --glue=TYPE             generate glue for TYPE [dzn]
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path
-  -l, --language=LANG         generate code for language=LANG [c++]
+  -l, --language=LANG         generate code for language=LANG [~a]
   -L, --locations             prepend locations to output trace
   -m, --model=MODEL           generate main for MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
   -q, --queue_size=SIZE       use queue size SIZE
   -s, --shell=MODEL           generate thread safe system shell for MODEL
-")
+
+Languages: ~a
+" %default-language (string-join (append %languages '("json" "makreel"))))
 	   (exit (or (and usage? 2) 0)))
      options)))
 
@@ -74,7 +77,7 @@ Usage: dzn code [OPTION]... DZN-FILE [MAP-FILE]...
          (files (option-ref options '() '()))
          (file-name (car files))
          (map-files (cdr args))
-         (language-opt (option-ref options 'language "c++"))
+         (language-opt (option-ref options 'language %default-language))
          (options (if (equal? language-opt "scheme") (acons 'behaviour #t options)
                       options))
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
