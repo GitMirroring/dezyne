@@ -102,8 +102,7 @@ Usage: dzn parse [OPTION]... [FILE]...
          (imports (filter-map import-opt options))
          (model-name (option-ref options 'model #f))
          (behaviour? (option-ref options 'behaviour #f))
-         (locations? (option-ref options 'locations #f))
-         (language (option-ref options 'language "c++")))
+         (locations? (option-ref options 'locations #f)))
     (parse-file file-name #:peg? peg? #:imports imports #:model-name model-name #:behaviour? behaviour? #:locations? locations?)))
 
 (define (assert-parse options file-name)
