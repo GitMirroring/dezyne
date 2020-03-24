@@ -60,7 +60,6 @@
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
-            (output (single-char #\o) (value #t))
             (queue_size (single-char #\q) (value #t))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
@@ -70,12 +69,11 @@
     (or
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
-Usage: dzn verify [OPTION]... DZN-FILE [MAP-FILE]...
-  -a, --all                   run all checks
+Usage: dzn verify [OPTION]... DZN-FILE
+  -a, --all                   keep going after first error
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path
-  -m, --model=MODEL           generate main for MODEL
-  -o, --output=DIR            write output to DIR (use - for stdout)
+  -m, --model=MODEL           restrict verification to model MODEL
   -q, --queue_size=SIZE       use queue size=SIZE for verification [3]
 ")
 	   (exit (or (and usage? 2) 0)))
