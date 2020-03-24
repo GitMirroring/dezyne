@@ -49,6 +49,7 @@ do_subst = sed						\
   -e 's,[@]pkgdatadir[@],$(pkgdatadir),g'		\
   -e 's,[@]guilemoduledir[@],$(guilemoduledir),g'	\
   -e 's,[@]guileobjectdir[@],$(guileobjectdir),g'	\
+  -e 's,[@]languages[@],$(languages),g'			\
   -e 's,[@]PACKAGE_VERSION[@],$(PACKAGE_VERSION),g'	\
   -e 's,[@]VERSION_MAJOR[@],$(VERSION_MAJOR),g'		\
   -e 's,[@]VERSION_MINOR[@],$(VERSION_MINOR),g'		\
