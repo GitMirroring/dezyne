@@ -63,7 +63,8 @@ This document describes Dezyne version @value{VERSION}.
 * Dezyne Syntax::
 * Well-formedness::
 * Glossary::
-* Index::
+* Concept Index::               Concepts.
+* Programming Index::           Data types, functions, and variables.
 * GNU Free Documentation License::  The license of this manual.
 
 @detailmenu
@@ -6924,6 +6925,7 @@ will result in the following error message:
 @end example
 
 
+@c *********************************************************************
 @node Glossary
 @chapter Glossary
 
@@ -7170,9 +7172,16 @@ will result in the following error message:
 @tab -
 @end multitable
 
-@node Index
-@unnumbered Index
+@c *********************************************************************
+@node Concept Index
+@unnumbered Concept Index
 @printindex cp
+
+@node Programming Index
+@unnumbered Programming Index
+@syncodeindex tp fn
+@syncodeindex vr fn
+@printindex fn
 
 @c *********************************************************************
 @node GNU Free Documentation License
