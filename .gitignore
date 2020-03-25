@@ -26,6 +26,8 @@ stamp-vti
 /config.status
 /configure
 /doc/dezyne.info
+/doc/dezyne.pdf
+/doc/html/
 /doc/version.texi
 /dzn/config.scm
 /pre-inst-env
