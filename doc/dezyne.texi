@@ -28,8 +28,8 @@ Documentation License''.
 
 @dircategory Software development
 @direntry
-* Dezyne: (dzn).                Dezyne component based.
-* dzn: (dzn)Invoking dzn.       Running Dzn.
+* Dezyne: (dezyne).                Dezyne Reference Manual.
+* dzn: (dezyne)Invoking dzn.       Running Dzn.
 @end direntry
 
 @titlepage
