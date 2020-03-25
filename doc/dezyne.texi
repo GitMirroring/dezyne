@@ -231,8 +231,8 @@ data is separated from control
 @item
 components allow for functional decomposition
 @item
-interfaces specify the conversions between each peer in a point
-to point relation
+interfaces specify the conversations between each peer in a point to
+point relation
 @end itemize
 @end itemize
 @itemize
