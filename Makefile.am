@@ -186,24 +186,33 @@ MAKEINFO_HTML_OPTIONS =									\
  --css-ref=https://www.gnu.org/software/gnulib/manual.css				\
  -c EXTRA_HEAD='<meta name="viewport" content="width=device-width, initial-scale=1" />'
 
+# Ask for warnings about cross-referenced manuals that are not listed in
+# htmlxref.cnf.
+EXTRA_DIST += .texinfo/htmlxref.cnf
+AM_MAKEINFOHTMLFLAGS = --set-customization-variable CHECK_HTMLXREF=true
+
 doc/html/index.html: ${srcdest}doc/dezyne.texi doc/version.texi $(WEB_IMAGES)
 	mkdir -p $(@D)/html_node
 	$(MAKEINFO) --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/html_node -I ${srcdest}doc -I doc $<
 	$(MAKEINFO) --no-split --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/dezyne.html -I ${srcdest}doc -I doc $<
 
-SITE = /srv/dezyne/
+SITE = /srv/dezyne
 publish: html pdf
-	rsync -P -rvz --delete doc/html/ $(SITE)/manuals/
-	rsync -P -rvz --delete doc/images $(SITE)/manuals/
-	rsync -P -rvz --delete doc/images $(SITE)/manuals/html_node/
-	rsync -P -rvz --delete doc/dezyne.pdf $(SITE)/manuals/
+	rsync -P -v . $(SITE)/
+	rsync -P -v . $(SITE)/manual/
+	rsync -P -rvz --delete doc/html/ $(SITE)/manual/
+	rsync -P -rvz --delete doc/images $(SITE)/manual/
+	rsync -P -rvz --delete doc/images $(SITE)/manual/html_node/
+	rsync -P -rvz doc/dezyne.pdf $(SITE)/manual/
 
-LOCAL_SITE = $(HOME)/src/web/dezyne.org/site/
+LOCAL_SITE = $(HOME)/src/web/dezyne.org/site/dezyne
 publish-local: html pdf
-	rsync -P -rvz --delete doc/html/ $(LOCAL_SITE)/manuals/
-	rsync -P -rvz --delete doc/images $(LOCAL_SITE)/manuals/
-	rsync -P -rvz --delete doc/images $(LOCAL_SITE)/manuals/html_node/
-	rsync -P -rvz --delete doc/dezyne.pdf $(LOCAL_SITE)/manuals/
+	rsync -P -v . $(LOCAL_SITE)/
+	rsync -P -v . $(LOCAL_SITE)/manual/
+	rsync -P -rvz --delete doc/html/ $(LOCAL_SITE)/manual/
+	rsync -P -rvz --delete doc/images $(LOCAL_SITE)/manual/
+	rsync -P -rvz --delete doc/images $(LOCAL_SITE)/manual/html_node/
+	rsync -P -rvz  doc/dezyne.pdf $(LOCAL_SITE)/manual/
 
 # Distribution
 ##############
