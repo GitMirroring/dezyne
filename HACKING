@@ -70,8 +70,35 @@ Try something like
     ./configure --host=x86_64-w64-mingw32
     make GUILE_TOOLS=$GUILE_TOOLS
 
+* Documentation
+
+** For the Dezyne manual, do something like:
+
+#+BEGIN_SRC bash
+$(grep -o 'guix time.*' *.scm) --ad-hoc texlive-bin texlive-base texlive-tex-plain texlive-tex-texinfo texlive-epsf rsync
+./autogen.sh
+./configure
+git clean -fdx -- doc
+make info html pdf
+make publish SITE=kluit.dezyne.org:/srv/dezyne.org/site/dezyne
+#+END_SRC
+
+** For the dezyne.org website
+
+#+BEGIN_SRC bash
+git clone kluit.dezyne.org:~janneke/src/web/dezyne.org.git
+cd dezyne.org
+guix environment -m guix.scm
+make
+make serve # => check localhost:8080
+make publish
+#+END_SRC
+
+** Emacs
+(push "/home/janneke/src/verum/ide/wip-doc/doc" Info-directory-list)
+
 * Legalese
-Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2019,2020 Jan Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
