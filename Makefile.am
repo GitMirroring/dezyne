@@ -355,6 +355,8 @@ linux:
 	chmod +x  $(distdir)/dzn
 	sed s,@COMMAND@,guile, bin/wrapper.sh > $(distdir)/guile
 	chmod +x  $(distdir)/guile
+	sed s,@COMMAND@,dzn-env, bin/dzn-env.sh > $(distdir)/dzn-env
+	chmod +x  $(distdir)/dzn-env
 	cp test/all/hello/hello.dzn $(distdir)
 	cp test/all/compliance_provides_bool/compliance_provides_bool.dzn $(distdir)
 	cp test/all/Camera/Camera.dzn $(distdir)
