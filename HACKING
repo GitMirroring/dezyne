@@ -53,6 +53,12 @@ Try something like
     ./configure --host=x86_64-w64-mingw32
     make GUILE_TOOLS=$GUILE_TOOLS
 
+* Documentation
+
+** Emacs
+(push "/home/janneke/src/verum/dzn/wip-doc/doc" Info-directory-list)
+(push "/home/janneke/src/verum/ide/wip-doc/doc" Info-directory-list)
+
 * Legalese
 Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 
