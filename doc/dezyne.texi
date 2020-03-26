@@ -9,6 +9,13 @@
 
 @include version.texi
 
+@c Identifier of the OpenPGP key used to sign tarballs and such.
+@set OPENPGP-SIGNING-KEY-ID 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+@set OPENPGP-SIGNING-KEY-URL https://savannah.gnu.org/people/viewgpg.php?user_id=4348
+
+@c Base URL for downloads.
+@set BASE-URL https://dezyne.org/download
+
 @copying
 Copyright @copyright{} 2014 Ard-Jan Moerdijk@*
 Copyright @copyright{} 2014, 2020 Rutger van Beusekom@*
@@ -55,6 +62,7 @@ This document describes Dezyne version @value{VERSION}.
 
 @menu
 * Introduction::                What is Dezyne about?
+* Installation::                Installing Dezyne.
 * The Dezyne Modeling Language::
 * Execution Semantics::         How does it work?
 * Verifying Models::            A guide to verification.
@@ -76,6 +84,11 @@ Introduction
 * Principles::
 * Typical use of Dezyne::
 * The Dezyne Application Domain::
+
+Installation
+
+* Binary Installation::         Getting Dezyne running in no time!
+* Requirements::                Software needed to build and run Dezyne.
 
 The Dezyne Modeling Language
 
@@ -171,7 +184,6 @@ Contributing
 @end menu
 
 @c *********************************************************************
-
 @node Introduction
 @chapter Introduction
 
@@ -437,6 +449,178 @@ an overarching goal.
 Dezyne allows carefully composing the controlling structure together
 with appropriate data transformation, whilst maintaining the ability
 to reason about each facet separately.
+
+@c *********************************************************************
+@node Installation
+@chapter Installation
+
+@cindex installing Dezyne
+
+There are two ways te get started with Dezyne: use a binary installation
+that we prepared especially for you, or you can build Dezyne from source
+yourself.  When you plan on contributing to Dezyne, @xref{Contributing},
+you may want to skip the sections on binary installation.
+
+@menu
+* Binary Installation::         Getting Dezyne running in no time!
+* Requirements::                Software needed to build and run Dezyne.
+@end menu
+
+@node Binary Installation
+@section Binary Installation
+
+@cindex installing Dezyne from binaries
+This section describes how to install Dezyne on an arbitrary system from a
+self-contained tarball providing binaries for Dezyne and for all its
+dependencies.  This is often quicker than installing from source, which
+is described in the next sections.  The only requirement is to have
+GNU@tie{}tar and gzip.
+
+@subsection Generic GNU/Linux Binary
+
+Installing goes along these lines:
+
+@enumerate
+@item
+@cindex downloading Dezyne binary
+Download the binary tarball from
+@indicateurl{@value{BASE-URL}/dezyne-@value{VERSION}-x86_64-linux.tar.gz},
+e.g.:
+
+@example
+$ wget @value{BASE-URL}/dezyne-@value{VERSION}-x86_64-linux.tar.gz
+@end example
+
+Make sure to download the associated @file{.sig} file and to verify the
+authenticity of the tarball against it, do something like:
+
+@example
+$ wget @value{BASE-URL}/dezyne-@value{VERSION}-x86_64-linux.tar.gz.sig
+$ gpg --verify dezyne-@value{VERSION}-x86_64-linux.tar.gz.sig
+@end example
+
+If that command fails because you do not have the required public key,
+then run this command to import it:
+
+@example
+$ wget @value{OPENPGP-SIGNING-KEY-URL} \
+      -qO - | gpg --import -
+@end example
+
+@noindent
+and rerun the @code{gpg --verify} command.
+
+Take note that a warning like ``This key is not certified with a trusted
+signature!'' is normal.
+
+Now, you can unpack the tarball; do something like:
+
+@example
+$ tar --warning=no-timestamp -xf /path/to/dezyne-@value{VERSION}-x86-64.tar.gz
+@end example
+
+Then try:
+@example
+$ cd dezyne-@value{VERSION}
+$ ./dzn --help
+@end example
+
+@item
+Make the @command{dzn} command available from other locations or to
+other users on the machine, for instance with:
+
+@example
+$ ln -s $PWD/dzn ~/bin/dzn
+or
+# ln -s $PWD/dzn /usr/local/bin/dzn
+@end example
+
+@item
+And optionally, make the @command{dzn-env}
+prefix-command@footnote{@command{dzn-env} can be used as a prefix for
+using programs from your operating system, such as @command{info},
+@command{man}, or @command{emacs}; so that they may find and use the
+documentation and extensions that are provided in the binary release.}
+available:
+
+@example
+$ ln -s $PWD/dzn-env ~/bin/dzn-env
+or
+# ln -s $PWD/dzn-env /usr/local/bin/dzn-env
+@end example
+
+@c TODO: an installer script, either taking care of system-wide
+@c installation (/usr/local, -- /opt?) or for an ordinary user: ~/bin/
+@c or ~/.local/bin and environment settings?
+
+@item
+Test your installation
+
+@example
+$ dzn hello
+$ dzn-env info dezyne
+@end example
+
+@end enumerate
+
+@noindent
+and get busy Dezyne'ing, @xref{The Dezyne command-line tools}!  You can
+skip the following sections about building from source.
+
+
+@subsection Generic Microsoft Windows Binary
+
+Installing goes along these lines:
+
+@enumerate
+@item
+@cindex downloading Dezyne binary
+Download the binary zip archive from
+@indicateurl{@value{BASE-URL}/dezyne-@value{VERSION}-i686-windows.zip},
+@end enumerate
+
+@c XXX TODO
+@dots{}
+
+@noindent
+and get busy Dezyne'ing, @xref{The Dezyne command-line tools}!  You can
+skip the following sections about building from source.
+
+@node Requirements
+@section Requirements
+
+This section lists requirements when building Dezyne from source.  The
+build procedure for Dezyne is the same as for GNU software, and is not
+covered here.  Please see the files @file{README} and @file{INSTALL} in
+the Dezyne source tree for additional details.
+
+@cindex official website
+Dezyne is available for download from its website at
+@url{https://dezyne.org/download.html}.
+
+Dezyne depends on the following packages:
+
+@itemize
+@item @url{https://gnu.org/software/guile/, GNU Guile}, version 3.0.x or
+2.2.x;
+@item @url{https://www.gnu.org/software/make/, GNU Make}.
+@item @url{https://mcrl2.org, mCRL2}, version 202006.0
+@item @url{https://gnu.org/software/m4/, GNU m4}, compiled with @code{--enable-changeword}
+@end itemize
+
+and to use the code that is generated by Dezyne, which includes running
+the regression test:
+@itemize
+@item @url{https://gcc.gnu.org, GCC's g++}, version 5.4 or later
+@end itemize
+
+Dezyne optionally uses the following packages:
+@itemize
+@item @uref{https://savannah.nongnu.org/projects/guile-json/, Guile-JSON} 1.x;
+@end itemize
+
+to provide support for the views of the Dezyne IDE, @xref{Dezyne
+Views,Dezyne Views,,dezyne-ide,Dezyne Views}.
 
 @c *********************************************************************
 @node The Dezyne Modeling Language
