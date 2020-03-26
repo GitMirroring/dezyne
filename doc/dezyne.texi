@@ -62,6 +62,7 @@ This document describes Dezyne version @value{VERSION}.
 * The Dezyne command-line tools::
 * Dezyne Syntax::
 * Well-formedness::
+* Contributing::
 * Glossary::
 * Concept Index::               Concepts.
 * Programming Index::           Data types, functions, and variables.
@@ -162,6 +163,10 @@ Dezyne Syntax
 * Interface and Component Behaviour::
 * System Components::
 * Namespaces::
+
+Contributing
+
+* The Perfect Setup::
 
 @end detailmenu
 @end menu
@@ -435,7 +440,6 @@ with appropriate data transformation, whilst maintaining the ability
 to reason about each facet separately.
 
 @c *********************************************************************
-
 @node The Dezyne Modeling Language
 @chapter The Dezyne Modeling Language
 
@@ -6924,6 +6928,37 @@ will result in the following error message:
 
 @end example
 
+@c *********************************************************************
+@node Contributing
+@chapter Contributing
+
+This project is a cooperative effort, and we need your help to make it
+grow!  Please get in touch with us on @email{dezyne-devel@@nongnu.org}
+and @code{#dezyne} on the Freenode IRC network.  We welcome ideas, bug
+reports, patches, and anything that may be helpful to the project.
+
+@menu
+* The Perfect Setup::
+@end menu
+
+@node The Perfect Setup
+@section The Perfect Setup
+
+The Perfect Setup for using Dezyne is to use the Dezyne IDE,
+see @ref{Top, Dezyne IDE,,dezyne-ide, the Dezyne IDE Manual}.
+
+The Perfect Setup to hack on Dezyne is basically the perfect setup used
+for GNU Guile hacking (@pxref{Using Guile in Emacs,,, guile, Guile
+Reference Manual}).  To work on real-life Dezyne projects, you need more
+than an editor, you need an IDE, @xref{Top,Dezyne IDE
+Manual,,dezyne-ide,Dezyne IDE Manual}.
+
+@table @code
+@item GNU Emacs
+To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
+@item ...
+...
+@end table
 
 @c *********************************************************************
 @node Glossary
