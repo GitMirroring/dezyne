@@ -332,8 +332,7 @@ dzn_linux =					\
 
 STRIP_FILES =					\
  gnu/store/*-boost*				\
- gnu/store/*/include				\
- gnu/store/*/share/man
+ gnu/store/*/include
 
 TAR = tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner
 
