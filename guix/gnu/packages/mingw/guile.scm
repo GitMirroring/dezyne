@@ -131,7 +131,7 @@ C or C++ programs, though that is not its primary goal.")
 
 (define-public guile-mingw
   (let ((commit "6d6bc013e1f9db98334e1212295b8be0e39fbf0a")
-        (revision "2"))
+        (revision "3"))
     (package
       (inherit guile-2.2)
       (name "guile-mingw")
@@ -144,7 +144,8 @@ C or C++ programs, though that is not its primary goal.")
                       (commit commit)))
                 (patches (search-patches "guile-mingw-piped-process.patch"
                                          "guile-mingw-fcntl.patch"
-                                         "guile-mingw-sigaction.patch"))
+                                         "guile-mingw-sigaction.patch"
+                                         "guile-mingw-suspendable.patch"))
                 (file-name (string-append name "-" version "-checkout"))
                 (sha256
                  (base32

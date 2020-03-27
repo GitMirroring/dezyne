@@ -1,0 +1,35 @@
+From cfaf31dcbaf49a03957ad1c42ae891184d8be84a Mon Sep 17 00:00:00 2001
+From: Jan Nieuwenhuizen <janneke@gnu.org>
+Date: Fri, 27 Mar 2020 21:29:23 +0100
+Subject: [PATCH 3/3] Make `read-bytes' suspendable for socket reads on MinGW.
+
+On MinGW, port-read will block on sockets if no data is available.
+Avoid blocking by using select first.
+
+* module/ice-9/suspendable-ports.scm (read-bytes)[mingw?]: For socket
+ports, guard port-read with select.
+---
+ module/ice-9/suspendable-ports.scm | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/module/ice-9/suspendable-ports.scm b/module/ice-9/suspendable-ports.scm
+index 3b258492e..6067cc63c 100644
+--- a/module/ice-9/suspendable-ports.scm
++++ b/module/ice-9/suspendable-ports.scm
+@@ -68,8 +68,12 @@
+ (define (wait-for-writable port) ((current-write-waiter) port))
+ 
+ (define (read-bytes port dst start count)
++  (define (socket? port)
++    (string-prefix? "#<input-output: socket" (format #f "~a" port)))
+   (cond
+-   (((port-read port) port dst start count)
++   ((and (or (not (socket? port))
++             (pair? (car (select (list port) '() '() 0 0))))
++         ((port-read port) port dst start count))
+     => (lambda (read)
+          (unless (<= 0 read count)
+            (error "bad return from port read function" read))
+-- 
+2.26.0
+
