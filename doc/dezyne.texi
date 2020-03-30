@@ -459,7 +459,7 @@ to reason about each facet separately.
 
 There are two ways te get started with Dezyne: use a binary installation
 that we prepared especially for you, or you can build Dezyne from source
-yourself.  When you plan on contributing to Dezyne, @xref{Contributing},
+yourself.  When you plan on contributing to Dezyne (@pxref{Contributing}),
 you may want to skip the sections on binary installation.
 
 @menu
@@ -565,7 +565,7 @@ $ dzn-env info dezyne
 @end enumerate
 
 @noindent
-and get busy Dezyne'ing, @xref{The Dezyne command-line tools}!  You can
+and get busy Dezyne'ing, @pxref{The Dezyne command-line tools}!  You can
 skip the following sections about building from source.
 
 
@@ -584,7 +584,7 @@ Download the binary zip archive from
 @dots{}
 
 @noindent
-and get busy Dezyne'ing, @xref{The Dezyne command-line tools}!  You can
+and get busy Dezyne'ing, @pxref{The Dezyne command-line tools}!  You can
 skip the following sections about building from source.
 
 @node Requirements
@@ -620,7 +620,7 @@ Dezyne optionally uses the following packages:
 @item @uref{https://savannah.nongnu.org/projects/guile-json/, Guile-JSON} 1.x;
 @end itemize
 
-to provide support for the views of the Dezyne IDE, @xref{Dezyne
+to provide support for the views of the Dezyne IDE, @pxref{Dezyne
 Views,Dezyne Views,,dezyne-ide,Dezyne Views}.
 
 @c *********************************************************************
@@ -1181,8 +1181,8 @@ Out events are only allowed to have @b{void} type.
    out void event-name();           // an out event declaration
 @end example
 
-Events can also have a parameter list to pass data variables, see
-@xref{Using Data Variables and Parameters},.
+Events can also have a parameter list to pass data variables,
+@pxref{Using Data Variables and Parameters},.
 
 @example
 [in/out] return-type event-name(parameter-list)
@@ -1350,7 +1350,7 @@ component Leaf
 @subsubsection A Component Decomposed Into Two Components
 
 A component decomposed into two components where these components are
-connected via their ports.  See further @xref{Decomposing a Component},
+connected via their ports.
 
 @example
 component Composition
@@ -1473,8 +1473,7 @@ and all out events of required interfaces.
   requires injected Interface port; (2)
 @end example
 
-1) port to a component with possibly delaying communication channel (See
-@xref{External},)
+1) port to a component with possibly delaying communication channel (@pxref{External},)
 
 2) port to a shared resource (See Injected)
 
@@ -1697,13 +1696,13 @@ The following elements can be used in the behaviour body:
 
 @itemize
 
-@item Local variables: see @xref{Using Local Variables},
-@item Functions: see @xref{Using functions},
-@item @xref{Actions},
-@item State declarations and initialisations: see @xref{Specifying Stateful Behaviour},
-@item @xref{Reply},
-@item Conditions: see @xref{Using Conditional Statements},
-@item Guards: see @xref{Using Guards},
+@item Local variables: @pxref{Using Local Variables},
+@item Functions: @pxref{Using functions},
+@item @pxref{Actions},
+@item State declarations and initialisations: @pxref{Specifying Stateful Behaviour},
+@item @pxref{Reply},
+@item Conditions: @pxref{Using Conditional Statements},
+@item Guards: @pxref{Using Guards},
 @end itemize
 
 @subsubsection Examples
@@ -1998,7 +1997,15 @@ extern datatypeInternal $datatypeExternal$;
 @end example
 
 After the definition variables of this type can be used to further
-define event (or method) signatures, see also @xref{Specifying Events},
+define event (or method) signatures.
+
+
+@unnumberedsubsec See also:
+
+@itemize
+@item @xref{Specifying Events}
+@end itemize
+
 
 @subsection Data Examples
 
@@ -2183,13 +2190,13 @@ The following elements can be used in the behaviour body:
 
 @itemize
 
-@item Local variables: see @xref{Using Local Variables},
-@item Functions: see @xref{Using functions},
+@item Local variables: @xref{Using Local Variables},
+@item Functions: @xref{Using functions},
 @item @xref{Actions},
-@item State declarations and initialisations: see @xref{Specifying Stateful Behaviour},
+@item State declarations and initialisations: @xref{Specifying Stateful Behaviour},
 @item @xref{Reply},
-@item Conditions: see @xref{Using Conditional Statements},
-@item Guards: see @xref{Using Guards},
+@item Conditions: @xref{Using Conditional Statements},
+@item Guards: @xref{Using Guards},
 @end itemize
 
 @subsubsection Examples
@@ -2302,7 +2309,8 @@ interface IMotion
 @subsection Actions
 
 The actions an interface or component should perform when an event is
-received are specified within a @xref{Specifying Behaviour},.
+received are specified within a Behaviour (@pxref{Specifying
+Behaviour}).
 
 Actions can be changing the value of a variable, invoking a function,
 generating another event or changing to another state and any
@@ -2358,7 +2366,7 @@ Here the action statement will only be selected when guard
 
 Special action statements can defined that will be performed in case no
 other events occur, or that optionally may be performed in case no other
-events occur, see @xref{Using inevitable and optional},.
+events occur, @pxref{Using inevitable and optional}.
 
 @subsubsection Examples
 
@@ -2485,7 +2493,7 @@ interface IPsm
 
 State variables and guard expressions enable specification of protocols
 in a behaviour section. They specify the selection of one of multiple
-different actions (see @xref{Actions},) for an input event.
+different actions.  @xref{Actions} for an input event.
 
 The state of an interface is composed of the values of all state
 variables.
@@ -2529,7 +2537,7 @@ Declaring a guarded action statement
 
 Here the action statement will only be selected when guard [state.State1] evaluates to true.
 
-See @xref{Actions}, for how to declare action statements.
+@xref{Actions}, for how to declare action statements.
 
 
 
@@ -3130,10 +3138,10 @@ on optional: action-body ;
 @end example
 
 The declaration of inevitable and optional actions follows the
-declaration of @xref{Actions}, where action-body: a collection of
-conditions / guards and statements (function invocations, changing
-variable values, changing to another state, generating another event)
-that define what actions to perform.
+declaration of actions (@pxref{Actions}), where action-body: a
+collection of conditions / guards and statements (function invocations,
+changing variable values, changing to another state, generating another
+event) that define what actions to perform.
 
 @subsubsection Examples
 
@@ -3449,7 +3457,7 @@ to the action statement after the guard or 'on event'.
 'provides' port. This limitation may be lifted in a future release.
 
 @b{Note:} Systems containing 'blocking' component instances must be
-contained in a @xref{Thread-safe Shell},.
+contained in a thread-safe shell (@pxref{Thread-safe Shell}).
 
 @subsubsection Syntax
 
@@ -3893,7 +3901,7 @@ subtle differences in the internal handling of messages.
 
 @section Indirect blocking out event
 
-See section on @xref{Blocking},
+Also @pxref{Blocking}.
 
 The in-event on the provides port (p.a) blocks (does not return) until a
 reply is handled. This happens in the handling of the requires port
@@ -3911,7 +3919,7 @@ before the provided out-event (p.b) would have been generated.
 
 @section External multiple out events
 
-See section on @xref{External},
+Also @pxref{External}.
 
 The addition of external on a required interface removes the atomicity
 of an action list, i.e: @{a; b;@}.
@@ -4597,7 +4605,7 @@ Display the current version of @code{dzn}, and then exit.
 @section Invoking @command{dzn code}
 
 The @command{dzn code} command generates C++ code for a Dezyne model
-file.  See @xref{Code Integration}.
+file.  @xref{Code Integration}.
 
 @example
 dzn @var{dzn-option}@dots{} code @var{option}@dots{} @file{FILE}
@@ -4637,7 +4645,7 @@ Write output to directory @var{DIR} (use @code{-} for stdout).
 
 @item --shell=@var{MODEL}
 @itemx -s @var{MODEL}
-Generate thread-safe system shell for @var{MODEL}.  See @xref{Thread-safe Shell}.
+Generate thread-safe system shell for @var{MODEL}.  @xref{Thread-safe Shell}.
 
 @end table
 
@@ -4645,7 +4653,7 @@ Generate thread-safe system shell for @var{MODEL}.  See @xref{Thread-safe Shell}
 @section Invoking @command{dzn verify}
 
 The @command{dzn verify} command checks a Dezyne file for models with
-verification problems.  See @xref{Verifying Models}.
+verification problems.  @xref{Verifying Models}.
 
 @example
 dzn @var{dzn-option}@dots{} verify @var{option}@dots{} @file{FILE}
@@ -4998,7 +5006,7 @@ There is a restriction on event declarations: an @code{out} event must be @code{
 
 @subsection Behaviour
 The @code{behaviour} section of an interface contains the protocol description of the interface.
-See @xref{Interface and Component Behaviour}, for an elaborate description.
+@xref{Interface and Component Behaviour}, for an elaborate description.
 
 
 @cindex type
@@ -5059,23 +5067,27 @@ The intention is, that binding such a port will occur at a high level in the sys
 to some component port @code{someComponent.somePort}, and that more than one injected port can be bound to that port.
 For that reason @code{MyInterface} cannot define @code{out} events.
 
-
-The @xref{System Components}, section describes the binding of injected ports in detail.
+@xref{System Components} for a detailed description of the binding of injected ports.
 
 @subsection Internal Description
 The component's internal description comes in three flavors:
 
 @itemize
 
-@item Behavioural: Like in the interface protocol the internals are given as a behavioural description,
-    in which for each event the required actions are given. See the @xref{Interface and Component Behaviour}, section.
+@item
+Behavioural: Like in the interface protocol the internals are given as a
+behavioural description, in which for each event the required actions
+are given.  @xref{Interface and Component Behaviour}.
 
-@item Compositional: The functionality is described as the composition of a number of sub components.
-    See the @xref{System Components}, section.
+@item
+Compositional: The functionality is described as the composition of a
+number of sub components.  @xref{System Components}.
 
-@item Hand-written: The internals are missing indicating the intention to have a hand-written implementation of
-    the component. This implementation must be such that it satisfies the specified ports.
-    The component is a place-holder only.
+@item
+Hand-written: The internals are missing indicating the intention to have
+a hand-written implementation of the component. This implementation
+must be such that it satisfies the specified ports.  The component
+is a place-holder only.
 
 @end itemize
 
@@ -5639,15 +5651,12 @@ cfoo.foo}and @code{cnut.wl <=> bot} in the example above.
 @end itemize
 
 @subsubsection Injection
-As described in the @xref{Component Models}, section, binding of
-@code{injected} ports is done at a higher system level. A wild-card
-character (@code{*}) is used to achieve the binding of one
-@code{provides} port to all @code{injected requires} ports.
-
+Binding of @code{injected} ports is done at a higher system level
+(@pxref{Component Models}).  A wild-card character (@code{*}) is used to
+achieve the binding of one @code{provides} port to all @code{injected
+requires} ports.
 
 Let's take a typical example involving logging:
-
-
 
 @example
 interface ILog @{
@@ -5898,6 +5907,8 @@ needed to define appropriate semantics.
 
 @section Summary
 The well-formedness checks in alphabetical order:
+
+@c XXX TODO; rewrite in a PDF'able format
 
 @xref{Action value discarded @i{enable}},@* @xref{Actions are not
 allowed here},@* @xref{ActionStatement only allowed within
@@ -7129,13 +7140,13 @@ reports, patches, and anything that may be helpful to the project.
 @section The Perfect Setup
 
 The Perfect Setup for using Dezyne is to use the Dezyne IDE,
-see @ref{Top, Dezyne IDE,,dezyne-ide, the Dezyne IDE Manual}.
+@pxref{Top, ,,dezyne-ide,the Dezyne IDE Manual}.
 
 The Perfect Setup to hack on Dezyne is basically the perfect setup used
-for GNU Guile hacking (@pxref{Using Guile in Emacs,,, guile, Guile
+for GNU Guile hacking (@pxref{Using Guile in Emacs,,, guile, GNU Guile
 Reference Manual}).  To work on real-life Dezyne projects, you need more
-than an editor, you need an IDE, @xref{Top,Dezyne IDE
-Manual,,dezyne-ide,Dezyne IDE Manual}.
+than an editor: you need an IDE, @pxref{Top, ,,dezyne-ide,the Dezyne IDE
+Manual}.
 
 @table @code
 @item GNU Emacs
