@@ -34,6 +34,8 @@
 
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
+  #:use-module (gaiag ast)
+  #:use-module (gaiag goops)
   #:use-module (gaiag parse)
   #:use-module (gaiag shell-util)
 
@@ -71,12 +73,16 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((help (single-char #\h))
+          '((behaviour (single-char #\b) (value #f))
+            (components)
+            (foreigns)
+            (help (single-char #\h))
             (import (single-char #\I) (value #t))
-            (behaviour (single-char #\b) (value #f))
+            (interfaces)
             (locations (single-char #\L))
             (model (single-char #\m) (value #t))
-            (output (single-char #\o) (value #t))))
+            (output (single-char #\o) (value #t))
+            (systems)))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
@@ -86,12 +92,16 @@
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
 Usage: dzn parse [OPTION]... [FILE]...
+      --components       list components
+      --foreigns         list foreign components
   -h, --help             display this help and exit
+      --interfaces       list interfaces
   -I, --import=DIR+      add DIR to import path
   -L, --locations        show locations in AST
   -m, --model=MODEL      generate ast for MODEL
   -b, --behaviour        include behaviour of imported models,
   -o, --output=FILE      write ast to FILE
+      --systems          list systems
 ")
           (exit (or (and usage? 2) 0))))
     options))
@@ -119,13 +129,24 @@ Usage: dzn parse [OPTION]... [FILE]...
          (peg? (gdzn:command-line:get 'peg #f)) ;; assert-parse eats error message
          (file (and (pair? files) (car files)))
          (ast ((if (or #t debug? peg?) parse assert-parse) options file)))
-    (if (option-ref options 'output #f)
-        (let* ((file-name (option-ref options 'output "-"))
-               (sexp (om->list ast))
-               (json? (gdzn:command-line:get 'json))
-               (output (if json? (scm->json-string sexp)
-                           (with-output-to-string (cut pretty-print sexp)))))
-          (if (equal? file-name "-") (display output)
-              (with-output-to-file file-name (cut display output))))
-        (when (gdzn:command-line:get 'verbose)
-          (display "parse: no errors found\n")))))
+    (cond ((option-ref options 'output #f)
+           (let* ((file-name (option-ref options 'output "-"))
+                  (sexp (om->list ast))
+                  (json? (gdzn:command-line:get 'json))
+                  (output (if json? (scm->json-string sexp)
+                              (with-output-to-string (cut pretty-print sexp)))))
+             (if (equal? file-name "-") (display output)
+                 (with-output-to-file file-name (cut display output)))))
+          ((option-ref options 'components #f)
+           (let ((pred (conjoin (is? <component>) (negate ast:imported?))))
+             (display (string-join (map ast:dotted-name (tree-collect pred ast)) "\n" 'suffix))))
+          ((option-ref options 'foreigns #f)
+           (let ((pred (conjoin (is? <foreign>) (negate ast:imported?))))
+             (display (string-join (map ast:dotted-name (tree-collect pred ast)) "\n" 'suffix))))
+          ((option-ref options 'interfaces #f)
+           (let ((pred (conjoin (is? <interface>) (negate ast:imported?))))
+             (display (string-join (map ast:dotted-name (tree-collect pred ast)) "\n" 'suffix))))
+          ((option-ref options 'systems #f)
+           (let ((pred (conjoin (is? <system>) (negate ast:imported?))))
+             (display (string-join (map ast:dotted-name (tree-collect pred ast)) "\n" 'suffix))))
+          ((gdzn:command-line:get 'verbose) (display "parse: no errors found\n")))))
