@@ -1,0 +1,49 @@
+From 7355cb8ff78990ae1d139876a528d62c976657a2 Mon Sep 17 00:00:00 2001
+From: "Jan (janneke) Nieuwenhuizen" <janneke@gnu.org>
+Date: Wed, 1 Apr 2020 18:03:09 +0200
+Subject: [PATCH] mingw: Clear errno before CreateProcess.
+
+* libguile/posix-w32.c (start_child): Avoid recursing (and breaking any
+PIPE setup) when running in WINE.
+---
+ libguile/posix-w32.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/libguile/posix-w32.c b/libguile/posix-w32.c
+index e7d0ef5e1..503faf2f4 100644
+--- a/libguile/posix-w32.c
++++ b/libguile/posix-w32.c
+@@ -618,6 +618,10 @@ start_child (const char *exec_file, char **argv,
+   intptr_t pid;
+   int bin_sh_replaced = 0;
+ 
++  /* When running in WINE, chances are we hit ENOENT (possibly transated
++     to ENOEXEC).  */
++  errno = 0;
++
+   if (!reading)
+     c2p[1] = outfd;
+   if (!writing)
+@@ -742,14 +746,17 @@ start_child (const char *exec_file, char **argv,
+ 
+   /* Posix requires to call the shell if execvp fails to invoke EXEC_FILE.
+    * But if there are no arguments, this would just open an interactive
+-   * cmd.exe shell, so return in that case. */
++   * cmd.exe shell, so return in that case.
++   *
++   * XXX: recursing like this will break any PIPE setups.
++   */
+   if ((errno_save == ENOEXEC || errno_save == ENOENT)
+       && (argv[0] != NULL && argv[1] != NULL))
+     {
+       const char *shell = getenv ("ComSpec");
+ 
+       if (!shell)
+-        shell = "cmd.exe";
++        shell = "cmd.exe"; // XXX: Not adding /c will be chatty!
+ 
+       if (c_strcasecmp (exec_file, shell) != 0)
+         {
+-- 
+2.26.0
+

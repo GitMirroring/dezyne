@@ -145,7 +145,8 @@ C or C++ programs, though that is not its primary goal.")
                 (patches (search-patches "guile-mingw-piped-process.patch"
                                          "guile-mingw-fcntl.patch"
                                          "guile-mingw-sigaction.patch"
-                                         "guile-mingw-suspendable.patch"))
+                                         "guile-mingw-suspendable.patch"
+                                         "guile-mingw-start-child.patch"))
                 (file-name (string-append name "-" version "-checkout"))
                 (sha256
                  (base32
