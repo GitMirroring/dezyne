@@ -409,7 +409,7 @@ livelock to deadlock.)"
   (define (to-exclude? edge)
     (node-color (vector-ref nodes (edge-end-state edge))))
   (begin
-   (annotate-exclude nodes (list "dillegal"))
+   (annotate-exclude nodes (list "declarative_illegal"))
    (list->vector (map (lambda (n) (let ((new-node (clone-node n)))
                                     (set-node-succ! new-node (filter (negate to-exclude?) (node-succ n)))
                                     new-node))
@@ -420,7 +420,7 @@ livelock to deadlock.)"
   (define (has-deadlock? state)
       (null? (filter (lambda (e) ((negate node-color) (vector-ref nodes (edge-end-state e)))) (node-succ (vector-ref nodes state)))))
   (begin
-    (annotate-exclude nodes (list "dillegal"))
+    (annotate-exclude nodes (list "declarative_illegal"))
     (filter has-deadlock?
      (filter (compose not node-color (cut vector-ref nodes <>))
       (sort (iota (vector-length nodes))

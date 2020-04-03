@@ -118,7 +118,7 @@ illegal")
      internal-literal   <   'internal' / 'silent'
      reply-literal      <   'reply'
      tau-literal        <   'tau'
-     illegal            <-- 'illegal' / 'declarative_illegal' / 'dillegal'
+     illegal            <-- 'illegal' / 'declarative_illegal'
      error              <-- incomplete / queue-full / range-error / reply-error / missing-reply / second-reply
      queue-full         <-  'queue_full' / port-name tick 'queue_full'
      range-error        <-  'range_error'
