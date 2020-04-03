@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -142,7 +142,6 @@
                      ("lpsparelm")
                      ("lps2lts" "--cached" "--out=aut" "--save-at-end" "-" "-")
                      ("ltsconvert" "-edpweak-bisim" "--in=aut" "--out=aut")
-                     ("sed" "-e" "s,\"declarative_illegal\",\"dillegal\",g")
                      (,%dzn "lts" "--single-line" "--deadlock" "--tau" ,taus "--livelock" "-")))
          (foo (when (> (gdzn:debugity) 0)
                 (format (current-error-port) "commands: ~s\n" commands)))
@@ -165,7 +164,6 @@
                      ("lpsparelm")
                      ("lps2lts" "--cached" "--out=aut" "--save-at-end" "-" "-")
                      ("ltsconvert" "-edpweak-bisim" "--in=aut" "--out=aut")
-                     ("sed" "-e" "s,\"declarative_illegal\",\"dillegal\",g")
                      (,%dzn "lts" "--failures" "-")))
          (interface (pipeline->string commands))
          (commands `(,(cut format #t "~a\n\x04\n~a" lts interface)
@@ -227,7 +225,6 @@
                      ("lpsparelm")
                      ("lps2lts" "--cached" "--out=aut" "--save-at-end" "-" "-")
                      ("ltsconvert" "-edpweak-bisim" "--in=aut" "--out=aut")
-                     ("sed" "-e" "s,\"declarative_illegal\",\"dillegal\",g")
                      (,%dzn "lts" "--single-line"  "--nondet" ,deterministic "--illegal" "illegal" "--deadlock" ,@taus "--livelock" "--failures" "-")))
          (result (pipeline->string commands))
          (result (result-split result))
