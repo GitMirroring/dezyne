@@ -40,6 +40,7 @@ proc
  , recurse
  , return
  , second_reply
+ , tag
 }, #x:makreel:model-name reordered_comm);
 
 #x:makreel:model-name reordered = rename({
@@ -77,7 +78,7 @@ proc
   }, #x:makreel:model-name parallel);
 
 #x:makreel:model-name allow = allow({
-   tau_void
+    tau_void
   , #x:makreel:model-name tau_reply
   , #x:makreel:model-name in'
   , #x:makreel:model-name reply'
@@ -93,6 +94,7 @@ proc
   , recurse
   , return
   , second_reply
+  , tag
   }, #x:makreel:model-name comm);
 
 #x:makreel:model-name interface_internal = rename({

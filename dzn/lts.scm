@@ -810,7 +810,7 @@ required to be non-deterministic."
 
 (define (parse-label label)
   (define-peg-string-patterns
-    "tree               <-- event / modeling / defer-qout / reply / state / return / queue / tau-literal / illegal / error / end / flush / blocking / parse-error
+    "tree               <-- event / modeling / defer-qout / tag / reply / state / return / queue / tau-literal / illegal / error / end / flush / blocking / parse-error
      parse-error        <-- [a-zA-Z_0-9'()]*
      event              <-- port-name tick direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
      modeling           <-- port-name tick internal-literal lpar scope* ('inevitable' / 'optional') rpar
@@ -820,6 +820,7 @@ required to be non-deterministic."
      flush              <-- port-scope* identifier tick 'flush'
      blocking           <-- port-scope* identifier tick 'blocking'
      reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
+     tag                <   tag-literal lpar int comma int rpar
      state              <-- port-name tick state-literal state-arguments
      state-literal      <   'state'
      state-arguments    <-  (lpar state-argument (comma state-argument)* rpar)?
@@ -846,6 +847,7 @@ required to be non-deterministic."
      action-literal     <   'action'
      internal-literal   <   'internal' / 'silent'
      reply-literal      <   'reply'
+     tag-literal        <   'tag'
      tau-literal        <   'tau'
      illegal            <-- 'illegal' / 'declarative_illegal'
      error              <-- queue-full / range-error / reply-error / missing-reply / second-reply

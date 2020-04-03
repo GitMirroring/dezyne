@@ -11,6 +11,7 @@ range_error;
 recurse;
 return;
 second_reply;
+tag: Nat # Nat;
 tau_void;
 
 proc

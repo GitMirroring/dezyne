@@ -21,6 +21,7 @@ req_and_queue_allow = allow({
  , queue_not_empty
  , queue_full
  , tau_void
+ , tag
 #x:queue-allow-requires
  }, req_and_queue_comm);
 

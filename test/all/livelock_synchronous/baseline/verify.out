@@ -1,7 +1,8 @@
 model: livelock_synchronous
 h.hello
-<loop>
 w.hello
+<loop>
 w.world
 w.return
+w.hello
 <livelock>

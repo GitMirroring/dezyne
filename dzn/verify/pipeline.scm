@@ -131,7 +131,7 @@ actions."
          (taus (delete-duplicates
                 (append-map events-trigger/action
                             (append out-triggers in-actions))))
-         (taus (cons "<defer>" taus)))
+         (taus (append (list "tag" "<defer>") taus)))
     (string-join taus ",")))
 
 (define (deterministic-labels component)
@@ -149,10 +149,10 @@ actions."
   (let ((trace (string-map (lambda (c) (if (eq? c #\newline) #\; c)) trace)))
     (string-join
      (filter (lambda (event)
-               (and (not (member event '("inevitable" "optional" "tau" ;;"<illegal>" "<declarative-illegal>"
-                                         )))
+               (and (not (member event '("inevitable" "optional" "tau")))
                     (not (string-contains event ".qout."))
                     (not (string-contains event ".<blocking>"))
+                    (not (string-contains event "tag("))
                     (not (find (cute string-suffix? <> event) '(".optional" ".inevitable")))))
              (string-split trace #\;))
      "\n")))
@@ -274,7 +274,8 @@ actions."
           (list (string-append "--exclude-tau=" exclude-taus))))))
 
 (define (in-out:aut->verify-interface options)
-  (let ((taus (model-taus options)))
+  (let* ((taus (model-taus options))
+         (model (options-model options)))
     `(,%dzn "lts" "--single-line"
             "--deadlock"
             ,@taus
