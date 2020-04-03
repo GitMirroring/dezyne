@@ -39,6 +39,7 @@
   #:use-module (dzn command-line)
   #:use-module (dzn lts)
   #:use-module (dzn code makreel)
+  #:use-module (dzn normalize)
   #:use-module (dzn parse)
   #:use-module (dzn shell-util)
 
@@ -96,7 +97,8 @@ Generate exhaustive set of traces for Dezyne model
          (text (regexp-substitute/global #f "\"[^\"]*<blocking>\"" text 'pre "\"tau\"" 'post))
          (text (regexp-substitute/global #f "\"[^\"]*\\.qout\\.[^\"]*\"" text 'pre "\"tau\"" 'post))
          (text (regexp-substitute/global #f "\"(optional|inevitable)\"" text 'pre "\"tau\"" 'post))
-         (text (regexp-substitute/global #f "\"[^\"]*\\.(optional|inevitable)\"" text 'pre "\"tau\"" 'post)))
+         (text (regexp-substitute/global #f "\"[^\"]*\\.(optional|inevitable)\"" text 'pre "\"tau\"" 'post))
+         (text (regexp-substitute/global #f "\"tag[()].[^\"]*\"" text 'pre "\"tau\"" 'post)))
     text))
 
 (define (model->lts root model file-name)
@@ -149,16 +151,26 @@ Generate exhaustive set of traces for Dezyne model
          (files (option-ref options '() '()))
          (file-name (car files))
          (ast (parse options file-name))
-         (root (makreel:om ast))
          (model-name (option-ref options 'model #f)))
     (define (named? o)
       (equal? (makreel:unticked-dotted-name o) model-name))
-    (let* ((models (ast:model* root))
-           (components-interfaces (append (filter (conjoin (is? <component>) .behavior) models)
-                                          (filter (is? <interface>) models)))
-           (model (or (and model-name (find named? models))
-                      (and (pair? components-interfaces) (car components-interfaces)))))
-      (cond ((and model-name (not model)) (error "no such model:" model-name))
-            ((is-a? model <system>) #t) ;; silently no traces
-            ((and model-name (or (is-a? model <foreign>) (not (.behavior model)))) (error "no model with behavior:" model-name))
-            (model (model->traces options root model file-name))))))
+    (parameterize ((%no-unreachable? #t))
+      (let* ((root (makreel:om ast))
+             (models (ast:model* root))
+             (components-interfaces
+              (append
+               (filter (conjoin (is? <component>) .behavior) models)
+               (filter (is? <interface>) models)))
+             (model (or (and model-name (find named? models))
+                        (and (pair? components-interfaces)
+                             (car components-interfaces)))))
+        (cond ((and model-name (not model))
+               (error "no such model:" model-name))
+              ((is-a? model <system>) ;; silently no traces
+               #t)
+              ((and model-name
+                    (or (is-a? model <foreign>)
+                        (not (.behavior model))))
+               (error "no model with behavior:" model-name))
+              (model
+               (model->traces options root model file-name)))))))

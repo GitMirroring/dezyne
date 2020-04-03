@@ -958,6 +958,10 @@
 (define (makreel:init-process process)
   (format #f "init ~a;\n" process))
 
+(define-method (makreel:line-column (o <tag>))
+  (let ((location (.location o)))
+    (format #f "~a, ~a" (.line location) (.column location))))
+
 (define-templates-macro define-templates makreel)
 (include-from-path "dzn/templates/dzn.scm")
 (include-from-path "dzn/templates/makreel.scm")

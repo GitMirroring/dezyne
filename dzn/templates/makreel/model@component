@@ -98,6 +98,7 @@ provides_allow = allow ({
  , missing_reply
  , range_error
  , second_reply
+ , tag
  , tau_void
 #x:provides-allow
  }, provides_comm);
@@ -190,6 +191,7 @@ component_behavior_allow = allow({
  , range_error
  , recurse
  , return
+ , tag
    #x:component-behavior-allow-provides
    #x:component-behavior-allow-requires
  , #x:makreel:model-name end }, component_behavior_comm);
@@ -348,6 +350,7 @@ component_semantics_allow = allow({
  , recurse
  , return
  , second_reply
+ , tag
  , tau_void
  }, component_semantics_comm);
 
@@ -392,6 +395,7 @@ component_allow = allow({
  , recurse
  , return
  , second_reply
+ , tag
  , tau_void
  }, component_comm);
 

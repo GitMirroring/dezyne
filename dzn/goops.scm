@@ -226,6 +226,7 @@
            <stack>
            <statement>
            <system>
+           <tag>
            <the-end-blocking>
            <the-end>
            <trigger>
@@ -623,6 +624,8 @@
 (define-ast <warning> (<message>))
 
 (define-ast <skip> (<imperative>))
+
+(define-ast <tag> (<imperative>))
 
 (define-ast <the-end> (<statement>)
   (trigger))

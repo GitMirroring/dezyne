@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2018, 2020 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2020, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
@@ -46,7 +46,8 @@
 
   #:use-module (dzn ast)
 
-  #:export (add-defer-end
+  #:export (%no-unreachable?
+            add-defer-end
             add-determinism-temporaries
             add-explicit-temporaries
             add-function-return
@@ -68,6 +69,9 @@
 ;; Should add-explicit-temporaries only cater for deterministic ordering
 ;; of noisy expressions?
 (define %noisy-ordering? (make-parameter #f))
+
+;; Should unreachable-code tags be omitted?
+(define %no-unreachable? (make-parameter #f))
 
 ;; A prefix is a normalized combination of the declarative statements
 ;; that ... the imperative statement.  It is a triple that combines
@@ -395,6 +399,37 @@
   (append (append-map (cut add-illegals model triples <>) (ast:in-triggers model))
           (filter (compose ast:modeling? car ast:trigger* triple-on) triples)))
 
+(define (add-tag statement)
+  (define (location statement)
+    (let ((loc (.location statement)))
+      (if loc loc (location (.parent statement)))))
+  (if (declarative-illegal? statement) statement
+      (let* ((tag (make <tag> #:location (location statement)))
+             (elements (if (is-a? statement <compound>)
+                           (append (list tag) (ast:statement* statement))
+                           (list tag statement)))
+             (statement (make <compound> #:elements elements)))
+      statement)))
+
+(define (tag-blocks o)
+  (cond ((not (is-a? o <ast>)) o)
+    ((is-a? o <if>)
+      (let* ((then (add-tag (tag-blocks (.then o))))
+                   (else (tag-blocks (.else o)))
+                   (else (if else (add-tag else) else)))
+        (clone o #:then then #:else else)))
+    ((or (is-a? o <function>) (is-a? o <defer>))
+      (clone o #:statement (add-tag (tag-blocks (.statement o)))))
+    (else (tree-map tag-blocks o))))
+
+(define (triples:tag-blocks triples)
+  (define (tag-blocks-triple t)
+    (make-triple (triple-on t)
+                 (triple-guard t)
+                 (triple-blocking? t)
+                 (add-tag (tag-blocks (triple-statement t)))))
+  (map tag-blocks-triple triples))
+
 (define (triples:mark-the-end triples)
   (define (mark-the-end t)
     (let* ((on (triple-on t))
@@ -525,13 +560,17 @@ guarded occurrences."
               (triples:fix-empty-interface (parent o <model>))
               (triples:add-illegals (parent o <model>))
               triples:mark-the-end
+              (if (%no-unreachable?) identity triples:tag-blocks)
               (triples:declarative-illegals (parent o <model>))
               triples:split-multiple-on
               triples:->triples
               .statement
               ) o)
             #:functions
-            (group-expressions (.functions o) (list <and> <field-test> <or>))))
+            ((compose
+              (if (%no-unreachable?) identity tag-blocks)
+              (cute group-expressions <> (list <and> <field-test> <or>))
+             ) (.functions o))))
     ((? (is? <ast>))
      (tree-map normalize:state+illegals o))
     (_

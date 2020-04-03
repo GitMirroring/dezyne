@@ -28,6 +28,7 @@
   , #.name queue_full
   , declarative_illegal
   , illegal
+  , tag
   , tau_void
   }, #.name _portexternal_comm);
 

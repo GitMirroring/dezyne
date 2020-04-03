@@ -131,7 +131,7 @@ actions."
          (taus (delete-duplicates
                 (append-map events-trigger/action
                             (append out-triggers in-actions))))
-         (taus (cons "<defer>" taus)))
+         (taus (append (list "tag" "<defer>") taus)))
     (string-join taus ",")))
 
 (define (deterministic-labels component)
@@ -149,10 +149,10 @@ actions."
   (let ((trace (string-map (lambda (c) (if (eq? c #\newline) #\; c)) trace)))
     (string-join
      (filter (lambda (event)
-               (and (not (member event '("inevitable" "optional" "tau" ;;"<illegal>" "<declarative-illegal>"
-                                         )))
+               (and (not (member event '("inevitable" "optional" "tau")))
                     (not (string-contains event ".qout."))
                     (not (string-contains event ".<blocking>"))
+                    (not (string-contains event "tag("))
                     (not (find (cute string-suffix? <> event) '(".optional" ".inevitable")))))
              (string-split trace #\;))
      "\n")))
@@ -243,10 +243,8 @@ actions."
 
 (define (in-out:aut->aut-weak-trace options)
   (let* ((model (options-model options))
-         (model-name (makreel:name model))
-         (taus (if (is-a? model <interface>)
-                   '("--tau=inevitable,optional")
-                   '())))
+         (taus (if (not (is-a? model <interface>)) '()
+                   '("--tau=inevitable,optional,tag,<flush>"))))
     `("ltsconvert" "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
 
 (define in-out:aut->aut-dpweak-bisim
@@ -275,7 +273,8 @@ actions."
           (list (string-append "--exclude-tau=" exclude-taus))))))
 
 (define (in-out:aut->verify-interface options)
-  (let ((taus (model-taus options)))
+  (let* ((taus (model-taus options))
+         (model (options-model options)))
     `(,%dzn "lts" "--single-line"
             "--deadlock"
             ,@taus
@@ -356,6 +355,10 @@ for MODEL, using ROOT."
       (let ((imports (command-line:get 'import)))
         (if (null? imports) ""
             (string-join imports " -I " 'prefix))))
+    (define (flags->string)
+      (string-append
+       (imports->string)
+       (if (%no-unreachable?) " --no-unreachable" "")))
     (let ((file-name (ast:source-file root))
           (model-name (makreel:unticked-dotted-name model)))
       (match command
@@ -364,13 +367,13 @@ for MODEL, using ROOT."
            (format #f "~a ~a" program (string-join (map arg->string args)))))
         ((? (const (equal? out "verify-compliance")))
          (format #f "~a verify --model=~a --out=aut+provides-aut~a ~a"
-                 (program->string %dzn) model-name (imports->string) file-name))
+                 (program->string %dzn) model-name (flags->string) file-name))
         (_
          (and (not (string-prefix? "verify-interface" out))
               (string-append
-               (format #f "~a code --language=makreel --model=~a~a --init=~s  ~a"
-                       (program->string %dzn) model-name (imports->string)
-                       (get-init model)
+               (format #f "~a code --language=makreel --model=~a --init=~s~a ~a"
+                       (program->string %dzn) model-name (get-init model)
+                       (flags->string)
                        file-name)))))))
   (string-join (filter-map command->string commands) " \\\n  | "))
 

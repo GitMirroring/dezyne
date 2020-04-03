@@ -144,6 +144,8 @@
 
 (define-templates sum-helper-params makreel:sum-helper-params parameters-grammar)
 
+(define-templates makreel:line-column makreel:line-column)
+
 ;; interface
 (define-templates provides-port-parallel-proc ast:provides-port* newline-parallel-infix)
 (define-templates requires-port-parallel-proc ast:non-external-port* newline-parallel-prefix)
