@@ -35,11 +35,11 @@
 
 (define-public guile-patched
   (package
-    (inherit guile-2.2)
+    (inherit guile-2.2.6)
     (name "guile-piped-process")
     (source (origin
-              (inherit (package-source guile-2.2))
+              (inherit (package-source guile-2.2.6))
               (patches (cons* (search-patch "guile-piped-process.patch")
-                              (origin-patches (package-source guile-2.2))))
+                              (origin-patches (package-source guile-2.2.6))))
               ;; Use pre-built object files.  Saves ~3h build time.
               (snippet #f)))))
