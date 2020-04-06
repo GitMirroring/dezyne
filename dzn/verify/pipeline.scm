@@ -56,6 +56,11 @@
             x:interface-init
             x:component-init))
 
+(define (mingw?)
+  (string-suffix? "mingw32" %host-type))
+
+(define %dzn (if (mingw?) "dzn.cmd" %dzn))
+
 (define* ((om:scope-name #:optional (infix "_")) o)
   (let ((infix (if (symbol? infix) (symbol->string infix)
                    infix)))
