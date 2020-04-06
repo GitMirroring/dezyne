@@ -46,6 +46,7 @@
   #:use-module (dzn goops)
   #:use-module (dzn makreel)
   #:use-module (dzn misc)
+  #:use-module (dzn shell-util)
   #:use-module (dzn verify traces)
   #:use-module (gash job)
   #:use-module (gash pipe)
@@ -55,6 +56,8 @@
             verify:file-name
             x:interface-init
             x:component-init))
+
+(define %dzn (if (mingw?) "dzn.cmd" %dzn))
 
 (define* ((om:scope-name #:optional (infix "_")) o)
   (let ((infix (if (symbol? infix) (symbol->string infix)
