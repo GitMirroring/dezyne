@@ -567,31 +567,11 @@
          (elements (append (make-constants) (.elements root))))
     (clone root #:elements elements)))
 
-(define* (recurses? behaviour function #:optional (seen '()))
-  (define (return-call ast)
-    (match ast
-      (($ <call>) ast)
-      ((and ($ <assign>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
-      ((and ($ <variable>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
-      (_ #f)))
-  (define (.function-name call)
-    (or (and=> (as (.function call) <function>) .name) ""))
-  (or (member (.name function) seen)
-      (let* ((compound (.statement function))
-             (calls (tree-collect return-call compound))
-             (names (delete-duplicates (sort (map (compose .function-name return-call) calls)
-                                             string<))))
-        (any identity
-             (map (lambda (n)
-                    (let ((fn (ast:lookup behaviour n)))
-                      (and fn (recurses? behaviour fn (cons (.name function) seen)))))
-                  names)))))
-
 (define-method (set-recursive (o <behaviour>))
   (let* ((functions (.functions o))
          (function-list (.elements functions))
-         (function-list (map (lambda (f) (if (recurses? o f) (clone f #:recursive #t) f))
-                              function-list))
+         (function-list (map (lambda (f) (if (ast:recursive? f) (clone f #:recursive #t) f))
+                             function-list))
          (functions (clone functions #:elements function-list)))
     (clone o #:functions functions)))
 

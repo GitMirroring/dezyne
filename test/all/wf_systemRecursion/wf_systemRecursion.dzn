@@ -43,11 +43,23 @@ component C3 {
 
 component C4 {
   system {
-    C1 c1;
+    C3 c3;
   }
 }
 
 component C5 {
   system {
+  }
+}
+
+component C6 {
+  system {
+    C6 c6;
+  }
+}
+
+component wf_systemRecursion {
+  system {
+    C1 c1;
   }
 }
