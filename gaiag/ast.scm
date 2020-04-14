@@ -32,6 +32,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
   #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 q)
   #:use-module (ice-9 receive)
 
   #:use-module (srfi srfi-1)
@@ -49,7 +50,9 @@
            ast:async-out-triggers
            ast:async?
            ast:async-port*
+           ast:call-statement
            ast:clr-events
+           ast:component-model*
            ast:declarative?
            ast:direction
            ast:dzn-scope?
@@ -61,6 +64,7 @@
            ast:full-name
            ast:full-scope
            ast:get-model
+           ast:graph-cyclic?
            ast:id-path
            ast:in-event*
            ast:in-triggers
@@ -96,6 +100,7 @@
            ast:rescope
            ast:scope
            ast:source-file
+           ast:system*
            ast:return-type
            ast:return-types
            ast:return-values
@@ -130,6 +135,7 @@
            ast:namespace*
            ast:name-equal?
            ast:port*
+           ast:recursive?
            ast:statement*
            ast:top*
            ast:trigger*
@@ -217,6 +223,12 @@
 (define-method (ast:provides-port o)
   (let ((ports (ast:provides-port* o)))
     (and (pair? ports) (car ports))))
+
+(define-method (ast:component-model* (o <system>))
+  (filter-map .type (ast:instance* o)))
+
+(define-method (ast:system* (o <system>))
+  (filter (is? <system>) (ast:component-model* o)))
 
 (define-method (ast:dzn-scope? (o <model>))
   (member (car (.ids (.name o))) '("dzn" "dzn'")))
@@ -867,6 +879,13 @@
     (or (and (null? statements) (not (is-a? (.parent o) <behaviour>)))
         (and (pair? statements) ((compose ast:imperative? car) statements)))))
 
+(define (ast:call-statement o)
+  (match o
+    (($ <call>) o)
+    ((and ($ <assign>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
+    ((and ($ <variable>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
+    (_ #f)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; LOOKUP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1218,6 +1237,66 @@
                                            (filter (is? <system>)
                                                    (map .type (ast:instance* o)))))
                          systems))))))
+
+;; This implements Tarjan's strongly connected components algorithm,
+;; see https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
+(define ast:graph-scc
+  (let ((index-table (make-hash-table))     ;values: #f or 0..#num-nodes
+        (lowlink-table (make-hash-table))   ;values: 0..#num-nodes
+        (on-stack?-table (make-hash-table)) ;values: #f, #t
+        (scc-table (make-hash-table))       ;values: list of nodes
+        (index 0)
+        (stack (make-q)))
+    (lambda (succ* v)              ;(succ* x) -> list of successors of x
+      (define (push! v)
+        (hashq-set! on-stack?-table v #t)
+        (q-push! stack v))
+      (define (pop!)
+        (let ((top (q-pop! stack)))
+          (hashq-set! on-stack?-table top #f)
+          top))
+      (let ((v-key (.node v)))
+        (when (not (hashq-ref index-table v-key #f))
+          (hashq-set! index-table v-key index)
+          (hashq-set! lowlink-table v-key index)
+          (set! index (1+ index))
+          (push! v-key)
+          (for-each
+           (lambda (w)
+             (let ((w-key (.node w)))
+               (cond ((not (hashq-ref index-table w-key #f))
+                      (ast:graph-scc succ* w)
+                      (hashq-set! lowlink-table v-key
+                                  (min (hashq-ref lowlink-table v-key)
+                                       (hashq-ref lowlink-table w-key))))
+                     ((hashq-ref on-stack?-table w-key)
+                      (hashq-set! lowlink-table v-key
+                                  (min (hashq-ref lowlink-table v-key)
+                                       (hashq-ref index-table w-key)))))))
+           (succ* v))
+          (when (eq? (hashq-ref index-table v-key)
+                     (hashq-ref lowlink-table v-key))
+            (let ((scc (let loop ((w-key (pop!)))
+                         (if (eq? w-key v-key) (list v-key)
+                             (cons w-key (loop (pop!)))))))
+              (for-each (cut hashq-set! scc-table <> scc) scc))))
+        (hashq-ref scc-table v-key)))))
+
+(define (ast:graph-cyclic? succ* o)
+  (let ((scc (ast:graph-scc succ* o)))
+    (or (not (null? (cdr scc)))
+        (find (lambda (s) (eq? (.node o) (.node s))) (succ* o)))))
+
+
+(define-method (ast:function* (o <function>))
+  (let* ((compound (.statement o))
+         (statements (tree-collect ast:call-statement compound))
+         (functions (map (compose .function ast:call-statement) statements)))
+    (delete-duplicates (filter identity functions) ;; skip invalid calls
+                       (lambda (a b) (equal? (.name a) (.name b))))))
+
+(define-method (ast:recursive? (o <function>))
+    (ast:graph-cyclic? ast:function* o))
 
 (define (ast-> ast)
   ((compose

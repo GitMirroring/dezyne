@@ -4,5 +4,7 @@ test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:44:16: error: val
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:45:7: error: statement after call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:48:16: error: valued recursive functions not supported yet
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:49:7: error: statement after call
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:63:7: error: no statement allowed after recursive function call
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:64:7: error: statement after call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:78:7: error: no statement allowed after recursive function call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:79:7: error: statement after call
