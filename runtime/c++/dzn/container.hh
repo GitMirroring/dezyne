@@ -52,6 +52,7 @@ namespace dzn
   struct container
   {
     const bool flush;
+    int data;
     dzn::meta meta;
     dzn::locator dzn_locator;
     dzn::runtime dzn_rt;
@@ -71,6 +72,7 @@ namespace dzn
 
     container(bool flush, dzn::locator&& l = dzn::locator{})
     : flush(flush)
+    , data(data)
     , meta{"<external>","container",0,0,{},{&system.dzn_meta},{[this]{system.check_bindings();}}}
     , dzn_locator(std::forward<dzn::locator>(l))
     , dzn_rt()
@@ -154,7 +156,11 @@ namespace dzn
         }
         else
         {
-          pump(it->second);
+          // if (data)
+          //   //pump([]{it->second (data++);});
+          //   pump(it->second, data++);
+          // else
+            pump(it->second);
           port.clear();
         }
       }
