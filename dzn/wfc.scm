@@ -191,7 +191,6 @@
 (define %model-event-types (make-parameter '()))
 (define %model-blocking? (make-parameter #f))
 
-
 (define-method (wfc (o <behaviour>))
   (parameterize ((%model-event-types (ast:return-types (parent o <model>)))
                  (%model-blocking? (model-blocking? (parent o <model>))))
@@ -553,34 +552,9 @@
   '())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; helper functions
-
-(define* (recurses? call #:optional (seen '()))
-  (define (call-statement ast)
-    (match ast
-      (($ <call>) ast)
-      ((and ($ <assign>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
-      ((and ($ <variable>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
-      (_ #f)))
-  (define (.function-name call)
-    (or (and=> (as (.function call) <function>) .name) (.function call)))
-  (or (and (member (.function.name call) seen) seen)
-      (let ((function (.function call)))
-        (and function
-             (let* ((compound (.statement function))
-                    (call-statements (tree-collect call-statement compound))
-                    (calls (delete-duplicates (map call-statement call-statements)
-                                              (lambda (a b) (string< (or (.function.name a) "")
-                                                                     (or (.function.name b) ""))))))
-               (any identity
-                    (map (lambda (c)
-                           (recurses? c (cons (.function.name call) seen)))
-                         calls)))))))
-
 (define-method (tail-recursion (o <call>))
-  (let ((function (parent o <function>))
-        (called-function (.function o)))
-    (if (or (not function)
-            (not (and=> (recurses? o) (cut member (.name function) <>)))) '()
+  (let ((function (parent o <function>)))
+    (if (or (not function) (not (.recursive function))) '()
             (let* ((continuation ((compose car wfc:continuation) o))
                    (continuation (if (or (parent o <assign>) (parent o <variable>)) ((compose car (@@ (dzn makreel) makreel:continuation)) continuation) continuation))
                    (continuation (and continuation
@@ -939,35 +913,13 @@
                                           (string-join (map trigger->string out-triggers) ", ")))))))
           (else '()))))
 
-(define-method (ast:component-model* (o <system>))
-  (filter-map .type (ast:instance* o)))
-
-(define-method (ast:system* (o <system>))
-  (filter (is? <system>) (ast:component-model* o)))
-
-(define-method (sub-systems- (o <system>) path)
-  (if (find (cut ast:eq? o <>) path) '()
-      (let ((path (cons o path))
-            (systems (ast:system* o)))
-        (append-map cons
-                    systems
-                    (map (cute sub-systems <> path) systems)))))
-
-(define sub-systems
-  (let ((cache-alist '()))
-    (lambda* (o #:optional (path '()))
-      (let ((key (.node o)))
-        (or (assoc-ref cache-alist key)
-            (let ((ss (sub-systems- o path)))
-              (when (and (null? path) (not (find (cut ast:eq? <> o) ss)))
-                (set! cache-alist (assoc-set! cache-alist key ss)))
-              ss))))))
+(define-method (recursive? (o <system>))
+  (ast:graph-cyclic? ast:system* o))
 
 (define-method (recursive (o <system>))
-  (let* ((sub (sub-systems o)))
-    (if (find (cut ast:eq? o <>) sub)
-        `(,(wfc-error o (format #f "system composition of `~a' is recursive" (type-name (.name o)))))
-        '())))
+  (if (recursive? o)
+      `(,(wfc-error o (format #f "system composition of `~a' is recursive" (type-name (.name o)))))
+      '()))
 
 (define-method (required-instances (o <instance>) (s <system>))
   (let* ((instances (ast:instance* s))
