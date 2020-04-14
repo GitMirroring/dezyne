@@ -582,18 +582,12 @@
     (clone root #:elements elements)))
 
 (define* (recurses? behaviour function #:optional (seen '()))
-  (define (return-call ast)
-    (match ast
-      (($ <call>) ast)
-      ((and ($ <assign>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
-      ((and ($ <variable>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
-      (_ #f)))
   (define (.function-name call)
     (or (and=> (as (.function call) <function>) .name) ""))
   (or (member (.name function) seen)
       (let* ((compound (.statement function))
-             (calls (tree-collect return-call compound))
-             (names (delete-duplicates (sort (map (compose .function-name return-call) calls)
+             (calls (tree-collect ast:call-statement compound))
+             (names (delete-duplicates (sort (map (compose .function-name ast:call-statement) calls)
                                              string<))))
         (any identity
              (map (lambda (n)
