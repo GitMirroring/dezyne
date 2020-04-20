@@ -1,0 +1,8 @@
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: compliance_out_two: check: deterministic: ok
+verify: compliance_out_two: check: illegal: ok
+verify: compliance_out_two: check: deadlock: ok
+verify: compliance_out_two: check: compliance: fail
+p.e
+verify: compliance_out_two: check: livelock: ok
