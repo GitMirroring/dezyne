@@ -1,0 +1,20 @@
+interface I {
+  in void e();
+  in void f();
+  out void cb();
+
+  behaviour {
+    on e: {}
+    on f: {}
+    on inevitable: cb;
+  }
+}
+
+component compliance_out_two {
+  provides I p;
+
+  behaviour {
+    on p.f(): {}
+    on p.e(): {}
+  }
+}
