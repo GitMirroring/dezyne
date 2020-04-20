@@ -990,16 +990,20 @@
                 (cond
                  ((pair? found) found)
                  ((or (not name) (not p)) '())
-                 (else (ast:lookup-n (parent p <scope>) name)))))))
+                 (else (ast:lookup-list (parent p <scope>) name)))))))
 
 (define-method (ast:lookup-n (o <boolean>) name)
   '())
 
-(define (ast:lookup- root o name)
-  (let ((lookup (ast:lookup-n o name)))
-    (if (null? lookup) #f (car lookup))))
+(define (ast:lookup-list- root o name)
+  (ast:lookup-n o name))
 
-(define (ast:lookup o name) ((ast:pure-funcq ast:lookup-) (parent o <root>) o name))
+(define (ast:lookup-list o name)
+  ((ast:pure-funcq ast:lookup-list-) (parent o <root>) o name))
+
+(define (ast:lookup o name)
+  (let ((lookup (ast:lookup-list o name)))
+    (if (null? lookup) #f (car lookup))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
