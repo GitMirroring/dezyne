@@ -21,10 +21,14 @@
 #
 # Code:
 
+UNIT_TESTS =					\
+  %D%/lts.scm					\
+  %D%/makreel.scm
+
 dist_%C%_scm_DATA =				\
  %D%/automake.scm				\
  %D%/dzn.scm					\
- %D%/lts.scm
+ $(UNIT_TESTS)
 
 dist_nocompile_%C%_scm_DATA =
 
