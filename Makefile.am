@@ -116,9 +116,6 @@ LOG_COMPILER = $(top_builddir)/pre-inst-env run
 SCM_LOG_COMPILER = $(top_builddir)/pre-inst-env $(GUILE)
 AM_SCM_LOG_FLAGS = --no-auto-compile
 
-UNIT_TESTS =					\
-  test/gaiag/lts.scm
-
 TESTS = $(UNIT_TESTS) $(FULL_TESTS)
 EXTRA_DIST += $(TESTS)
 
