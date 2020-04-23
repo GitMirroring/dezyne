@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -68,6 +68,7 @@ HELLO_TESTS =					\
 
 REGRESSION_TESTS =				\
  %D%/alpha_event				\
+ %D%/alpha_variable				\
  %D%/async_async_prio				\
  %D%/async_blocking				\
  %D%/async_cancel				\

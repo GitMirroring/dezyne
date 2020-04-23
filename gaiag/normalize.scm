@@ -1,9 +1,9 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018, 2019, 2020 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -266,7 +266,7 @@
                               (cut make <compound> #:elements <>)
                               triples:->on-guard*
                               triples:simplify-guard
-                              (rewrite-formals (parent o <model>))
+                              (rewrite-formals-and-locals (parent o <model>))
                               (triples:add-illegals (parent o <model>))
                               triples:split-multiple-on
                               triples:->triples
@@ -275,24 +275,51 @@
     ((? (is? <ast>)) (tree-map triples:event-traversal o))
     (_ o)))
 
-(define ((rewrite-formals model) triples)
+(define ((rewrite-formals-and-locals model) triples)
+  "Rewrite names of formals and locals for event-first normalization.
+
+Event-first normalization groups all guarded event handling blocks for a
+specific event in one @code{on EVENT @{@dots{}@}} clause.  Before
+normalization each block can use its own naming for the parameters as
+formally declared in the interface.  Normalization implies that these
+specific parameter names have to be unified.
+
+We follow the following renaming strategy:
+
+@itemize
+@item formals are rewnitten to their name as declared in the interface
+@item as long that name clashes with a member variable, append an 'x'
+@item if the new formal name clashes with a local, append an 'x' to the local
+@end itemize"
 
   (define (pair-equal? p) (equal? (car p) (cdr p)))
 
   (define ((rename mapping) o)
+    (define (formal-or-local? o)
+      (or (is-a? o <formal>) (and (is-a? o <variable>) (not (is-a? (.parent o) <variables>)))))
+    (define (rename-string o)
+      (or (assoc-ref mapping o) o))
     (match o
            ((and ($ <trigger>) (? (compose null? ast:formal*))) o)
            (($ <trigger>)
-            (clone o #:formals (clone (.formals o) #:elements (map (rename mapping) ((compose .elements .formals) o)))))
+            (clone o #:formals (clone (.formals o) #:elements (map (rename mapping) (ast:formal* o)))))
            (($ <action>) (clone o #:arguments ((rename mapping) (.arguments o))))
-           (($ <arguments>) (clone o #:elements (map (rename mapping) (.elements o))))
-           (($ <var>) (if (is-a? (.variable o) <formal>) (clone o #:name ((rename mapping) (.name o))) o))
+           (($ <arguments>) (clone o #:elements (map (rename mapping) (ast:argument* o))))
+           (($ <var>) (if (formal-or-local? (.variable o)) (clone o #:name (rename-string (.name o)))
+                          o))
            (($ <assign>)
             (let ((expression ((rename mapping) (.expression o)))
-                  (name (if (is-a? (.variable o) <formal>) ((rename mapping) (.variable.name o)) (.variable.name o))))
+                  (name (if (formal-or-local? (.variable o)) (rename-string (.variable.name o))
+                            (.variable.name o))))
               (clone o #:variable.name name #:expression expression)))
-           (($ <variable>) (clone o #:expression ((rename mapping) (.expression o))))
-           ((? string?) (or (assoc-ref mapping o) o))
+           (($ <variable>)
+            (let ((name (if (formal-or-local? o) (rename-string (.name o))
+                            (.name o))))
+              (clone o #:name name #:expression ((rename mapping) (.expression o)))))
+           (($ <field-test>) (if (formal-or-local? (.variable o)) (clone o #:variable.name (rename-string (.variable.name o)))
+                                 o))
+           (($ <formal>) (clone o #:name (rename-string (.name o))))
+           (($ <formal-binding>) (clone o #:name (rename-string (.name o))))
            ((? (is? <ast>)) (tree-map (rename mapping) o))
            (_ o)))
 
@@ -322,14 +349,10 @@
                       (fold-right (lambda (name o)
                                     (cons (fresh o name) o))
                                   occupied names))) ;; occupied names -> (append namesx occupied)
-
            (fresh-formals (list-head (refresh occupied formals) (length formals)))
            (mapping (filter (negate pair-equal?) (map cons (map .name ((compose .elements .formals) trigger)) fresh-formals)))
-
            (occupied (append (map cdr mapping) members))
-
            (mapping (append (map cons locals (list-head (refresh occupied locals) (length locals))) mapping)))
-
       (if (null? mapping) t
           (t-triple
            (clone o #:triggers (clone (.triggers o) #:elements (list ((rename mapping) trigger))))
