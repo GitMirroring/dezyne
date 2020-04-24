@@ -44,6 +44,7 @@ component hello_alpha
   {
     xint a;
     {
+      on p.e(): {}
       on r.f, r.g: illegal;
       on r.g(x): a = x;
     }
