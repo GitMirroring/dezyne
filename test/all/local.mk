@@ -68,6 +68,7 @@ HELLO_TESTS =					\
 
 REGRESSION_TESTS =				\
  %D%/alpha_event				\
+ %D%/alpha_local				\
  %D%/alpha_variable				\
  %D%/async_async_prio				\
  %D%/async_blocking				\
