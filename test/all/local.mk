@@ -222,6 +222,7 @@ REGRESSION_TESTS =				\
  %D%/system_hello				\
  %D%/system_helloworld				\
  %D%/system_inevitable				\
+ %D%/system_mix_bindings			\
  %D%/system_nondet_out				\
  %D%/system_nondet_reply			\
  %D%/system_optional				\
@@ -297,7 +298,8 @@ XFAIL_TESTS =					\
  %D%/compliance_livelock			\
  %D%/compliance_out_inevitable_illegal		\
  %D%/import_strip_component			\
- %D%/shell
+ %D%/shell					\
+ %D%/system_mix_bindings
 
 if have_scheme
  XFAIL_TESTS += %D%/blocking_system4
