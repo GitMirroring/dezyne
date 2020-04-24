@@ -1,0 +1,54 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2020 Joran Jessurun <joran.jessurun@gmail.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Reported by Joran Jessurun on IRC
+//
+// Code:
+
+interface A {
+  in void a();
+  behaviour {
+    on a: {}
+  }
+}
+
+component B {
+  provides A api;
+  requires A apj;
+
+  behaviour {
+    on api.a(): apj.a();
+  }
+}
+
+component C {
+  provides A api;
+  requires A apj;
+
+  system {
+    B b1;
+    b1.api <=> api;
+
+    B b2;
+    b2.api <=> b1.apj;
+    b2.apj <=> apj;
+  }
+}
