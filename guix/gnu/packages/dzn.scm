@@ -55,14 +55,14 @@
 (define-public dzn
   (package
     (name "dzn")
-    (version #!dzn!# "2.10.0.rc0.150-6b7c28")
+    (version #!dzn!# "2.10.0.rc9")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://dezyne.org/download/dzn/"
                            name "-" version ".tar.gz"))
        (sha256
-        (base32 #!dzn!# "1fx7fy8wyfskkhvc8q0gvlzpf2wjaiwj9xma368md2mccqx39kgn"))))
+        (base32 #!dzn!# "0ws8d4mn9031iwgyn3wpxysll9v99jhrin1nrjyykxnifpd18vix"))))
     (inputs `(("bash" ,bash-minimal)
               ("guile" ,guile-2.2)
               ("m4-cw" ,m4-changeword)
