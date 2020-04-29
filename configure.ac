@@ -62,7 +62,7 @@ dnl Check whether lps2lts can produce a valid lts on stdout
 dnl This patch also has lps2lts read from stdin
 dnl For cross-compiling (with patched mCRL2), use ./configure ac_cv_lps2lts_stdout=yes
 AC_CACHE_CHECK([whether lps2lts writes valid lts to stdout], [ac_cv_lps2lts_stdout],
-  [AS_IF([echo 'init delta;' | $MCRL22LPS | $LPS2LTS - 2>&5], [ac_cv_lps2lts_stdout=yes], [ac_cv_lps2lts_stdout=no])])
+  [AS_IF([echo 'init delta;' | $MCRL22LPS | $LPS2LTS --save-at-end --out=aut - - 2>&5], [ac_cv_lps2lts_stdout=yes], [ac_cv_lps2lts_stdout=no])])
 if test "x$ac_cv_lps2lts_stdout" = xno; then
    AC_MSG_ERROR([Please install an lps2lts that writes valid LTSs to stdout])
 fi
@@ -70,7 +70,7 @@ fi
 dnl Check whether ltscompare can read two LTSes from stdin
 dnl For cross-compiling (with patched mCRL2), use ./configure ac_cv_lpscompare_stdin=yes
 AC_CACHE_CHECK([whether ltscompare can read two LTSes from stdin], [ac_cv_ltscompare_stdin],
-  [AS_IF([echo -e 'des (0,1,1)\n(0,stays,0)\ndes (0,1,1)\n(0,stays,0)\n' | $LTSCOMPARE -pweak-failures  --in1=aut --in2=aut - - 1>&5 2>&5], [ac_cv_ltscompare_stdin=yes], [ac_cv_ltscompare_stdin=no])])
+  [AS_IF([echo -e 'des (0,1,1)\n(0,stays,0)\n\004\ndes (0,1,1)\n(0,stays,0)\n' | $LTSCOMPARE -pweak-failures --in1=aut --in2=aut - - 1>&5 2>&5], [ac_cv_ltscompare_stdin=yes], [ac_cv_ltscompare_stdin=no])])
 if test "x$ac_cv_ltscompare_stdin" = xno; then
    AC_MSG_ERROR([Please install an ltscompare that can read two LTSses form stdin])
 fi
@@ -78,7 +78,7 @@ fi
 dnl Check whether ltscompare can produce structured output
 dnl For cross-compiling (with patched mCRL2), use ./configure ac_cv_lpscompare_structured_output=yes
 AC_CACHE_CHECK([whether ltscompare produce structured output], [ac_cv_ltscompare_structured_output],
-  [AS_IF([echo -e 'des (0,1,1)\n(0,stays,0)\ndes (0,1,1)\n(0,stays,0)\n' | $LTSCOMPARE -pweak-failures --structured-output --in1=aut --in2=aut - - 1>&5 2>&5], [ac_cv_ltscompare_structured_output=yes], [ac_cv_ltscompare_structured_output=no])])
+  [AS_IF([echo -e 'des (0,1,1)\n(0,stays,0)\n\004\n\ndes (0,1,1)\n(0,stays,0)\n' | $LTSCOMPARE -pweak-failures --structured-output --in1=aut --in2=aut - - 1>&5 2>&5], [ac_cv_ltscompare_structured_output=yes], [ac_cv_ltscompare_structured_output=no])])
 if test "x$ac_cv_ltscompare_structured_output" = xno; then
    AC_MSG_ERROR([Please install an ltscompare with --structured-output support])
 fi

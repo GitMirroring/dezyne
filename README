@@ -23,7 +23,7 @@ Dezyne currently depends on the following packages:
 
   - [[https://gnu.org/software/guile/][GNU Guile 2.2.x]]
   - [[https://www.gnu.org/software/make/][GNU Make]]
-  - [[https://mcrl2.org][mCRL2]], version 201908.0 or later
+  - [[https://mcrl2.org][mCRL2]], version 201908.0.863ff22263 or later
   - [[https://gnu.org/software/m4/][GNU m4]], compiled with --enable-changeword
 
 To run the regression test, these additional packages are needed:

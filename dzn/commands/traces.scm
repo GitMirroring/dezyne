@@ -99,7 +99,7 @@ Usage: dzn traces [OPTION]... DZN-FILE
                      ("mcrl22lps" "--quiet" "-b")
                      ("lpsconstelm" "--quiet" "-st")
                      ("lpsparelm")
-                     ("lps2lts" "--quiet" "--cached" "--out=aut" "-")))
+                     ("lps2lts" "--quiet" "--cached" "--out=aut""--save-at-end" "-" "-")))
          (result (pipeline->string commands))
          (commands `(,(cut display result)
                      ("ltsconvert" "-eweak-trace" "--in=aut" "--out=aut")))
