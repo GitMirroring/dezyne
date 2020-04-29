@@ -126,7 +126,7 @@ illegal")
      reply-error        <-  'double_reply_error' / 'no_reply_error'
      missing-reply      <-  'missing_reply'
      second-reply       <-  'second_reply'
-     separator          <   '\n' / ' '
+     separator          <   '\n' / ' ' / ';'
      tick               <   [']
      lpar               <   [(]
      rpar               <   [)]
