@@ -140,6 +140,8 @@
 (define-templates action-proc makreel:action-proc newline-infix)
 (define-templates member-init makreel:member-init parameters-grammar)
 
+(define-templates sum-helper-params makreel:sum-helper-params parameters-grammar)
+
 ;; interface
 (define-templates provides-port-parallel-proc ast:provides-ports newline-parallel-infix)
 (define-templates requires-port-parallel-proc ast:non-external-ports newline-parallel-prefix)

@@ -1,1 +1,3 @@
-. sum #.variable.name : #x:basic-type . #x:type-bound  #x:event-prefix reply(#x:reply-constructor (#.variable.name)) . #x:type-check  #x:continuation;
+. sum #.variable.name : #x:basic-type . #x:type-bound  #x:event-prefix reply(#x:reply-constructor (#.variable.name)) . #x:type-check #x:process-identifier _sum_helper(#.variable.name = #.variable.name);
+
+#x:process-identifier _sum_helper#x:sum-helper-params = #x:continuation;
