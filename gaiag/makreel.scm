@@ -694,6 +694,12 @@
 (define-method (makreel:process-continuation (o <ast>))
   (mcrl2:process-continuation o))
 
+(define-method (makreel:sum-helper-params (o <ast>))
+  (let* ((locals (variables-in-scope o))
+         (var (list (or (parent o <variable>) (.variable (parent o <assign>)))))
+         (params (append locals var)))
+    (delete-duplicates params ast:eq?)))
+
 (define-method (makreel:the-end (o <ast>))
   (if (and (parent o <component>) (ast:eq? o (.statement (parent o <behaviour>)))) o
       '()))
