@@ -1,4 +1,4 @@
-test/all/wf_eventNotValuedAction/wf_eventNotValuedAction.dzn:32:16: syntax-error
+test/all/wf_eventNotValuedAction/wf_eventNotValuedAction.dzn:32:16: error
 		on e: { V v = a; reply(v); }
                ^
                `expression' expected
