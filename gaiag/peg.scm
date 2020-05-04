@@ -20,7 +20,7 @@
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 
-(define-module (gaig peg)
+(define-module (gaiag peg)
   #:use-module (gaiag peg codegen)
   #:use-module (gaiag peg string-peg)
   ;; Note: the most important effect of using string-peg is not whatever
