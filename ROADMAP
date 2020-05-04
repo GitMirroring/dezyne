@@ -50,6 +50,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Move nginx/haunt-based website setup from banaan to kluit.
     + Fix dummy download page.
   - Pass regression test
+    + XFAIL: notably test/all/shell
     + Rewrite underlapping tests from wip-test (old-regression)
       - Dataparam?
       - Injected?
@@ -63,6 +64,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Fix problematic draft patches
       - DRAFT peg: Add fall-back parsing.
       - DRAFT peg: Add whitespace and comment skip parsers.
+  - Upstream mCRL2 patches
   - Parser bugs/hardening/performance
     + Finish and merge wip-memoize
   - Debian package
@@ -79,7 +81,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
      - Gerenate images.
   - Resurrect C++03 support
   - Resurrect C# support
-  - Upstream mcrl2 patches
   - Fully support IDE release
     + Finish and merge wip-namespace
   - Eradicate remnants of cloud-based solution
@@ -89,6 +90,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - dzn lts + states: simple but correct dot-based state charts
   - Nsis-based installer for Windows
   - Revisit code trace format h.hello <- <external>.
+  - Find a solution to the m4-changeword kludge
 ** After Release 3.0
   - Documentation
     + Integration with IDEs.
@@ -106,6 +108,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Sub machines
   - Weak illegals
 * DONE
+  - Forward-port mcrl2 patches, submit upstream
   - Support binary release
     + Solicit and incorporate feedback on 2.10.0.rc8
   - Move pack, guix and binary release to pack.git
