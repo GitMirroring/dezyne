@@ -35,15 +35,17 @@
   #:use-module (dzn peg using-parsers)
   #:use-module (dzn parse ast)
 
-  #:export (peg:parse
-            %peg-locations?
-            %skip-parser?
-            peg:handle-syntax-error
-            peg:line-number
-            peg:column-number
-            peg:line))
+  #:re-export (%peg:locations?
+               %peg:skip?
+               %peg:fall-back?
+               %peg:debug?
+               %peg:error)
+
+  #:export (peg:parse))
 
 (define* (peg:parse string file-name #:key (imports '()))
+
+  (define imported-files '())
 
   (define* (peg:parse-recursive string file-name #:key (imports '()))
 
@@ -67,40 +69,36 @@
     (define-peg-pattern is-event body -is-event-)
 
 
-
-
     (define variable-stack '(()))
 
     (define (-enter-frame- str len pos)
-      (unless (%peg:fall-back?) ; TODO
-        ;;(warn 'enter-frame: variable-stack)
+      (unless (%peg:fall-back?)
         (set! variable-stack (cons (car variable-stack) variable-stack)))
       (list pos '()))
     (define-peg-pattern enter-frame none -enter-frame-)
 
     (define (-exit-frame- str len pos)
-      (unless (%peg:fall-back?) ; TODO
-        ;;(warn 'exit-frame: variable-stack)
+      (unless (%peg:fall-back?)
         (set! variable-stack (cdr variable-stack)))
       (list pos '()))
     (define-peg-pattern exit-frame none -exit-frame-)
 
     (define (-add-var- str len pos)
       (let ((res (identifier str len pos))
-            (top (or (%peg:fall-back?) (car variable-stack))) ; TODO
-            (bottom (or (%peg:fall-back?) (cdr variable-stack)))) ; TODO
+            (top (or (%peg:fall-back?) (car variable-stack)))
+            (bottom (or (%peg:fall-back?) (cdr variable-stack))))
         (when res
-          (or (%peg:fall-back?) ; TODO
+          (or (%peg:fall-back?)
               (set! variable-stack (cons (cons (substring str pos (car res)) top) bottom))))
         res))
     (define-peg-pattern add-var all -add-var-)
 
     (define (-var- str len pos)
       (let* ((res (identifier str len pos))
-             (top (or (%peg:fall-back?) (car variable-stack))) ; TODO
+             (top (or (%peg:fall-back?) (car variable-stack)))
              (var-name (and res (substring str pos (car res)))))
         (and var-name
-             (or (%peg:fall-back?) ; TODO
+             (or (%peg:fall-back?)
                  (find (cut equal? var-name <>) top))
              res)))
     (define-peg-pattern var all -var-)
@@ -111,8 +109,8 @@
              (let* ((import-file-name (string-trim-both (apply string-append (cdadr res))))
                     (import-file-name (or (search-path imports import-file-name)
                                           (let ((pos (car res))
-                                                (message (format #f "No such file or directory: `~a' [~a]\n" import-file-name imports)))
-                                            (peg:error file-name string pos message))))
+                                                (message (format #f "No such file: `~a' in [~a]\n" import-file-name (string-join imports))))
+                                            ((@@ (dzn parse) peg:error) file-name str pos message))))
                     (import-file-name (canonicalize-path import-file-name))
                     (root (if (member import-file-name imported-files) #f
                               (let* ((foo (set! imported-files (cons import-file-name imported-files)))
@@ -121,7 +119,7 @@
                                      (parse-tree (catch 'syntax-error
                                                    (lambda ()
                                                      (peg:parse-recursive string import-file-name #:imports imports))
-                                                   (peg:handle-syntax-error import-file-name string))))
+                                                   ((@@ (dzn parse) peg:handle-syntax-error) import-file-name string))))
                                 (parse-tree->ast parse-tree #:string string #:file-name import-file-name)))))
                (list (car res) (list 'import import-file-name root))))))
     (define-peg-pattern do-import body -do-import-)
@@ -173,9 +171,11 @@ types-and-events <-- (type / event)+
 
 event <-- direction type-name# event-name# formals# SEMICOLON#
 
-component <-- COMPONENT reset-event-names compound-name# BRACE-OPEN# ports (behaviour / system)? BRACE-CLOSE#
+component <-- COMPONENT reset-event-names compound-name# BRACE-OPEN# ports# body# BRACE-CLOSE#
 
-ports <-- port*
+body <- behaviour / system / &BRACE-CLOSE
+
+ports <-- (port / &BEHAVIOUR / &SYSTEM / &BRACE-CLOSE)#*
 
 port <-- port-direction compound-name# formals? name# SEMICOLON#
 
@@ -261,6 +261,7 @@ function <-- type-name name &(formals BRACE-OPEN) enter-frame formals BRACE-OPEN
 
 variable <-- type-name add-var (ASSIGN expression#)? SEMICOLON#
 
+
 expression <-- or-expression
 or-expression <- and-expression OR or-expression# / and-expression
 and-expression <- compare-expression AND and-expression# / compare-expression
@@ -268,14 +269,10 @@ compare-expression <- plus-min-expression COMPARE plus-min-expression# / plus-mi
 plus-min-expression <- not-expression (PLUS / MINUS) not-expression# / not-expression
 not-expression <- not / group / data / named-expression
 not <-- NOT not-expression#
-
 named-expression <- action-or-call / field-test / enum-literal / literal / var
-
 enum-literal <-- scope name
 field-test <-- var DOT name
-
 literal <-- NUMBER / FALSE / TRUE
-
 group <-- PAREN-OPEN expression PAREN-CLOSE#
 
 system <-- SYSTEM BRACE-OPEN# instances-and-bindings BRACE-CLOSE#
@@ -383,49 +380,6 @@ KEYWORD <
   / 'system' ![a-zA-Z_0-9]
   / 'true' ![a-zA-Z_0-9]")
 
-  (parameterize ((%peg:locations? #t)
-                 (%peg:skip? #t)
-                 (%peg:debug? #f))
-		(let* ((result (catch
-				'syntax-error
-				(lambda ()
-                                  (peg:tree (match-pattern root string)))
-				(lambda (key . args)
-                                  (match args
-                                    (((pos message)) (peg:error file-name string pos (format #f "`~a' expected" message)))
-                                    (_ (format (current-error-port) "parse error: ~a" args)))
-                                  (exit 1)))))
-		  result)))
+    (peg:tree (match-pattern root string)))
 
-  (define imported-files '())
   (peg:parse-recursive string file-name #:imports imports))
-
-(define (peg:line-number string pos)
-  (1+ (string-count string #\newline 0 pos)))
-
-(define (peg:column-number string pos)
-  (- pos (or (string-rindex string #\newline 0 pos) -1)))
-
-(define (peg:line string pos)
-  (let ((start (1+ (or (string-rindex string #\newline 0 pos) -1)))
-        (end (or (string-index string #\newline pos) (string-length string))))
-    (substring string start end)))
-
-(define (peg:error file-name string pos message)
-  (let* ((ln (peg:line-number string pos))
-         (col (peg:column-number string pos))
-         (line (peg:line string pos))
-         (indent (make-string (1- col) #\space)))
-    (format (current-error-port) "~a:~a:~a: syntax-error\n~a\n~a^\n~a~a\n"
-            file-name
-            ln col line
-            indent
-            indent
-            message)
-      (exit 1)))
-
-(define (peg:handle-syntax-error file-name string)
-  (lambda (key . args)
-    (let* ((pos (caar args))
-           (message (format #f "expected `~a'" (cadar args))))
-      (peg:error file-name string pos message))))

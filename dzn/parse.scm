@@ -25,34 +25,70 @@
 ;;; Code:
 
 (define-module (dzn parse)
+
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
   #:use-module (ice-9 rdelim)
 
-  #:use-module (dzn parse peg)
   #:use-module (dzn command-line)
-  #:use-module (dzn goops)
+  #:use-module (dzn parse peg)
   #:use-module (dzn parse ast)
   #:use-module (dzn ast)
   #:use-module (dzn wfc)
 
   #:export (peg:parse-file
+            peg:line-number
+            peg:column-number
+            peg:handle-syntax-error
             parse-file))
+
+(define (peg:line-number string pos)
+  (1+ (string-count string #\newline 0 pos)))
+
+(define (peg:column-number string pos)
+  (- pos (or (string-rindex string #\newline 0 pos) -1)))
+
+(define (peg:line string pos)
+  (let ((start (1+ (or (string-rindex string #\newline 0 pos) -1)))
+        (end (or (string-index string #\newline pos) (string-length string))))
+    (substring string start end)))
+
+(define (peg:error file-name string pos message)
+  (let* ((ln (peg:line-number string pos))
+         (col (peg:column-number string pos))
+         (line (peg:line string pos))
+         (indent (make-string (1- col) #\space)))
+    (format (current-error-port) "~a:~a:~a: error\n~a\n~a^\n~a~a\n"
+            file-name
+            ln col line
+            indent
+            indent
+            message)
+      (exit 1)))
+
+(define (peg:handle-syntax-error file-name string)
+  (lambda (key . args)
+    (let* ((pos (caar args))
+           (message (format #f "`~a' expected" (cadar args))))
+      (peg:error file-name string pos message))))
 
 (define* (peg:parse-file file-name #:key (imports '()))
   (let* ((string (if (equal? file-name "-") (read-string)
                      (catch #t
-                       (lambda () (with-input-from-file file-name read-string))
-                       (lambda (key . args)
-                         (format (current-error-port) "No such file or directory: ~a\n" file-name)
-                         (exit 1)))))
+                            (lambda () (with-input-from-file file-name read-string))
+                            (lambda (key . args)
+                              (format (current-error-port) "No such file or directory: ~a\n" file-name)
+                              (exit 1)))))
          (imports (if (equal? file-name "-") '()
                       (cons (dirname (canonicalize-path file-name)) imports)))
          (parse-tree (catch 'syntax-error
-                       (lambda ()
-                         (peg:parse string file-name #:imports imports))
-                       (peg:handle-syntax-error file-name string)))
+                            (lambda ()
+                              (parameterize ((%peg:locations? #t)
+                                             (%peg:skip? #t)
+                                             (%peg:debug? (gdzn:command-line:get 'debug)))
+                                (peg:parse string file-name #:imports imports)))
+                            (peg:handle-syntax-error file-name string)))
          (gdzn-debug? (gdzn:command-line:get 'debug)))
     (parse-root->ast parse-tree #:string string #:file-name file-name)))
 

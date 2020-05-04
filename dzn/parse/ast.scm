@@ -39,7 +39,7 @@
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
-  #:use-module (dzn parse peg)
+  #:use-module (dzn parse)
   #:use-module (dzn parse silence)
   #:export (parse-tree->ast
             parse-root->ast))
@@ -111,7 +111,7 @@
 
         ((? string?) o)
 
-        (((and (? symbol?) type) body ... ('comment comment))
+        (((and (? symbol?) type) body ... ('comment comment ...))
          (let ((ast (helper (cons type body))))
            ast)) ;; TODO ensure (is-a? ast <ast>) is invariant to prevent comment loss
 
