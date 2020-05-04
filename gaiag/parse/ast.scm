@@ -39,7 +39,7 @@
   #:use-module (gaiag ast)
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
-  #:use-module (gaiag parse peg)
+  #:use-module (gaiag parse)
   #:use-module (gaiag parse silence)
   #:export (parse-tree->ast
             parse-root->ast))
@@ -111,7 +111,7 @@
 
         ((? string?) o)
 
-        (((and (? symbol?) type) body ... ('comment comment))
+        (((and (? symbol?) type) body ... ('comment comment ...))
          (let ((ast (helper (cons type body))))
            ast)) ;; TODO ensure (is-a? ast <ast>) is invariant to prevent comment loss
 

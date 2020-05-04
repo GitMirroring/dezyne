@@ -1,4 +1,4 @@
-test/all/wf_interfaceMustDefineEvent/wf_interfaceMustDefineEvent.dzn:24:19: syntax-error
+test/all/wf_interfaceMustDefineEvent/wf_interfaceMustDefineEvent.dzn:24:19: error
 interface Sensor {
                   ^
                   `types-and-events' expected
