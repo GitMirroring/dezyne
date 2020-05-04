@@ -620,14 +620,19 @@
         ((is-a? o <int-expr>) (make <int>))
         (else (make <void>))))
 
-(define-method (ast:return-type (o <event>))
-  ((compose .type .signature) o))
+(define-method (ast:return-types (interface <interface>))
+  "Return all event types used in INTERFACE."
+  (delete-duplicates (append-map ast:return-types (ast:event* interface)) ast:eq?))
 
-(define-method (ast:return-types (o <interface>))
-  (delete-duplicates (map ast:return-type (ast:event* o)) ast:eq?))
+(define-method (ast:return-types (component <component-model>))
+  "Return all event types used in COMPONENT."
+  (delete-duplicates (append-map ast:return-types (filter-map ast:type (ast:port* component))) ast:eq?))
 
-(define-method (ast:return-types (o <component-model>))
-  (delete-duplicates (append-map ast:return-types (map .type (ast:port* o))) ast:eq?))
+(define-method (ast:return-types (o <event>))
+  (list (ast:type o)))
+
+(define-method (ast:return-types (o <type>))
+  (list o))
 
 (define-method (ast:return-values (o <event>))
   (let ((type ((compose .type .signature) o)))
