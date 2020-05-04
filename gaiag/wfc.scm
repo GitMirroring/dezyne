@@ -98,9 +98,9 @@
    (let ((errors (binding-declaration o)))
      (if (pair? errors) errors
          (let ((errors (append
-                         (binding-direction o)
-                         (double-bindings o)
-                         (missing-bindings o))))
+                        (binding-direction o)
+                        (double-bindings o)
+                        (missing-bindings o))))
            (if (pair? errors) errors
                (cyclic-bindings o)))))))
 
@@ -124,9 +124,9 @@
 
 (define-method (wfc (o <int>)) ;; is-a <type>
   (append (re-declaration o)
-   (let ((range (.range o)))
-     (if (<= (.from range) (.to range)) '()
-         `(,(wfc-error o (format #f "subint ~a has empty range" (type-name (.name o)))))))))
+          (let ((range (.range o)))
+            (if (<= (.from range) (.to range)) '()
+                `(,(wfc-error o (format #f "subint ~a has empty range" (type-name (.name o)))))))))
 
 (define-method (wfc (o <port>))
   (append
@@ -184,19 +184,40 @@
         `(,(wfc-error o (format #f "~a-parameter not allowed on out-event `~a'" (.direction o) (.name event)))))
        (else '()))))))
 
+(define-method (model-event-types (model <model>))
+  "Return all event types used in MODEL."
+  (let* ((interfaces
+          (if (is-a? model <interface>) (list model)
+              (let* ((ports (ast:port* model)))
+                (filter identity (map ast:type ports)))))
+         (interfaces (filter (cut is-a? <> <interface>) interfaces))
+         (events (append-map ast:event* interfaces))
+         (types (map (compose ast:type .signature) events)))
+    (delete-duplicates types ast:eq?)))
+
+(define-method (model-blocking? (o <model>))
+  (and (is-a? o <component>)
+       (pair? (tree-collect-filter (disjoin (is? <declarative>) (is? <compound>)) (is? <blocking>) (.behaviour o)))))
+
+(define %model-event-types (make-parameter '()))
+(define %model-blocking? (make-parameter #f))
+
+
 (define-method (wfc (o <behaviour>))
-  (append
-   (append-map wfc (ast:type* o))
-   (append-map wfc (ast:port* o))
-   (append-map wfc (ast:variable* o))
-   (append-map
-    (lambda (variable)
-      (if (ast:name-equal? (.name (parent o <model>)) (.name variable))
-          `(,(wfc-error variable (format #f "variable `~a' must not have the same name as the model it is declared in" (.name variable))))
-          '()))
-    (ast:variable* o))
-   (append-map wfc (ast:function* o))
-   (wfc (.statement o))))
+  (parameterize ((%model-event-types (model-event-types (parent o <model>)))
+                 (%model-blocking? (model-blocking? (parent o <model>))))
+    (append
+     (append-map wfc (ast:type* o))
+     (append-map wfc (ast:port* o))
+     (append-map wfc (ast:variable* o))
+     (append-map
+      (lambda (variable)
+        (if (ast:name-equal? (.name (parent o <model>)) (.name variable))
+            `(,(wfc-error variable (format #f "variable `~a' must not have the same name as the model it is declared in" (.name variable))))
+            '()))
+      (ast:variable* o))
+     (append-map wfc (ast:function* o))
+     (wfc (.statement o)))))
 
 (define-method (wfc (o <variable>))
   (append
@@ -376,14 +397,7 @@
 
 (define-method (wfc-reply-type (o <expression>))
   (let* ((reply-type (ast:type o))
-         (interface (parent o <interface>))
-         (interfaces
-          (if interface (list interface)
-              (let* ((ports (ast:port* (parent o <component-model>))))
-                (filter identity (map ast:type ports)))))
-         (interfaces (filter (cut is-a? <> <interface>) interfaces))
-         (events (append-map ast:event* interfaces))
-         (types (map (compose ast:type .signature) events))
+         (types (%model-event-types))
          (matching-types (filter (cut ast:equal? <> reply-type) types)))
     (if (pair? matching-types) '()
         `(,(wfc-error o (format #f "type mismatch: no event with reply type `~a'"
@@ -684,14 +698,15 @@
          (port (and (.port.name o) (.port o)))
          (event (if (and component
                          (ast:requires? trigger)
-                         (pair? (tree-collect-filter (disjoin (is? <declarative>) (is? <compound>)) (is? <blocking>) component)))
+                         (%model-blocking?))
                     (car (ast:event* (ast:provides-port component)))
                     (.event trigger)))
          (event-type (and event (ast:type event)))
-         (reply-type (ast:type o)))
-    (cond ((and port (not (is-a? (.type port) <interface>)))
+         (reply-type (ast:type o))
+         (port-type (and port (.type port))))
+    (cond ((and port (not (is-a? port-type <interface>)))
            `(,(wfc-error o (format #f "invalid type for port `~a', interface expected, found `~a ~a'"
-                                   (.port.name o) (ast-name (.type port)) (type-name (.type port))))
+                                   (.port.name o) (ast-name port-type) (type-name port-type)))
              ,(wfc-error (.port o) (format #f "`~a' declared here" (.port.name o)))))
           ((not event) '())         ; already covered in trigger check
           ((and (or (not (.port.name o))
@@ -844,24 +859,22 @@
         (else '())))
 
 (define-method (missing-bindings (o <system>))
-  (append (append-map missing-bindings (ast:port* o))
-          (append-map missing-bindings (ast:instance* o))))
-
-(define-method (missing-bindings (o <port>))
-  (missing-bindings o (parent o <system>) #f))
-
-(define-method (missing-bindings (o <port>) (system <system>) instance)
-  (let* ((bindings (ast:binding* system))
+  (let* ((bindings (ast:binding* o))
          (ports (append (filter-map (compose .port .left) bindings)
-                        (filter-map (compose .port .right) bindings))))
-    (if (member o ports ast:eq?) '()
-        `(,(wfc-error o (format #f "port `~a' not bound" (.name o)))
-          ,@(if (not instance) '()
-                `(,(wfc-error instance (format #f "of instance: `~a'" (.name instance)))))))))
+                        (filter-map (compose .port .right) bindings)))
+         (ports (delete-duplicates ports ast:eq?)))
+    (append (append-map (cut missing-bindings <> o ports #f) (ast:port* o))
+            (append-map (cut missing-bindings <> o ports) (ast:instance* o)))))
 
-(define-method (missing-bindings (o <instance>))
+(define-method (missing-bindings (o <port>) (system <system>) ports instance)
+  (if (member o ports ast:eq?) '()
+      `(,(wfc-error o (format #f "port `~a' not bound" (.name o)))
+        ,@(if (not instance) '()
+              `(,(wfc-error instance (format #f "of instance: `~a'" (.name instance))))))))
+
+(define-method (missing-bindings (o <instance>) (system <system>) ports)
   (append-map
-   (cute missing-bindings <> (parent o <system>) o)
+   (cute missing-bindings <> system ports o)
    (filter (negate .injected) (ast:port* (.type o)))))
 
 (define-method (missing-return (o <function>))
