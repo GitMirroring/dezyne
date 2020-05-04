@@ -30,6 +30,7 @@
 
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-43)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
@@ -59,8 +60,33 @@
                           interfaces)
                    (set! interfaces (append interfaces rest) )))
           ((get) interfaces)))))
+
   (define (make-list? o) (if (pair? o) o
                              (list o)))
+
+  (define newlines ;; --> (vector (pos1 . pos2) (pos2+1 . pos3) ...) where posi is position of newline
+    (let* ((last (string-length string))
+           (lines (let loop ((current-pos 0) (result '()))
+                    (let ((index (string-index string #\newline current-pos last)))
+                      (if (not index) result
+                          (loop (1+ index) (append result (list index)))))))
+           (lines (let loop ((start 0) (todo lines) (result '()))
+                    (if (null? todo) (append result (list (cons start last)))
+                        (loop (1+ (car todo)) (cdr todo) (append result (list (cons start (car todo)))))))))
+      (list->vector lines)))
+
+  (define (compare-pos pos nl)
+    (cond ((< (cdr pos) (car nl)) -1)
+          ((> (car pos) (cdr nl)) 1)
+          (else 0)))
+
+  (define (line-number pos)
+    (let ((index (vector-binary-search newlines (cons pos pos) compare-pos)))
+      (if index (1+ index) (vector-length newlines))))
+
+  (define (column-number line pos)
+    (1+ (- pos (car (vector-ref newlines (1- line))))))
+
   (define (file-helper o file-name start-pos)
     (define (get-location o)
       (match o
@@ -92,14 +118,14 @@
            ast)) ;; TODO ensure (is-a? ast <ast>) is invariant to prevent comment loss
 
         (((and (? symbol?) type) body ... ('location pos end))
-         (let* ((ast (helper (cons type body)))
-                (location (helper (last o)))
-                (location (if (and (is-a? ast <root-node>)
-                                   (.location ast)) (clone location #:file-name (.file-name (.location ast)))
-                                   location)))
-           (if (and location (or (is-a? ast <locationed-node>)))
-               (clone ast #:location location)
-               ast)))
+         (let ((ast (helper (cons type body))))
+           (if (not (is-a? ast <locationed-node>)) ast
+               (let* ((location (helper (last o)))
+                      (location (if (and (is-a? ast <root-node>) (.location ast))
+                                    (clone location #:file-name (.file-name (.location ast)))
+                                    location)))
+                 (if location (clone ast #:location location)
+                     ast)))))
 
         (((and (or 'root 'interface 'behaviour 'component 'types 'events 'event) type) body ... (? string?))
          ;; FIXME: junking non-comment-parsed string
@@ -523,11 +549,11 @@
         (('literal string) (make <literal-node> #:value (helper string)))
 
         (('location pos end)
-         (let* ((start-line (peg:line-number string start-pos))
-                (line (peg:line-number string  pos))
-                (column (peg:column-number string pos))
-                (end-line (peg:line-number string end))
-                (end-column (peg:column-number string end)))
+         (let* ((start-line (line-number start-pos))
+                (line (line-number pos))
+                (column (column-number line pos))
+                (end-line (line-number end))
+                (end-column (column-number end-line end)))
            (make <location-node> #:file-name file-name #:line (1+ (- line start-line)) #:column column #:end-line (1+ (- end-line start-line)) #:end-column end-column #:offset (- pos start-pos) #:length (- end pos))))
 
         ((? (is? <ast>)) o)
@@ -542,7 +568,8 @@
   (let* ((root-node (file-helper o file-name 0))
          (elements (append (async-interfaces 'get) (.elements root-node)))
          (root (make <root> #:node (clone root-node #:elements elements)))
-         (imports (tree-collect (is? <import>) root))
+         (imports (tree-collect-filter (disjoin (is? <import>) (is? <root>) (is? <ast-list>))
+                                       (is? <import>) root))
          (root (clone root
                       #:elements (filter (negate (is? <import>))
                                          (append (.elements root)
