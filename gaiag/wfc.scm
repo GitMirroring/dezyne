@@ -184,17 +184,6 @@
         `(,(wfc-error o (format #f "~a-parameter not allowed on out-event `~a'" (.direction o) (.name event)))))
        (else '()))))))
 
-(define-method (model-event-types (model <model>))
-  "Return all event types used in MODEL."
-  (let* ((interfaces
-          (if (is-a? model <interface>) (list model)
-              (let* ((ports (ast:port* model)))
-                (filter identity (map ast:type ports)))))
-         (interfaces (filter (cut is-a? <> <interface>) interfaces))
-         (events (append-map ast:event* interfaces))
-         (types (map (compose ast:type .signature) events)))
-    (delete-duplicates types ast:eq?)))
-
 (define-method (model-blocking? (o <model>))
   (and (is-a? o <component>)
        (pair? (tree-collect-filter (disjoin (is? <declarative>) (is? <compound>)) (is? <blocking>) (.behaviour o)))))
@@ -204,7 +193,7 @@
 
 
 (define-method (wfc (o <behaviour>))
-  (parameterize ((%model-event-types (model-event-types (parent o <model>)))
+  (parameterize ((%model-event-types (ast:return-types (parent o <model>)))
                  (%model-blocking? (model-blocking? (parent o <model>))))
     (append
      (append-map wfc (ast:type* o))
