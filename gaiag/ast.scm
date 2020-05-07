@@ -50,6 +50,8 @@
            ast:async?
            ast:async-port*
            ast:call-statement
+           %calls-per-function
+           ast:calls-per-function
            ast:clr-events
            ast:declarative?
            ast:direction
@@ -131,6 +133,7 @@
            ast:namespace*
            ast:name-equal?
            ast:port*
+           ast:recurses?
            ast:statement*
            ast:top*
            ast:trigger*
@@ -1221,6 +1224,33 @@
                                            (filter (is? <system>)
                                                    (map .type (ast:instance* o)))))
                          systems))))))
+
+(define %calls-per-function (make-parameter '()))
+(define-method (ast:calls-per-function (o <behaviour>))
+  "Return an alist with for each function a list of all function calls
+in that function's body."
+  (define (.function-name call)
+    (or (and=> (as (.function call) <function>) .name) (.function call)))
+  (define (calls function)
+    (let* ((compound (.statement function))
+           (call-statements (tree-collect ast:call-statement compound)))
+      (delete-duplicates (map ast:call-statement call-statements)
+                         (lambda (a b) (equal? (or (.function.name a) "")
+                                               (or (.function.name b) ""))))))
+  (map (lambda (f) (cons (.name f) (calls f))) (ast:function* o)))
+
+(define* (ast:recurses? call #:optional (seen '()))
+  (define (.function-name call)
+    (or (and=> (as (.function call) <function>) .name) (.function call)))
+  (or (and (member (.function.name call) seen) seen)
+      (let ((function (.function call)))
+        (and function
+             (let ((calls (find (lambda (fc) (equal? (.name function) (car fc))) (%calls-per-function))))
+               (and calls
+                    (find identity
+                          (map (lambda (c)
+                                 (ast:recurses? c (cons (.function.name call) seen)))
+                               (cdr calls)))))))))
 
 (define (ast-> ast)
   ((compose
