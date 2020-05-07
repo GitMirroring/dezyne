@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2019, 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -277,12 +278,10 @@ literal <-- NUMBER / FALSE / TRUE
 
 group <-- PAREN-OPEN expression PAREN-CLOSE#
 
-system <-- SYSTEM BRACE-OPEN# instances bindings BRACE-CLOSE#
+system <-- SYSTEM BRACE-OPEN# instances-and-bindings BRACE-CLOSE#
 
-instances <-- instance*
+instances-and-bindings <-- (instance / binding)*
 instance <-- compound-name name SEMICOLON#
-
-bindings <-- binding*
 binding <-- end-point BIND end-point SEMICOLON#
 end-point <-- compound-name (DOT ASTERISK)? / ASTERISK
 

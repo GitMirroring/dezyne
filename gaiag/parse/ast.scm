@@ -1,7 +1,8 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2019, 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -95,7 +96,7 @@
                 (location (helper (last o)))
                 (location (if (and (is-a? ast <root-node>)
                                    (.location ast)) (clone location #:file-name (.file-name (.location ast)))
-                              location)))
+                                   location)))
            location))
         (_ #f)))
     (define (helper o)
@@ -218,35 +219,24 @@
            #:ports (helper ports)
            #:behaviour (set-recursive (helper behaviour))))
 
-        (('component name ports ('system ('instances 'bindings) rest ...))
-         (make <system-node>
-           #:name (helper name)
-           #:ports (helper ports)))
+        (('component name ports ('system instances-and-bindings rest ...))
+         (let ((instances-and-bindings (helper instances-and-bindings)))
+           (receive (instances bindings)
+               (partition (is? <instance-node>) instances-and-bindings)
+             (make <system-node>
+               #:name (helper name)
+               #:ports (helper ports)
+               #:instances (make <instances-node> #:elements instances)
+               #:bindings (make <bindings-node> #:elements bindings)))))
 
-        (('component name ports ('system instances bindings rest ...))
-         (make <system-node>
-           #:name (helper name)
-           #:ports (helper ports)
-           #:instances (helper instances)
-           #:bindings (helper bindings)))
+        (('instances-and-bindings instances-and-bindings ...)
+         (helper instances-and-bindings))
 
-        ('instances
-         (make <instances-node>))
-
-        (('instances elements ...)
-         (make <instances-node> #:elements (helper elements)))
-
-        ('bindings
-         (make <bindings-node>))
-
-        (('bindings elements ...)
-         (make <bindings-node> #:elements (helper elements)))
+        (('instance type name)
+         (make <instance-node> #:name (helper name) #:type.name (helper type)))
 
         (('binding left right)
          (make <binding-node> #:left (helper left) #:right (helper right)))
-
-        ;; (('end-point)
-        ;;  (make <end-point-node> #:port.name "*"))
 
         (('end-point "*")
          (make <end-point-node> #:port.name "*"))
@@ -462,11 +452,6 @@
            #:expression (helper expression)
            #:then (helper then)
            #:else (helper else)))
-
-        (('instance type name) (make <instance-node> #:name (helper name) #:type.name (helper type)))
-
-        (('instances instances ...)
-         (make <instances-node> #:elements (helper instances)))
 
         (('enum-literal type field)
          (let ((type (helper type)))
