@@ -39,7 +39,6 @@
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
-  ;;#:use-module (dzn parse)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse silence)
   #:export (parse-tree->ast
@@ -101,8 +100,6 @@
         (_ #f)))
     (define (helper o)
       (match o
-        ;; ("bool" (make <scope.name-node> #:ids '("bool")))
-        ;; ("void" (make <scope.name-node> #:ids '("void")))
         ("bool" "bool")
         ("void" "void")
 
@@ -172,18 +169,22 @@
         (('extern name data)
          (make <extern-node> #:name (helper name) #:value (helper data)))
 
-        (('interface name types-or-events behaviour)
-         (let* ((types-or-events (helper types-or-events))
-                (types (filter (is? <type-node>) types-or-events))
-                (events (filter (is? <event-node>) types-or-events))
-                (behaviour (set-recursive (helper behaviour))))
-           (make <interface-node>
-             #:name (helper name)
-             #:types (make <types-node> #:elements types)
-             #:events (make <events-node> #:elements events)
-             #:behaviour (and behaviour (.node ((mark-silent) (make <behaviour> #:node behaviour)))))))
+        (('interface name types-and-events behaviour)
+         (let* ((types-and-events (helper types-and-events))
+                (behaviour (set-recursive (helper behaviour)))
+                (behaviour (and behaviour
+                                (.node ((mark-silent)
+                                        (make <behaviour> #:node behaviour))))))
+           (receive (types events)
+               (partition (is? <type-node>) types-and-events)
+             (make <interface-node>
+               #:name (helper name)
+               #:types (make <types-node> #:elements types)
+               #:events (make <events-node> #:elements events)
+               #:behaviour behaviour))))
 
-        (('types-or-events types-or-events ...) (helper types-or-events))
+        (('types-and-events types-and-events ...)
+         (helper types-and-events))
 
         (('event direction type name formals)
          (make <event-node>
