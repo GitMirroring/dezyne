@@ -39,7 +39,7 @@ component B {
   }
 }
 
-component C {
+component system_mix_bindings {
   provides A api;
   requires A apj;
 
