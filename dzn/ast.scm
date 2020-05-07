@@ -1046,7 +1046,8 @@
   (and (.port.name o) (ast:lookup o (.port.name o))))
 
 (define-method (.port (o <trigger>))
-  (and (.port.name o) (ast:lookup o (.port.name o))))
+  "<trigger> opens a new scope, so lookup the port name the parent scope"
+  (and (.port.name o) (ast:lookup (.parent o) (.port.name o))))
 
 (define-method (.port (o <action>))
   (and (.port.name o) (ast:lookup o (.port.name o))))
