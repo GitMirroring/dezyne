@@ -70,9 +70,9 @@ component hello_foreign
 
   system
     {
-      hello c;
-      foreign f;
       h <=> c.h;
+      hello c;
       c.w <=> f.w;
+      foreign f;
     }
 }
