@@ -188,13 +188,27 @@
   (and (is-a? o <component>)
        (pair? (tree-collect-filter (disjoin (is? <declarative>) (is? <compound>)) (is? <blocking>) (.behaviour o)))))
 
+(define-method (calls-per-function (o <behaviour>))
+  "Return an alist with for each function a list of all function calls
+in that function's body."
+  (define (.function-name call)
+    (or (and=> (as (.function call) <function>) .name) (.function call)))
+  (define (calls function)
+    (let* ((compound (.statement function))
+           (call-statements (tree-collect ast:call-statement compound)))
+      (delete-duplicates (map ast:call-statement call-statements)
+                         (lambda (a b) (equal? (or (.function.name a) "")
+                                               (or (.function.name b) ""))))))
+  (map (lambda (f) (cons (.name f) (calls f))) (ast:function* o)))
+
 (define %model-event-types (make-parameter '()))
 (define %model-blocking? (make-parameter #f))
+(define %calls-per-function (make-parameter '()))
 
 (define-method (wfc (o <behaviour>))
   (parameterize ((%model-event-types (ast:return-types (parent o <model>)))
                  (%model-blocking? (model-blocking? (parent o <model>)))
-                 (%calls-per-function (ast:calls-per-function o)))
+                 (%calls-per-function (calls-per-function o)))
     (append
      (append-map wfc (ast:type* o))
      (append-map wfc (ast:port* o))
@@ -553,11 +567,23 @@
   '())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; helper functions
+(define* (recurses? call #:optional (seen '()))
+  (define (.function-name call)
+    (or (and=> (as (.function call) <function>) .name) (.function call)))
+  (or (and (member (.function.name call) seen) seen)
+      (let ((function (.function call)))
+        (and function
+             (let ((calls (cdr (find (lambda (fc) (equal? (.name function) (car fc))) (%calls-per-function)))))
+               (any identity
+                    (map (lambda (c)
+                           (recurses? c (cons (.function.name call) seen)))
+                         calls)))))))
+
 (define-method (tail-recursion (o <call>))
   (let ((function (parent o <function>))
         (called-function (.function o)))
     (if (or (not function)
-            (not (and=> (ast:recurses? o) (cut member (.name function) <>)))) '()
+            (not (and=> (recurses? o) (cut member (.name function) <>)))) '()
             (let* ((continuation ((compose car wfc:continuation) o))
                    (continuation (if (or (parent o <assign>) (parent o <variable>)) ((compose car (@@ (dzn makreel) makreel:continuation)) continuation) continuation))
                    (continuation (and continuation
