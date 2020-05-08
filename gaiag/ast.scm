@@ -49,7 +49,6 @@
            ast:async-out-triggers
            ast:async?
            ast:async-port*
-           ast:call-statement
            ast:clr-events
            ast:declarative?
            ast:direction
@@ -867,13 +866,6 @@
   (let ((statements (ast:statement* o)))
     (or (and (null? statements) (not (is-a? (.parent o) <behaviour>)))
         (and (pair? statements) ((compose ast:imperative? car) statements)))))
-
-(define (ast:call-statement o)
-  (match o
-    (($ <call>) o)
-    ((and ($ <assign>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
-    ((and ($ <variable>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
-    (_ #f)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; LOOKUP
