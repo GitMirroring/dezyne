@@ -18,12 +18,16 @@
 ;;; License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gaiag peg codegen)
-  #:export (compile-peg-pattern wrap-parser-for-users add-peg-compiler!
-                                %peg:error
-                                %peg:debug?
-                                %peg:fall-back?
-                                %peg:locations?
-                                %peg:skip?)
+  #:export (compile-peg-pattern
+            wrap-parser-for-users
+            add-peg-compiler!
+            define-skip-parser
+            %peg:error
+            %peg:debug?
+            %peg:fall-back?
+            %peg:locations?
+            %peg:skip?)
+
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 pretty-print)
   #:use-module (system base pmatch))
@@ -408,7 +412,7 @@ return EXP."
 (define %peg:error (make-parameter (lambda (pos str error) #f)))
 (define %peg:debug? (make-parameter #f))
 (define %peg:locations? (make-parameter #f))
-(define %peg:skip? (make-parameter #f))
+(define %peg:skip? (make-parameter (lambda (str strlen at) `(,at ()))))
 
 (define (trace? symbol)
   (cond ((pair? (%peg:debug?)) (memq symbol (%peg:debug?)))
@@ -424,9 +428,8 @@ return EXP."
                 (make-string indent #\space)
                 '#,s-syn))
       (set! indent (+ indent 4))
-      (let* ((comment-res (if (%peg:skip?) ((@ (gaiag peg string-peg) peg-comment) str strlen at)
-                              (list at '())))
-             (comment-loc (and (%peg:skip?) comment-res `(location ,at ,(car comment-res))))
+      (let* ((comment-res ((%peg:skip?) str strlen at))
+             (comment-loc (and (%peg:locations?) comment-res `(location ,at ,(car comment-res))))
              (at (or (and comment-res (car comment-res)) at))
              (res (#,parser str strlen at)))
         (set! indent (- indent 4))
@@ -465,3 +468,10 @@ return EXP."
                  (else #``(,at ,body ,@annotate))))
             ;; If we didn't match, just return false.
             #f))))
+
+(define-syntax define-skip-parser
+  (lambda (x)
+    (syntax-case x ()
+      ((_ sym accum pat)
+       (let* ((matchf (compile-peg-pattern #'pat (syntax->datum #'accum))))
+         #`(define sym #,matchf))))))
