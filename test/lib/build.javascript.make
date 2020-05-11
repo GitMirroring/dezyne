@@ -30,10 +30,13 @@ default: $(OUT)/test
 
 DEVELOPMENT:=$(shell readlink -f $(dir $(filter %/build.javascript.make,$(MAKEFILE_LIST)))../../)
 
+$(info IN:$(IN))
+$(info OUT:$(OUT))
+$(info DIR:$(DIR))
 $(OUT)/test: $(MAIN)
 	cp $(MAIN) $(OUT)/test
 	mkdir -p $(OUT)/dzn
 	ln -fs $(DEVELOPMENT)/runtime/javascript/dzn/* $(OUT)/dzn/
-	if test -f $(IN)/main.js; then cp -f $(IN)/main.js $(OUT); fi
-	if test -f $(IN)/javascript/main.js; then cp -f $(IN)/main.js $(OUT); fi
+	if test -f $(IN)/main.js; then cp -f $(IN)/main.js $(OUT)/test; fi
+	if test -f $(IN)/javascript/main.js; then cp -f $(IN)/javascript/main.js $(OUT)/test; fi
 	chmod +x $(OUT)/test
