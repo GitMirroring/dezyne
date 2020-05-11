@@ -363,7 +363,7 @@ output, and standard error as three values."
                                 ,(string-append "diff -ywB"
                                                 " --ignore-matching-lines='<flush>$'"
                                                 ;; ignore foreign/system communications
-                                                " --ignore-matching-lines='[.][^.]*[.][^.]*[.]'"
+                                                " --ignore-matching-lines='[.][^. ]\\+[.][^. ]\\+[.]'"
                                                 " <(echo -e '" input "')"
                                                 " <(echo -e '" net "')" ))
                               #f)
