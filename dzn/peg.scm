@@ -29,8 +29,15 @@
   #:use-module (dzn peg simplify-tree)
   #:use-module (dzn peg using-parsers)
   #:use-module (dzn peg cache)
+
   #:re-export (define-peg-pattern
                define-peg-string-patterns
+               define-skip-parser
+               %peg:debug?
+               %peg:fall-back?
+               %peg:locations?
+               %peg:skip?
+               %peg:error
                match-pattern
                search-for-pattern
                compile-peg-pattern

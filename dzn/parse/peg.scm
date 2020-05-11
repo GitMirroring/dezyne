@@ -30,9 +30,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
 
-  #:use-module (dzn peg codegen)
-  #:use-module (dzn peg string-peg)
-  #:use-module (dzn peg using-parsers)
+  #:use-module (dzn peg)
   #:use-module (dzn parse ast)
 
   #:re-export (%peg:locations?
@@ -41,7 +39,16 @@
                %peg:debug?
                %peg:error)
 
-  #:export (peg:parse))
+  #:export (peg:parse
+            peg:skip-parse))
+
+(define-skip-parser peg-eol none (or "\f" "\n" "\r" "\v"))
+(define-skip-parser peg-ws none (or " " "\t"))
+(define-skip-parser peg-line all (and "//" (* (and (not-followed-by peg-eol) peg-any))))
+(define-skip-parser peg-block all (and "/*" (* (or peg-block (and (not-followed-by "*/") peg-any))) (expect "*/")))
+(define-skip-parser peg-skip all (* (or peg-ws peg-eol peg-line peg-block)))
+
+(define peg:skip-parse peg-skip)
 
 (define* (peg:parse string file-name #:key (imports '()))
 
