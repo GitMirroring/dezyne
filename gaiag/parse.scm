@@ -85,7 +85,7 @@
          (parse-tree (catch 'syntax-error
                             (lambda ()
                               (parameterize ((%peg:locations? #t)
-                                             (%peg:skip? #t)
+                                             (%peg:skip? peg:skip-parse)
                                              (%peg:debug? (gdzn:command-line:get 'debug)))
                                 (peg:parse string file-name #:imports imports)))
                             (peg:handle-syntax-error file-name string)))

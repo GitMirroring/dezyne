@@ -19,7 +19,6 @@
 (define-module (gaiag peg string-peg)
   #:export (peg-as-peg
             define-peg-string-patterns
-            peg-comment
             peg-grammar)
   #:use-module (gaiag peg using-parsers)
   #:use-module (gaiag peg codegen)
@@ -278,25 +277,3 @@ RB < ']'
      (else (error "Bad embedded PEG string" args))))
 
 (add-peg-compiler! 'peg peg-string-compile)
-
-(define-syntax define-unwrapped-sexp-parser
-  (lambda (x)
-    (syntax-case x ()
-      ((_ sym accum pat)
-       (let* ((matchf (compile-peg-pattern #'pat (syntax->datum #'accum))))
-         #`(define sym #,matchf))))))
-
-(define-unwrapped-sexp-parser peg-eol none (or "\f" "\n" "\r" "\v"))
-(add-peg-compiler! 'peg-eol peg-eol)
-
-(define-unwrapped-sexp-parser peg-ws none (or " " "\t"))
-(add-peg-compiler! 'peg-ws peg-ws)
-
-(define-unwrapped-sexp-parser peg-line all (and "//" (* (and (not-followed-by peg-eol) peg-any))))
-(add-peg-compiler! 'peg-line peg-line)
-
-(define-unwrapped-sexp-parser peg-block all (and "/*" (* (or peg-block (and (not-followed-by "*/") peg-any))) (expect "*/")))
-(add-peg-compiler! 'peg-block peg-block)
-
-(define-unwrapped-sexp-parser peg-comment all (* (or peg-ws peg-eol peg-line peg-block)))
-(add-peg-compiler! 'peg-comment peg-comment)
