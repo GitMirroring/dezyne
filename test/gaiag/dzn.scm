@@ -350,14 +350,7 @@ output, and standard error as three values."
         (receive (status stdout stderr)
             (observe `(,test ,@(if (flush? file-name) '("--flush") '())) input)
           (and (zero? status)
-               (let (;; FIXME: async_order and other async_* tests
-                     ;; use an ugly " " hack that dzn trace chokes on.
-                     ;; TODO: fix async_* (or dzn trace??) and drop
-                     ;; code2fdr.
-                     ;; (net (format-trace stderr #:format "event"))
-                     (net (receive (status stdout stderr)
-                                  (observe '("code2fdr") stderr)
-                                stdout)))
+               (let ((net (format-trace stderr #:format "event")))
                  (receive (status stdout stderr)
                      (observe `("bash" "-c"
                                 ,(string-append "diff -ywB"
