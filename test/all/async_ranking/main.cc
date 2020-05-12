@@ -51,7 +51,7 @@ int main()
 
   C c;
 
-  dzn::apply(&c.sut.dzn_meta, [](const dzn::meta* m){std::clog << m->parent << " " << m << " " << m->name << " " << m->rank << std::endl;});
+  dzn::apply(&c.sut.dzn_meta, [](const dzn::meta* m){std::cout << m->parent << " " << m << " " << m->name << " " << m->rank << std::endl;});
 
   c.sut.dzn_meta.name = "sut";
   c.sut.p.meta.requires.port = "p";
