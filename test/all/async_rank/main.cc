@@ -54,7 +54,7 @@ int main()
   };
   C c;
 
-  dzn::apply(&c.sut.dzn_meta, [](const dzn::meta* m){std::clog << m->parent << " " << m << " " << m->name << " " << m->rank << std::endl;});
+  dzn::apply(&c.sut.dzn_meta, [](const dzn::meta* m){std::cout << m->parent << " " << m << " " << m->name << " " << m->rank << std::endl;});
 
   c.sut.p.out.f = [] {std::clog << "sut.p.f -> <external>.p.f" << std::endl;};
   c.sut.p.out.g = [] {std::clog << "sut.p.g -> <external>.p.g" << std::endl;};
