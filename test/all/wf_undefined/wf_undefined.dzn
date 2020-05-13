@@ -1,0 +1,84 @@
+extern xint $int$;
+
+// test undefined externs
+interface I0 {
+  in void hello(xxint xx);
+  out void world(xxxint xxx);
+  behaviour {
+    yint y;
+    on hello: {
+      zint z = $0$;
+    }
+  }
+}
+
+// test undefined enums
+interface I1 {
+  enum EN { EN1, EN2, EN3 };
+  in EE hello();
+  out void world();
+  behaviour {
+    EN en = EN.EN4;
+    ENN enn = EN.EN3;
+    on hello: {
+      en = EN.EN5;
+      enn = EN.EN1;
+      em = EN.EN2;
+      reply(EN.EN0);
+    }
+  }
+}
+
+// test undefined events
+interface I2 {
+  in void hello();
+  out void world();
+  behaviour {
+    on hello: { mundo; }
+    on hola: {}
+    on inevitable: world;
+    on inevitable: mundo;
+  }
+}
+
+
+// test undefined ports and events
+component C1 {
+  provides I1 p1;
+  provides I3 p2;
+  requires I1 r1;
+  requires I4 r2;
+  behaviour {
+    on p1.hello(x): {
+      // r.hello(x); // reported by peg parser
+      r1.hola(x);
+      r2.hello(x);
+    }
+    on p1.hola(x): {}
+    // on p2.hello(x): { r3.hello(x); } // reported by peg parser
+    // on p3.hello(x): {}  // reported by peg parser
+    on r1.world(x): {
+      // p3.world(x); // reported by peg parser
+      r2.world(x);
+      r1.mundo(x);
+    } // reported by peg parser
+    on r1.mundo(x): {}
+    on r2.world(x): {}
+  }
+}
+
+// test undefined instances and bindings
+component wf_undefined {
+  provides I1 p1;
+  provides I3 p2;
+  requires I1 r1;
+  requires I4 r2;
+  system {
+    C1 c1;
+    C2 c2;
+    c1.p1 <=> p1;
+    c1.p2 <=> p3;
+    c1.p3 <=> r1;
+    c2.p <=> c3.p;
+  }
+}
