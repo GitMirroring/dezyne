@@ -292,6 +292,7 @@ PARSER_TESTS =					\
  %D%/wf_subintMinMax				\
  %D%/wf_systemRecursion				\
  %D%/wf_typeerror				\
+ %D%/wf_undefined				\
  %D%/wf_variableInitExpression
 
 # The LTS for these tests is not generated reproducibly by mcrl22lps |
