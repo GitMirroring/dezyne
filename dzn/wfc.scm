@@ -103,6 +103,17 @@
            (if (pair? errors) errors
                (cyclic-bindings o)))))))
 
+(define-method (wfc (o <instance>))
+  (append
+   (re-declaration o)
+   (let ((component (.type o)))
+     (cond ((not component)
+            `(,(wfc-error o (format #f "undefined component `~a'" (type-name (.type.name o))))))
+           ((not (is-a? component <component-model>))
+            `(,(wfc-error o (format #f "component expected, found `~a ~a'" (ast-name component) (type-name component)))))
+           (else '()))))
+  )
+
 (define-method (wfc (o <type>))
   (re-declaration o))
 
@@ -645,6 +656,7 @@
           ((and (is-a? o <variable>) (is-a? expression-type <void>))
            (if (is-a? assign-type <extern>) '()
                `(,(wfc-error o (format #f "uninitialized variable `~a'" (.name o))))))
+          ((not assign-type) '()) ;; reported before
           ((and (not (ast:equal? expression-type assign-type))
                 (not (and (is-a? assign-type <extern>)
                           (is-a? expression <data>)))
@@ -682,17 +694,18 @@
                                    (.port.name o) (ast-name port-type) (type-name port-type)))
              ,(wfc-error (.port o) (format #f "`~a' declared here" (.port.name o)))))
           ((not event) '())         ; already covered in trigger check
+          ((not event-type) '())    ; reported before
           ((and (or (not (.port.name o))
                     (equal? (.port.name o) (.port.name trigger)))
                 (ast:in? event) ;;exclude requires out reply; assume blocking release
                 (not (ast:equal? event-type reply-type))
                 (not (and (is-a? event-type <int>)
-                          (is-a? reply-type <int>))))
-           `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
-                                   (and event-type (type-name event-type))
-                                   (type-name reply-type)))
-             ,@(if event `(,(wfc-error event "event defined here"))
-                   '())))
+                          (is-a? reply-type <int>)))
+                `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
+                                        (type-name event-type)
+                                        (type-name reply-type)))
+                  ,@(if event `(,(wfc-error event "event defined here"))
+                        '()))))
           (else '()))))
 
 (define-method (action (o <action>))
@@ -850,7 +863,7 @@
 (define-method (missing-bindings (o <instance>) (system <system>) ports)
   (append-map
    (cute missing-bindings <> system ports o)
-   (filter (negate .injected) (ast:port* (.type o)))))
+   (filter (negate .injected) (if (not (.type o)) '() (ast:port* (.type o))))))
 
 (define-method (missing-return (o <function>))
   (if (is-a? (ast:type o) <void>) '()
