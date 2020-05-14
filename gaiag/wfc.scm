@@ -240,8 +240,8 @@
 
 (define-method (wfc (o <guard>)) ;; is-a <declarative>
   (define (otherwise-guard? o)
-  (and (is-a? o <guard>)
-       (is-a? (.expression o) <otherwise>)))
+    (and (is-a? o <guard>)
+         (is-a? (.expression o) <otherwise>)))
   (define (otherwise o)
     (let ((compound (parent o <compound>)))
       (if (not compound) '()
@@ -257,10 +257,14 @@
                   `(,(wfc-error o "cannot use otherwise guard more than once")
                     ,(wfc-error (car otherwises) "second otherwise here"))
                   '()))))))
-  (append
-   (wfc (.expression o))
-   (if (is-a? (.expression o) <otherwise>) (otherwise o) '())
-   (wfc (.statement o))))
+  (let* ((expression (.expression o))
+         (otherwise? (is-a? (.expression o) <otherwise>))
+         (wfce (wfc expression)))
+    (append wfce
+            (if (or otherwise? (pair? wfce)) '()
+                (typed-expression expression <bool>))
+            (if otherwise? (otherwise o) '())
+            (wfc (.statement o)))))
 
 (define-method (wfc (o <declarative-illegal>)) ;; is-a <declarative>
   ;; TODO; in source??

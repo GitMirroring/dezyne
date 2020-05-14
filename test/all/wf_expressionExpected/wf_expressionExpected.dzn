@@ -1,0 +1,20 @@
+interface wf_expressionExpected {
+  in void e();
+  behaviour {
+    enum EN { E1, E2, E3 };
+    EN en = EN.E1;
+    bool b = false;
+    subint SI {0..10};
+    SI i = 5;
+    [en] on e: {}
+    [i] on e: {}
+    [b] on e: {
+      if (en) {
+        b = !i;
+        b = b && en;
+        b = (i >= en);
+        b = (b != i);
+      }
+    }
+  }
+}
