@@ -1,0 +1,7 @@
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:9:6: error: <bool> expression expected
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:10:6: error: <bool> expression expected
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:12:11: error: <bool> expression expected
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:13:14: error: <bool> expression expected
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:14:18: error: <bool> expression expected
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:15:19: error: <int> expression expected
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:16:14: error: type mismatch in binary operator: `bool' versus `int'
