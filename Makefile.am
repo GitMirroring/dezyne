@@ -31,7 +31,8 @@ EXTRA_DIST =					\
  build-aux/git-version-gen			\
  build-aux/gitlog-to-changelog			\
  guix.scm					\
- guix/gnu/packages/dzn.scm
+ guix/gnu/packages/dzn.scm			\
+ guix/gnu/packages/mcrl2.scm
 
 dist_lisp_DATA = emacs/dzn-mode.el
 
