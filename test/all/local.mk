@@ -261,6 +261,7 @@ PARSER_TESTS =					\
  %D%/wf_eventNotAction				\
  %D%/wf_eventNotTrigger				\
  %D%/wf_eventNotValuedAction			\
+ %D%/wf_expressionExpected			\
  %D%/wf_functionInExpression			\
  %D%/wf_functionReturnNotExpected		\
  %D%/wf_functionReturnValue			\
