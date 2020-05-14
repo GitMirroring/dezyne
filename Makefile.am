@@ -40,7 +40,8 @@ EXTRA_DIST =					\
  build-aux/mdate-from-git.scm			\
  build-aux/update-semantics.sh			\
  guix.scm					\
- guix/pack/dezyne.scm
+ guix/pack/dezyne.scm				\
+ guix/pack/mcrl2.scm
 
 dist_lisp_DATA = emacs/dzn-mode.el
 
