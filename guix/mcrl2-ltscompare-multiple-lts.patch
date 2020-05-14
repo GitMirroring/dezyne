@@ -1,0 +1,62 @@
+From 31d7e8a351f92fcd9b4d7dd74181590808c9d191 Mon Sep 17 00:00:00 2001
+From: Jan Nieuwenhuizen <janneke@gnu.org>
+Date: Thu, 16 Jan 2020 22:58:16 +0100
+Subject: [PATCH 2/3] ltscompare: allow reading multiple aldebaran lts's from
+ stdin.
+
+---
+ libraries/lts/source/liblts_aut.cpp | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/libraries/lts/source/liblts_aut.cpp b/libraries/lts/source/liblts_aut.cpp
+index cd3bc2940..8d00cf60e 100644
+--- a/libraries/lts/source/liblts_aut.cpp
++++ b/libraries/lts/source/liblts_aut.cpp
+@@ -243,7 +243,8 @@ static bool read_initial_part_of_an_aut_transition(
+   }
+   if (ch != '(')
+   {
+-    throw mcrl2::runtime_error("Expect opening bracket at line " + std::to_string(line_no) + ".");
++    is.unget();
++    return false;
+   }
+ 
+   is >> skipws >> from;
+@@ -531,7 +532,7 @@ namespace lts
+ 
+ void probabilistic_lts_aut_t::load(const string& filename)
+ {
+-  if (filename=="")
++  if (filename=="" || filename=="-")
+   {
+     read_from_aut(*this,cin);
+   }
+@@ -556,7 +557,7 @@ void probabilistic_lts_aut_t::load(istream& is)
+ 
+ void probabilistic_lts_aut_t::save(string const& filename) const
+ {
+-  if (filename=="")
++  if (filename=="" || filename=="-")
+   {
+     write_to_aut(*this,cout);
+   }
+@@ -576,7 +577,7 @@ void probabilistic_lts_aut_t::save(string const& filename) const
+ 
+ void lts_aut_t::load(const string& filename)
+ {
+-  if (filename=="")
++  if (filename=="" || filename=="-")
+   {
+     read_from_aut(*this,cin);
+   }
+@@ -601,7 +602,7 @@ void lts_aut_t::load(istream& is)
+ 
+ void lts_aut_t::save(string const& filename) const
+ {
+-  if (filename=="")
++  if (filename=="" || filename=="-")
+   {
+     write_to_aut(*this,cout);
+   }
+-- 
+2.24.0
