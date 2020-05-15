@@ -63,7 +63,6 @@
        (sha256
         (base32 #!dzn!# "0qc96m7mjf02zrbpxyhjhb2jpaf73ipvxfbphashify7jla71p43"))))
     (inputs `(("bash" ,bash-minimal)
-              ("coreutils" ,coreutils)
               ("guile" ,guile-2.2)
               ("m4-cw" ,m4-changeword)
               ("mcrl2" ,mcrl2-minimal)
@@ -91,7 +90,6 @@
            (lambda* (#:key inputs outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
                     (bash (assoc-ref %build-inputs "bash"))
-                    (coreutils (assoc-ref %build-inputs "coreutils"))
                     (guile (assoc-ref %build-inputs "guile"))
                     (json (assoc-ref %build-inputs "guile-json"))
                     (m4 (assoc-ref %build-inputs "m4-cw"))
@@ -103,7 +101,6 @@
                                             "(write (effective-version))")))
                     (data-dir (string-append out "/share/dzn"))
                     (path (list (string-append bash "/bin")
-                                (string-append coreutils "/bin")
                                 (string-append guile "/bin")
                                 (string-append m4 "/bin")
                                 (string-append mcrl2 "/bin")
