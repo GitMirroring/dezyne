@@ -98,18 +98,19 @@ Toggle on/off: M-x dzn-save RET."
         (remove-hook 'after-save-hook 'dzn-after-save t)
       (add-hook 'after-save-hook 'dzn-after-save t t))))
 
+(defun get-models ()
+  (let ((text (buffer-string))
+        (result nil))
+    (string-match "" text)
+    (while (string-match "^\\(component\\|interface\\|system\\)\\s *\\([_A-Za-z][_0-9A-Za-z]*\\)[^{}]*{[^{}]*?\\(behaviour\\|system\\)" text (match-end 0))
+      (push (list (match-string 1 text) (match-string 2 text) (match-string 3 text)) result))
+    (reverse result)))
+
 (defun dzn-get-models ()
   (interactive)
-  (let ((interfaces
-         (split-string
-          (shell-command-to-string (dzn-command-string "parse" '("--interfaces" "2>/dev/null")))))
-        (components
-         (split-string
-          (shell-command-to-string (dzn-command-string "parse" '("--components" "2>/dev/null")))))
-        (systems
-         (split-string
-          (shell-command-to-string (dzn-command-string "parse" '("--systems" "2>/dev/null"))))))
-    (setq dzn-models (append systems components interfaces))
+  (let* ((models (get-models))
+         (model-names (mapcar #'cadr models)))
+    (setq dzn-models model-names)
     (message "models: %s" dzn-models)
     dzn-models))
 
