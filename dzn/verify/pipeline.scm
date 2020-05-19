@@ -221,6 +221,10 @@
         (when (> (gdzn:debugity) 0)
           (format (current-error-port) "interface: ~s\n" interface-accepts)
           (format (current-error-port) "component: ~s\n" component-accepts))
+        (when (and (not (zero? status))
+                   (not trace))
+          ;; XXX Avoid "no verification errors found"
+          (throw 'programming-error (format #f "status: ~s, trace: ~s\n" status trace)))
         (values trace interface-accepts component-accepts)))))
 
 (define ((mcrl2:verify-component-deterministic-illegal-deadlock-livelock-refinement model) dir dzn-file-name ast verbose? all?)
