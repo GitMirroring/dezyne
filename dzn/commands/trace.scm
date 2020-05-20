@@ -36,11 +36,8 @@
   #:use-module (dzn misc)
   #:use-module (dzn command-line)
 
-  #:use-module (dzn peg cache)
-  #:use-module (dzn peg codegen)
-  #:use-module (dzn peg string-peg)
-  #:use-module (dzn peg using-parsers)
-  #:use-module (dzn parse peg)
+  #:use-module (dzn peg)
+  #:use-module (dzn parse)
 
   #:use-module (json)
 

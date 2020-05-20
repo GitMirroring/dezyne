@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2017, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2014, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -34,14 +34,12 @@
   #:use-module (dzn command-line)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse ast)
-  #:use-module (dzn ast)
+  #:use-module (dzn parse peg)
   #:use-module (dzn wfc)
 
-  #:export (peg:parse-file
-            peg:line-number
-            peg:column-number
-            peg:handle-syntax-error
-            parse-file))
+  #:export (file->ast
+            string->ast
+            peg:handle-syntax-error))
 
 (define (peg:line-number string pos)
   (1+ (string-count string #\newline 0 pos)))
@@ -65,7 +63,7 @@
             indent
             indent
             message)
-      (exit 1)))
+      (throw 'syntax-error '())))
 
 (define (peg:handle-syntax-error file-name string)
   (lambda (key . args)
@@ -73,28 +71,27 @@
            (message (format #f "`~a' expected" (cadar args))))
       (peg:error file-name string pos message))))
 
-(define* (peg:parse-file file-name #:key (imports '()))
-  (let* ((string (if (equal? file-name "-") (read-string)
-                     (catch #t
-                            (lambda () (with-input-from-file file-name read-string))
-                            (lambda (key . args)
-                              (format (current-error-port) "No such file or directory: ~a\n" file-name)
-                              (exit 1)))))
-         (imports (if (equal? file-name "-") '()
-                      (cons (dirname (canonicalize-path file-name)) imports)))
-         (parse-tree (catch 'syntax-error
+(define* (parse-string string #:key (file-name "-") (imports '()))
+  (let* ((parse-tree (catch 'syntax-error
                             (lambda ()
                               (parameterize ((%peg:locations? #t)
                                              (%peg:skip? peg:skip-parse)
                                              (%peg:debug? (gdzn:command-line:get 'debug)))
                                 (peg:parse string file-name #:imports imports)))
-                            (peg:handle-syntax-error file-name string)))
+                       (peg:handle-syntax-error file-name string)))
          (gdzn-debug? (gdzn:command-line:get 'debug)))
     (parse-root->ast parse-tree #:string string #:file-name file-name)))
 
-(define* (parse-file file-name #:key peg? (imports '()) behaviour? model-name locations?)
-  (let* ((ast (peg:parse-file file-name #:imports imports))
-         (ast (if peg? ast
-                  (ast:wfc ast))))
-    (if (not model-name) ast
-        (ast:filter-model ast (ast:get-model ast model-name)))))
+(define* (file->ast file-name #:key peg? (imports '()))
+  (let* ((string (if (equal? file-name "-") (read-string)
+                     (with-input-from-file file-name read-string)))
+         (imports (if (equal? file-name "-") '()
+                      (cons (dirname (canonicalize-path file-name)) imports)))
+         (ast (parse-string string #:file-name file-name #:imports imports)))
+    (if peg? ast
+        (ast:wfc ast))))
+
+(define* (string->ast string #:key peg?)
+  (let ((ast (parse-string string)))
+    (if peg? ast
+        (ast:wfc ast))))

@@ -45,7 +45,6 @@
   #:use-module (dzn code)
   #:use-module (dzn dzn)
   #:use-module (dzn normalize)
-  #:use-module (dzn parse)
   #:use-module (dzn templates)
 
   #:export (<glue-event>

@@ -42,7 +42,6 @@
   #:use-module (dzn misc)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)
-  #:use-module (dzn parse)
 
   #:export (
            ast:formal->index

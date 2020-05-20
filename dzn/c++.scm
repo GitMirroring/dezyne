@@ -41,7 +41,6 @@
   #:use-module (dzn code)
   #:use-module (dzn glue)
   #:use-module (dzn indent)
-  #:use-module (dzn parse)
 
   #:use-module (dzn ast)
 

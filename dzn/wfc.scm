@@ -39,7 +39,6 @@
   #:use-module (dzn goops)
 
   #:use-module (dzn misc)
-  #:use-module (dzn parse)
 
   #:export (
            ast:wfc

@@ -43,7 +43,6 @@
   #:use-module (dzn ast)
 
   #:use-module (dzn indent)
-  #:use-module (dzn parse)
   #:use-module (dzn shell-util)
   #:use-module (dzn templates)
 

@@ -28,7 +28,6 @@
   #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn command-line)
-  #:use-module (dzn parse)
   #:export (parse-opts
             main))
 

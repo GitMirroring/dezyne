@@ -31,7 +31,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (dzn misc)
   #:use-module (dzn command-line)
-  #:use-module (ice-9 peg)
+  #:use-module (dzn peg)
   #:use-module (gash pipe)
 
   #:export (main
