@@ -31,7 +31,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
-  #:use-module (ice-9 peg)
+  #:use-module (gaiag peg)
   #:use-module (gash pipe)
 
   #:export (main

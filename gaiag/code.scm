@@ -42,7 +42,6 @@
   #:use-module (gaiag ast)
   #:use-module (gaiag dzn)
   #:use-module (gaiag normalize)
-  #:use-module (gaiag parse)
   #:use-module (gaiag templates)
 
 

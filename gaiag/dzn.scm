@@ -43,7 +43,6 @@
   #:use-module (gaiag ast)
 
   #:use-module (gaiag indent)
-  #:use-module (gaiag parse)
   #:use-module (gaiag shell-util)
   #:use-module (gaiag templates)
 

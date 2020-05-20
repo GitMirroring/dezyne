@@ -41,7 +41,6 @@
   #:use-module (gaiag code)
   #:use-module (gaiag glue)
   #:use-module (gaiag indent)
-  #:use-module (gaiag parse)
 
   #:use-module (gaiag ast)
 

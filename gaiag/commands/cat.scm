@@ -28,7 +28,6 @@
   #:use-module (gaiag config)
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
-  #:use-module (gaiag parse)
   #:export (parse-opts
             main))
 
