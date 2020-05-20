@@ -36,11 +36,8 @@
   #:use-module (gaiag misc)
   #:use-module (gaiag command-line)
 
-  #:use-module (gaiag peg cache)
-  #:use-module (gaiag peg codegen)
-  #:use-module (gaiag peg string-peg)
-  #:use-module (gaiag peg using-parsers)
-  #:use-module (gaiag parse peg)
+  #:use-module (gaiag peg)
+  #:use-module (gaiag parse)
 
   #:use-module (json)
 

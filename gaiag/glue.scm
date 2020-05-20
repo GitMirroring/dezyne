@@ -45,7 +45,6 @@
   #:use-module (gaiag code)
   #:use-module (gaiag dzn)
   #:use-module (gaiag normalize)
-  #:use-module (gaiag parse)
   #:use-module (gaiag templates)
 
   #:export (<glue-event>

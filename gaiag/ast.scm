@@ -42,7 +42,6 @@
   #:use-module (gaiag misc)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
-  #:use-module (gaiag parse)
 
   #:export (
            ast:formal->index

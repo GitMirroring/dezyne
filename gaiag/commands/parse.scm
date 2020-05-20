@@ -36,6 +36,7 @@
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
   #:use-module (gaiag shell-util)
+  #:use-module (gaiag ast)
 
   #:export (dump-model-stream
             parse
@@ -73,8 +74,6 @@
   (let* ((option-spec
           '((help (single-char #\h))
             (import (single-char #\I) (value #t))
-            (behaviour (single-char #\b) (value #f))
-            (locations (single-char #\L))
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))))
 	 (options (getopt-long args option-spec
@@ -88,37 +87,42 @@
 Usage: dzn parse [OPTION]... [FILE]...
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
-  -L, --locations        show locations in AST
   -m, --model=MODEL      generate ast for MODEL
-  -b, --behaviour        include behaviour of imported models,
   -o, --output=FILE      write ast to FILE
 ")
           (exit (or (and usage? 2) 0))))
     options))
 
-(define (parse options file-name)
+(define (parse- options file-name)
   (let* ((peg? (gdzn:command-line:get 'peg #f))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (model-name (option-ref options 'model #f))
-         (behaviour? (option-ref options 'behaviour #f))
-         (locations? (option-ref options 'locations #f)))
-    (parse-file file-name #:peg? peg? #:imports imports #:model-name model-name #:behaviour? behaviour? #:locations? locations?)))
+         (ast (file->ast file-name #:peg? peg? #:imports imports)))
+    (if (not model-name) ast
+        (ast:filter-model ast (ast:get-model ast model-name)))))
 
 (define (assert-parse options file-name)
   (catch #t
-    (lambda _
-      (parse options file-name))
-    (lambda _
+    (cut parse- options file-name)
+    (lambda (key . args)
+      (case key
+        ((system-error)
+         (let ((errno (system-error-errno (cons key args))))
+           (format (current-error-port) "~a: ~a\n"
+                   (strerror errno) file-name))))
       (exit 1))))
+
+(define (parse options file-name)
+  (let ((debug? (gdzn:command-line:get 'debug #f))
+        (peg? (gdzn:command-line:get 'peg #f)))
+    ((if (or debug? peg?) parse- assert-parse) options file-name)))
 
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
-         (debug? (gdzn:command-line:get 'debug #f))
-         (peg? (gdzn:command-line:get 'peg #f)) ;; assert-parse eats error message
          (file (and (pair? files) (car files)))
-         (ast ((if (or #t debug? peg?) parse assert-parse) options file)))
+         (ast (parse options file)))
     (if (option-ref options 'output #f)
         (let* ((file-name (option-ref options 'output "-"))
                (sexp (om->list ast))

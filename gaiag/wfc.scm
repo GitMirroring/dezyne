@@ -39,7 +39,6 @@
   #:use-module (gaiag goops)
 
   #:use-module (gaiag misc)
-  #:use-module (gaiag parse)
 
   #:export (
            ast:wfc
