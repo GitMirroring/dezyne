@@ -3220,7 +3220,7 @@ interface Sensor
     @{
       on enable:        illegal;
       on disable:       state = States.Disabled;
-      on optional:    @{ triggered; state = States.Triggered; @}
+      on optional:      @{ triggered; state = States.Triggered; @}
     @}
     [state.Triggered]
     @{
@@ -5545,12 +5545,19 @@ ports.  An example: suppose the following components to be defined:
 
 @example
 component Foo @{
-  provides IFoo foo; requires IBar bar; requires INut nut; //
-  ... internals ...
-@} component Bar @{
-  provides IBar b; // ... internals ...
-@} component Nut @{
-  provides INut nt; requires IWell wl; // ... internals ...
+  provides IFoo foo;
+  requires IBar bar;
+  requires INut nut;
+  //  ... internals ...
+@}
+component Bar @{
+  provides IBar b;
+  // ... internals ...
+@}
+component Nut @{
+  provides INut nt;
+  requires IWell wl;
+  // ... internals ...
 @}
 
 @end example
@@ -5562,7 +5569,9 @@ Then a system component @code{MySys} could be defined:
 
 @example
 component MySys @{
-  provides IFoo top; requires IWell bot; // ... internals ...
+  provides IFoo top;
+  requires IWell bot;
+  // ... internals ...
 @}
 
 @end example
@@ -5575,10 +5584,18 @@ where its internals are composed of the @code{Foo}, @code{Bar}, and
 
 @example
 component MySys @{
-  provides IFoo top; requires IWell bot; system @{
-    Foo cfoo; Bar cbar; Nut cnut; top <=> cfoo.foo; cfoo.bar <=> cbar.b;
-    cfoo.nut <=> cnut.nt; cnut.wl <=> bot;
-  @} @}
+  provides IFoo top;
+  requires IWell bot;
+  system @{
+    Foo cfoo;
+    Bar cbar;
+    Nut cnut;
+    top <=> cfoo.foo;
+    cfoo.bar <=> cbar.b;
+    cfoo.nut <=> cnut.nt;
+    cnut.wl <=> bot;
+  @}
+@}
 
 @end example
 
@@ -5607,7 +5624,8 @@ It is allowed to have more than one instance of the same type:
 
 
 @example
-  MyComponent myInstance1; MyComponent myInstance2;
+  MyComponent myInstance1;
+  MyComponent myInstance2;
 
 @end example
 
@@ -5659,8 +5677,11 @@ Let's take a typical example involving logging:
 
 @example
 interface ILog @{
-  ...  @} component Log @{
-  provides ILog log; ...
+  ...
+@}
+component Log @{
+  provides ILog log;
+  ...
 @}
 
 @end example
@@ -5671,11 +5692,18 @@ Suppose a lot of components require logging:
 
 
 @example
-...  component MyComponent12 @{
-  provides MyInterface12 intf; requires injected ILOg l; ...
-@} component MyComponent13 @{
-  provides MyInterface13 intf; requires injected ILOg l; ...
-@} ...
+...
+component MyComponent12 @{
+  provides MyInterface12 intf;
+  requires injected ILOg l;
+  ...
+@}
+component MyComponent13 @{
+  provides MyInterface13 intf;
+  requires injected ILOg l;
+  ...
+@}
+...
 
 @end example
 
@@ -5686,10 +5714,16 @@ then some system component can bind all logging in one go:
 
 @example
 component MySystem @{
-  ...  system @{
-    Log clog; ...  MyComponent12 c12; MyComponent13 c13; ...  clog.log
-    <=> *;
-  @} @}
+  ...
+  system @{
+    Log clog;
+    ...
+    MyComponent12 c12;
+    MyComponent13 c13;
+    ...
+    clog.log <=> *;
+  @}
+@}
 
 @end example
 
@@ -5700,9 +5734,14 @@ It is allowed to group some components in a sub system:
 
 @example
 component MySubSystem @{
-  ...  system @{
-    ...  MyComponent12 c12; MyComponent13 c13; ...
-  @} @}
+  ...
+  system @{
+    ...
+    MyComponent12 c12;
+    MyComponent13 c13;
+    ...
+  @}
+@}
 
 @end example
 
@@ -5713,9 +5752,14 @@ and do the wild-card binding for that sub system only:
 
 @example
 component MySystem @{
-  ...  system @{
-    Log clog; MySubSystem subsys; ...  clog.log <=> subsys.*;
-  @} @}
+  ...
+  system @{
+    Log clog;
+    MySubSystem subsys;
+    ...
+    clog.log <=> subsys.*;
+  @}
+@}
 
 @end example
 
@@ -5746,11 +5790,16 @@ A syntax example:
 
 @example
 namespace MyNamespace @{
-  extern MyString $std::string$; interface MyInterface @{
-    enum MyEnumType @{ Val1, Val2, Val3 @}; in MyEnumType
-    myValuedEvent(MyString s); out void myReply(); behaviour @{
-      on myValuedEvent(s) : @{ reply MyEnumType.Val3; @} @}
-  @} @}
+  extern MyString $std::string$;
+  interface MyInterface @{
+    enum MyEnumType @{ Val1, Val2, Val3 @};
+    in MyEnumType myValuedEvent(MyString s);
+    out void myReply();
+    behaviour @{
+      on myValuedEvent(s) : @{ reply MyEnumType.Val3; @}
+    @}
+  @}
+@}
 
 @end example
 
@@ -5767,13 +5816,17 @@ An example with nested namespaces introduces namespace
 
 @example
 namespace MyNamespace1 @{
-  extern MyString $std::string$; namespace MyNamespace2 @{
+  extern MyString $std::string$;
+  namespace MyNamespace2 @{
     interface MyInterface @{
-      enum MyEnumType @{ Val1, Val2, Val3 @}; in MyEnumType
-      myValuedEvent(MyString s); out void myReply(); behaviour
-     @{
-         on myValuedEvent(s) : @{ reply MyEnumType.Val3; @} @}
-    @} @}
+      enum MyEnumType @{ Val1, Val2, Val3 @};
+      in MyEnumType myValuedEvent(MyString s);
+      out void myReply();
+      behaviour @{
+         on myValuedEvent(s) : @{ reply MyEnumType.Val3; @}
+      @}
+    @}
+  @}
 @}
 
 @end example
@@ -5793,7 +5846,8 @@ So
 
 @example
 namespace MyNamespace1 @{
-  extern MyString $std::string$; interface MyInterface @{ ... @}
+  extern MyString $std::string$;
+  interface MyInterface @{ ... @}
 @}
 
 @end example
@@ -5805,8 +5859,11 @@ is equivalent to
 
 @example
 namespace MyNamespace1 @{
-  extern MyString $std::string$; @} namespace MyNamespace1 @{
-  interface MyInterface @{ ... @} @}
+  extern MyString $std::string$;
+@}
+namespace MyNamespace1 @{
+  interface MyInterface @{ ... @}
+@}
 
 @end example
 
@@ -5830,22 +5887,42 @@ example.
 @example
 namespace foo @{
   interface I @{
-    enum Bool @{F,T@}; in Bool e(); out void a(); behaviour @{
-      on e: @{a; reply (Bool.T); @} @}
-  @} @} namespace inner @{
+    enum Bool @{F,T@};
+    in Bool e();
+    out void a();
+    behaviour @{
+      on e: @{a; reply (Bool.T); @}
+    @}
+  @}
+@}
+namespace inner @{
   namespace foo @{
     interface I @{
-      enum Bool @{f,t@}; in Bool e(); out void a(); behaviour @{ .... @}
-    @} @} component space @{
-    provides foo.I inner; provides .foo.I fooi; behaviour @{
-      foo.I.Bool inner_state = foo.I.Bool.t; .foo.I.Bool foo_state =
-      .foo.I.Bool.T; on inner.e(): @{...@} on fooi.e(): @{...@}
-    @} @}
-@} namespace bar @{
+      enum Bool @{f,t@};
+      in Bool e();
+      out void a();
+      behaviour @{ .... @}
+    @}
+  @}
+  component space @{
+    provides foo.I inner;
+    provides .foo.I fooi;
+    behaviour @{
+      foo.I.Bool inner_state = foo.I.Bool.t;
+      .foo.I.Bool foo_state = .foo.I.Bool.T;
+      on inner.e(): @{...@}
+      on fooi.e(): @{...@}
+    @}
+  @}
+@}
+namespace bar @{
   component c @{
-    provides foo.I i; behaviour @{
-      foo.I.Bool state = foo.I.Bool.T; on i.e(): @{...@}
-    @} @}
+    provides foo.I i;
+    behaviour @{
+      foo.I.Bool state = foo.I.Bool.T;
+      on i.e(): @{...@}
+    @}
+  @}
 @}
 
 @end example
@@ -5875,7 +5952,9 @@ namespace, a dot notation can be used. Using this notation,
 @example
 namespace MyNamespace1 @{
   namespace MyNamespace2 @{
-    extern MyString $std::string$; @} interface MyInterface @{ ... @}
+    extern MyString $std::string$;
+  @}
+  interface MyInterface @{ ... @}
 @}
 
 @end example
@@ -5886,8 +5965,8 @@ can be written as:
 
 
 @example
-extern MyNamespace1.MyNamespace2.MyString $std::string$; interface
-MyNamespace1.MyInterface @{ ... @}
+extern MyNamespace1.MyNamespace2.MyString $std::string$;
+interface MyNamespace1.MyInterface @{ ... @}
 
 @end example
 
@@ -5985,8 +6064,12 @@ behaviour is available:
 
 
 @example
- 1 interface Sensor @{ 2 in void enable(); 3 in void disable(); 4 out
- void triggered(); 5 out void disabled(); 6 @}
+ 1 interface Sensor @{
+ 2   in void enable();
+ 3   in void disable();
+ 4   out void triggered();
+ 5   out void disabled();
+ 6 @}
 
 @end example
 
@@ -6005,7 +6088,11 @@ Completely 'passive' interfaces are not allowed; at least one @b{in} or
 
 
 @example
- 1 interface Sensor @{ 2 behaviour @{ 3 // ...  4 @} 5 @}
+ 1 interface Sensor @{
+ 2   behaviour @{
+ 3     // ...
+ 4   @}
+ 5 @}
 
 @end example
 
@@ -6023,9 +6110,14 @@ Only @i{in} Event can have a return type.
 
 
 @example
- 1 interface Sensor @{ 2 enum Value@{ New, Old @}; 3 in void enable(); 4
- in void disable(); 5 out Value triggered(); 6 out void disabled(); 7
- ...  8 @}
+ 1 interface Sensor @{
+ 2   enum Value@{ New, Old @};
+ 3   in void enable();
+ 4   in void disable();
+ 5   out Value triggered();
+ 6   out void disabled();
+ 7   ...
+ 8 @}
 
 @end example
 
@@ -6052,9 +6144,15 @@ An example:
 
 
 @example
-  1 interface Sensor @{ 2 in void activate(); 3 in void deactivate(); 4
-  behaviour @{ ... @} 5 @} 6 7 component Alarm @{ 8 requires Sensor
-  sensor; 9 behaviour @{ ... @}
+  1 interface Sensor @{
+  2   in void activate();
+  3   in void deactivate();
+  4   behaviour @{ ... @}
+  5 @}
+  6
+  7 component Alarm @{
+  8   requires Sensor sensor;
+  9   behaviour @{ ... @}
  10 @}
 
 @end example
@@ -6065,9 +6163,15 @@ Another example:
 
 
 @example
-  1 interface Siren @{ 2 out void start(); 3 out void stop(); 4
-  behaviour @{ ... @} 5 @} 6 7 component Alarm @{ 8 provides Siren
-  siren; 9 behaviour @{ ... @}
+  1 interface Siren @{
+  2   out void start();
+  3   out void stop();
+  4   behaviour @{ ... @}
+  5 @}
+  6
+  7 component Alarm @{
+  8   provides Siren siren;
+  9   behaviour @{ ... @}
  10 @}
 
 @end example
@@ -6076,8 +6180,7 @@ Another example:
 Both examples result in the following error message:
 
 @example
-7:11: Component with behaviour needs at least one trigger event:
-@i{Alarm}
+7:11: Component with behaviour needs at least one trigger event: @i{Alarm}
 @end example
 
 @anchor{Component with behaviour must have at least one provides port
@@ -6092,8 +6195,10 @@ An example:
 
 
 @example
- 1 component Alarm @{ 2 requires Sensor sensor; 3 behaviour @{ ... @} 4
- @}
+ 1 component Alarm @{
+ 2   requires Sensor sensor;
+ 3   behaviour @{ ... @}
+ 4 @}
 
 @end example
 
@@ -6101,8 +6206,7 @@ An example:
 The examples result in the following error message:
 
 @example
-1:11: Component with behaviour must have at least one provides port:
-@i{Alarm}
+1:11: Component with behaviour must have at least one provides port: @i{Alarm}
 @end example
 
 @section Well-formedness Checks -- Directional
@@ -6151,12 +6255,13 @@ are:
 
 
 @example
- 1 on sensor.triggered(): @{ ... @} 2 [guard1] [guard2] on
- sensor.triggered(): @{ ... @} 3 [guard1] on sensor.triggered():
- [guard2] @{ ... @} 4 on sensor.triggered(): [guard1] [guard2] @{ ... @}
- 5 [guard1] blocking [guard2] on sensor.triggered(): @{ ... @} 6
- blocking [guard1] on sensor.triggered(): [guard2] @{ ... @} 7 on
- sensor.triggered(): [guard1] [guard2] blocking @{ ... @}
+ 1 on sensor.triggered(): @{ ... @}
+ 2 [guard1] [guard2] on sensor.triggered(): @{ ... @}
+ 3 [guard1] on sensor.triggered(): [guard2] @{ ... @}
+ 4 on sensor.triggered(): [guard1] [guard2] @{ ... @}
+ 5 [guard1] blocking [guard2] on sensor.triggered(): @{ ... @}
+ 6 blocking [guard1] on sensor.triggered(): [guard2] @{ ... @}
+ 7 on sensor.triggered(): [guard1] [guard2] blocking @{ ... @}
 
 @end example
 
@@ -6173,8 +6278,15 @@ a declarative context:
 
 
 @example
- 1 [state.Armed] 2 @{ 3 on sensor.triggered(): 4 @{ 5 // the imperative
- part: 6 console.detected(); 7 state = States.Triggered; 8 @} 9 @}
+ 1 [state.Armed]
+ 2 @{
+ 3   on sensor.triggered():
+ 4   @{
+ 5     // the imperative part:
+ 6     console.detected();
+ 7     state = States.Triggered;
+ 8   @}
+ 9 @}
 
 @end example
 
@@ -6188,7 +6300,10 @@ context:
 
 
 @example
- 1 [state.Armed] 2 @{ 3 state = States.Triggered; 4 @}
+ 1 [state.Armed]
+ 2 @{
+ 3   state = States.Triggered;
+ 4 @}
 
 @end example
 
@@ -6196,8 +6311,7 @@ context:
 This results in the following error message:
 
 @example
-3:3: Well-formedness error: AssignmentStatement only allowed within
-OnEventStatement
+3:3: Well-formedness error: AssignmentStatement only allowed within OnEventStatement
 
 @end example
 
@@ -6208,7 +6322,10 @@ An ActionStatement occurred outside the scope of a declarative context:
 
 
 @example
- 1 [state.Disarming] 2 @{ 3 console.detected(); 4 @}
+ 1 [state.Disarming]
+ 2 @{
+ 3   console.detected();
+ 4 @}
 
 @end example
 
@@ -6216,8 +6333,7 @@ An ActionStatement occurred outside the scope of a declarative context:
 This results in the following error message:
 
 @example
-3:3: Well-formedness error: ActionStatement only allowed within
-OnEventStatement
+3:3: Well-formedness error: ActionStatement only allowed within OnEventStatement
 
 @end example
 
@@ -6228,8 +6344,14 @@ A second OnEventStatement occurred in the declarative context:
 
 
 @example
- 1 on console.arm(): 2 @{ 3 [state.Disarming] 4 @{ 5 on
- sensor.triggered(): 6 @{ ... @} 7 @} 8 @}
+ 1 on console.arm():
+ 2 @{
+ 3   [state.Disarming]
+ 4   @{
+ 5     on sensor.triggered():
+ 6     @{ ... @}
+ 7   @}
+ 8 @}
 
 @end example
 
@@ -6237,8 +6359,7 @@ A second OnEventStatement occurred in the declarative context:
 This results in the following error message:
 
 @example
-5:5: Well-formedness error: OnEventStatement not allowed within other
-OnEventStatement
+5:5: Well-formedness error: OnEventStatement not allowed within other OnEventStatement
 
 @end example
 
@@ -6249,8 +6370,14 @@ A second BlockingStatement occurred in the declarative context:
 
 
 @example
- 1 blocking on console.arm(): 2 @{ 3 [state.Disarming] 4 @{ 5 blocking 6
- @{ ... @} 7 @} 8 @}
+ 1 blocking on console.arm():
+ 2 @{
+ 3   [state.Disarming]
+ 4   @{
+ 5     blocking
+ 6     @{ ... @}
+ 7   @}
+ 8 @}
 
 @end example
 
@@ -6258,8 +6385,7 @@ A second BlockingStatement occurred in the declarative context:
 This results in the following error message:
 
 @example
-5:5: Well-formedness error: BlockingStatement not allowed within other
-BlockingStatement
+5:5: Well-formedness error: BlockingStatement not allowed within other BlockingStatement
 
 @end example
 
@@ -6271,9 +6397,14 @@ allowed in interfaces.  So:
 
 
 @example
- 1 interface Sensor @{ 2 in void enable(); 3 in void disable(); 4
- behaviour @{ 5 on enable: @{ .... @} 6 blocking on disable: @{ ... @} 7
- @} 8 @}
+ 1 interface Sensor @{
+ 2   in void enable();
+ 3   in void disable();
+ 4   behaviour @{
+ 5     on enable: @{ .... @}
+ 6     blocking on disable: @{ ... @}
+ 7   @}
+ 8 @}
 
 @end example
 
@@ -6281,8 +6412,7 @@ allowed in interfaces.  So:
 results in the following error message:
 
 @example
-6:5: Well-formedness error: BlockingStatement not allowed in interface
-behaviour
+6:5: Well-formedness error: BlockingStatement not allowed in interface behaviour
 
 @end example
 
@@ -6294,15 +6424,32 @@ events, due to implementation restrictions.  So:
 
 
 @example
-  1 interface Sensor @{ 2 in void activate(); 3 out void activated(); 4
-  behaviour @{ 5 on activate: @{@} 6 on inevitable: activated; 7 @} 8 @}
+  1 interface Sensor @{
+  2   in void activate();
+  3   out void activated();
+  4   behaviour @{
+  5     on activate: @{@}
+  6     on inevitable: activated;
+  7   @}
+  8 @}
   9
- 10 interface Test @{ 11 in void test(); 12 behaviour @{ 13 on test:
- @{@} 14 @} 15 @} 16 17 component SensorComp @{ 18 provides Sensor
- sensor1; 19 provides Test test; 20 requires Sensor sensor2; 21
- behaviour @{ 22 blocking on sensor1.activate(): sensor2.activate(); 23
- on sensor2.activated(): @{ sensor1.activated(); sensor1.reply(); @} 24
- on test.test(): @{@} 25 @} 26 @}
+ 10 interface Test @{
+ 11   in void test();
+ 12   behaviour @{
+ 13     on test: @{@}
+ 14   @}
+ 15 @}
+ 16
+ 17 component SensorComp @{
+ 18   provides Sensor sensor1;
+ 19   provides Test test;
+ 20   requires Sensor sensor2;
+ 21   behaviour @{
+ 22     blocking on sensor1.activate(): sensor2.activate();
+ 23     on sensor2.activated(): @{ sensor1.activated(); sensor1.reply(); @}
+ 24     on test.test(): @{@}
+ 25   @}
+ 26 @}
 
 @end example
 
@@ -6310,8 +6457,7 @@ events, due to implementation restrictions.  So:
 results in the following error message:
 
 @example
-22:5: Well-formedness error: BlockingStatement not allowed with multiple
-provides ports
+22:5: Well-formedness error: BlockingStatement not allowed with multiple provides ports
 
 @end example
 
@@ -6345,8 +6491,13 @@ statement in a list.  So:
 
 
 @example
- 1 on console.arm(): 2 @{ 3 [sounding] sounding = false; 4 [otherwise]
- sounding = true; 5 [otherwise] illegal; 6 @} 7
+ 1 on console.arm():
+ 2 @{
+ 3   [sounding] sounding = false;
+ 4   [otherwise] sounding = true;
+ 5   [otherwise] illegal;
+ 6 @}
+ 7
 
 @end example
 
@@ -6354,9 +6505,8 @@ statement in a list.  So:
 will result in the following error message:
 
 @example
-4:4: Well-formedness error: Otherwise guard combined with second
-otherwise is not allowed 5:3: Well-formedness error: Second otherwise
-defined here
+4:4: Well-formedness error: Otherwise guard combined with second otherwise is not allowed
+5:3: Well-formedness error: Second otherwise defined here
 
 @end example
 
@@ -6370,8 +6520,9 @@ with a non-guarded statement.  So:
 
 
 @example
- 1 on console.arm(): sounding = false; 2 [otherwise] @{ on
- console.disarm(): sounding = true; @} 3
+ 1 on console.arm(): sounding = false;
+ 2 [otherwise] @{ on console.disarm(): sounding = true; @}
+ 3
 
 @end example
 
@@ -6379,9 +6530,8 @@ with a non-guarded statement.  So:
 will result in the following error message:
 
 @example
-4:2: Well-formedness error: Otherwise guard combined with non
-GuardedStatement is not allowed 1:2: Well-formedness error: non
-GuardedStatement defined here
+4:2: Well-formedness error: Otherwise guard combined with non GuardedStatement is not allowed
+1:2: Well-formedness error: non GuardedStatement defined here
 
 @end example
 
@@ -6394,7 +6544,12 @@ if the @i{illegal} occurs in a nested CompoundStatement:
 
 
 @example
- 1 on console.arm(): 2 @{ 3 @{ 4 @{ illegal; @} 5 @} 6 sounding = true;
+ 1 on console.arm():
+ 2 @{
+ 3   @{
+ 4     @{ illegal; @}
+ 5   @}
+ 6   sounding = true;
  7 @}
 
 @end example
@@ -6403,8 +6558,7 @@ if the @i{illegal} occurs in a nested CompoundStatement:
 This results in the following error message:
 
 @example
-4:7: Well-formedness error: Illegal must be the only Statement in a
-compound
+4:7: Well-formedness error: Illegal must be the only Statement in a compound
 
 @end example
 
@@ -6415,8 +6569,13 @@ the condition may be accompanied by other action statements, e.g:
 
 
 @example
- 1 on console.arm(): 2 @{ 3 s = sensor.enable(); 4 if (s.NOK) @{ 5
- illegal; 6 @} 7 @}
+ 1 on console.arm():
+ 2 @{
+ 3   s = sensor.enable();
+ 4   if (s.NOK) @{
+ 5     illegal;
+ 6   @}
+ 7 @}
 
 @end example
 
@@ -6430,8 +6589,12 @@ example:
 
 
 @example
- 1 bool b = true; 2 on arm: 3 @{ 4 if (b) @{ illegal; @} 5 else @{ state
- = States.Armed; @} 6 @}
+ 1 bool b = true;
+ 2 on arm:
+ 3 @{
+ 4   if (b) @{ illegal; @}
+ 5   else @{ state = States.Armed; @}
+ 6 @}
 
 @end example
 
@@ -6439,8 +6602,7 @@ example:
 This results in the following error message:
 
 @example
-4:12: Well-formedness error: Illegal is not allowed in if-then-else
-statements
+4:12: Well-formedness error: Illegal is not allowed in if-then-else statements
 
 @end example
 
@@ -6453,7 +6615,14 @@ To be more specific, it must not occur in a function body. An example:
 
 
 @example
- 1 void ill() 2 @{ 3 illegal; 4 @} 5 on arm: 6 @{ 7 ill(); 8 @}
+ 1 void ill()
+ 2 @{
+ 3   illegal;
+ 4 @}
+ 5 on arm:
+ 6 @{
+ 7   ill();
+ 8 @}
 
 @end example
 
@@ -6482,10 +6651,15 @@ example:
 
 
 @example
-  1 component Test @{ 2 provides Start start; 3 requires Sensor sensor;
-  4 behaviour @{ 5 on start.start(): @{ sensor.activate(); @} 6 blocking
-  on start.stop(): @{ sensor.activate(); @} 7 on sensor.deactivated():
-  @{ sensor.reply(); @} 8 @} 9 @}
+  1 component Test @{
+  2   provides Start start;
+  3   requires Sensor sensor;
+  4   behaviour @{
+  5     on start.start(): @{ sensor.activate(); @}
+  6     blocking on start.stop(): @{ sensor.activate(); @}
+  7     on sensor.deactivated(): @{ sensor.reply(); @}
+  8   @}
+  9 @}
 
 @end example
 
@@ -6493,8 +6667,7 @@ example:
 This results in the following error message:
 
 @example
-7:32: Well-formedness error: Reply not allowed on 'requires' Port:
-'sensor'
+7:32: Well-formedness error: Reply not allowed on 'requires' Port: 'sensor'
 
 @end example
 
@@ -6520,12 +6693,26 @@ An Action is used in a complex expression.
 
 
 @example
-  1 interface Sensor @{ 2 enum Status @{ OK, NOK @}; 3 in Status
-  enable(); 4 @} 5 component Alarm @{ 6 provides Console console; 7
-  requires Sensor sensor; 8 behaviour @{ 9 ....
- 10 bool b = true; 11 on console.arm(): 12 @{ 13 if (sensor.enable() ==
- Sensor.Status.OK) @{ 14 state = States.Armed; 15 @} 16 bool b =
- sensor.enable(); 17 bool b = b || sensor.enable(); 18 @} 19 @} 20 @}
+  1 interface Sensor @{
+  2   enum Status @{ OK, NOK @};
+  3   in Status enable();
+  4 @}
+  5 component Alarm @{
+  6   provides Console console;
+  7   requires Sensor sensor;
+  8   behaviour @{
+  9     ....
+ 10     bool b = true;
+ 11     on console.arm():
+ 12     @{
+ 13       if (sensor.enable() == Sensor.Status.OK) @{
+ 14         state = States.Armed;
+ 15       @}
+ 16       bool b = sensor.enable();
+ 17       bool b = b || sensor.enable();
+ 18     @}
+ 19   @}
+ 20 @}
 
 @end example
 
@@ -6533,8 +6720,8 @@ An Action is used in a complex expression.
 This results in the following error messages:
 
 @example
-13:10: Well-formedness error: Actions are not allowed here 17:20:
-Well-formedness error: Actions are not allowed here
+13:10: Well-formedness error: Actions are not allowed here
+17:20: Well-formedness error: Actions are not allowed here
 
 @end example
 The call of the @i{sensor.enable()} action on line 16 is the only
@@ -6546,11 +6733,22 @@ Action is used as initial value of a global variable.
 
 
 @example
-  1 interface Sensor @{ 2 enum Status @{ OK, NOK @}; 3 in Status
-  enable(); 4 @} 5 component Alarm @{ 6 provides Console console; 7
-  requires Sensor sensor; 8 behaviour @{ 9 ...
- 10 Sensor.Status st = sensor.enable(); 11 on console.arm(): 12 @{ 13
- ...  14 @} 15 @} 16 @}
+  1 interface Sensor @{
+  2   enum Status @{ OK, NOK @};
+  3   in Status enable();
+  4 @}
+  5 component Alarm @{
+  6   provides Console console;
+  7   requires Sensor sensor;
+  8   behaviour @{
+  9     ...
+ 10     Sensor.Status st = sensor.enable();
+ 11     on console.arm():
+ 12     @{
+ 13       ...
+ 14     @}
+ 15   @}
+ 16 @}
 
 @end example
 
@@ -6569,12 +6767,25 @@ A Function call is used in a complex expression.
 
 
 @example
-  1 interface Sensor @{ 2 enum Status @{ OK, NOK @}; 3 in Status
-  enable(); 4 @} 5 component Alarm @{ 6 provides Console console; 7
-  requires Sensor sensor; 8 behaviour @{ 9 ....
- 10 bool ok() @{ 11 return (enab() == OK); 12 @} 13 Sensor.Status enab()
- @{ 14 Sensor.Status r = sensor.enable(); 15 return r; 16 @} 17 ...  18
- @} 19 @}
+  1 interface Sensor @{
+  2   enum Status @{ OK, NOK @};
+  3   in Status enable();
+  4 @}
+  5 component Alarm @{
+  6   provides Console console;
+  7   requires Sensor sensor;
+  8   behaviour @{
+  9     ....
+ 10     bool ok() @{
+ 11       return (enab() == OK);
+ 12     @}
+ 13     Sensor.Status enab() @{
+ 14       Sensor.Status r = sensor.enable();
+ 15       return r;
+ 16     @}
+ 17     ...
+ 18   @}
+ 19 @}
 
 @end example
 
@@ -6593,8 +6804,15 @@ A valued Function is called without assigning its return value.
 
 
 @example
-  1 ...  2 bool negate(bool b) 3 @{ 4 return !b; 5 @} 6 void test(bool
-  b) 7 @{ 8 negate(b); 9 @}
+  1 ...
+  2 bool negate(bool b)
+  3 @{
+  4   return !b;
+  5 @}
+  6 void test(bool b)
+  7 @{
+  8   negate(b);
+  9 @}
  10 ...
 
 @end example
@@ -6614,10 +6832,21 @@ example:
 
 
 @example
-  1 interface Sensor @{ 2 enum Status @{ OK, NOK @}; 3 in Status
-  enable(); 4 @} 5 component Alarm @{ 6 provides Console console; 7
-  requires Sensor sensor; 8 behaviour @{ 9 ....
- 10 on console.arm(): 11 @{ 12 sensor.enable(); 13 @} 14 @} 15 @}
+  1 interface Sensor @{
+  2   enum Status @{ OK, NOK @};
+  3   in Status enable();
+  4 @}
+  5 component Alarm @{
+  6   provides Console console;
+  7   requires Sensor sensor;
+  8   behaviour @{
+  9     ....
+ 10     on console.arm():
+ 11     @{
+ 12       sensor.enable();
+ 13     @}
+ 14   @}
+ 15 @}
 
 @end example
 
@@ -6638,8 +6867,15 @@ Interface shall not have out events. An example:
 
 
 @example
- 1 interface Intf @{ 2 in void evt(); 3 out void notif(); 4 @} 5 6
- component Comp @{ 7 requires injected Intf i; 8 .....  9 @}
+ 1 interface Intf @{
+ 2   in void evt();
+ 3   out void notif();
+ 4 @}
+ 5
+ 6 component Comp @{
+ 7   requires injected Intf i;
+ 8   .....
+ 9 @}
 
 @end example
 
@@ -6661,11 +6897,25 @@ binding errors below:
 
 
 @example
-  1 import Console; 2 import Alarm_Impl; 3 import Sensor_Impl; 4 import
-  Siren_Impl; 5 6 component AlarmSystem 7 @{ 8 provides Console console;
-  9 provides Console consoleAlt;
- 10 11 system 12 @{ 13 Alarm_Impl alarm; 14 Sensor_Impl sensor; 15
- Siren_Impl siren; 16 17 // bindings .....  18 @} 19 @}
+  1 import Console;
+  2 import Alarm_Impl;
+  3 import Sensor_Impl;
+  4 import Siren_Impl;
+  5
+  6 component AlarmSystem
+  7 @{
+  8   provides Console console;
+  9   provides Console consoleAlt;
+ 10
+ 11   system
+ 12   @{
+ 13     Alarm_Impl alarm;
+ 14     Sensor_Impl sensor;
+ 15     Siren_Impl siren;
+ 16
+ 17     // bindings .....
+ 18   @}
+ 19 @}
 
 @end example
 
@@ -6680,8 +6930,8 @@ bindings are added in the AlarmSystem Component above, the following
 error message will be issued (among others):
 
 @example
-8:19: Well-formedness error: Port is not bound: @i{console}9:19:
-Well-formedness error: Port is not bound: @i{consoleAlt}
+8:19: Well-formedness error: Port is not bound: @i{console}
+9:19: Well-formedness error: Port is not bound: @i{consoleAlt}
 @end example
 
 @anchor{Port is not bound @i{alarm.console}}
@@ -6703,8 +6953,9 @@ above is followed by
 
 
 @example
- 18 console <=> alarm.console; 19 alarm.sensor <=> sensor.sensor; 20
- consoleAlt <=> alarm.console;
+ 18 console <=> alarm.console;
+ 19 alarm.sensor <=> sensor.sensor;
+ 20 consoleAlt <=> alarm.console;
 
 @end example
 
@@ -6778,8 +7029,15 @@ An example:
 
 
 @example
-  1 component Sys @{ 2 provides Console console; 3 system @{ 4 Logger
-  logger; 5 SubSystem sub; 6 ...  7 logger.* <=> sub.*; 8 ...  9 @}
+  1 component Sys @{
+  2   provides Console console;
+  3   system @{
+  4     Logger logger;
+  5     SubSystem sub;
+  6     ...
+  7     logger.* <=> sub.*;
+  8     ...
+  9   @}
  10 @}
 
 @end example
@@ -6815,9 +7073,17 @@ system component.
 In the most trivial example, which creates a one-component cycle:
 
 @example
-  1 component Comp @{ 2 provides Intf prov; 3 requires Intf req; 4 @} 5
-  6 component Sys @{ 7 system @{ 8 Comp c; 9 c.prov <=> c.req;
- 10 @} 11 @}
+  1 component Comp @{
+  2   provides Intf prov;
+  3   requires Intf req;
+  4 @}
+  5
+  6 component Sys @{
+  7   system @{
+  8     Comp c;
+  9     c.prov <=> c.req;
+ 10   @}
+ 11 @}
 
 @end example
 
@@ -6832,15 +7098,42 @@ the following error message will be issued:
 A more elaborate example creates a cycle over three components:
 
 @example
-  1 component Comp1 @{ 2 provides Intf p; 3 requires Intf r; 4 @} 5 6
-  component Comp2 @{ 7 provides Intf p1; 8 provides Intf p2; 9 requires
-  Intf r1;
- 10 requires Intf r2; 11 @} 12 13 component Sys @{ 14 provides Intf p1;
- 15 provides Intf p2; 16 17 requires Intf r1; 18 requires Intf r2; 19 20
- system @{ 21 Comp2 c21; 22 Comp2 c22; 23 Comp1 c11; 24 Comp1 c12; 25 26
- p1 <=> c21.p1; 27 p2 <=> c22.p1; 28 c21.r1 <=> c11.p; 29 c21.r2 <=>
- c12.p; 30 c22.r1 <=> c21.p2; 31 c22.r2 <=> r2; 32 33 c11.r <=> r1; 34
- c12.r <=> c22.p2; 35 @} 36 @}
+  1 component Comp1 @{
+  2   provides Intf p;
+  3   requires Intf r;
+  4 @}
+  5
+  6 component Comp2 @{
+  7   provides Intf p1;
+  8   provides Intf p2;
+  9   requires Intf r1;
+ 10   requires Intf r2;
+ 11 @}
+ 12
+ 13 component Sys @{
+ 14   provides Intf p1;
+ 15   provides Intf p2;
+ 16
+ 17   requires Intf r1;
+ 18   requires Intf r2;
+ 19
+ 20   system @{
+ 21     Comp2 c21;
+ 22     Comp2 c22;
+ 23     Comp1 c11;
+ 24     Comp1 c12;
+ 25
+ 26     p1 <=> c21.p1;
+ 27     p2 <=> c22.p1;
+ 28     c21.r1 <=> c11.p;
+ 29     c21.r2 <=> c12.p;
+ 30     c22.r1 <=> c21.p2;
+ 31     c22.r2 <=> r2;
+ 32
+ 33     c11.r <=> r1;
+ 34     c12.r <=> c22.p2;
+ 35   @}
+ 36 @}
 
 @end example
 
@@ -6848,10 +7141,9 @@ A more elaborate example creates a cycle over three components:
 As a result the following error messages will be issued:
 
 @example
-21:5: Well-formedness error: Component is part of a cyclic binding:
-@i{c21}22:5: Well-formedness error: Component is part of a cyclic
-binding: @i{c22}24:5: Well-formedness error: Component is part of a
-cyclic binding: @i{c12}
+21:5: Well-formedness error: Component is part of a cyclic binding: @i{c21}
+22:5: Well-formedness error: Component is part of a cyclic binding: @i{c22}
+24:5: Well-formedness error: Component is part of a cyclic binding: @i{c12}
 @end example
 
 @anchor{Wildcard can be bound to a provided port only}
@@ -6863,11 +7155,25 @@ used to bind such a Port, the other side of a wildcard binding must be a
 
 
 @example
-  1 component Comp @{ 2 requires injected Logger logger; 3 .....  4 @} 5
-  6 component MyLogger @{ 7 requires Logger logger; 8 ...  9 @}
- 10 11 component Sys @{ 12 provides Console console; 13 system @{ 14
- MyLogger myLogger; 15 SubSystem sub; 16 ...  17 myLogger.logger <=> *;
- 18 @} 19 @}
+  1 component Comp @{
+  2   requires injected Logger logger;
+  3   .....
+  4 @}
+  5
+  6 component MyLogger @{
+  7   requires Logger logger;
+  8   ...
+  9 @}
+ 10
+ 11 component Sys @{
+ 12   provides Console console;
+ 13   system @{
+ 14     MyLogger myLogger;
+ 15     SubSystem sub;
+ 16     ...
+ 17     myLogger.logger <=> *;
+ 18   @}
+ 19 @}
 
 @end example
 
@@ -6875,8 +7181,7 @@ used to bind such a Port, the other side of a wildcard binding must be a
 the following error message will be issued:
 
 @example
-17:20: Well-formedness error: Wildcard can be bound to a provided port
-only
+17:20: Well-formedness error: Wildcard can be bound to a provided port only
 
 @end example
 
@@ -6893,11 +7198,35 @@ instances.  Component C1 instantiates C3, which instantiates C4, which
 instantiates C1.
 
 @example
-  1 component C1 @{ 2 system @{ 3 C2 c2; 4 C3 c3; 5 @} 6 @} 7 8
-  component C2 @{ 9 system @{
- 10 C5 c5; 11 @} 12 @} 13 14 component C3 @{ 15 system @{ 16 C4 c4; 17
- C2 c2; 18 @} 19 @} 20 21 component C4 @{ 22 system @{ 23 C1 c1; 24 @}
- 25 @} 26 27 component C5 @{ 28 system @{ @} // an empty system 29 @}
+  1 component C1 @{
+  2   system @{
+  3     C2 c2;
+  4     C3 c3;
+  5   @}
+  6 @}
+  7
+  8 component C2 @{
+  9   system @{
+ 10     C5 c5;
+ 11   @}
+ 12 @}
+ 13
+ 14 component C3 @{
+ 15   system @{
+ 16     C4 c4;
+ 17     C2 c2;
+ 18   @}
+ 19 @}
+ 20
+ 21 component C4 @{
+ 22   system @{
+ 23     C1 c1;
+ 24   @}
+ 25 @}
+ 26
+ 27 component C5 @{
+ 28   system @{ @} // an empty system
+ 29 @}
 
 @end example
 
@@ -6923,16 +7252,53 @@ possible when that is a port of a sub Component)
 In the example below some errors are reported.
 
 @example
-  1 interface I @{ 2 in void e(); 3 behaviour @{ 4 on e: @{@} 5 @} 6 @}
-  7 8 component C1 @{ 9 provides I p;
- 10 requires external I r1; 11 requires external I r2; 12 behaviour @{
- 13 on p.e(): @{@} 14 @} 15 @} 16 17 component C2 @{ 18 provides I p; 19
- behaviour @{ 20 on p.e(): @{@} 21 @} 22 @} 23 24 component S1 @{ 25
- provides I p; 26 requires I r; 27 system @{ 28 C1 c1; 29 C2 c2; 30 p
- <=> c1.p; 31 c1.r1 <=> r; 32 c1.r2 <=> c2.p; 33 @} 34 @} 35 36
- component S2 @{ 37 provides I p1; 38 provides I p2; 39 requires
- external I r1; 40 requires external I r2; 41 system @{ 42 S1 s1; 43 p1
- <=> s1.p; 44 p2 <=> r2; 45 r1 <=> s1.r; 46 @} 47 @}
+  1 interface I @{
+  2   in void e();
+  3   behaviour @{
+  4     on e: @{@}
+  5   @}
+  6 @}
+  7
+  8 component C1 @{
+  9   provides I p;
+ 10   requires external I r1;
+ 11   requires external I r2;
+ 12   behaviour @{
+ 13     on p.e(): @{@}
+ 14   @}
+ 15 @}
+ 16
+ 17 component C2 @{
+ 18   provides I p;
+ 19   behaviour @{
+ 20     on p.e(): @{@}
+ 21   @}
+ 22 @}
+ 23
+ 24 component S1 @{
+ 25   provides I p;
+ 26   requires I r;
+ 27   system @{
+ 28     C1 c1;
+ 29     C2 c2;
+ 30     p <=> c1.p;
+ 31     c1.r1 <=> r;
+ 32     c1.r2 <=> c2.p;
+ 33   @}
+ 34 @}
+ 35
+ 36 component S2 @{
+ 37   provides I p1;
+ 38   provides I p2;
+ 39   requires external I r1;
+ 40   requires external I r2;
+ 41   system @{
+ 42     S1 s1;
+ 43     p1 <=> s1.p;
+ 44     p2 <=> r2;
+ 45     r1 <=> s1.r;
+ 46   @}
+ 47 @}
 
 @end example
 
@@ -6940,9 +7306,8 @@ In the example below some errors are reported.
 the following error message will be issued on @i{S2}:
 
 @example
-44:12: Well-formedness error: External port must be bound to external
-port: @i{r2}45:5: Well-formedness error: External port must be bound to
-external port: @i{r1}
+44:12: Well-formedness error: External port must be bound to external port: @i{r2}
+45:5: Well-formedness error: External port must be bound to external port: @i{r1}
 @end example
 
 @section Well-formedness Checks -- Functions
@@ -6968,8 +7333,13 @@ error is issued when a return is not guaranteed. An example:
 
 
 @example
- 1 bool func() 2 @{ 3 if (a && b) 4 @{ return true; @} 5 else if (c) 6
- @{ illegal; @} 7 @}
+ 1 bool func()
+ 2 @{
+ 3   if (a && b)
+ 4   @{ return true; @}
+ 5   else if (c)
+ 6   @{ illegal; @}
+ 7 @}
 
 @end example
 
@@ -6977,8 +7347,7 @@ error is issued when a return is not guaranteed. An example:
 For this code fragment the following error message will be issued:
 
 @example
-1:10: Well-formedness error: Function does not return a value in all
-cases: func
+1:10: Well-formedness error: Function does not return a value in all cases: func
 
 @end example
 
@@ -6989,8 +7358,13 @@ A @b{return} Statement is restricted to Function bodies. So
 
 
 @example
- 1 on sensor.disabled(): 2 @{ 3 [sounding] 4 @{ 5 return; // triggers an
- error 6 @} 7 @}
+ 1 on sensor.disabled():
+ 2 @{
+ 3   [sounding]
+ 4   @{
+ 5     return; // triggers an error
+ 6   @}
+ 7 @}
 
 @end example
 
@@ -7011,9 +7385,19 @@ Statements. So
 
 
 @example
-  1 component Sensor @{ 2 ...  3 behaviour @{ 4 ...  5 void f() @{ 6
-  bool b = false; 7 if (b) @{ 8 f(); 9 b = true;
- 10 @} 11 @} 12 @} 13 @}
+  1 component Sensor @{
+  2   ...
+  3   behaviour @{
+  4     ...
+  5     void f() @{
+  6       bool b = false;
+  7       if (b) @{
+  8         f();
+  9         b = true;
+ 10       @}
+ 11     @}
+ 12   @}
+ 13 @}
 
 @end example
 
@@ -7021,8 +7405,7 @@ Statements. So
 will result in the following error message:
 
 @example
-9:9: Well-formedness error: Statement violates tail recursion in
-recursive Function
+9:9: Well-formedness error: Statement violates tail recursion in recursive Function
 
 @end example
 Remark: two functions @i{f} and @i{g} that are defined in terms of each
@@ -7039,9 +7422,11 @@ parameters; in other words, they must have a data type. An example:
 
 
 @example
-  1 interface Sensor @{ 2 enum Code @{ ok, nok @}; 3 in Code
-  activate(Code c); 4 behaviour @{ ... @}
-@}
+  1 interface Sensor @{
+  2   enum Code @{ ok, nok @};
+  3   in Code activate(Code c);
+  4   behaviour @{ ... @}
+  5 @}
 
 @end example
 
@@ -7060,8 +7445,12 @@ An out Event is not allowed to have an out Data Parameter. This example:
 
 
 @example
- 1 interface Sensor @{ 2 extern INT $int$; 3 in void enable(); 4 in void
- disable(); 5 out void triggered(out INT value); 6 out void disabled();
+ 1 interface Sensor @{
+ 2   extern INT $int$;
+ 3   in void enable();
+ 4   in void disable();
+ 5   out void triggered(out INT value);
+ 6   out void disabled();
  7 @}
 
 @end example
@@ -7070,8 +7459,7 @@ An out Event is not allowed to have an out Data Parameter. This example:
 will result in the following error message:
 
 @example
-5:30: Well-formedness error: Out Parameter is not allowed for out Event:
-value
+5:30: Well-formedness error: Out Parameter is not allowed for out Event: value
 
 @end example
 
@@ -7082,8 +7470,12 @@ An out Event is not allowed to have an inout Data Parameter. An example:
 
 
 @example
- 1 interface Sensor @{ 2 extern INT $int$; 3 in void enable(); 4 in void
- disable(); 5 out void triggered(); 6 out void disabled(inout INT dis);
+ 1 interface Sensor @{
+ 2   extern INT $int$;
+ 3   in void enable();
+ 4   in void disable();
+ 5   out void triggered();
+ 6   out void disabled(inout INT dis);
  7 @}
 
 @end example
@@ -7092,8 +7484,7 @@ An out Event is not allowed to have an inout Data Parameter. An example:
 will result in the following error message:
 
 @example
-6:31: Well-formedness error: Inout Parameter is not allowed for out
-Event: dis
+6:31: Well-formedness error: Inout Parameter is not allowed for out Event: dis
 
 @end example
 
@@ -7107,10 +7498,17 @@ error. So:
 
 
 @example
-  1 extern xint $int$; 2 component Test @{ 3 provides Intf intf; 4
-  behaviour @{ 5 xint NR; 6 on intf.evt(number): 7 fn(number <- NR); 8 9
-  void fn(xint i) @{ ... @}
- 10 @} 11 @}
+  1 extern xint $int$;
+  2 component Test @{
+  3   provides Intf intf;
+  4   behaviour @{
+  5     xint NR;
+  6     on intf.evt(number):
+  7       fn(number <- NR);
+  8
+  9     void fn(xint i) @{ ... @}
+ 10   @}
+ 11 @}
 
 @end example
 
