@@ -678,9 +678,11 @@
           ((not event) '())         ; already covered in trigger check
           ((and (or (not (.port.name o))
                     (equal? (.port.name o) (.port.name trigger)))
+                (ast:in? event) ;;exclude requires out reply; assume blocking release
                 (not (ast:equal? event-type reply-type))
                 (not (and (is-a? event-type <int>)
                           (is-a? reply-type <int>)))
+
                 `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
                                         (and event-type (type-name event-type))
                                         (type-name reply-type)))
