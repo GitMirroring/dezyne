@@ -120,6 +120,7 @@ REGRESSION_TESTS =				\
  %D%/dollars					\
  %D%/empty_dollars				\
  %D%/enum_expressions				\
+ %D%/equal_binary				\
  %D%/external_asynchronous_sync			\
  %D%/extern_in_interface			\
  %D%/foreign_namespace				\
@@ -171,6 +172,7 @@ REGRESSION_TESTS =				\
  %D%/hello_provides				\
  %D%/hello_recursive				\
  %D%/hello_silent				\
+ %D%/hello_shadow				\
  %D%/hello_single_to_multiple			\
  %D%/hello_synchronous_livelock			\
  %D%/hello_systems				\
