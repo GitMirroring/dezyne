@@ -50,13 +50,13 @@
 (define %source-dir (dirname (current-filename)))
 (add-to-load-path (string-append %source-dir "/guix"))
 (%patch-path (cons (string-append %source-dir "/guix") (%patch-path)))
-(use-modules (gnu packages dzn))
+(use-modules (gnu packages dezyne))
 
-(define-public dzn.git
+(define-public dezyne.git
   (package
-    (inherit dzn)
+    (inherit dezyne)
     (source (local-file %source-dir
                         #:recursive? #t
                         #:select? (git-predicate %source-dir)))))
 
-dzn.git
+dezyne.git
