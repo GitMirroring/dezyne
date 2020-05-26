@@ -20,7 +20,7 @@
 AC_INIT([Dezyne command-line],
         [m4_esyscmd([build-aux/git-version-gen .tarball-version])],
         [bug-dezyne@nongnu.org],
-        [dzn])
+        [dezyne])
 AC_CONFIG_SRCDIR([gaiag/parse.scm])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIRS([build-aux])

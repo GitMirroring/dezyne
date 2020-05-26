@@ -31,7 +31,7 @@ EXTRA_DIST =					\
  build-aux/git-version-gen			\
  build-aux/gitlog-to-changelog			\
  guix.scm					\
- guix/gnu/packages/dzn.scm			\
+ guix/gnu/packages/dezyne.scm			\
  guix/gnu/packages/mcrl2.scm
 
 dist_lisp_DATA = emacs/dzn-mode.el
@@ -161,7 +161,7 @@ doc/dzn-%.1: bin/dzn Makefile $(ALL_GO)
 #  2. make sign-dist
 #  3. make release
 #  4. test guix package build, binary packs (see HACKING)
-#     GUIX_PACKAGE_PATH=guix build dzn
+#     GUIX_PACKAGE_PATH=guix build dezyne
 #     make linux
 #     make mingw
 #  5. Send mail to
@@ -192,17 +192,17 @@ dist-hook: gen-ChangeLog
 # FIXME: this will only work after we switch to source tarball
 # distribution and url-feth
 release: update-hash
-	git commit -m 'guix: Update hash.'				\
-		-m '* guix/gnu/packages/dzn.scm (dzn): Update hash.'	\
-		guix/gnu/packages/dzn.scm
+	git commit -m 'guix: Update hash.'					\
+		-m '* guix/gnu/packages/dezyne.scm (dezyne): Update hash.'	\
+		guix/gnu/packages/dezyne.scm
 
 if have_guix
 update-hash: $(DIST_ARCHIVES)
 	$(GUIX) download file://$(PWD)/$<
 	sed -i \
-		-e 's,base32 #!dzn!# "[^"]*"),base32 #!dzn!# "$(shell $(GUIX) hash $<)"),' \
-		-e 's,version #!dzn!# "[^"]*"),version #!dzn!# "$(PACKAGE_VERSION)"),' \
-	guix/gnu/packages/dzn.scm
+		-e 's,base32 #!dezyne!# "[^"]*"),base32 #!dezyne!# "$(shell $(GUIX) hash $<)"),' \
+		-e 's,version #!dezyne!# "[^"]*"),version #!dezyne!# "$(PACKAGE_VERSION)"),' \
+	guix/gnu/packages/dezyne.scm
 else
 $(warning update-hash: no Guix)
 endif
