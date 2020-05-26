@@ -34,50 +34,53 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 ** Release 2.10, unsorted
   - Naming
     - dzn.git => dezyne.git
-    - ide.git => dezyne-ide.git
-  - Release on savannah.nongnu.org; create dezyne-devel@nongnu.org,
-    bug-dezyne@nongnu.org
   - Documentation
-    + All READMEs.
     + Review doc/dezyne.texi.
-    + Documentation on IDE
-      - Dezyne-IDE
-      - Atom/VSCodium (or even proprietary Microsoft Visual Studio Code?)
-      - GNU Emacs
-      - VIM/Alternative editor
   - Website
     + Hello-world blog post dezyne.org
     + Move nginx/haunt-based website setup from banaan to kluit.
-    + Fix dummy download page.
+    + Fix dummy download page. --> how do we release 2.10?
   - Pass regression test
     + XFAIL: notably test/all/shell
     + Rewrite underlapping tests from wip-test (old-regression)
       - Dataparam?
       - Injected?
-  - Finish and merge `wip' branch.
+  - Pass customer models internally
+  - Finish and merge `janneke/wip' branch.
     + DRAFT verify: Remove dependency on file-system and shell.
-    + DRAFT test: Start unit test for makreel.
   - Support binary release
     + Solicit and incorporate feedback on 2.10.0.rc10
-  - Upstream PEG patches to Guile
+  - Finish and merge `rutger/fall-back' branch.
     + Fix problematic draft patches
       - DRAFT peg: Add fall-back parsing.
       - DRAFT peg: Add whitespace and comment skip parsers.
-  - Upstream mCRL2 patches
   - Parser bugs/hardening/performance
-    + Finish and merge wip-memoize
+    + Finish and merge wip-memoize, janneke/wip-convert
+    + Use-before-define patch from `rutger/master'
+  - Contact users with binary release announcement
+
+** Release 2.11, unsorted
+  - Formally end-of-life cloud-based 2.9
+  - Deprecate cloud-based 2.9
+    + No new trial accounts
+  - ide.git => dezyne-ide.git
+    + Documentation on IDE
+      - Dezyne-IDE
+      - Atom/VSCodium (or even proprietary Microsoft Visual Studio Code?)
+      - GNU Emacs
+      - VIM/Alternative editor
+
+** Release 3.0, unsorted
+  - Release on savannah.nongnu.org; create dezyne-devel@nongnu.org,
+    bug-dezyne@nongnu.org
+    + All READMEs.
   - Debian package
     + Source build on Buster
-  - Deprecate cloud-based 2.9
-    + No new test accounts
-    + Contact users with binary release announcement
-** Release 3.0, unsorted
-  - Formally end-of-life cloud-based 2.9
   - Documentation
     + Finish and merge wip-doc branch.
      - Merge snippets/tests with doc/dezyne.texi.
      - Remove error messages.
-     - Gerenate images.
+     - Generate images.
   - Resurrect C++03 support
   - Resurrect C# support
   - Fully support IDE release
@@ -107,6 +110,9 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Sub machines
   - Weak illegals
 * DONE
+  - Upstream PEG patches to Guile
+  - Upstream mCRL2 patches
+  - DRAFT test: Start unit test for makreel.
   - Emacs: Implement get-models using regex parsing; drop dzn parse
     --components, --interfaces.
   - Parser bugs/hardening/performance
