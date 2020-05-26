@@ -23,7 +23,7 @@
 ;;;
 ;;; Code:
 
-(define-module (gnu packages dzn)
+(define-module (gnu packages dezyne)
   #:use-module (guix build-system gnu)
   #:use-module (guix gexp)
   #:use-module (guix download)
@@ -49,20 +49,20 @@
 
 (define %source-dir (getcwd))
 
-;; scp kluit.dezyne.org:.../download/dzn-dzn-2.10.0.tar.gz .
-;; guix download ./dzn-dzn-2.10.0.tar.gz
+;; scp kluit.dezyne.org:.../download/dezyne-2.10.0.tar.gz .
+;; guix download ./dezyne-2.10.0.tar.gz
 
-(define-public dzn
+(define-public dezyne
   (package
-    (name "dzn")
-    (version #!dzn!# "2.10.0.rc5")
+    (name "dezyne")
+    (version #!dezyne!# "2.10.0.rc10")
     (source
      (origin
        (method url-fetch)
-       (uri (string-append "https://dezyne.org/download/dzn/"
+       (uri (string-append "https://dezyne.org/download/dezyne/"
                            name "-" version ".tar.gz"))
        (sha256
-        (base32 #!dzn!# "0qc96m7mjf02zrbpxyhjhb2jpaf73ipvxfbphashify7jla71p43"))))
+        (base32 #!dezyne!# "1ckcv759plrfmil8jv961bx95h79l8n1xba3rj88gkgrjlbns7qc"))))
     (inputs `(("bash" ,bash-minimal)
               ("guile" ,guile-2.2)
               ("m4-cw" ,m4-changeword)
@@ -100,7 +100,7 @@
                                 (open-pipe* OPEN_READ
                                             "guile" "-c"
                                             "(write (effective-version))")))
-                    (data-dir (string-append out "/share/dzn"))
+                    (data-dir (string-append out "/share/dezyne"))
                     (path (list (string-append bash "/bin")
                                 (string-append guile "/bin")
                                 (string-append m4 "/bin")
