@@ -1,4 +1,1 @@
-test/all/wf_variableInitExpression/wf_variableInitExpression.dzn:37:13: error
-    bool b = c;
-            ^
-            `expression' expected
+test/all/wf_variableInitExpression/wf_variableInitExpression.dzn:37:5: error: undefined identifier `c'
