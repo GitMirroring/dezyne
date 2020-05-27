@@ -354,6 +354,7 @@
         (('type-name name) (helper name))
         (('event-name name) (helper name))
         (('identifier identifier) (helper identifier))
+        (('unknown-identifier name) (helper name))
 
         (('interface-action event) (make <action-node> #:event.name (helper event)))
 
@@ -420,6 +421,7 @@
         (('data) (make <data-node> #:value *unspecified*))
 
         (('field-test ('var identifier _ ...) field) (make <field-test-node> #:variable.name identifier #:field (helper field)))
+        (('field-test ('unknown-identifier identifier _ ...) field) (make <field-test-node> #:variable.name identifier #:field (helper field)))
 
         (('function type name formals)
          (make <function-node>
