@@ -75,6 +75,25 @@
         (and res (member (substring str pos (car res)) interface-events) res)))
     (define-peg-pattern is-event body -is-event-)
 
+    (define port-names '())
+
+    (define (-reset-port-names- str len pos)
+      (set! port-names '())
+      (list pos '()))
+    (define-peg-pattern reset-port-names none -reset-port-names-)
+
+    (define (-port-name- str len pos)
+      (let ((res (name str len pos)))
+        (when res
+          (set! port-names (cons (substring str pos (car res)) port-names)))
+        res))
+    (define-peg-pattern port-name body -port-name-)
+
+    (define (-is-port- str len pos)
+      (let ((res (name str len pos)))
+        (and res (member (substring str pos (car res)) port-names) res)))
+    (define-peg-pattern is-port body -is-port-)
+
 
     (define variable-stack '(()))
 
@@ -178,13 +197,13 @@ types-and-events <-- (type / event)+
 
 event <-- direction type-name# event-name# formals# SEMICOLON#
 
-component <-- COMPONENT reset-event-names compound-name# BRACE-OPEN# ports# body# BRACE-CLOSE#
+component <-- COMPONENT reset-port-names reset-event-names compound-name# BRACE-OPEN# ports# body# BRACE-CLOSE#
 
 body <- behaviour / system / &BRACE-CLOSE
 
 ports <-- (port / &BEHAVIOUR / &SYSTEM / &BRACE-CLOSE)#*
 
-port <-- port-direction compound-name# formals? name# SEMICOLON#
+port <-- port-direction compound-name# formals? port-name# SEMICOLON#
 
 port-direction <- provides external? / requires (injected / external)?
 
@@ -207,19 +226,15 @@ compound <-- BRACE-OPEN enter-frame statement* BRACE-CLOSE# exit-frame
 on <-- ON (illegal-triggers COLON illegal / enter-frame triggers# COLON# statement# exit-frame)
 
 interface-action-or-call <- (interface-action / interface-call)
+interface-action <-- is-event
+interface-call <-- name
 
 arguments <-- PAREN-OPEN (argument (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
 argument <-- expression
 
-interface-action <-- is-event
-
 action-or-call <- (action / call)
-
-action <-- name DOT name arguments
-
-interface-call <-- !is-event name
-
-call <-- !is-event name arguments
+action <-- is-port DOT# name# arguments#
+call <-- name arguments
 
 
 guard <-- BRACKET-OPEN (otherwise / expression)# BRACKET-CLOSE# statement#
@@ -227,16 +242,16 @@ guard <-- BRACKET-OPEN (otherwise / expression)# BRACKET-CLOSE# statement#
 skip-statement <-- SEMICOLON
 
 triggers <-- (trigger (&COLON / COMMA)#)+
-trigger <-- is-event / OPTIONAL / INEVITABLE / name DOT# name# trigger-formals#
+trigger <-- is-port DOT# name# trigger-formals# / OPTIONAL / INEVITABLE / is-event / unknown-identifier
 
 formals <-- PAREN-OPEN (formal (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
 formal <-- (INOUT / IN / OUT)? type-name add-var
 
 trigger-formals <-- PAREN-OPEN (trigger-formal (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
-trigger-formal <-- add-var (LEFT-ARROW var)?
+trigger-formal <-- add-var (LEFT-ARROW (var / unknown-identifier))?
 
 illegal-triggers <-- (illegal-trigger (&COLON / COMMA)#)+
-illegal-trigger <-- is-event / name DOT# name# trigger-formals?
+illegal-trigger <-- is-port DOT# name# trigger-formals? / is-event / unknown-identifier
 
 blocking <-- BLOCKING statement
 
@@ -251,6 +266,7 @@ reply <-- (name DOT)? REPLY PAREN-OPEN# expression? PAREN-CLOSE#
 return <-- RETURN expression? SEMICOLON#
 
 identifier <- !KEYWORD [a-zA-Z_] [a-zA-Z_0-9]*
+unknown-identifier <-- name
 
 data <-- DOLLAR (!DOLLAR .)* DOLLAR#
 
@@ -276,9 +292,9 @@ compare-expression <- plus-min-expression COMPARE plus-min-expression# / plus-mi
 plus-min-expression <- not-expression (PLUS / MINUS) not-expression# / not-expression
 not-expression <- not / group / data / named-expression
 not <-- NOT not-expression#
-named-expression <- action-or-call / field-test / enum-literal / literal / var
+named-expression <-  !var !is-port enum-literal / field-test / literal / var / action-or-call / interface-action / unknown-identifier
 enum-literal <-- scope name
-field-test <-- var DOT name
+field-test <-- !is-port (var / unknown-identifier) DOT name
 literal <-- NUMBER / FALSE / TRUE
 group <-- PAREN-OPEN expression PAREN-CLOSE#
 

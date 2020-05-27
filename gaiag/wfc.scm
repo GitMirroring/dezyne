@@ -345,14 +345,16 @@
    (tail-recursion o)))
 
 (define-method (wfc (o <if>)) ;; is-a <imperative>
-  (let* ((expression (.expression o))
-         (wfce (wfc expression)))
-    (append wfce
-            (if (pair? wfce) '()
-                (typed-expression expression <bool>))
-            (call-context o)
-            (wfc (.then o))
-            (if (.else o) (wfc (.else o)) '()))))
+  (let ((expression (.expression o)))
+    (if (is-a? expression <string>)
+        `(,(wfc-error o (format #f "undefined identifier `~a'" expression)))
+        (let ((wfce (wfc expression)))
+          (append wfce
+                  (if (pair? wfce) '()
+                      (typed-expression expression <bool>))
+                  (call-context o)
+                  (wfc (.then o))
+                  (if (.else o) (wfc (.else o)) '()))))))
 
 (define-method (wfc (o <illegal>)) ;; is-a <imperative>
   (define (illegal o)
@@ -431,7 +433,10 @@
              ,(wfc-error (.port o) (format #f "`~a' declared here" (.port.name o)))))
           (else (let ((event (.event o)))
                   (cond
-                   ((not event)
+                   ((and (is-a? model <interface>) (not event))
+                    `(,(wfc-error o (format #f "event `~a' not defined"
+                                            (.event.name o)))))
+                   ((and (is-a? model <component>) (not event))
                     `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
                                             (.event.name o) (.port.name o)))
                       ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
@@ -631,9 +636,11 @@
 (define-method (assign (o <ast>))
   (let* ((assign-type (ast:type o))
          (expression (.expression o))
-         (wfce (wfc expression))
+         (wfce (if (is-a? expression <string>) '() (wfc expression)))
          (expression-type (if (null? wfce) (ast:type expression) #f)))
     (cond ((pair? wfce) wfce)
+          ((is-a? expression <string>)
+           `(,(wfc-error o (format #f "undefined identifier `~a'" expression))))
           ((and (not assign-type) (is-a? o <variable>))
            `(,(wfc-error o (format #f "unknown type name `~a'" (type-name (.type.name o))))))
           ((and (is-a? o <variable>) (is-a? expression-type <void>))
@@ -682,7 +689,6 @@
                 (not (ast:equal? event-type reply-type))
                 (not (and (is-a? event-type <int>)
                           (is-a? reply-type <int>)))
-
                 `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
                                         (and event-type (type-name event-type))
                                         (type-name reply-type)))
@@ -701,7 +707,7 @@
             ((and (is-a? model <component>) (not event))
              (let ((port (.port o)))
                (if (not port)
-                   `(,(wfc-error o (format #f "undefined port `~a'" (.port.name o))))
+                   `()
                    `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
                                            (.event.name o) (.port.name o)))
                      ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))))

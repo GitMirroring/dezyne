@@ -1,4 +1,2 @@
-test/all/wf_eventNotValuedAction/wf_eventNotValuedAction.dzn:32:16: error
-		on e: { V v = a; reply(v); }
-               ^
-               `expression' expected
+test/all/wf_eventNotValuedAction/wf_eventNotValuedAction.dzn:32:17: error: cannot use in-event `a' as action
+test/all/wf_eventNotValuedAction/wf_eventNotValuedAction.dzn:29:2: error: event `a' declared here
