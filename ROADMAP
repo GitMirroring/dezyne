@@ -38,8 +38,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Review doc/dezyne.texi.
   - Website
     + Hello-world blog post dezyne.org
-    + Move nginx/haunt-based website setup from banaan to kluit.
-    + Fix dummy download page. --> how do we release 2.10?
   - Pass regression test
     + XFAIL: notably test/all/shell
     + Rewrite underlapping tests from wip-test (old-regression)
@@ -110,6 +108,11 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Sub machines
   - Weak illegals
 * DONE
+  - Serve dezyen.org from the kluit
+    + Move nginx/haunt-based website setup from banaan to kluit.
+    + dezyne.org dns => kluit
+    + letsencrypt certs/certbot setup in the kluit
+    + Add binary downloads to download page
   - Upstream PEG patches to Guile
   - Upstream mCRL2 patches
   - DRAFT test: Start unit test for makreel.
