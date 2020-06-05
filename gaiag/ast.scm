@@ -503,7 +503,8 @@
   (eq? (.node a) (.node b)))
 
 (define-method (ast:equal? (a <declaration>) (b <declaration>))
-  (equal? (ast:full-name a) (ast:full-name b)))
+  (and (eq? (class-of a) (class-of b))
+   (equal? (ast:full-name a) (ast:full-name b))))
 
 (define-method (ast:equal? (a <named>) (b <named>))
   (ast:equal? (.name a) (.name b)))
