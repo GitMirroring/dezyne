@@ -687,12 +687,12 @@
                 (ast:in? event) ;;exclude requires out reply; assume blocking release
                 (not (ast:equal? event-type reply-type))
                 (not (and (is-a? event-type <int>)
-                          (is-a? reply-type <int>)))
-                `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
-                                        (and event-type (type-name event-type))
-                                        (type-name reply-type)))
-                  ,@(if event `(,(wfc-error event "event defined here"))
-                        '()))))
+                          (is-a? reply-type <int>))))
+           `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
+                                   (and event-type (type-name event-type))
+                                   (type-name reply-type)))
+             ,@(if event `(,(wfc-error event "event defined here"))
+                   '())))
           (else '()))))
 
 (define-method (action (o <action>))
