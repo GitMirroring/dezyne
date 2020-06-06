@@ -95,6 +95,7 @@ REGRESSION_TESTS =				\
  %D%/async_sync_prio				\
  %D%/blocking_binding				\
  %D%/blocking_imperative			\
+ %D%/blocking_function_reply		\
  %D%/blocking_normalize				\
  %D%/blocking_requires				\
  %D%/blocking_requires_normalize		\

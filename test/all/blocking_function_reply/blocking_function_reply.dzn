@@ -1,0 +1,38 @@
+interface I
+{
+ in void block();
+
+ behaviour
+ {
+   on block: {}
+ }
+}
+
+interface R
+{
+  in void ping();
+  out void pong();
+
+  behaviour
+  {
+    on ping: pong;
+  }
+}
+
+component blocking_function_reply
+{
+  provides I p;
+  requires R r;
+
+  behaviour
+  {
+    void unblock()
+    {
+      reply();
+    }
+
+    blocking on p.block(): r.ping();
+
+    on r.pong(): unblock();
+  }
+}
