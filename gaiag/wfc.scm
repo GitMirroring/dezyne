@@ -783,20 +783,21 @@
                                    (.direction (.port right)) (.port.name right)))
              ,(wfc-error (.port left) (format #f "port `~a' declared here" (.port.name left)))
              ,(wfc-error (.port right) (format #f "port `~a' declared here" (.port.name right)))))
-          ((or (and
-                (.instance.name left)
-                (.instance.name right)
-                (.port left)
-                (.port right)
-                (not (equal? (.external (.port left))
-                             (.external (.port right)))))
-               (and
-                (or (and (.instance.name left) (not (.instance.name right)))
-                    (and (.instance.name right) (not (.instance.name left))))
-                (.port left)
-                (.port right)
-                (not (equal? (.external (.port left))
-                             (.external (.port right))))))
+          ((and
+            (.port left)
+            (ast:requires? (.port left))
+            (.port right)
+            (ast:requires? (.port right))
+            (or (and
+                 (.instance.name left)
+                 (not (.instance.name right))
+                 (not (.external (.port left)))
+                 (.external (.port right)))
+                (and
+                 (not (.instance.name left))
+                 (.instance.name right)
+                 (.external (.port left))
+                 (not (.external (.port right))))))
            `(,(wfc-error o (format #f "cannot bind ~a port `~a' to ~a port `~a'"
                                    (or (.external (.port left)) 'non-external) (.port.name left)
                                    (or (.external (.port right)) 'non-external) (.port.name right)))
