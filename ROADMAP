@@ -44,14 +44,8 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       - Dataparam?
       - Injected?
   - Pass customer models internally
-  - Finish and merge `janneke/wip' branch.
-    + DRAFT verify: Remove dependency on file-system and shell.
   - Support binary release
     + Solicit and incorporate feedback on 2.10.0.rc10
-  - Finish and merge `rutger/fall-back' branch.
-    + Fix problematic draft patches
-      - DRAFT peg: Add fall-back parsing.
-      - DRAFT peg: Add whitespace and comment skip parsers.
   - Parser bugs/hardening/performance
     + Finish and merge wip-memoize, janneke/wip-convert
     + Use-before-define patch from `rutger/master'
@@ -108,6 +102,12 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Sub machines
   - Weak illegals
 * DONE
+  - Finish and merge `rutger/fall-back' branch.
+    + Fix problematic draft patches
+      - DRAFT peg: Add fall-back parsing.
+      - DRAFT peg: Add whitespace and comment skip parsers.
+  - Finish and merge `janneke/wip' branch.
+    + DRAFT verify: Remove dependency on file-system and shell.
   - Serve dezyen.org from the kluit
     + Move nginx/haunt-based website setup from banaan to kluit.
     + dezyne.org dns => kluit
