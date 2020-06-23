@@ -28,6 +28,9 @@
              (texinfo plain-text)
              (texinfo reflection))
 
+(define escaped-chars '())
+(module-define! (resolve-module '(texinfo serialize)) 'escaped-chars escaped-chars)
+
 (define scrub-//
   (let ((dirt (make-regexp "^//+")))
     (lambda (line)
