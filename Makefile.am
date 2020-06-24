@@ -210,7 +210,8 @@ override $(srcdir)/doc/version.texi:
 	$(AM_V_GEN)set -e						\
 	LC_ALL=C; export LC_ALL;					\
 	TZ=UTC0; export TZ;						\
-	timestamp=$$(git log --pretty=format:%ct -- doc/dezyne.texi	\
+	timestamp=$$({ git log --pretty=format:%ct -- doc/dezyne.texi	\
+		       || date +%s -r doc/dezyne.texi; }		\
 	                 | sort -n -r | head -n 1);			\
 	dmy=$$(date --date="@$$timestamp" "+%-d %B %Y");		\
 	my=$$(date --date="@$$timestamp" "+%B %Y");			\
