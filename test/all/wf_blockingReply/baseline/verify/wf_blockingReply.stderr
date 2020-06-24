@@ -1,0 +1,2 @@
+test/all/wf_blockingReply/wf_blockingReply.dzn:45:30: error: type mismatch: expected `bool', found `void'
+test/all/wf_blockingReply/wf_blockingReply.dzn:33:3: error: event defined here
