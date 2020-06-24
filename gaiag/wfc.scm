@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2017, 2019, 2020 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2014, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -196,7 +196,7 @@
 
 (define-method (model-blocking? (o <model>))
   (and (is-a? o <component>)
-       (pair? (tree-collect-filter (disjoin (is? <declarative>) (is? <compound>)) (is? <blocking>) (.behaviour o)))))
+       (pair? (tree-collect-filter (disjoin (is? <declarative>) (is? <compound>)) (is? <blocking>) (.statement (.behaviour o))))))
 
 (define %model-event-types (make-parameter '()))
 (define %model-blocking? (make-parameter #f))
@@ -684,7 +684,7 @@
          (event (if (and component
                          (ast:requires? trigger)
                          (%model-blocking?))
-                    (car (ast:event* (ast:provides-port component)))
+                    (car (ast:event* (ast:provides-port component))) ;; anything goes, except #f
                     (.event trigger)))
          (event-type (and event (ast:type event)))
          (reply-type (ast:type o))

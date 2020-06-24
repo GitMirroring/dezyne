@@ -255,6 +255,7 @@ PARSER_TESTS =					\
  %D%/wf_blockingInblocking			\
  %D%/wf_blockingInInterface			\
  %D%/wf_blockingMultipleProvides		\
+ %D%/wf_blockingReply				\
  %D%/wf_componentNeedsProvides			\
  %D%/wf_componentNeedsTrigger			\
  %D%/wf_coverageDuplicate			\
