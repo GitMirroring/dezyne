@@ -32,8 +32,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 
 * TODO
 ** Release 2.10, unsorted
-  - Naming
-    - dzn.git => dezyne.git
   - Documentation
     + Review doc/dezyne.texi.
   - Website
@@ -46,9 +44,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Pass customer models internally
   - Support binary release
     + Solicit and incorporate feedback on 2.10.0.rc10
-  - Parser bugs/hardening/performance
-    + Finish and merge wip-memoize, janneke/wip-convert
-    + Use-before-define patch from `rutger/master'
   - Contact users with binary release announcement
 
 ** Release 2.11, unsorted
@@ -102,6 +97,11 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Sub machines
   - Weak illegals
 * DONE
+  - Naming
+    - dzn.git => dezyne.git
+  - Parser bugs/hardening/performance
+    + Finish and merge wip-memoize
+    + Use-before-define patch from `rutger/master'
   - Finish and merge `rutger/fall-back' branch.
     + Fix problematic draft patches
       - DRAFT peg: Add fall-back parsing.
