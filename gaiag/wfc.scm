@@ -41,17 +41,17 @@
   #:use-module (gaiag misc)
 
   #:export (
-           ast:wfc
+            ast:wfc
+            wfc:report-error
            ))
 
 (define (ast:wfc o)
   (let ((errors (wfc o)))
     (when (pair? errors)
-      (for-each report-error errors)
-      (exit 1)))
+      (apply throw 'well-formedness-error errors)))
   o)
 
-(define (report-error o)
+(define (wfc:report-error o)
   (let* ((ast (.ast o))
          (loc (.location ast)))
     (if loc

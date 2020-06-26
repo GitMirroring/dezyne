@@ -37,6 +37,7 @@
   #:use-module (gaiag parse)
   #:use-module (gaiag shell-util)
   #:use-module (gaiag ast)
+  #:use-module (gaiag wfc)
 
   #:export (dump-model-stream
             parse
@@ -108,6 +109,9 @@ Usage: dzn parse [OPTION]... [FILE]...
     (lambda (key . args)
       (case key
         ((syntax-error)
+         (exit 1))
+        ((well-formedness-error)
+         (for-each wfc:report-error args)
          (exit 1))
         ((system-error)
          (let ((errno (system-error-errno (cons key args))))
