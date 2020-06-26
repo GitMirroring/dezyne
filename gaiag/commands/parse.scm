@@ -107,11 +107,16 @@ Usage: dzn parse [OPTION]... [FILE]...
     (cut parse- options file-name)
     (lambda (key . args)
       (case key
+        ((syntax-error)
+         (exit 1))
         ((system-error)
          (let ((errno (system-error-errno (cons key args))))
            (format (current-error-port) "~a: ~a\n"
-                   (strerror errno) file-name))))
-      (exit 1))))
+                   (strerror errno) file-name))
+         (exit 1))
+        (else (format (current-error-port) "internal error: ~a: ~a: ~s\n"
+                      file-name key args)
+              (exit 1))))))
 
 (define (parse options file-name)
   (let ((debug? (gdzn:command-line:get 'debug #f))
