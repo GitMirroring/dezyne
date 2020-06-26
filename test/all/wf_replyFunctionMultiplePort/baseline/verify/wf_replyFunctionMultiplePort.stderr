@@ -1,0 +1,1 @@
+test/all/wf_replyFunctionMultiplePort/wf_replyFunctionMultiplePort.dzn:37:7: error: must specify a provides-port with reply

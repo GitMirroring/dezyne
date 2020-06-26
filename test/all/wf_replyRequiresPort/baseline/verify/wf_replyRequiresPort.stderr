@@ -1,0 +1,2 @@
+test/all/wf_replyRequiresPort/wf_replyRequiresPort.dzn:44:23: error: requires port `sensor' not allowed in reply
+test/all/wf_replyRequiresPort/wf_replyRequiresPort.dzn:42:3: error: port defined here

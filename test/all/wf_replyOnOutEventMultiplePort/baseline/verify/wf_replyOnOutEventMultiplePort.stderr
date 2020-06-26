@@ -1,0 +1,1 @@
+test/all/wf_replyOnOutEventMultiplePort/wf_replyOnOutEventMultiplePort.dzn:47:30: error: must specify a provides-port with out-event: sensor.activated

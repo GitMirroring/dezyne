@@ -290,7 +290,14 @@ PARSER_TESTS =					\
  %D%/wf_outEventNonVoidReturn			\
  %D%/wf_parameterBinding			\
  %D%/wf_parameterDataType			\
- %D%/wf_replyRequiredPort			\
+ %D%/wf_replyFunctionExpression			\
+ %D%/wf_replyFunctionMultiplePort		\
+ %D%/wf_replyOnOutEvent				\
+ %D%/wf_replyOnOutEventMultiplePort		\
+ %D%/wf_replyOnPort				\
+ %D%/wf_replyOnType				\
+ %D%/wf_replyPort				\
+ %D%/wf_replyRequiresPort			\
  %D%/wf_replyTypeMismatch			\
  %D%/wf_subintMinMax				\
  %D%/wf_systemRecursion				\

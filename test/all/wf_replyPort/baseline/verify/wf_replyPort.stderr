@@ -1,0 +1,1 @@
+test/all/wf_replyPort/wf_replyPort.dzn:35:23: error: undefined port `foo'
