@@ -391,21 +391,58 @@
 (define-method (wfc (o <reply>)) ;; is-a <imperative>
   (append
    (call-context o)
-   (reply o)
-   (reply-without-port o)
-   (let* ((expr (.expression o))
-          (wfc-expr (wfc expr)))
-     (append wfc-expr
-             (if (and expr (null? wfc-expr)) (wfc-reply-type expr)
-                 '())))))
+   (if (.expression o) (wfc (.expression o)) '())
+   (if (.port.name o) (reply-with-port o) (reply-without-port o))))
 
-(define-method (wfc-reply-type (o <expression>))
-  (let* ((reply-type (ast:type o))
-         (types (%model-event-types))
-         (matching-types (filter (cut ast:equal? <> reply-type) types)))
-    (if (pair? matching-types) '()
-        `(,(wfc-error o (format #f "type mismatch: no event with reply type `~a'"
-                                (type-name reply-type)))))))
+(define-method (reply-with-port (o <reply>))
+  "pre: (.port.name o)"
+  (let ((port (.port o))
+        (on (parent o <on>)))
+    (cond ((not port)
+           `(,(wfc-error o (format #f "undefined port `~a'" (.port.name o)))))
+          ((not (is-a? (.type port) <interface>)) '()) ; reported before
+          ((ast:requires? port)
+           `(,(wfc-error o (format #f "requires port `~a' not allowed in reply"
+                                   (.name port)))
+             ,(wfc-error port "port defined here")))
+          (on (reply-in-on o))
+          (else (wfc-reply-expression o port)))))
+
+(define-method (reply-without-port (o <reply>))
+  "pre: (not (.port.name o))"
+  (define (trigger->string o)
+    (format #f "~a.~a" (.port.name o) (.event.name o)))
+  (let ((model (parent o <model>))
+         (on (parent o <on>)))
+    (cond ((or (not (is-a? model <component>))
+               (<= (length (ast:provides-port* model)) 1))
+           (if on (reply-in-on o) (wfc-reply-expression o #f)))
+          ((not on)
+           `(,(wfc-error o "must specify a provides-port with reply")))
+          ((let ((out-triggers (filter (compose ast:requires? .port) (ast:trigger* on))))
+             (and (pair? out-triggers)
+                  `(,(wfc-error o (format #f "must specify a provides-port with out-event: ~a"
+                                          (string-join (map trigger->string out-triggers) ", ")))))))
+          (else (reply-in-on o)))))
+
+(define-method (wfc-reply-expression (o <reply>) port)
+  (let* ((expression (.expression o))
+         (error? (and expression (pair? (wfc expression)))))
+    (if error? '() ;; reported before
+        (let* ((reply-type (and expression (ast:type expression)))
+               (reply-type-name (if reply-type (type-name reply-type) "void"))
+               (interface (and port (.type port)))
+               (types (if interface (ast:return-types interface) (%model-event-types)))
+               (matching-types (filter (cut ast:equal? <> reply-type) types)))
+          (cond
+           ((pair? matching-types) '())
+           (port
+            `(,(wfc-error o (format #f "type mismatch: no event with reply type `~a' for port `~a'"
+                                    reply-type-name (.name port)))
+              ,(wfc-error port "port defined here")))
+           (else
+            `(,(wfc-error o (format #f "type mismatch: no event with reply type `~a'"
+                                    reply-type-name)))))))))
 
 (define-method (wfc (o <return>)) ;; is-a <imperative>
   (let* ((wfce (if (.expression o) (wfc (.expression o)) '()))
@@ -673,64 +710,65 @@
 (define-method (type-name (o <scope.name>))
   (string-join (.ids o) "."))
 
-(define-method (reply (o <reply>))
+(define-method (reply-in-on (o <reply>))
+  "pre: in <on> clause"
   (let ((on (parent o <on>)))
-    (if (not on) '() ;; FIXME: handled elsewhere?
-        (append-map (cut reply o <>) (ast:trigger* on)))))
+    (append-map (cut reply-in-on o <>) (ast:trigger* on))))
 
-(define-method (reply (o <reply>) (trigger <trigger>))
+(define-method (reply-in-on (o <reply>) (trigger <trigger>))
   (let* ((component (parent o <component>))
+         (unblock? (and component
+                        (ast:requires? trigger)
+                        (%model-blocking?)))
+         (provides* (and component (ast:provides-port* component)))
          (port (and (.port.name o) (.port o)))
-         (event (if (and component
-                         (ast:requires? trigger)
-                         (%model-blocking?))
-                    (car (ast:event* (ast:provides-port component))) ;; anything goes, except #f
-                    (.event trigger)))
+         (port (or port (and unblock? (pair? provides*) (car provides*))))
+         (interface (and port (.type port)))
+         (event (and (not unblock?) (.event trigger)))
          (event-type (and event (ast:type event)))
-         (reply-type (ast:type o))
-         (port-type (and port (.type port))))
-    (cond ((and port (not (is-a? port-type <interface>)))
-           `(,(wfc-error o (format #f "invalid type for port `~a', interface expected, found `~a ~a'"
-                                   (.port.name o) (ast-name port-type) (type-name port-type)))
-             ,(wfc-error (.port o) (format #f "`~a' declared here" (.port.name o)))))
-          ((not event) '())         ; already covered in trigger check
-          ((not event-type) '())    ; reported before
-          ((and (or (not (.port.name o))
-                    (equal? (.port.name o) (.port.name trigger)))
-                (ast:in? event) ;;exclude requires out reply; assume blocking release
-                (not (ast:equal? event-type reply-type))
-                (not (and (is-a? event-type <int>)
-                          (is-a? reply-type <int>)))
-                `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
-                                        (type-name event-type)
-                                        (type-name reply-type)))
-                  ,@(if event `(,(wfc-error event "event defined here"))
-                        '()))))
-          (else '()))))
+         (reply-type (ast:type o)))
+    (cond ((and (not (%model-blocking?)) port (not (equal? (.port.name o) (.port.name trigger))))
+           `(,(wfc-error o (format #f "port `~a' does not match with trigger port `~a'"
+                                   (.port.name o) (.port.name trigger)))))
+          ((and (not unblock?) (not event)) '()) ; already covered in trigger check
+          ((and (not unblock?) (not event-type)) '()) ; reported before
+          ((and (not unblock?) (ast:in? event)) ; also covers interfaces
+           (if (and (not (ast:equal? event-type reply-type))
+                    (not (and (is-a? event-type <int>)
+                              (is-a? reply-type <int>))))
+               `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
+                                       (type-name event-type)
+                                       (type-name reply-type)))
+                 ,(wfc-error event "event defined here"))
+               '()))
+          ((not (%model-blocking?))     ; also covers interfaces
+           `(,(wfc-error o (format #f "reply not allowed on out event `~a'" (.name event)))
+             ,(wfc-error event (format #f "event `~a' declared here" (.name event)))))
+          (else (wfc-reply-expression o port)))))
 
 (define-method (action (o <action>))
-    (let ((event (.event o))
-          (model (parent o <model>)))
-      (cond ((and (is-a? model <interface>) (not event))
-             `(,(wfc-error o (format #f "undefined event `~a'" (.event.name o)))))
-            ((and (is-a? model <interface>) (ast:in? event))
-             `(,(wfc-error o (format #f "cannot use ~a-event `~a' as action" (.direction event) (.event.name o)))
-               ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
-            ((and (is-a? model <component>) (not event))
-             (let ((port (.port o)))
-               (if (not port)
-                   `()
-                   `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
-                                           (.event.name o) (.port.name o)))
-                     ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))))
-            ((and (is-a? model <component>)
-                  (or (and (ast:in? event) (ast:provides? (.port o)))
-                      (and (ast:out? event) (ast:requires? (.port o)))))
-             `(,(wfc-error o (format #f "cannot use ~a ~a-event `~a' as action"
-                                     (.direction (.port o)) (.direction event) (.event.name o)))
-               ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))
-               ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
-            (else '()))))
+  (let ((event (.event o))
+        (model (parent o <model>)))
+    (cond ((and (is-a? model <interface>) (not event))
+           `(,(wfc-error o (format #f "undefined event `~a'" (.event.name o)))))
+          ((and (is-a? model <interface>) (ast:in? event))
+           `(,(wfc-error o (format #f "cannot use ~a-event `~a' as action" (.direction event) (.event.name o)))
+             ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+          ((and (is-a? model <component>) (not event))
+           (let ((port (.port o)))
+             (if (not port)
+                 `()
+                 `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
+                                         (.event.name o) (.port.name o)))
+                   ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))))
+          ((and (is-a? model <component>)
+                (or (and (ast:in? event) (ast:provides? (.port o)))
+                    (and (ast:out? event) (ast:requires? (.port o)))))
+           `(,(wfc-error o (format #f "cannot use ~a ~a-event `~a' as action"
+                                   (.direction (.port o)) (.direction event) (.event.name o)))
+             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))
+             ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+          (else '()))))
 
 (define-method (binding-declaration (o <system>))
   (append-map binding-declaration (ast:binding* o)))
@@ -921,22 +959,6 @@
 (define-method (wfc:continuation (o <if>))
   (cons ((@@ (dzn makreel) makreel:then-continuation) o)
         ((@@ (dzn makreel) makreel:else-continuation) o)))
-
-(define-method (reply-without-port (o <reply>))
-  (define (trigger->string o)
-    (format #f "~a.~a" (.port.name o) (.event.name o)))
-  (let ((model (parent o <model>))
-        (on (parent o <on>)))
-    (cond ((.port o) '())
-          ((or (not (is-a? model <component>))
-               (<= (length (ast:provides-port* model)) 1)) '())
-          ((not on)
-           `(,(wfc-error o "must specify a provides-port with reply")))
-          ((let ((out-triggers (filter (compose ast:requires? .port) (ast:trigger* on))))
-             (and (pair? out-triggers)
-                  `(,(wfc-error o (format #f "must specify a provides-port with out-event: ~a"
-                                          (string-join (map trigger->string out-triggers) ", ")))))))
-          (else '()))))
 
 (define-method (recursive? (o <system>))
   (ast:graph-cyclic? ast:system* o))

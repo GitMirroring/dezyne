@@ -1,4 +1,5 @@
 test/all/wf_typeerror/wf_typeerror.dzn:40:5: error: interface expected, found `enum E'
-test/all/wf_typeerror/wf_typeerror.dzn:42:12: error: event `e' not defined for port `p'
+test/all/wf_typeerror/wf_typeerror.dzn:43:12: error: event `e' not defined for port `p'
 test/all/wf_typeerror/wf_typeerror.dzn:40:5: error: port `p' declared here
-test/all/wf_typeerror/wf_typeerror.dzn:42:25: error: type mismatch: no event with reply type `EE'
+test/all/wf_typeerror/wf_typeerror.dzn:44:19: error: type mismatch: expected `E', found `EE'
+test/all/wf_typeerror/wf_typeerror.dzn:27:5: error: event defined here

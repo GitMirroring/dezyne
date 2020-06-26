@@ -1,0 +1,2 @@
+test/all/wf_replyOnOutEvent/wf_replyOnOutEvent.dzn:45:28: error: reply not allowed on out event `activated'
+test/all/wf_replyOnOutEvent/wf_replyOnOutEvent.dzn:26:3: error: event `activated' declared here
