@@ -22,6 +22,7 @@
 # Code:
 
 SMOKE_TESTS =					\
+ %D%/parse_syntax				\
  %D%/parse_type_mismatch			\
  %D%/hello					\
  %D%/compliance_provides_bool
