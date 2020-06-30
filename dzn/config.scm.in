@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -33,6 +33,7 @@
             %guilemoduledir
             %guileobjectdir
             %languages
+            %package
             %prefix
             %root-dir
             %template-dir
@@ -40,6 +41,10 @@
             %version-major
             %version-minor
             %version-patch))
+
+(define %package
+  (or (and (getenv "DZN_UNINSTALLED") "dezyne")
+      "@PACKAGE@"))
 
 (define %prefix
   (or (and (getenv "DZN_UNINSTALLED") (getenv "PREFIX"))
@@ -55,7 +60,7 @@
 
 (define %pkgdatadir
   (or (and (getenv "DZN_UNINSTALLED") %prefix)
-      (string-append %datadir "/dzn")))
+      (string-append %datadir "/" %package)))
 
 (define %bindir
   (or (and (getenv "DZN_UNINSTALLED") (string-append %prefix "/bin"))
