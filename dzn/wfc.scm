@@ -453,11 +453,7 @@
             (cond ((not function)
                    `(,(wfc-error o "cannot use return outside of function")))
                   ((pair? wfce) '())
-                  ((and (not (ast:equal? function-type return-type))
-                        (not (and (is-a? function-type <int>)
-                                  (is-a? return-type <int>)))
-                        (not (and (is-a? function-type <extern>)
-                                  (is-a? return-type <data>))))
+                  ((not (equal-type? function-type return-type))
                    `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
                                            (type-name function-type)
                                            (type-name return-type)))))
@@ -522,6 +518,12 @@
 (define-method (wfc (o <group>))
   (wfc (.expression o)))
 
+(define-method (equal-type? t1 t2)
+  (or (and (is-a? t1 <int>) (is-a? t2 <int>))
+      (and (is-a? t1 <extern>) (is-a? t2 <data>))
+      (and (is-a? t1 <data>) (is-a? t2 <extern>))
+      (ast:equal? t1 t2)))
+
 (define-method (typed-expression (o <expression>) (type <class>))
   (let* ((expr-wfc (wfc o))
          (expr-type (ast:type o)))
@@ -548,14 +550,10 @@
          (expr2-wfc (wfc expr2))
          (expr2-type (ast:type expr2)))
     (cond ((or (pair? expr1-wfc) (pair? expr2-wfc)) (append expr1-wfc expr2-wfc))
-          ((and (not (ast:equal? expr1-type expr2-type))
-                (not (and (is-a? expr1-type <extern>)
-                          (is-a? expr2-type <data>)))
-                (not (and (is-a? expr1-type <int>)
-                          (is-a? expr2-type <int>)))
-                `(,(wfc-error o (format #f "type mismatch in binary operator: `~a' versus `~a'"
-                                        (type-name expr1-type)
-                                        (type-name expr2-type))))))
+          ((not (equal-type? expr1-type expr2-type))
+           `(,(wfc-error o (format #f "type mismatch in binary operator: `~a' versus `~a'"
+                                   (type-name expr1-type)
+                                   (type-name expr2-type)))))
           (else '()))))
 
 (define-method (wfc (o <and>)) (typed-binary o <bool>))
@@ -694,14 +692,10 @@
            (if (is-a? assign-type <extern>) '()
                `(,(wfc-error o (format #f "uninitialized variable `~a'" (.name o))))))
           ((not assign-type) '()) ;; reported before
-          ((and (not (ast:equal? expression-type assign-type))
-                (not (and (is-a? assign-type <extern>)
-                          (is-a? expression <data>)))
-                (not (and (is-a? assign-type <int>)
-                          (is-a? expression-type <int>)))
-                `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
-                                        (type-name assign-type)
-                                        (type-name expression-type))))))
+          ((not (equal-type? expression-type assign-type))
+           `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
+                                   (type-name assign-type)
+                                   (type-name expression-type)))))
           (else '()))))
 
 (define-method (type-name (o <ast>))
@@ -733,9 +727,7 @@
           ((and (not unblock?) (not event)) '()) ; already covered in trigger check
           ((and (not unblock?) (not event-type)) '()) ; reported before
           ((and (not unblock?) (ast:in? event)) ; also covers interfaces
-           (if (and (not (ast:equal? event-type reply-type))
-                    (not (and (is-a? event-type <int>)
-                              (is-a? reply-type <int>))))
+           (if (not (equal-type? event-type reply-type))
                `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
                                        (type-name event-type)
                                        (type-name reply-type)))
