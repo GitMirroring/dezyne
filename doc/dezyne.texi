@@ -35,8 +35,9 @@ Documentation License''.
 
 @dircategory Software development
 @direntry
-* Dezyne: (dezyne).                Dezyne Reference Manual.
-* dzn: (dezyne)Invoking dzn.       Running Dzn.
+* Dezyne: (dezyne).                     Dezyne Reference Manual.
+* Dezyne Tutorial: (dezyne-tutorial).   Dezyne Tutorial.
+* dzn: (dezyne)Invoking dzn.            Running Dzn.
 @end direntry
 
 @titlepage
