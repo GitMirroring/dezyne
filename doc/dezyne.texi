@@ -35,11 +35,13 @@ Documentation License''.
 
 @dircategory Software development
 @direntry
-* Dezyne: (dezyne).                  Dezyne Reference Manual.
-* dzn: (dezyne)Invoking dzn.         Running Dezyne commands.
-* dzn: (dezyne)Invoking dzn code.    Generating code from a Dezyne file.
-* dzn: (dezyne)Invoking dzn parse.   Checking the syntax of Dezyne file.
-* dzn: (dezyne)Invoking dzn verify.  Verifying Dezyne models.
+* Dezyne: (dezyne).                     Dezyne Reference Manual.
+* Dezyne Tutorial: (dezyne-tutorial).   Dezyne Tutorial.
+* dzn: (dezyne)Invoking dzn.            Running Dezyne commands.
+* dzn: (dezyne)Invoking dzn code.       Generating code from a Dezyne file.
+* dzn: (dezyne)Invoking dzn parse.      Checking the syntax of Dezyne file.
+* dzn: (dezyne)Invoking dzn verify.     Verifying Dezyne models.
+* dzn: (dezyne)Invoking dzn.            Running Dzn.
 @end direntry
 
 @titlepage
