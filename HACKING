@@ -76,8 +76,26 @@ git clone kluit.dezyne.org:~janneke/src/web/dezyne.org.git
 cd dezyne.org
 guix environment -m guix.scm
 make
-make serve # => check localhost:8080
+make serve # => check localhost:8888
 make publish
+#+END_SRC
+
+** Importing texinfo, e.g. from DOCX
+
+To try automatic conversion using pandoc, e.g., do something like
+#+BEGIN_SRC bash
+guix environment --ad-hoc ghc-pandoc -- pandoc ~/src/verum/DezyneTutorial/Code_Integration_Complete.docx -o doc/dezyne-tutorial-code-integration.texi
+<add boilerplates, remove manually created TOC, remove silly anchors, stuff>
+<lotsa manual editing; steal from doc/dezyne.texi>
+<add license, etc.>
+Use: M-x texinfo-all-menus-update RET
+
+Look at
+  * https://git.savannah.gnu.org/cgit/guix.git/tree/doc/guix.texi
+  * https://guix.gnu.org/manual/en/html_node/
+
+and steal ideas for index, programmers index, syntax/keyword highligting in html, etc.
+
 #+END_SRC
 
 ** Emacs
