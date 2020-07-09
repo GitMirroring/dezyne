@@ -520,8 +520,7 @@
 
 (define-method (equal-type? t1 t2)
   (or (and (is-a? t1 <int>) (is-a? t2 <int>))
-      (and (is-a? t1 <extern>) (is-a? t2 <data>))
-      (and (is-a? t1 <data>) (is-a? t2 <extern>))
+      (and (is-a? t1 <extern>) (is-a? t2 <extern>))
       (ast:equal? t1 t2)))
 
 (define-method (typed-expression (o <expression>) (type <class>))

@@ -148,7 +148,7 @@
 (define-method (dzn:model (o <root>))
   (topological-sort
    (map dzn:annotate-shells
-        (filter (negate (disjoin (is? <data>) (is? <type>) (is? <namespace>) dzn-async?
+        (filter (negate (disjoin (is? <type>) (is? <namespace>) dzn-async?
                                  (conjoin ast:imported? (negate (is? <foreign>)))))
                 (ast:model* o)))))
 
