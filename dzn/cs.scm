@@ -172,7 +172,7 @@
   (topological-sort
    (map dzn:annotate-shells
         ;; cs needs async!
-        (filter (negate (disjoin (is? <data>) (is? <type>) (is? <namespace>) ;; dzn-async?
+        (filter (negate (disjoin (is? <type>) (is? <namespace>) ;; dzn-async?
                                  ast:imported?))
                 (ast:model* o)))))
 
