@@ -736,7 +736,7 @@
 (define-method (have-non-interface-models? (o <root>))
   (let* ((objects
           (filter
-           (disjoin (is? <data>)
+           (disjoin (is? <extern>)
                     (negate (disjoin dzn-async? ast:imported?)))
            ;; (disjoin (is? <data>)
            ;;          (conjoin (negate dzn-async?)
@@ -858,7 +858,7 @@
 (define-method (code:model (o <root>))
   (topological-sort
    (map dzn:annotate-shells
-        (filter (negate (disjoin (is? <data>) (is? <type>) (is? <namespace>)
+        (filter (negate (disjoin (is? <type>) (is? <namespace>)
                                  (conjoin ast:imported? (negate (is? <foreign>)))))
                 (ast:model* o)))))
 

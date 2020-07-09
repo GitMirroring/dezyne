@@ -593,7 +593,7 @@
 (define-method (ast:type (o <bool-expr>))
   (make <bool>))
 (define-method (ast:type (o <data-expr>))
-  (make <data>))
+  (make <extern>))
 (define-method (ast:type (o <int-expr>))
   (ast:expression->type o))
 (define-method (ast:type (o <group>))
@@ -1227,7 +1227,7 @@
     (append
      (stable-sort other
                   (lambda (a b)
-                    (or (and (is-a? a <data>)
+                    (or (and (is-a? a <extern>)
                              (or (is-a? b <interface>)
                                  (is-a? b <component>)
                                  (is-a? b <foreign>)))
