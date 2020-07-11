@@ -250,10 +250,7 @@ doc/version-tutorial.texi: doc/version.texi
 #  1. make tag PACKAGE_VERSION=X.Y
 #  2. make sign-dist
 #  3. make release
-#  4. test guix package build, binary packs (see HACKING)
-#     GUIX_PACKAGE_PATH=guix build dezyne
-#     make linux
-#     make mingw
+#  4. test guix package build, binary packs (see pack.git)
 #  5. Send mail to
 #     guile-user@gnu.org
 #     mcrl2-users@listserver.tue.nl
