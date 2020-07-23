@@ -29,11 +29,20 @@ interface Start {
   }
 }
 
+interface Action {
+  enum E {E1, E2};
+  in E action();
+  behaviour {
+    on action: reply(E.E1);
+  }
+}
+
 component Test {
   provides Start start;
+  requires Action action;
   behaviour {
     void func() {
-      reply(1);
+      reply(Action.E.E1);
     }
     on start.start(): func();
   }
