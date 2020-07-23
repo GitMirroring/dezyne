@@ -103,6 +103,7 @@
            ast:system*
            ast:return-type
            ast:return-types
+           ast:return-types-provides
            ast:return-values
            ast:valued-in-triggers
            ast:void-in-triggers
@@ -646,6 +647,10 @@
 
 (define-method (ast:return-types (o <type>))
   (list o))
+
+(define-method (ast:return-types-provides (component <component-model>))
+  "Return all event types used in COMPONENT."
+  (delete-duplicates (append-map ast:return-types (filter-map ast:type (ast:provides-port* component))) ast:eq?))
 
 (define-method (ast:return-values (o <event>))
   (let ((type ((compose .type .signature) o)))
