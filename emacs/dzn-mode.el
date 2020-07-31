@@ -224,12 +224,12 @@ dzn-command-alist\t\talist from name to command"
   (c++-mode)
   (c-set-style "dezyne")
   (setq major-mode 'dzn-mode)
-  (setq mode-name "dzn-mode")
-  (use-local-map dzn-mode-map)
-  (dzn-save t)
-  (dzn-hello)
+  (setq mode-name "Dezyne")
+  ;;(use-local-map dzn-mode-map)
+  ;;(dzn-save t)
+  ;;(dzn-hello)
   (run-hooks 'dzn-mode-hook))
 
-(require 'dzn-ide nil t)
+;;(require 'dzn-ide nil t)
 (provide 'dzn-mode)
 ;;; dzn-mode.el ends here
