@@ -38,7 +38,7 @@
 ;;
 ;; To use as the basis for a development environment, run:
 ;;
-;;   guix time-machine --commit=36640207c9543e48cd6daa92930f023f80065a5d -- environment -l guix.scm
+;;   guix time-machine --commit=abe3c5ed7d04985c987e6c81aeb1284354ea0c77 -- environment -l guix.scm
 ;;
 ;;; Code:
 
