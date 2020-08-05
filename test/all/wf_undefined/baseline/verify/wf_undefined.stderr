@@ -36,10 +36,12 @@ test/all/wf_undefined/wf_undefined.dzn:50:3: error: port `r2' declared here
 test/all/wf_undefined/wf_undefined.dzn:73:3: error: undefined interface `I3'
 test/all/wf_undefined/wf_undefined.dzn:75:3: error: undefined interface `I4'
 test/all/wf_undefined/wf_undefined.dzn:78:5: error: undefined component `C2'
-test/all/wf_undefined/wf_undefined.dzn:80:15: error: undefined port `p3' for `wf_undefined'
-test/all/wf_undefined/wf_undefined.dzn:71:1: error: `wf_undefined' defined here
-test/all/wf_undefined/wf_undefined.dzn:81:5: error: undefined port `p3' for `C1'
+test/all/wf_undefined/wf_undefined.dzn:79:5: error: undefined port `I1' for `C1'
 test/all/wf_undefined/wf_undefined.dzn:46:1: error: `C1' defined here
-test/all/wf_undefined/wf_undefined.dzn:82:5: error: instance expected, found `c2'
+test/all/wf_undefined/wf_undefined.dzn:81:15: error: undefined port `p3' for `wf_undefined'
+test/all/wf_undefined/wf_undefined.dzn:71:1: error: `wf_undefined' defined here
+test/all/wf_undefined/wf_undefined.dzn:82:5: error: undefined port `p3' for `C1'
+test/all/wf_undefined/wf_undefined.dzn:46:1: error: `C1' defined here
+test/all/wf_undefined/wf_undefined.dzn:83:5: error: instance expected, found `c2'
 test/all/wf_undefined/wf_undefined.dzn:78:5: error: defined here
-test/all/wf_undefined/wf_undefined.dzn:82:14: error: undefined identifier `c3'
+test/all/wf_undefined/wf_undefined.dzn:83:14: error: undefined identifier `c3'

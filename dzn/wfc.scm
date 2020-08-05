@@ -778,7 +778,7 @@
                                      (else '())))))
          (port-error (if (or (pair? instance-error) (ast:wildcard? (.port.name o))) '()
                          (let ((port (.port o)))
-                           (if port '()
+                           (if (and port (is-a? port <port>)) '()
                                (let* ((component (if (.instance.name o) (.type (.instance o))
                                                      (parent o <system>)))
                                       (cname (type-name (.name component))))
