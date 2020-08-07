@@ -60,6 +60,7 @@
 
 (define %pkgdatadir
   (or (and (getenv "DZN_UNINSTALLED") %prefix)
+      (getenv "DZN_DATADIR")
       (string-append %datadir "/" %package)))
 
 (define %bindir
