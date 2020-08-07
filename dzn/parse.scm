@@ -30,6 +30,7 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 pretty-print)
 
   #:use-module (dzn command-line)
   #:use-module (dzn parse peg)
@@ -76,11 +77,16 @@
                             (lambda ()
                               (parameterize ((%peg:locations? #t)
                                              (%peg:skip? peg:skip-parse)
-                                             (%peg:debug? (gdzn:command-line:get 'debug)))
+                                             (%peg:debug? (> (gdzn:debugity) 3)))
                                 (peg:parse string file-name #:imports imports)))
                        (peg:handle-syntax-error file-name string)))
          (gdzn-debug? (gdzn:command-line:get 'debug)))
-    (parse-root->ast parse-tree #:string string #:file-name file-name)))
+    (when (> (gdzn:debugity) 2)
+      (pretty-print parse-tree (current-error-port)))
+    (let ((ast (parse-root->ast parse-tree #:string string #:file-name file-name)))
+      (when (> (gdzn:debugity) 1)
+        (pretty-print ast  (current-error-port)))
+    ast)))
 
 (define* (file->ast file-name #:key peg? (imports '()))
   (let* ((string (if (equal? file-name "-") (read-string)
