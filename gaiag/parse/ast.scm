@@ -550,9 +550,6 @@
         (_ (format #f "LITERAL: \"~s\"" o))))
     (helper o))
 
-  (when (> (gdzn:debugity) 1)
-    (pretty-print o))
-
   (let* ((root-node (file-helper o file-name 0))
          (elements (append (async-interfaces 'get) (.elements root-node)))
          (root (make <root> #:node (clone root-node #:elements elements)))
