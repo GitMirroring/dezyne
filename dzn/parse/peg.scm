@@ -191,7 +191,7 @@ to <-- NUMBER
 
 extern <-- EXTERN compound-name# data# SEMICOLON#
 
-interface <-- INTERFACE reset-event-names compound-name# BRACE-OPEN# types-and-events# behaviour# BRACE-CLOSE#
+interface <-- INTERFACE reset-event-names reset-port-names compound-name# BRACE-OPEN# types-and-events# behaviour# BRACE-CLOSE#
 
 types-and-events <-- (type / event)+
 
