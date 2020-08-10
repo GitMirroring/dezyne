@@ -76,6 +76,7 @@
           '((help (single-char #\h))
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
+            (preprocess (single-char #\E))
             (output (single-char #\o) (value #t))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
@@ -86,6 +87,7 @@
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
 Usage: dzn parse [OPTION]... [FILE]...
+  -E, --preprocess       resolve imports
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
   -m, --model=MODEL      generate ast for MODEL
@@ -125,22 +127,39 @@ Usage: dzn parse [OPTION]... [FILE]...
               (exit 1))))))
 
 (define (parse options file-name)
-  (let ((debug? (gdzn:command-line:get 'debug #f))
-        (peg? (gdzn:command-line:get 'peg #f)))
+  (let* ((debug? (gdzn:command-line:get 'debug #f))
+         (peg? (gdzn:command-line:get 'peg #f)))
     ((if (or debug? peg?) parse- assert-parse) options file-name)))
+
+(define (assert-preprocess options file-name)
+  (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
+         (imports (filter-map import-opt options))
+         (debug? (gdzn:command-line:get 'debug #f)))
+    (if debug? (display (preprocess file-name #:imports imports))
+        (catch 'import-error
+          (cut display (preprocess file-name #:imports imports))
+          (lambda (key file-name imports)
+            (format (current-error-port) "No such file: ~s in [~a]\n"
+                    file-name imports)
+            (exit 1))))))
 
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
-         (file (and (pair? files) (car files)))
-         (ast (parse options file)))
-    (if (option-ref options 'output #f)
-        (let* ((file-name (option-ref options 'output "-"))
-               (sexp (om->list ast))
-               (json? (gdzn:command-line:get 'json))
-               (output (if json? (scm->json-string sexp)
-                           (with-output-to-string (cut pretty-print sexp)))))
-          (if (equal? file-name "-") (display output)
-              (with-output-to-file file-name (cut display output))))
-        (when (gdzn:command-line:get 'verbose)
-          (display "parse: no errors found\n")))))
+         (file-name (and (pair? files) (car files)))
+         (preprocess? (option-ref options 'preprocess #f)))
+    (cond (preprocess?
+           (assert-preprocess options file-name))
+          (else
+           (let ((ast (parse options file-name)))
+             (if (option-ref options 'output #f)
+                 (let* ((file-name (option-ref options 'output "-"))
+                        (sexp (om->list ast))
+                        (json? (gdzn:command-line:get 'json))
+                        (output (if json? (scm->json-string sexp)
+                                    (with-output-to-string
+                                      (cut pretty-print sexp)))))
+                   (if (equal? file-name "-") (display output)
+                       (with-output-to-file file-name (cut display output))))
+                 (when (gdzn:command-line:get 'verbose)
+                   (display "parse: no errors found\n"))))))))
