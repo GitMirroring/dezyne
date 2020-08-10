@@ -40,7 +40,8 @@
 
   #:export (file->ast
             string->ast
-            peg:handle-syntax-error))
+            peg:handle-syntax-error
+            preprocess))
 
 (define (peg:line-number string pos)
   (1+ (string-count string #\newline 0 pos)))
@@ -115,3 +116,46 @@
   (let ((ast (parse-string string)))
     (if peg? ast
         (ast:wfc ast))))
+
+(define* (preprocess file-name #:key (imports '()))
+  "Read @var{file-name}, using @var{imports} to resolve @code{import}
+statements and return the expanded dezyne text, similar to @command{gcc
+-E}."
+  (define (preprocess-helper file-names imports read)
+    (define (import-file import-line)
+      (string-trim-both
+       (string-drop-right
+        (string-drop (string-trim-both import-line) (string-length "import "))
+        1)))
+
+    (define (import? line)
+      (string-prefix? "import " (string-trim-both line)))
+
+    (define (comment-import-line line)
+      (if (import? line) (string-append "//" line) line))
+
+    (if (null? file-names) ""
+        (let ((file-name (search-path imports (car file-names))))
+          (unless file-name
+            (throw 'import-error
+                   (car file-names) (string-join imports)))
+          (let* ((canonical-name (canonicalize-path file-name))
+                 (lines (if (member canonical-name read) '()
+                            (string-split
+                             (with-input-from-file file-name read-string)
+                             #\newline))))
+            (string-join
+             `(,@(if (null? lines) '()
+                     `(,(string-append (if (null? read) "#file " "#imported ")
+                                       "\"" file-name "\"")))
+               ,@(map comment-import-line lines)
+               ,(preprocess-helper
+                 (append (cdr file-names)
+                         (map import-file (filter import? lines)))
+                 (cons (dirname canonical-name) imports)
+                 (cons canonical-name read)))
+             "\n")))))
+
+  (preprocess-helper (list (basename file-name))
+                     (cons (dirname file-name) imports)
+                     '()))
