@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2017, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2018, 2019, 202 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2014, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -53,32 +53,46 @@
         (end (or (string-index string #\newline pos) (string-length string))))
     (substring string start end)))
 
-(define (peg:error file-name string pos message)
-  (let* ((ln (peg:line-number string pos))
-         (col (peg:column-number string pos))
+(define (peg:message file-name string pos error message)
+  (let* ((line-number (peg:line-number string pos))
+         (column-number (peg:column-number string pos))
          (line (peg:line string pos))
-         (indent (make-string (1- col) #\space)))
-    (format (current-error-port) "~a:~a:~a: error\n~a\n~a^\n~a~a\n"
-            file-name
-            ln col line
-            indent
-            indent
-            message)
-      (throw 'syntax-error '())))
+         (indent (make-string (1- column-number) #\space))
+         (hanging (string-append indent message)))
+    (string-append
+     (format #f "~a:~a:~a: ~a\n~a\n~a^\n"
+             file-name line-number column-number
+             error line indent)
+     (if (string-null? hanging) ""
+         (string-append hanging "\n")))))
+
+(define* (peg:error-message file-name string pos message)
+    (display (peg:message file-name string pos "error" message) (current-error-port)))
+
+(define* (peg:handle-error file-name string pos message #:key (key 'syntax-error))
+  (peg:error-message file-name string pos message)
+  (throw key '()))
+
+(define (peg:syntax-error-message file-name string args)
+  (unless (or (null? args) (null? (car args)))
+    (let* ((pos (caar args))
+           (message (format #f "`~a' expected" (cadar args))))
+      (peg:error-message file-name string pos message))))
 
 (define (peg:handle-syntax-error file-name string)
   (lambda (key . args)
-    (let* ((pos (caar args))
-           (message (format #f "`~a' expected" (cadar args))))
-      (peg:error file-name string pos message))))
+    (if (or (null? args) (null? (car args))) (apply throw key args)
+        (begin
+          (peg:syntax-error-message file-name string args)
+          (apply throw key '())))))
 
 (define* (parse-string string #:key (file-name "-") (imports '()))
   (let* ((parse-tree (catch 'syntax-error
-                            (lambda ()
-                              (parameterize ((%peg:locations? #t)
-                                             (%peg:skip? peg:skip-parse)
-                                             (%peg:debug? (> (gdzn:debugity) 3)))
-                                (peg:parse string file-name #:imports imports)))
+                       (lambda ()
+                         (parameterize ((%peg:locations? #t)
+                                        (%peg:skip? peg:skip-parse)
+                                        (%peg:debug? (> (gdzn:debugity) 3)))
+                           (peg:parse string file-name #:imports imports)))
                        (peg:handle-syntax-error file-name string)))
          (gdzn-debug? (gdzn:command-line:get 'debug)))
     (when (> (gdzn:debugity) 2)
