@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2019, 2020 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2019, 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -136,16 +136,28 @@
                     (import-file-name (or (search-path imports import-file-name)
                                           (let ((pos (car res))
                                                 (message (format #f "No such file: `~a' in [~a]\n" import-file-name (string-join imports))))
-                                            ((@@ (gaiag parse) peg:error) file-name str pos message))))
+                                            ((@@ (gaiag parse) peg:handle-error) file-name str pos message))))
                     (import-file-name (canonicalize-path import-file-name))
                     (root (if (member import-file-name imported-files) #f
                               (let* ((foo (set! imported-files (cons import-file-name imported-files)))
                                      (string (with-input-from-file import-file-name read-string))
                                      (imports (cons (dirname import-file-name) imports))
-                                     (parse-tree (catch 'syntax-error
+                                     (parse-tree (catch #t
                                                    (lambda ()
                                                      (peg:parse-recursive string import-file-name #:imports imports))
-                                                   ((@@ (gaiag parse) peg:handle-syntax-error) import-file-name string))))
+                                                   (lambda (key . args)
+                                                     ;;(warn 'import: import-file-name 'key: key 'args: args)
+                                                     (let ((message ((@@ (gaiag parse) peg:message) file-name str pos "info: In file imported from here" "")))
+                                                       (case key
+                                                         ((syntax-error)
+                                                          ((@@ (gaiag parse) peg:syntax-error-message) import-file-name string args)
+                                                          (display message (current-error-port))
+                                                          (apply throw key '()))
+                                                         ((import-error)
+                                                          (display message (current-error-port))
+                                                          (apply throw key args))
+                                                         (else
+                                                          (apply throw key args))))))))
                                 (parse-tree->ast parse-tree #:string string #:file-name import-file-name)))))
                (list (car res) (list 'import import-file-name root))))))
     (define-peg-pattern do-import body -do-import-)

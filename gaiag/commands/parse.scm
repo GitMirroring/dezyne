@@ -110,6 +110,8 @@ Usage: dzn parse [OPTION]... [FILE]...
       (case key
         ((syntax-error)
          (exit 1))
+        ((import-error)
+         (exit 1))
         ((well-formedness-error)
          (for-each wfc:report-error args)
          (exit 1))
