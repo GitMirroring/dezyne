@@ -125,7 +125,9 @@ EXTRA_DIST += $(TESTS)
 # Documentation
 ###############
 
-info_TEXINFOS = doc/dezyne.texi
+info_TEXINFOS =					\
+ doc/dezyne.texi				\
+ doc/dezyne-tutorial.texi
 
 dezyne_TEXINFOS = doc/fdl-1.3.texi
 
@@ -179,8 +181,6 @@ doc/dzn.1: bin/dzn Makefile $(ALL_GO)
 doc/dzn-%.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< $*"
 
-html: doc/html/dezyne/index.html
-
 MAKEINFO_HTML_OPTIONS =									\
  --css-ref=https://www.gnu.org/software/gnulib/manual.css				\
  -c EXTRA_HEAD='<meta name="viewport" content="width=device-width, initial-scale=1" />'
@@ -190,10 +190,19 @@ MAKEINFO_HTML_OPTIONS =									\
 EXTRA_DIST += .texinfo/htmlxref.cnf
 AM_MAKEINFOHTMLFLAGS = --set-customization-variable CHECK_HTMLXREF=true
 
+html: html-manual html-tutorial
+html-manual: doc/html/dezyne/index.html
+html-tutorial: doc/html/dezyne-tutorial/index.html
+
 doc/html/dezyne/index.html: ${srcdest}doc/dezyne.texi doc/version.texi $(WEB_IMAGES)
 	mkdir -p $(@D)/html_node
 	$(MAKEINFO) --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/html_node -I ${srcdest}doc -I doc $<
 	$(MAKEINFO) --no-split --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/dezyne.html -I ${srcdest}doc -I doc $<
+
+doc/html/dezyne-tutorial/index.html: ${srcdest}doc/dezyne-tutorial.texi doc/version-tutorial.texi $(WEB_IMAGES)
+	mkdir -p $(@D)/html_node
+	$(MAKEINFO) --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/html_node -I ${srcdest}doc -I doc $<
+	$(MAKEINFO) --no-split --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/dezyne-tutorial.html -I ${srcdest}doc -I doc $<
 
 SITE = /srv/dezyne.org
 publish: html pdf
@@ -202,7 +211,10 @@ publish: html pdf
 	rsync -P -rvz --delete doc/html/ $(SITE)/manual/
 	rsync -P -rvz --delete doc/images $(SITE)/manual/dezyne/
 	rsync -P -rvz --delete doc/images $(SITE)/manual/dezyne/html_node/
+	rsync -P -rvz --delete doc/images $(SITE)/manual/dezyne-tutorial/
+	rsync -P -rvz --delete doc/images $(SITE)/manual/dezyne-tutorial/html_node/
 	rsync -P -rvz doc/dezyne.pdf $(SITE)/manual/
+	rsync -P -rvz doc/dezyne-tutorial.pdf $(SITE)/manual/
 
 LOCAL_SITE = $(HOME)/src/web/dezyne.org/site/dezyne
 publish-local: html pdf
@@ -224,6 +236,9 @@ override $(srcdir)/doc/version.texi:
 	  echo "@set EDITION $(VERSION)";				\
 	  echo "@set VERSION $(VERSION)"; } > $@-t;			\
 	mv $@-t $@
+
+doc/version-tutorial.texi: doc/version.texi
+	ln -f $< $@
 
 # Distribution
 ##############

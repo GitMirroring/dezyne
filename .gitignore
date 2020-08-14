@@ -27,6 +27,8 @@ stamp-vti
 /configure
 /doc/dezyne.info
 /doc/version.texi
+/doc/dezyne-tutorial.info
+/doc/version-tutorial.texi
 /dzn/config.scm
 /pre-inst-env
 /runtime/c++03/dzn/meta.hh
@@ -48,3 +50,5 @@ Makefile.in
 /test/bin/reorder
 /doc/html/
 /doc/dezyne.pdf
+/doc/stamp-1
+/doc/dezyne-tutorial.pdf
