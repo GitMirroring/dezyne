@@ -25,9 +25,13 @@ stamp-vti
 /config.log
 /config.status
 /configure
+/doc/dezyne-tutorial.info
+/doc/dezyne-tutorial.pdf
 /doc/dezyne.info
 /doc/dezyne.pdf
 /doc/html/
+/doc/stamp-1
+/doc/version-tutorial.texi
 /doc/version.texi
 /gaiag/config.scm
 /pre-inst-env
