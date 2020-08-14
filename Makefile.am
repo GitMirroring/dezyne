@@ -179,7 +179,7 @@ doc/dzn.1: bin/dzn Makefile $(ALL_GO)
 doc/dzn-%.1: bin/dzn Makefile $(ALL_GO)
 	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< $*"
 
-html: doc/html/index.html
+html: doc/html/dezyne/index.html
 
 MAKEINFO_HTML_OPTIONS =									\
  --css-ref=https://www.gnu.org/software/gnulib/manual.css				\
@@ -190,28 +190,23 @@ MAKEINFO_HTML_OPTIONS =									\
 EXTRA_DIST += .texinfo/htmlxref.cnf
 AM_MAKEINFOHTMLFLAGS = --set-customization-variable CHECK_HTMLXREF=true
 
-doc/html/index.html: ${srcdest}doc/dezyne.texi doc/version.texi $(WEB_IMAGES)
+doc/html/dezyne/index.html: ${srcdest}doc/dezyne.texi doc/version.texi $(WEB_IMAGES)
 	mkdir -p $(@D)/html_node
 	$(MAKEINFO) --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/html_node -I ${srcdest}doc -I doc $<
 	$(MAKEINFO) --no-split --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/dezyne.html -I ${srcdest}doc -I doc $<
 
-SITE = /srv/dezyne
+SITE = /srv/dezyne.org
 publish: html pdf
 	rsync -P -v . $(SITE)/
 	rsync -P -v . $(SITE)/manual/
 	rsync -P -rvz --delete doc/html/ $(SITE)/manual/
-	rsync -P -rvz --delete doc/images $(SITE)/manual/
-	rsync -P -rvz --delete doc/images $(SITE)/manual/html_node/
+	rsync -P -rvz --delete doc/images $(SITE)/manual/dezyne/
+	rsync -P -rvz --delete doc/images $(SITE)/manual/dezyne/html_node/
 	rsync -P -rvz doc/dezyne.pdf $(SITE)/manual/
 
 LOCAL_SITE = $(HOME)/src/web/dezyne.org/site/dezyne
 publish-local: html pdf
-	rsync -P -v . $(LOCAL_SITE)/
-	rsync -P -v . $(LOCAL_SITE)/manual/
-	rsync -P -rvz --delete doc/html/ $(LOCAL_SITE)/manual/
-	rsync -P -rvz --delete doc/images $(LOCAL_SITE)/manual/
-	rsync -P -rvz --delete doc/images $(LOCAL_SITE)/manual/html_node/
-	rsync -P -rvz  doc/dezyne.pdf $(LOCAL_SITE)/manual/
+	$(MAKE) publish SITE=$(LOCAL_SITE)
 
 # Generate 'version.texi' reproducibly using metadata from Git rather
 # than using metadata from the filesystem.
