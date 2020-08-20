@@ -365,13 +365,13 @@
   (.instance.name (ast:other-end-point o)))
 
 (define-method (code:instance-name (o <trigger>))
-  ((compose code:instance-name (cut .port (parent o <model>) <>)) o))
+  (code:instance-name (.port o)))
 
 (define-method (code:instance-port-name (o <port>))
   (.port.name (ast:other-end-point o)))
 
 (define-method (code:instance-port-name (o <trigger>))
-  ((compose code:instance-port-name (cut .port (parent o <model>) <>)) o))
+  (code:instance-port-name (.port o)))
 
 (define-method (code:function-type (o <type>))
   o)
