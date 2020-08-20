@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
@@ -1057,14 +1057,8 @@
 (define-method (ast:declaration* (o <enum>))
   (ast:field* o))
 
-(define-method (.port (model <component-model>) (o <trigger>))
-  (and (.port.name o) (ast:lookup o (.port.name o))))
-
-(define-method (.port (model <component-model>) (o <action>))
-  (and (.port.name o) (ast:lookup o (.port.name o))))
-
 (define-method (.port (o <trigger>))
-  "<trigger> opens a new scope, so lookup the port name the parent scope"
+  ;;<trigger> opens a new scope, so lookup the port name the parent scope
   (and (.port.name o) (ast:lookup (.parent o) (.port.name o))))
 
 (define-method (.port (o <action>))
