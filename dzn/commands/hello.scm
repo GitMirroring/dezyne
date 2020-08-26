@@ -22,8 +22,6 @@
 ;;; Code:
 
 (define-module (dzn commands hello)
-  #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
   #:use-module (dzn misc)
   #:export (parse-opts
