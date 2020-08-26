@@ -218,16 +218,19 @@ output, and standard error as three values."
          (dzn-name (string-append file-name "/" base-name ".dzn"))
          (baseline (string-append file-name "/baseline/verify"))
          (input "")
-         (includes (append-map (cut list "-I" <>)
-                               (cons (string-append file-name "/dzn")
-                                     (or (and=> (getenv "DZN_INCLUDE_PATH")
-                                                (cut string-split <> #\:))
-                                         '()))))
+         (includes (cons (string-append file-name "/dzn")
+                         (or (and=> (getenv "DZN_INCLUDE_PATH")
+                                    (cut string-split <> #\:))
+                             '())))
+         (includes (filter directory-exists? includes))
+         (includes (append-map (cut list "-I" <>) includes))
          (model (or (model? file-name) base-name)))
     (or (skip? file-name "verify")
         (receive (status stdout stderr)
             (observe
-             `("dzn" "--verbose" "verify" ,@includes "--all"
+             `("dzn" "--verbose" "verify"
+               ,@includes
+               "--all"
                ,@(if (model-unset? file-name) '() `("-m" ,model))
                ,dzn-name) input)
           (or (and (zero? status)
@@ -248,11 +251,12 @@ output, and standard error as three values."
   (and (let* ((base-name (basename file-name))
               (dzn-name (string-append file-name "/" base-name ".dzn"))
               (input "")
-              (includes (append-map (cut list "-I" <>)
-                                    (cons (string-append file-name "/" language)
-                                          (or (and=> (getenv "DZN_INCLUDE_PATH")
-                                                     (cut string-split <> #\:))
-                                              '()))))
+              (includes (cons (string-append file-name "/dzn")
+                              (or (and=> (getenv "DZN_INCLUDE_PATH")
+                                         (cut string-split <> #\:))
+                                  '())))
+              (includes (filter directory-exists? includes))
+              (includes (append-map (cut list "-I" <>) includes))
               (out (string-append file-name "/out"))
               (out-lang (string-append file-name "/out/" language))
               (model (or (model? file-name) base-name))
@@ -263,7 +267,10 @@ output, and standard error as three values."
              (and
               (receive (status stdout stderr)
                   (observe
-                   `("dzn" "code" ,@includes "-l" ,language "-o" ,out-lang
+                   `("dzn" "code"
+                     ,@includes
+                     "-l" ,language
+                     "-o" ,out-lang
                      "-m" ,model
                      ,@(if (thread-safe-shell? file-name) `("-s" ,base-name) '())
                      ,@(code-options file-name)
@@ -291,11 +298,12 @@ output, and standard error as three values."
   (let* ((base-name (basename file-name))
          (dzn-name (string-append file-name "/" base-name ".dzn"))
          (input "")
-         (includes (append-map (cut list "-I" <>)
-                               (cons (string-append file-name "/dzn")
-                                     (or (and=> (getenv "DZN_INCLUDE_PATH")
-                                                (cut string-split <> #\:))
-                                         '()))))
+         (includes (cons (string-append file-name "/dzn")
+                         (or (and=> (getenv "DZN_INCLUDE_PATH")
+                                    (cut string-split <> #\:))
+                             '())))
+         (includes (filter directory-exists? includes))
+         (includes (append-map (cut list "-I" <>) includes))
          (model (or (model? file-name) base-name))
          (out (string-append file-name "/out"))
          (out-lang (string-append file-name "/out/traces"))
