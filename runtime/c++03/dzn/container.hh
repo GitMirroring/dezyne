@@ -30,7 +30,6 @@
 #include <dzn/locator.hh>
 #include <dzn/runtime.hh>
 #include <dzn/pump.hh>
-#include <dzn/sexp.hh>
 
 #include <algorithm>
 #include <functional>
@@ -41,16 +40,6 @@
 
 namespace dzn
 {
-    namespace sexp
-    {
-      sexp nil = {(sexp*)"()", 0};
-      sexp dot = {(sexp*)".", 0};
-      int (*read_char)() = getchar;
-      int (*unread_char)(int) = ungetchar;
-      char const* global_string;
-      int global_pos;
-    }
-
   template <typename System, typename Function>
   struct container
   {
@@ -109,28 +98,15 @@ namespace dzn
       // if(actual != tmp)
       //   throw std::runtime_error("unmatched expectation: \"" + actual + "\" got: \"" + tmp + "\"");
     }
-    void set_state (std::string str)
-    {
-      sexp::sexp* sexp = sexp::read_from_string(str.c_str ());
-      std::list<sexp::sexp*> list = sexp::sexp_to_list(sexp);
-      std::map<std::string,std::map<std::string,std::string>> state_alist;
-      for(std::list<sexp::sexp*>::iterator it = list.begin(); it != list.end(); ++it)
-        state_alist[sexp::sexp_to_string((*it)->car)] = sexp::sexp_to_alist((*it)->cdr);
-      system.set_state(state_alist);
-    };
     void operator()(const std::map<std::string, Function>& lookup, const std::set<std::string>& required_ports)
     {
       this->lookup = lookup;
 
       std::string port;
       std::string str;
-      bool initial = true;
 
       while(std::getline (std::cin, str))
       {
-        if (initial && str[0] == '(') set_state (str);
-        initial = false;
-
         auto it = this->lookup.find(str);
         if(it == this->lookup.end() || port.size())
         {

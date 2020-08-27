@@ -30,8 +30,7 @@ dist_runtime_cxx_dzn_DATA =			\
  %D%/c++/dzn/locator.hh				\
  %D%/c++/dzn/meta.hh.in				\
  %D%/c++/dzn/pump.hh				\
- %D%/c++/dzn/runtime.hh				\
- %D%/c++/dzn/sexp.hh
+ %D%/c++/dzn/runtime.hh
 
 runtime_cxxdir = $(pkgdatadir)/runtime/c++
 dist_runtime_cxx_DATA =				\
