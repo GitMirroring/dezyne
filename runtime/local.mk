@@ -42,8 +42,7 @@ endif
 if have_javascript
 runtime_javascript_dzndir = $(pkgdatadir)/runtime/javascript/dzn
 dist_runtime_javascript_dzn_DATA =		\
- %D%/javascript/dzn/runtime.js			\
- %D%/javascript/dzn/sexp.js
+ %D%/javascript/dzn/runtime.js
 endif
 
 if have_scheme
