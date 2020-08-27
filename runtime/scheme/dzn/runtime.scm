@@ -54,7 +54,6 @@
 
             dzn:connect
             dzn:rank
-            dzn:set-state!
             dzn:trace
             dzn:trace-out
             dzn:trace-qout
@@ -147,13 +146,6 @@
   ;;(format (current-error-port) "rank: #f\n")
   #t)
 
-(define-method (dzn:set-state! (o <dzn:component>) state)
-  (define (state->value o)
-    (cond ((eq? o 'true) #t)
-          ((eq? o 'false) #f)
-          (else o)))
-  (for-each (lambda (v) (slot-set! o (car v) (state->value (cdr v)))) state))
-
 (define (dzn:type-name o)
   (string->symbol (string-drop-right (string-drop (symbol->string (class-name (class-of o))) 1) 1)))
 
@@ -163,16 +155,6 @@
                     (cons o (loop (.parent o))))))
          (path (reverse path)))
     (cons (dzn:type-name (car path)) (map .name (cdr path)))))
-
-(define-method (dzn:set-state! (o <dzn:system>) state)
-  (let* ((path (dzn:path o))
-         (instance-state (filter identity
-                                 (map (lambda (x)
-                                        (and (pair? (car x))
-                                             (equal? path (list-head (car x) (length path)))
-                                             (cons (list-ref (car x) (length path)) (cdr x))))
-                                      state))))
-    (for-each (lambda (i) (dzn:set-state! (slot-ref o (car i)) (cdr i))) instance-state)))
 
 (define (illegal) (throw 'assert 'illegal))
 
