@@ -123,10 +123,4 @@
 (define-templates version-assert)
 (define-templates calls (lambda (o) (filter (negate ast:async?) (ast:void-in-triggers o))))
 (define-templates rcalls ast:valued-in-triggers)
-
-;; set state
-(define-templates non-injected-instance-set-state non-injected-instances)
-(define-templates instance-set-state-argument code:set-state-argument)
-(define-templates variable-member-setter ast:variable*)
-
 (define-templates trace-q-out code:trace-q-out)
