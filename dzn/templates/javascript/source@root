@@ -13,7 +13,6 @@ if (node_p ()) {
   dzn = have_dzn_p () ? dzn : {};
   /* Add to your html something like
      <script src="js/dzn/runtime.js"></script>
-     <script src="js/dzn/sexp.js"></script>
      <script src="js/dzn/#x:scope+name .js"></script>
   */
 }
