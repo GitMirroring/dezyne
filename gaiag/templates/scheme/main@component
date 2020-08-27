@@ -96,10 +96,6 @@
         (if (eof-object? s) s
             (assoc-ref event-alist (string->symbol s)))))
 
-    (when (eq? (peek-char) ##\()
-      (let ((state (with-input-from-string (read-line) read)))
-        (dzn:set-state! sut state)))
-
     (let loop ()
       (when (getenv "PUMP_DEBUG") (format (current-error-port) "main loop\n"))
       (let ((event (next-event)))
