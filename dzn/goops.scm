@@ -113,7 +113,6 @@
            .right
            .root
            .scope
-           .sexp
            .signature
            .silent?
            .statement
@@ -315,8 +314,6 @@
            <scope.name>
            <selection-node>
            <selection>
-           <sexp-node>
-           <sexp>
            <shell-system-node>
            <shell-system>
            <signature-node>
@@ -422,9 +419,6 @@
 (define-method (make-wrapper (o <ast-node>) p) o)
 (define-method (make-wrapper (o <ast-list-node>) p) (make <ast-list> #:parent p #:node o))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define-ast <sexp> (<ast>)
-  (sexp))
 
 (define-ast <location> (<ast>)
   (file-name)

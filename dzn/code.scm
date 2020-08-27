@@ -131,7 +131,6 @@
             code:return
             code:scope+name
             code:scope-type-name
-            code:set-state-argument
             code:trigger
             code:type-name
             code:upcase-model-name
@@ -850,10 +849,6 @@
 (define-method (code:pump? (o <component>))
   (if ((compose pair? ast:req-events) o) o
       '()))
-
-(define-method (code:set-state-argument (o <instance>))
-  (if (is-a? (.type o) <system>) (.type o)
-      o))
 
 (define-method (code:model (o <root>))
   (topological-sort
