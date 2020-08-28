@@ -139,11 +139,11 @@
            ast:recursive?
            ast:statement*
            ast:top*
+           ast:topological-model-sort
            ast:trigger*
            ast:type*
            ast:variable*
 	   ast:void?
-           topological-sort
 
            .event
            .event.direction
@@ -1186,57 +1186,62 @@
 (define-method (.type (o <variable>))
   (ast:lookup o (.type.name o)))
 
-(define (topological-sort lst)
+(define-method (topological-sort (dag <list>) key)
+"Sort DAG topologically using function KEY, where DAG looks like
 
-  (define (key x) (ast:name x))
-  (define (sort dag)
-    (if (null? dag)
-        '()
-        (let* ((adj-table (make-hash-table))
-               (foo (for-each (lambda (def) (hashq-set! adj-table (key (car def)) (cdr def))) dag))
-               (sorted '()))
+@lisp
+((a child-a-0 child a-1 ...)
+ (b child-b-0 child-b-1 ...))
+@end lisp
+"
+  (if (null? dag) '()
+      (let* ((adj-table (make-hash-table))
+             (sorted '()))
 
-          (define (visit node children)
-            (if (eq? 'visited (hashq-ref adj-table (key node))) (error "double visit")
-                (begin
-                  (hashq-set! adj-table (key node) 'visited)
-                  ;; Visit unvisited nodes which node connects to
-                  (for-each (lambda (child)
-                              (let ((val (hashq-ref adj-table (key child))))
-                                ;;(stderr "val1: ~a ~a\n" (.name child) val)
-                                (if (not (eq? val 'visited))
-                                    (visit child (or val '())))))
-                            children)
-                  ;; Since all nodes downstream node are visited
-                  ;; by now, we can safely put node on the output list
-                  (set! sorted (cons node sorted)))))
+        (define (visit node children)
+          (if (eq? 'visited (hashq-ref adj-table (key node))) (error "double visit")
+              (begin
+                (hashq-set! adj-table (key node) 'visited)
+                ;; Visit unvisited nodes which node connects to
+                (for-each (lambda (child)
+                            (let ((val (hashq-ref adj-table (key child))))
+                              (if (not (eq? val 'visited))
+                                  (visit child (or val '())))))
+                          children)
+                ;; Since all nodes downstream node are visited
+                ;; by now, we can safely put node on the output list
+                (set! sorted (cons node sorted)))))
 
+        ;; Visit nodes
+        (for-each (lambda (def) (hashq-set! adj-table (key (car def)) (cdr def))) dag)
+        (visit (caar dag) (cdar dag))
+        (for-each (lambda (def)
+                    (let ((val (hashq-ref adj-table (key (car def)))))
+                      (if (not (eq? val 'visited))
+                          (visit (car def) (cdr def)))))
+                  (cdr dag))
+        (reverse sorted))))
 
-          ;; Visit nodes
-          (visit (caar dag) (cdar dag))
-          (for-each (lambda (def)
-                      (let ((val (hashq-ref adj-table (key (car def)))))
-                        ;;(stderr "val2: ~a ~a\n" (.name (car def)) val)
-                        (if (not (eq? val 'visited))
-                            (visit (car def) (cdr def)))))
-                    (cdr dag))
-          sorted)))
+(define-method (ast:topological-model-sort (models <list>))
+  "Return MODELS, sorted topologically."
 
-  (receive (systems other) (partition (is? <system>) lst)
-    (append
-     (stable-sort other
-                  (lambda (a b)
-                    (or (and (is-a? a <extern>)
-                             (or (is-a? b <interface>)
-                                 (is-a? b <component>)
-                                 (is-a? b <foreign>)))
-                        (and (is-a? a <interface>)
-                             (or (is-a? b <component>)
-                                 (is-a? b <foreign>))))))
-     (reverse (sort (map (lambda (o) (cons o
-                                           (filter (is? <system>)
-                                                   (map .type (ast:instance* o)))))
-                         systems))))))
+  (receive (systems rest) (partition (is? <system>) models)
+    (let* ((rest (stable-sort rest
+                              (lambda (a b)
+                                (or (and (is-a? a <extern>)
+                                         (or (is-a? b <interface>)
+                                             (is-a? b <component>)
+                                             (is-a? b <foreign>)))
+                                    (and (is-a? a <interface>)
+                                         (or (is-a? b <component>)
+                                             (is-a? b <foreign>)))))))
+           (system-dag (map (lambda (o)
+                              (cons o (filter (is? <system>)
+                                              (map .type (ast:instance* o)))))
+                            systems))
+           (systems (topological-sort system-dag ast:name))
+           (systems (filter (cute member <> models ast:eq?) systems)))
+      (append rest systems))))
 
 ;; This implements Tarjan's strongly connected components algorithm,
 ;; see https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm

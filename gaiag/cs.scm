@@ -169,12 +169,13 @@
     (if (is-a? rt <void>) '() rt)))
 
 (define-method (cs:model (o <root>))
-  (topological-sort
-   (map dzn:annotate-shells
-        ;; cs needs async!
-        (filter (negate (disjoin (is? <type>) (is? <namespace>) ;; dzn-async?
-                                 ast:imported?))
-                (ast:model* o)))))
+  (let* ((models (ast:model* o))
+         (models (filter (negate (disjoin (is? <type>) (is? <namespace>)
+                                          (conjoin ast:imported? (negate (is? <foreign>)))))
+                         models))
+         (models (ast:topological-model-sort models))
+         (models (map dzn:annotate-shells models)))
+    models))
 
 (define (cs:om ast) ;;TODO, replace me with code:om when (binding-into-blocking) is removed
   ((compose

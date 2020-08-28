@@ -146,11 +146,13 @@
 
 ;;; dzn: generic templates
 (define-method (dzn:model (o <root>))
-  (topological-sort
-   (map dzn:annotate-shells
-        (filter (negate (disjoin (is? <type>) (is? <namespace>) dzn-async?
-                                 (conjoin ast:imported? (negate (is? <foreign>)))))
-                (ast:model* o)))))
+  (let* ((models (ast:model* o))
+         (models (filter (negate (disjoin (is? <type>) (is? <namespace>) dzn-async?
+                                          (conjoin ast:imported? (negate (is? <foreign>)))))
+                         models))
+         (models (ast:topological-model-sort models))
+         (models (map dzn:annotate-shells models)))
+    models))
 
 (define-method (dzn:model (o <namespace>))
   (ast:top* o))

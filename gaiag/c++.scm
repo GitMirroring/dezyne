@@ -143,21 +143,18 @@
   (append (c++:type-name (.type o)) (list (.field o))))
 
 (define-method (c++:model (o <root>))
-  (if (code:glue)
-      (let ((models (ast:model* o)))
-        (if (null? (filter (negate (disjoin ast:imported? (is? <foreign>))) models))
-              (filter (is? <foreign>) models)
-              (topological-sort
-               (map dzn:annotate-shells
-                    (filter (negate (disjoin (is? <type>) dzn-async?
-                                             (conjoin ast:imported? (negate (is? <foreign>)))
-                                             (is? <foreign>)))
-                            (ast:model* o))))))
-      (topological-sort
-       (map dzn:annotate-shells
-            (filter (negate (disjoin (is? <type>) (is? <namespace>) dzn-async?
-                                     (conjoin ast:imported? (negate (is? <foreign>)))))
-                    (ast:model* o))))))
+  (let* ((models (ast:model* o))
+         (models
+          (if (code:glue)
+              (if (null? (filter (negate (disjoin ast:imported? (is? <foreign>))) models))
+                  (filter (is? <foreign>) models)
+                  (filter (negate (disjoin (is? <type>) dzn-async?)) models))
+              (filter (negate (disjoin (is? <type>) (is? <namespace>) dzn-async?
+                                       (conjoin ast:imported? (negate (is? <foreign>)))))
+                      models)))
+         (models (ast:topological-model-sort models))
+         (models (map dzn:annotate-shells models)))
+    models))
 
 (define-method (c++:dump o)
   (code:dump o))
