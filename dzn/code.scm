@@ -737,14 +737,7 @@
           (filter
            (disjoin (is? <extern>)
                     (negate (disjoin dzn-async? ast:imported?)))
-           ;; (disjoin (is? <data>)
-           ;;          (conjoin (negate dzn-async?)
-           ;;                   (disjoin (negate ast:imported?)
-           ;;                            (conjoin (is? <foreign>)
-           ;;                                     (compose negate
-           ;;                                              (cut equal? (ast:source-file o) <>)
-           ;;                                              ast:source-file)))))
-                          (ast:model* o)))
+           (ast:model* o)))
          (non-interface-models (filter (negate (is? <interface>)) objects)))
     (pair? non-interface-models)))
 
@@ -851,11 +844,13 @@
       '()))
 
 (define-method (code:model (o <root>))
-  (topological-sort
-   (map dzn:annotate-shells
-        (filter (negate (disjoin (is? <type>) (is? <namespace>)
-                                 (conjoin ast:imported? (negate (is? <foreign>)))))
-                (ast:model* o)))))
+  (let* ((models (ast:model* o))
+         (models (filter (negate (disjoin (is? <type>) (is? <namespace>)
+                                          (conjoin ast:imported? (negate (is? <foreign>)))))
+                         models))
+         (models (ast:topological-model-sort models))
+         (models (map dzn:annotate-shells models)))
+    models))
 
 (define-method (code:upcase-model-name o)
   (map string-upcase (ast:full-name (parent o <model>))))
