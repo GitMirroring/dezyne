@@ -44,7 +44,6 @@
 (define-templates enum-literal c++:enum-literal type-infix)
 (define-templates string-to-enum c++:string->enum)
 (define-templates asd-voidreply (lambda (o) (if asd? "__ASD_VoidReply, " "")))
-(define-templates scoped-port-name (lambda (port) ((compose .ids .name .type) port)) type-infix)
 (define-templates out-binding-lambda ast:provides-port*)
 (define-templates provided-port-declare ast:provides-port*)
 (define-templates required-port-declare ast:requires-port*)
