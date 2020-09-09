@@ -964,8 +964,12 @@
   (append-map (cut ast:lookdown <> name) o))
 
 (define-method (ast:lookdown (o <scope>) (name <string>))
-;;  (stderr "ast:lookdown 1[~s]: ~s\n" o name)
-  (filter (lambda (decl) (ast:name-equal? (.name decl)  name)) (ast:declaration* o)))
+  ;;  (stderr "ast:lookdown 1[~s]: ~s\n" o name)
+  (filter (lambda (decl)
+            (let ((decl (cond ((string? decl) decl)
+                              ((is-a? decl <named>) (.name decl)))))
+              (ast:name-equal? decl name)))
+          (ast:declaration* o)))
 
 (define-method (ast:lookdown (o <scope>) (name <scope.name>))
 ;;  (stderr "ast:lookdown 2[~s]: ~s\n" o name)
@@ -1096,7 +1100,9 @@
           ((and (not port-name)
                 (equal? (.event.name o) "optional"))
            (clone (ast:optional) #:parent interface))
-          (else (ast:lookup interface (.event.name o))))))
+          (else (and interface
+                     (let ((event (ast:lookdown interface (.event.name o))))
+                       (and (pair? event) (car event))))))))
 
 (define-method (.event.direction (o <action>))
   ((compose .direction .event) o))
