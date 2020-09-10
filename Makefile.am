@@ -75,6 +75,7 @@ bin_SCRIPTS =					\
 EXTRA_DIST +=					\
  bin/dzn.in
 
+dist_noinst_DATA =
 ALL_GO =
 include dzn/local.mk
 include gash/local.mk
@@ -233,14 +234,21 @@ distcheck-hook:
 	    fi;                                 \
 	done
 
-install-data-local:
-	test -z $(DESTDIR)$(pkgdatadir) || $(MKDIR_P) $(DESTDIR)$(pkgdatadir)
+define C_VERSION_COMMENT
+//version: $(PACKAGE_VERSION)
+endef
+
+define LISP_VERSION_COMMENT
+;;;version: $(PACKAGE_VERSION)
+endef
+
+install-data-hook:
 if have_cxx11
-	tar -cf - runtime/c++ | tar -C $(DESTDIR)$(pkgdatadir) -xf-
+	echo "$(C_VERSION_COMMENT)" | tee -a $$(find $(DESTDIR)$(pkgdatadir)/runtime/c++ -type f)
 endif
 if have_javascript
-	tar -cf - runtime/javascript | tar -C $(DESTDIR)$(pkgdatadir) -xf-
+	echo "$(C_VERSION_COMMENT)" | tee -a $$(find $(DESTDIR)$(pkgdatadir)/runtime/javascript -type f)
 endif
 if have_scheme
-	tar -cf - runtime/scheme | tar -C $(DESTDIR)$(pkgdatadir) -xf-
+	echo "$(LISP_VERSION_COMMENT)" | tee -a $$(find $(DESTDIR)$(pkgdatadir)/runtime/scheme -type f)
 endif
