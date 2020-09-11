@@ -5,8 +5,8 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
-* Changes in 2.10.0 since 2.9.0
-** Dezyne is now stand alone, client only, serverless, pure Scheme.
+* Changes in 2.10.0 since 2.9.1
+** Dezyne is now stand alone, client only, serverless, pure GNU Guile Scheme.
   - Removed: server, services, dzn, dzn/daemon
     + 20,000 LOC JavaScript.
     + 800 LOC of Shell
@@ -19,54 +19,32 @@
     + 4,200 LOC of TCL input
     + 200 LOC of Python
     + 700 LOC of Perl
-  with PEG parser and system-simulator by adding 3,000 LOC of Scheme.
+    with PEG parser and system-simulator by 4,000 LOC of Scheme.
   - The new Scheme-only, client-only (serverless) Dezyne git archive
     was grafted onto the historical development.git; that in turn was
     built on Gaiag (https://gitlab.com/janneke/gaiag), which is still
     at the root of this archive.
-
-* Dezyne Enterprise preview
-** Changes in dzn-explore dd. July 15, 2019
-  - State diagram: selecting the appropriate event sequence has been improved.
-    See the help page for more information.
-  - State diagram: The magnifying glass only shows when hovering above a node.
-  - The color scheme used in the three views has been slightly changed.
-    The colors can be customized by editing the following file in the installation:
-    .npm/lib/node_modules/dzn-enterprise/js/color_scheme.js
-  - dzn-explore will report any parse error and exit.
-  - Stand-alone components can be explored now.
-  - The system view now shows the correct top level system.
-  - When the dzn-explore command is terminated, no further exploration is possible.
-    To alert the user all three views show a red border.
-
-** Changes in dzn-explore dd. June 21, 2019
-  - The performance of dzn-explore has been improved.
-
-** Changes in dzn-explore dd. June 13, 2019
-  - State diagram: event descriptions related to foreign components
-    now include their full path.
-
-** Changes in dzn-explore dd. June 4, 2019
-  - A help page has bee added, accessable through the 'h' key.
-  - You no longer have to specify the server on the command line.
-  - A magnifying glass has been added to the state diagram.
-  - The trace view header is now always visible at startup.
-  - When navigating, the state diagram is not centered when the target state
-    is already in view.
-  - A trace can be truncated now.
-  - The enterprise daemon has been rewritten in Dezyne, so incidental
-    crashes are avoided.
-
-** Initial release of dzn-explore at https://development.verum.com
-
-To install:
-#+BEGIN_src bash
-  npm install -g https://development.verum.com/download/npm/dzn-enterprise.tar.gz
-#+END_src
-To explore, run:
-#+BEGIN_src bash
-  .npm/bin/dzn-explore
-#+END_src
+** Parser
+  - All error messages were changed.
+  - "Use before declare" is no longer supported for variables.
+  - Toplevel `dollar`-statements used inside a namespace are now
+    rejected.
+** Code generation
+  - C++: The tracing interface was changed, notably the "dzn::trace_in"
+    function was renamed to "dzn::trace".
+  - C++: Experimental state-variable tracing was disabled.
+  - Other languages were dropped.
+** Component simulator
+  - The component simulator was removed.
+*** Noteworthy bug fixes
+  - Fixed a bug where function calls immediately following an if
+    statement were not considered by the verifier
+  - Fixed a bug where an enum-field test used as the expression in a
+    reply statement would crash the verifier.
+  - Fixed a bug where a boolean "not" used as the expression in a
+    reply statement was ignored.
+  - Fixed a bug with precedence in deeply nested boolean expresisons
+    in generated code.
 
 * Changes in development since 2.9.1
    It contains work in progress and is not intended for evaluation or
@@ -291,7 +269,7 @@ To explore, run:
 
 * legalese
 
-Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2017,2018,2019,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 Copyright © 2017,2018,2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 Copyright © 2018,2019 Rob Wieringa <Rob.Wieringa@verum.com>
 
