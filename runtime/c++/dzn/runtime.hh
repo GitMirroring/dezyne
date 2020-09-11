@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2016, 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -34,6 +34,9 @@
 #include <map>
 #include <queue>
 #include <tuple>
+
+// Set to 1 for experimental state tracing feature.
+#define DZN_STATE_TRACING 0
 
 inline std::string to_string(bool b){return b ? "true" : "false";}
 inline std::string to_string(int i){return std::to_string(i);}
@@ -144,7 +147,10 @@ namespace dzn
     , event(event)
     , reply("return")
     {
-      trace(os, meta, event); //os << " " << *c << std::endl;
+      trace(os, meta, event);
+#if DZN_STATE_TRACING
+      os << *c << std::endl;
+#endif
       if(c->dzn_rt.handling(c))
       {
         collateral_block(c->dzn_locator);
@@ -164,7 +170,10 @@ namespace dzn
     }
     ~call_helper()
     {
-      trace_out(os, meta, reply.c_str());// os << " " << *c << std::endl;
+      trace_out(os, meta, reply.c_str());
+#if DZN_STATE_TRACING
+      os << *c << std::endl;
+#endif
     }
   };
 
@@ -179,7 +188,10 @@ namespace dzn
   void call_out(C* c, L&& l, const dzn::port::meta& meta, const char* event)
   {
     auto& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_qin(os, meta, event); //os << " " << *c << std::endl;
+    trace_qin(os, meta, event);
+#if DZN_STATE_TRACING
+    os << *c << std::endl;
+#endif
     c->dzn_rt.defer(meta.provides.address, c, [&,l]{l();});
   }
 }
