@@ -118,6 +118,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_provides_int			\
  %D%/compliance_provides_out			\
  %D%/compliance_requires_illegal		\
+ %D%/data_import				\
  %D%/deadlock_blocking_guard			\
  %D%/deadlock_blocking_inevitable		\
  %D%/deadlock_blocking_optional			\
