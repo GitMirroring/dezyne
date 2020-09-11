@@ -251,7 +251,7 @@ output, and standard error as three values."
   (and (let* ((base-name (basename file-name))
               (dzn-name (string-append file-name "/" base-name ".dzn"))
               (input "")
-              (includes (cons (string-append file-name "/dzn")
+              (includes (cons (string-append file-name "/" language)
                               (or (and=> (getenv "DZN_INCLUDE_PATH")
                                          (cut string-split <> #\:))
                                   '())))
