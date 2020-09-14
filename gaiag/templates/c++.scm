@@ -3,7 +3,7 @@
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -66,7 +66,7 @@
 (define-templates injected-instance-meta-initializer injected-instances)
 (define-templates non-injected-instance-meta-initializer non-injected-instances)
 (define-templates dzn-locator code:dzn-locator)
-(define-templates header-data (lambda (o) (filter (is? <data>) (ast:top* o))))
+(define-templates header-data ast:data*)
 (define-templates header-model c++:model)
 
 (define-templates provided-port-instance-declare ast:provides-port*)

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019,2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -50,7 +50,7 @@
 (define-templates required-port-reference-declare ast:requires-port*)
 (define-templates provided-port-reference-initializer ast:provides-port*)
 (define-templates required-port-reference-initializer ast:requires-port*)
-(define-templates header-data (lambda (o) (filter (is? <data>) (ast:top* o))))
+(define-templates header-data ast:data*)
 (define-templates out-binding-initializer ast:provides-port*)
 
 ;; c&p dzn
