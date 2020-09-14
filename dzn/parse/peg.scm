@@ -175,7 +175,9 @@
     (define-peg-string-patterns
       "root <-- top* EOF#
 
-top <- do-import / stream-command / namespace / type / interface / component / data
+top <- do-import / stream-command / scoped / data
+
+scoped <- namespace / type / interface / component
 
 import <- IMPORT (!SEMICOLON .)+ SEMICOLON#
 
@@ -188,7 +190,7 @@ dq-string <- double-quote unq-string double-quote
 double-quote < '\"'
 unq-string <- ('\\\"' / !'\"' .)*
 
-namespace <-- NAMESPACE compound-name# BRACE-OPEN# top* BRACE-CLOSE#
+namespace <-- NAMESPACE compound-name# BRACE-OPEN# scoped* BRACE-CLOSE#
 
 type <- enum / int / extern
 

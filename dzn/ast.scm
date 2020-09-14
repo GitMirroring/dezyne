@@ -52,6 +52,7 @@
            ast:call-statement
            ast:clr-events
            ast:component-model*
+           ast:data*
            ast:declarative?
            ast:direction
            ast:dzn-scope?
@@ -164,6 +165,7 @@
 (define-method (ast:acceptance* (o <acceptances>)) (.elements o))
 (define-method (ast:argument* (o <arguments>)) (.elements o))
 (define-method (ast:binding* (o <bindings>)) (.elements o))
+(define-method (ast:data* (o <root>)) (filter (is? <data>) (ast:top* o)))
 (define-method (ast:statement* (o <compound>)) (.elements o))
 (define-method (ast:statement* (o <declarative-compound>)) (.elements o))
 (define-method (ast:event* (o <events>)) (.elements o))
