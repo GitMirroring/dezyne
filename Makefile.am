@@ -189,6 +189,7 @@ dist-hook: gen-ChangeLog
 	echo $(VERSION) > $(distdir)/.tarball-version
 	git ls-tree -r --name-only HEAD > $(distdir)/.tarball-manifest
 	git show HEAD --format=%ct --no-patch > $(distdir)/.tarball-timestamp
+	rm -rf $(distdir)/test/all/*/out
 
 # FIXME: this will only work after we switch to source tarball
 # distribution and url-feth
