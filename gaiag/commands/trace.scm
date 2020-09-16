@@ -41,7 +41,7 @@
 
   #:use-module (json)
 
-  #:export (format-trace
+  #:export (trace:format-trace
             json-string->alist-scm
             step:format-trace
             seqdiag:get-model
