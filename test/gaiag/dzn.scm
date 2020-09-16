@@ -375,7 +375,7 @@ output, and standard error as three values."
         (receive (status stdout stderr)
             (observe `(,test ,@(if (flush? file-name) '("--flush") '())) input)
           (and (zero? status)
-               (let ((net (format-trace stderr #:format "event")))
+               (let ((net (trace:format-trace stderr #:format "event")))
                  (receive (status stdout stderr)
                      (observe `("bash" "-c"
                                 ,(string-append "diff -ywB"

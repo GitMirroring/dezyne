@@ -43,13 +43,13 @@
 
   #:export (format-trace
             json-string->alist-scm
-            parse-opts
             step:format-trace
             seqdiag:get-model
             seqdiag:format-sexp
             seqdiag:format-trace
             seqdiag:sexp->steps
             seqdiag:sequence->trail
+            trace:format-trace
             main))
 
 (define (parse-opts args)
@@ -113,7 +113,7 @@ ws               <   [ \t]
 ")
   (peg:tree (match-pattern trace ascii)))
 
-(define* (trace->steps trace #:key (file-name "<stdin>"))
+(define* (trace:trace->steps trace #:key (file-name "<stdin>"))
   ;;(stderr "trace:") (pretty-print trace (current-error-port))
   (catch 'syntax-error
     (lambda _
@@ -313,7 +313,7 @@ ws               <   [ \t]
      ".")))
 
 (define (trace:step->trace:code pijltjes)
-  (let* ((steps (trace->steps pijltjes #:file-name "foobar"))
+  (let* ((steps (trace:trace->steps pijltjes #:file-name "foobar"))
          (debug? #f)
          (foo (when debug? (stderr "steps:") (pretty-print steps (current-error-port))))
          (steps (map (lambda (s) (or (step->communication s) s)) steps))
@@ -441,10 +441,14 @@ ws               <   [ \t]
 (define (seqdiag:format-trace trace)
   (seqdiag:format-sexp (json-string->alist-scm trace)))
 
-(define* (step:format-trace trace #:key file-name format debug?)
-  (let* ((steps (trace->steps trace #:file-name file-name))
+(define* (trace:trace->structured trace #:key file-name debug?)
+  (let* ((steps (trace:trace->steps trace #:file-name file-name))
          (foo (when debug? (stderr "steps:") (pretty-print steps (current-error-port))))
-         (structured (map (lambda (s) (or (step->communication s) s)) steps))
+         (structured (map (lambda (s) (or (step->communication s) s)) steps)))
+    structured))
+
+(define* (trace:format-trace trace #:key file-name format debug?)
+  (let* ((structured (trace:trace->structured trace #:file-name file-name #:debug? debug?))
          (merged (merge-communications structured)))
     (cond ((equal? format "sexp") (if (dzn:command-line:get 'json) (scm->json-string (map serialize structured))
                                       (map serialize structured)))
@@ -457,7 +461,7 @@ ws               <   [ \t]
 
 (define* (format-trace trace #:key file-name format debug?)
   (if (seqdiag:trace? trace) (seqdiag:format-trace trace)
-      (step:format-trace trace #:file-name file-name #:format format #:debug? debug?)))
+      (trace:format-trace trace #:file-name file-name #:format format #:debug? debug?)))
 
 (define (main args)
   (let* ((options (parse-opts args))
