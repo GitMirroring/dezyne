@@ -83,7 +83,13 @@
 
 (define-method (begin-step (pc <program-counter>) (instance <runtime:instance>) (trigger <trigger>))
   (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
-  (push-pc pc trigger instance))
+  (let* ((pc (push-pc pc trigger instance))
+         (port (.port trigger))
+         (r:port (and port (runtime:port instance port))))
+    (if (not (assoc r:port (.blocked pc))) pc
+        (clone pc #:status (make <blocked-error>
+                             #:ast (.statement pc)
+                             #:message (format #f "port `~a' is blocked" (.name port)))))))
 
 (define-method (begin-step (pc <program-counter>) (instance <runtime:port>) (trigger <trigger>))
   (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
@@ -268,8 +274,12 @@
                    (%debug "second reply, previous=~a\n" ((@@ (gaiag vm report) step->location) value))
                    (clone pc #:status error))
                  (let ((value (eval-expression pc (.expression o))))
-                   (continuation (clone pc #:reply value) o)))))
-    (list pc)))
+                   (continuation (clone pc #:reply value) o))))
+         (port (.port o)))
+    (if (not port) (list pc)
+        (let* ((r:port (runtime:port (.instance pc) port))
+               (pc (clone pc #:released r:port)))
+          (list pc)))))
 
 (define-method (step (pc <program-counter>) (o <flush>))
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
@@ -307,6 +317,44 @@
              (pc (set-handling? pc #f)))
         (list pc))))))
 
+(define-method (step (pc <program-counter>) (o <blocking>))
+  (%debug "  ~s ~s |~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (list (continuation pc o)))
+
+(define-method (step (pc <program-counter>) (o <block>))
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (let* ((pc (continuation pc o))
+         (trigger (.trigger pc)))
+    (cond ((ast:requires? trigger)
+           (list pc))
+          ((.released pc)
+           (let ((pc (clone pc #:released #f)))
+             (list pc)))
+          (else
+           (let* ((instance (.instance pc))
+                  (r:port (runtime:port instance (.port trigger)))
+                  (pc (make <program-counter>
+                        #:async (.async pc)
+                        #:blocked (acons r:port pc (.blocked pc))
+                        #:state (.state pc)
+                        #:trail (.trail pc))))
+             (list pc))))))
+
+(define-method (step (pc <program-counter>) (o <unblock>))
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (let* ((blocked (.blocked pc))
+         (r:port (.released pc))
+         (released (assoc-ref blocked r:port))
+         (instance (.instance pc))
+         (pc (clone pc
+                    #:blocked (alist-delete r:port blocked)
+                    #:instance (.instance released)
+                    #:released #f
+                    #:previous (.previous released)
+                    #:statement (.statement released)
+                    #:trigger (.trigger released))))
+    (list pc)))
+
 (define-method (step (pc <program-counter>) (o <end-of-on>))
   ;; XXX FIXME: programmatical flush (vs: others are normalize+ast based).
   (define (flush-other pc)
@@ -323,6 +371,7 @@
 
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (or (flush-other pc)
+      (and (.released pc) (pair? (.blocked pc)) (step pc (make <unblock>)))
       (let ((return (make <trigger-return> #:location (.location o) #:port.name (.port.name (.trigger pc)))))
         (list (clone pc #:statement (clone return #:parent (.parent o)))))))
 
@@ -378,6 +427,9 @@
 ;;;
 ;;; Continuation
 ;;;
+
+(define-method (continuation (pc <program-counter>) (o <blocking>))
+  (clone pc #:statement (.statement o)))
 
 (define-method (continuation (pc <program-counter>) (o <compound>))
   (let ((list (ast:statement* o)))

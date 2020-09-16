@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -63,6 +64,30 @@
            o)))
   (tree-map normalize-compound o))
 
+(define* (set-blocking-reply-port o #:optional (port #f) (block? #f)) ;; FIXME: drop block? => #t
+  (match o
+    (($ <reply>) (if (not block?) o
+                     (let ((port? (.port o))) (if (and port? (not (symbol? port?))) o (clone o #:port.name (.name port))))))
+    (($ <blocking>) (clone o #:statement (set-blocking-reply-port (.statement o) port #t)))
+    (($ <on>)
+     (let* ((requires? (ast:requires? ((compose .port car ast:trigger*) o)))
+            (block? (or block? requires?))
+            (port (if port port
+                      (if requires? (ast:provides-port (parent o <model>))
+                          ((compose .port car ast:trigger*) o)))))
+       (clone o #:statement (set-blocking-reply-port (.statement o) port block?))))
+    (($ <guard>) (clone o #:statement (set-blocking-reply-port (.statement o) port block?)))
+    (($ <compound>) (clone o #:elements (map (cut set-blocking-reply-port <> port block?) (ast:statement* o))))
+    (($ <behaviour>) (clone o #:statement (set-blocking-reply-port (.statement o) port block?)
+                            ;; FIXME #t??
+                            #:functions (set-blocking-reply-port (.functions o) port #t)))
+    (($ <component>) (clone o #:behaviour (set-blocking-reply-port (.behaviour o) (if (= 1 (length (ast:provides-port* o))) (car (ast:provides-port* o)) #f) block?)))
+    (($ <system>) o)
+    (($ <foreign>) o)
+    (($ <interface>) o)
+    ((? (is? <ast>)) (tree-map (cut set-blocking-reply-port <> port block?) o))
+    (_ o)))
+
 (define* ((annotate-otherwise #:optional (statements '())) o) ;; FIXME *unspecified*
   (define (virgin-otherwise? x) (or (eq? x 'otherwise) (eq? x *unspecified*)))
   (match o
@@ -98,15 +123,19 @@
        (make <compound> #:elements (cons o f) #:location (.location o)))
       (($ <compound>)
        (clone o #:elements (map (cut add-flush <> f) (ast:statement* o))))
-      (($ <guard>) (clone o #:statement (add-flush (.statement o) f)))))
+      (($ <guard>) (clone o #:statement (add-flush (.statement o) f)))
+      (($ <blocking>) (clone o #:statement (add-flush (.statement o) f)))))
 
   (match o
     ((and ($ <on>) (= ast:trigger* triggers) (= .statement statement))
      (let* ((statement ((transform-action model) statement))
             (actions (tree-collect (is? <action>) statement))
+            (blocking? (or (parent o <blocking>)
+                           (pair? (tree-collect (is? <blocking>) o))))
             (trigger ((compose car ast:trigger*) o))
             (model (parent o <model>))
             (statement (if (or (is-a? model <interface>)
+                               (and (null? actions) (not blocking?))
                                (ast:out? (.event trigger))
                                (is-a? (.event trigger) <modeling-event>)) statement
                            (add-flush statement (list (clone (make <flush> #:location (.location o)) #:parent statement))))))
@@ -125,12 +154,14 @@
   (define (add-end-of-on o r)
     (match o
       ((and ($ <compound>) (? ast:imperative?))
-       (clone o #:elements (append (ast:statement* o) r)))
+       (clone o #:elements (append (ast:statement* o) (if (parent o <blocking>) (cons (make <block>) r) r))))
       ((? ast:imperative?)
-       (make <compound> #:elements (cons o r) #:location (.location o)))
+       (make <compound> #:elements (cons o (if (parent o <blocking>) (cons (make <block>) r) r)) #:location (.location o)))
       (($ <compound>)
        (clone o #:elements (map (cut add-end-of-on <> r) (ast:statement* o))))
       (($ <guard>)
+       (clone o #:statement (add-end-of-on (.statement o) r)))
+      (($ <blocking>)
        (clone o #:statement (add-end-of-on (.statement o) r)))))
 
   (match o
@@ -178,6 +209,7 @@
   ((compose
     normalize-compounds
     add-function-return
+    set-blocking-reply-port
     transform-end-of-on
     (transform-action)
     (annotate-otherwise)
