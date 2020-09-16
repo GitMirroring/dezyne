@@ -180,6 +180,8 @@
                    car)
           traces)
     traces)
+   ((find (compose pair? .blocked car) traces)
+    traces)
    ((null? traces)
     (check-provides-compliance pc event '()))
    (else

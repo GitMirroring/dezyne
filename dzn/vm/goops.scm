@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -32,7 +33,9 @@
   #:use-module (dzn misc)
   #:use-module (dzn vm evaluate)
   #:use-module (dzn vm runtime)
-  #:export (<end-of-on>
+  #:export (<block>
+            <unblock>
+            <end-of-on>
             <flush-async>
             <flush-return>
             <flush>
@@ -47,6 +50,7 @@
             <system-state>
 
             <acceptances>
+            <blocked-error>
             <compliance-error>
             <determinism-error>
             <end-of-trail>
@@ -58,6 +62,7 @@
             <second-reply-error>
 
             .async
+            .blocked
             .component-acceptance
             .deferred
             .handling?
@@ -66,6 +71,7 @@
             .port-acceptance
             .previous
             .q
+            .released
             .reply
             .return
             .state
@@ -90,6 +96,9 @@
                clone
                write))
 
+(define-ast <block> (<imperative>))
+(define-ast <unblock> (<imperative>))
+
 (define-ast <end-of-on> (<imperative>))
 
 (define-ast <flush> (<imperative>))
@@ -112,6 +121,8 @@
   (trigger))
 
 (define-ast <acceptances> (<ast-list>))
+
+(define-ast <blocked-error> (<error>))
 
 (define-ast <compliance-error> (<error>)
   (component-acceptance)
@@ -156,7 +167,10 @@
   (trail #:getter .trail #:init-value (list) #:init-keyword #:trail)
   (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger)
 
-  (async #:getter .async #:init-form (list) #:init-keyword #:async))
+  (async #:getter .async #:init-form (list) #:init-keyword #:async)
+
+  (blocked #:getter .blocked #:init-form (list) #:init-keyword #:blocked)
+  (released #:getter .released #:init-form #f #:init-keyword #:released))
 
 (define-class <state> ()
   (instance #:getter .instance #:init-form #f #:init-keyword #:instance)
@@ -232,6 +246,8 @@
   (when (pair? (.async o))
     (display " async: " port)
     (display (map (compose .name cadr) (.async o)) port))
+  (when (.released o) (display " *released*" port))
+  (when (pair? (.blocked o)) (display " *blocked*" port))
   (and=> (.reply o) (cut format port " reply: ~a" <>))
   (and=> (.return o) (cut format port " return: ~a" <>))
   (display " " port)

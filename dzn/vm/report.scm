@@ -67,6 +67,9 @@
 (define-method (trace->trail (o <error>))
   (cons #f (format #f "<~a>" (or (.message o) "error"))))
 
+(define-method (trace->trail (o <blocked-error>))
+  (cons #f "<deadlock>"))
+
 (define-method (trace->trail (o <end-of-trail>))
   #f)
 
