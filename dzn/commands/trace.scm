@@ -55,6 +55,7 @@
   (let* ((option-spec
           '((format (single-char #\f) (value #t))
             (help (single-char #\h))
+            (internal (single-char #\i))
             (locations (single-char #\L))
             (trail (single-char #\t) (value #t))))
 	 (options (getopt-long args option-spec))
@@ -64,8 +65,9 @@
 Usage: dzn trace [OPTION]... FILE
 Convert between different trace formats
 
-  -f, --format=FORMAT    display trace in format FORMAT [event] {code,event,sexp}
+  -f, --format=FORMAT    display trace in format FORMAT [event] {code,diagram,event,sexp}
   -h, --help             display this help and exit
+  -i, --internal         display system-internal events
   -L, --locations        prepend locations to output trace
   -t, --trail=TRAIL      use trail=TRAIL [read from stdin]
 ")
@@ -88,7 +90,8 @@ Convert between different trace formats
 
   (define-peg-string-patterns
     "trace <- line*
-line             <-  sexp ws* eol# / location? ws* (communication ws* eol# / message ws* eol#)
+line             <-  garbage eol# / sexp ws* eol# / location? ws* (communication ws* eol# / message ws* eol#)
+garbage          <   SEMICOLON (!eol .)+
 communication    <-- content ws* arrow ws* content# ws* state-vector?
 content          <-- instance-event
 state-vector     <   '[' (!']' .)+ ']'
@@ -109,6 +112,7 @@ name             <-- [a-zA-Z_][a-zA-Z_0-9]* / '<external>' / '<q>'
 number           <-- '-'? [0-9]+
 location-number  <-  [0-9]+
 eol              <   [\n]
+space            <   ' '
 ws               <   [ \t]
 ")
   (peg:tree (match-pattern trace ascii)))
@@ -126,15 +130,32 @@ ws               <   [ \t]
     (peg:handle-syntax-error file-name trace)))
 
 (define-immutable-record-type <communication>
-  (make-communication line location left right event direction arrow)
+  (make-communication line left-location left right-location right event direction arrow)
   communication?
   (line communication-line)
+  (left-location communication-left-location)
   (location communication-location)
   (left communication-left)
+  (right-location communication-right-location)
   (right communication-right)
   (event communication-event)
   (direction communication-direction)
   (arrow communication-arrow))
+
+(define (communication-location o)
+  (if (eq? (communication-direction o) 'in)
+      (or (communication-left-location o)
+          (communication-right-location o))
+      (or (communication-right-location o)
+          (communication-left-location o))))
+
+(define (communication-instance->model-path lst)
+  (let ((path (map string->symbol lst)))
+    (match path
+      (('sut port) '(sut))
+      (('sut path ... port) (cons 'sut path))
+      (('<external> path ...) path)
+      (_ path))))
 
 (define (record->alist o)
   (let ((type (record-type-descriptor o)))
@@ -195,17 +216,19 @@ ws               <   [ \t]
     ((('location location) communication)
      (let ((communication (step->communication communication)))
        (and communication
-            (set-field communication (communication-location) location))))
+            (if (not (communication-right communication))
+                (set-field communication (communication-left-location) location)
+                (set-field communication (communication-right-location) location)))))
 
     (('communication left (direction (and arrow (or "<-" "->"))) right)
      (let ((left (step->communication left))
            (right (step->communication right)))
        (cond ((and left right)
-              (make-communication o #f (car left) (car right) (or (cdr left) (cdr right)) direction arrow))
+              (make-communication o #f (car left) #f (car right) (or (cdr left) (cdr right)) direction arrow))
              (left
-              (make-communication o #f (car left) #f (cdr left) direction arrow))
+              (make-communication o #f (car left) #f #f (cdr left) direction arrow))
              (right
-              (make-communication o #f #f (car right) (cdr right) direction arrow))
+              (make-communication o #f #f #f (car right) (cdr right) direction arrow))
              (else (throw 'incommunicado o)))))
 
     (((and communication ('communication t ...)))
@@ -234,6 +257,24 @@ ws               <   [ \t]
           (communication-right c)))))
 
 (define (merge-communications steps)
+  (define (merge step step2)
+    (let* ((event (or (communication-event step)
+                      (communication-event step2)))
+           (communication (cond
+                           ((communication-left step)
+                            (set-fields step
+                                        ((communication-right-location) (communication-right-location step2))
+                                        ((communication-right) (communication-right step2))))
+                           (else
+                            (set-fields step
+                                        ((communication-left-location) (communication-left-location step2))
+                                        ((communication-left) (communication-left step2))))))
+           (communication (cond
+                           ((communication-event communication)
+                            communication)
+                           (else
+                            (set-field communication (communication-event) event)))))
+      communication))
   (if (code-pijltjes? steps) steps
       (let loop ((steps steps))
         (if (null? steps) '()
@@ -244,14 +285,7 @@ ws               <   [ \t]
                            (if (null? (cdr steps)) (list step)
                                (let ((step2 (cadr steps)))
                                  (if (not (communication? step2)) (loop (cons step (cddr steps)))
-                                     (let* ((event (or (communication-event step)
-                                                       (communication-event step2)))
-                                            (communication (if (communication-left step)
-                                                               (set-field step (communication-right) (communication-right step2))
-                                                               (set-field step (communication-left) (communication-left step2))))
-                                            (communication (if (communication-event communication) communication
-                                                               (set-field communication (communication-event) event))))
-                                       (cons communication (loop (cddr steps)))))))))))))
+                                     (cons (merge step step2) (loop (cddr steps))))))))))))
 
 (define (communication->string o)
   (let* ((event (communication-event o))
@@ -321,6 +355,9 @@ ws               <   [ \t]
 (define (state->string o)
   (with-output-to-string (cut display (cons 'state (state-sexp o)))))
 
+(define (trail->string o)
+  (with-output-to-string (cut display (cons 'trail (trail-sexp o)))))
+
 (define (step->code o)
   (cond ((communication? o) (communication->code o))
         ((eligible? o) (eligible->string o))
@@ -350,16 +387,19 @@ ws               <   [ \t]
        (q-instance? (communication-right o))))
 
 (define (step->event o)
-  (let ((instance (cond ((and=> (communication-left o) external-instance?) (communication-left o))
-                        ((and=> (communication-right o) external-instance?) (communication-right o))
-                        ((and=> (communication-left o) q-instance?) (communication-right o))
-                        (else (if (communication-left o) (communication-left o)
-                                  (communication-right o))))))
-    (string-join
-     (append
-      (cdr instance)
-      (list (communication-event o)))
-     ".")))
+  (cond ((communication? o)
+         (let ((instance (cond ((and=> (communication-left o) external-instance?) (communication-left o))
+                               ((and=> (communication-right o) external-instance?) (communication-right o))
+                               ((and=> (communication-left o) q-instance?) (communication-right o))
+                               (else (if (communication-left o) (communication-left o)
+                                         (communication-right o))))))
+           (string-join
+            (append
+             (cdr instance)
+             (list (communication-event o)))
+            ".")))
+        ((message? o)
+         (message->string o))))
 
 (define* (trace:step->trace:code pijltjes #:key debug?)
   (let* ((steps (trace:trace->steps pijltjes #:debug? debug?))
@@ -367,18 +407,15 @@ ws               <   [ \t]
          (foo (when debug? (format (current-error-port) "steps:") (pretty-print steps (current-error-port))))
          (steps (map (lambda (s) (or (step->communication s) s)) steps))
          (merged (merge-communications steps))
-         (communications (filter (disjoin state? (conjoin (negate q-out?) communication?)) merged)))
+         (communications (filter (disjoin state? message? (conjoin (negate q-out?) communication?)) merged)))
     (string-join (map step->code communications) "\n" 'suffix)))
 
 (define (serialize o)
   (let ((x (record->alist o)))
-
     (match x
       (('<communication> ('line line ...) rest ...) `((communication ,@rest)))
-      (('state ('sexp . sexp)) (format (current-error-port) "X: ~s\n" sexp) (warn 'Y: (list (with-input-from-string sexp read)))
-       )
+      (('state ('sexp . sexp)) (format (current-error-port) "X: ~s\n" sexp) (warn 'Y: (list (with-input-from-string sexp read))))
       (_ (list x)))))
-
 
 (define (seqdiag:get-model sexp)
   (let* ((inits (filter (compose (cut equal? <> "Initialize") (cut assoc-ref <> "kind"))
@@ -486,7 +523,252 @@ ws               <   [ \t]
          (structured (map (lambda (s) (or (step->communication s) s)) steps)))
     structured))
 
-(define* (trace:format-trace trace #:key file-name format debug?)
+
+;;;
+;;; Diagram
+;;;
+(define (instance->string instance)
+  (match instance
+    ((? string?) instance)
+    ((? symbol?) (symbol->string instance))
+    ((? pair?) (string-join (map symbol->string instance) "."))))
+
+(define (center reference string)
+  (let* ((reference (instance->string reference))
+         (string (instance->string string))
+         (width (string-length reference))
+         (len (string-length string))
+         (left-margin (max 0 (quotient (- width len) 2)))
+         (pad-left (make-string left-margin #\space))
+         (right-margin (max 0 (- width len left-margin)))
+         (pad-right (make-string right-margin #\space)))
+    (string-append pad-left string pad-right)))
+
+(define (location-length o)
+  (cond ((communication? o)
+         (max (location-length (communication-left-location o))
+              (location-length (communication-right-location o))))
+        ((message? o)
+         (location-length (message-location o)))
+        ((string? o)
+         (string-length o))
+        (else
+         0)))
+
+(define* (step:steps->diagram header steps #:key internal?)
+  (let* ((header (header-sexp header))
+         (spacing 30)
+         (spacer (make-string spacing #\space))
+         (sut (find (compose (cut equal? <> '(sut)) car) header))
+         (sut-name (and sut (cadr sut)))
+         (locations? (command-line:get 'locations))
+         (location-width (and locations? (apply max (map location-length steps)))))
+    (define (instance->head instance)
+      (match instance
+        ((('sut) type kind)
+         (center spacer type))
+        (('sut)
+         (center spacer sut-name))
+        ((('sut path ...) type kind)
+         (center spacer (cons sut-name path)))
+        ((name type 'provides)
+         (center name name))
+        ((name type 'requires)
+         (center name name))
+        ((name type 'component)
+         (center name name))
+        ((name type 'system)
+         (center name name))
+        ((name)
+         (center name name))
+        (_
+         (center spacer (format #f "~a" instance)))))
+    (define (port-instance->name o)
+      (match o
+        (('sut)
+         (symbol->string sut-name))
+        (('sut path ...)
+         (let* ((instance (find (compose (cut equal? o <>) car) header))
+                (kind (match instance ((name type kind) kind))))
+           (if (or internal? (memq kind '(foreign provides requires))) (string-join (map symbol->string (cons sut-name path)) ".")
+               (symbol->string sut-name))))
+        ((port)
+         (symbol->string port))
+        ((path ... port) ;; FIXME: bug in trace
+         (symbol->string port))))
+    (define (instance->life instance)
+      (match instance
+        ((name type 'provides)
+         ".")
+        ((name type 'requires)
+         ".")
+        ((name type 'component)
+         ":")
+        (_
+         ":")))
+
+    (let* ((header-instances (filter (match-lambda ((path name type) (not (eq? type 'system)))) header))
+           (header-instances (if internal? header-instances
+                                 (delete-duplicates
+                                  (map (lambda (h)
+                                         (match h
+                                           ((('sut path ...) type 'component)
+                                            sut)
+                                           ((('sut path ...) type 'foreign)
+                                            sut)
+                                           (_ h)))
+                                       header-instances))))
+           (header-names (map instance->head header-instances))
+           (header-line (string-trim-right (string-join header-names))))
+
+      (let* ((life-line (let loop ((instances header-instances) (pos 0))
+                          (if (null? instances) '()
+                              (let* ((instance (car instances))
+                                     (rest (cdr instances))
+                                     (name (string-trim-both (instance->head instance)))
+                                     (header-name (string-append
+                                                   (if (zero? pos) "" " ")
+                                                   name
+                                                   (if (null? rest) "" " ")))
+                                     (index (+ (string-contains header-line header-name)
+                                               (if (zero? pos) 0 1)
+                                               (modulo (string-length name) 2)
+                                               (quotient (string-length name) 2)))
+                                     (segment (string-append (make-string (- index pos 1) #\space)
+                                                             (instance->life instance))))
+                                (cons segment (loop (cdr instances) index))))))
+             (life-line (string-join life-line ""))
+             (width (1- (string-length header-line))))
+
+        (define* (location-prefix step #:key from?)
+          (let* ((location (cond ((and (communication? step)
+                                       (or (and from?
+                                                (eq? (communication-direction step) 'in))
+                                           (and (not from?)
+                                                (eq? (communication-direction step) 'out))))
+                                  (communication-left-location step))
+                                 ((communication? step)
+                                  (communication-right-location step))
+                                 ((message? step)
+                                  (message-location step))
+                                 (else ""))))
+            (if (not locations?) ""
+                (let* ((padding (- location-width (or (and location (string-length location)) 0)))
+                       (padding (if (string-prefix? "  " life-line) padding (+ padding 2)))
+                       (padding (make-string padding #\space)))
+                  (string-append location padding)))))
+
+        (define (communication->life communication)
+          (let* ((event (communication-event communication)))
+            (if (or (not (string? event))
+                    (not (list? (communication-left communication)))
+                    (not (list? (communication-right communication)))
+                    (not (string? (communication-arrow communication))))
+                (begin
+                  (format (current-error-port) "communication-error: ~s\n" communication)
+                  '())
+                (let* ((left (communication-left communication))
+                       (left (communication-instance->model-path left))
+                       (left (string-trim-both (port-instance->name left)))
+                       (left-margin (cond
+                                     ((string-prefix? (string-append left " ") header-line)
+                                      (quotient (1- (string-length left)) 2))
+                                     ((string-suffix? (string-append " " left) header-line)
+                                      (- width (quotient (string-length left) 2)))
+                                     (else (+ (or (string-contains header-line (string-append " " left " ")) 0)
+                                              (modulo (string-length left) 2)
+                                              (quotient (string-length left) 2)))))
+                       (right (communication-right communication))
+                       (right (communication-instance->model-path right))
+                       (right (string-trim-both (port-instance->name right)))
+                       (right-margin (cond
+                                      ((string-prefix? (string-append right " ") header-line)
+                                       (quotient (string-length right) 2))
+                                      ((string-suffix? (string-append " " right) header-line)
+                                       (- width (quotient (string-length right) 2)))
+                                      (else (+ (or (string-contains header-line (string-append " " right " ")) 0)
+                                               (modulo (string-length right) 2)
+                                               (quotient (string-length right) 2)))))
+                       (swap left-margin)
+                       (swap? (<  right-margin left-margin))
+                       (left-margin (if swap? right-margin left-margin))
+                       (right-margin (if swap? swap right-margin))
+                       (arrow (communication-arrow communication))
+                       (arrow (if swap? (assoc-ref `(("<-" . "->") ("->" . "<-")) arrow)
+                                  arrow)))
+                  (cond
+                   ((equal? arrow "->")
+                    (catch #t
+                      (lambda _
+                        (let* ((line (string-append
+                                      (substring life-line 0 (1+ left-margin))
+                                      event))
+                               (len (string-length line))
+                               (arrow (string-append (make-string (- right-margin left-margin 2) #\-) ">"))
+                               (arrow-line (string-append
+                                            (substring life-line 0 (1+ left-margin))
+                                            arrow))
+                               (arrow-len (string-length arrow-line)))
+                          (list (string-append (location-prefix "") life-line)
+                                (string-append
+                                 (location-prefix communication #:from? #t)
+                                 line
+                                 (substring life-line len))
+                                (string-append
+                                 (location-prefix communication #:from? #f)
+                                 arrow-line
+                                 (substring life-line arrow-len)))))
+                      (lambda (key . args)
+                        (format (current-error-port) "<- ~a ~s\n" key args)
+                        (list ">>>>>" life-line))))
+                   ((equal? arrow "<-")
+                    (catch #t
+                      (lambda _
+                        (let ((arrow (string-append "<" (make-string (- right-margin left-margin 2) #\-))))
+                          (list (string-append (location-prefix "") life-line)
+                                (string-append
+                                 (location-prefix communication #:from? #t)
+                                 (substring life-line 0 (- right-margin (string-length event) 0))
+                                 event
+                                 (substring life-line right-margin))
+                                (string-append
+                                 (location-prefix communication #:from? #f)
+                                 (substring life-line 0 (- right-margin (string-length arrow) 0))
+                                 arrow
+                                 (substring life-line right-margin)))))
+                      (lambda (key . args)
+                        (format (current-error-port) "<- ~a ~s\n" key args)
+                        (list "<<<<<" life-line)))))))))
+
+        (define (message->life step)
+          (list (string-append (location-prefix step) life-line " " (message-message step))))
+
+        (cons* (string-append (location-prefix "") header-line)
+               (string-append (location-prefix "") life-line)
+               (let loop ((steps steps))
+                 (if (null? steps) '()
+                     (let* ((step (car steps))
+                            (tail (cdr steps))
+                            (next (and (pair? tail) (car tail)))
+                            (communicating? (communication? next))
+                            (lines (cond ((communication? step)
+                                          (communication->life step))
+                                         ((message? step)
+                                          (message->life step))
+                                         ((eligible? step)
+                                          (if communicating? '()
+                                              (list (eligible->string step))))
+                                         ((state? step)
+                                          (if communicating? '()
+                                              (list (state->string step))))
+                                         ((labels? step)
+                                          (list (labels->string step)))
+                                         ((trail? step)
+                                          (if communicating? '()
+                                              (list (trail->string step)))))))
+                       (append lines (loop tail))))))))))
+
+(define* (trace:format-trace trace #:key file-name format internal? debug?)
   (let* ((structured (trace:trace->structured trace #:file-name file-name #:debug? debug?))
          (merged (merge-communications structured)))
     (cond ((equal? format "sexp") (if (dzn:command-line:get 'json) (scm->json-string (map serialize structured))
@@ -494,15 +776,22 @@ ws               <   [ \t]
           ((equal? format "event")
            (let ((communications (filter (conjoin (negate q-out?) external?) merged)))
              (string-join (map step->event communications) "\n" 'suffix)))
+          ((equal? format "diagram")
+           (let ((communications (filter (disjoin (conjoin (negate q-out?)
+                                                           (if internal? communication? external?))
+                                                  eligible? labels? message? state? trail?)
+                                         merged)))
+             (let ((header (find header? structured)))
+               (string-join (step:steps->diagram header communications #:internal? internal?) "\n" 'suffix))))
           (else
            (let ((communications (filter (disjoin (conjoin (negate q-out?) communication?)
                                                   message? state?)
                                          merged)))
              (string-join (map step->code communications) "\n" 'suffix))))))
 
-(define* (format-trace trace #:key file-name format debug?)
+(define* (format-trace trace #:key file-name format internal? debug?)
   (if (seqdiag:trace? trace) (seqdiag:format-trace trace)
-      (trace:format-trace trace #:file-name file-name #:format format #:debug? debug?)))
+      (trace:format-trace trace #:file-name file-name #:format format #:internal? internal? #:debug? debug?)))
 
 (define (main args)
   (let* ((options (parse-opts args))
@@ -513,6 +802,7 @@ ws               <   [ \t]
                     (if (equal? file-name "-") (read-string)
                         (with-input-from-file (car files) read-string))))
          (format (option-ref options 'format "event"))
+         (internal? (command-line:get 'internal #f))
          (debug? (dzn:command-line:get 'debug)))
-    (display (format-trace trace #:file-name file-name #:format format #:debug? debug?))
+    (display (format-trace trace #:file-name file-name #:format format #:internal? internal? #:debug? debug?))
     ""))

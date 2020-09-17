@@ -4985,12 +4985,17 @@ The @var{option}s can be among the following:
 
 @item --format=@var{format}
 @itemx -f @var{format}
-Display trace in format @var{format}.  The default is @var{code}, other
-choices are @var{event} and @var {sexp}.
+Display trace in format @var{format}, one of @code{diagram},
+@code{event}, or @code{sexp}.  The default is @code{code}.
 
 @item --help
 @itemx -h
 Display help on invoking @code{dzn trace}, and then exit.
+
+@item --internal
+Show communication between components in the system.  When using the
+option @option{--format=diagram} on a system trace, the communication
+between components in the system is hidden by default.
 
 @item --locations
 @itemx -L
