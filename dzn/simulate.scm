@@ -262,7 +262,7 @@
        (or (and deadlock-check? (check-deadlock pc event))
            '())))))
 
-(define* (run-trail trail #:key deadlock-check?)
+(define* (run-trail trail #:key deadlock-check? locations? trace verbose?)
   "Run TRAIL on (%SUT) and produce a trace on STDOUT."
   (define (trail-input pc)
     (let ((trail (.trail pc)))
@@ -272,7 +272,10 @@
             (%debug "  pop trail ~s ~s\n" event trail)
             (values event (clone pc #:trail trail))))))
   (let ((pc (make-pc #:trail trail)))
-    (report (list (list pc)))
+    (when (equal? trace "trace")
+      (serialize-header (.state pc) (current-output-port))
+      (newline))
+    (report (list (list pc)) #:trace trace #:header #t)
     (parameterize ((%next-input (if (pair? trail) trail-input read-input)))
       (let loop ((pcs (list pc)))
         (let ((traces (append-map
@@ -281,7 +284,7 @@
           (when (pair? traces)
             (let* ((traces (filter-match-error traces))
                    (pcs (map car traces)))
-              (report traces)
+              (report traces #:locations? locations? #:trace trace #:verbose? verbose?)
               (when (pair? pcs)
                 (loop pcs)))))))))
 
@@ -368,7 +371,8 @@
     (%next-input read-input)
     (%pc)))
 
-(define* (simulate* root trail #:key deadlock-check? model-name strict?)
+(define* (simulate* root trail #:key deadlock-check? model-name strict? trace
+                    locations? verbose?)
   "Entry point for simulate library: start simulate session for MODEL,
 following TRAIL.  When STRICT?, the trail must include all observable
 events.  When deadlock-check?, run check-deadlock at the end."
@@ -380,9 +384,16 @@ events.  When deadlock-check?, run check-deadlock at the end."
     (parameterize ((%strict? strict?)
                    (%sut (runtime:get-sut root (ast:get-model root model-name))))
       (parameterize ((%instances (runtime:system* (%sut))))
-        (run-trail trail #:deadlock-check? deadlock-check?)))))
+        (run-trail trail
+                   #:deadlock-check? deadlock-check?
+                   #:locations? locations?
+                   #:trace trace
+                   #:verbose? verbose?)
+        (when (equal? trace "trace")
+          (format #t "~a\n" (cons "eligible" (labels))))))))
 
-(define* (simulate root #:key deadlock-check? model-name strict? trail)
+(define* (simulate root #:key deadlock-check? model-name strict? trace trail
+                   locations? verbose?)
   "Entry-point for the command module: dzn simulate: start simulate
 session for MODEL, following TRAIL.  When STRICT?, the trail must
 include all observable events.  When deadlock-check?, run check-deadlock
@@ -396,4 +407,7 @@ at the end."
     (simulate* root trail
                #:deadlock-check? deadlock-check?
                #:model-name model-name
-               #:strict? strict?)))
+               #:strict? strict?
+               #:trace trace
+               #:locations? locations?
+               #:verbose? verbose?)))

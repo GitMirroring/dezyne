@@ -159,6 +159,164 @@
 
 
 ;;;
+;;; Trace (a.k.a. micro trace)
+;;;
+
+(define* (trace-step? pc)
+  (let ((instance (.instance pc))
+        (statement (.statement pc)))
+    (match statement
+      (#f (or (.trigger pc) (.reply pc)))
+      (($ <initial-compound>)
+       (let ((trigger (.trigger pc)))
+         (not (member (.event.name trigger) '("optional" "inevitable")))))
+      ((and ($ <trigger>) (= .event.name 'error)) #t)
+      ((and ($ <trigger>) (= .event.name (? (cut member <> '("optional" "inevitable"))))) #f)
+      (($ <trigger>) #t)
+      (($ <trigger-return>)
+       (and (not (is-a? (.event (.trigger pc)) <modeling-event>))
+            (let ((port (.port statement)))
+              (or (runtime:boundary-port? instance)
+                  (is-a? (parent statement <model>) <interface>)
+                  (and port
+                       (not (ast:async? port))
+                       (or (ast:provides? port)
+                           (let ((r:other-port (runtime:other-port (runtime:port instance port))))
+                             (and (runtime:boundary-port? r:other-port)
+                                  (ast:provides? (.ast r:other-port))))))))))
+      (($ <trigger-return-trace>) #t)
+      (($ <action>) #t)
+      (($ <q-in>) #t)
+      (($ <q-out>) #t)
+      (($ <q-trigger>) #t)
+      (_ #f))))
+
+(define* (display-trace o #:key locations? verbose?)
+  (let ((interface? (is-a? ((compose .type .ast %sut)) <interface>)))
+    (let loop ((steps (reverse o)) (first? #f) (port #f) (reply #f))
+      (when (pair? steps)
+        (let* ((pc (car steps))
+               (instance (.instance pc))
+               (trigger (.trigger pc))
+               (statement (.statement pc))
+               (port (or (and statement port) (and trigger (.port.name trigger))))
+               (reply (or (.reply pc)
+                          (and (is-a? statement <trigger-return>) "return")
+                          (and (not (is-a? statement <initial-compound>)) reply))))
+          (let* ((trace-step? (trace-step? pc))
+                 (first? (if trace-step? (not first?) first?))
+                 (location (if locations? (or (step->location statement)
+                                              (step->location ((compose .type .ast %sut)))
+                                              "<unknown-file>:")
+                               "")))
+
+            (define (step->string pc)
+              (let* ((instance (or (.instance pc) instance))
+                     (statement (.statement pc))
+                     (trigger (.trigger pc))
+                     (instance (cond (instance (runtime:instance->string instance))
+                                     (else "<external>")))
+                     (port (and (or (not (string-prefix? "<external>" instance))
+                                    (equal? "<external>" instance))
+                                port))
+                     (event (statement->string (cond ((is-a? statement <initial-compound>) trigger)
+                                                     ((and (is-a? statement <trigger-return>) reply)
+                                                      (clone statement #:expression reply))
+                                                     (statement)
+                                                     (reply (make <trigger-return> #:port.name port #:expression reply))
+                                                     (trigger)
+                                                     (else #f)))))
+                (and event (format #f "~a.~a" instance event))))
+
+            (cond ((not trace-step?)
+                   (when (and locations? verbose?)
+                     (let ((string (step->string pc)))
+                       (when string
+                         (format #t "~a~a\n" location (step->string pc))))))
+                  (else
+                   (let* ((swap? (or (is-a? statement <trigger-return>)
+                                     (and (is-a? statement <action>)
+                                          (ast:out? statement))
+                                     (and (not statement) reply)
+                                     (and (is-a? statement <trigger>)
+                                          (runtime:boundary-port? instance)
+                                          (ast:out? statement)
+                                          #t)
+                                     (and (is-a? statement <initial-compound>)
+                                          (is-a? trigger <q-trigger>))
+                                     (is-a? statement <q-in>)
+                                     (is-a? statement <q-out>)
+                                     (is-a? statement <q-trigger>)))
+                          (arrow (if swap? " <- " " -> "))
+                          (other-side (if interface? (statement->string statement)
+                                          "..."))
+                          (left-string (if (eq? first? swap?) other-side (step->string pc)))
+                          (right-string (if (eq? first? swap?) (step->string pc) other-side)))
+                     (format #t "~a~a~a\n" left-string arrow right-string))))
+
+            (cond
+             ((and (is-a? statement <action>)
+                   (ast:out? statement)
+                   (runtime:boundary-port? instance)
+                   (ast:requires? (.ast instance)))
+              (let* ((q-trigger (make <q-trigger> #:event.name (.event.name statement)
+                                      #:port.name port))
+                     (q-in (make <q-in> #:trigger q-trigger))
+                     (other-port (runtime:other-port (runtime:port instance port)))
+                     (instance (.container other-port))
+                     (pc (clone pc #:instance instance #:statement q-in)))
+                (loop (cons pc (cdr steps)) first? port reply)))
+             ((and (is-a? statement <action>)
+                   instance
+                   (ast:out? statement)
+                   (not (runtime:boundary-port? instance))
+                   (let* ((port (.port trigger))
+                          (r:other-port (runtime:other-port (runtime:port instance port))))
+                     (runtime:boundary-port? r:other-port)))
+              (let* ((port (.port trigger))
+                     (r:other-port (runtime:other-port (runtime:port instance port)))
+                     (pc (clone pc #:instance #f #:statement statement)))
+                (loop (cons pc (cdr steps)) first? port reply)))
+             ((and (is-a? statement <trigger-return>)
+                   (runtime:boundary-port? instance))
+              (let* ((other-port (runtime:other-port (runtime:port instance port)))
+                     (instance (.container other-port))
+                     (name (.name (.ast other-port)))
+                     (other-statement (clone statement #:port.name name))
+                     (pc (clone pc #:instance instance #:statement other-statement)))
+                (loop (cons pc (cdr steps)) first? port reply)))
+             ((and (is-a? statement <trigger-return>)
+                   (not (is-a? statement <trigger-return-trace>))
+                   (not (is-a? instance <runtime:port>))
+                   (let* ((trigger (clone statement #:port.name (.port.name statement)))
+                          (trigger (clone trigger #:parent (.type (.ast instance))))
+                          (port-name (.port.name statement))
+                          (port (.port trigger)))
+                     (and port
+                          (let* ((r:port (runtime:port instance port))
+                                 (r:other-port (runtime:other-port r:port)))
+                            (not (and (runtime:boundary-port? r:other-port)
+                                      (ast:requires? (.ast r:other-port))))))))
+              (let* ((trigger (clone statement #:port.name (.port.name statement)))
+                     (component (.type (.ast instance)))
+                     (trigger (clone trigger #:parent component))
+                     (port-name (.port.name statement))
+                     (other-port (.port trigger))
+                     (r:port (runtime:port instance other-port))
+                     (r:other-port (runtime:other-port r:port))
+                     (other-instance (.container r:other-port))
+                     (name (.name (.ast r:other-port)))
+                     (other-statement (make <trigger-return-trace>
+                                        #:port.name name
+                                        #:expression (.expression statement)))
+                     (pc (clone pc #:instance other-instance #:statement other-statement)))
+                (loop (cons pc (cdr steps)) first? port reply)))
+
+             (else
+              (loop (cdr steps) first? port reply)))))))))
+
+
+;;;
 ;;; Report
 ;;;
 
@@ -200,6 +358,19 @@
     ((and ($ <trigger-return>) (= .expression expression) (= .port.name port))
      (string-append (statement->string port) "." (statement->string expression)))
     ((and ($ <trigger-return>) (= .expression #f)) "return")
+
+    ;; trace completion
+    ((and ($ <trigger-return-trace>) (= .expression #f) (= .port.name #f))
+     "return")
+    ((and ($ <trigger-return-trace>) (= .expression #f) (= .port.name port))
+     (string-append (statement->string port) ".return"))
+    ((and ($ <trigger-return-trace>) (= .expression expression) (= .port.name #f))
+     (statement->string expression))
+    ((and ($ <trigger-return-trace>) (= .expression expression) (= .port.name port))
+     (string-append (statement->string port) "." (statement->string expression)))
+    ((and ($ <trigger-return-trace>) (= .expression #f)) "return")
+
+
     ((? number?) (number->string o))
     ("void" "return")
     ((? string?) o)
@@ -351,7 +522,7 @@
          (labels (map (cut string-append port-name "." <>) labels)))
     labels))
 
-(define (report traces)
+(define* (report traces #:key header (trace "event") locations? verbose?)
   (let* ((pcs (map car traces))
          (pc (car pcs))
          (status (.status pc))
@@ -359,13 +530,18 @@
     (when initial-message
       (display initial-message (current-error-port)))
 
-    ;; XXX FIXME: handle set of (non-deterministic) traces.
-    (display-trails traces)
+    ;; XXX TODO: handle set of (non-deterministic) traces.
+    ;;(for-each display-trace-n traces (iota (length traces)))
+    (cond ((equal? trace "event")
+           (display-trails traces))
+          ((equal? trace "trace")
+           (display-trace (car traces)
+                          #:locations? locations? #:verbose? verbose?)))
 
     (serialize (.state (car pcs)) (current-output-port))
     (newline)
 
-    (when (and (equal? format "trace") initial-message)
+    (when (and (equal? trace "trace") initial-message)
       (display initial-message))
     (let ((final-messages (final-error-messages traces)))
       (when final-messages
@@ -373,6 +549,13 @@
       (when (is-a? status <end-of-trail>)
         (let ((labels (end-of-trail-labels pc)))
           (format #t "~a\n" (cons "labels" labels))))
+
+      (when (equal? trace "trace")
+        (when (pair? traces)
+          (let* ((trail (trace->trail (car traces)))
+                 (trail (map cdr trail)))
+            (when (pair? trail)
+              (format #t "~a\n" (cons "trail" trail))))))
 
       (when status
         (exit EXIT_FAILURE)))))

@@ -34,12 +34,15 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((help (single-char #\h))
+          '((format (single-char #\f) (value #t))
+            (help (single-char #\h))
             (import (single-char #\I) (value #t))
+            (locations (single-char #\l))
             (model (single-char #\m) (value #t))
             (no-deadlock (single-char #\D))
             (strict (single-char #\s))
-            (trail (single-char #\t) (value #t))))
+            (trail (single-char #\t) (value #t))
+            (verbose (single-char #\v))))
 	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
@@ -51,11 +54,16 @@ Usage: dzn simulate [OPTION]... [FILE]...
 Simulate a Dezyne model
 
   -D, --no-deadlock      skip the deadlock check
+  -f, --format=FORMAT    display trace in format FORMAT [event] {event,trace}
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
+  -l, --locations        prepend locations to output trail,
+                           implies --format=trace
   -m, --model=MODEL      generate main for MODEL
   -s, --strict           use strict matching of trail
   -t, --trail=TRAIL      use trail=TRAIL [read from stdin]
+  -v, --verbose          show non-communication steps in trace,
+                           implies --format=trace --locations
 ")
           (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
@@ -71,9 +79,15 @@ Simulate a Dezyne model
          (ast (parse parse-options file-name))
          (no-deadlock? (option-ref options 'no-deadlock #f))
          (strict? (command-line:get 'strict #f))
+         (verbose? (command-line:get 'verbose #f))
+         (locations? (command-line:get 'locations verbose?))
+         (trace (command-line:get 'format (if locations? "trace" "event")))
          (trail (option-ref options 'trail #f)))
     (simulate ast
               #:model-name model-name
               #:deadlock-check? (not no-deadlock?)
+              #:locations? locations?
               #:strict? strict?
-              #:trail trail)))
+              #:trace trace
+              #:trail trail
+              #:verbose? verbose?)))

@@ -45,6 +45,7 @@
             <q-in>
             <q-out>
             <q-trigger>
+            <trigger-return-trace>
 
             <state>
             <system-state>
@@ -124,6 +125,8 @@
 
 (define-ast <silent-step> (<imperative>)
   (trigger))
+
+(define-ast <trigger-return-trace> (<trigger-return>))
 
 (define-ast <acceptances> (<ast-list>))
 
