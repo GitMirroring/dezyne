@@ -363,8 +363,11 @@
 ;;; State / locals / assign
 ;;;
 
+(define-method (get-state (o <system-state>) (instance <runtime:instance>))
+  (find (compose (cute eq? <> instance) .instance) (.state-list o)))
+
 (define-method (get-state (o <program-counter>) (instance <runtime:instance>))
-  (find (compose (cute eq? <> instance) .instance) ((compose .state-list .state) o)))
+  (get-state (.state o) instance))
 
 (define-method (get-state (o <program-counter>))
   (get-state o (.instance o)))
@@ -484,19 +487,21 @@
 
 (define-method (serialize-header (o <system-state>) port)
   (display "(header " port)
-  (for-each (lambda (x) (unless (eq? x ((compose car .state-list) o))
-                          (display " " port))
-                    (serialize-header x port))
-            (.state-list o))
+  (for-each (lambda (x)
+              (unless (eq? x ((compose car %instances)))
+                (display " " port))
+              (serialize-header x port))
+            (filter (disjoin (negate (is? <runtime:port>))
+                             runtime:boundary-port?)
+                    (%instances)))
   (display ")" port))
 
-(define-method (serialize-header (o <state>) port)
+(define-method (serialize-header (o <runtime:instance>) port)
   (display "(" port)
-  (let* ((instance (.instance o))
-         (model (.ast instance))
+  (let* ((model (.ast o))
          (name (ast:dotted-name (.type model)))
-         (kind (runtime:kind instance)))
-    (display (runtime:instance->path instance) port)
+         (kind (runtime:kind o)))
+    (display (runtime:instance->path o) port)
     (display " " port)
     (display name port)
     (display " " port)

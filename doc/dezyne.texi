@@ -4918,6 +4918,11 @@ The @var{option}s can be among the following:
 @itemx -D
 Do not run the deadlock check.
 
+@item --format=@var{format}
+@itemx -f @var{format}
+Print trace in format @var{format}; one of @code{event}, @code{trace}.
+The default is @code{event}.
+
 @item --help
 @itemx -h
 Display help on invoking @code{dzn simulate}, and then exit.
@@ -4925,6 +4930,10 @@ Display help on invoking @code{dzn simulate}, and then exit.
 @item --import=@var{dir}
 @itemx -I @var{dir}
 Add directory @var{dir} to the import path.
+
+@item --locations
+@itemx -l
+Display locations in the trace, this implies @option{--format=@code{trace}}.
 
 @item --model=@var{model}
 @itemx -m @var{model}
@@ -4939,6 +4948,11 @@ observable events.
 @item --trail=@var{trail}
 @itemx -t @var{trail}
 Use trail @var{trail}.  The default is to read from @code{stdin}.
+
+@item --verbose
+@itemx -v
+Display non-communication steps in the trace, this implies
+@option{--format=@code{trace}}, @option{--locations}.
 
 @end table
 
