@@ -44,7 +44,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       - Injected?
   - Pass customer models internally
   - Support binary release
-    + Solicit and incorporate feedback on 2.10.0.rc12
+    + Solicit and incorporate feedback on 2.10.0.rc14
   - Contact users with binary release announcement
 
 ** Release 2.11, unsorted
@@ -58,7 +58,25 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       - GNU Emacs
       - VIM/Alternative editor
 
+  - outcome meeting 17-09-2020
+    + fix 8sync related bug/workaround (info Robw)
+    + stderr related bug in combination with pipe and/or websocket (info Robw)
+    + make sequence diagram events stationary buttons in Gojs (info Pee)
+    + (2.10.1 or 2.11 tbd) implement exception wrappers for TFS (info Johri/Regtur)
+    + (2.10.1 or 2.11 tbd) fix C++17 requires keyword conflict (info Johri/Regtur)
+    + decision: we share javascript/scheme code generators only with selected users
+    + remove state diagram
+    + write 2.11 getting started (medium & format tbd)
+
+** Release 2.12
+  - state diagram
+  - LSP: highlighting & completion (80%)
+  - browser click via LSP
+  - hiding daemon from user
+
 ** Release 3.0, unsorted
+  - Update architecture for:
+    + language extension (nested behaviours, weak illegals, aggregate interfaces, system behaviours, requirements, etc.)
   - Release on savannah.nongnu.org; create dezyne-devel@nongnu.org,
     bug-dezyne@nongnu.org
     + All READMEs.
@@ -66,16 +84,16 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Source build on Buster
   - Documentation
     + Finish and merge wip-doc branch.
-     - Merge snippets/tests with doc/dezyne.texi.
-     - Remove error messages.
-     - Generate images.
+      - Merge snippets/tests with doc/dezyne.texi.
+      - Remove error messages.
+      - Generate images.
   - Resurrect C++03 support
   - Resurrect C# support
   - Fully support IDE release
     + Finish and merge wip-namespace
   - Eradicate remnants of cloud-based solution
     - Document access to examples, runtime.
-    + Remove dzn ls, dzn cat and dependencies
+    - Remove dzn ls, dzn cat and dependencies
   - dzn graph/ltsgraph (lts --graph?): The original dzn lts by Johri
   - dzn lts + states: simple but correct dot-based state charts
   - Nsis-based installer for Windows
