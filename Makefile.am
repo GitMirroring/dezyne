@@ -138,7 +138,7 @@ EXTRA_DIST +=						\
  doc/semantics/direct_multiple_out2.dzn			\
  doc/semantics/direct_out.dzn				\
  doc/semantics/external_multiple_out.dzn		\
- doc/semantics/indirect_blocking_multiple_out.dzn	\
+ doc/semantics/indirect_blocking_multiple_external_out.dzn	\
  doc/semantics/indirect_blocking_out.dzn		\
  doc/semantics/indirect_multiple_out1.dzn		\
  doc/semantics/indirect_multiple_out2.dzn		\
