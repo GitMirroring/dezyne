@@ -3882,7 +3882,7 @@ the component is such that the provided behaviour is the same in both
 cases.
 
 @example
-@verbatiminclude semantics/indirect_blocking_multiple_out.dzn
+@verbatiminclude semantics/indirect_blocking_multiple_external_out.dzn
 @end example
 
 @image{images/indirect_blocking_multiple_external_out,,,,.png}

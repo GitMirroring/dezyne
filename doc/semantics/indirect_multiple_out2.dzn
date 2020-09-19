@@ -1,3 +1,5 @@
+import indirect_multiple_out.dzn;
+
 component indirect_multiple_out2
 {
   provides I p;
