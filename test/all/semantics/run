@@ -1,0 +1,6 @@
+#! /bin/sh
+
+set -x
+mkdir -p test/all/semantics/out
+semantics.sh | tee test/all/semantics/out/semantics.org
+diff -u test/all/semantics/semantics.org test/all/semantics/out/semantics.org

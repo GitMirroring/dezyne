@@ -1,0 +1,376 @@
+* semantics
+
+** direct_in
+p           direct_in            r
+.               :                .
+.               :                .
+.a              :                .
+.-------------->:                .
+.               :                .
+.               :a               .
+.               :--------------->.
+.               :                .
+.               :          return.
+.               :<---------------.
+.               :                .
+.         return:                .
+.<--------------:                .
+(state ((p)) ((sut)) ((r)))
+(trail p.a r.a r.return p.return)
+(state ((p)) ((sut)) ((r)))
+(labels p.a)
+(eligible p.a)
+
+** direct_out
+p           direct_out           r
+.               :                .
+.               :                .
+.               :               a.
+.               :<---------------.
+.               :                .
+.              a:                .
+.<--------------:                .
+(state ((p)) ((sut)) ((r)))
+(trail r.a p.a)
+(state ((p)) ((sut)) ((r)))
+(labels r.a)
+(eligible r.a)
+
+** indirect_out
+p          indirect_out          r
+.               :                .
+.               :                .
+.a              :                .
+.-------------->:                .
+.               :                .
+.               :a               .
+.               :--------------->.
+.               :                .
+.               :               b.
+.               :<---------------.
+.               :                .
+.               :          return.
+.               :<---------------.
+.               :                .
+.              b:                .
+.<--------------:                .
+.               :                .
+.         return:                .
+.<--------------:                .
+(state ((p)) ((sut)) ((r)))
+(trail p.a r.a r.b r.return p.b p.return)
+(state ((p)) ((sut)) ((r)))
+(labels p.a r.b)
+(eligible p.a)
+
+** indirect_in
+p          indirect_in           r
+.               :                .
+.               :                .
+.               :               a.
+.               :<---------------.
+.               :                .
+.               :b               .
+.               :--------------->.
+.               :                .
+.               :          return.
+.               :<---------------.
+(state ((p)) ((sut)) ((r)))
+(trail r.a r.b r.return)
+(state ((p)) ((sut)) ((r)))
+(labels p.a r.a)
+(eligible p.a r.a)
+
+** direct_multiple_out1
+p      direct_multiple_out1      r
+.               :                .
+.               :                .
+.               :               a.
+.               :<---------------.
+.               :                .
+.               :               b.
+.               :<---------------.
+.               :                .
+.              a:                .
+.<--------------:                .
+.               :                .
+.              b:                .
+.<--------------:                .
+(state ((p)) ((sut)) ((r)))
+(trail r.a r.b p.a p.b)
+(state ((p)) ((sut)) ((r)))
+(labels r.a r.b)
+(eligible r.a)
+
+** direct_multiple_out2
+p      direct_multiple_out2      r
+.               :                .
+.               :                .
+.               :               a.
+.               :<---------------.
+.               :                .
+.               :               b.
+.               :<---------------.
+.               :                .
+.              a:                .
+.<--------------:                .
+.               :                .
+.              b:                .
+.<--------------:                .
+(state ((p)) ((sut)) ((r)))
+(trail r.a r.b p.a p.b)
+(state ((p)) ((sut)) ((r)))
+(labels r.a r.b)
+(eligible r.a)
+
+** indirect_multiple_out1
+p     indirect_multiple_out1     r1 r2
+.               :                .  .
+.               :                .  .
+.a              :                .  .
+.-------------->:                .  .
+.               :                .  .
+.               :a               .  .
+.               :--------------->.  .
+.               :                .  .
+.               :               b.  .
+.               :<---------------.  .
+.               :                .  .
+.               :          return.  .
+.               :<---------------.  .
+.               :                .  .
+.               :a               .  .
+.               :------------------>.
+.               :                .  .
+.               :                . b.
+.               :<------------------.
+.               :                .  .
+.               :             return.
+.               :<------------------.
+.               :                .  .
+.              b:                .  .
+.<--------------:                .  .
+.               :                .  .
+.         return:                .  .
+.<--------------:                .  .
+(state ((p)) ((sut)) ((r1)) ((r2)))
+(trail p.a r1.a r1.b r1.return r2.a r2.b r2.return p.b p.return)
+(state ((p)) ((sut)) ((r1)) ((r2)))
+(labels p.a r1.b r2.b)
+(eligible p.a)
+
+** indirect_multiple_out2
+p     indirect_multiple_out2     r1 r2
+.               :                .  .
+.               :                .  .
+.a              :                .  .
+.-------------->:                .  .
+.               :                .  .
+.               :a               .  .
+.               :--------------->.  .
+.               :                .  .
+.               :               b.  .
+.               :<---------------.  .
+.               :                .  .
+.               :          return.  .
+.               :<---------------.  .
+.               :                .  .
+.               :a               .  .
+.               :------------------>.
+.               :                .  .
+.               :                . b.
+.               :<------------------.
+.               :                .  .
+.               :             return.
+.               :<------------------.
+.               :                .  .
+.              b:                .  .
+.<--------------:                .  .
+.               :                .  .
+.         return:                .  .
+.<--------------:                .  .
+(state ((p)) ((sut)) ((r1)) ((r2)))
+(trail p.a r1.a r1.b r1.return r2.a r2.b r2.return p.b p.return)
+(state ((p)) ((sut)) ((r1)) ((r2)))
+(labels p.a r1.b r2.b)
+(eligible p.a)
+
+** indirect_multiple_out3
+p     indirect_multiple_out3     r1 r2
+.               :                .  .
+.               :                .  .
+.a              :                .  .
+.-------------->:                .  .
+.               :                .  .
+.               :a               .  .
+.               :--------------->.  .
+.               :                .  .
+.               :               b.  .
+.               :<---------------.  .
+.               :                .  .
+.               :          return.  .
+.               :<---------------.  .
+.               :                .  .
+.               :a               .  .
+.               :------------------>.
+.               :                .  .
+.               :                . b.
+.               :<------------------.
+.               :                .  .
+.               :             return.
+.               :<------------------.
+.               :                .  .
+.              b:                .  .
+.<--------------:                .  .
+.               :                .  .
+.         return:                .  .
+.<--------------:                .  .
+(state ((p)) ((sut)) ((r1)) ((r2)))
+(trail p.a r1.a r1.b r1.return r2.a r2.b r2.return p.b p.return)
+(state ((p)) ((sut)) ((r1)) ((r2)))
+(labels p.a r1.b r2.b)
+(eligible p.a)
+
+** indirect_blocking_out
+p     indirect_blocking_out      r
+.               :                .
+.               :                .
+.a              :                .
+.-------------->:                .
+.               :                .
+.               :a               .
+.               :--------------->.
+.               :                .
+.               :          return.
+.               :<---------------.
+.               :                .
+.               :               b.
+.               :<---------------.
+.               :                .
+.              b:                .
+.<--------------:                .
+.               :                .
+.         return:                .
+.<--------------:                .
+(state ((p)) ((sut)) ((r) (idle . true)))
+(trail p.a r.a r.return r.b p.b p.return)
+(state ((p)) ((sut)) ((r) (idle . true)))
+(labels p.a r.b)
+(eligible p.a)
+
+** external_multiple_out
+p     external_multiple_out      r
+.               :                .
+.               :                .
+.e              :                .
+.-------------->:                .
+.               :                .
+.               :e               .
+.               :--------------->.
+.               :                .
+.               :          return.
+.               :<---------------.
+.               :                .
+.         return:                .
+.<--------------:                .
+(state ((p) (idle . false)) ((sut) (idle . false)) ((r) (idle . false)))
+.               :                .
+.               :               a.
+.               :<---------------.
+.               :                .
+.               :               b.
+.               :<---------------.
+(state ((p) (idle . false)) ((sut) (idle . false)) ((r) (idle . true)))
+(state ((p) (idle . false)) ((sut) (idle . false)) ((r) (idle . true)))
+.               :                .
+.              a:                .
+.<--------------:                .
+.               :                .
+.              b:                .
+.<--------------:                .
+(state ((p) (idle . true)) ((sut) (idle . true)) ((r) (idle . true)))
+(trail r.b p.a p.b)
+(state ((p) (idle . true)) ((sut) (idle . true)) ((r) (idle . true)))
+(labels p.e r.a r.b)
+(eligible p.e)
+
+** indirect_blocking_multiple_external_out
+p indirect_blocking_multiple_external_out r1 r2
+.                    :                    .  .
+.                    :                    .  .
+.a                   :                    .  .
+.------------------->:                    .  .
+.                    :                    .  .
+.                    :a                   .  .
+.                    :------------------->.  .
+.                    :                    .  .
+.                    :                   b.  .
+.                    :<-------------------.  .
+.                    :                    .  .
+.                    :              return.  .
+.                    :<-------------------.  .
+.                    :                    .  .
+.                    :a                   .  .
+.                    :---------------------->.
+.                    :                    .  .
+.                    :                    . b.
+.                    :<----------------------.
+.                    :                    .  .
+.                    :                 return.
+.                    :<----------------------.
+.                    :                    .  .
+.                   b:                    .  .
+.<-------------------:                    .  .
+.                    :                    .  .
+.              return:                    .  .
+.<-------------------:                    .  .
+(state ((p)) ((sut) (ready . true)) ((r1)) ((r2)))
+(trail p.a r1.a r1.return r2.a r2.return r1.b p.b r2.b p.return)
+(state ((p)) ((sut) (ready . true)) ((r1)) ((r2)))
+(labels p.a r1.b r2.b)
+(eligible p.a)
+
+** system_hello
+h         system_hello.c
+.               :
+.               :
+.hello          :
+.-------------->:
+.               :
+.          world:
+.<--------------:
+.               :
+.         return:
+.<--------------:
+(state ((h)) ((sut c)))
+(trail h.hello h.world h.return)
+(state ((h)) ((sut c)))
+(labels h.hello)
+(eligible h.hello)
+
+** hello_system
+p         hello_system.e                 hello_system.b         r
+.               :                              :                .
+.               :                              :                .
+.hello          :                              :                .
+.-------------->:                              :                .
+.               :                              :                .
+.               :hello                         :                .
+.               :----------------------------->:                .
+.               :                              :                .
+.               :                              :hello           .
+.               :                              :--------------->.
+.               :                              :                .
+.               :                              :           false.
+.               :                              :<---------------.
+.               :                              :                .
+.               :                        return:                .
+.               :<-----------------------------:                .
+.               :                              :                .
+.         return:                              :                .
+.<--------------:                              :                .
+(state ((p) (b . false)) ((sut e) (e . E_T)) ((sut b) (b . false)) ((r) (b . false)))
+(trail p.hello r.hello r.false p.return)
+(state ((p) (b . false)) ((sut e) (e . E_T)) ((sut b) (b . false)) ((r) (b . false)))
+(labels p.hello r.world)
+(eligible p.hello r.world)

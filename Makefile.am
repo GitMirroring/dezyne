@@ -78,7 +78,8 @@ bin_SCRIPTS =					\
 
 EXTRA_DIST +=					\
  bin/dzn.in					\
- bin/scm2json.in
+ bin/scm2json.in				\
+ test/bin/semantics.sh
 
 dist_noinst_DATA =
 ALL_GO =
