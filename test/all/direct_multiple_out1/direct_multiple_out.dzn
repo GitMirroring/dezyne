@@ -1,0 +1,9 @@
+interface I
+{
+  out void a();
+  out void b();
+  behaviour
+  {
+    on inevitable: {a; b;}
+  }
+}

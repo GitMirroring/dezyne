@@ -73,6 +73,20 @@ HELLO_TESTS =					\
  %D%/livelock_interface0			\
  %D%/queuefull_component0
 
+SEMANTICS_TESTS =				\
+ %D%/direct_in					\
+ %D%/direct_out					\
+ %D%/indirect_out				\
+ %D%/indirect_in				\
+ %D%/direct_multiple_out1			\
+ %D%/direct_multiple_out2			\
+ %D%/indirect_multiple_out1			\
+ %D%/indirect_multiple_out2			\
+ %D%/indirect_multiple_out3			\
+ %D%/indirect_blocking_out			\
+ %D%/external_multiple_out			\
+ %D%/indirect_blocking_multiple_external_out
+
 REGRESSION_TESTS =				\
  %D%/alpha_event				\
  %D%/alpha_field_test				\
@@ -374,5 +388,6 @@ XFAIL_TESTS =					\
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
  $(HELLO_TESTS)					\
+ $(SEMANTICS_TESTS)				\
  $(PARSER_TESTS)				\
  $(REGRESSION_TESTS)
