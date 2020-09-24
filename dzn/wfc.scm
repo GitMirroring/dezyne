@@ -700,8 +700,12 @@
                                    (type-name expression-type)))))
           (else '()))))
 
+(define-method (type-name (o <boolean>))
+  "<unknown type>")
+
 (define-method (type-name (o <ast>))
-  (string-join (ast:full-name o) "."))
+  (or (and=> (ast:full-name o) (cut string-join <> "."))
+      "<unknown type>"))
 
 (define-method (type-name (o <scope.name>))
   (string-join (.ids o) "."))
