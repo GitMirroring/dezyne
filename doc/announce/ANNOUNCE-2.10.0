@@ -1,0 +1,86 @@
+Subject: Dezyne 2.10.0 released
+
+<#secure method=pgpmime mode=sign>
+
+We are delighted to announce Dezyne 2.10: The first standalone release
+of Dezyne.  Dezyne no longer depends on a server to do verification or
+code or view generation.
+
+Dezyne 2.10 demarcates the "core" of the Dezyne language.  Its intent is
+to offer the essentials in terms of language features and user
+experience.  The "core" simulation function (linking the model to state
+or trace and vice versa) is not yet included.  Also, "core" code
+generation is C++ and mCRL2 only.
+
+The source code of the Dezyne core is prepared (by an almost full
+rewrite from an implementation in C++, javascript, python, perl, TCL,
+shell and java to a single implementation in GNU Guile Scheme) for
+future dissemination of a reference implementation.
+
+The documentation, which has not been fully updated for 2.10 yet, is
+available here: <https://doc.verum.com/documentation.html>.
+
+What's next?
+
+2.11 aims to re-introduce simulation and visualization similar to 2.9.
+Furthermore, Dezyne supporting features such as code browsing/navigation
+and a modicum of code completion will be provided by means of LSP, such
+that you can use your personal favorite LSP-aware editor.
+
+Enjoy!
+The Verum Team
+
+Here are the binary downloads:
+  https://dezyne.org/download/dezyne/dezyne-2.10.0.x86_64-linux.tar.gz
+  https://dezyne.org/download/dezyne/dezyne-2.10.0.i686-windows.zip
+
+Here are the GPG detached signatures[*]:
+  https://dezyne.org/download/dezyne/dezyne-2.10.0.x86_64-linux.tar.gz.sig
+  https://dezyne.org/download/dezyne/dezyne-2.10.0.i686-windows.zip.sig
+
+Here are the MD5 and SHA1 checksums:
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx dezyne-2.10.0.x86_64-linux.tar.gz
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx dezyne-2.10.0.i686-windows.zip
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.10.0.x86_64-linux.tar.gz
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.10.0.i686-windows.zip
+
+[*] Use a .sig file to verify that the corresponding file (without the
+.sig suffix) is intact.  First, be sure to download both the .sig file
+and the corresponding tarball.  Then, run a command like this:
+
+  gpg --verify dezyne-2.10.0.x86_64-linux.tar.gz.sig
+
+If that command fails because you don't have the required public key,
+then run this command to import it:
+
+  gpg --keyserver keys.gnupg.net --recv-keys 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+
+and rerun the 'gpg --verify' command.
+
+NEWS
+
+* Changes in 2.10.0 since 2.9.1
+** Dezyne is now stand alone, client only, serverless, pure GNU Guile Scheme.
+  - Removed: server, services, dzn, dzn/daemon.
+** Parser
+  - All error messages were changed.
+  - "Use before declare" is no longer supported for variables.
+  - Toplevel `dollar`-statements used inside a namespace are now
+    rejected.
+** Code generation
+  - C++: The tracing interface was changed, notably the "dzn::trace_in"
+    function was renamed to "dzn::trace".
+  - C++: Experimental state-variable tracing was disabled.
+  - Other languages were dropped.
+** Component simulator
+  - The component simulator was removed.
+** Noteworthy bug fixes
+  - Fixed a bug where function calls immediately following an if
+    statement were not considered by the verifier
+  - Fixed a bug where an enum-field test used as the expression in a
+    reply statement would crash the verifier.
+  - Fixed a bug where a boolean "not" used as the expression in a
+    reply statement was ignored.
+  - Fixed a bug with precedence in deeply nested boolean expresisons
+    in generated code.
