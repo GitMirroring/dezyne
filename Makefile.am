@@ -158,14 +158,19 @@ doc/dzn-%.1: bin/dzn Makefile $(ALL_GO)
 #     - doc: Release update (NEWS, etc.)
 #     - git clean -fdx
 #     - ./autogen.sh; ./configure; make
-#  1. make tag PACKAGE_VERSION=X.Y
+#  1. make tag PACKAGE_VERSION=2.10.0
 #  2. make sign-dist
 #  3. make release
-#  4. test guix package build, binary packs (see HACKING)
+#  4. test guix package build, binary packs (see pack.git)
 #     GUIX_PACKAGE_PATH=guix build dezyne
 #     make linux
 #     make mingw
-#  5. Send mail to
+#  5. Create announcement
+#       make gen-announce PACKAGE_VERSION=2.10.0
+#       Update and commit doc/announce/ANNOUNCE-2.10.0
+#  6. Create blog post
+#       cp doc/announce/ANNOUNCE-2.10.0 ~/src/web/dezyne.org/posts/announce-2.10.0.md
+#  7. Send mail to
 #     guile-user@gnu.org
 #     mcrl2-users@listserver.tue.nl
 #     guix formal verification interest group (guix-devel@gnu.org?)
@@ -197,6 +202,20 @@ release: update-hash
 	git commit -m 'guix: Update hash.'					\
 		-m '* guix/gnu/packages/dezyne.scm (dezyne): Update hash.'	\
 		guix/gnu/packages/dezyne.scm
+
+GPG_KEY_ID:=1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+GEN_ANNOUNCE=$(GNULIB)/build-aux/announce-gen
+GNULIB=$(HOME)/src/gnulib
+gen-announce:
+	$(GEN_ANNOUNCE)						\
+	    --release-type=beta					\
+	    --package-name=dezyne				\
+	    --previous-version='2.9.1'				\
+            --current-version=$(PACKAGE_VERSION)		\
+	    --gpg-key-id=$(GPG_KEY_ID)				\
+	    --url-directory=https://dezyne.org/download/dezyne	\
+	    --news=NEWS						\
+            > doc/announce/ANNOUNCE-$(PACKAGE_VERSION)
 
 if have_guix
 update-hash: $(DIST_ARCHIVES)
