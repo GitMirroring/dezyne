@@ -311,6 +311,8 @@ gen-announce:
 	    --package-name=$(PACKAGE)				\
 	    --previous-version='2.11.0'				\
             --current-version=$(PACKAGE_VERSION)		\
+	    --archive-suf=x86_64-linux.tar.gz			\
+	    --archive-suf=i686-windows.zip			\
 	    --gpg-key-id=$(GPG_KEY_ID)				\
 	    --url-directory=https://dezyne.org/download/dezyne	\
 	    --news=NEWS						\
