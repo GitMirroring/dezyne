@@ -305,6 +305,8 @@ gen-announce:
 	    --package-name=dezyne				\
 	    --previous-version='2.9.1'				\
             --current-version=$(PACKAGE_VERSION)		\
+	    --archive-suf=x86_64-linux.tar.gz			\
+	    --archive-suf=i686-windows.zip			\
 	    --gpg-key-id=$(GPG_KEY_ID)				\
 	    --url-directory=https://dezyne.org/download/dezyne	\
 	    --news=NEWS						\
