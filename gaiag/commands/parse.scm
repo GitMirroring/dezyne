@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -99,51 +100,54 @@ Usage: dzn parse [OPTION]... [FILE]...
     options))
 
 (define (parse- options file-name)
-  (let* ((peg? (gdzn:command-line:get 'peg #f))
+  (let* ((skip-wfc? (gdzn:command-line:get 'peg #f))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (model-name (option-ref options 'model #f))
-         (ast (file->ast file-name #:peg? peg? #:imports imports)))
+         (ast (file->ast file-name #:skip-wfc? skip-wfc? #:imports imports)))
     (if (not model-name) ast
         (ast:filter-model ast (ast:get-model ast model-name)))))
+
+(define (handle-parser-exceptions file-name)
+  (lambda (key . args)
+    (case key
+      ((syntax-error)
+       (exit 1))
+      ((import-error)
+       (format (current-error-port)
+               "No such file: ~a: imported from ~a in: ~a\n"
+               (car args) file-name (cdr args))
+       (exit 1))
+      ((well-formedness-error)
+       (for-each wfc:report-error args)
+       (exit 1))
+      ((system-error)
+       (let ((errno (system-error-errno (cons key args))))
+         (format (current-error-port) "~a: ~a\n"
+                 (strerror errno) file-name))
+       (exit 1))
+      (else (format (current-error-port) "internal error: ~a: ~a: ~s\n"
+                    file-name key args)
+            (exit 1)))))
 
 (define (assert-parse options file-name)
   (catch #t
     (cut parse- options file-name)
-    (lambda (key . args)
-      (case key
-        ((syntax-error)
-         (exit 1))
-        ((import-error)
-         (exit 1))
-        ((well-formedness-error)
-         (for-each wfc:report-error args)
-         (exit 1))
-        ((system-error)
-         (let ((errno (system-error-errno (cons key args))))
-           (format (current-error-port) "~a: ~a\n"
-                   (strerror errno) file-name))
-         (exit 1))
-        (else (format (current-error-port) "internal error: ~a: ~a: ~s\n"
-                      file-name key args)
-              (exit 1))))))
+    (handle-parser-exceptions file-name)))
 
 (define (parse options file-name)
   (let* ((debug? (gdzn:command-line:get 'debug #f))
-         (peg? (gdzn:command-line:get 'peg #f)))
-    ((if (or debug? peg?) parse- assert-parse) options file-name)))
+         (skip-wfc? (gdzn:command-line:get 'peg #f)))
+    ((if (or debug? skip-wfc?) parse- assert-parse) options file-name)))
 
 (define (assert-preprocess options file-name)
   (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (debug? (gdzn:command-line:get 'debug #f)))
     (if debug? (display (preprocess file-name #:imports imports))
-        (catch 'import-error
-          (cut display (preprocess file-name #:imports imports))
-          (lambda (key file-name imports)
-            (format (current-error-port) "No such file: ~s in [~a]\n"
-                    file-name imports)
-            (exit 1))))))
+        (catch #t
+          (lambda _ (display (preprocess file-name #:imports imports)))
+          (handle-parser-exceptions file-name)))))
 
 (define (main args)
   (let* ((options (parse-opts args))
