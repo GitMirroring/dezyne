@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -243,6 +244,7 @@ REGRESSION_TESTS =				\
  %D%/unused_function
 
 PARSER_TESTS =					\
+ %D%/parse_block_comment_import			\
  %D%/wf_actionInExpression			\
  %D%/wf_actionNotInOnEvent			\
  %D%/wf_actionValueDiscarded			\
