@@ -39,7 +39,8 @@
                %peg:debug?
                %peg:error)
 
-  #:export (peg:parse
+  #:export (peg:imports
+            peg:parse
             peg:skip-parse))
 
 (define-skip-parser peg-eol none (or "\f" "\n" "\r" "\v"))
@@ -48,147 +49,102 @@
 (define-skip-parser peg-block all (and "/*" (* (or peg-block (and (not-followed-by "*/") peg-any))) (expect "*/")))
 (define-skip-parser peg-skip all (* (or peg-ws peg-eol peg-line peg-block)))
 
+(define (peg:imports string)
+  (define-peg-string-patterns
+    "root <- (import / SKIP+)*
+import <-- IMPORT file-name SEMICOLON
+IMPORT < 'import' ![a-zA-Z_0-9]
+file-name <- (!SEMICOLON .)+
+SEMICOLON < ';'
+SKIP < !IMPORT . 'import'*")
+  (peg:tree (match-pattern root string)))
+
 (define peg:skip-parse peg-skip)
 
-(define* (peg:parse string file-name #:key (imports '()))
+(define* (peg:parse string)
+  (define interface-events '())
 
-  (define imported-files '())
+  (define (-reset-event-names- str len pos)
+    (set! interface-events '())
+    (list pos '()))
+  (define-peg-pattern reset-event-names none -reset-event-names-)
 
-  (define* (peg:parse-recursive string file-name #:key (imports '()))
+  (define (-event-name- str len pos)
+    (let ((res (identifier str len pos)))
+      (when res
+        (set! interface-events (cons (substring str pos (car res)) interface-events)))
+      res))
+  (define-peg-pattern event-name all -event-name-)
 
-    (define interface-events '())
+  (define (-is-event- str len pos)
+    (let ((res (identifier str len pos)))
+      (and res (member (substring str pos (car res)) interface-events) res)))
+  (define-peg-pattern is-event body -is-event-)
 
-    (define (-reset-event-names- str len pos)
-      (set! interface-events '())
-      (list pos '()))
-    (define-peg-pattern reset-event-names none -reset-event-names-)
+  (define port-names '())
 
-    (define (-event-name- str len pos)
-      (let ((res (identifier str len pos)))
-        (when res
-          (set! interface-events (cons (substring str pos (car res)) interface-events)))
-        res))
-    (define-peg-pattern event-name all -event-name-)
+  (define (-reset-port-names- str len pos)
+    (set! port-names '())
+    (list pos '()))
+  (define-peg-pattern reset-port-names none -reset-port-names-)
 
-    (define (-is-event- str len pos)
-      (let ((res (identifier str len pos)))
-        (and res (member (substring str pos (car res)) interface-events) res)))
-    (define-peg-pattern is-event body -is-event-)
+  (define (-port-name- str len pos)
+    (let ((res (name str len pos)))
+      (when res
+        (set! port-names (cons (substring str pos (car res)) port-names)))
+      res))
+  (define-peg-pattern port-name body -port-name-)
 
-    (define port-names '())
-
-    (define (-reset-port-names- str len pos)
-      (set! port-names '())
-      (list pos '()))
-    (define-peg-pattern reset-port-names none -reset-port-names-)
-
-    (define (-port-name- str len pos)
-      (let ((res (name str len pos)))
-        (when res
-          (set! port-names (cons (substring str pos (car res)) port-names)))
-        res))
-    (define-peg-pattern port-name body -port-name-)
-
-    (define (-is-port- str len pos)
-      (let ((res (name str len pos)))
-        (and res (member (substring str pos (car res)) port-names) res)))
-    (define-peg-pattern is-port body -is-port-)
+  (define (-is-port- str len pos)
+    (let ((res (name str len pos)))
+      (and res (member (substring str pos (car res)) port-names) res)))
+  (define-peg-pattern is-port body -is-port-)
 
 
-    (define variable-stack '(()))
+  (define variable-stack '(()))
 
-    (define (-enter-frame- str len pos)
-      (unless (%peg:fall-back?)
-        (set! variable-stack (cons (car variable-stack) variable-stack)))
-      (list pos '()))
-    (define-peg-pattern enter-frame none -enter-frame-)
+  (define (-enter-frame- str len pos)
+    (unless (%peg:fall-back?)
+      (set! variable-stack (cons (car variable-stack) variable-stack)))
+    (list pos '()))
+  (define-peg-pattern enter-frame none -enter-frame-)
 
-    (define (-exit-frame- str len pos)
-      (unless (%peg:fall-back?)
-        (set! variable-stack (cdr variable-stack)))
-      (list pos '()))
-    (define-peg-pattern exit-frame none -exit-frame-)
+  (define (-exit-frame- str len pos)
+    (unless (%peg:fall-back?)
+      (set! variable-stack (cdr variable-stack)))
+    (list pos '()))
+  (define-peg-pattern exit-frame none -exit-frame-)
 
-    (define (-add-var- str len pos)
-      (let ((res (identifier str len pos))
-            (top (or (%peg:fall-back?) (car variable-stack)))
-            (bottom (or (%peg:fall-back?) (cdr variable-stack))))
-        (when res
-          (or (%peg:fall-back?)
-              (set! variable-stack (cons (cons (substring str pos (car res)) top) bottom))))
-        res))
-    (define-peg-pattern add-var all -add-var-)
+  (define (-add-var- str len pos)
+    (let ((res (identifier str len pos))
+          (top (or (%peg:fall-back?) (car variable-stack)))
+          (bottom (or (%peg:fall-back?) (cdr variable-stack))))
+      (when res
+        (or (%peg:fall-back?)
+            (set! variable-stack (cons (cons (substring str pos (car res)) top) bottom))))
+      res))
+  (define-peg-pattern add-var all -add-var-)
 
-    (define (-var- str len pos)
-      (let* ((res (identifier str len pos))
-             (top (or (%peg:fall-back?) (car variable-stack)))
-             (var-name (and res (substring str pos (car res)))))
-        (and var-name
-             (or (%peg:fall-back?)
-                 (find (cut equal? var-name <>) top))
-             res)))
-    (define-peg-pattern var all -var-)
+  (define (-var- str len pos)
+    (let* ((res (identifier str len pos))
+           (top (or (%peg:fall-back?) (car variable-stack)))
+           (var-name (and res (substring str pos (car res)))))
+      (and var-name
+           (or (%peg:fall-back?)
+               (find (cut equal? var-name <>) top))
+           res)))
+  (define-peg-pattern var all -var-)
 
-    (define (-do-import- str len pos)
-      (let ((res (import str len pos)))
-        (and res
-             (let* ((import-file-name (string-trim-both (apply string-append (cdadr res))))
-                    (import-file-name (or (search-path imports import-file-name)
-                                          (let ((pos (car res))
-                                                (message (format #f "No such file: `~a' in [~a]\n" import-file-name (string-join imports))))
-                                            ((@@ (dzn parse) peg:handle-error) file-name str pos message))))
-                    (import-file-name (canonicalize-path import-file-name))
-                    (root (if (member import-file-name imported-files) #f
-                              (let* ((foo (set! imported-files (cons import-file-name imported-files)))
-                                     (string (with-input-from-file import-file-name read-string))
-                                     (imports (cons (dirname import-file-name) imports))
-                                     (parse-tree (catch #t
-                                                   (lambda ()
-                                                     (peg:parse-recursive string import-file-name #:imports imports))
-                                                   (lambda (key . args)
-                                                     ;;(warn 'import: import-file-name 'key: key 'args: args)
-                                                     (let ((message ((@@ (dzn parse) peg:message) file-name str pos "info: In file imported from here" "")))
-                                                       (case key
-                                                         ((syntax-error)
-                                                          ((@@ (dzn parse) peg:syntax-error-message) import-file-name string args)
-                                                          (display message (current-error-port))
-                                                          (apply throw key '()))
-                                                         ((import-error)
-                                                          (display message (current-error-port))
-                                                          (apply throw key args))
-                                                         (else
-                                                          (apply throw key args))))))))
-                                (parse-tree->ast parse-tree #:string string #:file-name import-file-name)))))
-               (list (car res) (list 'import import-file-name root))))))
-    (define-peg-pattern do-import body -do-import-)
+  (define-peg-string-patterns
+    "root <-- top* EOF#
 
-    (define (-do-file-command- str len pos)
-      (let ((res (file-command str len pos)))
-        (when res
-          (let* ((body (cadr res))
-                 (text (drop-right (drop body 1) 1))
-                 (file-file-name (string-trim-both (apply string-append text))))
-            (set! file-name file-file-name)))
-        res))
-    (define-peg-pattern do-file-command body -do-file-command-)
-
-    (define-peg-string-patterns
-      "root <-- top* EOF#
-
-top <- do-import / stream-command / scoped / data
+top <- import / scoped / data
 
 scoped <- namespace / type / interface / component
 
-import <- IMPORT (!SEMICOLON .)+ SEMICOLON#
+import <-- IMPORT file-name SEMICOLON#
 
-stream-command <- do-file-command / imported-command
-file-command <-- FILE dq-string#
-imported-command <-- IMPORTED dq-string#
-FILE < '#file'
-IMPORTED < '#imported'
-dq-string <- double-quote unq-string double-quote
-double-quote < '\"'
-unq-string <- ('\\\"' / !'\"' .)*
+file-name <- (!SEMICOLON .)+
 
 namespace <-- NAMESPACE compound-name# BRACE-OPEN# scoped* BRACE-CLOSE#
 
@@ -417,6 +373,4 @@ KEYWORD <
   / 'system' ![a-zA-Z_0-9]
   / 'true' ![a-zA-Z_0-9]")
 
-    (peg:tree (match-pattern root string)))
-
-  (peg:parse-recursive string file-name #:imports imports))
+  (peg:tree (match-pattern root string)))

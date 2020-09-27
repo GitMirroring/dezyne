@@ -47,3 +47,5 @@ Makefile.in
 /test/bin/reorder
 /test/bin/run
 /test/bin/run-baseline
+/test/all/parse_preprocessed_foo/parse_preprocessed_foo.dzn
+/test/all/parse_preprocessed_imported_bar/parse_preprocessed_imported_bar.dzn

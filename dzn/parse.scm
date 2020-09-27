@@ -3,7 +3,7 @@
 ;;; Copyright © 2014, 2017, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 202 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2014, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2018, 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -29,10 +29,13 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
+  #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 regex)
   #:use-module (ice-9 pretty-print)
 
   #:use-module (dzn command-line)
+  #:use-module (dzn display)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse ast)
   #:use-module (dzn parse peg)
@@ -90,76 +93,143 @@
           (peg:syntax-error-message file-name string args)
           (apply throw key '())))))
 
-(define* (parse-string string #:key (file-name "-") (imports '()))
-  (let* ((parse-tree (catch 'syntax-error
-                       (lambda ()
-                         (parameterize ((%peg:locations? #t)
-                                        (%peg:skip? peg:skip-parse)
-                                        (%peg:debug? (> (gdzn:debugity) 3)))
-                           (peg:parse string file-name #:imports imports)))
-                       (peg:handle-syntax-error file-name string)))
-         (gdzn-debug? (gdzn:command-line:get 'debug)))
-    (when (> (gdzn:debugity) 2)
-      (pretty-print parse-tree (current-error-port)))
-    (let* ((ast (parse-tree->ast parse-tree #:string string #:file-name file-name))
-           (ast (annotate-ast ast)))
-      (when (> (gdzn:debugity) 1)
-        (pretty-print ast  (current-error-port)))
-    ast)))
 
-(define* (file->ast file-name #:key peg? (imports '()))
-  (let* ((string (if (equal? file-name "-") (read-string)
-                     (with-input-from-file file-name read-string)))
-         (imports (if (equal? file-name "-") '()
-                      (cons (dirname (canonicalize-path file-name)) imports)))
-         (ast (parse-string string #:file-name file-name #:imports imports)))
-    (if peg? ast
+
+(define* (file+import-content-alist->ast alist #:key skip-wfc?)
+  "From ALIST of form
+
+   '((FILE-NAME . CONTENT)
+     (IMPORTED-FILE-NAME . IMPORTED-CONTENT)
+      ...)
+
+parse CONTENT and return an ast.  When SKIP-WCF?, skip the
+well-formedness checks."
+
+  (define (expand-imports parse-tree-alist)
+    (let ((file (car parse-tree-alist))
+          (imports (cdr parse-tree-alist)))
+      (match file
+        ((file-name . root)
+         (let* ((imports (append-map (match-lambda
+                                       ((file-name . root) (.elements root)))
+                                     imports))
+                (elements (append imports (.elements root)))
+                (elements (filter (negate (is? <import>)) elements)))
+           (clone root #:elements elements))))))
+
+  (let* ((parse-tree-alist
+          (map (match-lambda
+                 ((file-name . content)
+                  (catch 'syntax-error
+                    (lambda ()
+                      (parameterize ((%peg:locations? #t)
+                                     (%peg:skip? peg:skip-parse)
+                                     (%peg:debug? (> (gdzn:debugity) 3)))
+                        (cons file-name (peg:parse content))))
+                    (peg:handle-syntax-error file-name content))))
+               alist))
+         (ast-alist (map (match-lambda
+                           ((file-name . parse-tree)
+                            (let ((content (assoc-ref alist file-name)))
+                              (cons file-name
+                                    (parse-tree->ast parse-tree #:string content #:file-name file-name)))))
+                         parse-tree-alist))
+         (ast (expand-imports ast-alist))
+         (ast (annotate-ast ast)))
+    (when (> (gdzn:debugity) 1)
+      (ast:pretty-print ast (current-error-port)))
+    (if skip-wfc? ast
         (ast:wfc ast))))
 
-(define* (string->ast string #:key peg?)
-  (let ((ast (parse-string string)))
-    (if peg? ast
-        (ast:wfc ast))))
+(define* (file->ast file-name #:key skip-wfc? (imports '()))
+  "Parse FILE-NAME and return an ast.  When SKIP-WFC?, skip the
+well-formedness checks."
+  (if (equal? file-name "-") (string->ast (read-string))
+      (let ((alist (file+import-content-alist file-name imports)))
+        (file+import-content-alist->ast alist #:skip-wfc? skip-wfc?))))
+
+(define* (string->ast string #:key skip-wfc?)
+  "Parse STRING and return an ast.  When SKIP-WFC? skip the
+well-formedness checks."
+  (let ((alist (string->file+import-content-alist string)))
+    (file+import-content-alist->ast alist #:skip-wfc? skip-wfc?)))
+
+(define (string->file+import-content-alist string)
+  "Split possibly pre-processed STRING at preprocessing markers
+
+   #file \"file-name\"
+   <content>
+   #imported \"imported-file-name\"
+   <imported-content>
+   ...
+
+and return an alist:
+
+   '((FILE-NAME . CONTENT)
+     (IMPORTED-FILE-NAME . IMPORTED-CONTENT) ...)
+"
+  (let ((file-match (string-match "^#file \"([^\"]*)\"\n" string)))
+    (if (not file-match) `(("-" . ,string))
+        (let* ((file-name (match:substring file-match 1))
+               (string (substring string (match:end file-match))))
+          (let loop ((file-name file-name)
+                     (string string)
+                     (imported-match (string-match "\n#imported \"([^\"]*)\"" string)))
+            (if (not imported-match) `((,file-name . ,string))
+                (cons `(,file-name . ,(substring string 0 (match:start imported-match)))
+                      (let ((string (substring string (match:end imported-match))))
+                        (loop (match:substring imported-match 1)
+                              string
+                              (string-match "\n#imported \"([^\"]*)\"" string))))))))))
 
 (define* (preprocess file-name #:key (imports '()))
   "Read @var{file-name}, using @var{imports} to resolve @code{import}
 statements and return the expanded dezyne text, similar to @command{gcc
 -E}."
-  (define (preprocess-helper file-names imports read)
-    (define (import-file import-line)
-      (string-trim-both
-       (string-drop-right
-        (string-drop (string-trim-both import-line) (string-length "import "))
-        1)))
+  (let* ((content-alist (if (equal? file-name "-") (string->file+import-content-alist (read-string))
+                            (file+import-content-alist file-name imports)))
+         (file (car content-alist))
+         (imports (cdr content-alist)))
+    (string-join
+     (append
+      (match file
+        ((file-name . content)
+         (if (string-prefix? "#file " content) (list content)
+             (list (format #f "#file ~s" file-name)
+                   content))))
+      (append-map (match-lambda ((file-name . content)
+                                 (list (format #f "#imported ~s" file-name)
+                                       content)))
+                  imports))
+     "\n")))
 
-    (define (import? line)
-      (string-prefix? "import " (string-trim-both line)))
+(define (file+import-content-alist file-name imports)
+  "Recursively resolve imports starting with FILE-NAME and return an
+alist:
 
-    (define (comment-import-line line)
-      (if (import? line) (string-append "//" line) line))
+   '((FILE-NAME . CONTENT)
+     (IMPORTED-FILE-NAME . IMPORTED-CONTENT) ...)
 
-    (if (null? file-names) ""
-        (let ((file-name (search-path imports (car file-names))))
-          (unless file-name
-            (throw 'import-error
-                   (car file-names) (string-join imports)))
-          (let* ((canonical-name (canonicalize-path file-name))
-                 (lines (if (member canonical-name read) '()
-                            (string-split
-                             (with-input-from-file file-name read-string)
-                             #\newline))))
-            (string-join
-             `(,@(if (null? lines) '()
-                     `(,(string-append (if (null? read) "#file " "#imported ")
-                                       "\"" file-name "\"")))
-               ,@(map comment-import-line lines)
-               ,(preprocess-helper
-                 (append (cdr file-names)
-                         (map import-file (filter import? lines)))
-                 (cons (dirname canonical-name) imports)
-                 (cons canonical-name read)))
-             "\n")))))
-
-  (preprocess-helper (list (basename file-name))
-                     (cons (dirname file-name) imports)
-                     '()))
+An import file name is resolved by searching for it in its parent
+directory and up the ancestral tree and then along the directories
+specified in IMPORTS."
+  (let loop ((file-names (list (basename file-name)))
+             (imports (cons (dirname file-name) imports))
+             (content-alist '()))
+    (if (null? file-names) (reverse content-alist)
+        (let* ((file-name (or (search-path imports (car file-names))
+                              (throw 'import-error (car file-names) (string-join imports))))
+               (imports (delete-duplicates (cons (dirname file-name) imports))))
+          (if (assoc-ref content-alist file-name) (loop (cdr file-names) imports content-alist)
+              (let ((content (with-input-from-file file-name read-string)))
+                (if (string-prefix? "#file \"" content) (string->file+import-content-alist content)
+                    (let ((content-alist (acons file-name content content-alist)))
+                      (loop (append (cdr file-names)
+                                    (let loop ((o (parameterize ((%peg:skip? peg:skip-parse)
+                                                                 (%peg:debug? (> (gdzn:debugity) 3)))
+                                                    (peg:imports content))))
+                                      (match o
+                                        (('import file-name) `(,file-name))
+                                        (_ (append-map loop o)))))
+                            imports
+                            content-alist)))))))))

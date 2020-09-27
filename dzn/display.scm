@@ -25,11 +25,14 @@
 ;;; Code:
 
 (define-module (dzn display)
+  #:use-module (srfi srfi-26)
+  #:use-module (ice-9 rdelim)
   #:use-module (ice-9 pretty-print)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)
-  #:export (display-slots om->list))
+  #:export (ast:display
+            ast:pretty-print))
 
 ;; AST printing
 (define (ast port) (display #\* port))
@@ -46,7 +49,6 @@
 (define-method (sdisplay (o <location-node>) port) #t)
 
 (define-method (display-slots (o <object>) port)
-;;  (format (current-error-port) "SLOTS:~a\n" (class-slots (class-of o)))
   (for-each
    (lambda (slot)
      (let* ((name (slot-definition-name slot))
@@ -76,11 +78,12 @@
   (if (.node o) (display-slots (.node o) port))
   (display #\) port))
 
-(define (om->list om)
-  (catch #t
-    (lambda ()
-      (with-input-from-string
-          (with-output-to-string (lambda () (write om)))
-        read))
-    (lambda (key . args)
-      (apply throw (cons key args)))))
+(define ast:display write)
+
+(define* (ast:pretty-print ast #:optional (port (current-output-port)))
+  "Turn @var{ast} into a user-friendly list representation and
+pretty-print it to PORT."
+  (pretty-print (with-input-from-string
+                    (with-output-to-string (cut write ast))
+                  read)
+                port))
