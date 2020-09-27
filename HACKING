@@ -15,7 +15,11 @@ Re-run all failures (e.g., after making fixes)
 
 Run all parser tests
 
-    make check FULL_TESTS="$(cd test/parser; ls -1)"
+    make check TESTS='$(PARSER_TESTS)'
+
+Run all error tests
+
+    make check TESTS="$(ls -1 test/error | sed s,^,test/all/,)"
 
 Run all verification failure tests
 
