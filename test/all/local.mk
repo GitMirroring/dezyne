@@ -245,6 +245,7 @@ REGRESSION_TESTS =				\
 
 PARSER_TESTS =					\
  %D%/parse_block_comment_import			\
+ %D%/parse_import_end				\
  %D%/wf_actionInExpression			\
  %D%/wf_actionNotInOnEvent			\
  %D%/wf_actionValueDiscarded			\
