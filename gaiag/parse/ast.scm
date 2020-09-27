@@ -41,8 +41,7 @@
   #:use-module (gaiag misc)
   #:use-module (gaiag parse)
   #:use-module (gaiag parse silence)
-  #:export (parse-tree->ast
-            parse-root->ast))
+  #:export (parse-tree->ast))
 
 (define (ast-> o)
   ((compose
@@ -51,6 +50,10 @@
     ) o))
 
 (define* (parse-tree->ast o #:key string (file-name "<stdin>"))
+  (let ((ast (parse-tree->ast- o string file-name)))
+    (clone ast #:elements (append (make-constants) (.elements ast)))))
+
+(define (parse-tree->ast- o string file-name)
   (define async-interfaces
     (let ((interfaces '()))
       (lambda (command . rest)
@@ -138,7 +141,7 @@
          (make <import-node> #:name (helper name) #:root (make <root-node>)))
 
         (('import name root)
-         (make <import-node> #:name (helper name) #:root (helper root)))
+         (make <import-node> #:name (helper name) #:root (parse-tree->ast- root string name)))
 
         (('namespace name)
          (make <namespace-node>
@@ -560,11 +563,6 @@
                                          (append (.elements root)
                                                  (append-map (compose .elements .root) imports))))))
     (tree-map make-namespaces root)))
-
-(define* (parse-root->ast o #:key string (file-name "<stdin>"))
-  (let* ((root (parse-tree->ast o #:string string #:file-name file-name))
-         (elements (append (make-constants) (.elements root))))
-    (clone root #:elements elements)))
 
 (define-method (set-recursive (o <behaviour>))
   (let* ((functions (.functions o))
