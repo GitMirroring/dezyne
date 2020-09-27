@@ -1,0 +1,7 @@
+/*
+import foo.dzn;
+*/
+component parse_block_comment_import
+{
+  system {}
+}
