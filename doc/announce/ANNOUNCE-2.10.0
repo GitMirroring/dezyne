@@ -30,20 +30,20 @@ that you can use your personal favorite LSP-aware editor.
 Enjoy!
 The Verum Team
 
-Here are the binary downloads:
-  https://dezyne.org/download/dezyne/dezyne-2.10.0.x86_64-linux.tar.gz
-  https://dezyne.org/download/dezyne/dezyne-2.10.0.i686-windows.zip
+Here are the compressed sources:
+  https://dezyne.org/download/dezyne/dezyne-2.10.0-x86_64-linux.tar.gz   (55MB)
+  https://dezyne.org/download/dezyne/dezyne-2.10.0-i686-windows.zip   (113MB)
 
 Here are the GPG detached signatures[*]:
-  https://dezyne.org/download/dezyne/dezyne-2.10.0.x86_64-linux.tar.gz.sig
-  https://dezyne.org/download/dezyne/dezyne-2.10.0.i686-windows.zip.sig
+  https://dezyne.org/download/dezyne/dezyne-2.10.0-x86_64-linux.tar.gz.sig
+  https://dezyne.org/download/dezyne/dezyne-2.10.0-i686-windows.zip.sig
 
 Here are the MD5 and SHA1 checksums:
 
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx dezyne-2.10.0.x86_64-linux.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx dezyne-2.10.0.i686-windows.zip
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.10.0.x86_64-linux.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.10.0.i686-windows.zip
+0dc90695b938ebbc88e2b036cc75223e  dezyne-2.10.0-x86_64-linux.tar.gz
+23ba189775292d97983f81b3537e9dfe  dezyne-2.10.0-i686-windows.zip
+c4e0c790922fad118c1a9dec9ae4327f26668d26  dezyne-2.10.0-x86_64-linux.tar.gz
+1e567ddd4b59ff5346cf558409b26eb6bb40dcb4  dezyne-2.10.0-i686-windows.zip
 
 [*] Use a .sig file to verify that the corresponding file (without the
 .sig suffix) is intact.  First, be sure to download both the .sig file
