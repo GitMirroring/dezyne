@@ -3,5 +3,5 @@ verify: ihello: check: livelock: ok
 verify: illegal_provides: check: deterministic: ok
 verify: illegal_provides: check: illegal: ok
 verify: illegal_provides: check: deadlock: fail
-verify: illegal_provides: check: compliance: ok
+verify: illegal_provides: check: compliance: skip
 verify: illegal_provides: check: livelock: ok

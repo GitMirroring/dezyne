@@ -22,19 +22,5 @@ w.hello
 w.return
 h.return
 h.hello
-verify: queuefull_external_sync: check: compliance: fail
-h.hello
-w.hello
-w.return
-h.return
-h.hello
-w.hello
-w.return
-h.return
-h.hello
-w.hello
-w.return
-h.return
-h.hello
-w.hello
+verify: queuefull_external_sync: check: compliance: skip
 verify: queuefull_external_sync: check: livelock: ok

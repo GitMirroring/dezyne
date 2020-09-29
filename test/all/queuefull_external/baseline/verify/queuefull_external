@@ -5,5 +5,5 @@ verify: ii: check: livelock: ok
 verify: queuefull_external: check: deterministic: ok
 verify: queuefull_external: check: illegal: ok
 verify: queuefull_external: check: deadlock: fail
-verify: queuefull_external: check: compliance: fail
+verify: queuefull_external: check: compliance: skip
 verify: queuefull_external: check: livelock: ok

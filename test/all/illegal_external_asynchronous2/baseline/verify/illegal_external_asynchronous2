@@ -29,6 +29,5 @@ r.a
 r.return
 p.return
 p.a
-verify: illegal_external_asynchronous2: check: compliance: fail
-p.a
+verify: illegal_external_asynchronous2: check: compliance: skip
 verify: illegal_external_asynchronous2: check: livelock: ok

@@ -7,14 +7,7 @@ w.return
 h.return
 w.cruel
 h.world
-verify: compliance_out_nondet: check: compliance: fail
-h.hello
-w.hello
-w.return
-h.return
-w.cruel
-h.world
-h.hello
+verify: compliance_out_nondet: check: compliance: skip
 verify: compliance_out_nondet: check: livelock: ok
 verify: ihello: check: deadlock: ok
 verify: ihello: check: livelock: ok

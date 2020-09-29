@@ -9,9 +9,5 @@ p.e
 r.e
 r.return
 r.cb
-verify: deadlock_blocking_inevitable: check: compliance: fail
-p.e
-r.e
-r.return
-r.cb
+verify: deadlock_blocking_inevitable: check: compliance: skip
 verify: deadlock_blocking_inevitable: check: livelock: ok

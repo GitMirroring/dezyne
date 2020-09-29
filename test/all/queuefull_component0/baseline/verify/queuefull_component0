@@ -9,11 +9,5 @@ r.c
 r.c
 r.c
 r.c
-verify: queuefull_component0: check: compliance: fail
-p.e
-r.e
-r.c
-r.c
-r.c
-r.c
+verify: queuefull_component0: check: compliance: skip
 verify: queuefull_component0: check: livelock: ok
