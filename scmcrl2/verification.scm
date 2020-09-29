@@ -164,8 +164,8 @@
          (result (result-split result))
          (info (get-info 'deadlock result)))
     (reduce-or (command-line:get 'all)
-               (list (cut report 'deadlock #f (get-trace 'deadlock result) info 'interface model-name)
-                     (cut report 'livelock #f (get-trace 'livelock result) info 'interface model-name)))))
+               (list (cut report 'deadlock #f (get-trace 'deadlock result) #f info 'interface model-name)
+                     (cut report 'livelock #f (get-trace 'livelock result) #f info 'interface model-name)))))
 
 (define (do-refinement lts model-name makreel model)
   (let* ((taus (compliance-taus model))
@@ -239,7 +239,7 @@
     (receive (refinement-trace interface-accepts component-accepts)
         (do-refinement lts model-name makreel model)
       (define (report-assert assert)
-        (report assert #f (get-trace assert result) info 'component model-name))
+        (report assert #f (get-trace assert result) #f info 'component model-name))
       (reduce-or (command-line:get 'all)
         (list (cut report-assert 'deterministic)
               (cut report-assert 'illegal)
@@ -248,6 +248,7 @@
               (cut report 'compliance
                          (or (get-trace 'illegal result) (get-trace 'deadlock result))
                          (extend-trace refinement-trace component-accepts)
+                         (extend-trace refinement-trace interface-accepts)
                          info 'component model-name))))))
 
 (define (mcrl2:verify model-name ast)
@@ -273,7 +274,12 @@
                              (transitions . ,transitions)))))
   #f))
 
-(define (report-fail model-type model-name assert info trace)
+(define (remove-flushes trace)
+  (and trace (string-join (filter (negate (cut string-contains <> "<flush>"))
+                                  (string-split trace #\newline))
+                          "\n")))
+
+(define (report-fail model-type model-name assert info trace interface-trace)
   (let* ((states (car info))
          (transitions (car (cdr info)))
          (trace-list (filter (negate string-null?) (string-split trace #\newline)))
@@ -298,22 +304,28 @@
                    ((second_reply) (format #f "double reply in model ~a" model-name))
                    ((incomplete) (format #f "model ~a is incomplete: event '~a' not handled" model-name second-last))
                    (else (format #f "~a in model ~a" error model-name))))
-         (trace-list (filter (negate (cut string-contains <> "<flush>")) trace-list))
          (trace (if (equal? last error)
                     (string-join (drop-right trace-list (if (equal? last 'incomplete) 2 1)) "\n")
-                    (string-join (take-while (negate (cut equal? "queue_full" <>)) trace-list) "\n"))))
+                    (string-join (take-while (negate (cut equal? "queue_full" <>)) trace-list) "\n")))
+
+         ;; XXX TODO current simulator does not expect flushes; remove
+         ;; when new simulator is in place
+         (trace (remove-flushes trace))
+         (interface-trace (remove-flushes interface-trace)))
     (if (gdzn:command-line:get 'json)
         (format #t "~a\n"
-                (scm->json-string `((model . ,model-name)
-                                    (type . ,model-type)
-                                    (assert . ,assert)
-                                    (status . done)
-                                    (result . fail)
-                                    (error . ,error)
-                                    (message . ,message)
-                                    (states . ,states)
-                                    (transitions . ,transitions)
-                                    (trace . ,trace))))
+                (scm->json-string (append
+                                    `((model . ,model-name)
+                                     (type . ,model-type)
+                                     (assert . ,assert)
+                                     (status . done)
+                                     (result . fail)
+                                     (error . ,error)
+                                     (message . ,message)
+                                     (states . ,states)
+                                     (transitions . ,transitions)
+                                     (trace . ,trace))
+                                     (if interface-trace `((interface-trace . ,interface-trace)) `()))))
         (begin
           (when (gdzn:command-line:get 'verbose)
             (stdout "verify: ~a: check: ~a: fail\n" model-name assert trace))
@@ -334,7 +346,7 @@
                            (result . skip)))))
   #f)
 
-(define (report assert skip trace info model-type model-name)
+(define (report assert skip trace interface-trace info model-type model-name)
   (cond (skip  (report-skip model-type model-name assert))
-        (trace (report-fail model-type model-name assert info trace))
+        (trace (report-fail model-type model-name assert info trace interface-trace ))
         (else  (report-ok   model-type model-name assert info))))
