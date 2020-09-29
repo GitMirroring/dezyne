@@ -3,7 +3,8 @@ verify: ihello: check: livelock: ok
 verify: iworld: check: deadlock: ok
 verify: iworld: check: livelock: ok
 verify: queuefull_external_sync: check: deterministic: ok
-verify: queuefull_external_sync: check: illegal: fail
+verify: queuefull_external_sync: check: illegal: ok
+verify: queuefull_external_sync: check: deadlock: fail
 h.hello
 w.hello
 w.return
@@ -18,7 +19,9 @@ w.return
 h.return
 h.hello
 w.hello
-verify: queuefull_external_sync: check: deadlock: ok
+w.return
+h.return
+h.hello
 verify: queuefull_external_sync: check: compliance: fail
 h.hello
 w.hello

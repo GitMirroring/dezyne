@@ -1,14 +1,14 @@
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
 verify: queuefull_component0: check: deterministic: ok
-verify: queuefull_component0: check: illegal: fail
+verify: queuefull_component0: check: illegal: ok
+verify: queuefull_component0: check: deadlock: fail
 p.e
 r.e
 r.c
 r.c
 r.c
 r.c
-verify: queuefull_component0: check: deadlock: ok
 verify: queuefull_component0: check: compliance: fail
 p.e
 r.e

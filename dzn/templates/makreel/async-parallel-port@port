@@ -1,5 +1,5 @@
 (l != [] && #.name is (head (l))) -> #.name internal(#x:makreel:interface-name inevitable) . #.name out (#x:makreel:interface-name action (#x:makreel:interface-name out'ack)) . async (l = tail (l))
  + #.name in (#x:makreel:interface-name action (#x:makreel:interface-name in'req)) . (find(#.name events(#x:makreel:interface-name action (#x:makreel:interface-name in'req)), l) -> Illegal <>
                                                        ((##l < QueueLength) -> #.name reply(#x:makreel:interface-name Void(void)) . async (l = l <| #.name events(#x:makreel:interface-name action (#x:makreel:interface-name in'req)))
-                                                        +(##l == QueueLength) -> queue_full . Illegal))
+                                                        +(##l == QueueLength) -> queue_full . delta))
  + #.name in (#x:makreel:interface-name action (#x:makreel:interface-name in'clr)) . #.name reply(#x:makreel:interface-name Void(void)) . async (remove(#.name events(#x:makreel:interface-name action (#x:makreel:interface-name in'req)), l))
