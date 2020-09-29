@@ -6,8 +6,5 @@ verify: deadlock_blocking_guard: check: deadlock: fail
 pp.ia
 pp.return
 pp.ia
-verify: deadlock_blocking_guard: check: compliance: fail
-pp.ia
-pp.return
-pp.ia
+verify: deadlock_blocking_guard: check: compliance: skip
 verify: deadlock_blocking_guard: check: livelock: ok

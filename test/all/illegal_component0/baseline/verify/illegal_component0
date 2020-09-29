@@ -6,8 +6,5 @@ i.e
 ii.e
 ii.return
 verify: illegal_component0: check: deadlock: ok
-verify: illegal_component0: check: compliance: fail
-i.e
-ii.e
-ii.return
+verify: illegal_component0: check: compliance: skip
 verify: illegal_component0: check: livelock: ok

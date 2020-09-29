@@ -5,8 +5,5 @@ verify: deadlock_component1: check: illegal: ok
 verify: deadlock_component1: check: deadlock: fail
 i.e
 i.return
-verify: deadlock_component1: check: compliance: fail
-i.e
-i.return
-i.e
+verify: deadlock_component1: check: compliance: skip
 verify: deadlock_component1: check: livelock: ok

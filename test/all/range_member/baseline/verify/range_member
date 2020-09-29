@@ -3,5 +3,5 @@ verify: irange_member: check: livelock: ok
 verify: range_member: check: deterministic: ok
 verify: range_member: check: illegal: ok
 verify: range_member: check: deadlock: fail
-verify: range_member: check: compliance: ok
+verify: range_member: check: compliance: skip
 verify: range_member: check: livelock: ok

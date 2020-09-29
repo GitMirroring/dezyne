@@ -8,8 +8,5 @@ verify: range_action: check: deadlock: fail
 p.e
 r.e
 r.12
-verify: range_action: check: compliance: fail
-p.e
-r.e
-r.12
+verify: range_action: check: compliance: skip
 verify: range_action: check: livelock: ok

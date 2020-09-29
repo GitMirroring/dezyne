@@ -6,6 +6,5 @@ verify: range_declaration_expression: check: deterministic: ok
 verify: range_declaration_expression: check: illegal: ok
 verify: range_declaration_expression: check: deadlock: fail
 p.e
-verify: range_declaration_expression: check: compliance: fail
-p.e
+verify: range_declaration_expression: check: compliance: skip
 verify: range_declaration_expression: check: livelock: ok

@@ -5,11 +5,7 @@ h.hello
 w.hello
 w.return
 h.return
-verify: compliance_out_inevitable_illegal: check: compliance: fail
-h.hello
-w.hello
-w.return
-h.return
+verify: compliance_out_inevitable_illegal: check: compliance: skip
 verify: compliance_out_inevitable_illegal: check: livelock: ok
 verify: ihello: check: deadlock: ok
 verify: ihello: check: livelock: ok

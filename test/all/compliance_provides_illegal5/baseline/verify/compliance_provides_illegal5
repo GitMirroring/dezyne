@@ -5,11 +5,7 @@ w.hello
 w.world
 w.return
 verify: compliance_provides_illegal5: check: deadlock: ok
-verify: compliance_provides_illegal5: check: compliance: fail
-h.hello
-w.hello
-w.world
-w.return
+verify: compliance_provides_illegal5: check: compliance: skip
 verify: compliance_provides_illegal5: check: livelock: ok
 verify: ihello: check: deadlock: ok
 verify: ihello: check: livelock: ok

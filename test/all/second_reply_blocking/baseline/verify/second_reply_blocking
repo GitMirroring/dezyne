@@ -9,9 +9,5 @@ p.e
 r.e
 r.return
 r.cb
-verify: second_reply_blocking: check: compliance: fail
-p.e
-r.e
-r.return
-r.cb
+verify: second_reply_blocking: check: compliance: skip
 verify: second_reply_blocking: check: livelock: ok

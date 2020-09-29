@@ -10,10 +10,5 @@ r.e
 r.return
 p.return
 p.e
-verify: range_expression: check: compliance: fail
-p.e
-r.e
-r.return
-p.return
-p.e
+verify: range_expression: check: compliance: skip
 verify: range_expression: check: livelock: ok

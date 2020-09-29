@@ -47,14 +47,5 @@ h.return
 h.hello
 w.hello
 w.return
-verify: illegal_hello_external: check: compliance: fail
-h.hello
-w.hello
-w.return
-h.return
-h.cancel
-w.cancel
-w.return
-h.return
-w.world
+verify: illegal_hello_external: check: compliance: skip
 verify: illegal_hello_external: check: livelock: ok

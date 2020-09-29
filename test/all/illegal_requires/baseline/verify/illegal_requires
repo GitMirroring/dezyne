@@ -5,7 +5,5 @@ verify: illegal_requires: check: illegal: fail
 h.hello
 w.world
 verify: illegal_requires: check: deadlock: ok
-verify: illegal_requires: check: compliance: fail
-h.hello
-w.world
+verify: illegal_requires: check: compliance: skip
 verify: illegal_requires: check: livelock: ok
