@@ -21,6 +21,14 @@
 ;;;
 ;;; Code:
 
+(define-module (Logger)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (dzn runtime)
+  #:use-module (shell_injected)
+  #:export (<Logger>
+            .out_log
+            .log))
+
 (define-class <Logger> (<dzn:component>)
   (out_log #:accessor .out_log #:init-value #f #:init-keyword #:out_log)
   (log #:accessor .log #:init-form (make <ILogger>) #:init-keyword #:log))
