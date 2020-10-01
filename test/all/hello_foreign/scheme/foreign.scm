@@ -21,6 +21,13 @@
 ;;;
 ;;; Code:
 
+(define-module (foreign)
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (dzn runtime)
+  #:use-module (hello_foreign)
+  #:export (<foreign>
+            .w))
+
 (define-class <foreign> (<dzn:component>)
   (w #:accessor .w #:init-keyword #:w))
 
