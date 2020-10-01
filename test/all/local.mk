@@ -167,6 +167,7 @@ REGRESSION_TESTS =				\
  %D%/hello_multiple_out				\
  %D%/hello_multiple_provides_requires		\
  %D%/hello_namespace_enum			\
+ %D%/hello_namespace_foreign			\
  %D%/hello_namespace_shadow			\
  %D%/hello_namespace_shadow2			\
  %D%/hello_optional_flush			\
