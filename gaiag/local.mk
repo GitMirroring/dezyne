@@ -41,7 +41,8 @@ dist_%C%_scm_DATA =				\
  %D%/serialize.scm				\
  %D%/shell-util.scm				\
  %D%/templates.scm				\
- %D%/wfc.scm
+ %D%/wfc.scm					\
+ %D%/c++ew.scm
 
 if have_cxx11
 dist_%C%_scm_DATA += %D%/c++.scm
