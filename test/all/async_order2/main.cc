@@ -62,7 +62,7 @@ int main()
   };
   C c;
   c.sut.dzn_meta.name = "sut";
-  c.sut.p.meta.requires.port = "p";
+  c.sut.p.meta.require.port = "p";
 
   int t = 0;
   c.sut.p.out.cb1 = [t] {std::clog << "sut.p.cb1 -> <external>.p.cb1 [" <<  t << "]" << std::endl;};
@@ -92,9 +92,9 @@ int main()
       // Disabled this trickery for now.
       connect(c.sut.p, c.c.r);
       c.c.dzn_meta.name = "<external>";
-      //c.c.p.meta.requires.port = "p";
-      c.c.r.meta.requires.port = "p";
-      c.sut.p.meta.requires.port = "p";
+      //c.c.p.meta.require.port = "p";
+      c.c.r.meta.require.port = "p";
+      c.sut.p.meta.require.port = "p";
       c.c.p.out.cb1 = [t] {std::clog << "c.p.cb1 -> <external>.p.cb1 [" <<  t << "]" << std::endl;};
       c.c.p.out.cb2 = [t] {std::clog << "c.p.cb2 -> <external>.p.cb2 [" <<  t << "]" << std::endl;};
       dzn::shell (c.pump, [&] {c.c.p.in.e ();});

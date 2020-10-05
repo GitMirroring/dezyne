@@ -59,8 +59,8 @@ int main()
     , pump()
     {
       sut.dzn_meta.name = "sut";
-      sut.p.meta.requires.port = "p";
-      sut.r.meta.provides.port = "r";
+      sut.p.meta.require.port = "p";
+      sut.r.meta.provide.port = "r";
     }
   };
   C c;

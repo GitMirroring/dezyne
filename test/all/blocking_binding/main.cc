@@ -45,11 +45,11 @@ connect_ports (dzn::container<blocking_binding, std::function<void()> >& c)
 std::map<std::string, std::function<void()> >
 event_map (dzn::container<blocking_binding, std::function<void()> >& c)
 {
-  c.system.p.meta.requires.port = "p";
+  c.system.p.meta.require.port = "p";
 
-  c.system.r.meta.provides.address = &c;
-  c.system.r.meta.provides.meta = &c.meta;
-  c.system.r.meta.provides.port = "r";
+  c.system.r.meta.provide.address = &c;
+  c.system.r.meta.provide.meta = &c.meta;
+  c.system.r.meta.provide.port = "r";
 
 
   return {

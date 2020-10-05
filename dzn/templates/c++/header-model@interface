@@ -27,8 +27,8 @@ inline void connect (#x:model-name & provided, #x:model-name & required)
 {
   provided.out = required.out;
   required.in = provided.in;
-  provided.meta.requires = required.meta.requires;
-  required.meta.provides = provided.meta.provides;
+  provided.meta.require = required.meta.require;
+  required.meta.provide = provided.meta.provide;
 }
 #x:close-namespace
 
