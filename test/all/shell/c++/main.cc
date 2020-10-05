@@ -73,11 +73,11 @@ connect_ports (dzn::container< ::shell, std::function<void()>>& c)
 std::map<std::string,std::function<void()> >
 event_map (dzn::container< ::shell, std::function<void()>>& c)
 {
-  c.system.p_outer.meta.requires.port = "p_outer";
+  c.system.p_outer.meta.require.port = "p_outer";
 
-  c.system.r_outer.meta.provides.address = &c;
-  c.system.r_outer.meta.provides.meta = &c.meta;
-  c.system.r_outer.meta.provides.port = "r_outer";
+  c.system.r_outer.meta.provide.address = &c;
+  c.system.r_outer.meta.provide.meta = &c.meta;
+  c.system.r_outer.meta.provide.port = "r_outer";
 
 
   return {{"illegal", []{std::clog << "illegal" << std::endl; std::exit(0);}}
