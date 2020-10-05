@@ -33,7 +33,7 @@ struct #x:model-name Glue
 #x:asd-register-cb-definition
 
 void defer_processCBs() {
-  dzn_runtime.defer(component.#x:implemented-port-name .meta.provides.address, &component, boost::bind(&#x:model-name Glue::on_flush_processCBs,this));
+  dzn_runtime.defer(component.#x:implemented-port-name .meta.provide.address, &component, boost::bind(&#x:model-name Glue::on_flush_processCBs,this));
 }
 
 void on_flush_processCBs() {

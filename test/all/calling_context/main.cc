@@ -36,8 +36,8 @@ int main(int argc, char* argv[])
 
   calling_context sut(locator.set(runtime));
   sut.dzn_meta.name = "sut";
-  sut.h.meta.requires.port = "h";
-  sut.w.meta.provides.port = "w";
+  sut.h.meta.require.port = "h";
+  sut.w.meta.provide.port = "w";
 
   sut.w.in.world = [&](int& cc, int i){
     //std::clog << "cc=" << cc << ", i=" << i << std::endl;

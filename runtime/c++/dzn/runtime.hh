@@ -192,7 +192,7 @@ namespace dzn
 #if DZN_STATE_TRACING
     os << *c << std::endl;
 #endif
-    c->dzn_rt.defer(meta.provides.address, c, [&,l]{l();});
+    c->dzn_rt.defer(meta.provide.address, c, [&,l]{l();});
   }
 }
 #endif //DZN_RUNTIME_HH
