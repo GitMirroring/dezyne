@@ -1,1 +1,1 @@
-#x:instance-name .#x:instance-port-name .meta.requires.port = "#.name";
+#x:instance-name .#x:instance-port-name .meta.require.port = "#.name";

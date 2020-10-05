@@ -36,30 +36,30 @@ namespace dzn
 
   void trace(std::ostream& os, port::meta const& m, const char* e)
   {
-    os << path(m.requires.meta, m.requires.port) << "." << e << " -> "
-       << path(m.provides.meta, m.provides.port) << "." << e << std::endl;
+    os << path(m.require.meta, m.require.port) << "." << e << " -> "
+       << path(m.provide.meta, m.provide.port) << "." << e << std::endl;
   }
 
   void trace_out(std::ostream& os, port::meta const& m, const char* e)
   {
-    os << path(m.requires.meta, m.requires.port) << "." << e << " <- "
-       << path(m.provides.meta, m.provides.port) << "." << e << std::endl;
+    os << path(m.require.meta, m.require.port) << "." << e << " <- "
+       << path(m.provide.meta, m.provide.port) << "." << e << std::endl;
   }
 
   void trace_qin(std::ostream& os, port::meta const& m, const char* e)
   {
-    if (path(m.provides.meta) == "<external>")
-      os << path(m.requires.meta, "<q>") << " <- "
-         << path(m.provides.meta, m.provides.port) << "." << e << std::endl;
+    if (path(m.provide.meta) == "<external>")
+      os << path(m.require.meta, "<q>") << " <- "
+         << path(m.provide.meta, m.provide.port) << "." << e << std::endl;
     else
-      os <<  path(m.provides.meta, m.provides.port) << ".<q> <- "
-         <<  path(m.requires.meta, m.requires.port) << "." << e << std::endl;
+      os <<  path(m.provide.meta, m.provide.port) << ".<q> <- "
+         <<  path(m.require.meta, m.require.port) << "." << e << std::endl;
   }
 
   void trace_qout(std::ostream& os, port::meta const& m, const char* e)
   {
-    os << path(m.requires.meta, m.requires.port) << "." << e << " <- "
-       << path(m.requires.meta, "<q>") << std::endl;
+    os << path(m.require.meta, m.require.port) << "." << e << " <- "
+       << path(m.require.meta, "<q>") << std::endl;
   }
 
   bool runtime::external(void* scope) {
