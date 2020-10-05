@@ -1,5 +1,5 @@
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2017, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
 ;;;
@@ -38,7 +38,7 @@
 ;;
 ;; To use as the basis for a development environment, run:
 ;;
-;;   guix time-machine --commit=abe3c5ed7d04985c987e6c81aeb1284354ea0c77 -- environment -l guix.scm
+;;   guix time-machine --commit=d6a8f0a9781a90c3037f25e51d7ff32e50f7a8c1 -- environment -l guix.scm
 ;;
 ;;; Code:
 
