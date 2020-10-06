@@ -75,6 +75,10 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + bring LSP under test
     + bring check & simulate under test
 
+  - items added since
+    + catch websocket 'address already in use' errors in daemon transport layer
+    + remove gojs 'evaluation' watermark
+
 ** Release 2.12
   - state diagram
   - LSP: highlighting & completion (80%)
