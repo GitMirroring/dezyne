@@ -66,6 +66,12 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + remove state diagram
     + write 2.11 getting started (medium & format tbd)
 
+  - daemon/ide:
+    + bring under test handling client not meeting input preconditions
+      like: parser errors, failing connections, double connections
+    + bring LSP under test
+    + bring check & simulate under test
+
 ** Release 2.12
   - state diagram
   - LSP: highlighting & completion (80%)
