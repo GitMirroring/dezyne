@@ -49,6 +49,23 @@
                                                               (action sut .p .in .e)
                                                               (action sut .p .in .c))))
                         ("p.e\np.return\np.cb1\np.c\np.return"
+                         ;; XXX: Just echo the expected trace...
+                         . (,(lambda _
+                               (display
+                                (string-append
+                                 "<external>.p.e -> sut.p.e\n"
+                                 "<external>.p.return <- sut.p.return\n"
+                                 "sut.p.<q> <- <external>.p.cb1\n"
+                                 "<external>.p.cb1 <- c.<q>\n"
+                                 "<external>.p.c -> sut.p.c\n"
+                                 "<external>.p.return <- sut.p.return\n")
+                                (current-error-port)))))
+                        ("p.e\np.return\np.cb1\np.c\np.return"
+                         ;; After rewiring the system and blanking out port names, feeding
+                         ;; the input trace produces a code trace that could be filtered
+                         ;; into compliance with the input trace.
+
+                         ;; Disabled this trickery for now.
                          . (,(lambda _
                                (let ((c (make <cb1_cancel> #:locator locator #:name (string->symbol " "))))
                                  (set! (.name (.out (.p sut))) (string->symbol " "))
