@@ -362,6 +362,9 @@ install-data-hook:
 if have_cxx11
 	echo "$(C_VERSION_COMMENT)" | tee -a $$(find $(DESTDIR)$(pkgdatadir)/runtime/c++ -type f)
 endif
+if have_cxx_exception_wrappers
+	echo "$(C_VERSION_COMMENT)" | tee -a $$(find $(DESTDIR)$(pkgdatadir)/runtime/examples -type f)
+endif
 if have_javascript
 	echo "$(C_VERSION_COMMENT)" | tee -a $$(find $(DESTDIR)$(pkgdatadir)/runtime/javascript -type f)
 endif

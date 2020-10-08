@@ -43,7 +43,17 @@
 
   #:use-module (dzn ast)
 
-  #:use-module (dzn templates))
+  #:use-module (dzn templates)
+  #:export (c++:capture-arguments
+            c++:dzn-locator
+            c++:enum->string
+            c++:enum-field->string
+            c++:enum-field-type
+            c++:enum-literal
+            c++:model
+            c++:string->enum
+            c++:type-name
+            c++:type-ref))
 
 ;;; ast accessors / template helpers
 

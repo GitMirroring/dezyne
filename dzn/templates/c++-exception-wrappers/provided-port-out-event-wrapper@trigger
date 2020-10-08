@@ -1,0 +1,15 @@
+           impl.#.port.name .out.#.event.name = [this](#x:calling-context-type-name & cc #x:formals-prefix) {
+             try {
+               #.port.name .out.#.event.name (#x:formal-names );
+             }
+             catch(std::exception& e) {
+               if(&cc != nullptr)
+               {
+                 cc.extend(std::current_exception());
+               }
+               else
+               {
+                 #x:calling-context-type-name ::report(e);
+               }
+             }
+           };
