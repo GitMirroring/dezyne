@@ -240,6 +240,9 @@
 (define-method (ast:system* (o <system>))
   (filter (is? <system>) (ast:component-model* o)))
 
+(define-method (ast:system* (o <root>))
+  (filter (is? <system>) (ast:model* o)))
+
 (define-method (ast:dzn-scope? (o <model>))
   (member (car (.ids (.name o))) '("dzn" "dzn'")))
 

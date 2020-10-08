@@ -42,9 +42,13 @@ CXX:=$(CCACHE) g++
 CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
 # FIXME: handwritten code, versioned?  $(IN)/../.. or ?
 CPPFLAGS=-I$(OUT) -I$(OUT)/..  -I$(OUT)/../.. -I$(OUT)/../../c++ -I$(IN) -I$(IN)/.. -I$(DEVELOPMENT)/runtime/c++ -D DZN_VERSION_ASSERT=1
-GLOBALS_H=$(wildcard $(DIR)/globals.h)
+GLOBALS_H=$(wildcard $(IN)/globals.h)
 ifneq ($(GLOBALS_H),)
 CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
+endif
+CALLING_CONTEXT_HH=$(wildcard $(IN)/c++/calling_context.hh)
+ifneq ($(CALLING_CONTEXT_HH),)
+CPPFLAGS:=$(CPPFLAGS) -include $(CALLING_CONTEXT_HH)
 endif
 
 $(OUT)/%.o: $(DEVELOPMENT)/runtime/c++/%.cc

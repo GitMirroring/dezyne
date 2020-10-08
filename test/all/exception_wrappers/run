@@ -1,0 +1,8 @@
+#! /bin/sh
+set -ex
+pwd
+dir=$1
+base=$(basename $dir)
+mkdir -p $dir/out/c++
+dzn code --calling-context=exception_context --language=c++-exception-wrappers -o $dir/out/c++ $dir/$base.dzn
+run $dir

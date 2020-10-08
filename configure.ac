@@ -223,6 +223,23 @@ AM_CONDITIONAL([have_scheme], [test "x$have_scheme" = xtrue])
 languages=`echo "$enable_languages" | sed 's/, *,/,/g' | tr , ' '`
 AC_SUBST(languages)
 
+AC_ARG_ENABLE([c++-exception-wrappers],
+   [AS_HELP_STRING([[--enable-c++-exception-wrappers]],
+      [Build exception wrappers for c++ (experimental)])],
+   [cxx_exception_wrappers="$enableval"],
+   [cxx_exception_wrappers="no"])
+
+case ${cxx_exception_wrappers} in
+  yes)
+if test "x$courageous" = xno; then
+    AC_MSG_ERROR([`c++ execption-wrappers is an experimental feature, try `--with-courage'.])
+fi
+have_cxx_exception_wrappers=true
+;;
+esac
+
+AM_CONDITIONAL([have_cxx_exception_wrappers], [test "x$have_cxx_exception_wrappers" = xtrue])
+
 # Output
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([pre-inst-env:build-aux/pre-inst-env.in],
@@ -240,4 +257,5 @@ AC_OUTPUT
 cat <<EOF
 
     Dezyne is configured for languages: $languages
+    Experimental c++ exception wrappers: $cxx_exception_wrappers
 EOF

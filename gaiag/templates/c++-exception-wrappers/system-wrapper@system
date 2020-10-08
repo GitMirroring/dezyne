@@ -1,0 +1,26 @@
+#x:port-wrapper
+
+struct #x:model-name Wrapper
+{
+    dzn::meta dzn_meta;
+
+    #x:wrapped-port-inst
+
+    #x:model-name  impl;
+
+    #x:model-name Wrapper(const dzn::locator& l)
+        : dzn_meta{"", "#x:model-name Wrapper",0,0,{#x:ports-meta-list },{ &impl.dzn_meta },
+        { #x:check-bindings-list }}
+        #x:provided-port-initializer
+        #x:required-port-initializer
+        , impl(l)
+        {
+          #x:provided-port-event-wrappers
+          #x:required-port-event-wrappers
+        }
+
+    void check_bindings()
+    {
+      dzn::check_bindings(&dzn_meta);
+    }
+};

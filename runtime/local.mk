@@ -46,6 +46,12 @@ dist_runtime_javascript_dzn_DATA =		\
  %D%/javascript/dzn/runtime.js
 endif
 
+if have_cxx_exception_wrappers
+runtime_examplesdir = $(pkgdatadir)/runtime/examples
+dist_runtime_examples_DATA =		\
+ %D%/examples/exception_context.hh
+endif
+
 if have_scheme
 runtime_scheme_dzndir = $(pkgdatadir)/runtime/scheme/dzn
 dist_runtime_scheme_dzn_DATA =			\

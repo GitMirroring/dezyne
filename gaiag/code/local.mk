@@ -34,6 +34,12 @@ else
 dist_noinst_DATA += %D%/c++.scm
 endif
 
+if have_cxx_exception_wrappers
+dist_%C%_scm_DATA += %D%/c++-exception-wrappers.scm
+else
+dist_noinst_DATA += %D%/c++-exception-wrappers.scm
+endif
+
 if have_cs
 dist_%C%_scm_DATA += %D%/cs.scm
 else

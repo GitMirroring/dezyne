@@ -31,6 +31,12 @@ dist_nocompile_%C%_scm_DATA =			\
 dist_nocompile_%C%_scm_DATA += %D%/c++.scm
 #endif
 
+if have_cxx_exception_wrappers
+dist_nocompile_%C%_scm_DATA += %D%/c++-exception-wrappers.scm
+else
+dist_noinst_DATA += %D%/c++-exception-wrappers.scm
+endif
+
 if have_cs
 dist_nocompile_%C%_scm_DATA += %D%/cs.scm
 else

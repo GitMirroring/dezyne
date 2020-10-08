@@ -1,0 +1,12 @@
+##ifndef #x:file-name-upcase _EXCEPTION_FORWARDING_HH
+##define #x:file-name-upcase _EXCEPTION_FORWARDING_HH
+
+##include "#x:file-name .hh"
+
+##include <dzn/runtime.hh>
+
+#x:system-wrapper
+
+##endif // #x:file-name-upcase _EXCEPTION_FORWARDING_HH
+
+//version: #x:version

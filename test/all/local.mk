@@ -251,6 +251,11 @@ REGRESSION_TESTS =				\
  %D%/system_reply_enum				\
  %D%/unused_function
 
+if have_cxx_exception_wrappers
+REGRESSION_TESTS +=				\
+ %D%/exception_wrappers
+endif
+
 PARSER_TESTS =					\
  %D%/newlines_between_dollars			\
  %D%/parse_block_comment_import			\
