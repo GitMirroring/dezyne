@@ -1,3 +1,26 @@
 (define-templates version (const %version))
 (define-templates header)
-(define-templates source)
+
+(define-templates calling-context-type-name c++ew:calling-context-type-name)
+
+(define-templates system-wrapper c++ew:ast-system*)
+
+(define-templates provided-port-initializer ast:provides-port* newline-infix)
+(define-templates required-port-initializer ast:requires-port* newline-infix)
+(define-templates provided-port-event-wrappers ast:provides-port* newline-infix)
+(define-templates required-port-event-wrappers ast:requires-port* newline-infix)
+(define-templates provided-port-in-event-wrapper c++ew:port-to-in-trigger* newline-infix)
+(define-templates provided-port-out-event-wrapper c++ew:port-to-out-trigger* newline-infix)
+(define-templates required-port-in-event-wrapper c++ew:port-to-in-trigger* newline-infix)
+(define-templates required-port-out-event-wrapper c++ew:port-to-out-trigger* newline-infix)
+(define-templates formals-prefix code:formals comma-prefix)
+(define-templates formal-names c++ew:formal-names comma-infix)
+(define-templates formal-names-prefix c++ew:formal-names comma-prefix)
+(define-templates port-type-upcase c++ew:port-type-upcase)
+(define-templates port-wrapper ast:port* newline-infix)
+(define-templates wrapped-port-inst ast:port* newline-infix)
+
+(define-templates valued-event-wrapper c++ew:valued-event?)
+(define-templates valued-event-return c++ew:valued-event?)
+(define-templates valued-required-in-return c++ew:valued-event?)
+(define-templates ew-trigger-type-base c++ew:trigger-type-base type-infix)

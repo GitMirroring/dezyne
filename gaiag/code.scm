@@ -469,13 +469,15 @@
   (ast:formal* (code:add-calling-context-formal ((compose .formals .signature .event) o))))
 
 (define-method (code:formals (o <trigger>))
-  (ast:formal* (code:add-calling-context-formal ((compose .formals) o))))
+  (if (string=? (code:language) "c++ew") (ast:formal* ((compose .formals) o))
+      (ast:formal* (code:add-calling-context-formal ((compose .formals) o)))))
 
 (define-method (code:formals (o <signature>))
   (ast:formal* (code:add-calling-context-formal ((compose .formals) o))))
 
 (define-method (code:formals (o <event>))
-  (ast:formal* (code:add-calling-context-formal ((compose .formals .signature) o))))
+  (if (string=? (code:language) "c++ew") (ast:formal* ((compose .formals .signature) o))
+      (ast:formal* (code:add-calling-context-formal ((compose .formals .signature) o)))))
 
 (define-method (code:formals (o <on>))
   (ast:formal*
@@ -763,7 +765,8 @@
               (mkdir-p dir)
               (with-output-to-file file-name
                 (dzn:indent (cut (%x:header) o)))))))
-    (if (or (not (code:header?)) (have-non-interface-models? o))
+    (if (and (%x:source) ;;don't generate .cc file if #x:source evaluates to #f
+         (or (not (code:header?)) (have-non-interface-models? o)))
         (let* ((ext (dzn:extension (make <component>)))
                (file-name (string-append dir base ext)))
           (if stdout? ((dzn:indent (cut (%x:source) o)))
@@ -822,7 +825,7 @@
   (member (language) '("c++" "c++03" "c++-msvc11")))
 
 (define (code:header?)
-  (member (language) '("c" "c++" "c++03" "c++-msvc11")))
+  (member (language) '("c" "c++" "c++ew" "c++03" "c++-msvc11")))
 
 (define (code:dir o)
   (if (member (language) '("javascript")) "dzn/" ""))

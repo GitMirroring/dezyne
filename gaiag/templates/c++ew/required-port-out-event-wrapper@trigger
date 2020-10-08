@@ -1,0 +1,4 @@
+            #.port.name .out.#.event.name  = [this] (#x:formals) {
+              calling_context* cc = nullptr;
+              impl.#.port.name .out.#.event.name (*cc #x:formal-names-prefix );
+            };
