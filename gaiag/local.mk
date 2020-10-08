@@ -41,11 +41,11 @@ dist_%C%_scm_DATA =				\
  %D%/serialize.scm				\
  %D%/shell-util.scm				\
  %D%/templates.scm				\
- %D%/wfc.scm					\
- %D%/c++ew.scm
+ %D%/wfc.scm
 
 if have_cxx11
 dist_%C%_scm_DATA += %D%/c++.scm
+dist_%C%_scm_DATA += %D%/c++ew.scm
 dist_%C%_scm_DATA += %D%/glue.scm
 
 if have_cxx03

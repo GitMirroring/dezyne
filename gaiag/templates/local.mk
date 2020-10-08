@@ -25,11 +25,11 @@ dist_nocompile_%C%_scm_DATA =			\
  %D%/code.scm					\
  %D%/dzn.scm					\
  %D%/json.scm					\
- %D%/makreel.scm				\
- %D%/c++ew.scm
+ %D%/makreel.scm
 
 if have_cxx11
 dist_nocompile_%C%_scm_DATA += %D%/c++.scm
+dist_nocompile_%C%_scm_DATA += %D%/c++ew.scm
 dist_nocompile_%C%_scm_DATA += %D%/glue.scm
 endif
 
@@ -55,11 +55,12 @@ nocompile_%C%_scmdir = $(%C%_scmdir)
 EXTRA_DIST +=					\
  %D%/dzn					\
  %D%/json					\
- %D%/makreel					\
- %D%/c++ew
+ %D%/makreel
 
 if have_cxx11
-EXTRA_DIST += %D%/c++
+EXTRA_DIST +=					\
+ %D%/c++					\
+ %D%/c++ew
 endif
 
 if have_cs
