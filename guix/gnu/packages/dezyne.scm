@@ -76,7 +76,7 @@
                      ("pkg-config" ,pkg-config)
                      ("texinfo" ,texinfo)
                      ("zip" ,zip))) ; for guix environment -l guix.scm
-    (propagated-inputs `(("guile-json" ,guile-json-1)))
+    (propagated-inputs `(("guile-json" ,guile-json-1))) ;;guile-json-1 <- guile-2.2 <- windows port
     (build-system gnu-build-system)
     (arguments
      `(#:modules ((ice-9 popen)
