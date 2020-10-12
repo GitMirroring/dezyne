@@ -55,10 +55,12 @@
     (let ((interfaces '()))
       (lambda (command . rest)
         (case command
-          ((add) (unless (find
-                          (lambda (x) (equal? (ast:scope x) (ast:scope (car rest))))
-                          interfaces)
-                   (set! interfaces (append interfaces rest) )))
+          ((add) (let* ((interface (car rest))
+                        (name (.name interface)))
+                   (unless (find
+                            (compose (cut ast:equal? <> name) .name)
+                            interfaces)
+                     (set! interfaces (append interfaces rest)))))
           ((get) interfaces)))))
 
   (define (make-list? o) (if (pair? o) o

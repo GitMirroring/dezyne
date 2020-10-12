@@ -1,0 +1,27 @@
+extern T $int$;
+
+interface i
+{
+  in void e(T t);
+  out void a(T t);
+  behaviour {
+    bool idle = true;
+    [idle] on e: idle=false;
+    [!idle] {
+      on inevitable: {idle=true;a;}
+      on e: illegal;
+    }
+  }
+}
+
+component async_types
+{
+  provides i p;
+  behaviour {
+    requires dzn.async interference;
+    requires dzn.async(T t) defer;
+    bool idle = true;
+    [idle] on p.e (t): {idle=false; defer.req (t);}
+    [!idle] on defer.ack (t): {idle=true;p.a (t);}
+  }
+}

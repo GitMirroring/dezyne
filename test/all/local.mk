@@ -90,6 +90,7 @@ REGRESSION_TESTS =				\
  %D%/async_prio3				\
  %D%/async_rank					\
  %D%/async_ranking				\
+ %D%/async_types				\
  %D%/async_silent				\
  %D%/async_simple				\
  %D%/async_synccb				\
@@ -97,7 +98,7 @@ REGRESSION_TESTS =				\
  %D%/async_sync_prio				\
  %D%/blocking_binding				\
  %D%/blocking_imperative			\
- %D%/blocking_function_reply		\
+ %D%/blocking_function_reply			\
  %D%/blocking_normalize				\
  %D%/blocking_requires				\
  %D%/blocking_requires_normalize		\
