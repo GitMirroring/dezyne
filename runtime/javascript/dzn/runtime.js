@@ -23,6 +23,10 @@
 //
 // Code:
 
+function node_p() {
+  return typeof(module) !== 'undefined';
+}
+
 if (!Array.prototype.each) {
   Array.prototype.each = Array.prototype.forEach;
 };
@@ -342,7 +346,13 @@ function locator(services) {
     return this;
   };
 
-  this.set(function(s){process.stderr.write(s);}, 'trace');
+  var log = function(s) {
+    if (node_p())
+      process.stderr.write(s)
+    else
+      console.log(s);
+  };
+  this.set(log, 'trace');
 
   this.get = function(o, key) {
     var key = this.key(o, key);
