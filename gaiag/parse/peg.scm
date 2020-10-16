@@ -56,7 +56,7 @@ import <-- IMPORT file-name SEMICOLON
 IMPORT < 'import' ![a-zA-Z_0-9]
 file-name <- (!SEMICOLON .)+
 SEMICOLON < ';'
-SKIP < .")
+SKIP < [\n\r\t ] &IMPORT / . IMPORT / .")
   (peg:tree (match-pattern root string)))
 
 (define peg:skip-parse peg-skip)
