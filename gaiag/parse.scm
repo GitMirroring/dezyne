@@ -146,15 +146,21 @@ by replacing import nodes by the actual parse trees."
   "Read @var{file-name}, using @var{imports} to resolve @code{import}
 statements and return the expanded dezyne text, similar to @command{gcc
 -E}."
-(let* ((content-alist (file+import-content-alist file-name imports))
-       (file (last content-alist)))
-  (cons* (string-append "#file " (car file))
-         (cdr file)
-         (append-map
-          (lambda (o)
-            `(,(string-append "#imported " (car o))
-              ,(cdr o)))
-          (drop-right content-alist 1)))))
+  (let* ((content-alist (file+import-content-alist file-name imports))
+         (content-alist (reverse content-alist))
+         (top (car content-alist)))
+    (string-join
+     (append
+      (match top
+        ((file-name . content)
+         (if (string-prefix? "#file " content) (list content)
+             (list (format #f "#file ~s" file-name)
+                   content))))
+      (append-map (match-lambda ((file-name . content)
+                                 (list (format #f "#imported ~s" file-name)
+                                       content)))
+                  (cdr content-alist)))
+     "\n")))
 
 (define* (file+import-content-alist file-name imports)
   "Turn a FILE-NAME into an alist of the file name and the file content

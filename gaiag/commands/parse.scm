@@ -142,9 +142,9 @@ Usage: dzn parse [OPTION]... [FILE]...
   (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (debug? (gdzn:command-line:get 'debug #f)))
-    (if debug? (map write-line (preprocess file-name #:imports imports))
+    (if debug? (display (preprocess file-name #:imports imports))
         (catch #t
-          (lambda _ (map write-line (preprocess file-name #:imports imports)))
+          (lambda _ (display (preprocess file-name #:imports imports)))
           (handle-parser-exceptions file-name)))))
 
 (define (main args)
