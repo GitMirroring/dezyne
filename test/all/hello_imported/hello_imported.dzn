@@ -1,3 +1,4 @@
+#file "hello_imported.dzn"
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
@@ -21,11 +22,10 @@
 //
 // Code:
 
-#file "C:\aap\hello_import.dzn"
 //import interfaces.dzn;
 //import components.dzn;
 
-component hello_import
+component hello_imported
 {
   provides ihello h;
   requires iworld w;
