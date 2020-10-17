@@ -135,16 +135,6 @@ SKIP < .")
            res)))
   (define-peg-pattern var all -var-)
 
-  (define (-do-file-command- str len pos)
-    (let ((res (file-command str len pos)))
-      (when res
-        (let* ((body (cadr res))
-               (text (drop-right (drop body 1) 1))
-               (file-file-name (string-trim-both (apply string-append text))))
-          (set! file-name file-file-name)))
-      res))
-  (define-peg-pattern do-file-command body -do-file-command-)
-
   (define-peg-string-patterns
     "root <-- top* EOF#
 
@@ -156,7 +146,7 @@ import <-- IMPORT file-name SEMICOLON#
 
 file-name <- (!SEMICOLON .)+
 
-stream-command <- do-file-command / imported-command
+stream-command <- file-command / imported-command
 file-command <-- FILE dq-string#
 imported-command <-- IMPORTED dq-string#
 FILE < '#file'
