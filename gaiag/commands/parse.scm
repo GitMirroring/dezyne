@@ -98,11 +98,11 @@ Usage: dzn parse [OPTION]... [FILE]...
     options))
 
 (define (parse- options file-name)
-  (let* ((peg? (gdzn:command-line:get 'peg #f))
+  (let* ((skip-wfc? (gdzn:command-line:get 'peg #f))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (model-name (option-ref options 'model #f))
-         (ast (file->ast file-name #:peg? peg? #:imports imports)))
+         (ast (file->ast file-name #:skip-wfc? skip-wfc? #:imports imports)))
     (if (not model-name) ast
         (ast:filter-model ast (ast:get-model ast model-name)))))
 
@@ -135,8 +135,8 @@ Usage: dzn parse [OPTION]... [FILE]...
 
 (define (parse options file-name)
   (let* ((debug? (gdzn:command-line:get 'debug #f))
-         (peg? (gdzn:command-line:get 'peg #f)))
-    ((if (or debug? peg?) parse- assert-parse) options file-name)))
+         (skip-wfc? (gdzn:command-line:get 'peg #f)))
+    ((if (or debug? skip-wfc?) parse- assert-parse) options file-name)))
 
 (define (assert-preprocess options file-name)
   (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
