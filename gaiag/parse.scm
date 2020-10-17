@@ -31,6 +31,7 @@
 
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 regex)
   #:use-module (ice-9 pretty-print)
 
   #:use-module (gaiag command-line)
@@ -97,66 +98,72 @@
 (define (is? symbol)
   (lambda (o) (is-a? o symbol)))
 
-(define (expand-imports parse-tree-alist)
-  "Turn an alist of file names and parse trees, into a single parse-tree
-by replacing import nodes by the actual parse trees."
-  (let ((parse-tree (cdr (last parse-tree-alist)))
-        (imports (drop-right parse-tree-alist 1)))
-    `(root
-         ,@(append
-            (map (lambda (i)
-                   (let ((file-name (car i))
-                         (root (filter (negate (is? 'import)) (cdr i))))
-                     `(import ,file-name ,root))) imports)
-            (filter (negate (is? 'import)) (cdr parse-tree))))))
+(define* (file+import-content-alist->ast alist #:key skip-wfc?)
+  "From ALIST of form
 
-(define* (parse-string string #:key (file-name "-") (imports '()))
-  (let* ((parse-tree-alist (map (lambda (p)
-                                  (let ((file-name (car p))
-                                        (content (cdr p)))
-                                    (catch 'syntax-error
-                                      (lambda ()
-                                        (parameterize ((%peg:locations? #t)
-                                                       (%peg:skip? peg:skip-parse)
-                                                       (%peg:debug? (> (gdzn:debugity) 3)))
-                                          (cons file-name (peg:parse content))))
-                                      (peg:handle-syntax-error file-name content))))
-                                (if (string=? "-" file-name) `(,(cons file-name string))
-                                    (file+import-content-alist file-name imports))))
-         (parse-tree (expand-imports parse-tree-alist))
-         (gdzn-debug? (gdzn:command-line:get 'debug)))
-    (when (> (gdzn:debugity) 2)
-      (pretty-print parse-tree (current-error-port)))
-    parse-tree))
+   '((FILE-NAME . CONTENT)
+     (IMPORTED-FILE-NAME . IMPORTED-CONTENT)
+      ...)
 
-(define* (file->ast file-name #:key peg? (imports '()))
-  (let* ((string (if (equal? file-name "-") (read-string)
-                     (with-input-from-file file-name read-string)))
-         (parse-tree (parse-string string #:file-name file-name #:imports imports))
-         (ast (parse-tree->ast parse-tree #:string string #:file-name file-name))
-         (ast (ast:annotate ast)))
-    (when (> (gdzn:debugity) 1)
-      (pretty-print ast  (current-error-port)))
-    (if peg? ast
-        (ast:wfc ast))))
+parse CONTENT and return an ast.  When SKIP-WCF?, skip the
+well-formedness checks."
 
-(define* (string->ast string #:key peg?)
-  (let* ((parse-tree (parse-string string))
-         (ast (parse-tree->ast parse-tree #:string string))
-         (ast (ast:annotate ast)))
-    (if peg? ast
-        (ast:wfc ast))))
+  (define (expand-imports parse-tree-alist)
+    (let ((file (car parse-tree-alist))
+          (imports (cdr parse-tree-alist)))
+      (match file
+        ((file-name . parse-tree)
+         `(root
+              ,@(append
+                 (map (match-lambda
+                        ((file-name . parse-tree)
+                         (let ((root (filter (negate (is? 'import)) parse-tree)))
+                           `(import ,file-name ,root))))
+                      imports)
+                 (filter (negate (is? 'import)) (cdr parse-tree))))))))
+
+  (let* ((parse-tree-alist
+          (map (match-lambda
+                 ((file-name . content)
+                  (catch 'syntax-error
+                    (lambda ()
+                      (parameterize ((%peg:locations? #t)
+                                     (%peg:skip? peg:skip-parse)
+                                     (%peg:debug? (> (gdzn:debugity) 3)))
+                        (cons file-name (peg:parse content))))
+                    (peg:handle-syntax-error file-name content))))
+               alist))
+         (parse-tree (expand-imports parse-tree-alist)))
+    (match alist
+      (((file-name . content) imports ...)
+       (let* ((ast (parse-tree->ast parse-tree #:string content #:file-name file-name))
+              (ast (annotate-ast ast)))
+         (when (> (gdzn:debugity) 1)
+           (pretty-print ast  (current-error-port)))
+         (if skip-wfc? ast
+             (ast:wfc ast)))))))
+
+(define* (file->ast file-name #:key skip-wfc? (imports '()))
+  "Parse FILE-NAME and return an ast.  When SKIP-WFC?, skip the
+well-formedness checks."
+  (if (equal? file-name "-") (string->ast (read-string))
+      (file+import-content-alist->ast (file+import-content-alist file-name imports) #:skip-wfc? skip-wfc?)))
+
+(define* (string->ast string #:key skip-wfc?)
+  "Parse STRING and return an ast.  When SKIP-WFC? skip the
+well-formedness checks."
+  (file+import-content-alist->ast `(("-" . ,string)) #:skip-wfc? skip-wfc?))
 
 (define* (preprocess file-name #:key (imports '()))
   "Read @var{file-name}, using @var{imports} to resolve @code{import}
 statements and return the expanded dezyne text, similar to @command{gcc
 -E}."
   (let* ((content-alist (file+import-content-alist file-name imports))
-         (content-alist (reverse content-alist))
-         (top (car content-alist)))
+         (file (car content-alist))
+         (imports (cdr content-alist)))
     (string-join
      (append
-      (match top
+      (match file
         ((file-name . content)
          (if (string-prefix? "#file " content) (list content)
              (list (format #f "#file ~s" file-name)
@@ -164,30 +171,34 @@ statements and return the expanded dezyne text, similar to @command{gcc
       (append-map (match-lambda ((file-name . content)
                                  (list (format #f "#imported ~s" file-name)
                                        content)))
-                  (cdr content-alist)))
+                  imports))
      "\n")))
 
 (define* (file+import-content-alist file-name imports)
-  "Turn a FILE-NAME into an alist of the file name and the file content
-and do the same for its import dependencies given the list of
-IMPORTS. An import file-name is resolved by searching for it in its
-parent directory and up the ancestral tree and then along the paths
+  "Recursively resolve imports starting with FILE-NAME and return an
+alist:
+
+   '((FILE-NAME . CONTENT)
+     (IMPORTED-FILE-NAME . IMPORTED-CONTENT)
+      ...)
+
+An import file name is resolved by searching for it in its parent
+directory and up the ancestral tree and then along the directories
 specified in IMPORTS."
   (let loop ((file-names (list (basename file-name)))
              (imports (cons (dirname file-name) imports))
              (content-alist '()))
-    (if (null? file-names) content-alist
+    (if (null? file-names) (reverse content-alist)
         (let* ((file-name (or (search-path imports (car file-names))
                               (throw 'import-error (car file-names) (string-join imports))))
                (imports (delete-duplicates (cons (dirname file-name) imports))))
           (if (assoc-ref content-alist file-name) (loop (cdr file-names) imports content-alist)
-              (let* ((content-alist (acons file-name
-                                           (with-input-from-file file-name read-string)
-                                           content-alist)))
+              (let* ((content (with-input-from-file file-name read-string))
+                     (content-alist (acons file-name content content-alist)))
                 (loop (append (cdr file-names)
                               (let loop ((o (parameterize ((%peg:skip? peg:skip-parse)
                                                            (%peg:debug? (> (gdzn:debugity) 3)))
-                                              (peg:imports (assoc-ref content-alist file-name)))))
+                                              (peg:imports content))))
                                 (match o
                                   (('import file-name) `(,file-name))
                                   (_ (append-map loop o)))))
