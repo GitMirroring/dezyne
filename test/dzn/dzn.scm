@@ -242,7 +242,9 @@ output, and standard error as three values."
                 (with-output-to-file err-file
                   (cut display stderr))
                 (let ((baseline-out (string-append baseline "/" base-name)))
-                  (and (zero? (system* "diff" "-uwB" baseline-out out-file))
+                  (and (or (and (string-null? stdout)
+                                (not (file-exists? baseline-out)))
+                           (zero? (system* "diff" "-uwB" baseline-out out-file)))
                        (zero? (system* "diff" "-uwB"
                                        (string-append baseline-out ".stderr") err-file))))))))))
 
