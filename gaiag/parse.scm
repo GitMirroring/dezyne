@@ -143,18 +143,49 @@ well-formedness checks."
   "Parse FILE-NAME and return an ast.  When SKIP-WFC?, skip the
 well-formedness checks."
   (if (equal? file-name "-") (string->ast (read-string))
-      (file+import-content-alist->ast (file+import-content-alist file-name imports) #:skip-wfc? skip-wfc?)))
+      (let ((alist (file+import-content-alist file-name imports)))
+        (file+import-content-alist->ast alist #:skip-wfc? skip-wfc?))))
 
 (define* (string->ast string #:key skip-wfc?)
   "Parse STRING and return an ast.  When SKIP-WFC? skip the
 well-formedness checks."
-  (file+import-content-alist->ast `(("-" . ,string)) #:skip-wfc? skip-wfc?))
+  (let ((alist (string->file+import-content-alist string)))
+    (file+import-content-alist->ast alist  #:skip-wfc? skip-wfc?)))
+
+(define (string->file+import-content-alist string)
+  "Split possibly pre-processed STRING at preprocessing markers
+
+   #file \"file-name\"
+   <content>
+   #imported \"imported-file-name\"
+   <imported-content>
+   ...
+
+and return an alist:
+
+   '((FILE-NAME . CONTENT)
+     (IMPORTED-FILE-NAME . IMPORTED-CONTENT) ...)
+"
+  (let ((file-match (string-match "^#file \"([^\"]*)\"\n" string)))
+    (if (not file-match) `(("-" . ,string))
+        (let* ((file-name (match:substring file-match 1))
+               (string (substring string (match:end file-match))))
+          (let loop ((file-name file-name)
+                     (string string)
+                     (imported-match (string-match "\n#imported \"([^\"]*)\"" string)))
+            (if (not imported-match) `((,file-name . ,string))
+                (cons `(,file-name . ,(substring string 0 (match:start imported-match)))
+                      (let ((string (substring string (match:end imported-match))))
+                        (loop (match:substring imported-match 1)
+                              string
+                              (string-match "\n#imported \"([^\"]*)\"" string))))))))))
 
 (define* (preprocess file-name #:key (imports '()))
   "Read @var{file-name}, using @var{imports} to resolve @code{import}
 statements and return the expanded dezyne text, similar to @command{gcc
 -E}."
-  (let* ((content-alist (file+import-content-alist file-name imports))
+  (let* ((content-alist (if (equal? file-name "-") (string->file+import-content-alist (read-string))
+                            (file+import-content-alist file-name imports)))
          (file (car content-alist))
          (imports (cdr content-alist)))
     (string-join
@@ -170,13 +201,12 @@ statements and return the expanded dezyne text, similar to @command{gcc
                   imports))
      "\n")))
 
-(define* (file+import-content-alist file-name imports)
+(define (file+import-content-alist file-name imports)
   "Recursively resolve imports starting with FILE-NAME and return an
 alist:
 
    '((FILE-NAME . CONTENT)
-     (IMPORTED-FILE-NAME . IMPORTED-CONTENT)
-      ...)
+     (IMPORTED-FILE-NAME . IMPORTED-CONTENT) ...)
 
 An import file name is resolved by searching for it in its parent
 directory and up the ancestral tree and then along the directories
@@ -189,14 +219,15 @@ specified in IMPORTS."
                               (throw 'import-error (car file-names) (string-join imports))))
                (imports (delete-duplicates (cons (dirname file-name) imports))))
           (if (assoc-ref content-alist file-name) (loop (cdr file-names) imports content-alist)
-              (let* ((content (with-input-from-file file-name read-string))
-                     (content-alist (acons file-name content content-alist)))
-                (loop (append (cdr file-names)
-                              (let loop ((o (parameterize ((%peg:skip? peg:skip-parse)
-                                                           (%peg:debug? (> (gdzn:debugity) 3)))
-                                              (peg:imports content))))
-                                (match o
-                                  (('import file-name) `(,file-name))
-                                  (_ (append-map loop o)))))
-                      imports
-                      content-alist)))))))
+              (let ((content (with-input-from-file file-name read-string)))
+                (if (string-prefix? "#file \"" content) (string->file+import-content-alist content)
+                    (let ((content-alist (acons file-name content content-alist)))
+                      (loop (append (cdr file-names)
+                                    (let loop ((o (parameterize ((%peg:skip? peg:skip-parse)
+                                                                 (%peg:debug? (> (gdzn:debugity) 3)))
+                                                    (peg:imports content))))
+                                      (match o
+                                        (('import file-name) `(,file-name))
+                                        (_ (append-map loop o)))))
+                            imports
+                            content-alist)))))))))

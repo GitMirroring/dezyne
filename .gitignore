@@ -46,3 +46,5 @@ Makefile.in
 /test/bin/run
 /test/all/*/out/
 /test/bin/reorder
+/test/all/parse_preprocessed_foo/parse_preprocessed_foo.dzn
+/test/all/parse_preprocessed_imported_bar/parse_preprocessed_imported_bar.dzn
