@@ -138,22 +138,13 @@ SKIP < !IMPORT . 'import'*")
   (define-peg-string-patterns
     "root <-- top* EOF#
 
-top <- import / stream-command / scoped / data
+top <- import / scoped / data
 
 scoped <- namespace / type / interface / component
 
 import <-- IMPORT file-name SEMICOLON#
 
 file-name <- (!SEMICOLON .)+
-
-stream-command <- file-command / imported-command
-file-command <-- FILE dq-string#
-imported-command <-- IMPORTED dq-string#
-FILE < '#file'
-IMPORTED < '#imported'
-dq-string <- double-quote unq-string double-quote
-double-quote < '\"'
-unq-string <- ('\\\"' / !'\"' .)*
 
 namespace <-- NAMESPACE compound-name# BRACE-OPEN# scoped* BRACE-CLOSE#
 
