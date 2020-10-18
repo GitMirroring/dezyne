@@ -61,7 +61,7 @@
        (uri (string-append "https://dezyne.org/download/dezyne/"
                            name "-" version ".tar.gz"))
        (sha256
-        (base32 #!dezyne!# "1sm5k916y0a1vz0yynckcbc1hpf02kwayzdwmsb911gq5cd5i944"))))
+        (base32 #!dezyne!# "1c96f5hppqajrgd0n54ak8i9lvf0f9hrcglggrasasm37l4bxclk"))))
     (inputs `(("bash" ,bash-minimal)
               ("guile" ,guile-2.2)
               ("m4-cw" ,m4-changeword)
