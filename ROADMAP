@@ -46,38 +46,27 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Review and merge wip-tutorial
       - doc/dezyne-tutorial.texi
     + Review and merge wip-release
-  - Formally end-of-life cloud-based 2.9
   - Deprecate cloud-based 2.9
     + No new trial accounts
-  - ide.git => dezyne-ide.git
-    + Documentation on IDE
-      - Dezyne-IDE
-      - Atom/VSCodium (or even proprietary Microsoft Visual Studio Code?)
-      - GNU Emacs
-      - VIM/Alternative editor
-
-  - outcome meeting 17-09-2020
-    + fix 8sync related bug/workaround (info Robw)
-    + stderr related bug in combination with pipe and/or websocket (info Robw)
-    + make sequence diagram events stationary buttons in Gojs (info Pee)
-    + (2.10.1 or 2.11 tbd) implement exception wrappers for TFS (info Johri/Regtur)
-    + (2.10.1 or 2.11 tbd) fix C++17 requires keyword conflict (info Johri/Regtur)
-    + decision: we share javascript/scheme code generators only with selected users
-    + remove state diagram
-    + write 2.11 getting started (medium & format tbd)
-
-  - daemon/ide:
-    + daemon lifetime management
-    + fix: seqdiag missing model option error not passed to dzn simulate
-    + allow dzn simulate without model option (using something like ast:model; do not change seqdiag)
-    + bring under test handling client not meeting input preconditions
-      like: parser errors, failing connections, double connections
-    + bring LSP under test
-    + bring check & simulate under test
-
-  - items added since
-    + catch websocket 'address already in use' errors in daemon transport layer
-    + remove gojs 'evaluation' watermark
+  - code
+    + Fix C++17 requires keyword conflict
+    + c++ew
+      - implement exception wrappers for TFS
+      - distribution: --enable-c++-exception-wrappers
+      - full test of client code
+    + Review and merge wip-scheme
+      - TODO: foreigns with same port (data2event, data4event)
+        WARNING: (daemon daemon): `.data2event' imported from both (daemon View_data2event) and (daemon Editor_data2event)
+    + Review and merge wip-javascript
+    + 2.11.rc0-javascript+scheme preview release
+  - LSP
+    + Cleanup and split fallback into PEG patches, wip-completion, wip-lsp
+    + Review and merge wip-completion
+    + Review and merge wip-lsp
+    + Bring completion under test
+    + Bring LSP under test
+    + Sort outp emacs/dzn-mode.el with (and without?) LSP
+    + Document LSP setup for various editors
 
 ** Release 2.12
   - state diagram
