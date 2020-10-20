@@ -1,3 +1,6 @@
+In test/all/parse_preprocessed_imported_bar/bar.dzn:
+imported from test/all/parse_preprocessed_imported_bar/foo.dzn:
+
 test/all/parse_preprocessed_imported_bar/bar.dzn:2:1: error
 bar
 ^
