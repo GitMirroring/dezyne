@@ -1,0 +1,9 @@
+import component.dzn;
+
+component S
+{
+  system
+  {
+    C c;
+  }
+}
