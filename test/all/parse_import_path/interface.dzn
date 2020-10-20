@@ -1,0 +1,10 @@
+interface I
+{
+  in void e();
+  behaviour
+  {
+    on e: illegal;
+  }
+}
+
+typo
