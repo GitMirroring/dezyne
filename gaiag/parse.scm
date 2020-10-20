@@ -73,24 +73,31 @@
      (if (string-null? hanging) ""
          (string-append hanging "\n")))))
 
-(define* (peg:error-message file-name string pos message)
-    (display (peg:message file-name string pos "error" message) (current-error-port)))
+(define (peg:imported-from->message imported-from file-name)
+  (let ((from (assoc-ref imported-from (basename file-name))))
+    (if from (string-append
+              (format #f "In ~a:\n" file-name)
+              (let loop ((from from))
+                (if from (string-append (format #f "imported from ~a:\n" from)
+                                        (loop (assoc-ref imported-from (basename from))))
+                    "\n")))
+        "")))
 
-(define* (peg:handle-error file-name string pos message #:key (key 'syntax-error))
-  (peg:error-message file-name string pos message)
-  (throw key '()))
+(define (peg:error-message imported-from file-name string pos message)
+  (display (peg:imported-from->message imported-from file-name) (current-error-port))
+  (display (peg:message file-name string pos "error" message) (current-error-port)))
 
-(define (peg:syntax-error-message file-name string args)
+(define (peg:syntax-error-message imported-from file-name string args)
   (unless (or (null? args) (null? (car args)))
     (let* ((pos (caar args))
            (message (format #f "`~a' expected" (cadar args))))
-      (peg:error-message file-name string pos message))))
+      (peg:error-message imported-from file-name string pos message))))
 
-(define (peg:handle-syntax-error file-name string)
+(define* (peg:handle-syntax-error file-name string #:key (imported-from '()))
   (lambda (key . args)
     (if (or (null? args) (null? (car args))) (apply throw key args)
         (begin
-          (peg:syntax-error-message file-name string args)
+          (peg:syntax-error-message imported-from file-name string args)
           (apply throw key '())))))
 
 
@@ -104,6 +111,13 @@
 
 parse CONTENT and return an ast.  When SKIP-WCF?, skip the
 well-formedness checks."
+
+  (define (imported-from alist)
+    (define parse
+      (match-lambda ((file-name . content)
+                     (map (cute cons <> file-name)
+                          (imported-file-names content)))))
+    (append-map parse alist))
 
   (define (expand-imports parse-tree-alist)
     (let ((file (car parse-tree-alist))
@@ -126,7 +140,7 @@ well-formedness checks."
                                      (%peg:skip? peg:skip-parse)
                                      (%peg:debug? (> (gdzn:debugity) 3)))
                         (cons file-name (peg:parse content))))
-                    (peg:handle-syntax-error file-name content))))
+                    (peg:handle-syntax-error file-name content #:imported-from (imported-from alist)))))
                alist))
          (ast-alist (map (match-lambda
                            ((file-name . parse-tree)
@@ -225,11 +239,15 @@ specified in IMPORTS."
                 (if (string-prefix? "#file \"" content) (string->file+import-content-alist content)
                     (let ((content-alist (acons file-name content content-alist)))
                       (loop (append (cdr file-names)
-                                    (let loop ((o (parameterize ((%peg:skip? peg:skip-parse)
-                                                                 (%peg:debug? (> (gdzn:debugity) 3)))
-                                                    (peg:imports content))))
-                                      (match o
-                                        (('import file-name) `(,file-name))
-                                        (_ (append-map loop o)))))
+                                    (imported-file-names content))
                             imports
                             content-alist)))))))))
+
+(define (imported-file-names content)
+  "Return the list of file names used in import statements in content."
+  (let loop ((o (parameterize ((%peg:skip? peg:skip-parse)
+                               (%peg:debug? (> (gdzn:debugity) 3)))
+                  (peg:imports content))))
+    (match o
+      (('import file-name) `(,file-name))
+      (_ (append-map loop o)))))
