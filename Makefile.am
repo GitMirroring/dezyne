@@ -71,10 +71,12 @@ dzn/%: dzn/%.in Makefile
 BUILT_SOURCES =
 
 bin_SCRIPTS =					\
-  bin/dzn
+  bin/dzn					\
+  bin/scm2json
 
 EXTRA_DIST +=					\
- bin/dzn.in
+ bin/dzn.in					\
+ bin/scm2json.in
 
 dist_noinst_DATA =
 ALL_GO =

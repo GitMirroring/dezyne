@@ -1,0 +1,8 @@
+#!@GUILE@ --no-auto-compile
+-*- scheme -*-
+!#
+
+(set! %load-path (append '("@guilemoduledir@") %load-path))
+(set! %load-compiled-path (append '("@guileobjectdir@") %load-compiled-path))
+
+((@ (dzn scm2json) main) (command-line))

@@ -39,6 +39,7 @@ dist_%C%_scm_DATA =				\
  %D%/parse.scm					\
  %D%/peg.scm					\
  %D%/serialize.scm				\
+ %D%/scm2json.scm				\
  %D%/shell-util.scm				\
  %D%/templates.scm				\
  %D%/wfc.scm

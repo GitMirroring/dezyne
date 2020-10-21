@@ -22,6 +22,7 @@ stamp-h[0-9]
 stamp-vti
 /m4
 /bin/dzn
+/bin/scm2json
 /config.log
 /config.status
 /configure
@@ -37,7 +38,6 @@ stamp-vti
 /libtool
 Makefile
 Makefile.in
-/bin/lts2traces
 /test-suite.log
 /test/dzn/*.log
 /test/dzn/*.trs
